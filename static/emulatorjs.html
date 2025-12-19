@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>EmulatorJS</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #000;
+      }
+      #game {
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="game"></div>
+
+    <script>
+      function getQueryParam(name) {
+        const params = new URLSearchParams(window.location.search);
+        return params.get(name);
+      }
+
+      const rom = getQueryParam("rom");
+      const core = getQueryParam("core") || "gba";
+      const color = getQueryParam("color") || "#0064ff";
+
+      if (!rom) {
+        document.body.innerHTML = "<p style='color:white;'>No ROM specified</p>";
+        throw new Error("No ROM specified");
+      }
+
+      const containerId = "game-" + Math.random().toString(36).substr(2, 9);
+      const container = document.getElementById("game");
+      container.id = containerId;
+
+      window.EJS_player = "#" + containerId;
+      window.EJS_core = core;
+      window.EJS_gameName = rom.replace(/\..+$/, "");
+      window.EJS_color = color;
+      window.EJS_pathtodata = "https://cdn.emulatorjs.org/stable/data/";
+      window.EJS_gameUrl = `/static/${rom}`;
+
+      if (core === "gba") {
+        window.EJS_biosUrl = "/static/bios/gba_bios.bin";
+      }
+      if (core === "nds") {
+        window.EJS_bios7Url = "/static/bios/bios7.bin";
+        window.EJS_bios9Url = "/static/bios/bios9.bin";
+        window.EJS_firmwareUrl = "/static/bios/firmware.bin";
+      }
+      const script = document.createElement("script");
+      script.src = "https://cdn.emulatorjs.org/stable/data/loader.js";
+      document.body.appendChild(script);
+    </script>
+  </body>
+</html>
