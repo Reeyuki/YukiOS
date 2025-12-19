@@ -1282,7 +1282,6 @@ class DesktopOS {
       tetris: { type: "game", url: "https://turbowarp.org/embed.html?autoplay#31651654" },
       roads: { type: "game", url: "https://slowroads.io" },
       vscode: { type: "game", url: "https://emupedia.net/emupedia-app-vscode" },
-      starcraft: { type: "game", url: "https://retroonline.net/Windows/StarCraft:%20Brood%20War" },
       isaac: { type: "game", url: "https://emupedia.net/emupedia-game-binding-of-isaac" },
       mario: { type: "game", url: "https://emupedia.net/emupedia-game-mario" },
       papaGames: { type: "game", url: "https://papasgamesfree.io" },
@@ -1295,12 +1294,11 @@ class DesktopOS {
         type: "game",
         url: "https://www.retrogames.cc/embed/8843-jojos-bizarre-adventure%3A-heritage-for-the-future-jojo-no-kimyou-na-bouken%3A-mirai-e-no-isan-japan-990927-no-cd.html"
       },
-      pokemonRed: { type: "game", url: "https://gamesfrog.com/games/gb/pokemon-red/iframe" },
-      pokemonEmerald: { type: "game", url: "https://gamesfrog.com/games/gba/pokemon-emerald-version/iframe" },
-      pokemonRuby: { type: "game", url: "https://gamesfrog.com/games/gba/pokemon-ruby/iframe" },
-      pokemonPlatinum: { type: "game", url: "https://gamesfrog.com/games/nds/pokemon-platinum-version/iframe" },
-      pokemonSapphire: { type: "game", url: "https://gamesfrog.com/games/gba/pokemon-mega-power" },
-      pokemonDark: { type: "game", url: "https://gamesfrog.com/games/gba/pokemon-dark-violet/iframe" }
+      pokemonRed: { type: "gba", url: "pokemon-red.gba" },
+      pokemonEmerald: { type: "gba", url: "pokemon-emerald.gba" },
+      pokemonRuby: { type: "gba", url: "pokemon-ruby.gba" },
+      pokemonSapphire: { type: "gba", url: "pokemon-sapphire.gba" },
+      pokemonPlatinum: { type: "nds", url: "pokemon-platinum.nds" }
     };
 
     const info = appMap[app];
@@ -1312,6 +1310,12 @@ class DesktopOS {
         break;
       case "swf":
         this.openRuffleApp(info.swf);
+        break;
+      case "gba":
+        this.openGbaApp(info.url);
+        break;
+      case "nds":
+        this.openGbaApp(info.url, info.type);
         break;
       case "game":
         this.openGameApp(app, info.url);
@@ -1327,6 +1331,30 @@ class DesktopOS {
 
     const content = `<embed src="${swfPath}" width="100%" height="100%">`;
     this.createWindow(id, gameName.toUpperCase(), content);
+  }
+
+  openGbaApp(romName, core = "gba") {
+    const uniqueId = `${core}-${romName.replace(/\W/g, "")}-${Date.now()}`;
+
+    if (document.getElementById(uniqueId)) {
+      this.wm.bringToFront(document.getElementById(uniqueId));
+      return;
+    }
+
+    const iframeUrl = `/static/emulatorjs.html?rom=${encodeURIComponent(romName)}&core=${encodeURIComponent(core)}&color=%230064ff`;
+
+    const content = `
+    <iframe src="${iframeUrl}"
+            id="${uniqueId}-iframe"
+            style="width:100%; height:100%; border:none;"
+            allow="autoplay; fullscreen; clipboard-write; encrypted-media; picture-in-picture"
+            sandbox="allow-forms allow-downloads allow-modals allow-pointer-lock allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation allow-autoplay">
+    </iframe>
+  `;
+
+    const windowTitle = romName.replace(/\..+$/, "");
+
+    this.createWindow(uniqueId, windowTitle, content, iframeUrl);
   }
 
   openGameApp(type, url) {
