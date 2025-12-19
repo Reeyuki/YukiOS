@@ -11,12 +11,13 @@
         background-color: black;
         color: white;
         margin: 0;
-        cursor: url("/icons/cursor.png");
         padding: 0;
+        cursor: url("/icons/cursor.png");
       }
       header {
         text-align: center;
         padding: 1rem;
+        position: relative;
       }
       nav a {
         color: white;
@@ -32,7 +33,12 @@
         padding: 1rem;
       }
       article {
-        margin-bottom: 3rem;
+        background-color: #1c1c1c;
+        border: 1px solid #444;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 2.5rem;
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.05);
       }
       h1,
       h2,
@@ -47,7 +53,7 @@
         color: white;
       }
       hr {
-        border: 1px solid white;
+        border: 1px solid #555;
         margin: 2rem 0;
       }
       footer {
@@ -55,12 +61,6 @@
         padding: 2rem;
         color: white;
       }
-      header {
-        position: relative;
-        text-align: center;
-        padding: 1rem;
-      }
-
       .home-button {
         position: absolute;
         top: 1rem;
@@ -71,9 +71,17 @@
         text-decoration: none;
         border-radius: 4px;
       }
-
       .home-button:hover {
         background-color: #ccc;
+        color: black;
+      }
+
+      ol li a {
+        color: #a0c4ff;
+        text-decoration: underline;
+      }
+      ol li a:hover {
+        color: #fff;
       }
     </style>
   </head>
@@ -83,38 +91,44 @@
       <h1>Blog</h1>
       <nav>
         <a href="#post1">Kernel-level Anti-Cheats</a>
-        <a href="#post2">Helpful Resources</a>
+        <a href="#post2">Why Discord Sucks</a>
       </nav>
     </header>
     <main>
       <article id="post1">
+        <h2>Why not use discord</h2>
+        <p>
+          <a href="https://iamsoph.ie/blog/2025/05/09/why-not-use-discord" target="_blank"
+            >https://iamsoph.ie/blog/2025/05/09/why-not-use-discord/</a
+          >
+        </p>
+      </article>
+      <article id="post2">
         <h2>Kernel-level anti-cheats SUCK, and here’s why</h2>
         <p>
           There’s a growing trend in multiplayer games where developers deploy anti-cheat software that runs at the
           kernel level, with deep access to your hardware and operating system. Riot’s Vanguard is a well-known example
           of this kind of anti-cheat, running with the same privileges as the OS itself
-          <sup><a href="#ref1">[1]</a></sup>
-          .
+          <sup><a href="#ref1">[1]</a></sup
+          >.
         </p>
         <p>
           These anti-cheats also tend to conflict with each other. A real-world example was Battlefield 6 refusing to
           run if Riot Vanguard was installed, because both systems competed for low-level control
-          <sup><a href="#ref2">[2]</a></sup>
-          .
+          <sup><a href="#ref2">[2]</a></sup
+          >.
         </p>
         <p>
           On top of that, kernel-level anti-cheats introduce real performance and privacy risks. They can observe most
           running processes and system activity, and users have reported overhead, instability, and general system
-          issues
-          <sup><a href="#ref3">[3]</a></sup>
-          .
+          issues <sup><a href="#ref3">[3]</a></sup
+          >.
         </p>
         <p>
           All of this is done largely to reduce the cost of proper server-side cheat detection. Instead, your PC becomes
           a constantly reporting client tied to their infrastructure. If anything goes wrong on their end, your system
-          is the one exposed
-          <sup><a href="#ref4">[4]</a></sup>
-          .
+          is the one exposed <sup><a href="#ref4">[4]</a></sup
+          >.
         </p>
         <p>
           I would strongly advise against buying or supporting games from companies that operate like this. They treat
@@ -125,22 +139,19 @@
           Protection SHOULD be done on the server side, never on the client. Trusting the client is the worst thing you
           can do in any web service. Any client-side protection can be inspected, modified, bypassed, or removed
           entirely. Going kernel-level doesn’t make an anti-cheat foolproof — cheaters can and do write their own kernel
-          drivers
-          <sup><a href="#ref5">[5]</a></sup>
-          .
+          drivers <sup><a href="#ref5">[5]</a></sup
+          >.
         </p>
         <p>
           To make things worse, some companies push misleading narratives about Linux being a major source of cheating.
-          Community discussions around Apex Legends highlight this clearly
-          <sup><a href="#ref6">[6]</a></sup>
-          .
+          Community discussions around Apex Legends highlight this clearly <sup><a href="#ref6">[6]</a></sup
+          >.
         </p>
         <p>
           According to Apex Legends developers, removing Linux support supposedly reduced cheating by 33%. This is
           honestly hilarious, considering the game experienced a major player drop during the same period. They also
-          stated that Linux users made up only about 2% of the player base
-          <sup><a href="#ref7">[7]</a></sup>
-          .
+          stated that Linux users made up only about 2% of the player base <sup><a href="#ref7">[7]</a></sup
+          >.
         </p>
         <p>That logic simply does not hold up.</p>
         <p>And in the end, this noisy and messy approach still fails to eliminate cheaters.</p>
@@ -148,65 +159,45 @@
         <h3>References</h3>
         <ol>
           <li id="ref1">
-            <a href="https://en.wikipedia.org/wiki/Riot_Vanguard" target="_blank">
-              https://en.wikipedia.org/wiki/Riot_Vanguard
-            </a>
+            <a href="https://en.wikipedia.org/wiki/Riot_Vanguard" target="_blank"
+              >https://en.wikipedia.org/wiki/Riot_Vanguard</a
+            >
           </li>
           <li id="ref2">
             <a
               href="https://www.reddit.com/r/technology/comments/1mpv50v/battlefield_6_open_beta_wont_run_if_you_have"
               target="_blank"
+              >https://www.reddit.com/r/technology/comments/1mpv50v/battlefield_6_open_beta_wont_run_if_you_have</a
             >
-              https://www.reddit.com/r/technology/comments/1mpv50v/battlefield_6_open_beta_wont_run_if_you_have
-            </a>
           </li>
           <li id="ref3">
             <a
               href="https://tskkc.com/more/138428/kernel-level-anti-cheat-explained-how-it-works-and-risks"
               target="_blank"
+              >https://tskkc.com/more/138428/kernel-level-anti-cheat-explained-how-it-works-and-risks</a
             >
-              https://tskkc.com/more/138428/kernel-level-anti-cheat-explained-how-it-works-and-risks
-            </a>
           </li>
           <li id="ref4">
-            <a href="https://leveluptalk.com/news/kernel-level-anti-cheat-gaming-risks-benefits/" target="_blank">
-              https://leveluptalk.com/news/kernel-level-anti-cheat-gaming-risks-benefits/
-            </a>
+            <a href="https://leveluptalk.com/news/kernel-level-anti-cheat-gaming-risks-benefits/" target="_blank"
+              >https://leveluptalk.com/news/kernel-level-anti-cheat-gaming-risks-benefits/</a
+            >
           </li>
           <li id="ref5">
-            <a href="https://courses.csail.mit.edu/6.857/2021/projects/Lee-Jiang-Srinivasan-Wang.pdf" target="_blank">
-              https://courses.csail.mit.edu/6.857/2021/projects/Lee-Jiang-Srinivasan-Wang.pdf
-            </a>
+            <a href="https://courses.csail.mit.edu/6.857/2021/projects/Lee-Jiang-Srinivasan-Wang.pdf" target="_blank"
+              >https://courses.csail.mit.edu/6.857/2021/projects/Lee-Jiang-Srinivasan-Wang.pdf</a
+            >
           </li>
           <li id="ref6">
-            <a href="https://www.reddit.com/r/linux_gaming/comments/1imv61k/" target="_blank">
-              https://www.reddit.com/r/linux_gaming/comments/1imv61k/
-            </a>
+            <a href="https://www.reddit.com/r/linux_gaming/comments/1imv61k/" target="_blank"
+              >https://www.reddit.com/r/linux_gaming/comments/1imv61k/</a
+            >
           </li>
           <li id="ref7">
-            <a href="https://www.reddit.com/r/apexlegends/comments/1ggi63h/" target="_blank">
-              https://www.reddit.com/r/apexlegends/comments/1ggi63h/
-            </a>
+            <a href="https://www.reddit.com/r/apexlegends/comments/1ggi63h/" target="_blank"
+              >https://www.reddit.com/r/apexlegends/comments/1ggi63h/</a
+            >
           </li>
         </ol>
-      </article>
-
-      <article id="post2">
-        <h2>Helpful Privacy Resources</h2>
-        <p>
-          Staying safe online is crucial for everyone. Here are some recommended resources to understand why privacy
-          matters:
-        </p>
-        <ul>
-          <li>
-            <a
-              href="https://www.privacyguides.org/en/basics/why-privacy-matters/#privacy-vs-secrecy:~:text=A%20common,wrong"
-              target="_blank"
-            >
-              Privacy vs Secrecy - Privacy Guides
-            </a>
-          </li>
-        </ul>
       </article>
     </main>
   </body>
