@@ -1344,16 +1344,17 @@ class DesktopOS {
 
     const formattedName = type.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase());
 
-    this.createWindow(type, formattedName, content);
+    this.createWindow(type, formattedName, content, url);
   }
 
-  createWindow(id, title, contentHtml) {
+  createWindow(id, title, contentHtml, externalUrl) {
     const win = this.wm.createWindow(`${id}-win`, title);
     win.innerHTML = `
       <div class="window-header">
         <span>${title}</span>
         <div class="window-controls">
           <button class="minimize-btn" title="Minimize">−</button>
+          ${externalUrl ? `<button class="external-btn" title="Open in External">↗</button>` : ""}
           <button class="maximize-btn" title="Maximize">□</button>
           <button class="close-btn" title="Close">X</button>
         </div>
@@ -1366,6 +1367,13 @@ class DesktopOS {
     this.wm.makeDraggable(win);
     this.wm.makeResizable(win);
     this.wm.setupWindowControls(win);
+
+    if (externalUrl) {
+      win.querySelector(".external-btn").addEventListener("click", () => {
+        window.open(externalUrl, "_blank");
+      });
+    }
+
     this.wm.addToTaskbar(win.id, title);
   }
 
