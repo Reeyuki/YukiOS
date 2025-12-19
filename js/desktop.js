@@ -1380,11 +1380,21 @@ class DesktopOS {
       isaac: { type: "game", url: "https://emupedia.net/emupedia-game-binding-of-isaac" },
       mario: { type: "game", url: "https://emupedia.net/emupedia-game-mario" },
       papaGames: { type: "game", url: "https://papasgamesfree.io" },
-      zombotron: { type: "game", url: "https://www.friv.com/z/games/zombotron/game.html" },
-      zombotron2: { type: "game", url: "https://www.friv.com/z/games/zombotron2/game.html" },
+      zombotron: { type: "game", url: "https://www.gameflare.com/embed/zombotron" },
+      zombotron2: { type: "game", url: "https://www.gameflare.com/embed/zombotron-2" },
       zombieTd: { type: "game", url: "https://www.gamesflow.com/jeux.php?id=2061391" },
       fancyPants: { type: "game", url: "https://www.friv.com/z/games/fancypantsadventure/game.html" },
       fancyPants2: { type: "game", url: "https://www.friv.com/z/games/fancypantsadventure2/game.html" },
+      jojo: {
+        type: "game",
+        url: "https://www.retrogames.cc/embed/8843-jojos-bizarre-adventure%3A-heritage-for-the-future-jojo-no-kimyou-na-bouken%3A-mirai-e-no-isan-japan-990927-no-cd.html",
+      },
+      pokemonRed: { type: "game", url: "https://gamesfrog.com/games/gb/pokemon-red/iframe" },
+      pokemonEmerald: { type: "game", url: "https://gamesfrog.com/games/gba/pokemon-emerald-version/iframe" },
+      pokemonRuby: { type: "game", url: "https://gamesfrog.com/games/gba/pokemon-ruby2/iframe" },
+      pokemonPlatinum: { type: "game", url: "https://gamesfrog.com/games/nds/pokemon-platinum-version/iframe" },
+      pokemonSapphire: { type: "game", url: "https://gamesfrog.com/games/gba/pokemon-mega-power" },
+      pokemonDark: { type: "game", url: "https://gamesfrog.com/games/gba/pokemon-dark-violet/iframe" },
     };
 
     const info = appMap[app];
@@ -1426,7 +1436,9 @@ class DesktopOS {
               sandbox="allow-forms allow-downloads allow-modals allow-pointer-lock allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation allow-autoplay"></iframe>
     `;
 
-    this.createWindow(type, type.toUpperCase(), content);
+    const formattedName = type.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase());
+
+    this.createWindow(type, formattedName, content);
   }
 
   createWindow(id, title, contentHtml) {
