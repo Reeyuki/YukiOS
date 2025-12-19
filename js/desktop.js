@@ -1297,7 +1297,7 @@ class DesktopOS {
       },
       pokemonRed: { type: "game", url: "https://gamesfrog.com/games/gb/pokemon-red/iframe" },
       pokemonEmerald: { type: "game", url: "https://gamesfrog.com/games/gba/pokemon-emerald-version/iframe" },
-      pokemonRuby: { type: "game", url: "https://gamesfrog.com/games/gba/pokemon-ruby2/iframe" },
+      pokemonRuby: { type: "game", url: "https://gamesfrog.com/games/gba/pokemon-ruby/iframe" },
       pokemonPlatinum: { type: "game", url: "https://gamesfrog.com/games/nds/pokemon-platinum-version/iframe" },
       pokemonSapphire: { type: "game", url: "https://gamesfrog.com/games/gba/pokemon-mega-power" },
       pokemonDark: { type: "game", url: "https://gamesfrog.com/games/gba/pokemon-dark-violet/iframe" }
