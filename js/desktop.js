@@ -1369,8 +1369,8 @@ class DesktopOS {
       terminal: { type: "system", action: () => terminalApp.open() },
       notepad: { type: "system", action: () => notepadApp.open() },
       music: { type: "system", action: () => this.musicPlayer.open(this.wm) },
-      sonic: { type: "swf", swf: "sonic.swf" },
-      swarmQueen: { type: "swf", swf: "swarmQueen.swf" },
+      sonic: { type: "swf", swf: "https://raw.githubusercontent.com/Reeyuki/reeyuki.github.io/refs/heads/main/static/sonic.swf" },
+      swarmQueen: { type: "swf", swf: "https://files.catbox.moe/tczjsf.swf" },
       pacman: { type: "game", url: "https://pacman-e281c.firebaseapp.com" },
       pvz: { type: "game", url: "https://emupedia.net/emupedia-game-pvz" },
       tetris: { type: "game", url: "https://turbowarp.org/embed.html?autoplay#31651654" },
@@ -1419,7 +1419,7 @@ class DesktopOS {
       return;
     }
 
-    const content = `<embed src="/static/${swfPath}" width="100%" height="100%">`;
+    const content = `<embed src="${swfPath}" width="100%" height="100%">`;
     this.createWindow(id, gameName.toUpperCase(), content);
   }
 
