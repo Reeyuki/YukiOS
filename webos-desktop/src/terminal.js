@@ -11,6 +11,7 @@ export class TerminalApp {
 
     this.commands = {};
     this.registerDefaultCommands();
+    this.pageLoadTime = Date.now();
   }
   async print(text, color = null, isCommand = false, promptText = null, delay = 30) {
     const line = document.createElement("div");
@@ -352,8 +353,13 @@ export class TerminalApp {
         : /Chrome\/\d+/.test(ua)
           ? "Chrome"
           : "Unknown";
+
+    const isChromiumBased = browser === "Chrome" || browser === "Edge";
+    const browserText = isChromiumBased ? `eww a chromium?!` : browser;
+
     const cores = navigator.hardwareConcurrency || "Unknown";
-    const memoryGB = navigator.deviceMemory || "Unknown";
+    const coresText = cores > 10 ? `${cores} (WOW ITS SO BIG!)` : cores;
+
     let gpu = "Unknown";
     try {
       const canvas = document.createElement("canvas");
@@ -363,18 +369,36 @@ export class TerminalApp {
         gpu = debugInfo ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
       }
     } catch {}
+
+    const elapsedMs = Date.now() - this.pageLoadTime;
+    const hours = Math.floor(elapsedMs / 3600000);
+    const minutes = Math.floor((elapsedMs % 3600000) / 60000);
+    const uptimeStr = `${hours}h, ${minutes}m`;
+
+    let engine = "Unknown";
+    if (typeof InstallTrigger !== "undefined") engine = "SpiderMonkey";
+    else if (!!window.chrome && /Google Inc/.test(navigator.vendor)) engine = "V8";
+    else if (/Apple/.test(navigator.vendor)) engine = "JavaScriptCore";
+
     const lines = [
-      `       .--.      ${this.username}@${this.hostname}`,
-      `     |o_o |     OS: Arch Linux`,
-      `     |:_/ |     Browser: ${browser}`,
-      `    //   \\ \\   CPU Cores: ${cores}`,
-      `   (|     | )  Architecture: ${platform}`,
-      `  /'\\_   _/\\'\\ RAM: ${memoryGB} GB`,
-      `  \\___)=(___/   GPU: ${gpu}`,
-      `                Resolution: ${window.innerWidth}x${window.innerHeight}`,
-      `                DE: KDE Plasma`
+      "",
+      "",
+      "                     " + this.username + "@" + this.hostname,
+      "        /\\           OWOS     Nyarch Linuwu",
+      `       /  \\          KEWNEL   ${engine}wu`,
+      `      /\\   \\         CPUWU    Cwpu Cowes: ${coresText}`,
+      `     / > ω <\\        BROWSEWU  ${browserText}`,
+      `    /   __   \\       GWAPHU    ${gpu}`,
+      `   / __|  |__-\\      ARCHIWU   ${platform}`,
+      "  /_-''    ''-_\\     SHEWW    /bin/bash",
+      `                     RESOWUW   ${window.innerWidth}x${window.innerHeight}`,
+      `                     DEWU      KDE Plasma`,
+      `                     UWUPTIME  ${uptimeStr}`
     ];
-    for (const line of lines) await this.print(line, "cyan");
+
+    for (const line of lines) {
+      await this.enqueuePrint(line);
+    }
   }
 
   cmdPs() {

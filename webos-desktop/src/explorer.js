@@ -1,5 +1,11 @@
 const contextMenu = document.getElementById("context-menu");
 
+export const FileKind = {
+  IMAGE: "image",
+  TEXT: "text",
+  OTHER: "other"
+};
+
 export class ExplorerApp {
   constructor(fileSystemManager, windowManager, notepadApp) {
     this.fs = fileSystemManager;
@@ -7,6 +13,7 @@ export class ExplorerApp {
     this.notepadApp = notepadApp;
     this.currentPath = ["home", "reeyuki"];
     this.fileSelectCallback = null;
+    this.open = this.open.bind(this);
   }
 
   open(callback = null) {
@@ -103,18 +110,19 @@ export class ExplorerApp {
       const isFile = this.fs.isFile(this.currentPath, name);
       const item = document.createElement("div");
       item.className = "file-item";
+      console.log(name, this.currentPath);
 
       let iconImg;
 
       if (isFile) {
         const kind = this.fs.getFileKind(this.currentPath, name);
-        if (kind === "image") {
-          iconImg = this.fs.getFileContent(this.currentPath, name) || "/icons/file.png";
+        if (kind === FileKind.IMAGE) {
+          iconImg = this.fs.getFileContent(this.currentPath, name) || "/static/icons/file.png";
         } else {
-          iconImg = "/icons/file.png";
+          iconImg = "/static/icons/notepad.png";
         }
       } else {
-        iconImg = "/icons/notepad.png";
+        iconImg = "/static/icons/file.png";
       }
 
       item.innerHTML = `
@@ -130,7 +138,7 @@ export class ExplorerApp {
           } else {
             const content = this.fs.getFileContent(this.currentPath, name);
             const kind = this.fs.getFileKind(this.currentPath, name);
-            if (kind === "image") {
+            if (kind === FileKind.IMAGE) {
               this.openImageViewer(name, content);
             } else {
               this.notepadApp.open(name, content, this.currentPath);
@@ -184,12 +192,18 @@ export class ExplorerApp {
       contextMenu.style.display = "none";
       if (isFile) {
         const content = this.fs.getFileContent(this.currentPath, itemName);
-        this.notepadApp.open(itemName, content, this.currentPath);
+        const kind = this.fs.getFileKind(this.currentPath, itemName);
+        if (kind === FileKind.IMAGE) {
+          this.openImageViewer(itemName, content);
+        } else {
+          this.notepadApp.open(itemName, content, this.currentPath);
+        }
       } else {
         this.currentPath.push(itemName);
         this.render();
       }
     };
+
     contextMenu.appendChild(createMenuItem(openText, openAction));
 
     if (isFile) {

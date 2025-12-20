@@ -1,10 +1,11 @@
 export class AppLauncher {
-  constructor(windowManager, fileSystemManager, musicPlayer, explorerApp, terminalApp) {
+  constructor(windowManager, fileSystemManager, musicPlayer, explorerApp, terminalApp, notepadApp) {
     this.wm = windowManager;
     this.fs = fileSystemManager;
     this.musicPlayer = musicPlayer;
     this.explorerApp = explorerApp;
     this.terminalApp = terminalApp;
+    this.notepadApp = notepadApp;
   }
 
   launch(app, icon) {
@@ -36,15 +37,16 @@ export class AppLauncher {
       zombotron2: { type: "game", url: "https://www.gameflare.com/embed/zombotron-2" },
       fancyPants: { type: "game", url: "https://www.friv.com/z/games/fancypantsadventure/game.html" },
       fancyPants2: { type: "game", url: "https://www.friv.com/z/games/fancypantsadventure2/game.html" },
+      strikeForce: { type: "game", url: "https://www.friv.com/z/games/strikeforcekitty/game.html" },
       jojo: {
         type: "game",
         url: "https://www.retrogames.cc/embed/8843-jojos-bizarre-adventure%3A-heritage-for-the-future-jojo-no-kimyou-na-bouken%3A-mirai-e-no-isan-japan-990927-no-cd.html"
       },
       pokemonRed: { type: "gba", url: "pokemon-red.gba" },
       pokemonEmerald: { type: "gba", url: "pokemon-emerald.gba" },
-      pokemonRuby: { type: "gba", url: "pokemon-ruby.gba" },
-      pokemonSapphire: { type: "gba", url: "pokemon-sapphire.gba" },
-      pokemonPlatinum: { type: "nds", url: "pokemon-platinum.nds" }
+      pokemonPlatinum: { type: "nds", url: "pokemon-platinum.nds" },
+      pokemonHeartgold: { type: "nds", url: "pokemon-heartgold.nds" },
+      pokemonWhite: { type: "nds", url: "pokemon-white.nds" }
     };
 
     const info = appMap[app];
