@@ -22,10 +22,6 @@ export class AppLauncher {
         type: "swf",
         swf: "https://reeyuki.github.io/static/swarmQueen.swf"
       },
-      zombieTd: {
-        type: "swf",
-        swf: "https://reeyuki.github.io/static/zombie_defense_agency.swf"
-      },
       pacman: { type: "game", url: "https://pacman-e281c.firebaseapp.com" },
       pvz: { type: "game", url: "https://emupedia.net/emupedia-game-pvz" },
       tetris: { type: "game", url: "https://turbowarp.org/embed.html?autoplay#31651654" },
@@ -34,6 +30,7 @@ export class AppLauncher {
       isaac: { type: "game", url: "https://emupedia.net/emupedia-game-binding-of-isaac" },
       mario: { type: "game", url: "https://emupedia.net/emupedia-game-mario" },
       papaGames: { type: "game", url: "https://papasgamesfree.io" },
+      zombieTd: { type: "game", url: "https://www.gamesflow.com/jeux.php?id=2061391" },
       zombotron: { type: "game", url: "https://www.gameflare.com/embed/zombotron" },
       zombotron2: { type: "game", url: "https://www.gameflare.com/embed/zombotron-2" },
       fancyPants: { type: "game", url: "https://www.friv.com/z/games/fancypantsadventure/game.html" },
