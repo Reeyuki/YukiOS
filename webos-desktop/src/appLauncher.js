@@ -83,6 +83,35 @@ export class AppLauncher {
   }
 
   openEmulatorApp(romName, core) {
+    if (location.hostname === "reeyuki.neocities.org") {
+      const popup = document.createElement("div");
+      popup.style.position = "fixed";
+      popup.style.top = "20px";
+      popup.style.left = "50%";
+      popup.style.transform = "translateX(-50%)";
+      popup.style.background = "#fff";
+      popup.style.border = "1px solid #ccc";
+      popup.style.padding = "15px";
+      popup.style.borderRadius = "5px";
+      popup.style.boxShadow = "0 2px 8px rgba(0,0,0,0.2)";
+      popup.style.zIndex = 9999;
+
+      popup.innerHTML = `
+        <strong>Cannot Load Game</strong><br>
+        Neocities hosting does not allow loading game assets from different domains. To play this game, use GitHub:<br>
+        <a href="https://reeyuki.github.io/desktop/" target="_blank">https://reeyuki.github.io/desktop/</a><br>
+        <button id="closePopup" style="margin-top:10px;">Close</button>
+      `;
+
+      document.body.appendChild(popup);
+
+      document.getElementById("closePopup").addEventListener("click", () => {
+        popup.remove();
+      });
+
+      return;
+    }
+
     const uniqueId = `${core}-${romName.replace(/\W/g, "")}-${Date.now()}`;
 
     if (document.getElementById(uniqueId)) {
