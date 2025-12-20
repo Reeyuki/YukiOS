@@ -3,6 +3,9 @@ export class NotepadApp {
     this.fs = fileSystemManager;
     this.wm = windowManager;
   }
+  setExplorer(explorerApp) {
+    this.explorerApp = explorerApp;
+  }
 
   open(title = "Untitled", content = "", filePath = null) {
     const winId = `notepad-${title.replace(/\s/g, "")}`;
@@ -91,7 +94,7 @@ export class NotepadApp {
   }
 
   openFileDialog() {
-    explorerApp.open((path, fileName) => {
+    this.explorerApp.open((path, fileName) => {
       const content = this.fs.getFileContent(path, fileName);
       this.open(fileName, content, path);
     });

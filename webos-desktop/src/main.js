@@ -1,9 +1,24 @@
 import { TerminalApp } from "./terminal.js";
-import { ExplorerApp } from "./explorer.js";
+import { ExplorerApp, FileKind } from "./explorer.js";
 import { WindowManager } from "./windowManager.js";
 import { AppLauncher } from "./appLauncher.js";
 import { NotepadApp } from "./notepad.js";
-
+const defaultStorage = {
+  home: {
+    reeyuki: {
+      Documents: {},
+      Pictures: {
+        "wallpaper1.webp": { type: "file", content: "/static/wallpapers/wallpaper1.webp", kind: FileKind.IMAGE },
+        "wallpaper2.webp": { type: "file", content: "/static/wallpapers/wallpaper2.webp", kind: FileKind.IMAGE },
+        "wallpaper3.webp": { type: "file", content: "/static/wallpapers/wallpaper3.webp", kind: FileKind.IMAGE },
+        "wallpaper4.webp": { type: "file", content: "/static/wallpapers/wallpaper4.webp", kind: FileKind.IMAGE },
+        "wallpaper5.webp": { type: "file", content: "/static/wallpapers/wallpaper5.webp", kind: FileKind.IMAGE },
+        "wallpaper6.webp": { type: "file", content: "/static/wallpapers/wallpaper6.webp", kind: FileKind.IMAGE }
+      },
+      Music: {}
+    }
+  }
+};
 const CONFIG = {
   GRID_SIZE: 80,
   STORAGE_KEY: "desktopOS_fileSystem",
@@ -27,21 +42,7 @@ class FileSystemManager {
 
   loadFromStorage() {
     const stored = localStorage.getItem(CONFIG.STORAGE_KEY);
-    this.fileSystem = stored
-      ? JSON.parse(stored)
-      : {
-          home: {
-            reeyuki: {
-              Documents: {},
-              Pictures: {
-                "wallpaper1.webp": { type: "file", content: "/static/wallpapers/wallpaper1.webp", kind: "image" },
-                "wallpaper2.webp": { type: "file", content: "/static/wallpapers/wallpaper2.webp", kind: "image" },
-                "wallpaper3.webp": { type: "file", content: "/static/wallpapers/wallpaper3.webp", kind: "image" }
-              },
-              Music: {}
-            }
-          }
-        };
+    this.fileSystem = stored ? JSON.parse(stored) : defaultStorage;
   }
 
   saveToStorage() {
@@ -88,8 +89,8 @@ class FileSystemManager {
 
   inferKind(fileName) {
     const ext = fileName.split(".").pop().toLowerCase();
-    if (["png", "jpg", "jpeg", "gif", "webp"].includes(ext)) return "image";
-    if (["txt", "js", "json", "md", "html", "css"].includes(ext)) return "text";
+    if (["png", "jpg", "jpeg", "gif", "webp"].includes(ext)) return FileKind.IMAGE;
+    if (["txt", "js", "json", "md", "html", "css"].includes(ext)) return FileKind.TEXT;
     return "generic";
   }
 
@@ -143,6 +144,7 @@ class FileSystemManager {
   getFileKind(path, fileName) {
     const folder = this.getFolder(path);
     const item = folder[fileName];
+    console.log(item);
     if (item && item.type === "file") {
       return item.kind || "generic";
     }
@@ -395,12 +397,15 @@ class SystemUtilities {
     setInterval(updateClock, 1000);
     updateClock();
   }
+
   static setRandomWallpaper() {
-    const wallpapers = [
-      "/static/wallpapers/wallpaper1.webp",
-      "/static/wallpapers/wallpaper2.webp",
-      "/static/wallpapers/wallpaper3.webp"
-    ];
+    const pictures = defaultStorage.home.reeyuki.Pictures;
+
+    const wallpapers = Object.values(pictures)
+      .filter((item) => item.kind === "image")
+      .map((item) => item.content);
+
+    if (!wallpapers.length) return;
 
     const randomWallpaper = wallpapers[Math.floor(Math.random() * wallpapers.length)];
 
@@ -412,11 +417,19 @@ const desktop = document.getElementById("desktop");
 
 const fileSystemManager = new FileSystemManager();
 const windowManager = new WindowManager();
-const notepadApp = new NotepadApp(fileSystemManager, windowManager);
+const notepadApp = new NotepadApp(fileSystemManager, windowManager, null);
 const explorerApp = new ExplorerApp(fileSystemManager, windowManager, notepadApp);
+notepadApp.setExplorer(explorerApp);
 const terminalApp = new TerminalApp(fileSystemManager, windowManager);
 const musicPlayer = new MusicPlayer();
-const appLauncher = new AppLauncher(windowManager, fileSystemManager, musicPlayer, explorerApp, terminalApp);
+const appLauncher = new AppLauncher(
+  windowManager,
+  fileSystemManager,
+  musicPlayer,
+  explorerApp,
+  terminalApp,
+  notepadApp
+);
 const desktopUI = new DesktopUI(appLauncher);
 SystemUtilities.startClock();
 SystemUtilities.setRandomWallpaper();
