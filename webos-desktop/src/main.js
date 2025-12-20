@@ -416,7 +416,7 @@ const notepadApp = new NotepadApp(fileSystemManager, windowManager);
 const explorerApp = new ExplorerApp(fileSystemManager, windowManager, notepadApp);
 const terminalApp = new TerminalApp(fileSystemManager, windowManager);
 const musicPlayer = new MusicPlayer();
-const appLauncher = new AppLauncher(windowManager, fileSystemManager, musicPlayer, explorerApp);
+const appLauncher = new AppLauncher(windowManager, fileSystemManager, musicPlayer, explorerApp, terminalApp);
 const desktopUI = new DesktopUI(appLauncher);
 SystemUtilities.startClock();
 SystemUtilities.setRandomWallpaper();
