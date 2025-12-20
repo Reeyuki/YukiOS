@@ -1,9 +1,10 @@
 export class AppLauncher {
-  constructor(windowManager, fileSystemManager, musicPlayer, explorerApp) {
+  constructor(windowManager, fileSystemManager, musicPlayer, explorerApp, terminalApp) {
     this.wm = windowManager;
     this.fs = fileSystemManager;
     this.musicPlayer = musicPlayer;
     this.explorerApp = explorerApp;
+    this.terminalApp = terminalApp;
   }
 
   launch(app, icon) {
