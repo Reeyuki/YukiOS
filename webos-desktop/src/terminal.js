@@ -342,10 +342,10 @@ export class TerminalApp {
       await this.print(`curl: (6) Could not resolve host: ${args[0]}`);
     }
   }
-
   async cmdNeofetch() {
     const ua = navigator.userAgent;
     const platform = navigator.platform || "Unknown";
+
     const browser = /Firefox\/\d+/.test(ua)
       ? "Firefox"
       : /Edg\/\d+/.test(ua)
@@ -355,7 +355,7 @@ export class TerminalApp {
           : "Unknown";
 
     const isChromiumBased = browser === "Chrome" || browser === "Edge";
-    const browserText = isChromiumBased ? `eww a chromium?!` : browser;
+    const browserText = isChromiumBased ? "eww a chromium?!" : browser;
 
     const cores = navigator.hardwareConcurrency || "Unknown";
     const coresText = cores > 10 ? `${cores} (WOW ITS SO BIG!)` : cores;
@@ -380,19 +380,31 @@ export class TerminalApp {
     else if (!!window.chrome && /Google Inc/.test(navigator.vendor)) engine = "V8";
     else if (/Apple/.test(navigator.vendor)) engine = "JavaScriptCore";
 
+    let osDetail = "Unknown";
+    if (/Windows NT 10/.test(ua)) osDetail = "Windows 10/11";
+    else if (/Mac OS X/.test(ua)) osDetail = "macOS";
+    else if (/Linux/.test(ua)) osDetail = "Linux";
+    else if (/Android/.test(ua)) osDetail = "Android";
+    else if (/iPhone|iPad/.test(ua)) osDetail = "iOS";
+
+    const osText = osDetail == "Windows 10/11" ? "Eww a windows!" : osDetail;
+
+    const ram = navigator.deviceMemory ? `${navigator.deviceMemory} GB` : "Unknown";
+
+    const dnt = navigator.doNotTrack === "1" || window.doNotTrack === "1" ? "Enabled" : "Disabled";
+
     const lines = [
       "",
       "",
       "                     " + this.username + "@" + this.hostname,
-      "        /\\           OWOS     Nyarch Linuwu",
+      `        /\\           OWOS     ${osText}`,
       `       /  \\          KEWNEL   ${engine}wu`,
       `      /\\   \\         CPUWU    Cwpu Cowes: ${coresText}`,
       `     / > ω <\\        BROWSEWU  ${browserText}`,
       `    /   __   \\       GWAPHU    ${gpu}`,
-      `   / __|  |__-\\      ARCHIWU   ${platform}`,
-      "  /_-''    ''-_\\     SHEWW    /bin/bash",
+      `   / __|  |__-\\      MEMOWY    ${ram}`,
+      `  /_-''    ''-_\\     DoNawtTWACKWU  ${dnt}`,
       `                     RESOWUW   ${window.innerWidth}x${window.innerHeight}`,
-      `                     DEWU      KDE Plasma`,
       `                     UWUPTIME  ${uptimeStr}`
     ];
 
