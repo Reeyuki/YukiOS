@@ -206,7 +206,7 @@ body {
 
 .explorer-container {
   display: flex;
-  height: 400px;
+  height: 100%;
   background: #1e1e1e;
   color: #fff;
   border: 1px solid #333;

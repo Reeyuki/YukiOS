@@ -6,10 +6,7 @@ export class AppLauncher {
     this.explorerApp = explorerApp;
     this.terminalApp = terminalApp;
     this.notepadApp = notepadApp;
-  }
-
-  launch(app, icon) {
-    const appMap = {
+    this.appMap = {
       return: { type: "system", action: () => (window.location.href = "/") },
       explorer: { type: "system", action: () => this.explorerApp.open() },
       computer: { type: "system", action: () => this.explorerApp.open() },
@@ -48,8 +45,11 @@ export class AppLauncher {
       pokemonHeartgold: { type: "nds", url: "https://files.catbox.moe/xntjzl.nds" },
       pokemonWhite: { type: "nds", url: "https://files.catbox.moe/dcicfh.nds" }
     };
+    populateStartMenu(this);
+  }
 
-    const info = appMap[app];
+  launch(app) {
+    const info = this.appMap[app];
     if (!info) return;
 
     switch (info.type) {
@@ -182,4 +182,32 @@ export class AppLauncher {
 
     this.wm.addToTaskbar(win.id, title);
   }
+}
+function populateStartMenu(appLauncher) {
+  const pageMap = {
+    system: document.querySelector('.kde-page[data-page="system"]'),
+    apps: document.querySelector('.kde-page[data-page="apps"]'),
+    games: document.querySelector('.kde-page[data-page="games"]'),
+    favorites: document.querySelector('.kde-page[data-page="favorites"]')
+  };
+
+  ["system", "apps", "games"].forEach((cat) => {
+    if (pageMap[cat]) pageMap[cat].innerHTML = "";
+  });
+
+  Object.entries(appLauncher.appMap).forEach(([appName, appData]) => {
+    const item = document.createElement("div");
+    item.classList.add("kde-item");
+    item.dataset.app = appName;
+
+    let label = appName.charAt(0).toUpperCase() + appName.slice(1);
+
+    item.textContent = label;
+
+    item.addEventListener("click", () => appLauncher.launch(appName));
+
+    if (appData.type === "system") pageMap.system?.appendChild(item);
+    else if (appData.type === "game" || appData.type === "swf") pageMap.games?.appendChild(item);
+    else pageMap.apps?.appendChild(item);
+  });
 }
