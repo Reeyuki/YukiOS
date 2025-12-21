@@ -212,7 +212,12 @@ body {
   border: 1px solid #333;
   font-family: sans-serif;
 }
-
+#explorer-win {
+  width: 750px;
+  left: 100px;
+  top: 100px;
+  z-index: 1000;
+}
 .explorer-sidebar {
   width: 150px;
   background: #2a2a2a;

@@ -28,12 +28,6 @@ export class ExplorerApp {
     win.className = "window";
     win.id = "explorer-win";
     win.dataset.fullscreen = "false";
-    Object.assign(win.style, {
-      width: "600px",
-      left: "100px",
-      top: "100px",
-      zIndex: "1000"
-    });
 
     win.innerHTML = `
       <div class="window-header">
@@ -95,6 +89,41 @@ export class ExplorerApp {
     this.currentPath = [...newPath];
     this.render();
   }
+  renderMusicPage() {
+    const view = document.getElementById("explorer-view");
+    if (!view) return;
+
+    view.innerHTML = `
+    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+      <iframe 
+        src="https://open.spotify.com/embed/playlist/6oK6F4LglYBr4mYLSRDJOa" 
+        width="300" 
+        height="380" 
+        frameborder="0" 
+        allowtransparency="true" 
+        allow="encrypted-media">
+      </iframe>
+
+      <iframe 
+        src="https://open.spotify.com/embed/playlist/1q7zv2ScwtR2jIxaIRj9iG" 
+        width="300" 
+        height="380" 
+        frameborder="0" 
+        allowtransparency="true" 
+        allow="encrypted-media">
+      </iframe>
+
+      <iframe 
+        src="https://open.spotify.com/embed/playlist/6q8mgrJZ5L4YxabVQoAZZf" 
+        width="300" 
+        height="380" 
+        frameborder="0" 
+        allowtransparency="true" 
+        allow="encrypted-media">
+      </iframe>
+    </div>
+  `;
+  }
 
   render() {
     const view = document.getElementById("explorer-view");
@@ -104,13 +133,17 @@ export class ExplorerApp {
     view.innerHTML = "";
     pathDisplay.textContent = "/" + this.currentPath.join("/");
 
+    if (this.currentPath[2] === "Music") {
+      this.renderMusicPage();
+      return;
+    }
+
     const folder = this.fs.getFolder(this.currentPath);
 
     Object.keys(folder).forEach((name) => {
       const isFile = this.fs.isFile(this.currentPath, name);
       const item = document.createElement("div");
       item.className = "file-item";
-      console.log(name, this.currentPath);
 
       let iconImg;
 
@@ -126,9 +159,9 @@ export class ExplorerApp {
       }
 
       item.innerHTML = `
-        <img src="${iconImg}" style="width:64px;height:64px;object-fit:cover">
-        <span>${name}</span>
-      `;
+      <img src="${iconImg}" style="width:64px;height:64px;object-fit:cover">
+      <span>${name}</span>
+    `;
 
       item.ondblclick = () => {
         if (isFile) {

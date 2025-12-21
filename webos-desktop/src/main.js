@@ -6,7 +6,13 @@ import { NotepadApp } from "./notepad.js";
 const defaultStorage = {
   home: {
     reeyuki: {
-      Documents: {},
+      Documents: {
+        "INFO.txt": {
+          type: "file",
+          content: "Files you saved in notepad gets saved in your browser session.",
+          kind: FileKind.TEXT
+        }
+      },
       Pictures: {
         "wallpaper1.webp": { type: "file", content: "/static/wallpapers/wallpaper1.webp", kind: FileKind.IMAGE },
         "wallpaper2.webp": { type: "file", content: "/static/wallpapers/wallpaper2.webp", kind: FileKind.IMAGE },
