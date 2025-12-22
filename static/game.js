@@ -251,10 +251,6 @@ async function loadGame(data) {
     spinnerElement.hidden = true;
   };
   Module.arguments = window.location.search.slice(1).split("&").filter(Boolean).map(decodeURIComponent);
-  window.onbeforeunload = function (event) {
-    event.preventDefault();
-    return "";
-  };
 
   window.Module = Module;
   const script = document.createElement("script");
@@ -693,3 +689,11 @@ const revc_ini = (() => {
   }
   return revc_iniDefault;
 })();
+
+function maximizeScreen() {
+  if (document.fullscreenElement) {
+    document.exitFullscreen();
+  }
+
+  document.documentElement.requestFullscreen();
+}
