@@ -89,13 +89,13 @@ Type: ${n?"File":"Folder"}`)};d.appendChild(s("Properties",r)),Object.assign(d.s
               id="${s}-iframe"
               style="width:100%; height:100%; border:none;"
               allow="autoplay; fullscreen; clipboard-write; encrypted-media; picture-in-picture"
-              sandbox="allow-forms allow-downloads allow-modals allow-pointer-lock allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation allow-autoplay">
+              sandbox="allow-forms allow-downloads allow-modals allow-pointer-lock allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation">
       </iframe>
     `,r=t.replace(/\..+$/,"");this.createWindow(s,r,o,i)}openGameApp(e,t){if(this.isBlacklisted(e)){this.showCannotLoadPopup();return}if(document.getElementById(`${e}-win`)){this.wm.bringToFront(document.getElementById(`${e}-win`));return}const n=`
       <iframe src="${t}" 
               style="width:100%; height:100%; border:none;" 
               allow="autoplay; fullscreen; clipboard-write; encrypted-media; picture-in-picture"
-              sandbox="allow-forms allow-downloads allow-modals allow-pointer-lock allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation allow-autoplay">
+              sandbox="allow-forms allow-downloads allow-modals allow-pointer-lock allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation">
       </iframe>
     `,s=e.replace(/([A-Z])/g," $1").replace(/^./,i=>i.toUpperCase());this.createWindow(e,s,n,t)}showCannotLoadPopup(){const e=document.createElement("div");e.style.position="fixed",e.style.top="20px",e.style.left="50%",e.style.transform="translateX(-50%)",e.style.background="#fff",e.style.border="1px solid #ccc",e.style.padding="15px",e.style.borderRadius="5px",e.style.boxShadow="0 2px 8px rgba(0,0,0,0.2)",e.style.zIndex=9999,e.innerHTML=`
       <strong>Cannot Load Game</strong><br>

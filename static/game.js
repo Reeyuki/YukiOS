@@ -2,8 +2,6 @@ const cloudSavesStatus = document.getElementById("cloud-saves-status");
 var statusElement = document.getElementById("status");
 var progressElement = document.getElementById("progress");
 var spinnerElement = document.getElementById("spinner");
-const wasm_content = "https://reeyuki.github.io/static/gtavc/vc-sky-en-v5.wasm";
-const data_content = "https://files.catbox.moe/dz0szc.data";
 
 const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 let isTouch = isMobile && window.matchMedia("(pointer: coarse)").matches;
@@ -91,41 +89,51 @@ let haveOriginalGame = false;
   };
 })();
 
-async function loadData() {
-  let response;
-  try {
-    response = await fetch(data_content);
-  } catch (err) {
-    console.error("Failed to fetch data:", err);
-    throw err;
-  }
+const wasm_content = "http://localhost:5050/static/gtavc/vc-sky-en-v6.wasm";
+const data_content = "http://localhost:5050/static/gtavc/vc-sky-en-v6.data";
 
-  if (!response.ok) {
-    throw new Error(`Failed to load data file: ${response.status}`);
+async function loadData() {
+  let cache;
+  try {
+    cache = await caches.open(location.hostname);
+    const cached = await cache.match(data_content);
+    if (cached && data_content !== "index.data") {
+      return new Uint8Array(await cached.arrayBuffer());
+    }
+  } catch (e) {
+    console.error("Failed to open cache:", e);
   }
+  const response = await fetch(data_content);
 
   const reader = response.body.getReader();
   let receivedLength = 0;
-  const chunks = [];
-
+  let chunks = [];
   while (true) {
     const { done, value } = await reader.read();
-    if (done) break;
+    if (done) {
+      break;
+    }
     chunks.push(value);
     receivedLength += value.length;
     if (typeof setStatus === "function") {
-      setStatus(`Downloading...(${receivedLength})`);
+      setStatus(`Downloading...(${receivedLength}/${dataSize})`);
     }
   }
-
-  const buffer = new Uint8Array(receivedLength);
+  let buffer = new Uint8Array(receivedLength);
   let position = 0;
-  for (const chunk of chunks) {
+  for (let chunk of chunks) {
     buffer.set(chunk, position);
     position += chunk.length;
   }
-
-  return buffer;
+  buffer = buffer.buffer;
+  if (cache) {
+    try {
+      await cache.put(data_content, new Response(buffer, { headers: { "Content-Type": "application/octet-stream" } }));
+    } catch (e) {
+      console.error("Failed to cache data:", e.message);
+    }
+  }
+  return new Uint8Array(buffer);
 }
 
 async function startGame(e) {
@@ -235,7 +243,7 @@ async function loadGame(data) {
   };
   Module.log = Module.print;
   Module.instantiateWasm = async (info, receiveInstance) => {
-    const wasm = await (await fetch(wasm_content)).arrayBuffer();
+    const wasm = await (await fetch(wasm_content ? wasm_content : "index.wasm")).arrayBuffer();
     const module = await WebAssembly.instantiate(wasm, info);
     return receiveInstance(module.instance, module);
   };
@@ -244,6 +252,10 @@ async function loadGame(data) {
     spinnerElement.hidden = true;
   };
   Module.arguments = window.location.search.slice(1).split("&").filter(Boolean).map(decodeURIComponent);
+  window.onbeforeunload = function (event) {
+    event.preventDefault();
+    return "";
+  };
 
   window.Module = Module;
   const script = document.createElement("script");
@@ -550,6 +562,49 @@ function ownerShipNotConfirmed() {
   ownerShipConfirmed();
 }
 
+disclaimerCheckbox.addEventListener("change", async (inputEvent) => {
+  if (inputEvent.target.checked) {
+    if (confirm(t("disclaimerPrompt"))) {
+      originalGameFile.addEventListener(
+        "change",
+        async (e) => {
+          try {
+            const file = e.target.files[0];
+            if (file) {
+              const sha256sums = (
+                await (await fetch("https://cdn.dos.zone/vcsky/sha256sums.txt")).text()
+              ).toLowerCase();
+              const arrayBuffer = await file.arrayBuffer();
+              if (window.crypto && window.crypto.subtle) {
+                const hashBuffer = await window.crypto.subtle.digest("SHA-256", arrayBuffer);
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                const hashHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+                if (sha256sums.indexOf(hashHex) !== -1) {
+                  ownerShipConfirmed();
+                } else {
+                  ownerShipNotConfirmed();
+                }
+              } else {
+                ownerShipNotConfirmed();
+              }
+            } else {
+              ownerShipNotConfirmed();
+            }
+          } catch (error) {
+            console.error("Error:", error);
+            ownerShipNotConfirmed();
+          }
+        },
+        { once: true }
+      );
+      originalGameFile.click();
+      return;
+    }
+  }
+
+  ownerShipNotConfirmed();
+});
+
 localStorage.getItem("vcsky.haveOriginalGame") === "true" ? ownerShipConfirmed() : ownerShipNotConfirmed();
 
 function showWasted() {
@@ -683,7 +738,7 @@ const revc_ini = (() => {
   return revc_iniDefault;
 })();
 
-function maximizeScreen() {
+function maximizeScreenn() {
   if (document.fullscreenElement) {
     document.exitFullscreen();
   }

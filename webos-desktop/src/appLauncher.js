@@ -115,7 +115,7 @@ export class AppLauncher {
               id="${uniqueId}-iframe"
               style="width:100%; height:100%; border:none;"
               allow="autoplay; fullscreen; clipboard-write; encrypted-media; picture-in-picture"
-              sandbox="allow-forms allow-downloads allow-modals allow-pointer-lock allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation allow-autoplay">
+              sandbox="allow-forms allow-downloads allow-modals allow-pointer-lock allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation">
       </iframe>
     `;
 
@@ -139,7 +139,7 @@ export class AppLauncher {
       <iframe src="${url}" 
               style="width:100%; height:100%; border:none;" 
               allow="autoplay; fullscreen; clipboard-write; encrypted-media; picture-in-picture"
-              sandbox="allow-forms allow-downloads allow-modals allow-pointer-lock allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation allow-autoplay">
+              sandbox="allow-forms allow-downloads allow-modals allow-pointer-lock allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation">
       </iframe>
     `;
 
