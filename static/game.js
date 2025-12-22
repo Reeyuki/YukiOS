@@ -2,8 +2,8 @@ const cloudSavesStatus = document.getElementById("cloud-saves-status");
 var statusElement = document.getElementById("status");
 var progressElement = document.getElementById("progress");
 var spinnerElement = document.getElementById("spinner");
-const wasm_content = "/static/gtavc/vc-sky-en-v5.wasm";
-const data_content = "/static/gtavc/vc-sky-en-v5.data";
+const wasm_content = "https://reeyuki.github.io/static/gtavc/vc-sky-en-v5.wasm";
+const data_content = "https://files.catbox.moe/dz0szc.data";
 
 const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 let isTouch = isMobile && window.matchMedia("(pointer: coarse)").matches;
