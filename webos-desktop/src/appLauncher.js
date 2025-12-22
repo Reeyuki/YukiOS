@@ -44,7 +44,16 @@ export class AppLauncher {
     };
 
     // Blacklist of full game names
-    this.emulatorBlacklist = ["pokemonPlatinum.nds", "pokemonHeartgold.nds", "gtaVc", "sonic"];
+    this.emulatorBlacklist = [
+      "swarmQueen",
+      "pokemonRed",
+      "pokemonEmerald",
+      "pokemonPlatinum",
+      "pokemonHeartgold",
+      "pokemonWhite",
+      "gtaVc",
+      "sonic"
+    ];
 
     populateStartMenu(this);
   }
