@@ -108,7 +108,7 @@ Type: ${n?"File":"Folder"}`)};d.appendChild(s("Properties",r)),Object.assign(d.s
         }, 1500);
       <\/script>
 
-    `,document.body.appendChild(t),document.getElementById("closePopup").addEventListener("click",()=>t.remove())}createWindow(e,t,n,s=null){const i=this.wm.createWindow(`${e}-win`,t);i.innerHTML=`
+    `,document.body.appendChild(t)}createWindow(e,t,n,s=null){const i=this.wm.createWindow(`${e}-win`,t);i.innerHTML=`
       <div class="window-header">
         <span>${t}</span>
         <div class="window-controls">

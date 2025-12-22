@@ -184,7 +184,6 @@ export class AppLauncher {
     `;
 
     document.body.appendChild(popup);
-    document.getElementById("closePopup").addEventListener("click", () => popup.remove());
   }
 
   // --- Create Window ---
