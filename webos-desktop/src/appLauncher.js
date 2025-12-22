@@ -39,6 +39,7 @@ export class AppLauncher {
         type: "game",
         url: "https://www.retrogames.cc/embed/8843-jojos-bizarre-adventure%3A-heritage-for-the-future-jojo-no-kimyou-na-bouken%3A-mirai-e-no-isan-japan-990927-no-cd.html"
       },
+      gtaVc: { type: "game", url: "/static/vciframe.html" },
       pokemonRed: { type: "gba", url: "pokemon-red.gba" },
       pokemonEmerald: { type: "gba", url: "pokemon-emerald.gba" },
       pokemonPlatinum: { type: "nds", url: "pokemon-platinum.nds" },
