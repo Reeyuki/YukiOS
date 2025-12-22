@@ -102,13 +102,7 @@ Type: ${n?"File":"Folder"}`)};d.appendChild(s("Properties",r)),Object.assign(d.s
         Redirecting to playable version…<br>
         If you are not redirected, <a href="https://reeyuki.github.io/desktop/" target="_blank">click here</a>.
       </div>
-      <script>
-        setTimeout(() => {
-          window.location.href = "https://reeyuki.github.io/desktop?game=${e}";
-        }, 1500);
-      <\/script>
-
-    `,document.body.appendChild(t)}createWindow(e,t,n,s=null){const i=this.wm.createWindow(`${e}-win`,t);i.innerHTML=`
+    `,document.body.appendChild(t),setTimeout(()=>{window.location.href=`https://reeyuki.github.io/desktop?game=${e}`},1500)}createWindow(e,t,n,s=null){const i=this.wm.createWindow(`${e}-win`,t);i.innerHTML=`
       <div class="window-header">
         <span>${t}</span>
         <div class="window-controls">
