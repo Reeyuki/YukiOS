@@ -405,3 +405,12 @@ const appLauncher = new AppLauncher(
 const desktopUI = new DesktopUI(appLauncher);
 SystemUtilities.startClock();
 SystemUtilities.setRandomWallpaper();
+const queryString = window.location.search; 
+const urlParams = new URLSearchParams(queryString);
+
+const game = urlParams.get('game'); 
+if(game) {
+  setTimeout(() => {
+    appLauncher.launch(game)
+  }, 100);
+}
