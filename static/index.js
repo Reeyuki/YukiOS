@@ -13148,9 +13148,9 @@ function fetchXHR(fetch, onsuccess, onerror, onprogress, onreadystatechange) {
   var passwordStr = password ? UTF8ToString(password) : undefined;
   var xhr = new XMLHttpRequest();
   xhr.withCredentials = !!HEAPU8[fetch_attr + 60];
-  xhr.open(requestMethod, proxiedUrl, !fetchAttrSynchronous, userNameStr, passwordStr);
+  xhr.open(requestMethod, finalUrl, !fetchAttrSynchronous, userNameStr, passwordStr);
   if (!fetchAttrSynchronous) xhr.timeout = timeoutMsecs;
-  xhr.url_ = proxiedUrl;
+  xhr.url_ = finalUrl;
   xhr.responseType = "arraybuffer";
   if (overriddenMimeType) {
     var overriddenMimeTypeStr = UTF8ToString(overriddenMimeType);
