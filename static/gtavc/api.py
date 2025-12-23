@@ -15,6 +15,8 @@ SAVE_DIR = os.path.join("assets")
 
 os.makedirs(SAVE_DIR, exist_ok=True)
 
+ALLOWED_DOMAIN = "cdn.dos.zone" 
+
 @app.route("/fetch", methods=["GET"])
 def fetch_file():
     url = request.args.get("url")
@@ -23,10 +25,15 @@ def fetch_file():
 
     url = url.replace("\\", "/")
     parsed_url = urlparse(url)
+
+    if parsed_url.netloc.lower() != ALLOWED_DOMAIN:
+        return abort(403, description="Access denied: URL domain not allowed")
+
     filename = os.path.basename(parsed_url.path)
     if not filename:
         return abort(400, description="Cannot determine filename from URL")
 
+    save_path = os.path.join(SAVE_DIR, filename)
     save_path = os.path.join(SAVE_DIR, filename)
 
     if not os.path.exists(save_path):
