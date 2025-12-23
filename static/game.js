@@ -89,8 +89,8 @@ let haveOriginalGame = false;
   };
 })();
 
-const wasm_content = "http://localhost:5050/static/gtavc/vc-sky-en-v6.wasm";
-const data_content = "http://localhost:5050/static/gtavc/vc-sky-en-v6.data";
+const wasm_content = "https://reeyuki.github.io/static/gtavc/vc-sky-en-v6.wasm";
+const data_content = "https://reeyuki.github.io/static/gtavc/vc-sky-en-v6.data";
 
 async function loadData() {
   let cache;
