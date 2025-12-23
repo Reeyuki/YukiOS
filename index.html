@@ -180,12 +180,12 @@
       <button class="enter-desktop" onclick="window.location.href = '/desktop/'">Enter Desktop</button>
       <a href="/blog.html">My Blog</a>
 
-      <div class="astolfo-images">
-        <img src="/static/astolfo.jpg" alt="Astolfo" />
-        <img src="/static/astolfo2.jpg" alt="Astolfo 2" />
-      </div>
+      <!--  <div class="astolfo-images"> -->
+      <!--    <img src="/static/astolfo.jpg" alt="Astolfo" /> -->
+      <!--    <img src="/static/astolfo2.jpg" alt="Astolfo 2" /> -->
+      <!--  </div> -->
 
-      <div class="trick" id="rickroll-button">Femboy Thighs Gallery</div>
+      <!-- <div class="trick" id="rickroll-button">Femboy Thighs Gallery</div> -->
       <div class="popup" id="rickroll-popup">
         <video controls autoplay>
           <source src="https://dn721809.ca.archive.org/0/items/youtube-xvFZjo5PgG0/xvFZjo5PgG0.mp4" type="video/mp4" />
@@ -219,9 +219,10 @@
     <script>
       const button = document.getElementById("rickroll-button");
       const popup = document.getElementById("rickroll-popup");
-      button.addEventListener("click", () => {
-        popup.style.display = "block";
-      });
+      if (button && popup)
+        button.addEventListener("click", () => {
+          popup.style.display = "block";
+        });
     </script>
   </body>
 </html>
