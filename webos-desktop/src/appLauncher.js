@@ -62,16 +62,10 @@ export class AppLauncher {
       minecraft: { type: "remote", url: "https://eaglercraft.com/play" }
     };
 
-    // Blacklist of full game names
     this.emulatorBlacklist = [
-      "swarmQueen",
-      "pokemonRed",
-      "pokemonEmerald",
-      "pokemonPlatinum",
-      "pokemonHeartgold",
-      "pokemonWhite",
+      ...Object.keys(this.appMap).filter((key) => ["swf", "gba", "nds"].includes(this.appMap[key].type)),
       "gtaVc",
-      "sonic"
+      "finnAndBones"
     ];
 
     populateStartMenu(this);
