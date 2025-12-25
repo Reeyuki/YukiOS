@@ -58,8 +58,8 @@ export class AppLauncher {
       pokemonRed: { type: "gba", url: "pokemon-red.gba" },
       pokemonEmerald: { type: "gba", url: "pokemon-emerald.gba" },
       pokemonPlatinum: { type: "nds", url: "pokemon-platinum.nds" },
-      pokemonHeartgold: { type: "nds", url: "https://files.catbox.moe/xntjzl.nds" },
-      pokemonWhite: { type: "nds", url: "https://files.catbox.moe/dcicfh.nds" },
+      pokemonHeartgold: { type: "nds", url: "https://reeyuki.netlify.app/static/pokemon-heartgold.nds" },
+      pokemonWhite: { type: "nds", url: "https://reeyuki.netlify.app/static/pokemon-white.nds" },
       minecraft: { type: "remote", url: "https://eaglercraft.com/play" }
     };
 
