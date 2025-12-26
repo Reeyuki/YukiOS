@@ -24,40 +24,35 @@ export class WindowManager {
 
     return win;
   }
-
-  addToTaskbar(winId, title) {
+  addToTaskbar(winId, title, iconUrl) {
     if (document.getElementById(`taskbar-${winId}`)) return;
 
     const taskbarItem = document.createElement("div");
     taskbarItem.id = `taskbar-${winId}`;
     taskbarItem.className = "taskbar-item";
-    taskbarItem.textContent = title;
 
-    Object.assign(taskbarItem.style, {
-      padding: "8px 15px",
-      background: "#2a2a2a",
-      color: "white",
-      cursor: "pointer",
-      borderRadius: "4px",
-      marginRight: "5px",
-      fontSize: "13px",
-      maxWidth: "150px",
-      overflow: "hidden",
-      textOverflow: "ellipsis",
-      whiteSpace: "nowrap"
-    });
+    if (iconUrl) {
+      const icon = document.createElement("img");
+      icon.src = iconUrl;
+      taskbarItem.appendChild(icon);
+    }
+
+    const text = document.createElement("span");
+    text.textContent = title;
+    taskbarItem.appendChild(text);
 
     taskbarItem.onclick = () => {
       const win = document.getElementById(winId);
       if (win) {
         if (win.style.display === "none") {
           win.style.display = "block";
-          taskbarItem.style.background = "#2a2a2a";
+          taskbarItem.classList.add("active");
         } else {
           this.bringToFront(win);
         }
       }
     };
+
     const taskbarWindows = document.getElementById("taskbar-windows");
     taskbarWindows.appendChild(taskbarItem);
     this.openWindows.set(winId, { taskbarItem, title });

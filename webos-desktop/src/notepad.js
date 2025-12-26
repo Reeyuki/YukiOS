@@ -40,7 +40,7 @@ export class NotepadApp {
     this.wm.makeDraggable(win);
     this.wm.makeResizable(win);
     this.wm.setupWindowControls(win);
-    this.wm.addToTaskbar(win.id, `${title} - Notepad`);
+    this.wm.addToTaskbar(win.id, `${title} - Notepad`, "/static/icons/music.png");
 
     this.setupNotepadControls(win, title, filePath);
   }

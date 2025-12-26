@@ -8,6 +8,9 @@ export class AppLauncher {
     this.notepadApp = notepadApp;
     this.pageLoadTime = Date.now();
 
+    const analyticsBase = this._getAnalyticsBase("hit-page");
+    this.sendAnalytics({ ...analyticsBase, event: "start" });
+
     this.appMap = {
       return: { type: "system", action: () => (window.location.href = "/") },
       explorer: { type: "system", action: () => this.explorerApp.open() },
@@ -58,14 +61,10 @@ export class AppLauncher {
       pokemonRed: { type: "gba", url: "pokemon-red.gba" },
       pokemonEmerald: { type: "gba", url: "pokemon-emerald.gba" },
       pokemonPlatinum: { type: "nds", url: "pokemon-platinum.nds" },
-      pokemonHeartgold: { type: "nds", url: "https://reeyuki.netlify.app/static/pokemon-heartgold.nds" },
-      pokemonWhite: { type: "nds", url: "https://reeyuki.netlify.app/static/pokemon-white.nds" },
+      pokemonHeartgold: { type: "nds", url: "pokemon-heartgold.nds" },
+      pokemonWhite: { type: "nds", url: "pokemon-white.nds" },
       minecraft: { type: "remote", url: "https://eaglercraft.com/play" }
     };
-
-    this.emulatorBlacklist = Object.keys(this.appMap)
-      .filter((key) => ["swf", "gba", "nds"].includes(this.appMap[key].type))
-      .concat(["gtaVc", "finnAndBones"]);
 
     populateStartMenu(this);
   }
@@ -129,7 +128,7 @@ export class AppLauncher {
   }
 
   sendAnalytics(data) {
-    fetch("https://reeyuki.duckdns.org/analytics", {
+    fetch("https://analytics.liventcord-a60.workers.dev/analytics", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data)
@@ -164,11 +163,12 @@ export class AppLauncher {
     this.createWindow(
       appName,
       appName.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase()),
-      htmlContent
+      htmlContent,
+      null,
+      appName
     );
   }
 
-  // --- Open Ruffle SWF ---
   openRuffleApp(gameName, swfPath) {
     if (!swfPath) {
       console.error("Swf is null!");
@@ -182,10 +182,9 @@ export class AppLauncher {
     }
 
     const content = `<embed src="${swfPath}" width="100%" height="100%">`;
-    this.createWindow(id, gameName.toUpperCase(), content);
+    this.createWindow(id, gameName.toUpperCase(), content, null, gameName);
   }
 
-  // --- Open Emulator Game ---
   openEmulatorApp(gameName, romName, core) {
     const uniqueId = `${core}-${romName.replace(/\W/g, "")}-${Date.now()}`;
     if (document.getElementById(uniqueId)) {
@@ -202,32 +201,39 @@ export class AppLauncher {
               sandbox="allow-forms allow-downloads allow-modals allow-pointer-lock allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation">
       </iframe>
     `;
-
     const windowTitle = romName.replace(/\..+$/, "");
-    this.createWindow(uniqueId, windowTitle, content, iframeUrl);
+    this.createWindow(uniqueId, windowTitle, content, iframeUrl, gameName);
   }
 
-  // --- Open normal game ---
   openGameApp(gameName, url) {
     if (document.getElementById(`${gameName}-win`)) {
       this.wm.bringToFront(document.getElementById(`${gameName}-win`));
       return;
     }
 
+    try {
+      const parsedUrl = new URL(url, window.location.origin);
+      if (!parsedUrl.protocol.startsWith("http")) {
+        throw new Error("Invalid URL protocol");
+      }
+    } catch (e) {
+      alert(`Invalid URL: ${url}`);
+      return;
+    }
+
     const content = `
-      <iframe src="${url}" 
-              style="width:100%; height:100%; border:none;" 
-              allow="autoplay; fullscreen; clipboard-write; encrypted-media; picture-in-picture"
-              sandbox="allow-forms allow-downloads allow-modals allow-pointer-lock allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation">
-      </iframe>
-    `;
+    <iframe src="${url}" 
+            style="width:100%; height:100%; border:none;" 
+            allow="autoplay; fullscreen; clipboard-write; encrypted-media; picture-in-picture"
+            sandbox="allow-forms allow-downloads allow-modals allow-pointer-lock allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation">
+    </iframe>
+  `;
 
     const formattedName = gameName.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase());
-    this.createWindow(gameName, formattedName, content, url);
+    this.createWindow(gameName, formattedName, content, url, gameName);
   }
 
-  // --- Create Window ---
-  createWindow(id, title, contentHtml, externalUrl = null) {
+  createWindow(id, title, contentHtml, externalUrl = null, appId = null) {
     const win = this.wm.createWindow(`${id}-win`, title);
     win.innerHTML = `
       <div class="window-header">
@@ -252,8 +258,18 @@ export class AppLauncher {
       win.querySelector(".external-btn").addEventListener("click", () => this.openRemoteApp(externalUrl));
     }
 
-    this.wm.addToTaskbar(win.id, title);
+    const icon = tryGetIcon(appId || id);
+    this.wm.addToTaskbar(win.id, title, icon);
     this.recordUsage(`${id}-win`);
+  }
+}
+
+function tryGetIcon(id) {
+  try {
+    const div = document.querySelector(`#desktop div[data-app="${id}"]`);
+    return div?.querySelector("img")?.src || null;
+  } catch (e) {
+    return null;
   }
 }
 

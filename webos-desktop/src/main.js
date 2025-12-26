@@ -194,7 +194,7 @@ class MusicPlayer {
     windowManager.makeDraggable(win);
     windowManager.makeResizable(win);
     windowManager.setupWindowControls(win);
-    windowManager.addToTaskbar(win.id, "MUSIC");
+    windowManager.addToTaskbar(win.id, "MUSIC", "/static/icons/music.png");
   }
 }
 

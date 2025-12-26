@@ -57,7 +57,7 @@ export class ExplorerApp {
     this.wm.makeDraggable(win);
     this.wm.makeResizable(win);
     this.wm.setupWindowControls(win);
-    this.wm.addToTaskbar(win.id, "File Explorer");
+    this.wm.addToTaskbar(win.id, "File Explorer", "/static/icons/file.png");
 
     this.setupExplorerControls(win);
     this.render();
@@ -152,7 +152,7 @@ export class ExplorerApp {
         if (kind === FileKind.IMAGE) {
           iconImg = this.fs.getFileContent(this.currentPath, name) || "/static/icons/file.png";
         } else {
-          iconImg = "/static/icons/notepad.png";
+          iconImg = "/static/icons/notepad.webp";
         }
       } else {
         iconImg = "/static/icons/file.png";

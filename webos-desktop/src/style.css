@@ -139,6 +139,58 @@ body {
 }
 
 #start-button {
+  width: 48px;
+  height: 100%;
+  flex-shrink: 0;
+}
+
+#taskbar-windows {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 100%;
+  padding: 0 6px;
+  flex: 1;
+  overflow-x: auto;
+}
+
+.taskbar-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.taskbar-item.active {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.taskbar-item img {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.taskbar-item span {
+  font-size: 13px;
+  line-height: 1;
+}
+
+#system-tray {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 12px;
+  height: 100%;
+  flex-shrink: 0;
+}
+
+#start-button {
   width: 50px;
   height: 40px;
   background: url("https://upload.wikimedia.org/wikipedia/commons/7/77/Breezeicons-places-64-start-here-kde.svg")
@@ -193,23 +245,6 @@ body {
 .start-item:hover {
   background: #3399ff;
   color: white;
-}
-
-#system-tray {
-  margin-left: auto;
-  padding-right: 15px;
-  font-size: 12px;
-  text-align: right;
-}
-
-.taskbar-button {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: white;
-  margin: 0 2px;
-  padding: 5px 15px;
-  font-size: 12px;
-  cursor: pointer;
 }
 
 .explorer-container {
