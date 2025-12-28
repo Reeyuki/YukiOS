@@ -126,13 +126,26 @@
         text-shadow: 0 0 10px black;
         pointer-events: none;
       }
+      .webring-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .webring-item img {
+        width: 90px;
+        height: 90px;
+        color: white;
+      }
     </style>
   </head>
   <body>
     <main>
       <h1>Reeyuki</h1>
       <img id="anime-greet" src="/static/anime.webp" alt="Anime image" />
-      <marquee scrolldelay="60" loop="1" behavior="slide"><center><h1>Thank you for visiting my site!</h1></center></marquee>
+      <marquee scrolldelay="60" loop="1" behavior="slide">
+        <center><h1>Thank you for visiting my site!</h1></center>
+      </marquee>
 
       <ul>
         <li><a href="https://reeyuki.github.io/desktop/" target="_blank">Enter Desktop</a></li>
@@ -152,6 +165,16 @@
         <li><a href="https://reeyuki.github.io" target="_blank">GitHub Pages</a></li>
         <li><a href="https://reeyuki.neocities.org" target="_blank">Neocities</a></li>
         <li><a href="https://reeyuki.nekoweb.org" target="_blank">NekoWeb</a></li>
+      </ul>
+
+      <h2>Webrings</h2>
+      <ul class="webring-list">
+        <li>
+          <a href="https://justjam.nekoweb.org/" class="webring-item">
+            <img src="/static/jam.webp" alt="Jam" />
+            <span>Jam</span>
+          </a>
+        </li>
       </ul>
     </main>
 
