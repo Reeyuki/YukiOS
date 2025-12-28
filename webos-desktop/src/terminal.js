@@ -438,4 +438,25 @@ export class TerminalApp {
       this.print(`tree: error reading directory`);
     }
   }
+  cmdHelp() {
+    const cmds = [
+      ["help", "Show this help message"],
+      ["clear", "Clear the terminal screen"],
+      ["ls", "List directory contents"],
+      ["pwd", "Print working directory"],
+      ["cd [dir]", "Change directory"],
+      ["mkdir", "Create a new directory"],
+      ["touch", "Create a new file"],
+      ["rm", "Remove file or directory"],
+      ["cat", "Display file contents"],
+      ["echo", "Display a line of text"],
+      ["whoami", "Display current user"],
+      ["hostname", "Display hostname"],
+      ["date", "Display current date and time"],
+      ["history", "Show command history"],
+      ["tree", "Display directory tree"]
+    ];
+    this.print("Available commands:");
+    cmds.forEach(([cmd, desc]) => this.print(`  ${cmd.padEnd(10)} - ${desc}`));
+  }
 }
