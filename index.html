@@ -99,33 +99,6 @@
         height: 250px;
       }
 
-      .popup {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: black;
-        z-index: 999;
-        justify-content: center;
-        align-items: center;
-      }
-      .popup video {
-        max-width: 90%;
-        max-height: 90%;
-      }
-      .popup-message {
-        position: absolute;
-        bottom: 20px;
-        width: 100%;
-        text-align: center;
-        color: white;
-        font-size: 1.5em;
-        font-weight: bold;
-        text-shadow: 0 0 10px black;
-        pointer-events: none;
-      }
       .webring-item {
         display: inline-flex;
         align-items: center;
@@ -151,7 +124,7 @@
         <li><a href="https://reeyuki.github.io/desktop/" target="_blank">Enter Desktop</a></li>
         <li><a href="/blog.html">My Blog</a></li>
         <li><a href="https://reeyuki.github.io/game.html">Play my Prospector game on browser</a></li>
-        <li><a href="#rickroll">Femboy Thighs Gallery</a></li>
+        <li><a href="/gallery.html">Femboy Thighs Gallery</a></li>
       </ul>
 
       <h2>My Projects</h2>
@@ -190,31 +163,5 @@
       <img src="/static/javascriptfreepage.gif" alt="Javascript Free Page" />
       <img src="/static/keepwebfree.gif" alt="Keep Web Free" />
     </footer>
-
-    <div id="rickroll" class="popup">
-      <video id="rickroll-video" autoplay controls>
-        <source src="https://dn721809.ca.archive.org/0/items/youtube-xvFZjo5PgG0/xvFZjo5PgG0.mp4" type="video/mp4" />
-      </video>
-      <p class="popup-message">You’ve been rickrolled!</p>
-    </div>
-
-    <script>
-      const popup = document.getElementById("rickroll");
-      const video = document.getElementById("rickroll-video");
-
-      function checkTarget() {
-        if (location.hash === "#rickroll") {
-          popup.style.display = "flex";
-          video.play();
-        } else {
-          popup.style.display = "none";
-          video.pause();
-          video.currentTime = 0;
-        }
-      }
-
-      window.addEventListener("hashchange", checkTarget);
-      window.addEventListener("load", checkTarget);
-    </script>
   </body>
 </html>
