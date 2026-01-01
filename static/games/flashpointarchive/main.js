@@ -76,7 +76,14 @@ const players = [
 
         // Get redirected URL and fetch
         let redirectInfo = await redirect(resourceURL);
-        let response = await _fetch(redirectInfo.redirect, options);
+        let url = redirectInfo.redirect;
+        if (url.includes("obama-alien-defense")) {
+          const match = url.match(/obama-alien-defense\/(.+)/)
+          if (match) {
+            url = `/static/games/obama-alien-defense/${match[1]}`
+          }
+        }
+        let response = await _fetch(url, options);
 
         // Spoof URL to bypass sitelocks
         Object.defineProperty(response, "url", { value: redirectInfo.original.href });

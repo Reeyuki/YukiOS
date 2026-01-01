@@ -22,8 +22,8 @@ body {
   height: calc(100vh - var(--taskbar-height));
 }
 .icon {
-  width: 80px; /* 🔒 fixed size */
-  height: 80px; /* 🔒 fixed size */
+  width: 80px;
+  height: 80px;
   aspect-ratio: 1 / 1;
 
   display: flex;
@@ -57,7 +57,7 @@ body {
 }
 
 .icon img {
-  width: 50%;
+  width: 55%;
   height: auto;
   display: block;
   margin-bottom: 0.3rem;

@@ -21,6 +21,7 @@ export class AppLauncher {
       sonic: { type: "swf", swf: "/static/games/swfGames/sonic.swf" },
       flight: { type: "swf", swf: "/static/games/swfGames/flight.swf" },
       swarmQueen: { type: "swf", swf: "/static/games/swfGames/swarmQueen.swf" },
+      paint: { type: "game", url: "https://paint.js.org/" },
       pacman: { type: "game", url: "https://pacman-e281c.firebaseapp.com" },
       pvz: { type: "game", url: "https://emupedia.net/emupedia-game-pvz" },
       tetris: { type: "game", url: "https://turbowarp.org/embed.html?autoplay#31651654" },
@@ -48,6 +49,10 @@ export class AppLauncher {
       mutantFighting: { type: "game", url: "https://www.gameflare.com/embed/mutant-fighting-cup" },
       mutantFighting2: { type: "game", url: "https://www.gameflare.com/embed/mutant-fighting-cup-2" },
       finnAndBones: { type: "game", url: "/static/flashpointarchive.html?fpGameName=finnAndBones" },
+      obama: { type: "game", url: "/static/flashpointarchive.html?fpGameName=obama-alien-defense" },
+      intrusion: { type: "game", url: "https://www.friv.com/z/games/intrusion/game.html" },
+      intrusion2: { type: "game", url: "https://files.silvergames.com/flash/ruffle/player.php?id=2278" },
+      dan: { type: "game", url: "https://www.silvergames.com/en/dan-the-man/gameframe" },
       infectonator: { type: "swf", swf: "https://cache.armorgames.com/files/games/infectonator-5020.swf?v=1373587522" },
       infectonator2: {
         type: "swf",
