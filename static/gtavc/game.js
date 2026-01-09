@@ -90,7 +90,7 @@ let haveOriginalGame = false;
 })();
 
 const wasm_content = "/static/gtavc/vc-sky-en-v6.wasm";
-const data_content = "/static/gtavc/vc-sky-en-v6.data";
+const data_content = "https://files.catbox.moe/dz0szc.data";
 async function loadData() {
   let cache;
   try {

@@ -13104,7 +13104,7 @@ function fetchXHR(fetch, onsuccess, onerror, onprogress, onreadystatechange) {
   }
   const originalUrl = UTF8ToString(urlPtr);
 
-  let finalUrl = originalUrl.replace(/^https:\/\/cdn\.dos\.zone\/vcsky\/fetched\//, "https://reeyuki.github.io/static/gtavc/assets/");
+  let finalUrl = originalUrl.replace(/^https:\/\/cdn\.dos\.zone\/vcsky\/fetched\//, "/static/gtavc/assets/");
 
 
   var fetch_attr = fetch + 108;
