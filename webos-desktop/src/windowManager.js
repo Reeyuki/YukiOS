@@ -10,8 +10,11 @@ export class WindowManager {
     win.id = id;
     win.dataset.fullscreen = "false";
 
-    const vw = width.includes("vw") ? (window.innerWidth * parseFloat(width)) / 100 : parseInt(width);
-    const vh = height.includes("vh") ? (window.innerHeight * parseFloat(height)) / 100 : parseInt(height);
+    const widthStr = width != null ? String(width) : "80vw";
+    const heightStr = height != null ? String(height) : "80vh";
+
+    const vw = widthStr.includes("vw") ? (window.innerWidth * parseFloat(widthStr)) / 100 : parseInt(widthStr);
+    const vh = heightStr.includes("vh") ? (window.innerHeight * parseFloat(heightStr)) / 100 : parseInt(heightStr);
 
     Object.assign(win.style, {
       width: `${vw}px`,
@@ -24,6 +27,7 @@ export class WindowManager {
 
     return win;
   }
+
   addToTaskbar(winId, title, iconUrl) {
     if (document.getElementById(`taskbar-${winId}`)) return;
 
@@ -51,6 +55,114 @@ export class WindowManager {
           this.bringToFront(win);
         }
       }
+    };
+    taskbarItem.oncontextmenu = (e) => {
+      e.preventDefault();
+      const existingMenu = document.getElementById("taskbar-context-menu");
+      if (existingMenu) existingMenu.remove();
+
+      const menu = document.createElement("div");
+      menu.id = "taskbar-context-menu";
+      menu.className = "kde-menu";
+
+      const win = document.getElementById(winId);
+
+      const addMenuItem = (text, action) => {
+        const item = document.createElement("div");
+        item.textContent = text;
+        item.className = "kde-item";
+        item.onclick = () => {
+          action();
+          menu.remove();
+        };
+        menu.appendChild(item);
+      };
+
+      addMenuItem(win.style.display === "none" ? "Restore" : "Minimize", () => {
+        if (win.style.display === "none") win.style.display = "block";
+        else this.minimizeWindow(win);
+        this.bringToFront(win);
+      });
+
+      addMenuItem(win.dataset.fullscreen === "true" ? "Restore Size" : "Maximize", () => {
+        this.toggleFullscreen(win);
+        this.bringToFront(win);
+      });
+
+      addMenuItem("Bring to Front", () => this.bringToFront(win));
+
+      addMenuItem("Properties", () => {
+        const appInfo = this.openWindows.get(winId);
+        if (!appInfo) return;
+
+        const win = document.getElementById(winId);
+        if (!win) return;
+
+        const dataset = win.dataset;
+        const rect = win.getBoundingClientRect();
+
+        const infoLines = [
+          `Window ID: ${winId}`,
+          `Title: ${appInfo.title}`,
+          dataset.appType ? `Type: ${dataset.appType}` : "",
+          dataset.appId ? `App ID: ${dataset.appId}` : "",
+          dataset.swf ? `SWF Path: ${dataset.swf}` : "",
+          dataset.rom ? `ROM: ${dataset.rom}` : "",
+          dataset.core ? `Core: ${dataset.core}` : "",
+          dataset.externalUrl ? `URL: ${dataset.externalUrl}` : "",
+          `Width: ${Math.round(rect.width)}px`,
+          `Height: ${Math.round(rect.height)}px`,
+          `Left: ${Math.round(rect.left)}px`,
+          `Top: ${Math.round(rect.top)}px`,
+          `Z-Index: ${win.style.zIndex}`,
+          `Fullscreen: ${dataset.fullscreen === "true" ? "Yes" : "No"}`
+        ].filter(Boolean);
+
+        const contentHtml = infoLines.map((line) => `<div style="margin:2px 0;">${line}</div>`).join("");
+
+        const propsWin = this.createWindow(`${winId}-props`, `Properties: ${appInfo.title}`, "40vw", "40vh");
+
+        propsWin.innerHTML = `
+          <div class="window-header">
+            <span>Properties: ${appInfo.title}</span>
+            <div class="window-controls">
+              <button class="minimize-btn" title="Minimize">−</button>
+              <button class="maximize-btn" title="Maximize">□</button>
+              <button class="close-btn" title="Close">X</button>
+            </div>
+          </div>
+          <div class="window-content" style="width:100%; height:100%; overflow:auto; user-select:text;">
+            ${contentHtml}
+          </div>
+        `;
+
+        desktop.appendChild(propsWin);
+        this.makeDraggable(propsWin);
+        this.makeResizable(propsWin);
+        this.setupWindowControls(propsWin);
+      });
+
+      addMenuItem("Close Window", () => {
+        this.removeFromTaskbar(winId);
+        if (win) win.remove();
+      });
+
+      document.body.appendChild(menu);
+
+      const rect = menu.getBoundingClientRect();
+      let posX = e.pageX;
+      let posBottom = window.innerHeight - e.pageY;
+
+      if (posX + rect.width > window.innerWidth) posX = window.innerWidth - rect.width - 10;
+      if (posBottom + rect.height > window.innerHeight) posBottom = 10;
+
+      menu.style.setProperty("--ctx-left", `${posX}px`);
+      menu.style.setProperty("--ctx-bottom", `${posBottom}px`);
+
+      document.addEventListener("click", function removeMenu() {
+        menu.remove();
+        document.removeEventListener("click", removeMenu);
+      });
     };
 
     const taskbarWindows = document.getElementById("taskbar-windows");
