@@ -19,7 +19,7 @@ export class WindowManager {
     this.gameWindowCount = 0;
   }
   updateTransparency() {
-    console.log("gameWindowCount is : ", gameWindowCount, " gameWindowCount>0 is : ", gameWindowCount > 0);
+    console.log("gameWindowCount is : ", this.gameWindowCount, " gameWindowCount>0 is : ", this.gameWindowCount > 0);
     if (this.gameWindowCount > 0) {
       hideTransparency();
     } else {
