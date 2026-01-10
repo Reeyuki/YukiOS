@@ -3,14 +3,47 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Reeyuki Site</title>
+    <title>Reeyuki – Personal Projects, Blog, and Browser Games</title>
+    <meta
+      name="description"
+      content="Explore Reeyuki's personal projects, blog, open-source games, and web presence. Discover creative projects, tools, and tutorials."
+    />
+    <meta name="author" content="Reeyuki" />
+    <meta property="og:title" content="Reeyuki – Personal Projects, Blog, and Browser Games" />
+    <meta
+      property="og:description"
+      content="Explore Reeyuki's personal projects, blog, open-source games, and web presence. Discover creative projects, tools, and tutorials."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="/static/anime.webp" />
+    <meta property="og:url" content="https://reeyuki.github.io/" />
+    <link rel="canonical" href="https://reeyuki.github.io/" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Reeyuki",
+        "url": "https://reeyuki.github.io/",
+        "sameAs": ["https://github.com/Reeyuki", "https://reeyuki.github.io", "https://reeyuki.neocities.org"],
+        "jobTitle": "Web Developer & Game Creator",
+        "worksFor": {
+          "@type": "Organization",
+          "name": "Self-Employed"
+        },
+        "mainEntityOfPage": {
+          "@type": "WebPage",
+          "@id": "https://reeyuki.github.io/"
+        }
+      }
+    </script>
+
     <style>
       * {
         box-sizing: border-box;
         margin: 0;
         padding: 0;
       }
-
       body {
         background: black;
         color: white;
@@ -21,7 +54,15 @@
         min-height: 100vh;
         font-family: sans-serif;
       }
-
+      header {
+        text-align: center;
+        padding: 20px;
+      }
+      h1,
+      h2,
+      p {
+        margin: 10px 0;
+      }
       main {
         flex: 1;
         display: flex;
@@ -33,23 +74,15 @@
         width: 100%;
         max-width: 1200px;
       }
-
-      h1,
-      h2,
-      p {
-        margin: 10px 0;
-      }
-
-      ul {
+      nav ul {
         list-style: none;
-        padding: 0;
-        margin: 0;
         display: flex;
         flex-direction: column;
         gap: 10px;
+        padding: 0;
+        margin: 0;
       }
-
-      ul li a {
+      nav ul li a {
         color: rgb(116, 155, 218);
         text-decoration: none;
         padding: 10px 20px;
@@ -57,23 +90,50 @@
         display: inline-block;
         transition: 0.3s;
       }
-
-      ul li a:hover {
+      nav ul li a:hover {
         background: white;
         color: black;
       }
-
       .images-row {
         display: flex;
         gap: 10px;
         overflow-x: auto;
+        padding: 10px 0;
       }
       .images-row img {
         max-height: 150px;
         width: auto;
       }
-
       main > img,
+      footer img {
+        max-width: 90%;
+        max-height: 300px;
+        width: auto;
+        height: auto;
+        border-radius: 5px;
+      }
+      footer {
+        margin-top: auto;
+        padding: 20px 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 20px;
+        flex-wrap: wrap;
+      }
+      #anime-greet {
+        height: 250px;
+      }
+      .webring-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .webring-item img {
+        width: 90px;
+        height: 90px;
+      }
+
       footer img {
         max-width: 90%;
         max-height: 300px;
@@ -94,74 +154,74 @@
         max-width: 200px;
         max-height: 100px;
       }
-
-      #anime-greet {
-        height: 250px;
-      }
-
-      .webring-item {
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-      }
-
-      .webring-item img {
-        width: 90px;
-        height: 90px;
-        color: white;
-      }
     </style>
   </head>
   <body>
-    <main>
+    <header>
       <h1>Reeyuki</h1>
-      <img id="anime-greet" src="/static/anime.webp" alt="Anime image" />
-      <marquee scrolldelay="60" loop="1" behavior="slide">
-        <center><h1>Thank you for visiting my site!</h1></center>
-      </marquee>
+      <img id="anime-greet" src="/static/anime.webp" alt="Anime illustration representing Reeyuki" />
+      <div style="text-align: center; width: 100%">
+        <marquee scrolldelay="60" loop="1" behavior="slide">
+          <h2>Thank you for visiting my site!</h2>
+        </marquee>
+      </div>
+    </header>
 
-      <ul>
-        <li><a href="https://reeyuki.github.io/desktop/" target="_blank">Enter Desktop</a></li>
-        <li><a href="/blog.html">My Blog</a></li>
-        <li><a href="https://reeyuki.github.io/game.html">Play my Prospector game on browser</a></li>
-        <li><a href="/gallery.html">Rickroll</a></li>
-      </ul>
+    <main>
+      <nav>
+        <h2>Navigation</h2>
+        <ul>
+          <li><a href="https://reeyuki.github.io/desktop/" target="_blank" rel="noopener">Enter Desktop</a></li>
+          <li><a href="/blog.html">My Blog</a></li>
+          <li><a href="https://reeyuki.github.io/game.html" target="_blank" rel="noopener">Play Prospector Game</a></li>
+          <li><a href="/gallery.html">Rickroll</a></li>
+        </ul>
+      </nav>
 
-      <h2>My Projects</h2>
-      <ul>
-        <li><a href="https://liventcord.koyeb.app" target="_blank">Open Source Discord Alternative</a></li>
-        <li><a href="https://github.com/Reeyuki" target="_blank">My Github</a></li>
-      </ul>
+      <section>
+        <h2>My Projects</h2>
+        <ul>
+          <li>
+            <a href="https://liventcord.koyeb.app" target="_blank" rel="noopener">Open Source Discord Alternative</a>
+          </li>
+          <li><a href="https://github.com/Reeyuki" target="_blank" rel="noopener">My GitHub</a></li>
+        </ul>
+      </section>
 
-      <h2>My Other Domains</h2>
-      <ul>
-        <li><a href="https://reeyuki.github.io" target="_blank">GitHub Pages</a></li>
-        <li><a href="https://reeyuki.neocities.org" target="_blank">Neocities</a></li>
-        <li><a href="https://reeyuki.nekoweb.org" target="_blank">NekoWeb</a></li>
-      </ul>
+      <section>
+        <h2>My Other Domains</h2>
+        <p>Clone of this website in other domains:</p>
+        <ul>
+          <li><a href="https://reeyuki.github.io" target="_blank" rel="noopener">GitHub Pages</a></li>
+          <li><a href="https://reeyuki.neocities.org" target="_blank" rel="noopener">Neocities Site</a></li>
+          <li><a href="https://reeyuki.nekoweb.org" target="_blank" rel="noopener">NekoWeb Site</a></li>
+        </ul>
+      </section>
 
-      <h2>Webrings</h2>
-      <ul class="webring-list">
-        <li>
-          <a href="https://justjam.nekoweb.org/" class="webring-item">
-            <img src="/static/jam.webp" alt="Jam" />
-            <span>Jam</span>
-          </a>
-        </li>
-      </ul>
+      <section>
+        <h2>Webrings</h2>
+        <ul class="webring-list">
+          <li>
+            <a href="https://justjam.nekoweb.org/" class="webring-item">
+              <img src="/static/jam.webp" alt="Jam Webring Logo" />
+              <span>Jam Webring</span>
+            </a>
+          </li>
+        </ul>
+      </section>
     </main>
 
     <div class="images-row">
-      <img src="/static/7.gif" alt="Gif 7" />
-      <img src="/static/5.gif" alt="Gif 5" />
-      <img src="/static/4.gif" alt="Gif 4" />
-      <img src="/static/3.gif" alt="Gif 3" />
+      <img src="/static/7.gif" alt="Animated gif 7" />
+      <img src="/static/4.gif" alt="Animated gif 4" />
+      <img src="/static/5.gif" alt="Animated gif 5" />
+      <img src="/static/3.gif" alt="Animated gif 3" />
     </div>
 
     <footer>
-      <img src="/static/nocookie.gif" alt="No Cookie" />
-      <img src="/static/javascriptfreepage.gif" alt="Javascript Free Page" />
-      <img src="/static/keepwebfree.gif" alt="Keep Web Free" />
+      <img src="/static/nocookie.gif" alt="No cookies badge" />
+      <img src="/static/javascriptfreepage.gif" alt="JavaScript-free badge" />
+      <img src="/static/keepwebfree.gif" alt="Keep web free badge" />
     </footer>
   </body>
 </html>
