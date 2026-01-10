@@ -105,7 +105,8 @@ export class AppLauncher {
       pokemonHeartgold: { type: "nds", url: "pokemon-heartgold.nds" },
       pokemonWhite: { type: "nds", url: "pokemon-white.nds" },
       minecraft: { type: "remote", url: "https://eaglercraft.com/play" },
-      liventcord: { type: "game", url: "https://liventcord.github.io" }
+      liventcord: { type: "game", url: "https://liventcord.github.io" },
+      fnaf: { type: "game", url: "/static/games/fnaf/" }
     };
 
     populateStartMenu(this);
