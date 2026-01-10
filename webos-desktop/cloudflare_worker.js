@@ -43,12 +43,14 @@ export default {
 
     if (url.pathname === "/kv" && request.method === "GET") {
       const list = await env.ASSETS_KV.list({ prefix: "analytics:" });
-      const results = [];
-
-      for (const item of list.keys) {
-        const value = await env.ASSETS_KV.get(item.name);
-        if (value) results.push({ key: item.name, value: JSON.parse(value) });
-      }
+      const values = await Promise.all(
+        list.keys.map(async (item) => {
+          const value = await env.ASSETS_KV.get(item.name);
+          if (value) return { key: item.name, value: JSON.parse(value) };
+          return null;
+        })
+      );
+      const results = values.filter(Boolean);
 
       return new Response(JSON.stringify(results), { headers: corsHeaders() });
     }
