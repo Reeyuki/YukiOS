@@ -212,10 +212,7 @@ export class AppLauncher {
   }
 
   openRuffleApp(gameName, swfPath) {
-    if (!swfPath) {
-      console.error("Swf is null!");
-      return;
-    }
+    if (!swfPath) return;
 
     const id = swfPath.replace(/[^a-zA-Z0-9]/g, "");
     if (document.getElementById(`${id}-win`)) {
@@ -224,7 +221,10 @@ export class AppLauncher {
     }
 
     const content = `<embed src="${swfPath}" width="100%" height="100%">`;
-    this.createWindow(id, gameName.toUpperCase(), content, null, gameName);
+    this.createWindow(id, gameName.toUpperCase(), content, null, gameName, {
+      type: "swf",
+      swf: swfPath
+    });
   }
 
   openEmulatorApp(gameName, romName, core) {
@@ -235,16 +235,13 @@ export class AppLauncher {
     }
 
     const iframeUrl = `/static/emulatorjs.html?rom=${encodeURIComponent(romName)}&core=${encodeURIComponent(core)}&color=%230064ff`;
-    const content = `
-      <iframe src="${iframeUrl}"
-              id="${uniqueId}-iframe"
-              style="width:100%; height:100%; border:none;"
-              allow="autoplay; fullscreen; clipboard-write; encrypted-media; picture-in-picture"
-              sandbox="allow-forms allow-downloads allow-modals allow-pointer-lock allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation">
-      </iframe>
-    `;
+    const content = `<iframe src="${iframeUrl}" style="width:100%; height:100%; border:none;" allow="autoplay; fullscreen; clipboard-write; encrypted-media; picture-in-picture" sandbox="allow-forms allow-downloads allow-modals allow-pointer-lock allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation"></iframe>`;
     const windowTitle = romName.replace(/\..+$/, "");
-    this.createWindow(uniqueId, windowTitle, content, iframeUrl, gameName);
+    this.createWindow(uniqueId, windowTitle, content, iframeUrl, gameName, {
+      type: core,
+      rom: romName,
+      core
+    });
   }
 
   openGameApp(gameName, url) {
@@ -253,30 +250,22 @@ export class AppLauncher {
       return;
     }
 
-    try {
-      const parsedUrl = new URL(url, window.location.origin);
-      if (!parsedUrl.protocol.startsWith("http")) {
-        throw new Error("Invalid URL protocol");
-      }
-    } catch (e) {
-      alert(`Invalid URL: ${url}`);
-      return;
-    }
-
-    const content = `
-    <iframe src="${url}" 
-            style="width:100%; height:100%; border:none;" 
-            allow="autoplay; fullscreen; clipboard-write; encrypted-media; picture-in-picture"
-            sandbox="allow-forms allow-downloads allow-modals allow-pointer-lock allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation">
-    </iframe>
-  `;
-
+    const content = `<iframe src="${url}" style="width:100%; height:100%; border:none;" allow="autoplay; fullscreen; clipboard-write; encrypted-media; picture-in-picture" sandbox="allow-forms allow-downloads allow-modals allow-pointer-lock allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation"></iframe>`;
     const formattedName = gameName.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase());
-    this.createWindow(gameName, formattedName, content, url, gameName);
+    this.createWindow(gameName, formattedName, content, url, gameName, {
+      type: "game"
+    });
   }
 
-  createWindow(id, title, contentHtml, externalUrl = null, appId = null) {
+  createWindow(id, title, contentHtml, externalUrl = null, appId = null, appMeta = {}) {
     const win = this.wm.createWindow(`${id}-win`, title);
+    win.dataset.appType = appMeta.type || "";
+    win.dataset.externalUrl = externalUrl || "";
+    win.dataset.appId = appId || "";
+    win.dataset.swf = appMeta.swf || "";
+    win.dataset.rom = appMeta.rom || "";
+    win.dataset.core = appMeta.core || "";
+
     win.innerHTML = `
       <div class="window-header">
         <span>${title}</span>

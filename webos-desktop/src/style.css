@@ -511,3 +511,32 @@ body {
 .ejs_canvas {
   height: 90% !important;
 }
+#taskbar-context-menu {
+  position: absolute;
+  width: 220px;
+  max-height: 200px;
+  display: flex;
+  flex-direction: column;
+  background: rgba(30, 30, 30, 0.98);
+  color: #eee;
+  border-radius: 8px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+  font-family: system-ui;
+  padding: 8px 0;
+  z-index: 10001;
+  left: var(--ctx-left, 0);
+  bottom: var(--ctx-bottom, 0);
+  overflow-y: auto;
+}
+
+#taskbar-context-menu .kde-item {
+  width: 100%;
+  padding: 10px 16px;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+#taskbar-context-menu .kde-item:hover {
+  background: #3daee9;
+  color: black;
+}
