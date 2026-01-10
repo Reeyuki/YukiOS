@@ -7,8 +7,7 @@
 body {
   margin: 0;
   height: 100vh;
-  background: url("/static/wallpapers/wallpaper2.webp") no-repeat center center fixed;
-  cursor: url("/static/icons/cursor.png");
+  cursor: url("/static/icons/cursor.png"), auto;
   background-size: cover;
   overflow: hidden;
   font-family: "Segoe UI", Tahoma, sans-serif;

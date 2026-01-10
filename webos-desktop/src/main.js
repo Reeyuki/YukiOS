@@ -254,7 +254,13 @@ class DesktopUI {
     });
   }
   showDesktopContextMenu(e) {
-    this.contextMenu.innerHTML = ` <div id="ctx-new-notepad">New Notepad</div>       <div id="ctx-open-explorer">Open File Explorer</div>       <hr>       <div id="ctx-refresh">Refresh</div>       <hr>    ;`;
+    this.contextMenu.innerHTML = `
+      <div id="ctx-new-notepad">New Notepad</div>
+      <div id="ctx-open-explorer">Open File Explorer</div>
+      <hr>
+      <div id="ctx-refresh">Refresh</div>
+    `;
+
     document.getElementById("ctx-new-notepad").onclick = () => {
       this.contextMenu.style.display = "none";
       notepadApp.open();

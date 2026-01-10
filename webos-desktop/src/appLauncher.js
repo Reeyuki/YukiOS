@@ -7,7 +7,7 @@ export class AppLauncher {
     this.terminalApp = terminalApp;
     this.notepadApp = notepadApp;
     this.pageLoadTime = Date.now();
-
+    this.TRANSPARENCY_ALLOWED_APP_IDS = new Set(["paint", "vscode", "liventcord"]);
     const analyticsBase = this._getAnalyticsBase("hit-page");
     this.sendAnalytics({ ...analyticsBase, event: "start" });
 
@@ -124,7 +124,7 @@ export class AppLauncher {
       gba: () => this.openEmulatorApp(app, info.url, "gba", analyticsBase),
       nds: () => this.openEmulatorApp(app, info.url, "nds", analyticsBase),
       game: () => this.openGameApp(app, info.url, analyticsBase),
-      html: () => this.openHtmlApp(app, info.html, analyticsBase),
+      html: () => this.openHtmlApp(app, info.html, analyticsBase, info),
       remote: () => this.openRemoteApp(info.url)
     };
 
@@ -137,7 +137,7 @@ export class AppLauncher {
       const canvas = document.createElement("canvas");
       const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
       if (gl) {
-        const debugInfo = gl.getExtension("WEBGL_debug_renderer_info");
+        const debugInfo = RENDERER || gl.getExtension("WEBGL_debug_renderer_info");
         gpu = debugInfo ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
       }
     } catch {}
@@ -196,7 +196,7 @@ export class AppLauncher {
     window.open(appUrl, "_blank", "noopener,noreferrer");
   }
 
-  openHtmlApp(appName, htmlContent) {
+  openHtmlApp(appName, htmlContent, appMeta) {
     if (document.getElementById(`${appName}-win`)) {
       this.wm.bringToFront(document.getElementById(`${appName}-win`));
       return;
@@ -207,7 +207,8 @@ export class AppLauncher {
       appName.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase()),
       htmlContent,
       null,
-      appName
+      appName,
+      appMeta
     );
   }
 
@@ -256,13 +257,20 @@ export class AppLauncher {
       type: "game"
     });
   }
+  isTransparencyBlocked(appId, appMeta) {
+    if (appMeta.type === "system") return false;
+    if (this.TRANSPARENCY_ALLOWED_APP_IDS.has(appId)) return false;
+    return true;
+  }
 
   createWindow(id, title, contentHtml, externalUrl = null, appId = null, appMeta = {}) {
-    const win = this.wm.createWindow(`${id}-win`, title);
+    const isGame = this.isTransparencyBlocked(appId, appMeta);
+    const win = this.wm.createWindow(`${id}-win`, title, "80vw", "80vh", isGame);
     win.dataset.appType = appMeta.type || "";
     win.dataset.externalUrl = externalUrl || "";
     win.dataset.appId = appId || "";
     win.dataset.swf = appMeta.swf || "";
+    win.dataset.isGame = isGame;
     win.dataset.rom = appMeta.rom || "";
     win.dataset.core = appMeta.core || "";
 

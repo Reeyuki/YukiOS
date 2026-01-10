@@ -1,10 +1,27 @@
+const styleEl = document.getElementById("window-style");
+
+function hideTransparency() {
+  styleEl.disabled = true;
+}
+
+function restoreTransparency() {
+  styleEl.disabled = false;
+}
+
 export class WindowManager {
   constructor() {
     this.openWindows = new Map();
     this.zIndexCounter = 1000;
+    this.gameWindowCount = 0;
   }
-
-  createWindow(id, title, width = "80vw", height = "80vh") {
+  updateTransparency() {
+    if (this.gameWindowCount > 0) {
+      hideTransparency();
+    } else {
+      restoreTransparency();
+    }
+  }
+  createWindow(id, title, width = "80vw", height = "80vh", isGame = false) {
     const win = document.createElement("div");
     win.className = "window";
     win.id = id;
@@ -24,6 +41,10 @@ export class WindowManager {
       position: "absolute",
       zIndex: this.zIndexCounter++
     });
+    if (isGame) {
+      this.gameWindowCount++;
+    }
+    this.updateTransparency();
 
     return win;
   }
@@ -246,6 +267,10 @@ export class WindowManager {
     win.querySelector(".close-btn").onclick = () => {
       this.removeFromTaskbar(win.id);
       win.remove();
+      if (win.dataset.isGame === "true") {
+        this.gameWindowCount = Math.max(0, this.gameWindowCount - 1);
+      }
+      this.updateTransparency();
     };
     win.querySelector(".minimize-btn").onclick = () => this.minimizeWindow(win);
     win.querySelector(".maximize-btn").onclick = () => this.toggleFullscreen(win);
