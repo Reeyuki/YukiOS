@@ -1,10 +1,14 @@
 const styleEl = document.getElementById("window-style");
 
 function hideTransparency() {
+  console.log(styleEl);
+  console.log("hide transparency");
   styleEl.disabled = true;
 }
 
 function restoreTransparency() {
+  console.log(styleEl);
+  console.log("restore transparency");
   styleEl.disabled = false;
 }
 
@@ -15,6 +19,7 @@ export class WindowManager {
     this.gameWindowCount = 0;
   }
   updateTransparency() {
+    console.log("gameWindowCount is : ", gameWindowCount, " gameWindowCount>0 is : ", gameWindowCount > 0);
     if (this.gameWindowCount > 0) {
       hideTransparency();
     } else {
@@ -44,6 +49,7 @@ export class WindowManager {
     if (isGame) {
       this.gameWindowCount++;
     }
+    console.log("is Game: ", isGame, "gameWindowCount is now : ", this.gameWindowCount);
     this.updateTransparency();
 
     return win;
@@ -267,7 +273,9 @@ export class WindowManager {
     win.querySelector(".close-btn").onclick = () => {
       this.removeFromTaskbar(win.id);
       win.remove();
-      if (win.dataset.isGame === "true") {
+      const isGame = win.dataset.isGame === "true";
+      console.log("Removing window is game is: ", isGame);
+      if (isGame) {
         this.gameWindowCount = Math.max(0, this.gameWindowCount - 1);
       }
       this.updateTransparency();
