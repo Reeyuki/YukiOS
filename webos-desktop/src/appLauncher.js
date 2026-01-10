@@ -258,6 +258,7 @@ export class AppLauncher {
     });
   }
   isTransparencyBlocked(appId, appMeta) {
+    console.log("Transparency check : ", appId, appMeta, this.TRANSPARENCY_ALLOWED_APP_IDS.has(appId));
     if (appMeta.type === "system") return false;
     if (this.TRANSPARENCY_ALLOWED_APP_IDS.has(appId)) return false;
     return true;
