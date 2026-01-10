@@ -43,6 +43,9 @@ export class AppLauncher {
       fancyPants2: { type: "game", url: "https://www.friv.com/z/games/fancypantsadventure2/game.html" },
       fancyPants3: { type: "game", url: "https://www.gameflare.com/embed/fancy-pants-3" },
       strikeForce: { type: "game", url: "https://www.friv.com/z/games/strikeforcekitty/game.html" },
+      strikeForce2: { type: "game", url: "https://www.friv.com/z/games/strikeforcekitty2/game.html" },
+      baloonsTd5: { type: "game", url: "https://www.gameflare.com/embed/bloons-tower-defense-5" },
+      trinitas: { type: "game", url: "/static/games/trinitas" },
       jojo: {
         type: "game",
         url: "https://www.retrogames.cc/embed/8843-jojos-bizarre-adventure%3A-heritage-for-the-future-jojo-no-kimyou-na-bouken%3A-mirai-e-no-isan-japan-990927-no-cd.html"

@@ -78,9 +78,9 @@ const players = [
         let redirectInfo = await redirect(resourceURL);
         let url = redirectInfo.redirect;
         if (url.includes("obama-alien-defense")) {
-          const match = url.match(/obama-alien-defense\/(.+)/)
+          const match = url.match(/obama-alien-defense\/(.+)/);
           if (match) {
-            url = `/static/games/obama-alien-defense/${match[1]}`
+            url = `/static/games/obama-alien-defense/${match[1]}`;
           }
         }
         let response = await _fetch(url, options);
