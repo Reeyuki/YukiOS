@@ -1,15 +1,16 @@
 const styleEl = document.getElementById("window-style");
+let styleParent = styleEl.parentNode;
 
 function hideTransparency() {
-  console.log(styleEl);
-  console.log("hide transparency");
-  styleEl.disabled = true;
+  if (styleEl.parentNode) {
+    styleParent.removeChild(styleEl);
+  }
 }
 
 function restoreTransparency() {
-  console.log(styleEl);
-  console.log("restore transparency");
-  styleEl.disabled = false;
+  if (!styleEl.parentNode) {
+    styleParent.appendChild(styleEl);
+  }
 }
 
 export class WindowManager {
@@ -19,7 +20,6 @@ export class WindowManager {
     this.gameWindowCount = 0;
   }
   updateTransparency() {
-    console.log("gameWindowCount is : ", this.gameWindowCount, " gameWindowCount>0 is : ", this.gameWindowCount > 0);
     if (this.gameWindowCount > 0) {
       hideTransparency();
     } else {
@@ -49,7 +49,6 @@ export class WindowManager {
     if (isGame) {
       this.gameWindowCount++;
     }
-    console.log("is Game: ", isGame, "gameWindowCount is now : ", this.gameWindowCount);
     this.updateTransparency();
 
     return win;
@@ -274,7 +273,6 @@ export class WindowManager {
       this.removeFromTaskbar(win.id);
       win.remove();
       const isGame = win.dataset.isGame === "true";
-      console.log("Removing window is game is: ", isGame);
       if (isGame) {
         this.gameWindowCount = Math.max(0, this.gameWindowCount - 1);
       }
