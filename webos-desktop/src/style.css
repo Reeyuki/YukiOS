@@ -459,6 +459,7 @@ body {
   padding: 12px;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 #kde-search {
@@ -474,14 +475,28 @@ body {
   display: none;
   flex-wrap: wrap;
   gap: 6px;
+  flex-shrink: 0;
+  overflow-y: auto;
+  max-height: 90%;
 }
-
 .kde-page.active {
   display: flex;
 }
+.kde-page::-webkit-scrollbar {
+  width: 6px;
+}
+
+.kde-page::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 4px;
+}
+
+.kde-page::-webkit-scrollbar-track {
+  background: transparent;
+}
 
 .kde-item {
-  width: calc(50% - 6px);
+  width: 90%;
   padding: 8px;
   background: #222;
   border-radius: 6px;
