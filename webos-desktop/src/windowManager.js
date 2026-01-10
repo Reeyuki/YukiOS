@@ -76,15 +76,21 @@ export class WindowManager {
 
   toggleFullscreen(win) {
     const wasFullscreen = win.dataset.fullscreen === "true";
+    const header = win.querySelector(".window-header");
 
     if (wasFullscreen) {
-      if (document.fullscreenElement) {
+      if (document.fullscreenElement === win) {
         document.exitFullscreen();
       }
-      win.style.width = win.dataset.prevWidth;
-      win.style.height = win.dataset.prevHeight;
-      win.style.left = win.dataset.prevLeft;
-      win.style.top = win.dataset.prevTop;
+
+      Object.assign(win.style, {
+        width: win.dataset.prevWidth,
+        height: win.dataset.prevHeight,
+        left: win.dataset.prevLeft,
+        top: win.dataset.prevTop
+      });
+
+      if (header) header.style.display = "";
       win.dataset.fullscreen = "false";
     } else {
       Object.assign(win.dataset, {
@@ -97,19 +103,30 @@ export class WindowManager {
       const makeFullscreen = () => {
         Object.assign(win.style, {
           width: "100vw",
-          height: "calc(100vh - 40px)",
+          height: "100vh",
           left: "0",
           top: "0"
         });
+        if (header) header.style.display = "none";
       };
 
-      if (document.documentElement.requestFullscreen) {
-        document.documentElement.requestFullscreen().then(makeFullscreen).catch(makeFullscreen);
+      if (win.requestFullscreen) {
+        win.requestFullscreen().then(makeFullscreen).catch(makeFullscreen);
       } else {
         makeFullscreen();
       }
 
       win.dataset.fullscreen = "true";
+
+      const onFullscreenChange = () => {
+        if (!document.fullscreenElement) {
+          if (header) header.style.display = "";
+          win.dataset.fullscreen = "false";
+          document.removeEventListener("fullscreenchange", onFullscreenChange);
+        }
+      };
+
+      document.addEventListener("fullscreenchange", onFullscreenChange);
     }
   }
 
@@ -138,37 +155,82 @@ export class WindowManager {
   }
 
   makeResizable(win) {
-    const resizer = document.createElement("div");
-    Object.assign(resizer.style, {
-      width: "10px",
-      height: "10px",
-      background: "transparent",
-      position: "absolute",
-      right: "0",
-      bottom: "0",
-      cursor: "se-resize"
-    });
-    win.appendChild(resizer);
+    const margin = 10;
 
-    resizer.addEventListener("mousedown", (e) => {
-      e.stopPropagation();
+    const getDirection = (e) => {
+      const rect = win.getBoundingClientRect();
+      let dir = "";
+      if (e.clientY - rect.top < margin) dir += "n";
+      else if (rect.bottom - e.clientY < margin) dir += "s";
+      if (e.clientX - rect.left < margin) dir += "w";
+      else if (rect.right - e.clientX < margin) dir += "e";
+      return dir;
+    };
+
+    win.addEventListener("mousemove", (e) => {
+      const dir = getDirection(e);
+      const cursorMap = {
+        n: "n-resize",
+        s: "s-resize",
+        w: "w-resize",
+        e: "e-resize",
+        nw: "nw-resize",
+        ne: "ne-resize",
+        sw: "sw-resize",
+        se: "se-resize",
+        "": "default"
+      };
+      win.style.cursor = cursorMap[dir] || "default";
+    });
+
+    win.addEventListener("mousedown", (e) => {
+      const direction = getDirection(e);
+      if (!direction) return;
+
+      e.preventDefault();
       const startX = e.clientX;
       const startY = e.clientY;
-      const startWidth = parseInt(document.defaultView.getComputedStyle(win).width, 10);
-      const startHeight = parseInt(document.defaultView.getComputedStyle(win).height, 10);
+      const rect = win.getBoundingClientRect();
+      const startWidth = rect.width;
+      const startHeight = rect.height;
+      const startLeft = rect.left;
+      const startTop = rect.top;
 
       const doDrag = (e) => {
-        win.style.width = `${startWidth + e.clientX - startX}px`;
-        win.style.height = `${startHeight + e.clientY - startY}px`;
+        let newWidth = startWidth;
+        let newHeight = startHeight;
+        let newLeft = startLeft;
+        let newTop = startTop;
+
+        if (direction.includes("e")) newWidth = startWidth + (e.clientX - startX);
+        if (direction.includes("s")) newHeight = startHeight + (e.clientY - startY);
+        if (direction.includes("w")) {
+          newWidth = startWidth - (e.clientX - startX);
+          newLeft = startLeft + (e.clientX - startX);
+        }
+        if (direction.includes("n")) {
+          newHeight = startHeight - (e.clientY - startY);
+          newTop = startTop + (e.clientY - startY);
+        }
+        const MIN_SIZE = 300;
+
+        if (newWidth > MIN_SIZE) {
+          win.style.width = `${newWidth}px`;
+          win.style.left = `${newLeft}px`;
+        }
+        if (newHeight > MIN_SIZE) {
+          win.style.height = `${newHeight}px`;
+          win.style.top = `${newTop}px`;
+        }
       };
 
       const stopDrag = () => {
-        document.documentElement.removeEventListener("mousemove", doDrag);
-        document.documentElement.removeEventListener("mouseup", stopDrag);
+        document.removeEventListener("mousemove", doDrag);
+        document.removeEventListener("mouseup", stopDrag);
       };
 
-      document.documentElement.addEventListener("mousemove", doDrag);
-      document.documentElement.addEventListener("mouseup", stopDrag);
+      document.addEventListener("mousemove", doDrag);
+      document.addEventListener("mouseup", stopDrag);
     });
   }
 }
