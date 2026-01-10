@@ -193,8 +193,7 @@ body {
 #start-button {
   width: 50px;
   height: 40px;
-  background: url("https://upload.wikimedia.org/wikipedia/commons/7/77/Breezeicons-places-64-start-here-kde.svg")
-    no-repeat center;
+  background: url("/static/icons/liventcord.webp") no-repeat center;
   background-size: 35px;
   cursor: pointer;
   transition: filter 0.2s;

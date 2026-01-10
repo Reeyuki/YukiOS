@@ -24,6 +24,10 @@ export class AppLauncher {
       paint: { type: "game", url: "https://paint.js.org/" },
       pacman: { type: "game", url: "https://pacman-e281c.firebaseapp.com" },
       pvz: { type: "game", url: "https://emupedia.net/emupedia-game-pvz" },
+      pvzHybrid: {
+        type: "remote",
+        url: "https://www.miniplay.com/embed/plants-vs-zombies-hybrid-story"
+      },
       tetris: { type: "game", url: "https://turbowarp.org/embed.html?autoplay#31651654" },
       roads: { type: "game", url: "https://slowroads.io" },
       vscode: { type: "game", url: "https://emupedia.net/emupedia-app-vscode" },
@@ -34,8 +38,10 @@ export class AppLauncher {
       zombotron: { type: "game", url: "https://www.gameflare.com/embed/zombotron" },
       zombotron2: { type: "game", url: "https://www.gameflare.com/embed/zombotron-2" },
       zombotron2Time: { type: "game", url: "https://www.gameflare.com/embed/zombotron-2-time-machine/" },
+      breach: { type: "game", url: "https://www.gameflare.com/embed/the-breach/" },
       fancyPants: { type: "game", url: "https://www.friv.com/z/games/fancypantsadventure/game.html" },
       fancyPants2: { type: "game", url: "https://www.friv.com/z/games/fancypantsadventure2/game.html" },
+      fancyPants3: { type: "game", url: "https://www.gameflare.com/embed/fancy-pants-3" },
       strikeForce: { type: "game", url: "https://www.friv.com/z/games/strikeforcekitty/game.html" },
       jojo: {
         type: "game",
@@ -63,12 +69,40 @@ export class AppLauncher {
         swf: "https://cache.armorgames.com/files/games/new-york-shark-12969.swf?v=1373587527"
       },
       swordsSouls: { type: "swf", swf: "https://cache.armorgames.com/files/games/swordssouls-17817.swf?v=1464609285" },
-      pokemonRed: { type: "gba", url: "pokemon-red.gba" },
+      corporationInc: {
+        type: "swf",
+        swf: "https://cache.armorgames.com/files/games/corporation-inc-7348.swf?v=1373587524"
+      },
+      aground: { type: "game", url: "https://cache.armorgames.com/files/games/aground-18245/index.html?v=1591832301" },
+      mobyDick: {
+        type: "swf",
+        swf: "https://cache.armorgames.com/files/games/moby-dick-the-video--7199.swf?v=1373587524"
+      },
+      mobyDick2: { type: "swf", swf: "https://cache.armorgames.com/files/games/moby-dick-2-12662.swf?v=1373587526" },
+      elfStory: { type: "swf", swf: "https://cache.armorgames.com/files/games/elf-story-14680.swf?v=1373587528" },
+      frogDares: { type: "swf", swf: "https://cache.armorgames.com/files/games/frog-dares-12672.swf?v=1373587526" },
+      kamikazePigs: {
+        type: "swf",
+        swf: "https://cache.armorgames.com/files/games/kamikaze-pigs-13545.swf?v=1373587527"
+      },
+      icyFishes: { type: "swf", swf: "https://cache.armorgames.com/files/games/icy-fishes-12977.swf?v=1373587527" },
+
+      feedUs6: {
+        type: "game",
+        url: "https://www.gameflare.com/embed/feed-us-lost-island"
+      },
+      feedUsPirates: {
+        type: "game",
+        url: "https://www.gameflare.com/embed/feed-us-pirates"
+      },
+      cactusMcCoy: { type: "game", url: "https://papasgamesfree.io/cactus-mccoy-1" },
+      jackSmith: { type: "game", url: "https://papasgamesfree.io/jacksmith" },
       pokemonEmerald: { type: "gba", url: "pokemon-emerald.gba" },
       pokemonPlatinum: { type: "nds", url: "pokemon-platinum.nds" },
       pokemonHeartgold: { type: "nds", url: "pokemon-heartgold.nds" },
       pokemonWhite: { type: "nds", url: "pokemon-white.nds" },
-      minecraft: { type: "remote", url: "https://eaglercraft.com/play" }
+      minecraft: { type: "remote", url: "https://eaglercraft.com/play" },
+      liventcord: { type: "game", url: "https://liventcord.github.io" }
     };
 
     populateStartMenu(this);
