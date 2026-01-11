@@ -4,6 +4,7 @@ import { WindowManager } from "./windowManager.js";
 import { BrowserApp } from "./browser.js";
 import { AppLauncher } from "./appLauncher.js";
 import { NotepadApp } from "./notepad.js";
+import { CameraApp } from "./camera.js";
 const defaultStorage = {
   home: {
     reeyuki: {
@@ -402,6 +403,7 @@ const browserApp = new BrowserApp(windowManager);
 notepadApp.setExplorer(explorerApp);
 const terminalApp = new TerminalApp(fileSystemManager, windowManager);
 const musicPlayer = new MusicPlayer();
+const cameraApp = new CameraApp(windowManager);
 const appLauncher = new AppLauncher(
   windowManager,
   fileSystemManager,
@@ -409,7 +411,8 @@ const appLauncher = new AppLauncher(
   explorerApp,
   terminalApp,
   notepadApp,
-  browserApp
+  browserApp,
+  cameraApp
 );
 const desktopUI = new DesktopUI(appLauncher);
 SystemUtilities.startClock();

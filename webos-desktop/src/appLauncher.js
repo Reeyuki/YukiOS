@@ -1,5 +1,14 @@
 export class AppLauncher {
-  constructor(windowManager, fileSystemManager, musicPlayer, explorerApp, terminalApp, notepadApp, browserApp) {
+  constructor(
+    windowManager,
+    fileSystemManager,
+    musicPlayer,
+    explorerApp,
+    terminalApp,
+    notepadApp,
+    browserApp,
+    cameraApp
+  ) {
     this.wm = windowManager;
     this.fs = fileSystemManager;
     this.musicPlayer = musicPlayer;
@@ -7,6 +16,7 @@ export class AppLauncher {
     this.terminalApp = terminalApp;
     this.notepadApp = notepadApp;
     this.browserApp = browserApp;
+    this.cameraApp = cameraApp;
     this.pageLoadTime = Date.now();
     this.TRANSPARENCY_ALLOWED_APP_IDS = new Set(["paint", "vscode", "liventcord"]);
     const analyticsBase = this._getAnalyticsBase("hit-page");
@@ -19,6 +29,7 @@ export class AppLauncher {
       terminal: { type: "system", action: () => this.terminalApp.open() },
       notepad: { type: "system", action: () => this.notepadApp.open() },
       browser: { type: "system", action: () => this.browserApp.open() },
+      cameraApp: { type: "system", action: () => this.cameraApp.open() },
       music: { type: "system", action: () => this.musicPlayer.open(this.wm) },
       sonic: { type: "swf", swf: "/static/games/swfGames/sonic.swf" },
       flight: { type: "swf", swf: "/static/games/swfGames/flight.swf" },
@@ -123,8 +134,11 @@ export class AppLauncher {
 
   launch(app) {
     const info = this.appMap[app];
-    if (!info) return;
-
+    if (!info) {
+      console.error(`App ${app} not found.`);
+      return;
+    }
+    console.error("Starting app : ", app);
     const analyticsBase = this._getAnalyticsBase(app);
     this.sendAnalytics({ ...analyticsBase, event: "launch" });
 
