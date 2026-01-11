@@ -49,7 +49,7 @@ export class CameraApp {
     this.wm.makeDraggable(win);
     this.wm.makeResizable(win);
     this.wm.setupWindowControls(win);
-    this.wm.addToTaskbar(win.id, "Camera", "/static/icons/camera.webp");
+    this.wm.addToTaskbar(win.id, "Camera", "/static/icons/camera.svg");
 
     win.querySelector(".close-btn").onclick = () => {
       this.stopCamera();

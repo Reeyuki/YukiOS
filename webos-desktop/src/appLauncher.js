@@ -31,6 +31,7 @@ export class AppLauncher {
       browser: { type: "system", action: () => this.browserApp.open() },
       cameraApp: { type: "system", action: () => this.cameraApp.open() },
       music: { type: "system", action: () => this.musicPlayer.open(this.wm) },
+      photopea: { type: "game", url: "https://www.photopea.com" },
       sonic: { type: "swf", swf: "/static/games/swfGames/sonic.swf" },
       flight: { type: "swf", swf: "/static/games/swfGames/flight.swf" },
       swarmQueen: { type: "swf", swf: "/static/games/swfGames/swarmQueen.swf" },

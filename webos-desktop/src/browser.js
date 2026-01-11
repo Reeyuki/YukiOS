@@ -48,8 +48,9 @@ export class BrowserApp {
       <button data-url="https://archive.org">Internet Archive</button>
       <button data-url="https://dustinbrett.com/Program%20Files/Browser/dino/index.html">T-Rex Dino</button>
       <button onclick="window.open('https://dn721809.ca.archive.org/0/items/youtube-xvFZjo5PgG0/xvFZjo5PgG0.mp4','_blank')">Click me</button>
+      <button data-url="https://bluemaxima.org/flashpoint">Flashpoint Archive</button>
+      <button data-url="https://jsfiddle.net">JS Fiddle</button>
       <a href="https://emupedia.net/beta/emuos/">EmuOS</a>
-
       </nav>
       <iframe id="browser-frame" src="${this.currentURL}" style="width:100%;height:calc(100% - 88px);border:none"></iframe>
     `;
