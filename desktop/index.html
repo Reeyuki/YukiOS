@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Yuki OS</title>
-    <script type="module" crossorigin src="/desktop/assets/index-7-fDRDlW.js"></script>
-    <link rel="stylesheet" crossorigin href="/desktop/assets/index-UTSauy7e.css">
+    <script type="module" crossorigin src="/desktop/assets/index-0fMKBCVx.js"></script>
+    <link rel="stylesheet" crossorigin href="/desktop/assets/index-BEhq9RDK.css">
   </head>
 
   <body>
@@ -415,36 +415,6 @@
 
     <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
     <script>
-      const ICON_WIDTH = 80;
-      const ICON_HEIGHT = 100;
-      const GAP = 5;
-
-      const desktop = document.getElementById("desktop");
-      const icons = desktop.querySelectorAll(".icon");
-
-      function layoutIcons() {
-        const desktopHeight = desktop.clientHeight;
-
-        let x = GAP;
-        let y = GAP;
-
-        icons.forEach((icon) => {
-          icon.style.position = "absolute";
-          icon.style.left = `${x}px`;
-          icon.style.top = `${y}px`;
-
-          y += ICON_HEIGHT + GAP;
-
-          if (y + ICON_HEIGHT > desktopHeight) {
-            y = GAP;
-            x += ICON_WIDTH + GAP;
-          }
-        });
-      }
-
-      window.addEventListener("load", layoutIcons);
-      window.addEventListener("resize", layoutIcons);
-
       document.querySelectorAll(".kde-cat").forEach((cat) => {
         cat.onclick = () => {
           document.querySelectorAll(".kde-cat").forEach((c) => c.classList.remove("active"));

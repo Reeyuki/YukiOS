@@ -54,6 +54,9 @@ body {
   border: 1px solid rgba(0, 120, 215, 0.6);
   border-radius: 0.2rem;
 }
+.icon.selectable img {
+  pointer-events: none;
+}
 
 .icon img {
   width: 55%;

@@ -138,7 +138,7 @@ export class AppLauncher {
       console.error(`App ${app} not found.`);
       return;
     }
-    console.error("Starting app : ", app);
+    console.log("Starting app : ", app);
     const analyticsBase = this._getAnalyticsBase(app);
     this.sendAnalytics({ ...analyticsBase, event: "launch" });
 
