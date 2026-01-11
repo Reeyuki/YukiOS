@@ -441,6 +441,7 @@ export class TerminalApp {
   cmdHelp() {
     const cmds = [
       ["help", "Show this help message"],
+      ["neofetch", "Display system/browser summary"],
       ["clear", "Clear the terminal screen"],
       ["ls", "List directory contents"],
       ["pwd", "Print working directory"],

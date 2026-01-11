@@ -14,18 +14,27 @@
             min-height: 100vh;
         }
         #game-selector {
-            display: flex;
-            gap: 10px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+            max-width: 900px;
+            padding: 20px;
+        }
+        #game-selector a {
+            text-align: center;
+            text-decoration: none;
+            color: #fff;
         }
         #game-selector img {
-            width: 150px;
-            height: 150px;
+            width: 100%;
+            aspect-ratio: 1 / 1;
             object-fit: cover;
             cursor: pointer;
             transition: transform 0.2s;
+            border-radius: 8px;
         }
         #game-selector img:hover {
-            transform: scale(1.1);
+            transform: scale(1.08);
         }
     </style>
   </head>
@@ -52,7 +61,10 @@
         <a href="https://games.crazygames.com/en_US/fnaf-shooter/index.html?isNewUser=false&v=1.348">
             <img src="/static/games/fnaf/fnafshooter.webp">
         </a>
-        
+        <a href="https://emupedia.net/emupedia-game-fnaf">
+            <img src="/static/games/fnaf/fnaf1.webp">
+            Emupadia Fnaf Games(1-2-3-4)
+        </a>
     </div>
   </body>
 </html>

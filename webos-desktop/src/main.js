@@ -1,6 +1,7 @@
 import { TerminalApp } from "./terminal.js";
 import { ExplorerApp, FileKind } from "./explorer.js";
 import { WindowManager } from "./windowManager.js";
+import { BrowserApp } from "./browser.js";
 import { AppLauncher } from "./appLauncher.js";
 import { NotepadApp } from "./notepad.js";
 const defaultStorage = {
@@ -397,6 +398,7 @@ const fileSystemManager = new FileSystemManager();
 const windowManager = new WindowManager();
 const notepadApp = new NotepadApp(fileSystemManager, windowManager, null);
 const explorerApp = new ExplorerApp(fileSystemManager, windowManager, notepadApp);
+const browserApp = new BrowserApp(windowManager);
 notepadApp.setExplorer(explorerApp);
 const terminalApp = new TerminalApp(fileSystemManager, windowManager);
 const musicPlayer = new MusicPlayer();
@@ -406,7 +408,8 @@ const appLauncher = new AppLauncher(
   musicPlayer,
   explorerApp,
   terminalApp,
-  notepadApp
+  notepadApp,
+  browserApp
 );
 const desktopUI = new DesktopUI(appLauncher);
 SystemUtilities.startClock();
