@@ -1,11 +1,12 @@
 export class AppLauncher {
-  constructor(windowManager, fileSystemManager, musicPlayer, explorerApp, terminalApp, notepadApp) {
+  constructor(windowManager, fileSystemManager, musicPlayer, explorerApp, terminalApp, notepadApp, browserApp) {
     this.wm = windowManager;
     this.fs = fileSystemManager;
     this.musicPlayer = musicPlayer;
     this.explorerApp = explorerApp;
     this.terminalApp = terminalApp;
     this.notepadApp = notepadApp;
+    this.browserApp = browserApp;
     this.pageLoadTime = Date.now();
     this.TRANSPARENCY_ALLOWED_APP_IDS = new Set(["paint", "vscode", "liventcord"]);
     const analyticsBase = this._getAnalyticsBase("hit-page");
@@ -17,6 +18,7 @@ export class AppLauncher {
       computer: { type: "system", action: () => this.explorerApp.open() },
       terminal: { type: "system", action: () => this.terminalApp.open() },
       notepad: { type: "system", action: () => this.notepadApp.open() },
+      browser: { type: "system", action: () => this.browserApp.open() },
       music: { type: "system", action: () => this.musicPlayer.open(this.wm) },
       sonic: { type: "swf", swf: "/static/games/swfGames/sonic.swf" },
       flight: { type: "swf", swf: "/static/games/swfGames/flight.swf" },
@@ -106,7 +108,14 @@ export class AppLauncher {
       pokemonWhite: { type: "nds", url: "pokemon-white.nds" },
       minecraft: { type: "remote", url: "https://eaglercraft.com/play" },
       liventcord: { type: "game", url: "https://liventcord.github.io" },
-      fnaf: { type: "game", url: "/static/games/fnaf/" }
+      fnaf: { type: "game", url: "/static/games/fnaf" },
+      geometryDash: { type: "game", url: "https://emupedia.net/emupedia-game-geometry-dash" },
+      cutTheRope: { type: "game", url: "https://emupedia.net/emupedia-game-cut-the-rope2" },
+      game2048: { type: "game", url: "https://emupedia.net/emupedia-game-2048" },
+      pinball: { type: "game", url: "https://emupedia.net/emupedia-game-space-cadet-pinball" },
+      flappyBird: { type: "game", url: "https://emupedia.net/emupedia-game-flappy-bird" },
+      jetpack: { type: "game", url: "https://emupedia.net/emupedia-game-jetpack-joyride" },
+      happyWheels: { type: "game", url: "https://emupedia.net/emupedia-game-happy-wheels/flash" }
     };
 
     populateStartMenu(this);
@@ -259,7 +268,6 @@ export class AppLauncher {
     });
   }
   isTransparencyBlocked(appId, appMeta) {
-    console.log("Transparency check : ", appId, appMeta, this.TRANSPARENCY_ALLOWED_APP_IDS.has(appId));
     if (appMeta.type === "system") return false;
     if (this.TRANSPARENCY_ALLOWED_APP_IDS.has(appId)) return false;
     return true;
