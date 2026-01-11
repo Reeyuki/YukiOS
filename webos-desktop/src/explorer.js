@@ -54,6 +54,7 @@ export class ExplorerApp {
 
     desktop.appendChild(win);
     document.getElementById("explorer-view").style.width = "600px";
+    document.getElementById("explorer-view").style.height = "300px";
     this.wm.makeDraggable(win);
     this.wm.makeResizable(win);
     this.wm.setupWindowControls(win);

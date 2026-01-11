@@ -180,18 +180,18 @@ class MusicPlayer {
     const win = windowManager.createWindow("music-win", "MUSIC");
 
     win.innerHTML = `
-  <div class="window-header">
-    <span>MUSIC</span>
-    <div class="window-controls">
-      <button class="minimize-btn" title="Minimize">−</button>
-      <button class="maximize-btn" title="Maximize">□</button>
-      <button class="close-btn" title="Close">X</button>
+    <div class="window-header">
+      <span>MUSIC</span>
+      <div class="window-controls">
+        <button class="minimize-btn" title="Minimize">−</button>
+        <button class="maximize-btn" title="Maximize">□</button>
+        <button class="close-btn" title="Close">X</button>
+      </div>
     </div>
-  </div>
-  <div class="window-content" style="width:100%; height:100%;">
-    <div id="player-container" style="display:flex; flex-direction:column; align-items:center; gap:10px; padding:10px;"></div>
-    </div>
-  </div>`;
+    <div class="window-content" style="width:100%; height:100%;">
+      <div id="player-container" style="display:flex; flex-direction:column; align-items:center; gap:10px; padding:10px;"></div>
+      </div>
+    </div>`;
 
     desktop.appendChild(win);
     explorerApp.renderMusicPage(document.getElementById("player-container"));
