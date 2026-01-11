@@ -240,6 +240,9 @@ export class AppLauncher {
   openRuffleApp(gameName, swfPath) {
     if (!swfPath) return;
 
+    const foundName = document.querySelector(`[data-app="${gameName}"] div`);
+    if (foundName) gameName = foundName.textContent;
+
     const id = swfPath.replace(/[^a-zA-Z0-9]/g, "");
     if (document.getElementById(`${id}-win`)) {
       this.wm.bringToFront(document.getElementById(`${id}-win`));
@@ -254,6 +257,9 @@ export class AppLauncher {
   }
 
   openEmulatorApp(gameName, romName, core) {
+    const foundName = document.querySelector(`[data-app="${gameName}"] div`);
+    if (foundName) gameName = foundName.textContent;
+
     const uniqueId = `${core}-${romName.replace(/\W/g, "")}-${Date.now()}`;
     if (document.getElementById(uniqueId)) {
       this.wm.bringToFront(document.getElementById(uniqueId));
@@ -262,8 +268,7 @@ export class AppLauncher {
 
     const iframeUrl = `/static/emulatorjs.html?rom=${encodeURIComponent(romName)}&core=${encodeURIComponent(core)}&color=%230064ff`;
     const content = `<iframe src="${iframeUrl}" style="width:100%; height:100%; border:none;" allow="autoplay; fullscreen; clipboard-write; encrypted-media; picture-in-picture" sandbox="allow-forms allow-downloads allow-modals allow-pointer-lock allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation"></iframe>`;
-    const windowTitle = romName.replace(/\..+$/, "");
-    this.createWindow(uniqueId, windowTitle, content, iframeUrl, gameName, {
+    this.createWindow(uniqueId, gameName, content, iframeUrl, gameName, {
       type: core,
       rom: romName,
       core
@@ -271,6 +276,8 @@ export class AppLauncher {
   }
 
   openGameApp(gameName, url) {
+    const foundName = document.querySelector(`[data-app="${gameName}"] div`);
+    if (foundName) gameName = foundName.textContent;
     if (document.getElementById(`${gameName}-win`)) {
       this.wm.bringToFront(document.getElementById(`${gameName}-win`));
       return;
