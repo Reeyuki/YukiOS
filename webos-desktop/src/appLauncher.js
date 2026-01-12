@@ -116,6 +116,10 @@ export class AppLauncher {
         type: "swf",
         swf: "/static/games/swfGames/feeduslostisland.swf"
       },
+      superrobotwar: {
+        type: "swf",
+        swf: "/static/games/superRobotWar/superrobotwar.swf"
+      },
       feedUsPirates: {
         type: "swf",
         swf: "/static/games/swfGames/feeduspirates.swf"
