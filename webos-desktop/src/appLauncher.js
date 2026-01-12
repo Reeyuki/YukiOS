@@ -124,7 +124,7 @@ export class AppLauncher {
         type: "swf",
         swf: "/static/games/swfGames/feeduspirates.swf"
       },
-      epicbossfighter2: { type: "swf", swf: "/static/games/swfGames/epicBossFighter2.swf" },
+      epicbossfighter2: { type: "swf", swf: "/static/games/swfGames/EpicBossFighter2.swf" },
       avatarFortressFight2: { type: "swf", swf: "/static/games/swfGames/avatarFortressFight2.swf" },
       incredibles: { type: "swf", swf: "/static/games/swfGames/incredibles.swf" },
       cactusMcCoy: { type: "game", url: "https://papasgamesfree.io/cactus-mccoy-1" },
@@ -342,7 +342,7 @@ export class AppLauncher {
     this.wm.makeDraggable(win);
     this.wm.makeResizable(win);
     this.wm.setupWindowControls(win);
-    this.wm.bringToFront(document.getElementById(`${appName}-win`));
+    this.wm.bringToFront(document.getElementById(`${id}-win`));
 
     if (externalUrl) {
       win.querySelector(".external-btn").addEventListener("click", () => this.openRemoteApp(externalUrl));
