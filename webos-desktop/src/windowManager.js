@@ -203,7 +203,7 @@ export class WindowManager {
   }
 
   bringToFront(win) {
-    win.style.zIndex = this.zIndexCounter++;
+    if (win) win.style.zIndex = this.zIndexCounter++;
   }
 
   minimizeWindow(win) {
