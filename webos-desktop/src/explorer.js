@@ -1,10 +1,6 @@
+import { FileKind } from "./fs.js";
+import { SystemUtilities } from "./system.js";
 const contextMenu = document.getElementById("context-menu");
-
-export const FileKind = {
-  IMAGE: "image",
-  TEXT: "text",
-  OTHER: "other"
-};
 
 export class ExplorerApp {
   constructor(fileSystemManager, windowManager, notepadApp) {
@@ -16,7 +12,7 @@ export class ExplorerApp {
     this.open = this.open.bind(this);
   }
 
-  open(callback = null) {
+  async open(callback = null) {
     this.fileSelectCallback = callback;
 
     if (document.getElementById("explorer-win")) {
@@ -32,11 +28,7 @@ export class ExplorerApp {
     win.innerHTML = `
       <div class="window-header">
         <span>File Explorer</span>
-        <div class="window-controls">
-          <button class="minimize-btn" title="Minimize">−</button>
-          <button class="maximize-btn" title="Maximize">□</button>
-          <button class="close-btn" title="Close">X</button>
-        </div>
+        ${this.wm.getWindowControls()}
       </div>
       <div class="explorer-nav">
         <div class="back-btn" id="exp-back">← Back</div>
@@ -53,80 +45,55 @@ export class ExplorerApp {
     `;
 
     desktop.appendChild(win);
-    document.getElementById("explorer-view").style.width = "600px";
-    document.getElementById("explorer-view").style.height = "300px";
+    const explorerView = win.querySelector("#explorer-view");
+    explorerView.style.width = "600px";
+    explorerView.style.height = "300px";
+
     this.wm.makeDraggable(win);
     this.wm.makeResizable(win);
     this.wm.setupWindowControls(win);
+
+    setTimeout(() => this.wm.bringToFront(win), 0);
     this.wm.addToTaskbar(win.id, "File Explorer", "/static/icons/file.png");
 
     this.setupExplorerControls(win);
-    this.render();
+    await this.render();
   }
 
   setupExplorerControls(win) {
-    win.querySelector("#exp-back").onclick = () => {
+    win.querySelector("#exp-back").onclick = async () => {
       if (this.currentPath.length > 1) {
         this.currentPath.pop();
-        this.render();
+        await this.render();
       }
     };
 
     win.querySelectorAll(".explorer-sidebar .start-item").forEach((item) => {
-      item.onclick = () => {
+      item.onclick = async () => {
         const path = item.dataset.path.split("/").filter((p) => p);
-        this.navigate(path);
+        this.currentPath = path;
+        await this.render();
       };
     });
 
     const explorerView = win.querySelector("#explorer-view");
     explorerView.addEventListener("contextmenu", (e) => {
-      if (e.target === explorerView) {
-        this.showBackgroundContextMenu(e);
-      }
+      if (e.target === explorerView) this.showBackgroundContextMenu(e);
     });
   }
 
-  navigate(newPath) {
-    this.currentPath = [...newPath];
-    this.render();
-  }
-  renderMusicPage(element) {
+  async renderMusicPage(element) {
     if (!element) return;
-
     element.innerHTML = `
-    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
-      <iframe 
-        src="https://open.spotify.com/embed/playlist/6oK6F4LglYBr4mYLSRDJOa" 
-        width="300" 
-        height="380" 
-        frameborder="0" 
-        allowtransparency="true" 
-        allow="encrypted-media">
-      </iframe>
-
-      <iframe 
-        src="https://open.spotify.com/embed/playlist/1q7zv2ScwtR2jIxaIRj9iG" 
-        width="300" 
-        height="380" 
-        frameborder="0" 
-        allowtransparency="true" 
-        allow="encrypted-media">
-      </iframe>
-
-      <iframe 
-        src="https://open.spotify.com/embed/playlist/6q8mgrJZ5L4YxabVQoAZZf" 
-        width="300" 
-        height="380" 
-        frameborder="0" 
-        allowtransparency="true" 
-        allow="encrypted-media">
-      </iframe>
-    </div>
-  `;
+      <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+        <iframe src="https://open.spotify.com/embed/playlist/6oK6F4LglYBr4mYLSRDJOa" width="300" height="380" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
+        <iframe src="https://open.spotify.com/embed/playlist/1q7zv2ScwtR2jIxaIRj9iG" width="300" height="380" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
+        <iframe src="https://open.spotify.com/embed/playlist/6q8mgrJZ5L4YxabVQoAZZf" width="300" height="380" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
+      </div>
+    `;
   }
 
-  render() {
+  async render() {
     const view = document.getElementById("explorer-view");
     const pathDisplay = document.getElementById("exp-path");
     if (!view) return;
@@ -135,58 +102,64 @@ export class ExplorerApp {
     pathDisplay.textContent = "/" + this.currentPath.join("/");
 
     if (this.currentPath[2] === "Music") {
-      this.renderMusicPage(document.getElementById("explorer-view"));
+      await this.renderMusicPage(view);
       return;
     }
 
     const folder = this.fs.getFolder(this.currentPath);
 
-    Object.keys(folder).forEach((name) => {
-      const isFile = this.fs.isFile(this.currentPath, name);
-      const item = document.createElement("div");
-      item.className = "file-item";
-
+    for (const [name, itemData] of Object.entries(folder)) {
+      const isFile = itemData?.type === "file";
       let iconImg;
 
       if (isFile) {
-        const kind = this.fs.getFileKind(this.currentPath, name);
-        if (kind === FileKind.IMAGE) {
-          iconImg = this.fs.getFileContent(this.currentPath, name) || "/static/icons/file.png";
+        if (itemData.icon) {
+          iconImg = itemData.icon.startsWith("/") ? itemData.icon : `data:image/*;base64,${itemData.icon}`;
         } else {
-          iconImg = "/static/icons/notepad.webp";
+          iconImg =
+            itemData.kind === FileKind.IMAGE
+              ? itemData.content.startsWith("/")
+                ? itemData.content
+                : `data:image/*;base64,${itemData.content}`
+              : "/static/icons/notepad.webp";
         }
       } else {
         iconImg = "/static/icons/file.png";
       }
 
+      const item = document.createElement("div");
+      item.className = "file-item";
       item.innerHTML = `
-      <img src="${iconImg}" style="width:64px;height:64px;object-fit:cover">
-      <span>${name}</span>
-    `;
+        <img src="${iconImg}" style="width:64px;height:64px;object-fit:cover">
+        <span>${name}</span>
+      `;
 
-      item.ondblclick = () => {
-        if (isFile) {
-          if (this.fileSelectCallback) {
-            this.fileSelectCallback(this.currentPath, name);
-            this.fileSelectCallback = null;
-          } else {
-            const content = this.fs.getFileContent(this.currentPath, name);
-            const kind = this.fs.getFileKind(this.currentPath, name);
-            if (kind === FileKind.IMAGE) {
-              this.openImageViewer(name, content);
-            } else {
-              this.notepadApp.open(name, content, this.currentPath);
-            }
-          }
-        } else {
-          this.currentPath.push(name);
-          this.render();
-        }
-      };
+      item.ondblclick = async () => this.openItem(name, isFile);
+      item.oncontextmenu = async (e) => this.showFileContextMenu(e, name, isFile);
 
-      item.oncontextmenu = (e) => this.showFileContextMenu(e, name, isFile);
       view.appendChild(item);
-    });
+    }
+  }
+
+  async openItem(name, isFile) {
+    if (isFile) {
+      if (this.fileSelectCallback) {
+        this.fileSelectCallback(this.currentPath, name);
+        this.fileSelectCallback = null;
+        return;
+      }
+      const content = await this.fs.getFileContent(this.currentPath, name);
+      const kind = await this.fs.getFileKind(this.currentPath, name);
+
+      if (kind === FileKind.IMAGE) {
+        this.openImageViewer(name, content);
+      } else {
+        this.notepadApp.open(name, content, this.currentPath);
+      }
+    } else {
+      this.currentPath.push(name);
+      await this.render();
+    }
   }
 
   openImageViewer(name, src) {
@@ -196,9 +169,7 @@ export class ExplorerApp {
     win.innerHTML = `
       <div class="window-header">
         <span>${name}</span>
-        <div class="window-controls">
-          <button class="close-btn">X</button>
-        </div>
+        ${this.wm.getWindowControls()}
       </div>
       <div style="display:flex;justify-content:center;align-items:center;height:calc(100% - 30px);background:#222">
         <img src="${src}" style="max-width:100%; max-height:100%">
@@ -206,10 +177,12 @@ export class ExplorerApp {
     `;
     desktop.appendChild(win);
     this.wm.makeDraggable(win);
-    win.querySelector(".close-btn").onclick = () => win.remove();
+    this.wm.makeResizable(win);
+    this.wm.setupWindowControls(win);
+    this.wm.addToTaskbar(win.id, name, "/static/icons/file.png");
   }
 
-  showFileContextMenu(e, itemName, isFile) {
+  async showFileContextMenu(e, itemName, isFile) {
     e.preventDefault();
     e.stopPropagation();
     contextMenu.innerHTML = "";
@@ -217,57 +190,58 @@ export class ExplorerApp {
     const createMenuItem = (text, onclick) => {
       const item = document.createElement("div");
       item.textContent = text;
-      item.onclick = onclick;
+      item.onclick = () => onclick();
       return item;
     };
 
     const openText = isFile ? "Open" : "Open Folder";
-    const openAction = () => {
+    const openAction = async () => {
       contextMenu.style.display = "none";
-      if (isFile) {
-        const content = this.fs.getFileContent(this.currentPath, itemName);
-        const kind = this.fs.getFileKind(this.currentPath, itemName);
-        if (kind === FileKind.IMAGE) {
-          this.openImageViewer(itemName, content);
-        } else {
-          this.notepadApp.open(itemName, content, this.currentPath);
-        }
-      } else {
-        this.currentPath.push(itemName);
-        this.render();
-      }
+      await this.openItem(itemName, isFile);
     };
-
     contextMenu.appendChild(createMenuItem(openText, openAction));
 
     if (isFile) {
       contextMenu.appendChild(document.createElement("hr"));
 
-      const deleteAction = () => {
-        contextMenu.style.display = "none";
-        this.fs.deleteItem(this.currentPath, itemName);
-        this.render();
-      };
-      contextMenu.appendChild(createMenuItem("Delete", deleteAction));
+      contextMenu.appendChild(
+        createMenuItem("Delete", async () => {
+          contextMenu.style.display = "none";
+          await this.fs.deleteItem(this.currentPath, itemName);
+          await this.render();
+        })
+      );
 
-      const renameAction = () => {
-        contextMenu.style.display = "none";
-        const newName = prompt("Enter new name:", itemName);
-        if (newName && newName !== itemName) {
-          this.fs.renameItem(this.currentPath, itemName, newName);
-          this.render();
-        }
-      };
-      contextMenu.appendChild(createMenuItem("Rename", renameAction));
+      contextMenu.appendChild(
+        createMenuItem("Rename", async () => {
+          contextMenu.style.display = "none";
+          const newName = prompt("Enter new name:", itemName);
+          if (newName && newName !== itemName) {
+            await this.fs.renameItem(this.currentPath, itemName, newName);
+            await this.render();
+          }
+        })
+      );
     }
 
-    contextMenu.appendChild(document.createElement("hr"));
+    const kind = isFile ? await this.fs.getFileKind(this.currentPath, itemName) : null;
+    const content = isFile ? await this.fs.getFileContent(this.currentPath, itemName) : null;
 
-    const propertiesAction = () => {
-      contextMenu.style.display = "none";
-      alert(`Name: ${itemName}\nType: ${isFile ? "File" : "Folder"}`);
-    };
-    contextMenu.appendChild(createMenuItem("Properties", propertiesAction));
+    if (kind === FileKind.IMAGE) {
+      contextMenu.appendChild(
+        createMenuItem("Set Wallpaper", () => {
+          contextMenu.style.display = "none";
+          SystemUtilities.setWallpaper(content);
+        })
+      );
+    }
+
+    contextMenu.appendChild(
+      createMenuItem("Properties", () => {
+        contextMenu.style.display = "none";
+        this.wm.showPopup(`Name: ${itemName}\nType: ${isFile ? "File" : "Folder"}`);
+      })
+    );
 
     Object.assign(contextMenu.style, {
       left: `${e.pageX}px`,
@@ -279,7 +253,6 @@ export class ExplorerApp {
   showBackgroundContextMenu(e) {
     e.preventDefault();
     e.stopPropagation();
-
     contextMenu.innerHTML = `
       <div id="ctx-new-file">New File</div>
       <div id="ctx-new-folder">New Folder</div>
@@ -287,28 +260,30 @@ export class ExplorerApp {
       <div id="ctx-refresh">Refresh</div>
     `;
 
-    document.getElementById("ctx-new-file").onclick = () => {
-      contextMenu.style.display = "none";
+    const bindAction = (id, action) => {
+      document.getElementById(id).onclick = async () => {
+        contextMenu.style.display = "none";
+        await action();
+      };
+    };
+
+    bindAction("ctx-new-file", async () => {
       const fileName = prompt("Enter file name:", "NewFile.txt");
       if (fileName) {
-        this.fs.createFile(this.currentPath, fileName);
-        this.render();
+        await this.fs.createFile(this.currentPath, fileName);
+        await this.render();
       }
-    };
+    });
 
-    document.getElementById("ctx-new-folder").onclick = () => {
-      contextMenu.style.display = "none";
+    bindAction("ctx-new-folder", async () => {
       const folderName = prompt("Enter folder name:", "NewFolder");
       if (folderName) {
-        this.fs.createFolder(this.currentPath, folderName);
-        this.render();
+        await this.fs.createFolder(this.currentPath, folderName);
+        await this.render();
       }
-    };
+    });
 
-    document.getElementById("ctx-refresh").onclick = () => {
-      contextMenu.style.display = "none";
-      this.render();
-    };
+    bindAction("ctx-refresh", async () => await this.render());
 
     Object.assign(contextMenu.style, {
       left: `${e.pageX}px`,

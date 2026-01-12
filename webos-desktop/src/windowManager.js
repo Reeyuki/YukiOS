@@ -151,11 +151,7 @@ export class WindowManager {
         propsWin.innerHTML = `
           <div class="window-header">
             <span>Properties: ${appInfo.title}</span>
-            <div class="window-controls">
-              <button class="minimize-btn" title="Minimize">−</button>
-              <button class="maximize-btn" title="Maximize">□</button>
-              <button class="close-btn" title="Close">X</button>
-            </div>
+            ${this.wm.getWindowControls()}
           </div>
           <div class="window-content" style="width:100%; height:100%; overflow:auto; user-select:text;">
             ${contentHtml}
@@ -194,6 +190,16 @@ export class WindowManager {
     const taskbarWindows = document.getElementById("taskbar-windows");
     taskbarWindows.appendChild(taskbarItem);
     this.openWindows.set(winId, { taskbarItem, title });
+  }
+
+  registerCloseWindow(closeButton, winId) {
+    closeButton.addEventListener("click", () => {
+      const win = document.getElementById(winId);
+      if (win) {
+        win.remove();
+      } else return;
+      this.removeFromTaskbar(winId);
+    });
   }
 
   removeFromTaskbar(winId) {
@@ -280,6 +286,8 @@ export class WindowManager {
     };
     win.querySelector(".minimize-btn").onclick = () => this.minimizeWindow(win);
     win.querySelector(".maximize-btn").onclick = () => this.toggleFullscreen(win);
+    const closeBtn = win.querySelector(".close-btn");
+    if (closeBtn) this.registerCloseWindow(closeBtn);
     win.addEventListener("mousedown", () => this.bringToFront(win));
   }
 
@@ -375,5 +383,37 @@ export class WindowManager {
       document.addEventListener("mousemove", doDrag);
       document.addEventListener("mouseup", stopDrag);
     });
+  }
+  getWindowControls() {
+    return `<div class="window-controls">
+              <button class="minimize-btn" title="Minimize">−</button>
+              <button class="maximize-btn" title="Maximize">□</button>
+              <button class="close-btn" title="Close">X</button>
+            </div>
+    `;
+  }
+
+  showPopup(text) {
+    const popup = document.createElement("div");
+    popup.textContent = text;
+    Object.assign(popup.style, {
+      position: "fixed",
+      top: "50%",
+      left: "50%",
+      transform: "translate(-50%, -50%)",
+      padding: "20px 40px",
+      backgroundColor: "rgba(0,0,0,0.8)",
+      color: "#fff",
+      fontSize: "18px",
+      borderRadius: "10px",
+      textAlign: "center",
+      zIndex: 9999,
+      cursor: "pointer",
+      boxShadow: "0 4px 15px rgba(0,0,0,0.3)"
+    });
+    popup.addEventListener("click", () => {
+      popup.remove();
+    });
+    document.body.appendChild(popup);
   }
 }

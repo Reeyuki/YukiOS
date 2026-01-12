@@ -45,7 +45,7 @@ export class BrowserApp {
       <button data-url="https://reeyuki.github.io">Reeyuki Site</button>
       <button data-url="https://liventcord.github.io">LiventCord</button>
       <button data-url="https://www.wikipedia.org">Wikipedia</button>
-      <button data-url="https://archive.org">Internet Archive</button>
+      <button data-url="https://www.mixconvert.com">Mix Convert</button>
       <button data-url="https://dustinbrett.com/Program%20Files/Browser/dino/index.html">T-Rex Dino</button>
       <button onclick="window.open('https://dn721809.ca.archive.org/0/items/youtube-xvFZjo5PgG0/xvFZjo5PgG0.mp4','_blank')">Click me</button>
       <button data-url="https://bluemaxima.org/flashpoint">Flashpoint Archive</button>

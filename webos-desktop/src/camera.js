@@ -23,11 +23,7 @@ export class CameraApp {
     win.innerHTML = `
       <div class="window-header">
         <span>Camera</span>
-        <div class="window-controls">
-          <button class="minimize-btn" title="Minimize">−</button>
-          <button class="maximize-btn" title="Maximize">□</button>
-          <button class="close-btn" title="Close">X</button>
-        </div>
+        ${this.wm.getWindowControls()}
       </div>
       <div style="padding:10px; display:flex; flex-direction:column; align-items:center; position:relative;">
         <div style="position:relative; width:100%; max-width:600px;">
@@ -172,9 +168,7 @@ export class CameraApp {
     this.historyWin.innerHTML = `
       <div class="window-header">
         <span>Recordings History</span>
-        <div class="window-controls">
-          <button class="close-btn">X</button>
-        </div>
+        ${this.wm.getWindowControls()}
       </div>
       <div id="history-list" style="padding:10px; display:flex; flex-direction:column; gap:5px; overflow-y:auto; height:calc(100% - 30px);"></div>
     `;

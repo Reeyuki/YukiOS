@@ -342,7 +342,7 @@ export class AppLauncher {
     this.wm.makeDraggable(win);
     this.wm.makeResizable(win);
     this.wm.setupWindowControls(win);
-    this.wm.bringToFront(document.getElementById(`${id}-win`));
+    this.wm.bringToFront(win);
 
     if (externalUrl) {
       win.querySelector(".external-btn").addEventListener("click", () => this.openRemoteApp(externalUrl));
