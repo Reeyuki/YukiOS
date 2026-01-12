@@ -48,17 +48,23 @@ export class AppLauncher {
       isaac: { type: "game", url: "https://emupedia.net/emupedia-game-binding-of-isaac" },
       mario: { type: "game", url: "https://emupedia.net/emupedia-game-mario" },
       papaGames: { type: "game", url: "https://papasgamesfree.io" },
-      zombieTd: { type: "game", url: "https://www.gamesflow.com/jeux.php?id=2061391" },
-      zombotron: { type: "game", url: "https://www.gameflare.com/embed/zombotron" },
-      zombotron2: { type: "game", url: "https://www.gameflare.com/embed/zombotron-2" },
-      zombotron2Time: { type: "game", url: "https://www.gameflare.com/embed/zombotron-2-time-machine/" },
-      breach: { type: "game", url: "https://www.gameflare.com/embed/the-breach/" },
-      fancyPants: { type: "game", url: "https://www.friv.com/z/games/fancypantsadventure/game.html" },
-      fancyPants2: { type: "game", url: "https://www.friv.com/z/games/fancypantsadventure2/game.html" },
-      fancyPants3: { type: "game", url: "https://www.gameflare.com/embed/fancy-pants-3" },
-      strikeForce: { type: "game", url: "https://www.friv.com/z/games/strikeforcekitty/game.html" },
-      strikeForce2: { type: "game", url: "https://www.friv.com/z/games/strikeforcekitty2/game.html" },
-      baloonsTd5: { type: "game", url: "https://www.gameflare.com/embed/bloons-tower-defense-5" },
+      zombieTd: { type: "swf", swf: "/static/games/swfGames/zombietd.swf" },
+      zombotron: { type: "swf", swf: "/static/games/zombotron/zombotron.swf" },
+      zombotron2: { type: "swf", swf: "/static/games/zombotron/zombotron2.swf" },
+      zombotron2Time: { type: "game", url: "/static/rfiv.html?game=zombotron" },
+      breach: { type: "swf", swf: "/static/games/swfGames/breach.swf" },
+      fancyPants: { type: "swf", swf: "/static/games/swfGames/fancypantsadventure.swf" },
+      fancyPants2: { type: "swf", swf: "/static/games/swfGames/fancypantsadventure2.swf" },
+      fancyPants3: { type: "swf", swf: "/static/games/swfGames/fancypantsadventure3.swf" },
+      strikeForce: {
+        type: "swf",
+        swf: "https://cache.armorgames.com/files/games/strikeforce-kitty-16008.swf?v=1404201513"
+      },
+      strikeForce2: {
+        type: "swf",
+        swf: "https://cache.armorgames.com/files/games/strikeforce-kitty-2-17643.swf?v=1423725280"
+      },
+      baloonsTd5: { type: "swf", swf: "/static/games/swfGames/baloonstd5.swf" },
       trinitas: { type: "game", url: "/static/games/trinitas" },
       jojo: {
         type: "game",
@@ -69,12 +75,14 @@ export class AppLauncher {
         type: "game",
         url: "https://g.igroutka.ru/games/164/Xm2W5MIcPqrF1Y90/12/subway_surfers_easter_edinburgh"
       },
-      mutantFighting: { type: "game", url: "https://www.gameflare.com/embed/mutant-fighting-cup" },
-      mutantFighting2: { type: "game", url: "https://www.gameflare.com/embed/mutant-fighting-cup-2" },
+      mutantFighting: {
+        type: "swf",
+        swf: "https://cache.armorgames.com/files/games/mutant-fighting-cup-14425.swf?v=1373587528"
+      },
+      mutantFighting2: { type: "swf", swf: "/static/games/swfGames/mutantfightingcup2.swf" },
       finnAndBones: { type: "game", url: "/static/flashpointarchive.html?fpGameName=finnAndBones" },
       obama: { type: "game", url: "/static/flashpointarchive.html?fpGameName=obama-alien-defense" },
-      intrusion: { type: "game", url: "https://www.friv.com/z/games/intrusion/game.html" },
-      intrusion2: { type: "game", url: "https://files.silvergames.com/flash/ruffle/player.php?id=2278" },
+      intrusion2: { type: "swf", swf: "/static/games/swfGames/intrusion2.swf" },
       dan: { type: "game", url: "https://www.silvergames.com/en/dan-the-man/gameframe" },
       infectonator: { type: "swf", swf: "https://cache.armorgames.com/files/games/infectonator-5020.swf?v=1373587522" },
       infectonator2: {
@@ -105,15 +113,16 @@ export class AppLauncher {
       icyFishes: { type: "swf", swf: "https://cache.armorgames.com/files/games/icy-fishes-12977.swf?v=1373587527" },
 
       feedUs6: {
-        type: "game",
-        url: "https://www.gameflare.com/embed/feed-us-lost-island"
+        type: "swf",
+        swf: "/static/games/swfGames/feeduslostisland.swf"
       },
       feedUsPirates: {
-        type: "game",
-        url: "https://www.gameflare.com/embed/feed-us-pirates"
+        type: "swf",
+        swf: "/static/games/swfGames/feeduspirates.swf"
       },
       cactusMcCoy: { type: "game", url: "https://papasgamesfree.io/cactus-mccoy-1" },
       jackSmith: { type: "game", url: "https://papasgamesfree.io/jacksmith" },
+      pokemonRed: { type: "gba", url: "pokemon-red.gba" },
       pokemonEmerald: { type: "gba", url: "pokemon-emerald.gba" },
       pokemonPlatinum: { type: "nds", url: "pokemon-platinum.nds" },
       pokemonHeartgold: { type: "nds", url: "pokemon-heartgold.nds" },
@@ -195,6 +204,7 @@ export class AppLauncher {
   }
 
   sendAnalytics(data) {
+    if (window.location.hostname === "localhost") return;
     fetch("https://analytics.liventcord-a60.workers.dev/analytics", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
