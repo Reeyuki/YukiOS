@@ -117,13 +117,16 @@ export class AppLauncher {
         swf: "/static/games/swfGames/feeduslostisland.swf"
       },
       superrobotwar: {
-        type: "swf",
-        swf: "/static/games/superRobotWar/superrobotwar.swf"
+        type: "game",
+        url: "/static/flashpointarchive.html?fpGameName=super-robot-war"
       },
       feedUsPirates: {
         type: "swf",
         swf: "/static/games/swfGames/feeduspirates.swf"
       },
+      epicbossfighter2: { type: "swf", swf: "/static/games/swfGames/epicBossFighter2.swf" },
+      avatarFortressFight2: { type: "swf", swf: "/static/games/swfGames/avatarFortressFight2.swf" },
+      incredibles: { type: "swf", swf: "/static/games/swfGames/incredibles.swf" },
       cactusMcCoy: { type: "game", url: "https://papasgamesfree.io/cactus-mccoy-1" },
       jackSmith: { type: "game", url: "https://papasgamesfree.io/jacksmith" },
       pokemonRed: { type: "gba", url: "pokemon-red.gba" },
@@ -339,6 +342,7 @@ export class AppLauncher {
     this.wm.makeDraggable(win);
     this.wm.makeResizable(win);
     this.wm.setupWindowControls(win);
+    this.wm.bringToFront(document.getElementById(`${appName}-win`));
 
     if (externalUrl) {
       win.querySelector(".external-btn").addEventListener("click", () => this.openRemoteApp(externalUrl));
