@@ -419,34 +419,6 @@ body {
   z-index: 1000;
 }
 
-.window-controls {
-  display: flex;
-  gap: 5px;
-}
-
-.minimize-btn,
-.maximize-btn,
-.close-btn {
-  padding: 2px 8px;
-  cursor: pointer;
-  border: none;
-  background: #444;
-  color: white;
-  border-radius: 3px;
-}
-
-.minimize-btn:hover {
-  background: #555;
-}
-
-.maximize-btn:hover {
-  background: #555;
-}
-
-.close-btn:hover {
-  background: #c42b1c;
-}
-
 .kde-menu {
   position: absolute;
   bottom: 45px;
@@ -666,4 +638,49 @@ body {
 
 .bookmark-bar button:active {
   background: linear-gradient(#d2d2d2, #ffffff);
+}
+
+.window-controls {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+}
+
+.window-controls button {
+  width: 46px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: white;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    transform 0.1s ease;
+}
+
+.window-controls button svg {
+  width: 10px;
+  height: 10px;
+  fill: white;
+  transition: fill 0.2s ease;
+}
+
+.window-controls .minimize-btn:hover,
+.window-controls .maximize-btn:hover,
+.window-controls .external-btn:hover {
+  background: #1a1a1a;
+  transform: scale(1.05);
+}
+
+.window-controls .close-btn:hover {
+  background: #e81123;
+  transform: scale(1.05);
+}
+
+.window-controls .close-btn:hover svg {
+  fill: #fff;
 }
