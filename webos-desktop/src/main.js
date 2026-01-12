@@ -673,32 +673,26 @@ class SystemUtilities {
 
     const randomWallpaper = wallpapers[Math.floor(Math.random() * wallpapers.length)];
 
-    let wallpaperDiv = document.getElementById("wallpaper");
+    let img = document.getElementById("wallpaper-img");
 
-    if (!wallpaperDiv) {
-      wallpaperDiv = document.createElement("div");
-      wallpaperDiv.id = "wallpaper";
-      Object.assign(wallpaperDiv.style, {
+    if (!img) {
+      img = document.createElement("img");
+      img.id = "wallpaper-img";
+      Object.assign(img.style, {
         position: "fixed",
-        top: "0",
-        left: "0",
+        inset: "0",
         width: "100vw",
         height: "100vh",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
+        objectFit: "cover",
         zIndex: "-1",
-        userSelect: "none",
-        pointerEvents: "none"
+        pointerEvents: "none",
+        userSelect: "none"
       });
-      document.body.appendChild(wallpaperDiv);
+      img.addEventListener("contextmenu", (e) => e.preventDefault());
+      document.body.appendChild(img);
     }
 
-    wallpaperDiv.style.backgroundImage = `url('${randomWallpaper}')`;
-
-    wallpaperDiv.addEventListener("contextmenu", (e) => {
-      e.preventDefault();
-    });
+    img.src = randomWallpaper;
   }
 }
 
