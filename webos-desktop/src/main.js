@@ -22,7 +22,11 @@ const defaultStorage = {
         "wallpaper3.webp": { type: "file", content: "/static/wallpapers/wallpaper3.webp", kind: FileKind.IMAGE },
         "wallpaper4.webp": { type: "file", content: "/static/wallpapers/wallpaper4.webp", kind: FileKind.IMAGE },
         "wallpaper5.webp": { type: "file", content: "/static/wallpapers/wallpaper5.webp", kind: FileKind.IMAGE },
-        "wallpaper6.webp": { type: "file", content: "/static/wallpapers/wallpaper6.webp", kind: FileKind.IMAGE }
+        "wallpaper6.webp": { type: "file", content: "/static/wallpapers/wallpaper6.webp", kind: FileKind.IMAGE },
+        "wallpaper7.webp": { type: "file", content: "/static/wallpapers/wallpaper7.webp", kind: FileKind.IMAGE },
+        "wallpaper8.webp": { type: "file", content: "/static/wallpapers/wallpaper8.webp", kind: FileKind.IMAGE },
+        "wallpaper9.webp": { type: "file", content: "/static/wallpapers/wallpaper9.webp", kind: FileKind.IMAGE },
+        "wallpaper10.webp": { type: "file", content: "/static/wallpapers/wallpaper10.webp", kind: FileKind.IMAGE }
       },
       Music: {}
     }
