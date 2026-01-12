@@ -28,13 +28,17 @@
         return params.get(name);
       }
 
-      const rom = getQueryParam("rom");
+      let rom = getQueryParam("rom");
       const core = getQueryParam("core") || "gba";
       const color = getQueryParam("color") || "#0064ff";
 
       if (!rom) {
         document.body.innerHTML = "<p style='color:white;'>No ROM specified</p>";
         throw new Error("No ROM specified");
+      }
+
+      if (rom.toLowerCase().includes("pokemon-white-2")) {
+        rom = "pokemon-white-2.zip";
       }
 
       const containerId = "game-" + Math.random().toString(36).substr(2, 9);
@@ -46,7 +50,12 @@
       window.EJS_gameName = rom.replace(/\..+$/, "");
       window.EJS_color = color;
       window.EJS_pathtodata = "/static/games/cdn.emulatorjs.org/stable/data";
-      window.EJS_gameUrl = rom.startsWith("https") ? rom : `https://reeyuki.netlify.app/static/${rom}`;
+
+      if (rom === "pokemon-white-2.zip") {
+        window.EJS_gameUrl = "https://reeyuki.netlify.app/static/pokemon-white-2.zip";
+      } else {
+        window.EJS_gameUrl = rom.startsWith("https") ? rom : `https://reeyuki.netlify.app/static/${rom}`;
+      }
 
       if (core === "gba") {
         window.EJS_biosUrl = "/static/bios/gba_bios.bin";

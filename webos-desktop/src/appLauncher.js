@@ -127,6 +127,7 @@ export class AppLauncher {
       pokemonPlatinum: { type: "nds", url: "pokemon-platinum.nds" },
       pokemonHeartgold: { type: "nds", url: "pokemon-heartgold.nds" },
       pokemonWhite: { type: "nds", url: "pokemon-white.nds" },
+      pokemonWhite2: { type: "nds", url: "pokemon-white-2.zip" },
       minecraft: { type: "remote", url: "https://eaglercraft.com/play" },
       liventcord: { type: "game", url: "https://liventcord.github.io" },
       fnaf: { type: "game", url: "/static/games/fnaf" },
