@@ -1,0 +1,81 @@
+<?xml version='1.0' encoding='UTF-8'?><xliff version='1.0' xml:lang='en'><file datatype='plaintext' original='localization_global.fla' source-language='EN'><header></header><body><trans-unit id='000'  resname='IDS_PLAY'><source>PLAY</source></trans-unit>
+<trans-unit id='001'  resname='IDS_SKIP'><source>SKIP</source></trans-unit>
+<trans-unit id='002'  resname='IDS_LOADING'><source>LOADING</source></trans-unit>
+<trans-unit id='003'  resname='IDS_CLOSE'><source>CLOSE</source></trans-unit>
+<trans-unit id='004'  resname='IDS_RESUME'><source>RESUME</source></trans-unit>
+<trans-unit id='005'  resname='IDS_HELP_TITLE'><source>HOW TO PLAY</source></trans-unit>
+<trans-unit id='006'  resname='IDS_SPACEBAR'><source>SPACEBAR</source></trans-unit>
+<trans-unit id='007'  resname='IDS_HOWTOPLAY'><source>HOW TO PLAY</source></trans-unit>
+<trans-unit id='008'  resname='IDS_QUIT'><source>QUIT</source></trans-unit>
+<trans-unit id='009'  resname='IDS_QUIT_TITLE'><source>ARE YOU SURE YOU WANT\n TO QUIT?</source></trans-unit>
+<trans-unit id='010'  resname='IDS_YES'><source>YES</source></trans-unit>
+<trans-unit id='011'  resname='IDS_NO'><source>NO</source></trans-unit>
+<trans-unit id='012'  resname='IDS_NEWGAME'><source>NEW GAME</source></trans-unit>
+<trans-unit id='013'  resname='IDS_NEWGAME_TXT'><source>YOU WILL LOSE ALL OF THE PROGRESS YOU'VE MADE.\n ARE YOU SURE YOU WANT TO START A NEW GAME?</source></trans-unit>
+<trans-unit id='014'  resname='IDS_CONTINUE'><source>CONTINUE</source></trans-unit>
+<trans-unit id='015'  resname='IDS_MENU'><source>MENU</source></trans-unit>
+<trans-unit id='016'  resname='IDS_NEXT'><source>NEXT</source></trans-unit>
+<trans-unit id='017'  resname='IDS_HOME'><source>HOME</source></trans-unit>
+<trans-unit id='018'  resname='IDS_BACK'><source>BACK</source></trans-unit>
+<trans-unit id='019'  resname='IDS_CONTROLS'><source>CONTROLS</source></trans-unit>
+<trans-unit id='020'  resname='IDS_LEVEL_SELECTION'><source>LEVEL SELECTION</source></trans-unit>
+<trans-unit id='021'  resname='IDS_LEVEL_SCORE'><source>HIGH SCORE</source></trans-unit>
+<trans-unit id='022'  resname='IDS_LEVEL1_TITLE'><source>LEVEL 1</source></trans-unit>
+<trans-unit id='023'  resname='IDS_LEVEL2_TITLE'><source>LEVEL 2</source></trans-unit>
+<trans-unit id='024'  resname='IDS_LEVEL3_TITLE'><source>LEVEL 3</source></trans-unit>
+<trans-unit id='025'  resname='IDS_MODE_SELECTION'><source>MODE SELECTION</source></trans-unit>
+<trans-unit id='026'  resname='IDS_MODE_1'><source>MORDECAI</source></trans-unit>
+<trans-unit id='027'  resname='IDS_MODE_0'><source>RIGBY</source></trans-unit>
+<trans-unit id='028'  resname='IDS_MODE_2'><source>MORDECAI AND RIGBY</source></trans-unit>
+<trans-unit id='029'  resname='IDS_MODE_PLAYER_1'><source>1 P</source></trans-unit>
+<trans-unit id='030'  resname='IDS_MODE_PLAYER_2'><source>2 P</source></trans-unit>
+<trans-unit id='031'  resname='IDS_CONFIGURE'><source>SET CONTROLS</source></trans-unit>
+<trans-unit id='032'  resname='IDS_CONFIGURE_TXT'><source>CLICK TO EDIT</source></trans-unit>
+<trans-unit id='033'  resname='IDS_PLAYER_1'><source>PLAYER 1</source></trans-unit>
+<trans-unit id='034'  resname='IDS_PLAYER_2'><source>PLAYER 2</source></trans-unit>
+<trans-unit id='035'  resname='IDS_UP'><source>UP</source></trans-unit>
+<trans-unit id='036'  resname='IDS_DOWN'><source>DOWN</source></trans-unit>
+<trans-unit id='037'  resname='IDS_LEFT'><source>LEFT</source></trans-unit>
+<trans-unit id='038'  resname='IDS_RIGHT'><source>RIGHT</source></trans-unit>
+<trans-unit id='039'  resname='IDS_ATTACK'><source>ATTACK</source></trans-unit>
+<trans-unit id='040'  resname='IDS_CHARGE'><source>DASH</source></trans-unit>
+<trans-unit id='041'  resname='IDS_HUD_CREDIT'><source>CREDITS</source></trans-unit>
+<trans-unit id='042'  resname='IDS_TRYAGAIN'><source>TRY AGAIN</source></trans-unit>
+<trans-unit id='043'  resname='IDS_LOSE_TXT'><source>KEEP PLAYING!\nDUDE YOU CAN'T GIVE UP NOW!</source></trans-unit>
+<trans-unit id='044'  resname='IDS_PLAY_AGAIN'><source>CONTINUE</source></trans-unit>
+<trans-unit id='045'  resname='IDS_WIN_TITLE'><source>YEEEEAAAAUUHHH!</source></trans-unit>
+<trans-unit id='046'  resname='IDS_WIN_TXT'><source>YOU UNLOCKED THE NEXT LEVEL !</source></trans-unit>
+<trans-unit id='047'  resname='IDS_JUMP'><source>JUMP</source></trans-unit>
+<trans-unit id='048'  resname='IDS_MOVEMENTS'><source>CONTROLS</source></trans-unit>
+<trans-unit id='049'  resname='IDS_KEY_1'><source>PRESS KEY</source></trans-unit>
+<trans-unit id='050'  resname='IDS_KEY_2'><source>ERROR KEY</source></trans-unit>
+<trans-unit id='051'  resname='IDS_COMBO'><source>COMBOS</source></trans-unit>
+<trans-unit id='052'  resname='IDS_NEWRECORD'><source>NEW RECORD</source></trans-unit>
+<trans-unit id='053'  resname='IDS_CREDIT_X'><source>x</source></trans-unit>
+<trans-unit id='054'  resname='IDS_BEST_COMBO'><source>COMBO MAX</source></trans-unit>
+<trans-unit id='055'  resname='IDS_LEVEL1_NAME'><source>BISTRO IN THE PARK</source></trans-unit>
+<trans-unit id='056'  resname='IDS_LEVEL2_NAME'><source>LAIR OF THE BLONDES</source></trans-unit>
+<trans-unit id='057'  resname='IDS_LEVEL3_NAME'><source>MUSEUM, 4224 A.D.</source></trans-unit>
+<trans-unit id='058'  resname='IDS_FINAL_SCORE'><source>FINAL SCORE:</source></trans-unit>
+<trans-unit id='059'  resname='IDS_BONUS'><source>BONUS CREDITS:</source></trans-unit>
+<trans-unit id='060'  resname='IDS_BEST_COMBO_2'><source>MAX COMBO:</source></trans-unit>
+<trans-unit id='061'  resname='IDS_DROP'><source>DROP FROM\n A PLATFORM</source></trans-unit>
+<trans-unit id='062'  resname='IDS_GAUGE'><source>FURY METER INCREASES AFTER EACH HIT</source></trans-unit>
+<trans-unit id='063'  resname='IDS_COMBO_X1'><source>X1</source></trans-unit>
+<trans-unit id='064'  resname='IDS_COMBO_X2'><source>X2</source></trans-unit>
+<trans-unit id='065'  resname='IDS_COMBO_X3'><source>X3</source></trans-unit>
+<trans-unit id='066'  resname='IDS_WARNING1'><source>MAITRE D'!</source></trans-unit>
+<trans-unit id='067'  resname='IDS_BOSS1'><source>THE BISTRO BOSS!</source></trans-unit>
+<trans-unit id='068'  resname='IDS_STORY_1'><source>JUST ANOTHER REGULAR DAY AT THE COFFEE SHOP WHEN SUDDENLY...</source></trans-unit>
+<trans-unit id='069'  resname='IDS_STORY_2'><source>NIGHT OWL DECIDED TO ADD ANOTHER PIECE TO HIS MUSEUM COLLECTION!</source></trans-unit>
+<trans-unit id='070'  resname='IDS_STORY_3'><source>THERE'S ONLY ONE WAY FOR MORDECAI AND RIGBY TO STOP HIM...</source></trans-unit>
+<trans-unit id='071'  resname='IDS_STORY_4'><source>DEATH KWON DO!!</source></trans-unit>
+<trans-unit id='072'  resname='IDS_FINAL_WIN'><source>YOU DEFEATED NIGHT OWL AND SAVED MARGARET!</source></trans-unit>
+<trans-unit id='073'  resname='IDS_COMBO_TXT'><source>WHEN FURY METER IS FULL...</source></trans-unit>
+<trans-unit id='074'  resname='IDS_COMBO_TXT_2'><source>TO DASH TOWARDS AN ENEMY</source></trans-unit>
+<trans-unit id='075'  resname='IDS_SCORE'><source>SCORE</source></trans-unit>
+<trans-unit id='076'  resname='IDS_WARNING2'><source>CYCLOPS!</source></trans-unit>
+<trans-unit id='077'  resname='IDS_WARNING3'><source>NIGHT OWL!</source></trans-unit>
+<trans-unit id='078'  resname='IDS_BOSS2'><source>THE BLONDE ENFORCER!</source></trans-unit>
+<trans-unit id='079'  resname='IDS_BOSS3'><source>THE BIG BOSS!</source></trans-unit>
+<trans-unit id='080'  resname='IDS_FINAL_WIN_2'><source>DUDE, YES!</source></trans-unit></body></file></xliff>

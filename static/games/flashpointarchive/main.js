@@ -2,6 +2,7 @@ let entry = null;
 let gameZip = null;
 
 const request = `/static/games/${new URLSearchParams(window.location.search).get("fpGameName")}/metadata.json`;
+const fallbackRequest = `/static/games/flashpointarchive/infinity.unstable.life/Flashpoint/Legacy/htdocs/miniclip.com/games/${new URLSearchParams(window.location.search).get("fpGameName")}/metadata.json`;
 const zipURL = new URL(
   "/static/games/flashpointarchive/download.unstable.life/gib-roms/Games/",
   window.location.origin
@@ -64,31 +65,62 @@ const players = [
     async initialize() {
       // Intercept calls to fetch with code that replaces the requested URL with redirected equivalent
       window.fetch = async (resource, options) => {
-        // Get request as URL object
-        let resourceURL = new URL(resource instanceof Request ? resource.url : resource);
-
-        // ??? (I think this was for some obscure edge case I can't find examples of anymore)
-        if (resourceURL.protocol == "blob:") resourceURL = new URL(resourceURL.pathname);
-
-        // Don't redirect if the requested URL belongs to the active player or doesn't use HTTP
-        if (this.source.startsWith(resourceURL.origin) || !resourceURL.protocol.startsWith("http"))
-          return await _fetch(resource, options);
-
-        // Get redirected URL and fetch
-        let redirectInfo = await redirect(resourceURL);
-        let url = redirectInfo.redirect;
-        const match = url.match(/\/games\/([^/]+)\/(.+)/);
-        if (match) {
-          const game = match[1];
-          const rest = match[2];
-          url = `/static/games/${game}/${rest}`;
+        let urlString;
+        if (resource instanceof Request) {
+          urlString = resource.url;
+        } else if (typeof resource === "string") {
+          urlString = resource;
+        } else {
+          console.log("Weird request, fallback to fetch: ", resource);
+          return _fetch(resource, options);
         }
 
-        let response = await _fetch(url, options);
+        console.log("Processing url: ", urlString);
 
-        // Spoof URL to bypass sitelocks
+        let resourceURL;
+        try {
+          resourceURL = new URL(urlString, location.origin);
+        } catch {
+          console.log("Invalid url, fetching as is: ", resource);
+          return _fetch(resource, options);
+        }
+
+        if (urlString.startsWith("blob:") || urlString.startsWith("data:")) {
+          return _fetch(resource, options);
+        }
+
+        // Skip URLs that belong to this player or are non-http
+        if (!resourceURL.protocol.startsWith("http") || this.source.startsWith(resourceURL.origin)) {
+          console.log("url belongs to this player or is non-http, skipping: ", resource);
+          return _fetch(resource, options);
+        }
+
+        // Get redirected URL
+        const redirectInfo = await redirect(resourceURL);
+        const redirected = redirectInfo.redirect;
+
+        // If redirect returns a blob, just fetch it directly
+        if (redirected.startsWith("blob:") || redirected.startsWith("data:")) {
+          console.log("Redirected to blob/data URL, fetching as-is: ", redirected);
+          return _fetch(redirected, options);
+        }
+
+        const original = new URL(redirected);
+        console.log("Redirected url:", redirectInfo, "from url:", resourceURL);
+        console.log("Original url is:", original);
+
+        let pathname = original.pathname;
+        console.log("Original pathname:", pathname);
+
+        // Rewrite Flashpoint paths
+        if (pathname.startsWith("/Flashpoint/Legacy/htdocs/") || /^\/games\/[^/]+\/.+/.test(pathname)) {
+          pathname = "/static/games/flashpointarchive/" + original.host + pathname;
+        }
+
+        console.log("Generated pathname:", pathname);
+
+        const response = await _fetch(pathname, options);
         Object.defineProperty(response, "url", { value: redirectInfo.original.href });
-
         return response;
       };
 
@@ -159,15 +191,31 @@ const players = [
 ];
 
 // Fetch API request
-fetch(request).then(async (response) => {
-  // Deserialize JSON response
+async function fetchEntry(url) {
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
   try {
-    entry = await response.json();
-    // If deserialization fails, replace page content with error message
+    return await response.json();
   } catch {
-    document.querySelector(".header").textContent = "The specified entry is invalid.";
-    document.querySelectorAll(".content *:not(.header)").forEach((elem) => (elem.style.display = "none"));
-    return;
+    throw new Error("Invalid JSON");
+  }
+}
+async function loadEntry(request) {
+  try {
+    entry = await fetchEntry(request);
+  } catch (err) {
+    console.warn(`Failed to load primary entry (${request}):`, err);
+    try {
+      entry = await fetchEntry(fallbackRequest);
+    } catch (fallbackErr) {
+      console.error("Failed to load fallback entry:", fallbackErr);
+      const header = document.querySelector(".header");
+      if (header) header.textContent = "The specified entry is invalid.";
+      document.querySelectorAll(".content *:not(.header)").forEach((elem) => {
+        elem.style.display = "none";
+      });
+      return;
+    }
   }
 
   // Add entry title to page title and display above player
@@ -243,4 +291,6 @@ fetch(request).then(async (response) => {
     // Add player to DOM and activate redirector
     players[p].initialize();
   }
-});
+}
+
+loadEntry(request);

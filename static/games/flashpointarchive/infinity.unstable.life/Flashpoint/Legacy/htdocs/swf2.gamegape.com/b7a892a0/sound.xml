@@ -1,0 +1,88 @@
+﻿<sounds>
+	<files>
+		<game hifi="sounds_ingame.swf" lofi="">
+			<musics>	
+				<!--musics game-->
+				<_game1 volume="75" />
+				<_game2 volume="70" />
+				<_game3 volume="75" />
+				<_boss volume="75"/>
+			</musics>
+			<fxs>
+				<!--fx game-->
+				<_attack_rigby volume="100" />
+				<_attack_rigby1 volume="100" />
+				<_attack_rigby2 volume="100" />
+				<_attack_rigby3 volume="100" />
+				<_attack_rigby4 volume="100" />
+				<_attack_rigby5 volume="100" />
+				<_attack_rigby6 volume="100" />
+				<_attack_jump_rigby volume="100" />
+				<_attack_jump_rigby1 volume="100" />
+				<_attack_jump_rigby2 volume="100" />
+				<_attack_jump_rigby3 volume="100" />
+				<_attack_special_rigby1 volume="200" />
+				<_attack_special_rigby2 volume="200" />
+				<_attack_special_rigby3 volume="200" />
+				<_attack_special_rigby4 volume="200" />
+				<_attack_mordecai volume="100" />
+				<_attack_mordecai1 volume="100" />
+				<_attack_mordecai2 volume="100" />
+				<_attack_mordecai3 volume="100" />
+				<_attack_mordecai4 volume="100" />
+				<_attack_mordecai5 volume="100" />
+				<_attack_mordecai6 volume="100" />
+				<_attack_jump_mordecai volume="100" />
+				<_attack_jump_mordecai1 volume="100" />
+				<_attack_jump_mordecai2 volume="100" />
+				<_attack_jump_mordecai3 volume="100" />
+				<_attack_special_mordecai1 volume="200" />
+				<_attack_special_mordecai2 volume="200" />
+				<_attack_special_mordecai3 volume="200" />
+				<_attack_special_mordecai4 volume="200" />
+				<_jump volume="150" />
+				<_collectable volume="100" />
+				<_hurt_rigby volume="100" />
+				<_hurt_mordecai volume="100" />
+				<_die_enemy volume="150" />
+				<_die_rigby volume="150" />
+				<_die_mordecai volume="150" />
+				<_recept volume="75" />
+				<_enemy_hurt volume="100" />
+				<_enemy_hurt_special volume="80" />
+				<_enemyBase_attack volume="200" />
+				<_enemyShooter_shoot volume="100" />
+				<_enemyShooter_shoot_plate volume="100" />
+				<_bossShooter_shoot volume="100" />
+				<_enemyHeavy_attack volume="200" />
+				<_combo1 volume="0" />
+				<_combo2 volume="0" />
+				<_combo3 volume="0" />
+				<_combo4 volume="0" />
+				<_TCBoss volume="100" />
+				<_win volume="100" />
+				<_lose volume="100" />
+			</fxs>
+		</game>
+		<main hifi="sounds.swf" lofi="">
+			<musics>	
+				<!--musics game-->
+				<_main volume="100" />
+			</musics>
+			<fxs>
+				<_over volume="70" />
+				<_tc_punch_rigby volume="200" />
+				<_tc_punch_mordecai volume="200" />
+			</fxs>
+		</main>
+	</files>
+	<groups>
+		<general volume="50">
+		<!--general volume="0"-->
+			<main volume="75">
+				<musics volume="85" />
+				<fxs volume="100" />
+			</main>
+		</general>
+	</groups>
+</sounds>

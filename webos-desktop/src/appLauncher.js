@@ -144,7 +144,8 @@ export class AppLauncher {
       pinball: { type: "game", url: "https://emupedia.net/emupedia-game-space-cadet-pinball" },
       flappyBird: { type: "game", url: "https://emupedia.net/emupedia-game-flappy-bird" },
       jetpack: { type: "game", url: "https://emupedia.net/emupedia-game-jetpack-joyride" },
-      happyWheels: { type: "game", url: "https://emupedia.net/emupedia-game-happy-wheels/flash" }
+      happyWheels: { type: "game", url: "https://emupedia.net/emupedia-game-happy-wheels/flash" },
+      fistPunch: { type: "game", url: "/static/flashpointarchive.html?fpGameName=fistPunch" }
     };
 
     populateStartMenu(this);
@@ -293,17 +294,17 @@ export class AppLauncher {
     });
   }
 
-  openGameApp(gameName, url) {
-    const foundName = document.querySelector(`[data-app="${gameName}"] div`);
-    if (foundName) gameName = foundName.textContent;
-    if (document.getElementById(`${gameName}-win`)) {
-      this.wm.bringToFront(document.getElementById(`${gameName}-win`));
+  openGameApp(appId, url) {
+    let foundNameText;
+    const foundName = document.querySelector(`[data-app="${appId}"] div`);
+    if (foundName) foundNameText = foundName.textContent;
+    if (document.getElementById(`${appId}-win`)) {
+      this.wm.bringToFront(document.getElementById(`${appId}-win`));
       return;
     }
 
     const content = `<iframe src="${url}" style="width:100%; height:100%; border:none;" allow="autoplay; fullscreen; clipboard-write; encrypted-media; picture-in-picture" sandbox="allow-forms allow-downloads allow-modals allow-pointer-lock allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation"></iframe>`;
-    const formattedName = gameName.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase());
-    this.createWindow(gameName, formattedName, content, url, gameName, {
+    this.createWindow(appId, foundNameText, content, url, appId, {
       type: "game"
     });
   }
@@ -323,6 +324,7 @@ export class AppLauncher {
     win.dataset.isGame = isGame;
     win.dataset.rom = appMeta.rom || "";
     win.dataset.core = appMeta.core || "";
+    console.log(`Id: ${id}, ${appId}, appMeta ${appMeta.toString()}, title: ${title}`);
 
     win.innerHTML = `
       <div class="window-header">
@@ -347,14 +349,23 @@ export class AppLauncher {
     if (externalUrl) {
       win.querySelector(".external-btn").addEventListener("click", () => this.openRemoteApp(externalUrl));
     }
-
     const icon = tryGetIcon(appId || id);
     this.wm.addToTaskbar(win.id, title, icon);
     this.recordUsage(`${id}-win`);
   }
 }
-
+function camelize(str) {
+  return str
+    .replace(/(?:^\w|[A-Z]|\b\w)/g, function (word, index) {
+      return index === 0 ? word.toLowerCase() : word.toUpperCase();
+    })
+    .replace(/\s+/g, "");
+}
 function tryGetIcon(id) {
+  id = camelize(id);
+  console.log("Trying get icon : ", id);
+  if (id === "explorer") return "/static/icons/file.png";
+  if (id === "computer") return "/static/icons/pc.webp";
   try {
     const div = document.querySelector(`#desktop div[data-app="${id}"]`);
     return div?.querySelector("img")?.src || null;
@@ -380,12 +391,33 @@ function populateStartMenu(appLauncher) {
     const item = document.createElement("div");
     item.classList.add("kde-item");
     item.dataset.app = appName;
+
+    const iconSrc = tryGetIcon(appName);
+
+    const icon = document.createElement("img");
+    icon.classList.add("kde-item-icon");
+    if (iconSrc) {
+      icon.src = iconSrc;
+      icon.alt = "";
+    } else {
+      icon.style.display = "none";
+    }
+
     const label = appName.charAt(0).toUpperCase() + appName.slice(1);
-    item.textContent = label;
+    const labelEl = document.createElement("span");
+    labelEl.textContent = label;
+
+    item.appendChild(icon);
+    item.appendChild(labelEl);
+
     item.addEventListener("click", () => appLauncher.launch(appName));
 
-    if (appData.type === "system") pageMap.system?.appendChild(item);
-    else if (appData.type === "game" || appData.type === "swf") pageMap.games?.appendChild(item);
-    else pageMap.apps?.appendChild(item);
+    if (appData.type === "system") {
+      pageMap.system?.appendChild(item);
+    } else if (appData.type === "game" || appData.type === "swf") {
+      pageMap.games?.appendChild(item);
+    } else {
+      pageMap.apps?.appendChild(item);
+    }
   });
 }

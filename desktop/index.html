@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Yuki OS</title>
-    <script type="module" crossorigin src="/desktop/assets/index-DG7dxXpm.js"></script>
-    <link rel="stylesheet" crossorigin href="/desktop/assets/index-C6aoRnJZ.css">
+    <script type="module" crossorigin src="/desktop/assets/index-CU_jLgU9.js"></script>
+    <link rel="stylesheet" crossorigin href="/desktop/assets/index-BJHlhAHB.css">
   </head>
 
   <body>
@@ -385,6 +385,10 @@
         <img src="/static/icons/incredibles.webp" />
         <div>Incredibles</div>
       </div>
+      <div class="icon selectable" data-app="fistPunch">
+        <img src="/static/icons/fistpunch.png" />
+        <div>Regular Show FP</div>
+      </div>
     </div>
     <div id="start-menu" class="kde-menu">
       <div class="kde-sidebar">
@@ -396,34 +400,19 @@
         <div class="kde-cat active" data-cat="favorites">⭐ Favorites</div>
         <div class="kde-cat" data-cat="apps">📦 Applications</div>
         <div class="kde-cat" data-cat="games">🎮 Games</div>
-        <div class="kde-cat" data-cat="system">⚙ System</div>
+        <div class="kde-cat" data-cat="system">⚙️ System</div>
       </div>
 
       <div class="kde-content">
         <input id="kde-search" placeholder="Search…" autocomplete="off" />
 
-        <div class="kde-page active" data-page="favorites">
-          <div class="kde-item" data-app="notepad">📝 Notepad</div>
-          <div class="kde-item" data-app="explorer">📁 File Manager</div>
-          <div class="kde-item" data-app="music">🎵 Music Player</div>
-        </div>
+        <div class="kde-page active" data-page="favorites"></div>
 
-        <div class="kde-page" data-page="apps">
-          <div class="kde-item" data-app="notepad">📝 Notepad</div>
-          <div class="kde-item" data-app="vscode">Visual Studio Code</div>
-          <div class="kde-item" data-app="explorer">📁 File Manager</div>
-        </div>
+        <div class="kde-page" data-page="apps"></div>
 
-        <div class="kde-page" data-page="games">
-          <div class="kde-item" data-app="pacman">👾 Pac-Man</div>
-          <div class="kde-item" data-app="pvz">🌻 Plants vs Zombies</div>
-          <div class="kde-item" data-app="sonic">🌀 Sonic</div>
-        </div>
+        <div class="kde-page" data-page="games"></div>
 
-        <div class="kde-page" data-page="system">
-          <div class="kde-item" data-app="settings">⚙ Settings</div>
-          <div class="kde-item" data-app="return">⏻ Logout</div>
-        </div>
+        <div class="kde-page" data-page="system"></div>
       </div>
     </div>
 
@@ -439,24 +428,7 @@
     <div id="context-menu"></div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ruffle-rs/0.2.0-nightly.2025.9.29/ruffle.js"></script>
-    <script>
-      document.querySelectorAll(".kde-cat").forEach((cat) => {
-        cat.onclick = () => {
-          document.querySelectorAll(".kde-cat").forEach((c) => c.classList.remove("active"));
-          document.querySelectorAll(".kde-page").forEach((p) => p.classList.remove("active"));
 
-          cat.classList.add("active");
-          document.querySelector(`.kde-page[data-page="${cat.dataset.cat}"]`).classList.add("active");
-        };
-      });
-
-      document.getElementById("kde-search").addEventListener("input", (e) => {
-        const q = e.target.value.toLowerCase();
-        document.querySelectorAll(".kde-item").forEach((item) => {
-          item.style.display = item.textContent.toLowerCase().includes(q) ? "" : "none";
-        });
-      });
-    </script>
     <style id="window-style">
       .window {
         background: linear-gradient(135deg, rgba(30, 30, 30, 0.5), rgba(50, 50, 50, 0.2));

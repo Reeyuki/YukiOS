@@ -7,6 +7,7 @@ import { NotepadApp } from "./notepad.js";
 import { CameraApp } from "./camera.js";
 import { SystemUtilities } from "./system.js";
 import { FileSystemManager } from "./fs.js";
+import { setupStartMenu } from "./startMenu.js";
 
 class MusicPlayer {
   constructor() {}
@@ -557,3 +558,4 @@ window.addEventListener("resize", layoutIcons);
 console.log(
   "Howdy, devtools user! the source of this site is available at: https://github.com/Reeyuki/reeyuki.github.io"
 );
+setupStartMenu();

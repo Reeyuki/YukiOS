@@ -516,8 +516,15 @@ body {
   border-radius: 6px;
   cursor: pointer;
   font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
-
+.kde-item-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
 .kde-item:hover {
   background: #3daee9;
   color: black;

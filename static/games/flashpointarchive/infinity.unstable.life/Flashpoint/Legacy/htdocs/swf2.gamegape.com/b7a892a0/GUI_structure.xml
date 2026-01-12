@@ -1,0 +1,5704 @@
+<gui>
+  <assets>
+    <asset id="GraphicLoaderCNScreen">
+      <assets>
+        <asset id="GraphicLoaderCNScreen_close">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="GraphicLoaderCNScreen_inter">
+          <name>interS</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="GraphicLoaderCNScreen_open">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="GraphicLoaderCNScreen_close">
+      <assets>
+        <asset id="GraphicLoaderCNScreen_close_content">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="GraphicLoaderCNScreen_inter">
+      <assets>
+        <asset id="loadingBarInterS_bg">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="LoadingProgress">
+          <name>mcAnim</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>71</tx>
+            <ty>66</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="GraphicLoaderCNScreen_open">
+      <assets>
+        <asset id="GraphicLoaderCNScreen_open_content">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="MenuScreen">
+      <assets>
+        <asset id="MenuScreen_close">
+          <name>closeS</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0.45</tx>
+            <ty>-0.05</ty>
+          </matrix>
+        </asset>
+        <asset id="MenuScreen_configInter">
+          <name>configInterS</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="MenuScreen_helpInter">
+          <name>helpInterS</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="MenuScreen_inter">
+          <name>interS</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="MenuScreen_quitInter">
+          <name>quitInterS</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="MenuScreen_open">
+          <name>openS</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0.45</tx>
+            <ty>-0.05</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="MenuScreen_close">
+      <assets>
+        <asset id="MenuScreen_closeS_content">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="MenuScreen_configInter">
+      <assets>
+        <asset id="_menu_Config_draw4">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="MenuScreen_configInter_content_BG">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>379</tx>
+            <ty>259</ty>
+          </matrix>
+        </asset>
+        <asset id="UICharactersImageBtn_set_keys_content">
+          <name>mcKeyPlayer1</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>237.8</tx>
+            <ty>266.85</ty>
+          </matrix>
+        </asset>
+        <asset id="UICharactersImageBtn_set_keys_content">
+          <name>mcKeyPlayer2</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>577.8</tx>
+            <ty>268.85</ty>
+          </matrix>
+        </asset>
+        <asset id="MenuScreen_configInter_Title">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>136</tx>
+            <ty>18</ty>
+          </matrix>
+        </asset>
+        <asset id="MenuScreen_configInter_txt">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>276</tx>
+            <ty>107</ty>
+          </matrix>
+        </asset>
+        <asset id="MenuScreen_configInter_txt_2">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>207.85</tx>
+            <ty>154.85</ty>
+          </matrix>
+        </asset>
+        <asset id="MenuScreen_configInter_txt_3">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>542.95</tx>
+            <ty>154.85</ty>
+          </matrix>
+        </asset>
+        <asset id="BtnClose">
+          <name>btnClose</name>
+          <matrix>
+            <a>0.9</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.9</d>
+            <tx>312</tx>
+            <ty>420</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="UICharactersImageBtn_set_keys_content">
+      <assets>
+        <asset id="UICharactersImageBtn_set_keys_content_elt">
+          <name>mcControl0</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-88</tx>
+            <ty>-88.15</ty>
+          </matrix>
+        </asset>
+        <asset id="UICharactersImageBtn_set_keys_content_elt">
+          <name>mcControl1</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-88</tx>
+            <ty>-48.65</ty>
+          </matrix>
+        </asset>
+        <asset id="UICharactersImageBtn_set_keys_content_elt">
+          <name>mcControl2</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-88</tx>
+            <ty>-9.15</ty>
+          </matrix>
+        </asset>
+        <asset id="UICharactersImageBtn_set_keys_content_elt">
+          <name>mcControl3</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-88</tx>
+            <ty>30.35</ty>
+          </matrix>
+        </asset>
+        <asset id="UICharactersImageBtn_set_keys_content_elt">
+          <name>mcControl4</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-88</tx>
+            <ty>69.85</ty>
+          </matrix>
+        </asset>
+        <asset id="UICharactersImageBtn_set_keys_content_elt">
+          <name>mcControl5</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-88</tx>
+            <ty>109.35</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="UICharactersImageBtn_set_keys_content_elt">
+      <assets>
+        <asset id="UICharactersImageBtn_set_keys_txt_up_label$UP$1$0$C$0$0$0$0$0">
+          <name>mcLabel</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>7</tx>
+            <ty>3</ty>
+          </matrix>
+        </asset>
+        <asset id="UICharactersImageBtn_set_keys_BtnKeyNeutral">
+          <name>btSelec</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-48.5</tx>
+            <ty>0.1</ty>
+          </matrix>
+        </asset>
+        <asset id="UICharactersImageBtn_set_keys_state">
+          <name>mcState</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1.03</d>
+            <tx>-23.75</tx>
+            <ty>8.55</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="UICharactersImageBtn_set_keys_BtnKeyNeutral">
+      <assets>
+        <asset id="_hitArea_5656">
+          <name>hit</name>
+          <matrix>
+            <a>3.79</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.68</d>
+            <tx>111.75</tx>
+            <ty>15.65</ty>
+          </matrix>
+        </asset>
+        <asset id="UICharactersImageBtn_set_keys_BtnKeyNeutral_disable">
+          <name>disable</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="UICharactersImageBtn_set_keys_BtnKeyNeutral_selected">
+          <name>selected</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="UICharactersImageBtn_set_keys_BtnKeyNeutral_down">
+          <name>down</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="UICharactersImageBtn_set_keys_BtnKeyNeutral_over">
+          <name>over</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="UICharactersImageBtn_set_keys_BtnKeyNeutral_up">
+          <name>up</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="UICharactersImageBtn_set_keys_state">
+      <assets>
+        <asset id="UICharactersImageBtn_set_keys_state_right">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="UICharactersImageBtn_set_keys_state_left">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="UICharactersImageBtn_set_keys_state_down">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="UICharactersImageBtn_set_keys_state_up">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="UICharactersImageBtn_set_keys_state_text">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="BtnClose">
+      <assets>
+        <asset id="_hitArea2">
+          <name>hit</name>
+          <matrix>
+            <a>3.11</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1.05</d>
+            <tx>73.25</tx>
+            <ty>26.2</ty>
+          </matrix>
+        </asset>
+        <asset id="BtnClose_State_down">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="BtnClose_State_over">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="BtnClose_State_up">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="MenuScreen_helpInter">
+      <assets>
+        <asset id="_menu_HowToPlay_draw4">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="MenuScreen_helpInter_content">
+          <name>mcHelpPages</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>377</tx>
+            <ty>259</ty>
+          </matrix>
+        </asset>
+        <asset id="MenuScreen_helpInter_Title">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>136</tx>
+            <ty>18</ty>
+          </matrix>
+        </asset>
+        <asset id="BtnClose">
+          <name>btnClose</name>
+          <matrix>
+            <a>0.9</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.9</d>
+            <tx>312</tx>
+            <ty>420</ty>
+          </matrix>
+        </asset>
+        <asset id="MenuScreen_helpInter_ArrowBtn">
+          <name>btnRight</name>
+          <matrix>
+            <a>0.85</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.85</d>
+            <tx>539.95</tx>
+            <ty>421.6</ty>
+          </matrix>
+        </asset>
+        <asset id="MenuScreen_helpInter_ArrowBtn">
+          <name>btnLeft</name>
+          <matrix>
+            <a>-0.85</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.85</d>
+            <tx>211.45</tx>
+            <ty>421.6</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="MenuScreen_helpInter_content">
+      <assets>
+        <asset id="MenuScreen_helpInter_content_page2">
+          <name>page2</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="MenuScreen_helpInter_content_page1">
+          <name>page1</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-198</tx>
+            <ty>-29</ty>
+          </matrix>
+        </asset>
+        <asset id="MenuScreen_helpInter_content_page0">
+          <name>page0</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-198</tx>
+            <ty>-29</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="MenuScreen_helpInter_content_page2">
+      <assets>
+        <asset id="_MenuScreen_config_BG">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-198</tx>
+            <ty>-29</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="MenuScreen_helpInter_content_page1">
+      <assets>
+        <asset id="_MenuScreen_helpInter_BG">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0.6</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="_howtoplay_character_2_72">
+          <name>mcContent</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>401.8</tx>
+            <ty>-37.05</ty>
+          </matrix>
+        </asset>
+        <asset id="_HelpInter_keys_BtnKey_Draw2">
+          <matrix>
+            <a>0.7</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.7</d>
+            <tx>-25.05</tx>
+            <ty>138.3</ty>
+          </matrix>
+        </asset>
+        <asset id="UICharactersImageBtn_set_keys_state">
+          <name>mcState1</name>
+          <matrix>
+            <a>0.7</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.72</d>
+            <tx>-31.2</tx>
+            <ty>131.95</ty>
+          </matrix>
+        </asset>
+        <asset id="_HelpInter_keys_BtnKey_Draw2">
+          <matrix>
+            <a>0.7</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.7</d>
+            <tx>91.95</tx>
+            <ty>137</ty>
+          </matrix>
+        </asset>
+        <asset id="UICharactersImageBtn_set_keys_state">
+          <name>mcState2</name>
+          <matrix>
+            <a>0.7</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.72</d>
+            <tx>85.8</tx>
+            <ty>130.65</ty>
+          </matrix>
+        </asset>
+        <asset id="_HelpInter_keys_BtnKey_Draw2">
+          <matrix>
+            <a>0.7</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.7</d>
+            <tx>226.55</tx>
+            <ty>141</ty>
+          </matrix>
+        </asset>
+        <asset id="UICharactersImageBtn_set_keys_state">
+          <name>mcState3</name>
+          <matrix>
+            <a>0.7</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.72</d>
+            <tx>220.4</tx>
+            <ty>134.65</ty>
+          </matrix>
+        </asset>
+        <asset id="_HelpInter_keys_BtnKey_Draw2">
+          <matrix>
+            <a>0.7</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.7</d>
+            <tx>357.55</tx>
+            <ty>141</ty>
+          </matrix>
+        </asset>
+        <asset id="UICharactersImageBtn_set_keys_state">
+          <name>mcState4</name>
+          <matrix>
+            <a>0.7</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.72</d>
+            <tx>351.4</tx>
+            <ty>134.65</ty>
+          </matrix>
+        </asset>
+        <asset id="MenuScreen_helpInter_content_page2_txt_switch">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>93.95</tx>
+            <ty>-58.2</ty>
+          </matrix>
+        </asset>
+        <asset id="_HelpInter_keys_BtnKey_Draw2">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>230.4</tx>
+            <ty>-39.65</ty>
+          </matrix>
+        </asset>
+        <asset id="UICharactersImageBtn_set_keys_state">
+          <name>mcState0</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1.03</d>
+            <tx>221.6</tx>
+            <ty>-48.15</ty>
+          </matrix>
+        </asset>
+        <asset id="MenuScreen_helpInter_content_page2_txt_x1">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>75.95</tx>
+            <ty>26.4</ty>
+          </matrix>
+        </asset>
+        <asset id="MenuScreen_helpInter_content_page2_txt_x2">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>221.45</tx>
+            <ty>26.4</ty>
+          </matrix>
+        </asset>
+        <asset id="MenuScreen_helpInter_content_page2_txt_x3">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>367.9</tx>
+            <ty>27.7</ty>
+          </matrix>
+        </asset>
+        <asset id="MenuScreen_helpInter_content_page2_txt2$COMBO_TXT_2$1$0$C$0$0$undefined$0$0">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>255.45</tx>
+            <ty>-58.15</ty>
+          </matrix>
+        </asset>
+        <asset id="MenuScreen_helpInter_content_page2_title">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-47</tx>
+            <ty>-122</ty>
+          </matrix>
+        </asset>
+        <asset id="MenuScreen_helpInter_content_page2_txt_combo">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>61</tx>
+            <ty>17.5</ty>
+          </matrix>
+        </asset>
+        <asset id="MenuScreen_helpInter_content_page2_txt_combo">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>206.45</tx>
+            <ty>17.5</ty>
+          </matrix>
+        </asset>
+        <asset id="MenuScreen_helpInter_content_page2_txt_combo">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>351.95</tx>
+            <ty>17.5</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="MenuScreen_helpInter_content_page0">
+      <assets>
+        <asset id="_MenuScreen_helpInter_BG">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0.6</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="MenuScreen_helpInter_content_page0_run">
+          <name>mcControl5</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>323.3</tx>
+            <ty>45.55</ty>
+          </matrix>
+        </asset>
+        <asset id="MenuScreen_helpInter_content_page0_slide">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>305.3</tx>
+            <ty>96.35</ty>
+          </matrix>
+        </asset>
+        <asset id="MenuScreen_helpInter_content_page0_title">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-55</tx>
+            <ty>-122</ty>
+          </matrix>
+        </asset>
+        <asset id="_howtoplay_character_1">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>350.8</tx>
+            <ty>-27.05</ty>
+          </matrix>
+        </asset>
+        <asset id="MenuScreen_helpInter_content_page0_commande1">
+          <name>mcControl1</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>78.55</tx>
+            <ty>17.55</ty>
+          </matrix>
+        </asset>
+        <asset id="MenuScreen_helpInter_content_page0_commande2">
+          <name>mcControl2</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-10.95</tx>
+            <ty>67.45</ty>
+          </matrix>
+        </asset>
+        <asset id="MenuScreen_helpInter_content_page0_commande3">
+          <name>mcControl3</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>213.6</tx>
+            <ty>67.45</ty>
+          </matrix>
+        </asset>
+        <asset id="MenuScreen_helpInter_content_page0_commande4">
+          <name>mcControl4</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>78.55</tx>
+            <ty>111.6</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="MenuScreen_helpInter_content_page0_run">
+      <assets>
+        <asset id="MenuScreen_helpInter_content_page1_txt1$ATTACK$1$0$C$0$0$0$0$0">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-17.4</tx>
+            <ty>-15.05</ty>
+          </matrix>
+        </asset>
+        <asset id="_HelpInter_keys_BtnKey_Draw2">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-58.55</tx>
+            <ty>-41.5</ty>
+          </matrix>
+        </asset>
+        <asset id="UICharactersImageBtn_set_keys_state">
+          <name>mcState</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1.03</d>
+            <tx>-67.35</tx>
+            <ty>-50</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="MenuScreen_helpInter_content_page0_commande1">
+      <assets>
+        <asset id="_HelpInter_keys_BtnKey_Draw2">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-54.6</tx>
+            <ty>-21.5</ty>
+          </matrix>
+        </asset>
+        <asset id="UICharactersImageBtn_set_keys_state">
+          <name>mcState</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1.03</d>
+            <tx>-63.4</tx>
+            <ty>-30</ty>
+          </matrix>
+        </asset>
+        <asset id="MenuScreen_helpInter_content_page0_txt3$JUMP$1$0$C$0$0$undefined$0$0">
+          <name>mcLabel</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-111.5</tx>
+            <ty>-65.4</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="MenuScreen_helpInter_content_page0_commande2">
+      <assets>
+        <asset id="_HelpInter_keys_BtnKey_Draw2">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-19.05</tx>
+            <ty>-21.5</ty>
+          </matrix>
+        </asset>
+        <asset id="UICharactersImageBtn_set_keys_state">
+          <name>mcState</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1.03</d>
+            <tx>-28</tx>
+            <ty>-30</ty>
+          </matrix>
+        </asset>
+        <asset id="MenuScreen_helpInter_content_page0_txt_left$LEFT$1$0$C$0$0$undefined$0$0">
+          <name>mcLabel</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-156.9</tx>
+            <ty>-34.7</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="MenuScreen_helpInter_content_page0_commande3">
+      <assets>
+        <asset id="_HelpInter_keys_BtnKey_Draw2">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-136.6</tx>
+            <ty>-21.5</ty>
+          </matrix>
+        </asset>
+        <asset id="UICharactersImageBtn_set_keys_state">
+          <name>mcState</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1.03</d>
+            <tx>-145.1</tx>
+            <ty>-30</ty>
+          </matrix>
+        </asset>
+        <asset id="MenuScreen_helpInter_content_page0_txt_right$RIGHT$1$0$C$0$0$undefined$0$0">
+          <name>mcLabel</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-114.05</tx>
+            <ty>-34.65</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="MenuScreen_helpInter_content_page0_commande4">
+      <assets>
+        <asset id="_HelpInter_keys_BtnKey_Draw2">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-54.6</tx>
+            <ty>-21.5</ty>
+          </matrix>
+        </asset>
+        <asset id="UICharactersImageBtn_set_keys_state">
+          <name>mcState</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1.03</d>
+            <tx>-63.4</tx>
+            <ty>-30</ty>
+          </matrix>
+        </asset>
+        <asset id="MenuScreen_helpInter_content_page0_drop$DROP$1$0$T$0$0$undefined$0$0">
+          <name>mcLabel</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-111.5</tx>
+            <ty>2.65</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="MenuScreen_helpInter_ArrowBtn">
+      <assets>
+        <asset id="_hitArea">
+          <name>hit</name>
+          <matrix>
+            <a>1.21</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.1</d>
+            <tx>83.95</tx>
+            <ty>33.9</ty>
+          </matrix>
+        </asset>
+        <asset id="MenuScreen_helpInter_ArrowBtn_down">
+          <name>down</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>1.35</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="MenuScreen_helpInter_ArrowBtn_over">
+          <name>over</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="MenuScreen_helpInter_ArrowBtn_up">
+          <name>up</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="MenuScreen_inter">
+      <assets>
+        <asset id="_menuMenu_draw">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0.05</ty>
+          </matrix>
+        </asset>
+        <asset id="MenuScreen_inter_popup_BG">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>374.95</tx>
+            <ty>281.45</ty>
+          </matrix>
+        </asset>
+        <asset id="BtnQuit">
+          <name>btnQuit</name>
+          <matrix>
+            <a>0.9</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.9</d>
+            <tx>260.7</tx>
+            <ty>348.8</ty>
+          </matrix>
+        </asset>
+        <asset id="BtnConfigure">
+          <name>btnConfig</name>
+          <matrix>
+            <a>0.9</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.9</d>
+            <tx>260.7</tx>
+            <ty>287.6</ty>
+          </matrix>
+        </asset>
+        <asset id="BtnHowToPlay">
+          <name>btnHowToPlay</name>
+          <matrix>
+            <a>0.9</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.9</d>
+            <tx>260.7</tx>
+            <ty>226.5</ty>
+          </matrix>
+        </asset>
+        <asset id="BtnResume">
+          <name>btnResume</name>
+          <matrix>
+            <a>0.9</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.9</d>
+            <tx>260.7</tx>
+            <ty>162.3</ty>
+          </matrix>
+        </asset>
+        <asset id="MenuScreenHelp_InterS_MenuTitle">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>136</tx>
+            <ty>18</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="BtnQuit">
+      <assets>
+        <asset id="_hitArea">
+          <name>hit</name>
+          <matrix>
+            <a>2.3</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.08</d>
+            <tx>183.85</tx>
+            <ty>30.85</ty>
+          </matrix>
+        </asset>
+        <asset id="BtnQuit_State_down">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="BtnQuit_State_over">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="BtnQuit_State_up">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="BtnConfigure">
+      <assets>
+        <asset id="_hitArea">
+          <name>hit</name>
+          <matrix>
+            <a>2.3</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.08</d>
+            <tx>183.85</tx>
+            <ty>30.85</ty>
+          </matrix>
+        </asset>
+        <asset id="BtnConfigure_State_down">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="BtnConfigure_State_over">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="BtnConfigure_State_up">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="BtnHowToPlay">
+      <assets>
+        <asset id="_hitArea">
+          <name>hit</name>
+          <matrix>
+            <a>2.3</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.08</d>
+            <tx>183.85</tx>
+            <ty>30.85</ty>
+          </matrix>
+        </asset>
+        <asset id="BtnHowToPlay_State_down">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="BtnHowToPlay_State_over">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="BtnHowToPlay_State_up">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="BtnResume">
+      <assets>
+        <asset id="_hitArea">
+          <name>hit</name>
+          <matrix>
+            <a>2.3</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.08</d>
+            <tx>183.85</tx>
+            <ty>30.85</ty>
+          </matrix>
+        </asset>
+        <asset id="BtnResume_State_down">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="BtnResume_State_over">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="BtnResume_State_up">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="MenuScreen_quitInter">
+      <assets>
+        <asset id="_menu_draw">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="MenuScreen_quitInter_popup_BG">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>374.5</tx>
+            <ty>261.75</ty>
+          </matrix>
+        </asset>
+        <asset id="BtnNo">
+          <name>btnNo</name>
+          <matrix>
+            <a>0.9</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.9</d>
+            <tx>353.5</tx>
+            <ty>286.85</ty>
+          </matrix>
+        </asset>
+        <asset id="BtnYes">
+          <name>btnYes</name>
+          <matrix>
+            <a>0.9</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.9</d>
+            <tx>215.8</tx>
+            <ty>287.15</ty>
+          </matrix>
+        </asset>
+        <asset id="_MenuScreenQuitInterS_title">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>240</tx>
+            <ty>199</ty>
+          </matrix>
+        </asset>
+        <asset id="MenuScreenHelp_InterS_MenuTitle">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>136</tx>
+            <ty>18</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="BtnNo">
+      <assets>
+        <asset id="_hitArea">
+          <name>hit</name>
+          <matrix>
+            <a>1.27</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.09</d>
+            <tx>132.65</tx>
+            <ty>24.1</ty>
+          </matrix>
+        </asset>
+        <asset id="BtnNo_State_down">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="BtnNo_State_over">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="BtnNo_State_up">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="BtnYes">
+      <assets>
+        <asset id="_hitArea">
+          <name>hit</name>
+          <matrix>
+            <a>1.26</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.09</d>
+            <tx>133.6</tx>
+            <ty>24.45</ty>
+          </matrix>
+        </asset>
+        <asset id="BtnYes_State_down">
+          <name>down</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="BtnYes_State_over">
+          <name>over</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="BtnYes_State_up">
+          <name>up</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="_PressNext">
+          <name>mcKeyPressNext</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>41.7</tx>
+            <ty>-1.65</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="MenuScreen_open">
+      <assets>
+        <asset id="MenuScreen_OpenS_content">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="PopUpNewGame">
+      <assets>
+        <asset id="PopUpNewGame_inter">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="PopUpNewGame_inter">
+      <assets>
+        <asset id="PopUpNewGameInterS_bg">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>1</ty>
+          </matrix>
+        </asset>
+        <asset id="PopUpNewGame_inter_popup_BG">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>375</tx>
+            <ty>261</ty>
+          </matrix>
+        </asset>
+        <asset id="PopUpNewGameInterS_warning">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>374.5</tx>
+            <ty>187.1</ty>
+          </matrix>
+        </asset>
+        <asset id="BtnYes">
+          <name>btnYes</name>
+          <matrix>
+            <a>0.9</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.9</d>
+            <tx>215.8</tx>
+            <ty>335.1</ty>
+          </matrix>
+        </asset>
+        <asset id="BtnNo">
+          <name>btnNo</name>
+          <matrix>
+            <a>0.9</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.9</d>
+            <tx>353.5</tx>
+            <ty>334.9</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenLose">
+      <assets>
+        <asset id="ScreenLose_close">
+          <name>closeS</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0.45</tx>
+            <ty>-0.05</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLose_inter">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLose_open">
+          <name>openS</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0.45</tx>
+            <ty>-0.05</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenLose_close">
+      <assets>
+        <asset id="ScreenLose_closeS_content">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenLose_inter">
+      <assets>
+        <asset id="ScreenLoose_inter_bg">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLose_inter_line">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>140.3</tx>
+            <ty>340.5</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLose_quitInter_popup_BG">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>374.5</tx>
+            <ty>261.75</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLoose_retryBtn">
+          <name>btnTryAgain</name>
+          <matrix>
+            <a>0.9</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.9</d>
+            <tx>370.85</tx>
+            <ty>330.5</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLoose_MenuBtn">
+          <name>btnHome</name>
+          <matrix>
+            <a>0.9</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.9</d>
+            <tx>203.4</tx>
+            <ty>334.1</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLose_desc_container_txt">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>55.1</tx>
+            <ty>173.35</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLose_txt">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>136</tx>
+            <ty>18</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenLoose_retryBtn">
+      <assets>
+        <asset id="_hitArea2">
+          <name>hit</name>
+          <matrix>
+            <a>3.11</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1.05</d>
+            <tx>73.25</tx>
+            <ty>26.2</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLoose_retryBtn_down">
+          <name>down</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLoose_retryBtn_over">
+          <name>over</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLoose_retryBtn_up">
+          <name>up</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="_PressNext">
+          <name>mcKeyPressNext</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-1.95</tx>
+            <ty>5.1</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenLoose_MenuBtn">
+      <assets>
+        <asset id="_hitArea">
+          <name>hit</name>
+          <matrix>
+            <a>1.26</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.09</d>
+            <tx>133.6</tx>
+            <ty>24.45</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLose_MenuBtn_disable">
+          <name>disable</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLoose_MenuBtn_down">
+          <name>down</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLoose_MenuBtn_over">
+          <name>over</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLoose_MenuBtn_up">
+          <name>up</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="_PressNext">
+          <name>mcKeyPressNext</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>25.1</tx>
+            <ty>16.4</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenLose_open">
+      <assets>
+        <asset id="ScreenLose_OpenS_content">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenFinalWin">
+      <assets>
+        <asset id="ScreenFinalWin_close">
+          <name>closeS</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0.45</tx>
+            <ty>-0.05</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenFinalWin_inter">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenFinalWin_open">
+          <name>openS</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0.45</tx>
+            <ty>-0.05</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenFinalWin_close">
+      <assets>
+        <asset id="ScreenFinalWin_closeS_content">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenFinalWin_inter">
+      <assets>
+        <asset id="ScreenFinalWin_inter_bg">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenfinalWin_txt">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>136</tx>
+            <ty>18</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenFinalWin_txt_content">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>187</tx>
+            <ty>429</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLoose_MenuBtn">
+          <name>btnHome</name>
+          <matrix>
+            <a>0.9</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.9</d>
+            <tx>574.45</tx>
+            <ty>444</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenFinalWin_open">
+      <assets>
+        <asset id="ScreenFinalWin_OpenS_content">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenWinMultiplayers">
+      <assets>
+        <asset id="ScreenWin_close">
+          <name>closeS</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0.45</tx>
+            <ty>-0.05</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenWinMultiplayer_inter">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenWin_open">
+          <name>openS</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0.45</tx>
+            <ty>-0.05</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenWin_close">
+      <assets>
+        <asset id="ScreenWin_closeS_content">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenWinMultiplayer_inter">
+      <assets>
+        <asset id="ScreenWin_inter_bg">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="MenuScreenWin_Inter_BG_multi">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>377</tx>
+            <ty>259</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenWin_inter_score_final_content">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>240.7</tx>
+            <ty>357.7</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenWin_inter_credits_left_content">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>218.4</tx>
+            <ty>329.1</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenWin_inter_credits_left_mc">
+          <name>txtBonus</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>368.5</tx>
+            <ty>327.1</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenWin_inter_score_final_mc">
+          <name>txtFinalScore</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>395.55</tx>
+            <ty>359.9</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenWin_inter_newrecord_content">
+          <name>mcNewRecord</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>316.9</tx>
+            <ty>394.95</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenWin_inter_credits_left_content_x">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>363.4</tx>
+            <ty>330.1</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenWin_nextBtn">
+          <name>btnNext</name>
+          <matrix>
+            <a>0.9</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.9</d>
+            <tx>353.55</tx>
+            <ty>418.1</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLoose_MenuBtn">
+          <name>btnHome</name>
+          <matrix>
+            <a>0.9</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.9</d>
+            <tx>215.85</tx>
+            <ty>418.1</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenWin_txt">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>136</tx>
+            <ty>18</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenWin_inter_player_content">
+          <name>txtPlayer1</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>157.35</tx>
+            <ty>165.05</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenWin_inter_player_content">
+          <name>txtPlayer2</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>405.6</tx>
+            <ty>164.05</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenWin_inter_content">
+          <name>mcUnlock</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>206.05</tx>
+            <ty>112</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenWin_inter_score_content">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>389.65</tx>
+            <ty>224.6</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenWin_inter_score_mc">
+          <name>txtScore2</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>443.15</tx>
+            <ty>223.9</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenWin_inter_combo_content">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>389.15</tx>
+            <ty>267.55</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenWin_inter_combo_mc">
+          <name>txtCombo2</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>426.4</tx>
+            <ty>266.3</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenWin_inter_score_content">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>110.25</tx>
+            <ty>224.6</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenWin_inter_score_mc">
+          <name>txtScore1</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>175.15</tx>
+            <ty>221.9</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenWin_inter_combo_content">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>109.75</tx>
+            <ty>268.4</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenWin_inter_combo_mc">
+          <name>txtCombo1</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>147.4</tx>
+            <ty>266.3</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenWin_inter_score_mc">
+          <name>txtComboScore1</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>175.15</tx>
+            <ty>269.55</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenWin_inter_score_mc">
+          <name>txtComboScore2</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>443.15</tx>
+            <ty>269.55</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenWin_inter_score_mc">
+          <name>txtBonusScore</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>337.65</tx>
+            <ty>330.1</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenWin_nextBtn">
+      <assets>
+        <asset id="_hitArea">
+          <name>hit</name>
+          <matrix>
+            <a>1.26</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.09</d>
+            <tx>133.6</tx>
+            <ty>24.45</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenWin_nextBtn_down">
+          <name>down</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenWin_nextBtn_over">
+          <name>over</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenWin_nextBtn_up">
+          <name>up</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="_PressNext">
+          <name>mcKeyPressNext</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>14.05</tx>
+            <ty>2.1</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenWin_inter_combo_mc">
+      <assets>
+        <asset id="ScreenWin_inter_combo_mc_rigby">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>88.95</tx>
+            <ty>28.95</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenWin_inter_combo_mc_mordecai">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>88.95</tx>
+            <ty>28.95</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenWin_open">
+      <assets>
+        <asset id="ScreenWin_OpenS_content">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenWin">
+      <assets>
+        <asset id="ScreenWin_close">
+          <name>closeS</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0.45</tx>
+            <ty>-0.05</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenWin_inter">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenWin_open">
+          <name>openS</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0.45</tx>
+            <ty>-0.05</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenWin_inter">
+      <assets>
+        <asset id="ScreenWin_inter_bg">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="MenuScreenWin_Inter_BG">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>377</tx>
+            <ty>259</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenWin_inter_score_final_content">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>240.7</tx>
+            <ty>357.7</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenWin_inter_score_final_mc">
+          <name>txtFinalScore</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>405.55</tx>
+            <ty>359.9</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenWin_inter_newrecord_content">
+          <name>mcNewRecord</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>316.9</tx>
+            <ty>394.95</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenWin_inter_score_content">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>253.65</tx>
+            <ty>224.6</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenWin_inter_score_mc">
+          <name>txtScore1</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>307.15</tx>
+            <ty>223.9</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenWin_inter_combo_content">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>253.15</tx>
+            <ty>267.55</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenWin_inter_score_mc">
+          <name>txtComboScore1</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>307.15</tx>
+            <ty>269.55</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenWin_inter_combo_mc">
+          <name>txtCombo1</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>298.4</tx>
+            <ty>267.05</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenWin_inter_credits_left_content">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>228.6</tx>
+            <ty>329.4</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenWin_inter_credits_left_mc">
+          <name>txtBonus</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>378.7</tx>
+            <ty>326.4</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenWin_inter_credits_left_content_x">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>373.6</tx>
+            <ty>329.4</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenWin_inter_score_mc">
+          <name>txtBonusScore</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>347.85</tx>
+            <ty>329.4</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenWin_nextBtn">
+          <name>btnNext</name>
+          <matrix>
+            <a>0.9</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.9</d>
+            <tx>353.55</tx>
+            <ty>418.1</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLoose_MenuBtn">
+          <name>btnHome</name>
+          <matrix>
+            <a>0.9</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.9</d>
+            <tx>215.85</tx>
+            <ty>418.1</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenWin_txt">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>136</tx>
+            <ty>18</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenWin_inter_player_content">
+          <name>txtPlayer1</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>280.3</tx>
+            <ty>167.05</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenWin_inter_content">
+          <name>mcUnlock</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>206.05</tx>
+            <ty>112</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenTcBoss">
+      <assets>
+        <asset id="ScreenTcBoss_close">
+          <name>closeS</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0.45</tx>
+            <ty>-0.05</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenTcBoss_inter">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenTcBoss_open">
+          <name>openS</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0.45</tx>
+            <ty>-0.05</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenTcBoss_close">
+      <assets>
+        <asset id="ScreenTCBoss_inter_content">
+          <name>mcBackground</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenTcBoss_closeS_content">
+          <name>mcContent</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenTCBoss_inter_content">
+      <assets>
+        <asset id="ScreenTCBoss_inter_content_level3">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>749.9</tx>
+            <ty>499.9</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenTCBoss_inter_content_level2">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>749.9</tx>
+            <ty>499.9</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenTCBoss_inter_content_level1">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>749.9</tx>
+            <ty>499.9</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenTcBoss_inter">
+      <assets>
+        <asset id="ScreenTcBoss_inter_bg">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenTCBoss_inter_content">
+          <name>mcBackground</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenTCBoss_inter_txt_content">
+          <name>mcTitle2</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>140.4</tx>
+            <ty>338.6</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenTCBoss_inter_title_content">
+          <name>mcTitle</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>132.15</tx>
+            <ty>223.4</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenTcBoss_open">
+      <assets>
+        <asset id="ScreenTCBoss_inter_content">
+          <name>mcBackground</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenTcBoss_OpenS_content">
+          <name>mcContent</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenTCLevel">
+      <assets>
+        <asset id="ScreenTCLevel_close">
+          <name>closeS</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0.45</tx>
+            <ty>-0.05</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenTCLevel_inter">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenTCLevel_open">
+          <name>openS</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0.45</tx>
+            <ty>-0.05</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenTCLevel_close">
+      <assets>
+        <asset id="ScreenTCLevel_inter_bg">
+          <name>mcBackground</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenTCLevel_closeS_content">
+          <name>mcContent</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenTCLevel_inter_bg">
+      <assets>
+        <asset id="ScreenTCLevel_inter_bg_level3">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenTCLevel_inter_bg_level2">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenTCLevel_inter_bg_level1">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenTCLevel_inter">
+      <assets>
+        <asset id="ScreenTCLevel_inter_bg">
+          <name>mcBackground</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenTCLevel_inter_levelLoader">
+          <name>mcLevelLoader</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>273.95</tx>
+            <ty>430.65</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenTCLevel_txt">
+          <name>txtTitle</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>136</tx>
+            <ty>18</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenTCLevel_inter_levelLoader">
+      <assets>
+        <asset id="ScreenTCLevel_inter_levelLoader_play">
+          <matrix>
+            <a>0.9</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.9</d>
+            <tx>10.95</tx>
+            <ty>14.9</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenTCLevel_inter_levelLoader_load">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-18</tx>
+            <ty>26.15</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenTCLevel_inter_levelLoader_play">
+      <assets>
+        <asset id="_hitArea">
+          <name>hit</name>
+          <matrix>
+            <a>1.26</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.09</d>
+            <tx>133.6</tx>
+            <ty>24.45</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenTCLevel_inter_levelLoader_play_down">
+          <name>down</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenTCLevel_inter_levelLoader_play_over">
+          <name>over</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenTCLevel_inter_levelLoader_play_up">
+          <name>up</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="_PressNext">
+          <name>mcKeyPressNext</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>14.05</tx>
+            <ty>2.1</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenTCLevel_open">
+      <assets>
+        <asset id="ScreenTCLevel_inter_bg">
+          <name>mcBackground</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenTCLevel_OpenS_content">
+          <name>mcContent</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenSelectCharacter">
+      <assets>
+        <asset id="ScreenSelectCharacter_close">
+          <name>closeS</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0.45</tx>
+            <ty>-0.05</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenSelectCharacter_inter">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenSelectCharacter_open">
+          <name>openS</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0.45</tx>
+            <ty>-0.05</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenSelectCharacter_close">
+      <assets>
+        <asset id="ScreenSelectCharacter_inter_bg">
+          <name>mcBackground</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenSelectCharacter_closeS_content">
+          <name>mcContent</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenSelectCharacter_inter_bg">
+      <assets>
+        <asset id="ScreenSelectCharacter_inter_bg_level3">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>749.9</tx>
+            <ty>499.9</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenSelectCharacter_inter_bg_level2">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>749.9</tx>
+            <ty>499.9</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenSelectCharacter_inter_bg_level1">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>749.9</tx>
+            <ty>499.9</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenSelectCharacter_inter">
+      <assets>
+        <asset id="ScreenSelectCharacter_inter_bg">
+          <name>mcBackground</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenSelectCharacter_btnMode01">
+          <name>btnCharacter01</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>158</tx>
+            <ty>275</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenSelectCharacter_btnMode01">
+          <name>btnCharacter02</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>370</tx>
+            <ty>275</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenSelectCharacter_btnMode01">
+          <name>btnCharacter03</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>583</tx>
+            <ty>275</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenMenuChoice_BtnBack">
+          <name>btnBack</name>
+          <matrix>
+            <a>0.9</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.9</d>
+            <tx>20</tx>
+            <ty>439</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenPlayerSelection_TitleTxt">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>136</tx>
+            <ty>18</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenSelectCharacter_btnMode01">
+      <assets>
+        <asset id="_hitArea">
+          <name>hit</name>
+          <matrix>
+            <a>2.12</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.52</d>
+            <tx>53.85</tx>
+            <ty>12.95</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenSelectCharacter_btnMode01_disable">
+          <name>disable</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenSelectCharacter_btnMode01_down">
+          <name>down</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenSelectCharacter_btnMode01_over">
+          <name>over</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenSelectCharacter_btnMode01_up">
+          <name>up</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenSelectCharacter_btnMode01_disable">
+      <assets>
+        <asset id="_PlayerlBtn_BGUnlocked_draw2">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="_ScreenSelectCharacter_btnMode01_txt$MODE_1$0$0$C$0$0$0$0$0">
+          <name>mcTitle</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-30</tx>
+            <ty>-157</ty>
+          </matrix>
+        </asset>
+        <asset id="_ScreenSelectCharacter_btnMode01_txt_2$MODE_1_PLAYER$1$0$C$0$0$undefined$0$0">
+          <name>mcMode</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-62</tx>
+            <ty>-146.95</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel_win_txt_score_draw$$0$0$T$0$0$undefined$0$0">
+          <name>mcScore</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-52.9</tx>
+            <ty>134.3</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel_win_score">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-50.2</tx>
+            <ty>116.05</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel_win_txt_2">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-67.15</tx>
+            <ty>71.45</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel_win_combo">
+          <name>mcCombo</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-35.7</tx>
+            <ty>87.45</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenSelectCharacter_btnMode01_perso">
+          <name>mcCharacters</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-1.65</tx>
+            <ty>-10.05</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenLevelSelection_btnLevel_win_combo">
+      <assets>
+        <asset id="ScreenLevelSelection_btnLevel_win_combo_two">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>100.95</tx>
+            <ty>32.4</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel_win_combo_mordecai">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>64.95</tx>
+            <ty>32.4</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel_win_combo_rigby">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>64.95</tx>
+            <ty>32.4</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenSelectCharacter_btnMode01_perso">
+      <assets>
+        <asset id="ScreenSelectCharacter_btnMode01_perso_two">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>79.45</tx>
+            <ty>78.95</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenSelectCharacter_btnMode01_perso_mordecai">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>68.25</tx>
+            <ty>81.15</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenSelectCharacter_btnMode01_perso_rigby">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>68.3</tx>
+            <ty>78.6</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenSelectCharacter_btnMode01_down">
+      <assets>
+        <asset id="_PlayerlBtn_BGUnlocked_draw2">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="_ScreenSelectCharacter_btnMode01_txt$MODE_1$0$0$C$0$0$0$0$0">
+          <name>mcTitle</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-30</tx>
+            <ty>-157</ty>
+          </matrix>
+        </asset>
+        <asset id="_ScreenSelectCharacter_btnMode01_txt_2$MODE_1_PLAYER$1$0$C$0$0$undefined$0$0">
+          <name>mcMode</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-62</tx>
+            <ty>-146.95</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel_win_txt_score_draw$$0$0$T$0$0$undefined$0$0">
+          <name>mcScore</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-52.9</tx>
+            <ty>134.3</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel_win_score">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-50.2</tx>
+            <ty>116.05</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel_win_txt_2">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-67.15</tx>
+            <ty>71.45</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel_win_combo">
+          <name>mcCombo</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-35.7</tx>
+            <ty>87.45</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenSelectCharacter_btnMode01_perso">
+          <name>mcCharacters</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-1.65</tx>
+            <ty>-10.05</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenSelectCharacter_btnMode01_over">
+      <assets>
+        <asset id="_PlayerlBtn_BGUnlocked_draw2">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenSelectCharacter_btnMode01_perso">
+          <name>mcCharacters</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-1.65</tx>
+            <ty>-10.05</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel_win_txt_score_draw$$0$0$T$0$0$undefined$0$0">
+          <name>mcScore</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-52.9</tx>
+            <ty>134.3</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel_win_score">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-50.2</tx>
+            <ty>116.05</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel_win_txt_2">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-67.15</tx>
+            <ty>71.45</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel_win_combo">
+          <name>mcCombo</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-35.7</tx>
+            <ty>87.45</ty>
+          </matrix>
+        </asset>
+        <asset id="_ScreenSelectCharacter_btnMode01_txt$MODE_1$0$0$C$0$0$0$0$0">
+          <name>mcTitle</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-30</tx>
+            <ty>-157</ty>
+          </matrix>
+        </asset>
+        <asset id="_ScreenSelectCharacter_btnMode01_txt_2$MODE_1_PLAYER$1$0$C$0$0$undefined$0$0">
+          <name>mcMode</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-62</tx>
+            <ty>-146.95</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel_win_over_anim_2">
+          <name>mcBorder</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0.15</tx>
+            <ty>-9</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenSelectCharacter_btnMode01_up">
+      <assets>
+        <asset id="_PlayerlBtn_BGUnlocked_draw2">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel_win_txt_score_draw$$0$0$T$0$0$undefined$0$0">
+          <name>mcScore</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-52.9</tx>
+            <ty>134.3</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel_win_score">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-50.2</tx>
+            <ty>116.05</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel_win_txt_2">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-67.15</tx>
+            <ty>71.45</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel_win_combo">
+          <name>mcCombo</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-35.7</tx>
+            <ty>87.45</ty>
+          </matrix>
+        </asset>
+        <asset id="_ScreenSelectCharacter_btnMode01_txt$MODE_1$0$0$C$0$0$0$0$0">
+          <name>mcTitle</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-30</tx>
+            <ty>-157</ty>
+          </matrix>
+        </asset>
+        <asset id="_ScreenSelectCharacter_btnMode01_txt_2$MODE_1_PLAYER$1$0$C$0$0$undefined$0$0">
+          <name>mcMode</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-62</tx>
+            <ty>-146.95</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenSelectCharacter_btnMode01_perso">
+          <name>mcCharacters</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-1.65</tx>
+            <ty>-10.05</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenMenuChoice_BtnBack">
+      <assets>
+        <asset id="_hitArea2">
+          <name>hit</name>
+          <matrix>
+            <a>2.15</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.97</d>
+            <tx>45.6</tx>
+            <ty>19.05</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenMenuChoice_BtnBack_down">
+          <name>down</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenMenuChoice_BtnBack_over">
+          <name>over</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenMenuChoice_BtnBack_up">
+          <name>up</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenSelectCharacter_open">
+      <assets>
+        <asset id="ScreenSelectCharacter_inter_bg">
+          <name>mcBackground</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenSelectCharacter_OpenS_content">
+          <name>mcContent</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenMenuChoice">
+      <assets>
+        <asset id="ScreenMenuChoice_close">
+          <name>closeS</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenMenuChoice_inter">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenMenuChoice_open">
+          <name>openS</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenMenuChoice_close">
+      <assets>
+        <asset id="ScreenMenuChoice_closeS_content">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenMenuChoice_inter">
+      <assets>
+        <asset id="ScreenSelectCharacter_inter_bg">
+          <name>mcBackground</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_TitleTxt">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>136</tx>
+            <ty>18</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel">
+          <name>btnLevel1</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>158</tx>
+            <ty>275</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel">
+          <name>btnLevel2</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>370</tx>
+            <ty>275</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel">
+          <name>btnLevel3</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>583</tx>
+            <ty>275</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenMenuChoice_BtnBack">
+          <name>btnHome</name>
+          <matrix>
+            <a>0.9</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.9</d>
+            <tx>20</tx>
+            <ty>439</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenLevelSelection_btnLevel">
+      <assets>
+        <asset id="ScreenLevelSelection_btnLevel_toUnlock">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel_toWin">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel_lock">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel_unlock">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel_win">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenLevelSelection_btnLevel_toUnlock">
+      <assets>
+        <asset id="ScreenLevelSelection_btnLevel_toUnlock_content">
+          <name>mcContent</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenLevelSelection_btnLevel_toWin">
+      <assets>
+        <asset id="_LevelBtn_BGUnlocked_draw2">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenLevelSelection_btnLevel_unlock">
+      <assets>
+        <asset id="_hitArea">
+          <name>hit</name>
+          <matrix>
+            <a>2.12</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.49</d>
+            <tx>53.85</tx>
+            <ty>12.05</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel_unlock_down">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel_unlock_over">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel_unlock_up">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenLevelSelection_btnLevel_unlock_down">
+      <assets>
+        <asset id="_LevelBtn_BGUnlocked_draw2">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel_win_drawOK">
+          <name>mcTitle</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-5</tx>
+            <ty>108.95</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel_bg">
+          <name>guicBG</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>1.45</tx>
+            <ty>-5.1</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel_win_nameLvl">
+          <name>mcName</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-67.05</tx>
+            <ty>-153</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenLevelSelection_btnLevel_bg">
+      <assets>
+        <asset id="ScreenLevelSelection_btnLevel_bg_level3">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-7.4</tx>
+            <ty>-8.35</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel_bg_level2">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>2.5</tx>
+            <ty>0.05</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel_bg_level1">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0.6</tx>
+            <ty>12.1</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenLevelSelection_btnLevel_unlock_over">
+      <assets>
+        <asset id="_LevelBtn_BGUnlocked_draw2">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel_win_drawOK">
+          <name>mcTitle</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-5</tx>
+            <ty>108.95</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel_bg">
+          <name>guicBG</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>1.45</tx>
+            <ty>-5.1</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel_win_nameLvl">
+          <name>mcName</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-67.05</tx>
+            <ty>-153</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel_win_over_anim">
+          <name>mcBorder</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0.15</tx>
+            <ty>-9</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenLevelSelection_btnLevel_unlock_up">
+      <assets>
+        <asset id="_LevelBtn_BGUnlocked_draw2">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel_win_drawOK">
+          <name>mcTitle</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-5</tx>
+            <ty>108.95</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel_bg">
+          <name>guicBG</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>1.45</tx>
+            <ty>-5.1</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel_win_nameLvl">
+          <name>mcName</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-67.05</tx>
+            <ty>-153</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenLevelSelection_btnLevel_win">
+      <assets>
+        <asset id="_hitArea">
+          <name>hit</name>
+          <matrix>
+            <a>2.12</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.52</d>
+            <tx>53.85</tx>
+            <ty>12.95</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel_win_down">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel_win_over">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel_win_up">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenLevelSelection_btnLevel_win_down">
+      <assets>
+        <asset id="_LevelBtn_BGUnlocked_draw2">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel_win_drawOK">
+          <name>mcTitle</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-5</tx>
+            <ty>108.95</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel_win_nameLvl">
+          <name>mcName</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-67.05</tx>
+            <ty>-153</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel_bg">
+          <name>guicBG</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>1.45</tx>
+            <ty>-5.1</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenLevelSelection_btnLevel_win_over">
+      <assets>
+        <asset id="_LevelBtn_BGUnlocked_draw2">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel_win_drawOK">
+          <name>mcTitle</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-5</tx>
+            <ty>108.95</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel_win_nameLvl">
+          <name>mcName</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-67.05</tx>
+            <ty>-153</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel_bg">
+          <name>guicBG</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>1.45</tx>
+            <ty>-5.1</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenLevelSelection_btnLevel_win_up">
+      <assets>
+        <asset id="_LevelBtn_BGUnlocked_draw2">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel_win_nameLvl">
+          <name>mcName</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-67.05</tx>
+            <ty>-153</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel_win_drawOK">
+          <name>mcTitle</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-5</tx>
+            <ty>108.95</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenLevelSelection_btnLevel_bg">
+          <name>guicBG</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>1.45</tx>
+            <ty>-5.1</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenMenuChoice_open">
+      <assets>
+        <asset id="ScreenMenuChoice_OpenS_content">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenIntro">
+      <assets>
+        <asset id="ScreenIntro_close">
+          <name>closeS</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0.45</tx>
+            <ty>-0.05</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenIntro_inter">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0.5</tx>
+            <ty>-0.05</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenIntro_open">
+          <name>openS</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0.45</tx>
+            <ty>-0.05</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenIntro_close">
+      <assets>
+        <asset id="ScreenIntro_closeS_content">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenIntro_inter">
+      <assets>
+        <asset id="ScreenIntroInterSAnim">
+          <name>mcAnim</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenStory_skipBtn">
+          <name>btnSkip</name>
+          <matrix>
+            <a>0.9</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.9</d>
+            <tx>579</tx>
+            <ty>439</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenStory_skipBtn">
+      <assets>
+        <asset id="_hitArea">
+          <name>hit</name>
+          <matrix>
+            <a>1.26</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.09</d>
+            <tx>133.6</tx>
+            <ty>24.45</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenStory_skipBtn_down">
+          <name>down</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenStory_skipBtn_over">
+          <name>over</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenStory_skipBtn_up">
+          <name>up</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="_PressNext">
+          <name>mcKeyPressNext</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>14.05</tx>
+            <ty>1.1</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenIntro_open">
+      <assets>
+        <asset id="ScreenIntro_OpenS_content">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenTC">
+      <assets>
+        <asset id="ScreenTC_close">
+          <name>closeS</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0.45</tx>
+            <ty>-0.05</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenTc_inter">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenTC_open">
+          <name>openS</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0.45</tx>
+            <ty>-0.05</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenTC_close">
+      <assets>
+        <asset id="ScreenTC_closeS_content">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenTc_inter">
+      <assets>
+        <asset id="ScreenTc_inter_bg">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="_TCBtnBG">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>254.9</tx>
+            <ty>823.8</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenTc_playBtn">
+          <name>btnPlay</name>
+          <matrix>
+            <a>0.9</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.9</d>
+            <tx>329.4</tx>
+            <ty>388.05</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenTc_newBtn">
+          <name>btnNewGame</name>
+          <matrix>
+            <a>0.9</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.9</d>
+            <tx>310</tx>
+            <ty>442</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenTc_playBtn">
+      <assets>
+        <asset id="_hitArea">
+          <name>hit</name>
+          <matrix>
+            <a>1.18</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.09</d>
+            <tx>76.55</tx>
+            <ty>24.55</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenTC_playBtn_down">
+          <name>down</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenTc_playBtn_over">
+          <name>over</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenTc_playBtn_up">
+          <name>up</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="_PressNext">
+          <name>mcKeyPressNext</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>14.05</tx>
+            <ty>2.1</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenTc_newBtn">
+      <assets>
+        <asset id="_hitArea">
+          <name>hit</name>
+          <matrix>
+            <a>1.69</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.1</d>
+            <tx>126.8</tx>
+            <ty>32.95</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenTc_newBtn_disable">
+          <name>disable</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenTc_newBtn_down">
+          <name>down</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenTc_newBtn_over">
+          <name>over</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="ScreenTc_newBtn_up">
+          <name>up</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="ScreenTC_open">
+      <assets>
+        <asset id="ScreenTC_OpenS_content">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="Hud">
+      <assets>
+        <asset id="_ScreenIngameGUI_BtnSound">
+          <name>btnSound</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>49.4</tx>
+            <ty>463.55</ty>
+          </matrix>
+        </asset>
+        <asset id="_ScreenIngameGUI_BtnHelp">
+          <name>btnHelp</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>10.95</tx>
+            <ty>462.35</ty>
+          </matrix>
+        </asset>
+        <asset id="Hud_continue">
+          <name>mcContinue</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>729.95</tx>
+            <ty>167.5</ty>
+          </matrix>
+        </asset>
+        <asset id="HUD_level_txt">
+          <name>textCredits</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>41.25</tx>
+            <ty>463.3</ty>
+          </matrix>
+        </asset>
+        <asset id="HudPlayer1">
+          <name>mcPlayer1</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="HudPlayer2">
+          <name>mcPlayer2</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>496</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="coins_draw_1">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>186.1</tx>
+            <ty>475.85</ty>
+          </matrix>
+        </asset>
+        <asset id="Hud_txt_nbcredit_83">
+          <name>mcCredits</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>213.5</tx>
+            <ty>460.55</ty>
+          </matrix>
+        </asset>
+        <asset id="Hud_txt_nbcredit_x">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>205.5</tx>
+            <ty>463.7</ty>
+          </matrix>
+        </asset>
+        <asset id="line_draw_1">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>89.7</tx>
+            <ty>461.45</ty>
+          </matrix>
+        </asset>
+        <asset id="HudBoss">
+          <name>mcBoss</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>274.5</tx>
+            <ty>416.05</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="_ScreenIngameGUI_BtnSound">
+      <assets>
+        <asset id="_ScreenIngameGUI_BtnSound_soundOff">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="_ScreenIngameGUI_BtnSound_soundOn">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="_ScreenIngameGUI_BtnSound_soundOff">
+      <assets>
+        <asset id="hud_hitArea">
+          <name>hit</name>
+          <matrix>
+            <a>0.56</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.49</d>
+            <tx>13.5</tx>
+            <ty>11.1</ty>
+          </matrix>
+        </asset>
+        <asset id="_ScreenIngameGUI_BtnSound_soundOff_down">
+          <name>down</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="_ScreenIngameGUI_BtnSound_soundOff_over">
+          <name>over</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="_ScreenIngameGUI_BtnSound_soundOff_up">
+          <name>up</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="_ScreenIngameGUI_BtnSound_soundOn">
+      <assets>
+        <asset id="hud_hitArea">
+          <name>hit</name>
+          <matrix>
+            <a>0.6</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.59</d>
+            <tx>13.45</tx>
+            <ty>11.1</ty>
+          </matrix>
+        </asset>
+        <asset id="_ScreenIngameGUI_BtnSound_soundOn_down">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="_ScreenIngameGUI_BtnSound_soundOn_over">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="_ScreenIngameGUI_BtnSound_soundOn_up">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="_ScreenIngameGUI_BtnHelp">
+      <assets>
+        <asset id="hud_hitArea">
+          <name>hit</name>
+          <matrix>
+            <a>0.6</a>
+            <b>0</b>
+            <c>0</c>
+            <d>0.59</d>
+            <tx>13.45</tx>
+            <ty>11.1</ty>
+          </matrix>
+        </asset>
+        <asset id="_ScreenIngameGUI_BtnHelp_down">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="_ScreenIngameGUI_BtnHelp_over">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="_ScreenIngameGUI_BtnHelp_up">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="HudPlayer1">
+      <assets>
+        <asset id="Hud_Player_Labels_full">
+          <name>mcFurieFull</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>21.6</tx>
+            <ty>30.3</ty>
+          </matrix>
+        </asset>
+        <asset id="Hud_Player_Labels_anim">
+          <name>mcFurieProgress</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>21.6</tx>
+            <ty>30.3</ty>
+          </matrix>
+        </asset>
+        <asset id="Hud_GUI_Life">
+          <name>mcLife</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>218.2</tx>
+            <ty>44</ty>
+          </matrix>
+        </asset>
+        <asset id="Hud_Player_Labels">
+          <name>mcPic</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>44.9</tx>
+            <ty>37.25</ty>
+          </matrix>
+        </asset>
+        <asset id="HudPlayer1_Score">
+          <name>mcScore</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>87</tx>
+            <ty>5</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="Hud_Player_Labels_full">
+      <assets>
+        <asset id="Hud_Player_Labels_Labels_anim_full_mordecai">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="Hud_Player_Labels_anim_full_rigby">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="Hud_Player_Labels_anim">
+      <assets>
+        <asset id="Hud_Player_Labels_anim_rigby">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="Hud_Player_Labels_Labels_anim_mordecai">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="Hud_GUI_Life">
+      <assets>
+        <asset id="Hud_GUI_Life_container_normal">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-132.2</tx>
+            <ty>-12.6</ty>
+          </matrix>
+        </asset>
+        <asset id="Hud_GUI_Life_container_hurt">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-132.2</tx>
+            <ty>-12.6</ty>
+          </matrix>
+        </asset>
+        <asset id="Hud_GUI_Life_container_empty">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-132.2</tx>
+            <ty>-12.6</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="Hud_Player_Labels">
+      <assets>
+        <asset id="Hud_Player_Labels_mordecai">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>4.45</tx>
+            <ty>4.75</ty>
+          </matrix>
+        </asset>
+        <asset id="Hud_Player_Labels_rigby">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-8.1</tx>
+            <ty>2.15</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="HudPlayer1_Score">
+      <assets>
+        <asset id="HudPlayer1_txt$$1$0$T$0$0$8$0$0">
+          <name>score</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="HudPlayer2">
+      <assets>
+        <asset id="Hud_Player_Labels_full">
+          <name>mcFurieFull</name>
+          <matrix>
+            <a>-1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>225.65</tx>
+            <ty>30.25</ty>
+          </matrix>
+        </asset>
+        <asset id="Hud_Player_Labels_anim">
+          <name>mcFurieProgress</name>
+          <matrix>
+            <a>-1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>225.65</tx>
+            <ty>30.25</ty>
+          </matrix>
+        </asset>
+        <asset id="Hud_GUI_Life_right">
+          <name>mcLife</name>
+          <matrix>
+            <a>-1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>29.6</tx>
+            <ty>44</ty>
+          </matrix>
+        </asset>
+        <asset id="Hud_Player_Labels_switched">
+          <name>mcPic</name>
+          <matrix>
+            <a>-1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>203</tx>
+            <ty>37</ty>
+          </matrix>
+        </asset>
+        <asset id="HudPlayer2_Score">
+          <name>mcScore</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-85</tx>
+            <ty>5</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="Hud_GUI_Life_right">
+      <assets>
+        <asset id="Hud_GUI_Life_container_normal">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-132.2</tx>
+            <ty>-12.6</ty>
+          </matrix>
+        </asset>
+        <asset id="Hud_GUI_Life_container_hurt">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-132.2</tx>
+            <ty>-12.6</ty>
+          </matrix>
+        </asset>
+        <asset id="Hud_GUI_Life_container_empty">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-132.2</tx>
+            <ty>-12.6</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="Hud_Player_Labels_switched">
+      <assets>
+        <asset id="Hud_Player_Labels_mordecai">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>4.95</tx>
+            <ty>4.5</ty>
+          </matrix>
+        </asset>
+        <asset id="Hud_Player_Labels_rigby">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-7.95</tx>
+            <ty>1.85</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="HudPlayer2_Score">
+      <assets>
+        <asset id="HudPlayer2_txt$$1$0$T$0$0$8$0$0">
+          <name>score</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="HudBoss">
+      <assets>
+        <asset id="Hud_Boss_Labels_anim">
+          <name>mcFurieProgress</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>412.55</tx>
+            <ty>36.3</ty>
+          </matrix>
+        </asset>
+        <asset id="Hud_Boss_GUI_Life">
+          <name>mcLife</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>163.7</tx>
+            <ty>52.2</ty>
+          </matrix>
+        </asset>
+        <asset id="Hud_Boss_Labels">
+          <name>mcPic</name>
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>437.9</tx>
+            <ty>43.25</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="Hud_Boss_Labels_anim">
+      <assets>
+        <asset id="Hud_Boss_Labels_anim_boss3">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="Hud_Boss_Labels_anim_boss2">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+        <asset id="Hud_Boss_Labels_Labels_anim_boss1">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>0</tx>
+            <ty>0</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="Hud_Boss_GUI_Life">
+      <assets>
+        <asset id="Hud_Boss_GUI_Life_container_normal">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-132.2</tx>
+            <ty>-10.6</ty>
+          </matrix>
+        </asset>
+        <asset id="Hud_Boss_GUI_Life_container_hurt">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-132.2</tx>
+            <ty>-10.6</ty>
+          </matrix>
+        </asset>
+        <asset id="Hud_Boss_GUI_Life_container_empty">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-132.2</tx>
+            <ty>-10.2</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+    <asset id="Hud_Boss_Labels">
+      <assets>
+        <asset id="Hud_Boss_Labels_boss1">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>4.45</tx>
+            <ty>4.75</ty>
+          </matrix>
+        </asset>
+        <asset id="Hud_Boss_Labels_boss2">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-8.1</tx>
+            <ty>2.15</ty>
+          </matrix>
+        </asset>
+        <asset id="Hud_Boss_Labels_boss3">
+          <matrix>
+            <a>1</a>
+            <b>0</b>
+            <c>0</c>
+            <d>1</d>
+            <tx>-8.1</tx>
+            <ty>2.15</ty>
+          </matrix>
+        </asset>
+      </assets>
+    </asset>
+  </assets>
+  <txtfields/>
+  <fonts>
+    <JustAnotherHand>
+      <s000>
+        <GlowFilter>
+          <size>25</size>
+        </GlowFilter>
+        <nofilters>
+          <size>34</size>
+          <size>35</size>
+          <size>40</size>
+          <size>75</size>
+          <size>14</size>
+          <size>15</size>
+          <size>16</size>
+          <size>18</size>
+          <size>20</size>
+          <size>21</size>
+          <size>22</size>
+          <size>24</size>
+          <size>25</size>
+          <size>50</size>
+          <size>30</size>
+        </nofilters>
+      </s000>
+      <s100>
+        <nofilters>
+          <size>25</size>
+        </nofilters>
+      </s100>
+    </JustAnotherHand>
+    <ShortStack>
+      <s000>
+        <BevelFilter_GlowFilter_GlowFilter>
+          <size>25</size>
+          <size>23</size>
+        </BevelFilter_GlowFilter_GlowFilter>
+        <GlowFilter>
+          <size>11</size>
+        </GlowFilter>
+        <BevelFilter_GlowFilter>
+          <size>20</size>
+          <size>21</size>
+          <size>11</size>
+        </BevelFilter_GlowFilter>
+        <nofilters>
+          <size>16</size>
+          <size>23</size>
+          <size>20</size>
+          <size>15</size>
+        </nofilters>
+      </s000>
+    </ShortStack>
+  </fonts>
+</gui>

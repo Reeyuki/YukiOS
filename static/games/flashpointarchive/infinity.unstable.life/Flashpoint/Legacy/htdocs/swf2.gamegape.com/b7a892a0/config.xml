@@ -1,0 +1,59 @@
+<system>
+	<debug type="Boolean">false</debug>
+	<isQwerty type="Boolean">true</isQwerty>
+	<!-- version -->
+	<version type="String">0.0.3</version>
+	<versionSo type="String">0.0.3</versionSo>
+	
+	<!-- game quality -->
+	<quality type="String">HIGH</quality>
+
+	<!-- debug -->
+	<fps type="Boolean">false</fps>
+	<dev type="Boolean">false</dev>
+	<export type="Boolean">false</export>
+	<debugBounce type="Boolean">false</debugBounce>
+	
+	<debugMode type="String">debug</debugMode>
+	<frameRate type="Number">30</frameRate>
+	<showRasterizations type="Boolean">false</showRasterizations>
+	<parseLvlD type="Boolean">true</parseLvlD>
+	
+	<!-- export IOS -->
+	<textureGenerator type="String">single</textureGenerator>
+	<exportAssets type="Boolean">false</exportAssets>
+	
+	<!-- paths -->
+	
+	<templates type="String">templates.swf</templates>
+	<sprites type="String">sprites.swf</sprites>
+	<blocks type="String">blocks.swf</blocks>
+	<characters type="String">characters.swf</characters>
+	<level_design1 type="String">level_design1.swf</level_design1> <!-- note: not used for release build -->
+	<level_decoration1 type="String">level_decoration1.swf</level_decoration1> <!-- note: not used for release build -->
+	<level_design2 type="String">level_design2.swf</level_design2> <!-- note: not used for release build -->
+	<level_decoration2 type="String">level_decoration2.swf</level_decoration2> <!-- note: not used for release build -->
+	<level_design3 type="String">level_design3.swf</level_design3> <!-- note: not used for release build -->
+	<level_decoration3 type="String">level_decoration3.swf</level_decoration3> <!-- note: not used for release build -->
+	<level_design_xml type="String">level_design_xml.swf</level_design_xml>
+	
+	<gameDev type="Boolean">false</gameDev>
+	<debugBox2D type="Boolean">false</debugBox2D>
+	
+	<!-- controls -->
+	<disableArrows type="Boolean">false</disableArrows>
+	<pressNext type="String">space</pressNext>
+		
+	<gameFullScreen type="Boolean">false</gameFullScreen>
+	
+	<!-- fonts system -->
+	<!-- newFonts: list the names of the fonts contained in the fonts.fla, which replaces swapFonts -->
+	<!-- classFonts: list the class path of the fonts contained in the fonts.fla -->
+	<!--
+	<fonts type="String">fonts.swf</fonts>
+	<swapFonts type="Array">Kozuka Gothic Pr6N EL</swapFonts>	
+	<newFonts type="Array">Arial Unicode MS,Arial Unicode MS,Arial Unicode MS</newFonts>
+	<embedFonts type="Array">true</embedFonts>
+	<classFonts type="Array">com.cn.CNAdventureTime4.ArialUnicodeMS</classFonts>
+	-->
+</system>
