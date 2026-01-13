@@ -23,7 +23,7 @@ class MusicPlayer {
     win.innerHTML = `
     <div class="window-header">
       <span>MUSIC</span>
-      ${this.wm.getWindowControls()}
+      ${windowManager.getWindowControls()}
     </div>
     <div class="window-content" style="width:100%; height:100%;">
       <div id="player-container" style="display:flex; flex-direction:column; align-items:center; gap:10px; padding:10px;"></div>
