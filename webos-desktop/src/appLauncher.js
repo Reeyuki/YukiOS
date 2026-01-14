@@ -38,6 +38,7 @@ export class AppLauncher {
       paint: { type: "game", url: "https://paint.js.org/" },
       pacman: { type: "game", url: "https://pacman-e281c.firebaseapp.com" },
       pvz: { type: "game", url: "https://emupedia.net/emupedia-game-pvz" },
+      pvz2: { type: "remote", url: "https://play.pvzge.com" },
       pvzHybrid: {
         type: "remote",
         url: "https://www.miniplay.com/embed/plants-vs-zombies-hybrid-story"
@@ -65,6 +66,7 @@ export class AppLauncher {
         swf: "https://cache.armorgames.com/files/games/strikeforce-kitty-2-17643.swf?v=1423725280"
       },
       baloonsTd5: { type: "swf", swf: "/static/games/swfGames/baloonstd5.swf" },
+      baloonsTd6: { type: "swf", swf: "https://truffled.lol/iframe.html?url=%2Fgames%2Fbtd6%2Findex.html" },
       trinitas: { type: "game", url: "/static/games/trinitas" },
       jojo: {
         type: "game",
@@ -145,7 +147,29 @@ export class AppLauncher {
       flappyBird: { type: "game", url: "https://emupedia.net/emupedia-game-flappy-bird" },
       jetpack: { type: "game", url: "https://emupedia.net/emupedia-game-jetpack-joyride" },
       happyWheels: { type: "game", url: "https://emupedia.net/emupedia-game-happy-wheels/flash" },
-      fistPunch: { type: "game", url: "/static/flashpointarchive.html?fpGameName=fistPunch" }
+      fistPunch: { type: "game", url: "/static/flashpointarchive.html?fpGameName=fistPunch" },
+      hollowKnight: { type: "game", url: "/static/hollowknight.html" },
+      slimeRancher: { type: "game", url: "https://dev.snubby.top" },
+      kindergarten: {
+        type: "game",
+        url: "https://truffled.lol/games/games/kindergarten/1/index.html"
+      },
+      kindergarten2: {
+        type: "game",
+        url: "https://truffled.lol/games/games/kindergarten/2/index.html"
+      },
+      cuphead: { type: "game", url: "https://truffled.lol/games/Cuphead/index.html" },
+      raft: { type: "game", url: "https://truffled.lol/games/raft/index.html" },
+      celeste: { type: "game", url: "https://truffled.lol/games/celeste/index.html" },
+      terraria: {
+        type: "game",
+        url: "https://truffled.lol/games/terraria/terraria-wrapper.html"
+      },
+      yandereSim: { type: "game", url: "https://truffled.lol/gamefile/yandere.html" },
+      undertale: { type: "game", url: "https://truffled.lol/games/bts" },
+      balatro: { type: "game", url: "https://truffled.lol/games/balatro/index.html" },
+      granny: { type: "game", url: "https://truffled.lol/gamefile/Granny.html" },
+      bendy: { type: "game", url: "https://truffled.lol/games/BATIM/BATIM/index.html" }
     };
 
     populateStartMenu(this);
