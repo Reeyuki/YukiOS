@@ -94,8 +94,8 @@ export class NotepadApp {
   }
 
   openFileDialog() {
-    this.explorerApp.open((path, fileName) => {
-      const content = this.fs.getFileContent(path, fileName);
+    this.explorerApp.open(async (path, fileName) => {
+      const content = await this.fs.getFileContent(path, fileName);
       this.open(fileName, content, path);
     });
   }
