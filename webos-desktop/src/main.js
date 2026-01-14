@@ -7,7 +7,7 @@ import { NotepadApp } from "./notepad.js";
 import { CameraApp } from "./camera.js";
 import { SystemUtilities } from "./system.js";
 import { FileSystemManager } from "./fs.js";
-import { setupStartMenu } from "./startMenu.js";
+import { setupStartMenu, updateFavoritesUI } from "./startMenu.js";
 
 class MusicPlayer {
   constructor() {}
@@ -58,6 +58,7 @@ class DesktopUI {
     this.startButton.addEventListener("click", (e) => {
       e.stopPropagation();
       this.startMenu.style.display = this.startMenu.style.display === "flex" ? "none" : "flex";
+      updateFavoritesUI(this.appLauncher);
     });
     this.startMenu.addEventListener("click", (e) => e.stopPropagation());
 

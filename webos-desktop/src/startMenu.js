@@ -29,12 +29,7 @@ function unfavoriteApp(appName) {
 function createStarButton(appName) {
   const btn = document.createElement("span");
   btn.textContent = "★";
-  btn.style.cursor = "pointer";
-  btn.style.position = "absolute";
-  btn.style.right = "10px";
-  btn.style.top = "50%";
-  btn.style.transform = "translateY(-50%)";
-  btn.style.fontSize = "16px";
+  btn.className = "star";
   btn.style.color = getFavorites().includes(appName) ? "gold" : "#ccc";
 
   btn.addEventListener("click", (e) => {
@@ -62,7 +57,11 @@ function updateStarState(appName, isFavorite) {
   }
 }
 
-function updateFavoritesUI() {
+export function updateFavoritesUI(appLauncher) {
+  if (!appLauncher) {
+    console.error("No app launcher");
+    return;
+  }
   const favoritesPage = document.querySelector('.kde-page[data-page="favorites"]');
   favoritesPage.innerHTML = "";
   const favorites = getFavorites();
@@ -78,13 +77,20 @@ function updateFavoritesUI() {
 
   favorites.forEach((appName) => {
     const appItem = document.querySelector(`.kde-item[data-app="${appName}"]`);
-    if (appItem) {
-      const clone = appItem.cloneNode(true);
-      clone.style.position = "relative";
-      clone.appendChild(createStarButton(appName));
-      clone.style.background = "rgba(255, 215, 0, 0.1)";
-      favoritesPage.appendChild(clone);
-    }
+    if (!appItem) return;
+
+    const clone = appItem.cloneNode(true);
+    clone.style.position = "relative";
+    clone.style.background = "rgba(255, 215, 0, 0.1)";
+
+    clone.onclick = () => appLauncher.launch(appName);
+
+    const oldStar = clone.querySelector(".star");
+    if (oldStar) oldStar.remove();
+
+    clone.appendChild(createStarButton(appName));
+
+    favoritesPage.appendChild(clone);
   });
 }
 
@@ -123,6 +129,72 @@ export function setupStartMenu() {
     });
   });
 
-  updateFavoritesUI();
   setupStars();
+}
+function camelize(str) {
+  return str
+    .replace(/(?:^\w|[A-Z]|\b\w)/g, function (word, index) {
+      return index === 0 ? word.toLowerCase() : word.toUpperCase();
+    })
+    .replace(/\s+/g, "");
+}
+
+export function tryGetIcon(id) {
+  id = camelize(id);
+  console.log("Trying get icon : ", id);
+  if (id === "explorer") return "/static/icons/file.png";
+  if (id === "computer") return "/static/icons/pc.webp";
+  try {
+    const div = document.querySelector(`#desktop div[data-app="${id}"]`);
+    return div?.querySelector("img")?.src || null;
+  } catch (e) {
+    return null;
+  }
+}
+
+export function populateStartMenu(appLauncher) {
+  const pageMap = {
+    system: document.querySelector('.kde-page[data-page="system"]'),
+    apps: document.querySelector('.kde-page[data-page="apps"]'),
+    games: document.querySelector('.kde-page[data-page="games"]'),
+    favorites: document.querySelector('.kde-page[data-page="favorites"]')
+  };
+
+  ["system", "apps", "games"].forEach((cat) => {
+    if (pageMap[cat]) pageMap[cat].innerHTML = "";
+  });
+
+  Object.entries(appLauncher.appMap).forEach(([appName, appData]) => {
+    const item = document.createElement("div");
+    item.classList.add("kde-item");
+    item.dataset.app = appName;
+
+    const iconSrc = tryGetIcon(appName);
+
+    const icon = document.createElement("img");
+    icon.classList.add("kde-item-icon");
+    if (iconSrc) {
+      icon.src = iconSrc;
+      icon.alt = "";
+    } else {
+      icon.style.display = "none";
+    }
+
+    const label = appName.charAt(0).toUpperCase() + appName.slice(1);
+    const labelEl = document.createElement("span");
+    labelEl.textContent = label;
+
+    item.appendChild(icon);
+    item.appendChild(labelEl);
+
+    item.addEventListener("click", () => appLauncher.launch(appName));
+
+    if (appData.type === "system") {
+      pageMap.system?.appendChild(item);
+    } else if (appData.type === "game" || appData.type === "swf") {
+      pageMap.games?.appendChild(item);
+    } else {
+      pageMap.apps?.appendChild(item);
+    }
+  });
 }
