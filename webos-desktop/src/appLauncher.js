@@ -154,11 +154,11 @@ export class AppLauncher {
       slimeRancher: { type: "game", url: "https://dev.snubby.top" },
       kindergarten: {
         type: "game",
-        url: "https://truffled.lol/games/games/kindergarten/1/index.html"
+        url: "https://truffled.lol/games/kindergarten/1/index.html"
       },
       kindergarten2: {
         type: "game",
-        url: "https://truffled.lol/games/games/kindergarten/2/index.html"
+        url: "https://truffled.lol/games/kindergarten/2/index.html"
       },
       cuphead: { type: "game", url: "https://truffled.lol/games/Cuphead/index.html" },
       raft: { type: "game", url: "https://truffled.lol/games/raft/index.html" },

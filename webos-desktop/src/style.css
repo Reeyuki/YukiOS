@@ -4,43 +4,59 @@
   --glass: rgba(255, 255, 255, 0.2);
 }
 
+html,
 body {
   margin: 0;
-  height: 100vh;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  min-height: 100%;
   cursor: url("/static/icons/cursor.png"), auto;
   background-size: cover;
-  overflow: hidden;
-  font-family: "Segoe UI", Tahoma, sans-serif;
-  user-select: none;
-  color: #ddd;
+  background-position: center;
+  background-repeat: no-repeat;
+  overflow: auto;
 }
 
 #desktop {
   position: relative;
   width: 100%;
-  height: calc(100vh - var(--taskbar-height));
-}
-.icon {
-  width: 80px;
-  height: 80px;
-  aspect-ratio: 1 / 1;
-
+  min-height: calc(100vh - var(--taskbar-height));
+  max-height: calc(100vh - var(--taskbar-height));
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  text-align: center;
-  color: white;
-  cursor: pointer;
-  position: relative;
-  padding-top: 0.3rem;
-  border: 1px solid transparent;
-  transition:
-    background 0.2s,
-    border 0.2s;
-  font-size: 0.75rem;
-  text-shadow: 1px 1px 2px black;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  padding: 0.5rem;
   box-sizing: border-box;
+  overflow-y: auto;
+}
+
+@media (max-width: 768px) {
+  .icon {
+    width: 80px;
+    height: 80px;
+    font-size: 0.75rem;
+  }
+
+  .icon img {
+    width: 60%;
+  }
+}
+
+@media (max-width: 480px) {
+  .icon {
+    width: 70px;
+    height: 70px;
+    font-size: 0.7rem;
+  }
+
+  .icon img {
+    width: 55%;
+  }
+}
+
+body {
+  padding-bottom: calc(var(--taskbar-height) + env(safe-area-inset-bottom));
 }
 
 .icon:hover {
@@ -54,15 +70,92 @@ body {
   border: 1px solid rgba(0, 120, 215, 0.6);
   border-radius: 0.2rem;
 }
+
 .icon.selectable img {
   pointer-events: none;
 }
-
+.icon {
+  width: 90px;
+  height: 90px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: center;
+  color: white;
+  cursor: pointer;
+  position: relative;
+  padding: 0.3rem 0 0.3rem 0;
+  border: 1px solid transparent;
+  transition:
+    background 0.2s,
+    border 0.2s;
+  font-size: 0.75rem;
+  text-shadow: 1px 1px 2px black;
+  box-sizing: border-box;
+  margin: 0.3rem;
+}
+.icon div {
+  font-family: sans-serif;
+}
 .icon img {
-  width: 55%;
-  height: auto;
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
   display: block;
   margin-bottom: 0.3rem;
+}
+
+.icon.popular {
+  background: linear-gradient(145deg, #d0e8ff, #a0d4ff);
+  border-radius: 6px;
+  border: none;
+  box-shadow: 0 1px 4px rgba(0, 120, 215, 0.3);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.icon.popular:hover {
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 2px 6px rgba(0, 120, 215, 0.4);
+}
+
+.icon.popular img {
+  border-radius: 6px;
+  transition: transform 0.2s ease;
+  transform: scale(1);
+}
+
+@media (max-width: 768px) {
+  #desktop {
+    justify-content: center;
+    align-content: flex-start;
+    padding: 0.5rem;
+  }
+
+  .icon {
+    width: 60px;
+    height: 60px;
+    font-size: 0.65rem;
+    margin: 0.2rem;
+  }
+
+  .icon img {
+    width: 50%;
+  }
+}
+
+@media (max-width: 480px) {
+  .icon {
+    width: 50px;
+    height: 50px;
+    font-size: 0.55rem;
+  }
+
+  .icon img {
+    width: 40%;
+  }
 }
 
 .window {
@@ -128,7 +221,7 @@ body {
 }
 
 #taskbar {
-  position: absolute;
+  position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
