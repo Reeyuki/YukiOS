@@ -171,7 +171,8 @@ export class AppLauncher {
       undertale: { type: "game", url: "https://truffled.lol/games/bts" },
       balatro: { type: "game", url: "https://truffled.lol/games/balatro/index.html" },
       granny: { type: "game", url: "https://truffled.lol/gamefile/Granny.html" },
-      bendy: { type: "game", url: "https://truffled.lol/games/BATIM/BATIM/index.html" }
+      bendy: { type: "game", url: "https://truffled.lol/games/BATIM/BATIM/index.html" },
+      tattletail: { type: "game", url: "https://truffled.lol/games/tattletail/index.html" }
     };
 
     populateStartMenu(this);
