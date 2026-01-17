@@ -1,3 +1,4 @@
+import { registerSW } from "virtual:pwa-register";
 import { TerminalApp } from "./terminal.js";
 import { ExplorerApp } from "./explorer.js";
 import { WindowManager } from "./windowManager.js";
@@ -560,3 +561,5 @@ console.log(
   "Howdy, devtools user! the source of this site is available at: https://github.com/Reeyuki/reeyuki.github.io"
 );
 setupStartMenu();
+
+registerSW({ immediate: true });
