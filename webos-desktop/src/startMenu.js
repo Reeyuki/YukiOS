@@ -141,13 +141,13 @@ function camelize(str) {
 
 export function tryGetIcon(id) {
   id = camelize(id);
-  console.log("Trying get icon : ", id);
   if (id === "explorer") return "/static/icons/file.png";
   if (id === "computer") return "/static/icons/pc.webp";
   try {
     const div = document.querySelector(`#desktop div[data-app="${id}"]`);
     return div?.querySelector("img")?.src || null;
   } catch (e) {
+    console.error(e);
     return null;
   }
 }

@@ -1,3 +1,4 @@
+import { desktop } from "./desktop.js";
 export class CameraApp {
   constructor(windowManager) {
     this.wm = windowManager;

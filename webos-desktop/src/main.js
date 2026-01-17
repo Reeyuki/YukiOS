@@ -98,11 +98,9 @@ class DesktopUI {
       this.appLauncher.launch(icon.dataset.app, icon);
     });
 
-    let mouseDownTime = 0;
     let mouseDownPos = { x: 0, y: 0 };
 
     icon.addEventListener("mousedown", (e) => {
-      mouseDownTime = Date.now();
       mouseDownPos = { x: e.clientX, y: e.clientY };
 
       if (!e.ctrlKey) {
@@ -143,7 +141,7 @@ class DesktopUI {
         }
       };
 
-      const onMouseUp = (e) => {
+      const onMouseUp = () => {
         if (this.isDragging) {
           const ICON_WIDTH = 80;
           const ICON_HEIGHT = 100;
@@ -508,7 +506,7 @@ const appLauncher = new AppLauncher(
   browserApp,
   cameraApp
 );
-const desktopUI = new DesktopUI(appLauncher);
+new DesktopUI(appLauncher);
 
 SystemUtilities.startClock();
 SystemUtilities.setRandomWallpaper();
@@ -522,11 +520,6 @@ if (game) {
     appLauncher.launch(game);
   }, 100);
 }
-
-const ICON_WIDTH = 80;
-const ICON_HEIGHT = 100;
-const GAP = 5;
-
 const icons = desktop.querySelectorAll(".icon");
 
 function layoutIcons() {

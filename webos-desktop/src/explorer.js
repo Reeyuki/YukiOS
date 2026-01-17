@@ -1,5 +1,7 @@
+import { desktop } from "./desktop.js";
 import { FileKind } from "./fs.js";
 import { SystemUtilities } from "./system.js";
+
 const contextMenu = document.getElementById("context-menu");
 
 export class ExplorerApp {

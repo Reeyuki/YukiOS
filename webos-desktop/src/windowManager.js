@@ -1,3 +1,5 @@
+import { desktop } from "./desktop.js";
+
 const styleEl = document.getElementById("window-style");
 let styleParent = styleEl.parentNode;
 

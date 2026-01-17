@@ -1,3 +1,5 @@
+import { desktop } from "./desktop.js";
+
 export class NotepadApp {
   constructor(fileSystemManager, windowManager) {
     this.fs = fileSystemManager;
@@ -88,7 +90,8 @@ export class NotepadApp {
     try {
       this.fs.createFile(path, fileName, content);
       alert(`File saved: ${fileName} at /${pathString}`);
-    } catch (error) {
+    } catch (e) {
+      console.error(e);
       alert("Error saving file. Please check the path.");
     }
   }

@@ -1,3 +1,4 @@
+import { desktop } from "./desktop.js";
 import { populateStartMenu, tryGetIcon } from "./startMenu";
 
 export class AppLauncher {
@@ -207,10 +208,13 @@ export class AppLauncher {
       const canvas = document.createElement("canvas");
       const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
       if (gl) {
-        const debugInfo = RENDERER || gl.getExtension("WEBGL_debug_renderer_info");
+        const debugInfo = gl.getExtension("WEBGL_debug_renderer_info");
+
         gpu = debugInfo ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
       }
-    } catch {}
+    } catch (e) {
+      console.error(e);
+    }
 
     const elapsedMs = Date.now() - this.pageLoadTime;
     const hours = Math.floor(elapsedMs / 3600000);

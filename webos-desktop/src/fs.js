@@ -139,10 +139,15 @@ export class FileSystemManager {
 
   getFolder(path) {
     const folders = this.normalizePath(path);
-    return folders.reduce((acc, name) => {
-      if (!acc[name]) throw new Error(`Invalid path: ${name}`);
-      return acc[name];
-    }, this.fileSystem);
+    let current = this.fileSystem;
+
+    for (const name of folders) {
+      if (!current[name]) throw new Error("Invalid path");
+      if (current[name].type === "file") throw new Error("Not a directory");
+      current = current[name];
+    }
+
+    return current;
   }
 
   inferKind(fileName) {
@@ -155,6 +160,7 @@ export class FileSystemManager {
   async createFile(path, name, content = "", kind = null, icon = null) {
     await this.fsReady;
     const folder = this.getFolder(path);
+    if (folder[name]) throw new Error("Already exists");
     const fileKind = kind || this.inferKind(name);
     const fileIcon = icon || (fileKind === FileKind.TEXT ? "/static/icons/notepad.webp" : "/static/icons/file.png");
     folder[name] = { type: "file", content, kind: fileKind, icon: fileIcon };
@@ -164,6 +170,7 @@ export class FileSystemManager {
   async createFolder(path, name) {
     await this.fsReady;
     const folder = this.getFolder(path);
+    if (folder[name]) throw new Error("Already exists");
     folder[name] = {};
     await this.saveToStorage();
   }
@@ -195,8 +202,7 @@ export class FileSystemManager {
     await this.saveToStorage();
   }
 
-  async getFileContent(path, name) {
-    await this.fsReady;
+  getFileContent(path, name) {
     const folder = this.getFolder(path);
     return folder[name]?.type === "file" ? folder[name].content : "";
   }
@@ -213,8 +219,7 @@ export class FileSystemManager {
     return folder[name]?.type === "file" ? folder[name].icon : null;
   }
 
-  async isFile(path, name) {
-    await this.fsReady;
+  isFile(path, name) {
     const folder = this.getFolder(path);
     return folder[name]?.type === "file";
   }
@@ -241,5 +246,18 @@ export class FileSystemManager {
     return new Promise((resolve) => {
       this.fs.exists(filePath, (exists) => resolve(exists));
     });
+  }
+
+  resolvePath(input, currentPath = []) {
+    const parts = typeof input === "string" ? input.split("/") : [];
+    let path = input.startsWith("/") ? [] : [...currentPath];
+
+    for (const part of parts) {
+      if (!part || part === ".") continue;
+      if (part === "..") path.pop();
+      else path.push(part);
+    }
+
+    return path;
   }
 }
