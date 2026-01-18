@@ -2,7 +2,9 @@ import BrowserFS from "browserfs";
 
 const CONFIG = {
   GRID_SIZE: 80,
-  STORAGE_KEY: "desktopOS_fileSystem"
+  ROOT: "/home/reeyuki",
+  META_FILE: ".meta.json",
+  LEGACY_KEY: "desktopOS_fileSystem"
 };
 
 export const FileKind = {
@@ -89,65 +91,117 @@ export const defaultStorage = {
   }
 };
 
-function mergeDefaults(defaults, target) {
-  for (const key in defaults) {
-    if (!(key in target)) {
-      target[key] = defaults[key];
-    } else if (typeof defaults[key] === "object" && defaults[key] !== null && !Array.isArray(defaults[key])) {
-      mergeDefaults(defaults[key], target[key]);
-    }
-  }
-  return target;
-}
-
 export class FileSystemManager {
   constructor() {
     this.fsReady = this.initFS();
   }
 
+  p(method, ...args) {
+    return new Promise((res, rej) => {
+      this.fs[method](...args, (err) => (err ? rej(err) : res()));
+    });
+  }
+
+  pRead(method, ...args) {
+    return new Promise((res, rej) => {
+      this.fs[method](...args, (err, data) => (err ? rej(err) : res(data)));
+    });
+  }
+
+  pStat(path) {
+    return new Promise((res, rej) => {
+      this.fs.stat(path, (e, s) => (e ? rej(e) : res(s)));
+    });
+  }
+
   async initFS() {
     return new Promise((resolve) => {
-      BrowserFS.configure({ fs: "IndexedDB", options: {} }, () => {
+      BrowserFS.configure({ fs: "IndexedDB", options: {} }, async () => {
         this.fs = BrowserFS.BFSRequire("fs");
-        this.loadFromStorage();
+        await this.migrateIfNeeded();
+        await this.ensureDefaults();
         resolve();
       });
     });
   }
 
-  async loadFromStorage() {
-    const exists = await this.exists(CONFIG.STORAGE_KEY);
-    if (!exists) {
-      await this.writeFile(CONFIG.STORAGE_KEY, JSON.stringify(defaultStorage));
-      this.fileSystem = JSON.parse(JSON.stringify(defaultStorage));
-    } else {
-      const stored = await this.readFile(CONFIG.STORAGE_KEY);
-      const storedFS = JSON.parse(stored);
-      this.fileSystem = mergeDefaults(defaultStorage, storedFS);
-      await this.saveToStorage();
+  async migrateIfNeeded() {
+    const rootExists = await this.exists(CONFIG.ROOT);
+    if (rootExists) return;
+    const legacyExists = await this.exists(CONFIG.LEGACY_KEY);
+    if (!legacyExists) return;
+    const raw = await this.readFile(CONFIG.LEGACY_KEY);
+    const legacyFS = JSON.parse(raw);
+    await this.createFromObject(legacyFS, "/");
+    await this.p("unlink", CONFIG.LEGACY_KEY);
+  }
+
+  async ensureDefaults() {
+    await this.createFromObject(defaultStorage, "/");
+  }
+
+  async createFromObject(obj, basePath) {
+    for (const key in obj) {
+      const value = obj[key];
+      const fullPath = this.join(basePath, key);
+      if (value.type === "file") {
+        await this.p("mkdir", this.dirname(fullPath), { recursive: true }).catch(() => {});
+        const exists = await this.exists(fullPath);
+        if (!exists) await this.p("writeFile", fullPath, value.content ?? "");
+        await this.writeMeta(this.dirname(fullPath), key, value);
+      } else {
+        await this.p("mkdir", fullPath, { recursive: true }).catch(() => {});
+        await this.createFromObject(value, fullPath);
+      }
     }
   }
 
-  async saveToStorage() {
-    await this.writeFile(CONFIG.STORAGE_KEY, JSON.stringify(this.fileSystem));
+  join(...parts) {
+    return parts.join("/").replace(/\/+/g, "/");
+  }
+
+  dirname(path) {
+    return path.split("/").slice(0, -1).join("/") || "/";
+  }
+
+  async readMeta(dir) {
+    const metaPath = this.join(dir, CONFIG.META_FILE);
+    try {
+      const data = await this.pRead("readFile", metaPath, "utf8");
+      return JSON.parse(data);
+    } catch {
+      return {};
+    }
+  }
+
+  async writeMeta(dir, name, data) {
+    const metaPath = this.join(dir, CONFIG.META_FILE);
+    const meta = await this.readMeta(dir);
+    meta[name] = { kind: data.kind, icon: data.icon };
+    await this.p("writeFile", metaPath, JSON.stringify(meta));
+  }
+
+  async removeMeta(dir, name) {
+    const metaPath = this.join(dir, CONFIG.META_FILE);
+    const meta = await this.readMeta(dir);
+    delete meta[name];
+    await this.p("writeFile", metaPath, JSON.stringify(meta));
   }
 
   normalizePath(path) {
-    if (typeof path === "string") return path.split("/").filter((p) => p);
-    return Array.isArray(path) ? path.filter((p) => p) : [];
+    if (typeof path === "string") return path.split("/").filter(Boolean);
+    return Array.isArray(path) ? path.filter(Boolean) : [];
   }
 
-  getFolder(path) {
-    const folders = this.normalizePath(path);
-    let current = this.fileSystem;
-
-    for (const name of folders) {
-      if (!current[name]) throw new Error("Invalid path");
-      if (current[name].type === "file") throw new Error("Not a directory");
-      current = current[name];
+  resolvePath(input, currentPath = []) {
+    const parts = typeof input === "string" ? input.split("/") : [];
+    let path = input.startsWith("/") ? [] : [...currentPath];
+    for (const part of parts) {
+      if (!part || part === ".") continue;
+      if (part === "..") path.pop();
+      else path.push(part);
     }
-
-    return current;
+    return path;
   }
 
   inferKind(fileName) {
@@ -157,107 +211,147 @@ export class FileSystemManager {
     return FileKind.OTHER;
   }
 
+  resolveDir(path = []) {
+    return this.join("/", ...CONFIG.ROOT.split("/").filter(Boolean), ...this.normalizePath(path));
+  }
+
+  async getFolder(path) {
+    await this.fsReady;
+
+    const dir = this.resolveDir(path);
+
+    let entries;
+    try {
+      entries = await new Promise((res, rej) => {
+        this.fs.readdir(dir, (e, list) => (e ? rej(e) : res(list)));
+      });
+    } catch {
+      throw new Error("Invalid path");
+    }
+
+    const meta = await this.readMeta(dir);
+    const result = {};
+
+    for (const name of entries) {
+      if (name === CONFIG.META_FILE) continue;
+      const full = this.join(dir, name);
+      const stat = await this.pStat(full);
+      if (stat.isDirectory()) {
+        result[name] = {};
+      } else {
+        const kind = meta[name]?.kind ?? this.inferKind(name);
+        const icon = meta[name]?.icon ?? "/static/icons/file.png";
+        let content = "";
+        try {
+          content = await this.pRead("readFile", full, "utf8");
+        } catch (e) {
+          console.error(e);
+        }
+        result[name] = { type: "file", kind, icon, content };
+      }
+    }
+
+    return result;
+  }
   async createFile(path, name, content = "", kind = null, icon = null) {
     await this.fsReady;
-    const folder = this.getFolder(path);
-    if (folder[name]) throw new Error("Already exists");
+    const dir = this.resolveDir(path);
+    const filePath = this.join(dir, name);
     const fileKind = kind || this.inferKind(name);
     const fileIcon = icon || (fileKind === FileKind.TEXT ? "/static/icons/notepad.webp" : "/static/icons/file.png");
-    folder[name] = { type: "file", content, kind: fileKind, icon: fileIcon };
-    await this.saveToStorage();
+    await this.p("mkdir", dir, { recursive: true }).catch(() => {});
+    await this.p("writeFile", filePath, content);
+    await this.writeMeta(dir, name, { kind: fileKind, icon: fileIcon });
   }
 
   async createFolder(path, name) {
     await this.fsReady;
-    const folder = this.getFolder(path);
-    if (folder[name]) throw new Error("Already exists");
-    folder[name] = {};
-    await this.saveToStorage();
+    const dir = this.join(this.resolveDir(path), name);
+    await this.p("mkdir", dir, { recursive: true });
   }
 
   async deleteItem(path, name) {
     await this.fsReady;
-    const folder = this.getFolder(path);
-    delete folder[name];
-    await this.saveToStorage();
+    const dir = this.resolveDir(path);
+    const target = this.join(dir, name);
+    const stat = await this.pStat(target);
+    if (stat.isDirectory()) {
+      await this.p("rmdir", target, { recursive: true });
+    } else {
+      await this.p("unlink", target);
+      await this.removeMeta(dir, name);
+    }
   }
 
   async renameItem(path, oldName, newName) {
     await this.fsReady;
-    const folder = this.getFolder(path);
-    folder[newName] = folder[oldName];
-    delete folder[oldName];
-    await this.saveToStorage();
+    const dir = this.resolveDir(path);
+    await this.p("rename", this.join(dir, oldName), this.join(dir, newName));
+    const meta = await this.readMeta(dir);
+    if (meta[oldName]) {
+      meta[newName] = meta[oldName];
+      delete meta[oldName];
+      await this.p("writeFile", this.join(dir, CONFIG.META_FILE), JSON.stringify(meta));
+    }
   }
 
   async updateFile(path, name, content) {
     await this.fsReady;
-    const folder = this.getFolder(path);
-    if (folder[name]?.type === "file") folder[name].content = content;
-    else {
+    const dir = this.resolveDir(path);
+    const filePath = this.join(dir, name);
+    const exists = await this.exists(filePath);
+    if (!exists) {
       const kind = this.inferKind(name);
       const icon = kind === FileKind.TEXT ? "/static/icons/notepad.webp" : "/static/icons/file.png";
-      folder[name] = { type: "file", content, kind, icon };
+      await this.createFile(path, name, content, kind, icon);
+    } else {
+      await this.p("writeFile", filePath, content);
     }
-    await this.saveToStorage();
   }
 
-  getFileContent(path, name) {
-    const folder = this.getFolder(path);
-    return folder[name]?.type === "file" ? folder[name].content : "";
+  async getFileContent(path, name) {
+    await this.fsReady;
+    try {
+      return await this.pRead("readFile", this.join(this.resolveDir(path), name), "utf8");
+    } catch {
+      return "";
+    }
   }
 
   async getFileKind(path, name) {
     await this.fsReady;
-    const folder = this.getFolder(path);
-    return folder[name]?.type === "file" ? folder[name].kind : null;
+    const meta = await this.readMeta(this.resolveDir(path));
+    return meta[name]?.kind ?? null;
   }
 
   async getFileIcon(path, name) {
     await this.fsReady;
-    const folder = this.getFolder(path);
-    return folder[name]?.type === "file" ? folder[name].icon : null;
+    const meta = await this.readMeta(this.resolveDir(path));
+    return meta[name]?.icon ?? null;
   }
 
   isFile(path, name) {
-    const folder = this.getFolder(path);
-    return folder[name]?.type === "file";
+    try {
+      return this.fs.statSync(this.join(this.resolveDir(path), name)).isFile();
+    } catch {
+      return false;
+    }
   }
 
   async writeFile(filePath, content) {
-    return new Promise((res, rej) => {
-      this.fs.writeFile(filePath, content, (err) => {
-        if (err) rej(err);
-        else res();
-      });
-    });
+    await this.p("writeFile", filePath, content);
   }
 
   async readFile(filePath) {
-    return new Promise((res, rej) => {
-      this.fs.readFile(filePath, "utf8", (err, data) => {
-        if (err) rej(err);
-        else res(data);
-      });
-    });
+    return await this.pRead("readFile", filePath, "utf8");
   }
 
   async exists(filePath) {
-    return new Promise((resolve) => {
-      this.fs.exists(filePath, (exists) => resolve(exists));
-    });
-  }
-
-  resolvePath(input, currentPath = []) {
-    const parts = typeof input === "string" ? input.split("/") : [];
-    let path = input.startsWith("/") ? [] : [...currentPath];
-
-    for (const part of parts) {
-      if (!part || part === ".") continue;
-      if (part === "..") path.pop();
-      else path.push(part);
+    try {
+      await this.pStat(filePath);
+      return true;
+    } catch {
+      return false;
     }
-
-    return path;
   }
 }
