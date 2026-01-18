@@ -397,25 +397,39 @@ export class WindowManager {
 
   showPopup(text) {
     const popup = document.createElement("div");
-    popup.textContent = text;
-    Object.assign(popup.style, {
-      position: "fixed",
-      top: "50%",
-      left: "50%",
-      transform: "translate(-50%, -50%)",
-      padding: "20px 40px",
-      backgroundColor: "rgba(0,0,0,0.8)",
-      color: "#fff",
-      fontSize: "18px",
-      borderRadius: "10px",
-      textAlign: "center",
-      zIndex: 9999,
-      cursor: "pointer",
-      boxShadow: "0 4px 15px rgba(0,0,0,0.3)"
+    popup.innerHTML = `
+        <div  style="display:flex; align-items:flex-start;">
+            <div style="flex-shrink:0; width:24px; height:24px; margin-right:8px; background:#0078d7; color:#fff; font-weight:bold; font-family:sans-serif; display:flex; justify-content:center; align-items:center; border-radius:50%;">i</div>
+            <div style="flex:1;">
+                <div style="color:#0078d7; font-weight:bold; font-size:13px; line-height:1.2;">Notification</div>
+                <div style="margin-top:2px; font-weight:normal; font-size:12px; color:#000;">${text}</div>
+            </div>
+            <div style="flex-shrink:0; margin-left:8px; font-weight:bold; cursor:pointer; color:#666;">×</div>
+        </div>
+        <div style="position:absolute; bottom:-8px; right:16px; width:0; height:0; border-left:8px solid transparent; border-right:8px solid transparent; border-top:8px solid #fff;"></div>
+    `;
+    popup.className = "tray-notify";
+    const closeBtn = popup.querySelector("div:last-child");
+    closeBtn.addEventListener("click", () => {
+      popup.style.bottom = "50px";
+      popup.style.opacity = "0";
+      setTimeout(() => popup.remove(), 500);
     });
+
     popup.addEventListener("click", () => {
-      popup.remove();
+      popup.style.bottom = "-100px";
+      popup.style.opacity = "0";
+      setTimeout(() => popup.remove(), 500);
     });
     document.body.appendChild(popup);
+    setTimeout(() => {
+      popup.style.bottom = "50px";
+      popup.style.opacity = "1";
+    }, 10);
+    setTimeout(() => {
+      popup.style.bottom = "-100px";
+      popup.style.opacity = "0";
+      setTimeout(() => popup.remove(), 500);
+    }, 5000);
   }
 }

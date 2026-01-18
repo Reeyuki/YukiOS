@@ -90,7 +90,7 @@ export class CameraApp {
       this.stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
       this.video.srcObject = this.stream;
     } catch (err) {
-      alert("Camera access denied or not available.");
+      this.wm.showPopup("Camera access denied or not available.");
       console.error(err);
     }
   }
@@ -189,7 +189,7 @@ export class CameraApp {
       this.startTimer();
     } catch (e) {
       console.error(e);
-      alert("Screen capture cancelled or not allowed");
+      this.wm.showPopup("Screen capture cancelled or not allowed");
     }
   }
 

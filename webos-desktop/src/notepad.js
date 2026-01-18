@@ -74,7 +74,7 @@ export class NotepadApp {
 
     const content = textarea.value;
     this.fs.updateFile(path, title, content);
-    alert(`File saved: ${title}`);
+    this.wm.showPopup(`File saved: ${title}`);
   }
 
   saveAsFile(textarea) {
@@ -89,10 +89,10 @@ export class NotepadApp {
 
     try {
       this.fs.createFile(path, fileName, content);
-      alert(`File saved: ${fileName} at /${pathString}`);
+      this.wm.showPopup(`File saved: ${fileName} at /${pathString}`);
     } catch (e) {
       console.error(e);
-      alert("Error saving file. Please check the path.");
+      this.wm.showPopup("Error saving file. Please check the path.");
     }
   }
 
