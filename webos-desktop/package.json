@@ -26,6 +26,8 @@
     "browserfs": "^1.4.3",
     "eslint-define-config": "^2.1.0",
     "globals": "^17.0.0",
+    "interactjs": "^1.10.27",
+    "lodash": "^4.17.21",
     "workbox-window": "^7.4.0"
   }
 }
