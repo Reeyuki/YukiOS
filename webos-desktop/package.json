@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "pnpm run format && vite build && rm -rf ../desktop/* && cp -r dist/* ../desktop/",
     "preview": "vite preview",
-    "format": "prettier . --write",
+    "format": "git diff --name-only --diff-filter=ACMRTUXB | grep -E '\\.(js|jsx|ts|css|json|html)$' || true | xargs -r -P 4 pnpm exec prettier --write",
     "lint": "eslint . --ext .js,.jsx --fix"
   },
   "devDependencies": {
@@ -24,10 +24,11 @@
   },
   "dependencies": {
     "browserfs": "^1.4.3",
-    "eslint-define-config": "^2.1.0",
     "globals": "^17.0.0",
+    "idb-keyval": "^6.2.2",
     "interactjs": "^1.10.27",
-    "lodash": "^4.17.21",
+    "lodash-es": "^4.17.22",
+    "memfs": "^4.54.0",
     "workbox-window": "^7.4.0"
   }
 }

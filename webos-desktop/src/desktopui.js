@@ -1,7 +1,7 @@
 import { updateFavoritesUI } from "./startMenu.js";
 import { desktop } from "./desktop.js";
 import interact from "interactjs";
-import _ from "lodash";
+import { last, pick, get, chain, isEmpty } from "lodash-es";
 
 export class DesktopUI {
   constructor(appLauncher, notepadApp, explorerApp) {
@@ -287,7 +287,7 @@ export class DesktopUI {
     }
 
     const selectedArray = Array.from(this.state.selectedIcons);
-    const lastSelected = _.last(selectedArray);
+    const lastSelected = last(selectedArray);
 
     this.contextMenu.innerHTML = this.createContextMenuHTML(this.templates.iconContextMenu);
 
@@ -308,7 +308,7 @@ export class DesktopUI {
       action: "cut",
       icons: selectedArray.map((icon) => ({
         element: icon,
-        data: this.extractIconData(icon)
+        data: pick(icon.dataset, ["app", "name", "path"])
       }))
     };
   }
@@ -317,7 +317,7 @@ export class DesktopUI {
     this.state.clipboard = {
       action: "copy",
       icons: selectedArray.map((icon) => ({
-        data: this.extractIconData(icon)
+        data: pick(icon.dataset, ["app", "name", "path"])
       }))
     };
   }
@@ -330,7 +330,7 @@ export class DesktopUI {
   }
 
   extractIconData(icon) {
-    const data = _.pick(icon.dataset, ["app", "name", "path"]);
+    const data = pick(icon.dataset, ["app", "name", "path"]);
     return {
       ...data,
       innerHTML: icon.innerHTML,
@@ -342,7 +342,7 @@ export class DesktopUI {
     const dataset = icon.dataset;
     const rect = icon.getBoundingClientRect();
     const appId = dataset.app;
-    const appInfo = _.get(this.appLauncher, `appMap.${appId}`, {});
+    const appInfo = get(this.appLauncher, `appMap.${appId}`, {});
 
     const properties = {
       Name: dataset.name || "Unknown",
@@ -359,8 +359,8 @@ export class DesktopUI {
       "Z-Index": icon.style.zIndex || "0"
     };
 
-    return _.chain(properties)
-      .pickBy((value) => !_.isEmpty(value) && value !== undefined)
+    return chain(properties)
+      .pickBy((value) => !isEmpty(value) && value !== undefined)
       .map((value, key) => `<div style="margin:2px 0;">${key}: ${value}</div>`)
       .join("")
       .value();
@@ -444,7 +444,7 @@ export class DesktopUI {
     icon.className = data.className;
     icon.innerHTML = data.innerHTML;
 
-    Object.assign(icon.dataset, _.pick(data, ["app", "name", "path"]));
+    Object.assign(icon.dataset, pick(data, ["app", "name", "path"]));
 
     Object.assign(icon.style, {
       position: "absolute",

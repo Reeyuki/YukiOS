@@ -80,35 +80,6 @@ if (game) {
     appLauncher.launch(game);
   }, 100);
 }
-const icons = Array.from(desktop.querySelectorAll(".icon"));
-
-function layoutIcons() {
-  const desktopHeight = desktop.clientHeight;
-  const ICON_WIDTH = 80;
-  const ICON_HEIGHT = 100;
-  const GAP = 5;
-
-  let x = GAP;
-  let y = GAP;
-
-  requestAnimationFrame(() => {
-    for (let i = 0; i < icons.length; i++) {
-      const icon = icons[i];
-      icon.style.position = "absolute";
-      icon.style.left = `${x}px`;
-      icon.style.top = `${y}px`;
-
-      y += ICON_HEIGHT + GAP;
-      if (y + ICON_HEIGHT > desktopHeight) {
-        y = GAP;
-        x += ICON_WIDTH + GAP;
-      }
-    }
-  });
-}
-
-window.addEventListener("load", layoutIcons);
-window.addEventListener("resize", layoutIcons);
 
 console.log(
   "Howdy, devtools user! the source of this site is available at: https://github.com/Reeyuki/reeyuki.github.io"
