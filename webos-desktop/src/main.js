@@ -80,7 +80,7 @@ if (game) {
     appLauncher.launch(game);
   }, 100);
 }
-const icons = desktop.querySelectorAll(".icon");
+const icons = Array.from(desktop.querySelectorAll(".icon"));
 
 function layoutIcons() {
   const desktopHeight = desktop.clientHeight;
@@ -91,14 +91,14 @@ function layoutIcons() {
   let x = GAP;
   let y = GAP;
 
-  icons.forEach((icon) => {
-    if (!icon.style.left || !icon.style.top) {
+  requestAnimationFrame(() => {
+    for (let i = 0; i < icons.length; i++) {
+      const icon = icons[i];
       icon.style.position = "absolute";
       icon.style.left = `${x}px`;
       icon.style.top = `${y}px`;
 
       y += ICON_HEIGHT + GAP;
-
       if (y + ICON_HEIGHT > desktopHeight) {
         y = GAP;
         x += ICON_WIDTH + GAP;
