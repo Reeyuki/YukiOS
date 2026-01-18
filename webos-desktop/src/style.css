@@ -16,7 +16,9 @@ body {
   background-position: center;
   background-repeat: no-repeat;
 }
-
+* {
+  font-family: sans-serif;
+}
 #desktop {
   position: relative;
   width: 100%;
