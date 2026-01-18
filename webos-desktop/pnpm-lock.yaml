@@ -16,6 +16,12 @@ importers:
       globals:
         specifier: ^17.0.0
         version: 17.0.0
+      interactjs:
+        specifier: ^1.10.27
+        version: 1.10.27
+      lodash:
+        specifier: ^4.17.21
+        version: 4.17.21
       workbox-window:
         specifier: ^7.4.0
         version: 7.4.0
@@ -893,6 +899,10 @@ packages:
       { integrity: sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ== }
     engines: { node: ">=18.18" }
 
+  "@interactjs/types@1.10.27":
+    resolution:
+      { integrity: sha512-BUdv0cvs4H5ODuwft2Xp4eL8Vmi3LcihK42z0Ft/FbVJZoRioBsxH+LlsBdK4tAie7PqlKGy+1oyOncu1nQ6eA== }
+
   "@isaacs/balanced-match@4.0.1":
     resolution:
       { integrity: sha512-yzMTt9lEb8Gv7zRioUilSglI0c0smZ9k5D65677DLWLtWJaXIS3CqcGyUFByYKlnUj6TkjLVs54fBl6+TiGQDQ== }
@@ -1338,9 +1348,9 @@ packages:
       { integrity: sha512-P8BjAsXvZS+VIDUI11hHCQEv74YT67YUi5JJFNWIqL235sBmjX4+qx9Muvls5ivyNENctx46xQLQ3aTuE7ssaQ== }
     engines: { node: ">=6" }
 
-  caniuse-lite@1.0.30001764:
+  caniuse-lite@1.0.30001765:
     resolution:
-      { integrity: sha512-9JGuzl2M+vPL+pz70gtMF9sHdMFbY9FJaQBi186cHKH3pSzDvzoUJUPV6fqiKIMyXbud9ZLg4F3Yza1vJ1+93g== }
+      { integrity: sha512-LWcNtSyZrakjECqmpP4qdg0MMGdN368D7X8XvvAqOcqMv0RxnlqVKZl2V6/mBR68oYMxOZPLw/gO7DuisMHUvQ== }
 
   chalk@4.1.2:
     resolution:
@@ -1869,6 +1879,10 @@ packages:
     resolution:
       { integrity: sha512-JmXMZ6wuvDmLiHEml9ykzqO6lwFbof0GG4IkcGaENdCRDDmMVnny7s5HsIgHCbaq0w2MyPhDqkhTUgS2LU2PHA== }
     engines: { node: ">=0.8.19" }
+
+  interactjs@1.10.27:
+    resolution:
+      { integrity: sha512-y/8RcCftGAF24gSp76X2JS3XpHiUvDQyhF8i7ujemBz77hwiHDuJzftHx7thY8cxGogwGiPJ+o97kWB6eAXnsA== }
 
   internal-slot@1.1.0:
     resolution:
@@ -3655,6 +3669,8 @@ snapshots:
 
   "@humanwhocodes/retry@0.4.3": {}
 
+  "@interactjs/types@1.10.27": {}
+
   "@isaacs/balanced-match@4.0.1": {}
 
   "@isaacs/brace-expansion@5.0.0":
@@ -3979,7 +3995,7 @@ snapshots:
   browserslist@4.28.1:
     dependencies:
       baseline-browser-mapping: 2.9.15
-      caniuse-lite: 1.0.30001764
+      caniuse-lite: 1.0.30001765
       electron-to-chromium: 1.5.267
       node-releases: 2.0.27
       update-browserslist-db: 1.2.3(browserslist@4.28.1)
@@ -4005,7 +4021,7 @@ snapshots:
 
   callsites@3.1.0: {}
 
-  caniuse-lite@1.0.30001764: {}
+  caniuse-lite@1.0.30001765: {}
 
   chalk@4.1.2:
     dependencies:
@@ -4522,6 +4538,10 @@ snapshots:
       resolve-from: 4.0.0
 
   imurmurhash@0.1.4: {}
+
+  interactjs@1.10.27:
+    dependencies:
+      "@interactjs/types": 1.10.27
 
   internal-slot@1.1.0:
     dependencies:
