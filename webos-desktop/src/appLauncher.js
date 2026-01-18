@@ -132,6 +132,7 @@ export class AppLauncher {
       epicbossfighter2: { type: "swf", swf: "/static/games/swfGames/EpicBossFighter2.swf" },
       avatarFortressFight2: { type: "swf", swf: "/static/games/swfGames/avatarFortressFight2.swf" },
       incredibles: { type: "swf", swf: "/static/games/swfGames/incredibles.swf" },
+      savagePursuit: { type: "swf", swf: "/static/games/swfGames/savagepursuit.swf" },
       cactusMcCoy: { type: "game", url: "https://papasgamesfree.io/cactus-mccoy-1" },
       jackSmith: { type: "game", url: "https://papasgamesfree.io/jacksmith" },
       pokemonRed: { type: "gba", url: "pokemon-red.gba" },
