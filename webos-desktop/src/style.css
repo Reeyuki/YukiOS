@@ -147,7 +147,7 @@ body {
   transition: transform 0.18s ease;
 }
 
-.icon.popular:hover img {
+.icon:hover img {
   transform: scale(1.05);
 }
 
