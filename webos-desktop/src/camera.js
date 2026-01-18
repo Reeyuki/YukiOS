@@ -49,6 +49,7 @@ export class CameraApp {
     this.wm.makeResizable(win);
     this.wm.setupWindowControls(win);
     this.wm.addToTaskbar(win.id, "Camera", "/static/icons/camera.svg");
+    this.wm.bringToFront(win);
     const closebtn = win.querySelector(".close-btn");
     (closebtn.addEventListener("click"),
       () => {

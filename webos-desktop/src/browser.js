@@ -61,7 +61,7 @@ export class BrowserApp {
     this.wm.makeResizable(win);
     this.wm.setupWindowControls(win);
     this.wm.addToTaskbar(win.id, "Browser", "/static/icons/chromium.webp");
-
+    this.wm.bringToFront(win);
     this.wm.registerCloseWindow(win.querySelector(".close-btn"), win.id);
 
     this.frame = win.querySelector("#browser-frame");
