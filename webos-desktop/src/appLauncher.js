@@ -204,44 +204,43 @@ export class AppLauncher {
   }
 
   _getAnalyticsBase(app) {
-    let gpu = "Unknown";
-    try {
-      const canvas = document.createElement("canvas");
-      const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
-      if (gl) {
-        const debugInfo = gl.getExtension("WEBGL_debug_renderer_info");
-
-        gpu = debugInfo ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
-      }
-    } catch (e) {
-      console.error(e);
-    }
-
-    const elapsedMs = Date.now() - this.pageLoadTime;
-    const hours = Math.floor(elapsedMs / 3600000);
-    const minutes = Math.floor((elapsedMs % 3600000) / 60000);
-    const uptimeStr = `${hours}h, ${minutes}m`;
-    const isBrave =
-      /Brave\//.test(navigator.userAgent) ||
-      (window.navigator.brave && typeof window.navigator.brave.isBrave === "function");
-
+    const now = Date.now();
+    const sessionAgeMs = now - this.pageLoadTime;
+    const cores = navigator.hardwareConcurrency || "Unknown";
+    const width = window.innerWidth;
+    let viewport = "small";
+    if (width >= 1024) viewport = "large";
+    else if (width >= 640) viewport = "medium";
+    const browserFamily = this.getBrowserFamily();
+    const deviceType = this.getDeviceType();
     return {
       app,
-      timestamp: Date.now(),
-      browser: {
-        userAgent: navigator.userAgent,
-        isBrave,
-        language: navigator.language,
-        platform: navigator.platform,
-        screenWidth: window.screen.width,
-        screenHeight: window.screen.height,
-        uptime: uptimeStr,
-        gpu,
-        ram: navigator.deviceMemory ? `${navigator.deviceMemory} GB` : "Unknown",
-        cpuCores: navigator.hardwareConcurrency || "Unknown",
-        dnt: navigator.doNotTrack === "1" || window.doNotTrack === "1" ? "Enabled" : "Disabled"
-      }
+      timestamp: now,
+      sessionAgeMs,
+      cores,
+      viewport,
+      deviceType,
+      browserfamily: browserFamily
     };
+  }
+
+  getDeviceType() {
+    const ua = navigator.userAgent || navigator.vendor || window.opera;
+
+    if (/android/i.test(ua)) return "mobile";
+    if (/iPad|iPhone|iPod/.test(ua) && !window.MSStream) return "mobile";
+    return "desktop";
+  }
+
+  getBrowserFamily() {
+    const ua = navigator.userAgent;
+
+    if (/Firefox\/\d+/i.test(ua)) return "firefox";
+    if (/Edg\/\d+/i.test(ua)) return "edge";
+    if (/Chrome\/\d+/i.test(ua) && !/Edg\/\d+/i.test(ua)) return "chrome";
+    if (/Safari\/\d+/i.test(ua) && !/Chrome\/\d+/i.test(ua)) return "safari";
+
+    return "other";
   }
 
   sendAnalytics(data) {
