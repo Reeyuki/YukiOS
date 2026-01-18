@@ -84,6 +84,12 @@ export const defaultStorage = {
           content: "/static/wallpapers/wallpaper10.webp",
           kind: FileKind.IMAGE,
           icon: "/static/wallpapers/wallpaper10.webp"
+        },
+        "wallpaper11.webp": {
+          type: "file",
+          content: "/static/wallpapers/wallpaper11.webp",
+          kind: FileKind.IMAGE,
+          icon: "/static/wallpapers/wallpaper11.webp"
         }
       },
       Music: {}
