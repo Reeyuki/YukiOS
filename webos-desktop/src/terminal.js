@@ -62,7 +62,6 @@ export class TerminalApp {
     this.printQueue = this.printQueue.then(() => this.print(text, color, isCommand, promptText, delay));
     return this.printQueue;
   }
-
   setupEventHandlers() {
     this.terminalInput.addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
@@ -87,13 +86,32 @@ export class TerminalApp {
         e.preventDefault();
         this.cmdClear();
       } else if (e.ctrlKey && e.key === "c") {
+        const selection = window.getSelection();
+        if (selection && selection.toString().length > 0) return;
         e.preventDefault();
         this.enqueuePrint("^C", "white", true, this.terminalPrompt.textContent);
         this.terminalInput.value = "";
+      } else if (e.ctrlKey && e.key === "d") {
+        const selection = window.getSelection();
+        if (selection && selection.toString().length > 0) return;
+        if (this.terminalInput.value.length > 0) return;
+        e.preventDefault();
+        const win = document.getElementById("terminal-win");
+        this.wm.removeFromTaskbar(win.id);
+        if (win) win.remove();
+        return;
       }
     });
 
-    document.getElementById("terminal-win").addEventListener("click", () => {
+    const win = document.getElementById("terminal-win");
+
+    win.addEventListener("mousedown", () => {
+      const selection = window.getSelection();
+      if (selection) selection.removeAllRanges();
+    });
+
+    win.addEventListener("mouseup", () => {
+      if (window.getSelection().toString().length > 0) return;
       this.terminalInput.focus();
     });
   }
@@ -249,22 +267,22 @@ export class TerminalApp {
     Object.assign(win.style, { left: "200px", top: "100px" });
 
     win.innerHTML = `
-      <div class="window-header">
-        <span>Terminal</span>
-        <div class="window-controls">
-          <button class="minimize-btn">−</button>
-          <button class="maximize-btn">□</button>
-          <button class="close-btn">X</button>
-        </div>
+    <div class="window-header">
+      <span>Terminal</span>
+      <div class="window-controls">
+        <button class="minimize-btn">−</button>
+        <button class="maximize-btn">□</button>
+        <button class="close-btn">X</button>
       </div>
-      <div class="window-content" style="background:#000;color:white;font-family:monospace;padding:10px;overflow-y:auto;height:calc(100% - 40px);">
-        <div id="terminal-output" style="white-space:pre;"></div>
-        <div id="terminal-input-line" style="display:flex;">
-          <span id="terminal-prompt"></span>
-          <input id="terminal-input" style="flex:1;background:transparent;border:none;color:white;font-family:monospace;outline:none;margin-left:5px;">
-        </div>
+    </div>
+    <div class="window-content" style="background:#000;color:white;font-family:monospace;padding:10px;overflow-y:auto;height:calc(100% - 40px);">
+      <div id="terminal-output" style="white-space:pre;"></div>
+      <div id="terminal-input-line" style="display:flex;">
+        <span id="terminal-prompt"></span>
+        <input id="terminal-input" style="flex:1;background:transparent;border:none;color:white;font-family:monospace;outline:none;margin-left:5px;">
       </div>
-    `;
+    </div>
+  `;
 
     desktop.appendChild(win);
     this.wm.makeDraggable(win);
@@ -276,6 +294,13 @@ export class TerminalApp {
     this.terminalInput = win.querySelector("#terminal-input");
     this.terminalPrompt = win.querySelector("#terminal-prompt");
     this.terminalInputLine = win.querySelector("#terminal-input-line");
+
+    this.terminalOutput.addEventListener("contextmenu", (e) => {
+      e.stopPropagation();
+    });
+
+    this.terminalOutput.style.userSelect = "text";
+    this.terminalInput.style.userSelect = "text";
 
     this.updatePrompt();
     this.print("Welcome to Reeyuki's terminal");
