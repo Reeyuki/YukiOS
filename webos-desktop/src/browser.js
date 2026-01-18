@@ -62,7 +62,7 @@ export class BrowserApp {
     this.wm.setupWindowControls(win);
     this.wm.addToTaskbar(win.id, "Browser", "/static/icons/chromium.webp");
 
-    win.querySelector(".close-btn").onclick = () => win.remove();
+    this.wm.registerCloseWindow(win.querySelector(".close-btn"), win.id);
 
     this.frame = win.querySelector("#browser-frame");
     this.addressInput = win.querySelector("#address-bar");

@@ -27,15 +27,17 @@ export class CameraApp {
         ${this.wm.getWindowControls()}
       </div>
       <div style="padding:10px; display:flex; flex-direction:column; align-items:center; position:relative;">
-        <div style="position:relative; width:100%; max-width:600px;">
-          <video id="camera-video" autoplay playsinline style="width:100%; border:1px solid #ccc; border-radius:8px;"></video>
-          <span id="recording-icon" style="position:absolute; top:10px; left:10px; width:15px; height:15px; border-radius:50%; background:red; display:none;"></span>
-          <span id="recording-timer" style="position:absolute; top:10px; right:10px; font-weight:bold;"></span>
-        </div>
+      <div class="video-shell">
+        <video id="camera-video" autoplay playsinline></video>
+        <span id="recording-icon"></span>
+        <span id="recording-timer"></span>
+      </div>
+
         <div style="margin-top:10px; display:flex; gap:10px;">
           <button id="take-photo-btn" style="padding:5px 15px;">Take Photo</button>
           <button id="start-record-btn" style="padding:5px 15px;">Start Recording</button>
           <button id="stop-record-btn" style="padding:5px 15px;" disabled>Stop Recording</button>
+          <button id="start-screen-btn" style="padding:5px 15px;">Record Screen</button>
           <button id="open-history-btn" style="padding:5px 15px;">History</button>
         </div>
         <a id="download-link" style="display:none; margin-top:10px;"></a>
@@ -47,12 +49,14 @@ export class CameraApp {
     this.wm.makeResizable(win);
     this.wm.setupWindowControls(win);
     this.wm.addToTaskbar(win.id, "Camera", "/static/icons/camera.svg");
+    const closebtn = win.querySelector(".close-btn");
+    (closebtn.addEventListener("click"),
+      () => {
+        this.stopCamera();
 
-    win.querySelector(".close-btn").onclick = () => {
-      this.stopCamera();
-      win.remove();
-      if (this.historyWin) this.historyWin.remove();
-    };
+        if (this.historyWin) this.historyWin.remove();
+      });
+    this.wm.registerCloseWindow(closebtn, win.id);
 
     this.video = win.querySelector("#camera-video");
     this.takePhotoBtn = win.querySelector("#take-photo-btn");
@@ -62,6 +66,7 @@ export class CameraApp {
     this.recordingIcon = win.querySelector("#recording-icon");
     this.recordingTimer = win.querySelector("#recording-timer");
     this.historyBtn = win.querySelector("#open-history-btn");
+    this.startScreenBtn = win.querySelector("#start-screen-btn");
 
     win.style.width = "50vw";
     win.style.height = "70vh";
@@ -74,6 +79,7 @@ export class CameraApp {
     this.startRecordBtn.onclick = () => this.startRecording();
     this.stopRecordBtn.onclick = () => this.stopRecording();
     this.historyBtn.onclick = () => this.openHistoryWindow();
+    this.startScreenBtn.onclick = () => this.startScreenRecording();
   }
 
   async startCamera() {
@@ -111,6 +117,7 @@ export class CameraApp {
       const blob = new Blob(this.recordedChunks, { type: "video/webm" });
       const url = URL.createObjectURL(blob);
       this.addRecording(url);
+      this.stopTimer();
       this.downloadLink.href = url;
       this.downloadLink.download = `video-${Date.now()}.webm`;
       this.downloadLink.textContent = "Download Video";
@@ -128,10 +135,56 @@ export class CameraApp {
   stopRecording() {
     if (this.mediaRecorder && this.mediaRecorder.state !== "inactive") {
       this.mediaRecorder.stop();
+      this.stopTimer();
+      this.recordingIcon.style.display = "none";
       this.startRecordBtn.disabled = false;
       this.stopRecordBtn.disabled = true;
-      this.recordingIcon.style.display = "none";
-      this.stopTimer();
+    }
+  }
+
+  async startScreenRecording() {
+    try {
+      const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+      this.activeStream = screenStream;
+      this.video.srcObject = screenStream;
+
+      this.recordedChunks = [];
+      this.mediaRecorder = new MediaRecorder(screenStream);
+
+      this.mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) this.recordedChunks.push(e.data);
+      };
+
+      this.mediaRecorder.onstop = () => {
+        const blob = new Blob(this.recordedChunks, { type: "video/webm" });
+        const url = URL.createObjectURL(blob);
+        this.addRecording(url);
+        this.downloadLink.href = url;
+        this.downloadLink.download = `screen-${Date.now()}.webm`;
+        this.downloadLink.textContent = "Download Screen Recording";
+        this.downloadLink.style.display = "block";
+        this.stopTimer();
+        this.recordingIcon.style.display = "none";
+        this.startRecordBtn.disabled = false;
+        this.stopRecordBtn.disabled = true;
+        this.activeStream.getTracks().forEach((t) => t.stop());
+        this.activeStream = null;
+        this.video.srcObject = this.stream;
+        if (this.historyWin) this.renderHistory();
+      };
+
+      screenStream.getVideoTracks()[0].onended = () => {
+        if (this.mediaRecorder.state !== "inactive") this.mediaRecorder.stop();
+      };
+
+      this.mediaRecorder.start();
+      this.startRecordBtn.disabled = true;
+      this.stopRecordBtn.disabled = false;
+      this.recordingIcon.style.display = "block";
+      this.startTimer();
+    } catch (e) {
+      console.error(e);
+      alert("Screen capture cancelled or not allowed");
     }
   }
 
@@ -152,8 +205,15 @@ export class CameraApp {
   }
 
   addRecording(url) {
-    this.recordings.unshift(url);
-    if (this.recordings.length > 5) this.recordings.pop();
+    this.recordings.unshift({
+      id: crypto.randomUUID(),
+      name: `Recording ${new Date().toLocaleTimeString()}`,
+      url
+    });
+    if (this.recordings.length > 5) {
+      const removed = this.recordings.pop();
+      URL.revokeObjectURL(removed.url);
+    }
   }
 
   openHistoryWindow() {
@@ -197,15 +257,54 @@ export class CameraApp {
     if (!this.historyWin) return;
     const list = this.historyWin.querySelector("#history-list");
     list.innerHTML = "";
-    this.recordings.forEach((url, index) => {
-      const item = document.createElement("div");
-      item.textContent = `Recording ${this.recordings.length - index}`;
-      item.style.cursor = "pointer";
-      item.style.padding = "5px";
-      item.style.borderBottom = "1px solid #ccc";
-      item.onclick = () => this.playRecording(url);
-      list.appendChild(item);
+
+    this.recordings.forEach((rec) => {
+      const row = document.createElement("div");
+      row.style.display = "flex";
+      row.style.alignItems = "center";
+      row.style.justifyContent = "space-between";
+      row.style.gap = "6px";
+      row.style.borderBottom = "1px solid #ccc";
+      row.style.padding = "6px";
+
+      const title = document.createElement("span");
+      title.textContent = rec.name;
+      title.style.cursor = "pointer";
+      title.onclick = () => this.playRecording(rec.url);
+
+      const actions = document.createElement("div");
+      actions.style.display = "flex";
+      actions.style.gap = "4px";
+
+      const renameBtn = document.createElement("button");
+      renameBtn.textContent = "Rename";
+      renameBtn.onclick = () => this.renameRecording(rec.id);
+
+      const deleteBtn = document.createElement("button");
+      deleteBtn.textContent = "Delete";
+      deleteBtn.onclick = () => this.deleteRecording(rec.id);
+
+      actions.appendChild(renameBtn);
+      actions.appendChild(deleteBtn);
+      row.appendChild(title);
+      row.appendChild(actions);
+      list.appendChild(row);
     });
+  }
+  renameRecording(id) {
+    const rec = this.recordings.find((r) => r.id === id);
+    if (!rec) return;
+    const name = prompt("Rename recording:", rec.name);
+    if (!name) return;
+    rec.name = name;
+    this.renderHistory();
+  }
+  deleteRecording(id) {
+    const index = this.recordings.findIndex((r) => r.id === id);
+    if (index === -1) return;
+    URL.revokeObjectURL(this.recordings[index].url);
+    this.recordings.splice(index, 1);
+    this.renderHistory();
   }
 
   playRecording(url) {

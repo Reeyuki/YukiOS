@@ -113,7 +113,6 @@ body {
 .icon img {
   width: 60px;
   height: 60px;
-  object-fit: contain;
   display: block;
   margin-bottom: 0.3rem;
 }
@@ -227,7 +226,6 @@ body {
   height: 300px;
   border: none;
   resize: none;
-  font-family: "Consolas", monospace;
   padding: 5px;
   outline: none;
   background: #2a2a2a;
@@ -239,7 +237,6 @@ body {
   border: 1px solid #555;
   padding: 3px 8px;
   cursor: pointer;
-  font-family: monospace;
 }
 
 #taskbar {
@@ -409,7 +406,6 @@ body {
   background: #1e1e1e;
   color: #fff;
   border: 1px solid #333;
-  font-family: sans-serif;
 }
 #explorer-win {
   width: 750px;
@@ -657,7 +653,6 @@ body {
   color: #eee;
   border-radius: 8px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
-  font-family: system-ui;
   padding: 8px 0;
   z-index: 10001;
   left: var(--ctx-left, 0);
@@ -814,4 +809,39 @@ body {
   top: "50%";
   transform: "translateY(-50%)";
   font-size: "16px";
+}
+
+.video-shell {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  aspect-ratio: 16 / 9;
+  max-height: 45vh;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.video-shell video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.video-shell #recording-icon {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: red;
+  display: none;
+}
+
+.video-shell #recording-timer {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-weight: bold;
 }
