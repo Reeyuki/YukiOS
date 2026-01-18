@@ -80,6 +80,8 @@ export class CameraApp {
     this.stopRecordBtn.onclick = () => this.stopRecording();
     this.historyBtn.onclick = () => this.openHistoryWindow();
     this.startScreenBtn.onclick = () => this.startScreenRecording();
+    this.db = this.initDB();
+    this.restoreHistory();
   }
 
   async startCamera() {
@@ -116,7 +118,8 @@ export class CameraApp {
     this.mediaRecorder.onstop = () => {
       const blob = new Blob(this.recordedChunks, { type: "video/webm" });
       const url = URL.createObjectURL(blob);
-      this.addRecording(url);
+      this.addRecording(url, blob);
+
       this.stopTimer();
       this.downloadLink.href = url;
       this.downloadLink.download = `video-${Date.now()}.webm`;
@@ -158,7 +161,8 @@ export class CameraApp {
       this.mediaRecorder.onstop = () => {
         const blob = new Blob(this.recordedChunks, { type: "video/webm" });
         const url = URL.createObjectURL(blob);
-        this.addRecording(url);
+        this.addRecording(url, blob);
+
         this.downloadLink.href = url;
         this.downloadLink.download = `screen-${Date.now()}.webm`;
         this.downloadLink.textContent = "Download Screen Recording";
@@ -204,15 +208,24 @@ export class CameraApp {
     this.recordingTimer.textContent = "";
   }
 
-  addRecording(url) {
-    this.recordings.unshift({
+  async addRecording(url, blob) {
+    const rec = {
       id: crypto.randomUUID(),
       name: `Recording ${new Date().toLocaleTimeString()}`,
-      url
+      blob
+    };
+
+    this.recordings.unshift({
+      ...rec,
+      url: URL.createObjectURL(blob)
     });
+
+    await this.saveRecordingToDB(rec);
+
     if (this.recordings.length > 5) {
       const removed = this.recordings.pop();
       URL.revokeObjectURL(removed.url);
+      await this.deleteRecordingFromDB(removed.id);
     }
   }
 
@@ -291,19 +304,23 @@ export class CameraApp {
       list.appendChild(row);
     });
   }
-  renameRecording(id) {
+  async renameRecording(id) {
     const rec = this.recordings.find((r) => r.id === id);
     if (!rec) return;
     const name = prompt("Rename recording:", rec.name);
     if (!name) return;
     rec.name = name;
+    const dbRec = { id, name, blob: rec.blob };
+    await this.saveRecordingToDB(dbRec);
     this.renderHistory();
   }
-  deleteRecording(id) {
+
+  async deleteRecording(id) {
     const index = this.recordings.findIndex((r) => r.id === id);
     if (index === -1) return;
     URL.revokeObjectURL(this.recordings[index].url);
     this.recordings.splice(index, 1);
+    await this.deleteRecordingFromDB(id);
     this.renderHistory();
   }
 
@@ -341,5 +358,51 @@ export class CameraApp {
     if (this.stream) {
       this.stream.getTracks().forEach((track) => track.stop());
     }
+  }
+
+  async initDB() {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open("camera-recordings-db", 1);
+      req.onupgradeneeded = (e) => {
+        const db = e.target.result;
+        db.createObjectStore("recordings", { keyPath: "id" });
+      };
+      req.onsuccess = (e) => resolve(e.target.result);
+      req.onerror = (e) => reject(e);
+    });
+  }
+
+  async saveRecordingToDB(rec) {
+    const db = await this.db;
+    return new Promise((resolve) => {
+      const tx = db.transaction("recordings", "readwrite");
+      tx.objectStore("recordings").put(rec);
+      tx.oncomplete = resolve;
+    });
+  }
+
+  async deleteRecordingFromDB(id) {
+    const db = await this.db;
+    return new Promise((resolve) => {
+      const tx = db.transaction("recordings", "readwrite");
+      tx.objectStore("recordings").delete(id);
+      tx.oncomplete = resolve;
+    });
+  }
+
+  async loadRecordingsFromDB() {
+    const db = await this.db;
+    return new Promise((resolve) => {
+      const tx = db.transaction("recordings", "readonly");
+      const req = tx.objectStore("recordings").getAll();
+      req.onsuccess = () => resolve(req.result);
+    });
+  }
+  async restoreHistory() {
+    const stored = await this.loadRecordingsFromDB();
+    this.recordings = stored.map((r) => ({
+      ...r,
+      url: URL.createObjectURL(r.blob)
+    }));
   }
 }
