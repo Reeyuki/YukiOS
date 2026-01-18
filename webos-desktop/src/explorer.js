@@ -9,7 +9,10 @@ export class ExplorerApp {
     this.fs = fileSystemManager;
     this.wm = windowManager;
     this.notepadApp = notepadApp;
-    this.currentPath = ["home", "reeyuki"];
+    this.currentPath = [];
+    this.history = [];
+    this.historyIndex = -1;
+
     this.fileSelectCallback = null;
     this.open = this.open.bind(this);
   }
@@ -38,9 +41,9 @@ export class ExplorerApp {
       </div>
       <div class="explorer-container">
         <div class="explorer-sidebar">
-          <div class="start-item" data-path="home/reeyuki/Documents">Documents</div>
-          <div class="start-item" data-path="home/reeyuki/Pictures">Pictures</div>
-          <div class="start-item" data-path="home/reeyuki/Music">Music</div>
+          <div class="start-item" data-path="Documents">Documents</div>
+          <div class="start-item" data-path="Pictures">Pictures</div>
+          <div class="start-item" data-path="Music">Music</div>
         </div>
         <div class="explorer-main" id="explorer-view"></div>
       </div>
@@ -59,13 +62,14 @@ export class ExplorerApp {
     this.wm.addToTaskbar(win.id, "File Explorer", "/static/icons/file.png");
 
     this.setupExplorerControls(win);
-    await this.render();
+    this.navigate([]);
   }
 
   setupExplorerControls(win) {
     win.querySelector("#exp-back").onclick = async () => {
-      if (this.currentPath.length > 1) {
-        this.currentPath.pop();
+      if (this.historyIndex > 0) {
+        this.historyIndex--;
+        this.currentPath = [...this.history[this.historyIndex]];
         await this.render();
       }
     };
@@ -73,8 +77,7 @@ export class ExplorerApp {
     win.querySelectorAll(".explorer-sidebar .start-item").forEach((item) => {
       item.onclick = async () => {
         const path = item.dataset.path.split("/").filter((p) => p);
-        this.currentPath = path;
-        await this.render();
+        this.navigate(path);
       };
     });
 
@@ -82,6 +85,14 @@ export class ExplorerApp {
     explorerView.addEventListener("contextmenu", (e) => {
       if (e.target === explorerView) this.showBackgroundContextMenu(e);
     });
+  }
+
+  navigate(path) {
+    this.currentPath = [...path];
+    this.history = this.history.slice(0, this.historyIndex + 1);
+    this.history.push([...this.currentPath]);
+    this.historyIndex = this.history.length - 1;
+    return this.render();
   }
 
   async renderMusicPage(element) {
@@ -103,12 +114,12 @@ export class ExplorerApp {
     view.innerHTML = "";
     pathDisplay.textContent = "/" + this.currentPath.join("/");
 
-    if (this.currentPath[2] === "Music") {
+    if (this.currentPath[this.currentPath.length - 1] === "Music") {
       await this.renderMusicPage(view);
       return;
     }
 
-    const folder = this.fs.getFolder(this.currentPath);
+    const folder = await this.fs.getFolder(this.currentPath);
 
     for (const [name, itemData] of Object.entries(folder)) {
       const isFile = itemData?.type === "file";
@@ -159,8 +170,7 @@ export class ExplorerApp {
         this.notepadApp.open(name, content, this.currentPath);
       }
     } else {
-      this.currentPath.push(name);
-      await this.render();
+      this.navigate([...this.currentPath, name]);
     }
   }
 
