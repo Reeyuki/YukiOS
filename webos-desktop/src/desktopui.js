@@ -1,7 +1,7 @@
 import { updateFavoritesUI } from "./startMenu.js";
 import { desktop } from "./desktop.js";
 import interact from "interactjs";
-import { last, pick, get, chain, isEmpty } from "lodash-es";
+import { last, pick, get, isEmpty } from "lodash-es";
 
 export class DesktopUI {
   constructor(appLauncher, notepadApp, explorerApp) {
@@ -60,7 +60,39 @@ export class DesktopUI {
     this.setupIconHandlers();
     this.setupInteractableSelection();
     this.setupStartMenu();
+    this.setupKeyboardShortcuts();
   }
+
+  setupKeyboardShortcuts() {
+    let lastMousePos = { x: 50, y: 50 };
+
+    document.addEventListener("mousemove", (e) => {
+      lastMousePos = { x: e.pageX, y: e.pageY };
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.ctrlKey && e.code === "KeyC") {
+        e.preventDefault();
+        const selectedArray = Array.from(this.state.selectedIcons);
+        if (selectedArray.length) this.copySelectedIcons(selectedArray);
+      }
+
+      if (e.ctrlKey && e.code === "KeyX") {
+        e.preventDefault();
+        const selectedArray = Array.from(this.state.selectedIcons);
+        if (selectedArray.length) this.cutSelectedIcons(selectedArray);
+      }
+
+      if (e.ctrlKey && e.code === "KeyV") {
+        e.preventDefault();
+        if (!this.state.clipboard) return;
+        this.pasteIcons(lastMousePos.x, lastMousePos.y);
+      }
+    });
+  }
+
+
+
 
   toggleStartMenu() {
     this.startMenu.style.display = this.startMenu.style.display === "flex" ? "none" : "flex";
@@ -303,12 +335,16 @@ export class DesktopUI {
     this.positionContextMenu(e);
   }
 
-  cutSelectedIcons(selectedArray) {
+ cutSelectedIcons(selectedArray) {
     this.state.clipboard = {
       action: "cut",
       icons: selectedArray.map((icon) => ({
         element: icon,
-        data: pick(icon.dataset, ["app", "name", "path"])
+        data: {
+          ...pick(icon.dataset, ["app", "name", "path"]),
+          className: icon.className,
+          innerHTML: icon.innerHTML
+        }
       }))
     };
   }
@@ -317,10 +353,15 @@ export class DesktopUI {
     this.state.clipboard = {
       action: "copy",
       icons: selectedArray.map((icon) => ({
-        data: pick(icon.dataset, ["app", "name", "path"])
+        data: {
+          ...pick(icon.dataset, ["app", "name", "path"]),
+          className: icon.className,
+          innerHTML: icon.innerHTML
+        }
       }))
     };
   }
+
 
   deleteSelectedIcons(selectedArray) {
     selectedArray.forEach((icon) => {
@@ -338,33 +379,33 @@ export class DesktopUI {
     };
   }
 
-  createPropertiesContent(icon) {
-    const dataset = icon.dataset;
-    const rect = icon.getBoundingClientRect();
-    const appId = dataset.app;
-    const appInfo = get(this.appLauncher, `appMap.${appId}`, {});
+createPropertiesContent(icon) {
+  const dataset = icon.dataset;
+  const rect = icon.getBoundingClientRect();
+  const appId = dataset.app;
+  const appInfo = get(this.appLauncher, `appMap.${appId}`, {});
 
-    const properties = {
-      Name: dataset.name || "Unknown",
-      Type: dataset.app || "Application",
-      Path: dataset.path,
-      "App Type": appInfo.type,
-      "SWF Path": appInfo.swf,
-      URL: appInfo.url,
-      Core: dataset.core,
-      Width: `${Math.round(rect.width)}px`,
-      Height: `${Math.round(rect.height)}px`,
-      Left: `${Math.round(rect.left)}px`,
-      Top: `${Math.round(rect.top)}px`,
-      "Z-Index": icon.style.zIndex || "0"
-    };
+  const properties = {
+    Name: dataset.name || "Unknown",
+    Type: dataset.app || "Application",
+    Path: dataset.path,
+    "App Type": appInfo.type,
+    "SWF Path": appInfo.swf,
+    URL: appInfo.url,
+    Core: dataset.core,
+    Width: `${Math.round(rect.width)}px`,
+    Height: `${Math.round(rect.height)}px`,
+    Left: `${Math.round(rect.left)}px`,
+    Top: `${Math.round(rect.top)}px`,
+    "Z-Index": icon.style.zIndex || "0"
+  };
 
-    return chain(properties)
-      .pickBy((value) => !isEmpty(value) && value !== undefined)
-      .map((value, key) => `<div style="margin:2px 0;">${key}: ${value}</div>`)
-      .join("")
-      .value();
+  return Object.entries(properties)
+      .filter(([, value]) => value !== undefined && !isEmpty(value))
+      .map(([key, value]) => `<div style="margin:2px 0;">${key}: ${value}</div>`)
+      .join("");
   }
+
 
   createWindowHTML(title, content) {
     return `
@@ -418,16 +459,19 @@ export class DesktopUI {
       display: "block"
     });
   }
-
   pasteIcons(x, y) {
     if (!this.state.clipboard) return;
 
     const { action, icons } = this.state.clipboard;
 
     icons.forEach((iconData, index) => {
-      const newIcon = this.createIconElement(iconData.data, x + index * 10, y + index * 10);
+      let newLeft = x + index * 10;
+      let newTop = y + index * 10;
+
+      const newIcon = this.createIconElement(iconData.data, newLeft, newTop);
       this.makeIconInteractable(newIcon);
       this.desktop.appendChild(newIcon);
+      this.snapIconToGrid(newIcon);
 
       if (action === "cut" && iconData.element) {
         iconData.element.remove();
@@ -580,3 +624,35 @@ export class DesktopUI {
     });
   }
 }
+
+
+const ICON_WIDTH = 80;
+const ICON_HEIGHT = 100;
+const GAP = 5;
+
+function layoutIcons() {
+  const icons = desktop.querySelectorAll(".icon");
+  const desktopHeight = desktop.clientHeight;
+
+  let x = GAP;
+  let y = GAP;
+
+  requestAnimationFrame(() => {
+    for (const icon of icons) {
+      Object.assign(icon.style, {
+        position: "absolute",
+        left: `${x}px`,
+        top: `${y}px`
+      });
+
+      y += ICON_HEIGHT + GAP;
+      if (y + ICON_HEIGHT > desktopHeight) {
+        y = GAP;
+        x += ICON_WIDTH + GAP;
+      }
+    }
+  });
+}
+
+window.addEventListener("load", layoutIcons);
+window.addEventListener("resize", layoutIcons);

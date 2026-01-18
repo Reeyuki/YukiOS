@@ -23,14 +23,10 @@ body {
   position: relative;
   width: 100%;
   min-height: calc(100vh - var(--taskbar-height));
-  display: flex;
-  flex-wrap: wrap;
-  align-content: flex-start;
   padding: 5px;
   box-sizing: border-box;
   overflow: auto;
 }
-
 .taskbar {
   position: fixed;
   bottom: 0;
@@ -108,7 +104,7 @@ body {
   font-size: 0.75rem;
   text-shadow: 1px 1px 2px black;
   box-sizing: border-box;
-  margin: 5px;
+  position: absolute;
 }
 .icon div {
   font-family: sans-serif;
