@@ -8,27 +8,43 @@ html,
 body {
   margin: 0;
   padding: 0;
-  height: 100%;
   width: 100%;
-  min-height: 100%;
+  height: 100%;
+  overflow: hidden;
   cursor: url("/static/icons/cursor.png"), auto;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  overflow: auto;
 }
 
 #desktop {
   position: relative;
   width: 100%;
-  min-height: calc(100vh - var(--taskbar-height));
-  max-height: calc(100vh - var(--taskbar-height));
-  display: flex;
-  flex-wrap: wrap;
-  align-content: flex-start;
-  padding: 0.5rem;
+  height: calc(100vh - var(--taskbar-height));
   box-sizing: border-box;
-  overflow-y: auto;
+  overflow: hidden;
+}
+
+.taskbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: var(--taskbar-height);
+  z-index: 1000;
+}
+
+.window {
+  position: absolute;
+  min-width: 200px;
+  min-height: 120px;
+  box-sizing: border-box;
+}
+
+.window .titlebar {
+  height: 28px;
+  cursor: move;
+  user-select: none;
 }
 
 @media (max-width: 768px) {
@@ -53,10 +69,6 @@ body {
   .icon img {
     width: 55%;
   }
-}
-
-body {
-  padding-bottom: calc(var(--taskbar-height) + env(safe-area-inset-bottom));
 }
 
 .icon:hover {
