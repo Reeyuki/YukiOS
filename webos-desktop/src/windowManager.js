@@ -297,16 +297,22 @@ export class WindowManager {
     const header = win.querySelector(".window-header");
     header.onmousedown = (e) => {
       if (e.target.tagName === "BUTTON") return;
+
+      e.stopPropagation();
+
+      this.isDraggingWindow = true;
       const ox = e.clientX - win.offsetLeft;
       const oy = e.clientY - win.offsetTop;
       document.onmousemove = (e) => {
         win.style.left = `${e.clientX - ox}px`;
         win.style.top = `${e.clientY - oy}px`;
       };
-      document.onmouseup = () => (document.onmousemove = null);
+      document.onmouseup = () => {
+        document.onmousemove = null;
+        this.isDraggingWindow = false;
+      };
     };
   }
-
   makeResizable(win) {
     const margin = 10;
 

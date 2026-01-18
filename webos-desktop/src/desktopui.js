@@ -5,42 +5,41 @@ import { last, pick, get, isEmpty } from "lodash-es";
 
 export class DesktopUI {
   constructor(appLauncher, notepadApp, explorerApp) {
-    this.appLauncher = appLauncher;
-    this.notepadApp = notepadApp;
-    this.explorerApp = explorerApp;
-    this.desktop = document.getElementById("desktop");
-    this.startButton = document.getElementById("start-button");
-    this.startMenu = document.getElementById("start-menu");
-    this.contextMenu = document.getElementById("context-menu");
-    this.selectionBox = document.getElementById("selection-box");
+  this.appLauncher = appLauncher;
+  this.notepadApp = notepadApp;
+  this.explorerApp = explorerApp;
+  this.desktop = document.getElementById("desktop");
+  this.startButton = document.getElementById("start-button");
+  this.startMenu = document.getElementById("start-menu");
+  this.contextMenu = document.getElementById("context-menu");
+  this.selectionBox = document.getElementById("selection-box");
 
-    this.state = {
-      clipboard: null,
-      selectedIcons: new Set(),
-      gridSize: { width: 80, height: 100, gap: 5 },
-      isSelecting: false
-    };
+  this.state = {
+    clipboard: null,
+    selectedIcons: new Set(),
+    gridSize: { width: 80, height: 100, gap: 5 },
+    isSelecting: false
+  };
 
-    this.templates = {
-      iconContextMenu: [
-        { id: "ctx-open", label: "Open", action: "open" },
-        { id: "ctx-cut", label: "Cut", action: "cut" },
-        { id: "ctx-copy", label: "Copy", action: "copy" },
-        { id: "ctx-delete", label: "Delete", action: "delete" },
-        { id: "ctx-properties", label: "Properties", action: "properties" }
-      ],
-      desktopContextMenu: [
-        { id: "ctx-new-notepad", label: "New Notepad", action: "newNotepad" },
-        { id: "ctx-open-explorer", label: "Open File Explorer", action: "openExplorer" },
-        { id: "ctx-paste", label: "Paste", action: "paste", condition: () => this.state.clipboard },
-        "hr",
-        { id: "ctx-refresh", label: "Refresh", action: "refresh" }
-      ]
-    };
+  this.templates = {
+    iconContextMenu: [
+      { id: "ctx-open", label: "Open", action: "open" },
+      { id: "ctx-cut", label: "Cut", action: "cut" },
+      { id: "ctx-copy", label: "Copy", action: "copy" },
+      { id: "ctx-delete", label: "Delete", action: "delete" },
+      { id: "ctx-properties", label: "Properties", action: "properties" }
+    ],
+    desktopContextMenu: [
+      { id: "ctx-new-notepad", label: "New Notepad", action: "newNotepad" },
+      { id: "ctx-open-explorer", label: "Open File Explorer", action: "openExplorer" },
+      { id: "ctx-paste", label: "Paste", action: "paste", condition: () => this.state.clipboard },
+      "hr",
+      { id: "ctx-refresh", label: "Refresh", action: "refresh" }
+    ]
+  };
 
-    this.setupEventListeners();
-  }
-
+  this.setupEventListeners();
+}
   setupEventListeners() {
     this.startButton.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -517,7 +516,7 @@ createPropertiesContent(icon) {
       cursorChecker: () => null,
       listeners: {
         start: (event) => {
-          if (event.target !== this.desktop) return;
+          if (this.appLauncher.wm.isDraggingWindow) return;
 
           selectionState = {
             startX: event.pageX,
