@@ -209,41 +209,11 @@ export class AppLauncher {
   _getAnalyticsBase(app) {
     const now = Date.now();
     const sessionAgeMs = now - this.pageLoadTime;
-    const cores = navigator.hardwareConcurrency || "Unknown";
-    const width = window.innerWidth;
-    let viewport = "small";
-    if (width >= 1024) viewport = "large";
-    else if (width >= 640) viewport = "medium";
-    const browserFamily = this.getBrowserFamily();
-    const deviceType = this.getDeviceType();
     return {
       app,
       timestamp: now,
       sessionAgeMs,
-      cores,
-      viewport,
-      deviceType,
-      browserfamily: browserFamily
     };
-  }
-
-  getDeviceType() {
-    const ua = navigator.userAgent || navigator.vendor || window.opera;
-
-    if (/android/i.test(ua)) return "mobile";
-    if (/iPad|iPhone|iPod/.test(ua) && !window.MSStream) return "mobile";
-    return "desktop";
-  }
-
-  getBrowserFamily() {
-    const ua = navigator.userAgent;
-
-    if (/Firefox\/\d+/i.test(ua)) return "firefox";
-    if (/Edg\/\d+/i.test(ua)) return "edge";
-    if (/Chrome\/\d+/i.test(ua) && !/Edg\/\d+/i.test(ua)) return "chrome";
-    if (/Safari\/\d+/i.test(ua) && !/Chrome\/\d+/i.test(ua)) return "safari";
-
-    return "other";
   }
 
   sendAnalytics(data) {
