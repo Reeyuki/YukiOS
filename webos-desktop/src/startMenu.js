@@ -1,3 +1,6 @@
+import { camelize } from "./utils.js";
+
+
 const FAVORITES_KEY = "kdeFavorites";
 
 function getFavorites() {
@@ -130,13 +133,6 @@ export function setupStartMenu() {
   });
 
   setupStars();
-}
-function camelize(str) {
-  return str
-    .replace(/(?:^\w|[A-Z]|\b\w)/g, function (word, index) {
-      return index === 0 ? word.toLowerCase() : word.toUpperCase();
-    })
-    .replace(/\s+/g, "");
 }
 
 export function tryGetIcon(id) {

@@ -4,42 +4,52 @@ import interact from "interactjs";
 import { last, pick, get, isEmpty } from "lodash-es";
 
 export class DesktopUI {
-  constructor(appLauncher, notepadApp, explorerApp) {
-  this.appLauncher = appLauncher;
-  this.notepadApp = notepadApp;
-  this.explorerApp = explorerApp;
-  this.desktop = document.getElementById("desktop");
-  this.startButton = document.getElementById("start-button");
-  this.startMenu = document.getElementById("start-menu");
-  this.contextMenu = document.getElementById("context-menu");
-  this.selectionBox = document.getElementById("selection-box");
+  constructor(appLauncher, notepadApp, explorerApp, fileSystemManager) {
+    this.appLauncher = appLauncher;
+    this.notepadApp = notepadApp;
+    this.explorerApp = explorerApp;
+    this.fs = fileSystemManager;
+    this.desktop = document.getElementById("desktop");
+    this.startButton = document.getElementById("start-button");
+    this.startMenu = document.getElementById("start-menu");
+    this.contextMenu = document.getElementById("context-menu");
+    this.selectionBox = document.getElementById("selection-box");
 
-  this.state = {
-    clipboard: null,
-    selectedIcons: new Set(),
-    gridSize: { width: 80, height: 100, gap: 5 },
-    isSelecting: false
-  };
+    this.state = {
+      clipboard: null,
+      selectedIcons: new Set(),
+      gridSize: { width: 80, height: 100, gap: 5 },
+      isSelecting: false,
+      dragTarget: null
+    };
 
-  this.templates = {
-    iconContextMenu: [
-      { id: "ctx-open", label: "Open", action: "open" },
-      { id: "ctx-cut", label: "Cut", action: "cut" },
-      { id: "ctx-copy", label: "Copy", action: "copy" },
-      { id: "ctx-delete", label: "Delete", action: "delete" },
-      { id: "ctx-properties", label: "Properties", action: "properties" }
-    ],
-    desktopContextMenu: [
-      { id: "ctx-new-notepad", label: "New Notepad", action: "newNotepad" },
-      { id: "ctx-open-explorer", label: "Open File Explorer", action: "openExplorer" },
-      { id: "ctx-paste", label: "Paste", action: "paste", condition: () => this.state.clipboard },
-      "hr",
-      { id: "ctx-refresh", label: "Refresh", action: "refresh" }
-    ]
-  };
+    this.templates = {
+      iconContextMenu: [
+        { id: "ctx-open", label: "Open", action: "open" },
+        { id: "ctx-cut", label: "Cut", action: "cut" },
+        { id: "ctx-copy", label: "Copy", action: "copy" },
+        { id: "ctx-delete", label: "Delete", action: "delete" },
+        { id: "ctx-properties", label: "Properties", action: "properties" }
+      ],
+      folderContextMenu: [
+        { id: "ctx-open-folder", label: "Open", action: "openFolder" },
+        { id: "ctx-delete-folder", label: "Delete", action: "deleteFolder" },
+        { id: "ctx-rename-folder", label: "Rename", action: "renameFolder" }
+      ],
+      desktopContextMenu: [
+        { id: "ctx-new-notepad", label: "New Notepad", action: "newNotepad" },
+        { id: "ctx-new-folder", label: "New Folder", action: "newFolder" },
+        { id: "ctx-open-explorer", label: "Open File Explorer", action: "openExplorer" },
+        { id: "ctx-paste", label: "Paste", action: "paste", condition: () => this.state.clipboard },
+        "hr",
+        { id: "ctx-refresh", label: "Refresh", action: "refresh" }
+      ]
+    };
 
-  this.setupEventListeners();
-}
+    this.setupEventListeners();
+    this.initializeDesktopFiles();
+  }
+
   setupEventListeners() {
     this.startButton.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -90,9 +100,6 @@ export class DesktopUI {
     });
   }
 
-
-
-
   toggleStartMenu() {
     this.startMenu.style.display = this.startMenu.style.display === "flex" ? "none" : "flex";
     updateFavoritesUI(this.appLauncher);
@@ -104,7 +111,10 @@ export class DesktopUI {
   }
 
   handleContextMenu(e) {
-    if (e.target.classList.contains("selectable")) {
+    if (e.target.classList.contains("folder-icon")) {
+      e.preventDefault();
+      this.showFolderContextMenu(e, e.target);
+    } else if (e.target.classList.contains("selectable")) {
       e.preventDefault();
       this.showIconContextMenu(e, e.target);
     } else if (e.target === this.desktop) {
@@ -134,15 +144,23 @@ export class DesktopUI {
     });
   }
 
-  attachIconEvents(icon) {
-    icon.addEventListener("dblclick", (e) => {
-      e.stopPropagation();
+ attachIconEvents(icon) {
+  icon.addEventListener("dblclick", (e) => {
+    e.stopPropagation();
+    if (icon.classList.contains("folder-icon")) {
+      this.openFolder(icon.dataset.folderName);
+    } else {
       this.appLauncher.launch(icon.dataset.app, icon);
-    });
+    }
+  });
 
-    icon.addEventListener("mousedown", (e) => {
-      this.handleIconSelection(icon, e.ctrlKey);
-    });
+  icon.addEventListener("mousedown", (e) => {
+    this.handleIconSelection(icon, e.ctrlKey);
+  });
+}
+  async openFolder(folderName) {
+    this.explorerApp.open();
+    await this.explorerApp.navigate(["Desktop", folderName]);
   }
 
   handleIconSelection(icon, isCtrlKey) {
@@ -204,19 +222,87 @@ export class DesktopUI {
         top: `${newY}px`
       });
     });
+
+    this.updateDragTarget(event);
   }
 
-  onDragEnd() {
-    this.state.selectedIcons.forEach((selectedIcon) => {
-      this.snapIconToGrid(selectedIcon);
-      Object.assign(selectedIcon.style, {
-        opacity: "1",
-        zIndex: "1",
-        cursor: "default"
-      });
+  updateDragTarget(event) {
+    const folderIcons = document.querySelectorAll(".folder-icon");
+    let foundTarget = null;
+
+    folderIcons.forEach((folder) => {
+      const rect = folder.getBoundingClientRect();
+      if (
+        event.clientX >= rect.left &&
+        event.clientX <= rect.right &&
+        event.clientY >= rect.top &&
+        event.clientY <= rect.bottom
+      ) {
+        foundTarget = folder;
+      }
     });
+
+    if (this.state.dragTarget) {
+      this.state.dragTarget.style.outline = "";
+    }
+
+    if (foundTarget && !this.state.selectedIcons.has(foundTarget)) {
+      foundTarget.style.outline = "2px solid #0078d7";
+      this.state.dragTarget = foundTarget;
+    } else {
+      this.state.dragTarget = null;
+    }
   }
 
+
+  async moveIconsToFolder(icons, folderName) {
+  for (const icon of icons) {
+    if (icon.classList.contains("folder-icon")) continue;
+
+    const nameElement = icon.querySelector("div");
+    const name = nameElement ? nameElement.textContent.trim() : "Unknown";
+    const fileName = `${name}.desktop`;
+    const fileContent = await this.fs.getFileContent(["Desktop"], fileName);
+    
+    await this.fs.createFile(["Desktop", folderName], fileName, fileContent, "text");
+    await this.fs.deleteItem(["Desktop"], fileName);
+    
+    icon.remove();
+    this.state.selectedIcons.delete(icon);
+  }
+
+  this.clearSelection();
+}
+
+  
+async updateDesktopFilePositions() {
+  for (const icon of this.state.selectedIcons) {
+    if (icon.classList.contains("folder-icon")) continue;
+
+    const nameElement = icon.querySelector("div");
+    const name = nameElement ? nameElement.textContent.trim() : "Unknown";
+    const fileName = `${name}.desktop`;
+    const app = icon.dataset.app;
+    
+    const pathMap = {
+      explorer: "/static/icons/pc.webp",
+      notepad: "/static/icons/notepad.webp",
+      flash: "/static/icons/flash.png"
+    };
+    
+    const fileContent = JSON.stringify({
+      app: app,
+      name: name,
+      path: pathMap[app] || "/static/icons/file.png",
+      position: {
+        left: icon.style.left,
+        top: icon.style.top
+      }
+    });
+
+    await this.fs.createFile(["Desktop"], fileName, fileContent, "text");
+  }
+}
   snapIconToGrid(icon) {
     const { width, height, gap } = this.state.gridSize;
     const columnWidth = width + gap;
@@ -311,6 +397,33 @@ export class DesktopUI {
     });
   }
 
+  showFolderContextMenu(e, folderIcon) {
+    this.clearSelection();
+    this.addToSelection(folderIcon);
+
+    this.contextMenu.innerHTML = this.createContextMenuHTML(this.templates.folderContextMenu);
+
+    const handlers = {
+      openFolder: () => this.openFolder(folderIcon.dataset.folderName),
+      deleteFolder: async () => {
+        await this.fs.deleteItem(["Desktop"], folderIcon.dataset.folderName);
+        folderIcon.remove();
+        this.clearSelection();
+      },
+      renameFolder: async () => {
+        const newName = prompt("Enter new folder name:", folderIcon.dataset.folderName);
+        if (newName && newName !== folderIcon.dataset.folderName) {
+          await this.fs.renameItem(["Desktop"], folderIcon.dataset.folderName, newName);
+          folderIcon.dataset.folderName = newName;
+          folderIcon.querySelector("span").textContent = newName;
+        }
+      }
+    };
+
+    this.attachContextMenuHandlers(this.templates.folderContextMenu, handlers);
+    this.positionContextMenu(e);
+  }
+
   showIconContextMenu(e, icon) {
     if (!this.state.selectedIcons.has(icon)) {
       this.clearSelection();
@@ -334,7 +447,7 @@ export class DesktopUI {
     this.positionContextMenu(e);
   }
 
- cutSelectedIcons(selectedArray) {
+  cutSelectedIcons(selectedArray) {
     this.state.clipboard = {
       action: "cut",
       icons: selectedArray.map((icon) => ({
@@ -361,7 +474,6 @@ export class DesktopUI {
     };
   }
 
-
   deleteSelectedIcons(selectedArray) {
     selectedArray.forEach((icon) => {
       this.state.selectedIcons.delete(icon);
@@ -378,53 +490,60 @@ export class DesktopUI {
     };
   }
 
-createPropertiesContent(icon) {
-  const dataset = icon.dataset;
-  const rect = icon.getBoundingClientRect();
-  const appId = dataset.app;
-  const appInfo = get(this.appLauncher, `appMap.${appId}`, {});
+  createPropertiesContent(icon) {
+      const rect = icon.getBoundingClientRect();
+      const appId = icon.dataset.app;
+      const appInfo = get(this.appLauncher, `appMap.${appId}`, {});
+      const nameElement = icon.querySelector("div");
+      const name = nameElement ? nameElement.textContent.trim() : "Unknown";
 
-  const properties = {
-    Name: dataset.name || "Unknown",
-    Type: dataset.app || "Application",
-    Path: dataset.path,
-    "App Type": appInfo.type,
-    "SWF Path": appInfo.swf,
-    URL: appInfo.url,
-    Core: dataset.core,
-    Width: `${Math.round(rect.width)}px`,
-    Height: `${Math.round(rect.height)}px`,
-    Left: `${Math.round(rect.left)}px`,
-    Top: `${Math.round(rect.top)}px`,
-    "Z-Index": icon.style.zIndex || "0"
-  };
+      const pathMap = {
+        explorer: "/static/icons/pc.webp",
+        notepad: "/static/icons/notepad.webp",
+        flash: "/static/icons/flash.png"
+      };
 
-  return Object.entries(properties)
-      .filter(([, value]) => value !== undefined && !isEmpty(value))
-      .map(([key, value]) => `<div style="margin:2px 0;">${key}: ${value}</div>`)
-      .join("");
-  }
+      const properties = {
+        Name: name,
+        Type: appId || "Application",
+        Path: pathMap[appId] || "/static/icons/file.png",
+        "App Type": appInfo.type,
+        "SWF Path": appInfo.swf,
+        URL: appInfo.url,
+        Width: `${Math.round(rect.width)}px`,
+        Height: `${Math.round(rect.height)}px`,
+        Left: `${Math.round(rect.left)}px`,
+        Top: `${Math.round(rect.top)}px`,
+        "Z-Index": icon.style.zIndex || "0"
+      };
 
+      return Object.entries(properties)
+        .filter(([, value]) => value !== undefined && !isEmpty(value))
+        .map(([key, value]) => `<div style="margin:2px 0;">${key}: ${value}</div>`)
+        .join("");
+    }
 
-  createWindowHTML(title, content) {
-    return `
-      <div class="window-header">
-        <span>${title}</span>
-        <div class="window-controls">
-          <button class="minimize-btn" title="Minimize">−</button>
-          <button class="maximize-btn" title="Maximize">□</button>
-          <button class="close-btn" title="Close">X</button>
+    createWindowHTML(title, content) {
+      return `
+        <div class="window-header">
+          <span>${title}</span>
+          <div class="window-controls">
+            <button class="minimize-btn" title="Minimize">−</button>
+            <button class="maximize-btn" title="Maximize">□</button>
+            <button class="close-btn" title="Close">X</button>
+          </div>
         </div>
-      </div>
-      <div class="window-content" style="width:100%; height:100%; overflow:auto; user-select:text; padding:10px;">
-        ${content}
-      </div>
-    `;
-  }
+        <div class="window-content" style="width:100%; height:100%; overflow:auto; user-select:text; padding:10px;">
+          ${content}
+        </div>
+      `;
+    }
 
-  showPropertiesDialog(icon) {
+    showPropertiesDialog(icon) {
     const winId = icon.id || `icon-${Date.now()}`;
-    const title = `Properties: ${icon.dataset.name || "Unknown"}`;
+    const nameElement = icon.querySelector("div");
+    const name = nameElement ? nameElement.textContent.trim() : "Unknown";
+    const title = `Properties: ${name}`;
     const contentHtml = this.createPropertiesContent(icon);
 
     const propsWin = this.appLauncher.wm.createWindow(`${winId}-props`, title, "300px", "auto");
@@ -438,19 +557,181 @@ createPropertiesContent(icon) {
   }
 
   showDesktopContextMenu(e) {
-    this.contextMenu.innerHTML = this.createContextMenuHTML(this.templates.desktopContextMenu);
+  this.contextMenu.innerHTML = this.createContextMenuHTML(this.templates.desktopContextMenu);
 
-    const handlers = {
-      newNotepad: () => this.notepadApp.open(),
-      openExplorer: () => this.explorerApp.open(),
-      paste: () => this.pasteIcons(e.pageX, e.pageY),
-      refresh: () => location.reload()
+  const handlers = {
+    newNotepad: () => this.notepadApp.open(),
+    newFolder: async () => {
+      const folderName = prompt("Enter folder name:", "New Folder");
+      if (folderName) {
+        await this.fs.createFolder(["Desktop"], folderName);
+        this.createFolderIcon(folderName);
+        await this.saveFolderPosition(folderName);
+      }
+    },
+    openExplorer: () => this.explorerApp.open(),
+    paste: () => this.pasteIcons(e.pageX, e.pageY),
+    refresh: async () => {
+      const folderIcons = document.querySelectorAll(".folder-icon");
+      folderIcons.forEach(icon => icon.remove());
+      await this.loadDesktopItems();
+      await this.loadFolderPositions();
+    }
+  };
+
+  this.attachContextMenuHandlers(this.templates.desktopContextMenu, handlers);
+  this.positionContextMenu(e);
+}
+async initializeDesktopFiles() {
+  await this.fs.ensureFolder(["Desktop"]);
+  
+  const icons = document.querySelectorAll(".icon.selectable:not(.folder-icon)");
+  for (const icon of icons) {
+    const nameElement = icon.querySelector("div");
+    const name = nameElement ? nameElement.textContent.trim() : "Unknown";
+    const app = icon.dataset.app;
+    const fileName = `${name}.desktop`;
+    
+    const pathMap = {
+      explorer: "/static/icons/pc.webp",
+      notepad: "/static/icons/notepad.webp",
+      flash: "/static/icons/flash.png"
     };
-
-    this.attachContextMenuHandlers(this.templates.desktopContextMenu, handlers);
-    this.positionContextMenu(e);
+    
+    const desktopFileContent = JSON.stringify({
+      app: app,
+      name: name,
+      path: pathMap[app] || "/static/icons/file.png",
+      position: {
+        left: icon.style.left || "0px",
+        top: icon.style.top || "0px"
+      }
+    });
+    
+    const existingFile = await this.fs.getFileContent(["Desktop"], fileName);
+    if (!existingFile) {
+      await this.fs.createFile(["Desktop"], fileName, desktopFileContent, "text");
+    }
   }
 
+  await this.loadDesktopItems();
+}
+
+async loadDesktopItems() {
+  const desktopFolder = await this.fs.getFolder(["Desktop"]);
+  
+  for (const [name, itemData] of Object.entries(desktopFolder)) {
+    if (!itemData.type) {
+      this.createFolderIcon(name);
+    } else if (name.endsWith(".desktop")) {
+      await this.loadDesktopFile(name, itemData.content);
+    }
+  }
+}
+
+async loadDesktopFile(fileName, content) {
+  try {
+    const data = JSON.parse(content);
+    const existingIcon = Array.from(document.querySelectorAll(".icon.selectable:not(.folder-icon)")).find(icon => {
+      const nameElement = icon.querySelector("div");
+      const iconName = nameElement ? nameElement.textContent.trim() : "";
+      return iconName === data.name && icon.dataset.app === data.app;
+    });
+
+    if (existingIcon && data.position) {
+      Object.assign(existingIcon.style, {
+        left: data.position.left,
+        top: data.position.top
+      });
+    }
+  } catch (e) {
+    console.error("Failed to load desktop file:", fileName, e);
+  }
+}
+
+createFolderIcon(folderName) {
+  const existingFolder = document.querySelector(`.folder-icon[data-folder-name="${folderName}"]`);
+  if (existingFolder) return existingFolder;
+
+  const folderIcon = document.createElement("div");
+  folderIcon.className = "icon selectable folder-icon";
+  folderIcon.dataset.folderName = folderName;
+  folderIcon.innerHTML = `
+    <img src="/static/icons/file.png" style="width:64px;height:64px">
+    <div>${folderName}</div>
+  `;
+
+  this.desktop.appendChild(folderIcon);
+  this.makeIconInteractable(folderIcon);
+  this.snapIconToGrid(folderIcon);
+
+  return folderIcon;
+}
+
+async saveFolderPosition(folderName) {
+  const folderIcon = document.querySelector(`.folder-icon[data-folder-name="${folderName}"]`);
+  if (!folderIcon) return;
+
+  const metaFileName = `.${folderName}.folder`;
+  const folderData = JSON.stringify({
+    type: "folder",
+    name: folderName,
+    position: {
+      left: folderIcon.style.left,
+      top: folderIcon.style.top
+    }
+  });
+
+  await this.fs.createFile(["Desktop"], metaFileName, folderData, "text");
+}
+
+async loadFolderPositions() {
+  const desktopFolder = await this.fs.getFolder(["Desktop"]);
+  
+  for (const [name, itemData] of Object.entries(desktopFolder)) {
+    if (name.endsWith(".folder") && itemData.type === "file") {
+      try {
+        const data = JSON.parse(itemData.content);
+        const folderIcon = document.querySelector(`.folder-icon[data-folder-name="${data.name}"]`);
+        
+        if (folderIcon && data.position) {
+          Object.assign(folderIcon.style, {
+            left: data.position.left,
+            top: data.position.top
+          });
+        }
+      } catch (e) {
+        console.error("Failed to load folder position:", name, e);
+      }
+    }
+  }
+}
+
+async onDragEnd() {
+  if (this.state.dragTarget) {
+    const folderName = this.state.dragTarget.dataset.folderName;
+    await this.moveIconsToFolder(Array.from(this.state.selectedIcons), folderName);
+    this.state.dragTarget.style.outline = "";
+    this.state.dragTarget = null;
+  } else {
+    this.state.selectedIcons.forEach((selectedIcon) => {
+      this.snapIconToGrid(selectedIcon);
+      Object.assign(selectedIcon.style, {
+        opacity: "1",
+        zIndex: "1",
+        cursor: "default"
+      });
+    });
+
+    await this.updateDesktopFilePositions();
+    
+    for (const icon of this.state.selectedIcons) {
+      if (icon.classList.contains("folder-icon")) {
+        await this.saveFolderPosition(icon.dataset.folderName);
+      }
+    }
+  }
+}
   positionContextMenu(e) {
     Object.assign(this.contextMenu.style, {
       left: `${e.pageX}px`,
@@ -458,6 +739,7 @@ createPropertiesContent(icon) {
       display: "block"
     });
   }
+
   pasteIcons(x, y) {
     if (!this.state.clipboard) return;
 
@@ -598,13 +880,17 @@ createPropertiesContent(icon) {
 
   setupStartMenu() {
     const menuActions = {
+      home: () => {
+        this.explorerApp.open();
+        this.explorerApp.navigate("");
+      },
       documents: () => {
         this.explorerApp.open();
-        this.explorerApp.navigate(["home", "reeyuki", "Documents"]);
+        this.explorerApp.navigate(this.fs.resolveDir("Documents"));
       },
       pictures: () => {
         this.explorerApp.open();
-        this.explorerApp.navigate(["home", "reeyuki", "Pictures"]);
+        this.explorerApp.navigate(this.fs.resolveDir("Pictures"));
       },
       notes: () => this.notepadApp.open()
     };
@@ -612,7 +898,7 @@ createPropertiesContent(icon) {
     this.startMenu.querySelectorAll(".start-item").forEach((item) => {
       item.onclick = (e) => {
         e.stopPropagation();
-        const app = item.dataset.app;
+        const app = item.dataset.path;
 
         if (menuActions[app]) {
           menuActions[app]();
@@ -623,7 +909,6 @@ createPropertiesContent(icon) {
     });
   }
 }
-
 
 const ICON_WIDTH = 80;
 const ICON_HEIGHT = 100;

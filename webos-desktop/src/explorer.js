@@ -1,6 +1,8 @@
 import { desktop } from "./desktop.js";
 import { FileKind } from "./fs.js";
 import { SystemUtilities } from "./system.js";
+import { appMetadata} from "./app.js"
+import { camelize } from "./utils.js";
 
 const contextMenu = document.getElementById("context-menu");
 
@@ -41,6 +43,7 @@ export class ExplorerApp {
       </div>
       <div class="explorer-container">
         <div class="explorer-sidebar">
+        <div class="start-item" data-path="">Home</div>
           <div class="start-item" data-path="Documents">Documents</div>
           <div class="start-item" data-path="Pictures">Pictures</div>
           <div class="start-item" data-path="Music">Music</div>
@@ -52,7 +55,6 @@ export class ExplorerApp {
     desktop.appendChild(win);
     const explorerView = win.querySelector("#explorer-view");
     explorerView.style.width = "600px";
-    explorerView.style.height = "300px";
 
     this.wm.makeDraggable(win);
     this.wm.makeResizable(win);
@@ -106,53 +108,47 @@ export class ExplorerApp {
     `;
   }
 
-  async render() {
-    const view = document.getElementById("explorer-view");
-    const pathDisplay = document.getElementById("exp-path");
-    if (!view) return;
+async render() {
+  const view = document.getElementById("explorer-view");
+  const pathDisplay = document.getElementById("exp-path");
+  if (!view) return;
 
-    view.innerHTML = "";
-    pathDisplay.textContent = "/" + this.currentPath.join("/");
+  view.innerHTML = "";
+  pathDisplay.textContent = "/" + this.currentPath.join("/");
 
-    if (this.currentPath[this.currentPath.length - 1] === "Music") {
-      await this.renderMusicPage(view);
-      return;
-    }
-
-    const folder = await this.fs.getFolder(this.currentPath);
-
-    for (const [name, itemData] of Object.entries(folder)) {
-      const isFile = itemData?.type === "file";
-      let iconImg;
-
-      if (isFile) {
-        if (itemData.icon) {
-          iconImg = itemData.icon.startsWith("/") ? itemData.icon : `data:image/*;base64,${itemData.icon}`;
-        } else {
-          iconImg =
-            itemData.kind === FileKind.IMAGE
-              ? itemData.content.startsWith("/")
-                ? itemData.content
-                : `data:image/*;base64,${itemData.content}`
-              : "/static/icons/notepad.webp";
-        }
-      } else {
-        iconImg = "/static/icons/file.png";
-      }
-
-      const item = document.createElement("div");
-      item.className = "file-item";
-      item.innerHTML = `
-        <img src="${iconImg}" style="width:64px;height:64px;object-fit:cover">
-        <span>${name}</span>
-      `;
-
-      item.ondblclick = async () => this.openItem(name, isFile);
-      item.oncontextmenu = async (e) => this.showFileContextMenu(e, name, isFile);
-
-      view.appendChild(item);
-    }
+  if (this.currentPath[this.currentPath.length - 1] === "Music") {
+    await this.renderMusicPage(view);
+    return;
   }
+
+  const folder = await this.fs.getFolder(this.currentPath);
+
+  for (const [name, itemData] of Object.entries(folder)) {
+    const isFile = itemData?.type === "file";
+    let iconImg;
+
+    if (isFile) {
+      const baseName = name.split('.')[0];
+      const camelName = camelize(baseName)
+      iconImg = appMetadata[camelName]?.icon || "/static/icons/notepad.webp";
+      console.log("basename: ", baseName, " name : ", name , " found result : ", iconImg, " camelized: ",camelName)
+    } else {
+      iconImg = "/static/icons/file.png";
+    }
+
+    const item = document.createElement("div");
+    item.className = "file-item";
+    item.innerHTML = `
+      <img src="${iconImg}" style="width:64px;height:64px;object-fit:contain">
+      <span>${name}</span>
+    `;
+
+    item.ondblclick = async () => this.openItem(name, isFile);
+    item.oncontextmenu = async (e) => this.showFileContextMenu(e, name, isFile);
+
+    view.appendChild(item);
+  }
+}
 
   async openItem(name, isFile) {
     if (isFile) {
@@ -213,39 +209,44 @@ export class ExplorerApp {
     };
     contextMenu.appendChild(createMenuItem(openText, openAction));
 
-    if (isFile) {
-      contextMenu.appendChild(document.createElement("hr"));
+    contextMenu.appendChild(document.createElement("hr"));
 
-      contextMenu.appendChild(
-        createMenuItem("Delete", async () => {
-          contextMenu.style.display = "none";
+    contextMenu.appendChild(
+      createMenuItem("Delete", async () => {
+        contextMenu.style.display = "none";
+        const confirmMsg = isFile 
+          ? `Are you sure you want to delete "${itemName}"?`
+          : `Are you sure you want to delete the folder "${itemName}" and all its contents?`;
+        if (confirm(confirmMsg)) {
           await this.fs.deleteItem(this.currentPath, itemName);
           await this.render();
-        })
-      );
+        }
+      })
+    );
 
-      contextMenu.appendChild(
-        createMenuItem("Rename", async () => {
-          contextMenu.style.display = "none";
-          const newName = prompt("Enter new name:", itemName);
-          if (newName && newName !== itemName) {
-            await this.fs.renameItem(this.currentPath, itemName, newName);
-            await this.render();
-          }
-        })
-      );
-    }
+    contextMenu.appendChild(
+      createMenuItem("Rename", async () => {
+        contextMenu.style.display = "none";
+        const newName = prompt("Enter new name:", itemName);
+        if (newName && newName !== itemName) {
+          await this.fs.renameItem(this.currentPath, itemName, newName);
+          await this.render();
+        }
+      })
+    );
 
-    const kind = isFile ? await this.fs.getFileKind(this.currentPath, itemName) : null;
-    const content = isFile ? await this.fs.getFileContent(this.currentPath, itemName) : null;
+    if (isFile) {
+      const kind = await this.fs.getFileKind(this.currentPath, itemName);
+      const content = await this.fs.getFileContent(this.currentPath, itemName);
 
-    if (kind === FileKind.IMAGE) {
-      contextMenu.appendChild(
-        createMenuItem("Set Wallpaper", () => {
-          contextMenu.style.display = "none";
-          SystemUtilities.setWallpaper(content);
-        })
-      );
+      if (kind === FileKind.IMAGE) {
+        contextMenu.appendChild(
+          createMenuItem("Set Wallpaper", () => {
+            contextMenu.style.display = "none";
+            SystemUtilities.setWallpaper(content);
+          })
+        );
+      }
     }
 
     contextMenu.appendChild(

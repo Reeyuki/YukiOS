@@ -11,6 +11,7 @@ import { FileSystemManager } from "./fs.js";
 import { setupStartMenu } from "./startMenu.js";
 import { desktop } from "./desktop.js";
 import { DesktopUI } from "./desktopui.js";
+import { appMetadata } from "./app.js"
 
 class MusicPlayer {
   constructor() {}
@@ -66,7 +67,9 @@ const appLauncher = new AppLauncher(
   cameraApp
 );
 
-new DesktopUI(appLauncher, notepadApp, explorerApp);
+console.log(appMetadata)
+
+new DesktopUI(appLauncher, notepadApp, explorerApp,fileSystemManager);
 
 SystemUtilities.startClock();
 SystemUtilities.setRandomWallpaper();
