@@ -156,11 +156,11 @@ export class AppLauncher {
       slimeRancher: { type: "game", url: "https://dev.snubby.top" },
       kindergarten: {
         type: "game",
-        url: "https://truffled.lol/games/kindergarten/1/index.html"
+        url: "/static/games/gnmath/kindergarten"
       },
       kindergarten2: {
         type: "game",
-        url: "https://truffled.lol/games/kindergarten/2/index.html"
+        url: "/static/games/gnmath/kindergarten2"
       },
       cuphead: { type: "game", url: "https://truffled.lol/games/Cuphead/index.html" },
       raft: { type: "game", url: "https://truffled.lol/games/raft/index.html" },
@@ -169,12 +169,15 @@ export class AppLauncher {
         type: "game",
         url: "https://truffled.lol/games/terraria/terraria-wrapper.html"
       },
-      yandereSim: { type: "game", url: "https://truffled.lol/gamefile/yandere.html" },
+      yandereSim: { type: "game", url: "/static/games/gnmath/yandere.html" },
       undertale: { type: "game", url: "https://truffled.lol/games/bts" },
       balatro: { type: "game", url: "https://truffled.lol/games/balatro/index.html" },
-      granny: { type: "game", url: "https://truffled.lol/gamefile/Granny.html" },
-      bendy: { type: "game", url: "https://truffled.lol/games/BATIM/BATIM/index.html" },
-      tattletail: { type: "game", url: "https://truffled.lol/games/tattletail/index.html" }
+      granny: { type: "game", url: "/static/games/gnmath/granny.html" },
+      bendy: { type: "game", url: "/static/games/gnmath/bendy.html" },
+      tattletail: { type: "game", url: "https://truffled.lol/games/tattletail/index.html" },
+      repo: {type: "game", url: "/static/games/gnmath/repo.html"},
+      omori: {type: "game", url: "/static/games/gnmath/omori.html"},
+      ultrakill: {type: "game", url: "/static/games/gnmath/ultrakill.html"}
     };
 
     populateStartMenu(this);
