@@ -78,7 +78,9 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: mac-build
-          path: yukios/dist/Yukios-*-mac.zip
+          path: |
+            yukios/dist/YukiOS-*-mac-*.zip
+            yukios/dist/YukiOS-*-mac-*.dmg
 
   release:
     runs-on: ubuntu-latest
