@@ -47,7 +47,17 @@ function createWindow(url, title, width, height) {
 
   Menu.setApplicationMenu(null);
   win.loadURL(url);
-  if (DEBUG) win.webContents.openDevTools();
+  // if (DEBUG)
+  win.webContents.openDevTools();
+  
+  win.on("close", async (e) => {
+    if (assetServer) {
+      e.preventDefault();
+      log(`Window closing: ${title}`);
+      win.destroy();
+    }
+  });
+  
   return win;
 }
 
@@ -55,6 +65,7 @@ function launchGameWindow(gameId) {
   const url = `http://localhost:${PORT}/index.html?game=${encodeURIComponent(gameId)}`;
   return createWindow(url, gameId, 1440, 900);
 }
+
 function ensureGameShortcut(gameId) {
   if (!app.isPackaged) return;
   console.log("Registering game shortcut for: ", gameId)
@@ -173,6 +184,15 @@ app.whenReady().then(() => {
   });
 });
 
-app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") app.quit();
+app.on("window-all-closed", async () => {
+  if (process.platform !== "darwin") {
+    app.quit();
+  }
+});
+
+app.on("before-quit", async (e) => {
+  if (assetServer ) {
+    e.preventDefault();
+    app.quit();
+  }
 });
