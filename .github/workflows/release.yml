@@ -32,9 +32,9 @@ jobs:
         with:
           name: linux-build
           path: |
-            yukios/dist/Yukios-*.AppImage
-            yukios/dist/yukios-*.zip
-            yukios/dist/yukios_*.deb
+            yukios/dist/YukiOS-*-linux-*.AppImage
+            yukios/dist/YukiOS-*-linux-*.zip
+            yukios/dist/YukiOS-*-linux-*.deb
 
   build-windows:
     runs-on: windows-latest
@@ -88,28 +88,45 @@ jobs:
       - build-mac
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
+
+      - name: Download Linux artifacts
+        uses: actions/download-artifact@v4
         with:
           name: linux-build
           path: release_files/linux
-      - uses: actions/download-artifact@v4
+        continue-on-error: true
+
+      - name: Download Windows artifacts
+        uses: actions/download-artifact@v4
         with:
           name: windows-build
           path: release_files/windows
-      - uses: actions/download-artifact@v4
+        continue-on-error: true
+
+      - name: Download Mac artifacts
+        uses: actions/download-artifact@v4
         with:
           name: mac-build
           path: release_files/mac
-      - run: ls -R release_files || true
-      - uses: softprops/action-gh-release@v1
+        continue-on-error: true
+
+      - name: List release files
+        run: ls -R release_files || true
+
+      - name: Build artifact list
+        id: artifacts
+        run: |
+          files=$(find release_files -type f)
+          echo "files<<EOF" >> $GITHUB_OUTPUT
+          echo "$files" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        if: steps.artifacts.outputs.files != ''
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.event.inputs.version }}
           name: Release ${{ github.event.inputs.version }}
-          files: |
-            release_files/linux/Yukios-*.AppImage
-            release_files/linux/yukios-*.zip
-            release_files/linux/yukios_*.deb
-            release_files/windows/*.exe
-            release_files/mac/Yukios-*-mac.zip
+          files: ${{ steps.artifacts.outputs.files }}
