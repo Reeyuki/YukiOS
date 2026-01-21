@@ -57,6 +57,7 @@ jobs:
         with:
           name: windows-build
           path: yukios/dist/*.zip
+          path: yukios/dist/*Setup*.exe
 
   build-mac:
     runs-on: macos-latest

@@ -1,11 +1,12 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
-contextBridge.exposeInMainWorld("nativeAPI", {
-  getGlobal: async (key) => {
-    return await ipcRenderer.invoke("read-global-variable", key);
-  }
+contextBridge.exposeInMainWorld("electronAPI", {
+  launchGame: (gameId) => ipcRenderer.invoke("launch-game", gameId),
+  readGlobalVariable: (key) => ipcRenderer.invoke("read-global-variable", key)
 });
 
 contextBridge.exposeInMainWorld("assets", {
-  onProgress: (callback) => ipcRenderer.on("asset-sync", (event, data) => callback(data))
+  onProgress: (callback) => {
+    ipcRenderer.on("asset-sync", (event, data) => callback(data));
+  }
 });

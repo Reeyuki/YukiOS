@@ -1,16 +1,26 @@
-const { app, BrowserWindow, ipcMain, Menu } = require("electron");
+const { app, BrowserWindow, ipcMain, Menu, shell } = require("electron");
 const path = require("path");
 const fs = require("fs");
-const express = require("express");
-const axios = require("axios");
+const createAssetServer = require("./assetServer");
 
-let mainWindow;
 const PORT = 6767;
 const CDN_BASE = "https://reeyuki.netlify.app";
-let resourcesPath;
 const staticFolderName = "static";
-let userStaticPath;
 const DEBUG = !app.isPackaged;
+
+let mainWindow;
+let resourcesPath;
+let userStaticPath;
+let assetServer;
+
+const logFile = path.join(app.getPath("userData"), "electron-debug.log");
+const logStream = fs.createWriteStream(logFile, { flags: "a" });
+
+function log(...args) {
+  const line = args.map(a => typeof a === "string" ? a : JSON.stringify(a)).join(" ");
+  console.log(line);
+  logStream.write(line + "\n");
+}
 
 function getResourcesPath() {
   return app.isPackaged
@@ -18,176 +28,151 @@ function getResourcesPath() {
     : path.join(__dirname, "resources");
 }
 
-function createWindow() {
-  mainWindow = new BrowserWindow({
-    width: 800,
-    height: 500,
+function createWindow(url, title, width, height) {
+  const win = new BrowserWindow({
+    width,
+    height,
     minWidth: 400,
     minHeight: 200,
-    center: true,
-    fullscreen: false,
-    alwaysOnTop: false,
     resizable: true,
-    title: "yukios",
-    frame: true,
+    title,
     autoHideMenuBar: true,
-    menuBarVisible: false,
     icon: path.join(resourcesPath, "icons/icon-256.png"),
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       nodeIntegration: false,
-      contextIsolation: true,
-    },
+      contextIsolation: true
+    }
   });
 
   Menu.setApplicationMenu(null);
-  mainWindow.loadURL(`http://localhost:${PORT}/index.html`);
-
-  if (DEBUG) mainWindow.webContents.openDevTools();
+  win.loadURL(url);
+  if (DEBUG) win.webContents.openDevTools();
+  return win;
 }
 
-async function ensureFile(localFile, cdnPath) {
-  if (!fs.existsSync(localFile)) {
-    const dir = path.dirname(localFile);
-    fs.mkdirSync(dir, { recursive: true });
-    const cdnUrl = `${CDN_BASE}/static/${cdnPath}`;
-    try {
-      const response = await axios.get(cdnUrl, { responseType: "arraybuffer" });
-      fs.writeFileSync(localFile, response.data);
-    } catch (err) {
-      console.error("Failed to download", cdnUrl, err.message);
-    }
-  }
+function launchGameWindow(gameId) {
+  const url = `http://localhost:${PORT}/index.html?game=${encodeURIComponent(gameId)}`;
+  return createWindow(url, gameId, 1440, 900);
 }
-async function fetchRemoteMetadata() {
-  try {
-    const url = `${CDN_BASE}/static/metadata.json`;
-    const response = await axios.get(url);
-    return response.data;
-  } catch (err) {
-    console.error("Failed to fetch remote metadata:", err.message);
-    return null;
-  }
-}
+function ensureGameShortcut(gameId) {
+  if (!app.isPackaged) return;
+  console.log("Registering game shortcut for: ", gameId)
+  
+  if (process.platform === "win32") {
+    const dir = path.join(app.getPath("desktop"), "YukiOS Games");
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 
+    const shortcutPath = path.join(dir, `${gameId}.lnk`);
+    if (fs.existsSync(shortcutPath)) return;
 
-async function downloadUpdatedAssets() {
-  const localMetadataFile = path.join(resourcesPath, staticFolderName, "metadata.json");
-  let localVersion = "0.0.0";
-
-  if (fs.existsSync(localMetadataFile)) {
-    try {
-      const raw = fs.readFileSync(localMetadataFile, "utf-8");
-      const metadata = JSON.parse(raw);
-      localVersion = metadata.version || "0.0.0";
-    } catch {}
+    shell.writeShortcutLink(shortcutPath, {
+      target: process.execPath,
+      args: `--game=${gameId}`,
+      description: `YukiOS Game: ${gameId}`,
+      icon: process.execPath
+    });
+    return;
   }
 
-  const remoteMetadata = await fetchRemoteMetadata();
-  if (!remoteMetadata) return;
+  if (process.platform === "linux") {
+    const dir = path.join(
+      app.getPath("home"),
+      ".local",
+      "share",
+      "applications"
+    );
 
-  const remoteVersion = remoteMetadata.version || "0.0.0";
-  if (remoteVersion === localVersion) return;
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 
-  const files = remoteMetadata.files || {};
-  const total = Object.keys(files).length;
-  let count = 0;
-
-  for (const [key, entry] of Object.entries(files)) {
-    const cachedFile = path.join(userStaticPath, key);
-    const bundledFile = path.join(resourcesPath, staticFolderName, key);
-    if (fs.existsSync(bundledFile) || fs.existsSync(cachedFile)) {
-      count++;
-      mainWindow?.webContents.send("asset-sync", { file: key, progress: (count / total) * 100 });
-      continue;
+    const shortcutPath = path.join(dir, `yukios-${gameId}.desktop`);
+    if (fs.existsSync(shortcutPath)) return;
+    function camelToHuman(str) {
+      return str
+        .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+        .replace(/_/g, " ")
+        .replace(/\s+/g, " ")
+        .trim()
+        .replace(/^./, c => c.toUpperCase());
     }
 
-    await ensureFile(cachedFile, entry.path || key);
-    count++;
-    mainWindow?.webContents.send("asset-sync", { file: key, progress: (count / total) * 100 });
+    const content = `
+      [Desktop Entry]
+      Type=Application
+      Version=1.0
+      Name=${camelToHuman(gameId)}
+      Comment=YukiOS Game
+      Exec=${process.execPath} --game=${gameId}
+      Icon=${process.execPath}
+      Terminal=false
+      Categories=Game;YukiOS;
+      StartupWMClass=${gameId}
+    `.trim();
+
+    fs.writeFileSync(shortcutPath, content);
+    fs.chmodSync(shortcutPath, 0o755);
+    return;
   }
 
-  const localMetadataPath = path.join(userStaticPath, "metadata.json");
-  fs.writeFileSync(localMetadataPath, JSON.stringify(remoteMetadata, null, 2));
-  mainWindow?.webContents.send("asset-sync", { done: true });
-}
+  if (process.platform === "darwin") {
+    const dir = path.join(app.getPath("home"), "Applications", "webOS Games");
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 
+    const shortcutPath = path.join(dir, `${gameId}.app`);
+    if (fs.existsSync(shortcutPath)) return;
 
-async function preloadStaticFiles(req, res, next) {
-  const metadataFile = path.join(resourcesPath, staticFolderName, "metadata.json");
-  if (!fs.existsSync(metadataFile)) return next();
-
-  try {
-    const metadataRaw = fs.readFileSync(metadataFile, "utf-8");
-    const metadata = JSON.parse(metadataRaw);
-
-    let requested = decodeURIComponent(req.path).replace(/^\/+/, "");
-    if (requested.startsWith(`${staticFolderName}/`)) requested = requested.slice(`${staticFolderName}/`.length);
-    if (!requested) return next();
-
-    const entry = metadata.files && metadata.files[requested];
-    if (!entry) return next();
-
-    const bundledFile = path.join(resourcesPath, staticFolderName, requested);
-    if (fs.existsSync(bundledFile)) return next();
-
-    const cachedFile = path.join(userStaticPath, requested);
-    await ensureFile(cachedFile, entry.path || requested);
-  } catch (err) {
-    console.error(err);
+    shell.writeShortcutLink(shortcutPath, {
+      target: process.execPath,
+      args: `--game=${gameId}`
+    });
   }
-
-  next();
 }
 
-function startServer() {
-  const server = express();
+ipcMain.handle("launch-game", (event, gameId) => {
+  log("IPC launch-game:", gameId);
+  ensureGameShortcut(gameId);
+  launchGameWindow(gameId);
+});
 
-  server.use(preloadStaticFiles);
-  server.use(`/${staticFolderName}`, express.static(userStaticPath));
-  server.use(`/${staticFolderName}`, express.static(path.join(resourcesPath, staticFolderName)));
-
-  server.use("/desktop", express.static(path.join(resourcesPath, "desktop")));
-  server.use("/assets", express.static(path.join(resourcesPath, "desktop")));
-
-  server.use((req, res) => {
-    const requested = decodeURIComponent(req.path);
-    const candidate = path.join(resourcesPath, requested);
-    if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) return res.sendFile(candidate);
-
-    const alt = path.join(resourcesPath, "desktop", path.basename(requested));
-    if (fs.existsSync(alt) && fs.statSync(alt).isFile()) return res.sendFile(alt);
-
-    console.error("serve: 404 for", req.method, req.path, "candidate:", candidate);
-    res.status(404).send("Not found");
-  });
-
-  server.listen(PORT, () => {
-    console.log("Local server running at http://localhost:" + PORT);
-  });
-}
+ipcMain.handle("read-global-variable", (event, key) => {
+  const globals = {
+    TEST1: "Hello",
+    TEST2: [2, 4, 5],
+    TEST3: { value1: 10, value2: {} }
+  };
+  return globals[key] || null;
+});
 
 app.whenReady().then(() => {
   resourcesPath = getResourcesPath();
   userStaticPath = path.join(app.getPath("userData"), staticFolderName);
   if (!fs.existsSync(userStaticPath)) fs.mkdirSync(userStaticPath, { recursive: true });
 
-  downloadUpdatedAssets().catch(err => console.error("Background asset update failed:", err));
+  const gameArg = process.argv.find(a => a.startsWith("--game="));
+  const gameId = gameArg ? gameArg.split("=")[1] : null;
 
-  startServer();
-  createWindow();
+  mainWindow = createWindow(
+    `http://localhost:${PORT}/index.html${gameId ? "?game=" + encodeURIComponent(gameId) : ""}`,
+    gameId || "yukios",
+    gameId ? 1440 : 1200,
+    gameId ? 900 : 800
+  );
 
-  app.on("activate", () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+  assetServer = createAssetServer({
+    resourcesPath,
+    userStaticPath,
+    staticFolderName,
+    CDN_BASE,
+    PORT,
+    log,
+    mainWindow
+  });
+
+  mainWindow.webContents.on("did-finish-load", () => {
+    assetServer.predownloadAssets().catch(err => log(err));
   });
 });
 
-
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
-});
-
-ipcMain.handle("read-global-variable", (event, key) => {
-  const globals = { TEST1: "Hello", TEST2: [2, 4, 5], TEST3: { value1: 10, value2: {} } };
-  return globals[key] || null;
 });
