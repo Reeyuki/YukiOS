@@ -48,11 +48,17 @@
       "icon": "resources/icons/icon.ico"
     },
     "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
+      "oneClick": true,
+      "perMachine": false,
+      "allowElevation": false,
+      "allowToChangeInstallationDirectory": false,
+      "createDesktopShortcut": false,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Yuki OS",
+      "runAfterFinish": true,
       "installerIcon": "resources/icons/icon.ico",
       "uninstallerIcon": "resources/icons/icon.ico",
-      "uninstallDisplayName": "Yukios 1.0.0"
+      "uninstallDisplayName": "Yuki OS"
     },
     "linux": {
       "target": [
