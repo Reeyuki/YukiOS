@@ -1,0 +1,69 @@
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: webos-desktop/pnpm-lock.yaml
+
+      - name: Build webos-desktop
+        run: |
+          cd webos-desktop
+          pnpm install
+          pnpm build
+
+      - name: Prepare site
+        run: |
+          mkdir site
+          shopt -s dotglob
+          for item in *; do
+            if [ "$item" != "webos-desktop" ] && [ "$item" != "static" ] && [ "$item" != "site" ]; then
+              cp -r "$item" site/
+            fi
+          done
+          mkdir -p site/static
+          for item in static/*; do
+            if [ "$(basename "$item")" != "gtavc" ]; then
+              cp -r "$item" site/static/
+            fi
+          done
+          cp -r webos-desktop/dist/* site/
+          touch site/.nojekyll
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
