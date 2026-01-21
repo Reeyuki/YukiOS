@@ -69,7 +69,7 @@ export class AppLauncher {
         swf: "https://cache.armorgames.com/files/games/strikeforce-kitty-2-17643.swf?v=1423725280"
       },
       baloonsTd5: { type: "swf", swf: "/static/games/swfGames/baloonstd5.swf" },
-      baloonsTd6: { type: "swf", swf: "https://truffled.lol/iframe.html?url=%2Fgames%2Fbtd6%2Findex.html" },
+      baloonsTd6: { type: "swf", swf: "https://truffled.lol/games/btd6/index.html" },
       trinitas: { type: "game", url: "/static/games/trinitas" },
       jojo: {
         type: "game",
