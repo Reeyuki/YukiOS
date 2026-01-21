@@ -111,5 +111,5 @@ jobs:
             release_files/linux/Yukios-*.AppImage
             release_files/linux/yukios-*.zip
             release_files/linux/yukios_*.deb
-            release_files/windows/*.zip
+            release_files/windows/*.exe
             release_files/mac/Yukios-*-mac.zip

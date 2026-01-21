@@ -7,7 +7,7 @@
     "email": "reeyuki@example.com"
   },
   "homepage": "https://reeyuki.github.io",
-  "description": "Yukios Game/Utility Application",
+  "description": "Yukios Game Archive",
   "scripts": {
     "start": "electron .",
     "format": "git diff --name-only --diff-filter=ACMRTUXB | grep -E '\\.(js|jsx|ts|css|json|html)$' || true | xargs -r -P 4 pnpm exec prettier --write",
@@ -27,6 +27,7 @@
   "build": {
     "appId": "com.reeyuki.yukios",
     "productName": "Yukios",
+    "artifactName": "YukiOS-${version}-${os}-${arch}${installerSuffix}.${ext}",
     "directories": {
       "output": "dist"
     },
