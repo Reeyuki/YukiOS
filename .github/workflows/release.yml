@@ -11,8 +11,11 @@ permissions:
   contents: write
 
 jobs:
-  build-linux:
+  build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform: [linux, windows, mac]
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
@@ -26,74 +29,29 @@ jobs:
           pnpm install
           node node_modules/electron/install.js
       - working-directory: yukios
-        run: pnpm run build-linux
+        run: |
+          if [ "${{ matrix.platform }}" = "linux" ]; then
+            pnpm run build-linux
+          elif [ "${{ matrix.platform }}" = "windows" ]; then
+            pnpm run build-win
+          elif [ "${{ matrix.platform }}" = "mac" ]; then
+            pnpm run build-mac
+          fi
       - working-directory: yukios/dist
         run: ls -la || true
       - uses: actions/upload-artifact@v4
         with:
-          name: linux-build
+          name: ${{ matrix.platform }}-build
           path: |
-            yukios/dist/Yukios-*.AppImage
-            yukios/dist/yukios-*.zip
-            yukios/dist/yukios_*.deb
-
-  build-windows:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '20'
-      - run: npm install -g pnpm
-      - working-directory: webos-desktop
-        run: pnpm install
-      - working-directory: yukios
-        run: |
-          pnpm install
-          node node_modules/electron/install.js
-      - working-directory: yukios
-        run: pnpm run build-win
-      - working-directory: yukios/dist
-        run: |
-          Get-ChildItem -File | ForEach-Object {
-            $zipName = "yukios-1.0.0.zip"
-            Compress-Archive -Path $_.FullName -DestinationPath $zipName -Update
-          }
-          ls -la
-      - uses: actions/upload-artifact@v4
-        with:
-          name: windows-build
-          path: yukios/dist/yukios-1.0.0.zip
-
-  build-mac:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '20'
-      - run: npm install -g pnpm
-      - working-directory: webos-desktop
-        run: pnpm install
-      - working-directory: yukios
-        run: |
-          pnpm install
-          node node_modules/electron/install.js
-      - working-directory: yukios
-        run: pnpm run build-mac
-      - working-directory: yukios/dist
-        run: ls -la || true
-      - uses: actions/upload-artifact@v4
-        with:
-          name: mac-build
-          path: yukios/dist/Yukios-*-mac.zip
+            linux: yukios/dist/Yukios-*.AppImage
+                   yukios/dist/yukios-*.zip
+                   yukios/dist/yukios_*.deb
+            windows: yukios/dist/*.zip
+            mac: yukios/dist/Yukios-*-mac.zip
 
   release:
     runs-on: ubuntu-latest
-    needs:
-      - build-linux
-      - build-windows
-      - build-mac
+    needs: build
     steps:
       - uses: actions/checkout@v3
       - uses: actions/download-artifact@v4
@@ -119,5 +77,5 @@ jobs:
             release_files/linux/Yukios-*.AppImage
             release_files/linux/yukios-*.zip
             release_files/linux/yukios_*.deb
-            release_files/windows/yukios-1.0.0.zip
+            release_files/windows/*.zip
             release_files/mac/Yukios-*-mac.zip
