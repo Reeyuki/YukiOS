@@ -7,7 +7,7 @@ const srcStatic = path.join(__dirname, "../static");
 const srcStaticResource = path.join(__dirname, "./resources/static");
 const destResources = path.join(__dirname, "resources");
 
-execSync("pnpm run build", { cwd: path.join(__dirname, "../webos-desktop"), stdio: "inherit" });
+execSync("pnpm run build-win", { cwd: path.join(__dirname, "../webos-desktop"), stdio: "inherit" });
 
 fs.cpSync(srcWeb, destResources, { recursive: true });
 

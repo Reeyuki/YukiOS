@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "pnpm run format && vite build && rm -rf ../desktop/* && cp -r dist/* ../desktop/",
+    "build-win": "vite build",
     "preview": "vite preview",
     "format": "git diff --name-only --diff-filter=ACMRTUXB | grep -E '\\.(js|jsx|ts|css|json|html)$' || true | xargs -r -P 4 pnpm exec prettier --write",
     "lint": "eslint . --ext .js,.jsx --fix"
