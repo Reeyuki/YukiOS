@@ -1,0 +1,51 @@
+name: Build and Release Yukios
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version'
+        required: true
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install dependencies in webos-desktop
+        working-directory: webos-desktop
+        run: pnpm install
+
+      - name: Install dependencies in yukios
+        working-directory: yukios
+        run: |
+          pnpm install
+          node node_modules/electron/install.js
+
+      - name: Build Yukios
+        working-directory: yukios
+        run: pnpm build
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ github.event.inputs.version }}
+          release_name: Release ${{ github.event.inputs.version }}
+          draft: false
+          prerelease: false
+
+      - name: Upload release assets
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            dist/linux-unpacked/**
+            dist/yukios_*.deb
+            dist/yukios-*.zip

@@ -10,7 +10,7 @@
         background-color: #1e1e1ed9;
       }
     </style>
-    <script type="module" crossorigin src="/desktop/assets/index-B87YiUZn.js"></script>
+    <script type="module" crossorigin src="/desktop/assets/index-B4stP6xP.js"></script>
     <link rel="modulepreload" crossorigin href="/desktop/assets/vendor--MsaxDnK.js">
     <link rel="stylesheet" crossorigin href="/desktop/assets/index-BkqU3682.css">
   </head>
@@ -29,9 +29,9 @@
         <div>Notepad</div>
       </div>
 
-      <div class="icon selectable" data-app="browser">
-        <img src="/static/icons/chromium.webp" />
-        <div>Browser</div>
+      <div class="icon selectable" data-app="cameraApp">
+        <img src="/static/icons/camera.svg" />
+        <div>Camera</div>
       </div>
 
       <div class="icon selectable" data-app="photopea">
@@ -43,10 +43,10 @@
         <img src="/static/icons/paint.webp" />
         <div>Paint</div>
       </div>
-
-      <div class="icon selectable" data-app="cameraApp">
-        <img src="/static/icons/camera.svg" />
-        <div>Camera</div>
+      
+      <div class="icon selectable" data-app="browser">
+        <img src="/static/icons/chromium.webp" />
+        <div>Browser</div>
       </div>
 
       <div class="icon selectable popular" data-app="cuphead">
@@ -492,6 +492,12 @@
         <img src="/static/icons/savage.jpg" />
         <div>Savage Pursuit</div>
       </div>
+
+      <div class="icon selectable" data-app="theVisitor">
+        <img src="/static/icons/visitor.webp" />
+        <div>The Visitor</div>
+      </div>
+
     </div>
 
     <div id="start-menu" class="kde-menu">
@@ -524,6 +530,21 @@
       <div id="start-button"></div>
       <div id="taskbar-windows" style="display: flex"></div>
       <div id="system-tray">
+        <div id="asset-status">Syncing assets...</div>
+        <progress id="asset-progress" max="100" value="0"></progress>
+
+        <script>
+        window.assets.onProgress((data) => {
+          if (data.done) {
+            document.getElementById("asset-status").textContent = "Assets up to date!";
+            document.getElementById("asset-progress").value = 100;
+          } else {
+            document.getElementById("asset-status").textContent = `Downloading ${data.file}...`;
+            document.getElementById("asset-progress").value = data.progress;
+          }
+        });
+        </script>
+
         <div id="clock">12:00 PM</div>
         <div id="date">12/18/2025</div>
       </div>
