@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Release version'
+        description: Release version
         required: true
 
 permissions:
@@ -20,10 +20,10 @@ jobs:
           node-version: '20'
       - run: npm install -g pnpm
       - working-directory: webos-desktop
-        run: pnpm install
+        run: pnpm install --no-frozen-lockfile
       - working-directory: yukios
         run: |
-          pnpm install
+          pnpm install --no-frozen-lockfile
           node node_modules/electron/install.js
           pnpm run build-linux
       - working-directory: yukios/dist
@@ -45,10 +45,10 @@ jobs:
           node-version: '20'
       - run: npm install -g pnpm
       - working-directory: webos-desktop
-        run: pnpm install
+        run: pnpm install --no-frozen-lockfile
       - working-directory: yukios
         run: |
-          pnpm install
+          pnpm install --no-frozen-lockfile
           node node_modules/electron/install.js
           pnpm run build-win
       - working-directory: yukios/dist
@@ -67,10 +67,10 @@ jobs:
           node-version: '20'
       - run: npm install -g pnpm
       - working-directory: webos-desktop
-        run: pnpm install
+        run: pnpm install --no-frozen-lockfile
       - working-directory: yukios
         run: |
-          pnpm install
+          pnpm install --no-frozen-lockfile
           node node_modules/electron/install.js
           pnpm run build-mac
       - working-directory: yukios/dist
