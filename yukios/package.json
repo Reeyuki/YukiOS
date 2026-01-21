@@ -27,7 +27,7 @@
   "build": {
     "appId": "com.reeyuki.yukios",
     "productName": "Yukios",
-    "artifactName": "YukiOS-${version}-${os}-${arch}${installerSuffix}.${ext}",
+    "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
     "directories": {
       "output": "dist"
     },
@@ -35,6 +35,7 @@
       "**/*"
     ],
     "mac": {
+      "artifactName": "YukiOS-${version}-mac-${arch}.zip",
       "target": [
         "dmg",
         "zip"
@@ -42,6 +43,7 @@
       "icon": "resources/icons/icon.icns"
     },
     "win": {
+      "artifactName": "YukiOS-${version}-windows-${arch}-setup.${ext}",
       "target": [
         "nsis",
         "zip"
@@ -62,6 +64,7 @@
       "uninstallDisplayName": "Yuki OS"
     },
     "linux": {
+      "artifactName": "YukiOS-${version}-linux-${arch}.${ext}",
       "target": [
         "AppImage",
         "deb",
