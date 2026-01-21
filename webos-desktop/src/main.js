@@ -80,7 +80,7 @@ const game = urlParams.get("game");
 if (game) {
   setTimeout(() => {
     appLauncher.launch(game);
-  }, 100);
+  }, 0);
 }
 
 console.log(

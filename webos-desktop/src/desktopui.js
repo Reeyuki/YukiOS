@@ -625,6 +625,7 @@ export class DesktopUI {
         const folderIcons = document.querySelectorAll(".folder-icon");
         folderIcons.forEach(icon => icon.remove());
         await this.loadDesktopItems();
+        location.reload()
       }
     };
 

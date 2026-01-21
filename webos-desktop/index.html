@@ -531,19 +531,31 @@
       <div id="system-tray">
         <div id="asset-status">Syncing assets...</div>
         <progress id="asset-progress" max="100" value="0"></progress>
-
         <script>
-        window.assets.onProgress((data) => {
-          if (data.done) {
-            document.getElementById("asset-status").textContent = "Assets up to date!";
-            document.getElementById("asset-progress").value = 100;
-          } else {
-            document.getElementById("asset-status").textContent = `Downloading ${data.file}...`;
-            document.getElementById("asset-progress").value = data.progress;
-          }
-        });
-        </script>
+          const statusEl = document.getElementById("asset-status");
+          const progressEl = document.getElementById("asset-progress");
+          const tray = statusEl.parentElement;
 
+          window.assets.onProgress((data) => {
+            if (data.done) {
+              statusEl.textContent = "Assets up to date!";
+              progressEl.value = 100;
+
+              setTimeout(() => {
+                tray.style.display = "none";
+              }, 1500);
+              return;
+            }
+
+            tray.style.display = "flex";
+
+            const fileName = data.file.split("/").pop().split("\\").pop();
+            const shortName = fileName.length > 10 ? fileName.slice(-10) : fileName;
+
+            statusEl.textContent = `Downloading …/${shortName}`;
+            progressEl.value = data.progress;
+          });
+        </script>
         <div id="clock">12:00 PM</div>
         <div id="date">12/18/2025</div>
       </div>
