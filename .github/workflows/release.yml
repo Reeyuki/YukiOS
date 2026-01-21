@@ -37,7 +37,7 @@ jobs:
             yukios/dist/yukios_*.deb
 
   build-windows:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
@@ -52,7 +52,7 @@ jobs:
           node node_modules/electron/install.js
           pnpm run build-win
       - working-directory: yukios/dist
-        run: ls -la || true
+        run: dir
       - uses: actions/upload-artifact@v4
         with:
           name: windows-build
@@ -71,7 +71,6 @@ jobs:
       - working-directory: yukios
         run: |
           pnpm install
-          npm install dmg-license
           node node_modules/electron/install.js
           pnpm run build-mac
       - working-directory: yukios/dist
