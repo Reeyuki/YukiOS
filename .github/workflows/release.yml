@@ -44,6 +44,7 @@ jobs:
           release_name: Release ${{ github.event.inputs.version }}
           draft: false
           prerelease: false
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload release assets
         uses: softprops/action-gh-release@v1
@@ -52,3 +53,5 @@ jobs:
             dist/linux-unpacked/**
             dist/yukios_*.deb
             dist/yukios-*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
