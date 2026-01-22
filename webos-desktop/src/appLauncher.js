@@ -133,7 +133,7 @@ export class AppLauncher {
       avatarFortressFight2: { type: "swf", swf: "/static/games/swfGames/avatarFortressFight2.swf" },
       incredibles: { type: "swf", swf: "/static/games/swfGames/incredibles.swf" },
       savagePursuit: { type: "swf", swf: "/static/games/swfGames/savagepursuit.swf" },
-      theVisitor: {type: "swf", swf: "/static/games/swfGames/theVisitor.swf"},
+      theVisitor: { type: "swf", swf: "/static/games/swfGames/theVisitor.swf" },
       cactusMcCoy: { type: "game", url: "https://papasgamesfree.io/cactus-mccoy-1" },
       jackSmith: { type: "game", url: "https://papasgamesfree.io/jacksmith" },
       pokemonRed: { type: "gba", url: "pokemon-red.gba" },
@@ -176,9 +176,9 @@ export class AppLauncher {
       granny: { type: "game", url: "/static/games/gnmath/granny.html" },
       bendy: { type: "game", url: "/static/games/gnmath/bendy.html" },
       tattletail: { type: "game", url: "https://truffled.lol/games/tattletail/index.html" },
-      repo: {type: "game", url: "/static/games/gnmath/repo.html"},
-      omori: {type: "game", url: "/static/games/gnmath/omori.html"},
-      ultrakill: {type: "game", url: "/static/games/gnmath/ultrakill.html"}
+      repo: { type: "game", url: "/static/games/gnmath/repo.html" },
+      omori: { type: "game", url: "/static/games/gnmath/omori.html" },
+      ultrakill: { type: "game", url: "/static/games/gnmath/ultrakill.html" }
     };
 
     populateStartMenu(this);
@@ -197,11 +197,7 @@ export class AppLauncher {
     const urlParams = new URLSearchParams(window.location.search);
     const launchedByElectron = urlParams.has("game");
 
-    if (
-      window.electronAPI &&
-      typeof window.electronAPI.launchGame === "function" &&
-      !launchedByElectron
-    ) {
+    if (window.electronAPI && typeof window.electronAPI.launchGame === "function" && !launchedByElectron) {
       window.electronAPI.launchGame(app);
       return;
     }
@@ -225,7 +221,7 @@ export class AppLauncher {
     return {
       app,
       timestamp: now,
-      sessionAgeMs,
+      sessionAgeMs
     };
   }
 
@@ -332,75 +328,66 @@ export class AppLauncher {
   }
 
   createWindow(id, title, contentHtml, externalUrl = null, appId = null, appMeta = {}) {
-  const urlParams = new URLSearchParams(window.location.search);
-  const electronGameMode = urlParams.has("game");
+    const urlParams = new URLSearchParams(window.location.search);
+    const electronGameMode = urlParams.has("game");
 
-  if (electronGameMode && appId) {
-    document.body.innerHTML = `
-      <div id="electron-game-root" style="
-        width:100vw;
-        height:100vh;
-        margin:0;
-        padding:0;
-        overflow:hidden;
-        background:black;
-      ">
+    if (electronGameMode && appId) {
+      document.body.innerHTML = `
+        <div id="electron-game-root" style="
+          width:100vw;
+          height:100vh;
+          margin:0;
+          padding:0;
+          overflow:hidden;
+          background:black;
+        ">
+          ${contentHtml}
+        </div>
+      `;
+      document.title = title;
+      return;
+    }
+
+    const isGame = this.isTransparencyBlocked(appId, appMeta);
+
+    const win = this.wm.createWindow(`${id}-win`, title, "80vw", "80vh", isGame);
+
+    win.dataset.appType = appMeta.type || "";
+    win.dataset.externalUrl = externalUrl || "";
+    win.dataset.appId = appId || "";
+    win.dataset.swf = appMeta.swf || "";
+    win.dataset.isGame = isGame;
+    win.dataset.rom = appMeta.rom || "";
+    win.dataset.core = appMeta.core || "";
+
+    win.innerHTML = `
+      <div class="window-header">
+        <span>${title}</span>
+        <div class="window-controls">
+          <button class="minimize-btn" title="Minimize">−</button>
+          ${externalUrl ? `<button class="external-btn" title="Open in External">↗</button>` : ""}
+          <button class="maximize-btn" title="Maximize">□</button>
+          <button class="close-btn" title="Close">X</button>
+        </div>
+      </div>
+      <div class="window-content" style="width:100%; height:100%;">
         ${contentHtml}
       </div>
     `;
-    document.title = title;
-    return;
+
+    desktop.appendChild(win);
+
+    this.wm.makeDraggable(win);
+    this.wm.makeResizable(win);
+    this.wm.setupWindowControls(win);
+    this.wm.bringToFront(win);
+
+    if (externalUrl) {
+      win.querySelector(".external-btn").addEventListener("click", () => this.openRemoteApp(externalUrl));
+    }
+
+    const icon = tryGetIcon(appId || id);
+    this.wm.addToTaskbar(win.id, title, icon);
+    this.recordUsage(`${id}-win`);
   }
-
-  const isGame = this.isTransparencyBlocked(appId, appMeta);
-
-  const win = this.wm.createWindow(
-    `${id}-win`,
-    title,
-    "80vw",
-    "80vh",
-    isGame
-  );
-
-  win.dataset.appType = appMeta.type || "";
-  win.dataset.externalUrl = externalUrl || "";
-  win.dataset.appId = appId || "";
-  win.dataset.swf = appMeta.swf || "";
-  win.dataset.isGame = isGame;
-  win.dataset.rom = appMeta.rom || "";
-  win.dataset.core = appMeta.core || "";
-
-  win.innerHTML = `
-    <div class="window-header">
-      <span>${title}</span>
-      <div class="window-controls">
-        <button class="minimize-btn" title="Minimize">−</button>
-        ${externalUrl ? `<button class="external-btn" title="Open in External">↗</button>` : ""}
-        <button class="maximize-btn" title="Maximize">□</button>
-        <button class="close-btn" title="Close">X</button>
-      </div>
-    </div>
-    <div class="window-content" style="width:100%; height:100%;">
-      ${contentHtml}
-    </div>
-  `;
-
-  desktop.appendChild(win);
-
-  this.wm.makeDraggable(win);
-  this.wm.makeResizable(win);
-  this.wm.setupWindowControls(win);
-  this.wm.bringToFront(win);
-
-  if (externalUrl) {
-    win
-      .querySelector(".external-btn")
-      .addEventListener("click", () => this.openRemoteApp(externalUrl));
-  }
-
-  const icon = tryGetIcon(appId || id);
-  this.wm.addToTaskbar(win.id, title, icon);
-  this.recordUsage(`${id}-win`);
-}
-
 }

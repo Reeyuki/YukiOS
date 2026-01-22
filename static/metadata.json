@@ -1,5 +1,5 @@
 {
-  "version": "-v0.0.1",
+  "version": "-v0.0.2",
   "files": {
     ".prettierignore": { "path": ".prettierignore" },
     "nocookie.gif": { "path": "nocookie.gif" },
@@ -62,6 +62,7 @@
     "games/swfGames/feeduspirates.swf": { "path": "games/swfGames/feeduspirates.swf" },
     "games/swfGames/breach.swf": { "path": "games/swfGames/breach.swf" },
     "games/swfGames/flight.swf": { "path": "games/swfGames/flight.swf" },
+    "games/swfGames/theVisitor.swf": { "path": "games/swfGames/theVisitor.swf" },
     "games/swfGames/savagepursuit.swf": { "path": "games/swfGames/savagepursuit.swf" },
     "games/swfGames/EpicBossFighter2.swf": { "path": "games/swfGames/EpicBossFighter2.swf" },
     "games/swfGames/mutantfightingcup2.swf": { "path": "games/swfGames/mutantfightingcup2.swf" },

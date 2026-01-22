@@ -1,6 +1,5 @@
 import { camelize } from "./utils.js";
 
-
 const FAVORITES_KEY = "kdeFavorites";
 
 function getFavorites() {
