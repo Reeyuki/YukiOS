@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  base: "/desktop/",
+  base: "desktop/",
   build: {
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
