@@ -11,10 +11,10 @@
   "scripts": {
     "start": "electron .",
     "format": "git diff --name-only --diff-filter=ACMRTUXB | grep -E '\\.(js|jsx|ts|css|json|html)$' || true | xargs -r -P 4 npx prettier --write",
-    "build-linux": "node build.js && npx electron-builder --linux",
-    "build-win": "node build.js && npx electron-builder --win",
-    "build-mac": "node build.js && npx electron-builder --mac",
-    "build": "node build.js && npx electron-builder"
+    "build-linux": "node build.js && npx electron-builder --linux --publish never",
+    "build-win": "node build.js && npx electron-builder --win --publish never",
+    "build-mac": "node build.js && npx electron-builder --mac --publish never",
+    "build": "node build.js && npx electron-builder --publish never"
   },
   "devDependencies": {
     "electron": "^26.6.10",
@@ -74,13 +74,6 @@
       "icon": "resources/icons",
       "maintainer": "reeyuki@example.com",
       "category": "Game"
-    },
-    "publish": [
-      {
-        "provider": "github",
-        "owner": "reeyuki",
-        "repo": "reeyuki.github.io"
-      }
-    ]
+    }
   }
 }
