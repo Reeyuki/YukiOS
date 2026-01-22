@@ -42,63 +42,64 @@ class MusicPlayer {
   }
 }
 
-if (!window.electronAPI) {
-  fetch("https://api.github.com/repos/Reeyuki/reeyuki.github.io/releases/latest")
-    .then((res) => res.json())
-    .then((release) => {
-      const files = release.assets.map((asset) => ({
-        name: asset.name,
-        url: asset.browser_download_url
-      }));
+function detectOS() {
+  const platform = navigator.platform.toLowerCase();
+  const ua = navigator.userAgent.toLowerCase();
+  if (platform.includes("win")) return "windows";
+  if (platform.includes("mac") || ua.includes("macintosh") || ua.includes("mac os")) return "mac";
+  if (platform.includes("linux")) return "linux";
+  if (/android|iphone|ipad|ipod/.test(ua)) return "mobile";
+  return "windows";
+}
 
-      const osFiles = {
-        linux: files.filter((f) => f.name.includes("linux")),
-        mac: files.filter((f) => f.name.includes("mac")),
-        windows: files.filter((f) => f.name.includes("windows"))
-      };
+function initDownloadButton() {
+  const os = detectOS();
+  if (os === "mobile") return;
 
-      function detectOS() {
-        const platform = navigator.platform.toLowerCase();
-        const ua = navigator.userAgent.toLowerCase();
-        if (platform.includes("win")) return "windows";
-        if (platform.includes("mac") || ua.includes("macintosh") || ua.includes("mac os")) return "mac";
-        if (platform.includes("linux")) return "linux";
-        if (/android|iphone|ipad|ipod/.test(ua)) return "mobile";
-        return "windows";
-      }
+  const installBtn = document.createElement("div");
+  installBtn.id = "install-app";
+  installBtn.textContent = "Install Desktop App";
+  document.body.appendChild(installBtn);
+  installBtn.addEventListener("click", () => {
+    fetch("https://api.github.com/repos/Reeyuki/reeyuki.github.io/releases/latest")
+      .then((res) => res.json())
+      .then((release) => {
+        const files = release.assets.map((asset) => ({
+          name: asset.name,
+          url: asset.browser_download_url
+        }));
 
-      function downloadFile(fileUrl) {
-        const a = document.createElement("a");
-        a.href = fileUrl;
-        a.download = "";
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-      }
-
-      function askLinuxPackage(files) {
-        const choice = prompt(
-          "Linux detected. Choose install type:\n1 = .deb (debian based)\n2 = .zip (portable)",
-          "1"
-        );
-        if (choice === "2") {
-          const zipFile = files.find((f) => f.name.endsWith(".zip"));
-          if (zipFile) downloadFile(zipFile.url);
-        } else {
-          const debFile = files.find((f) => f.name.endsWith(".deb"));
-          if (debFile) downloadFile(debFile.url);
+        const osFiles = {
+          linux: files.filter((f) => f.name.includes("linux")),
+          mac: files.filter((f) => f.name.includes("mac")),
+          windows: files.filter((f) => f.name.includes("windows"))
+        };
+        function downloadFile(fileUrl) {
+          const a = document.createElement("a");
+          a.href = fileUrl;
+          a.download = "";
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
         }
-      }
 
-      const os = detectOS();
-      if (os === "mobile") return;
+        function askLinuxPackage(files) {
+          const choice = prompt(
+            "Linux detected. Choose install type:\n1 = .deb (debian based)\n2 = .zip (portable)",
+            "1"
+          );
+          if (choice === "2") {
+            const zipFile = files.find((f) => f.name.endsWith(".zip"));
+            if (zipFile) downloadFile(zipFile.url);
+          } else {
+            const debFile = files.find((f) => f.name.endsWith(".deb"));
+            if (debFile) downloadFile(debFile.url);
+          }
+        }
 
-      const installBtn = document.createElement("div");
-      installBtn.id = "install-app";
-      installBtn.textContent = "Install Desktop App";
-      document.body.appendChild(installBtn);
+        const os = detectOS();
+        if (os === "mobile") return;
 
-      installBtn.addEventListener("click", () => {
         const osSpecificFiles = osFiles[os];
         if (!osSpecificFiles || osSpecificFiles.length === 0) return;
 
@@ -108,7 +109,10 @@ if (!window.electronAPI) {
           downloadFile(osSpecificFiles[0].url);
         }
       });
-    });
+  });
+}
+if (!window.electronAPI) {
+  initDownloadButton();
 }
 
 const fileSystemManager = new FileSystemManager();

@@ -271,6 +271,7 @@ export class AppLauncher {
 
   openRuffleApp(gameName, swfPath) {
     if (!swfPath) return;
+    const originalName = gameName;
 
     const foundName = document.querySelector(`[data-app="${gameName}"] div`);
     if (foundName) gameName = foundName.textContent;
@@ -282,7 +283,7 @@ export class AppLauncher {
     }
 
     const content = `<embed src="${swfPath}" width="100%" height="100%">`;
-    this.createWindow(id, gameName.toUpperCase(), content, null, gameName, {
+    this.createWindow(id, gameName.toUpperCase(), content, null, originalName, {
       type: "swf",
       swf: swfPath
     });
@@ -365,7 +366,7 @@ export class AppLauncher {
         <span>${title}</span>
         <div class="window-controls">
           <button class="minimize-btn" title="Minimize">−</button>
-          ${externalUrl ? `<button class="external-btn" title="Open in External">↗</button>` : ""}
+          <button class="external-btn" title="Open in External">↗</button>
           <button class="maximize-btn" title="Maximize">□</button>
           <button class="close-btn" title="Close">X</button>
         </div>
@@ -382,9 +383,13 @@ export class AppLauncher {
     this.wm.setupWindowControls(win);
     this.wm.bringToFront(win);
 
-    if (externalUrl) {
-      win.querySelector(".external-btn").addEventListener("click", () => this.openRemoteApp(externalUrl));
-    }
+    win.querySelector(".external-btn").addEventListener("click", () => {
+      if (!appId) return;
+      console.log(id, title, contentHtml, externalUrl, appId, appMeta);
+      const url = new URL(window.location.href);
+      url.searchParams.set("game", appId);
+      window.open(url.toString(), "_blank", "noopener,noreferrer");
+    });
 
     const icon = tryGetIcon(appId || id);
     this.wm.addToTaskbar(win.id, title, icon);
