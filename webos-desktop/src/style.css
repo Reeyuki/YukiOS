@@ -865,3 +865,26 @@ body {
     bottom 0.5s ease,
     opacity 0.5s ease;
 }
+
+#install-app {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 12px 20px;
+  border-radius: 16px;
+  font-family: 'Segoe UI', sans-serif;
+  font-weight: 600;
+  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
+  z-index: 9999;
+}
+#install-app:hover {
+  transform: scale(1.05);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+  background: rgba(255, 255, 255, 0.25);
+}

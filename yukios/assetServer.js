@@ -4,19 +4,11 @@ const axios = require("axios");
 const express = require("express");
 
 module.exports = function createAssetServer(options) {
-  const {
-    resourcesPath,
-    userStaticPath,
-    staticFolderName,
-    CDN_BASE,
-    PORT,
-    log,
-    mainWindow
-  } = options;
+  const { resourcesPath, userStaticPath, staticFolderName, CDN_BASE, PORT, log, mainWindow } = options;
 
   const server = express();
   const CONCURRENT_DOWNLOADS = 10;
-  const MAX_RETRIES = 3;
+  const MAX_RETRIES = 10;
 
   async function fetchRemoteMetadata() {
     try {
@@ -30,27 +22,27 @@ module.exports = function createAssetServer(options) {
 
   async function downloadFile(localFile, cdnPath, retries = MAX_RETRIES) {
     const cdnUrl = `${CDN_BASE}/static/${cdnPath}`;
-    
+
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
         fs.mkdirSync(path.dirname(localFile), { recursive: true });
         const response = await axios.get(cdnUrl, { responseType: "stream" });
         const writer = fs.createWriteStream(localFile);
-        
+
         await new Promise((resolve, reject) => {
           response.data.pipe(writer);
           response.data.on("error", reject);
           writer.on("finish", resolve);
           writer.on("error", reject);
         });
-        
+
         return true;
       } catch (err) {
         if (attempt === retries) {
           throw err;
         }
         log(`Download attempt ${attempt + 1} failed for ${cdnPath}, retrying...`);
-        await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
+        await new Promise((resolve) => setTimeout(resolve, 1000 * (attempt + 1)));
       }
     }
   }
@@ -60,7 +52,7 @@ module.exports = function createAssetServer(options) {
     const executing = [];
 
     for (const task of tasks) {
-      const promise = task().then(result => {
+      const promise = task().then((result) => {
         executing.splice(executing.indexOf(promise), 1);
         return result;
       });
@@ -78,7 +70,7 @@ module.exports = function createAssetServer(options) {
 
   async function predownloadAssets() {
     log("Starting predownloadAssets...");
-    
+
     const metadata = await fetchRemoteMetadata();
     if (!metadata || !metadata.files) {
       log("No metadata or files found");
@@ -135,7 +127,7 @@ module.exports = function createAssetServer(options) {
     }
 
     log(`Starting concurrent download of ${downloadTasks.length} assets...`);
-    
+
     const total = downloadTasks.length;
     let completed = 0;
 
@@ -143,19 +135,19 @@ module.exports = function createAssetServer(options) {
       const result = await task();
       completed++;
       const key = tasksInfo[index];
-      
+
       log(`Progress: ${completed}/${total} (${((completed / total) * 100).toFixed(1)}%)`);
-      
-      mainWindow?.webContents.send("asset-sync", { 
-        file: key, 
-        progress: (completed / total) * 100 
+
+      mainWindow?.webContents.send("asset-sync", {
+        file: key,
+        progress: (completed / total) * 100
       });
-      
+
       return result;
     });
 
     await downloadWithConcurrency(wrappedTasks, CONCURRENT_DOWNLOADS);
-    
+
     log("All downloads complete, sending done signal");
     mainWindow?.webContents.send("asset-sync", { done: true });
     log("Pre-download completed");
@@ -163,71 +155,70 @@ module.exports = function createAssetServer(options) {
 
   async function streamAndCacheFile(res, localFile, cdnPath) {
     const cdnUrl = `${CDN_BASE}/static/${cdnPath}`;
-    
+
     for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
       try {
         fs.mkdirSync(path.dirname(localFile), { recursive: true });
         const response = await axios.get(cdnUrl, { responseType: "stream" });
-        
+
         if (response.headers["content-type"]) {
           res.setHeader("Content-Type", response.headers["content-type"]);
         }
         if (response.headers["content-length"]) {
           res.setHeader("Content-Length", response.headers["content-length"]);
         }
-        
+
         const fileStream = fs.createWriteStream(localFile);
-        
+
         await new Promise((resolve, reject) => {
           let responseEnded = false;
           let fileEnded = false;
-          
+
           const checkBothEnded = () => {
             if (responseEnded && fileEnded) {
               resolve();
             }
           };
-          
+
           response.data.pipe(fileStream);
           response.data.pipe(res);
-          
+
           response.data.on("error", (err) => {
             fileStream.destroy();
             res.destroy();
             reject(err);
           });
-          
+
           fileStream.on("finish", () => {
             fileEnded = true;
             checkBothEnded();
           });
-          
+
           fileStream.on("error", (err) => {
             res.destroy();
             reject(err);
           });
-          
+
           res.on("finish", () => {
             responseEnded = true;
             checkBothEnded();
           });
-          
+
           res.on("error", (err) => {
             fileStream.destroy();
             reject(err);
           });
         });
-        
+
         log("Successfully streamed and cached:", cdnPath);
         return;
-        
       } catch (err) {
         if (attempt === MAX_RETRIES) {
           log("Failed to stream after retries:", cdnPath, err.message);
           throw err;
         }
         log(`Stream attempt ${attempt + 1} failed for ${cdnPath}, retrying...`);
-        
+
         if (fs.existsSync(localFile)) {
           try {
             fs.unlinkSync(localFile);
@@ -235,8 +226,8 @@ module.exports = function createAssetServer(options) {
             log("Failed to remove partial file:", unlinkErr.message);
           }
         }
-        
-        await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
+
+        await new Promise((resolve) => setTimeout(resolve, 1000 * (attempt + 1)));
       }
     }
   }
@@ -253,15 +244,15 @@ module.exports = function createAssetServer(options) {
   server.use(`/${staticFolderName}`, async (req, res, next) => {
     try {
       let requested = req.path;
-      
+
       if (requested.startsWith(`/${staticFolderName}/`)) {
         requested = requested.substring(`/${staticFolderName}/`.length);
-      } else if (requested.startsWith('/')) {
+      } else if (requested.startsWith("/")) {
         requested = requested.substring(1);
       }
-      
+
       log(`Processing static asset request: ${requested}`);
-      
+
       const bundled = path.join(resourcesPath, staticFolderName, requested);
       if (fs.existsSync(bundled)) {
         log(`Serving from bundle: ${requested}`);
@@ -282,7 +273,7 @@ module.exports = function createAssetServer(options) {
 
       const metadata = JSON.parse(fs.readFileSync(metadataFile, "utf-8"));
       const entry = metadata.files && metadata.files[requested];
-      
+
       if (!entry) {
         log(`No metadata entry found for: ${requested}`);
         return next();
@@ -304,7 +295,7 @@ module.exports = function createAssetServer(options) {
   server.use((req, res) => {
     const requested = decodeURIComponent(req.path);
     log(`Fallback handler for: ${requested}`);
-    
+
     const direct = path.join(resourcesPath, requested);
     if (fs.existsSync(direct) && fs.statSync(direct).isFile()) {
       log(`Serving direct file: ${requested}`);

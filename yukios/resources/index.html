@@ -10,9 +10,9 @@
         background-color: #1e1e1ed9;
       }
     </style>
-    <script type="module" crossorigin src="/desktop/assets/index-DnSCdDcq.js"></script>
+    <script type="module" crossorigin src="/desktop/assets/index-DJtKWi36.js"></script>
     <link rel="modulepreload" crossorigin href="/desktop/assets/vendor--MsaxDnK.js">
-    <link rel="stylesheet" crossorigin href="/desktop/assets/index-BKPOsF-k.css">
+    <link rel="stylesheet" crossorigin href="/desktop/assets/index-DShyWdBJ.css">
   </head>
 
   <body>
@@ -497,7 +497,6 @@
         <img src="/static/icons/visitor.webp" />
         <div>The Visitor</div>
       </div>
-
     </div>
 
     <div id="start-menu" class="kde-menu">
@@ -526,16 +525,24 @@
       </div>
     </div>
 
-    <div id="taskbar">
-      <div id="start-button"></div>
-      <div id="taskbar-windows" style="display: flex"></div>
-      <div id="system-tray">
-        <div id="asset-status">Syncing assets...</div>
-        <progress id="asset-progress" max="100" value="0"></progress>
-        <script>
-          const statusEl = document.getElementById("asset-status");
-          const progressEl = document.getElementById("asset-progress");
-          const tray = statusEl.parentElement;
+   <div id="taskbar">
+    <div id="start-button"></div>
+    <div id="taskbar-windows" style="display: flex"></div>
+    <div id="system-tray">
+      <div id="clock">12:00 PM</div>
+      <div id="date">01/01/2026</div>
+      <script>
+        if (window.assets) {
+          const statusEl = document.createElement("div");
+          statusEl.id = "asset-status";
+          statusEl.textContent = "Syncing assets...";
+          const progressEl = document.createElement("progress");
+          progressEl.id = "asset-progress";
+          progressEl.max = 100;
+          progressEl.value = 0;
+          const tray = document.getElementById("system-tray");
+          tray.insertBefore(statusEl, tray.firstChild);
+          tray.insertBefore(progressEl, tray.firstChild.nextSibling);
 
           window.assets.onProgress((data) => {
             if (data.done) {
@@ -543,7 +550,8 @@
               progressEl.value = 100;
 
               setTimeout(() => {
-                tray.style.display = "none";
+                statusEl.style.display = "none";
+                progressEl.style.display = "none";
               }, 1500);
               return;
             }
@@ -556,11 +564,11 @@
             statusEl.textContent = `Downloading …/${shortName}`;
             progressEl.value = data.progress;
           });
-        </script>
-        <div id="clock">12:00 PM</div>
-        <div id="date">12/18/2025</div>
-      </div>
+        }
+      </script>
     </div>
+  </div>
+
 
     <div id="context-menu"></div>
 

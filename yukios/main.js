@@ -17,15 +17,13 @@ const logFile = path.join(app.getPath("userData"), "electron-debug.log");
 const logStream = fs.createWriteStream(logFile, { flags: "a" });
 
 function log(...args) {
-  const line = args.map(a => typeof a === "string" ? a : JSON.stringify(a)).join(" ");
+  const line = args.map((a) => (typeof a === "string" ? a : JSON.stringify(a))).join(" ");
   console.log(line);
   logStream.write(line + "\n");
 }
 
 function getResourcesPath() {
-  return app.isPackaged
-    ? path.join(process.resourcesPath, "app.asar", "resources")
-    : path.join(__dirname, "resources");
+  return app.isPackaged ? path.join(process.resourcesPath, "app.asar", "resources") : path.join(__dirname, "resources");
 }
 
 function createWindow(url, title, width, height) {
@@ -47,9 +45,8 @@ function createWindow(url, title, width, height) {
 
   Menu.setApplicationMenu(null);
   win.loadURL(url);
-  // if (DEBUG)
-  win.webContents.openDevTools();
-  
+  if (DEBUG) win.webContents.openDevTools();
+
   win.on("close", async (e) => {
     if (assetServer) {
       e.preventDefault();
@@ -57,7 +54,7 @@ function createWindow(url, title, width, height) {
       win.destroy();
     }
   });
-  
+
   return win;
 }
 
@@ -68,8 +65,8 @@ function launchGameWindow(gameId) {
 
 function ensureGameShortcut(gameId) {
   if (!app.isPackaged) return;
-  console.log("Registering game shortcut for: ", gameId)
-  
+  console.log("Registering game shortcut for: ", gameId);
+
   if (process.platform === "win32") {
     const dir = path.join(app.getPath("desktop"), "YukiOS Games");
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
@@ -87,12 +84,7 @@ function ensureGameShortcut(gameId) {
   }
 
   if (process.platform === "linux") {
-    const dir = path.join(
-      app.getPath("home"),
-      ".local",
-      "share",
-      "applications"
-    );
+    const dir = path.join(app.getPath("home"), ".local", "share", "applications");
 
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 
@@ -104,7 +96,7 @@ function ensureGameShortcut(gameId) {
         .replace(/_/g, " ")
         .replace(/\s+/g, " ")
         .trim()
-        .replace(/^./, c => c.toUpperCase());
+        .replace(/^./, (c) => c.toUpperCase());
     }
 
     const content = `
@@ -159,7 +151,7 @@ app.whenReady().then(() => {
   userStaticPath = path.join(app.getPath("userData"), staticFolderName);
   if (!fs.existsSync(userStaticPath)) fs.mkdirSync(userStaticPath, { recursive: true });
 
-  const gameArg = process.argv.find(a => a.startsWith("--game="));
+  const gameArg = process.argv.find((a) => a.startsWith("--game="));
   const gameId = gameArg ? gameArg.split("=")[1] : null;
 
   mainWindow = createWindow(
@@ -180,7 +172,7 @@ app.whenReady().then(() => {
   });
 
   mainWindow.webContents.on("did-finish-load", () => {
-    assetServer.predownloadAssets().catch(err => log(err));
+    assetServer.predownloadAssets().catch((err) => log(err));
   });
 });
 
@@ -191,7 +183,7 @@ app.on("window-all-closed", async () => {
 });
 
 app.on("before-quit", async (e) => {
-  if (assetServer ) {
+  if (assetServer) {
     e.preventDefault();
     app.quit();
   }

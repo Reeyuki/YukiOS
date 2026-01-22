@@ -10,7 +10,7 @@
   "description": "Yukios Game Archive",
   "scripts": {
     "start": "electron .",
-    "format": "git diff --name-only --diff-filter=ACMRTUXB | grep -E '\\.(js|jsx|ts|css|json|html)$' || true | xargs -r -P 4 pnpm exec prettier --write",
+    "format": "git diff --name-only --diff-filter=ACMRTUXB | grep -E '\\.(js|jsx|ts|css|json|html)$' || true | xargs -r -P 4 npx prettier --write",
     "build-linux": "node build.js && npx electron-builder --linux",
     "build-win": "node build.js && npx electron-builder --win",
     "build-mac": "node build.js && npx electron-builder --mac",

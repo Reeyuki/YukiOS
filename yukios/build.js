@@ -33,14 +33,13 @@ fs.readdirSync(srcStatic, { withFileTypes: true }).forEach((entry) => {
   fs.cpSync(srcPath, destPath, { recursive: true });
 });
 
-
 const assetsSrc = path.join(destResources, "assets");
 const desktopDest = path.join(destResources, "desktop");
-const indexHtmlSrc= path.join(srcWeb, "index.html");
+const indexHtmlSrc = path.join(srcWeb, "index.html");
 const indexHtmlDest = path.join(destResources, "index.html");
 fs.mkdirSync(desktopDest, { recursive: true });
 fs.readdirSync(assetsSrc).forEach((file) => {
   fs.renameSync(path.join(assetsSrc, file), path.join(desktopDest, file));
 });
 
-fs.renameSync(path.join(indexHtmlSrc), path.join(indexHtmlDest))
+fs.renameSync(path.join(indexHtmlSrc), path.join(indexHtmlDest));
