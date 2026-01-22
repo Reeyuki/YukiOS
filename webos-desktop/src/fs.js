@@ -217,8 +217,8 @@ export class FileSystemManager {
     return FileKind.OTHER;
   }
   resolveDir(path = []) {
-      if (typeof path === "string") path = [path];
-      return this.join("/", ...CONFIG.ROOT.split("/").filter(Boolean), ...this.normalizePath(path));
+    if (typeof path === "string") path = [path];
+    return this.join("/", ...CONFIG.ROOT.split("/").filter(Boolean), ...this.normalizePath(path));
   }
   async ensureFolder(path) {
     await this.fsReady;
@@ -281,35 +281,35 @@ export class FileSystemManager {
     await this.p("mkdir", dir, { recursive: true });
   }
 
-async deleteItem(path, name) {
-  await this.fsReady;
-  const dir = this.resolveDir(path);
-  const target = this.join(dir, name);
-  const stat = await this.pStat(target);
-  if (stat.isDirectory()) {
-    await this.deleteDirectoryRecursive(target);
-  } else {
-    await this.p("unlink", target);
-    await this.removeMeta(dir, name);
-  }
-}
-
-async deleteDirectoryRecursive(dirPath) {
-  const entries = await this.pRead("readdir", dirPath);
-  
-  for (const entry of entries) {
-    const fullPath = this.join(dirPath, entry);
-    const stat = await this.pStat(fullPath);
-    
+  async deleteItem(path, name) {
+    await this.fsReady;
+    const dir = this.resolveDir(path);
+    const target = this.join(dir, name);
+    const stat = await this.pStat(target);
     if (stat.isDirectory()) {
-      await this.deleteDirectoryRecursive(fullPath);
+      await this.deleteDirectoryRecursive(target);
     } else {
-      await this.p("unlink", fullPath);
+      await this.p("unlink", target);
+      await this.removeMeta(dir, name);
     }
   }
-  
-  await this.p("rmdir", dirPath);
-}
+
+  async deleteDirectoryRecursive(dirPath) {
+    const entries = await this.pRead("readdir", dirPath);
+
+    for (const entry of entries) {
+      const fullPath = this.join(dirPath, entry);
+      const stat = await this.pStat(fullPath);
+
+      if (stat.isDirectory()) {
+        await this.deleteDirectoryRecursive(fullPath);
+      } else {
+        await this.p("unlink", fullPath);
+      }
+    }
+
+    await this.p("rmdir", dirPath);
+  }
   async renameItem(path, oldName, newName) {
     await this.fsReady;
     const dir = this.resolveDir(path);

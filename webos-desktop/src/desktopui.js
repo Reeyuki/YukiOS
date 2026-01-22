@@ -52,12 +52,12 @@ export class DesktopUI {
   }
 
   pxToPercent(px, dimension) {
-    const desktopSize = dimension === 'x' ? this.desktop.clientWidth : this.desktop.clientHeight;
+    const desktopSize = dimension === "x" ? this.desktop.clientWidth : this.desktop.clientHeight;
     return (px / desktopSize) * 100;
   }
 
   percentToPx(percent, dimension) {
-    const desktopSize = dimension === 'x' ? this.desktop.clientWidth : this.desktop.clientHeight;
+    const desktopSize = dimension === "x" ? this.desktop.clientWidth : this.desktop.clientHeight;
     return (percent / 100) * desktopSize;
   }
 
@@ -96,14 +96,14 @@ export class DesktopUI {
 
   repositionAllIcons() {
     const icons = document.querySelectorAll(".icon.selectable");
-    icons.forEach(icon => {
+    icons.forEach((icon) => {
       const leftPercent = parseFloat(icon.dataset.leftPercent);
       const topPercent = parseFloat(icon.dataset.topPercent);
-      
+
       if (!isNaN(leftPercent) && !isNaN(topPercent)) {
-        const leftPx = this.percentToPx(leftPercent, 'x');
-        const topPx = this.percentToPx(topPercent, 'y');
-        
+        const leftPx = this.percentToPx(leftPercent, "x");
+        const topPx = this.percentToPx(topPercent, "y");
+
         Object.assign(icon.style, {
           left: `${leftPx}px`,
           top: `${topPx}px`
@@ -264,8 +264,8 @@ export class DesktopUI {
         top: `${newY}px`
       });
 
-      selectedIcon.dataset.leftPercent = this.pxToPercent(newX, 'x');
-      selectedIcon.dataset.topPercent = this.pxToPercent(newY, 'y');
+      selectedIcon.dataset.leftPercent = this.pxToPercent(newX, "x");
+      selectedIcon.dataset.topPercent = this.pxToPercent(newY, "y");
     });
 
     this.updateDragTarget(event);
@@ -307,10 +307,10 @@ export class DesktopUI {
       const name = nameElement ? nameElement.textContent.trim() : "Unknown";
       const fileName = `${name}.desktop`;
       const fileContent = await this.fs.getFileContent(["Desktop"], fileName);
-      
+
       await this.fs.createFile(["Desktop", folderName], fileName, fileContent, "text");
       await this.fs.deleteItem(["Desktop"], fileName);
-      
+
       icon.remove();
       this.state.selectedIcons.delete(icon);
     }
@@ -326,16 +326,17 @@ export class DesktopUI {
       const name = nameElement ? nameElement.textContent.trim() : "Unknown";
       const fileName = `${name}.desktop`;
       const app = icon.dataset.app;
-      
+
       const pathMap = {
         explorer: "/static/icons/pc.webp",
         notepad: "/static/icons/notepad.webp",
         flash: "/static/icons/flash.png"
       };
 
-      const leftPercent = parseFloat(icon.dataset.leftPercent) || this.pxToPercent(parseFloat(icon.style.left) || 0, 'x');
-      const topPercent = parseFloat(icon.dataset.topPercent) || this.pxToPercent(parseFloat(icon.style.top) || 0, 'y');
-      
+      const leftPercent =
+        parseFloat(icon.dataset.leftPercent) || this.pxToPercent(parseFloat(icon.style.left) || 0, "x");
+      const topPercent = parseFloat(icon.dataset.topPercent) || this.pxToPercent(parseFloat(icon.style.top) || 0, "y");
+
       const fileContent = JSON.stringify({
         app: app,
         name: name,
@@ -376,8 +377,8 @@ export class DesktopUI {
       top: `${snappedTop}px`
     });
 
-    icon.dataset.leftPercent = this.pxToPercent(snappedLeft, 'x');
-    icon.dataset.topPercent = this.pxToPercent(snappedTop, 'y');
+    icon.dataset.leftPercent = this.pxToPercent(snappedLeft, "x");
+    icon.dataset.topPercent = this.pxToPercent(snappedTop, "y");
   }
 
   isPositionOccupied(left, top, excludeIcon) {
@@ -623,9 +624,9 @@ export class DesktopUI {
       paste: () => this.pasteIcons(e.pageX, e.pageY),
       refresh: async () => {
         const folderIcons = document.querySelectorAll(".folder-icon");
-        folderIcons.forEach(icon => icon.remove());
+        folderIcons.forEach((icon) => icon.remove());
         await this.loadDesktopItems();
-        location.reload()
+        location.reload();
       }
     };
 
@@ -635,27 +636,27 @@ export class DesktopUI {
 
   async initializeDesktopFiles() {
     await this.fs.ensureFolder(["Desktop"]);
-    
+
     const icons = document.querySelectorAll(".icon.selectable:not(.folder-icon)");
     for (const icon of icons) {
       const nameElement = icon.querySelector("div");
       const name = nameElement ? nameElement.textContent.trim() : "Unknown";
       const app = icon.dataset.app;
       const fileName = `${name}.desktop`;
-      
+
       const existingFileContent = await this.fs.getFileContent(["Desktop"], fileName);
-      
+
       if (existingFileContent) {
         const fileData = JSON.parse(existingFileContent);
         if (fileData.position && fileData.position.leftPercent !== undefined) {
-          const leftPx = this.percentToPx(fileData.position.leftPercent, 'x');
-          const topPx = this.percentToPx(fileData.position.topPercent, 'y');
-          
+          const leftPx = this.percentToPx(fileData.position.leftPercent, "x");
+          const topPx = this.percentToPx(fileData.position.topPercent, "y");
+
           Object.assign(icon.style, {
             left: `${leftPx}px`,
             top: `${topPx}px`
           });
-          
+
           icon.dataset.leftPercent = fileData.position.leftPercent;
           icon.dataset.topPercent = fileData.position.topPercent;
         }
@@ -665,13 +666,13 @@ export class DesktopUI {
           notepad: "/static/icons/notepad.webp",
           flash: "/static/icons/flash.png"
         };
-        
+
         const desktopFileContent = JSON.stringify({
           app: app,
           name: name,
           path: pathMap[app] || "/static/icons/file.png"
         });
-        
+
         await this.fs.createFile(["Desktop"], fileName, desktopFileContent, "text");
       }
     }
@@ -681,7 +682,7 @@ export class DesktopUI {
 
   async loadDesktopItems() {
     const desktopFolder = await this.fs.getFolder(["Desktop"]);
-    
+
     for (const [name, itemData] of Object.entries(desktopFolder)) {
       if (!itemData.type) {
         await this.createFolderIcon(name);
@@ -706,18 +707,18 @@ export class DesktopUI {
 
     const metaFileName = `.${folderName}.folder`;
     const metaContent = await this.fs.getFileContent(["Desktop"], metaFileName);
-    
+
     if (metaContent) {
       const folderData = JSON.parse(metaContent);
       if (folderData.position && folderData.position.leftPercent !== undefined) {
-        const leftPx = this.percentToPx(folderData.position.leftPercent, 'x');
-        const topPx = this.percentToPx(folderData.position.topPercent, 'y');
-        
+        const leftPx = this.percentToPx(folderData.position.leftPercent, "x");
+        const topPx = this.percentToPx(folderData.position.topPercent, "y");
+
         Object.assign(folderIcon.style, {
           left: `${leftPx}px`,
           top: `${topPx}px`
         });
-        
+
         folderIcon.dataset.leftPercent = folderData.position.leftPercent;
         folderIcon.dataset.topPercent = folderData.position.topPercent;
       } else {
@@ -732,12 +733,14 @@ export class DesktopUI {
 
   async saveFolderPosition(folderName) {
     if (!this.state.isUserDragging) return;
-    
+
     const folderIcon = document.querySelector(`.folder-icon[data-folder-name="${folderName}"]`);
     if (!folderIcon) return;
 
-    const leftPercent = parseFloat(folderIcon.dataset.leftPercent) || this.pxToPercent(parseFloat(folderIcon.style.left) || 0, 'x');
-    const topPercent = parseFloat(folderIcon.dataset.topPercent) || this.pxToPercent(parseFloat(folderIcon.style.top) || 0, 'y');
+    const leftPercent =
+      parseFloat(folderIcon.dataset.leftPercent) || this.pxToPercent(parseFloat(folderIcon.style.left) || 0, "x");
+    const topPercent =
+      parseFloat(folderIcon.dataset.topPercent) || this.pxToPercent(parseFloat(folderIcon.style.top) || 0, "y");
 
     const metaFileName = `.${folderName}.folder`;
     const folderData = JSON.stringify({
@@ -754,9 +757,9 @@ export class DesktopUI {
 
   async onDragEnd() {
     if (!this.state.isUserDragging) return;
-    
+
     this.state.isUserDragging = false;
-    
+
     if (this.state.dragTarget) {
       const folderName = this.state.dragTarget.dataset.folderName;
       await this.moveIconsToFolder(Array.from(this.state.selectedIcons), folderName);
@@ -773,7 +776,7 @@ export class DesktopUI {
       });
 
       await this.updateDesktopFilePositions();
-      
+
       for (const icon of this.state.selectedIcons) {
         if (icon.classList.contains("folder-icon")) {
           await this.saveFolderPosition(icon.dataset.folderName);
@@ -830,8 +833,8 @@ export class DesktopUI {
       cursor: "default"
     });
 
-    icon.dataset.leftPercent = this.pxToPercent(left, 'x');
-    icon.dataset.topPercent = this.pxToPercent(top, 'y');
+    icon.dataset.leftPercent = this.pxToPercent(left, "x");
+    icon.dataset.topPercent = this.pxToPercent(top, "y");
 
     return icon;
   }

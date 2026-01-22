@@ -88,7 +88,6 @@ module.exports = function createAssetServer(options) {
 
     for (const [key, entry] of Object.entries(metadata.files)) {
       if (key.startsWith("gtavc/")) {
-        log(`Skipping gtavc file from preload: ${key}`);
         continue;
       }
 
@@ -244,7 +243,6 @@ module.exports = function createAssetServer(options) {
   server.use(`/${staticFolderName}`, async (req, res, next) => {
     try {
       let requested = req.path;
-
       if (requested.startsWith(`/${staticFolderName}/`)) {
         requested = requested.substring(`/${staticFolderName}/`.length);
       } else if (requested.startsWith("/")) {
@@ -254,38 +252,47 @@ module.exports = function createAssetServer(options) {
       log(`Processing static asset request: ${requested}`);
 
       const bundled = path.join(resourcesPath, staticFolderName, requested);
-      if (fs.existsSync(bundled)) {
+      if (fs.existsSync(bundled) && fs.statSync(bundled).isFile()) {
         log(`Serving from bundle: ${requested}`);
-        return next();
+        return res.sendFile(bundled);
       }
 
       const cached = path.join(userStaticPath, requested);
-      if (fs.existsSync(cached)) {
+      if (fs.existsSync(cached) && fs.statSync(cached).isFile()) {
         log(`Serving from cache: ${requested}`);
-        return next();
+        return res.sendFile(cached);
       }
 
       const metadataFile = path.join(userStaticPath, "metadata.json");
-      if (!fs.existsSync(metadataFile)) {
-        log(`No metadata file found, skipping: ${requested}`);
-        return next();
+      let metadata = null;
+      if (fs.existsSync(metadataFile)) {
+        metadata = JSON.parse(fs.readFileSync(metadataFile, "utf-8"));
       }
 
-      const metadata = JSON.parse(fs.readFileSync(metadataFile, "utf-8"));
-      const entry = metadata.files && metadata.files[requested];
+      const entry = metadata?.files?.[requested];
 
-      if (!entry) {
-        log(`No metadata entry found for: ${requested}`);
-        return next();
+      if (entry) {
+        log("On-demand streaming and caching asset:", requested);
+        await streamAndCacheFile(res, cached, entry.path || requested);
+        return;
       }
 
-      log("On-demand streaming and caching asset:", requested);
-      await streamAndCacheFile(res, cached, entry.path || requested);
+      log(`No metadata entry found for: ${requested}, falling back...`);
+
+      const fallback = path.join(resourcesPath, "desktop", path.basename(requested));
+      if (fs.existsSync(fallback) && fs.statSync(fallback).isFile()) {
+        log(`Serving fallback file: ${requested}`);
+        return res.sendFile(fallback);
+      }
+
+      log(`404 - File not found: ${requested}`);
+      res.status(404).send("Not found");
     } catch (err) {
       log("Asset stream error:", err.message);
-      next();
+      res.status(500).send("Internal Server Error");
     }
   });
+
 
   server.use(`/${staticFolderName}`, express.static(userStaticPath));
   server.use(`/${staticFolderName}`, express.static(path.join(resourcesPath, staticFolderName)));

@@ -1,6 +1,7 @@
-const { app, BrowserWindow, ipcMain, Menu, shell } = require("electron");
+const { app, BrowserWindow, ipcMain, Menu, shell, dialog } = require("electron");
 const path = require("path");
 const fs = require("fs");
+const { autoUpdater } = require("electron-updater");
 const createAssetServer = require("./assetServer");
 
 const PORT = 6767;
@@ -146,7 +147,27 @@ ipcMain.handle("read-global-variable", (event, key) => {
   return globals[key] || null;
 });
 
+autoUpdater.autoDownload = true;
+
+autoUpdater.on("update-available", () => {
+  console.log("Update available. Downloading...");
+});
+
+autoUpdater.on("update-downloaded", () => {
+  const response = dialog.showMessageBoxSync({
+    type: "info",
+    buttons: ["Restart", "Later"],
+    title: "Update Ready",
+    message: "A new version has been downloaded. Restart to apply the update?"
+  });
+  if (response === 0) {
+    autoUpdater.quitAndInstall();
+  }
+});
+
 app.whenReady().then(() => {
+  autoUpdater.checkForUpdatesAndNotify();
+
   resourcesPath = getResourcesPath();
   userStaticPath = path.join(app.getPath("userData"), staticFolderName);
   if (!fs.existsSync(userStaticPath)) fs.mkdirSync(userStaticPath, { recursive: true });

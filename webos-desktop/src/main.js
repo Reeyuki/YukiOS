@@ -10,7 +10,7 @@ import { FileSystemManager } from "./fs.js";
 import { setupStartMenu } from "./startMenu.js";
 import { desktop } from "./desktop.js";
 import { DesktopUI } from "./desktopui.js";
-import { appMetadata } from "./app.js"
+import { appMetadata } from "./app.js";
 
 class MusicPlayer {
   constructor() {}
@@ -43,67 +43,73 @@ class MusicPlayer {
 }
 
 if (!window.electronAPI) {
-  const osFiles = {
-    linux: [
-      { name: "YukiOS-1.0.0-linux-amd64.deb", url: "YukiOS-1.0.0-linux-amd64.deb" },
-      { name: "YukiOS-1.0.0-linux-x64.zip", url: "YukiOS-1.0.0-linux-x64.zip" }
-    ],
-    mac: [
-      { name: "YukiOS-1.0.0-mac-arm64.zip", url: "YukiOS-1.0.0-mac-arm64.zip" },
-      { name: "YukiOS-1.0.0-mac-arm64.zip.dmg", url: "YukiOS-1.0.0-mac-arm64.zip.dmg" }
-    ],
-    windows: [
-      { name: "YukiOS-1.0.0-windows-x64-setup.exe", url: "YukiOS-1.0.0-windows-x64-setup.exe" }
-    ]
-  };
+  fetch("https://api.github.com/repos/Reeyuki/reeyuki.github.io/releases/latest")
+    .then((res) => res.json())
+    .then((release) => {
+      const files = release.assets.map((asset) => ({
+        name: asset.name,
+        url: asset.browser_download_url
+      }));
 
-  function detectOS() {
-    const platform = navigator.platform.toLowerCase();
-    const ua = navigator.userAgent.toLowerCase();
-    if (platform.includes("win")) return "windows";
-    if (platform.includes("mac") || ua.includes("macintosh") || ua.includes("mac os")) return "mac";
-    if (platform.includes("linux")) return "linux";
-    return "windows";
-  }
+      const osFiles = {
+        linux: files.filter((f) => f.name.includes("linux")),
+        mac: files.filter((f) => f.name.includes("mac")),
+        windows: files.filter((f) => f.name.includes("windows"))
+      };
 
-  function downloadFile(fileUrl) {
-    const a = document.createElement("a");
-    a.href = fileUrl;
-    a.download = "";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  }
+      function detectOS() {
+        const platform = navigator.platform.toLowerCase();
+        const ua = navigator.userAgent.toLowerCase();
+        if (platform.includes("win")) return "windows";
+        if (platform.includes("mac") || ua.includes("macintosh") || ua.includes("mac os")) return "mac";
+        if (platform.includes("linux")) return "linux";
+        if (/android|iphone|ipad|ipod/.test(ua)) return "mobile";
+        return "windows";
+      }
 
-  function askLinuxPackage(files) {
-    const choice = prompt("Linux detected. Choose install type:\n1 = .deb (debian based)\n2 = .zip (portable)", "1");
-    if (choice === "2") {
-      const zipFile = files.find(f => f.name.endsWith(".zip"));
-      if (zipFile) downloadFile(zipFile.url);
-    } else {
-      const debFile = files.find(f => f.name.endsWith(".deb"));
-      if (debFile) downloadFile(debFile.url);
-    }
-  }
+      function downloadFile(fileUrl) {
+        const a = document.createElement("a");
+        a.href = fileUrl;
+        a.download = "";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
 
-  const installBtn = document.createElement("div");
-  installBtn.id = "install-app";
-  installBtn.textContent = "Install Desktop App";
-  document.body.appendChild(installBtn);
+      function askLinuxPackage(files) {
+        const choice = prompt(
+          "Linux detected. Choose install type:\n1 = .deb (debian based)\n2 = .zip (portable)",
+          "1"
+        );
+        if (choice === "2") {
+          const zipFile = files.find((f) => f.name.endsWith(".zip"));
+          if (zipFile) downloadFile(zipFile.url);
+        } else {
+          const debFile = files.find((f) => f.name.endsWith(".deb"));
+          if (debFile) downloadFile(debFile.url);
+        }
+      }
 
-  installBtn.addEventListener("click", () => {
-    const os = detectOS();
-    const files = osFiles[os];
-    if (!files || files.length === 0) return;
+      const os = detectOS();
+      if (os === "mobile") return;
 
-    if (os === "linux") {
-      askLinuxPackage(files);
-    } else {
-      downloadFile(files[0].url);
-    }
-  });
+      const installBtn = document.createElement("div");
+      installBtn.id = "install-app";
+      installBtn.textContent = "Install Desktop App";
+      document.body.appendChild(installBtn);
+
+      installBtn.addEventListener("click", () => {
+        const osSpecificFiles = osFiles[os];
+        if (!osSpecificFiles || osSpecificFiles.length === 0) return;
+
+        if (os === "linux") {
+          askLinuxPackage(osSpecificFiles);
+        } else {
+          downloadFile(osSpecificFiles[0].url);
+        }
+      });
+    });
 }
-
 
 const fileSystemManager = new FileSystemManager();
 const windowManager = new WindowManager();
@@ -129,9 +135,9 @@ const appLauncher = new AppLauncher(
   cameraApp
 );
 
-console.log(appMetadata)
+console.log(appMetadata);
 
-new DesktopUI(appLauncher, notepadApp, explorerApp,fileSystemManager);
+new DesktopUI(appLauncher, notepadApp, explorerApp, fileSystemManager);
 
 SystemUtilities.startClock();
 SystemUtilities.setRandomWallpaper();

@@ -1,7 +1,7 @@
 import { desktop } from "./desktop.js";
 import { FileKind } from "./fs.js";
 import { SystemUtilities } from "./system.js";
-import { appMetadata} from "./app.js"
+import { appMetadata } from "./app.js";
 import { camelize } from "./utils.js";
 
 const contextMenu = document.getElementById("context-menu");
@@ -108,47 +108,47 @@ export class ExplorerApp {
     `;
   }
 
-async render() {
-  const view = document.getElementById("explorer-view");
-  const pathDisplay = document.getElementById("exp-path");
-  if (!view) return;
+  async render() {
+    const view = document.getElementById("explorer-view");
+    const pathDisplay = document.getElementById("exp-path");
+    if (!view) return;
 
-  view.innerHTML = "";
-  pathDisplay.textContent = "/" + this.currentPath.join("/");
+    view.innerHTML = "";
+    pathDisplay.textContent = "/" + this.currentPath.join("/");
 
-  if (this.currentPath[this.currentPath.length - 1] === "Music") {
-    await this.renderMusicPage(view);
-    return;
-  }
-
-  const folder = await this.fs.getFolder(this.currentPath);
-
-  for (const [name, itemData] of Object.entries(folder)) {
-    const isFile = itemData?.type === "file";
-    let iconImg;
-
-    if (isFile) {
-      const baseName = name.split('.')[0];
-      const camelName = camelize(baseName)
-      iconImg = appMetadata[camelName]?.icon || "/static/icons/notepad.webp";
-      console.log("basename: ", baseName, " name : ", name , " found result : ", iconImg, " camelized: ",camelName)
-    } else {
-      iconImg = "/static/icons/file.png";
+    if (this.currentPath[this.currentPath.length - 1] === "Music") {
+      await this.renderMusicPage(view);
+      return;
     }
 
-    const item = document.createElement("div");
-    item.className = "file-item";
-    item.innerHTML = `
+    const folder = await this.fs.getFolder(this.currentPath);
+
+    for (const [name, itemData] of Object.entries(folder)) {
+      const isFile = itemData?.type === "file";
+      let iconImg;
+
+      if (isFile) {
+        const baseName = name.split(".")[0];
+        const camelName = camelize(baseName);
+        iconImg = appMetadata[camelName]?.icon || "/static/icons/notepad.webp";
+        console.log("basename: ", baseName, " name : ", name, " found result : ", iconImg, " camelized: ", camelName);
+      } else {
+        iconImg = "/static/icons/file.png";
+      }
+
+      const item = document.createElement("div");
+      item.className = "file-item";
+      item.innerHTML = `
       <img src="${iconImg}" style="width:64px;height:64px;object-fit:contain">
       <span>${name}</span>
     `;
 
-    item.ondblclick = async () => this.openItem(name, isFile);
-    item.oncontextmenu = async (e) => this.showFileContextMenu(e, name, isFile);
+      item.ondblclick = async () => this.openItem(name, isFile);
+      item.oncontextmenu = async (e) => this.showFileContextMenu(e, name, isFile);
 
-    view.appendChild(item);
+      view.appendChild(item);
+    }
   }
-}
 
   async openItem(name, isFile) {
     if (isFile) {
@@ -214,7 +214,7 @@ async render() {
     contextMenu.appendChild(
       createMenuItem("Delete", async () => {
         contextMenu.style.display = "none";
-        const confirmMsg = isFile 
+        const confirmMsg = isFile
           ? `Are you sure you want to delete "${itemName}"?`
           : `Are you sure you want to delete the folder "${itemName}" and all its contents?`;
         if (confirm(confirmMsg)) {
