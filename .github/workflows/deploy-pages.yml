@@ -38,20 +38,15 @@ jobs:
 
       - name: Prepare site
         run: |
+          rm -rf site
           mkdir site
-          shopt -s dotglob
-          for item in *; do
-            if [ "$item" != "webos-desktop" ] && [ "$item" != "static" ] && [ "$item" != "site" ]; then
-              cp -r "$item" site/
-            fi
-          done
+          cp -r webos-desktop/dist/* site/
           mkdir -p site/static
           for item in static/*; do
             if [ "$(basename "$item")" != "gtavc" ]; then
               cp -r "$item" site/static/
             fi
           done
-          cp -r webos-desktop/dist/* site/
           touch site/.nojekyll
 
       - uses: actions/upload-pages-artifact@v3
