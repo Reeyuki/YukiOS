@@ -36,22 +36,22 @@ jobs:
           pnpm install
           pnpm build
 
-      - name: Prepare site
+      - name: Prepare desktop
         run: |
-          rm -rf site
-          mkdir site
-          cp -r webos-desktop/dist/* site/
-          mkdir -p site/static
+          rm -rf desktop
+          mkdir desktop
+          cp -r webos-desktop/dist/* desktop/
+          mkdir -p desktop/static
           for item in static/*; do
             if [ "$(basename "$item")" != "gtavc" ]; then
-              cp -r "$item" site/static/
+              cp -r "$item" desktop/static/
             fi
           done
-          touch site/.nojekyll
+          touch desktop/.nojekyll
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: site
+          path: desktop
 
   deploy:
     runs-on: ubuntu-latest
