@@ -47,6 +47,7 @@ jobs:
               cp -r "$item" desktop/static/
             fi
           done
+          cp favicon.ico desktop/favicon.ico
           touch desktop/.nojekyll
 
       - uses: actions/upload-pages-artifact@v3
