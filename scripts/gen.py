@@ -31,13 +31,16 @@ def prepare_desktop_folder():
     run(f"cp -r webos-desktop/dist/* {DESKTOP_DIR}/")
     (DESKTOP_DIR / "static").mkdir(exist_ok=True)
     for item in STATIC_DIR.iterdir():
-        if item.name != "gtavc":
+        if item.name == "gtavc":
+            run(f"rsync -a --exclude='assets' {item}/ {DESKTOP_DIR}/static/gtavc/")
+        else:
             run(f"cp -r {item} {DESKTOP_DIR}/static/")
     for f in ["favicon.ico"]:
         if Path(f).exists():
             run(f"cp {f} {DESKTOP_DIR}/")
     (DESKTOP_DIR / ".nojekyll").touch()
     (DESKTOP_DIR / "play").mkdir(parents=True, exist_ok=True)
+
 
 def parse_games():
     with INDEX_FILE.open(encoding="utf-8") as f:
