@@ -36,8 +36,8 @@ jobs:
           pip install beautifulsoup4
 
       - name: Copy html files
-        -run:
-          mkdir desktop/
+        run: |
+          mkdir -p desktop
           cp *.html desktop/
           cp -r minergame desktop/
 
