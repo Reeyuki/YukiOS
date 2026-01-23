@@ -154,7 +154,7 @@ export class AppLauncher {
       happyWheels: { type: "game", url: "https://emupedia.net/emupedia-game-happy-wheels/flash" },
       fistPunch: { type: "game", url: "/static/flashpointarchive.html?fpGameName=fistPunch" },
       hollowKnight: { type: "game", url: "/static/hollowknight.html" },
-      slimeRancher: { type: "game", url: "https://dev.snubby.top" },
+      slimeRancher: { type: "game", url: "/static/games/slimeRancher" },
       kindergarten: {
         type: "game",
         url: "/static/games/gnmath/kindergarten"
