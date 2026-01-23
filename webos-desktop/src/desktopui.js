@@ -108,6 +108,8 @@ export class DesktopUI {
           left: `${leftPx}px`,
           top: `${topPx}px`
         });
+
+        this.snapIconToGrid(icon);
       }
     });
   }

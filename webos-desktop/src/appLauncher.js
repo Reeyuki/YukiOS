@@ -26,7 +26,7 @@ export class AppLauncher {
     this.sendAnalytics({ ...analyticsBase, event: "start" });
 
     this.appMap = {
-      return: { type: "system", action: () => (window.location.href = "/") },
+      return: { type: "system", action: () => (window.location.href = "https://reeyuki.github.io/site") },
       explorer: { type: "system", action: () => this.explorerApp.open() },
       computer: { type: "system", action: () => this.explorerApp.open() },
       terminal: { type: "system", action: () => this.terminalApp.open() },

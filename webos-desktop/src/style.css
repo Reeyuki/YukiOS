@@ -101,7 +101,11 @@ body {
   cursor: pointer;
   padding: 0.3rem 0;
   border: 1px solid transparent;
-  transition: background 0.2s, border 0.2s, box-shadow 0.2s, transform 0.2s;
+  transition:
+    background 0.2s,
+    border 0.2s,
+    box-shadow 0.2s,
+    transform 0.2s;
   font-size: 0.75rem;
   text-shadow: 1px 1px 2px black;
   box-sizing: border-box;
@@ -117,7 +121,9 @@ body {
   height: 60px;
   display: block;
   margin-bottom: 0.3rem;
-  transition: transform 0.18s ease, filter 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    filter 0.18s ease;
 }
 
 .icon.popular {
@@ -153,7 +159,6 @@ body {
   transform: scale(1.05);
 }
 
-
 @media (max-width: 768px) {
   #desktop {
     justify-content: center;
@@ -167,8 +172,6 @@ body {
     font-size: 0.65rem;
     margin: 0.2rem;
   }
-
-
 }
 
 @media (max-width: 480px) {
@@ -177,7 +180,6 @@ body {
     height: 50px;
     font-size: 0.55rem;
   }
-
 }
 
 .window {
@@ -872,7 +874,7 @@ body {
   right: 20px;
   padding: 12px 20px;
   border-radius: 16px;
-  font-family: 'Segoe UI', sans-serif;
+  font-family: "Segoe UI", sans-serif;
   font-weight: 600;
   backdrop-filter: blur(12px);
   background: rgba(255, 255, 255, 0.15);
@@ -880,7 +882,10 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.3);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
   cursor: pointer;
-  transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s,
+    background 0.2s,
+    box-shadow 0.2s;
   z-index: 9999;
 }
 #install-app:hover {

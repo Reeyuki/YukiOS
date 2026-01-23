@@ -30,25 +30,20 @@ jobs:
           cache: pnpm
           cache-dependency-path: webos-desktop/pnpm-lock.yaml
 
-      - name: Build webos-desktop
+      - name: Install Python deps
         run: |
-          cd webos-desktop
-          pnpm install
-          pnpm build
+          python -m pip install --upgrade pip
+          pip install beautifulsoup4
 
-      - name: Prepare desktop
+      - name: Copy html files
+        -run:
+          mkdir desktop/
+          cp *.html desktop/
+          cp -r minergame desktop/
+
+      - name: Run SEO build pipeline
         run: |
-          rm -rf desktop
-          mkdir desktop
-          cp -r webos-desktop/dist/* desktop/
-          mkdir -p desktop/static
-          for item in static/*; do
-            if [ "$(basename "$item")" != "gtavc" ]; then
-              cp -r "$item" desktop/static/
-            fi
-          done
-          cp favicon.ico desktop/favicon.ico
-          touch desktop/.nojekyll
+          python scripts/gen.py
 
       - uses: actions/upload-pages-artifact@v3
         with:
