@@ -21,23 +21,21 @@ def build_webos_desktop():
     run("pnpm build", cwd="webos-desktop")
 
 def prepare_desktop_folder():
-    if DESKTOP_DIR.exists():
-        for item in DESKTOP_DIR.iterdir():
-            if item.is_dir():
-                subprocess.run(f"rm -rf {item}", shell=True)
-            else:
-                item.unlink()
     DESKTOP_DIR.mkdir(parents=True, exist_ok=True)
+
     run(f"cp -r webos-desktop/dist/* {DESKTOP_DIR}/")
+
     (DESKTOP_DIR / "static").mkdir(exist_ok=True)
     for item in STATIC_DIR.iterdir():
         if item.name == "gtavc":
             run(f"rsync -a --exclude='assets' {item}/ {DESKTOP_DIR}/static/gtavc/")
         else:
             run(f"cp -r {item} {DESKTOP_DIR}/static/")
+
     for f in ["favicon.ico"]:
         if Path(f).exists():
             run(f"cp {f} {DESKTOP_DIR}/")
+
     (DESKTOP_DIR / ".nojekyll").touch()
     (DESKTOP_DIR / "play").mkdir(parents=True, exist_ok=True)
 
