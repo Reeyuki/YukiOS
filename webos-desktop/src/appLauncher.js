@@ -178,7 +178,8 @@ export class AppLauncher {
       tattletail: { type: "game", url: "https://truffled.lol/games/tattletail/index.html" },
       repo: { type: "game", url: "/static/games/gnmath/repo.html" },
       omori: { type: "game", url: "/static/games/gnmath/omori.html" },
-      ultrakill: { type: "game", url: "/static/games/gnmath/ultrakill.html" }
+      ultrakill: { type: "game", url: "/static/games/gnmath/ultrakill.html" },
+      vampireSurvivors: {type: "remote", url:"https://poncle.itch.io/vampire-survivors"}
     };
 
     populateStartMenu(this);
