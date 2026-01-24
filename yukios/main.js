@@ -13,6 +13,7 @@ let mainWindow;
 let resourcesPath;
 let userStaticPath;
 let assetServer;
+let appStartTime = Date.now();
 
 const logFile = path.join(app.getPath("userData"), "electron-debug.log");
 const logStream = fs.createWriteStream(logFile, { flags: "a" });
@@ -27,7 +28,73 @@ function getResourcesPath() {
   return app.isPackaged ? path.join(process.resourcesPath, "app.asar", "resources") : path.join(__dirname, "resources");
 }
 
-function createWindow(url, title, width, height) {
+function sendAnalytics(data) {
+  if (!app.isPackaged) {
+    log("Analytics (dev mode, not sent):", data);
+    return;
+  }
+  
+  const https = require("https");
+  const payload = JSON.stringify(data);
+  
+  const options = {
+    hostname: "analytics.liventcord-a60.workers.dev",
+    path: "/analytics",
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Content-Length": Buffer.byteLength(payload)
+    }
+  };
+
+  const req = https.request(options, (res) => {
+    log(`Analytics sent: ${res.statusCode}`);
+  });
+
+  req.on("error", (err) => {
+    log("Analytics error:", err.message);
+  });
+
+  req.write(payload);
+  req.end();
+}
+
+function getAnalyticsBase(appName) {
+  const now = Date.now();
+  const sessionAgeMs = now - appStartTime;
+  return {
+    app: appName,
+    timestamp: now,
+    sessionAgeMs
+  };
+}
+
+function trackAppStart() {
+  const analyticsBase = getAnalyticsBase("yukios-desktop");
+  sendAnalytics({
+    ...analyticsBase,
+    event: "start"
+  });
+}
+
+function trackGameLaunch(gameId) {
+  const analyticsBase = getAnalyticsBase(`game-${gameId}`);
+  sendAnalytics({
+    ...analyticsBase,
+    event: "start",
+    gameId
+  });
+}
+
+function trackAppClose() {
+  const analyticsBase = getAnalyticsBase("yukios-desktop");
+  sendAnalytics({
+    ...analyticsBase,
+    event: "close"
+  });
+}
+
+function createWindow(url, title, width, height, isGame = false, gameId = null) {
   const win = new BrowserWindow({
     width,
     height,
@@ -52,6 +119,16 @@ function createWindow(url, title, width, height) {
     if (assetServer) {
       e.preventDefault();
       log(`Window closing: ${title}`);
+      
+      if (isGame && gameId) {
+        const analyticsBase = getAnalyticsBase(`game-${gameId}`);
+        sendAnalytics({
+          ...analyticsBase,
+          event: "close",
+          gameId
+        });
+      }
+      
       win.destroy();
     }
   });
@@ -61,7 +138,8 @@ function createWindow(url, title, width, height) {
 
 function launchGameWindow(gameId) {
   const url = `http://localhost:${PORT}/index.html?game=${encodeURIComponent(gameId)}`;
-  return createWindow(url, gameId, 1440, 900);
+  trackGameLaunch(gameId);
+  return createWindow(url, gameId, 1440, 900, true, gameId);
 }
 
 function ensureGameShortcut(gameId) {
@@ -175,11 +253,19 @@ app.whenReady().then(() => {
   const gameArg = process.argv.find((a) => a.startsWith("--game="));
   const gameId = gameArg ? gameArg.split("=")[1] : null;
 
+  trackAppStart();
+
+  if (gameId) {
+    trackGameLaunch(gameId);
+  }
+
   mainWindow = createWindow(
     `http://localhost:${PORT}/index.html${gameId ? "?game=" + encodeURIComponent(gameId) : ""}`,
     gameId || "yukios",
     gameId ? 1440 : 1200,
-    gameId ? 900 : 800
+    gameId ? 900 : 800,
+    !!gameId,
+    gameId
   );
 
   assetServer = createAssetServer({
@@ -199,6 +285,7 @@ app.whenReady().then(() => {
 
 app.on("window-all-closed", async () => {
   if (process.platform !== "darwin") {
+    trackAppClose();
     app.quit();
   }
 });
@@ -206,6 +293,7 @@ app.on("window-all-closed", async () => {
 app.on("before-quit", async (e) => {
   if (assetServer) {
     e.preventDefault();
+    trackAppClose();
     app.quit();
   }
 });

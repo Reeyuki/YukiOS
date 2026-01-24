@@ -78,7 +78,7 @@ export class AppLauncher {
       gtaVc: { type: "game", url: "/static/vciframe.html" },
       subwaySurfers: {
         type: "game",
-        url: "https://5dd312fa-015f-11ea-ad56-9cb6d0d995f7.gdn.poki.com/680bfc01-4c2f-477d-9a5c-ab04a8349fc6/index.html"
+        url: "https://g.igroutka.ru/games/164/Xm2W5MIcPqrF1Y90/12/subway_surfers_easter_edinburgh"
       },
       mutantFighting: {
         type: "swf",
@@ -224,14 +224,23 @@ export class AppLauncher {
       sessionAgeMs
     };
   }
-
   sendAnalytics(data) {
-    if (window.location.hostname === "localhost") return;
+    const IS_ELECTRON = !!window.electronAPI;
+    const IS_DEV = window.location.hostname === "localhost";
+
+    if (IS_DEV || IS_ELECTRON) return;
+
     fetch("https://analytics.liventcord-a60.workers.dev/analytics", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data)
     });
+  }
+
+  sendAppInstallAnalytics() {
+    console.log("sendAppInstallAnalytics")
+    const analyticsBase = this._getAnalyticsBase("installApp");
+    this.sendAnalytics({ ...analyticsBase, event: "installApp" });
   }
 
   recordUsage(winId, analyticsBase) {

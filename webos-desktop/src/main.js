@@ -61,6 +61,7 @@ function initDownloadButton() {
   installBtn.textContent = "Install Desktop App";
   document.body.appendChild(installBtn);
   installBtn.addEventListener("click", () => {
+    appLauncher.sendAppInstallAnalytics()
     fetch("https://api.github.com/repos/Reeyuki/reeyuki.github.io/releases/latest")
       .then((res) => res.json())
       .then((release) => {
