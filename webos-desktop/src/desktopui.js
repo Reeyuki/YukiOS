@@ -994,7 +994,8 @@ export function layoutIcons(icons, isExplorerIcon) {
   if (!icons) return;
   const ICON_WIDTH = 80;
   const ICON_HEIGHT = 100;
-  const GAP = isExplorerIcon ? 20 : 5;
+  const GAP = isExplorerIcon ? 30 : 10;
+  const GAPY = isExplorerIcon ? 25 : 5;
 
   const desktopHeight = desktop.clientHeight;
   const cellWidth = ICON_WIDTH + GAP;
@@ -1006,7 +1007,7 @@ export function layoutIcons(icons, isExplorerIcon) {
   requestAnimationFrame(() => {
     for (const icon of icons) {
       const x = GAP + col * cellWidth;
-      const y = GAP + row * cellHeight;
+      const y = GAPY + row * cellHeight;
 
       Object.assign(icon.style, {
         position: "absolute",

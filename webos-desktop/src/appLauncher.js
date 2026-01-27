@@ -1,5 +1,5 @@
 import { desktop } from "./desktop.js";
-import { appMap } from "./games.js";
+import { appMap, getGameName } from "./games.js";
 import { populateStartMenu, tryGetIcon } from "./startMenu";
 
 export class AppLauncher {
@@ -141,12 +141,9 @@ export class AppLauncher {
     );
   }
 
-  openRuffleApp(gameName, swfPath) {
+  openRuffleApp(originalName, swfPath) {
     if (!swfPath) return;
-    const originalName = gameName;
-
-    const foundName = document.querySelector(`[data-app="${gameName}"] div`);
-    if (foundName) gameName = foundName.textContent;
+    const gameName = getGameName(originalName);
 
     const id = swfPath.replace(/[^a-zA-Z0-9]/g, "");
     if (document.getElementById(`${id}-win`)) {
@@ -161,9 +158,8 @@ export class AppLauncher {
     });
   }
 
-  openEmulatorApp(gameName, romName, core) {
-    const foundName = document.querySelector(`[data-app="${gameName}"] div`);
-    if (foundName) gameName = foundName.textContent;
+  openEmulatorApp(originalName, romName, core) {
+    const gameName = getGameName(originalName);
 
     const uniqueId = `${core}-${romName.replace(/\W/g, "")}-${Date.now()}`;
     if (document.getElementById(uniqueId)) {
@@ -181,16 +177,14 @@ export class AppLauncher {
   }
 
   openGameApp(appId, url) {
-    let foundNameText;
-    const foundName = document.querySelector(`[data-app="${appId}"] div`);
-    if (foundName) foundNameText = foundName.textContent;
+    const gameName = getGameName(appId);
     if (document.getElementById(`${appId}-win`)) {
       this.wm.bringToFront(document.getElementById(`${appId}-win`));
       return;
     }
 
     const content = `<iframe src="${url}" style="width:100%; height:100%; border:none;" allow="autoplay; fullscreen; clipboard-write; encrypted-media; picture-in-picture" sandbox="allow-forms allow-downloads allow-modals allow-pointer-lock allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation"></iframe>`;
-    this.createWindow(appId, foundNameText, content, url, appId, {
+    this.createWindow(appId, gameName, content, url, appId, {
       type: "game"
     });
   }
@@ -203,7 +197,6 @@ export class AppLauncher {
   createWindow(id, title, contentHtml, externalUrl = null, appId = null, appMeta = {}) {
     const urlParams = new URLSearchParams(window.location.search);
     const electronGameMode = urlParams.has("game");
-
     if (electronGameMode && appId) {
       document.body.innerHTML = `
         <div id="electron-game-root" style="
