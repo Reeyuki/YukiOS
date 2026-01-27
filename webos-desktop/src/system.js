@@ -4,9 +4,9 @@ const WALLPAPER_KEY = "desktopOS_selectedWallpaper";
 
 export class SystemUtilities {
   static startClock() {
-    const clock = document.getElementById("clock")
+    const clock = document.getElementById("clock");
     const date = document.getElementById("date");
-    if(!clock | !date) return
+    if (!clock | !date) return;
     const updateClock = () => {
       const now = new Date();
       clock.textContent = now.toLocaleTimeString([], {

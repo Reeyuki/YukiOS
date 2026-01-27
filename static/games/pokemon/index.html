@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+  <head>
+    <title>FNAF</title>
+    <style>
+      body {
+        color: #fff;
+        font-family: Verdana, sans-serif;
+        background: radial-gradient(#2d2d30, #1b1b1c);
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+      }
+      #game-selector {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 16px;
+        max-width: 900px;
+        padding: 20px;
+      }
+      #game-selector a {
+        text-align: center;
+        text-decoration: none;
+        color: #fff;
+      }
+      #game-selector img {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        object-fit: cover;
+        cursor: pointer;
+        transition: transform 0.2s;
+        border-radius: 8px;
+      }
+      #game-selector img:hover {
+        transform: scale(1.08);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="game-selector">
+      <a href="/desktop?game=pokemonRed&swf=true">
+        <img src="/static/icons/pokemonred.png" />
+        <div>Pokemon Red</div>
+      </a>
+      <a href="/desktop?game=pokemonEmerald&swf=true">
+        <img src="/static/icons/pokemonemerald.png" />
+        <div>Pokemon Emerald</div>
+      </a>
+      <a href="/desktop?game=pokemonPlatinum&swf=true">
+        <img src="/static/icons/pokemonplatinum.jpg" />
+        <div>Pokemon Platinum</div>
+      </a>
+      <a href="/desktop?game=pokemonHeartgold&swf=true">
+        <img src="/static/icons/pokemonheartgold.webp" />
+        <div>Pokemon Heartgold</div>
+      </a>
+      <a href="/desktop?game=pokemonWhite&swf=true">
+        <img src="/static/icons/pokemonwhite.jpg" />
+        <div>Pokemon White</div>
+      </a>
+      <a href="/desktop?game=pokemonWhite2&swf=true">
+        <img src="/static/icons/pokemonwhite.jpg" />
+        <div>Pokemon White 2</div>
+      </a>
+    </div>
+  </body>
+</html>
