@@ -100,31 +100,25 @@ body {
   color: white;
   cursor: pointer;
   padding: 0.3rem 0;
-  border: 1px solid transparent;
-  transition:
-    background 0.2s,
-    border 0.2s,
-    box-shadow 0.2s,
-    transform 0.2s;
   font-size: 0.75rem;
   text-shadow: 1px 1px 2px black;
   box-sizing: border-box;
   position: absolute;
 }
 
-.icon div {
-  font-family: sans-serif;
-}
-
 .icon img {
   width: 60px;
   height: 60px;
-  display: block;
+  flex-shrink: 0;
   margin-bottom: 0.3rem;
-  transition:
-    transform 0.18s ease,
-    filter 0.18s ease;
 }
+
+.icon div {
+  line-height: 1.1;
+  max-width: 100%;
+  word-wrap: break-word;
+}
+
 
 .icon.popular {
   background: transparent;
