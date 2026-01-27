@@ -325,13 +325,13 @@ export const appMap = {
   milkInside: {
     type: "game",
     url: "/static/games/gnmath/milkInside.html",
-    icon: "/static/icons/goi.webp",
+    icon: "/static/icons/inside.webp",
     title: "Milk inside a bag of milk"
   },
   milkOutside: {
     type: "game",
     url: "/static/games/gnmath/milkOutside.html",
-    icon: "/static/icons/goi.webp",
+    icon: "/static/icons/outside.webp",
     title: "Milk outside a bag of milk"
   },
   vscode: {
