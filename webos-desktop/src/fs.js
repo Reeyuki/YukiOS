@@ -92,7 +92,8 @@ export const defaultStorage = {
           icon: "/static/wallpapers/wallpaper11.webp"
         }
       },
-      Music: {}
+      Music: {},
+      Games: {}
     }
   }
 };

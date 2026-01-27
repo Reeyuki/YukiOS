@@ -3,17 +3,28 @@ import { defineConfig } from "vite";
 export default defineConfig({
   base: "./",
   build: {
-    chunkSizeWarningLimit: 1000,
+    target: "esnext",
+    minify: true,
+    sourcemap: false,
+    cssCodeSplit: false,
+    reportCompressedSize: false,
+    chunkSizeWarningLimit: 5000,
     rollupOptions: {
+      treeshake: false,
       output: {
-        manualChunks(id) {
-          if (id.includes("node_modules")) {
-            if (id.includes("react")) return "react-vendor";
-            if (id.includes("vite")) return "vite-vendor";
-            return "vendor";
-          }
-        }
+        manualChunks: undefined
       }
+    }
+  },
+  esbuild: {
+    minify: true,
+    treeShaking: false,
+    legalComments: "none"
+  },
+  optimizeDeps: {
+    esbuildOptions: {
+      minify: true,
+      treeShaking: false
     }
   }
 });

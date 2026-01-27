@@ -19,13 +19,20 @@ body {
 * {
   font-family: sans-serif;
 }
-#desktop {
+.desktop {
   position: relative;
   width: 100%;
   min-height: calc(100vh - var(--taskbar-height));
   padding: 5px;
   box-sizing: border-box;
   overflow: auto;
+}
+.desktop-exp {
+  position: relative;
+  width: 1000px;
+  height: 100%;
+  padding: 5px;
+  box-sizing: border-box;
 }
 .taskbar {
   position: fixed;
@@ -107,16 +114,24 @@ body {
 }
 
 .icon img {
-  width: 60px;
-  height: 60px;
+  width: 70px;
+  height: 70px;
   flex-shrink: 0;
   margin-bottom: 0.3rem;
 }
 
+.icon.explorer-game img {
+  width: 90px;
+  height: 90px;
+}
+
 .icon div {
-  line-height: 1.1;
-  max-width: 100%;
-  word-wrap: break-word;
+  font-size: 12px;
+  line-height: 1.25;
+  text-align: center;
+  color: #f5f5f5;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+  word-break: break-word;
 }
 
 .icon.popular {
@@ -410,6 +425,7 @@ body {
 }
 .explorer-sidebar {
   width: 150px;
+  user-select: none;
   background: #2a2a2a;
   border-right: 1px solid #444;
   padding: 10px 0;
@@ -419,14 +435,15 @@ body {
   flex-grow: 1;
   display: flex;
   flex-wrap: wrap;
-  align-content: flex-start;
+  align-items: flex-start;
   padding: 10px;
-  max-height: 500px;
-  gap: 15px;
-  overflow-y: auto;
+  overflow: auto;
   background: #1e1e1e;
 }
 
+.explorer-main.games-page .file-item {
+  display: none;
+}
 .explorer-nav {
   height: 35px;
   background: #2a2a2a;

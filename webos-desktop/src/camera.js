@@ -51,12 +51,11 @@ export class CameraApp {
     this.wm.addToTaskbar(win.id, "Camera", "/static/icons/camera.svg");
     this.wm.bringToFront(win);
     const closebtn = win.querySelector(".close-btn");
-    (closebtn.addEventListener("click"),
-      () => {
-        this.stopCamera();
+    closebtn.addEventListener("click", () => {
+      this.stopCamera();
+      if (this.historyWin) this.historyWin.remove();
+    });
 
-        if (this.historyWin) this.historyWin.remove();
-      });
     this.wm.registerCloseWindow(closebtn, win.id);
 
     this.video = win.querySelector("#camera-video");

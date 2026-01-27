@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 from urllib.parse import quote_plus
 from datetime import datetime
 
-SYSTEM_APPS = {"explorer", "computer", "terminal", "notepad", "browser", "cameraApp", "music"}
+SYSTEM_APPS = {"explorer","terminal", "notepad", "browser", "cameraApp", "music"}
 INDEX_FILE = Path("webos-desktop/dist/index.html")
 DESKTOP_DIR = Path("desktop")
 STATIC_DIR = Path("static")

@@ -5,10 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "pnpm run format && vite build",
+    "build": "vite build",
+    "b": "pnpm build && cp -r dist/* ../desktop/",
     "build-win": "vite build",
     "preview": "vite preview",
-    "format": "git diff --name-only --diff-filter=ACMRTUXB | grep -E '\\.(js|jsx|ts|css|json|html)$' || true | xargs -r -P 4 pnpm exec prettier --write",
+    "format": "pnpm exec prettier . --write",
     "lint": "eslint . --ext .js,.jsx --fix"
   },
   "devDependencies": {
@@ -19,16 +20,15 @@
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^7.2.1",
-    "prettier": "^3.8.0",
+    "prettier": "^3.8.1",
     "vite": "^7.3.1"
   },
   "dependencies": {
     "browserfs": "^1.4.3",
-    "globals": "^17.0.0",
+    "globals": "^17.1.0",
     "idb-keyval": "^6.2.2",
     "interactjs": "^1.10.27",
-    "lodash-es": "^4.17.22",
-    "memfs": "^4.54.0",
+    "memfs": "^4.56.10",
     "workbox-window": "^7.4.0"
   }
 }

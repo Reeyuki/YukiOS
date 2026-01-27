@@ -1,7 +1,6 @@
 import { updateFavoritesUI } from "./startMenu.js";
 import { desktop } from "./desktop.js";
 import interact from "interactjs";
-import { last, pick, get, isEmpty } from "lodash-es";
 
 export class DesktopUI {
   constructor(appLauncher, notepadApp, explorerApp, fileSystemManager) {
@@ -171,10 +170,12 @@ export class DesktopUI {
     });
   }
 
-  makeIconInteractable(icon) {
+  makeIconInteractable(icon, ignoreDrag = false) {
     this.setIconNonDraggable(icon);
+    if (!ignoreDrag) {
+      this.setupInteractDrag(icon);
+    }
     this.attachIconEvents(icon);
-    this.setupInteractDrag(icon);
   }
 
   setIconNonDraggable(icon) {
@@ -355,22 +356,37 @@ export class DesktopUI {
 
   snapIconToGrid(icon) {
     const { width, height, gap } = this.state.gridSize;
-    const columnWidth = width + gap;
-    const rowHeight = height + gap;
 
-    let currentLeft = parseFloat(icon.style.left) || 0;
-    let currentTop = parseFloat(icon.style.top) || 0;
+    const cellW = width + gap;
+    const cellH = height + gap;
 
-    let snappedLeft = Math.round(currentLeft / columnWidth) * columnWidth + gap;
-    let snappedTop = Math.round(currentTop / rowHeight) * rowHeight + gap;
+    let x = parseFloat(icon.style.left) || 0;
+    let y = parseFloat(icon.style.top) || 0;
+
+    let col = Math.round((x - gap) / cellW);
+    let row = Math.round((y - gap) / cellH);
+
+    if (col < 0) col = 0;
+    if (row < 0) row = 0;
+
+    let snappedLeft = gap + col * cellW;
+    let snappedTop = gap + row * cellH;
+
+    const desktopW = this.desktop.clientWidth;
+    const desktopH = this.desktop.clientHeight;
 
     while (this.isPositionOccupied(snappedLeft, snappedTop, icon)) {
-      const desktopHeight = this.desktop.clientHeight;
-      snappedTop += rowHeight;
+      row++;
+      snappedTop = gap + row * cellH;
 
-      if (snappedTop + height > desktopHeight) {
-        snappedTop = gap;
-        snappedLeft += columnWidth;
+      if (snappedTop + height > desktopH) {
+        row = 0;
+        col++;
+        snappedLeft = gap + col * cellW;
+
+        if (snappedLeft + width > desktopW) {
+          break;
+        }
       }
     }
 
@@ -382,10 +398,9 @@ export class DesktopUI {
     icon.dataset.leftPercent = this.pxToPercent(snappedLeft, "x");
     icon.dataset.topPercent = this.pxToPercent(snappedTop, "y");
   }
-
   isPositionOccupied(left, top, excludeIcon) {
     const icons = Array.from(document.querySelectorAll(".icon.selectable"));
-    const tolerance = 10;
+    const { width, height } = this.state.gridSize;
 
     return icons.some((icon) => {
       if (icon === excludeIcon) return false;
@@ -393,7 +408,7 @@ export class DesktopUI {
       const iconLeft = parseFloat(icon.style.left) || 0;
       const iconTop = parseFloat(icon.style.top) || 0;
 
-      return Math.abs(iconLeft - left) < tolerance && Math.abs(iconTop - top) < tolerance;
+      return Math.abs(iconLeft - left) < width * 0.5 && Math.abs(iconTop - top) < height * 0.5;
     });
   }
 
@@ -484,7 +499,7 @@ export class DesktopUI {
     }
 
     const selectedArray = Array.from(this.state.selectedIcons);
-    const lastSelected = last(selectedArray);
+    const lastSelected = selectedArray[selectedArray.length - 1];
 
     this.contextMenu.innerHTML = this.createContextMenuHTML(this.templates.iconContextMenu);
 
@@ -499,14 +514,15 @@ export class DesktopUI {
     this.attachContextMenuHandlers(this.templates.iconContextMenu, handlers);
     this.positionContextMenu(e);
   }
-
   cutSelectedIcons(selectedArray) {
     this.state.clipboard = {
       action: "cut",
       icons: selectedArray.map((icon) => ({
         element: icon,
         data: {
-          ...pick(icon.dataset, ["app", "name", "path"]),
+          app: icon.dataset.app,
+          name: icon.dataset.name,
+          path: icon.dataset.path,
           className: icon.className,
           innerHTML: icon.innerHTML
         }
@@ -519,7 +535,9 @@ export class DesktopUI {
       action: "copy",
       icons: selectedArray.map((icon) => ({
         data: {
-          ...pick(icon.dataset, ["app", "name", "path"]),
+          app: icon.dataset.app,
+          name: icon.dataset.name,
+          path: icon.dataset.path,
           className: icon.className,
           innerHTML: icon.innerHTML
         }
@@ -535,9 +553,10 @@ export class DesktopUI {
   }
 
   extractIconData(icon) {
-    const data = pick(icon.dataset, ["app", "name", "path"]);
     return {
-      ...data,
+      app: icon.dataset.app,
+      name: icon.dataset.name,
+      path: icon.dataset.path,
       innerHTML: icon.innerHTML,
       className: icon.className
     };
@@ -546,7 +565,7 @@ export class DesktopUI {
   createPropertiesContent(icon) {
     const rect = icon.getBoundingClientRect();
     const appId = icon.dataset.app;
-    const appInfo = get(this.appLauncher, `appMap.${appId}`, {});
+    const appInfo = this.appLauncher?.appMap?.[appId] ?? {};
     const nameElement = icon.querySelector("div");
     const name = nameElement ? nameElement.textContent.trim() : "Unknown";
 
@@ -571,11 +590,10 @@ export class DesktopUI {
     };
 
     return Object.entries(properties)
-      .filter(([, value]) => value !== undefined && !isEmpty(value))
+      .filter(([, value]) => value !== undefined && value !== "")
       .map(([key, value]) => `<div style="margin:2px 0;">${key}: ${value}</div>`)
       .join("");
   }
-
   createWindowHTML(title, content) {
     return `
       <div class="window-header">
@@ -824,7 +842,9 @@ export class DesktopUI {
     icon.className = data.className;
     icon.innerHTML = data.innerHTML;
 
-    Object.assign(icon.dataset, pick(data, ["app", "name", "path"]));
+    icon.dataset.app = data.app;
+    icon.dataset.name = data.name;
+    icon.dataset.path = data.path;
 
     Object.assign(icon.style, {
       position: "absolute",
@@ -968,12 +988,16 @@ export class DesktopUI {
   }
 }
 
-const ICON_WIDTH = 80;
-const ICON_HEIGHT = 100;
-const GAP = 5;
+export function layoutIcons(icons, isExplorerIcon) {
+  if (!icons) return;
+  let ICON_WIDTH = 80;
+  let ICON_HEIGHT = 120;
+  let GAP = 5;
 
-function layoutIcons() {
-  const icons = desktop.querySelectorAll(".icon");
+  if (isExplorerIcon) {
+    GAP = 20;
+  }
+
   const desktopHeight = desktop.clientHeight;
 
   let x = GAP;
@@ -988,6 +1012,7 @@ function layoutIcons() {
       });
 
       y += ICON_HEIGHT + GAP;
+
       if (y + ICON_HEIGHT > desktopHeight) {
         y = GAP;
         x += ICON_WIDTH + GAP;
@@ -995,6 +1020,10 @@ function layoutIcons() {
     }
   });
 }
+function layoutIconsCall() {
+  const icons = desktop.querySelectorAll(":scope > .icon");
+  layoutIcons(icons);
+}
 
-window.addEventListener("load", layoutIcons);
-window.addEventListener("resize", layoutIcons);
+window.addEventListener("load", layoutIconsCall);
+window.addEventListener("resize", layoutIconsCall);

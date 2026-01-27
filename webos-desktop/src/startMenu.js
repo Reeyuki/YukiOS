@@ -1,3 +1,4 @@
+import { games } from "./games.js";
 import { camelize } from "./utils.js";
 
 const FAVORITES_KEY = "kdeFavorites";
@@ -137,8 +138,11 @@ export function setupStartMenu() {
 export function tryGetIcon(id) {
   id = camelize(id);
   if (id === "explorer") return "/static/icons/file.png";
-  if (id === "computer") return "/static/icons/pc.webp";
+
   try {
+    const foundGame = games.find((game) => game.app === id || game.app.startsWith(id));
+    if (foundGame && foundGame.icon) return foundGame.icon;
+    console.log("Cant find game for: ", id, " games : ", games);
     const div = document.querySelector(`#desktop div[data-app="${id}"]`);
     return div?.querySelector("img")?.src || null;
   } catch (e) {

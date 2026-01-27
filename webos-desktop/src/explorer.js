@@ -3,6 +3,8 @@ import { FileKind } from "./fs.js";
 import { SystemUtilities } from "./system.js";
 import { appMetadata } from "./app.js";
 import { camelize } from "./utils.js";
+import { layoutIcons } from "./desktopui.js";
+import { GamesPageRenderer } from "./games.js";
 
 const contextMenu = document.getElementById("context-menu");
 
@@ -14,7 +16,8 @@ export class ExplorerApp {
     this.currentPath = [];
     this.history = [];
     this.historyIndex = -1;
-
+    this.lastWin = null;
+    this.desktopUI = null;
     this.fileSelectCallback = null;
     this.open = this.open.bind(this);
   }
@@ -31,7 +34,7 @@ export class ExplorerApp {
     win.className = "window";
     win.id = "explorer-win";
     win.dataset.fullscreen = "false";
-
+    this.lastWin = win;
     win.innerHTML = `
       <div class="window-header">
         <span>File Explorer</span>
@@ -43,7 +46,8 @@ export class ExplorerApp {
       </div>
       <div class="explorer-container">
         <div class="explorer-sidebar">
-        <div class="start-item" data-path="">Home</div>
+          <div class="start-item" data-path="">Home</div>
+          <div class="start-item" data-path="Games">Games</div>
           <div class="start-item" data-path="Documents">Documents</div>
           <div class="start-item" data-path="Pictures">Pictures</div>
           <div class="start-item" data-path="Music">Music</div>
@@ -55,6 +59,7 @@ export class ExplorerApp {
     desktop.appendChild(win);
     const explorerView = win.querySelector("#explorer-view");
     explorerView.style.width = "600px";
+    explorerView.style.height = "400px";
 
     this.wm.makeDraggable(win);
     this.wm.makeResizable(win);
@@ -65,6 +70,17 @@ export class ExplorerApp {
 
     this.setupExplorerControls(win);
     this.navigate([]);
+  }
+
+  async openFlash() {
+    await this.open();
+    setTimeout(() => {
+      this.navigate(["Games"]);
+      if (this.lastWin) {
+        const games = this.lastWin.querySelectorAll(".icon");
+        layoutIcons(games, true);
+      }
+    }, 1);
   }
 
   setupExplorerControls(win) {
@@ -108,16 +124,50 @@ export class ExplorerApp {
     `;
   }
 
+  async renderGamesPage(view) {
+    view.classList.add("games-page");
+    const renderer = new GamesPageRenderer();
+    await renderer.renderGamesPage(view);
+    setTimeout(() => {
+      if (this.lastWin) {
+        const games = this.lastWin.querySelectorAll(".icon");
+        layoutIcons(games, true);
+        games.forEach((g) => {
+          this.makeExplorerIconInteractable(g);
+        });
+
+        this.lastWin.style.width = "85vw";
+        this.lastWin.style.height = "85vh";
+        const explorerView = this.lastWin.querySelector("#explorer-view");
+        if (explorerView) {
+          explorerView.style.height = "";
+        }
+      }
+    }, 0);
+  }
+
   async render() {
     const view = document.getElementById("explorer-view");
     const pathDisplay = document.getElementById("exp-path");
     if (!view) return;
 
     view.innerHTML = "";
+    view.classList.remove("games-page");
     pathDisplay.textContent = "/" + this.currentPath.join("/");
 
     if (this.currentPath[this.currentPath.length - 1] === "Music") {
       await this.renderMusicPage(view);
+      return;
+    }
+
+    if (this.currentPath[this.currentPath.length - 1] === "Games") {
+      await this.renderGamesPage(view);
+      setTimeout(() => {
+        if (this.lastWin) {
+          const games = this.lastWin.querySelectorAll(".icon");
+          layoutIcons(games, true);
+        }
+      }, 1);
       return;
     }
 
@@ -128,10 +178,13 @@ export class ExplorerApp {
       let iconImg;
 
       if (isFile) {
-        const baseName = name.split(".")[0];
-        const camelName = camelize(baseName);
-        iconImg = appMetadata[camelName]?.icon || "/static/icons/notepad.webp";
-        console.log("basename: ", baseName, " name : ", name, " found result : ", iconImg, " camelized: ", camelName);
+        if (itemData.kind === FileKind.IMAGE) {
+          iconImg = itemData.icon || itemData.content;
+        } else {
+          const baseName = name.split(".")[0];
+          const camelName = camelize(baseName);
+          iconImg = appMetadata[camelName]?.icon || itemData.icon || "/static/icons/notepad.webp";
+        }
       } else {
         iconImg = "/static/icons/file.png";
       }
@@ -139,9 +192,9 @@ export class ExplorerApp {
       const item = document.createElement("div");
       item.className = "file-item";
       item.innerHTML = `
-      <img src="${iconImg}" style="width:64px;height:64px;object-fit:contain">
-      <span>${name}</span>
-    `;
+        <img src="${iconImg}" style="width:64px;height:64px;object-fit:cover;border-radius:8px">
+        <span>${name}</span>
+      `;
 
       item.ondblclick = async () => this.openItem(name, isFile);
       item.oncontextmenu = async (e) => this.showFileContextMenu(e, name, isFile);
@@ -303,5 +356,13 @@ export class ExplorerApp {
       top: `${e.pageY}px`,
       display: "block"
     });
+  }
+
+  setDesktopUI(desktopUI) {
+    this.desktopUI = desktopUI;
+  }
+
+  makeExplorerIconInteractable(icon) {
+    this.desktopUI.makeIconInteractable(icon, true);
   }
 }
