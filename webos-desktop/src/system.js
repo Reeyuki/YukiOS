@@ -4,13 +4,16 @@ const WALLPAPER_KEY = "desktopOS_selectedWallpaper";
 
 export class SystemUtilities {
   static startClock() {
+    const clock = document.getElementById("clock")
+    const date = document.getElementById("date");
+    if(!clock | !date) return
     const updateClock = () => {
       const now = new Date();
-      document.getElementById("clock").textContent = now.toLocaleTimeString([], {
+      clock.textContent = now.toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit"
       });
-      document.getElementById("date").textContent = now.toLocaleDateString();
+      date.textContent = now.toLocaleDateString();
     };
     setInterval(updateClock, 1000);
     updateClock();
