@@ -192,7 +192,7 @@ export class DesktopUI {
       if (icon.classList.contains("folder-icon")) {
         this.openFolder(icon.dataset.folderName);
       } else {
-        this.appLauncher.launch(icon.dataset.app, icon);
+        this.appLauncher.launch(icon.dataset.app);
       }
     });
 
@@ -489,7 +489,7 @@ export class DesktopUI {
     this.contextMenu.innerHTML = this.createContextMenuHTML(this.templates.iconContextMenu);
 
     const handlers = {
-      open: () => this.appLauncher.launch(lastSelected.dataset.app, lastSelected),
+      open: () => this.appLauncher.launch(lastSelected.dataset.app),
       cut: () => this.cutSelectedIcons(selectedArray),
       copy: () => this.copySelectedIcons(selectedArray),
       delete: () => this.deleteSelectedIcons(selectedArray),
