@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Candy Crush</title>
+<meta charset="utf-8">
+<meta name="format-detection" content="telephone=no">
+<meta name="HandheldFriendly" content="true">
+<meta name="robots" content="noindex,nofollow">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Phaser App">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, minimum-scale=1.0, maximum-scale=1.01">
+<meta name="game-slug" content="Mayas-Match">
+<meta name="splashscreen-game-url" content="https://830581635-628405001538672842.preview.editmysite.com/uploads/b/139890129-709153476852373754/files/img/teaser.jpg">
+<meta name="supports-ad-play-button" content="true">
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-MENBM6GSNY"></script>
+<script>
+function gtag(){dataLayer.push(arguments)}
+window.dataLayer=window.dataLayer||[]
+gtag("js",new Date)
+gtag("config","G-MENBM6GSNY")
+</script>
+
+<link rel="stylesheet" href="https://830581635-628405001538672842.preview.editmysite.com/uploads/b/139890129-709153476852373754/files/css/stylesheet.css" type="text/css" charset="utf-8">
+<script src="https://830581635-628405001538672842.preview.editmysite.com/uploads/b/139890129-709153476852373754/files/js/custom-phaser.min.js"></script>
+<script src="https://830581635-628405001538672842.preview.editmysite.com/uploads/b/139890129-709153476852373754/files/js/game.min.js"></script>
+
+<style>
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-image: url("https://830581635-628405001538672842.preview.editmysite.com/uploads/b/139890129-709153476852373754/files/img/bg.jpg");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center center;
+}
+
+canvas {
+    display: block;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    touch-action: none;
+    user-select: none;
+}
+
+#focusHelper {
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    display: none;
+    background-color: #000000;
+    opacity: 0;
+    top: 0px;
+    left: 0px;
+    z-index: 9999;
+}
+
+#button {
+    display:none;
+}
+
+.imgb_vis {
+    animation: imgb-animation 7s linear;
+}
+
+@keyframes imgb-animation {
+    10% { transform: translateX(0); }
+    20% { transform: translateX(100px); }
+    90% { transform: translateX(100px); }
+    100% { transform: translateX(0); }
+}
+</style>
+</head>
+
+<body onload="initGame()">
+
+<div id="gameFontPreload">
+    <div style="font-family: ComicSansBold" class="fontPreload">.</div>
+</div>
+
+<div id="focusHelper"></div>
+
+<script>
+window.addEventListener("blur", function(){
+    document.getElementById("focusHelper").style.display="block"
+})
+window.addEventListener("focus", function(){
+    document.getElementById("focusHelper").style.display="none"
+})
+</script>
+
+<script src="https://cdn.jsdelivr.net/gh/st39/sdk@main/api.js"></script>
+
+<div id="button" class="imgb imgb_vis" style="position: fixed; top: 10%; left: -100px; z-index: 10;">
+<a target="_blank" href="https://sites.google.com/view/classroom6x/" title="More Unblocked Games 6x">
+<img src="https://lh4.googleusercontent.com/lUEWrXMVEr4AdjKISyJahDRJ61bwfvHdpeYm86Djn5U8oCm9dI60NGXSBqad9HUvzTXgqlkosA_hWV-VuXPjzrkGvh3_kNSgYk8ySWzXnDpbBCBiooyBbU8oBy3YBZMDkW8RcRVmDuC0raoeqZBm8kBlqs6c5mdfkJeN2aE68lXS_lcOZ5_F7lIuM6qLVg" width="100" height="30" style="cursor:pointer;" alt="Unblocked Games Classroom 6x">
+</a>
+</div>
+
+<script>
+(function(){
+    function resizeGame(){
+        var canvas = document.querySelector("canvas");
+        if(!canvas) return;
+
+        var vw = window.innerWidth;
+        var vh = window.innerHeight;
+
+        var gameW = canvas.width;
+        var gameH = canvas.height;
+
+        var scale = Math.min(vw / gameW, vh / gameH);
+
+        var displayW = Math.floor(gameW * scale);
+        var displayH = Math.floor(gameH * scale);
+
+        canvas.style.width = displayW + "px";
+        canvas.style.height = displayH + "px";
+    }
+
+    window.addEventListener("resize", resizeGame);
+    window.addEventListener("orientationchange", resizeGame);
+    window.addEventListener("load", function(){
+        setTimeout(resizeGame, 100);
+    });
+})();
+</script>
+
+</body>
+</html>
