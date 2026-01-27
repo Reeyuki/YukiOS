@@ -1,243 +1,596 @@
 export const appMap = {
-  photopea: { type: "game", url: "https://www.photopea.com" },
-  sonic: { type: "swf", swf: "/static/games/swfGames/sonic.swf" },
-  flight: { type: "swf", swf: "/static/games/swfGames/flight.swf" },
-  swarmQueen: { type: "swf", swf: "/static/games/swfGames/swarmQueen.swf" },
-  paint: { type: "game", url: "https://paint.js.org/" },
-  pacman: { type: "game", url: "https://pacman-e281c.firebaseapp.com" },
-  pvz: { type: "game", url: "https://emupedia.net/emupedia-game-pvz" },
-  pvz2: { type: "remote", url: "https://play.pvzge.com" },
+  sonic: { type: "swf", swf: "/static/games/swfGames/sonic.swf", icon: "/static/icons/sonic.webp", title: "Sonic" },
+  flight: { type: "swf", swf: "/static/games/swfGames/flight.swf", icon: "/static/icons/flight.webp", title: "Flight" },
+  swarmQueen: {
+    type: "swf",
+    swf: "/static/games/swfGames/swarmQueen.swf",
+    icon: "/static/icons/swarm.webp",
+    title: "Swarm Queen"
+  },
+  pacman: {
+    type: "game",
+    url: "https://pacman-e281c.firebaseapp.com",
+    icon: "/static/icons/pac-man.webp",
+    title: "Pac-Man"
+  },
+  pvz: {
+    type: "game",
+    url: "https://emupedia.net/emupedia-game-pvz",
+    icon: "/static/icons/pvz.webp",
+    title: "Plants vs. Zombies"
+  },
+  pvz2: {
+    type: "remote",
+    url: "https://play.pvzge.com",
+    icon: "/static/icons/pvz2.webp",
+    title: "Plants vs. Zombies 2"
+  },
   pvzHybrid: {
     type: "remote",
-    url: "https://www.miniplay.com/embed/plants-vs-zombies-hybrid-story"
+    url: "https://www.miniplay.com/embed/plants-vs-zombies-hybrid-story",
+    icon: "/static/icons/pvzhybrid.webp",
+    title: "PVZ Hybrid"
   },
-  tetris: { type: "game", url: "https://turbowarp.org/embed.html?autoplay#31651654" },
-  roads: { type: "game", url: "https://slowroads.io" },
-  vscode: { type: "game", url: "https://emupedia.net/emupedia-app-vscode" },
-  isaac: { type: "game", url: "https://emupedia.net/emupedia-game-binding-of-isaac" },
-  mario: { type: "game", url: "https://emupedia.net/emupedia-game-mario" },
-  papaGames: { type: "game", url: "https://papasgamesfree.io" },
-  zombieTd: { type: "swf", swf: "/static/games/swfGames/zombietd.swf" },
-  zombotron: { type: "swf", swf: "/static/games/zombotron/zombotron.swf" },
-  zombotron2: { type: "swf", swf: "/static/games/zombotron/zombotron2.swf" },
-  zombotron2Time: { type: "game", url: "/static/rfiv.html?game=zombotron" },
-  breach: { type: "swf", swf: "/static/games/swfGames/breach.swf" },
-  fancyPants: { type: "swf", swf: "/static/games/swfGames/fancypantsadventure.swf" },
-  fancyPants2: { type: "swf", swf: "/static/games/swfGames/fancypantsadventure2.swf" },
-  fancyPants3: { type: "swf", swf: "/static/games/swfGames/fancypantsadventure3.swf" },
+  tetris: {
+    type: "game",
+    url: "https://turbowarp.org/embed.html?autoplay#31651654",
+    icon: "/static/icons/tetris.webp",
+    title: "Tetris"
+  },
+  roads: { type: "game", url: "https://slowroads.io", icon: "/static/icons/roads.svg", title: "Roads" },
+  vscode: {
+    type: "game",
+    url: "https://emupedia.net/emupedia-app-vscode",
+    icon: "/static/icons/vscode.webp",
+    title: "Vs Code"
+  },
+  isaac: {
+    type: "game",
+    url: "https://emupedia.net/emupedia-game-binding-of-isaac",
+    icon: "/static/icons/isaac.webp",
+    title: "Isaac"
+  },
+  mario: {
+    type: "game",
+    url: "https://emupedia.net/emupedia-game-mario",
+    icon: "/static/icons/mario.webp",
+    title: "Mario"
+  },
+  papaGames: {
+    type: "game",
+    url: "https://papasgamesfree.io",
+    icon: "/static/icons/papa.webp",
+    title: "Papa's Games",
+    popular: true
+  },
+  zombieTd: {
+    type: "swf",
+    swf: "/static/games/swfGames/zombietd.swf",
+    icon: "/static/icons/zombietd.webp",
+    title: "Zombie TD"
+  },
+  zombotron: {
+    type: "swf",
+    swf: "/static/games/zombotron/zombotron.swf",
+    icon: "/static/icons/zombotron.webp",
+    title: "Zombotron"
+  },
+  zombotron2: {
+    type: "swf",
+    swf: "/static/games/zombotron/zombotron2.swf",
+    icon: "/static/icons/zombotron.webp",
+    title: "Zombotron 2"
+  },
+  zombotron2Time: {
+    type: "game",
+    url: "/static/rfiv.html?game=zombotron",
+    icon: "/static/icons/zombotron2.webp",
+    title: "Zombotron 2 Time Machine"
+  },
+  breach: { type: "swf", swf: "/static/games/swfGames/breach.swf", icon: "/static/icons/breach.webp", title: "Breach" },
+  fancyPants: {
+    type: "swf",
+    swf: "/static/games/swfGames/fancypantsadventure.swf",
+    icon: "/static/icons/fancypants2.webp",
+    title: "Fancy Pants"
+  },
+  fancyPants2: {
+    type: "swf",
+    swf: "/static/games/swfGames/fancypantsadventure2.swf",
+    icon: "/static/icons/fancypants2.webp",
+    title: "Fancy Pants 2"
+  },
+  fancyPants3: {
+    type: "swf",
+    swf: "/static/games/swfGames/fancypantsadventure3.swf",
+    icon: "/static/icons/fancypants3.webp",
+    title: "Fancy Pants 3"
+  },
   strikeForce: {
     type: "swf",
-    swf: "https://cache.armorgames.com/files/games/strikeforce-kitty-16008.swf?v=1404201513"
+    swf: "https://cache.armorgames.com/files/games/strikeforce-kitty-16008.swf?v=1404201513",
+    icon: "/static/icons/strikeforce.avif",
+    title: "Strike Force Kitty"
   },
   strikeForce2: {
     type: "swf",
-    swf: "https://cache.armorgames.com/files/games/strikeforce-kitty-2-17643.swf?v=1423725280"
+    swf: "https://cache.armorgames.com/files/games/strikeforce-kitty-2-17643.swf?v=1423725280",
+    icon: "/static/icons/strikeforce.avif",
+    title: "Strike Force Kitty 2"
   },
-  baloonsTd5: { type: "swf", swf: "/static/games/swfGames/baloonstd5.swf" },
-  baloonsTd6: { type: "swf", swf: "https://truffled.lol/games/btd6/index.html" },
-  trinitas: { type: "game", url: "/static/games/trinitas" },
+  baloonsTd5: {
+    type: "swf",
+    swf: "/static/games/swfGames/baloonstd5.swf",
+    icon: "/static/icons/baloonstd5.webp",
+    title: "Baloons TD 5"
+  },
+  baloonsTd6: {
+    type: "swf",
+    swf: "https://truffled.lol/games/btd6/index.html",
+    icon: "/static/icons/baloonstd6.webp",
+    title: "Baloons TD 6"
+  },
+  trinitas: { type: "game", url: "/static/games/trinitas", icon: "/static/icons/trinitas.webp", title: "Trinitas" },
   jojo: {
     type: "game",
-    url: "https://www.retrogames.cc/embed/8843-jojos-bizarre-adventure%3A-heritage-for-the-future-jojo-no-kimyou-na-bouken%3A-mirai-e-no-isan-japan-990927-no-cd.html"
+    url: "https://www.retrogames.cc/embed/8843-jojos-bizarre-adventure%3A-heritage-for-the-future-jojo-no-kimyou-na-bouken%3A-mirai-e-no-isan-japan-990927-no-cd.html",
+    icon: "/static/icons/jojo.gif",
+    title: "JJBA Heritage Future"
   },
-  gtaVc: { type: "game", url: "/static/vciframe.html" },
+  gtaVc: { type: "game", url: "/static/vciframe.html", icon: "/static/icons/gtavc.webp", title: "GTA Vice City" },
   subwaySurfers: {
     type: "game",
-    url: "https://5dd312fa-015f-11ea-ad56-9cb6d0d995f7.gdn.poki.com/680bfc01-4c2f-477d-9a5c-ab04a8349fc6/index.html"
+    url: "https://5dd312fa-015f-11ea-ad56-9cb6d0d995f7.gdn.poki.com/680bfc01-4c2f-477d-9a5c-ab04a8349fc6/index.html",
+    icon: "/static/icons/subway.webp",
+    title: "Subway Surfers"
   },
   mutantFighting: {
     type: "swf",
-    swf: "https://cache.armorgames.com/files/games/mutant-fighting-cup-14425.swf?v=1373587528"
+    swf: "https://cache.armorgames.com/files/games/mutant-fighting-cup-14425.swf?v=1373587528",
+    icon: "/static/icons/mutantcup1.webp",
+    title: "Mutant Fighting Cup"
   },
-  mutantFighting2: { type: "swf", swf: "/static/games/swfGames/mutantfightingcup2.swf" },
-  finnAndBones: { type: "game", url: "/static/flashpointarchive.html?fpGameName=finnAndBones" },
-  obama: { type: "game", url: "/static/flashpointarchive.html?fpGameName=obama-alien-defense" },
-  intrusion2: { type: "swf", swf: "/static/games/swfGames/intrusion2.swf" },
-  dan: { type: "game", url: "https://www.silvergames.com/en/dan-the-man/gameframe" },
-  infectonator: { type: "swf", swf: "https://cache.armorgames.com/files/games/infectonator-5020.swf?v=1373587522" },
+  mutantFighting2: {
+    type: "swf",
+    swf: "/static/games/swfGames/mutantfightingcup2.swf",
+    icon: "/static/icons/mutantcup2.webp",
+    title: "Mutant Fighting Cup 2"
+  },
+  finnAndBones: {
+    type: "game",
+    url: "/static/flashpointarchive.html?fpGameName=finnAndBones",
+    icon: "/static/icons/finn-and-bones.webp",
+    title: "Finn And Bones"
+  },
+  obama: {
+    type: "game",
+    url: "/static/flashpointarchive.html?fpGameName=obama-alien-defense",
+    icon: "/static/icons/obama.webp",
+    title: "Obama Alien Defense"
+  },
+  intrusion2: {
+    type: "swf",
+    swf: "/static/games/swfGames/intrusion2.swf",
+    icon: "/static/icons/intrusion-2.webp",
+    title: "Intrusion 2"
+  },
+  dan: {
+    type: "game",
+    url: "https://www.silvergames.com/en/dan-the-man/gameframe",
+    icon: "/static/icons/dan.webp",
+    title: "Dan The Man"
+  },
+  infectonator: {
+    type: "swf",
+    swf: "https://cache.armorgames.com/files/games/infectonator-5020.swf?v=1373587522",
+    icon: "/static/icons/infectonator.webp",
+    title: "Infectonator"
+  },
   infectonator2: {
     type: "swf",
-    swf: "https://cache.armorgames.com/files/games/infectonator-2-13150.swf?v=1373587527"
+    swf: "https://cache.armorgames.com/files/games/infectonator-2-13150.swf?v=1373587527",
+    icon: "/static/icons/infectonator2.webp",
+    title: "Infectonator 2"
   },
   newyorkShark: {
     type: "swf",
-    swf: "https://cache.armorgames.com/files/games/new-york-shark-12969.swf?v=1373587527"
+    swf: "https://cache.armorgames.com/files/games/new-york-shark-12969.swf?v=1373587527",
+    icon: "/static/icons/newyorkshark.webp",
+    title: "New York Shark"
   },
-  swordsSouls: { type: "swf", swf: "https://cache.armorgames.com/files/games/swordssouls-17817.swf?v=1464609285" },
+  swordsSouls: {
+    type: "swf",
+    swf: "https://cache.armorgames.com/files/games/swordssouls-17817.swf?v=1464609285",
+    icon: "/static/icons/swordsandsouls.webp",
+    title: "Swords And Souls"
+  },
   corporationInc: {
     type: "swf",
-    swf: "https://cache.armorgames.com/files/games/corporation-inc-7348.swf?v=1373587524"
+    swf: "https://cache.armorgames.com/files/games/corporation-inc-7348.swf?v=1373587524",
+    icon: "/static/icons/corporation-inc.webp",
+    title: "Corporation Inc"
   },
-  aground: { type: "game", url: "https://cache.armorgames.com/files/games/aground-18245/index.html?v=1591832301" },
+  aground: {
+    type: "game",
+    url: "https://cache.armorgames.com/files/games/aground-18245/index.html?v=1591832301",
+    icon: "/static/icons/aground.webp",
+    title: "Aground"
+  },
   mobyDick: {
     type: "swf",
-    swf: "https://cache.armorgames.com/files/games/moby-dick-the-video--7199.swf?v=1373587524"
+    swf: "https://cache.armorgames.com/files/games/moby-dick-the-video--7199.swf?v=1373587524",
+    icon: "/static/icons/mobydick.webp",
+    title: "Moby Dick"
   },
-  mobyDick2: { type: "swf", swf: "https://cache.armorgames.com/files/games/moby-dick-2-12662.swf?v=1373587526" },
-  elfStory: { type: "swf", swf: "https://cache.armorgames.com/files/games/elf-story-14680.swf?v=1373587528" },
-  frogDares: { type: "swf", swf: "https://cache.armorgames.com/files/games/frog-dares-12672.swf?v=1373587526" },
+  mobyDick2: {
+    type: "swf",
+    swf: "https://cache.armorgames.com/files/games/moby-dick-2-12662.swf?v=1373587526",
+    icon: "/static/icons/mobydick.webp",
+    title: "Moby Dick 2"
+  },
+  elfStory: {
+    type: "swf",
+    swf: "https://cache.armorgames.com/files/games/elf-story-14680.swf?v=1373587528",
+    icon: "/static/icons/elfstory.webp",
+    title: "Elf Story"
+  },
+  frogDares: {
+    type: "swf",
+    swf: "https://cache.armorgames.com/files/games/frog-dares-12672.swf?v=1373587526",
+    icon: "/static/icons/frogdares.webp",
+    title: "Frog Dares"
+  },
   kamikazePigs: {
     type: "swf",
-    swf: "https://cache.armorgames.com/files/games/kamikaze-pigs-13545.swf?v=1373587527"
+    swf: "https://cache.armorgames.com/files/games/kamikaze-pigs-13545.swf?v=1373587527",
+    icon: "/static/icons/kamikazePigs.webp",
+    title: "Kamikaze Pigs"
   },
-  icyFishes: { type: "swf", swf: "https://cache.armorgames.com/files/games/icy-fishes-12977.swf?v=1373587527" },
-
+  icyFishes: {
+    type: "swf",
+    swf: "https://cache.armorgames.com/files/games/icy-fishes-12977.swf?v=1373587527",
+    icon: "/static/icons/icyFishes.webp",
+    title: "Icy Fishes"
+  },
   feedUs6: {
     type: "swf",
-    swf: "/static/games/swfGames/feeduslostisland.swf"
+    swf: "/static/games/swfGames/feeduslostisland.swf",
+    icon: "/static/icons/feedus6.webp",
+    title: "Feed Us 6"
   },
   superrobotwar: {
     type: "game",
-    url: "/static/flashpointarchive.html?fpGameName=super-robot-war"
+    url: "/static/flashpointarchive.html?fpGameName=super-robot-war",
+    icon: "/static/icons/superrobotwar.webp",
+    title: "Super Robot War"
   },
   feedUsPirates: {
     type: "swf",
-    swf: "/static/games/swfGames/feeduspirates.swf"
+    swf: "/static/games/swfGames/feeduspirates.swf",
+    icon: "/static/icons/feedus_pirates.webp",
+    title: "Feed Us Pirates"
   },
-  epicbossfighter2: { type: "swf", swf: "/static/games/swfGames/EpicBossFighter2.swf" },
-  avatarFortressFight2: { type: "swf", swf: "/static/games/swfGames/avatarFortressFight2.swf" },
-  incredibles: { type: "swf", swf: "/static/games/swfGames/incredibles.swf" },
-  savagePursuit: { type: "swf", swf: "/static/games/swfGames/savagepursuit.swf" },
-  theVisitor: { type: "swf", swf: "/static/games/swfGames/theVisitor.swf" },
-  cactusMcCoy: { type: "game", url: "https://papasgamesfree.io/cactus-mccoy-1" },
-  jackSmith: { type: "game", url: "https://papasgamesfree.io/jacksmith" },
-  pokemon: { type: "game", url: "/static/games/pokemon/index.html" },
-  pokemonRed: { type: "gba", url: "pokemon-red.gba" },
-  pokemonEmerald: { type: "gba", url: "pokemon-emerald.gba" },
-  pokemonPlatinum: { type: "nds", url: "pokemon-platinum.nds" },
-  pokemonHeartgold: { type: "nds", url: "pokemon-heartgold.nds" },
-  pokemonWhite: { type: "nds", url: "pokemon-white.nds" },
-  pokemonWhite2: { type: "nds", url: "pokemon-white-2.zip" },
-  minecraft: { type: "remote", url: "https://eaglercraft.com/play" },
-  liventcord: { type: "game", url: "https://liventcord.github.io" },
-  fnaf: { type: "game", url: "/static/games/fnaf" },
-  geometryDash: { type: "game", url: "https://emupedia.net/emupedia-game-geometry-dash" },
-  cutTheRope: { type: "game", url: "https://emupedia.net/emupedia-game-cut-the-rope2" },
-  game2048: { type: "game", url: "https://emupedia.net/emupedia-game-2048" },
-  pinball: { type: "game", url: "https://emupedia.net/emupedia-game-space-cadet-pinball" },
-  flappyBird: { type: "game", url: "https://emupedia.net/emupedia-game-flappy-bird" },
-  jetpack: { type: "game", url: "https://emupedia.net/emupedia-game-jetpack-joyride" },
-  happyWheels: { type: "game", url: "https://emupedia.net/emupedia-game-happy-wheels/flash" },
-  fistPunch: { type: "game", url: "/static/flashpointarchive.html?fpGameName=fistPunch" },
-  hollowKnight: { type: "game", url: "/static/hollowknight.html" },
-  slimeRancher: { type: "game", url: "/static/games/slimeRancher" },
+  epicbossfighter2: {
+    type: "swf",
+    swf: "/static/games/swfGames/EpicBossFighter2.swf",
+    icon: "/static/icons/epicbossfighter2.webp",
+    title: "Epic Boss Fighter 2"
+  },
+  avatarFortressFight2: {
+    type: "swf",
+    swf: "/static/games/swfGames/avatarFortressFight2.swf",
+    icon: "/static/icons/avatarFortressFight.webp",
+    title: "Avatar Fortress Fight 2"
+  },
+  incredibles: {
+    type: "swf",
+    swf: "/static/games/swfGames/incredibles.swf",
+    icon: "/static/icons/incredibles.webp",
+    title: "Incredibles"
+  },
+  savagePursuit: {
+    type: "swf",
+    swf: "/static/games/swfGames/savagepursuit.swf",
+    icon: "/static/icons/savage.webp",
+    title: "Savage Pursuit"
+  },
+  theVisitor: {
+    type: "swf",
+    swf: "/static/games/swfGames/theVisitor.swf",
+    icon: "/static/icons/visitor.webp",
+    title: "The Visitor"
+  },
+  cactusMcCoy: {
+    type: "game",
+    url: "https://papasgamesfree.io/cactus-mccoy-1",
+    icon: "/static/icons/cactus-mccoy.webp",
+    title: "Cactus McCoy"
+  },
+  jackSmith: {
+    type: "game",
+    url: "https://papasgamesfree.io/jacksmith",
+    icon: "/static/icons/jacksmith.webp",
+    title: "JackSmith"
+  },
+  pokemon: {
+    type: "game",
+    url: "/static/games/pokemon/index.html",
+    icon: "/static/icons/pokeball.webp",
+    title: "Pokemon"
+  },
+  pokemonRed: { type: "gba", url: "pokemon-red.gba", icon: "/static/icons/pokemonred.webp", title: "Pokemon" },
+  pokemonEmerald: {
+    type: "gba",
+    url: "pokemon-emerald.gba",
+    icon: "/static/icons/pokemonemerald.webp",
+    title: "Pokemon"
+  },
+  pokemonPlatinum: {
+    type: "nds",
+    url: "pokemon-platinum.nds",
+    icon: "/static/icons/pokemonplatinum.webp",
+    title: "Pokemon"
+  },
+  pokemonHeartgold: {
+    type: "nds",
+    url: "pokemon-heartgold.nds",
+    icon: "/static/icons/pokemonheartgold.webp",
+    title: "Pokemon"
+  },
+  pokemonWhite: { type: "nds", url: "pokemon-white.nds", icon: "/static/icons/pokemon-white.webp", title: "Pokemon" },
+  pokemonWhite2: {
+    type: "nds",
+    url: "pokemon-white-2.zip",
+    icon: "/static/icons/pokemon-white.webp",
+    title: "Pokemon"
+  },
+  minecraft: {
+    type: "remote",
+    url: "https://eaglercraft.com/play",
+    icon: "/static/icons/minecraft.webp",
+    title: "Minecraft"
+  },
+  liventcord: {
+    type: "game",
+    url: "https://liventcord.github.io",
+    icon: "/static/icons/liventcord.webp",
+    title: "LiventCord"
+  },
+  fnaf: { type: "game", url: "/static/games/fnaf", icon: "/static/icons/fnaf1.webp", title: "Fnaf" },
+  geometryDash: {
+    type: "game",
+    url: "https://emupedia.net/emupedia-game-geometry-dash",
+    icon: "/static/icons/geometryDash.webp",
+    title: "Geometry Dash"
+  },
+  cutTheRope: {
+    type: "game",
+    url: "https://emupedia.net/emupedia-game-cut-the-rope2",
+    icon: "/static/icons/ctr2.webp",
+    title: "Cut The Rope 2"
+  },
+  game2048: {
+    type: "game",
+    url: "https://emupedia.net/emupedia-game-2048",
+    icon: "/static/icons/2048.webp",
+    title: "2048"
+  },
+  pinball: {
+    type: "game",
+    url: "https://emupedia.net/emupedia-game-space-cadet-pinball",
+    icon: "/static/icons/pinball.webp",
+    title: "Pinball"
+  },
+  flappyBird: {
+    type: "game",
+    url: "https://emupedia.net/emupedia-game-flappy-bird",
+    icon: "/static/icons/flappy.webp",
+    title: "Flappy Bird"
+  },
+  jetpack: {
+    type: "game",
+    url: "https://emupedia.net/emupedia-game-jetpack-joyride",
+    icon: "/static/icons/jetpack.webp",
+    title: "Jetpack Joyride"
+  },
+  happyWheels: {
+    type: "game",
+    url: "https://emupedia.net/emupedia-game-happy-wheels/flash",
+    icon: "/static/icons/happyWheels.webp",
+    title: "Happy Wheels"
+  },
+  fistPunch: {
+    type: "game",
+    url: "/static/flashpointarchive.html?fpGameName=fistPunch",
+    icon: "/static/icons/fistpunch.webp",
+    title: "Regular Show FP"
+  },
+  hollowKnight: {
+    type: "game",
+    url: "/static/hollowknight.html",
+    icon: "/static/icons/hollowKnight.webp",
+    title: "Hollow Knight"
+  },
+  slimeRancher: {
+    type: "game",
+    url: "/static/games/slimeRancher",
+    icon: "/static/icons/slime.webp",
+    title: "Slime Rancher"
+  },
   kindergarten: {
     type: "game",
-    url: "/static/games/gnmath/kindergarten.html"
+    url: "/static/games/gnmath/kindergarten.html",
+    icon: "/static/icons/kind1.webp",
+    title: "Kindergarten"
   },
   kindergarten2: {
     type: "game",
-    url: "/static/games/gnmath/kindergarten2.html"
+    url: "/static/games/gnmath/kindergarten2.html",
+    icon: "/static/icons/kind2.webp",
+    title: "Kindergarten 2"
   },
-  cuphead: { type: "game", url: "https://truffled.lol/games/Cuphead/index.html" },
-  raft: { type: "game", url: "https://truffled.lol/games/raft/index.html" },
-  celeste: { type: "game", url: "https://truffled.lol/games/celeste/index.html" },
+  cuphead: {
+    type: "game",
+    url: "https://truffled.lol/games/Cuphead/index.html",
+    icon: "/static/icons/cup.webp",
+    title: "Cuphead"
+  },
+  raft: {
+    type: "game",
+    url: "https://truffled.lol/games/raft/index.html",
+    icon: "/static/icons/raft.webp",
+    title: "Raft"
+  },
+  celeste: {
+    type: "game",
+    url: "https://truffled.lol/games/celeste/index.html",
+    icon: "/static/icons/celeste.webp",
+    title: "Celeste"
+  },
   terraria: {
     type: "game",
-    url: "https://truffled.lol/games/terraria/terraria-wrapper.html"
+    url: "https://truffled.lol/games/terraria/terraria-wrapper.html",
+    icon: "/static/icons/ter.webp",
+    title: "Terraria"
   },
-  yandereSim: { type: "game", url: "/static/games/gnmath/yandere.html" },
-  undertale: { type: "game", url: "https://truffled.lol/games/bts" },
-  balatro: { type: "game", url: "https://truffled.lol/games/balatro/index.html" },
-  granny: { type: "game", url: "/static/games/gnmath/granny.html" },
-  bendy: { type: "game", url: "/static/games/gnmath/bendy.html" },
-  tattletail: { type: "game", url: "https://truffled.lol/games/tattletail/index.html" },
-  repo: { type: "game", url: "/static/games/gnmath/repo.html" },
-  omori: { type: "game", url: "/static/games/gnmath/omori.html" },
-  ultrakill: { type: "game", url: "/static/games/gnmath/ultrakill.html" },
+  yandereSim: {
+    type: "game",
+    url: "/static/games/gnmath/yandere.html",
+    icon: "/static/icons/yandere.webp",
+    title: "Yandere Simulator"
+  },
+  undertale: {
+    type: "game",
+    url: "https://truffled.lol/games/bts",
+    icon: "/static/icons/undertale.webp",
+    title: "Undertale Sans Fight"
+  },
+  balatro: {
+    type: "game",
+    url: "https://truffled.lol/games/balatro/index.html",
+    icon: "/static/icons/bal.webp",
+    title: "Balatro"
+  },
+  granny: { type: "game", url: "/static/games/gnmath/granny.html", icon: "/static/icons/granny.webp", title: "Granny" },
+  bendy: { type: "game", url: "/static/games/gnmath/bendy.html", icon: "/static/icons/bendy.webp", title: "Bendy" },
+  tattletail: {
+    type: "game",
+    url: "https://truffled.lol/games/tattletail/index.html",
+    icon: "/static/icons/tat.webp",
+    title: "Tattletail"
+  },
+  repo: { type: "game", url: "/static/games/gnmath/repo.html", icon: "/static/icons/repo.webp", title: "R.E.P.O" },
+  omori: { type: "game", url: "/static/games/gnmath/omori.html", icon: "/static/icons/omori.webp", title: "Omori" },
+  ultrakill: {
+    type: "game",
+    url: "/static/games/gnmath/ultrakill.html",
+    icon: "/static/icons/ultrakill.webp",
+    title: "Ultrakill"
+  },
   badIceCream: {
     type: "game",
     url: "/static/games/badIceCream/index.html",
-    swf: "/static/games/badIceCream/bic1.swf"
+    swf: "/static/games/badIceCream/bic1.swf",
+    icon: "/static/icons/bic1.webp",
+    title: "Bad Ice Cream[1-3]"
   },
-  badIceCream2: { type: "game", url: "/static/games/badIceCream/bic2.html" },
-  badIceCream3: { type: "game", url: "/static/games/badIceCream/bic3.html" },
-  henryStickmin: { type: "game", url: " /static/games/henryStickmin/index.html" },
-  henryBank: { type: "swf", swf: " /static/games/henryStickmin/bank.swf" },
-  henryPrison: { type: "swf", swf: " /static/games/henryStickmin/prison.swf" },
-  henryAirship: { type: "swf", swf: " /static/games/henryStickmin/airship.swf" },
-  henryDiamond: { type: "swf", swf: " /static/games/henryStickmin/diamond.swf" },
-  henryComplex: { type: "swf", swf: " /static/games/henryStickmin/complex.swf" }
+  badIceCream2: {
+    type: "game",
+    url: "/static/games/badIceCream/bic2.html",
+    icon: "/static/icons/bic2.webp",
+    title: "Bad Ice Cream 2"
+  },
+  badIceCream3: {
+    type: "game",
+    url: "/static/games/badIceCream/bic3.html",
+    icon: "/static/icons/bic3.webp",
+    title: "Bad Ice Cream 3"
+  },
+  henry: {
+    type: "game",
+    url: " /static/games/henryStickmin/index.html",
+    icon: "/static/icons/henry-prison.webp",
+    title: "Henry Stickmin Games",
+    popular: true
+  },
+  henryBank: {
+    type: "swf",
+    swf: " /static/games/henryStickmin/bank.swf",
+    icon: "/static/icons/henry-bank.webp",
+    title: "Henry Stickmin Bank"
+  },
+  henryPrison: {
+    type: "swf",
+    swf: " /static/games/henryStickmin/prison.swf",
+    icon: "/static/icons/henry-prison.webp",
+    title: "Henry Stickmin Prison"
+  },
+  henryAirship: {
+    type: "swf",
+    swf: " /static/games/henryStickmin/airship.swf",
+    icon: "/static/icons/henry-airship.webp",
+    title: "Henry Stickmin Airship"
+  },
+  henryDiamond: {
+    type: "swf",
+    swf: " /static/games/henryStickmin/diamond.swf",
+    icon: "/static/icons/henry-diamond.webp",
+    title: "Henry Stickmin Diamond"
+  },
+  henryComplex: {
+    type: "swf",
+    swf: " /static/games/henryStickmin/complex.swf",
+    icon: "/static/icons/henry-complex.webp",
+    title: "Henry Stickmin Complex"
+  },
+  vampireSurvivors: {
+    type: "remote",
+    url: "https://poncle.itch.io/vampire-survivors",
+    icon: "/static/icons/vampireSurvivors.webp",
+    title: "Vampire Survivors"
+  },
+  baldi: {
+    type: "game",
+    url: "/static/games/baldi/baldi.html",
+    icon: "/static/icons/baldi.webp",
+    title: "Baldi's Basics"
+  }
 };
 
-export const games = [
-  { app: "papaGames", icon: "/static/icons/papa.webp", title: "Papa's Games", popular: true },
-  { app: "henryStickmin", icon: "/static/icons/henry-stickmin.png", title: "Henry Stickmin Games", popular: true },
-  { app: "badIceCream", icon: "/static/icons/bic1.jpg", title: "Bad Ice Cream[1-3]" },
-  { app: "pacman", icon: "/static/icons/pac-man.webp", title: "Pac-Man" },
-  { app: "pvz", icon: "/static/icons/pvz.webp", title: "Plants vs. Zombies" },
-  { app: "pvz2", icon: "/static/icons/pvz2.webp", title: "Plants vs. Zombies 2" },
-  { app: "pvzHybrid", icon: "/static/icons/pvzhybrid.webp", title: "PVZ Hybrid" },
-  { app: "tetris", icon: "/static/icons/tetris.webp", title: "Tetris" },
-  { app: "roads", icon: "/static/icons/roads.svg", title: "Roads" },
-  { app: "mario", icon: "/static/icons/mario.webp", title: "Mario" },
-  { app: "sonic", icon: "/static/icons/sonic.png", title: "Sonic" },
-  { app: "cactusMcCoy", icon: "/static/icons/cactus-mccoy.png", title: "Cactus McCoy" },
-  { app: "jackSmith", icon: "/static/icons/jacksmith.png", title: "JackSmith" },
-  { app: "zombieTd", icon: "/static/icons/zombietd.jpg", title: "Zombie TD" },
-  { app: "baloonsTd5", icon: "/static/icons/baloonstd5.webp", title: "Baloons TD 5" },
-  { app: "baloonsTd6", icon: "/static/icons/baloonstd6.webp", title: "Baloons TD 6" },
-  { app: "trinitas", icon: "/static/icons/trinitas.jpg", title: "Trinitas" },
-  { app: "zombotron", icon: "/static/icons/zombotron.webp", title: "Zombotron" },
-  { app: "zombotron2", icon: "/static/icons/zombotron.webp", title: "Zombotron 2" },
-  { app: "zombotron2Time", icon: "/static/icons/zombotron2.webp", title: "Zombotron 2 Time Machine" },
-  { app: "breach", icon: "/static/icons/breach.webp", title: "Breach" },
-  { app: "swarmQueen", icon: "/static/icons/swarm.webp", title: "Swarm Queen" },
-  { app: "fancyPants", icon: "/static/icons/fancypants.png", title: "Fancy Pants" },
-  { app: "fancyPants2", icon: "/static/icons/fancypants2.png", title: "Fancy Pants 2" },
-  { app: "fancyPants3", icon: "/static/icons/fancypants3.png", title: "Fancy Pants 3" },
-  { app: "elfStory", icon: "/static/icons/elfstory.png", title: "Elf Story" },
-  { app: "frogDares", icon: "/static/icons/frogdares.jpg", title: "Frog Dares" },
-  { app: "icyFishes", icon: "/static/icons/icyFishes.png", title: "Icy Fishes" },
-  { app: "kamikazePigs", icon: "/static/icons/kamikazePigs.webp", title: "Kamikaze Pigs" },
-  { app: "strikeForce", icon: "/static/icons/strikeforce.avif", title: "Strike Force Kitty" },
-  { app: "strikeForce2", icon: "/static/icons/strikeforce.avif", title: "Strike Force Kitty 2" },
-  { app: "jojo", icon: "/static/icons/jojo.gif", title: "JJBA Heritage Future" },
-  { app: "mutantFighting", icon: "/static/icons/mutantcup1.png", title: "Mutant Fighting Cup" },
-  { app: "mutantFighting2", icon: "/static/icons/mutantcup2.png", title: "Mutant Fighting Cup 2" },
-  { app: "finnAndBones", icon: "/static/icons/finn-and-bones.webp", title: "Finn And Bones" },
-  { app: "infectonator", icon: "/static/icons/infectonator.webp", title: "Infectonator" },
-  { app: "infectonator2", icon: "/static/icons/infectonator2.webp", title: "Infectonator 2" },
-  { app: "newyorkShark", icon: "/static/icons/newyorkshark.webp", title: "New York Shark" },
-  { app: "swordsSouls", icon: "/static/icons/swordsandsouls.webp", title: "Swords And Souls" },
-  { app: "flight", icon: "/static/icons/flight.webp", title: "Flight" },
-  { app: "corporationInc", icon: "/static/icons/corporation-inc.jpg", title: "Corporation Inc" },
-  { app: "aground", icon: "/static/icons/aground.jpg", title: "Aground" },
-  { app: "mobyDick", icon: "/static/icons/mobydick.png", title: "Moby Dick" },
-  { app: "mobyDick2", icon: "/static/icons/mobydick.png", title: "Moby Dick 2" },
-  { app: "feedUs6", icon: "/static/icons/feedus6.webp", title: "Feed Us 6" },
-  { app: "feedUsPirates", icon: "/static/icons/feedus_pirates.webp", title: "Feed Us Pirates" },
-  { app: "intrusion2", icon: "/static/icons/intrusion-2.jpg", title: "Intrusion 2" },
-  { app: "dan", icon: "/static/icons/dan.webp", title: "Dan The Man" },
-  { app: "obama", icon: "/static/icons/obama.jpg", title: "Obama Alien Defense" },
-  { app: "fnaf", icon: "/static/icons/fnaf1.webp", title: "Fnaf" },
-  { app: "geometryDash", icon: "/static/icons/geometryDash.png", title: "Geometry Dash" },
-  { app: "cutTheRope", icon: "/static/icons/ctr2.png", title: "Cut The Rope 2" },
-  { app: "game2048", icon: "/static/icons/2048.png", title: "2048" },
-  { app: "pinball", icon: "/static/icons/pinball.png", title: "Pinball" },
-  { app: "flappyBird", icon: "/static/icons/flappy.png", title: "Flappy Bird" },
-  { app: "happyWheels", icon: "/static/icons/happyWheels.png", title: "Happy Wheels" },
-  { app: "jetpack", icon: "/static/icons/jetpack.png", title: "Jetpack Joyride" },
-  { app: "superrobotwar", icon: "/static/icons/superrobotwar.jpg", title: "Super Robot War" },
-  { app: "epicbossfighter2", icon: "/static/icons/epicbossfighter2.png", title: "Epic Boss Fighter 2" },
-  { app: "avatarFortressFight2", icon: "/static/icons/avatarFortressFight.webp", title: "Avatar Fortress Fight 2" },
-  { app: "incredibles", icon: "/static/icons/incredibles.webp", title: "Incredibles" },
-  { app: "fistPunch", icon: "/static/icons/fistpunch.png", title: "Regular Show FP" },
-  { app: "undertale", icon: "/static/icons/undertale.webp", title: "Undertale Sans Fight" },
-  { app: "savagePursuit", icon: "/static/icons/savage.jpg", title: "Savage Pursuit" },
-  { app: "theVisitor", icon: "/static/icons/visitor.webp", title: "The Visitor" }
-];
-
 export class GamesPageRenderer {
-  constructor() {
-    this.games = games;
+  excludedApps = [
+    "badIceCream2",
+    "badIceCream3",
+    "henryPrison",
+    "henryBank",
+    "henryAirship",
+    "henryDiamond",
+    "henryComplex"
+  ];
+
+  getGames() {
+    const desk = document.getElementById("desktop");
+    const detectedApps = new Set();
+    if (desk) {
+      desk.querySelectorAll("[data-app]").forEach((el) => {
+        const app = el.getAttribute("data-app");
+        if (app) detectedApps.add(app);
+      });
+    }
+
+    return Object.entries(appMap)
+      .filter(([app]) => !this.excludedApps.includes(app) && !detectedApps.has(app))
+      .map(([app, data]) => ({
+        app,
+        ...data
+      }));
   }
 
   createIcon(game) {
     const classes = ["icon selectable explorer-game"];
     if (game.popular) classes.push("popular");
     return `
-      <div class="${classes}" data-app="${game.app}">
+      <div class="${classes.join(" ")}" data-app="${game.app}">
         <img src="${game.icon}" />
         <div>${game.title}</div>
       </div>
@@ -246,7 +599,8 @@ export class GamesPageRenderer {
 
   async renderGamesPage(element) {
     if (!element) return;
-    const iconsHTML = this.games.map((g) => this.createIcon(g)).join("");
+    const games = this.getGames();
+    const iconsHTML = games.map((g) => this.createIcon(g)).join("");
     element.innerHTML = `
       <div class="desktop-exp">
         ${iconsHTML}

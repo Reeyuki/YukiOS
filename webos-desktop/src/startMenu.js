@@ -1,4 +1,4 @@
-import { games } from "./games.js";
+import { appMap } from "./games.js";
 import { camelize } from "./utils.js";
 
 const FAVORITES_KEY = "kdeFavorites";
@@ -134,19 +134,29 @@ export function setupStartMenu() {
 
   setupStars();
 }
-
 export function tryGetIcon(id) {
   id = camelize(id);
-  if (id === "explorer") return "/static/icons/file.png";
+
+  if (id === "explorer") {
+    return "/static/icons/file.webp";
+  }
 
   try {
-    const foundGame = games.find((game) => game.app === id || game.app.startsWith(id));
-    if (foundGame && foundGame.icon) return foundGame.icon;
-    console.log("Cant find game for: ", id, " games : ", games);
+    if (appMap[id] && appMap[id].icon) {
+      return appMap[id].icon;
+    }
+
+    const foundEntry = Object.entries(appMap).find(([key]) => key === id || key.startsWith(id) || id.startsWith(key));
+
+    if (foundEntry && foundEntry[1].icon) {
+      return foundEntry[1].icon;
+    }
+
     const div = document.querySelector(`#desktop div[data-app="${id}"]`);
-    return div?.querySelector("img")?.src || null;
+    const imgSrc = div?.querySelector("img")?.src || null;
+    return imgSrc;
   } catch (e) {
-    console.error(e);
+    console.error("Error occurred while getting icon:", e);
     return null;
   }
 }
@@ -178,10 +188,8 @@ export function populateStartMenu(appLauncher) {
     } else {
       icon.style.display = "none";
     }
-
-    const label = appName.charAt(0).toUpperCase() + appName.slice(1);
     const labelEl = document.createElement("span");
-    labelEl.textContent = label;
+    labelEl.textContent = appData.title;
 
     item.appendChild(icon);
     item.appendChild(labelEl);

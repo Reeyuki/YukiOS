@@ -1,0 +1,17 @@
+<html>
+  <head>
+    <title>Baldi's Basics</title>
+    <link rel="icon" type="image/png" href="/favicon.ico" />
+    <link rel="stylesheet" href="TemplateData/style.css" />
+    <script src="TemplateData/UnityProgress.js"></script>
+    <script src="baldi.js"></script>
+    <script>
+      var gameInstance = UnityLoader.instantiate("gameContainer", "baldi.json", {
+        onProgress: UnityProgress
+      });
+    </script>
+  </head>
+  <body style="margin:0; display:flex; justify-content:center; align-items:center; height:100vh; background:#231f20;">
+    <div id="gameContainer" style="width:800px; height:560px;"></div>
+  </body>
+</html>

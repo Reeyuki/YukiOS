@@ -288,7 +288,7 @@ export class TerminalApp {
     this.wm.makeDraggable(win);
     this.wm.makeResizable(win);
     this.wm.setupWindowControls(win);
-    this.wm.addToTaskbar(win.id, "Terminal", "/static/icons/terminal.png");
+    this.wm.addToTaskbar(win.id, "Terminal", "/static/icons/terminal.webp");
 
     this.terminalOutput = win.querySelector("#terminal-output");
     this.terminalInput = win.querySelector("#terminal-input");

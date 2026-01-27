@@ -10,7 +10,6 @@ import { FileSystemManager } from "./fs.js";
 import { setupStartMenu } from "./startMenu.js";
 import { desktop } from "./desktop.js";
 import { DesktopUI } from "./desktopui.js";
-import { appMetadata } from "./app.js";
 
 class MusicPlayer {
   constructor() {}
@@ -38,7 +37,7 @@ class MusicPlayer {
     windowManager.makeDraggable(win);
     windowManager.makeResizable(win);
     windowManager.setupWindowControls(win);
-    windowManager.addToTaskbar(win.id, "MUSIC", "/static/icons/music.png");
+    windowManager.addToTaskbar(win.id, "MUSIC", "/static/icons/music.webp");
   }
 }
 
@@ -60,8 +59,11 @@ function initDownloadButton() {
   installBtn.id = "install-app";
   installBtn.textContent = "Install Desktop App";
   document.body.appendChild(installBtn);
+  setTimeout(() => {
+    if (installBtn) installBtn.remove();
+  }, 10000);
   installBtn.addEventListener("click", () => {
-    appLauncher.sendAppInstallAnalytics()
+    appLauncher.sendAppInstallAnalytics();
     fetch("https://api.github.com/repos/Reeyuki/reeyuki.github.io/releases/latest")
       .then((res) => res.json())
       .then((release) => {
@@ -140,9 +142,9 @@ const appLauncher = new AppLauncher(
   cameraApp
 );
 
-console.log(appMetadata);
+const desktopUI = new DesktopUI(appLauncher, notepadApp, explorerApp, fileSystemManager);
 
-new DesktopUI(appLauncher, notepadApp, explorerApp, fileSystemManager);
+explorerApp.setDesktopUI(desktopUI);
 
 SystemUtilities.startClock();
 SystemUtilities.setRandomWallpaper();
@@ -151,13 +153,10 @@ const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
 
 const game = urlParams.get("game");
+const swf = urlParams.get("swf") === "true";
 if (game) {
   setTimeout(() => {
-    appLauncher.launch(game);
+    appLauncher.launch(game, swf);
   }, 0);
 }
-
-console.log(
-  "Howdy, devtools user! the source of this site is available at: https://github.com/Reeyuki/reeyuki.github.io"
-);
 setupStartMenu();

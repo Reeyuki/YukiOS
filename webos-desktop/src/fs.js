@@ -252,7 +252,7 @@ export class FileSystemManager {
         result[name] = {};
       } else {
         const kind = meta[name]?.kind ?? this.inferKind(name);
-        const icon = meta[name]?.icon ?? "/static/icons/file.png";
+        const icon = meta[name]?.icon ?? "/static/icons/file.webp";
         let content = "";
         try {
           content = await this.pRead("readFile", full, "utf8");
@@ -270,7 +270,7 @@ export class FileSystemManager {
     const dir = this.resolveDir(path);
     const filePath = this.join(dir, name);
     const fileKind = kind || this.inferKind(name);
-    const fileIcon = icon || (fileKind === FileKind.TEXT ? "/static/icons/notepad.webp" : "/static/icons/file.png");
+    const fileIcon = icon || (fileKind === FileKind.TEXT ? "/static/icons/notepad.webp" : "/static/icons/file.webp");
     await this.p("mkdir", dir, { recursive: true }).catch(() => {});
     await this.p("writeFile", filePath, content);
     await this.writeMeta(dir, name, { kind: fileKind, icon: fileIcon });
@@ -330,7 +330,7 @@ export class FileSystemManager {
     const exists = await this.exists(filePath);
     if (!exists) {
       const kind = this.inferKind(name);
-      const icon = kind === FileKind.TEXT ? "/static/icons/notepad.webp" : "/static/icons/file.png";
+      const icon = kind === FileKind.TEXT ? "/static/icons/notepad.webp" : "/static/icons/file.webp";
       await this.createFile(path, name, content, kind, icon);
     } else {
       await this.p("writeFile", filePath, content);

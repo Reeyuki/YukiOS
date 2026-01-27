@@ -66,7 +66,7 @@ export class ExplorerApp {
     this.wm.setupWindowControls(win);
 
     setTimeout(() => this.wm.bringToFront(win), 0);
-    this.wm.addToTaskbar(win.id, "File Explorer", "/static/icons/file.png");
+    this.wm.addToTaskbar(win.id, "File Explorer", "/static/icons/file.webp");
 
     this.setupExplorerControls(win);
     this.navigate([]);
@@ -136,8 +136,10 @@ export class ExplorerApp {
           this.makeExplorerIconInteractable(g);
         });
 
-        this.lastWin.style.width = "85vw";
-        this.lastWin.style.height = "85vh";
+        this.lastWin.style.width = "100vw";
+        this.lastWin.style.height = "90vh";
+        this.lastWin.style.left = "0px";
+        this.lastWin.style.top = "5vh";
         const explorerView = this.lastWin.querySelector("#explorer-view");
         if (explorerView) {
           explorerView.style.height = "";
@@ -186,7 +188,7 @@ export class ExplorerApp {
           iconImg = appMetadata[camelName]?.icon || itemData.icon || "/static/icons/notepad.webp";
         }
       } else {
-        iconImg = "/static/icons/file.png";
+        iconImg = "/static/icons/file.webp";
       }
 
       const item = document.createElement("div");
@@ -240,7 +242,7 @@ export class ExplorerApp {
     this.wm.makeDraggable(win);
     this.wm.makeResizable(win);
     this.wm.setupWindowControls(win);
-    this.wm.addToTaskbar(win.id, name, "/static/icons/file.png");
+    this.wm.addToTaskbar(win.id, name, "/static/icons/file.webp");
   }
 
   async showFileContextMenu(e, itemName, isFile) {

@@ -100,7 +100,18 @@ export class BrowserApp {
       console.error("No url found");
       return;
     }
+
     if (!url.startsWith("http") && !url.startsWith("chrome")) url = "https://" + url;
+
+    try {
+      const parsed = new URL(url);
+      if (parsed.hostname.includes("google.com")) {
+        url = "https://www.google.com/webhp?igu=1";
+      }
+    } catch (e) {
+      console.error(e);
+    }
+
     if (this.historyIndex < this.history.length - 1) {
       this.history = this.history.slice(0, this.historyIndex + 1);
     }

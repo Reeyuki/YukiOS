@@ -333,7 +333,7 @@ export class DesktopUI {
       const pathMap = {
         explorer: "/static/icons/pc.webp",
         notepad: "/static/icons/notepad.webp",
-        flash: "/static/icons/flash.png"
+        flash: "/static/icons/flash.webp"
       };
 
       const leftPercent =
@@ -343,7 +343,7 @@ export class DesktopUI {
       const fileContent = JSON.stringify({
         app: app,
         name: name,
-        path: pathMap[app] || "/static/icons/file.png",
+        path: pathMap[app] || "/static/icons/file.webp",
         position: {
           leftPercent: leftPercent,
           topPercent: topPercent
@@ -572,13 +572,13 @@ export class DesktopUI {
     const pathMap = {
       explorer: "/static/icons/pc.webp",
       notepad: "/static/icons/notepad.webp",
-      flash: "/static/icons/flash.png"
+      flash: "/static/icons/flash.webp"
     };
 
     const properties = {
       Name: name,
       Type: appId || "Application",
-      Path: pathMap[appId] || "/static/icons/file.png",
+      Path: pathMap[appId] || "/static/icons/file.webp",
       "App Type": appInfo.type,
       "SWF Path": appInfo.swf,
       URL: appInfo.url,
@@ -684,13 +684,13 @@ export class DesktopUI {
         const pathMap = {
           explorer: "/static/icons/pc.webp",
           notepad: "/static/icons/notepad.webp",
-          flash: "/static/icons/flash.png"
+          flash: "/static/icons/flash.webp"
         };
 
         const desktopFileContent = JSON.stringify({
           app: app,
           name: name,
-          path: pathMap[app] || "/static/icons/file.png"
+          path: pathMap[app] || "/static/icons/file.webp"
         });
 
         await this.fs.createFile(["Desktop"], fileName, desktopFileContent, "text");
@@ -718,7 +718,7 @@ export class DesktopUI {
     folderIcon.className = "icon selectable folder-icon";
     folderIcon.dataset.folderName = folderName;
     folderIcon.innerHTML = `
-      <img src="/static/icons/file.png" style="width:64px;height:64px">
+      <img src="/static/icons/file.webp" style="width:64px;height:64px">
       <div>${folderName}</div>
     `;
 
@@ -877,6 +877,7 @@ export class DesktopUI {
       listeners: {
         start: (event) => {
           if (this.appLauncher.wm.isDraggingWindow) return;
+          if (event.target !== this.desktop) return;
 
           selectionState = {
             startX: event.pageX,
@@ -888,7 +889,8 @@ export class DesktopUI {
           this.clearSelection();
         },
         move: (event) => {
-          if (!selectionState.isActive || event.target !== this.desktop) return;
+          if (!selectionState.isActive) return;
+          if (event.target !== this.desktop) return;
 
           this.updateSelectionBox(event, selectionState);
           this.updateIconSelection();
@@ -990,32 +992,32 @@ export class DesktopUI {
 
 export function layoutIcons(icons, isExplorerIcon) {
   if (!icons) return;
-  let ICON_WIDTH = 80;
-  let ICON_HEIGHT = 120;
-  let GAP = 5;
-
-  if (isExplorerIcon) {
-    GAP = 20;
-  }
+  const ICON_WIDTH = 80;
+  const ICON_HEIGHT = 100;
+  const GAP = isExplorerIcon ? 20 : 5;
 
   const desktopHeight = desktop.clientHeight;
+  const cellWidth = ICON_WIDTH + GAP;
+  const cellHeight = ICON_HEIGHT + GAP;
 
-  let x = GAP;
-  let y = GAP;
+  let col = 0;
+  let row = 0;
 
   requestAnimationFrame(() => {
     for (const icon of icons) {
+      const x = GAP + col * cellWidth;
+      const y = GAP + row * cellHeight;
+
       Object.assign(icon.style, {
         position: "absolute",
         left: `${x}px`,
         top: `${y}px`
       });
 
-      y += ICON_HEIGHT + GAP;
-
-      if (y + ICON_HEIGHT > desktopHeight) {
-        y = GAP;
-        x += ICON_WIDTH + GAP;
+      row++;
+      if (y + cellHeight + ICON_HEIGHT > desktopHeight) {
+        row = 0;
+        col++;
       }
     }
   });

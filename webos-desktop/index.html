@@ -4,17 +4,17 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>Yuki OS – Browser-Based Gaming Desktop</title>
+    <title>Yuki OS – Browser Gaming Hub with Flash, GBA, NDS & HTML5 Games</title>
 
     <meta
       name="description"
-      content="Yuki OS is a browser-based gaming desktop that lets you play games instantly online. No downloads, no installs — just play."
+      content="Yuki OS is a browser-based gaming hub offering hundreds of games across Flash, GBA, NDS, and HTML5 platforms. Play instantly online with no downloads or installs."
     />
 
-    <meta property="og:title" content="Yuki OS – Browser-Based Gaming Desktop" />
+    <meta property="og:title" content="Yuki OS – Browser Gaming Hub with Flash, GBA, NDS & HTML5 Games" />
     <meta
       property="og:description"
-      content="Play games instantly in your browser with Yuki OS — a web-based gaming desktop with instant access to hundreds of games."
+      content="Experience hundreds of games in your browser with Yuki OS. Play Flash, GBA, NDS, HTML5, and more instantly online without downloads."
     />
     <meta property="og:type" content="website" />
     <meta property="og:image" content="https://reeyuki.github.io/static/seo/preview.webp" />
@@ -23,15 +23,14 @@
     <meta property="og:locale" content="en_US" />
 
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Yuki OS – Browser-Based Gaming Desktop" />
+    <meta name="twitter:title" content="Yuki OS – Browser Gaming Hub with Flash, GBA, NDS & HTML5 Games" />
     <meta
       name="twitter:description"
-      content="Play games instantly online with Yuki OS. A web-based gaming desktop with no downloads and no installs."
+      content="Yuki OS lets you play hundreds of games directly in your browser. Flash, GBA, NDS, and HTML5 games with no downloads required."
     />
     <meta name="twitter:image" content="https://reeyuki.github.io/static/seo/preview.webp" />
 
     <meta name="application-name" content="Yuki OS" />
-
     <link rel="canonical" href="https://reeyuki.github.io/" />
 
     <script type="application/ld+json">
@@ -40,7 +39,7 @@
         "@type": "WebSite",
         "name": "Yuki OS",
         "url": "https://reeyuki.github.io/",
-        "description": "Browser-based gaming desktop for instant online play.",
+        "description": "Browser-based gaming hub offering Flash, GBA, NDS, and HTML5 games playable instantly online without downloads.",
         "publisher": {
           "@type": "Organization",
           "name": "Yuki OS"
@@ -60,20 +59,12 @@
   </head>
 
   <body>
-    <main style="position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden">
-      <h1>Yuki OS</h1>
-      <p>
-        Yuki OS is a browser-based gaming desktop that lets you play games instantly online without downloads or
-        installs.
-      </p>
-    </main>
-
     <div id="selection-box"></div>
 
-    <div id="desktop">
+    <div id="desktop" class="desktop">
       <div class="icon selectable" data-app="explorer">
-        <img src="/static/icons/pc.webp" />
-        <div>Computer</div>
+        <img src="/static/icons/files.webp" />
+        <div>File Explorer</div>
       </div>
 
       <div class="icon selectable" data-app="notepad">
@@ -87,7 +78,7 @@
       </div>
 
       <div class="icon selectable" data-app="photopea">
-        <img src="/static/icons/photopea.png" />
+        <img src="/static/icons/photopea.webp" />
         <div>Photopea</div>
       </div>
 
@@ -97,18 +88,23 @@
       </div>
 
       <div class="icon selectable" data-app="browser">
-        <img src="/static/icons/chromium.webp" />
+        <img src="/static/icons/firefox.webp" />
         <div>Browser</div>
+      </div>
+
+      <div class="icon selectable popular" data-app="flash">
+        <img src="/static/icons/flash.webp" />
+        <div>Flash Games</div>
+      </div>
+
+      <div class="icon selectable popular" data-app="pokemon">
+        <img src="/static/icons/pokeball.webp" />
+        <div>Pokemon Games</div>
       </div>
 
       <div class="icon selectable popular" data-app="cuphead">
         <img src="/static/icons/cup.webp" />
         <div>Cuphead</div>
-      </div>
-
-      <div class="icon selectable popular" data-app="vampireSurvivors">
-        <img src="/static/icons/vampireSurvivors.webp" />
-        <div>Vampire Survivors</div>
       </div>
 
       <div class="icon selectable popular" data-app="raft">
@@ -132,16 +128,16 @@
       </div>
 
       <div class="icon selectable popular" data-app="isaac">
-        <img src="/static/icons/isaac.ico" />
+        <img src="/static/icons/isaac.webp" />
         <div>Isaac</div>
       </div>
       <div class="icon selectable popular" data-app="gtaVc">
-        <img src="/static/icons/gtavc.png" />
+        <img src="/static/icons/gtavc.webp" />
         <div>GTA Vice City</div>
       </div>
 
       <div class="icon selectable popular" data-app="subwaySurfers">
-        <img src="/static/icons/subway.png" />
+        <img src="/static/icons/subway.webp" />
         <div>Subway Surfers</div>
       </div>
 
@@ -203,13 +199,23 @@
         <div>Tattletail</div>
       </div>
 
+      <div class="icon selectable" data-app="baldi">
+        <img src="/static/icons/baldi.webp" />
+        <div>Baldi's Basics</div>
+      </div>
+
+      <div class="icon selectable" data-app="vampireSurvivors">
+        <img src="/static/icons/vampireSurvivors.webp" />
+        <div>Vampire Survivors</div>
+      </div>
+
       <div class="icon selectable" data-app="terminal">
-        <img src="/static/icons/terminal.png" />
+        <img src="/static/icons/terminal.webp" />
         <div>Terminal</div>
       </div>
 
       <div class="icon selectable" data-app="music">
-        <img src="/static/icons/music.png" />
+        <img src="/static/icons/music.webp" />
         <div>Music Player</div>
       </div>
 
@@ -218,353 +224,22 @@
         <div>Liventcord</div>
       </div>
 
-      <div class="icon selectable" data-app="pacman">
-        <img src="/static/icons/pac-man.webp" />
-        <div>Pac-Man</div>
-      </div>
-
-      <div class="icon selectable" data-app="pvz">
-        <img src="/static/icons/pvz.webp" />
-        <div>Plants vs. Zombies</div>
-      </div>
-      <div class="icon selectable" data-app="pvz2">
-        <img src="/static/icons/pvz2.webp" />
-        <div>Plants vs. Zombies 2</div>
-      </div>
-      <div class="icon selectable" data-app="pvzHybrid">
-        <img src="/static/icons/pvzhybrid.webp" />
-        <div>PVZ Hybrid</div>
-      </div>
-
-      <div class="icon selectable" data-app="tetris">
-        <img src="/static/icons/tetris.webp" />
-        <div>Tetris</div>
-      </div>
-
-      <div class="icon selectable" data-app="roads">
-        <img src="/static/icons/roads.svg" />
-        <div>Roads</div>
-      </div>
-
-      <div class="icon selectable" data-app="mario">
-        <img src="/static/icons/mario.webp" />
-        <div>Mario</div>
-      </div>
-
-      <div class="icon selectable" data-app="sonic">
-        <img src="/static/icons/sonic.png" />
-        <div>Sonic</div>
-      </div>
-
-      <div class="icon selectable" data-app="papaGames">
-        <img src="/static/icons/papa.webp" />
-        <div>Papa's Games</div>
-      </div>
-
-      <div class="icon selectable" data-app="cactusMcCoy">
-        <img src="/static/icons/cactus-mccoy.png" />
-        <div>Cactus McCoy</div>
-      </div>
-      <div class="icon selectable" data-app="jackSmith">
-        <img src="/static/icons/jacksmith.png" />
-        <div>JackSmith</div>
-      </div>
-
-      <div class="icon selectable" data-app="zombieTd">
-        <img src="/static/icons/zombietd.jpg" />
-        <div>Zombie TD</div>
-      </div>
-
-      <div class="icon selectable" data-app="baloonsTd5">
-        <img src="/static/icons/baloonstd5.webp" />
-        <div>Baloons TD 5</div>
-      </div>
-
-      <div class="icon selectable" data-app="baloonsTd6">
-        <img src="/static/icons/baloonstd6.webp" />
-        <div>Baloons TD 6</div>
-      </div>
-
-      <div class="icon selectable" data-app="trinitas">
-        <img src="/static/icons/trinitas.jpg" />
-        <div>Trinitas</div>
-      </div>
-
-      <div class="icon selectable" data-app="zombotron">
-        <img src="/static/icons/zombotron.webp" />
-        <div>Zombotron</div>
-      </div>
-
-      <div class="icon selectable" data-app="zombotron2">
-        <img src="/static/icons/zombotron.webp" />
-        <div>Zombotron 2</div>
-      </div>
-
-      <div class="icon selectable" data-app="zombotron2Time">
-        <img src="/static/icons/zombotron2.webp" />
-        <div>Zombotron 2 Time Machine</div>
-      </div>
-
-      <div class="icon selectable" data-app="breach">
-        <img src="/static/icons/breach.webp" />
-        <div>Breach</div>
-      </div>
-
-      <div class="icon selectable" data-app="swarmQueen">
-        <img src="/static/icons/swarm.webp" />
-        <div>Swarm Queen</div>
-      </div>
-
-      <div class="icon selectable" data-app="fancyPants">
-        <img src="/static/icons/fancypants.png" />
-        <div>Fancy Pants</div>
-      </div>
-
-      <div class="icon selectable" data-app="fancyPants2">
-        <img src="/static/icons/fancypants2.png" />
-        <div>Fancy Pants 2</div>
-      </div>
-
-      <div class="icon selectable" data-app="fancyPants3">
-        <img src="/static/icons/fancypants3.png" />
-        <div>Fancy Pants 3</div>
-      </div>
-
-      <div class="icon selectable" data-app="elfStory">
-        <img src="/static/icons/elfstory.png" />
-        <div>Elf Story</div>
-      </div>
-
-      <div class="icon selectable" data-app="frogDares">
-        <img src="/static/icons/frogdares.jpg" />
-        <div>Frog Dares</div>
-      </div>
-
-      <div class="icon selectable" data-app="icyFishes">
-        <img src="/static/icons/icyFishes.png" />
-        <div>Icy Fishes</div>
-      </div>
-
-      <div class="icon selectable" data-app="kamikazePigs">
-        <img src="/static/icons/kamikazePigs.webp" />
-        <div>Kamikaze Pigs</div>
-      </div>
-
-      <div class="icon selectable" data-app="strikeForce">
-        <img src="/static/icons/strikeforce.avif" />
-        <div>Strike Force Kitty</div>
-      </div>
-
-      <div class="icon selectable" data-app="strikeForce2">
-        <img src="/static/icons/strikeforce.avif" />
-        <div>Strike Force Kitty 2</div>
-      </div>
-
-      <div class="icon selectable" data-app="jojo">
-        <img src="/static/icons/jojo.gif" />
-        <div>JJBA Heritage Future</div>
-      </div>
-
-      <div class="icon selectable" data-app="pokemonRed">
-        <img src="/static/icons/pokemonred.png" />
-        <div>Pokemon Red</div>
-      </div>
-
-      <div class="icon selectable" data-app="pokemonEmerald">
-        <img src="/static/icons/pokemonemerald.png" />
-        <div>Pokemon Emerald</div>
-      </div>
-      <div class="icon selectable" data-app="pokemonPlatinum">
-        <img src="/static/icons/pokemonplatinum.jpg" />
-        <div>Pokemon Platinum</div>
-      </div>
-
-      <div class="icon selectable" data-app="pokemonHeartgold">
-        <img src="/static/icons/pokemonheartgold.webp" />
-        <div>Pokemon Heartgold</div>
-      </div>
-
-      <div class="icon selectable" data-app="pokemonWhite">
-        <img src="/static/icons/pokemonwhite.jpg" />
-        <div>Pokemon White</div>
-      </div>
-
-      <div class="icon selectable" data-app="pokemonWhite2">
-        <img src="/static/icons/pokemonwhite.jpg" />
-        <div>Pokemon White 2</div>
-      </div>
-
-      <div class="icon selectable" data-app="mutantFighting">
-        <img src="/static/icons/mutantcup1.png" />
-        <div>Mutant Fighting Cup</div>
-      </div>
-
-      <div class="icon selectable" data-app="mutantFighting2">
-        <img src="/static/icons/mutantcup2.png" />
-        <div>Mutant Fighting Cup 2</div>
-      </div>
-
-      <div class="icon selectable" data-app="finnAndBones">
-        <img src="/static/icons/finn-and-bones.webp" />
-        <div>Finn And Bones</div>
-      </div>
-
-      <div class="icon selectable" data-app="infectonator">
-        <img src="/static/icons/infectonator.webp" />
-        <div>Infectonator</div>
-      </div>
-
-      <div class="icon selectable" data-app="infectonator2">
-        <img src="/static/icons/infectonator2.webp" />
-        <div>Infectonator 2</div>
-      </div>
-
-      <div class="icon selectable" data-app="newyorkShark">
-        <img src="/static/icons/newyorkshark.webp" />
-        <div>New York Shark</div>
-      </div>
-
       <div class="icon selectable" data-app="vscode">
         <img src="/static/icons/vscode.webp" />
         <div>Visual Studio Code</div>
-      </div>
-
-      <div class="icon selectable" data-app="swordsSouls">
-        <img src="/static/icons/swordsandsouls.webp" />
-        <div>Swords And Souls</div>
-      </div>
-
-      <div class="icon selectable" data-app="flight">
-        <img src="/static/icons/flight.webp" />
-        <div>Flight</div>
-      </div>
-
-      <div class="icon selectable" data-app="corporationInc">
-        <img src="/static/icons/corporation-inc.jpg" />
-        <div>Corporation Inc</div>
-      </div>
-      <div class="icon selectable" data-app="aground">
-        <img src="/static/icons/aground.jpg" />
-        <div>Aground</div>
-      </div>
-      <div class="icon selectable" data-app="mobyDick">
-        <img src="/static/icons/mobydick.png" />
-        <div>Moby Dick</div>
-      </div>
-      <div class="icon selectable" data-app="mobyDick2">
-        <img src="/static/icons/mobydick.png" />
-        <div>Moby Dick 2</div>
-      </div>
-      <div class="icon selectable" data-app="feedUs6">
-        <img src="/static/icons/feedus6.webp" />
-        <div>Feed Us 6</div>
-      </div>
-      <div class="icon selectable" data-app="feedUsPirates">
-        <img src="/static/icons/feedus_pirates.webp" />
-        <div>Feed Us Pirates</div>
-      </div>
-
-      <div class="icon selectable" data-app="intrusion2">
-        <img src="/static/icons/intrusion-2.jpg" />
-        <div>Intrusion 2</div>
-      </div>
-
-      <div class="icon selectable" data-app="dan">
-        <img src="/static/icons/dan.webp" />
-        <div>Dan The Man</div>
-      </div>
-
-      <div class="icon selectable" data-app="obama">
-        <img src="/static/icons/obama.jpg" />
-        <div>Obama Alien Defense</div>
-      </div>
-
-      <div class="icon selectable" data-app="fnaf">
-        <img src="/static/icons/fnaf1.webp" />
-        <div>Fnaf</div>
-      </div>
-
-      <div class="icon selectable" data-app="geometryDash">
-        <img src="/static/icons/geometryDash.png" />
-        <div>Geometry Dash</div>
-      </div>
-
-      <div class="icon selectable" data-app="cutTheRope">
-        <img src="/static/icons/ctr2.png" />
-        <div>Cut The Rope 2</div>
-      </div>
-
-      <div class="icon selectable" data-app="game2048">
-        <img src="/static/icons/2048.png" />
-        <div>2048</div>
-      </div>
-
-      <div class="icon selectable" data-app="pinball">
-        <img src="/static/icons/pinball.png" />
-        <div>Pinball</div>
-      </div>
-
-      <div class="icon selectable" data-app="flappyBird">
-        <img src="/static/icons/flappy.png" />
-        <div>Flappy Bird</div>
-      </div>
-
-      <div class="icon selectable" data-app="happyWheels">
-        <img src="/static/icons/happyWheels.png" />
-        <div>Happy Wheels</div>
-      </div>
-
-      <div class="icon selectable" data-app="jetpack">
-        <img src="/static/icons/jetpack.png" />
-        <div>Jetpack Joyride</div>
-      </div>
-
-      <div class="icon selectable" data-app="superrobotwar">
-        <img src="/static/icons/superrobotwar.jpg" />
-        <div>Super Robot War</div>
-      </div>
-      <div class="icon selectable" data-app="epicbossfighter2">
-        <img src="/static/icons/epicbossfighter2.png" />
-        <div>Epic Boss Fighter 2</div>
-      </div>
-      <div class="icon selectable" data-app="avatarFortressFight2">
-        <img src="/static/icons/avatarFortressFight.webp" />
-        <div>Avatar Fortress Fight 2</div>
-      </div>
-      <div class="icon selectable" data-app="incredibles">
-        <img src="/static/icons/incredibles.webp" />
-        <div>Incredibles</div>
-      </div>
-      <div class="icon selectable" data-app="fistPunch">
-        <img src="/static/icons/fistpunch.png" />
-        <div>Regular Show FP</div>
-      </div>
-
-      <div class="icon selectable" data-app="undertale">
-        <img src="/static/icons/undertale.webp" />
-        <div>Undertale Sans Fight</div>
-      </div>
-
-      <div class="icon selectable" data-app="savagePursuit">
-        <img src="/static/icons/savage.jpg" />
-        <div>Savage Pursuit</div>
-      </div>
-
-      <div class="icon selectable" data-app="theVisitor">
-        <img src="/static/icons/visitor.webp" />
-        <div>The Visitor</div>
       </div>
     </div>
 
     <div id="start-menu" class="kde-menu">
       <div class="kde-sidebar">
-        <div class="kde-user">
-          <img src="/static/icons/guest.webp" />
-          <span>reeyuki</span>
-        </div>
+        <a href="https://github.com/Reeyuki" target="_blank">
+          <div class="kde-user">
+            <img src="/static/icons/guest.webp" />
+            <span>reeyuki</span>
+          </div>
+        </a>
 
         <div class="kde-cat active" data-cat="favorites">⭐ Favorites</div>
-        <div class="kde-cat" data-cat="apps">📦 Applications</div>
         <div class="kde-cat" data-cat="games">🎮 Games</div>
         <div class="kde-cat" data-cat="system">⚙️ System</div>
       </div>
@@ -630,17 +305,17 @@
 
     <style id="window-style">
       .window {
-        background: linear-gradient(135deg, rgba(30, 30, 30, 0.5), rgba(50, 50, 50, 0.2));
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
+        background: rgba(19, 19, 19, 0.82);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
       }
+
       .window * {
         background: transparent !important;
-        color: rgba(255, 255, 255, 0.9);
+        color: rgba(255, 255, 255, 0.92);
       }
+
       .window-controls button:hover {
-        background: #0000005c !important;
+        background: rgba(255, 255, 255, 0.15) !important;
       }
     </style>
   </body>
