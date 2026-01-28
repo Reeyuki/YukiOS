@@ -278,13 +278,15 @@ export class WindowManager {
 
   setupWindowControls(win) {
     win.querySelector(".close-btn").onclick = () => {
+      const iframe = win.querySelector("iframe");
+      if (iframe) iframe.src = "about:blank";
       this.removeFromTaskbar(win.id);
-      win.remove();
       const isGame = win.dataset.isGame === "true";
       if (isGame) {
         this.gameWindowCount = Math.max(0, this.gameWindowCount - 1);
       }
       this.updateTransparency();
+      win.remove();
     };
     win.querySelector(".minimize-btn").onclick = () => this.minimizeWindow(win);
     win.querySelector(".maximize-btn").onclick = () => this.toggleFullscreen(win);

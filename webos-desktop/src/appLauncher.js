@@ -2,6 +2,9 @@ import { desktop } from "./desktop.js";
 import { appMap, getGameName } from "./games.js";
 import { populateStartMenu, tryGetIcon } from "./startMenu";
 
+const IFRAME_ATTRS =
+  'style="width:100%;height:100%;border:none;" allow="autoplay; fullscreen; clipboard-write; encrypted-media; picture-in-picture" sandbox="allow-forms allow-downloads allow-modals allow-pointer-lock allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation"';
+
 export class AppLauncher {
   constructor(
     windowManager,
@@ -26,6 +29,7 @@ export class AppLauncher {
     const analyticsBase = this._getAnalyticsBase("hit-page");
     this.sendAnalytics({ ...analyticsBase, event: "start" });
     this.BIC = "badIceCream";
+
     const localAppMap = {
       return: {
         type: "system",
@@ -47,54 +51,38 @@ export class AppLauncher {
 
   launch(app, swf = false) {
     const info = this.appMap[app];
-    if (!info) {
-      console.error(`App ${app} not found.`);
-      return;
-    }
-    console.log("Starting app : ", app);
+    if (!info) return console.error(`App ${app} not found.`);
 
     const analyticsBase = this._getAnalyticsBase(app);
     this.sendAnalytics({ ...analyticsBase, event: "launch" });
+
     if (app.includes(this.BIC)) {
       if (swf) {
-        console.log("Start ruffle");
-        this.openRuffleApp(app, info.swf);
+        return this.openIframeApp({ appId: app, type: "swf", source: info.swf, originalName: app });
       } else {
-        console.log(app, info.url);
-        this.openGameApp(app, info.url);
+        return this.openIframeApp({ appId: app, type: "game", source: info.url, originalName: app, analyticsBase });
       }
-      return;
     }
 
     const urlParams = new URLSearchParams(window.location.search);
-    const launchedByElectron = urlParams.has("game");
+    if (window.electronAPI?.launchGame && !urlParams.has("game")) return window.electronAPI.launchGame(app);
 
-    if (window.electronAPI && typeof window.electronAPI.launchGame === "function" && !launchedByElectron) {
-      window.electronAPI.launchGame(app);
-      return;
-    }
-
-    const handleApp = {
+    const handlers = {
       system: () => info.action(),
-      swf: () => this.openRuffleApp(app, info.swf),
-      gba: () => this.openEmulatorApp(app, info.url, "gba"),
-      nds: () => this.openEmulatorApp(app, info.url, "nds"),
-      game: () => this.openGameApp(app, info.url, analyticsBase),
+      swf: () => this.openIframeApp({ appId: app, type: "swf", source: info.swf, originalName: app }),
+      gba: () => this.openIframeApp({ appId: app, type: "gba", source: info.url, originalName: app }),
+      nds: () => this.openIframeApp({ appId: app, type: "nds", source: info.url, originalName: app }),
+      game: () => this.openIframeApp({ appId: app, type: "game", source: info.url, originalName: app, analyticsBase }),
       html: () => this.openHtmlApp(app, info.html, info),
       remote: () => this.openRemoteApp(info.url)
     };
 
-    handleApp[info.type]?.();
+    handlers[info.type]?.();
   }
 
   _getAnalyticsBase(app) {
     const now = Date.now();
-    const sessionAgeMs = now - this.pageLoadTime;
-    return {
-      app,
-      timestamp: now,
-      sessionAgeMs
-    };
+    return { app, timestamp: now, sessionAgeMs: now - this.pageLoadTime };
   }
 
   sendAnalytics(data) {
@@ -109,31 +97,22 @@ export class AppLauncher {
   recordUsage(winId, analyticsBase) {
     const startTime = Date.now();
     const win = document.getElementById(winId);
-
-    const sendUsage = () => {
-      const durationMs = Date.now() - startTime;
-      this.sendAnalytics({ ...analyticsBase, event: "usage", durationMs });
-    };
-
+    const sendUsage = () =>
+      this.sendAnalytics({ ...analyticsBase, event: "usage", durationMs: Date.now() - startTime });
     win.querySelector(".close-btn").addEventListener("click", sendUsage);
     win.addEventListener("blur", sendUsage);
   }
 
   openRemoteApp(appUrl) {
-    const analyticsBase = this._getAnalyticsBase(appUrl);
-    this.sendAnalytics({ ...analyticsBase, event: "launch" });
+    this.sendAnalytics({ ...this._getAnalyticsBase(appUrl), event: "launch" });
     window.open(appUrl, "_blank", "noopener,noreferrer");
   }
 
   openHtmlApp(appName, htmlContent, appMeta) {
-    if (document.getElementById(`${appName}-win`)) {
-      this.wm.bringToFront(document.getElementById(`${appName}-win`));
-      return;
-    }
-
+    if (this._bringToFrontIfExists(appName)) return;
     this.createWindow(
       appName,
-      appName.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase()),
+      appName.replace(/([A-Z])/g, " $1").replace(/^./, (s) => s.toUpperCase()),
       htmlContent,
       null,
       appName,
@@ -141,90 +120,99 @@ export class AppLauncher {
     );
   }
 
-  openRuffleApp(originalName, swfPath) {
-    if (!swfPath) return;
-    const gameName = getGameName(originalName);
+  openIframeApp({ appId, type, source, originalName, analyticsBase = null }) {
+    let id;
+    let contentHtml;
+    let externalUrl = null;
 
-    const id = swfPath.replace(/[^a-zA-Z0-9]/g, "");
-    if (document.getElementById(`${id}-win`)) {
-      this.wm.bringToFront(document.getElementById(`${id}-win`));
-      return;
+    if (type === "swf") {
+      id = source.replace(/[^a-zA-Z0-9]/g, "");
+      if (this._bringToFrontIfExists(id)) return;
+      const gameName = getGameName(originalName);
+      const swfPath = source.startsWith("http") ? source : `${window.location.origin}${source}`;
+      contentHtml = `<iframe srcdoc="
+      <!DOCTYPE html>
+      <html lang='en'>
+        <head>
+          <meta charset='UTF-8'>
+          <title>${gameName}</title>
+          <script src='https://cdn.jsdelivr.net/npm/@ruffle-rs/ruffle@0.2.0-nightly.2026.1.17/ruffle.min.js'></script>
+          <style>html,body{margin:0;padding:0;width:100%;height:100%;background:black;overflow:hidden;}#player{width:100%;height:100%;}</style>
+        </head>
+        <body>
+          <div id='player'></div>
+          <script>
+            const ruffle = window.RufflePlayer.newest();
+            const player = ruffle.createPlayer();
+            player.style.width='100%';
+            player.style.height='100%';
+            player.style.display='block';
+            document.getElementById('player').appendChild(player);
+            player.load('${swfPath}');
+          </script>
+        </body>
+      </html>" ${IFRAME_ATTRS}></iframe>`;
+    } else {
+      id = type === "game" ? appId : `${type}-${source.replace(/\W/g, "")}-${Date.now()}`;
+      if (this._bringToFrontIfExists(id)) return;
+      const iframeUrl =
+        type === "game"
+          ? source
+          : `/static/emulatorjs.html?rom=${encodeURIComponent(source)}&core=${encodeURIComponent(type)}&color=%230064ff`;
+      contentHtml = `<iframe src="${iframeUrl}" ${IFRAME_ATTRS}></iframe>`;
+      if (type === "game") externalUrl = source;
     }
 
-    const content = `<embed src="${swfPath}" width="100%" height="100%">`;
-    this.createWindow(id, gameName.toUpperCase(), content, null, originalName, {
-      type: "swf",
-      swf: swfPath
-    });
+    this.createIframeWindow(
+      id,
+      getGameName(originalName),
+      contentHtml,
+      appId,
+      {
+        type,
+        swf: type === "swf" ? source : undefined,
+        rom: type !== "game" && type !== "swf" ? source : undefined,
+        core: type !== "game" && type !== "swf" ? type : undefined
+      },
+      analyticsBase,
+      externalUrl
+    );
   }
 
-  openEmulatorApp(originalName, romName, core) {
-    const gameName = getGameName(originalName);
-
-    const uniqueId = `${core}-${romName.replace(/\W/g, "")}-${Date.now()}`;
-    if (document.getElementById(uniqueId)) {
-      this.wm.bringToFront(document.getElementById(uniqueId));
-      return;
-    }
-
-    const iframeUrl = `/static/emulatorjs.html?rom=${encodeURIComponent(romName)}&core=${encodeURIComponent(core)}&color=%230064ff`;
-    const content = `<iframe src="${iframeUrl}" style="width:100%; height:100%; border:none;" allow="autoplay; fullscreen; clipboard-write; encrypted-media; picture-in-picture" sandbox="allow-forms allow-downloads allow-modals allow-pointer-lock allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation"></iframe>`;
-    this.createWindow(uniqueId, gameName, content, iframeUrl, gameName, {
-      type: core,
-      rom: romName,
-      core
-    });
+  _bringToFrontIfExists(id) {
+    const el = document.getElementById(`${id}-win`);
+    if (el) this.wm.bringToFront(el);
+    return !!el;
   }
 
-  openGameApp(appId, url) {
-    const gameName = getGameName(appId);
-    if (document.getElementById(`${appId}-win`)) {
-      this.wm.bringToFront(document.getElementById(`${appId}-win`));
-      return;
-    }
-
-    const content = `<iframe src="${url}" style="width:100%; height:100%; border:none;" allow="autoplay; fullscreen; clipboard-write; encrypted-media; picture-in-picture" sandbox="allow-forms allow-downloads allow-modals allow-pointer-lock allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation"></iframe>`;
-    this.createWindow(appId, gameName, content, url, appId, {
-      type: "game"
-    });
+  createIframeWindow(id, title, contentHtml, appId, appMeta, analyticsBase = null, externalUrl = null) {
+    this.createWindow(id, title, contentHtml, externalUrl || analyticsBase, appId, appMeta);
   }
+
   isTransparencyBlocked(appId, appMeta) {
-    if (appMeta.type === "system") return false;
-    if (this.TRANSPARENCY_ALLOWED_APP_IDS.has(appId)) return false;
-    return true;
+    return !(appMeta.type === "system" || this.TRANSPARENCY_ALLOWED_APP_IDS.has(appId));
   }
 
   createWindow(id, title, contentHtml, externalUrl = null, appId = null, appMeta = {}) {
     const urlParams = new URLSearchParams(window.location.search);
-    const electronGameMode = urlParams.has("game");
-    if (electronGameMode && appId) {
-      document.body.innerHTML = `
-        <div id="electron-game-root" style="
-          width:100vw;
-          height:100vh;
-          margin:0;
-          padding:0;
-          overflow:hidden;
-          background:black;
-        ">
-          ${contentHtml}
-        </div>
-      `;
+    if (urlParams.has("game") && appId) {
+      document.body.innerHTML = `<div id="electron-game-root" style="width:100vw;height:100vh;margin:0;padding:0;overflow:hidden;background:black;">${contentHtml}</div>`;
       document.title = title;
       return;
     }
 
     const isGame = this.isTransparencyBlocked(appId, appMeta);
-
     const win = this.wm.createWindow(`${id}-win`, title, "80vw", "80vh", isGame);
 
-    win.dataset.appType = appMeta.type || "";
-    win.dataset.externalUrl = externalUrl || "";
-    win.dataset.appId = appId || "";
-    win.dataset.swf = appMeta.swf || "";
-    win.dataset.isGame = isGame;
-    win.dataset.rom = appMeta.rom || "";
-    win.dataset.core = appMeta.core || "";
+    Object.assign(win.dataset, {
+      appType: appMeta.type || "",
+      externalUrl: externalUrl || "",
+      appId: appId || "",
+      swf: appMeta.swf || "",
+      isGame,
+      rom: appMeta.rom || "",
+      core: appMeta.core || ""
+    });
 
     win.innerHTML = `
       <div class="window-header">
@@ -236,13 +224,10 @@ export class AppLauncher {
           <button class="close-btn" title="Close">X</button>
         </div>
       </div>
-      <div class="window-content" style="width:100%; height:100%;">
-        ${contentHtml}
-      </div>
+      <div class="window-content" style="width:100%; height:100%;">${contentHtml}</div>
     `;
 
     desktop.appendChild(win);
-
     this.wm.makeDraggable(win);
     this.wm.makeResizable(win);
     this.wm.setupWindowControls(win);
@@ -250,7 +235,6 @@ export class AppLauncher {
 
     win.querySelector(".external-btn").addEventListener("click", () => {
       if (!appId) return;
-      console.log(id, title, contentHtml, externalUrl, appId, appMeta);
       const url = new URL(window.location.href);
       url.searchParams.set("game", appId);
       window.open(url.toString(), "_blank", "noopener,noreferrer");

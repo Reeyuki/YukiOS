@@ -1,7 +1,7 @@
 export const appMap = {
   minecraft: {
-    type: "remote",
-    url: "https://eaglercraft.com/play",
+    type: "game",
+    url: "/static/games/minecraft/index.html",
     icon: "/static/icons/minecraft.webp",
     title: "Minecraft"
   },
