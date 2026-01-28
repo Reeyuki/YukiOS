@@ -112,7 +112,7 @@ export const appMap = {
   },
   cuphead: {
     type: "game",
-    url: "https://truffled.lol/games/Cuphead/index.html",
+    url: "/static/games/gnmath/cuphead.html",
     icon: "/static/icons/cup.webp",
     title: "Cuphead"
   },
@@ -124,14 +124,14 @@ export const appMap = {
   },
   celeste: {
     type: "game",
-    url: "https://truffled.lol/games/celeste/index.html",
+    url: "/static/games/gnmath/celeste.html",
     icon: "/static/icons/celeste.webp",
     title: "Celeste"
   },
-  fnaf: { type: "game", url: "/static/games/fnaf", icon: "/static/icons/fnaf1.webp", title: "Fnaf" },
+  fnaf: { type: "game", url: "/static/games/fnaf/index.html", icon: "/static/icons/fnaf1.webp", title: "Fnaf" },
   balatro: {
     type: "game",
-    url: "https://truffled.lol/games/balatro/index.html",
+    url: "/static/games/gnmath/balatro.html",
     icon: "/static/icons/bal.webp",
     title: "Balatro"
   },
@@ -288,7 +288,7 @@ export const appMap = {
   },
   raft: {
     type: "game",
-    url: "https://truffled.lol/games/raft/index.html",
+    url: "/static/games/gnmath/raft.html",
     icon: "/static/icons/raft.webp",
     title: "Raft"
   },
@@ -300,7 +300,7 @@ export const appMap = {
   },
   tattletail: {
     type: "game",
-    url: "https://truffled.lol/games/tattletail/index.html",
+    url: "/static/games/gnmath/tattletail.html",
     icon: "/static/icons/tat.webp",
     title: "Tattletail"
   },
