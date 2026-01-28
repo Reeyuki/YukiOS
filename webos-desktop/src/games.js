@@ -154,8 +154,8 @@ export const appMap = {
     title: "Baloons TD 5"
   },
   baloonsTd6: {
-    type: "swf",
-    swf: "https://truffled.lol/games/btd6/index.html",
+    type: "game",
+    url: "https://truffled.lol/games/btd6/index.html",
     icon: "/static/icons/baloonstd6.webp",
     title: "Baloons TD 6"
   },
@@ -203,8 +203,7 @@ export const appMap = {
     type: "game",
     url: "https://papasgamesfree.io",
     icon: "/static/icons/papa.webp",
-    title: "Papa's Games",
-    popular: true
+    title: "Papa's Games"
   },
   jackSmith: {
     type: "game",
@@ -222,8 +221,7 @@ export const appMap = {
     type: "game",
     url: " /static/games/henryStickmin/index.html",
     icon: "/static/icons/henry-prison.webp",
-    title: "Henry Stickmin Games",
-    popular: true
+    title: "Henry Stickmin Games"
   },
   henryBank: {
     type: "swf",
