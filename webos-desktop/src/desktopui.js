@@ -236,13 +236,17 @@ class SelectionManager {
 }
 
 class FileSystemHelper {
-  constructor(fs, positionHelper) {
-    this.fs = fs;
+  constructor(positionHelper) {
     this.positionHelper = positionHelper;
   }
 
+  _getStorageKey(pathArray, fileName) {
+    return [...pathArray, fileName].join("/");
+  }
+
   async loadPositionFromFile(path, fileName) {
-    const content = await this.fs.getFileContent(path, fileName);
+    const key = this._getStorageKey(path, fileName);
+    const content = localStorage.getItem(key);
     if (!content) return null;
 
     try {
@@ -272,7 +276,8 @@ class FileSystemHelper {
       topPercent: position.topPercent
     });
 
-    await this.fs.createFile(path, fileName, content, "text");
+    const key = this._getStorageKey(path, fileName);
+    localStorage.setItem(key, content);
   }
 
   async saveFolderPosition(path, folderName, folderIcon) {
@@ -283,7 +288,8 @@ class FileSystemHelper {
       topPercent: position.topPercent
     });
 
-    await this.fs.createFile(path, metaFileName, content, "text");
+    const key = this._getStorageKey(path, metaFileName);
+    localStorage.setItem(key, content);
   }
 }
 
