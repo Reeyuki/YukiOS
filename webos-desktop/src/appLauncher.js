@@ -63,7 +63,23 @@ export class AppLauncher {
         return this.openIframeApp({ appId: app, type: "game", source: info.url, originalName: app, analyticsBase });
       }
     }
-
+    if (app === "gtaVc" && !window.electronAPI) {
+      const msgId = "gtavc-browser-warning";
+      if (!document.getElementById(`${msgId}-win`)) {
+        const content = `
+          <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;font-family:sans-serif;padding:20px;box-sizing:border-box;text-align:center;">
+            <h2 style="margin-bottom:12px;">Cannot Launch Game</h2>
+            <p style="font-size:16px;max-width:500px;">
+              GTA Vice City cannot run in the browser using a https domain (this site).
+              Please launch this game using the desktop app.
+              This game can't run over HTTPS, but works fine on localhost and through LAN, and I couldn't figure out why.
+            </p>
+          </div>
+        `;
+        this.createWindow(msgId, "Launch Error", content, null, msgId, { type: "system" });
+      }
+      return;
+    }
     const urlParams = new URLSearchParams(window.location.search);
     if (window.electronAPI?.launchGame && !urlParams.has("game")) return window.electronAPI.launchGame(app);
 
