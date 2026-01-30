@@ -1,6 +1,4 @@
 #!/bin/bash
-# Usage: ./generate_metadata.sh /path/to/static metadata.json 1.0.0
-
 SRC_DIR="$1"
 OUTPUT_FILE="$2"
 VERSION="$3"
@@ -10,12 +8,14 @@ if [ -z "$SRC_DIR" ] || [ -z "$OUTPUT_FILE" ] || [ -z "$VERSION" ]; then
   exit 1
 fi
 
+OUTPUT_PATH="$(realpath "$OUTPUT_FILE")"
+
 cd "$SRC_DIR" || exit 1
 
 {
   echo "{"
   echo "  \"version\": \"$VERSION\","
-  echo '  "files": {'
+  echo "  \"files\": {"
 
   first=true
   while IFS= read -r file; do
@@ -26,9 +26,9 @@ cd "$SRC_DIR" || exit 1
       echo ","
     fi
     echo -n "    \"$file\": { \"path\": \"$file\" }"
-  done < <(find . -type f ! -path "*/icons/*" ! -path "*/wallpapers/*")
+  done < <(find . -type f ! -path "*/icons/*" ! -path "*/wallpapers/*" | sort)
 
   echo
   echo "  }"
   echo "}"
-} > "$OUTPUT_FILE"
+} > "$OUTPUT_PATH"

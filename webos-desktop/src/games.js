@@ -147,17 +147,17 @@ export const appMap = {
     icon: "/static/icons/flappy.webp",
     title: "Flappy Bird"
   },
-  baloonsTd5: {
+  BalloonsTd5: {
     type: "swf",
-    swf: "/static/games/swfGames/baloonstd5.swf",
-    icon: "/static/icons/baloonstd5.webp",
-    title: "Baloons TD 5"
+    swf: "/static/games/swfGames/balloonstd5.swf",
+    icon: "/static/icons/balloonstd5.webp",
+    title: "Balloons TD 5"
   },
-  baloonsTd6: {
+  BalloonsTd6: {
     type: "game",
     url: "https://truffled.lol/games/btd6/index.html",
-    icon: "/static/icons/baloonstd6.webp",
-    title: "Baloons TD 6"
+    icon: "/static/icons/balloonstd6.webp",
+    title: "Balloons TD 6"
   },
   cutTheRope: {
     type: "game",
@@ -219,37 +219,37 @@ export const appMap = {
   },
   henry: {
     type: "game",
-    url: " /static/games/henryStickmin/index.html",
+    url: "/static/games/henryStickmin/index.html",
     icon: "/static/icons/henry-prison.webp",
     title: "Henry Stickmin Games"
   },
   henryBank: {
     type: "swf",
-    swf: " /static/games/henryStickmin/bank.swf",
+    swf: "/static/games/henryStickmin/bank.swf",
     icon: "/static/icons/henry-bank.webp",
     title: "Henry Stickmin Bank"
   },
   henryPrison: {
     type: "swf",
-    swf: " /static/games/henryStickmin/prison.swf",
+    swf: "/static/games/henryStickmin/prison.swf",
     icon: "/static/icons/henry-prison.webp",
     title: "Henry Stickmin Prison"
   },
   henryAirship: {
     type: "swf",
-    swf: " /static/games/henryStickmin/airship.swf",
+    swf: "/static/games/henryStickmin/airship.swf",
     icon: "/static/icons/henry-airship.webp",
     title: "Henry Stickmin Airship"
   },
   henryDiamond: {
     type: "swf",
-    swf: " /static/games/henryStickmin/diamond.swf",
+    swf: "/static/games/henryStickmin/diamond.swf",
     icon: "/static/icons/henry-diamond.webp",
     title: "Henry Stickmin Diamond"
   },
   henryComplex: {
     type: "swf",
-    swf: " /static/games/henryStickmin/complex.swf",
+    swf: "/static/games/henryStickmin/complex.swf",
     icon: "/static/icons/henry-complex.webp",
     title: "Henry Stickmin Complex"
   },
@@ -502,11 +502,11 @@ export const appMap = {
     icon: "/static/icons/elfstory.webp",
     title: "Elf Story"
   },
-  frogDares: {
+  swarmQueen: {
     type: "swf",
-    swf: "https://cache.armorgames.com/files/games/frog-dares-12672.swf?v=1373587526",
-    icon: "/static/icons/frogdares.webp",
-    title: "Frog Dares"
+    swf: "/static/games/swfGames/swarmQueen.swf",
+    icon: "/static/icons/swarm.webp",
+    title: "Swarm Queen"
   },
   kamikazePigs: {
     type: "swf",
@@ -583,11 +583,11 @@ export const appMap = {
   roads: { type: "game", url: "https://slowroads.io", icon: "/static/icons/roads.svg", title: "Roads" },
   repo: { type: "game", url: "/static/games/gnmath/repo.html", icon: "/static/icons/repo.webp", title: "R.E.P.O" },
   flight: { type: "swf", swf: "/static/games/swfGames/flight.swf", icon: "/static/icons/flight.webp", title: "Flight" },
-  swarmQueen: {
+  frogDares: {
     type: "swf",
-    swf: "/static/games/swfGames/swarmQueen.swf",
-    icon: "/static/icons/swarm.webp",
-    title: "Swarm Queen"
+    swf: "https://cache.armorgames.com/files/games/frog-dares-12672.swf?v=1373587526",
+    icon: "/static/icons/frogdares.webp",
+    title: "Frog Dares"
   },
   candyCrush: {
     type: "game",
@@ -600,6 +600,12 @@ export const appMap = {
     url: "/static/games/gnmath/oneshot.html",
     icon: "/static/icons/oneshot.webp",
     title: "Oneshot"
+  },
+  shark: {
+    type: "game",
+    url: "https://azgames.io/crazy-shark.embed",
+    icon: "/static/icons/shark.webp",
+    title: "Crazy Shark"
   }
 };
 export class GamesPageRenderer {
