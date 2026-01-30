@@ -179,7 +179,7 @@ export const appMap = {
   },
   slimeRancher: {
     type: "game",
-    url: "/static/games/slimeRancher",
+    url: "https://dev.snubby.top/",
     icon: "/static/icons/slime.webp",
     title: "Slime Rancher"
   },
