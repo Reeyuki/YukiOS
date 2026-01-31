@@ -206,38 +206,48 @@ export class ExplorerApp {
   }
 
   async openItem(name, isFile) {
-    if (isFile) {
-      if (this.fileSelectCallback) {
-        this.fileSelectCallback(this.currentPath, name);
-        this.fileSelectCallback = null;
-        return;
-      }
-      const content = await this.fs.getFileContent(this.currentPath, name);
-      const kind = await this.fs.getFileKind(this.currentPath, name);
-
-      if (kind === FileKind.IMAGE) {
-        this.openImageViewer(name, content);
-      } else {
-        this.notepadApp.open(name, content, this.currentPath);
-      }
-    } else {
+    if (!isFile) {
       this.navigate([...this.currentPath, name]);
+      return;
     }
+
+    if (this.fileSelectCallback) {
+      this.fileSelectCallback(this.currentPath, name);
+      this.fileSelectCallback = null;
+      return;
+    }
+
+    const content = await this.fs.getFileContent(this.currentPath, name);
+    const kind = await this.fs.getFileKind(this.currentPath, name);
+
+    if (kind === FileKind.IMAGE || kind === FileKind.VIDEO) {
+      this.openMediaViewer(name, content, kind);
+      return;
+    }
+
+    this.notepadApp.open(name, content, this.currentPath);
   }
 
-  openImageViewer(name, src) {
+  openMediaViewer(name, src, kind) {
     const win = document.createElement("div");
     win.className = "window";
     Object.assign(win.style, { width: "500px", height: "400px", left: "150px", top: "150px", zIndex: 2000 });
+
+    const media =
+      kind === FileKind.VIDEO
+        ? `<video src="${src}" controls autoplay loop style="max-width:100%;max-height:100%"></video>`
+        : `<img src="${src}" style="max-width:100%;max-height:100%">`;
+
     win.innerHTML = `
       <div class="window-header">
         <span>${name}</span>
         ${this.wm.getWindowControls()}
       </div>
       <div style="display:flex;justify-content:center;align-items:center;height:calc(100% - 30px);background:#222">
-        <img src="${src}" style="max-width:100%; max-height:100%">
+        ${media}
       </div>
     `;
+
     desktop.appendChild(win);
     this.wm.makeDraggable(win);
     this.wm.makeResizable(win);
@@ -294,7 +304,7 @@ export class ExplorerApp {
       const kind = await this.fs.getFileKind(this.currentPath, itemName);
       const content = await this.fs.getFileContent(this.currentPath, itemName);
 
-      if (kind === FileKind.IMAGE) {
+      if (kind === FileKind.IMAGE || kind === FileKind.VIDEO) {
         contextMenu.appendChild(
           createMenuItem("Set Wallpaper", () => {
             contextMenu.style.display = "none";

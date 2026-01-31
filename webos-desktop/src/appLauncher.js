@@ -110,13 +110,27 @@ export class AppLauncher {
     });
   }
 
-  recordUsage(winId, analyticsBase) {
+  recordUsage(winId) {
     const startTime = Date.now();
     const win = document.getElementById(winId);
-    const sendUsage = () =>
-      this.sendAnalytics({ ...analyticsBase, event: "usage", durationMs: Date.now() - startTime });
-    win.querySelector(".close-btn").addEventListener("click", sendUsage);
-    win.addEventListener("blur", sendUsage);
+    if (!win) return;
+
+    const appId = win.dataset.appId || "";
+    let sent = false;
+
+    const sendUsage = () => {
+      if (sent) return;
+      sent = true;
+      this.sendAnalytics({
+        app: appId,
+        event: "usage",
+        durationMs: Date.now() - startTime,
+        timestamp: Date.now(),
+        sessionAgeMs: Date.now() - this.pageLoadTime
+      });
+    };
+
+    win.querySelector(".close-btn")?.addEventListener("click", sendUsage);
   }
 
   openRemoteApp(appUrl) {
