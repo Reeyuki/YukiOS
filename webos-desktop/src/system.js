@@ -20,9 +20,11 @@ export class SystemUtilities {
   }
 
   static setRandomWallpaper() {
-    const pictures = defaultStorage.home.reeyuki.Pictures;
+    const pictures = defaultStorage?.home?.reeyuki?.Pictures.Wallpapers;
+    if (!pictures || typeof pictures !== "object") return;
+
     const wallpapers = Object.values(pictures)
-      .filter((item) => item.kind === "image")
+      .filter((item) => item && (item.kind === "image" || item.kind === "video") && typeof item.content === "string")
       .map((item) => item.content);
 
     if (!wallpapers.length) return;
@@ -32,27 +34,42 @@ export class SystemUtilities {
   }
 
   static setWallpaper(wallpaperURL) {
-    let img = document.getElementById("wallpaper-img");
+    if (!wallpaperURL) return;
 
-    if (!img) {
-      img = document.createElement("img");
-      img.id = "wallpaper-img";
-      Object.assign(img.style, {
-        position: "fixed",
-        inset: "0",
-        width: "100vw",
-        height: "100vh",
-        objectFit: "cover",
-        zIndex: "-1",
-        pointerEvents: "none",
-        userSelect: "none"
-      });
-      img.addEventListener("contextmenu", (e) => e.preventDefault());
-      document.body.appendChild(img);
+    const isVideo = wallpaperURL.toLowerCase().endsWith(".mp4");
+
+    let existing = document.getElementById("wallpaper-img") || document.getElementById("wallpaper-video");
+    if (existing) existing.remove();
+
+    let el;
+
+    if (isVideo) {
+      el = document.createElement("video");
+      el.id = "wallpaper-video";
+      el.src = wallpaperURL;
+      el.autoplay = true;
+      el.loop = true;
+      el.muted = true;
+      el.playsInline = true;
+    } else {
+      el = document.createElement("img");
+      el.id = "wallpaper-img";
+      el.src = wallpaperURL;
     }
 
-    img.src = wallpaperURL;
+    Object.assign(el.style, {
+      position: "fixed",
+      inset: "0",
+      width: "100vw",
+      height: "100vh",
+      objectFit: "cover",
+      zIndex: "-1",
+      pointerEvents: "none",
+      userSelect: "none"
+    });
 
+    el.addEventListener("contextmenu", (e) => e.preventDefault());
+    document.body.appendChild(el);
     localStorage.setItem(WALLPAPER_KEY, wallpaperURL);
   }
 

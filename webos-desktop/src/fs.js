@@ -9,6 +9,7 @@ const CONFIG = {
 
 export const FileKind = {
   IMAGE: "image",
+  VIDEO: "VIDEO",
   TEXT: "text",
   OTHER: "other"
 };
@@ -25,71 +26,79 @@ export const defaultStorage = {
         }
       },
       Pictures: {
-        "wallpaper1.webp": {
-          type: "file",
-          content: "/static/wallpapers/wallpaper1.webp",
-          kind: FileKind.IMAGE,
-          icon: "/static/wallpapers/wallpaper1.webp"
-        },
-        "wallpaper2.webp": {
-          type: "file",
-          content: "/static/wallpapers/wallpaper2.webp",
-          kind: FileKind.IMAGE,
-          icon: "/static/wallpapers/wallpaper2.webp"
-        },
-        "wallpaper3.webp": {
-          type: "file",
-          content: "/static/wallpapers/wallpaper3.webp",
-          kind: FileKind.IMAGE,
-          icon: "/static/wallpapers/wallpaper3.webp"
-        },
-        "wallpaper4.webp": {
-          type: "file",
-          content: "/static/wallpapers/wallpaper4.webp",
-          kind: FileKind.IMAGE,
-          icon: "/static/wallpapers/wallpaper4.webp"
-        },
-        "wallpaper5.webp": {
-          type: "file",
-          content: "/static/wallpapers/wallpaper5.webp",
-          kind: FileKind.IMAGE,
-          icon: "/static/wallpapers/wallpaper5.webp"
-        },
-        "wallpaper6.webp": {
-          type: "file",
-          content: "/static/wallpapers/wallpaper6.webp",
-          kind: FileKind.IMAGE,
-          icon: "/static/wallpapers/wallpaper6.webp"
-        },
-        "wallpaper7.webp": {
-          type: "file",
-          content: "/static/wallpapers/wallpaper7.webp",
-          kind: FileKind.IMAGE,
-          icon: "/static/wallpapers/wallpaper7.webp"
-        },
-        "wallpaper8.webp": {
-          type: "file",
-          content: "/static/wallpapers/wallpaper8.webp",
-          kind: FileKind.IMAGE,
-          icon: "/static/wallpapers/wallpaper8.webp"
-        },
-        "wallpaper9.webp": {
-          type: "file",
-          content: "/static/wallpapers/wallpaper9.webp",
-          kind: FileKind.IMAGE,
-          icon: "/static/wallpapers/wallpaper9.webp"
-        },
-        "wallpaper10.webp": {
-          type: "file",
-          content: "/static/wallpapers/wallpaper10.webp",
-          kind: FileKind.IMAGE,
-          icon: "/static/wallpapers/wallpaper10.webp"
-        },
-        "wallpaper11.webp": {
-          type: "file",
-          content: "/static/wallpapers/wallpaper11.webp",
-          kind: FileKind.IMAGE,
-          icon: "/static/wallpapers/wallpaper11.webp"
+        Wallpapers: {
+          "wallpaper1.webp": {
+            type: "file",
+            content: "/static/wallpapers/wallpaper1.webp",
+            kind: FileKind.IMAGE,
+            icon: "/static/wallpapers/wallpaper1.webp"
+          },
+          "wallpaper2.webp": {
+            type: "file",
+            content: "/static/wallpapers/wallpaper2.webp",
+            kind: FileKind.IMAGE,
+            icon: "/static/wallpapers/wallpaper2.webp"
+          },
+          "wallpaper3.webp": {
+            type: "file",
+            content: "/static/wallpapers/wallpaper3.webp",
+            kind: FileKind.IMAGE,
+            icon: "/static/wallpapers/wallpaper3.webp"
+          },
+          "wallpaper4.webp": {
+            type: "file",
+            content: "/static/wallpapers/wallpaper4.webp",
+            kind: FileKind.IMAGE,
+            icon: "/static/wallpapers/wallpaper4.webp"
+          },
+          "wallpaper5.webp": {
+            type: "file",
+            content: "/static/wallpapers/wallpaper5.webp",
+            kind: FileKind.IMAGE,
+            icon: "/static/wallpapers/wallpaper5.webp"
+          },
+          "wallpaper6.webp": {
+            type: "file",
+            content: "/static/wallpapers/wallpaper6.webp",
+            kind: FileKind.IMAGE,
+            icon: "/static/wallpapers/wallpaper6.webp"
+          },
+          "wallpaper7.webp": {
+            type: "file",
+            content: "/static/wallpapers/wallpaper7.webp",
+            kind: FileKind.IMAGE,
+            icon: "/static/wallpapers/wallpaper7.webp"
+          },
+          "wallpaper8.webp": {
+            type: "file",
+            content: "/static/wallpapers/wallpaper8.webp",
+            kind: FileKind.IMAGE,
+            icon: "/static/wallpapers/wallpaper8.webp"
+          },
+          "wallpaper9.webp": {
+            type: "file",
+            content: "/static/wallpapers/wallpaper9.webp",
+            kind: FileKind.IMAGE,
+            icon: "/static/wallpapers/wallpaper9.webp"
+          },
+          "wallpaper10.webp": {
+            type: "file",
+            content: "/static/wallpapers/wallpaper10.webp",
+            kind: FileKind.IMAGE,
+            icon: "/static/wallpapers/wallpaper10.webp"
+          },
+          "wallpaper11.webp": {
+            type: "file",
+            content: "/static/wallpapers/wallpaper11.webp",
+            kind: FileKind.IMAGE,
+            icon: "/static/wallpapers/wallpaper11.webp"
+          },
+          "nier.mp4": {
+            type: "file",
+            content: "https://motionbgs.com/media/4348/2b-in-nier-automata.1920x1080.mp4",
+            kind: FileKind.VIDEO,
+            icon: "/static/wallpapers/nier.webp"
+          }
         }
       },
       Music: {},
