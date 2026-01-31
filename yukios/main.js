@@ -28,15 +28,24 @@ function getResourcesPath() {
   return app.isPackaged ? path.join(process.resourcesPath, "app.asar", "resources") : path.join(__dirname, "resources");
 }
 
+let lastAnalyticsTime = 0;
+const ANALYTICS_THROTTLE_MS = 500;
+
 function sendAnalytics(data) {
+  const now = Date.now();
   if (!app.isPackaged) {
-    log("Analytics (dev mode, not sent):", data);
     return;
   }
-  
+
+  if (now - lastAnalyticsTime < ANALYTICS_THROTTLE_MS) {
+    return;
+  }
+
+  lastAnalyticsTime = now;
+
   const https = require("https");
   const payload = JSON.stringify(data);
-  
+
   const options = {
     hostname: "analytics.liventcord-a60.workers.dev",
     path: "/analytics",
@@ -119,7 +128,7 @@ function createWindow(url, title, width, height, isGame = false, gameId = null) 
     if (assetServer) {
       e.preventDefault();
       log(`Window closing: ${title}`);
-      
+
       if (isGame && gameId) {
         const analyticsBase = getAnalyticsBase(`game-${gameId}`);
         sendAnalytics({
@@ -128,7 +137,7 @@ function createWindow(url, title, width, height, isGame = false, gameId = null) 
           gameId
         });
       }
-      
+
       win.destroy();
     }
   });
@@ -243,7 +252,7 @@ autoUpdater.on("update-downloaded", () => {
   }
 });
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   autoUpdater.checkForUpdatesAndNotify();
 
   resourcesPath = getResourcesPath();

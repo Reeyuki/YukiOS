@@ -9,40 +9,83 @@ module.exports = function createAssetServer(options) {
   const server = express();
   const CONCURRENT_DOWNLOADS = 10;
   const MAX_RETRIES = 10;
+  let mimeTypes = null;
+  try {
+    mimeTypes = require("mime-types");
+  } catch {}
+
+  function ensureDirSync(dir) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+
+  function isReadableFileSync(filePath) {
+    try {
+      const abs = path.resolve(filePath);
+      const stats = fs.statSync(abs);
+      if (!stats.isFile()) return null;
+      fs.accessSync(abs, fs.constants.R_OK);
+      return { abs, stats };
+    } catch {
+      return null;
+    }
+  }
+
+  function setHeadersForFile(res, stats, abs) {
+    if (mimeTypes) {
+      const mt = mimeTypes.lookup(abs);
+      if (mt) res.setHeader("Content-Type", mt);
+    }
+    if (stats?.size) res.setHeader("Content-Length", stats.size);
+    if (stats?.mtime) res.setHeader("Last-Modified", stats.mtime.toUTCString());
+  }
+
+  function sendFile(res, filePath, tag) {
+    const file = isReadableFileSync(filePath);
+    if (!file) {
+      log(`Cannot access file (${tag}):`, filePath);
+      if (!res.headersSent) res.status(500).send("Internal Server Error");
+      return false;
+    }
+    const { abs, stats } = file;
+    setHeadersForFile(res, stats, abs);
+    try {
+      const data = fs.readFileSync(abs);
+      res.send(data);
+      return true;
+    } catch (err) {
+      log(`Read error (${tag}) for ${abs}:`, err?.message || err);
+      if (!res.headersSent) res.status(500).send("Internal Server Error");
+      return false;
+    }
+  }
 
   async function fetchRemoteMetadata() {
     try {
-      const res = await axios.get(`${CDN_BASE}/static/metadata.json`);
+      const res = await axios.get(`${CDN_BASE}/static/metadata.json`, { timeout: 15000 });
       return res.data;
     } catch (err) {
-      log("Failed to fetch remote metadata:", err.message);
+      log("Failed to fetch remote metadata:", err?.message || err);
       return null;
     }
   }
 
   async function downloadFile(localFile, cdnPath, retries = MAX_RETRIES) {
     const cdnUrl = `${CDN_BASE}/static/${cdnPath}`;
-
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
-        fs.mkdirSync(path.dirname(localFile), { recursive: true });
-        const response = await axios.get(cdnUrl, { responseType: "stream" });
-        const writer = fs.createWriteStream(localFile);
-
-        await new Promise((resolve, reject) => {
-          response.data.pipe(writer);
-          response.data.on("error", reject);
-          writer.on("finish", resolve);
-          writer.on("error", reject);
-        });
-
+        ensureDirSync(path.dirname(localFile));
+        const response = await axios.get(cdnUrl, { responseType: "arraybuffer", timeout: 30000 });
+        fs.writeFileSync(localFile, response.data);
+        log("Downloaded:", cdnPath);
         return true;
       } catch (err) {
-        if (attempt === retries) {
-          throw err;
+        if (err?.response?.status === 404) {
+          log(`File not found (404): ${cdnPath}`);
+          return false;
         }
+        if (attempt === retries) throw err;
         log(`Download attempt ${attempt + 1} failed for ${cdnPath}, retrying...`);
-        await new Promise((resolve) => setTimeout(resolve, 1000 * (attempt + 1)));
+        await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)));
       }
     }
   }
@@ -50,281 +93,163 @@ module.exports = function createAssetServer(options) {
   async function downloadWithConcurrency(tasks, concurrency) {
     const results = [];
     const executing = [];
-
     for (const task of tasks) {
-      const promise = task().then((result) => {
-        executing.splice(executing.indexOf(promise), 1);
-        return result;
+      const p = task().then((res) => {
+        const i = executing.indexOf(p);
+        if (i > -1) executing.splice(i, 1);
+        return res;
       });
-
-      results.push(promise);
-      executing.push(promise);
-
-      if (executing.length >= concurrency) {
-        await Promise.race(executing);
-      }
+      results.push(p);
+      executing.push(p);
+      if (executing.length >= concurrency) await Promise.race(executing);
     }
-
     return Promise.allSettled(results);
   }
 
   async function predownloadAssets() {
     log("Starting predownloadAssets...");
-
     const metadata = await fetchRemoteMetadata();
-    if (!metadata || !metadata.files) {
-      log("No metadata or files found");
+    if (!metadata?.files) {
       mainWindow?.webContents.send("asset-sync", { done: true });
       return;
     }
 
-    log(`Metadata loaded with ${Object.keys(metadata.files).length} total files`);
-
-    fs.mkdirSync(userStaticPath, { recursive: true });
-    fs.writeFileSync(path.join(userStaticPath, "metadata.json"), JSON.stringify(metadata, null, 2));
+    const totalFiles = Object.keys(metadata.files).length;
+    log(`Metadata loaded with ${totalFiles} total files`);
+    ensureDirSync(userStaticPath);
+    try {
+      fs.writeFileSync(path.join(userStaticPath, "metadata.json"), JSON.stringify(metadata, null, 2));
+    } catch (e) {
+      log("Failed to write metadata.json:", e?.message || e);
+    }
 
     const downloadTasks = [];
     const tasksInfo = [];
-
     for (const [key, entry] of Object.entries(metadata.files)) {
-      if (key.startsWith("gtavc/")) {
-        continue;
-      }
-
+      if (key.startsWith("gtavc/")) continue;
       const bundled = path.join(resourcesPath, staticFolderName, key);
-      if (fs.existsSync(bundled)) {
-        log(`File exists in bundle: ${key}`);
-        continue;
-      }
-
       const cached = path.join(userStaticPath, key);
-      if (fs.existsSync(cached)) {
-        log(`File exists in cache: ${key}`);
-        continue;
-      }
-
+      if (isReadableFileSync(bundled) || isReadableFileSync(cached)) continue;
       tasksInfo.push(key);
       downloadTasks.push(async () => {
         try {
-          log("Pre-downloading asset:", key);
           await downloadFile(cached, entry.path || key);
-          log("Successfully downloaded:", key);
           return { success: true, key };
         } catch (err) {
-          log("Pre-download failed:", key, err.message);
+          log("Pre-download failed:", key, err?.message || err);
           return { success: false, key };
         }
       });
     }
 
-    log(`Found ${downloadTasks.length} files to download`);
-
-    if (downloadTasks.length === 0) {
-      log("No assets need downloading, sending done signal");
+    const total = downloadTasks.length;
+    if (total === 0) {
       mainWindow?.webContents.send("asset-sync", { done: true });
       return;
     }
 
-    log(`Starting concurrent download of ${downloadTasks.length} assets...`);
-
-    const total = downloadTasks.length;
     let completed = 0;
-
-    const wrappedTasks = downloadTasks.map((task, index) => async () => {
+    const wrapped = downloadTasks.map((task, idx) => async () => {
       const result = await task();
       completed++;
-      const key = tasksInfo[index];
-
-      log(`Progress: ${completed}/${total} (${((completed / total) * 100).toFixed(1)}%)`);
-
-      mainWindow?.webContents.send("asset-sync", {
-        file: key,
-        progress: (completed / total) * 100
-      });
-
+      mainWindow?.webContents.send("asset-sync", { file: tasksInfo[idx], progress: (completed / total) * 100 });
       return result;
     });
 
-    await downloadWithConcurrency(wrappedTasks, CONCURRENT_DOWNLOADS);
-
-    log("All downloads complete, sending done signal");
+    await downloadWithConcurrency(wrapped, CONCURRENT_DOWNLOADS);
     mainWindow?.webContents.send("asset-sync", { done: true });
     log("Pre-download completed");
   }
 
-  async function streamAndCacheFile(res, localFile, cdnPath) {
-    const cdnUrl = `${CDN_BASE}/static/${cdnPath}`;
-
-    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-      try {
-        fs.mkdirSync(path.dirname(localFile), { recursive: true });
-        const response = await axios.get(cdnUrl, { responseType: "stream" });
-
-        if (response.headers["content-type"]) {
-          res.setHeader("Content-Type", response.headers["content-type"]);
-        }
-        if (response.headers["content-length"]) {
-          res.setHeader("Content-Length", response.headers["content-length"]);
-        }
-
-        const fileStream = fs.createWriteStream(localFile);
-
-        await new Promise((resolve, reject) => {
-          let responseEnded = false;
-          let fileEnded = false;
-
-          const checkBothEnded = () => {
-            if (responseEnded && fileEnded) {
-              resolve();
-            }
-          };
-
-          response.data.pipe(fileStream);
-          response.data.pipe(res);
-
-          response.data.on("error", (err) => {
-            fileStream.destroy();
-            res.destroy();
-            reject(err);
-          });
-
-          fileStream.on("finish", () => {
-            fileEnded = true;
-            checkBothEnded();
-          });
-
-          fileStream.on("error", (err) => {
-            res.destroy();
-            reject(err);
-          });
-
-          res.on("finish", () => {
-            responseEnded = true;
-            checkBothEnded();
-          });
-
-          res.on("error", (err) => {
-            fileStream.destroy();
-            reject(err);
-          });
-        });
-
-        log("Successfully streamed and cached:", cdnPath);
-        return;
-      } catch (err) {
-        if (attempt === MAX_RETRIES) {
-          log("Failed to stream after retries:", cdnPath, err.message);
-          throw err;
-        }
-        log(`Stream attempt ${attempt + 1} failed for ${cdnPath}, retrying...`);
-
-        if (fs.existsSync(localFile)) {
-          try {
-            fs.unlinkSync(localFile);
-          } catch (unlinkErr) {
-            log("Failed to remove partial file:", unlinkErr.message);
-          }
-        }
-
-        await new Promise((resolve) => setTimeout(resolve, 1000 * (attempt + 1)));
-      }
-    }
-  }
-
-  server.use((req, res, next) => {
-    log(`Incoming request: ${req.method} ${req.path}`);
-    next();
-  });
-
-  server.get(`/${staticFolderName}`, async (req, res, next) => {
-    next();
-  });
-
-  server.use(`/${staticFolderName}`, async (req, res, next) => {
+  async function handleAssetRequest(req, res) {
     try {
-      let requested = req.path;
-      if (requested.startsWith(`/${staticFolderName}/`)) {
-        requested = requested.substring(`/${staticFolderName}/`.length);
-      } else if (requested.startsWith("/")) {
-        requested = requested.substring(1);
-      }
-
-      log(`Processing static asset request: ${requested}`);
+      let requested = decodeURIComponent(req.path || "");
+      if (requested.startsWith(`/${staticFolderName}/`)) requested = requested.slice(staticFolderName.length + 2);
+      else if (requested.startsWith("/")) requested = requested.slice(1);
 
       const bundled = path.join(resourcesPath, staticFolderName, requested);
-      if (fs.existsSync(bundled) && fs.statSync(bundled).isFile()) {
-        log(`Serving from bundle: ${requested}`);
-        return res.sendFile(bundled);
+      if (isReadableFileSync(bundled)) {
+        sendFile(res, bundled, "bundle");
+        return;
       }
 
       const cached = path.join(userStaticPath, requested);
-      if (fs.existsSync(cached) && fs.statSync(cached).isFile()) {
-        log(`Serving from cache: ${requested}`);
-        return res.sendFile(cached);
+      if (isReadableFileSync(cached)) {
+        sendFile(res, cached, "cache");
+        return;
       }
 
       const metadataFile = path.join(userStaticPath, "metadata.json");
       let metadata = null;
-      if (fs.existsSync(metadataFile)) {
-        metadata = JSON.parse(fs.readFileSync(metadataFile, "utf-8"));
-      }
+      if (fs.existsSync(metadataFile))
+        try {
+          metadata = JSON.parse(fs.readFileSync(metadataFile, "utf-8"));
+        } catch {
+          metadata = null;
+        }
 
       const entry = metadata?.files?.[requested];
-
       if (entry) {
-        log("On-demand streaming and caching asset:", requested);
-        await streamAndCacheFile(res, cached, entry.path || requested);
+        try {
+          await downloadFile(cached, entry.path || requested);
+          sendFile(res, cached, "downloaded");
+        } catch {
+          res.status(500).send("Failed to fetch asset");
+        }
         return;
       }
 
-      log(`No metadata entry found for: ${requested}, falling back...`);
-
       const fallback = path.join(resourcesPath, "desktop", path.basename(requested));
-      if (fs.existsSync(fallback) && fs.statSync(fallback).isFile()) {
-        log(`Serving fallback file: ${requested}`);
-        return res.sendFile(fallback);
+      if (isReadableFileSync(fallback)) {
+        sendFile(res, fallback, "fallback");
+        return;
       }
 
-      log(`404 - File not found: ${requested}`);
       res.status(404).send("Not found");
     } catch (err) {
-      log("Asset stream error:", err.message);
-      res.status(500).send("Internal Server Error");
+      log("Asset error:", err?.message || err);
+      if (!res.headersSent) res.status(500).send("Internal Server Error");
     }
-  });
+  }
 
-
+  server.use(`/${staticFolderName}`, handleAssetRequest);
   server.use(`/${staticFolderName}`, express.static(userStaticPath));
   server.use(`/${staticFolderName}`, express.static(path.join(resourcesPath, staticFolderName)));
   server.use("/desktop", express.static(path.join(resourcesPath, "desktop")));
   server.use("/assets", express.static(path.join(resourcesPath, "desktop")));
 
-  server.use((req, res) => {
-    const requested = decodeURIComponent(req.path);
-    log(`Fallback handler for: ${requested}`);
+  server.use(async (req, res) => {
+    try {
+      const requested = decodeURIComponent(req.path || "");
+      const direct = path.join(resourcesPath, requested);
+      if (isReadableFileSync(direct)) {
+        sendFile(res, direct, "direct");
+        return;
+      }
 
-    const direct = path.join(resourcesPath, requested);
-    if (fs.existsSync(direct) && fs.statSync(direct).isFile()) {
-      log(`Serving direct file: ${requested}`);
-      return res.sendFile(direct);
+      const fallback = path.join(resourcesPath, "desktop", path.basename(requested));
+      if (isReadableFileSync(fallback)) {
+        sendFile(res, fallback, "fallback");
+        return;
+      }
+
+      res.status(404).send("Not found");
+    } catch (err) {
+      log("Fallback handler error:", err?.message || err);
+      if (!res.headersSent) res.status(500).send("Internal Server Error");
     }
-
-    const fallback = path.join(resourcesPath, "desktop", path.basename(requested));
-    if (fs.existsSync(fallback) && fs.statSync(fallback).isFile()) {
-      log(`Serving fallback file: ${requested}`);
-      return res.sendFile(fallback);
-    }
-
-    log(`404 - File not found: ${requested}`);
-    res.status(404).send("Not found");
   });
 
-  server.listen(PORT, () => {
-    log("Asset server running at http://localhost:" + PORT);
+  server.use((err, req, res, next) => {
+    try {
+      log(`Express error for ${req.method} ${req.path}:`, err?.message || err);
+      if (!res.headersSent) res.status(err?.status || 500).send(err?.message || "Internal Server Error");
+    } catch {
+      if (!res.headersSent) res.status(500).send("Internal Server Error");
+    }
   });
 
-  return {
-    server,
-    predownloadAssets
-  };
+  server.listen(PORT, () => log("Asset server running at http://localhost:" + PORT));
+
+  return { server, predownloadAssets };
 };

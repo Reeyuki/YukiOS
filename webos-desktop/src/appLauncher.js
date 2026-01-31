@@ -81,7 +81,8 @@ export class AppLauncher {
       return;
     }
     const urlParams = new URLSearchParams(window.location.search);
-    if (window.electronAPI?.launchGame && !urlParams.has("game")) return window.electronAPI.launchGame(app);
+    if (info.type != "system" && window.electronAPI?.launchGame && !urlParams.has("game"))
+      return window.electronAPI.launchGame(app);
 
     const handlers = {
       system: () => info.action(),
@@ -138,7 +139,11 @@ export class AppLauncher {
 
   openRemoteApp(appUrl) {
     this.sendAnalytics({ ...this._getAnalyticsBase(appUrl), event: "launch" });
-    window.open(appUrl, "_blank", "noopener,noreferrer");
+    if (window.electronAPI) {
+      location.href = appUrl;
+    } else {
+      window.open(appUrl, "_blank", "noopener,noreferrer");
+    }
   }
 
   openHtmlApp(appName, htmlContent, appMeta) {
@@ -229,8 +234,21 @@ export class AppLauncher {
   createWindow(id, title, contentHtml, externalUrl = null, appId = null, appMeta = {}) {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has("game") && appId) {
-      document.body.innerHTML = `<div id="electron-game-root" style="width:100vw;height:100vh;margin:0;padding:0;overflow:hidden;background:black;">${contentHtml}</div>`;
       document.title = title;
+      document.head.insertAdjacentHTML(
+        "beforeend",
+        `<style>
+                html, body {
+                    margin: 0;
+                    padding: 0;
+                    width: 100%;
+                    height: 100%;
+                    overflow: hidden;
+                    background: black;
+                }
+            </style>`
+      );
+      document.body.innerHTML = `<div id="electron-game-root" style="width:100vw;height:100vh;margin:0;padding:0;overflow:hidden;">${contentHtml}</div>`;
       return;
     }
 
@@ -248,16 +266,16 @@ export class AppLauncher {
     });
 
     win.innerHTML = `
-      <div class="window-header">
-        <span>${title}</span>
-        <div class="window-controls">
-          <button class="minimize-btn" title="Minimize">−</button>
-          <button class="external-btn" title="Open in External">↗</button>
-          <button class="maximize-btn" title="Maximize">□</button>
-          <button class="close-btn" title="Close">X</button>
+        <div class="window-header">
+            <span>${title}</span>
+            <div class="window-controls">
+                <button class="minimize-btn" title="Minimize">−</button>
+                <button class="external-btn" title="Open in External">↗</button>
+                <button class="maximize-btn" title="Maximize">□</button>
+                <button class="close-btn" title="Close">X</button>
+            </div>
         </div>
-      </div>
-      <div class="window-content" style="width:100%; height:100%;">${contentHtml}</div>
+        <div class="window-content" style="width:100%; height:100%; overflow:hidden;">${contentHtml}</div>
     `;
 
     desktop.appendChild(win);

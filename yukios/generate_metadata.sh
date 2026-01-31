@@ -20,6 +20,9 @@ cd "$SRC_DIR" || exit 1
   first=true
   while IFS= read -r file; do
     file="${file#./}"
+    if [[ "$file" == .* ]]; then
+      continue
+    fi
     if [ "$first" = true ]; then
       first=false
     else
