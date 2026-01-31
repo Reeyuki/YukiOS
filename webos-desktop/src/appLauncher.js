@@ -109,6 +109,9 @@ export class AppLauncher {
       body: JSON.stringify(data)
     });
   }
+  sendAppInstallAnalytics() {
+    this.sendAnalytics({ ...this._getAnalyticsBase(), event: "installApp" });
+  }
 
   recordUsage(winId) {
     const startTime = Date.now();
