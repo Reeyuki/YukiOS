@@ -148,7 +148,33 @@ function createWindow(url, title, width, height, isGame = false, gameId = null) 
 function launchGameWindow(gameId) {
   const url = `http://localhost:${PORT}/index.html?game=${encodeURIComponent(gameId)}`;
   trackGameLaunch(gameId);
+  if (gameId === "TMNP") {
+    handleTMNP(gameId);
+    return;
+  }
   return createWindow(url, gameId, 1440, 900, true, gameId);
+}
+
+function handleTMNP() {
+  const { spawn } = require("child_process");
+  const path = require("path");
+  const fs = require("fs");
+
+  const exeName = "TeenageMutantNinjaPuppets.exe";
+  const exePath = path.join(userStaticPath, "games", "TMNP", exeName);
+
+  if (!fs.existsSync(exePath)) {
+    console.error("Executable not found:", exePath);
+  }
+
+  let child;
+  if (process.platform === "win32") {
+    child = spawn(exePath, [], { detached: true, stdio: "ignore" });
+  } else if (process.platform === "linux") {
+    child = spawn("wine", [exePath], { detached: true, stdio: "ignore" });
+  } else {
+    console.error("Unsupported platform:", process.platform);
+  }
 }
 
 function ensureGameShortcut(gameId) {

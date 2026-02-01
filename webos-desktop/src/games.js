@@ -606,6 +606,11 @@ export const appMap = {
     url: "https://azgames.io/crazy-shark.embed",
     icon: "/static/icons/shark.webp",
     title: "Crazy Shark"
+  },
+  TMNP: {
+    type: "game",
+    icon: "/static/icons/tmnp.webp",
+    title: "Teenage Mutant Ninja Puppets"
   }
 };
 export class GamesPageRenderer {
@@ -622,7 +627,8 @@ export class GamesPageRenderer {
     "pokemonPlatinum",
     "pokemonHeartgold",
     "pokemonWhite",
-    "pokemonWhite2"
+    "pokemonWhite2",
+    "TMNP"
   ];
 
   getGames() {

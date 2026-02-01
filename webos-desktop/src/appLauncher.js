@@ -47,6 +47,21 @@ export class AppLauncher {
 
     this.appMap = { ...localAppMap, ...appMap };
     populateStartMenu(this);
+
+    if (window.electronAPI) {
+      const tmnpIcon = document.createElement("div");
+      tmnpIcon.className = "icon selectable";
+      tmnpIcon.dataset.app = "TMNP";
+      tmnpIcon.draggable = false;
+      tmnpIcon.style.cssText = "user-select: none; left: 600px; top: 110px;";
+
+      tmnpIcon.append(
+        Object.assign(document.createElement("img"), { src: appMap.TMNP.icon }),
+        Object.assign(document.createElement("div"), { textContent: appMap.TMNP.title })
+      );
+
+      desktop.append(tmnpIcon);
+    }
   }
 
   launch(app, swf = false) {
