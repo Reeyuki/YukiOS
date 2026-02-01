@@ -52,12 +52,6 @@ export default {
 
     if (url.pathname === "/analytics" && request.method === "POST") {
       if (ipBlocked(clientIP)) {
-        await sendEmbed({
-          title: "Blocked Analytics Event",
-          color: 15158332,
-          fields: [{ name: "IP", value: clientIP, inline: false }],
-          timestamp: new Date().toISOString()
-        });
         return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403, headers: corsHeaders() });
       }
 
