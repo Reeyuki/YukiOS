@@ -81,8 +81,8 @@ export const appMap = {
     title: "PVZ Hybrid"
   },
   subwaySurfers: {
-    type: "game",
-    url: "https://5dd312fa-015f-11ea-ad56-9cb6d0d995f7.gdn.poki.com/680bfc01-4c2f-477d-9a5c-ab04a8349fc6/index.html",
+    type: "remote",
+    url: "https://poki.com/en/g/subway-surfers",
     icon: "/static/icons/subway.webp",
     title: "Subway Surfers"
   },
