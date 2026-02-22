@@ -3,3 +3,4 @@
 *.bin filter=lfs diff=lfs merge=lfs -text
 static/gtavc/vc-sky-en-v6.data filter=lfs diff=lfs merge=lfs -text
 * binary
+static/games/pokemon/tboirpsp0301.iso filter=lfs diff=lfs merge=lfs -text

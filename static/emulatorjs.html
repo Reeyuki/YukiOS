@@ -65,6 +65,9 @@
         window.EJS_bios9Url = "/static/bios/bios9.bin";
         window.EJS_firmwareUrl = "/static/bios/firmware.bin";
       }
+      if(core ==="psp") {
+        window.EJS_threads = true;
+      }
       const script = document.createElement("script");
       script.src = "/static/games/cdn.emulatorjs.org/stable/data/loader.js";
       document.body.appendChild(script);

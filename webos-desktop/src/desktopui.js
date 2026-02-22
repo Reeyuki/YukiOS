@@ -308,7 +308,7 @@ export class DesktopUI {
     this.positionHelper = new PositionHelper(this.desktop, { width: 80, height: 100, gap: 5 });
     this.contextMenuHelper = new ContextMenuHelper(this.contextMenu);
     this.selectionManager = new SelectionManager();
-    this.fileSystemHelper = new FileSystemHelper(this.fs, this.positionHelper);
+    this.fileSystemHelper = new FileSystemHelper(this.positionHelper);
 
     this.state = {
       clipboard: null,

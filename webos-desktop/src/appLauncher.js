@@ -103,6 +103,7 @@ export class AppLauncher {
       system: () => info.action(),
       swf: () => this.openIframeApp({ appId: app, type: "swf", source: info.swf, originalName: app }),
       gba: () => this.openIframeApp({ appId: app, type: "gba", source: info.url, originalName: app }),
+      psp: () => this.openIframeApp({ appId: app, type: "psp", source: info.url, originalName: app }),
       nds: () => this.openIframeApp({ appId: app, type: "nds", source: info.url, originalName: app }),
       game: () => this.openIframeApp({ appId: app, type: "game", source: info.url, originalName: app, analyticsBase }),
       html: () => this.openHtmlApp(app, info.html, info),
