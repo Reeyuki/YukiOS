@@ -98,11 +98,11 @@ export const appMap = {
     icon: "/static/icons/yellow.webp",
     title: "Undertale Yellow"
   },
-  deltraveler: {
+  deltarune: {
     type: "game",
     url: "/static/games/gnmath/deltraveler.html",
-    icon: "/static/icons/deltraveler.webp",
-    title: "Deltraveler"
+    icon: "/static/icons/deltarune.png",
+    title: "Deltarune"
   },
   geometryDash: {
     type: "game",
@@ -172,8 +172,8 @@ export const appMap = {
     title: "Happy Wheels"
   },
   vampireSurvivors: {
-    type: "remote",
-    url: "https://poncle.itch.io/vampire-survivors",
+    type: "game",
+    url: "/static/games/html/vampire.html",
     icon: "/static/icons/vampireSurvivors.webp",
     title: "Vampire Survivors"
   },
@@ -446,6 +446,12 @@ export const appMap = {
     icon: "/static/icons/isaac.webp",
     title: "Isaac"
   },
+  isaacRebirth: {
+    type: "psp",
+    url: "tboirpsp0301.iso",
+    icon: "/static/icons/isaac.webp",
+    title: "Isaac Rebirth"
+  },
   dan: {
     type: "game",
     url: "https://www.silvergames.com/en/dan-the-man/gameframe",
@@ -611,7 +617,37 @@ export const appMap = {
     type: "game",
     icon: "/static/icons/tmnp.webp",
     title: "Teenage Mutant Ninja Puppets"
-  }
+  },
+  tankTrouble: {
+    type: "swf",
+    swf: "/static/games/swfGames/tankTrouble.swf",
+    icon: "/static/icons/tankTrouble.webp",
+    title: "Tank Trouble"
+  },
+  doodle: {
+    type: "game",
+    url: "https://doodle-halloween-momo-cat--academy.games.playgama.net/cmj06y04k00r8nv0h6m63h9pc/index.html",
+    icon: "/static/icons/doodle.webp",
+    title: "Doodle Halloween Cat"
+  },
+  halfLife: {
+    type: "game",
+    url: "/static/games/html/half.html",
+    icon: "/static/icons/half.webp",
+    title: "Half Life"
+  },
+  cs: {
+    type: "game",
+    url: "/static/games/html/cs.html",
+    icon: "/static/icons/half.webp",
+    title: "Cs"
+  },
+  angryBirdsSpace: {
+    type: "game",
+    url: "/static/games/html/angryBirdsSpace.html",
+    icon: "/static/icons/angryBirdsSpace.webp",
+    title: "Angry Birds Space"
+  },
 };
 export class GamesPageRenderer {
   excludedApps = [
@@ -628,7 +664,8 @@ export class GamesPageRenderer {
     "pokemonHeartgold",
     "pokemonWhite",
     "pokemonWhite2",
-    "TMNP"
+    "TMNP",
+    "doodle"
   ];
 
   getGames() {
@@ -640,9 +677,10 @@ export class GamesPageRenderer {
         if (app) detectedApps.add(app);
       });
     }
-
     return Object.entries(appMap)
-      .filter(([app]) => !this.excludedApps.includes(app) && !detectedApps.has(app))
+      .filter(
+        ([app]) => !this.excludedApps.includes(app) && !detectedApps.has(app) && window.electronApi && app != "TMNP"
+      )
       .map(([app, data]) => ({
         app,
         ...data

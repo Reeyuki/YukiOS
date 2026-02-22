@@ -244,7 +244,10 @@
     </script>
     <canvas id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
     <div id="overlayDiv"></div>
-    <img id="presplash" src="web-presplash.jpg" />
+<img id="presplash" src="" />
+<script>
+  document.getElementById("presplash").src = document.location.origin + "/static/icons/inside.webp";
+</script>
     <div id="ContextContainer">
       <a id="ContextButton">≡</a><br />
       <div id="ContextMenu" style="display: none">
