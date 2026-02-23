@@ -66,7 +66,7 @@ export class ExplorerApp {
     this.wm.setupWindowControls(win);
 
     setTimeout(() => this.wm.bringToFront(win), 0);
-    this.wm.addToTaskbar(win.id, "File Explorer", "/static/icons/file.webp");
+    this.wm.addToTaskbar(win.id, "File Explorer", "/static/icons/files.webp");
 
     this.setupExplorerControls(win);
     this.navigate([]);
@@ -188,7 +188,7 @@ export class ExplorerApp {
           iconImg = appMetadata[camelName]?.icon || itemData.icon || "/static/icons/notepad.webp";
         }
       } else {
-        iconImg = "/static/icons/file.webp";
+        iconImg = "/static/icons/files.webp";
       }
 
       const item = document.createElement("div");
@@ -214,6 +214,21 @@ export class ExplorerApp {
     if (this.fileSelectCallback) {
       this.fileSelectCallback(this.currentPath, name);
       this.fileSelectCallback = null;
+      return;
+    }
+
+    if (name.endsWith(".desktop") && window.appLauncher) {
+      const contentStr = await this.fs.getFileContent(this.currentPath, name);
+      let content;
+      try {
+        content = JSON.parse(contentStr);
+      } catch (e) {
+        console.error("Failed to parse desktop file JSON:", e);
+        return;
+      }
+      if (content.app) {
+        window.appLauncher.launch(content.app);
+      }
       return;
     }
 
@@ -252,7 +267,7 @@ export class ExplorerApp {
     this.wm.makeDraggable(win);
     this.wm.makeResizable(win);
     this.wm.setupWindowControls(win);
-    this.wm.addToTaskbar(win.id, name, "/static/icons/file.webp");
+    this.wm.addToTaskbar(win.id, name, "/static/icons/files.webp");
   }
 
   async showFileContextMenu(e, itemName, isFile) {

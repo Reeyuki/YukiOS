@@ -1,6 +1,6 @@
 import { desktop } from "./desktop.js";
 import { appMap, getGameName } from "./games.js";
-import { populateStartMenu, tryGetIcon } from "./startMenu";
+import { initializeAppGrid, populateStartMenu, tryGetIcon } from "./startMenu";
 
 const IFRAME_ATTRS =
   'style="width:100%;height:100%;border:none;" allow="autoplay; fullscreen; clipboard-write; encrypted-media; picture-in-picture" sandbox="allow-forms allow-downloads allow-modals allow-pointer-lock allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation"';
@@ -14,7 +14,11 @@ export class AppLauncher {
     terminalApp,
     notepadApp,
     browserApp,
-    cameraApp
+    cameraApp,
+    pythonApp,
+    nodeApp,
+    calculatorApp,
+    aboutApp
   ) {
     this.wm = windowManager;
     this.fs = fileSystemManager;
@@ -24,8 +28,12 @@ export class AppLauncher {
     this.notepadApp = notepadApp;
     this.browserApp = browserApp;
     this.cameraApp = cameraApp;
+    this.pythonApp = pythonApp;
+    this.nodeApp = nodeApp;
+    this.calculatorApp = calculatorApp;
+    this.aboutApp = aboutApp;
     this.pageLoadTime = Date.now();
-    this.TRANSPARENCY_ALLOWED_APP_IDS = new Set(["paint", "vscode", "liventcord"]);
+    this.TRANSPARENCY_ALLOWED_APP_IDS = new Set(["paint", "photopea", "vscode", "liventcord"]);
     const analyticsBase = this._getAnalyticsBase("hit-page");
     this.sendAnalytics({ ...analyticsBase, event: "start" });
     this.BIC = "badIceCream";
@@ -41,12 +49,17 @@ export class AppLauncher {
       notepad: { type: "system", title: "Notepad", action: () => this.notepadApp.open() },
       browser: { type: "system", title: "Browser", action: () => this.browserApp.open() },
       cameraApp: { type: "system", title: "Camera App", action: () => this.cameraApp.open() },
+      pythonApp: { type: "system", title: "Python Code Editor", action: () => this.pythonApp.open() },
+      nodeApp: { type: "system", title: "NodeJS Code Editor", action: () => this.nodeApp.open() },
+      calculatorApp: { type: "system", title: "Calculator", action: () => this.calculatorApp.open() },
+      aboutApp: { type: "system", title: "About", action: () => this.aboutApp.open() },
       music: { type: "system", title: "Music Player", action: () => this.musicPlayer.open(this.wm) },
       flash: { type: "system", title: "Flash Games", action: () => this.explorerApp.openFlash() }
     };
 
     this.appMap = { ...localAppMap, ...appMap };
     populateStartMenu(this);
+    initializeAppGrid();
 
     if (window.electronAPI) {
       const tmnpIcon = document.createElement("div");

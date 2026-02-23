@@ -18,6 +18,13 @@ export class TerminalApp {
     this.registerDefaultCommands();
   }
 
+  // Convert a path array like ["home", "reeyuki"] to "/home/reeyuki"
+  pathToString(path) {
+    if (typeof path === "string") return path;
+    if (!Array.isArray(path) || path.length === 0) return "/";
+    return "/" + path.join("/");
+  }
+
   async print(text, color = null, isCommand = false, promptText = null, delay = 30) {
     this.printDepth++;
     if (this.printDepth === 1) {
@@ -62,6 +69,7 @@ export class TerminalApp {
     this.printQueue = this.printQueue.then(() => this.print(text, color, isCommand, promptText, delay));
     return this.printQueue;
   }
+
   setupEventHandlers() {
     this.terminalInput.addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
@@ -116,17 +124,17 @@ export class TerminalApp {
     });
   }
 
-  expandGlob(pattern, path) {
-    const items = Object.keys(this.fs.getFolder(path));
+  async expandGlob(pattern, path) {
+    const items = Object.keys(await this.fs.getFolder(this.pathToString(path)));
     const regex = new RegExp("^" + pattern.replace(/\*/g, ".*").replace(/\?/g, ".") + "$");
     return items.filter((item) => regex.test(item));
   }
 
-  expandGlobsInArgs(args, path) {
+  async expandGlobsInArgs(args, path) {
     const expanded = [];
     for (const arg of args) {
       if (arg.includes("*") || arg.includes("?")) {
-        const matches = this.expandGlob(arg, path);
+        const matches = await this.expandGlob(arg, path);
         if (matches.length > 0) {
           expanded.push(...matches);
         } else {
@@ -166,7 +174,7 @@ export class TerminalApp {
 
     for (let i = 0; i < pipeline.length; i++) {
       const { command, args, flags } = pipeline[i];
-      const expandedArgs = this.expandGlobsInArgs(args, this.currentPath);
+      const expandedArgs = await this.expandGlobsInArgs(args, this.currentPath);
 
       if (output !== null) {
         expandedArgs.unshift(output);
@@ -210,7 +218,8 @@ export class TerminalApp {
 
     this.updatePrompt();
   }
-  handleTabCompletion() {
+
+  async handleTabCompletion() {
     const input = this.terminalInput.value;
     const cursorPos = this.terminalInput.selectionStart;
     const left = input.slice(0, cursorPos);
@@ -231,7 +240,7 @@ export class TerminalApp {
 
     let folderContents;
     try {
-      folderContents = Object.keys(this.fs.getFolder(pathParts));
+      folderContents = Object.keys(await this.fs.getFolder(this.pathToString(pathParts)));
     } catch {
       return;
     }
@@ -239,7 +248,8 @@ export class TerminalApp {
     if (!matches.length) return;
 
     if (matches.length === 1) {
-      const completion = matches[0] + (this.fs.isFile(pathParts, matches[0]) ? "" : "/");
+      const isFile = await this.fs.isFile(pathParts, matches[0]);
+      const completion = matches[0] + (isFile ? "" : "/");
       this.terminalInput.value = leftBeforePartial + completion + input.slice(cursorPos);
       this.terminalInput.selectionStart = this.terminalInput.selectionEnd =
         leftBeforePartial.length + completion.length;
@@ -254,7 +264,7 @@ export class TerminalApp {
         this.terminalInput.selectionStart = this.terminalInput.selectionEnd =
           leftBeforePartial.length + commonPrefix.length;
       } else {
-        this.print(matches.join("  "));
+        await this.print(matches.join("  "));
       }
     }
   }
@@ -349,7 +359,7 @@ export class TerminalApp {
     this.terminalOutput.innerHTML = "";
   }
 
-  cmdLs(args = [], flags = []) {
+  async cmdLs(args = [], flags = []) {
     const showAll = flags.some((f) => f.includes("a"));
     const longFormat = flags.some((f) => f.includes("l"));
     const humanReadable = flags.some((f) => f.includes("h"));
@@ -368,100 +378,115 @@ export class TerminalApp {
       return `${Math.round(s)}${units[i]}`;
     };
 
-    const listFolder = (path, prefix = "") => {
+    const listFolder = async (path, prefix = "") => {
       try {
-        const items = this.fs.getFolder(path);
+        const items = await this.fs.getFolder(this.pathToString(path));
         let keys = Object.keys(items);
         if (!showAll) keys = keys.filter((k) => !k.startsWith("."));
         if (reverse) keys = keys.reverse();
-        keys.forEach((item) => {
-          const isFile = this.fs.isFile(path, item);
+        for (const item of keys) {
+          const isFile = await this.fs.isFile(path, item);
           const display = longFormat
             ? `${isFile ? "-" : "d"} ${item}${isFile ? "" : "/"}${isFile && items[item].size != null ? ` ${formatSize(items[item].size)}` : ""}`
             : item + (isFile ? "" : "/");
-          this.print(prefix + display, isFile ? null : "blue");
-          if (recursive && !isFile) listFolder(this.fs.resolvePath(item, path), prefix + "  ");
-        });
-      } catch {
-        this.print(`ls: cannot access '${path}': No such file or directory`);
+          await this.print(prefix + display, isFile ? null : "blue");
+          if (recursive && !isFile) {
+            const subPath = Array.isArray(path) ? [...path, item] : this.fs.resolvePath(item, path);
+            await listFolder(subPath, prefix + "  ");
+          }
+        }
+      } catch (e) {
+        await this.print(`ls: cannot access '${this.pathToString(path)}': No such file or directory`);
+        console.error(e);
       }
     };
 
-    const path = args.length ? this.fs.resolvePath(args[0], this.currentPath) : this.currentPath;
-    listFolder(path);
+    const targetPath = args.length ? this.fs.resolvePath(args[0], this.currentPath) : [...this.currentPath];
+    await listFolder(targetPath);
   }
 
-  cmdCd(args) {
+  async cmdCd(args) {
     if (!args.length || args[0] === "~") {
       this.currentPath = ["home", this.username];
       return;
     }
     try {
       const newPath = this.fs.resolvePath(args[0], this.currentPath);
-      this.fs.getFolder(newPath);
+      await this.fs.getFolder(this.pathToString(newPath));
       this.currentPath = newPath;
     } catch {
-      this.print(`cd: ${args[0]}: No such file or directory`);
+      await this.print(`cd: ${args[0]}: No such file or directory`);
     }
   }
 
-  cmdMkdir(args) {
+  async cmdMkdir(args) {
     if (!args.length) return this.print("mkdir: missing operand");
-    args.forEach((dir) => {
-      this.fs.createFolder(this.currentPath, dir);
-      this.print(`Created directory: ${dir}`);
-    });
+    for (const dir of args) {
+      await this.fs.createFolder(this.currentPath, dir);
+      await this.print(`Created directory: ${dir}`);
+    }
   }
 
-  cmdTouch(args) {
+  async cmdTouch(args) {
     if (!args.length) return this.print("touch: missing file operand");
-    args.forEach((file) => {
-      this.fs.createFile(this.currentPath, file, "");
-      this.print(`Created file: ${file}`);
-    });
+    for (const file of args) {
+      await this.fs.createFile(this.currentPath, file, "");
+      await this.print(`Created file: ${file}`);
+    }
   }
 
-  cmdRm(args = [], flags = []) {
+  async cmdRm(args = [], flags = []) {
     if (!args.length) return this.print("rm: missing operand");
 
-    const isRecursive = flags.some((f) => f.includes("r"));
+    const isRecursive = flags.some((f) => f.includes("r") || f.includes("R"));
     const isForce = flags.some((f) => f.includes("f"));
 
-    const removeItem = (pathArray) => {
+    const removeItem = async (pathArray) => {
       try {
         const parentPath = pathArray.slice(0, -1);
         const name = pathArray[pathArray.length - 1];
 
-        if (this.fs.isFile(parentPath, name)) {
-          this.fs.deleteItem(parentPath, name);
+        const isFile = await this.fs.isFile(parentPath, name);
+        if (isFile) {
+          await this.fs.deleteItem(parentPath, name);
         } else {
           if (!isRecursive) throw new Error("is a directory");
-          const folderItems = Object.keys(this.fs.getFolder(pathArray));
-          folderItems.forEach((sub) => removeItem([...pathArray, sub]));
-          this.fs.deleteItem(parentPath, name);
+          const folderItems = Object.keys(await this.fs.getFolder(this.pathToString(pathArray)));
+          for (const sub of folderItems) {
+            await removeItem([...pathArray, sub]);
+          }
+          await this.fs.deleteItem(parentPath, name);
         }
       } catch (e) {
-        if (!isForce) this.print(`rm: cannot remove '${pathArray.join("/")}': ${e.message}`);
+        if (!isForce) await this.print(`rm: cannot remove '${pathArray.join("/")}': ${e.message}`);
       }
     };
 
-    args.forEach((arg) => {
-      let fullPath = arg.startsWith("/") ? this.fs.resolvePath(arg, []) : this.fs.resolvePath(arg, this.currentPath);
-      removeItem(fullPath);
-    });
+    for (const arg of args) {
+      const fullPath = arg.startsWith("/") ? this.fs.resolvePath(arg, []) : this.fs.resolvePath(arg, this.currentPath);
+      await removeItem(fullPath);
+    }
   }
 
-  cmdCat(args) {
+  async cmdCat(args) {
     if (!args.length) return this.print("cat: missing file operand");
-    args.forEach((file) => {
+    for (const file of args) {
       if (file.includes("\n")) {
-        this.print(file);
-      } else if (!this.fs.isFile(this.currentPath, file)) {
-        this.print(`cat: ${file}: Is a directory`);
+        await this.print(file);
       } else {
-        this.print(this.fs.getFileContent(this.currentPath, file) || "(empty file)");
+        try {
+          const isFile = await this.fs.isFile(this.currentPath, file);
+          if (!isFile) {
+            await this.print(`cat: ${file}: Is a directory`);
+          } else {
+            const content = await this.fs.getFileContent(this.currentPath, file);
+            await this.print(content || "(empty file)");
+          }
+        } catch {
+          await this.print(`cat: ${file}: No such file or directory`);
+        }
       }
-    });
+    }
   }
 
   cmdGrep(args) {
@@ -489,15 +514,27 @@ export class TerminalApp {
     this.print(`  ${lines.length}  ${words.length}  ${chars}`);
   }
 
-  cmdTree(path = this.currentPath, prefix = "") {
-    if (!prefix) this.print(path.length ? "/" + path.join("/") : "/");
-    const items = Object.keys(this.fs.getFolder(path));
-    items.forEach((item, i) => {
-      const isFile = this.fs.isFile(path, item);
+  async cmdTree(path = null, prefix = "") {
+    if (path === null) path = [...this.currentPath];
+    if (!prefix) await this.print(path.length ? "/" + path.join("/") : "/");
+
+    let items;
+    try {
+      items = Object.keys(await this.fs.getFolder(this.pathToString(path)));
+    } catch {
+      await this.print(`tree: cannot access '${this.pathToString(path)}': No such file or directory`);
+      return;
+    }
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      const isFile = await this.fs.isFile(path, item);
       const last = i === items.length - 1;
-      this.print(prefix + (last ? "└── " : "├── ") + item + (isFile ? "" : "/"));
-      if (!isFile) this.cmdTree([...path, item], prefix + (last ? "    " : "│   "));
-    });
+      await this.print(prefix + (last ? "└── " : "├── ") + item + (isFile ? "" : "/"));
+      if (!isFile) {
+        await this.cmdTree([...path, item], prefix + (last ? "    " : "│   "));
+      }
+    }
   }
 
   async cmdPing(args) {
@@ -553,11 +590,9 @@ export class TerminalApp {
       const gl = canvas.getContext("webgl2") || canvas.getContext("webgl");
       if (gl) {
         gpu = gl.getParameter(gl.RENDERER);
-
         const texSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
         const varyings = gl.getParameter(gl.MAX_VARYING_VECTORS);
         const uniforms = gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS);
-
         renderScore = Math.min(8, Math.floor((texSize / 2048 + varyings / 16 + uniforms / 128) * 1.2));
       }
     } catch (e) {
@@ -596,16 +631,16 @@ export class TerminalApp {
     }
   }
 
-  cmdPs() {
+  async cmdPs() {
     const wins = Array.from(document.querySelectorAll(".window"));
-    this.print("  PID   TTY      TIME CMD");
-    wins.forEach((w, i) => {
-      const cmd = w.querySelector(".window-header span")?.textContent || "unknown";
-      this.print(`  ${1000 + i}  pts/0  0:00 ${cmd}`);
-    });
+    await this.print("  PID   TTY      TIME CMD");
+    for (let i = 0; i < wins.length; i++) {
+      const cmd = wins[i].querySelector(".window-header span")?.textContent || "unknown";
+      await this.print(`  ${1000 + i}  pts/0  0:00 ${cmd}`);
+    }
   }
 
-  cmdHelp() {
+  async cmdHelp() {
     const cmds = [
       ["help", "Show this help message"],
       ["neofetch", "Display system/browser summary"],
@@ -626,10 +661,12 @@ export class TerminalApp {
       ["history", "Show command history"],
       ["tree", "Display directory tree"]
     ];
-    this.print("Available commands:");
-    cmds.forEach(([cmd, desc]) => this.print(`  ${cmd.padEnd(10)} - ${desc}`));
-    this.print("");
-    this.print("Glob patterns: * (match any), ? (match one)");
-    this.print("Pipes: command1 | command2");
+    await this.print("Available commands:");
+    for (const [cmd, desc] of cmds) {
+      await this.print(`  ${cmd.padEnd(10)} - ${desc}`);
+    }
+    await this.print("");
+    await this.print("Glob patterns: * (match any), ? (match one)");
+    await this.print("Pipes: command1 | command2");
   }
 }

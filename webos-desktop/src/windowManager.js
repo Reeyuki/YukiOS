@@ -55,23 +55,27 @@ export class WindowManager {
 
     return win;
   }
-
-  addToTaskbar(winId, title, iconUrl) {
+  addToTaskbar(winId, title, iconValue) {
     if (document.getElementById(`taskbar-${winId}`)) return;
 
     const taskbarItem = document.createElement("div");
     taskbarItem.id = `taskbar-${winId}`;
     taskbarItem.className = "taskbar-item";
 
-    if (iconUrl) {
-      const icon = document.createElement("img");
-      icon.src = iconUrl;
-      taskbarItem.appendChild(icon);
+    let icon;
+
+    const isImagePath = typeof iconValue === "string" && /\.(png|jpg|jpeg|gif|webp|svg|ico)$/i.test(iconValue);
+
+    if (isImagePath) {
+      icon = document.createElement("img");
+      icon.src = iconValue;
+    } else {
+      icon = document.createElement("i");
+      icon.style.color = "white";
+      icon.className = iconValue.startsWith("fa") ? iconValue : `fa ${iconValue}`;
     }
 
-    const text = document.createElement("span");
-    text.textContent = title;
-    taskbarItem.appendChild(text);
+    taskbarItem.appendChild(icon);
 
     taskbarItem.onclick = () => {
       const win = document.getElementById(winId);
@@ -91,14 +95,14 @@ export class WindowManager {
 
       const menu = document.createElement("div");
       menu.id = "taskbar-context-menu";
-      menu.className = "kde-menu";
+      menu.className = "start-menu";
 
       const win = document.getElementById(winId);
 
       const addMenuItem = (text, action) => {
         const item = document.createElement("div");
         item.textContent = text;
-        item.className = "kde-item";
+        item.className = "start-item";
         item.onclick = () => {
           action();
           menu.remove();
@@ -168,7 +172,10 @@ export class WindowManager {
 
       addMenuItem("Close Window", () => {
         this.removeFromTaskbar(winId);
-        if (win) win.remove();
+        if (win) {
+          win.style.animation = "popUp 0.5s ease forwards";
+          setTimeout(() => win.remove(), 500);
+        }
       });
 
       document.body.appendChild(menu);
@@ -198,7 +205,8 @@ export class WindowManager {
     closeButton.addEventListener("click", () => {
       const win = document.getElementById(winId);
       if (win) {
-        win.remove();
+        win.style.animation = "popUp 0.5s ease forwards";
+        setTimeout(() => win.remove(), 500);
       } else return;
       this.removeFromTaskbar(winId);
     });
@@ -286,7 +294,8 @@ export class WindowManager {
         this.gameWindowCount = Math.max(0, this.gameWindowCount - 1);
       }
       this.updateTransparency();
-      win.remove();
+      win.style.animation = "popUp 0.5s ease forwards";
+      setTimeout(() => win.remove(), 500);
     };
     win.querySelector(".minimize-btn").onclick = () => this.minimizeWindow(win);
     win.querySelector(".maximize-btn").onclick = () => this.toggleFullscreen(win);

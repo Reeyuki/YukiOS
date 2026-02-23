@@ -81,8 +81,8 @@ export const appMap = {
     title: "PVZ Hybrid"
   },
   subwaySurfers: {
-    type: "remote",
-    url: "https://poki.com/en/g/subway-surfers",
+    type: "game",
+    url: "/static/games/subwaySurfers/index.html",
     icon: "/static/icons/subway.webp",
     title: "Subway Surfers"
   },
@@ -338,6 +338,19 @@ export const appMap = {
     icon: "/static/icons/vscode.webp",
     title: "Vs Code"
   },
+  paint: {
+    type: "game",
+    url: "https://jspaint.app",
+    icon: "/static/icons/vscode.webp",
+    title: "Vs Code"
+  },
+  photopea: {
+    type: "game",
+    url: "https://www.photopea.com/",
+    icon: "/static/icons/photopea.webp",
+    title: "Photopea"
+  },
+
   fancyPants: {
     type: "swf",
     swf: "/static/games/swfGames/fancypantsadventure.swf",
@@ -639,7 +652,7 @@ export const appMap = {
   cs: {
     type: "game",
     url: "/static/games/html/cs.html",
-    icon: "/static/icons/half.webp",
+    icon: "/static/icons/cs.webp",
     title: "Cs"
   },
   angryBirdsSpace: {
@@ -653,6 +666,18 @@ export const appMap = {
     url: "/static/games/nso/index.html",
     icon: "/static/icons/nso.webp",
     title: "Needy Streamer Overload"
+  },
+  doom: {
+    type: "game",
+    url: "https://emupedia.net/emupedia-game-doom1",
+    icon: "/static/icons/doom.webp",
+    title: "Doom"
+  },
+  doom2: {
+    type: "game",
+    url: "https://emupedia.net/emupedia-game-doom2",
+    icon: "/static/icons/doom.webp",
+    title: "Doom 2"
   }
 };
 export class GamesPageRenderer {
@@ -673,7 +698,6 @@ export class GamesPageRenderer {
     "TMNP",
     "doodle"
   ];
-
   getGames() {
     const desk = document.getElementById("desktop");
     const detectedApps = new Set();
@@ -683,10 +707,16 @@ export class GamesPageRenderer {
         if (app) detectedApps.add(app);
       });
     }
+
+    const isElectron = !!window.electronApi;
+
     return Object.entries(appMap)
-      .filter(
-        ([app]) => !this.excludedApps.includes(app) && !detectedApps.has(app) && window.electronApi && app != "TMNP"
-      )
+      .filter(([app]) => {
+        if (this.excludedApps.includes(app)) return false;
+        if (detectedApps.has(app)) return false;
+        if (app === "TMNP" && !isElectron) return false;
+        return true;
+      })
       .map(([app, data]) => ({
         app,
         ...data

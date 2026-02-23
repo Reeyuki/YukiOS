@@ -101,11 +101,8 @@ Yuki OS focuses on platform integration rather than engine reimplementation:
 
 ---
 
-## 🚧 Status
-
-Active development
-
----
+## TODO
+- Add loading menu
 
 ## 📜 License
 

@@ -49,12 +49,12 @@ function createStarButton(appName) {
 }
 
 function updateStarState(appName, isFavorite) {
-  document.querySelectorAll(`.kde-item[data-app="${appName}"] span`).forEach((star) => {
+  document.querySelectorAll(`.start-item[data-app="${appName}"] span`).forEach((star) => {
     if (star.textContent === "★") {
       star.style.color = isFavorite ? "gold" : "#ccc";
     }
   });
-  const item = document.querySelector(`.kde-item[data-app="${appName}"]`);
+  const item = document.querySelector(`.start-item[data-app="${appName}"]`);
   if (item) {
     item.style.background = isFavorite ? "rgba(255, 215, 0, 0.1)" : "transparent";
   }
@@ -65,7 +65,7 @@ export function updateFavoritesUI(appLauncher) {
     console.error("No app launcher");
     return;
   }
-  const favoritesPage = document.querySelector('.kde-page[data-page="favorites"]');
+  const favoritesPage = document.querySelector('.start-page[data-page="favorites"]');
   favoritesPage.innerHTML = "";
   const favorites = getFavorites();
 
@@ -79,7 +79,7 @@ export function updateFavoritesUI(appLauncher) {
   }
 
   favorites.forEach((appName) => {
-    const appItem = document.querySelector(`.kde-item[data-app="${appName}"]`);
+    const appItem = document.querySelector(`.start-item[data-app="${appName}"]`);
     if (!appItem) return;
 
     const clone = appItem.cloneNode(true);
@@ -98,7 +98,7 @@ export function updateFavoritesUI(appLauncher) {
 }
 
 function setupStars() {
-  document.querySelectorAll(".kde-page:not([data-page='favorites']) .kde-item").forEach((item) => {
+  document.querySelectorAll(".start-page:not([data-page='favorites']) .start-item").forEach((item) => {
     const appName = item.dataset.app;
     item.style.position = "relative";
     const star = createStarButton(appName);
@@ -116,18 +116,18 @@ function setupStars() {
 }
 
 export function setupStartMenu() {
-  document.querySelectorAll(".kde-cat").forEach((cat) => {
+  document.querySelectorAll(".start-cat").forEach((cat) => {
     cat.onclick = () => {
-      document.querySelectorAll(".kde-cat").forEach((c) => c.classList.remove("active"));
-      document.querySelectorAll(".kde-page").forEach((p) => p.classList.remove("active"));
+      document.querySelectorAll(".start-cat").forEach((c) => c.classList.remove("active"));
+      document.querySelectorAll(".start-page").forEach((p) => p.classList.remove("active"));
       cat.classList.add("active");
-      document.querySelector(`.kde-page[data-page="${cat.dataset.cat}"]`).classList.add("active");
+      document.querySelector(`.start-page[data-page="${cat.dataset.cat}"]`).classList.add("active");
     };
   });
 
-  document.getElementById("kde-search").addEventListener("input", (e) => {
+  document.getElementById("start-search").addEventListener("input", (e) => {
     const q = e.target.value.toLowerCase();
-    document.querySelectorAll(".kde-item").forEach((item) => {
+    document.querySelectorAll(".start-item").forEach((item) => {
       item.style.display = item.textContent.toLowerCase().includes(q) ? "" : "none";
     });
   });
@@ -161,12 +161,22 @@ export function tryGetIcon(id) {
   }
 }
 
+export function initializeAppGrid() {
+  const items = document.querySelectorAll(".app-grid div");
+  items.forEach((item) => {
+    const dataApp = item.dataset.app;
+    if (dataApp) {
+      item.addEventListener("click", () => window.appLauncher.launch(dataApp));
+    }
+  });
+}
+
 export function populateStartMenu(appLauncher) {
   const pageMap = {
-    system: document.querySelector('.kde-page[data-page="system"]'),
-    apps: document.querySelector('.kde-page[data-page="apps"]'),
-    games: document.querySelector('.kde-page[data-page="games"]'),
-    favorites: document.querySelector('.kde-page[data-page="favorites"]')
+    system: document.querySelector('.start-page[data-page="system"]'),
+    apps: document.querySelector('.start-page[data-page="apps"]'),
+    games: document.querySelector('.start-page[data-page="games"]'),
+    favorites: document.querySelector('.start-page[data-page="favorites"]')
   };
 
   ["system", "apps", "games"].forEach((cat) => {
@@ -175,23 +185,33 @@ export function populateStartMenu(appLauncher) {
 
   Object.entries(appLauncher.appMap).forEach(([appName, appData]) => {
     const item = document.createElement("div");
-    item.classList.add("kde-item");
+    item.classList.add("start-item");
     item.dataset.app = appName;
 
-    const iconSrc = tryGetIcon(appName);
+    const iconValue = tryGetIcon(appName);
 
-    const icon = document.createElement("img");
-    icon.classList.add("kde-item-icon");
-    if (iconSrc) {
-      icon.src = iconSrc;
+    let icon = null;
+
+    const isImagePath = typeof iconValue === "string" && /\.(png|jpg|jpeg|gif|webp|svg|ico)$/i.test(iconValue);
+
+    if (isImagePath) {
+      icon = document.createElement("img");
+      icon.classList.add("start-item-icon");
+      icon.src = iconValue;
       icon.alt = "";
-    } else {
-      icon.style.display = "none";
+    } else if (typeof iconValue === "string" && iconValue.trim().length > 0) {
+      icon = document.createElement("i");
+      icon.classList.add("start-item-icon");
+      icon.className += iconValue.startsWith("fa") ? ` ${iconValue}` : ` fa ${iconValue}`;
     }
+
+    if (icon) {
+      item.appendChild(icon);
+    }
+
     const labelEl = document.createElement("span");
     labelEl.textContent = appData.title;
 
-    item.appendChild(icon);
     item.appendChild(labelEl);
 
     item.addEventListener("click", () => appLauncher.launch(appName));
