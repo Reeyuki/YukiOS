@@ -4,6 +4,7 @@
     Cross-Origin-Opener-Policy = "same-origin"
     Cross-Origin-Embedder-Policy = "require-corp"
   
+[[headers]]
   for = "/static/vciframe.html"
   [headers.values]
     Cross-Origin-Opener-Policy = "same-origin"
