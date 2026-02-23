@@ -648,6 +648,12 @@ export const appMap = {
     icon: "/static/icons/angryBirdsSpace.webp",
     title: "Angry Birds Space"
   },
+  nso: {
+    type: "game",
+    url: "/static/games/nso/index.html",
+    icon: "/static/icons/nso.webp",
+    title: "Needy Streamer Overload"
+  }
 };
 export class GamesPageRenderer {
   excludedApps = [
