@@ -447,8 +447,8 @@ export const appMap = {
     title: "Isaac"
   },
   isaacRebirth: {
-    type: "psp",
-    url: "tboirpsp0301.iso",
+    type: "remote",
+    url: "/static/games/html/isaacRebirth.html",
     icon: "/static/icons/isaac.webp",
     title: "Isaac Rebirth"
   },
