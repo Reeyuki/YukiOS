@@ -1,9 +1,43 @@
 import { desktop } from "./desktop.js";
 
+const PROXY_BASE = "https://api.codetabs.com/v1/proxy/?quest=";
+
+async function loadViaProxy(iframe, url) {
+  try {
+    const proxyUrl = PROXY_BASE + encodeURIComponent(url);
+    const response = await fetch(proxyUrl);
+    const html = await response.text();
+
+    // Inject a <base> tag so relative asset paths resolve against the real origin
+    const base = new URL(url);
+    const rewritten = html.replace(/(<head[^>]*>)/i, `$1<base href="${base.origin}/">`);
+
+    const blob = new Blob([rewritten], { type: "text/html" });
+    const blobUrl = URL.createObjectURL(blob);
+
+    // Revoke previous blob URL to avoid memory leaks
+    if (iframe._blobUrl) URL.revokeObjectURL(iframe._blobUrl);
+    iframe._blobUrl = blobUrl;
+    iframe.src = blobUrl;
+  } catch (err) {
+    console.error("Proxy load failed:", err);
+    const errHtml = `<html><body style="font-family:sans-serif;padding:2rem;color:#333">
+      <h2>⚠ Failed to load page</h2>
+      <p><strong>Error:</strong> ${err.message}</p>
+      <p><strong>URL:</strong> ${url}</p>
+    </body></html>`;
+    const blob = new Blob([errHtml], { type: "text/html" });
+    if (iframe._blobUrl) URL.revokeObjectURL(iframe._blobUrl);
+    iframe._blobUrl = URL.createObjectURL(blob);
+    iframe.src = iframe._blobUrl;
+  }
+}
+
 export class BrowserApp {
   constructor(windowManager) {
     this.wm = windowManager;
     this.windows = {};
+    this.searchEngine = { name: "Google Search", url: "https://www.google.com/search?q=" };
   }
 
   open() {
@@ -37,6 +71,7 @@ export class BrowserApp {
           <button class="reload-btn">⟳</button>
         </div>
         <input class="address-bar" type="url" enterkeyhint="go">
+        <button class="settings-btn" title="Settings">⚙</button>
       </nav>
       <nav class="bookmark-bar">
         <button data-url="https://www.google.com/webhp?igu=1">Google</button>
@@ -47,8 +82,49 @@ export class BrowserApp {
         <button data-url="https://dustinbrett.com/Program%20Files/Browser/dino/index.html">T-Rex Dino</button>
         <button data-url="https://bluemaxima.org/flashpoint">Flashpoint Archive</button>
         <button data-url="https://jsfiddle.net">JS Fiddle</button>
+        <button data-url="https://www.myinstants.com/en/categories/sound%20effects/us/">SoundBoard</button>
       </nav>
       <div class="iframe-container" style="position:relative;width:100%;height:calc(100% - 112px);"></div>
+
+      <!-- Settings Panel -->
+      <div class="browser-settings-panel" id="browser-settings-panel">
+        <div class="browser-settings-header">
+          <span>Settings</span>
+          <button class="settings-close-btn" title="Close settings">✕</button>
+        </div>
+        <div class="browser-settings-body">
+          <div class="settings-section">
+            <label class="settings-label">Search Engine</label>
+            <div class="settings-current-engine" id="settings-current-engine">Google Search</div>
+            <div class="select-options show">
+              <div class="select-option" data-name="Brave Search" data-url="https://search.brave.com/search?q=">
+                <img class="engine-icon" src="https://search.brave.com/favicon.ico" onerror="this.style.display='none'">
+                Brave Search
+              </div>
+              <div class="select-option" data-name="DuckDuckGo" data-url="https://duckduckgo.com/?q=">
+                <img class="engine-icon" src="https://duckduckgo.com/favicon.ico" onerror="this.style.display='none'">
+                DuckDuckGo
+              </div>
+              <div class="select-option active-engine" data-name="Google Search" data-url="https://www.google.com/search?q=">
+                <img class="engine-icon" src="https://www.google.com/favicon.ico" onerror="this.style.display='none'">
+                Google Search
+              </div>
+              <div class="select-option" data-name="Bing" data-url="https://www.bing.com/search?q=">
+                <img class="engine-icon" src="https://www.bing.com/favicon.ico" onerror="this.style.display='none'">
+                Bing
+              </div>
+              <div class="select-option" data-name="Startpage" data-url="https://www.startpage.com/search?q=">
+                <img class="engine-icon" src="https://www.startpage.com/favicon.ico" onerror="this.style.display='none'">
+                Startpage
+              </div>
+              <div class="select-option" data-name="Qwant" data-url="https://www.qwant.com/?q=">
+                <img class="engine-icon" src="https://www.qwant.com/favicon.ico" onerror="this.style.display='none'">
+                Qwant
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     `;
 
     desktop.appendChild(win);
@@ -71,15 +147,37 @@ export class BrowserApp {
     this.forwardBtn = win.querySelector(".forward-btn");
     this.reloadBtn = win.querySelector(".reload-btn");
     this.iframeContainer = win.querySelector(".iframe-container");
+    this.settingsPanel = win.querySelector("#browser-settings-panel");
+    this.settingsBtn = win.querySelector(".settings-btn");
 
     this.tabs = [];
     this.currentTabIndex = -1;
 
     this.newTabBtn.onclick = () => this.addTab();
+
     this.addressInput.addEventListener("keydown", (e) => {
       if (e.key === "Enter" && this.currentTabIndex >= 0) {
-        this.navigate(this.tabs[this.currentTabIndex], this.addressInput.value);
+        const raw = this.addressInput.value.trim();
+        const url = this.resolveInput(raw);
+        this.navigate(this.tabs[this.currentTabIndex], url);
       }
+    });
+
+    this.settingsBtn.onclick = () => {
+      this.settingsPanel.classList.toggle("open");
+    };
+
+    win.querySelector(".settings-close-btn").onclick = () => {
+      this.settingsPanel.classList.remove("open");
+    };
+
+    win.querySelectorAll(".select-option").forEach((opt) => {
+      opt.addEventListener("click", () => {
+        this.searchEngine = { name: opt.dataset.name, url: opt.dataset.url };
+        win.querySelectorAll(".select-option").forEach((o) => o.classList.remove("active-engine"));
+        opt.classList.add("active-engine");
+        win.querySelector("#settings-current-engine").textContent = opt.dataset.name;
+      });
     });
 
     win.querySelectorAll(".bookmark-bar button").forEach((btn) => {
@@ -90,7 +188,21 @@ export class BrowserApp {
       });
     });
 
+    this.backBtn.onclick = () => this.goBack();
+    this.forwardBtn.onclick = () => this.goForward();
+    this.reloadBtn.onclick = () => {
+      const tab = this.tabs[this.currentTabIndex];
+      if (tab) loadViaProxy(tab.iframe, tab.url);
+    };
+
     this.addTab("https://www.google.com/webhp?igu=1");
+  }
+
+  resolveInput(raw) {
+    if (!raw) return "";
+    if (/^https?:\/\//i.test(raw)) return raw;
+    if (/^[\w-]+\.[\w.-]+(\/.*)?$/.test(raw)) return "https://" + raw;
+    return this.searchEngine.url + encodeURIComponent(raw);
   }
 
   addTab(url = "https://www.google.com/webhp?igu=1") {
@@ -105,7 +217,6 @@ export class BrowserApp {
     iframe.style.top = "0";
     iframe.style.left = "0";
     iframe.style.display = "none";
-    iframe.src = url;
     this.iframeContainer.appendChild(iframe);
 
     const tab = {
@@ -154,6 +265,9 @@ export class BrowserApp {
       faviconImg.src = this.getFavicon(tab.url);
     };
 
+    // Fetch through proxy and render as blob
+    loadViaProxy(iframe, url);
+
     this.switchTab(tabIndex);
   }
 
@@ -184,6 +298,7 @@ export class BrowserApp {
   closeTab(index) {
     if (index < 0 || index >= this.tabs.length) return;
     const tab = this.tabs[index];
+    if (tab.iframe._blobUrl) URL.revokeObjectURL(tab.iframe._blobUrl);
     tab.iframe.remove();
     this.tabs.splice(index, 1);
     this.tabsContainer.children[index].remove();
@@ -201,8 +316,12 @@ export class BrowserApp {
 
     try {
       const parsed = new URL(url);
-      if (parsed.hostname.includes("google.com")) url = "https://www.google.com/webhp?igu=1";
-    } catch {}
+      if (parsed.hostname.includes("google.com") && !parsed.search) {
+        url = "https://www.google.com/webhp?igu=1";
+      }
+    } catch (e) {
+      console.error(e);
+    }
 
     if (tab.historyIndex < tab.history.length - 1) {
       tab.history = tab.history.slice(0, tab.historyIndex + 1);
@@ -210,8 +329,9 @@ export class BrowserApp {
     tab.history.push(url);
     tab.historyIndex++;
     tab.url = url;
-    tab.iframe.src = url;
+    this.addressInput.value = url;
     this.updateNavigation(tab);
+    loadViaProxy(tab.iframe, url);
   }
 
   goBack() {
@@ -219,8 +339,9 @@ export class BrowserApp {
     if (!tab || tab.historyIndex <= 0) return;
     tab.historyIndex--;
     tab.url = tab.history[tab.historyIndex];
-    tab.iframe.src = tab.url;
+    this.addressInput.value = tab.url;
     this.updateNavigation(tab);
+    loadViaProxy(tab.iframe, tab.url);
   }
 
   goForward() {
@@ -228,8 +349,9 @@ export class BrowserApp {
     if (!tab || tab.historyIndex >= tab.history.length - 1) return;
     tab.historyIndex++;
     tab.url = tab.history[tab.historyIndex];
-    tab.iframe.src = tab.url;
+    this.addressInput.value = tab.url;
     this.updateNavigation(tab);
+    loadViaProxy(tab.iframe, tab.url);
   }
 
   updateNavigation(tab) {

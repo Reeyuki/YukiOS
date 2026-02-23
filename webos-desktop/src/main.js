@@ -5,11 +5,15 @@ import { BrowserApp } from "./browser.js";
 import { AppLauncher } from "./appLauncher.js";
 import { NotepadApp } from "./notepad.js";
 import { CameraApp } from "./camera.js";
+import { AboutApp } from "./about.js";
+import { PythonEditorApp } from "./python.js";
 import { SystemUtilities } from "./system.js";
 import { FileSystemManager } from "./fs.js";
 import { setupStartMenu } from "./startMenu.js";
 import { desktop } from "./desktop.js";
 import { DesktopUI } from "./desktopui.js";
+import { CalculatorApp } from "./calculator.js";
+import { NodeEditorApp } from "./node.js";
 
 class MusicPlayer {
   constructor() {}
@@ -50,10 +54,11 @@ function detectOS() {
   if (/android|iphone|ipad|ipod/.test(ua)) return "mobile";
   return "windows";
 }
-
+function isMobile() {
+  return window.matchMedia("(max-width: 768px)").matches;
+}
 function initDownloadButton() {
-  const os = detectOS();
-  if (os === "mobile") return;
+  if (isMobile()) return;
 
   const installBtn = document.createElement("div");
   installBtn.id = "install-app";
@@ -101,7 +106,7 @@ function initDownloadButton() {
         }
 
         const os = detectOS();
-        if (os === "mobile") return;
+        if (isMobile()) return;
 
         const osSpecificFiles = osFiles[os];
         if (!osSpecificFiles || osSpecificFiles.length === 0) return;
@@ -123,14 +128,18 @@ const windowManager = new WindowManager();
 
 const notepadApp = new NotepadApp(fileSystemManager, windowManager, null);
 const explorerApp = new ExplorerApp(fileSystemManager, windowManager, notepadApp);
-
+const calculatorApp = new CalculatorApp(windowManager);
 notepadApp.setExplorer(explorerApp);
 
 const browserApp = new BrowserApp(windowManager);
 const terminalApp = new TerminalApp(fileSystemManager, windowManager);
+const nodeApp = new NodeEditorApp(fileSystemManager, windowManager);
+const pythonApp = new PythonEditorApp(fileSystemManager, windowManager);
+pythonApp.setExplorer(explorerApp);
+nodeApp.setExplorer(explorerApp);
 const musicPlayer = new MusicPlayer();
 const cameraApp = new CameraApp(windowManager);
-
+const aboutApp = new AboutApp(windowManager);
 const appLauncher = new AppLauncher(
   windowManager,
   fileSystemManager,
@@ -139,9 +148,13 @@ const appLauncher = new AppLauncher(
   terminalApp,
   notepadApp,
   browserApp,
-  cameraApp
+  cameraApp,
+  pythonApp,
+  nodeApp,
+  calculatorApp,
+  aboutApp
 );
-
+window.appLauncher = appLauncher;
 const desktopUI = new DesktopUI(appLauncher, notepadApp, explorerApp, fileSystemManager);
 
 explorerApp.setDesktopUI(desktopUI);

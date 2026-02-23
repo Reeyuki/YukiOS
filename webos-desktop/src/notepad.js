@@ -42,7 +42,7 @@ export class NotepadApp {
     this.wm.makeDraggable(win);
     this.wm.makeResizable(win);
     this.wm.setupWindowControls(win);
-    this.wm.addToTaskbar(win.id, `${title} - Notepad`, "/static/icons/music.webp");
+    this.wm.addToTaskbar(win.id, `${title} - Notepad`, "/static/icons/notepad.webp");
 
     this.setupNotepadControls(win, title, filePath);
   }

@@ -247,7 +247,7 @@ export class FileSystemManager {
         this.fs.readdir(dir, (e, list) => (e ? rej(e) : res(list)));
       });
     } catch {
-      throw new Error("Invalid path");
+      throw new Error(`Invalid path: ${JSON.stringify(path)}`);
     }
 
     const meta = await this.readMeta(dir);

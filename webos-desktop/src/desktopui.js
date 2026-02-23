@@ -347,6 +347,7 @@ export class DesktopUI {
     this.startButton.addEventListener("click", (e) => {
       e.stopPropagation();
       this.toggleStartMenu();
+      document.querySelector('.start-cat[data-cat="menu"]').click();
     });
 
     this.startMenu.addEventListener("click", (e) => e.stopPropagation());
@@ -387,18 +388,22 @@ export class DesktopUI {
     });
 
     document.addEventListener("keydown", (e) => {
+      // Don't intercept shortcuts when user is typing in an input
+      const active = document.activeElement;
+      const isTyping =
+        active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA" || active.isContentEditable);
+      if (isTyping) return;
+
       const selectedArray = this.selectionManager.toArray();
 
       if (e.ctrlKey && e.code === "KeyC") {
         e.preventDefault();
         if (selectedArray.length) this.copySelectedIcons(selectedArray);
       }
-
       if (e.ctrlKey && e.code === "KeyX") {
         e.preventDefault();
         if (selectedArray.length) this.cutSelectedIcons(selectedArray);
       }
-
       if (e.ctrlKey && e.code === "KeyV") {
         e.preventDefault();
         if (this.state.clipboard) this.pasteIcons(lastMousePos.x, lastMousePos.y);
@@ -862,11 +867,13 @@ export class DesktopUI {
   }
 
   setupInteractableSelection() {
-    let selectionState = {
-      startX: 0,
-      startY: 0,
-      isActive: false
-    };
+    let selectionState = { startX: 0, startY: 0, isActive: false };
+
+    // Track whether the mousedown landed directly on the desktop
+    let mousedownOnDesktop = false;
+    this.desktop.addEventListener("mousedown", (e) => {
+      mousedownOnDesktop = e.target === this.desktop;
+    });
 
     const desktopInteractable = interact(this.desktop);
     desktopInteractable.resizable(false);
@@ -876,7 +883,7 @@ export class DesktopUI {
       listeners: {
         start: (event) => {
           if (this.appLauncher.wm.isDraggingWindow) return;
-          if (event.target !== this.desktop) return;
+          if (!mousedownOnDesktop) return; // <-- replaces the target check
 
           selectionState = {
             startX: event.pageX,
@@ -889,8 +896,6 @@ export class DesktopUI {
         },
         move: (event) => {
           if (!selectionState.isActive) return;
-          if (event.target !== this.desktop) return;
-
           this.updateSelectionBox(event, selectionState);
           this.updateIconSelection();
         },
@@ -898,6 +903,7 @@ export class DesktopUI {
           if (!selectionState.isActive) return;
           this.hideSelectionBox();
           selectionState.isActive = false;
+          mousedownOnDesktop = false; // reset for next interaction
         }
       }
     });

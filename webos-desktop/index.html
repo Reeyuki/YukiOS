@@ -32,7 +32,12 @@
 
     <meta name="application-name" content="Yuki OS" />
     <link rel="canonical" href="https://reeyuki.github.io/" />
-
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/js/all.min.js"
+      integrity="sha512-6BTOlkauINO65nLhXhthZMtepgJSghyimIalb+crKRPhvhmsCdnIuGcVbR5/aQY2A+260iC1OPy1oCdB6pSSwQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -72,8 +77,18 @@
       </div>
 
       <div class="icon selectable" data-app="cameraApp">
-        <img src="/static/icons/cam.webp" />
+        <img src="/static/icons/obs.webp" />
         <div>Camera</div>
+      </div>
+
+      <div class="icon selectable" data-app="pythonApp">
+        <i style="color: #5299b9" class="fas fa-code"></i>
+        <div>Python Code Editor</div>
+      </div>
+
+      <div class="icon selectable" data-app="nodeApp">
+        <i style="color: #caca43" class="fas fa-code"></i>
+        <div>NodeJS Code Editor</div>
       </div>
 
       <div class="icon selectable" data-app="photopea">
@@ -89,6 +104,11 @@
       <div class="icon selectable" data-app="browser">
         <img src="/static/icons/firefox.webp" />
         <div>Browser</div>
+      </div>
+
+      <div class="icon selectable" data-app="calculatorApp">
+        <i class="fas fa-calculator"></i>
+        <div>Calculator</div>
       </div>
 
       <div class="icon selectable" data-app="flash">
@@ -184,7 +204,7 @@
         <div>Repo</div>
       </div>
 
-      <div class="icon selectable " data-app="kindergarten">
+      <div class="icon selectable" data-app="kindergarten">
         <img src="/static/icons/kind1.webp" />
         <div>Kindergarten</div>
       </div>
@@ -273,7 +293,7 @@
         <img src="/static/icons/angryBirdsSpace.webp" />
         <div>Angry Birds Space</div>
       </div>
-      
+
       <div class="icon selectable popular" data-app="doodle">
         <img src="/static/icons/doodle.webp" />
         <div>Doodle Halloween Cat</div>
@@ -282,6 +302,16 @@
       <div class="icon selectable popular" data-app="nso">
         <img src="/static/icons/nso.webp" />
         <div>Needy Streamer Overload</div>
+      </div>
+
+      <div class="icon selectable popular" data-app="doom">
+        <img src="/static/icons/doom.webp" />
+        <div>Doom</div>
+      </div>
+
+      <div class="icon selectable popular" data-app="doom2">
+        <img src="/static/icons/doom.webp" />
+        <div>Doom 2</div>
       </div>
 
       <div class="icon selectable" data-app="cs">
@@ -310,30 +340,54 @@
       </div>
     </div>
 
-    <div id="start-menu" class="kde-menu">
-      <div class="kde-sidebar">
-        <a href="https://github.com/Reeyuki" target="_blank">
-          <div class="kde-user">
-            <img src="/static/icons/guest.webp" />
-            <span>reeyuki</span>
-          </div>
-        </a>
+    <div id="start-menu" class="start-menu">
+      <div class="start-sidebar">
+        <div class="start-user">
+          <img src="/static/icons/guest.webp" />
+          <span>reeyuki</span>
+          <button
+            class="start-signout-btn"
+            onclick="window.open('https://github.com/Reeyuki/reeyuki.github.io', '_blank')"
+            title="GitHub Repository"
+            style="background-color: transparent; color: white; transform: scale(2); border: none"
+          >
+            <i class="fab fa-github"></i>
+          </button>
+        </div>
 
-        <div class="kde-cat active" data-cat="favorites">⭐ Favorites</div>
-        <div class="kde-cat" data-cat="games">🎮 Games</div>
-        <div class="kde-cat" data-cat="system">⚙️ System</div>
+        <div class="start-cat" data-cat="menu">Menu</div>
+        <div class="start-cat" data-cat="games">🎮 Games</div>
+        <div class="start-cat" data-cat="system">⚙️ System</div>
+        <div class="start-cat active" data-cat="favorites">⭐ Favorites</div>
       </div>
 
-      <div class="kde-content">
-        <input id="kde-search" placeholder="Search…" autocomplete="off" />
+      <div class="start-content">
+        <input id="start-search" placeholder="Search…" autocomplete="off" />
 
-        <div class="kde-page active" data-page="favorites"></div>
+        <div class="start-page active" data-page="favorites"></div>
 
-        <div class="kde-page" data-page="apps"></div>
+        <div class="start-page" data-page="apps"></div>
 
-        <div class="kde-page" data-page="games"></div>
+        <div class="start-page" data-page="games"></div>
 
-        <div class="kde-page" data-page="system"></div>
+        <div class="start-page" data-page="system"></div>
+        <div class="start-page" data-page="menu">
+          <div class="app-grid">
+            <div class="app-item" data-app="explorer"><i class="fas fa-folder"></i> <span>Files</span></div>
+            <div class="app-item" data-app="terminal"><i class="fas fa-terminal"></i> <span>Terminal</span></div>
+            <div class="app-item" data-app="browser"><i class="fas fa-globe"></i> <span>Browser</span></div>
+            <div class="app-item" data-app="settings"><i class="fas fa-cog"></i> <span>Settings</span></div>
+            <div class="app-item" data-app="notepad"><i class="fas fa-edit"></i> <span>Notepad</span></div>
+            <div class="app-item" data-app="music"><i class="fas fa-music"></i> <span>Music</span></div>
+            <div class="app-item" data-app="cameraApp"><i class="fas fa-images"></i> <span>Camera</span></div>
+            <div class="app-item" data-app="calculatorApp">
+              <i class="fas fa-calculator"></i> <span>Calculator</span>
+            </div>
+            <div class="app-item" data-app="pythonApp"><i class="fas fa-code"></i> <span>Python Code Editor</span></div>
+            <div class="app-item" data-app="nodeApp"><i class="fas fa-code"></i> <span>NodeJS Code Editor</span></div>
+            <div class="app-item" data-app="aboutApp"><i class="fas fa-info-circle"></i> <span>About YukiOS</span></div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -389,7 +443,7 @@
         box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
       }
 
-      .window * {
+      .window *:not(#browser-settings-panel):not(#browser-settings-panel *) {
         background: transparent !important;
         color: rgba(255, 255, 255, 0.92);
       }
