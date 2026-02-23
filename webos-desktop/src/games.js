@@ -448,7 +448,7 @@ export const appMap = {
   },
   isaacRebirth: {
     type: "remote",
-    url: "/static/games/html/isaacRebirth.html",
+    url: "https://reeyuki.netlify.app/static/games/html/isaacRebirth.html",
     icon: "/static/icons/isaac.webp",
     title: "Isaac Rebirth"
   },
