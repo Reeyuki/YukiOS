@@ -44,7 +44,7 @@ export class AppLauncher {
       return: {
         type: "system",
         title: "Return",
-        action: () => (window.location.href = "https://reeyuki.github.io/site")
+        action: () => (window.location.href = "https://reeyuki.github.io")
       },
       explorer: { type: "system", title: "Explorer", action: () => this.explorerApp.open() },
       terminal: { type: "system", title: "Terminal", action: () => this.terminalApp.open() },

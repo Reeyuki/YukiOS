@@ -4,7 +4,7 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://reeyuki.github.io/sitemap.xml
+Sitemap: https://yukios.netlify.app/sitemap.xml
 
 # If you do not want AI bots to crawl your site, remove the # from the following lines:
 #User-agent: AI2Bot
