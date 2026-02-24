@@ -188,7 +188,7 @@ export class ExplorerApp {
           iconImg = appMetadata[camelName]?.icon || itemData.icon || "/static/icons/notepad.webp";
         }
       } else {
-        iconImg = "/static/icons/files.webp";
+        iconImg = "/static/icons/file.webp";
       }
 
       const item = document.createElement("div");

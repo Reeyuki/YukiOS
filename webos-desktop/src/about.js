@@ -38,7 +38,6 @@ export class AboutApp {
             <p style="color: var(--text-secondary); font-size: 0.9rem; max-width:700px; margin: 1rem auto 0; line-height:1.6; text-align: center;">
               A browser-based desktop environment that provides a unified windowed system for games, emulators, web apps, and interactive content.
               Yuki OS integrates multiple execution runtimes — Flash, EmulatorJS, WASM, Unity, HTML5, and more — into a single consistent desktop interface.
-              Click an icon, content opens in a window. Simple as that.
             </p>
           </div>
 
@@ -47,9 +46,6 @@ export class AboutApp {
             <h2 style="font-size: 1.25rem; color: var(--text-primary); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; font-family: fontb;">
               <i class="fas fa-users" style="color: var(--accent);"></i> Developers
             </h2>
-            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">
-              Click on a developer's card to learn more about them and support their work.
-            </p>
 
             <div class="developers-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; align-items: start;">
 
@@ -61,14 +57,14 @@ export class AboutApp {
                   </div>
                   <div style="flex: 1;">
                     <div style="font-family: fontb; color: var(--text-primary); font-size: 1.1rem;">reeyuki</div>
-                    <div style="color: var(--text-secondary); font-size: 0.85rem;">Lead Developer &amp; Creator</div>
+                    <div style="color: var(--text-secondary); font-size: 0.85rem;">Creator</div>
                   </div>
                   <i class="fas fa-chevron-down dev-chevron" id="chevron-reeyuki" style="color: var(--text-secondary); transition: transform 0.3s ease;"></i>
                 </div>
                 <div class="dev-info" id="devinfo-reeyuki" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease; background: rgba(21, 25, 35, 0.5);">
                   <div style="padding: 1rem; border-top: 1px solid var(--border);">
                     <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem; line-height: 1.6;">
-                      Creator of Yuki OS — building a unified browser desktop for games, emulators, and web apps. Passionate about runtime integration and seamless UX.
+                     Spends too much time making browsers do things they weren't meant to do. (Running doom is one of them!)
                     </p>
                     <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
                       <a href="https://github.com/reeyuki" target="_blank" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: rgba(125, 211, 192, 0.15); border: 1px solid rgba(125, 211, 192, 0.3); border-radius: 8px; color: var(--text-primary); text-decoration: none; font-size: 0.85rem; transition: all 0.2s ease;" onmouseover="this.style.background='rgba(125, 211, 192, 0.25)'" onmouseout="this.style.background='rgba(125, 211, 192, 0.15)'">
@@ -105,12 +101,7 @@ export class AboutApp {
                   "Full file system with explorer, file ops, and app integration."
                 ],
                 ["fa-gamepad", "Game Platform", "Run GBA, NDS, Flash, WASM, Unity, and indie HTML5 games."],
-                ["fa-cube", "Modular Apps", "Terminal, browser, text editor, camera, and system utilities."],
-                [
-                  "fa-cloud-download-alt",
-                  "Hybrid Asset System",
-                  "Bundled, CDN, streamed, cached, and offline-ready assets."
-                ]
+                ["fa-cube", "Modular Apps", "Terminal, browser, text editor, camera, and system utilities."]
               ]
                 .map(
                   ([icon, title, desc]) => `
@@ -130,14 +121,11 @@ export class AboutApp {
           <!-- Footer -->
           <div class="about-footer" style="display: flex; flex-direction: column; align-items: center; text-align: center; padding: 1rem 1rem 0.5rem; border-top: 1px solid var(--border); margin-top: auto; background: transparent;">
             <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 0.75rem; text-align: center;">
-              Made with <i class="fas fa-heart" style="color: #ef4444;"></i> by the Yuki OS team
+              Made with <i class="fas fa-heart" style="color: #ef4444;"></i> by Reeyuki
             </p>
             <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
-              <a href="https://github.com/reeyuki/yukios" target="_blank" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: rgba(125, 211, 192, 0.15); border: 1px solid rgba(125, 211, 192, 0.3); border-radius: 8px; color: var(--text-primary); text-decoration: none; font-size: 0.85rem; transition: all 0.2s ease;" onmouseover="this.style.background='rgba(125, 211, 192, 0.25)'" onmouseout="this.style.background='rgba(125, 211, 192, 0.15)'">
+              <a href="https://github.com/reeyuki/reeyuki.github.io" target="_blank" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: rgba(125, 211, 192, 0.15); border: 1px solid rgba(125, 211, 192, 0.3); border-radius: 8px; color: var(--text-primary); text-decoration: none; font-size: 0.85rem; transition: all 0.2s ease;" onmouseover="this.style.background='rgba(125, 211, 192, 0.25)'" onmouseout="this.style.background='rgba(125, 211, 192, 0.15)'">
                 <i class="fab fa-github"></i> View on GitHub
-              </a>
-              <a href="#" onclick="event.preventDefault(); openApp('whatsnew');" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: rgba(125, 211, 192, 0.15); border: 1px solid rgba(125, 211, 192, 0.3); border-radius: 8px; color: var(--text-primary); text-decoration: none; font-size: 0.85rem; transition: all 0.2s ease;" onmouseover="this.style.background='rgba(125, 211, 192, 0.25)'" onmouseout="this.style.background='rgba(125, 211, 192, 0.15)'">
-                <i class="fas fa-star"></i> What's New
               </a>
             </div>
           </div>

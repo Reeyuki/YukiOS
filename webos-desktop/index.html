@@ -63,6 +63,74 @@
   </head>
 
   <body>
+    <div id="bootloader">
+      <div class="boot-logo"><img src="/static/icons/liventcord.webp" /></div>
+      <h1 class="boot-title"><b>YUKI OS</b></h1>
+      <div class="boot-version">Version 1.0</div>
+      <div class="boot-options" id="bootOptions">
+        <div class="boot-option selected" data-index="0"><i class="fas fa-play"></i> <span>Yuki OS</span></div>
+      </div>
+      <div class="boot-hint">Enter <i class="fas fa-level-down-alt"></i> to boot</div>
+      <div
+        id="bootCountdown"
+        style="position: absolute; bottom: 4rem; color: var(--accent); font-size: 0.9rem; display: none"
+      ></div>
+      <div id="bottom-text" style="position: absolute; bottom: 0.5rem; color: #888">
+        made with <i class="fa-solid fa-heart"></i> by reeyuki
+      </div>
+      <div class="boot-loading" id="bootLoading">
+        <div class="loading-bar-container">
+          <div class="loading-bar" id="loadingBar"></div>
+        </div>
+        <div class="boot-messages" id="bootMessages"></div>
+      </div>
+    </div>
+
+    <div id="login" class="is-hidden">
+      <div class="login-wrapper">
+        <div class="login-left">
+          <div class="login-time">
+            <div class="login-time-main" id="loginClock">1:42 AM</div>
+            <div class="login-time-date" id="loginDate">Tuesday, February 24</div>
+          </div>
+
+          <div class="login-info-card">
+            <div class="info-card-title"><i class="fas fa-info-circle"></i> System Information</div>
+            <div class="info-card-content">
+              <div class="info-stat">
+                <span class="info-stat-label">OS</span>
+                <span class="info-stat-value">YukiOS</span>
+              </div>
+              <div class="info-stat">
+                <span class="info-stat-label">Version</span>
+                <span class="info-stat-value">1.0</span>
+              </div>
+              <div class="info-stat">
+                <span class="info-stat-label">Browser</span>
+                <span class="info-stat-value" id="browserInfo"></span>
+              </div>
+              <div class="info-stat">
+                <span class="info-stat-label">Uptime</span>
+                <span class="info-stat-value" id="uptime">0m</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="login-container passwordless">
+          <div class="login-avatar"><i class="fas fa-user"></i></div>
+          <h2 class="login-title" id="loginGreeting"></h2>
+          <p class="login-subtitle" id="loginSubtitle">Just enter your username</p>
+          <input type="text" class="login-input" id="username" placeholder="Username" value="" />
+          <div class="login-input-wrapper" id="passwordWrapper" style="display: none">
+            <input type="password" class="login-input" id="password" placeholder="Password" value="" />
+            <i class="fas fa-eye password-toggle" id="passwordToggle" onclick="togglePassword()"></i>
+          </div>
+          <button id="login-btn">Sign In</button>
+        </div>
+      </div>
+    </div>
+
     <div id="selection-box"></div>
 
     <div id="desktop" class="desktop">
@@ -355,10 +423,11 @@
           </button>
         </div>
 
-        <div class="start-cat" data-cat="menu">Menu</div>
+        <div class="start-cat active" data-cat="menu">Menu</div>
         <div class="start-cat" data-cat="games">🎮 Games</div>
         <div class="start-cat" data-cat="system">⚙️ System</div>
-        <div class="start-cat active" data-cat="favorites">⭐ Favorites</div>
+        <div class="start-cat" data-cat="favorites">⭐ Favorites</div>
+        <div class="start-cat" data-cat="settings">⚙️ Settings</div>
       </div>
 
       <div class="start-content">
@@ -437,19 +506,230 @@
 
     <div id="context-menu"></div>
 
+    <!-- window-styles.html — component-level <style> blocks -->
+
     <style id="window-style">
-      .window {
-        background: rgba(19, 19, 19, 0.82);
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+      #explorer-win {
+        background: rgba(14, 14, 20, 0.75) !important;
+        backdrop-filter: blur(32px) saturate(1.6) !important;
+        border: 1px solid rgba(255, 255, 255, 0.09) !important;
+        box-shadow:
+          0 24px 64px rgba(0, 0, 0, 0.65),
+          0 0 0 1px rgba(255, 255, 255, 0.06) inset,
+          0 0 60px rgba(79, 158, 255, 0.07) !important;
+        border-radius: 14px !important;
+        overflow: hidden !important;
       }
 
-      .window *:not(#browser-settings-panel):not(#browser-settings-panel *) {
+      /* Header, nav, container */
+      #explorer-win .window-header {
+        background: rgba(255, 255, 255, 0.045) !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
+        color: rgba(255, 255, 255, 0.88) !important;
+        padding: 10px 14px !important;
+      }
+      #explorer-win .explorer-nav {
+        background: rgba(255, 255, 255, 0.03) !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
+        color: rgba(255, 255, 255, 0.5) !important;
+      }
+      #explorer-win .explorer-container {
         background: transparent !important;
-        color: rgba(255, 255, 255, 0.92);
       }
 
-      .window-controls button:hover {
-        background: rgba(255, 255, 255, 0.15) !important;
+      /* Sidebar */
+      #explorer-win .explorer-sidebar {
+        background: rgba(255, 255, 255, 0.03) !important;
+        border-right: 1px solid rgba(255, 255, 255, 0.07) !important;
+      }
+      #explorer-win .explorer-sidebar .start-item {
+        color: rgba(255, 255, 255, 0.6) !important;
+        background: transparent !important;
+      }
+      #explorer-win .explorer-sidebar .start-item:hover {
+        background: rgba(79, 158, 255, 0.15) !important;
+        color: rgba(255, 255, 255, 0.92) !important;
+      }
+
+      /* Main area */
+      #explorer-win .explorer-main {
+        background:
+          radial-gradient(ellipse at 70% 20%, rgba(79, 158, 255, 0.05) 0%, transparent 55%), rgba(10, 10, 16, 0.4) !important;
+      }
+
+      /* File items */
+      #explorer-win .file-item {
+        background: rgba(255, 255, 255, 0.04) !important;
+        border: 1px solid rgba(255, 255, 255, 0.07) !important;
+        color: rgba(255, 255, 255, 0.65) !important;
+        border-radius: 10px !important;
+        transition: all 0.18s ease !important;
+      }
+      #explorer-win .file-item:hover {
+        background: rgba(79, 158, 255, 0.12) !important;
+        border-color: rgba(79, 158, 255, 0.35) !important;
+        color: rgba(255, 255, 255, 0.92) !important;
+        transform: translateY(-2px) !important;
+        box-shadow:
+          0 6px 20px rgba(0, 0, 0, 0.3),
+          0 0 0 1px rgba(79, 158, 255, 0.25) inset !important;
+      }
+      #explorer-win .file-item span {
+        color: inherit !important;
+      }
+
+      /* Nav / back buttons */
+      #explorer-win .back-btn {
+        background: rgba(255, 255, 255, 0.06) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        color: rgba(255, 255, 255, 0.6) !important;
+        border-radius: 6px !important;
+        padding: 3px 10px !important;
+      }
+      #explorer-win .back-btn:hover {
+        background: rgba(255, 255, 255, 0.1) !important;
+        color: rgba(255, 255, 255, 0.9) !important;
+      }
+      #explorer-win #exp-path {
+        color: rgba(255, 255, 255, 0.4) !important;
+      }
+
+      /* Window controls */
+      #explorer-win .window-controls button {
+        background: rgba(255, 255, 255, 0.06) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        color: rgba(255, 255, 255, 0.7) !important;
+        border-radius: 6px !important;
+      }
+      #explorer-win .window-controls button:hover {
+        background: rgba(255, 255, 255, 0.14) !important;
+        color: #fff !important;
+      }
+      #explorer-win .window-controls .close-btn:hover {
+        background: rgba(232, 17, 35, 0.85) !important;
+        border-color: rgba(232, 17, 35, 0.5) !important;
+      }
+    </style>
+
+    <style id="notepad-style">
+      [id^="notepad-"] {
+        background: rgba(13, 13, 19, 0.82) !important;
+        backdrop-filter: blur(32px) saturate(1.5) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        box-shadow:
+          0 24px 64px rgba(0, 0, 0, 0.65),
+          0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+          0 0 60px rgba(120, 180, 255, 0.05) !important;
+        border-radius: 14px !important;
+        overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+      }
+
+      [id^="notepad-"] .window-header {
+        background: rgba(255, 255, 255, 0.04) !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
+        color: rgba(255, 255, 255, 0.85) !important;
+        padding: 10px 14px !important;
+        font-size: 13px !important;
+        font-family: "Sora", "Segoe UI", sans-serif !important;
+        letter-spacing: 0.02em !important;
+        flex-shrink: 0 !important;
+      }
+
+      [id^="notepad-"] .notepad-menu {
+        display: flex !important;
+        gap: 6px !important;
+        padding: 7px 12px !important;
+        background: rgba(255, 255, 255, 0.025) !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+        flex-shrink: 0 !important;
+      }
+      [id^="notepad-"] .notepad-btn {
+        background: rgba(255, 255, 255, 0.07) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        color: rgba(255, 255, 255, 0.65) !important;
+        border-radius: 7px !important;
+        padding: 4px 13px !important;
+        font-size: 12px !important;
+        font-family: "Sora", sans-serif !important;
+        cursor: pointer !important;
+        letter-spacing: 0.02em !important;
+        transition: all 0.15s ease !important;
+      }
+      [id^="notepad-"] .notepad-btn:hover {
+        background: rgba(79, 158, 255, 0.18) !important;
+        border-color: rgba(79, 158, 255, 0.4) !important;
+        color: rgba(255, 255, 255, 0.95) !important;
+        box-shadow: 0 2px 10px rgba(79, 158, 255, 0.15) !important;
+        transform: translateY(-1px) !important;
+      }
+      [id^="notepad-"] .notepad-btn:active {
+        transform: translateY(0) !important;
+        background: rgba(79, 158, 255, 0.25) !important;
+      }
+
+      /* Content area */
+      [id^="notepad-"] .window-content {
+        flex: 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        background: transparent !important;
+      }
+
+      /* Textarea */
+      [id^="notepad-"] .notepad-textarea {
+        flex: 1 !important;
+        width: 100% !important;
+        height: 100% !important;
+        background: rgba(8, 8, 14, 0.6) !important;
+        color: rgba(220, 230, 245, 0.9) !important;
+        border: none !important;
+        outline: none !important;
+        padding: 16px 20px !important;
+        font-family: "JetBrains Mono", "Fira Code", monospace !important;
+        font-size: 13.5px !important;
+        line-height: 1.75 !important;
+        resize: none !important;
+        caret-color: rgba(79, 158, 255, 0.9) !important;
+        box-sizing: border-box !important;
+        scrollbar-width: thin !important;
+        scrollbar-color: rgba(255, 255, 255, 0.1) transparent !important;
+      }
+      [id^="notepad-"] .notepad-textarea::selection {
+        background: rgba(79, 158, 255, 0.28) !important;
+        color: #fff !important;
+      }
+      [id^="notepad-"] .notepad-textarea::placeholder {
+        color: rgba(255, 255, 255, 0.2) !important;
+      }
+      [id^="notepad-"] .notepad-textarea::-webkit-scrollbar {
+        width: 5px !important;
+      }
+      [id^="notepad-"] .notepad-textarea::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.12) !important;
+        border-radius: 99px !important;
+      }
+      [id^="notepad-"] .notepad-textarea::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.22) !important;
+      }
+
+      /* Window controls */
+      [id^="notepad-"] .window-controls button {
+        background: rgba(255, 255, 255, 0.06) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        color: rgba(255, 255, 255, 0.7) !important;
+        border-radius: 6px !important;
+      }
+      [id^="notepad-"] .window-controls button:hover {
+        background: rgba(255, 255, 255, 0.14) !important;
+        color: #fff !important;
+      }
+      [id^="notepad-"] .window-controls .close-btn:hover {
+        background: rgba(232, 17, 35, 0.85) !important;
+        border-color: rgba(232, 17, 35, 0.5) !important;
       }
     </style>
   </body>

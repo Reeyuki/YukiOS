@@ -22,7 +22,7 @@ export class WindowManager {
     this.gameWindowCount = 0;
   }
   updateTransparency() {
-    if (this.gameWindowCount > 0) {
+    if (this.gameWindowCount > 0 || !window._settings.transparency) {
       hideTransparency();
     } else {
       restoreTransparency();

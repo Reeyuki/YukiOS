@@ -101,9 +101,6 @@ Yuki OS focuses on platform integration rather than engine reimplementation:
 
 ---
 
-## TODO
-- Add loading menu
-
 ## 📜 License
 
 The project license applies to platform code only.
