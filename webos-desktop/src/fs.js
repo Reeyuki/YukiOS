@@ -20,7 +20,8 @@ export const defaultStorage = {
       Documents: {
         "INFO.txt": {
           type: "file",
-          content: "Files you saved in notepad get saved in your browser session.",
+          content:
+            "This is an example text file.\n\nYou can edit this file using the Text Editor app.\n\nTry creating your own files by:\n1. Opening the Text Editor\n2. Writing your content\n3. Clicking Save As and entering a filename\n\nHave fun exploring YukiOS!",
           kind: FileKind.TEXT,
           icon: "/static/icons/notepad.webp"
         }
