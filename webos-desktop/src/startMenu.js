@@ -118,6 +118,10 @@ function setupStars() {
 export function setupStartMenu() {
   document.querySelectorAll(".start-cat").forEach((cat) => {
     cat.onclick = () => {
+      if (cat.dataset.cat === "settings") {
+        window.appLauncher.launch("settings");
+        return;
+      }
       document.querySelectorAll(".start-cat").forEach((c) => c.classList.remove("active"));
       document.querySelectorAll(".start-page").forEach((p) => p.classList.remove("active"));
       cat.classList.add("active");
@@ -153,7 +157,7 @@ export function tryGetIcon(id) {
     }
 
     const div = document.querySelector(`#desktop div[data-app="${id}"]`);
-    const imgSrc = div?.querySelector("img")?.src || null;
+    const imgSrc = div?.querySelector("img")?.src || div?.querySelector("svg");
     return imgSrc;
   } catch (e) {
     console.error("Error occurred while getting icon:", e);
@@ -193,7 +197,6 @@ export function populateStartMenu(appLauncher) {
     let icon = null;
 
     const isImagePath = typeof iconValue === "string" && /\.(png|jpg|jpeg|gif|webp|svg|ico)$/i.test(iconValue);
-
     if (isImagePath) {
       icon = document.createElement("img");
       icon.classList.add("start-item-icon");
@@ -225,3 +228,26 @@ export function populateStartMenu(appLauncher) {
     }
   });
 }
+
+function getBrowser() {
+  const ua = navigator.userAgent;
+
+  let name = "Unknown";
+
+  if (ua.includes("Edg/")) {
+    name = "Microsoft Edge";
+  } else if (ua.includes("OPR/") || ua.includes("Opera")) {
+    name = "Opera";
+  } else if (ua.includes("Chrome/") && !ua.includes("Edg/")) {
+    name = "Google Chrome";
+  } else if (ua.includes("Safari/") && !ua.includes("Chrome/")) {
+    name = "Safari";
+  } else if (ua.includes("Firefox/")) {
+    name = "Mozilla Firefox";
+  }
+
+  return name;
+}
+
+const browser = document.getElementById("browserInfo");
+browser.textContent = getBrowser();

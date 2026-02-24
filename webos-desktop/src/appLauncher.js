@@ -18,7 +18,8 @@ export class AppLauncher {
     pythonApp,
     nodeApp,
     calculatorApp,
-    aboutApp
+    aboutApp,
+    settingsApp
   ) {
     this.wm = windowManager;
     this.fs = fileSystemManager;
@@ -32,6 +33,7 @@ export class AppLauncher {
     this.nodeApp = nodeApp;
     this.calculatorApp = calculatorApp;
     this.aboutApp = aboutApp;
+    this.settingsApp = settingsApp;
     this.pageLoadTime = Date.now();
     this.TRANSPARENCY_ALLOWED_APP_IDS = new Set(["paint", "photopea", "vscode", "liventcord"]);
     const analyticsBase = this._getAnalyticsBase("hit-page");
@@ -51,6 +53,7 @@ export class AppLauncher {
       cameraApp: { type: "system", title: "Camera App", action: () => this.cameraApp.open() },
       pythonApp: { type: "system", title: "Python Code Editor", action: () => this.pythonApp.open() },
       nodeApp: { type: "system", title: "NodeJS Code Editor", action: () => this.nodeApp.open() },
+      settings: { type: "system", title: "Settings", action: () => this.settingsApp.open() },
       calculatorApp: { type: "system", title: "Calculator", action: () => this.calculatorApp.open() },
       aboutApp: { type: "system", title: "About", action: () => this.aboutApp.open() },
       music: { type: "system", title: "Music Player", action: () => this.musicPlayer.open(this.wm) },
