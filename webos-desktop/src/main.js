@@ -70,7 +70,7 @@ function initDownloadButton() {
   }, 10000);
   installBtn.addEventListener("click", () => {
     appLauncher.sendAppInstallAnalytics();
-    fetch("https://api.github.com/repos/Reeyuki/reeyuki.github.io/releases/latest")
+    fetch("https://api.github.com/repos/Reeyuki/YukiOS/releases/latest")
       .then((res) => res.json())
       .then((release) => {
         const files = release.assets.map((asset) => ({

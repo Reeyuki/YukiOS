@@ -6,7 +6,7 @@
     "name": "Reeyuki",
     "email": "reeyuki@example.com"
   },
-  "homepage": "https://reeyuki.github.io",
+  "homepage": "https://yukios.netlify.app",
   "description": "Yukios Game Archive",
   "scripts": {
     "start": "electron .",
