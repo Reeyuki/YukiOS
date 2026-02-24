@@ -5,10 +5,12 @@ const WALLPAPER_KEY = "desktopOS_selectedWallpaper";
 const loginBtn = document.getElementById("login-btn");
 const login = document.getElementById("login");
 
+let settings;
 loginBtn.addEventListener("click", () => {
   login.classList.add("fade-out");
   login.classList.remove("active");
   login.addEventListener("transitionend", () => login.remove(), { once: true });
+  settings.updateUsername();
 });
 
 let pageLoadTime;
@@ -38,6 +40,9 @@ function showLogin() {
 }
 
 export class SystemUtilities {
+  static setSettings(_settings) {
+    settings = _settings;
+  }
   static startClock() {
     const clock = document.getElementById("clock");
     const date = document.getElementById("date");

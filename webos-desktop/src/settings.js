@@ -1,5 +1,6 @@
 import { desktop } from "./desktop.js";
 import { skipBootSequence } from "./system.js";
+
 /**
  * SettingsApp — System settings panel for yukiOS.
  *
@@ -10,15 +11,17 @@ export class SettingsApp {
   constructor(windowManager) {
     this.wm = windowManager;
 
-    this._settings = {
-      username: localStorage.getItem("yukiOS_username") ?? "",
-      bootAnimation: localStorage.getItem("yukiOS_bootAnimation") !== "false"
-    };
-    const start = document.querySelector(".start-user");
-    const startSpan = start?.querySelector("span");
-    if (startSpan) startSpan.textContent = this._settings.username;
-    window._settings = this._settings;
-    if (this._settings.bootAnimation) skipBootSequence();
+    setTimeout(() => {
+      this._settings = {
+        username: localStorage.getItem("yukiOS_username") ?? "",
+        bootAnimation: localStorage.getItem("yukiOS_bootAnimation") !== "false"
+      };
+
+      this._applyUsername(this._settings.username);
+      window._settings = this._settings;
+
+      if (!this._settings.bootAnimation) skipBootSequence();
+    }, 0);
   }
 
   open() {
@@ -43,7 +46,8 @@ export class SettingsApp {
   }
 
   _buildHTML() {
-    const { username, bootAnimation } = this._settings;
+    // Always read from this._settings so the window reflects current persisted state.
+    const { bootAnimation } = this._settings;
 
     return `
       <div class="window-header">
@@ -94,7 +98,6 @@ export class SettingsApp {
                 id="settingsUsername"
                 type="text"
                 class="editor-filename"
-                value="${this._escAttr(username)}"
                 placeholder="Enter username…"
                 spellcheck="false"
                 style="width:180px;padding:6px 10px;font-size:13px"
@@ -215,6 +218,8 @@ export class SettingsApp {
     const resetBtn = win.querySelector("#settingsResetBtn");
     const status = win.querySelector("#settingsStatus");
 
+    usernameInput.value = this._settings.username;
+
     const showStatus = (msg = "Changes saved!") => {
       status.textContent = msg;
       status.style.opacity = "1";
@@ -234,6 +239,8 @@ export class SettingsApp {
       Object.assign(this._settings, { username, bootAnimation });
       Object.assign(window._settings, this._settings);
 
+      this._applyUsername(username);
+
       showStatus("Changes saved!");
     };
 
@@ -252,8 +259,14 @@ export class SettingsApp {
     });
   }
 
-  _escAttr(str) {
-    return str.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  _applyUsername(username) {
+    const start = document.querySelector(".start-user");
+    const startSpan = start?.querySelector("span");
+    if (startSpan) startSpan.textContent = username;
+  }
+  updateUsername() {
+    const username = document.querySelector(".login-input").value;
+    this._applyUsername(username);
   }
 
   get(key) {

@@ -342,7 +342,7 @@ export const appMap = {
     type: "game",
     url: "https://jspaint.app",
     icon: "/static/icons/vscode.webp",
-    title: "Vs Code"
+    title: "Paint"
   },
   photopea: {
     type: "game",
