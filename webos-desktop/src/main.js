@@ -164,6 +164,7 @@ explorerApp.setDesktopUI(desktopUI);
 
 SystemUtilities.startClock();
 SystemUtilities.setRandomWallpaper();
+SystemUtilities.setSettings(settingsApp);
 
 const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
