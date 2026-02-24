@@ -205,7 +205,15 @@ export class BrowserApp {
     return this.searchEngine.url + encodeURIComponent(raw);
   }
 
-  addTab(url = "https://www.google.com/webhp?igu=1") {
+  addTab(url) {
+    if (!url) {
+      try {
+        const { origin } = new URL(this.searchEngine.url);
+        url = origin + "/";
+      } catch {
+        url = "https://www.google.com/webhp?igu=1";
+      }
+    }
     const tabIndex = this.tabs.length;
 
     const iframe = document.createElement("iframe");

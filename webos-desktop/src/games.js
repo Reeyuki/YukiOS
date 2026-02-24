@@ -207,15 +207,21 @@ export const appMap = {
   },
   jackSmith: {
     type: "game",
-    url: "https://papasgamesfree.io/jacksmith",
+    url: "https://papasgamesfree.io/play/jacksmith",
     icon: "/static/icons/jacksmith.webp",
     title: "JackSmith"
   },
   cactusMcCoy: {
     type: "game",
-    url: "https://papasgamesfree.io/cactus-mccoy-1",
+    url: "https://papasgamesfree.io/play/cactus-mccoy-1",
     icon: "/static/icons/cactus-mccoy.webp",
     title: "Cactus McCoy"
+  },
+  cactusMcCoy2: {
+    type: "game",
+    url: "https://papasgamesfree.io/play/cactus-mccoy-2",
+    icon: "/static/icons/cactus-mccoy.webp",
+    title: "Cactus McCoy 2"
   },
   henry: {
     type: "game",
