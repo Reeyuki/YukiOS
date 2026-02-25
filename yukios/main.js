@@ -5,7 +5,7 @@ const { autoUpdater } = require("electron-updater");
 const createAssetServer = require("./assetServer");
 
 const PORT = 6767;
-const CDN_BASE = "https://reeyuki.netlify.app";
+const CDN_BASE = "https://yukios.netlify.app";
 const staticFolderName = "static";
 const DEBUG = !app.isPackaged;
 
