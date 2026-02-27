@@ -129,12 +129,6 @@ export const appMap = {
     title: "Celeste"
   },
   fnaf: { type: "game", url: "/static/games/fnaf/index.html", icon: "/static/icons/fnaf1.webp", title: "Fnaf" },
-  balatro: {
-    type: "game",
-    url: "/static/games/gnmath/balatro.html",
-    icon: "/static/icons/bal.webp",
-    title: "Balatro"
-  },
   game2048: {
     type: "game",
     url: "https://emupedia.net/emupedia-game-2048",
