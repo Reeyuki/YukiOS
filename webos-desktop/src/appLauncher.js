@@ -131,7 +131,7 @@ export class AppLauncher {
 
   _getAnalyticsBase(app) {
     const now = Date.now();
-    return { app, timestamp: now, sessionAgeMs: now - this.pageLoadTime };
+    return { app, name: localStorage.getItem("yukiOS_username") || "", timestamp: now, sessionAgeMs: now - this.pageLoadTime };
   }
 
   sendAnalytics(data) {
