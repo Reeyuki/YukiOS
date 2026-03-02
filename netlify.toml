@@ -5,7 +5,7 @@
     Cross-Origin-Embedder-Policy = "require-corp"
   
 [[headers]]
-  for = "/static/vciframe.html"
+  for = "/static/gtavc/index.html"
   [headers.values]
     Cross-Origin-Opener-Policy = "same-origin"
     Cross-Origin-Embedder-Policy = "require-corp"

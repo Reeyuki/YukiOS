@@ -24,7 +24,12 @@
     }
     return e[s].exports;
   }
-  for (var c = "function" == typeof require && require, s = 0; s < o.length; s++) r(o[s]);
+  for (
+    var c = "function" == typeof require && require, s = 0;
+    s < o.length;
+    s++
+  )
+    r(o[s]);
   return r;
 })(
   {
@@ -55,20 +60,22 @@
                       e();
                     });
                   });
-                ((c.onerror = (t) => {
-                  (o(t), t.preventDefault());
+                (c.onerror = (t) => {
+                  o(t), t.preventDefault();
                 }),
                   (c.oncomplete = (t) => {
                     n();
-                  }));
+                  });
               })().catch(o);
             });
           }
           async function a(t, n) {
-            const e = (await o(t, n)).transaction([t.DB_STORE_NAME], "readwrite").objectStore(t.DB_STORE_NAME);
+            const e = (await o(t, n))
+              .transaction([t.DB_STORE_NAME], "readwrite")
+              .objectStore(t.DB_STORE_NAME);
             await new Promise((t, n) => {
               const o = e.clear();
-              ((o.onsuccess = () => t()), (o.onerror = () => n(o.error)));
+              (o.onsuccess = () => t()), (o.onerror = () => n(o.error));
             });
           }
           return (
@@ -86,7 +93,7 @@
                     }
                   }
                 p((n) => {
-                  (l(n),
+                  l(n),
                     (async function () {
                       if (!w) {
                         let t = null;
@@ -97,8 +104,19 @@
                               const e = t.map((t) => {
                                   const e = r.encode(t.path);
                                   return (
-                                    (n += 4 + e.length + 8 + 4 + 1 + (t.contents ? 4 + t.contents.length : 0)),
-                                    { key: e, time: t.timestamp.getTime(), mode: t.mode, contents: t.contents }
+                                    (n +=
+                                      4 +
+                                      e.length +
+                                      8 +
+                                      4 +
+                                      1 +
+                                      (t.contents ? 4 + t.contents.length : 0)),
+                                    {
+                                      key: e,
+                                      time: t.timestamp.getTime(),
+                                      mode: t.mode,
+                                      contents: t.contents,
+                                    }
                                   );
                                 }),
                                 o = new Uint8Array(n);
@@ -108,14 +126,17 @@
                                   e = t.time,
                                   r = t.mode,
                                   s = t.contents;
-                                ((c = i(o, n.length, c)),
+                                (c = i(o, n.length, c)),
                                   o.set(n, c),
                                   (c += n.length),
                                   (c = u(o, e, c)),
                                   (c = i(o, r, c)),
                                   (o[c] = s ? 1 : 0),
                                   (c += 1),
-                                  s && ((c = i(o, s.length, c)), o.set(s, c), (c += s.length)));
+                                  s &&
+                                    ((c = i(o, s.length, c)),
+                                    o.set(s, c),
+                                    (c += s.length));
                               }
                               return o;
                             })(
@@ -134,7 +155,7 @@
                                       e(n);
                                     });
                                   });
-                                  ((e.path = n), o.push(e));
+                                  (e.path = n), o.push(e);
                                 }
                                 return o;
                               })(o, f)
@@ -145,20 +166,22 @@
                       }
                     })().catch((n) => {
                       t("ERR!!! syncfs error", n);
-                    }));
+                    });
                 });
               })().catch((n) => {
-                (t("ERR!!! syncfs error", n), l(n));
+                t("ERR!!! syncfs error", n), l(n);
               });
             }),
             {
               addListener: (t) => {
-                (n.push(t.onLoad), e.push(t.onSave));
-              }
+                n.push(t.onLoad), e.push(t.onSave);
+              },
             }
           );
         }
-        (Object.defineProperty(e, "__esModule", { value: !0 }), (e.wrapIDBFS = void 0), (e.wrapIDBFS = o));
+        Object.defineProperty(e, "__esModule", { value: !0 }),
+          (e.wrapIDBFS = void 0),
+          (e.wrapIDBFS = o);
         const r = new TextEncoder(),
           c = new TextDecoder();
         function s(t) {
@@ -177,7 +200,7 @@
             let w;
             if (((e += 1), u)) {
               const n = a(t, e);
-              ((e += 4), (w = t.subarray(e, e + n)), (e += n));
+              (e += 4), (w = t.subarray(e, e + n)), (e += n);
             }
             n.push({ path: r, timestamp: new Date(s), mode: i, contents: w });
           }
@@ -194,12 +217,15 @@
         }
         function a(t, n) {
           return (
-            (255 & t[n]) | ((t[n + 1] << 8) & 65280) | ((t[n + 2] << 16) & 16711680) | ((t[n + 3] << 24) & 4278190080)
+            (255 & t[n]) |
+            ((t[n + 1] << 8) & 65280) |
+            ((t[n + 2] << 16) & 16711680) |
+            ((t[n + 3] << 24) & 4278190080)
           );
         }
         function u(t, n, e) {
           const o = (n / 4294967296) >>> 0;
-          return (i(t, n >>> 0, e), i(t, o, e + 4), e + 8);
+          return i(t, n >>> 0, e), i(t, o, e + 4), e + 8;
         }
         function f(t, n) {
           const e = a(t, n);
@@ -207,8 +233,8 @@
         }
         window.wrapIDBFS = o;
       },
-      {}
-    ]
+      {},
+    ],
   },
   {},
   [1]

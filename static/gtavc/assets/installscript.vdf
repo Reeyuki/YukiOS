@@ -1,9 +1,0 @@
-"InstallScript"
-{
-       	"Registry"
-       	{
-                "HKEY_LOCAL_MACHINE\\SOFTWARE\\Rockstar Games\\Grand Theft Auto Vice City\\1.00.000"
-                {
-   				}
-   		}
-}

@@ -1,12 +1,17 @@
 var Module = typeof Module != "undefined" ? Module : {};
 var ENVIRONMENT_IS_WEB = !!globalThis.window;
 var ENVIRONMENT_IS_WORKER = !!globalThis.WorkerGlobalScope;
-var ENVIRONMENT_IS_NODE = globalThis.process?.versions?.node && globalThis.process?.type != "renderer";
-if (!Module["expectedDataFileDownloads"]) Module["expectedDataFileDownloads"] = 0;
+var ENVIRONMENT_IS_NODE =
+  globalThis.process?.versions?.node && globalThis.process?.type != "renderer";
+if (!Module["expectedDataFileDownloads"])
+  Module["expectedDataFileDownloads"] = 0;
 Module["expectedDataFileDownloads"]++;
 (() => {
-  var isPthread = typeof ENVIRONMENT_IS_PTHREAD != "undefined" && ENVIRONMENT_IS_PTHREAD;
-  var isWasmWorker = typeof ENVIRONMENT_IS_WASM_WORKER != "undefined" && ENVIRONMENT_IS_WASM_WORKER;
+  var isPthread =
+    typeof ENVIRONMENT_IS_PTHREAD != "undefined" && ENVIRONMENT_IS_PTHREAD;
+  var isWasmWorker =
+    typeof ENVIRONMENT_IS_WASM_WORKER != "undefined" &&
+    ENVIRONMENT_IS_WASM_WORKER;
   if (isPthread || isWasmWorker) return;
   var isNode =
     globalThis.process &&
@@ -17,10 +22,18 @@ Module["expectedDataFileDownloads"]++;
     var PACKAGE_PATH = "";
     if (typeof window === "object") {
       PACKAGE_PATH = window["encodeURIComponent"](
-        window.location.pathname.substring(0, window.location.pathname.lastIndexOf("/")) + "/"
+        window.location.pathname.substring(
+          0,
+          window.location.pathname.lastIndexOf("/")
+        ) + "/"
       );
-    } else if (typeof process === "undefined" && typeof location !== "undefined") {
-      PACKAGE_PATH = encodeURIComponent(location.pathname.substring(0, location.pathname.lastIndexOf("/")) + "/");
+    } else if (
+      typeof process === "undefined" &&
+      typeof location !== "undefined"
+    ) {
+      PACKAGE_PATH = encodeURIComponent(
+        location.pathname.substring(0, location.pathname.lastIndexOf("/")) + "/"
+      );
     }
     var PACKAGE_NAME = "/home/caiiiycuk/vc/vc-sky/index.data";
     var REMOTE_PACKAGE_BASE = "index.data";
@@ -60,9 +73,14 @@ Module["expectedDataFileDownloads"]++;
           totalLoaded += download.loaded;
           totalSize += download.total;
         }
-        Module["setStatus"] && Module["setStatus"](`Downloading data... (${totalLoaded}/${totalSize})`);
+        Module["setStatus"] &&
+          Module["setStatus"](
+            `Downloading data... (${totalLoaded}/${totalSize})`
+          );
       }
-      const packageData = new Uint8Array(chunks.map((c) => c.length).reduce((a, b) => a + b, 0));
+      const packageData = new Uint8Array(
+        chunks.map((c) => c.length).reduce((a, b) => a + b, 0)
+      );
       let offset = 0;
       for (const chunk of chunks) {
         packageData.set(chunk, offset);
@@ -72,9 +90,13 @@ Module["expectedDataFileDownloads"]++;
     }
     var fetchPromise;
     var fetched =
-      Module["getPreloadedPackage"] && Module["getPreloadedPackage"](REMOTE_PACKAGE_NAME, REMOTE_PACKAGE_SIZE);
+      Module["getPreloadedPackage"] &&
+      Module["getPreloadedPackage"](REMOTE_PACKAGE_NAME, REMOTE_PACKAGE_SIZE);
     if (!fetched) {
-      fetchPromise = fetchRemotePackage(REMOTE_PACKAGE_NAME, REMOTE_PACKAGE_SIZE);
+      fetchPromise = fetchRemotePackage(
+        REMOTE_PACKAGE_NAME,
+        REMOTE_PACKAGE_SIZE
+      );
     }
     async function runWithFS(Module) {
       function assert(check, msg) {
@@ -87,43 +109,178 @@ Module["expectedDataFileDownloads"]++;
       Module["FS_createPath"]("/vc-assets/local", "audio", true, true);
       Module["FS_createPath"]("/vc-assets/local", "data", true, true);
       Module["FS_createPath"]("/vc-assets/local/data", "maps", true, true);
-      Module["FS_createPath"]("/vc-assets/local/data/maps", "airport", true, true);
-      Module["FS_createPath"]("/vc-assets/local/data/maps", "airportn", true, true);
+      Module["FS_createPath"](
+        "/vc-assets/local/data/maps",
+        "airport",
+        true,
+        true
+      );
+      Module["FS_createPath"](
+        "/vc-assets/local/data/maps",
+        "airportn",
+        true,
+        true
+      );
       Module["FS_createPath"]("/vc-assets/local/data/maps", "bank", true, true);
       Module["FS_createPath"]("/vc-assets/local/data/maps", "bar", true, true);
-      Module["FS_createPath"]("/vc-assets/local/data/maps", "bridge", true, true);
-      Module["FS_createPath"]("/vc-assets/local/data/maps", "cisland", true, true);
+      Module["FS_createPath"](
+        "/vc-assets/local/data/maps",
+        "bridge",
+        true,
+        true
+      );
+      Module["FS_createPath"](
+        "/vc-assets/local/data/maps",
+        "cisland",
+        true,
+        true
+      );
       Module["FS_createPath"]("/vc-assets/local/data/maps", "club", true, true);
-      Module["FS_createPath"]("/vc-assets/local/data/maps", "concerth", true, true);
-      Module["FS_createPath"]("/vc-assets/local/data/maps", "docks", true, true);
-      Module["FS_createPath"]("/vc-assets/local/data/maps", "downtown", true, true);
-      Module["FS_createPath"]("/vc-assets/local/data/maps", "downtows", true, true);
+      Module["FS_createPath"](
+        "/vc-assets/local/data/maps",
+        "concerth",
+        true,
+        true
+      );
+      Module["FS_createPath"](
+        "/vc-assets/local/data/maps",
+        "docks",
+        true,
+        true
+      );
+      Module["FS_createPath"](
+        "/vc-assets/local/data/maps",
+        "downtown",
+        true,
+        true
+      );
+      Module["FS_createPath"](
+        "/vc-assets/local/data/maps",
+        "downtows",
+        true,
+        true
+      );
       Module["FS_createPath"]("/vc-assets/local/data/maps", "golf", true, true);
-      Module["FS_createPath"]("/vc-assets/local/data/maps", "haiti", true, true);
-      Module["FS_createPath"]("/vc-assets/local/data/maps", "haitin", true, true);
-      Module["FS_createPath"]("/vc-assets/local/data/maps", "hotel", true, true);
-      Module["FS_createPath"]("/vc-assets/local/data/maps", "islandsf", true, true);
-      Module["FS_createPath"]("/vc-assets/local/data/maps", "lawyers", true, true);
-      Module["FS_createPath"]("/vc-assets/local/data/maps", "littleha", true, true);
+      Module["FS_createPath"](
+        "/vc-assets/local/data/maps",
+        "haiti",
+        true,
+        true
+      );
+      Module["FS_createPath"](
+        "/vc-assets/local/data/maps",
+        "haitin",
+        true,
+        true
+      );
+      Module["FS_createPath"](
+        "/vc-assets/local/data/maps",
+        "hotel",
+        true,
+        true
+      );
+      Module["FS_createPath"](
+        "/vc-assets/local/data/maps",
+        "islandsf",
+        true,
+        true
+      );
+      Module["FS_createPath"](
+        "/vc-assets/local/data/maps",
+        "lawyers",
+        true,
+        true
+      );
+      Module["FS_createPath"](
+        "/vc-assets/local/data/maps",
+        "littleha",
+        true,
+        true
+      );
       Module["FS_createPath"]("/vc-assets/local/data/maps", "mall", true, true);
-      Module["FS_createPath"]("/vc-assets/local/data/maps", "mansion", true, true);
-      Module["FS_createPath"]("/vc-assets/local/data/maps", "nbeach", true, true);
-      Module["FS_createPath"]("/vc-assets/local/data/maps", "nbeachbt", true, true);
-      Module["FS_createPath"]("/vc-assets/local/data/maps", "nbeachw", true, true);
-      Module["FS_createPath"]("/vc-assets/local/data/maps", "oceandn", true, true);
-      Module["FS_createPath"]("/vc-assets/local/data/maps", "oceandrv", true, true);
-      Module["FS_createPath"]("/vc-assets/local/data/maps", "stadint", true, true);
-      Module["FS_createPath"]("/vc-assets/local/data/maps", "starisl", true, true);
-      Module["FS_createPath"]("/vc-assets/local/data/maps", "stripclb", true, true);
-      Module["FS_createPath"]("/vc-assets/local/data/maps", "washintn", true, true);
-      Module["FS_createPath"]("/vc-assets/local/data/maps", "washints", true, true);
-      Module["FS_createPath"]("/vc-assets/local/data/maps", "yacht", true, true);
+      Module["FS_createPath"](
+        "/vc-assets/local/data/maps",
+        "mansion",
+        true,
+        true
+      );
+      Module["FS_createPath"](
+        "/vc-assets/local/data/maps",
+        "nbeach",
+        true,
+        true
+      );
+      Module["FS_createPath"](
+        "/vc-assets/local/data/maps",
+        "nbeachbt",
+        true,
+        true
+      );
+      Module["FS_createPath"](
+        "/vc-assets/local/data/maps",
+        "nbeachw",
+        true,
+        true
+      );
+      Module["FS_createPath"](
+        "/vc-assets/local/data/maps",
+        "oceandn",
+        true,
+        true
+      );
+      Module["FS_createPath"](
+        "/vc-assets/local/data/maps",
+        "oceandrv",
+        true,
+        true
+      );
+      Module["FS_createPath"](
+        "/vc-assets/local/data/maps",
+        "stadint",
+        true,
+        true
+      );
+      Module["FS_createPath"](
+        "/vc-assets/local/data/maps",
+        "starisl",
+        true,
+        true
+      );
+      Module["FS_createPath"](
+        "/vc-assets/local/data/maps",
+        "stripclb",
+        true,
+        true
+      );
+      Module["FS_createPath"](
+        "/vc-assets/local/data/maps",
+        "washintn",
+        true,
+        true
+      );
+      Module["FS_createPath"](
+        "/vc-assets/local/data/maps",
+        "washints",
+        true,
+        true
+      );
+      Module["FS_createPath"](
+        "/vc-assets/local/data/maps",
+        "yacht",
+        true,
+        true
+      );
       Module["FS_createPath"]("/vc-assets/local/data", "paths", true, true);
       Module["FS_createPath"]("/vc-assets/local", "fonts", true, true);
       Module["FS_createPath"]("/vc-assets/local", "models", true, true);
       Module["FS_createPath"]("/vc-assets/local/models", "coll", true, true);
       Module["FS_createPath"]("/vc-assets/local/models", "generic", true, true);
-      Module["FS_createPath"]("/vc-assets/local/models", "gta3.img", true, true);
+      Module["FS_createPath"](
+        "/vc-assets/local/models",
+        "gta3.img",
+        true,
+        true
+      );
       Module["FS_createPath"]("/vc-assets/local", "mp3", true, true);
       Module["FS_createPath"]("/vc-assets/local", "mss", true, true);
       Module["FS_createPath"]("/vc-assets/local", "skins", true, true);
@@ -146,9 +303,13 @@ Module["expectedDataFileDownloads"]++;
           Module["FS_createDataFile"](name, null, data, true, true, true);
           Module["removeRunDependency"](`fp ${name}`);
         }
-        Module["removeRunDependency"]("datafile_/home/caiiiycuk/vc/vc-sky/index.data");
+        Module["removeRunDependency"](
+          "datafile_/home/caiiiycuk/vc/vc-sky/index.data"
+        );
       }
-      Module["addRunDependency"]("datafile_/home/caiiiycuk/vc/vc-sky/index.data");
+      Module["addRunDependency"](
+        "datafile_/home/caiiiycuk/vc/vc-sky/index.data"
+      );
       if (!Module["preloadResults"]) Module["preloadResults"] = {};
       Module["preloadResults"][PACKAGE_NAME] = { fromCache: false };
       if (!fetched) {
@@ -164,1953 +325,9724 @@ Module["expectedDataFileDownloads"]++;
     }
   }
   loadPackage({
-    files: [
-      { filename: "/vc-assets/local/anim/cuts.dir", start: 0, end: 4736 },
-      { filename: "/vc-assets/local/anim/cuts.img/int_a.dat", start: 4736, end: 8832 },
-      { filename: "/vc-assets/local/anim/cuts.img/int_a.ifp", start: 8832, end: 1479296 },
-      { filename: "/vc-assets/local/anim/cuts.img/int_d.dat", start: 1479296, end: 1487488 },
-      { filename: "/vc-assets/local/anim/cuts.img/int_d.ifp", start: 1487488, end: 4061824 },
-      { filename: "/vc-assets/local/anim/cuts.img/int_m.dat", start: 4061824, end: 4065920 },
-      { filename: "/vc-assets/local/anim/cuts.img/int_m.ifp", start: 4065920, end: 5403264 },
-      { filename: "/vc-assets/local/anim/ped.ifp", start: 5403264, end: 7604416 },
-      { filename: "/vc-assets/local/audio/flash.adf", start: 7604416, end: 33051462 },
-      { filename: "/vc-assets/local/audio/sfx.sdt", start: 33051462, end: 33250282 },
-      { filename: "/vc-assets/local/audio/sound.cache", start: 33250282, end: 33255178 },
-      { filename: "/vc-assets/local/data/animviewer.dat", start: 33255178, end: 33256272 },
-      { filename: "/vc-assets/local/data/carcols.dat", start: 33256272, end: 33264219 },
-      { filename: "/vc-assets/local/data/cullzone.dat", start: 33264219, end: 33419527 },
-      { filename: "/vc-assets/local/data/cullzoneempty.dat", start: 33419527, end: 33580651 },
-      { filename: "/vc-assets/local/data/debug.sc", start: 33580651, end: 33586029 },
-      { filename: "/vc-assets/local/data/default.dat", start: 33586029, end: 33586532 },
-      { filename: "/vc-assets/local/data/default.ide", start: 33586532, end: 33607379 },
-      { filename: "/vc-assets/local/data/fistfite.dat", start: 33607379, end: 33609312 },
-      { filename: "/vc-assets/local/data/freeroam_miami.scm", start: 33609312, end: 33647509 },
-      { filename: "/vc-assets/local/data/gta_vc.dat", start: 33647509, end: 33650034 },
-      { filename: "/vc-assets/local/data/handling.cfg", start: 33650034, end: 33675862 },
-      { filename: "/vc-assets/local/data/info.zon", start: 33675862, end: 33686345 },
-      { filename: "/vc-assets/local/data/main.sc", start: 33686345, end: 33691860 },
-      { filename: "/vc-assets/local/data/main.scm", start: 33691860, end: 34960993 },
-      { filename: "/vc-assets/local/data/map.zon", start: 34960993, end: 34963147 },
-      { filename: "/vc-assets/local/data/maps/airport/airport.col", start: 34963147, end: 35287359 },
-      { filename: "/vc-assets/local/data/maps/airport/airport.ide", start: 35287359, end: 35303622 },
-      { filename: "/vc-assets/local/data/maps/airport/airport.ipl", start: 35303622, end: 35341367 },
-      { filename: "/vc-assets/local/data/maps/airportn/airportn.col", start: 35341367, end: 35552347 },
-      { filename: "/vc-assets/local/data/maps/airportn/airportn.ide", start: 35552347, end: 35557003 },
-      { filename: "/vc-assets/local/data/maps/airportn/airportn.ipl", start: 35557003, end: 35577974 },
-      { filename: "/vc-assets/local/data/maps/bank/bank.col", start: 35577974, end: 35595190 },
-      { filename: "/vc-assets/local/data/maps/bank/bank.ide", start: 35595190, end: 35602876 },
-      { filename: "/vc-assets/local/data/maps/bank/bank.ipl", start: 35602876, end: 35607855 },
-      { filename: "/vc-assets/local/data/maps/bar/bar.ide", start: 35607855, end: 35607891 },
-      { filename: "/vc-assets/local/data/maps/bridge/bridge.col", start: 35607891, end: 35707447 },
-      { filename: "/vc-assets/local/data/maps/bridge/bridge.ide", start: 35707447, end: 35709471 },
-      { filename: "/vc-assets/local/data/maps/bridge/bridge.ipl", start: 35709471, end: 35714302 },
-      { filename: "/vc-assets/local/data/maps/cisland/cisland.col", start: 35714302, end: 35935594 },
-      { filename: "/vc-assets/local/data/maps/cisland/cisland.ide", start: 35935594, end: 35944601 },
-      { filename: "/vc-assets/local/data/maps/cisland/cisland.ipl", start: 35944601, end: 35970231 },
-      { filename: "/vc-assets/local/data/maps/club/club.col", start: 35970231, end: 35994243 },
-      { filename: "/vc-assets/local/data/maps/club/club.ide", start: 35994243, end: 36003567 },
-      { filename: "/vc-assets/local/data/maps/club/club.ipl", start: 36003567, end: 36010521 },
-      { filename: "/vc-assets/local/data/maps/concerth/concerth.col", start: 36010521, end: 36021101 },
-      { filename: "/vc-assets/local/data/maps/concerth/concerth.ide", start: 36021101, end: 36029269 },
-      { filename: "/vc-assets/local/data/maps/concerth/concerth.ipl", start: 36029269, end: 36031081 },
-      { filename: "/vc-assets/local/data/maps/cull.ipl", start: 36031081, end: 36087558 },
-      { filename: "/vc-assets/local/data/maps/docks/docks.col", start: 36087558, end: 36384002 },
-      { filename: "/vc-assets/local/data/maps/docks/docks.ide", start: 36384002, end: 36393133 },
-      { filename: "/vc-assets/local/data/maps/docks/docks.ipl", start: 36393133, end: 36423386 },
-      { filename: "/vc-assets/local/data/maps/downtown/downtown.col", start: 36423386, end: 36928174 },
-      { filename: "/vc-assets/local/data/maps/downtown/downtown.ide", start: 36928174, end: 36950875 },
-      { filename: "/vc-assets/local/data/maps/downtown/downtown.ipl", start: 36950875, end: 37005634 },
-      { filename: "/vc-assets/local/data/maps/downtows/downtows.col", start: 37005634, end: 37261898 },
-      { filename: "/vc-assets/local/data/maps/downtows/downtows.ide", start: 37261898, end: 37268739 },
-      { filename: "/vc-assets/local/data/maps/downtows/downtows.ipl", start: 37268739, end: 37295153 },
-      { filename: "/vc-assets/local/data/maps/generic.ide", start: 37295153, end: 37316882 },
-      { filename: "/vc-assets/local/data/maps/golf/golf.col", start: 37316882, end: 37677702 },
-      { filename: "/vc-assets/local/data/maps/golf/golf.ide", start: 37677702, end: 37683299 },
-      { filename: "/vc-assets/local/data/maps/golf/golf.ipl", start: 37683299, end: 37700668 },
-      { filename: "/vc-assets/local/data/maps/haiti/haiti.col", start: 37700668, end: 38053200 },
-      { filename: "/vc-assets/local/data/maps/haiti/haiti.ide", start: 38053200, end: 38059021 },
-      { filename: "/vc-assets/local/data/maps/haiti/haiti.ipl", start: 38059021, end: 38097841 },
-      { filename: "/vc-assets/local/data/maps/haitin/haitin.col", start: 38097841, end: 38399185 },
-      { filename: "/vc-assets/local/data/maps/haitin/haitin.ide", start: 38399185, end: 38404988 },
-      { filename: "/vc-assets/local/data/maps/haitin/haitin.ipl", start: 38404988, end: 38431403 },
-      { filename: "/vc-assets/local/data/maps/hotel/hotel.col", start: 38431403, end: 38442583 },
-      { filename: "/vc-assets/local/data/maps/hotel/hotel.ide", start: 38442583, end: 38447264 },
-      { filename: "/vc-assets/local/data/maps/hotel/hotel.ipl", start: 38447264, end: 38456197 },
-      { filename: "/vc-assets/local/data/maps/islandsf/islandsf.col", start: 38456197, end: 38464753 },
-      { filename: "/vc-assets/local/data/maps/islandsf/islandsf.ide", start: 38464753, end: 38468656 },
-      { filename: "/vc-assets/local/data/maps/islandsf/islandsf.ipl", start: 38468656, end: 38478914 },
-      { filename: "/vc-assets/local/data/maps/lawyers/lawyers.col", start: 38478914, end: 38494706 },
-      { filename: "/vc-assets/local/data/maps/lawyers/lawyers.ide", start: 38494706, end: 38495778 },
-      { filename: "/vc-assets/local/data/maps/lawyers/lawyers.ipl", start: 38495778, end: 38497193 },
-      { filename: "/vc-assets/local/data/maps/littleha/littleha.col", start: 38497193, end: 38864753 },
-      { filename: "/vc-assets/local/data/maps/littleha/littleha.ide", start: 38864753, end: 38880021 },
-      { filename: "/vc-assets/local/data/maps/littleha/littleha.ipl", start: 38880021, end: 38948253 },
-      { filename: "/vc-assets/local/data/maps/mall/mall.col", start: 38948253, end: 39150745 },
-      { filename: "/vc-assets/local/data/maps/mall/mall.ide", start: 39150745, end: 39160592 },
-      { filename: "/vc-assets/local/data/maps/mall/mall.ipl", start: 39160592, end: 39184369 },
-      { filename: "/vc-assets/local/data/maps/mansion/mansion.col", start: 39184369, end: 39337245 },
-      { filename: "/vc-assets/local/data/maps/mansion/mansion.ide", start: 39337245, end: 39346762 },
-      { filename: "/vc-assets/local/data/maps/mansion/mansion.ipl", start: 39346762, end: 39361821 },
-      { filename: "/vc-assets/local/data/maps/map0.dat", start: 39361821, end: 39362479 },
-      { filename: "/vc-assets/local/data/maps/map1.dat", start: 39362479, end: 39363137 },
-      { filename: "/vc-assets/local/data/maps/map2.dat", start: 39363137, end: 39363795 },
-      { filename: "/vc-assets/local/data/maps/map3.dat", start: 39363795, end: 39364453 },
-      { filename: "/vc-assets/local/data/maps/map4.dat", start: 39364453, end: 39365111 },
-      { filename: "/vc-assets/local/data/maps/map5.dat", start: 39365111, end: 39365769 },
-      { filename: "/vc-assets/local/data/maps/map6.dat", start: 39365769, end: 39366427 },
-      { filename: "/vc-assets/local/data/maps/map7.dat", start: 39366427, end: 39367085 },
-      { filename: "/vc-assets/local/data/maps/nbeach/nbeach.col", start: 39367085, end: 39723785 },
-      { filename: "/vc-assets/local/data/maps/nbeach/nbeach.ide", start: 39723785, end: 39729306 },
-      { filename: "/vc-assets/local/data/maps/nbeach/nbeach.ipl", start: 39729306, end: 39772162 },
-      { filename: "/vc-assets/local/data/maps/nbeachbt/nbeachbt.col", start: 39772162, end: 40267550 },
-      { filename: "/vc-assets/local/data/maps/nbeachbt/nbeachbt.ide", start: 40267550, end: 40277712 },
-      { filename: "/vc-assets/local/data/maps/nbeachbt/nbeachbt.ipl", start: 40277712, end: 40351880 },
-      { filename: "/vc-assets/local/data/maps/nbeachw/nbeachw.col", start: 40351880, end: 40613460 },
-      { filename: "/vc-assets/local/data/maps/nbeachw/nbeachw.ide", start: 40613460, end: 40622721 },
-      { filename: "/vc-assets/local/data/maps/nbeachw/nbeachw.ipl", start: 40622721, end: 40663666 },
-      { filename: "/vc-assets/local/data/maps/oceandn/oceandn.col", start: 40663666, end: 40954358 },
-      { filename: "/vc-assets/local/data/maps/oceandn/oceandn.ide", start: 40954358, end: 40974676 },
-      { filename: "/vc-assets/local/data/maps/oceandn/oceandn.ipl", start: 40974676, end: 41051625 },
-      { filename: "/vc-assets/local/data/maps/oceandrv/oceandrv.col", start: 41051625, end: 41228733 },
-      { filename: "/vc-assets/local/data/maps/oceandrv/oceandrv.ide", start: 41228733, end: 41241943 },
-      { filename: "/vc-assets/local/data/maps/oceandrv/oceandrv.ipl", start: 41241943, end: 41292132 },
-      { filename: "/vc-assets/local/data/maps/paths.ipl", start: 41292132, end: 42438238 },
-      { filename: "/vc-assets/local/data/maps/stadint/stadint.col", start: 42438238, end: 42871574 },
-      { filename: "/vc-assets/local/data/maps/stadint/stadint.ide", start: 42871574, end: 42881894 },
-      { filename: "/vc-assets/local/data/maps/stadint/stadint.ipl", start: 42881894, end: 42889167 },
-      { filename: "/vc-assets/local/data/maps/starisl/starisl.col", start: 42889167, end: 43135687 },
-      { filename: "/vc-assets/local/data/maps/starisl/starisl.ide", start: 43135687, end: 43139685 },
-      { filename: "/vc-assets/local/data/maps/starisl/starisl.ipl", start: 43139685, end: 43178706 },
-      { filename: "/vc-assets/local/data/maps/stripclb/stripclb.col", start: 43178706, end: 43207698 },
-      { filename: "/vc-assets/local/data/maps/stripclb/stripclb.ide", start: 43207698, end: 43212847 },
-      { filename: "/vc-assets/local/data/maps/stripclb/stripclb.ipl", start: 43212847, end: 43214015 },
-      { filename: "/vc-assets/local/data/maps/washintn/washintn.col", start: 43214015, end: 43489127 },
-      { filename: "/vc-assets/local/data/maps/washintn/washintn.ide", start: 43489127, end: 43506624 },
-      { filename: "/vc-assets/local/data/maps/washintn/washintn.ipl", start: 43506624, end: 43589579 },
-      { filename: "/vc-assets/local/data/maps/washints/washints.col", start: 43589579, end: 43898783 },
-      { filename: "/vc-assets/local/data/maps/washints/washints.ide", start: 43898783, end: 43920082 },
-      { filename: "/vc-assets/local/data/maps/washints/washints.ipl", start: 43920082, end: 43987513 },
-      { filename: "/vc-assets/local/data/maps/yacht/yacht.col", start: 43987513, end: 44012449 },
-      { filename: "/vc-assets/local/data/maps/yacht/yacht.ide", start: 44012449, end: 44014827 },
-      { filename: "/vc-assets/local/data/maps/yacht/yacht.ipl", start: 44014827, end: 44014903 },
-      { filename: "/vc-assets/local/data/navig.zon", start: 44014903, end: 44015662 },
-      { filename: "/vc-assets/local/data/object.dat", start: 44015662, end: 44041939 },
-      { filename: "/vc-assets/local/data/occlu.ipl", start: 44041939, end: 44063666 },
-      { filename: "/vc-assets/local/data/particle.cfg", start: 44063666, end: 44081004 },
-      { filename: "/vc-assets/local/data/paths/flight.dat", start: 44081004, end: 44089044 },
-      { filename: "/vc-assets/local/data/paths/flight2.dat", start: 44089044, end: 44092499 },
-      { filename: "/vc-assets/local/data/paths/flight3.dat", start: 44092499, end: 44104303 },
-      { filename: "/vc-assets/local/data/paths/spath0.dat", start: 44104303, end: 44106109 },
-      { filename: "/vc-assets/local/data/ped.dat", start: 44106109, end: 44108124 },
-      { filename: "/vc-assets/local/data/pedgrp.dat", start: 44108124, end: 44116559 },
-      { filename: "/vc-assets/local/data/pedstats.dat", start: 44116559, end: 44119781 },
-      { filename: "/vc-assets/local/data/surface.dat", start: 44119781, end: 44120343 },
-      { filename: "/vc-assets/local/data/timecyc.dat", start: 44120343, end: 44166483 },
-      { filename: "/vc-assets/local/data/train.dat", start: 44166483, end: 44168934 },
-      { filename: "/vc-assets/local/data/train2.dat", start: 44168934, end: 44173128 },
-      { filename: "/vc-assets/local/data/water.dat", start: 44173128, end: 44174357 },
-      { filename: "/vc-assets/local/data/waterpro.dat", start: 44174357, end: 44195801 },
-      { filename: "/vc-assets/local/data/weapon.dat", start: 44195801, end: 44202619 },
-      { filename: "/vc-assets/local/fonts/sansation.ttf", start: 44202619, end: 44281083 },
-      { filename: "/vc-assets/local/gamecontrollerdb.txt", start: 44281083, end: 44533234 },
-      { filename: "/vc-assets/local/installscript.vdf", start: 44533234, end: 44533417 },
-      { filename: "/vc-assets/local/models/coll/generic.col", start: 44533417, end: 44618189 },
-      { filename: "/vc-assets/local/models/coll/peds.col", start: 44618189, end: 44639666 },
-      { filename: "/vc-assets/local/models/coll/vehicles.col", start: 44639666, end: 44745262 },
-      { filename: "/vc-assets/local/models/coll/weapons.col", start: 44745262, end: 44745710 },
-      { filename: "/vc-assets/local/models/fonts.txd", start: 44745710, end: 45270294 },
-      { filename: "/vc-assets/local/models/fonts_r.txd", start: 45270294, end: 45794878 },
-      { filename: "/vc-assets/local/models/fronten1.txd", start: 45794878, end: 45992934 },
-      { filename: "/vc-assets/local/models/fronten2.txd", start: 45992934, end: 46741518 },
-      { filename: "/vc-assets/local/models/frontend_ds2.txd", start: 46741518, end: 47071494 },
-      { filename: "/vc-assets/local/models/frontend_ds3.txd", start: 47071494, end: 47596462 },
-      { filename: "/vc-assets/local/models/frontend_ds4.txd", start: 47596462, end: 48121430 },
-      { filename: "/vc-assets/local/models/frontend_nsw.txd", start: 48121430, end: 50481534 },
-      { filename: "/vc-assets/local/models/frontend_x360.txd", start: 50481534, end: 51006502 },
-      { filename: "/vc-assets/local/models/frontend_xone.txd", start: 51006502, end: 51531470 },
-      { filename: "/vc-assets/local/models/generic.txd", start: 51531470, end: 52699846 },
-      { filename: "/vc-assets/local/models/generic/air_vlo.dff", start: 52699846, end: 52706762 },
-      { filename: "/vc-assets/local/models/generic/arrow.dff", start: 52706762, end: 52711611 },
-      { filename: "/vc-assets/local/models/generic/player.bmp", start: 52711611, end: 52778223 },
-      { filename: "/vc-assets/local/models/generic/wheels.dff", start: 52778223, end: 52874290 },
-      { filename: "/vc-assets/local/models/generic/wheels.txd", start: 52874290, end: 52898266 },
-      { filename: "/vc-assets/local/models/generic/zonecylb.dff", start: 52898266, end: 52900526 },
-      { filename: "/vc-assets/local/models/gta3.dir", start: 52900526, end: 53093902 },
-      { filename: "/vc-assets/local/models/gta3.img/admiral.dff", start: 53093902, end: 53272078 },
-      { filename: "/vc-assets/local/models/gta3.img/admiral.txd", start: 53272078, end: 53317134 },
-      { filename: "/vc-assets/local/models/gta3.img/air_brway_030.dff", start: 53317134, end: 53343758 },
-      { filename: "/vc-assets/local/models/gta3.img/air_brway_34.dff", start: 53343758, end: 53370382 },
-      { filename: "/vc-assets/local/models/gta3.img/airgrndb.txd", start: 53370382, end: 53380622 },
-      { filename: "/vc-assets/local/models/gta3.img/airplan.dff", start: 53380622, end: 53450254 },
-      { filename: "/vc-assets/local/models/gta3.img/airplan.txd", start: 53450254, end: 53589518 },
-      { filename: "/vc-assets/local/models/gta3.img/airport.col", start: 53589518, end: 53915150 },
-      { filename: "/vc-assets/local/models/gta3.img/airport.txd", start: 53915150, end: 54064654 },
-      { filename: "/vc-assets/local/models/gta3.img/airporterminal.txd", start: 54064654, end: 54328846 },
-      { filename: "/vc-assets/local/models/gta3.img/airportn.col", start: 54328846, end: 54541838 },
-      { filename: "/vc-assets/local/models/gta3.img/airsignn.txd", start: 54541838, end: 54629902 },
-      { filename: "/vc-assets/local/models/gta3.img/airstuff2.txd", start: 54629902, end: 54656526 },
-      { filename: "/vc-assets/local/models/gta3.img/airtrain.dff", start: 54656526, end: 54750734 },
-      { filename: "/vc-assets/local/models/gta3.img/airtrain.txd", start: 54750734, end: 54777358 },
-      { filename: "/vc-assets/local/models/gta3.img/alleyprop.txd", start: 54777358, end: 54803982 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_3dbillb.dff", start: 54803982, end: 54869518 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_barriergate3.dff", start: 54869518, end: 54892046 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_billboard.txd", start: 54892046, end: 55127566 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_billboards3.dff", start: 55127566, end: 55150094 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_blastdef_03.dff", start: 55150094, end: 55162382 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_boardshad1.dff", start: 55162382, end: 55168526 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_build1.txd", start: 55168526, end: 55248398 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_build2.txd", start: 55248398, end: 55606798 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_buildings2.txd", start: 55606798, end: 55879182 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_carbush2_01.dff", start: 55879182, end: 55909902 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_carparkterm1.dff", start: 55909902, end: 55985678 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_clothes.txd", start: 55985678, end: 56071694 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_dockstairs1.dff", start: 56071694, end: 56104462 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_firetrucks.dff", start: 56104462, end: 56133134 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_francisland.txd", start: 56133134, end: 56323598 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_ground1.txd", start: 56323598, end: 56473102 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_hangar1_01.dff", start: 56473102, end: 56540686 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_hland_01.dff", start: 56540686, end: 56552974 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_jumbo_01.dff", start: 56552974, end: 56610318 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_jumbo_bridge.dff", start: 56610318, end: 56667662 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_jumbos.txd", start: 56667662, end: 56837646 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_learjet1_01.dff", start: 56837646, end: 56888846 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_learjets.txd", start: 56888846, end: 56901134 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_lod.txd", start: 56901134, end: 56942094 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_lodbit.txd", start: 56942094, end: 56946190 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_misc1bit.txd", start: 56946190, end: 57013774 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_newesca_01.dff", start: 57013774, end: 57093646 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_newescaglas_01.dff", start: 57093646, end: 57112078 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_newprops1opac.txd", start: 57112078, end: 57128462 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_radar1_01.dff", start: 57128462, end: 57148942 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_rland04.dff", start: 57148942, end: 57169422 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_rland06.dff", start: 57169422, end: 57187854 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_rland07.dff", start: 57187854, end: 57196046 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_rland10.dff", start: 57196046, end: 57212430 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_rlandnew9.dff", start: 57212430, end: 57232910 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_roads.txd", start: 57232910, end: 57544206 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_roadsect1.dff", start: 57544206, end: 57570830 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_roadsect1.txd", start: 57570830, end: 57714190 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_roadsect2a.dff", start: 57714190, end: 57740814 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_roadsect3.dff", start: 57740814, end: 57779726 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_roadsect3b.dff", start: 57779726, end: 57804302 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_roadsect4.dff", start: 57804302, end: 57941518 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_roadsect5.dff", start: 57941518, end: 57986574 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_runsign3_01.dff", start: 57986574, end: 57998862 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_runsigns1.txd", start: 57998862, end: 58101262 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_seaplanedock1.dff", start: 58101262, end: 58121742 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_seaplanprop.txd", start: 58121742, end: 58441230 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_smahangar2_01.dff", start: 58441230, end: 58445326 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_smallradar1_02.dff", start: 58445326, end: 58455566 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_steps1_01.dff", start: 58455566, end: 58478094 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_stepsn1_01.dff", start: 58478094, end: 58500622 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_termbbase1.dff", start: 58500622, end: 58539534 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_termina2_01.dff", start: 58539534, end: 58568206 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_termina_01.dff", start: 58568206, end: 58596878 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_termina_roof1.dff", start: 58596878, end: 58607118 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_termina_roof2.dff", start: 58607118, end: 58617358 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_terminagrflo1.dff", start: 58617358, end: 58625550 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_terminagrflo2.dff", start: 58625550, end: 58633742 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_terminal1.txd", start: 58633742, end: 58908174 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_terminal1boards.txd", start: 58908174, end: 59188750 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_terminalb1.dff", start: 59188750, end: 59272718 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_termsign1_dy.dff", start: 59272718, end: 59274766 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_termwindows.txd", start: 59274766, end: 59442702 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_termwindows1.dff", start: 59442702, end: 59454990 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_termwindows1b.dff", start: 59454990, end: 59461134 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_tower.dff", start: 59461134, end: 59481614 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_trailer_01.dff", start: 59481614, end: 59528718 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_treesfw1_01.dff", start: 59528718, end: 59538958 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_treeshot1_02.dff", start: 59538958, end: 59553294 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_viceairport.txd", start: 59553294, end: 59743758 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_wallfence2.dff", start: 59743758, end: 59756046 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_wallfence3.dff", start: 59756046, end: 59770382 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_wallfence4.dff", start: 59770382, end: 59786766 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_wallfence5.dff", start: 59786766, end: 59805198 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_wallfence7.dff", start: 59805198, end: 59813390 },
-      { filename: "/vc-assets/local/models/gta3.img/ap_windowstruts.dff", start: 59813390, end: 59872782 },
-      { filename: "/vc-assets/local/models/gta3.img/apairprtbits07.dff", start: 59872782, end: 59876878 },
-      { filename: "/vc-assets/local/models/gta3.img/apcarparkn.txd", start: 59876878, end: 59938318 },
-      { filename: "/vc-assets/local/models/gta3.img/apchecpointn.txd", start: 59938318, end: 60016142 },
-      { filename: "/vc-assets/local/models/gta3.img/apgroundn.txd", start: 60016142, end: 60108302 },
-      { filename: "/vc-assets/local/models/gta3.img/apjumbon.txd", start: 60108302, end: 60278286 },
-      { filename: "/vc-assets/local/models/gta3.img/aproadsn.txd", start: 60278286, end: 60558862 },
-      { filename: "/vc-assets/local/models/gta3.img/b_hse_doors.dff", start: 60558862, end: 60560910 },
-      { filename: "/vc-assets/local/models/gta3.img/b_hse_ext.dff", start: 60560910, end: 60585486 },
-      { filename: "/vc-assets/local/models/gta3.img/b_hse_interior.dff", start: 60585486, end: 60610062 },
-      { filename: "/vc-assets/local/models/gta3.img/b_hse_interiorrays.dff", start: 60610062, end: 60614158 },
-      { filename: "/vc-assets/local/models/gta3.img/b_hse_pier.dff", start: 60614158, end: 60739086 },
-      { filename: "/vc-assets/local/models/gta3.img/b_hse_pierfence.dff", start: 60739086, end: 60751374 },
-      { filename: "/vc-assets/local/models/gta3.img/baggage.dff", start: 60751374, end: 60847630 },
-      { filename: "/vc-assets/local/models/gta3.img/baggage.txd", start: 60847630, end: 60870158 },
-      { filename: "/vc-assets/local/models/gta3.img/bank.col", start: 60870158, end: 60888590 },
-      { filename: "/vc-assets/local/models/gta3.img/banshee.dff", start: 60888590, end: 61033998 },
-      { filename: "/vc-assets/local/models/gta3.img/banshee.txd", start: 61033998, end: 61077006 },
-      { filename: "/vc-assets/local/models/gta3.img/baseball.ifp", start: 61077006, end: 61136398 },
-      { filename: "/vc-assets/local/models/gta3.img/basketballcourt04.dff", start: 61136398, end: 61158926 },
-      { filename: "/vc-assets/local/models/gta3.img/bat.dff", start: 61158926, end: 61163022 },
-      { filename: "/vc-assets/local/models/gta3.img/bat.txd", start: 61163022, end: 61171214 },
-      { filename: "/vc-assets/local/models/gta3.img/beach_bush02.dff", start: 61171214, end: 61173262 },
-      { filename: "/vc-assets/local/models/gta3.img/beach_bush06s.dff", start: 61173262, end: 61177358 },
-      { filename: "/vc-assets/local/models/gta3.img/beach_bush08s.dff", start: 61177358, end: 61181454 },
-      { filename: "/vc-assets/local/models/gta3.img/beachlo1.dff", start: 61181454, end: 61185550 },
-      { filename: "/vc-assets/local/models/gta3.img/benson.dff", start: 61185550, end: 61359630 },
-      { filename: "/vc-assets/local/models/gta3.img/benson.txd", start: 61359630, end: 61470222 },
-      { filename: "/vc-assets/local/models/gta3.img/bfinject.dff", start: 61470222, end: 61599246 },
-      { filename: "/vc-assets/local/models/gta3.img/bfinject.txd", start: 61599246, end: 61638158 },
-      { filename: "/vc-assets/local/models/gta3.img/bfost.dff", start: 61638158, end: 61705742 },
-      { filename: "/vc-assets/local/models/gta3.img/bfost.txd", start: 61705742, end: 61728270 },
-      { filename: "/vc-assets/local/models/gta3.img/bfotr.dff", start: 61728270, end: 61793806 },
-      { filename: "/vc-assets/local/models/gta3.img/bfotr.txd", start: 61793806, end: 61816334 },
-      { filename: "/vc-assets/local/models/gta3.img/bfypr.dff", start: 61816334, end: 61875726 },
-      { filename: "/vc-assets/local/models/gta3.img/bfypr.txd", start: 61875726, end: 61898254 },
-      { filename: "/vc-assets/local/models/gta3.img/bfyst.dff", start: 61898254, end: 61963790 },
-      { filename: "/vc-assets/local/models/gta3.img/bfyst.txd", start: 61963790, end: 61986318 },
-      { filename: "/vc-assets/local/models/gta3.img/biked.ifp", start: 61986318, end: 62127630 },
-      { filename: "/vc-assets/local/models/gta3.img/bikeh.ifp", start: 62127630, end: 62238222 },
-      { filename: "/vc-assets/local/models/gta3.img/bikes.ifp", start: 62238222, end: 62371342 },
-      { filename: "/vc-assets/local/models/gta3.img/bikev.ifp", start: 62371342, end: 62459406 },
-      { filename: "/vc-assets/local/models/gta3.img/billbd3.dff", start: 62459406, end: 62488078 },
-      { filename: "/vc-assets/local/models/gta3.img/billbrd.txd", start: 62488078, end: 62539278 },
-      { filename: "/vc-assets/local/models/gta3.img/blimp_day.dff", start: 62539278, end: 62551566 },
-      { filename: "/vc-assets/local/models/gta3.img/blimp_night.dff", start: 62551566, end: 62563854 },
-      { filename: "/vc-assets/local/models/gta3.img/blistac.dff", start: 62563854, end: 62729742 },
-      { filename: "/vc-assets/local/models/gta3.img/blistac.txd", start: 62729742, end: 62774798 },
-      { filename: "/vc-assets/local/models/gta3.img/bmodk.dff", start: 62774798, end: 62846478 },
-      { filename: "/vc-assets/local/models/gta3.img/bmodk.txd", start: 62846478, end: 62869006 },
-      { filename: "/vc-assets/local/models/gta3.img/bmost.dff", start: 62869006, end: 62948878 },
-      { filename: "/vc-assets/local/models/gta3.img/bmost.txd", start: 62948878, end: 62971406 },
-      { filename: "/vc-assets/local/models/gta3.img/bmotr.dff", start: 62971406, end: 63047182 },
-      { filename: "/vc-assets/local/models/gta3.img/bmotr.txd", start: 63047182, end: 63069710 },
-      { filename: "/vc-assets/local/models/gta3.img/bmycr.dff", start: 63069710, end: 63143438 },
-      { filename: "/vc-assets/local/models/gta3.img/bmycr.txd", start: 63143438, end: 63165966 },
-      { filename: "/vc-assets/local/models/gta3.img/bmypi.dff", start: 63165966, end: 63245838 },
-      { filename: "/vc-assets/local/models/gta3.img/bmypi.txd", start: 63245838, end: 63268366 },
-      { filename: "/vc-assets/local/models/gta3.img/bmyst.dff", start: 63268366, end: 63344142 },
-      { filename: "/vc-assets/local/models/gta3.img/bmyst.txd", start: 63344142, end: 63366670 },
-      { filename: "/vc-assets/local/models/gta3.img/boat_kb1.dff", start: 63366670, end: 63385102 },
-      { filename: "/vc-assets/local/models/gta3.img/boat_kb2.dff", start: 63385102, end: 63458830 },
-      { filename: "/vc-assets/local/models/gta3.img/boatcranelg0.dff", start: 63458830, end: 63489550 },
-      { filename: "/vc-assets/local/models/gta3.img/boatcranesm0.dff", start: 63489550, end: 63516174 },
-      { filename: "/vc-assets/local/models/gta3.img/boathouse.txd", start: 63516174, end: 64003598 },
-      { filename: "/vc-assets/local/models/gta3.img/bobcat.dff", start: 64003598, end: 64159246 },
-      { filename: "/vc-assets/local/models/gta3.img/bobcat.txd", start: 64159246, end: 64208398 },
-      { filename: "/vc-assets/local/models/gta3.img/bodyarmour.dff", start: 64208398, end: 64216590 },
-      { filename: "/vc-assets/local/models/gta3.img/bollardlight.dff", start: 64216590, end: 64220686 },
-      { filename: "/vc-assets/local/models/gta3.img/boxville.dff", start: 64220686, end: 64388622 },
-      { filename: "/vc-assets/local/models/gta3.img/boxville.txd", start: 64388622, end: 64495118 },
-      { filename: "/vc-assets/local/models/gta3.img/brassknuckle.dff", start: 64495118, end: 64499214 },
-      { filename: "/vc-assets/local/models/gta3.img/brassknuckle.txd", start: 64499214, end: 64505358 },
-      { filename: "/vc-assets/local/models/gta3.img/brfcase.dff", start: 64505358, end: 64531982 },
-      { filename: "/vc-assets/local/models/gta3.img/brfcase.txd", start: 64531982, end: 64546318 },
-      { filename: "/vc-assets/local/models/gta3.img/bribe.dff", start: 64546318, end: 64552462 },
-      { filename: "/vc-assets/local/models/gta3.img/bridge.col", start: 64552462, end: 64652814 },
-      { filename: "/vc-assets/local/models/gta3.img/burrito.dff", start: 64652814, end: 64841230 },
-      { filename: "/vc-assets/local/models/gta3.img/burrito.txd", start: 64841230, end: 64884238 },
-      { filename: "/vc-assets/local/models/gta3.img/bus.dff", start: 64884238, end: 65029646 },
-      { filename: "/vc-assets/local/models/gta3.img/bus.txd", start: 65029646, end: 65074702 },
-      { filename: "/vc-assets/local/models/gta3.img/bussign1.dff", start: 65074702, end: 65078798 },
-      { filename: "/vc-assets/local/models/gta3.img/cabbie.dff", start: 65078798, end: 65273358 },
-      { filename: "/vc-assets/local/models/gta3.img/cabbie.txd", start: 65273358, end: 65326606 },
-      { filename: "/vc-assets/local/models/gta3.img/cdseaan.dff", start: 65326606, end: 65328654 },
-      { filename: "/vc-assets/local/models/gta3.img/cdseabed01.dff", start: 65328654, end: 65334798 },
-      { filename: "/vc-assets/local/models/gta3.img/cdseabed02.dff", start: 65334798, end: 65340942 },
-      { filename: "/vc-assets/local/models/gta3.img/cdseabed03.dff", start: 65340942, end: 65345038 },
-      { filename: "/vc-assets/local/models/gta3.img/cdseabed04.dff", start: 65345038, end: 65349134 },
-      { filename: "/vc-assets/local/models/gta3.img/cdseabed05.dff", start: 65349134, end: 65353230 },
-      { filename: "/vc-assets/local/models/gta3.img/cdseabed06.dff", start: 65353230, end: 65357326 },
-      { filename: "/vc-assets/local/models/gta3.img/cdseabed07.dff", start: 65357326, end: 65361422 },
-      { filename: "/vc-assets/local/models/gta3.img/cdseabed08.dff", start: 65361422, end: 65365518 },
-      { filename: "/vc-assets/local/models/gta3.img/cdseabed09.dff", start: 65365518, end: 65369614 },
-      { filename: "/vc-assets/local/models/gta3.img/cdseabed16.dff", start: 65369614, end: 65371662 },
-      { filename: "/vc-assets/local/models/gta3.img/cdseabed18.dff", start: 65371662, end: 65375758 },
-      { filename: "/vc-assets/local/models/gta3.img/cdseabed19.dff", start: 65375758, end: 65377806 },
-      { filename: "/vc-assets/local/models/gta3.img/cdseabed20.dff", start: 65377806, end: 65381902 },
-      { filename: "/vc-assets/local/models/gta3.img/cdseabed21.dff", start: 65381902, end: 65383950 },
-      { filename: "/vc-assets/local/models/gta3.img/cdseabed24.dff", start: 65383950, end: 65385998 },
-      { filename: "/vc-assets/local/models/gta3.img/cdseabed25.dff", start: 65385998, end: 65388046 },
-      { filename: "/vc-assets/local/models/gta3.img/cdseabed26.dff", start: 65388046, end: 65390094 },
-      { filename: "/vc-assets/local/models/gta3.img/cdseabed27.dff", start: 65390094, end: 65392142 },
-      { filename: "/vc-assets/local/models/gta3.img/cdseabed28.dff", start: 65392142, end: 65394190 },
-      { filename: "/vc-assets/local/models/gta3.img/cdseabed29.dff", start: 65394190, end: 65396238 },
-      { filename: "/vc-assets/local/models/gta3.img/cdseabed30.dff", start: 65396238, end: 65398286 },
-      { filename: "/vc-assets/local/models/gta3.img/cheetah.dff", start: 65398286, end: 65568270 },
-      { filename: "/vc-assets/local/models/gta3.img/cheetah.txd", start: 65568270, end: 65611278 },
-      { filename: "/vc-assets/local/models/gta3.img/chromegun.dff", start: 65611278, end: 65629710 },
-      { filename: "/vc-assets/local/models/gta3.img/chromegun.txd", start: 65629710, end: 65637902 },
-      { filename: "/vc-assets/local/models/gta3.img/cisland.col", start: 65637902, end: 65861134 },
-      { filename: "/vc-assets/local/models/gta3.img/cl_tablesetlrg.dff", start: 65861134, end: 65887758 },
-      { filename: "/vc-assets/local/models/gta3.img/club.col", start: 65887758, end: 65912334 },
-      { filename: "/vc-assets/local/models/gta3.img/coach.dff", start: 65912334, end: 66053646 },
-      { filename: "/vc-assets/local/models/gta3.img/coach.ifp", start: 66053646, end: 66139662 },
-      { filename: "/vc-assets/local/models/gta3.img/coach.txd", start: 66139662, end: 66188814 },
-      { filename: "/vc-assets/local/models/gta3.img/cokpoolwater.dff", start: 66188814, end: 66190862 },
-      { filename: "/vc-assets/local/models/gta3.img/colt45.dff", start: 66190862, end: 66207246 },
-      { filename: "/vc-assets/local/models/gta3.img/colt45.ifp", start: 66207246, end: 66266638 },
-      { filename: "/vc-assets/local/models/gta3.img/colt45.txd", start: 66266638, end: 66274830 },
-      { filename: "/vc-assets/local/models/gta3.img/comet.dff", start: 66274830, end: 66416142 },
-      { filename: "/vc-assets/local/models/gta3.img/comet.txd", start: 66416142, end: 66461198 },
-      { filename: "/vc-assets/local/models/gta3.img/concerth.col", start: 66461198, end: 66473486 },
-      { filename: "/vc-assets/local/models/gta3.img/cop.dff", start: 66473486, end: 66545166 },
-      { filename: "/vc-assets/local/models/gta3.img/cop.txd", start: 66545166, end: 66567694 },
-      { filename: "/vc-assets/local/models/gta3.img/cranebasea0.dff", start: 66567694, end: 66592270 },
-      { filename: "/vc-assets/local/models/gta3.img/cranes.txd", start: 66592270, end: 66668046 },
-      { filename: "/vc-assets/local/models/gta3.img/crate.txd", start: 66668046, end: 67010062 },
-      { filename: "/vc-assets/local/models/gta3.img/crgoshp010.dff", start: 67010062, end: 67087886 },
-      { filename: "/vc-assets/local/models/gta3.img/cs_chop.dff", start: 67087886, end: 67333646 },
-      { filename: "/vc-assets/local/models/gta3.img/cs_chop.txd", start: 67333646, end: 67452430 },
-      { filename: "/vc-assets/local/models/gta3.img/csassa.dff", start: 67452430, end: 67542542 },
-      { filename: "/vc-assets/local/models/gta3.img/csassa.txd", start: 67542542, end: 67587598 },
-      { filename: "/vc-assets/local/models/gta3.img/csassb.dff", start: 67587598, end: 67681806 },
-      { filename: "/vc-assets/local/models/gta3.img/csassb.txd", start: 67681806, end: 67726862 },
-      { filename: "/vc-assets/local/models/gta3.img/csassc.dff", start: 67726862, end: 67816974 },
-      { filename: "/vc-assets/local/models/gta3.img/csassc.txd", start: 67816974, end: 67862030 },
-      { filename: "/vc-assets/local/models/gta3.img/csdeal.dff", start: 67862030, end: 67995150 },
-      { filename: "/vc-assets/local/models/gta3.img/csdeal.txd", start: 67995150, end: 68040206 },
-      { filename: "/vc-assets/local/models/gta3.img/csken.dff", start: 68040206, end: 68204046 },
-      { filename: "/vc-assets/local/models/gta3.img/csken.txd", start: 68204046, end: 68249102 },
-      { filename: "/vc-assets/local/models/gta3.img/csplay.dff", start: 68249102, end: 68394510 },
-      { filename: "/vc-assets/local/models/gta3.img/csplay.txd", start: 68394510, end: 68439566 },
-      { filename: "/vc-assets/local/models/gta3.img/cssonny.dff", start: 68439566, end: 68570638 },
-      { filename: "/vc-assets/local/models/gta3.img/cssonny.txd", start: 68570638, end: 68615694 },
-      { filename: "/vc-assets/local/models/gta3.img/deco_buildkb29_nt.dff", start: 68615694, end: 68648462 },
-      { filename: "/vc-assets/local/models/gta3.img/deco_buildkb_nt.dff", start: 68648462, end: 68673038 },
-      { filename: "/vc-assets/local/models/gta3.img/deco_polgrnda10.dff", start: 68673038, end: 68724238 },
-      { filename: "/vc-assets/local/models/gta3.img/deco_polgrnda12.dff", start: 68724238, end: 68861454 },
-      { filename: "/vc-assets/local/models/gta3.img/deco_polgrnda13.dff", start: 68861454, end: 68873742 },
-      { filename: "/vc-assets/local/models/gta3.img/delcase.dff", start: 68873742, end: 68881934 },
-      { filename: "/vc-assets/local/models/gta3.img/delcase.txd", start: 68881934, end: 68926990 },
-      { filename: "/vc-assets/local/models/gta3.img/dinghy.dff", start: 68926990, end: 69010958 },
-      { filename: "/vc-assets/local/models/gta3.img/dinghy.txd", start: 69010958, end: 69047822 },
-      { filename: "/vc-assets/local/models/gta3.img/dk_cargoshp95.dff", start: 69047822, end: 69248526 },
-      { filename: "/vc-assets/local/models/gta3.img/dk_dockroads02.dff", start: 69248526, end: 69277198 },
-      { filename: "/vc-assets/local/models/gta3.img/dk_dockroads03.dff", start: 69277198, end: 69305870 },
-      { filename: "/vc-assets/local/models/gta3.img/dk_dockroads04.dff", start: 69305870, end: 69320206 },
-      { filename: "/vc-assets/local/models/gta3.img/dk_midbuilds.txd", start: 69320206, end: 69783054 },
-      { filename: "/vc-assets/local/models/gta3.img/dk_waretank.dff", start: 69783054, end: 69826062 },
-      { filename: "/vc-assets/local/models/gta3.img/dk_waretankdoor1.dff", start: 69826062, end: 69828110 },
-      { filename: "/vc-assets/local/models/gta3.img/dkcargohull2.dff", start: 69828110, end: 69940750 },
-      { filename: "/vc-assets/local/models/gta3.img/dkcargohull2b.dff", start: 69940750, end: 70012430 },
-      { filename: "/vc-assets/local/models/gta3.img/dkcargohull2c.dff", start: 70012430, end: 70088206 },
-      { filename: "/vc-assets/local/models/gta3.img/dkcargoshp.txd", start: 70088206, end: 70452750 },
-      { filename: "/vc-assets/local/models/gta3.img/doc_crane_cab03.dff", start: 70452750, end: 70477326 },
-      { filename: "/vc-assets/local/models/gta3.img/doc_crane_cab04.dff", start: 70477326, end: 70524430 },
-      { filename: "/vc-assets/local/models/gta3.img/doc_craneeggs04.dff", start: 70524430, end: 70567438 },
-      { filename: "/vc-assets/local/models/gta3.img/doc_dockwareold.dff", start: 70567438, end: 70606350 },
-      { filename: "/vc-assets/local/models/gta3.img/doccrane.txd", start: 70606350, end: 70669838 },
-      { filename: "/vc-assets/local/models/gta3.img/docfactories.txd", start: 70669838, end: 71177742 },
-      { filename: "/vc-assets/local/models/gta3.img/dock_props01.dff", start: 71177742, end: 71183886 },
-      { filename: "/vc-assets/local/models/gta3.img/dock_props02.dff", start: 71183886, end: 71220750 },
-      { filename: "/vc-assets/local/models/gta3.img/dock_ships.txd", start: 71220750, end: 71466510 },
-      { filename: "/vc-assets/local/models/gta3.img/dockcranescale0.dff", start: 71466510, end: 71519758 },
-      { filename: "/vc-assets/local/models/gta3.img/dockfence.dff", start: 71519758, end: 71521806 },
-      { filename: "/vc-assets/local/models/gta3.img/dockfence.txd", start: 71521806, end: 71583246 },
-      { filename: "/vc-assets/local/models/gta3.img/dockfuel07.dff", start: 71583246, end: 71609870 },
-      { filename: "/vc-assets/local/models/gta3.img/dockgrass.dff", start: 71609870, end: 71652878 },
-      { filename: "/vc-assets/local/models/gta3.img/dockgrass.txd", start: 71652878, end: 71663118 },
-      { filename: "/vc-assets/local/models/gta3.img/dockgrnd.txd", start: 71663118, end: 72074766 },
-      { filename: "/vc-assets/local/models/gta3.img/docklight.txd", start: 72074766, end: 72115726 },
-      { filename: "/vc-assets/local/models/gta3.img/dockroads.txd", start: 72115726, end: 72355342 },
-      { filename: "/vc-assets/local/models/gta3.img/docks.col", start: 72355342, end: 72652302 },
-      { filename: "/vc-assets/local/models/gta3.img/docks.txd", start: 72652302, end: 73223694 },
-      { filename: "/vc-assets/local/models/gta3.img/docks10.dff", start: 73223694, end: 73291278 },
-      { filename: "/vc-assets/local/models/gta3.img/docks21.dff", start: 73291278, end: 73369102 },
-      { filename: "/vc-assets/local/models/gta3.img/docks28.dff", start: 73369102, end: 73412110 },
-      { filename: "/vc-assets/local/models/gta3.img/docks30.dff", start: 73412110, end: 73514510 },
-      { filename: "/vc-assets/local/models/gta3.img/docks31.dff", start: 73514510, end: 73528846 },
-      { filename: "/vc-assets/local/models/gta3.img/docks32.dff", start: 73528846, end: 73537038 },
-      { filename: "/vc-assets/local/models/gta3.img/docks37.dff", start: 73537038, end: 73569806 },
-      { filename: "/vc-assets/local/models/gta3.img/docks40.dff", start: 73569806, end: 73586190 },
-      { filename: "/vc-assets/local/models/gta3.img/docks62.dff", start: 73586190, end: 73594382 },
-      { filename: "/vc-assets/local/models/gta3.img/docks85.dff", start: 73594382, end: 73606670 },
-      { filename: "/vc-assets/local/models/gta3.img/docksprops04.dff", start: 73606670, end: 73790990 },
-      { filename: "/vc-assets/local/models/gta3.img/docksprops11.dff", start: 73790990, end: 73934350 },
-      { filename: "/vc-assets/local/models/gta3.img/docksprops12.dff", start: 73934350, end: 74077710 },
-      { filename: "/vc-assets/local/models/gta3.img/docksprops13.dff", start: 74077710, end: 74194446 },
-      { filename: "/vc-assets/local/models/gta3.img/docksprops14.dff", start: 74194446, end: 74280462 },
-      { filename: "/vc-assets/local/models/gta3.img/dolphin.dff", start: 74280462, end: 74307086 },
-      { filename: "/vc-assets/local/models/gta3.img/dolphin.txd", start: 74307086, end: 74311182 },
-      { filename: "/vc-assets/local/models/gta3.img/downtown.col", start: 74311182, end: 74817038 },
-      { filename: "/vc-assets/local/models/gta3.img/downtows.col", start: 74817038, end: 75075086 },
-      { filename: "/vc-assets/local/models/gta3.img/drink.dff", start: 75075086, end: 75079182 },
-      { filename: "/vc-assets/local/models/gta3.img/drink.txd", start: 75079182, end: 75091470 },
-      { filename: "/vc-assets/local/models/gta3.img/dt_blimp.txd", start: 75091470, end: 75095566 },
-      { filename: "/vc-assets/local/models/gta3.img/dt_lod.txd", start: 75095566, end: 75253262 },
-      { filename: "/vc-assets/local/models/gta3.img/dts_lodbig.txd", start: 75253262, end: 75296270 },
-      { filename: "/vc-assets/local/models/gta3.img/dts_lodsmall.txd", start: 75296270, end: 75324942 },
-      { filename: "/vc-assets/local/models/gta3.img/dts_lodsmall2.txd", start: 75324942, end: 75415054 },
-      { filename: "/vc-assets/local/models/gta3.img/dynhydrent.txd", start: 75415054, end: 75427342 },
-      { filename: "/vc-assets/local/models/gta3.img/dynsigns.txd", start: 75427342, end: 75453966 },
-      { filename: "/vc-assets/local/models/gta3.img/esperant.dff", start: 75453966, end: 75623950 },
-      { filename: "/vc-assets/local/models/gta3.img/esperant.txd", start: 75623950, end: 75675150 },
-      { filename: "/vc-assets/local/models/gta3.img/faggio.dff", start: 75675150, end: 75750926 },
-      { filename: "/vc-assets/local/models/gta3.img/faggio.txd", start: 75750926, end: 75775502 },
-      { filename: "/vc-assets/local/models/gta3.img/fire_hydrant.dff", start: 75775502, end: 75791886 },
-      { filename: "/vc-assets/local/models/gta3.img/fish1.txd", start: 75791886, end: 75798030 },
-      { filename: "/vc-assets/local/models/gta3.img/fish1single.dff", start: 75798030, end: 75800078 },
-      { filename: "/vc-assets/local/models/gta3.img/fish2.txd", start: 75800078, end: 75806222 },
-      { filename: "/vc-assets/local/models/gta3.img/fish2s.dff", start: 75806222, end: 75810318 },
-      { filename: "/vc-assets/local/models/gta3.img/fish2single.dff", start: 75810318, end: 75812366 },
-      { filename: "/vc-assets/local/models/gta3.img/fish3.txd", start: 75812366, end: 75818510 },
-      { filename: "/vc-assets/local/models/gta3.img/fish3s.dff", start: 75818510, end: 75820558 },
-      { filename: "/vc-assets/local/models/gta3.img/fish3single.dff", start: 75820558, end: 75822606 },
-      { filename: "/vc-assets/local/models/gta3.img/flatbed.dff", start: 75822606, end: 76070414 },
-      { filename: "/vc-assets/local/models/gta3.img/flatbed.txd", start: 76070414, end: 76146190 },
-      { filename: "/vc-assets/local/models/gta3.img/gda.dff", start: 76146190, end: 76207630 },
-      { filename: "/vc-assets/local/models/gta3.img/gda.txd", start: 76207630, end: 76230158 },
-      { filename: "/vc-assets/local/models/gta3.img/gdb.dff", start: 76230158, end: 76291598 },
-      { filename: "/vc-assets/local/models/gta3.img/gdb.txd", start: 76291598, end: 76314126 },
-      { filename: "/vc-assets/local/models/gta3.img/gf_lod.txd", start: 76314126, end: 76346894 },
-      { filename: "/vc-assets/local/models/gta3.img/gf_treesfw1_01.dff", start: 76346894, end: 76367374 },
-      { filename: "/vc-assets/local/models/gta3.img/gf_treesfw2_01.dff", start: 76367374, end: 76383758 },
-      { filename: "/vc-assets/local/models/gta3.img/gf_treesfw3_01.dff", start: 76383758, end: 76398094 },
-      { filename: "/vc-assets/local/models/gta3.img/gf_treesfw4_01.dff", start: 76398094, end: 76414478 },
-      { filename: "/vc-assets/local/models/gta3.img/gf_treesfw5_01.dff", start: 76414478, end: 76432910 },
-      { filename: "/vc-assets/local/models/gta3.img/ggsalonsign1.dff", start: 76432910, end: 76437006 },
-      { filename: "/vc-assets/local/models/gta3.img/glendale.dff", start: 76437006, end: 76594702 },
-      { filename: "/vc-assets/local/models/gta3.img/glendale.txd", start: 76594702, end: 76647950 },
-      { filename: "/vc-assets/local/models/gta3.img/golf.col", start: 76647950, end: 77010446 },
-      { filename: "/vc-assets/local/models/gta3.img/greenwoo.dff", start: 77010446, end: 77198862 },
-      { filename: "/vc-assets/local/models/gta3.img/greenwoo.txd", start: 77198862, end: 77245966 },
-      { filename: "/vc-assets/local/models/gta3.img/haiti.col", start: 77245966, end: 77600270 },
-      { filename: "/vc-assets/local/models/gta3.img/haitin.col", start: 77600270, end: 77903374 },
-      { filename: "/vc-assets/local/models/gta3.img/health.dff", start: 77903374, end: 77911566 },
-      { filename: "/vc-assets/local/models/gta3.img/hermes.dff", start: 77911566, end: 78040590 },
-      { filename: "/vc-assets/local/models/gta3.img/hermes.txd", start: 78040590, end: 78099982 },
-      { filename: "/vc-assets/local/models/gta3.img/hfost.dff", start: 78099982, end: 78165518 },
-      { filename: "/vc-assets/local/models/gta3.img/hfost.txd", start: 78165518, end: 78188046 },
-      { filename: "/vc-assets/local/models/gta3.img/hfotr.dff", start: 78188046, end: 78253582 },
-      { filename: "/vc-assets/local/models/gta3.img/hfotr.txd", start: 78253582, end: 78276110 },
-      { filename: "/vc-assets/local/models/gta3.img/hfybe.dff", start: 78276110, end: 78331406 },
-      { filename: "/vc-assets/local/models/gta3.img/hfybe.txd", start: 78331406, end: 78353934 },
-      { filename: "/vc-assets/local/models/gta3.img/hfybu.dff", start: 78353934, end: 78419470 },
-      { filename: "/vc-assets/local/models/gta3.img/hfybu.txd", start: 78419470, end: 78441998 },
-      { filename: "/vc-assets/local/models/gta3.img/hfypr.dff", start: 78441998, end: 78501390 },
-      { filename: "/vc-assets/local/models/gta3.img/hfypr.txd", start: 78501390, end: 78523918 },
-      { filename: "/vc-assets/local/models/gta3.img/hfyri.dff", start: 78523918, end: 78585358 },
-      { filename: "/vc-assets/local/models/gta3.img/hfyri.txd", start: 78585358, end: 78607886 },
-      { filename: "/vc-assets/local/models/gta3.img/hfyst.dff", start: 78607886, end: 78671374 },
-      { filename: "/vc-assets/local/models/gta3.img/hfyst.txd", start: 78671374, end: 78693902 },
-      { filename: "/vc-assets/local/models/gta3.img/hi_cutcouch.txd", start: 78693902, end: 78745102 },
-      { filename: "/vc-assets/local/models/gta3.img/hi_cuthoomintshad.txd", start: 78745102, end: 78902798 },
-      { filename: "/vc-assets/local/models/gta3.img/hi_cuthotel1.txd", start: 78902798, end: 78945806 },
-      { filename: "/vc-assets/local/models/gta3.img/hi_cuthtl2.txd", start: 78945806, end: 79154702 },
-      { filename: "/vc-assets/local/models/gta3.img/hi_cuthtl4.txd", start: 79154702, end: 79189518 },
-      { filename: "/vc-assets/local/models/gta3.img/hi_cuthtlalp.txd", start: 79189518, end: 79375886 },
-      { filename: "/vc-assets/local/models/gta3.img/hi_cutint1.txd", start: 79375886, end: 79509006 },
-      { filename: "/vc-assets/local/models/gta3.img/hi_cutintprops.txd", start: 79509006, end: 79609358 },
-      { filename: "/vc-assets/local/models/gta3.img/hi_cuttblprop.txd", start: 79609358, end: 79695374 },
-      { filename: "/vc-assets/local/models/gta3.img/hmoca.dff", start: 79695374, end: 79765006 },
-      { filename: "/vc-assets/local/models/gta3.img/hmoca.txd", start: 79765006, end: 79787534 },
-      { filename: "/vc-assets/local/models/gta3.img/hmost.dff", start: 79787534, end: 79863310 },
-      { filename: "/vc-assets/local/models/gta3.img/hmost.txd", start: 79863310, end: 79885838 },
-      { filename: "/vc-assets/local/models/gta3.img/hmotr.dff", start: 79885838, end: 79961614 },
-      { filename: "/vc-assets/local/models/gta3.img/hmotr.txd", start: 79961614, end: 79984142 },
-      { filename: "/vc-assets/local/models/gta3.img/hmyap.dff", start: 79984142, end: 80053774 },
-      { filename: "/vc-assets/local/models/gta3.img/hmyap.txd", start: 80053774, end: 80076302 },
-      { filename: "/vc-assets/local/models/gta3.img/hmyst.dff", start: 80076302, end: 80150030 },
-      { filename: "/vc-assets/local/models/gta3.img/hmyst.txd", start: 80150030, end: 80172558 },
-      { filename: "/vc-assets/local/models/gta3.img/hot_bar1_01.dff", start: 80172558, end: 80244238 },
-      { filename: "/vc-assets/local/models/gta3.img/hot_drawers1_01.dff", start: 80244238, end: 80283150 },
-      { filename: "/vc-assets/local/models/gta3.img/hot_mags1.dff", start: 80283150, end: 80289294 },
-      { filename: "/vc-assets/local/models/gta3.img/hot_mobint.txd", start: 80289294, end: 80989710 },
-      { filename: "/vc-assets/local/models/gta3.img/hot_room317.dff", start: 80989710, end: 81042958 },
-      { filename: "/vc-assets/local/models/gta3.img/hot_roomtrans.txd", start: 81042958, end: 81315342 },
-      { filename: "/vc-assets/local/models/gta3.img/hot_trans1.dff", start: 81315342, end: 81344014 },
-      { filename: "/vc-assets/local/models/gta3.img/hotel.col", start: 81344014, end: 81356302 },
-      { filename: "/vc-assets/local/models/gta3.img/hotelroomint.txd", start: 81356302, end: 82085390 },
-      { filename: "/vc-assets/local/models/gta3.img/hotroomfan.dff", start: 82085390, end: 82091534 },
-      { filename: "/vc-assets/local/models/gta3.img/hotshad1.dff", start: 82091534, end: 82099726 },
-      { filename: "/vc-assets/local/models/gta3.img/ht_doors.dff", start: 82099726, end: 82103822 },
-      { filename: "/vc-assets/local/models/gta3.img/ht_fans_nt.dff", start: 82103822, end: 82146830 },
-      { filename: "/vc-assets/local/models/gta3.img/ht_kb_couch1_nt.dff", start: 82146830, end: 82208270 },
-      { filename: "/vc-assets/local/models/gta3.img/ht_mainfloor2_nt.dff", start: 82208270, end: 82243086 },
-      { filename: "/vc-assets/local/models/gta3.img/ht_mainfloor_nt.dff", start: 82243086, end: 82281998 },
-      { filename: "/vc-assets/local/models/gta3.img/ht_upstairs.dff", start: 82281998, end: 82333198 },
-      { filename: "/vc-assets/local/models/gta3.img/ht_veg01_nt.dff", start: 82333198, end: 82347534 },
-      { filename: "/vc-assets/local/models/gta3.img/ht_veg02_dy.dff", start: 82347534, end: 82386446 },
-      { filename: "/vc-assets/local/models/gta3.img/ht_veg02_nt.dff", start: 82386446, end: 82425358 },
-      { filename: "/vc-assets/local/models/gta3.img/ht_veg04_nt.dff", start: 82425358, end: 82451982 },
-      { filename: "/vc-assets/local/models/gta3.img/htdoorhtlalp.txd", start: 82451982, end: 82478606 },
-      { filename: "/vc-assets/local/models/gta3.img/htl_dco_chair03_nt.dff", start: 82478606, end: 82529806 },
-      { filename: "/vc-assets/local/models/gta3.img/htl_ext03.txd", start: 82529806, end: 82548238 },
-      { filename: "/vc-assets/local/models/gta3.img/htl_exterior03_nt.dff", start: 82548238, end: 82554382 },
-      { filename: "/vc-assets/local/models/gta3.img/htl_gls_1_nt.dff", start: 82554382, end: 82556430 },
-      { filename: "/vc-assets/local/models/gta3.img/htl_gls_2_nt.dff", start: 82556430, end: 82558478 },
-      { filename: "/vc-assets/local/models/gta3.img/htl_gls_3_nt.dff", start: 82558478, end: 82560526 },
-      { filename: "/vc-assets/local/models/gta3.img/htl_gls_lobby.dff", start: 82560526, end: 82562574 },
-      { filename: "/vc-assets/local/models/gta3.img/htl_lftdoor1_nt.dff", start: 82562574, end: 82566670 },
-      { filename: "/vc-assets/local/models/gta3.img/htl_maintiles_nt.dff", start: 82566670, end: 82591246 },
-      { filename: "/vc-assets/local/models/gta3.img/icons3.txd", start: 82591246, end: 82595342 },
-      { filename: "/vc-assets/local/models/gta3.img/icons4.txd", start: 82595342, end: 82599438 },
-      { filename: "/vc-assets/local/models/gta3.img/icons5.txd", start: 82599438, end: 82605582 },
-      { filename: "/vc-assets/local/models/gta3.img/icons7.txd", start: 82605582, end: 82609678 },
-      { filename: "/vc-assets/local/models/gta3.img/icons9.txd", start: 82609678, end: 82615822 },
-      { filename: "/vc-assets/local/models/gta3.img/igken.dff", start: 82615822, end: 82693646 },
-      { filename: "/vc-assets/local/models/gta3.img/igken.txd", start: 82693646, end: 82738702 },
-      { filename: "/vc-assets/local/models/gta3.img/infernus.dff", start: 82738702, end: 82861582 },
-      { filename: "/vc-assets/local/models/gta3.img/infernus.txd", start: 82861582, end: 82914830 },
-      { filename: "/vc-assets/local/models/gta3.img/islandlodbeach.dff", start: 82914830, end: 83283470 },
-      { filename: "/vc-assets/local/models/gta3.img/islandlodmainland.dff", start: 83283470, end: 83629582 },
-      { filename: "/vc-assets/local/models/gta3.img/islandlolodb.txd", start: 83629582, end: 83715598 },
-      { filename: "/vc-assets/local/models/gta3.img/islandlolodm.txd", start: 83715598, end: 83815950 },
-      { filename: "/vc-assets/local/models/gta3.img/islandsf.col", start: 83815950, end: 83826190 },
-      { filename: "/vc-assets/local/models/gta3.img/jellyfish.dff", start: 83826190, end: 83836430 },
-      { filename: "/vc-assets/local/models/gta3.img/jellyfish1.txd", start: 83836430, end: 83846670 },
-      { filename: "/vc-assets/local/models/gta3.img/jfoto.dff", start: 83846670, end: 83912206 },
-      { filename: "/vc-assets/local/models/gta3.img/jfoto.txd", start: 83912206, end: 83934734 },
-      { filename: "/vc-assets/local/models/gta3.img/jmoto.dff", start: 83934734, end: 83996174 },
-      { filename: "/vc-assets/local/models/gta3.img/jmoto.txd", start: 83996174, end: 84018702 },
-      { filename: "/vc-assets/local/models/gta3.img/kaufman.dff", start: 84018702, end: 84215310 },
-      { filename: "/vc-assets/local/models/gta3.img/kaufman.txd", start: 84215310, end: 84297230 },
-      { filename: "/vc-assets/local/models/gta3.img/lamppost1.dff", start: 84297230, end: 84305422 },
-      { filename: "/vc-assets/local/models/gta3.img/lamppost2.dff", start: 84305422, end: 84319758 },
-      { filename: "/vc-assets/local/models/gta3.img/lamppost3.dff", start: 84319758, end: 84323854 },
-      { filename: "/vc-assets/local/models/gta3.img/landstal.dff", start: 84323854, end: 84520462 },
-      { filename: "/vc-assets/local/models/gta3.img/landstal.txd", start: 84520462, end: 84565518 },
-      { filename: "/vc-assets/local/models/gta3.img/lawyers.col", start: 84565518, end: 84581902 },
-      { filename: "/vc-assets/local/models/gta3.img/linerun.dff", start: 84581902, end: 84737550 },
-      { filename: "/vc-assets/local/models/gta3.img/linerun.txd", start: 84737550, end: 84786702 },
-      { filename: "/vc-assets/local/models/gta3.img/littleha.col", start: 84786702, end: 85155342 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_backside.dff", start: 85155342, end: 85165582 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_beacon2_nt.dff", start: 85165582, end: 85171726 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_beacon_dy.dff", start: 85171726, end: 85179918 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_beacon_nt.dff", start: 85179918, end: 85188110 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_bridgew.dff", start: 85188110, end: 85190158 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_build01.dff", start: 85190158, end: 85192206 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_build02.dff", start: 85192206, end: 85196302 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_build03.dff", start: 85196302, end: 85200398 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_build04.dff", start: 85200398, end: 85202446 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_build05.dff", start: 85202446, end: 85206542 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_car_show_out.dff", start: 85206542, end: 85216782 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_colony_nt.dff", start: 85216782, end: 85218830 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_docks.txd", start: 85218830, end: 85382670 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_docks2.txd", start: 85382670, end: 85419534 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_dockwareold.dff", start: 85419534, end: 85423630 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_frntstep.dff", start: 85423630, end: 85429774 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_grnd2.dff", start: 85429774, end: 85444110 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_grnd3.dff", start: 85444110, end: 85450254 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_grnd4.dff", start: 85450254, end: 85462542 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_grnd5.dff", start: 85462542, end: 85476878 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_grnd6.dff", start: 85476878, end: 85487118 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_grssypatch.dff", start: 85487118, end: 85491214 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_hotel01.dff", start: 85491214, end: 85505550 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_hotel02.dff", start: 85505550, end: 85526030 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_hotel03.dff", start: 85526030, end: 85558798 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_hotel04.dff", start: 85558798, end: 85571086 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_hotel05.dff", start: 85571086, end: 85585422 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_hotel06.dff", start: 85585422, end: 85599758 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_hotel08.dff", start: 85599758, end: 85616142 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_hotel13.dff", start: 85616142, end: 85632526 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_hotel15.dff", start: 85632526, end: 85648910 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_hotelhot_nt.dff", start: 85648910, end: 85650958 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_houses27.dff", start: 85650958, end: 85665294 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_htlpoolbar01.dff", start: 85665294, end: 85677582 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_htlpoolbase01.dff", start: 85677582, end: 85681678 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_htlpoolbase01b.dff", start: 85681678, end: 85685774 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_htlpoolbase02.dff", start: 85685774, end: 85691918 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_htlpoolbase03.dff", start: 85691918, end: 85696014 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_htlpoolbase04.dff", start: 85696014, end: 85698062 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_htlpoolrm01.dff", start: 85698062, end: 85704206 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_htlpoolrm02.dff", start: 85704206, end: 85710350 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_leslie_dy.dff", start: 85710350, end: 85714446 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_leslie_nt.dff", start: 85714446, end: 85718542 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_macalpin_dy.dff", start: 85718542, end: 85724686 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_macalpin_nt.dff", start: 85724686, end: 85730830 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_majest_nt.dff", start: 85730830, end: 85734926 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_majestic2x_nt.dff", start: 85734926, end: 85739022 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_majestic_dy.dff", start: 85739022, end: 85745166 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_majestic_nt.dff", start: 85745166, end: 85751310 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_majesticz_nt.dff", start: 85751310, end: 85753358 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_man_grnds.txd", start: 85753358, end: 85806606 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_mansion03.dff", start: 85806606, end: 85812750 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_mansionbase02.dff", start: 85812750, end: 85816846 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_pizzaplace.dff", start: 85816846, end: 85820942 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_road01.dff", start: 85820942, end: 85825038 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_road02.dff", start: 85825038, end: 85827086 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_road03.dff", start: 85827086, end: 85831182 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_road04.dff", start: 85831182, end: 85835278 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_road05.dff", start: 85835278, end: 85839374 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_road07.dff", start: 85839374, end: 85841422 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_road08.dff", start: 85841422, end: 85843470 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_road09.dff", start: 85843470, end: 85845518 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_road10.dff", start: 85845518, end: 85849614 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_road11.dff", start: 85849614, end: 85853710 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_road12_gf.dff", start: 85853710, end: 85855758 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_roadswsh01.dff", start: 85855758, end: 85861902 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_roadswsh04.dff", start: 85861902, end: 85863950 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_roadswsh05.dff", start: 85863950, end: 85868046 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_roadswsh28.dff", start: 85868046, end: 85870094 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_rooftopstart.dff", start: 85870094, end: 85876238 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_shedbig30.dff", start: 85876238, end: 85882382 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_shop.dff", start: 85882382, end: 85892622 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_starbig.txd", start: 85892622, end: 85921294 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_starlite_dy.dff", start: 85921294, end: 85923342 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_starlite_nt.dff", start: 85923342, end: 85925390 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_starsmall.txd", start: 85925390, end: 85988878 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_tides2_nt.dff", start: 85988878, end: 85995022 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_tides_dy.dff", start: 85995022, end: 86005262 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_tides_nt.dff", start: 86005262, end: 86015502 },
-      { filename: "/vc-assets/local/models/gta3.img/lod_wtrftr_1a.dff", start: 86015502, end: 86017550 },
-      { filename: "/vc-assets/local/models/gta3.img/lodach_police.dff", start: 86017550, end: 86025742 },
-      { filename: "/vc-assets/local/models/gta3.img/lodachb.dff", start: 86025742, end: 86029838 },
-      { filename: "/vc-assets/local/models/gta3.img/lodachb1.dff", start: 86029838, end: 86033934 },
-      { filename: "/vc-assets/local/models/gta3.img/lodachbit02.dff", start: 86033934, end: 86038030 },
-      { filename: "/vc-assets/local/models/gta3.img/lodachbit03.dff", start: 86038030, end: 86046222 },
-      { filename: "/vc-assets/local/models/gta3.img/lodachbit04.dff", start: 86046222, end: 86060558 },
-      { filename: "/vc-assets/local/models/gta3.img/lodachbit04b.dff", start: 86060558, end: 86076942 },
-      { filename: "/vc-assets/local/models/gta3.img/lodachbit05.dff", start: 86076942, end: 86081038 },
-      { filename: "/vc-assets/local/models/gta3.img/lodachbit06.dff", start: 86081038, end: 86085134 },
-      { filename: "/vc-assets/local/models/gta3.img/lodachroads01.dff", start: 86085134, end: 86089230 },
-      { filename: "/vc-assets/local/models/gta3.img/lodachroads02.dff", start: 86089230, end: 86091278 },
-      { filename: "/vc-assets/local/models/gta3.img/lodachroads03.dff", start: 86091278, end: 86093326 },
-      { filename: "/vc-assets/local/models/gta3.img/lodachroads09.dff", start: 86093326, end: 86097422 },
-      { filename: "/vc-assets/local/models/gta3.img/lodachsand1.dff", start: 86097422, end: 86099470 },
-      { filename: "/vc-assets/local/models/gta3.img/lodachsand2.dff", start: 86099470, end: 86101518 },
-      { filename: "/vc-assets/local/models/gta3.img/lodachsand2b.dff", start: 86101518, end: 86103566 },
-      { filename: "/vc-assets/local/models/gta3.img/lodachwjetty01.dff", start: 86103566, end: 86113806 },
-      { filename: "/vc-assets/local/models/gta3.img/lodachwjetty02.dff", start: 86113806, end: 86119950 },
-      { filename: "/vc-assets/local/models/gta3.img/lodacne.dff", start: 86119950, end: 86126094 },
-      { filename: "/vc-assets/local/models/gta3.img/lodairpn.txd", start: 86126094, end: 86156814 },
-      { filename: "/vc-assets/local/models/gta3.img/lodallbit.dff", start: 86156814, end: 86158862 },
-      { filename: "/vc-assets/local/models/gta3.img/lodalleys1_01_nt.dff", start: 86158862, end: 86162958 },
-      { filename: "/vc-assets/local/models/gta3.img/lodalleys1b_01_dy.dff", start: 86162958, end: 86167054 },
-      { filename: "/vc-assets/local/models/gta3.img/lodalleys2_01_dy.dff", start: 86167054, end: 86171150 },
-      { filename: "/vc-assets/local/models/gta3.img/lodalleys2_01_nt.dff", start: 86171150, end: 86173198 },
-      { filename: "/vc-assets/local/models/gta3.img/lodalleys3_01_nt.dff", start: 86173198, end: 86175246 },
-      { filename: "/vc-assets/local/models/gta3.img/lodalleys3b_01_dy.dff", start: 86175246, end: 86177294 },
-      { filename: "/vc-assets/local/models/gta3.img/lodalleys3b_01_nt.dff", start: 86177294, end: 86179342 },
-      { filename: "/vc-assets/local/models/gta3.img/lodallroof01.dff", start: 86179342, end: 86183438 },
-      { filename: "/vc-assets/local/models/gta3.img/lodanahouse01.dff", start: 86183438, end: 86187534 },
-      { filename: "/vc-assets/local/models/gta3.img/lodanahouse02.dff", start: 86187534, end: 86191630 },
-      { filename: "/vc-assets/local/models/gta3.img/lodanahouse03.dff", start: 86191630, end: 86195726 },
-      { filename: "/vc-assets/local/models/gta3.img/lodanahouse04.dff", start: 86195726, end: 86199822 },
-      { filename: "/vc-assets/local/models/gta3.img/lodanahouse06.dff", start: 86199822, end: 86203918 },
-      { filename: "/vc-assets/local/models/gta3.img/lodanahouse07.dff", start: 86203918, end: 86208014 },
-      { filename: "/vc-assets/local/models/gta3.img/lodanahouse09.dff", start: 86208014, end: 86212110 },
-      { filename: "/vc-assets/local/models/gta3.img/lodanahouse10.dff", start: 86212110, end: 86218254 },
-      { filename: "/vc-assets/local/models/gta3.img/lodanahouse11.dff", start: 86218254, end: 86222350 },
-      { filename: "/vc-assets/local/models/gta3.img/lodanahouse12.dff", start: 86222350, end: 86242830 },
-      { filename: "/vc-assets/local/models/gta3.img/lodanrd1_nt.dff", start: 86242830, end: 86246926 },
-      { filename: "/vc-assets/local/models/gta3.img/lodanrda03_nt.dff", start: 86246926, end: 86251022 },
-      { filename: "/vc-assets/local/models/gta3.img/lodanrda04_nt.dff", start: 86251022, end: 86253070 },
-      { filename: "/vc-assets/local/models/gta3.img/lodanrda05_dy.dff", start: 86253070, end: 86255118 },
-      { filename: "/vc-assets/local/models/gta3.img/lodanrda05_nt.dff", start: 86255118, end: 86257166 },
-      { filename: "/vc-assets/local/models/gta3.img/lodanrda06_nt.dff", start: 86257166, end: 86259214 },
-      { filename: "/vc-assets/local/models/gta3.img/lodanroad04.dff", start: 86259214, end: 86265358 },
-      { filename: "/vc-assets/local/models/gta3.img/lodanroad05.dff", start: 86265358, end: 86269454 },
-      { filename: "/vc-assets/local/models/gta3.img/lodanrod2b_nt.dff", start: 86269454, end: 86273550 },
-      { filename: "/vc-assets/local/models/gta3.img/lodargohull2.dff", start: 86273550, end: 86285838 },
-      { filename: "/vc-assets/local/models/gta3.img/lodasket.dff", start: 86285838, end: 86287886 },
-      { filename: "/vc-assets/local/models/gta3.img/lodavehotel.dff", start: 86287886, end: 86308366 },
-      { filename: "/vc-assets/local/models/gta3.img/lodawasteb2.dff", start: 86308366, end: 86312462 },
-      { filename: "/vc-assets/local/models/gta3.img/lodawyersfront.dff", start: 86312462, end: 86314510 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbackbit.dff", start: 86314510, end: 86318606 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbighotel_nt.dff", start: 86318606, end: 86345230 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbighotpool.dff", start: 86345230, end: 86351374 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbigshops1.dff", start: 86351374, end: 86363662 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbigshops2.dff", start: 86363662, end: 86375950 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbillboards1.dff", start: 86375950, end: 86377998 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbillboards2.dff", start: 86377998, end: 86380046 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbillboards3.dff", start: 86380046, end: 86382094 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbillboards4.dff", start: 86382094, end: 86384142 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbillboards5.dff", start: 86384142, end: 86386190 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbit02.dff", start: 86386190, end: 86390286 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbit03.dff", start: 86390286, end: 86402574 },
-      { filename: "/vc-assets/local/models/gta3.img/lodboxgirdbridge.dff", start: 86402574, end: 86404622 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbphq.dff", start: 86404622, end: 86412814 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbridge.txd", start: 86412814, end: 86418958 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbridgesupp01.dff", start: 86418958, end: 86429198 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbridgesupp03.dff", start: 86429198, end: 86437390 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbridgesupp04.dff", start: 86437390, end: 86445582 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuil19wall.dff", start: 86445582, end: 86449678 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuild.dff", start: 86449678, end: 86455822 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuild01.dff", start: 86455822, end: 86472206 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuilding01.dff", start: 86472206, end: 86484494 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildingg1.dff", start: 86484494, end: 86494734 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildingg2.dff", start: 86494734, end: 86502926 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildingg3.dff", start: 86502926, end: 86511118 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildingw1.dff", start: 86511118, end: 86519310 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildkb23_nt.dff", start: 86519310, end: 86521358 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildkb27_nt.dff", start: 86521358, end: 86523406 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildkb2_dy.dff", start: 86523406, end: 86525454 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildkb2_nt.dff", start: 86525454, end: 86527502 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildws02.dff", start: 86527502, end: 86531598 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildws03.dff", start: 86531598, end: 86541838 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildws04.dff", start: 86541838, end: 86556174 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildws05.dff", start: 86556174, end: 86560270 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildws06.dff", start: 86560270, end: 86572558 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildws07.dff", start: 86572558, end: 86578702 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildws07.txd", start: 86578702, end: 86660622 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildws09.dff", start: 86660622, end: 86672910 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildws10.dff", start: 86672910, end: 86677006 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildws12.dff", start: 86677006, end: 86681102 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildws13.dff", start: 86681102, end: 86693390 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildws14.dff", start: 86693390, end: 86707726 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildws16.dff", start: 86707726, end: 86726158 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildws17.dff", start: 86726158, end: 86742542 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildws18.dff", start: 86742542, end: 86756878 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildws19.dff", start: 86756878, end: 86767118 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildws20.dff", start: 86767118, end: 86773262 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildws21.dff", start: 86773262, end: 86779406 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildws22.dff", start: 86779406, end: 86783502 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildws23.dff", start: 86783502, end: 86789646 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildws2329.dff", start: 86789646, end: 86793742 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildws24.dff", start: 86793742, end: 86799886 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildws25.dff", start: 86799886, end: 86810126 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildws26.dff", start: 86810126, end: 86818318 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildws264.dff", start: 86818318, end: 86820366 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildws27.dff", start: 86820366, end: 86824462 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildws28.dff", start: 86824462, end: 86828558 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildws29.dff", start: 86828558, end: 86830606 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildws30.dff", start: 86830606, end: 86834702 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildws31.dff", start: 86834702, end: 86840846 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildws312.dff", start: 86840846, end: 86844942 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildws32.dff", start: 86844942, end: 86851086 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildws322.dff", start: 86851086, end: 86855182 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildws33.dff", start: 86855182, end: 86859278 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildws332.dff", start: 86859278, end: 86863374 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildws35.dff", start: 86863374, end: 86867470 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildws36.dff", start: 86867470, end: 86875662 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildws40.dff", start: 86875662, end: 86879758 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildws41.dff", start: 86879758, end: 86885902 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildws42.dff", start: 86885902, end: 86889998 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildws43.dff", start: 86889998, end: 86898190 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildws43ins.dff", start: 86898190, end: 86904334 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildws44.dff", start: 86904334, end: 86908430 },
-      { filename: "/vc-assets/local/models/gta3.img/lodbuildws45.dff", start: 86908430, end: 86912526 },
-      { filename: "/vc-assets/local/models/gta3.img/lodcargoshp03.dff", start: 86912526, end: 86914574 },
-      { filename: "/vc-assets/local/models/gta3.img/lodcargoshp04.dff", start: 86914574, end: 86916622 },
-      { filename: "/vc-assets/local/models/gta3.img/lodcargoshp05.dff", start: 86916622, end: 86928910 },
-      { filename: "/vc-assets/local/models/gta3.img/lodcargoshp24.dff", start: 86928910, end: 86930958 },
-      { filename: "/vc-assets/local/models/gta3.img/lodcargoshp25.dff", start: 86930958, end: 86933006 },
-      { filename: "/vc-assets/local/models/gta3.img/lodcargoshp28.dff", start: 86933006, end: 86941198 },
-      { filename: "/vc-assets/local/models/gta3.img/lodcargoshp32.dff", start: 86941198, end: 86947342 },
-      { filename: "/vc-assets/local/models/gta3.img/lodcargoshp35.dff", start: 86947342, end: 86951438 },
-      { filename: "/vc-assets/local/models/gta3.img/lodcargoshp40.dff", start: 86951438, end: 86955534 },
-      { filename: "/vc-assets/local/models/gta3.img/lodcargoshp41.dff", start: 86955534, end: 86961678 },
-      { filename: "/vc-assets/local/models/gta3.img/lodcargoshp47.dff", start: 86961678, end: 86965774 },
-      { filename: "/vc-assets/local/models/gta3.img/lodcargoshp50.dff", start: 86965774, end: 86969870 },
-      { filename: "/vc-assets/local/models/gta3.img/lodcargoshp51.dff", start: 86969870, end: 86973966 },
-      { filename: "/vc-assets/local/models/gta3.img/lodcargoshp64.dff", start: 86973966, end: 86990350 },
-      { filename: "/vc-assets/local/models/gta3.img/lodcargoshp70.dff", start: 86990350, end: 86998542 },
-      { filename: "/vc-assets/local/models/gta3.img/lodcargoshp71.dff", start: 86998542, end: 87006734 },
-      { filename: "/vc-assets/local/models/gta3.img/lodcargoshp72.dff", start: 87006734, end: 87012878 },
-      { filename: "/vc-assets/local/models/gta3.img/lodcargoshp73.dff", start: 87012878, end: 87019022 },
-      { filename: "/vc-assets/local/models/gta3.img/lodcarparkterm1.dff", start: 87019022, end: 87021070 },
-      { filename: "/vc-assets/local/models/gta3.img/lodcasagrande_nt.dff", start: 87021070, end: 87027214 },
-      { filename: "/vc-assets/local/models/gta3.img/lodcbtwbrdge.dff", start: 87027214, end: 87031310 },
-      { filename: "/vc-assets/local/models/gta3.img/lodchariot.dff", start: 87031310, end: 87057934 },
-      { filename: "/vc-assets/local/models/gta3.img/lodchbt.dff", start: 87057934, end: 87064078 },
-      { filename: "/vc-assets/local/models/gta3.img/lodchbtb.dff", start: 87064078, end: 87066126 },
-      { filename: "/vc-assets/local/models/gta3.img/lodchbtb2.dff", start: 87066126, end: 87070222 },
-      { filename: "/vc-assets/local/models/gta3.img/lodchlo1.dff", start: 87070222, end: 87072270 },
-      { filename: "/vc-assets/local/models/gta3.img/lodcland01.dff", start: 87072270, end: 87078414 },
-      { filename: "/vc-assets/local/models/gta3.img/lodcland03.dff", start: 87078414, end: 87082510 },
-      { filename: "/vc-assets/local/models/gta3.img/lodcland09.dff", start: 87082510, end: 87088654 },
-      { filename: "/vc-assets/local/models/gta3.img/lodcland10.dff", start: 87088654, end: 87092750 },
-      { filename: "/vc-assets/local/models/gta3.img/lodcland11.dff", start: 87092750, end: 87094798 },
-      { filename: "/vc-assets/local/models/gta3.img/lodcland12.dff", start: 87094798, end: 87107086 },
-      { filename: "/vc-assets/local/models/gta3.img/lodcland13_gf.dff", start: 87107086, end: 87113230 },
-      { filename: "/vc-assets/local/models/gta3.img/lodclevelander_nt.dff", start: 87113230, end: 87121422 },
-      { filename: "/vc-assets/local/models/gta3.img/lodclubback.dff", start: 87121422, end: 87123470 },
-      { filename: "/vc-assets/local/models/gta3.img/lodclubhouse1.dff", start: 87123470, end: 87129614 },
-      { filename: "/vc-assets/local/models/gta3.img/lodclubout_nt.dff", start: 87129614, end: 87143950 },
-      { filename: "/vc-assets/local/models/gta3.img/lodcoast.dff", start: 87143950, end: 87148046 },
-      { filename: "/vc-assets/local/models/gta3.img/lodcoast04.dff", start: 87148046, end: 87154190 },
-      { filename: "/vc-assets/local/models/gta3.img/lodcoast06.dff", start: 87154190, end: 87160334 },
-      { filename: "/vc-assets/local/models/gta3.img/lodcoast08.dff", start: 87160334, end: 87164430 },
-      { filename: "/vc-assets/local/models/gta3.img/lodcoast1.dff", start: 87164430, end: 87168526 },
-      { filename: "/vc-assets/local/models/gta3.img/lodcoast2.dff", start: 87168526, end: 87172622 },
-      { filename: "/vc-assets/local/models/gta3.img/lodcoast3.dff", start: 87172622, end: 87176718 },
-      { filename: "/vc-assets/local/models/gta3.img/lodcoast4.dff", start: 87176718, end: 87180814 },
-      { filename: "/vc-assets/local/models/gta3.img/lodcoast5.dff", start: 87180814, end: 87182862 },
-      { filename: "/vc-assets/local/models/gta3.img/lodcoasta2.dff", start: 87182862, end: 87184910 },
-      { filename: "/vc-assets/local/models/gta3.img/lodcoastfirst.dff", start: 87184910, end: 87189006 },
-      { filename: "/vc-assets/local/models/gta3.img/lodcolony2_dy.dff", start: 87189006, end: 87193102 },
-      { filename: "/vc-assets/local/models/gta3.img/lodcolony2_nt.dff", start: 87193102, end: 87197198 },
-      { filename: "/vc-assets/local/models/gta3.img/lodcolony_nt.dff", start: 87197198, end: 87203342 },
-      { filename: "/vc-assets/local/models/gta3.img/lodconcwall1.dff", start: 87203342, end: 87205390 },
-      { filename: "/vc-assets/local/models/gta3.img/lodcpaynspray.dff", start: 87205390, end: 87211534 },
-      { filename: "/vc-assets/local/models/gta3.img/lodcrushbn.dff", start: 87211534, end: 87217678 },
-      { filename: "/vc-assets/local/models/gta3.img/lodcrushefuck.dff", start: 87217678, end: 87234062 },
-      { filename: "/vc-assets/local/models/gta3.img/lodcrushers08.dff", start: 87234062, end: 87250446 },
-      { filename: "/vc-assets/local/models/gta3.img/lodcrushers10.dff", start: 87250446, end: 87264782 },
-      { filename: "/vc-assets/local/models/gta3.img/lodcrushers12.dff", start: 87264782, end: 87272974 },
-      { filename: "/vc-assets/local/models/gta3.img/lodcrushers14.dff", start: 87272974, end: 87283214 },
-      { filename: "/vc-assets/local/models/gta3.img/lodcrushju.dff", start: 87283214, end: 87295502 },
-      { filename: "/vc-assets/local/models/gta3.img/lodcrushmnf.dff", start: 87295502, end: 87301646 },
-      { filename: "/vc-assets/local/models/gta3.img/lodd_build2.dff", start: 87301646, end: 87315982 },
-      { filename: "/vc-assets/local/models/gta3.img/lodd_buildnew.dff", start: 87315982, end: 87320078 },
-      { filename: "/vc-assets/local/models/gta3.img/lodd_downtown05.dff", start: 87320078, end: 87322126 },
-      { filename: "/vc-assets/local/models/gta3.img/lodd_downtown06.dff", start: 87322126, end: 87324174 },
-      { filename: "/vc-assets/local/models/gta3.img/lodd_downtown08.dff", start: 87324174, end: 87326222 },
-      { filename: "/vc-assets/local/models/gta3.img/lodd_downtown09.dff", start: 87326222, end: 87328270 },
-      { filename: "/vc-assets/local/models/gta3.img/lodd_downtown10.dff", start: 87328270, end: 87330318 },
-      { filename: "/vc-assets/local/models/gta3.img/lodd_downtown_new1.dff", start: 87330318, end: 87332366 },
-      { filename: "/vc-assets/local/models/gta3.img/loddbridge.dff", start: 87332366, end: 87338510 },
-      { filename: "/vc-assets/local/models/gta3.img/loddingsite1.dff", start: 87338510, end: 87361038 },
-      { filename: "/vc-assets/local/models/gta3.img/loddockbridge.dff", start: 87361038, end: 87365134 },
-      { filename: "/vc-assets/local/models/gta3.img/loddockroads01.dff", start: 87365134, end: 87367182 },
-      { filename: "/vc-assets/local/models/gta3.img/loddockroads02.dff", start: 87367182, end: 87371278 },
-      { filename: "/vc-assets/local/models/gta3.img/loddockroads03.dff", start: 87371278, end: 87375374 },
-      { filename: "/vc-assets/local/models/gta3.img/loddockroads04.dff", start: 87375374, end: 87377422 },
-      { filename: "/vc-assets/local/models/gta3.img/loddockroads05.dff", start: 87377422, end: 87379470 },
-      { filename: "/vc-assets/local/models/gta3.img/loddockroads06.dff", start: 87379470, end: 87383566 },
-      { filename: "/vc-assets/local/models/gta3.img/loddockroads08.dff", start: 87383566, end: 87387662 },
-      { filename: "/vc-assets/local/models/gta3.img/loddockwall1.dff", start: 87387662, end: 87389710 },
-      { filename: "/vc-assets/local/models/gta3.img/loder2.dff", start: 87389710, end: 87393806 },
-      { filename: "/vc-assets/local/models/gta3.img/lodfiretrucks.dff", start: 87393806, end: 87399950 },
-      { filename: "/vc-assets/local/models/gta3.img/lodflargetank1.dff", start: 87399950, end: 87406094 },
-      { filename: "/vc-assets/local/models/gta3.img/lodflyingschool1.dff", start: 87406094, end: 87410190 },
-      { filename: "/vc-assets/local/models/gta3.img/lodfreightterminal1.dff", start: 87410190, end: 87418382 },
-      { filename: "/vc-assets/local/models/gta3.img/lodfroad1.dff", start: 87418382, end: 87420430 },
-      { filename: "/vc-assets/local/models/gta3.img/lodfroad2.dff", start: 87420430, end: 87424526 },
-      { filename: "/vc-assets/local/models/gta3.img/lodfroad3.dff", start: 87424526, end: 87426574 },
-      { filename: "/vc-assets/local/models/gta3.img/lodfroad4.dff", start: 87426574, end: 87428622 },
-      { filename: "/vc-assets/local/models/gta3.img/lodfroad5.dff", start: 87428622, end: 87432718 },
-      { filename: "/vc-assets/local/models/gta3.img/lodfsthus.dff", start: 87432718, end: 87445006 },
-      { filename: "/vc-assets/local/models/gta3.img/lodgarage02.dff", start: 87445006, end: 87447054 },
-      { filename: "/vc-assets/local/models/gta3.img/lodgarage03.dff", start: 87447054, end: 87451150 },
-      { filename: "/vc-assets/local/models/gta3.img/lodgarage1.dff", start: 87451150, end: 87453198 },
-      { filename: "/vc-assets/local/models/gta3.img/lodgarden1.dff", start: 87453198, end: 87459342 },
-      { filename: "/vc-assets/local/models/gta3.img/lodgate03.dff", start: 87459342, end: 87465486 },
-      { filename: "/vc-assets/local/models/gta3.img/lodgate1.dff", start: 87465486, end: 87467534 },
-      { filename: "/vc-assets/local/models/gta3.img/lodgate2.dff", start: 87467534, end: 87469582 },
-      { filename: "/vc-assets/local/models/gta3.img/lodgatesa.dff", start: 87469582, end: 87481870 },
-      { filename: "/vc-assets/local/models/gta3.img/lodgatesb.dff", start: 87481870, end: 87494158 },
-      { filename: "/vc-assets/local/models/gta3.img/lodgolfwall.dff", start: 87494158, end: 87504398 },
-      { filename: "/vc-assets/local/models/gta3.img/lodgrnda1.dff", start: 87504398, end: 87506446 },
-      { filename: "/vc-assets/local/models/gta3.img/lodground1.dff", start: 87506446, end: 87510542 },
-      { filename: "/vc-assets/local/models/gta3.img/lodground2.dff", start: 87510542, end: 87518734 },
-      { filename: "/vc-assets/local/models/gta3.img/lodground3.dff", start: 87518734, end: 87522830 },
-      { filename: "/vc-assets/local/models/gta3.img/lodground4.dff", start: 87522830, end: 87526926 },
-      { filename: "/vc-assets/local/models/gta3.img/lodground5.dff", start: 87526926, end: 87531022 },
-      { filename: "/vc-assets/local/models/gta3.img/lodgroundplane.dff", start: 87531022, end: 87535118 },
-      { filename: "/vc-assets/local/models/gta3.img/lodgstoreext.dff", start: 87535118, end: 87539214 },
-      { filename: "/vc-assets/local/models/gta3.img/lodh_ammu.dff", start: 87539214, end: 87541262 },
-      { filename: "/vc-assets/local/models/gta3.img/lodh_brdgsup1.dff", start: 87541262, end: 87549454 },
-      { filename: "/vc-assets/local/models/gta3.img/lodh_deco01.dff", start: 87549454, end: 87569934 },
-      { filename: "/vc-assets/local/models/gta3.img/lodh_deco02.dff", start: 87569934, end: 87586318 },
-      { filename: "/vc-assets/local/models/gta3.img/lodh_deco03.dff", start: 87586318, end: 87604750 },
-      { filename: "/vc-assets/local/models/gta3.img/lodh_deco04.dff", start: 87604750, end: 87617038 },
-      { filename: "/vc-assets/local/models/gta3.img/lodh_deco05.dff", start: 87617038, end: 87623182 },
-      { filename: "/vc-assets/local/models/gta3.img/lodh_hardwares.dff", start: 87623182, end: 87625230 },
-      { filename: "/vc-assets/local/models/gta3.img/lodh_hosp02.dff", start: 87625230, end: 87631374 },
-      { filename: "/vc-assets/local/models/gta3.img/lodh_hosp03.dff", start: 87631374, end: 87637518 },
-      { filename: "/vc-assets/local/models/gta3.img/lodh_hospgrnd.dff", start: 87637518, end: 87643662 },
-      { filename: "/vc-assets/local/models/gta3.img/lodh_hospital.dff", start: 87643662, end: 87653902 },
-      { filename: "/vc-assets/local/models/gta3.img/lodh_pizzaplace.dff", start: 87653902, end: 87655950 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhafinrd.dff", start: 87655950, end: 87660046 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhahousebk2.dff", start: 87660046, end: 87666190 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhaiblockc1.dff", start: 87666190, end: 87678478 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhaiblockc2.dff", start: 87678478, end: 87690766 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhaiblockc3.dff", start: 87690766, end: 87703054 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhaiti.txd", start: 87703054, end: 87784974 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhaitibig.txd", start: 87784974, end: 87834126 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhaitin.txd", start: 87834126, end: 87856654 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhaitinbig.txd", start: 87856654, end: 87985678 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhangar1.dff", start: 87985678, end: 87989774 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhangar1_01.dff", start: 87989774, end: 87993870 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhangar1_04.dff", start: 87993870, end: 87997966 },
-      { filename: "/vc-assets/local/models/gta3.img/lodharoada2.dff", start: 87997966, end: 88002062 },
-      { filename: "/vc-assets/local/models/gta3.img/lodharoada3.dff", start: 88002062, end: 88008206 },
-      { filename: "/vc-assets/local/models/gta3.img/lodharoada4.dff", start: 88008206, end: 88010254 },
-      { filename: "/vc-assets/local/models/gta3.img/lodharoada6.dff", start: 88010254, end: 88014350 },
-      { filename: "/vc-assets/local/models/gta3.img/lodharoada8.dff", start: 88014350, end: 88018446 },
-      { filename: "/vc-assets/local/models/gta3.img/lodharoada9.dff", start: 88018446, end: 88022542 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhavabit01.dff", start: 88022542, end: 88028686 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhavabit04.dff", start: 88028686, end: 88030734 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhavabit05.dff", start: 88030734, end: 88034830 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhavabit06.dff", start: 88034830, end: 88038926 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhavabit07.dff", start: 88038926, end: 88043022 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhavabit08.dff", start: 88043022, end: 88047118 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhavabit09.dff", start: 88047118, end: 88051214 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhavabit10.dff", start: 88051214, end: 88055310 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhavabit11.dff", start: 88055310, end: 88059406 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhavabit12.dff", start: 88059406, end: 88063502 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhavana.txd", start: 88063502, end: 88149518 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhavanabrg.txd", start: 88149518, end: 88153614 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhavbig.txd", start: 88153614, end: 88180238 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhavroad3.dff", start: 88180238, end: 88184334 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhawaste1.dff", start: 88184334, end: 88188430 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhawaste2.dff", start: 88188430, end: 88190478 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhbit04bgrd1.dff", start: 88190478, end: 88194574 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhbit04grd2.dff", start: 88194574, end: 88196622 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhbtjetty01.dff", start: 88196622, end: 88206862 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhbtjetty02.dff", start: 88206862, end: 88217102 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhbuild003.dff", start: 88217102, end: 88219150 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhbuild005.dff", start: 88219150, end: 88225294 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhbuild013.dff", start: 88225294, end: 88229390 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhbuild014.dff", start: 88229390, end: 88233486 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhbuild015.dff", start: 88233486, end: 88237582 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhbuild017.dff", start: 88237582, end: 88245774 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhbuild018.dff", start: 88245774, end: 88251918 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhbuild020.dff", start: 88251918, end: 88256014 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhbuild021.dff", start: 88256014, end: 88258062 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhbuild025.dff", start: 88258062, end: 88264206 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhbuild033.dff", start: 88264206, end: 88272398 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhbuild040.dff", start: 88272398, end: 88278542 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhbuild043.dff", start: 88278542, end: 88303118 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhbuild050.dff", start: 88303118, end: 88311310 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhbuild058.dff", start: 88311310, end: 88321550 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhbuild062.dff", start: 88321550, end: 88327694 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhbuild063.dff", start: 88327694, end: 88337934 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhbuild066.dff", start: 88337934, end: 88348174 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhbuild068.dff", start: 88348174, end: 88354318 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhbuild069.dff", start: 88354318, end: 88360462 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhbuild071.dff", start: 88360462, end: 88362510 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhbuild072.dff", start: 88362510, end: 88364558 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhbuild073.dff", start: 88364558, end: 88366606 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhbuild074.dff", start: 88366606, end: 88368654 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhbuild075.dff", start: 88368654, end: 88370702 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhbuild081.dff", start: 88370702, end: 88372750 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhbuild0812.dff", start: 88372750, end: 88376846 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhbuild111.dff", start: 88376846, end: 88378894 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhbuild112.dff", start: 88378894, end: 88387086 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhbuild114.dff", start: 88387086, end: 88389134 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhbuild116.dff", start: 88389134, end: 88391182 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhbuild119.dff", start: 88391182, end: 88393230 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhbuild120.dff", start: 88393230, end: 88395278 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhbuild121.dff", start: 88395278, end: 88397326 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhbuild184.dff", start: 88397326, end: 88407566 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhbuild187.dff", start: 88407566, end: 88415758 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhbuild192.dff", start: 88415758, end: 88417806 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhbuild195.dff", start: 88417806, end: 88419854 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhbuild198.dff", start: 88419854, end: 88428046 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhbuild203.dff", start: 88428046, end: 88432142 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhbuild213.dff", start: 88432142, end: 88434190 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhbuild214.dff", start: 88434190, end: 88436238 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhbuild215.dff", start: 88436238, end: 88438286 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhbuild216.dff", start: 88438286, end: 88440334 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhipment01.dff", start: 88440334, end: 88444430 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhipment03.dff", start: 88444430, end: 88452622 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhipment05.dff", start: 88452622, end: 88460814 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhit14.dff", start: 88460814, end: 88469006 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhitbuild1a.dff", start: 88469006, end: 88481294 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhitbuild1aa.dff", start: 88481294, end: 88487438 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhitsjm.dff", start: 88487438, end: 88499726 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhland_01.dff", start: 88499726, end: 88507918 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhnewsky1.dff", start: 88507918, end: 88518158 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhnewsky2.dff", start: 88518158, end: 88526350 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhnewsky3.dff", start: 88526350, end: 88536590 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhookerinn1.dff", start: 88536590, end: 88542734 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhoose.dff", start: 88542734, end: 88557070 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhotel.dff", start: 88557070, end: 88561166 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhotel10.dff", start: 88561166, end: 88581646 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhotel_windows.dff", start: 88581646, end: 88593934 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhotelgrnd.dff", start: 88593934, end: 88600078 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhpaynspray.dff", start: 88600078, end: 88606222 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhpshoutdet.dff", start: 88606222, end: 88616462 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhsebuild1.dff", start: 88616462, end: 88622606 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhtooceanrd1.dff", start: 88622606, end: 88626702 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhundermall1.dff", start: 88626702, end: 88632846 },
-      { filename: "/vc-assets/local/models/gta3.img/lodhwbridge.dff", start: 88632846, end: 88645134 },
-      { filename: "/vc-assets/local/models/gta3.img/lodi_exterior_front.dff", start: 88645134, end: 88647182 },
-      { filename: "/vc-assets/local/models/gta3.img/lodiamiland049.dff", start: 88647182, end: 88651278 },
-      { filename: "/vc-assets/local/models/gta3.img/lodiamiland050.dff", start: 88651278, end: 88655374 },
-      { filename: "/vc-assets/local/models/gta3.img/lodiamiland057.dff", start: 88655374, end: 88659470 },
-      { filename: "/vc-assets/local/models/gta3.img/lodicecream01.dff", start: 88659470, end: 88667662 },
-      { filename: "/vc-assets/local/models/gta3.img/lodighsandgrs1.dff", start: 88667662, end: 88671758 },
-      { filename: "/vc-assets/local/models/gta3.img/lodigste1mesh.dff", start: 88671758, end: 88673806 },
-      { filename: "/vc-assets/local/models/gta3.img/lodina1.dff", start: 88673806, end: 88679950 },
-      { filename: "/vc-assets/local/models/gta3.img/lodina2.dff", start: 88679950, end: 88686094 },
-      { filename: "/vc-assets/local/models/gta3.img/lodina3.dff", start: 88686094, end: 88688142 },
-      { filename: "/vc-assets/local/models/gta3.img/lodinhaiti.dff", start: 88688142, end: 88694286 },
-      { filename: "/vc-assets/local/models/gta3.img/lodipad0.dff", start: 88694286, end: 88698382 },
-      { filename: "/vc-assets/local/models/gta3.img/lodita1.dff", start: 88698382, end: 88702478 },
-      { filename: "/vc-assets/local/models/gta3.img/loditcut.dff", start: 88702478, end: 88712718 },
-      { filename: "/vc-assets/local/models/gta3.img/loditnewbt.dff", start: 88712718, end: 88731150 },
-      { filename: "/vc-assets/local/models/gta3.img/loditsnip.dff", start: 88731150, end: 88737294 },
-      { filename: "/vc-assets/local/models/gta3.img/loditwarhus.dff", start: 88737294, end: 88745486 },
-      { filename: "/vc-assets/local/models/gta3.img/lodjumbo_01.dff", start: 88745486, end: 88753678 },
-      { filename: "/vc-assets/local/models/gta3.img/lodk_camjones.dff", start: 88753678, end: 88759822 },
-      { filename: "/vc-assets/local/models/gta3.img/lodk_grassarea.dff", start: 88759822, end: 88765966 },
-      { filename: "/vc-assets/local/models/gta3.img/lodkcranescale0.dff", start: 88765966, end: 88782350 },
-      { filename: "/vc-assets/local/models/gta3.img/lodkcranescale01.dff", start: 88782350, end: 88798734 },
-      { filename: "/vc-assets/local/models/gta3.img/lodkfuel02.dff", start: 88798734, end: 88811022 },
-      { filename: "/vc-assets/local/models/gta3.img/lodkhus.dff", start: 88811022, end: 88823310 },
-      { filename: "/vc-assets/local/models/gta3.img/lodks10.dff", start: 88823310, end: 88841742 },
-      { filename: "/vc-assets/local/models/gta3.img/lodks21.dff", start: 88841742, end: 88862222 },
-      { filename: "/vc-assets/local/models/gta3.img/lodks28.dff", start: 88862222, end: 88868366 },
-      { filename: "/vc-assets/local/models/gta3.img/lodks29.dff", start: 88868366, end: 88870414 },
-      { filename: "/vc-assets/local/models/gta3.img/lodks30.dff", start: 88870414, end: 88888846 },
-      { filename: "/vc-assets/local/models/gta3.img/lodks31.dff", start: 88888846, end: 88890894 },
-      { filename: "/vc-assets/local/models/gta3.img/lodks32.dff", start: 88890894, end: 88892942 },
-      { filename: "/vc-assets/local/models/gta3.img/lodks37.dff", start: 88892942, end: 88901134 },
-      { filename: "/vc-assets/local/models/gta3.img/lodks40.dff", start: 88901134, end: 88905230 },
-      { filename: "/vc-assets/local/models/gta3.img/lodks42.dff", start: 88905230, end: 88913422 },
-      { filename: "/vc-assets/local/models/gta3.img/lodks43.dff", start: 88913422, end: 88921614 },
-      { filename: "/vc-assets/local/models/gta3.img/lodks46.dff", start: 88921614, end: 88940046 },
-      { filename: "/vc-assets/local/models/gta3.img/lodks47.dff", start: 88940046, end: 88948238 },
-      { filename: "/vc-assets/local/models/gta3.img/lodks48.dff", start: 88948238, end: 88956430 },
-      { filename: "/vc-assets/local/models/gta3.img/lodks49.dff", start: 88956430, end: 88964622 },
-      { filename: "/vc-assets/local/models/gta3.img/lodks50.dff", start: 88964622, end: 88970766 },
-      { filename: "/vc-assets/local/models/gta3.img/lodks51.dff", start: 88970766, end: 88978958 },
-      { filename: "/vc-assets/local/models/gta3.img/lodks52.dff", start: 88978958, end: 88985102 },
-      { filename: "/vc-assets/local/models/gta3.img/lodks53.dff", start: 88985102, end: 88993294 },
-      { filename: "/vc-assets/local/models/gta3.img/lodks60.dff", start: 88993294, end: 88997390 },
-      { filename: "/vc-assets/local/models/gta3.img/lodks61.dff", start: 88997390, end: 89003534 },
-      { filename: "/vc-assets/local/models/gta3.img/lodks62.dff", start: 89003534, end: 89007630 },
-      { filename: "/vc-assets/local/models/gta3.img/lodks85.dff", start: 89007630, end: 89011726 },
-      { filename: "/vc-assets/local/models/gta3.img/lodks92.dff", start: 89011726, end: 89015822 },
-      { filename: "/vc-assets/local/models/gta3.img/lodks93.dff", start: 89015822, end: 89019918 },
-      { filename: "/vc-assets/local/models/gta3.img/lodks95.dff", start: 89019918, end: 89026062 },
-      { filename: "/vc-assets/local/models/gta3.img/lodks96.dff", start: 89026062, end: 89030158 },
-      { filename: "/vc-assets/local/models/gta3.img/lodksprops04.dff", start: 89030158, end: 89034254 },
-      { filename: "/vc-assets/local/models/gta3.img/lodksprops10.dff", start: 89034254, end: 89040398 },
-      { filename: "/vc-assets/local/models/gta3.img/lodksprops11.dff", start: 89040398, end: 89046542 },
-      { filename: "/vc-assets/local/models/gta3.img/lodksprops14.dff", start: 89046542, end: 89050638 },
-      { filename: "/vc-assets/local/models/gta3.img/lodksprops15.dff", start: 89050638, end: 89052686 },
-      { filename: "/vc-assets/local/models/gta3.img/lodksware01.dff", start: 89052686, end: 89062926 },
-      { filename: "/vc-assets/local/models/gta3.img/lodl2.dff", start: 89062926, end: 89067022 },
-      { filename: "/vc-assets/local/models/gta3.img/lodlargebuild.dff", start: 89067022, end: 89073166 },
-      { filename: "/vc-assets/local/models/gta3.img/lodld1.dff", start: 89073166, end: 89081358 },
-      { filename: "/vc-assets/local/models/gta3.img/lodldingground40.dff", start: 89081358, end: 89087502 },
-      { filename: "/vc-assets/local/models/gta3.img/lodldingground50.dff", start: 89087502, end: 89093646 },
-      { filename: "/vc-assets/local/models/gta3.img/lodldingsite2.dff", start: 89093646, end: 89101838 },
-      { filename: "/vc-assets/local/models/gta3.img/lodlhaitibuilding02.dff", start: 89101838, end: 89112078 },
-      { filename: "/vc-assets/local/models/gta3.img/lodlhaitibuilding06.dff", start: 89112078, end: 89124366 },
-      { filename: "/vc-assets/local/models/gta3.img/lodlhaitibuilding07.dff", start: 89124366, end: 89126414 },
-      { filename: "/vc-assets/local/models/gta3.img/lodlhaitibuilding09.dff", start: 89126414, end: 89140750 },
-      { filename: "/vc-assets/local/models/gta3.img/lodlhland.dff", start: 89140750, end: 89150990 },
-      { filename: "/vc-assets/local/models/gta3.img/lodlightext.dff", start: 89150990, end: 89161230 },
-      { filename: "/vc-assets/local/models/gta3.img/lodlleygb_nt.dff", start: 89161230, end: 89163278 },
-      { filename: "/vc-assets/local/models/gta3.img/lodlleyground.dff", start: 89163278, end: 89165326 },
-      { filename: "/vc-assets/local/models/gta3.img/lodlleyground2.dff", start: 89165326, end: 89167374 },
-      { filename: "/vc-assets/local/models/gta3.img/lodlleyground4.dff", start: 89167374, end: 89169422 },
-      { filename: "/vc-assets/local/models/gta3.img/lodlleyground5.dff", start: 89169422, end: 89171470 },
-      { filename: "/vc-assets/local/models/gta3.img/lodmain_body.dff", start: 89171470, end: 89189902 },
-      { filename: "/vc-assets/local/models/gta3.img/lodmainisl2b_01.dff", start: 89189902, end: 89193998 },
-      { filename: "/vc-assets/local/models/gta3.img/lodmainisl4_01.dff", start: 89193998, end: 89204238 },
-      { filename: "/vc-assets/local/models/gta3.img/lodmainisl5_01.dff", start: 89204238, end: 89216526 },
-      { filename: "/vc-assets/local/models/gta3.img/lodmainisland1a_01.dff", start: 89216526, end: 89222670 },
-      { filename: "/vc-assets/local/models/gta3.img/lodmainisland1b_01.dff", start: 89222670, end: 89230862 },
-      { filename: "/vc-assets/local/models/gta3.img/lodmainisland2a_01.dff", start: 89230862, end: 89237006 },
-      { filename: "/vc-assets/local/models/gta3.img/lodmainisland3a_01.dff", start: 89237006, end: 89249294 },
-      { filename: "/vc-assets/local/models/gta3.img/lodmainisland3b_01.dff", start: 89249294, end: 89257486 },
-      { filename: "/vc-assets/local/models/gta3.img/lodmainisland6a_01.dff", start: 89257486, end: 89265678 },
-      { filename: "/vc-assets/local/models/gta3.img/lodmainisland6b_01.dff", start: 89265678, end: 89269774 },
-      { filename: "/vc-assets/local/models/gta3.img/lodmajestic2c_dy.dff", start: 89269774, end: 89275918 },
-      { filename: "/vc-assets/local/models/gta3.img/lodmajestic2c_nt.dff", start: 89275918, end: 89284110 },
-      { filename: "/vc-assets/local/models/gta3.img/lodmalsign4.dff", start: 89284110, end: 89286158 },
-      { filename: "/vc-assets/local/models/gta3.img/lodmalsign5.dff", start: 89286158, end: 89288206 },
-      { filename: "/vc-assets/local/models/gta3.img/lodmiamilanda.dff", start: 89288206, end: 89294350 },
-      { filename: "/vc-assets/local/models/gta3.img/lodmiland027a.dff", start: 89294350, end: 89306638 },
-      { filename: "/vc-assets/local/models/gta3.img/lodmiland037.dff", start: 89306638, end: 89312782 },
-      { filename: "/vc-assets/local/models/gta3.img/lodmiland039.dff", start: 89312782, end: 89314830 },
-      { filename: "/vc-assets/local/models/gta3.img/lodmiland041.dff", start: 89314830, end: 89318926 },
-      { filename: "/vc-assets/local/models/gta3.img/lodmiland170.dff", start: 89318926, end: 89323022 },
-      { filename: "/vc-assets/local/models/gta3.img/lodmiland171.dff", start: 89323022, end: 89335310 },
-      { filename: "/vc-assets/local/models/gta3.img/lodmiland172.dff", start: 89335310, end: 89343502 },
-      { filename: "/vc-assets/local/models/gta3.img/lodmiland173.dff", start: 89343502, end: 89353742 },
-      { filename: "/vc-assets/local/models/gta3.img/lodmiland174.dff", start: 89353742, end: 89361934 },
-      { filename: "/vc-assets/local/models/gta3.img/lodmiland175.dff", start: 89361934, end: 89368078 },
-      { filename: "/vc-assets/local/models/gta3.img/lodmiland176.dff", start: 89368078, end: 89370126 },
-      { filename: "/vc-assets/local/models/gta3.img/lodmiland177.dff", start: 89370126, end: 89372174 },
-      { filename: "/vc-assets/local/models/gta3.img/lodmiland178.dff", start: 89372174, end: 89374222 },
-      { filename: "/vc-assets/local/models/gta3.img/lodmiland179.dff", start: 89374222, end: 89384462 },
-      { filename: "/vc-assets/local/models/gta3.img/lodmiland180.dff", start: 89384462, end: 89392654 },
-      { filename: "/vc-assets/local/models/gta3.img/lodmiland_kb01_nt.dff", start: 89392654, end: 89398798 },
-      { filename: "/vc-assets/local/models/gta3.img/lodmiland_kb02.dff", start: 89398798, end: 89402894 },
-      { filename: "/vc-assets/local/models/gta3.img/lodmiland_kb03.dff", start: 89402894, end: 89406990 },
-      { filename: "/vc-assets/local/models/gta3.img/lodmiland_kb04.dff", start: 89406990, end: 89411086 },
-      { filename: "/vc-assets/local/models/gta3.img/lodmiland_kb10.dff", start: 89411086, end: 89423374 },
-      { filename: "/vc-assets/local/models/gta3.img/lodmiland_kb10b.dff", start: 89423374, end: 89427470 },
-      { filename: "/vc-assets/local/models/gta3.img/lodmiland_kb11.dff", start: 89427470, end: 89433614 },
-      { filename: "/vc-assets/local/models/gta3.img/lodmiland_kb11b.dff", start: 89433614, end: 89437710 },
-      { filename: "/vc-assets/local/models/gta3.img/lodmiland_kb12.dff", start: 89437710, end: 89443854 },
-      { filename: "/vc-assets/local/models/gta3.img/lodmiland_kb12b.dff", start: 89443854, end: 89447950 },
-      { filename: "/vc-assets/local/models/gta3.img/lodmiland_kb13.dff", start: 89447950, end: 89456142 },
-      { filename: "/vc-assets/local/models/gta3.img/lodmiland_ws04.dff", start: 89456142, end: 89460238 },
-      { filename: "/vc-assets/local/models/gta3.img/lodmiland_ws04b.dff", start: 89460238, end: 89464334 },
-      { filename: "/vc-assets/local/models/gta3.img/lodmiodnroadxa.dff", start: 89464334, end: 89468430 },
-      { filename: "/vc-assets/local/models/gta3.img/lodmrgbase1.dff", start: 89468430, end: 89476622 },
-      { filename: "/vc-assets/local/models/gta3.img/lodmrgbuild1.dff", start: 89476622, end: 89484814 },
-      { filename: "/vc-assets/local/models/gta3.img/lodmrgbuild2.dff", start: 89484814, end: 89490958 },
-      { filename: "/vc-assets/local/models/gta3.img/lodmrgtrees4.dff", start: 89490958, end: 89505294 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnbbridge1.dff", start: 89505294, end: 89521678 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnbchw.txd", start: 89521678, end: 89611790 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnbeach.txd", start: 89611790, end: 89759246 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnbeach07.dff", start: 89759246, end: 89761294 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnbeach08.dff", start: 89761294, end: 89763342 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnbeachbtbig.txd", start: 89763342, end: 89832974 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnbeachwbig.txd", start: 89832974, end: 89873934 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnbwroad01.dff", start: 89873934, end: 89875982 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnbwroad02.dff", start: 89875982, end: 89880078 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnbwroad03.dff", start: 89880078, end: 89882126 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnbwroad04.dff", start: 89882126, end: 89884174 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnbwroad05.dff", start: 89884174, end: 89886222 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnbwroad06.dff", start: 89886222, end: 89888270 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnbwroad07.dff", start: 89888270, end: 89892366 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnbwroad08.dff", start: 89892366, end: 89904654 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnd04.dff", start: 89904654, end: 89906702 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnebasea0.dff", start: 89906702, end: 89910798 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnetopa0.dff", start: 89910798, end: 89914894 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnewscafe_nt.dff", start: 89914894, end: 89921038 },
-      { filename: "/vc-assets/local/models/gta3.img/lodngst2mesh.dff", start: 89921038, end: 89923086 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnorthbridge1.dff", start: 89923086, end: 89929230 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnorthisland1.dff", start: 89929230, end: 89935374 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnorthisland2.dff", start: 89935374, end: 89943566 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnorthisland3.dff", start: 89943566, end: 89949710 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnorthstar.dff", start: 89949710, end: 89976334 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnrthroad01.dff", start: 89976334, end: 89978382 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnrthroad02.dff", start: 89978382, end: 89980430 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnrthroad03.dff", start: 89980430, end: 89982478 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnrthroad04.dff", start: 89982478, end: 89986574 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnrthroad05.dff", start: 89986574, end: 89988622 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnrthroad06.dff", start: 89988622, end: 89990670 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnrthroad07.dff", start: 89990670, end: 89992718 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnrthroad08.dff", start: 89992718, end: 89994766 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnrthroad09.dff", start: 89994766, end: 89996814 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnrthroad10.dff", start: 89996814, end: 89998862 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnrthroad11.dff", start: 89998862, end: 90000910 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnrthroad12.dff", start: 90000910, end: 90002958 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnrthroad13.dff", start: 90002958, end: 90005006 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnrthroad14.dff", start: 90005006, end: 90007054 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnrthroad15.dff", start: 90007054, end: 90009102 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnrthroad16.dff", start: 90009102, end: 90011150 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnrthroad17.dff", start: 90011150, end: 90013198 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnrthroad18.dff", start: 90013198, end: 90015246 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnrthroad19.dff", start: 90015246, end: 90017294 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnrthroad20.dff", start: 90017294, end: 90019342 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnrthroad21.dff", start: 90019342, end: 90021390 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnrthroad22.dff", start: 90021390, end: 90023438 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnrthroad23.dff", start: 90023438, end: 90025486 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnrthroad24.dff", start: 90025486, end: 90027534 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnrthroad25.dff", start: 90027534, end: 90029582 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnrthroad26.dff", start: 90029582, end: 90031630 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnrthroad27.dff", start: 90031630, end: 90033678 },
-      { filename: "/vc-assets/local/models/gta3.img/lodnrthroad28.dff", start: 90033678, end: 90035726 },
-      { filename: "/vc-assets/local/models/gta3.img/lodntoon03.dff", start: 90035726, end: 90048014 },
-      { filename: "/vc-assets/local/models/gta3.img/lodntoon04.dff", start: 90048014, end: 90058254 },
-      { filename: "/vc-assets/local/models/gta3.img/lodntoon13.dff", start: 90058254, end: 90068494 },
-      { filename: "/vc-assets/local/models/gta3.img/lodntoon18.dff", start: 90068494, end: 90076686 },
-      { filename: "/vc-assets/local/models/gta3.img/lodntoon20.dff", start: 90076686, end: 90084878 },
-      { filename: "/vc-assets/local/models/gta3.img/lodntoon21.dff", start: 90084878, end: 90091022 },
-      { filename: "/vc-assets/local/models/gta3.img/lodntoon22.dff", start: 90091022, end: 90111502 },
-      { filename: "/vc-assets/local/models/gta3.img/lodntoon23.dff", start: 90111502, end: 90131982 },
-      { filename: "/vc-assets/local/models/gta3.img/lodntoon32.dff", start: 90131982, end: 90144270 },
-      { filename: "/vc-assets/local/models/gta3.img/lodntoon34.dff", start: 90144270, end: 90148366 },
-      { filename: "/vc-assets/local/models/gta3.img/lodntoon39.dff", start: 90148366, end: 90168846 },
-      { filename: "/vc-assets/local/models/gta3.img/lodntoon49.dff", start: 90168846, end: 90172942 },
-      { filename: "/vc-assets/local/models/gta3.img/lodntoon53.dff", start: 90172942, end: 90191374 },
-      { filename: "/vc-assets/local/models/gta3.img/lodntoon54.dff", start: 90191374, end: 90199566 },
-      { filename: "/vc-assets/local/models/gta3.img/lodntoon55.dff", start: 90199566, end: 90217998 },
-      { filename: "/vc-assets/local/models/gta3.img/lodntoon56.dff", start: 90217998, end: 90236430 },
-      { filename: "/vc-assets/local/models/gta3.img/lodntoon65.dff", start: 90236430, end: 90238478 },
-      { filename: "/vc-assets/local/models/gta3.img/lodntoon66.dff", start: 90238478, end: 90240526 },
-      { filename: "/vc-assets/local/models/gta3.img/lodntoon70.dff", start: 90240526, end: 90244622 },
-      { filename: "/vc-assets/local/models/gta3.img/lodntoon72.dff", start: 90244622, end: 90248718 },
-      { filename: "/vc-assets/local/models/gta3.img/lodntoon72b.dff", start: 90248718, end: 90250766 },
-      { filename: "/vc-assets/local/models/gta3.img/lodntoon73.dff", start: 90250766, end: 90252814 },
-      { filename: "/vc-assets/local/models/gta3.img/lodntoon73b.dff", start: 90252814, end: 90254862 },
-      { filename: "/vc-assets/local/models/gta3.img/lodntoon74.dff", start: 90254862, end: 90256910 },
-      { filename: "/vc-assets/local/models/gta3.img/lodntoon_newbit.dff", start: 90256910, end: 90265102 },
-      { filename: "/vc-assets/local/models/gta3.img/lodntoon_shops.dff", start: 90265102, end: 90273294 },
-      { filename: "/vc-assets/local/models/gta3.img/lodntoon_top02.dff", start: 90273294, end: 90281486 },
-      { filename: "/vc-assets/local/models/gta3.img/lodntoon_top04.dff", start: 90281486, end: 90283534 },
-      { filename: "/vc-assets/local/models/gta3.img/lodntoon_top05.dff", start: 90283534, end: 90285582 },
-      { filename: "/vc-assets/local/models/gta3.img/lodntoon_top07.dff", start: 90285582, end: 90289678 },
-      { filename: "/vc-assets/local/models/gta3.img/lodntoon_top08.dff", start: 90289678, end: 90306062 },
-      { filename: "/vc-assets/local/models/gta3.img/lodntoon_top10.dff", start: 90306062, end: 90318350 },
-      { filename: "/vc-assets/local/models/gta3.img/lodo_buildkb09.dff", start: 90318350, end: 90320398 },
-      { filename: "/vc-assets/local/models/gta3.img/lodo_buildkb25.dff", start: 90320398, end: 90324494 },
-      { filename: "/vc-assets/local/models/gta3.img/lodo_buildkb29_nt.dff", start: 90324494, end: 90326542 },
-      { filename: "/vc-assets/local/models/gta3.img/lodo_buildkb_nt.dff", start: 90326542, end: 90328590 },
-      { filename: "/vc-assets/local/models/gta3.img/lodo_copgrnd.dff", start: 90328590, end: 90332686 },
-      { filename: "/vc-assets/local/models/gta3.img/lodo_polbuild.dff", start: 90332686, end: 90347022 },
-      { filename: "/vc-assets/local/models/gta3.img/lodo_polgrnda10.dff", start: 90347022, end: 90359310 },
-      { filename: "/vc-assets/local/models/gta3.img/lodo_polgrnda12.dff", start: 90359310, end: 90373646 },
-      { filename: "/vc-assets/local/models/gta3.img/lodo_polgrnda13.dff", start: 90373646, end: 90379790 },
-      { filename: "/vc-assets/local/models/gta3.img/lodo_polgrnda14.dff", start: 90379790, end: 90387982 },
-      { filename: "/vc-assets/local/models/gta3.img/lodo_polgrnda16.dff", start: 90387982, end: 90396174 },
-      { filename: "/vc-assets/local/models/gta3.img/lodo_polgrnda17.dff", start: 90396174, end: 90404366 },
-      { filename: "/vc-assets/local/models/gta3.img/lodo_polgrnda7.dff", start: 90404366, end: 90416654 },
-      { filename: "/vc-assets/local/models/gta3.img/lodo_polgrnda8.dff", start: 90416654, end: 90422798 },
-      { filename: "/vc-assets/local/models/gta3.img/lodo_polgrnda9.dff", start: 90422798, end: 90437134 },
-      { filename: "/vc-assets/local/models/gta3.img/lodoada1.dff", start: 90437134, end: 90441230 },
-      { filename: "/vc-assets/local/models/gta3.img/lodoadc1.dff", start: 90441230, end: 90443278 },
-      { filename: "/vc-assets/local/models/gta3.img/lodoadc2.dff", start: 90443278, end: 90445326 },
-      { filename: "/vc-assets/local/models/gta3.img/lodoadc3.dff", start: 90445326, end: 90447374 },
-      { filename: "/vc-assets/local/models/gta3.img/lodoadc4.dff", start: 90447374, end: 90449422 },
-      { filename: "/vc-assets/local/models/gta3.img/lodoastsky1.dff", start: 90449422, end: 90453518 },
-      { filename: "/vc-assets/local/models/gta3.img/lodoastsky2.dff", start: 90453518, end: 90457614 },
-      { filename: "/vc-assets/local/models/gta3.img/lodoceanrdn1_dy.dff", start: 90457614, end: 90459662 },
-      { filename: "/vc-assets/local/models/gta3.img/lodoceanrdn1_nt.dff", start: 90459662, end: 90461710 },
-      { filename: "/vc-assets/local/models/gta3.img/lododrive.txd", start: 90461710, end: 90572302 },
-      { filename: "/vc-assets/local/models/gta3.img/lododriven.txd", start: 90572302, end: 90713614 },
-      { filename: "/vc-assets/local/models/gta3.img/lodoshp010.dff", start: 90713614, end: 90729998 },
-      { filename: "/vc-assets/local/models/gta3.img/lodotel01.dff", start: 90729998, end: 90740238 },
-      { filename: "/vc-assets/local/models/gta3.img/lodotel02.dff", start: 90740238, end: 90748430 },
-      { filename: "/vc-assets/local/models/gta3.img/lodotel03.dff", start: 90748430, end: 90770958 },
-      { filename: "/vc-assets/local/models/gta3.img/lodowsand1.dff", start: 90770958, end: 90773006 },
-      { filename: "/vc-assets/local/models/gta3.img/lodowsand2.dff", start: 90773006, end: 90775054 },
-      { filename: "/vc-assets/local/models/gta3.img/lodpad_grdn_2.dff", start: 90775054, end: 90787342 },
-      { filename: "/vc-assets/local/models/gta3.img/lodpaynspray.dff", start: 90787342, end: 90791438 },
-      { filename: "/vc-assets/local/models/gta3.img/lodpedbridge3.dff", start: 90791438, end: 90797582 },
-      { filename: "/vc-assets/local/models/gta3.img/lodpelican2_nt.dff", start: 90797582, end: 90801678 },
-      { filename: "/vc-assets/local/models/gta3.img/lodpelican_dy.dff", start: 90801678, end: 90805774 },
-      { filename: "/vc-assets/local/models/gta3.img/lodpelican_nt.dff", start: 90805774, end: 90809870 },
-      { filename: "/vc-assets/local/models/gta3.img/lodphils.dff", start: 90809870, end: 90832398 },
-      { filename: "/vc-assets/local/models/gta3.img/lodpital.dff", start: 90832398, end: 90840590 },
-      { filename: "/vc-assets/local/models/gta3.img/lodpizzaplace.dff", start: 90840590, end: 90844686 },
-      { filename: "/vc-assets/local/models/gta3.img/lodport_carpark0.dff", start: 90844686, end: 90846734 },
-      { filename: "/vc-assets/local/models/gta3.img/lodprintworks.dff", start: 90846734, end: 90859022 },
-      { filename: "/vc-assets/local/models/gta3.img/lodracecotop.dff", start: 90859022, end: 90877454 },
-      { filename: "/vc-assets/local/models/gta3.img/lodracecotop2.dff", start: 90877454, end: 90887694 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrbits05.dff", start: 90887694, end: 90895886 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrbits06.dff", start: 90895886, end: 90899982 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrbits13.dff", start: 90899982, end: 90904078 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrbits13b.dff", start: 90904078, end: 90906126 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrbits13c.dff", start: 90906126, end: 90908174 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrbits17.dff", start: 90908174, end: 90912270 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrbits22.dff", start: 90912270, end: 90916366 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrbits24.dff", start: 90916366, end: 90920462 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrbits45.dff", start: 90920462, end: 90924558 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrbits46.dff", start: 90924558, end: 90930702 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrbits49.dff", start: 90930702, end: 90934798 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrbits50.dff", start: 90934798, end: 90938894 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrbits51.dff", start: 90938894, end: 90942990 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrbits52.dff", start: 90942990, end: 90949134 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrbits54.dff", start: 90949134, end: 90955278 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrbits55.dff", start: 90955278, end: 90959374 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrbits56.dff", start: 90959374, end: 90965518 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrbits57.dff", start: 90965518, end: 90969614 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrbits58.dff", start: 90969614, end: 90975758 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrbits59.dff", start: 90975758, end: 90981902 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrbl02b.dff", start: 90981902, end: 90983950 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrblocks02.dff", start: 90983950, end: 90994190 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrblocks03.dff", start: 90994190, end: 91002382 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrblocks04.dff", start: 91002382, end: 91018766 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrbridge2.dff", start: 91018766, end: 91043342 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrdepot.dff", start: 91043342, end: 91051534 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrentrance02.dff", start: 91051534, end: 91057678 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrentrance1.dff", start: 91057678, end: 91063822 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrhouse.dff", start: 91063822, end: 91069966 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrisland_road1.dff", start: 91069966, end: 91074062 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrisland_road2.dff", start: 91074062, end: 91078158 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrisland_road3.dff", start: 91078158, end: 91080206 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrisland_road4.dff", start: 91080206, end: 91084302 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrisland_road6.dff", start: 91084302, end: 91086350 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrland01.dff", start: 91086350, end: 91098638 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrland02.dff", start: 91098638, end: 91106830 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrland03.dff", start: 91106830, end: 91112974 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrland04.dff", start: 91112974, end: 91117070 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrland05.dff", start: 91117070, end: 91123214 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrland06.dff", start: 91123214, end: 91133454 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrland07.dff", start: 91133454, end: 91137550 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrland08.dff", start: 91137550, end: 91143694 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrland10.dff", start: 91143694, end: 91149838 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrlandnew9.dff", start: 91149838, end: 91160078 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrnda1.dff", start: 91160078, end: 91162126 },
-      { filename: "/vc-assets/local/models/gta3.img/lodroad01_nt.dff", start: 91162126, end: 91166222 },
-      { filename: "/vc-assets/local/models/gta3.img/lodroad03od.dff", start: 91166222, end: 91168270 },
-      { filename: "/vc-assets/local/models/gta3.img/lodroad04od_nt.dff", start: 91168270, end: 91172366 },
-      { filename: "/vc-assets/local/models/gta3.img/lodroad05od.dff", start: 91172366, end: 91176462 },
-      { filename: "/vc-assets/local/models/gta3.img/lodroad08_nt.dff", start: 91176462, end: 91178510 },
-      { filename: "/vc-assets/local/models/gta3.img/lodroadab.dff", start: 91178510, end: 91180558 },
-      { filename: "/vc-assets/local/models/gta3.img/lodroadnew.dff", start: 91180558, end: 91184654 },
-      { filename: "/vc-assets/local/models/gta3.img/lodroadsect1.dff", start: 91184654, end: 91190798 },
-      { filename: "/vc-assets/local/models/gta3.img/lodroadsect2a.dff", start: 91190798, end: 91196942 },
-      { filename: "/vc-assets/local/models/gta3.img/lodroadsect2b.dff", start: 91196942, end: 91203086 },
-      { filename: "/vc-assets/local/models/gta3.img/lodroadsect3.dff", start: 91203086, end: 91219470 },
-      { filename: "/vc-assets/local/models/gta3.img/lodroadsect4.dff", start: 91219470, end: 91239950 },
-      { filename: "/vc-assets/local/models/gta3.img/lodroadsect5.dff", start: 91239950, end: 91250190 },
-      { filename: "/vc-assets/local/models/gta3.img/lodroadsigns1_02.dff", start: 91250190, end: 91254286 },
-      { filename: "/vc-assets/local/models/gta3.img/lodroadsigns1_03.dff", start: 91254286, end: 91258382 },
-      { filename: "/vc-assets/local/models/gta3.img/lodroadx.dff", start: 91258382, end: 91262478 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrtrees1.dff", start: 91262478, end: 91276814 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrtrees2.dff", start: 91276814, end: 91287054 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrtrees3.dff", start: 91287054, end: 91301390 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrtrees4.dff", start: 91301390, end: 91315726 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrtrees5.dff", start: 91315726, end: 91328014 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrwaterfrnt05.dff", start: 91328014, end: 91334158 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrwaterfrnt06.dff", start: 91334158, end: 91336206 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrwaterfrnt06b.dff", start: 91336206, end: 91340302 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrwaterfrnt07.dff", start: 91340302, end: 91342350 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrwaterfrnt07b.dff", start: 91342350, end: 91344398 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrwaterfrnt08.dff", start: 91344398, end: 91348494 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrwaterfrnt09.dff", start: 91348494, end: 91352590 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrwaterfrnt09b.dff", start: 91352590, end: 91354638 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrwaterfrnt10.dff", start: 91354638, end: 91358734 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrwaterfrnt11.dff", start: 91358734, end: 91362830 },
-      { filename: "/vc-assets/local/models/gta3.img/lodrwaterfrnt12.dff", start: 91362830, end: 91366926 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsbrgestart_r_dt.dff", start: 91366926, end: 91383310 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsbrgestart_r_nt.dff", start: 91383310, end: 91399694 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsbrgestartf_dt.dff", start: 91399694, end: 91411982 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsbrgestartf_nt.dff", start: 91411982, end: 91424270 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsbridge07_dt.dff", start: 91424270, end: 91432462 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsbridge07_nt.dff", start: 91432462, end: 91440654 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsbridge1_dt.dff", start: 91440654, end: 91448846 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsbridge1_nt.dff", start: 91448846, end: 91457038 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsbridge2_dt.dff", start: 91457038, end: 91469326 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsbridge2_nt.dff", start: 91469326, end: 91481614 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsbridge3_dt.dff", start: 91481614, end: 91489806 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsbridge3_nt.dff", start: 91489806, end: 91497998 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsbridge4_dt.dff", start: 91497998, end: 91508238 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsbridge4_nt.dff", start: 91508238, end: 91518478 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsbridge5_dt.dff", start: 91518478, end: 91532814 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsbridge5_nt.dff", start: 91532814, end: 91547150 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsbridge6_dt.dff", start: 91547150, end: 91555342 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsbridge6_nt.dff", start: 91555342, end: 91563534 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsbridge_dt.dff", start: 91563534, end: 91575822 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsbridge_nt.dff", start: 91575822, end: 91586062 },
-      { filename: "/vc-assets/local/models/gta3.img/lodscarland226.dff", start: 91586062, end: 91588110 },
-      { filename: "/vc-assets/local/models/gta3.img/lodse_ext.dff", start: 91588110, end: 91592206 },
-      { filename: "/vc-assets/local/models/gta3.img/lodse_pier.dff", start: 91592206, end: 91600398 },
-      { filename: "/vc-assets/local/models/gta3.img/lodse_pierfence.dff", start: 91600398, end: 91604494 },
-      { filename: "/vc-assets/local/models/gta3.img/lodseaplaland1.dff", start: 91604494, end: 91606542 },
-      { filename: "/vc-assets/local/models/gta3.img/lodseaplanehanger1.dff", start: 91606542, end: 91612686 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsection.dff", start: 91612686, end: 91618830 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsho_ext1.dff", start: 91618830, end: 91622926 },
-      { filename: "/vc-assets/local/models/gta3.img/lodshopfronts01.dff", start: 91622926, end: 91633166 },
-      { filename: "/vc-assets/local/models/gta3.img/lodshopfronts01b.dff", start: 91633166, end: 91645454 },
-      { filename: "/vc-assets/local/models/gta3.img/lodshopfronts02.dff", start: 91645454, end: 91651598 },
-      { filename: "/vc-assets/local/models/gta3.img/lodshopfronts02b.dff", start: 91651598, end: 91659790 },
-      { filename: "/vc-assets/local/models/gta3.img/lodshpfrnts1grd.dff", start: 91659790, end: 91663886 },
-      { filename: "/vc-assets/local/models/gta3.img/lodshpfrts1bgrd.dff", start: 91663886, end: 91665934 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsion1_a.dff", start: 91665934, end: 91674126 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsion1_base.dff", start: 91674126, end: 91686414 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsion1b.dff", start: 91686414, end: 91694606 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsion1gardens.dff", start: 91694606, end: 91715086 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsion2_a.dff", start: 91715086, end: 91721230 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsion2_b.dff", start: 91721230, end: 91727374 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsion2c.dff", start: 91727374, end: 91733518 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsion3_b.dff", start: 91733518, end: 91739662 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsion3_base.dff", start: 91739662, end: 91760142 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsion3_c.dff", start: 91760142, end: 91766286 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsion3a.dff", start: 91766286, end: 91778574 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsion3gardens.dff", start: 91778574, end: 91797006 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsjmcrush.dff", start: 91797006, end: 91807246 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsmahangar2_01.dff", start: 91807246, end: 91811342 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsmahangar2_02.dff", start: 91811342, end: 91815438 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsmahangar2_03.dff", start: 91815438, end: 91819534 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsmahangar2_04.dff", start: 91819534, end: 91823630 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsmahangar2_05.dff", start: 91823630, end: 91827726 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsmahangar2_06.dff", start: 91827726, end: 91831822 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsmallhangars1_01.dff", start: 91831822, end: 91837966 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsmallhangars1_02.dff", start: 91837966, end: 91842062 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsmallhangars1_03.dff", start: 91842062, end: 91846158 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsmallisland1_01.dff", start: 91846158, end: 91848206 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsmallislebridge1.dff", start: 91848206, end: 91852302 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsmallradar1.dff", start: 91852302, end: 91858446 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsmallradar1_02.dff", start: 91858446, end: 91864590 },
-      { filename: "/vc-assets/local/models/gta3.img/lodst_woodfence30.dff", start: 91864590, end: 91866638 },
-      { filename: "/vc-assets/local/models/gta3.img/lodstadiumland_a.dff", start: 91866638, end: 91878926 },
-      { filename: "/vc-assets/local/models/gta3.img/lodstadiumland_b.dff", start: 91878926, end: 91893262 },
-      { filename: "/vc-assets/local/models/gta3.img/lodstadiumland_c.dff", start: 91893262, end: 91901454 },
-      { filename: "/vc-assets/local/models/gta3.img/lodstadiumland_d.dff", start: 91901454, end: 91907598 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsthroad01.dff", start: 91907598, end: 91909646 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsthroad02.dff", start: 91909646, end: 91911694 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsthroad03.dff", start: 91911694, end: 91913742 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsthroad04.dff", start: 91913742, end: 91915790 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsthroad05.dff", start: 91915790, end: 91917838 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsthroad06.dff", start: 91917838, end: 91919886 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsthroad07.dff", start: 91919886, end: 91921934 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsthroad08.dff", start: 91921934, end: 91923982 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsthroad09.dff", start: 91923982, end: 91926030 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsthroad10.dff", start: 91926030, end: 91928078 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsthroad11.dff", start: 91928078, end: 91930126 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsthroad12.dff", start: 91930126, end: 91932174 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsthroad13.dff", start: 91932174, end: 91934222 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsthroad14.dff", start: 91934222, end: 91936270 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsthroad15.dff", start: 91936270, end: 91938318 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsthroad16.dff", start: 91938318, end: 91940366 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsthroad17.dff", start: 91940366, end: 91942414 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsthroad18.dff", start: 91942414, end: 91944462 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsthroad19.dff", start: 91944462, end: 91946510 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsthroad20.dff", start: 91946510, end: 91948558 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsthroad21.dff", start: 91948558, end: 91950606 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsthroad22.dff", start: 91950606, end: 91952654 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsthroad23.dff", start: 91952654, end: 91954702 },
-      { filename: "/vc-assets/local/models/gta3.img/lodsthroad24.dff", start: 91954702, end: 91956750 },
-      { filename: "/vc-assets/local/models/gta3.img/lodtaxifirm02.dff", start: 91956750, end: 91960846 },
-      { filename: "/vc-assets/local/models/gta3.img/lodtbuildws14.dff", start: 91960846, end: 91966990 },
-      { filename: "/vc-assets/local/models/gta3.img/lodtermaintfloor1.dff", start: 91966990, end: 91977230 },
-      { filename: "/vc-assets/local/models/gta3.img/lodtermina_01.dff", start: 91977230, end: 91989518 },
-      { filename: "/vc-assets/local/models/gta3.img/lodterminalb1.dff", start: 91989518, end: 91999758 },
-      { filename: "/vc-assets/local/models/gta3.img/lodti1rd.dff", start: 91999758, end: 92007950 },
-      { filename: "/vc-assets/local/models/gta3.img/lodtibuilds.dff", start: 92007950, end: 92016142 },
-      { filename: "/vc-assets/local/models/gta3.img/lodticent.dff", start: 92016142, end: 92020238 },
-      { filename: "/vc-assets/local/models/gta3.img/lodtides3_nt.dff", start: 92020238, end: 92028430 },
-      { filename: "/vc-assets/local/models/gta3.img/lodtihut1.dff", start: 92028430, end: 92048910 },
-      { filename: "/vc-assets/local/models/gta3.img/lodtihut2.dff", start: 92048910, end: 92067342 },
-      { filename: "/vc-assets/local/models/gta3.img/lodtihut3.dff", start: 92067342, end: 92079630 },
-      { filename: "/vc-assets/local/models/gta3.img/lodtimall.dff", start: 92079630, end: 92087822 },
-      { filename: "/vc-assets/local/models/gta3.img/lodtiroadbuild.dff", start: 92087822, end: 92104206 },
-      { filename: "/vc-assets/local/models/gta3.img/lodtiskyg.dff", start: 92104206, end: 92110350 },
-      { filename: "/vc-assets/local/models/gta3.img/lodtiskyt.dff", start: 92110350, end: 92116494 },
-      { filename: "/vc-assets/local/models/gta3.img/lodtistation.dff", start: 92116494, end: 92120590 },
-      { filename: "/vc-assets/local/models/gta3.img/lodtistation01.dff", start: 92120590, end: 92124686 },
-      { filename: "/vc-assets/local/models/gta3.img/lodtleha_hardware.dff", start: 92124686, end: 92128782 },
-      { filename: "/vc-assets/local/models/gta3.img/lodtleha_police.dff", start: 92128782, end: 92136974 },
-      { filename: "/vc-assets/local/models/gta3.img/lodtlehabroad.dff", start: 92136974, end: 92141070 },
-      { filename: "/vc-assets/local/models/gta3.img/lodtlehacoast02.dff", start: 92141070, end: 92147214 },
-      { filename: "/vc-assets/local/models/gta3.img/lodtlehacoast05.dff", start: 92147214, end: 92151310 },
-      { filename: "/vc-assets/local/models/gta3.img/lodtlharoadgg2.dff", start: 92151310, end: 92155406 },
-      { filename: "/vc-assets/local/models/gta3.img/lodtower.dff", start: 92155406, end: 92161550 },
-      { filename: "/vc-assets/local/models/gta3.img/lodtower_01.dff", start: 92161550, end: 92169742 },
-      { filename: "/vc-assets/local/models/gta3.img/lodtower_02.dff", start: 92169742, end: 92177934 },
-      { filename: "/vc-assets/local/models/gta3.img/lodtower_03.dff", start: 92177934, end: 92186126 },
-      { filename: "/vc-assets/local/models/gta3.img/lodtranspol1.dff", start: 92186126, end: 92190222 },
-      { filename: "/vc-assets/local/models/gta3.img/lodtroada.dff", start: 92190222, end: 92192270 },
-      { filename: "/vc-assets/local/models/gta3.img/lodtroadb.dff", start: 92192270, end: 92194318 },
-      { filename: "/vc-assets/local/models/gta3.img/lodtship_structure0.dff", start: 92194318, end: 92216846 },
-      { filename: "/vc-assets/local/models/gta3.img/loduild034.dff", start: 92216846, end: 92222990 },
-      { filename: "/vc-assets/local/models/gta3.img/loduild1b.dff", start: 92222990, end: 92227086 },
-      { filename: "/vc-assets/local/models/gta3.img/loduilding01.dff", start: 92227086, end: 92231182 },
-      { filename: "/vc-assets/local/models/gta3.img/loduilding05.dff", start: 92231182, end: 92239374 },
-      { filename: "/vc-assets/local/models/gta3.img/lodvroad1.dff", start: 92239374, end: 92241422 },
-      { filename: "/vc-assets/local/models/gta3.img/lodvroad2.dff", start: 92241422, end: 92243470 },
-      { filename: "/vc-assets/local/models/gta3.img/lodwalkway2.dff", start: 92243470, end: 92247566 },
-      { filename: "/vc-assets/local/models/gta3.img/lodwall.dff", start: 92247566, end: 92251662 },
-      { filename: "/vc-assets/local/models/gta3.img/lodwall2.dff", start: 92251662, end: 92253710 },
-      { filename: "/vc-assets/local/models/gta3.img/lodwall3.dff", start: 92253710, end: 92255758 },
-      { filename: "/vc-assets/local/models/gta3.img/lodwaretank.dff", start: 92255758, end: 92259854 },
-      { filename: "/vc-assets/local/models/gta3.img/lodwashnbrdge.txd", start: 92259854, end: 92265998 },
-      { filename: "/vc-assets/local/models/gta3.img/lodwashpaynspray.dff", start: 92265998, end: 92272142 },
-      { filename: "/vc-assets/local/models/gta3.img/lodwashsth.txd", start: 92272142, end: 92366350 },
-      { filename: "/vc-assets/local/models/gta3.img/lodwoodbridge1.dff", start: 92366350, end: 92370446 },
-      { filename: "/vc-assets/local/models/gta3.img/lodworksramps.dff", start: 92370446, end: 92376590 },
-      { filename: "/vc-assets/local/models/gta3.img/lodwshsth99.txd", start: 92376590, end: 92595726 },
-      { filename: "/vc-assets/local/models/gta3.img/lodwsouth08.txd", start: 92595726, end: 92835342 },
-      { filename: "/vc-assets/local/models/gta3.img/lodxrefhirise1.dff", start: 92835342, end: 92841486 },
-      { filename: "/vc-assets/local/models/gta3.img/lodxrefhot.txd", start: 92841486, end: 92874254 },
-      { filename: "/vc-assets/local/models/gta3.img/lodxrefhse1.dff", start: 92874254, end: 92878350 },
-      { filename: "/vc-assets/local/models/gta3.img/lodxrefhse2.dff", start: 92878350, end: 92882446 },
-      { filename: "/vc-assets/local/models/gta3.img/luggage.txd", start: 92882446, end: 92986894 },
-      { filename: "/vc-assets/local/models/gta3.img/male01.dff", start: 92986894, end: 93058574 },
-      { filename: "/vc-assets/local/models/gta3.img/male01.txd", start: 93058574, end: 93081102 },
-      { filename: "/vc-assets/local/models/gta3.img/mall.col", start: 93081102, end: 93283854 },
-      { filename: "/vc-assets/local/models/gta3.img/mallroof.txd", start: 93283854, end: 93285902 },
-      { filename: "/vc-assets/local/models/gta3.img/manana.dff", start: 93285902, end: 93439502 },
-      { filename: "/vc-assets/local/models/gta3.img/manana.txd", start: 93439502, end: 93484558 },
-      { filename: "/vc-assets/local/models/gta3.img/mansion.col", start: 93484558, end: 93638158 },
-      { filename: "/vc-assets/local/models/gta3.img/marquis.dff", start: 93638158, end: 93771278 },
-      { filename: "/vc-assets/local/models/gta3.img/marquis.txd", start: 93771278, end: 93806094 },
-      { filename: "/vc-assets/local/models/gta3.img/mbtbemp.dff", start: 93806094, end: 93826574 },
-      { filename: "/vc-assets/local/models/gta3.img/mbtbemp.txd", start: 93826574, end: 93974030 },
-      { filename: "/vc-assets/local/models/gta3.img/mc_ground3.dff", start: 93974030, end: 93984270 },
-      { filename: "/vc-assets/local/models/gta3.img/mc_ground4.dff", start: 93984270, end: 93994510 },
-      { filename: "/vc-assets/local/models/gta3.img/mc_ground5.dff", start: 93994510, end: 94002702 },
-      { filename: "/vc-assets/local/models/gta3.img/mc_overlights1.dff", start: 94002702, end: 94008846 },
-      { filename: "/vc-assets/local/models/gta3.img/mc_overlights2.dff", start: 94008846, end: 94021134 },
-      { filename: "/vc-assets/local/models/gta3.img/mc_wall2.dff", start: 94021134, end: 94031374 },
-      { filename: "/vc-assets/local/models/gta3.img/mc_wall3.dff", start: 94031374, end: 94043662 },
-      { filename: "/vc-assets/local/models/gta3.img/mcompounda1.txd", start: 94043662, end: 94459406 },
-      { filename: "/vc-assets/local/models/gta3.img/merced.dff", start: 94459406, end: 94737934 },
-      { filename: "/vc-assets/local/models/gta3.img/merced.txd", start: 94737934, end: 94821902 },
-      { filename: "/vc-assets/local/models/gta3.img/mesa.dff", start: 94821902, end: 95002126 },
-      { filename: "/vc-assets/local/models/gta3.img/mesa.txd", start: 95002126, end: 95045134 },
-      { filename: "/vc-assets/local/models/gta3.img/metal.txd", start: 95045134, end: 95065614 },
-      { filename: "/vc-assets/local/models/gta3.img/miamiland_kb02.dff", start: 95065614, end: 95086094 },
-      { filename: "/vc-assets/local/models/gta3.img/miamiland_kb03.dff", start: 95086094, end: 95090190 },
-      { filename: "/vc-assets/local/models/gta3.img/miamiland_kb04.dff", start: 95090190, end: 95106574 },
-      { filename: "/vc-assets/local/models/gta3.img/miamiland_kb11.dff", start: 95106574, end: 95125006 },
-      { filename: "/vc-assets/local/models/gta3.img/miamiland_kb11b.dff", start: 95125006, end: 95133198 },
-      { filename: "/vc-assets/local/models/gta3.img/miamiland_ws04.dff", start: 95133198, end: 95151630 },
-      { filename: "/vc-assets/local/models/gta3.img/miamiland_ws04b.dff", start: 95151630, end: 95157774 },
-      { filename: "/vc-assets/local/models/gta3.img/missile.dff", start: 95157774, end: 95163918 },
-      { filename: "/vc-assets/local/models/gta3.img/missile.txd", start: 95163918, end: 95168014 },
-      { filename: "/vc-assets/local/models/gta3.img/mitraffic.txd", start: 95168014, end: 95174158 },
-      { filename: "/vc-assets/local/models/gta3.img/mob_detailsb.dff", start: 95174158, end: 95270414 },
-      { filename: "/vc-assets/local/models/gta3.img/mob_door2.dff", start: 95270414, end: 95274510 },
-      { filename: "/vc-assets/local/models/gta3.img/mob_door3.dff", start: 95274510, end: 95278606 },
-      { filename: "/vc-assets/local/models/gta3.img/mob_mobroom2.dff", start: 95278606, end: 95438350 },
-      { filename: "/vc-assets/local/models/gta3.img/money.dff", start: 95438350, end: 95440398 },
-      { filename: "/vc-assets/local/models/gta3.img/moonbeam.dff", start: 95440398, end: 95618574 },
-      { filename: "/vc-assets/local/models/gta3.img/moonbeam.txd", start: 95618574, end: 95663630 },
-      { filename: "/vc-assets/local/models/gta3.img/mtraffic1.dff", start: 95663630, end: 95698446 },
-      { filename: "/vc-assets/local/models/gta3.img/mule.dff", start: 95698446, end: 95852046 },
-      { filename: "/vc-assets/local/models/gta3.img/mule.txd", start: 95852046, end: 95964686 },
-      { filename: "/vc-assets/local/models/gta3.img/nairport.txd", start: 95964686, end: 96263694 },
-      { filename: "/vc-assets/local/models/gta3.img/nbeach.col", start: 96263694, end: 96622094 },
-      { filename: "/vc-assets/local/models/gta3.img/nbeach_lod.txd", start: 96622094, end: 96740878 },
-      { filename: "/vc-assets/local/models/gta3.img/nbeachbt.col", start: 96740878, end: 97236494 },
-      { filename: "/vc-assets/local/models/gta3.img/nbeachw.col", start: 97236494, end: 97498638 },
-      { filename: "/vc-assets/local/models/gta3.img/nbw_grssypatch.txd", start: 97498638, end: 97502734 },
-      { filename: "/vc-assets/local/models/gta3.img/new_bushtest.dff", start: 97502734, end: 97506830 },
-      { filename: "/vc-assets/local/models/gta3.img/new_bushtest42.dff", start: 97506830, end: 97512974 },
-      { filename: "/vc-assets/local/models/gta3.img/newashbuild1.txd", start: 97512974, end: 97947150 },
-      { filename: "/vc-assets/local/models/gta3.img/nitestick.dff", start: 97947150, end: 97951246 },
-      { filename: "/vc-assets/local/models/gta3.img/nitestick.txd", start: 97951246, end: 97957390 },
-      { filename: "/vc-assets/local/models/gta3.img/noparkingsign1.dff", start: 97957390, end: 97961486 },
-      { filename: "/vc-assets/local/models/gta3.img/northbuild.txd", start: 97961486, end: 98731534 },
-      { filename: "/vc-assets/local/models/gta3.img/nrth1veg21.dff", start: 98731534, end: 98741774 },
-      { filename: "/vc-assets/local/models/gta3.img/nrth1veg42.dff", start: 98741774, end: 98774542 },
-      { filename: "/vc-assets/local/models/gta3.img/nrth3veg05.dff", start: 98774542, end: 98792974 },
-      { filename: "/vc-assets/local/models/gta3.img/nrth3veg08.dff", start: 98792974, end: 98811406 },
-      { filename: "/vc-assets/local/models/gta3.img/nrth3veg16.dff", start: 98811406, end: 98833934 },
-      { filename: "/vc-assets/local/models/gta3.img/nrth3veg25.dff", start: 98833934, end: 98868750 },
-      { filename: "/vc-assets/local/models/gta3.img/nrth3veg50.dff", start: 98868750, end: 98885134 },
-      { filename: "/vc-assets/local/models/gta3.img/nrth3veg59.dff", start: 98885134, end: 98907662 },
-      { filename: "/vc-assets/local/models/gta3.img/nrth4veg05.dff", start: 98907662, end: 98926094 },
-      { filename: "/vc-assets/local/models/gta3.img/nrth4veg21.dff", start: 98926094, end: 98938382 },
-      { filename: "/vc-assets/local/models/gta3.img/nrth4veg212.dff", start: 98938382, end: 98950670 },
-      { filename: "/vc-assets/local/models/gta3.img/nrth7veg.dff", start: 98950670, end: 98979342 },
-      { filename: "/vc-assets/local/models/gta3.img/nt_aircon1_01.dff", start: 98979342, end: 98985486 },
-      { filename: "/vc-assets/local/models/gta3.img/nt_aircon1dbl.dff", start: 98985486, end: 98995726 },
-      { filename: "/vc-assets/local/models/gta3.img/nt_aircon3_01.dff", start: 98995726, end: 98997774 },
-      { filename: "/vc-assets/local/models/gta3.img/nt_bed1_01.dff", start: 98997774, end: 99059214 },
-      { filename: "/vc-assets/local/models/gta3.img/nt_couch_1.dff", start: 99059214, end: 99073550 },
-      { filename: "/vc-assets/local/models/gta3.img/nt_wassily1_02.dff", start: 99073550, end: 99173902 },
-      { filename: "/vc-assets/local/models/gta3.img/oceandn.col", start: 99173902, end: 99464718 },
-      { filename: "/vc-assets/local/models/gta3.img/oceandrv.col", start: 99464718, end: 99642894 },
-      { filename: "/vc-assets/local/models/gta3.img/oceanic.dff", start: 99642894, end: 99804686 },
-      { filename: "/vc-assets/local/models/gta3.img/oceanic.txd", start: 99804686, end: 99855886 },
-      { filename: "/vc-assets/local/models/gta3.img/oceanrda03_dy.dff", start: 99855886, end: 99874318 },
-      { filename: "/vc-assets/local/models/gta3.img/oceanrda03_nt.dff", start: 99874318, end: 99894798 },
-      { filename: "/vc-assets/local/models/gta3.img/oceanrda04_dy.dff", start: 99894798, end: 99902990 },
-      { filename: "/vc-assets/local/models/gta3.img/oceanrda04_nt.dff", start: 99902990, end: 99913230 },
-      { filename: "/vc-assets/local/models/gta3.img/oceanrda05_nt.dff", start: 99913230, end: 99931662 },
-      { filename: "/vc-assets/local/models/gta3.img/oceanrda06_nt.dff", start: 99931662, end: 99943950 },
-      { filename: "/vc-assets/local/models/gta3.img/ocmiamistrip8.txd", start: 99943950, end: 100298254 },
-      { filename: "/vc-assets/local/models/gta3.img/ocmiamistrip9.txd", start: 100298254, end: 101025294 },
-      { filename: "/vc-assets/local/models/gta3.img/od_alleys3_01_dy.dff", start: 101025294, end: 101033486 },
-      { filename: "/vc-assets/local/models/gta3.img/od_alleys3_01_nt.dff", start: 101033486, end: 101041678 },
-      { filename: "/vc-assets/local/models/gta3.img/od_alleys3b_01_dy.dff", start: 101041678, end: 101051918 },
-      { filename: "/vc-assets/local/models/gta3.img/od_alleys3b_01_nt.dff", start: 101051918, end: 101062158 },
-      { filename: "/vc-assets/local/models/gta3.img/od_buildkb23_dy.dff", start: 101062158, end: 101074446 },
-      { filename: "/vc-assets/local/models/gta3.img/od_buildkb23_nt.dff", start: 101074446, end: 101086734 },
-      { filename: "/vc-assets/local/models/gta3.img/od_buildkb27_dy.dff", start: 101086734, end: 101131790 },
-      { filename: "/vc-assets/local/models/gta3.img/od_buildkb27_nt.dff", start: 101131790, end: 101176846 },
-      { filename: "/vc-assets/local/models/gta3.img/od_buildkb2_dy.dff", start: 101176846, end: 101219854 },
-      { filename: "/vc-assets/local/models/gta3.img/od_buildkb2_nt.dff", start: 101219854, end: 101260814 },
-      { filename: "/vc-assets/local/models/gta3.img/od_dirtshad4.dff", start: 101260814, end: 101273102 },
-      { filename: "/vc-assets/local/models/gta3.img/od_hotels1.txd", start: 101273102, end: 101690894 },
-      { filename: "/vc-assets/local/models/gta3.img/od_lightbeam.dff", start: 101690894, end: 101692942 },
-      { filename: "/vc-assets/local/models/gta3.img/od_majestic2c_dy.dff", start: 101692942, end: 101740046 },
-      { filename: "/vc-assets/local/models/gta3.img/od_majestic2c_nt.dff", start: 101740046, end: 101789198 },
-      { filename: "/vc-assets/local/models/gta3.img/od_neona1.dff", start: 101789198, end: 101791246 },
-      { filename: "/vc-assets/local/models/gta3.img/od_neonn.dff", start: 101791246, end: 101795342 },
-      { filename: "/vc-assets/local/models/gta3.img/od_neons1.txd", start: 101795342, end: 101867022 },
-      { filename: "/vc-assets/local/models/gta3.img/od_neons3b_nt.dff", start: 101867022, end: 101869070 },
-      { filename: "/vc-assets/local/models/gta3.img/od_neonx1.dff", start: 101869070, end: 101873166 },
-      { filename: "/vc-assets/local/models/gta3.img/odalleygb_dy.dff", start: 101873166, end: 101883406 },
-      { filename: "/vc-assets/local/models/gta3.img/odalleygb_nt.dff", start: 101883406, end: 101893646 },
-      { filename: "/vc-assets/local/models/gta3.img/odalleyground_dy.dff", start: 101893646, end: 101901838 },
-      { filename: "/vc-assets/local/models/gta3.img/odalleyground_nt.dff", start: 101901838, end: 101910030 },
-      { filename: "/vc-assets/local/models/gta3.img/oddoorway2.dff", start: 101910030, end: 101916174 },
-      { filename: "/vc-assets/local/models/gta3.img/odhighsandgrs1.dff", start: 101916174, end: 101936654 },
-      { filename: "/vc-assets/local/models/gta3.img/odlowsand1.dff", start: 101936654, end: 101938702 },
-      { filename: "/vc-assets/local/models/gta3.img/odlowsand2.dff", start: 101938702, end: 101940750 },
-      { filename: "/vc-assets/local/models/gta3.img/odneontest.dff", start: 101940750, end: 101942798 },
-      { filename: "/vc-assets/local/models/gta3.img/odneontest.txd", start: 101942798, end: 102084110 },
-      { filename: "/vc-assets/local/models/gta3.img/odnhotelspr.txd", start: 102084110, end: 102665742 },
-      { filename: "/vc-assets/local/models/gta3.img/odnroad04od_nt.dff", start: 102665742, end: 102686222 },
-      { filename: "/vc-assets/local/models/gta3.img/odnroad05od.dff", start: 102686222, end: 102694414 },
-      { filename: "/vc-assets/local/models/gta3.img/odnroad08_dy.dff", start: 102694414, end: 102704654 },
-      { filename: "/vc-assets/local/models/gta3.img/odnroad08_nt.dff", start: 102704654, end: 102716942 },
-      { filename: "/vc-assets/local/models/gta3.img/package1.dff", start: 102716942, end: 102723086 },
-      { filename: "/vc-assets/local/models/gta3.img/package1.txd", start: 102723086, end: 102727182 },
-      { filename: "/vc-assets/local/models/gta3.img/packer.dff", start: 102727182, end: 102895118 },
-      { filename: "/vc-assets/local/models/gta3.img/packer.txd", start: 102895118, end: 102946318 },
-      { filename: "/vc-assets/local/models/gta3.img/pcj600.dff", start: 102946318, end: 103038478 },
-      { filename: "/vc-assets/local/models/gta3.img/pcj600.txd", start: 103038478, end: 103069198 },
-      { filename: "/vc-assets/local/models/gta3.img/peren.dff", start: 103069198, end: 103245326 },
-      { filename: "/vc-assets/local/models/gta3.img/peren.txd", start: 103245326, end: 103290382 },
-      { filename: "/vc-assets/local/models/gta3.img/pheonix.dff", start: 103290382, end: 103443982 },
-      { filename: "/vc-assets/local/models/gta3.img/pheonix.txd", start: 103443982, end: 103489038 },
-      { filename: "/vc-assets/local/models/gta3.img/plants01.dff", start: 103489038, end: 103503374 },
-      { filename: "/vc-assets/local/models/gta3.img/player.dff", start: 103503374, end: 103591438 },
-      { filename: "/vc-assets/local/models/gta3.img/player.txd", start: 103591438, end: 103636494 },
-      { filename: "/vc-assets/local/models/gta3.img/playidles.ifp", start: 103636494, end: 103722510 },
-      { filename: "/vc-assets/local/models/gta3.img/police.dff", start: 103722510, end: 103898638 },
-      { filename: "/vc-assets/local/models/gta3.img/police.txd", start: 103898638, end: 103978510 },
-      { filename: "/vc-assets/local/models/gta3.img/pony.dff", start: 103978510, end: 104148494 },
-      { filename: "/vc-assets/local/models/gta3.img/pony.txd", start: 104148494, end: 104193550 },
-      { filename: "/vc-assets/local/models/gta3.img/property_fsale.dff", start: 104193550, end: 104199694 },
-      { filename: "/vc-assets/local/models/gta3.img/property_locked.dff", start: 104199694, end: 104205838 },
-      { filename: "/vc-assets/local/models/gta3.img/radar32.txd", start: 104205838, end: 104216078 },
-      { filename: "/vc-assets/local/models/gta3.img/radar33.txd", start: 104216078, end: 104226318 },
-      { filename: "/vc-assets/local/models/gta3.img/radar35.txd", start: 104226318, end: 104236558 },
-      { filename: "/vc-assets/local/models/gta3.img/radar36.txd", start: 104236558, end: 104246798 },
-      { filename: "/vc-assets/local/models/gta3.img/radar37.txd", start: 104246798, end: 104257038 },
-      { filename: "/vc-assets/local/models/gta3.img/radar40.txd", start: 104257038, end: 104267278 },
-      { filename: "/vc-assets/local/models/gta3.img/radar41.txd", start: 104267278, end: 104277518 },
-      { filename: "/vc-assets/local/models/gta3.img/radar43.txd", start: 104277518, end: 104287758 },
-      { filename: "/vc-assets/local/models/gta3.img/radar44.txd", start: 104287758, end: 104297998 },
-      { filename: "/vc-assets/local/models/gta3.img/radar45.txd", start: 104297998, end: 104308238 },
-      { filename: "/vc-assets/local/models/gta3.img/radar48.txd", start: 104308238, end: 104318478 },
-      { filename: "/vc-assets/local/models/gta3.img/radar49.txd", start: 104318478, end: 104328718 },
-      { filename: "/vc-assets/local/models/gta3.img/radar50.txd", start: 104328718, end: 104338958 },
-      { filename: "/vc-assets/local/models/gta3.img/radar51.txd", start: 104338958, end: 104349198 },
-      { filename: "/vc-assets/local/models/gta3.img/radar52.txd", start: 104349198, end: 104359438 },
-      { filename: "/vc-assets/local/models/gta3.img/radar53.txd", start: 104359438, end: 104369678 },
-      { filename: "/vc-assets/local/models/gta3.img/radar56.txd", start: 104369678, end: 104379918 },
-      { filename: "/vc-assets/local/models/gta3.img/radar57.txd", start: 104379918, end: 104390158 },
-      { filename: "/vc-assets/local/models/gta3.img/radar58.txd", start: 104390158, end: 104400398 },
-      { filename: "/vc-assets/local/models/gta3.img/radar59.txd", start: 104400398, end: 104410638 },
-      { filename: "/vc-assets/local/models/gta3.img/rancher.dff", start: 104410638, end: 104580622 },
-      { filename: "/vc-assets/local/models/gta3.img/rancher.txd", start: 104580622, end: 104625678 },
-      { filename: "/vc-assets/local/models/gta3.img/reefer.dff", start: 104625678, end: 104736270 },
-      { filename: "/vc-assets/local/models/gta3.img/reefer.txd", start: 104736270, end: 104787470 },
-      { filename: "/vc-assets/local/models/gta3.img/regina.dff", start: 104787470, end: 104982030 },
-      { filename: "/vc-assets/local/models/gta3.img/regina.txd", start: 104982030, end: 105027086 },
-      { filename: "/vc-assets/local/models/gta3.img/rio.dff", start: 105027086, end: 105156110 },
-      { filename: "/vc-assets/local/models/gta3.img/rio.txd", start: 105156110, end: 105192974 },
-      { filename: "/vc-assets/local/models/gta3.img/rockpatch03.dff", start: 105192974, end: 105205262 },
-      { filename: "/vc-assets/local/models/gta3.img/rocky.txd", start: 105205262, end: 105217550 },
-      { filename: "/vc-assets/local/models/gta3.img/rumpo.dff", start: 105217550, end: 105393678 },
-      { filename: "/vc-assets/local/models/gta3.img/rumpo.txd", start: 105393678, end: 105455118 },
-      { filename: "/vc-assets/local/models/gta3.img/rustship_structure0.dff", start: 105455118, end: 105569806 },
-      { filename: "/vc-assets/local/models/gta3.img/sabre.dff", start: 105569806, end: 105747982 },
-      { filename: "/vc-assets/local/models/gta3.img/sabre.txd", start: 105747982, end: 105793038 },
-      { filename: "/vc-assets/local/models/gta3.img/sanchez.dff", start: 105793038, end: 105887246 },
-      { filename: "/vc-assets/local/models/gta3.img/sanchez.txd", start: 105887246, end: 105917966 },
-      { filename: "/vc-assets/local/models/gta3.img/schair.dff", start: 105917966, end: 105928206 },
-      { filename: "/vc-assets/local/models/gta3.img/schair.txd", start: 105928206, end: 105940494 },
-      { filename: "/vc-assets/local/models/gta3.img/seabed.txd", start: 105940494, end: 106008078 },
-      { filename: "/vc-assets/local/models/gta3.img/securica.dff", start: 106008078, end: 106155534 },
-      { filename: "/vc-assets/local/models/gta3.img/securica.txd", start: 106155534, end: 106216974 },
-      { filename: "/vc-assets/local/models/gta3.img/sentinel.dff", start: 106216974, end: 106389006 },
-      { filename: "/vc-assets/local/models/gta3.img/sentinel.txd", start: 106389006, end: 106434062 },
-      { filename: "/vc-assets/local/models/gta3.img/sentxs.dff", start: 106434062, end: 106616334 },
-      { filename: "/vc-assets/local/models/gta3.img/sentxs.txd", start: 106616334, end: 106661390 },
-      { filename: "/vc-assets/local/models/gta3.img/sfrenda.dff", start: 106661390, end: 106741262 },
-      { filename: "/vc-assets/local/models/gta3.img/sfrenda.txd", start: 106741262, end: 106786318 },
-      { filename: "/vc-assets/local/models/gta3.img/sfrendb.dff", start: 106786318, end: 106868238 },
-      { filename: "/vc-assets/local/models/gta3.img/sfrendb.txd", start: 106868238, end: 106913294 },
-      { filename: "/vc-assets/local/models/gta3.img/sgoona.dff", start: 106913294, end: 106987022 },
-      { filename: "/vc-assets/local/models/gta3.img/sgoona.txd", start: 106987022, end: 107032078 },
-      { filename: "/vc-assets/local/models/gta3.img/sgoonb.dff", start: 107032078, end: 107107854 },
-      { filename: "/vc-assets/local/models/gta3.img/sgoonb.txd", start: 107107854, end: 107152910 },
-      { filename: "/vc-assets/local/models/gta3.img/shared_beach.txd", start: 107152910, end: 107527694 },
-      { filename: "/vc-assets/local/models/gta3.img/sharedalleyod.txd", start: 107527694, end: 107865614 },
-      { filename: "/vc-assets/local/models/gta3.img/shark.dff", start: 107865614, end: 107877902 },
-      { filename: "/vc-assets/local/models/gta3.img/shark.txd", start: 107877902, end: 107884046 },
-      { filename: "/vc-assets/local/models/gta3.img/shotgun.ifp", start: 107884046, end: 107935246 },
-      { filename: "/vc-assets/local/models/gta3.img/signs.txd", start: 107935246, end: 107978254 },
-      { filename: "/vc-assets/local/models/gta3.img/speeder.dff", start: 107978254, end: 108064270 },
-      { filename: "/vc-assets/local/models/gta3.img/speeder.txd", start: 108064270, end: 108103182 },
-      { filename: "/vc-assets/local/models/gta3.img/stadint.col", start: 108103182, end: 108537358 },
-      { filename: "/vc-assets/local/models/gta3.img/stallion.dff", start: 108537358, end: 108695054 },
-      { filename: "/vc-assets/local/models/gta3.img/stallion.txd", start: 108695054, end: 108740110 },
-      { filename: "/vc-assets/local/models/gta3.img/starisl.col", start: 108740110, end: 108987918 },
-      { filename: "/vc-assets/local/models/gta3.img/stiltsville03.dff", start: 108987918, end: 109084174 },
-      { filename: "/vc-assets/local/models/gta3.img/stiltsville05.dff", start: 109084174, end: 109248014 },
-      { filename: "/vc-assets/local/models/gta3.img/stiltsville1.dff", start: 109248014, end: 109411854 },
-      { filename: "/vc-assets/local/models/gta3.img/stilty.txd", start: 109411854, end: 109538830 },
-      { filename: "/vc-assets/local/models/gta3.img/stinger.dff", start: 109538830, end: 109657614 },
-      { filename: "/vc-assets/local/models/gta3.img/stinger.txd", start: 109657614, end: 109706766 },
-      { filename: "/vc-assets/local/models/gta3.img/streetlamp1.dff", start: 109706766, end: 109712910 },
-      { filename: "/vc-assets/local/models/gta3.img/streetlamp2.dff", start: 109712910, end: 109719054 },
-      { filename: "/vc-assets/local/models/gta3.img/stripback.txd", start: 109719054, end: 110034446 },
-      { filename: "/vc-assets/local/models/gta3.img/stripclb.col", start: 110034446, end: 110065166 },
-      { filename: "/vc-assets/local/models/gta3.img/stripclbdrclsd.dff", start: 110065166, end: 110067214 },
-      { filename: "/vc-assets/local/models/gta3.img/strpbckdrclsd.dff", start: 110067214, end: 110069262 },
-      { filename: "/vc-assets/local/models/gta3.img/sub_floodlite.dff", start: 110069262, end: 110077454 },
-      { filename: "/vc-assets/local/models/gta3.img/sunbathe.ifp", start: 110077454, end: 110136846 },
-      { filename: "/vc-assets/local/models/gta3.img/svntray.dff", start: 110136846, end: 110142990 },
-      { filename: "/vc-assets/local/models/gta3.img/svntray.txd", start: 110142990, end: 110155278 },
-      { filename: "/vc-assets/local/models/gta3.img/swashlandb.txd", start: 110155278, end: 110630414 },
-      { filename: "/vc-assets/local/models/gta3.img/taxi.dff", start: 110630414, end: 110798350 },
-      { filename: "/vc-assets/local/models/gta3.img/taxi.txd", start: 110798350, end: 110849550 },
-      { filename: "/vc-assets/local/models/gta3.img/telegraph.txd", start: 110849550, end: 110904846 },
-      { filename: "/vc-assets/local/models/gta3.img/telgrphpole02.dff", start: 110904846, end: 110910990 },
-      { filename: "/vc-assets/local/models/gta3.img/trash.dff", start: 110910990, end: 111068686 },
-      { filename: "/vc-assets/local/models/gta3.img/trash.txd", start: 111068686, end: 111113742 },
-      { filename: "/vc-assets/local/models/gta3.img/treeshad.txd", start: 111113742, end: 111148558 },
-      { filename: "/vc-assets/local/models/gta3.img/treeshadairha05.dff", start: 111148558, end: 111160846 },
-      { filename: "/vc-assets/local/models/gta3.img/treeshadairha06.dff", start: 111160846, end: 111166990 },
-      { filename: "/vc-assets/local/models/gta3.img/treeshadairha07.dff", start: 111166990, end: 111173134 },
-      { filename: "/vc-assets/local/models/gta3.img/treeshadwn01.dff", start: 111173134, end: 111195662 },
-      { filename: "/vc-assets/local/models/gta3.img/treeshadwn02.dff", start: 111195662, end: 111203854 },
-      { filename: "/vc-assets/local/models/gta3.img/treeshadwn03.dff", start: 111203854, end: 111209998 },
-      { filename: "/vc-assets/local/models/gta3.img/turtle.dff", start: 111209998, end: 111230478 },
-      { filename: "/vc-assets/local/models/gta3.img/turtle.txd", start: 111230478, end: 111240718 },
-      { filename: "/vc-assets/local/models/gta3.img/uzi.dff", start: 111240718, end: 111263246 },
-      { filename: "/vc-assets/local/models/gta3.img/uzi.ifp", start: 111263246, end: 111320590 },
-      { filename: "/vc-assets/local/models/gta3.img/uzi.txd", start: 111320590, end: 111328782 },
-      { filename: "/vc-assets/local/models/gta3.img/van.ifp", start: 111328782, end: 111408654 },
-      { filename: "/vc-assets/local/models/gta3.img/veg_palm01.dff", start: 111408654, end: 111412750 },
-      { filename: "/vc-assets/local/models/gta3.img/veg_palm02.dff", start: 111412750, end: 111416846 },
-      { filename: "/vc-assets/local/models/gta3.img/veg_palm04.dff", start: 111416846, end: 111420942 },
-      { filename: "/vc-assets/local/models/gta3.img/veg_palmbig14.dff", start: 111420942, end: 111427086 },
-      { filename: "/vc-assets/local/models/gta3.img/veg_palmkbb11.dff", start: 111427086, end: 111431182 },
-      { filename: "/vc-assets/local/models/gta3.img/veg_palwee01.dff", start: 111431182, end: 111435278 },
-      { filename: "/vc-assets/local/models/gta3.img/virgo.dff", start: 111435278, end: 111611406 },
-      { filename: "/vc-assets/local/models/gta3.img/virgo.txd", start: 111611406, end: 111658510 },
-      { filename: "/vc-assets/local/models/gta3.img/walton.dff", start: 111658510, end: 111824398 },
-      { filename: "/vc-assets/local/models/gta3.img/walton.txd", start: 111824398, end: 111869454 },
-      { filename: "/vc-assets/local/models/gta3.img/wash_deco01.dff", start: 111869454, end: 111957518 },
-      { filename: "/vc-assets/local/models/gta3.img/wash_deco012.dff", start: 111957518, end: 111986190 },
-      { filename: "/vc-assets/local/models/gta3.img/wash_deco02.dff", start: 111986190, end: 112041486 },
-      { filename: "/vc-assets/local/models/gta3.img/wash_deco022.dff", start: 112041486, end: 112053774 },
-      { filename: "/vc-assets/local/models/gta3.img/wash_deco03.dff", start: 112053774, end: 112111118 },
-      { filename: "/vc-assets/local/models/gta3.img/wash_deco032.dff", start: 112111118, end: 112117262 },
-      { filename: "/vc-assets/local/models/gta3.img/wash_pizzaplace.dff", start: 112117262, end: 112133646 },
-      { filename: "/vc-assets/local/models/gta3.img/washawning2b.dff", start: 112133646, end: 112147982 },
-      { filename: "/vc-assets/local/models/gta3.img/washawninga1.dff", start: 112147982, end: 112162318 },
-      { filename: "/vc-assets/local/models/gta3.img/washbballcrt.txd", start: 112162318, end: 112317966 },
-      { filename: "/vc-assets/local/models/gta3.img/washbuild003.dff", start: 112317966, end: 112334350 },
-      { filename: "/vc-assets/local/models/gta3.img/washbuild005.dff", start: 112334350, end: 112354830 },
-      { filename: "/vc-assets/local/models/gta3.img/washbuild014.dff", start: 112354830, end: 112373262 },
-      { filename: "/vc-assets/local/models/gta3.img/washbuild068.dff", start: 112373262, end: 112426510 },
-      { filename: "/vc-assets/local/models/gta3.img/washbuild071.dff", start: 112426510, end: 112436750 },
-      { filename: "/vc-assets/local/models/gta3.img/washbuild072.dff", start: 112436750, end: 112449038 },
-      { filename: "/vc-assets/local/models/gta3.img/washbuild073.dff", start: 112449038, end: 112489998 },
-      { filename: "/vc-assets/local/models/gta3.img/washbuild074.dff", start: 112489998, end: 112500238 },
-      { filename: "/vc-assets/local/models/gta3.img/washbuild075.dff", start: 112500238, end: 112510478 },
-      { filename: "/vc-assets/local/models/gta3.img/washbuild116.dff", start: 112510478, end: 112514574 },
-      { filename: "/vc-assets/local/models/gta3.img/washbuild120.txd", start: 112514574, end: 113028622 },
-      { filename: "/vc-assets/local/models/gta3.img/washbuild124.txd", start: 113028622, end: 113165838 },
-      { filename: "/vc-assets/local/models/gta3.img/washbuild187.dff", start: 113165838, end: 113219086 },
-      { filename: "/vc-assets/local/models/gta3.img/washbuild198.dff", start: 113219086, end: 113286670 },
-      { filename: "/vc-assets/local/models/gta3.img/washcorn2.txd", start: 113286670, end: 113573390 },
-      { filename: "/vc-assets/local/models/gta3.img/washing.dff", start: 113573390, end: 113739278 },
-      { filename: "/vc-assets/local/models/gta3.img/washing.txd", start: 113739278, end: 113784334 },
-      { filename: "/vc-assets/local/models/gta3.img/washintn.col", start: 113784334, end: 114060814 },
-      { filename: "/vc-assets/local/models/gta3.img/washints.col", start: 114060814, end: 114370062 },
-      { filename: "/vc-assets/local/models/gta3.img/washlandb.txd", start: 114370062, end: 114517518 },
-      { filename: "/vc-assets/local/models/gta3.img/washmallnew.txd", start: 114517518, end: 115301902 },
-      { filename: "/vc-assets/local/models/gta3.img/washmallpark.txd", start: 115301902, end: 115498510 },
-      { filename: "/vc-assets/local/models/gta3.img/washmiamistrip2.txd", start: 115498510, end: 116067854 },
-      { filename: "/vc-assets/local/models/gta3.img/washmiamistrip3.txd", start: 116067854, end: 116547086 },
-      { filename: "/vc-assets/local/models/gta3.img/washmiamistrip4.txd", start: 116547086, end: 117097998 },
-      { filename: "/vc-assets/local/models/gta3.img/washnewbuild1.txd", start: 117097998, end: 117347854 },
-      { filename: "/vc-assets/local/models/gta3.img/washnewbuild2.txd", start: 117347854, end: 117702158 },
-      { filename: "/vc-assets/local/models/gta3.img/washnewbuild21.txd", start: 117702158, end: 118015502 },
-      { filename: "/vc-assets/local/models/gta3.img/washnewsky1.dff", start: 118015502, end: 118097422 },
-      { filename: "/vc-assets/local/models/gta3.img/washnewsky2.dff", start: 118097422, end: 118121998 },
-      { filename: "/vc-assets/local/models/gta3.img/washnewsky3.dff", start: 118121998, end: 118203918 },
-      { filename: "/vc-assets/local/models/gta3.img/washnrthpstr1.txd", start: 118203918, end: 118251022 },
-      { filename: "/vc-assets/local/models/gta3.img/washotelneon1.dff", start: 118251022, end: 118302222 },
-      { filename: "/vc-assets/local/models/gta3.img/washpshoutdet.dff", start: 118302222, end: 118371854 },
-      { filename: "/vc-assets/local/models/gta3.img/washpshoutveg.dff", start: 118371854, end: 118423054 },
-      { filename: "/vc-assets/local/models/gta3.img/washsky1.txd", start: 118423054, end: 118791694 },
-      { filename: "/vc-assets/local/models/gta3.img/washskyplant1.dff", start: 118791694, end: 118853134 },
-      { filename: "/vc-assets/local/models/gta3.img/washskyplant2.dff", start: 118853134, end: 118914574 },
-      { filename: "/vc-assets/local/models/gta3.img/washvegy241.dff", start: 118914574, end: 118945294 },
-      { filename: "/vc-assets/local/models/gta3.img/washwater.txd", start: 118945294, end: 119012878 },
-      { filename: "/vc-assets/local/models/gta3.img/wfogo.dff", start: 119012878, end: 119076366 },
-      { filename: "/vc-assets/local/models/gta3.img/wfogo.txd", start: 119076366, end: 119098894 },
-      { filename: "/vc-assets/local/models/gta3.img/wfost.dff", start: 119098894, end: 119166478 },
-      { filename: "/vc-assets/local/models/gta3.img/wfost.txd", start: 119166478, end: 119189006 },
-      { filename: "/vc-assets/local/models/gta3.img/wfotr.dff", start: 119189006, end: 119254542 },
-      { filename: "/vc-assets/local/models/gta3.img/wfotr.txd", start: 119254542, end: 119277070 },
-      { filename: "/vc-assets/local/models/gta3.img/wfybu.dff", start: 119277070, end: 119342606 },
-      { filename: "/vc-assets/local/models/gta3.img/wfybu.txd", start: 119342606, end: 119365134 },
-      { filename: "/vc-assets/local/models/gta3.img/wfypr.dff", start: 119365134, end: 119426574 },
-      { filename: "/vc-assets/local/models/gta3.img/wfypr.txd", start: 119426574, end: 119449102 },
-      { filename: "/vc-assets/local/models/gta3.img/wfyri.dff", start: 119449102, end: 119512590 },
-      { filename: "/vc-assets/local/models/gta3.img/wfyri.txd", start: 119512590, end: 119535118 },
-      { filename: "/vc-assets/local/models/gta3.img/wfysh.dff", start: 119535118, end: 119598606 },
-      { filename: "/vc-assets/local/models/gta3.img/wfysh.txd", start: 119598606, end: 119621134 },
-      { filename: "/vc-assets/local/models/gta3.img/wmobu.dff", start: 119621134, end: 119686670 },
-      { filename: "/vc-assets/local/models/gta3.img/wmobu.txd", start: 119686670, end: 119705102 },
-      { filename: "/vc-assets/local/models/gta3.img/wmori.dff", start: 119705102, end: 119770638 },
-      { filename: "/vc-assets/local/models/gta3.img/wmori.txd", start: 119770638, end: 119793166 },
-      { filename: "/vc-assets/local/models/gta3.img/wmost.dff", start: 119793166, end: 119873038 },
-      { filename: "/vc-assets/local/models/gta3.img/wmost.txd", start: 119873038, end: 119895566 },
-      { filename: "/vc-assets/local/models/gta3.img/wmotr.dff", start: 119895566, end: 119950862 },
-      { filename: "/vc-assets/local/models/gta3.img/wmotr.txd", start: 119950862, end: 119973390 },
-      { filename: "/vc-assets/local/models/gta3.img/wmybu.dff", start: 119973390, end: 120045070 },
-      { filename: "/vc-assets/local/models/gta3.img/wmybu.txd", start: 120045070, end: 120067598 },
-      { filename: "/vc-assets/local/models/gta3.img/wmycr.dff", start: 120067598, end: 120141326 },
-      { filename: "/vc-assets/local/models/gta3.img/wmycr.txd", start: 120141326, end: 120163854 },
-      { filename: "/vc-assets/local/models/gta3.img/wmypi.dff", start: 120163854, end: 120243726 },
-      { filename: "/vc-assets/local/models/gta3.img/wmypi.txd", start: 120243726, end: 120266254 },
-      { filename: "/vc-assets/local/models/gta3.img/wmyri.dff", start: 120266254, end: 120346126 },
-      { filename: "/vc-assets/local/models/gta3.img/wmyri.txd", start: 120346126, end: 120368654 },
-      { filename: "/vc-assets/local/models/gta3.img/wsh_roadswsh05.dff", start: 120368654, end: 120374798 },
-      { filename: "/vc-assets/local/models/gta3.img/wshbldws26bit.dff", start: 120374798, end: 120391182 },
-      { filename: "/vc-assets/local/models/gta3.img/wshbuil19wall.dff", start: 120391182, end: 120401422 },
-      { filename: "/vc-assets/local/models/gta3.img/wshbuildws09.dff", start: 120401422, end: 120464910 },
-      { filename: "/vc-assets/local/models/gta3.img/wshbuildws19.dff", start: 120464910, end: 120530446 },
-      { filename: "/vc-assets/local/models/gta3.img/wshbuildws26.dff", start: 120530446, end: 120544782 },
-      { filename: "/vc-assets/local/models/gta3.img/wshbuildws31.dff", start: 120544782, end: 120561166 },
-      { filename: "/vc-assets/local/models/gta3.img/wshbuildws312.dff", start: 120561166, end: 120575502 },
-      { filename: "/vc-assets/local/models/gta3.img/wshbuildws322.dff", start: 120575502, end: 120589838 },
-      { filename: "/vc-assets/local/models/gta3.img/wshbuildws43.dff", start: 120589838, end: 120671758 },
-      { filename: "/vc-assets/local/models/gta3.img/wshmalsign4.dff", start: 120671758, end: 120679950 },
-      { filename: "/vc-assets/local/models/gta3.img/wshmoundlaw1.dff", start: 120679950, end: 120686094 },
-      { filename: "/vc-assets/local/models/gta3.img/wshneon.txd", start: 120686094, end: 120692238 },
-      { filename: "/vc-assets/local/models/gta3.img/wshnrthpstr07.dff", start: 120692238, end: 120694286 },
-      { filename: "/vc-assets/local/models/gta3.img/wshnrthroad01.dff", start: 120694286, end: 120698382 },
-      { filename: "/vc-assets/local/models/gta3.img/wshnrthroad02.dff", start: 120698382, end: 120704526 },
-      { filename: "/vc-assets/local/models/gta3.img/wshnrthroad10.dff", start: 120704526, end: 120710670 },
-      { filename: "/vc-assets/local/models/gta3.img/wshnrthroad11.dff", start: 120710670, end: 120718862 },
-      { filename: "/vc-assets/local/models/gta3.img/wshnrthroad12.dff", start: 120718862, end: 120722958 },
-      { filename: "/vc-assets/local/models/gta3.img/wshnrthroad13.dff", start: 120722958, end: 120729102 },
-      { filename: "/vc-assets/local/models/gta3.img/wshnrthroad14.dff", start: 120729102, end: 120735246 },
-      { filename: "/vc-assets/local/models/gta3.img/wshnrthroad18.dff", start: 120735246, end: 120739342 },
-      { filename: "/vc-assets/local/models/gta3.img/wshnrthroad19.dff", start: 120739342, end: 120743438 },
-      { filename: "/vc-assets/local/models/gta3.img/wshnrthroad21.dff", start: 120743438, end: 120749582 },
-      { filename: "/vc-assets/local/models/gta3.img/wshnrthroad22.dff", start: 120749582, end: 120753678 },
-      { filename: "/vc-assets/local/models/gta3.img/wshnrthroad24.dff", start: 120753678, end: 120757774 },
-      { filename: "/vc-assets/local/models/gta3.img/wshnrthroad26.dff", start: 120757774, end: 120763918 },
-      { filename: "/vc-assets/local/models/gta3.img/wshnrthroad27.dff", start: 120763918, end: 120768014 },
-      { filename: "/vc-assets/local/models/gta3.img/wshscarland226.dff", start: 120768014, end: 120794638 },
-      { filename: "/vc-assets/local/models/gta3.img/wshsthroad05.dff", start: 120794638, end: 120798734 },
-      { filename: "/vc-assets/local/models/gta3.img/wshsthroad16.dff", start: 120798734, end: 120806926 },
-      { filename: "/vc-assets/local/models/gta3.img/wshtelgrph.txd", start: 120806926, end: 120827406 },
-      { filename: "/vc-assets/local/models/gta3.img/wshtelgrphcabl03.dff", start: 120827406, end: 120835598 },
-      { filename: "/vc-assets/local/models/gta3.img/wshtelgrphcabl04.dff", start: 120835598, end: 120843790 },
-      { filename: "/vc-assets/local/models/gta3.img/wshtelgrphcabl05.dff", start: 120843790, end: 120851982 },
-      { filename: "/vc-assets/local/models/gta3.img/wshxreflod.txd", start: 120851982, end: 120872462 },
-      { filename: "/vc-assets/local/models/gta3.img/xod_majestic_dy.dff", start: 120872462, end: 120927758 },
-      { filename: "/vc-assets/local/models/gta3.img/xod_majestic_nt.dff", start: 120927758, end: 120974862 },
-      { filename: "/vc-assets/local/models/gta3.img/xod_starlite_dy.dff", start: 120974862, end: 121017870 },
-      { filename: "/vc-assets/local/models/gta3.img/xod_starlite_nt.dff", start: 121017870, end: 121052686 },
-      { filename: "/vc-assets/local/models/gta3.img/xrefhotels.txd", start: 121052686, end: 121296398 },
-      { filename: "/vc-assets/local/models/gta3.img/yacht.col", start: 121296398, end: 121323022 },
-      { filename: "/vc-assets/local/models/gta3.img/yacht_lod.txd", start: 121323022, end: 121329166 },
-      { filename: "/vc-assets/local/models/gta3.img/yankee.dff", start: 121329166, end: 121497102 },
-      { filename: "/vc-assets/local/models/gta3.img/yankee.txd", start: 121497102, end: 121615886 },
-      { filename: "/vc-assets/local/models/hud.txd", start: 121615886, end: 121723062 },
-      { filename: "/vc-assets/local/models/intro.txd", start: 121723062, end: 121807798 },
-      { filename: "/vc-assets/local/models/misc.txd", start: 121807798, end: 121831774 },
-      { filename: "/vc-assets/local/models/nswbtns.txd", start: 121831774, end: 122360198 },
-      { filename: "/vc-assets/local/models/particle.txd", start: 122360198, end: 125028270 },
-      { filename: "/vc-assets/local/models/ps3btns.txd", start: 125028270, end: 125556694 },
-      { filename: "/vc-assets/local/models/x360btns.txd", start: 125556694, end: 126085118 },
-      { filename: "/vc-assets/local/mp3/mp3report.txt", start: 126085118, end: 126085290 },
-      { filename: "/vc-assets/local/mss/mp3dec.asi", start: 126085290, end: 126211242 },
-      { filename: "/vc-assets/local/mss/mssa3d.m3d", start: 126211242, end: 126262442 },
-      { filename: "/vc-assets/local/mss/mssa3d2.m3d", start: 126262442, end: 126323370 },
-      { filename: "/vc-assets/local/mss/mssds3dh.m3d", start: 126323370, end: 126374058 },
-      { filename: "/vc-assets/local/mss/mssds3ds.m3d", start: 126374058, end: 126424746 },
-      { filename: "/vc-assets/local/mss/msseax.m3d", start: 126424746, end: 126478506 },
-      { filename: "/vc-assets/local/mss/msseax3.m3d", start: 126478506, end: 126551210 },
-      { filename: "/vc-assets/local/mss/mssfast.m3d", start: 126551210, end: 126614186 },
-      { filename: "/vc-assets/local/mss/mssrsx.m3d", start: 126614186, end: 126966954 },
-      { filename: "/vc-assets/local/mss/reverb3.flt", start: 126966954, end: 127023786 },
-      { filename: "/vc-assets/local/readme.txt", start: 127023786, end: 127041644 },
-      { filename: "/vc-assets/local/revc.ini", start: 127041644, end: 127044284 },
-      { filename: "/vc-assets/local/skins/texture_guide.jpg", start: 127044284, end: 127132423 },
-      { filename: "/vc-assets/local/text/american.gxt", start: 127132423, end: 127556557 },
-      { filename: "/vc-assets/local/text/french.gxt", start: 127556557, end: 128026689 },
-      { filename: "/vc-assets/local/text/german.gxt", start: 128026689, end: 128488719 },
-      { filename: "/vc-assets/local/text/italian.gxt", start: 128488719, end: 128947805 },
-      { filename: "/vc-assets/local/text/russian.gxt", start: 128947805, end: 129368409 },
-      { filename: "/vc-assets/local/text/spanish.gxt", start: 129368409, end: 129823823 },
-      { filename: "/vc-assets/local/txd/intro1.txd", start: 129823823, end: 130087159 },
-      { filename: "/vc-assets/local/txd/intro2.txd", start: 130087159, end: 130350495 },
-      { filename: "/vc-assets/local/txd/intro3.txd", start: 130350495, end: 130613831 },
-      { filename: "/vc-assets/local/txd/intro4.txd", start: 130613831, end: 130877167 },
-      { filename: "/vc-assets/local/txd/loadsc0.txd", start: 130877167, end: 131140503 },
-      { filename: "/vc-assets/local/txd/loadsc1.txd", start: 131140503, end: 131403839 },
-      { filename: "/vc-assets/local/txd/loadsc10.txd", start: 131403839, end: 131667175 },
-      { filename: "/vc-assets/local/txd/loadsc11.txd", start: 131667175, end: 131930511 },
-      { filename: "/vc-assets/local/txd/loadsc12.txd", start: 131930511, end: 132193847 },
-      { filename: "/vc-assets/local/txd/loadsc13.txd", start: 132193847, end: 132457183 },
-      { filename: "/vc-assets/local/txd/loadsc2.txd", start: 132457183, end: 132720519 },
-      { filename: "/vc-assets/local/txd/loadsc3.txd", start: 132720519, end: 132983855 },
-      { filename: "/vc-assets/local/txd/loadsc4.txd", start: 132983855, end: 133247191 },
-      { filename: "/vc-assets/local/txd/loadsc5.txd", start: 133247191, end: 133510527 },
-      { filename: "/vc-assets/local/txd/loadsc6.txd", start: 133510527, end: 133773863 },
-      { filename: "/vc-assets/local/txd/loadsc7.txd", start: 133773863, end: 134037199 },
-      { filename: "/vc-assets/local/txd/loadsc8.txd", start: 134037199, end: 134300535 },
-      { filename: "/vc-assets/local/txd/loadsc9.txd", start: 134300535, end: 134563871 },
-      { filename: "/vc-assets/local/txd/news.txd", start: 134563871, end: 134827207 },
-      { filename: "/vc-assets/local/txd/outro.txd", start: 134827207, end: 135090543 },
-      { filename: "/vc-assets/local/txd/splash1.txd", start: 135090543, end: 135222807 },
-      { filename: "/vc-assets/local/txd/splash2.txd", start: 135222807, end: 135355071 },
-      { filename: "/vc-assets/local/txd/splash3.txd", start: 135355071, end: 135355111 }
-    ],
-    remote_package_size: 135355111
-  });
+  "files": [
+    {
+      "filename": "/vc-assets/local/anim/cuts.dir",
+      "start": 0,
+      "end": 4736
+    },
+    {
+      "filename": "/vc-assets/local/anim/cuts.img/int_a.dat",
+      "start": 4736,
+      "end": 8832
+    },
+    {
+      "filename": "/vc-assets/local/anim/cuts.img/int_a.ifp",
+      "start": 8832,
+      "end": 1479296
+    },
+    {
+      "filename": "/vc-assets/local/anim/cuts.img/int_d.dat",
+      "start": 1479296,
+      "end": 1487488
+    },
+    {
+      "filename": "/vc-assets/local/anim/cuts.img/int_d.ifp",
+      "start": 1487488,
+      "end": 4061824
+    },
+    {
+      "filename": "/vc-assets/local/anim/cuts.img/int_m.dat",
+      "start": 4061824,
+      "end": 4065920
+    },
+    {
+      "filename": "/vc-assets/local/anim/cuts.img/int_m.ifp",
+      "start": 4065920,
+      "end": 5403264
+    },
+    {
+      "filename": "/vc-assets/local/anim/ped.ifp",
+      "start": 5403264,
+      "end": 7604416
+    },
+    {
+      "filename": "/vc-assets/local/audio/flash.adf",
+      "start": 7604416,
+      "end": 33051462
+    },
+    {
+      "filename": "/vc-assets/local/audio/sfx.sdt",
+      "start": 33051462,
+      "end": 33250282
+    },
+    {
+      "filename": "/vc-assets/local/audio/sound.cache",
+      "start": 33250282,
+      "end": 33255178
+    },
+    {
+      "filename": "/vc-assets/local/data/animviewer.dat",
+      "start": 33255178,
+      "end": 33256272
+    },
+    {
+      "filename": "/vc-assets/local/data/carcols.dat",
+      "start": 33256272,
+      "end": 33264219
+    },
+    {
+      "filename": "/vc-assets/local/data/cullzone.dat",
+      "start": 33264219,
+      "end": 33419527
+    },
+    {
+      "filename": "/vc-assets/local/data/cullzoneempty.dat",
+      "start": 33419527,
+      "end": 33580651
+    },
+    {
+      "filename": "/vc-assets/local/data/debug.sc",
+      "start": 33580651,
+      "end": 33586029
+    },
+    {
+      "filename": "/vc-assets/local/data/default.dat",
+      "start": 33586029,
+      "end": 33586532
+    },
+    {
+      "filename": "/vc-assets/local/data/default.ide",
+      "start": 33586532,
+      "end": 33607379
+    },
+    {
+      "filename": "/vc-assets/local/data/fistfite.dat",
+      "start": 33607379,
+      "end": 33609312
+    },
+    {
+      "filename": "/vc-assets/local/data/freeroam_miami.scm",
+      "start": 33609312,
+      "end": 33647509
+    },
+    {
+      "filename": "/vc-assets/local/data/gta_vc.dat",
+      "start": 33647509,
+      "end": 33650034
+    },
+    {
+      "filename": "/vc-assets/local/data/handling.cfg",
+      "start": 33650034,
+      "end": 33675862
+    },
+    {
+      "filename": "/vc-assets/local/data/info.zon",
+      "start": 33675862,
+      "end": 33686345
+    },
+    {
+      "filename": "/vc-assets/local/data/main.sc",
+      "start": 33686345,
+      "end": 33691860
+    },
+    {
+      "filename": "/vc-assets/local/data/main.scm",
+      "start": 33691860,
+      "end": 34960993
+    },
+    {
+      "filename": "/vc-assets/local/data/map.zon",
+      "start": 34960993,
+      "end": 34963147
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/airport/airport.col",
+      "start": 34963147,
+      "end": 35287359
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/airport/airport.ide",
+      "start": 35287359,
+      "end": 35303622
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/airport/airport.ipl",
+      "start": 35303622,
+      "end": 35341367
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/airportn/airportn.col",
+      "start": 35341367,
+      "end": 35552347
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/airportn/airportn.ide",
+      "start": 35552347,
+      "end": 35557003
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/airportn/airportn.ipl",
+      "start": 35557003,
+      "end": 35577974
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/bank/bank.col",
+      "start": 35577974,
+      "end": 35595190
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/bank/bank.ide",
+      "start": 35595190,
+      "end": 35602876
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/bank/bank.ipl",
+      "start": 35602876,
+      "end": 35607855
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/bar/bar.ide",
+      "start": 35607855,
+      "end": 35607891
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/bridge/bridge.col",
+      "start": 35607891,
+      "end": 35707447
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/bridge/bridge.ide",
+      "start": 35707447,
+      "end": 35709471
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/bridge/bridge.ipl",
+      "start": 35709471,
+      "end": 35714302
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/cisland/cisland.col",
+      "start": 35714302,
+      "end": 35935594
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/cisland/cisland.ide",
+      "start": 35935594,
+      "end": 35944601
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/cisland/cisland.ipl",
+      "start": 35944601,
+      "end": 35970231
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/club/club.col",
+      "start": 35970231,
+      "end": 35994243
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/club/club.ide",
+      "start": 35994243,
+      "end": 36003567
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/club/club.ipl",
+      "start": 36003567,
+      "end": 36010521
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/concerth/concerth.col",
+      "start": 36010521,
+      "end": 36021101
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/concerth/concerth.ide",
+      "start": 36021101,
+      "end": 36029269
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/concerth/concerth.ipl",
+      "start": 36029269,
+      "end": 36031081
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/cull.ipl",
+      "start": 36031081,
+      "end": 36087558
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/docks/docks.col",
+      "start": 36087558,
+      "end": 36384002
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/docks/docks.ide",
+      "start": 36384002,
+      "end": 36393133
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/docks/docks.ipl",
+      "start": 36393133,
+      "end": 36423386
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/downtown/downtown.col",
+      "start": 36423386,
+      "end": 36928174
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/downtown/downtown.ide",
+      "start": 36928174,
+      "end": 36950875
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/downtown/downtown.ipl",
+      "start": 36950875,
+      "end": 37005634
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/downtows/downtows.col",
+      "start": 37005634,
+      "end": 37261898
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/downtows/downtows.ide",
+      "start": 37261898,
+      "end": 37268739
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/downtows/downtows.ipl",
+      "start": 37268739,
+      "end": 37295153
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/generic.ide",
+      "start": 37295153,
+      "end": 37316882
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/golf/golf.col",
+      "start": 37316882,
+      "end": 37677702
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/golf/golf.ide",
+      "start": 37677702,
+      "end": 37683299
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/golf/golf.ipl",
+      "start": 37683299,
+      "end": 37700668
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/haiti/haiti.col",
+      "start": 37700668,
+      "end": 38053200
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/haiti/haiti.ide",
+      "start": 38053200,
+      "end": 38059021
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/haiti/haiti.ipl",
+      "start": 38059021,
+      "end": 38097841
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/haitin/haitin.col",
+      "start": 38097841,
+      "end": 38399185
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/haitin/haitin.ide",
+      "start": 38399185,
+      "end": 38404988
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/haitin/haitin.ipl",
+      "start": 38404988,
+      "end": 38431403
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/hotel/hotel.col",
+      "start": 38431403,
+      "end": 38442583
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/hotel/hotel.ide",
+      "start": 38442583,
+      "end": 38447264
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/hotel/hotel.ipl",
+      "start": 38447264,
+      "end": 38456197
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/islandsf/islandsf.col",
+      "start": 38456197,
+      "end": 38464753
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/islandsf/islandsf.ide",
+      "start": 38464753,
+      "end": 38468656
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/islandsf/islandsf.ipl",
+      "start": 38468656,
+      "end": 38478914
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/lawyers/lawyers.col",
+      "start": 38478914,
+      "end": 38494706
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/lawyers/lawyers.ide",
+      "start": 38494706,
+      "end": 38495778
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/lawyers/lawyers.ipl",
+      "start": 38495778,
+      "end": 38497193
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/littleha/littleha.col",
+      "start": 38497193,
+      "end": 38864753
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/littleha/littleha.ide",
+      "start": 38864753,
+      "end": 38880021
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/littleha/littleha.ipl",
+      "start": 38880021,
+      "end": 38948253
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/mall/mall.col",
+      "start": 38948253,
+      "end": 39150745
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/mall/mall.ide",
+      "start": 39150745,
+      "end": 39160592
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/mall/mall.ipl",
+      "start": 39160592,
+      "end": 39184369
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/mansion/mansion.col",
+      "start": 39184369,
+      "end": 39337245
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/mansion/mansion.ide",
+      "start": 39337245,
+      "end": 39346762
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/mansion/mansion.ipl",
+      "start": 39346762,
+      "end": 39361821
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/map0.dat",
+      "start": 39361821,
+      "end": 39362479
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/map1.dat",
+      "start": 39362479,
+      "end": 39363137
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/map2.dat",
+      "start": 39363137,
+      "end": 39363795
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/map3.dat",
+      "start": 39363795,
+      "end": 39364453
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/map4.dat",
+      "start": 39364453,
+      "end": 39365111
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/map5.dat",
+      "start": 39365111,
+      "end": 39365769
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/map6.dat",
+      "start": 39365769,
+      "end": 39366427
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/map7.dat",
+      "start": 39366427,
+      "end": 39367085
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/nbeach/nbeach.col",
+      "start": 39367085,
+      "end": 39723785
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/nbeach/nbeach.ide",
+      "start": 39723785,
+      "end": 39729306
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/nbeach/nbeach.ipl",
+      "start": 39729306,
+      "end": 39772162
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/nbeachbt/nbeachbt.col",
+      "start": 39772162,
+      "end": 40267550
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/nbeachbt/nbeachbt.ide",
+      "start": 40267550,
+      "end": 40277712
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/nbeachbt/nbeachbt.ipl",
+      "start": 40277712,
+      "end": 40351880
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/nbeachw/nbeachw.col",
+      "start": 40351880,
+      "end": 40613460
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/nbeachw/nbeachw.ide",
+      "start": 40613460,
+      "end": 40622721
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/nbeachw/nbeachw.ipl",
+      "start": 40622721,
+      "end": 40663666
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/oceandn/oceandn.col",
+      "start": 40663666,
+      "end": 40954358
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/oceandn/oceandn.ide",
+      "start": 40954358,
+      "end": 40974676
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/oceandn/oceandn.ipl",
+      "start": 40974676,
+      "end": 41051625
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/oceandrv/oceandrv.col",
+      "start": 41051625,
+      "end": 41228733
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/oceandrv/oceandrv.ide",
+      "start": 41228733,
+      "end": 41241943
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/oceandrv/oceandrv.ipl",
+      "start": 41241943,
+      "end": 41292132
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/paths.ipl",
+      "start": 41292132,
+      "end": 42438238
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/stadint/stadint.col",
+      "start": 42438238,
+      "end": 42871574
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/stadint/stadint.ide",
+      "start": 42871574,
+      "end": 42881894
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/stadint/stadint.ipl",
+      "start": 42881894,
+      "end": 42889167
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/starisl/starisl.col",
+      "start": 42889167,
+      "end": 43135687
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/starisl/starisl.ide",
+      "start": 43135687,
+      "end": 43139685
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/starisl/starisl.ipl",
+      "start": 43139685,
+      "end": 43178706
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/stripclb/stripclb.col",
+      "start": 43178706,
+      "end": 43207698
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/stripclb/stripclb.ide",
+      "start": 43207698,
+      "end": 43212847
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/stripclb/stripclb.ipl",
+      "start": 43212847,
+      "end": 43214015
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/washintn/washintn.col",
+      "start": 43214015,
+      "end": 43489127
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/washintn/washintn.ide",
+      "start": 43489127,
+      "end": 43506624
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/washintn/washintn.ipl",
+      "start": 43506624,
+      "end": 43589579
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/washints/washints.col",
+      "start": 43589579,
+      "end": 43898783
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/washints/washints.ide",
+      "start": 43898783,
+      "end": 43920082
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/washints/washints.ipl",
+      "start": 43920082,
+      "end": 43987513
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/yacht/yacht.col",
+      "start": 43987513,
+      "end": 44012449
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/yacht/yacht.ide",
+      "start": 44012449,
+      "end": 44014827
+    },
+    {
+      "filename": "/vc-assets/local/data/maps/yacht/yacht.ipl",
+      "start": 44014827,
+      "end": 44014903
+    },
+    {
+      "filename": "/vc-assets/local/data/navig.zon",
+      "start": 44014903,
+      "end": 44015662
+    },
+    {
+      "filename": "/vc-assets/local/data/object.dat",
+      "start": 44015662,
+      "end": 44041939
+    },
+    {
+      "filename": "/vc-assets/local/data/occlu.ipl",
+      "start": 44041939,
+      "end": 44063666
+    },
+    {
+      "filename": "/vc-assets/local/data/particle.cfg",
+      "start": 44063666,
+      "end": 44081004
+    },
+    {
+      "filename": "/vc-assets/local/data/paths/flight.dat",
+      "start": 44081004,
+      "end": 44089044
+    },
+    {
+      "filename": "/vc-assets/local/data/paths/flight2.dat",
+      "start": 44089044,
+      "end": 44092499
+    },
+    {
+      "filename": "/vc-assets/local/data/paths/flight3.dat",
+      "start": 44092499,
+      "end": 44104303
+    },
+    {
+      "filename": "/vc-assets/local/data/paths/spath0.dat",
+      "start": 44104303,
+      "end": 44106109
+    },
+    {
+      "filename": "/vc-assets/local/data/ped.dat",
+      "start": 44106109,
+      "end": 44108124
+    },
+    {
+      "filename": "/vc-assets/local/data/pedgrp.dat",
+      "start": 44108124,
+      "end": 44116559
+    },
+    {
+      "filename": "/vc-assets/local/data/pedstats.dat",
+      "start": 44116559,
+      "end": 44119781
+    },
+    {
+      "filename": "/vc-assets/local/data/surface.dat",
+      "start": 44119781,
+      "end": 44120343
+    },
+    {
+      "filename": "/vc-assets/local/data/timecyc.dat",
+      "start": 44120343,
+      "end": 44166483
+    },
+    {
+      "filename": "/vc-assets/local/data/train.dat",
+      "start": 44166483,
+      "end": 44168934
+    },
+    {
+      "filename": "/vc-assets/local/data/train2.dat",
+      "start": 44168934,
+      "end": 44173128
+    },
+    {
+      "filename": "/vc-assets/local/data/water.dat",
+      "start": 44173128,
+      "end": 44174357
+    },
+    {
+      "filename": "/vc-assets/local/data/waterpro.dat",
+      "start": 44174357,
+      "end": 44195801
+    },
+    {
+      "filename": "/vc-assets/local/data/weapon.dat",
+      "start": 44195801,
+      "end": 44202619
+    },
+    {
+      "filename": "/vc-assets/local/fonts/sansation.ttf",
+      "start": 44202619,
+      "end": 44281083
+    },
+    {
+      "filename": "/vc-assets/local/gamecontrollerdb.txt",
+      "start": 44281083,
+      "end": 44533234
+    },
+    {
+      "filename": "/vc-assets/local/installscript.vdf",
+      "start": 44533234,
+      "end": 44533417
+    },
+    {
+      "filename": "/vc-assets/local/models/coll/generic.col",
+      "start": 44533417,
+      "end": 44618189
+    },
+    {
+      "filename": "/vc-assets/local/models/coll/peds.col",
+      "start": 44618189,
+      "end": 44639666
+    },
+    {
+      "filename": "/vc-assets/local/models/coll/vehicles.col",
+      "start": 44639666,
+      "end": 44745262
+    },
+    {
+      "filename": "/vc-assets/local/models/coll/weapons.col",
+      "start": 44745262,
+      "end": 44745710
+    },
+    {
+      "filename": "/vc-assets/local/models/fonts.txd",
+      "start": 44745710,
+      "end": 45270294
+    },
+    {
+      "filename": "/vc-assets/local/models/fonts_r.txd",
+      "start": 45270294,
+      "end": 45794878
+    },
+    {
+      "filename": "/vc-assets/local/models/fronten1.txd",
+      "start": 45794878,
+      "end": 45992934
+    },
+    {
+      "filename": "/vc-assets/local/models/fronten2.txd",
+      "start": 45992934,
+      "end": 46741518
+    },
+    {
+      "filename": "/vc-assets/local/models/frontend_ds2.txd",
+      "start": 46741518,
+      "end": 47071494
+    },
+    {
+      "filename": "/vc-assets/local/models/frontend_ds3.txd",
+      "start": 47071494,
+      "end": 47596462
+    },
+    {
+      "filename": "/vc-assets/local/models/frontend_ds4.txd",
+      "start": 47596462,
+      "end": 48121430
+    },
+    {
+      "filename": "/vc-assets/local/models/frontend_nsw.txd",
+      "start": 48121430,
+      "end": 50481534
+    },
+    {
+      "filename": "/vc-assets/local/models/frontend_x360.txd",
+      "start": 50481534,
+      "end": 51006502
+    },
+    {
+      "filename": "/vc-assets/local/models/frontend_xone.txd",
+      "start": 51006502,
+      "end": 51531470
+    },
+    {
+      "filename": "/vc-assets/local/models/generic.txd",
+      "start": 51531470,
+      "end": 52699846
+    },
+    {
+      "filename": "/vc-assets/local/models/generic/air_vlo.dff",
+      "start": 52699846,
+      "end": 52706762
+    },
+    {
+      "filename": "/vc-assets/local/models/generic/arrow.dff",
+      "start": 52706762,
+      "end": 52711611
+    },
+    {
+      "filename": "/vc-assets/local/models/generic/player.bmp",
+      "start": 52711611,
+      "end": 52778223
+    },
+    {
+      "filename": "/vc-assets/local/models/generic/wheels.dff",
+      "start": 52778223,
+      "end": 52874290
+    },
+    {
+      "filename": "/vc-assets/local/models/generic/wheels.txd",
+      "start": 52874290,
+      "end": 52898266
+    },
+    {
+      "filename": "/vc-assets/local/models/generic/zonecylb.dff",
+      "start": 52898266,
+      "end": 52900526
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.dir",
+      "start": 52900526,
+      "end": 53093902
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/admiral.dff",
+      "start": 53093902,
+      "end": 53272078
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/admiral.txd",
+      "start": 53272078,
+      "end": 53317134
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/air_brway_030.dff",
+      "start": 53317134,
+      "end": 53343758
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/air_brway_34.dff",
+      "start": 53343758,
+      "end": 53370382
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/airgrndb.txd",
+      "start": 53370382,
+      "end": 53380622
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/airplan.dff",
+      "start": 53380622,
+      "end": 53450254
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/airplan.txd",
+      "start": 53450254,
+      "end": 53589518
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/airport.col",
+      "start": 53589518,
+      "end": 53915150
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/airport.txd",
+      "start": 53915150,
+      "end": 54064654
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/airporterminal.txd",
+      "start": 54064654,
+      "end": 54328846
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/airportn.col",
+      "start": 54328846,
+      "end": 54541838
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/airsignn.txd",
+      "start": 54541838,
+      "end": 54629902
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/airstuff2.txd",
+      "start": 54629902,
+      "end": 54656526
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/airtrain.dff",
+      "start": 54656526,
+      "end": 54750734
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/airtrain.txd",
+      "start": 54750734,
+      "end": 54777358
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/alleyprop.txd",
+      "start": 54777358,
+      "end": 54803982
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_3dbillb.dff",
+      "start": 54803982,
+      "end": 54869518
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_barriergate3.dff",
+      "start": 54869518,
+      "end": 54892046
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_billboard.txd",
+      "start": 54892046,
+      "end": 55127566
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_billboards3.dff",
+      "start": 55127566,
+      "end": 55150094
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_blastdef_03.dff",
+      "start": 55150094,
+      "end": 55162382
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_boardshad1.dff",
+      "start": 55162382,
+      "end": 55168526
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_build1.txd",
+      "start": 55168526,
+      "end": 55248398
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_build2.txd",
+      "start": 55248398,
+      "end": 55606798
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_buildings2.txd",
+      "start": 55606798,
+      "end": 55879182
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_carbush2_01.dff",
+      "start": 55879182,
+      "end": 55909902
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_carparkterm1.dff",
+      "start": 55909902,
+      "end": 55985678
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_clothes.txd",
+      "start": 55985678,
+      "end": 56071694
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_dockstairs1.dff",
+      "start": 56071694,
+      "end": 56104462
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_firetrucks.dff",
+      "start": 56104462,
+      "end": 56133134
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_francisland.txd",
+      "start": 56133134,
+      "end": 56323598
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_ground1.txd",
+      "start": 56323598,
+      "end": 56473102
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_hangar1_01.dff",
+      "start": 56473102,
+      "end": 56540686
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_hland_01.dff",
+      "start": 56540686,
+      "end": 56552974
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_jumbo_01.dff",
+      "start": 56552974,
+      "end": 56610318
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_jumbo_bridge.dff",
+      "start": 56610318,
+      "end": 56667662
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_jumbos.txd",
+      "start": 56667662,
+      "end": 56837646
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_learjet1_01.dff",
+      "start": 56837646,
+      "end": 56888846
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_learjets.txd",
+      "start": 56888846,
+      "end": 56901134
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_lod.txd",
+      "start": 56901134,
+      "end": 56942094
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_lodbit.txd",
+      "start": 56942094,
+      "end": 56946190
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_misc1bit.txd",
+      "start": 56946190,
+      "end": 57013774
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_newesca_01.dff",
+      "start": 57013774,
+      "end": 57093646
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_newescaglas_01.dff",
+      "start": 57093646,
+      "end": 57112078
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_newprops1opac.txd",
+      "start": 57112078,
+      "end": 57128462
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_radar1_01.dff",
+      "start": 57128462,
+      "end": 57148942
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_rland04.dff",
+      "start": 57148942,
+      "end": 57169422
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_rland06.dff",
+      "start": 57169422,
+      "end": 57187854
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_rland07.dff",
+      "start": 57187854,
+      "end": 57196046
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_rland10.dff",
+      "start": 57196046,
+      "end": 57212430
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_rlandnew9.dff",
+      "start": 57212430,
+      "end": 57232910
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_roads.txd",
+      "start": 57232910,
+      "end": 57544206
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_roadsect1.dff",
+      "start": 57544206,
+      "end": 57570830
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_roadsect1.txd",
+      "start": 57570830,
+      "end": 57714190
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_roadsect2a.dff",
+      "start": 57714190,
+      "end": 57740814
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_roadsect3.dff",
+      "start": 57740814,
+      "end": 57779726
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_roadsect3b.dff",
+      "start": 57779726,
+      "end": 57804302
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_roadsect4.dff",
+      "start": 57804302,
+      "end": 57941518
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_roadsect5.dff",
+      "start": 57941518,
+      "end": 57986574
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_runsign3_01.dff",
+      "start": 57986574,
+      "end": 57998862
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_runsigns1.txd",
+      "start": 57998862,
+      "end": 58101262
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_seaplanedock1.dff",
+      "start": 58101262,
+      "end": 58121742
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_seaplanprop.txd",
+      "start": 58121742,
+      "end": 58441230
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_smahangar2_01.dff",
+      "start": 58441230,
+      "end": 58445326
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_smallradar1_02.dff",
+      "start": 58445326,
+      "end": 58455566
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_steps1_01.dff",
+      "start": 58455566,
+      "end": 58478094
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_stepsn1_01.dff",
+      "start": 58478094,
+      "end": 58500622
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_termbbase1.dff",
+      "start": 58500622,
+      "end": 58539534
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_termina2_01.dff",
+      "start": 58539534,
+      "end": 58568206
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_termina_01.dff",
+      "start": 58568206,
+      "end": 58596878
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_termina_roof1.dff",
+      "start": 58596878,
+      "end": 58607118
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_termina_roof2.dff",
+      "start": 58607118,
+      "end": 58617358
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_terminagrflo1.dff",
+      "start": 58617358,
+      "end": 58625550
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_terminagrflo2.dff",
+      "start": 58625550,
+      "end": 58633742
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_terminal1.txd",
+      "start": 58633742,
+      "end": 58908174
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_terminal1boards.txd",
+      "start": 58908174,
+      "end": 59188750
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_terminalb1.dff",
+      "start": 59188750,
+      "end": 59272718
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_termsign1_dy.dff",
+      "start": 59272718,
+      "end": 59274766
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_termwindows.txd",
+      "start": 59274766,
+      "end": 59442702
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_termwindows1.dff",
+      "start": 59442702,
+      "end": 59454990
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_termwindows1b.dff",
+      "start": 59454990,
+      "end": 59461134
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_tower.dff",
+      "start": 59461134,
+      "end": 59481614
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_trailer_01.dff",
+      "start": 59481614,
+      "end": 59528718
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_treesfw1_01.dff",
+      "start": 59528718,
+      "end": 59538958
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_treeshot1_02.dff",
+      "start": 59538958,
+      "end": 59553294
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_viceairport.txd",
+      "start": 59553294,
+      "end": 59743758
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_wallfence2.dff",
+      "start": 59743758,
+      "end": 59756046
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_wallfence3.dff",
+      "start": 59756046,
+      "end": 59770382
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_wallfence4.dff",
+      "start": 59770382,
+      "end": 59786766
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_wallfence5.dff",
+      "start": 59786766,
+      "end": 59805198
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_wallfence7.dff",
+      "start": 59805198,
+      "end": 59813390
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ap_windowstruts.dff",
+      "start": 59813390,
+      "end": 59872782
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/apairprtbits07.dff",
+      "start": 59872782,
+      "end": 59876878
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/apcarparkn.txd",
+      "start": 59876878,
+      "end": 59938318
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/apchecpointn.txd",
+      "start": 59938318,
+      "end": 60016142
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/apgroundn.txd",
+      "start": 60016142,
+      "end": 60108302
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/apjumbon.txd",
+      "start": 60108302,
+      "end": 60278286
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/aproadsn.txd",
+      "start": 60278286,
+      "end": 60558862
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/b_hse_doors.dff",
+      "start": 60558862,
+      "end": 60560910
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/b_hse_ext.dff",
+      "start": 60560910,
+      "end": 60585486
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/b_hse_interior.dff",
+      "start": 60585486,
+      "end": 60610062
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/b_hse_interiorrays.dff",
+      "start": 60610062,
+      "end": 60614158
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/b_hse_pier.dff",
+      "start": 60614158,
+      "end": 60739086
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/b_hse_pierfence.dff",
+      "start": 60739086,
+      "end": 60751374
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/baggage.dff",
+      "start": 60751374,
+      "end": 60847630
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/baggage.txd",
+      "start": 60847630,
+      "end": 60870158
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/bank.col",
+      "start": 60870158,
+      "end": 60888590
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/banshee.dff",
+      "start": 60888590,
+      "end": 61033998
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/banshee.txd",
+      "start": 61033998,
+      "end": 61077006
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/baseball.ifp",
+      "start": 61077006,
+      "end": 61136398
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/basketballcourt04.dff",
+      "start": 61136398,
+      "end": 61158926
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/bat.dff",
+      "start": 61158926,
+      "end": 61163022
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/bat.txd",
+      "start": 61163022,
+      "end": 61171214
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/beach_bush02.dff",
+      "start": 61171214,
+      "end": 61173262
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/beach_bush06s.dff",
+      "start": 61173262,
+      "end": 61177358
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/beach_bush08s.dff",
+      "start": 61177358,
+      "end": 61181454
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/beachlo1.dff",
+      "start": 61181454,
+      "end": 61185550
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/benson.dff",
+      "start": 61185550,
+      "end": 61359630
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/benson.txd",
+      "start": 61359630,
+      "end": 61470222
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/bfinject.dff",
+      "start": 61470222,
+      "end": 61599246
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/bfinject.txd",
+      "start": 61599246,
+      "end": 61638158
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/bfost.dff",
+      "start": 61638158,
+      "end": 61705742
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/bfost.txd",
+      "start": 61705742,
+      "end": 61728270
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/bfotr.dff",
+      "start": 61728270,
+      "end": 61793806
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/bfotr.txd",
+      "start": 61793806,
+      "end": 61816334
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/bfypr.dff",
+      "start": 61816334,
+      "end": 61875726
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/bfypr.txd",
+      "start": 61875726,
+      "end": 61898254
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/bfyst.dff",
+      "start": 61898254,
+      "end": 61963790
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/bfyst.txd",
+      "start": 61963790,
+      "end": 61986318
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/biked.ifp",
+      "start": 61986318,
+      "end": 62127630
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/bikeh.ifp",
+      "start": 62127630,
+      "end": 62238222
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/bikes.ifp",
+      "start": 62238222,
+      "end": 62371342
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/bikev.ifp",
+      "start": 62371342,
+      "end": 62459406
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/billbd3.dff",
+      "start": 62459406,
+      "end": 62488078
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/billbrd.txd",
+      "start": 62488078,
+      "end": 62539278
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/blimp_day.dff",
+      "start": 62539278,
+      "end": 62551566
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/blimp_night.dff",
+      "start": 62551566,
+      "end": 62563854
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/blistac.dff",
+      "start": 62563854,
+      "end": 62729742
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/blistac.txd",
+      "start": 62729742,
+      "end": 62774798
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/bmodk.dff",
+      "start": 62774798,
+      "end": 62846478
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/bmodk.txd",
+      "start": 62846478,
+      "end": 62869006
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/bmost.dff",
+      "start": 62869006,
+      "end": 62948878
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/bmost.txd",
+      "start": 62948878,
+      "end": 62971406
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/bmotr.dff",
+      "start": 62971406,
+      "end": 63047182
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/bmotr.txd",
+      "start": 63047182,
+      "end": 63069710
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/bmycr.dff",
+      "start": 63069710,
+      "end": 63143438
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/bmycr.txd",
+      "start": 63143438,
+      "end": 63165966
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/bmypi.dff",
+      "start": 63165966,
+      "end": 63245838
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/bmypi.txd",
+      "start": 63245838,
+      "end": 63268366
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/bmyst.dff",
+      "start": 63268366,
+      "end": 63344142
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/bmyst.txd",
+      "start": 63344142,
+      "end": 63366670
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/boat_kb1.dff",
+      "start": 63366670,
+      "end": 63385102
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/boat_kb2.dff",
+      "start": 63385102,
+      "end": 63458830
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/boatcranelg0.dff",
+      "start": 63458830,
+      "end": 63489550
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/boatcranesm0.dff",
+      "start": 63489550,
+      "end": 63516174
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/boathouse.txd",
+      "start": 63516174,
+      "end": 64003598
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/bobcat.dff",
+      "start": 64003598,
+      "end": 64159246
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/bobcat.txd",
+      "start": 64159246,
+      "end": 64208398
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/bodyarmour.dff",
+      "start": 64208398,
+      "end": 64216590
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/bollardlight.dff",
+      "start": 64216590,
+      "end": 64220686
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/boxville.dff",
+      "start": 64220686,
+      "end": 64388622
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/boxville.txd",
+      "start": 64388622,
+      "end": 64495118
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/brassknuckle.dff",
+      "start": 64495118,
+      "end": 64499214
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/brassknuckle.txd",
+      "start": 64499214,
+      "end": 64505358
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/brfcase.dff",
+      "start": 64505358,
+      "end": 64531982
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/brfcase.txd",
+      "start": 64531982,
+      "end": 64546318
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/bribe.dff",
+      "start": 64546318,
+      "end": 64552462
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/bridge.col",
+      "start": 64552462,
+      "end": 64652814
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/burrito.dff",
+      "start": 64652814,
+      "end": 64841230
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/burrito.txd",
+      "start": 64841230,
+      "end": 64884238
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/bus.dff",
+      "start": 64884238,
+      "end": 65029646
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/bus.txd",
+      "start": 65029646,
+      "end": 65074702
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/bussign1.dff",
+      "start": 65074702,
+      "end": 65078798
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/cabbie.dff",
+      "start": 65078798,
+      "end": 65273358
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/cabbie.txd",
+      "start": 65273358,
+      "end": 65326606
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/cdseaan.dff",
+      "start": 65326606,
+      "end": 65328654
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/cdseabed01.dff",
+      "start": 65328654,
+      "end": 65334798
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/cdseabed02.dff",
+      "start": 65334798,
+      "end": 65340942
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/cdseabed03.dff",
+      "start": 65340942,
+      "end": 65345038
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/cdseabed04.dff",
+      "start": 65345038,
+      "end": 65349134
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/cdseabed05.dff",
+      "start": 65349134,
+      "end": 65353230
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/cdseabed06.dff",
+      "start": 65353230,
+      "end": 65357326
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/cdseabed07.dff",
+      "start": 65357326,
+      "end": 65361422
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/cdseabed08.dff",
+      "start": 65361422,
+      "end": 65365518
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/cdseabed09.dff",
+      "start": 65365518,
+      "end": 65369614
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/cdseabed16.dff",
+      "start": 65369614,
+      "end": 65371662
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/cdseabed18.dff",
+      "start": 65371662,
+      "end": 65375758
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/cdseabed19.dff",
+      "start": 65375758,
+      "end": 65377806
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/cdseabed20.dff",
+      "start": 65377806,
+      "end": 65381902
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/cdseabed21.dff",
+      "start": 65381902,
+      "end": 65383950
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/cdseabed24.dff",
+      "start": 65383950,
+      "end": 65385998
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/cdseabed25.dff",
+      "start": 65385998,
+      "end": 65388046
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/cdseabed26.dff",
+      "start": 65388046,
+      "end": 65390094
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/cdseabed27.dff",
+      "start": 65390094,
+      "end": 65392142
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/cdseabed28.dff",
+      "start": 65392142,
+      "end": 65394190
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/cdseabed29.dff",
+      "start": 65394190,
+      "end": 65396238
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/cdseabed30.dff",
+      "start": 65396238,
+      "end": 65398286
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/cheetah.dff",
+      "start": 65398286,
+      "end": 65568270
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/cheetah.txd",
+      "start": 65568270,
+      "end": 65611278
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/chromegun.dff",
+      "start": 65611278,
+      "end": 65629710
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/chromegun.txd",
+      "start": 65629710,
+      "end": 65637902
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/cisland.col",
+      "start": 65637902,
+      "end": 65861134
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/cl_tablesetlrg.dff",
+      "start": 65861134,
+      "end": 65887758
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/club.col",
+      "start": 65887758,
+      "end": 65912334
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/coach.dff",
+      "start": 65912334,
+      "end": 66053646
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/coach.ifp",
+      "start": 66053646,
+      "end": 66139662
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/coach.txd",
+      "start": 66139662,
+      "end": 66188814
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/cokpoolwater.dff",
+      "start": 66188814,
+      "end": 66190862
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/colt45.dff",
+      "start": 66190862,
+      "end": 66207246
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/colt45.ifp",
+      "start": 66207246,
+      "end": 66266638
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/colt45.txd",
+      "start": 66266638,
+      "end": 66274830
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/comet.dff",
+      "start": 66274830,
+      "end": 66416142
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/comet.txd",
+      "start": 66416142,
+      "end": 66461198
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/concerth.col",
+      "start": 66461198,
+      "end": 66473486
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/cop.dff",
+      "start": 66473486,
+      "end": 66545166
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/cop.txd",
+      "start": 66545166,
+      "end": 66567694
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/cranebasea0.dff",
+      "start": 66567694,
+      "end": 66592270
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/cranes.txd",
+      "start": 66592270,
+      "end": 66668046
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/crate.txd",
+      "start": 66668046,
+      "end": 67010062
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/crgoshp010.dff",
+      "start": 67010062,
+      "end": 67087886
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/cs_chop.dff",
+      "start": 67087886,
+      "end": 67333646
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/cs_chop.txd",
+      "start": 67333646,
+      "end": 67452430
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/csassa.dff",
+      "start": 67452430,
+      "end": 67542542
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/csassa.txd",
+      "start": 67542542,
+      "end": 67587598
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/csassb.dff",
+      "start": 67587598,
+      "end": 67681806
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/csassb.txd",
+      "start": 67681806,
+      "end": 67726862
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/csassc.dff",
+      "start": 67726862,
+      "end": 67816974
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/csassc.txd",
+      "start": 67816974,
+      "end": 67862030
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/csdeal.dff",
+      "start": 67862030,
+      "end": 67995150
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/csdeal.txd",
+      "start": 67995150,
+      "end": 68040206
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/csken.dff",
+      "start": 68040206,
+      "end": 68204046
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/csken.txd",
+      "start": 68204046,
+      "end": 68249102
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/csplay.dff",
+      "start": 68249102,
+      "end": 68394510
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/csplay.txd",
+      "start": 68394510,
+      "end": 68439566
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/cssonny.dff",
+      "start": 68439566,
+      "end": 68570638
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/cssonny.txd",
+      "start": 68570638,
+      "end": 68615694
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/deco_buildkb29_nt.dff",
+      "start": 68615694,
+      "end": 68648462
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/deco_buildkb_nt.dff",
+      "start": 68648462,
+      "end": 68673038
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/deco_polgrnda10.dff",
+      "start": 68673038,
+      "end": 68724238
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/deco_polgrnda12.dff",
+      "start": 68724238,
+      "end": 68861454
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/deco_polgrnda13.dff",
+      "start": 68861454,
+      "end": 68873742
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/delcase.dff",
+      "start": 68873742,
+      "end": 68881934
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/delcase.txd",
+      "start": 68881934,
+      "end": 68926990
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/dinghy.dff",
+      "start": 68926990,
+      "end": 69010958
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/dinghy.txd",
+      "start": 69010958,
+      "end": 69047822
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/dk_cargoshp95.dff",
+      "start": 69047822,
+      "end": 69248526
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/dk_dockroads02.dff",
+      "start": 69248526,
+      "end": 69277198
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/dk_dockroads03.dff",
+      "start": 69277198,
+      "end": 69305870
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/dk_dockroads04.dff",
+      "start": 69305870,
+      "end": 69320206
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/dk_midbuilds.txd",
+      "start": 69320206,
+      "end": 69783054
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/dk_waretank.dff",
+      "start": 69783054,
+      "end": 69826062
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/dk_waretankdoor1.dff",
+      "start": 69826062,
+      "end": 69828110
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/dkcargohull2.dff",
+      "start": 69828110,
+      "end": 69940750
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/dkcargohull2b.dff",
+      "start": 69940750,
+      "end": 70012430
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/dkcargohull2c.dff",
+      "start": 70012430,
+      "end": 70088206
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/dkcargoshp.txd",
+      "start": 70088206,
+      "end": 70452750
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/doc_crane_cab03.dff",
+      "start": 70452750,
+      "end": 70477326
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/doc_crane_cab04.dff",
+      "start": 70477326,
+      "end": 70524430
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/doc_craneeggs04.dff",
+      "start": 70524430,
+      "end": 70567438
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/doc_dockwareold.dff",
+      "start": 70567438,
+      "end": 70606350
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/doccrane.txd",
+      "start": 70606350,
+      "end": 70669838
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/docfactories.txd",
+      "start": 70669838,
+      "end": 71177742
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/dock_props01.dff",
+      "start": 71177742,
+      "end": 71183886
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/dock_props02.dff",
+      "start": 71183886,
+      "end": 71220750
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/dock_ships.txd",
+      "start": 71220750,
+      "end": 71466510
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/dockcranescale0.dff",
+      "start": 71466510,
+      "end": 71519758
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/dockfence.dff",
+      "start": 71519758,
+      "end": 71521806
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/dockfence.txd",
+      "start": 71521806,
+      "end": 71583246
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/dockfuel07.dff",
+      "start": 71583246,
+      "end": 71609870
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/dockgrass.dff",
+      "start": 71609870,
+      "end": 71652878
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/dockgrass.txd",
+      "start": 71652878,
+      "end": 71663118
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/dockgrnd.txd",
+      "start": 71663118,
+      "end": 72074766
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/docklight.txd",
+      "start": 72074766,
+      "end": 72115726
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/dockroads.txd",
+      "start": 72115726,
+      "end": 72355342
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/docks.col",
+      "start": 72355342,
+      "end": 72652302
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/docks.txd",
+      "start": 72652302,
+      "end": 73223694
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/docks10.dff",
+      "start": 73223694,
+      "end": 73291278
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/docks21.dff",
+      "start": 73291278,
+      "end": 73369102
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/docks28.dff",
+      "start": 73369102,
+      "end": 73412110
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/docks30.dff",
+      "start": 73412110,
+      "end": 73514510
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/docks31.dff",
+      "start": 73514510,
+      "end": 73528846
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/docks32.dff",
+      "start": 73528846,
+      "end": 73537038
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/docks37.dff",
+      "start": 73537038,
+      "end": 73569806
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/docks40.dff",
+      "start": 73569806,
+      "end": 73586190
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/docks62.dff",
+      "start": 73586190,
+      "end": 73594382
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/docks85.dff",
+      "start": 73594382,
+      "end": 73606670
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/docksprops04.dff",
+      "start": 73606670,
+      "end": 73790990
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/docksprops11.dff",
+      "start": 73790990,
+      "end": 73934350
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/docksprops12.dff",
+      "start": 73934350,
+      "end": 74077710
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/docksprops13.dff",
+      "start": 74077710,
+      "end": 74194446
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/docksprops14.dff",
+      "start": 74194446,
+      "end": 74280462
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/dolphin.dff",
+      "start": 74280462,
+      "end": 74307086
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/dolphin.txd",
+      "start": 74307086,
+      "end": 74311182
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/downtown.col",
+      "start": 74311182,
+      "end": 74817038
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/downtows.col",
+      "start": 74817038,
+      "end": 75075086
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/drink.dff",
+      "start": 75075086,
+      "end": 75079182
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/drink.txd",
+      "start": 75079182,
+      "end": 75091470
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/dt_blimp.txd",
+      "start": 75091470,
+      "end": 75095566
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/dt_lod.txd",
+      "start": 75095566,
+      "end": 75253262
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/dts_lodbig.txd",
+      "start": 75253262,
+      "end": 75296270
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/dts_lodsmall.txd",
+      "start": 75296270,
+      "end": 75324942
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/dts_lodsmall2.txd",
+      "start": 75324942,
+      "end": 75415054
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/dynhydrent.txd",
+      "start": 75415054,
+      "end": 75427342
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/dynsigns.txd",
+      "start": 75427342,
+      "end": 75453966
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/esperant.dff",
+      "start": 75453966,
+      "end": 75623950
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/esperant.txd",
+      "start": 75623950,
+      "end": 75675150
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/faggio.dff",
+      "start": 75675150,
+      "end": 75750926
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/faggio.txd",
+      "start": 75750926,
+      "end": 75775502
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/fire_hydrant.dff",
+      "start": 75775502,
+      "end": 75791886
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/fish1.txd",
+      "start": 75791886,
+      "end": 75798030
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/fish1single.dff",
+      "start": 75798030,
+      "end": 75800078
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/fish2.txd",
+      "start": 75800078,
+      "end": 75806222
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/fish2s.dff",
+      "start": 75806222,
+      "end": 75810318
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/fish2single.dff",
+      "start": 75810318,
+      "end": 75812366
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/fish3.txd",
+      "start": 75812366,
+      "end": 75818510
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/fish3s.dff",
+      "start": 75818510,
+      "end": 75820558
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/fish3single.dff",
+      "start": 75820558,
+      "end": 75822606
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/flatbed.dff",
+      "start": 75822606,
+      "end": 76070414
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/flatbed.txd",
+      "start": 76070414,
+      "end": 76146190
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/gda.dff",
+      "start": 76146190,
+      "end": 76207630
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/gda.txd",
+      "start": 76207630,
+      "end": 76230158
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/gdb.dff",
+      "start": 76230158,
+      "end": 76291598
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/gdb.txd",
+      "start": 76291598,
+      "end": 76314126
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/gf_lod.txd",
+      "start": 76314126,
+      "end": 76346894
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/gf_treesfw1_01.dff",
+      "start": 76346894,
+      "end": 76367374
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/gf_treesfw2_01.dff",
+      "start": 76367374,
+      "end": 76383758
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/gf_treesfw3_01.dff",
+      "start": 76383758,
+      "end": 76398094
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/gf_treesfw4_01.dff",
+      "start": 76398094,
+      "end": 76414478
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/gf_treesfw5_01.dff",
+      "start": 76414478,
+      "end": 76432910
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ggsalonsign1.dff",
+      "start": 76432910,
+      "end": 76437006
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/glendale.dff",
+      "start": 76437006,
+      "end": 76594702
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/glendale.txd",
+      "start": 76594702,
+      "end": 76647950
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/golf.col",
+      "start": 76647950,
+      "end": 77010446
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/greenwoo.dff",
+      "start": 77010446,
+      "end": 77198862
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/greenwoo.txd",
+      "start": 77198862,
+      "end": 77245966
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/haiti.col",
+      "start": 77245966,
+      "end": 77600270
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/haitin.col",
+      "start": 77600270,
+      "end": 77903374
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/health.dff",
+      "start": 77903374,
+      "end": 77911566
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/hermes.dff",
+      "start": 77911566,
+      "end": 78040590
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/hermes.txd",
+      "start": 78040590,
+      "end": 78099982
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/hfost.dff",
+      "start": 78099982,
+      "end": 78165518
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/hfost.txd",
+      "start": 78165518,
+      "end": 78188046
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/hfotr.dff",
+      "start": 78188046,
+      "end": 78253582
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/hfotr.txd",
+      "start": 78253582,
+      "end": 78276110
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/hfybe.dff",
+      "start": 78276110,
+      "end": 78331406
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/hfybe.txd",
+      "start": 78331406,
+      "end": 78353934
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/hfybu.dff",
+      "start": 78353934,
+      "end": 78419470
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/hfybu.txd",
+      "start": 78419470,
+      "end": 78441998
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/hfypr.dff",
+      "start": 78441998,
+      "end": 78501390
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/hfypr.txd",
+      "start": 78501390,
+      "end": 78523918
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/hfyri.dff",
+      "start": 78523918,
+      "end": 78585358
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/hfyri.txd",
+      "start": 78585358,
+      "end": 78607886
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/hfyst.dff",
+      "start": 78607886,
+      "end": 78671374
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/hfyst.txd",
+      "start": 78671374,
+      "end": 78693902
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/hi_cutcouch.txd",
+      "start": 78693902,
+      "end": 78745102
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/hi_cuthoomintshad.txd",
+      "start": 78745102,
+      "end": 78902798
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/hi_cuthotel1.txd",
+      "start": 78902798,
+      "end": 78945806
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/hi_cuthtl2.txd",
+      "start": 78945806,
+      "end": 79154702
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/hi_cuthtl4.txd",
+      "start": 79154702,
+      "end": 79189518
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/hi_cuthtlalp.txd",
+      "start": 79189518,
+      "end": 79375886
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/hi_cutint1.txd",
+      "start": 79375886,
+      "end": 79509006
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/hi_cutintprops.txd",
+      "start": 79509006,
+      "end": 79609358
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/hi_cuttblprop.txd",
+      "start": 79609358,
+      "end": 79695374
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/hmoca.dff",
+      "start": 79695374,
+      "end": 79765006
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/hmoca.txd",
+      "start": 79765006,
+      "end": 79787534
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/hmost.dff",
+      "start": 79787534,
+      "end": 79863310
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/hmost.txd",
+      "start": 79863310,
+      "end": 79885838
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/hmotr.dff",
+      "start": 79885838,
+      "end": 79961614
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/hmotr.txd",
+      "start": 79961614,
+      "end": 79984142
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/hmyap.dff",
+      "start": 79984142,
+      "end": 80053774
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/hmyap.txd",
+      "start": 80053774,
+      "end": 80076302
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/hmyst.dff",
+      "start": 80076302,
+      "end": 80150030
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/hmyst.txd",
+      "start": 80150030,
+      "end": 80172558
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/hot_bar1_01.dff",
+      "start": 80172558,
+      "end": 80244238
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/hot_drawers1_01.dff",
+      "start": 80244238,
+      "end": 80283150
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/hot_mags1.dff",
+      "start": 80283150,
+      "end": 80289294
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/hot_mobint.txd",
+      "start": 80289294,
+      "end": 80989710
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/hot_room317.dff",
+      "start": 80989710,
+      "end": 81042958
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/hot_roomtrans.txd",
+      "start": 81042958,
+      "end": 81315342
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/hot_trans1.dff",
+      "start": 81315342,
+      "end": 81344014
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/hotel.col",
+      "start": 81344014,
+      "end": 81356302
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/hotelroomint.txd",
+      "start": 81356302,
+      "end": 82085390
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/hotroomfan.dff",
+      "start": 82085390,
+      "end": 82091534
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/hotshad1.dff",
+      "start": 82091534,
+      "end": 82099726
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ht_doors.dff",
+      "start": 82099726,
+      "end": 82103822
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ht_fans_nt.dff",
+      "start": 82103822,
+      "end": 82146830
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ht_kb_couch1_nt.dff",
+      "start": 82146830,
+      "end": 82208270
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ht_mainfloor2_nt.dff",
+      "start": 82208270,
+      "end": 82243086
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ht_mainfloor_nt.dff",
+      "start": 82243086,
+      "end": 82281998
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ht_upstairs.dff",
+      "start": 82281998,
+      "end": 82333198
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ht_veg01_nt.dff",
+      "start": 82333198,
+      "end": 82347534
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ht_veg02_dy.dff",
+      "start": 82347534,
+      "end": 82386446
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ht_veg02_nt.dff",
+      "start": 82386446,
+      "end": 82425358
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ht_veg04_nt.dff",
+      "start": 82425358,
+      "end": 82451982
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/htdoorhtlalp.txd",
+      "start": 82451982,
+      "end": 82478606
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/htl_dco_chair03_nt.dff",
+      "start": 82478606,
+      "end": 82529806
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/htl_ext03.txd",
+      "start": 82529806,
+      "end": 82548238
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/htl_exterior03_nt.dff",
+      "start": 82548238,
+      "end": 82554382
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/htl_gls_1_nt.dff",
+      "start": 82554382,
+      "end": 82556430
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/htl_gls_2_nt.dff",
+      "start": 82556430,
+      "end": 82558478
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/htl_gls_3_nt.dff",
+      "start": 82558478,
+      "end": 82560526
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/htl_gls_lobby.dff",
+      "start": 82560526,
+      "end": 82562574
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/htl_lftdoor1_nt.dff",
+      "start": 82562574,
+      "end": 82566670
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/htl_maintiles_nt.dff",
+      "start": 82566670,
+      "end": 82591246
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/icons3.txd",
+      "start": 82591246,
+      "end": 82595342
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/icons4.txd",
+      "start": 82595342,
+      "end": 82599438
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/icons5.txd",
+      "start": 82599438,
+      "end": 82605582
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/icons7.txd",
+      "start": 82605582,
+      "end": 82609678
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/icons9.txd",
+      "start": 82609678,
+      "end": 82615822
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/igken.dff",
+      "start": 82615822,
+      "end": 82693646
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/igken.txd",
+      "start": 82693646,
+      "end": 82738702
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/infernus.dff",
+      "start": 82738702,
+      "end": 82861582
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/infernus.txd",
+      "start": 82861582,
+      "end": 82914830
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/islandlodbeach.dff",
+      "start": 82914830,
+      "end": 83283470
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/islandlodmainland.dff",
+      "start": 83283470,
+      "end": 83629582
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/islandlolodb.txd",
+      "start": 83629582,
+      "end": 83715598
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/islandlolodm.txd",
+      "start": 83715598,
+      "end": 83815950
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/islandsf.col",
+      "start": 83815950,
+      "end": 83826190
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/jellyfish.dff",
+      "start": 83826190,
+      "end": 83836430
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/jellyfish1.txd",
+      "start": 83836430,
+      "end": 83846670
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/jfoto.dff",
+      "start": 83846670,
+      "end": 83912206
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/jfoto.txd",
+      "start": 83912206,
+      "end": 83934734
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/jmoto.dff",
+      "start": 83934734,
+      "end": 83996174
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/jmoto.txd",
+      "start": 83996174,
+      "end": 84018702
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/kaufman.dff",
+      "start": 84018702,
+      "end": 84215310
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/kaufman.txd",
+      "start": 84215310,
+      "end": 84297230
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lamppost1.dff",
+      "start": 84297230,
+      "end": 84305422
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lamppost2.dff",
+      "start": 84305422,
+      "end": 84319758
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lamppost3.dff",
+      "start": 84319758,
+      "end": 84323854
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/landstal.dff",
+      "start": 84323854,
+      "end": 84520462
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/landstal.txd",
+      "start": 84520462,
+      "end": 84565518
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lawyers.col",
+      "start": 84565518,
+      "end": 84581902
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/linerun.dff",
+      "start": 84581902,
+      "end": 84737550
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/linerun.txd",
+      "start": 84737550,
+      "end": 84786702
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/littleha.col",
+      "start": 84786702,
+      "end": 85155342
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_backside.dff",
+      "start": 85155342,
+      "end": 85165582
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_beacon2_nt.dff",
+      "start": 85165582,
+      "end": 85171726
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_beacon_dy.dff",
+      "start": 85171726,
+      "end": 85179918
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_beacon_nt.dff",
+      "start": 85179918,
+      "end": 85188110
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_bridgew.dff",
+      "start": 85188110,
+      "end": 85190158
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_build01.dff",
+      "start": 85190158,
+      "end": 85192206
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_build02.dff",
+      "start": 85192206,
+      "end": 85196302
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_build03.dff",
+      "start": 85196302,
+      "end": 85200398
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_build04.dff",
+      "start": 85200398,
+      "end": 85202446
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_build05.dff",
+      "start": 85202446,
+      "end": 85206542
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_car_show_out.dff",
+      "start": 85206542,
+      "end": 85216782
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_colony_nt.dff",
+      "start": 85216782,
+      "end": 85218830
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_docks.txd",
+      "start": 85218830,
+      "end": 85382670
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_docks2.txd",
+      "start": 85382670,
+      "end": 85419534
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_dockwareold.dff",
+      "start": 85419534,
+      "end": 85423630
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_frntstep.dff",
+      "start": 85423630,
+      "end": 85429774
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_grnd2.dff",
+      "start": 85429774,
+      "end": 85444110
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_grnd3.dff",
+      "start": 85444110,
+      "end": 85450254
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_grnd4.dff",
+      "start": 85450254,
+      "end": 85462542
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_grnd5.dff",
+      "start": 85462542,
+      "end": 85476878
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_grnd6.dff",
+      "start": 85476878,
+      "end": 85487118
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_grssypatch.dff",
+      "start": 85487118,
+      "end": 85491214
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_hotel01.dff",
+      "start": 85491214,
+      "end": 85505550
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_hotel02.dff",
+      "start": 85505550,
+      "end": 85526030
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_hotel03.dff",
+      "start": 85526030,
+      "end": 85558798
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_hotel04.dff",
+      "start": 85558798,
+      "end": 85571086
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_hotel05.dff",
+      "start": 85571086,
+      "end": 85585422
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_hotel06.dff",
+      "start": 85585422,
+      "end": 85599758
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_hotel08.dff",
+      "start": 85599758,
+      "end": 85616142
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_hotel13.dff",
+      "start": 85616142,
+      "end": 85632526
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_hotel15.dff",
+      "start": 85632526,
+      "end": 85648910
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_hotelhot_nt.dff",
+      "start": 85648910,
+      "end": 85650958
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_houses27.dff",
+      "start": 85650958,
+      "end": 85665294
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_htlpoolbar01.dff",
+      "start": 85665294,
+      "end": 85677582
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_htlpoolbase01.dff",
+      "start": 85677582,
+      "end": 85681678
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_htlpoolbase01b.dff",
+      "start": 85681678,
+      "end": 85685774
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_htlpoolbase02.dff",
+      "start": 85685774,
+      "end": 85691918
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_htlpoolbase03.dff",
+      "start": 85691918,
+      "end": 85696014
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_htlpoolbase04.dff",
+      "start": 85696014,
+      "end": 85698062
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_htlpoolrm01.dff",
+      "start": 85698062,
+      "end": 85704206
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_htlpoolrm02.dff",
+      "start": 85704206,
+      "end": 85710350
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_leslie_dy.dff",
+      "start": 85710350,
+      "end": 85714446
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_leslie_nt.dff",
+      "start": 85714446,
+      "end": 85718542
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_macalpin_dy.dff",
+      "start": 85718542,
+      "end": 85724686
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_macalpin_nt.dff",
+      "start": 85724686,
+      "end": 85730830
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_majest_nt.dff",
+      "start": 85730830,
+      "end": 85734926
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_majestic2x_nt.dff",
+      "start": 85734926,
+      "end": 85739022
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_majestic_dy.dff",
+      "start": 85739022,
+      "end": 85745166
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_majestic_nt.dff",
+      "start": 85745166,
+      "end": 85751310
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_majesticz_nt.dff",
+      "start": 85751310,
+      "end": 85753358
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_man_grnds.txd",
+      "start": 85753358,
+      "end": 85806606
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_mansion03.dff",
+      "start": 85806606,
+      "end": 85812750
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_mansionbase02.dff",
+      "start": 85812750,
+      "end": 85816846
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_pizzaplace.dff",
+      "start": 85816846,
+      "end": 85820942
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_road01.dff",
+      "start": 85820942,
+      "end": 85825038
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_road02.dff",
+      "start": 85825038,
+      "end": 85827086
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_road03.dff",
+      "start": 85827086,
+      "end": 85831182
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_road04.dff",
+      "start": 85831182,
+      "end": 85835278
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_road05.dff",
+      "start": 85835278,
+      "end": 85839374
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_road07.dff",
+      "start": 85839374,
+      "end": 85841422
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_road08.dff",
+      "start": 85841422,
+      "end": 85843470
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_road09.dff",
+      "start": 85843470,
+      "end": 85845518
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_road10.dff",
+      "start": 85845518,
+      "end": 85849614
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_road11.dff",
+      "start": 85849614,
+      "end": 85853710
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_road12_gf.dff",
+      "start": 85853710,
+      "end": 85855758
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_roadswsh01.dff",
+      "start": 85855758,
+      "end": 85861902
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_roadswsh04.dff",
+      "start": 85861902,
+      "end": 85863950
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_roadswsh05.dff",
+      "start": 85863950,
+      "end": 85868046
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_roadswsh28.dff",
+      "start": 85868046,
+      "end": 85870094
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_rooftopstart.dff",
+      "start": 85870094,
+      "end": 85876238
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_shedbig30.dff",
+      "start": 85876238,
+      "end": 85882382
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_shop.dff",
+      "start": 85882382,
+      "end": 85892622
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_starbig.txd",
+      "start": 85892622,
+      "end": 85921294
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_starlite_dy.dff",
+      "start": 85921294,
+      "end": 85923342
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_starlite_nt.dff",
+      "start": 85923342,
+      "end": 85925390
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_starsmall.txd",
+      "start": 85925390,
+      "end": 85988878
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_tides2_nt.dff",
+      "start": 85988878,
+      "end": 85995022
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_tides_dy.dff",
+      "start": 85995022,
+      "end": 86005262
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_tides_nt.dff",
+      "start": 86005262,
+      "end": 86015502
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lod_wtrftr_1a.dff",
+      "start": 86015502,
+      "end": 86017550
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodach_police.dff",
+      "start": 86017550,
+      "end": 86025742
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodachb.dff",
+      "start": 86025742,
+      "end": 86029838
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodachb1.dff",
+      "start": 86029838,
+      "end": 86033934
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodachbit02.dff",
+      "start": 86033934,
+      "end": 86038030
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodachbit03.dff",
+      "start": 86038030,
+      "end": 86046222
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodachbit04.dff",
+      "start": 86046222,
+      "end": 86060558
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodachbit04b.dff",
+      "start": 86060558,
+      "end": 86076942
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodachbit05.dff",
+      "start": 86076942,
+      "end": 86081038
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodachbit06.dff",
+      "start": 86081038,
+      "end": 86085134
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodachroads01.dff",
+      "start": 86085134,
+      "end": 86089230
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodachroads02.dff",
+      "start": 86089230,
+      "end": 86091278
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodachroads03.dff",
+      "start": 86091278,
+      "end": 86093326
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodachroads09.dff",
+      "start": 86093326,
+      "end": 86097422
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodachsand1.dff",
+      "start": 86097422,
+      "end": 86099470
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodachsand2.dff",
+      "start": 86099470,
+      "end": 86101518
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodachsand2b.dff",
+      "start": 86101518,
+      "end": 86103566
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodachwjetty01.dff",
+      "start": 86103566,
+      "end": 86113806
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodachwjetty02.dff",
+      "start": 86113806,
+      "end": 86119950
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodacne.dff",
+      "start": 86119950,
+      "end": 86126094
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodairpn.txd",
+      "start": 86126094,
+      "end": 86156814
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodallbit.dff",
+      "start": 86156814,
+      "end": 86158862
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodalleys1_01_nt.dff",
+      "start": 86158862,
+      "end": 86162958
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodalleys1b_01_dy.dff",
+      "start": 86162958,
+      "end": 86167054
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodalleys2_01_dy.dff",
+      "start": 86167054,
+      "end": 86171150
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodalleys2_01_nt.dff",
+      "start": 86171150,
+      "end": 86173198
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodalleys3_01_nt.dff",
+      "start": 86173198,
+      "end": 86175246
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodalleys3b_01_dy.dff",
+      "start": 86175246,
+      "end": 86177294
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodalleys3b_01_nt.dff",
+      "start": 86177294,
+      "end": 86179342
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodallroof01.dff",
+      "start": 86179342,
+      "end": 86183438
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodanahouse01.dff",
+      "start": 86183438,
+      "end": 86187534
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodanahouse02.dff",
+      "start": 86187534,
+      "end": 86191630
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodanahouse03.dff",
+      "start": 86191630,
+      "end": 86195726
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodanahouse04.dff",
+      "start": 86195726,
+      "end": 86199822
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodanahouse06.dff",
+      "start": 86199822,
+      "end": 86203918
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodanahouse07.dff",
+      "start": 86203918,
+      "end": 86208014
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodanahouse09.dff",
+      "start": 86208014,
+      "end": 86212110
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodanahouse10.dff",
+      "start": 86212110,
+      "end": 86218254
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodanahouse11.dff",
+      "start": 86218254,
+      "end": 86222350
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodanahouse12.dff",
+      "start": 86222350,
+      "end": 86242830
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodanrd1_nt.dff",
+      "start": 86242830,
+      "end": 86246926
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodanrda03_nt.dff",
+      "start": 86246926,
+      "end": 86251022
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodanrda04_nt.dff",
+      "start": 86251022,
+      "end": 86253070
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodanrda05_dy.dff",
+      "start": 86253070,
+      "end": 86255118
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodanrda05_nt.dff",
+      "start": 86255118,
+      "end": 86257166
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodanrda06_nt.dff",
+      "start": 86257166,
+      "end": 86259214
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodanroad04.dff",
+      "start": 86259214,
+      "end": 86265358
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodanroad05.dff",
+      "start": 86265358,
+      "end": 86269454
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodanrod2b_nt.dff",
+      "start": 86269454,
+      "end": 86273550
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodargohull2.dff",
+      "start": 86273550,
+      "end": 86285838
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodasket.dff",
+      "start": 86285838,
+      "end": 86287886
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodavehotel.dff",
+      "start": 86287886,
+      "end": 86308366
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodawasteb2.dff",
+      "start": 86308366,
+      "end": 86312462
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodawyersfront.dff",
+      "start": 86312462,
+      "end": 86314510
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbackbit.dff",
+      "start": 86314510,
+      "end": 86318606
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbighotel_nt.dff",
+      "start": 86318606,
+      "end": 86345230
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbighotpool.dff",
+      "start": 86345230,
+      "end": 86351374
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbigshops1.dff",
+      "start": 86351374,
+      "end": 86363662
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbigshops2.dff",
+      "start": 86363662,
+      "end": 86375950
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbillboards1.dff",
+      "start": 86375950,
+      "end": 86377998
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbillboards2.dff",
+      "start": 86377998,
+      "end": 86380046
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbillboards3.dff",
+      "start": 86380046,
+      "end": 86382094
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbillboards4.dff",
+      "start": 86382094,
+      "end": 86384142
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbillboards5.dff",
+      "start": 86384142,
+      "end": 86386190
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbit02.dff",
+      "start": 86386190,
+      "end": 86390286
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbit03.dff",
+      "start": 86390286,
+      "end": 86402574
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodboxgirdbridge.dff",
+      "start": 86402574,
+      "end": 86404622
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbphq.dff",
+      "start": 86404622,
+      "end": 86412814
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbridge.txd",
+      "start": 86412814,
+      "end": 86418958
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbridgesupp01.dff",
+      "start": 86418958,
+      "end": 86429198
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbridgesupp03.dff",
+      "start": 86429198,
+      "end": 86437390
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbridgesupp04.dff",
+      "start": 86437390,
+      "end": 86445582
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuil19wall.dff",
+      "start": 86445582,
+      "end": 86449678
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuild.dff",
+      "start": 86449678,
+      "end": 86455822
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuild01.dff",
+      "start": 86455822,
+      "end": 86472206
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuilding01.dff",
+      "start": 86472206,
+      "end": 86484494
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildingg1.dff",
+      "start": 86484494,
+      "end": 86494734
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildingg2.dff",
+      "start": 86494734,
+      "end": 86502926
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildingg3.dff",
+      "start": 86502926,
+      "end": 86511118
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildingw1.dff",
+      "start": 86511118,
+      "end": 86519310
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildkb23_nt.dff",
+      "start": 86519310,
+      "end": 86521358
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildkb27_nt.dff",
+      "start": 86521358,
+      "end": 86523406
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildkb2_dy.dff",
+      "start": 86523406,
+      "end": 86525454
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildkb2_nt.dff",
+      "start": 86525454,
+      "end": 86527502
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildws02.dff",
+      "start": 86527502,
+      "end": 86531598
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildws03.dff",
+      "start": 86531598,
+      "end": 86541838
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildws04.dff",
+      "start": 86541838,
+      "end": 86556174
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildws05.dff",
+      "start": 86556174,
+      "end": 86560270
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildws06.dff",
+      "start": 86560270,
+      "end": 86572558
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildws07.dff",
+      "start": 86572558,
+      "end": 86578702
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildws07.txd",
+      "start": 86578702,
+      "end": 86660622
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildws09.dff",
+      "start": 86660622,
+      "end": 86672910
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildws10.dff",
+      "start": 86672910,
+      "end": 86677006
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildws12.dff",
+      "start": 86677006,
+      "end": 86681102
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildws13.dff",
+      "start": 86681102,
+      "end": 86693390
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildws14.dff",
+      "start": 86693390,
+      "end": 86707726
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildws16.dff",
+      "start": 86707726,
+      "end": 86726158
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildws17.dff",
+      "start": 86726158,
+      "end": 86742542
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildws18.dff",
+      "start": 86742542,
+      "end": 86756878
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildws19.dff",
+      "start": 86756878,
+      "end": 86767118
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildws20.dff",
+      "start": 86767118,
+      "end": 86773262
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildws21.dff",
+      "start": 86773262,
+      "end": 86779406
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildws22.dff",
+      "start": 86779406,
+      "end": 86783502
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildws23.dff",
+      "start": 86783502,
+      "end": 86789646
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildws2329.dff",
+      "start": 86789646,
+      "end": 86793742
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildws24.dff",
+      "start": 86793742,
+      "end": 86799886
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildws25.dff",
+      "start": 86799886,
+      "end": 86810126
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildws26.dff",
+      "start": 86810126,
+      "end": 86818318
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildws264.dff",
+      "start": 86818318,
+      "end": 86820366
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildws27.dff",
+      "start": 86820366,
+      "end": 86824462
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildws28.dff",
+      "start": 86824462,
+      "end": 86828558
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildws29.dff",
+      "start": 86828558,
+      "end": 86830606
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildws30.dff",
+      "start": 86830606,
+      "end": 86834702
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildws31.dff",
+      "start": 86834702,
+      "end": 86840846
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildws312.dff",
+      "start": 86840846,
+      "end": 86844942
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildws32.dff",
+      "start": 86844942,
+      "end": 86851086
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildws322.dff",
+      "start": 86851086,
+      "end": 86855182
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildws33.dff",
+      "start": 86855182,
+      "end": 86859278
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildws332.dff",
+      "start": 86859278,
+      "end": 86863374
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildws35.dff",
+      "start": 86863374,
+      "end": 86867470
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildws36.dff",
+      "start": 86867470,
+      "end": 86875662
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildws40.dff",
+      "start": 86875662,
+      "end": 86879758
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildws41.dff",
+      "start": 86879758,
+      "end": 86885902
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildws42.dff",
+      "start": 86885902,
+      "end": 86889998
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildws43.dff",
+      "start": 86889998,
+      "end": 86898190
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildws43ins.dff",
+      "start": 86898190,
+      "end": 86904334
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildws44.dff",
+      "start": 86904334,
+      "end": 86908430
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodbuildws45.dff",
+      "start": 86908430,
+      "end": 86912526
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodcargoshp03.dff",
+      "start": 86912526,
+      "end": 86914574
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodcargoshp04.dff",
+      "start": 86914574,
+      "end": 86916622
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodcargoshp05.dff",
+      "start": 86916622,
+      "end": 86928910
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodcargoshp24.dff",
+      "start": 86928910,
+      "end": 86930958
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodcargoshp25.dff",
+      "start": 86930958,
+      "end": 86933006
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodcargoshp28.dff",
+      "start": 86933006,
+      "end": 86941198
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodcargoshp32.dff",
+      "start": 86941198,
+      "end": 86947342
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodcargoshp35.dff",
+      "start": 86947342,
+      "end": 86951438
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodcargoshp40.dff",
+      "start": 86951438,
+      "end": 86955534
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodcargoshp41.dff",
+      "start": 86955534,
+      "end": 86961678
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodcargoshp47.dff",
+      "start": 86961678,
+      "end": 86965774
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodcargoshp50.dff",
+      "start": 86965774,
+      "end": 86969870
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodcargoshp51.dff",
+      "start": 86969870,
+      "end": 86973966
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodcargoshp64.dff",
+      "start": 86973966,
+      "end": 86990350
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodcargoshp70.dff",
+      "start": 86990350,
+      "end": 86998542
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodcargoshp71.dff",
+      "start": 86998542,
+      "end": 87006734
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodcargoshp72.dff",
+      "start": 87006734,
+      "end": 87012878
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodcargoshp73.dff",
+      "start": 87012878,
+      "end": 87019022
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodcarparkterm1.dff",
+      "start": 87019022,
+      "end": 87021070
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodcasagrande_nt.dff",
+      "start": 87021070,
+      "end": 87027214
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodcbtwbrdge.dff",
+      "start": 87027214,
+      "end": 87031310
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodchariot.dff",
+      "start": 87031310,
+      "end": 87057934
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodchbt.dff",
+      "start": 87057934,
+      "end": 87064078
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodchbtb.dff",
+      "start": 87064078,
+      "end": 87066126
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodchbtb2.dff",
+      "start": 87066126,
+      "end": 87070222
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodchlo1.dff",
+      "start": 87070222,
+      "end": 87072270
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodcland01.dff",
+      "start": 87072270,
+      "end": 87078414
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodcland03.dff",
+      "start": 87078414,
+      "end": 87082510
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodcland09.dff",
+      "start": 87082510,
+      "end": 87088654
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodcland10.dff",
+      "start": 87088654,
+      "end": 87092750
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodcland11.dff",
+      "start": 87092750,
+      "end": 87094798
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodcland12.dff",
+      "start": 87094798,
+      "end": 87107086
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodcland13_gf.dff",
+      "start": 87107086,
+      "end": 87113230
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodclevelander_nt.dff",
+      "start": 87113230,
+      "end": 87121422
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodclubback.dff",
+      "start": 87121422,
+      "end": 87123470
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodclubhouse1.dff",
+      "start": 87123470,
+      "end": 87129614
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodclubout_nt.dff",
+      "start": 87129614,
+      "end": 87143950
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodcoast.dff",
+      "start": 87143950,
+      "end": 87148046
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodcoast04.dff",
+      "start": 87148046,
+      "end": 87154190
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodcoast06.dff",
+      "start": 87154190,
+      "end": 87160334
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodcoast08.dff",
+      "start": 87160334,
+      "end": 87164430
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodcoast1.dff",
+      "start": 87164430,
+      "end": 87168526
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodcoast2.dff",
+      "start": 87168526,
+      "end": 87172622
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodcoast3.dff",
+      "start": 87172622,
+      "end": 87176718
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodcoast4.dff",
+      "start": 87176718,
+      "end": 87180814
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodcoast5.dff",
+      "start": 87180814,
+      "end": 87182862
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodcoasta2.dff",
+      "start": 87182862,
+      "end": 87184910
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodcoastfirst.dff",
+      "start": 87184910,
+      "end": 87189006
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodcolony2_dy.dff",
+      "start": 87189006,
+      "end": 87193102
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodcolony2_nt.dff",
+      "start": 87193102,
+      "end": 87197198
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodcolony_nt.dff",
+      "start": 87197198,
+      "end": 87203342
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodconcwall1.dff",
+      "start": 87203342,
+      "end": 87205390
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodcpaynspray.dff",
+      "start": 87205390,
+      "end": 87211534
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodcrushbn.dff",
+      "start": 87211534,
+      "end": 87217678
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodcrushefuck.dff",
+      "start": 87217678,
+      "end": 87234062
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodcrushers08.dff",
+      "start": 87234062,
+      "end": 87250446
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodcrushers10.dff",
+      "start": 87250446,
+      "end": 87264782
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodcrushers12.dff",
+      "start": 87264782,
+      "end": 87272974
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodcrushers14.dff",
+      "start": 87272974,
+      "end": 87283214
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodcrushju.dff",
+      "start": 87283214,
+      "end": 87295502
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodcrushmnf.dff",
+      "start": 87295502,
+      "end": 87301646
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodd_build2.dff",
+      "start": 87301646,
+      "end": 87315982
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodd_buildnew.dff",
+      "start": 87315982,
+      "end": 87320078
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodd_downtown05.dff",
+      "start": 87320078,
+      "end": 87322126
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodd_downtown06.dff",
+      "start": 87322126,
+      "end": 87324174
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodd_downtown08.dff",
+      "start": 87324174,
+      "end": 87326222
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodd_downtown09.dff",
+      "start": 87326222,
+      "end": 87328270
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodd_downtown10.dff",
+      "start": 87328270,
+      "end": 87330318
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodd_downtown_new1.dff",
+      "start": 87330318,
+      "end": 87332366
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/loddbridge.dff",
+      "start": 87332366,
+      "end": 87338510
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/loddingsite1.dff",
+      "start": 87338510,
+      "end": 87361038
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/loddockbridge.dff",
+      "start": 87361038,
+      "end": 87365134
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/loddockroads01.dff",
+      "start": 87365134,
+      "end": 87367182
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/loddockroads02.dff",
+      "start": 87367182,
+      "end": 87371278
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/loddockroads03.dff",
+      "start": 87371278,
+      "end": 87375374
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/loddockroads04.dff",
+      "start": 87375374,
+      "end": 87377422
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/loddockroads05.dff",
+      "start": 87377422,
+      "end": 87379470
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/loddockroads06.dff",
+      "start": 87379470,
+      "end": 87383566
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/loddockroads08.dff",
+      "start": 87383566,
+      "end": 87387662
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/loddockwall1.dff",
+      "start": 87387662,
+      "end": 87389710
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/loder2.dff",
+      "start": 87389710,
+      "end": 87393806
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodfiretrucks.dff",
+      "start": 87393806,
+      "end": 87399950
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodflargetank1.dff",
+      "start": 87399950,
+      "end": 87406094
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodflyingschool1.dff",
+      "start": 87406094,
+      "end": 87410190
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodfreightterminal1.dff",
+      "start": 87410190,
+      "end": 87418382
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodfroad1.dff",
+      "start": 87418382,
+      "end": 87420430
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodfroad2.dff",
+      "start": 87420430,
+      "end": 87424526
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodfroad3.dff",
+      "start": 87424526,
+      "end": 87426574
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodfroad4.dff",
+      "start": 87426574,
+      "end": 87428622
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodfroad5.dff",
+      "start": 87428622,
+      "end": 87432718
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodfsthus.dff",
+      "start": 87432718,
+      "end": 87445006
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodgarage02.dff",
+      "start": 87445006,
+      "end": 87447054
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodgarage03.dff",
+      "start": 87447054,
+      "end": 87451150
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodgarage1.dff",
+      "start": 87451150,
+      "end": 87453198
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodgarden1.dff",
+      "start": 87453198,
+      "end": 87459342
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodgate03.dff",
+      "start": 87459342,
+      "end": 87465486
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodgate1.dff",
+      "start": 87465486,
+      "end": 87467534
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodgate2.dff",
+      "start": 87467534,
+      "end": 87469582
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodgatesa.dff",
+      "start": 87469582,
+      "end": 87481870
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodgatesb.dff",
+      "start": 87481870,
+      "end": 87494158
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodgolfwall.dff",
+      "start": 87494158,
+      "end": 87504398
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodgrnda1.dff",
+      "start": 87504398,
+      "end": 87506446
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodground1.dff",
+      "start": 87506446,
+      "end": 87510542
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodground2.dff",
+      "start": 87510542,
+      "end": 87518734
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodground3.dff",
+      "start": 87518734,
+      "end": 87522830
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodground4.dff",
+      "start": 87522830,
+      "end": 87526926
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodground5.dff",
+      "start": 87526926,
+      "end": 87531022
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodgroundplane.dff",
+      "start": 87531022,
+      "end": 87535118
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodgstoreext.dff",
+      "start": 87535118,
+      "end": 87539214
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodh_ammu.dff",
+      "start": 87539214,
+      "end": 87541262
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodh_brdgsup1.dff",
+      "start": 87541262,
+      "end": 87549454
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodh_deco01.dff",
+      "start": 87549454,
+      "end": 87569934
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodh_deco02.dff",
+      "start": 87569934,
+      "end": 87586318
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodh_deco03.dff",
+      "start": 87586318,
+      "end": 87604750
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodh_deco04.dff",
+      "start": 87604750,
+      "end": 87617038
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodh_deco05.dff",
+      "start": 87617038,
+      "end": 87623182
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodh_hardwares.dff",
+      "start": 87623182,
+      "end": 87625230
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodh_hosp02.dff",
+      "start": 87625230,
+      "end": 87631374
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodh_hosp03.dff",
+      "start": 87631374,
+      "end": 87637518
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodh_hospgrnd.dff",
+      "start": 87637518,
+      "end": 87643662
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodh_hospital.dff",
+      "start": 87643662,
+      "end": 87653902
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodh_pizzaplace.dff",
+      "start": 87653902,
+      "end": 87655950
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhafinrd.dff",
+      "start": 87655950,
+      "end": 87660046
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhahousebk2.dff",
+      "start": 87660046,
+      "end": 87666190
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhaiblockc1.dff",
+      "start": 87666190,
+      "end": 87678478
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhaiblockc2.dff",
+      "start": 87678478,
+      "end": 87690766
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhaiblockc3.dff",
+      "start": 87690766,
+      "end": 87703054
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhaiti.txd",
+      "start": 87703054,
+      "end": 87784974
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhaitibig.txd",
+      "start": 87784974,
+      "end": 87834126
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhaitin.txd",
+      "start": 87834126,
+      "end": 87856654
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhaitinbig.txd",
+      "start": 87856654,
+      "end": 87985678
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhangar1.dff",
+      "start": 87985678,
+      "end": 87989774
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhangar1_01.dff",
+      "start": 87989774,
+      "end": 87993870
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhangar1_04.dff",
+      "start": 87993870,
+      "end": 87997966
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodharoada2.dff",
+      "start": 87997966,
+      "end": 88002062
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodharoada3.dff",
+      "start": 88002062,
+      "end": 88008206
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodharoada4.dff",
+      "start": 88008206,
+      "end": 88010254
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodharoada6.dff",
+      "start": 88010254,
+      "end": 88014350
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodharoada8.dff",
+      "start": 88014350,
+      "end": 88018446
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodharoada9.dff",
+      "start": 88018446,
+      "end": 88022542
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhavabit01.dff",
+      "start": 88022542,
+      "end": 88028686
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhavabit04.dff",
+      "start": 88028686,
+      "end": 88030734
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhavabit05.dff",
+      "start": 88030734,
+      "end": 88034830
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhavabit06.dff",
+      "start": 88034830,
+      "end": 88038926
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhavabit07.dff",
+      "start": 88038926,
+      "end": 88043022
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhavabit08.dff",
+      "start": 88043022,
+      "end": 88047118
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhavabit09.dff",
+      "start": 88047118,
+      "end": 88051214
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhavabit10.dff",
+      "start": 88051214,
+      "end": 88055310
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhavabit11.dff",
+      "start": 88055310,
+      "end": 88059406
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhavabit12.dff",
+      "start": 88059406,
+      "end": 88063502
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhavana.txd",
+      "start": 88063502,
+      "end": 88149518
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhavanabrg.txd",
+      "start": 88149518,
+      "end": 88153614
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhavbig.txd",
+      "start": 88153614,
+      "end": 88180238
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhavroad3.dff",
+      "start": 88180238,
+      "end": 88184334
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhawaste1.dff",
+      "start": 88184334,
+      "end": 88188430
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhawaste2.dff",
+      "start": 88188430,
+      "end": 88190478
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhbit04bgrd1.dff",
+      "start": 88190478,
+      "end": 88194574
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhbit04grd2.dff",
+      "start": 88194574,
+      "end": 88196622
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhbtjetty01.dff",
+      "start": 88196622,
+      "end": 88206862
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhbtjetty02.dff",
+      "start": 88206862,
+      "end": 88217102
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhbuild003.dff",
+      "start": 88217102,
+      "end": 88219150
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhbuild005.dff",
+      "start": 88219150,
+      "end": 88225294
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhbuild013.dff",
+      "start": 88225294,
+      "end": 88229390
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhbuild014.dff",
+      "start": 88229390,
+      "end": 88233486
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhbuild015.dff",
+      "start": 88233486,
+      "end": 88237582
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhbuild017.dff",
+      "start": 88237582,
+      "end": 88245774
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhbuild018.dff",
+      "start": 88245774,
+      "end": 88251918
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhbuild020.dff",
+      "start": 88251918,
+      "end": 88256014
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhbuild021.dff",
+      "start": 88256014,
+      "end": 88258062
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhbuild025.dff",
+      "start": 88258062,
+      "end": 88264206
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhbuild033.dff",
+      "start": 88264206,
+      "end": 88272398
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhbuild040.dff",
+      "start": 88272398,
+      "end": 88278542
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhbuild043.dff",
+      "start": 88278542,
+      "end": 88303118
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhbuild050.dff",
+      "start": 88303118,
+      "end": 88311310
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhbuild058.dff",
+      "start": 88311310,
+      "end": 88321550
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhbuild062.dff",
+      "start": 88321550,
+      "end": 88327694
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhbuild063.dff",
+      "start": 88327694,
+      "end": 88337934
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhbuild066.dff",
+      "start": 88337934,
+      "end": 88348174
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhbuild068.dff",
+      "start": 88348174,
+      "end": 88354318
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhbuild069.dff",
+      "start": 88354318,
+      "end": 88360462
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhbuild071.dff",
+      "start": 88360462,
+      "end": 88362510
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhbuild072.dff",
+      "start": 88362510,
+      "end": 88364558
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhbuild073.dff",
+      "start": 88364558,
+      "end": 88366606
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhbuild074.dff",
+      "start": 88366606,
+      "end": 88368654
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhbuild075.dff",
+      "start": 88368654,
+      "end": 88370702
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhbuild081.dff",
+      "start": 88370702,
+      "end": 88372750
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhbuild0812.dff",
+      "start": 88372750,
+      "end": 88376846
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhbuild111.dff",
+      "start": 88376846,
+      "end": 88378894
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhbuild112.dff",
+      "start": 88378894,
+      "end": 88387086
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhbuild114.dff",
+      "start": 88387086,
+      "end": 88389134
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhbuild116.dff",
+      "start": 88389134,
+      "end": 88391182
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhbuild119.dff",
+      "start": 88391182,
+      "end": 88393230
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhbuild120.dff",
+      "start": 88393230,
+      "end": 88395278
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhbuild121.dff",
+      "start": 88395278,
+      "end": 88397326
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhbuild184.dff",
+      "start": 88397326,
+      "end": 88407566
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhbuild187.dff",
+      "start": 88407566,
+      "end": 88415758
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhbuild192.dff",
+      "start": 88415758,
+      "end": 88417806
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhbuild195.dff",
+      "start": 88417806,
+      "end": 88419854
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhbuild198.dff",
+      "start": 88419854,
+      "end": 88428046
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhbuild203.dff",
+      "start": 88428046,
+      "end": 88432142
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhbuild213.dff",
+      "start": 88432142,
+      "end": 88434190
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhbuild214.dff",
+      "start": 88434190,
+      "end": 88436238
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhbuild215.dff",
+      "start": 88436238,
+      "end": 88438286
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhbuild216.dff",
+      "start": 88438286,
+      "end": 88440334
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhipment01.dff",
+      "start": 88440334,
+      "end": 88444430
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhipment03.dff",
+      "start": 88444430,
+      "end": 88452622
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhipment05.dff",
+      "start": 88452622,
+      "end": 88460814
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhit14.dff",
+      "start": 88460814,
+      "end": 88469006
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhitbuild1a.dff",
+      "start": 88469006,
+      "end": 88481294
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhitbuild1aa.dff",
+      "start": 88481294,
+      "end": 88487438
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhitsjm.dff",
+      "start": 88487438,
+      "end": 88499726
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhland_01.dff",
+      "start": 88499726,
+      "end": 88507918
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhnewsky1.dff",
+      "start": 88507918,
+      "end": 88518158
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhnewsky2.dff",
+      "start": 88518158,
+      "end": 88526350
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhnewsky3.dff",
+      "start": 88526350,
+      "end": 88536590
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhookerinn1.dff",
+      "start": 88536590,
+      "end": 88542734
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhoose.dff",
+      "start": 88542734,
+      "end": 88557070
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhotel.dff",
+      "start": 88557070,
+      "end": 88561166
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhotel10.dff",
+      "start": 88561166,
+      "end": 88581646
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhotel_windows.dff",
+      "start": 88581646,
+      "end": 88593934
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhotelgrnd.dff",
+      "start": 88593934,
+      "end": 88600078
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhpaynspray.dff",
+      "start": 88600078,
+      "end": 88606222
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhpshoutdet.dff",
+      "start": 88606222,
+      "end": 88616462
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhsebuild1.dff",
+      "start": 88616462,
+      "end": 88622606
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhtooceanrd1.dff",
+      "start": 88622606,
+      "end": 88626702
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhundermall1.dff",
+      "start": 88626702,
+      "end": 88632846
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodhwbridge.dff",
+      "start": 88632846,
+      "end": 88645134
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodi_exterior_front.dff",
+      "start": 88645134,
+      "end": 88647182
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodiamiland049.dff",
+      "start": 88647182,
+      "end": 88651278
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodiamiland050.dff",
+      "start": 88651278,
+      "end": 88655374
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodiamiland057.dff",
+      "start": 88655374,
+      "end": 88659470
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodicecream01.dff",
+      "start": 88659470,
+      "end": 88667662
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodighsandgrs1.dff",
+      "start": 88667662,
+      "end": 88671758
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodigste1mesh.dff",
+      "start": 88671758,
+      "end": 88673806
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodina1.dff",
+      "start": 88673806,
+      "end": 88679950
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodina2.dff",
+      "start": 88679950,
+      "end": 88686094
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodina3.dff",
+      "start": 88686094,
+      "end": 88688142
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodinhaiti.dff",
+      "start": 88688142,
+      "end": 88694286
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodipad0.dff",
+      "start": 88694286,
+      "end": 88698382
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodita1.dff",
+      "start": 88698382,
+      "end": 88702478
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/loditcut.dff",
+      "start": 88702478,
+      "end": 88712718
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/loditnewbt.dff",
+      "start": 88712718,
+      "end": 88731150
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/loditsnip.dff",
+      "start": 88731150,
+      "end": 88737294
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/loditwarhus.dff",
+      "start": 88737294,
+      "end": 88745486
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodjumbo_01.dff",
+      "start": 88745486,
+      "end": 88753678
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodk_camjones.dff",
+      "start": 88753678,
+      "end": 88759822
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodk_grassarea.dff",
+      "start": 88759822,
+      "end": 88765966
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodkcranescale0.dff",
+      "start": 88765966,
+      "end": 88782350
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodkcranescale01.dff",
+      "start": 88782350,
+      "end": 88798734
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodkfuel02.dff",
+      "start": 88798734,
+      "end": 88811022
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodkhus.dff",
+      "start": 88811022,
+      "end": 88823310
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodks10.dff",
+      "start": 88823310,
+      "end": 88841742
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodks21.dff",
+      "start": 88841742,
+      "end": 88862222
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodks28.dff",
+      "start": 88862222,
+      "end": 88868366
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodks29.dff",
+      "start": 88868366,
+      "end": 88870414
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodks30.dff",
+      "start": 88870414,
+      "end": 88888846
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodks31.dff",
+      "start": 88888846,
+      "end": 88890894
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodks32.dff",
+      "start": 88890894,
+      "end": 88892942
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodks37.dff",
+      "start": 88892942,
+      "end": 88901134
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodks40.dff",
+      "start": 88901134,
+      "end": 88905230
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodks42.dff",
+      "start": 88905230,
+      "end": 88913422
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodks43.dff",
+      "start": 88913422,
+      "end": 88921614
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodks46.dff",
+      "start": 88921614,
+      "end": 88940046
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodks47.dff",
+      "start": 88940046,
+      "end": 88948238
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodks48.dff",
+      "start": 88948238,
+      "end": 88956430
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodks49.dff",
+      "start": 88956430,
+      "end": 88964622
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodks50.dff",
+      "start": 88964622,
+      "end": 88970766
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodks51.dff",
+      "start": 88970766,
+      "end": 88978958
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodks52.dff",
+      "start": 88978958,
+      "end": 88985102
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodks53.dff",
+      "start": 88985102,
+      "end": 88993294
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodks60.dff",
+      "start": 88993294,
+      "end": 88997390
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodks61.dff",
+      "start": 88997390,
+      "end": 89003534
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodks62.dff",
+      "start": 89003534,
+      "end": 89007630
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodks85.dff",
+      "start": 89007630,
+      "end": 89011726
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodks92.dff",
+      "start": 89011726,
+      "end": 89015822
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodks93.dff",
+      "start": 89015822,
+      "end": 89019918
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodks95.dff",
+      "start": 89019918,
+      "end": 89026062
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodks96.dff",
+      "start": 89026062,
+      "end": 89030158
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodksprops04.dff",
+      "start": 89030158,
+      "end": 89034254
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodksprops10.dff",
+      "start": 89034254,
+      "end": 89040398
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodksprops11.dff",
+      "start": 89040398,
+      "end": 89046542
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodksprops14.dff",
+      "start": 89046542,
+      "end": 89050638
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodksprops15.dff",
+      "start": 89050638,
+      "end": 89052686
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodksware01.dff",
+      "start": 89052686,
+      "end": 89062926
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodl2.dff",
+      "start": 89062926,
+      "end": 89067022
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodlargebuild.dff",
+      "start": 89067022,
+      "end": 89073166
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodld1.dff",
+      "start": 89073166,
+      "end": 89081358
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodldingground40.dff",
+      "start": 89081358,
+      "end": 89087502
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodldingground50.dff",
+      "start": 89087502,
+      "end": 89093646
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodldingsite2.dff",
+      "start": 89093646,
+      "end": 89101838
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodlhaitibuilding02.dff",
+      "start": 89101838,
+      "end": 89112078
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodlhaitibuilding06.dff",
+      "start": 89112078,
+      "end": 89124366
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodlhaitibuilding07.dff",
+      "start": 89124366,
+      "end": 89126414
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodlhaitibuilding09.dff",
+      "start": 89126414,
+      "end": 89140750
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodlhland.dff",
+      "start": 89140750,
+      "end": 89150990
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodlightext.dff",
+      "start": 89150990,
+      "end": 89161230
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodlleygb_nt.dff",
+      "start": 89161230,
+      "end": 89163278
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodlleyground.dff",
+      "start": 89163278,
+      "end": 89165326
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodlleyground2.dff",
+      "start": 89165326,
+      "end": 89167374
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodlleyground4.dff",
+      "start": 89167374,
+      "end": 89169422
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodlleyground5.dff",
+      "start": 89169422,
+      "end": 89171470
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodmain_body.dff",
+      "start": 89171470,
+      "end": 89189902
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodmainisl2b_01.dff",
+      "start": 89189902,
+      "end": 89193998
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodmainisl4_01.dff",
+      "start": 89193998,
+      "end": 89204238
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodmainisl5_01.dff",
+      "start": 89204238,
+      "end": 89216526
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodmainisland1a_01.dff",
+      "start": 89216526,
+      "end": 89222670
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodmainisland1b_01.dff",
+      "start": 89222670,
+      "end": 89230862
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodmainisland2a_01.dff",
+      "start": 89230862,
+      "end": 89237006
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodmainisland3a_01.dff",
+      "start": 89237006,
+      "end": 89249294
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodmainisland3b_01.dff",
+      "start": 89249294,
+      "end": 89257486
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodmainisland6a_01.dff",
+      "start": 89257486,
+      "end": 89265678
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodmainisland6b_01.dff",
+      "start": 89265678,
+      "end": 89269774
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodmajestic2c_dy.dff",
+      "start": 89269774,
+      "end": 89275918
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodmajestic2c_nt.dff",
+      "start": 89275918,
+      "end": 89284110
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodmalsign4.dff",
+      "start": 89284110,
+      "end": 89286158
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodmalsign5.dff",
+      "start": 89286158,
+      "end": 89288206
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodmiamilanda.dff",
+      "start": 89288206,
+      "end": 89294350
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodmiland027a.dff",
+      "start": 89294350,
+      "end": 89306638
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodmiland037.dff",
+      "start": 89306638,
+      "end": 89312782
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodmiland039.dff",
+      "start": 89312782,
+      "end": 89314830
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodmiland041.dff",
+      "start": 89314830,
+      "end": 89318926
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodmiland170.dff",
+      "start": 89318926,
+      "end": 89323022
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodmiland171.dff",
+      "start": 89323022,
+      "end": 89335310
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodmiland172.dff",
+      "start": 89335310,
+      "end": 89343502
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodmiland173.dff",
+      "start": 89343502,
+      "end": 89353742
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodmiland174.dff",
+      "start": 89353742,
+      "end": 89361934
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodmiland175.dff",
+      "start": 89361934,
+      "end": 89368078
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodmiland176.dff",
+      "start": 89368078,
+      "end": 89370126
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodmiland177.dff",
+      "start": 89370126,
+      "end": 89372174
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodmiland178.dff",
+      "start": 89372174,
+      "end": 89374222
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodmiland179.dff",
+      "start": 89374222,
+      "end": 89384462
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodmiland180.dff",
+      "start": 89384462,
+      "end": 89392654
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodmiland_kb01_nt.dff",
+      "start": 89392654,
+      "end": 89398798
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodmiland_kb02.dff",
+      "start": 89398798,
+      "end": 89402894
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodmiland_kb03.dff",
+      "start": 89402894,
+      "end": 89406990
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodmiland_kb04.dff",
+      "start": 89406990,
+      "end": 89411086
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodmiland_kb10.dff",
+      "start": 89411086,
+      "end": 89423374
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodmiland_kb10b.dff",
+      "start": 89423374,
+      "end": 89427470
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodmiland_kb11.dff",
+      "start": 89427470,
+      "end": 89433614
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodmiland_kb11b.dff",
+      "start": 89433614,
+      "end": 89437710
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodmiland_kb12.dff",
+      "start": 89437710,
+      "end": 89443854
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodmiland_kb12b.dff",
+      "start": 89443854,
+      "end": 89447950
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodmiland_kb13.dff",
+      "start": 89447950,
+      "end": 89456142
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodmiland_ws04.dff",
+      "start": 89456142,
+      "end": 89460238
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodmiland_ws04b.dff",
+      "start": 89460238,
+      "end": 89464334
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodmiodnroadxa.dff",
+      "start": 89464334,
+      "end": 89468430
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodmrgbase1.dff",
+      "start": 89468430,
+      "end": 89476622
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodmrgbuild1.dff",
+      "start": 89476622,
+      "end": 89484814
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodmrgbuild2.dff",
+      "start": 89484814,
+      "end": 89490958
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodmrgtrees4.dff",
+      "start": 89490958,
+      "end": 89505294
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnbbridge1.dff",
+      "start": 89505294,
+      "end": 89521678
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnbchw.txd",
+      "start": 89521678,
+      "end": 89611790
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnbeach.txd",
+      "start": 89611790,
+      "end": 89759246
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnbeach07.dff",
+      "start": 89759246,
+      "end": 89761294
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnbeach08.dff",
+      "start": 89761294,
+      "end": 89763342
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnbeachbtbig.txd",
+      "start": 89763342,
+      "end": 89832974
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnbeachwbig.txd",
+      "start": 89832974,
+      "end": 89873934
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnbwroad01.dff",
+      "start": 89873934,
+      "end": 89875982
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnbwroad02.dff",
+      "start": 89875982,
+      "end": 89880078
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnbwroad03.dff",
+      "start": 89880078,
+      "end": 89882126
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnbwroad04.dff",
+      "start": 89882126,
+      "end": 89884174
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnbwroad05.dff",
+      "start": 89884174,
+      "end": 89886222
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnbwroad06.dff",
+      "start": 89886222,
+      "end": 89888270
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnbwroad07.dff",
+      "start": 89888270,
+      "end": 89892366
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnbwroad08.dff",
+      "start": 89892366,
+      "end": 89904654
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnd04.dff",
+      "start": 89904654,
+      "end": 89906702
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnebasea0.dff",
+      "start": 89906702,
+      "end": 89910798
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnetopa0.dff",
+      "start": 89910798,
+      "end": 89914894
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnewscafe_nt.dff",
+      "start": 89914894,
+      "end": 89921038
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodngst2mesh.dff",
+      "start": 89921038,
+      "end": 89923086
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnorthbridge1.dff",
+      "start": 89923086,
+      "end": 89929230
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnorthisland1.dff",
+      "start": 89929230,
+      "end": 89935374
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnorthisland2.dff",
+      "start": 89935374,
+      "end": 89943566
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnorthisland3.dff",
+      "start": 89943566,
+      "end": 89949710
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnorthstar.dff",
+      "start": 89949710,
+      "end": 89976334
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnrthroad01.dff",
+      "start": 89976334,
+      "end": 89978382
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnrthroad02.dff",
+      "start": 89978382,
+      "end": 89980430
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnrthroad03.dff",
+      "start": 89980430,
+      "end": 89982478
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnrthroad04.dff",
+      "start": 89982478,
+      "end": 89986574
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnrthroad05.dff",
+      "start": 89986574,
+      "end": 89988622
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnrthroad06.dff",
+      "start": 89988622,
+      "end": 89990670
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnrthroad07.dff",
+      "start": 89990670,
+      "end": 89992718
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnrthroad08.dff",
+      "start": 89992718,
+      "end": 89994766
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnrthroad09.dff",
+      "start": 89994766,
+      "end": 89996814
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnrthroad10.dff",
+      "start": 89996814,
+      "end": 89998862
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnrthroad11.dff",
+      "start": 89998862,
+      "end": 90000910
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnrthroad12.dff",
+      "start": 90000910,
+      "end": 90002958
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnrthroad13.dff",
+      "start": 90002958,
+      "end": 90005006
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnrthroad14.dff",
+      "start": 90005006,
+      "end": 90007054
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnrthroad15.dff",
+      "start": 90007054,
+      "end": 90009102
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnrthroad16.dff",
+      "start": 90009102,
+      "end": 90011150
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnrthroad17.dff",
+      "start": 90011150,
+      "end": 90013198
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnrthroad18.dff",
+      "start": 90013198,
+      "end": 90015246
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnrthroad19.dff",
+      "start": 90015246,
+      "end": 90017294
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnrthroad20.dff",
+      "start": 90017294,
+      "end": 90019342
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnrthroad21.dff",
+      "start": 90019342,
+      "end": 90021390
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnrthroad22.dff",
+      "start": 90021390,
+      "end": 90023438
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnrthroad23.dff",
+      "start": 90023438,
+      "end": 90025486
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnrthroad24.dff",
+      "start": 90025486,
+      "end": 90027534
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnrthroad25.dff",
+      "start": 90027534,
+      "end": 90029582
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnrthroad26.dff",
+      "start": 90029582,
+      "end": 90031630
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnrthroad27.dff",
+      "start": 90031630,
+      "end": 90033678
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodnrthroad28.dff",
+      "start": 90033678,
+      "end": 90035726
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodntoon03.dff",
+      "start": 90035726,
+      "end": 90048014
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodntoon04.dff",
+      "start": 90048014,
+      "end": 90058254
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodntoon13.dff",
+      "start": 90058254,
+      "end": 90068494
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodntoon18.dff",
+      "start": 90068494,
+      "end": 90076686
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodntoon20.dff",
+      "start": 90076686,
+      "end": 90084878
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodntoon21.dff",
+      "start": 90084878,
+      "end": 90091022
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodntoon22.dff",
+      "start": 90091022,
+      "end": 90111502
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodntoon23.dff",
+      "start": 90111502,
+      "end": 90131982
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodntoon32.dff",
+      "start": 90131982,
+      "end": 90144270
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodntoon34.dff",
+      "start": 90144270,
+      "end": 90148366
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodntoon39.dff",
+      "start": 90148366,
+      "end": 90168846
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodntoon49.dff",
+      "start": 90168846,
+      "end": 90172942
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodntoon53.dff",
+      "start": 90172942,
+      "end": 90191374
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodntoon54.dff",
+      "start": 90191374,
+      "end": 90199566
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodntoon55.dff",
+      "start": 90199566,
+      "end": 90217998
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodntoon56.dff",
+      "start": 90217998,
+      "end": 90236430
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodntoon65.dff",
+      "start": 90236430,
+      "end": 90238478
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodntoon66.dff",
+      "start": 90238478,
+      "end": 90240526
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodntoon70.dff",
+      "start": 90240526,
+      "end": 90244622
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodntoon72.dff",
+      "start": 90244622,
+      "end": 90248718
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodntoon72b.dff",
+      "start": 90248718,
+      "end": 90250766
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodntoon73.dff",
+      "start": 90250766,
+      "end": 90252814
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodntoon73b.dff",
+      "start": 90252814,
+      "end": 90254862
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodntoon74.dff",
+      "start": 90254862,
+      "end": 90256910
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodntoon_newbit.dff",
+      "start": 90256910,
+      "end": 90265102
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodntoon_shops.dff",
+      "start": 90265102,
+      "end": 90273294
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodntoon_top02.dff",
+      "start": 90273294,
+      "end": 90281486
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodntoon_top04.dff",
+      "start": 90281486,
+      "end": 90283534
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodntoon_top05.dff",
+      "start": 90283534,
+      "end": 90285582
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodntoon_top07.dff",
+      "start": 90285582,
+      "end": 90289678
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodntoon_top08.dff",
+      "start": 90289678,
+      "end": 90306062
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodntoon_top10.dff",
+      "start": 90306062,
+      "end": 90318350
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodo_buildkb09.dff",
+      "start": 90318350,
+      "end": 90320398
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodo_buildkb25.dff",
+      "start": 90320398,
+      "end": 90324494
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodo_buildkb29_nt.dff",
+      "start": 90324494,
+      "end": 90326542
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodo_buildkb_nt.dff",
+      "start": 90326542,
+      "end": 90328590
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodo_copgrnd.dff",
+      "start": 90328590,
+      "end": 90332686
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodo_polbuild.dff",
+      "start": 90332686,
+      "end": 90347022
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodo_polgrnda10.dff",
+      "start": 90347022,
+      "end": 90359310
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodo_polgrnda12.dff",
+      "start": 90359310,
+      "end": 90373646
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodo_polgrnda13.dff",
+      "start": 90373646,
+      "end": 90379790
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodo_polgrnda14.dff",
+      "start": 90379790,
+      "end": 90387982
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodo_polgrnda16.dff",
+      "start": 90387982,
+      "end": 90396174
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodo_polgrnda17.dff",
+      "start": 90396174,
+      "end": 90404366
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodo_polgrnda7.dff",
+      "start": 90404366,
+      "end": 90416654
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodo_polgrnda8.dff",
+      "start": 90416654,
+      "end": 90422798
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodo_polgrnda9.dff",
+      "start": 90422798,
+      "end": 90437134
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodoada1.dff",
+      "start": 90437134,
+      "end": 90441230
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodoadc1.dff",
+      "start": 90441230,
+      "end": 90443278
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodoadc2.dff",
+      "start": 90443278,
+      "end": 90445326
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodoadc3.dff",
+      "start": 90445326,
+      "end": 90447374
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodoadc4.dff",
+      "start": 90447374,
+      "end": 90449422
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodoastsky1.dff",
+      "start": 90449422,
+      "end": 90453518
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodoastsky2.dff",
+      "start": 90453518,
+      "end": 90457614
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodoceanrdn1_dy.dff",
+      "start": 90457614,
+      "end": 90459662
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodoceanrdn1_nt.dff",
+      "start": 90459662,
+      "end": 90461710
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lododrive.txd",
+      "start": 90461710,
+      "end": 90572302
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lododriven.txd",
+      "start": 90572302,
+      "end": 90713614
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodoshp010.dff",
+      "start": 90713614,
+      "end": 90729998
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodotel01.dff",
+      "start": 90729998,
+      "end": 90740238
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodotel02.dff",
+      "start": 90740238,
+      "end": 90748430
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodotel03.dff",
+      "start": 90748430,
+      "end": 90770958
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodowsand1.dff",
+      "start": 90770958,
+      "end": 90773006
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodowsand2.dff",
+      "start": 90773006,
+      "end": 90775054
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodpad_grdn_2.dff",
+      "start": 90775054,
+      "end": 90787342
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodpaynspray.dff",
+      "start": 90787342,
+      "end": 90791438
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodpedbridge3.dff",
+      "start": 90791438,
+      "end": 90797582
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodpelican2_nt.dff",
+      "start": 90797582,
+      "end": 90801678
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodpelican_dy.dff",
+      "start": 90801678,
+      "end": 90805774
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodpelican_nt.dff",
+      "start": 90805774,
+      "end": 90809870
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodphils.dff",
+      "start": 90809870,
+      "end": 90832398
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodpital.dff",
+      "start": 90832398,
+      "end": 90840590
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodpizzaplace.dff",
+      "start": 90840590,
+      "end": 90844686
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodport_carpark0.dff",
+      "start": 90844686,
+      "end": 90846734
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodprintworks.dff",
+      "start": 90846734,
+      "end": 90859022
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodracecotop.dff",
+      "start": 90859022,
+      "end": 90877454
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodracecotop2.dff",
+      "start": 90877454,
+      "end": 90887694
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrbits05.dff",
+      "start": 90887694,
+      "end": 90895886
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrbits06.dff",
+      "start": 90895886,
+      "end": 90899982
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrbits13.dff",
+      "start": 90899982,
+      "end": 90904078
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrbits13b.dff",
+      "start": 90904078,
+      "end": 90906126
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrbits13c.dff",
+      "start": 90906126,
+      "end": 90908174
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrbits17.dff",
+      "start": 90908174,
+      "end": 90912270
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrbits22.dff",
+      "start": 90912270,
+      "end": 90916366
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrbits24.dff",
+      "start": 90916366,
+      "end": 90920462
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrbits45.dff",
+      "start": 90920462,
+      "end": 90924558
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrbits46.dff",
+      "start": 90924558,
+      "end": 90930702
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrbits49.dff",
+      "start": 90930702,
+      "end": 90934798
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrbits50.dff",
+      "start": 90934798,
+      "end": 90938894
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrbits51.dff",
+      "start": 90938894,
+      "end": 90942990
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrbits52.dff",
+      "start": 90942990,
+      "end": 90949134
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrbits54.dff",
+      "start": 90949134,
+      "end": 90955278
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrbits55.dff",
+      "start": 90955278,
+      "end": 90959374
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrbits56.dff",
+      "start": 90959374,
+      "end": 90965518
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrbits57.dff",
+      "start": 90965518,
+      "end": 90969614
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrbits58.dff",
+      "start": 90969614,
+      "end": 90975758
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrbits59.dff",
+      "start": 90975758,
+      "end": 90981902
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrbl02b.dff",
+      "start": 90981902,
+      "end": 90983950
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrblocks02.dff",
+      "start": 90983950,
+      "end": 90994190
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrblocks03.dff",
+      "start": 90994190,
+      "end": 91002382
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrblocks04.dff",
+      "start": 91002382,
+      "end": 91018766
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrbridge2.dff",
+      "start": 91018766,
+      "end": 91043342
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrdepot.dff",
+      "start": 91043342,
+      "end": 91051534
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrentrance02.dff",
+      "start": 91051534,
+      "end": 91057678
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrentrance1.dff",
+      "start": 91057678,
+      "end": 91063822
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrhouse.dff",
+      "start": 91063822,
+      "end": 91069966
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrisland_road1.dff",
+      "start": 91069966,
+      "end": 91074062
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrisland_road2.dff",
+      "start": 91074062,
+      "end": 91078158
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrisland_road3.dff",
+      "start": 91078158,
+      "end": 91080206
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrisland_road4.dff",
+      "start": 91080206,
+      "end": 91084302
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrisland_road6.dff",
+      "start": 91084302,
+      "end": 91086350
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrland01.dff",
+      "start": 91086350,
+      "end": 91098638
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrland02.dff",
+      "start": 91098638,
+      "end": 91106830
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrland03.dff",
+      "start": 91106830,
+      "end": 91112974
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrland04.dff",
+      "start": 91112974,
+      "end": 91117070
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrland05.dff",
+      "start": 91117070,
+      "end": 91123214
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrland06.dff",
+      "start": 91123214,
+      "end": 91133454
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrland07.dff",
+      "start": 91133454,
+      "end": 91137550
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrland08.dff",
+      "start": 91137550,
+      "end": 91143694
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrland10.dff",
+      "start": 91143694,
+      "end": 91149838
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrlandnew9.dff",
+      "start": 91149838,
+      "end": 91160078
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrnda1.dff",
+      "start": 91160078,
+      "end": 91162126
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodroad01_nt.dff",
+      "start": 91162126,
+      "end": 91166222
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodroad03od.dff",
+      "start": 91166222,
+      "end": 91168270
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodroad04od_nt.dff",
+      "start": 91168270,
+      "end": 91172366
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodroad05od.dff",
+      "start": 91172366,
+      "end": 91176462
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodroad08_nt.dff",
+      "start": 91176462,
+      "end": 91178510
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodroadab.dff",
+      "start": 91178510,
+      "end": 91180558
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodroadnew.dff",
+      "start": 91180558,
+      "end": 91184654
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodroadsect1.dff",
+      "start": 91184654,
+      "end": 91190798
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodroadsect2a.dff",
+      "start": 91190798,
+      "end": 91196942
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodroadsect2b.dff",
+      "start": 91196942,
+      "end": 91203086
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodroadsect3.dff",
+      "start": 91203086,
+      "end": 91219470
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodroadsect4.dff",
+      "start": 91219470,
+      "end": 91239950
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodroadsect5.dff",
+      "start": 91239950,
+      "end": 91250190
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodroadsigns1_02.dff",
+      "start": 91250190,
+      "end": 91254286
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodroadsigns1_03.dff",
+      "start": 91254286,
+      "end": 91258382
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodroadx.dff",
+      "start": 91258382,
+      "end": 91262478
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrtrees1.dff",
+      "start": 91262478,
+      "end": 91276814
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrtrees2.dff",
+      "start": 91276814,
+      "end": 91287054
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrtrees3.dff",
+      "start": 91287054,
+      "end": 91301390
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrtrees4.dff",
+      "start": 91301390,
+      "end": 91315726
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrtrees5.dff",
+      "start": 91315726,
+      "end": 91328014
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrwaterfrnt05.dff",
+      "start": 91328014,
+      "end": 91334158
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrwaterfrnt06.dff",
+      "start": 91334158,
+      "end": 91336206
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrwaterfrnt06b.dff",
+      "start": 91336206,
+      "end": 91340302
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrwaterfrnt07.dff",
+      "start": 91340302,
+      "end": 91342350
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrwaterfrnt07b.dff",
+      "start": 91342350,
+      "end": 91344398
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrwaterfrnt08.dff",
+      "start": 91344398,
+      "end": 91348494
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrwaterfrnt09.dff",
+      "start": 91348494,
+      "end": 91352590
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrwaterfrnt09b.dff",
+      "start": 91352590,
+      "end": 91354638
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrwaterfrnt10.dff",
+      "start": 91354638,
+      "end": 91358734
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrwaterfrnt11.dff",
+      "start": 91358734,
+      "end": 91362830
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodrwaterfrnt12.dff",
+      "start": 91362830,
+      "end": 91366926
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsbrgestart_r_dt.dff",
+      "start": 91366926,
+      "end": 91383310
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsbrgestart_r_nt.dff",
+      "start": 91383310,
+      "end": 91399694
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsbrgestartf_dt.dff",
+      "start": 91399694,
+      "end": 91411982
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsbrgestartf_nt.dff",
+      "start": 91411982,
+      "end": 91424270
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsbridge07_dt.dff",
+      "start": 91424270,
+      "end": 91432462
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsbridge07_nt.dff",
+      "start": 91432462,
+      "end": 91440654
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsbridge1_dt.dff",
+      "start": 91440654,
+      "end": 91448846
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsbridge1_nt.dff",
+      "start": 91448846,
+      "end": 91457038
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsbridge2_dt.dff",
+      "start": 91457038,
+      "end": 91469326
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsbridge2_nt.dff",
+      "start": 91469326,
+      "end": 91481614
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsbridge3_dt.dff",
+      "start": 91481614,
+      "end": 91489806
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsbridge3_nt.dff",
+      "start": 91489806,
+      "end": 91497998
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsbridge4_dt.dff",
+      "start": 91497998,
+      "end": 91508238
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsbridge4_nt.dff",
+      "start": 91508238,
+      "end": 91518478
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsbridge5_dt.dff",
+      "start": 91518478,
+      "end": 91532814
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsbridge5_nt.dff",
+      "start": 91532814,
+      "end": 91547150
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsbridge6_dt.dff",
+      "start": 91547150,
+      "end": 91555342
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsbridge6_nt.dff",
+      "start": 91555342,
+      "end": 91563534
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsbridge_dt.dff",
+      "start": 91563534,
+      "end": 91575822
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsbridge_nt.dff",
+      "start": 91575822,
+      "end": 91586062
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodscarland226.dff",
+      "start": 91586062,
+      "end": 91588110
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodse_ext.dff",
+      "start": 91588110,
+      "end": 91592206
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodse_pier.dff",
+      "start": 91592206,
+      "end": 91600398
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodse_pierfence.dff",
+      "start": 91600398,
+      "end": 91604494
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodseaplaland1.dff",
+      "start": 91604494,
+      "end": 91606542
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodseaplanehanger1.dff",
+      "start": 91606542,
+      "end": 91612686
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsection.dff",
+      "start": 91612686,
+      "end": 91618830
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsho_ext1.dff",
+      "start": 91618830,
+      "end": 91622926
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodshopfronts01.dff",
+      "start": 91622926,
+      "end": 91633166
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodshopfronts01b.dff",
+      "start": 91633166,
+      "end": 91645454
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodshopfronts02.dff",
+      "start": 91645454,
+      "end": 91651598
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodshopfronts02b.dff",
+      "start": 91651598,
+      "end": 91659790
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodshpfrnts1grd.dff",
+      "start": 91659790,
+      "end": 91663886
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodshpfrts1bgrd.dff",
+      "start": 91663886,
+      "end": 91665934
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsion1_a.dff",
+      "start": 91665934,
+      "end": 91674126
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsion1_base.dff",
+      "start": 91674126,
+      "end": 91686414
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsion1b.dff",
+      "start": 91686414,
+      "end": 91694606
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsion1gardens.dff",
+      "start": 91694606,
+      "end": 91715086
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsion2_a.dff",
+      "start": 91715086,
+      "end": 91721230
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsion2_b.dff",
+      "start": 91721230,
+      "end": 91727374
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsion2c.dff",
+      "start": 91727374,
+      "end": 91733518
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsion3_b.dff",
+      "start": 91733518,
+      "end": 91739662
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsion3_base.dff",
+      "start": 91739662,
+      "end": 91760142
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsion3_c.dff",
+      "start": 91760142,
+      "end": 91766286
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsion3a.dff",
+      "start": 91766286,
+      "end": 91778574
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsion3gardens.dff",
+      "start": 91778574,
+      "end": 91797006
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsjmcrush.dff",
+      "start": 91797006,
+      "end": 91807246
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsmahangar2_01.dff",
+      "start": 91807246,
+      "end": 91811342
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsmahangar2_02.dff",
+      "start": 91811342,
+      "end": 91815438
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsmahangar2_03.dff",
+      "start": 91815438,
+      "end": 91819534
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsmahangar2_04.dff",
+      "start": 91819534,
+      "end": 91823630
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsmahangar2_05.dff",
+      "start": 91823630,
+      "end": 91827726
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsmahangar2_06.dff",
+      "start": 91827726,
+      "end": 91831822
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsmallhangars1_01.dff",
+      "start": 91831822,
+      "end": 91837966
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsmallhangars1_02.dff",
+      "start": 91837966,
+      "end": 91842062
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsmallhangars1_03.dff",
+      "start": 91842062,
+      "end": 91846158
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsmallisland1_01.dff",
+      "start": 91846158,
+      "end": 91848206
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsmallislebridge1.dff",
+      "start": 91848206,
+      "end": 91852302
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsmallradar1.dff",
+      "start": 91852302,
+      "end": 91858446
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsmallradar1_02.dff",
+      "start": 91858446,
+      "end": 91864590
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodst_woodfence30.dff",
+      "start": 91864590,
+      "end": 91866638
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodstadiumland_a.dff",
+      "start": 91866638,
+      "end": 91878926
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodstadiumland_b.dff",
+      "start": 91878926,
+      "end": 91893262
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodstadiumland_c.dff",
+      "start": 91893262,
+      "end": 91901454
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodstadiumland_d.dff",
+      "start": 91901454,
+      "end": 91907598
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsthroad01.dff",
+      "start": 91907598,
+      "end": 91909646
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsthroad02.dff",
+      "start": 91909646,
+      "end": 91911694
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsthroad03.dff",
+      "start": 91911694,
+      "end": 91913742
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsthroad04.dff",
+      "start": 91913742,
+      "end": 91915790
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsthroad05.dff",
+      "start": 91915790,
+      "end": 91917838
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsthroad06.dff",
+      "start": 91917838,
+      "end": 91919886
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsthroad07.dff",
+      "start": 91919886,
+      "end": 91921934
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsthroad08.dff",
+      "start": 91921934,
+      "end": 91923982
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsthroad09.dff",
+      "start": 91923982,
+      "end": 91926030
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsthroad10.dff",
+      "start": 91926030,
+      "end": 91928078
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsthroad11.dff",
+      "start": 91928078,
+      "end": 91930126
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsthroad12.dff",
+      "start": 91930126,
+      "end": 91932174
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsthroad13.dff",
+      "start": 91932174,
+      "end": 91934222
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsthroad14.dff",
+      "start": 91934222,
+      "end": 91936270
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsthroad15.dff",
+      "start": 91936270,
+      "end": 91938318
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsthroad16.dff",
+      "start": 91938318,
+      "end": 91940366
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsthroad17.dff",
+      "start": 91940366,
+      "end": 91942414
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsthroad18.dff",
+      "start": 91942414,
+      "end": 91944462
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsthroad19.dff",
+      "start": 91944462,
+      "end": 91946510
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsthroad20.dff",
+      "start": 91946510,
+      "end": 91948558
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsthroad21.dff",
+      "start": 91948558,
+      "end": 91950606
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsthroad22.dff",
+      "start": 91950606,
+      "end": 91952654
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsthroad23.dff",
+      "start": 91952654,
+      "end": 91954702
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodsthroad24.dff",
+      "start": 91954702,
+      "end": 91956750
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodtaxifirm02.dff",
+      "start": 91956750,
+      "end": 91960846
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodtbuildws14.dff",
+      "start": 91960846,
+      "end": 91966990
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodtermaintfloor1.dff",
+      "start": 91966990,
+      "end": 91977230
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodtermina_01.dff",
+      "start": 91977230,
+      "end": 91989518
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodterminalb1.dff",
+      "start": 91989518,
+      "end": 91999758
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodti1rd.dff",
+      "start": 91999758,
+      "end": 92007950
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodtibuilds.dff",
+      "start": 92007950,
+      "end": 92016142
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodticent.dff",
+      "start": 92016142,
+      "end": 92020238
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodtides3_nt.dff",
+      "start": 92020238,
+      "end": 92028430
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodtihut1.dff",
+      "start": 92028430,
+      "end": 92048910
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodtihut2.dff",
+      "start": 92048910,
+      "end": 92067342
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodtihut3.dff",
+      "start": 92067342,
+      "end": 92079630
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodtimall.dff",
+      "start": 92079630,
+      "end": 92087822
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodtiroadbuild.dff",
+      "start": 92087822,
+      "end": 92104206
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodtiskyg.dff",
+      "start": 92104206,
+      "end": 92110350
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodtiskyt.dff",
+      "start": 92110350,
+      "end": 92116494
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodtistation.dff",
+      "start": 92116494,
+      "end": 92120590
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodtistation01.dff",
+      "start": 92120590,
+      "end": 92124686
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodtleha_hardware.dff",
+      "start": 92124686,
+      "end": 92128782
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodtleha_police.dff",
+      "start": 92128782,
+      "end": 92136974
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodtlehabroad.dff",
+      "start": 92136974,
+      "end": 92141070
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodtlehacoast02.dff",
+      "start": 92141070,
+      "end": 92147214
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodtlehacoast05.dff",
+      "start": 92147214,
+      "end": 92151310
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodtlharoadgg2.dff",
+      "start": 92151310,
+      "end": 92155406
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodtower.dff",
+      "start": 92155406,
+      "end": 92161550
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodtower_01.dff",
+      "start": 92161550,
+      "end": 92169742
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodtower_02.dff",
+      "start": 92169742,
+      "end": 92177934
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodtower_03.dff",
+      "start": 92177934,
+      "end": 92186126
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodtranspol1.dff",
+      "start": 92186126,
+      "end": 92190222
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodtroada.dff",
+      "start": 92190222,
+      "end": 92192270
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodtroadb.dff",
+      "start": 92192270,
+      "end": 92194318
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodtship_structure0.dff",
+      "start": 92194318,
+      "end": 92216846
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/loduild034.dff",
+      "start": 92216846,
+      "end": 92222990
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/loduild1b.dff",
+      "start": 92222990,
+      "end": 92227086
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/loduilding01.dff",
+      "start": 92227086,
+      "end": 92231182
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/loduilding05.dff",
+      "start": 92231182,
+      "end": 92239374
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodvroad1.dff",
+      "start": 92239374,
+      "end": 92241422
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodvroad2.dff",
+      "start": 92241422,
+      "end": 92243470
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodwalkway2.dff",
+      "start": 92243470,
+      "end": 92247566
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodwall.dff",
+      "start": 92247566,
+      "end": 92251662
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodwall2.dff",
+      "start": 92251662,
+      "end": 92253710
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodwall3.dff",
+      "start": 92253710,
+      "end": 92255758
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodwaretank.dff",
+      "start": 92255758,
+      "end": 92259854
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodwashnbrdge.txd",
+      "start": 92259854,
+      "end": 92265998
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodwashpaynspray.dff",
+      "start": 92265998,
+      "end": 92272142
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodwashsth.txd",
+      "start": 92272142,
+      "end": 92366350
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodwoodbridge1.dff",
+      "start": 92366350,
+      "end": 92370446
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodworksramps.dff",
+      "start": 92370446,
+      "end": 92376590
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodwshsth99.txd",
+      "start": 92376590,
+      "end": 92595726
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodwsouth08.txd",
+      "start": 92595726,
+      "end": 92835342
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodxrefhirise1.dff",
+      "start": 92835342,
+      "end": 92841486
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodxrefhot.txd",
+      "start": 92841486,
+      "end": 92874254
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodxrefhse1.dff",
+      "start": 92874254,
+      "end": 92878350
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/lodxrefhse2.dff",
+      "start": 92878350,
+      "end": 92882446
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/luggage.txd",
+      "start": 92882446,
+      "end": 92986894
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/male01.dff",
+      "start": 92986894,
+      "end": 93058574
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/male01.txd",
+      "start": 93058574,
+      "end": 93081102
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/mall.col",
+      "start": 93081102,
+      "end": 93283854
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/mallroof.txd",
+      "start": 93283854,
+      "end": 93285902
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/manana.dff",
+      "start": 93285902,
+      "end": 93439502
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/manana.txd",
+      "start": 93439502,
+      "end": 93484558
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/mansion.col",
+      "start": 93484558,
+      "end": 93638158
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/marquis.dff",
+      "start": 93638158,
+      "end": 93771278
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/marquis.txd",
+      "start": 93771278,
+      "end": 93806094
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/mbtbemp.dff",
+      "start": 93806094,
+      "end": 93826574
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/mbtbemp.txd",
+      "start": 93826574,
+      "end": 93974030
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/mc_ground3.dff",
+      "start": 93974030,
+      "end": 93984270
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/mc_ground4.dff",
+      "start": 93984270,
+      "end": 93994510
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/mc_ground5.dff",
+      "start": 93994510,
+      "end": 94002702
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/mc_overlights1.dff",
+      "start": 94002702,
+      "end": 94008846
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/mc_overlights2.dff",
+      "start": 94008846,
+      "end": 94021134
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/mc_wall2.dff",
+      "start": 94021134,
+      "end": 94031374
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/mc_wall3.dff",
+      "start": 94031374,
+      "end": 94043662
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/mcompounda1.txd",
+      "start": 94043662,
+      "end": 94459406
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/merced.dff",
+      "start": 94459406,
+      "end": 94737934
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/merced.txd",
+      "start": 94737934,
+      "end": 94821902
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/mesa.dff",
+      "start": 94821902,
+      "end": 95002126
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/mesa.txd",
+      "start": 95002126,
+      "end": 95045134
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/metal.txd",
+      "start": 95045134,
+      "end": 95065614
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/miamiland_kb02.dff",
+      "start": 95065614,
+      "end": 95086094
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/miamiland_kb03.dff",
+      "start": 95086094,
+      "end": 95090190
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/miamiland_kb04.dff",
+      "start": 95090190,
+      "end": 95106574
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/miamiland_kb11.dff",
+      "start": 95106574,
+      "end": 95125006
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/miamiland_kb11b.dff",
+      "start": 95125006,
+      "end": 95133198
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/miamiland_ws04.dff",
+      "start": 95133198,
+      "end": 95151630
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/miamiland_ws04b.dff",
+      "start": 95151630,
+      "end": 95157774
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/missile.dff",
+      "start": 95157774,
+      "end": 95163918
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/missile.txd",
+      "start": 95163918,
+      "end": 95168014
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/mitraffic.txd",
+      "start": 95168014,
+      "end": 95174158
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/mob_detailsb.dff",
+      "start": 95174158,
+      "end": 95270414
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/mob_door2.dff",
+      "start": 95270414,
+      "end": 95274510
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/mob_door3.dff",
+      "start": 95274510,
+      "end": 95278606
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/mob_mobroom2.dff",
+      "start": 95278606,
+      "end": 95438350
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/money.dff",
+      "start": 95438350,
+      "end": 95440398
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/moonbeam.dff",
+      "start": 95440398,
+      "end": 95618574
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/moonbeam.txd",
+      "start": 95618574,
+      "end": 95663630
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/mtraffic1.dff",
+      "start": 95663630,
+      "end": 95698446
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/mule.dff",
+      "start": 95698446,
+      "end": 95852046
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/mule.txd",
+      "start": 95852046,
+      "end": 95964686
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/nairport.txd",
+      "start": 95964686,
+      "end": 96263694
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/nbeach.col",
+      "start": 96263694,
+      "end": 96622094
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/nbeach_lod.txd",
+      "start": 96622094,
+      "end": 96740878
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/nbeachbt.col",
+      "start": 96740878,
+      "end": 97236494
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/nbeachw.col",
+      "start": 97236494,
+      "end": 97498638
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/nbw_grssypatch.txd",
+      "start": 97498638,
+      "end": 97502734
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/new_bushtest.dff",
+      "start": 97502734,
+      "end": 97506830
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/new_bushtest42.dff",
+      "start": 97506830,
+      "end": 97512974
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/newashbuild1.txd",
+      "start": 97512974,
+      "end": 97947150
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/nitestick.dff",
+      "start": 97947150,
+      "end": 97951246
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/nitestick.txd",
+      "start": 97951246,
+      "end": 97957390
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/noparkingsign1.dff",
+      "start": 97957390,
+      "end": 97961486
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/northbuild.txd",
+      "start": 97961486,
+      "end": 98731534
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/nrth1veg21.dff",
+      "start": 98731534,
+      "end": 98741774
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/nrth1veg42.dff",
+      "start": 98741774,
+      "end": 98774542
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/nrth3veg05.dff",
+      "start": 98774542,
+      "end": 98792974
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/nrth3veg08.dff",
+      "start": 98792974,
+      "end": 98811406
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/nrth3veg16.dff",
+      "start": 98811406,
+      "end": 98833934
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/nrth3veg25.dff",
+      "start": 98833934,
+      "end": 98868750
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/nrth3veg50.dff",
+      "start": 98868750,
+      "end": 98885134
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/nrth3veg59.dff",
+      "start": 98885134,
+      "end": 98907662
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/nrth4veg05.dff",
+      "start": 98907662,
+      "end": 98926094
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/nrth4veg21.dff",
+      "start": 98926094,
+      "end": 98938382
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/nrth4veg212.dff",
+      "start": 98938382,
+      "end": 98950670
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/nrth7veg.dff",
+      "start": 98950670,
+      "end": 98979342
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/nt_aircon1_01.dff",
+      "start": 98979342,
+      "end": 98985486
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/nt_aircon1dbl.dff",
+      "start": 98985486,
+      "end": 98995726
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/nt_aircon3_01.dff",
+      "start": 98995726,
+      "end": 98997774
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/nt_bed1_01.dff",
+      "start": 98997774,
+      "end": 99059214
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/nt_couch_1.dff",
+      "start": 99059214,
+      "end": 99073550
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/nt_wassily1_02.dff",
+      "start": 99073550,
+      "end": 99173902
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/oceandn.col",
+      "start": 99173902,
+      "end": 99464718
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/oceandrv.col",
+      "start": 99464718,
+      "end": 99642894
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/oceanic.dff",
+      "start": 99642894,
+      "end": 99804686
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/oceanic.txd",
+      "start": 99804686,
+      "end": 99855886
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/oceanrda03_dy.dff",
+      "start": 99855886,
+      "end": 99874318
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/oceanrda03_nt.dff",
+      "start": 99874318,
+      "end": 99894798
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/oceanrda04_dy.dff",
+      "start": 99894798,
+      "end": 99902990
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/oceanrda04_nt.dff",
+      "start": 99902990,
+      "end": 99913230
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/oceanrda05_nt.dff",
+      "start": 99913230,
+      "end": 99931662
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/oceanrda06_nt.dff",
+      "start": 99931662,
+      "end": 99943950
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ocmiamistrip8.txd",
+      "start": 99943950,
+      "end": 100298254
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/ocmiamistrip9.txd",
+      "start": 100298254,
+      "end": 101025294
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/od_alleys3_01_dy.dff",
+      "start": 101025294,
+      "end": 101033486
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/od_alleys3_01_nt.dff",
+      "start": 101033486,
+      "end": 101041678
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/od_alleys3b_01_dy.dff",
+      "start": 101041678,
+      "end": 101051918
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/od_alleys3b_01_nt.dff",
+      "start": 101051918,
+      "end": 101062158
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/od_buildkb23_dy.dff",
+      "start": 101062158,
+      "end": 101074446
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/od_buildkb23_nt.dff",
+      "start": 101074446,
+      "end": 101086734
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/od_buildkb27_dy.dff",
+      "start": 101086734,
+      "end": 101131790
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/od_buildkb27_nt.dff",
+      "start": 101131790,
+      "end": 101176846
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/od_buildkb2_dy.dff",
+      "start": 101176846,
+      "end": 101219854
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/od_buildkb2_nt.dff",
+      "start": 101219854,
+      "end": 101260814
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/od_dirtshad4.dff",
+      "start": 101260814,
+      "end": 101273102
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/od_hotels1.txd",
+      "start": 101273102,
+      "end": 101690894
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/od_lightbeam.dff",
+      "start": 101690894,
+      "end": 101692942
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/od_majestic2c_dy.dff",
+      "start": 101692942,
+      "end": 101740046
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/od_majestic2c_nt.dff",
+      "start": 101740046,
+      "end": 101789198
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/od_neona1.dff",
+      "start": 101789198,
+      "end": 101791246
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/od_neonn.dff",
+      "start": 101791246,
+      "end": 101795342
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/od_neons1.txd",
+      "start": 101795342,
+      "end": 101867022
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/od_neons3b_nt.dff",
+      "start": 101867022,
+      "end": 101869070
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/od_neonx1.dff",
+      "start": 101869070,
+      "end": 101873166
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/odalleygb_dy.dff",
+      "start": 101873166,
+      "end": 101883406
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/odalleygb_nt.dff",
+      "start": 101883406,
+      "end": 101893646
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/odalleyground_dy.dff",
+      "start": 101893646,
+      "end": 101901838
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/odalleyground_nt.dff",
+      "start": 101901838,
+      "end": 101910030
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/oddoorway2.dff",
+      "start": 101910030,
+      "end": 101916174
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/odhighsandgrs1.dff",
+      "start": 101916174,
+      "end": 101936654
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/odlowsand1.dff",
+      "start": 101936654,
+      "end": 101938702
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/odlowsand2.dff",
+      "start": 101938702,
+      "end": 101940750
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/odneontest.dff",
+      "start": 101940750,
+      "end": 101942798
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/odneontest.txd",
+      "start": 101942798,
+      "end": 102084110
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/odnhotelspr.txd",
+      "start": 102084110,
+      "end": 102665742
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/odnroad04od_nt.dff",
+      "start": 102665742,
+      "end": 102686222
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/odnroad05od.dff",
+      "start": 102686222,
+      "end": 102694414
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/odnroad08_dy.dff",
+      "start": 102694414,
+      "end": 102704654
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/odnroad08_nt.dff",
+      "start": 102704654,
+      "end": 102716942
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/package1.dff",
+      "start": 102716942,
+      "end": 102723086
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/package1.txd",
+      "start": 102723086,
+      "end": 102727182
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/packer.dff",
+      "start": 102727182,
+      "end": 102895118
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/packer.txd",
+      "start": 102895118,
+      "end": 102946318
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/pcj600.dff",
+      "start": 102946318,
+      "end": 103038478
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/pcj600.txd",
+      "start": 103038478,
+      "end": 103069198
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/peren.dff",
+      "start": 103069198,
+      "end": 103245326
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/peren.txd",
+      "start": 103245326,
+      "end": 103290382
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/pheonix.dff",
+      "start": 103290382,
+      "end": 103443982
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/pheonix.txd",
+      "start": 103443982,
+      "end": 103489038
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/plants01.dff",
+      "start": 103489038,
+      "end": 103503374
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/player.dff",
+      "start": 103503374,
+      "end": 103591438
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/player.txd",
+      "start": 103591438,
+      "end": 103636494
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/playidles.ifp",
+      "start": 103636494,
+      "end": 103722510
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/police.dff",
+      "start": 103722510,
+      "end": 103898638
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/police.txd",
+      "start": 103898638,
+      "end": 103978510
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/pony.dff",
+      "start": 103978510,
+      "end": 104148494
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/pony.txd",
+      "start": 104148494,
+      "end": 104193550
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/property_fsale.dff",
+      "start": 104193550,
+      "end": 104199694
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/property_locked.dff",
+      "start": 104199694,
+      "end": 104205838
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/radar32.txd",
+      "start": 104205838,
+      "end": 104216078
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/radar33.txd",
+      "start": 104216078,
+      "end": 104226318
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/radar35.txd",
+      "start": 104226318,
+      "end": 104236558
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/radar36.txd",
+      "start": 104236558,
+      "end": 104246798
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/radar37.txd",
+      "start": 104246798,
+      "end": 104257038
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/radar40.txd",
+      "start": 104257038,
+      "end": 104267278
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/radar41.txd",
+      "start": 104267278,
+      "end": 104277518
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/radar43.txd",
+      "start": 104277518,
+      "end": 104287758
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/radar44.txd",
+      "start": 104287758,
+      "end": 104297998
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/radar45.txd",
+      "start": 104297998,
+      "end": 104308238
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/radar48.txd",
+      "start": 104308238,
+      "end": 104318478
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/radar49.txd",
+      "start": 104318478,
+      "end": 104328718
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/radar50.txd",
+      "start": 104328718,
+      "end": 104338958
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/radar51.txd",
+      "start": 104338958,
+      "end": 104349198
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/radar52.txd",
+      "start": 104349198,
+      "end": 104359438
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/radar53.txd",
+      "start": 104359438,
+      "end": 104369678
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/radar56.txd",
+      "start": 104369678,
+      "end": 104379918
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/radar57.txd",
+      "start": 104379918,
+      "end": 104390158
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/radar58.txd",
+      "start": 104390158,
+      "end": 104400398
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/radar59.txd",
+      "start": 104400398,
+      "end": 104410638
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/rancher.dff",
+      "start": 104410638,
+      "end": 104580622
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/rancher.txd",
+      "start": 104580622,
+      "end": 104625678
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/reefer.dff",
+      "start": 104625678,
+      "end": 104736270
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/reefer.txd",
+      "start": 104736270,
+      "end": 104787470
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/regina.dff",
+      "start": 104787470,
+      "end": 104982030
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/regina.txd",
+      "start": 104982030,
+      "end": 105027086
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/rio.dff",
+      "start": 105027086,
+      "end": 105156110
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/rio.txd",
+      "start": 105156110,
+      "end": 105192974
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/rockpatch03.dff",
+      "start": 105192974,
+      "end": 105205262
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/rocky.txd",
+      "start": 105205262,
+      "end": 105217550
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/rumpo.dff",
+      "start": 105217550,
+      "end": 105393678
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/rumpo.txd",
+      "start": 105393678,
+      "end": 105455118
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/rustship_structure0.dff",
+      "start": 105455118,
+      "end": 105569806
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/sabre.dff",
+      "start": 105569806,
+      "end": 105747982
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/sabre.txd",
+      "start": 105747982,
+      "end": 105793038
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/sanchez.dff",
+      "start": 105793038,
+      "end": 105887246
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/sanchez.txd",
+      "start": 105887246,
+      "end": 105917966
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/schair.dff",
+      "start": 105917966,
+      "end": 105928206
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/schair.txd",
+      "start": 105928206,
+      "end": 105940494
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/seabed.txd",
+      "start": 105940494,
+      "end": 106008078
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/securica.dff",
+      "start": 106008078,
+      "end": 106155534
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/securica.txd",
+      "start": 106155534,
+      "end": 106216974
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/sentinel.dff",
+      "start": 106216974,
+      "end": 106389006
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/sentinel.txd",
+      "start": 106389006,
+      "end": 106434062
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/sentxs.dff",
+      "start": 106434062,
+      "end": 106616334
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/sentxs.txd",
+      "start": 106616334,
+      "end": 106661390
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/sfrenda.dff",
+      "start": 106661390,
+      "end": 106741262
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/sfrenda.txd",
+      "start": 106741262,
+      "end": 106786318
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/sfrendb.dff",
+      "start": 106786318,
+      "end": 106868238
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/sfrendb.txd",
+      "start": 106868238,
+      "end": 106913294
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/sgoona.dff",
+      "start": 106913294,
+      "end": 106987022
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/sgoona.txd",
+      "start": 106987022,
+      "end": 107032078
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/sgoonb.dff",
+      "start": 107032078,
+      "end": 107107854
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/sgoonb.txd",
+      "start": 107107854,
+      "end": 107152910
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/shared_beach.txd",
+      "start": 107152910,
+      "end": 107527694
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/sharedalleyod.txd",
+      "start": 107527694,
+      "end": 107865614
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/shark.dff",
+      "start": 107865614,
+      "end": 107877902
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/shark.txd",
+      "start": 107877902,
+      "end": 107884046
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/shotgun.ifp",
+      "start": 107884046,
+      "end": 107935246
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/signs.txd",
+      "start": 107935246,
+      "end": 107978254
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/speeder.dff",
+      "start": 107978254,
+      "end": 108064270
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/speeder.txd",
+      "start": 108064270,
+      "end": 108103182
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/stadint.col",
+      "start": 108103182,
+      "end": 108537358
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/stallion.dff",
+      "start": 108537358,
+      "end": 108695054
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/stallion.txd",
+      "start": 108695054,
+      "end": 108740110
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/starisl.col",
+      "start": 108740110,
+      "end": 108987918
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/stiltsville03.dff",
+      "start": 108987918,
+      "end": 109084174
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/stiltsville05.dff",
+      "start": 109084174,
+      "end": 109248014
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/stiltsville1.dff",
+      "start": 109248014,
+      "end": 109411854
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/stilty.txd",
+      "start": 109411854,
+      "end": 109538830
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/stinger.dff",
+      "start": 109538830,
+      "end": 109657614
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/stinger.txd",
+      "start": 109657614,
+      "end": 109706766
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/streetlamp1.dff",
+      "start": 109706766,
+      "end": 109712910
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/streetlamp2.dff",
+      "start": 109712910,
+      "end": 109719054
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/stripback.txd",
+      "start": 109719054,
+      "end": 110034446
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/stripclb.col",
+      "start": 110034446,
+      "end": 110065166
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/stripclbdrclsd.dff",
+      "start": 110065166,
+      "end": 110067214
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/strpbckdrclsd.dff",
+      "start": 110067214,
+      "end": 110069262
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/sub_floodlite.dff",
+      "start": 110069262,
+      "end": 110077454
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/sunbathe.ifp",
+      "start": 110077454,
+      "end": 110136846
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/svntray.dff",
+      "start": 110136846,
+      "end": 110142990
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/svntray.txd",
+      "start": 110142990,
+      "end": 110155278
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/swashlandb.txd",
+      "start": 110155278,
+      "end": 110630414
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/taxi.dff",
+      "start": 110630414,
+      "end": 110798350
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/taxi.txd",
+      "start": 110798350,
+      "end": 110849550
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/telegraph.txd",
+      "start": 110849550,
+      "end": 110904846
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/telgrphpole02.dff",
+      "start": 110904846,
+      "end": 110910990
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/trash.dff",
+      "start": 110910990,
+      "end": 111068686
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/trash.txd",
+      "start": 111068686,
+      "end": 111113742
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/treeshad.txd",
+      "start": 111113742,
+      "end": 111148558
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/treeshadairha05.dff",
+      "start": 111148558,
+      "end": 111160846
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/treeshadairha06.dff",
+      "start": 111160846,
+      "end": 111166990
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/treeshadairha07.dff",
+      "start": 111166990,
+      "end": 111173134
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/treeshadwn01.dff",
+      "start": 111173134,
+      "end": 111195662
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/treeshadwn02.dff",
+      "start": 111195662,
+      "end": 111203854
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/treeshadwn03.dff",
+      "start": 111203854,
+      "end": 111209998
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/turtle.dff",
+      "start": 111209998,
+      "end": 111230478
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/turtle.txd",
+      "start": 111230478,
+      "end": 111240718
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/uzi.dff",
+      "start": 111240718,
+      "end": 111263246
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/uzi.ifp",
+      "start": 111263246,
+      "end": 111320590
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/uzi.txd",
+      "start": 111320590,
+      "end": 111328782
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/van.ifp",
+      "start": 111328782,
+      "end": 111408654
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/veg_palm01.dff",
+      "start": 111408654,
+      "end": 111412750
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/veg_palm02.dff",
+      "start": 111412750,
+      "end": 111416846
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/veg_palm04.dff",
+      "start": 111416846,
+      "end": 111420942
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/veg_palmbig14.dff",
+      "start": 111420942,
+      "end": 111427086
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/veg_palmkbb11.dff",
+      "start": 111427086,
+      "end": 111431182
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/veg_palwee01.dff",
+      "start": 111431182,
+      "end": 111435278
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/virgo.dff",
+      "start": 111435278,
+      "end": 111611406
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/virgo.txd",
+      "start": 111611406,
+      "end": 111658510
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/walton.dff",
+      "start": 111658510,
+      "end": 111824398
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/walton.txd",
+      "start": 111824398,
+      "end": 111869454
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wash_deco01.dff",
+      "start": 111869454,
+      "end": 111957518
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wash_deco012.dff",
+      "start": 111957518,
+      "end": 111986190
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wash_deco02.dff",
+      "start": 111986190,
+      "end": 112041486
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wash_deco022.dff",
+      "start": 112041486,
+      "end": 112053774
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wash_deco03.dff",
+      "start": 112053774,
+      "end": 112111118
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wash_deco032.dff",
+      "start": 112111118,
+      "end": 112117262
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wash_pizzaplace.dff",
+      "start": 112117262,
+      "end": 112133646
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/washawning2b.dff",
+      "start": 112133646,
+      "end": 112147982
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/washawninga1.dff",
+      "start": 112147982,
+      "end": 112162318
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/washbballcrt.txd",
+      "start": 112162318,
+      "end": 112317966
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/washbuild003.dff",
+      "start": 112317966,
+      "end": 112334350
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/washbuild005.dff",
+      "start": 112334350,
+      "end": 112354830
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/washbuild014.dff",
+      "start": 112354830,
+      "end": 112373262
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/washbuild068.dff",
+      "start": 112373262,
+      "end": 112426510
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/washbuild071.dff",
+      "start": 112426510,
+      "end": 112436750
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/washbuild072.dff",
+      "start": 112436750,
+      "end": 112449038
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/washbuild073.dff",
+      "start": 112449038,
+      "end": 112489998
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/washbuild074.dff",
+      "start": 112489998,
+      "end": 112500238
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/washbuild075.dff",
+      "start": 112500238,
+      "end": 112510478
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/washbuild116.dff",
+      "start": 112510478,
+      "end": 112514574
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/washbuild120.txd",
+      "start": 112514574,
+      "end": 113028622
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/washbuild124.txd",
+      "start": 113028622,
+      "end": 113165838
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/washbuild187.dff",
+      "start": 113165838,
+      "end": 113219086
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/washbuild198.dff",
+      "start": 113219086,
+      "end": 113286670
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/washcorn2.txd",
+      "start": 113286670,
+      "end": 113573390
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/washing.dff",
+      "start": 113573390,
+      "end": 113739278
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/washing.txd",
+      "start": 113739278,
+      "end": 113784334
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/washintn.col",
+      "start": 113784334,
+      "end": 114060814
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/washints.col",
+      "start": 114060814,
+      "end": 114370062
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/washlandb.txd",
+      "start": 114370062,
+      "end": 114517518
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/washmallnew.txd",
+      "start": 114517518,
+      "end": 115301902
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/washmallpark.txd",
+      "start": 115301902,
+      "end": 115498510
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/washmiamistrip2.txd",
+      "start": 115498510,
+      "end": 116067854
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/washmiamistrip3.txd",
+      "start": 116067854,
+      "end": 116547086
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/washmiamistrip4.txd",
+      "start": 116547086,
+      "end": 117097998
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/washnewbuild1.txd",
+      "start": 117097998,
+      "end": 117347854
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/washnewbuild2.txd",
+      "start": 117347854,
+      "end": 117702158
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/washnewbuild21.txd",
+      "start": 117702158,
+      "end": 118015502
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/washnewsky1.dff",
+      "start": 118015502,
+      "end": 118097422
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/washnewsky2.dff",
+      "start": 118097422,
+      "end": 118121998
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/washnewsky3.dff",
+      "start": 118121998,
+      "end": 118203918
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/washnrthpstr1.txd",
+      "start": 118203918,
+      "end": 118251022
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/washotelneon1.dff",
+      "start": 118251022,
+      "end": 118302222
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/washpshoutdet.dff",
+      "start": 118302222,
+      "end": 118371854
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/washpshoutveg.dff",
+      "start": 118371854,
+      "end": 118423054
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/washsky1.txd",
+      "start": 118423054,
+      "end": 118791694
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/washskyplant1.dff",
+      "start": 118791694,
+      "end": 118853134
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/washskyplant2.dff",
+      "start": 118853134,
+      "end": 118914574
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/washvegy241.dff",
+      "start": 118914574,
+      "end": 118945294
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/washwater.txd",
+      "start": 118945294,
+      "end": 119012878
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wfogo.dff",
+      "start": 119012878,
+      "end": 119076366
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wfogo.txd",
+      "start": 119076366,
+      "end": 119098894
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wfost.dff",
+      "start": 119098894,
+      "end": 119166478
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wfost.txd",
+      "start": 119166478,
+      "end": 119189006
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wfotr.dff",
+      "start": 119189006,
+      "end": 119254542
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wfotr.txd",
+      "start": 119254542,
+      "end": 119277070
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wfybu.dff",
+      "start": 119277070,
+      "end": 119342606
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wfybu.txd",
+      "start": 119342606,
+      "end": 119365134
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wfypr.dff",
+      "start": 119365134,
+      "end": 119426574
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wfypr.txd",
+      "start": 119426574,
+      "end": 119449102
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wfyri.dff",
+      "start": 119449102,
+      "end": 119512590
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wfyri.txd",
+      "start": 119512590,
+      "end": 119535118
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wfysh.dff",
+      "start": 119535118,
+      "end": 119598606
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wfysh.txd",
+      "start": 119598606,
+      "end": 119621134
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wmobu.dff",
+      "start": 119621134,
+      "end": 119686670
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wmobu.txd",
+      "start": 119686670,
+      "end": 119705102
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wmori.dff",
+      "start": 119705102,
+      "end": 119770638
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wmori.txd",
+      "start": 119770638,
+      "end": 119793166
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wmost.dff",
+      "start": 119793166,
+      "end": 119873038
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wmost.txd",
+      "start": 119873038,
+      "end": 119895566
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wmotr.dff",
+      "start": 119895566,
+      "end": 119950862
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wmotr.txd",
+      "start": 119950862,
+      "end": 119973390
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wmybu.dff",
+      "start": 119973390,
+      "end": 120045070
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wmybu.txd",
+      "start": 120045070,
+      "end": 120067598
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wmycr.dff",
+      "start": 120067598,
+      "end": 120141326
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wmycr.txd",
+      "start": 120141326,
+      "end": 120163854
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wmypi.dff",
+      "start": 120163854,
+      "end": 120243726
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wmypi.txd",
+      "start": 120243726,
+      "end": 120266254
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wmyri.dff",
+      "start": 120266254,
+      "end": 120346126
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wmyri.txd",
+      "start": 120346126,
+      "end": 120368654
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wsh_roadswsh05.dff",
+      "start": 120368654,
+      "end": 120374798
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wshbldws26bit.dff",
+      "start": 120374798,
+      "end": 120391182
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wshbuil19wall.dff",
+      "start": 120391182,
+      "end": 120401422
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wshbuildws09.dff",
+      "start": 120401422,
+      "end": 120464910
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wshbuildws19.dff",
+      "start": 120464910,
+      "end": 120530446
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wshbuildws26.dff",
+      "start": 120530446,
+      "end": 120544782
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wshbuildws31.dff",
+      "start": 120544782,
+      "end": 120561166
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wshbuildws312.dff",
+      "start": 120561166,
+      "end": 120575502
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wshbuildws322.dff",
+      "start": 120575502,
+      "end": 120589838
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wshbuildws43.dff",
+      "start": 120589838,
+      "end": 120671758
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wshmalsign4.dff",
+      "start": 120671758,
+      "end": 120679950
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wshmoundlaw1.dff",
+      "start": 120679950,
+      "end": 120686094
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wshneon.txd",
+      "start": 120686094,
+      "end": 120692238
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wshnrthpstr07.dff",
+      "start": 120692238,
+      "end": 120694286
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wshnrthroad01.dff",
+      "start": 120694286,
+      "end": 120698382
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wshnrthroad02.dff",
+      "start": 120698382,
+      "end": 120704526
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wshnrthroad10.dff",
+      "start": 120704526,
+      "end": 120710670
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wshnrthroad11.dff",
+      "start": 120710670,
+      "end": 120718862
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wshnrthroad12.dff",
+      "start": 120718862,
+      "end": 120722958
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wshnrthroad13.dff",
+      "start": 120722958,
+      "end": 120729102
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wshnrthroad14.dff",
+      "start": 120729102,
+      "end": 120735246
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wshnrthroad18.dff",
+      "start": 120735246,
+      "end": 120739342
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wshnrthroad19.dff",
+      "start": 120739342,
+      "end": 120743438
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wshnrthroad21.dff",
+      "start": 120743438,
+      "end": 120749582
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wshnrthroad22.dff",
+      "start": 120749582,
+      "end": 120753678
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wshnrthroad24.dff",
+      "start": 120753678,
+      "end": 120757774
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wshnrthroad26.dff",
+      "start": 120757774,
+      "end": 120763918
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wshnrthroad27.dff",
+      "start": 120763918,
+      "end": 120768014
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wshscarland226.dff",
+      "start": 120768014,
+      "end": 120794638
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wshsthroad05.dff",
+      "start": 120794638,
+      "end": 120798734
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wshsthroad16.dff",
+      "start": 120798734,
+      "end": 120806926
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wshtelgrph.txd",
+      "start": 120806926,
+      "end": 120827406
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wshtelgrphcabl03.dff",
+      "start": 120827406,
+      "end": 120835598
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wshtelgrphcabl04.dff",
+      "start": 120835598,
+      "end": 120843790
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wshtelgrphcabl05.dff",
+      "start": 120843790,
+      "end": 120851982
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/wshxreflod.txd",
+      "start": 120851982,
+      "end": 120872462
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/xod_majestic_dy.dff",
+      "start": 120872462,
+      "end": 120927758
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/xod_majestic_nt.dff",
+      "start": 120927758,
+      "end": 120974862
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/xod_starlite_dy.dff",
+      "start": 120974862,
+      "end": 121017870
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/xod_starlite_nt.dff",
+      "start": 121017870,
+      "end": 121052686
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/xrefhotels.txd",
+      "start": 121052686,
+      "end": 121296398
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/yacht.col",
+      "start": 121296398,
+      "end": 121323022
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/yacht_lod.txd",
+      "start": 121323022,
+      "end": 121329166
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/yankee.dff",
+      "start": 121329166,
+      "end": 121497102
+    },
+    {
+      "filename": "/vc-assets/local/models/gta3.img/yankee.txd",
+      "start": 121497102,
+      "end": 121615886
+    },
+    {
+      "filename": "/vc-assets/local/models/hud.txd",
+      "start": 121615886,
+      "end": 121723062
+    },
+    {
+      "filename": "/vc-assets/local/models/intro.txd",
+      "start": 121723062,
+      "end": 121807798
+    },
+    {
+      "filename": "/vc-assets/local/models/misc.txd",
+      "start": 121807798,
+      "end": 121831774
+    },
+    {
+      "filename": "/vc-assets/local/models/nswbtns.txd",
+      "start": 121831774,
+      "end": 122360198
+    },
+    {
+      "filename": "/vc-assets/local/models/particle.txd",
+      "start": 122360198,
+      "end": 125028270
+    },
+    {
+      "filename": "/vc-assets/local/models/ps3btns.txd",
+      "start": 125028270,
+      "end": 125556694
+    },
+    {
+      "filename": "/vc-assets/local/models/x360btns.txd",
+      "start": 125556694,
+      "end": 126085118
+    },
+    {
+      "filename": "/vc-assets/local/mp3/mp3report.txt",
+      "start": 126085118,
+      "end": 126085290
+    },
+    {
+      "filename": "/vc-assets/local/mss/mp3dec.asi",
+      "start": 126085290,
+      "end": 126211242
+    },
+    {
+      "filename": "/vc-assets/local/mss/mssa3d.m3d",
+      "start": 126211242,
+      "end": 126262442
+    },
+    {
+      "filename": "/vc-assets/local/mss/mssa3d2.m3d",
+      "start": 126262442,
+      "end": 126323370
+    },
+    {
+      "filename": "/vc-assets/local/mss/mssds3dh.m3d",
+      "start": 126323370,
+      "end": 126374058
+    },
+    {
+      "filename": "/vc-assets/local/mss/mssds3ds.m3d",
+      "start": 126374058,
+      "end": 126424746
+    },
+    {
+      "filename": "/vc-assets/local/mss/msseax.m3d",
+      "start": 126424746,
+      "end": 126478506
+    },
+    {
+      "filename": "/vc-assets/local/mss/msseax3.m3d",
+      "start": 126478506,
+      "end": 126551210
+    },
+    {
+      "filename": "/vc-assets/local/mss/mssfast.m3d",
+      "start": 126551210,
+      "end": 126614186
+    },
+    {
+      "filename": "/vc-assets/local/mss/mssrsx.m3d",
+      "start": 126614186,
+      "end": 126966954
+    },
+    {
+      "filename": "/vc-assets/local/mss/reverb3.flt",
+      "start": 126966954,
+      "end": 127023786
+    },
+    {
+      "filename": "/vc-assets/local/readme.txt",
+      "start": 127023786,
+      "end": 127041644
+    },
+    {
+      "filename": "/vc-assets/local/revc.ini",
+      "start": 127041644,
+      "end": 127044284
+    },
+    {
+      "filename": "/vc-assets/local/skins/texture_guide.jpg",
+      "start": 127044284,
+      "end": 127132423
+    },
+    {
+      "filename": "/vc-assets/local/text/american.gxt",
+      "start": 127132423,
+      "end": 127556557
+    },
+    {
+      "filename": "/vc-assets/local/text/french.gxt",
+      "start": 127556557,
+      "end": 128026689
+    },
+    {
+      "filename": "/vc-assets/local/text/german.gxt",
+      "start": 128026689,
+      "end": 128488719
+    },
+    {
+      "filename": "/vc-assets/local/text/italian.gxt",
+      "start": 128488719,
+      "end": 128947805
+    },
+    {
+      "filename": "/vc-assets/local/text/russian.gxt",
+      "start": 128947805,
+      "end": 129368409
+    },
+    {
+      "filename": "/vc-assets/local/text/spanish.gxt",
+      "start": 129368409,
+      "end": 129823823
+    },
+    {
+      "filename": "/vc-assets/local/txd/intro1.txd",
+      "start": 129823823,
+      "end": 130087159
+    },
+    {
+      "filename": "/vc-assets/local/txd/intro2.txd",
+      "start": 130087159,
+      "end": 130350495
+    },
+    {
+      "filename": "/vc-assets/local/txd/intro3.txd",
+      "start": 130350495,
+      "end": 130613831
+    },
+    {
+      "filename": "/vc-assets/local/txd/intro4.txd",
+      "start": 130613831,
+      "end": 130877167
+    },
+    {
+      "filename": "/vc-assets/local/txd/loadsc0.txd",
+      "start": 130877167,
+      "end": 131140503
+    },
+    {
+      "filename": "/vc-assets/local/txd/loadsc1.txd",
+      "start": 131140503,
+      "end": 131403839
+    },
+    {
+      "filename": "/vc-assets/local/txd/loadsc10.txd",
+      "start": 131403839,
+      "end": 131667175
+    },
+    {
+      "filename": "/vc-assets/local/txd/loadsc11.txd",
+      "start": 131667175,
+      "end": 131930511
+    },
+    {
+      "filename": "/vc-assets/local/txd/loadsc12.txd",
+      "start": 131930511,
+      "end": 132193847
+    },
+    {
+      "filename": "/vc-assets/local/txd/loadsc13.txd",
+      "start": 132193847,
+      "end": 132457183
+    },
+    {
+      "filename": "/vc-assets/local/txd/loadsc2.txd",
+      "start": 132457183,
+      "end": 132720519
+    },
+    {
+      "filename": "/vc-assets/local/txd/loadsc3.txd",
+      "start": 132720519,
+      "end": 132983855
+    },
+    {
+      "filename": "/vc-assets/local/txd/loadsc4.txd",
+      "start": 132983855,
+      "end": 133247191
+    },
+    {
+      "filename": "/vc-assets/local/txd/loadsc5.txd",
+      "start": 133247191,
+      "end": 133510527
+    },
+    {
+      "filename": "/vc-assets/local/txd/loadsc6.txd",
+      "start": 133510527,
+      "end": 133773863
+    },
+    {
+      "filename": "/vc-assets/local/txd/loadsc7.txd",
+      "start": 133773863,
+      "end": 134037199
+    },
+    {
+      "filename": "/vc-assets/local/txd/loadsc8.txd",
+      "start": 134037199,
+      "end": 134300535
+    },
+    {
+      "filename": "/vc-assets/local/txd/loadsc9.txd",
+      "start": 134300535,
+      "end": 134563871
+    },
+    {
+      "filename": "/vc-assets/local/txd/news.txd",
+      "start": 134563871,
+      "end": 134827207
+    },
+    {
+      "filename": "/vc-assets/local/txd/outro.txd",
+      "start": 134827207,
+      "end": 135090543
+    },
+    {
+      "filename": "/vc-assets/local/txd/splash1.txd",
+      "start": 135090543,
+      "end": 135222807
+    },
+    {
+      "filename": "/vc-assets/local/txd/splash2.txd",
+      "start": 135222807,
+      "end": 135355071
+    },
+    {
+      "filename": "/vc-assets/local/txd/splash3.txd",
+      "start": 135355071,
+      "end": 135355111
+    }
+  ]
+});
 })();
 var arguments_ = [];
 var thisProgram = "./this.program";
@@ -2219,7 +10151,8 @@ function updateMemoryViews() {
 }
 function preRun() {
   if (Module["preRun"]) {
-    if (typeof Module["preRun"] == "function") Module["preRun"] = [Module["preRun"]];
+    if (typeof Module["preRun"] == "function")
+      Module["preRun"] = [Module["preRun"]];
     while (Module["preRun"].length) {
       addOnPreRun(Module["preRun"].shift());
     }
@@ -2230,13 +10163,14 @@ function initRuntime() {
   runtimeInitialized = true;
   if (!Module["noFSInit"] && !FS.initialized) FS.init();
   TTY.init();
-  wasmExports["xk"]();
+  wasmExports["wk"]();
   FS.ignorePermissions = false;
 }
 function preMain() {}
 function postRun() {
   if (Module["postRun"]) {
-    if (typeof Module["postRun"] == "function") Module["postRun"] = [Module["postRun"]];
+    if (typeof Module["postRun"] == "function")
+      Module["postRun"] = [Module["postRun"]];
     while (Module["postRun"].length) {
       addOnPostRun(Module["postRun"].shift());
     }
@@ -2254,7 +10188,7 @@ abort = function (what) {
 };
 var wasmBinaryFile;
 function findWasmBinary() {
-  return locateFile("/static/gtavc/index.wasm");
+  return locateFile("index.wasm");
 }
 function getBinarySync(file) {
   if (file == wasmBinaryFile && wasmBinary) {
@@ -2288,7 +10222,10 @@ async function instantiateAsync(binary, binaryFile, imports) {
   if (!binary && !isFileURI(binaryFile) && !ENVIRONMENT_IS_NODE) {
     try {
       var response = fetch(binaryFile, { credentials: "same-origin" });
-      var instantiationResult = await WebAssembly.instantiateStreaming(response, imports);
+      var instantiationResult = await WebAssembly.instantiateStreaming(
+        response,
+        imports
+      );
       return instantiationResult;
     } catch (reason) {
       err(`wasm streaming compile failed: ${reason}`);
@@ -2517,7 +10454,8 @@ var ___resumeException = (ptr) => {
 var PATH = {
   isAbs: (path) => path.charAt(0) === "/",
   splitPath: (filename) => {
-    var splitPathRe = /^(\/?|)([\s\S]*?)((?:\.{1,2}|[^\/]+?|)(\.[^.\/]*|))(?:[\/]*)$/;
+    var splitPathRe =
+      /^(\/?|)([\s\S]*?)((?:\.{1,2}|[^\/]+?|)(\.[^.\/]*|))(?:[\/]*)$/;
     return splitPathRe.exec(filename).slice(1);
   },
   normalizeArray: (parts, allowAboveRoot) => {
@@ -2570,7 +10508,7 @@ var PATH = {
   },
   basename: (path) => path && path.match(/([^\/]+|\/)\/*$/)[1],
   join: (...paths) => PATH.normalize(paths.join("/")),
-  join2: (l, r) => PATH.normalize(l + "/" + r)
+  join2: (l, r) => PATH.normalize(l + "/" + r),
 };
 var initRandomFill = () => {
   if (ENVIRONMENT_IS_NODE) {
@@ -2633,7 +10571,7 @@ var PATH_FS = {
     }
     outputParts = outputParts.concat(toParts.slice(samePartsLength));
     return outputParts.join("/");
-  }
+  },
 };
 var UTF8Decoder = new TextDecoder();
 var findStringEnd = (heapOrArray, idx, maxBytesToRead, ignoreNul) => {
@@ -2645,7 +10583,9 @@ var findStringEnd = (heapOrArray, idx, maxBytesToRead, ignoreNul) => {
 var UTF8ArrayToString = (heapOrArray, idx = 0, maxBytesToRead, ignoreNul) => {
   var endPtr = findStringEnd(heapOrArray, idx, maxBytesToRead, ignoreNul);
   return UTF8Decoder.decode(
-    heapOrArray.buffer ? heapOrArray.subarray(idx, endPtr) : new Uint8Array(heapOrArray.slice(idx, endPtr))
+    heapOrArray.buffer
+      ? heapOrArray.subarray(idx, endPtr)
+      : new Uint8Array(heapOrArray.slice(idx, endPtr))
   );
 };
 var FS_stdin_getChar_buffer = [];
@@ -2796,7 +10736,7 @@ var TTY = {
         stream.node.mtime = stream.node.ctime = Date.now();
       }
       return i;
-    }
+    },
   },
   default_tty_ops: {
     get_char(tty) {
@@ -2823,8 +10763,9 @@ var TTY = {
         c_cflag: 191,
         c_lflag: 35387,
         c_cc: [
-          3, 28, 127, 21, 4, 0, 1, 0, 17, 19, 26, 0, 18, 15, 23, 22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-        ]
+          3, 28, 127, 21, 4, 0, 1, 0, 17, 19, 26, 0, 18, 15, 23, 22, 0, 0, 0, 0,
+          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        ],
       };
     },
     ioctl_tcsets(tty, optional_actions, data) {
@@ -2832,7 +10773,7 @@ var TTY = {
     },
     ioctl_tiocgwinsz(tty) {
       return [24, 80];
-    }
+    },
   },
   default_tty1_ops: {
     put_char(tty, val) {
@@ -2848,8 +10789,8 @@ var TTY = {
         err(UTF8ArrayToString(tty.output));
         tty.output = [];
       }
-    }
-  }
+    },
+  },
 };
 var mmapAlloc = (size) => {
   abort();
@@ -2874,28 +10815,38 @@ var MEMFS = {
           unlink: MEMFS.node_ops.unlink,
           rmdir: MEMFS.node_ops.rmdir,
           readdir: MEMFS.node_ops.readdir,
-          symlink: MEMFS.node_ops.symlink
+          symlink: MEMFS.node_ops.symlink,
         },
-        stream: { llseek: MEMFS.stream_ops.llseek }
+        stream: { llseek: MEMFS.stream_ops.llseek },
       },
       file: {
-        node: { getattr: MEMFS.node_ops.getattr, setattr: MEMFS.node_ops.setattr },
+        node: {
+          getattr: MEMFS.node_ops.getattr,
+          setattr: MEMFS.node_ops.setattr,
+        },
         stream: {
           llseek: MEMFS.stream_ops.llseek,
           read: MEMFS.stream_ops.read,
           write: MEMFS.stream_ops.write,
           mmap: MEMFS.stream_ops.mmap,
-          msync: MEMFS.stream_ops.msync
-        }
+          msync: MEMFS.stream_ops.msync,
+        },
       },
       link: {
-        node: { getattr: MEMFS.node_ops.getattr, setattr: MEMFS.node_ops.setattr, readlink: MEMFS.node_ops.readlink },
-        stream: {}
+        node: {
+          getattr: MEMFS.node_ops.getattr,
+          setattr: MEMFS.node_ops.setattr,
+          readlink: MEMFS.node_ops.readlink,
+        },
+        stream: {},
       },
       chrdev: {
-        node: { getattr: MEMFS.node_ops.getattr, setattr: MEMFS.node_ops.setattr },
-        stream: FS.chrdev_stream_ops
-      }
+        node: {
+          getattr: MEMFS.node_ops.getattr,
+          setattr: MEMFS.node_ops.setattr,
+        },
+        stream: FS.chrdev_stream_ops,
+      },
     };
     var node = FS.createNode(parent, name, mode, dev);
     if (FS.isDir(node.mode)) {
@@ -2923,18 +10874,23 @@ var MEMFS = {
   },
   getFileDataAsTypedArray(node) {
     if (!node.contents) return new Uint8Array(0);
-    if (node.contents.subarray) return node.contents.subarray(0, node.usedBytes);
+    if (node.contents.subarray)
+      return node.contents.subarray(0, node.usedBytes);
     return new Uint8Array(node.contents);
   },
   expandFileStorage(node, newCapacity) {
     var prevCapacity = node.contents ? node.contents.length : 0;
     if (prevCapacity >= newCapacity) return;
     var CAPACITY_DOUBLING_MAX = 1024 * 1024;
-    newCapacity = Math.max(newCapacity, (prevCapacity * (prevCapacity < CAPACITY_DOUBLING_MAX ? 2 : 1.125)) >>> 0);
+    newCapacity = Math.max(
+      newCapacity,
+      (prevCapacity * (prevCapacity < CAPACITY_DOUBLING_MAX ? 2 : 1.125)) >>> 0
+    );
     if (prevCapacity != 0) newCapacity = Math.max(newCapacity, 256);
     var oldContents = node.contents;
     node.contents = new Uint8Array(newCapacity);
-    if (node.usedBytes > 0) node.contents.set(oldContents.subarray(0, node.usedBytes), 0);
+    if (node.usedBytes > 0)
+      node.contents.set(oldContents.subarray(0, node.usedBytes), 0);
   },
   resizeFileStorage(node, newSize) {
     if (node.usedBytes == newSize) return;
@@ -2945,7 +10901,9 @@ var MEMFS = {
       var oldContents = node.contents;
       node.contents = new Uint8Array(newSize);
       if (oldContents) {
-        node.contents.set(oldContents.subarray(0, Math.min(newSize, node.usedBytes)));
+        node.contents.set(
+          oldContents.subarray(0, Math.min(newSize, node.usedBytes))
+        );
       }
       node.usedBytes = newSize;
     }
@@ -3012,7 +10970,11 @@ var MEMFS = {
       delete old_node.parent.contents[old_node.name];
       new_dir.contents[new_name] = old_node;
       old_node.name = new_name;
-      new_dir.ctime = new_dir.mtime = old_node.parent.ctime = old_node.parent.mtime = Date.now();
+      new_dir.ctime =
+        new_dir.mtime =
+        old_node.parent.ctime =
+        old_node.parent.mtime =
+          Date.now();
     },
     unlink(parent, name) {
       delete parent.contents[name];
@@ -3039,7 +11001,7 @@ var MEMFS = {
         throw new FS.ErrnoError(28);
       }
       return node.link;
-    }
+    },
   },
   stream_ops: {
     read(stream, buffer, offset, length, position) {
@@ -3049,7 +11011,8 @@ var MEMFS = {
       if (size > 8 && contents.subarray) {
         buffer.set(contents.subarray(position, position + size), offset);
       } else {
-        for (var i = 0; i < size; i++) buffer[offset + i] = contents[position + i];
+        for (var i = 0; i < size; i++)
+          buffer[offset + i] = contents[position + i];
       }
       return size;
     },
@@ -3120,7 +11083,11 @@ var MEMFS = {
             if (contents.subarray) {
               contents = contents.subarray(position, position + length);
             } else {
-              contents = Array.prototype.slice.call(contents, position, position + length);
+              contents = Array.prototype.slice.call(
+                contents,
+                position,
+                position + length
+              );
             }
           }
           HEAP8.set(contents, ptr);
@@ -3131,11 +11098,18 @@ var MEMFS = {
     msync(stream, buffer, offset, length, mmapFlags) {
       MEMFS.stream_ops.write(stream, buffer, 0, length, offset, false);
       return 0;
-    }
-  }
+    },
+  },
 };
 var FS_modeStringToFlags = (str) => {
-  var flagModes = { r: 0, "r+": 2, w: 512 | 64 | 1, "w+": 512 | 64 | 2, a: 1024 | 64 | 1, "a+": 1024 | 64 | 2 };
+  var flagModes = {
+    r: 0,
+    "r+": 2,
+    w: 512 | 64 | 1,
+    "w+": 512 | 64 | 2,
+    a: 1024 | 64 | 1,
+    "a+": 1024 | 64 | 2,
+  };
   var flags = flagModes[str];
   if (typeof flags == "undefined") {
     throw new Error(`Unknown file open mode: ${str}`);
@@ -3180,9 +11154,23 @@ var IDBFS = {
         node.idbfs_mount = mnt.mount;
         node.memfs_stream_ops = node.stream_ops;
         node.stream_ops = { ...node.stream_ops };
-        node.stream_ops.write = (stream, buffer, offset, length, position, canOwn) => {
+        node.stream_ops.write = (
+          stream,
+          buffer,
+          offset,
+          length,
+          position,
+          canOwn
+        ) => {
           stream.node.isModified = true;
-          return node.memfs_stream_ops.write(stream, buffer, offset, length, position, canOwn);
+          return node.memfs_stream_ops.write(
+            stream,
+            buffer,
+            offset,
+            length,
+            position,
+            canOwn
+          );
         };
         node.stream_ops.close = (stream) => {
           var n = stream.node;
@@ -3195,10 +11183,18 @@ var IDBFS = {
         IDBFS.queuePersist(mnt.mount);
         return node;
       };
-      mnt.node_ops.rmdir = (...args) => (IDBFS.queuePersist(mnt.mount), memfs_node_ops.rmdir(...args));
-      mnt.node_ops.symlink = (...args) => (IDBFS.queuePersist(mnt.mount), memfs_node_ops.symlink(...args));
-      mnt.node_ops.unlink = (...args) => (IDBFS.queuePersist(mnt.mount), memfs_node_ops.unlink(...args));
-      mnt.node_ops.rename = (...args) => (IDBFS.queuePersist(mnt.mount), memfs_node_ops.rename(...args));
+      mnt.node_ops.rmdir = (...args) => (
+        IDBFS.queuePersist(mnt.mount), memfs_node_ops.rmdir(...args)
+      );
+      mnt.node_ops.symlink = (...args) => (
+        IDBFS.queuePersist(mnt.mount), memfs_node_ops.symlink(...args)
+      );
+      mnt.node_ops.unlink = (...args) => (
+        IDBFS.queuePersist(mnt.mount), memfs_node_ops.unlink(...args)
+      );
+      mnt.node_ops.rename = (...args) => (
+        IDBFS.queuePersist(mnt.mount), memfs_node_ops.rename(...args)
+      );
     }
     return mnt;
   },
@@ -3215,7 +11211,8 @@ var IDBFS = {
       });
     };
 
-    if (window.syncfs !== undefined) window.syncfs(IDBFS, mount, populate, callback, fn);
+    if (window.syncfs !== undefined)
+      window.syncfs(IDBFS, mount, populate, callback, fn);
     else fn(callback);
   },
   quit: () => {
@@ -3269,7 +11266,9 @@ var IDBFS = {
     function toAbsolute(root) {
       return (p) => PATH.join2(root, p);
     }
-    var check = FS.readdir(mount.mountpoint).filter(isRealDir).map(toAbsolute(mount.mountpoint));
+    var check = FS.readdir(mount.mountpoint)
+      .filter(isRealDir)
+      .map(toAbsolute(mount.mountpoint));
     while (check.length) {
       var path = check.pop();
       var stat;
@@ -3323,7 +11322,11 @@ var IDBFS = {
       return callback(null, { timestamp: stat.mtime, mode: stat.mode });
     } else if (FS.isFile(stat.mode)) {
       node.contents = MEMFS.getFileDataAsTypedArray(node);
-      return callback(null, { timestamp: stat.mtime, mode: stat.mode, contents: node.contents });
+      return callback(null, {
+        timestamp: stat.mtime,
+        mode: stat.mode,
+        contents: node.contents,
+      });
     } else {
       return callback(new Error("node type not supported"));
     }
@@ -3445,7 +11448,7 @@ var IDBFS = {
         IDBFS.removeRemoteEntry(store, path, done);
       }
     }
-  }
+  },
 };
 var asyncLoad = async (url) => {
   var arrayBuffer = await readAsync(url);
@@ -3463,7 +11466,16 @@ var FS_handledByPreloadPlugin = async (byteArray, fullname) => {
   }
   return byteArray;
 };
-var FS_preloadFile = async (parent, name, url, canRead, canWrite, dontCreateFile, canOwn, preFinish) => {
+var FS_preloadFile = async (
+  parent,
+  name,
+  url,
+  canRead,
+  canWrite,
+  dontCreateFile,
+  canOwn,
+  preFinish
+) => {
   var fullname = name ? PATH_FS.resolve(PATH.join2(parent, name)) : parent;
   var dep = getUniqueRunDependency(`cp ${fullname}`);
   addRunDependency(dep);
@@ -3493,7 +11505,18 @@ var FS_createPreloadedFile = (
   canOwn,
   preFinish
 ) => {
-  FS_preloadFile(parent, name, url, canRead, canWrite, dontCreateFile, canOwn, preFinish).then(onload).catch(onerror);
+  FS_preloadFile(
+    parent,
+    name,
+    url,
+    canRead,
+    canWrite,
+    dontCreateFile,
+    canOwn,
+    preFinish
+  )
+    .then(onload)
+    .catch(onerror);
 };
 var FS = {
   root: null,
@@ -3646,7 +11669,9 @@ var FS = {
       if (FS.isRoot(node)) {
         var mount = node.mount.mountpoint;
         if (!path) return mount;
-        return mount[mount.length - 1] !== "/" ? `${mount}/${path}` : mount + path;
+        return mount[mount.length - 1] !== "/"
+          ? `${mount}/${path}`
+          : mount + path;
       }
       path = path ? `${node.name}/${path}` : node.name;
       node = node.parent;
@@ -3861,7 +11886,7 @@ var FS = {
     },
     llseek() {
       throw new FS.ErrnoError(70);
-    }
+    },
   },
   major: (dev) => dev >> 8,
   minor: (dev) => dev & 255,
@@ -3887,7 +11912,9 @@ var FS = {
     }
     FS.syncFSRequests++;
     if (FS.syncFSRequests > 1) {
-      err(`warning: ${FS.syncFSRequests} FS.syncfs operations in flight at once, probably just doing extra work`);
+      err(
+        `warning: ${FS.syncFSRequests} FS.syncfs operations in flight at once, probably just doing extra work`
+      );
     }
     var mounts = FS.getMounts(FS.root.mount);
     var completed = 0;
@@ -4006,7 +12033,7 @@ var FS = {
       ffree: FS.nextInode - 1,
       fsid: 42,
       flags: 2,
-      namelen: 255
+      namelen: 255,
     };
     if (node.node_ops.statfs) {
       Object.assign(rtn, node.node_ops.statfs(node.mount.opts.root));
@@ -4099,7 +12126,9 @@ var FS = {
     if (errCode) {
       throw new FS.ErrnoError(errCode);
     }
-    errCode = new_node ? FS.mayDelete(new_dir, new_name, isdir) : FS.mayCreate(new_dir, new_name);
+    errCode = new_node
+      ? FS.mayDelete(new_dir, new_name, isdir)
+      : FS.mayCreate(new_dir, new_name);
     if (errCode) {
       throw new FS.ErrnoError(errCode);
     }
@@ -4200,7 +12229,11 @@ var FS = {
     return FS.stat(path, true);
   },
   doChmod(stream, node, mode, dontFollow) {
-    FS.doSetAttr(stream, node, { mode: (mode & 4095) | (node.mode & ~4095), ctime: Date.now(), dontFollow });
+    FS.doSetAttr(stream, node, {
+      mode: (mode & 4095) | (node.mode & ~4095),
+      ctime: Date.now(),
+      dontFollow,
+    });
   },
   chmod(path, mode, dontFollow) {
     var node;
@@ -4294,7 +12327,10 @@ var FS = {
       node = path;
     } else {
       isDirPath = path.endsWith("/");
-      var lookup = FS.lookupPath(path, { follow: !(flags & 131072), noent_okay: true });
+      var lookup = FS.lookupPath(path, {
+        follow: !(flags & 131072),
+        noent_okay: true,
+      });
       node = lookup.node;
       path = lookup.path;
     }
@@ -4338,7 +12374,7 @@ var FS = {
       position: 0,
       stream_ops: node.stream_ops,
       ungotten: [],
-      error: false
+      error: false,
     });
     if (stream.stream_ops.open) {
       stream.stream_ops.open(stream);
@@ -4408,7 +12444,13 @@ var FS = {
     } else if (!stream.seekable) {
       throw new FS.ErrnoError(70);
     }
-    var bytesRead = stream.stream_ops.read(stream, buffer, offset, length, position);
+    var bytesRead = stream.stream_ops.read(
+      stream,
+      buffer,
+      offset,
+      length,
+      position
+    );
     if (!seeking) stream.position += bytesRead;
     return bytesRead;
   },
@@ -4437,12 +12479,23 @@ var FS = {
     } else if (!stream.seekable) {
       throw new FS.ErrnoError(70);
     }
-    var bytesWritten = stream.stream_ops.write(stream, buffer, offset, length, position, canOwn);
+    var bytesWritten = stream.stream_ops.write(
+      stream,
+      buffer,
+      offset,
+      length,
+      position,
+      canOwn
+    );
     if (!seeking) stream.position += bytesWritten;
     return bytesWritten;
   },
   mmap(stream, length, position, prot, flags) {
-    if ((prot & 2) !== 0 && (flags & 2) === 0 && (stream.flags & 2097155) !== 2) {
+    if (
+      (prot & 2) !== 0 &&
+      (flags & 2) === 0 &&
+      (stream.flags & 2097155) !== 2
+    ) {
       throw new FS.ErrnoError(2);
     }
     if ((stream.flags & 2097155) === 1) {
@@ -4523,7 +12576,7 @@ var FS = {
     FS.registerDevice(FS.makedev(1, 3), {
       read: () => 0,
       write: (stream, buffer, offset, length, pos) => length,
-      llseek: () => 0
+      llseek: () => 0,
     });
     FS.mkdev("/dev/null", FS.makedev(1, 3));
     TTY.register(FS.makedev(5, 0), TTY.default_tty_ops);
@@ -4561,7 +12614,7 @@ var FS = {
                 parent: null,
                 mount: { mountpoint: "fake" },
                 node_ops: { readlink: () => stream.path },
-                id: fd + 1
+                id: fd + 1,
               };
               ret.parent = ret;
               return ret;
@@ -4570,10 +12623,10 @@ var FS = {
               return Array.from(FS.streams.entries())
                 .filter(([k, v]) => v)
                 .map(([k, v]) => k.toString());
-            }
+            },
           };
           return node;
-        }
+        },
       },
       {},
       "/proc/self/fd"
@@ -4643,7 +12696,7 @@ var FS = {
       object: null,
       parentExists: false,
       parentPath: null,
-      parentObject: null
+      parentObject: null,
     };
     try {
       var lookup = FS.lookupPath(path, { parent: true });
@@ -4679,7 +12732,10 @@ var FS = {
     return current;
   },
   createFile(parent, name, properties, canRead, canWrite) {
-    var path = PATH.join2(typeof parent == "string" ? parent : FS.getPath(parent), name);
+    var path = PATH.join2(
+      typeof parent == "string" ? parent : FS.getPath(parent),
+      name
+    );
     var mode = FS_getMode(canRead, canWrite);
     return FS.create(path, mode);
   },
@@ -4694,7 +12750,8 @@ var FS = {
     if (data) {
       if (typeof data == "string") {
         var arr = new Array(data.length);
-        for (var i = 0, len = data.length; i < len; ++i) arr[i] = data.charCodeAt(i);
+        for (var i = 0, len = data.length; i < len; ++i)
+          arr[i] = data.charCodeAt(i);
         data = arr;
       }
       FS.chmod(node, mode | 146);
@@ -4705,7 +12762,10 @@ var FS = {
     }
   },
   createDevice(parent, name, input, output) {
-    var path = PATH.join2(typeof parent == "string" ? parent : FS.getPath(parent), name);
+    var path = PATH.join2(
+      typeof parent == "string" ? parent : FS.getPath(parent),
+      name
+    );
     var mode = FS_getMode(!!input, !!output);
     FS.createDevice.major ??= 64;
     var dev = FS.makedev(FS.createDevice.major++, 0);
@@ -4751,7 +12811,7 @@ var FS = {
           stream.node.mtime = stream.node.ctime = Date.now();
         }
         return i;
-      }
+      },
     });
     return FS.mkdev(path, mode, dev);
   },
@@ -4792,16 +12852,25 @@ var FS = {
           abort("Couldn't load " + url + ". Status: " + xhr.status);
         var datalength = Number(xhr.getResponseHeader("Content-length"));
         var header;
-        var hasByteServing = (header = xhr.getResponseHeader("Accept-Ranges")) && header === "bytes";
-        var usesGzip = (header = xhr.getResponseHeader("Content-Encoding")) && header === "gzip";
+        var hasByteServing =
+          (header = xhr.getResponseHeader("Accept-Ranges")) &&
+          header === "bytes";
+        var usesGzip =
+          (header = xhr.getResponseHeader("Content-Encoding")) &&
+          header === "gzip";
         var chunkSize = 1024 * 1024;
         if (!hasByteServing) chunkSize = datalength;
         var doXHR = (from, to) => {
-          if (from > to) abort("invalid range (" + from + ", " + to + ") or no bytes requested!");
-          if (to > datalength - 1) abort("only " + datalength + " bytes available! programmer error!");
+          if (from > to)
+            abort(
+              "invalid range (" + from + ", " + to + ") or no bytes requested!"
+            );
+          if (to > datalength - 1)
+            abort("only " + datalength + " bytes available! programmer error!");
           var xhr = new XMLHttpRequest();
           xhr.open("GET", url, false);
-          if (datalength !== chunkSize) xhr.setRequestHeader("Range", "bytes=" + from + "-" + to);
+          if (datalength !== chunkSize)
+            xhr.setRequestHeader("Range", "bytes=" + from + "-" + to);
           xhr.responseType = "arraybuffer";
           if (xhr.overrideMimeType) {
             xhr.overrideMimeType("text/plain; charset=x-user-defined");
@@ -4822,14 +12891,17 @@ var FS = {
           if (typeof lazyArray.chunks[chunkNum] == "undefined") {
             lazyArray.chunks[chunkNum] = doXHR(start, end);
           }
-          if (typeof lazyArray.chunks[chunkNum] == "undefined") abort("doXHR failed!");
+          if (typeof lazyArray.chunks[chunkNum] == "undefined")
+            abort("doXHR failed!");
           return lazyArray.chunks[chunkNum];
         });
         if (usesGzip || !datalength) {
           chunkSize = datalength = 1;
           datalength = this.getter(0).length;
           chunkSize = datalength;
-          out("LazyFiles on gzip forces download of the whole file when length is accessed");
+          out(
+            "LazyFiles on gzip forces download of the whole file when length is accessed"
+          );
         }
         this._length = datalength;
         this._chunkSize = chunkSize;
@@ -4869,8 +12941,8 @@ var FS = {
       usedBytes: {
         get: function () {
           return this.contents.length;
-        }
-      }
+        },
+      },
     });
     var stream_ops = {};
     for (const [key, fn] of Object.entries(node.stream_ops)) {
@@ -4909,7 +12981,7 @@ var FS = {
     };
     node.stream_ops = stream_ops;
     return node;
-  }
+  },
 };
 var UTF8ToString = (ptr, maxBytesToRead, ignoreNul) => {
   if (!ptr) return "";
@@ -4989,9 +13061,15 @@ var SYSCALLS = {
   getStr(ptr) {
     var ret = UTF8ToString(ptr);
     return ret;
-  }
+  },
 };
-var ___syscall__newselect = function (nfds, readfds, writefds, exceptfds, timeout) {
+var ___syscall__newselect = function (
+  nfds,
+  readfds,
+  writefds,
+  exceptfds,
+  timeout
+) {
   try {
     var total = 0;
     var srcReadLow = readfds ? HEAP32[readfds >> 2] : 0,
@@ -5016,7 +13094,7 @@ var ___syscall__newselect = function (nfds, readfds, writefds, exceptfds, timeou
       (exceptfds ? HEAP32[(exceptfds + 4) >> 2] : 0);
     var check = (fd, low, high, val) => (fd < 32 ? low & val : high & val);
     for (var fd = 0; fd < nfds; fd++) {
-      var mask = 1 << (fd % 32);
+      var mask = 1 << fd % 32;
       if (!check(fd, allLow, allHigh, mask)) {
         continue;
       }
@@ -5032,15 +13110,21 @@ var ___syscall__newselect = function (nfds, readfds, writefds, exceptfds, timeou
         flags = stream.stream_ops.poll(stream, timeoutInMillis);
       }
       if (flags & 1 && check(fd, srcReadLow, srcReadHigh, mask)) {
-        fd < 32 ? (dstReadLow = dstReadLow | mask) : (dstReadHigh = dstReadHigh | mask);
+        fd < 32
+          ? (dstReadLow = dstReadLow | mask)
+          : (dstReadHigh = dstReadHigh | mask);
         total++;
       }
       if (flags & 4 && check(fd, srcWriteLow, srcWriteHigh, mask)) {
-        fd < 32 ? (dstWriteLow = dstWriteLow | mask) : (dstWriteHigh = dstWriteHigh | mask);
+        fd < 32
+          ? (dstWriteLow = dstWriteLow | mask)
+          : (dstWriteHigh = dstWriteHigh | mask);
         total++;
       }
       if (flags & 2 && check(fd, srcExceptLow, srcExceptHigh, mask)) {
-        fd < 32 ? (dstExceptLow = dstExceptLow | mask) : (dstExceptHigh = dstExceptHigh | mask);
+        fd < 32
+          ? (dstExceptLow = dstExceptLow | mask)
+          : (dstExceptHigh = dstExceptHigh | mask);
         total++;
       }
     }
@@ -5146,7 +13230,8 @@ function ___syscall_fcntl64(fd, cmd, varargs) {
     return -e.errno;
   }
 }
-var stringToUTF8 = (str, outPtr, maxBytesToWrite) => stringToUTF8Array(str, HEAPU8, outPtr, maxBytesToWrite);
+var stringToUTF8 = (str, outPtr, maxBytesToWrite) =>
+  stringToUTF8Array(str, HEAPU8, outPtr, maxBytesToWrite);
 function ___syscall_getcwd(buf, size) {
   try {
     if (size === 0) return -28;
@@ -5168,7 +13253,10 @@ function ___syscall_getdents64(fd, dirp, count) {
     var pos = 0;
     var off = FS.llseek(stream, 0, 1);
     var startIdx = Math.floor(off / struct_size);
-    var endIdx = Math.min(stream.getdents.length, startIdx + Math.floor(count / struct_size));
+    var endIdx = Math.min(
+      stream.getdents.length,
+      startIdx + Math.floor(count / struct_size)
+    );
     for (var idx = startIdx; idx < endIdx; idx++) {
       var id;
       var type;
@@ -5191,7 +13279,13 @@ function ___syscall_getdents64(fd, dirp, count) {
           throw e;
         }
         id = child.id;
-        type = FS.isChrdev(child.mode) ? 2 : FS.isDir(child.mode) ? 4 : FS.isLink(child.mode) ? 10 : 8;
+        type = FS.isChrdev(child.mode)
+          ? 2
+          : FS.isDir(child.mode)
+          ? 4
+          : FS.isLink(child.mode)
+          ? 10
+          : 8;
       }
       HEAP64[(dirp + pos) >> 3] = BigInt(id);
       HEAP64[(dirp + pos + 8) >> 3] = BigInt((idx + 1) * struct_size);
@@ -5252,7 +13346,13 @@ function ___syscall_ioctl(fd, op, varargs) {
           for (var i = 0; i < 32; i++) {
             c_cc.push(HEAP8[argp + i + 17]);
           }
-          return stream.tty.ops.ioctl_tcsets(stream.tty, op, { c_iflag, c_oflag, c_cflag, c_lflag, c_cc });
+          return stream.tty.ops.ioctl_tcsets(stream.tty, op, {
+            c_iflag,
+            c_oflag,
+            c_cflag,
+            c_lflag,
+            c_cc,
+          });
         }
         return 0;
       }
@@ -5387,7 +13487,8 @@ function ___syscall_unlinkat(dirfd, path, flags) {
 var __abort_js = () => abort("");
 var INT53_MAX = 9007199254740992;
 var INT53_MIN = -9007199254740992;
-var bigintToI53Checked = (num) => (num < INT53_MIN || num > INT53_MAX ? NaN : Number(num));
+var bigintToI53Checked = (num) =>
+  num < INT53_MIN || num > INT53_MAX ? NaN : Number(num);
 function __gmtime_js(time, tmPtr) {
   time = bigintToI53Checked(time);
   var date = new Date(time * 1e3);
@@ -5402,12 +13503,19 @@ function __gmtime_js(time, tmPtr) {
   var yday = ((date.getTime() - start) / (1e3 * 60 * 60 * 24)) | 0;
   HEAP32[(tmPtr + 28) >> 2] = yday;
 }
-var isLeapYear = (year) => year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
-var MONTH_DAYS_LEAP_CUMULATIVE = [0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335];
-var MONTH_DAYS_REGULAR_CUMULATIVE = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
+var isLeapYear = (year) =>
+  year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+var MONTH_DAYS_LEAP_CUMULATIVE = [
+  0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335,
+];
+var MONTH_DAYS_REGULAR_CUMULATIVE = [
+  0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334,
+];
 var ydayFromDate = (date) => {
   var leap = isLeapYear(date.getFullYear());
-  var monthDaysCumulative = leap ? MONTH_DAYS_LEAP_CUMULATIVE : MONTH_DAYS_REGULAR_CUMULATIVE;
+  var monthDaysCumulative = leap
+    ? MONTH_DAYS_LEAP_CUMULATIVE
+    : MONTH_DAYS_REGULAR_CUMULATIVE;
   var yday = monthDaysCumulative[date.getMonth()] + date.getDate() - 1;
   return yday;
 };
@@ -5427,50 +13535,11 @@ function __localtime_js(time, tmPtr) {
   var start = new Date(date.getFullYear(), 0, 1);
   var summerOffset = new Date(date.getFullYear(), 6, 1).getTimezoneOffset();
   var winterOffset = start.getTimezoneOffset();
-  var dst = (summerOffset != winterOffset && date.getTimezoneOffset() == Math.min(winterOffset, summerOffset)) | 0;
+  var dst =
+    (summerOffset != winterOffset &&
+      date.getTimezoneOffset() == Math.min(winterOffset, summerOffset)) | 0;
   HEAP32[(tmPtr + 32) >> 2] = dst;
 }
-var __mktime_js = function (tmPtr) {
-  var ret = (() => {
-    var date = new Date(
-      HEAP32[(tmPtr + 20) >> 2] + 1900,
-      HEAP32[(tmPtr + 16) >> 2],
-      HEAP32[(tmPtr + 12) >> 2],
-      HEAP32[(tmPtr + 8) >> 2],
-      HEAP32[(tmPtr + 4) >> 2],
-      HEAP32[tmPtr >> 2],
-      0
-    );
-    var dst = HEAP32[(tmPtr + 32) >> 2];
-    var guessedOffset = date.getTimezoneOffset();
-    var start = new Date(date.getFullYear(), 0, 1);
-    var summerOffset = new Date(date.getFullYear(), 6, 1).getTimezoneOffset();
-    var winterOffset = start.getTimezoneOffset();
-    var dstOffset = Math.min(winterOffset, summerOffset);
-    if (dst < 0) {
-      HEAP32[(tmPtr + 32) >> 2] = Number(summerOffset != winterOffset && dstOffset == guessedOffset);
-    } else if (dst > 0 != (dstOffset == guessedOffset)) {
-      var nonDstOffset = Math.max(winterOffset, summerOffset);
-      var trueOffset = dst > 0 ? dstOffset : nonDstOffset;
-      date.setTime(date.getTime() + (trueOffset - guessedOffset) * 6e4);
-    }
-    HEAP32[(tmPtr + 24) >> 2] = date.getDay();
-    var yday = ydayFromDate(date) | 0;
-    HEAP32[(tmPtr + 28) >> 2] = yday;
-    HEAP32[tmPtr >> 2] = date.getSeconds();
-    HEAP32[(tmPtr + 4) >> 2] = date.getMinutes();
-    HEAP32[(tmPtr + 8) >> 2] = date.getHours();
-    HEAP32[(tmPtr + 12) >> 2] = date.getDate();
-    HEAP32[(tmPtr + 16) >> 2] = date.getMonth();
-    HEAP32[(tmPtr + 20) >> 2] = date.getYear();
-    var timeMs = date.getTime();
-    if (isNaN(timeMs)) {
-      return -1;
-    }
-    return timeMs / 1e3;
-  })();
-  return BigInt(ret);
-};
 var __tzset_js = (timezone, daylight, std_name, dst_name) => {
   var currentYear = new Date().getFullYear();
   var winter = new Date(currentYear, 0, 1);
@@ -5508,7 +13577,8 @@ var _emscripten_set_main_loop_timing = (mode, value) => {
   }
   if (mode == 0) {
     MainLoop.scheduler = function MainLoop_scheduler_setTimeout() {
-      var timeUntilNextTick = Math.max(0, MainLoop.tickStartTime + value - _emscripten_get_now()) | 0;
+      var timeUntilNextTick =
+        Math.max(0, MainLoop.tickStartTime + value - _emscripten_get_now()) | 0;
       setTimeout(MainLoop.runner, timeUntilNextTick);
     };
     MainLoop.method = "timeout";
@@ -5525,7 +13595,10 @@ var _emscripten_set_main_loop_timing = (mode, value) => {
         var setImmediates = [];
         var emscriptenMainLoopMessageId = "setimmediate";
         var MainLoop_setImmediate_messageHandler = (event) => {
-          if (event.data === emscriptenMainLoopMessageId || event.data.target === emscriptenMainLoopMessageId) {
+          if (
+            event.data === emscriptenMainLoopMessageId ||
+            event.data.target === emscriptenMainLoopMessageId
+          ) {
             event.stopPropagation();
             setImmediates.shift()();
           }
@@ -5696,7 +13769,8 @@ var MainLoop = {
   },
   init() {
     Module["preMainLoop"] && MainLoop.preMainLoop.push(Module["preMainLoop"]);
-    Module["postMainLoop"] && MainLoop.postMainLoop.push(Module["postMainLoop"]);
+    Module["postMainLoop"] &&
+      MainLoop.postMainLoop.push(Module["postMainLoop"]);
   },
   runIter(func) {
     if (ABORT) return;
@@ -5729,7 +13803,7 @@ var MainLoop = {
     } else {
       MainLoop.fakeRequestAnimationFrame(func);
     }
-  }
+  },
 };
 var AL = {
   QUEUE_INTERVAL: 25,
@@ -5742,7 +13816,7 @@ var AL = {
     AL_SOFT_loop_points: true,
     AL_SOFT_source_length: true,
     AL_EXT_source_distance_model: true,
-    AL_SOFT_source_spatialize: true
+    AL_SOFT_source_spatialize: true,
   },
   _alcErr: 0,
   alcErr: 0,
@@ -5752,7 +13826,17 @@ var AL = {
   stringCache: {},
   contexts: {},
   currentCtx: null,
-  buffers: { 0: { id: 0, refCount: 0, audioBuf: null, frequency: 0, bytesPerSample: 2, channels: 1, length: 0 } },
+  buffers: {
+    0: {
+      id: 0,
+      refCount: 0,
+      audioBuf: null,
+      frequency: 0,
+      bytesPerSample: 2,
+      channels: 1,
+      length: 0,
+    },
+  },
   paramArray: [],
   _nextId: 1,
   newId: () => (AL.freeIds.length > 0 ? AL.freeIds.pop() : AL._nextId++),
@@ -5880,16 +13964,20 @@ var AL = {
         if (delta < loopEnd) {
           src.bufOffset = delta;
         } else {
-          src.bufOffset = loopStart + ((delta - loopStart) % (loopEnd - loopStart));
+          src.bufOffset =
+            loopStart + ((delta - loopStart) % (loopEnd - loopStart));
         }
       }
     } else if (src.audioQueue[0]) {
-      src.bufOffset = (currentTime - src.audioQueue[0]._startTime) * src.playbackRate;
+      src.bufOffset =
+        (currentTime - src.audioQueue[0]._startTime) * src.playbackRate;
     } else {
       if (src.type !== 4136 && src.looping) {
         var srcDuration = AL.sourceDuration(src) / src.playbackRate;
         if (srcDuration > 0) {
-          src.bufStartTime += Math.floor((currentTime - src.bufStartTime) / srcDuration) * srcDuration;
+          src.bufStartTime +=
+            Math.floor((currentTime - src.bufStartTime) / srcDuration) *
+            srcDuration;
         }
       }
       for (var i = 0; i < src.bufQueue.length; i++) {
@@ -5903,7 +13991,8 @@ var AL = {
         }
         var buf = src.bufQueue[src.bufsProcessed];
         if (buf.length > 0) {
-          nextStartTime = src.bufStartTime + buf.audioBuf.duration / src.playbackRate;
+          nextStartTime =
+            src.bufStartTime + buf.audioBuf.duration / src.playbackRate;
           if (currentTime < nextStartTime) {
             src.bufOffset = (currentTime - src.bufStartTime) * src.playbackRate;
             break;
@@ -5978,7 +14067,10 @@ var AL = {
         break;
       }
     }
-    if (src.spatialize === 1 || (src.spatialize === 2 && templateBuf.channels === 1)) {
+    if (
+      src.spatialize === 1 ||
+      (src.spatialize === 2 && templateBuf.channels === 1)
+    ) {
       if (src.panner) {
         return;
       }
@@ -6012,7 +14104,9 @@ var AL = {
     panner.maxDistance = src.maxDistance;
     panner.rolloffFactor = src.rolloffFactor;
     panner.panningModel = src.context.hrtf ? "HRTF" : "equalpower";
-    var distanceModel = src.context.sourceDistanceModel ? src.distanceModel : src.context.distanceModel;
+    var distanceModel = src.context.sourceDistanceModel
+      ? src.distanceModel
+      : src.context.distanceModel;
     switch (distanceModel) {
       case 0:
         panner.distanceModel = "inverse";
@@ -6039,7 +14133,11 @@ var AL = {
       listener.positionY.value = ctx.listener.position[1];
       listener.positionZ.value = ctx.listener.position[2];
     } else {
-      listener.setPosition(ctx.listener.position[0], ctx.listener.position[1], ctx.listener.position[2]);
+      listener.setPosition(
+        ctx.listener.position[0],
+        ctx.listener.position[1],
+        ctx.listener.position[2]
+      );
     }
     if (listener.forwardX) {
       listener.forwardX.value = ctx.listener.direction[0];
@@ -6146,7 +14244,10 @@ var AL = {
     var lVelX = listener.velocity[0];
     var lVelY = listener.velocity[1];
     var lVelZ = listener.velocity[2];
-    if ((posX === lPosX && posY === lPosY && posZ === lPosZ) || (velX === lVelX && velY === lVelY && velZ === lVelZ)) {
+    if (
+      (posX === lPosX && posY === lPosY && posZ === lPosZ) ||
+      (velX === lVelX && velY === lVelY && velZ === lVelZ)
+    ) {
       src.dopplerShift = 1;
     } else {
       var speedOfSound = src.context.speedOfSound;
@@ -6159,7 +14260,9 @@ var AL = {
       var vss = (slX * velX + slY * velY + slZ * velZ) / magSl;
       vls = Math.min(vls, speedOfSound / dopplerFactor);
       vss = Math.min(vss, speedOfSound / dopplerFactor);
-      src.dopplerShift = (speedOfSound - dopplerFactor * vls) / (speedOfSound - dopplerFactor * vss);
+      src.dopplerShift =
+        (speedOfSound - dopplerFactor * vls) /
+        (speedOfSound - dopplerFactor * vss);
     }
     if (src.dopplerShift !== oldShift) {
       AL.updateSourceRate(src);
@@ -6176,7 +14279,8 @@ var AL = {
       if (src.type === 4136 && src.looping) {
         duration = Number.POSITIVE_INFINITY;
       } else {
-        duration = (audioSrc.buffer.duration - audioSrc._startOffset) / src.playbackRate;
+        duration =
+          (audioSrc.buffer.duration - audioSrc._startOffset) / src.playbackRate;
       }
       audioSrc._duration = duration;
       audioSrc.playbackRate.value = src.playbackRate;
@@ -6288,7 +14392,9 @@ var AL = {
       case 4102:
         return AL.currentCtx.listener.velocity;
       case 4111:
-        return AL.currentCtx.listener.direction.concat(AL.currentCtx.listener.up);
+        return AL.currentCtx.listener.direction.concat(
+          AL.currentCtx.listener.up
+        );
       case 4106:
         return AL.currentCtx.gain.gain.value;
       default:
@@ -6307,7 +14413,11 @@ var AL = {
     var listener = AL.currentCtx.listener;
     switch (param) {
       case 4100:
-        if (!Number.isFinite(value[0]) || !Number.isFinite(value[1]) || !Number.isFinite(value[2])) {
+        if (
+          !Number.isFinite(value[0]) ||
+          !Number.isFinite(value[1]) ||
+          !Number.isFinite(value[2])
+        ) {
           AL.currentCtx.err = 40963;
           return;
         }
@@ -6317,7 +14427,11 @@ var AL = {
         AL.updateListenerSpace(AL.currentCtx);
         break;
       case 4102:
-        if (!Number.isFinite(value[0]) || !Number.isFinite(value[1]) || !Number.isFinite(value[2])) {
+        if (
+          !Number.isFinite(value[0]) ||
+          !Number.isFinite(value[1]) ||
+          !Number.isFinite(value[2])
+        ) {
           AL.currentCtx.err = 40963;
           return;
         }
@@ -6380,7 +14494,10 @@ var AL = {
         if (buf.length === 0) {
           return [0, 0];
         }
-        return [(buf.audioBuf._loopStart || 0) * buf.frequency, (buf.audioBuf._loopEnd || buf.length) * buf.frequency];
+        return [
+          (buf.audioBuf._loopStart || 0) * buf.frequency,
+          (buf.audioBuf._loopEnd || buf.length) * buf.frequency,
+        ];
       default:
         AL.currentCtx.err = 40962;
         return null;
@@ -6407,7 +14524,13 @@ var AL = {
         }
         break;
       case 8213:
-        if (value[0] < 0 || value[0] > buf.length || value[1] < 0 || value[1] > buf.Length || value[0] >= value[1]) {
+        if (
+          value[0] < 0 ||
+          value[0] > buf.length ||
+          value[1] < 0 ||
+          value[1] > buf.Length ||
+          value[0] >= value[1]
+        ) {
           AL.currentCtx.err = 40963;
           return;
         }
@@ -6470,7 +14593,10 @@ var AL = {
         }
         return src.bufQueue.length;
       case 4118:
-        if ((src.bufQueue.length === 1 && src.bufQueue[0].id === 0) || src.looping) {
+        if (
+          (src.bufQueue.length === 1 && src.bufQueue[0].id === 0) ||
+          src.looping
+        ) {
           return 0;
         }
         return src.bufsProcessed;
@@ -6506,7 +14632,8 @@ var AL = {
         for (var i = 0; i < src.bufQueue.length; i++) {
           length += src.bufQueue[i].length;
           if (src.bufQueue[i].id !== 0) {
-            bytesPerFrame = src.bufQueue[i].bytesPerSample * src.bufQueue[i].channels;
+            bytesPerFrame =
+              src.bufQueue[i].bytesPerSample * src.bufQueue[i].channels;
           }
         }
         return length * bytesPerFrame;
@@ -6583,7 +14710,11 @@ var AL = {
         AL.updateSourceRate(src);
         break;
       case 4100:
-        if (!Number.isFinite(value[0]) || !Number.isFinite(value[1]) || !Number.isFinite(value[2])) {
+        if (
+          !Number.isFinite(value[0]) ||
+          !Number.isFinite(value[1]) ||
+          !Number.isFinite(value[2])
+        ) {
           AL.currentCtx.err = 40963;
           return;
         }
@@ -6593,7 +14724,11 @@ var AL = {
         AL.updateSourceSpace(src);
         break;
       case 4101:
-        if (!Number.isFinite(value[0]) || !Number.isFinite(value[1]) || !Number.isFinite(value[2])) {
+        if (
+          !Number.isFinite(value[0]) ||
+          !Number.isFinite(value[1]) ||
+          !Number.isFinite(value[2])
+        ) {
           AL.currentCtx.err = 40963;
           return;
         }
@@ -6603,7 +14738,11 @@ var AL = {
         AL.updateSourceSpace(src);
         break;
       case 4102:
-        if (!Number.isFinite(value[0]) || !Number.isFinite(value[1]) || !Number.isFinite(value[2])) {
+        if (
+          !Number.isFinite(value[0]) ||
+          !Number.isFinite(value[1]) ||
+          !Number.isFinite(value[2])
+        ) {
           AL.currentCtx.err = 40963;
           return;
         }
@@ -6627,8 +14766,10 @@ var AL = {
           if (src.type === 4136 && src.audioQueue.length > 0) {
             var audioSrc = src.audioQueue[0];
             audioSrc.loop = false;
-            audioSrc._duration = src.bufQueue[0].audioBuf.duration / src.playbackRate;
-            audioSrc._startTime = currentTime - src.bufOffset / src.playbackRate;
+            audioSrc._duration =
+              src.bufQueue[0].audioBuf.duration / src.playbackRate;
+            audioSrc._startTime =
+              currentTime - src.bufOffset / src.playbackRate;
           }
         } else {
           AL.currentCtx.err = 40963;
@@ -6674,14 +14815,22 @@ var AL = {
         src.gain.gain.value = value;
         break;
       case 4109:
-        if (!Number.isFinite(value) || value < 0 || value > Math.min(src.maxGain, 1)) {
+        if (
+          !Number.isFinite(value) ||
+          value < 0 ||
+          value > Math.min(src.maxGain, 1)
+        ) {
           AL.currentCtx.err = 40963;
           return;
         }
         src.minGain = value;
         break;
       case 4110:
-        if (!Number.isFinite(value) || value < Math.max(0, src.minGain) || value > 1) {
+        if (
+          !Number.isFinite(value) ||
+          value < Math.max(0, src.minGain) ||
+          value > 1
+        ) {
           AL.currentCtx.err = 40963;
           return;
         }
@@ -6826,7 +14975,7 @@ var AL = {
       return null;
     }
     return c;
-  }
+  },
 };
 var _alBuffer3f = (bufferId, param, value0, value1, value2) => {
   AL.setBufferParam("alBuffer3f", bufferId, param, null);
@@ -7108,7 +15257,7 @@ var _alGenBuffers = (count, pBufferIds) => {
       frequency: 0,
       bytesPerSample: 2,
       channels: 1,
-      length: 0
+      length: 0,
     };
     AL.deviceRefCounts[buf.deviceId]++;
     AL.buffers[buf.id] = buf;
@@ -7153,7 +15302,7 @@ var _alGenSources = (count, pSourceIds) => {
       spatialize: 2,
       get playbackRate() {
         return this.pitch * this.dopplerShift;
-      }
+      },
     };
     AL.currentCtx.sources[src.id] = src;
     HEAP32[(pSourceIds + i * 4) >> 2] = src.id;
@@ -8266,7 +16415,12 @@ var _alSourceUnqueueBuffers = (sourceId, count, pBufferIds) => {
     AL.currentCtx.err = 40961;
     return;
   }
-  if (count > (src.bufQueue.length === 1 && src.bufQueue[0].id === 0 ? 0 : src.bufsProcessed)) {
+  if (
+    count >
+    (src.bufQueue.length === 1 && src.bufQueue[0].id === 0
+      ? 0
+      : src.bufsProcessed)
+  ) {
     AL.currentCtx.err = 40963;
     return;
   }
@@ -8495,9 +16649,17 @@ var _alcCreateContext = (deviceId, pAttrList) => {
     id: AL.newId(),
     attrs,
     audioCtx: ac,
-    listener: { position: [0, 0, 0], velocity: [0, 0, 0], direction: [0, 0, 0], up: [0, 0, 0] },
+    listener: {
+      position: [0, 0, 0],
+      velocity: [0, 0, 0],
+      direction: [0, 0, 0],
+      up: [0, 0, 0],
+    },
     sources: [],
-    interval: setInterval(() => AL.scheduleContextAudio(ctx), AL.QUEUE_INTERVAL),
+    interval: setInterval(
+      () => AL.scheduleContextAudio(ctx),
+      AL.QUEUE_INTERVAL
+    ),
     gain,
     distanceModel: 53250,
     speedOfSound: 343.3,
@@ -8512,7 +16674,7 @@ var _alcCreateContext = (deviceId, pAttrList) => {
       if (this._err === 0 || val === 0) {
         this._err = val;
       }
-    }
+    },
   };
   AL.deviceRefCounts[deviceId]++;
   AL.contexts[ctx.id] = ctx;
@@ -8728,12 +16890,16 @@ var Browser = {
     Browser.initted = true;
     var imagePlugin = {};
     imagePlugin["canHandle"] = function imagePlugin_canHandle(name) {
-      return !Module["noImageDecoding"] && /\.(jpg|jpeg|png|bmp|webp)$/i.test(name);
+      return (
+        !Module["noImageDecoding"] && /\.(jpg|jpeg|png|bmp|webp)$/i.test(name)
+      );
     };
     imagePlugin["handle"] = async function imagePlugin_handle(byteArray, name) {
       var b = new Blob([byteArray], { type: Browser.getMimetype(name) });
       if (b.size !== byteArray.length) {
-        b = new Blob([new Uint8Array(byteArray).buffer], { type: Browser.getMimetype(name) });
+        b = new Blob([new Uint8Array(byteArray).buffer], {
+          type: Browser.getMimetype(name),
+        });
       }
       var url = URL.createObjectURL(b);
       return new Promise((resolve, reject) => {
@@ -8758,7 +16924,10 @@ var Browser = {
     preloadPlugins.push(imagePlugin);
     var audioPlugin = {};
     audioPlugin["canHandle"] = function audioPlugin_canHandle(name) {
-      return !Module["noAudioDecoding"] && name.slice(-4) in { ".ogg": 1, ".wav": 1, ".mp3": 1 };
+      return (
+        !Module["noAudioDecoding"] &&
+        name.slice(-4) in { ".ogg": 1, ".wav": 1, ".mp3": 1 }
+      );
     };
     audioPlugin["handle"] = async function audioPlugin_handle(byteArray, name) {
       return new Promise((resolve, reject) => {
@@ -8775,9 +16944,12 @@ var Browser = {
         audio.addEventListener("canplaythrough", () => finish(audio), false);
         audio.onerror = function audio_onerror(event) {
           if (done) return;
-          err(`warning: browser could not fully decode audio ${name}, trying slower base64 approach`);
+          err(
+            `warning: browser could not fully decode audio ${name}, trying slower base64 approach`
+          );
           function encode64(data) {
-            var BASE = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+            var BASE =
+              "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
             var PAD = "=";
             var ret = "";
             var leftchar = 0;
@@ -8800,7 +16972,8 @@ var Browser = {
             }
             return ret;
           }
-          audio.src = "data:audio/x-" + name.slice(-3) + ";base64," + encode64(byteArray);
+          audio.src =
+            "data:audio/x-" + name.slice(-3) + ";base64," + encode64(byteArray);
           finish(audio);
         };
         audio.src = url;
@@ -8821,7 +16994,10 @@ var Browser = {
         canvas.addEventListener(
           "click",
           (ev) => {
-            if (!Browser.pointerLock && Browser.getCanvas().requestPointerLock) {
+            if (
+              !Browser.pointerLock &&
+              Browser.getCanvas().requestPointerLock
+            ) {
               Browser.getCanvas().requestPointerLock();
               ev.preventDefault();
             }
@@ -8832,14 +17008,15 @@ var Browser = {
     }
   },
   createContext(canvas, useWebGL, setInModule, webGLContextAttributes) {
-    if (useWebGL && Module["ctx"] && canvas == Browser.getCanvas()) return Module["ctx"];
+    if (useWebGL && Module["ctx"] && canvas == Browser.getCanvas())
+      return Module["ctx"];
     var ctx;
     var contextHandle;
     if (useWebGL) {
       var contextAttributes = {
         antialias: false,
         alpha: false,
-        majorVersion: typeof WebGL2RenderingContext != "undefined" ? 2 : 1
+        majorVersion: typeof WebGL2RenderingContext != "undefined" ? 2 : 1,
       };
       if (webGLContextAttributes) {
         for (var attribute in webGLContextAttributes) {
@@ -8872,7 +17049,8 @@ var Browser = {
     Browser.lockPointer = lockPointer;
     Browser.resizeCanvas = resizeCanvas;
     if (typeof Browser.lockPointer == "undefined") Browser.lockPointer = true;
-    if (typeof Browser.resizeCanvas == "undefined") Browser.resizeCanvas = false;
+    if (typeof Browser.resizeCanvas == "undefined")
+      Browser.resizeCanvas = false;
     var canvas = Browser.getCanvas();
     function fullscreenChange() {
       Browser.isFullscreen = false;
@@ -8902,7 +17080,11 @@ var Browser = {
       Browser.fullscreenHandlersInstalled = true;
       document.addEventListener("fullscreenchange", fullscreenChange, false);
       document.addEventListener("mozfullscreenchange", fullscreenChange, false);
-      document.addEventListener("webkitfullscreenchange", fullscreenChange, false);
+      document.addEventListener(
+        "webkitfullscreenchange",
+        fullscreenChange,
+        false
+      );
       document.addEventListener("MSFullscreenChange", fullscreenChange, false);
     }
     var canvasContainer = document.createElement("div");
@@ -8913,10 +17095,16 @@ var Browser = {
       canvasContainer["mozRequestFullScreen"] ||
       canvasContainer["msRequestFullscreen"] ||
       (canvasContainer["webkitRequestFullscreen"]
-        ? () => canvasContainer["webkitRequestFullscreen"](Element["ALLOW_KEYBOARD_INPUT"])
+        ? () =>
+            canvasContainer["webkitRequestFullscreen"](
+              Element["ALLOW_KEYBOARD_INPUT"]
+            )
         : null) ||
       (canvasContainer["webkitRequestFullScreen"]
-        ? () => canvasContainer["webkitRequestFullScreen"](Element["ALLOW_KEYBOARD_INPUT"])
+        ? () =>
+            canvasContainer["webkitRequestFullScreen"](
+              Element["ALLOW_KEYBOARD_INPUT"]
+            )
         : null);
     canvasContainer.requestFullscreen();
   },
@@ -8945,18 +17133,29 @@ var Browser = {
       bmp: "image/bmp",
       ogg: "audio/ogg",
       wav: "audio/wav",
-      mp3: "audio/mpeg"
+      mp3: "audio/mpeg",
     }[name.slice(name.lastIndexOf(".") + 1)];
   },
   getUserMedia(func) {
-    window.getUserMedia ||= navigator["getUserMedia"] || navigator["mozGetUserMedia"];
+    window.getUserMedia ||=
+      navigator["getUserMedia"] || navigator["mozGetUserMedia"];
     window.getUserMedia(func);
   },
   getMovementX(event) {
-    return event["movementX"] || event["mozMovementX"] || event["webkitMovementX"] || 0;
+    return (
+      event["movementX"] ||
+      event["mozMovementX"] ||
+      event["webkitMovementX"] ||
+      0
+    );
   },
   getMovementY(event) {
-    return event["movementY"] || event["mozMovementY"] || event["webkitMovementY"] || 0;
+    return (
+      event["movementY"] ||
+      event["mozMovementY"] ||
+      event["webkitMovementY"] ||
+      0
+    );
   },
   getMouseWheelDelta(event) {
     var delta = 0;
@@ -8997,8 +17196,14 @@ var Browser = {
   calculateMouseCoords(pageX, pageY) {
     var canvas = Browser.getCanvas();
     var rect = canvas.getBoundingClientRect();
-    var scrollX = typeof window.scrollX != "undefined" ? window.scrollX : window.pageXOffset;
-    var scrollY = typeof window.scrollY != "undefined" ? window.scrollY : window.pageYOffset;
+    var scrollX =
+      typeof window.scrollX != "undefined"
+        ? window.scrollX
+        : window.pageXOffset;
+    var scrollY =
+      typeof window.scrollY != "undefined"
+        ? window.scrollY
+        : window.pageYOffset;
     var adjustedX = pageX - (scrollX + rect.left);
     var adjustedY = pageY - (scrollY + rect.top);
     adjustedX = adjustedX * (canvas.width / rect.width);
@@ -9023,7 +17228,11 @@ var Browser = {
       Browser.mouseX += Browser.mouseMovementX;
       Browser.mouseY += Browser.mouseMovementY;
     } else {
-      if (event.type === "touchstart" || event.type === "touchend" || event.type === "touchmove") {
+      if (
+        event.type === "touchstart" ||
+        event.type === "touchend" ||
+        event.type === "touchmove"
+      ) {
         var touch = event.touch;
         if (touch === undefined) {
           return;
@@ -9046,7 +17255,9 @@ var Browser = {
   resizeListeners: [],
   updateResizeListeners() {
     var canvas = Browser.getCanvas();
-    Browser.resizeListeners.forEach((listener) => listener(canvas.width, canvas.height));
+    Browser.resizeListeners.forEach((listener) =>
+      listener(canvas.width, canvas.height)
+    );
   },
   setCanvasSize(width, height, noUpdates) {
     var canvas = Browser.getCanvas();
@@ -9090,7 +17301,10 @@ var Browser = {
         h = Math.round(w / Module["forcedAspectRatio"]);
       }
     }
-    if (getFullscreenElement() === canvas.parentNode && typeof screen != "undefined") {
+    if (
+      getFullscreenElement() === canvas.parentNode &&
+      typeof screen != "undefined"
+    ) {
       var factor = Math.min(screen.width / w, screen.height / h);
       w = Math.round(w * factor);
       h = Math.round(h * factor);
@@ -9115,7 +17329,7 @@ var Browser = {
         }
       }
     }
-  }
+  },
 };
 var EGL = {
   errorCode: 12288,
@@ -9123,7 +17337,12 @@ var EGL = {
   currentContext: 0,
   currentReadSurface: 0,
   currentDrawSurface: 0,
-  contextAttributes: { alpha: false, depth: false, stencil: false, antialias: false },
+  contextAttributes: {
+    alpha: false,
+    depth: false,
+    stencil: false,
+    antialias: false,
+  },
   stringCache: {},
   setErrorCode(code) {
     EGL.errorCode = code;
@@ -9172,7 +17391,7 @@ var EGL = {
     }
     EGL.setErrorCode(12288);
     return 1;
-  }
+  },
 };
 var _eglBindAPI = (api) => {
   if (api == 12448) {
@@ -9182,13 +17401,19 @@ var _eglBindAPI = (api) => {
   EGL.setErrorCode(12300);
   return 0;
 };
-var _eglChooseConfig = (display, attrib_list, configs, config_size, numConfigs) =>
-  EGL.chooseConfig(display, attrib_list, configs, config_size, numConfigs);
+var _eglChooseConfig = (
+  display,
+  attrib_list,
+  configs,
+  config_size,
+  numConfigs
+) => EGL.chooseConfig(display, attrib_list, configs, config_size, numConfigs);
 var GLctx;
 var webgl_enable_ANGLE_instanced_arrays = (ctx) => {
   var ext = ctx.getExtension("ANGLE_instanced_arrays");
   if (ext) {
-    ctx["vertexAttribDivisor"] = (index, divisor) => ext["vertexAttribDivisorANGLE"](index, divisor);
+    ctx["vertexAttribDivisor"] = (index, divisor) =>
+      ext["vertexAttribDivisorANGLE"](index, divisor);
     ctx["drawArraysInstanced"] = (mode, first, count, primcount) =>
       ext["drawArraysInstancedANGLE"](mode, first, count, primcount);
     ctx["drawElementsInstanced"] = (mode, count, type, indices, primcount) =>
@@ -9214,14 +17439,21 @@ var webgl_enable_WEBGL_draw_buffers = (ctx) => {
   }
 };
 var webgl_enable_WEBGL_draw_instanced_base_vertex_base_instance = (ctx) =>
-  !!(ctx.dibvbi = ctx.getExtension("WEBGL_draw_instanced_base_vertex_base_instance"));
+  !!(ctx.dibvbi = ctx.getExtension(
+    "WEBGL_draw_instanced_base_vertex_base_instance"
+  ));
 var webgl_enable_WEBGL_multi_draw_instanced_base_vertex_base_instance = (ctx) =>
-  !!(ctx.mdibvbi = ctx.getExtension("WEBGL_multi_draw_instanced_base_vertex_base_instance"));
+  !!(ctx.mdibvbi = ctx.getExtension(
+    "WEBGL_multi_draw_instanced_base_vertex_base_instance"
+  ));
 var webgl_enable_EXT_polygon_offset_clamp = (ctx) =>
   !!(ctx.extPolygonOffsetClamp = ctx.getExtension("EXT_polygon_offset_clamp"));
-var webgl_enable_EXT_clip_control = (ctx) => !!(ctx.extClipControl = ctx.getExtension("EXT_clip_control"));
-var webgl_enable_WEBGL_polygon_mode = (ctx) => !!(ctx.webglPolygonMode = ctx.getExtension("WEBGL_polygon_mode"));
-var webgl_enable_WEBGL_multi_draw = (ctx) => !!(ctx.multiDrawWebgl = ctx.getExtension("WEBGL_multi_draw"));
+var webgl_enable_EXT_clip_control = (ctx) =>
+  !!(ctx.extClipControl = ctx.getExtension("EXT_clip_control"));
+var webgl_enable_WEBGL_polygon_mode = (ctx) =>
+  !!(ctx.webglPolygonMode = ctx.getExtension("WEBGL_polygon_mode"));
+var webgl_enable_WEBGL_multi_draw = (ctx) =>
+  !!(ctx.multiDrawWebgl = ctx.getExtension("WEBGL_multi_draw"));
 var getEmscriptenSupportedExtensions = (ctx) => {
   var supportedExtensions = [
     "ANGLE_instanced_arrays",
@@ -9266,9 +17498,11 @@ var getEmscriptenSupportedExtensions = (ctx) => {
     "WEBGL_debug_shaders",
     "WEBGL_lose_context",
     "WEBGL_multi_draw",
-    "WEBGL_polygon_mode"
+    "WEBGL_polygon_mode",
   ];
-  return (ctx.getSupportedExtensions() || []).filter((ext) => supportedExtensions.includes(ext));
+  return (ctx.getSupportedExtensions() || []).filter((ext) =>
+    supportedExtensions.includes(ext)
+  );
 };
 var registerPreMainLoop = (f) => {
   typeof MainLoop != "undefined" && MainLoop.preMainLoop.push(f);
@@ -9330,15 +17564,19 @@ var GL = {
     var largestIndex = GL.log2ceilLookup(GL.MAX_TEMP_BUFFER_SIZE);
     context.tempVertexBufferCounters1 = [];
     context.tempVertexBufferCounters2 = [];
-    context.tempVertexBufferCounters1.length = context.tempVertexBufferCounters2.length = largestIndex + 1;
+    context.tempVertexBufferCounters1.length =
+      context.tempVertexBufferCounters2.length = largestIndex + 1;
     context.tempVertexBuffers1 = [];
     context.tempVertexBuffers2 = [];
-    context.tempVertexBuffers1.length = context.tempVertexBuffers2.length = largestIndex + 1;
+    context.tempVertexBuffers1.length = context.tempVertexBuffers2.length =
+      largestIndex + 1;
     context.tempIndexBuffers = [];
     context.tempIndexBuffers.length = largestIndex + 1;
     for (var i = 0; i <= largestIndex; ++i) {
       context.tempIndexBuffers[i] = null;
-      context.tempVertexBufferCounters1[i] = context.tempVertexBufferCounters2[i] = 0;
+      context.tempVertexBufferCounters1[i] = context.tempVertexBufferCounters2[
+        i
+      ] = 0;
       var ringbufferLength = GL.numTempVertexBuffersPerSize;
       context.tempVertexBuffers1[i] = [];
       context.tempVertexBuffers2[i] = [];
@@ -9380,7 +17618,8 @@ var GL = {
     var ringbuffer = GL.currentContext.tempVertexBuffers1[idx];
     var nextFreeBufferIndex = GL.currentContext.tempVertexBufferCounters1[idx];
     GL.currentContext.tempVertexBufferCounters1[idx] =
-      (GL.currentContext.tempVertexBufferCounters1[idx] + 1) & (GL.numTempVertexBuffersPerSize - 1);
+      (GL.currentContext.tempVertexBufferCounters1[idx] + 1) &
+      (GL.numTempVertexBuffersPerSize - 1);
     var vbo = ringbuffer[nextFreeBufferIndex];
     if (vbo) {
       return vbo;
@@ -9413,7 +17652,8 @@ var GL = {
     GL.currentContext.tempVertexBuffers1 = GL.currentContext.tempVertexBuffers2;
     GL.currentContext.tempVertexBuffers2 = vb;
     vb = GL.currentContext.tempVertexBufferCounters1;
-    GL.currentContext.tempVertexBufferCounters1 = GL.currentContext.tempVertexBufferCounters2;
+    GL.currentContext.tempVertexBufferCounters1 =
+      GL.currentContext.tempVertexBufferCounters2;
     GL.currentContext.tempVertexBufferCounters2 = vb;
     var largestIndex = GL.log2ceilLookup(GL.MAX_TEMP_BUFFER_SIZE);
     for (var i = 0; i <= largestIndex; ++i) {
@@ -9446,7 +17686,15 @@ var GL = {
       var buf = GL.getTempVertexBuffer(size);
       GLctx.bindBuffer(34962, buf);
       GLctx.bufferSubData(34962, 0, HEAPU8.subarray(cb.ptr, cb.ptr + size));
-      cb.vertexAttribPointerAdaptor.call(GLctx, i, cb.size, cb.type, cb.normalized, cb.stride, 0);
+      cb.vertexAttribPointerAdaptor.call(
+        GLctx,
+        i,
+        cb.size,
+        cb.type,
+        cb.normalized,
+        cb.stride,
+        0
+      );
     }
   },
   postDrawHandleClientVertexAttribBindings: () => {
@@ -9459,7 +17707,9 @@ var GL = {
       canvas.getContextSafariWebGL2Fixed = canvas.getContext;
       function fixedGetContext(ver, attrs) {
         var gl = canvas.getContextSafariWebGL2Fixed(ver, attrs);
-        return (ver == "webgl") == gl instanceof WebGLRenderingContext ? gl : null;
+        return (ver == "webgl") == gl instanceof WebGLRenderingContext
+          ? gl
+          : null;
       }
       canvas.getContext = fixedGetContext;
     }
@@ -9477,7 +17727,7 @@ var GL = {
       handle,
       attributes: webGLContextAttributes,
       version: webGLContextAttributes.majorVersion,
-      GLctx: ctx
+      GLctx: ctx,
     };
     if (ctx.canvas) ctx.canvas.GLctxObject = context;
     GL.contexts[handle] = context;
@@ -9498,7 +17748,7 @@ var GL = {
         normalized: 0,
         stride: 0,
         ptr: 0,
-        vertexAttribPointerAdaptor: null
+        vertexAttribPointerAdaptor: null,
       };
     }
     GL.generateTempBuffers(false, context);
@@ -9515,7 +17765,9 @@ var GL = {
       GL.currentContext = null;
     }
     if (typeof JSEvents == "object") {
-      JSEvents.removeAllHandlersOnTarget(GL.contexts[contextHandle].GLctx.canvas);
+      JSEvents.removeAllHandlersOnTarget(
+        GL.contexts[contextHandle].GLctx.canvas
+      );
     }
     if (GL.contexts[contextHandle]?.GLctx.canvas) {
       GL.contexts[contextHandle].GLctx.canvas.GLctxObject = undefined;
@@ -9537,17 +17789,21 @@ var GL = {
     webgl_enable_WEBGL_draw_instanced_base_vertex_base_instance(GLctx);
     webgl_enable_WEBGL_multi_draw_instanced_base_vertex_base_instance(GLctx);
     if (context.version >= 2) {
-      GLctx.disjointTimerQueryExt = GLctx.getExtension("EXT_disjoint_timer_query_webgl2");
+      GLctx.disjointTimerQueryExt = GLctx.getExtension(
+        "EXT_disjoint_timer_query_webgl2"
+      );
     }
     if (context.version < 2 || !GLctx.disjointTimerQueryExt) {
-      GLctx.disjointTimerQueryExt = GLctx.getExtension("EXT_disjoint_timer_query");
+      GLctx.disjointTimerQueryExt = GLctx.getExtension(
+        "EXT_disjoint_timer_query"
+      );
     }
     for (var ext of getEmscriptenSupportedExtensions(GLctx)) {
       if (!ext.includes("lose_context") && !ext.includes("debug")) {
         GLctx.getExtension(ext);
       }
     }
-  }
+  },
 };
 var _eglCreateContext = (display, config, hmm, contextAttribs) => {
   if (display != 62e3) {
@@ -9864,7 +18120,13 @@ var readEmAsmArgs = (sigPtr, buf) => {
     wide &= ch != 112;
     buf += wide && buf % 8 ? 4 : 0;
     readEmAsmArgsArray.push(
-      ch == 112 ? HEAPU32[buf >> 2] : ch == 106 ? HEAP64[buf >> 3] : ch == 105 ? HEAP32[buf >> 2] : HEAPF64[buf >> 3]
+      ch == 112
+        ? HEAPU32[buf >> 2]
+        : ch == 106
+        ? HEAP64[buf >> 3]
+        : ch == 105
+        ? HEAP32[buf >> 2]
+        : HEAPF64[buf >> 3]
     );
     buf += wide ? 8 : 4;
   }
@@ -9874,15 +18136,22 @@ var runEmAsmFunction = (code, sigPtr, argbuf) => {
   var args = readEmAsmArgs(sigPtr, argbuf);
   return ASM_CONSTS[code](...args);
 };
-var _emscripten_asm_const_int = (code, sigPtr, argbuf) => runEmAsmFunction(code, sigPtr, argbuf);
+var _emscripten_asm_const_int = (code, sigPtr, argbuf) =>
+  runEmAsmFunction(code, sigPtr, argbuf);
 var runMainThreadEmAsm = (emAsmAddr, sigPtr, argbuf, sync) => {
   var args = readEmAsmArgs(sigPtr, argbuf);
   return ASM_CONSTS[emAsmAddr](...args);
 };
-var _emscripten_asm_const_int_sync_on_main_thread = (emAsmAddr, sigPtr, argbuf) =>
-  runMainThreadEmAsm(emAsmAddr, sigPtr, argbuf, 1);
-var _emscripten_asm_const_ptr_sync_on_main_thread = (emAsmAddr, sigPtr, argbuf) =>
-  runMainThreadEmAsm(emAsmAddr, sigPtr, argbuf, 1);
+var _emscripten_asm_const_int_sync_on_main_thread = (
+  emAsmAddr,
+  sigPtr,
+  argbuf
+) => runMainThreadEmAsm(emAsmAddr, sigPtr, argbuf, 1);
+var _emscripten_asm_const_ptr_sync_on_main_thread = (
+  emAsmAddr,
+  sigPtr,
+  argbuf
+) => runMainThreadEmAsm(emAsmAddr, sigPtr, argbuf, 1);
 var _emscripten_err = (str) => err(UTF8ToString(str));
 var JSEvents = {
   removeAllEventListeners() {
@@ -9902,7 +18171,10 @@ var JSEvents = {
       return true;
     }
     for (var call of JSEvents.deferredCalls) {
-      if (call.targetFunction == targetFunction && arraysHaveEqualContent(call.argsList, argsList)) {
+      if (
+        call.targetFunction == targetFunction &&
+        arraysHaveEqualContent(call.argsList, argsList)
+      ) {
         return;
       }
     }
@@ -9910,13 +18182,18 @@ var JSEvents = {
     JSEvents.deferredCalls.sort((x, y) => x.precedence < y.precedence);
   },
   removeDeferredCalls(targetFunction) {
-    JSEvents.deferredCalls = JSEvents.deferredCalls.filter((call) => call.targetFunction != targetFunction);
+    JSEvents.deferredCalls = JSEvents.deferredCalls.filter(
+      (call) => call.targetFunction != targetFunction
+    );
   },
   canPerformEventHandlerRequests() {
     if (navigator.userActivation) {
       return navigator.userActivation.isActive;
     }
-    return JSEvents.inEventHandler && JSEvents.currentEventHandler.allowsDeferredCalls;
+    return (
+      JSEvents.inEventHandler &&
+      JSEvents.currentEventHandler.allowsDeferredCalls
+    );
   },
   runDeferredCalls() {
     if (!JSEvents.canPerformEventHandlerRequests()) {
@@ -9933,7 +18210,8 @@ var JSEvents = {
     for (var i = 0; i < JSEvents.eventHandlers.length; ++i) {
       if (
         JSEvents.eventHandlers[i].target == target &&
-        (!eventTypeString || eventTypeString == JSEvents.eventHandlers[i].eventTypeString)
+        (!eventTypeString ||
+          eventTypeString == JSEvents.eventHandlers[i].eventTypeString)
       ) {
         JSEvents._removeHandler(i--);
       }
@@ -9941,7 +18219,11 @@ var JSEvents = {
   },
   _removeHandler(i) {
     var h = JSEvents.eventHandlers[i];
-    h.target.removeEventListener(h.eventTypeString, h.eventListenerFunc, h.useCapture);
+    h.target.removeEventListener(
+      h.eventTypeString,
+      h.eventListenerFunc,
+      h.useCapture
+    );
     JSEvents.eventHandlers.splice(i, 1);
   },
   registerOrRemoveHandler(eventHandler) {
@@ -9967,7 +18249,8 @@ var JSEvents = {
       for (var i = 0; i < JSEvents.eventHandlers.length; ++i) {
         if (
           JSEvents.eventHandlers[i].target == eventHandler.target &&
-          JSEvents.eventHandlers[i].eventTypeString == eventHandler.eventTypeString
+          JSEvents.eventHandlers[i].eventTypeString ==
+            eventHandler.eventTypeString
         ) {
           JSEvents._removeHandler(i--);
         }
@@ -9999,13 +18282,15 @@ var JSEvents = {
   },
   fullscreenEnabled() {
     return document.fullscreenEnabled || document.webkitFullscreenEnabled;
-  }
+  },
 };
 var specialHTMLTargets = [0, globalThis.document ?? 0, globalThis.window ?? 0];
-var maybeCStringToJsString = (cString) => (cString > 2 ? UTF8ToString(cString) : cString);
+var maybeCStringToJsString = (cString) =>
+  cString > 2 ? UTF8ToString(cString) : cString;
 var findEventTarget = (target) => {
   target = maybeCStringToJsString(target);
-  var domElement = specialHTMLTargets[target] || globalThis.document?.querySelector(target);
+  var domElement =
+    specialHTMLTargets[target] || globalThis.document?.querySelector(target);
   return domElement;
 };
 var findCanvasEventTarget = findEventTarget;
@@ -10080,7 +18365,8 @@ var registerRestoreOldStyle = (canvas) => {
       canvas.style.width = oldCssWidth;
       canvas.style.height = oldCssHeight;
       canvas.style.backgroundColor = oldBackgroundColor;
-      if (!oldDocumentBackgroundColor) document.body.style.backgroundColor = "white";
+      if (!oldDocumentBackgroundColor)
+        document.body.style.backgroundColor = "white";
       document.body.style.backgroundColor = oldDocumentBackgroundColor;
       canvas.style.paddingLeft = oldPaddingLeft;
       canvas.style.paddingRight = oldPaddingRight;
@@ -10094,7 +18380,8 @@ var registerRestoreOldStyle = (canvas) => {
       document.documentElement.style.overflow = oldDocumentOverflow;
       document.body.scroll = oldDocumentScroll;
       canvas.style.imageRendering = oldImageRendering;
-      if (canvas.GLctxObject) canvas.GLctxObject.GLctx.viewport(0, 0, oldWidth, oldHeight);
+      if (canvas.GLctxObject)
+        canvas.GLctxObject.GLctx.viewport(0, 0, oldWidth, oldHeight);
       if (currentFullscreenStrategy.canvasResizedCallback) {
         getWasmTableEntry(currentFullscreenStrategy.canvasResizedCallback)(
           37,
@@ -10113,7 +18400,9 @@ var setLetterbox = (element, topBottom, leftRight) => {
   element.style.paddingTop = element.style.paddingBottom = topBottom + "px";
 };
 var getBoundingClientRect = (e) =>
-  specialHTMLTargets.indexOf(e) < 0 ? e.getBoundingClientRect() : { left: 0, top: 0 };
+  specialHTMLTargets.indexOf(e) < 0
+    ? e.getBoundingClientRect()
+    : { left: 0, top: 0 };
 var JSEvents_resizeCanvasForFullscreen = (target, strategy) => {
   var restoreOldStyle = registerRestoreOldStyle(target);
   var cssWidth = strategy.softFullscreen ? innerWidth : screen.width;
@@ -10125,7 +18414,11 @@ var JSEvents_resizeCanvasForFullscreen = (target, strategy) => {
   var windowedRttWidth = canvasSize[0];
   var windowedRttHeight = canvasSize[1];
   if (strategy.scaleMode == 3) {
-    setLetterbox(target, (cssHeight - windowedCssHeight) / 2, (cssWidth - windowedCssWidth) / 2);
+    setLetterbox(
+      target,
+      (cssHeight - windowedCssHeight) / 2,
+      (cssWidth - windowedCssWidth) / 2
+    );
     cssWidth = windowedCssWidth;
     cssHeight = windowedCssHeight;
   } else if (strategy.scaleMode == 2) {
@@ -10157,7 +18450,8 @@ var JSEvents_resizeCanvasForFullscreen = (target, strategy) => {
     var newWidth = (cssWidth * dpiScale) | 0;
     var newHeight = (cssHeight * dpiScale) | 0;
     setCanvasElementSize(target, newWidth, newHeight);
-    if (target.GLctxObject) target.GLctxObject.GLctx.viewport(0, 0, newWidth, newHeight);
+    if (target.GLctxObject)
+      target.GLctxObject.GLctx.viewport(0, 0, newWidth, newHeight);
   }
   return restoreOldStyle;
 };
@@ -10174,7 +18468,11 @@ var JSEvents_requestFullscreen = (target, strategy) => {
   }
   currentFullscreenStrategy = strategy;
   if (strategy.canvasResizedCallback) {
-    getWasmTableEntry(strategy.canvasResizedCallback)(37, 0, strategy.canvasResizedCallbackUserData);
+    getWasmTableEntry(strategy.canvasResizedCallback)(
+      37,
+      0,
+      strategy.canvasResizedCallbackUserData
+    );
   }
   return 0;
 };
@@ -10273,7 +18571,8 @@ var _emscripten_glBeginQuery = (target, id) => {
 var _emscripten_glBeginQueryEXT = (target, id) => {
   GLctx.disjointTimerQueryExt["beginQueryEXT"](target, GL.queries[id]);
 };
-var _emscripten_glBeginTransformFeedback = (x0) => GLctx.beginTransformFeedback(x0);
+var _emscripten_glBeginTransformFeedback = (x0) =>
+  GLctx.beginTransformFeedback(x0);
 var _emscripten_glBindAttribLocation = (program, index, name) => {
   GLctx.bindAttribLocation(GL.programs[program], index, UTF8ToString(name));
 };
@@ -10298,7 +18597,13 @@ var _emscripten_glBindBuffer = (target, buffer) => {
 var _emscripten_glBindBufferBase = (target, index, buffer) => {
   GLctx.bindBufferBase(target, index, GL.buffers[buffer]);
 };
-var _emscripten_glBindBufferRange = (target, index, buffer, offset, ptrsize) => {
+var _emscripten_glBindBufferRange = (
+  target,
+  index,
+  buffer,
+  offset,
+  ptrsize
+) => {
   GLctx.bindBufferRange(target, index, GL.buffers[buffer], offset, ptrsize);
 };
 var _emscripten_glBindFramebuffer = (target, framebuffer) => {
@@ -10322,11 +18627,14 @@ var _emscripten_glBindVertexArray = (vao) => {
   GLctx.currentElementArrayBufferBinding = ibo ? ibo.name | 0 : 0;
 };
 var _emscripten_glBindVertexArrayOES = _emscripten_glBindVertexArray;
-var _emscripten_glBlendColor = (x0, x1, x2, x3) => GLctx.blendColor(x0, x1, x2, x3);
+var _emscripten_glBlendColor = (x0, x1, x2, x3) =>
+  GLctx.blendColor(x0, x1, x2, x3);
 var _emscripten_glBlendEquation = (x0) => GLctx.blendEquation(x0);
-var _emscripten_glBlendEquationSeparate = (x0, x1) => GLctx.blendEquationSeparate(x0, x1);
+var _emscripten_glBlendEquationSeparate = (x0, x1) =>
+  GLctx.blendEquationSeparate(x0, x1);
 var _emscripten_glBlendFunc = (x0, x1) => GLctx.blendFunc(x0, x1);
-var _emscripten_glBlendFuncSeparate = (x0, x1, x2, x3) => GLctx.blendFuncSeparate(x0, x1, x2, x3);
+var _emscripten_glBlendFuncSeparate = (x0, x1, x2, x3) =>
+  GLctx.blendFuncSeparate(x0, x1, x2, x3);
 var _emscripten_glBlitFramebuffer = (x0, x1, x2, x3, x4, x5, x6, x7, x8, x9) =>
   GLctx.blitFramebuffer(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9);
 var _emscripten_glBufferData = (target, size, data, usage) => {
@@ -10338,7 +18646,11 @@ var _emscripten_glBufferData = (target, size, data, usage) => {
     }
     return;
   }
-  GLctx.bufferData(target, data ? HEAPU8.subarray(data, data + size) : size, usage);
+  GLctx.bufferData(
+    target,
+    data ? HEAPU8.subarray(data, data + size) : size,
+    usage
+  );
 };
 var _emscripten_glBufferSubData = (target, offset, size, data) => {
   if (GL.currentContext.version >= 2) {
@@ -10347,9 +18659,11 @@ var _emscripten_glBufferSubData = (target, offset, size, data) => {
   }
   GLctx.bufferSubData(target, offset, HEAPU8.subarray(data, data + size));
 };
-var _emscripten_glCheckFramebufferStatus = (x0) => GLctx.checkFramebufferStatus(x0);
+var _emscripten_glCheckFramebufferStatus = (x0) =>
+  GLctx.checkFramebufferStatus(x0);
 var _emscripten_glClear = (x0) => GLctx.clear(x0);
-var _emscripten_glClearBufferfi = (x0, x1, x2, x3) => GLctx.clearBufferfi(x0, x1, x2, x3);
+var _emscripten_glClearBufferfi = (x0, x1, x2, x3) =>
+  GLctx.clearBufferfi(x0, x1, x2, x3);
 var _emscripten_glClearBufferfv = (buffer, drawbuffer, value) => {
   GLctx.clearBufferfv(buffer, drawbuffer, HEAPF32, value >> 2);
 };
@@ -10359,7 +18673,8 @@ var _emscripten_glClearBufferiv = (buffer, drawbuffer, value) => {
 var _emscripten_glClearBufferuiv = (buffer, drawbuffer, value) => {
   GLctx.clearBufferuiv(buffer, drawbuffer, HEAPU32, value >> 2);
 };
-var _emscripten_glClearColor = (x0, x1, x2, x3) => GLctx.clearColor(x0, x1, x2, x3);
+var _emscripten_glClearColor = (x0, x1, x2, x3) =>
+  GLctx.clearColor(x0, x1, x2, x3);
 var _emscripten_glClearDepthf = (x0) => GLctx.clearDepth(x0);
 var _emscripten_glClearStencil = (x0) => GLctx.clearStencil(x0);
 var _emscripten_glClientWaitSync = (sync, flags, timeout) => {
@@ -10375,13 +18690,41 @@ var _emscripten_glColorMask = (red, green, blue, alpha) => {
 var _emscripten_glCompileShader = (shader) => {
   GLctx.compileShader(GL.shaders[shader]);
 };
-var _emscripten_glCompressedTexImage2D = (target, level, internalFormat, width, height, border, imageSize, data) => {
+var _emscripten_glCompressedTexImage2D = (
+  target,
+  level,
+  internalFormat,
+  width,
+  height,
+  border,
+  imageSize,
+  data
+) => {
   if (GL.currentContext.version >= 2) {
     if (GLctx.currentPixelUnpackBufferBinding || !imageSize) {
-      GLctx.compressedTexImage2D(target, level, internalFormat, width, height, border, imageSize, data);
+      GLctx.compressedTexImage2D(
+        target,
+        level,
+        internalFormat,
+        width,
+        height,
+        border,
+        imageSize,
+        data
+      );
       return;
     }
-    GLctx.compressedTexImage2D(target, level, internalFormat, width, height, border, HEAPU8, data, imageSize);
+    GLctx.compressedTexImage2D(
+      target,
+      level,
+      internalFormat,
+      width,
+      height,
+      border,
+      HEAPU8,
+      data,
+      imageSize
+    );
     return;
   }
   GLctx.compressedTexImage2D(
@@ -10406,9 +18749,30 @@ var _emscripten_glCompressedTexImage3D = (
   data
 ) => {
   if (GLctx.currentPixelUnpackBufferBinding) {
-    GLctx.compressedTexImage3D(target, level, internalFormat, width, height, depth, border, imageSize, data);
+    GLctx.compressedTexImage3D(
+      target,
+      level,
+      internalFormat,
+      width,
+      height,
+      depth,
+      border,
+      imageSize,
+      data
+    );
   } else {
-    GLctx.compressedTexImage3D(target, level, internalFormat, width, height, depth, border, HEAPU8, data, imageSize);
+    GLctx.compressedTexImage3D(
+      target,
+      level,
+      internalFormat,
+      width,
+      height,
+      depth,
+      border,
+      HEAPU8,
+      data,
+      imageSize
+    );
   }
 };
 var _emscripten_glCompressedTexSubImage2D = (
@@ -10424,10 +18788,31 @@ var _emscripten_glCompressedTexSubImage2D = (
 ) => {
   if (GL.currentContext.version >= 2) {
     if (GLctx.currentPixelUnpackBufferBinding || !imageSize) {
-      GLctx.compressedTexSubImage2D(target, level, xoffset, yoffset, width, height, format, imageSize, data);
+      GLctx.compressedTexSubImage2D(
+        target,
+        level,
+        xoffset,
+        yoffset,
+        width,
+        height,
+        format,
+        imageSize,
+        data
+      );
       return;
     }
-    GLctx.compressedTexSubImage2D(target, level, xoffset, yoffset, width, height, format, HEAPU8, data, imageSize);
+    GLctx.compressedTexSubImage2D(
+      target,
+      level,
+      xoffset,
+      yoffset,
+      width,
+      height,
+      format,
+      HEAPU8,
+      data,
+      imageSize
+    );
     return;
   }
   GLctx.compressedTexSubImage2D(
@@ -10485,7 +18870,8 @@ var _emscripten_glCompressedTexSubImage3D = (
     );
   }
 };
-var _emscripten_glCopyBufferSubData = (x0, x1, x2, x3, x4) => GLctx.copyBufferSubData(x0, x1, x2, x3, x4);
+var _emscripten_glCopyBufferSubData = (x0, x1, x2, x3, x4) =>
+  GLctx.copyBufferSubData(x0, x1, x2, x3, x4);
 var _emscripten_glCopyTexImage2D = (x0, x1, x2, x3, x4, x5, x6, x7) =>
   GLctx.copyTexImage2D(x0, x1, x2, x3, x4, x5, x6, x7);
 var _emscripten_glCopyTexSubImage2D = (x0, x1, x2, x3, x4, x5, x6, x7) =>
@@ -10496,7 +18882,10 @@ var _emscripten_glCreateProgram = () => {
   var id = GL.getNewId(GL.programs);
   var program = GLctx.createProgram();
   program.name = id;
-  program.maxUniformLength = program.maxAttributeLength = program.maxUniformBlockNameLength = 0;
+  program.maxUniformLength =
+    program.maxAttributeLength =
+    program.maxUniformBlockNameLength =
+      0;
   program.uniformIdCounter = 1;
   GL.programs[id] = program;
   return id;
@@ -10515,10 +18904,14 @@ var _emscripten_glDeleteBuffers = (n, buffers) => {
     GLctx.deleteBuffer(buffer);
     buffer.name = 0;
     GL.buffers[id] = null;
-    if (id == GLctx.currentArrayBufferBinding) GLctx.currentArrayBufferBinding = 0;
-    if (id == GLctx.currentElementArrayBufferBinding) GLctx.currentElementArrayBufferBinding = 0;
-    if (id == GLctx.currentPixelPackBufferBinding) GLctx.currentPixelPackBufferBinding = 0;
-    if (id == GLctx.currentPixelUnpackBufferBinding) GLctx.currentPixelUnpackBufferBinding = 0;
+    if (id == GLctx.currentArrayBufferBinding)
+      GLctx.currentArrayBufferBinding = 0;
+    if (id == GLctx.currentElementArrayBufferBinding)
+      GLctx.currentElementArrayBufferBinding = 0;
+    if (id == GLctx.currentPixelPackBufferBinding)
+      GLctx.currentPixelPackBufferBinding = 0;
+    if (id == GLctx.currentPixelUnpackBufferBinding)
+      GLctx.currentPixelUnpackBufferBinding = 0;
   }
 };
 var _emscripten_glDeleteFramebuffers = (n, framebuffers) => {
@@ -10692,7 +19085,10 @@ var _emscripten_glDrawElements = (mode, count, type, indices) => {
               GL.recordError(1282);
               return;
           }
-          vertexes = new arrayClass(HEAPU8.buffer, indices, count).reduce((max, current) => Math.max(max, current)) + 1;
+          vertexes =
+            new arrayClass(HEAPU8.buffer, indices, count).reduce(
+              (max, current) => Math.max(max, current)
+            ) + 1;
           break;
         }
       }
@@ -10706,15 +19102,31 @@ var _emscripten_glDrawElements = (mode, count, type, indices) => {
     GLctx.bindBuffer(34963, null);
   }
 };
-var _emscripten_glDrawElementsInstanced = (mode, count, type, indices, primcount) => {
+var _emscripten_glDrawElementsInstanced = (
+  mode,
+  count,
+  type,
+  indices,
+  primcount
+) => {
   GLctx.drawElementsInstanced(mode, count, type, indices, primcount);
 };
-var _emscripten_glDrawElementsInstancedANGLE = _emscripten_glDrawElementsInstanced;
-var _emscripten_glDrawElementsInstancedARB = _emscripten_glDrawElementsInstanced;
-var _emscripten_glDrawElementsInstancedEXT = _emscripten_glDrawElementsInstanced;
+var _emscripten_glDrawElementsInstancedANGLE =
+  _emscripten_glDrawElementsInstanced;
+var _emscripten_glDrawElementsInstancedARB =
+  _emscripten_glDrawElementsInstanced;
+var _emscripten_glDrawElementsInstancedEXT =
+  _emscripten_glDrawElementsInstanced;
 var _emscripten_glDrawElementsInstancedNV = _emscripten_glDrawElementsInstanced;
 var _glDrawElements = _emscripten_glDrawElements;
-var _emscripten_glDrawRangeElements = (mode, start, end, count, type, indices) => {
+var _emscripten_glDrawRangeElements = (
+  mode,
+  start,
+  end,
+  count,
+  type,
+  indices
+) => {
   _glDrawElements(mode, count, type, indices);
 };
 var _emscripten_glEnable = (x0) => GLctx.enable(x0);
@@ -10801,7 +19213,9 @@ var _emscripten_glFlushMappedBufferRange = (target, offset, length) => {
   }
   if (!(mapping.access & 16)) {
     GL.recordError(1282);
-    err("buffer was not mapped with GL_MAP_FLUSH_EXPLICIT_BIT in glFlushMappedBufferRange");
+    err(
+      "buffer was not mapped with GL_MAP_FLUSH_EXPLICIT_BIT in glFlushMappedBufferRange"
+    );
     return;
   }
   if (offset < 0 || length < 0 || offset + length > mapping.length) {
@@ -10809,16 +19223,54 @@ var _emscripten_glFlushMappedBufferRange = (target, offset, length) => {
     err("invalid range in glFlushMappedBufferRange");
     return;
   }
-  GLctx.bufferSubData(target, mapping.offset, HEAPU8.subarray(mapping.mem + offset, mapping.mem + offset + length));
+  GLctx.bufferSubData(
+    target,
+    mapping.offset,
+    HEAPU8.subarray(mapping.mem + offset, mapping.mem + offset + length)
+  );
 };
-var _emscripten_glFramebufferRenderbuffer = (target, attachment, renderbuffertarget, renderbuffer) => {
-  GLctx.framebufferRenderbuffer(target, attachment, renderbuffertarget, GL.renderbuffers[renderbuffer]);
+var _emscripten_glFramebufferRenderbuffer = (
+  target,
+  attachment,
+  renderbuffertarget,
+  renderbuffer
+) => {
+  GLctx.framebufferRenderbuffer(
+    target,
+    attachment,
+    renderbuffertarget,
+    GL.renderbuffers[renderbuffer]
+  );
 };
-var _emscripten_glFramebufferTexture2D = (target, attachment, textarget, texture, level) => {
-  GLctx.framebufferTexture2D(target, attachment, textarget, GL.textures[texture], level);
+var _emscripten_glFramebufferTexture2D = (
+  target,
+  attachment,
+  textarget,
+  texture,
+  level
+) => {
+  GLctx.framebufferTexture2D(
+    target,
+    attachment,
+    textarget,
+    GL.textures[texture],
+    level
+  );
 };
-var _emscripten_glFramebufferTextureLayer = (target, attachment, texture, level, layer) => {
-  GLctx.framebufferTextureLayer(target, attachment, GL.textures[texture], level, layer);
+var _emscripten_glFramebufferTextureLayer = (
+  target,
+  attachment,
+  texture,
+  level,
+  layer
+) => {
+  GLctx.framebufferTextureLayer(
+    target,
+    attachment,
+    GL.textures[texture],
+    level,
+    layer
+  );
 };
 var _emscripten_glFrontFace = (x0) => GLctx.frontFace(x0);
 var _emscripten_glGenBuffers = (n, buffers) => {
@@ -10861,32 +19313,91 @@ var _emscripten_glGenVertexArrays = (n, arrays) => {
 };
 var _emscripten_glGenVertexArraysOES = _emscripten_glGenVertexArrays;
 var _emscripten_glGenerateMipmap = (x0) => GLctx.generateMipmap(x0);
-var __glGetActiveAttribOrUniform = (funcName, program, index, bufSize, length, size, type, name) => {
+var __glGetActiveAttribOrUniform = (
+  funcName,
+  program,
+  index,
+  bufSize,
+  length,
+  size,
+  type,
+  name
+) => {
   program = GL.programs[program];
   var info = GLctx[funcName](program, index);
   if (info) {
-    var numBytesWrittenExclNull = name && stringToUTF8(info.name, name, bufSize);
+    var numBytesWrittenExclNull =
+      name && stringToUTF8(info.name, name, bufSize);
     if (length) HEAP32[length >> 2] = numBytesWrittenExclNull;
     if (size) HEAP32[size >> 2] = info.size;
     if (type) HEAP32[type >> 2] = info.type;
   }
 };
-var _emscripten_glGetActiveAttrib = (program, index, bufSize, length, size, type, name) =>
-  __glGetActiveAttribOrUniform("getActiveAttrib", program, index, bufSize, length, size, type, name);
-var _emscripten_glGetActiveUniform = (program, index, bufSize, length, size, type, name) =>
-  __glGetActiveAttribOrUniform("getActiveUniform", program, index, bufSize, length, size, type, name);
-var _emscripten_glGetActiveUniformBlockName = (program, uniformBlockIndex, bufSize, length, uniformBlockName) => {
+var _emscripten_glGetActiveAttrib = (
+  program,
+  index,
+  bufSize,
+  length,
+  size,
+  type,
+  name
+) =>
+  __glGetActiveAttribOrUniform(
+    "getActiveAttrib",
+    program,
+    index,
+    bufSize,
+    length,
+    size,
+    type,
+    name
+  );
+var _emscripten_glGetActiveUniform = (
+  program,
+  index,
+  bufSize,
+  length,
+  size,
+  type,
+  name
+) =>
+  __glGetActiveAttribOrUniform(
+    "getActiveUniform",
+    program,
+    index,
+    bufSize,
+    length,
+    size,
+    type,
+    name
+  );
+var _emscripten_glGetActiveUniformBlockName = (
+  program,
+  uniformBlockIndex,
+  bufSize,
+  length,
+  uniformBlockName
+) => {
   program = GL.programs[program];
   var result = GLctx.getActiveUniformBlockName(program, uniformBlockIndex);
   if (!result) return;
   if (uniformBlockName && bufSize > 0) {
-    var numBytesWrittenExclNull = stringToUTF8(result, uniformBlockName, bufSize);
+    var numBytesWrittenExclNull = stringToUTF8(
+      result,
+      uniformBlockName,
+      bufSize
+    );
     if (length) HEAP32[length >> 2] = numBytesWrittenExclNull;
   } else {
     if (length) HEAP32[length >> 2] = 0;
   }
 };
-var _emscripten_glGetActiveUniformBlockiv = (program, uniformBlockIndex, pname, params) => {
+var _emscripten_glGetActiveUniformBlockiv = (
+  program,
+  uniformBlockIndex,
+  pname,
+  params
+) => {
   if (!params) {
     GL.recordError(1281);
     return;
@@ -10897,7 +19408,11 @@ var _emscripten_glGetActiveUniformBlockiv = (program, uniformBlockIndex, pname, 
     HEAP32[params >> 2] = name.length + 1;
     return;
   }
-  var result = GLctx.getActiveUniformBlockParameter(program, uniformBlockIndex, pname);
+  var result = GLctx.getActiveUniformBlockParameter(
+    program,
+    uniformBlockIndex,
+    pname
+  );
   if (result === null) return;
   if (pname == 35395) {
     for (var i = 0; i < result.length; i++) {
@@ -10907,7 +19422,13 @@ var _emscripten_glGetActiveUniformBlockiv = (program, uniformBlockIndex, pname, 
     HEAP32[params >> 2] = result;
   }
 };
-var _emscripten_glGetActiveUniformsiv = (program, uniformCount, uniformIndices, pname, params) => {
+var _emscripten_glGetActiveUniformsiv = (
+  program,
+  uniformCount,
+  uniformIndices,
+  pname,
+  params
+) => {
   if (!params) {
     GL.recordError(1281);
     return;
@@ -11106,7 +19627,8 @@ var _emscripten_glGetBufferParameteriv = (target, value, data) => {
 var _emscripten_glGetBufferPointerv = (target, pname, params) => {
   if (pname == 35005) {
     var ptr = 0;
-    var mappedBuffer = GL.mappedBuffers[emscriptenWebGLGetBufferBinding(target)];
+    var mappedBuffer =
+      GL.mappedBuffers[emscriptenWebGLGetBufferBinding(target)];
     if (mappedBuffer) {
       ptr = mappedBuffer.mem;
     }
@@ -11124,8 +19646,17 @@ var _emscripten_glGetError = () => {
 var _emscripten_glGetFloatv = (name_, p) => emscriptenWebGLGet(name_, p, 2);
 var _emscripten_glGetFragDataLocation = (program, name) =>
   GLctx.getFragDataLocation(GL.programs[program], UTF8ToString(name));
-var _emscripten_glGetFramebufferAttachmentParameteriv = (target, attachment, pname, params) => {
-  var result = GLctx.getFramebufferAttachmentParameter(target, attachment, pname);
+var _emscripten_glGetFramebufferAttachmentParameteriv = (
+  target,
+  attachment,
+  pname,
+  params
+) => {
+  var result = GLctx.getFramebufferAttachmentParameter(
+    target,
+    attachment,
+    pname
+  );
   if (result instanceof WebGLRenderbuffer || result instanceof WebGLTexture) {
     result = result.name | 0;
   }
@@ -11185,13 +19716,21 @@ var emscriptenWebGLGetIndexed = (target, index, data, type) => {
       abort("internal emscriptenWebGLGetIndexed() error, bad type: " + type);
   }
 };
-var _emscripten_glGetInteger64i_v = (target, index, data) => emscriptenWebGLGetIndexed(target, index, data, 1);
+var _emscripten_glGetInteger64i_v = (target, index, data) =>
+  emscriptenWebGLGetIndexed(target, index, data, 1);
 var _emscripten_glGetInteger64v = (name_, p) => {
   emscriptenWebGLGet(name_, p, 1);
 };
-var _emscripten_glGetIntegeri_v = (target, index, data) => emscriptenWebGLGetIndexed(target, index, data, 0);
+var _emscripten_glGetIntegeri_v = (target, index, data) =>
+  emscriptenWebGLGetIndexed(target, index, data, 0);
 var _emscripten_glGetIntegerv = (name_, p) => emscriptenWebGLGet(name_, p, 0);
-var _emscripten_glGetInternalformativ = (target, internalformat, pname, bufSize, params) => {
+var _emscripten_glGetInternalformativ = (
+  target,
+  internalformat,
+  pname,
+  bufSize,
+  params
+) => {
   if (bufSize < 0) {
     GL.recordError(1281);
     return;
@@ -11206,13 +19745,20 @@ var _emscripten_glGetInternalformativ = (target, internalformat, pname, bufSize,
     HEAP32[(params + i * 4) >> 2] = ret[i];
   }
 };
-var _emscripten_glGetProgramBinary = (program, bufSize, length, binaryFormat, binary) => {
+var _emscripten_glGetProgramBinary = (
+  program,
+  bufSize,
+  length,
+  binaryFormat,
+  binary
+) => {
   GL.recordError(1282);
 };
 var _emscripten_glGetProgramInfoLog = (program, maxLength, length, infoLog) => {
   var log = GLctx.getProgramInfoLog(GL.programs[program]);
   if (log === null) log = "(unknown error)";
-  var numBytesWrittenExclNull = maxLength > 0 && infoLog ? stringToUTF8(log, infoLog, maxLength) : 0;
+  var numBytesWrittenExclNull =
+    maxLength > 0 && infoLog ? stringToUTF8(log, infoLog, maxLength) : 0;
   if (length) HEAP32[length >> 2] = numBytesWrittenExclNull;
 };
 var _emscripten_glGetProgramiv = (program, pname, p) => {
@@ -11330,7 +19876,10 @@ var _emscripten_glGetQueryivEXT = (target, pname, params) => {
     GL.recordError(1281);
     return;
   }
-  HEAP32[params >> 2] = GLctx.disjointTimerQueryExt["getQueryEXT"](target, pname);
+  HEAP32[params >> 2] = GLctx.disjointTimerQueryExt["getQueryEXT"](
+    target,
+    pname
+  );
 };
 var _emscripten_glGetRenderbufferParameteriv = (target, pname, params) => {
   if (!params) {
@@ -11356,10 +19905,16 @@ var _emscripten_glGetSamplerParameteriv = (sampler, pname, params) => {
 var _emscripten_glGetShaderInfoLog = (shader, maxLength, length, infoLog) => {
   var log = GLctx.getShaderInfoLog(GL.shaders[shader]);
   if (log === null) log = "(unknown error)";
-  var numBytesWrittenExclNull = maxLength > 0 && infoLog ? stringToUTF8(log, infoLog, maxLength) : 0;
+  var numBytesWrittenExclNull =
+    maxLength > 0 && infoLog ? stringToUTF8(log, infoLog, maxLength) : 0;
   if (length) HEAP32[length >> 2] = numBytesWrittenExclNull;
 };
-var _emscripten_glGetShaderPrecisionFormat = (shaderType, precisionType, range, precision) => {
+var _emscripten_glGetShaderPrecisionFormat = (
+  shaderType,
+  precisionType,
+  range,
+  precision
+) => {
   var result = GLctx.getShaderPrecisionFormat(shaderType, precisionType);
   HEAP32[range >> 2] = result.rangeMin;
   HEAP32[(range + 4) >> 2] = result.rangeMax;
@@ -11368,7 +19923,8 @@ var _emscripten_glGetShaderPrecisionFormat = (shaderType, precisionType, range, 
 var _emscripten_glGetShaderSource = (shader, bufSize, length, source) => {
   var result = GLctx.getShaderSource(GL.shaders[shader]);
   if (!result) return;
-  var numBytesWrittenExclNull = bufSize > 0 && source ? stringToUTF8(result, source, bufSize) : 0;
+  var numBytesWrittenExclNull =
+    bufSize > 0 && source ? stringToUTF8(result, source, bufSize) : 0;
   if (length) HEAP32[length >> 2] = numBytesWrittenExclNull;
 };
 var _emscripten_glGetShaderiv = (shader, pname, p) => {
@@ -11409,7 +19965,8 @@ var _emscripten_glGetString = (name_) => {
       case 7938:
         var webGLVersion = GLctx.getParameter(7938);
         var glVersion = `OpenGL ES 2.0 (${webGLVersion})`;
-        if (GL.currentContext.version >= 2) glVersion = `OpenGL ES 3.0 (${webGLVersion})`;
+        if (GL.currentContext.version >= 2)
+          glVersion = `OpenGL ES 3.0 (${webGLVersion})`;
         ret = stringToNewUTF8(glVersion);
         break;
       case 35724:
@@ -11485,7 +20042,15 @@ var _emscripten_glGetTexParameteriv = (target, pname, params) => {
   }
   HEAP32[params >> 2] = GLctx.getTexParameter(target, pname);
 };
-var _emscripten_glGetTransformFeedbackVarying = (program, index, bufSize, length, size, type, name) => {
+var _emscripten_glGetTransformFeedbackVarying = (
+  program,
+  index,
+  bufSize,
+  length,
+  size,
+  type,
+  name
+) => {
   program = GL.programs[program];
   var info = GLctx.getTransformFeedbackVarying(program, index);
   if (!info) return;
@@ -11499,8 +20064,16 @@ var _emscripten_glGetTransformFeedbackVarying = (program, index, bufSize, length
   if (type) HEAP32[type >> 2] = info.type;
 };
 var _emscripten_glGetUniformBlockIndex = (program, uniformBlockName) =>
-  GLctx.getUniformBlockIndex(GL.programs[program], UTF8ToString(uniformBlockName));
-var _emscripten_glGetUniformIndices = (program, uniformCount, uniformNames, uniformIndices) => {
+  GLctx.getUniformBlockIndex(
+    GL.programs[program],
+    UTF8ToString(uniformBlockName)
+  );
+var _emscripten_glGetUniformIndices = (
+  program,
+  uniformCount,
+  uniformNames,
+  uniformIndices
+) => {
   if (!uniformIndices) {
     GL.recordError(1281);
     return;
@@ -11511,7 +20084,8 @@ var _emscripten_glGetUniformIndices = (program, uniformCount, uniformNames, unif
   }
   program = GL.programs[program];
   var names = [];
-  for (var i = 0; i < uniformCount; i++) names.push(UTF8ToString(HEAPU32[(uniformNames + i * 4) >> 2]));
+  for (var i = 0; i < uniformCount; i++)
+    names.push(UTF8ToString(HEAPU32[(uniformNames + i * 4) >> 2]));
   var result = GLctx.getUniformIndices(program, names);
   if (!result) return;
   var len = result.length;
@@ -11520,7 +20094,8 @@ var _emscripten_glGetUniformIndices = (program, uniformCount, uniformNames, unif
   }
 };
 var jstoi_q = (str) => parseInt(str);
-var webglGetLeftBracePos = (name) => name.slice(-1) == "]" && name.lastIndexOf("[");
+var webglGetLeftBracePos = (name) =>
+  name.slice(-1) == "]" && name.lastIndexOf("[");
 var webglPrepareUniformLocationsBeforeFirstUse = (program) => {
   var uniformLocsById = program.uniformLocsById,
     uniformSizeAndIdsByName = program.uniformSizeAndIdsByName,
@@ -11561,7 +20136,11 @@ var _emscripten_glGetUniformLocation = (program, name) => {
     var sizeAndId = program.uniformSizeAndIdsByName[uniformBaseName];
     if (sizeAndId && arrayIndex < sizeAndId[0]) {
       arrayIndex += sizeAndId[1];
-      if ((uniformLocsById[arrayIndex] = uniformLocsById[arrayIndex] || GLctx.getUniformLocation(program, name))) {
+      if (
+        (uniformLocsById[arrayIndex] =
+          uniformLocsById[arrayIndex] ||
+          GLctx.getUniformLocation(program, name))
+      ) {
         return arrayIndex;
       }
     }
@@ -11577,7 +20156,8 @@ var webglGetUniformLocation = (location) => {
     if (typeof webglLoc == "number") {
       p.uniformLocsById[location] = webglLoc = GLctx.getUniformLocation(
         p,
-        p.uniformArrayNamesById[location] + (webglLoc > 0 ? `[${webglLoc}]` : "")
+        p.uniformArrayNamesById[location] +
+          (webglLoc > 0 ? `[${webglLoc}]` : "")
       );
     }
     return webglLoc;
@@ -11629,7 +20209,9 @@ var emscriptenWebGLGetVertexAttrib = (index, pname, params, type) => {
     return;
   }
   if (GL.currentContext.clientBuffers[index].enabled) {
-    err("glGetVertexAttrib*v on client-side array: not supported, bad data returned");
+    err(
+      "glGetVertexAttrib*v on client-side array: not supported, bad data returned"
+    );
   }
   var data = GLctx.getVertexAttrib(index, pname);
   if (pname == 34975) {
@@ -11672,7 +20254,9 @@ var _emscripten_glGetVertexAttribPointerv = (index, pname, pointer) => {
     return;
   }
   if (GL.currentContext.clientBuffers[index].enabled) {
-    err("glGetVertexAttribPointer on client-side array: not supported, bad data returned");
+    err(
+      "glGetVertexAttribPointer on client-side array: not supported, bad data returned"
+    );
   }
   HEAP32[pointer >> 2] = GLctx.getVertexAttribOffset(index, pname);
 };
@@ -11683,14 +20267,26 @@ var _emscripten_glGetVertexAttribiv = (index, pname, params) => {
   emscriptenWebGLGetVertexAttrib(index, pname, params, 5);
 };
 var _emscripten_glHint = (x0, x1) => GLctx.hint(x0, x1);
-var _emscripten_glInvalidateFramebuffer = (target, numAttachments, attachments) => {
+var _emscripten_glInvalidateFramebuffer = (
+  target,
+  numAttachments,
+  attachments
+) => {
   var list = tempFixedLengthArray[numAttachments];
   for (var i = 0; i < numAttachments; i++) {
     list[i] = HEAP32[(attachments + i * 4) >> 2];
   }
   GLctx.invalidateFramebuffer(target, list);
 };
-var _emscripten_glInvalidateSubFramebuffer = (target, numAttachments, attachments, x, y, width, height) => {
+var _emscripten_glInvalidateSubFramebuffer = (
+  target,
+  numAttachments,
+  attachments,
+  x,
+  y,
+  width,
+  height
+) => {
   var list = tempFixedLengthArray[numAttachments];
   for (var i = 0; i < numAttachments; i++) {
     list[i] = HEAP32[(attachments + i * 4) >> 2];
@@ -11744,7 +20340,8 @@ var _emscripten_glIsTexture = (id) => {
   if (!texture) return 0;
   return GLctx.isTexture(texture);
 };
-var _emscripten_glIsTransformFeedback = (id) => GLctx.isTransformFeedback(GL.transformFeedbacks[id]);
+var _emscripten_glIsTransformFeedback = (id) =>
+  GLctx.isTransformFeedback(GL.transformFeedbacks[id]);
 var _emscripten_glIsVertexArray = (array) => {
   var vao = GL.vaos[array];
   if (!vao) return 0;
@@ -11760,7 +20357,9 @@ var _emscripten_glLinkProgram = (program) => {
 };
 var _emscripten_glMapBufferRange = (target, offset, length, access) => {
   if ((access & (1 | 32)) != 0) {
-    err("glMapBufferRange access does not support MAP_READ or MAP_UNSYNCHRONIZED");
+    err(
+      "glMapBufferRange access does not support MAP_READ or MAP_UNSYNCHRONIZED"
+    );
     return 0;
   }
   if ((access & 2) == 0) {
@@ -11768,7 +20367,9 @@ var _emscripten_glMapBufferRange = (target, offset, length, access) => {
     return 0;
   }
   if ((access & (4 | 8)) == 0) {
-    err("glMapBufferRange access must include INVALIDATE_BUFFER or INVALIDATE_RANGE");
+    err(
+      "glMapBufferRange access must include INVALIDATE_BUFFER or INVALIDATE_RANGE"
+    );
     return 0;
   }
   if (!emscriptenWebGLValidateMapBufferTarget(target)) {
@@ -11817,11 +20418,24 @@ var computeUnpackAlignedImageSize = (width, height, sizePerPixel) => {
     return (x + y - 1) & -y;
   }
   var plainRowSize = (GL.unpackRowLength || width) * sizePerPixel;
-  var alignedRowSize = roundedToNextMultipleOf(plainRowSize, GL.unpackAlignment);
+  var alignedRowSize = roundedToNextMultipleOf(
+    plainRowSize,
+    GL.unpackAlignment
+  );
   return height * alignedRowSize;
 };
 var colorChannelsInGlTextureFormat = (format) => {
-  var colorChannels = { 5: 3, 6: 4, 8: 2, 29502: 3, 29504: 4, 26917: 2, 26918: 2, 29846: 3, 29847: 4 };
+  var colorChannels = {
+    5: 3,
+    6: 4,
+    8: 2,
+    29502: 3,
+    29504: 4,
+    26917: 2,
+    26918: 2,
+    29846: 3,
+    29847: 4,
+  };
   return colorChannels[format - 6402] || 1;
 };
 var heapObjectForWebGLType = (type) => {
@@ -11831,15 +20445,34 @@ var heapObjectForWebGLType = (type) => {
   if (type == 2) return HEAP16;
   if (type == 4) return HEAP32;
   if (type == 6) return HEAPF32;
-  if (type == 5 || type == 28922 || type == 28520 || type == 30779 || type == 30782) return HEAPU32;
+  if (
+    type == 5 ||
+    type == 28922 ||
+    type == 28520 ||
+    type == 30779 ||
+    type == 30782
+  )
+    return HEAPU32;
   return HEAPU16;
 };
-var toTypedArrayIndex = (pointer, heap) => pointer >>> (31 - Math.clz32(heap.BYTES_PER_ELEMENT));
-var emscriptenWebGLGetTexPixelData = (type, format, width, height, pixels, internalFormat) => {
+var toTypedArrayIndex = (pointer, heap) =>
+  pointer >>> (31 - Math.clz32(heap.BYTES_PER_ELEMENT));
+var emscriptenWebGLGetTexPixelData = (
+  type,
+  format,
+  width,
+  height,
+  pixels,
+  internalFormat
+) => {
   var heap = heapObjectForWebGLType(type);
-  var sizePerPixel = colorChannelsInGlTextureFormat(format) * heap.BYTES_PER_ELEMENT;
+  var sizePerPixel =
+    colorChannelsInGlTextureFormat(format) * heap.BYTES_PER_ELEMENT;
   var bytes = computeUnpackAlignedImageSize(width, height, sizePerPixel);
-  return heap.subarray(toTypedArrayIndex(pixels, heap), toTypedArrayIndex(pixels + bytes, heap));
+  return heap.subarray(
+    toTypedArrayIndex(pixels, heap),
+    toTypedArrayIndex(pixels + bytes, heap)
+  );
 };
 var _emscripten_glReadPixels = (x, y, width, height, format, type, pixels) => {
   if (GL.currentContext.version >= 2) {
@@ -11852,7 +20485,14 @@ var _emscripten_glReadPixels = (x, y, width, height, format, type, pixels) => {
     GLctx.readPixels(x, y, width, height, format, type, heap, target);
     return;
   }
-  var pixelData = emscriptenWebGLGetTexPixelData(type, format, width, height, pixels, format);
+  var pixelData = emscriptenWebGLGetTexPixelData(
+    type,
+    format,
+    width,
+    height,
+    pixels,
+    format
+  );
   if (!pixelData) {
     GL.recordError(1280);
     return;
@@ -11860,10 +20500,12 @@ var _emscripten_glReadPixels = (x, y, width, height, format, type, pixels) => {
   GLctx.readPixels(x, y, width, height, format, type, pixelData);
 };
 var _emscripten_glReleaseShaderCompiler = () => {};
-var _emscripten_glRenderbufferStorage = (x0, x1, x2, x3) => GLctx.renderbufferStorage(x0, x1, x2, x3);
+var _emscripten_glRenderbufferStorage = (x0, x1, x2, x3) =>
+  GLctx.renderbufferStorage(x0, x1, x2, x3);
 var _emscripten_glRenderbufferStorageMultisample = (x0, x1, x2, x3, x4) =>
   GLctx.renderbufferStorageMultisample(x0, x1, x2, x3, x4);
-var _emscripten_glResumeTransformFeedback = () => GLctx.resumeTransformFeedback();
+var _emscripten_glResumeTransformFeedback = () =>
+  GLctx.resumeTransformFeedback();
 var _emscripten_glSampleCoverage = (value, invert) => {
   GLctx.sampleCoverage(value, !!invert);
 };
@@ -11882,7 +20524,13 @@ var _emscripten_glSamplerParameteriv = (sampler, pname, params) => {
   GLctx.samplerParameteri(GL.samplers[sampler], pname, param);
 };
 var _emscripten_glScissor = (x0, x1, x2, x3) => GLctx.scissor(x0, x1, x2, x3);
-var _emscripten_glShaderBinary = (count, shaders, binaryformat, binary, length) => {
+var _emscripten_glShaderBinary = (
+  count,
+  shaders,
+  binaryformat,
+  binary,
+  length
+) => {
   GL.recordError(1280);
 };
 var _emscripten_glShaderSource = (shader, count, string, length) => {
@@ -11890,30 +20538,105 @@ var _emscripten_glShaderSource = (shader, count, string, length) => {
   GLctx.shaderSource(GL.shaders[shader], source);
 };
 var _emscripten_glStencilFunc = (x0, x1, x2) => GLctx.stencilFunc(x0, x1, x2);
-var _emscripten_glStencilFuncSeparate = (x0, x1, x2, x3) => GLctx.stencilFuncSeparate(x0, x1, x2, x3);
+var _emscripten_glStencilFuncSeparate = (x0, x1, x2, x3) =>
+  GLctx.stencilFuncSeparate(x0, x1, x2, x3);
 var _emscripten_glStencilMask = (x0) => GLctx.stencilMask(x0);
-var _emscripten_glStencilMaskSeparate = (x0, x1) => GLctx.stencilMaskSeparate(x0, x1);
+var _emscripten_glStencilMaskSeparate = (x0, x1) =>
+  GLctx.stencilMaskSeparate(x0, x1);
 var _emscripten_glStencilOp = (x0, x1, x2) => GLctx.stencilOp(x0, x1, x2);
-var _emscripten_glStencilOpSeparate = (x0, x1, x2, x3) => GLctx.stencilOpSeparate(x0, x1, x2, x3);
-var _emscripten_glTexImage2D = (target, level, internalFormat, width, height, border, format, type, pixels) => {
+var _emscripten_glStencilOpSeparate = (x0, x1, x2, x3) =>
+  GLctx.stencilOpSeparate(x0, x1, x2, x3);
+var _emscripten_glTexImage2D = (
+  target,
+  level,
+  internalFormat,
+  width,
+  height,
+  border,
+  format,
+  type,
+  pixels
+) => {
   if (GL.currentContext.version >= 2) {
     if (GLctx.currentPixelUnpackBufferBinding) {
-      GLctx.texImage2D(target, level, internalFormat, width, height, border, format, type, pixels);
+      GLctx.texImage2D(
+        target,
+        level,
+        internalFormat,
+        width,
+        height,
+        border,
+        format,
+        type,
+        pixels
+      );
       return;
     }
     if (pixels) {
       var heap = heapObjectForWebGLType(type);
       var index = toTypedArrayIndex(pixels, heap);
-      GLctx.texImage2D(target, level, internalFormat, width, height, border, format, type, heap, index);
+      GLctx.texImage2D(
+        target,
+        level,
+        internalFormat,
+        width,
+        height,
+        border,
+        format,
+        type,
+        heap,
+        index
+      );
       return;
     }
   }
-  var pixelData = pixels ? emscriptenWebGLGetTexPixelData(type, format, width, height, pixels, internalFormat) : null;
-  GLctx.texImage2D(target, level, internalFormat, width, height, border, format, type, pixelData);
+  var pixelData = pixels
+    ? emscriptenWebGLGetTexPixelData(
+        type,
+        format,
+        width,
+        height,
+        pixels,
+        internalFormat
+      )
+    : null;
+  GLctx.texImage2D(
+    target,
+    level,
+    internalFormat,
+    width,
+    height,
+    border,
+    format,
+    type,
+    pixelData
+  );
 };
-var _emscripten_glTexImage3D = (target, level, internalFormat, width, height, depth, border, format, type, pixels) => {
+var _emscripten_glTexImage3D = (
+  target,
+  level,
+  internalFormat,
+  width,
+  height,
+  depth,
+  border,
+  format,
+  type,
+  pixels
+) => {
   if (GLctx.currentPixelUnpackBufferBinding) {
-    GLctx.texImage3D(target, level, internalFormat, width, height, depth, border, format, type, pixels);
+    GLctx.texImage3D(
+      target,
+      level,
+      internalFormat,
+      width,
+      height,
+      depth,
+      border,
+      format,
+      type,
+      pixels
+    );
   } else if (pixels) {
     var heap = heapObjectForWebGLType(type);
     GLctx.texImage3D(
@@ -11930,25 +20653,60 @@ var _emscripten_glTexImage3D = (target, level, internalFormat, width, height, de
       toTypedArrayIndex(pixels, heap)
     );
   } else {
-    GLctx.texImage3D(target, level, internalFormat, width, height, depth, border, format, type, null);
+    GLctx.texImage3D(
+      target,
+      level,
+      internalFormat,
+      width,
+      height,
+      depth,
+      border,
+      format,
+      type,
+      null
+    );
   }
 };
-var _emscripten_glTexParameterf = (x0, x1, x2) => GLctx.texParameterf(x0, x1, x2);
+var _emscripten_glTexParameterf = (x0, x1, x2) =>
+  GLctx.texParameterf(x0, x1, x2);
 var _emscripten_glTexParameterfv = (target, pname, params) => {
   var param = HEAPF32[params >> 2];
   GLctx.texParameterf(target, pname, param);
 };
-var _emscripten_glTexParameteri = (x0, x1, x2) => GLctx.texParameteri(x0, x1, x2);
+var _emscripten_glTexParameteri = (x0, x1, x2) =>
+  GLctx.texParameteri(x0, x1, x2);
 var _emscripten_glTexParameteriv = (target, pname, params) => {
   var param = HEAP32[params >> 2];
   GLctx.texParameteri(target, pname, param);
 };
-var _emscripten_glTexStorage2D = (x0, x1, x2, x3, x4) => GLctx.texStorage2D(x0, x1, x2, x3, x4);
-var _emscripten_glTexStorage3D = (x0, x1, x2, x3, x4, x5) => GLctx.texStorage3D(x0, x1, x2, x3, x4, x5);
-var _emscripten_glTexSubImage2D = (target, level, xoffset, yoffset, width, height, format, type, pixels) => {
+var _emscripten_glTexStorage2D = (x0, x1, x2, x3, x4) =>
+  GLctx.texStorage2D(x0, x1, x2, x3, x4);
+var _emscripten_glTexStorage3D = (x0, x1, x2, x3, x4, x5) =>
+  GLctx.texStorage3D(x0, x1, x2, x3, x4, x5);
+var _emscripten_glTexSubImage2D = (
+  target,
+  level,
+  xoffset,
+  yoffset,
+  width,
+  height,
+  format,
+  type,
+  pixels
+) => {
   if (GL.currentContext.version >= 2) {
     if (GLctx.currentPixelUnpackBufferBinding) {
-      GLctx.texSubImage2D(target, level, xoffset, yoffset, width, height, format, type, pixels);
+      GLctx.texSubImage2D(
+        target,
+        level,
+        xoffset,
+        yoffset,
+        width,
+        height,
+        format,
+        type,
+        pixels
+      );
       return;
     }
     if (pixels) {
@@ -11968,8 +20726,20 @@ var _emscripten_glTexSubImage2D = (target, level, xoffset, yoffset, width, heigh
       return;
     }
   }
-  var pixelData = pixels ? emscriptenWebGLGetTexPixelData(type, format, width, height, pixels, 0) : null;
-  GLctx.texSubImage2D(target, level, xoffset, yoffset, width, height, format, type, pixelData);
+  var pixelData = pixels
+    ? emscriptenWebGLGetTexPixelData(type, format, width, height, pixels, 0)
+    : null;
+  GLctx.texSubImage2D(
+    target,
+    level,
+    xoffset,
+    yoffset,
+    width,
+    height,
+    format,
+    type,
+    pixelData
+  );
 };
 var _emscripten_glTexSubImage3D = (
   target,
@@ -11985,7 +20755,19 @@ var _emscripten_glTexSubImage3D = (
   pixels
 ) => {
   if (GLctx.currentPixelUnpackBufferBinding) {
-    GLctx.texSubImage3D(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels);
+    GLctx.texSubImage3D(
+      target,
+      level,
+      xoffset,
+      yoffset,
+      zoffset,
+      width,
+      height,
+      depth,
+      format,
+      type,
+      pixels
+    );
   } else if (pixels) {
     var heap = heapObjectForWebGLType(type);
     GLctx.texSubImage3D(
@@ -12003,13 +20785,31 @@ var _emscripten_glTexSubImage3D = (
       toTypedArrayIndex(pixels, heap)
     );
   } else {
-    GLctx.texSubImage3D(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, null);
+    GLctx.texSubImage3D(
+      target,
+      level,
+      xoffset,
+      yoffset,
+      zoffset,
+      width,
+      height,
+      depth,
+      format,
+      type,
+      null
+    );
   }
 };
-var _emscripten_glTransformFeedbackVaryings = (program, count, varyings, bufferMode) => {
+var _emscripten_glTransformFeedbackVaryings = (
+  program,
+  count,
+  varyings,
+  bufferMode
+) => {
   program = GL.programs[program];
   var vars = [];
-  for (var i = 0; i < count; i++) vars.push(UTF8ToString(HEAPU32[(varyings + i * 4) >> 2]));
+  for (var i = 0; i < count; i++)
+    vars.push(UTF8ToString(HEAPU32[(varyings + i * 4) >> 2]));
   GLctx.transformFeedbackVaryings(program, vars, bufferMode);
 };
 var _emscripten_glUniform1f = (location, v0) => {
@@ -12018,7 +20818,13 @@ var _emscripten_glUniform1f = (location, v0) => {
 var miniTempWebGLFloatBuffers = [];
 var _emscripten_glUniform1fv = (location, count, value) => {
   if (GL.currentContext.version >= 2) {
-    count && GLctx.uniform1fv(webglGetUniformLocation(location), HEAPF32, value >> 2, count);
+    count &&
+      GLctx.uniform1fv(
+        webglGetUniformLocation(location),
+        HEAPF32,
+        value >> 2,
+        count
+      );
     return;
   }
   if (count <= 288) {
@@ -12037,7 +20843,13 @@ var _emscripten_glUniform1i = (location, v0) => {
 var miniTempWebGLIntBuffers = [];
 var _emscripten_glUniform1iv = (location, count, value) => {
   if (GL.currentContext.version >= 2) {
-    count && GLctx.uniform1iv(webglGetUniformLocation(location), HEAP32, value >> 2, count);
+    count &&
+      GLctx.uniform1iv(
+        webglGetUniformLocation(location),
+        HEAP32,
+        value >> 2,
+        count
+      );
     return;
   }
   if (count <= 288) {
@@ -12054,14 +20866,26 @@ var _emscripten_glUniform1ui = (location, v0) => {
   GLctx.uniform1ui(webglGetUniformLocation(location), v0);
 };
 var _emscripten_glUniform1uiv = (location, count, value) => {
-  count && GLctx.uniform1uiv(webglGetUniformLocation(location), HEAPU32, value >> 2, count);
+  count &&
+    GLctx.uniform1uiv(
+      webglGetUniformLocation(location),
+      HEAPU32,
+      value >> 2,
+      count
+    );
 };
 var _emscripten_glUniform2f = (location, v0, v1) => {
   GLctx.uniform2f(webglGetUniformLocation(location), v0, v1);
 };
 var _emscripten_glUniform2fv = (location, count, value) => {
   if (GL.currentContext.version >= 2) {
-    count && GLctx.uniform2fv(webglGetUniformLocation(location), HEAPF32, value >> 2, count * 2);
+    count &&
+      GLctx.uniform2fv(
+        webglGetUniformLocation(location),
+        HEAPF32,
+        value >> 2,
+        count * 2
+      );
     return;
   }
   if (count <= 144) {
@@ -12081,7 +20905,13 @@ var _emscripten_glUniform2i = (location, v0, v1) => {
 };
 var _emscripten_glUniform2iv = (location, count, value) => {
   if (GL.currentContext.version >= 2) {
-    count && GLctx.uniform2iv(webglGetUniformLocation(location), HEAP32, value >> 2, count * 2);
+    count &&
+      GLctx.uniform2iv(
+        webglGetUniformLocation(location),
+        HEAP32,
+        value >> 2,
+        count * 2
+      );
     return;
   }
   if (count <= 144) {
@@ -12100,14 +20930,26 @@ var _emscripten_glUniform2ui = (location, v0, v1) => {
   GLctx.uniform2ui(webglGetUniformLocation(location), v0, v1);
 };
 var _emscripten_glUniform2uiv = (location, count, value) => {
-  count && GLctx.uniform2uiv(webglGetUniformLocation(location), HEAPU32, value >> 2, count * 2);
+  count &&
+    GLctx.uniform2uiv(
+      webglGetUniformLocation(location),
+      HEAPU32,
+      value >> 2,
+      count * 2
+    );
 };
 var _emscripten_glUniform3f = (location, v0, v1, v2) => {
   GLctx.uniform3f(webglGetUniformLocation(location), v0, v1, v2);
 };
 var _emscripten_glUniform3fv = (location, count, value) => {
   if (GL.currentContext.version >= 2) {
-    count && GLctx.uniform3fv(webglGetUniformLocation(location), HEAPF32, value >> 2, count * 3);
+    count &&
+      GLctx.uniform3fv(
+        webglGetUniformLocation(location),
+        HEAPF32,
+        value >> 2,
+        count * 3
+      );
     return;
   }
   if (count <= 96) {
@@ -12128,7 +20970,13 @@ var _emscripten_glUniform3i = (location, v0, v1, v2) => {
 };
 var _emscripten_glUniform3iv = (location, count, value) => {
   if (GL.currentContext.version >= 2) {
-    count && GLctx.uniform3iv(webglGetUniformLocation(location), HEAP32, value >> 2, count * 3);
+    count &&
+      GLctx.uniform3iv(
+        webglGetUniformLocation(location),
+        HEAP32,
+        value >> 2,
+        count * 3
+      );
     return;
   }
   if (count <= 96) {
@@ -12148,14 +20996,26 @@ var _emscripten_glUniform3ui = (location, v0, v1, v2) => {
   GLctx.uniform3ui(webglGetUniformLocation(location), v0, v1, v2);
 };
 var _emscripten_glUniform3uiv = (location, count, value) => {
-  count && GLctx.uniform3uiv(webglGetUniformLocation(location), HEAPU32, value >> 2, count * 3);
+  count &&
+    GLctx.uniform3uiv(
+      webglGetUniformLocation(location),
+      HEAPU32,
+      value >> 2,
+      count * 3
+    );
 };
 var _emscripten_glUniform4f = (location, v0, v1, v2, v3) => {
   GLctx.uniform4f(webglGetUniformLocation(location), v0, v1, v2, v3);
 };
 var _emscripten_glUniform4fv = (location, count, value) => {
   if (GL.currentContext.version >= 2) {
-    count && GLctx.uniform4fv(webglGetUniformLocation(location), HEAPF32, value >> 2, count * 4);
+    count &&
+      GLctx.uniform4fv(
+        webglGetUniformLocation(location),
+        HEAPF32,
+        value >> 2,
+        count * 4
+      );
     return;
   }
   if (count <= 72) {
@@ -12180,7 +21040,13 @@ var _emscripten_glUniform4i = (location, v0, v1, v2, v3) => {
 };
 var _emscripten_glUniform4iv = (location, count, value) => {
   if (GL.currentContext.version >= 2) {
-    count && GLctx.uniform4iv(webglGetUniformLocation(location), HEAP32, value >> 2, count * 4);
+    count &&
+      GLctx.uniform4iv(
+        webglGetUniformLocation(location),
+        HEAP32,
+        value >> 2,
+        count * 4
+      );
     return;
   }
   if (count <= 72) {
@@ -12201,15 +21067,32 @@ var _emscripten_glUniform4ui = (location, v0, v1, v2, v3) => {
   GLctx.uniform4ui(webglGetUniformLocation(location), v0, v1, v2, v3);
 };
 var _emscripten_glUniform4uiv = (location, count, value) => {
-  count && GLctx.uniform4uiv(webglGetUniformLocation(location), HEAPU32, value >> 2, count * 4);
+  count &&
+    GLctx.uniform4uiv(
+      webglGetUniformLocation(location),
+      HEAPU32,
+      value >> 2,
+      count * 4
+    );
 };
-var _emscripten_glUniformBlockBinding = (program, uniformBlockIndex, uniformBlockBinding) => {
+var _emscripten_glUniformBlockBinding = (
+  program,
+  uniformBlockIndex,
+  uniformBlockBinding
+) => {
   program = GL.programs[program];
   GLctx.uniformBlockBinding(program, uniformBlockIndex, uniformBlockBinding);
 };
 var _emscripten_glUniformMatrix2fv = (location, count, transpose, value) => {
   if (GL.currentContext.version >= 2) {
-    count && GLctx.uniformMatrix2fv(webglGetUniformLocation(location), !!transpose, HEAPF32, value >> 2, count * 4);
+    count &&
+      GLctx.uniformMatrix2fv(
+        webglGetUniformLocation(location),
+        !!transpose,
+        HEAPF32,
+        value >> 2,
+        count * 4
+      );
     return;
   }
   if (count <= 72) {
@@ -12227,14 +21110,35 @@ var _emscripten_glUniformMatrix2fv = (location, count, transpose, value) => {
   GLctx.uniformMatrix2fv(webglGetUniformLocation(location), !!transpose, view);
 };
 var _emscripten_glUniformMatrix2x3fv = (location, count, transpose, value) => {
-  count && GLctx.uniformMatrix2x3fv(webglGetUniformLocation(location), !!transpose, HEAPF32, value >> 2, count * 6);
+  count &&
+    GLctx.uniformMatrix2x3fv(
+      webglGetUniformLocation(location),
+      !!transpose,
+      HEAPF32,
+      value >> 2,
+      count * 6
+    );
 };
 var _emscripten_glUniformMatrix2x4fv = (location, count, transpose, value) => {
-  count && GLctx.uniformMatrix2x4fv(webglGetUniformLocation(location), !!transpose, HEAPF32, value >> 2, count * 8);
+  count &&
+    GLctx.uniformMatrix2x4fv(
+      webglGetUniformLocation(location),
+      !!transpose,
+      HEAPF32,
+      value >> 2,
+      count * 8
+    );
 };
 var _emscripten_glUniformMatrix3fv = (location, count, transpose, value) => {
   if (GL.currentContext.version >= 2) {
-    count && GLctx.uniformMatrix3fv(webglGetUniformLocation(location), !!transpose, HEAPF32, value >> 2, count * 9);
+    count &&
+      GLctx.uniformMatrix3fv(
+        webglGetUniformLocation(location),
+        !!transpose,
+        HEAPF32,
+        value >> 2,
+        count * 9
+      );
     return;
   }
   if (count <= 32) {
@@ -12257,14 +21161,35 @@ var _emscripten_glUniformMatrix3fv = (location, count, transpose, value) => {
   GLctx.uniformMatrix3fv(webglGetUniformLocation(location), !!transpose, view);
 };
 var _emscripten_glUniformMatrix3x2fv = (location, count, transpose, value) => {
-  count && GLctx.uniformMatrix3x2fv(webglGetUniformLocation(location), !!transpose, HEAPF32, value >> 2, count * 6);
+  count &&
+    GLctx.uniformMatrix3x2fv(
+      webglGetUniformLocation(location),
+      !!transpose,
+      HEAPF32,
+      value >> 2,
+      count * 6
+    );
 };
 var _emscripten_glUniformMatrix3x4fv = (location, count, transpose, value) => {
-  count && GLctx.uniformMatrix3x4fv(webglGetUniformLocation(location), !!transpose, HEAPF32, value >> 2, count * 12);
+  count &&
+    GLctx.uniformMatrix3x4fv(
+      webglGetUniformLocation(location),
+      !!transpose,
+      HEAPF32,
+      value >> 2,
+      count * 12
+    );
 };
 var _emscripten_glUniformMatrix4fv = (location, count, transpose, value) => {
   if (GL.currentContext.version >= 2) {
-    count && GLctx.uniformMatrix4fv(webglGetUniformLocation(location), !!transpose, HEAPF32, value >> 2, count * 16);
+    count &&
+      GLctx.uniformMatrix4fv(
+        webglGetUniformLocation(location),
+        !!transpose,
+        HEAPF32,
+        value >> 2,
+        count * 16
+      );
     return;
   }
   if (count <= 18) {
@@ -12297,10 +21222,24 @@ var _emscripten_glUniformMatrix4fv = (location, count, transpose, value) => {
   GLctx.uniformMatrix4fv(webglGetUniformLocation(location), !!transpose, view);
 };
 var _emscripten_glUniformMatrix4x2fv = (location, count, transpose, value) => {
-  count && GLctx.uniformMatrix4x2fv(webglGetUniformLocation(location), !!transpose, HEAPF32, value >> 2, count * 8);
+  count &&
+    GLctx.uniformMatrix4x2fv(
+      webglGetUniformLocation(location),
+      !!transpose,
+      HEAPF32,
+      value >> 2,
+      count * 8
+    );
 };
 var _emscripten_glUniformMatrix4x3fv = (location, count, transpose, value) => {
-  count && GLctx.uniformMatrix4x3fv(webglGetUniformLocation(location), !!transpose, HEAPF32, value >> 2, count * 12);
+  count &&
+    GLctx.uniformMatrix4x3fv(
+      webglGetUniformLocation(location),
+      !!transpose,
+      HEAPF32,
+      value >> 2,
+      count * 12
+    );
 };
 var _emscripten_glUnmapBuffer = (target) => {
   if (!emscriptenWebGLValidateMapBufferTarget(target)) {
@@ -12317,8 +21256,19 @@ var _emscripten_glUnmapBuffer = (target) => {
   }
   if (!(mapping.access & 16)) {
     if (GL.currentContext.version >= 2) {
-      GLctx.bufferSubData(target, mapping.offset, HEAPU8, mapping.mem, mapping.length);
-    } else GLctx.bufferSubData(target, mapping.offset, HEAPU8.subarray(mapping.mem, mapping.mem + mapping.length));
+      GLctx.bufferSubData(
+        target,
+        mapping.offset,
+        HEAPU8,
+        mapping.mem,
+        mapping.length
+      );
+    } else
+      GLctx.bufferSubData(
+        target,
+        mapping.offset,
+        HEAPU8.subarray(mapping.mem, mapping.mem + mapping.length)
+      );
   }
   _free(mapping.mem);
   mapping.mem = 0;
@@ -12336,17 +21286,31 @@ var _emscripten_glVertexAttrib1f = (x0, x1) => GLctx.vertexAttrib1f(x0, x1);
 var _emscripten_glVertexAttrib1fv = (index, v) => {
   GLctx.vertexAttrib1f(index, HEAPF32[v >> 2]);
 };
-var _emscripten_glVertexAttrib2f = (x0, x1, x2) => GLctx.vertexAttrib2f(x0, x1, x2);
+var _emscripten_glVertexAttrib2f = (x0, x1, x2) =>
+  GLctx.vertexAttrib2f(x0, x1, x2);
 var _emscripten_glVertexAttrib2fv = (index, v) => {
   GLctx.vertexAttrib2f(index, HEAPF32[v >> 2], HEAPF32[(v + 4) >> 2]);
 };
-var _emscripten_glVertexAttrib3f = (x0, x1, x2, x3) => GLctx.vertexAttrib3f(x0, x1, x2, x3);
+var _emscripten_glVertexAttrib3f = (x0, x1, x2, x3) =>
+  GLctx.vertexAttrib3f(x0, x1, x2, x3);
 var _emscripten_glVertexAttrib3fv = (index, v) => {
-  GLctx.vertexAttrib3f(index, HEAPF32[v >> 2], HEAPF32[(v + 4) >> 2], HEAPF32[(v + 8) >> 2]);
+  GLctx.vertexAttrib3f(
+    index,
+    HEAPF32[v >> 2],
+    HEAPF32[(v + 4) >> 2],
+    HEAPF32[(v + 8) >> 2]
+  );
 };
-var _emscripten_glVertexAttrib4f = (x0, x1, x2, x3, x4) => GLctx.vertexAttrib4f(x0, x1, x2, x3, x4);
+var _emscripten_glVertexAttrib4f = (x0, x1, x2, x3, x4) =>
+  GLctx.vertexAttrib4f(x0, x1, x2, x3, x4);
 var _emscripten_glVertexAttrib4fv = (index, v) => {
-  GLctx.vertexAttrib4f(index, HEAPF32[v >> 2], HEAPF32[(v + 4) >> 2], HEAPF32[(v + 8) >> 2], HEAPF32[(v + 12) >> 2]);
+  GLctx.vertexAttrib4f(
+    index,
+    HEAPF32[v >> 2],
+    HEAPF32[(v + 4) >> 2],
+    HEAPF32[(v + 8) >> 2],
+    HEAPF32[(v + 12) >> 2]
+  );
 };
 var _emscripten_glVertexAttribDivisor = (index, divisor) => {
   GLctx.vertexAttribDivisor(index, divisor);
@@ -12355,13 +21319,27 @@ var _emscripten_glVertexAttribDivisorANGLE = _emscripten_glVertexAttribDivisor;
 var _emscripten_glVertexAttribDivisorARB = _emscripten_glVertexAttribDivisor;
 var _emscripten_glVertexAttribDivisorEXT = _emscripten_glVertexAttribDivisor;
 var _emscripten_glVertexAttribDivisorNV = _emscripten_glVertexAttribDivisor;
-var _emscripten_glVertexAttribI4i = (x0, x1, x2, x3, x4) => GLctx.vertexAttribI4i(x0, x1, x2, x3, x4);
+var _emscripten_glVertexAttribI4i = (x0, x1, x2, x3, x4) =>
+  GLctx.vertexAttribI4i(x0, x1, x2, x3, x4);
 var _emscripten_glVertexAttribI4iv = (index, v) => {
-  GLctx.vertexAttribI4i(index, HEAP32[v >> 2], HEAP32[(v + 4) >> 2], HEAP32[(v + 8) >> 2], HEAP32[(v + 12) >> 2]);
+  GLctx.vertexAttribI4i(
+    index,
+    HEAP32[v >> 2],
+    HEAP32[(v + 4) >> 2],
+    HEAP32[(v + 8) >> 2],
+    HEAP32[(v + 12) >> 2]
+  );
 };
-var _emscripten_glVertexAttribI4ui = (x0, x1, x2, x3, x4) => GLctx.vertexAttribI4ui(x0, x1, x2, x3, x4);
+var _emscripten_glVertexAttribI4ui = (x0, x1, x2, x3, x4) =>
+  GLctx.vertexAttribI4ui(x0, x1, x2, x3, x4);
 var _emscripten_glVertexAttribI4uiv = (index, v) => {
-  GLctx.vertexAttribI4ui(index, HEAPU32[v >> 2], HEAPU32[(v + 4) >> 2], HEAPU32[(v + 8) >> 2], HEAPU32[(v + 12) >> 2]);
+  GLctx.vertexAttribI4ui(
+    index,
+    HEAPU32[v >> 2],
+    HEAPU32[(v + 4) >> 2],
+    HEAPU32[(v + 8) >> 2],
+    HEAPU32[(v + 12) >> 2]
+  );
 };
 var _emscripten_glVertexAttribIPointer = (index, size, type, stride, ptr) => {
   var cb = GL.currentContext.clientBuffers[index];
@@ -12372,7 +21350,14 @@ var _emscripten_glVertexAttribIPointer = (index, size, type, stride, ptr) => {
     cb.stride = stride;
     cb.ptr = ptr;
     cb.clientside = true;
-    cb.vertexAttribPointerAdaptor = function (index, size, type, normalized, stride, ptr) {
+    cb.vertexAttribPointerAdaptor = function (
+      index,
+      size,
+      type,
+      normalized,
+      stride,
+      ptr
+    ) {
       this.vertexAttribIPointer(index, size, type, stride, ptr);
     };
     return;
@@ -12380,7 +21365,14 @@ var _emscripten_glVertexAttribIPointer = (index, size, type, stride, ptr) => {
   cb.clientside = false;
   GLctx.vertexAttribIPointer(index, size, type, stride, ptr);
 };
-var _emscripten_glVertexAttribPointer = (index, size, type, normalized, stride, ptr) => {
+var _emscripten_glVertexAttribPointer = (
+  index,
+  size,
+  type,
+  normalized,
+  stride,
+  ptr
+) => {
   var cb = GL.currentContext.clientBuffers[index];
   if (!GLctx.currentArrayBufferBinding) {
     cb.size = size;
@@ -12389,7 +21381,14 @@ var _emscripten_glVertexAttribPointer = (index, size, type, normalized, stride, 
     cb.stride = stride;
     cb.ptr = ptr;
     cb.clientside = true;
-    cb.vertexAttribPointerAdaptor = function (index, size, type, normalized, stride, ptr) {
+    cb.vertexAttribPointerAdaptor = function (
+      index,
+      size,
+      type,
+      normalized,
+      stride,
+      ptr
+    ) {
       this.vertexAttribPointer(index, size, type, normalized, stride, ptr);
     };
     return;
@@ -12420,14 +21419,18 @@ var doRequestFullscreen = (target, strategy) => {
   }
   return JSEvents_requestFullscreen(target, strategy);
 };
-var _emscripten_request_fullscreen_strategy = (target, deferUntilInEventHandler, fullscreenStrategy) => {
+var _emscripten_request_fullscreen_strategy = (
+  target,
+  deferUntilInEventHandler,
+  fullscreenStrategy
+) => {
   var strategy = {
     scaleMode: HEAP32[fullscreenStrategy >> 2],
     canvasResolutionScaleMode: HEAP32[(fullscreenStrategy + 4) >> 2],
     filteringMode: HEAP32[(fullscreenStrategy + 8) >> 2],
     deferUntilInEventHandler,
     canvasResizedCallback: HEAP32[(fullscreenStrategy + 12) >> 2],
-    canvasResizedCallbackUserData: HEAP32[(fullscreenStrategy + 16) >> 2]
+    canvasResizedCallbackUserData: HEAP32[(fullscreenStrategy + 16) >> 2],
   };
   return doRequestFullscreen(target, strategy);
 };
@@ -12467,7 +21470,10 @@ var _emscripten_resize_heap = (requestedSize) => {
   for (var cutDown = 1; cutDown <= 4; cutDown *= 2) {
     var overGrownHeapSize = oldSize * (1 + 0.2 / cutDown);
     overGrownHeapSize = Math.min(overGrownHeapSize, requestedSize + 100663296);
-    var newSize = Math.min(maxHeapSize, alignMemory(Math.max(requestedSize, overGrownHeapSize), 65536));
+    var newSize = Math.min(
+      maxHeapSize,
+      alignMemory(Math.max(requestedSize, overGrownHeapSize), 65536)
+    );
     var replacement = growMemory(newSize);
     if (replacement) {
       return true;
@@ -12478,15 +21484,27 @@ var _emscripten_resize_heap = (requestedSize) => {
 var _emscripten_run_script_int = (ptr) => eval(UTF8ToString(ptr)) | 0;
 var _emscripten_sample_gamepad_data = () => {
   try {
-    if (navigator.getGamepads) return (JSEvents.lastGamepadState = navigator.getGamepads()) ? 0 : -1;
+    if (navigator.getGamepads)
+      return (JSEvents.lastGamepadState = navigator.getGamepads()) ? 0 : -1;
   } catch (e) {
     navigator.getGamepads = null;
   }
   return -1;
 };
-var registerBeforeUnloadEventCallback = (target, userData, useCapture, callbackfunc, eventTypeId, eventTypeString) => {
+var registerBeforeUnloadEventCallback = (
+  target,
+  userData,
+  useCapture,
+  callbackfunc,
+  eventTypeId,
+  eventTypeString
+) => {
   var beforeUnloadEventHandlerFunc = (e) => {
-    var confirmationMessage = getWasmTableEntry(callbackfunc)(eventTypeId, 0, userData);
+    var confirmationMessage = getWasmTableEntry(callbackfunc)(
+      eventTypeId,
+      0,
+      userData
+    );
     if (confirmationMessage) {
       confirmationMessage = UTF8ToString(confirmationMessage);
     }
@@ -12503,14 +21521,25 @@ var registerBeforeUnloadEventCallback = (target, userData, useCapture, callbackf
     userData,
     callbackfunc,
     handlerFunc: beforeUnloadEventHandlerFunc,
-    useCapture
+    useCapture,
   };
   return JSEvents.registerOrRemoveHandler(eventHandler);
 };
-var _emscripten_set_beforeunload_callback_on_thread = (userData, callbackfunc, targetThread) => {
+var _emscripten_set_beforeunload_callback_on_thread = (
+  userData,
+  callbackfunc,
+  targetThread
+) => {
   if (typeof onbeforeunload == "undefined") return -1;
   if (targetThread !== 1) return -5;
-  return registerBeforeUnloadEventCallback(2, userData, true, callbackfunc, 28, "beforeunload");
+  return registerBeforeUnloadEventCallback(
+    2,
+    userData,
+    true,
+    callbackfunc,
+    28,
+    "beforeunload"
+  );
 };
 var registerFocusEventCallback = (
   target,
@@ -12529,7 +21558,8 @@ var registerFocusEventCallback = (
     var focusEvent = JSEvents.focusEvent;
     stringToUTF8(nodeName, focusEvent + 0, 128);
     stringToUTF8(id, focusEvent + 128, 128);
-    if (getWasmTableEntry(callbackfunc)(eventTypeId, focusEvent, userData)) e.preventDefault();
+    if (getWasmTableEntry(callbackfunc)(eventTypeId, focusEvent, userData))
+      e.preventDefault();
   };
   var eventHandler = {
     target: findEventTarget(target),
@@ -12538,12 +21568,26 @@ var registerFocusEventCallback = (
     userData,
     callbackfunc,
     handlerFunc: focusEventHandlerFunc,
-    useCapture
+    useCapture,
   };
   return JSEvents.registerOrRemoveHandler(eventHandler);
 };
-var _emscripten_set_blur_callback_on_thread = (target, userData, useCapture, callbackfunc, targetThread) =>
-  registerFocusEventCallback(target, userData, useCapture, callbackfunc, 12, "blur", targetThread);
+var _emscripten_set_blur_callback_on_thread = (
+  target,
+  userData,
+  useCapture,
+  callbackfunc,
+  targetThread
+) =>
+  registerFocusEventCallback(
+    target,
+    userData,
+    useCapture,
+    callbackfunc,
+    12,
+    "blur",
+    targetThread
+  );
 var _emscripten_set_element_css_size = (target, width, height) => {
   target = findEventTarget(target);
   if (!target) return -4;
@@ -12551,20 +21595,40 @@ var _emscripten_set_element_css_size = (target, width, height) => {
   target.style.height = height + "px";
   return 0;
 };
-var _emscripten_set_focus_callback_on_thread = (target, userData, useCapture, callbackfunc, targetThread) =>
-  registerFocusEventCallback(target, userData, useCapture, callbackfunc, 13, "focus", targetThread);
+var _emscripten_set_focus_callback_on_thread = (
+  target,
+  userData,
+  useCapture,
+  callbackfunc,
+  targetThread
+) =>
+  registerFocusEventCallback(
+    target,
+    userData,
+    useCapture,
+    callbackfunc,
+    13,
+    "focus",
+    targetThread
+  );
 var fillFullscreenChangeEventData = (eventStruct) => {
   var fullscreenElement = getFullscreenElement();
   var isFullscreen = !!fullscreenElement;
   HEAP8[eventStruct] = isFullscreen;
   HEAP8[eventStruct + 1] = JSEvents.fullscreenEnabled();
-  var reportedElement = isFullscreen ? fullscreenElement : JSEvents.previousFullscreenElement;
+  var reportedElement = isFullscreen
+    ? fullscreenElement
+    : JSEvents.previousFullscreenElement;
   var nodeName = JSEvents.getNodeNameForTarget(reportedElement);
   var id = reportedElement?.id || "";
   stringToUTF8(nodeName, eventStruct + 2, 128);
   stringToUTF8(id, eventStruct + 130, 128);
-  HEAP32[(eventStruct + 260) >> 2] = reportedElement ? reportedElement.clientWidth : 0;
-  HEAP32[(eventStruct + 264) >> 2] = reportedElement ? reportedElement.clientHeight : 0;
+  HEAP32[(eventStruct + 260) >> 2] = reportedElement
+    ? reportedElement.clientWidth
+    : 0;
+  HEAP32[(eventStruct + 264) >> 2] = reportedElement
+    ? reportedElement.clientHeight
+    : 0;
   HEAP32[(eventStruct + 268) >> 2] = screen.width;
   HEAP32[(eventStruct + 272) >> 2] = screen.height;
   if (isFullscreen) {
@@ -12585,7 +21649,14 @@ var registerFullscreenChangeEventCallback = (
   var fullscreenChangeEventhandlerFunc = (e) => {
     var fullscreenChangeEvent = JSEvents.fullscreenChangeEvent;
     fillFullscreenChangeEventData(fullscreenChangeEvent);
-    if (getWasmTableEntry(callbackfunc)(eventTypeId, fullscreenChangeEvent, userData)) e.preventDefault();
+    if (
+      getWasmTableEntry(callbackfunc)(
+        eventTypeId,
+        fullscreenChangeEvent,
+        userData
+      )
+    )
+      e.preventDefault();
   };
   var eventHandler = {
     target,
@@ -12594,7 +21665,7 @@ var registerFullscreenChangeEventCallback = (
     userData,
     callbackfunc,
     handlerFunc: fullscreenChangeEventhandlerFunc,
-    useCapture
+    useCapture,
   };
   return JSEvents.registerOrRemoveHandler(eventHandler);
 };
@@ -12641,7 +21712,8 @@ var registerGamepadEventCallback = (
   var gamepadEventHandlerFunc = (e) => {
     var gamepadEvent = JSEvents.gamepadEvent;
     fillGamepadEventData(gamepadEvent, e["gamepad"]);
-    if (getWasmTableEntry(callbackfunc)(eventTypeId, gamepadEvent, userData)) e.preventDefault();
+    if (getWasmTableEntry(callbackfunc)(eventTypeId, gamepadEvent, userData))
+      e.preventDefault();
   };
   var eventHandler = {
     target: findEventTarget(target),
@@ -12651,17 +21723,43 @@ var registerGamepadEventCallback = (
     userData,
     callbackfunc,
     handlerFunc: gamepadEventHandlerFunc,
-    useCapture
+    useCapture,
   };
   return JSEvents.registerOrRemoveHandler(eventHandler);
 };
-var _emscripten_set_gamepadconnected_callback_on_thread = (userData, useCapture, callbackfunc, targetThread) => {
+var _emscripten_set_gamepadconnected_callback_on_thread = (
+  userData,
+  useCapture,
+  callbackfunc,
+  targetThread
+) => {
   if (_emscripten_sample_gamepad_data()) return -1;
-  return registerGamepadEventCallback(2, userData, useCapture, callbackfunc, 26, "gamepadconnected", targetThread);
+  return registerGamepadEventCallback(
+    2,
+    userData,
+    useCapture,
+    callbackfunc,
+    26,
+    "gamepadconnected",
+    targetThread
+  );
 };
-var _emscripten_set_gamepaddisconnected_callback_on_thread = (userData, useCapture, callbackfunc, targetThread) => {
+var _emscripten_set_gamepaddisconnected_callback_on_thread = (
+  userData,
+  useCapture,
+  callbackfunc,
+  targetThread
+) => {
   if (_emscripten_sample_gamepad_data()) return -1;
-  return registerGamepadEventCallback(2, userData, useCapture, callbackfunc, 27, "gamepaddisconnected", targetThread);
+  return registerGamepadEventCallback(
+    2,
+    userData,
+    useCapture,
+    callbackfunc,
+    27,
+    "gamepaddisconnected",
+    targetThread
+  );
 };
 var registerKeyEventCallback = (
   target,
@@ -12691,7 +21789,8 @@ var registerKeyEventCallback = (
     stringToUTF8(e.code || "", keyEventData + 64, 32);
     stringToUTF8(e.char || "", keyEventData + 96, 32);
     stringToUTF8(e.locale || "", keyEventData + 128, 32);
-    if (getWasmTableEntry(callbackfunc)(eventTypeId, keyEventData, userData)) e.preventDefault();
+    if (getWasmTableEntry(callbackfunc)(eventTypeId, keyEventData, userData))
+      e.preventDefault();
   };
   var eventHandler = {
     target: findEventTarget(target),
@@ -12700,16 +21799,58 @@ var registerKeyEventCallback = (
     userData,
     callbackfunc,
     handlerFunc: keyEventHandlerFunc,
-    useCapture
+    useCapture,
   };
   return JSEvents.registerOrRemoveHandler(eventHandler);
 };
-var _emscripten_set_keydown_callback_on_thread = (target, userData, useCapture, callbackfunc, targetThread) =>
-  registerKeyEventCallback(target, userData, useCapture, callbackfunc, 2, "keydown", targetThread);
-var _emscripten_set_keypress_callback_on_thread = (target, userData, useCapture, callbackfunc, targetThread) =>
-  registerKeyEventCallback(target, userData, useCapture, callbackfunc, 1, "keypress", targetThread);
-var _emscripten_set_keyup_callback_on_thread = (target, userData, useCapture, callbackfunc, targetThread) =>
-  registerKeyEventCallback(target, userData, useCapture, callbackfunc, 3, "keyup", targetThread);
+var _emscripten_set_keydown_callback_on_thread = (
+  target,
+  userData,
+  useCapture,
+  callbackfunc,
+  targetThread
+) =>
+  registerKeyEventCallback(
+    target,
+    userData,
+    useCapture,
+    callbackfunc,
+    2,
+    "keydown",
+    targetThread
+  );
+var _emscripten_set_keypress_callback_on_thread = (
+  target,
+  userData,
+  useCapture,
+  callbackfunc,
+  targetThread
+) =>
+  registerKeyEventCallback(
+    target,
+    userData,
+    useCapture,
+    callbackfunc,
+    1,
+    "keypress",
+    targetThread
+  );
+var _emscripten_set_keyup_callback_on_thread = (
+  target,
+  userData,
+  useCapture,
+  callbackfunc,
+  targetThread
+) =>
+  registerKeyEventCallback(
+    target,
+    userData,
+    useCapture,
+    callbackfunc,
+    3,
+    "keyup",
+    targetThread
+  );
 var _emscripten_set_main_loop = (func, fps, simulateInfiniteLoop) => {
   var iterFunc = getWasmTableEntry(func);
   setMainLoop(iterFunc, fps, simulateInfiniteLoop);
@@ -12747,31 +21888,110 @@ var registerMouseEventCallback = (
   target = findEventTarget(target);
   var mouseEventHandlerFunc = (e) => {
     fillMouseEventData(JSEvents.mouseEvent, e, target);
-    if (getWasmTableEntry(callbackfunc)(eventTypeId, JSEvents.mouseEvent, userData)) e.preventDefault();
+    if (
+      getWasmTableEntry(callbackfunc)(
+        eventTypeId,
+        JSEvents.mouseEvent,
+        userData
+      )
+    )
+      e.preventDefault();
   };
   var eventHandler = {
     target,
     allowsDeferredCalls:
-      eventTypeString != "mousemove" && eventTypeString != "mouseenter" && eventTypeString != "mouseleave",
+      eventTypeString != "mousemove" &&
+      eventTypeString != "mouseenter" &&
+      eventTypeString != "mouseleave",
     eventTypeString,
     eventTypeId,
     userData,
     callbackfunc,
     handlerFunc: mouseEventHandlerFunc,
-    useCapture
+    useCapture,
   };
   return JSEvents.registerOrRemoveHandler(eventHandler);
 };
-var _emscripten_set_mousedown_callback_on_thread = (target, userData, useCapture, callbackfunc, targetThread) =>
-  registerMouseEventCallback(target, userData, useCapture, callbackfunc, 5, "mousedown", targetThread);
-var _emscripten_set_mouseenter_callback_on_thread = (target, userData, useCapture, callbackfunc, targetThread) =>
-  registerMouseEventCallback(target, userData, useCapture, callbackfunc, 33, "mouseenter", targetThread);
-var _emscripten_set_mouseleave_callback_on_thread = (target, userData, useCapture, callbackfunc, targetThread) =>
-  registerMouseEventCallback(target, userData, useCapture, callbackfunc, 34, "mouseleave", targetThread);
-var _emscripten_set_mousemove_callback_on_thread = (target, userData, useCapture, callbackfunc, targetThread) =>
-  registerMouseEventCallback(target, userData, useCapture, callbackfunc, 8, "mousemove", targetThread);
-var _emscripten_set_mouseup_callback_on_thread = (target, userData, useCapture, callbackfunc, targetThread) =>
-  registerMouseEventCallback(target, userData, useCapture, callbackfunc, 6, "mouseup", targetThread);
+var _emscripten_set_mousedown_callback_on_thread = (
+  target,
+  userData,
+  useCapture,
+  callbackfunc,
+  targetThread
+) =>
+  registerMouseEventCallback(
+    target,
+    userData,
+    useCapture,
+    callbackfunc,
+    5,
+    "mousedown",
+    targetThread
+  );
+var _emscripten_set_mouseenter_callback_on_thread = (
+  target,
+  userData,
+  useCapture,
+  callbackfunc,
+  targetThread
+) =>
+  registerMouseEventCallback(
+    target,
+    userData,
+    useCapture,
+    callbackfunc,
+    33,
+    "mouseenter",
+    targetThread
+  );
+var _emscripten_set_mouseleave_callback_on_thread = (
+  target,
+  userData,
+  useCapture,
+  callbackfunc,
+  targetThread
+) =>
+  registerMouseEventCallback(
+    target,
+    userData,
+    useCapture,
+    callbackfunc,
+    34,
+    "mouseleave",
+    targetThread
+  );
+var _emscripten_set_mousemove_callback_on_thread = (
+  target,
+  userData,
+  useCapture,
+  callbackfunc,
+  targetThread
+) =>
+  registerMouseEventCallback(
+    target,
+    userData,
+    useCapture,
+    callbackfunc,
+    8,
+    "mousemove",
+    targetThread
+  );
+var _emscripten_set_mouseup_callback_on_thread = (
+  target,
+  userData,
+  useCapture,
+  callbackfunc,
+  targetThread
+) =>
+  registerMouseEventCallback(
+    target,
+    userData,
+    useCapture,
+    callbackfunc,
+    6,
+    "mouseup",
+    targetThread
+  );
 var fillPointerlockChangeEventData = (eventStruct) => {
   var pointerLockElement = document.pointerLockElement;
   var isPointerlocked = !!pointerLockElement;
@@ -12795,7 +22015,14 @@ var registerPointerlockChangeEventCallback = (
   var pointerlockChangeEventHandlerFunc = (e) => {
     var pointerlockChangeEvent = JSEvents.pointerlockChangeEvent;
     fillPointerlockChangeEventData(pointerlockChangeEvent);
-    if (getWasmTableEntry(callbackfunc)(eventTypeId, pointerlockChangeEvent, userData)) e.preventDefault();
+    if (
+      getWasmTableEntry(callbackfunc)(
+        eventTypeId,
+        pointerlockChangeEvent,
+        userData
+      )
+    )
+      e.preventDefault();
   };
   var eventHandler = {
     target,
@@ -12804,7 +22031,7 @@ var registerPointerlockChangeEventCallback = (
     userData,
     callbackfunc,
     handlerFunc: pointerlockChangeEventHandlerFunc,
-    useCapture
+    useCapture,
   };
   return JSEvents.registerOrRemoveHandler(eventHandler);
 };
@@ -12860,7 +22087,8 @@ var registerUiEventCallback = (
     HEAP32[(uiEvent + 24) >> 2] = outerHeight;
     HEAP32[(uiEvent + 28) >> 2] = pageXOffset | 0;
     HEAP32[(uiEvent + 32) >> 2] = pageYOffset | 0;
-    if (getWasmTableEntry(callbackfunc)(eventTypeId, uiEvent, userData)) e.preventDefault();
+    if (getWasmTableEntry(callbackfunc)(eventTypeId, uiEvent, userData))
+      e.preventDefault();
   };
   var eventHandler = {
     target,
@@ -12869,12 +22097,26 @@ var registerUiEventCallback = (
     userData,
     callbackfunc,
     handlerFunc: uiEventHandlerFunc,
-    useCapture
+    useCapture,
   };
   return JSEvents.registerOrRemoveHandler(eventHandler);
 };
-var _emscripten_set_resize_callback_on_thread = (target, userData, useCapture, callbackfunc, targetThread) =>
-  registerUiEventCallback(target, userData, useCapture, callbackfunc, 10, "resize", targetThread);
+var _emscripten_set_resize_callback_on_thread = (
+  target,
+  userData,
+  useCapture,
+  callbackfunc,
+  targetThread
+) =>
+  registerUiEventCallback(
+    target,
+    userData,
+    useCapture,
+    callbackfunc,
+    10,
+    "resize",
+    targetThread
+  );
 var registerTouchEventCallback = (
   target,
   userData,
@@ -12930,28 +22172,86 @@ var registerTouchEventCallback = (
       }
     }
     HEAP32[(touchEvent + 8) >> 2] = numTouches;
-    if (getWasmTableEntry(callbackfunc)(eventTypeId, touchEvent, userData)) e.preventDefault();
+    if (getWasmTableEntry(callbackfunc)(eventTypeId, touchEvent, userData))
+      e.preventDefault();
   };
   var eventHandler = {
     target,
-    allowsDeferredCalls: eventTypeString == "touchstart" || eventTypeString == "touchend",
+    allowsDeferredCalls:
+      eventTypeString == "touchstart" || eventTypeString == "touchend",
     eventTypeString,
     eventTypeId,
     userData,
     callbackfunc,
     handlerFunc: touchEventHandlerFunc,
-    useCapture
+    useCapture,
   };
   return JSEvents.registerOrRemoveHandler(eventHandler);
 };
-var _emscripten_set_touchcancel_callback_on_thread = (target, userData, useCapture, callbackfunc, targetThread) =>
-  registerTouchEventCallback(target, userData, useCapture, callbackfunc, 25, "touchcancel", targetThread);
-var _emscripten_set_touchend_callback_on_thread = (target, userData, useCapture, callbackfunc, targetThread) =>
-  registerTouchEventCallback(target, userData, useCapture, callbackfunc, 23, "touchend", targetThread);
-var _emscripten_set_touchmove_callback_on_thread = (target, userData, useCapture, callbackfunc, targetThread) =>
-  registerTouchEventCallback(target, userData, useCapture, callbackfunc, 24, "touchmove", targetThread);
-var _emscripten_set_touchstart_callback_on_thread = (target, userData, useCapture, callbackfunc, targetThread) =>
-  registerTouchEventCallback(target, userData, useCapture, callbackfunc, 22, "touchstart", targetThread);
+var _emscripten_set_touchcancel_callback_on_thread = (
+  target,
+  userData,
+  useCapture,
+  callbackfunc,
+  targetThread
+) =>
+  registerTouchEventCallback(
+    target,
+    userData,
+    useCapture,
+    callbackfunc,
+    25,
+    "touchcancel",
+    targetThread
+  );
+var _emscripten_set_touchend_callback_on_thread = (
+  target,
+  userData,
+  useCapture,
+  callbackfunc,
+  targetThread
+) =>
+  registerTouchEventCallback(
+    target,
+    userData,
+    useCapture,
+    callbackfunc,
+    23,
+    "touchend",
+    targetThread
+  );
+var _emscripten_set_touchmove_callback_on_thread = (
+  target,
+  userData,
+  useCapture,
+  callbackfunc,
+  targetThread
+) =>
+  registerTouchEventCallback(
+    target,
+    userData,
+    useCapture,
+    callbackfunc,
+    24,
+    "touchmove",
+    targetThread
+  );
+var _emscripten_set_touchstart_callback_on_thread = (
+  target,
+  userData,
+  useCapture,
+  callbackfunc,
+  targetThread
+) =>
+  registerTouchEventCallback(
+    target,
+    userData,
+    useCapture,
+    callbackfunc,
+    22,
+    "touchstart",
+    targetThread
+  );
 var fillVisibilityChangeEventData = (eventStruct) => {
   var visibilityStates = ["hidden", "visible", "prerender", "unloaded"];
   var visibilityState = visibilityStates.indexOf(document.visibilityState);
@@ -12972,7 +22272,14 @@ var registerVisibilityChangeEventCallback = (
   var visibilityChangeEventHandlerFunc = (e) => {
     var visibilityChangeEvent = JSEvents.visibilityChangeEvent;
     fillVisibilityChangeEventData(visibilityChangeEvent);
-    if (getWasmTableEntry(callbackfunc)(eventTypeId, visibilityChangeEvent, userData)) e.preventDefault();
+    if (
+      getWasmTableEntry(callbackfunc)(
+        eventTypeId,
+        visibilityChangeEvent,
+        userData
+      )
+    )
+      e.preventDefault();
   };
   var eventHandler = {
     target,
@@ -12981,11 +22288,16 @@ var registerVisibilityChangeEventCallback = (
     userData,
     callbackfunc,
     handlerFunc: visibilityChangeEventHandlerFunc,
-    useCapture
+    useCapture,
   };
   return JSEvents.registerOrRemoveHandler(eventHandler);
 };
-var _emscripten_set_visibilitychange_callback_on_thread = (userData, useCapture, callbackfunc, targetThread) => {
+var _emscripten_set_visibilitychange_callback_on_thread = (
+  userData,
+  useCapture,
+  callbackfunc,
+  targetThread
+) => {
   if (!specialHTMLTargets[1]) {
     return -4;
   }
@@ -13017,7 +22329,8 @@ var registerWheelEventCallback = (
     HEAPF64[(wheelEvent + 72) >> 3] = e["deltaY"];
     HEAPF64[(wheelEvent + 80) >> 3] = e["deltaZ"];
     HEAP32[(wheelEvent + 88) >> 2] = e["deltaMode"];
-    if (getWasmTableEntry(callbackfunc)(eventTypeId, wheelEvent, userData)) e.preventDefault();
+    if (getWasmTableEntry(callbackfunc)(eventTypeId, wheelEvent, userData))
+      e.preventDefault();
   };
   var eventHandler = {
     target,
@@ -13027,22 +22340,39 @@ var registerWheelEventCallback = (
     userData,
     callbackfunc,
     handlerFunc: wheelHandlerFunc,
-    useCapture
+    useCapture,
   };
   return JSEvents.registerOrRemoveHandler(eventHandler);
 };
-var _emscripten_set_wheel_callback_on_thread = (target, userData, useCapture, callbackfunc, targetThread) => {
+var _emscripten_set_wheel_callback_on_thread = (
+  target,
+  userData,
+  useCapture,
+  callbackfunc,
+  targetThread
+) => {
   target = findEventTarget(target);
   if (!target) return -4;
   if (typeof target.onwheel != "undefined") {
-    return registerWheelEventCallback(target, userData, useCapture, callbackfunc, 9, "wheel", targetThread);
+    return registerWheelEventCallback(
+      target,
+      userData,
+      useCapture,
+      callbackfunc,
+      9,
+      "wheel",
+      targetThread
+    );
   } else {
     return -1;
   }
 };
-var _emscripten_set_window_title = (title) => (document.title = UTF8ToString(title));
+var _emscripten_set_window_title = (title) =>
+  (document.title = UTF8ToString(title));
 var _emscripten_sleep = () => {
-  abort("Please compile your program with async support in order to use asynchronous operations like emscripten_sleep");
+  abort(
+    "Please compile your program with async support in order to use asynchronous operations like emscripten_sleep"
+  );
 };
 class HandleAllocator {
   allocated = [undefined];
@@ -13093,23 +22423,19 @@ var Fetch = {
     } finally {
       removeRunDependency("library_fetch_init");
     }
-  }
+  },
 };
-
 function fetchXHR(fetch, onsuccess, onerror, onprogress, onreadystatechange) {
-  var urlPtr = HEAPU32[(fetch + 8) >> 2];
-  if (!urlPtr) {
+  var url = HEAPU32[(fetch + 8) >> 2];
+  if (!url) {
     onerror(fetch, "no url specified!");
     return;
   }
-  const originalUrl = UTF8ToString(urlPtr);
-
-  let finalUrl = originalUrl.replace(/^https:\/\/cdn\.dos\.zone\/vcsky\/fetched\//, "/static/gtavc/assets/");
-
-
+  var url_ = UTF8ToString(url);
+  url_ = "assets/" +url_
   var fetch_attr = fetch + 108;
   var requestMethod = UTF8ToString(fetch_attr + 0);
-
+  requestMethod ||= "GET";
   var timeoutMsecs = HEAPU32[(fetch_attr + 56) >> 2];
   var userName = HEAPU32[(fetch_attr + 68) >> 2];
   var password = HEAPU32[(fetch_attr + 72) >> 2];
@@ -13125,9 +22451,15 @@ function fetchXHR(fetch, onsuccess, onerror, onprogress, onreadystatechange) {
   var passwordStr = password ? UTF8ToString(password) : undefined;
   var xhr = new XMLHttpRequest();
   xhr.withCredentials = !!HEAPU8[fetch_attr + 60];
-  xhr.open(requestMethod, finalUrl, !fetchAttrSynchronous, userNameStr, passwordStr);
+  xhr.open(
+    requestMethod,
+    url_,
+    !fetchAttrSynchronous,
+    userNameStr,
+    passwordStr
+  );
   if (!fetchAttrSynchronous) xhr.timeout = timeoutMsecs;
-  xhr.url_ = finalUrl;
+  xhr.url_ = url_;
   xhr.responseType = "arraybuffer";
   if (overriddenMimeType) {
     var overriddenMimeTypeStr = UTF8ToString(overriddenMimeType);
@@ -13147,11 +22479,16 @@ function fetchXHR(fetch, onsuccess, onerror, onprogress, onreadystatechange) {
   }
   var id = Fetch.xhrs.allocate(xhr);
   HEAPU32[fetch >> 2] = id;
-  var data = dataPtr && dataLength ? HEAPU8.slice(dataPtr, dataPtr + dataLength) : null;
+  var data =
+    dataPtr && dataLength ? HEAPU8.slice(dataPtr, dataPtr + dataLength) : null;
   function saveResponseAndStatus() {
     var ptr = 0;
     var ptrLen = 0;
-    if (xhr.response && fetchAttrLoadToMemory && HEAPU32[(fetch + 12) >> 2] === 0) {
+    if (
+      xhr.response &&
+      fetchAttrLoadToMemory &&
+      HEAPU32[(fetch + 12) >> 2] === 0
+    ) {
       ptrLen = xhr.response.byteLength;
     }
     if (ptrLen > 0) {
@@ -13201,7 +22538,10 @@ function fetchXHR(fetch, onsuccess, onerror, onprogress, onreadystatechange) {
     if (!Fetch.xhrs.has(id)) {
       return;
     }
-    var ptrLen = fetchAttrLoadToMemory && fetchAttrStreamData && xhr.response ? xhr.response.byteLength : 0;
+    var ptrLen =
+      fetchAttrLoadToMemory && fetchAttrStreamData && xhr.response
+        ? xhr.response.byteLength
+        : 0;
     var ptr = 0;
     if (ptrLen > 0 && fetchAttrLoadToMemory && fetchAttrStreamData) {
       ptr = _realloc(HEAPU32[(fetch + 12) >> 2], ptrLen);
@@ -13226,7 +22566,11 @@ function fetchXHR(fetch, onsuccess, onerror, onprogress, onreadystatechange) {
     if (xhr.readyState >= 2) {
       HEAP16[(fetch + 42) >> 1] = xhr.status;
     }
-    if (!fetchAttrSynchronous && xhr.readyState === 2 && xhr.responseURL.length > 0) {
+    if (
+      !fetchAttrSynchronous &&
+      xhr.readyState === 2 &&
+      xhr.responseURL.length > 0
+    ) {
       var ruPtr = stringToNewUTF8(xhr.responseURL);
       HEAPU32[(fetch + 200) >> 2] = ruPtr;
     }
@@ -13345,7 +22689,13 @@ function fetchDeleteCachedData(db, fetch, onsuccess, onerror) {
     onerror(fetch, 0, e);
   }
 }
-function _emscripten_start_fetch(fetch, successcb, errorcb, progresscb, readystatechangecb) {
+function _emscripten_start_fetch(
+  fetch,
+  successcb,
+  errorcb,
+  progresscb,
+  readystatechangecb
+) {
   var fetch_attr = fetch + 108;
   var onsuccess = HEAPU32[(fetch_attr + 36) >> 2];
   var onerror = HEAPU32[(fetch_attr + 40) >> 2];
@@ -13385,7 +22735,13 @@ function _emscripten_start_fetch(fetch, successcb, errorcb, progresscb, readysta
     });
   };
   var performUncachedXhr = (fetch, xhr, e) => {
-    fetchXHR(fetch, reportSuccess, reportError, reportProgress, reportReadyStateChange);
+    fetchXHR(
+      fetch,
+      reportSuccess,
+      reportError,
+      reportProgress,
+      reportReadyStateChange
+    );
   };
   var cacheResultAndReportSuccess = (fetch, xhr, e) => {
     var storeSuccess = (fetch, xhr, e) => {
@@ -13400,10 +22756,22 @@ function _emscripten_start_fetch(fetch, successcb, errorcb, progresscb, readysta
         else successcb?.(fetch);
       });
     };
-    fetchCacheData(Fetch.dbInstance, fetch, xhr.response, storeSuccess, storeError);
+    fetchCacheData(
+      Fetch.dbInstance,
+      fetch,
+      xhr.response,
+      storeSuccess,
+      storeError
+    );
   };
   var performCachedXhr = (fetch, xhr, e) => {
-    fetchXHR(fetch, cacheResultAndReportSuccess, reportError, reportProgress, reportReadyStateChange);
+    fetchXHR(
+      fetch,
+      cacheResultAndReportSuccess,
+      reportError,
+      reportProgress,
+      reportReadyStateChange
+    );
   };
   var requestMethod = UTF8ToString(fetch_attr + 0);
   var fetchAttrReplace = !!(fetchAttributes & 16);
@@ -13412,7 +22780,13 @@ function _emscripten_start_fetch(fetch, successcb, errorcb, progresscb, readysta
   if (requestMethod === "EM_IDB_STORE") {
     var ptr = HEAPU32[(fetch_attr + 84) >> 2];
     var size = HEAPU32[(fetch_attr + 88) >> 2];
-    fetchCacheData(Fetch.dbInstance, fetch, HEAPU8.slice(ptr, ptr + size), reportSuccess, reportError);
+    fetchCacheData(
+      Fetch.dbInstance,
+      fetch,
+      HEAPU8.slice(ptr, ptr + size),
+      reportSuccess,
+      reportError
+    );
   } else if (requestMethod === "EM_IDB_DELETE") {
     fetchDeleteCachedData(Fetch.dbInstance, fetch, reportSuccess, reportError);
   } else if (!fetchAttrReplace) {
@@ -13420,7 +22794,11 @@ function _emscripten_start_fetch(fetch, successcb, errorcb, progresscb, readysta
       Fetch.dbInstance,
       fetch,
       reportSuccess,
-      fetchAttrNoDownload ? reportError : fetchAttrPersistFile ? performCachedXhr : performUncachedXhr
+      fetchAttrNoDownload
+        ? reportError
+        : fetchAttrPersistFile
+        ? performCachedXhr
+        : performUncachedXhr
     );
   } else if (!fetchAttrNoDownload) {
     fetchXHR(
@@ -13439,7 +22817,8 @@ var ENV = {};
 var getExecutableName = () => thisProgram || "./this.program";
 var getEnvStrings = () => {
   if (!getEnvStrings.strings) {
-    var lang = (globalThis.navigator?.language ?? "C").replace("-", "_") + ".UTF-8";
+    var lang =
+      (globalThis.navigator?.language ?? "C").replace("-", "_") + ".UTF-8";
     var env = {
       USER: "web_user",
       LOGNAME: "web_user",
@@ -13447,7 +22826,7 @@ var getEnvStrings = () => {
       PWD: "/",
       HOME: "/home/web_user",
       LANG: lang,
-      _: getExecutableName()
+      _: getExecutableName(),
     };
     for (var x in ENV) {
       if (ENV[x] === undefined) delete env[x];
@@ -13666,7 +23045,10 @@ registerPreMainLoop(() => GL.newRenderingFrameStarted());
 for (let i = 0; i < 32; ++i) tempFixedLengthArray.push(new Array(i));
 var miniTempWebGLFloatBuffersStorage = new Float32Array(288);
 for (var i = 0; i <= 288; ++i) {
-  miniTempWebGLFloatBuffers[i] = miniTempWebGLFloatBuffersStorage.subarray(0, i);
+  miniTempWebGLFloatBuffers[i] = miniTempWebGLFloatBuffersStorage.subarray(
+    0,
+    i
+  );
 }
 var miniTempWebGLIntBuffersStorage = new Int32Array(288);
 for (var i = 0; i <= 288; ++i) {
@@ -13682,7 +23064,8 @@ Fetch.init();
   if (Module["arguments"]) arguments_ = Module["arguments"];
   if (Module["thisProgram"]) thisProgram = Module["thisProgram"];
   if (Module["preInit"]) {
-    if (typeof Module["preInit"] == "function") Module["preInit"] = [Module["preInit"]];
+    if (typeof Module["preInit"] == "function")
+      Module["preInit"] = [Module["preInit"]];
     while (Module["preInit"].length > 0) {
       Module["preInit"].shift()();
     }
@@ -13722,12 +23105,7 @@ var ASM_CONSTS = {
   980155: () => {
     Module.hotelMission();
   },
-  980182: ($0, $1) =>
-    UTF8ToString($0) === location.host ||
-    UTF8ToString($1) === location.hostname ||
-    location.host.startsWith("localhost") ||
-    location.host.startsWith("127.0.0.1") ||
-    location.host.startsWith("192.168."),
+  980182: ($0, $1) => true,
   980393: () => {
     Module.syncdone = 0;
     FS.syncfs(function (err) {
@@ -13796,7 +23174,10 @@ var ASM_CONSTS = {
   981519: () => {
     var canvas = Module?.canvas || document.getElementById("canvas");
     if (!canvas) return 0;
-    var plElement = document.pointerLockElement || document.mozPointerLockElement || document.webkitPointerLockElement;
+    var plElement =
+      document.pointerLockElement ||
+      document.mozPointerLockElement ||
+      document.webkitPointerLockElement;
     return plElement === canvas ? 1 : 0;
   },
   981767: ($0) => {
@@ -13824,7 +23205,10 @@ var ASM_CONSTS = {
     return false;
   },
   982242: () => {
-    if (typeof navigator.mediaDevices !== "undefined" && typeof navigator.mediaDevices.getUserMedia !== "undefined") {
+    if (
+      typeof navigator.mediaDevices !== "undefined" &&
+      typeof navigator.mediaDevices.getUserMedia !== "undefined"
+    ) {
       return true;
     } else if (typeof navigator.webkitGetUserMedia !== "undefined") {
       return true;
@@ -13867,9 +23251,13 @@ var ASM_CONSTS = {
         SDL2.capture.silenceTimer = undefined;
         SDL2.capture.silenceBuffer = undefined;
       }
-      SDL2.capture.mediaStreamNode = SDL2.audioContext.createMediaStreamSource(stream);
-      SDL2.capture.scriptProcessorNode = SDL2.audioContext.createScriptProcessor($1, $0, 1);
-      SDL2.capture.scriptProcessorNode.onaudioprocess = function (audioProcessingEvent) {
+      SDL2.capture.mediaStreamNode =
+        SDL2.audioContext.createMediaStreamSource(stream);
+      SDL2.capture.scriptProcessorNode =
+        SDL2.audioContext.createScriptProcessor($1, $0, 1);
+      SDL2.capture.scriptProcessorNode.onaudioprocess = function (
+        audioProcessingEvent
+      ) {
         if (SDL2 === undefined || SDL2.capture === undefined) {
           return;
         }
@@ -13882,22 +23270,43 @@ var ASM_CONSTS = {
       SDL2.capture.stream = stream;
     };
     var no_microphone = function (error) {};
-    SDL2.capture.silenceBuffer = SDL2.audioContext.createBuffer($0, $1, SDL2.audioContext.sampleRate);
+    SDL2.capture.silenceBuffer = SDL2.audioContext.createBuffer(
+      $0,
+      $1,
+      SDL2.audioContext.sampleRate
+    );
     SDL2.capture.silenceBuffer.getChannelData(0).fill(0);
     var silence_callback = function () {
       SDL2.capture.currentCaptureBuffer = SDL2.capture.silenceBuffer;
       dynCall("vp", $2, [$3]);
     };
-    SDL2.capture.silenceTimer = setInterval(silence_callback, ($1 / SDL2.audioContext.sampleRate) * 1e3);
-    if (navigator.mediaDevices !== undefined && navigator.mediaDevices.getUserMedia !== undefined) {
-      navigator.mediaDevices.getUserMedia({ audio: true, video: false }).then(have_microphone).catch(no_microphone);
+    SDL2.capture.silenceTimer = setInterval(
+      silence_callback,
+      ($1 / SDL2.audioContext.sampleRate) * 1e3
+    );
+    if (
+      navigator.mediaDevices !== undefined &&
+      navigator.mediaDevices.getUserMedia !== undefined
+    ) {
+      navigator.mediaDevices
+        .getUserMedia({ audio: true, video: false })
+        .then(have_microphone)
+        .catch(no_microphone);
     } else if (navigator.webkitGetUserMedia !== undefined) {
-      navigator.webkitGetUserMedia({ audio: true, video: false }, have_microphone, no_microphone);
+      navigator.webkitGetUserMedia(
+        { audio: true, video: false },
+        have_microphone,
+        no_microphone
+      );
     }
   },
   984789: ($0, $1, $2, $3) => {
     var SDL2 = Module["SDL2"];
-    SDL2.audio.scriptProcessorNode = SDL2.audioContext["createScriptProcessor"]($1, 0, $0);
+    SDL2.audio.scriptProcessorNode = SDL2.audioContext["createScriptProcessor"](
+      $1,
+      0,
+      $0
+    );
     SDL2.audio.scriptProcessorNode["onaudioprocess"] = function (e) {
       if (SDL2 === undefined || SDL2.audio === undefined) {
         return;
@@ -13912,7 +23321,11 @@ var ASM_CONSTS = {
     };
     SDL2.audio.scriptProcessorNode["connect"](SDL2.audioContext["destination"]);
     if (SDL2.audioContext.state === "suspended") {
-      SDL2.audio.silenceBuffer = SDL2.audioContext.createBuffer($0, $1, SDL2.audioContext.sampleRate);
+      SDL2.audio.silenceBuffer = SDL2.audioContext.createBuffer(
+        $0,
+        $1,
+        SDL2.audioContext.sampleRate
+      );
       SDL2.audio.silenceBuffer.getChannelData(0).fill(0);
       var silence_callback = function () {
         if (typeof navigator.userActivation !== "undefined") {
@@ -13924,7 +23337,10 @@ var ASM_CONSTS = {
         dynCall("vp", $2, [$3]);
         SDL2.audio.currentOutputBuffer = undefined;
       };
-      SDL2.audio.silenceTimer = setInterval(silence_callback, ($1 / SDL2.audioContext.sampleRate) * 1e3);
+      SDL2.audio.silenceTimer = setInterval(
+        silence_callback,
+        ($1 / SDL2.audioContext.sampleRate) * 1e3
+      );
     }
   },
   985964: ($0, $1) => {
@@ -13985,7 +23401,9 @@ var ASM_CONSTS = {
         }
       }
       if (SDL2.capture.scriptProcessorNode !== undefined) {
-        SDL2.capture.scriptProcessorNode.onaudioprocess = function (audioProcessingEvent) {};
+        SDL2.capture.scriptProcessorNode.onaudioprocess = function (
+          audioProcessingEvent
+        ) {};
         SDL2.capture.scriptProcessorNode.disconnect();
       }
       if (SDL2.capture.mediaStreamNode !== undefined) {
@@ -14001,7 +23419,11 @@ var ASM_CONSTS = {
       }
       SDL2.audio = undefined;
     }
-    if (SDL2.audioContext !== undefined && SDL2.audio === undefined && SDL2.capture === undefined) {
+    if (
+      SDL2.audioContext !== undefined &&
+      SDL2.audio === undefined &&
+      SDL2.capture === undefined
+    ) {
       SDL2.audioContext.close();
       SDL2.audioContext = undefined;
     }
@@ -14026,7 +23448,10 @@ var ASM_CONSTS = {
     var src = pixels / 4;
     var dst = 0;
     var num;
-    if (typeof CanvasPixelArray !== "undefined" && data instanceof CanvasPixelArray) {
+    if (
+      typeof CanvasPixelArray !== "undefined" &&
+      data instanceof CanvasPixelArray
+    ) {
       num = data.length;
       while (dst < num) {
         var val = HEAP32[src];
@@ -14092,7 +23517,10 @@ var ASM_CONSTS = {
     var src = pixels / 4;
     var dst = 0;
     var num;
-    if (typeof CanvasPixelArray !== "undefined" && data instanceof CanvasPixelArray) {
+    if (
+      typeof CanvasPixelArray !== "undefined" &&
+      data instanceof CanvasPixelArray
+    ) {
       num = data.length;
       while (dst < num) {
         var val = HEAP32[src];
@@ -14144,7 +23572,7 @@ var ASM_CONSTS = {
       AL.currentCtx.err = 40963;
       return 1;
     }
-  }
+  },
 };
 var _malloc,
   _free,
@@ -14164,49 +23592,48 @@ var _malloc,
   wasmMemory,
   wasmTable;
 function assignWasmExports(wasmExports) {
-  _malloc = wasmExports["zk"];
-  _free = wasmExports["Ak"];
-  _realloc = wasmExports["Bk"];
-  _main = Module["_main"] = wasmExports["Ck"];
-  _setThrew = wasmExports["Dk"];
-  __emscripten_tempret_set = wasmExports["Ek"];
-  __emscripten_stack_restore = wasmExports["Fk"];
-  __emscripten_stack_alloc = wasmExports["Gk"];
-  _emscripten_stack_get_current = wasmExports["Hk"];
-  ___cxa_decrement_exception_refcount = wasmExports["Ik"];
-  ___cxa_increment_exception_refcount = wasmExports["Jk"];
-  ___cxa_can_catch = wasmExports["Kk"];
-  ___cxa_get_exception_ptr = wasmExports["Lk"];
-  memory = wasmMemory = wasmExports["wk"];
-  __indirect_function_table = wasmTable = wasmExports["yk"];
+  _malloc = wasmExports["yk"];
+  _free = wasmExports["zk"];
+  _realloc = wasmExports["Ak"];
+  _main = Module["_main"] = wasmExports["Bk"];
+  _setThrew = wasmExports["Ck"];
+  __emscripten_tempret_set = wasmExports["Dk"];
+  __emscripten_stack_restore = wasmExports["Ek"];
+  __emscripten_stack_alloc = wasmExports["Fk"];
+  _emscripten_stack_get_current = wasmExports["Gk"];
+  ___cxa_decrement_exception_refcount = wasmExports["Hk"];
+  ___cxa_increment_exception_refcount = wasmExports["Ik"];
+  ___cxa_can_catch = wasmExports["Jk"];
+  ___cxa_get_exception_ptr = wasmExports["Kk"];
+  memory = wasmMemory = wasmExports["vk"];
+  __indirect_function_table = wasmTable = wasmExports["xk"];
 }
 var wasmImports = {
   n: ___cxa_begin_catch,
   z: ___cxa_end_catch,
   a: ___cxa_find_matching_catch_2,
   f: ___cxa_find_matching_catch_3,
-  gc: ___cxa_rethrow,
+  fc: ___cxa_rethrow,
   h: ___cxa_throw,
-  fc: ___cxa_uncaught_exceptions,
+  ec: ___cxa_uncaught_exceptions,
   c: ___resumeException,
-  vk: ___syscall__newselect,
-  uk: ___syscall_chdir,
-  tk: ___syscall_faccessat,
+  uk: ___syscall__newselect,
+  tk: ___syscall_chdir,
+  sk: ___syscall_faccessat,
   H: ___syscall_fcntl64,
-  sk: ___syscall_getcwd,
-  rk: ___syscall_getdents64,
-  qk: ___syscall_ioctl,
-  pk: ___syscall_lstat64,
-  ok: ___syscall_mkdirat,
-  nk: ___syscall_newfstatat,
-  ec: ___syscall_openat,
-  mk: ___syscall_readlinkat,
-  lk: ___syscall_stat64,
-  kk: ___syscall_unlinkat,
-  fk: __abort_js,
-  ek: __gmtime_js,
-  dk: __localtime_js,
-  ck: __mktime_js,
+  rk: ___syscall_getcwd,
+  qk: ___syscall_getdents64,
+  pk: ___syscall_ioctl,
+  ok: ___syscall_lstat64,
+  nk: ___syscall_mkdirat,
+  mk: ___syscall_newfstatat,
+  dc: ___syscall_openat,
+  lk: ___syscall_readlinkat,
+  kk: ___syscall_stat64,
+  jk: ___syscall_unlinkat,
+  ek: __abort_js,
+  dk: __gmtime_js,
+  ck: __localtime_js,
   bk: __tzset_js,
   ak: _alBuffer3f,
   $j: _alBuffer3i,
@@ -14214,11 +23641,11 @@ var wasmImports = {
   _j: _alBufferf,
   Zj: _alBufferfv,
   Yj: _alBufferi,
-  bc: _alBufferiv,
+  ac: _alBufferiv,
   ha: _alDeleteBuffers,
   Ia: _alDeleteSources,
   Xj: _alDisable,
-  ac: _alDistanceModel,
+  $b: _alDistanceModel,
   Wj: _alDopplerFactor,
   Vj: _alDopplerVelocity,
   Uj: _alEnable,
@@ -14234,7 +23661,7 @@ var wasmImports = {
   Mj: _alGetBufferiv,
   Lj: _alGetDouble,
   Kj: _alGetDoublev,
-  $b: _alGetEnumValue,
+  _b: _alGetEnumValue,
   Jj: _alGetError,
   Ij: _alGetFloat,
   Hj: _alGetFloatv,
@@ -14248,19 +23675,19 @@ var wasmImports = {
   zj: _alGetListeneriv,
   yj: _alGetSource3f,
   xj: _alGetSource3i,
-  _b: _alGetSourcef,
+  Zb: _alGetSourcef,
   wj: _alGetSourcefv,
   u: _alGetSourcei,
   vj: _alGetSourceiv,
-  Zb: _alGetString,
+  Yb: _alGetString,
   Ga: _alIsBuffer,
   uj: _alIsEnabled,
   tj: _alIsExtensionPresent,
   sj: _alIsSource,
   Fa: _alListener3f,
   rj: _alListener3i,
-  Yb: _alListenerf,
-  Xb: _alListenerfv,
+  Xb: _alListenerf,
+  Wb: _alListenerfv,
   qj: _alListeneri,
   pj: _alListeneriv,
   D: _alSource3f,
@@ -14280,28 +23707,28 @@ var wasmImports = {
   y: _alSourcei,
   ij: _alSourceiv,
   hj: _alSpeedOfSound,
-  Wb: _alcCloseDevice,
-  Vb: _alcCreateContext,
-  Ub: _alcDestroyContext,
+  Vb: _alcCloseDevice,
+  Ub: _alcCreateContext,
+  Tb: _alcDestroyContext,
   gj: _alcGetIntegerv,
   qa: _alcIsExtensionPresent,
   Da: _alcMakeContextCurrent,
-  Tb: _alcOpenDevice,
+  Sb: _alcOpenDevice,
   fj: _alcSuspendContext,
-  jk: _clock_time_get,
+  ik: _clock_time_get,
   ej: _eglBindAPI,
-  Sb: _eglChooseConfig,
-  Rb: _eglCreateContext,
-  Qb: _eglCreateWindowSurface,
+  Rb: _eglChooseConfig,
+  Qb: _eglCreateContext,
+  Pb: _eglCreateWindowSurface,
   dj: _eglDestroyContext,
   cj: _eglDestroySurface,
   bj: _eglGetConfigAttrib,
   Ca: _eglGetDisplay,
   aj: _eglGetError,
-  Pb: _eglInitialize,
-  Ob: _eglMakeCurrent,
+  Ob: _eglInitialize,
+  Nb: _eglMakeCurrent,
   $i: _eglQueryString,
-  Nb: _eglSwapBuffers,
+  Mb: _eglSwapBuffers,
   _i: _eglSwapInterval,
   Zi: _eglTerminate,
   Yi: _eglWaitGL,
@@ -14309,15 +23736,15 @@ var wasmImports = {
   q: _emscripten_asm_const_int,
   B: _emscripten_asm_const_int_sync_on_main_thread,
   Wi: _emscripten_asm_const_ptr_sync_on_main_thread,
-  Mb: _emscripten_date_now,
-  Lb: _emscripten_err,
+  Lb: _emscripten_date_now,
+  Kb: _emscripten_err,
   Vi: _emscripten_exit_fullscreen,
   Ui: _emscripten_exit_pointerlock,
   Ti: _emscripten_fetch_free,
   ea: _emscripten_get_device_pixel_ratio,
   U: _emscripten_get_element_css_size,
-  Kb: _emscripten_get_gamepad_status,
-  Jb: _emscripten_get_now,
+  Jb: _emscripten_get_gamepad_status,
+  Ib: _emscripten_get_now,
   Si: _emscripten_get_num_gamepads,
   Ri: _emscripten_get_screen_size,
   Qi: _emscripten_glActiveTexture,
@@ -14601,51 +24028,51 @@ var wasmImports = {
   Ba: _emscripten_has_asyncify,
   Hd: _emscripten_is_main_browser_thread,
   Gd: _emscripten_request_fullscreen_strategy,
-  Ib: _emscripten_request_pointerlock,
+  Hb: _emscripten_request_pointerlock,
   Fd: _emscripten_resize_heap,
   Ed: _emscripten_run_script_int,
-  Hb: _emscripten_sample_gamepad_data,
-  Gb: _emscripten_set_beforeunload_callback_on_thread,
-  Fb: _emscripten_set_blur_callback_on_thread,
+  Gb: _emscripten_sample_gamepad_data,
+  Fb: _emscripten_set_beforeunload_callback_on_thread,
+  Eb: _emscripten_set_blur_callback_on_thread,
   da: _emscripten_set_canvas_element_size,
   Aa: _emscripten_set_element_css_size,
-  Eb: _emscripten_set_focus_callback_on_thread,
-  Db: _emscripten_set_fullscreenchange_callback_on_thread,
-  Cb: _emscripten_set_gamepadconnected_callback_on_thread,
-  Bb: _emscripten_set_gamepaddisconnected_callback_on_thread,
-  Ab: _emscripten_set_keydown_callback_on_thread,
-  zb: _emscripten_set_keypress_callback_on_thread,
-  yb: _emscripten_set_keyup_callback_on_thread,
+  Db: _emscripten_set_focus_callback_on_thread,
+  Cb: _emscripten_set_fullscreenchange_callback_on_thread,
+  Bb: _emscripten_set_gamepadconnected_callback_on_thread,
+  Ab: _emscripten_set_gamepaddisconnected_callback_on_thread,
+  zb: _emscripten_set_keydown_callback_on_thread,
+  yb: _emscripten_set_keypress_callback_on_thread,
+  xb: _emscripten_set_keyup_callback_on_thread,
   Dd: _emscripten_set_main_loop,
-  xb: _emscripten_set_mousedown_callback_on_thread,
-  wb: _emscripten_set_mouseenter_callback_on_thread,
-  vb: _emscripten_set_mouseleave_callback_on_thread,
-  ub: _emscripten_set_mousemove_callback_on_thread,
-  tb: _emscripten_set_mouseup_callback_on_thread,
-  sb: _emscripten_set_pointerlockchange_callback_on_thread,
-  rb: _emscripten_set_resize_callback_on_thread,
-  qb: _emscripten_set_touchcancel_callback_on_thread,
-  pb: _emscripten_set_touchend_callback_on_thread,
-  ob: _emscripten_set_touchmove_callback_on_thread,
-  nb: _emscripten_set_touchstart_callback_on_thread,
-  mb: _emscripten_set_visibilitychange_callback_on_thread,
-  lb: _emscripten_set_wheel_callback_on_thread,
+  wb: _emscripten_set_mousedown_callback_on_thread,
+  vb: _emscripten_set_mouseenter_callback_on_thread,
+  ub: _emscripten_set_mouseleave_callback_on_thread,
+  tb: _emscripten_set_mousemove_callback_on_thread,
+  sb: _emscripten_set_mouseup_callback_on_thread,
+  rb: _emscripten_set_pointerlockchange_callback_on_thread,
+  qb: _emscripten_set_resize_callback_on_thread,
+  pb: _emscripten_set_touchcancel_callback_on_thread,
+  ob: _emscripten_set_touchend_callback_on_thread,
+  nb: _emscripten_set_touchmove_callback_on_thread,
+  mb: _emscripten_set_touchstart_callback_on_thread,
+  lb: _emscripten_set_visibilitychange_callback_on_thread,
+  kb: _emscripten_set_wheel_callback_on_thread,
   Cd: _emscripten_set_window_title,
   za: _emscripten_sleep,
   Bd: _emscripten_start_fetch,
-  ik: _environ_get,
-  hk: _environ_sizes_get,
+  hk: _environ_get,
+  gk: _environ_sizes_get,
   Ad: _exit,
   ja: _fd_close,
-  dc: _fd_read,
-  gk: _fd_seek,
-  cc: _fd_write,
+  cc: _fd_read,
+  fk: _fd_seek,
+  bc: _fd_write,
   zd: _glActiveTexture,
-  kb: _glAttachShader,
+  jb: _glAttachShader,
   _: _glBindBuffer,
   yd: _glBindBufferBase,
   Z: _glBindFramebuffer,
-  jb: _glBindRenderbuffer,
+  ib: _glBindRenderbuffer,
   xd: _glBindSampler,
   M: _glBindTexture,
   wd: _glBindVertexArray,
@@ -14663,11 +24090,11 @@ var wasmImports = {
   ld: _glCreateShader,
   kd: _glCullFace,
   ya: _glDeleteBuffers,
-  ib: _glDeleteFramebuffers,
+  hb: _glDeleteFramebuffers,
   jd: _glDeleteProgram,
   id: _glDeleteRenderbuffers,
   hd: _glDeleteSamplers,
-  hb: _glDeleteShader,
+  gb: _glDeleteShader,
   gd: _glDeleteTextures,
   fd: _glDeleteVertexArrays,
   ed: _glDepthFunc,
@@ -14681,10 +24108,10 @@ var wasmImports = {
   P: _glEnable,
   _c: _glEnableVertexAttribArray,
   Zc: _glFramebufferRenderbuffer,
-  gb: _glFramebufferTexture2D,
+  fb: _glFramebufferTexture2D,
   Yc: _glFrontFace,
   wa: _glGenBuffers,
-  fb: _glGenFramebuffers,
+  eb: _glGenFramebuffers,
   Xc: _glGenRenderbuffers,
   Wc: _glGenSamplers,
   Vc: _glGenTextures,
@@ -14692,20 +24119,20 @@ var wasmImports = {
   Tc: _glGenerateMipmap,
   C: _glGetIntegerv,
   Sc: _glGetProgramInfoLog,
-  eb: _glGetProgramiv,
+  db: _glGetProgramiv,
   Rc: _glGetShaderInfoLog,
-  db: _glGetShaderiv,
+  cb: _glGetShaderiv,
   Qc: _glGetStringi,
   Pc: _glGetUniformBlockIndex,
   Oc: _glGetUniformLocation,
   Nc: _glLinkProgram,
-  cb: _glPixelStorei,
+  bb: _glPixelStorei,
   Mc: _glPolygonOffset,
   Lc: _glReadPixels,
   Kc: _glRenderbufferStorage,
   Jc: _glSamplerParameterf,
   pa: _glSamplerParameteri,
-  bb: _glScissor,
+  ab: _glScissor,
   Ic: _glShaderSource,
   Hc: _glStencilFunc,
   Gc: _glStencilMask,
@@ -14719,19 +24146,19 @@ var wasmImports = {
   zc: _glVertexAttribDivisor,
   yc: _glVertexAttribPointer,
   xc: _glViewport,
-  ab: invoke_diii,
+  $a: invoke_diii,
   wc: invoke_f,
   ca: invoke_fff,
-  $a: invoke_ffffi,
+  _a: invoke_ffffi,
   ba: invoke_fi,
   F: invoke_fii,
   oa: invoke_fiif,
   na: invoke_fiii,
-  _a: invoke_fiiif,
+  Za: invoke_fiiif,
   t: invoke_i,
-  Za: invoke_idiiii,
+  Ya: invoke_idiiii,
   d: invoke_ii,
-  Ya: invoke_iif,
+  Xa: invoke_iif,
   aa: invoke_iifiiiiiii,
   k: invoke_iii,
   w: invoke_iiifffii,
@@ -14739,9 +24166,9 @@ var wasmImports = {
   ua: invoke_iiifi,
   j: invoke_iiii,
   ta: invoke_iiiid,
-  Xa: invoke_iiiif,
-  Wa: invoke_iiiifi,
-  Va: invoke_iiiifii,
+  Wa: invoke_iiiif,
+  Va: invoke_iiiifi,
+  Ua: invoke_iiiifii,
   m: invoke_iiiii,
   vc: invoke_iiiiiff,
   X: invoke_iiiiifffffff,
@@ -14750,52 +24177,52 @@ var wasmImports = {
   o: invoke_iiiiii,
   r: invoke_iiiiiii,
   K: invoke_iiiiiiii,
-  Ua: invoke_iiiiiiiii,
+  Ta: invoke_iiiiiiiii,
   ma: invoke_iiiiiiiiiiii,
-  Ta: invoke_iiiiiiiiiiiii,
+  Sa: invoke_iiiiiiiiiiiii,
   W: invoke_iiji,
   la: invoke_iijiii,
   uc: invoke_iijji,
-  Sa: invoke_iijjiii,
+  Ra: invoke_iijjiii,
   tc: invoke_ijjiiii,
   O: invoke_j,
-  Ra: invoke_ji,
+  sc: invoke_ji,
   Qa: invoke_jiiii,
   g: invoke_v,
   Pa: invoke_vdii,
-  sc: invoke_vf,
+  rc: invoke_vf,
   e: invoke_vi,
   N: invoke_vif,
   Oa: invoke_viff,
-  rc: invoke_vifffii,
+  qc: invoke_vifffii,
   J: invoke_vifi,
   b: invoke_vii,
   I: invoke_viif,
-  qc: invoke_viiff,
+  pc: invoke_viiff,
   Na: invoke_viifi,
   i: invoke_viii,
   Ma: invoke_viiif,
-  pc: invoke_viiiffi,
+  oc: invoke_viiiffi,
   sa: invoke_viiifi,
   x: invoke_viiifiiiiifi,
   l: invoke_viiii,
   La: invoke_viiiiffffiiif,
   Ka: invoke_viiiifi,
-  oc: invoke_viiiifif,
+  nc: invoke_viiiifif,
   p: invoke_viiiii,
   s: invoke_viiiiii,
   E: invoke_viiiiiii,
   S: invoke_viiiiiiii,
-  nc: invoke_viiiiiiiii,
+  mc: invoke_viiiiiiiii,
   V: invoke_viiiiiiiiii,
-  mc: invoke_viiiiiiiiiii,
+  lc: invoke_viiiiiiiiiii,
   ka: invoke_viiiiiiiiiiiiiii,
-  lc: invoke_viij,
+  kc: invoke_viij,
   Ja: invoke_viijii,
-  kc: invoke_vij,
-  jc: invoke_viji,
-  ic: invoke_vjjii,
-  hc: _llvm_eh_typeid_for
+  jc: invoke_vij,
+  ic: invoke_viji,
+  hc: invoke_vjjii,
+  gc: _llvm_eh_typeid_for,
 };
 function invoke_viiii(index, a1, a2, a3, a4) {
   var sp = stackSave();
@@ -15087,7 +24514,20 @@ function invoke_viiiiiiiii(index, a1, a2, a3, a4, a5, a6, a7, a8, a9) {
     _setThrew(1, 0);
   }
 }
-function invoke_viiifiiiiifi(index, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11) {
+function invoke_viiifiiiiifi(
+  index,
+  a1,
+  a2,
+  a3,
+  a4,
+  a5,
+  a6,
+  a7,
+  a8,
+  a9,
+  a10,
+  a11
+) {
   var sp = stackSave();
   try {
     getWasmTableEntry(index)(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11);
@@ -15111,17 +24551,6 @@ function invoke_j(index) {
   var sp = stackSave();
   try {
     return getWasmTableEntry(index)();
-  } catch (e) {
-    stackRestore(sp);
-    if (e !== e + 0) throw e;
-    _setThrew(1, 0);
-    return 0n;
-  }
-}
-function invoke_ji(index, a1) {
-  var sp = stackSave();
-  try {
-    return getWasmTableEntry(index)(a1);
   } catch (e) {
     stackRestore(sp);
     if (e !== e + 0) throw e;
@@ -15209,20 +24638,72 @@ function invoke_iifiiiiiii(index, a1, a2, a3, a4, a5, a6, a7, a8, a9) {
     _setThrew(1, 0);
   }
 }
-function invoke_iiiiiiiiiiiii(index, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12) {
+function invoke_iiiiiiiiiiiii(
+  index,
+  a1,
+  a2,
+  a3,
+  a4,
+  a5,
+  a6,
+  a7,
+  a8,
+  a9,
+  a10,
+  a11,
+  a12
+) {
   var sp = stackSave();
   try {
-    return getWasmTableEntry(index)(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12);
+    return getWasmTableEntry(index)(
+      a1,
+      a2,
+      a3,
+      a4,
+      a5,
+      a6,
+      a7,
+      a8,
+      a9,
+      a10,
+      a11,
+      a12
+    );
   } catch (e) {
     stackRestore(sp);
     if (e !== e + 0) throw e;
     _setThrew(1, 0);
   }
 }
-function invoke_iiiiifffffff(index, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11) {
+function invoke_iiiiifffffff(
+  index,
+  a1,
+  a2,
+  a3,
+  a4,
+  a5,
+  a6,
+  a7,
+  a8,
+  a9,
+  a10,
+  a11
+) {
   var sp = stackSave();
   try {
-    return getWasmTableEntry(index)(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11);
+    return getWasmTableEntry(index)(
+      a1,
+      a2,
+      a3,
+      a4,
+      a5,
+      a6,
+      a7,
+      a8,
+      a9,
+      a10,
+      a11
+    );
   } catch (e) {
     stackRestore(sp);
     if (e !== e + 0) throw e;
@@ -15239,7 +24720,21 @@ function invoke_iiiiiff(index, a1, a2, a3, a4, a5, a6) {
     _setThrew(1, 0);
   }
 }
-function invoke_viiiiffffiiif(index, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12) {
+function invoke_viiiiffffiiif(
+  index,
+  a1,
+  a2,
+  a3,
+  a4,
+  a5,
+  a6,
+  a7,
+  a8,
+  a9,
+  a10,
+  a11,
+  a12
+) {
   var sp = stackSave();
   try {
     getWasmTableEntry(index)(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12);
@@ -15289,7 +24784,20 @@ function invoke_vifffii(index, a1, a2, a3, a4, a5, a6) {
     _setThrew(1, 0);
   }
 }
-function invoke_viiiiiiiiiii(index, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11) {
+function invoke_viiiiiiiiiii(
+  index,
+  a1,
+  a2,
+  a3,
+  a4,
+  a5,
+  a6,
+  a7,
+  a8,
+  a9,
+  a10,
+  a11
+) {
   var sp = stackSave();
   try {
     getWasmTableEntry(index)(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11);
@@ -15459,6 +24967,17 @@ function invoke_idiiii(index, a1, a2, a3, a4, a5) {
     _setThrew(1, 0);
   }
 }
+function invoke_ji(index, a1) {
+  var sp = stackSave();
+  try {
+    return getWasmTableEntry(index)(a1);
+  } catch (e) {
+    stackRestore(sp);
+    if (e !== e + 0) throw e;
+    _setThrew(1, 0);
+    return 0n;
+  }
+}
 function invoke_iiiffii(index, a1, a2, a3, a4, a5, a6) {
   var sp = stackSave();
   try {
@@ -15540,20 +25059,78 @@ function invoke_diii(index, a1, a2, a3) {
     _setThrew(1, 0);
   }
 }
-function invoke_iiiiiiiiiiii(index, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11) {
+function invoke_iiiiiiiiiiii(
+  index,
+  a1,
+  a2,
+  a3,
+  a4,
+  a5,
+  a6,
+  a7,
+  a8,
+  a9,
+  a10,
+  a11
+) {
   var sp = stackSave();
   try {
-    return getWasmTableEntry(index)(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11);
+    return getWasmTableEntry(index)(
+      a1,
+      a2,
+      a3,
+      a4,
+      a5,
+      a6,
+      a7,
+      a8,
+      a9,
+      a10,
+      a11
+    );
   } catch (e) {
     stackRestore(sp);
     if (e !== e + 0) throw e;
     _setThrew(1, 0);
   }
 }
-function invoke_viiiiiiiiiiiiiii(index, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15) {
+function invoke_viiiiiiiiiiiiiii(
+  index,
+  a1,
+  a2,
+  a3,
+  a4,
+  a5,
+  a6,
+  a7,
+  a8,
+  a9,
+  a10,
+  a11,
+  a12,
+  a13,
+  a14,
+  a15
+) {
   var sp = stackSave();
   try {
-    getWasmTableEntry(index)(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15);
+    getWasmTableEntry(index)(
+      a1,
+      a2,
+      a3,
+      a4,
+      a5,
+      a6,
+      a7,
+      a8,
+      a9,
+      a10,
+      a11,
+      a12,
+      a13,
+      a14,
+      a15
+    );
   } catch (e) {
     stackRestore(sp);
     if (e !== e + 0) throw e;
