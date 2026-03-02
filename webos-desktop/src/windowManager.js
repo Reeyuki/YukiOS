@@ -157,7 +157,7 @@ export class WindowManager {
         propsWin.innerHTML = `
           <div class="window-header">
             <span>Properties: ${appInfo.title}</span>
-            ${this.wm.getWindowControls()}
+            ${this.getWindowControls()}
           </div>
           <div class="window-content" style="width:100%; height:100%; overflow:auto; user-select:text;">
             ${contentHtml}
