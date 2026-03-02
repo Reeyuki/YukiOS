@@ -192,7 +192,7 @@ export const appMap = {
   },
   granny: { type: "game", url: "/static/games/gnmath/granny.html", icon: "/static/icons/granny.webp", title: "Granny" },
   bendy: { type: "game", url: "/static/games/gnmath/bendy.html", icon: "/static/icons/bendy.webp", title: "Bendy" },
-  gtaVc: { type: "game", url: "/static/vciframe.html", icon: "/static/icons/gtavc.webp", title: "GTA Vice City" },
+  gtaVc: { type: "game", url: "/static/gtavc/index.html", icon: "/static/icons/gtavc.webp", title: "GTA Vice City" },
   papaGames: {
     type: "game",
     url: "https://papasgamesfree.io",
