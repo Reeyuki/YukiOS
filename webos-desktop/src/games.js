@@ -661,6 +661,12 @@ export const appMap = {
     icon: "/static/icons/angryBirdsSpace.webp",
     title: "Angry Birds Space"
   },
+  angryBirdsEpic: {
+    type: "game",
+    url: "/static/games/html/angryBirdsEpic.html",
+    icon: "/static/icons/angryBirdsEpic.webp",
+    title: "Angry Birds Space"
+  },
   nso: {
     type: "game",
     url: "/static/games/nso/index.html",

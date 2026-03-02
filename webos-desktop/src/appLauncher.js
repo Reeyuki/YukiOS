@@ -131,7 +131,12 @@ export class AppLauncher {
 
   _getAnalyticsBase(app) {
     const now = Date.now();
-    return { app, name: document.querySelector(".start-user span").textContent || "", timestamp: now, sessionAgeMs: now - this.pageLoadTime };
+    return {
+      app,
+      name: document.querySelector(".start-user span").textContent || "",
+      timestamp: now,
+      sessionAgeMs: now - this.pageLoadTime
+    };
   }
 
   sendAnalytics(data) {
