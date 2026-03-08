@@ -22,37 +22,60 @@
         color: #fff;
         font-family: Arial;
         text-align: center;
+        width: 340px;
       }
       #loader.hide {
         display: none;
       }
+      #status {
+        font-size: 14px;
+        margin-bottom: 6px;
+        opacity: 0.9;
+      }
+      .bar {
+        width: 100%;
+        height: 14px;
+        background: #2a1a2a;
+        border-radius: 6px;
+        overflow: hidden;
+        margin-top: 8px;
+      }
       .fill {
         height: 100%;
-        width: 40%;
+        width: 0%;
         background: #eb458b;
-        animation: l 1.4s infinite;
+        transition: width 0.15s linear;
       }
-      @keyframes l {
-        0%,
-        100% {
-          margin-left: -40%;
-        }
-        50% {
-          margin-left: 100%;
-        }
+      #percent {
+        margin-top: 6px;
+        font-size: 13px;
+      }
+      #mb {
+        font-size: 12px;
+        opacity: 0.85;
+        margin-top: 2px;
       }
     </style>
   </head>
   <body>
     <canvas id="canvas"></canvas>
+
     <div id="loader">
       <div>port by edurocks</div>
-      <div>loading..</div>
-      <div class="bar"><div class="fill"></div></div>
+      <div id="status">Downloading games files...</div>
+      <div id="percent">0%</div>
+      <div id="mb">0 / 0 MB</div>
+      <div class="bar"><div class="fill" id="fill"></div></div>
     </div>
+
     <script>
       var canvas = document.getElementById("canvas");
       var loader = document.getElementById("loader");
+      var fill = document.getElementById("fill");
+      var percentText = document.getElementById("percent");
+      var mbText = document.getElementById("mb");
+      var status = document.getElementById("status");
+
       var config = {
         dataUrl: "Build/nsoweather2.data.unityweb",
         frameworkUrl: "Build/nsoweather2.framework.js.unityweb",
@@ -62,14 +85,62 @@
         productName: "Windose",
         productVersion: "1.4.0"
       };
-      var script = document.createElement("script");
-      script.src = "Build/nsoweather2.loader.js";
-      script.onload = function () {
-        createUnityInstance(canvas, config).then(function () {
-          loader.classList.add("hide");
-        });
-      };
-      document.body.appendChild(script);
+
+      async function getSize(url) {
+        try {
+          var r = await fetch(url, { method: "HEAD" });
+          return parseInt(r.headers.get("content-length") || 0);
+        } catch {
+          return 0;
+        }
+      }
+
+      async function start() {
+        var sizes = await Promise.all([getSize(config.dataUrl), getSize(config.frameworkUrl), getSize(config.codeUrl)]);
+
+        var totalBytes = sizes.reduce((a, b) => a + b, 0);
+        var totalMB = (totalBytes / 1024 / 1024).toFixed(1);
+
+        var firstProgress = false;
+
+        var script = document.createElement("script");
+        script.src = "Build/nsoweather2.loader.js";
+
+        script.onload = function () {
+          createUnityInstance(canvas, config, function (progress) {
+            if (!firstProgress) {
+              firstProgress = true;
+              status.textContent = "downloading game files";
+            }
+
+            var downloadProgress = Math.min(progress / 0.9, 1);
+
+            var percent = Math.round(downloadProgress * 100);
+            fill.style.width = percent + "%";
+            percentText.textContent = percent + "%";
+
+            if (progress < 0.9) {
+              var loadedBytes = downloadProgress * totalBytes;
+              var loadedMB = (loadedBytes / 1024 / 1024).toFixed(1);
+
+              mbText.textContent = loadedMB + " / " + totalMB + " MB";
+            } else {
+              status.textContent = "initializing engine";
+              mbText.textContent = totalMB + " / " + totalMB + " MB";
+            }
+          }).then(function () {
+            status.textContent = "starting game";
+
+            setTimeout(function () {
+              loader.classList.add("hide");
+            }, 400);
+          });
+        };
+
+        document.body.appendChild(script);
+      }
+
+      start();
     </script>
   </body>
 </html>
