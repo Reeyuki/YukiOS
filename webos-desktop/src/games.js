@@ -684,6 +684,12 @@ export const appMap = {
     url: "https://emupedia.net/emupedia-game-doom2",
     icon: "/static/icons/doom.webp",
     title: "Doom 2"
+  },
+  ghostOTFR: {
+    type: "game",
+    url: "https://reeyuki.github.io/GhostOTFR",
+    icon: "/static/icons/ghostOTFR.png",
+    title: "Ghost Of The Forgotten Realm"
   }
 };
 export class GamesPageRenderer {
