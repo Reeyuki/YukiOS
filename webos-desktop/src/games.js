@@ -690,6 +690,12 @@ export const appMap = {
     url: "https://reeyuki.github.io/GhostOTFR",
     icon: "/static/icons/ghostOTFR.png",
     title: "Ghost Of The Forgotten Realm"
+  },
+  voraxier: {
+    type: "game",
+    url: "https://reeyuki.netlify.app",
+    icon: "/static/icons/voraxier",
+    title: "Voraxier"
   }
 };
 export class GamesPageRenderer {
