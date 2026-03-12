@@ -685,15 +685,15 @@ export const appMap = {
     icon: "/static/icons/doom.webp",
     title: "Doom 2"
   },
-  ghostOTFR: {
+  soultheraAscendant: {
     type: "game",
-    url: "https://reeyuki.github.io/GhostOTFR",
+    url: "https://reeyuki.github.io/SoultheraAscendant",
     icon: "/static/icons/ghostOTFR.png",
-    title: "Ghost Of The Forgotten Realm"
+    title: "Soulthera Ascendant"
   },
   voraxier: {
     type: "game",
-    url: "https://reeyuki.netlify.app",
+    url: "https://voraxoid.netlify.app",
     icon: "/static/icons/voraxier",
     title: "Voraxier"
   }
