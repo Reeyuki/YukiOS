@@ -13,7 +13,7 @@ export class AboutApp {
       return;
     }
 
-    const win = this.wm.createWindow(winId, "About Yuki OS", "700px", "600px");
+    const win = this.wm.createWindow(winId, "About Yuki OS", "700px", "650px");
     Object.assign(win.style, { left: "200px", top: "80px" });
 
     win.innerHTML = `
@@ -26,82 +26,51 @@ export class AboutApp {
         </div>
       </div>
       <div class="window-content" style="padding:0; height: calc(100% - 40px); overflow: hidden;">
-        <div class="about-app-container" style="padding: 1.75rem 1.25rem 4rem; max-height: 80vh; overflow: auto; display: flex; flex-direction: column; box-sizing: border-box;">
+        <div class="about-app-container" style="padding: 1.75rem 1.25rem 4rem; max-height: 85vh; overflow: auto; display: flex; flex-direction: column; box-sizing: border-box;">
           
-          <!-- Header -->
           <div class="about-header" style="display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 2rem; padding-top: 0.25rem;">
             <div style="width: 100px; height: 100px; background: linear-gradient(135deg, var(--accent), var(--accent-hover)); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; animation: float 3s ease-in-out infinite;">
               <i class="fas fa-desktop" style="font-size: 3rem; color: var(--bg-primary);"></i>
             </div>
             <h1 style="font-size: 2rem; margin-bottom: 0; color: var(--text-primary); font-family: fontb; text-align: center; width: 100%;">Yuki OS</h1>
-            <p style="color: var(--text-secondary); font-size: 1rem; margin: 0; text-align: center; width: 100%;">Version 1.0</p>
+            <p style="color: var(--text-secondary); font-size: 1rem; margin: 0; text-align: center;">Version 1.0</p>
             <p style="color: var(--text-secondary); font-size: 0.9rem; max-width:700px; margin: 1rem auto 0; line-height:1.6; text-align: center;">
-              A browser-based desktop environment that provides a unified windowed system for games, emulators, web apps, and interactive content.
-              Yuki OS integrates multiple execution runtimes — Flash, EmulatorJS, WASM, Unity, HTML5, and more — into a single consistent desktop interface.
+              A browser-based desktop OS where apps and games run in windows inside your browser. Open multiple apps, move them around, resize them, and multitask just like on a real computer. Upload custom wallpapers and manage your virtual filesystem seamlessly. Yuki OS comes with 130 ready-to-play games and built-in apps including terminal, browser, text editor, camera, calculator, paint,task manager, and a Python / Node.js IDE.
             </p>
           </div>
 
-          <!-- Developers Section -->
           <div class="about-section" style="margin-bottom: 2rem;">
             <h2 style="font-size: 1.25rem; color: var(--text-primary); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; font-family: fontb;">
-              <i class="fas fa-users" style="color: var(--accent);"></i> Developers
-            </h2>
-
-            <div class="developers-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; align-items: start;">
-
-              <!-- Developer: reeyuki -->
-              <div class="developer-card" style="background: rgba(30, 35, 48, 0.6); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; transition: all 0.3s ease;">
-                <div class="dev-header" onclick="window._aboutApp && window._aboutApp.toggleDevInfo('reeyuki')" style="padding: 1rem; cursor: pointer; display: flex; align-items: center; gap: 1rem; transition: background 0.2s; background: transparent;" onmouseover="this.style.background='rgba(125, 211, 192, 0.1)'" onmouseout="this.style.background='transparent'">
-                  <div style="width: 50px; height: 50px; background: linear-gradient(135deg, var(--accent), var(--accent-hover)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: var(--bg-primary); flex-shrink: 0;">
-                    <i class="fas fa-user"></i>
-                  </div>
-                  <div style="flex: 1;">
-                    <div style="font-family: fontb; color: var(--text-primary); font-size: 1.1rem;">reeyuki</div>
-                    <div style="color: var(--text-secondary); font-size: 0.85rem;">Creator</div>
-                  </div>
-                  <i class="fas fa-chevron-down dev-chevron" id="chevron-reeyuki" style="color: var(--text-secondary); transition: transform 0.3s ease;"></i>
-                </div>
-                <div class="dev-info" id="devinfo-reeyuki" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease; background: rgba(21, 25, 35, 0.5);">
-                  <div style="padding: 1rem; border-top: 1px solid var(--border);">
-                    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem; line-height: 1.6;">
-                     Spends too much time making browsers do things they weren't meant to do. (Running doom is one of them!)
-                    </p>
-                    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
-                      <a href="https://github.com/reeyuki" target="_blank" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: rgba(125, 211, 192, 0.15); border: 1px solid rgba(125, 211, 192, 0.3); border-radius: 8px; color: var(--text-primary); text-decoration: none; font-size: 0.85rem; transition: all 0.2s ease;" onmouseover="this.style.background='rgba(125, 211, 192, 0.25)'" onmouseout="this.style.background='rgba(125, 211, 192, 0.15)'">
-                        <i class="fab fa-github"></i> GitHub
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-          </div>
-
-          <!-- Features Section -->
-          <div class="about-section" style="margin-bottom: 2rem;">
-            <h2 style="font-size: 1.25rem; color: var(--text-primary); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; font-family: fontb;">
-              <i class="fas fa-star" style="color: var(--accent);"></i> What's Inside
+              <i class="fas fa-star" style="color: var(--accent);"></i> Key Features
             </h2>
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem;">
               ${[
                 [
                   "fa-window-restore",
                   "Windowed Multitasking",
-                  "Drag, resize, and manage multiple windows simultaneously."
-                ],
-                [
-                  "fa-layer-group",
-                  "Multi-Runtime Support",
-                  "Flash (Ruffle), EmulatorJS, WASM, Unity, HTML5, and more."
+                  "Drag, resize, and layer multiple windows to multitask like a desktop."
                 ],
                 [
                   "fa-folder-open",
                   "Virtual Filesystem",
-                  "Full file system with explorer, file ops, and app integration."
+                  "Full file explorer with file operations and app integration."
                 ],
-                ["fa-gamepad", "Game Platform", "Run GBA, NDS, Flash, WASM, Unity, and indie HTML5 games."],
-                ["fa-cube", "Modular Apps", "Terminal, browser, text editor, camera, and system utilities."]
+                [
+                  "fa-gamepad",
+                  "Integrated Game Platform",
+                  "Access 130 curated games and web-based emulators in one place."
+                ],
+                [
+                  "fa-cube",
+                  "Built-in Apps",
+                  "Includes terminal, browser, text editor, camera, calculator, paint, and Python / Node.js IDE."
+                ],
+                [
+                  "fa-layer-group",
+                  "Multi-Runtime Support",
+                  "Supports Flash (Ruffle), EmulatorJS, WASM, Unity, HTML5, and more."
+                ],
+                ["fa-image", "Wallpaper Upload", "Upload custom wallpapers for a personalized desktop experience."]
               ]
                 .map(
                   ([icon, title, desc]) => `
@@ -118,7 +87,6 @@ export class AboutApp {
             </div>
           </div>
 
-          <!-- Footer -->
           <div class="about-footer" style="display: flex; flex-direction: column; align-items: center; text-align: center; padding: 1rem 1rem 0.5rem; border-top: 1px solid var(--border); margin-top: auto; background: transparent;">
             <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 0.75rem; text-align: center;">
               Made with <i class="fas fa-heart" style="color: #ef4444;"></i> by Reeyuki
