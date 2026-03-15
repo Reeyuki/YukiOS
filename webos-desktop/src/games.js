@@ -708,6 +708,18 @@ export const appMap = {
     url: "https://voraxoid.netlify.app",
     icon: "/static/icons/voraxier",
     title: "Voraxier"
+  },
+  jumpingFinn: {
+    type: "swf",
+    swf: "/static/games/swfGames/jumpingFinn.swf",
+    icon: "/static/icons/jumpingFinn.webp",
+    title: "Jumping Finn"
+  },
+  thereIsNoGame: {
+    type: "game",
+    url: "/static/games/html/thereIsNoGame.html",
+    icon: "/static/icons/thereIsNoGame.webp",
+    title: "There Is No Game"
   }
 };
 export class GamesPageRenderer {

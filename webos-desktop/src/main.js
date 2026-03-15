@@ -67,7 +67,7 @@ function initDownloadButton() {
   document.body.appendChild(installBtn);
   setTimeout(() => {
     if (installBtn) installBtn.remove();
-  }, 10000);
+  }, 5000);
   installBtn.addEventListener("click", () => {
     appLauncher.sendAppInstallAnalytics();
     fetch("https://api.github.com/repos/Reeyuki/YukiOS/releases/latest")

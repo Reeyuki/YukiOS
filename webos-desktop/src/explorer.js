@@ -285,7 +285,7 @@ export class ExplorerApp {
         this.lastWin.style.width = "100vw";
         this.lastWin.style.height = "90vh";
         this.lastWin.style.left = "0px";
-        this.lastWin.style.top = "5vh";
+        this.lastWin.style.top = "2vh";
         const explorerView = this.lastWin.querySelector("#explorer-view");
         if (explorerView) {
           explorerView.style.height = "";

@@ -881,7 +881,6 @@ input {
   );
   pointer-events: none;
 }
-
 .explorer-main {
   flex: 1;
   display: flex;
@@ -890,18 +889,18 @@ input {
   padding: 14px;
   overflow: auto;
   background: radial-gradient(ellipse at 70% 20%, rgba(79, 158, 255, 0.05) 0%, transparent 55%), var(--s1);
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
+  scrollbar-width: auto;
+  scrollbar-color: rgba(255, 255, 255, 0.6) rgba(0, 0, 0, 0.1);
 }
 .explorer-main::-webkit-scrollbar {
-  width: 5px;
+  width: 12px;
 }
 .explorer-main::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.6);
   border-radius: 99px;
 }
 .explorer-main::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.8);
 }
 .explorer-main.games-page .file-item {
   display: none;
