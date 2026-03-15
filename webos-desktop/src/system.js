@@ -1,6 +1,7 @@
 import { defaultStorage } from "./fs.js";
 
 const WALLPAPER_KEY = "desktopOS_selectedWallpaper";
+const WALLPAPER_INDEX_KEY = "desktopOS_wallpaperIndex";
 
 const loginBtn = document.getElementById("login-btn");
 const login = document.getElementById("login");
@@ -43,6 +44,7 @@ export class SystemUtilities {
   static setSettings(_settings) {
     settings = _settings;
   }
+
   static startClock() {
     const clock = document.getElementById("clock");
     const date = document.getElementById("date");
@@ -62,7 +64,7 @@ export class SystemUtilities {
     updateClock();
   }
 
-  static setRandomWallpaper() {
+  static setSequentialWallpaper() {
     const pictures = defaultStorage?.home?.reeyuki?.Pictures.Wallpapers;
     if (!pictures || typeof pictures !== "object") return;
 
@@ -70,7 +72,12 @@ export class SystemUtilities {
       .filter((item) => item && (item.kind === "image" || item.kind === "video") && typeof item.content === "string")
       .map((item) => item.content);
 
-    if (wallpapers.length) this.setWallpaper(wallpapers[Math.floor(Math.random() * wallpapers.length)]);
+    if (!wallpapers.length) return;
+
+    let index = parseInt(localStorage.getItem(WALLPAPER_INDEX_KEY)) || 0;
+    index = (index + 1) % wallpapers.length;
+    localStorage.setItem(WALLPAPER_INDEX_KEY, index);
+    this.setWallpaper(wallpapers[index]);
   }
 
   static setWallpaper(wallpaperURL) {
@@ -112,7 +119,7 @@ export class SystemUtilities {
 
   static loadWallpaper() {
     const saved = localStorage.getItem(WALLPAPER_KEY);
-    saved ? this.setWallpaper(saved) : this.setRandomWallpaper();
+    saved ? this.setWallpaper(saved) : this.setSequentialWallpaper();
   }
 }
 

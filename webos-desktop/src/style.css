@@ -361,7 +361,7 @@ input {
   display: flex;
   align-items: center;
   padding: 0 8px;
-  z-index: 2000;
+  z-index: 10;
   box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.5);
 }
 
@@ -594,6 +594,7 @@ input {
   border-radius: 5px 5px 0 0;
   box-shadow: 5px -5px 15px #00000080;
   color: #ddd;
+  z-index: 0;
 }
 .start-sidebar {
   width: 160px;
@@ -2234,6 +2235,16 @@ select:focus {
   font-size: 0.75rem;
 }
 
+#boot-tip {
+    position: absolute;
+  bottom: 3rem;
+  color: var(--gray-dark);
+  font-size: 1rem;
+  text-align: center;
+}
+#boot-tip i {
+  font-size: 0.75rem;
+}
 .boot-loading {
   width: 600px;
   margin-top: 2rem;

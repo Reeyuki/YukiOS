@@ -92,17 +92,29 @@ export const appMap = {
     icon: "/static/icons/undertale.webp",
     title: "Undertale Sans Fight"
   },
-  undertaleYellow: {
+  undertale: {
     type: "game",
-    url: "/static/games/gnmath/undertaleYellow.html",
-    icon: "/static/icons/yellow.webp",
-    title: "Undertale Yellow"
+    url: "/static/games/html/undertale.html",
+    icon: "/static/icons/undertale.png",
+    title: "Undertale"
   },
   deltarune: {
     type: "game",
     url: "/static/games/gnmath/deltraveler.html",
     icon: "/static/icons/deltarune.png",
     title: "Deltarune"
+  },
+  balatro: {
+    type: "game",
+    url: "/static/games/gnmath/balatro/balatro.html",
+    icon: "/static/icons/balatro.webp",
+    title: "Balatro"
+  },
+  brotato: {
+    type: "game",
+    url: "/static/games/html/brotato.html",
+    icon: "/static/icons/brotato.webp",
+    title: "Brotato"
   },
   geometryDash: {
     type: "game",

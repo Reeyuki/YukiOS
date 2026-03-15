@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <link rel="icon" type="image/png" href="/png/logo.svg"/>
+      <title>Truffled - 404</title>
+      <meta name="title" content="Truffled - Interactive Learning Resources">
+      <meta name="description" content="Truffled is an educational platform offering interactive activities, brain-training challenges, and creative learning tools for students.">
+      <meta property="og:type" content="website">
+      <meta property="og:url" content="https://truffled.lol/">
+      <meta property="og:title" content="Truffled - Interactive Learning Resources">
+      <meta property="og:description" content="Explore engaging educational content, problem-solving challenges, and interactive tools designed to support learning.">
+      <meta property="og:image" content="https://truffled.lol/png/logo.png">
+      <meta name="twitter:card" content="summary_large_image">
+      <meta name="twitter:url" content="https://truffled.lol/">
+      <meta name="twitter:title" content="Truffled - Interactive Learning Resources">
+      <meta name="twitter:description" content="A safe and clean educational site offering interactive activities and learning-focused tools.">
+      <meta name="twitter:image" content="https://truffled.lol/png/logo.png">
+      <link rel="canonical" href="https://truffled.lol/">
+      <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+      <link rel="stylesheet" href="/css/404.css">
+   
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PXHK7Q7G3Z"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-PXHK7Q7G3Z');
+</script>
+
+</head>
+   <script async src="https://www.googletagmanager.com/gtag/js?id=G-PXHK7Q7G3Z"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-PXHK7Q7G3Z');
+</script>
+   <body>
+      <div class="content">
+         <h1>Page Not Found</h1>
+         <p>you may be seeing this if you went on a broken game or searched the proxy the first time, search again but join discord and request a bug if you find a broken game!</p>
+         <div class="button-container">
+            <button onclick="history.back()">Go Back</button>
+         </div>
+      </div>
+      </div>
+      <script async src="https://www.googletagmanager.com/gtag/js?id=WLTG1S4STB"></script>
+      <script async src="https://www.googletagmanager.com/gtag/js?id=WLTG1S4STB"></script>
+      <script src="/js/panic.js"></script>
+      <script src="/js/right.js"></script>
+   </body>
+</html>

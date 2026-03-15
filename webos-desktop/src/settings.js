@@ -19,7 +19,6 @@ export class SettingsApp {
 
       this._applyUsername(this._settings.username);
       window._settings = this._settings;
-
       if (!this._settings.bootAnimation) skipBootSequence();
     }, 0);
   }
@@ -41,12 +40,15 @@ export class SettingsApp {
     this.wm.makeResizable(win);
     this.wm.setupWindowControls(win);
     this.wm.addToTaskbar(win.id, "Settings", "fas fa-sliders-h");
+    if (this.desktopUi !== undefined) this.desktopUI.closeAllMenus();
 
     this._bindControls(win);
   }
+  setDesktopUI(desktopUi) {
+    this.desktopUI = desktopUi;
+  }
 
   _buildHTML() {
-    // Always read from this._settings so the window reflects current persisted state.
     const { bootAnimation } = this._settings;
 
     return `
@@ -257,6 +259,7 @@ export class SettingsApp {
     usernameInput.addEventListener("keydown", (e) => {
       if (e.key === "Enter") save();
     });
+    bootAnimToggle.addEventListener("change", save);
   }
 
   _applyUsername(username) {

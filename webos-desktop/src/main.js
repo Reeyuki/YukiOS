@@ -161,9 +161,9 @@ window.appLauncher = appLauncher;
 const desktopUI = new DesktopUI(appLauncher, notepadApp, explorerApp, fileSystemManager);
 
 explorerApp.setDesktopUI(desktopUI);
-
+settingsApp.setDesktopUI(desktopUI);
 SystemUtilities.startClock();
-SystemUtilities.setRandomWallpaper();
+SystemUtilities.setSequentialWallpaper();
 SystemUtilities.setSettings(settingsApp);
 
 const queryString = window.location.search;
