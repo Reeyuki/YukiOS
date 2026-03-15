@@ -720,6 +720,24 @@ export const appMap = {
     url: "/static/games/html/thereIsNoGame.html",
     icon: "/static/icons/thereIsNoGame.webp",
     title: "There Is No Game"
+  },
+  tinyFishing: {
+    type: "game",
+    url: "https://truffled.lol/games/tiny-fishing/index.html",
+    icon: "/static/icons/tinyFishing.webp",
+    title: "Tiny Fishing"
+  },
+  ddlc: {
+    type: "game",
+    url: "https://selenite.cc/resources/semag/ddlc/index.html",
+    icon: "/static/icons/ddlc.webp",
+    title: "Doki Doki Literature Club"
+  },
+  amongUs: {
+    type: "game",
+    url: "https://selenite.cc/resources/semag/amongus/index.html",
+    icon: "/static/icons/among.webp",
+    title: "Among Us"
   }
 };
 export class GamesPageRenderer {
@@ -738,7 +756,9 @@ export class GamesPageRenderer {
     "pokemonWhite",
     "pokemonWhite2",
     "TMNP",
-    "doodle"
+    "doodle",
+    "amongUs",
+    "ddlc"
   ];
   getGames() {
     const desk = document.getElementById("desktop");

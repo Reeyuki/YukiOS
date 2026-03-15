@@ -1,7 +1,25 @@
 import { updateFavoritesUI } from "./startMenu.js";
 import { desktop } from "./desktop.js";
 import interact from "interactjs";
-
+const systemApps = new Set([
+  "explorer",
+  "terminal",
+  "notepad",
+  "browser",
+  "cameraApp",
+  "pythonApp",
+  "nodeApp",
+  "settings",
+  "calculatorApp",
+  "aboutApp",
+  "music",
+  "taskManagerApp",
+  "return",
+  "paint",
+  "photopea",
+  "vscode",
+  "liventcord"
+]);
 class PositionHelper {
   constructor(desktop, gridSize) {
     this.desktop = desktop;
@@ -94,6 +112,30 @@ class PositionHelper {
         if (row >= maxRows) {
           row = 0;
           col++;
+        }
+      })
+    );
+  }
+  layoutRight(icons) {
+    const { width, height, gap } = this.gridSize;
+    const cellW = width + gap;
+    const cellH = height + gap;
+    const dw = this.desktop.clientWidth;
+    const dh = this.desktop.clientHeight;
+    const maxRows = Math.max(1, Math.floor((dh - gap) / cellH));
+    const maxCols = Math.max(1, Math.floor((dw - gap) / cellW));
+
+    let col = maxCols - 1;
+    let row = 0;
+
+    requestAnimationFrame(() =>
+      icons.forEach((icon) => {
+        icon.style.left = `${gap + col * cellW}px`;
+        icon.style.top = `${gap + row * cellH}px`;
+        row++;
+        if (row >= maxRows) {
+          row = 0;
+          col--;
         }
       })
     );
@@ -716,7 +758,10 @@ export class DesktopUI {
     await this.fs.ensureFolder(["Desktop"]);
 
     const saved = PositionStore.load();
-    const icons = document.querySelectorAll(".icon.selectable:not(.folder-icon)");
+    const icons = Array.from(document.querySelectorAll(".icon.selectable:not(.folder-icon)"));
+
+    const systemIcons = [];
+    const regularIcons = [];
 
     for (const icon of icons) {
       const name = IconDataHelper.getIconName(icon);
@@ -728,8 +773,17 @@ export class DesktopUI {
       const key = PositionStore.getKey(icon);
       if (saved[key]) {
         this.positionHelper.placeAtCell(icon, saved[key].col, saved[key].row, icon);
+      } else {
+        if (systemApps.has(app)) {
+          systemIcons.push(icon);
+        } else {
+          regularIcons.push(icon);
+        }
       }
     }
+
+    if (regularIcons.length) this.positionHelper.layout(regularIcons);
+    if (systemIcons.length) this.positionHelper.layoutRight(systemIcons);
 
     await this.loadDesktopItems();
   }
@@ -944,13 +998,19 @@ export function layoutIcons(icons, isExplorerIcon) {
   const positionHelper = new PositionHelper(desktop, { width: 80, height: 100, gap: 5 });
   positionHelper.layout(icons, isExplorerIcon);
 }
-
 function layoutIconsCall() {
   const saved = PositionStore.load();
-  const unsaved = Array.from(desktop.querySelectorAll(":scope > .icon")).filter(
+
+  const allUnsaved = Array.from(desktop.querySelectorAll(":scope > .icon")).filter(
     (icon) => !saved[PositionStore.getKey(icon)]
   );
-  if (unsaved.length) layoutIcons(unsaved);
+
+  const systemIcons = allUnsaved.filter((i) => systemApps.has(i.dataset.app));
+  const regularIcons = allUnsaved.filter((i) => !systemApps.has(i.dataset.app));
+
+  const positionHelper = new PositionHelper(desktop, { width: 80, height: 100, gap: 5 });
+  if (regularIcons.length) positionHelper.layout(regularIcons);
+  if (systemIcons.length) positionHelper.layoutRight(systemIcons);
 }
 
 window.addEventListener("load", layoutIconsCall);
