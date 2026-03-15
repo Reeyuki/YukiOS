@@ -8,6 +8,51 @@ import { GamesPageRenderer } from "./games.js";
 
 const contextMenu = document.getElementById("context-menu");
 
+const IMAGE_EXTS = ["png", "jpg", "jpeg", "gif", "webp", "bmp", "svg", "avif"];
+const VIDEO_EXTS = ["mp4", "webm", "ogv", "mov"];
+
+function getExt(name) {
+  return name.split(".").pop().toLowerCase();
+}
+
+function fileKindFromName(name) {
+  const ext = getExt(name);
+  if (IMAGE_EXTS.includes(ext)) return FileKind.IMAGE;
+  if (VIDEO_EXTS.includes(ext)) return FileKind.VIDEO;
+  if (["txt", "js", "json", "md", "html", "css"].includes(ext)) return FileKind.TEXT;
+  return FileKind.OTHER;
+}
+
+function isWallpaperPath(path) {
+  return (
+    path.length >= 2 &&
+    path[path.length - 2] === "Pictures" &&
+    path[path.length - 1] === "Wallpapers"
+  );
+}
+
+function isMediaKind(kind) {
+  return kind === FileKind.IMAGE || kind === FileKind.VIDEO;
+}
+
+function readFileAsDataURL(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function readFileAsText(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsText(file);
+  });
+}
+
 export class ExplorerApp {
   constructor(fileSystemManager, windowManager, notepadApp) {
     this.fs = fileSystemManager;
@@ -43,6 +88,16 @@ export class ExplorerApp {
       <div class="explorer-nav">
         <div class="back-btn" id="exp-back">← Back</div>
         <div id="exp-path" style="color:#555"></div>
+        <div class="explorer-upload-area" id="exp-upload-area">
+          <label class="explorer-upload-btn" title="Upload files">
+            ⬆ Upload
+            <input type="file" id="exp-file-input" multiple style="display:none">
+          </label>
+          <label class="explorer-upload-btn" title="Upload folder" style="margin-left:4px">
+            📁 Folder
+            <input type="file" id="exp-folder-input" multiple webkitdirectory style="display:none">
+          </label>
+        </div>
       </div>
       <div class="explorer-container">
         <div class="explorer-sidebar">
@@ -53,6 +108,9 @@ export class ExplorerApp {
           <div class="start-item" data-path="Music">Music</div>
         </div>
         <div class="explorer-main" id="explorer-view"></div>
+      </div>
+      <div id="exp-upload-progress" style="display:none;position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.7);color:#fff;font-size:12px;padding:6px 10px;z-index:10;border-radius:0 0 6px 6px;">
+        Uploading...
       </div>
     `;
 
@@ -103,6 +161,98 @@ export class ExplorerApp {
     explorerView.addEventListener("contextmenu", (e) => {
       if (e.target === explorerView) this.showBackgroundContextMenu(e);
     });
+
+    win.querySelector("#exp-file-input").addEventListener("change", async (e) => {
+      await this.handleFileUpload(Array.from(e.target.files), false);
+      e.target.value = "";
+    });
+
+    win.querySelector("#exp-folder-input").addEventListener("change", async (e) => {
+      await this.handleFileUpload(Array.from(e.target.files), true);
+      e.target.value = "";
+    });
+  }
+
+  async handleFileUpload(files, isFolder) {
+    if (!files.length) return;
+
+    const progressEl = this.lastWin?.querySelector("#exp-upload-progress");
+    if (progressEl) progressEl.style.display = "block";
+
+    try {
+      if (isFolder) {
+        await this.uploadFolderFiles(files);
+      } else {
+        for (const file of files) {
+          await this.uploadSingleFile(file, this.currentPath);
+        }
+      }
+    } finally {
+      if (progressEl) progressEl.style.display = "none";
+    }
+
+    await this.render();
+  }
+
+  async uploadFolderFiles(files) {
+    const pathMap = new Map();
+
+    for (const file of files) {
+      const relativePath = file.webkitRelativePath || file.name;
+      const parts = relativePath.split("/");
+      const fileName = parts.pop();
+      const subPath = [...this.currentPath, ...parts];
+
+      const subKey = subPath.join("/");
+      if (!pathMap.has(subKey)) {
+        pathMap.set(subKey, { path: subPath, files: [] });
+      }
+      pathMap.get(subKey).files.push({ file, fileName });
+    }
+
+    for (const { path, files: groupedFiles } of pathMap.values()) {
+      await this.fs.ensureFolder(path);
+      for (const { file, fileName } of groupedFiles) {
+        await this.uploadSingleFile(file, path, fileName);
+      }
+    }
+  }
+
+  async uploadSingleFile(file, targetPath, overrideName = null) {
+    const name = overrideName || file.name;
+    const kind = fileKindFromName(name);
+
+    let content;
+    let icon;
+
+    if (isMediaKind(kind)) {
+      content = await readFileAsDataURL(file);
+      icon = kind === FileKind.IMAGE ? content : "/static/icons/file.webp";
+
+      if (isWallpaperPath(targetPath) || this.isInWallpapersContext(name, targetPath)) {
+        await this.saveToWallpapers(name, content, kind, icon);
+        return;
+      }
+    } else {
+      try {
+        content = await readFileAsText(file);
+      } catch {
+        content = await readFileAsDataURL(file);
+      }
+      icon = "/static/icons/notepad.webp";
+    }
+
+    await this.fs.createFile(targetPath, name, content, kind, icon);
+  }
+
+  isInWallpapersContext(name, path) {
+    return isWallpaperPath(path);
+  }
+
+  async saveToWallpapers(name, content, kind, icon) {
+    const wallpapersPath = ["Pictures", "Wallpapers"];
+    await this.fs.ensureFolder(wallpapersPath);
+    await this.fs.createFile(wallpapersPath, name, content, kind, icon);
   }
 
   navigate(path) {
@@ -324,6 +474,14 @@ export class ExplorerApp {
           createMenuItem("Set Wallpaper", () => {
             contextMenu.style.display = "none";
             SystemUtilities.setWallpaper(content);
+          })
+        );
+
+        contextMenu.appendChild(
+          createMenuItem("Save as Wallpaper", async () => {
+            contextMenu.style.display = "none";
+            await this.saveToWallpapers(itemName, content, kind, kind === FileKind.IMAGE ? content : "/static/icons/file.webp");
+            this.wm.showPopup(`"${itemName}" added to Pictures/Wallpapers`);
           })
         );
       }
