@@ -8,64 +8,72 @@ class PositionHelper {
     this.gridSize = gridSize;
   }
 
-  convert(value, dimension, toPercent) {
-    const size = dimension === "x" ? this.desktop.clientWidth : this.desktop.clientHeight;
-    return toPercent ? (value / size) * 100 : (value / 100) * size;
+  cellToPixels(col, row) {
+    const { width, height, gap } = this.gridSize;
+    return { left: gap + col * (width + gap), top: gap + row * (height + gap) };
+  }
+
+  pixelsToCell(leftPx, topPx) {
+    const { width, height, gap } = this.gridSize;
+    return {
+      col: Math.max(0, Math.round((leftPx - gap) / (width + gap))),
+      row: Math.max(0, Math.round((topPx - gap) / (height + gap)))
+    };
+  }
+
+  isCellOccupied(col, row, exclude = null) {
+    const { left, top } = this.cellToPixels(col, row);
+    const { width, height } = this.gridSize;
+    return Array.from(document.querySelectorAll(".icon.selectable")).some(
+      (i) =>
+        i !== exclude &&
+        Math.abs((parseFloat(i.style.left) || 0) - left) < width * 0.5 &&
+        Math.abs((parseFloat(i.style.top) || 0) - top) < height * 0.5
+    );
+  }
+
+  nextFreeCell(col, row, exclude = null) {
+    const { width, height, gap } = this.gridSize;
+    const dw = this.desktop.clientWidth;
+    const dh = this.desktop.clientHeight;
+    const maxRows = Math.max(1, Math.floor((dh - gap) / (height + gap)));
+    const maxCols = Math.max(1, Math.floor((dw - gap) / (width + gap)));
+
+    let c = col,
+      r = row;
+    while (this.isCellOccupied(c, r, exclude)) {
+      r++;
+      if (r >= maxRows) {
+        r = 0;
+        c++;
+      }
+      if (c >= maxCols) {
+        c = 0;
+        r = 0;
+        break;
+      }
+    }
+    return { col: c, row: r };
   }
 
   setPosition(icon, leftPx, topPx) {
     icon.style.left = `${leftPx}px`;
     icon.style.top = `${topPx}px`;
-    icon.dataset.leftPercent = this.convert(leftPx, "x", true);
-    icon.dataset.topPercent = this.convert(topPx, "y", true);
-  }
-
-  getPosition(icon) {
-    const lp = parseFloat(icon.dataset.leftPercent);
-    const tp = parseFloat(icon.dataset.topPercent);
-    return !isNaN(lp) && !isNaN(tp)
-      ? { leftPx: this.convert(lp, "x"), topPx: this.convert(tp, "y"), leftPercent: lp, topPercent: tp }
-      : {
-          leftPx: parseFloat(icon.style.left) || 0,
-          topPx: parseFloat(icon.style.top) || 0,
-          leftPercent: this.convert(parseFloat(icon.style.left) || 0, "x", true),
-          topPercent: this.convert(parseFloat(icon.style.top) || 0, "y", true)
-        };
   }
 
   snap(icon, exclude = null) {
-    const { width, height, gap } = this.gridSize;
-    const cellW = width + gap,
-      cellH = height + gap;
-    let { leftPx: x, topPx: y } = this.getPosition(icon);
-    let col = Math.max(0, Math.round((x - gap) / cellW));
-    let row = Math.max(0, Math.round((y - gap) / cellH));
+    const x = parseFloat(icon.style.left) || 0;
+    const y = parseFloat(icon.style.top) || 0;
+    const { col, row } = this.pixelsToCell(x, y);
+    const free = this.nextFreeCell(col, row, exclude || icon);
+    const { left, top } = this.cellToPixels(free.col, free.row);
+    this.setPosition(icon, left, top);
+  }
 
-    const isOccupied = (l, t) =>
-      Array.from(document.querySelectorAll(".icon.selectable")).some(
-        (i) =>
-          i !== (exclude || icon) &&
-          Math.abs((parseFloat(i.style.left) || 0) - l) < width * 0.5 &&
-          Math.abs((parseFloat(i.style.top) || 0) - t) < height * 0.5
-      );
-
-    let snappedLeft = gap + col * cellW,
-      snappedTop = gap + row * cellH;
-    const dw = this.desktop.clientWidth,
-      dh = this.desktop.clientHeight;
-
-    while (isOccupied(snappedLeft, snappedTop)) {
-      row++;
-      snappedTop = gap + row * cellH;
-      if (snappedTop + height > dh) {
-        row = 0;
-        col++;
-        snappedLeft = gap + col * cellW;
-        if (snappedLeft + width > dw) break;
-      }
-    }
-
-    this.setPosition(icon, snappedLeft, snappedTop);
+  placeAtCell(icon, col, row, exclude = null) {
+    const free = this.nextFreeCell(col, row, exclude || icon);
+    const { left, top } = this.cellToPixels(free.col, free.row);
+    this.setPosition(icon, left, top);
   }
 
   layout(icons, isExplorerIcon = false) {
@@ -80,7 +88,8 @@ class PositionHelper {
 
     requestAnimationFrame(() =>
       icons.forEach((icon) => {
-        this.setPosition(icon, gap + col * cellW, gap + row * cellH);
+        icon.style.left = `${gap + col * cellW}px`;
+        icon.style.top = `${gap + row * cellH}px`;
         row++;
         if (row >= maxRows) {
           row = 0;
@@ -88,6 +97,28 @@ class PositionHelper {
         }
       })
     );
+  }
+}
+
+const POSITIONS_KEY = "desktop:icon-positions";
+
+class PositionStore {
+  static load() {
+    try {
+      return JSON.parse(localStorage.getItem(POSITIONS_KEY)) || {};
+    } catch {
+      return {};
+    }
+  }
+
+  static save(map) {
+    localStorage.setItem(POSITIONS_KEY, JSON.stringify(map));
+  }
+
+  static getKey(icon) {
+    return icon.dataset.folderName
+      ? `folder:${icon.dataset.folderName}`
+      : `app:${icon.dataset.app}:${IconDataHelper.getIconName(icon)}`;
   }
 }
 
@@ -125,26 +156,19 @@ class IconDataHelper {
     };
   }
 
-  static createDesktopFileData(app, name, position = null) {
+  static createDesktopFileData(app, name) {
     const pathMap = this.getIconPathMap();
-    const data = {
+    return JSON.stringify({
       app,
       name,
       path: pathMap[app] || "/static/icons/file.webp"
-    };
-
-    if (position) {
-      data.position = position;
-    }
-
-    return JSON.stringify(data);
+    });
   }
 
-  static createFolderMetaData(folderName, position) {
+  static createFolderMetaData(folderName) {
     return JSON.stringify({
       type: "folder",
-      name: folderName,
-      position
+      name: folderName
     });
   }
 }
@@ -235,64 +259,6 @@ class SelectionManager {
   }
 }
 
-class FileSystemHelper {
-  constructor(positionHelper) {
-    this.positionHelper = positionHelper;
-  }
-
-  _getStorageKey(pathArray, fileName) {
-    return [...pathArray, fileName].join("/");
-  }
-
-  async loadPositionFromFile(path, fileName) {
-    const key = this._getStorageKey(path, fileName);
-    const content = localStorage.getItem(key);
-    if (!content) return null;
-
-    try {
-      const data = JSON.parse(content);
-      if (data.position && data.position.leftPercent !== undefined) {
-        return {
-          leftPx: this.positionHelper.convert(data.position.leftPercent, "x"),
-          topPx: this.positionHelper.convert(data.position.topPercent, "y"),
-          leftPercent: data.position.leftPercent,
-          topPercent: data.position.topPercent
-        };
-      }
-    } catch (e) {
-      console.error("Error parsing position data:", e);
-    }
-
-    return null;
-  }
-
-  async saveIconPosition(path, fileName, icon) {
-    const position = this.positionHelper.getPosition(icon);
-    const app = icon.dataset.app;
-    const name = IconDataHelper.getIconName(icon);
-
-    const content = IconDataHelper.createDesktopFileData(app, name, {
-      leftPercent: position.leftPercent,
-      topPercent: position.topPercent
-    });
-
-    const key = this._getStorageKey(path, fileName);
-    localStorage.setItem(key, content);
-  }
-
-  async saveFolderPosition(path, folderName, folderIcon) {
-    const position = this.positionHelper.getPosition(folderIcon);
-    const metaFileName = `.${folderName}.folder`;
-    const content = IconDataHelper.createFolderMetaData(folderName, {
-      leftPercent: position.leftPercent,
-      topPercent: position.topPercent
-    });
-
-    const key = this._getStorageKey(path, metaFileName);
-    localStorage.setItem(key, content);
-  }
-}
-
 export class DesktopUI {
   constructor(appLauncher, notepadApp, explorerApp, fileSystemManager) {
     this.appLauncher = appLauncher;
@@ -308,7 +274,6 @@ export class DesktopUI {
     this.positionHelper = new PositionHelper(this.desktop, { width: 80, height: 100, gap: 5 });
     this.contextMenuHelper = new ContextMenuHelper(this.contextMenu);
     this.selectionManager = new SelectionManager();
-    this.fileSystemHelper = new FileSystemHelper(this.positionHelper);
 
     this.state = {
       clipboard: null,
@@ -360,24 +325,6 @@ export class DesktopUI {
     this.setupInteractableSelection();
     this.setupStartMenu();
     this.setupKeyboardShortcuts();
-    this.setupResizeHandler();
-  }
-
-  setupResizeHandler() {
-    let resizeTimeout;
-    window.addEventListener("resize", () => {
-      clearTimeout(resizeTimeout);
-      resizeTimeout = setTimeout(() => this.repositionAllIcons(), 100);
-    });
-  }
-
-  repositionAllIcons() {
-    const icons = document.querySelectorAll("#desktop > .icon.selectable");
-    icons.forEach((icon) => {
-      const position = this.positionHelper.getPosition(icon);
-      this.positionHelper.setPosition(icon, position.leftPx, position.topPx);
-      this.positionHelper.snap(icon);
-    });
   }
 
   setupKeyboardShortcuts() {
@@ -388,7 +335,6 @@ export class DesktopUI {
     });
 
     document.addEventListener("keydown", (e) => {
-      // Don't intercept shortcuts when user is typing in an input
       const active = document.activeElement;
       const isTyping =
         active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA" || active.isContentEditable);
@@ -565,6 +511,7 @@ export class DesktopUI {
   }
 
   async moveIconsToFolder(icons, folderName) {
+    const saved = PositionStore.load();
     for (const icon of icons) {
       if (icon.classList.contains("folder-icon")) continue;
 
@@ -575,21 +522,12 @@ export class DesktopUI {
       await this.fs.createFile(["Desktop", folderName], fileName, fileContent, "text");
       await this.fs.deleteItem(["Desktop"], fileName);
 
+      delete saved[PositionStore.getKey(icon)];
       icon.remove();
       this.selectionManager.remove(icon);
     }
-
+    PositionStore.save(saved);
     this.selectionManager.clear();
-  }
-
-  async updateDesktopFilePositions() {
-    for (const icon of this.selectionManager.toArray()) {
-      if (icon.classList.contains("folder-icon")) continue;
-
-      const name = IconDataHelper.getIconName(icon);
-      const fileName = `${name}.desktop`;
-      await this.fileSystemHelper.saveIconPosition(["Desktop"], fileName, icon);
-    }
   }
 
   async onDragEnd() {
@@ -612,13 +550,14 @@ export class DesktopUI {
         });
       });
 
-      await this.updateDesktopFilePositions();
-
-      for (const icon of this.selectionManager.toArray()) {
-        if (icon.classList.contains("folder-icon")) {
-          await this.fileSystemHelper.saveFolderPosition(["Desktop"], icon.dataset.folderName, icon);
-        }
-      }
+      const saved = PositionStore.load();
+      this.selectionManager.forEach((selectedIcon) => {
+        const x = parseFloat(selectedIcon.style.left) || 0;
+        const y = parseFloat(selectedIcon.style.top) || 0;
+        const { col, row } = this.positionHelper.pixelsToCell(x, y);
+        saved[PositionStore.getKey(selectedIcon)] = { col, row };
+      });
+      PositionStore.save(saved);
     }
   }
 
@@ -637,8 +576,16 @@ export class DesktopUI {
         const newName = prompt("Enter new folder name:", folderIcon.dataset.folderName);
         if (newName && newName !== folderIcon.dataset.folderName) {
           await this.fs.renameItem(["Desktop"], folderIcon.dataset.folderName, newName);
+          const saved = PositionStore.load();
+          const oldKey = PositionStore.getKey(folderIcon);
           folderIcon.dataset.folderName = newName;
           folderIcon.querySelector("span").textContent = newName;
+          const newKey = PositionStore.getKey(folderIcon);
+          if (saved[oldKey]) {
+            saved[newKey] = saved[oldKey];
+            delete saved[oldKey];
+            PositionStore.save(saved);
+          }
         }
       }
     };
@@ -675,10 +622,13 @@ export class DesktopUI {
   }
 
   deleteSelectedIcons(selectedArray) {
+    const saved = PositionStore.load();
     selectedArray.forEach((icon) => {
+      delete saved[PositionStore.getKey(icon)];
       this.selectionManager.remove(icon);
       icon.remove();
     });
+    PositionStore.save(saved);
   }
 
   createPropertiesContent(icon) {
@@ -765,19 +715,19 @@ export class DesktopUI {
   async initializeDesktopFiles() {
     await this.fs.ensureFolder(["Desktop"]);
 
+    const saved = PositionStore.load();
     const icons = document.querySelectorAll(".icon.selectable:not(.folder-icon)");
+
     for (const icon of icons) {
       const name = IconDataHelper.getIconName(icon);
       const app = icon.dataset.app;
       const fileName = `${name}.desktop`;
+      const content = IconDataHelper.createDesktopFileData(app, name);
+      await this.fs.createFile(["Desktop"], fileName, content, "text");
 
-      const position = await this.fileSystemHelper.loadPositionFromFile(["Desktop"], fileName);
-
-      if (position) {
-        this.positionHelper.setPosition(icon, position.leftPx, position.topPx);
-      } else {
-        const content = IconDataHelper.createDesktopFileData(app, name);
-        await this.fs.createFile(["Desktop"], fileName, content, "text");
+      const key = PositionStore.getKey(icon);
+      if (saved[key]) {
+        this.positionHelper.placeAtCell(icon, saved[key].col, saved[key].row, icon);
       }
     }
 
@@ -809,11 +759,10 @@ export class DesktopUI {
     this.desktop.appendChild(folderIcon);
     this.makeIconInteractable(folderIcon);
 
-    const metaFileName = `.${folderName}.folder`;
-    const position = await this.fileSystemHelper.loadPositionFromFile(["Desktop"], metaFileName);
-
-    if (position) {
-      this.positionHelper.setPosition(folderIcon, position.leftPx, position.topPx);
+    const saved = PositionStore.load();
+    const key = PositionStore.getKey(folderIcon);
+    if (saved[key]) {
+      this.positionHelper.placeAtCell(folderIcon, saved[key].col, saved[key].row, folderIcon);
     } else {
       this.positionHelper.snap(folderIcon);
     }
@@ -827,10 +776,7 @@ export class DesktopUI {
     const { action, icons } = this.state.clipboard;
 
     icons.forEach((iconData, index) => {
-      let newLeft = x + index * 10;
-      let newTop = y + index * 10;
-
-      const newIcon = this.createIconElement(iconData.data, newLeft, newTop);
+      const newIcon = this.createIconElement(iconData.data, x + index * 10, y + index * 10);
       this.makeIconInteractable(newIcon);
       this.desktop.appendChild(newIcon);
       this.positionHelper.snap(newIcon);
@@ -868,9 +814,8 @@ export class DesktopUI {
 
   setupInteractableSelection() {
     let selectionState = { startX: 0, startY: 0, isActive: false };
-
-    // Track whether the mousedown landed directly on the desktop
     let mousedownOnDesktop = false;
+
     this.desktop.addEventListener("mousedown", (e) => {
       mousedownOnDesktop = e.target === this.desktop;
     });
@@ -883,7 +828,7 @@ export class DesktopUI {
       listeners: {
         start: (event) => {
           if (this.appLauncher.wm.isDraggingWindow) return;
-          if (!mousedownOnDesktop) return; // <-- replaces the target check
+          if (!mousedownOnDesktop) return;
 
           selectionState = {
             startX: event.pageX,
@@ -903,7 +848,7 @@ export class DesktopUI {
           if (!selectionState.isActive) return;
           this.hideSelectionBox();
           selectionState.isActive = false;
-          mousedownOnDesktop = false; // reset for next interaction
+          mousedownOnDesktop = false;
         }
       }
     });
@@ -1001,8 +946,11 @@ export function layoutIcons(icons, isExplorerIcon) {
 }
 
 function layoutIconsCall() {
-  const icons = desktop.querySelectorAll(":scope > .icon");
-  layoutIcons(icons);
+  const saved = PositionStore.load();
+  const unsaved = Array.from(desktop.querySelectorAll(":scope > .icon")).filter(
+    (icon) => !saved[PositionStore.getKey(icon)]
+  );
+  if (unsaved.length) layoutIcons(unsaved);
 }
 
 window.addEventListener("load", layoutIconsCall);

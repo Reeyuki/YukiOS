@@ -194,7 +194,10 @@ export class TaskManagerApp {
       th.onclick = () => {
         const key = th.dataset.key;
         if (this.sortKey === key) this.sortAsc = !this.sortAsc;
-        else { this.sortKey = key; this.sortAsc = true; }
+        else {
+          this.sortKey = key;
+          this.sortAsc = true;
+        }
         this._renderProcesses(win);
       };
     });
@@ -252,9 +255,10 @@ export class TaskManagerApp {
     }
 
     procs.sort((a, b) => {
-      let va = a[this.sortKey], vb = b[this.sortKey];
-      if (typeof va === "string") va = va.toLowerCase(), vb = vb.toLowerCase();
-      return this.sortAsc ? (va > vb ? 1 : -1) : (va < vb ? 1 : -1);
+      let va = a[this.sortKey],
+        vb = b[this.sortKey];
+      if (typeof va === "string") ((va = va.toLowerCase()), (vb = vb.toLowerCase()));
+      return this.sortAsc ? (va > vb ? 1 : -1) : va < vb ? 1 : -1;
     });
 
     const tbody = win.querySelector("#tm-tbody");
@@ -274,20 +278,21 @@ export class TaskManagerApp {
     const maxCpu = Math.max(...procs.map((p) => p.cpu), 1);
     const maxMem = Math.max(...procs.map((p) => p.mem), 1);
 
-    tbody.innerHTML = procs.map((p) => {
-      const selected = p.winId === this.selectedId ? "tm-row-selected" : "";
-      const cpuPct = (p.cpu / maxCpu) * 100;
-      const memPct = (p.mem / maxMem) * 100;
-      const cpuColor = p.cpu > 50 ? "#ef5350" : p.cpu > 20 ? "#ffa726" : "#4fc3f7";
-      const statusColor = p.status === "Running" ? "#81c995" : "#888";
+    tbody.innerHTML = procs
+      .map((p) => {
+        const selected = p.winId === this.selectedId ? "tm-row-selected" : "";
+        const cpuPct = (p.cpu / maxCpu) * 100;
+        const memPct = (p.mem / maxMem) * 100;
+        const cpuColor = p.cpu > 50 ? "#ef5350" : p.cpu > 20 ? "#ffa726" : "#4fc3f7";
+        const statusColor = p.status === "Running" ? "#81c995" : "#888";
 
-      const iconHtml = p.icon
-        ? (p.icon.startsWith("http") || p.icon.startsWith("/")
-          ? `<img src="${p.icon}" style="width:14px;height:14px;margin-right:6px;vertical-align:middle;object-fit:contain;">`
-          : `<i class="${p.icon}" style="font-size:12px;margin-right:6px;color:#888;vertical-align:middle;"></i>`)
-        : `<span style="display:inline-block;width:14px;margin-right:6px;"></span>`;
+        const iconHtml = p.icon
+          ? p.icon.startsWith("http") || p.icon.startsWith("/")
+            ? `<img src="${p.icon}" style="width:14px;height:14px;margin-right:6px;vertical-align:middle;object-fit:contain;">`
+            : `<i class="${p.icon}" style="font-size:12px;margin-right:6px;color:#888;vertical-align:middle;"></i>`
+          : `<span style="display:inline-block;width:14px;margin-right:6px;"></span>`;
 
-      return `<tr class="tm-row ${selected}" data-id="${p.winId}">
+        return `<tr class="tm-row ${selected}" data-id="${p.winId}">
         <td style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; position:relative;">
           <div class="tm-bar" style="width:${cpuPct}%; background:${cpuColor};"></div>
           <span style="position:relative;">${iconHtml}${p.title}</span>
@@ -302,7 +307,8 @@ export class TaskManagerApp {
         </td>
         <td style="text-align:right; color:${statusColor};">${p.status}</td>
       </tr>`;
-    }).join("");
+      })
+      .join("");
 
     tbody.querySelectorAll(".tm-row").forEach((row) => {
       row.onclick = () => {
@@ -343,7 +349,10 @@ export class TaskManagerApp {
     ctx.lineWidth = 1;
     for (let i = 0; i <= 4; i++) {
       const y = (h / 4) * i;
-      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(w, y);
+      ctx.stroke();
     }
 
     const step = w / (history.length - 1);
@@ -374,7 +383,10 @@ export class TaskManagerApp {
 
   _renderPerf(win) {
     const runningProcs = this._getProcesses();
-    const totalCpu = Math.min(99, runningProcs.reduce((s, p) => s + p.cpu, 0));
+    const totalCpu = Math.min(
+      99,
+      runningProcs.reduce((s, p) => s + p.cpu, 0)
+    );
     const memBase = 35 + runningProcs.length * 3;
     const totalMem = Math.min(99, memBase + (Math.random() - 0.5) * 2);
 
@@ -406,10 +418,14 @@ export class TaskManagerApp {
 
     const el = win.querySelector("#tm-sysinfo");
     if (el) {
-      el.innerHTML = info.map(([k, v]) => `
+      el.innerHTML = info
+        .map(
+          ([k, v]) => `
         <div style="color:#555; font-size:11px;">${k}</div>
         <div style="color:#aaa;">${v}</div>
-      `).join("");
+      `
+        )
+        .join("");
     }
   }
 

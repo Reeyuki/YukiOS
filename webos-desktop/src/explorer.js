@@ -24,11 +24,7 @@ function fileKindFromName(name) {
 }
 
 function isWallpaperPath(path) {
-  return (
-    path.length >= 2 &&
-    path[path.length - 2] === "Pictures" &&
-    path[path.length - 1] === "Wallpapers"
-  );
+  return path.length >= 2 && path[path.length - 2] === "Pictures" && path[path.length - 1] === "Wallpapers";
 }
 
 function isMediaKind(kind) {
@@ -480,7 +476,12 @@ export class ExplorerApp {
         contextMenu.appendChild(
           createMenuItem("Save as Wallpaper", async () => {
             contextMenu.style.display = "none";
-            await this.saveToWallpapers(itemName, content, kind, kind === FileKind.IMAGE ? content : "/static/icons/file.webp");
+            await this.saveToWallpapers(
+              itemName,
+              content,
+              kind,
+              kind === FileKind.IMAGE ? content : "/static/icons/file.webp"
+            );
             this.wm.showPopup(`"${itemName}" added to Pictures/Wallpapers`);
           })
         );
