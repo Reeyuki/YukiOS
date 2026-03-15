@@ -19,7 +19,8 @@ export class AppLauncher {
     nodeApp,
     calculatorApp,
     aboutApp,
-    settingsApp
+    settingsApp,
+    taskManagerApp
   ) {
     this.wm = windowManager;
     this.fs = fileSystemManager;
@@ -34,6 +35,7 @@ export class AppLauncher {
     this.calculatorApp = calculatorApp;
     this.aboutApp = aboutApp;
     this.settingsApp = settingsApp;
+    this.taskManager = taskManagerApp;
     this.pageLoadTime = Date.now();
     this.TRANSPARENCY_ALLOWED_APP_IDS = new Set(["paint", "photopea", "vscode", "liventcord"]);
     const analyticsBase = this._getAnalyticsBase("hit-page");
@@ -57,7 +59,8 @@ export class AppLauncher {
       calculatorApp: { type: "system", title: "Calculator", action: () => this.calculatorApp.open() },
       aboutApp: { type: "system", title: "About", action: () => this.aboutApp.open() },
       music: { type: "system", title: "Music Player", action: () => this.musicPlayer.open(this.wm) },
-      flash: { type: "system", title: "Flash Games", action: () => this.explorerApp.openFlash() }
+      flash: { type: "system", title: "Flash Games", action: () => this.explorerApp.openFlash() },
+      taskManagerApp: { type: "system", title: "Task Manager", action: () => taskManagerApp.open() }
     };
 
     this.appMap = { ...localAppMap, ...appMap };

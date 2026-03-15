@@ -15,7 +15,7 @@ import { DesktopUI } from "./desktopui.js";
 import { CalculatorApp } from "./calculator.js";
 import { NodeEditorApp } from "./node.js";
 import { SettingsApp } from "./settings.js";
-
+import { TaskManagerApp } from "./taskManager.js";
 class MusicPlayer {
   constructor() {}
   open(windowManager) {
@@ -142,6 +142,7 @@ const musicPlayer = new MusicPlayer();
 const cameraApp = new CameraApp(windowManager);
 const aboutApp = new AboutApp(windowManager);
 const settingsApp = new SettingsApp(windowManager);
+const taskManagerApp = new TaskManagerApp(windowManager);
 const appLauncher = new AppLauncher(
   windowManager,
   fileSystemManager,
@@ -155,7 +156,8 @@ const appLauncher = new AppLauncher(
   nodeApp,
   calculatorApp,
   aboutApp,
-  settingsApp
+  settingsApp,
+  taskManagerApp
 );
 window.appLauncher = appLauncher;
 const desktopUI = new DesktopUI(appLauncher, notepadApp, explorerApp, fileSystemManager);
