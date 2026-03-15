@@ -2236,7 +2236,7 @@ select:focus {
 }
 
 #boot-tip {
-    position: absolute;
+  position: absolute;
   bottom: 3rem;
   color: var(--gray-dark);
   font-size: 1rem;
@@ -2618,4 +2618,23 @@ select:focus {
 #history-list::-webkit-scrollbar-thumb {
   background: var(--cam-border);
   border-radius: 2px;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track,
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 6px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.55);
 }
