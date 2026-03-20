@@ -1,0 +1,614 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Yuki OS – Browser Gaming Hub with Flash, GBA, NDS & HTML5 Games</title>
+
+    <meta
+      name="description"
+      content="Yuki OS is a browser-based gaming hub offering hundreds of games across Flash, GBA, NDS, and HTML5 platforms. Play instantly online with no downloads or installs."
+    />
+
+    <meta property="og:title" content="Yuki OS – Browser Gaming Hub with Flash, GBA, NDS & HTML5 Games" />
+    <meta
+      property="og:description"
+      content="Experience hundreds of games in your browser with Yuki OS. Play Flash, GBA, NDS, HTML5, and more instantly online without downloads."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://yukios.netlify.app/static/seo/preview.webp" />
+    <meta property="og:site_name" content="Yuki OS" />
+    <meta property="og:url" content="https://yukios.netlify.app" />
+    <meta property="og:locale" content="en_US" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Yuki OS – Browser Gaming Hub with Flash, GBA, NDS & HTML5 Games" />
+    <meta
+      name="twitter:description"
+      content="Yuki OS lets you play hundreds of games directly in your browser. Flash, GBA, NDS, and HTML5 games with no downloads required."
+    />
+    <meta name="twitter:image" content="https://yukios.netlify.app/static/seo/preview.webp" />
+
+    <meta name="application-name" content="Yuki OS" />
+    <link rel="canonical" href="https://yukios.netlify.app/" />
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/js/all.min.js"
+      integrity="sha512-6BTOlkauINO65nLhXhthZMtepgJSghyimIalb+crKRPhvhmsCdnIuGcVbR5/aQY2A+260iC1OPy1oCdB6pSSwQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Yuki OS",
+        "url": "https://yukios.netlify.app",
+        "description": "Browser-based gaming hub offering Flash, GBA, NDS, and HTML5 games playable instantly online without downloads.",
+        "publisher": {
+          "@type": "Organization",
+          "name": "Yuki OS"
+        }
+      }
+    </script>
+
+    <link href="/src/style.css" rel="stylesheet" />
+    <script type="module" src="/src/main.js"></script>
+
+    <style>
+      body {
+        background-color: #1e1e1ed9;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="bootloader">
+      <div class="boot-logo"><img src="/static/icons/liventcord.webp" /></div>
+      <h1 class="boot-title"><b>YUKI OS</b></h1>
+      <div class="boot-version">Version 1.0</div>
+      <div class="boot-options" id="bootOptions">
+        <div class="boot-option selected" data-index="0"><i class="fas fa-play"></i> <span>Yuki OS</span></div>
+      </div>
+      <div class="boot-hint">Enter <i class="fas fa-level-down-alt"></i> to boot</div>
+      <div
+        id="bootCountdown"
+        style="position: absolute; bottom: 4rem; color: var(--accent); font-size: 0.9rem; display: none"
+      ></div>
+      <h1 id="boot-tip">Tip: You can disable this screen from settings.</h1>
+      <div id="bottom-text" style="position: absolute; bottom: 0.5rem; color: #888">
+        made with <i class="fa-solid fa-heart"></i> by reeyuki
+      </div>
+      <div class="boot-loading" id="bootLoading">
+        <div class="loading-bar-container">
+          <div class="loading-bar" id="loadingBar"></div>
+        </div>
+        <div class="boot-messages" id="bootMessages"></div>
+      </div>
+    </div>
+
+    <div id="login" class="is-hidden">
+      <div class="login-wrapper">
+        <div class="login-left">
+          <div class="login-time">
+            <div class="login-time-main" id="loginClock">1:42 AM</div>
+            <div class="login-time-date" id="loginDate">Tuesday, February 24</div>
+          </div>
+
+          <div class="login-info-card">
+            <div class="info-card-title"><i class="fas fa-info-circle"></i> System Information</div>
+            <div class="info-card-content">
+              <div class="info-stat">
+                <span class="info-stat-label">OS</span>
+                <span class="info-stat-value">YukiOS</span>
+              </div>
+              <div class="info-stat">
+                <span class="info-stat-label">Version</span>
+                <span class="info-stat-value">1.0</span>
+              </div>
+              <div class="info-stat">
+                <span class="info-stat-label">Browser</span>
+                <span class="info-stat-value" id="browserInfo"></span>
+              </div>
+              <div class="info-stat">
+                <span class="info-stat-label">Uptime</span>
+                <span class="info-stat-value" id="uptime">0m</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="login-container passwordless">
+          <div class="login-avatar"><i class="fas fa-user"></i></div>
+          <h2 class="login-title" id="loginGreeting"></h2>
+          <p class="login-subtitle" id="loginSubtitle">Just enter your username</p>
+          <input type="text" class="login-input" id="username" placeholder="Username" value="" />
+          <div class="login-input-wrapper" id="passwordWrapper" style="display: none">
+            <input type="password" class="login-input" id="password" placeholder="Password" value="" />
+            <i class="fas fa-eye password-toggle" id="passwordToggle" onclick="togglePassword()"></i>
+          </div>
+          <button id="login-btn">Sign In</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="selection-box"></div>
+
+    <div id="desktop" class="desktop">
+      <div class="icon selectable" data-app="explorer">
+        <img src="/static/icons/files.webp" />
+        <div>File Explorer</div>
+      </div>
+
+      <div class="icon selectable" data-app="notepad">
+        <img src="/static/icons/notepad.webp" />
+        <div>Notepad</div>
+      </div>
+
+      <div class="icon selectable" data-app="cameraApp">
+        <img src="/static/icons/obs.webp" />
+        <div>Camera</div>
+      </div>
+
+      <div class="icon selectable" data-app="pythonApp">
+        <i style="color: #5299b9" class="fas fa-code"></i>
+        <div>Python Code Editor</div>
+      </div>
+
+      <div class="icon selectable" data-app="nodeApp">
+        <i style="color: #caca43" class="fas fa-code"></i>
+        <div>NodeJS Code Editor</div>
+      </div>
+
+      <div class="icon selectable" data-app="photopea">
+        <img src="/static/icons/photopea.webp" />
+        <div>Photopea</div>
+      </div>
+
+      <div class="icon selectable" data-app="paint">
+        <img src="/static/icons/paint.webp" />
+        <div>Paint</div>
+      </div>
+
+      <div class="icon selectable" data-app="browser">
+        <img src="/static/icons/firefox.webp" />
+        <div>Browser</div>
+      </div>
+
+      <div class="icon selectable" data-app="calculatorApp">
+        <i style="color: #6677dd" class="fas fa-calculator"></i>
+        <div>Calculator</div>
+      </div>
+
+      <div class="icon selectable" data-app="emulatorApp">
+        <i style="color: #6677dd" class="fas fa-gamepad"></i>
+        <div>Emulator JS</div>
+      </div>
+
+      <div class="icon selectable" data-app="terminal">
+        <img src="/static/icons/terminal.webp" />
+        <div>Terminal</div>
+      </div>
+
+      <div class="icon selectable" data-app="music">
+        <img src="/static/icons/music.webp" />
+        <div>Music Player</div>
+      </div>
+
+      <div class="icon selectable popular" data-app="gamesApp">
+        <i style="color: #5299b9" class="fas fa-gamepad"></i>
+        <div>Games</div>
+      </div>
+
+      <div class="icon selectable popular" data-app="flash">
+        <img src="/static/icons/flash.webp" />
+        <div>Flash Games</div>
+      </div>
+
+      <div class="icon selectable popular" data-app="minecraft">
+        <img src="/static/icons/minecraft.webp" />
+        <div>Minecraft</div>
+      </div>
+
+      <div class="icon selectable popular" data-app="terraria">
+        <img src="/static/icons/ter.webp" />
+        <div>Terraria</div>
+      </div>
+
+      <div class="icon selectable popular" data-app="celeste">
+        <img src="/static/icons/celeste.webp" />
+        <div>Celeste</div>
+      </div>
+
+      <div class="icon selectable popular" data-app="sonic">
+        <img src="/static/icons/sonic.webp" />
+        <div>Sonic</div>
+      </div>
+
+      <div class="icon selectable popular" data-app="pokemon">
+        <img src="/static/icons/pokeball.webp" />
+        <div>Pokémon</div>
+      </div>
+
+      <div class="icon selectable popular" data-app="pvz">
+        <img src="/static/icons/pvz.webp" />
+        <div>Plants vs. Zombies</div>
+      </div>
+
+      <div class="icon selectable popular" data-app="subwaySurfers">
+        <img src="/static/icons/subway.webp" />
+        <div>Subway Surfers</div>
+      </div>
+
+      <div class="icon selectable popular" data-app="undertale">
+        <img src="/static/icons/undertale.png" />
+        <div>Undertale</div>
+      </div>
+
+      <div class="icon selectable popular" data-app="deltarune">
+        <img src="/static/icons/deltarune.png" />
+        <div>Deltarune</div>
+      </div>
+
+      <div class="icon selectable popular" data-app="cuphead">
+        <img src="/static/icons/cup.webp" />
+        <div>Cuphead</div>
+      </div>
+
+      <div class="icon selectable popular" data-app="hollowKnight">
+        <img src="/static/icons/hollowKnight.webp" />
+        <div>Hollow Knight</div>
+      </div>
+
+      <div class="icon selectable popular" data-app="amongUs">
+        <img src="/static/icons/among.webp" />
+        <div>Among Us</div>
+      </div>
+
+      <div class="icon selectable popular" data-app="candyCrush">
+        <img src="/static/icons/candy.webp" />
+        <div>Candy Crush</div>
+      </div>
+
+      <div class="icon selectable popular" data-app="gtaVc">
+        <img src="/static/icons/gtavc.webp" />
+        <div>GTA Vice City</div>
+      </div>
+
+      <div class="icon selectable popular" data-app="slimeRancher">
+        <img src="/static/icons/slime.webp" />
+        <div>Slime Rancher</div>
+      </div>
+
+      <div class="icon selectable popular" data-app="balatro">
+        <img src="/static/icons/balatro.webp" />
+        <div>Balatro</div>
+      </div>
+    </div>
+
+    <div id="start-menu" class="start-menu">
+      <div class="start-sidebar">
+        <div class="start-user">
+          <img src="/static/icons/guest.webp" />
+          <span style="overflow: auto">reeyuki</span>
+          <button
+            class="start-signout-btn"
+            onclick="window.open('https://github.com/Reeyuki/YukiOS', '_blank')"
+            title="GitHub Repository"
+            style="background-color: transparent; color: white; transform: scale(2); border: none"
+          >
+            <i class="fab fa-github"></i>
+          </button>
+        </div>
+
+        <div class="start-cat active" data-cat="menu">Menu</div>
+        <div class="start-cat" data-cat="games">🎮 Games</div>
+        <div class="start-cat" data-cat="system">⚙️ System</div>
+        <div class="start-cat" data-cat="favorites">⭐ Favorites</div>
+        <div class="start-cat" data-cat="settings">⚙️ Settings</div>
+      </div>
+
+      <div class="start-content">
+        <input id="start-search" placeholder="Search…" autocomplete="off" />
+
+        <div class="start-page active" data-page="favorites"></div>
+
+        <div class="start-page" data-page="apps"></div>
+
+        <div class="start-page" data-page="games"></div>
+
+        <div class="start-page" data-page="system"></div>
+        <div class="start-page" data-page="menu">
+          <div class="app-grid">
+            <div class="app-item" data-app="explorer"><i class="fas fa-folder"></i> <span>Files</span></div>
+            <div class="app-item" data-app="terminal"><i class="fas fa-terminal"></i> <span>Terminal</span></div>
+            <div class="app-item" data-app="browser"><i class="fas fa-globe"></i> <span>Browser</span></div>
+            <div class="app-item" data-app="settings"><i class="fas fa-cog"></i> <span>Settings</span></div>
+            <div class="app-item" data-app="notepad"><i class="fas fa-edit"></i> <span>Notepad</span></div>
+            <div class="app-item" data-app="music"><i class="fas fa-music"></i> <span>Music</span></div>
+            <div class="app-item" data-app="cameraApp"><i class="fas fa-images"></i> <span>Camera</span></div>
+            <div class="app-item" data-app="appCreatorApp"><i class="fas fa-cubes"></i> <span>AppCreator</span></div>
+            <div class="app-item" data-app="calculatorApp">
+              <i class="fas fa-calculator"></i> <span>Calculator</span>
+            </div>
+            <div class="app-item" data-app="taskManagerApp">
+              <i class="fas fa-list-check"></i> <span>Task Manager</span>
+            </div>
+            <div class="app-item" data-app="aboutApp"><i class="fas fa-info-circle"></i> <span>About YukiOS</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="taskbar">
+      <div id="start-button"></div>
+      <div id="taskbar-windows" style="display: flex"></div>
+      <div id="system-tray">
+        <div id="clock">12:00 PM</div>
+        <div id="date">01/01/2026</div>
+        <script>
+          if (window.assets) {
+            const statusEl = document.createElement("div");
+            statusEl.id = "asset-status";
+            statusEl.textContent = "Syncing assets...";
+            const progressEl = document.createElement("progress");
+            progressEl.id = "asset-progress";
+            progressEl.max = 100;
+            progressEl.value = 0;
+            const tray = document.getElementById("system-tray");
+            tray.insertBefore(statusEl, tray.firstChild);
+            tray.insertBefore(progressEl, tray.firstChild.nextSibling);
+
+            window.assets.onProgress((data) => {
+              if (data.done) {
+                statusEl.textContent = "Assets up to date!";
+                progressEl.value = 100;
+
+                setTimeout(() => {
+                  statusEl.style.display = "none";
+                  progressEl.style.display = "none";
+                }, 10000);
+                return;
+              }
+
+              tray.style.display = "flex";
+
+              const fileName = data.file.split("/").pop().split("\\").pop();
+              const shortName = fileName.length > 10 ? fileName.slice(-10) : fileName;
+
+              statusEl.textContent = `Downloading …/${shortName}`;
+              progressEl.value = data.progress;
+            });
+          }
+        </script>
+      </div>
+    </div>
+
+    <div id="context-menu"></div>
+
+    <!-- window-styles.html — component-level <style> blocks -->
+
+    <style id="window-style">
+      [id^="explorer-"] {
+        background: rgba(14, 14, 20, 0.75) !important;
+        backdrop-filter: blur(32px) saturate(1.6) !important;
+        border: 1px solid rgba(255, 255, 255, 0.09) !important;
+        box-shadow:
+          0 24px 64px rgba(0, 0, 0, 0.65),
+          0 0 0 1px rgba(255, 255, 255, 0.06) inset,
+          0 0 60px rgba(79, 158, 255, 0.07) !important;
+        border-radius: 14px !important;
+        overflow: hidden !important;
+      }
+
+      /* Header, nav, container */
+      [id^="explorer-"] .window-header {
+        background: rgba(255, 255, 255, 0.045) !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
+        color: rgba(255, 255, 255, 0.88) !important;
+        padding: 10px 14px !important;
+      }
+      [id^="explorer-"] .explorer-nav {
+        background: rgba(255, 255, 255, 0.03) !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
+        color: rgba(255, 255, 255, 0.5) !important;
+      }
+      [id^="explorer-"] .explorer-container {
+        background: transparent !important;
+      }
+
+      /* Main area */
+      [id^="explorer-"] .explorer-main {
+        background:
+          radial-gradient(ellipse at 70% 20%, rgba(79, 158, 255, 0.05) 0%, transparent 55%), rgba(10, 10, 16, 0.4) !important;
+      }
+
+      /* File items */
+      [id^="explorer-"] .file-item {
+        background: rgba(255, 255, 255, 0.04) !important;
+        border: 1px solid rgba(255, 255, 255, 0.07) !important;
+        color: rgba(255, 255, 255, 0.65) !important;
+        border-radius: 10px !important;
+        transition: all 0.18s ease !important;
+      }
+      [id^="explorer-"] .file-item:hover {
+        background: rgba(79, 158, 255, 0.12) !important;
+        border-color: rgba(79, 158, 255, 0.35) !important;
+        color: rgba(255, 255, 255, 0.92) !important;
+        transform: translateY(-2px) !important;
+        box-shadow:
+          0 6px 20px rgba(0, 0, 0, 0.3),
+          0 0 0 1px rgba(79, 158, 255, 0.25) inset !important;
+      }
+      [id^="explorer-"] .file-item span {
+        color: inherit !important;
+      }
+      .file-item.explorer-selected {
+        background: rgba(79, 158, 255, 0.22) !important;
+        border-color: rgba(79, 158, 255, 0.6) !important;
+        color: rgba(255, 255, 255, 0.96) !important;
+        box-shadow:
+          0 0 0 1px rgba(79, 158, 255, 0.45) inset,
+          0 4px 14px rgba(0, 0, 0, 0.35) !important;
+      }
+      .file-item.explorer-selected:hover {
+        background: rgba(79, 158, 255, 0.28) !important;
+        transform: translateY(-2px) !important;
+      }
+
+      /* Nav / back buttons */
+      [id^="explorer-"] .back-btn {
+        background: rgba(255, 255, 255, 0.06) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        color: rgba(255, 255, 255, 0.6) !important;
+        border-radius: 6px !important;
+        padding: 3px 10px !important;
+      }
+      [id^="explorer-"] .back-btn:hover {
+        background: rgba(255, 255, 255, 0.1) !important;
+        color: rgba(255, 255, 255, 0.9) !important;
+      }
+      [id^="explorer-"] #exp-path {
+        color: rgba(255, 255, 255, 0.4) !important;
+      }
+
+      /* Window controls */
+      [id^="explorer-"] .window-controls button {
+        background: rgba(255, 255, 255, 0.06) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        color: rgba(255, 255, 255, 0.7) !important;
+        border-radius: 6px !important;
+      }
+      [id^="explorer-"] .window-controls button:hover {
+        background: rgba(255, 255, 255, 0.14) !important;
+        color: #fff !important;
+      }
+      [id^="explorer-"] .window-controls .close-btn:hover {
+        background: rgba(232, 17, 35, 0.85) !important;
+        border-color: rgba(232, 17, 35, 0.5) !important;
+      }
+    </style>
+
+    <style id="notepad-style">
+      [id^="notepad-"] {
+        background: rgba(13, 13, 19, 0.82) !important;
+        backdrop-filter: blur(32px) saturate(1.5) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        box-shadow:
+          0 24px 64px rgba(0, 0, 0, 0.65),
+          0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+          0 0 60px rgba(120, 180, 255, 0.05) !important;
+        border-radius: 14px !important;
+        overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+      }
+
+      [id^="notepad-"] .window-header {
+        background: rgba(255, 255, 255, 0.04) !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
+        color: rgba(255, 255, 255, 0.85) !important;
+        padding: 10px 14px !important;
+        font-size: 13px !important;
+        font-family: "Sora", "Segoe UI", sans-serif !important;
+        letter-spacing: 0.02em !important;
+        flex-shrink: 0 !important;
+      }
+
+      [id^="notepad-"] .notepad-menu {
+        display: flex !important;
+        gap: 6px !important;
+        padding: 7px 12px !important;
+        background: rgba(255, 255, 255, 0.025) !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+        flex-shrink: 0 !important;
+      }
+      [id^="notepad-"] .notepad-btn {
+        background: rgba(255, 255, 255, 0.07) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        color: rgba(255, 255, 255, 0.65) !important;
+        border-radius: 7px !important;
+        padding: 4px 13px !important;
+        font-size: 12px !important;
+        font-family: "Sora", sans-serif !important;
+        cursor: pointer !important;
+        letter-spacing: 0.02em !important;
+        transition: all 0.15s ease !important;
+      }
+      [id^="notepad-"] .notepad-btn:hover {
+        background: rgba(79, 158, 255, 0.18) !important;
+        border-color: rgba(79, 158, 255, 0.4) !important;
+        color: rgba(255, 255, 255, 0.95) !important;
+        box-shadow: 0 2px 10px rgba(79, 158, 255, 0.15) !important;
+        transform: translateY(-1px) !important;
+      }
+      [id^="notepad-"] .notepad-btn:active {
+        transform: translateY(0) !important;
+        background: rgba(79, 158, 255, 0.25) !important;
+      }
+
+      /* Content area */
+      [id^="notepad-"] .window-content {
+        flex: 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        background: transparent !important;
+      }
+
+      /* Textarea */
+      [id^="notepad-"] .notepad-textarea {
+        flex: 1 !important;
+        width: 100% !important;
+        height: 100% !important;
+        background: rgba(8, 8, 14, 0.6) !important;
+        color: rgba(220, 230, 245, 0.9) !important;
+        border: none !important;
+        outline: none !important;
+        padding: 16px 20px !important;
+        font-family: "JetBrains Mono", "Fira Code", monospace !important;
+        font-size: 13.5px !important;
+        line-height: 1.75 !important;
+        resize: none !important;
+        caret-color: rgba(79, 158, 255, 0.9) !important;
+        box-sizing: border-box !important;
+        scrollbar-width: thin !important;
+        scrollbar-color: rgba(255, 255, 255, 0.1) transparent !important;
+      }
+      [id^="notepad-"] .notepad-textarea::selection {
+        background: rgba(79, 158, 255, 0.28) !important;
+        color: #fff !important;
+      }
+      [id^="notepad-"] .notepad-textarea::placeholder {
+        color: rgba(255, 255, 255, 0.2) !important;
+      }
+      [id^="notepad-"] .notepad-textarea::-webkit-scrollbar {
+        width: 5px !important;
+      }
+      [id^="notepad-"] .notepad-textarea::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.12) !important;
+        border-radius: 99px !important;
+      }
+      [id^="notepad-"] .notepad-textarea::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.22) !important;
+      }
+
+      /* Window controls */
+      [id^="notepad-"] .window-controls button {
+        background: rgba(255, 255, 255, 0.06) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        color: rgba(255, 255, 255, 0.7) !important;
+        border-radius: 6px !important;
+      }
+      [id^="notepad-"] .window-controls button:hover {
+        background: rgba(255, 255, 255, 0.14) !important;
+        color: #fff !important;
+      }
+      [id^="notepad-"] .window-controls .close-btn:hover {
+        background: rgba(232, 17, 35, 0.85) !important;
+        border-color: rgba(232, 17, 35, 0.5) !important;
+      }
+    </style>
+  </body>
+</html>

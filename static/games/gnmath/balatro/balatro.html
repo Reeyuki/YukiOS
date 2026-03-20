@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no, minimum-scale=1, maximum-scale=1"
+    />
+    <title>Balatro</title>
+    <link rel="stylesheet" type="text/css" href="theme/love.css" />
+    <script>
+      var newConsole = (function (oldConsole) {
+        return {
+          log: function () {
+            var data = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+              data[_i] = arguments[_i];
+            }
+            if (data.length == 1) //Start looking for api's (And dont show anything)
+            {
+              if (typeof data[0] == "string" && data[0].indexOf("callJavascriptFunction") != -1) //Contains function
+              {
+                // oldConsole.log(data[0]);
+                try {
+                  return eval(data[0].split("callJavascriptFunction ")[1]);
+                } catch (e) {
+                  oldConsole.error(
+                    "Something went wrong with your callJS: \nCode: " +
+                      data[0].split("callJavascriptFunction ")[1] +
+                      "\nError: '" +
+                      e.message +
+                      "'"
+                  );
+                  return null;
+                }
+              } else {
+                oldConsole.log(data[0]);
+                return null;
+              }
+            } else oldConsole.log(data[0], data.splice(1));
+            return null;
+          },
+          info: function () {
+            var data = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+              data[_i] = arguments[_i];
+            }
+            if (data.length == 1) oldConsole.info(data[0]);
+            else oldConsole.info(data[0], data.splice(1));
+          },
+          warn: function () {
+            var data = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+              data[_i] = arguments[_i];
+            }
+            if (data.length == 1) oldConsole.warn(data[0]);
+            else oldConsole.warn(data[0], data.splice(1));
+          },
+          error: function () {
+            var data = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+              data[_i] = arguments[_i];
+            }
+            if (data.length == 1) oldConsole.error(data[0]);
+            else oldConsole.error(data[0], data.splice(1));
+          },
+          clear: function () {
+            oldConsole.clear();
+          },
+          assert: function () {
+            for (var _i = 0; _i < arguments.length; _i++) {
+              data[_i] = arguments[_i];
+            }
+            oldConsole.assert(data[0], data[1], data.splice(2));
+          },
+          group: function () {
+            for (var _i = 0; _i < arguments.length; _i++) {
+              data[_i] = arguments[_i];
+            }
+            oldConsole.group(data[0], data.splice(1));
+          },
+          groupCollapsed: function () {
+            for (var _i = 0; _i < arguments.length; _i++) {
+              data[_i] = arguments[_i];
+            }
+            oldConsole.groupCollapsed(data[0], data.splice(1));
+          },
+          groupEnd: function () {
+            oldConsole.groupEnd();
+          }
+        };
+      })(window.console);
+      window.console = newConsole;
+    </script>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        background: #0b1a24;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        overflow: hidden;
+        font-family: arial, sans-serif;
+      }
+
+      #game-wrapper {
+        position: relative;
+        display: inline-block;
+      }
+
+      #loadingCanvas {
+        display: block;
+      }
+
+      #canvas {
+        display: block;
+        visibility: hidden;
+      }
+
+      #loading-overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 18px;
+        background: #0d2233;
+        pointer-events: none;
+      }
+
+      #loading-overlay.hidden {
+        display: none;
+      }
+
+      #loading-status {
+        color: #8ec3e3;
+        font-size: 1em;
+        letter-spacing: 0.04em;
+      }
+
+      #progress-track {
+        width: 280px;
+        height: 6px;
+        background: rgba(142, 195, 227, 0.15);
+        border-radius: 3px;
+        overflow: hidden;
+      }
+
+      #progress-fill {
+        height: 100%;
+        width: 0%;
+        background: #8ec3e3;
+        border-radius: 3px;
+        transition: width 0.3s ease;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="game-wrapper">
+      <canvas id="loadingCanvas" oncontextmenu="event.preventDefault()"></canvas>
+      <canvas id="canvas" oncontextmenu="event.preventDefault()" width="100%" height="100%"></canvas>
+
+      <div id="loading-overlay">
+        <div id="loading-status">Loading...</div>
+        <div id="progress-track">
+          <div id="progress-fill"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <script type="text/javascript">
+      window.callad = () => {
+        window.parent.postMessage({ type: "adcall" }, "*");
+      };
+
+      var canvas = document.getElementById("loadingCanvas");
+      canvas.width = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+      canvas.height = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+
+      document.getElementById("game-wrapper").style.width = canvas.width + "px";
+      document.getElementById("game-wrapper").style.height = canvas.height + "px";
+
+      window.onload = function () {
+        window.focus();
+      };
+      window.onclick = function () {
+        window.focus();
+      };
+
+      window.addEventListener(
+        "keydown",
+        function (e) {
+          if ([32, 37, 38, 39, 40].indexOf(e.keyCode) > -1) {
+            e.preventDefault();
+          }
+        },
+        false
+      );
+
+      var Module = {
+        arguments: ["./game.love"],
+        INITIAL_MEMORY: 256000000,
+        printErr: console.error.bind(console),
+        canvas: (function () {
+          var c = document.getElementById("canvas");
+          c.addEventListener(
+            "webglcontextlost",
+            function (e) {
+              alert("WebGL context lost. You will need to reload the page.");
+              e.preventDefault();
+            },
+            false
+          );
+          return c;
+        })(),
+        setStatus: function (text) {
+          var statusEl = document.getElementById("loading-status");
+          var overlay = document.getElementById("loading-overlay");
+
+          if (text) {
+            statusEl.textContent = text;
+          } else if (Module.remainingDependencies === 0) {
+            overlay.classList.add("hidden");
+            document.getElementById("loadingCanvas").style.display = "none";
+            document.getElementById("canvas").style.visibility = "visible";
+          }
+        },
+        totalDependencies: 0,
+        remainingDependencies: 0,
+        monitorRunDependencies: function (left) {
+          this.remainingDependencies = left;
+          this.totalDependencies = Math.max(this.totalDependencies, left);
+
+          var fill = document.getElementById("progress-fill");
+          if (this.totalDependencies > 0) {
+            var pct = ((this.totalDependencies - left) / this.totalDependencies) * 100;
+            fill.style.width = pct + "%";
+          }
+
+          Module.setStatus(
+            left
+              ? "Preparing... (" + (this.totalDependencies - left) + "/" + this.totalDependencies + ")"
+              : "All downloads complete."
+          );
+        }
+      };
+
+      Module.setStatus("Downloading...");
+
+      window.onerror = function () {
+        Module.setStatus("Exception thrown, see JavaScript console");
+        Module.setStatus = function (text) {
+          if (text) Module.printErr("[post-exception status] " + text);
+        };
+      };
+
+      var applicationLoad = function () {
+        Love(Module);
+      };
+    </script>
+    <script type="text/javascript" src="game.js"></script>
+    <script async type="text/javascript" src="love.js" onload="applicationLoad(this)"></script>
+  </body>
+</html>

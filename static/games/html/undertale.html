@@ -1,0 +1,1194 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <base href="https://cdn.jsdelivr.net/gh/DylanThahan28/dw/" />
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta
+      name="viewport"
+      content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"
+    />
+    <title>UNDERTALE</title>
+    <style>
+      :root {
+        --primary: #5678b1;
+        --primary-dark: #3a5490;
+        --primary-light: #7b9fd4;
+        --surface: #e8eaed;
+        --surface-dim: #c8cdd6;
+        --surface-bright: #f4f5f7;
+        --bg: #0d1117;
+        --bg-mid: #141b27;
+        --text-on-dark: #e8eaed;
+        --text-on-light: #1a2540;
+        --accent-glow: rgba(86, 120, 177, 0.4);
+        --font-mono: "Share Tech Mono", "Courier Prime", "Lucida Console", Monaco, monospace;
+      }
+
+      @keyframes rotation {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      @keyframes fadeIn {
+        0% {
+          opacity: 0;
+        }
+        100% {
+          opacity: 1;
+        }
+      }
+
+      @keyframes blur {
+        0% {
+          filter: blur(0) grayscale(0);
+        }
+        100% {
+          filter: blur(2px) grayscale(1);
+        }
+      }
+
+      @keyframes pulse-glow {
+        0%,
+        100% {
+          box-shadow: 0 0 8px var(--accent-glow);
+        }
+        50% {
+          box-shadow:
+            0 0 24px var(--accent-glow),
+            0 0 48px rgba(86, 120, 177, 0.2);
+        }
+      }
+
+      @keyframes scanline {
+        0% {
+          transform: translateY(-100%);
+        }
+        100% {
+          transform: translateY(100vh);
+        }
+      }
+
+      html {
+        background: var(--bg);
+      }
+
+      body {
+        font-family: var(--font-mono);
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        min-width: 100vw;
+        background-color: var(--bg);
+        background-image:
+          radial-gradient(ellipse 80% 60% at 50% 40%, rgba(86, 120, 177, 0.07) 0%, transparent 70%),
+          repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 2px,
+            rgba(86, 120, 177, 0.015) 2px,
+            rgba(86, 120, 177, 0.015) 4px
+          );
+        display: flex;
+        flex-direction: column;
+        overflow-x: hidden;
+        place-items: center;
+        position: relative;
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, var(--primary), var(--primary-light), transparent);
+        opacity: 0.6;
+        z-index: 9999;
+        pointer-events: none;
+      }
+
+      body.scrollingDisabled {
+        overflow: hidden;
+      }
+
+      .emscripten {
+        padding-right: 0;
+        display: block;
+      }
+
+      div.emscripten {
+        text-align: center;
+        font-family: var(--font-mono);
+        color: var(--surface);
+      }
+
+      canvas.emscripten {
+        display: none;
+        background-color: var(--bg);
+        position: flex;
+        transition: opacity 5s ease-in;
+        -webkit-transition: opacity 5s ease-in;
+        opacity: 0;
+        filter: blur(0) grayscale(0);
+        image-rendering: optimizeSpeed;
+        image-rendering: -moz-crisp-edges;
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: -o-crisp-edges;
+        image-rendering: pixelated;
+        -ms-interpolation-mode: nearest-neighbor;
+      }
+
+      canvas.active {
+        animation-name: fadeIn;
+        animation-duration: 2s;
+        opacity: 1;
+      }
+
+      canvas.paused {
+        animation-name: blur;
+        animation-duration: 0.5s;
+        filter: blur(2px) grayscale(1);
+      }
+
+      canvas.unpaused {
+        animation-name: none;
+      }
+
+      canvas.animatedSizeTransitions {
+        transition:
+          width 0.3s ease,
+          height 0.3s ease;
+      }
+
+      .spinner {
+        height: 30px;
+        width: 30px;
+        animation: rotation 0.8s linear infinite;
+        border: 3px solid rgba(86, 120, 177, 0.25);
+        border-top: 3px solid var(--primary-light);
+        border-radius: 100%;
+        box-shadow: 0 0 12px var(--accent-glow);
+      }
+
+      #status {
+        display: inline-block;
+        vertical-align: top;
+        font-weight: bold;
+        color: var(--surface-dim);
+        font-size: 13px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      #progress {
+        display: none;
+      }
+
+      div.loading {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        pointer-events: none;
+        gap: 4px;
+      }
+
+      div.loading > * {
+        padding: 8px;
+        margin: 4px;
+      }
+
+      .output-container {
+        text-align: center;
+        margin-top: auto;
+      }
+
+      .output-button {
+        border: 1px solid rgba(86, 120, 177, 0.4);
+        width: 200px;
+        height: 28px;
+        margin: 5px;
+        border-radius: 4px;
+        cursor: pointer;
+        background-color: rgba(86, 120, 177, 0.08);
+        color: var(--surface);
+        font-family: var(--font-mono);
+        font-size: 12px;
+        letter-spacing: 0.06em;
+        transition:
+          background 0.2s,
+          border-color 0.2s;
+      }
+
+      .output-button:hover {
+        background-color: rgba(86, 120, 177, 0.2);
+        border-color: var(--primary);
+      }
+
+      #output {
+        display: none;
+        height: 200px;
+        background-color: var(--bg-mid);
+        color: var(--surface-dim);
+        font-family: var(--font-mono);
+        outline: none;
+        border: none;
+        padding: 0;
+        width: 100%;
+      }
+
+      #message-container {
+        display: none;
+        min-height: 50px;
+        background-color: rgba(13, 17, 23, 0.85);
+        backdrop-filter: blur(8px);
+        outline: none;
+        border: none;
+        border-bottom: 1px solid rgba(86, 120, 177, 0.3);
+        padding: 0;
+        width: 100%;
+        position: absolute;
+        top: 0;
+      }
+
+      #messages {
+        margin-left: 50px;
+        color: var(--surface-dim);
+        font-family: var(--font-mono);
+        outline: none;
+        border: none;
+        padding: 0;
+      }
+
+      img.qrCode {
+        opacity: 1;
+        width: 50%;
+        height: 50%;
+      }
+
+      #pauseMenuContainer {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      #pauseMenuContainer[hidden] {
+        display: none !important;
+        opacity: 0;
+      }
+
+      #pauseMenuBorder {
+        background: linear-gradient(135deg, var(--primary), rgba(86, 120, 177, 0.2) 60%, transparent);
+        padding: 1px;
+        border-radius: 6px;
+        clip-path: polygon(10.5px 0, 100% 0, 100% 100%, 0 100%, 0 10.5px);
+        width: 70vw;
+        max-width: 400px;
+        box-shadow:
+          0 0 40px rgba(86, 120, 177, 0.25),
+          0 0 80px rgba(86, 120, 177, 0.1);
+        animation: pulse-glow 3s ease-in-out infinite;
+      }
+
+      #pauseMenu {
+        display: flex;
+        flex-direction: column;
+        padding: 60px 30px;
+        background: linear-gradient(
+          180deg,
+          rgba(20, 27, 39, 0.97) 0%,
+          rgba(16, 22, 34, 0.92) 55%,
+          rgba(20, 27, 39, 0.97) 100%
+        );
+        border-radius: 6px;
+        clip-path: polygon(10px 0, 100% 0, 100% 100%, 0 100%, 0 10px);
+        animation: fadeIn 0.5s ease;
+        opacity: 1;
+        position: relative;
+        overflow: hidden;
+      }
+
+      #pauseMenu::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 3px,
+          rgba(86, 120, 177, 0.02) 3px,
+          rgba(86, 120, 177, 0.02) 4px
+        );
+        pointer-events: none;
+      }
+
+      #pauseMenu button {
+        font-weight: 700;
+        font-size: 15px;
+        font-family: var(--font-mono);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--surface);
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        border: 1px solid var(--primary-light);
+        border-radius: 4px;
+        padding: 13px 24px;
+        margin: 6px 0;
+        cursor: pointer;
+        -webkit-user-select: none;
+        user-select: none;
+        position: relative;
+        transition: all 0.15s ease;
+        box-shadow: 0 0 0 transparent;
+      }
+
+      #pauseMenu button:hover {
+        background: linear-gradient(135deg, var(--primary-light), var(--primary));
+        box-shadow: 0 0 16px var(--accent-glow);
+        transform: translateY(-1px);
+      }
+
+      #pauseMenu button:active {
+        transform: translateY(1px);
+        box-shadow: none;
+        filter: brightness(0.85);
+      }
+
+      #pauseMenu button#quitButton {
+        background: rgba(86, 120, 177, 0.12);
+        border-color: rgba(86, 120, 177, 0.35);
+        color: var(--surface-dim);
+      }
+
+      #pauseMenu button#quitButton:hover {
+        background: rgba(86, 120, 177, 0.22);
+        border-color: var(--primary);
+        color: var(--surface);
+        box-shadow: 0 0 12px rgba(86, 120, 177, 0.2);
+      }
+
+      #pauseMenu button[hidden] {
+        display: none;
+      }
+
+      #offlineDownloadBtn {
+        position: fixed;
+        top: 18px;
+        right: 18px;
+        z-index: 1000;
+        background: rgba(13, 17, 23, 0.92);
+        color: var(--surface);
+        border: 1px solid rgba(86, 120, 177, 0.5);
+        border-radius: 6px;
+        padding: 10px 18px;
+        font-family: var(--font-mono);
+        font-weight: bold;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        backdrop-filter: blur(12px);
+        box-shadow: 0 0 20px rgba(86, 120, 177, 0.15);
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
+        display: none !important;
+      }
+
+      #offlineDownloadBtn:hover {
+        border-color: var(--primary);
+        box-shadow: 0 0 24px rgba(86, 120, 177, 0.3);
+      }
+
+      #offlineDownloadBtn .close-btn {
+        font-size: 18px;
+        font-weight: bold;
+        opacity: 0.5;
+        transition:
+          opacity 0.2s,
+          color 0.2s;
+        cursor: pointer;
+        line-height: 1;
+      }
+
+      #offlineDownloadBtn .close-btn:hover {
+        opacity: 1;
+        color: var(--primary-light);
+      }
+
+      #offlineDownloadBtn.hidden {
+        display: none !important;
+      }
+
+      #downloadModal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(8, 11, 18, 0.88);
+        backdrop-filter: blur(16px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 2000;
+      }
+
+      #downloadModal.show {
+        display: flex;
+      }
+
+      #downloadModalContent {
+        background: linear-gradient(160deg, rgba(20, 27, 39, 0.99) 0%, rgba(15, 21, 34, 0.97) 100%);
+        border: 1px solid rgba(86, 120, 177, 0.45);
+        border-radius: 10px;
+        padding: 48px 44px;
+        max-width: 480px;
+        width: 90%;
+        text-align: center;
+        animation: fadeIn 0.3s ease;
+        box-shadow:
+          0 0 60px rgba(86, 120, 177, 0.2),
+          0 24px 64px rgba(0, 0, 0, 0.6);
+        position: relative;
+        overflow: hidden;
+      }
+
+      #downloadModalContent::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, var(--primary), var(--primary-light), transparent);
+        opacity: 0.8;
+      }
+
+      #downloadModalContent h2 {
+        color: var(--surface);
+        font-family: var(--font-mono);
+        margin-top: 0;
+        font-size: 20px;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        font-weight: 700;
+      }
+
+      #downloadModalContent h2::after {
+        content: "";
+        display: block;
+        width: 40px;
+        height: 2px;
+        background: var(--primary);
+        margin: 12px auto 0;
+        border-radius: 1px;
+        box-shadow: 0 0 8px var(--accent-glow);
+      }
+
+      #downloadModalContent p {
+        color: var(--surface-dim);
+        font-family: var(--font-mono);
+        margin: 22px 0;
+        line-height: 1.7;
+        font-size: 13px;
+        letter-spacing: 0.04em;
+      }
+
+      .modal-buttons {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        margin-top: 28px;
+        flex-wrap: wrap;
+      }
+
+      .modal-button {
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        color: var(--surface-bright);
+        border: 1px solid var(--primary-light);
+        border-radius: 5px;
+        padding: 14px 28px;
+        font-family: var(--font-mono);
+        font-weight: bold;
+        font-size: 13px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.18s ease;
+        box-shadow: 0 0 0 transparent;
+      }
+
+      .modal-button:hover {
+        background: linear-gradient(135deg, var(--primary-light), var(--primary));
+        box-shadow: 0 0 20px var(--accent-glow);
+        transform: translateY(-2px);
+      }
+
+      .modal-button:active {
+        transform: translateY(0);
+        box-shadow: none;
+      }
+
+      .modal-button.secondary {
+        background: rgba(86, 120, 177, 0.08);
+        border-color: rgba(86, 120, 177, 0.3);
+        color: var(--surface-dim);
+      }
+
+      .modal-button.secondary:hover {
+        background: rgba(86, 120, 177, 0.18);
+        border-color: var(--primary);
+        color: var(--surface);
+        box-shadow: 0 0 12px rgba(86, 120, 177, 0.2);
+      }
+
+      .file-size {
+        color: var(--primary-light);
+        font-size: 11px;
+        margin-top: 6px;
+        opacity: 0.8;
+        letter-spacing: 0.06em;
+        display: block;
+      }
+
+      #fullscreenBtn {
+        position: fixed;
+        bottom: 18px;
+        right: 18px;
+        z-index: 1000;
+        background: rgba(13, 17, 23, 0.85);
+        color: var(--surface-dim);
+        border: 1px solid rgba(86, 120, 177, 0.4);
+        border-radius: 6px;
+        width: 38px;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        backdrop-filter: blur(12px);
+        box-shadow: 0 0 16px rgba(86, 120, 177, 0.1);
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s,
+          color 0.2s,
+          background 0.2s;
+        flex-shrink: 0;
+      }
+
+      #fullscreenBtn:hover {
+        border-color: var(--primary);
+        box-shadow: 0 0 20px rgba(86, 120, 177, 0.3);
+        color: var(--surface);
+        background: rgba(86, 120, 177, 0.15);
+      }
+
+      #fullscreenBtn:active {
+        transform: scale(0.93);
+      }
+
+      #fullscreenBtn svg {
+        width: 16px;
+        height: 16px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        transition: opacity 0.15s;
+      }
+
+      #fullscreenBtn .icon-expand {
+        display: block;
+      }
+      #fullscreenBtn .icon-compress {
+        display: none;
+      }
+
+      #fullscreenBtn.is-fullscreen .icon-expand {
+        display: none;
+      }
+      #fullscreenBtn.is-fullscreen .icon-compress {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <button id="offlineDownloadBtn">
+      <span onclick="showDownloadModal()">Download for Offline</span>
+      <span
+        class="close-btn"
+        onclick="
+          event.stopPropagation();
+          hideDownloadButton();
+        "
+        >✕</span
+      >
+    </button>
+
+    <div id="downloadModal">
+      <div id="downloadModalContent">
+        <h2>Download for Offline Use</h2>
+        <p>Choose your download option:</p>
+        <div class="modal-buttons">
+          <button class="modal-button" onclick="startDownload(true)">
+            With Music<br />
+            <span class="file-size">(~225 MB)</span>
+          </button>
+          <button class="modal-button" onclick="startDownload(false)">
+            Without Music<br />
+            <span class="file-size">(~125 MB)</span>
+          </button>
+        </div>
+        <div class="modal-buttons" style="margin-top: 12px">
+          <button class="modal-button secondary" onclick="hideDownloadModal()">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
+
+    <div id="pauseMenuContainer" hidden>
+      <div id="pauseMenuBorder">
+        <div id="pauseMenu">
+          <button id="resumeButton" onclick="resume()">Resume</button>
+          <button id="quitButton" onclick="quitIfSupported()">Quit</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="loading">
+      <div class="spinner" id="spinner"></div>
+      <div class="emscripten" id="status">Loading...</div>
+      <progress value="0" max="100" id="progress" hidden="1"></progress>
+    </div>
+
+    <div id="message-container">
+      <div id="messages"></div>
+    </div>
+
+    <button id="fullscreenBtn" title="Toggle Fullscreen" onclick="toggleFullscreen()">
+      <svg class="icon-expand" viewBox="0 0 24 24">
+        <polyline points="15 3 21 3 21 9"></polyline>
+        <polyline points="9 21 3 21 3 15"></polyline>
+        <line x1="21" y1="3" x2="14" y2="10"></line>
+        <line x1="3" y1="21" x2="10" y2="14"></line>
+      </svg>
+      <svg class="icon-compress" viewBox="0 0 24 24">
+        <polyline points="4 14 10 14 10 20"></polyline>
+        <polyline points="20 10 14 10 14 4"></polyline>
+        <line x1="10" y1="14" x2="3" y2="21"></line>
+        <line x1="21" y1="3" x2="14" y2="10"></line>
+      </svg>
+    </button>
+
+    <script>
+      function hideDownloadButton() {
+        document.getElementById("offlineDownloadBtn").classList.add("hidden");
+      }
+
+      const musicFiles = [
+        "mus_ghostbattle.ogg",
+        "snd_curtgunshot.ogg",
+        "mus_piano.ogg",
+        "mus_f_6s_5.ogg",
+        "mus_temvillage.ogg",
+        "mus_mettatonbattle.ogg",
+        "mus_f_wind2.ogg",
+        "mus_zzz_c2.ogg",
+        "mus_town.ogg",
+        "mus_computer.ogg",
+        "mus_mettafly.ogg",
+        "mus_f_destroyed3.ogg",
+        "mus_elevator_last.ogg",
+        "mus_f_intro.ogg",
+        "mus_harpnoise.ogg",
+        "mus_hereweare.ogg",
+        "mus_f_finale_3.ogg",
+        "mus_repeat_2.ogg",
+        "mus_f_part3.ogg",
+        "mus_disturbing.ogg",
+        "mus_st_troubledingle.ogg",
+        "mus_drone.ogg",
+        "mus_undynefast.ogg",
+        "mus_cast_2.ogg",
+        "mus_chokedup.ogg",
+        "mus_sfx_hypergoner_charge.ogg",
+        "mus_creepy_ambience.ogg",
+        "mus_tone2.ogg",
+        "mus_sfx_hypergoner_laugh.ogg",
+        "mus_doorclose.ogg",
+        "mus_mettsad.ogg",
+        "mus_waterfall.ogg",
+        "mus_boss1.ogg",
+        "mus_napstahouse.ogg",
+        "mus_zz_megalovania.ogg",
+        "mus_menu4.ogg",
+        "mus_smallshock.ogg",
+        "mus_menu3.ogg",
+        "mus_kingdescription.ogg",
+        "mus_snowy.ogg",
+        "mus_cast_1.ogg",
+        "mus_churchbell.ogg",
+        "mus_f_newlaugh.ogg",
+        "mus_house2.ogg",
+        "mus_dooropen.ogg",
+        "snd_ballchime.ogg",
+        "mus_rain_deep.ogg",
+        "mus_mett_cheer.ogg",
+        "mus_crickets.ogg",
+        "mus_date_fight.ogg",
+        "mus_core_ambience.ogg",
+        "mus_f_6s_4.ogg",
+        "mus_battle2.ogg",
+        "mus_predummy.ogg",
+        "mus_birdsong.ogg",
+        "mus_anothermedium.ogg",
+        "mus_wind.ogg",
+        "mus_leave.ogg",
+        "mus_options_winter.ogg",
+        "mus_menu0.ogg",
+        "mus_x_undyne_pre.ogg",
+        "mus_toriel.ogg",
+        "mus_snoresymphony.ogg",
+        "mus_toomuch.ogg",
+        "mus_cast_3.ogg",
+        "mus_prebattle1.ogg",
+        "mus_tv.ogg",
+        "mus_dogroom.ogg",
+        "mus_st_him.ogg",
+        "mus_mettaton_pretransform.ogg",
+        "mus_ruins.ogg",
+        "mus_options_summer.ogg",
+        "mus_whoopee.ogg",
+        "mus_myemeow.ogg",
+        "mus_mystery.ogg",
+        "mus_sigh_of_dog.ogg",
+        "mus_dogshrine_xbox.ogg",
+        "mus_xpart_b.ogg",
+        "mus_mettmusical1.ogg",
+        "mus_dogmeander.ogg",
+        "mus_sfx_chainsaw.ogg",
+        "mus_sansdate.ogg",
+        "mus_x_undyne.ogg",
+        "mus_fallendown2.ogg",
+        "mus_mysteriousroom2.ogg",
+        "mus_undyneboss.ogg",
+        "mus_mettmusical2.ogg",
+        "mus_deeploop2.ogg",
+        "mus_dance_of_dog.ogg",
+        "mus_cast_5.ogg",
+        "mus_date.ogg",
+        "mus_wawa.ogg",
+        "mus_mode.ogg",
+        "mus_dummybattle.ogg",
+        "mus_cast_6.ogg",
+        "mus_f_alarm.ogg",
+        "mus_cast_4.ogg",
+        "mus_ruinspiano.ogg",
+        "mus_muscle.ogg",
+        "mus_spoopy_wave.ogg",
+        "mus_date_tense.ogg",
+        "mus_f_6s_2.ogg",
+        "mus_gameover.ogg",
+        "mus_undynescary.ogg",
+        "mus_f_6s_6.ogg",
+        "mus_undynepiano.ogg",
+        "mus_f_part1.ogg",
+        "mus_rain.ogg",
+        "mus_dogshrine_2.ogg",
+        "mus_menu1.ogg",
+        "mus_xpart_a.ogg",
+        "mus_reunited.ogg",
+        "mus_snowwalk.ogg",
+        "mus_elevator.ogg",
+        "mus_zzz_c.ogg",
+        "mus_endarea_partb.ogg",
+        "mus_fearsting.ogg",
+        "mus_spoopy.ogg",
+        "mus_wrongnumbersong.ogg",
+        "mus_bgflamea.ogg",
+        "mus_z_ending.ogg",
+        "mus_xpart_2.ogg",
+        "mus_operatile.ogg",
+        "mus_st_happytown.ogg",
+        "mus_tone3.ogg",
+        "mus_birdnoise.ogg",
+        "mus_repeat_1.ogg",
+        "mus_mettmusical4.ogg",
+        "mus_story.ogg",
+        "mus_waterquiet.ogg",
+        "mus_confession.ogg",
+        "mus_silence.ogg",
+        "mus_amalgam.ogg",
+        "mus_dogshrine_1.ogg",
+        "mus_f_destroyed.ogg",
+        "mus_f_wind1.ogg",
+        "mus_bad.ogg",
+        "mus_endingexcerpt1.ogg",
+        "mus_xpart.ogg",
+        "mus_coretransition.ogg",
+        "mus_oogloop.ogg",
+        "mus_core.ogg",
+        "mus_vsasgore.ogg",
+        "mus_napstachords.ogg",
+        "mus_story_stuck.ogg",
+        "mus_spoopy_holiday.ogg",
+        "mus_race.ogg",
+        "mus_musicbox.ogg",
+        "mus_express_myself.ogg",
+        "mus_lab.ogg",
+        "mus_news.ogg",
+        "mus_news_battle.ogg",
+        "mus_sticksnap.ogg",
+        "mus_undynetruetheme.ogg",
+        "mus_dununnn.ogg",
+        "mus_intronoise.ogg",
+        "mus_hotel_battle.ogg",
+        "mus_options_fall.ogg",
+        "mus_papyrus.ogg",
+        "mus_alphysfix.ogg",
+        "mus_sfx_rainbowbeam_hold.ogg",
+        "mus_mett_applause.ogg",
+        "mus_f_newlaugh_low.ogg",
+        "mus_papyrusboss.ogg",
+        "mus_mettmusical3.ogg",
+        "mus_mettaton_neo.ogg",
+        "mus_cymbal.ogg",
+        "mus_ambientwater.ogg",
+        "mus_undynetheme.ogg",
+        "mus_st_meatfactory.ogg",
+        "snd_mushroomdance.ogg",
+        "mus_sfx_a_grab.ogg",
+        "mus_menu5.ogg",
+        "mus_wrongworld.ogg",
+        "mus_yourbestfriend_3.ogg",
+        "mus_house1.ogg",
+        "mus_flowey.ogg",
+        "mus_mettaton_ex.ogg",
+        "mus_woofenstein.ogg",
+        "mus_menu2.ogg",
+        "mus_smile.ogg",
+        "mus_f_part2.ogg",
+        "mus_dontgiveup.ogg",
+        "mus_coolbeat.ogg",
+        "mus_shop.ogg",
+        "mus_f_6s_3.ogg",
+        "mus_woofenstein_loop.ogg",
+        "mus_battle1.ogg",
+        "mus_xpart_back.ogg",
+        "mus_hotel.ogg",
+        "mus_barrier.ogg",
+        "mus_endarea_parta.ogg",
+        "mus_ohyes.ogg",
+        "mus_endingexcerpt2.ogg",
+        "mus_tension.ogg",
+        "mus_f_6s_1.ogg",
+        "mus_temshop.ogg",
+        "mus_dogappear.ogg",
+        "mus_mtgameshow.ogg",
+        "mus_spider.ogg",
+        "mus_f_destroyed2.ogg",
+        "mus_star.ogg",
+        "mus_f_saved.ogg",
+        "mus_bergentruckung.ogg",
+        "mus_f_finale_2.ogg",
+        "mus_cast_7.ogg",
+        "mus_dogsong.ogg",
+        "mus_f_finale_1_l.ogg",
+        "mus_rimshot.ogg",
+        "mus_f_finale_1.ogg",
+        "mus_menu6.ogg",
+        "index.html",
+        "index.js",
+        "runner.js",
+        "favicon.png",
+        "game.unx.part1",
+        "game.unx.part2",
+        "game.unx.part3",
+        "game.unx.part4",
+        "game.unx.part5",
+        "runner.data",
+        "runner.wasm",
+        "audio-worklet.js",
+        "runner.json",
+        "runnerLocal.svg",
+        "runner.svg"
+      ];
+
+      const coreFiles = [
+        "index.html",
+        "index.js",
+        "runner.js",
+        "favicon.png",
+        "game.unx.part1",
+        "game.unx.part2",
+        "game.unx.part3",
+        "game.unx.part4",
+        "game.unx.part5",
+        "runner.data",
+        "runner.wasm",
+        "audio-worklet.js",
+        "runner.json",
+        "runnerLocal.svg",
+        "runner.svg"
+      ];
+
+      function showDownloadModal() {
+        document.getElementById("downloadModal").classList.add("show");
+      }
+
+      function hideDownloadModal() {
+        document.getElementById("downloadModal").classList.remove("show");
+      }
+
+      async function startDownload(includeMusic) {
+        hideDownloadModal();
+
+        const btn = document.getElementById("offlineDownloadBtn");
+        const statusEl = document.getElementById("status");
+        const progressEl = document.getElementById("progress");
+
+        btn.disabled = true;
+        btn.textContent = "Downloading...";
+
+        const baseUrl = "https://cdn.jsdelivr.net/gh/DylanThahan28/dw/";
+        let filesToCache = [...coreFiles];
+
+        if (includeMusic) {
+          filesToCache = filesToCache.concat(musicFiles);
+        }
+
+        try {
+          if (!("serviceWorker" in navigator)) {
+            alert("Service Workers not supported in this browser");
+            btn.disabled = false;
+            btn.textContent = "Download for Offline";
+            return;
+          }
+
+          const swUrls = ["/pinned/undertale/cachesw.js", "cachesw.js", "./cachesw.js", "../cachesw.js", "/cachesw.js"];
+
+          let registration;
+          for (const swUrl of swUrls) {
+            try {
+              registration = await navigator.serviceWorker.register(swUrl);
+              break;
+            } catch (e) {}
+          }
+
+          if (!registration) {
+            throw new Error("Failed to register service worker from all sources");
+          }
+
+          await navigator.serviceWorker.ready;
+
+          progressEl.hidden = false;
+          progressEl.max = filesToCache.length;
+          progressEl.value = 0;
+
+          const cache = await caches.open("offline-cache-v1");
+
+          for (let i = 0; i < filesToCache.length; i++) {
+            const file = filesToCache[i];
+            statusEl.textContent = `Caching ${file}... (${i + 1}/${filesToCache.length})`;
+
+            try {
+              const fullUrl = baseUrl + file;
+              await cache.add(fullUrl);
+            } catch (e) {}
+
+            progressEl.value = i + 1;
+          }
+
+          await cache.add(window.location.href);
+
+          statusEl.textContent = "All files cached! Ready for offline use.";
+          btn.textContent = "Downloaded";
+          setTimeout(() => {
+            statusEl.textContent = "Downloading...(faster now. new repo)";
+            progressEl.hidden = true;
+            btn.disabled = false;
+            btn.textContent = "Download for Offline";
+          }, 3000);
+        } catch (error) {
+          statusEl.textContent = "Download failed. Check console.";
+          btn.disabled = false;
+          btn.textContent = "Retry Download";
+        }
+      }
+    </script>
+
+    <script>
+      function toggleFullscreen() {
+        const btn = document.getElementById("fullscreenBtn");
+        const target = document.getElementById("canvas") || document.documentElement;
+
+        if (!document.fullscreenElement) {
+          (target.requestFullscreen || target.webkitRequestFullscreen || target.mozRequestFullScreen).call(target);
+        } else {
+          (document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen).call(document);
+        }
+      }
+
+      document.addEventListener("fullscreenchange", () => {
+        const btn = document.getElementById("fullscreenBtn");
+        btn.classList.toggle("is-fullscreen", !!document.fullscreenElement);
+      });
+
+      document.addEventListener("webkitfullscreenchange", () => {
+        const btn = document.getElementById("fullscreenBtn");
+        btn.classList.toggle("is-fullscreen", !!document.webkitFullscreenElement);
+      });
+    </script>
+
+    <script>
+      const blob = new Blob([document.querySelector("#tick-worker").textContent]);
+      const worker = new Worker(window.URL.createObjectURL(blob));
+
+      worker.onmessage = function () {
+        GM_tick(performance.now());
+      };
+
+      const isMultiplayer = function () {
+        if (typeof GM_is_multiplayer !== "function") return false;
+        return GM_is_multiplayer() !== 0;
+      };
+
+      document.addEventListener("visibilitychange", function () {
+        if (!isMultiplayer()) return;
+        if (document.visibilityState === "hidden") {
+          worker.postMessage({ run: true, fps: 60 });
+        } else {
+          worker.postMessage({ run: false });
+        }
+      });
+    </script>
+
+    <script>
+      function mergeFiles(fileParts) {
+        return new Promise((resolve, reject) => {
+          let buffers = [];
+
+          function fetchPart(index) {
+            if (index >= fileParts.length) {
+              let mergedBlob = new Blob(buffers);
+              let mergedFileUrl = URL.createObjectURL(mergedBlob);
+              resolve(mergedFileUrl);
+              return;
+            }
+            fetch(fileParts[index])
+              .then((response) => response.arrayBuffer())
+              .then((data) => {
+                buffers.push(data);
+                fetchPart(index + 1);
+              })
+              .catch(reject);
+          }
+          fetchPart(0);
+        });
+      }
+
+      function getParts(file, start, end) {
+        let parts = [];
+        for (let i = start; i <= end; i++) {
+          parts.push(file + ".part" + i);
+        }
+        return parts;
+      }
+
+      mergeFiles(getParts("game.unx", 1, 5))
+        .then(async (url) => {
+          window.gameUnxUrl = url;
+
+          const originalFetch = window.fetch;
+          window.fetch = async function (...args) {
+            let [url, options] = args;
+            if (typeof url === "string" && url.includes("game.unx")) {
+              url = window.gameUnxUrl;
+            } else if (url instanceof Request && url.url.includes("game.unx")) {
+              url = new Request(window.gameUnxUrl, url);
+            }
+            return originalFetch.call(this, url, options);
+          };
+
+          const originalOpen = XMLHttpRequest.prototype.open;
+          XMLHttpRequest.prototype.open = function (method, url, ...rest) {
+            if (url.includes("game.unx")) url = window.gameUnxUrl;
+            return originalOpen.call(this, method, url, ...rest);
+          };
+
+          let index = document.createElement("script");
+          index.src = "index.js";
+          document.body.appendChild(index);
+
+          let runner = document.createElement("script");
+          runner.src = "runner.js";
+          document.body.appendChild(runner);
+        })
+        .catch((error) => {
+          console.error("Failed to merge files:", error);
+        });
+    </script>
+
+    <script id="luminalos-cooperation-script">
+      window.addEventListener("message", (event) => {
+        const { type, payload } = event.data;
+
+        if (type === "request-save-data") {
+          try {
+            const saveData = {};
+            for (let i = 0; i < localStorage.length; i++) {
+              const key = localStorage.key(i);
+              saveData[key] = localStorage.getItem(key);
+            }
+            const saveDataString = JSON.stringify(saveData);
+            if (event.source) {
+              event.source.postMessage({ type: "save-data-response", payload: saveDataString }, event.origin);
+            }
+          } catch (error) {
+            if (event.source) {
+              event.source.postMessage({ type: "save-data-response", payload: null }, event.origin);
+            }
+          }
+        }
+
+        if (type === "load-save-data") {
+          try {
+            localStorage.clear();
+            const saveData = JSON.parse(payload);
+            for (const key in saveData) {
+              localStorage.setItem(key, saveData[key]);
+            }
+            alert("Progress loaded! The game will now restart to apply the changes.");
+            location.reload();
+          } catch (error) {
+            alert("Failed to load save data. The file might be corrupted.");
+          }
+        }
+      });
+    </script>
+  </body>
+</html>

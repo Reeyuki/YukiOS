@@ -1,0 +1,80 @@
+{
+  "name": "yukios",
+  "version": "1.0.0",
+  "main": "main.js",
+  "author": {
+    "name": "Reeyuki",
+    "email": "reeyuki@example.com"
+  },
+  "homepage": "https://yukios.netlify.app",
+  "description": "Yukios Game Archive",
+  "scripts": {
+    "start": "electron .",
+    "format": "pnpm exec prettier . --write",
+    "build-linux": "node build.js && npx electron-builder --linux --publish never",
+    "build-win": "node build.js && npx electron-builder --win --publish never",
+    "build-mac": "node build.js && npx electron-builder --mac --publish never",
+    "build": "node build.js && npx electron-builder --publish never"
+  },
+  "devDependencies": {
+    "electron": "^26.6.10",
+    "electron-builder": "^26.4.0"
+  },
+  "dependencies": {
+    "axios": "^1.13.2",
+    "electron-updater": "^6.7.3",
+    "express": "^5.2.1",
+    "mime-types": "^3.0.2"
+  },
+  "build": {
+    "appId": "com.reeyuki.yukios",
+    "productName": "Yukios",
+    "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "**/*"
+    ],
+    "mac": {
+      "artifactName": "YukiOS-${version}-mac-${arch}.zip",
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "icon": "resources/icons/icon.icns"
+    },
+    "win": {
+      "artifactName": "YukiOS-${version}-windows-${arch}-setup.${ext}",
+      "target": [
+        "nsis",
+        "zip"
+      ],
+      "icon": "resources/icons/icon.ico"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "allowElevation": false,
+      "allowToChangeInstallationDirectory": false,
+      "createDesktopShortcut": false,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Yuki OS",
+      "runAfterFinish": true,
+      "installerIcon": "resources/icons/icon.ico",
+      "uninstallerIcon": "resources/icons/icon.ico",
+      "uninstallDisplayName": "Yuki OS"
+    },
+    "linux": {
+      "artifactName": "YukiOS-${version}-linux-${arch}.${ext}",
+      "target": [
+        "AppImage",
+        "deb",
+        "zip"
+      ],
+      "icon": "resources/icons",
+      "maintainer": "reeyuki@example.com",
+      "category": "Game"
+    }
+  }
+}

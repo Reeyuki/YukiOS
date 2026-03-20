@@ -1,0 +1,432 @@
+import { desktop } from "./desktop.js";
+import { showStartStyleMenu } from "./shared/contextMenu.js";
+
+const styleEl = document.getElementById("window-style");
+let styleParent = styleEl.parentNode;
+
+function hideTransparency() {
+  if (styleEl.parentNode) {
+    styleParent.removeChild(styleEl);
+  }
+}
+
+function restoreTransparency() {
+  if (!styleEl.parentNode) {
+    styleParent.appendChild(styleEl);
+  }
+}
+
+export class WindowManager {
+  constructor() {
+    this.openWindows = new Map();
+    this.zIndexCounter = 1000;
+    this.gameWindowCount = 0;
+    this.isDraggingWindow = false;
+  }
+  updateTransparency() {
+    if (this.gameWindowCount > 0 || !window._settings.transparency) {
+      hideTransparency();
+    } else {
+      restoreTransparency();
+    }
+  }
+  createWindow(id, title, width = "80vw", height = "80vh", isGame = false) {
+    const win = document.createElement("div");
+    win.className = "window";
+    win.id = id;
+    win.dataset.fullscreen = "false";
+
+    const widthStr = width != null ? String(width) : "80vw";
+    const heightStr = height != null ? String(height) : "80vh";
+
+    const vw = widthStr.includes("vw") ? (window.innerWidth * parseFloat(widthStr)) / 100 : parseInt(widthStr);
+    const vh = heightStr.includes("vh") ? (window.innerHeight * parseFloat(heightStr)) / 100 : parseInt(heightStr);
+
+    Object.assign(win.style, {
+      width: `${vw}px`,
+      height: `${vh}px`,
+      left: `${(window.innerWidth - vw) / 2}px`,
+      top: `${(window.innerHeight - vh) / 2}px`,
+      position: "absolute",
+      zIndex: this.zIndexCounter++
+    });
+    if (isGame) {
+      this.gameWindowCount++;
+    }
+    this.updateTransparency();
+
+    win.addEventListener("mousedown", () => this.bringToFront(win));
+
+    return win;
+  }
+  addToTaskbar(winId, title, iconValue, color = null) {
+    if (document.getElementById(`taskbar-${winId}`)) return;
+
+    const taskbarItem = document.createElement("div");
+    taskbarItem.id = `taskbar-${winId}`;
+    taskbarItem.className = "taskbar-item";
+
+    let icon;
+
+    const isImagePath = typeof iconValue === "string" && /\.(png|jpg|jpeg|gif|webp|svg|ico)$/i.test(iconValue);
+    const isDataUrl = typeof iconValue === "string" && iconValue.startsWith("data:");
+
+    if (isImagePath || isDataUrl) {
+      icon = document.createElement("img");
+      icon.src = iconValue;
+    } else if (typeof iconValue === "string" && iconValue.length > 0) {
+      icon = document.createElement("i");
+      icon.style.color = color ?? "white";
+      icon.className = iconValue.startsWith("fa") ? iconValue : `fa ${iconValue}`;
+    } else {
+      icon = document.createElement("i");
+      icon.className = "fas fa-window-maximize";
+      icon.style.color = "white";
+    }
+
+    taskbarItem.appendChild(icon);
+
+    taskbarItem.onclick = () => {
+      const win = document.getElementById(winId);
+      if (win) {
+        if (win.style.display === "none") {
+          win.style.display = "block";
+          taskbarItem.classList.add("active");
+        } else {
+          this.bringToFront(win);
+        }
+      }
+    };
+    taskbarItem.oncontextmenu = (e) => {
+      e.preventDefault();
+
+      const win = document.getElementById(winId);
+
+      showStartStyleMenu(e, (addMenuItem) => {
+        addMenuItem(win.style.display === "none" ? "Restore" : "Minimize", () => {
+          if (win.style.display === "none") win.style.display = "block";
+          else this.minimizeWindow(win);
+          this.bringToFront(win);
+        });
+
+        addMenuItem(win.dataset.fullscreen === "true" ? "Restore Size" : "Maximize", () => {
+          this.toggleFullscreen(win);
+          this.bringToFront(win);
+        });
+
+        addMenuItem("Bring to Front", () => this.bringToFront(win));
+
+        addMenuItem("Properties", () => {
+          const win = document.getElementById(winId);
+          if (!win) return;
+
+          const appInfo = this.openWindows.get(winId);
+          if (!appInfo) return;
+
+          const dataset = win.dataset;
+          const rect = win.getBoundingClientRect();
+
+          const infoLines = [
+            `Window ID: ${winId}`,
+            `Title: ${appInfo.title}`,
+            dataset.appType ? `Type: ${dataset.appType}` : "",
+            dataset.appId ? `App ID: ${dataset.appId}` : "",
+            dataset.swf ? `SWF Path: ${dataset.swf}` : "",
+            dataset.rom ? `ROM: ${dataset.rom}` : "",
+            dataset.core ? `Core: ${dataset.core}` : "",
+            dataset.externalUrl ? `URL: ${dataset.externalUrl}` : "",
+            `Width: ${Math.round(rect.width)}px`,
+            `Height: ${Math.round(rect.height)}px`,
+            `Left: ${Math.round(rect.left)}px`,
+            `Top: ${Math.round(rect.top)}px`,
+            `Z-Index: ${win.style.zIndex}`,
+            `Fullscreen: ${dataset.fullscreen === "true" ? "Yes" : "No"}`
+          ].filter(Boolean);
+
+          const contentHtml = infoLines.map((line) => `<div style="margin:2px 0;">${line}</div>`).join("");
+
+          const propsWin = this.createWindow(`${winId}-props`, `Properties: ${appInfo.title}`, "40vw", "40vh");
+
+          propsWin.innerHTML = `
+            <div class="window-header">
+              <span>Properties: ${appInfo.title}</span>
+              ${this.getWindowControls()}
+            </div>
+            <div class="window-content" style="width:100%; height:100%; overflow:auto; user-select:text;">
+              ${contentHtml}
+            </div>
+          `;
+
+          desktop.appendChild(propsWin);
+          this.makeDraggable(propsWin);
+          this.makeResizable(propsWin);
+          this.setupWindowControls(propsWin);
+        });
+
+        addMenuItem("Close Window", () => {
+          this.removeFromTaskbar(winId);
+          if (win) {
+            win.style.animation = "popUp 0.5s ease forwards";
+            setTimeout(() => win.remove(), 500);
+          }
+        });
+      });
+    };
+
+    const taskbarWindows = document.getElementById("taskbar-windows");
+    taskbarWindows.appendChild(taskbarItem);
+    this.openWindows.set(winId, { taskbarItem, title });
+  }
+
+  registerCloseWindow(closeButton, winId) {
+    closeButton.addEventListener("click", () => {
+      const win = document.getElementById(winId);
+      if (win) {
+        win.style.animation = "popUp 0.5s ease forwards";
+        setTimeout(() => win.remove(), 500);
+      } else return;
+      this.removeFromTaskbar(winId);
+    });
+  }
+
+  removeFromTaskbar(winId) {
+    const taskbarItem = document.getElementById(`taskbar-${winId}`);
+    if (taskbarItem) taskbarItem.remove();
+    this.openWindows.delete(winId);
+  }
+
+  bringToFront(win) {
+    if (win) win.style.zIndex = this.zIndexCounter++;
+  }
+
+  minimizeWindow(win) {
+    win.style.display = "none";
+    const taskbarItem = document.getElementById(`taskbar-${win.id}`);
+    if (taskbarItem) taskbarItem.style.background = "#1a1a1a";
+  }
+
+  toggleFullscreen(win) {
+    const wasFullscreen = win.dataset.fullscreen === "true";
+    const header = win.querySelector(".window-header");
+
+    if (wasFullscreen) {
+      if (document.fullscreenElement === win) {
+        document.exitFullscreen();
+      }
+
+      Object.assign(win.style, {
+        width: win.dataset.prevWidth,
+        height: win.dataset.prevHeight,
+        left: win.dataset.prevLeft,
+        top: win.dataset.prevTop
+      });
+
+      if (header) header.style.display = "";
+      win.dataset.fullscreen = "false";
+    } else {
+      Object.assign(win.dataset, {
+        prevWidth: win.style.width,
+        prevHeight: win.style.height,
+        prevLeft: win.style.left,
+        prevTop: win.style.top
+      });
+
+      const makeFullscreen = () => {
+        Object.assign(win.style, {
+          width: "100vw",
+          height: "100vh",
+          left: "0",
+          top: "0"
+        });
+        if (header) header.style.display = "none";
+      };
+
+      if (win.requestFullscreen) {
+        win.requestFullscreen().then(makeFullscreen).catch(makeFullscreen);
+      } else {
+        makeFullscreen();
+      }
+
+      win.dataset.fullscreen = "true";
+
+      const onFullscreenChange = () => {
+        if (!document.fullscreenElement) {
+          if (header) header.style.display = "";
+          win.dataset.fullscreen = "false";
+          document.removeEventListener("fullscreenchange", onFullscreenChange);
+        }
+      };
+
+      document.addEventListener("fullscreenchange", onFullscreenChange);
+    }
+  }
+
+  setupWindowControls(win) {
+    win.querySelector(".close-btn").onclick = () => {
+      const iframe = win.querySelector("iframe");
+      if (iframe) iframe.src = "about:blank";
+      this.removeFromTaskbar(win.id);
+      const isGame = win.dataset.isGame === "true";
+      if (isGame) {
+        this.gameWindowCount = Math.max(0, this.gameWindowCount - 1);
+      }
+      this.updateTransparency();
+      win.style.animation = "popUp 0.5s ease forwards";
+      setTimeout(() => win.remove(), 500);
+    };
+    win.querySelector(".minimize-btn").onclick = () => this.minimizeWindow(win);
+    win.querySelector(".maximize-btn").onclick = () => this.toggleFullscreen(win);
+  }
+
+  makeDraggable(win) {
+    const header = win.querySelector(".window-header");
+    header.onmousedown = (e) => {
+      if (e.target.tagName === "BUTTON") return;
+
+      this.bringToFront(win);
+      e.stopPropagation();
+
+      this.isDraggingWindow = true;
+      const ox = e.clientX - win.offsetLeft;
+      const oy = e.clientY - win.offsetTop;
+      document.onmousemove = (e) => {
+        win.style.left = `${e.clientX - ox}px`;
+        win.style.top = `${e.clientY - oy}px`;
+      };
+      document.onmouseup = () => {
+        document.onmousemove = null;
+        this.isDraggingWindow = false;
+      };
+    };
+  }
+  makeResizable(win, setHeightUnsetElement = null) {
+    const margin = 10;
+
+    const getDirection = (e) => {
+      const rect = win.getBoundingClientRect();
+      let dir = "";
+      if (e.clientY - rect.top < margin) dir += "n";
+      else if (rect.bottom - e.clientY < margin) dir += "s";
+      if (e.clientX - rect.left < margin) dir += "w";
+      else if (rect.right - e.clientX < margin) dir += "e";
+      return dir;
+    };
+
+    win.addEventListener("mousemove", (e) => {
+      const dir = getDirection(e);
+      const cursorMap = {
+        n: "n-resize",
+        s: "s-resize",
+        w: "w-resize",
+        e: "e-resize",
+        nw: "nw-resize",
+        ne: "ne-resize",
+        sw: "sw-resize",
+        se: "se-resize",
+        "": "default"
+      };
+      win.style.cursor = cursorMap[dir] || "default";
+    });
+
+    win.addEventListener("mousedown", (e) => {
+      const direction = getDirection(e);
+      if (!direction) return;
+
+      this.bringToFront(win);
+      e.preventDefault();
+      const startX = e.clientX;
+      const startY = e.clientY;
+      const rect = win.getBoundingClientRect();
+      const startWidth = rect.width;
+      const startHeight = rect.height;
+      const startLeft = rect.left;
+      const startTop = rect.top;
+
+      const doDrag = (e) => {
+        let newWidth = startWidth;
+        let newHeight = startHeight;
+        let newLeft = startLeft;
+        let newTop = startTop;
+
+        if (direction.includes("e")) newWidth = startWidth + (e.clientX - startX);
+        if (direction.includes("s")) newHeight = startHeight + (e.clientY - startY);
+        if (direction.includes("w")) {
+          newWidth = startWidth - (e.clientX - startX);
+          newLeft = startLeft + (e.clientX - startX);
+        }
+        if (direction.includes("n")) {
+          newHeight = startHeight - (e.clientY - startY);
+          newTop = startTop + (e.clientY - startY);
+        }
+        const MIN_SIZE = 300;
+
+        if (newWidth > MIN_SIZE) {
+          win.style.width = `${newWidth}px`;
+          win.style.left = `${newLeft}px`;
+        }
+        if (newHeight > MIN_SIZE) {
+          win.style.height = `${newHeight}px`;
+          win.style.top = `${newTop}px`;
+        }
+        if (setHeightUnsetElement) {
+          const s = setHeightUnsetElement.style;
+          if (s) s.height = "unset";
+        }
+      };
+
+      const stopDrag = () => {
+        document.removeEventListener("mousemove", doDrag);
+        document.removeEventListener("mouseup", stopDrag);
+      };
+
+      document.addEventListener("mousemove", doDrag);
+      document.addEventListener("mouseup", stopDrag);
+    });
+  }
+  getWindowControls() {
+    return `<div class="window-controls">
+              <button class="minimize-btn" title="Minimize">−</button>
+              <button class="maximize-btn" title="Maximize">□</button>
+              <button class="close-btn" title="Close">X</button>
+            </div>
+    `;
+  }
+
+  showPopup(text) {
+    const popup = document.createElement("div");
+    popup.innerHTML = `
+        <div  style="display:flex; align-items:flex-start;">
+            <div style="flex-shrink:0; width:24px; height:24px; margin-right:8px; background:#0078d7; color:#fff; font-weight:bold; font-family:sans-serif; display:flex; justify-content:center; align-items:center; border-radius:50%;">i</div>
+            <div style="flex:1;">
+                <div style="color:#0078d7; font-weight:bold; font-size:13px; line-height:1.2;">Notification</div>
+                <div style="margin-top:2px; font-weight:normal; font-size:12px; color:#000;">${text}</div>
+            </div>
+            <div style="flex-shrink:0; margin-left:8px; font-weight:bold; cursor:pointer; color:#666;">×</div>
+        </div>
+        <div style="position:absolute; bottom:-8px; right:16px; width:0; height:0; border-left:8px solid transparent; border-right:8px solid transparent; border-top:8px solid #fff;"></div>
+    `;
+    popup.className = "tray-notify";
+    const closeBtn = popup.querySelector("div:last-child");
+    closeBtn.addEventListener("click", () => {
+      popup.style.bottom = "50px";
+      popup.style.opacity = "0";
+      setTimeout(() => popup.remove(), 500);
+    });
+
+    popup.addEventListener("click", () => {
+      popup.style.bottom = "-100px";
+      popup.style.opacity = "0";
+      setTimeout(() => popup.remove(), 500);
+    });
+    document.body.appendChild(popup);
+    setTimeout(() => {
+      popup.style.bottom = "50px";
+      popup.style.opacity = "1";
+    }, 10);
+    setTimeout(() => {
+      popup.style.bottom = "-100px";
+      popup.style.opacity = "0";
+      setTimeout(() => popup.remove(), 500);
+    }, 5000);
+  }
+}

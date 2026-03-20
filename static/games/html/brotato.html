@@ -1,0 +1,484 @@
+<!doctype html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+  <head>
+    <base href="https://cdn.jsdelivr.net/gh/Stinkalistic/UGS@main/MISC/brotato/" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, user-scalable=no" />
+    <title>Brotato</title>
+    <style type="text/css">
+      @import url("https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;700&display=swap");
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        touch-action: none;
+        margin: 0;
+        border: 0 none;
+        padding: 0;
+        text-align: center;
+        background-color: #0a0a0a;
+      }
+
+      #canvas {
+        display: block;
+        margin: 0;
+        color: white;
+      }
+
+      #canvas:focus {
+        outline: none;
+      }
+
+      .godot {
+        font-family: "Noto Sans", "Droid Sans", Arial, sans-serif;
+        color: #e0e0e0;
+        background-color: #3b3943;
+        background-image: linear-gradient(to bottom, #403e48, #35333c);
+        border: 1px solid #45434e;
+        box-shadow: 0 0 1px 1px #2f2d35;
+      }
+
+      #status {
+        position: absolute;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        visibility: hidden;
+      }
+
+      #status-progress {
+        width: 366px;
+        height: 7px;
+        background-color: #38363a;
+        border: 1px solid #444246;
+        padding: 1px;
+        box-shadow: 0 0 2px 1px #1b1c22;
+        border-radius: 2px;
+        visibility: visible;
+      }
+
+      @media only screen and (orientation: portrait) {
+        #status-progress {
+          width: 61.8%;
+        }
+      }
+
+      #status-progress-inner {
+        height: 100%;
+        width: 0;
+        box-sizing: border-box;
+        transition: width 0.5s linear;
+        background-color: #202020;
+        border: 1px solid #222223;
+        box-shadow: 0 0 1px 1px #27282e;
+        border-radius: 3px;
+      }
+
+      #status-indeterminate {
+        height: 42px;
+        visibility: visible;
+        position: relative;
+      }
+
+      #status-indeterminate > div {
+        width: 4.5px;
+        height: 0;
+        border-style: solid;
+        border-width: 9px 3px 0 3px;
+        border-color: #2b2b2b transparent transparent transparent;
+        transform-origin: center 21px;
+        position: absolute;
+      }
+
+      #status-indeterminate > div:nth-child(1) {
+        transform: rotate(22.5deg);
+      }
+      #status-indeterminate > div:nth-child(2) {
+        transform: rotate(67.5deg);
+      }
+      #status-indeterminate > div:nth-child(3) {
+        transform: rotate(112.5deg);
+      }
+      #status-indeterminate > div:nth-child(4) {
+        transform: rotate(157.5deg);
+      }
+      #status-indeterminate > div:nth-child(5) {
+        transform: rotate(202.5deg);
+      }
+      #status-indeterminate > div:nth-child(6) {
+        transform: rotate(247.5deg);
+      }
+      #status-indeterminate > div:nth-child(7) {
+        transform: rotate(292.5deg);
+      }
+      #status-indeterminate > div:nth-child(8) {
+        transform: rotate(337.5deg);
+      }
+
+      #status-notice {
+        margin: 0 100px;
+        line-height: 1.3;
+        visibility: visible;
+        padding: 4px 6px;
+      }
+
+      #loading-overlay {
+        position: fixed;
+        inset: 0;
+        background: #0d0b0f;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        gap: 0;
+      }
+
+      #loading-overlay::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(ellipse 60% 40% at 50% 0%, rgba(255, 80, 0, 0.12) 0%, transparent 70%),
+          radial-gradient(ellipse 40% 30% at 20% 100%, rgba(180, 30, 30, 0.08) 0%, transparent 60%);
+        pointer-events: none;
+      }
+
+      #loading-game-image {
+        width: min(420px, 85vw);
+        height: auto;
+        image-rendering: pixelated;
+        filter: drop-shadow(0 0 40px rgba(255, 100, 0, 0.35)) drop-shadow(0 0 80px rgba(255, 50, 0, 0.15));
+        animation: floatImg 3.5s ease-in-out infinite;
+        margin-bottom: 36px;
+        position: relative;
+        z-index: 1;
+      }
+
+      @keyframes floatImg {
+        0%,
+        100% {
+          transform: translateY(0px);
+        }
+        50% {
+          transform: translateY(-10px);
+        }
+      }
+
+      #loading-bar-wrap {
+        position: relative;
+        z-index: 1;
+        width: min(420px, 85vw);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 14px;
+      }
+
+      #loading-label {
+        font-family: "Pixelify Sans", monospace;
+        font-size: 18px;
+        font-weight: 700;
+        color: #ff8c42;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        animation: labelPulse 1.4s ease-in-out infinite;
+      }
+
+      @keyframes labelPulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.55;
+        }
+      }
+
+      #loading-bar-track {
+        width: 100%;
+        height: 10px;
+        background: #1e1a24;
+        border-radius: 6px;
+        border: 1px solid #3a2e20;
+        overflow: hidden;
+        box-shadow:
+          0 0 0 1px #0a0808 inset,
+          0 2px 8px rgba(0, 0, 0, 0.6);
+      }
+
+      #loading-bar-fill {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, #c44b00, #ff7a1a, #ffb347);
+        border-radius: 6px;
+        transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+        box-shadow:
+          0 0 10px rgba(255, 120, 30, 0.7),
+          0 0 24px rgba(255, 80, 0, 0.3);
+        position: relative;
+      }
+
+      #loading-bar-fill::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 40%;
+        background: rgba(255, 255, 255, 0.18);
+        border-radius: 6px 6px 0 0;
+      }
+
+      #loading-pct {
+        font-family: "Pixelify Sans", monospace;
+        font-size: 13px;
+        color: #7a6050;
+        letter-spacing: 0.08em;
+      }
+
+      #sidebarad1,
+      #sidebarad2 {
+        position: fixed;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 160px;
+        height: 600px;
+        padding: 0;
+        margin: 0;
+        z-index: 999999;
+      }
+      #sidebarad1 {
+        left: 0;
+      }
+      #sidebarad2 {
+        right: 0;
+      }
+
+      .sidebar-close {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 22px;
+        height: 22px;
+        line-height: 22px;
+        text-align: center;
+        background: rgba(0, 0, 0, 0.7);
+        color: #fff;
+        font-size: 14px;
+        cursor: pointer;
+        user-select: none;
+        z-index: 10;
+      }
+
+      .sidebar-frame {
+        width: 160px;
+        height: 600px;
+        border: none;
+        display: block;
+      }
+    </style>
+    <link id="-gd-engine-icon" rel="icon" type="image/png" href="index.icon.png" />
+    <link rel="apple-touch-icon" href="index.apple-touch-icon.png" />
+  </head>
+  <body>
+    <div id="loading-overlay">
+      <img id="loading-game-image" alt="Brotato" />
+      <div id="loading-bar-wrap">
+        <div id="loading-label">Loading…</div>
+        <div id="loading-bar-track">
+          <div id="loading-bar-fill"></div>
+        </div>
+        <div id="loading-pct">0%</div>
+      </div>
+    </div>
+
+    <canvas id="canvas">
+      HTML5 canvas appears to be unsupported in the current browser.<br />
+      Please try updating or use a different browser.
+    </canvas>
+
+    <div id="status">
+      <div id="status-progress" style="display: none" oncontextmenu="event.preventDefault()">
+        <div id="status-progress-inner"></div>
+      </div>
+      <div id="status-indeterminate" style="display: none" oncontextmenu="event.preventDefault()">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
+      <div id="status-notice" class="godot" style="display: none"></div>
+    </div>
+
+    <script>
+      document.getElementById("loading-game-image").src = window.location.origin + "/static/icons/brotato.webp";
+      var _fakeRaf = null;
+      var _fakeStart = performance.now();
+      var _fakeDuration = 30000;
+      (function tick(now) {
+        var pct = Math.min(((now - _fakeStart) / _fakeDuration) * 90, 90);
+        document.getElementById("loading-bar-fill").style.width = pct + "%";
+        document.getElementById("loading-pct").textContent = Math.floor(pct) + "%";
+        _fakeRaf = requestAnimationFrame(tick);
+      })(performance.now());
+    </script>
+    <script src="main.js"></script>
+    <script type="text/javascript" src="index.js"></script>
+    <script type="text/javascript">
+      //<![CDATA[
+
+      window.godotRunStart = function () {
+        const GODOT_CONFIG = {
+          args: [],
+          canvasResizePolicy: 2,
+          executable: "index",
+          experimentalVK: false,
+          fileSizes: { "index.pck": 138330272, "index.wasm": 25658069 },
+          focusCanvas: true,
+          gdnativeLibs: []
+        };
+        var engine = new Engine(GODOT_CONFIG);
+
+        (function () {
+          const INDETERMINATE_STATUS_STEP_MS = 100;
+          var statusProgress = document.getElementById("status-progress");
+          var statusProgressInner = document.getElementById("status-progress-inner");
+          var statusIndeterminate = document.getElementById("status-indeterminate");
+          var statusNotice = document.getElementById("status-notice");
+
+          var loadingOverlay = document.getElementById("loading-overlay");
+          var loadingBarFill = document.getElementById("loading-bar-fill");
+          var loadingPct = document.getElementById("loading-pct");
+          var loadingLabel = document.getElementById("loading-label");
+
+          var initializing = true;
+          var statusMode = "hidden";
+          var fakeProgress = 0;
+
+          function stopFakeProgress() {
+            if (_fakeRaf) {
+              cancelAnimationFrame(_fakeRaf);
+              _fakeRaf = null;
+            }
+          }
+
+          var animationCallbacks = [];
+          function animate(time) {
+            animationCallbacks.forEach((callback) => callback(time));
+            requestAnimationFrame(animate);
+          }
+          requestAnimationFrame(animate);
+
+          function setStatusMode(mode) {
+            if (statusMode === mode || !initializing) return;
+            [statusProgress, statusIndeterminate, statusNotice].forEach((elem) => {
+              elem.style.display = "none";
+            });
+            animationCallbacks = animationCallbacks.filter((v) => v != animateStatusIndeterminate);
+            switch (mode) {
+              case "progress":
+                statusProgress.style.display = "block";
+                break;
+              case "indeterminate":
+                statusIndeterminate.style.display = "block";
+                animationCallbacks.push(animateStatusIndeterminate);
+                loadingLabel.textContent = "Starting…";
+                break;
+              case "notice":
+                statusNotice.style.display = "block";
+                break;
+              case "hidden":
+                break;
+              default:
+                throw new Error("Invalid status mode");
+            }
+            statusMode = mode;
+          }
+
+          function animateStatusIndeterminate(ms) {
+            var i = Math.floor((ms / INDETERMINATE_STATUS_STEP_MS) % 8);
+            if (statusIndeterminate.children[i].style.borderTopColor == "") {
+              Array.prototype.slice.call(statusIndeterminate.children).forEach((child) => {
+                child.style.borderTopColor = "";
+              });
+              statusIndeterminate.children[i].style.borderTopColor = "#dfdfdf";
+            }
+          }
+
+          function setStatusNotice(text) {
+            while (statusNotice.lastChild) {
+              statusNotice.removeChild(statusNotice.lastChild);
+            }
+            text.split("\n").forEach((line) => {
+              statusNotice.appendChild(document.createTextNode(line));
+              statusNotice.appendChild(document.createElement("br"));
+            });
+          }
+
+          function displayFailureNotice(err) {
+            var msg = err.message || err;
+            console.error(msg);
+            setStatusNotice(msg);
+            setStatusMode("notice");
+            initializing = false;
+            loadingLabel.textContent = "Error";
+          }
+
+          if (!Engine.isWebGLAvailable()) {
+            displayFailureNotice("WebGL not available");
+          } else {
+            setStatusMode("indeterminate");
+            engine
+              .startGame({
+                onProgress: function (current, total) {
+                  if (total > 0) {
+                    statusProgressInner.style.width = (current / total) * 100 + "%";
+                    setStatusMode("progress");
+                  }
+                }
+              })
+              .then(
+                () => {
+                  stopFakeProgress();
+                  loadingBarFill.style.width = "100%";
+                  loadingPct.textContent = "100%";
+                  loadingLabel.textContent = "Ready!";
+                  setTimeout(() => {
+                    loadingOverlay.style.transition = "opacity 0.6s ease";
+                    loadingOverlay.style.opacity = "0";
+                    setTimeout(() => (loadingOverlay.style.display = "none"), 620);
+                  }, 300);
+                  setStatusMode("hidden");
+                  initializing = false;
+                },
+                function (err) {
+                  stopFakeProgress();
+                  displayFailureNotice(err);
+                }
+              );
+          }
+        })();
+      };
+      //]]>
+    </script>
+
+    <div id="sidebarad1">
+      <div class="sidebar-close" onclick="this.parentElement.style.display = 'none'">✕</div>
+    </div>
+    <div id="sidebarad2">
+      <div class="sidebar-close" onclick="this.parentElement.style.display = 'none'">✕</div>
+    </div>
+
+  </body>
+</html>

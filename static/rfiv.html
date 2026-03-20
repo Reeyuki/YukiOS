@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="robots" content="noindex,nofollow">
+    <title>Game</title>
+    <style>
+        body {
+            color: #fff;
+            font-family: "Verdana", sans-serif;
+            background: radial-gradient(#2d2d30, #1b1b1c);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        a:link, .button {
+            color: #fff;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        a:hover, .button:hover {
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+        a:visited {
+            color: #fff;
+        }
+
+        #inner {
+            width: 90vw;
+            max-width: 133vh;
+            height: 90vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #spinner {
+            width: 60px;
+            height: 60px;
+            border: 6px solid #fff;
+            border-top-color: #2d2d30;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        canvas {
+            max-width: 100%;
+            max-height: 100%;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div id="spinner"></div>
+    <div id="inner"></div>
+
+    <script>
+        const spinner = document.getElementById('spinner');
+        const gameName = new URLSearchParams(window.location.search).get("game");
+        if (gameName) {
+            const script = document.createElement('script');
+            script.src = `/static/games/rfiv/${gameName}.js`;
+            script.onload = () => { spinner.style.display = 'none'; };
+            document.body.appendChild(script);
+        }
+
+        const stageInterval = setInterval(() => {
+            const stage0 = document.getElementById('stage0');
+            if (stage0) {
+                stage0.firstChild.style.backgroundColor = "rgb(0,0,0)";
+                stage0.remove();
+                document.getElementById('inner').appendChild(stage0);
+                clearInterval(stageInterval);
+            }
+        }, 500);
+
+        function resizeGameCanvas() {
+            const canvas = document.querySelector("canvas");
+            if (canvas) {
+                canvas.style.maxWidth = "100%";
+                canvas.style.maxHeight = "100%";
+            }
+        }
+        setInterval(resizeGameCanvas, 1500);
+
+        window.addEventListener('blur', () => window.focus());
+    </script>
+</body>
+</html>
