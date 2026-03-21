@@ -399,7 +399,7 @@ export class ExplorerApp {
 
         .games-app-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+          grid-template-columns: repeat(auto-fill, 120px);
           gap: 12px;
           padding: 4px 2px;
         }
@@ -420,8 +420,8 @@ export class ExplorerApp {
         }
 
         .games-app-card-img-wrap {
-          width: 100%;
-          aspect-ratio: 1 / 1;
+          width: 90px;
+          height: 90px;
           overflow: hidden;
           display: flex;
           align-items: center;
@@ -456,18 +456,17 @@ export class ExplorerApp {
         }
 
         .games-app-card-title {
-          font-size: 1.5em;
+          font-size: 1.3em;
           text-align: center;
-          line-height: 1.3;
+          line-height: 1.2;
           word-break: break-word;
-          padding: 8px 8px 0;
+          padding: 4px 4px 0;
           width: 100%;
           box-sizing: border-box;
-          min-height: 32px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          transition: color 0.18s;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
         }
       `;
     document.head.appendChild(style);

@@ -181,7 +181,6 @@ export const videos = [
   "https://motionbgs.com/media/53/black-hole.1920x1080.mp4",
   "https://motionbgs.com/media/4072/grim-reaper.1920x1080.mp4",
   "https://motionbgs.com/media/722/space-science-hud.1920x1080.mp4",
-  "https://motionbgs.com/media/3151/cristiano-ronaldo.1920x1080.mp4",
   "https://motionbgs.com/media/3764/torii.1920x1080.mp4",
   "https://motionbgs.com/media/1732/flying-cinnamoroll-hello-kitty.1920x1080.mp4"
 ];
