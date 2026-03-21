@@ -30,7 +30,7 @@ export const appMap = {
     icon: "/static/icons/pokemonheartgold.webp",
     title: "Pokemon"
   },
-  pokemonWhite: { type: "nds", url: "pokemon-white.nds", icon: "/static/icons/pokemon-white.webp", title: "Pokemon" },
+  pokemonWhite: { type: "nds", url: "pokemon-white.zip", icon: "/static/icons/pokemon-white.webp", title: "Pokemon" },
   pokemonWhite2: {
     type: "nds",
     url: "pokemon-white-2.zip",
