@@ -2,10 +2,21 @@ import { desktop } from "./desktop.js";
 
 const PROXY_BASE = "https://api.codetabs.com/v1/proxy/?quest=";
 
-const DIRECT_IFRAME_PATTERNS = [/google\.com\/webhp/, /google\.com\/search/];
+const DIRECT_IFRAME_PATTERNS = [/google\.com/];
 
 function shouldLoadDirect(url) {
   return DIRECT_IFRAME_PATTERNS.some((p) => p.test(url));
+}
+
+function injectGoogleIgu(url) {
+  try {
+    const parsed = new URL(url);
+    if (parsed.hostname.includes("google.com")) {
+      parsed.searchParams.set("igu", "1");
+      return parsed.toString();
+    }
+  } catch {}
+  return url;
 }
 
 async function loadViaProxy(iframe, url) {
@@ -194,9 +205,9 @@ export class BrowserApp {
 
   resolveInput(raw) {
     if (!raw) return "";
-    if (/^https?:\/\//i.test(raw)) return raw;
-    if (/^[\w-]+\.[\w.-]+(\/.*)?$/.test(raw)) return "https://" + raw;
-    return this.searchEngine.url + encodeURIComponent(raw);
+    if (/^https?:\/\//i.test(raw)) return injectGoogleIgu(raw);
+    if (/^[\w-]+\.[\w.-]+(\/.*)?$/.test(raw)) return injectGoogleIgu("https://" + raw);
+    return this.searchEngine.url + encodeURIComponent(raw) + "&igu=1";
   }
 
   addTab(url) {
@@ -208,6 +219,7 @@ export class BrowserApp {
         url = "https://www.google.com/webhp?igu=1";
       }
     }
+    url = injectGoogleIgu(url);
     const tabIndex = this.tabs.length;
 
     const iframe = document.createElement("iframe");
@@ -314,15 +326,7 @@ export class BrowserApp {
   navigate(tab, url) {
     if (!url) return;
     if (!url.startsWith("http")) url = "https://" + url;
-
-    try {
-      const parsed = new URL(url);
-      if (parsed.hostname.includes("google.com") && !parsed.search) {
-        url = "https://www.google.com/webhp?igu=1";
-      }
-    } catch (e) {
-      console.error(e);
-    }
+    url = injectGoogleIgu(url);
 
     if (tab.historyIndex < tab.history.length - 1) {
       tab.history = tab.history.slice(0, tab.historyIndex + 1);
