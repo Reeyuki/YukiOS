@@ -1,5 +1,16 @@
 import { FileKind } from "./fs.js";
 import { SystemUtilities } from "./system.js";
+import { videos } from "./wallpaperList.js";
+
+function toBlobUrl(src) {
+  if (!src || !src.startsWith("data:")) return src;
+  const [header, base64] = src.split(",");
+  const mime = header.match(/data:(.*?);/)?.[1] ?? "application/octet-stream";
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return URL.createObjectURL(new Blob([bytes], { type: mime }));
+}
 
 function getThumbnailUrl(src) {
   const match = src.match(/\/media\/(\d+)\/(.*?)(?:\.\d+x\d+)?\.mp4$/);
@@ -40,6 +51,7 @@ export async function renderWallpapersPage(explorerInstance, view) {
 
 async function refreshWallpaperGrid(fs, grid, wm, previewZone) {
   grid.innerHTML = "";
+
   const folder = await fs.getFolder(["Pictures", "Wallpapers"]);
 
   for (const [name, data] of Object.entries(folder)) {
@@ -84,24 +96,25 @@ async function refreshWallpaperGrid(fs, grid, wm, previewZone) {
     setBtn.onclick = async (e) => {
       e.stopPropagation();
       const content = await fs.getFileContent(["Pictures", "Wallpapers"], name);
-      SystemUtilities.setWallpaper(content);
+      await SystemUtilities.setWallpaper(toBlobUrl(content));
       wm.showPopup(`Wallpaper set to "${name}"`);
     };
 
     actions.appendChild(setBtn);
+
     card.appendChild(thumbEl);
     card.appendChild(nameEl);
     card.appendChild(actions);
 
-    card.addEventListener("click", (e) => {
-      if (e.target === setBtn) return;
-      showCardPreview(name, src, isVideo, previewZone, fs, wm);
-    });
+card.addEventListener("click", async (e) => {
+  if (e.target === setBtn) return;
+  const content = await fs.getFileContent(["Pictures", "Wallpapers"], name);
+  showCardPreview(name, toBlobUrl(content), isVideo, previewZone, fs, wm);
+});
 
     grid.appendChild(card);
   }
 }
-
 function showCardPreview(name, src, isVideo, previewZone, fs, wm) {
   previewZone.classList.add("wp-preview-active");
   previewZone.innerHTML = "";
@@ -111,7 +124,8 @@ function showCardPreview(name, src, isVideo, previewZone, fs, wm) {
 
   const media = isVideo ? document.createElement("video") : document.createElement("img");
   media.className = "wp-preview-media";
-  media.src = src;
+  media.src = src || "";
+
   if (isVideo) {
     media.autoplay = true;
     media.loop = true;
@@ -123,24 +137,7 @@ function showCardPreview(name, src, isVideo, previewZone, fs, wm) {
   overlay.className = "wp-preview-overlay";
   overlay.innerHTML = `
     <div class="wp-preview-label">${name}</div>
-    <div class="wp-preview-btns">
-      <button class="wp-action-btn wp-discard-btn">✕ Close</button>
-      <button class="wp-action-btn wp-save-btn">✔ Set Wallpaper</button>
-    </div>
   `;
-
-  overlay.querySelector(".wp-discard-btn").onclick = () => {
-    previewZone.classList.remove("wp-preview-active");
-    previewZone.innerHTML = "";
-  };
-
-  overlay.querySelector(".wp-save-btn").onclick = async () => {
-    const content = await fs.getFileContent(["Pictures", "Wallpapers"], name);
-    SystemUtilities.setWallpaper(content);
-    wm.showPopup(`Wallpaper set to "${name}"`);
-    previewZone.classList.remove("wp-preview-active");
-    previewZone.innerHTML = "";
-  };
 
   inner.appendChild(media);
   inner.appendChild(overlay);
@@ -174,7 +171,7 @@ function showRandomPreview(explorerInstance, previewZone, grid, fs, wm) {
     <div class="wp-preview-btns">
       <button class="wp-action-btn wp-discard-btn">✕ Discard</button>
       <button class="wp-action-btn wp-another-btn">↻ Another</button>
-      <button class="wp-action-btn wp-save-btn">✔ Set Wallpaper</button>
+      <button class="wp-action-btn wp-save-btn">✓ Set Wallpaper</button>
     </div>
   `;
 
@@ -187,7 +184,7 @@ function showRandomPreview(explorerInstance, previewZone, grid, fs, wm) {
     showRandomPreview(explorerInstance, previewZone, grid, fs, wm);
 
   overlay.querySelector(".wp-save-btn").onclick = async () => {
-    SystemUtilities.setWallpaper(src);
+    await SystemUtilities.setWallpaper(src);
 
     const urlParts = src.split("/");
     const rawName = urlParts[urlParts.length - 1]
