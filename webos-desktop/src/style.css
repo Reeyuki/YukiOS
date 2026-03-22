@@ -79,7 +79,7 @@ body {
   background-repeat: no-repeat;
 }
 body {
-  font-family: "SUSE Mono";
+  font-family: "Sora,sans-serif";
   overflow: hidden;
   background: var(--bg-primary);
   color: var(--text-primary);
@@ -291,8 +291,9 @@ input {
   cursor: move;
   font-weight: 600;
   font-size: 14px;
-  letter-spacing: 0.03em;
+
   user-select: none;
+  white-space: nowrap;
 }
 
 .window-content {
@@ -895,7 +896,7 @@ input {
   font-size: 12.5px;
   font-weight: 500;
   color: var(--tx2);
-  letter-spacing: 0.01em;
+
   position: relative;
 }
 .explorer-nav::after {
@@ -1030,7 +1031,6 @@ input {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  letter-spacing: 0.01em;
 }
 
 .explorer-select-confirm-btn {
@@ -1106,7 +1106,6 @@ input {
   font-weight: 600;
   margin-bottom: 14px;
   color: #fff;
-  letter-spacing: 0.01em;
 }
 ._fd-dialog-label {
   font-size: 1.5em;
@@ -1221,7 +1220,6 @@ input {
 .wp-title {
   font-size: 13px;
   font-weight: 600;
-  letter-spacing: 0.12em;
 
   color: rgba(255, 255, 255, 0.4);
 }
@@ -1237,7 +1235,7 @@ input {
   color: #fff;
   font-weight: 600;
   cursor: pointer;
-  letter-spacing: 0.03em;
+
   transition:
     opacity 0.15s,
     transform 0.15s;
@@ -1300,7 +1298,6 @@ input {
 
 .wp-preview-label {
   font-size: 11px;
-  letter-spacing: 0.1em;
 
   color: rgba(255, 255, 255, 0.5);
   margin-bottom: 10px;
@@ -1318,7 +1315,7 @@ input {
   font-size: 1.1em;
   font-weight: 600;
   cursor: pointer;
-  letter-spacing: 0.03em;
+
   transition:
     opacity 0.15s,
     transform 0.12s;
@@ -1441,7 +1438,6 @@ input {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  letter-spacing: 0.02em;
 }
 
 .wp-card-actions {
@@ -1457,7 +1453,6 @@ input {
   font-weight: 600;
   cursor: pointer;
   transition: background 0.15s;
-  letter-spacing: 0.04em;
 }
 
 .wp-set-btn {
@@ -1621,7 +1616,7 @@ input {
   font-size: 1.1em;
   font-family: "Sora", sans-serif;
   cursor: pointer;
-  letter-spacing: 0.02em;
+
   transition:
     background 0.15s,
     border-color 0.15s,
@@ -1904,7 +1899,6 @@ input {
   padding: 10px 14px;
   font-size: 13px;
   font-weight: 600;
-  letter-spacing: 0.04em;
 
   color: rgba(255, 255, 255, 0.55);
   border-bottom: 1px solid rgba(255, 255, 255, 0.07);
@@ -1949,7 +1943,6 @@ input {
   display: block;
   font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.06em;
 
   color: rgba(255, 255, 255, 0.4);
   margin-bottom: 8px;
@@ -2071,7 +2064,6 @@ input {
   justify-content: space-between;
   font-family: "Syne", sans-serif;
   font-size: 0.75rem;
-  letter-spacing: 0.12em;
 
   color: rgba(255, 255, 255, 0.35);
   user-select: none;
@@ -2106,7 +2098,6 @@ input {
   font-size: 2.4rem;
   font-weight: 300;
   color: #ffd280;
-  letter-spacing: -0.02em;
   line-height: 1;
   word-break: break-all;
   text-align: right;
@@ -2179,7 +2170,7 @@ input {
   color: #0e0a00;
   font-size: 1.3rem;
   font-weight: 500;
-  letter-spacing: 0.05em;
+
   grid-column: span 4;
   border-radius: 0 0 4px 4px;
 }
@@ -2391,7 +2382,6 @@ input {
   font-size: 11px;
   font-weight: 600;
 
-  letter-spacing: 0.08em;
   color: #4a5568;
   background: #0f0f1a;
   border-bottom: 1px solid #1a1a2e;
@@ -2507,8 +2497,6 @@ input {
   right: 20px;
   padding: 1.1em 20px;
   border-radius: 16px;
-  font-family: "Sora", sans-serif;
-  font-weight: 600;
   backdrop-filter: blur(1.1em);
   background: rgba(255, 255, 255, 0.15);
   color: #fff;
@@ -2600,7 +2588,6 @@ input {
   font-size: 5rem;
   font-family: fontb;
   margin-bottom: 0.5rem;
-  letter-spacing: -0.02em;
   margin-left: -6px;
 }
 
@@ -2804,7 +2791,6 @@ select:focus {
   font-weight: 400;
   color: var(--text-primary);
   margin-bottom: 0.5rem;
-  letter-spacing: 4px;
 }
 
 .boot-version {
@@ -2921,7 +2907,6 @@ select:focus {
   --cam-accent-dim: #7a1e25;
   --cam-green: #39d353;
   --cam-text: #c9d1d9;
-  --cam-muted: #6e7681;
   --cam-header-h: 36px;
   --cam-radius: 6px;
   --cam-font-ui: "Barlow", sans-serif;
@@ -2968,9 +2953,6 @@ select:focus {
 #camera-win .window-header > span,
 #history-win .window-header > span {
   font-size: 1.1em;
-  letter-spacing: 0.12em;
-
-  color: var(--cam-muted);
 }
 
 /* ── Video shell ───────────────────────────────────────── */
@@ -3056,7 +3038,6 @@ select:focus {
   font-size: 13px;
   color: var(--cam-accent);
   text-shadow: 0 0 6px var(--cam-accent);
-  letter-spacing: 0.08em;
 }
 
 /* ── Button row ────────────────────────────────────────── */
@@ -3072,7 +3053,6 @@ select:focus {
 #camera-win button,
 #history-win button {
   font-size: 11px;
-  letter-spacing: 0.1em;
 
   cursor: pointer;
   background: var(--cam-panel);
@@ -3088,7 +3068,6 @@ select:focus {
 #camera-win button:hover:not(:disabled),
 #history-win button:hover:not(:disabled) {
   background: var(--cam-border);
-  border-color: var(--cam-muted);
   color: #fff;
 }
 
@@ -3119,14 +3098,9 @@ select:focus {
   box-shadow: 0 0 10px rgba(230, 57, 70, 0.25);
 }
 
-#stop-record-btn {
-  border-color: var(--cam-muted) !important;
-}
-
 /* ── Download link ─────────────────────────────────────── */
 #download-link {
   font-size: 11px;
-  letter-spacing: 0.1em;
 
   color: var(--cam-green) !important;
   text-decoration: none;
@@ -3169,7 +3143,6 @@ select:focus {
 }
 
 #history-list > div:hover {
-  border-color: var(--cam-muted) !important;
   background: var(--cam-panel);
 }
 
@@ -3211,9 +3184,6 @@ select:focus {
   justify-content: space-between;
   padding: 0 1.1em;
   font-size: 1.1em;
-  letter-spacing: 0.12em;
-
-  color: var(--cam-muted);
 }
 
 .window:has(> div > video[controls]) video {
@@ -3283,7 +3253,6 @@ select:focus {
 
 .ac-section-title {
   font-size: 11px;
-  letter-spacing: 0.14em;
 
   color: var(--tx2);
   border-bottom: 1px solid var(--glass-border);
@@ -3315,7 +3284,7 @@ select:focus {
 
 .ac-label {
   font-size: 1.1em;
-  letter-spacing: 0.05em;
+
   color: var(--tx2);
 
   margin-bottom: 6px;
@@ -3429,7 +3398,7 @@ select:focus {
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  letter-spacing: 0.03em;
+
   transition:
     background 0.15s,
     transform 0.1s,
@@ -3600,7 +3569,6 @@ select:focus {
   padding: 1px 7px;
   margin-left: 6px;
   vertical-align: middle;
-  letter-spacing: 0.02em;
 }
 
 .games-app-grid {

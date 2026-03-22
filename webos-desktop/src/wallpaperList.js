@@ -14,8 +14,6 @@ export const videos = [
   "https://motionbgs.com/media/9297/before-the-road.3840x2160.mp4",
   "https://motionbgs.com/media/9274/reze-midnight-reflection.3840x2160.mp4",
   "https://motionbgs.com/media/9265/minecraft-rainy-cabin.3840x2160.mp4",
-  "https://motionbgs.com/media/9230/dark-queen.3840x2160.mp4",
-  "https://motionbgs.com/media/9256/gabimaru-the-hollow-hells-paradise.3840x2160.mp4",
   "https://motionbgs.com/media/9253/izuku-midoriya-todoroki-lida.3840x2160.mp4",
   "https://motionbgs.com/media/9167/echoes-of-a-fallen-world.3840x2160.mp4",
   "https://motionbgs.com/media/9292/satoru-gojo-shattered-sky.3840x2160.mp4",

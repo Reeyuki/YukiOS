@@ -6,6 +6,7 @@ import {
   fileKindFromName,
   isRomFile,
   isImageFile,
+  isVideoFile,
   isWallpaperPath,
   readFileAsDataURL,
   readFileAsText,
@@ -529,8 +530,8 @@ export class ExplorerApp {
       content = await readFileAsDataURL(file);
       icon = "@content";
     } else if (kind === FileKind.VIDEO) {
-      content = await readFileAsDataURL(file);
-      icon = "/static/icons/file.webp";
+      content = file;
+      icon = "/static/icons/obs.webp";
     } else if (kind === FileKind.ROM) {
       content = await readFileAsDataURL(file);
       icon = "rom";
@@ -544,6 +545,25 @@ export class ExplorerApp {
     }
 
     return { kind, content, icon };
+  }
+
+  async _saveFilePayload(targetPath, name, kind, content, icon) {
+    if (kind === FileKind.VIDEO) {
+      await this.fs.writeBinaryFile(targetPath, name, content, FileKind.VIDEO, icon);
+    } else {
+      await this.fs.createFile(targetPath, name, content, kind, icon);
+    }
+  }
+
+  async _replaceFilePayload(targetPath, name, kind, content, icon) {
+    if (kind === FileKind.VIDEO) {
+      await this.fs.deleteBinaryFile(targetPath, name).catch(() => {});
+      await this.fs.writeBinaryFile(targetPath, name, content, FileKind.VIDEO, icon);
+    } else {
+      const dir = this.fs.resolveDir(targetPath);
+      await this.fs.updateFile(targetPath, name, content);
+      await this.fs.writeMeta(dir, name, { kind, icon });
+    }
   }
 
   async handleFileUpload(files, isFolder, win, inst) {
@@ -593,7 +613,7 @@ export class ExplorerApp {
 
         if (!exists) {
           const { kind, content, icon } = await this._resolveFilePayload(file, name, targetPath);
-          await this.fs.createFile(targetPath, name, content, kind, icon);
+          await this._saveFilePayload(targetPath, name, kind, content, icon);
           uploadedCount++;
           continue;
         }
@@ -615,11 +635,10 @@ export class ExplorerApp {
         const { kind, content, icon } = await this._resolveFilePayload(file, name, targetPath);
 
         if (action === "replace") {
-          await this.fs.updateFile(targetPath, name, content);
-          await this.fs.writeMeta(dir, name, { kind, icon });
+          await this._replaceFilePayload(targetPath, name, kind, content, icon);
           uploadedCount++;
         } else {
-          await this.fs.createFile(targetPath, name, content, kind, icon);
+          await this._saveFilePayload(targetPath, name, kind, content, icon);
           uploadedCount++;
         }
       }
@@ -644,7 +663,7 @@ export class ExplorerApp {
       return;
     }
 
-    await this.fs.createFile(targetPath, name, content, kind, icon);
+    await this._saveFilePayload(targetPath, name, kind, content, icon);
   }
 
   async saveToWallpapers(name, content, kind, icon) {
@@ -720,6 +739,8 @@ export class ExplorerApp {
             ? await this.fs.getFileContent(inst.currentPath, name)
             : itemData.icon || itemData.content;
         iconEl = buildFileIconHTML(name, { thumbnailSrc });
+      } else if (itemData.kind === FileKind.VIDEO || isVideoFile(name)) {
+        iconEl = buildFileIconHTML(name);
       } else if (name.endsWith(".desktop")) {
         let iconSrc = "/static/icons/file.webp";
         try {

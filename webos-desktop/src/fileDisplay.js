@@ -100,6 +100,13 @@ export function openMediaViewer(name, src, kind, windowManager) {
   windowManager.addToTaskbar(win.id, name, "/static/icons/files.webp");
 }
 
+function base64ToBlob(dataURL) {
+  const [header, b64] = dataURL.split(",");
+  const mime = header.match(/:(.*?);/)[1];
+  const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+  return new Blob([bytes], { type: mime });
+}
+
 export async function openFileWith({ name, path, fs, notepadApp, emulatorApp, windowManager }) {
   if (isRomFile(name)) {
     if (!emulatorApp) return;
@@ -111,13 +118,26 @@ export async function openFileWith({ name, path, fs, notepadApp, emulatorApp, wi
   }
 
   if (isVideoFile(name)) {
-    let src = await fs.getFileContent(path, name);
-    if (!src && fs.readBinaryFile) {
-      const folderPath = Array.isArray(path) ? path.join("/") : path;
-      const blob = await fs.readBinaryFile(folderPath, name);
-      if (blob) src = URL.createObjectURL(blob);
+    const folderPath = Array.isArray(path) ? path.join("/") : path;
+
+    const blobFromDB = fs.readBinaryFile ? await fs.readBinaryFile(folderPath, name) : null;
+
+    if (blobFromDB) {
+      openMediaViewer(name, URL.createObjectURL(blobFromDB), FileKind.VIDEO, windowManager);
+      return;
     }
-    if (src) openMediaViewer(name, src, FileKind.VIDEO, windowManager);
+
+    const raw = await fs.getFileContent(path, name);
+    if (!raw) return;
+
+    if (raw.startsWith("data:")) {
+      const blob = base64ToBlob(raw);
+      const src = URL.createObjectURL(blob);
+      openMediaViewer(name, src, FileKind.VIDEO, windowManager);
+      return;
+    }
+
+    openMediaViewer(name, raw, FileKind.VIDEO, windowManager);
     return;
   }
 

@@ -8,4 +8,5 @@ Add calendar popup on os time text
 Add markdown support
 Add pdf support
 Optimize file operations
-Use blob url on videos better performance
+Add md support
+Add html support
