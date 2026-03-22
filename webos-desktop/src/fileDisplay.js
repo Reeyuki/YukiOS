@@ -6,7 +6,8 @@ export const VIDEO_EXTS = ["mp4", "webm", "ogv", "mov"];
 import { ROM_EXTS, detectCore } from "./shared/coreMap.js";
 export { ROM_EXTS };
 
-export const TEXT_EXTS = ["txt", "js", "json", "md", "html", "css"];
+export const HTML_EXTS = ["html", "htm"];
+export const TEXT_EXTS = ["txt", "js", "json", "md", "css"];
 
 export function getExt(name) {
   return name.split(".").pop().toLowerCase();
@@ -17,8 +18,13 @@ export function fileKindFromName(name) {
   if (IMAGE_EXTS.includes(ext)) return FileKind.IMAGE;
   if (VIDEO_EXTS.includes(ext)) return FileKind.VIDEO;
   if (ROM_EXTS.includes(ext)) return FileKind.ROM;
+  if (HTML_EXTS.includes(ext)) return FileKind.HTML ?? FileKind.TEXT;
   if (TEXT_EXTS.includes(ext)) return FileKind.TEXT;
   return FileKind.OTHER;
+}
+
+export function isHtmlFile(name) {
+  return HTML_EXTS.includes(getExt(name));
 }
 
 export function isRomFile(name) {
@@ -66,6 +72,9 @@ export function readFileAsText(file) {
 
 export function buildFileIconHTML(name, { thumbnailSrc = null, size = 64, radius = 8 } = {}) {
   const s = `width:${size}px;height:${size}px;border-radius:${radius}px;`;
+  if (isHtmlFile(name)) {
+    return `<img src="/static/icons/firefox.webp" style="${s}object-fit:cover;">`;
+  }
   if (isRomFile(name)) {
     return `<div style="${s}display:flex;align-items:center;justify-content:center;font-size:${Math.round(size * 0.44)}px;color:#6677dd;"><i class="fas fa-gamepad"></i></div>`;
   }
@@ -107,7 +116,7 @@ function base64ToBlob(dataURL) {
   return new Blob([bytes], { type: mime });
 }
 
-export async function openFileWith({ name, path, fs, notepadApp, emulatorApp, windowManager }) {
+export async function openFileWith({ name, path, fs, notepadApp, emulatorApp, browserApp, windowManager }) {
   if (isRomFile(name)) {
     if (!emulatorApp) return;
     const dataUrl = await fs.getFileContent(path, name);
@@ -142,6 +151,14 @@ export async function openFileWith({ name, path, fs, notepadApp, emulatorApp, wi
   }
 
   const content = await fs.getFileContent(path, name);
+  if (isHtmlFile(name)) {
+    if (browserApp) {
+      browserApp.openHtml(content, name, path);
+    } else {
+      notepadApp.open(name, content, path);
+    }
+    return;
+  }
   if (isImageFile(name)) {
     openMediaViewer(name, content, FileKind.IMAGE, windowManager);
     return;

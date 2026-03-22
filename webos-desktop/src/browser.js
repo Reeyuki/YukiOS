@@ -58,10 +58,10 @@ async function loadViaProxy(iframe, url) {
 }
 
 export class BrowserApp {
-  constructor(windowManager) {
+  constructor(windowManager, fs) {
     this.wm = windowManager;
+    this.fs = fs;
     this.windows = {};
-    this.searchEngine = { name: "Google Search", url: "https://www.google.com/search?q=" };
   }
 
   open() {
@@ -79,7 +79,6 @@ export class BrowserApp {
       <div class="window-header">
         <span>Browser</span>
         ${this.wm.getWindowControls()}
-
       </div>
       <div class="tab-bar">
         <div class="tabs-container"></div>
@@ -92,7 +91,6 @@ export class BrowserApp {
           <button class="reload-btn">⟳</button>
         </div>
         <input class="address-bar" type="url" enterkeyhint="go">
-        <button class="settings-btn" title="Settings">⚙</button>
       </nav>
       <nav class="bookmark-bar">
         <button data-url="https://www.google.com/webhp?igu=1">Google</button>
@@ -104,29 +102,6 @@ export class BrowserApp {
         <button data-url="https://www.myinstants.com/en/categories/sound%20effects/us/">SoundBoard</button>
       </nav>
       <div class="iframe-container" style="position:relative;width:100%;height:calc(100% - 112px);"></div>
-
-      <div class="browser-settings-panel" id="browser-settings-panel">
-        <div class="browser-settings-header">
-          <span>Settings</span>
-          <button class="settings-close-btn" title="Close settings">✕</button>
-        </div>
-        <div class="browser-settings-body">
-          <div class="settings-section">
-            <label class="settings-label">Search Engine</label>
-            <div class="settings-current-engine" id="settings-current-engine">Google Search</div>
-            <div class="select-options show">
-              <div class="select-option active-engine" data-name="Google Search" data-url="https://www.google.com/search?q=">
-                <img class="engine-icon" src="https://www.google.com/favicon.ico" onerror="this.style.display='none'">
-                Google Search
-              </div>
-              <div class="select-option" data-name="Bing" data-url="https://www.bing.com/search?q=">
-                <img class="engine-icon" src="https://www.bing.com/favicon.ico" onerror="this.style.display='none'">
-                Bing
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
     `;
 
     desktop.appendChild(win);
@@ -149,8 +124,6 @@ export class BrowserApp {
     this.forwardBtn = win.querySelector(".forward-btn");
     this.reloadBtn = win.querySelector(".reload-btn");
     this.iframeContainer = win.querySelector(".iframe-container");
-    this.settingsPanel = win.querySelector("#browser-settings-panel");
-    this.settingsBtn = win.querySelector(".settings-btn");
 
     this.tabs = [];
     this.currentTabIndex = -1;
@@ -160,26 +133,8 @@ export class BrowserApp {
     this.addressInput.addEventListener("keydown", (e) => {
       if (e.key === "Enter" && this.currentTabIndex >= 0) {
         const raw = this.addressInput.value.trim();
-        const url = this.resolveInput(raw);
-        this.navigate(this.tabs[this.currentTabIndex], url);
+        this.navigateFromInput(this.tabs[this.currentTabIndex], raw);
       }
-    });
-
-    this.settingsBtn.onclick = () => {
-      this.settingsPanel.classList.toggle("open");
-    };
-
-    win.querySelector(".settings-close-btn").onclick = () => {
-      this.settingsPanel.classList.remove("open");
-    };
-
-    win.querySelectorAll(".select-option").forEach((opt) => {
-      opt.addEventListener("click", () => {
-        this.searchEngine = { name: opt.dataset.name, url: opt.dataset.url };
-        win.querySelectorAll(".select-option").forEach((o) => o.classList.remove("active-engine"));
-        opt.classList.add("active-engine");
-        win.querySelector("#settings-current-engine").textContent = opt.dataset.name;
-      });
     });
 
     win.querySelectorAll(".bookmark-bar button").forEach((btn) => {
@@ -200,22 +155,146 @@ export class BrowserApp {
     this.addTab("https://www.google.com/webhp?igu=1");
   }
 
+  openHtml(htmlContent, name, path) {
+    const existing = document.getElementById("browser-win");
+    if (!existing) {
+      this.open();
+    } else {
+      this.wm.bringToFront(existing);
+    }
+
+    const pathSegments = Array.isArray(path) ? path : path ? path.split("/").filter(Boolean) : [];
+    const fullPath = this.fs.CONFIG.ROOT + [...pathSegments, name].join("/");
+
+    const blob = new Blob([htmlContent], { type: "text/html" });
+    const blobUrl = URL.createObjectURL(blob);
+
+    const tabIndex = this.tabs.length;
+    const iframe = document.createElement("iframe");
+    iframe.className = "browser-frame";
+    iframe.style.cssText = "width:100%;height:100%;border:none;position:absolute;top:0;left:0;display:none;";
+    this.iframeContainer.appendChild(iframe);
+
+    const tab = {
+      url: fullPath,
+      history: [fullPath],
+      historyIndex: 0,
+      title: name,
+      iframe,
+      favicon: "/static/icons/firefox.webp",
+      _blobUrl: blobUrl
+    };
+    this.tabs.push(tab);
+
+    const tabBtn = document.createElement("div");
+    tabBtn.className = "tab-btn";
+
+    const faviconImg = document.createElement("img");
+    faviconImg.className = "tab-favicon";
+    faviconImg.src = "/static/icons/files.webp";
+    faviconImg.onerror = () => (faviconImg.src = "/static/icons/default-favicon.png");
+
+    tabBtn.innerHTML = `
+    <span class="tab-title">${name}</span>
+    <button class="tab-close-btn" title="Close tab">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12"><line x1="1" y1="1" x2="11" y2="11" stroke="currentColor" stroke-width="2"/><line x1="11" y1="1" x2="1" y2="11" stroke="currentColor" stroke-width="2"/></svg>
+    </button>
+    `;
+    tabBtn.prepend(faviconImg);
+
+    this.tabsContainer.appendChild(tabBtn);
+
+    tabBtn.querySelector(".tab-close-btn").onclick = (e) => {
+      e.stopPropagation();
+      this.closeTab(tabIndex);
+    };
+    tabBtn.onclick = () => this.switchTab(tabIndex);
+
+    iframe._blobUrl = blobUrl;
+    iframe.src = blobUrl;
+
+    this.switchTab(tabIndex);
+  }
+
+  _isLocalTab(tab) {
+    return tab && tab.url && tab.url.startsWith(this.fs.CONFIG.ROOT);
+  }
+
+  _resolveLocalPath(raw, currentTabUrl) {
+    if (raw.startsWith("/")) return raw;
+    if (raw.startsWith("~/")) return this.fs.CONFIG.ROOT + raw.slice(2);
+    const base =
+      currentTabUrl && currentTabUrl.startsWith(this.fs.CONFIG.ROOT)
+        ? currentTabUrl.substring(0, currentTabUrl.lastIndexOf("/") + 1)
+        : this.fs.CONFIG.ROOT;
+    return base + raw;
+  }
+
+  async _tryLoadFromFs(fsPath) {
+    if (!this.fs) return null;
+    try {
+      const parts = fsPath.replace(/^\/home\/reeyuki\//, "").split("/");
+      const name = parts.pop();
+      const content = await this.fs.getFileContent(parts, name);
+      if (content === "" || content === null || content === undefined) return null;
+      return { content, name, fsPath };
+    } catch {
+      return null;
+    }
+  }
+
+  async navigateFromInput(tab, raw) {
+    if (!raw) return;
+
+    const looksLikeFsPath =
+      raw.startsWith(this.fs.CONFIG.ROOT) ||
+      raw.startsWith("~/") ||
+      (this._isLocalTab(tab) && !raw.startsWith("http") && !/^[\w-]+\.[\w.-]+(\/.*)?$/.test(raw));
+
+    if (looksLikeFsPath) {
+      const fsPath = this._resolveLocalPath(raw, tab.url);
+      const result = await this._tryLoadFromFs(fsPath);
+      if (result) {
+        this._navigateToLocalHtml(tab, result.content, result.name, fsPath);
+        return;
+      }
+    }
+
+    const url = this.resolveInput(raw);
+    this.navigate(tab, url);
+  }
+
+  _navigateToLocalHtml(tab, htmlContent, name, fsPath) {
+    const blob = new Blob([htmlContent], { type: "text/html" });
+    const blobUrl = URL.createObjectURL(blob);
+
+    if (tab.iframe._blobUrl) URL.revokeObjectURL(tab.iframe._blobUrl);
+    tab.iframe._blobUrl = blobUrl;
+    tab.iframe.src = blobUrl;
+
+    if (tab.historyIndex < tab.history.length - 1) {
+      tab.history = tab.history.slice(0, tab.historyIndex + 1);
+    }
+    tab.history.push(fsPath);
+    tab.historyIndex++;
+    tab.url = fsPath;
+    tab.title = name;
+    this.addressInput.value = fsPath;
+    this.updateNavigation(tab);
+
+    const tabBtn = this.tabsContainer.children[this.currentTabIndex];
+    if (tabBtn) tabBtn.querySelector(".tab-title").textContent = name;
+  }
+
   resolveInput(raw) {
     if (!raw) return "";
     if (/^https?:\/\//i.test(raw)) return injectGoogleIgu(raw);
     if (/^[\w-]+\.[\w.-]+(\/.*)?$/.test(raw)) return injectGoogleIgu("https://" + raw);
-    return this.searchEngine.url + encodeURIComponent(raw) + "&igu=1";
+    return "https://www.google.com/search?q=" + encodeURIComponent(raw) + "&igu=1";
   }
 
   addTab(url) {
-    if (!url) {
-      try {
-        const { origin } = new URL(this.searchEngine.url);
-        url = origin + "/";
-      } catch {
-        url = "https://www.google.com/webhp?igu=1";
-      }
-    }
+    if (!url) url = "https://www.google.com/webhp?igu=1";
     url = injectGoogleIgu(url);
     const tabIndex = this.tabs.length;
 
@@ -336,24 +415,46 @@ export class BrowserApp {
     loadViaProxy(tab.iframe, url);
   }
 
-  goBack() {
+  async goBack() {
     const tab = this.tabs[this.currentTabIndex];
     if (!tab || tab.historyIndex <= 0) return;
     tab.historyIndex--;
     tab.url = tab.history[tab.historyIndex];
     this.addressInput.value = tab.url;
     this.updateNavigation(tab);
+    if (tab.url.startsWith(this.fs.CONFIG.ROOT)) {
+      const result = await this._tryLoadFromFs(tab.url);
+      if (result) {
+        this._loadBlobIntoIframe(tab, result.content);
+        return;
+      }
+    }
     loadViaProxy(tab.iframe, tab.url);
   }
 
-  goForward() {
+  async goForward() {
     const tab = this.tabs[this.currentTabIndex];
     if (!tab || tab.historyIndex >= tab.history.length - 1) return;
     tab.historyIndex++;
     tab.url = tab.history[tab.historyIndex];
     this.addressInput.value = tab.url;
     this.updateNavigation(tab);
+    if (tab.url.startsWith(this.fs.CONFIG.ROOT)) {
+      const result = await this._tryLoadFromFs(tab.url);
+      if (result) {
+        this._loadBlobIntoIframe(tab, result.content);
+        return;
+      }
+    }
     loadViaProxy(tab.iframe, tab.url);
+  }
+
+  _loadBlobIntoIframe(tab, htmlContent) {
+    const blob = new Blob([htmlContent], { type: "text/html" });
+    const blobUrl = URL.createObjectURL(blob);
+    if (tab.iframe._blobUrl) URL.revokeObjectURL(tab.iframe._blobUrl);
+    tab.iframe._blobUrl = blobUrl;
+    tab.iframe.src = blobUrl;
   }
 
   updateNavigation(tab) {

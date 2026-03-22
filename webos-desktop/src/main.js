@@ -122,7 +122,7 @@ const notepadApp = new NotepadApp(fileSystemManager, windowManager, null);
 const explorerApp = new ExplorerApp(fileSystemManager, windowManager, notepadApp);
 const calculatorApp = new CalculatorApp(windowManager);
 notepadApp.setExplorer(explorerApp);
-const browserApp = new BrowserApp(windowManager);
+const browserApp = new BrowserApp(windowManager, fileSystemManager);
 const terminalApp = new TerminalApp(fileSystemManager, windowManager);
 const nodeApp = new NodeEditorApp(fileSystemManager, windowManager);
 const pythonApp = new PythonEditorApp(fileSystemManager, windowManager);
@@ -137,7 +137,7 @@ const weatherApp = new WeatherApp(windowManager);
 window.weatherApp = weatherApp;
 const emulatorApp = new EmulatorApp(fileSystemManager, windowManager);
 explorerApp.setEmulator(emulatorApp);
-
+explorerApp.setBrowser(browserApp);
 const appCreatorApp = new AppCreatorApp(fileSystemManager, windowManager);
 
 const appLauncher = new AppLauncher(

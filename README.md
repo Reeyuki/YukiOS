@@ -1,103 +1,79 @@
-# 🖥️ Yuki OS
+# Yuki OS
 
-Yuki OS is a browser-based desktop environment that provides a unified windowed system for games, emulators, web apps, and interactive content. It integrates multiple execution runtimes into a single desktop interface, allowing different technologies to run inside one consistent environment.
-
-Content is normalized into a single interaction model:
-👉 **Click icon → content opens in a window**, regardless of runtime.
+Yuki OS is a browser-based desktop environment that runs games, emulators, and web applications inside a single, consistent system. It provides a windowed interface where different technologies share the same lifecycle, input model, and UI behavior.
 
 ---
 
-## ⚙️ Core Features
+## Overview
 
-### 🪟 Desktop Environment
-
-* 🧩 Windowed multitasking
-* 🖱️ Drag / move / resize windows
-* 🎯 Focus and z-index management
-* 🖼️ Desktop icons and wallpapers
-* 📋 Task management
-* 🧭 Start menu
-* 🚀 App launcher
-
-### 🧠 Application System
-
-* 📚 App registry
-* 🧬 Type-based app launching
-* 🔁 Unified window lifecycle
-* ⚡ Centralized boot system
-* 🧱 Modular app structure
-
-### 🛠️ Built-in Apps
-
-* 📁 File Explorer
-* 💾 Virtual filesystem
-* 🧑‍💻 Terminal
-* 📝 Text editor
-* 🌐 Browser
-* 📷 Camera
-* 🎮 Games system
-* ⚙️ System utilities
+Yuki OS combines multiple execution environments into one desktop-style interface. Instead of switching between separate tools, everything runs within the same system, using a unified window manager and application model.
 
 ---
 
-## 🎮 Multi-Runtime Platform
+## Core Capabilities
 
-Yuki OS supports multiple execution environments:
+### Desktop Environment
 
-* ⚡ Flash (via Ruffle)
-* 🕹️ EmulatorJS (GBA / NDS)
-* 🧪 WebAssembly
-* 🎯 Unity Web builds
-* 🌍 HTML5
-* 📜 JavaScript engines
-* ☁️ CDN-hosted content
+* Windowed multitasking with drag, resize, and focus handling
+* Desktop layout with icons, wallpapers, and task management
+* Start menu and application launcher
 
-All runtimes are integrated into the same desktop, window, input, and lifecycle system.
+### Application System
 
----
+* Central app registry
+* Type-based app loading
+* Shared window lifecycle across all apps
+* Modular structure for adding new functionality
 
-## 📦 Asset System
+### Built-in Tools
 
-Hybrid asset handling model:
-
-* 📦 Bundled static assets
-* ☁️ CDN assets
-* 📡 On-demand streaming
-* 💽 Local caching
-* 🗂️ Metadata-driven loading
-* 🔌 Offline reuse
-
-Assets may be predownloaded, streamed, cached, reused, or served locally.
+* File explorer with virtual filesystem
+* Terminal and text editor
+* Web browser
+* Emulator and game launcher
+* Camera access
+* Task Manager
+* Basic utilities (calculator, weather)
 
 ---
 
-## 🕹️ Game Platform Scope
+## Multi-Runtime Support
 
-Supported content types include:
+Yuki OS supports multiple execution environments under a single interface:
 
-* 🧠 Emulator-based games
-* 🗃️ Flash archive games
-* 🎯 Unity web builds
-* 🧪 WASM ports
-* 🎲 Indie HTML5 games
-* 🔧 Engine ports
+* Flash content via Ruffle
+* Emulator-based systems (GBA, NDS)
+* WebAssembly applications
+* Unity Web builds
+* HTML5 and JavaScript apps
 
-All content runs inside the same desktop environment and window system.
+All runtimes are handled through the same windowing, input, and lifecycle system.
 
 ---
 
-## 🏗️ Architecture
+## Use Case
 
-Yuki OS focuses on platform integration rather than engine reimplementation:
+Yuki OS is designed as a unified platform for interactive content. It works best as a hub for:
 
-* 🔄 Runtime orchestration
-* 🌐 Environment unification
-* 🧭 Loader normalization
-* 📡 Asset routing
-* 🗄️ Filesystem mapping
-* 🎮 Input normalization
-* 🪟 Window lifecycle management
-* ✨ UX consistency
+* browser-based games
+* emulated systems
+* archived web content
+* experimental or mixed-runtime apps
+
+---
+
+## Design Approach
+
+* Consistent UI across all runtimes
+* Isolation between apps with shared system behavior
+* Modular architecture for extending capabilities
+* Focus on running diverse content in a single environment
+
+---
+
+## Scope
+
+Yuki OS is not a full operating system replacement. It is a runtime platform that brings together different web technologies under one interface.
 
 ---
 

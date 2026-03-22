@@ -9,4 +9,3 @@ Add markdown support
 Add pdf support
 Optimize file operations
 Add md support
-Add html support

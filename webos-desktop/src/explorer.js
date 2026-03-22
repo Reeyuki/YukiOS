@@ -7,6 +7,7 @@ import {
   isRomFile,
   isImageFile,
   isVideoFile,
+  isHtmlFile,
   isWallpaperPath,
   readFileAsDataURL,
   readFileAsText,
@@ -54,6 +55,10 @@ export class ExplorerApp {
 
   setEmulator(emulatorApp) {
     this.emulatorApp = emulatorApp;
+  }
+
+  setBrowser(browserApp) {
+    this.browserApp = browserApp;
   }
 
   setDesktopUI(desktopUI) {
@@ -733,6 +738,8 @@ export class ExplorerApp {
         iconEl = `<img src="/static/icons/file.webp" style="width:64px;height:64px;object-fit:cover;border-radius:8px">`;
       } else if (isRomFile(name)) {
         iconEl = buildFileIconHTML(name);
+      } else if (isHtmlFile(name)) {
+        iconEl = buildFileIconHTML(name);
       } else if (isImageFile(name)) {
         const thumbnailSrc =
           itemData.icon === "@content"
@@ -856,6 +863,7 @@ export class ExplorerApp {
       fs: this.fs,
       notepadApp: this.notepadApp,
       emulatorApp: this.emulatorApp,
+      browserApp: this.browserApp,
       windowManager: this.wm
     });
   }

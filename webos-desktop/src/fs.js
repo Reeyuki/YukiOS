@@ -1,10 +1,4 @@
 import BrowserFS from "browserfs";
-const CONFIG = {
-  GRID_SIZE: 80,
-  ROOT: "/home/reeyuki",
-  META_FILE: ".meta.json",
-  LEGACY_KEY: "desktopOS_fileSystem"
-};
 
 export const FileKind = { TEXT: "text", IMAGE: "image", VIDEO: "video", ROM: "rom", OTHER: "other" };
 
@@ -122,6 +116,12 @@ export const defaultStorage = {
 
 export class FileSystemManager {
   constructor() {
+    this.CONFIG = {
+      GRID_SIZE: 80,
+      ROOT: "/home/reeyuki",
+      META_FILE: ".meta.json",
+      LEGACY_KEY: "desktopOS_fileSystem"
+    };
     this.fsReady = this.initFS();
   }
 
@@ -170,14 +170,14 @@ export class FileSystemManager {
   }
 
   async migrateIfNeeded() {
-    const rootExists = await this.exists(CONFIG.ROOT);
+    const rootExists = await this.exists(this.CONFIG.ROOT);
     if (rootExists) return;
-    const legacyExists = await this.exists(CONFIG.LEGACY_KEY);
+    const legacyExists = await this.exists(this.CONFIG.LEGACY_KEY);
     if (!legacyExists) return;
-    const raw = await this.readFile(CONFIG.LEGACY_KEY);
+    const raw = await this.readFile(this.CONFIG.LEGACY_KEY);
     const legacyFS = JSON.parse(raw);
     await this.createFromObject(legacyFS, "/");
-    await this.p("unlink", CONFIG.LEGACY_KEY);
+    await this.p("unlink", this.CONFIG.LEGACY_KEY);
   }
 
   async ensureDefaults() {
@@ -223,7 +223,7 @@ export class FileSystemManager {
   }
 
   async readMeta(dir) {
-    const metaPath = this.join(dir, CONFIG.META_FILE);
+    const metaPath = this.join(dir, this.CONFIG.META_FILE);
     try {
       const data = await this.pRead("readFile", metaPath, "utf8");
       return JSON.parse(data);
@@ -235,7 +235,7 @@ export class FileSystemManager {
   async writeMeta(dir, name, data) {
     const release = await this._acquireMeta(dir);
     try {
-      const metaPath = this.join(dir, CONFIG.META_FILE);
+      const metaPath = this.join(dir, this.CONFIG.META_FILE);
       const meta = await this.readMeta(dir);
       meta[name] = { kind: data.kind, icon: data.icon };
       if (data.faIcon) meta[name].faIcon = data.faIcon;
@@ -248,7 +248,7 @@ export class FileSystemManager {
   async removeMeta(dir, name) {
     const release = await this._acquireMeta(dir);
     try {
-      const metaPath = this.join(dir, CONFIG.META_FILE);
+      const metaPath = this.join(dir, this.CONFIG.META_FILE);
       const meta = await this.readMeta(dir);
       delete meta[name];
       await this.p("writeFile", metaPath, JSON.stringify(meta));
@@ -286,7 +286,7 @@ export class FileSystemManager {
       if (path.startsWith("/")) return path;
       path = [path];
     }
-    return this.join("/", ...CONFIG.ROOT.split("/").filter(Boolean), ...this.normalizePath(path));
+    return this.join("/", ...this.CONFIG.ROOT.split("/").filter(Boolean), ...this.normalizePath(path));
   }
 
   async ensureFolder(path) {
@@ -312,7 +312,7 @@ export class FileSystemManager {
     const result = {};
 
     for (const name of entries) {
-      if (name === CONFIG.META_FILE) continue;
+      if (name === this.CONFIG.META_FILE) continue;
       const full = this.join(dir, name);
       const stat = await this.pStat(full);
       if (stat.isDirectory()) {
@@ -405,7 +405,7 @@ export class FileSystemManager {
       if (meta[oldName]) {
         meta[newName] = meta[oldName];
         delete meta[oldName];
-        await this.p("writeFile", this.join(dir, CONFIG.META_FILE), JSON.stringify(meta));
+        await this.p("writeFile", this.join(dir, this.CONFIG.META_FILE), JSON.stringify(meta));
       }
     } finally {
       release();
@@ -545,7 +545,7 @@ export class FileSystemManager {
       if (meta[oldName]) {
         meta[newName] = meta[oldName];
         delete meta[oldName];
-        await this.p("writeFile", this.join(dir, CONFIG.META_FILE), JSON.stringify(meta));
+        await this.p("writeFile", this.join(dir, this.CONFIG.META_FILE), JSON.stringify(meta));
       }
     } finally {
       release();
