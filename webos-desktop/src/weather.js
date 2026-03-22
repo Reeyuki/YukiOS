@@ -320,11 +320,8 @@ export class WeatherApp {
       </style>
       <div class="window-header">
         <span>WEATHER</span>
-        <div class="window-controls">
-          <button class="minimize-btn" title="Minimize">−</button>
-          <button class="maximize-btn" title="Maximize">□</button>
-          <button class="close-btn" title="Close">X</button>
-        </div>
+        ${this.wm.getWindowControls()}
+
       </div>
       <div class="window-content">
         <div class="wx-toolbar">

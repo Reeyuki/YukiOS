@@ -86,11 +86,8 @@ export class EmulatorApp {
     win.innerHTML = `
       <div class="window-header">
         <span>Emulator</span>
-        <div class="window-controls">
-          <button class="minimize-btn" title="Minimize">−</button>
-          <button class="maximize-btn" title="Maximize">□</button>
-          <button class="close-btn" title="Close">X</button>
-        </div>
+        ${this.wm.getWindowControls()}
+
       </div>
       <div class="window-content" style="display:flex;flex-direction:column;height:calc(100% - 32px);background:#0d0d10;overflow:hidden;">
         <style>
@@ -259,7 +256,7 @@ export class EmulatorApp {
     this.wm.makeDraggable(win);
     this.wm.makeResizable(win);
     this.wm.setupWindowControls(win);
-    this.wm.addToTaskbar(win.id, "Emulator", "fas fa-gamepad", "#6677dd");
+    this.wm.addToTaskbar(win.id, "Emulator", "/static/icons/emulator.webp", "#6677dd");
     this._setupLauncher(win, winId);
     this._setupTabs(win, winId);
     this._loadLibrary(win, winId);
@@ -463,7 +460,7 @@ export class EmulatorApp {
     let binary = "";
     for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
     const base64 = "data:application/octet-stream;base64," + btoa(binary);
-    await this.fs.createFile(desktopPath, file.name, base64, FileKind.OTHER, null, "fas fa-gamepad");
+    await this.fs.createFile(desktopPath, file.name, base64, FileKind.OTHER, null, "/static/icons/emulator.webp");
   }
 
   _launchRom(file, core) {
@@ -492,11 +489,8 @@ export class EmulatorApp {
     win.innerHTML = `
       <div class="window-header">
         <span>${gameTitle}</span>
-        <div class="window-controls">
-          <button class="minimize-btn" title="Minimize">−</button>
-          <button class="maximize-btn" title="Maximize">□</button>
-          <button class="close-btn" title="Close">X</button>
-        </div>
+        ${this.wm.getWindowControls()}
+
       </div>
       <div class="window-content" style="padding:0;overflow:hidden;height:calc(100% - 32px);background:#000;">
         <iframe src="${shellUrl}" style="width:100%;height:100%;border:none;display:block;" allow="autoplay; fullscreen"></iframe>
@@ -507,7 +501,7 @@ export class EmulatorApp {
     this.wm.makeDraggable(win);
     this.wm.makeResizable(win);
     this.wm.setupWindowControls(win);
-    this.wm.addToTaskbar(win.id, gameTitle, "fas fa-gamepad", "#6677dd");
+    this.wm.addToTaskbar(win.id, gameTitle, "/static/icons/emulator.webp", "#6677dd");
     this.wm.bringToFront(win);
 
     win.querySelector(".close-btn").addEventListener(

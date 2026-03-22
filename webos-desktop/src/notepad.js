@@ -23,11 +23,8 @@ export class NotepadApp {
     win.innerHTML = `
       <div class="window-header">
         <span>${title} - Notepad</span>
-        <div class="window-controls">
-          <button class="minimize-btn" title="Minimize">−</button>
-          <button class="maximize-btn" title="Maximize">□</button>
-          <button class="close-btn" title="Close">X</button>
-        </div>
+        ${this.wm.getWindowControls()}
+
       </div>
       <div class="notepad-menu">
         <button class="notepad-btn" data-action="save">Save</button>

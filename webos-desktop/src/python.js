@@ -92,11 +92,8 @@ export class PythonEditorApp {
     return `
       <div class="window-header">
         <span>Python Editor</span>
-        <div class="window-controls">
-          <button class="minimize-btn" title="Minimize">−</button>
-          <button class="maximize-btn" title="Maximize">□</button>
-          <button class="close-btn" title="Close">×</button>
-        </div>
+        ${this.wm.getWindowControls()}
+
       </div>
 
       <div class="py-version-screen">
@@ -349,11 +346,8 @@ export class PythonEditorApp {
     return `
       <div class="window-header">
         <span>Python Editor</span>
-        <div class="window-controls">
-          <button class="minimize-btn" title="Minimize">−</button>
-          <button class="maximize-btn" title="Maximize">□</button>
-          <button class="close-btn" title="Close">×</button>
-        </div>
+        ${this.wm.getWindowControls()}
+
       </div>
 
       <div class="python-interpreter">

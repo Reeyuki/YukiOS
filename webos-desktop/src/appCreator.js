@@ -96,11 +96,8 @@ export class AppCreatorApp {
     win.innerHTML = `
       <div class="window-header">
         <span>App Creator</span>
-        <div class="window-controls">
-          <button class="minimize-btn" title="Minimize">−</button>
-          <button class="maximize-btn" title="Maximize">□</button>
-          <button class="close-btn" title="Close">X</button>
-        </div>
+          ${this.wm.getWindowControls()}
+
       </div>
       <div class="window-content">
         <div class="ac-pane">
@@ -498,11 +495,8 @@ export class AppCreatorApp {
     win.innerHTML = `
       <div class="window-header">
         <span>${name} — Preview</span>
-        <div class="window-controls">
-          <button class="minimize-btn" title="Minimize">−</button>
-          <button class="maximize-btn" title="Maximize">□</button>
-          <button class="close-btn" title="Close">X</button>
-        </div>
+        ${this.wm.getWindowControls()}
+
       </div>
       <div class="window-content">
         <iframe src="${url}" style="width:100%;height:100%;border:none;" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>

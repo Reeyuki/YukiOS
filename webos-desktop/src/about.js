@@ -19,11 +19,7 @@ export class AboutApp {
     win.innerHTML = `
       <div class="window-header">
         <span>About Yuki OS</span>
-        <div class="window-controls">
-          <button class="minimize-btn" title="Minimize">−</button>
-          <button class="maximize-btn" title="Maximize">□</button>
-          <button class="close-btn" title="Close">X</button>
-        </div>
+        ${this.wm.getWindowControls()}
       </div>
       <div class="window-content" style="padding:0; height: calc(100% - 40px); overflow: hidden;">
         <div class="about-app-container" style="padding: 1.75rem 1.25rem 4rem; max-height: 85vh; overflow: auto; display: flex; flex-direction: column; box-sizing: border-box;">

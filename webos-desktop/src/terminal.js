@@ -279,11 +279,8 @@ export class TerminalApp {
     win.innerHTML = `
     <div class="window-header">
       <span>Terminal</span>
-      <div class="window-controls">
-        <button class="minimize-btn">−</button>
-        <button class="maximize-btn">□</button>
-        <button class="close-btn">X</button>
-      </div>
+        ${this.wm.getWindowControls()}
+
     </div>
     <div class="window-content" style="background:#000;color:white;font-family:monospace;padding:10px;overflow-y:auto;height:calc(100% - 40px);">
       <div id="terminal-output" style="white-space:pre;"></div>

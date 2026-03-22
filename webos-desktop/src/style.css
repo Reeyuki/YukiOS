@@ -347,6 +347,63 @@ input {
   fill: #fff;
 }
 
+.window-controls.mac-controls {
+  flex-direction: row;
+  gap: 8px;
+  padding: 0;
+  align-items: center;
+}
+.window-controls.mac-controls button {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: transparent;
+  padding: 0;
+  flex-shrink: 0;
+  border: none;
+  position: relative;
+  overflow: visible;
+}
+.window-controls.mac-controls button::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.15s;
+  background-image: var(--mac-icon);
+  background-size: 7px 7px;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+.window-controls.mac-controls button:hover::after {
+  opacity: 1;
+}
+.window-controls.mac-controls button:hover {
+  transform: none;
+}
+.mac-close {
+  background: #ff5f57 !important;
+  box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.25);
+}
+.mac-minimize {
+  background: #febc2e !important;
+  box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.2);
+}
+.mac-maximize {
+  background: #28c840 !important;
+  box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.2);
+}
+.mac-close {
+  --mac-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Cpath d='M1.5 1.5l5 5M6.5 1.5l-5 5' stroke='%234d0000' stroke-width='1.2' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+.mac-minimize {
+  --mac-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Cpath d='M1.5 4h5' stroke='%234d3800' stroke-width='1.2' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+.mac-maximize {
+  --mac-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Cpath d='M4 1v6M1 4h6' stroke='%23003a00' stroke-width='1.2' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+
 /* ══════════════════════════════════════════════
    TASKBAR
 ══════════════════════════════════════════════ */
@@ -1072,7 +1129,7 @@ input {
   font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.12em;
-  text-transform: uppercase;
+
   color: rgba(255, 255, 255, 0.4);
 }
 
@@ -1151,7 +1208,7 @@ input {
 .wp-preview-label {
   font-size: 11px;
   letter-spacing: 0.1em;
-  text-transform: uppercase;
+
   color: rgba(255, 255, 255, 0.5);
   margin-bottom: 10px;
 }
@@ -1710,7 +1767,7 @@ input {
   font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.04em;
-  text-transform: uppercase;
+
   color: rgba(255, 255, 255, 0.55);
   border-bottom: 1px solid rgba(255, 255, 255, 0.07);
   flex-shrink: 0;
@@ -1755,7 +1812,7 @@ input {
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.06em;
-  text-transform: uppercase;
+
   color: rgba(255, 255, 255, 0.4);
   margin-bottom: 8px;
 }
@@ -1877,7 +1934,7 @@ input {
   font-family: "Syne", sans-serif;
   font-size: 0.75rem;
   letter-spacing: 0.12em;
-  text-transform: uppercase;
+
   color: rgba(255, 255, 255, 0.35);
   user-select: none;
 }
@@ -2195,7 +2252,7 @@ input {
   padding: 5px 10px;
   font-size: 11px;
   font-weight: 600;
-  text-transform: uppercase;
+
   letter-spacing: 0.08em;
   color: #4a5568;
   background: #0f0f1a;
@@ -2729,7 +2786,6 @@ select:focus {
   --cam-muted: #6e7681;
   --cam-header-h: 36px;
   --cam-radius: 6px;
-  --cam-font-mono: "Share Tech Mono", monospace;
   --cam-font-ui: "Barlow", sans-serif;
   --cam-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
 }
@@ -2773,10 +2829,9 @@ select:focus {
 
 #camera-win .window-header > span,
 #history-win .window-header > span {
-  font-family: var(--cam-font-mono);
   font-size: 1.1em;
   letter-spacing: 0.12em;
-  text-transform: uppercase;
+
   color: var(--cam-muted);
 }
 
@@ -2860,7 +2915,6 @@ select:focus {
   top: 10px;
   left: 30px;
   z-index: 10;
-  font-family: var(--cam-font-mono);
   font-size: 13px;
   color: var(--cam-accent);
   text-shadow: 0 0 6px var(--cam-accent);
@@ -2879,16 +2933,12 @@ select:focus {
 /* Base button reset */
 #camera-win button,
 #history-win button {
-  font-family: var(--cam-font-mono);
   font-size: 11px;
   letter-spacing: 0.1em;
-  text-transform: uppercase;
+
   cursor: pointer;
-  border-radius: 3px;
-  border: 1px solid var(--cam-border);
   background: var(--cam-panel);
   color: var(--cam-text);
-  padding: 7px 16px !important;
   transition:
     background 0.15s,
     border-color 0.15s,
@@ -2937,10 +2987,9 @@ select:focus {
 
 /* ── Download link ─────────────────────────────────────── */
 #download-link {
-  font-family: var(--cam-font-mono);
   font-size: 11px;
   letter-spacing: 0.1em;
-  text-transform: uppercase;
+
   color: var(--cam-green) !important;
   text-decoration: none;
   border: 1px solid var(--cam-green);
@@ -2987,7 +3036,6 @@ select:focus {
 }
 
 #history-list span {
-  font-family: var(--cam-font-mono);
   font-size: 1.1em;
   color: var(--cam-text);
   flex: 1;
@@ -3024,10 +3072,9 @@ select:focus {
   align-items: center;
   justify-content: space-between;
   padding: 0 1.1em;
-  font-family: var(--cam-font-mono);
   font-size: 1.1em;
   letter-spacing: 0.12em;
-  text-transform: uppercase;
+
   color: var(--cam-muted);
 }
 
@@ -3099,7 +3146,7 @@ select:focus {
 .ac-section-title {
   font-size: 11px;
   letter-spacing: 0.14em;
-  text-transform: uppercase;
+
   color: var(--tx2);
   border-bottom: 1px solid var(--glass-border);
   padding-bottom: 8px;
@@ -3132,7 +3179,7 @@ select:focus {
   font-size: 1.1em;
   letter-spacing: 0.05em;
   color: var(--tx2);
-  text-transform: uppercase;
+
   margin-bottom: 6px;
   display: block;
   font-weight: 500;

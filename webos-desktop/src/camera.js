@@ -53,10 +53,14 @@ export class CameraApp {
     const closebtn = win.querySelector(".close-btn");
     closebtn.addEventListener("click", () => {
       this.stopCamera();
-      if (this.historyWin) this.historyWin.remove();
+      if (this.historyWin) {
+        this.historyWin.remove();
+        this.historyWin = null;
+      }
+      this.wm.removeFromTaskbar(win.id);
+      win.style.animation = "popUp 0.5s ease forwards";
+      setTimeout(() => win.remove(), 500);
     });
-
-    this.wm.registerCloseWindow(closebtn, win.id);
 
     this.video = win.querySelector("#camera-video");
     this.takePhotoBtn = win.querySelector("#take-photo-btn");
@@ -221,12 +225,6 @@ export class CameraApp {
     });
 
     await this.saveRecordingToDB(rec);
-
-    if (this.recordings.length > 5) {
-      const removed = this.recordings.pop();
-      URL.revokeObjectURL(removed.url);
-      await this.deleteRecordingFromDB(removed.id);
-    }
   }
 
   openHistoryWindow() {
@@ -331,9 +329,8 @@ export class CameraApp {
     playerWin.innerHTML = `
       <div class="window-header">
         <span>Playback</span>
-        <div class="window-controls">
-          <button class="close-btn">X</button>
-        </div>
+        ${this.wm.getWindowControls()}
+
       </div>
       <video controls autoplay style="width:100%; height:90%;"></video>
     `;

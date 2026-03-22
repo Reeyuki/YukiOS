@@ -65,11 +65,8 @@ export class NodeEditorApp {
     return `
       <div class="window-header">
         <span>${title} — NodeJS Code Editor</span>
-        <div class="window-controls">
-          <button class="minimize-btn" title="Minimize">−</button>
-          <button class="maximize-btn" title="Maximize">□</button>
-          <button class="close-btn" title="Close">×</button>
-        </div>
+        ${this.wm.getWindowControls()}
+
       </div>
 
       <div class="python-interpreter" style="display:flex;flex-direction:column;height:calc(100% - 36px)">

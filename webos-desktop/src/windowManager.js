@@ -383,13 +383,20 @@ export class WindowManager {
       document.addEventListener("mouseup", stopDrag);
     });
   }
+
   getWindowControls() {
+    if (window._settings?.macOsControls) {
+      return `<div class="window-controls mac-controls">
+        <button class="close-btn mac-btn mac-close" title="Close"></button>
+        <button class="minimize-btn mac-btn mac-minimize" title="Minimize"></button>
+        <button class="maximize-btn mac-btn mac-maximize" title="Maximize"></button>
+      </div>`;
+    }
     return `<div class="window-controls">
-              <button class="minimize-btn" title="Minimize">−</button>
-              <button class="maximize-btn" title="Maximize">□</button>
-              <button class="close-btn" title="Close">X</button>
-            </div>
-    `;
+      <button class="minimize-btn" title="Minimize"><svg viewBox="0 0 10 1" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h10v1H0z"></path></svg></button>
+      <button class="maximize-btn" title="Maximize"><svg viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg"><path d="M0 0v10h10V0H0zm1 1h8v8H1V1z"></path></svg></button>
+      <button class="close-btn" title="Close"><svg viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg"><path d="M10.2.7L9.5 0 5.1 4.4.7 0 0 .7l4.4 4.4L0 9.5l.7.7 4.4-4.4 4.4 4.4.7-.7-4.4-4.4z"></path></svg></button>
+    </div>`;
   }
 
   showPopup(text) {

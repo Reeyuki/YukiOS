@@ -78,11 +78,8 @@ export class BrowserApp {
     win.innerHTML = `
       <div class="window-header">
         <span>Browser</span>
-        <div class="window-controls">
-          <button class="minimize-btn" title="Minimize">−</button>
-          <button class="maximize-btn" title="Maximize">□</button>
-          <button class="close-btn" title="Close">X</button>
-        </div>
+        ${this.wm.getWindowControls()}
+
       </div>
       <div class="tab-bar">
         <div class="tabs-container"></div>

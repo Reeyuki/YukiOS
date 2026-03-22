@@ -11,7 +11,8 @@ export const StorageKeys = {
   wallpaperIndexKey: "yukiOS_wallpaperIndex",
   lastBoot: "yukiOS_lastBoot",
   cycleWallpaper: "yukiOS_cycleWallpaper",
-  manualWallpaper: "yukiOS_manualWallpaper"
+  manualWallpaper: "yukiOS_manualWallpaper",
+  macOsControls: "yukiOS_macOsControls"
 };
 
 export class SettingsApp {
@@ -23,7 +24,8 @@ export class SettingsApp {
         username: localStorage.getItem(StorageKeys.username) ?? "",
         bootAnimation: localStorage.getItem(StorageKeys.bootAnimation) !== "false",
         weather: localStorage.getItem(StorageKeys.weather) !== "false",
-        cycleWallpaper: localStorage.getItem(StorageKeys.cycleWallpaper) !== "false"
+        cycleWallpaper: localStorage.getItem(StorageKeys.cycleWallpaper) !== "false",
+        macOsControls: localStorage.getItem(StorageKeys.macOsControls) === "true"
       };
 
       this._applyUsername(this._settings.username);
@@ -66,16 +68,13 @@ export class SettingsApp {
   }
 
   _buildHTML() {
-    const { bootAnimation, weather, cycleWallpaper } = this._settings;
+    const { bootAnimation, weather, cycleWallpaper, macOsControls } = this._settings;
 
     return `
       <div class="window-header">
         <span>Settings</span>
-        <div class="window-controls">
-          <button class="minimize-btn" title="Minimize">−</button>
-          <button class="maximize-btn" title="Maximize">□</button>
-          <button class="close-btn" title="Close">×</button>
-        </div>
+        ${this.wm.getWindowControls()}
+
       </div>
 
       <div class="stt-shell">
@@ -136,6 +135,17 @@ export class SettingsApp {
               </div>
               <label class="stt-toggle" aria-label="Toggle taskbar weather">
                 <input type="checkbox" id="settingsWeather" ${weather ? "checked" : ""} />
+                <span class="stt-track"><span class="stt-thumb"></span></span>
+              </label>
+            </div>
+
+            <div class="stt-row">
+              <div class="stt-label-group">
+                <span class="stt-label-title">macOS Window Controls</span>
+                <span class="stt-label-desc">Use macOS-style traffic light buttons on window title bars</span>
+              </div>
+              <label class="stt-toggle" aria-label="Toggle macOS window controls">
+                <input type="checkbox" id="settingsMacControls" ${macOsControls ? "checked" : ""} />
                 <span class="stt-track"><span class="stt-thumb"></span></span>
               </label>
             </div>
@@ -379,6 +389,7 @@ export class SettingsApp {
     const bootAnimToggle = win.querySelector("#settingsBootAnimation");
     const weatherToggle = win.querySelector("#settingsWeather");
     const cycleWallpaperToggle = win.querySelector("#settingsCycleWallpaper");
+    const macControlsToggle = win.querySelector("#settingsMacControls");
     const resetBtn = win.querySelector("#settingsResetBtn");
     const dataResetBtn = win.querySelector("#settingsDataResetBtn");
     const status = win.querySelector("#settingsStatus");
@@ -399,15 +410,17 @@ export class SettingsApp {
       const bootAnimation = bootAnimToggle.checked;
       const weather = weatherToggle.checked;
       const cycleWallpaper = cycleWallpaperToggle.checked;
+      const macOsControls = macControlsToggle.checked;
 
       localStorage.setItem(StorageKeys.username, username);
       localStorage.setItem(StorageKeys.bootAnimation, String(bootAnimation));
       localStorage.setItem(StorageKeys.weather, String(weather));
       localStorage.setItem(StorageKeys.cycleWallpaper, String(cycleWallpaper));
+      localStorage.setItem(StorageKeys.macOsControls, String(macOsControls));
 
       const weatherChanged = weather !== this._settings.weather;
 
-      Object.assign(this._settings, { username, bootAnimation, weather, cycleWallpaper });
+      Object.assign(this._settings, { username, bootAnimation, weather, cycleWallpaper, macOsControls });
       Object.assign(window._settings, this._settings);
 
       this._applyUsername(username);
@@ -428,6 +441,7 @@ export class SettingsApp {
       bootAnimToggle.checked = true;
       weatherToggle.checked = true;
       cycleWallpaperToggle.checked = true;
+      macControlsToggle.checked = false;
       save();
       showStatus("Settings reset.");
     };
@@ -442,6 +456,7 @@ export class SettingsApp {
     bootAnimToggle.addEventListener("change", save);
     weatherToggle.addEventListener("change", save);
     cycleWallpaperToggle.addEventListener("change", save);
+    macControlsToggle.addEventListener("change", save);
   }
 
   resetAllData = () => {

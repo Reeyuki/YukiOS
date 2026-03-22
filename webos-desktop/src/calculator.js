@@ -19,11 +19,8 @@ export class CalculatorApp {
     win.innerHTML = `
       <div class="window-header calc-header">
         <span>Calculator</span>
-        <div class="window-controls">
-          <button class="minimize-btn">−</button>
-          <button class="maximize-btn">□</button>
-          <button class="close-btn">X</button>
-        </div>
+        ${this.wm.getWindowControls()}
+
       </div>
       <div class="calc-body">
         <div class="calc-history" id="calc-history-${winId}"></div>

@@ -1208,7 +1208,9 @@ export class DesktopUI {
     const title = `Properties: ${name}`;
     const propsWin = this.appLauncher.wm.createWindow(`${icon.id || Date.now()}-props`, title, "300px", "auto");
     propsWin.innerHTML = `
-      <div class="window-header"><span>${title}</span><div class="window-controls"><button class="minimize-btn">−</button><button class="maximize-btn">□</button><button class="close-btn">X</button></div></div>
+      <div class="window-header"><span>${title}</span>
+        ${this.wm.getWindowControls()}
+
       <div class="window-content" style="width:100%;height:100%;overflow:auto;user-select:text;padding:10px;">${contentHtml}</div>
     `;
     desktop.appendChild(propsWin);

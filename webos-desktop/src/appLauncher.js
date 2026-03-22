@@ -294,12 +294,8 @@ export class AppLauncher {
     win.innerHTML = `
         <div class="window-header">
             <span>${title}</span>
-            <div class="window-controls">
-                <button class="minimize-btn" title="Minimize">−</button>
-                <button class="external-btn" title="Open in External">↗</button>
-                <button class="maximize-btn" title="Maximize">□</button>
-                <button class="close-btn" title="Close">X</button>
-            </div>
+                    ${this.wm.getWindowControls()}
+
         </div>
         <div class="window-content" style="width:100%; height:100%; overflow:hidden;">${contentHtml}</div>
     `;
