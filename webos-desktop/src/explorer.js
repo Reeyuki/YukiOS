@@ -105,6 +105,7 @@ export class ExplorerApp {
           <div class="start-item" data-path="Documents"><img src="/static/icons/notepad.webp" class="sidebar-icon">Documents</div>
           <div class="start-item" data-path="Desktop"><i class="fas fa-desktop sidebar-icon-fa"></i>Desktop</div>
           <div class="start-item" data-path="Pictures"><i class="fas fa-image sidebar-icon-fa"></i>Pictures</div>
+          <div class="start-item" data-path="Videos"><i class="fas fa-video sidebar-icon-fa"></i>Videos</div>
           <div class="start-item" data-path="Pictures/Wallpapers"><i class="fas fa-panorama sidebar-icon-fa"></i>Wallpapers</div>
         </div>
         <div class="explorer-main" id="${winId}-view"></div>
@@ -742,9 +743,12 @@ export class ExplorerApp {
     const kind = fileKindFromName(name);
     let content, icon;
 
-    if (kind === FileKind.IMAGE || kind === FileKind.VIDEO) {
+    if (kind === FileKind.IMAGE) {
       content = await readFileAsDataURL(file);
-      icon = kind === FileKind.IMAGE ? content : "/static/icons/file.webp";
+      icon = "@content";
+    } else if (kind === FileKind.VIDEO) {
+      content = await readFileAsDataURL(file);
+      icon = "/static/icons/file.webp";
     } else if (kind === FileKind.ROM) {
       content = await readFileAsDataURL(file);
       icon = "rom";

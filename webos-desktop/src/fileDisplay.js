@@ -109,10 +109,21 @@ export async function openFileWith({ name, path, fs, notepadApp, emulatorApp, wi
     emulatorApp._launchRom(file, detectCore(name));
     return;
   }
+
+  if (isVideoFile(name)) {
+    let src = await fs.getFileContent(path, name);
+    if (!src && fs.readBinaryFile) {
+      const folderPath = Array.isArray(path) ? path.join("/") : path;
+      const blob = await fs.readBinaryFile(folderPath, name);
+      if (blob) src = URL.createObjectURL(blob);
+    }
+    if (src) openMediaViewer(name, src, FileKind.VIDEO, windowManager);
+    return;
+  }
+
   const content = await fs.getFileContent(path, name);
-  if (isImageFile(name) || isVideoFile(name)) {
-    const kind = isVideoFile(name) ? FileKind.VIDEO : FileKind.IMAGE;
-    openMediaViewer(name, content, kind, windowManager);
+  if (isImageFile(name)) {
+    openMediaViewer(name, content, FileKind.IMAGE, windowManager);
     return;
   }
   notepadApp.open(name, content, path);

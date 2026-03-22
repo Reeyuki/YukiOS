@@ -1151,6 +1151,7 @@ input {
     transform 0.15s;
   box-shadow: 0 2px 1.1em rgba(108, 99, 255, 0.35);
   flex-shrink: 0;
+  margin-left: 20px;
 }
 
 .wp-random-btn:hover {
@@ -1426,7 +1427,6 @@ input {
   display: block;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 /* ══════════════════════════════════════════════

@@ -177,10 +177,12 @@ export class SystemUtilities {
         });
     Object.assign(el.style, {
       position: "fixed",
-      inset: "0",
-      width: "100vw",
-      height: "100vh",
+      top: "50%",
+      left: "50%",
+      width: "100%",
+      height: "100%",
       objectFit: "cover",
+      transform: "translate(-50%, -50%)",
       zIndex: "-1",
       pointerEvents: "none",
       userSelect: "none"

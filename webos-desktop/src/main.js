@@ -129,7 +129,7 @@ const pythonApp = new PythonEditorApp(fileSystemManager, windowManager);
 pythonApp.setExplorer(explorerApp);
 nodeApp.setExplorer(explorerApp);
 const musicPlayer = new MusicPlayer();
-const cameraApp = new CameraApp(windowManager);
+const cameraApp = new CameraApp(windowManager, fileSystemManager);
 const aboutApp = new AboutApp(windowManager);
 const settingsApp = new SettingsApp(windowManager);
 const taskManagerApp = new TaskManagerApp(windowManager);

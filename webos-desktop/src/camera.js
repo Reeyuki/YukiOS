@@ -1,7 +1,9 @@
 import { desktop } from "./desktop.js";
+
 export class CameraApp {
-  constructor(windowManager) {
+  constructor(windowManager, fileSystemManager) {
     this.wm = windowManager;
+    this.fs = fileSystemManager;
     this.stream = null;
     this.mediaRecorder = null;
     this.recordedChunks = [];
@@ -50,6 +52,7 @@ export class CameraApp {
     this.wm.setupWindowControls(win);
     this.wm.addToTaskbar(win.id, "Camera", "/static/icons/obs.webp");
     this.wm.bringToFront(win);
+
     const closebtn = win.querySelector(".close-btn");
     closebtn.addEventListener("click", () => {
       this.stopCamera();
@@ -84,7 +87,7 @@ export class CameraApp {
     this.stopRecordBtn.onclick = () => this.stopRecording();
     this.historyBtn.onclick = () => this.openHistoryWindow();
     this.startScreenBtn.onclick = () => this.startScreenRecording();
-    this.db = this.initDB();
+
     this.restoreHistory();
   }
 
@@ -129,7 +132,6 @@ export class CameraApp {
       this.downloadLink.download = `video-${Date.now()}.webm`;
       this.downloadLink.textContent = "Download Video";
       this.downloadLink.style.display = "block";
-      if (this.historyWin) this.renderHistory();
     };
 
     this.mediaRecorder.start();
@@ -178,7 +180,6 @@ export class CameraApp {
         this.activeStream.getTracks().forEach((t) => t.stop());
         this.activeStream = null;
         this.video.srcObject = this.stream;
-        if (this.historyWin) this.renderHistory();
       };
 
       screenStream.getVideoTracks()[0].onended = () => {
@@ -213,18 +214,18 @@ export class CameraApp {
   }
 
   async addRecording(url, blob) {
-    const rec = {
-      id: crypto.randomUUID(),
-      name: `Recording ${new Date().toLocaleTimeString()}`,
-      blob
-    };
+    const displayName = `Recording ${new Date().toLocaleTimeString()}`;
+    const fileName = `recording-${Date.now()}.webm`;
+    const savedName = await this.fs.writeBinaryFile("Videos", fileName, blob, "video", "/static/icons/obs.webp");
 
     this.recordings.unshift({
-      ...rec,
-      url: URL.createObjectURL(blob)
+      id: savedName,
+      name: displayName,
+      url,
+      blob
     });
 
-    await this.saveRecordingToDB(rec);
+    if (this.historyWin) this.renderHistory();
   }
 
   openHistoryWindow() {
@@ -302,14 +303,16 @@ export class CameraApp {
       list.appendChild(row);
     });
   }
+
   async renameRecording(id) {
     const rec = this.recordings.find((r) => r.id === id);
     if (!rec) return;
     const name = prompt("Rename recording:", rec.name);
     if (!name) return;
+    const newFileName = `${name}.webm`;
+    await this.fs.renameBinaryFile("Videos", rec.id, newFileName);
+    rec.id = newFileName;
     rec.name = name;
-    const dbRec = { id, name, blob: rec.blob };
-    await this.saveRecordingToDB(dbRec);
     this.renderHistory();
   }
 
@@ -317,8 +320,8 @@ export class CameraApp {
     const index = this.recordings.findIndex((r) => r.id === id);
     if (index === -1) return;
     URL.revokeObjectURL(this.recordings[index].url);
+    await this.fs.deleteBinaryFile("Videos", id);
     this.recordings.splice(index, 1);
-    await this.deleteRecordingFromDB(id);
     this.renderHistory();
   }
 
@@ -330,7 +333,6 @@ export class CameraApp {
       <div class="window-header">
         <span>Playback</span>
         ${this.wm.getWindowControls()}
-
       </div>
       <video controls autoplay style="width:100%; height:90%;"></video>
     `;
@@ -357,49 +359,23 @@ export class CameraApp {
     }
   }
 
-  async initDB() {
-    return new Promise((resolve, reject) => {
-      const req = indexedDB.open("camera-recordings-db", 1);
-      req.onupgradeneeded = (e) => {
-        const db = e.target.result;
-        db.createObjectStore("recordings", { keyPath: "id" });
-      };
-      req.onsuccess = (e) => resolve(e.target.result);
-      req.onerror = (e) => reject(e);
-    });
-  }
-
-  async saveRecordingToDB(rec) {
-    const db = await this.db;
-    return new Promise((resolve) => {
-      const tx = db.transaction("recordings", "readwrite");
-      tx.objectStore("recordings").put(rec);
-      tx.oncomplete = resolve;
-    });
-  }
-
-  async deleteRecordingFromDB(id) {
-    const db = await this.db;
-    return new Promise((resolve) => {
-      const tx = db.transaction("recordings", "readwrite");
-      tx.objectStore("recordings").delete(id);
-      tx.oncomplete = resolve;
-    });
-  }
-
-  async loadRecordingsFromDB() {
-    const db = await this.db;
-    return new Promise((resolve) => {
-      const tx = db.transaction("recordings", "readonly");
-      const req = tx.objectStore("recordings").getAll();
-      req.onsuccess = () => resolve(req.result);
-    });
-  }
   async restoreHistory() {
-    const stored = await this.loadRecordingsFromDB();
-    this.recordings = stored.map((r) => ({
-      ...r,
-      url: URL.createObjectURL(r.blob)
-    }));
+    await this.fs.fsReady;
+    const folder = await this.fs.getFolder("Videos").catch(() => ({}));
+    const entries = Object.keys(folder).filter((k) => folder[k].type === "file");
+
+    this.recordings = [];
+    for (const name of entries) {
+      const blob = await this.fs.readBinaryFile("Videos", name);
+      if (!blob) continue;
+      this.recordings.push({
+        id: name,
+        name: name.replace(/\.webm$/, ""),
+        url: URL.createObjectURL(blob),
+        blob
+      });
+    }
+
+    if (this.historyWin) this.renderHistory();
   }
 }

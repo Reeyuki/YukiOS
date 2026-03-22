@@ -114,7 +114,8 @@ export const defaultStorage = {
           }
         }
       },
-      Music: {}
+      Music: {},
+      Videos: {}
     }
   }
 };
@@ -146,10 +147,25 @@ export class FileSystemManager {
     return new Promise((resolve) => {
       BrowserFS.configure({ fs: "IndexedDB", options: {} }, async () => {
         this.fs = BrowserFS.BFSRequire("fs");
+        await this.initBlobDB();
         await this.migrateIfNeeded();
         await this.ensureDefaults();
         resolve();
       });
+    });
+  }
+
+  initBlobDB() {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open("fs-blobs-db", 1);
+      req.onupgradeneeded = (e) => {
+        e.target.result.createObjectStore("blobs", { keyPath: "path" });
+      };
+      req.onsuccess = (e) => {
+        this.blobDB = e.target.result;
+        resolve();
+      };
+      req.onerror = (e) => reject(e);
     });
   }
 
@@ -261,8 +277,10 @@ export class FileSystemManager {
     const ext = fileName.split(".").pop().toLowerCase();
     if (["png", "jpg", "jpeg", "gif", "webp"].includes(ext)) return FileKind.IMAGE;
     if (["txt", "js", "json", "md", "html", "css"].includes(ext)) return FileKind.TEXT;
+    if (["mp4", "webm", "mov", "avi", "mkv"].includes(ext)) return FileKind.VIDEO;
     return FileKind.OTHER;
   }
+
   resolveDir(path = []) {
     if (typeof path === "string") {
       if (path.startsWith("/")) return path;
@@ -270,6 +288,7 @@ export class FileSystemManager {
     }
     return this.join("/", ...CONFIG.ROOT.split("/").filter(Boolean), ...this.normalizePath(path));
   }
+
   async ensureFolder(path) {
     await this.fsReady;
     const dir = this.resolveDir(path);
@@ -457,5 +476,93 @@ export class FileSystemManager {
     } catch {
       return false;
     }
+  }
+
+  async writeBinaryFile(folderPath, name, blob, kind = null, icon = null) {
+    await this.fsReady;
+    const uniqueName = await this.getUniqueFileName(folderPath, name);
+    const dir = this.resolveDir(folderPath);
+    const fullPath = this.join(dir, uniqueName);
+    const fileKind = kind || FileKind.VIDEO;
+    const fileIcon = icon || "/static/icons/video.webp";
+
+    await this.p("mkdir", dir, { recursive: true }).catch(() => {});
+    await this.p("writeFile", fullPath, "");
+    await this.writeMeta(dir, uniqueName, { kind: fileKind, icon: fileIcon });
+
+    await new Promise((resolve, reject) => {
+      const tx = this.blobDB.transaction("blobs", "readwrite");
+      tx.objectStore("blobs").put({ path: fullPath, blob });
+      tx.oncomplete = resolve;
+      tx.onerror = reject;
+    });
+
+    return uniqueName;
+  }
+
+  async readBinaryFile(folderPath, name) {
+    await this.fsReady;
+    const fullPath = this.join(this.resolveDir(folderPath), name);
+    return new Promise((resolve, reject) => {
+      const tx = this.blobDB.transaction("blobs", "readonly");
+      const req = tx.objectStore("blobs").get(fullPath);
+      req.onsuccess = () => resolve(req.result?.blob ?? null);
+      req.onerror = reject;
+    });
+  }
+
+  async deleteBinaryFile(folderPath, name) {
+    await this.fsReady;
+    const dir = this.resolveDir(folderPath);
+    const fullPath = this.join(dir, name);
+
+    await this.p("unlink", fullPath).catch(() => {});
+    await this.removeMeta(dir, name);
+
+    await new Promise((resolve, reject) => {
+      const tx = this.blobDB.transaction("blobs", "readwrite");
+      tx.objectStore("blobs").delete(fullPath);
+      tx.oncomplete = resolve;
+      tx.onerror = reject;
+    });
+  }
+
+  async renameBinaryFile(folderPath, oldName, newName) {
+    await this.fsReady;
+    const dir = this.resolveDir(folderPath);
+    const oldPath = this.join(dir, oldName);
+    const newPath = this.join(dir, newName);
+
+    if (oldName !== newName && (await this.exists(newPath))) {
+      throw new Error(`A file named "${newName}" already exists.`);
+    }
+
+    await this.p("rename", oldPath, newPath);
+
+    const release = await this._acquireMeta(dir);
+    try {
+      const meta = await this.readMeta(dir);
+      if (meta[oldName]) {
+        meta[newName] = meta[oldName];
+        delete meta[oldName];
+        await this.p("writeFile", this.join(dir, CONFIG.META_FILE), JSON.stringify(meta));
+      }
+    } finally {
+      release();
+    }
+
+    await new Promise((resolve, reject) => {
+      const tx = this.blobDB.transaction("blobs", "readwrite");
+      const store = tx.objectStore("blobs");
+      const req = store.get(oldPath);
+      req.onsuccess = () => {
+        if (req.result) {
+          store.delete(oldPath);
+          store.put({ path: newPath, blob: req.result.blob });
+        }
+        resolve();
+      };
+      req.onerror = reject;
+    });
   }
 }
