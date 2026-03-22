@@ -868,7 +868,8 @@ export class ExplorerApp {
   async saveToWallpapers(name, content, kind, icon) {
     const wallpapersPath = ["Pictures", "Wallpapers"];
     await this.fs.ensureFolder(wallpapersPath);
-    await this.fs.createFile(wallpapersPath, name, content, kind, icon);
+    const safeIcon = kind === FileKind.IMAGE ? "@content" : icon || "/static/icons/file.webp";
+    await this.fs.createFile(wallpapersPath, name, content, kind, safeIcon);
   }
 
   navigate(path) {
@@ -932,7 +933,11 @@ export class ExplorerApp {
       } else if (isRomFile(name)) {
         iconEl = buildFileIconHTML(name);
       } else if (isImageFile(name)) {
-        iconEl = buildFileIconHTML(name, { thumbnailSrc: itemData.icon || itemData.content });
+        const thumbnailSrc =
+          itemData.icon === "@content"
+            ? await this.fs.getFileContent(inst.currentPath, name)
+            : itemData.icon || itemData.content;
+        iconEl = buildFileIconHTML(name, { thumbnailSrc });
       } else if (name.endsWith(".desktop")) {
         let iconSrc = "/static/icons/file.webp";
         try {
@@ -1320,7 +1325,7 @@ export class ExplorerApp {
                 itemName,
                 content,
                 kind,
-                kind === FileKind.IMAGE ? content : "/static/icons/file.webp"
+                kind === FileKind.IMAGE ? "@content" : "/static/icons/file.webp"
               );
               this.wm.showPopup(`"${itemName}" added to Pictures/Wallpapers`);
             })
