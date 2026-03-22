@@ -1,4 +1,4 @@
-import { videos } from "./wallpapers.js";
+import { videos } from "./wallpaperList.js";
 import { detectUserLocation } from "./weather.js";
 import { getWeatherIcon } from "./shared/weatherCodes.js";
 import { getBrowser } from "./shared/platformUtils.js";

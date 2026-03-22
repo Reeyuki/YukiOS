@@ -184,40 +184,6 @@ export class TaskManagerApp {
       </div>
     `;
 
-    const style = document.createElement("style");
-    style.textContent = `
-      .tm-tab {
-        background: transparent; border: none; color: #666;
-        padding: 8px 18px; cursor: pointer; font-family: 'Consolas','Courier New',monospace;
-        font-size: 12px; border-bottom: 2px solid transparent; transition: color 0.15s;
-      }
-      .tm-tab:hover { color: #aaa; }
-      .tm-tab-active { color: #c8c8c8 !important; border-bottom-color: #4fc3f7 !important; }
-      .tm-th:hover { color: #c8c8c8 !important; background: #161616; }
-      .tm-row { cursor: pointer; transition: background 0.1s; }
-      .tm-row:hover { background: #171717; }
-      .tm-row-selected { background: #0d2137 !important; }
-      .tm-action-btn {
-        background: #1e1e1e; border: 1px solid #2a2a2a; color: #aaa;
-        padding: 4px 12px; cursor: pointer; font-family: 'Consolas','Courier New',monospace;
-        font-size: 11px; border-radius: 2px; transition: background 0.15s;
-      }
-      .tm-action-btn:hover:not(:disabled) { background: #262626; color: #fff; }
-      .tm-action-btn:disabled { color: #444; cursor: default; border-color: #1a1a1a; }
-      .tm-kill-btn:not(:disabled) { border-color: #5a1a1a; color: #e57373; }
-      .tm-kill-btn:not(:disabled):hover { background: #2a1010; color: #ef9a9a; border-color: #7a2a2a; }
-      .tm-perf-card {
-        background: #111; border: 1px solid #1e1e1e; border-radius: 3px; padding: 14px;
-      }
-      #tm-tbody tr td { padding: 5px 10px; border-bottom: 1px solid #141414; }
-      .tm-bar-cell { position: relative; }
-      .tm-bar {
-        position: absolute; left: 0; top: 0; height: 100%;
-        opacity: 0.12; pointer-events: none;
-      }
-    `;
-    document.head.appendChild(style);
-
     desktop.appendChild(win);
     this.wm.makeDraggable(win);
     this.wm.makeResizable(win);

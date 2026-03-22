@@ -906,50 +906,6 @@ class GameWindowRenderer {
       const countEl = container.closest(".window-content")?.closest(".window-root")?.querySelector(".games-app-count");
       if (countEl) countEl.textContent = query ? visible : games.length;
     });
-
-    if (!document.getElementById("games-search-style")) {
-      const style = document.createElement("style");
-      style.id = "games-search-style";
-      style.textContent = `
-        .games-search-wrap {
-          position: relative;
-          margin-bottom: 14px;
-        }
-        .games-search-input {
-          width: 100%;
-          box-sizing: border-box;
-          padding: 7px 36px 7px 12px;
-          border-radius: 8px;
-          border: 1.5px solid rgba(255,255,255,0.1);
-          background: rgba(255,255,255,0.06);
-          color: #dde;
-          font-size: 13px;
-          outline: none;
-          transition: border-color 0.18s, background 0.18s;
-        }
-        .games-search-input::placeholder { color: rgba(255,255,255,0.3); }
-        .games-search-input:focus {
-          border-color: rgba(110,168,254,0.5);
-          background: rgba(48, 48, 48, 0.7);
-        }
-        .games-search-icon {
-          position: absolute;
-          right: 10px;
-          top: 50%;
-          transform: translateY(-50%);
-          font-size: 14px;
-          pointer-events: none;
-          opacity: 0.45;
-        }
-        .games-no-results {
-          text-align: center;
-          color: rgba(255,255,255,0.3);
-          font-size: 13px;
-          padding: 32px 0;
-        }
-      `;
-      document.head.appendChild(style);
-    }
   }
 }
 

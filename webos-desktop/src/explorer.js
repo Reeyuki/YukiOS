@@ -325,12 +325,6 @@ export class ExplorerApp {
     flashRenderer.render(container, (appId) => {
       if (this.appLauncher) this.appLauncher.launch(appId);
     });
-    if (!document.getElementById("games-shared-style")) {
-      this._injectSharedStyles();
-    }
-    if (!document.getElementById("flash-app-style")) {
-      this._injectFlashStyles();
-    }
   }
 
   openGamesApp() {
@@ -365,218 +359,6 @@ export class ExplorerApp {
     gamesRenderer.render(container, (appId) => {
       if (this.appLauncher) this.appLauncher.launch(appId);
     });
-    if (!document.getElementById("games-shared-style")) {
-      this._injectSharedStyles();
-    }
-    if (!document.getElementById("games-app-style")) {
-      this._injectGamesStyles();
-    }
-  }
-
-  _injectSharedStyles() {
-    const style = document.createElement("style");
-    style.id = "games-shared-style";
-    style.textContent = `
-        @keyframes gac-fadein {
-          from { opacity: 0; transform: translateY(14px) scale(0.96); }
-          to   { opacity: 1; transform: translateY(0)   scale(1); }
-        }
-        @keyframes gac-shimmer {
-          from { transform: translateX(-100%); }
-          to   { transform: translateX(200%); }
-        }
-
-        .games-app-count {
-          font-size: 11px;
-          font-weight: 500;
-          color: rgba(255,255,255,0.45);
-          background: rgba(255,255,255,0.08);
-          border-radius: 10px;
-          padding: 1px 7px;
-          margin-left: 6px;
-          vertical-align: middle;
-          letter-spacing: 0.02em;
-        }
-
-        .games-app-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, 120px);
-          gap: 12px;
-          padding: 4px 2px;
-        }
-
-        .games-app-card {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          border-radius: 12px;
-          cursor: pointer;
-          user-select: none;
-          overflow: hidden;
-          padding-bottom: 10px;
-          position: relative;
-          opacity: 0;
-          animation: gac-fadein 0.35s ease forwards;
-          will-change: transform;
-        }
-
-        .games-app-card-img-wrap {
-          width: 90px;
-          height: 90px;
-          overflow: hidden;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: rgba(0,0,0,0.3);
-          flex-shrink: 0;
-          position: relative;
-        }
-
-        .games-app-card-img-wrap::after {
-          content: "";
-          position: absolute;
-          inset: 0;
-          transform: translateX(-100%);
-          pointer-events: none;
-        }
-
-        .games-app-card:hover .games-app-card-img-wrap::after {
-          animation: gac-shimmer 0.55s ease forwards;
-        }
-
-        .games-app-card-img-wrap img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          display: block;
-          transition: transform 0.3s ease;
-        }
-
-        .games-app-card:hover .games-app-card-img-wrap img {
-          transform: scale(1.07);
-        }
-
-        .games-app-card-title {
-          font-size: 1.3em;
-          text-align: center;
-          line-height: 1.2;
-          word-break: break-word;
-          padding: 4px 4px 0;
-          width: 100%;
-          box-sizing: border-box;
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
-      `;
-    document.head.appendChild(style);
-  }
-
-  _injectGamesStyles() {
-    const style = document.createElement("style");
-    style.id = "games-app-style";
-    style.textContent = `
-        @keyframes gac-glow-pulse {
-          0%, 100% { box-shadow: 0 0 0 0 rgba(110,168,254,0); }
-          50%       { box-shadow: 0 0 14px 4px rgba(110,168,254,0.4); }
-        }
-
-        .games-app-window {
-          overflow-y: auto;
-          overflow-x: hidden;
-          scrollbar-width: thin;
-          scrollbar-color: rgba(110,168,254,0.35) transparent;
-        }
-        .games-app-window::-webkit-scrollbar { width: 5px; }
-        .games-app-window::-webkit-scrollbar-thumb {
-          background: rgba(110,168,254,0.35);
-          border-radius: 99px;
-        }
-
-        .games-app-window .games-app-card {
-          background: rgba(255,255,255,0.04);
-          border: 1.5px solid rgba(255,255,255,0.06);
-          transition: background 0.18s, border-color 0.18s, transform 0.18s, box-shadow 0.18s;
-        }
-        .games-app-window .games-app-card:hover {
-          background: rgba(255,255,255,0.09);
-          transform: translateY(-3px) scale(1.02);
-          border-color: rgba(255,255,255,0.18);
-          box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-        }
-        .games-app-window .games-app-card.active {
-          border-color: #6ea8fe;
-          background: rgba(110,168,254,0.1);
-          animation: gac-fadein 0.35s ease forwards, gac-glow-pulse 1.8s ease-in-out infinite;
-        }
-        .games-app-window .games-app-card-img-wrap::after {
-          background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.18) 50%, transparent 60%);
-        }
-        .games-app-window .games-app-card-title {
-          color: #dde;
-        }
-        .games-app-window .games-app-card:hover .games-app-card-title {
-          color: #fff;
-        }
-      `;
-    document.head.appendChild(style);
-  }
-
-  _injectFlashStyles() {
-    const style = document.createElement("style");
-    style.id = "flash-app-style";
-    style.textContent = `
-        @keyframes flash-glow-pulse {
-          0%, 100% { box-shadow: 0 0 0 0 rgba(255,170,40,0); }
-          50%       { box-shadow: 0 0 16px 5px rgba(255,170,40,0.45); }
-        }
-        @keyframes flash-scanline {
-          from { background-position: 0 0; }
-          to   { background-position: 0 6px; }
-        }
-
-        .flash-app-window {
-          overflow-y: auto;
-          overflow-x: hidden;
-          scrollbar-width: thin;
-          scrollbar-color: rgba(255,170,40,0.4) transparent;
-          animation: flash-scanline 0.4s steps(1) infinite;
-        }
-        .flash-app-window::-webkit-scrollbar { width: 5px; }
-        .flash-app-window::-webkit-scrollbar-thumb {
-          background: rgba(255,170,40,0.4);
-          border-radius: 99px;
-        }
-
-        .flash-app-window .games-app-card {
-          background: rgba(255,140,0,0.06);
-          border: 1.5px solid rgba(255,170,40,0.12);
-          transition: background 0.18s, border-color 0.18s, transform 0.18s, box-shadow 0.18s;
-          border-radius: 8px;
-        }
-        .flash-app-window .games-app-card:hover {
-          background: rgba(255,140,0,0.14);
-          transform: translateY(-3px) scale(1.02);
-          border-color: rgba(255,170,40,0.5);
-          box-shadow: 0 6px 22px rgba(255,100,0,0.3);
-        }
-        .flash-app-window .games-app-card.active {
-          border-color: #ffaa28;
-          background: rgba(255,170,40,0.12);
-          animation: gac-fadein 0.35s ease forwards, flash-glow-pulse 1.8s ease-in-out infinite;
-        }
-        .flash-app-window .games-app-card-img-wrap::after {
-          background: linear-gradient(105deg, transparent 40%, rgba(255,200,80,0.28) 50%, transparent 60%);
-        }
-        .flash-app-window .games-app-card-title {
-          color: #f0c87a;
-        }
-        .flash-app-window .games-app-card:hover .games-app-card-title {
-          color: #ffe4a0;
-        }
-      `;
-    document.head.appendChild(style);
   }
 
   setupExplorerControls(win, winId) {
@@ -1342,7 +1124,6 @@ export class ExplorerApp {
   }
 
   _showConfirmDialog({ title, message, confirmText = "OK", onConfirm }) {
-    this._ensureFdStyles();
     const overlay = document.createElement("div");
     overlay.style.cssText = `
       position:fixed;inset:0;z-index:99999;
@@ -1378,71 +1159,7 @@ export class ExplorerApp {
     };
   }
 
-  _ensureFdStyles() {
-    if (document.getElementById("_fd-dialog-style")) return;
-    const s = document.createElement("style");
-    s.id = "_fd-dialog-style";
-    s.textContent = `
-      @keyframes fdOverlayIn { from { opacity:0; } to { opacity:1; } }
-      @keyframes fdDialogIn  { from { opacity:0; transform:scale(0.94) translateY(-8px); } to { opacity:1; transform:scale(1) translateY(0); } }
-      ._fd-dialog {
-        background:#1e1e1e;
-        border:1px solid rgba(255,255,255,0.12);
-        border-radius:8px;
-        box-shadow:0 24px 64px rgba(0,0,0,0.7);
-        padding:20px 24px 16px;
-        min-width:300px;
-        max-width:400px;
-        width:90%;
-        animation:fdDialogIn 0.15s ease;
-        font-family:inherit;
-        color:#e0e0e0;
-      }
-      ._fd-dialog-title {
-        font-size:13px;
-        font-weight:600;
-        margin-bottom:14px;
-        color:#fff;
-        letter-spacing:0.01em;
-      }
-      ._fd-dialog-label {
-        font-size:1.5em;
-        color:#aaa;
-        margin-bottom:6px;
-      }
-      ._fd-dialog-input {
-        width:100%;
-        box-sizing:border-box;
-        background:#2a2a2a;
-        border:1px solid rgba(255,255,255,0.15);
-        border-radius:5px;
-        color:#fff;
-        font-size:13px;
-        padding:7px 10px;
-        outline:none;
-        transition:border-color 0.15s;
-        font-family:inherit;
-      }
-      ._fd-dialog-input:focus { border-color:#4a90d9; }
-      ._fd-dialog-actions {
-        display:flex;justify-content:flex-end;gap:8px;margin-top:16px;
-      }
-      ._fd-btn {
-        font-size:12px;font-family:inherit;cursor:pointer;
-        border-radius:5px;padding:6px 16px;border:none;
-        transition:background 0.12s, opacity 0.12s;
-      }
-      ._fd-btn-cancel { background:rgba(255,255,255,0.08);color:#ccc; }
-      ._fd-btn-cancel:hover { background:rgba(255,255,255,0.14); }
-      ._fd-btn-confirm { background:#2a6db5;color:#fff; }
-      ._fd-btn-confirm:hover { background:#3480cc; }
-      ._fd-btn-confirm:disabled { opacity:0.4;cursor:default; }
-    `;
-    document.head.appendChild(s);
-  }
-
   _showInputDialog({ title, label, defaultValue, confirmText = "Create", onConfirm }) {
-    this._ensureFdStyles();
     const overlay = document.createElement("div");
     overlay.style.cssText = `
       position:fixed;inset:0;z-index:99999;
@@ -1682,58 +1399,7 @@ export class ExplorerApp {
     this.desktopUI?.makeIconInteractable(icon, true);
   }
 
-  _ensureInlineRenameStyles() {
-    if (document.getElementById("_inline-rename-style")) return;
-    const s = document.createElement("style");
-    s.id = "_inline-rename-style";
-    s.textContent = `
-      .file-item.is-renaming { pointer-events: none; }
-      .file-item.is-renaming .inline-rename-wrap { pointer-events: all; }
-      .inline-rename-wrap {
-        position: relative;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        width: 100%;
-      }
-      .inline-rename-input {
-        width: calc(100% - 4px);
-        box-sizing: border-box;
-        background: #1a1a2e;
-        border: 1.5px solid #4a90d9;
-        border-radius: 4px;
-        color: #fff;
-        font-size: 1.5em;
-        font-family: inherit;
-        text-align: center;
-        padding: 2px 4px;
-        outline: none;
-        margin-top: 2px;
-        min-width: 0;
-      }
-      .inline-rename-input.error { border-color: #e06c75; }
-      .inline-rename-error {
-        position: absolute;
-        top: calc(100% + 3px);
-        left: 50%;
-        transform: translateX(-50%);
-        background: #2a1a1a;
-        border: 1px solid #e06c75;
-        border-radius: 4px;
-        color: #e06c75;
-        font-size: 10.5px;
-        font-family: inherit;
-        padding: 3px 8px;
-        white-space: nowrap;
-        z-index: 9999;
-        pointer-events: none;
-      }
-    `;
-    document.head.appendChild(s);
-  }
-
   _startInlineRename(itemEl, currentName, inst) {
-    this._ensureInlineRenameStyles();
     if (itemEl.classList.contains("is-renaming")) return;
     itemEl.classList.add("is-renaming");
 
@@ -1824,7 +1490,6 @@ export class ExplorerApp {
   }
 
   async _spawnInlineItem(inst, isFile) {
-    this._ensureInlineRenameStyles();
     const win = document.getElementById(inst.winId);
     if (!win) return;
     const view = win.querySelector(`#${inst.winId}-view`);
