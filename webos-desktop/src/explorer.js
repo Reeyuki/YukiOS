@@ -511,6 +511,24 @@ export class ExplorerApp {
     view.addEventListener("mouseup", endSel);
     document.addEventListener("mouseup", endSel);
 
+    view.addEventListener("dragover", (e) => {
+      const hasBrowserFiles = [...(e.dataTransfer?.items || [])].some((i) => i.kind === "file");
+      if (!hasBrowserFiles) return;
+      e.preventDefault();
+      e.stopPropagation();
+      view.classList.add("explorer-drop-active");
+    });
+
+    view.addEventListener("dragleave", (e) => {
+      if (!view.contains(e.relatedTarget)) {
+        view.classList.remove("explorer-drop-active");
+      }
+    });
+
+    view.addEventListener("drop", (e) => {
+      view.classList.remove("explorer-drop-active");
+    });
+
     const fileInput = win.querySelector(`#${winId}-file-input`);
     const folderInput = win.querySelector(`#${winId}-folder-input`);
     if (fileInput) {

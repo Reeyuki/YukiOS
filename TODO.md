@@ -1,4 +1,3 @@
-Implement drag support for saving files to desktop
 Add file format conversion context menus
 Add f2 key renaming
 Add kivi irc

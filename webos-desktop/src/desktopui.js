@@ -429,6 +429,7 @@ export class DesktopUI {
     this.setupInteractableSelection();
     this.setupStartMenu();
     this.setupKeyboardShortcuts();
+    this.setupBrowserDrop();
   }
 
   setupKeyboardShortcuts() {
@@ -522,6 +523,151 @@ export class DesktopUI {
           })();
           return;
         }
+      }
+    });
+  }
+
+  setupBrowserDrop() {
+    const OVERLAY_ID = "browser-drop-overlay";
+
+    const getOverlay = () => document.getElementById(OVERLAY_ID);
+
+    const createOverlay = (label) => {
+      let el = getOverlay();
+      if (!el) {
+        el = document.createElement("div");
+        el.id = OVERLAY_ID;
+        el.style.cssText = `
+          position:fixed;inset:0;pointer-events:none;z-index:99999;
+          display:flex;align-items:center;justify-content:center;
+          transition:background 0.15s;
+        `;
+        document.body.appendChild(el);
+      }
+      el.style.background = "rgba(79,158,255,0.13)";
+      el.style.border = "2.5px dashed rgba(79,158,255,0.55)";
+      el.style.boxSizing = "border-box";
+      el.innerHTML = `<span style="
+        background:rgba(20,28,48,0.82);color:#7ecfff;
+        font-size:15px;padding:10px 22px;border-radius:10px;
+        pointer-events:none;font-family:inherit;letter-spacing:0.02em;
+      ">${label}</span>`;
+      return el;
+    };
+
+    const removeOverlay = () => {
+      const el = getOverlay();
+      if (el) el.remove();
+    };
+
+    const getExplorerInstanceAtPoint = (clientX, clientY) => {
+      if (!this.explorerApp) return null;
+      for (const [winId, inst] of this.explorerApp._instances) {
+        if (inst.mode !== "browse") continue;
+        const win = document.getElementById(winId);
+        if (!win) continue;
+        const view = win.querySelector(`#${winId}-view`);
+        if (!view) continue;
+        const r = view.getBoundingClientRect();
+        if (clientX >= r.left && clientX <= r.right && clientY >= r.top && clientY <= r.bottom) {
+          return inst;
+        }
+      }
+      return null;
+    };
+
+    const hasBrowserFiles = (dt) => {
+      if (!dt) return false;
+      for (const item of dt.items) {
+        if (item.kind === "file") return true;
+      }
+      return false;
+    };
+
+    let dragCounter = 0;
+
+    document.addEventListener("dragenter", (e) => {
+      if (!hasBrowserFiles(e.dataTransfer)) return;
+      dragCounter++;
+      if (dragCounter !== 1) return;
+      e.preventDefault();
+      const inst = getExplorerInstanceAtPoint(e.clientX, e.clientY);
+      const label = inst
+        ? `Drop to save here → ${inst.currentPath.length ? inst.currentPath.join("/") : "Home"}`
+        : "Drop to save to Desktop";
+      createOverlay(label);
+    });
+
+    document.addEventListener("dragover", (e) => {
+      if (!hasBrowserFiles(e.dataTransfer)) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "copy";
+      const overlay = getOverlay();
+      if (!overlay) return;
+      const inst = getExplorerInstanceAtPoint(e.clientX, e.clientY);
+      const label = inst
+        ? `Drop to save here → ${inst.currentPath.length ? inst.currentPath.join("/") : "Home"}`
+        : "Drop to save to Desktop";
+      const span = overlay.querySelector("span");
+      if (span) span.textContent = label;
+    });
+
+    document.addEventListener("dragleave", (e) => {
+      if (!hasBrowserFiles(e.dataTransfer)) return;
+      dragCounter = Math.max(0, dragCounter - 1);
+      if (dragCounter === 0) removeOverlay();
+    });
+
+    document.addEventListener("drop", async (e) => {
+      dragCounter = 0;
+      removeOverlay();
+
+      if (!hasBrowserFiles(e.dataTransfer)) return;
+      e.preventDefault();
+
+      const files = Array.from(e.dataTransfer.files);
+      if (!files.length) return;
+
+      const inst = getExplorerInstanceAtPoint(e.clientX, e.clientY);
+
+      if (inst && this.explorerApp) {
+        const win = document.getElementById(inst.winId);
+        await this.explorerApp.handleFileUpload(files, false, win, inst);
+        return;
+      }
+
+      let uploadedCount = 0;
+      for (const file of files) {
+        try {
+          const { kind, content, icon } = await this.explorerApp._resolveFilePayload(file, file.name, ["Desktop"]);
+          const dir = this.fs.resolveDir(["Desktop"]);
+          const destExists = await this.fs.exists(this.fs.join(dir, file.name));
+
+          let finalName = file.name;
+          if (destExists) {
+            const { showConflictDialog } = await import("./shared/conflictDialog.js");
+            const result = await showConflictDialog(file.name);
+            if (result.action === "skip") continue;
+            if (result.action === "keep") {
+              finalName = await this.fs.getUniqueFileName(["Desktop"], file.name);
+            }
+          }
+
+          if (kind === "video") {
+            await this.fs.writeBinaryFile(["Desktop"], finalName, content, kind, icon);
+          } else {
+            await this.fs.createFile(["Desktop"], finalName, content, kind, icon);
+          }
+
+          const itemData = { type: "file", kind, icon, content };
+          await this.createDesktopFileIcon(finalName, itemData);
+          uploadedCount++;
+        } catch {
+          this.appLauncher.wm.showPopup(`Could not save "${file.name}"`);
+        }
+      }
+      if (uploadedCount > 0) {
+        this.appLauncher.wm.showPopup(`${uploadedCount} file${uploadedCount !== 1 ? "s" : ""} saved to Desktop`);
       }
     });
   }
