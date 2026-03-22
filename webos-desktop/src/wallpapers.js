@@ -48,7 +48,6 @@ export async function renderWallpapersPage(explorerInstance, view) {
 
   header.querySelector("#wp-try-random").onclick = () => showRandomPreview(explorerInstance, previewZone, grid, fs, wm);
 }
-
 async function refreshWallpaperGrid(fs, grid, wm, previewZone) {
   grid.innerHTML = "";
 
@@ -106,15 +105,16 @@ async function refreshWallpaperGrid(fs, grid, wm, previewZone) {
     card.appendChild(nameEl);
     card.appendChild(actions);
 
-card.addEventListener("click", async (e) => {
-  if (e.target === setBtn) return;
-  const content = await fs.getFileContent(["Pictures", "Wallpapers"], name);
-  showCardPreview(name, toBlobUrl(content), isVideo, previewZone, fs, wm);
-});
+    card.addEventListener("click", async (e) => {
+      if (e.target === setBtn) return;
+      const content = await fs.getFileContent(["Pictures", "Wallpapers"], name);
+      showCardPreview(name, toBlobUrl(content), isVideo, previewZone, fs, wm);
+    });
 
     grid.appendChild(card);
   }
 }
+
 function showCardPreview(name, src, isVideo, previewZone, fs, wm) {
   previewZone.classList.add("wp-preview-active");
   previewZone.innerHTML = "";
@@ -137,7 +137,24 @@ function showCardPreview(name, src, isVideo, previewZone, fs, wm) {
   overlay.className = "wp-preview-overlay";
   overlay.innerHTML = `
     <div class="wp-preview-label">${name}</div>
+    <div class="wp-preview-btns">
+      <button class="wp-action-btn wp-discard-btn">✕ Close</button>
+      <button class="wp-action-btn wp-save-btn">✔ Set Wallpaper</button>
+    </div>
   `;
+
+  overlay.querySelector(".wp-discard-btn").onclick = () => {
+    previewZone.classList.remove("wp-preview-active");
+    previewZone.innerHTML = "";
+  };
+
+  overlay.querySelector(".wp-save-btn").onclick = async () => {
+    const content = await fs.getFileContent(["Pictures", "Wallpapers"], name);
+    SystemUtilities.setWallpaper(content);
+    wm.showPopup(`Wallpaper set to "${name}"`);
+    previewZone.classList.remove("wp-preview-active");
+    previewZone.innerHTML = "";
+  };
 
   inner.appendChild(media);
   inner.appendChild(overlay);
@@ -171,7 +188,7 @@ function showRandomPreview(explorerInstance, previewZone, grid, fs, wm) {
     <div class="wp-preview-btns">
       <button class="wp-action-btn wp-discard-btn">✕ Discard</button>
       <button class="wp-action-btn wp-another-btn">↻ Another</button>
-      <button class="wp-action-btn wp-save-btn">✓ Set Wallpaper</button>
+      <button class="wp-action-btn wp-save-btn">✔ Set Wallpaper</button>
     </div>
   `;
 

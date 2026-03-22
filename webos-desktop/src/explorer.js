@@ -82,7 +82,7 @@ export class ExplorerApp {
       </div>
       <div class="explorer-nav">
         <div class="back-btn" id="${winId}-back">← Back</div>
-        <div id="${winId}-path" style="color:#555"></div>
+        <div id="${winId}-path"></div>
         ${
           isSelector
             ? ""
@@ -174,7 +174,7 @@ export class ExplorerApp {
       </div>
       <div class="explorer-nav">
         <div class="back-btn" id="${winId}-back">← Back</div>
-        <div id="${winId}-path" style="color:#555"></div>
+        <div id="${winId}-path" ></div>
       </div>
       <div class="explorer-container">
         <div class="explorer-sidebar">
