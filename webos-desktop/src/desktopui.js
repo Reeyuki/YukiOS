@@ -647,6 +647,7 @@ export class DesktopUI {
   updateDragTarget(event) {
     let foundFolder = null;
     document.querySelectorAll(".folder-icon").forEach((folder) => {
+      if (this.selectionManager.has(folder)) return;
       const rect = folder.getBoundingClientRect();
       if (
         event.clientX >= rect.left &&
