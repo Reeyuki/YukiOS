@@ -12,7 +12,8 @@ export const StorageKeys = {
   lastBoot: "yukiOS_lastBoot",
   cycleWallpaper: "yukiOS_cycleWallpaper",
   manualWallpaper: "yukiOS_manualWallpaper",
-  macOsControls: "yukiOS_macOsControls"
+  macOsControls: "yukiOS_macOsControls",
+  clippy: "yukiOS_clippy"
 };
 
 export class SettingsApp {
@@ -25,7 +26,8 @@ export class SettingsApp {
         bootAnimation: localStorage.getItem(StorageKeys.bootAnimation) !== "false",
         weather: localStorage.getItem(StorageKeys.weather) !== "false",
         cycleWallpaper: localStorage.getItem(StorageKeys.cycleWallpaper) !== "false",
-        macOsControls: localStorage.getItem(StorageKeys.macOsControls) === "true"
+        macOsControls: localStorage.getItem(StorageKeys.macOsControls) === "true",
+        clippy: localStorage.getItem(StorageKeys.clippy) !== "false"
       };
 
       this._applyUsername(this._settings.username);
@@ -68,7 +70,7 @@ export class SettingsApp {
   }
 
   _buildHTML() {
-    const { bootAnimation, weather, cycleWallpaper, macOsControls } = this._settings;
+    const { bootAnimation, weather, cycleWallpaper, macOsControls, clippy } = this._settings;
 
     return `
       <div class="window-header">
@@ -146,6 +148,17 @@ export class SettingsApp {
               </div>
               <label class="stt-toggle" aria-label="Toggle macOS window controls">
                 <input type="checkbox" id="settingsMacControls" ${macOsControls ? "checked" : ""} />
+                <span class="stt-track"><span class="stt-thumb"></span></span>
+              </label>
+            </div>
+
+            <div class="stt-row">
+              <div class="stt-label-group">
+                <span class="stt-label-title">Clippy</span>
+                <span class="stt-label-desc">Show the Clippy assistant after boot</span>
+              </div>
+              <label class="stt-toggle" aria-label="Toggle Clippy">
+                <input type="checkbox" id="settingsClippy" ${clippy ? "checked" : ""} />
                 <span class="stt-track"><span class="stt-thumb"></span></span>
               </label>
             </div>
@@ -390,6 +403,7 @@ export class SettingsApp {
     const weatherToggle = win.querySelector("#settingsWeather");
     const cycleWallpaperToggle = win.querySelector("#settingsCycleWallpaper");
     const macControlsToggle = win.querySelector("#settingsMacControls");
+    const clippyToggle = win.querySelector("#settingsClippy");
     const resetBtn = win.querySelector("#settingsResetBtn");
     const dataResetBtn = win.querySelector("#settingsDataResetBtn");
     const status = win.querySelector("#settingsStatus");
@@ -411,16 +425,18 @@ export class SettingsApp {
       const weather = weatherToggle.checked;
       const cycleWallpaper = cycleWallpaperToggle.checked;
       const macOsControls = macControlsToggle.checked;
+      const clippy = clippyToggle.checked;
 
       localStorage.setItem(StorageKeys.username, username);
       localStorage.setItem(StorageKeys.bootAnimation, String(bootAnimation));
       localStorage.setItem(StorageKeys.weather, String(weather));
       localStorage.setItem(StorageKeys.cycleWallpaper, String(cycleWallpaper));
       localStorage.setItem(StorageKeys.macOsControls, String(macOsControls));
+      localStorage.setItem(StorageKeys.clippy, String(clippy));
 
       const weatherChanged = weather !== this._settings.weather;
 
-      Object.assign(this._settings, { username, bootAnimation, weather, cycleWallpaper, macOsControls });
+      Object.assign(this._settings, { username, bootAnimation, weather, cycleWallpaper, macOsControls, clippy });
       Object.assign(window._settings, this._settings);
 
       this._applyUsername(username);
@@ -442,6 +458,7 @@ export class SettingsApp {
       weatherToggle.checked = true;
       cycleWallpaperToggle.checked = true;
       macControlsToggle.checked = false;
+      clippyToggle.checked = true;
       save();
       showStatus("Settings reset.");
     };
@@ -457,6 +474,7 @@ export class SettingsApp {
     weatherToggle.addEventListener("change", save);
     cycleWallpaperToggle.addEventListener("change", save);
     macControlsToggle.addEventListener("change", save);
+    clippyToggle.addEventListener("change", save);
   }
 
   resetAllData = () => {

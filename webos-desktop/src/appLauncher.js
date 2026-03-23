@@ -2,6 +2,7 @@ import { desktop } from "./desktop.js";
 import { appMap, getGameName } from "./games.js";
 import { initializeAppGrid, populateStartMenu, tryGetIcon } from "./startMenu";
 import { IFRAME_ATTRS } from "./shared/iframeAttrs.js";
+import { initClippy, speak as clippySpeak } from "./clippy.js";
 
 export class AppLauncher {
   constructor(
@@ -42,28 +43,114 @@ export class AppLauncher {
     this.appCreatorApp = appCreatorApp;
     this.pageLoadTime = Date.now();
     this.TRANSPARENCY_ALLOWED_APP_IDS = new Set(["paint", "photopea", "vscode", "liventcord"]);
+
+    this.clippyPromise = initClippy(settingsApp);
+
     const analyticsBase = this._getAnalyticsBase("hit-page");
     this.sendAnalytics({ ...analyticsBase, event: "start" });
     this.BIC = "badIceCream";
 
     const localAppMap = {
-      explorer: { type: "system", title: "Explorer", action: () => this.explorerApp.open() },
-      terminal: { type: "system", title: "Terminal", action: () => this.terminalApp.open() },
-      notepad: { type: "system", title: "Notepad", action: () => this.notepadApp.open() },
-      browser: { type: "system", title: "Browser", action: () => this.browserApp.open() },
-      cameraApp: { type: "system", title: "Camera App", action: () => this.cameraApp.open() },
-      pythonApp: { type: "system", title: "Python Code Editor", action: () => this.pythonApp.open() },
-      nodeApp: { type: "system", title: "NodeJS Code Editor", action: () => this.nodeApp.open() },
-      settings: { type: "system", title: "Settings", action: () => this.settingsApp.open() },
-      calculatorApp: { type: "system", title: "Calculator", action: () => this.calculatorApp.open() },
-      aboutApp: { type: "system", title: "About", action: () => this.aboutApp.open() },
-      music: { type: "system", title: "Music Player", action: () => this.musicPlayer.open(this.wm) },
-      flash: { type: "system", title: "Flash Games", action: () => this.explorerApp.openFlash() },
-      gamesApp: { type: "system", title: "Games", action: () => this.explorerApp.openGamesApp() },
-      taskManagerApp: { type: "system", title: "Task Manager", action: () => taskManagerApp.open() },
-      weatherApp: { type: "system", title: "Weather App", action: () => weatherApp.open() },
-      emulatorApp: { type: "system", title: "Emulator App", action: () => emulatorApp.open() },
-      appCreatorApp: { type: "system", title: "App Creator App", action: () => appCreatorApp.open() }
+      explorer: {
+        type: "system",
+        title: "Explorer",
+        action: () => this.explorerApp.open(),
+        clippy: { message: "It looks like you're organizing files. Want help?!", animation: "Searching" }
+      },
+      terminal: {
+        type: "system",
+        title: "Terminal",
+        action: () => this.terminalApp.open(),
+        clippy: { message: "Be careful with commands!", animation: "Acknowledge" }
+      },
+      notepad: {
+        type: "system",
+        title: "Notepad",
+        action: () => this.notepadApp.open(),
+        clippy: { message: "It looks like you're writing something. Need help with that letter?", animation: "Pleased" }
+      },
+      browser: {
+        type: "system",
+        title: "Browser",
+        action: () => this.browserApp.open(),
+        clippy: { message: "I can help you find your bookmarks.", animation: "animate" }
+      },
+      cameraApp: {
+        type: "system",
+        title: "Camera App",
+        action: () => this.cameraApp.open(),
+        clippy: { message: "Smile! I'll help you look your best.", animation: "Congratulate" }
+      },
+      pythonApp: {
+        type: "system",
+        title: "Python Code Editor",
+        action: () => this.pythonApp.open(),
+        clippy: { message: "Need a Python tip?", animation: "Searching" }
+      },
+      nodeApp: {
+        type: "system",
+        title: "NodeJS Code Editor",
+        action: () => this.nodeApp.open()
+      },
+      settings: {
+        type: "system",
+        title: "Settings",
+        action: () => this.settingsApp.open(),
+        clippy: { message: "I can guide you through settings.", animation: "Acknowledge" }
+      },
+      calculatorApp: {
+        type: "system",
+        title: "Calculator",
+        action: () => this.calculatorApp.open(),
+        clippy: { message: "I can do math too! ...Mostly.", animation: "Pleased" }
+      },
+      aboutApp: {
+        type: "system",
+        title: "About",
+        action: () => this.aboutApp.open(),
+        clippy: { message: "Your system is running smoothly.", animation: "Acknowledge" }
+      },
+      music: {
+        type: "system",
+        title: "Music Player",
+        action: () => this.musicPlayer.open(this.wm),
+        clippy: { message: "Listen to random musics!", animation: "MoveLeft" }
+      },
+      flash: {
+        type: "system",
+        title: "Flash Games",
+        action: () => this.explorerApp.openFlash(),
+        clippy: { message: "Ah the classics!", animation: "Pleased" }
+      },
+      gamesApp: {
+        type: "system",
+        title: "Games",
+        action: () => this.explorerApp.openGamesApp(),
+        clippy: { message: "I can suggest tips for your games.", animation: "animate" }
+      },
+      taskManagerApp: {
+        type: "system",
+        title: "Task Manager",
+        action: () => taskManagerApp.open(),
+        clippy: { message: "Something's hogging resources. Want me to guess what?", animation: "Acknowledge" }
+      },
+      weatherApp: {
+        type: "system",
+        title: "Weather App",
+        action: () => weatherApp.open(),
+        clippy: { message: "Rain is expected today. Don't forget your umbrella!", animation: "Pleased" }
+      },
+      emulatorApp: {
+        type: "system",
+        title: "Emulator App",
+        action: () => emulatorApp.open(),
+        clippy: { message: "Nintendo is going to be mad", animation: "animate" }
+      },
+      appCreatorApp: {
+        type: "system",
+        title: "App Creator App",
+        action: () => appCreatorApp.open()
+      }
     };
 
     this.appMap = { ...appMap, ...localAppMap };
@@ -76,20 +163,21 @@ export class AppLauncher {
       tmnpIcon.dataset.app = "TMNP";
       tmnpIcon.draggable = false;
       tmnpIcon.style.cssText = "user-select: none; left: 600px; top: 110px;";
-
       tmnpIcon.append(
         Object.assign(document.createElement("img"), { src: appMap.TMNP.icon }),
         Object.assign(document.createElement("div"), { textContent: appMap.TMNP.title })
       );
-
       desktop.append(tmnpIcon);
     }
   }
 
-  launch(app, swf = false) {
+  async speak(message, animation) {
+    await clippySpeak(message, animation);
+  }
+
+  async launch(app, swf = false) {
     const info = this.appMap[app];
     if (!info) return console.error(`App ${app} not found.`);
-
     const analyticsBase = this._getAnalyticsBase(app);
     this.sendAnalytics({ ...analyticsBase, event: "launch" });
 
@@ -100,12 +188,20 @@ export class AppLauncher {
         return this.openIframeApp({ appId: app, type: "game", source: info.url, originalName: app, analyticsBase });
       }
     }
+
     const urlParams = new URLSearchParams(window.location.search);
-    if (info.type != "system" && window.electronAPI?.launchGame && !urlParams.has("game"))
+    if (info.type !== "system" && window.electronAPI?.launchGame && !urlParams.has("game"))
       return window.electronAPI.launchGame(app);
 
+    if (info.type === "system") {
+      info.action();
+      if (info.clippy) {
+        await clippySpeak(info.clippy.message, info.clippy.animation);
+      }
+      return;
+    }
+
     const handlers = {
-      system: () => info.action(),
       swf: () => this.openIframeApp({ appId: app, type: "swf", source: info.swf, originalName: app }),
       gba: () => this.openIframeApp({ appId: app, type: "gba", source: info.url, originalName: app }),
       psp: () => this.openIframeApp({ appId: app, type: "psp", source: info.url, originalName: app }),
@@ -114,15 +210,14 @@ export class AppLauncher {
       html: () => this.openHtmlApp(app, info.html, info),
       remote: () => this.openRemoteApp(info.url)
     };
-
     handlers[info.type]?.();
   }
 
   _getAnalyticsBase(app) {
     const now = Date.now();
     return {
-      app,
-      name: document.querySelector(".start-user span").textContent || "",
+      app: app ?? "unknown",
+      name: document.querySelector(".start-user span")?.textContent ?? "",
       timestamp: now,
       sessionAgeMs: now - this.pageLoadTime
     };
@@ -134,10 +229,11 @@ export class AppLauncher {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data)
-    });
+    }).catch((err) => console.warn("Analytics failed:", err));
   }
-  sendAppInstallAnalytics() {
-    this.sendAnalytics({ ...this._getAnalyticsBase(), event: "installApp" });
+
+  sendAppInstallAnalytics(app) {
+    this.sendAnalytics({ ...this._getAnalyticsBase(app ?? "unknown"), event: "installApp" });
   }
 
   recordUsage(winId) {
@@ -250,7 +346,7 @@ export class AppLauncher {
   }
 
   createIframeWindow(id, title, contentHtml, appId, appMeta, analyticsBase = null, externalUrl = null) {
-    this.createWindow(id, title, contentHtml, externalUrl || analyticsBase, appId, appMeta);
+    this.createWindow(id, title, contentHtml, externalUrl, appId, appMeta);
   }
 
   isTransparencyBlocked(appId, appMeta) {
@@ -264,15 +360,15 @@ export class AppLauncher {
       document.head.insertAdjacentHTML(
         "beforeend",
         `<style>
-                html, body {
-                    margin: 0;
-                    padding: 0;
-                    width: 100%;
-                    height: 100%;
-                    overflow: hidden;
-                    background: black;
-                }
-            </style>`
+          html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: black;
+          }
+        </style>`
       );
       document.body.innerHTML = `<div id="electron-game-root" style="width:100vw;height:100vh;margin:0;padding:0;overflow:hidden;">${contentHtml}</div>`;
       return;
@@ -292,12 +388,11 @@ export class AppLauncher {
     });
 
     win.innerHTML = `
-        <div class="window-header">
-            <span>${title}</span>
-                    ${this.wm.getWindowControls()}
-
-        </div>
-        <div class="window-content" style="width:100%; height:100%; overflow:hidden;">${contentHtml}</div>
+      <div class="window-header">
+        <span>${title}</span>
+        ${this.wm.getWindowControls()}
+      </div>
+      <div class="window-content" style="width:100%; height:100%; overflow:hidden;">${contentHtml}</div>
     `;
 
     desktop.appendChild(win);
@@ -306,7 +401,7 @@ export class AppLauncher {
     this.wm.setupWindowControls(win);
     this.wm.bringToFront(win);
 
-    win.querySelector(".external-btn").addEventListener("click", () => {
+    win.querySelector(".external-btn")?.addEventListener("click", () => {
       if (!appId) return;
       const url = new URL(window.location.href);
       url.searchParams.set("game", appId);

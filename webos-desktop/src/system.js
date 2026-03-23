@@ -7,12 +7,16 @@ import { StorageKeys } from "./settings.js";
 const loginBtn = document.getElementById("login-btn");
 const login = document.getElementById("login");
 let settings;
+let _skipUsernameUpdate = false;
 
 loginBtn.addEventListener("click", () => {
   login.classList.add("fade-out");
   login.classList.remove("active");
   login.addEventListener("transitionend", () => login.remove(), { once: true });
-  settings.updateUsername();
+  if (!_skipUsernameUpdate) {
+    settings.updateUsername();
+  }
+  _skipUsernameUpdate = false;
 });
 
 let pageLoadTime;
@@ -44,7 +48,6 @@ function showLogin() {
 let _weatherIntervalId = null;
 let _weatherWidget = null;
 
-// ── Blob URL cache for base64 video wallpapers ──
 let _currentWallpaperBlobUrl = null;
 
 function _revokeWallpaperBlob() {
@@ -54,23 +57,14 @@ function _revokeWallpaperBlob() {
   }
 }
 
-/**
- * Detect whether a string is a base64 data-URL for a video.
- */
 function _isBase64Video(str) {
   return typeof str === "string" && str.startsWith("data:video/");
 }
 
-/**
- * Detect whether a string is a base64 data-URL for an image.
- */
 function _isBase64Image(str) {
   return typeof str === "string" && str.startsWith("data:image/");
 }
 
-/**
- * Convert a base64 data-URL to a Blob URL.
- */
 function _base64ToBlobUrl(dataUrl) {
   const [header, b64] = dataUrl.split(",");
   const mime = header.match(/:(.*?);/)[1];
@@ -81,7 +75,6 @@ function _base64ToBlobUrl(dataUrl) {
   return URL.createObjectURL(blob);
 }
 
-// ── IndexedDB helpers for wallpaper blob storage ──
 const WP_BLOB_DB_NAME = "wallpaper-blobs-db";
 const WP_BLOB_DB_VERSION = 1;
 const WP_BLOB_STORE = "wallpapers";
@@ -233,16 +226,10 @@ export class SystemUtilities {
 
     const wallpaper = videos[index];
     localStorage.setItem(StorageKeys.wallpaperKey, wallpaper);
-    // Sequential wallpapers are remote URLs, clear any stored blob
     _clearWallpaperBlob().catch(() => {});
     this.applyWallpaper(wallpaper);
   }
 
-  /**
-   * Set a wallpaper. If the wallpaperURL is a base64 data-URL for a video,
-   * we convert it to a Blob, store the Blob in IndexedDB, and only keep
-   * a marker in localStorage (not the huge base64 string).
-   */
   static async setWallpaper(wallpaperURL) {
     if (!wallpaperURL) return;
 
@@ -256,7 +243,6 @@ export class SystemUtilities {
     }
 
     if (_isBase64Video(wallpaperURL)) {
-      // Convert base64 → Blob and store in IndexedDB
       const [header, b64] = wallpaperURL.split(",");
       const mime = header.match(/:(.*?);/)[1];
       const binary = atob(b64);
@@ -265,13 +251,9 @@ export class SystemUtilities {
       const blob = new Blob([bytes], { type: mime });
 
       await _storeWallpaperBlob(blob);
-      // Store a marker so we know to load from IndexedDB
       localStorage.setItem(StorageKeys.wallpaperKey, "__blob_video__");
       this._applyVideoBlob(blob);
     } else if (_isBase64Image(wallpaperURL)) {
-      // Images as base64 are smaller and fine in localStorage, but let's
-      // still optimize large ones. For simplicity, store all base64 images
-      // as blobs too if they exceed 512KB.
       if (wallpaperURL.length > 524288) {
         const [header, b64] = wallpaperURL.split(",");
         const mime = header.match(/:(.*?);/)[1];
@@ -288,7 +270,6 @@ export class SystemUtilities {
         this.applyWallpaper(wallpaperURL);
       }
     } else {
-      // Normal URL (http/https or /static/...)
       await _clearWallpaperBlob().catch(() => {});
       localStorage.setItem(StorageKeys.wallpaperKey, wallpaperURL);
       this.applyWallpaper(wallpaperURL);
@@ -358,7 +339,6 @@ export class SystemUtilities {
   static applyWallpaper(wallpaperURL) {
     if (!wallpaperURL) return;
 
-    // If it's a base64 video, convert to blob URL for performance
     if (_isBase64Video(wallpaperURL)) {
       _revokeWallpaperBlob();
       _currentWallpaperBlobUrl = _base64ToBlobUrl(wallpaperURL);
@@ -392,7 +372,6 @@ export class SystemUtilities {
       return;
     }
 
-    // If it's a base64 image, also use blob URL
     if (_isBase64Image(wallpaperURL)) {
       _revokeWallpaperBlob();
       _currentWallpaperBlobUrl = _base64ToBlobUrl(wallpaperURL);
@@ -422,7 +401,6 @@ export class SystemUtilities {
       return;
     }
 
-    // Regular URL path
     _revokeWallpaperBlob();
 
     const isVideo = wallpaperURL.toLowerCase().endsWith(".mp4");
@@ -465,7 +443,6 @@ export class SystemUtilities {
     const isManual = localStorage.getItem(StorageKeys.manualWallpaper) === "true";
     const saved = localStorage.getItem(StorageKeys.wallpaperKey);
 
-    // Check for blob-stored wallpapers first
     if (saved === "__blob_video__" || saved === "__blob_image__") {
       try {
         const blob = await _loadWallpaperBlob();
@@ -480,7 +457,6 @@ export class SystemUtilities {
       } catch (e) {
         console.warn("Failed to load wallpaper blob, falling back", e);
       }
-      // If blob loading failed, fall through to default
       this.setSequentialWallpaper();
       return;
     }
@@ -533,6 +509,7 @@ export function skipBootSequence() {
   isStartedBooting = true;
   document.getElementById("bootloader")?.classList.add("hidden");
   showLogin();
+  _skipUsernameUpdate = true;
   document.getElementById("login-btn").click();
 }
 

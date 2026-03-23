@@ -1,9 +1,12 @@
 import { desktop } from "./desktop.js";
+import { speak } from "./clippy.js";
 
 export class NotepadApp {
   constructor(fileSystemManager, windowManager) {
     this.fs = fileSystemManager;
     this.wm = windowManager;
+    this.idleTimer = null;
+    this.idleDelay = 15000;
   }
 
   setExplorer(explorerApp) {
@@ -43,6 +46,7 @@ export class NotepadApp {
     this.wm.addToTaskbar(win.id, `${title} - Notepad`, "/static/icons/notepad.webp");
 
     this.setupNotepadControls(win, title, filePath);
+    this.setupIdleDetection(win);
   }
 
   setupNotepadControls(win, currentTitle, currentPath) {
@@ -63,6 +67,35 @@ export class NotepadApp {
     });
   }
 
+  setupIdleDetection(win) {
+    const textarea = win.querySelector(".notepad-textarea");
+
+    const resetIdleTimer = () => {
+      if (this.idleTimer) {
+        clearTimeout(this.idleTimer);
+      }
+
+      if (textarea.value.trim().length > 0) {
+        this.idleTimer = setTimeout(() => {
+          speak("Still there? I can check your spelling.", "Thinking");
+        }, this.idleDelay);
+      }
+    };
+
+    textarea.addEventListener("input", resetIdleTimer);
+    textarea.addEventListener("keydown", resetIdleTimer);
+
+    const observer = new MutationObserver(() => {
+      if (!document.contains(win)) {
+        if (this.idleTimer) {
+          clearTimeout(this.idleTimer);
+        }
+        observer.disconnect();
+      }
+    });
+    observer.observe(desktop, { childList: true });
+  }
+
   saveFile(win, textarea, title, path) {
     if (!path) {
       this.saveAsFile(textarea, title);
@@ -71,6 +104,7 @@ export class NotepadApp {
     const content = textarea.value;
     this.fs.updateFile(path, title, content);
     this.wm.showPopup(`File saved: ${title}`);
+    speak("Great, your file has been saved!", "Save");
   }
 
   saveAsFile(textarea, currentTitle = "Untitled.txt") {
@@ -82,6 +116,7 @@ export class NotepadApp {
         .then(() => {
           const pathStr = path.length ? `/${path.join("/")}/${fileName}` : `/${fileName}`;
           this.wm.showPopup(`File saved: ${pathStr}`);
+          speak("Great, your file has been saved!", "Save");
         })
         .catch((e) => {
           console.error(e);
@@ -91,6 +126,7 @@ export class NotepadApp {
   }
 
   openFileDialog() {
+    speak("Looking for something?", "Searching");
     this.explorerApp.open(async (path, fileName) => {
       const content = await this.fs.getFileContent(path, fileName);
       this.open(fileName, content, path);

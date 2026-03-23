@@ -18,6 +18,7 @@ import {
 import { renderWallpapersPage } from "./wallpapers.js";
 import { showConflictDialog } from "./shared/conflictDialog.js";
 import { showDynamicContextMenu, hideMenu } from "./shared/contextMenu.js";
+import { speak } from "./clippy.js";
 
 export class ExplorerApp {
   constructor(fileSystemManager, windowManager, notepadApp) {
@@ -819,6 +820,11 @@ export class ExplorerApp {
       view.appendChild(item);
     }
 
+    const folderEntries = Object.keys(folder);
+    if (folderEntries.length === 0 && inst.mode === "browse") {
+      speak("This folder is empty. Want me to help you organize?", "Searching");
+    }
+
     if (inst.mode === "select") {
       this._bindSelectBarButton(inst);
     }
@@ -864,6 +870,8 @@ export class ExplorerApp {
       this.navigateInstance(inst, [...inst.currentPath, name]);
       return;
     }
+
+    speak("It looks like you're opening a file. I can read that for you.", "Reading");
 
     if (name.endsWith(".desktop") && this.appLauncher) {
       try {
@@ -1606,8 +1614,10 @@ export class ExplorerApp {
       try {
         if (isFile) {
           await this.fs.createFile(inst.currentPath, name);
+          speak("New file created! Don't forget to name it something memorable.", "Pleased");
         } else {
           await this.fs.createFolder(inst.currentPath, name);
+          speak("New folder created! Don't forget to name it something memorable.", "Pleased");
         }
         await this.renderInstance(inst);
       } catch (err) {

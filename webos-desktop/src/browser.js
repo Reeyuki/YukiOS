@@ -1,8 +1,9 @@
 import { desktop } from "./desktop.js";
+import { speak } from "./clippy.js";
 
 const PROXY_BASE = "https://api.codetabs.com/v1/proxy/?quest=";
 
-const DIRECT_IFRAME_PATTERNS = [/google\.com/];
+const DIRECT_IFRAME_PATTERNS = [/google.com/];
 
 function shouldLoadDirect(url) {
   return DIRECT_IFRAME_PATTERNS.some((p) => p.test(url));
@@ -45,11 +46,12 @@ async function loadViaProxy(iframe, url) {
     iframe.src = blobUrl;
   } catch (err) {
     console.error("Proxy load failed:", err);
+    speak("That page didn't load. Try a search instead?", "Alert");
     const errHtml = `<html><body style="font-family:sans-serif;padding:2rem;color:#333">
       <h2>⚠ Failed to load page</h2>
       <p><strong>Error:</strong> ${err.message}</p>
       <p><strong>URL:</strong> ${url}</p>
-    </body></html>`;
+      </body></html>`;
     const blob = new Blob([errHtml], { type: "text/html" });
     if (iframe._blobUrl) URL.revokeObjectURL(iframe._blobUrl);
     iframe._blobUrl = URL.createObjectURL(blob);
@@ -128,7 +130,10 @@ export class BrowserApp {
     this.tabs = [];
     this.currentTabIndex = -1;
 
-    this.newTabBtn.onclick = () => this.addTab();
+    this.newTabBtn.onclick = () => {
+      speak("Where are we headed today?", "CheckingSomething");
+      this.addTab();
+    };
 
     this.addressInput.addEventListener("keydown", (e) => {
       if (e.key === "Enter" && this.currentTabIndex >= 0) {
@@ -140,7 +145,12 @@ export class BrowserApp {
     win.querySelectorAll(".bookmark-bar button").forEach((btn) => {
       btn.addEventListener("click", () => {
         if (this.currentTabIndex >= 0) {
-          this.navigate(this.tabs[this.currentTabIndex], btn.dataset.url);
+          // Exclude Reeyuki bookmark from the "Good choice" greeting
+          const bookmarkUrl = btn.dataset.url;
+          if (bookmarkUrl !== "https://reeyuki.nekoweb.org") {
+            speak("Good choice! I know this one.", "Congratulate");
+          }
+          this.navigate(this.tabs[this.currentTabIndex], bookmarkUrl);
         }
       });
     });
@@ -195,10 +205,10 @@ export class BrowserApp {
     faviconImg.onerror = () => (faviconImg.src = "/static/icons/default-favicon.png");
 
     tabBtn.innerHTML = `
-    <span class="tab-title">${name}</span>
-    <button class="tab-close-btn" title="Close tab">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12"><line x1="1" y1="1" x2="11" y2="11" stroke="currentColor" stroke-width="2"/><line x1="11" y1="1" x2="1" y2="11" stroke="currentColor" stroke-width="2"/></svg>
-    </button>
+      <span class="tab-title">${name}</span>
+      <button class="tab-close-btn" title="Close tab">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12"><line x1="1" y1="1" x2="11" y2="11" stroke="currentColor" stroke-width="2"/><line x1="11" y1="1" x2="1" y2="11" stroke="currentColor" stroke-width="2"/></svg>
+      </button>
     `;
     tabBtn.prepend(faviconImg);
 
@@ -293,6 +303,17 @@ export class BrowserApp {
     return "https://www.google.com/search?q=" + encodeURIComponent(raw) + "&igu=1";
   }
 
+  _checkDomainClippy(url) {
+    try {
+      const hostname = new URL(url).hostname;
+      if (hostname.includes("reeyuki")) {
+        speak("Aw, you're so sweet!", "Congratulate");
+      } else if (hostname.includes("google.com")) {
+        speak("Need help finding something?", "Searching");
+      }
+    } catch {}
+  }
+
   addTab(url) {
     if (!url) url = "https://www.google.com/webhp?igu=1";
     url = injectGoogleIgu(url);
@@ -328,11 +349,11 @@ export class BrowserApp {
     faviconImg.onerror = () => (faviconImg.src = "/static/icons/default-favicon.png");
 
     tabBtn.innerHTML = `
-    <span class="tab-title">${tab.title}</span>
-    <button class="tab-close-btn" title="Close tab">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12"><line x1="1" y1="1" x2="11" y2="11" stroke="currentColor" stroke-width="2"/><line x1="11" y1="1" x2="1" y2="11" stroke="currentColor" stroke-width="2"/></svg>
-    </button>
-  `;
+      <span class="tab-title">${tab.title}</span>
+      <button class="tab-close-btn" title="Close tab">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12"><line x1="1" y1="1" x2="11" y2="11" stroke="currentColor" stroke-width="2"/><line x1="11" y1="1" x2="1" y2="11" stroke="currentColor" stroke-width="2"/></svg>
+      </button>
+    `;
     tabBtn.prepend(faviconImg);
 
     if (this.newTabBtn && this.newTabBtn.parentNode === this.tabsContainer) {
@@ -403,6 +424,8 @@ export class BrowserApp {
     if (!url) return;
     if (!url.startsWith("http")) url = "https://" + url;
     url = injectGoogleIgu(url);
+
+    this._checkDomainClippy(url);
 
     if (tab.historyIndex < tab.history.length - 1) {
       tab.history = tab.history.slice(0, tab.historyIndex + 1);

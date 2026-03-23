@@ -844,33 +844,49 @@ class GameWindowRenderer {
     return [];
   }
 
+  getFlashGames() {
+    return [];
+  }
+
   createCard(game) {
-    return `
-      <div class="games-app-card" data-app="${game.app}" title="${game.title}">
-        <div class="games-app-card-img-wrap">
-          <img src="${game.icon}" alt="${game.title}" />
-        </div>
-        <div class="games-app-card-title">${game.title}</div>
+    return `<div class="games-app-card" data-app="${game.app}" title="${game.title}">
+      <div class="games-app-card-img-wrap">
+        <img src="${game.icon}" alt="${game.title}" />
       </div>
-    `;
+      <div class="games-app-card-title">${game.title}</div>
+    </div>`;
   }
 
   render(container, onLaunch) {
     const games = this.getGames();
-    container.innerHTML = `
-      <div class="games-search-wrap">
+    const flashGames = this.getFlashGames();
+    const totalGames = games.length + flashGames.length;
+
+    let flashSection = "";
+    if (flashGames.length > 0) {
+      flashSection = `
+        <div class="games-section-header">
+          <img src="/static/icons/flash.webp" alt="Flash" class="games-section-icon" style="width:24px;height:24px;margin-right:8px;vertical-align:middle;" />
+          <span>Flash Games</span>
+        </div>
+        <div class="games-app-grid games-app-grid-flash">
+          ${flashGames.map((g) => this.createCard(g)).join("")}
+        </div>`;
+    }
+
+    container.innerHTML = `<div class="games-search-wrap">
         <input class="games-search-input" type="text" placeholder="Search games…" autocomplete="off" spellcheck="false" />
         <span class="games-search-icon">🔍</span>
       </div>
       <div class="games-app-grid">
         ${games.map((g) => this.createCard(g)).join("")}
       </div>
-      <div class="games-no-results" style="display:none;">No games found</div>
-    `;
+      ${flashSection}
+      <div class="games-no-results" style="display:none;">No games found</div>`;
 
-    const grid = container.querySelector(".games-app-grid");
     const noResults = container.querySelector(".games-no-results");
     const searchInput = container.querySelector(".games-search-input");
+    const flashHeader = container.querySelector(".games-section-header");
 
     const applyAnimations = (cards) => {
       cards.forEach((card, i) => {
@@ -903,8 +919,17 @@ class GameWindowRenderer {
       });
       noResults.style.display = visible === 0 ? "block" : "none";
 
+      if (flashHeader) {
+        const flashGrid = container.querySelector(".games-app-grid-flash");
+        if (flashGrid) {
+          const flashCards = Array.from(flashGrid.querySelectorAll(".games-app-card"));
+          const anyFlashVisible = flashCards.some((c) => c.style.display !== "none");
+          flashHeader.style.display = anyFlashVisible ? "" : "none";
+        }
+      }
+
       const countEl = container.closest(".window-content")?.closest(".window-root")?.querySelector(".games-app-count");
-      if (countEl) countEl.textContent = query ? visible : games.length;
+      if (countEl) countEl.textContent = query ? visible : totalGames;
     });
   }
 }
@@ -915,6 +940,17 @@ export class GamesAppRenderer extends GameWindowRenderer {
       .filter(([id, data]) => {
         if (data.type === "system") return false;
         if (isFlashGame(id, data)) return false;
+        if (GAMES_APP_EXCLUDED.has(id)) return false;
+        if (!data.icon || !data.title) return false;
+        return true;
+      })
+      .map(([id, data]) => ({ app: id, ...data }));
+  }
+
+  getFlashGames() {
+    return Object.entries(appMap)
+      .filter(([id, data]) => {
+        if (!isFlashGame(id, data)) return false;
         if (GAMES_APP_EXCLUDED.has(id)) return false;
         if (!data.icon || !data.title) return false;
         return true;
@@ -934,10 +970,20 @@ const FLASH_EMUPEDIA_EXCLUDED = new Set([
   "jetpack"
 ]);
 const FLASH_EMUPEDIA_PATTERN = "emupedia.net";
-const FLASH_URL_PATTERNS = ["papasgamesfree.io", "flashpointarchive.html", "/static/rfiv.html", "cache.armorgames.com"];
+const FLASH_URL_PATTERNS = [
+  "papasgamesfree.io",
+  "flashpointarchive.html",
+  "/static/rfiv.html",
+  "cache.armorgames.com",
+  "silvergames.com"
+];
+
+const FLASH_LOCAL_IDS = new Set(["badIceCream", "henry", "badIceCream2", "badIceCream3", "trinitas"]);
 
 function isFlashGame(id, data) {
   if (data.type === "swf") return true;
+  if (data.swf) return true;
+  if (FLASH_LOCAL_IDS.has(id)) return true;
   if (data.type !== "game") return false;
   const url = data.url || "";
   if (FLASH_URL_PATTERNS.some((p) => url.includes(p))) return true;

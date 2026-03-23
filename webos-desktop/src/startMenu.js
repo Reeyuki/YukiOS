@@ -1,6 +1,7 @@
 import { appMap } from "./games.js";
 import { camelize } from "./utils.js";
 import { StorageKeys } from "./settings.js";
+import { speak } from "./clippy.js";
 
 function getFavorites() {
   return JSON.parse(localStorage.getItem(StorageKeys.favoritesKey)) || [];
@@ -17,6 +18,7 @@ function favoriteApp(appName) {
     saveFavorites(favorites);
     updateFavoritesUI();
     updateStarState(appName, true);
+    speak("Nice pick, I like that one too!", "Congratulate");
   }
 }
 
@@ -125,10 +127,20 @@ export function setupStartMenu(appLauncher) {
       document.querySelectorAll(".start-page").forEach((p) => p.classList.remove("active"));
       cat.classList.add("active");
       document.querySelector(`.start-page[data-page="${cat.dataset.cat}"]`).classList.add("active");
+
+      if (cat.dataset.cat === "favorites") {
+        speak("These are your favorites! Great taste.", "Pleased");
+      }
     };
   });
 
-  document.getElementById("start-search").addEventListener("input", (e) => {
+  const searchInput = document.getElementById("start-search");
+
+  searchInput.addEventListener("focus", () => {
+    speak("Looking for an app? I know where everything is.", "Searching");
+  });
+
+  searchInput.addEventListener("input", (e) => {
     const q = e.target.value.toLowerCase();
     document.querySelectorAll(".start-item").forEach((item) => {
       item.style.display = item.textContent.toLowerCase().includes(q) ? "" : "none";
@@ -137,6 +149,7 @@ export function setupStartMenu(appLauncher) {
 
   setupStars();
 }
+
 export function tryGetIcon(id) {
   id = camelize(id);
 
