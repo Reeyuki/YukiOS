@@ -124,9 +124,15 @@ export const appMap = {
   },
   hollowKnight: {
     type: "game",
-    url: "/static/hollowknight.html",
+    url: "/static/games/html/hollowknight.html",
     icon: "/static/icons/hollowKnight.webp",
     title: "Hollow Knight"
+  },
+  hollowKnightSS: {
+    type: "game",
+    url: "/static/games/html/hollowknightss.html",
+    icon: "/static/icons/hollowKnightSS.webp",
+    title: "Hollow Knight: Silksong"
   },
   celeste: {
     type: "game",
