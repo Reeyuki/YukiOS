@@ -1,0 +1,719 @@
+/* ============================================================
+   OFFICE APP - DARK THEME
+   Color palette: Catppuccin Mocha inspired
+   Base:    #1e1e2e
+   Surface: #181825
+   Overlay: #313244
+   Text:    #cdd6f4
+   Subtext: #a6adc8
+   Accent:  #89b4fa (blue)
+   Green:   #a6e3a1
+   Yellow:  #f9e2af
+   Red:     #f38ba8
+   Mauve:   #cba6f7
+   ============================================================ */
+
+/* ----------------------------------------------------------
+   Menu bar
+---------------------------------------------------------- */
+.office-menu-bar {
+  display: flex;
+  gap: 4px;
+  padding: 4px 8px;
+  background: #181825;
+  border-bottom: 1px solid #313244;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.office-menu-btn {
+  cursor: pointer;
+  padding: 4px 12px;
+  background: #313244;
+  color: #cdd6f4;
+  border: 1px solid #45475a;
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: inherit;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+
+.office-menu-btn:hover {
+  background: #45475a;
+  border-color: #89b4fa;
+  color: #cdd6f4;
+}
+
+.office-menu-btn:active {
+  background: #89b4fa;
+  color: #1e1e2e;
+}
+
+/* ----------------------------------------------------------
+   Window content area
+---------------------------------------------------------- */
+.office-window-content {
+  height: calc(100% - 80px);
+  overflow: auto;
+  background: #1e1e2e;
+}
+
+/* ----------------------------------------------------------
+   Editor area
+---------------------------------------------------------- */
+.office-editor-area {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #1e1e2e;
+}
+
+/* ----------------------------------------------------------
+   Loading indicator
+---------------------------------------------------------- */
+.office-loading-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: 16px;
+  color: #a6adc8;
+  background: #1e1e2e;
+}
+
+/* ----------------------------------------------------------
+   Messages: error / info
+---------------------------------------------------------- */
+.office-error-msg {
+  padding: 20px;
+  color: #f38ba8;
+  background: #1e1e2e;
+  font-size: 14px;
+}
+
+.office-info-msg {
+  padding: 20px;
+  color: #a6adc8;
+  background: #1e1e2e;
+  font-size: 14px;
+}
+
+/* ----------------------------------------------------------
+   Drop zone
+---------------------------------------------------------- */
+.office-dropzone {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 3px dashed #45475a;
+  border-radius: 12px;
+  margin: 10px;
+  box-sizing: border-box;
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    background 0.2s;
+  background: #181825;
+}
+
+.office-dropzone:hover {
+  border-color: #89b4fa;
+  background: #1e1e2e;
+}
+
+.office-dropzone--active {
+  border-color: #89b4fa;
+  background: #24273a;
+}
+
+.office-dropzone__icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.7;
+}
+
+.office-dropzone__title {
+  font-size: 18px;
+  color: #cdd6f4;
+  margin-bottom: 8px;
+}
+
+.office-dropzone__subtitle {
+  font-size: 13px;
+  color: #6c7086;
+}
+
+/* Match the dynamic div children created in showDropZone */
+.office-dropzone > div:first-child {
+  font-size: 48px;
+  color: #6c7086;
+  margin-bottom: 16px;
+}
+.office-dropzone > div:nth-child(2) {
+  font-size: 18px;
+  color: #cdd6f4;
+  margin-bottom: 8px;
+}
+.office-dropzone > div:nth-child(3) {
+  font-size: 13px;
+  color: #6c7086;
+}
+
+/* ----------------------------------------------------------
+   Rich-text toolbar
+---------------------------------------------------------- */
+.office-toolbar {
+  display: flex;
+  gap: 4px;
+  padding: 6px 8px;
+  background: #181825;
+  border-bottom: 1px solid #313244;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.office-toolbar__btn {
+  cursor: pointer;
+  padding: 3px 8px;
+  background: #313244;
+  color: #cdd6f4;
+  border: 1px solid #45475a;
+  border-radius: 3px;
+  font-size: 12px;
+  min-width: 28px;
+  font-family: inherit;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+
+.office-toolbar__btn:hover {
+  background: #45475a;
+  border-color: #89b4fa;
+}
+
+.office-toolbar__btn:active {
+  background: #89b4fa;
+  color: #1e1e2e;
+}
+
+.office-toolbar__btn--bold {
+  font-weight: bold;
+}
+.office-toolbar__btn--italic {
+  font-style: italic;
+}
+.office-toolbar__btn--underline {
+  text-decoration: underline;
+}
+.office-toolbar__btn--strike {
+  text-decoration: line-through;
+}
+
+.office-toolbar__select {
+  font-size: 12px;
+  background: #313244;
+  color: #cdd6f4;
+  border: 1px solid #45475a;
+  border-radius: 3px;
+  padding: 2px 4px;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.office-toolbar__select:focus {
+  outline: none;
+  border-color: #89b4fa;
+}
+
+/* ----------------------------------------------------------
+   Rich-text editor (contenteditable)
+---------------------------------------------------------- */
+.office-richtext-editor {
+  flex: 1;
+  min-height: 200px;
+  border: none;
+  padding: 20px 24px;
+  font-family: Georgia, serif;
+  font-size: 14px;
+  line-height: 1.7;
+  overflow: auto;
+  outline: none;
+  background: #1e1e2e;
+  color: #cdd6f4;
+  caret-color: #89b4fa;
+}
+
+.office-richtext-editor:focus {
+  background: #1e1e2e;
+}
+
+/* Links inside editor */
+.office-richtext-editor a {
+  color: #89b4fa;
+}
+
+/* ----------------------------------------------------------
+   Spreadsheet
+---------------------------------------------------------- */
+.office-sheet-wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #1e1e2e;
+}
+
+.office-sheet-tabs {
+  display: flex;
+  gap: 2px;
+  padding: 4px 6px;
+  background: #181825;
+  border-bottom: 1px solid #313244;
+  flex-shrink: 0;
+}
+
+.office-sheet-tab {
+  padding: 4px 14px;
+  background: #313244;
+  color: #a6adc8;
+  border: 1px solid #45475a;
+  border-radius: 4px 4px 0 0;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+
+.office-sheet-tab:hover {
+  background: #45475a;
+  color: #cdd6f4;
+}
+
+.office-sheet-tab--active {
+  background: #1e1e2e;
+  color: #89b4fa;
+  border-bottom-color: #1e1e2e;
+}
+
+.office-sheet-scroll {
+  flex: 1;
+  overflow: auto;
+}
+
+.office-spreadsheet {
+  border-collapse: collapse;
+  font-family: "Courier New", monospace;
+  font-size: 13px;
+  color: #cdd6f4;
+}
+
+.office-spreadsheet__corner {
+  border: 1px solid #45475a;
+  background: #181825;
+  padding: 2px 8px;
+  position: sticky;
+  top: 0;
+  left: 0;
+  z-index: 3;
+  min-width: 40px;
+}
+
+.office-spreadsheet__col-header {
+  border: 1px solid #45475a;
+  background: #181825;
+  color: #a6adc8;
+  padding: 2px 8px;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  min-width: 80px;
+  font-weight: bold;
+  text-align: center;
+  user-select: none;
+}
+
+.office-spreadsheet__row-header {
+  border: 1px solid #45475a;
+  background: #181825;
+  color: #a6adc8;
+  padding: 2px 8px;
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  font-weight: bold;
+  text-align: center;
+  user-select: none;
+}
+
+.office-spreadsheet__cell {
+  border: 1px solid #313244;
+  padding: 2px 6px;
+  min-width: 80px;
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  outline: none;
+  background: #1e1e2e;
+  color: #cdd6f4;
+  caret-color: #89b4fa;
+}
+
+.office-spreadsheet__cell:hover {
+  background: #24273a;
+}
+
+.office-spreadsheet__cell--focused {
+  outline: 2px solid #89b4fa !important;
+  outline-offset: -1px;
+  background: #24273a;
+  z-index: 1;
+  position: relative;
+}
+
+/* ----------------------------------------------------------
+   ODT viewer
+---------------------------------------------------------- */
+.office-odt-wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #1e1e2e;
+}
+
+.office-odt-iframe {
+  width: 100%;
+  flex: 1;
+  border: none;
+  background: #1e1e2e;
+}
+
+/* ----------------------------------------------------------
+   PDF viewer
+---------------------------------------------------------- */
+.office-pdf-viewer {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background: #181825;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+.office-pdf-info {
+  text-align: center;
+  color: #a6adc8;
+  padding: 8px;
+  font-size: 14px;
+}
+
+.office-pdf-page {
+  position: relative;
+  margin: 10px auto;
+  background: #2a2a2a;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+}
+
+.office-pdf-text-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.office-pdf-page-label {
+  text-align: center;
+  color: #6c7086;
+  padding: 4px;
+  font-size: 12px;
+}
+
+/* ----------------------------------------------------------
+   Presentation viewer (PPTX / ODP)
+---------------------------------------------------------- */
+.office-presentation-viewer {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background: #181825;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+.office-presentation-info {
+  text-align: center;
+  color: #a6adc8;
+  padding: 8px;
+  font-size: 14px;
+}
+
+.office-slide-wrapper {
+  position: relative;
+  width: 960px;
+  height: 540px;
+  margin: 16px auto;
+  background: #ffffff;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+  border-radius: 2px;
+  border: 1px solid #45475a;
+}
+
+.office-slide-content {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.office-slide-label {
+  text-align: center;
+  color: #6c7086;
+  padding: 4px;
+  font-size: 12px;
+}
+
+/* ----------------------------------------------------------
+   Scrollbar styling (Webkit)
+---------------------------------------------------------- */
+.office-richtext-editor::-webkit-scrollbar,
+.office-sheet-scroll::-webkit-scrollbar,
+.office-pdf-viewer::-webkit-scrollbar,
+.office-presentation-viewer::-webkit-scrollbar,
+.office-doc-content::-webkit-scrollbar,
+.office-window-content::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.office-richtext-editor::-webkit-scrollbar-track,
+.office-sheet-scroll::-webkit-scrollbar-track,
+.office-pdf-viewer::-webkit-scrollbar-track,
+.office-presentation-viewer::-webkit-scrollbar-track,
+.office-doc-content::-webkit-scrollbar-track,
+.office-window-content::-webkit-scrollbar-track {
+  background: #181825;
+}
+
+.office-richtext-editor::-webkit-scrollbar-thumb,
+.office-sheet-scroll::-webkit-scrollbar-thumb,
+.office-pdf-viewer::-webkit-scrollbar-thumb,
+.office-presentation-viewer::-webkit-scrollbar-thumb,
+.office-doc-content::-webkit-scrollbar-thumb,
+.office-window-content::-webkit-scrollbar-thumb {
+  background: #45475a;
+  border-radius: 4px;
+}
+
+.office-richtext-editor::-webkit-scrollbar-thumb:hover,
+.office-sheet-scroll::-webkit-scrollbar-thumb:hover,
+.office-pdf-viewer::-webkit-scrollbar-thumb:hover,
+.office-presentation-viewer::-webkit-scrollbar-thumb:hover,
+.office-doc-content::-webkit-scrollbar-thumb:hover,
+.office-window-content::-webkit-scrollbar-thumb:hover {
+  background: #6c7086;
+}
+
+/* ----------------------------------------------------------
+   Selection color
+---------------------------------------------------------- */
+.office-richtext-editor ::selection,
+.office-spreadsheet__cell ::selection {
+  background: #89b4fa44;
+  color: #cdd6f4;
+}
+
+.office-cell-highlight {
+  background-color: #f9e2af !important;
+  outline: 2px solid #fab387;
+}
+
+.office-fullscreen {
+  z-index: 10000 !important;
+}
+
+.office-menu-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 8px;
+  border-bottom: 1px solid #45475a;
+}
+
+.office-menu-btn {
+  font-size: 12px;
+  padding: 6px 10px;
+}
+
+/* Menu Bar */
+.office-menu-bar {
+  display: flex;
+  align-items: center;
+  background: #1e1e2e;
+  border-bottom: 1px solid #45475a;
+  padding: 0;
+  height: 28px;
+  user-select: none;
+}
+
+/* Dropdown Container */
+.office-menu-dropdown {
+  position: relative;
+  height: 100%;
+}
+
+.office-menu-dropdown__trigger {
+  background: transparent;
+  border: none;
+  color: #cdd6f4;
+  padding: 0 12px;
+  height: 100%;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.office-menu-dropdown__trigger:hover,
+.office-menu-dropdown.active .office-menu-dropdown__trigger {
+  background: #313244;
+}
+
+/* Dropdown Content */
+.office-menu-dropdown__content {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  min-width: 220px;
+  background: #1e1e2e;
+  border: 1px solid #45475a;
+  border-radius: 0 0 6px 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+  padding: 4px 0;
+}
+
+.office-menu-dropdown.active .office-menu-dropdown__content {
+  display: block;
+}
+
+/* Menu Items */
+.office-menu-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 6px 12px;
+  background: transparent;
+  border: none;
+  color: #cdd6f4;
+  font-size: 13px;
+  cursor: pointer;
+  text-align: left;
+  gap: 8px;
+  transition: background 0.1s;
+}
+
+.office-menu-item:hover {
+  background: #313244;
+}
+
+.office-menu-item:disabled {
+  color: #6c7086;
+  cursor: not-allowed;
+}
+
+.office-menu-item__icon {
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.office-menu-item__label {
+  flex: 1;
+}
+
+.office-menu-item__shortcut {
+  color: #6c7086;
+  font-size: 11px;
+  margin-left: auto;
+}
+
+.office-menu-item__arrow {
+  color: #6c7086;
+  font-size: 10px;
+}
+
+.office-menu-item__check {
+  width: 16px;
+  text-align: center;
+  color: #a6e3a1;
+}
+
+/* Menu Divider */
+.office-menu-divider {
+  height: 1px;
+  background: #45475a;
+  margin: 4px 8px;
+}
+
+/* Submenu */
+.office-menu-submenu {
+  position: relative;
+}
+
+.office-menu-submenu__content {
+  display: none;
+  position: absolute;
+  left: 100%;
+  top: 0;
+  min-width: 180px;
+  background: #1e1e2e;
+  border: 1px solid #45475a;
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  padding: 4px 0;
+  z-index: 1001;
+}
+
+.office-menu-submenu:hover .office-menu-submenu__content {
+  display: block;
+}
+
+/* Context-specific items (hidden by default) */
+.office-menu-item--spreadsheet,
+.office-menu-item--document {
+  display: none;
+}
+
+.office-menu-bar[data-mode="spreadsheet"] .office-menu-item--spreadsheet {
+  display: flex;
+}
+
+.office-menu-bar[data-mode="document"] .office-menu-item--document {
+  display: flex;
+}
+
+/* Fullscreen mode */
+.office-fullscreen {
+  position: fixed !important;
+  left: 0 !important;
+  top: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 10000 !important;
+  border-radius: 0 !important;
+}
+
+/* Highlight for search */
+.office-cell-highlight {
+  background-color: #f9e2af !important;
+  outline: 2px solid #fab387;
+}

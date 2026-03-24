@@ -8,9 +8,11 @@ import {
   isImageFile,
   isVideoFile,
   isHtmlFile,
+  isOfficeFile,
   isWallpaperPath,
   readFileAsDataURL,
   readFileAsText,
+  resolveFileIcon,
   buildFileIconHTML,
   openMediaViewer,
   openFileWith
@@ -25,6 +27,7 @@ export class ExplorerApp {
     this.fs = fileSystemManager;
     this.wm = windowManager;
     this.notepadApp = notepadApp;
+    this.officeApp = null;
     this.desktopUI = null;
     this.open = this.open.bind(this);
     this._instances = new Map();
@@ -64,6 +67,9 @@ export class ExplorerApp {
 
   setDesktopUI(desktopUI) {
     this.desktopUI = desktopUI;
+  }
+  setOfficeApp(officeApp) {
+    this.officeApp = officeApp;
   }
   setAppLauncher(appLauncher) {
     this.appLauncher = appLauncher;
@@ -548,24 +554,21 @@ export class ExplorerApp {
 
   async _resolveFilePayload(file, name, targetPath) {
     const kind = fileKindFromName(name);
-    let content, icon;
+    const icon = resolveFileIcon(name);
+    let content;
 
     if (kind === FileKind.IMAGE) {
       content = await readFileAsDataURL(file);
-      icon = "@content";
     } else if (kind === FileKind.VIDEO) {
       content = file;
-      icon = "/static/icons/obs.webp";
     } else if (kind === FileKind.ROM) {
       content = await readFileAsDataURL(file);
-      icon = "rom";
     } else {
       try {
         content = await readFileAsText(file);
       } catch {
         content = await readFileAsDataURL(file);
       }
-      icon = "/static/icons/notepad.webp";
     }
 
     return { kind, content, icon };
@@ -755,18 +758,6 @@ export class ExplorerApp {
 
       if (!isFile) {
         iconEl = `<img src="/static/icons/file.webp" style="width:64px;height:64px;object-fit:cover;border-radius:8px">`;
-      } else if (isRomFile(name)) {
-        iconEl = buildFileIconHTML(name);
-      } else if (isHtmlFile(name)) {
-        iconEl = buildFileIconHTML(name);
-      } else if (isImageFile(name)) {
-        const thumbnailSrc =
-          itemData.icon === "@content"
-            ? await this.fs.getFileContent(inst.currentPath, name)
-            : itemData.icon || itemData.content;
-        iconEl = buildFileIconHTML(name, { thumbnailSrc });
-      } else if (itemData.kind === FileKind.VIDEO || isVideoFile(name)) {
-        iconEl = buildFileIconHTML(name);
       } else if (name.endsWith(".desktop")) {
         let iconSrc = "/static/icons/file.webp";
         try {
@@ -779,8 +770,12 @@ export class ExplorerApp {
           ? `<div style="width:64px;height:64px;display:flex;align-items:center;justify-content:center;background:#1a1a2e;border-radius:8px;font-size:28px;color:#8090ff;"><i class="${iconSrc}"></i></div>`
           : `<img src="${iconSrc}" style="width:64px;height:64px;object-fit:cover;border-radius:8px">`;
       } else {
-        const src = itemData.icon || "/static/icons/notepad.webp";
-        iconEl = `<img src="${src}" style="width:64px;height:64px;object-fit:cover;border-radius:8px">`;
+        const thumbnailSrc = isImageFile(name)
+          ? itemData.icon === "@content"
+            ? await this.fs.getFileContent(inst.currentPath, name)
+            : itemData.icon || itemData.content
+          : null;
+        iconEl = buildFileIconHTML(name, { thumbnailSrc, storedIcon: itemData.icon });
       }
 
       const item = document.createElement("div");
@@ -890,7 +885,8 @@ export class ExplorerApp {
       notepadApp: this.notepadApp,
       emulatorApp: this.emulatorApp,
       browserApp: this.browserApp,
-      windowManager: this.wm
+      windowManager: this.wm,
+      officeApp: this.officeApp
     });
   }
 

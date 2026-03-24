@@ -22,7 +22,8 @@ export class AppLauncher {
     taskManagerApp,
     weatherApp,
     emulatorApp,
-    appCreatorApp
+    appCreatorApp,
+    officeApp
   ) {
     this.wm = windowManager;
     this.fs = fileSystemManager;
@@ -41,6 +42,7 @@ export class AppLauncher {
     this.weatherApp = weatherApp;
     this.emulatorApp = emulatorApp;
     this.appCreatorApp = appCreatorApp;
+    this.officeApp = officeApp;
     this.pageLoadTime = Date.now();
     this.TRANSPARENCY_ALLOWED_APP_IDS = new Set(["paint", "photopea", "vscode", "liventcord"]);
 
@@ -150,6 +152,12 @@ export class AppLauncher {
         type: "system",
         title: "App Creator App",
         action: () => appCreatorApp.open()
+      },
+      officeApp: {
+        type: "system",
+        title: "Office App",
+        action: () => officeApp.open(),
+        clippy: { message: "Need a hand creating a document or spreadsheet?", animation: "animate" }
       }
     };
 

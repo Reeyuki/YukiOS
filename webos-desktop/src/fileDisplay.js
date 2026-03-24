@@ -2,6 +2,21 @@ import { FileKind } from "./fs.js";
 import { desktop } from "./desktop.js";
 export const IMAGE_EXTS = ["png", "jpg", "jpeg", "gif", "webp", "bmp", "svg", "avif"];
 export const VIDEO_EXTS = ["mp4", "webm", "ogv", "mov"];
+export const OFFICE_EXTS = [
+  "docx",
+  "doc",
+  "xlsx",
+  "xls",
+  "slx",
+  "csv",
+  "odt",
+  "ods",
+  "pdf",
+  "odp",
+  "pptx",
+  "ppt",
+  "rtf"
+];
 
 import { ROM_EXTS, detectCore } from "./shared/coreMap.js";
 export { ROM_EXTS };
@@ -39,6 +54,10 @@ export function isVideoFile(name) {
   return VIDEO_EXTS.includes(getExt(name));
 }
 
+export function isOfficeFile(name) {
+  return OFFICE_EXTS.includes(getExt(name));
+}
+
 export function isMediaFile(name) {
   return isImageFile(name) || isVideoFile(name);
 }
@@ -50,6 +69,15 @@ export function isWallpaperPath(path) {
     path[path.length - 2] === "Pictures" &&
     path[path.length - 1] === "Wallpapers"
   );
+}
+
+export function resolveFileIcon(name) {
+  if (isImageFile(name)) return "@content";
+  if (isVideoFile(name)) return "/static/icons/obs.webp";
+  if (isRomFile(name)) return "rom";
+  if (isOfficeFile(name)) return "/static/icons/office.webp";
+  if (isHtmlFile(name)) return "/static/icons/firefox.webp";
+  return "/static/icons/notepad.webp";
 }
 
 export function readFileAsDataURL(file) {
@@ -70,7 +98,7 @@ export function readFileAsText(file) {
   });
 }
 
-export function buildFileIconHTML(name, { thumbnailSrc = null, size = 64, radius = 8 } = {}) {
+export function buildFileIconHTML(name, { thumbnailSrc = null, size = 64, radius = 8, storedIcon = null } = {}) {
   const s = `width:${size}px;height:${size}px;border-radius:${radius}px;`;
   if (isHtmlFile(name)) {
     return `<img src="/static/icons/firefox.webp" style="${s}object-fit:cover;">`;
@@ -83,6 +111,12 @@ export function buildFileIconHTML(name, { thumbnailSrc = null, size = 64, radius
   }
   if (isVideoFile(name)) {
     return `<div style="${s}display:flex;align-items:center;justify-content:center;background:#111;font-size:${Math.round(size * 0.44)}px;color:#aaa;"><i class="fas fa-film"></i></div>`;
+  }
+  if (isOfficeFile(name)) {
+    return `<img src="/static/icons/office.webp" style="${s}object-fit:cover;">`;
+  }
+  if (storedIcon && storedIcon !== "@content" && storedIcon !== "rom") {
+    return `<img src="${storedIcon}" style="${s}object-fit:cover;">`;
   }
   return `<img src="/static/icons/notepad.webp" style="${s}object-fit:cover;">`;
 }
@@ -116,7 +150,7 @@ function base64ToBlob(dataURL) {
   return new Blob([bytes], { type: mime });
 }
 
-export async function openFileWith({ name, path, fs, notepadApp, emulatorApp, browserApp, windowManager }) {
+export async function openFileWith({ name, path, fs, notepadApp, emulatorApp, browserApp, windowManager, officeApp }) {
   if (isRomFile(name)) {
     if (!emulatorApp) return;
     const dataUrl = await fs.getFileContent(path, name);
@@ -128,26 +162,31 @@ export async function openFileWith({ name, path, fs, notepadApp, emulatorApp, br
 
   if (isVideoFile(name)) {
     const folderPath = Array.isArray(path) ? path.join("/") : path;
-
     const blobFromDB = fs.readBinaryFile ? await fs.readBinaryFile(folderPath, name) : null;
-
     if (blobFromDB) {
       openMediaViewer(name, URL.createObjectURL(blobFromDB), FileKind.VIDEO, windowManager);
       return;
     }
-
     const raw = await fs.getFileContent(path, name);
     if (!raw) return;
-
     if (raw.startsWith("data:")) {
       const blob = base64ToBlob(raw);
       const src = URL.createObjectURL(blob);
       openMediaViewer(name, src, FileKind.VIDEO, windowManager);
       return;
     }
-
     openMediaViewer(name, raw, FileKind.VIDEO, windowManager);
     return;
+  }
+
+  if (isOfficeFile(name)) {
+    if (!officeApp) {
+      console.warn("openFileWith: officeApp not provided for", name, "— falling through to notepad");
+    } else {
+      const content = await fs.getFileContent(path, name);
+      officeApp.loadContent(name, content, path);
+      return;
+    }
   }
 
   const content = await fs.getFileContent(path, name);
