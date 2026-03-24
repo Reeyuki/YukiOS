@@ -792,6 +792,12 @@ export const appMap = {
     icon: "/static/icons/effing2.webp",
     title: "Effing Worms 2"
   },
+  yukiJump: {
+    type: "game",
+    url: "https://play.unity.com/en/games/c49468cf-ed31-4ee9-ad06-c1addb8a01d4/yukijump",
+    icon: "/static/icons/yukijump.webp",
+    title: "Yuki Jump"
+  },
   emulatorApp: { type: "system", title: "Emulator App", icon: "fa fa-gamepad" },
   nodeApp: { type: "system", title: "NodeJS Code Editor", icon: "fa fa-code" },
   pythonApp: { type: "system", title: "Python Code Editor", icon: "fa fa-code" },

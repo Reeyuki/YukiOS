@@ -190,6 +190,30 @@ input {
   filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.35)) saturate(1.1);
 }
 
+.icon.popular.mygames {
+  border-color: rgba(0, 200, 255, 0.8);
+  box-shadow:
+    0 0 0 2px rgba(0, 200, 255, 0.6),
+    0 6px 14px rgba(0, 0, 0, 0.22),
+    0 0 12px rgba(0, 200, 255, 0.45);
+}
+
+.icon.popular.mygames::after {
+  background: radial-gradient(circle at top, rgba(0, 200, 255, 0.45), transparent 70%);
+}
+
+.icon.popular.mygames:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow:
+    0 0 0 2px rgba(0, 200, 255, 0.9),
+    0 10px 22px rgba(0, 0, 0, 0.32),
+    0 0 16px rgba(0, 200, 255, 0.6);
+}
+
+.icon.popular.mygames img {
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4)) saturate(1.2) brightness(1.05);
+}
+
 .icon.explorer-game img {
   width: 90px;
   height: 90px;
