@@ -1575,7 +1575,23 @@ export class OfficeApp {
   }
 
   async initEditor(container, content, state, win) {
-    const arrayBuffer = await FileUtils.toArrayBuffer(content);
+    let arrayBuffer = await FileUtils.toArrayBuffer(content);
+
+    if (!arrayBuffer && state.ext && state.filePath) {
+      const ext = state.ext.toLowerCase();
+      if ([".pdf", ".docx", ".xlsx", ".xls", ".pptx", ".ppt"].includes(ext)) {
+        try {
+          const blob = await this.fs.readBinaryFile(state.filePath, state.title);
+          if (blob) {
+            arrayBuffer = await blob.arrayBuffer();
+            console.log("Loaded binary office file from blob storage:", state.title, arrayBuffer.byteLength);
+          }
+        } catch (e) {
+          console.error("Error loading from binary storage:", e);
+        }
+      }
+    }
+
     if (arrayBuffer) state.rawArrayBuffer = arrayBuffer;
     container.querySelector(".office-loading-indicator")?.remove();
 
@@ -1584,7 +1600,6 @@ export class OfficeApp {
 
     this.setupIdleDetection(win, state.ext);
   }
-
   setupMenuActions(win, state) {
     const actions = {
       new: () => this.createNewFile(win, state),
@@ -2310,20 +2325,28 @@ export class OfficeApp {
     try {
       const content = await this.generateFileContent(state);
       if (content === null) return;
+
       if (state.filePath && this.fs) {
         const ext = state.ext;
-        let storageContent = content;
-        if (FileUtils.isBinaryExtension(ext) && content instanceof Uint8Array) {
+
+        if (ext === ".pdf" && content instanceof Uint8Array) {
+          const blob = new Blob([content], { type: "application/pdf" });
+          await this.fs.writeBinaryFile(state.filePath, state.title, blob, FileKind.OTHER, "/static/icons/pdf.webp");
+        } else if (FileUtils.isBinaryExtension(ext) && content instanceof Uint8Array) {
           const mime = FileUtils.mimeForExtension(ext);
-          storageContent = FileUtils.arrayBufferToDataUrl(content.buffer, mime);
+          const storageContent = FileUtils.arrayBufferToDataUrl(content.buffer, mime);
+          this.fs.updateFile(state.filePath, state.title, storageContent);
+        } else {
+          this.fs.updateFile(state.filePath, state.title, content);
         }
-        this.fs.updateFile(state.filePath, state.title, storageContent);
+
         this.wm.showPopup(`File saved: ${state.title}`);
         speak("Great, your file has been saved!", "Save");
       } else {
         this.downloadFile(state);
       }
-    } catch {
+    } catch (e) {
+      console.error("Save error:", e);
       this.wm.showPopup("Error saving file.");
     }
   }

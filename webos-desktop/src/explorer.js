@@ -598,6 +598,19 @@ export class ExplorerApp {
     const icon = resolveFileIcon(name);
     let content;
 
+    if (isOfficeFile(name)) {
+      const ext = name.substring(name.lastIndexOf(".")).toLowerCase();
+
+      if ([".pdf", ".docx", ".xlsx", ".xls", ".pptx", ".ppt"].includes(ext)) {
+        return {
+          kind,
+          content: file,
+          icon,
+          isBinaryOffice: true
+        };
+      }
+    }
+
     if (kind === FileKind.IMAGE) {
       content = await readFileAsDataURL(file);
     } else if (kind === FileKind.VIDEO) {
@@ -614,26 +627,24 @@ export class ExplorerApp {
 
     return { kind, content, icon };
   }
-
-  async _saveFilePayload(targetPath, name, kind, content, icon) {
-    if (kind === FileKind.VIDEO) {
-      await this.fs.writeBinaryFile(targetPath, name, content, FileKind.VIDEO, icon);
+  async _saveFilePayload(targetPath, name, kind, content, icon, isBinaryOffice = false) {
+    if (kind === FileKind.VIDEO || isBinaryOffice) {
+      await this.fs.writeBinaryFile(targetPath, name, content, kind, icon);
     } else {
       await this.fs.createFile(targetPath, name, content, kind, icon);
     }
   }
 
-  async _replaceFilePayload(targetPath, name, kind, content, icon) {
-    if (kind === FileKind.VIDEO) {
+  async _replaceFilePayload(targetPath, name, kind, content, icon, isBinaryOffice = false) {
+    if (kind === FileKind.VIDEO || isBinaryOffice) {
       await this.fs.deleteBinaryFile(targetPath, name).catch(() => {});
-      await this.fs.writeBinaryFile(targetPath, name, content, FileKind.VIDEO, icon);
+      await this.fs.writeBinaryFile(targetPath, name, content, kind, icon);
     } else {
       const dir = this.fs.resolveDir(targetPath);
       await this.fs.updateFile(targetPath, name, content);
       await this.fs.writeMeta(dir, name, { kind, icon });
     }
   }
-
   async handleFileUpload(files, isFolder, win, inst) {
     if (!files.length) return;
     const progressEl = win?.querySelector(`#${inst.winId}-upload-progress`);
@@ -680,8 +691,8 @@ export class ExplorerApp {
         const exists = await this.fs.exists(existingPath);
 
         if (!exists) {
-          const { kind, content, icon } = await this._resolveFilePayload(file, name, targetPath);
-          await this._saveFilePayload(targetPath, name, kind, content, icon);
+          const { kind, content, icon, isBinaryOffice } = await this._resolveFilePayload(file, name, targetPath);
+          await this._saveFilePayload(targetPath, name, kind, content, icon, isBinaryOffice);
           uploadedCount++;
           continue;
         }
@@ -700,13 +711,13 @@ export class ExplorerApp {
           continue;
         }
 
-        const { kind, content, icon } = await this._resolveFilePayload(file, name, targetPath);
+        const { kind, content, icon, isBinaryOffice } = await this._resolveFilePayload(file, name, targetPath);
 
         if (action === "replace") {
-          await this._replaceFilePayload(targetPath, name, kind, content, icon);
+          await this._replaceFilePayload(targetPath, name, kind, content, icon, isBinaryOffice);
           uploadedCount++;
         } else {
-          await this._saveFilePayload(targetPath, name, kind, content, icon);
+          await this._saveFilePayload(targetPath, name, kind, content, icon, isBinaryOffice);
           uploadedCount++;
         }
       }
@@ -724,14 +735,14 @@ export class ExplorerApp {
 
   async uploadSingleFile(file, targetPath, overrideName = null) {
     const name = overrideName || file.name;
-    const { kind, content, icon } = await this._resolveFilePayload(file, name, targetPath);
+    const { kind, content, icon, isBinaryOffice } = await this._resolveFilePayload(file, name, targetPath);
 
     if (isWallpaperPath(targetPath)) {
       await this.saveToWallpapers(name, content, kind, icon);
       return;
     }
 
-    await this._saveFilePayload(targetPath, name, kind, content, icon);
+    await this._saveFilePayload(targetPath, name, kind, content, icon, isBinaryOffice);
   }
 
   async saveToWallpapers(name, content, kind, icon) {

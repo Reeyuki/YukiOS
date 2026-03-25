@@ -1,5 +1,6 @@
 import { FileKind } from "./fs.js";
 import { desktop } from "./desktop.js";
+
 export const IMAGE_EXTS = ["png", "jpg", "jpeg", "gif", "webp", "bmp", "svg", "avif"];
 export const VIDEO_EXTS = ["mp4", "webm", "ogv", "mov"];
 export const OFFICE_EXTS = [
@@ -23,6 +24,8 @@ export { ROM_EXTS };
 
 export const HTML_EXTS = ["html", "htm"];
 export const TEXT_EXTS = ["txt", "js", "json", "md", "css"];
+
+const BINARY_OFFICE_EXTS = ["pdf", "docx", "xlsx", "xls", "pptx", "ppt"];
 
 export function getExt(name) {
   return name.split(".").pop().toLowerCase();
@@ -56,6 +59,10 @@ export function isVideoFile(name) {
 
 export function isOfficeFile(name) {
   return OFFICE_EXTS.includes(getExt(name));
+}
+
+export function isBinaryOfficeFile(name) {
+  return BINARY_OFFICE_EXTS.includes(getExt(name));
 }
 
 export function isMediaFile(name) {
@@ -183,7 +190,24 @@ export async function openFileWith({ name, path, fs, notepadApp, emulatorApp, br
     if (!officeApp) {
       console.warn("openFileWith: officeApp not provided for", name, "— falling through to notepad");
     } else {
-      const content = await fs.getFileContent(path, name);
+      let content;
+
+      if (isBinaryOfficeFile(name) && fs.readBinaryFile) {
+        try {
+          const blob = await fs.readBinaryFile(path, name);
+          if (blob && blob.size > 0) {
+            content = await blob.arrayBuffer();
+            console.log("Loaded binary office file from blob storage:", name, content.byteLength, "bytes");
+          }
+        } catch (e) {
+          console.warn("Could not load from binary storage:", e);
+        }
+      }
+
+      if (!content) {
+        content = await fs.getFileContent(path, name);
+      }
+
       officeApp.loadContent(name, content, path);
       return;
     }
