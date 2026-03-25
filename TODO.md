@@ -10,3 +10,4 @@ Optimize file operations
 Add md support
 Add notification hub
 Optimize office libraries imports
+Add window icons before their title

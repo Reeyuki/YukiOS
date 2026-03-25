@@ -89,11 +89,13 @@ export function showStartStyleMenu(e, buildFn) {
   document.body.appendChild(menu);
 
   const rect = menu.getBoundingClientRect();
-  let posX = e.pageX;
-  let posBottom = window.innerHeight - e.pageY;
+  let posX = e.clientX;
+  let posY = e.clientY - rect.height;
 
   if (posX + rect.width > window.innerWidth) posX = window.innerWidth - rect.width - 10;
-  if (posBottom + rect.height > window.innerHeight) posBottom = 10;
+  if (posY < 0) posY = e.clientY;
+
+  const posBottom = window.innerHeight - posY - rect.height;
 
   menu.style.setProperty("--ctx-left", `${posX}px`);
   menu.style.setProperty("--ctx-bottom", `${posBottom}px`);

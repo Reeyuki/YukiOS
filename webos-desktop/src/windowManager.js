@@ -278,8 +278,83 @@ export class WindowManager {
     win.querySelector(".maximize-btn").onclick = () => this.toggleFullscreen(win);
   }
 
+  _showWindowContextMenu(e, win) {
+    const winId = win.id;
+
+    showStartStyleMenu(e, (addMenuItem) => {
+      addMenuItem(win.style.display === "none" ? "Restore" : "Minimize", () => {
+        if (win.style.display === "none") win.style.display = "block";
+        else this.minimizeWindow(win);
+        this.bringToFront(win);
+      });
+
+      addMenuItem(win.dataset.fullscreen === "true" ? "Restore Size" : "Maximize", () => {
+        this.toggleFullscreen(win);
+        this.bringToFront(win);
+      });
+
+      addMenuItem("Bring to Front", () => this.bringToFront(win));
+
+      addMenuItem("Properties", () => {
+        const appInfo = this.openWindows.get(winId);
+        if (!appInfo) return;
+
+        const dataset = win.dataset;
+        const rect = win.getBoundingClientRect();
+
+        const infoLines = [
+          `Window ID: ${winId}`,
+          `Title: ${appInfo.title}`,
+          dataset.appType ? `Type: ${dataset.appType}` : "",
+          dataset.appId ? `App ID: ${dataset.appId}` : "",
+          dataset.swf ? `SWF Path: ${dataset.swf}` : "",
+          dataset.rom ? `ROM: ${dataset.rom}` : "",
+          dataset.core ? `Core: ${dataset.core}` : "",
+          dataset.externalUrl ? `URL: ${dataset.externalUrl}` : "",
+          `Width: ${Math.round(rect.width)}px`,
+          `Height: ${Math.round(rect.height)}px`,
+          `Left: ${Math.round(rect.left)}px`,
+          `Top: ${Math.round(rect.top)}px`,
+          `Z-Index: ${win.style.zIndex}`,
+          `Fullscreen: ${dataset.fullscreen === "true" ? "Yes" : "No"}`
+        ].filter(Boolean);
+
+        const contentHtml = infoLines.map((line) => `<div style="margin:2px 0;">${line}</div>`).join("");
+
+        const propsWin = this.createWindow(`${winId}-props`, `Properties: ${appInfo.title}`, "40vw", "40vh");
+
+        propsWin.innerHTML = `
+          <div class="window-header">
+            <span>Properties: ${appInfo.title}</span>
+            ${this.getWindowControls()}
+          </div>
+          <div class="window-content" style="width:100%; height:100%; overflow:auto; user-select:text;">
+            ${contentHtml}
+          </div>
+        `;
+
+        desktop.appendChild(propsWin);
+        this.makeDraggable(propsWin);
+        this.makeResizable(propsWin);
+        this.setupWindowControls(propsWin);
+      });
+
+      addMenuItem("Close Window", () => {
+        this.removeFromTaskbar(winId);
+        win.style.animation = "popUp 0.5s ease forwards";
+        setTimeout(() => win.remove(), 500);
+      });
+    });
+  }
+
   makeDraggable(win) {
     const header = win.querySelector(".window-header");
+
+    header.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+      this._showWindowContextMenu(e, win);
+    });
+
     header.onmousedown = (e) => {
       if (e.target.tagName === "BUTTON") return;
 

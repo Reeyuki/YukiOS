@@ -117,6 +117,8 @@ function setupStars() {
 }
 
 export function setupStartMenu(appLauncher) {
+  document.querySelector(".start-menu")?.addEventListener("contextmenu", (e) => e.preventDefault());
+
   document.querySelectorAll(".start-cat").forEach((cat) => {
     cat.onclick = () => {
       if (cat.dataset.cat === "settings") {
@@ -242,26 +244,3 @@ export function populateStartMenu(appLauncher) {
     }
   });
 }
-
-function getBrowser() {
-  const ua = navigator.userAgent;
-
-  let name = "Unknown";
-
-  if (ua.includes("Edg/")) {
-    name = "Microsoft Edge";
-  } else if (ua.includes("OPR/") || ua.includes("Opera")) {
-    name = "Opera";
-  } else if (ua.includes("Chrome/") && !ua.includes("Edg/")) {
-    name = "Google Chrome";
-  } else if (ua.includes("Safari/") && !ua.includes("Chrome/")) {
-    name = "Safari";
-  } else if (ua.includes("Firefox/")) {
-    name = "Mozilla Firefox";
-  }
-
-  return name;
-}
-
-const browser = document.getElementById("browserInfo");
-browser.textContent = getBrowser();

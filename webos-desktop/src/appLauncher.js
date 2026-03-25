@@ -3,6 +3,13 @@ import { appMap, getGameName } from "./games.js";
 import { initializeAppGrid, populateStartMenu, tryGetIcon } from "./startMenu";
 import { IFRAME_ATTRS } from "./shared/iframeAttrs.js";
 import { initClippy, speak as clippySpeak } from "./clippy.js";
+import {
+  initAnalytics,
+  getAnalyticsBase,
+  sendLaunchAnalytics,
+  sendAppInstallAnalytics,
+  recordUsage
+} from "./analytics.js";
 
 export class AppLauncher {
   constructor(
@@ -43,13 +50,12 @@ export class AppLauncher {
     this.emulatorApp = emulatorApp;
     this.appCreatorApp = appCreatorApp;
     this.officeApp = officeApp;
-    this.pageLoadTime = Date.now();
     this.TRANSPARENCY_ALLOWED_APP_IDS = new Set(["paint", "photopea", "vscode", "liventcord"]);
 
     this.clippyPromise = initClippy(settingsApp);
 
-    const analyticsBase = this._getAnalyticsBase("hit-page");
-    this.sendAnalytics({ ...analyticsBase, event: "start" });
+    initAnalytics();
+
     this.BIC = "badIceCream";
 
     const localAppMap = {
@@ -193,8 +199,9 @@ export class AppLauncher {
   async launch(app, swf = false) {
     const info = this.appMap[app];
     if (!info) return console.error(`App ${app} not found.`);
-    const analyticsBase = this._getAnalyticsBase(app);
-    this.sendAnalytics({ ...analyticsBase, event: "launch" });
+
+    const analyticsBase = getAnalyticsBase(app);
+    sendLaunchAnalytics(app);
 
     if (app.includes(this.BIC)) {
       if (swf) {
@@ -228,54 +235,8 @@ export class AppLauncher {
     handlers[info.type]?.();
   }
 
-  _getAnalyticsBase(app) {
-    const now = Date.now();
-    return {
-      app: app ?? "unknown",
-      name: document.querySelector(".start-user span")?.textContent ?? "",
-      timestamp: now,
-      sessionAgeMs: now - this.pageLoadTime
-    };
-  }
-
-  sendAnalytics(data) {
-    if (window.location.hostname === "localhost") return;
-    fetch("https://analytics.liventcord-a60.workers.dev/analytics", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data)
-    }).catch((err) => console.warn("Analytics failed:", err));
-  }
-
-  sendAppInstallAnalytics(app) {
-    this.sendAnalytics({ ...this._getAnalyticsBase(app ?? "unknown"), event: "installApp" });
-  }
-
-  recordUsage(winId) {
-    const startTime = Date.now();
-    const win = document.getElementById(winId);
-    if (!win) return;
-
-    const appId = win.dataset.appId || "";
-    let sent = false;
-
-    const sendUsage = () => {
-      if (sent) return;
-      sent = true;
-      this.sendAnalytics({
-        app: appId,
-        event: "usage",
-        durationMs: Date.now() - startTime,
-        timestamp: Date.now(),
-        sessionAgeMs: Date.now() - this.pageLoadTime
-      });
-    };
-
-    win.querySelector(".close-btn")?.addEventListener("click", sendUsage);
-  }
-
   openRemoteApp(appUrl) {
-    this.sendAnalytics({ ...this._getAnalyticsBase(appUrl), event: "launch" });
+    sendLaunchAnalytics(appUrl);
     if (window.electronAPI) {
       location.href = appUrl;
     } else {
@@ -425,6 +386,9 @@ export class AppLauncher {
 
     const icon = tryGetIcon(appId || id);
     this.wm.addToTaskbar(win.id, title, icon);
-    this.recordUsage(`${id}-win`);
+
+    recordUsage(`${id}-win`);
   }
 }
+
+export { sendAppInstallAnalytics };
