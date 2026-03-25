@@ -1,8 +1,6 @@
 export const videos = [
   "https://motionbgs.com/media/8008/above-the-stormworld.3840x2160.mp4",
   "https://motionbgs.com/media/9295/st-michaels-mount.3840x2160.mp4",
-  "https://motionbgs.com/media/9147/yuji-itadori-city.3840x2160.mp4",
-  "https://motionbgs.com/media/9275/reze-blue-butterfly.3840x2160.mp4",
   "https://motionbgs.com/media/8778/heart-of-the-singularity.3840x2160.mp4",
   "https://motionbgs.com/media/7011/unknown-within.3840x2160.mp4",
   "https://motionbgs.com/media/4564/rotating-black-hole.1920x1080.mp4",

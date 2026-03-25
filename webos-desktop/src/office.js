@@ -961,56 +961,56 @@ export class OfficeApp {
     <button class="office-menu-dropdown__trigger">File</button>
     <div class="office-menu-dropdown__content">
       <button class="office-menu-item" data-action="new">
-        <span class="office-menu-item__icon">📄</span>
+        <span class="office-menu-item__icon"><i class="fas fa-file"></i></span>
         <span class="office-menu-item__label">New</span>
         <span class="office-menu-item__shortcut">Ctrl+N</span>
       </button>
       <button class="office-menu-item" data-action="open">
-        <span class="office-menu-item__icon">📂</span>
+        <span class="office-menu-item__icon"><i class="fas fa-folder-open"></i></span>
         <span class="office-menu-item__label">Open</span>
         <span class="office-menu-item__shortcut">Ctrl+O</span>
       </button>
       <div class="office-menu-divider"></div>
       <button class="office-menu-item" data-action="save">
-        <span class="office-menu-item__icon">💾</span>
+        <span class="office-menu-item__icon"><i class="fas fa-save"></i></span>
         <span class="office-menu-item__label">Save</span>
         <span class="office-menu-item__shortcut">Ctrl+S</span>
       </button>
       <button class="office-menu-item" data-action="saveAs">
-        <span class="office-menu-item__icon">💾</span>
+        <span class="office-menu-item__icon"><i class="fas fa-save"></i></span>
         <span class="office-menu-item__label">Save As...</span>
         <span class="office-menu-item__shortcut">Ctrl+Shift+S</span>
       </button>
       <div class="office-menu-divider"></div>
       <button class="office-menu-item" data-action="download">
-        <span class="office-menu-item__icon">⬇️</span>
+        <span class="office-menu-item__icon"><i class="fas fa-download"></i></span>
         <span class="office-menu-item__label">Download</span>
         <span class="office-menu-item__shortcut"></span>
       </button>
       <div class="office-menu-submenu">
         <button class="office-menu-item office-menu-item--has-submenu">
-          <span class="office-menu-item__icon">📤</span>
+          <span class="office-menu-item__icon"><i class="fas fa-file-export"></i></span>
           <span class="office-menu-item__label">Export As</span>
-          <span class="office-menu-item__arrow">▶</span>
+          <span class="office-menu-item__arrow"><i class="fas fa-caret-right"></i></span>
         </button>
         <div class="office-menu-submenu__content">
           <button class="office-menu-item" data-action="exportPDF">
-            <span class="office-menu-item__icon">📕</span>
+            <span class="office-menu-item__icon"><i class="fas fa-file-pdf"></i></span>
             <span class="office-menu-item__label">PDF Document</span>
           </button>
           <button class="office-menu-item" data-action="exportHTML">
-            <span class="office-menu-item__icon">🌐</span>
+            <span class="office-menu-item__icon"><i class="fas fa-file-code"></i></span>
             <span class="office-menu-item__label">HTML Page</span>
           </button>
           <button class="office-menu-item" data-action="exportTXT">
-            <span class="office-menu-item__icon">📝</span>
+            <span class="office-menu-item__icon"><i class="fas fa-file-alt"></i></span>
             <span class="office-menu-item__label">Plain Text</span>
           </button>
         </div>
       </div>
       <div class="office-menu-divider"></div>
       <button class="office-menu-item" data-action="print">
-        <span class="office-menu-item__icon">🖨️</span>
+        <span class="office-menu-item__icon"><i class="fas fa-print"></i></span>
         <span class="office-menu-item__label">Print</span>
         <span class="office-menu-item__shortcut">Ctrl+P</span>
       </button>
@@ -1021,45 +1021,45 @@ export class OfficeApp {
     <button class="office-menu-dropdown__trigger">Edit</button>
     <div class="office-menu-dropdown__content">
       <button class="office-menu-item" data-action="undo">
-        <span class="office-menu-item__icon">↶</span>
+        <span class="office-menu-item__icon"><i class="fas fa-undo"></i></span>
         <span class="office-menu-item__label">Undo</span>
         <span class="office-menu-item__shortcut">Ctrl+Z</span>
       </button>
       <button class="office-menu-item" data-action="redo">
-        <span class="office-menu-item__icon">↷</span>
+        <span class="office-menu-item__icon"><i class="fas fa-redo"></i></span>
         <span class="office-menu-item__label">Redo</span>
         <span class="office-menu-item__shortcut">Ctrl+Y</span>
       </button>
       <div class="office-menu-divider"></div>
       <button class="office-menu-item" data-action="cut">
-        <span class="office-menu-item__icon">✂️</span>
+        <span class="office-menu-item__icon"><i class="fas fa-cut"></i></span>
         <span class="office-menu-item__label">Cut</span>
         <span class="office-menu-item__shortcut">Ctrl+X</span>
       </button>
       <button class="office-menu-item" data-action="copy">
-        <span class="office-menu-item__icon">📋</span>
+        <span class="office-menu-item__icon"><i class="fas fa-copy"></i></span>
         <span class="office-menu-item__label">Copy</span>
         <span class="office-menu-item__shortcut">Ctrl+C</span>
       </button>
       <button class="office-menu-item" data-action="paste">
-        <span class="office-menu-item__icon">📌</span>
+        <span class="office-menu-item__icon"><i class="fas fa-paste"></i></span>
         <span class="office-menu-item__label">Paste</span>
         <span class="office-menu-item__shortcut">Ctrl+V</span>
       </button>
       <div class="office-menu-divider"></div>
       <button class="office-menu-item" data-action="selectAll">
-        <span class="office-menu-item__icon">⬚</span>
+        <span class="office-menu-item__icon"><i class="fas fa-border-all"></i></span>
         <span class="office-menu-item__label">Select All</span>
         <span class="office-menu-item__shortcut">Ctrl+A</span>
       </button>
       <div class="office-menu-divider"></div>
       <button class="office-menu-item" data-action="find">
-        <span class="office-menu-item__icon">🔍</span>
+        <span class="office-menu-item__icon"><i class="fas fa-search"></i></span>
         <span class="office-menu-item__label">Find</span>
         <span class="office-menu-item__shortcut">Ctrl+F</span>
       </button>
       <button class="office-menu-item" data-action="replace">
-        <span class="office-menu-item__icon">🔄</span>
+        <span class="office-menu-item__icon"><i class="fas fa-exchange-alt"></i></span>
         <span class="office-menu-item__label">Find & Replace</span>
         <span class="office-menu-item__shortcut">Ctrl+H</span>
       </button>
@@ -1070,31 +1070,31 @@ export class OfficeApp {
     <button class="office-menu-dropdown__trigger">View</button>
     <div class="office-menu-dropdown__content">
       <button class="office-menu-item" data-action="zoomIn">
-        <span class="office-menu-item__icon">🔍</span>
+        <span class="office-menu-item__icon"><i class="fas fa-search-plus"></i></span>
         <span class="office-menu-item__label">Zoom In</span>
         <span class="office-menu-item__shortcut">Ctrl++</span>
       </button>
       <button class="office-menu-item" data-action="zoomOut">
-        <span class="office-menu-item__icon">🔍</span>
+        <span class="office-menu-item__icon"><i class="fas fa-search-minus"></i></span>
         <span class="office-menu-item__label">Zoom Out</span>
         <span class="office-menu-item__shortcut">Ctrl+-</span>
       </button>
       <button class="office-menu-item" data-action="zoomReset">
-        <span class="office-menu-item__icon">🔍</span>
+        <span class="office-menu-item__icon"><i class="fas fa-search"></i></span>
         <span class="office-menu-item__label">Reset Zoom</span>
         <span class="office-menu-item__shortcut">Ctrl+0</span>
       </button>
       <div class="office-menu-divider"></div>
       <button class="office-menu-item" data-action="fullscreen">
-        <span class="office-menu-item__icon">⛶</span>
+        <span class="office-menu-item__icon"><i class="fas fa-expand"></i></span>
         <span class="office-menu-item__label">Fullscreen</span>
         <span class="office-menu-item__shortcut">F11</span>
       </button>
       <div class="office-menu-divider"></div>
       <button class="office-menu-item" data-action="toggleGrid">
-        <span class="office-menu-item__icon">▦</span>
+        <span class="office-menu-item__icon"><i class="fas fa-border-all"></i></span>
         <span class="office-menu-item__label">Show Gridlines</span>
-        <span class="office-menu-item__check">✓</span>
+        <span class="office-menu-item__check"><i class="fas fa-check"></i></span>
       </button>
     </div>
   </div>
@@ -1103,33 +1103,33 @@ export class OfficeApp {
     <button class="office-menu-dropdown__trigger">Insert</button>
     <div class="office-menu-dropdown__content">
       <button class="office-menu-item office-menu-item--document" data-action="insertImage">
-        <span class="office-menu-item__icon">🖼️</span>
+        <span class="office-menu-item__icon"><i class="fas fa-image"></i></span>
         <span class="office-menu-item__label">Image</span>
       </button>
       <button class="office-menu-item office-menu-item--document" data-action="insertTable">
-        <span class="office-menu-item__icon">▦</span>
+        <span class="office-menu-item__icon"><i class="fas fa-table"></i></span>
         <span class="office-menu-item__label">Table</span>
       </button>
       <button class="office-menu-item office-menu-item--document" data-action="insertLink">
-        <span class="office-menu-item__icon">🔗</span>
+        <span class="office-menu-item__icon"><i class="fas fa-link"></i></span>
         <span class="office-menu-item__label">Link</span>
         <span class="office-menu-item__shortcut">Ctrl+K</span>
       </button>
       <button class="office-menu-item office-menu-item--document" data-action="insertHR">
-        <span class="office-menu-item__icon">—</span>
+        <span class="office-menu-item__icon"><i class="fas fa-minus"></i></span>
         <span class="office-menu-item__label">Horizontal Line</span>
       </button>
       <div class="office-menu-divider office-menu-item--spreadsheet"></div>
       <button class="office-menu-item office-menu-item--spreadsheet" data-action="addRow">
-        <span class="office-menu-item__icon">➕</span>
+        <span class="office-menu-item__icon"><i class="fas fa-plus"></i></span>
         <span class="office-menu-item__label">Row</span>
       </button>
       <button class="office-menu-item office-menu-item--spreadsheet" data-action="addColumn">
-        <span class="office-menu-item__icon">➕</span>
+        <span class="office-menu-item__icon"><i class="fas fa-plus"></i></span>
         <span class="office-menu-item__label">Column</span>
       </button>
       <button class="office-menu-item office-menu-item--spreadsheet" data-action="addSheet">
-        <span class="office-menu-item__icon">📑</span>
+        <span class="office-menu-item__icon"><i class="fas fa-file-alt"></i></span>
         <span class="office-menu-item__label">New Sheet</span>
       </button>
     </div>
@@ -1139,55 +1139,55 @@ export class OfficeApp {
     <button class="office-menu-dropdown__trigger">Format</button>
     <div class="office-menu-dropdown__content">
       <button class="office-menu-item" data-action="formatBold">
-        <span class="office-menu-item__icon"><b>B</b></span>
+        <span class="office-menu-item__icon"><i class="fas fa-bold"></i></span>
         <span class="office-menu-item__label">Bold</span>
         <span class="office-menu-item__shortcut">Ctrl+B</span>
       </button>
       <button class="office-menu-item" data-action="formatItalic">
-        <span class="office-menu-item__icon"><i>I</i></span>
+        <span class="office-menu-item__icon"><i class="fas fa-italic"></i></span>
         <span class="office-menu-item__label">Italic</span>
         <span class="office-menu-item__shortcut">Ctrl+I</span>
       </button>
       <button class="office-menu-item" data-action="formatUnderline">
-        <span class="office-menu-item__icon"><u>U</u></span>
+        <span class="office-menu-item__icon"><i class="fas fa-underline"></i></span>
         <span class="office-menu-item__label">Underline</span>
         <span class="office-menu-item__shortcut">Ctrl+U</span>
       </button>
       <button class="office-menu-item" data-action="formatStrike">
-        <span class="office-menu-item__icon"><s>S</s></span>
+        <span class="office-menu-item__icon"><i class="fas fa-strikethrough"></i></span>
         <span class="office-menu-item__label">Strikethrough</span>
       </button>
       <div class="office-menu-divider"></div>
       <div class="office-menu-submenu">
         <button class="office-menu-item office-menu-item--has-submenu">
-          <span class="office-menu-item__icon">¶</span>
+          <span class="office-menu-item__icon"><i class="fas fa-paragraph"></i></span>
           <span class="office-menu-item__label">Paragraph</span>
-          <span class="office-menu-item__arrow">▶</span>
+          <span class="office-menu-item__arrow"><i class="fas fa-caret-right"></i></span>
         </button>
         <div class="office-menu-submenu__content">
           <button class="office-menu-item" data-action="alignLeft">
-            <span class="office-menu-item__icon">⬅</span>
+            <span class="office-menu-item__icon"><i class="fas fa-align-left"></i></span>
             <span class="office-menu-item__label">Align Left</span>
           </button>
           <button class="office-menu-item" data-action="alignCenter">
-            <span class="office-menu-item__icon">⬌</span>
+            <span class="office-menu-item__icon"><i class="fas fa-align-center"></i></span>
             <span class="office-menu-item__label">Align Center</span>
           </button>
           <button class="office-menu-item" data-action="alignRight">
-            <span class="office-menu-item__icon">➡</span>
+            <span class="office-menu-item__icon"><i class="fas fa-align-right"></i></span>
             <span class="office-menu-item__label">Align Right</span>
           </button>
           <button class="office-menu-item" data-action="alignJustify">
-            <span class="office-menu-item__icon">☰</span>
+            <span class="office-menu-item__icon"><i class="fas fa-align-justify"></i></span>
             <span class="office-menu-item__label">Justify</span>
           </button>
         </div>
       </div>
       <div class="office-menu-submenu">
         <button class="office-menu-item office-menu-item--has-submenu">
-          <span class="office-menu-item__icon">🔤</span>
+          <span class="office-menu-item__icon"><i class="fas fa-heading"></i></span>
           <span class="office-menu-item__label">Heading</span>
-          <span class="office-menu-item__arrow">▶</span>
+          <span class="office-menu-item__arrow"><i class="fas fa-caret-right"></i></span>
         </button>
         <div class="office-menu-submenu__content">
           <button class="office-menu-item" data-action="heading1">
@@ -1206,7 +1206,7 @@ export class OfficeApp {
       </div>
       <div class="office-menu-divider"></div>
       <button class="office-menu-item" data-action="clearFormat">
-        <span class="office-menu-item__icon">🚫</span>
+        <span class="office-menu-item__icon"><i class="fas fa-eraser"></i></span>
         <span class="office-menu-item__label">Clear Formatting</span>
       </button>
     </div>
@@ -1216,20 +1216,20 @@ export class OfficeApp {
     <button class="office-menu-dropdown__trigger">Tools</button>
     <div class="office-menu-dropdown__content">
       <button class="office-menu-item" data-action="spellCheck">
-        <span class="office-menu-item__icon">✓</span>
+        <span class="office-menu-item__icon"><i class="fas fa-check"></i></span>
         <span class="office-menu-item__label">Spell Check</span>
       </button>
       <button class="office-menu-item" data-action="wordCount">
-        <span class="office-menu-item__icon">🔢</span>
+        <span class="office-menu-item__icon"><i class="fas fa-list-ol"></i></span>
         <span class="office-menu-item__label">Word Count</span>
       </button>
       <div class="office-menu-divider office-menu-item--spreadsheet"></div>
       <button class="office-menu-item office-menu-item--spreadsheet" data-action="sortAsc">
-        <span class="office-menu-item__icon">↑</span>
+        <span class="office-menu-item__icon"><i class="fas fa-sort-alpha-down"></i></span>
         <span class="office-menu-item__label">Sort A → Z</span>
       </button>
       <button class="office-menu-item office-menu-item--spreadsheet" data-action="sortDesc">
-        <span class="office-menu-item__icon">↓</span>
+        <span class="office-menu-item__icon"><i class="fas fa-sort-alpha-up"></i></span>
         <span class="office-menu-item__label">Sort Z → A</span>
       </button>
     </div>
@@ -1239,11 +1239,11 @@ export class OfficeApp {
     <button class="office-menu-dropdown__trigger">Help</button>
     <div class="office-menu-dropdown__content">
       <button class="office-menu-item" data-action="shortcuts">
-        <span class="office-menu-item__icon">⌨️</span>
+        <span class="office-menu-item__icon"><i class="fas fa-keyboard"></i></span>
         <span class="office-menu-item__label">Keyboard Shortcuts</span>
       </button>
       <button class="office-menu-item" data-action="about">
-        <span class="office-menu-item__icon">ℹ️</span>
+        <span class="office-menu-item__icon"><i class="fas fa-info-circle"></i></span>
         <span class="office-menu-item__label">About</span>
       </button>
     </div>
@@ -1260,7 +1260,7 @@ export class OfficeApp {
     this.wm.makeDraggable(win);
     this.wm.makeResizable(win);
     this.wm.setupWindowControls(win);
-    this.wm.addToTaskbar(win.id, `${title} - Office`, "/static/icons/notepad.webp");
+    this.wm.addToTaskbar(win.id, `${title} - Office`, "/static/icons/office.webp");
     const editorArea = win.querySelector(".office-editor-area");
     const state = {
       winId,
@@ -1293,7 +1293,7 @@ export class OfficeApp {
     const dropZone = document.createElement("div");
     dropZone.className = "office-dropzone";
     dropZone.innerHTML = `
-      <div class="office-dropzone__icon">📄</div>
+      <div class="office-dropzone__icon"><i class="fas fa-file-upload fa-3x"></i></div>
       <div class="office-dropzone__title">Drop a file here or click to upload</div>
       <div class="office-dropzone__subtitle">Supports: DOCX, XLSX, XLS, CSV, ODT, PDF, ODP, TXT, HTML</div>
     `;
@@ -1694,7 +1694,7 @@ export class OfficeApp {
   showAbout(win) {
     this.wm.showPopup(`
     <div style="text-align:center">
-      <div style="font-size:24px;margin-bottom:8px">📝 Office App</div>
+      <div style="font-size:24px;margin-bottom:8px"><i class="fas fa-file-alt"></i> Office App</div>
       <div>Version 1.0.0</div>
       <div style="color:#6c7086;margin-top:8px">
         Supports DOCX, XLSX, CSV, ODT, PDF, ODP

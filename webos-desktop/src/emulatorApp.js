@@ -302,10 +302,9 @@ export class EmulatorApp {
         list.innerHTML =
           roms.length === 0
             ? `<div class="emu-library-empty"><div class="emu-library-empty-icon">🎮</div>No ROMs found on Desktop<br><span style="font-size:11px">Upload a ROM to save it here</span></div>`
-            : `<div class="emu-library-empty"><div class="emu-library-empty-icon">🔍</div>No matches for "${filter}"</div>`;
+            : `<div class="emu-library-empty"><div class="emu-library-empty-icon"><i class="fas fa-search"></i></div>No matches for "${filter}"</div>`;
         return;
       }
-
       list.innerHTML = "";
       filtered.forEach(({ name }) => {
         const ext = name.split(".").pop().toLowerCase();

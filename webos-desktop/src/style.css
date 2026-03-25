@@ -166,13 +166,13 @@ input {
 }
 
 /* Popular badge */
-.icon.popular {
+.mygames {
   border-color: rgba(255, 215, 0, 0.55);
   box-shadow:
     0 0 0 1px rgba(255, 215, 0, 0.35),
     0 4px 10px rgba(0, 0, 0, 0.18);
 }
-.icon.popular::after {
+.mygames::after {
   content: "";
   position: absolute;
   inset: -3px;
@@ -180,17 +180,17 @@ input {
   background: radial-gradient(circle at top, rgba(255, 215, 0, 0.35), transparent 70%);
   pointer-events: none;
 }
-.icon.popular:hover {
+.mygames:hover {
   transform: translateY(-2px);
   box-shadow:
     0 0 0 1px rgba(255, 215, 0, 0.55),
     0 8px 18px rgba(0, 0, 0, 0.28);
 }
-.icon.popular img {
+.mygames img {
   filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.35)) saturate(1.1);
 }
 
-.icon.popular.mygames {
+.mygames.mygames {
   border-color: rgba(0, 200, 255, 0.8);
   box-shadow:
     0 0 0 2px rgba(0, 200, 255, 0.6),
@@ -198,11 +198,11 @@ input {
     0 0 12px rgba(0, 200, 255, 0.45);
 }
 
-.icon.popular.mygames::after {
+.mygames.mygames::after {
   background: radial-gradient(circle at top, rgba(0, 200, 255, 0.45), transparent 70%);
 }
 
-.icon.popular.mygames:hover {
+.mygames.mygames:hover {
   transform: translateY(-3px) scale(1.02);
   box-shadow:
     0 0 0 2px rgba(0, 200, 255, 0.9),
@@ -210,7 +210,7 @@ input {
     0 0 16px rgba(0, 200, 255, 0.6);
 }
 
-.icon.popular.mygames img {
+.mygames.mygames img {
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4)) saturate(1.2) brightness(1.05);
 }
 
@@ -1659,6 +1659,109 @@ input {
   transform: translateY(0);
   background: rgba(79, 158, 255, 0.25);
 }
+[id^="notepad-"] {
+  background: rgba(13, 13, 19, 0.82) !important;
+  backdrop-filter: blur(32px) saturate(1.5) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.65),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+    0 0 60px rgba(120, 180, 255, 0.05) !important;
+  border-radius: 14px !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+[id^="notepad-"] .window-header {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+  padding: 10px 14px !important;
+  font-size: 13px !important;
+  font-family: "Sora", "Segoe UI", sans-serif !important;
+  letter-spacing: 0.02em !important;
+  flex-shrink: 0 !important;
+}
+
+[id^="notepad-"] .notepad-menu {
+  display: flex !important;
+  gap: 6px !important;
+  padding: 7px 12px !important;
+  background: rgba(255, 255, 255, 0.025) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+  flex-shrink: 0 !important;
+}
+[id^="notepad-"] .notepad-btn {
+  background: rgba(255, 255, 255, 0.07) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: rgba(255, 255, 255, 0.65) !important;
+  border-radius: 7px !important;
+  padding: 4px 13px !important;
+  font-size: 12px !important;
+  font-family: "Sora", sans-serif !important;
+  cursor: pointer !important;
+  letter-spacing: 0.02em !important;
+  transition: all 0.15s ease !important;
+}
+[id^="notepad-"] .notepad-btn:hover {
+  background: rgba(79, 158, 255, 0.18) !important;
+  border-color: rgba(79, 158, 255, 0.4) !important;
+  color: rgba(255, 255, 255, 0.95) !important;
+  box-shadow: 0 2px 10px rgba(79, 158, 255, 0.15) !important;
+  transform: translateY(-1px) !important;
+}
+[id^="notepad-"] .notepad-btn:active {
+  transform: translateY(0) !important;
+  background: rgba(79, 158, 255, 0.25) !important;
+}
+
+/* Content area */
+[id^="notepad-"] .window-content {
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  background: transparent !important;
+}
+
+/* Textarea */
+[id^="notepad-"] .notepad-textarea {
+  flex: 1 !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: rgba(8, 8, 14, 0.6) !important;
+  color: rgba(220, 230, 245, 0.9) !important;
+  border: none !important;
+  outline: none !important;
+  padding: 16px 20px !important;
+  font-family: "JetBrains Mono", "Fira Code", monospace !important;
+  font-size: 13.5px !important;
+  line-height: 1.75 !important;
+  resize: none !important;
+  caret-color: rgba(79, 158, 255, 0.9) !important;
+  box-sizing: border-box !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent !important;
+}
+[id^="notepad-"] .notepad-textarea::selection {
+  background: rgba(79, 158, 255, 0.28) !important;
+  color: #fff !important;
+}
+[id^="notepad-"] .notepad-textarea::placeholder {
+  color: rgba(255, 255, 255, 0.2) !important;
+}
+[id^="notepad-"] .notepad-textarea::-webkit-scrollbar {
+  width: 5px !important;
+}
+[id^="notepad-"] .notepad-textarea::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12) !important;
+  border-radius: 99px !important;
+}
+[id^="notepad-"] .notepad-textarea::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.22) !important;
+}
 
 /* ══════════════════════════════════════════════
    BROWSER
@@ -2568,25 +2671,25 @@ input {
   opacity: 1;
   visibility: visible;
   pointer-events: all;
-  transition:
-    opacity 0.6s ease,
-    visibility 0.6s ease;
 }
 
 #login.is-hidden {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
+  transition:
+    opacity 0.6s ease,
+    visibility 0s linear 0.6s;
 }
 
 #login.fade-out {
   opacity: 0;
+  pointer-events: none;
 }
 #login.active {
   display: flex;
   opacity: 1;
 }
-
 .login-wrapper {
   display: flex;
   align-items: stretch;

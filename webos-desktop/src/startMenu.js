@@ -156,7 +156,9 @@ export function tryGetIcon(id) {
   if (id === "explorer") {
     return "/static/icons/file.webp";
   }
-
+  if (id === "appCreatorApp") {
+    return "fa fa-cubes";
+  }
   try {
     if (appMap[id] && appMap[id].icon) {
       return appMap[id].icon;

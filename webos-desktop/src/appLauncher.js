@@ -164,7 +164,14 @@ export class AppLauncher {
     this.appMap = { ...appMap, ...localAppMap };
     populateStartMenu(this);
     initializeAppGrid(this);
+    const ABOUT_LAUNCH_KEY = "yukios_about_seen";
 
+    if (!localStorage.getItem(ABOUT_LAUNCH_KEY)) {
+      setTimeout(() => {
+        this.aboutApp.open();
+        localStorage.setItem(ABOUT_LAUNCH_KEY, "true");
+      }, 300);
+    }
     if (window.electronAPI) {
       const tmnpIcon = document.createElement("div");
       tmnpIcon.className = "icon selectable";
@@ -398,7 +405,7 @@ export class AppLauncher {
     win.innerHTML = `
       <div class="window-header">
         <span>${title}</span>
-        ${this.wm.getWindowControls()}
+        ${this.wm.getWindowControls(externalUrl)}
       </div>
       <div class="window-content" style="width:100%; height:100%; overflow:hidden;">${contentHtml}</div>
     `;

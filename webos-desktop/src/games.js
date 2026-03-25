@@ -301,6 +301,12 @@ export const appMap = {
     icon: "/static/icons/jetpack.webp",
     title: "Jetpack Joyride"
   },
+  fruitNinja: {
+    type: "game",
+    url: "https://emupedia.net/emupedia-game-fruit-ninja",
+    icon: "/static/icons/fruit.webp",
+    title: "Fruit Ninja"
+  },
   raft: {
     type: "game",
     url: "/static/games/gnmath/raft.html",
@@ -678,17 +684,54 @@ export const appMap = {
     icon: "/static/icons/cs.webp",
     title: "Cs"
   },
+  angryBirdsOnline: {
+    type: "game",
+    url: "https://truffled.lol/gamefile/angrybirdsonline.html",
+    icon: "/static/icons/angryBirds.webp",
+    title: "Angry Birds Online"
+  },
+  angryBirdsChrome: {
+    type: "game",
+    url: "/static/games/html/angryBirdsChrome.html",
+    icon: "/static/icons/angryBirdsChrome.webp",
+    title: "Angry Birds Chrome"
+  },
+  angryBirdsSd: {
+    type: "game",
+    url: "/static/games/html/angryBirdsSd.html",
+    icon: "/static/icons/angryBirdsSd.webp",
+    title: "Angry Birds Showdown"
+  },
   angryBirdsSpace: {
     type: "game",
     url: "/static/games/html/angryBirdsSpace.html",
     icon: "/static/icons/angryBirdsSpace.webp",
     title: "Angry Birds Space"
   },
+
+  angryBirdsHalloween: {
+    type: "swf",
+    swf: "/static/games/swfGames/angry-birds-hd-halloween.swf",
+    icon: "/static/icons/angryBirdsHalloween.webp",
+    title: "Angry Birds Halloween"
+  },
   angryBirdsEpic: {
     type: "game",
     url: "/static/games/html/angryBirdsEpic.html",
     icon: "/static/icons/angryBirdsEpic.webp",
     title: "Angry Birds Epic"
+  },
+  badPiggies: {
+    type: "game",
+    url: "https://truffled.lol/gamefile/piggies.html",
+    icon: "/static/icons/badp.webp",
+    title: "Bad Piggies"
+  },
+  holeio: {
+    type: "game",
+    url: "/static/games/html/holeio.html",
+    icon: "/static/icons/hole-io.webp",
+    title: "Hole.io"
   },
   nso: {
     type: "game",
@@ -774,11 +817,11 @@ export const appMap = {
     icon: "/static/icons/dadnme.webp",
     title: "Dad 'n Me"
   },
-  angryBirdsHalloween: {
+  alienHominid: {
     type: "swf",
-    swf: "/static/games/swfGames/angry-birds-hd-halloween.swf",
-    icon: "/static/icons/angryBirdsHalloween.webp",
-    title: "Angry Birds Halloween"
+    swf: "/static/games/swfGames/alienHominid.swf",
+    icon: "/static/icons/alienHominid.webp",
+    title: "Alien Hominid"
   },
   effingWorms: {
     type: "swf",
@@ -795,8 +838,38 @@ export const appMap = {
   yukiJump: {
     type: "game",
     url: "https://play.unity.com/en/games/c49468cf-ed31-4ee9-ad06-c1addb8a01d4/yukijump",
-    icon: "/static/icons/yukijump.webp",
+    icon: "/static/icons/yukiJump.webp",
     title: "Yuki Jump"
+  },
+  starBound: {
+    type: "game",
+    url: "https://truffled.lol/games/Starbound/index.html",
+    icon: "/static/icons/starbound.webp",
+    title: "StarBound"
+  },
+  buckShot: {
+    type: "game",
+    url: "https://truffled.lol/games/buckshot/index.html",
+    icon: "/static/icons/buckShot.webp",
+    title: "Buckshot Roulette"
+  },
+  cloverpit: {
+    type: "game",
+    url: "https://truffled.lol/gamefile/cloverpit.html",
+    icon: "/static/icons/cloverpit.webp",
+    title: "Cloverpit"
+  },
+  littleAlchemy2: {
+    type: "game",
+    icon: "/static/icons/littleAlchemy2.webp",
+    title: "Little Alchemy 2",
+    url: "https://truffled.lol/gamefile/little2.html"
+  },
+  clusterRush: {
+    type: "game",
+    icon: "/static/icons/clusterRush.webp",
+    title: "Cluster Rush",
+    url: "/static/games/html/clusterRush.html"
   },
   emulatorApp: { type: "system", title: "Emulator App", icon: "fa fa-gamepad" },
   nodeApp: { type: "system", title: "NodeJS Code Editor", icon: "fa fa-code" },
@@ -819,37 +892,7 @@ export function getGameName(appId) {
   return appMap[appId]?.title || null;
 }
 
-const GAMES_APP_EXCLUDED = new Set([
-  "badIceCream2",
-  "badIceCream3",
-  "henryPrison",
-  "henryBank",
-  "henryAirship",
-  "henryDiamond",
-  "henryComplex",
-  "pokemonRed",
-  "pokemonEmerald",
-  "pokemonPlatinum",
-  "pokemonHeartgold",
-  "pokemonWhite",
-  "pokemonWhite2",
-  "TMNP",
-  "doodle",
-  "ddlc",
-  "emulatorApp",
-  "taskManagerApp",
-  "weatherApp",
-  "settingsApp",
-  "aboutApp",
-  "nodeApp",
-  "pythonApp",
-  "calculatorApp",
-  "vscode",
-  "paint",
-  "photopea",
-  "liventcord",
-  "roads"
-]);
+const GAMES_APP_EXCLUDED = new Set(["TMNP", "vscode", "paint", "photopea", "liventcord"]);
 
 class GameWindowRenderer {
   getGames() {
@@ -872,7 +915,6 @@ class GameWindowRenderer {
   render(container, onLaunch) {
     const games = this.getGames();
     const flashGames = this.getFlashGames();
-    const totalGames = games.length + flashGames.length;
 
     let flashSection = "";
     if (flashGames.length > 0) {
@@ -888,7 +930,7 @@ class GameWindowRenderer {
 
     container.innerHTML = `<div class="games-search-wrap">
         <input class="games-search-input" type="text" placeholder="Search games…" autocomplete="off" spellcheck="false" />
-        <span class="games-search-icon">🔍</span>
+        <span class="games-search-icon"><i class="fas fa-search"></i></span>
       </div>
       <div class="games-app-grid">
         ${games.map((g) => this.createCard(g)).join("")}
@@ -917,31 +959,37 @@ class GameWindowRenderer {
     };
 
     const allCards = Array.from(container.querySelectorAll(".games-app-card"));
+    const updateCount = (count) => {
+      const countEl = container.closest(".window-content")?.closest(".window-root")?.querySelector(".games-app-count");
+      if (countEl) countEl.textContent = count;
+    };
+
+    updateCount(allCards.length);
     applyAnimations(allCards);
     attachCardHandlers(allCards);
 
     searchInput.addEventListener("input", () => {
       const query = searchInput.value.trim().toLowerCase();
-      let visible = 0;
+      let visibleCount = 0;
+
       allCards.forEach((card) => {
         const title = card.querySelector(".games-app-card-title").textContent.toLowerCase();
-        const show = !query || title.includes(query);
-        card.style.display = show ? "" : "none";
-        if (show) visible++;
+        const isMatch = !query || title.includes(query);
+
+        card.style.display = isMatch ? "" : "none";
+        if (isMatch) visibleCount++;
       });
-      noResults.style.display = visible === 0 ? "block" : "none";
+
+      noResults.style.display = visibleCount === 0 ? "block" : "none";
+      updateCount(visibleCount);
 
       if (flashHeader) {
         const flashGrid = container.querySelector(".games-app-grid-flash");
-        if (flashGrid) {
-          const flashCards = Array.from(flashGrid.querySelectorAll(".games-app-card"));
-          const anyFlashVisible = flashCards.some((c) => c.style.display !== "none");
-          flashHeader.style.display = anyFlashVisible ? "" : "none";
-        }
+        const hasVisibleFlash =
+          flashGrid &&
+          Array.from(flashGrid.querySelectorAll(".games-app-card")).some((c) => c.style.display !== "none");
+        flashHeader.style.display = hasVisibleFlash ? "" : "none";
       }
-
-      const countEl = container.closest(".window-content")?.closest(".window-root")?.querySelector(".games-app-count");
-      if (countEl) countEl.textContent = query ? visible : totalGames;
     });
   }
 }
@@ -978,6 +1026,7 @@ const FLASH_EMUPEDIA_EXCLUDED = new Set([
   "geometryDash",
   "game2048",
   "mario",
+  "fruitNinja",
   "cutTheRope",
   "jetpack"
 ]);

@@ -29,9 +29,9 @@ export class AboutApp {
               <i class="fas fa-desktop" style="font-size: 3rem; color: var(--bg-primary);"></i>
             </div>
             <h1 style="font-size: 2rem; margin-bottom: 0; color: var(--text-primary); font-family: fontb; text-align: center; width: 100%;">Yuki OS</h1>
-            <p style="color: var(--text-secondary); font-size: 1rem; margin: 0; text-align: center;">Version 1.0</p>
-            <p style="color: var(--text-secondary); font-size: 0.9rem; max-width:700px; margin: 1rem auto 0; line-height:1.6; text-align: center;">
-              A browser-based desktop OS where apps and games run in windows inside your browser. Open multiple apps, move them around, resize them, and multitask just like on a real computer. Upload custom wallpapers and manage your virtual filesystem seamlessly. Yuki OS comes with 130 ready-to-play games and built-in apps including terminal, browser, text editor, camera, calculator, paint,task manager, and a Python / Node.js IDE.
+            <p style="color: var(--text-primary); font-size: 1rem; margin: 0; text-align: center;">Version 1.0</p>
+            <p style="color: var(--text-primary); font-size: 0.9rem; max-width:700px; margin: 1rem auto 0; line-height:1.6; text-align: center;">
+              A browser-based desktop OS where apps and games run in windows inside your browser. Open multiple apps, move them around, resize them, and multitask just like on a real computer. Upload custom wallpapers and manage your virtual filesystem seamlessly. Yuki OS comes with 150 ready-to-play games and built-in apps including file explorer, browser, text editor,office, camera, calculator, paint,task manager,terminal, and a Python / Node.js IDE.
             </p>
           </div>
 
@@ -75,7 +75,7 @@ export class AboutApp {
                     <i class="fas ${icon}" style="color: var(--accent); font-size: 1rem;"></i>
                     <span style="font-family: fontb; color: var(--text-primary); font-size: 0.9rem;">${title}</span>
                   </div>
-                  <p style="color: var(--text-secondary); font-size: 0.8rem; margin: 0; line-height: 1.5;">${desc}</p>
+                  <p style="color: var(--text-primary); font-size: 0.8rem; margin: 0; line-height: 1.5;">${desc}</p>
                 </div>
               `
                 )
@@ -83,8 +83,25 @@ export class AboutApp {
             </div>
           </div>
 
+          <div class="about-section" style="margin-bottom: 2rem;">
+            <h2 style="font-size: 1.25rem; color: var(--text-primary); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; font-family: fontb;">
+              <i class="fas fa-scale-balanced" style="color: var(--accent);"></i> Legal & Copyright
+            </h2>
+            <p style="color: var(--text-primary); font-size: 0.85rem; line-height: 1.6; margin-bottom: 0.75rem;">
+              Yuki OS does not claim ownership of third-party games, software, or intellectual property made available through the platform. All trademarks, logos, and content belong to their respective owners.
+            </p>
+            <p style="color: var(--text-primary); font-size: 0.85rem; line-height: 1.6; margin-bottom: 0.75rem;">
+              Content is provided for educational and preservation purposes. If you are a copyright holder or authorized representative and believe that any content infringes your rights, you may request removal.
+            </p>
+            <p style="color: var(--text-primary); font-size: 0.85rem; line-height: 1.6;">
+              To submit a copyright or DMCA takedown request, please include sufficient identification of the material and proof of ownership and contact:
+              <br>
+              <a href="mailto:yukios-os@proton.me" style="color: var(--accent); text-decoration: none;">yukios-os@proton.me</a>
+            </p>
+          </div>
+
           <div class="about-footer" style="display: flex; flex-direction: column; align-items: center; text-align: center; padding: 1rem 1rem 0.5rem; border-top: 1px solid var(--border); margin-top: auto; background: transparent;">
-            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 0.75rem; text-align: center;">
+            <p style="color: var(--text-primary); font-size: 0.85rem; margin-bottom: 0.75rem; text-align: center;">
               Made with <i class="fas fa-heart" style="color: #ef4444;"></i> by Reeyuki
             </p>
             <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
