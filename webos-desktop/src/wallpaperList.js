@@ -65,7 +65,6 @@ export const videos = [
   "https://motionbgs.com/media/6544/sevagoth-prime.3840x2160.mp4",
   "https://motionbgs.com/media/6570/sevagoth-prime-warframe.1920x1080.mp4",
   "https://motionbgs.com/media/482/baruuk-prime-warframe.1920x1080.mp4",
-  "https://motionbgs.com/media/6090/raiden-mortal-kombat.1920x1080.mp4",
   "https://motionbgs.com/media/6377/helldivers-2-escalation-of-freedom.1920x1080.mp4",
   "https://motionbgs.com/media/180/skyrim-the-elder-scrolls-v.1920x1080.mp4",
   "https://motionbgs.com/media/6920/battlefield-sekiro.1920x1080.mp4",

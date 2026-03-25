@@ -164,6 +164,17 @@ export class AppLauncher {
         title: "Office App",
         action: () => officeApp.open(),
         clippy: { message: "Need a hand creating a document or spreadsheet?", animation: "animate" }
+      },
+      libreSprite: {
+        type: "system",
+        title: "LibreSprite",
+        action: () =>
+          this.openIframeApp({
+            appId: "libreSprite",
+            type: "game",
+            source: "/static/apps/libresprite/index.html",
+            originalName: "libreSprite"
+          })
       }
     };
 

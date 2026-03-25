@@ -379,7 +379,6 @@ export const appMap = {
     icon: "/static/icons/photopea.webp",
     title: "Photopea"
   },
-
   fancyPants: {
     type: "swf",
     swf: "/static/games/swfGames/fancypantsadventure.swf",
