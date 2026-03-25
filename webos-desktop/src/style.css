@@ -4012,3 +4012,378 @@ select:focus {
   opacity: 0.12;
   pointer-events: none;
 }
+
+/* Calendar Popup Styles */ /* Calendar Popup Styles */
+/* Calendar Popup Styles */
+.calendar-popup {
+  position: fixed;
+  background: rgba(25, 25, 25, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 10000;
+  animation: calendar-fade-in 0.2s ease-out;
+  min-width: 320px;
+  user-select: none;
+}
+
+@keyframes calendar-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.calendar-time-display {
+  text-align: center;
+  font-size: 2em;
+  font-weight: 300;
+  color: #fff;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  font-variant-numeric: tabular-nums;
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.calendar-month-year-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.calendar-month-year {
+  font-size: 1.1em;
+  font-weight: 600;
+  color: #fff;
+}
+
+.calendar-today-btn {
+  background: rgba(59, 130, 246, 0.3);
+  border: none;
+  color: #fff;
+  font-size: 0.7em;
+  padding: 2px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.calendar-today-btn:hover {
+  background: rgba(59, 130, 246, 0.5);
+}
+
+.calendar-nav-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: #fff;
+  font-size: 1.5em;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  padding: 0;
+  line-height: 1;
+}
+
+.calendar-nav-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+}
+
+.calendar-nav-btn:active {
+  transform: scale(0.95);
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: auto repeat(7, 1fr);
+  gap: 2px;
+  margin-bottom: 12px;
+}
+
+.calendar-week-header,
+.calendar-week-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7em;
+  color: rgba(255, 255, 255, 0.3);
+  padding: 4px;
+  min-width: 24px;
+}
+
+.calendar-week-number {
+  font-variant-numeric: tabular-nums;
+}
+
+.calendar-day-header {
+  text-align: center;
+  font-size: 0.75em;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  padding: 8px 4px;
+}
+
+.calendar-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-size: 0.85em;
+  color: #fff;
+  transition: all 0.15s ease;
+  cursor: pointer;
+  position: relative;
+  min-width: 32px;
+  min-height: 32px;
+}
+
+.calendar-day:not(.empty):hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.calendar-day.empty {
+  cursor: default;
+}
+
+.calendar-day.weekend {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.calendar-day.today {
+  background: rgba(59, 130, 246, 0.8);
+  font-weight: 700;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+}
+
+.calendar-day.today:hover {
+  background: rgba(59, 130, 246, 1);
+}
+
+.calendar-day.has-event::after {
+  content: "";
+  position: absolute;
+  bottom: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  background: #f59e0b;
+  border-radius: 50%;
+}
+
+.calendar-day.today.has-event::after {
+  background: #fff;
+}
+
+/* Agenda Section */
+.calendar-agenda {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 12px;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.calendar-agenda-title {
+  font-size: 0.85em;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 8px;
+}
+
+.calendar-no-events {
+  font-size: 0.8em;
+  color: rgba(255, 255, 255, 0.4);
+  font-style: italic;
+}
+
+.calendar-agenda-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.calendar-agenda-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.calendar-agenda-date {
+  font-size: 0.75em;
+  font-weight: 600;
+  color: #60a5fa;
+  min-width: 50px;
+}
+
+.calendar-agenda-text {
+  font-size: 0.8em;
+  color: rgba(255, 255, 255, 0.8);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Event Modal */
+.calendar-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10001;
+  animation: modal-overlay-fade 0.2s ease;
+}
+
+@keyframes modal-overlay-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.calendar-modal {
+  background: rgba(35, 35, 35, 0.98);
+  backdrop-filter: blur(20px);
+  border-radius: 12px;
+  padding: 20px;
+  min-width: 300px;
+  max-width: 400px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: modal-pop 0.2s ease;
+}
+
+@keyframes modal-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.calendar-modal-title {
+  font-size: 1.1em;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 16px;
+}
+
+.calendar-modal-input {
+  width: 100%;
+  min-height: 80px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 12px;
+  color: #fff;
+  font-size: 0.9em;
+  resize: vertical;
+  margin-bottom: 16px;
+  font-family: inherit;
+}
+
+.calendar-modal-input:focus {
+  outline: none;
+  border-color: rgba(59, 130, 246, 0.5);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.calendar-modal-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.calendar-modal-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.calendar-modal-btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: none;
+  font-size: 0.85em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.calendar-modal-btn.save {
+  background: rgba(59, 130, 246, 0.8);
+  color: #fff;
+}
+
+.calendar-modal-btn.save:hover {
+  background: rgba(59, 130, 246, 1);
+}
+
+.calendar-modal-btn.delete {
+  background: rgba(239, 68, 68, 0.8);
+  color: #fff;
+}
+
+.calendar-modal-btn.delete:hover {
+  background: rgba(239, 68, 68, 1);
+}
+
+.calendar-modal-btn.cancel {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.calendar-modal-btn.cancel:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+#date {
+  cursor: pointer !important;
+  transition: opacity 0.2s ease;
+}
+
+#date:hover {
+  opacity: 0.7;
+}
+
+/* Scrollbar for agenda */
+.calendar-agenda::-webkit-scrollbar {
+  width: 4px;
+}
+
+.calendar-agenda::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.calendar-agenda::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+}

@@ -1,5 +1,4 @@
 Add file format conversion context menus
-Add calendar popup on os time text
 Add markdown support
 Optimize file operations
 Add md support
