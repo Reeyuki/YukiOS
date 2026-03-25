@@ -432,6 +432,47 @@ export class ExplorerApp {
     };
     document.addEventListener("keydown", explorerKeyHandler);
 
+    const renameKeyHandler = (e) => {
+      if (!document.getElementById(winId)) {
+        document.removeEventListener("keydown", renameKeyHandler);
+        return;
+      }
+
+      const active = document.activeElement;
+      if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA" || active.isContentEditable)) return;
+
+      const winEl = document.getElementById(winId);
+      if (!winEl) return;
+
+      const winRect = winEl.getBoundingClientRect();
+      const mouseOver =
+        lastExplorerMousePos.x >= winRect.left &&
+        lastExplorerMousePos.x <= winRect.right &&
+        lastExplorerMousePos.y >= winRect.top &&
+        lastExplorerMousePos.y <= winRect.bottom;
+
+      if (!mouseOver && !winEl.contains(document.activeElement)) return;
+
+      if (e.key !== "F2") return;
+
+      e.preventDefault();
+
+      const selectedName = inst.selectedFile || (inst.selectedItems.size === 1 ? [...inst.selectedItems][0] : null);
+      if (!selectedName) return;
+
+      const winView = winEl.querySelector(`#${winId}-view`);
+      if (!winView) return;
+
+      const itemEl = [...winView.querySelectorAll(".file-item")].find(
+        (el) => el.querySelector("span")?.textContent === selectedName
+      );
+
+      if (itemEl) {
+        this._startInlineRename(itemEl, selectedName, inst);
+      }
+    };
+
+    document.addEventListener("keydown", renameKeyHandler);
     const lastExplorerMousePos = { x: 0, y: 0 };
     win.addEventListener("mousemove", (e) => {
       lastExplorerMousePos.x = e.clientX;
