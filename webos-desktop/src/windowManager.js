@@ -59,6 +59,24 @@ export class WindowManager {
 
     return win;
   }
+
+  getWindowIconHtml(iconValue, color = null) {
+    if (!iconValue) return "";
+    const size = 30;
+
+    const isImagePath = typeof iconValue === "string" && /\.(png|jpg|jpeg|gif|webp|svg|ico)$/i.test(iconValue);
+    const isDataUrl = typeof iconValue === "string" && iconValue.startsWith("data:");
+
+    if (isImagePath || isDataUrl) {
+      return `<img src="${iconValue}" style="width:${size}px;height:${size}px;margin-right:6px;vertical-align:middle;object-fit:contain;" />`;
+    } else if (typeof iconValue === "string" && iconValue.length > 0) {
+      const cls = iconValue.startsWith("fa") ? iconValue : `fa ${iconValue}`;
+      const clr = color ?? "white";
+      return `<i class="${cls}" style="color:${clr};margin-right:6px;font-size:${size}px;vertical-align:middle;"></i>`;
+    }
+    return "";
+  }
+
   addToTaskbar(winId, title, iconValue, color = null) {
     if (document.getElementById(`taskbar-${winId}`)) return;
 
@@ -147,9 +165,11 @@ export class WindowManager {
 
           const propsWin = this.createWindow(`${winId}-props`, `Properties: ${appInfo.title}`, "40vw", "40vh");
 
+          const propsIconHtml = this.getWindowIconHtml(appInfo.iconValue, appInfo.color);
+
           propsWin.innerHTML = `
             <div class="window-header">
-              <span>Properties: ${appInfo.title}</span>
+              <span>${propsIconHtml}Properties: ${appInfo.title}</span>
               ${this.getWindowControls()}
             </div>
             <div class="window-content" style="width:100%; height:100%; overflow:auto; user-select:text;">
@@ -175,7 +195,22 @@ export class WindowManager {
 
     const taskbarWindows = document.getElementById("taskbar-windows");
     taskbarWindows.appendChild(taskbarItem);
-    this.openWindows.set(winId, { taskbarItem, title });
+    this.openWindows.set(winId, { taskbarItem, title, iconValue, color });
+    const win = document.getElementById(winId);
+    if (win) {
+      const headerSpan = win.querySelector(".window-header > span");
+      if (headerSpan) {
+        const iconHtml = this.getWindowIconHtml(iconValue, color);
+        if (iconHtml) {
+          const temp = document.createElement("div");
+          temp.innerHTML = iconHtml;
+          const iconEl = temp.firstElementChild;
+          if (iconEl) {
+            headerSpan.insertBefore(iconEl, headerSpan.firstChild);
+          }
+        }
+      }
+    }
   }
 
   registerCloseWindow(closeButton, winId) {
@@ -323,9 +358,11 @@ export class WindowManager {
 
         const propsWin = this.createWindow(`${winId}-props`, `Properties: ${appInfo.title}`, "40vw", "40vh");
 
+        const propsIconHtml = this.getWindowIconHtml(appInfo.iconValue, appInfo.color);
+
         propsWin.innerHTML = `
           <div class="window-header">
-            <span>Properties: ${appInfo.title}</span>
+            <span>${propsIconHtml}Properties: ${appInfo.title}</span>
             ${this.getWindowControls()}
           </div>
           <div class="window-content" style="width:100%; height:100%; overflow:auto; user-select:text;">
