@@ -1390,7 +1390,6 @@ export class DesktopUI {
       refresh: async () => {
         document.querySelectorAll(".folder-icon, .desktop-file-icon").forEach((i) => i.remove());
         await this.loadDesktopItems();
-        location.reload();
       }
     });
   }

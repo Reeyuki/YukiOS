@@ -5,6 +5,7 @@ export const FileKind = { TEXT: "text", IMAGE: "image", VIDEO: "video", ROM: "ro
 export const defaultStorage = {
   home: {
     reeyuki: {
+      Desktop: {},
       Documents: {
         "INFO.txt": {
           type: "file",
@@ -123,6 +124,23 @@ export class FileSystemManager {
       LEGACY_KEY: "desktopOS_fileSystem"
     };
     this.fsReady = this.initFS();
+    this.desktopUI = null;
+  }
+
+  setDesktopUI(desktopUI) {
+    this.desktopUI = desktopUI;
+  }
+
+  isDesktopPath(path) {
+    const desktopPath = this.join(this.CONFIG.ROOT, "Desktop");
+    const resolvedPath = this.resolveDir(path);
+    return resolvedPath === desktopPath || resolvedPath.startsWith(desktopPath + "/");
+  }
+
+  async notifyDesktopChange(path) {
+    if (this.desktopUI && this.isDesktopPath(path)) {
+      await this.desktopUI.loadDesktopItems();
+    }
   }
 
   p(method, ...args) {
@@ -354,6 +372,7 @@ export class FileSystemManager {
     await this.p("mkdir", dir, { recursive: true }).catch(() => {});
     await this.p("writeFile", filePath, content);
     await this.writeMeta(dir, uniqueName, { kind: fileKind, icon: fileIcon, faIcon });
+    await this.notifyDesktopChange(path);
     return uniqueName;
   }
 
@@ -362,6 +381,7 @@ export class FileSystemManager {
     const uniqueName = await this.getUniqueFileName(path, name);
     const dir = this.join(this.resolveDir(path), uniqueName);
     await this.p("mkdir", dir, { recursive: true });
+    await this.notifyDesktopChange(path);
     return uniqueName;
   }
 
@@ -376,6 +396,7 @@ export class FileSystemManager {
       await this.p("unlink", target);
       await this.removeMeta(dir, name);
     }
+    await this.notifyDesktopChange(path);
   }
 
   async deleteDirectoryRecursive(dirPath) {
@@ -410,6 +431,7 @@ export class FileSystemManager {
     } finally {
       release();
     }
+    await this.notifyDesktopChange(path);
   }
 
   async updateFile(path, name, content) {
@@ -423,6 +445,7 @@ export class FileSystemManager {
       await this.createFile(path, name, content, kind, icon);
     } else {
       await this.p("writeFile", filePath, content);
+      await this.notifyDesktopChange(path);
     }
   }
 
@@ -497,6 +520,7 @@ export class FileSystemManager {
       tx.onerror = reject;
     });
 
+    await this.notifyDesktopChange(folderPath);
     return uniqueName;
   }
 
@@ -525,6 +549,8 @@ export class FileSystemManager {
       tx.oncomplete = resolve;
       tx.onerror = reject;
     });
+
+    await this.notifyDesktopChange(folderPath);
   }
 
   async renameBinaryFile(folderPath, oldName, newName) {
@@ -564,5 +590,7 @@ export class FileSystemManager {
       };
       req.onerror = reject;
     });
+
+    await this.notifyDesktopChange(folderPath);
   }
 }
