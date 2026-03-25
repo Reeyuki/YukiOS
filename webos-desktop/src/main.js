@@ -20,7 +20,7 @@ import { WeatherApp } from "./weather.js";
 import { EmulatorApp } from "./emulatorApp.js";
 import { detectOS, isMobile } from "./shared/platformUtils.js";
 import { AppCreatorApp } from "./appCreator.js";
-import { OfficeApp } from "./office.js";
+import { OfficeAppProxy } from "./officeLoader.js";
 
 class MusicPlayer {
   constructor() {}
@@ -121,7 +121,8 @@ const fileSystemManager = new FileSystemManager();
 const windowManager = new WindowManager();
 const notepadApp = new NotepadApp(fileSystemManager, windowManager, null);
 const explorerApp = new ExplorerApp(fileSystemManager, windowManager, notepadApp);
-const officeApp = new OfficeApp(fileSystemManager, windowManager, explorerApp);
+const officeApp = new OfficeAppProxy(fileSystemManager, windowManager);
+officeApp.setExplorer(explorerApp);
 explorerApp.setOfficeApp(officeApp);
 const calculatorApp = new CalculatorApp(windowManager);
 notepadApp.setExplorer(explorerApp);

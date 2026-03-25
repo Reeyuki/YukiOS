@@ -4,46 +4,118 @@ import { speak } from "./clippy.js";
 class OfficeModuleLoader {
   constructor() {
     this.cache = new Map();
+    this.loadingPromises = new Map();
   }
 
-  async load(key, importFn) {
-    if (this.cache.has(key)) return this.cache.get(key);
-    const mod = await importFn();
-    this.cache.set(key, mod);
-    return mod;
+  loadScript(url) {
+    if (this.loadingPromises.has(url)) {
+      return this.loadingPromises.get(url);
+    }
+
+    const promise = new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src = url;
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error(`Failed to load ${url}`));
+      document.head.appendChild(script);
+    });
+
+    this.loadingPromises.set(url, promise);
+    return promise;
+  }
+
+  loadStylesheet(url) {
+    if (this.loadingPromises.has(url)) {
+      return this.loadingPromises.get(url);
+    }
+
+    const promise = new Promise((resolve, reject) => {
+      const link = document.createElement("link");
+      link.rel = "stylesheet";
+      link.href = url;
+      link.onload = () => resolve();
+      link.onerror = () => reject(new Error(`Failed to load ${url}`));
+      document.head.appendChild(link);
+    });
+
+    this.loadingPromises.set(url, promise);
+    return promise;
   }
 
   async mammoth() {
-    return this.load("mammoth", () => import("mammoth"));
-  }
+    if (this.cache.has("mammoth")) return this.cache.get("mammoth");
 
-  async xlsx() {
-    return this.load("xlsx", () => import("xlsx"));
-  }
-
-  async pdfjs() {
-    const mod = await this.load("pdfjs-dist", async () => {
-      const pdfjs = await import("pdfjs-dist");
-      if (typeof window !== "undefined") {
-        pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
-      }
-      return pdfjs;
-    });
+    await this.loadScript("https://cdn.jsdelivr.net/npm/mammoth@1.12.0/mammoth.browser.min.js");
+    const mod = window.mammoth;
+    this.cache.set("mammoth", mod);
     return mod;
   }
 
+  async xlsx() {
+    if (this.cache.has("xlsx")) return this.cache.get("xlsx");
+
+    await this.loadScript("https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js");
+    const mod = window.XLSX;
+    this.cache.set("xlsx", mod);
+    return mod;
+  }
+
+  async handsontable() {
+    if (this.cache.has("handsontable")) return this.cache.get("handsontable");
+
+    await Promise.all([
+      this.loadScript("https://cdn.jsdelivr.net/npm/handsontable@12.4.0/dist/handsontable.full.min.js"),
+      this.loadStylesheet("https://cdn.jsdelivr.net/npm/handsontable@12.4.0/dist/handsontable.full.min.css")
+    ]);
+
+    const mod = window.Handsontable;
+    this.cache.set("handsontable", mod);
+    return mod;
+  }
+
+  async pdfjs() {
+    if (this.cache.has("pdfjs")) return this.cache.get("pdfjs");
+
+    await Promise.all([
+      this.loadScript("https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"),
+      this.loadScript("https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/web/pdf_viewer.min.js"),
+      this.loadStylesheet("https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/web/pdf_viewer.min.css")
+    ]);
+
+    const pdfjs = window.pdfjsLib;
+    pdfjs.GlobalWorkerOptions.workerSrc = "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
+
+    this.cache.set("pdfjs", pdfjs);
+    this.cache.set("pdfjsViewer", window.pdfjsViewer);
+    return pdfjs;
+  }
+
+  async pdfjsViewer() {
+    if (!this.cache.has("pdfjsViewer")) {
+      await this.pdfjs();
+    }
+    return this.cache.get("pdfjsViewer");
+  }
+
   async jszip() {
-    return this.load("jszip", () => import("jszip"));
+    if (this.cache.has("jszip")) return this.cache.get("jszip");
+
+    await this.loadScript("https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js");
+    const mod = window.JSZip;
+    this.cache.set("jszip", mod);
+    return mod;
   }
 
   async docx() {
-    return this.load("docx", () => import("docx"));
+    if (this.cache.has("docx")) return this.cache.get("docx");
+
+    await this.loadScript("https://cdn.jsdelivr.net/npm/docx@9.6.1/build/index.js");
+    const mod = window.docx;
+    this.cache.set("docx", mod);
+    return mod;
   }
 }
-
 const modules = new OfficeModuleLoader();
-
-// ─── File utilities  ──────────────────────────────────────────────
 
 const FileUtils = {
   getExtension(fileName) {
@@ -82,6 +154,70 @@ const FileUtils = {
     return mimeMap[ext] || "application/octet-stream";
   },
 
+  isBinaryExtension(ext) {
+    const binaryExts = [".docx", ".xlsx", ".xls", ".odt", ".pdf", ".odp"];
+    return binaryExts.includes(ext);
+  },
+
+  arrayBufferToBase64(buffer) {
+    const bytes = new Uint8Array(buffer);
+    const chunkSize = 8192;
+    let binary = "";
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+      const chunk = bytes.subarray(i, i + chunkSize);
+      binary += String.fromCharCode.apply(null, chunk);
+    }
+    return btoa(binary);
+  },
+
+  arrayBufferToDataUrl(buffer, mimeType) {
+    const base64 = this.arrayBufferToBase64(buffer);
+    return `data:${mimeType};base64,${base64}`;
+  },
+  async toArrayBuffer(content) {
+    if (content instanceof ArrayBuffer) return content;
+    if (content instanceof Uint8Array) return content.buffer;
+    if (content instanceof Blob) return content.arrayBuffer();
+
+    if (typeof content === "string") {
+      if (content.startsWith("data:")) {
+        try {
+          const resp = await fetch(content);
+          return resp.arrayBuffer();
+        } catch (e) {
+          const base64 = content.split(",")[1];
+          if (base64) {
+            return this.base64ToArrayBuffer(base64);
+          }
+        }
+      }
+
+      if (this.isBase64(content)) {
+        return this.base64ToArrayBuffer(content);
+      }
+
+      return new TextEncoder().encode(content).buffer;
+    }
+
+    return null;
+  },
+
+  isBase64(str) {
+    if (!str || typeof str !== "string") return false;
+
+    const base64Regex = /^[A-Za-z0-9+/]+=*$/;
+
+    return str.length > 100 && base64Regex.test(str.replace(/\s/g, ""));
+  },
+
+  base64ToArrayBuffer(base64) {
+    const binaryString = atob(base64);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    return bytes.buffer;
+  },
   async toArrayBuffer(content) {
     if (content instanceof ArrayBuffer) return content;
     if (content instanceof Uint8Array) return content.buffer;
@@ -117,27 +253,37 @@ const FileUtils = {
   }
 };
 
-// ─── File I/O  ────────────────────────────────────────────────────
-
 class FileIO {
-  static triggerUpload() {
+  static triggerUpload(multiple = false) {
     return new Promise((resolve) => {
       const input = document.createElement("input");
       input.type = "file";
+      input.multiple = multiple;
       input.accept = ".docx,.xlsx,.xls,.csv,.odt,.pdf,.odp,.txt,.html";
       input.style.display = "none";
-      input.addEventListener("change", () => {
-        const file = input.files[0];
-        if (file) {
-          const reader = new FileReader();
-          reader.onload = () => resolve({ name: file.name, arrayBuffer: reader.result });
-          reader.onerror = () => resolve(null);
-          reader.readAsArrayBuffer(file);
-        } else {
-          resolve(null);
+
+      input.addEventListener("change", async () => {
+        const files = Array.from(input.files);
+        if (files.length === 0) {
+          resolve([]);
+          input.remove();
+          return;
         }
+
+        const results = [];
+        for (const file of files) {
+          try {
+            const arrayBuffer = await file.arrayBuffer();
+            results.push({ name: file.name, arrayBuffer });
+          } catch (error) {
+            console.error(`Error reading file ${file.name}:`, error);
+          }
+        }
+
+        resolve(results);
         input.remove();
       });
+
       document.body.appendChild(input);
       input.click();
     });
@@ -168,8 +314,6 @@ class FileIO {
     }, 1000);
   }
 }
-
-// ─── ODF shared utilities ────────────────────────────────────────────────────
 
 class OdfStyleParser {
   static collectStyles(xmlStrings, extraGraphicProps = false) {
@@ -241,11 +385,9 @@ class OdfMediaLoader {
   }
 }
 
-// ─── HTML converters ────────────────────────────────────────
-
 class HtmlConverter {
   static async toOdtBlob(html) {
-    const JSZip = (await modules.jszip()).default;
+    const JSZip = await modules.jszip();
     const zip = new JSZip();
     zip.file("mimetype", "application/vnd.oasis.opendocument.text", {
       compression: "STORE"
@@ -353,8 +495,6 @@ class HtmlConverter {
   }
 }
 
-// ─── Rich Text Editor ─────────────────────────────────
-
 class RichTextEditor {
   static init(container, htmlContent, state) {
     const toolbar = document.createElement("div");
@@ -420,8 +560,6 @@ class RichTextEditor {
   }
 }
 
-// ─── Editor Strategies ──────────────────
-
 class EditorStrategy {
   canHandle(_ext) {
     return false;
@@ -436,123 +574,137 @@ class SpreadsheetEditor extends EditorStrategy {
 
   async init(container, arrayBuffer, state) {
     const XLSX = await modules.xlsx();
+
+    let buffer = arrayBuffer;
+    if (!buffer || !(buffer instanceof ArrayBuffer)) {
+      console.warn("SpreadsheetEditor: Invalid buffer, creating empty workbook");
+      buffer = null;
+    }
+
     let workbook;
-    if (arrayBuffer && arrayBuffer.byteLength > 0) {
+    if (buffer && buffer.byteLength > 0) {
       try {
-        workbook = XLSX.read(new Uint8Array(arrayBuffer), { type: "array" });
-      } catch {
-        workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet([[""]]), "Sheet1");
+        const uint8 = new Uint8Array(buffer);
+        console.log("Reading XLSX, buffer size:", uint8.byteLength);
+        workbook = XLSX.read(uint8, { type: "array" });
+      } catch (e) {
+        console.error("XLSX read error:", e);
+        workbook = this.createEmptyWorkbook(XLSX);
       }
     } else {
-      workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(
-        workbook,
-        XLSX.utils.aoa_to_sheet(Array.from({ length: 50 }, () => Array(26).fill(""))),
-        "Sheet1"
-      );
+      workbook = this.createEmptyWorkbook(XLSX);
     }
+
     state.workbook = workbook;
     state.activeSheet = workbook.SheetNames[0];
+
+    if (await this.tryHandsontable(container, workbook, state, XLSX)) {
+      return;
+    }
+
     this.renderSheet(container, workbook, state, XLSX);
   }
 
-  renderSheet(container, workbook, state, XLSX) {
-    container.innerHTML = "";
-    const wrapper = document.createElement("div");
-    wrapper.className = "office-sheet-wrapper";
-    if (workbook.SheetNames.length > 1) {
-      const tabBar = document.createElement("div");
-      tabBar.className = "office-sheet-tabs";
-      workbook.SheetNames.forEach((name) => {
-        const tab = document.createElement("button");
-        tab.textContent = name;
-        tab.className = `office-sheet-tab${name === state.activeSheet ? " office-sheet-tab--active" : ""}`;
-        tab.addEventListener("click", () => {
-          state.activeSheet = name;
-          this.renderSheet(container, workbook, state, XLSX);
-        });
-        tabBar.appendChild(tab);
-      });
-      wrapper.appendChild(tabBar);
-    }
-    const tc = document.createElement("div");
-    tc.className = "office-sheet-scroll";
-    const ws = workbook.Sheets[state.activeSheet];
-    const data = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
-    const minRows = Math.max(data.length, 50);
-    let maxCols = 26;
-    data.forEach((r) => {
-      if (r.length > maxCols) maxCols = r.length;
-    });
-    const table = document.createElement("table");
-    table.className = "office-spreadsheet";
-    const hr = document.createElement("tr");
-    const corner = document.createElement("th");
-    corner.className = "office-spreadsheet__corner";
-    hr.appendChild(corner);
-    for (let c = 0; c < maxCols; c++) {
-      const th = document.createElement("th");
-      th.textContent = FileUtils.colLabel(c);
-      th.className = "office-spreadsheet__col-header";
-      hr.appendChild(th);
-    }
-    table.appendChild(hr);
-    for (let r = 0; r < minRows; r++) {
-      const tr = document.createElement("tr");
-      const rth = document.createElement("th");
-      rth.textContent = r + 1;
-      rth.className = "office-spreadsheet__row-header";
-      tr.appendChild(rth);
-      for (let c = 0; c < maxCols; c++) {
-        const td = document.createElement("td");
-        td.contentEditable = "true";
-        td.className = "office-spreadsheet__cell";
-        td.textContent = data[r]?.[c] ?? "";
-        td.dataset.row = r;
-        td.dataset.col = c;
-        td.addEventListener("focus", () => td.classList.add("office-spreadsheet__cell--focused"));
-        td.addEventListener("blur", () => {
-          td.classList.remove("office-spreadsheet__cell--focused");
-          SpreadsheetEditor.updateCell(state, XLSX, parseInt(td.dataset.row), parseInt(td.dataset.col), td.textContent);
-        });
-        td.addEventListener("keydown", (e) => {
-          if (e.key === "Tab") {
-            e.preventDefault();
-            table.querySelector(`td[data-row="${r}"][data-col="${e.shiftKey ? c - 1 : c + 1}"]`)?.focus();
-          } else if (e.key === "Enter") {
-            e.preventDefault();
-            table.querySelector(`td[data-row="${e.shiftKey ? r - 1 : r + 1}"][data-col="${c}"]`)?.focus();
-          }
-        });
-        tr.appendChild(td);
-      }
-      table.appendChild(tr);
-    }
-    tc.appendChild(table);
-    wrapper.appendChild(tc);
-    container.appendChild(wrapper);
-    state.editor = table;
-    state.editorType = "spreadsheet";
+  createEmptyWorkbook(XLSX) {
+    const wb = XLSX.utils.book_new();
+    const emptyData = Array.from({ length: 50 }, () => Array(26).fill(""));
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(emptyData), "Sheet1");
+    return wb;
   }
 
-  static updateCell(state, XLSX, row, col, value) {
-    if (!state.workbook) return;
-    const ws = state.workbook.Sheets[state.activeSheet];
-    const ref = XLSX.utils.encode_cell({ r: row, c: col });
-    const num = Number(value);
-    ws[ref] = value !== "" && !isNaN(num) ? { t: "n", v: num } : { t: "s", v: value };
-    const range = XLSX.utils.decode_range(ws["!ref"] || "A1");
-    if (row > range.e.r) range.e.r = row;
-    if (col > range.e.c) range.e.c = col;
-    ws["!ref"] = XLSX.utils.encode_range(range);
+  async tryHandsontable(container, workbook, state, XLSX) {
+    try {
+      const Handsontable = await modules.handsontable();
+
+      const ws = workbook.Sheets[state.activeSheet];
+      const data = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
+
+      while (data.length < 50) data.push([]);
+      data.forEach((row) => {
+        while (row.length < 26) row.push("");
+      });
+
+      container.innerHTML = `
+        <div class="office-sheet-wrapper">
+          ${this.renderSheetTabs(workbook, state)}
+          <div class="office-handsontable-container"></div>
+        </div>
+      `;
+
+      const hotContainer = container.querySelector(".office-handsontable-container");
+
+      state.hot = new Handsontable(hotContainer, {
+        data: data,
+        rowHeaders: true,
+        colHeaders: true,
+        contextMenu: true,
+        manualColumnResize: true,
+        manualRowResize: true,
+        width: "100%",
+        height: container.clientHeight - 40,
+        stretchH: "all",
+        licenseKey: "non-commercial-and-evaluation",
+        afterChange: (changes) => {
+          if (changes) {
+            this.syncHotToWorkbook(state, XLSX);
+          }
+        }
+      });
+
+      container.querySelectorAll(".office-sheet-tab").forEach((tab) => {
+        tab.addEventListener("click", () => {
+          state.activeSheet = tab.dataset.sheet;
+          this.tryHandsontable(container, workbook, state, XLSX);
+        });
+      });
+
+      state.editor = state.hot;
+      state.editorType = "spreadsheet";
+      return true;
+    } catch (e) {
+      console.log("Handsontable not available, using fallback:", e.message);
+      return false;
+    }
   }
+
+  renderSheetTabs(workbook, state) {
+    if (workbook.SheetNames.length <= 1) return "";
+    return `<div class="office-sheet-tabs">
+      ${workbook.SheetNames.map(
+        (name) => `
+        <button class="office-sheet-tab ${name === state.activeSheet ? "office-sheet-tab--active" : ""}"
+                data-sheet="${name}">${name}</button>
+      `
+      ).join("")}
+    </div>`;
+  }
+
+  syncHotToWorkbook(state, XLSX) {
+    if (!state.hot || !state.workbook) return;
+    const data = state.hot.getData();
+    state.workbook.Sheets[state.activeSheet] = XLSX.utils.aoa_to_sheet(data);
+  }
+
+  renderSheet(container, workbook, state, XLSX) {}
 
   static async syncTable(state) {
     const XLSX = await modules.xlsx();
+
+    if (state.hot) {
+      const data = state.hot.getData();
+      state.workbook.Sheets[state.activeSheet] = XLSX.utils.aoa_to_sheet(data);
+      return;
+    }
+
     if (state.editorType !== "spreadsheet" || !state.editor) return;
     state.editor.querySelectorAll("td[data-row][data-col]").forEach((td) => {
-      SpreadsheetEditor.updateCell(state, XLSX, parseInt(td.dataset.row), parseInt(td.dataset.col), td.textContent);
+      const row = parseInt(td.dataset.row);
+      const col = parseInt(td.dataset.col);
+      const ref = XLSX.utils.encode_cell({ r: row, c: col });
+      const ws = state.workbook.Sheets[state.activeSheet];
+      const value = td.textContent;
+      const num = Number(value);
+      ws[ref] = value !== "" && !isNaN(num) ? { t: "n", v: num } : { t: "s", v: value };
     });
   }
 }
@@ -566,7 +718,7 @@ class DocxEditor extends EditorStrategy {
     let html = "";
     if (arrayBuffer && arrayBuffer.byteLength > 0) {
       try {
-        const mammoth = (await modules.mammoth()).default;
+        const mammoth = await modules.mammoth();
         const result = await mammoth.convertToHtml({ arrayBuffer });
         html = result.value;
       } catch (e) {
@@ -592,7 +744,7 @@ class OdtViewer extends EditorStrategy {
     const wrapper = document.createElement("div");
     wrapper.className = "office-odt-wrapper";
     try {
-      const JSZip = (await modules.jszip()).default;
+      const JSZip = await modules.jszip();
       const zip = await JSZip.loadAsync(arrayBuffer);
       const contentXml = await zip.file("content.xml")?.async("string");
       const stylesXml = (await zip.file("styles.xml")?.async("string")) || "";
@@ -784,7 +936,7 @@ class OdpViewer extends EditorStrategy {
   async init(container, arrayBuffer, state) {
     state.editorType = "presentation";
     try {
-      const JSZip = (await modules.jszip()).default;
+      const JSZip = await modules.jszip();
       const zip = await JSZip.loadAsync(arrayBuffer);
       const contentXml = await zip.file("content.xml")?.async("string");
       if (!contentXml) {
@@ -903,8 +1055,6 @@ class PlainTextEditor extends EditorStrategy {
     RichTextEditor.init(container, text, state);
   }
 }
-
-// ─── Editor Registry ─────────────────────────────────────────────────────────
 
 class EditorRegistry {
   constructor() {
@@ -1289,56 +1439,128 @@ export class OfficeApp {
     }
   }
 
+  async saveFilesToDocuments(files) {
+    if (!this.fs || !files || files.length === 0) return [];
+
+    const documentsPath = ["Documents"];
+    await this.fs.ensureFolder(documentsPath);
+
+    const savedFiles = [];
+    for (const fileData of files) {
+      try {
+        const ext = FileUtils.getExtension(fileData.name);
+        const mime = FileUtils.mimeForExtension(ext);
+
+        let content;
+        if (FileUtils.isBinaryExtension(ext)) {
+          content = FileUtils.arrayBufferToDataUrl(fileData.arrayBuffer, mime);
+        } else {
+          content = new TextDecoder().decode(fileData.arrayBuffer);
+        }
+
+        const savedName = await this.fs.createFile(documentsPath, fileData.name, content);
+        savedFiles.push({
+          name: savedName,
+          path: documentsPath,
+          arrayBuffer: fileData.arrayBuffer
+        });
+      } catch (e) {
+        console.error(`Error saving ${fileData.name}:`, e);
+      }
+    }
+
+    if (savedFiles.length > 0) {
+      const fileList = savedFiles.map((f) => f.name).join(", ");
+      this.wm.showPopup(`Saved to Documents: ${fileList}`);
+      speak(
+        savedFiles.length === 1
+          ? "I've saved that to your Documents folder!"
+          : `I've saved ${savedFiles.length} files to your Documents folder!`,
+        "Save"
+      );
+    }
+
+    return savedFiles;
+  }
+
   showDropZone(container, state, win) {
     const dropZone = document.createElement("div");
     dropZone.className = "office-dropzone";
     dropZone.innerHTML = `
-      <div class="office-dropzone__icon"><i class="fas fa-file-upload fa-3x"></i></div>
-      <div class="office-dropzone__title">Drop a file here or click to upload</div>
-      <div class="office-dropzone__subtitle">Supports: DOCX, XLSX, XLS, CSV, ODT, PDF, ODP, TXT, HTML</div>
-    `;
+    <div class="office-dropzone__icon"><i class="fas fa-file-upload fa-3x"></i></div>
+    <div class="office-dropzone__title">Drop file(s) here or click to upload</div>
+    <div class="office-dropzone__subtitle">Supports: DOCX, XLSX, XLS, CSV, ODT, PDF, ODP, TXT, HTML (Multiple files supported)</div>
+  `;
+
     dropZone.addEventListener("dragover", (e) => {
       e.preventDefault();
       e.stopPropagation();
       dropZone.classList.add("office-dropzone--active");
     });
+
     dropZone.addEventListener("dragleave", (e) => {
       e.preventDefault();
       e.stopPropagation();
       dropZone.classList.remove("office-dropzone--active");
     });
-    dropZone.addEventListener("drop", (e) => {
+
+    dropZone.addEventListener("drop", async (e) => {
       e.preventDefault();
       e.stopPropagation();
       dropZone.classList.remove("office-dropzone--active");
-      const file = e.dataTransfer.files[0];
-      if (file) this.loadFileIntoEditor(file, container, state, win);
-    });
-    dropZone.addEventListener("click", async () => {
-      const result = await FileIO.triggerUpload();
-      if (result) {
-        this.applyFileToState(result.name, state, win);
-        await this.replaceEditorContent(container, result.arrayBuffer, state, win);
+
+      const files = Array.from(e.dataTransfer.files);
+      if (files.length > 0) {
+        await this.handleMultipleFiles(files, container, state, win);
       }
     });
+
+    dropZone.addEventListener("click", async () => {
+      const results = await FileIO.triggerUpload(true);
+      if (results.length > 0) {
+        await this.handleUploadedFiles(results, container, state, win);
+      }
+    });
+
     container.appendChild(dropZone);
   }
 
-  async loadFileIntoEditor(file, container, state, win) {
-    this.applyFileToState(file.name, state, win);
-    try {
-      const arrayBuffer = await file.arrayBuffer();
-      await this.replaceEditorContent(container, arrayBuffer, state, win);
-    } catch (e) {
-      console.error("File upload error:", e);
-      container.innerHTML = `<div class="office-error-msg">Error loading file: ${e.message}</div>`;
+  async handleMultipleFiles(files, container, state, win) {
+    const fileDataArray = [];
+
+    for (const file of files) {
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        fileDataArray.push({ name: file.name, arrayBuffer });
+      } catch (e) {
+        console.error(`Error reading file ${file.name}:`, e);
+      }
+    }
+
+    await this.handleUploadedFiles(fileDataArray, container, state, win);
+  }
+
+  async handleUploadedFiles(fileDataArray, container, state, win) {
+    if (fileDataArray.length === 0) return;
+
+    const savedFiles = await this.saveFilesToDocuments(fileDataArray);
+
+    if (savedFiles.length > 0) {
+      const firstFile = savedFiles[0];
+      this.applyFileToState(firstFile.name, state, win);
+      state.filePath = firstFile.path;
+      await this.replaceEditorContent(container, firstFile.arrayBuffer, state, win);
+
+      for (let i = 1; i < savedFiles.length; i++) {
+        const file = savedFiles[i];
+        this.open(file.name, file.arrayBuffer, file.path);
+      }
     }
   }
 
   applyFileToState(fileName, state, win) {
     state.title = fileName;
     state.ext = FileUtils.getExtension(fileName);
-    state.filePath = null;
     const header = win.querySelector(".window-header span");
     if (header) header.textContent = `${fileName} - Office`;
   }
@@ -1365,89 +1587,6 @@ export class OfficeApp {
 
   setupMenuActions(win, state) {
     const actions = {
-      open: () => this.openFileViaUpload(win, state),
-      save: () => this.saveFile(win, state),
-      saveAs: () => this.saveAsFile(state),
-      download: () => this.downloadFile(state),
-
-      new: () => this.createNewFile(win, state),
-
-      undo: () => this.executeEditCommand("undo", state),
-      redo: () => this.executeEditCommand("redo", state),
-      cut: () => this.executeEditCommand("cut", state),
-      copy: () => this.executeEditCommand("copy", state),
-      paste: () => this.executeEditCommand("paste", state),
-
-      find: () => this.showFindDialog(win, state),
-      replace: () => this.showReplaceDialog(win, state),
-
-      print: () => this.printDocument(win, state),
-
-      zoomIn: () => this.adjustZoom(win, state, 1.1),
-      zoomOut: () => this.adjustZoom(win, state, 0.9),
-      fullscreen: () => this.toggleFullscreen(win),
-
-      addRow: () => this.addSpreadsheetRow(state),
-      addColumn: () => this.addSpreadsheetColumn(state),
-      deleteRow: () => this.deleteSpreadsheetRow(state),
-      deleteColumn: () => this.deleteSpreadsheetColumn(state),
-      addSheet: () => this.addSpreadsheetSheet(state),
-
-      exportPDF: () => this.exportToPDF(state),
-      exportHTML: () => this.exportToHTML(state)
-    };
-
-    win.querySelectorAll(".office-menu-btn").forEach((btn) => {
-      const action = actions[btn.dataset.action];
-      if (action) btn.onclick = action;
-    });
-
-    this.updateMenuVisibility(win, state);
-  }
-
-  setupMenuBar(win, state) {
-    const menuBar = win.querySelector(".office-menu-bar");
-
-    const isSpreadsheet = [".xlsx", ".xls", ".csv"].includes(state.ext);
-    menuBar.dataset.mode = isSpreadsheet ? "spreadsheet" : "document";
-
-    const dropdowns = win.querySelectorAll(".office-menu-dropdown");
-
-    dropdowns.forEach((dropdown) => {
-      const trigger = dropdown.querySelector(".office-menu-dropdown__trigger");
-
-      trigger.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const isActive = dropdown.classList.contains("active");
-
-        dropdowns.forEach((d) => d.classList.remove("active"));
-
-        if (!isActive) {
-          dropdown.classList.add("active");
-        }
-      });
-
-      trigger.addEventListener("mouseenter", () => {
-        const anyActive = win.querySelector(".office-menu-dropdown.active");
-        if (anyActive && anyActive !== dropdown) {
-          dropdowns.forEach((d) => d.classList.remove("active"));
-          dropdown.classList.add("active");
-        }
-      });
-    });
-
-    document.addEventListener("click", (e) => {
-      if (!e.target.closest(".office-menu-dropdown")) {
-        dropdowns.forEach((d) => d.classList.remove("active"));
-      }
-    });
-
-    this.setupMenuActions(win, state);
-  }
-
-  setupMenuActions(win, state) {
-    const actions = {
-      // File
       new: () => this.createNewFile(win, state),
       open: () => this.openFileViaUpload(win, state),
       save: () => this.saveFile(win, state),
@@ -1457,25 +1596,20 @@ export class OfficeApp {
       exportHTML: () => this.exportToHTML(state),
       exportTXT: () => this.exportToTXT(state),
       print: () => this.printDocument(win, state),
+      cut: () => this.cutToClipboard(state),
+      copy: () => this.copyToClipboard(state),
+      paste: () => this.pasteFromClipboard(state),
 
-      // Edit
       undo: () => this.executeCommand("undo", state),
       redo: () => this.executeCommand("redo", state),
-      cut: () => this.executeCommand("cut", state),
-      copy: () => this.executeCommand("copy", state),
-      paste: () => this.executeCommand("paste", state),
       selectAll: () => this.executeCommand("selectAll", state),
       find: () => this.showFindDialog(win, state),
       replace: () => this.showReplaceDialog(win, state),
-
-      // View
       zoomIn: () => this.adjustZoom(win, state, 1.1),
       zoomOut: () => this.adjustZoom(win, state, 0.9),
       zoomReset: () => this.resetZoom(win, state),
       fullscreen: () => this.toggleFullscreen(win),
       toggleGrid: () => this.toggleGrid(win, state),
-
-      // Insert
       insertImage: () => this.insertImage(state),
       insertTable: () => this.insertTable(state),
       insertLink: () => this.insertLink(state),
@@ -1483,8 +1617,6 @@ export class OfficeApp {
       addRow: () => this.addSpreadsheetRow(state),
       addColumn: () => this.addSpreadsheetColumn(state),
       addSheet: () => this.addSpreadsheetSheet(state),
-
-      // Format
       formatBold: () => this.executeCommand("bold", state),
       formatItalic: () => this.executeCommand("italic", state),
       formatUnderline: () => this.executeCommand("underline", state),
@@ -1498,12 +1630,10 @@ export class OfficeApp {
       heading3: () => this.formatBlock("h3", state),
       paragraph: () => this.formatBlock("p", state),
       clearFormat: () => this.executeCommand("removeFormat", state),
-
-      // Tools
       spellCheck: () => this.spellCheck(state),
       wordCount: () => this.showWordCount(win, state),
-
-      // Help
+      sortAsc: () => this.sortSpreadsheet(state, true),
+      sortDesc: () => this.sortSpreadsheet(state, false),
       shortcuts: () => this.showShortcuts(win),
       about: () => this.showAbout(win)
     };
@@ -1511,7 +1641,8 @@ export class OfficeApp {
     win.querySelectorAll(".office-menu-item[data-action]").forEach((item) => {
       const action = actions[item.dataset.action];
       if (action) {
-        item.addEventListener("click", () => {
+        item.addEventListener("click", (e) => {
+          e.stopPropagation();
           win.querySelectorAll(".office-menu-dropdown").forEach((d) => d.classList.remove("active"));
           action();
         });
@@ -1520,7 +1651,26 @@ export class OfficeApp {
 
     this.setupKeyboardShortcuts(win, state, actions);
   }
+  async sortSpreadsheet(state, ascending = true) {
+    if (state.editorType !== "spreadsheet" || !state.hot) {
+      this.wm.showPopup("Sort is only available for spreadsheets");
+      return;
+    }
 
+    try {
+      const plugin = state.hot.getPlugin("columnSorting");
+      if (plugin) {
+        plugin.sort({
+          column: 0,
+          sortOrder: ascending ? "asc" : "desc"
+        });
+        this.wm.showPopup(`Sorted ${ascending ? "A → Z" : "Z → A"}`);
+      }
+    } catch (e) {
+      console.error("Sort error:", e);
+      this.wm.showPopup("Sort feature requires Handsontable");
+    }
+  }
   setupKeyboardShortcuts(win, state, actions) {
     win.addEventListener("keydown", (e) => {
       if (!e.ctrlKey && !e.metaKey) return;
@@ -1576,7 +1726,7 @@ export class OfficeApp {
     }
   }
 
-  resetZoom(win, state) {
+  resetZoom(win) {
     const editorArea = win.querySelector(".office-editor-area");
     editorArea.dataset.zoom = "1";
     editorArea.style.zoom = "1";
@@ -1658,7 +1808,7 @@ export class OfficeApp {
   `);
   }
 
-  showShortcuts(win) {
+  showShortcuts() {
     const shortcuts = `
     <div style="text-align:left;font-family:monospace;font-size:12px">
       <div><b>File</b></div>
@@ -1691,7 +1841,7 @@ export class OfficeApp {
     this.wm.showPopup(shortcuts);
   }
 
-  showAbout(win) {
+  showAbout() {
     this.wm.showPopup(`
     <div style="text-align:center">
       <div style="font-size:24px;margin-bottom:8px"><i class="fas fa-file-alt"></i> Office App</div>
@@ -1738,25 +1888,6 @@ export class OfficeApp {
       win.querySelector(".window-header span").textContent = "Untitled - Office";
     }
   }
-  executeEditCommand(command, state) {
-    if (state.editorType === "contenteditable" && state.editor) {
-      state.editor.focus();
-      document.execCommand(command);
-    } else if (state.editorType === "spreadsheet") {
-      const focusedCell = document.querySelector(".office-spreadsheet__cell--focused");
-      if (focusedCell) {
-        if (command === "copy" || command === "cut") {
-          navigator.clipboard.writeText(focusedCell.textContent);
-          if (command === "cut") focusedCell.textContent = "";
-        } else if (command === "paste") {
-          navigator.clipboard.readText().then((text) => {
-            focusedCell.textContent = text;
-            focusedCell.dispatchEvent(new Event("blur"));
-          });
-        }
-      }
-    }
-  }
 
   showFindDialog(win, state) {
     const searchTerm = prompt("Find:");
@@ -1780,7 +1911,92 @@ export class OfficeApp {
       state.editor.innerHTML = html.replaceAll(findText, replaceText);
     }
   }
+  async copyToClipboard(state) {
+    if (state.editorType === "contenteditable" && state.editor) {
+      state.editor.focus();
+      const selection = window.getSelection();
+      const text = selection.toString();
 
+      if (!text) {
+        this.wm.showPopup("Nothing selected to copy");
+        return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(text);
+        this.wm.showPopup("Copied to clipboard");
+      } catch (err) {
+        document.execCommand("copy");
+      }
+    } else if (state.editorType === "spreadsheet") {
+      const focused = document.activeElement;
+      if (focused?.classList.contains("office-spreadsheet__cell")) {
+        const selection = window.getSelection().toString() || focused.textContent;
+        try {
+          await navigator.clipboard.writeText(selection);
+          this.wm.showPopup("Copied to clipboard");
+        } catch (err) {
+          document.execCommand("copy");
+        }
+      }
+    }
+  }
+
+  async cutToClipboard(state) {
+    if (state.editorType === "contenteditable" && state.editor) {
+      state.editor.focus();
+      const selection = window.getSelection();
+      const text = selection.toString();
+
+      if (!text) {
+        this.wm.showPopup("Nothing selected to cut");
+        return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(text);
+        document.execCommand("delete");
+        this.wm.showPopup("Cut to clipboard");
+      } catch (err) {
+        document.execCommand("cut");
+      }
+    } else if (state.editorType === "spreadsheet") {
+      const focused = document.activeElement;
+      if (focused?.classList.contains("office-spreadsheet__cell")) {
+        try {
+          await navigator.clipboard.writeText(focused.textContent);
+          focused.textContent = "";
+          this.wm.showPopup("Cut to clipboard");
+        } catch (err) {
+          document.execCommand("cut");
+        }
+      }
+    }
+  }
+
+  async pasteFromClipboard(state) {
+    if (state.editorType === "contenteditable" && state.editor) {
+      state.editor.focus();
+      try {
+        const text = await navigator.clipboard.readText();
+        document.execCommand("insertText", false, text);
+        this.wm.showPopup("Pasted from clipboard");
+      } catch (err) {
+        this.wm.showPopup("Clipboard access denied. Use Ctrl+V instead.");
+      }
+    } else if (state.editorType === "spreadsheet") {
+      const focused = document.activeElement;
+      if (focused?.classList.contains("office-spreadsheet__cell")) {
+        try {
+          const text = await navigator.clipboard.readText();
+          focused.textContent = text;
+          this.wm.showPopup("Pasted from clipboard");
+        } catch (err) {
+          this.wm.showPopup("Clipboard access denied. Use Ctrl+V instead.");
+        }
+      }
+    }
+  }
   printDocument(win, state) {
     const printWindow = window.open("", "", "width=800,height=600");
     let content = "";
@@ -1842,40 +2058,41 @@ export class OfficeApp {
 
   async addSpreadsheetRow(state) {
     if (state.editorType !== "spreadsheet") return;
-    const XLSX = await modules.xlsx();
-    const ws = state.workbook.Sheets[state.activeSheet];
-    const range = XLSX.utils.decode_range(ws["!ref"] || "A1");
-    range.e.r++;
-    ws["!ref"] = XLSX.utils.encode_range(range);
-    const container = document.querySelector(`#${state.winId} .office-editor-area`);
-    new SpreadsheetEditor().renderSheet(container, state.workbook, state, XLSX);
+    if (!state.hot) {
+      this.wm.showPopup("Row add works in grid view");
+      return;
+    }
+    const rowCount = state.hot.countRows();
+    state.hot.alter("insert_row", rowCount, 1);
+    this.wm.showPopup("Row added");
   }
 
   async addSpreadsheetColumn(state) {
     if (state.editorType !== "spreadsheet") return;
-    const XLSX = await modules.xlsx();
-    const ws = state.workbook.Sheets[state.activeSheet];
-    const range = XLSX.utils.decode_range(ws["!ref"] || "A1");
-    range.e.c++;
-    ws["!ref"] = XLSX.utils.encode_range(range);
-    const container = document.querySelector(`#${state.winId} .office-editor-area`);
-    new SpreadsheetEditor().renderSheet(container, state.workbook, state, XLSX);
+    if (!state.hot) {
+      this.wm.showPopup("Column add works in grid view");
+      return;
+    }
+    const colCount = state.hot.countCols();
+    state.hot.alter("insert_col", colCount, 1);
+    this.wm.showPopup("Column added");
   }
 
   async addSpreadsheetSheet(state) {
-    if (!state.workbook) return;
-    const XLSX = await modules.xlsx();
-    const sheetName = prompt("Sheet name:", `Sheet${state.workbook.SheetNames.length + 1}`);
-    if (!sheetName) return;
+    if (state.editorType !== "spreadsheet" || !state.workbook) return;
 
-    XLSX.utils.book_append_sheet(
-      state.workbook,
-      XLSX.utils.aoa_to_sheet(Array.from({ length: 50 }, () => Array(26).fill(""))),
-      sheetName
-    );
-    state.activeSheet = sheetName;
+    const name = prompt("Sheet name:", `Sheet${state.workbook.SheetNames.length + 1}`);
+    if (!name) return;
+
+    const XLSX = await modules.xlsx();
+    const emptyData = Array.from({ length: 50 }, () => Array(26).fill(""));
+    XLSX.utils.book_append_sheet(state.workbook, XLSX.utils.aoa_to_sheet(emptyData), name);
+
+    state.activeSheet = name;
+
     const container = document.querySelector(`#${state.winId} .office-editor-area`);
-    new SpreadsheetEditor().renderSheet(container, state.workbook, state, XLSX);
+    container.innerHTML = "";
+    await new SpreadsheetEditor().tryHandsontable(container, state.workbook, state, XLSX);
   }
 
   async exportToPDF(state) {
@@ -1901,13 +2118,6 @@ export class OfficeApp {
     this.wm.showPopup("Exported as HTML");
   }
 
-  updateMenuVisibility(win, state) {
-    const isSpreadsheet = [".xlsx", ".xls", ".csv"].includes(state.ext);
-    win.querySelectorAll(".office-menu-btn--spreadsheet").forEach((btn) => {
-      btn.style.display = isSpreadsheet ? "" : "none";
-    });
-  }
-
   findInSpreadsheet(state, searchTerm) {
     const cells = document.querySelectorAll(".office-spreadsheet__cell");
     cells.forEach((cell) => cell.classList.remove("office-cell-highlight"));
@@ -1919,17 +2129,103 @@ export class OfficeApp {
       }
     });
   }
+  setupMenuBar(win, state) {
+    const menuBar = win.querySelector(".office-menu-bar");
+
+    const ext = state.ext;
+    const isSpreadsheet = [".xlsx", ".xls", ".csv"].includes(ext);
+    const isReadOnly = [".pdf", ".odp", ".odt"].includes(ext);
+    const isDocEditable = [".docx", ".txt", ".html", ""].includes(ext) || !ext;
+
+    menuBar.dataset.mode = isSpreadsheet ? "spreadsheet" : "document";
+
+    const formatDropdown = win.querySelector(".office-menu-dropdown:nth-child(5)");
+    if (formatDropdown) {
+      formatDropdown.style.display = isDocEditable ? "" : "none";
+    }
+
+    const insertDropdown = win.querySelector(".office-menu-dropdown:nth-child(4)");
+
+    win.querySelectorAll(".office-menu-item--document").forEach((item) => {
+      item.style.display = isDocEditable ? "" : "none";
+    });
+
+    win.querySelectorAll(".office-menu-item--spreadsheet").forEach((item) => {
+      item.style.display = isSpreadsheet ? "" : "none";
+    });
+
+    if (insertDropdown) {
+      insertDropdown.style.display = isReadOnly ? "none" : "";
+    }
+
+    const editDropdown = win.querySelector(".office-menu-dropdown:nth-child(2)");
+    if (isReadOnly && editDropdown) {
+      editDropdown.querySelectorAll(".office-menu-item").forEach((item) => {
+        item.classList.add("office-menu-item--disabled");
+        item.style.pointerEvents = "none";
+        item.style.opacity = "0.5";
+      });
+    }
+
+    win.querySelectorAll('[data-action^="sort"]').forEach((item) => {
+      item.style.display = isSpreadsheet ? "" : "none";
+    });
+
+    win.querySelectorAll(".office-menu-divider.office-menu-item--spreadsheet").forEach((divider) => {
+      divider.style.display = isSpreadsheet ? "" : "none";
+    });
+
+    win.querySelectorAll('[data-action="toggleGrid"]').forEach((item) => {
+      item.style.display = isSpreadsheet ? "" : "none";
+    });
+
+    const dropdowns = win.querySelectorAll(".office-menu-dropdown");
+
+    dropdowns.forEach((dropdown) => {
+      const trigger = dropdown.querySelector(".office-menu-dropdown__trigger");
+      if (!trigger) return;
+
+      const newTrigger = trigger.cloneNode(true);
+      trigger.parentNode.replaceChild(newTrigger, trigger);
+
+      newTrigger.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const isActive = dropdown.classList.contains("active");
+
+        dropdowns.forEach((d) => d.classList.remove("active"));
+
+        if (!isActive) {
+          dropdown.classList.add("active");
+        }
+      });
+
+      newTrigger.addEventListener("mouseenter", () => {
+        const anyActive = win.querySelector(".office-menu-dropdown.active");
+        if (anyActive && anyActive !== dropdown) {
+          dropdowns.forEach((d) => d.classList.remove("active"));
+          dropdown.classList.add("active");
+        }
+      });
+    });
+
+    const closeDropdowns = (e) => {
+      if (!e.target.closest(".office-menu-dropdown")) {
+        dropdowns.forEach((d) => d.classList.remove("active"));
+      }
+    };
+
+    document.removeEventListener("click", win._closeDropdownsHandler);
+    win._closeDropdownsHandler = closeDropdowns;
+    document.addEventListener("click", closeDropdowns);
+  }
   async openFileViaUpload(win, state) {
     speak("Looking for something?", "Searching");
-    const result = await FileIO.triggerUpload();
-    if (!result) return;
-    this.applyFileToState(result.name, state, win);
+
+    const results = await FileIO.triggerUpload(true);
+    if (results.length === 0) return;
+
     const editorArea = win.querySelector(".office-editor-area");
-    try {
-      await this.replaceEditorContent(editorArea, result.arrayBuffer, state, win);
-    } catch (e) {
-      editorArea.innerHTML = `<div class="office-error-msg">Error loading file: ${e.message}</div>`;
-    }
+    await this.handleUploadedFiles(results, editorArea, state, win);
   }
 
   setupIdleDetection(win, ext) {
@@ -2015,7 +2311,13 @@ export class OfficeApp {
       const content = await this.generateFileContent(state);
       if (content === null) return;
       if (state.filePath && this.fs) {
-        this.fs.updateFile(state.filePath, state.title, content);
+        const ext = state.ext;
+        let storageContent = content;
+        if (FileUtils.isBinaryExtension(ext) && content instanceof Uint8Array) {
+          const mime = FileUtils.mimeForExtension(ext);
+          storageContent = FileUtils.arrayBufferToDataUrl(content.buffer, mime);
+        }
+        this.fs.updateFile(state.filePath, state.title, storageContent);
         this.wm.showPopup(`File saved: ${state.title}`);
         speak("Great, your file has been saved!", "Save");
       } else {
@@ -2035,7 +2337,14 @@ export class OfficeApp {
           if (se && se !== state.ext) state.ext = se;
           const content = await this.generateFileContent(state);
           if (content === null) return;
-          await this.fs.createFile(path, fileName, content);
+
+          let storageContent = content;
+          if (FileUtils.isBinaryExtension(state.ext) && content instanceof Uint8Array) {
+            const mime = FileUtils.mimeForExtension(state.ext);
+            storageContent = FileUtils.arrayBufferToDataUrl(content.buffer, mime);
+          }
+
+          await this.fs.createFile(path, fileName, storageContent);
           const ps = path.length ? `/${path.join("/")}/${fileName}` : `/${fileName}`;
           state.title = fileName;
           state.filePath = path;
@@ -2066,6 +2375,7 @@ export class OfficeApp {
   openFileDialog() {
     this.open();
   }
+
   loadContent(fileName, content, filePath) {
     this.open(fileName, content, filePath);
   }

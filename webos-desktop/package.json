@@ -25,15 +25,10 @@
   },
   "dependencies": {
     "browserfs": "^1.4.3",
-    "docx": "^9.6.1",
     "globals": "^17.1.0",
     "idb-keyval": "^6.2.2",
     "interactjs": "^1.10.27",
-    "jszip": "^3.10.1",
-    "mammoth": "^1.12.0",
     "memfs": "^4.56.10",
-    "pdfjs-dist": "^5.5.207",
-    "workbox-window": "^7.4.0",
-    "xlsx": "^0.18.5"
+    "workbox-window": "^7.4.0"
   }
 }
