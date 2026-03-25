@@ -144,24 +144,24 @@ export class AppLauncher {
       },
       weatherApp: {
         type: "system",
-        title: "Weather App",
+        title: "Weather",
         action: () => weatherApp.open(),
         clippy: { message: "Rain is expected today. Don't forget your umbrella!", animation: "Pleased" }
       },
       emulatorApp: {
         type: "system",
-        title: "Emulator App",
+        title: "Emulator",
         action: () => emulatorApp.open(),
         clippy: { message: "Nintendo is going to be mad", animation: "animate" }
       },
       appCreatorApp: {
         type: "system",
-        title: "App Creator App",
+        title: "App Creator",
         action: () => appCreatorApp.open()
       },
       officeApp: {
         type: "system",
-        title: "Office App",
+        title: "Office",
         action: () => officeApp.open(),
         clippy: { message: "Need a hand creating a document or spreadsheet?", animation: "animate" }
       },
@@ -174,6 +174,17 @@ export class AppLauncher {
             type: "game",
             source: "/static/apps/libresprite/index.html",
             originalName: "libreSprite"
+          })
+      },
+      kiwiIRC: {
+        type: "system",
+        title: "kiwiIRC",
+        action: () =>
+          this.openIframeApp({
+            appId: "kiwiIRC",
+            type: "game",
+            source: "/static/apps/kiwiirc/index.html",
+            originalName: "Kivi IRC"
           })
       }
     };
@@ -309,10 +320,10 @@ export class AppLauncher {
       contentHtml = `<iframe src="${iframeUrl}" ${IFRAME_ATTRS}></iframe>`;
       if (type === "game") externalUrl = source;
     }
-
+    const displayTitle = this.appMap[appId]?.title || getGameName(originalName);
     this.createIframeWindow(
       id,
-      getGameName(originalName),
+      displayTitle,
       contentHtml,
       appId,
       {

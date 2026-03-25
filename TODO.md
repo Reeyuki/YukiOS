@@ -1,6 +1,4 @@
 Add file format conversion context menus
-Add kivi irc
-Add libresprite
 Replace span text with div in desktop icons
 Add calendar popup on os time text
 Add markdown support

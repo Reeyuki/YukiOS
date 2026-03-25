@@ -161,6 +161,9 @@ export function tryGetIcon(id) {
   if (id === "appCreatorApp") {
     return "fa fa-cubes";
   }
+  if (id === "kiwiIRC") {
+    return "/static/icons/kiwiirc.webp";
+  }
   try {
     if (appMap[id] && appMap[id].icon) {
       return appMap[id].icon;
