@@ -1444,7 +1444,7 @@ export class DesktopUI {
     const icon = document.createElement("div");
     icon.className = "icon selectable desktop-file-icon";
     icon.dataset.fileName = fileName;
-    icon.innerHTML = `${iconHTML}<span>${fileName}</span>`;
+    icon.innerHTML = `${iconHTML}<div>${fileName}</div>`;
     Object.assign(icon.style, { position: "absolute", userSelect: "none", cursor: "default" });
 
     icon.addEventListener("dblclick", (e) => {
