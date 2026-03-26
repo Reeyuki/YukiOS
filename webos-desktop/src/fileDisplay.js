@@ -18,6 +18,7 @@ export const OFFICE_EXTS = [
   "ppt",
   "rtf"
 ];
+export const ZIP_EXTS = ["zip"];
 
 import { ROM_EXTS, detectCore } from "./shared/coreMap.js";
 export { ROM_EXTS };
@@ -37,6 +38,7 @@ export function fileKindFromName(name) {
   if (IMAGE_EXTS.includes(ext)) return FileKind.IMAGE;
   if (VIDEO_EXTS.includes(ext)) return FileKind.VIDEO;
   if (ROM_EXTS.includes(ext)) return FileKind.ROM;
+  if (ZIP_EXTS.includes(ext)) return FileKind.OTHER;
   if (HTML_EXTS.includes(ext)) return FileKind.HTML ?? FileKind.TEXT;
   if (MARKDOWN_EXTS.includes(ext)) return FileKind.TEXT;
   if (TEXT_EXTS.includes(ext)) return FileKind.TEXT;
@@ -67,6 +69,10 @@ export function isOfficeFile(name) {
   return OFFICE_EXTS.includes(getExt(name));
 }
 
+export function isZipFile(name) {
+  return ZIP_EXTS.includes(getExt(name));
+}
+
 export function isBinaryOfficeFile(name) {
   return BINARY_OFFICE_EXTS.includes(getExt(name));
 }
@@ -88,6 +94,7 @@ export function resolveFileIcon(name) {
   if (isImageFile(name)) return "@content";
   if (isVideoFile(name)) return "/static/icons/obs.webp";
   if (isRomFile(name)) return "rom";
+  if (isZipFile(name)) return "/static/icons/zip.webp";
   if (isOfficeFile(name)) return "/static/icons/office.webp";
   if (isHtmlFile(name)) return "/static/icons/firefox.webp";
   return "/static/icons/notepad.webp";
@@ -121,6 +128,9 @@ export function buildFileIconHTML(name, { thumbnailSrc = null, size = 64, radius
   }
   if (isRomFile(name)) {
     return `<div style="${s}display:flex;align-items:center;justify-content:center;font-size:${Math.round(size * 0.44)}px;color:#6677dd;"><i class="fas fa-gamepad"></i></div>`;
+  }
+  if (isZipFile(name)) {
+    return `<img src="/static/icons/zip.webp" style="${s}object-fit:cover;">`;
   }
   if (isImageFile(name) && thumbnailSrc) {
     return `<img src="${thumbnailSrc}" style="${s}object-fit:cover;">`;
@@ -237,11 +247,8 @@ export async function openFileWith({
           const blob = await fs.readBinaryFile(path, name);
           if (blob && blob.size > 0) {
             content = await blob.arrayBuffer();
-            console.log("Loaded binary office file from blob storage:", name, content.byteLength, "bytes");
           }
-        } catch (e) {
-          console.warn("Could not load from binary storage:", e);
-        }
+        } catch (e) {}
       }
 
       if (!content) {
@@ -290,7 +297,6 @@ export function decodeDataURLContent(content) {
         return decodeURIComponent(plainMatch[1]);
       }
     } catch (err) {
-      console.error("Failed to decode data URL:", err);
       return content;
     }
   }

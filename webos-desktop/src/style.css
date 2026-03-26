@@ -304,10 +304,10 @@ input {
 }
 
 .window-header {
-  background: rgba(40, 40, 40, 0.9);
+  background: black;
   backdrop-filter: blur(1.1em);
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  padding: 5px 10px;
+  padding: 5px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -315,7 +315,6 @@ input {
   cursor: move;
   font-weight: 600;
   font-size: 14px;
-
   user-select: none;
   white-space: nowrap;
 }
@@ -343,7 +342,7 @@ input {
   justify-content: center;
   border: none;
   border-radius: 6px;
-  background: rgba(255, 255, 255, 0.05);
+  background-color: black;
   color: #e3e3e3;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -359,7 +358,7 @@ input {
 .window-controls .minimize-btn:hover,
 .window-controls .maximize-btn:hover,
 .window-controls .external-btn:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: #1a1a1a;
   transform: scale(1.1);
 }
 

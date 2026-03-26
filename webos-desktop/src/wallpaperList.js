@@ -31,7 +31,6 @@ export const videos = [
   "https://motionbgs.com/media/2766/dio-brando-jojo.1920x1080.mp4",
   "https://motionbgs.com/media/6768/frieren-the-slayer.1920x1080.mp4",
   "https://motionbgs.com/media/6968/hatsune-miku-night.1920x1080.mp4",
-  "https://motionbgs.com/media/5622/shigeo-mob.1920x1080.mp4",
   "https://motionbgs.com/media/1618/rem-with-blue-hair-and-maid-outfit-rezero.1920x1080.mp4",
   "https://motionbgs.com/media/9267/minecraft-relaxing-fireplace.3840x2160.mp4",
   "https://motionbgs.com/media/2400/nature-in-made-in-abyss.1920x1080.mp4",

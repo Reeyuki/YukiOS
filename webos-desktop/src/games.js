@@ -11,31 +11,36 @@ export const appMap = {
     icon: "/static/icons/pokeball.webp",
     title: "Pokemon"
   },
-  pokemonRed: { type: "gba", url: "pokemon-red.gba", icon: "/static/icons/pokemonred.webp", title: "Pokemon" },
+  pokemonRed: { type: "gba", url: "pokemon-red.gba", icon: "/static/icons/pokemonred.webp", title: "Pokemon Red" },
   pokemonEmerald: {
     type: "gba",
     url: "pokemon-emerald.gba",
     icon: "/static/icons/pokemonemerald.webp",
-    title: "Pokemon"
+    title: "Pokemon Emerald"
   },
   pokemonPlatinum: {
     type: "nds",
     url: "pokemon-platinum.nds",
     icon: "/static/icons/pokemonplatinum.webp",
-    title: "Pokemon"
+    title: "Pokemon Platinum"
   },
   pokemonHeartgold: {
     type: "nds",
     url: "pokemon-heartgold.nds",
     icon: "/static/icons/pokemonheartgold.webp",
-    title: "Pokemon"
+    title: "Pokemon Heartgold"
   },
-  pokemonWhite: { type: "nds", url: "pokemon-white.zip", icon: "/static/icons/pokemon-white.webp", title: "Pokemon" },
+  pokemonWhite: {
+    type: "nds",
+    url: "pokemon-white.zip",
+    icon: "/static/icons/pokemon-white.webp",
+    title: "Pokemon White"
+  },
   pokemonWhite2: {
     type: "nds",
     url: "pokemon-white-2.zip",
     icon: "/static/icons/pokemon-white.webp",
-    title: "Pokemon"
+    title: "Pokemon White 2"
   },
   tetris: {
     type: "game",
