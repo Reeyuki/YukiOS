@@ -1416,7 +1416,7 @@ export class DesktopUI {
         continue;
       }
 
-      if (this.isRightAlignedSystemApp(app)) systemIcons.push(icon);
+      if (createIsRightAlignedSystemApp(sharedAppLauncher.appMap)(app)) systemIcons.push(icon);
       else regularIcons.push(icon);
     }
 

@@ -1588,6 +1588,162 @@ input {
 /* ══════════════════════════════════════════════
    NOTEPAD
 ══════════════════════════════════════════════ */
+
+.window.notepad-window {
+  background: rgba(13, 13, 19, 0.92);
+  backdrop-filter: blur(32px) saturate(1.5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.65),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+    0 0 60px rgba(120, 180, 255, 0.05);
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.notepad-window .window-header {
+  background: rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.85);
+  padding: 10px 14px;
+  font-size: 13px;
+  font-family: "Sora", "Segoe UI", sans-serif;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+
+.notepad-menubar {
+  display: flex;
+  gap: 2px;
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.025);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 12px;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.notepad-menu-item {
+  position: relative;
+  padding: 4px 10px;
+  cursor: default;
+  color: rgba(255, 255, 255, 0.75);
+  border-radius: 4px;
+  transition: background 0.1s;
+}
+
+.notepad-menu-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.notepad-menu-item.active {
+  background: rgba(79, 158, 255, 0.25);
+  color: #fff;
+}
+
+.notepad-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: rgba(30, 30, 38, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  min-width: 220px;
+  z-index: 10000;
+  padding: 4px 0;
+  border-radius: 8px;
+  backdrop-filter: blur(20px);
+}
+
+.notepad-menu-item.active .notepad-dropdown {
+  display: block;
+}
+
+.dropdown-item {
+  padding: 6px 35px 6px 28px;
+  cursor: default;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  white-space: nowrap;
+  color: rgba(255, 255, 255, 0.8);
+  transition: background 0.1s;
+}
+
+.dropdown-item:hover {
+  background: rgba(79, 158, 255, 0.3);
+  color: #fff;
+}
+
+.dropdown-item.disabled {
+  color: rgba(255, 255, 255, 0.3);
+  pointer-events: none;
+}
+
+.dropdown-item .checkmark {
+  position: absolute;
+  left: 10px;
+  font-size: 10px;
+  color: rgba(79, 200, 180, 0.9);
+}
+
+.dropdown-item .shortcut {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 11px;
+  margin-left: 30px;
+}
+
+.dropdown-item:hover .shortcut {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.dropdown-item .arrow {
+  font-size: 8px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.dropdown-separator {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 4px 8px;
+}
+
+.dropdown-submenu {
+  position: relative;
+}
+
+.dropdown-submenu .submenu {
+  display: none;
+  position: absolute;
+  left: 100%;
+  top: 0;
+  background: rgba(30, 30, 38, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  min-width: 180px;
+  padding: 4px 0;
+  border-radius: 8px;
+  backdrop-filter: blur(20px);
+}
+
+.dropdown-submenu:hover .submenu {
+  display: block;
+}
+
+.notepad-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+  background: transparent;
+}
+
 .notepad-textarea {
   flex: 1;
   width: 100%;
@@ -1598,170 +1754,199 @@ input {
   outline: none;
   background: rgba(8, 8, 14, 0.6);
   color: rgba(220, 230, 245, 0.9);
-  font-family: "JetBrains Mono", "Fira Code", monospace;
-  font-size: 13.5px;
-  line-height: 1.75;
-  caret-color: var(--accent);
+  font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-size: 14px;
+  line-height: 1.7;
+  caret-color: rgba(79, 158, 255, 0.9);
   box-sizing: border-box;
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
 }
+
 .notepad-textarea::selection {
   background: rgba(79, 158, 255, 0.28);
   color: #fff;
 }
+
 .notepad-textarea::placeholder {
   color: rgba(255, 255, 255, 0.2);
 }
+
 .notepad-textarea::-webkit-scrollbar {
-  width: 5px;
+  width: 8px;
+  height: 8px;
 }
+
+.notepad-textarea::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 .notepad-textarea::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.12);
   border-radius: 99px;
 }
 
-.notepad-menu {
+.notepad-textarea::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.notepad-textarea::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+.notepad-statusbar {
   display: flex;
-  gap: 6px;
-  padding: 7px 1.1em;
-  background: rgba(255, 255, 255, 0.025);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  justify-content: flex-end;
+  gap: 20px;
+  padding: 5px 16px;
+  background: rgba(79, 158, 255, 0.15);
+  border-top: 1px solid rgba(79, 158, 255, 0.2);
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.7);
   flex-shrink: 0;
 }
 
-.notepad-btn {
-  background: var(--glass);
-  border: 1px solid var(--glass-border);
-  color: rgba(255, 255, 255, 0.65);
-  border-radius: 7px;
-  padding: 4px 13px;
-  font-size: 1.1em;
-  font-family: "Sora", sans-serif;
-  cursor: pointer;
+.notepad-statusbar span {
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+}
 
+.notepad-dialog {
+  position: absolute;
+  background: rgba(35, 35, 45, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 18px;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5);
+  z-index: 20000;
+  min-width: 350px;
+  color: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+}
+
+.notepad-dialog h3 {
+  margin: 0 0 15px 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.notepad-dialog h2 {
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 400;
+}
+
+.notepad-dialog-row {
+  margin: 12px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.notepad-dialog-row label {
+  min-width: 85px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+}
+
+.notepad-dialog input[type="text"],
+.notepad-dialog input[type="number"] {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.3);
+  color: rgba(255, 255, 255, 0.9);
+  outline: none;
+  font-size: 13px;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+}
+
+.notepad-dialog input[type="text"]:focus,
+.notepad-dialog input[type="number"]:focus {
+  border-color: rgba(79, 158, 255, 0.5);
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.notepad-dialog select {
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.3);
+  color: rgba(255, 255, 255, 0.9);
+  outline: none;
+  cursor: pointer;
+  font-size: 13px;
+  transition: border-color 0.15s;
+}
+
+.notepad-dialog select:focus {
+  border-color: rgba(79, 158, 255, 0.5);
+}
+
+.notepad-dialog select option {
+  background: #2a2a35;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.notepad-dialog-buttons {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.notepad-dialog button {
+  padding: 8px 20px;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 13px;
   transition:
     background 0.15s,
-    border-color 0.15s,
-    color 0.15s,
-    transform 0.1s,
-    box-shadow 0.15s;
+    border-color 0.15s;
 }
-.notepad-btn:hover {
-  background: rgba(79, 158, 255, 0.18);
+
+.notepad-dialog button:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.notepad-dialog button.primary {
+  background: rgba(79, 158, 255, 0.3);
+  color: #fff;
   border-color: rgba(79, 158, 255, 0.4);
-  color: var(--tx1);
-  box-shadow: 0 2px 10px rgba(79, 158, 255, 0.15);
-  transform: translateY(-1px);
-}
-.notepad-btn:active {
-  transform: translateY(0);
-  background: rgba(79, 158, 255, 0.25);
-}
-[id^="notepad-"] {
-  background: rgba(13, 13, 19, 0.82) !important;
-  backdrop-filter: blur(32px) saturate(1.5) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  box-shadow:
-    0 24px 64px rgba(0, 0, 0, 0.65),
-    0 0 0 1px rgba(255, 255, 255, 0.05) inset,
-    0 0 60px rgba(120, 180, 255, 0.05) !important;
-  border-radius: 14px !important;
-  overflow: hidden !important;
-  display: flex !important;
-  flex-direction: column !important;
 }
 
-[id^="notepad-"] .window-header {
-  background: rgba(255, 255, 255, 0.04) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
-  color: rgba(255, 255, 255, 0.85) !important;
-  padding: 10px 14px !important;
-  font-size: 13px !important;
-  font-family: "Sora", "Segoe UI", sans-serif !important;
-  letter-spacing: 0.02em !important;
-  flex-shrink: 0 !important;
+.notepad-dialog button.primary:hover {
+  background: rgba(79, 158, 255, 0.4);
+  border-color: rgba(79, 158, 255, 0.5);
 }
 
-[id^="notepad-"] .notepad-menu {
-  display: flex !important;
-  gap: 6px !important;
-  padding: 7px 12px !important;
-  background: rgba(255, 255, 255, 0.025) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
-  flex-shrink: 0 !important;
-}
-[id^="notepad-"] .notepad-btn {
-  background: rgba(255, 255, 255, 0.07) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  color: rgba(255, 255, 255, 0.65) !important;
-  border-radius: 7px !important;
-  padding: 4px 13px !important;
-  font-size: 12px !important;
-  font-family: "Sora", sans-serif !important;
-  cursor: pointer !important;
-  letter-spacing: 0.02em !important;
-  transition: all 0.15s ease !important;
-}
-[id^="notepad-"] .notepad-btn:hover {
-  background: rgba(79, 158, 255, 0.18) !important;
-  border-color: rgba(79, 158, 255, 0.4) !important;
-  color: rgba(255, 255, 255, 0.95) !important;
-  box-shadow: 0 2px 10px rgba(79, 158, 255, 0.15) !important;
-  transform: translateY(-1px) !important;
-}
-[id^="notepad-"] .notepad-btn:active {
-  transform: translateY(0) !important;
-  background: rgba(79, 158, 255, 0.25) !important;
+.notepad-dialog-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 13px;
 }
 
-/* Content area */
-[id^="notepad-"] .window-content {
-  flex: 1 !important;
-  display: flex !important;
-  flex-direction: column !important;
-  padding: 0 !important;
-  overflow: hidden !important;
-  background: transparent !important;
+.notepad-dialog-checkbox input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: rgba(79, 158, 255, 0.8);
+  cursor: pointer;
 }
 
-/* Textarea */
-[id^="notepad-"] .notepad-textarea {
-  flex: 1 !important;
-  width: 100% !important;
-  height: 100% !important;
-  background: rgba(8, 8, 14, 0.6) !important;
-  color: rgba(220, 230, 245, 0.9) !important;
-  border: none !important;
-  outline: none !important;
-  padding: 16px 20px !important;
-  font-family: "JetBrains Mono", "Fira Code", monospace !important;
-  font-size: 13.5px !important;
-  line-height: 1.75 !important;
-  resize: none !important;
-  caret-color: rgba(79, 158, 255, 0.9) !important;
-  box-sizing: border-box !important;
-  scrollbar-width: thin !important;
-  scrollbar-color: rgba(255, 255, 255, 0.1) transparent !important;
+.font-preview {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.85);
 }
-[id^="notepad-"] .notepad-textarea::selection {
-  background: rgba(79, 158, 255, 0.28) !important;
-  color: #fff !important;
-}
-[id^="notepad-"] .notepad-textarea::placeholder {
-  color: rgba(255, 255, 255, 0.2) !important;
-}
-[id^="notepad-"] .notepad-textarea::-webkit-scrollbar {
-  width: 5px !important;
-}
-[id^="notepad-"] .notepad-textarea::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.12) !important;
-  border-radius: 99px !important;
-}
-[id^="notepad-"] .notepad-textarea::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.22) !important;
-}
-
 /* ══════════════════════════════════════════════
    BROWSER
 ══════════════════════════════════════════════ */

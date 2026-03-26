@@ -299,11 +299,11 @@ function handleCalendarKeydown(e) {
 }
 
 function closeCalendarOnClickOutside(e) {
+  if (e.target.closest(".calendar-modal-overlay")) return;
   if (_calendarPopup && !_calendarPopup.contains(e.target) && e.target.id !== "date") {
     closeCalendarPopup();
   }
 }
-
 function showEventModal(dateKey, existingEvent = "") {
   const overlay = document.createElement("div");
   overlay.className = "calendar-modal-overlay";
