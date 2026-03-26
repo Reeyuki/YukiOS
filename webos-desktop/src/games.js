@@ -362,10 +362,15 @@ export const appMap = {
     title: "Milk outside a bag of milk"
   },
   vscode: {
-    type: "game",
+    type: "system",
     url: "https://emupedia.net/emupedia-app-vscode",
     icon: "/static/icons/vscode.webp",
     title: "Vs Code"
+  },
+  monaco: {
+    type: "system",
+    title: "Monaco Editor",
+    icon: "/static/icons/vscode.webp"
   },
   paint: {
     type: "game",

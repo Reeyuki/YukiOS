@@ -79,7 +79,6 @@ export const videos = [
   "https://motionbgs.com/media/9252/shadowlands-lich-king.3840x2160.mp4",
   "https://motionbgs.com/media/9259/fairy-tail-symbol.3840x2160.mp4",
   "https://motionbgs.com/media/9261/fairy-tail-magic-team.3840x2160.mp4",
-  "https://motionbgs.com/media/9249/arcane-elf-sorceress.3840x2160.mp4",
   "https://motionbgs.com/media/9257/gym-dark.3840x2160.mp4",
   "https://motionbgs.com/media/1926/moonlit-bloom-cherry.1920x1080.mp4",
   "https://motionbgs.com/media/3759/a-painting-landscape.1920x1080.mp4",

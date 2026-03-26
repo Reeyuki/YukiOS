@@ -30,7 +30,8 @@ export class AppLauncher {
     weatherApp,
     emulatorApp,
     appCreatorApp,
-    officeApp
+    officeApp,
+    monaco
   ) {
     this.wm = windowManager;
     this.fs = fileSystemManager;
@@ -50,6 +51,7 @@ export class AppLauncher {
     this.emulatorApp = emulatorApp;
     this.appCreatorApp = appCreatorApp;
     this.officeApp = officeApp;
+    this.monacoApp = monaco;
     this.TRANSPARENCY_ALLOWED_APP_IDS = new Set(["paint", "photopea", "vscode", "liventcord"]);
 
     this.clippyPromise = initClippy(settingsApp);
@@ -76,6 +78,12 @@ export class AppLauncher {
         title: "Notepad",
         action: () => this.notepadApp.open(),
         clippy: { message: "It looks like you're writing something. Need help with that letter?", animation: "Pleased" }
+      },
+      monaco: {
+        type: "system",
+        title: "Monaco Editor",
+        action: () => this.monacoApp.open(),
+        clippy: { message: "Would you like help starting with a 'Hello World?", animation: "Pleased" }
       },
       browser: {
         type: "system",
@@ -189,6 +197,13 @@ export class AppLauncher {
       }
     };
 
+    this.clippyMap = Object.fromEntries(
+      Object.entries(localAppMap)
+        .filter(([, v]) => v.clippy)
+        .map(([k, v]) => [k, v.clippy])
+    );
+
+    this.clippyMap["vscode"] = { message: "Ready to write some code!", animation: "Congratulate" };
     this.appMap = { ...appMap, ...localAppMap };
     populateStartMenu(this);
     initializeAppGrid(this);
@@ -225,6 +240,11 @@ export class AppLauncher {
     const analyticsBase = getAnalyticsBase(app);
     sendLaunchAnalytics(app);
 
+    const clippyEntry = this.clippyMap[app];
+    if (clippyEntry) {
+      clippySpeak(clippyEntry.message, clippyEntry.animation);
+    }
+
     if (app.includes(this.BIC)) {
       if (swf) {
         return this.openIframeApp({ appId: app, type: "swf", source: info.swf, originalName: app });
@@ -238,10 +258,9 @@ export class AppLauncher {
       return window.electronAPI.launchGame(app);
 
     if (info.type === "system") {
-      info.action();
-      if (info.clippy) {
-        await clippySpeak(info.clippy.message, info.clippy.animation);
-      }
+      if (info.url) {
+        this.openIframeApp({ appId: app, type: "game", source: info.url, originalName: app, analyticsBase });
+      } else if (info.action) info.action();
       return;
     }
 

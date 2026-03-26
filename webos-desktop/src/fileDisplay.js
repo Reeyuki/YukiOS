@@ -258,7 +258,6 @@ export async function openFileWith({
   notepadApp.open(name, content, path);
 }
 
-// Add to fileDisplay.js exports
 export function decodeDataURLContent(content) {
   if (!content) return "";
 

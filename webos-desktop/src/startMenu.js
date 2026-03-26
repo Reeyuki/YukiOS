@@ -60,12 +60,13 @@ function updateStarState(appName, isFavorite) {
     item.style.background = isFavorite ? "rgba(255, 215, 0, 0.1)" : "transparent";
   }
 }
-
-export function updateFavoritesUI(appLauncher) {
-  if (!appLauncher) {
+let sharedAppLauncher;
+export function updateFavoritesUI() {
+  if (!sharedAppLauncher) {
     console.error("No app launcher");
     return;
   }
+
   const favoritesPage = document.querySelector('.start-page[data-page="favorites"]');
   favoritesPage.innerHTML = "";
   const favorites = getFavorites();
@@ -87,7 +88,7 @@ export function updateFavoritesUI(appLauncher) {
     clone.style.position = "relative";
     clone.style.background = "rgba(255, 215, 0, 0.1)";
 
-    clone.onclick = () => appLauncher.launch(appName);
+    clone.onclick = () => sharedAppLauncher.launch(appName);
 
     const oldStar = clone.querySelector(".star");
     if (oldStar) oldStar.remove();
@@ -117,6 +118,7 @@ function setupStars() {
 }
 
 export function setupStartMenu(appLauncher) {
+  sharedAppLauncher = appLauncher;
   document.querySelector(".start-menu")?.addEventListener("contextmenu", (e) => e.preventDefault());
 
   document.querySelectorAll(".start-cat").forEach((cat) => {

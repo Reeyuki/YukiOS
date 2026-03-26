@@ -22,6 +22,7 @@ import { detectOS, isMobile } from "./shared/platformUtils.js";
 import { AppCreatorApp } from "./appCreator.js";
 import { OfficeAppProxy } from "./officeLoader.js";
 import { MarkdownApp } from "./markdown.js";
+import { MonacoApp } from "./monaco.js";
 
 class MusicPlayer {
   constructor() {}
@@ -145,6 +146,7 @@ const emulatorApp = new EmulatorApp(fileSystemManager, windowManager);
 explorerApp.setEmulator(emulatorApp);
 explorerApp.setBrowser(browserApp);
 const appCreatorApp = new AppCreatorApp(fileSystemManager, windowManager);
+const monacoApp = new MonacoApp(fileSystemManager, windowManager, explorerApp);
 
 const appLauncher = new AppLauncher(
   windowManager,
@@ -164,7 +166,8 @@ const appLauncher = new AppLauncher(
   weatherApp,
   emulatorApp,
   appCreatorApp,
-  officeApp
+  officeApp,
+  monacoApp
 );
 appCreatorApp.setAppLauncher(appLauncher);
 explorerApp.setAppLauncher(appLauncher);
