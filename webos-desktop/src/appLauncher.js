@@ -203,6 +203,17 @@ export class AppLauncher {
             source: "/static/apps/kiwiirc/index.html",
             originalName: "Kivi IRC"
           })
+      },
+      yukiConvert: {
+        type: "system",
+        title: "Yuki Convert",
+        action: () =>
+          this.openIframeApp({
+            appId: "yukiConvert",
+            type: "game",
+            source: "https://yukiconvert.netlify.app/file-converter",
+            originalName: "Yuki Convert"
+          })
       }
     };
 

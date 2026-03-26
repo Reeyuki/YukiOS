@@ -63,7 +63,6 @@ export class WindowManager {
   getWindowIconHtml(iconValue, color = null) {
     if (!iconValue) return "";
     const size = 30;
-
     const isImagePath = typeof iconValue === "string" && /\.(png|jpg|jpeg|gif|webp|svg|ico)$/i.test(iconValue);
     const isDataUrl = typeof iconValue === "string" && iconValue.startsWith("data:");
 
@@ -79,6 +78,7 @@ export class WindowManager {
 
   addToTaskbar(winId, title, iconValue, color = null) {
     if (document.getElementById(`taskbar-${winId}`)) return;
+    if (iconValue === "fas fa-video") color = "6677dd";
 
     const taskbarItem = document.createElement("div");
     taskbarItem.id = `taskbar-${winId}`;

@@ -94,7 +94,20 @@ export class ExplorerApp {
       </div>
       <div class="explorer-nav">
         <div class="back-btn" id="${winId}-back">← Back</div>
-        <div id="${winId}-path"></div>
+        <div class="back-btn" id="${winId}-next" style="margin-left:4px">→ Next</div>
+        <div style="white-space:pre width:50px" id="${winId}-path"></div>
+        <input
+          type="text"
+          id="${winId}-search"
+          placeholder="Search..."
+          spellcheck="false"
+          style="
+            margin-left:auto;padding:4px 10px;border-radius:5px;
+            border:1px solid rgba(255,255,255,0.15);
+            background:transparent;color:#fff;font-size:12px;
+            outline:none;font-family:inherit;width:160px;
+          "
+        >
         ${
           isSelector
             ? ""
@@ -130,6 +143,17 @@ export class ExplorerApp {
         <button id="${winId}-select-btn" class="explorer-select-confirm-btn" disabled>Select This File</button>
       </div>`
           : `
+      <div id="${winId}-status-bar" style="
+        display:flex;align-items:center;gap:0;
+        padding:4px 12px;
+        background:rgba(255,255,255,0.03);
+        border-top:1px solid rgba(255,255,255,0.07);
+        flex-shrink:0;font-size:11px;color:#888;
+        min-height:24px;
+      ">
+        <span id="${winId}-status-items"></span>
+        <span id="${winId}-status-selected" style="margin-left:0"></span>
+      </div>
       <div id="${winId}-upload-progress" style="display:none;position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.7);color:#fff;font-size:12px;padding:6px 10px;z-index:10;border-radius:0 0 6px 6px;">
         Uploading...
       </div>`
@@ -213,7 +237,7 @@ export class ExplorerApp {
           style="
             flex:1;padding:6px 10px;border-radius:5px;
             border:1px solid rgba(255,255,255,0.15);
-            background:#2a2a2a;color:#fff;font-size:13px;
+            background:transparent;color:#fff;font-size:13px;
             outline:none;font-family:inherit;
           "
         >
@@ -384,6 +408,33 @@ export class ExplorerApp {
       }
     };
 
+    const nextBtn = win.querySelector(`#${winId}-next`);
+    if (nextBtn) {
+      nextBtn.onclick = async () => {
+        if (inst.historyIndex < inst.history.length - 1) {
+          inst.historyIndex++;
+          inst.currentPath = [...inst.history[inst.historyIndex]];
+          await this.renderInstance(inst);
+        }
+      };
+    }
+
+    const searchInput = win.querySelector(`#${winId}-search`);
+    if (searchInput) {
+      searchInput.addEventListener("input", () => {
+        const query = searchInput.value.toLowerCase();
+        const view = win.querySelector(`#${winId}-view`);
+        if (!view) return;
+        view.querySelectorAll(".file-item").forEach((item) => {
+          const name = item.querySelector("span")?.textContent?.toLowerCase() || "";
+          item.style.display = name.includes(query) ? "" : "none";
+        });
+      });
+      searchInput.addEventListener("keydown", (e) => {
+        e.stopPropagation();
+      });
+    }
+
     win.querySelectorAll(".explorer-sidebar .start-item").forEach((item) => {
       item.onclick = async () => {
         this.navigateInstance(
@@ -549,6 +600,7 @@ export class ExplorerApp {
           i.selectedItems.delete(name);
         }
       });
+      this._updateStatusBar(i, i._cachedFolder);
     });
 
     const endSel = () => {
@@ -813,6 +865,8 @@ export class ExplorerApp {
       view.style.height = "600px";
     }
     const folder = await this.fs.getFolder(inst.currentPath);
+    inst._cachedFolder = folder;
+    if (inst.mode === "browse") inst._cachedFolderStats = await this._buildFolderStats(inst);
 
     for (const [name, itemData] of Object.entries(folder)) {
       const isFile = itemData?.type === "file";
@@ -880,6 +934,10 @@ export class ExplorerApp {
     const folderEntries = Object.keys(folder);
     if (folderEntries.length === 0 && inst.mode === "browse") {
       speak("This folder is empty. Want me to help you organize?", "Searching");
+    }
+
+    if (inst.mode === "browse") {
+      await this._updateStatusBar(inst, folder);
     }
 
     if (inst.mode === "select") {
@@ -971,9 +1029,9 @@ export class ExplorerApp {
     let applyToAllAction = null;
 
     const copyFileToPath = async (name, srcPath) => {
-      const content = await this.fs.getFileContent(srcPath, name);
       const kind = await this.fs.getFileKind(srcPath, name);
       const fileIcon = await this.fs.getFileIcon(srcPath, name);
+      const isBinary = kind === FileKind.VIDEO || name.toLowerCase().endsWith(".pdf");
 
       const destDir = this.fs.resolveDir(destPath);
       const destFilePath = this.fs.join(destDir, name);
@@ -997,11 +1055,20 @@ export class ExplorerApp {
         finalName = await this.fs.getUniqueFileName(destPath, name);
       }
 
-      if (resolvedAction === "replace") {
-        await this.fs.updateFile(destPath, name, content);
-        await this.fs.writeMeta(destDir, name, { kind, icon: fileIcon });
+      if (isBinary) {
+        const blob = await this.fs.readBinaryFile(srcPath, name);
+        if (resolvedAction === "replace") {
+          await this.fs.deleteBinaryFile(destPath, name).catch(() => {});
+        }
+        await this.fs.writeBinaryFile(destPath, finalName, blob, kind, fileIcon);
       } else {
-        await this.fs.createFile(destPath, finalName, content, kind, fileIcon);
+        const content = await this.fs.getFileContent(srcPath, name);
+        if (resolvedAction === "replace") {
+          await this.fs.updateFile(destPath, name, content);
+          await this.fs.writeMeta(destDir, name, { kind, icon: fileIcon });
+        } else {
+          await this.fs.createFile(destPath, finalName, content, kind, fileIcon);
+        }
       }
 
       return finalName;
@@ -1661,6 +1728,9 @@ export class ExplorerApp {
       itemEl.classList.add("explorer-selected");
     }
     inst.selectedFile = name;
+    if (inst.mode === "browse") {
+      this._updateStatusBar(inst, inst._cachedFolder);
+    }
   }
 
   _setupExplorerItemDrag(itemEl, name, isFile, inst) {
@@ -1785,6 +1855,92 @@ export class ExplorerApp {
       document.addEventListener("mousemove", onMouseMove);
       document.addEventListener("mouseup", onMouseUp);
     });
+  }
+
+  _formatSize(bytes) {
+    if (bytes < 1024) return bytes + " B";
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + " KB";
+    if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(2) + " MB";
+    return (bytes / (1024 * 1024 * 1024)).toFixed(2) + " GB";
+  }
+
+  async _buildFolderStats(inst) {
+    const dir = this.fs.resolveDir(inst.currentPath);
+    const stats = {};
+    try {
+      const meta = await this.fs.readMeta(dir);
+      const entries = await new Promise((res, rej) => {
+        this.fs.fs.readdir(dir, (e, list) => (e ? rej(e) : res(list)));
+      });
+      for (const name of entries) {
+        if (name === this.fs.CONFIG.META_FILE) continue;
+        try {
+          const full = this.fs.join(dir, name);
+          const s = await this.fs.pStat(full);
+          if (s.isFile()) {
+            const size = meta[name]?.size ?? s.size ?? 0;
+            stats[name] = { isFile: true, size };
+          } else {
+            const size = await this._calcDirSize(full);
+            stats[name] = { isFile: false, size };
+          }
+        } catch {}
+      }
+    } catch {}
+    return stats;
+  }
+
+  async _calcDirSize(dirPath) {
+    let total = 0;
+    try {
+      const entries = await new Promise((res, rej) => {
+        this.fs.fs.readdir(dirPath, (e, list) => (e ? rej(e) : res(list)));
+      });
+      const meta = await this.fs.readMeta(dirPath);
+      for (const name of entries) {
+        if (name === this.fs.CONFIG.META_FILE) continue;
+        try {
+          const full = this.fs.join(dirPath, name);
+          const s = await this.fs.pStat(full);
+          if (s.isFile()) {
+            total += meta[name]?.size ?? s.size ?? 0;
+          } else {
+            total += await this._calcDirSize(full);
+          }
+        } catch {}
+      }
+    } catch {}
+    return total;
+  }
+
+  async _updateStatusBar(inst, folder) {
+    const win = document.getElementById(inst.winId);
+    if (!win) return;
+    const itemsEl = win.querySelector(`#${inst.winId}-status-items`);
+    const selectedEl = win.querySelector(`#${inst.winId}-status-selected`);
+    if (!itemsEl || !selectedEl) return;
+
+    const totalCount = Object.keys(folder || {}).length;
+    itemsEl.textContent = `${totalCount} item${totalCount !== 1 ? "s" : ""}`;
+
+    const selCount = inst.selectedItems.size;
+    if (selCount === 0) {
+      selectedEl.textContent = "";
+      return;
+    }
+
+    const stats = inst._cachedFolderStats || {};
+    let totalSize = 0;
+    for (const name of inst.selectedItems) {
+      const s = stats[name];
+      if (s) totalSize += s.size;
+    }
+    const sizeStr = this._formatSize(totalSize);
+    if (selCount === 1) {
+      selectedEl.textContent = ` | 1 item selected  ${sizeStr}`;
+    } else {
+      selectedEl.textContent = ` | ${selCount} items selected  (${sizeStr})`;
+    }
   }
 
   makeExplorerIconInteractable(icon) {

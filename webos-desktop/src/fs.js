@@ -257,6 +257,8 @@ export class FileSystemManager {
       const meta = await this.readMeta(dir);
       meta[name] = { kind: data.kind, icon: data.icon };
       if (data.faIcon) meta[name].faIcon = data.faIcon;
+      if (data.size != null) meta[name].size = data.size;
+      if (data.faIcon) meta[name].faIcon = data.faIcon;
       await this.p("writeFile", metaPath, JSON.stringify(meta));
     } finally {
       release();
@@ -511,7 +513,8 @@ export class FileSystemManager {
 
     await this.p("mkdir", dir, { recursive: true }).catch(() => {});
     await this.p("writeFile", fullPath, "");
-    await this.writeMeta(dir, uniqueName, { kind: fileKind, icon: fileIcon });
+    const fileSize = blob instanceof Blob ? blob.size : 0;
+    await this.writeMeta(dir, uniqueName, { kind: fileKind, icon: fileIcon, size: fileSize });
 
     await new Promise((resolve, reject) => {
       const tx = this.blobDB.transaction("blobs", "readwrite");

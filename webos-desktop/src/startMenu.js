@@ -164,6 +164,9 @@ export function tryGetIcon(id) {
   if (id === "kiwiIRC") {
     return "/static/icons/kiwiirc.webp";
   }
+  if (id === "yukiConvert") {
+    return "fas fa-video";
+  }
   try {
     if (appMap[id] && appMap[id].icon) {
       return appMap[id].icon;
