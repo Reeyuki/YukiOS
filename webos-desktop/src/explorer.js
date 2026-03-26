@@ -4,10 +4,7 @@ import { SystemUtilities } from "./system.js";
 import { appMap, GamesAppRenderer, FlashAppRenderer } from "./games.js";
 import {
   fileKindFromName,
-  isRomFile,
   isImageFile,
-  isVideoFile,
-  isHtmlFile,
   isOfficeFile,
   isWallpaperPath,
   readFileAsDataURL,
@@ -23,10 +20,11 @@ import { showDynamicContextMenu, hideMenu } from "./shared/contextMenu.js";
 import { speak } from "./clippy.js";
 
 export class ExplorerApp {
-  constructor(fileSystemManager, windowManager, notepadApp) {
+  constructor(fileSystemManager, windowManager, notepadApp, markdownApp) {
     this.fs = fileSystemManager;
     this.wm = windowManager;
     this.notepadApp = notepadApp;
+    this.markdownApp = markdownApp;
     this.officeApp = null;
     this.desktopUI = null;
     this.open = this.open.bind(this);
@@ -938,7 +936,8 @@ export class ExplorerApp {
       emulatorApp: this.emulatorApp,
       browserApp: this.browserApp,
       windowManager: this.wm,
-      officeApp: this.officeApp
+      officeApp: this.officeApp,
+      markdownApp: this.markdownApp
     });
   }
 
@@ -1103,14 +1102,19 @@ export class ExplorerApp {
       await this.renderInstance(inst);
     }
   }
-
   async showFileContextMenu(e, itemName, isFile, inst) {
     e.preventDefault();
     e.stopPropagation();
 
     showDynamicContextMenu(e, async (menu, item, hr) => {
-      menu.appendChild(item(isFile ? "Open" : "Open Folder", () => this.openItemForInstance(inst, itemName, isFile)));
-      menu.appendChild(hr());
+      if (isFile && itemName.toLowerCase().endsWith(".md")) {
+        menu.appendChild(item("👁 Preview", () => this._openMarkdownPreview(itemName, inst)));
+        menu.appendChild(item("✏ Edit with Notepad", () => this._openMarkdownInNotepad(itemName, inst)));
+        menu.appendChild(hr());
+      } else {
+        menu.appendChild(item(isFile ? "Open" : "Open Folder", () => this.openItemForInstance(inst, itemName, isFile)));
+        menu.appendChild(hr());
+      }
 
       menu.appendChild(
         item("Copy", () => {
@@ -1225,7 +1229,63 @@ export class ExplorerApp {
       );
     });
   }
+  async _openMarkdownPreview(fileName, inst) {
+    try {
+      const rawContent = await this.fs.getFileContent(inst.currentPath, fileName);
+      const content = this._decodeFileContent(rawContent);
+      const path = inst.currentPath.join("/");
 
+      if (this.markdownApp && this.markdownApp.open) {
+        this.markdownApp.open(fileName, content, path);
+        speak("Opening markdown preview. Looking good!", "Reading");
+      } else {
+        this.wm.showPopup("Markdown app not available");
+      }
+    } catch (err) {
+      this.wm.showPopup(`Failed to open "${fileName}"`);
+      console.error("Error opening markdown preview:", err);
+    }
+  }
+
+  async _openMarkdownInNotepad(fileName, inst) {
+    try {
+      const rawContent = await this.fs.getFileContent(inst.currentPath, fileName);
+      const content = this._decodeFileContent(rawContent);
+      const path = inst.currentPath.join("/");
+
+      if (this.notepadApp && this.notepadApp.open) {
+        this.notepadApp.open(fileName, content, path);
+        speak("Opening in Notepad. Time to edit!", "Writing");
+      } else {
+        this.wm.showPopup("Notepad app not available");
+      }
+    } catch (err) {
+      this.wm.showPopup(`Failed to open "${fileName}"`);
+      console.error("Error opening markdown in notepad:", err);
+    }
+  }
+  _decodeFileContent(content) {
+    if (!content) return "";
+
+    if (content.startsWith("data:")) {
+      try {
+        const base64Match = content.match(/^data:[^;]+;base64,(.+)$/);
+        if (base64Match && base64Match[1]) {
+          return atob(base64Match[1]);
+        }
+
+        const plainMatch = content.match(/^data:[^,]+,(.+)$/);
+        if (plainMatch && plainMatch[1]) {
+          return decodeURIComponent(plainMatch[1]);
+        }
+      } catch (err) {
+        console.error("Failed to decode data URL:", err);
+        return content;
+      }
+    }
+
+    return content;
+  }
   _showConfirmDialog({ title, message, confirmText = "OK", onConfirm }) {
     const overlay = document.createElement("div");
     overlay.style.cssText = `

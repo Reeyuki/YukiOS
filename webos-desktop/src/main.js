@@ -21,6 +21,7 @@ import { EmulatorApp } from "./emulatorApp.js";
 import { detectOS, isMobile } from "./shared/platformUtils.js";
 import { AppCreatorApp } from "./appCreator.js";
 import { OfficeAppProxy } from "./officeLoader.js";
+import { MarkdownApp } from "./markdown.js";
 
 class MusicPlayer {
   constructor() {}
@@ -120,7 +121,8 @@ if (!window.electronAPI) {
 const fileSystemManager = new FileSystemManager();
 const windowManager = new WindowManager();
 const notepadApp = new NotepadApp(fileSystemManager, windowManager, null);
-const explorerApp = new ExplorerApp(fileSystemManager, windowManager, notepadApp);
+const markdownApp = new MarkdownApp(windowManager);
+const explorerApp = new ExplorerApp(fileSystemManager, windowManager, notepadApp, markdownApp);
 const officeApp = new OfficeAppProxy(fileSystemManager, windowManager);
 officeApp.setExplorer(explorerApp);
 explorerApp.setOfficeApp(officeApp);

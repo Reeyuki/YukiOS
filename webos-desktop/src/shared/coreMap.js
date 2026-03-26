@@ -6,7 +6,7 @@ export const CORE_EXTENSIONS = {
   n64: ["n64", "z64", "v64"],
   psx: ["bin", "cue", "img", "pbp", "iso"],
   psp: ["iso", "cso"],
-  segaMD: ["md", "gen", "smd"],
+  segaMD: ["gen", "smd"],
   segaGG: ["gg"],
   segaMS: ["sms"]
 };

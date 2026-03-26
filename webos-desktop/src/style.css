@@ -4387,3 +4387,34 @@ select:focus {
   background: rgba(255, 255, 255, 0.2);
   border-radius: 2px;
 }
+
+/* Markdown app */
+
+.markdown-container {
+  height: calc(100% - 66px);
+  overflow: hidden;
+}
+
+.markdown-container .markdown-body {
+  padding: 24px 32px;
+  height: 100%;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.markdown-container .markdown-body::-webkit-scrollbar {
+  width: 10px;
+}
+
+.markdown-container .markdown-body::-webkit-scrollbar-track {
+  background: #0d1117;
+}
+
+.markdown-container .markdown-body::-webkit-scrollbar-thumb {
+  background: #30363d;
+  border-radius: 5px;
+}
+
+.markdown-container .markdown-body::-webkit-scrollbar-thumb:hover {
+  background: #484f58;
+}

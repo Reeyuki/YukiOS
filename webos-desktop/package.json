@@ -28,6 +28,7 @@
     "globals": "^17.1.0",
     "idb-keyval": "^6.2.2",
     "interactjs": "^1.10.27",
+    "marked": "^17.0.5",
     "memfs": "^4.56.10",
     "workbox-window": "^7.4.0"
   }

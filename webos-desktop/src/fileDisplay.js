@@ -23,7 +23,8 @@ import { ROM_EXTS, detectCore } from "./shared/coreMap.js";
 export { ROM_EXTS };
 
 export const HTML_EXTS = ["html", "htm"];
-export const TEXT_EXTS = ["txt", "js", "json", "md", "css"];
+export const MARKDOWN_EXTS = ["md", "markdown"];
+export const TEXT_EXTS = ["txt", "js", "json", "css", "xml", "yaml", "yml", "ini", "cfg", "log"];
 
 const BINARY_OFFICE_EXTS = ["pdf", "docx", "xlsx", "xls", "pptx", "ppt"];
 
@@ -37,12 +38,17 @@ export function fileKindFromName(name) {
   if (VIDEO_EXTS.includes(ext)) return FileKind.VIDEO;
   if (ROM_EXTS.includes(ext)) return FileKind.ROM;
   if (HTML_EXTS.includes(ext)) return FileKind.HTML ?? FileKind.TEXT;
+  if (MARKDOWN_EXTS.includes(ext)) return FileKind.TEXT;
   if (TEXT_EXTS.includes(ext)) return FileKind.TEXT;
   return FileKind.OTHER;
 }
 
 export function isHtmlFile(name) {
   return HTML_EXTS.includes(getExt(name));
+}
+
+export function isMarkdownFile(name) {
+  return MARKDOWN_EXTS.includes(getExt(name));
 }
 
 export function isRomFile(name) {
@@ -110,6 +116,9 @@ export function buildFileIconHTML(name, { thumbnailSrc = null, size = 64, radius
   if (isHtmlFile(name)) {
     return `<img src="/static/icons/firefox.webp" style="${s}object-fit:cover;">`;
   }
+  if (isMarkdownFile(name)) {
+    return `<div style="${s}display:flex;align-items:center;justify-content:center;font-size:${Math.round(size * 0.5)}px;color:#519aba;background:#1e1e1e;border:1px solid #333;"><i class="fab fa-markdown"></i></div>`;
+  }
   if (isRomFile(name)) {
     return `<div style="${s}display:flex;align-items:center;justify-content:center;font-size:${Math.round(size * 0.44)}px;color:#6677dd;"><i class="fas fa-gamepad"></i></div>`;
   }
@@ -157,7 +166,17 @@ function base64ToBlob(dataURL) {
   return new Blob([bytes], { type: mime });
 }
 
-export async function openFileWith({ name, path, fs, notepadApp, emulatorApp, browserApp, windowManager, officeApp }) {
+export async function openFileWith({
+  name,
+  path,
+  fs,
+  notepadApp,
+  emulatorApp,
+  browserApp,
+  windowManager,
+  officeApp,
+  markdownApp
+}) {
   if (isRomFile(name)) {
     if (!emulatorApp) return;
     const dataUrl = await fs.getFileContent(path, name);
@@ -213,6 +232,16 @@ export async function openFileWith({ name, path, fs, notepadApp, emulatorApp, br
     }
   }
 
+  if (isMarkdownFile(name)) {
+    const content = await fs.getFileContent(path, name);
+    if (markdownApp) {
+      markdownApp.open(name, content, path);
+    } else {
+      notepadApp.open(name, content, path);
+    }
+    return;
+  }
+
   const content = await fs.getFileContent(path, name);
   if (isHtmlFile(name)) {
     if (browserApp) {
@@ -227,4 +256,28 @@ export async function openFileWith({ name, path, fs, notepadApp, emulatorApp, br
     return;
   }
   notepadApp.open(name, content, path);
+}
+
+// Add to fileDisplay.js exports
+export function decodeDataURLContent(content) {
+  if (!content) return "";
+
+  if (content.startsWith("data:")) {
+    try {
+      const base64Match = content.match(/^data:[^;]+;base64,(.+)$/);
+      if (base64Match && base64Match[1]) {
+        return atob(base64Match[1]);
+      }
+
+      const plainMatch = content.match(/^data:[^,]+,(.+)$/);
+      if (plainMatch && plainMatch[1]) {
+        return decodeURIComponent(plainMatch[1]);
+      }
+    } catch (err) {
+      console.error("Failed to decode data URL:", err);
+      return content;
+    }
+  }
+
+  return content;
 }
