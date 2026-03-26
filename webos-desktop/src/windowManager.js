@@ -17,12 +17,27 @@ function restoreTransparency() {
 }
 
 export class WindowManager {
-  constructor() {
+  constructor(notificationCenter = null) {
     this.openWindows = new Map();
     this.zIndexCounter = 1000;
     this.gameWindowCount = 0;
     this.isDraggingWindow = false;
+    this.notificationCenter = notificationCenter;
   }
+
+  setNotificationCenter(notificationCenter) {
+    this.notificationCenter = notificationCenter;
+  }
+
+  notify(title, message, type = "info", duration = 5000, icon = null) {
+    if (this.notificationCenter) {
+      this.notificationCenter.addNotification(title, message, type, duration, icon);
+    } else {
+      console.warn("Notification Center not initialized");
+      this.sendNotify(message);
+    }
+  }
+
   updateTransparency() {
     if (this.gameWindowCount > 0 || !window._settings.transparency) {
       hideTransparency();
@@ -30,6 +45,7 @@ export class WindowManager {
       restoreTransparency();
     }
   }
+
   createWindow(id, title, width = "80vw", height = "80vh", isGame = false) {
     const win = document.createElement("div");
     win.className = "window";
@@ -413,6 +429,7 @@ export class WindowManager {
       };
     };
   }
+
   makeResizable(win, setHeightUnsetElement = null) {
     const margin = 10;
 
@@ -515,8 +532,9 @@ export class WindowManager {
     </div>`;
   }
 
-  showPopup(text) {
+  sendNotify(text) {
     const popup = document.createElement("div");
+    this.notificationCenter.addNotification(text);
     popup.innerHTML = `
         <div  style="display:flex; align-items:flex-start;">
             <div style="flex-shrink:0; width:24px; height:24px; margin-right:8px; background:#0078d7; color:#fff; font-weight:bold; font-family:sans-serif; display:flex; justify-content:center; align-items:center; border-radius:50%;">i</div>

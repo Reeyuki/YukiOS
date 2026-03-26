@@ -822,7 +822,7 @@ export class ExplorerApp {
       const parts = [];
       if (uploadedCount > 0) parts.push(`${uploadedCount} file${uploadedCount !== 1 ? "s" : ""} uploaded`);
       if (skippedCount > 0) parts.push(`${skippedCount} skipped`);
-      if (parts.length) this.wm.showPopup(parts.join(", "));
+      if (parts.length) this.wm.sendNotify(parts.join(", "));
     } finally {
       if (progressEl) progressEl.style.display = "none";
     }
@@ -1164,7 +1164,7 @@ export class ExplorerApp {
             pastedCount++;
           }
         } catch {
-          this.wm.showPopup(`Could not paste "${name}"`);
+          this.wm.sendNotify(`Could not paste "${name}"`);
         }
       }
 
@@ -1202,7 +1202,7 @@ export class ExplorerApp {
             }
           }
         } catch {
-          this.wm.showPopup(`Could not paste item`);
+          this.wm.sendNotify(`Could not paste item`);
         }
       }
 
@@ -1210,7 +1210,7 @@ export class ExplorerApp {
     }
 
     if (pastedCount > 0) {
-      this.wm.showPopup(`${pastedCount} item${pastedCount !== 1 ? "s" : ""} pasted`);
+      this.wm.sendNotify(`${pastedCount} item${pastedCount !== 1 ? "s" : ""} pasted`);
       await this.renderInstance(inst);
     }
   }
@@ -1255,12 +1255,12 @@ export class ExplorerApp {
   async _extractArchive(itemName, inst) {
     const lower = itemName.toLowerCase();
     const progressMsg = `Extracting "${itemName}"...`;
-    this.wm.showPopup(progressMsg);
+    this.wm.sendNotify(progressMsg);
 
     try {
       const blob = await this.fs.readBinaryFile(inst.currentPath, itemName);
       if (!blob) {
-        this.wm.showPopup(`Could not read "${itemName}" — was it uploaded as a binary file?`);
+        this.wm.sendNotify(`Could not read "${itemName}" — was it uploaded as a binary file?`);
         return;
       }
       const arrayBuffer = await blob.arrayBuffer();
@@ -1284,15 +1284,15 @@ export class ExplorerApp {
       } else if (lower.endsWith(".tar")) {
         await this._extractTar(bytes, destPath);
       } else {
-        this.wm.showPopup(`Format not supported in browser: ${itemName}\nSupported: ZIP, GZ, TAR, TAR.GZ, TGZ`);
+        this.wm.sendNotify(`Format not supported in browser: ${itemName}\nSupported: ZIP, GZ, TAR, TAR.GZ, TGZ`);
         return;
       }
 
       await this.renderInstance(inst);
-      this.wm.showPopup(`Extracted to "${baseName}/"`);
+      this.wm.sendNotify(`Extracted to "${baseName}/"`);
     } catch (err) {
       console.error("Extraction error:", err);
-      this.wm.showPopup(`Failed to extract "${itemName}": ${err.message || err}`);
+      this.wm.sendNotify(`Failed to extract "${itemName}": ${err.message || err}`);
     }
   }
 
@@ -1460,7 +1460,7 @@ export class ExplorerApp {
             data: { name: n, path: inst.currentPath, isFile: nameToIsFile[n] ?? isFile }
           }));
           this._setClipboard({ source: "explorer", action: "copy", icons, sourceInst: inst });
-          this.wm.showPopup(`${icons.length} item${icons.length !== 1 ? "s" : ""} copied`);
+          this.wm.sendNotify(`${icons.length} item${icons.length !== 1 ? "s" : ""} copied`);
         })
       );
 
@@ -1490,7 +1490,7 @@ export class ExplorerApp {
               if (el) el.style.opacity = "0.5";
             });
           }
-          this.wm.showPopup(`${icons.length} item${icons.length !== 1 ? "s" : ""} cut`);
+          this.wm.sendNotify(`${icons.length} item${icons.length !== 1 ? "s" : ""} cut`);
         })
       );
 
@@ -1506,7 +1506,7 @@ export class ExplorerApp {
             onConfirm: async () => {
               await this.fs.deleteItem(inst.currentPath, itemName);
               await this.renderInstance(inst);
-              this.wm.showPopup(`"${itemName}" deleted`);
+              this.wm.sendNotify(`"${itemName}" deleted`);
             }
           });
         })
@@ -1531,7 +1531,7 @@ export class ExplorerApp {
           menu.appendChild(
             item("Set Wallpaper", () => {
               SystemUtilities.setWallpaper(content);
-              this.wm.showPopup(`Wallpaper set to "${itemName}"`);
+              this.wm.sendNotify(`Wallpaper set to "${itemName}"`);
             })
           );
           menu.appendChild(
@@ -1542,7 +1542,7 @@ export class ExplorerApp {
                 kind,
                 kind === FileKind.IMAGE ? "@content" : "/static/icons/file.webp"
               );
-              this.wm.showPopup(`"${itemName}" added to Pictures/Wallpapers`);
+              this.wm.sendNotify(`"${itemName}" added to Pictures/Wallpapers`);
             })
           );
         }
@@ -1555,7 +1555,7 @@ export class ExplorerApp {
 
       menu.appendChild(
         item("Properties", () => {
-          this.wm.showPopup(`Name: ${itemName}\nType: ${isFile ? "File" : "Folder"}`);
+          this.wm.sendNotify(`Name: ${itemName}\nType: ${isFile ? "File" : "Folder"}`);
         })
       );
     });
@@ -1570,10 +1570,10 @@ export class ExplorerApp {
         this.markdownApp.open(fileName, content, path);
         speak("Opening markdown preview. Looking good!", "Reading");
       } else {
-        this.wm.showPopup("Markdown app not available");
+        this.wm.sendNotify("Markdown app not available");
       }
     } catch (err) {
-      this.wm.showPopup(`Failed to open "${fileName}"`);
+      this.wm.sendNotify(`Failed to open "${fileName}"`);
       console.error("Error opening markdown preview:", err);
     }
   }
@@ -1588,10 +1588,10 @@ export class ExplorerApp {
         this.notepadApp.open(fileName, content, path);
         speak("Opening in Notepad. Time to edit!", "Writing");
       } else {
-        this.wm.showPopup("Notepad app not available");
+        this.wm.sendNotify("Notepad app not available");
       }
     } catch (err) {
-      this.wm.showPopup(`Failed to open "${fileName}"`);
+      this.wm.sendNotify(`Failed to open "${fileName}"`);
       console.error("Error opening markdown in notepad:", err);
     }
   }

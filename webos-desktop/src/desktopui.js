@@ -337,9 +337,9 @@ export class DesktopUI {
           saved[PositionStore.getKey(icon)] = { col, row };
           PositionStore.save(saved);
         }
-        this.appLauncher.wm.showPopup(`"${finalName}" moved to Desktop`);
+        this.appLauncher.wm.sendNotify(`"${finalName}" moved to Desktop`);
       } catch {
-        this.appLauncher.wm.showPopup(`Could not move "${name}" to Desktop`);
+        this.appLauncher.wm.sendNotify(`Could not move "${name}" to Desktop`);
       }
     } else {
       const existingIcon = document.querySelector(`.folder-icon[data-folder-name="${CSS.escape(name)}"]`);
@@ -400,9 +400,9 @@ export class DesktopUI {
           saved[PositionStore.getKey(icon)] = { col, row };
           PositionStore.save(saved);
         }
-        this.appLauncher.wm.showPopup(`"${name}" folder moved to Desktop`);
+        this.appLauncher.wm.sendNotify(`"${name}" folder moved to Desktop`);
       } catch {
-        this.appLauncher.wm.showPopup(`Could not move "${name}" to Desktop`);
+        this.appLauncher.wm.sendNotify(`Could not move "${name}" to Desktop`);
       }
     }
   }
@@ -494,7 +494,7 @@ export class DesktopUI {
                 if (action === "cut") this.state.clipboard = null;
               }
               await this.explorerApp.renderInstance(inst);
-              this.appLauncher.wm.showPopup(`${iconsData.length} item${iconsData.length !== 1 ? "s" : ""} pasted`);
+              this.appLauncher.wm.sendNotify(`${iconsData.length} item${iconsData.length !== 1 ? "s" : ""} pasted`);
             })();
             return;
           }
@@ -654,11 +654,11 @@ export class DesktopUI {
           await this.createDesktopFileIcon(finalName, itemData);
           uploadedCount++;
         } catch {
-          this.appLauncher.wm.showPopup(`Could not save "${file.name}"`);
+          this.appLauncher.wm.sendNotify(`Could not save "${file.name}"`);
         }
       }
       if (uploadedCount > 0) {
-        this.appLauncher.wm.showPopup(`${uploadedCount} file${uploadedCount !== 1 ? "s" : ""} saved to Desktop`);
+        this.appLauncher.wm.sendNotify(`${uploadedCount} file${uploadedCount !== 1 ? "s" : ""} saved to Desktop`);
       }
     });
   }
@@ -847,7 +847,7 @@ export class DesktopUI {
     }
     PositionStore.save(saved);
     this.selectionManager.clear();
-    if (moved > 0) this.appLauncher.wm.showPopup(`${moved} item${moved !== 1 ? "s" : ""} moved to "${folderName}"`);
+    if (moved > 0) this.appLauncher.wm.sendNotify(`${moved} item${moved !== 1 ? "s" : ""} moved to "${folderName}"`);
   }
 
   async onDragEnd() {
@@ -1022,7 +1022,7 @@ export class DesktopUI {
     this.selectionManager.clear();
     if (moved > 0) {
       const pathLabel = inst.currentPath.length ? inst.currentPath.join("/") : "Home";
-      this.appLauncher.wm.showPopup(`${moved} item${moved !== 1 ? "s" : ""} moved to ${pathLabel}`);
+      this.appLauncher.wm.sendNotify(`${moved} item${moved !== 1 ? "s" : ""} moved to ${pathLabel}`);
       await this.explorerApp.renderInstance(inst);
     }
   }
@@ -1145,7 +1145,7 @@ export class DesktopUI {
             pastedCount++;
           }
         } catch {
-          this.appLauncher.wm.showPopup(`Could not paste "${name}"`);
+          this.appLauncher.wm.sendNotify(`Could not paste "${name}"`);
         }
       }
 
@@ -1202,7 +1202,7 @@ export class DesktopUI {
             pastedCount++;
           }
         } catch {
-          this.appLauncher.wm.showPopup(`Could not paste item`);
+          this.appLauncher.wm.sendNotify(`Could not paste item`);
         }
       }
 
@@ -1212,7 +1212,7 @@ export class DesktopUI {
     }
 
     if (pastedCount > 0) {
-      this.appLauncher.wm.showPopup(`${pastedCount} item${pastedCount !== 1 ? "s" : ""} pasted`);
+      this.appLauncher.wm.sendNotify(`${pastedCount} item${pastedCount !== 1 ? "s" : ""} pasted`);
     }
   }
 
@@ -1223,19 +1223,19 @@ export class DesktopUI {
       openFolder: () => this.openFolder(folderIcon.dataset.folderName),
       copyFolder: () => {
         this.state.clipboard = this._buildDesktopClipboard("copy", [folderIcon]);
-        this.appLauncher.wm.showPopup(`"${folderIcon.dataset.folderName}" copied`);
+        this.appLauncher.wm.sendNotify(`"${folderIcon.dataset.folderName}" copied`);
       },
       cutFolder: () => {
         this.state.clipboard = this._buildDesktopClipboard("cut", [folderIcon]);
         folderIcon.style.opacity = "0.5";
-        this.appLauncher.wm.showPopup(`"${folderIcon.dataset.folderName}" cut`);
+        this.appLauncher.wm.sendNotify(`"${folderIcon.dataset.folderName}" cut`);
       },
       deleteFolder: async () => {
         const folderName = folderIcon.dataset.folderName;
         await this.fs.deleteItem(["Desktop"], folderName);
         folderIcon.remove();
         this.selectionManager.clear();
-        this.appLauncher.wm.showPopup(`Folder "${folderName}" deleted`);
+        this.appLauncher.wm.sendNotify(`Folder "${folderName}" deleted`);
       },
       renameFolder: async () => {
         const newName = prompt("Enter new folder name:", folderIcon.dataset.folderName);
@@ -1251,7 +1251,7 @@ export class DesktopUI {
             delete saved[oldKey];
             PositionStore.save(saved);
           }
-          this.appLauncher.wm.showPopup(`Renamed to "${newName}"`);
+          this.appLauncher.wm.sendNotify(`Renamed to "${newName}"`);
         }
       }
     });
@@ -1263,17 +1263,17 @@ export class DesktopUI {
       openFile: () => this._openDesktopFile(fileName),
       copyFile: () => {
         this.state.clipboard = this._buildDesktopClipboard("copy", [fileIcon]);
-        this.appLauncher.wm.showPopup(`"${fileName}" copied`);
+        this.appLauncher.wm.sendNotify(`"${fileName}" copied`);
       },
       cutFile: () => {
         this.state.clipboard = this._buildDesktopClipboard("cut", [fileIcon]);
         fileIcon.style.opacity = "0.5";
-        this.appLauncher.wm.showPopup(`"${fileName}" cut`);
+        this.appLauncher.wm.sendNotify(`"${fileName}" cut`);
       },
       deleteFile: async () => {
         await this.fs.deleteItem(["Desktop"], fileName);
         fileIcon.remove();
-        this.appLauncher.wm.showPopup(`"${fileName}" deleted`);
+        this.appLauncher.wm.sendNotify(`"${fileName}" deleted`);
       },
       renameFile: async () => {
         const newName = prompt("Enter new name:", fileName);
@@ -1281,7 +1281,7 @@ export class DesktopUI {
           await this.fs.renameItem(["Desktop"], fileName, newName);
           fileIcon.dataset.fileName = newName;
           fileIcon.querySelector("span").textContent = newName;
-          this.appLauncher.wm.showPopup(`Renamed to "${newName}"`);
+          this.appLauncher.wm.sendNotify(`Renamed to "${newName}"`);
         }
       }
     });
@@ -1298,12 +1298,12 @@ export class DesktopUI {
       open: () => this.appLauncher.launch(last.dataset.app),
       copy: () => {
         this.state.clipboard = this._buildDesktopClipboard("copy", selectedArray);
-        this.appLauncher.wm.showPopup(`${selectedArray.length} item${selectedArray.length !== 1 ? "s" : ""} copied`);
+        this.appLauncher.wm.sendNotify(`${selectedArray.length} item${selectedArray.length !== 1 ? "s" : ""} copied`);
       },
       cut: () => {
         this.state.clipboard = this._buildDesktopClipboard("cut", selectedArray);
         selectedArray.forEach((i) => (i.style.opacity = "0.5"));
-        this.appLauncher.wm.showPopup(`${selectedArray.length} item${selectedArray.length !== 1 ? "s" : ""} cut`);
+        this.appLauncher.wm.sendNotify(`${selectedArray.length} item${selectedArray.length !== 1 ? "s" : ""} cut`);
       },
       delete: () => this.deleteSelectedIcons(selectedArray),
       properties: () => this.showPropertiesDialog(last)
@@ -1365,7 +1365,7 @@ export class DesktopUI {
         if (folderName) {
           await this.fs.createFolder(["Desktop"], folderName);
           await this.createFolderIcon(folderName);
-          this.appLauncher.wm.showPopup(`Folder "${folderName}" created`);
+          this.appLauncher.wm.sendNotify(`Folder "${folderName}" created`);
         }
       },
       openExplorer: () => this.explorerApp.open(),

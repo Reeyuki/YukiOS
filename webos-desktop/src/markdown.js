@@ -49,7 +49,7 @@ export class MarkdownApp {
       await this.loadMarked();
       this.loadMarkdownCSS();
     } catch (error) {
-      this.wm.showPopup("Markdown renderer unavailable.");
+      this.wm.sendNotify("Markdown renderer unavailable.");
       return;
     }
 

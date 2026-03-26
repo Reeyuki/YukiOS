@@ -382,7 +382,7 @@ export class AppCreatorApp {
     const meta = await this._loadAppMeta(appId);
     if (!meta) {
       this._showStatus(statusEl, "error", "Could not find app to edit.");
-      this.wm.showPopup(`Failed to update "${name}": app not found.`);
+      this.wm.sendNotify(`Failed to update "${name}": app not found.`);
       return;
     }
 
@@ -399,7 +399,7 @@ export class AppCreatorApp {
       );
     } catch (e) {
       console.warn("AppCreator: fs update failed", e);
-      this.wm.showPopup(`Failed to save "${name}" to filesystem.`);
+      this.wm.sendNotify(`Failed to save "${name}" to filesystem.`);
     }
 
     if (this.appLauncher?.appMap?.[appId]) {
@@ -410,7 +410,7 @@ export class AppCreatorApp {
 
     win.querySelector("#ac-cancel-edit-btn").click();
     this._showStatus(statusEl, "success", `"${name}" updated successfully.`);
-    this.wm.showPopup(`"${name}" updated successfully.`);
+    this.wm.sendNotify(`"${name}" updated successfully.`);
     this._refreshInstalledList(win);
   }
 
@@ -424,7 +424,7 @@ export class AppCreatorApp {
       await this.fs.deleteItem(AC.FS_FOLDER, meta._fileName);
     } catch (e) {
       console.warn("AppCreator: fs delete failed", e);
-      this.wm.showPopup(`Failed to delete "${meta.name}" from filesystem.`);
+      this.wm.sendNotify(`Failed to delete "${meta.name}" from filesystem.`);
     }
 
     delete this.appLauncher?.appMap?.[appId];
@@ -432,7 +432,7 @@ export class AppCreatorApp {
     const desktopIcon = document.querySelector(`.icon.selectable[data-app="${appId}"]`);
     if (desktopIcon) desktopIcon.remove();
 
-    this.wm.showPopup(`"${meta.name}" has been uninstalled.`);
+    this.wm.sendNotify(`"${meta.name}" has been uninstalled.`);
 
     if (win) this._refreshInstalledList(win);
   }
@@ -524,13 +524,13 @@ export class AppCreatorApp {
       );
     } catch (e) {
       console.warn("AppCreator: could not persist app to filesystem", e);
-      this.wm.showPopup(`Failed to save "${name}" to filesystem.`);
+      this.wm.sendNotify(`Failed to save "${name}" to filesystem.`);
     }
 
     this.appLauncher.appMap[appId] = buildAppMapEntry(name, url, iconUrl);
     this._addToDesktop(appId, name, iconUrl);
     this._showStatus(statusEl, "success", `"${name}" installed!`);
-    this.wm.showPopup(`"${name}" installed and added to desktop.`);
+    this.wm.sendNotify(`"${name}" installed and added to desktop.`);
     this._refreshInstalledList(win);
   }
 

@@ -35,9 +35,9 @@ export function saveAs(fs, wm, fileName, content) {
   const path = pathString.split("/").filter(Boolean);
   try {
     fs.createFile(path, fileName, content);
-    wm.showPopup(`Saved: ${fileName} → /${pathString}`);
+    wm.sendNotify(`Saved: ${fileName} → /${pathString}`);
   } catch (e) {
-    wm.showPopup(`Save error: ${e.message}`);
+    wm.sendNotify(`Save error: ${e.message}`);
   }
 }
 

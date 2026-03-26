@@ -323,9 +323,9 @@ export class NodeEditorApp {
       if (currentFilePath) {
         try {
           this.fs.updateFile(currentFilePath, fileName, content);
-          this.wm.showPopup(`Saved: ${fileName}`);
+          this.wm.sendNotify(`Saved: ${fileName}`);
         } catch (e) {
-          this.wm.showPopup(`Save failed: ${e.message}`);
+          this.wm.sendNotify(`Save failed: ${e.message}`);
         }
       } else {
         this._saveAs(fileName, content);
@@ -334,7 +334,7 @@ export class NodeEditorApp {
 
     win.querySelector("#loadBtn").addEventListener("click", () => {
       if (!this.explorerApp) {
-        this.wm.showPopup("File explorer not available.");
+        this.wm.sendNotify("File explorer not available.");
         return;
       }
       this.explorerApp.open(async (path, fileName) => {
@@ -343,7 +343,7 @@ export class NodeEditorApp {
           filenameInput.value = fileName || "script.js";
           currentFilePath = path;
         } catch (e) {
-          this.wm.showPopup(`Load failed: ${e.message}`);
+          this.wm.sendNotify(`Load failed: ${e.message}`);
         }
       });
     });

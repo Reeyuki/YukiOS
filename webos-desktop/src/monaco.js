@@ -375,7 +375,7 @@ export class MonacoApp {
       try {
         await this.loadMonaco();
       } catch (e) {
-        this.wm.showPopup("Failed to load Monaco Editor");
+        this.wm.sendNotify("Failed to load Monaco Editor");
         return;
       }
     }
@@ -861,7 +861,7 @@ export class MonacoApp {
         monaco.editor.setModelLanguage(editor.getModel(), languages[nextIndex]);
         editorData.settings.language = languages[nextIndex];
         this.updateStatusBar(editorData);
-        this.wm.showPopup(`Language: ${languages[nextIndex]}`);
+        this.wm.sendNotify(`Language: ${languages[nextIndex]}`);
       },
       changeTheme: () => {
         const themes = ["vs", "vs-dark", "hc-black"];
@@ -870,7 +870,7 @@ export class MonacoApp {
         const nextIndex = (currentIndex + 1) % themes.length;
         editorData.settings.theme = themes[nextIndex];
         monaco.editor.setTheme(themes[nextIndex]);
-        this.wm.showPopup(`Theme: ${themes[nextIndex]}`);
+        this.wm.sendNotify(`Theme: ${themes[nextIndex]}`);
       },
       toggleFullscreen: () => {
         if (!document.fullscreenElement) {
@@ -914,7 +914,7 @@ export class MonacoApp {
             text: trimmed
           }
         ]);
-        this.wm.showPopup("Trailing whitespace trimmed");
+        this.wm.sendNotify("Trailing whitespace trimmed");
       },
       transformUppercase: () => {
         const selection = editor.getSelection();
@@ -964,7 +964,7 @@ export class MonacoApp {
             text: lines.join("\n")
           }
         ]);
-        this.wm.showPopup("Lines sorted ascending");
+        this.wm.sendNotify("Lines sorted ascending");
       },
       sortLinesDesc: () => {
         const model = editor.getModel();
@@ -976,7 +976,7 @@ export class MonacoApp {
             text: lines.join("\n")
           }
         ]);
-        this.wm.showPopup("Lines sorted descending");
+        this.wm.sendNotify("Lines sorted descending");
       },
       removeDuplicates: () => {
         const model = editor.getModel();
@@ -988,7 +988,7 @@ export class MonacoApp {
             text: unique.join("\n")
           }
         ]);
-        this.wm.showPopup(`Removed ${lines.length - unique.length} duplicate lines`);
+        this.wm.sendNotify(`Removed ${lines.length - unique.length} duplicate lines`);
       },
       reverseLines: () => {
         const model = editor.getModel();
@@ -1000,7 +1000,7 @@ export class MonacoApp {
             text: lines.join("\n")
           }
         ]);
-        this.wm.showPopup("Lines reversed");
+        this.wm.sendNotify("Lines reversed");
       },
       shuffleLines: () => {
         const model = editor.getModel();
@@ -1015,7 +1015,7 @@ export class MonacoApp {
             text: lines.join("\n")
           }
         ]);
-        this.wm.showPopup("Lines shuffled");
+        this.wm.sendNotify("Lines shuffled");
       },
       joinLines: () => {
         const selection = editor.getSelection();
@@ -1045,7 +1045,9 @@ export class MonacoApp {
         const chars = text.length;
         const charsNoSpaces = text.replace(/\s/g, "").length;
         const lines = text.split("\n").length;
-        this.wm.showPopup(`Words: ${words} | Characters: ${chars} (${charsNoSpaces} without spaces) | Lines: ${lines}`);
+        this.wm.sendNotify(
+          `Words: ${words} | Characters: ${chars} (${charsNoSpaces} without spaces) | Lines: ${lines}`
+        );
       },
       base64Encode: () => {
         const selection = editor.getSelection();
@@ -1058,7 +1060,7 @@ export class MonacoApp {
               text: encoded
             }
           ]);
-          this.wm.showPopup("Text encoded to Base64");
+          this.wm.sendNotify("Text encoded to Base64");
         }
       },
       base64Decode: () => {
@@ -1073,19 +1075,19 @@ export class MonacoApp {
                 text: decoded
               }
             ]);
-            this.wm.showPopup("Base64 decoded");
+            this.wm.sendNotify("Base64 decoded");
           } catch (e) {
-            this.wm.showPopup("Invalid Base64 string");
+            this.wm.sendNotify("Invalid Base64 string");
           }
         }
       },
       validateJSON: () => {
         try {
           JSON.parse(editor.getValue());
-          this.wm.showPopup("Valid JSON!");
+          this.wm.sendNotify("Valid JSON!");
           speak("JSON looks good!", "Congratulate");
         } catch (e) {
-          this.wm.showPopup(`Invalid JSON: ${e.message}`);
+          this.wm.sendNotify(`Invalid JSON: ${e.message}`);
           speak("There's an error in your JSON.", "Alert");
         }
       },
@@ -1093,28 +1095,28 @@ export class MonacoApp {
         try {
           const obj = JSON.parse(editor.getValue());
           editor.setValue(JSON.stringify(obj));
-          this.wm.showPopup("JSON minified");
+          this.wm.sendNotify("JSON minified");
         } catch (e) {
-          this.wm.showPopup(`Invalid JSON: ${e.message}`);
+          this.wm.sendNotify(`Invalid JSON: ${e.message}`);
         }
       },
       beautifyJSON: () => {
         try {
           const obj = JSON.parse(editor.getValue());
           editor.setValue(JSON.stringify(obj, null, 2));
-          this.wm.showPopup("JSON beautified");
+          this.wm.sendNotify("JSON beautified");
         } catch (e) {
-          this.wm.showPopup(`Invalid JSON: ${e.message}`);
+          this.wm.sendNotify(`Invalid JSON: ${e.message}`);
         }
       },
 
       showShortcuts: () => {
         const shortcuts = `File:\n  Ctrl+N - New Tab\n  Ctrl+Shift+N - New Window\n  Ctrl+O - Open File\n  Ctrl+S - Save\n  Ctrl+W - Close Tab\n  \nEdit:\n  Ctrl+Z - Undo\n  Ctrl+Y - Redo\n  Ctrl+F - Find\n  Ctrl+H - Replace\n  \nGo:\n  Ctrl+G - Go to Line\n  F12 - Go to Definition`;
-        this.wm.showPopup(shortcuts);
+        this.wm.sendNotify(shortcuts);
       },
       showDocs: () => window.open("https://code.visualstudio.com/docs", "_blank"),
       about: () => {
-        this.wm.showPopup("Monaco Editor v0.45.0 - Professional code editing powered by VS Code");
+        this.wm.sendNotify("Monaco Editor v0.45.0 - Professional code editing powered by VS Code");
         speak("This is Monaco Editor, the code editor that powers VS Code!", "Explain");
       }
     };
@@ -1146,7 +1148,7 @@ export class MonacoApp {
         editorData.filePath = editorData.filePath;
         editorData.isDirty = false;
         this.updateTabTitle(editorData.tabId, uniqueName, false);
-        this.wm.showPopup(`File saved: ${uniqueName}`);
+        this.wm.sendNotify(`File saved: ${uniqueName}`);
         speak("Code saved successfully!", "Save");
         return;
       }
@@ -1158,7 +1160,7 @@ export class MonacoApp {
 
     editorData.isDirty = false;
     this.updateTabTitle(editorData.tabId, editorData.title, false);
-    this.wm.showPopup(`File saved: ${editorData.title}`);
+    this.wm.sendNotify(`File saved: ${editorData.title}`);
     speak("Code saved successfully!", "Save");
   }
 
@@ -1182,7 +1184,7 @@ export class MonacoApp {
             editorData.isDirty = false;
             this.updateTabTitle(editorData.tabId, uniqueName, false);
             const pathStr = path.length ? `/${path.join("/")}/${uniqueName}` : `/${uniqueName}`;
-            this.wm.showPopup(`File saved: ${pathStr}`);
+            this.wm.sendNotify(`File saved: ${pathStr}`);
             speak("Code saved successfully!", "Save");
             return;
           }
@@ -1197,10 +1199,10 @@ export class MonacoApp {
         editorData.isDirty = false;
         this.updateTabTitle(editorData.tabId, fileName, false);
         const pathStr = path.length ? `/${path.join("/")}/${fileName}` : `/${fileName}`;
-        this.wm.showPopup(`File saved: ${pathStr}`);
+        this.wm.sendNotify(`File saved: ${pathStr}`);
         speak("Code saved successfully!", "Save");
       } catch (e) {
-        this.wm.showPopup("Error saving file.");
+        this.wm.sendNotify("Error saving file.");
       }
     });
   }

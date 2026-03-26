@@ -238,7 +238,7 @@ export class TaskManagerApp {
         setTimeout(() => w.remove(), 500);
       }
       this.wm.removeFromTaskbar(this.selectedId);
-      this.wm.showPopup(`"${title}" ended`);
+      this.wm.sendNotify(`"${title}" ended`);
       this.selectedId = null;
       this._renderProcesses(win);
     };

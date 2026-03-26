@@ -1471,7 +1471,7 @@ export class OfficeApp {
 
     if (savedFiles.length > 0) {
       const fileList = savedFiles.map((f) => f.name).join(", ");
-      this.wm.showPopup(`Saved to Documents: ${fileList}`);
+      this.wm.sendNotify(`Saved to Documents: ${fileList}`);
       speak(
         savedFiles.length === 1
           ? "I've saved that to your Documents folder!"
@@ -1668,7 +1668,7 @@ export class OfficeApp {
   }
   async sortSpreadsheet(state, ascending = true) {
     if (state.editorType !== "spreadsheet" || !state.hot) {
-      this.wm.showPopup("Sort is only available for spreadsheets");
+      this.wm.sendNotify("Sort is only available for spreadsheets");
       return;
     }
 
@@ -1679,11 +1679,11 @@ export class OfficeApp {
           column: 0,
           sortOrder: ascending ? "asc" : "desc"
         });
-        this.wm.showPopup(`Sorted ${ascending ? "A → Z" : "Z → A"}`);
+        this.wm.sendNotify(`Sorted ${ascending ? "A → Z" : "Z → A"}`);
       }
     } catch (e) {
       console.error("Sort error:", e);
-      this.wm.showPopup("Sort feature requires Handsontable");
+      this.wm.sendNotify("Sort feature requires Handsontable");
     }
   }
   setupKeyboardShortcuts(win, state, actions) {
@@ -1815,7 +1815,7 @@ export class OfficeApp {
     const charsNoSpace = text.replace(/\s/g, "").length;
     const lines = text.split("\n").length;
 
-    this.wm.showPopup(`
+    this.wm.sendNotify(`
     Words: ${words}
     Characters: ${chars}
     Characters (no spaces): ${charsNoSpace}
@@ -1853,11 +1853,11 @@ export class OfficeApp {
       <div>F11 - Fullscreen</div>
     </div>
   `;
-    this.wm.showPopup(shortcuts);
+    this.wm.sendNotify(shortcuts);
   }
 
   showAbout() {
-    this.wm.showPopup(`
+    this.wm.sendNotify(`
     <div style="text-align:center">
       <div style="font-size:24px;margin-bottom:8px"><i class="fas fa-file-alt"></i> Office App</div>
       <div>Version 1.0.0</div>
@@ -1871,7 +1871,7 @@ export class OfficeApp {
   spellCheck(state) {
     if (state.editorType === "contenteditable" && state.editor) {
       state.editor.spellcheck = !state.editor.spellcheck;
-      this.wm.showPopup(`Spell check: ${state.editor.spellcheck ? "ON" : "OFF"}`);
+      this.wm.sendNotify(`Spell check: ${state.editor.spellcheck ? "ON" : "OFF"}`);
     }
   }
 
@@ -1890,7 +1890,7 @@ export class OfficeApp {
       text = state.editor.innerText;
     }
     FileIO.triggerDownload(`${state.title}.txt`, text);
-    this.wm.showPopup("Exported as TXT");
+    this.wm.sendNotify("Exported as TXT");
   }
 
   createNewFile(win, state) {
@@ -1933,13 +1933,13 @@ export class OfficeApp {
       const text = selection.toString();
 
       if (!text) {
-        this.wm.showPopup("Nothing selected to copy");
+        this.wm.sendNotify("Nothing selected to copy");
         return;
       }
 
       try {
         await navigator.clipboard.writeText(text);
-        this.wm.showPopup("Copied to clipboard");
+        this.wm.sendNotify("Copied to clipboard");
       } catch (err) {
         document.execCommand("copy");
       }
@@ -1949,7 +1949,7 @@ export class OfficeApp {
         const selection = window.getSelection().toString() || focused.textContent;
         try {
           await navigator.clipboard.writeText(selection);
-          this.wm.showPopup("Copied to clipboard");
+          this.wm.sendNotify("Copied to clipboard");
         } catch (err) {
           document.execCommand("copy");
         }
@@ -1964,14 +1964,14 @@ export class OfficeApp {
       const text = selection.toString();
 
       if (!text) {
-        this.wm.showPopup("Nothing selected to cut");
+        this.wm.sendNotify("Nothing selected to cut");
         return;
       }
 
       try {
         await navigator.clipboard.writeText(text);
         document.execCommand("delete");
-        this.wm.showPopup("Cut to clipboard");
+        this.wm.sendNotify("Cut to clipboard");
       } catch (err) {
         document.execCommand("cut");
       }
@@ -1981,7 +1981,7 @@ export class OfficeApp {
         try {
           await navigator.clipboard.writeText(focused.textContent);
           focused.textContent = "";
-          this.wm.showPopup("Cut to clipboard");
+          this.wm.sendNotify("Cut to clipboard");
         } catch (err) {
           document.execCommand("cut");
         }
@@ -1995,9 +1995,9 @@ export class OfficeApp {
       try {
         const text = await navigator.clipboard.readText();
         document.execCommand("insertText", false, text);
-        this.wm.showPopup("Pasted from clipboard");
+        this.wm.sendNotify("Pasted from clipboard");
       } catch (err) {
-        this.wm.showPopup("Clipboard access denied. Use Ctrl+V instead.");
+        this.wm.sendNotify("Clipboard access denied. Use Ctrl+V instead.");
       }
     } else if (state.editorType === "spreadsheet") {
       const focused = document.activeElement;
@@ -2005,9 +2005,9 @@ export class OfficeApp {
         try {
           const text = await navigator.clipboard.readText();
           focused.textContent = text;
-          this.wm.showPopup("Pasted from clipboard");
+          this.wm.sendNotify("Pasted from clipboard");
         } catch (err) {
-          this.wm.showPopup("Clipboard access denied. Use Ctrl+V instead.");
+          this.wm.sendNotify("Clipboard access denied. Use Ctrl+V instead.");
         }
       }
     }
@@ -2074,23 +2074,23 @@ export class OfficeApp {
   async addSpreadsheetRow(state) {
     if (state.editorType !== "spreadsheet") return;
     if (!state.hot) {
-      this.wm.showPopup("Row add works in grid view");
+      this.wm.sendNotify("Row add works in grid view");
       return;
     }
     const rowCount = state.hot.countRows();
     state.hot.alter("insert_row", rowCount, 1);
-    this.wm.showPopup("Row added");
+    this.wm.sendNotify("Row added");
   }
 
   async addSpreadsheetColumn(state) {
     if (state.editorType !== "spreadsheet") return;
     if (!state.hot) {
-      this.wm.showPopup("Column add works in grid view");
+      this.wm.sendNotify("Column add works in grid view");
       return;
     }
     const colCount = state.hot.countCols();
     state.hot.alter("insert_col", colCount, 1);
-    this.wm.showPopup("Column added");
+    this.wm.sendNotify("Column added");
   }
 
   async addSpreadsheetSheet(state) {
@@ -2130,7 +2130,7 @@ export class OfficeApp {
 </html>`;
 
     FileIO.triggerDownload(`${state.title}.html`, fullHTML);
-    this.wm.showPopup("Exported as HTML");
+    this.wm.sendNotify("Exported as HTML");
   }
 
   findInSpreadsheet(state, searchTerm) {
@@ -2340,14 +2340,14 @@ export class OfficeApp {
           this.fs.updateFile(state.filePath, state.title, content);
         }
 
-        this.wm.showPopup(`File saved: ${state.title}`);
+        this.wm.sendNotify(`File saved: ${state.title}`);
         speak("Great, your file has been saved!", "Save");
       } else {
         this.downloadFile(state);
       }
     } catch (e) {
       console.error("Save error:", e);
-      this.wm.showPopup("Error saving file.");
+      this.wm.sendNotify("Error saving file.");
     }
   }
 
@@ -2371,10 +2371,10 @@ export class OfficeApp {
           const ps = path.length ? `/${path.join("/")}/${fileName}` : `/${fileName}`;
           state.title = fileName;
           state.filePath = path;
-          this.wm.showPopup(`File saved: ${ps}`);
+          this.wm.sendNotify(`File saved: ${ps}`);
           speak("Great, your file has been saved!", "Save");
         } catch {
-          this.wm.showPopup("Error saving file.");
+          this.wm.sendNotify("Error saving file.");
         }
       });
     } else {
@@ -2388,10 +2388,10 @@ export class OfficeApp {
       if (content === null) return;
       const fileName = state.title.includes(".") ? state.title : `${state.title}${state.ext || ".txt"}`;
       FileIO.triggerDownload(fileName, content);
-      this.wm.showPopup(`Downloaded: ${fileName}`);
+      this.wm.sendNotify(`Downloaded: ${fileName}`);
       speak("Great, your file has been downloaded!", "Save");
     } catch {
-      this.wm.showPopup("Error downloading file.");
+      this.wm.sendNotify("Error downloading file.");
     }
   }
 

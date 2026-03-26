@@ -24,6 +24,7 @@ import { OfficeAppProxy } from "./officeLoader.js";
 import { MarkdownApp } from "./markdown.js";
 import { MonacoApp } from "./monaco.js";
 import { Model3DApp } from "./model3d.js";
+import { NotificationCenter } from "./notificationCenter.js";
 
 class MusicPlayer {
   constructor() {}
@@ -120,8 +121,10 @@ function initDownloadButton() {
 if (!window.electronAPI) {
   initDownloadButton();
 }
+const notificationCenter = new NotificationCenter();
+notificationCenter.initialize();
 const fileSystemManager = new FileSystemManager();
-const windowManager = new WindowManager();
+const windowManager = new WindowManager(notificationCenter);
 const notepadApp = new NotepadApp(fileSystemManager, windowManager, null);
 const markdownApp = new MarkdownApp(windowManager);
 const explorerApp = new ExplorerApp(fileSystemManager, windowManager, notepadApp, markdownApp);

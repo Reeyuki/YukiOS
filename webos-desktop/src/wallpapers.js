@@ -96,7 +96,7 @@ async function refreshWallpaperGrid(fs, grid, wm, previewZone) {
       e.stopPropagation();
       const content = await fs.getFileContent(["Pictures", "Wallpapers"], name);
       await SystemUtilities.setWallpaper(toBlobUrl(content));
-      wm.showPopup(`Wallpaper set to "${name}"`);
+      wm.sendNotify(`Wallpaper set to "${name}"`);
     };
 
     actions.appendChild(setBtn);
@@ -151,7 +151,7 @@ function showCardPreview(name, src, isVideo, previewZone, fs, wm) {
   overlay.querySelector(".wp-save-btn").onclick = async () => {
     const content = await fs.getFileContent(["Pictures", "Wallpapers"], name);
     SystemUtilities.setWallpaper(content);
-    wm.showPopup(`Wallpaper set to "${name}"`);
+    wm.sendNotify(`Wallpaper set to "${name}"`);
     previewZone.classList.remove("wp-preview-active");
     previewZone.innerHTML = "";
   };
@@ -222,7 +222,7 @@ function showRandomPreview(explorerInstance, previewZone, grid, fs, wm) {
       isVideo ? "/static/icons/file.webp" : src
     );
 
-    wm.showPopup(`Saved as "${fileName}"`);
+    wm.sendNotify(`Saved as "${fileName}"`);
     previewZone.classList.remove("wp-preview-active");
     previewZone.innerHTML = "";
     await refreshWallpaperGrid(fs, grid, wm, previewZone);

@@ -400,7 +400,7 @@ export class NotepadApp {
     this.fs.updateFile(instance.currentPath, instance.currentTitle, content);
     instance.modified = false;
     this.updateTitle(win, winId);
-    this.wm.showPopup(`File saved: ${instance.currentTitle}`);
+    this.wm.sendNotify(`File saved: ${instance.currentTitle}`);
     speak("Great, your file has been saved!", "Save");
   }
 
@@ -419,11 +419,11 @@ export class NotepadApp {
           instance.modified = false;
           this.updateTitle(win, winId);
           const pathStr = path.length ? `/${path.join("/")}/${fileName}` : `/${fileName}`;
-          this.wm.showPopup(`File saved: ${pathStr}`);
+          this.wm.sendNotify(`File saved: ${pathStr}`);
           speak("Great, your file has been saved!", "Save");
         })
         .catch(() => {
-          this.wm.showPopup("Error saving file.");
+          this.wm.sendNotify("Error saving file.");
         });
     });
   }
@@ -540,7 +540,7 @@ export class NotepadApp {
       textarea.setSelectionRange(index, index + searchText.length);
       this.updateStatusBar(win, winId);
     } else {
-      this.wm.showPopup(`Cannot find "${searchText}"`);
+      this.wm.sendNotify(`Cannot find "${searchText}"`);
     }
   }
 
@@ -570,7 +570,7 @@ export class NotepadApp {
       textarea.setSelectionRange(index, index + searchText.length);
       this.updateStatusBar(win, winId);
     } else {
-      this.wm.showPopup(`Cannot find "${searchText}"`);
+      this.wm.sendNotify(`Cannot find "${searchText}"`);
     }
   }
 
@@ -659,7 +659,7 @@ export class NotepadApp {
       instance.modified = true;
       this.updateTitle(win, winId);
       this.updateStatusBar(win, winId);
-      this.wm.showPopup(`Replaced ${Math.abs(Math.round(count))} occurrence(s)`);
+      this.wm.sendNotify(`Replaced ${Math.abs(Math.round(count))} occurrence(s)`);
     };
 
     dialog.querySelector(".cancel-btn").onclick = () => dialog.remove();
@@ -698,7 +698,7 @@ export class NotepadApp {
       const totalLines = allLines.length;
 
       if (lineNum < 1 || lineNum > totalLines) {
-        this.wm.showPopup(`Line number must be between 1 and ${totalLines}`);
+        this.wm.sendNotify(`Line number must be between 1 and ${totalLines}`);
         return;
       }
 
