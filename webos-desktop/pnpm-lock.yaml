@@ -10,6 +10,9 @@ importers:
       browserfs:
         specifier: ^1.4.3
         version: 1.4.3
+      fflate:
+        specifier: ^0.8.2
+        version: 0.8.2
       globals:
         specifier: ^17.1.0
         version: 17.1.0
@@ -1061,6 +1064,10 @@ packages:
     peerDependenciesMeta:
       picomatch:
         optional: true
+
+  fflate@0.8.2:
+    resolution:
+      { integrity: sha512-cPJU47OaAoCbg0pBvzsgpTPhmhqI5eJjh/JIu8tPj5q+T7iLvW/JAYUqmE7KOB4R1ZyEhzBaIQpQpardBF5z8A== }
 
   file-entry-cache@8.0.0:
     resolution:
@@ -2733,6 +2740,8 @@ snapshots:
   fdir@6.5.0(picomatch@4.0.3):
     optionalDependencies:
       picomatch: 4.0.3
+
+  fflate@0.8.2: {}
 
   file-entry-cache@8.0.0:
     dependencies:

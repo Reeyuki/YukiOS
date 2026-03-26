@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "browserfs": "^1.4.3",
+    "fflate": "^0.8.2",
     "globals": "^17.1.0",
     "idb-keyval": "^6.2.2",
     "interactjs": "^1.10.27",

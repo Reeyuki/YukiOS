@@ -1,5 +1,6 @@
 import { desktop } from "./desktop.js";
 import { FileKind } from "./fs.js";
+import { unzip, gunzip, strFromU8 } from "fflate";
 import { SystemUtilities } from "./system.js";
 import { appMap, GamesAppRenderer, FlashAppRenderer } from "./games.js";
 import {
@@ -609,9 +610,12 @@ export class ExplorerApp {
       }
     }
 
+    const archiveExts = [".zip", ".gz", ".tgz", ".tar", ".rar", ".7z", ".bz2", ".xz"];
+    const isArchive = archiveExts.some((ext) => name.toLowerCase().endsWith(ext));
+
     if (kind === FileKind.IMAGE) {
       content = await readFileAsDataURL(file);
-    } else if (kind === FileKind.VIDEO) {
+    } else if (kind === FileKind.VIDEO || isArchive) {
       content = file;
     } else if (kind === FileKind.ROM) {
       content = await readFileAsDataURL(file);
@@ -623,18 +627,18 @@ export class ExplorerApp {
       }
     }
 
-    return { kind, content, icon };
+    return { kind, content, icon, isBinary: isArchive };
   }
-  async _saveFilePayload(targetPath, name, kind, content, icon, isBinaryOffice = false) {
-    if (kind === FileKind.VIDEO || isBinaryOffice) {
+  async _saveFilePayload(targetPath, name, kind, content, icon, isBinaryOffice = false, isBinary = false) {
+    if (kind === FileKind.VIDEO || isBinaryOffice || isBinary) {
       await this.fs.writeBinaryFile(targetPath, name, content, kind, icon);
     } else {
       await this.fs.createFile(targetPath, name, content, kind, icon);
     }
   }
 
-  async _replaceFilePayload(targetPath, name, kind, content, icon, isBinaryOffice = false) {
-    if (kind === FileKind.VIDEO || isBinaryOffice) {
+  async _replaceFilePayload(targetPath, name, kind, content, icon, isBinaryOffice = false, isBinary = false) {
+    if (kind === FileKind.VIDEO || isBinaryOffice || isBinary) {
       await this.fs.deleteBinaryFile(targetPath, name).catch(() => {});
       await this.fs.writeBinaryFile(targetPath, name, content, kind, icon);
     } else {
@@ -689,8 +693,12 @@ export class ExplorerApp {
         const exists = await this.fs.exists(existingPath);
 
         if (!exists) {
-          const { kind, content, icon, isBinaryOffice } = await this._resolveFilePayload(file, name, targetPath);
-          await this._saveFilePayload(targetPath, name, kind, content, icon, isBinaryOffice);
+          const { kind, content, icon, isBinaryOffice, isBinary } = await this._resolveFilePayload(
+            file,
+            name,
+            targetPath
+          );
+          await this._saveFilePayload(targetPath, name, kind, content, icon, isBinaryOffice, isBinary);
           uploadedCount++;
           continue;
         }
@@ -709,13 +717,17 @@ export class ExplorerApp {
           continue;
         }
 
-        const { kind, content, icon, isBinaryOffice } = await this._resolveFilePayload(file, name, targetPath);
+        const { kind, content, icon, isBinaryOffice, isBinary } = await this._resolveFilePayload(
+          file,
+          name,
+          targetPath
+        );
 
         if (action === "replace") {
-          await this._replaceFilePayload(targetPath, name, kind, content, icon, isBinaryOffice);
+          await this._replaceFilePayload(targetPath, name, kind, content, icon, isBinaryOffice, isBinary);
           uploadedCount++;
         } else {
-          await this._saveFilePayload(targetPath, name, kind, content, icon, isBinaryOffice);
+          await this._saveFilePayload(targetPath, name, kind, content, icon, isBinaryOffice, isBinary);
           uploadedCount++;
         }
       }
@@ -733,14 +745,14 @@ export class ExplorerApp {
 
   async uploadSingleFile(file, targetPath, overrideName = null) {
     const name = overrideName || file.name;
-    const { kind, content, icon, isBinaryOffice } = await this._resolveFilePayload(file, name, targetPath);
+    const { kind, content, icon, isBinaryOffice, isBinary } = await this._resolveFilePayload(file, name, targetPath);
 
     if (isWallpaperPath(targetPath)) {
       await this.saveToWallpapers(name, content, kind, icon);
       return;
     }
 
-    await this._saveFilePayload(targetPath, name, kind, content, icon, isBinaryOffice);
+    await this._saveFilePayload(targetPath, name, kind, content, icon, isBinaryOffice, isBinary);
   }
 
   async saveToWallpapers(name, content, kind, icon) {
@@ -1100,6 +1112,220 @@ export class ExplorerApp {
       await this.renderInstance(inst);
     }
   }
+  _isArchiveFile(name) {
+    const lower = name.toLowerCase();
+    return (
+      lower.endsWith(".zip") ||
+      lower.endsWith(".gz") ||
+      lower.endsWith(".tgz") ||
+      lower.endsWith(".tar") ||
+      lower.endsWith(".tar.gz") ||
+      lower.endsWith(".tar.bz2") ||
+      lower.endsWith(".tar.xz") ||
+      lower.endsWith(".rar") ||
+      lower.endsWith(".7z") ||
+      lower.endsWith(".bz2") ||
+      lower.endsWith(".xz")
+    );
+  }
+
+  _archiveBaseName(name) {
+    const lower = name.toLowerCase();
+    const stripSuffixes = [
+      ".tar.gz",
+      ".tar.bz2",
+      ".tar.xz",
+      ".tgz",
+      ".zip",
+      ".gz",
+      ".bz2",
+      ".xz",
+      ".tar",
+      ".rar",
+      ".7z"
+    ];
+    for (const suffix of stripSuffixes) {
+      if (lower.endsWith(suffix)) return name.slice(0, name.length - suffix.length);
+    }
+    return name;
+  }
+
+  async _extractArchive(itemName, inst) {
+    const lower = itemName.toLowerCase();
+    const progressMsg = `Extracting "${itemName}"...`;
+    this.wm.showPopup(progressMsg);
+
+    try {
+      const blob = await this.fs.readBinaryFile(inst.currentPath, itemName);
+      if (!blob) {
+        this.wm.showPopup(`Could not read "${itemName}" — was it uploaded as a binary file?`);
+        return;
+      }
+      const arrayBuffer = await blob.arrayBuffer();
+      const bytes = new Uint8Array(arrayBuffer);
+
+      const baseName = this._archiveBaseName(itemName);
+      const destPath = [...inst.currentPath, baseName];
+      await this.fs.ensureFolder(destPath);
+
+      if (lower.endsWith(".zip")) {
+        await this._extractZip(bytes, destPath);
+      } else if (lower.endsWith(".tar.gz") || lower.endsWith(".tgz")) {
+        const decompressed = await this._gunzipBytes(bytes);
+        await this._extractTar(decompressed, destPath);
+      } else if (lower.endsWith(".gz") && !lower.endsWith(".tar.gz")) {
+        const decompressed = await this._gunzipBytes(bytes);
+        const innerName = itemName.slice(0, -3);
+        const text = strFromU8(decompressed, true);
+        const kind = this.fs.inferKind ? this.fs.inferKind(innerName) : FileKind.TEXT;
+        await this.fs.createFile(destPath, innerName, text, kind);
+      } else if (lower.endsWith(".tar")) {
+        await this._extractTar(bytes, destPath);
+      } else {
+        this.wm.showPopup(`Format not supported in browser: ${itemName}\nSupported: ZIP, GZ, TAR, TAR.GZ, TGZ`);
+        return;
+      }
+
+      await this.renderInstance(inst);
+      this.wm.showPopup(`Extracted to "${baseName}/"`);
+    } catch (err) {
+      console.error("Extraction error:", err);
+      this.wm.showPopup(`Failed to extract "${itemName}": ${err.message || err}`);
+    }
+  }
+
+  _gunzipBytes(bytes) {
+    return new Promise((resolve, reject) => {
+      gunzip(bytes, (err, data) => {
+        if (err) reject(err);
+        else resolve(data);
+      });
+    });
+  }
+
+  async _extractZip(bytes, destPath) {
+    return new Promise((resolve, reject) => {
+      unzip(bytes, async (err, files) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        try {
+          for (const [path, data] of Object.entries(files)) {
+            if (path.endsWith("/")) continue;
+            const parts = path.split("/").filter(Boolean);
+            const fileName = parts.pop();
+            const subPath = [...destPath, ...parts];
+            await this.fs.ensureFolder(subPath);
+            const content = this._bytesToStoreContent(fileName, data);
+            const kind = this.fs.inferKind ? this.fs.inferKind(fileName) : FileKind.TEXT;
+            await this.fs.createFile(subPath, fileName, content, kind);
+          }
+          resolve();
+        } catch (e) {
+          reject(e);
+        }
+      });
+    });
+  }
+
+  async _extractTar(bytes, destPath) {
+    let offset = 0;
+    while (offset + 512 <= bytes.length) {
+      const header = bytes.slice(offset, offset + 512);
+      const nameRaw = this._tarStr(header, 0, 100);
+      if (!nameRaw) break;
+
+      const sizeOctal = this._tarStr(header, 124, 12).trim();
+      const size = parseInt(sizeOctal, 8) || 0;
+      const typeflag = String.fromCharCode(header[156]);
+
+      offset += 512;
+
+      if (typeflag === "0" || typeflag === "\0") {
+        const parts = nameRaw.replace(/\\/g, "/").split("/").filter(Boolean);
+        const fileName = parts.pop();
+        const subPath = [...destPath, ...parts];
+        await this.fs.ensureFolder(subPath);
+        const fileBytes = bytes.slice(offset, offset + size);
+        const content = this._bytesToStoreContent(fileName, fileBytes);
+        const kind = this.fs.inferKind ? this.fs.inferKind(fileName) : FileKind.TEXT;
+        await this.fs.createFile(subPath, fileName, content, kind);
+      }
+
+      offset += Math.ceil(size / 512) * 512;
+    }
+  }
+
+  _tarStr(bytes, offset, length) {
+    let str = "";
+    for (let i = offset; i < offset + length; i++) {
+      if (bytes[i] === 0) break;
+      str += String.fromCharCode(bytes[i]);
+    }
+    return str;
+  }
+
+  _bytesToStoreContent(fileName, bytes) {
+    const lower = fileName.toLowerCase();
+    const isText =
+      lower.endsWith(".txt") ||
+      lower.endsWith(".md") ||
+      lower.endsWith(".js") ||
+      lower.endsWith(".json") ||
+      lower.endsWith(".html") ||
+      lower.endsWith(".css") ||
+      lower.endsWith(".xml") ||
+      lower.endsWith(".csv") ||
+      lower.endsWith(".ts") ||
+      lower.endsWith(".py") ||
+      lower.endsWith(".sh") ||
+      lower.endsWith(".yaml") ||
+      lower.endsWith(".yml") ||
+      lower.endsWith(".toml") ||
+      lower.endsWith(".ini") ||
+      lower.endsWith(".cfg") ||
+      lower.endsWith(".log") ||
+      lower.endsWith(".sql");
+
+    if (isText) {
+      try {
+        return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+      } catch {}
+    }
+
+    const isImage =
+      lower.endsWith(".png") ||
+      lower.endsWith(".jpg") ||
+      lower.endsWith(".jpeg") ||
+      lower.endsWith(".gif") ||
+      lower.endsWith(".webp") ||
+      lower.endsWith(".svg") ||
+      lower.endsWith(".bmp") ||
+      lower.endsWith(".ico");
+
+    const mimeMap = {
+      png: "image/png",
+      jpg: "image/jpeg",
+      jpeg: "image/jpeg",
+      gif: "image/gif",
+      webp: "image/webp",
+      svg: "image/svg+xml",
+      bmp: "image/bmp",
+      ico: "image/x-icon"
+    };
+    const ext = lower.split(".").pop();
+
+    if (isImage) {
+      const mime = mimeMap[ext] || "image/png";
+      const b64 = btoa(String.fromCharCode(...bytes));
+      return `data:${mime};base64,${b64}`;
+    }
+
+    const b64 = btoa(String.fromCharCode(...bytes));
+    return `data:application/octet-stream;base64,${b64}`;
+  }
+
   async showFileContextMenu(e, itemName, isFile, inst) {
     e.preventDefault();
     e.stopPropagation();
@@ -1218,6 +1444,11 @@ export class ExplorerApp {
             })
           );
         }
+      }
+
+      if (isFile && this._isArchiveFile(itemName)) {
+        menu.appendChild(hr());
+        menu.appendChild(item("📦 Extract Here", () => this._extractArchive(itemName, inst)));
       }
 
       menu.appendChild(
