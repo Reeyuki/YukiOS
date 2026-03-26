@@ -916,8 +916,6 @@ export class ExplorerApp {
       return;
     }
 
-    speak("It looks like you're opening a file. I can read that for you.", "Reading");
-
     if (name.endsWith(".desktop") && this.appLauncher) {
       try {
         const content = JSON.parse(await this.fs.getFileContent(inst.currentPath, name));

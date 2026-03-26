@@ -9,7 +9,7 @@
     "b": "pnpm build && cp -r dist/* ../desktop/",
     "build-win": "vite build",
     "preview": "vite preview",
-    "format": "pnpm exec prettier . --write",
+    "format": "pnpm exec prettier . --write --cache",
     "lint": "eslint . --ext .js,.jsx --fix"
   },
   "devDependencies": {
@@ -28,8 +28,10 @@
     "globals": "^17.1.0",
     "idb-keyval": "^6.2.2",
     "interactjs": "^1.10.27",
+    "jszip": "^3.10.1",
     "marked": "^17.0.5",
     "memfs": "^4.56.10",
+    "three": "^0.183.2",
     "workbox-window": "^7.4.0"
   }
 }

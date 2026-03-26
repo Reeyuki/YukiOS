@@ -23,6 +23,7 @@ import { AppCreatorApp } from "./appCreator.js";
 import { OfficeAppProxy } from "./officeLoader.js";
 import { MarkdownApp } from "./markdown.js";
 import { MonacoApp } from "./monaco.js";
+import { Model3DApp } from "./model3d.js";
 
 class MusicPlayer {
   constructor() {}
@@ -147,7 +148,7 @@ explorerApp.setEmulator(emulatorApp);
 explorerApp.setBrowser(browserApp);
 const appCreatorApp = new AppCreatorApp(fileSystemManager, windowManager);
 const monacoApp = new MonacoApp(fileSystemManager, windowManager, explorerApp);
-
+const model3dApp = new Model3DApp(fileSystemManager, windowManager, explorerApp);
 const appLauncher = new AppLauncher(
   windowManager,
   fileSystemManager,
@@ -167,7 +168,8 @@ const appLauncher = new AppLauncher(
   emulatorApp,
   appCreatorApp,
   officeApp,
-  monacoApp
+  monacoApp,
+  model3dApp
 );
 appCreatorApp.setAppLauncher(appLauncher);
 explorerApp.setAppLauncher(appLauncher);

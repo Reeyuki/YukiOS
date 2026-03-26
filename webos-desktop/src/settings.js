@@ -56,7 +56,7 @@ export class SettingsApp {
     this.wm.makeDraggable(win);
     this.wm.makeResizable(win);
     this.wm.setupWindowControls(win);
-    this.wm.addToTaskbar(win.id, "Settings", "fas fa-sliders-h");
+    this.wm.addToTaskbar(win.id, "Settings", "fas fa-cog");
     if (this.desktopUi !== undefined) this.desktopUI.closeAllMenus();
 
     this._bindControls(win);

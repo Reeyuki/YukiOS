@@ -361,17 +361,7 @@ export const appMap = {
     icon: "/static/icons/outside.webp",
     title: "Milk outside a bag of milk"
   },
-  vscode: {
-    type: "system",
-    url: "https://emupedia.net/emupedia-app-vscode",
-    icon: "/static/icons/vscode.webp",
-    title: "Vs Code"
-  },
-  monaco: {
-    type: "system",
-    title: "Monaco Editor",
-    icon: "/static/icons/vscode.webp"
-  },
+
   paint: {
     type: "game",
     url: "https://jspaint.app",
@@ -881,7 +871,7 @@ export const appMap = {
   taskManagerApp: { type: "system", title: "Task Manager", icon: "fa fa-list-check" },
   weatherApp: { type: "system", title: "Weather App", icon: "fa fa-location-crosshairs" },
   calculatorApp: { type: "system", title: "Calculator", icon: "fa fa-calculator" },
-  settingsApp: { type: "system", title: "Settings", icon: "fa fa-sliders-h" },
+  settingsApp: { type: "system", title: "Settings", icon: "fa fa-cog" },
   aboutApp: { type: "system", title: "About", icon: "fa fa-circle-info" },
   explorer: { type: "system", title: "File Explorer", icon: "/static/icons/files.webp" },
   notepad: { type: "system", title: "Notepad", icon: "/static/icons/notepad.webp" },
@@ -890,7 +880,19 @@ export const appMap = {
   music: { type: "system", title: "Music", icon: "/static/icons/music.webp" },
   cameraApp: { type: "system", title: "Camera", icon: "/static/icons/obs.webp" },
   gamesApp: { type: "system", title: "Games", icon: "/static/icons/files.webp" },
-  flash: { type: "system", title: "Flash Games", icon: "/static/icons/flash.webp" }
+  flash: { type: "system", title: "Flash Games", icon: "/static/icons/flash.webp" },
+  vscode: {
+    type: "system",
+    url: "https://emupedia.net/emupedia-app-vscode",
+    icon: "/static/icons/vscode.webp",
+    title: "Vs Code"
+  },
+  monaco: {
+    type: "system",
+    title: "Monaco Editor",
+    icon: "/static/icons/vscode.webp"
+  },
+  model3dApp: { type: "system", title: "3D Model Viewer", icon: "/static/icons/3dmodel.webp" }
 };
 export function getGameName(appId) {
   return appMap[appId]?.title || null;

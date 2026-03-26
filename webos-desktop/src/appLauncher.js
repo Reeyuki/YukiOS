@@ -31,7 +31,8 @@ export class AppLauncher {
     emulatorApp,
     appCreatorApp,
     officeApp,
-    monaco
+    monaco,
+    model3dApp
   ) {
     this.wm = windowManager;
     this.fs = fileSystemManager;
@@ -52,6 +53,7 @@ export class AppLauncher {
     this.appCreatorApp = appCreatorApp;
     this.officeApp = officeApp;
     this.monacoApp = monaco;
+    this.model3dApp = model3dApp;
     this.TRANSPARENCY_ALLOWED_APP_IDS = new Set(["paint", "photopea", "vscode", "liventcord"]);
 
     this.clippyPromise = initClippy(settingsApp);
@@ -132,6 +134,12 @@ export class AppLauncher {
         action: () => this.musicPlayer.open(this.wm),
         clippy: { message: "Listen to random musics!", animation: "MoveLeft" }
       },
+      model3dApp: {
+        type: "system",
+        title: "3D Model Viewer",
+        action: () => this.model3dApp.open(),
+        clippy: { message: "That caught my eye!", animation: "MoveLeft" }
+      },
       flash: {
         type: "system",
         title: "Flash Games",
@@ -176,6 +184,7 @@ export class AppLauncher {
       libreSprite: {
         type: "system",
         title: "LibreSprite",
+        url: "/static/apps/libresprite/index.html",
         action: () =>
           this.openIframeApp({
             appId: "libreSprite",
@@ -259,7 +268,11 @@ export class AppLauncher {
 
     if (info.type === "system") {
       if (info.url) {
-        this.openIframeApp({ appId: app, type: "game", source: info.url, originalName: app, analyticsBase });
+        if (app === "libreSprite") {
+          this.openRemoteApp(info.url);
+        } else {
+          this.openIframeApp({ appId: app, type: "game", source: info.url, originalName: app, analyticsBase });
+        }
       } else if (info.action) info.action();
       return;
     }

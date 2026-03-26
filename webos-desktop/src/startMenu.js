@@ -74,8 +74,6 @@ export function updateFavoritesUI() {
   if (favorites.length === 0) {
     const noFav = document.createElement("div");
     noFav.textContent = "No favorite apps";
-    noFav.style.padding = "10px";
-    noFav.style.color = "#888";
     favoritesPage.appendChild(noFav);
     return;
   }

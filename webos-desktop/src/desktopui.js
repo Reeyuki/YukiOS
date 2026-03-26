@@ -7,13 +7,15 @@ import { showConflictDialog } from "./shared/conflictDialog.js";
 import { showContextMenu, hideMenu } from "./shared/contextMenu.js";
 
 let sharedAppLauncher;
-export function createIsRightAlignedSystemApp(appMap) {
-  return function (app) {
-    if (app === "flash" || app === "gamesApp") return false;
-    return !!(appMap && appMap[app] && appMap[app].type === "system");
-  };
-}
 
+function isRightAlignedSystemApp(appMap, app) {
+  if (app === "flash" || app === "gamesApp") return false;
+
+  if (app === "paint" || app === "photopea") return true;
+
+  const appMeta = appMap?.[app];
+  return !!(appMeta && appMeta.type === "system");
+}
 class PositionHelper {
   constructor(desktop, gridSize) {
     this.desktop = desktop;
@@ -278,14 +280,7 @@ export class DesktopUI {
   getClipboard() {
     return this.state.clipboard;
   }
-  isRightAlignedSystemApp(app) {
-    if (app === "paint" || app === "photopea") return true;
 
-    if (app === "flash" || app === "gamesApp") return false;
-
-    const appMeta = this.appLauncher.appMap?.[app];
-    return appMeta && appMeta.type === "system";
-  }
   async dropFromExplorer(name, isFile, sourcePath, clientX, clientY) {
     const rect = this.desktop.getBoundingClientRect();
     const leftPx = clientX - rect.left;
@@ -416,7 +411,7 @@ export class DesktopUI {
     this.startButton.addEventListener("click", (e) => {
       e.stopPropagation();
       this.toggleStartMenu();
-      document.querySelector('.start-cat[data-cat="menu"]').click();
+      document.querySelector('.start-cat[data-cat="menu"]')?.click();
     });
     this.startMenu.addEventListener("click", (e) => e.stopPropagation());
     document.addEventListener("click", () => this.closeAllMenus());
@@ -1352,8 +1347,8 @@ export class DesktopUI {
     const propsWin = this.appLauncher.wm.createWindow(`${icon.id || Date.now()}-props`, title, "300px", "auto");
     propsWin.innerHTML = `
       <div class="window-header"><span>${title}</span>
-        ${this.wm.getWindowControls()}
-
+        ${this.appLauncher.wm.getWindowControls()}
+      </div>
       <div class="window-content" style="width:100%;height:100%;overflow:auto;user-select:text;padding:10px;">${contentHtml}</div>
     `;
     desktop.appendChild(propsWin);
@@ -1416,8 +1411,11 @@ export class DesktopUI {
         continue;
       }
 
-      if (createIsRightAlignedSystemApp(sharedAppLauncher.appMap)(app)) systemIcons.push(icon);
-      else regularIcons.push(icon);
+      if (isRightAlignedSystemApp(this.appLauncher.appMap, app)) {
+        systemIcons.push(icon);
+      } else {
+        regularIcons.push(icon);
+      }
     }
 
     if (regularIcons.length) this.positionHelper.layout(regularIcons);
@@ -1425,6 +1423,7 @@ export class DesktopUI {
 
     await this.loadDesktopItems();
   }
+
   async loadDesktopItems() {
     const desktopFolder = await this.fs.getFolder(["Desktop"]);
     for (const [name, itemData] of Object.entries(desktopFolder)) {
@@ -1437,7 +1436,7 @@ export class DesktopUI {
   }
 
   async createDesktopFileIcon(fileName, itemData = null) {
-    if (document.querySelector(`.desktop-file-icon[data-file-name="${fileName}"]`)) return;
+    if (document.querySelector(`.desktop-file-icon[data-file-name="${CSS.escape(fileName)}"]`)) return;
 
     let thumbnailSrc = null;
     if (isImageFile(fileName)) {
@@ -1485,7 +1484,7 @@ export class DesktopUI {
   }
 
   async createFolderIcon(folderName) {
-    if (document.querySelector(`.folder-icon[data-folder-name="${folderName}"]`)) return;
+    if (document.querySelector(`.folder-icon[data-folder-name="${CSS.escape(folderName)}"]`)) return;
     const folderIcon = document.createElement("div");
     folderIcon.className = "icon selectable folder-icon";
     folderIcon.dataset.folderName = folderName;
@@ -1597,20 +1596,21 @@ function layoutIconsCall() {
 
   const positionHelper = new PositionHelper(desktop, { width: 80, height: 100, gap: 5 });
 
-  const isRightAligned = createIsRightAlignedSystemApp(sharedAppLauncher.appMap);
-
   const systemIcons = [];
   const regularIcons = [];
 
   for (const icon of allUnsaved) {
     const app = icon.dataset.app;
-    if (isRightAligned(app)) systemIcons.push(icon);
-    else regularIcons.push(icon);
+    if (isRightAlignedSystemApp(sharedAppLauncher.appMap, app)) {
+      systemIcons.push(icon);
+    } else {
+      regularIcons.push(icon);
+    }
   }
 
   if (regularIcons.length) positionHelper.layout(regularIcons);
   if (systemIcons.length) positionHelper.layoutRight(systemIcons);
 }
 
-window.addEventListener("load", () => layoutIconsCall(sharedAppLauncher.appMap));
-window.addEventListener("resize", () => layoutIconsCall(sharedAppLauncher.appMap));
+window.addEventListener("load", () => layoutIconsCall());
+window.addEventListener("resize", () => layoutIconsCall());

@@ -187,9 +187,8 @@ export async function openFileWith({
   }
 
   if (isVideoFile(name)) {
-    const folderPath = Array.isArray(path) ? path.join("/") : path;
-    const blobFromDB = fs.readBinaryFile ? await fs.readBinaryFile(folderPath, name) : null;
-    if (blobFromDB) {
+    const blobFromDB = fs.readBinaryFile ? await fs.readBinaryFile(path, name) : null;
+    if (blobFromDB && blobFromDB.size > 0) {
       openMediaViewer(name, URL.createObjectURL(blobFromDB), FileKind.VIDEO, windowManager);
       return;
     }
@@ -202,6 +201,28 @@ export async function openFileWith({
       return;
     }
     openMediaViewer(name, raw, FileKind.VIDEO, windowManager);
+    return;
+  }
+
+  if (isImageFile(name)) {
+    const blobFromDB = fs.readBinaryFile ? await fs.readBinaryFile(path, name) : null;
+    if (blobFromDB && blobFromDB.size > 0) {
+      openMediaViewer(name, URL.createObjectURL(blobFromDB), FileKind.IMAGE, windowManager);
+      return;
+    }
+    const content = await fs.getFileContent(path, name);
+    if (content) {
+      if (content.startsWith("data:")) {
+        const blob = base64ToBlob(content);
+        const src = URL.createObjectURL(blob);
+        openMediaViewer(name, src, FileKind.IMAGE, windowManager);
+        return;
+      }
+      if (content.startsWith("http") || content.startsWith("/")) {
+        openMediaViewer(name, content, FileKind.IMAGE, windowManager);
+        return;
+      }
+    }
     return;
   }
 
@@ -249,10 +270,6 @@ export async function openFileWith({
     } else {
       notepadApp.open(name, content, path);
     }
-    return;
-  }
-  if (isImageFile(name)) {
-    openMediaViewer(name, content, FileKind.IMAGE, windowManager);
     return;
   }
   notepadApp.open(name, content, path);
