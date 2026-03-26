@@ -29,6 +29,8 @@ export const TEXT_EXTS = ["txt", "js", "json", "css", "xml", "yaml", "yml", "ini
 
 const BINARY_OFFICE_EXTS = ["pdf", "docx", "xlsx", "xls", "pptx", "ppt"];
 
+const LARGE_FILE_THRESHOLD = 1024 * 1024;
+
 export function getExt(name) {
   return name.split(".").pop().toLowerCase();
 }
@@ -176,6 +178,33 @@ function base64ToBlob(dataURL) {
   return new Blob([bytes], { type: mime });
 }
 
+function formatFileSize(bytes) {
+  if (bytes < 1024) return `${bytes} bytes`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function getContentSize(content) {
+  if (!content) return 0;
+  if (typeof content === "string") {
+    return new Blob([content]).size;
+  }
+  if (content instanceof Blob) {
+    return content.size;
+  }
+  if (content instanceof ArrayBuffer) {
+    return content.byteLength;
+  }
+  return 0;
+}
+
+async function confirmLargeFile(name, size) {
+  const sizeStr = formatFileSize(size);
+  return confirm(
+    `The file "${name}" is quite large (${sizeStr}).\n\nOpening it in Notepad may cause performance issues.\n\nDo you want to continue?`
+  );
+}
+
 export async function openFileWith({
   name,
   path,
@@ -187,6 +216,10 @@ export async function openFileWith({
   officeApp,
   markdownApp
 }) {
+  if (isZipFile(name)) {
+    return;
+  }
+
   if (isRomFile(name)) {
     if (!emulatorApp) return;
     const dataUrl = await fs.getFileContent(path, name);
@@ -265,20 +298,38 @@ export async function openFileWith({
     if (markdownApp) {
       markdownApp.open(name, content, path);
     } else {
+      const size = getContentSize(content);
+      if (size > LARGE_FILE_THRESHOLD) {
+        const confirmed = await confirmLargeFile(name, size);
+        if (!confirmed) return;
+      }
       notepadApp.open(name, content, path);
     }
     return;
   }
 
   const content = await fs.getFileContent(path, name);
+
   if (isHtmlFile(name)) {
     if (browserApp) {
       browserApp.openHtml(content, name, path);
     } else {
+      const size = getContentSize(content);
+      if (size > LARGE_FILE_THRESHOLD) {
+        const confirmed = await confirmLargeFile(name, size);
+        if (!confirmed) return;
+      }
       notepadApp.open(name, content, path);
     }
     return;
   }
+
+  const size = getContentSize(content);
+  if (size > LARGE_FILE_THRESHOLD) {
+    const confirmed = await confirmLargeFile(name, size);
+    if (!confirmed) return;
+  }
+
   notepadApp.open(name, content, path);
 }
 
