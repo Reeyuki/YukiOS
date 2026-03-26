@@ -5,6 +5,12 @@ export const appMap = {
     icon: "/static/icons/minecraft.webp",
     title: "Minecraft"
   },
+  purplePlace: {
+    type: "game",
+    icon: "/static/icons/purplePlace.webp",
+    title: "Purple Place",
+    url: "https://html5.gdata1.com/purble-place/?v=20260125224127"
+  },
   pokemon: {
     type: "game",
     url: "/static/games/pokemon/index.html",
