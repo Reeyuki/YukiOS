@@ -181,7 +181,6 @@ settingsApp.setAppLauncher(appLauncher);
 appCreatorApp.setDesktopUI(desktopUI);
 appCreatorApp.restoreInstalledApps();
 SystemUtilities.startClock();
-SystemUtilities.setSequentialWallpaper();
 SystemUtilities.setSettings(settingsApp);
 SystemUtilities.startTaskbarWeather(appLauncher);
 SystemUtilities.loadWallpaper();
