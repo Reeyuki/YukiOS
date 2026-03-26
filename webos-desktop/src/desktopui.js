@@ -6,25 +6,13 @@ import { StorageKeys } from "./settings.js";
 import { showConflictDialog } from "./shared/conflictDialog.js";
 import { showContextMenu, hideMenu } from "./shared/contextMenu.js";
 
-const systemApps = new Set([
-  "explorer",
-  "terminal",
-  "notepad",
-  "browser",
-  "cameraApp",
-  "pythonApp",
-  "nodeApp",
-  "settings",
-  "calculatorApp",
-  "aboutApp",
-  "music",
-  "taskManagerApp",
-  "paint",
-  "photopea",
-  "vscode",
-  "liventcord",
-  "emulatorApp"
-]);
+let sharedAppLauncher;
+export function createIsRightAlignedSystemApp(appMap) {
+  return function (app) {
+    if (app === "flash" || app === "gamesApp") return false;
+    return !!(appMap && appMap[app] && appMap[app].type === "system");
+  };
+}
 
 class PositionHelper {
   constructor(desktop, gridSize) {
@@ -220,6 +208,7 @@ class SelectionManager {
 export class DesktopUI {
   constructor(appLauncher, notepadApp, explorerApp, fileSystemManager, emulatorApp = null) {
     this.appLauncher = appLauncher;
+    sharedAppLauncher = appLauncher;
     this.notepadApp = notepadApp;
     this.explorerApp = explorerApp;
     this.emulatorApp = emulatorApp;
@@ -289,7 +278,14 @@ export class DesktopUI {
   getClipboard() {
     return this.state.clipboard;
   }
+  isRightAlignedSystemApp(app) {
+    if (app === "paint" || app === "photopea") return true;
 
+    if (app === "flash" || app === "gamesApp") return false;
+
+    const appMeta = this.appLauncher.appMap?.[app];
+    return appMeta && appMeta.type === "system";
+  }
   async dropFromExplorer(name, isFile, sourcePath, clientX, clientY) {
     const rect = this.desktop.getBoundingClientRect();
     const leftPx = clientX - rect.left;
@@ -1398,6 +1394,7 @@ export class DesktopUI {
     await this.fs.ensureFolder(["Desktop"]);
     const saved = PositionStore.load();
     const icons = Array.from(document.querySelectorAll(".icon.selectable:not(.folder-icon):not(.desktop-file-icon)"));
+
     const systemIcons = [];
     const regularIcons = [];
 
@@ -1406,21 +1403,28 @@ export class DesktopUI {
       const app = icon.dataset.app;
       const fileName = `${name}.desktop`;
       const dir = this.fs.resolveDir(["Desktop"]);
+
       const alreadyExists = await this.fs.exists(this.fs.join(dir, fileName));
       if (!alreadyExists) {
         await this.fs.createFile(["Desktop"], fileName, IconDataHelper.createDesktopFileData(app, name), "text");
       }
+
       const key = PositionStore.getKey(icon);
-      if (saved[key]) this.positionHelper.placeAtCell(icon, saved[key].col, saved[key].row, icon);
-      else if (systemApps.has(app)) systemIcons.push(icon);
+
+      if (saved[key]) {
+        this.positionHelper.placeAtCell(icon, saved[key].col, saved[key].row, icon);
+        continue;
+      }
+
+      if (this.isRightAlignedSystemApp(app)) systemIcons.push(icon);
       else regularIcons.push(icon);
     }
 
     if (regularIcons.length) this.positionHelper.layout(regularIcons);
     if (systemIcons.length) this.positionHelper.layoutRight(systemIcons);
+
     await this.loadDesktopItems();
   }
-
   async loadDesktopItems() {
     const desktopFolder = await this.fs.getFolder(["Desktop"]);
     for (const [name, itemData] of Object.entries(desktopFolder)) {
@@ -1584,16 +1588,29 @@ export function layoutIcons(icons, isExplorerIcon) {
 }
 
 function layoutIconsCall() {
+  if (!sharedAppLauncher) return;
+
   const saved = PositionStore.load();
   const allUnsaved = Array.from(desktop.querySelectorAll(":scope > .icon")).filter(
     (icon) => !saved[PositionStore.getKey(icon)]
   );
+
   const positionHelper = new PositionHelper(desktop, { width: 80, height: 100, gap: 5 });
-  const systemIcons = allUnsaved.filter((i) => systemApps.has(i.dataset.app));
-  const regularIcons = allUnsaved.filter((i) => !systemApps.has(i.dataset.app));
+
+  const isRightAligned = createIsRightAlignedSystemApp(sharedAppLauncher.appMap);
+
+  const systemIcons = [];
+  const regularIcons = [];
+
+  for (const icon of allUnsaved) {
+    const app = icon.dataset.app;
+    if (isRightAligned(app)) systemIcons.push(icon);
+    else regularIcons.push(icon);
+  }
+
   if (regularIcons.length) positionHelper.layout(regularIcons);
   if (systemIcons.length) positionHelper.layoutRight(systemIcons);
 }
 
-window.addEventListener("load", layoutIconsCall);
-window.addEventListener("resize", layoutIconsCall);
+window.addEventListener("load", () => layoutIconsCall(sharedAppLauncher.appMap));
+window.addEventListener("resize", () => layoutIconsCall(sharedAppLauncher.appMap));
