@@ -903,8 +903,51 @@ export const appMap = {
     title: "Monaco Editor",
     icon: "/static/icons/vscode.webp"
   },
-  model3dApp: { type: "system", title: "3D Model Viewer", icon: "/static/icons/3dmodel.webp" }
+  model3dApp: { type: "system", title: "3D Model Viewer", icon: "/static/icons/3dmodel.webp" },
+  yukiConvert: {
+    type: "system",
+    title: "Yuki Convert",
+    icon: "fas fa-video",
+    url: "https://yukiconvert.netlify.app/file-converter"
+  },
+  libreSprite: {
+    type: "system",
+    title: "LibreSprite",
+    icon: "/static/icons/libresprite.webp",
+    url: "/static/apps/libresprite/index.html"
+  },
+  officeApp: {
+    type: "system",
+    title: "Office",
+    icon: "/static/icons/office.webp",
+    url: "/static/apps/office/index.html"
+  },
+  photopea: {
+    type: "system",
+    title: "Photopea",
+    icon: "/static/icons/photopea.webp",
+    url: "https://www.photopea.com/"
+  },
+  paint: {
+    type: "system",
+    title: "Paint",
+    icon: "/static/icons/paint.webp",
+    url: "https://jspaint.app"
+  },
+  appCreatorApp: {
+    type: "system",
+    title: "App Creator",
+    icon: "fas fa-cubes",
+    url: "/static/apps/appcreator/index.html"
+  },
+  kiwiIRC: {
+    type: "system",
+    title: "kiwiIRC",
+    icon: "/static/icons/kiwiirc.webp",
+    url: "/static/apps/kiwiirc/index.html"
+  }
 };
+
 export function getGameName(appId) {
   return appMap[appId]?.title || null;
 }
@@ -1036,6 +1079,79 @@ export class GamesAppRenderer extends GameWindowRenderer {
   }
 }
 
+export class SystemAppRenderer {
+  constructor(appMap = null) {
+    this.appMap = appMap;
+  }
+  getSystemApps() {
+    return Object.entries(appMap)
+      .filter(([id, data]) => data.type === "system" && data.icon && data.title)
+      .map(([id, data]) => ({ app: id, ...data }));
+  }
+
+  createCard(app) {
+    const icon = app.icon || "";
+    const isFontAwesome =
+      typeof icon === "string" && (icon.startsWith("fa ") || icon.startsWith("fas ") || icon.startsWith("fab "));
+    return `<div class="games-app-card" data-app="${app.app}" title="${app.title}">
+      <div class="games-app-card-img-wrap">
+        ${isFontAwesome ? `<i style="color:#6677dd;" class="icon ${icon}"></i>` : `<img src="${icon}" alt="${app.title}" />`}
+      </div>
+      <div class="games-app-card-title">${app.title}</div>
+    </div>`;
+  }
+
+  render(container, onLaunch) {
+    const apps = this.getSystemApps();
+    container.innerHTML = `
+      <div class="games-app-grid">
+        ${apps.map((a) => this.createCard(a)).join("")}
+      </div>
+      <div class="games-no-results" style="display:none;">No apps found</div>`;
+
+    const noResults = container.querySelector(".games-no-results");
+    const allCards = Array.from(container.querySelectorAll(".games-app-card"));
+
+    const applyAnimations = (cards) => {
+      cards.forEach((card, i) => (card.style.animationDelay = `${Math.min(i * 18, 400)}ms`));
+    };
+
+    const attachCardHandlers = (cards) => {
+      cards.forEach((card) => {
+        card.addEventListener("dblclick", () => onLaunch?.(card.dataset.app));
+        card.addEventListener("click", () => {
+          container.querySelectorAll(".games-app-card").forEach((c) => c.classList.remove("active"));
+          card.classList.add("active");
+        });
+      });
+    };
+
+    const updateCount = (count) => {
+      const countEl = container.closest(".window-content")?.closest(".window-root")?.querySelector(".games-app-count");
+      if (countEl) countEl.textContent = count;
+    };
+
+    updateCount(allCards.length);
+    applyAnimations(allCards);
+    attachCardHandlers(allCards);
+
+    const searchInput = container.querySelector(".games-search-input");
+    if (searchInput) {
+      searchInput.addEventListener("input", () => {
+        const query = searchInput.value.trim().toLowerCase();
+        let visibleCount = 0;
+        allCards.forEach((card) => {
+          const title = card.querySelector(".games-app-card-title").textContent.toLowerCase();
+          const isMatch = !query || title.includes(query);
+          card.style.display = isMatch ? "" : "none";
+          if (isMatch) visibleCount++;
+        });
+        noResults.style.display = visibleCount === 0 ? "block" : "none";
+        updateCount(visibleCount);
+      });
+    }
+  }
+}
 const FLASH_EMUPEDIA_EXCLUDED = new Set([
   "doom",
   "doom2",

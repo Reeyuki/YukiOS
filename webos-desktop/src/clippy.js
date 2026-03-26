@@ -17,7 +17,7 @@ async function setupClippy() {
   return window.clippyAgent;
 }
 
-export function initClippy(settingsApp) {
+export function initClippy() {
   clippyPromise = new Promise((resolve) => {
     const clippyEnabled = localStorage.getItem(StorageKeys.clippy) !== "false";
     if (!clippyEnabled) return resolve(null);

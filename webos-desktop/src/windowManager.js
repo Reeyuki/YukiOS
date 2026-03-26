@@ -95,11 +95,13 @@ export class WindowManager {
     } else if (typeof iconValue === "string" && iconValue.length > 0) {
       icon = document.createElement("i");
       icon.style.color = color ?? "white";
+      icon.alt = title;
       icon.className = iconValue.startsWith("fa") ? iconValue : `fa ${iconValue}`;
     } else {
       icon = document.createElement("i");
       icon.className = "fas fa-window-maximize";
       icon.style.color = "white";
+      icon.alt = title;
     }
 
     taskbarItem.appendChild(icon);

@@ -56,7 +56,7 @@ export class AppLauncher {
     this.model3dApp = model3dApp;
     this.TRANSPARENCY_ALLOWED_APP_IDS = new Set(["paint", "photopea", "vscode", "liventcord"]);
 
-    this.clippyPromise = initClippy(settingsApp);
+    this.clippyPromise = initClippy();
 
     initAnalytics();
 
@@ -152,6 +152,12 @@ export class AppLauncher {
         action: () => this.explorerApp.openGamesApp(),
         clippy: { message: "I can suggest tips for your games.", animation: "animate" }
       },
+      systemApps: {
+        type: "system",
+        title: "System Apps",
+        action: () => this.explorerApp.openSystemsApp()
+      },
+
       taskManagerApp: {
         type: "system",
         title: "Task Manager",

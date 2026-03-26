@@ -62,23 +62,7 @@ Yuki OS is designed as a unified platform for interactive content. It works best
 
 ---
 
-## Design Approach
-
-* Consistent UI across all runtimes
-* Isolation between apps with shared system behavior
-* Modular architecture for extending capabilities
-* Focus on running diverse content in a single environment
-
----
-
-## Scope
-
-Yuki OS is not a full operating system replacement. It is a runtime platform that brings together different web technologies under one interface.
-
----
-
 ## 📜 License
 
 The project license applies to platform code only.
 External engines, emulators, runtimes, and game assets remain the property of their respective owners.
-

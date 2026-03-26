@@ -2,7 +2,7 @@ import { desktop } from "./desktop.js";
 import { FileKind } from "./fs.js";
 import { unzip, gunzip, strFromU8 } from "fflate";
 import { SystemUtilities } from "./system.js";
-import { appMap, GamesAppRenderer, FlashAppRenderer } from "./games.js";
+import { appMap, GamesAppRenderer, FlashAppRenderer, SystemAppRenderer } from "./games.js";
 import {
   fileKindFromName,
   isImageFile,
@@ -346,7 +346,7 @@ export class ExplorerApp {
     const flashCount = flashRenderer.getGames().length;
     win.innerHTML = `
       <div class="window-header">
-        <span>⚡ Flash Games <span class="games-app-count">${flashCount}</span></span>
+        <span>Flash Games <span class="games-app-count">${flashCount}</span></span>
         ${this.wm.getWindowControls()}
       </div>
       <div class="window-content flash-app-window" style="width:100%;height:100%;overflow:auto;padding:18px;box-sizing:border-box;">
@@ -380,7 +380,7 @@ export class ExplorerApp {
     const gamesCount = gamesRenderer.getGames().length;
     win.innerHTML = `
       <div class="window-header">
-        <span>🎮 Games <span class="games-app-count">${gamesCount}</span></span>
+        <span>Games <span class="games-app-count">${gamesCount}</span></span>
         ${this.wm.getWindowControls()}
       </div>
       <div class="window-content games-app-window" style="width:100%;height:100%;overflow:auto;padding:18px;box-sizing:border-box;">
@@ -397,6 +397,41 @@ export class ExplorerApp {
     });
   }
 
+  openSystemsApp(appLauncher) {
+    const winId = "system-apps-win";
+    const existing = document.getElementById(winId);
+    if (existing) {
+      this.wm.bringToFront(existing);
+      return;
+    }
+    const win = this.wm.createWindow(winId, "System Apps");
+    win.classList.add("window-root");
+    win.style.width = "600px";
+    win.style.height = "480px";
+    win.style.left = "100px";
+    win.style.top = "60px";
+
+    const systemRenderer = new SystemAppRenderer(appLauncher?.appMap);
+    const systemCount = systemRenderer.getSystemApps().length;
+
+    win.innerHTML = `
+    <div class="window-header">
+      <span>System Apps <span class="games-app-count">${systemCount}</span></span>
+      ${this.wm.getWindowControls()}
+    </div>
+    <div class="window-content games-app-window" style="width:100%;height:100%;overflow:auto;padding:18px;box-sizing:border-box;">
+      <div id="system-app-container"></div>
+    </div>`;
+    desktop.appendChild(win);
+    this.wm.makeDraggable(win);
+    this.wm.makeResizable(win);
+    this.wm.setupWindowControls(win);
+    this.wm.addToTaskbar(winId, "System Apps", "fas fa-desktop");
+    const container = win.querySelector("#system-app-container");
+    systemRenderer.render(container, (appId) => {
+      if (this.appLauncher) this.appLauncher.launch(appId);
+    });
+  }
   setupExplorerControls(win, winId) {
     const inst = this._getInstance(winId);
 
