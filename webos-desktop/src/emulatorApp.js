@@ -366,6 +366,7 @@ export class EmulatorApp {
     this.wm.setupWindowControls(win);
     this.wm.makeDraggable(win);
     this.wm.bringToFront(win);
+    this.wm.addToTaskbar(win.id, gameTitle, "/static/icons/emulator.webp", "#6677dd");
 
     const iframe = win.querySelector("iframe");
     const onMessage = (e) => {

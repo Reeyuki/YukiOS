@@ -1,3 +1,5 @@
+import { isImageFile } from "./utils.js";
+
 export class NotificationCenter {
   constructor() {
     this.notifications = [];
@@ -80,12 +82,6 @@ export class NotificationCenter {
     this.updateNotificationCenter();
     this.updateBadge();
 
-    if (duration > 0) {
-      setTimeout(() => {
-        this.removeNotification(notification.id);
-      }, duration);
-    }
-
     return notification.id;
   }
 
@@ -124,7 +120,7 @@ export class NotificationCenter {
 
       let iconHtml = "";
       if (notif.icon) {
-        const isImagePath = typeof notif.icon === "string" && /\.(png|jpg|jpeg|gif|webp|svg|ico)$/i.test(notif.icon);
+        const isImagePath = isImageFile(notif.icon);
         const isDataUrl = typeof notif.icon === "string" && notif.icon.startsWith("data:");
 
         if (isImagePath || isDataUrl) {
@@ -149,7 +145,7 @@ export class NotificationCenter {
         </div>
         <div class="notification-item-content">
           <div class="notification-item-title">${notif.title}</div>
-          <div class="notification-item-message">${notif.message}</div>
+          <div class="notification-item-message">${notif.message ?? ""}</div>
           <div class="notification-item-time">${timestamp}</div>
         </div>
         <button class="notification-item-close" title="Remove">×</button>

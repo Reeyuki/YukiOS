@@ -1,19 +1,16 @@
 import { desktop } from "./desktop.js";
 import { showStartStyleMenu } from "./shared/contextMenu.js";
+import { isImageFile } from "./utils.js";
 
 const styleEl = document.getElementById("window-style");
 let styleParent = styleEl.parentNode;
 
 function hideTransparency() {
-  if (styleEl.parentNode) {
-    styleParent.removeChild(styleEl);
-  }
+  if (styleEl.parentNode) styleParent.removeChild(styleEl);
 }
 
 function restoreTransparency() {
-  if (!styleEl.parentNode) {
-    styleParent.appendChild(styleEl);
-  }
+  if (!styleEl.parentNode) styleParent.appendChild(styleEl);
 }
 
 export class WindowManager {
@@ -23,6 +20,9 @@ export class WindowManager {
     this.gameWindowCount = 0;
     this.isDraggingWindow = false;
     this.notificationCenter = notificationCenter;
+    this.initialTitle = document.title || "YukiOS";
+    const faviconLink = document.querySelector("link[rel~='icon']");
+    this.initialFavicon = faviconLink ? faviconLink.href : "";
   }
 
   setNotificationCenter(notificationCenter) {
@@ -46,6 +46,97 @@ export class WindowManager {
     }
   }
 
+  _resolveIconType(iconValue) {
+    return {
+      isImage: isImageFile(iconValue),
+      isDataUrl: typeof iconValue === "string" && iconValue.startsWith("data:")
+    };
+  }
+
+  _getFaviconLink() {
+    let link = document.querySelector("link[rel~='icon']");
+    if (!link) {
+      link = document.createElement("link");
+      link.rel = "icon";
+      document.head.appendChild(link);
+    }
+    return link;
+  }
+
+  _animateAndRemove(win) {
+    win.style.animation = "popUp 0.5s ease forwards";
+    setTimeout(() => win.remove(), 500);
+  }
+
+  _buildPropertiesWindow(winId) {
+    const win = document.getElementById(winId);
+    if (!win) return;
+
+    const appInfo = this.openWindows.get(winId);
+    if (!appInfo) return;
+
+    const dataset = win.dataset;
+    const rect = win.getBoundingClientRect();
+
+    const infoLines = [
+      `Window ID: ${winId}`,
+      `Title: ${appInfo.title}`,
+      dataset.appType ? `Type: ${dataset.appType}` : "",
+      dataset.appId ? `App ID: ${dataset.appId}` : "",
+      dataset.swf ? `SWF Path: ${dataset.swf}` : "",
+      dataset.rom ? `ROM: ${dataset.rom}` : "",
+      dataset.core ? `Core: ${dataset.core}` : "",
+      dataset.externalUrl ? `URL: ${dataset.externalUrl}` : "",
+      `Width: ${Math.round(rect.width)}px`,
+      `Height: ${Math.round(rect.height)}px`,
+      `Left: ${Math.round(rect.left)}px`,
+      `Top: ${Math.round(rect.top)}px`,
+      `Z-Index: ${win.style.zIndex}`,
+      `Fullscreen: ${dataset.fullscreen === "true" ? "Yes" : "No"}`
+    ].filter(Boolean);
+
+    const contentHtml = infoLines.map((line) => `<div style="margin:2px 0;">${line}</div>`).join("");
+    const propsWin = this.createWindow(`${winId}-props`, `Properties: ${appInfo.title}`, "40vw", "40vh");
+    const propsIconHtml = this.getWindowIconHtml(appInfo.iconValue, appInfo.color);
+
+    propsWin.innerHTML = `
+      <div class="window-header">
+        <span>${propsIconHtml}Properties: ${appInfo.title}</span>
+        ${this.getWindowControls()}
+      </div>
+      <div class="window-content" style="width:100%; height:100%; overflow:auto; user-select:text;">
+        ${contentHtml}
+      </div>
+    `;
+
+    desktop.appendChild(propsWin);
+    this.mountWindow(propsWin, `${winId}-props`, appInfo.title, appInfo.iconValue, appInfo.color);
+  }
+
+  _buildContextMenuItems(addMenuItem, win) {
+    const winId = win.id;
+
+    addMenuItem(win.style.display === "none" ? "Restore" : "Minimize", () => {
+      if (win.style.display === "none") win.style.display = "block";
+      else this.minimizeWindow(win);
+      this.bringToFront(win);
+    });
+
+    addMenuItem(win.dataset.fullscreen === "true" ? "Restore Size" : "Maximize", () => {
+      this.toggleFullscreen(win);
+      this.bringToFront(win);
+    });
+
+    addMenuItem("Bring to Front", () => this.bringToFront(win));
+
+    addMenuItem("Properties", () => this._buildPropertiesWindow(winId));
+
+    addMenuItem("Close Window", () => {
+      this.removeFromTaskbar(winId);
+      if (win) this._animateAndRemove(win);
+    });
+  }
+
   createWindow(id, title, width = "80vw", height = "80vh", isGame = false) {
     const win = document.createElement("div");
     win.className = "window";
@@ -66,9 +157,8 @@ export class WindowManager {
       position: "absolute",
       zIndex: this.zIndexCounter++
     });
-    if (isGame) {
-      this.gameWindowCount++;
-    }
+
+    if (isGame) this.gameWindowCount++;
     this.updateTransparency();
 
     win.addEventListener("mousedown", () => this.bringToFront(win));
@@ -76,13 +166,20 @@ export class WindowManager {
     return win;
   }
 
+  mountWindow(win, winId, title, iconValue, color = null) {
+    this.makeDraggable(win);
+    this.makeResizable(win);
+    this.setupWindowControls(win);
+    this.addToTaskbar(winId, title, iconValue, color);
+    this.bringToFront(win);
+  }
+
   getWindowIconHtml(iconValue, color = null) {
     if (!iconValue) return "";
     const size = 30;
-    const isImagePath = typeof iconValue === "string" && /\.(png|jpg|jpeg|gif|webp|svg|ico)$/i.test(iconValue);
-    const isDataUrl = typeof iconValue === "string" && iconValue.startsWith("data:");
+    const { isImage, isDataUrl } = this._resolveIconType(iconValue);
 
-    if (isImagePath || isDataUrl) {
+    if (isImage || isDataUrl) {
       return `<img src="${iconValue}" style="width:${size}px;height:${size}px;margin-right:6px;vertical-align:middle;object-fit:contain;" />`;
     } else if (typeof iconValue === "string" && iconValue.length > 0) {
       const cls = iconValue.startsWith("fa") ? iconValue : `fa ${iconValue}`;
@@ -92,6 +189,29 @@ export class WindowManager {
     return "";
   }
 
+  _buildTaskbarIcon(iconValue, title, color) {
+    const { isImage, isDataUrl } = this._resolveIconType(iconValue);
+
+    if (isImage || isDataUrl) {
+      const icon = document.createElement("img");
+      icon.src = iconValue;
+      return icon;
+    }
+
+    const icon = document.createElement("i");
+    icon.alt = title;
+
+    if (typeof iconValue === "string" && iconValue.length > 0) {
+      icon.className = iconValue.startsWith("fa") ? iconValue : `fa ${iconValue}`;
+      icon.style.color = color ?? "white";
+    } else {
+      icon.className = "fas fa-window-maximize";
+      icon.style.color = "white";
+    }
+
+    return icon;
+  }
+
   addToTaskbar(winId, title, iconValue, color = null) {
     if (document.getElementById(`taskbar-${winId}`)) return;
     if (iconValue === "fas fa-video") color = "6677dd";
@@ -99,121 +219,28 @@ export class WindowManager {
     const taskbarItem = document.createElement("div");
     taskbarItem.id = `taskbar-${winId}`;
     taskbarItem.className = "taskbar-item";
-
-    let icon;
-
-    const isImagePath = typeof iconValue === "string" && /\.(png|jpg|jpeg|gif|webp|svg|ico)$/i.test(iconValue);
-    const isDataUrl = typeof iconValue === "string" && iconValue.startsWith("data:");
-
-    if (isImagePath || isDataUrl) {
-      icon = document.createElement("img");
-      icon.src = iconValue;
-    } else if (typeof iconValue === "string" && iconValue.length > 0) {
-      icon = document.createElement("i");
-      icon.style.color = color ?? "white";
-      icon.alt = title;
-      icon.className = iconValue.startsWith("fa") ? iconValue : `fa ${iconValue}`;
-    } else {
-      icon = document.createElement("i");
-      icon.className = "fas fa-window-maximize";
-      icon.style.color = "white";
-      icon.alt = title;
-    }
-
-    taskbarItem.appendChild(icon);
+    taskbarItem.appendChild(this._buildTaskbarIcon(iconValue, title, color));
 
     taskbarItem.onclick = () => {
       const win = document.getElementById(winId);
-      if (win) {
-        if (win.style.display === "none") {
-          win.style.display = "block";
-          taskbarItem.classList.add("active");
-        } else {
-          this.bringToFront(win);
-        }
+      if (!win) return;
+      if (win.style.display === "none") {
+        win.style.display = "block";
+        taskbarItem.classList.remove("minimized");
       }
+      this.bringToFront(win);
     };
+
     taskbarItem.oncontextmenu = (e) => {
       e.preventDefault();
-
       const win = document.getElementById(winId);
-
-      showStartStyleMenu(e, (addMenuItem) => {
-        addMenuItem(win.style.display === "none" ? "Restore" : "Minimize", () => {
-          if (win.style.display === "none") win.style.display = "block";
-          else this.minimizeWindow(win);
-          this.bringToFront(win);
-        });
-
-        addMenuItem(win.dataset.fullscreen === "true" ? "Restore Size" : "Maximize", () => {
-          this.toggleFullscreen(win);
-          this.bringToFront(win);
-        });
-
-        addMenuItem("Bring to Front", () => this.bringToFront(win));
-
-        addMenuItem("Properties", () => {
-          const win = document.getElementById(winId);
-          if (!win) return;
-
-          const appInfo = this.openWindows.get(winId);
-          if (!appInfo) return;
-
-          const dataset = win.dataset;
-          const rect = win.getBoundingClientRect();
-
-          const infoLines = [
-            `Window ID: ${winId}`,
-            `Title: ${appInfo.title}`,
-            dataset.appType ? `Type: ${dataset.appType}` : "",
-            dataset.appId ? `App ID: ${dataset.appId}` : "",
-            dataset.swf ? `SWF Path: ${dataset.swf}` : "",
-            dataset.rom ? `ROM: ${dataset.rom}` : "",
-            dataset.core ? `Core: ${dataset.core}` : "",
-            dataset.externalUrl ? `URL: ${dataset.externalUrl}` : "",
-            `Width: ${Math.round(rect.width)}px`,
-            `Height: ${Math.round(rect.height)}px`,
-            `Left: ${Math.round(rect.left)}px`,
-            `Top: ${Math.round(rect.top)}px`,
-            `Z-Index: ${win.style.zIndex}`,
-            `Fullscreen: ${dataset.fullscreen === "true" ? "Yes" : "No"}`
-          ].filter(Boolean);
-
-          const contentHtml = infoLines.map((line) => `<div style="margin:2px 0;">${line}</div>`).join("");
-
-          const propsWin = this.createWindow(`${winId}-props`, `Properties: ${appInfo.title}`, "40vw", "40vh");
-
-          const propsIconHtml = this.getWindowIconHtml(appInfo.iconValue, appInfo.color);
-
-          propsWin.innerHTML = `
-            <div class="window-header">
-              <span>${propsIconHtml}Properties: ${appInfo.title}</span>
-              ${this.getWindowControls()}
-            </div>
-            <div class="window-content" style="width:100%; height:100%; overflow:auto; user-select:text;">
-              ${contentHtml}
-            </div>
-          `;
-
-          desktop.appendChild(propsWin);
-          this.makeDraggable(propsWin);
-          this.makeResizable(propsWin);
-          this.setupWindowControls(propsWin);
-        });
-
-        addMenuItem("Close Window", () => {
-          this.removeFromTaskbar(winId);
-          if (win) {
-            win.style.animation = "popUp 0.5s ease forwards";
-            setTimeout(() => win.remove(), 500);
-          }
-        });
-      });
+      showStartStyleMenu(e, (addMenuItem) => this._buildContextMenuItems(addMenuItem, win));
     };
 
     const taskbarWindows = document.getElementById("taskbar-windows");
     taskbarWindows.appendChild(taskbarItem);
     this.openWindows.set(winId, { taskbarItem, title, iconValue, color });
+
     const win = document.getElementById(winId);
     if (win) {
       const headerSpan = win.querySelector(".window-header > span");
@@ -223,9 +250,7 @@ export class WindowManager {
           const temp = document.createElement("div");
           temp.innerHTML = iconHtml;
           const iconEl = temp.firstElementChild;
-          if (iconEl) {
-            headerSpan.insertBefore(iconEl, headerSpan.firstChild);
-          }
+          if (iconEl) headerSpan.insertBefore(iconEl, headerSpan.firstChild);
         }
       }
     }
@@ -234,28 +259,63 @@ export class WindowManager {
   registerCloseWindow(closeButton, winId) {
     closeButton.addEventListener("click", () => {
       const win = document.getElementById(winId);
-      if (win) {
-        win.style.animation = "popUp 0.5s ease forwards";
-        setTimeout(() => win.remove(), 500);
-      } else return;
+      if (!win) return;
+      this._animateAndRemove(win);
       this.removeFromTaskbar(winId);
     });
+  }
+
+  updatePageFavicon(iconValue, title) {
+    document.title = title || this.initialTitle;
+    const link = this._getFaviconLink();
+    link.href = this.initialFavicon || "";
+
+    const { isImage, isDataUrl } = this._resolveIconType(iconValue);
+    if (isImage || isDataUrl) link.href = iconValue;
+  }
+
+  resetToDefaultState() {
+    document.title = this.initialTitle;
+    const link = this._getFaviconLink();
+    link.href = this.initialFavicon || "";
+  }
+
+  bringToFront(win) {
+    if (!win) return;
+
+    this.openWindows.forEach(({ taskbarItem }) => taskbarItem.classList.remove("active"));
+
+    const entry = this.openWindows.get(win.id);
+    if (entry?.taskbarItem) {
+      entry.taskbarItem.classList.add("active");
+      entry.taskbarItem.classList.remove("minimized");
+      this.updatePageFavicon(entry.iconValue, entry.title);
+      document.title = entry.title || "YukiOS";
+    }
+
+    win.style.zIndex = this.zIndexCounter++;
   }
 
   removeFromTaskbar(winId) {
     const taskbarItem = document.getElementById(`taskbar-${winId}`);
     if (taskbarItem) taskbarItem.remove();
     this.openWindows.delete(winId);
-  }
 
-  bringToFront(win) {
-    if (win) win.style.zIndex = this.zIndexCounter++;
+    if (this.openWindows.size === 0) {
+      this.resetToDefaultState();
+    } else {
+      const lastWin = Array.from(this.openWindows.values()).pop();
+      if (lastWin) this.updatePageFavicon(lastWin.iconValue, lastWin.title);
+    }
   }
 
   minimizeWindow(win) {
     win.style.display = "none";
     const taskbarItem = document.getElementById(`taskbar-${win.id}`);
-    if (taskbarItem) taskbarItem.style.background = "#1a1a1a";
+    if (taskbarItem) {
+      taskbarItem.classList.remove("active");
+      taskbarItem.classList.add("minimized");
+    }
   }
 
   toggleFullscreen(win) {
@@ -263,9 +323,7 @@ export class WindowManager {
     const header = win.querySelector(".window-header");
 
     if (wasFullscreen) {
-      if (document.fullscreenElement === win) {
-        document.exitFullscreen();
-      }
+      if (document.fullscreenElement === win) document.exitFullscreen();
 
       Object.assign(win.style, {
         width: win.dataset.prevWidth,
@@ -285,12 +343,7 @@ export class WindowManager {
       });
 
       const makeFullscreen = () => {
-        Object.assign(win.style, {
-          width: "100vw",
-          height: "100vh",
-          left: "0",
-          top: "0"
-        });
+        Object.assign(win.style, { width: "100vw", height: "100vh", left: "0", top: "0" });
         if (header) header.style.display = "none";
       };
 
@@ -319,87 +372,18 @@ export class WindowManager {
       const iframe = win.querySelector("iframe");
       if (iframe) iframe.src = "about:blank";
       this.removeFromTaskbar(win.id);
-      const isGame = win.dataset.isGame === "true";
-      if (isGame) {
+      if (win.dataset.isGame === "true") {
         this.gameWindowCount = Math.max(0, this.gameWindowCount - 1);
       }
       this.updateTransparency();
-      win.style.animation = "popUp 0.5s ease forwards";
-      setTimeout(() => win.remove(), 500);
+      this._animateAndRemove(win);
     };
     win.querySelector(".minimize-btn").onclick = () => this.minimizeWindow(win);
     win.querySelector(".maximize-btn").onclick = () => this.toggleFullscreen(win);
   }
 
   _showWindowContextMenu(e, win) {
-    const winId = win.id;
-
-    showStartStyleMenu(e, (addMenuItem) => {
-      addMenuItem(win.style.display === "none" ? "Restore" : "Minimize", () => {
-        if (win.style.display === "none") win.style.display = "block";
-        else this.minimizeWindow(win);
-        this.bringToFront(win);
-      });
-
-      addMenuItem(win.dataset.fullscreen === "true" ? "Restore Size" : "Maximize", () => {
-        this.toggleFullscreen(win);
-        this.bringToFront(win);
-      });
-
-      addMenuItem("Bring to Front", () => this.bringToFront(win));
-
-      addMenuItem("Properties", () => {
-        const appInfo = this.openWindows.get(winId);
-        if (!appInfo) return;
-
-        const dataset = win.dataset;
-        const rect = win.getBoundingClientRect();
-
-        const infoLines = [
-          `Window ID: ${winId}`,
-          `Title: ${appInfo.title}`,
-          dataset.appType ? `Type: ${dataset.appType}` : "",
-          dataset.appId ? `App ID: ${dataset.appId}` : "",
-          dataset.swf ? `SWF Path: ${dataset.swf}` : "",
-          dataset.rom ? `ROM: ${dataset.rom}` : "",
-          dataset.core ? `Core: ${dataset.core}` : "",
-          dataset.externalUrl ? `URL: ${dataset.externalUrl}` : "",
-          `Width: ${Math.round(rect.width)}px`,
-          `Height: ${Math.round(rect.height)}px`,
-          `Left: ${Math.round(rect.left)}px`,
-          `Top: ${Math.round(rect.top)}px`,
-          `Z-Index: ${win.style.zIndex}`,
-          `Fullscreen: ${dataset.fullscreen === "true" ? "Yes" : "No"}`
-        ].filter(Boolean);
-
-        const contentHtml = infoLines.map((line) => `<div style="margin:2px 0;">${line}</div>`).join("");
-
-        const propsWin = this.createWindow(`${winId}-props`, `Properties: ${appInfo.title}`, "40vw", "40vh");
-
-        const propsIconHtml = this.getWindowIconHtml(appInfo.iconValue, appInfo.color);
-
-        propsWin.innerHTML = `
-          <div class="window-header">
-            <span>${propsIconHtml}Properties: ${appInfo.title}</span>
-            ${this.getWindowControls()}
-          </div>
-          <div class="window-content" style="width:100%; height:100%; overflow:auto; user-select:text;">
-            ${contentHtml}
-          </div>
-        `;
-
-        desktop.appendChild(propsWin);
-        this.makeDraggable(propsWin);
-        this.makeResizable(propsWin);
-        this.setupWindowControls(propsWin);
-      });
-
-      addMenuItem("Close Window", () => {
-        this.removeFromTaskbar(winId);
-        win.style.animation = "popUp 0.5s ease forwards";
-        setTimeout(() => win.remove(), 500);
-      });
-    });
+    showStartStyleMenu(e, (addMenuItem) => this._buildContextMenuItems(addMenuItem, win));
   }
 
   makeDraggable(win) {
@@ -415,10 +399,11 @@ export class WindowManager {
 
       this.bringToFront(win);
       e.stopPropagation();
-
       this.isDraggingWindow = true;
+
       const ox = e.clientX - win.offsetLeft;
       const oy = e.clientY - win.offsetTop;
+
       document.onmousemove = (e) => {
         win.style.left = `${e.clientX - ox}px`;
         win.style.top = `${e.clientY - oy}px`;
@@ -443,20 +428,20 @@ export class WindowManager {
       return dir;
     };
 
+    const cursorMap = {
+      n: "n-resize",
+      s: "s-resize",
+      w: "w-resize",
+      e: "e-resize",
+      nw: "nw-resize",
+      ne: "ne-resize",
+      sw: "sw-resize",
+      se: "se-resize",
+      "": "default"
+    };
+
     win.addEventListener("mousemove", (e) => {
-      const dir = getDirection(e);
-      const cursorMap = {
-        n: "n-resize",
-        s: "s-resize",
-        w: "w-resize",
-        e: "e-resize",
-        nw: "nw-resize",
-        ne: "ne-resize",
-        sw: "sw-resize",
-        se: "se-resize",
-        "": "default"
-      };
-      win.style.cursor = cursorMap[dir] || "default";
+      win.style.cursor = cursorMap[getDirection(e)] || "default";
     });
 
     win.addEventListener("mousedown", (e) => {
@@ -465,6 +450,7 @@ export class WindowManager {
 
       this.bringToFront(win);
       e.preventDefault();
+
       const startX = e.clientX;
       const startY = e.clientY;
       const rect = win.getBoundingClientRect();
@@ -472,6 +458,7 @@ export class WindowManager {
       const startHeight = rect.height;
       const startLeft = rect.left;
       const startTop = rect.top;
+      const MIN_SIZE = 300;
 
       const doDrag = (e) => {
         let newWidth = startWidth;
@@ -489,7 +476,6 @@ export class WindowManager {
           newHeight = startHeight - (e.clientY - startY);
           newTop = startTop + (e.clientY - startY);
         }
-        const MIN_SIZE = 300;
 
         if (newWidth > MIN_SIZE) {
           win.style.width = `${newWidth}px`;
@@ -499,10 +485,7 @@ export class WindowManager {
           win.style.height = `${newHeight}px`;
           win.style.top = `${newTop}px`;
         }
-        if (setHeightUnsetElement) {
-          const s = setHeightUnsetElement.style;
-          if (s) s.height = "unset";
-        }
+        if (setHeightUnsetElement?.style) setHeightUnsetElement.style.height = "unset";
       };
 
       const stopDrag = () => {
@@ -516,17 +499,20 @@ export class WindowManager {
   }
 
   getWindowControls(externalUrl) {
+    const externalBtn = externalUrl ? `<button class="external-btn" title="Open in External">↗</button>` : "";
+
     if (window._settings?.macOsControls) {
       return `<div class="window-controls mac-controls">
         <button class="close-btn mac-btn mac-close" title="Close"></button>
-        ${externalUrl ? ` <button class="external-btn" title="Open in External">↗</button>` : ""}
+        ${externalBtn}
         <button class="minimize-btn mac-btn mac-minimize" title="Minimize"></button>
         <button class="maximize-btn mac-btn mac-maximize" title="Maximize"></button>
       </div>`;
     }
+
     return `<div class="window-controls">
       <button class="minimize-btn" title="Minimize"><svg viewBox="0 0 10 1" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h10v1H0z"></path></svg></button>
-      ${externalUrl ? ` <button class="external-btn" title="Open in External">↗</button>` : ""}
+      ${externalBtn}
       <button class="maximize-btn" title="Maximize"><svg viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg"><path d="M0 0v10h10V0H0zm1 1h8v8H1V1z"></path></svg></button>
       <button class="close-btn" title="Close"><svg viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg"><path d="M10.2.7L9.5 0 5.1 4.4.7 0 0 .7l4.4 4.4L0 9.5l.7.7 4.4-4.4 4.4 4.4.7-.7-4.4-4.4z"></path></svg></button>
     </div>`;
@@ -534,40 +520,40 @@ export class WindowManager {
 
   sendNotify(text) {
     const popup = document.createElement("div");
-    this.notificationCenter.addNotification(text);
+    this.notificationCenter.addNotification(text, "");
     popup.innerHTML = `
-        <div  style="display:flex; align-items:flex-start;">
-            <div style="flex-shrink:0; width:24px; height:24px; margin-right:8px; background:#0078d7; color:#fff; font-weight:bold; font-family:sans-serif; display:flex; justify-content:center; align-items:center; border-radius:50%;">i</div>
-            <div style="flex:1;">
-                <div style="color:#0078d7; font-weight:bold; font-size:13px; line-height:1.2;">Notification</div>
-                <div style="margin-top:2px; font-weight:normal; font-size:12px; color:#000;">${text}</div>
-            </div>
-            <div style="flex-shrink:0; margin-left:8px; font-weight:bold; cursor:pointer; color:#666;">×</div>
+      <div style="display:flex; align-items:flex-start;">
+        <div style="flex-shrink:0; width:24px; height:24px; margin-right:8px; background:#0078d7; color:#fff; font-weight:bold; font-family:sans-serif; display:flex; justify-content:center; align-items:center; border-radius:50%;">i</div>
+        <div style="flex:1;">
+          <div style="color:#0078d7; font-weight:bold; font-size:13px; line-height:1.2;">Notification</div>
+          <div style="margin-top:2px; font-weight:normal; font-size:12px; color:#000;">${text}</div>
         </div>
-        <div style="position:absolute; bottom:-8px; right:16px; width:0; height:0; border-left:8px solid transparent; border-right:8px solid transparent; border-top:8px solid #fff;"></div>
+        <div style="flex-shrink:0; margin-left:8px; font-weight:bold; cursor:pointer; color:#666;">×</div>
+      </div>
+      <div style="position:absolute; bottom:-8px; right:16px; width:0; height:0; border-left:8px solid transparent; border-right:8px solid transparent; border-top:8px solid #fff;"></div>
     `;
     popup.className = "tray-notify";
-    const closeBtn = popup.querySelector("div:last-child");
-    closeBtn.addEventListener("click", () => {
+
+    const dismiss = () => {
+      popup.style.bottom = "-100px";
+      popup.style.opacity = "0";
+      setTimeout(() => popup.remove(), 500);
+    };
+
+    popup.querySelector("div:last-child").addEventListener("click", (e) => {
+      e.stopPropagation();
       popup.style.bottom = "50px";
       popup.style.opacity = "0";
       setTimeout(() => popup.remove(), 500);
     });
 
-    popup.addEventListener("click", () => {
-      popup.style.bottom = "-100px";
-      popup.style.opacity = "0";
-      setTimeout(() => popup.remove(), 500);
-    });
+    popup.addEventListener("click", dismiss);
     document.body.appendChild(popup);
+
     setTimeout(() => {
       popup.style.bottom = "50px";
       popup.style.opacity = "1";
     }, 10);
-    setTimeout(() => {
-      popup.style.bottom = "-100px";
-      popup.style.opacity = "0";
-      setTimeout(() => popup.remove(), 500);
-    }, 5000);
+    setTimeout(dismiss, 5000);
   }
 }

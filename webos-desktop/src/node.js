@@ -509,34 +509,33 @@ export class NodeEditorApp {
     pkgList.innerHTML = "";
 
     if (this._pkgCache.size === 0) {
-      pkgList.innerHTML = '<li style="opacity:0.4;padding:4px 2px">No packages installed yet.</li>';
+      pkgList.innerHTML = '<li class="pkg-list__empty">No packages installed yet.</li>';
       return;
     }
 
     for (const [name, { version }] of this._pkgCache.entries()) {
       const li = document.createElement("li");
-      li.style.cssText =
-        "display:flex;align-items:center;justify-content:space-between;padding:4px 2px;border-bottom:1px solid rgba(255,255,255,0.05)";
+      li.className = "pkg-list__item";
 
       const label = document.createElement("span");
       label.textContent = `${name}`;
-      label.style.fontWeight = "600";
+      label.className = "pkg-list__label";
 
       const ver = document.createElement("span");
       ver.textContent = `v${version}`;
-      ver.style.cssText = "opacity:0.5;font-size:10px;margin-left:6px";
+      ver.className = "pkg-list__version";
 
       const removeBtn = document.createElement("button");
       removeBtn.innerHTML = '<i class="fas fa-times"></i>';
       removeBtn.title = `Remove ${name}`;
-      removeBtn.style.cssText =
-        "background:none;border:none;cursor:pointer;opacity:0.5;padding:2px 4px;color:inherit;font-size:11px";
+      removeBtn.className = "pkg-list__remove";
       removeBtn.addEventListener("click", () => {
         this._pkgCache.delete(name);
         this._renderPkgList(pkgList);
       });
 
       const left = document.createElement("span");
+      left.className = "pkg-list__left";
       left.appendChild(label);
       left.appendChild(ver);
 
@@ -545,7 +544,6 @@ export class NodeEditorApp {
       pkgList.appendChild(li);
     }
   }
-
   _setRunning(win, running) {
     const dot = win.querySelector("#statusDot");
     const label = win.querySelector("#statusLabel");

@@ -508,8 +508,15 @@ export class FileSystemManager {
     const uniqueName = await this.getUniqueFileName(folderPath, name);
     const dir = this.resolveDir(folderPath);
     const fullPath = this.join(dir, uniqueName);
-    const fileKind = kind || FileKind.VIDEO;
-    const fileIcon = icon || "/static/icons/video.webp";
+    const inferredKind = kind || this.inferKind(name);
+
+    let defaultIcon = "/static/icons/file.webp";
+    if (inferredKind === FileKind.IMAGE) defaultIcon = "fas fa-image";
+    if (inferredKind === FileKind.VIDEO) defaultIcon = "fas fa-film";
+    if (inferredKind === FileKind.TEXT) defaultIcon = "/static/icons/notepad.webp";
+
+    const fileKind = inferredKind;
+    const fileIcon = icon || defaultIcon;
 
     await this.p("mkdir", dir, { recursive: true }).catch(() => {});
     await this.p("writeFile", fullPath, "");

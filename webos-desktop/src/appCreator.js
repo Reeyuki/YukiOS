@@ -17,7 +17,7 @@ function resolvedIcon(iconUrl) {
 
 function isImageIcon(iconValue) {
   if (typeof iconValue !== "string") return false;
-  return /\.(png|jpg|jpeg|gif|webp|svg|ico)$/i.test(iconValue) || iconValue.startsWith("data:");
+  return isImageFile(iconValue) || iconValue.startsWith("data:");
 }
 
 function buildAppMapEntry(name, url, icon) {
@@ -452,8 +452,7 @@ export class AppCreatorApp {
         existingImg.src = iconUrl;
         existingImg.onerror = () => {
           const i = document.createElement("i");
-          i.className = AC.FALLBACK_ICON;
-          i.style.cssText = "font-size:48px;pointer-events:none;";
+          i.className = `${AC.FALLBACK_ICON} desktop-icon__fallback`;
           existingImg.replaceWith(i);
         };
       } else if (existingI) {
@@ -461,8 +460,7 @@ export class AppCreatorApp {
         img.src = iconUrl;
         img.onerror = () => {
           const i = document.createElement("i");
-          i.className = AC.FALLBACK_ICON;
-          i.style.cssText = "font-size:48px;pointer-events:none;";
+          i.className = `${AC.FALLBACK_ICON} desktop-icon__fallback`;
           img.replaceWith(i);
         };
         existingI.replaceWith(img);
@@ -471,10 +469,10 @@ export class AppCreatorApp {
       const cls = iconUrl || AC.FALLBACK_ICON;
       if (existingI) {
         existingI.className = cls;
+        existingI.classList.add("desktop-icon__fallback");
       } else if (existingImg) {
         const i = document.createElement("i");
-        i.className = cls;
-        i.style.cssText = "font-size:48px;pointer-events:none;";
+        i.className = `${cls} desktop-icon__fallback`;
         existingImg.replaceWith(i);
       }
     }

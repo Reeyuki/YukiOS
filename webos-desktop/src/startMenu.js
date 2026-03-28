@@ -2,6 +2,7 @@ import { appMap } from "./games.js";
 import { camelize } from "./utils.js";
 import { StorageKeys } from "./settings.js";
 import { speak } from "./clippy.js";
+import { isImageFile } from "./utils.js";
 
 function getFavorites() {
   return JSON.parse(localStorage.getItem(StorageKeys.favoritesKey)) || [];
@@ -218,7 +219,7 @@ export function populateStartMenu(appLauncher) {
 
     let icon = null;
 
-    const isImagePath = typeof iconValue === "string" && /\.(png|jpg|jpeg|gif|webp|svg|ico)$/i.test(iconValue);
+    const isImagePath = isImageFile(iconValue);
     if (isImagePath) {
       icon = document.createElement("img");
       icon.classList.add("start-item-icon");

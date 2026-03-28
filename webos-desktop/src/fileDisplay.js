@@ -18,7 +18,7 @@ export const OFFICE_EXTS = [
   "ppt",
   "rtf"
 ];
-export const ZIP_EXTS = ["zip"];
+export const ZIP_EXTS = ["zip", "gz", "tgz", "tar", "rar", "7z", "bz2", "xz"];
 
 import { ROM_EXTS, detectCore } from "./shared/coreMap.js";
 export { ROM_EXTS };

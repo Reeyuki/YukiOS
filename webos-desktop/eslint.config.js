@@ -17,6 +17,5 @@ export default [
       "no-console": "off"
     }
   },
-  js.configs.recommended,
   prettier
 ];

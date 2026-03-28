@@ -1,8 +1,7 @@
 import { desktop } from "./desktop.js";
 import { FileKind } from "./fs.js";
-import { unzip, gunzip, strFromU8 } from "fflate";
 import { SystemUtilities } from "./system.js";
-import { appMap, GamesAppRenderer, FlashAppRenderer, SystemAppRenderer } from "./games.js";
+import { appMap } from "./games.js";
 import {
   fileKindFromName,
   isImageFile,
@@ -17,8 +16,21 @@ import {
 } from "./fileDisplay.js";
 import { renderWallpapersPage } from "./wallpapers.js";
 import { showConflictDialog } from "./shared/conflictDialog.js";
-import { showDynamicContextMenu, hideMenu } from "./shared/contextMenu.js";
+import { showDynamicContextMenu } from "./shared/contextMenu.js";
 import { speak } from "./clippy.js";
+import { ArchiveExtractor } from "./archiveExtractor.js";
+import {
+  formatSize,
+  pluralize,
+  isArchiveFile,
+  decodeFileContent,
+  buildClipboardIcons,
+  isWindowFocused,
+  splitWebkitPath
+} from "./utils.js";
+
+const BINARY_OFFICE_EXTS = [".pdf", ".docx", ".xlsx", ".xls", ".pptx", ".ppt"];
+const ARCHIVE_EXTS = [".zip", ".gz", ".tgz", ".tar", ".rar", ".7z", ".bz2", ".xz"];
 
 export class ExplorerApp {
   constructor(fileSystemManager, windowManager, notepadApp, markdownApp) {
@@ -30,6 +42,23 @@ export class ExplorerApp {
     this.desktopUI = null;
     this.open = this.open.bind(this);
     this._instances = new Map();
+    this._archiveExtractor = new ArchiveExtractor(fileSystemManager, (msg) => windowManager.sendNotify(msg));
+  }
+
+  setEmulator(emulatorApp) {
+    this.emulatorApp = emulatorApp;
+  }
+  setBrowser(browserApp) {
+    this.browserApp = browserApp;
+  }
+  setDesktopUI(desktopUI) {
+    this.desktopUI = desktopUI;
+  }
+  setOfficeApp(officeApp) {
+    this.officeApp = officeApp;
+  }
+  setAppLauncher(appLauncher) {
+    this.appLauncher = appLauncher;
   }
 
   _createInstance(winId, callback, notepadRef, mode) {
@@ -51,27 +80,66 @@ export class ExplorerApp {
   _getInstance(winId) {
     return this._instances.get(winId);
   }
-
   _removeInstance(winId) {
     this._instances.delete(winId);
   }
 
-  setEmulator(emulatorApp) {
-    this.emulatorApp = emulatorApp;
+  _getClipboard() {
+    return this.desktopUI?.state?.clipboard ?? null;
+  }
+  _setClipboard(data) {
+    if (this.desktopUI) this.desktopUI.state.clipboard = data;
   }
 
-  setBrowser(browserApp) {
-    this.browserApp = browserApp;
+  _watchWindowRemoval(winId) {
+    const observer = new MutationObserver(() => {
+      if (!document.getElementById(winId)) {
+        this._removeInstance(winId);
+        observer.disconnect();
+      }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
   }
 
-  setDesktopUI(desktopUI) {
-    this.desktopUI = desktopUI;
+  _closeWindow(winId) {
+    const win = document.getElementById(winId);
+    if (win) win.remove();
+    this._removeInstance(winId);
   }
-  setOfficeApp(officeApp) {
-    this.officeApp = officeApp;
+
+  _sidebarHTML() {
+    return `
+      <div class="explorer-sidebar">
+        <div class="start-item" data-path=""><img src="/static/icons/files.webp" class="sidebar-icon">Home</div>
+        <div class="start-item" data-path="Documents"><img src="/static/icons/notepad.webp" class="sidebar-icon">Documents</div>
+        <div class="start-item" data-path="Desktop"><i class="fas fa-desktop sidebar-icon-fa"></i>Desktop</div>
+        <div class="start-item" data-path="Pictures"><i class="fas fa-image sidebar-icon-fa"></i>Pictures</div>
+        <div class="start-item" data-path="Videos"><i class="fas fa-video sidebar-icon-fa"></i>Videos</div>
+        <div class="start-item" data-path="Pictures/Wallpapers"><i class="fas fa-panorama sidebar-icon-fa"></i>Wallpapers</div>
+      </div>`;
   }
-  setAppLauncher(appLauncher) {
-    this.appLauncher = appLauncher;
+
+  _bindSidebar(win, inst) {
+    win.querySelectorAll(".explorer-sidebar .start-item").forEach((item) => {
+      item.onclick = () => this.navigateInstance(inst, item.dataset.path.split("/").filter(Boolean));
+    });
+  }
+
+  _bindBackButton(win, inst) {
+    win.querySelector(`#${inst.winId}-back`).onclick = async () => {
+      if (inst.historyIndex > 0) {
+        inst.historyIndex--;
+        inst.currentPath = [...inst.history[inst.historyIndex]];
+        await this.renderInstance(inst);
+      }
+    };
+  }
+
+  _initExplorerView(win, winId) {
+    const view = win.querySelector(`#${winId}-view`);
+    view.style.width = "600px";
+    view.style.height = "unset";
+    return view;
   }
 
   async open(callback = null, notepadRef = null) {
@@ -125,14 +193,7 @@ export class ExplorerApp {
         }
       </div>
       <div class="explorer-container">
-        <div class="explorer-sidebar">
-          <div class="start-item" data-path=""><img src="/static/icons/files.webp" class="sidebar-icon">Home</div>
-          <div class="start-item" data-path="Documents"><img src="/static/icons/notepad.webp" class="sidebar-icon">Documents</div>
-          <div class="start-item" data-path="Desktop"><i class="fas fa-desktop sidebar-icon-fa"></i>Desktop</div>
-          <div class="start-item" data-path="Pictures"><i class="fas fa-image sidebar-icon-fa"></i>Pictures</div>
-          <div class="start-item" data-path="Videos"><i class="fas fa-video sidebar-icon-fa"></i>Videos</div>
-          <div class="start-item" data-path="Pictures/Wallpapers"><i class="fas fa-panorama sidebar-icon-fa"></i>Wallpapers</div>
-        </div>
+        ${this._sidebarHTML()}
         <div class="explorer-main" id="${winId}-view"></div>
       </div>
       ${
@@ -161,13 +222,11 @@ export class ExplorerApp {
     `;
 
     desktop.appendChild(win);
-    const explorerView = win.querySelector(`#${winId}-view`);
-    explorerView.style.width = "600px";
-    explorerView.style.height = "unset";
+    this._initExplorerView(win, winId);
 
     this.wm.makeDraggable(win);
     const self = this;
-    const wallpaperViewProxy = {
+    this.wm.makeResizable(win, {
       get style() {
         const i = self._getInstance(winId);
         if (i && i.currentPath.join("/") === "Pictures/Wallpapers") {
@@ -175,18 +234,11 @@ export class ExplorerApp {
         }
         return null;
       }
-    };
-    this.wm.makeResizable(win, wallpaperViewProxy);
+    });
     this.wm.setupWindowControls(win);
     this.wm.bringToFront(win);
 
-    const observer = new MutationObserver(() => {
-      if (!document.getElementById(winId)) {
-        this._removeInstance(winId);
-        observer.disconnect();
-      }
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
+    this._watchWindowRemoval(winId);
 
     if (!isSelector) {
       this.wm.addToTaskbar(win.id, "File Explorer", "/static/icons/files.webp");
@@ -210,7 +262,7 @@ export class ExplorerApp {
       </div>
       <div class="explorer-nav">
         <div class="back-btn" id="${winId}-back">← Back</div>
-        <div id="${winId}-path" ></div>
+        <div id="${winId}-path"></div>
       </div>
       <div class="explorer-container">
         <div class="explorer-sidebar">
@@ -255,23 +307,13 @@ export class ExplorerApp {
     `;
 
     desktop.appendChild(win);
-
-    const explorerView = win.querySelector(`#${winId}-view`);
-    explorerView.style.width = "600px";
-    explorerView.style.height = "unset";
+    this._initExplorerView(win, winId);
 
     this.wm.makeDraggable(win);
     this.wm.makeResizable(win);
     this.wm.setupWindowControls(win);
     this.wm.bringToFront(win);
-
-    const observer = new MutationObserver(() => {
-      if (!document.getElementById(winId)) {
-        this._removeInstance(winId);
-        observer.disconnect();
-      }
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
+    this._watchWindowRemoval(winId);
 
     const fileNameInput = win.querySelector(`#${winId}-filename-input`);
     const saveBtn = win.querySelector(`#${winId}-save-btn`);
@@ -297,151 +339,21 @@ export class ExplorerApp {
       }
       const cb = inst.saveCallback;
       inst.saveCallback = null;
-      const win = document.getElementById(winId);
-      if (win) win.remove();
-      this._removeInstance(winId);
+      this._closeWindow(winId);
       if (cb) cb(inst.currentPath, fileName);
     };
 
-    cancelBtn.onclick = () => {
-      const win = document.getElementById(winId);
-      if (win) win.remove();
-      this._removeInstance(winId);
-    };
+    cancelBtn.onclick = () => this._closeWindow(winId);
 
-    win.querySelector(`#${winId}-back`).onclick = async () => {
-      if (inst.historyIndex > 0) {
-        inst.historyIndex--;
-        inst.currentPath = [...inst.history[inst.historyIndex]];
-        await this.renderInstance(inst);
-      }
-    };
-
-    win.querySelectorAll(".explorer-sidebar .start-item").forEach((item) => {
-      item.onclick = async () => {
-        this.navigateInstance(
-          inst,
-          item.dataset.path.split("/").filter((p) => p)
-        );
-      };
-    });
-
+    this._bindBackButton(win, inst);
+    this._bindSidebar(win, inst);
     this.navigateInstance(inst, []);
   }
 
-  openFlash() {
-    const winId = "flash-app-win";
-    const existing = document.getElementById(winId);
-    if (existing) {
-      this.wm.bringToFront(existing);
-      return;
-    }
-    const win = this.wm.createWindow(winId, "Flash Games");
-    win.classList.add("window-root");
-    win.style.width = "860px";
-    win.style.height = "560px";
-    win.style.left = "100px";
-    win.style.top = "60px";
-    const flashRenderer = new FlashAppRenderer();
-    const flashCount = flashRenderer.getGames().length;
-    win.innerHTML = `
-      <div class="window-header">
-        <span>Flash Games <span class="games-app-count">${flashCount}</span></span>
-        ${this.wm.getWindowControls()}
-      </div>
-      <div class="window-content flash-app-window" style="width:100%;height:100%;overflow:auto;padding:18px;box-sizing:border-box;">
-        <div id="flash-app-container"></div>
-      </div>`;
-    desktop.appendChild(win);
-    this.wm.makeDraggable(win);
-    this.wm.makeResizable(win);
-    this.wm.setupWindowControls(win);
-    this.wm.addToTaskbar(winId, "Flash Games", "/static/icons/flash.webp");
-    const container = win.querySelector("#flash-app-container");
-    flashRenderer.render(container, (appId) => {
-      if (this.appLauncher) this.appLauncher.launch(appId);
-    });
-  }
-
-  openGamesApp() {
-    const winId = "games-app-win";
-    const existing = document.getElementById(winId);
-    if (existing) {
-      this.wm.bringToFront(existing);
-      return;
-    }
-    const win = this.wm.createWindow(winId, "Games");
-    win.classList.add("window-root");
-    win.style.width = "860px";
-    win.style.height = "560px";
-    win.style.left = "80px";
-    win.style.top = "40px";
-    const gamesRenderer = new GamesAppRenderer();
-    const gamesCount = gamesRenderer.getGames().length;
-    win.innerHTML = `
-      <div class="window-header">
-        <span>Games <span class="games-app-count">${gamesCount}</span></span>
-        ${this.wm.getWindowControls()}
-      </div>
-      <div class="window-content games-app-window" style="width:100%;height:100%;overflow:auto;padding:18px;box-sizing:border-box;">
-        <div id="games-app-container"></div>
-      </div>`;
-    desktop.appendChild(win);
-    this.wm.makeDraggable(win);
-    this.wm.makeResizable(win);
-    this.wm.setupWindowControls(win);
-    this.wm.addToTaskbar(winId, "Games", "fas fa-gamepad");
-    const container = win.querySelector("#games-app-container");
-    gamesRenderer.render(container, (appId) => {
-      if (this.appLauncher) this.appLauncher.launch(appId);
-    });
-  }
-
-  openSystemsApp(appLauncher) {
-    const winId = "system-apps-win";
-    const existing = document.getElementById(winId);
-    if (existing) {
-      this.wm.bringToFront(existing);
-      return;
-    }
-    const win = this.wm.createWindow(winId, "System Apps");
-    win.classList.add("window-root");
-    win.style.width = "600px";
-    win.style.height = "480px";
-    win.style.left = "100px";
-    win.style.top = "60px";
-
-    const systemRenderer = new SystemAppRenderer(appLauncher?.appMap);
-    const systemCount = systemRenderer.getSystemApps().length;
-
-    win.innerHTML = `
-    <div class="window-header">
-      <span>System Apps <span class="games-app-count">${systemCount}</span></span>
-      ${this.wm.getWindowControls()}
-    </div>
-    <div class="window-content games-app-window" style="width:100%;height:100%;overflow:auto;padding:18px;box-sizing:border-box;">
-      <div id="system-app-container"></div>
-    </div>`;
-    desktop.appendChild(win);
-    this.wm.makeDraggable(win);
-    this.wm.makeResizable(win);
-    this.wm.setupWindowControls(win);
-    this.wm.addToTaskbar(winId, "System Apps", "fas fa-desktop");
-    const container = win.querySelector("#system-app-container");
-    systemRenderer.render(container, (appId) => {
-      if (this.appLauncher) this.appLauncher.launch(appId);
-    });
-  }
   setupExplorerControls(win, winId) {
     const inst = this._getInstance(winId);
 
-    win.querySelector(`#${winId}-back`).onclick = async () => {
-      if (inst.historyIndex > 0) {
-        inst.historyIndex--;
-        inst.currentPath = [...inst.history[inst.historyIndex]];
-        await this.renderInstance(inst);
-      }
-    };
+    this._bindBackButton(win, inst);
 
     const nextBtn = win.querySelector(`#${winId}-next`);
     if (nextBtn) {
@@ -458,29 +370,27 @@ export class ExplorerApp {
     if (searchInput) {
       searchInput.addEventListener("input", () => {
         const query = searchInput.value.toLowerCase();
-        const view = win.querySelector(`#${winId}-view`);
-        if (!view) return;
-        view.querySelectorAll(".file-item").forEach((item) => {
-          const name = item.querySelector("span")?.textContent?.toLowerCase() || "";
-          item.style.display = name.includes(query) ? "" : "none";
-        });
+        win
+          .querySelector(`#${winId}-view`)
+          ?.querySelectorAll(".file-item")
+          .forEach((item) => {
+            const name = item.querySelector("span")?.textContent?.toLowerCase() || "";
+            item.style.display = name.includes(query) ? "" : "none";
+          });
       });
-      searchInput.addEventListener("keydown", (e) => {
-        e.stopPropagation();
-      });
+      searchInput.addEventListener("keydown", (e) => e.stopPropagation());
     }
 
-    win.querySelectorAll(".explorer-sidebar .start-item").forEach((item) => {
-      item.onclick = async () => {
-        this.navigateInstance(
-          inst,
-          item.dataset.path.split("/").filter((p) => p)
-        );
-      };
-    });
+    this._bindSidebar(win, inst);
 
     win.querySelector(`#${winId}-view`).addEventListener("contextmenu", (e) => {
       if (e.target === win.querySelector(`#${winId}-view`)) this.showBackgroundContextMenu(e, inst);
+    });
+
+    const lastMousePos = { x: 0, y: 0 };
+    win.addEventListener("mousemove", (e) => {
+      lastMousePos.x = e.clientX;
+      lastMousePos.y = e.clientY;
     });
 
     const explorerKeyHandler = (e) => {
@@ -490,30 +400,26 @@ export class ExplorerApp {
       }
       const active = document.activeElement;
       if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA" || active.isContentEditable)) return;
-      const winEl = document.getElementById(winId);
-      if (!winEl) return;
-      const winRect = winEl.getBoundingClientRect();
-      const mouseOver =
-        lastExplorerMousePos.x >= winRect.left &&
-        lastExplorerMousePos.x <= winRect.right &&
-        lastExplorerMousePos.y >= winRect.top &&
-        lastExplorerMousePos.y <= winRect.bottom;
-      if (!mouseOver && !winEl.contains(document.activeElement)) return;
-      if (!e.ctrlKey) return;
-      if (e.code !== "KeyC" && e.code !== "KeyX") return;
+      if (!isWindowFocused(winId, lastMousePos)) return;
+      if (!e.ctrlKey || (e.code !== "KeyC" && e.code !== "KeyX")) return;
       if (!inst.selectedItems.size) return;
       e.preventDefault();
+
       const action = e.code === "KeyX" ? "cut" : "copy";
-      const winView = winEl.querySelector(`#${winId}-view`);
-      const items = [...inst.selectedItems].map((name) => {
-        const itemEl = winView
-          ? [...winView.querySelectorAll(".file-item")].find((el) => el.querySelector("span")?.textContent === name)
-          : null;
-        return { name, isFile: itemEl?.dataset.isFile === "true" ?? true };
-      });
-      if (this.desktopUI?.setClipboard) {
-        this.desktopUI.setClipboard({ action, items, sourcePath: inst.currentPath });
-      }
+      const view = win.querySelector(`#${winId}-view`);
+      const icons = [...inst.selectedItems]
+        .map((name) => {
+          const el = view
+            ? [...view.querySelectorAll(".file-item")].find((el) => el.querySelector("span")?.textContent === name)
+            : null;
+          return { name, isFile: el?.dataset.isFile === "true" ?? true };
+        })
+        .map(({ name, isFile }) => ({
+          element: null,
+          data: { name, path: inst.currentPath, isFile }
+        }));
+
+      this._setClipboard({ action, items: icons, sourcePath: inst.currentPath });
     };
     document.addEventListener("keydown", explorerKeyHandler);
 
@@ -522,71 +428,49 @@ export class ExplorerApp {
         document.removeEventListener("keydown", renameKeyHandler);
         return;
       }
-
       const active = document.activeElement;
       if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA" || active.isContentEditable)) return;
-
-      const winEl = document.getElementById(winId);
-      if (!winEl) return;
-
-      const winRect = winEl.getBoundingClientRect();
-      const mouseOver =
-        lastExplorerMousePos.x >= winRect.left &&
-        lastExplorerMousePos.x <= winRect.right &&
-        lastExplorerMousePos.y >= winRect.top &&
-        lastExplorerMousePos.y <= winRect.bottom;
-
-      if (!mouseOver && !winEl.contains(document.activeElement)) return;
-
-      if (e.key !== "F2") return;
-
+      if (!isWindowFocused(winId, lastMousePos) || e.key !== "F2") return;
       e.preventDefault();
 
       const selectedName = inst.selectedFile || (inst.selectedItems.size === 1 ? [...inst.selectedItems][0] : null);
       if (!selectedName) return;
 
-      const winView = winEl.querySelector(`#${winId}-view`);
-      if (!winView) return;
-
-      const itemEl = [...winView.querySelectorAll(".file-item")].find(
-        (el) => el.querySelector("span")?.textContent === selectedName
-      );
-
-      if (itemEl) {
-        this._startInlineRename(itemEl, selectedName, inst);
-      }
+      const view = win.querySelector(`#${winId}-view`);
+      const itemEl =
+        view &&
+        [...view.querySelectorAll(".file-item")].find((el) => el.querySelector("span")?.textContent === selectedName);
+      if (itemEl) this._startInlineRename(itemEl, selectedName, inst);
     };
-
     document.addEventListener("keydown", renameKeyHandler);
-    const lastExplorerMousePos = { x: 0, y: 0 };
-    win.addEventListener("mousemove", (e) => {
-      lastExplorerMousePos.x = e.clientX;
-      lastExplorerMousePos.y = e.clientY;
-    });
 
+    this._setupSelectionBox(win, winId);
+    this._setupDropZone(win, winId);
+    this._setupUploadInputs(win, winId, inst);
+  }
+
+  _setupSelectionBox(win, winId) {
     const view = win.querySelector(`#${winId}-view`);
     const selBox = document.createElement("div");
-    selBox.style.cssText = `
-      position:absolute;border:1px solid rgba(79,158,255,0.7);
-      background:rgba(79,158,255,0.12);pointer-events:none;display:none;z-index:10;
-    `;
+    selBox.className = "explorer-selbox";
     view.style.position = "relative";
     view.appendChild(selBox);
 
     const selState = { active: false, startX: 0, startY: 0 };
 
     view.addEventListener("mousedown", (e) => {
-      if (e.button !== 0) return;
-      if (e.target !== view && e.target !== selBox) return;
+      if (e.button !== 0 || (e.target !== view && e.target !== selBox)) return;
       const rect = view.getBoundingClientRect();
       selState.active = true;
       selState.startX = e.clientX - rect.left + view.scrollLeft;
       selState.startY = e.clientY - rect.top + view.scrollTop;
-      selBox.style.display = "block";
-      selBox.style.left = selState.startX + "px";
-      selBox.style.top = selState.startY + "px";
-      selBox.style.width = "0px";
-      selBox.style.height = "0px";
+      Object.assign(selBox.style, {
+        display: "block",
+        left: selState.startX + "px",
+        top: selState.startY + "px",
+        width: "0px",
+        height: "0px"
+      });
     });
 
     view.addEventListener("mousemove", (e) => {
@@ -600,16 +484,16 @@ export class ExplorerApp {
       const y = Math.min(curY, selState.startY);
       const w = Math.abs(curX - selState.startX);
       const h = Math.abs(curY - selState.startY);
-      selBox.style.left = x + "px";
-      selBox.style.top = y + "px";
-      selBox.style.width = w + "px";
-      selBox.style.height = h + "px";
+
+      Object.assign(selBox.style, { left: x + "px", top: y + "px", width: w + "px", height: h + "px" });
 
       const boxRect = { left: x, top: y, right: x + w, bottom: y + h };
+
       if (!e.ctrlKey) {
         view.querySelectorAll(".file-item.explorer-selected").forEach((el) => el.classList.remove("explorer-selected"));
         i.selectedItems = new Set();
       }
+
       view.querySelectorAll(".file-item").forEach((item) => {
         const r = item.getBoundingClientRect();
         const vr = view.getBoundingClientRect();
@@ -635,6 +519,7 @@ export class ExplorerApp {
           i.selectedItems.delete(name);
         }
       });
+
       this._updateStatusBar(i, i._cachedFolder);
     });
 
@@ -644,25 +529,23 @@ export class ExplorerApp {
     };
     view.addEventListener("mouseup", endSel);
     document.addEventListener("mouseup", endSel);
+  }
 
+  _setupDropZone(win, winId) {
+    const view = win.querySelector(`#${winId}-view`);
     view.addEventListener("dragover", (e) => {
-      const hasBrowserFiles = [...(e.dataTransfer?.items || [])].some((i) => i.kind === "file");
-      if (!hasBrowserFiles) return;
+      if (![...(e.dataTransfer?.items || [])].some((i) => i.kind === "file")) return;
       e.preventDefault();
       e.stopPropagation();
       view.classList.add("explorer-drop-active");
     });
-
     view.addEventListener("dragleave", (e) => {
-      if (!view.contains(e.relatedTarget)) {
-        view.classList.remove("explorer-drop-active");
-      }
+      if (!view.contains(e.relatedTarget)) view.classList.remove("explorer-drop-active");
     });
+    view.addEventListener("drop", () => view.classList.remove("explorer-drop-active"));
+  }
 
-    view.addEventListener("drop", (e) => {
-      view.classList.remove("explorer-drop-active");
-    });
-
+  _setupUploadInputs(win, winId, inst) {
     const fileInput = win.querySelector(`#${winId}-file-input`);
     const folderInput = win.querySelector(`#${winId}-folder-input`);
     if (fileInput) {
@@ -679,33 +562,24 @@ export class ExplorerApp {
     }
   }
 
-  async _resolveFilePayload(file, name, targetPath) {
+  async _resolveFilePayload(file, name) {
     const kind = fileKindFromName(name);
     const icon = resolveFileIcon(name);
-    let content;
 
     if (isOfficeFile(name)) {
       const ext = name.substring(name.lastIndexOf(".")).toLowerCase();
-
-      if ([".pdf", ".docx", ".xlsx", ".xls", ".pptx", ".ppt"].includes(ext)) {
-        return {
-          kind,
-          content: file,
-          icon,
-          isBinaryOffice: true
-        };
+      if (BINARY_OFFICE_EXTS.includes(ext)) {
+        return { kind, content: file, icon, isBinaryOffice: true };
       }
     }
 
-    const archiveExts = [".zip", ".gz", ".tgz", ".tar", ".rar", ".7z", ".bz2", ".xz"];
-    const isArchive = archiveExts.some((ext) => name.toLowerCase().endsWith(ext));
+    const isArchive = ARCHIVE_EXTS.some((ext) => name.toLowerCase().endsWith(ext));
 
-    if (kind === FileKind.IMAGE) {
+    let content;
+    if (kind === FileKind.IMAGE || kind === FileKind.ROM) {
       content = await readFileAsDataURL(file);
     } else if (kind === FileKind.VIDEO || isArchive) {
       content = file;
-    } else if (kind === FileKind.ROM) {
-      content = await readFileAsDataURL(file);
     } else {
       try {
         content = await readFileAsText(file);
@@ -714,8 +588,9 @@ export class ExplorerApp {
       }
     }
 
-    return { kind, content, icon, isBinary: isArchive };
+    return { kind, content, icon, isBinaryOffice: false, isBinary: isArchive };
   }
+
   async _saveFilePayload(targetPath, name, kind, content, icon, isBinaryOffice = false, isBinary = false) {
     if (kind === FileKind.VIDEO || isBinaryOffice || isBinary) {
       await this.fs.writeBinaryFile(targetPath, name, content, kind, icon);
@@ -734,6 +609,12 @@ export class ExplorerApp {
       await this.fs.writeMeta(dir, name, { kind, icon });
     }
   }
+
+  async _resolveConflictAction(name, applyToAllAction) {
+    if (applyToAllAction) return { action: applyToAllAction, applyToAll: false };
+    return showConflictDialog(name);
+  }
+
   async handleFileUpload(files, isFolder, win, inst) {
     if (!files.length) return;
     const progressEl = win?.querySelector(`#${inst.winId}-upload-progress`);
@@ -749,8 +630,7 @@ export class ExplorerApp {
       if (isFolder) {
         const pathMap = new Map();
         for (const file of files) {
-          const parts = (file.webkitRelativePath || file.name).split("/");
-          const fileName = parts.pop();
+          const { parts, fileName } = splitWebkitPath(file);
           const subPath = [...inst.currentPath, ...parts];
           const key = subPath.join("/");
           if (!pathMap.has(key)) pathMap.set(key, { path: subPath, files: [] });
@@ -769,58 +649,64 @@ export class ExplorerApp {
 
       for (const { file, targetPath, name } of flatFiles) {
         if (isWallpaperPath(targetPath)) {
-          const { kind, content, icon } = await this._resolveFilePayload(file, name, targetPath);
+          const { kind, content, icon } = await this._resolveFilePayload(file, name);
           await this.saveToWallpapers(name, content, kind, icon);
           uploadedCount++;
           continue;
         }
 
-        const dir = this.fs.resolveDir(targetPath);
-        const existingPath = this.fs.join(dir, name);
+        const existingPath = this.fs.join(this.fs.resolveDir(targetPath), name);
         const exists = await this.fs.exists(existingPath);
+        const payload = await this._resolveFilePayload(file, name);
 
         if (!exists) {
-          const { kind, content, icon, isBinaryOffice, isBinary } = await this._resolveFilePayload(
-            file,
+          await this._saveFilePayload(
+            targetPath,
             name,
-            targetPath
+            payload.kind,
+            payload.content,
+            payload.icon,
+            payload.isBinaryOffice,
+            payload.isBinary
           );
-          await this._saveFilePayload(targetPath, name, kind, content, icon, isBinaryOffice, isBinary);
           uploadedCount++;
           continue;
         }
 
-        let action;
-        if (applyToAllAction) {
-          action = applyToAllAction;
-        } else {
-          const result = await showConflictDialog(name);
-          if (result.applyToAll) applyToAllAction = result.action;
-          action = result.action;
-        }
+        const result = await this._resolveConflictAction(name, applyToAllAction);
+        if (result.applyToAll) applyToAllAction = result.action;
 
-        if (action === "skip") {
+        if (result.action === "skip") {
           skippedCount++;
           continue;
         }
 
-        const { kind, content, icon, isBinaryOffice, isBinary } = await this._resolveFilePayload(
-          file,
-          name,
-          targetPath
-        );
-
-        if (action === "replace") {
-          await this._replaceFilePayload(targetPath, name, kind, content, icon, isBinaryOffice, isBinary);
-          uploadedCount++;
+        if (result.action === "replace") {
+          await this._replaceFilePayload(
+            targetPath,
+            name,
+            payload.kind,
+            payload.content,
+            payload.icon,
+            payload.isBinaryOffice,
+            payload.isBinary
+          );
         } else {
-          await this._saveFilePayload(targetPath, name, kind, content, icon, isBinaryOffice, isBinary);
-          uploadedCount++;
+          await this._saveFilePayload(
+            targetPath,
+            name,
+            payload.kind,
+            payload.content,
+            payload.icon,
+            payload.isBinaryOffice,
+            payload.isBinary
+          );
         }
+        uploadedCount++;
       }
 
       const parts = [];
-      if (uploadedCount > 0) parts.push(`${uploadedCount} file${uploadedCount !== 1 ? "s" : ""} uploaded`);
+      if (uploadedCount > 0) parts.push(`${uploadedCount} ${pluralize(uploadedCount, "file")} uploaded`);
       if (skippedCount > 0) parts.push(`${skippedCount} skipped`);
       if (parts.length) this.wm.sendNotify(parts.join(", "));
     } finally {
@@ -832,13 +718,11 @@ export class ExplorerApp {
 
   async uploadSingleFile(file, targetPath, overrideName = null) {
     const name = overrideName || file.name;
-    const { kind, content, icon, isBinaryOffice, isBinary } = await this._resolveFilePayload(file, name, targetPath);
-
+    const { kind, content, icon, isBinaryOffice, isBinary } = await this._resolveFilePayload(file, name);
     if (isWallpaperPath(targetPath)) {
       await this.saveToWallpapers(name, content, kind, icon);
       return;
     }
-
     await this._saveFilePayload(targetPath, name, kind, content, icon, isBinaryOffice, isBinary);
   }
 
@@ -861,6 +745,7 @@ export class ExplorerApp {
     inst.historyIndex = inst.history.length - 1;
     inst.selectedFile = null;
     inst.selectedItems = new Set();
+
     if (inst.mode === "select") {
       const win = document.getElementById(inst.winId);
       if (win) {
@@ -892,91 +777,90 @@ export class ExplorerApp {
     if (inst.currentPath.join("/") === "Pictures/Wallpapers" && inst.mode === "browse") {
       await renderWallpapersPage(this, view);
       return;
-    } else {
-      view.classList.remove("wallpapers-page");
     }
 
-    if (view.style.height === "") {
-      view.style.height = "600px";
-    }
+    view.classList.remove("wallpapers-page");
+    if (view.style.height === "") view.style.height = "600px";
+
     const folder = await this.fs.getFolder(inst.currentPath);
     inst._cachedFolder = folder;
     if (inst.mode === "browse") inst._cachedFolderStats = await this._buildFolderStats(inst);
 
     for (const [name, itemData] of Object.entries(folder)) {
       const isFile = itemData?.type === "file";
-      let iconEl;
-
-      if (!isFile) {
-        iconEl = `<img src="/static/icons/file.webp" style="width:64px;height:64px;object-fit:cover;border-radius:8px">`;
-      } else if (name.endsWith(".desktop")) {
-        let iconSrc = "/static/icons/file.webp";
-        try {
-          const raw = await this.fs.getFileContent(inst.currentPath, name);
-          const parsed = JSON.parse(raw || "{}");
-          iconSrc = appMap[parsed.app]?.icon || parsed.path || "/static/icons/file.webp";
-        } catch {}
-        const isFaIcon = iconSrc.startsWith("fa");
-        iconEl = isFaIcon
-          ? `<div style="width:64px;height:64px;display:flex;align-items:center;justify-content:center;background:#1a1a2e;border-radius:8px;font-size:28px;color:#8090ff;"><i class="${iconSrc}"></i></div>`
-          : `<img src="${iconSrc}" style="width:64px;height:64px;object-fit:cover;border-radius:8px">`;
-      } else {
-        const thumbnailSrc = isImageFile(name)
-          ? itemData.icon === "@content"
-            ? await this.fs.getFileContent(inst.currentPath, name)
-            : itemData.icon || itemData.content
-          : null;
-        iconEl = buildFileIconHTML(name, { thumbnailSrc, storedIcon: itemData.icon });
-      }
+      const iconEl = await this._buildItemIconHTML(name, isFile, itemData, inst);
 
       const item = document.createElement("div");
       item.className = "file-item";
       item.dataset.isFile = isFile ? "true" : "false";
       item.innerHTML = `${iconEl}<span>${name}</span>`;
 
-      if (inst.mode === "select") {
-        if (isFile) {
-          item.onclick = () => this._selectFile(inst, name, item);
-          item.ondblclick = () => this._confirmSelection(inst);
-        } else {
-          item.ondblclick = async () => this.openItemForInstance(inst, name, false);
-        }
-      } else if (inst.mode === "save") {
-        if (!isFile) {
-          item.ondblclick = async () => this.navigateInstance(inst, [...inst.currentPath, name]);
-        } else {
-          item.onclick = () => {
-            const fileNameInput = win.querySelector(`#${inst.winId}-filename-input`);
-            if (fileNameInput) fileNameInput.value = name;
-            win
-              .querySelectorAll(".file-item.explorer-selected")
-              .forEach((el) => el.classList.remove("explorer-selected"));
-            item.classList.add("explorer-selected");
-          };
-        }
-      } else {
-        item.onclick = (e) => {
-          if (e.detail === 1) this._selectExplorerItem(inst, name, item, e.ctrlKey);
-        };
-        item.ondblclick = async () => this.openItemForInstance(inst, name, isFile);
-        item.oncontextmenu = async (e) => this.showFileContextMenu(e, name, isFile, inst);
-        this._setupExplorerItemDrag(item, name, isFile, inst);
-      }
-
+      this._bindItemInteractions(item, name, isFile, inst, win);
       view.appendChild(item);
     }
 
-    const folderEntries = Object.keys(folder);
-    if (folderEntries.length === 0 && inst.mode === "browse") {
+    if (Object.keys(folder).length === 0 && inst.mode === "browse") {
       speak("This folder is empty. Want me to help you organize?", "Searching");
     }
 
-    if (inst.mode === "browse") {
-      await this._updateStatusBar(inst, folder);
+    if (inst.mode === "browse") await this._updateStatusBar(inst, folder);
+    if (inst.mode === "select") this._bindSelectBarButton(inst);
+  }
+
+  async _buildItemIconHTML(name, isFile, itemData, inst) {
+    if (!isFile) {
+      return `<img src="/static/icons/file.webp" style="width:64px;height:64px;object-fit:cover;border-radius:8px">`;
     }
 
+    if (name.endsWith(".desktop")) {
+      let iconSrc = "/static/icons/file.webp";
+      try {
+        const raw = await this.fs.getFileContent(inst.currentPath, name);
+        const parsed = JSON.parse(raw || "{}");
+        iconSrc = appMap[parsed.app]?.icon || parsed.path || "/static/icons/file.webp";
+      } catch {}
+      const isFaIcon = iconSrc.startsWith("fa");
+      return isFaIcon
+        ? `<div style="width:64px;height:64px;display:flex;align-items:center;justify-content:center;background:#1a1a2e;border-radius:8px;font-size:28px;color:#8090ff;"><i class="${iconSrc}"></i></div>`
+        : `<img src="${iconSrc}" style="width:64px;height:64px;object-fit:cover;border-radius:8px">`;
+    }
+
+    const thumbnailSrc = isImageFile(name)
+      ? itemData.icon === "@content"
+        ? await this.fs.getFileContent(inst.currentPath, name)
+        : itemData.icon || itemData.content
+      : null;
+    return buildFileIconHTML(name, { thumbnailSrc, storedIcon: itemData.icon });
+  }
+
+  _bindItemInteractions(item, name, isFile, inst, win) {
     if (inst.mode === "select") {
-      this._bindSelectBarButton(inst);
+      if (isFile) {
+        item.onclick = () => this._selectFile(inst, name, item);
+        item.ondblclick = () => this._confirmSelection(inst);
+      } else {
+        item.ondblclick = () => this.openItemForInstance(inst, name, false);
+      }
+    } else if (inst.mode === "save") {
+      if (!isFile) {
+        item.ondblclick = () => this.navigateInstance(inst, [...inst.currentPath, name]);
+      } else {
+        item.onclick = () => {
+          const input = win.querySelector(`#${inst.winId}-filename-input`);
+          if (input) input.value = name;
+          win
+            .querySelectorAll(".file-item.explorer-selected")
+            .forEach((el) => el.classList.remove("explorer-selected"));
+          item.classList.add("explorer-selected");
+        };
+      }
+    } else {
+      item.onclick = (e) => {
+        if (e.detail === 1) this._selectExplorerItem(inst, name, item, e.ctrlKey);
+      };
+      item.ondblclick = () => this.openItemForInstance(inst, name, isFile);
+      item.oncontextmenu = (e) => this.showFileContextMenu(e, name, isFile, inst);
+      this._setupExplorerItemDrag(item, name, isFile, inst);
     }
   }
 
@@ -994,19 +878,15 @@ export class ExplorerApp {
 
   _bindSelectBarButton(inst) {
     const win = document.getElementById(inst.winId);
-    if (!win) return;
-    const btn = win.querySelector(`#${inst.winId}-select-btn`);
-    if (!btn) return;
-    btn.onclick = () => this._confirmSelection(inst);
+    const btn = win?.querySelector(`#${inst.winId}-select-btn`);
+    if (btn) btn.onclick = () => this._confirmSelection(inst);
   }
 
   _confirmSelection(inst) {
     if (!inst.selectedFile || !inst.fileSelectCallback) return;
     const cb = inst.fileSelectCallback;
     inst.fileSelectCallback = null;
-    const win = document.getElementById(inst.winId);
-    if (win) win.remove();
-    this._removeInstance(inst.winId);
+    this._closeWindow(inst.winId);
     cb(inst.currentPath, inst.selectedFile);
   }
 
@@ -1048,22 +928,15 @@ export class ExplorerApp {
     openMediaViewer(name, src, kind, this.wm);
   }
 
-  _getClipboard() {
-    return this.desktopUI?.state?.clipboard ?? null;
-  }
-
-  _setClipboard(data) {
-    if (this.desktopUI) this.desktopUI.state.clipboard = data;
-  }
-
   async _pasteToPath(destPath, inst) {
     const cb = this._getClipboard();
     if (!cb) return;
-    const action = cb.action;
+
+    const { action } = cb;
     let pastedCount = 0;
     let applyToAllAction = null;
 
-    const copyFileToPath = async (name, srcPath) => {
+    const copyFile = async (name, srcPath) => {
       const kind = await this.fs.getFileKind(srcPath, name);
       const fileIcon = await this.fs.getFileIcon(srcPath, name);
       const isBinary = kind === FileKind.VIDEO || name.toLowerCase().endsWith(".pdf");
@@ -1074,33 +947,24 @@ export class ExplorerApp {
 
       let resolvedAction = "replace";
       if (destExists) {
-        if (applyToAllAction) {
-          resolvedAction = applyToAllAction;
-        } else {
-          const result = await showConflictDialog(name);
-          if (result.applyToAll) applyToAllAction = result.action;
-          resolvedAction = result.action;
-        }
+        const result = await this._resolveConflictAction(name, applyToAllAction);
+        if (result.applyToAll) applyToAllAction = result.action;
+        resolvedAction = result.action;
       }
 
       if (resolvedAction === "skip") return null;
 
-      let finalName = name;
-      if (resolvedAction === "keep") {
-        finalName = await this.fs.getUniqueFileName(destPath, name);
-      }
+      let finalName = resolvedAction === "keep" ? await this.fs.getUniqueFileName(destPath, name) : name;
 
       if (isBinary) {
         const blob = await this.fs.readBinaryFile(srcPath, name);
-        if (resolvedAction === "replace") {
-          await this.fs.deleteBinaryFile(destPath, name).catch(() => {});
-        }
+        if (resolvedAction === "replace") await this.fs.deleteBinaryFile(destPath, name).catch(() => {});
         await this.fs.writeBinaryFile(destPath, finalName, blob, kind, fileIcon);
       } else {
         const content = await this.fs.getFileContent(srcPath, name);
         if (resolvedAction === "replace") {
           await this.fs.updateFile(destPath, name, content);
-          await this.fs.writeMeta(destDir, name, { kind, icon: fileIcon });
+          await this.fs.writeMeta(this.fs.resolveDir(destPath), name, { kind, icon: fileIcon });
         } else {
           await this.fs.createFile(destPath, finalName, content, kind, fileIcon);
         }
@@ -1109,39 +973,36 @@ export class ExplorerApp {
       return finalName;
     };
 
-    const copyFolderToPath = async (name, srcBasePath) => {
+    const copyFolder = async (name, srcBasePath) => {
       const uniqueName = action === "copy" ? await this.fs.getUniqueFileName(destPath, name) : name;
       await this.fs.ensureFolder([...destPath, uniqueName]);
       const srcEntries = await this.fs.getFolder([...srcBasePath, name]).catch(() => ({}));
 
       for (const [childName, childData] of Object.entries(srcEntries)) {
         if (childData?.type !== "file") continue;
-        const childContent = await this.fs.getFileContent([...srcBasePath, name], childName);
-        const childKind = await this.fs.getFileKind([...srcBasePath, name], childName);
-        const childIcon = await this.fs.getFileIcon([...srcBasePath, name], childName);
 
-        const destDir = this.fs.resolveDir([...destPath, uniqueName]);
-        const destFilePath = this.fs.join(destDir, childName);
-        const childExists = await this.fs.exists(destFilePath);
+        const childPath = [...srcBasePath, name];
+        const childContent = await this.fs.getFileContent(childPath, childName);
+        const childKind = await this.fs.getFileKind(childPath, childName);
+        const childIcon = await this.fs.getFileIcon(childPath, childName);
+        const destFolderPath = [...destPath, uniqueName];
+        const destDir = this.fs.resolveDir(destFolderPath);
+        const childExists = await this.fs.exists(this.fs.join(destDir, childName));
 
         let resolvedAction = "replace";
         if (childExists) {
-          if (applyToAllAction) {
-            resolvedAction = applyToAllAction;
-          } else {
-            const result = await showConflictDialog(childName);
-            if (result.applyToAll) applyToAllAction = result.action;
-            resolvedAction = result.action;
-          }
+          const result = await this._resolveConflictAction(childName, applyToAllAction);
+          if (result.applyToAll) applyToAllAction = result.action;
+          resolvedAction = result.action;
         }
 
         if (resolvedAction === "skip") continue;
 
         if (resolvedAction === "replace") {
-          await this.fs.updateFile([...destPath, uniqueName], childName, childContent);
+          await this.fs.updateFile(destFolderPath, childName, childContent);
           await this.fs.writeMeta(destDir, childName, { kind: childKind, icon: childIcon });
         } else {
-          await this.fs.createFile([...destPath, uniqueName], childName, childContent, childKind, childIcon);
+          await this.fs.createFile(destFolderPath, childName, childContent, childKind, childIcon);
         }
       }
 
@@ -1153,13 +1014,13 @@ export class ExplorerApp {
         const { name, path: srcPath, isFile } = iconData.data;
         try {
           if (isFile) {
-            const result = await copyFileToPath(name, srcPath);
+            const result = await copyFile(name, srcPath);
             if (result !== null) {
               if (action === "cut") await this.fs.deleteItem(srcPath, name);
               pastedCount++;
             }
           } else {
-            await copyFolderToPath(name, srcPath);
+            await copyFolder(name, srcPath);
             if (action === "cut") await this.fs.deleteItem(srcPath, name);
             pastedCount++;
           }
@@ -1177,32 +1038,31 @@ export class ExplorerApp {
         const { isDesktopFile, isFolderIcon, fileName, folderName, app, name } = iconData.data;
         try {
           if (isDesktopFile) {
-            const result = await copyFileToPath(fileName, ["Desktop"]);
+            const result = await copyFile(fileName, ["Desktop"]);
             if (result !== null) {
               if (action === "cut") {
                 await this.fs.deleteItem(["Desktop"], fileName);
-                if (iconData.element) iconData.element.remove();
+                iconData.element?.remove();
               }
               pastedCount++;
             }
           } else if (isFolderIcon) {
-            await copyFolderToPath(folderName, ["Desktop"]);
+            await copyFolder(folderName, ["Desktop"]);
             if (action === "cut") {
               await this.fs.deleteItem(["Desktop"], folderName);
-              if (iconData.element) iconData.element.remove();
+              iconData.element?.remove();
             }
             pastedCount++;
           } else {
-            const appIconName = name || app;
-            const srcFileName = `${appIconName}.desktop`;
-            const result = await copyFileToPath(srcFileName, ["Desktop"]);
+            const srcFileName = `${name || app}.desktop`;
+            const result = await copyFile(srcFileName, ["Desktop"]);
             if (result !== null) {
-              if (action === "cut" && iconData.element) iconData.element.remove();
+              if (action === "cut") iconData.element?.remove();
               pastedCount++;
             }
           }
         } catch {
-          this.wm.sendNotify(`Could not paste item`);
+          this.wm.sendNotify("Could not paste item");
         }
       }
 
@@ -1210,222 +1070,9 @@ export class ExplorerApp {
     }
 
     if (pastedCount > 0) {
-      this.wm.sendNotify(`${pastedCount} item${pastedCount !== 1 ? "s" : ""} pasted`);
+      this.wm.sendNotify(`${pastedCount} ${pluralize(pastedCount, "item")} pasted`);
       await this.renderInstance(inst);
     }
-  }
-  _isArchiveFile(name) {
-    const lower = name.toLowerCase();
-    return (
-      lower.endsWith(".zip") ||
-      lower.endsWith(".gz") ||
-      lower.endsWith(".tgz") ||
-      lower.endsWith(".tar") ||
-      lower.endsWith(".tar.gz") ||
-      lower.endsWith(".tar.bz2") ||
-      lower.endsWith(".tar.xz") ||
-      lower.endsWith(".rar") ||
-      lower.endsWith(".7z") ||
-      lower.endsWith(".bz2") ||
-      lower.endsWith(".xz")
-    );
-  }
-
-  _archiveBaseName(name) {
-    const lower = name.toLowerCase();
-    const stripSuffixes = [
-      ".tar.gz",
-      ".tar.bz2",
-      ".tar.xz",
-      ".tgz",
-      ".zip",
-      ".gz",
-      ".bz2",
-      ".xz",
-      ".tar",
-      ".rar",
-      ".7z"
-    ];
-    for (const suffix of stripSuffixes) {
-      if (lower.endsWith(suffix)) return name.slice(0, name.length - suffix.length);
-    }
-    return name;
-  }
-
-  async _extractArchive(itemName, inst) {
-    const lower = itemName.toLowerCase();
-    const progressMsg = `Extracting "${itemName}"...`;
-    this.wm.sendNotify(progressMsg);
-
-    try {
-      const blob = await this.fs.readBinaryFile(inst.currentPath, itemName);
-      if (!blob) {
-        this.wm.sendNotify(`Could not read "${itemName}" — was it uploaded as a binary file?`);
-        return;
-      }
-      const arrayBuffer = await blob.arrayBuffer();
-      const bytes = new Uint8Array(arrayBuffer);
-
-      const baseName = this._archiveBaseName(itemName);
-      const destPath = [...inst.currentPath, baseName];
-      await this.fs.ensureFolder(destPath);
-
-      if (lower.endsWith(".zip")) {
-        await this._extractZip(bytes, destPath);
-      } else if (lower.endsWith(".tar.gz") || lower.endsWith(".tgz")) {
-        const decompressed = await this._gunzipBytes(bytes);
-        await this._extractTar(decompressed, destPath);
-      } else if (lower.endsWith(".gz") && !lower.endsWith(".tar.gz")) {
-        const decompressed = await this._gunzipBytes(bytes);
-        const innerName = itemName.slice(0, -3);
-        const text = strFromU8(decompressed, true);
-        const kind = this.fs.inferKind ? this.fs.inferKind(innerName) : FileKind.TEXT;
-        await this.fs.createFile(destPath, innerName, text, kind);
-      } else if (lower.endsWith(".tar")) {
-        await this._extractTar(bytes, destPath);
-      } else {
-        this.wm.sendNotify(`Format not supported in browser: ${itemName}\nSupported: ZIP, GZ, TAR, TAR.GZ, TGZ`);
-        return;
-      }
-
-      await this.renderInstance(inst);
-      this.wm.sendNotify(`Extracted to "${baseName}/"`);
-    } catch (err) {
-      console.error("Extraction error:", err);
-      this.wm.sendNotify(`Failed to extract "${itemName}": ${err.message || err}`);
-    }
-  }
-
-  _gunzipBytes(bytes) {
-    return new Promise((resolve, reject) => {
-      gunzip(bytes, (err, data) => {
-        if (err) reject(err);
-        else resolve(data);
-      });
-    });
-  }
-
-  async _extractZip(bytes, destPath) {
-    return new Promise((resolve, reject) => {
-      unzip(bytes, async (err, files) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-        try {
-          for (const [path, data] of Object.entries(files)) {
-            if (path.endsWith("/")) continue;
-            const parts = path.split("/").filter(Boolean);
-            const fileName = parts.pop();
-            const subPath = [...destPath, ...parts];
-            await this.fs.ensureFolder(subPath);
-            const content = this._bytesToStoreContent(fileName, data);
-            const kind = this.fs.inferKind ? this.fs.inferKind(fileName) : FileKind.TEXT;
-            await this.fs.createFile(subPath, fileName, content, kind);
-          }
-          resolve();
-        } catch (e) {
-          reject(e);
-        }
-      });
-    });
-  }
-
-  async _extractTar(bytes, destPath) {
-    let offset = 0;
-    while (offset + 512 <= bytes.length) {
-      const header = bytes.slice(offset, offset + 512);
-      const nameRaw = this._tarStr(header, 0, 100);
-      if (!nameRaw) break;
-
-      const sizeOctal = this._tarStr(header, 124, 12).trim();
-      const size = parseInt(sizeOctal, 8) || 0;
-      const typeflag = String.fromCharCode(header[156]);
-
-      offset += 512;
-
-      if (typeflag === "0" || typeflag === "\0") {
-        const parts = nameRaw.replace(/\\/g, "/").split("/").filter(Boolean);
-        const fileName = parts.pop();
-        const subPath = [...destPath, ...parts];
-        await this.fs.ensureFolder(subPath);
-        const fileBytes = bytes.slice(offset, offset + size);
-        const content = this._bytesToStoreContent(fileName, fileBytes);
-        const kind = this.fs.inferKind ? this.fs.inferKind(fileName) : FileKind.TEXT;
-        await this.fs.createFile(subPath, fileName, content, kind);
-      }
-
-      offset += Math.ceil(size / 512) * 512;
-    }
-  }
-
-  _tarStr(bytes, offset, length) {
-    let str = "";
-    for (let i = offset; i < offset + length; i++) {
-      if (bytes[i] === 0) break;
-      str += String.fromCharCode(bytes[i]);
-    }
-    return str;
-  }
-
-  _bytesToStoreContent(fileName, bytes) {
-    const lower = fileName.toLowerCase();
-    const isText =
-      lower.endsWith(".txt") ||
-      lower.endsWith(".md") ||
-      lower.endsWith(".js") ||
-      lower.endsWith(".json") ||
-      lower.endsWith(".html") ||
-      lower.endsWith(".css") ||
-      lower.endsWith(".xml") ||
-      lower.endsWith(".csv") ||
-      lower.endsWith(".ts") ||
-      lower.endsWith(".py") ||
-      lower.endsWith(".sh") ||
-      lower.endsWith(".yaml") ||
-      lower.endsWith(".yml") ||
-      lower.endsWith(".toml") ||
-      lower.endsWith(".ini") ||
-      lower.endsWith(".cfg") ||
-      lower.endsWith(".log") ||
-      lower.endsWith(".sql");
-
-    if (isText) {
-      try {
-        return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
-      } catch {}
-    }
-
-    const isImage =
-      lower.endsWith(".png") ||
-      lower.endsWith(".jpg") ||
-      lower.endsWith(".jpeg") ||
-      lower.endsWith(".gif") ||
-      lower.endsWith(".webp") ||
-      lower.endsWith(".svg") ||
-      lower.endsWith(".bmp") ||
-      lower.endsWith(".ico");
-
-    const mimeMap = {
-      png: "image/png",
-      jpg: "image/jpeg",
-      jpeg: "image/jpeg",
-      gif: "image/gif",
-      webp: "image/webp",
-      svg: "image/svg+xml",
-      bmp: "image/bmp",
-      ico: "image/x-icon"
-    };
-    const ext = lower.split(".").pop();
-
-    if (isImage) {
-      const mime = mimeMap[ext] || "image/png";
-      const b64 = btoa(String.fromCharCode(...bytes));
-      return `data:${mime};base64,${b64}`;
-    }
-
-    const b64 = btoa(String.fromCharCode(...bytes));
-    return `data:application/octet-stream;base64,${b64}`;
   }
 
   async showFileContextMenu(e, itemName, isFile, inst) {
@@ -1442,58 +1089,25 @@ export class ExplorerApp {
         menu.appendChild(hr());
       }
 
-      menu.appendChild(
-        item("Copy", () => {
-          const allSelected =
-            inst.selectedItems.size > 1 && inst.selectedItems.has(itemName) ? [...inst.selectedItems] : [itemName];
-          const win = document.getElementById(inst.winId);
-          const view = win?.querySelector(`#${inst.winId}-view`);
-          const nameToIsFile = {};
-          if (view) {
-            [...view.querySelectorAll(".file-item")].forEach((el) => {
-              const n = el.querySelector("span")?.textContent;
-              if (n) nameToIsFile[n] = el.dataset.isFile === "true";
-            });
-          }
-          const icons = allSelected.map((n) => ({
-            element: null,
-            data: { name: n, path: inst.currentPath, isFile: nameToIsFile[n] ?? isFile }
-          }));
-          this._setClipboard({ source: "explorer", action: "copy", icons, sourceInst: inst });
-          this.wm.sendNotify(`${icons.length} item${icons.length !== 1 ? "s" : ""} copied`);
-        })
-      );
+      const buildClipItem = (action) => {
+        const view = document.getElementById(inst.winId)?.querySelector(`#${inst.winId}-view`);
+        const icons = buildClipboardIcons(inst.selectedItems, itemName, isFile, view, inst.currentPath);
+        this._setClipboard({ source: "explorer", action, icons, sourceInst: inst });
 
-      menu.appendChild(
-        item("Cut", () => {
-          const allSelected =
-            inst.selectedItems.size > 1 && inst.selectedItems.has(itemName) ? [...inst.selectedItems] : [itemName];
-          const win = document.getElementById(inst.winId);
-          const view = win?.querySelector(`#${inst.winId}-view`);
-          const nameToIsFile = {};
-          if (view) {
-            [...view.querySelectorAll(".file-item")].forEach((el) => {
-              const n = el.querySelector("span")?.textContent;
-              if (n) nameToIsFile[n] = el.dataset.isFile === "true";
-            });
-          }
-          const icons = allSelected.map((n) => ({
-            element: null,
-            data: { name: n, path: inst.currentPath, isFile: nameToIsFile[n] ?? isFile }
-          }));
-          this._setClipboard({ source: "explorer", action: "cut", icons, sourceInst: inst });
-          if (view) {
-            allSelected.forEach((n) => {
-              const el = [...view.querySelectorAll(".file-item")].find(
-                (el) => el.querySelector("span")?.textContent === n
-              );
-              if (el) el.style.opacity = "0.5";
-            });
-          }
-          this.wm.sendNotify(`${icons.length} item${icons.length !== 1 ? "s" : ""} cut`);
-        })
-      );
+        if (action === "cut" && view) {
+          icons.forEach(({ data: { name: n } }) => {
+            const el = [...view.querySelectorAll(".file-item")].find(
+              (el) => el.querySelector("span")?.textContent === n
+            );
+            if (el) el.style.opacity = "0.5";
+          });
+        }
 
+        this.wm.sendNotify(`${icons.length} ${pluralize(icons.length, "item")} ${action}`);
+      };
+
+      menu.appendChild(item("Copy", () => buildClipItem("copy")));
+      menu.appendChild(item("Cut", () => buildClipItem("cut")));
       menu.appendChild(hr());
 
       menu.appendChild(
@@ -1515,11 +1129,10 @@ export class ExplorerApp {
       menu.appendChild(
         item("Rename", () => {
           const win = document.getElementById(inst.winId);
-          if (!win) return;
-          const view = win.querySelector(`#${inst.winId}-view`);
-          const itemEl = [...view.querySelectorAll(".file-item")].find(
-            (el) => el.querySelector("span")?.textContent === itemName
-          );
+          const view = win?.querySelector(`#${inst.winId}-view`);
+          const itemEl =
+            view &&
+            [...view.querySelectorAll(".file-item")].find((el) => el.querySelector("span")?.textContent === itemName);
           if (itemEl) this._startInlineRename(itemEl, itemName, inst);
         })
       );
@@ -1548,9 +1161,13 @@ export class ExplorerApp {
         }
       }
 
-      if (isFile && this._isArchiveFile(itemName)) {
+      if (isFile && isArchiveFile(itemName)) {
         menu.appendChild(hr());
-        menu.appendChild(item("📦 Extract Here", () => this._extractArchive(itemName, inst)));
+        menu.appendChild(
+          item("📦 Extract Here", () =>
+            this._archiveExtractor.extract(itemName, inst.currentPath, () => this.renderInstance(inst))
+          )
+        );
       }
 
       menu.appendChild(
@@ -1560,14 +1177,12 @@ export class ExplorerApp {
       );
     });
   }
+
   async _openMarkdownPreview(fileName, inst) {
     try {
-      const rawContent = await this.fs.getFileContent(inst.currentPath, fileName);
-      const content = this._decodeFileContent(rawContent);
-      const path = inst.currentPath.join("/");
-
-      if (this.markdownApp && this.markdownApp.open) {
-        this.markdownApp.open(fileName, content, path);
+      const content = decodeFileContent(await this.fs.getFileContent(inst.currentPath, fileName));
+      if (this.markdownApp?.open) {
+        this.markdownApp.open(fileName, content, inst.currentPath.join("/"));
         speak("Opening markdown preview. Looking good!", "Reading");
       } else {
         this.wm.sendNotify("Markdown app not available");
@@ -1580,12 +1195,9 @@ export class ExplorerApp {
 
   async _openMarkdownInNotepad(fileName, inst) {
     try {
-      const rawContent = await this.fs.getFileContent(inst.currentPath, fileName);
-      const content = this._decodeFileContent(rawContent);
-      const path = inst.currentPath.join("/");
-
-      if (this.notepadApp && this.notepadApp.open) {
-        this.notepadApp.open(fileName, content, path);
+      const content = decodeFileContent(await this.fs.getFileContent(inst.currentPath, fileName));
+      if (this.notepadApp?.open) {
+        this.notepadApp.open(fileName, content, inst.currentPath.join("/"));
         speak("Opening in Notepad. Time to edit!", "Writing");
       } else {
         this.wm.sendNotify("Notepad app not available");
@@ -1595,37 +1207,10 @@ export class ExplorerApp {
       console.error("Error opening markdown in notepad:", err);
     }
   }
-  _decodeFileContent(content) {
-    if (!content) return "";
 
-    if (content.startsWith("data:")) {
-      try {
-        const base64Match = content.match(/^data:[^;]+;base64,(.+)$/);
-        if (base64Match && base64Match[1]) {
-          return atob(base64Match[1]);
-        }
-
-        const plainMatch = content.match(/^data:[^,]+,(.+)$/);
-        if (plainMatch && plainMatch[1]) {
-          return decodeURIComponent(plainMatch[1]);
-        }
-      } catch (err) {
-        console.error("Failed to decode data URL:", err);
-        return content;
-      }
-    }
-
-    return content;
-  }
   _showConfirmDialog({ title, message, confirmText = "OK", onConfirm }) {
     const overlay = document.createElement("div");
-    overlay.style.cssText = `
-      position:fixed;inset:0;z-index:99999;
-      background:rgba(0,0,0,0.45);
-      display:flex;align-items:center;justify-content:center;
-      animation:fdOverlayIn 0.12s ease;
-    `;
-
+    overlay.className = "explorer-confirmation-overlay";
     overlay.innerHTML = `
       <div class="_fd-dialog">
         <div class="_fd-dialog-title">${title}</div>
@@ -1636,7 +1221,6 @@ export class ExplorerApp {
         </div>
       </div>
     `;
-
     document.body.appendChild(overlay);
 
     const close = () => overlay.remove();
@@ -1655,13 +1239,7 @@ export class ExplorerApp {
 
   _showInputDialog({ title, label, defaultValue, confirmText = "Create", onConfirm }) {
     const overlay = document.createElement("div");
-    overlay.style.cssText = `
-      position:fixed;inset:0;z-index:99999;
-      background:rgba(0,0,0,0.45);
-      display:flex;align-items:center;justify-content:center;
-      animation:fdOverlayIn 0.12s ease;
-    `;
-
+    overlay.className = "explorer-confirmation-overlay";
     overlay.innerHTML = `
       <div class="_fd-dialog">
         <div class="_fd-dialog-title">${title}</div>
@@ -1674,7 +1252,6 @@ export class ExplorerApp {
         </div>
       </div>
     `;
-
     document.body.appendChild(overlay);
 
     const input = overlay.querySelector("._fd-dialog-input");
@@ -1686,14 +1263,12 @@ export class ExplorerApp {
     input.focus();
 
     const close = () => overlay.remove();
-
     const showError = (msg) => {
       errorEl.textContent = msg;
       errorEl.style.display = "block";
       input.style.borderColor = "#e06c75";
       confirmBtn.disabled = false;
     };
-
     const clearError = () => {
       errorEl.style.display = "none";
       input.style.borderColor = "";
@@ -1705,11 +1280,8 @@ export class ExplorerApp {
       confirmBtn.disabled = true;
       try {
         const result = await onConfirm(val);
-        if (typeof result === "string" && result) {
-          showError(result);
-        } else {
-          close();
-        }
+        if (typeof result === "string" && result) showError(result);
+        else close();
       } catch (err) {
         showError(err.message || "An error occurred.");
       }
@@ -1751,10 +1323,12 @@ export class ExplorerApp {
   _selectExplorerItem(inst, name, itemEl, isCtrl) {
     const win = document.getElementById(inst.winId);
     if (!win) return;
+
     if (!isCtrl) {
       win.querySelectorAll(".file-item.explorer-selected").forEach((el) => el.classList.remove("explorer-selected"));
       inst.selectedItems = new Set();
     }
+
     if (inst.selectedItems.has(name) && isCtrl) {
       inst.selectedItems.delete(name);
       itemEl.classList.remove("explorer-selected");
@@ -1762,18 +1336,14 @@ export class ExplorerApp {
       inst.selectedItems.add(name);
       itemEl.classList.add("explorer-selected");
     }
+
     inst.selectedFile = name;
-    if (inst.mode === "browse") {
-      this._updateStatusBar(inst, inst._cachedFolder);
-    }
+    if (inst.mode === "browse") this._updateStatusBar(inst, inst._cachedFolder);
   }
 
   _setupExplorerItemDrag(itemEl, name, isFile, inst) {
-    let dragState = null;
-
     itemEl.addEventListener("mousedown", (e) => {
-      if (e.button !== 0) return;
-      if (e.target.tagName === "INPUT") return;
+      if (e.button !== 0 || e.target.tagName === "INPUT") return;
 
       const startX = e.clientX;
       const startY = e.clientY;
@@ -1786,46 +1356,32 @@ export class ExplorerApp {
 
         if (!dragging && Math.sqrt(dx * dx + dy * dy) > 6) {
           dragging = true;
-
-          if (!inst.selectedItems.has(name)) {
-            this._selectExplorerItem(inst, name, itemEl, false);
-          }
+          if (!inst.selectedItems.has(name)) this._selectExplorerItem(inst, name, itemEl, false);
 
           const win = document.getElementById(inst.winId);
           const view = win?.querySelector(`#${inst.winId}-view`);
           const selectedEls = view ? [...view.querySelectorAll(".file-item.explorer-selected")] : [itemEl];
-          const count = selectedEls.length || 1;
 
           ghost = document.createElement("div");
-          ghost.style.cssText = `
-            position:fixed;pointer-events:none;z-index:99999;
-            display:flex;flex-direction:column;align-items:center;justify-content:center;
-            background:rgba(20,20,35,0.82);border:1.5px solid rgba(79,158,255,0.55);
-            border-radius:10px;padding:8px 12px;gap:4px;backdrop-filter:blur(8px);
-            box-shadow:0 8px 32px rgba(0,0,0,0.5);min-width:80px;
-          `;
+          ghost.className = "explorer-drag-ghost";
           const iconEl = (selectedEls[0] || itemEl).querySelector("img")?.cloneNode() || document.createElement("div");
-          iconEl.style.cssText = "width:40px;height:40px;object-fit:cover;border-radius:6px;opacity:0.9;";
+          iconEl.className = "explorer-ghost-icon";
           const label = document.createElement("div");
-          label.style.cssText =
-            "color:rgba(255,255,255,0.9);font-size:11px;text-align:center;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;";
-          label.textContent = count > 1 ? `${count} items` : name;
+          label.className = "explorer-file-label";
+          label.textContent = selectedEls.length > 1 ? `${selectedEls.length} items` : name;
           ghost.appendChild(iconEl);
           ghost.appendChild(label);
           ghost.style.left = ev.clientX - 50 + "px";
           ghost.style.top = ev.clientY - 30 + "px";
           document.body.appendChild(ghost);
-
-          dragState = { ghost };
         }
 
         if (dragging && ghost) {
           ghost.style.left = ev.clientX - 50 + "px";
           ghost.style.top = ev.clientY - 30 + "px";
 
-          const desktopEl = document.getElementById("desktop");
           const explorerWin = document.getElementById(inst.winId);
-          const overDesktop = desktopEl && !explorerWin?.contains(document.elementFromPoint(ev.clientX, ev.clientY));
+          const overDesktop = !explorerWin?.contains(document.elementFromPoint(ev.clientX, ev.clientY));
           ghost.style.borderColor = overDesktop ? "rgba(79,255,120,0.7)" : "rgba(79,158,255,0.55)";
           ghost.style.boxShadow = overDesktop
             ? "0 8px 32px rgba(0,0,0,0.5),0 0 0 1px rgba(79,255,120,0.3)"
@@ -1836,18 +1392,12 @@ export class ExplorerApp {
       const onMouseUp = async (ev) => {
         document.removeEventListener("mousemove", onMouseMove);
         document.removeEventListener("mouseup", onMouseUp);
-
         if (ghost) ghost.remove();
-        dragState = null;
-
         if (!dragging) return;
 
         const explorerWin = document.getElementById(inst.winId);
-        const elAtPoint = document.elementFromPoint(ev.clientX, ev.clientY);
-        const droppedOnExplorer = explorerWin?.contains(elAtPoint);
-
-        if (droppedOnExplorer) return;
-        if (!this.desktopUI?.dropFromExplorer) return;
+        const droppedOnExplorer = explorerWin?.contains(document.elementFromPoint(ev.clientX, ev.clientY));
+        if (droppedOnExplorer || !this.desktopUI?.dropFromExplorer) return;
 
         const desktopEl = document.getElementById("desktop");
         if (!desktopEl) return;
@@ -1875,13 +1425,9 @@ export class ExplorerApp {
           await this.desktopUI.dropFromExplorer(itemName, iF, inst.currentPath, ev.clientX, ev.clientY);
         }
 
-        const win2 = document.getElementById(inst.winId);
-        const view2 = win2?.querySelector(`#${inst.winId}-view`);
-        if (view2) {
-          view2
-            .querySelectorAll(".file-item.explorer-selected")
-            .forEach((el) => el.classList.remove("explorer-selected"));
-        }
+        view
+          ?.querySelectorAll(".file-item.explorer-selected")
+          .forEach((el) => el.classList.remove("explorer-selected"));
         inst.selectedItems = new Set();
         inst.selectedFile = null;
         await this.renderInstance(inst);
@@ -1890,13 +1436,6 @@ export class ExplorerApp {
       document.addEventListener("mousemove", onMouseMove);
       document.addEventListener("mouseup", onMouseUp);
     });
-  }
-
-  _formatSize(bytes) {
-    if (bytes < 1024) return bytes + " B";
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + " KB";
-    if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(2) + " MB";
-    return (bytes / (1024 * 1024 * 1024)).toFixed(2) + " GB";
   }
 
   async _buildFolderStats(inst) {
@@ -1913,11 +1452,9 @@ export class ExplorerApp {
           const full = this.fs.join(dir, name);
           const s = await this.fs.pStat(full);
           if (s.isFile()) {
-            const size = meta[name]?.size ?? s.size ?? 0;
-            stats[name] = { isFile: true, size };
+            stats[name] = { isFile: true, size: meta[name]?.size ?? s.size ?? 0 };
           } else {
-            const size = await this._calcDirSize(full);
-            stats[name] = { isFile: false, size };
+            stats[name] = { isFile: false, size: await this._calcDirSize(full) };
           }
         } catch {}
       }
@@ -1937,11 +1474,7 @@ export class ExplorerApp {
         try {
           const full = this.fs.join(dirPath, name);
           const s = await this.fs.pStat(full);
-          if (s.isFile()) {
-            total += meta[name]?.size ?? s.size ?? 0;
-          } else {
-            total += await this._calcDirSize(full);
-          }
+          total += s.isFile() ? (meta[name]?.size ?? s.size ?? 0) : await this._calcDirSize(full);
         } catch {}
       }
     } catch {}
@@ -1956,7 +1489,7 @@ export class ExplorerApp {
     if (!itemsEl || !selectedEl) return;
 
     const totalCount = Object.keys(folder || {}).length;
-    itemsEl.textContent = `${totalCount} item${totalCount !== 1 ? "s" : ""}`;
+    itemsEl.textContent = `${totalCount} ${pluralize(totalCount, "item")}`;
 
     const selCount = inst.selectedItems.size;
     if (selCount === 0) {
@@ -1970,12 +1503,10 @@ export class ExplorerApp {
       const s = stats[name];
       if (s) totalSize += s.size;
     }
-    const sizeStr = this._formatSize(totalSize);
-    if (selCount === 1) {
-      selectedEl.textContent = ` | 1 item selected  ${sizeStr}`;
-    } else {
-      selectedEl.textContent = ` | ${selCount} items selected  (${sizeStr})`;
-    }
+
+    const sizeStr = formatSize(totalSize);
+    selectedEl.textContent =
+      selCount === 1 ? ` | 1 item selected  ${sizeStr}` : ` | ${selCount} items selected  (${sizeStr})`;
   }
 
   makeExplorerIconInteractable(icon) {
@@ -1989,37 +1520,19 @@ export class ExplorerApp {
     const spanEl = itemEl.querySelector("span");
     spanEl.style.display = "none";
 
-    const wrap = document.createElement("div");
-    wrap.className = "inline-rename-wrap";
-
-    const input = document.createElement("input");
-    input.className = "inline-rename-input";
-    input.type = "text";
-    input.value = currentName;
-    input.spellcheck = false;
-
-    const errorTip = document.createElement("div");
-    errorTip.className = "inline-rename-error";
-    errorTip.style.display = "none";
-
-    wrap.appendChild(input);
-    wrap.appendChild(errorTip);
+    const { wrap, input, errorTip } = this._createInlineInput(currentName);
     itemEl.appendChild(wrap);
 
     const dotIdx = currentName.lastIndexOf(".");
     input.focus();
-    if (dotIdx > 0) {
-      input.setSelectionRange(0, dotIdx);
-    } else {
-      input.select();
-    }
+    if (dotIdx > 0) input.setSelectionRange(0, dotIdx);
+    else input.select();
 
     const showError = (msg) => {
       errorTip.textContent = msg;
       errorTip.style.display = "block";
       input.classList.add("error");
     };
-
     const clearError = () => {
       errorTip.style.display = "none";
       input.classList.remove("error");
@@ -2053,29 +1566,12 @@ export class ExplorerApp {
       }
     };
 
-    input.onkeydown = (ev) => {
-      ev.stopPropagation();
-      if (ev.key === "Enter") {
-        ev.preventDefault();
-        commit();
-      }
-      if (ev.key === "Escape") {
-        ev.preventDefault();
-        cancel();
-      }
-    };
-    input.oninput = () => clearError();
-    input.onblur = () => {
-      setTimeout(() => commit(), 120);
-    };
-    input.onclick = (ev) => ev.stopPropagation();
-    input.ondblclick = (ev) => ev.stopPropagation();
+    this._bindInlineInputEvents(input, commit, cancel, clearError);
   }
 
   async _spawnInlineItem(inst, isFile) {
     const win = document.getElementById(inst.winId);
-    if (!win) return;
-    const view = win.querySelector(`#${inst.winId}-view`);
+    const view = win?.querySelector(`#${inst.winId}-view`);
     if (!view) return;
 
     const defaultName = isFile ? "New File.txt" : "New Folder";
@@ -2085,46 +1581,27 @@ export class ExplorerApp {
     item.className = "file-item is-renaming";
     item.innerHTML = `<img src="${iconSrc}" style="width:64px;height:64px;object-fit:cover;border-radius:8px">`;
 
-    const wrap = document.createElement("div");
-    wrap.className = "inline-rename-wrap";
-
-    const input = document.createElement("input");
-    input.className = "inline-rename-input";
-    input.type = "text";
-    input.value = defaultName;
-    input.spellcheck = false;
-
-    const errorTip = document.createElement("div");
-    errorTip.className = "inline-rename-error";
-    errorTip.style.display = "none";
-
-    wrap.appendChild(input);
-    wrap.appendChild(errorTip);
+    const { wrap, input, errorTip } = this._createInlineInput(defaultName);
     item.appendChild(wrap);
     view.appendChild(item);
     item.scrollIntoView({ block: "nearest" });
 
     const dotIdx = defaultName.lastIndexOf(".");
     input.focus();
-    if (isFile && dotIdx > 0) {
-      input.setSelectionRange(0, dotIdx);
-    } else {
-      input.select();
-    }
+    if (isFile && dotIdx > 0) input.setSelectionRange(0, dotIdx);
+    else input.select();
 
     const showError = (msg) => {
       errorTip.textContent = msg;
       errorTip.style.display = "block";
       input.classList.add("error");
     };
-
     const clearError = () => {
       errorTip.style.display = "none";
       input.classList.remove("error");
     };
 
     let committed = false;
-
     const cancel = () => {
       if (committed) return;
       committed = true;
@@ -2155,6 +1632,29 @@ export class ExplorerApp {
       }
     };
 
+    this._bindInlineInputEvents(input, commit, cancel, clearError);
+  }
+
+  _createInlineInput(value) {
+    const wrap = document.createElement("div");
+    wrap.className = "inline-rename-wrap";
+
+    const input = document.createElement("input");
+    input.className = "inline-rename-input";
+    input.type = "text";
+    input.value = value;
+    input.spellcheck = false;
+
+    const errorTip = document.createElement("div");
+    errorTip.className = "inline-rename-error";
+    errorTip.style.display = "none";
+
+    wrap.appendChild(input);
+    wrap.appendChild(errorTip);
+    return { wrap, input, errorTip };
+  }
+
+  _bindInlineInputEvents(input, commit, cancel, clearError) {
     input.onkeydown = (ev) => {
       ev.stopPropagation();
       if (ev.key === "Enter") {
@@ -2167,9 +1667,7 @@ export class ExplorerApp {
       }
     };
     input.oninput = () => clearError();
-    input.onblur = () => {
-      setTimeout(() => commit(), 120);
-    };
+    input.onblur = () => setTimeout(() => commit(), 120);
     input.onclick = (ev) => ev.stopPropagation();
     input.ondblclick = (ev) => ev.stopPropagation();
   }

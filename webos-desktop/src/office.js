@@ -1,6 +1,7 @@
+/* eslint-disable no-unused-vars */
 import { desktop } from "./desktop.js";
 import { speak } from "./clippy.js";
-
+import { FileKind } from "./fs.js";
 class OfficeModuleLoader {
   constructor() {
     this.cache = new Map();
@@ -173,33 +174,6 @@ const FileUtils = {
   arrayBufferToDataUrl(buffer, mimeType) {
     const base64 = this.arrayBufferToBase64(buffer);
     return `data:${mimeType};base64,${base64}`;
-  },
-  async toArrayBuffer(content) {
-    if (content instanceof ArrayBuffer) return content;
-    if (content instanceof Uint8Array) return content.buffer;
-    if (content instanceof Blob) return content.arrayBuffer();
-
-    if (typeof content === "string") {
-      if (content.startsWith("data:")) {
-        try {
-          const resp = await fetch(content);
-          return resp.arrayBuffer();
-        } catch (e) {
-          const base64 = content.split(",")[1];
-          if (base64) {
-            return this.base64ToArrayBuffer(base64);
-          }
-        }
-      }
-
-      if (this.isBase64(content)) {
-        return this.base64ToArrayBuffer(content);
-      }
-
-      return new TextEncoder().encode(content).buffer;
-    }
-
-    return null;
   },
 
   isBase64(str) {
@@ -424,7 +398,7 @@ class HtmlConverter {
   }
 
   static async toDocxParagraphs(html) {
-    const { Document, Packer, Paragraph, TextRun, HeadingLevel, UnderlineType } = await modules.docx();
+    const { Paragraph, TextRun, HeadingLevel, UnderlineType } = await modules.docx();
 
     const div = document.createElement("div");
     div.innerHTML = html;
@@ -561,10 +535,10 @@ class RichTextEditor {
 }
 
 class EditorStrategy {
-  canHandle(_ext) {
+  canHandle() {
     return false;
   }
-  async init(_container, _arrayBuffer, _state) {}
+  async init() {}
 }
 
 class SpreadsheetEditor extends EditorStrategy {
@@ -685,7 +659,7 @@ class SpreadsheetEditor extends EditorStrategy {
     state.workbook.Sheets[state.activeSheet] = XLSX.utils.aoa_to_sheet(data);
   }
 
-  renderSheet(container, workbook, state, XLSX) {}
+  renderSheet() {}
 
   static async syncTable(state) {
     const XLSX = await modules.xlsx();

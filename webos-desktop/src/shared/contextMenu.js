@@ -64,16 +64,17 @@ export function showDynamicContextMenu(e, buildFn) {
   positionMenu(menu, e.pageX, e.pageY);
   bindDismissal();
 }
-
 export function showStartStyleMenu(e, buildFn) {
+  const existing = document.getElementById("taskbar-context-menu");
+  if (existing) existing.remove();
+
   const menu = document.createElement("div");
   menu.id = "taskbar-context-menu";
-  menu.className = "start-menu";
 
   const addMenuItem = (text, action) => {
     const menuItem = document.createElement("div");
     menuItem.textContent = text;
-    menuItem.className = "start-item";
+    menuItem.className = "menu-item";
     menuItem.onclick = () => {
       action();
       menu.remove();
@@ -83,12 +84,12 @@ export function showStartStyleMenu(e, buildFn) {
 
   buildFn(addMenuItem);
 
-  const existing = document.getElementById("taskbar-context-menu");
-  if (existing) existing.remove();
-
   document.body.appendChild(menu);
 
+  menu.style.display = "block";
+
   const rect = menu.getBoundingClientRect();
+
   let posX = e.clientX;
   let posY = e.clientY - rect.height;
 

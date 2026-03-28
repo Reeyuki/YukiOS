@@ -758,13 +758,13 @@ export const appMap = {
   },
   soultheraAscendant: {
     type: "game",
-    url: "https://reeyuki.github.io/SoultheraAscendant",
+    url: "https://itch.io/embed-upload/16780483?color=333333",
     icon: "/static/icons/ghostOTFR.png",
     title: "Soulthera Ascendant"
   },
   voraxier: {
     type: "game",
-    url: "https://voraxoid.netlify.app",
+    url: "https://itch.io/embed-upload/16780920",
     icon: "/static/icons/voraxier.webp",
     title: "Voraxier"
   },

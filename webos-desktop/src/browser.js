@@ -2,8 +2,7 @@ import { desktop } from "./desktop.js";
 import { speak } from "./clippy.js";
 
 const PROXY_BASE = "https://api.codetabs.com/v1/proxy/?quest=";
-
-const DIRECT_IFRAME_PATTERNS = [/google.com/];
+const DIRECT_IFRAME_PATTERNS = [/google.com/, /wikipedia.org/];
 
 function shouldLoadDirect(url) {
   return DIRECT_IFRAME_PATTERNS.some((p) => p.test(url));
@@ -47,11 +46,15 @@ async function loadViaProxy(iframe, url) {
   } catch (err) {
     console.error("Proxy load failed:", err);
     speak("That page didn't load. Try a search instead?", "Alert");
-    const errHtml = `<html><body style="font-family:sans-serif;padding:2rem;color:#333">
+
+    const errHtml = `<html><body class="browser-error-container">
       <h2>⚠ Failed to load page</h2>
-      <p><strong>Error:</strong> ${err.message}</p>
-      <p><strong>URL:</strong> ${url}</p>
+      <div class="browser-error-details">
+        <p><strong>Error:</strong> ${err.message}</p>
+        <p><strong>URL:</strong> ${url}</p>
+      </div>
       </body></html>`;
+
     const blob = new Blob([errHtml], { type: "text/html" });
     if (iframe._blobUrl) URL.revokeObjectURL(iframe._blobUrl);
     iframe._blobUrl = URL.createObjectURL(blob);
@@ -99,11 +102,11 @@ export class BrowserApp {
         <button data-url="https://reeyuki.nekoweb.org">Reeyuki Site</button>
         <button data-url="https://liventcord.github.io">LiventCord</button>
         <button data-url="https://www.wikipedia.org">Wikipedia</button>
-        <button data-url="https://www.mixconvert.com">Mix Convert</button>
+        <button data-url="https://yukiconvert.netlify.app/file-converter">File Converter</button>
         <button data-url="https://jsfiddle.net">JS Fiddle</button>
         <button data-url="https://www.myinstants.com/en/categories/sound%20effects/us/">SoundBoard</button>
       </nav>
-      <div class="iframe-container" style="position:relative;width:100%;height:calc(100% - 112px);"></div>
+      <div class="iframe-container"></div>
     `;
 
     desktop.appendChild(win);
@@ -113,11 +116,6 @@ export class BrowserApp {
     this.wm.addToTaskbar(win.id, "Browser", "/static/icons/firefox.webp");
     this.wm.bringToFront(win);
     this.wm.registerCloseWindow(win.querySelector(".close-btn"), win.id);
-
-    win.style.width = "70vw";
-    win.style.height = "70vh";
-    win.style.left = "15vw";
-    win.style.top = "15vh";
 
     this.tabsContainer = win.querySelector(".tabs-container");
     this.newTabBtn = win.querySelector(".new-tab-btn");
@@ -145,7 +143,6 @@ export class BrowserApp {
     win.querySelectorAll(".bookmark-bar button").forEach((btn) => {
       btn.addEventListener("click", () => {
         if (this.currentTabIndex >= 0) {
-          // Exclude Reeyuki bookmark from the "Good choice" greeting
           const bookmarkUrl = btn.dataset.url;
           if (bookmarkUrl !== "https://reeyuki.nekoweb.org") {
             speak("Good choice! I know this one.", "Congratulate");
@@ -321,13 +318,6 @@ export class BrowserApp {
 
     const iframe = document.createElement("iframe");
     iframe.className = "browser-frame";
-    iframe.style.width = "100%";
-    iframe.style.height = "100%";
-    iframe.style.border = "none";
-    iframe.style.position = "absolute";
-    iframe.style.top = "0";
-    iframe.style.left = "0";
-    iframe.style.display = "none";
     this.iframeContainer.appendChild(iframe);
 
     const tab = {
@@ -377,7 +367,6 @@ export class BrowserApp {
     };
 
     loadViaProxy(iframe, url);
-
     this.switchTab(tabIndex);
   }
 
@@ -395,16 +384,14 @@ export class BrowserApp {
     this.currentTabIndex = index;
 
     this.tabs.forEach((tab, i) => {
-      tab.iframe.style.display = i === index ? "block" : "none";
+      tab.iframe.classList.toggle("active", i === index);
       this.tabsContainer.children[i].classList.toggle("active-tab", i === index);
     });
 
     const tab = this.tabs[index];
     this.addressInput.value = tab.url;
-    this.backBtn.disabled = tab.historyIndex <= 0;
-    this.forwardBtn.disabled = tab.historyIndex >= tab.history.length - 1;
+    this.updateNavigation(tab);
   }
-
   closeTab(index) {
     if (index < 0 || index >= this.tabs.length) return;
     const tab = this.tabs[index];
@@ -479,7 +466,6 @@ export class BrowserApp {
     tab.iframe._blobUrl = blobUrl;
     tab.iframe.src = blobUrl;
   }
-
   updateNavigation(tab) {
     this.backBtn.disabled = tab.historyIndex <= 0;
     this.forwardBtn.disabled = tab.historyIndex >= tab.history.length - 1;

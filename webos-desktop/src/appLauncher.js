@@ -32,7 +32,8 @@ export class AppLauncher {
     appCreatorApp,
     officeApp,
     monaco,
-    model3dApp
+    model3dApp,
+    categoriesApp
   ) {
     this.wm = windowManager;
     this.fs = fileSystemManager;
@@ -54,6 +55,7 @@ export class AppLauncher {
     this.officeApp = officeApp;
     this.monacoApp = monaco;
     this.model3dApp = model3dApp;
+    this.categoriesApp = categoriesApp;
     this.TRANSPARENCY_ALLOWED_APP_IDS = new Set(["paint", "photopea", "vscode", "liventcord"]);
 
     this.clippyPromise = initClippy();
@@ -143,19 +145,19 @@ export class AppLauncher {
       flash: {
         type: "system",
         title: "Flash Games",
-        action: () => this.explorerApp.openFlash(),
+        action: () => this.categoriesApp.openFlash(this, this.explorerApp.wm),
         clippy: { message: "Ah the classics!", animation: "Pleased" }
       },
       gamesApp: {
         type: "system",
         title: "Games",
-        action: () => this.explorerApp.openGamesApp(),
+        action: () => this.categoriesApp.openGamesApp(this, this.explorerApp.wm),
         clippy: { message: "I can suggest tips for your games.", animation: "animate" }
       },
       systemApps: {
         type: "system",
         title: "System Apps",
-        action: () => this.explorerApp.openSystemsApp()
+        action: () => this.categoriesApp.openSystemsApp(this, this.explorerApp.wm)
       },
 
       taskManagerApp: {

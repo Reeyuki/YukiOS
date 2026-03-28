@@ -83,7 +83,7 @@ export class MarkdownApp {
     this.wm.setupWindowControls(win);
     this.wm.addToTaskbar(win.id, title, "fab fa-markdown", "#519aba");
 
-    this.setupControls(win, title, decodedContent, filePath);
+    this.wm.setupWindowControls(win, title, decodedContent, filePath);
   }
 
   loadContent(fileName, content, filePath) {

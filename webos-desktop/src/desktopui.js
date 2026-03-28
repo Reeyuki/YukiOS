@@ -528,21 +528,11 @@ export class DesktopUI {
       if (!el) {
         el = document.createElement("div");
         el.id = OVERLAY_ID;
-        el.style.cssText = `
-          position:fixed;inset:0;pointer-events:none;z-index:99999;
-          display:flex;align-items:center;justify-content:center;
-          transition:background 0.15s;
-        `;
+        el.className = "overlay";
         document.body.appendChild(el);
       }
-      el.style.background = "rgba(79,158,255,0.13)";
-      el.style.border = "2.5px dashed rgba(79,158,255,0.55)";
-      el.style.boxSizing = "border-box";
-      el.innerHTML = `<span style="
-        background:rgba(20,28,48,0.82);color:#7ecfff;
-        font-size:15px;padding:10px 22px;border-radius:10px;
-        pointer-events:none;font-family:inherit;letter-spacing:0.02em;
-      ">${label}</span>`;
+      el.classList.add("overlay--active");
+      el.innerHTML = `<span class="overlay__label">${label}</span>`;
       return el;
     };
 

@@ -1,8 +1,237 @@
-import { videos } from "./wallpaperList.js";
 import { detectUserLocation } from "./weather.js";
 import { getWeatherIcon } from "./shared/weatherCodes.js";
 import { getBrowser } from "./shared/platformUtils.js";
 import { StorageKeys } from "./settings.js";
+import { videos } from "./wallpaperList.js";
+import { setCurrentCalendarMonth, createCalendarPopup } from "./calendar.js";
+
+class WallpaperStore {
+  static _currentWallpaperBlobUrl = null;
+  static WP_BLOB_DB_NAME = "wallpaper-blobs-db";
+  static WP_BLOB_DB_VERSION = 1;
+  static WP_BLOB_STORE = "wallpapers";
+  static WP_BLOB_KEY = "current";
+  static _wpBlobDB = null;
+
+  static _revokeWallpaperBlob() {
+    if (this._currentWallpaperBlobUrl) {
+      URL.revokeObjectURL(this._currentWallpaperBlobUrl);
+      this._currentWallpaperBlobUrl = null;
+    }
+  }
+
+  static _isBase64Video(str) {
+    return typeof str === "string" && str.startsWith("data:video/");
+  }
+
+  static _isBase64Image(str) {
+    return typeof str === "string" && str.startsWith("data:image/");
+  }
+
+  static _base64ToBlobUrl(dataUrl) {
+    const [header, b64] = dataUrl.split(",");
+    const mime = header.match(/:(.*?);/)[1];
+    const binary = atob(b64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    const blob = new Blob([bytes], { type: mime });
+    return URL.createObjectURL(blob);
+  }
+
+  static _openWpBlobDB() {
+    if (this._wpBlobDB) return Promise.resolve(this._wpBlobDB);
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(this.WP_BLOB_DB_NAME, this.WP_BLOB_DB_VERSION);
+      req.onupgradeneeded = (e) => {
+        e.target.result.createObjectStore(this.WP_BLOB_STORE);
+      };
+      req.onsuccess = (e) => {
+        this._wpBlobDB = e.target.result;
+        resolve(this._wpBlobDB);
+      };
+      req.onerror = (e) => reject(e);
+    });
+  }
+
+  static async _storeWallpaperBlob(blob) {
+    const db = await this._openWpBlobDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(this.WP_BLOB_STORE, "readwrite");
+      tx.objectStore(this.WP_BLOB_STORE).put(blob, this.WP_BLOB_KEY);
+      tx.oncomplete = () => resolve();
+      tx.onerror = (e) => reject(e);
+    });
+  }
+
+  static async _loadWallpaperBlob() {
+    const db = await this._openWpBlobDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(this.WP_BLOB_STORE, "readonly");
+      const req = tx.objectStore(this.WP_BLOB_STORE).get(this.WP_BLOB_KEY);
+      req.onsuccess = () => resolve(req.result ?? null);
+      req.onerror = (e) => reject(e);
+    });
+  }
+
+  static async _clearWallpaperBlob() {
+    const db = await this._openWpBlobDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(this.WP_BLOB_STORE, "readwrite");
+      tx.objectStore(this.WP_BLOB_STORE).delete(this.WP_BLOB_KEY);
+      tx.oncomplete = () => resolve();
+      tx.onerror = (e) => reject(e);
+    });
+  }
+}
+
+class WallpaperManager {
+  static setSequentialWallpaper() {
+    const isManual = localStorage.getItem(StorageKeys.manualWallpaper) === "true";
+    if (isManual) return;
+
+    const shouldCycle = localStorage.getItem(StorageKeys.cycleWallpaper) !== "false";
+    const existing = localStorage.getItem(StorageKeys.wallpaperKey);
+    if (!shouldCycle && existing) return;
+
+    if (typeof videos === "undefined" || !videos.length) return;
+
+    let index = parseInt(localStorage.getItem(StorageKeys.wallpaperIndexKey)) || 0;
+    if (shouldCycle) {
+      index = (index + 1) % videos.length;
+      localStorage.setItem(StorageKeys.wallpaperIndexKey, String(index));
+    }
+
+    const wallpaper = videos[index];
+    localStorage.setItem(StorageKeys.wallpaperKey, wallpaper);
+    WallpaperStore._clearWallpaperBlob().catch(() => {});
+    this.applyWallpaper(wallpaper);
+  }
+
+  static async setWallpaper(wallpaperURL) {
+    if (!wallpaperURL) return;
+
+    localStorage.setItem(StorageKeys.manualWallpaper, "true");
+    localStorage.setItem(StorageKeys.cycleWallpaper, "false");
+
+    const toggle = document.getElementById("settingsCycleWallpaper");
+    if (toggle) toggle.checked = false;
+
+    if (WallpaperStore._isBase64Video(wallpaperURL)) {
+      const blob = this._dataURItoBlob(wallpaperURL);
+      await WallpaperStore._storeWallpaperBlob(blob);
+      localStorage.setItem(StorageKeys.wallpaperKey, "__blob_video__");
+      this._applyBlob(blob, "video");
+    } else if (WallpaperStore._isBase64Image(wallpaperURL)) {
+      if (wallpaperURL.length > 524288) {
+        const blob = this._dataURItoBlob(wallpaperURL);
+        await WallpaperStore._storeWallpaperBlob(blob);
+        localStorage.setItem(StorageKeys.wallpaperKey, "__blob_image__");
+        this._applyBlob(blob, "img");
+      } else {
+        await WallpaperStore._clearWallpaperBlob().catch(() => {});
+        localStorage.setItem(StorageKeys.wallpaperKey, wallpaperURL);
+        this.applyWallpaper(wallpaperURL);
+      }
+    } else {
+      await WallpaperStore._clearWallpaperBlob().catch(() => {});
+      localStorage.setItem(StorageKeys.wallpaperKey, wallpaperURL);
+      this.applyWallpaper(wallpaperURL);
+    }
+  }
+
+  static _dataURItoBlob(dataUrl) {
+    const [header, b64] = dataUrl.split(",");
+    const mime = header.match(/:(.*?);/)[1];
+    const binary = atob(b64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return new Blob([bytes], { type: mime });
+  }
+
+  static _applyBlob(blob, type) {
+    WallpaperStore._revokeWallpaperBlob();
+    WallpaperStore._currentWallpaperBlobUrl = URL.createObjectURL(blob);
+    this._renderElement(type, WallpaperStore._currentWallpaperBlobUrl);
+  }
+
+  static applyWallpaper(wallpaperURL) {
+    if (!wallpaperURL) return;
+
+    if (WallpaperStore._isBase64Video(wallpaperURL)) {
+      WallpaperStore._revokeWallpaperBlob();
+      WallpaperStore._currentWallpaperBlobUrl = WallpaperStore._base64ToBlobUrl(wallpaperURL);
+      this._renderElement("video", WallpaperStore._currentWallpaperBlobUrl);
+      return;
+    }
+
+    if (WallpaperStore._isBase64Image(wallpaperURL)) {
+      WallpaperStore._revokeWallpaperBlob();
+      WallpaperStore._currentWallpaperBlobUrl = WallpaperStore._base64ToBlobUrl(wallpaperURL);
+      this._renderElement("img", WallpaperStore._currentWallpaperBlobUrl);
+      return;
+    }
+
+    WallpaperStore._revokeWallpaperBlob();
+    const isVideo = wallpaperURL.toLowerCase().endsWith(".mp4") || wallpaperURL.toLowerCase().endsWith(".webm");
+    this._renderElement(isVideo ? "video" : "img", wallpaperURL);
+  }
+
+  static _renderElement(tag, src) {
+    document.getElementById("wallpaper-img")?.remove();
+    document.getElementById("wallpaper-video")?.remove();
+
+    const isVideo = tag === "video";
+    const el = document.createElement(tag);
+    el.id = isVideo ? "wallpaper-video" : "wallpaper-img";
+    el.src = src;
+
+    if (isVideo) {
+      Object.assign(el, { autoplay: true, loop: true, muted: true, playsInline: true });
+    }
+
+    Object.assign(el.style, {
+      position: "fixed",
+      top: "50%",
+      left: "50%",
+      width: "100%",
+      height: "100%",
+      objectFit: "cover",
+      transform: "translate(-50%, -50%)",
+      zIndex: "-1",
+      pointerEvents: "none",
+      userSelect: "none"
+    });
+
+    el.addEventListener("contextmenu", (e) => e.preventDefault());
+    document.body.appendChild(el);
+  }
+
+  static async loadWallpaper() {
+    const shouldCycle = localStorage.getItem(StorageKeys.cycleWallpaper) !== "false";
+    const isManual = localStorage.getItem(StorageKeys.manualWallpaper) === "true";
+    const saved = localStorage.getItem(StorageKeys.wallpaperKey);
+
+    if (saved === "__blob_video__" || saved === "__blob_image__") {
+      try {
+        const blob = await WallpaperStore._loadWallpaperBlob();
+        if (blob) {
+          this._applyBlob(blob, saved === "__blob_video__" ? "video" : "img");
+          return;
+        }
+      } catch (e) {
+        console.warn("Failed to load wallpaper blob", e);
+      }
+      this.setSequentialWallpaper();
+      return;
+    }
+
+    if ((isManual && saved) || (!shouldCycle && saved)) {
+      this.applyWallpaper(saved);
+    } else {
+      this.setSequentialWallpaper();
+    }
+  }
+}
 
 const loginBtn = document.getElementById("login-btn");
 const login = document.getElementById("login");
@@ -34,7 +263,7 @@ function getGreeting(username) {
 }
 
 function showLogin() {
-  const savedUsername = localStorage.getItem("yukiOS_username");
+  const savedUsername = localStorage.getItem(StorageKeys.username);
   if (savedUsername) {
     const usernameInput = document.getElementById("username");
     if (usernameInput) usernameInput.value = savedUsername;
@@ -48,475 +277,10 @@ function showLogin() {
 let _weatherIntervalId = null;
 let _weatherWidget = null;
 
-let _currentWallpaperBlobUrl = null;
-
-function _revokeWallpaperBlob() {
-  if (_currentWallpaperBlobUrl) {
-    URL.revokeObjectURL(_currentWallpaperBlobUrl);
-    _currentWallpaperBlobUrl = null;
-  }
-}
-
-function _isBase64Video(str) {
-  return typeof str === "string" && str.startsWith("data:video/");
-}
-
-function _isBase64Image(str) {
-  return typeof str === "string" && str.startsWith("data:image/");
-}
-
-function _base64ToBlobUrl(dataUrl) {
-  const [header, b64] = dataUrl.split(",");
-  const mime = header.match(/:(.*?);/)[1];
-  const binary = atob(b64);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-  const blob = new Blob([bytes], { type: mime });
-  return URL.createObjectURL(blob);
-}
-
-const WP_BLOB_DB_NAME = "wallpaper-blobs-db";
-const WP_BLOB_DB_VERSION = 1;
-const WP_BLOB_STORE = "wallpapers";
-const WP_BLOB_KEY = "current";
-
-let _wpBlobDB = null;
-
-function _openWpBlobDB() {
-  if (_wpBlobDB) return Promise.resolve(_wpBlobDB);
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open(WP_BLOB_DB_NAME, WP_BLOB_DB_VERSION);
-    req.onupgradeneeded = (e) => {
-      e.target.result.createObjectStore(WP_BLOB_STORE);
-    };
-    req.onsuccess = (e) => {
-      _wpBlobDB = e.target.result;
-      resolve(_wpBlobDB);
-    };
-    req.onerror = (e) => reject(e);
-  });
-}
-
-async function _storeWallpaperBlob(blob) {
-  const db = await _openWpBlobDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(WP_BLOB_STORE, "readwrite");
-    tx.objectStore(WP_BLOB_STORE).put(blob, WP_BLOB_KEY);
-    tx.oncomplete = () => resolve();
-    tx.onerror = (e) => reject(e);
-  });
-}
-
-async function _loadWallpaperBlob() {
-  const db = await _openWpBlobDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(WP_BLOB_STORE, "readonly");
-    const req = tx.objectStore(WP_BLOB_STORE).get(WP_BLOB_KEY);
-    req.onsuccess = () => resolve(req.result ?? null);
-    req.onerror = (e) => reject(e);
-  });
-}
-
-async function _clearWallpaperBlob() {
-  const db = await _openWpBlobDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(WP_BLOB_STORE, "readwrite");
-    tx.objectStore(WP_BLOB_STORE).delete(WP_BLOB_KEY);
-    tx.oncomplete = () => resolve();
-    tx.onerror = (e) => reject(e);
-  });
-}
-let _calendarPopup = null;
-let _currentCalendarMonth = new Date();
-let _calendarEvents = JSON.parse(localStorage.getItem("yukiOS_calendar_events") || "{}");
-let _calendarTimeInterval = null;
-
-function saveCalendarEvents() {
-  localStorage.setItem("yukiOS_calendar_events", JSON.stringify(_calendarEvents));
-}
-
-function getEventKey(year, month, day) {
-  return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-}
-
-function getWeekNumber(date) {
-  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-  const dayNum = d.getUTCDay() || 7;
-  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-  return Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
-}
-
-function createCalendarPopup() {
-  if (_calendarPopup) {
-    closeCalendarPopup();
-    return;
-  }
-
-  const popup = document.createElement("div");
-  popup.id = "calendar-popup";
-  popup.className = "calendar-popup";
-
-  const timeDisplay = document.createElement("div");
-  timeDisplay.className = "calendar-time-display";
-
-  const header = document.createElement("div");
-  header.className = "calendar-header";
-
-  const prevBtn = document.createElement("button");
-  prevBtn.className = "calendar-nav-btn";
-  prevBtn.textContent = "‹";
-  prevBtn.title = "Previous month";
-  prevBtn.onclick = () => {
-    _currentCalendarMonth.setMonth(_currentCalendarMonth.getMonth() - 1);
-    renderCalendar();
-  };
-
-  const monthYearContainer = document.createElement("div");
-  monthYearContainer.className = "calendar-month-year-container";
-
-  const monthYear = document.createElement("div");
-  monthYear.className = "calendar-month-year";
-
-  const todayBtn = document.createElement("button");
-  todayBtn.className = "calendar-today-btn";
-  todayBtn.textContent = "Today";
-  todayBtn.onclick = () => {
-    _currentCalendarMonth = new Date();
-    renderCalendar();
-  };
-
-  monthYearContainer.appendChild(monthYear);
-  monthYearContainer.appendChild(todayBtn);
-
-  const nextBtn = document.createElement("button");
-  nextBtn.className = "calendar-nav-btn";
-  nextBtn.textContent = "›";
-  nextBtn.title = "Next month";
-  nextBtn.onclick = () => {
-    _currentCalendarMonth.setMonth(_currentCalendarMonth.getMonth() + 1);
-    renderCalendar();
-  };
-
-  header.appendChild(prevBtn);
-  header.appendChild(monthYearContainer);
-  header.appendChild(nextBtn);
-
-  const grid = document.createElement("div");
-  grid.className = "calendar-grid";
-
-  const agenda = document.createElement("div");
-  agenda.className = "calendar-agenda";
-
-  popup.appendChild(timeDisplay);
-  popup.appendChild(header);
-  popup.appendChild(grid);
-  popup.appendChild(agenda);
-  document.body.appendChild(popup);
-
-  _calendarPopup = popup;
-
-  positionCalendarPopup();
-
-  updateCalendarTime();
-  _calendarTimeInterval = setInterval(updateCalendarTime, 1000);
-
-  renderCalendar();
-
-  document.addEventListener("keydown", handleCalendarKeydown);
-
-  setTimeout(() => {
-    document.addEventListener("click", closeCalendarOnClickOutside);
-  }, 0);
-}
-
-function closeCalendarPopup() {
-  if (_calendarPopup) {
-    _calendarPopup.remove();
-    _calendarPopup = null;
-  }
-  if (_calendarTimeInterval) {
-    clearInterval(_calendarTimeInterval);
-    _calendarTimeInterval = null;
-  }
-  document.removeEventListener("keydown", handleCalendarKeydown);
-  document.removeEventListener("click", closeCalendarOnClickOutside);
-}
-
-function positionCalendarPopup() {
-  if (!_calendarPopup) return;
-
-  const dateEl = document.getElementById("date");
-  const rect = dateEl.getBoundingClientRect();
-  const popupRect = _calendarPopup.getBoundingClientRect();
-
-  let left = rect.left + rect.width / 2 - popupRect.width / 2;
-  let bottom = window.innerHeight - rect.top + 8;
-
-  if (left + popupRect.width > window.innerWidth - 10) {
-    left = window.innerWidth - popupRect.width - 10;
-  }
-  if (left < 10) {
-    left = 10;
-  }
-
-  _calendarPopup.style.bottom = `${bottom}px`;
-  _calendarPopup.style.left = `${left}px`;
-  _calendarPopup.style.top = "auto";
-}
-
-function updateCalendarTime() {
-  if (!_calendarPopup) return;
-  const timeDisplay = _calendarPopup.querySelector(".calendar-time-display");
-  if (timeDisplay) {
-    const now = new Date();
-    timeDisplay.textContent = now.toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit"
-    });
-  }
-}
-
-function handleCalendarKeydown(e) {
-  if (!_calendarPopup) return;
-
-  if (e.key === "Escape") {
-    closeCalendarPopup();
-  } else if (e.key === "ArrowLeft") {
-    _currentCalendarMonth.setMonth(_currentCalendarMonth.getMonth() - 1);
-    renderCalendar();
-  } else if (e.key === "ArrowRight") {
-    _currentCalendarMonth.setMonth(_currentCalendarMonth.getMonth() + 1);
-    renderCalendar();
-  } else if (e.key === "ArrowUp") {
-    _currentCalendarMonth.setFullYear(_currentCalendarMonth.getFullYear() - 1);
-    renderCalendar();
-  } else if (e.key === "ArrowDown") {
-    _currentCalendarMonth.setFullYear(_currentCalendarMonth.getFullYear() + 1);
-    renderCalendar();
-  }
-}
-
-function closeCalendarOnClickOutside(e) {
-  if (e.target.closest(".calendar-modal-overlay")) return;
-  if (_calendarPopup && !_calendarPopup.contains(e.target) && e.target.id !== "date") {
-    closeCalendarPopup();
-  }
-}
-function showEventModal(dateKey, existingEvent = "") {
-  const overlay = document.createElement("div");
-  overlay.className = "calendar-modal-overlay";
-
-  const modal = document.createElement("div");
-  modal.className = "calendar-modal";
-
-  const title = document.createElement("div");
-  title.className = "calendar-modal-title";
-  title.textContent = `Event for ${dateKey}`;
-
-  const input = document.createElement("textarea");
-  input.className = "calendar-modal-input";
-  input.placeholder = "Enter event details...";
-  input.value = existingEvent;
-
-  const buttons = document.createElement("div");
-  buttons.className = "calendar-modal-buttons";
-
-  const saveBtn = document.createElement("button");
-  saveBtn.className = "calendar-modal-btn save";
-  saveBtn.textContent = "Save";
-  saveBtn.onclick = () => {
-    const value = input.value.trim();
-    if (value) {
-      _calendarEvents[dateKey] = value;
-    } else {
-      delete _calendarEvents[dateKey];
-    }
-    saveCalendarEvents();
-    overlay.remove();
-    renderCalendar();
-  };
-
-  const deleteBtn = document.createElement("button");
-  deleteBtn.className = "calendar-modal-btn delete";
-  deleteBtn.textContent = "Delete";
-  deleteBtn.onclick = () => {
-    delete _calendarEvents[dateKey];
-    saveCalendarEvents();
-    overlay.remove();
-    renderCalendar();
-  };
-
-  const cancelBtn = document.createElement("button");
-  cancelBtn.className = "calendar-modal-btn cancel";
-  cancelBtn.textContent = "Cancel";
-  cancelBtn.onclick = () => overlay.remove();
-
-  buttons.appendChild(saveBtn);
-  if (existingEvent) buttons.appendChild(deleteBtn);
-  buttons.appendChild(cancelBtn);
-
-  modal.appendChild(title);
-  modal.appendChild(input);
-  modal.appendChild(buttons);
-  overlay.appendChild(modal);
-  document.body.appendChild(overlay);
-
-  input.focus();
-
-  overlay.addEventListener("click", (e) => {
-    if (e.target === overlay) overlay.remove();
-  });
-}
-
-function renderCalendar() {
-  if (!_calendarPopup) return;
-
-  const monthYear = _calendarPopup.querySelector(".calendar-month-year");
-  const grid = _calendarPopup.querySelector(".calendar-grid");
-  const agenda = _calendarPopup.querySelector(".calendar-agenda");
-
-  const year = _currentCalendarMonth.getFullYear();
-  const month = _currentCalendarMonth.getMonth();
-
-  monthYear.textContent = new Date(year, month).toLocaleDateString([], {
-    month: "long",
-    year: "numeric"
-  });
-
-  grid.innerHTML = "";
-
-  const weekHeader = document.createElement("div");
-  weekHeader.className = "calendar-week-header";
-  weekHeader.textContent = "W";
-  weekHeader.title = "Week number";
-  grid.appendChild(weekHeader);
-
-  const dayHeaders = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
-  dayHeaders.forEach((day) => {
-    const dayHeader = document.createElement("div");
-    dayHeader.className = "calendar-day-header";
-    dayHeader.textContent = day;
-    grid.appendChild(dayHeader);
-  });
-
-  const firstDay = new Date(year, month, 1).getDay();
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-  const today = new Date();
-  const isCurrentMonth = today.getMonth() === month && today.getFullYear() === year;
-  const currentDay = today.getDate();
-
-  const totalCells = firstDay + daysInMonth;
-  const rows = Math.ceil(totalCells / 7);
-
-  let dayCounter = 1;
-
-  for (let row = 0; row < rows; row++) {
-    const weekDate = new Date(year, month, dayCounter - firstDay + row * 7);
-    const weekNum = document.createElement("div");
-    weekNum.className = "calendar-week-number";
-    weekNum.textContent = getWeekNumber(new Date(year, month, Math.max(1, dayCounter)));
-    grid.appendChild(weekNum);
-
-    for (let col = 0; col < 7; col++) {
-      const cellIndex = row * 7 + col;
-      const dayCell = document.createElement("div");
-      dayCell.className = "calendar-day";
-
-      if (cellIndex >= firstDay && dayCounter <= daysInMonth) {
-        const day = dayCounter;
-        dayCell.textContent = day;
-
-        const dateKey = getEventKey(year, month, day);
-        const hasEvent = _calendarEvents[dateKey];
-
-        if (hasEvent) {
-          dayCell.classList.add("has-event");
-          dayCell.title = hasEvent;
-        }
-
-        if (isCurrentMonth && day === currentDay) {
-          dayCell.classList.add("today");
-        }
-
-        if (col === 0 || col === 6) {
-          dayCell.classList.add("weekend");
-        }
-
-        dayCell.onclick = () => {
-          showEventModal(dateKey, _calendarEvents[dateKey] || "");
-        };
-
-        dayCounter++;
-      } else {
-        dayCell.classList.add("empty");
-      }
-
-      grid.appendChild(dayCell);
-    }
-  }
-
-  renderAgenda(agenda);
-
-  const weekNums = grid.querySelectorAll(".calendar-week-number");
-  weekNums.forEach((wn, i) => {
-    if (i > 0) {
-      const dayInWeek = Math.min(1 + (i - 1) * 7 - firstDay + 7, daysInMonth);
-      if (dayInWeek > 0 && dayInWeek <= daysInMonth) {
-        wn.textContent = getWeekNumber(new Date(year, month, dayInWeek));
-      }
-    }
-  });
-}
-
-function renderAgenda(agendaEl) {
-  agendaEl.innerHTML = "";
-
-  const title = document.createElement("div");
-  title.className = "calendar-agenda-title";
-  title.textContent = "📅 Upcoming Events";
-  agendaEl.appendChild(title);
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const upcomingEvents = Object.entries(_calendarEvents)
-    .filter(([key]) => new Date(key) >= today)
-    .sort(([a], [b]) => new Date(a) - new Date(b))
-    .slice(0, 5);
-
-  if (upcomingEvents.length === 0) {
-    const noEvents = document.createElement("div");
-    noEvents.className = "calendar-no-events";
-    noEvents.textContent = "No upcoming events";
-    agendaEl.appendChild(noEvents);
-    return;
-  }
-
-  upcomingEvents.forEach(([dateKey, event]) => {
-    const eventEl = document.createElement("div");
-    eventEl.className = "calendar-agenda-item";
-
-    const dateEl = document.createElement("span");
-    dateEl.className = "calendar-agenda-date";
-    const eventDate = new Date(dateKey);
-    const isToday = eventDate.toDateString() === new Date().toDateString();
-    dateEl.textContent = isToday ? "Today" : eventDate.toLocaleDateString([], { month: "short", day: "numeric" });
-
-    const textEl = document.createElement("span");
-    textEl.className = "calendar-agenda-text";
-    textEl.textContent = event.length > 30 ? event.substring(0, 30) + "…" : event;
-
-    eventEl.appendChild(dateEl);
-    eventEl.appendChild(textEl);
-    eventEl.onclick = () => showEventModal(dateKey, event);
-    agendaEl.appendChild(eventEl);
-  });
-}
-
 export class SystemUtilities {
+  static async loadWallpaper() {
+    await WallpaperManager.loadWallpaper();
+  }
   static setSettings(_settings) {
     settings = _settings;
   }
@@ -530,7 +294,7 @@ export class SystemUtilities {
     date.style.cursor = "pointer";
     date.addEventListener("click", (e) => {
       e.stopPropagation();
-      _currentCalendarMonth = new Date();
+      setCurrentCalendarMonth();
       createCalendarPopup();
     });
 
@@ -547,7 +311,7 @@ export class SystemUtilities {
   }
 
   static async startTaskbarWeather(appLauncher) {
-    if (localStorage.getItem("yukiOS_weather") === "false") return;
+    if (localStorage.getItem(StorageKeys.weather) === "false") return;
 
     const tray = document.getElementById("system-tray");
     if (!tray) return;
@@ -555,16 +319,6 @@ export class SystemUtilities {
     if (!_weatherWidget) {
       const widget = document.createElement("div");
       widget.id = "taskbar-weather";
-      widget.style.cssText = `
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        font-size: 1.1em;
-        cursor: default;
-        padding: 0 6px;
-        opacity: 0.85;
-        white-space: nowrap;
-      `;
       widget.textContent = "…";
       widget.addEventListener("click", () => {
         appLauncher?.launch("weatherApp");
@@ -606,267 +360,8 @@ export class SystemUtilities {
       _weatherWidget = null;
     }
   }
-
-  static setSequentialWallpaper() {
-    const isManual = localStorage.getItem(StorageKeys.manualWallpaper) === "true";
-    if (isManual) return;
-
-    const shouldCycle = localStorage.getItem(StorageKeys.cycleWallpaper) !== "false";
-    const existing = localStorage.getItem(StorageKeys.wallpaperKey);
-    if (!shouldCycle && existing) return;
-
-    let index = parseInt(localStorage.getItem(StorageKeys.wallpaperIndexKey)) || 0;
-    if (shouldCycle) {
-      index = (index + 1) % videos.length;
-      localStorage.setItem(StorageKeys.wallpaperIndexKey, String(index));
-    }
-
-    const wallpaper = videos[index];
-    localStorage.setItem(StorageKeys.wallpaperKey, wallpaper);
-    _clearWallpaperBlob().catch(() => {});
-    this.applyWallpaper(wallpaper);
-  }
-
-  static async setWallpaper(wallpaperURL) {
-    if (!wallpaperURL) return;
-
-    localStorage.setItem(StorageKeys.manualWallpaper, "true");
-    localStorage.setItem(StorageKeys.cycleWallpaper, "false");
-    const toggle = document.getElementById("settingsCycleWallpaper");
-    if (toggle) toggle.checked = false;
-    if (settings) {
-      settings._settings.cycleWallpaper = false;
-      if (window._settings) window._settings.cycleWallpaper = false;
-    }
-
-    if (_isBase64Video(wallpaperURL)) {
-      const [header, b64] = wallpaperURL.split(",");
-      const mime = header.match(/:(.*?);/)[1];
-      const binary = atob(b64);
-      const bytes = new Uint8Array(binary.length);
-      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-      const blob = new Blob([bytes], { type: mime });
-
-      await _storeWallpaperBlob(blob);
-      localStorage.setItem(StorageKeys.wallpaperKey, "__blob_video__");
-      this._applyVideoBlob(blob);
-    } else if (_isBase64Image(wallpaperURL)) {
-      if (wallpaperURL.length > 524288) {
-        const [header, b64] = wallpaperURL.split(",");
-        const mime = header.match(/:(.*?);/)[1];
-        const binary = atob(b64);
-        const bytes = new Uint8Array(binary.length);
-        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-        const blob = new Blob([bytes], { type: mime });
-        await _storeWallpaperBlob(blob);
-        localStorage.setItem(StorageKeys.wallpaperKey, "__blob_image__");
-        this._applyImageBlob(blob);
-      } else {
-        await _clearWallpaperBlob().catch(() => {});
-        localStorage.setItem(StorageKeys.wallpaperKey, wallpaperURL);
-        this.applyWallpaper(wallpaperURL);
-      }
-    } else {
-      await _clearWallpaperBlob().catch(() => {});
-      localStorage.setItem(StorageKeys.wallpaperKey, wallpaperURL);
-      this.applyWallpaper(wallpaperURL);
-    }
-  }
-
-  static _applyVideoBlob(blob) {
-    _revokeWallpaperBlob();
-    _currentWallpaperBlobUrl = URL.createObjectURL(blob);
-
-    document.getElementById("wallpaper-img")?.remove();
-    document.getElementById("wallpaper-video")?.remove();
-
-    const el = Object.assign(document.createElement("video"), {
-      id: "wallpaper-video",
-      src: _currentWallpaperBlobUrl,
-      autoplay: true,
-      loop: true,
-      muted: true,
-      playsInline: true
-    });
-
-    Object.assign(el.style, {
-      position: "fixed",
-      top: "50%",
-      left: "50%",
-      width: "100%",
-      height: "100%",
-      objectFit: "cover",
-      transform: "translate(-50%, -50%)",
-      zIndex: "-1",
-      pointerEvents: "none",
-      userSelect: "none"
-    });
-    el.addEventListener("contextmenu", (e) => e.preventDefault());
-    document.body.appendChild(el);
-  }
-
-  static _applyImageBlob(blob) {
-    _revokeWallpaperBlob();
-    _currentWallpaperBlobUrl = URL.createObjectURL(blob);
-
-    document.getElementById("wallpaper-img")?.remove();
-    document.getElementById("wallpaper-video")?.remove();
-
-    const el = Object.assign(document.createElement("img"), {
-      id: "wallpaper-img",
-      src: _currentWallpaperBlobUrl
-    });
-
-    Object.assign(el.style, {
-      position: "fixed",
-      top: "50%",
-      left: "50%",
-      width: "100%",
-      height: "100%",
-      objectFit: "cover",
-      transform: "translate(-50%, -50%)",
-      zIndex: "-1",
-      pointerEvents: "none",
-      userSelect: "none"
-    });
-    el.addEventListener("contextmenu", (e) => e.preventDefault());
-    document.body.appendChild(el);
-  }
-
-  static applyWallpaper(wallpaperURL) {
-    if (!wallpaperURL) return;
-
-    if (_isBase64Video(wallpaperURL)) {
-      _revokeWallpaperBlob();
-      _currentWallpaperBlobUrl = _base64ToBlobUrl(wallpaperURL);
-
-      document.getElementById("wallpaper-img")?.remove();
-      document.getElementById("wallpaper-video")?.remove();
-
-      const el = Object.assign(document.createElement("video"), {
-        id: "wallpaper-video",
-        src: _currentWallpaperBlobUrl,
-        autoplay: true,
-        loop: true,
-        muted: true,
-        playsInline: true
-      });
-
-      Object.assign(el.style, {
-        position: "fixed",
-        top: "50%",
-        left: "50%",
-        width: "100%",
-        height: "100%",
-        objectFit: "cover",
-        transform: "translate(-50%, -50%)",
-        zIndex: "-1",
-        pointerEvents: "none",
-        userSelect: "none"
-      });
-      el.addEventListener("contextmenu", (e) => e.preventDefault());
-      document.body.appendChild(el);
-      return;
-    }
-
-    if (_isBase64Image(wallpaperURL)) {
-      _revokeWallpaperBlob();
-      _currentWallpaperBlobUrl = _base64ToBlobUrl(wallpaperURL);
-
-      document.getElementById("wallpaper-img")?.remove();
-      document.getElementById("wallpaper-video")?.remove();
-
-      const el = Object.assign(document.createElement("img"), {
-        id: "wallpaper-img",
-        src: _currentWallpaperBlobUrl
-      });
-
-      Object.assign(el.style, {
-        position: "fixed",
-        top: "50%",
-        left: "50%",
-        width: "100%",
-        height: "100%",
-        objectFit: "cover",
-        transform: "translate(-50%, -50%)",
-        zIndex: "-1",
-        pointerEvents: "none",
-        userSelect: "none"
-      });
-      el.addEventListener("contextmenu", (e) => e.preventDefault());
-      document.body.appendChild(el);
-      return;
-    }
-
-    _revokeWallpaperBlob();
-
-    const isVideo = wallpaperURL.toLowerCase().endsWith(".mp4");
-
-    document.getElementById("wallpaper-img")?.remove();
-    document.getElementById("wallpaper-video")?.remove();
-
-    const el = isVideo
-      ? Object.assign(document.createElement("video"), {
-          id: "wallpaper-video",
-          src: wallpaperURL,
-          autoplay: true,
-          loop: true,
-          muted: true,
-          playsInline: true
-        })
-      : Object.assign(document.createElement("img"), {
-          id: "wallpaper-img",
-          src: wallpaperURL
-        });
-
-    Object.assign(el.style, {
-      position: "fixed",
-      top: "50%",
-      left: "50%",
-      width: "100%",
-      height: "100%",
-      objectFit: "cover",
-      transform: "translate(-50%, -50%)",
-      zIndex: "-1",
-      pointerEvents: "none",
-      userSelect: "none"
-    });
-    el.addEventListener("contextmenu", (e) => e.preventDefault());
-    document.body.appendChild(el);
-  }
-
-  static async loadWallpaper() {
-    const shouldCycle = localStorage.getItem(StorageKeys.cycleWallpaper) !== "false";
-    const isManual = localStorage.getItem(StorageKeys.manualWallpaper) === "true";
-    const saved = localStorage.getItem(StorageKeys.wallpaperKey);
-
-    if (saved === "__blob_video__" || saved === "__blob_image__") {
-      try {
-        const blob = await _loadWallpaperBlob();
-        if (blob) {
-          if (saved === "__blob_video__") {
-            this._applyVideoBlob(blob);
-          } else {
-            this._applyImageBlob(blob);
-          }
-          return;
-        }
-      } catch (e) {
-        console.warn("Failed to load wallpaper blob, falling back", e);
-      }
-      this.setSequentialWallpaper();
-      return;
-    }
-
-    if (isManual && saved) {
-      this.applyWallpaper(saved);
-    } else if (shouldCycle) {
-      this.setSequentialWallpaper();
-    } else if (saved) {
-      this.applyWallpaper(saved);
-    } else {
-      this.setSequentialWallpaper();
-    }
+  static setWallpaper(url) {
+    WallpaperManager.setWallpaper(url);
   }
 }
 

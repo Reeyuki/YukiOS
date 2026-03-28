@@ -13,7 +13,8 @@ export const StorageKeys = {
   cycleWallpaper: "yukiOS_cycleWallpaper",
   manualWallpaper: "yukiOS_manualWallpaper",
   macOsControls: "yukiOS_macOsControls",
-  clippy: "yukiOS_clippy"
+  clippy: "yukiOS_clippy",
+  calendarEvents: "yukiOS_calendar_events"
 };
 
 export class SettingsApp {

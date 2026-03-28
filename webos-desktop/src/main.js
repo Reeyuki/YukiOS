@@ -25,6 +25,7 @@ import { MarkdownApp } from "./markdown.js";
 import { MonacoApp } from "./monaco.js";
 import { Model3DApp } from "./model3d.js";
 import { NotificationCenter } from "./notificationCenter.js";
+import { CategoriesApp } from "./categories.js";
 
 class MusicPlayer {
   constructor() {}
@@ -62,6 +63,7 @@ class MusicPlayer {
 }
 
 function initDownloadButton() {
+  return;
   if (isMobile()) return;
   const installBtn = document.createElement("div");
   installBtn.id = "install-app";
@@ -151,6 +153,8 @@ explorerApp.setEmulator(emulatorApp);
 explorerApp.setBrowser(browserApp);
 const appCreatorApp = new AppCreatorApp(fileSystemManager, windowManager);
 const monacoApp = new MonacoApp(fileSystemManager, windowManager, explorerApp);
+const categoriesApp = new CategoriesApp();
+
 const model3dApp = new Model3DApp(fileSystemManager, windowManager, explorerApp);
 const appLauncher = new AppLauncher(
   windowManager,
@@ -172,7 +176,8 @@ const appLauncher = new AppLauncher(
   appCreatorApp,
   officeApp,
   monacoApp,
-  model3dApp
+  model3dApp,
+  categoriesApp
 );
 appCreatorApp.setAppLauncher(appLauncher);
 explorerApp.setAppLauncher(appLauncher);

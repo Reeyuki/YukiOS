@@ -21,7 +21,6 @@ export const videos = [
   "https://motionbgs.com/media/1057/itachi-shillouette-in-front-of-the-red-moon.1920x1080.mp4",
   "https://motionbgs.com/media/6839/black-haired-girl.1920x1080.mp4",
   "https://motionbgs.com/media/5535/itachi.1920x1080.mp4",
-  "https://motionbgs.com/media/781/samurai-near-the-tree.1920x1080.mp4",
   "https://motionbgs.com/media/156/chainsaw-man-into-a-rage.1920x1080.mp4",
   "https://motionbgs.com/media/6158/ishtar-fate.1920x1080.mp4",
   "https://motionbgs.com/media/2015/berserk.1920x1080.mp4",
