@@ -47,9 +47,11 @@ export class WindowManager {
   }
 
   _resolveIconType(iconValue) {
+    const isDataUrl = typeof iconValue === "string" && iconValue.startsWith("data:");
+    const isHttpUrl = typeof iconValue === "string" && /^https?:\/\//.test(iconValue);
     return {
-      isImage: isImageFile(iconValue),
-      isDataUrl: typeof iconValue === "string" && iconValue.startsWith("data:")
+      isImage: isImageFile(iconValue) || isHttpUrl,
+      isDataUrl
     };
   }
 
@@ -199,6 +201,12 @@ export class WindowManager {
     if (isImage || isDataUrl) {
       const icon = document.createElement("img");
       icon.src = iconValue;
+      icon.onerror = () => {
+        const fallback = document.createElement("i");
+        fallback.className = "fas fa-window-maximize";
+        fallback.style.color = color ?? "white";
+        icon.replaceWith(fallback);
+      };
       return icon;
     }
 

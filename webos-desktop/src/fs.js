@@ -339,6 +339,17 @@ export class FileSystemManager {
     return result;
   }
 
+  async readTextFile(path, name) {
+    await this.fsReady;
+    const dir = this.resolveDir(path);
+    const fullPath = this.join(dir, name);
+    try {
+      return await this.pRead("readFile", fullPath, "utf8");
+    } catch {
+      return null;
+    }
+  }
+
   async getUniqueFileName(path, name) {
     await this.fsReady;
     const dir = this.resolveDir(path);

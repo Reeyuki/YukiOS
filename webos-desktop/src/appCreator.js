@@ -21,12 +21,22 @@ function isImageIcon(iconValue) {
   return isImageFile(iconValue) || iconValue.startsWith("data:");
 }
 
-function buildAppMapEntry(name, url, icon) {
-  return { type: "game", title: name, url, icon, iconValue: icon };
+function buildAppMapEntry(name, url, icon, faviconUrl) {
+  const iconValue = faviconUrl || icon;
+  return { type: "game", title: name, url, icon, iconValue, faviconUrl };
 }
 
-function buildAppMeta(appId, name, url, icon) {
-  return { appId, name, url, icon, type: "game" };
+function buildAppMeta(appId, name, url, icon, faviconUrl) {
+  return { appId, name, url, icon, faviconUrl, type: "game" };
+}
+
+function deriveFaviconUrl(appUrl) {
+  try {
+    const { origin } = new URL(appUrl);
+    return `${origin}/favicon.ico`;
+  } catch {
+    return null;
+  }
 }
 
 function makeDesktopIconElement(appId, name, iconUrl) {
@@ -77,8 +87,8 @@ export class AppCreatorApp {
   async restoreInstalledApps() {
     const apps = await this._loadAllCustomApps();
     for (const app of apps) {
-      this.appLauncher.appMap[app.appId] = buildAppMapEntry(app.name, app.url, app.icon);
-      this._addToDesktop(app.appId, app.name, app.icon);
+      this.appLauncher.appMap[app.appId] = buildAppMapEntry(app.name, app.url, app.icon, app.faviconUrl);
+      this._addToDesktop(app.appId, app.name, app.icon, app.faviconUrl);
     }
   }
 
@@ -332,10 +342,12 @@ export class AppCreatorApp {
     const apps = [];
     try {
       const folder = await this.fs.getFolder(AC.FS_FOLDER);
-      for (const [fileName, data] of Object.entries(folder)) {
-        if (!fileName.endsWith(".json") || !data.content) continue;
+      for (const [fileName] of Object.entries(folder)) {
+        if (!fileName.endsWith(".json")) continue;
         try {
-          const meta = JSON.parse(data.content);
+          const raw = await this.fs.readTextFile(AC.FS_FOLDER, fileName);
+          if (!raw) continue;
+          const meta = JSON.parse(raw);
           if (meta.appId?.startsWith(AC.APP_ID_PREFIX)) apps.push({ ...meta, _fileName: fileName });
         } catch {}
       }
@@ -346,10 +358,12 @@ export class AppCreatorApp {
   async _loadAppMeta(appId) {
     try {
       const folder = await this.fs.getFolder(AC.FS_FOLDER);
-      for (const [fileName, data] of Object.entries(folder)) {
-        if (!data.content) continue;
+      for (const [fileName] of Object.entries(folder)) {
+        if (!fileName.endsWith(".json")) continue;
         try {
-          const meta = JSON.parse(data.content);
+          const raw = await this.fs.readTextFile(AC.FS_FOLDER, fileName);
+          if (!raw) continue;
+          const meta = JSON.parse(raw);
           if (meta.appId === appId) return { ...meta, _fileName: fileName };
         } catch {}
       }
@@ -387,24 +401,20 @@ export class AppCreatorApp {
       return;
     }
 
-    const updated = buildAppMeta(appId, name, url, iconUrl);
+    const faviconUrl = meta.faviconUrl || deriveFaviconUrl(url);
+    const updated = buildAppMeta(appId, name, url, iconUrl, faviconUrl);
 
     try {
-      await this.fs.deleteItem(AC.FS_FOLDER, meta._fileName);
-      await this.fs.createFile(
-        AC.FS_FOLDER,
-        meta._fileName,
-        JSON.stringify(updated, null, 2),
-        "text",
-        AC.FALLBACK_ICON
-      );
+      const dir = this.fs.resolveDir(AC.FS_FOLDER);
+      const filePath = this.fs.join(dir, meta._fileName);
+      await this.fs.p("writeFile", filePath, JSON.stringify(updated, null, 2));
     } catch (e) {
       console.warn("AppCreator: fs update failed", e);
       this.wm.sendNotify(`Failed to save "${name}" to filesystem.`);
     }
 
     if (this.appLauncher?.appMap?.[appId]) {
-      this.appLauncher.appMap[appId] = buildAppMapEntry(name, url, iconUrl);
+      this.appLauncher.appMap[appId] = buildAppMapEntry(name, url, iconUrl, faviconUrl);
     }
 
     this._updateDesktopIcon(appId, name, iconUrl);
@@ -511,37 +521,37 @@ export class AppCreatorApp {
 
   async _installApp(name, url, iconUrl, statusEl, win) {
     const appId = `${AC.APP_ID_PREFIX}${name.toLowerCase().replace(/\s+/g, "-")}-${Date.now()}`;
-    const appMeta = buildAppMeta(appId, name, url, iconUrl);
+    const fileName = `${appId}.json`;
+    const faviconUrl = deriveFaviconUrl(url);
+    const appMeta = buildAppMeta(appId, name, url, iconUrl, faviconUrl);
 
     try {
-      await this.fs.createFile(
-        AC.FS_FOLDER,
-        `${appId}.json`,
-        JSON.stringify(appMeta, null, 2),
-        "text",
-        AC.FALLBACK_ICON
-      );
+      await this.fs.ensureFolder(AC.FS_FOLDER);
+      const dir = this.fs.resolveDir(AC.FS_FOLDER);
+      const filePath = this.fs.join(dir, fileName);
+      await this.fs.p("writeFile", filePath, JSON.stringify(appMeta, null, 2));
+      await this.fs.writeMeta(dir, fileName, { kind: "text", icon: AC.FALLBACK_ICON });
     } catch (e) {
       console.warn("AppCreator: could not persist app to filesystem", e);
       this.wm.sendNotify(`Failed to save "${name}" to filesystem.`);
     }
 
-    this.appLauncher.appMap[appId] = buildAppMapEntry(name, url, iconUrl);
-    this._addToDesktop(appId, name, iconUrl);
+    this.appLauncher.appMap[appId] = buildAppMapEntry(name, url, iconUrl, faviconUrl);
+    this._addToDesktop(appId, name, iconUrl, faviconUrl);
     this._showStatus(statusEl, "success", `"${name}" installed!`);
     this.wm.sendNotify(`"${name}" installed and added to desktop.`);
     this._refreshInstalledList(win);
   }
 
-  _addToDesktop(appId, name, iconUrl) {
+  _addToDesktop(appId, name, iconUrl, faviconUrl) {
     if (this.desktopUI) {
-      this._addViaDesktopUI(this.desktopUI, appId, name, iconUrl);
+      this._addViaDesktopUI(this.desktopUI, appId, name, iconUrl, faviconUrl);
     } else {
       console.warn("AppCreator: desktopUI not set, call setDesktopUI() after construction.");
     }
   }
 
-  _addViaDesktopUI(desktopUI, appId, name, iconUrl) {
+  _addViaDesktopUI(desktopUI, appId, name, iconUrl, faviconUrl) {
     const icon = makeDesktopIconElement(appId, name, iconUrl);
     desktop.append(icon);
 

@@ -456,7 +456,8 @@ export class AppLauncher {
       window.open(url.toString(), "_blank", "noopener,noreferrer");
     });
 
-    const icon = tryGetIcon(appId || id);
+    const mapEntry = this.appMap[appId];
+    const icon = mapEntry?.iconValue || mapEntry?.icon || tryGetIcon(appId || id);
     this.wm.addToTaskbar(win.id, title, icon);
 
     recordUsage(`${id}-win`);
