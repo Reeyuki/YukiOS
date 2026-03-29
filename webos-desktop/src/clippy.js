@@ -1,5 +1,9 @@
 import { StorageKeys } from "./settings.js";
 
+const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+const shouldDisableClippy = isMobile || isLocalhost;
+
 let clippyPromise = null;
 async function setupClippy() {
   const script = document.createElement("script");
@@ -19,7 +23,8 @@ async function setupClippy() {
 
 export function initClippy() {
   clippyPromise = new Promise((resolve) => {
-    const clippyEnabled = localStorage.getItem(StorageKeys.clippy) !== "false";
+    const saved = localStorage.getItem(StorageKeys.clippy);
+    const clippyEnabled = saved !== null ? saved !== "false" : !shouldDisableClippy;
     if (!clippyEnabled) return resolve(null);
 
     const bootloader = document.getElementById("bootloader");
@@ -47,8 +52,16 @@ export function initClippy() {
 
   return clippyPromise;
 }
+const SPEAK_COOLDOWN_MS = 50_000;
+let lastSpokenMessage = null;
+let lastSpokenAt = 0;
+
 export async function speak(message, animation) {
   if (!clippyPromise) return;
+  const now = Date.now();
+  if (message === lastSpokenMessage && now - lastSpokenAt < SPEAK_COOLDOWN_MS) return;
+  lastSpokenMessage = message;
+  lastSpokenAt = now;
   console.log("Speaking: ", message, animation);
   const clippy = await clippyPromise;
   if (!clippy) return;

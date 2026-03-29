@@ -1,5 +1,8 @@
 import { desktop } from "./desktop.js";
 import { skipBootSequence, SystemUtilities } from "./system.js";
+const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+const shouldDisableClippy = isMobile || isLocalhost;
 
 export const StorageKeys = {
   username: "yukiOS_username",
@@ -28,15 +31,25 @@ export class SettingsApp {
         weather: localStorage.getItem(StorageKeys.weather) !== "false",
         cycleWallpaper: localStorage.getItem(StorageKeys.cycleWallpaper) !== "false",
         macOsControls: localStorage.getItem(StorageKeys.macOsControls) === "true",
-        clippy: localStorage.getItem(StorageKeys.clippy) !== "false"
+        // Check if a saved preference exists; if not, apply the "disable" rule
+        clippy:
+          localStorage.getItem(StorageKeys.clippy) !== null
+            ? localStorage.getItem(StorageKeys.clippy) !== "false"
+            : !shouldDisableClippy
       };
-
       this._applyUsername(this._settings.username);
       window._settings = this._settings;
 
       const lastBoot = parseInt(localStorage.getItem(StorageKeys.lastBoot) ?? "0", 10);
-      const recentlyBooted = Date.now() - lastBoot < 10 * 60 * 1000;
-      if (!this._settings.bootAnimation || recentlyBooted) skipBootSequence();
+
+      const recentlyBooted = Date.now() - lastBoot < 30 * 60 * 1000;
+
+      if (!this._settings.bootAnimation || recentlyBooted) {
+        if (typeof skipBootSequence === "function") {
+          skipBootSequence();
+        }
+      }
+
       localStorage.setItem(StorageKeys.lastBoot, String(Date.now()));
     }, 0);
   }
@@ -459,7 +472,7 @@ export class SettingsApp {
       weatherToggle.checked = true;
       cycleWallpaperToggle.checked = true;
       macControlsToggle.checked = false;
-      clippyToggle.checked = true;
+      clippyToggle.checked = !(isMobile || isLocalhost);
       save();
       showStatus("Settings reset.");
     };

@@ -132,8 +132,12 @@ export class WindowManager {
     addMenuItem("Properties", () => this._buildPropertiesWindow(winId));
 
     addMenuItem("Close Window", () => {
-      this.removeFromTaskbar(winId);
-      if (win) this._animateAndRemove(win);
+      const winToClose = document.getElementById(winId);
+      if (winToClose) {
+        this._silenceWindow(winToClose);
+        this.removeFromTaskbar(winId);
+        this._animateAndRemove(winToClose);
+      }
     });
   }
 
@@ -369,8 +373,7 @@ export class WindowManager {
 
   setupWindowControls(win) {
     win.querySelector(".close-btn").onclick = () => {
-      const iframe = win.querySelector("iframe");
-      if (iframe) iframe.src = "about:blank";
+      this._silenceWindow(win);
       this.removeFromTaskbar(win.id);
       if (win.dataset.isGame === "true") {
         this.gameWindowCount = Math.max(0, this.gameWindowCount - 1);
@@ -381,7 +384,25 @@ export class WindowManager {
     win.querySelector(".minimize-btn").onclick = () => this.minimizeWindow(win);
     win.querySelector(".maximize-btn").onclick = () => this.toggleFullscreen(win);
   }
+  _silenceWindow(win) {
+    const iframes = win.querySelectorAll("iframe");
+    iframes.forEach((iframe) => {
+      try {
+        iframe.src = "about:blank";
+        iframe.remove();
+      } catch (e) {
+        iframe.src = "about:blank";
+      }
+    });
 
+    const media = win.querySelectorAll("video, audio");
+    media.forEach((m) => {
+      m.pause();
+      m.src = "";
+      m.load();
+      m.remove();
+    });
+  }
   _showWindowContextMenu(e, win) {
     showStartStyleMenu(e, (addMenuItem) => this._buildContextMenuItems(addMenuItem, win));
   }

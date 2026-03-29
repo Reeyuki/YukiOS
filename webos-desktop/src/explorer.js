@@ -574,11 +574,10 @@ export class ExplorerApp {
     }
 
     const isArchive = ARCHIVE_EXTS.some((ext) => name.toLowerCase().endsWith(ext));
+    const isBinary = isArchive || kind === FileKind.IMAGE || kind === FileKind.AUDIO || kind === FileKind.ROM;
 
     let content;
-    if (kind === FileKind.IMAGE || kind === FileKind.ROM) {
-      content = await readFileAsDataURL(file);
-    } else if (kind === FileKind.VIDEO || isArchive) {
+    if (kind === FileKind.VIDEO || isBinary) {
       content = file;
     } else {
       try {
@@ -588,7 +587,7 @@ export class ExplorerApp {
       }
     }
 
-    return { kind, content, icon, isBinaryOffice: false, isBinary: isArchive };
+    return { kind, content, icon, isBinaryOffice: false, isBinary };
   }
 
   async _saveFilePayload(targetPath, name, kind, content, icon, isBinaryOffice = false, isBinary = false) {
@@ -825,11 +824,16 @@ export class ExplorerApp {
         : `<img src="${iconSrc}" style="width:64px;height:64px;object-fit:cover;border-radius:8px">`;
     }
 
-    const thumbnailSrc = isImageFile(name)
-      ? itemData.icon === "@content"
-        ? await this.fs.getFileContent(inst.currentPath, name)
-        : itemData.icon || itemData.content
-      : null;
+    let thumbnailSrc = null;
+    if (isImageFile(name)) {
+      if (itemData.icon === "@content") {
+        const content = await this.fs.getFileContent(inst.currentPath, name);
+        thumbnailSrc = content instanceof Blob ? URL.createObjectURL(content) : content;
+      } else {
+        thumbnailSrc = itemData.icon || itemData.content;
+      }
+    }
+
     return buildFileIconHTML(name, { thumbnailSrc, storedIcon: itemData.icon });
   }
 

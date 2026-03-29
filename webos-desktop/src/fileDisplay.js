@@ -3,6 +3,7 @@ import { desktop } from "./desktop.js";
 
 export const IMAGE_EXTS = ["png", "jpg", "jpeg", "gif", "webp", "bmp", "svg", "avif"];
 export const VIDEO_EXTS = ["mp4", "webm", "ogv", "mov"];
+export const AUDIO_EXTS = ["mp3", "ogg", "wav", "flac", "aac", "m4a", "opus", "wma"];
 export const OFFICE_EXTS = [
   "docx",
   "doc",
@@ -39,6 +40,7 @@ export function fileKindFromName(name) {
   const ext = getExt(name);
   if (IMAGE_EXTS.includes(ext)) return FileKind.IMAGE;
   if (VIDEO_EXTS.includes(ext)) return FileKind.VIDEO;
+  if (AUDIO_EXTS.includes(ext)) return FileKind.AUDIO ?? FileKind.OTHER;
   if (ROM_EXTS.includes(ext)) return FileKind.ROM;
   if (ZIP_EXTS.includes(ext)) return FileKind.OTHER;
   if (HTML_EXTS.includes(ext)) return FileKind.HTML ?? FileKind.TEXT;
@@ -50,35 +52,30 @@ export function fileKindFromName(name) {
 export function isHtmlFile(name) {
   return HTML_EXTS.includes(getExt(name));
 }
-
 export function isMarkdownFile(name) {
   return MARKDOWN_EXTS.includes(getExt(name));
 }
-
 export function isRomFile(name) {
   return ROM_EXTS.includes(getExt(name));
 }
-
 export function isImageFile(name) {
   return IMAGE_EXTS.includes(getExt(name));
 }
-
 export function isVideoFile(name) {
   return VIDEO_EXTS.includes(getExt(name));
 }
-
+export function isAudioFile(name) {
+  return AUDIO_EXTS.includes(getExt(name));
+}
 export function isOfficeFile(name) {
   return OFFICE_EXTS.includes(getExt(name));
 }
-
 export function isZipFile(name) {
   return ZIP_EXTS.includes(getExt(name));
 }
-
 export function isBinaryOfficeFile(name) {
   return BINARY_OFFICE_EXTS.includes(getExt(name));
 }
-
 export function isMediaFile(name) {
   return isImageFile(name) || isVideoFile(name);
 }
@@ -95,6 +92,7 @@ export function isWallpaperPath(path) {
 export function resolveFileIcon(name) {
   if (isImageFile(name)) return "@content";
   if (isVideoFile(name)) return "/static/icons/obs.webp";
+  if (isAudioFile(name)) return "/static/icons/music.webp";
   if (isRomFile(name)) return "rom";
   if (isZipFile(name)) return "/static/icons/zip.webp";
   if (isOfficeFile(name)) return "/static/icons/office.webp";
@@ -134,6 +132,9 @@ export function buildFileIconHTML(name, { thumbnailSrc = null, size = 64, radius
   if (isZipFile(name)) {
     return `<img src="/static/icons/zip.webp" style="${s}object-fit:cover;">`;
   }
+  if (isAudioFile(name)) {
+    return `<img src="/static/icons/music.webp" style="${s}object-fit:cover;">`;
+  }
   if (isImageFile(name) && thumbnailSrc) {
     return `<img src="${thumbnailSrc}" style="${s}object-fit:cover;">`;
   }
@@ -150,11 +151,21 @@ export function buildFileIconHTML(name, { thumbnailSrc = null, size = 64, radius
 }
 
 export function openMediaViewer(name, src, kind, windowManager) {
-  const win = windowManager.createWindow(`media-${Date.now()}`, name, "500px", "400px");
   const isVideo = kind === FileKind.VIDEO || isVideoFile(name);
-  const media = isVideo
-    ? `<video src="${src}" controls autoplay loop style="max-width:100%;max-height:100%"></video>`
-    : `<img src="${src}" style="max-width:100%;max-height:100%">`;
+  const isAudio = kind === FileKind.AUDIO || isAudioFile(name);
+
+  const [width, height] = isAudio ? ["400px", "120px"] : ["500px", "400px"];
+  const win = windowManager.createWindow(`media-${Date.now()}`, name, width, height);
+
+  let media;
+  if (isVideo) {
+    media = `<video src="${src}" controls autoplay loop style="max-width:100%;max-height:100%"></video>`;
+  } else if (isAudio) {
+    media = `<audio src="${src}" controls autoplay style="width:90%"></audio>`;
+  } else {
+    media = `<img src="${src}" style="max-width:100%;max-height:100%">`;
+  }
+
   win.innerHTML = `
     <div class="window-header">
       <span>${name}</span>
@@ -168,7 +179,7 @@ export function openMediaViewer(name, src, kind, windowManager) {
   windowManager.makeDraggable(win);
   windowManager.makeResizable(win);
   windowManager.setupWindowControls(win);
-  windowManager.addToTaskbar(win.id, name, "/static/icons/files.webp");
+  windowManager.addToTaskbar(win.id, name, isAudio ? "/static/icons/music.webp" : "/static/icons/files.webp");
 }
 
 function base64ToBlob(dataURL) {
@@ -176,6 +187,20 @@ function base64ToBlob(dataURL) {
   const mime = header.match(/:(.*?);/)[1];
   const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
   return new Blob([bytes], { type: mime });
+}
+
+function audioExtToMime(name) {
+  const map = {
+    mp3: "audio/mpeg",
+    ogg: "audio/ogg",
+    wav: "audio/wav",
+    flac: "audio/flac",
+    aac: "audio/aac",
+    m4a: "audio/mp4",
+    opus: "audio/opus",
+    wma: "audio/x-ms-wma"
+  };
+  return map[getExt(name)] ?? "audio/octet-stream";
 }
 
 function formatFileSize(bytes) {
@@ -186,15 +211,9 @@ function formatFileSize(bytes) {
 
 function getContentSize(content) {
   if (!content) return 0;
-  if (typeof content === "string") {
-    return new Blob([content]).size;
-  }
-  if (content instanceof Blob) {
-    return content.size;
-  }
-  if (content instanceof ArrayBuffer) {
-    return content.byteLength;
-  }
+  if (typeof content === "string") return new Blob([content]).size;
+  if (content instanceof Blob) return content.size;
+  if (content instanceof ArrayBuffer) return content.byteLength;
   return 0;
 }
 
@@ -216,109 +235,75 @@ export async function openFileWith({
   officeApp,
   markdownApp
 }) {
-  if (isZipFile(name)) {
-    return;
-  }
+  if (isZipFile(name)) return;
 
   if (isRomFile(name)) {
     if (!emulatorApp) return;
-    const dataUrl = await fs.getFileContent(path, name);
-    const blob = await fetch(dataUrl).then((r) => r.blob());
+    const blob = await fs.readBinaryFile(path, name);
+    if (!blob) return;
     const file = new File([blob], name, { type: "application/octet-stream" });
     emulatorApp._launchRom(file, detectCore(name));
     return;
   }
 
-  if (isVideoFile(name)) {
-    const blobFromDB = fs.readBinaryFile ? await fs.readBinaryFile(path, name) : null;
-    if (blobFromDB && blobFromDB.size > 0) {
-      openMediaViewer(name, URL.createObjectURL(blobFromDB), FileKind.VIDEO, windowManager);
-      return;
-    }
-    const raw = await fs.getFileContent(path, name);
-    if (!raw) return;
-    if (raw.startsWith("data:")) {
-      const blob = base64ToBlob(raw);
-      const src = URL.createObjectURL(blob);
-      openMediaViewer(name, src, FileKind.VIDEO, windowManager);
-      return;
-    }
-    openMediaViewer(name, raw, FileKind.VIDEO, windowManager);
-    return;
-  }
+  if (isVideoFile(name) || isAudioFile(name) || isImageFile(name)) {
+    const kind = isVideoFile(name) ? FileKind.VIDEO : isAudioFile(name) ? FileKind.AUDIO : FileKind.IMAGE;
+    const mime = isAudioFile(name)
+      ? audioExtToMime(name)
+      : isVideoFile(name)
+        ? `video/${getExt(name)}`
+        : `image/${getExt(name)}`;
 
-  if (isImageFile(name)) {
-    const blobFromDB = fs.readBinaryFile ? await fs.readBinaryFile(path, name) : null;
-    if (blobFromDB && blobFromDB.size > 0) {
-      openMediaViewer(name, URL.createObjectURL(blobFromDB), FileKind.IMAGE, windowManager);
+    const ensureTypedBlobURL = (b) => URL.createObjectURL(b.type ? b : new Blob([b], { type: mime }));
+
+    const blob = await fs.readBinaryFile(path, name);
+    if (blob && blob.size > 0) {
+      openMediaViewer(name, ensureTypedBlobURL(blob), kind, windowManager);
       return;
     }
     const content = await fs.getFileContent(path, name);
-    if (content) {
-      if (content.startsWith("data:")) {
-        const blob = base64ToBlob(content);
-        const src = URL.createObjectURL(blob);
-        openMediaViewer(name, src, FileKind.IMAGE, windowManager);
-        return;
-      }
-      if (content.startsWith("http") || content.startsWith("/")) {
-        openMediaViewer(name, content, FileKind.IMAGE, windowManager);
-        return;
-      }
+    if (content instanceof Blob && content.size > 0) {
+      openMediaViewer(name, ensureTypedBlobURL(content), kind, windowManager);
+      return;
+    }
+    if (typeof content === "string" && content) {
+      const src = content.startsWith("data:")
+        ? URL.createObjectURL(base64ToBlob(content))
+        : URL.createObjectURL(new Blob([Uint8Array.from(content, (c) => c.charCodeAt(0))], { type: mime }));
+      openMediaViewer(name, src, kind, windowManager);
     }
     return;
   }
 
   if (isOfficeFile(name)) {
     if (!officeApp) {
-      console.warn("openFileWith: officeApp not provided for", name, "— falling through to notepad");
+      console.warn("openFileWith: officeApp not provided for", name);
     } else {
-      let content;
-
-      if (isBinaryOfficeFile(name) && fs.readBinaryFile) {
-        try {
-          const blob = await fs.readBinaryFile(path, name);
-          if (blob && blob.size > 0) {
-            content = await blob.arrayBuffer();
-          }
-        } catch (e) {}
+      const blob = await fs.readBinaryFile(path, name);
+      if (blob && blob.size > 0) {
+        officeApp.loadContent(name, await blob.arrayBuffer(), path);
+      } else {
+        officeApp.loadContent(name, await fs.getFileContent(path, name), path);
       }
-
-      if (!content) {
-        content = await fs.getFileContent(path, name);
-      }
-
-      officeApp.loadContent(name, content, path);
       return;
     }
   }
 
+  const content = await fs.getFileContent(path, name);
+
   if (isMarkdownFile(name)) {
-    const content = await fs.getFileContent(path, name);
     if (markdownApp) {
       markdownApp.open(name, content, path);
     } else {
-      const size = getContentSize(content);
-      if (size > LARGE_FILE_THRESHOLD) {
-        const confirmed = await confirmLargeFile(name, size);
-        if (!confirmed) return;
-      }
       notepadApp.open(name, content, path);
     }
     return;
   }
 
-  const content = await fs.getFileContent(path, name);
-
   if (isHtmlFile(name)) {
     if (browserApp) {
       browserApp.openHtml(content, name, path);
     } else {
-      const size = getContentSize(content);
-      if (size > LARGE_FILE_THRESHOLD) {
-        const confirmed = await confirmLargeFile(name, size);
-        if (!confirmed) return;
-      }
       notepadApp.open(name, content, path);
     }
     return;
@@ -329,28 +314,20 @@ export async function openFileWith({
     const confirmed = await confirmLargeFile(name, size);
     if (!confirmed) return;
   }
-
   notepadApp.open(name, content, path);
 }
 
 export function decodeDataURLContent(content) {
   if (!content) return "";
-
   if (content.startsWith("data:")) {
     try {
       const base64Match = content.match(/^data:[^;]+;base64,(.+)$/);
-      if (base64Match && base64Match[1]) {
-        return atob(base64Match[1]);
-      }
-
+      if (base64Match && base64Match[1]) return atob(base64Match[1]);
       const plainMatch = content.match(/^data:[^,]+,(.+)$/);
-      if (plainMatch && plainMatch[1]) {
-        return decodeURIComponent(plainMatch[1]);
-      }
+      if (plainMatch && plainMatch[1]) return decodeURIComponent(plainMatch[1]);
     } catch (err) {
       return content;
     }
   }
-
   return content;
 }

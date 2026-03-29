@@ -68,8 +68,7 @@ export class AppLauncher {
       explorer: {
         type: "system",
         title: "Explorer",
-        action: () => this.explorerApp.open(),
-        clippy: { message: "It looks like you're organizing files. Want help?!", animation: "Searching" }
+        action: () => this.explorerApp.open()
       },
       terminal: {
         type: "system",

@@ -1,6 +1,6 @@
 import BrowserFS from "browserfs";
 
-export const FileKind = { TEXT: "text", IMAGE: "image", VIDEO: "video", ROM: "rom", OTHER: "other" };
+export const FileKind = { TEXT: "text", IMAGE: "image", VIDEO: "video", AUDIO: "audio", ROM: "rom", OTHER: "other" };
 
 export const defaultStorage = {
   home: {
@@ -166,7 +166,6 @@ export class FileSystemManager {
       BrowserFS.configure({ fs: "IndexedDB", options: {} }, async () => {
         this.fs = BrowserFS.BFSRequire("fs");
         await this.initBlobDB();
-        await this.migrateIfNeeded();
         await this.ensureDefaults();
         resolve();
       });
@@ -187,17 +186,6 @@ export class FileSystemManager {
     });
   }
 
-  async migrateIfNeeded() {
-    const rootExists = await this.exists(this.CONFIG.ROOT);
-    if (rootExists) return;
-    const legacyExists = await this.exists(this.CONFIG.LEGACY_KEY);
-    if (!legacyExists) return;
-    const raw = await this.readFile(this.CONFIG.LEGACY_KEY);
-    const legacyFS = JSON.parse(raw);
-    await this.createFromObject(legacyFS, "/");
-    await this.p("unlink", this.CONFIG.LEGACY_KEY);
-  }
-
   async ensureDefaults() {
     await this.createFromObject(defaultStorage, "/");
   }
@@ -209,7 +197,9 @@ export class FileSystemManager {
       if (value.type === "file") {
         await this.p("mkdir", this.dirname(fullPath), { recursive: true }).catch(() => {});
         const exists = await this.exists(fullPath);
-        if (!exists) await this.p("writeFile", fullPath, value.content ?? "");
+        if (!exists) {
+          await this.p("writeFile", fullPath, value.content ?? "");
+        }
         await this.writeMeta(this.dirname(fullPath), key, value);
       } else {
         await this.p("mkdir", fullPath, { recursive: true }).catch(() => {});
@@ -258,7 +248,6 @@ export class FileSystemManager {
       meta[name] = { kind: data.kind, icon: data.icon };
       if (data.faIcon) meta[name].faIcon = data.faIcon;
       if (data.size != null) meta[name].size = data.size;
-      if (data.faIcon) meta[name].faIcon = data.faIcon;
       await this.p("writeFile", metaPath, JSON.stringify(meta));
     } finally {
       release();
@@ -295,9 +284,11 @@ export class FileSystemManager {
 
   inferKind(fileName) {
     const ext = fileName.split(".").pop().toLowerCase();
-    if (["png", "jpg", "jpeg", "gif", "webp"].includes(ext)) return FileKind.IMAGE;
-    if (["txt", "js", "json", "md", "html", "css"].includes(ext)) return FileKind.TEXT;
-    if (["mp4", "webm", "mov", "avi", "mkv"].includes(ext)) return FileKind.VIDEO;
+    if (["png", "jpg", "jpeg", "gif", "webp", "bmp", "svg", "avif"].includes(ext)) return FileKind.IMAGE;
+    if (["txt", "js", "json", "md", "html", "css", "xml", "yaml", "yml", "ini", "cfg", "log"].includes(ext))
+      return FileKind.TEXT;
+    if (["mp4", "webm", "ogv", "mov"].includes(ext)) return FileKind.VIDEO;
+    if (["mp3", "ogg", "wav", "flac", "aac", "m4a", "opus", "wma"].includes(ext)) return FileKind.AUDIO;
     return FileKind.OTHER;
   }
 
@@ -372,8 +363,15 @@ export class FileSystemManager {
     const fileKind = kind || this.inferKind(uniqueName);
     const fileIcon = icon || (fileKind === FileKind.TEXT ? "/static/icons/notepad.webp" : "/static/icons/file.webp");
     await this.p("mkdir", dir, { recursive: true }).catch(() => {});
-    await this.p("writeFile", filePath, content);
-    await this.writeMeta(dir, uniqueName, { kind: fileKind, icon: fileIcon, faIcon });
+    if (content instanceof Blob) {
+      const typedBlob = content.type ? content : new Blob([content], { type: this._mimeFromName(uniqueName) });
+      await this.p("writeFile", filePath, "");
+      await this.writeMeta(dir, uniqueName, { kind: fileKind, icon: fileIcon, faIcon, size: typedBlob.size });
+      await this._putBlob(filePath, typedBlob);
+    } else {
+      await this.p("writeFile", filePath, content);
+      await this.writeMeta(dir, uniqueName, { kind: fileKind, icon: fileIcon, faIcon });
+    }
     await this.notifyDesktopChange(path);
     return uniqueName;
   }
@@ -397,6 +395,7 @@ export class FileSystemManager {
     } else {
       await this.p("unlink", target);
       await this.removeMeta(dir, name);
+      await this._deleteBlobByFullPath(this.join(dir, name));
     }
     await this.notifyDesktopChange(path);
   }
@@ -410,6 +409,7 @@ export class FileSystemManager {
         await this.deleteDirectoryRecursive(fullPath);
       } else {
         await this.p("unlink", fullPath);
+        await this._deleteBlobByFullPath(fullPath);
       }
     }
     await this.p("rmdir", dirPath);
@@ -418,10 +418,15 @@ export class FileSystemManager {
   async renameItem(path, oldName, newName) {
     await this.fsReady;
     const dir = this.resolveDir(path);
-    if (oldName !== newName && (await this.exists(this.join(dir, newName)))) {
+    const oldPath = this.join(dir, oldName);
+    const newPath = this.join(dir, newName);
+
+    if (oldName !== newName && (await this.exists(newPath))) {
       throw new Error(`A file or folder named "${newName}" already exists.`);
     }
-    await this.p("rename", this.join(dir, oldName), this.join(dir, newName));
+
+    await this.p("rename", oldPath, newPath);
+
     const release = await this._acquireMeta(dir);
     try {
       const meta = await this.readMeta(dir);
@@ -433,6 +438,8 @@ export class FileSystemManager {
     } finally {
       release();
     }
+
+    await this._renameBlobByFullPath(oldPath, newPath);
     await this.notifyDesktopChange(path);
   }
 
@@ -445,16 +452,109 @@ export class FileSystemManager {
       const kind = this.inferKind(name);
       const icon = kind === FileKind.TEXT ? "/static/icons/notepad.webp" : "/static/icons/file.webp";
       await this.createFile(path, name, content, kind, icon);
+    } else if (content instanceof Blob) {
+      const typedBlob = content.type ? content : new Blob([content], { type: this._mimeFromName(name) });
+      await this.p("writeFile", filePath, "");
+      await this._putBlob(filePath, typedBlob);
+      await this.notifyDesktopChange(path);
     } else {
       await this.p("writeFile", filePath, content);
       await this.notifyDesktopChange(path);
     }
   }
 
+  _mimeFromName(name) {
+    const ext = name.split(".").pop().toLowerCase();
+    const map = {
+      mp3: "audio/mpeg",
+      ogg: "audio/ogg",
+      wav: "audio/wav",
+      flac: "audio/flac",
+      aac: "audio/aac",
+      m4a: "audio/mp4",
+      opus: "audio/opus",
+      wma: "audio/x-ms-wma",
+      mp4: "video/mp4",
+      webm: "video/webm",
+      ogv: "video/ogg",
+      mov: "video/quicktime",
+      png: "image/png",
+      jpg: "image/jpeg",
+      jpeg: "image/jpeg",
+      gif: "image/gif",
+      webp: "image/webp",
+      bmp: "image/bmp",
+      svg: "image/svg+xml",
+      avif: "image/avif",
+      pdf: "application/pdf",
+      docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      doc: "application/msword",
+      xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      xls: "application/vnd.ms-excel",
+      pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+      ppt: "application/vnd.ms-powerpoint",
+      zip: "application/zip",
+      gz: "application/gzip",
+      tar: "application/x-tar",
+      rar: "application/vnd.rar",
+      "7z": "application/x-7z-compressed"
+    };
+    return map[ext] ?? "application/octet-stream";
+  }
+
+  _isBinaryName(name) {
+    const ext = name.split(".").pop().toLowerCase();
+    const textExts = new Set([
+      "txt",
+      "js",
+      "json",
+      "css",
+      "xml",
+      "yaml",
+      "yml",
+      "ini",
+      "cfg",
+      "log",
+      "md",
+      "markdown",
+      "html",
+      "htm",
+      "csv",
+      "rtf",
+      "ts",
+      "jsx",
+      "tsx",
+      "sh",
+      "bat",
+      "py",
+      "rb",
+      "php"
+    ]);
+    return !textExts.has(ext);
+  }
+
   async getFileContent(path, name) {
     await this.fsReady;
+    const fullPath = this.join(this.resolveDir(path), name);
+
+    const blob = await this._getBlobByFullPath(fullPath);
+    if (blob) {
+      return blob.type ? blob : new Blob([blob], { type: this._mimeFromName(name) });
+    }
+
     try {
-      return await this.pRead("readFile", this.join(this.resolveDir(path), name), "utf8");
+      const text = await this.pRead("readFile", fullPath, "utf8");
+      if (!text) return "";
+      if (
+        typeof text === "string" &&
+        this._isBinaryName(name) &&
+        !text.startsWith("data:") &&
+        !text.startsWith("http") &&
+        !text.startsWith("/")
+      ) {
+        return null;
+      }
+      return text;
     } catch {
       return "";
     }
@@ -508,28 +608,22 @@ export class FileSystemManager {
     const uniqueName = await this.getUniqueFileName(folderPath, name);
     const dir = this.resolveDir(folderPath);
     const fullPath = this.join(dir, uniqueName);
-    const inferredKind = kind || this.inferKind(name);
+    const fileKind = kind || this.inferKind(name);
 
-    let defaultIcon = "/static/icons/file.webp";
-    if (inferredKind === FileKind.IMAGE) defaultIcon = "fas fa-image";
-    if (inferredKind === FileKind.VIDEO) defaultIcon = "fas fa-film";
-    if (inferredKind === FileKind.TEXT) defaultIcon = "/static/icons/notepad.webp";
-
-    const fileKind = inferredKind;
-    const fileIcon = icon || defaultIcon;
+    const iconMap = {
+      [FileKind.IMAGE]: "@content",
+      [FileKind.VIDEO]: "/static/icons/obs.webp",
+      [FileKind.AUDIO]: "/static/icons/music.webp",
+      [FileKind.TEXT]: "/static/icons/notepad.webp"
+    };
+    const fileIcon = icon || iconMap[fileKind] || "/static/icons/file.webp";
+    const fileSize = blob instanceof Blob ? blob.size : 0;
 
     await this.p("mkdir", dir, { recursive: true }).catch(() => {});
+    const typedBlob = blob instanceof Blob && !blob.type ? new Blob([blob], { type: this._mimeFromName(name) }) : blob;
     await this.p("writeFile", fullPath, "");
-    const fileSize = blob instanceof Blob ? blob.size : 0;
     await this.writeMeta(dir, uniqueName, { kind: fileKind, icon: fileIcon, size: fileSize });
-
-    await new Promise((resolve, reject) => {
-      const tx = this.blobDB.transaction("blobs", "readwrite");
-      tx.objectStore("blobs").put({ path: fullPath, blob });
-      tx.oncomplete = resolve;
-      tx.onerror = reject;
-    });
-
+    await this._putBlob(fullPath, typedBlob);
     await this.notifyDesktopChange(folderPath);
     return uniqueName;
   }
@@ -537,29 +631,18 @@ export class FileSystemManager {
   async readBinaryFile(folderPath, name) {
     await this.fsReady;
     const fullPath = this.join(this.resolveDir(folderPath), name);
-    return new Promise((resolve, reject) => {
-      const tx = this.blobDB.transaction("blobs", "readonly");
-      const req = tx.objectStore("blobs").get(fullPath);
-      req.onsuccess = () => resolve(req.result?.blob ?? null);
-      req.onerror = reject;
-    });
+    const blob = await this._getBlobByFullPath(fullPath);
+    if (!blob) return null;
+    return blob.type ? blob : new Blob([blob], { type: this._mimeFromName(name) });
   }
 
   async deleteBinaryFile(folderPath, name) {
     await this.fsReady;
     const dir = this.resolveDir(folderPath);
     const fullPath = this.join(dir, name);
-
     await this.p("unlink", fullPath).catch(() => {});
     await this.removeMeta(dir, name);
-
-    await new Promise((resolve, reject) => {
-      const tx = this.blobDB.transaction("blobs", "readwrite");
-      tx.objectStore("blobs").delete(fullPath);
-      tx.oncomplete = resolve;
-      tx.onerror = reject;
-    });
-
+    await this._deleteBlobByFullPath(fullPath);
     await this.notifyDesktopChange(folderPath);
   }
 
@@ -587,7 +670,39 @@ export class FileSystemManager {
       release();
     }
 
-    await new Promise((resolve, reject) => {
+    await this._renameBlobByFullPath(oldPath, newPath);
+    await this.notifyDesktopChange(folderPath);
+  }
+
+  _putBlob(fullPath, blob) {
+    return new Promise((resolve, reject) => {
+      const tx = this.blobDB.transaction("blobs", "readwrite");
+      tx.objectStore("blobs").put({ path: fullPath, blob });
+      tx.oncomplete = resolve;
+      tx.onerror = reject;
+    });
+  }
+
+  _getBlobByFullPath(fullPath) {
+    return new Promise((resolve, reject) => {
+      const tx = this.blobDB.transaction("blobs", "readonly");
+      const req = tx.objectStore("blobs").get(fullPath);
+      req.onsuccess = () => resolve(req.result?.blob ?? null);
+      req.onerror = reject;
+    });
+  }
+
+  _deleteBlobByFullPath(fullPath) {
+    return new Promise((resolve, reject) => {
+      const tx = this.blobDB.transaction("blobs", "readwrite");
+      tx.objectStore("blobs").delete(fullPath);
+      tx.oncomplete = resolve;
+      tx.onerror = reject;
+    });
+  }
+
+  _renameBlobByFullPath(oldPath, newPath) {
+    return new Promise((resolve, reject) => {
       const tx = this.blobDB.transaction("blobs", "readwrite");
       const store = tx.objectStore("blobs");
       const req = store.get(oldPath);
@@ -600,7 +715,5 @@ export class FileSystemManager {
       };
       req.onerror = reject;
     });
-
-    await this.notifyDesktopChange(folderPath);
   }
 }
