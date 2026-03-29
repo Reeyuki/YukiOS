@@ -949,7 +949,7 @@ export const appMap = {
   slitherIO: {
     type: "game",
     title: "Slither IO",
-    url: "https://slither.io",
+    url: "http://slither.com/io",
     icon: "/static/icons/slitherio.webp"
   },
   yorgIO: {
