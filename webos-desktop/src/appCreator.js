@@ -1,3 +1,4 @@
+import { isImageFile } from "./fileDisplay.js";
 import { desktop } from "./desktop.js";
 
 const AC = {
