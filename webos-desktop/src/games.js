@@ -403,6 +403,30 @@ export const appMap = {
     icon: "/static/icons/fancypants3.webp",
     title: "Fancy Pants 3"
   },
+  earnToDie: {
+    type: "swf",
+    swf: "/static/games/swfGames/earntodie.swf",
+    icon: "/static/icons/earntodie.webp",
+    title: "Earn to Die"
+  },
+  earnToDie2012: {
+    type: "swf",
+    swf: "/static/games/swfGames/earn-to-die-2012.swf",
+    icon: "/static/icons/earn2012.webp",
+    title: "Earn to Die 2012"
+  },
+  earnToDie2012part2: {
+    type: "swf",
+    swf: "/static/games/swfGames/earntodie2012-part2.swf",
+    icon: "/static/icons/earn2012part2.webp",
+    title: "Earn to Die 2012 Part 2"
+  },
+  earnToDieExodus: {
+    type: "swf",
+    swf: "/static/games/swfGames/earntodie2-exodus.swf",
+    icon: "/static/icons/earnexodus.webp",
+    title: "Earn to Die Exodus"
+  },
   strikeForce: {
     type: "swf",
     swf: "https://cache.armorgames.com/files/games/strikeforce-kitty-16008.swf?v=1404201513",
@@ -758,13 +782,13 @@ export const appMap = {
   },
   soultheraAscendant: {
     type: "game",
-    url: "https://itch.io/embed-upload/16780483?color=333333",
+    url: "https://itch.io/embed-upload/16780920",
     icon: "/static/icons/ghostOTFR.png",
     title: "Soulthera Ascendant"
   },
   voraxier: {
     type: "game",
-    url: "https://itch.io/embed-upload/16780920",
+    url: "https://itch.io/embed-upload/16780483?color=333333",
     icon: "/static/icons/voraxier.webp",
     title: "Voraxier"
   },
