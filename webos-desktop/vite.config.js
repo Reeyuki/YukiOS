@@ -11,6 +11,7 @@ export default defineConfig({
     chunkSizeWarningLimit: 5000,
     rollupOptions: {
       treeshake: false,
+      external: ["three", /^three\/.*/],
       output: {
         manualChunks: undefined
       }

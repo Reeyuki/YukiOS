@@ -1,13 +1,5 @@
 import { desktop } from "./desktop.js";
 import { speak } from "./clippy.js";
-import * as THREE from "three";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
-import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader.js";
-import { ColladaLoader } from "three/examples/jsm/loaders/ColladaLoader.js";
-import { TDSLoader } from "three/examples/jsm/loaders/TDSLoader.js";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import { SkeletonHelper } from "three";
 import JSZip from "jszip";
 
 const SAMPLE_MODELS = [
@@ -41,6 +33,30 @@ const SAMPLE_MODELS = [
   }
 ];
 
+let THREE = null;
+let GLTFLoader = null;
+let OBJLoader = null;
+let FBXLoader = null;
+let ColladaLoader = null;
+let TDSLoader = null;
+let OrbitControls = null;
+let SkeletonHelper = null;
+
+async function loadThree() {
+  if (THREE) return;
+  [THREE, { GLTFLoader }, { OBJLoader }, { FBXLoader }, { ColladaLoader }, { TDSLoader }, { OrbitControls }] =
+    await Promise.all([
+      import("three"),
+      import("three/examples/jsm/loaders/GLTFLoader.js"),
+      import("three/examples/jsm/loaders/OBJLoader.js"),
+      import("three/examples/jsm/loaders/FBXLoader.js"),
+      import("three/examples/jsm/loaders/ColladaLoader.js"),
+      import("three/examples/jsm/loaders/TDSLoader.js"),
+      import("three/examples/jsm/controls/OrbitControls.js")
+    ]);
+  SkeletonHelper = THREE.SkeletonHelper;
+}
+
 export class Model3DApp {
   constructor(fileSystemManager, windowManager, explorerApp) {
     this.fs = fileSystemManager;
@@ -51,7 +67,7 @@ export class Model3DApp {
     this.animations = [];
     this.currentAction = null;
     this.currentAnimationIndex = -1;
-    this.clock = new THREE.Clock();
+    this.clock = null;
     this.autoRotate = false;
     this.wireframe = false;
     this.showGrid = true;
@@ -65,7 +81,7 @@ export class Model3DApp {
     this.sampleCache = new Map();
   }
 
-  open(title = "3D Model Viewer", filePath = null) {
+  async open(title = "3D Model Viewer", filePath = null) {
     const winId = `model3d-${Date.now()}`;
     if (document.getElementById(winId)) {
       this.wm.bringToFront(document.getElementById(winId));
@@ -276,7 +292,7 @@ export class Model3DApp {
     this.wm.addToTaskbar(win.id, title, "/static/icons/3dmodel.webp");
 
     this.win = win;
-    this.setupRenderer(win, filePath);
+    await this.setupRenderer(win, filePath);
     this.setupControls(win);
     this.setupAnimationControls(win);
     this.setupDragDrop(win);
@@ -472,10 +488,13 @@ export class Model3DApp {
     }
   }
 
-  setupRenderer(win, filePath) {
+  async setupRenderer(win, filePath) {
+    await loadThree();
+
     const container = win.querySelector(".model3d-container");
 
     this.scene = new THREE.Scene();
+    this.clock = new THREE.Clock();
 
     this.camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.01, 10000);
     this.camera.position.set(3, 2, 5);
@@ -521,7 +540,7 @@ export class Model3DApp {
     this.container = container;
 
     if (filePath) {
-      this.loadModel(filePath, "");
+      await this.loadModel(filePath, "");
     }
   }
 
@@ -1062,6 +1081,8 @@ export class Model3DApp {
   }
 
   async loadModel(fileData, fileName = "") {
+    await loadThree();
+
     this.showLoading(true);
     this.hideWelcome();
 
@@ -1096,34 +1117,38 @@ export class Model3DApp {
       let animations = [];
 
       switch (ext) {
-        case "obj":
+        case "obj": {
           const objLoader = new OBJLoader();
           const objText = new TextDecoder().decode(fileData);
           object = objLoader.parse(objText);
           break;
+        }
 
-        case "fbx":
+        case "fbx": {
           const fbxLoader = new FBXLoader();
           object = fbxLoader.parse(fileData, "");
           animations = object.animations || [];
           break;
+        }
 
-        case "dae":
+        case "dae": {
           const daeLoader = new ColladaLoader();
           const daeText = new TextDecoder().decode(fileData);
           const collada = daeLoader.parse(daeText, "");
           object = collada.scene;
           animations = collada.animations || [];
           break;
+        }
 
-        case "3ds":
+        case "3ds": {
           const tdsLoader = new TDSLoader();
           object = tdsLoader.parse(fileData);
           break;
+        }
 
         case "gltf":
         case "glb":
-        default:
+        default: {
           const gltfLoader = new GLTFLoader();
           const gltf = await new Promise((resolve, reject) => {
             gltfLoader.parse(fileData, "", resolve, reject);
@@ -1131,6 +1156,7 @@ export class Model3DApp {
           object = gltf.scene;
           animations = gltf.animations || [];
           break;
+        }
       }
 
       if (object) {

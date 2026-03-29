@@ -166,7 +166,11 @@ export class WindowManager {
 
     if (isGame) this.gameWindowCount++;
     this.updateTransparency();
-
+    if (win.id === "yukiOS-settings") {
+      setTimeout(() => {
+        win.click();
+      }, 0);
+    }
     win.addEventListener("mousedown", () => this.bringToFront(win));
 
     return win;
