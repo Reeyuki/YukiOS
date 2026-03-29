@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Bad Time Simulator (Sans Fight)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="do you wanna have a bad time?">
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  background: #000;
+  color: #fff;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+}
+
+#c2canvasdiv {
+  width: 640px;
+  height: 480px;
+  margin: auto;
+  position: absolute;
+  inset: 0;
+}
+
+canvas {
+  display: block;
+}
+</style>
+</head>
+
+<body>
+
+<div id="c2canvasdiv">
+  <canvas id="c2canvas" width="640" height="480">
+    <h1>Your browser does not support HTML5 canvas. Please use a modern browser.</h1>
+  </canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/gh/nbjrkzddz/5yrgdegfwfew4@d3772e576f5a2ad716d32ace9c7e5b94f59ded9e/bigfoot/g/gfiles/gfiles/html5/sans-fight/jquery-3.4.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/bobydob/JSEngine@4c04e7fb85008b3d23ba8848826ba2c0a859fa4f/build/bts-sans/c2.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  cr_createRuntime("c2canvas");
+});
+
+document.addEventListener("visibilitychange", function () {
+  cr_setSuspended(document.hidden);
+});
+
+if (navigator.serviceWorker) {
+  navigator.serviceWorker.register("sw.js").catch(console.warn);
+}
+</script>
+
+</body>
+</html>

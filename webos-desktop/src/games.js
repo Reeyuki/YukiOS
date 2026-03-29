@@ -93,7 +93,7 @@ export const appMap = {
   },
   undertaleSans: {
     type: "game",
-    url: "https://truffled.lol/games/bts",
+    url: "/static/games/gnmath/bts.html",
     icon: "/static/icons/undertale.webp",
     title: "Undertale Sans Fight"
   },
@@ -691,7 +691,7 @@ export const appMap = {
   },
   angryBirdsOnline: {
     type: "game",
-    url: "https://truffled.lol/gamefile/angrybirdsonline.html",
+    url: "/static/games/html/angryBirdsOnline.html",
     icon: "/static/icons/angryBirds.webp",
     title: "Angry Birds Online"
   },
@@ -728,7 +728,7 @@ export const appMap = {
   },
   badPiggies: {
     type: "game",
-    url: "https://truffled.lol/gamefile/piggies.html",
+    url: "/static/games/html/badPiggies.html",
     icon: "/static/icons/badp.webp",
     title: "Bad Piggies"
   },
@@ -800,7 +800,7 @@ export const appMap = {
   },
   lethalCompany: {
     type: "game",
-    url: "https://gg.horror-games.io/lethal-company",
+    url: "https://gg.horror-games.io/lethal-company/",
     icon: "/static/icons/lethal.webp",
     title: "Lethal Company"
   },
@@ -854,13 +854,13 @@ export const appMap = {
   },
   buckShot: {
     type: "game",
-    url: "https://truffled.lol/games/buckshot/index.html",
+    url: "/static/games/html/buckshot.html",
     icon: "/static/icons/buckShot.webp",
     title: "Buckshot Roulette"
   },
   cloverpit: {
     type: "game",
-    url: "https://truffled.lol/gamefile/cloverpit.html",
+    url: "/static/games/html/cloverpit.html",
     icon: "/static/icons/cloverpit.webp",
     title: "Cloverpit"
   },
@@ -868,7 +868,7 @@ export const appMap = {
     type: "game",
     icon: "/static/icons/littleAlchemy2.webp",
     title: "Little Alchemy 2",
-    url: "https://truffled.lol/gamefile/little2.html"
+    url: "/static/games/html/little2.html"
   },
   clusterRush: {
     type: "game",
@@ -908,7 +908,7 @@ export const appMap = {
     type: "system",
     title: "Yuki Convert",
     icon: "fas fa-video",
-    url: "https://yukiconvert.netlify.app/file-converter"
+    url: "/static/apps/yukiconvert/file-converter"
   },
   libreSprite: {
     type: "system",
@@ -945,6 +945,24 @@ export const appMap = {
     title: "kiwiIRC",
     icon: "/static/icons/kiwiirc.webp",
     url: "/static/apps/kiwiirc/index.html"
+  },
+  slitherIO: {
+    type: "game",
+    title: "Slither IO",
+    url: "https://slither.io",
+    icon: "/static/icons/slitherio.webp"
+  },
+  yorgIO: {
+    type: "game",
+    title: "Yorg.io",
+    url: "https://yorg.io",
+    icon: "/static/icons/yorgio.webp"
+  },
+  yorg3IO: {
+    type: "game",
+    title: "Yorg 3 io",
+    url: "https://yorg3.io",
+    icon: "/static/icons/yorgio.webp"
   }
 };
 

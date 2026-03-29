@@ -242,47 +242,6 @@
         color: #7a6050;
         letter-spacing: 0.08em;
       }
-
-      #sidebarad1,
-      #sidebarad2 {
-        position: fixed;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 160px;
-        height: 600px;
-        padding: 0;
-        margin: 0;
-        z-index: 999999;
-      }
-      #sidebarad1 {
-        left: 0;
-      }
-      #sidebarad2 {
-        right: 0;
-      }
-
-      .sidebar-close {
-        position: absolute;
-        top: 0;
-        right: 0;
-        width: 22px;
-        height: 22px;
-        line-height: 22px;
-        text-align: center;
-        background: rgba(0, 0, 0, 0.7);
-        color: #fff;
-        font-size: 14px;
-        cursor: pointer;
-        user-select: none;
-        z-index: 10;
-      }
-
-      .sidebar-frame {
-        width: 160px;
-        height: 600px;
-        border: none;
-        display: block;
-      }
     </style>
     <link id="-gd-engine-icon" rel="icon" type="image/png" href="index.icon.png" />
     <link rel="apple-touch-icon" href="index.apple-touch-icon.png" />
@@ -472,12 +431,5 @@
       };
       //]]>
     </script>
-
-    <div id="sidebarad1">
-      <div class="sidebar-close" onclick="this.parentElement.style.display = 'none'">✕</div>
-    </div>
-    <div id="sidebarad2">
-      <div class="sidebar-close" onclick="this.parentElement.style.display = 'none'">✕</div>
-    </div>
   </body>
 </html>
