@@ -475,6 +475,12 @@ export const appMap = {
     icon: "/static/icons/fixItFelix.webp",
     title: "Fix It Felix"
   },
+  rotate: {
+    type: "game",
+    url: "/static/games/rotate/index.html",
+    icon: "/static/icons/rotate.webp",
+    title: "Rotate"
+  },
   bobTheRobber: {
     type: "swf",
     swf: "/static/games/swfGames/bob1.swf",
