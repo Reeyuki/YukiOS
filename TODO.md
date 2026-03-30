@@ -5,3 +5,4 @@ Add properties for file inspection and also have file rename input here
 Add support to launching .swf files with ruffle
 Add boxedwine
 Add cypress tests
+Add achievements system

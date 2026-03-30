@@ -221,6 +221,12 @@ export const appMap = {
     icon: "/static/icons/gtavc.webp",
     title: "GTA Vice City"
   },
+  garrysMod: {
+    type: "game",
+    url: "/static/games/garrysMod/index.html",
+    icon: "/static/icons/garrysMod.webp",
+    title: "Garry's Mod"
+  },
   papaGames: {
     type: "game",
     url: "https://papasgamesfree.io",
