@@ -978,13 +978,19 @@ export const appMap = {
     type: "swf",
     icon: "/static/icons/smashcomputer.webp",
     title: "Smash Your Computer",
-    swf: "/static/games/html/swfGames/smashComputer.swf"
+    swf: "/static/games/swfGames/smashComputer.swf"
   },
   years400: {
     type: "swf",
     swf: "https://cache.armorgames.com/files/games/400-years-14662.swf?v=1373587528",
     icon: "/static/icons/400years.webp",
     title: "400 Years"
+  },
+  smashyCity: {
+    type: "game",
+    url: "https://www.box10.com/downloads/html5/smashycity/",
+    icon: "/static/icons/smashyCity.webp",
+    title: "Smashy City"
   },
   emulatorApp: { type: "system", title: "Emulator App", icon: "fa fa-gamepad" },
   nodeApp: { type: "system", title: "NodeJS Code Editor", icon: "fa fa-code" },

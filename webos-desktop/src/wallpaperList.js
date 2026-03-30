@@ -42,8 +42,7 @@ export const videos = [
   "https://motionbgs.com/media/8991/iku-and-tenshi-touhou.1920x1080.mp4",
   "https://motionbgs.com/media/4108/sunaookami-shiroko.1920x1080.mp4",
   "https://motionbgs.com/media/492/nier-automata.1920x1080.mp4",
-  "https://motionbgs.com/media/317/bmw-m4-parked-on-a-wet-road-at-night_2.1920x1080.mp4",
-  "https://motionbgs.com/media/490/alone-hollow-knight.1920x1080.mp4",
+  "https://motionbgs.com/media/8866/silksong-pixel-art.1920x1080.mp4",
   "https://motionbgs.com/media/7245/spider-man-marvel-rivals.1920x1080.mp4",
   "https://motionbgs.com/media/6864/space-marine.1920x1080.mp4",
   "https://motionbgs.com/media/4017/ashenvale-wow.1920x1080.mp4",
@@ -62,13 +61,9 @@ export const videos = [
   "https://motionbgs.com/media/3226/yongli-sword-ghost-of-tsushima.1920x1080.mp4",
   "https://motionbgs.com/media/1033/the-drive-on-the-road-at-sunset.1920x1080.mp4",
   "https://motionbgs.com/media/1043/man-sitting-on-car-floating-in-the-ocean.1920x1080.mp4",
-  "https://motionbgs.com/media/9252/shadowlands-lich-king.1920x1080.mp4",
-  "https://motionbgs.com/media/9257/gym-dark.1920x1080.mp4",
   "https://motionbgs.com/media/1926/moonlit-bloom-cherry.1920x1080.mp4",
   "https://motionbgs.com/media/3759/a-painting-landscape.1920x1080.mp4",
   "https://motionbgs.com/media/7028/cat-cloud.1920x1080.mp4",
   "https://motionbgs.com/media/8626/celestial-veil.1920x1080.mp4",
-  "https://motionbgs.com/media/53/black-hole.1920x1080.mp4",
-  "https://motionbgs.com/media/722/space-science-hud.1920x1080.mp4",
-  "https://motionbgs.com/media/3764/torii.1920x1080.mp4"
+  "https://motionbgs.com/media/53/black-hole.1920x1080.mp4"
 ];
