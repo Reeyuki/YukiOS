@@ -62,6 +62,8 @@ async function loadViaProxy(iframe, url) {
   }
 }
 
+const CLOSE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12"><line x1="1" y1="1" x2="11" y2="11" stroke="currentColor" stroke-width="2"/><line x1="11" y1="1" x2="1" y2="11" stroke="currentColor" stroke-width="2"/></svg>`;
+
 export class BrowserApp {
   constructor(windowManager, fs) {
     this.wm = windowManager;
@@ -82,30 +84,22 @@ export class BrowserApp {
 
     win.innerHTML = `
       <div class="window-header">
-        <span>Browser</span>
+        <span>Firefox</span>
         ${this.wm.getWindowControls()}
       </div>
       <div class="tab-bar">
         <div class="tabs-container"></div>
-        <button class="new-tab-btn">+</button>
+        <button class="new-tab-btn" title="Open new tab">+</button>
       </div>
       <nav class="browser-nav">
         <div>
-          <button class="back-btn" disabled>←</button>
-          <button class="forward-btn" disabled>→</button>
-          <button class="reload-btn">⟳</button>
+          <button class="back-btn" disabled title="Go back">&#8592;</button>
+          <button class="forward-btn" disabled title="Go forward">&#8594;</button>
+          <button class="reload-btn" title="Reload">&#8635;</button>
         </div>
-        <input class="address-bar" type="url" enterkeyhint="go">
+        <input class="address-bar" type="url" placeholder="Search or enter address" enterkeyhint="go">
       </nav>
-      <nav class="bookmark-bar">
-        <button data-url="https://www.google.com/webhp?igu=1">Google</button>
-        <button data-url="https://reeyuki.nekoweb.org">Reeyuki Site</button>
-        <button data-url="https://liventcord.github.io">LiventCord</button>
-        <button data-url="https://www.wikipedia.org">Wikipedia</button>
-        <button data-url="https://yukiconvert.netlify.app/file-converter">File Converter</button>
-        <button data-url="https://jsfiddle.net">JS Fiddle</button>
-        <button data-url="https://www.myinstants.com/en/categories/sound%20effects/us/">SoundBoard</button>
-      </nav>
+      <nav class="bookmark-bar"></nav>
       <div class="iframe-container"></div>
     `;
 
@@ -113,7 +107,7 @@ export class BrowserApp {
     this.wm.makeDraggable(win);
     this.wm.makeResizable(win);
     this.wm.setupWindowControls(win);
-    this.wm.addToTaskbar(win.id, "Browser", "/static/icons/firefox.webp");
+    this.wm.addToTaskbar(win.id, "Firefox", "/static/icons/firefox.webp");
     this.wm.bringToFront(win);
     this.wm.registerCloseWindow(win.querySelector(".close-btn"), win.id);
 
@@ -124,9 +118,13 @@ export class BrowserApp {
     this.forwardBtn = win.querySelector(".forward-btn");
     this.reloadBtn = win.querySelector(".reload-btn");
     this.iframeContainer = win.querySelector(".iframe-container");
+    this.bookmarkBar = win.querySelector(".bookmark-bar");
 
     this.tabs = [];
     this.currentTabIndex = -1;
+
+    // Create bookmarks with favicons
+    this.createBookmarks();
 
     this.newTabBtn.onclick = () => {
       speak("Where are we headed today?", "CheckingSomething");
@@ -140,18 +138,6 @@ export class BrowserApp {
       }
     });
 
-    win.querySelectorAll(".bookmark-bar button").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        if (this.currentTabIndex >= 0) {
-          const bookmarkUrl = btn.dataset.url;
-          if (bookmarkUrl !== "https://reeyuki.nekoweb.org") {
-            speak("Good choice! I know this one.", "Congratulate");
-          }
-          this.navigate(this.tabs[this.currentTabIndex], bookmarkUrl);
-        }
-      });
-    });
-
     this.backBtn.onclick = () => this.goBack();
     this.forwardBtn.onclick = () => this.goForward();
     this.reloadBtn.onclick = () => {
@@ -162,6 +148,48 @@ export class BrowserApp {
     if (!skipDefaultTab) {
       this.addTab("https://www.google.com/webhp?igu=1");
     }
+  }
+
+  createBookmarks() {
+    const bookmarks = [
+      { name: "Google", url: "https://www.google.com/webhp?igu=1" },
+      { name: "Reeyuki Site", url: "https://reeyuki.nekoweb.org" },
+      { name: "LiventCord", url: "https://liventcord.github.io" },
+      { name: "Wikipedia", url: "https://www.wikipedia.org" },
+      { name: "File Converter", url: "https://yukiconvert.netlify.app/file-converter" },
+      { name: "JS Fiddle", url: "https://jsfiddle.net" },
+      { name: "SoundBoard", url: "https://www.myinstants.com/en/categories/sound%20effects/us/" }
+    ];
+
+    bookmarks.forEach((bookmark) => {
+      const btn = document.createElement("button");
+      btn.dataset.url = bookmark.url;
+
+      const favicon = document.createElement("img");
+      favicon.className = "bookmark-favicon";
+      favicon.src = this.getFavicon(bookmark.url);
+      favicon.onerror = () => {
+        favicon.src = "/static/icons/firefox.webp";
+      };
+
+      const text = document.createElement("span");
+      text.textContent = bookmark.name;
+
+      btn.appendChild(favicon);
+      btn.appendChild(text);
+
+      btn.addEventListener("click", () => {
+        if (this.currentTabIndex >= 0) {
+          const bookmarkUrl = btn.dataset.url;
+          if (bookmarkUrl !== "https://reeyuki.nekoweb.org") {
+            speak("Good choice! I know this one.", "Congratulate");
+          }
+          this.navigate(this.tabs[this.currentTabIndex], bookmarkUrl);
+        }
+      });
+
+      this.bookmarkBar.appendChild(btn);
+    });
   }
 
   openHtml(htmlContent, name, path) {
@@ -195,29 +223,8 @@ export class BrowserApp {
     };
     this.tabs.push(tab);
 
-    const tabBtn = document.createElement("div");
-    tabBtn.className = "tab-btn";
-
-    const faviconImg = document.createElement("img");
-    faviconImg.className = "tab-favicon";
-    faviconImg.src = "/static/icons/files.webp";
-    faviconImg.onerror = () => (faviconImg.src = "/static/icons/default-favicon.png");
-
-    tabBtn.innerHTML = `
-      <span class="tab-title">${name}</span>
-      <button class="tab-close-btn" title="Close tab">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12"><line x1="1" y1="1" x2="11" y2="11" stroke="currentColor" stroke-width="2"/><line x1="11" y1="1" x2="1" y2="11" stroke="currentColor" stroke-width="2"/></svg>
-      </button>
-    `;
-    tabBtn.prepend(faviconImg);
-
+    const tabBtn = this._createTabElement(name, "/static/icons/files.webp", tabIndex);
     this.tabsContainer.appendChild(tabBtn);
-
-    tabBtn.querySelector(".tab-close-btn").onclick = (e) => {
-      e.stopPropagation();
-      this.closeTab(tabIndex);
-    };
-    tabBtn.onclick = () => this.switchTab(tabIndex);
 
     iframe.onload = () => {
       const title = iframe.contentDocument?.title || name;
@@ -226,8 +233,37 @@ export class BrowserApp {
     };
 
     iframe.src = blobUrl;
-
     this.switchTab(tabIndex);
+  }
+
+  _createTabElement(title, faviconSrc, tabIndex) {
+    const tabBtn = document.createElement("div");
+    tabBtn.className = "tab-btn";
+
+    const faviconImg = document.createElement("img");
+    faviconImg.className = "tab-favicon";
+    faviconImg.src = faviconSrc || "/static/icons/firefox.webp";
+    faviconImg.onerror = () => (faviconImg.src = "/static/icons/firefox.webp");
+
+    const titleSpan = document.createElement("span");
+    titleSpan.className = "tab-title";
+    titleSpan.textContent = title;
+
+    const closeBtn = document.createElement("button");
+    closeBtn.className = "tab-close-btn";
+    closeBtn.title = "Close tab";
+    closeBtn.innerHTML = CLOSE_ICON;
+    closeBtn.onclick = (e) => {
+      e.stopPropagation();
+      this.closeTab(this.tabs.indexOf(this.tabs[tabIndex]));
+    };
+
+    tabBtn.appendChild(faviconImg);
+    tabBtn.appendChild(titleSpan);
+    tabBtn.appendChild(closeBtn);
+    tabBtn.onclick = () => this.switchTab(this.tabs.length);
+
+    return tabBtn;
   }
 
   _isLocalTab(tab) {
@@ -337,39 +373,40 @@ export class BrowserApp {
     };
     this.tabs.push(tab);
 
+    const faviconSrc = this.getFavicon(url);
     const tabBtn = document.createElement("div");
     tabBtn.className = "tab-btn";
 
     const faviconImg = document.createElement("img");
     faviconImg.className = "tab-favicon";
-    faviconImg.src = this.getFavicon(url);
-    faviconImg.onerror = () => (faviconImg.src = "/static/icons/default-favicon.png");
+    faviconImg.src = faviconSrc;
+    faviconImg.onerror = () => (faviconImg.src = "/static/icons/firefox.webp");
 
-    tabBtn.innerHTML = `
-      <span class="tab-title">${tab.title}</span>
-      <button class="tab-close-btn" title="Close tab">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12"><line x1="1" y1="1" x2="11" y2="11" stroke="currentColor" stroke-width="2"/><line x1="11" y1="1" x2="1" y2="11" stroke="currentColor" stroke-width="2"/></svg>
-      </button>
-    `;
-    tabBtn.prepend(faviconImg);
+    const titleSpan = document.createElement("span");
+    titleSpan.className = "tab-title";
+    titleSpan.textContent = tab.title;
 
-    if (this.newTabBtn && this.newTabBtn.parentNode === this.tabsContainer) {
-      this.tabsContainer.insertBefore(tabBtn, this.newTabBtn);
-    } else {
-      this.tabsContainer.appendChild(tabBtn);
-    }
-
-    tabBtn.querySelector(".tab-close-btn").onclick = (e) => {
+    const closeBtn = document.createElement("button");
+    closeBtn.className = "tab-close-btn";
+    closeBtn.title = "Close tab";
+    closeBtn.innerHTML = CLOSE_ICON;
+    closeBtn.onclick = (e) => {
       e.stopPropagation();
       this.closeTab(tabIndex);
     };
+
+    tabBtn.appendChild(faviconImg);
+    tabBtn.appendChild(titleSpan);
+    tabBtn.appendChild(closeBtn);
     tabBtn.onclick = () => this.switchTab(tabIndex);
+
+    this.tabsContainer.appendChild(tabBtn);
 
     iframe.onload = () => {
       let title = iframe.contentDocument?.title || tab.url;
       if (!title || title.trim() === "") title = tab.url;
       tab.title = title;
-      tabBtn.querySelector(".tab-title").textContent = title;
+      titleSpan.textContent = title;
       faviconImg.src = this.getFavicon(tab.url);
     };
 
@@ -382,7 +419,7 @@ export class BrowserApp {
       const { hostname } = new URL(url);
       return `https://${hostname}/favicon.ico`;
     } catch {
-      return "/static/icons/default-favicon.png";
+      return "/static/icons/firefox.webp";
     }
   }
 
@@ -399,6 +436,7 @@ export class BrowserApp {
     this.addressInput.value = tab.url;
     this.updateNavigation(tab);
   }
+
   closeTab(index) {
     if (index < 0 || index >= this.tabs.length) return;
     const tab = this.tabs[index];
@@ -473,6 +511,7 @@ export class BrowserApp {
     tab.iframe._blobUrl = blobUrl;
     tab.iframe.src = blobUrl;
   }
+
   updateNavigation(tab) {
     this.backBtn.disabled = tab.historyIndex <= 0;
     this.forwardBtn.disabled = tab.historyIndex >= tab.history.length - 1;
