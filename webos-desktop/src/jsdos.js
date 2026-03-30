@@ -34,29 +34,6 @@ export class JsDosApp {
     this._windowManager.addToTaskbar(win.id, "js-dos", "/static/icons/jsdos.webp");
   }
 
-  _ensureJsDosAssets() {
-    if (document.getElementById("jsdos-css")) return Promise.resolve();
-    return new Promise((resolve, reject) => {
-      const link = document.createElement("link");
-      link.id = "jsdos-css";
-      link.rel = "stylesheet";
-      link.href = "https://v8.js-dos.com/latest/js-dos.css";
-      document.head.appendChild(link);
-
-      if (window.Dos) {
-        resolve();
-        return;
-      }
-
-      const script = document.createElement("script");
-      script.id = "jsdos-js";
-      script.src = "https://v8.js-dos.com/latest/js-dos.js";
-      script.onload = resolve;
-      script.onerror = () => reject(new Error("Failed to load js-dos runtime."));
-      document.head.appendChild(script);
-    });
-  }
-
   async _buildBundle(name, arrayBuffer) {
     const zip = new JSZip();
     const conf = [
@@ -79,6 +56,38 @@ export class JsDosApp {
     zip.folder(".jsdos").file("dosbox.conf", conf);
     zip.file(name, arrayBuffer);
     return zip.generateAsync({ type: "blob" });
+  }
+
+  _buildIframeHTML(bundleUrl) {
+    return `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; background: #000; overflow: hidden; }
+  #dos { width: 100%; height: 100%; }
+</style>
+<link rel="stylesheet" href="https://v8.js-dos.com/latest/js-dos.css">
+</head>
+<body>
+<div id="dos"></div>
+<script src="https://v8.js-dos.com/latest/js-dos.js"><\/script>
+<script>
+  Dos(document.getElementById("dos"), {
+    url: ${JSON.stringify(bundleUrl)},
+    onEvent: function(event, ci) {
+      if (event === "ci-ready") {
+        window._ci = ci;
+      }
+    }
+  });
+  window.addEventListener("message", function(e) {
+    if (e.data === "mute" && window._ci) { try { window._ci.mute(); } catch {} }
+  });
+<\/script>
+</body>
+</html>`;
   }
 
   async launchExe(name, path) {
@@ -114,17 +123,16 @@ export class JsDosApp {
       <div style="color:#ff6b6b;font-size:14px;font-family:monospace;">${msg}</div>`;
     };
 
-    let dosProps = null;
-    let ciRef = null;
+    let iframeEl = null;
+    let bundleUrl = null;
+    let iframePageUrl = null;
 
     const cleanup = () => {
       try {
-        ciRef?.mute();
+        iframeEl?.contentWindow?.postMessage("mute", "*");
       } catch {}
-      try {
-        dosProps?.stop();
-      } catch {}
-      URL.revokeObjectURL(bundleUrl);
+      if (bundleUrl) URL.revokeObjectURL(bundleUrl);
+      if (iframePageUrl) URL.revokeObjectURL(iframePageUrl);
     };
 
     win.querySelector(".close-btn").addEventListener("click", () => {
@@ -134,11 +142,11 @@ export class JsDosApp {
     });
 
     win.querySelector(".minimize-btn").addEventListener("click", () => {
-      ciRef?.mute();
+      try {
+        iframeEl?.contentWindow?.postMessage("mute", "*");
+      } catch {}
       wm.minimizeWindow(win);
     });
-
-    let bundleUrl = null;
 
     try {
       setLog("Reading file…");
@@ -164,23 +172,20 @@ export class JsDosApp {
 
       bundleUrl = URL.createObjectURL(bundleBlob);
 
-      setLog("Loading js-dos runtime…");
-      await this._ensureJsDosAssets();
+      setLog("Launching…");
 
-      if (typeof Dos === "undefined") {
-        showError("js-dos runtime unavailable.");
-        return;
-      }
+      const iframeHTML = this._buildIframeHTML(bundleUrl);
+      const iframeBlobUrl = URL.createObjectURL(new Blob([iframeHTML], { type: "text/html" }));
+      iframePageUrl = iframeBlobUrl;
 
       inner.innerHTML = "";
       inner.style.cssText = "width:100%;height:100%;";
 
-      dosProps = Dos(inner, {
-        url: bundleUrl,
-        onEvent: (event, ci) => {
-          if (event === "ci-ready") ciRef = ci;
-        }
-      });
+      iframeEl = document.createElement("iframe");
+      iframeEl.src = iframeBlobUrl;
+      iframeEl.style.cssText = "width:100%;height:100%;border:none;display:block;";
+      iframeEl.setAttribute("allowfullscreen", "");
+      inner.appendChild(iframeEl);
     } catch (e) {
       showError(`Error: ${e.message}`);
     }

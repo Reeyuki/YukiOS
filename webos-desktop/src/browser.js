@@ -69,7 +69,7 @@ export class BrowserApp {
     this.windows = {};
   }
 
-  open() {
+  open(skipDefaultTab = false) {
     if (document.getElementById("browser-win")) {
       this.wm.bringToFront(document.getElementById("browser-win"));
       return;
@@ -130,7 +130,7 @@ export class BrowserApp {
 
     this.newTabBtn.onclick = () => {
       speak("Where are we headed today?", "CheckingSomething");
-      this.addTab();
+      this.addTab("https://www.google.com/webhp?igu=1");
     };
 
     this.addressInput.addEventListener("keydown", (e) => {
@@ -159,13 +159,15 @@ export class BrowserApp {
       if (tab) loadViaProxy(tab.iframe, tab.url);
     };
 
-    this.addTab("https://www.google.com/webhp?igu=1");
+    if (!skipDefaultTab) {
+      this.addTab("https://www.google.com/webhp?igu=1");
+    }
   }
 
   openHtml(htmlContent, name, path) {
     const existing = document.getElementById("browser-win");
     if (!existing) {
-      this.open();
+      this.open(true);
     } else {
       this.wm.bringToFront(existing);
     }
@@ -179,8 +181,9 @@ export class BrowserApp {
     const tabIndex = this.tabs.length;
     const iframe = document.createElement("iframe");
     iframe.className = "browser-frame";
-    iframe.style.cssText = "width:100%;height:100%;border:none;position:absolute;top:0;left:0;display:none;";
     this.iframeContainer.appendChild(iframe);
+
+    iframe._blobUrl = blobUrl;
 
     const tab = {
       url: fullPath,
@@ -188,8 +191,7 @@ export class BrowserApp {
       historyIndex: 0,
       title: name,
       iframe,
-      favicon: "/static/icons/firefox.webp",
-      _blobUrl: blobUrl
+      favicon: "/static/icons/firefox.webp"
     };
     this.tabs.push(tab);
 
@@ -217,7 +219,12 @@ export class BrowserApp {
     };
     tabBtn.onclick = () => this.switchTab(tabIndex);
 
-    iframe._blobUrl = blobUrl;
+    iframe.onload = () => {
+      const title = iframe.contentDocument?.title || name;
+      tab.title = title || name;
+      tabBtn.querySelector(".tab-title").textContent = tab.title;
+    };
+
     iframe.src = blobUrl;
 
     this.switchTab(tabIndex);

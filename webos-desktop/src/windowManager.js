@@ -23,6 +23,7 @@ export class WindowManager {
     this.initialTitle = document.title || "YukiOS";
     const faviconLink = document.querySelector("link[rel~='icon']");
     this.initialFavicon = faviconLink ? faviconLink.href : "";
+    this._initVisibilityTracking();
   }
 
   setNotificationCenter(notificationCenter) {
@@ -57,11 +58,6 @@ export class WindowManager {
 
   _getFaviconLink() {
     let link = document.querySelector("link[rel~='icon']");
-    if (!link) {
-      link = document.createElement("link");
-      link.rel = "icon";
-      document.head.appendChild(link);
-    }
     return link;
   }
 
@@ -284,16 +280,37 @@ export class WindowManager {
   updatePageFavicon(iconValue, title) {
     document.title = title || this.initialTitle;
     const link = this._getFaviconLink();
-    link.href = this.initialFavicon || "";
-
     const { isImage, isDataUrl } = this._resolveIconType(iconValue);
-    if (isImage || isDataUrl) link.href = iconValue;
+    if (isImage || isDataUrl) {
+      link.href = iconValue;
+    } else {
+      link.href = this.initialFavicon || "";
+    }
   }
 
   resetToDefaultState() {
     document.title = this.initialTitle;
     const link = this._getFaviconLink();
     link.href = this.initialFavicon || "";
+  }
+
+  _initVisibilityTracking() {
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) {
+        document.title = this.initialTitle;
+        this._getFaviconLink().href = this.initialFavicon || "";
+      } else {
+        if (this.openWindows.size === 0) {
+          this.resetToDefaultState();
+        } else {
+          const activeEntry =
+            Array.from(this.openWindows.values()).findLast((entry) =>
+              entry.taskbarItem?.classList.contains("active")
+            ) ?? Array.from(this.openWindows.values()).pop();
+          if (activeEntry) this.updatePageFavicon(activeEntry.iconValue, activeEntry.title);
+        }
+      }
+    });
   }
 
   bringToFront(win) {

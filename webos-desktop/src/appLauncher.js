@@ -10,6 +10,7 @@ import {
   sendAppInstallAnalytics,
   recordUsage
 } from "./analytics.js";
+import { StorageKeys } from "./settings.js";
 
 export class AppLauncher {
   constructor(
@@ -25,6 +26,7 @@ export class AppLauncher {
     nodeApp,
     calculatorApp,
     aboutApp,
+    newsApp,
     settingsApp,
     taskManagerApp,
     weatherApp,
@@ -48,6 +50,7 @@ export class AppLauncher {
     this.nodeApp = nodeApp;
     this.calculatorApp = calculatorApp;
     this.aboutApp = aboutApp;
+    this.newsApp = newsApp;
     this.settingsApp = settingsApp;
     this.taskManager = taskManagerApp;
     this.weatherApp = weatherApp;
@@ -130,6 +133,11 @@ export class AppLauncher {
         title: "About",
         action: () => this.aboutApp.open(),
         clippy: { message: "Your system is running smoothly.", animation: "Acknowledge" }
+      },
+      newsApp: {
+        type: "system",
+        title: "What's New",
+        action: () => this.newsApp.open()
       },
       music: {
         type: "system",
@@ -241,12 +249,18 @@ export class AppLauncher {
     this.appMap = { ...appMap, ...localAppMap };
     populateStartMenu(this);
     initializeAppGrid(this);
-    const ABOUT_LAUNCH_KEY = "yukios_about_seen";
 
-    if (!localStorage.getItem(ABOUT_LAUNCH_KEY)) {
+    if (!localStorage.getItem(StorageKeys.aboutLaunchKey)) {
       setTimeout(() => {
         this.aboutApp.open();
-        localStorage.setItem(ABOUT_LAUNCH_KEY, "true");
+        localStorage.setItem(StorageKeys.aboutLaunchKey, "true");
+      }, 300);
+    }
+
+    if (!localStorage.getItem(StorageKeys.newsSeenKey)) {
+      setTimeout(() => {
+        this.newsApp.open();
+        localStorage.setItem(StorageKeys.newsSeenKey, "true");
       }, 300);
     }
     if (window.electronAPI) {

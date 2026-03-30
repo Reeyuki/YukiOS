@@ -1006,6 +1006,7 @@ export const appMap = {
   calculatorApp: { type: "system", title: "Calculator", icon: "fa fa-calculator" },
   settingsApp: { type: "system", title: "Settings", icon: "fa fa-cog" },
   aboutApp: { type: "system", title: "About", icon: "fa fa-circle-info" },
+  newsApp: { type: "system", title: "What's New", icon: "fa fa-newspaper" },
   explorer: { type: "system", title: "File Explorer", icon: "/static/icons/files.webp" },
   notepad: { type: "system", title: "Notepad", icon: "/static/icons/notepad.webp" },
   browser: { type: "system", title: "Browser", icon: "/static/icons/firefox.webp" },

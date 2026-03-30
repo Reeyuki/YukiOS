@@ -31,7 +31,7 @@ export class AboutApp {
             <h1 style="font-size: 2rem; margin-bottom: 0; color: var(--text-primary); font-family: fontb; text-align: center; width: 100%;">Yuki OS</h1>
             <p style="color: var(--text-primary); font-size: 1rem; margin: 0; text-align: center;">Version 1.0</p>
             <p style="color: var(--text-primary); font-size: 0.9rem; max-width:700px; margin: 1rem auto 0; line-height:1.6; text-align: center;">
-              A browser-based desktop OS where apps and games run in windows inside your browser. Open multiple apps, move them around, resize them, and multitask just like on a real computer. Upload custom wallpapers and manage your virtual filesystem seamlessly. Yuki OS comes with 150 ready-to-play games and built-in apps including file explorer, browser, text editor,office, camera, calculator, paint,task manager,terminal, and a Python / Node.js IDE.
+              A browser-based desktop OS where apps and games run in windows inside your browser. Open multiple apps, move them around, resize them, and multitask just like on a real computer. Upload custom wallpapers and manage your virtual filesystem seamlessly. Yuki OS comes with 170+ ready-to-play games and built-in apps including file explorer, browser, text editor,office, camera, calculator, paint,task manager,terminal, and a Python / Node.js IDE.
             </p>
           </div>
 

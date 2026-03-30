@@ -1,6 +1,5 @@
 import { unzip, gunzip, strFromU8 } from "fflate";
 import SevenZip from "7z-wasm";
-
 import { FileKind } from "./fs.js";
 import { archiveBaseName, bytesToStoreContent, tarStr } from "./utils.js";
 

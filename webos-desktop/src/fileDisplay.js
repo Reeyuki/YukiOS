@@ -1,38 +1,67 @@
 import { FileKind } from "./fs.js";
 import { desktop } from "./desktop.js";
 
-export const IMAGE_EXTS = ["png", "jpg", "jpeg", "gif", "webp", "bmp", "svg", "avif"];
-export const VIDEO_EXTS = ["mp4", "webm", "ogv", "mov"];
+export const IMAGE_EXTS = ["png", "jpg", "jpeg", "gif", "webp", "bmp", "svg", "avif", "ico"];
+export const VIDEO_EXTS = ["mp4", "webm", "ogv", "mov", "mkv", "avi", "m4v", "wmv", "flv"];
 export const AUDIO_EXTS = ["mp3", "ogg", "wav", "flac", "aac", "m4a", "opus", "wma"];
-export const OFFICE_EXTS = [
-  "docx",
-  "doc",
-  "xlsx",
-  "xls",
-  "slx",
-  "csv",
-  "odt",
-  "ods",
-  "pdf",
-  "odp",
-  "pptx",
-  "ppt",
-  "rtf"
-];
+export const OFFICE_EXTS = ["docx", "doc", "xlsx", "xls", "slx", "csv", "odt", "ods", "pdf", "odp", "pptx", "ppt"];
 export const ZIP_EXTS = ["zip", "gz", "tgz", "tar", "rar", "7z", "bz2", "xz"];
 export const EXE_EXTS = ["exe", "msi", "com", "bat", "cmd", "jsdos"];
 
 import { ROM_EXTS, detectCore } from "./shared/coreMap.js";
 export { ROM_EXTS };
 
-export const HTML_EXTS = ["html", "htm"];
+export const HTML_EXTS = ["html", "htm", "xhtml"];
 export const MARKDOWN_EXTS = ["md", "markdown"];
-export const TEXT_EXTS = ["txt", "js", "json", "css", "xml", "yaml", "yml", "ini", "cfg", "log"];
+export const TEXT_EXTS = [
+  "txt",
+  "js",
+  "json",
+  "css",
+  "xml",
+  "yaml",
+  "yml",
+  "ini",
+  "cfg",
+  "log",
+  "rtf",
+  "ts",
+  "tsx",
+  "jsx",
+  "mjs",
+  "cjs",
+  "sh",
+  "bash",
+  "zsh",
+  "env",
+  "sql",
+  "py",
+  "java",
+  "cs",
+  "cpp",
+  "c",
+  "h",
+  "hpp",
+  "go",
+  "rs",
+  "php"
+];
 
 const BINARY_OFFICE_EXTS = ["pdf", "docx", "xlsx", "xls", "pptx", "ppt"];
 
 const LARGE_FILE_THRESHOLD = 1024 * 1024;
 
+const VIDEO_MIME_MAP = {
+  mp4: "video/mp4",
+  webm: "video/webm",
+  ogv: "video/ogg",
+  mov: "video/quicktime",
+  mkv: "video/x-matroska",
+  avi: "video/x-msvideo",
+  m4v: "video/x-m4v",
+  wmv: "video/x-ms-wmv",
+  flv: "video/x-flv"
+};
 export function getExt(name) {
   return name.split(".").pop().toLowerCase();
 }
@@ -83,7 +112,54 @@ export function isBinaryOfficeFile(name) {
 export function isMediaFile(name) {
   return isImageFile(name) || isVideoFile(name);
 }
-
+export function isJsonFile(name) {
+  return getExt(name) === "json";
+}
+export function isCodeFile(name) {
+  return [
+    "ts",
+    "tsx",
+    "jsx",
+    "mjs",
+    "cjs",
+    "js",
+    "css",
+    "py",
+    "java",
+    "cs",
+    "cpp",
+    "c",
+    "h",
+    "hpp",
+    "go",
+    "rs",
+    "php",
+    "sh",
+    "bash",
+    "zsh",
+    "sql",
+    "env",
+    "scss",
+    "sass",
+    "less",
+    "vue",
+    "svelte",
+    "kt",
+    "kts",
+    "swift",
+    "rb",
+    "dart",
+    "toml",
+    "properties",
+    "ini",
+    "cfg",
+    "lock",
+    "dockerfile",
+    "makefile",
+    "yml",
+    "yaml"
+  ].includes(getExt(name));
+}
 export function isWallpaperPath(path) {
   return (
     Array.isArray(path) &&
@@ -102,6 +178,7 @@ export function resolveFileIcon(name) {
   if (isExeFile(name)) return "/static/icons/jsdos.webp";
   if (isOfficeFile(name)) return "/static/icons/office.webp";
   if (isHtmlFile(name)) return "/static/icons/firefox.webp";
+  if (isJsonFile(name)) return "/static/icons/json.webp";
   return "/static/icons/notepad.webp";
 }
 
@@ -142,6 +219,12 @@ export function buildFileIconHTML(name, { thumbnailSrc = null, size = 64, radius
   }
   if (isAudioFile(name)) {
     return `<img src="/static/icons/music.webp" style="${s}object-fit:cover;">`;
+  }
+  if (isJsonFile(name)) {
+    return `<img src="/static/icons/notepad.webp" style="${s}object-fit:cover;">`;
+  }
+  if (isCodeFile(name)) {
+    return `<div style="${s}display:flex;align-items:center;justify-content:center;font-size:${Math.round(size * 0.44)}px;color:#569cd6;background:#1e1e1e;border:1px solid #333;"><i class="fas fa-code"></i></div>`;
   }
   if (isImageFile(name) && thumbnailSrc) {
     return `<img src="${thumbnailSrc}" style="${s}object-fit:cover;">`;
@@ -262,15 +345,31 @@ export async function openFileWith({
   }
 
   if (isVideoFile(name) || isAudioFile(name) || isImageFile(name)) {
+    const ext = getExt(name);
+
+    const IMAGE_MIME_MAP = {
+      jpg: "image/jpeg",
+      jpeg: "image/jpeg",
+      png: "image/png",
+      gif: "image/gif",
+      webp: "image/webp",
+      bmp: "image/bmp",
+      svg: "image/svg+xml",
+      avif: "image/avif",
+      ico: "image/x-icon",
+      tif: "image/tiff",
+      tiff: "image/tiff"
+    };
+
     const kind = isVideoFile(name) ? FileKind.VIDEO : isAudioFile(name) ? FileKind.AUDIO : FileKind.IMAGE;
+
     const mime = isAudioFile(name)
       ? audioExtToMime(name)
       : isVideoFile(name)
-        ? `video/${getExt(name)}`
-        : `image/${getExt(name)}`;
+        ? (VIDEO_MIME_MAP[getExt(name)] ?? "application/octet-stream")
+        : (IMAGE_MIME_MAP[ext] ?? "application/octet-stream");
 
     const ensureTypedBlobURL = (b) => URL.createObjectURL(b.type ? b : new Blob([b], { type: mime }));
-
     const blob = await fs.readBinaryFile(path, name);
     if (blob && blob.size > 0) {
       openMediaViewer(name, ensureTypedBlobURL(blob), kind, windowManager);
@@ -292,7 +391,9 @@ export async function openFileWith({
 
   if (isOfficeFile(name)) {
     if (!officeApp) {
-      console.warn("openFileWith: officeApp not provided for", name);
+      const content = await fs.getFileContent(path, name);
+      notepadApp.open(name, content, path);
+      return;
     } else {
       const blob = await fs.readBinaryFile(path, name);
       if (blob && blob.size > 0) {

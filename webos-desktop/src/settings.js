@@ -17,7 +17,9 @@ export const StorageKeys = {
   manualWallpaper: "yukiOS_manualWallpaper",
   macOsControls: "yukiOS_macOsControls",
   clippy: "yukiOS_clippy",
-  calendarEvents: "yukiOS_calendar_events"
+  calendarEvents: "yukiOS_calendar_events",
+  aboutLaunchKey: "yukiOS_about_seen",
+  newsSeenKey: "yukiOS_news_seen"
 };
 
 export class SettingsApp {

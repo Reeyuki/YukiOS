@@ -1,3 +1,4 @@
+import { zipSync } from "fflate";
 import { desktop } from "./desktop.js";
 import { FileKind } from "./fs.js";
 import { SystemUtilities } from "./system.js";
@@ -1086,6 +1087,46 @@ export class ExplorerApp {
     }
   }
 
+  async _downloadItems(itemName, isFile, inst) {
+    const effectiveItems =
+      inst.selectedItems.size > 1 && inst.selectedItems.has(itemName) ? [...inst.selectedItems] : [itemName];
+
+    if (effectiveItems.length === 1 && isFile) {
+      const blob = await this.fs.readBinaryFile(inst.currentPath, itemName);
+      const src = blob
+        ? URL.createObjectURL(blob)
+        : URL.createObjectURL(new Blob([await this.fs.getFileContent(inst.currentPath, itemName)]));
+      const a = document.createElement("a");
+      a.href = src;
+      a.download = itemName;
+      a.click();
+      URL.revokeObjectURL(src);
+      return;
+    }
+
+    const folder = inst._cachedFolder || (await this.fs.getFolder(inst.currentPath));
+    const zipEntries = {};
+
+    for (const name of effectiveItems) {
+      const entry = folder[name];
+      if (!entry || entry.type !== "file") continue;
+      const blob = await this.fs.readBinaryFile(inst.currentPath, name);
+      if (blob) {
+        zipEntries[name] = new Uint8Array(await blob.arrayBuffer());
+      } else {
+        const text = await this.fs.getFileContent(inst.currentPath, name);
+        zipEntries[name] = new TextEncoder().encode(typeof text === "string" ? text : "");
+      }
+    }
+
+    const zipped = zipSync(zipEntries);
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([zipped], { type: "application/zip" }));
+    a.download = "archive.zip";
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
   async showFileContextMenu(e, itemName, isFile, inst) {
     e.preventDefault();
     e.stopPropagation();
@@ -1119,6 +1160,9 @@ export class ExplorerApp {
 
       menu.appendChild(item("Copy", () => buildClipItem("copy")));
       menu.appendChild(item("Cut", () => buildClipItem("cut")));
+      menu.appendChild(hr());
+
+      menu.appendChild(item("⬇ Download", () => this._downloadItems(itemName, isFile, inst)));
       menu.appendChild(hr());
 
       menu.appendChild(

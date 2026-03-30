@@ -6,6 +6,7 @@ import { AppLauncher } from "./appLauncher.js";
 import { NotepadApp } from "./notepad.js";
 import { CameraApp } from "./camera.js";
 import { AboutApp } from "./about.js";
+import { NewsApp } from "./news.js";
 import { PythonEditorApp } from "./python.js";
 import { SystemUtilities } from "./system.js";
 import { FileSystemManager } from "./fs.js";
@@ -110,6 +111,7 @@ const jsDosApp = new JsDosApp(fileSystemManager, windowManager, explorerApp);
 explorerApp.setJsDos(jsDosApp);
 const cameraApp = new CameraApp(windowManager, fileSystemManager);
 const aboutApp = new AboutApp(windowManager);
+const newsApp = new NewsApp(windowManager);
 const settingsApp = new SettingsApp(windowManager);
 const taskManagerApp = new TaskManagerApp(windowManager);
 const weatherApp = new WeatherApp(windowManager);
@@ -135,6 +137,7 @@ const appLauncher = new AppLauncher(
   nodeApp,
   calculatorApp,
   aboutApp,
+  newsApp,
   settingsApp,
   taskManagerApp,
   weatherApp,
