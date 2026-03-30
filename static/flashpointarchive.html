@@ -5,11 +5,49 @@
     <link rel="stylesheet" href="https://ooooooooo.ooo/static/main.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="/static/games/flashpointarchive/main.js" defer></script>
+    <style>
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+      }
+      .content {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+      .player {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        background: #000;
+      }
+      .player > * {
+        max-width: 100%;
+        max-height: 100%;
+      }
+      .fullscreen-btn {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        padding: 6px 10px;
+        background: rgba(0, 0, 0, 0.6);
+        color: #fff;
+        border: 1px solid #fff;
+        cursor: pointer;
+        z-index: 10;
+      }
+    </style>
   </head>
   <body>
     <div class="content">
       <div class="header"></div>
-      <div class="player"></div>
+
+      <button class="fullscreen-btn" onclick="toggleFullscreen()">Fullscreen</button>
+      <div class="player" id="player"></div>
+
       <div class="footer">
         <div class="navigation">
           <div class="general">
@@ -35,5 +73,16 @@
         </div>
       </div>
     </div>
+
+    <script>
+      function toggleFullscreen() {
+        const el = document.getElementById("player");
+        if (!document.fullscreenElement) {
+          el.requestFullscreen();
+        } else {
+          document.exitFullscreen();
+        }
+      }
+    </script>
   </body>
 </html>

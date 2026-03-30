@@ -20,6 +20,7 @@ export const OFFICE_EXTS = [
   "rtf"
 ];
 export const ZIP_EXTS = ["zip", "gz", "tgz", "tar", "rar", "7z", "bz2", "xz"];
+export const EXE_EXTS = ["exe", "msi", "com", "bat", "cmd", "jsdos"];
 
 import { ROM_EXTS, detectCore } from "./shared/coreMap.js";
 export { ROM_EXTS };
@@ -73,6 +74,9 @@ export function isOfficeFile(name) {
 export function isZipFile(name) {
   return ZIP_EXTS.includes(getExt(name));
 }
+export function isExeFile(name) {
+  return EXE_EXTS.includes(getExt(name));
+}
 export function isBinaryOfficeFile(name) {
   return BINARY_OFFICE_EXTS.includes(getExt(name));
 }
@@ -95,6 +99,7 @@ export function resolveFileIcon(name) {
   if (isAudioFile(name)) return "/static/icons/music.webp";
   if (isRomFile(name)) return "rom";
   if (isZipFile(name)) return "/static/icons/zip.webp";
+  if (isExeFile(name)) return "/static/icons/jsdos.webp";
   if (isOfficeFile(name)) return "/static/icons/office.webp";
   if (isHtmlFile(name)) return "/static/icons/firefox.webp";
   return "/static/icons/notepad.webp";
@@ -131,6 +136,9 @@ export function buildFileIconHTML(name, { thumbnailSrc = null, size = 64, radius
   }
   if (isZipFile(name)) {
     return `<img src="/static/icons/zip.webp" style="${s}object-fit:cover;">`;
+  }
+  if (isExeFile(name)) {
+    return `<img src="/static/icons/jsdos.webp" style="${s}object-fit:cover;">`;
   }
   if (isAudioFile(name)) {
     return `<img src="/static/icons/music.webp" style="${s}object-fit:cover;">`;
@@ -233,9 +241,16 @@ export async function openFileWith({
   browserApp,
   windowManager,
   officeApp,
-  markdownApp
+  markdownApp,
+  jsDosApp
 }) {
   if (isZipFile(name)) return;
+  console.log("Open file with: ", name, path);
+  if (isExeFile(name)) {
+    if (!jsDosApp) return;
+    jsDosApp.launchExe(name, path);
+    return;
+  }
 
   if (isRomFile(name)) {
     if (!emulatorApp) return;

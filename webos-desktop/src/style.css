@@ -3997,9 +3997,9 @@ select:focus {
 
 .games-app-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, 120px);
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
   gap: 12px;
-  padding: 4px 2px;
+  padding: 10px;
 }
 
 .games-app-card {
@@ -4082,6 +4082,7 @@ select:focus {
   overflow-x: hidden;
   scrollbar-width: thin;
   scrollbar-color: rgba(110, 168, 254, 0.35) transparent;
+  padding: 2px !important;
 }
 .games-app-window::-webkit-scrollbar {
   width: 5px;

@@ -248,7 +248,7 @@ async function loadEntry(request) {
       _fetch(`${oooo}/${elem.classList[1]}?id=${entry.uuid}`, { method: "POST" });
     })
   );
-
+  
   // Identify appropriate player based on launch command
   let p = Math.max(
     0,

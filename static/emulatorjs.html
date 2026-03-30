@@ -51,12 +51,15 @@
       window.EJS_color = color;
       window.EJS_pathtodata = "/static/games/cdn.emulatorjs.org/stable/data";
 
-      window.EJS_gameUrl = rom.endsWith(".zip")
-        ? `https://yukiosroms.netlify.app/${rom}`
-        : rom.startsWith("https")
-          ? rom
-          : `https://yukiosroms.netlify.app/${rom}`;
+      const isAbsoluteUrl = /^https?:\/\//i.test(rom);
+      const isPath = rom.startsWith("/");
 
+      window.EJS_gameUrl =
+        isAbsoluteUrl || isPath
+          ? rom
+          : rom.endsWith(".zip")
+            ? `https://yukiosroms.netlify.app/${rom}`
+            : `https://yukiosroms.netlify.app/${rom}`;
       if (core === "gba") {
         window.EJS_biosUrl = "/static/bios/gba_bios.bin";
       }

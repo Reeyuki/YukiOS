@@ -20,10 +20,10 @@ import { appendOutput, saveAs, handleTabKey, handleCtrlEnterRun } from "./shared
  *
  */
 export class NodeEditorApp {
-  constructor(fileSystemManager, windowManager) {
+  constructor(fileSystemManager, windowManager, explorerApp) {
     this.fs = fileSystemManager;
     this.wm = windowManager;
-    this.explorerApp = null;
+    this.explorerApp = explorerApp;
 
     this._asyncModule = null;
     this._loadPromise = null;
@@ -31,10 +31,6 @@ export class NodeEditorApp {
     this._pkgCache = new Map();
 
     this._runState = new Map();
-  }
-
-  setExplorer(explorerApp) {
-    this.explorerApp = explorerApp;
   }
 
   open(title = "NodeJS Code Editor", content = "", filePath = null) {

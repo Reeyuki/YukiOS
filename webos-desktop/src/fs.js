@@ -303,9 +303,13 @@ export class FileSystemManager {
   async ensureFolder(path) {
     await this.fsReady;
     const dir = this.resolveDir(path);
-    await this.p("mkdir", dir, { recursive: true }).catch(() => {});
+    const segments = dir.split("/").filter(Boolean);
+    let current = "";
+    for (const seg of segments) {
+      current += "/" + seg;
+      await this.p("mkdir", current, { recursive: true }).catch(() => {});
+    }
   }
-
   async getFolder(path) {
     await this.fsReady;
     const dir = this.resolveDir(path);
@@ -546,7 +550,8 @@ export class FileSystemManager {
 
   async getFileContent(path, name) {
     await this.fsReady;
-    const fullPath = this.join(this.resolveDir(path), name);
+    const dir = this.resolveDir(path);
+    const fullPath = this.join(dir, name);
 
     const blob = await this._getBlobByFullPath(fullPath);
     if (blob) {
@@ -555,7 +560,11 @@ export class FileSystemManager {
 
     try {
       const text = await this.pRead("readFile", fullPath, "utf8");
-      if (!text) return "";
+      if (!text) {
+        const entries = await this.pRead("readdir", dir).catch(() => []);
+        console.warn(`getFileContent: "${name}" is empty in "${dir}". Available:`, entries);
+        return "";
+      }
       if (
         typeof text === "string" &&
         this._isBinaryName(name) &&
@@ -567,10 +576,11 @@ export class FileSystemManager {
       }
       return text;
     } catch {
+      const entries = await this.pRead("readdir", dir).catch(() => []);
+      console.warn(`getFileContent: "${name}" not found in "${dir}". Available:`, entries);
       return "";
     }
   }
-
   async getFileKind(path, name) {
     await this.fsReady;
     const meta = await this.readMeta(this.resolveDir(path));
@@ -638,12 +648,16 @@ export class FileSystemManager {
     await this.notifyDesktopChange(folderPath);
     return uniqueName;
   }
-
   async readBinaryFile(folderPath, name) {
     await this.fsReady;
-    const fullPath = this.join(this.resolveDir(folderPath), name);
+    const dir = this.resolveDir(folderPath);
+    const fullPath = this.join(dir, name);
     const blob = await this._getBlobByFullPath(fullPath);
-    if (!blob) return null;
+    if (!blob) {
+      const entries = await this.pRead("readdir", dir).catch(() => []);
+      console.warn(`readBinaryFile: "${name}" not found in "${dir}". Available:`, entries);
+      return null;
+    }
     return blob.type ? blob : new Blob([blob], { type: this._mimeFromName(name) });
   }
 

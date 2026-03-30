@@ -10,7 +10,6 @@ import { PythonEditorApp } from "./python.js";
 import { SystemUtilities } from "./system.js";
 import { FileSystemManager } from "./fs.js";
 import { setupStartMenu } from "./startMenu.js";
-
 import { DesktopUI } from "./desktopui.js";
 import { CalculatorApp } from "./calculator.js";
 import { NodeEditorApp } from "./node.js";
@@ -27,6 +26,7 @@ import { Model3DApp } from "./model3d.js";
 import { NotificationCenter } from "./notificationCenter.js";
 import { CategoriesApp } from "./categories.js";
 import { MusicPlayerApp } from "./music.js";
+import { JsDosApp } from "./jsdos.js";
 
 function initDownloadButton() {
   return;
@@ -103,11 +103,11 @@ const calculatorApp = new CalculatorApp(windowManager);
 notepadApp.setExplorer(explorerApp);
 const browserApp = new BrowserApp(windowManager, fileSystemManager);
 const terminalApp = new TerminalApp(fileSystemManager, windowManager);
-const nodeApp = new NodeEditorApp(fileSystemManager, windowManager);
-const pythonApp = new PythonEditorApp(fileSystemManager, windowManager);
-pythonApp.setExplorer(explorerApp);
-nodeApp.setExplorer(explorerApp);
+const nodeApp = new NodeEditorApp(fileSystemManager, windowManager, explorerApp);
+const pythonApp = new PythonEditorApp(fileSystemManager, windowManager, explorerApp);
 const musicPlayer = new MusicPlayerApp();
+const jsDosApp = new JsDosApp(fileSystemManager, windowManager, explorerApp);
+explorerApp.setJsDos(jsDosApp);
 const cameraApp = new CameraApp(windowManager, fileSystemManager);
 const aboutApp = new AboutApp(windowManager);
 const settingsApp = new SettingsApp(windowManager);
@@ -143,7 +143,8 @@ const appLauncher = new AppLauncher(
   officeApp,
   monacoApp,
   model3dApp,
-  categoriesApp
+  categoriesApp,
+  jsDosApp
 );
 appCreatorApp.setAppLauncher(appLauncher);
 explorerApp.setAppLauncher(appLauncher);

@@ -33,7 +33,8 @@ export class AppLauncher {
     officeApp,
     monaco,
     model3dApp,
-    categoriesApp
+    categoriesApp,
+    jsDosApp
   ) {
     this.wm = windowManager;
     this.fs = fileSystemManager;
@@ -56,6 +57,7 @@ export class AppLauncher {
     this.monacoApp = monaco;
     this.model3dApp = model3dApp;
     this.categoriesApp = categoriesApp;
+    this.jsDosApp = jsDosApp;
     this.TRANSPARENCY_ALLOWED_APP_IDS = new Set(["paint", "photopea", "vscode", "liventcord"]);
 
     this.clippyPromise = initClippy();
@@ -188,6 +190,11 @@ export class AppLauncher {
         action: () => officeApp.open(),
         clippy: { message: "Need a hand creating a document or spreadsheet?", animation: "animate" }
       },
+      jsDosApp: {
+        type: "system",
+        title: "JsDos",
+        action: () => this.jsDosApp.open()
+      },
       libreSprite: {
         type: "system",
         title: "LibreSprite",
@@ -300,6 +307,8 @@ export class AppLauncher {
       gba: () => this.openIframeApp({ appId: app, type: "gba", source: info.url, originalName: app }),
       psp: () => this.openIframeApp({ appId: app, type: "psp", source: info.url, originalName: app }),
       nds: () => this.openIframeApp({ appId: app, type: "nds", source: info.url, originalName: app }),
+      megadrive: () => this.openIframeApp({ appId: app, type: "segaMD", source: info.url, originalName: app }),
+      genesis: () => this.openIframeApp({ appId: app, type: "segaMD", source: info.url, originalName: app }),
       game: () => this.openIframeApp({ appId: app, type: "game", source: info.url, originalName: app, analyticsBase }),
       html: () => this.openHtmlApp(app, info.html, info),
       remote: () => this.openRemoteApp(info.url)

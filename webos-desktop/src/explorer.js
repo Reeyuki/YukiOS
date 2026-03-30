@@ -12,7 +12,8 @@ import {
   resolveFileIcon,
   buildFileIconHTML,
   openMediaViewer,
-  openFileWith
+  openFileWith,
+  isExeFile
 } from "./fileDisplay.js";
 import { renderWallpapersPage } from "./wallpapers.js";
 import { showConflictDialog } from "./shared/conflictDialog.js";
@@ -59,6 +60,9 @@ export class ExplorerApp {
   }
   setAppLauncher(appLauncher) {
     this.appLauncher = appLauncher;
+  }
+  setJsDos(jsDosApp) {
+    this.jsDosApp = jsDosApp;
   }
 
   _createInstance(winId, callback, notepadRef, mode) {
@@ -562,22 +566,24 @@ export class ExplorerApp {
     }
   }
 
+  _isBinaryWrite(kind, isBinaryOffice, isBinary) {
+    return kind === FileKind.VIDEO || isBinaryOffice || isBinary;
+  }
+
   async _resolveFilePayload(file, name) {
     const kind = fileKindFromName(name);
     const icon = resolveFileIcon(name);
-
-    if (isOfficeFile(name)) {
-      const ext = name.substring(name.lastIndexOf(".")).toLowerCase();
-      if (BINARY_OFFICE_EXTS.includes(ext)) {
-        return { kind, content: file, icon, isBinaryOffice: true };
-      }
-    }
-
-    const isArchive = ARCHIVE_EXTS.some((ext) => name.toLowerCase().endsWith(ext));
-    const isBinary = isArchive || kind === FileKind.IMAGE || kind === FileKind.AUDIO || kind === FileKind.ROM;
-
+    const isBinaryOffice =
+      isOfficeFile(name) && BINARY_OFFICE_EXTS.includes(name.substring(name.lastIndexOf(".")).toLowerCase());
+    const isBinary =
+      isBinaryOffice ||
+      ARCHIVE_EXTS.some((ext) => name.toLowerCase().endsWith(ext)) ||
+      kind === FileKind.IMAGE ||
+      kind === FileKind.AUDIO ||
+      kind === FileKind.ROM ||
+      isExeFile(name);
     let content;
-    if (kind === FileKind.VIDEO || isBinary) {
+    if (this._isBinaryWrite(kind, isBinaryOffice, isBinary)) {
       content = file;
     } else {
       try {
@@ -586,12 +592,11 @@ export class ExplorerApp {
         content = await readFileAsDataURL(file);
       }
     }
-
-    return { kind, content, icon, isBinaryOffice: false, isBinary };
+    return { kind, content, icon, isBinaryOffice, isBinary };
   }
 
   async _saveFilePayload(targetPath, name, kind, content, icon, isBinaryOffice = false, isBinary = false) {
-    if (kind === FileKind.VIDEO || isBinaryOffice || isBinary) {
+    if (this._isBinaryWrite(kind, isBinaryOffice, isBinary)) {
       await this.fs.writeBinaryFile(targetPath, name, content, kind, icon);
     } else {
       await this.fs.createFile(targetPath, name, content, kind, icon);
@@ -599,7 +604,7 @@ export class ExplorerApp {
   }
 
   async _replaceFilePayload(targetPath, name, kind, content, icon, isBinaryOffice = false, isBinary = false) {
-    if (kind === FileKind.VIDEO || isBinaryOffice || isBinary) {
+    if (this._isBinaryWrite(kind, isBinaryOffice, isBinary)) {
       await this.fs.deleteBinaryFile(targetPath, name).catch(() => {});
       await this.fs.writeBinaryFile(targetPath, name, content, kind, icon);
     } else {
@@ -636,7 +641,8 @@ export class ExplorerApp {
           pathMap.get(key).files.push({ file, fileName });
         }
         flatFiles = [];
-        for (const { path, files: grouped } of pathMap.values()) {
+        const sortedEntries = [...pathMap.values()].sort((a, b) => a.path.length - b.path.length);
+        for (const { path, files: grouped } of sortedEntries) {
           await this.fs.ensureFolder(path);
           for (const { file, fileName } of grouped) {
             flatFiles.push({ file, targetPath: path, name: fileName });
@@ -917,14 +923,15 @@ export class ExplorerApp {
 
     await openFileWith({
       name,
-      path: inst.currentPath,
+      path: [...inst.currentPath],
       fs: this.fs,
       notepadApp: this.notepadApp,
       emulatorApp: this.emulatorApp,
       browserApp: this.browserApp,
       windowManager: this.wm,
       officeApp: this.officeApp,
-      markdownApp: this.markdownApp
+      markdownApp: this.markdownApp,
+      jsDosApp: this.jsDosApp
     });
   }
 

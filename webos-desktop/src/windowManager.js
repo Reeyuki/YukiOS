@@ -427,6 +427,38 @@ export class WindowManager {
       this._showWindowContextMenu(e, win);
     });
 
+    const bringToFrontIfInside = (e) => {
+      if (!win.contains(e.target)) return;
+      if (e.target.tagName === "BUTTON") return;
+      this.bringToFront(win);
+    };
+
+    document.addEventListener("mousedown", bringToFrontIfInside);
+
+    const attachIframeListeners = () => {
+      const iframes = win.querySelectorAll("iframe");
+
+      iframes.forEach((iframe) => {
+        const onLoad = () => {
+          try {
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+
+            iframeDoc.addEventListener("mousedown", () => {
+              this.bringToFront(win);
+            });
+          } catch (e) {}
+        };
+
+        if (iframe.contentDocument?.readyState === "complete") {
+          onLoad();
+        } else {
+          iframe.addEventListener("load", onLoad);
+        }
+      });
+    };
+
+    attachIframeListeners();
+
     header.onmousedown = (e) => {
       if (e.target.tagName === "BUTTON") return;
 
@@ -441,13 +473,13 @@ export class WindowManager {
         win.style.left = `${e.clientX - ox}px`;
         win.style.top = `${e.clientY - oy}px`;
       };
+
       document.onmouseup = () => {
         document.onmousemove = null;
         this.isDraggingWindow = false;
       };
     };
   }
-
   makeResizable(win, setHeightUnsetElement = null) {
     const margin = 10;
 

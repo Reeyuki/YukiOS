@@ -30,16 +30,13 @@ const PYTHON_VERSIONS = [
 ];
 
 export class PythonEditorApp {
-  constructor(fileSystemManager, windowManager) {
+  constructor(fileSystemManager, windowManager, explorerApp) {
     this.fs = fileSystemManager;
     this.wm = windowManager;
+    this.explorerApp = explorerApp;
     this.explorerApp = null;
     this._selectedVersion = null;
     this._workerInitialized = false;
-  }
-
-  setExplorer(explorerApp) {
-    this.explorerApp = explorerApp;
   }
 
   open(title = "Python Editor", content = "", filePath = null) {

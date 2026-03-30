@@ -23,6 +23,7 @@ export default defineConfig({
     legalComments: "none"
   },
   optimizeDeps: {
+    exclude: ["7z-wasm"],
     esbuildOptions: {
       minify: true,
       treeShaking: false

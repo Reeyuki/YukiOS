@@ -227,6 +227,12 @@ export const appMap = {
     icon: "/static/icons/papa.webp",
     title: "Papa's Games"
   },
+  trollface: {
+    type: "game",
+    url: "https://www.trollquests.com",
+    icon: "/static/icons/trollface.webp",
+    title: "Trollface Quest Games"
+  },
   jackSmith: {
     type: "game",
     url: "https://papasgamesfree.io/play/jacksmith",
@@ -457,11 +463,67 @@ export const appMap = {
     icon: "/static/icons/zombotron2.webp",
     title: "Zombotron 2 Time Machine"
   },
+  redBall4: {
+    type: "game",
+    url: "https://playredball4.com/wp-content/uploads/games/redball4",
+    icon: "/static/icons/redball4.webp",
+    title: "Red Ball 4"
+  },
+  fixItFelix: {
+    type: "megadrive",
+    url: "/static/games/emulator/felix.7z",
+    icon: "/static/icons/fixItFelix.webp",
+    title: "Fix It Felix"
+  },
+  bobTheRobber: {
+    type: "swf",
+    swf: "/static/games/swfGames/bob1.swf",
+    icon: "/static/icons/bob.webp",
+    title: "Bob The Robber"
+  },
   bobTheRobber2: {
     type: "game",
     url: "/static/rfiv.html?game=bobTheRobber2",
-    icon: "/static/icons/bob.webp",
+    icon: "/static/icons/bob2.webp",
     title: "Bob The Robber 2"
+  },
+  bobTheRobber3: {
+    type: "game",
+    url: "https://www.minijuegosgratis.com/v3/games/games/prod/217808/bob-the-robber-3/index.api.html?mp_api_as3_url=http%3A%2F%2Fssl.minijuegosgratis.com%2Flechuck%2Fas3%2Flatest.swf&amp;mp_api_as3_url_bck=http%3A%2F%2Fapi.minijuegos.com%2Flechuck%2Fclient-as%2F&amp;mp_api_id=1803&amp;mp_api_js_url=http%3A%2F%2Fssl.minijuegosgratis.com%2Flechuck%2Fjs%2Flatest.js&amp;mp_api_js_url_bck=http%3A%2F%2Fapi.minijuegos.com%2Flechuck%2Fclient-js%2F&amp;mp_assets=http%3A%2F%2Fs2.minijuegosgratis.com%2F&amp;mp_embed=0&amp;mp_game_id=217808&amp;mp_game_uid=bob-the-robber-3&amp;mp_game_url=http%3A%2F%2Fwww.minigiochi.com%2Fembed%2Fbob-the-robber-3&amp;mp_int=1&amp;mp_locale=it_IT&amp;mp_player_type=IFRAME&amp;mp_site_http_url=http%3A%2F%2Fwww.minigiochi.com%2F&amp;mp_site_name=minigiochi.com&amp;mp_site_url=http%3A%2F%2Fwww.minigiochi.com%2F&amp;mp_timezone=Europe%2FRome&amp;mp_view_type=&amp;mini_signature=57cb7805991dbc0ed2f180fbd4e5358a&amp;xdm_e=http%3A%2F%2Fwww.minigiochi.com&amp;xdm_c=default216&amp;xdm_p=1",
+    icon: "/static/icons/bob3.webp",
+    title: "Bob The Robber 3"
+  },
+  bobTheRobber4: {
+    type: "game",
+    url: "https://html5.gamedistribution.com/rvvASMiM/f7f522cafad845d68fcddadbcb581087/index.html",
+    icon: "/static/icons/bob4f.webp",
+    title: "Bob The Robber 4 Part 1: France"
+  },
+
+  bobTheRobber4Russia: {
+    type: "game",
+    url: "https://html5.gamedistribution.com/268e2d230a4c4ee58c52bc9ddff62838/",
+    icon: "/static/icons/bob4rus.webp",
+    title: "Bob The Robber 4 Part 2: Russia"
+  },
+  bobTheRobber4Japan: {
+    type: "game",
+    url: "https://html5.gamedistribution.com/rvvASMiM/8c16e991b9bf4dfab0942772d77483f7/index.html",
+    icon: "/static/icons/bob4j.webp",
+    title: "Bob The Robber 4 Part 3: Japan"
+  },
+
+  bobTheRobber5: {
+    type: "game",
+    url: "https://html5.gamedistribution.com/2b89b70d201b443991360f2ba5622c17/?mp_api_as3_url=http%3A%2F%2Fssl.minijuegosgratis.com%2Flechuck%2Fas3%2Flatest.swf&amp;mp_api_as3_url_bck=http%3A%2F%2Fapi.minijuegos.com%2Flechuck%2Fclient-as%2F&amp;mp_api_id=2589&amp;mp_api_js_url=http%3A%2F%2Fssl.minijuegosgratis.com%2Flechuck%2Fjs%2Flatest.js&amp;mp_api_js_url_bck=http%3A%2F%2Fapi.minijuegos.com%2Flechuck%2Fclient-js%2F&amp;mp_assets=http%3A%2F%2Fs2.minijuegosgratis.com%2F&amp;mp_embed=0&amp;mp_game_id=225826&amp;mp_game_uid=bob-the-robber-5-temple-adventure&amp;mp_game_url=http%3A%2F%2Fwww.minigiochi.com%2Fembed%2Fbob-the-robber-5-temple-adventure&amp;mp_int=1&amp;mp_locale=it_IT&amp;mp_player_type=IFRAME&amp;mp_site_http_url=http%3A%2F%2Fwww.minigiochi.com%2F&amp;mp_site_name=minigiochi.com&amp;mp_site_url=http%3A%2F%2Fwww.minigiochi.com%2F&amp;mp_timezone=Europe%2FRome&amp;mp_view_type=&amp;mini_signature=5ccb073d70ca702d7015014d9afa7f7f&amp;xdm_e=http%3A%2F%2Fwww.minigiochi.com&amp;xdm_c=default8165&amp;xdm_p=1",
+    icon: "/static/icons/bob5.webp",
+    title: "Bob The Robber Part 5: The Temple Adventure"
+  },
+  solarSmash: {
+    type: "game",
+    url: "/static/games/html/solarsmash.html",
+    icon: "/static/icons/solar.webp",
+    title: "Solar Smash"
   },
   swordsSouls: {
     type: "swf",
@@ -609,6 +671,12 @@ export const appMap = {
     icon: "/static/icons/superrobotwar.webp",
     title: "Super Robot War"
   },
+  commandoAssault: {
+    type: "game",
+    url: "/static/flashpointarchive.html?fpGameName=commandoAssault",
+    icon: "/static/icons/commandoAssault.webp",
+    title: "Commando Assault"
+  },
   feedUsPirates: {
     type: "swf",
     swf: "/static/games/swfGames/feeduspirates.swf",
@@ -650,6 +718,12 @@ export const appMap = {
     url: "/static/flashpointarchive.html?fpGameName=obama-alien-defense",
     icon: "/static/icons/obama.webp",
     title: "Obama Alien Defense"
+  },
+  angryGranToss: {
+    type: "game",
+    url: "/static/flashpointarchive.html?fpGameName=angryGranToss",
+    icon: "/static/icons/angrygran.webp",
+    title: "Angry Gran Toss"
   },
   liventcord: {
     type: "game",
@@ -900,6 +974,18 @@ export const appMap = {
     title: "Cluster Rush",
     url: "/static/games/html/clusterRush.html"
   },
+  smashComputer: {
+    type: "swf",
+    icon: "/static/icons/smashcomputer.webp",
+    title: "Smash Your Computer",
+    swf: "/static/games/html/swfGames/smashComputer.swf"
+  },
+  years400: {
+    type: "swf",
+    swf: "https://cache.armorgames.com/files/games/400-years-14662.swf?v=1373587528",
+    icon: "/static/icons/400years.webp",
+    title: "400 Years"
+  },
   emulatorApp: { type: "system", title: "Emulator App", icon: "fa fa-gamepad" },
   nodeApp: { type: "system", title: "NodeJS Code Editor", icon: "fa fa-code" },
   pythonApp: { type: "system", title: "Python Code Editor", icon: "fa fa-code" },
@@ -931,6 +1017,12 @@ export const appMap = {
   yukiConvert: {
     type: "system",
     title: "Yuki Convert",
+    icon: "fas fa-video",
+    url: "/static/apps/yukiconvert/file-converter"
+  },
+  jsdos: {
+    type: "system",
+    title: "Js Dos",
     icon: "fas fa-video",
     url: "/static/apps/yukiconvert/file-converter"
   },
@@ -1030,19 +1122,97 @@ class GameWindowRenderer {
         </div>`;
     }
 
-    container.innerHTML = `<div class="games-search-wrap">
-        <input class="games-search-input" type="text" placeholder="Search games…" autocomplete="off" spellcheck="false" />
-        <span class="games-search-icon"><i class="fas fa-search"></i></span>
+    container.innerHTML = `<div class="games-toolbar" style="display:flex;align-items:center;gap:8px;padding:6px 8px 2px 8px;">
+        <div class="games-source-dropdown" style="position:relative;display:inline-block;">
+          <button class="games-source-btn" style="display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:6px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:inherit;cursor:pointer;font-size:13px;font-weight:500;">
+            <i class="fas fa-database" style="font-size:11px;opacity:0.7;"></i>
+            <span class="games-source-label">YukiOS Games</span>
+            <i class="fas fa-chevron-down" style="font-size:10px;opacity:0.6;margin-left:2px;"></i>
+          </button>
+          <div class="games-source-menu" style="display:none;position:absolute;top:calc(100% + 4px);left:0;min-width:140px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:#1e1e2e;box-shadow:0 8px 24px rgba(0,0,0,0.4);z-index:999;overflow:hidden;">
+            <div class="games-source-item games-source-item--active" data-source="yukios" style="padding:8px 14px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:8px;">
+              <i class="fas fa-check" style="font-size:11px;opacity:0.8;"></i> YukiOS Games
+            </div>
+            <div class="games-source-item" data-source="gnmath" style="padding:8px 14px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:8px;">
+              <i class="fas fa-check" style="font-size:11px;opacity:0;"></i> gnmath
+            </div>
+          </div>
+        </div>
+        <div class="games-search-wrap" style="flex:1;">
+          <input class="games-search-input" type="text" placeholder="Search games…" autocomplete="off" spellcheck="false" />
+          <span class="games-search-icon"><i class="fas fa-search"></i></span>
+        </div>
       </div>
-      <div class="games-app-grid">
-        ${games.map((g) => this.createCard(g)).join("")}
+      <div class="games-source-content games-source-content--yukios">
+        <div class="games-app-grid">
+          ${games.map((g) => this.createCard(g)).join("")}
+        </div>
+        ${flashSection}
+        <div class="games-no-results" style="display:none;">No games found</div>
       </div>
-      ${flashSection}
-      <div class="games-no-results" style="display:none;">No games found</div>`;
+      <div class="games-source-content games-source-content--gnmath" style="display:none;height:100%;padding:0;">
+</div>`;
 
     const noResults = container.querySelector(".games-no-results");
     const searchInput = container.querySelector(".games-search-input");
     const flashHeader = container.querySelector(".games-section-header");
+    const sourceBtn = container.querySelector(".games-source-btn");
+    const sourceMenu = container.querySelector(".games-source-menu");
+    const sourceLabel = container.querySelector(".games-source-label");
+    const sourceItems = container.querySelectorAll(".games-source-item");
+    const yukiosContent = container.querySelector(".games-source-content--yukios");
+    const gnmathContent = container.querySelector(".games-source-content--gnmath");
+
+    sourceBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const isOpen = sourceMenu.style.display !== "none";
+      sourceMenu.style.display = isOpen ? "none" : "block";
+    });
+
+    document.addEventListener("click", () => {
+      sourceMenu.style.display = "none";
+    });
+
+    sourceItems.forEach((item) => {
+      item.addEventListener("mouseenter", () => {
+        item.style.background = "rgba(255,255,255,0.08)";
+      });
+      item.addEventListener("mouseleave", () => {
+        item.style.background = "";
+      });
+      item.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const source = item.dataset.source;
+        sourceItems.forEach((si) => {
+          si.querySelector(".fa-check").style.opacity = "0";
+          si.classList.remove("games-source-item--active");
+        });
+        item.querySelector(".fa-check").style.opacity = "0.8";
+        item.classList.add("games-source-item--active");
+
+        if (source === "yukios") {
+          sourceLabel.textContent = "YukiOS Games";
+          yukiosContent.style.display = "";
+          gnmathContent.style.display = "none";
+          searchInput.style.display = "";
+          container.querySelector(".games-search-icon").style.display = "";
+        } else if (source === "gnmath") {
+          sourceLabel.textContent = "gnmath";
+          yukiosContent.style.display = "none";
+          gnmathContent.style.display = "";
+          searchInput.style.display = "none";
+          container.querySelector(".games-search-icon").style.display = "none";
+          if (!gnmathContent.querySelector("iframe")) {
+            const iframe = document.createElement("iframe");
+            iframe.src = "/static/games/gnmath/index.html";
+            iframe.style.cssText = "width:100%;height:100vh;border:none;display:block;";
+            iframe.allowFullscreen = true;
+            gnmathContent.appendChild(iframe);
+          }
+        }
+        sourceMenu.style.display = "none";
+      });
+    });
 
     const applyAnimations = (cards) => {
       cards.forEach((card, i) => {
