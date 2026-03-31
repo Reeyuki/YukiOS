@@ -1042,8 +1042,7 @@ export const appMap = {
   jsdos: {
     type: "system",
     title: "Js Dos",
-    icon: "fas fa-video",
-    url: "/static/apps/yukiconvert/file-converter"
+    icon: "fas fa-video"
   },
   libreSprite: {
     type: "system",
