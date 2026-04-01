@@ -349,7 +349,6 @@ export class PythonEditorApp {
 
       <div class="python-interpreter">
 
-        <!-- Toolbar -->
         <div class="python-toolbar">
           <button class="editor-btn run-btn" id="runBtn">
             <i class="fas fa-play"></i> Run
@@ -374,12 +373,10 @@ export class PythonEditorApp {
             spellcheck="false"
           />
 
-          <!-- Version badge -->
           <span class="py-active-version-badge" title="Python runtime version">
             <i class="fab fa-python"></i> ${versionLabel}
           </span>
 
-          <!-- Runtime status -->
           <div class="pyodide-progress-wrap" id="progressWrap">
             <div class="pyodide-status-dot pulsing" id="statusDot"></div>
             <div class="pyodide-progress-track">
@@ -389,7 +386,6 @@ export class PythonEditorApp {
           </div>
         </div>
 
-        <!-- Editor + Output split -->
         <div class="python-editor-container">
           <div class="python-editor-section">
             <div class="python-section-header">
@@ -548,6 +544,7 @@ export class PythonEditorApp {
         if (result !== null && result !== undefined) {
           this._appendOutput(outputArea, `→ ${result}`, "result");
         }
+        window.achievements.incrementPowerAction();
 
         if (!outputArea.textContent.trim()) {
           this._appendOutput(outputArea, "(no output)", "info");

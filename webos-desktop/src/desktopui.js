@@ -843,6 +843,7 @@ export class DesktopUI {
   async onDragEnd() {
     if (!this.state.isUserDragging) return;
     this.state.isUserDragging = false;
+    window.achievements.incrementDesktopFile();
 
     if (this.state.explorerDragTarget) {
       const explorerWin = this.state.explorerDragTarget;

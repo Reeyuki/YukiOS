@@ -28,6 +28,7 @@ import { NotificationCenter } from "./notificationCenter.js";
 import { CategoriesApp } from "./categories.js";
 import { MusicPlayerApp } from "./music.js";
 import { JsDosApp } from "./jsdos.js";
+import { AchievementsApp } from "./achievements.js";
 
 function initDownloadButton() {
   return;
@@ -91,9 +92,9 @@ if (!window.electronAPI) {
   initDownloadButton();
 }
 const notificationCenter = new NotificationCenter();
-notificationCenter.initialize();
 const fileSystemManager = new FileSystemManager();
 const windowManager = new WindowManager(notificationCenter);
+const achievementsApp = new AchievementsApp(windowManager);
 const notepadApp = new NotepadApp(fileSystemManager, windowManager, null);
 const markdownApp = new MarkdownApp(windowManager);
 const explorerApp = new ExplorerApp(fileSystemManager, windowManager, notepadApp, markdownApp);
@@ -115,7 +116,6 @@ const newsApp = new NewsApp(windowManager);
 const settingsApp = new SettingsApp(windowManager);
 const taskManagerApp = new TaskManagerApp(windowManager);
 const weatherApp = new WeatherApp(windowManager);
-window.weatherApp = weatherApp;
 const emulatorApp = new EmulatorApp(fileSystemManager, windowManager);
 explorerApp.setEmulator(emulatorApp);
 explorerApp.setBrowser(browserApp);
@@ -147,11 +147,11 @@ const appLauncher = new AppLauncher(
   monacoApp,
   model3dApp,
   categoriesApp,
-  jsDosApp
+  jsDosApp,
+  achievementsApp
 );
 appCreatorApp.setAppLauncher(appLauncher);
 explorerApp.setAppLauncher(appLauncher);
-
 const desktopUI = new DesktopUI(appLauncher, notepadApp, explorerApp, fileSystemManager, emulatorApp);
 explorerApp.setDesktopUI(desktopUI);
 settingsApp.setDesktopUI(desktopUI);

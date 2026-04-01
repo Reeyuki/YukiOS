@@ -1,6 +1,7 @@
 import { desktop } from "./desktop.js";
 import { speak } from "./clippy.js";
-import JSZip from "jszip";
+import JSZip from "https://esm.sh/jszip@3.10.1";
+import { Achievements } from "./achievements.js";
 
 const SAMPLE_MODELS = [
   {
@@ -44,16 +45,24 @@ let SkeletonHelper = null;
 
 async function loadThree() {
   if (THREE) return;
-  [THREE, { GLTFLoader }, { OBJLoader }, { FBXLoader }, { ColladaLoader }, { TDSLoader }, { OrbitControls }] =
-    await Promise.all([
-      import("three"),
-      import("three/examples/jsm/loaders/GLTFLoader.js"),
-      import("three/examples/jsm/loaders/OBJLoader.js"),
-      import("three/examples/jsm/loaders/FBXLoader.js"),
-      import("three/examples/jsm/loaders/ColladaLoader.js"),
-      import("three/examples/jsm/loaders/TDSLoader.js"),
-      import("three/examples/jsm/controls/OrbitControls.js")
-    ]);
+
+  const [threeModule, gltfMod, objMod, fbxMod, daeMod, tdsMod, orbitMod] = await Promise.all([
+    import("https://esm.sh/three@0.160.0"),
+    import("https://esm.sh/three@0.160.0/examples/jsm/loaders/GLTFLoader.js"),
+    import("https://esm.sh/three@0.160.0/examples/jsm/loaders/OBJLoader.js"),
+    import("https://esm.sh/three@0.160.0/examples/jsm/loaders/FBXLoader.js"),
+    import("https://esm.sh/three@0.160.0/examples/jsm/loaders/ColladaLoader.js"),
+    import("https://esm.sh/three@0.160.0/examples/jsm/loaders/TDSLoader.js"),
+    import("https://esm.sh/three@0.160.0/examples/jsm/controls/OrbitControls.js")
+  ]);
+
+  THREE = threeModule;
+  GLTFLoader = gltfMod.GLTFLoader;
+  OBJLoader = objMod.OBJLoader;
+  FBXLoader = fbxMod.FBXLoader;
+  ColladaLoader = daeMod.ColladaLoader;
+  TDSLoader = tdsMod.TDSLoader;
+  OrbitControls = orbitMod.OrbitControls;
   SkeletonHelper = THREE.SkeletonHelper;
 }
 
@@ -1198,6 +1207,7 @@ export class Model3DApp {
         this.updateModelInfo(object);
         this.updateStatus(fileName);
         this.addModelLabel(fileName);
+        window.achievements.trigger(Achievements.ModelViewer);
       }
     } catch (error) {
       console.error("Error loading model:", error);

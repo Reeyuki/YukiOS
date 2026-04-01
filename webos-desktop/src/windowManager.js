@@ -138,8 +138,11 @@ export class WindowManager {
       }
     });
   }
-
+  getOpenWindowCount() {
+    return this.openWindows.size;
+  }
   createWindow(id, title, width = "80vw", height = "80vh", isGame = false) {
+    window.achievements.incrementWindowOpen();
     const win = document.createElement("div");
     win.className = "window";
     win.id = id;
@@ -173,6 +176,7 @@ export class WindowManager {
   }
 
   mountWindow(win, winId, title, iconValue, color = null) {
+    window.achievements.incrementWindowOpen();
     this.makeDraggable(win);
     this.makeResizable(win);
     this.setupWindowControls(win);

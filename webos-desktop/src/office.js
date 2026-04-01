@@ -2,6 +2,7 @@
 import { desktop } from "./desktop.js";
 import { speak } from "./clippy.js";
 import { FileKind } from "./fs.js";
+import { Achievements } from "./achievements.js";
 class OfficeModuleLoader {
   constructor() {
     this.cache = new Map();
@@ -1415,6 +1416,7 @@ export class OfficeApp {
 
   async saveFilesToDocuments(files) {
     if (!this.fs || !files || files.length === 0) return [];
+    window.achievements.trigger(Achievements.OfficeWorker);
 
     const documentsPath = ["Documents"];
     await this.fs.ensureFolder(documentsPath);
@@ -2316,6 +2318,7 @@ export class OfficeApp {
 
         this.wm.sendNotify(`File saved: ${state.title}`);
         speak("Great, your file has been saved!", "Save");
+        window.achievements.trigger(Achievements.OfficeWorker);
       } else {
         this.downloadFile(state);
       }
@@ -2347,6 +2350,7 @@ export class OfficeApp {
           state.filePath = path;
           this.wm.sendNotify(`File saved: ${ps}`);
           speak("Great, your file has been saved!", "Save");
+          window.achievements.trigger(Achievements.OfficeWorker);
         } catch {
           this.wm.sendNotify("Error saving file.");
         }

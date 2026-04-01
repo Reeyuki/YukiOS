@@ -2,8 +2,7 @@ import { desktop } from "./desktop.js";
 import { getWeatherInfo } from "./shared/weatherCodes.js";
 
 const WEATHER_CACHE_TTL = 10 * 60 * 1000;
-const LOCATION_CACHE_TTL = 60 * 60 * 1000;
-
+const LOCATION_CACHE_TTL = 24 * 60 * 60 * 1000;
 function getCached(key, ttl = WEATHER_CACHE_TTL) {
   try {
     const raw = localStorage.getItem(key);

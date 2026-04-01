@@ -110,6 +110,8 @@ class WallpaperManager {
   static async setWallpaper(wallpaperURL) {
     if (!wallpaperURL) return;
 
+    window.achievements.incrementWallpaper();
+
     localStorage.setItem(StorageKeys.manualWallpaper, "true");
     localStorage.setItem(StorageKeys.cycleWallpaper, "false");
 
@@ -239,6 +241,7 @@ let settings;
 let _skipUsernameUpdate = false;
 
 loginBtn.addEventListener("click", () => {
+  window.achievements.incrementSession();
   login.classList.add("fade-out");
   login.classList.remove("active");
   login.addEventListener("transitionend", () => login.remove(), { once: true });
@@ -364,12 +367,21 @@ export class SystemUtilities {
     WallpaperManager.setWallpaper(url);
   }
 }
-
 let isStartedBooting = false;
 
-function startBootSequence() {
+function finalizeBootTransition() {
+  const bootloader = document.getElementById("bootloader");
+  if (bootloader) {
+    bootloader.classList.add("hidden");
+  }
+
+  showLogin();
+}
+
+export function startBootSequence() {
   if (isStartedBooting) return;
   isStartedBooting = true;
+
   const messages = [
     "Starting boot sequence for YukiOS...",
     "Finished running startup functions.",
@@ -385,12 +397,11 @@ function startBootSequence() {
       msgEl.className = "boot-message";
       msgEl.textContent = `[OK] ${msg}`;
       messagesContainer.appendChild(msgEl);
+
       loadingBar.style.width = `${((index + 1) / messages.length) * 100}%`;
+
       if (index === messages.length - 1) {
-        setTimeout(() => {
-          document.getElementById("bootloader").classList.add("hidden");
-          showLogin();
-        }, 500);
+        setTimeout(finalizeBootTransition, 500);
       }
     }, index * 250);
   });
@@ -399,16 +410,16 @@ function startBootSequence() {
 export function skipBootSequence() {
   if (isStartedBooting) return;
   isStartedBooting = true;
-  document.getElementById("bootloader")?.classList.add("hidden");
-  showLogin();
+
+  finalizeBootTransition();
   _skipUsernameUpdate = true;
-  document.getElementById("login-btn").click();
+  document.getElementById("login-btn")?.click();
 }
 
-document.querySelector(".boot-option").addEventListener("click", startBootSequence);
+document.querySelector(".boot-option")?.addEventListener("click", startBootSequence);
+
 document.body.addEventListener("keydown", (e) => {
   if (e.key === "Enter") startBootSequence();
 });
-
 const browser = document.getElementById("browserInfo");
 browser.textContent = getBrowser();

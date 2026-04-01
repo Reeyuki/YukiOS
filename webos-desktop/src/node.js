@@ -67,7 +67,6 @@ export class NodeEditorApp {
 
       <div class="python-interpreter" style="display:flex;flex-direction:column;height:calc(100% - 36px)">
 
-        <!-- Toolbar -->
         <div class="python-toolbar" style="flex-shrink:0">
           <button class="editor-btn run-btn" id="runBtn" disabled>
             <i class="fas fa-play"></i> Run
@@ -89,7 +88,6 @@ export class NodeEditorApp {
           </button>
           <input type="text" id="nodeFilename" class="editor-filename" value="index.js" spellcheck="false" />
 
-          <!-- Runtime status -->
           <div class="pyodide-progress-wrap visible" id="progressWrap">
             <div class="pyodide-status-dot pulsing" id="statusDot"></div>
             <div class="pyodide-progress-track">
@@ -99,10 +97,8 @@ export class NodeEditorApp {
           </div>
         </div>
 
-        <!-- Main body: editor | output | packages -->
         <div style="display:flex;flex:1;min-height:0;overflow:hidden">
 
-          <!-- Editor -->
           <div class="python-editor-section" style="flex:1;min-width:0;display:flex;flex-direction:column">
             <div class="python-section-header">
               <i class="fab fa-js-square"></i> Editor
@@ -117,7 +113,6 @@ export class NodeEditorApp {
             >${escaped}</textarea>
           </div>
 
-          <!-- Output -->
           <div class="python-output-section" style="flex:1;min-width:0;display:flex;flex-direction:column">
             <div class="python-section-header">
               <i class="fas fa-terminal"></i> Output
@@ -127,7 +122,6 @@ export class NodeEditorApp {
             </div>
           </div>
 
-          <!-- Package Manager Panel (hidden by default) -->
           <div id="pkgPanel" style="
             width:0;overflow:hidden;flex-shrink:0;
             display:flex;flex-direction:column;
@@ -139,7 +133,6 @@ export class NodeEditorApp {
               <i class="fas fa-box"></i> Package Manager
             </div>
 
-            <!-- Install row -->
             <div style="display:flex;gap:6px;padding:8px;flex-shrink:0">
               <input
                 id="pkgInput"
@@ -157,14 +150,12 @@ export class NodeEditorApp {
               </button>
             </div>
 
-            <!-- Installed list -->
             <div style="font-size:11px;padding:0 10px 4px;opacity:0.5;flex-shrink:0">Installed packages</div>
             <ul id="pkgList" style="
               flex:1;overflow-y:auto;margin:0;padding:4px 8px;
               list-style:none;font-size:12px;
             "></ul>
 
-            <!-- Info -->
             <div style="font-size:10px;padding:8px;opacity:0.4;line-height:1.5;flex-shrink:0">
               Packages are fetched from esm.sh and cached for this session.
               Use bare specifiers in your code:<br>
@@ -474,6 +465,7 @@ export class NodeEditorApp {
         result.error.dispose();
         hadOutput = true;
       } else {
+        window.achievements.incrementPowerAction();
         const val = vm.dump(result.value);
         result.value.dispose();
         if (val !== undefined && !(typeof val === "object" && Object.keys(val).length === 0)) {

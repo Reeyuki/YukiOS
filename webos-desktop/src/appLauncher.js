@@ -36,7 +36,8 @@ export class AppLauncher {
     monaco,
     model3dApp,
     categoriesApp,
-    jsDosApp
+    jsDosApp,
+    achievementsApp
   ) {
     this.wm = windowManager;
     this.fs = fileSystemManager;
@@ -61,6 +62,7 @@ export class AppLauncher {
     this.model3dApp = model3dApp;
     this.categoriesApp = categoriesApp;
     this.jsDosApp = jsDosApp;
+    this.achievementsApp = achievementsApp;
     this.TRANSPARENCY_ALLOWED_APP_IDS = new Set(["paint", "photopea", "vscode", "liventcord"]);
 
     this.clippyPromise = initClippy();
@@ -203,6 +205,11 @@ export class AppLauncher {
         title: "JsDos",
         action: () => this.jsDosApp.open()
       },
+      achievementsApp: {
+        type: "system",
+        title: "Achievements",
+        action: () => this.achievementsApp.open()
+      },
       libreSprite: {
         type: "system",
         title: "LibreSprite",
@@ -247,6 +254,7 @@ export class AppLauncher {
 
     this.clippyMap["vscode"] = { message: "Ready to write some code!", animation: "Congratulate" };
     this.appMap = { ...appMap, ...localAppMap };
+    this._launchedAppIds = this._loadLaunchedApps();
     populateStartMenu(this);
     initializeAppGrid(this);
 
@@ -285,6 +293,14 @@ export class AppLauncher {
     const info = this.appMap[app];
     if (!info) return console.error(`App ${app} not found.`);
 
+    if (!this._launchedAppIds.has(app)) {
+      this._launchedAppIds.add(app);
+      this._saveLaunchedApps();
+      this.achievementsApp.incrementAppLaunched();
+    }
+    if (info.type !== "system") {
+      this.achievementsApp.incrementGameLaunched();
+    }
     const analyticsBase = getAnalyticsBase(app);
     sendLaunchAnalytics(app);
 
@@ -328,6 +344,20 @@ export class AppLauncher {
       remote: () => this.openRemoteApp(info.url)
     };
     handlers[info.type]?.();
+  }
+
+  _loadLaunchedApps() {
+    try {
+      const saved = localStorage.getItem(StorageKeys.launchedApps);
+      if (saved) return new Set(JSON.parse(saved));
+    } catch (e) {}
+    return new Set();
+  }
+
+  _saveLaunchedApps() {
+    try {
+      localStorage.setItem(StorageKeys.launchedApps, JSON.stringify([...this._launchedAppIds]));
+    } catch (e) {}
   }
 
   openRemoteApp(appUrl) {

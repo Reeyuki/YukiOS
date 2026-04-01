@@ -1,3 +1,4 @@
+import { Achievements } from "./achievements.js";
 import { desktop } from "./desktop.js";
 
 export class TerminalApp {
@@ -18,14 +19,13 @@ export class TerminalApp {
     this.registerDefaultCommands();
   }
 
-  // Convert a path array like ["home", "reeyuki"] to "/home/reeyuki"
   pathToString(path) {
     if (typeof path === "string") return path;
     if (!Array.isArray(path) || path.length === 0) return "/";
     return "/" + path.join("/");
   }
 
-  async print(text, color = null, isCommand = false, promptText = null, delay = 30) {
+  async print(text, color = null, isCommand = false, promptText = null, delay = 10) {
     this.printDepth++;
     if (this.printDepth === 1) {
       this.isPrinting = true;
@@ -209,10 +209,10 @@ export class TerminalApp {
 
     return capturedLines.join("\n");
   }
-
   async executeCommand(commandStr) {
+    window.achievements.triggerCommandExecution();
     await this.enqueuePrint(commandStr, null, true, this.terminalPrompt.textContent);
-
+    window.achievements.trigger(Achievements.DeveloperMode);
     const pipeline = this.parseCommand(commandStr);
     await this.executePipeline(pipeline);
 
@@ -419,8 +419,13 @@ export class TerminalApp {
   async cmdMkdir(args) {
     if (!args.length) return this.print("mkdir: missing operand");
     for (const dir of args) {
-      await this.fs.createFolder(this.currentPath, dir);
-      await this.print(`Created directory: ${dir}`);
+      try {
+        const targetPath = this.fs.resolvePath(dir, this.currentPath);
+        await this.fs.createFolder(targetPath.slice(0, -1), targetPath[targetPath.length - 1]);
+        await this.print(`Created directory: ${dir}`);
+      } catch (e) {
+        await this.print(`mkdir: cannot create directory '${dir}': ${e.message}`);
+      }
     }
   }
 
@@ -557,6 +562,7 @@ export class TerminalApp {
   }
 
   async cmdNeofetch() {
+    window.achievements.trigger(Achievements.DeveloperModeSuper);
     const ua = navigator.userAgent;
     const platformRaw = navigator.userAgentData?.platform || navigator.platform || ua || "Unknown";
 
@@ -611,16 +617,15 @@ export class TerminalApp {
       "",
       "",
       "                     " + this.username + "@" + this.hostname,
-      `        /\\           OWOS     ${osText}`,
-      `       /  \\          KEWNEL   ${engine}wu`,
-      `      /\\   \\         CPUWU    Cwpu Cowes: ${coresText}`,
-      `     / > ω <\\        BROWSEWU  ${browserText}`,
-      `    /   __   \\       GWAPHU    ${gpu}`,
-      `   / __|  |__-\\      WENDAWU   ${renderScore}`,
-      `  /_-''    ''-_\\     MEMOWY    ${ram}`,
-      `                     DoNawtTWACKWU  ${dnt}`,
-      `                     RESOWUW   ${window.innerWidth}x${window.innerHeight}`,
-      `                     UWUPTIME  ${uptime}`
+      `        /\\           OS     ${osText}`,
+      `       /  \\          KERNEL   ${engine}wu`,
+      `      /\\   \\        CPU    Cwpu Cowes: ${coresText}`,
+      `     / > ω <\\        BROWSER  ${browserText}`,
+      `    /   __   \\       GRAPHICS    ${gpu}`,
+      `   / __|  |__-\\      MEMOWY    ${ram}`,
+      `  /_-''    ''-_\\     DO-NOT-TRACK  ${dnt}`,
+      `                      RESOLUTION   ${window.innerWidth}x${window.innerHeight}`,
+      `                      UPTIME  ${uptime}`
     ];
 
     for (const line of lines) {

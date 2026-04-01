@@ -6,9 +6,6 @@ export class NotificationCenter {
     this.isOpen = false;
     this.maxNotifications = 50;
     this.notificationId = 0;
-  }
-
-  initialize() {
     this.createNotificationCenterUI();
     this.setupTaskbarButton();
   }

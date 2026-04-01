@@ -1039,10 +1039,10 @@ export const appMap = {
     icon: "fas fa-video",
     url: "/static/apps/yukiconvert/file-converter"
   },
-  jsdos: {
+  jsDosApp: {
     type: "system",
-    title: "Js Dos",
-    icon: "fas fa-video"
+    title: "JsDos",
+    icon: "/static/icons/jsdos.webp"
   },
   libreSprite: {
     type: "system",

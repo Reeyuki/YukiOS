@@ -30,6 +30,7 @@ import {
   isWindowFocused,
   splitWebkitPath
 } from "./utils.js";
+import { Achievements } from "./achievements.js";
 
 const BINARY_OFFICE_EXTS = [".pdf", ".docx", ".xlsx", ".xls", ".pptx", ".ppt"];
 const ARCHIVE_EXTS = [".zip", ".gz", ".tgz", ".tar", ".rar", ".7z", ".bz2", ".xz"];
@@ -597,6 +598,7 @@ export class ExplorerApp {
   }
 
   async _saveFilePayload(targetPath, name, kind, content, icon, isBinaryOffice = false, isBinary = false) {
+    window.achievements.incrementFileUploaded();
     if (this._isBinaryWrite(kind, isBinaryOffice, isBinary)) {
       await this.fs.writeBinaryFile(targetPath, name, content, kind, icon);
     } else {
@@ -733,6 +735,8 @@ export class ExplorerApp {
   }
 
   async saveToWallpapers(name, content, kind, icon) {
+    window.achievements.trigger(Achievements.PersonalSpace);
+
     const wallpapersPath = ["Pictures", "Wallpapers"];
     await this.fs.ensureFolder(wallpapersPath);
     const safeIcon = kind === FileKind.IMAGE ? "@content" : icon || "/static/icons/file.webp";
@@ -1220,7 +1224,10 @@ export class ExplorerApp {
         menu.appendChild(hr());
         menu.appendChild(
           item("📦 Extract Here", () =>
-            this._archiveExtractor.extract(itemName, inst.currentPath, () => this.renderInstance(inst))
+            this._archiveExtractor.extract(itemName, inst.currentPath, () => {
+              window.achievements.trigger(Achievements.ArchiveHandler);
+              this.renderInstance(inst);
+            })
           )
         );
       }

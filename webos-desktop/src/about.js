@@ -54,7 +54,7 @@ export class AboutApp {
                 [
                   "fa-gamepad",
                   "Integrated Game Platform",
-                  "Access 130 curated games and web-based emulators in one place."
+                  "Access 170 curated games and web-based emulators in one place."
                 ],
                 [
                   "fa-cube",

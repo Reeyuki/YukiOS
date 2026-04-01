@@ -1,5 +1,6 @@
 import { desktop } from "./desktop.js";
 import { skipBootSequence, SystemUtilities } from "./system.js";
+
 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
 const shouldDisableClippy = isMobile || isLocalhost;
@@ -19,7 +20,9 @@ export const StorageKeys = {
   clippy: "yukiOS_clippy",
   calendarEvents: "yukiOS_calendar_events",
   aboutLaunchKey: "yukiOS_about_seen",
-  newsSeenKey: "yukiOS_news_seen"
+  newsSeenKey: "yukiOS_news_seen",
+  achievementKeys: "yukiOS_achievements",
+  achievementCounters: "yukiOS_achievement_counters"
 };
 
 export class SettingsApp {
@@ -33,7 +36,6 @@ export class SettingsApp {
         weather: localStorage.getItem(StorageKeys.weather) !== "false",
         cycleWallpaper: localStorage.getItem(StorageKeys.cycleWallpaper) !== "false",
         macOsControls: localStorage.getItem(StorageKeys.macOsControls) === "true",
-        // Check if a saved preference exists; if not, apply the "disable" rule
         clippy:
           localStorage.getItem(StorageKeys.clippy) !== null
             ? localStorage.getItem(StorageKeys.clippy) !== "false"
@@ -43,7 +45,6 @@ export class SettingsApp {
       window._settings = this._settings;
 
       const lastBoot = parseInt(localStorage.getItem(StorageKeys.lastBoot) ?? "0", 10);
-
       const recentlyBooted = Date.now() - lastBoot < 30 * 60 * 1000;
 
       if (!this._settings.bootAnimation || recentlyBooted) {
@@ -64,7 +65,7 @@ export class SettingsApp {
       return;
     }
 
-    const win = this.wm.createWindow(winId, "Settings", "500px", "460px");
+    const win = this.wm.createWindow(winId, "Settings", "500px", "520px");
     Object.assign(win.style, { left: "200px", top: "100px" });
     win.innerHTML = this._buildHTML();
 
@@ -81,6 +82,7 @@ export class SettingsApp {
   setDesktopUI(desktopUi) {
     this.desktopUI = desktopUi;
   }
+
   setAppLauncher(appLauncher) {
     this._appLauncher = appLauncher;
   }
@@ -92,7 +94,6 @@ export class SettingsApp {
       <div class="window-header">
         <span>Settings</span>
         ${this.wm.getWindowControls()}
-
       </div>
 
       <div class="stt-shell">
@@ -101,8 +102,11 @@ export class SettingsApp {
           <button class="editor-btn" id="settingsResetBtn">
             <i class="fas fa-undo"></i> Reset
           </button>
-          <button class="editor-btn stt-danger-btn" id="settingsDataResetBtn">
-            <i class="fas fa-trash"></i> Reset OS Settings
+          <button class="editor-btn stt-warning-btn" id="settingsResetTogglesBtn">
+            <i class="fas fa-sliders-h"></i> Reset Settings
+          </button>
+          <button class="editor-btn stt-danger-btn" id="settingsDeleteAllBtn">
+            <i class="fas fa-trash"></i> Delete All Data
           </button>
           <span id="settingsStatus" class="stt-saved-badge">Saved</span>
         </div>
@@ -213,7 +217,8 @@ export class SettingsApp {
     const macControlsToggle = win.querySelector("#settingsMacControls");
     const clippyToggle = win.querySelector("#settingsClippy");
     const resetBtn = win.querySelector("#settingsResetBtn");
-    const dataResetBtn = win.querySelector("#settingsDataResetBtn");
+    const resetTogglesBtn = win.querySelector("#settingsResetTogglesBtn");
+    const deleteAllBtn = win.querySelector("#settingsDeleteAllBtn");
     const status = win.querySelector("#settingsStatus");
 
     usernameInput.value = this._settings.username;
@@ -261,18 +266,32 @@ export class SettingsApp {
     };
 
     const reset = () => {
-      usernameInput.value = "";
+      usernameInput.value = this._settings.username;
+      bootAnimToggle.checked = this._settings.bootAnimation;
+      weatherToggle.checked = this._settings.weather;
+      cycleWallpaperToggle.checked = this._settings.cycleWallpaper;
+      macControlsToggle.checked = this._settings.macOsControls;
+      clippyToggle.checked = this._settings.clippy;
+      showStatus("Reset to saved values");
+    };
+
+    const resetToggles = () => {
+      const confirmed = confirm("This will reset all toggle settings to their default values. Continue?");
+      if (!confirmed) return;
+
       bootAnimToggle.checked = true;
       weatherToggle.checked = true;
       cycleWallpaperToggle.checked = true;
       macControlsToggle.checked = false;
       clippyToggle.checked = !(isMobile || isLocalhost);
+
       save();
-      showStatus("Settings reset.");
+      showStatus("Toggles reset to defaults");
     };
 
     resetBtn.addEventListener("click", reset);
-    dataResetBtn.addEventListener("click", this.resetAllData);
+    resetTogglesBtn.addEventListener("click", resetToggles);
+    deleteAllBtn.addEventListener("click", this.deleteAllData);
 
     usernameInput.addEventListener("keydown", (e) => {
       if (e.key === "Enter") save();
@@ -285,8 +304,134 @@ export class SettingsApp {
     clippyToggle.addEventListener("change", save);
   }
 
-  resetAllData = () => {
-    const confirmed = confirm("This will erase all OS settings and reload. Continue?");
+  deleteAllData = async () => {
+    const confirmed = confirm(
+      "⚠️ WARNING: Delete All Data\n\n" +
+        "This will permanently delete:\n" +
+        "• All game progresses,saved files, settings, and preferences\n\n" +
+        "This action CANNOT be undone!\n\n" +
+        "Are you sure you want to continue?"
+    );
+    if (!confirmed) return;
+
+    try {
+      const localStorageKeys = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key) localStorageKeys.push(key);
+      }
+
+      localStorageKeys.forEach((key) => {
+        try {
+          localStorage.removeItem(key);
+        } catch (e) {
+          console.warn(`Failed to remove localStorage key: ${key}`, e);
+        }
+      });
+
+      const sessionStorageKeys = [];
+      for (let i = 0; i < sessionStorage.length; i++) {
+        const key = sessionStorage.key(i);
+        if (key) sessionStorageKeys.push(key);
+      }
+
+      sessionStorageKeys.forEach((key) => {
+        try {
+          sessionStorage.removeItem(key);
+        } catch (e) {
+          console.warn(`Failed to remove sessionStorage key: ${key}`, e);
+        }
+      });
+
+      await this._deleteAllIndexedDBDatabases();
+
+      if ("caches" in window) {
+        try {
+          const cacheNames = await caches.keys();
+          await Promise.all(cacheNames.map((name) => caches.delete(name)));
+        } catch (e) {
+          console.warn("Failed to clear caches:", e);
+        }
+      }
+
+      location.reload();
+    } catch (error) {
+      console.error("Error deleting all data:", error);
+      alert("An error occurred while deleting data. Some data may remain. The page will now reload.");
+      location.reload();
+    }
+  };
+
+  _deleteAllIndexedDBDatabases = async () => {
+    if (typeof indexedDB.databases === "function") {
+      try {
+        const databases = await indexedDB.databases();
+        const deletePromises = databases.map((dbInfo) => {
+          return new Promise((resolve) => {
+            if (!dbInfo.name) {
+              resolve();
+              return;
+            }
+            const request = indexedDB.deleteDatabase(dbInfo.name);
+            request.onsuccess = () => {
+              console.log(`Deleted IndexedDB: ${dbInfo.name}`);
+              resolve();
+            };
+            request.onerror = (e) => {
+              console.warn(`Failed to delete IndexedDB: ${dbInfo.name}`, e);
+              resolve();
+            };
+            request.onblocked = () => {
+              console.warn(`IndexedDB deletion blocked: ${dbInfo.name}`);
+              resolve();
+            };
+          });
+        });
+        await Promise.all(deletePromises);
+        return;
+      } catch (e) {
+        console.warn("indexedDB.databases() failed, falling back to known names:", e);
+      }
+    }
+
+    const knownDatabaseNames = this._generateDatabaseNameVariations();
+
+    const deletePromises = knownDatabaseNames.map((dbName) => {
+      return new Promise((resolve) => {
+        try {
+          const request = indexedDB.deleteDatabase(dbName);
+          request.onsuccess = () => {
+            console.log(`Deleted IndexedDB: ${dbName}`);
+            resolve();
+          };
+          request.onerror = () => resolve();
+          request.onblocked = () => resolve();
+        } catch (e) {
+          resolve();
+        }
+      });
+    });
+
+    await Promise.all(deletePromises);
+  };
+  _generateDatabaseNameVariations = () => {
+    const prefixes = ["yuki", "yukiOS", "app", "data", "cache", "store"];
+    const suffixes = ["db", "DB", "database", "Database", "store", "Store", "cache", "Cache", "data", "Data"];
+    const variations = [];
+
+    prefixes.forEach((prefix) => {
+      suffixes.forEach((suffix) => {
+        variations.push(`${prefix}-${suffix}`);
+        variations.push(`${prefix}_${suffix}`);
+        variations.push(`${prefix}${suffix}`);
+      });
+    });
+
+    return variations;
+  };
+
+  resetModuleData = () => {
+    const confirmed = confirm("This will reset OS settings defined by the module and reload. Continue?");
     if (!confirmed) return;
 
     Object.values(StorageKeys).forEach((key) => localStorage.removeItem(key));

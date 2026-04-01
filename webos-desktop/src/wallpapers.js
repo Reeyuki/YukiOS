@@ -2,17 +2,31 @@ import { FileKind } from "./fs.js";
 import { SystemUtilities } from "./system.js";
 import { videos } from "./wallpaperList.js";
 
-function toBlobUrl(src) {
-  if (!src || !src.startsWith("data:")) return src;
-  const [header, base64] = src.split(",");
-  const mime = header.match(/data:(.*?);/)?.[1] ?? "application/octet-stream";
-  const binary = atob(base64);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-  return URL.createObjectURL(new Blob([bytes], { type: mime }));
+function toBlobUrl(content) {
+  if (!content) return null;
+
+  if (content instanceof Blob) {
+    return URL.createObjectURL(content);
+  }
+  if (typeof content === "string") {
+    if (content.startsWith("http") || content.startsWith("/") || content.startsWith("blob:")) {
+      return content;
+    }
+    if (content.startsWith("data:")) {
+      const [header, base64] = content.split(",");
+      const mime = header.match(/data:(.*?);/)?.[1] ?? "application/octet-stream";
+      const binary = atob(base64);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+      return URL.createObjectURL(new Blob([bytes], { type: mime }));
+    }
+  }
+
+  return null;
 }
 
 function getThumbnailUrl(src) {
+  if (typeof src !== "string") return null;
   const match = src.match(/\/media\/(\d+)\/(.*?)(?:\.\d+x\d+)?\.mp4$/);
   if (match) return `https://motionbgs.com/i/c/364x205/media/${match[1]}/${match[2]}.jpg`;
   return null;
@@ -48,6 +62,7 @@ export async function renderWallpapersPage(explorerInstance, view) {
 
   header.querySelector("#wp-try-random").onclick = () => showRandomPreview(explorerInstance, previewZone, grid, fs, wm);
 }
+
 async function refreshWallpaperGrid(fs, grid, wm, previewZone) {
   grid.innerHTML = "";
 
@@ -56,8 +71,6 @@ async function refreshWallpaperGrid(fs, grid, wm, previewZone) {
   for (const [name, data] of Object.entries(folder)) {
     if (data?.type !== "file") continue;
     const isVideo = data.kind === FileKind.VIDEO;
-    const src = data.content;
-    const thumbUrl = isVideo ? getThumbnailUrl(src) : null;
 
     const card = document.createElement("div");
     card.className = "wp-card";
@@ -67,6 +80,10 @@ async function refreshWallpaperGrid(fs, grid, wm, previewZone) {
     thumbEl.className = "wp-thumb" + (isVideo ? " wp-thumb-video" : "");
 
     if (isVideo) {
+      const content = await fs.getFileContent(["Pictures", "Wallpapers"], name);
+      const contentStr = content instanceof Blob ? null : content;
+      const thumbUrl = getThumbnailUrl(contentStr);
+
       if (thumbUrl) {
         const img = document.createElement("img");
         img.className = "wp-thumb-img";
@@ -79,7 +96,18 @@ async function refreshWallpaperGrid(fs, grid, wm, previewZone) {
       badge.textContent = "▶";
       thumbEl.appendChild(badge);
     } else {
-      thumbEl.style.backgroundImage = `url('${data.icon || data.content}')`;
+      let thumbSrc = null;
+
+      if (data.icon === "@content") {
+        const content = await fs.getFileContent(["Pictures", "Wallpapers"], name);
+        thumbSrc = toBlobUrl(content);
+      } else if (data.icon) {
+        thumbSrc = data.icon;
+      }
+
+      if (thumbSrc) {
+        thumbEl.style.backgroundImage = `url('${thumbSrc}')`;
+      }
     }
 
     const nameEl = document.createElement("div");
@@ -95,8 +123,11 @@ async function refreshWallpaperGrid(fs, grid, wm, previewZone) {
     setBtn.onclick = async (e) => {
       e.stopPropagation();
       const content = await fs.getFileContent(["Pictures", "Wallpapers"], name);
-      await SystemUtilities.setWallpaper(toBlobUrl(content));
-      wm.sendNotify(`Wallpaper set to "${name}"`);
+      const url = toBlobUrl(content);
+      if (url) {
+        await SystemUtilities.setWallpaper(url);
+        wm.sendNotify(`Wallpaper set to "${name}"`);
+      }
     };
 
     actions.appendChild(setBtn);
@@ -108,7 +139,10 @@ async function refreshWallpaperGrid(fs, grid, wm, previewZone) {
     card.addEventListener("click", async (e) => {
       if (e.target === setBtn) return;
       const content = await fs.getFileContent(["Pictures", "Wallpapers"], name);
-      showCardPreview(name, toBlobUrl(content), isVideo, previewZone, fs, wm);
+      const url = toBlobUrl(content);
+      if (url) {
+        showCardPreview(name, url, isVideo, previewZone, fs, wm);
+      }
     });
 
     grid.appendChild(card);
@@ -150,8 +184,11 @@ function showCardPreview(name, src, isVideo, previewZone, fs, wm) {
 
   overlay.querySelector(".wp-save-btn").onclick = async () => {
     const content = await fs.getFileContent(["Pictures", "Wallpapers"], name);
-    SystemUtilities.setWallpaper(content);
-    wm.sendNotify(`Wallpaper set to "${name}"`);
+    const url = toBlobUrl(content);
+    if (url) {
+      await SystemUtilities.setWallpaper(url);
+      wm.sendNotify(`Wallpaper set to "${name}"`);
+    }
     previewZone.classList.remove("wp-preview-active");
     previewZone.innerHTML = "";
   };

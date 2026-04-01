@@ -13,6 +13,9 @@ importers:
       browserfs:
         specifier: ^1.4.3
         version: 1.4.3
+      canvas-confetti:
+        specifier: ^1.9.4
+        version: 1.9.4
       fflate:
         specifier: ^0.8.2
         version: 0.8.2
@@ -780,6 +783,10 @@ packages:
     resolution:
       { integrity: sha512-P8BjAsXvZS+VIDUI11hHCQEv74YT67YUi5JJFNWIqL235sBmjX4+qx9Muvls5ivyNENctx46xQLQ3aTuE7ssaQ== }
     engines: { node: ">=6" }
+
+  canvas-confetti@1.9.4:
+    resolution:
+      { integrity: sha512-yxQbJkAVrFXWNbTUjPqjF7G+g6pDotOUHGbkZq2NELZUMDpiJ85rIEazVb8GTaAptNW2miJAXbs1BtioA251Pw== }
 
   chalk@4.1.2:
     resolution:
@@ -2407,6 +2414,8 @@ snapshots:
       get-intrinsic: 1.3.0
 
   callsites@3.1.0: {}
+
+  canvas-confetti@1.9.4: {}
 
   chalk@4.1.2:
     dependencies:

@@ -2,7 +2,10 @@ import { StorageKeys } from "./settings.js";
 
 let _calendarPopup = null;
 let _currentCalendarMonth = new Date();
-let _calendarEvents = JSON.parse(localStorage.getItem(StorageKeys.calendarEvents) || "{}");
+let _calendarEvents;
+setTimeout(() => {
+  _calendarEvents = JSON.parse(localStorage.getItem(StorageKeys.calendarEvents) || "{}");
+}, 0);
 let _calendarTimeInterval = null;
 
 function saveCalendarEvents() {
