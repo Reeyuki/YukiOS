@@ -522,7 +522,7 @@ input {
 #system-tray {
   display: flex;
   align-items: center;
-  gap: 1.1em;
+  gap: 0.5em;
   padding: 0 1.1em;
   height: 100%;
   flex-shrink: 0;
@@ -6849,4 +6849,231 @@ select:focus {
   color: #ff6b6b;
   font-size: 14px;
   font-family: monospace;
+}
+
+/* Workspaces */
+#workspace-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 6px;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  margin-right: 4px;
+  flex-shrink: 0;
+}
+
+.workspace-sep {
+  width: 1px;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.15);
+  margin: 0 2px;
+  flex-shrink: 0;
+}
+
+.workspace-btn {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.6);
+  border-radius: 5px;
+  padding: 2px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    color 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  user-select: none;
+}
+
+.workspace-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+}
+
+.workspace-btn.active {
+  background: rgba(100, 120, 220, 0.35);
+  border-color: rgba(100, 120, 220, 0.6);
+  color: #fff;
+}
+
+.workspace-overview-btn {
+  padding: 3px 7px;
+}
+
+.workspace-btn.workspace-add {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.08);
+  padding: 2px 8px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.workspace-btn.workspace-add:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.workspace-close {
+  font-size: 13px;
+  line-height: 1;
+  opacity: 0.5;
+  margin-left: 2px;
+  border-radius: 3px;
+  padding: 0 2px;
+}
+
+.workspace-close:hover {
+  opacity: 1;
+  background: rgba(232, 17, 35, 0.7);
+}
+
+#workspace-overview {
+  position: fixed;
+  inset: 0;
+  bottom: 40px;
+  background: rgba(10, 10, 18, 0.92);
+  backdrop-filter: blur(20px);
+  z-index: 1000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 32px 24px 24px;
+  flex-wrap: wrap;
+  animation: ov-fadein 0.18s ease;
+}
+
+@keyframes ov-fadein {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.ov-panel {
+  position: relative;
+  border-radius: 10px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+  flex-shrink: 0;
+}
+
+.ov-panel:hover {
+  border-color: rgba(100, 120, 220, 0.5);
+  box-shadow:
+    0 0 0 1px rgba(100, 120, 220, 0.3),
+    0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.ov-panel.ov-active {
+  border-color: rgba(100, 120, 220, 0.8);
+  box-shadow:
+    0 0 0 2px rgba(100, 120, 220, 0.4),
+    0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.ov-panel.ov-drop-target {
+  border-color: rgba(80, 200, 120, 0.9);
+  box-shadow:
+    0 0 0 2px rgba(80, 200, 120, 0.4),
+    0 8px 32px rgba(0, 0, 0, 0.5);
+  background: rgba(80, 200, 120, 0.07);
+}
+
+.ov-label {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+  padding: 4px 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 10;
+  pointer-events: none;
+  letter-spacing: 0.03em;
+}
+
+.ov-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+
+.ov-window {
+  position: absolute;
+  background: rgba(30, 32, 48, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  cursor: grab;
+  pointer-events: all;
+  transition:
+    box-shadow 0.12s,
+    opacity 0.12s;
+}
+
+.ov-window:hover {
+  box-shadow: 0 4px 24px rgba(100, 120, 220, 0.4);
+  border-color: rgba(100, 120, 220, 0.5);
+}
+
+.ov-window.ov-dragging {
+  opacity: 0.5;
+  cursor: grabbing;
+}
+
+.ov-window-header {
+  background: rgba(255, 255, 255, 0.07);
+  padding: 6px 10px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.8);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  pointer-events: none;
+}
+
+.ov-window-body {
+  background: rgba(20, 22, 34, 0.8);
+  flex: 1;
+  min-height: 40px;
+  height: calc(100% - 33px);
+  pointer-events: none;
+}
+
+.ov-add-ws {
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px dashed rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 13px;
+  padding: 16px 24px;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    color 0.15s,
+    border-color 0.15s;
+  align-self: center;
+}
+
+.ov-add-ws:hover {
+  background: rgba(100, 120, 220, 0.15);
+  border-color: rgba(100, 120, 220, 0.5);
+  color: #fff;
 }
