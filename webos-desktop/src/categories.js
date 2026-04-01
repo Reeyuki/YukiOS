@@ -42,27 +42,34 @@ export class CategoriesApp {
       wm.bringToFront(existing);
       return;
     }
+
     const win = wm.createWindow(winId, "Games");
     win.classList.add("window-root");
     win.style.width = "860px";
     win.style.height = "560px";
     win.style.left = "80px";
     win.style.top = "40px";
+    win.style.display = "flex";
+    win.style.flexDirection = "column";
+
     const gamesRenderer = new GamesAppRenderer();
     const gamesCount = gamesRenderer.getGames().length;
+
     win.innerHTML = `
-      <div class="window-header">
-        <span>Games <span class="games-app-count">${gamesCount}</span></span>
-        ${wm.getWindowControls()}
-      </div>
-      <div class="window-content games-app-window" style="width:100%;height:100%;overflow:auto;padding:18px;box-sizing:border-box;">
-        <div id="games-app-container"></div>
-      </div>`;
+    <div class="window-header">
+      <span>Games <span class="games-app-count">${gamesCount + 2588}</span></span>
+      ${wm.getWindowControls()}
+    </div>
+    <div class="window-content games-app-window" style="flex:1;overflow:auto;padding:18px;box-sizing:border-box;">
+      <div id="games-app-container" style="height:100%;"></div>
+    </div>`;
+
     desktop.appendChild(win);
     wm.makeDraggable(win);
     wm.makeResizable(win);
     wm.setupWindowControls(win);
     wm.addToTaskbar(winId, "Games", "fas fa-gamepad");
+
     const container = win.querySelector("#games-app-container");
     gamesRenderer.render(container, (appId) => {
       if (appLauncher) appLauncher.launch(appId);

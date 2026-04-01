@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Game Portal</title>
+    <style>
+      :root {
+        --bg: #121212;
+        --card-bg: #1e1e1e;
+        --text: #ffffff;
+        --accent: #00cf5d;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: var(--bg);
+        color: var(--text);
+        margin: 0;
+        padding: 20px;
+      }
+
+      #search-bar {
+        max-width: 400px;
+        margin: 0 auto 20px auto;
+        display: block;
+        width: 100%;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #333;
+        background: #1e1e1e;
+        color: white;
+        outline: none;
+      }
+
+      #game-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .game-card {
+        background: var(--card-bg);
+        border-radius: 12px;
+        overflow: hidden;
+        transition: transform 0.2s;
+        cursor: pointer;
+        border: 1px solid #333;
+      }
+
+      .game-card:hover {
+        transform: translateY(-5px);
+        border-color: var(--accent);
+      }
+
+      .game-card img {
+        width: 100%;
+        aspect-ratio: 16/9;
+        object-fit: cover;
+        display: block;
+      }
+
+      .game-info {
+        padding: 12px;
+        text-align: center;
+        font-weight: bold;
+      }
+
+      #game-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.95);
+        z-index: 1000;
+      }
+
+      #game-overlay iframe {
+        width: 100%;
+        height: calc(100% - 60px);
+        border: none;
+      }
+
+      .controls {
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 20px;
+        background: #000;
+      }
+
+      .close-btn {
+        background: var(--accent);
+        color: black;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+
+      #sentinel {
+        height: 50px;
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1 id="game-count" style="text-align: center; margin-bottom: 20px">Loading games...</h1>
+    <input id="search-bar" type="text" placeholder="Search games..." />
+    <div id="game-container"></div>
+    <div id="sentinel"></div>
+
+    <div id="game-overlay">
+      <div class="controls">
+        <span id="current-game-title"></span>
+        <button class="close-btn" onclick="closeGame()">CLOSE GAME</button>
+      </div>
+      <iframe id="game-iframe" src=""></iframe>
+    </div>
+
+    <script>
+      let allGames = [];
+      let filteredGames = [];
+      let currentIndex = 0;
+      const CHUNK_SIZE = 12;
+
+      const container = document.getElementById("game-container");
+      const overlay = document.getElementById("game-overlay");
+      const iframe = document.getElementById("game-iframe");
+      const titleText = document.getElementById("current-game-title");
+      const searchInput = document.getElementById("search-bar");
+      function resolveUrl(url) {
+        if (/^https?:\/\//i.test(url) || /^\/\//.test(url)) {
+          return url;
+        }
+        const base = "/static/games/archive";
+        if (url.startsWith("/")) {
+          return base + url;
+        }
+        return base + "/" + url;
+      }
+      function formatName(name, url) {
+        if (!isNaN(name) && name.trim() !== "") {
+          try {
+            const parts = url.split("/");
+            let fallback = parts[parts.length - 2] || name;
+            return fallback
+              .split(/[-_ ]+/)
+              .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+              .join(" ");
+          } catch (e) {
+            return name;
+          }
+        }
+        return name;
+      }
+
+      async function init() {
+        try {
+          const response = await fetch("/static/games/archive/games.json");
+          const data = await response.json();
+          allGames = data.games;
+          filteredGames = allGames;
+
+          updateCount();
+
+          loadMore();
+          setupObserver();
+        } catch (err) {
+          console.error("Failed to load games:", err);
+          document.getElementById("game-count").innerText = "Error loading games";
+        }
+      }
+
+      function updateCount() {
+        const countElement = document.getElementById("game-count");
+        countElement.innerText = `${filteredGames.length} Games Available`;
+      }
+
+      function loadMore() {
+        const nextBatch = filteredGames.slice(currentIndex, currentIndex + CHUNK_SIZE);
+
+        nextBatch.forEach((game) => {
+          const resolvedUrl = resolveUrl(game.url);
+          const resolvedThumbnail = resolveUrl(game.thumbnail);
+          const displayName = formatName(game.name, resolvedUrl);
+
+          const card = document.createElement("div");
+          card.className = "game-card";
+          card.onclick = () => openGame(resolvedUrl, displayName);
+
+          card.innerHTML = `
+                    <img src="${resolvedThumbnail}" loading="lazy" alt="${displayName}">
+                    <div class="game-info">${displayName}</div>
+                `;
+
+          container.appendChild(card);
+        });
+
+        currentIndex += CHUNK_SIZE;
+      }
+
+      function resetAndLoad() {
+        container.innerHTML = "";
+        currentIndex = 0;
+        loadMore();
+      }
+
+      function setupObserver() {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            if (entries[0].isIntersecting && currentIndex < filteredGames.length) {
+              loadMore();
+            }
+          },
+          { threshold: 0.1 }
+        );
+
+        observer.observe(document.getElementById("sentinel"));
+      }
+
+      function openGame(url, name) {
+        titleText.innerText = name;
+        iframe.src = url;
+        overlay.style.display = "block";
+        document.body.style.overflow = "hidden";
+      }
+
+      function closeGame() {
+        overlay.style.display = "none";
+        iframe.src = "";
+        document.body.style.overflow = "auto";
+      }
+
+      searchInput.addEventListener("input", function () {
+        const query = this.value.toLowerCase().trim();
+
+        filteredGames = allGames.filter((game) => {
+          const name = formatName(game.name, game.url).toLowerCase();
+          return name.includes(query);
+        });
+
+        updateCount();
+        resetAndLoad();
+      });
+
+      init();
+    </script>
+  </body>
+</html>

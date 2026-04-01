@@ -1154,6 +1154,9 @@ class GameWindowRenderer {
             <div class="games-source-item" data-source="gnmath" style="padding:8px 14px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:8px;">
               <i class="fas fa-check" style="font-size:11px;opacity:0;"></i> gnmath
             </div>
+            <div class="games-source-item" data-source="allgames" style="padding:8px 14px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:8px;">
+              <i class="fas fa-check" style="font-size:11px;opacity:0;"></i> allgames
+            </div>
           </div>
         </div>
         <div class="games-search-wrap" style="flex:1;">
@@ -1168,7 +1171,8 @@ class GameWindowRenderer {
         ${flashSection}
         <div class="games-no-results" style="display:none;">No games found</div>
       </div>
-      <div class="games-source-content games-source-content--gnmath" style="display:none;height:100%;padding:0;">
+      <div class="games-source-content games-source-content--gnmath" style="display:none;height:100%;padding:0;"></div>
+      <div class="games-source-content games-source-content--allgames" style="display:none;height:100%;padding:0;"></div>
 </div>`;
 
     const noResults = container.querySelector(".games-no-results");
@@ -1180,6 +1184,7 @@ class GameWindowRenderer {
     const sourceItems = container.querySelectorAll(".games-source-item");
     const yukiosContent = container.querySelector(".games-source-content--yukios");
     const gnmathContent = container.querySelector(".games-source-content--gnmath");
+    const allGamesContent = container.querySelector(".games-source-content--allgames");
 
     sourceBtn.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -1212,11 +1217,13 @@ class GameWindowRenderer {
           sourceLabel.textContent = "YukiOS Games";
           yukiosContent.style.display = "";
           gnmathContent.style.display = "none";
+          allGamesContent.style.display = "none";
           searchInput.style.display = "";
           container.querySelector(".games-search-icon").style.display = "";
         } else if (source === "gnmath") {
           sourceLabel.textContent = "gnmath";
           yukiosContent.style.display = "none";
+          allGamesContent.style.display = "none";
           gnmathContent.style.display = "";
           searchInput.style.display = "none";
           container.querySelector(".games-search-icon").style.display = "none";
@@ -1226,6 +1233,20 @@ class GameWindowRenderer {
             iframe.style.cssText = "width:100%;height:100vh;border:none;display:block;";
             iframe.allowFullscreen = true;
             gnmathContent.appendChild(iframe);
+          }
+        } else if (source === "allgames") {
+          sourceLabel.textContent = "allgames";
+          yukiosContent.style.display = "none";
+          allGamesContent.style.display = "";
+          gnmathContent.style.display = "none";
+          searchInput.style.display = "none";
+          container.querySelector(".games-search-icon").style.display = "none";
+          if (!allGamesContent.querySelector("iframe")) {
+            const iframe = document.createElement("iframe");
+            iframe.src = "/static/games/archive/allgames.html";
+            iframe.style.cssText = "width:100%;height:100vh;border:none;display:block;";
+            iframe.allowFullscreen = true;
+            allGamesContent.appendChild(iframe);
           }
         }
         sourceMenu.style.display = "none";
@@ -1250,6 +1271,7 @@ class GameWindowRenderer {
 
     const allCards = Array.from(container.querySelectorAll(".games-app-card"));
     const updateCount = (count) => {
+      count = count + 2588;
       const countEl = container.closest(".window-content")?.closest(".window-root")?.querySelector(".games-app-count");
       if (countEl) countEl.textContent = count;
     };
@@ -1357,6 +1379,8 @@ export class SystemAppRenderer {
     };
 
     const updateCount = (count) => {
+      count = count + 2588;
+
       const countEl = container.closest(".window-content")?.closest(".window-root")?.querySelector(".games-app-count");
       if (countEl) countEl.textContent = count;
     };

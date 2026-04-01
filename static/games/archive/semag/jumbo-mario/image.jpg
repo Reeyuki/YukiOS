@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<!-- initialize theme vars
+    https://coolors.co/10002b-240046-3c096c-5a189a-7b2cbf-9d4edd-c77dff-e0aaff -->
+
+		<!-- initialize externals -->
+		
+	<script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "name": "Selenite",
+            "alternateName": "selenite.cc",
+            "url": "https://selenite.cc",
+            "logo": "https://selenite.cc/favicon.png",
+            "sameAs": [
+                "https://github.com/selenite-cc",
+                "https://youtube.com/@selenitecc",
+                "https://tiktok.com/@selenitecc",
+                "https://selenite.cc",
+            ]
+        }
+    </script>
+
+		<!-- initialize my stuff -->
+		<script src="/js/all.js" type="7b34dfb51d1a336dce2a3bec-text/javascript"></script>
+		<script src="/js/main.js" type="7b34dfb51d1a336dce2a3bec-text/javascript"></script>
+		<!-- <script src="/js/widget.js"></script> -->
+		<script type="7b34dfb51d1a336dce2a3bec-text/javascript">
+			document.addEventListener("DOMContentLoaded", () => {
+				setBackground();
+				fetch("/quotes.json")
+					.then((response) => response.json())
+					.then((data) => {
+						const randomQuote = data[Math.floor(Math.random() * data.length)];
+
+						if (randomQuote.includes("OGNUM1") && randomQuote.includes("SQRTNUM1")) {
+							const ognum = Math.floor(Math.random() * 3000);
+							randomQuote = `the square root of ${ognum} is ${Math.sqrt(ognum)}`;
+						} else if (randomQuote.includes("CURRENTURL")) {
+							randomQuote = window.location.hostname;
+						}
+
+						document.getElementById("randomquote").innerHTML = randomQuote;
+					})
+					.catch((error) => console.error("Error loading quotes:", error));
+			});
+		</script>
+
+		<link rel="stylesheet" href="/css/main.css" />
+		<link rel="stylesheet" href="/css/pages.css" />
+		<link rel="manifest" href="/manifest.json" />
+		<!-- seo + other things -->
+		<title>404 | Selenite</title>
+		<link rel="icon" href="/favicon.ico" />
+		<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3415518411898563" crossorigin="anonymous" type="7b34dfb51d1a336dce2a3bec-text/javascript"></script>
+	</head>
+	<alerts> </alerts>
+	<body>
+			<h1 class="title">page not found</h1>
+      <p>we could not find the page you were trying to open. try again?</p>
+      <p>:3</p>
+	<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="7b34dfb51d1a336dce2a3bec-|49" defer></script></body>
+</html>
