@@ -14,7 +14,8 @@ import {
   buildFileIconHTML,
   openMediaViewer,
   openFileWith,
-  isExeFile
+  isExeFile,
+  isSwfFile
 } from "./fileDisplay.js";
 import { renderWallpapersPage } from "./wallpapers.js";
 import { showConflictDialog } from "./shared/conflictDialog.js";
@@ -582,8 +583,11 @@ export class ExplorerApp {
       ARCHIVE_EXTS.some((ext) => name.toLowerCase().endsWith(ext)) ||
       kind === FileKind.IMAGE ||
       kind === FileKind.AUDIO ||
+      kind === FileKind.VIDEO ||
       kind === FileKind.ROM ||
-      isExeFile(name);
+      isExeFile(name) ||
+      isSwfFile(name) ||
+      isZipFile(name);
     let content;
     if (this._isBinaryWrite(kind, isBinaryOffice, isBinary)) {
       content = file;
@@ -936,7 +940,8 @@ export class ExplorerApp {
       windowManager: this.wm,
       officeApp: this.officeApp,
       markdownApp: this.markdownApp,
-      jsDosApp: this.jsDosApp
+      jsDosApp: this.jsDosApp,
+      appLauncher: this.appLauncher
     });
   }
 

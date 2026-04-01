@@ -1470,7 +1470,8 @@ export class DesktopUI {
       fs: this.fs,
       notepadApp: this.notepadApp,
       emulatorApp: this.emulatorApp,
-      windowManager: this.appLauncher.wm
+      windowManager: this.appLauncher.wm,
+      appLauncher: this.appLauncher
     });
   }
 

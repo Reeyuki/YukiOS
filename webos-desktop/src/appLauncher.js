@@ -389,8 +389,9 @@ export class AppLauncher {
     if (type === "swf") {
       id = source.replace(/[^a-zA-Z0-9]/g, "");
       if (this._bringToFrontIfExists(id)) return;
-      const gameName = getGameName(originalName);
-      const swfPath = source.startsWith("http") ? source : `${window.location.origin}${source}`;
+      const gameName = getGameName(originalName) || originalName;
+      const swfPath =
+        source.startsWith("http") || source.startsWith("blob:") ? source : `${window.location.origin}${source}`;
       contentHtml = `<iframe srcdoc="
       <!DOCTYPE html>
       <html lang='en'>
@@ -423,7 +424,7 @@ export class AppLauncher {
       contentHtml = `<iframe src="${iframeUrl}" ${IFRAME_ATTRS}></iframe>`;
       if (type === "game") externalUrl = source;
     }
-    const displayTitle = this.appMap[appId]?.title || getGameName(originalName);
+    const displayTitle = this.appMap[appId]?.title || getGameName(originalName) || originalName;
     this.createIframeWindow(
       id,
       displayTitle,
@@ -510,7 +511,10 @@ export class AppLauncher {
     });
 
     const mapEntry = this.appMap[appId];
-    const icon = mapEntry?.iconValue || mapEntry?.icon || tryGetIcon(appId || id);
+    const icon =
+      mapEntry?.iconValue ||
+      mapEntry?.icon ||
+      (appMeta.type === "swf" ? "/static/icons/flash.webp" : tryGetIcon(appId || id));
     this.wm.addToTaskbar(win.id, title, icon);
 
     recordUsage(`${id}-win`);

@@ -29,6 +29,7 @@ import { CategoriesApp } from "./categories.js";
 import { MusicPlayerApp } from "./music.js";
 import { JsDosApp } from "./jsdos.js";
 import { AchievementsApp } from "./achievements.js";
+import { sendAppInstallAnalytics } from "./analytics.js";
 
 function initDownloadButton() {
   return;
@@ -41,7 +42,7 @@ function initDownloadButton() {
     if (installBtn) installBtn.remove();
   }, 3000);
   installBtn.addEventListener("click", () => {
-    appLauncher.sendAppInstallAnalytics();
+    sendAppInstallAnalytics();
     fetch("https://api.github.com/repos/Reeyuki/YukiOS/releases/latest")
       .then((res) => res.json())
       .then((release) => {

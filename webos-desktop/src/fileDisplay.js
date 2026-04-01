@@ -7,6 +7,7 @@ export const AUDIO_EXTS = ["mp3", "ogg", "wav", "flac", "aac", "m4a", "opus", "w
 export const OFFICE_EXTS = ["docx", "doc", "xlsx", "xls", "slx", "csv", "odt", "ods", "pdf", "odp", "pptx", "ppt"];
 export const ZIP_EXTS = ["zip", "gz", "tgz", "tar", "rar", "7z", "bz2", "xz"];
 export const EXE_EXTS = ["exe", "msi", "com", "bat", "cmd", "jsdos"];
+export const SWF_EXTS = ["swf"];
 
 import { ROM_EXTS, detectCore } from "./shared/coreMap.js";
 export { ROM_EXTS };
@@ -62,6 +63,7 @@ const VIDEO_MIME_MAP = {
   wmv: "video/x-ms-wmv",
   flv: "video/x-flv"
 };
+
 export function getExt(name) {
   return name.split(".").pop().toLowerCase();
 }
@@ -72,6 +74,7 @@ export function fileKindFromName(name) {
   if (VIDEO_EXTS.includes(ext)) return FileKind.VIDEO;
   if (AUDIO_EXTS.includes(ext)) return FileKind.AUDIO ?? FileKind.OTHER;
   if (ROM_EXTS.includes(ext)) return FileKind.ROM;
+  if (SWF_EXTS.includes(ext)) return FileKind.OTHER;
   if (ZIP_EXTS.includes(ext)) return FileKind.OTHER;
   if (HTML_EXTS.includes(ext)) return FileKind.HTML ?? FileKind.TEXT;
   if (MARKDOWN_EXTS.includes(ext)) return FileKind.TEXT;
@@ -105,6 +108,9 @@ export function isZipFile(name) {
 }
 export function isExeFile(name) {
   return EXE_EXTS.includes(getExt(name));
+}
+export function isSwfFile(name) {
+  return SWF_EXTS.includes(getExt(name));
 }
 export function isBinaryOfficeFile(name) {
   return BINARY_OFFICE_EXTS.includes(getExt(name));
@@ -174,6 +180,7 @@ export function resolveFileIcon(name) {
   if (isVideoFile(name)) return "/static/icons/obs.webp";
   if (isAudioFile(name)) return "/static/icons/music.webp";
   if (isRomFile(name)) return "rom";
+  if (isSwfFile(name)) return "/static/icons/flash.webp";
   if (isZipFile(name)) return "/static/icons/zip.webp";
   if (isExeFile(name)) return "/static/icons/jsdos.webp";
   if (isOfficeFile(name)) return "/static/icons/office.webp";
@@ -210,6 +217,9 @@ export function buildFileIconHTML(name, { thumbnailSrc = null, size = 64, radius
   }
   if (isRomFile(name)) {
     return `<div style="${s}display:flex;align-items:center;justify-content:center;font-size:${Math.round(size * 0.44)}px;color:#6677dd;"><i class="fas fa-gamepad"></i></div>`;
+  }
+  if (isSwfFile(name)) {
+    return `<img src="/static/icons/flash.webp" style="${s}object-fit:cover;">`;
   }
   if (isZipFile(name)) {
     return `<img src="/static/icons/zip.webp" style="${s}object-fit:cover;">`;
@@ -325,13 +335,46 @@ export async function openFileWith({
   windowManager,
   officeApp,
   markdownApp,
-  jsDosApp
+  jsDosApp,
+  appLauncher
 }) {
   if (isZipFile(name)) return;
   console.log("Open file with: ", name, path);
+
   if (isExeFile(name)) {
     if (!jsDosApp) return;
     jsDosApp.launchExe(name, path);
+    return;
+  }
+
+  if (isSwfFile(name)) {
+    if (!appLauncher) return;
+    const SWF_MIME = "application/x-shockwave-flash";
+    let swfUrl = null;
+
+    const blob = await fs.readBinaryFile(path, name);
+    if (blob && blob.size > 0) {
+      swfUrl = URL.createObjectURL(new Blob([blob], { type: SWF_MIME }));
+    } else {
+      const content = await fs.getFileContent(path, name);
+      if (content instanceof Blob && content.size > 0) {
+        swfUrl = URL.createObjectURL(new Blob([content], { type: SWF_MIME }));
+      } else if (content instanceof ArrayBuffer && content.byteLength > 0) {
+        swfUrl = URL.createObjectURL(new Blob([content], { type: SWF_MIME }));
+      } else if (typeof content === "string" && content) {
+        swfUrl = content.startsWith("data:")
+          ? URL.createObjectURL(base64ToBlob(content))
+          : URL.createObjectURL(new Blob([Uint8Array.from(content, (c) => c.charCodeAt(0))], { type: SWF_MIME }));
+      }
+    }
+
+    if (!swfUrl) return;
+    appLauncher.openIframeApp({
+      appId: `swf-${name}-${Date.now()}`,
+      type: "swf",
+      source: swfUrl,
+      originalName: name
+    });
     return;
   }
 
