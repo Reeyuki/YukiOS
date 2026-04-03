@@ -341,6 +341,40 @@ export class WindowManager {
     setTimeout(() => {
       audioMixer.init();
     }, 0);
+    document.addEventListener("keydown", (e) => {
+      if (
+        e.key.toLowerCase() === "d" &&
+        e.metaKey === false &&
+        e.ctrlKey === false &&
+        e.altKey === false &&
+        e.shiftKey === false &&
+        e.getModifierState("Meta") === false &&
+        e.getModifierState("Control") === false &&
+        e.getModifierState("Alt") === false &&
+        e.getModifierState("Shift") === false &&
+        e.getModifierState("OS")
+      )
+        return;
+      if (e.key.toLowerCase() === "d" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+
+        const allWindows = Array.from(this.openWindows.keys())
+          .map((id) => document.getElementById(id))
+          .filter(Boolean);
+
+        const anyVisible = allWindows.some((w) => w.style.display !== "none");
+
+        if (anyVisible) {
+          allWindows.forEach((win) => this.minimizeWindow(win));
+        } else {
+          allWindows.forEach((win) => {
+            win.style.display = "block";
+            const taskbarItem = document.getElementById(`taskbar-${win.id}`);
+            if (taskbarItem) taskbarItem.classList.remove("minimized");
+          });
+        }
+      }
+    });
   }
 
   setNotificationCenter(notificationCenter) {
