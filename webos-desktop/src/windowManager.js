@@ -336,6 +336,10 @@ export class WindowManager {
     this.initialTitle = document.title || "YukiOS";
     const faviconLink = document.querySelector("link[rel~='icon']");
     this.initialFavicon = faviconLink ? faviconLink.href : "";
+    this._snapGhost = null;
+    this._activeSnapZone = null;
+    this._snapThreshold = 60;
+    this._initSnapGhost();
     this._initVisibilityTracking();
     this.workspaceManager = new WorkspaceManager(this);
     setTimeout(() => {
@@ -373,6 +377,26 @@ export class WindowManager {
             if (taskbarItem) taskbarItem.classList.remove("minimized");
           });
         }
+      }
+    });
+    document.addEventListener("keydown", (e) => {
+      if (!e.metaKey && !e.ctrlKey) return;
+      const focused = Array.from(this.openWindows.keys())
+        .map((id) => document.getElementById(id))
+        .filter(Boolean)
+        .sort((a, b) => parseInt(b.style.zIndex) - parseInt(a.style.zIndex))[0];
+      if (!focused) return;
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        this._applySnap(focused, "left");
+      }
+      if (e.key === "ArrowRight") {
+        e.preventDefault();
+        this._applySnap(focused, "right");
+      }
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        this._applySnap(focused, "maximize");
       }
     });
   }
@@ -487,6 +511,10 @@ export class WindowManager {
         }
       });
     }
+
+    addMenuItem("Snap Left", () => this._applySnap(win, "left"));
+    addMenuItem("Snap Right", () => this._applySnap(win, "right"));
+    addMenuItem("Snap Maximize", () => this._applySnap(win, "maximize"));
 
     addMenuItem("Properties", () => this._buildPropertiesWindow(winId));
 
@@ -806,6 +834,100 @@ export class WindowManager {
     showStartStyleMenu(e, (addMenuItem) => this._buildContextMenuItems(addMenuItem, win));
   }
 
+  _initSnapGhost() {
+    const ghost = document.createElement("div");
+    ghost.id = "snap-ghost";
+    document.getElementById("desktop").appendChild(ghost);
+    this._snapGhost = ghost;
+  }
+
+  _getSnapZone(x, y) {
+    const t = this._snapThreshold;
+    const dw = window.innerWidth;
+    const taskbarH = document.getElementById("taskbar")?.offsetHeight ?? 40;
+    const dh = window.innerHeight - taskbarH;
+    const atLeft = x < t;
+    const atRight = x > dw - t;
+    const atTop = y < t;
+    const atBottom = y > dh - t;
+    if (atTop && atLeft) return "top-left";
+    if (atTop && atRight) return "top-right";
+    if (atBottom && atLeft) return "bottom-left";
+    if (atBottom && atRight) return "bottom-right";
+    if (atTop) return "maximize";
+    if (atLeft) return "left";
+    if (atRight) return "right";
+    return null;
+  }
+
+  _getSnapRect(zone) {
+    const taskbarH = document.getElementById("taskbar")?.offsetHeight ?? 40;
+    const dw = window.innerWidth;
+    const dh = window.innerHeight - taskbarH;
+    const half = { width: dw / 2, height: dh };
+    const quarter = { width: dw / 2, height: dh / 2 };
+    const map = {
+      left: { left: 0, top: 0, width: dw / 2, height: dh },
+      right: { left: dw / 2, top: 0, width: dw / 2, height: dh },
+      maximize: { left: 0, top: 0, width: dw, height: dh },
+      "top-left": { left: 0, top: 0, ...quarter },
+      "top-right": { left: dw / 2, top: 0, ...quarter },
+      "bottom-left": { left: 0, top: dh / 2, ...quarter },
+      "bottom-right": { left: dw / 2, top: dh / 2, ...quarter }
+    };
+    return map[zone] ?? null;
+  }
+
+  _showSnapGhost(zone) {
+    const rect = this._getSnapRect(zone);
+    if (!rect) {
+      this._hideSnapGhost();
+      return;
+    }
+    Object.assign(this._snapGhost.style, {
+      display: "block",
+      left: rect.left + "px",
+      top: rect.top + "px",
+      width: rect.width + "px",
+      height: rect.height + "px"
+    });
+  }
+
+  _hideSnapGhost() {
+    if (this._snapGhost) this._snapGhost.style.display = "none";
+  }
+
+  _applySnap(win, zone) {
+    const rect = this._getSnapRect(zone);
+    if (!rect) return;
+    if (win.dataset.snapZone !== zone) {
+      win.dataset.preSnapLeft = win.style.left;
+      win.dataset.preSnapTop = win.style.top;
+      win.dataset.preSnapWidth = win.style.width;
+      win.dataset.preSnapHeight = win.style.height;
+    }
+    Object.assign(win.style, {
+      left: rect.left + "px",
+      top: rect.top + "px",
+      width: rect.width + "px",
+      height: rect.height + "px"
+    });
+    win.dataset.snapZone = zone;
+    win.dataset.fullscreen = zone === "maximize" ? "true" : "false";
+  }
+
+  _unsnap(win) {
+    if (!win.dataset.snapZone) return;
+    if (win.dataset.preSnapWidth) win.style.width = win.dataset.preSnapWidth;
+    if (win.dataset.preSnapHeight) win.style.height = win.dataset.preSnapHeight;
+    delete win.dataset.snapZone;
+    delete win.dataset.preSnapLeft;
+    delete win.dataset.preSnapTop;
+    delete win.dataset.preSnapWidth;
+    delete win.dataset.preSnapHeight;
+    win.dataset.fullscreen = "false";
+  }
+
   makeDraggable(win) {
     const header = win.querySelector(".window-header");
 
@@ -854,17 +976,29 @@ export class WindowManager {
       e.stopPropagation();
       this.isDraggingWindow = true;
 
+      const wasSnapped = !!win.dataset.snapZone;
       const ox = e.clientX - win.offsetLeft;
       const oy = e.clientY - win.offsetTop;
+
+      if (wasSnapped) this._unsnap(win);
 
       document.onmousemove = (e) => {
         win.style.left = `${e.clientX - ox}px`;
         win.style.top = `${e.clientY - oy}px`;
+        const zone = this._getSnapZone(e.clientX, e.clientY);
+        this._activeSnapZone = zone;
+        if (zone) this._showSnapGhost(zone);
+        else this._hideSnapGhost();
       };
 
-      document.onmouseup = () => {
+      document.onmouseup = (e) => {
         document.onmousemove = null;
         this.isDraggingWindow = false;
+        this._hideSnapGhost();
+        if (this._activeSnapZone) {
+          this._applySnap(win, this._activeSnapZone);
+          this._activeSnapZone = null;
+        }
       };
     };
   }

@@ -33,6 +33,20 @@ export class NewsApp {
                 "fa-gamepad",
                 "JsDos gui support",
                 "You can now upload jsdos files directly at jsdos app and play featured jsdos games."
+              ],
+              [
+                "fa-layer-group",
+                "Virtual Workspaces",
+                "Boost your productivity by organizing apps into multiple virtual desktops, allowing you to switch between different tasks seamlessly."
+              ][
+                ("fa-microsoft",
+                "Window Snapping and Edge Tiling",
+                "Organize your workspace by dragging windows to screen edges or using Super+Arrow keys to tile windows into halves or quarters.")
+              ],
+              [
+                "fa-sliders",
+                "Audio Mixer",
+                "Take full control of your soundscape with per-app volume controls with audio mixer."
               ]
             ]
           }

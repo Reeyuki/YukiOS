@@ -7310,3 +7310,15 @@ select:focus {
   padding: 18px 0;
   display: none;
 }
+
+#snap-ghost {
+  position: absolute;
+  display: none;
+  background: rgba(0, 120, 215, 0.25);
+  border: 2px solid rgba(0, 120, 215, 0.7);
+  border-radius: 6px;
+  pointer-events: none;
+  z-index: 11000;
+  transition: all 0.1s ease;
+  box-sizing: border-box;
+}
