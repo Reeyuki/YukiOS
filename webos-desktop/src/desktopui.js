@@ -1364,7 +1364,7 @@ export class DesktopUI {
         await this.explorerApp.open();
         setTimeout(() => {
           this.explorerApp.navigate(["Pictures", "Wallpapers"]);
-        }, 50);
+        }, 100);
       },
       paste: async () => {
         await this._pasteToDesktop();

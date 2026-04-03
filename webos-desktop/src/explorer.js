@@ -15,7 +15,8 @@ import {
   openMediaViewer,
   openFileWith,
   isExeFile,
-  isSwfFile
+  isSwfFile,
+  isZipFile
 } from "./fileDisplay.js";
 import { renderWallpapersPage } from "./wallpapers.js";
 import { showConflictDialog } from "./shared/conflictDialog.js";

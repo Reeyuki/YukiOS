@@ -1008,7 +1008,7 @@ export const appMap = {
   nodeApp: { type: "system", title: "NodeJS Code Editor", icon: "fa fa-code" },
   pythonApp: { type: "system", title: "Python Code Editor", icon: "fa fa-code" },
   taskManagerApp: { type: "system", title: "Task Manager", icon: "fa fa-list-check" },
-  weatherApp: { type: "system", title: "Weather App", icon: "fa fa-location-crosshairs" },
+  weatherApp: { type: "system", title: "Weather App", icon: "fa fa-cloud" },
   calculatorApp: { type: "system", title: "Calculator", icon: "fa fa-calculator" },
   settingsApp: { type: "system", title: "Settings", icon: "fa fa-cog" },
   aboutApp: { type: "system", title: "About", icon: "fa fa-circle-info" },

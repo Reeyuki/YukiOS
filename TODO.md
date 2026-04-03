@@ -5,3 +5,6 @@ Add properties for file inspection and also have file rename input here
 Add boxedwine
 Add cypress tests
 Add v86
+set wallpaper context menu is broken
+implement Window Snapping & Tiling
+Add Win+D to show desktop

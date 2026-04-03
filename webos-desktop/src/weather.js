@@ -337,7 +337,7 @@ export class WeatherApp {
     wm.makeDraggable(win);
     wm.makeResizable(win);
     wm.setupWindowControls(win);
-    wm.addToTaskbar(win.id, "Weather", "fas fa-location-crosshairs");
+    wm.addToTaskbar(win.id, "Weather", "fas fa-cloud");
 
     const body = win.querySelector("#wx-body");
     const searchInput = win.querySelector("#wx-search-input");

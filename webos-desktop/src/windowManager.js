@@ -1,6 +1,7 @@
 import { desktop } from "./desktop.js";
 import { showStartStyleMenu } from "./shared/contextMenu.js";
 import { isImageFile } from "./utils.js";
+import { audioMixer } from "./audioMixer.js";
 
 export class WorkspaceManager {
   constructor(windowManager) {
@@ -27,7 +28,7 @@ export class WorkspaceManager {
       this._barEl = document.createElement("div");
       this._barEl.id = "workspace-bar";
       const taskbar = document.getElementById("taskbar");
-      taskbar.insertBefore(this._barEl, taskbar.lastChild);
+      taskbar.insertBefore(this._barEl, document.getElementById("system-tray"));
     }
 
     this._barEl.innerHTML = "";
@@ -337,6 +338,9 @@ export class WindowManager {
     this.initialFavicon = faviconLink ? faviconLink.href : "";
     this._initVisibilityTracking();
     this.workspaceManager = new WorkspaceManager(this);
+    setTimeout(() => {
+      audioMixer.init();
+    }, 0);
   }
 
   setNotificationCenter(notificationCenter) {
@@ -581,6 +585,8 @@ export class WindowManager {
     this.openWindows.set(winId, { taskbarItem, title, iconValue, color });
     this.workspaceManager?.registerWindow(winId);
 
+    audioMixer.registerWindow(winId, title, audioMixer.getIconHtmlForTaskbar(null, iconValue));
+
     const win = document.getElementById(winId);
     if (win) {
       const headerSpan = win.querySelector(".window-header > span");
@@ -662,6 +668,7 @@ export class WindowManager {
     if (taskbarItem) taskbarItem.remove();
     this.openWindows.delete(winId);
     this.workspaceManager?.unregisterWindow(winId);
+    audioMixer.unregisterWindow(winId);
 
     if (this.openWindows.size === 0) {
       this.resetToDefaultState();
@@ -788,11 +795,12 @@ export class WindowManager {
         const onLoad = () => {
           try {
             const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-
             iframeDoc.addEventListener("mousedown", () => {
               this.bringToFront(win);
             });
           } catch (e) {}
+
+          audioMixer.patchIframeAudioContext(win.id, iframe);
         };
 
         if (iframe.contentDocument?.readyState === "complete") {

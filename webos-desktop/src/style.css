@@ -523,7 +523,6 @@ input {
   display: flex;
   align-items: center;
   gap: 0.5em;
-  padding: 0 1.1em;
   height: 100%;
   flex-shrink: 0;
   color: #fff;
@@ -6230,8 +6229,7 @@ select:focus {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
+  width: 32px;
   cursor: pointer;
   position: relative;
   transition: background 0.2s;
@@ -6875,7 +6873,6 @@ select:focus {
   border: 1px solid rgba(255, 255, 255, 0.12);
   color: rgba(255, 255, 255, 0.6);
   border-radius: 5px;
-  padding: 2px 10px;
   font-size: 12px;
   cursor: pointer;
   transition:
@@ -6935,7 +6932,7 @@ select:focus {
   bottom: 40px;
   background: rgba(10, 10, 18, 0.92);
   backdrop-filter: blur(20px);
-  z-index: 1000;
+  z-index: 10000;
   display: none;
   align-items: center;
   justify-content: center;
@@ -7076,4 +7073,240 @@ select:focus {
   background: rgba(100, 120, 220, 0.15);
   border-color: rgba(100, 120, 220, 0.5);
   color: #fff;
+}
+
+/* Audio Mixer */
+#audio-mixer-tray-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.75);
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background 0.15s,
+    color 0.15s;
+  line-height: 1;
+}
+
+#audio-mixer-tray-btn:hover,
+#audio-mixer-tray-btn.active {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+#audio-mixer-panel {
+  position: fixed;
+  z-index: 99999;
+  width: 280px;
+  max-height: 480px;
+  background: rgba(18, 18, 26, 0.97);
+  backdrop-filter: blur(24px) saturate(1.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  box-shadow:
+    0 16px 48px rgba(0, 0, 0, 0.7),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.9);
+  animation: amFadeIn 0.15s ease;
+}
+
+@keyframes amFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.am-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  flex-shrink: 0;
+}
+
+.am-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.01em;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.am-close-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  font-size: 13px;
+  padding: 2px 5px;
+  border-radius: 4px;
+  line-height: 1;
+  transition:
+    background 0.12s,
+    color 0.12s;
+}
+
+.am-close-btn:hover {
+  background: rgba(220, 50, 50, 0.7);
+  color: #fff;
+}
+
+.am-master-section {
+  padding: 12px 14px 10px;
+  flex-shrink: 0;
+}
+
+.am-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.06);
+  margin: 0 14px;
+  flex-shrink: 0;
+}
+
+.am-channels {
+  overflow-y: auto;
+  flex: 1;
+  padding: 8px 0 10px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
+.am-channels::-webkit-scrollbar {
+  width: 4px;
+}
+
+.am-channels::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+}
+
+.am-channel-row {
+  padding: 6px 14px;
+  transition: background 0.1s;
+}
+
+.am-channel-row:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.am-channel-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 5px;
+}
+
+.am-app-icon {
+  width: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 12px;
+}
+
+.am-icon {
+  font-size: 15px;
+  line-height: 1;
+}
+
+.am-app-name {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 170px;
+}
+
+.am-slider-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.am-slider {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.15);
+  outline: none;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.am-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  transition:
+    transform 0.1s,
+    box-shadow 0.1s;
+}
+
+.am-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.am-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  border: none;
+  cursor: pointer;
+}
+
+.am-master-slider {
+  background: linear-gradient(
+    to right,
+    rgba(100, 160, 255, 0.8) 0%,
+    rgba(100, 160, 255, 0.8) var(--val, 100%),
+    rgba(255, 255, 255, 0.15) var(--val, 100%)
+  );
+}
+
+.am-vol-label {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.45);
+  width: 32px;
+  text-align: right;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.am-empty {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.25);
+  font-size: 12px;
+  padding: 18px 0;
+  display: none;
 }
