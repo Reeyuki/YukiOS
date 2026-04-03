@@ -1044,6 +1044,11 @@ export const appMap = {
     title: "JsDos",
     icon: "/static/icons/jsdos.webp"
   },
+  v86app: {
+    type: "system",
+    title: "Virtual 86",
+    icon: "/static/icons/v86.webp"
+  },
   libreSprite: {
     type: "system",
     title: "LibreSprite",

@@ -37,6 +37,7 @@ export class AppLauncher {
     model3dApp,
     categoriesApp,
     jsDosApp,
+    v86app,
     achievementsApp
   ) {
     this.wm = windowManager;
@@ -62,6 +63,7 @@ export class AppLauncher {
     this.model3dApp = model3dApp;
     this.categoriesApp = categoriesApp;
     this.jsDosApp = jsDosApp;
+    this.v86app = v86app;
     this.achievementsApp = achievementsApp;
     this.TRANSPARENCY_ALLOWED_APP_IDS = new Set(["paint", "photopea", "vscode", "liventcord"]);
 
@@ -204,6 +206,11 @@ export class AppLauncher {
         type: "system",
         title: "JsDos",
         action: () => this.jsDosApp.open()
+      },
+      v86app: {
+        type: "system",
+        title: "Virtual 86",
+        action: () => this.v86app.open()
       },
       achievementsApp: {
         type: "system",

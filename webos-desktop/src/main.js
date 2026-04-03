@@ -28,6 +28,7 @@ import { NotificationCenter } from "./notificationCenter.js";
 import { CategoriesApp } from "./categories.js";
 import { MusicPlayerApp } from "./music.js";
 import { JsDosApp } from "./jsdos.js";
+import { V86App } from "./v86.js";
 import { AchievementsApp } from "./achievements.js";
 import { sendAppInstallAnalytics } from "./analytics.js";
 
@@ -111,6 +112,8 @@ const pythonApp = new PythonEditorApp(fileSystemManager, windowManager, explorer
 const musicPlayer = new MusicPlayerApp();
 const jsDosApp = new JsDosApp(fileSystemManager, windowManager, explorerApp);
 explorerApp.setJsDos(jsDosApp);
+const v86app = new V86App(fileSystemManager, windowManager, explorerApp);
+explorerApp.setv86App(v86app);
 const cameraApp = new CameraApp(windowManager, fileSystemManager);
 const aboutApp = new AboutApp(windowManager);
 const newsApp = new NewsApp(windowManager);
@@ -149,6 +152,7 @@ const appLauncher = new AppLauncher(
   model3dApp,
   categoriesApp,
   jsDosApp,
+  v86app,
   achievementsApp
 );
 appCreatorApp.setAppLauncher(appLauncher);

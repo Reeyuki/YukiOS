@@ -38,7 +38,8 @@ export class NewsApp {
                 "fa-layer-group",
                 "Virtual Workspaces",
                 "Boost your productivity by organizing apps into multiple virtual desktops, allowing you to switch between different tasks seamlessly."
-              ][
+              ],
+              [
                 ("fa-microsoft",
                 "Window Snapping and Edge Tiling",
                 "Organize your workspace by dragging windows to screen edges or using Super+Arrow keys to tile windows into halves or quarters.")

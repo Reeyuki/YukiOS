@@ -68,6 +68,9 @@ export class ExplorerApp {
   setJsDos(jsDosApp) {
     this.jsDosApp = jsDosApp;
   }
+  setv86App(v86app) {
+    this.v86app = v86app;
+  }
 
   _createInstance(winId, callback, notepadRef, mode) {
     const inst = {
