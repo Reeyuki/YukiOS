@@ -580,8 +580,8 @@ export const appMap = {
     title: "Aground"
   },
   corporationInc: {
-    type: "swf",
-    swf: "https://cache.armorgames.com/files/games/corporation-inc-7348.swf?v=1373587524",
+    type: "game",
+    url: "https://corporationincgame.com",
     icon: "/static/icons/corporation-inc.webp",
     title: "Corporation Inc"
   },
