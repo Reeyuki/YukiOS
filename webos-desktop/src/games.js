@@ -151,7 +151,25 @@ export const appMap = {
     icon: "/static/icons/celeste.webp",
     title: "Celeste"
   },
-  fnaf: { type: "game", url: "/static/games/fnaf/index.html", icon: "/static/icons/fnaf1.webp", title: "FNAF [1-6]" },
+  fnaf: { type: "game", url: "/static/games/fnaf/index.html", icon: "/static/icons/fnaf1.webp", title: "FNAF [1-7]" },
+  fnafSl: {
+    type: "game",
+    url: "/static/games/fnaf/sl.html",
+    icon: "/static/icons/fnaf-sl.webp",
+    title: "Fnaf Sister Location"
+  },
+  fnafps: {
+    type: "game",
+    url: "/static/games/fnaf/ps.html",
+    icon: "/static/icons/fnafps.webp",
+    title: "Fnaf Pizzeria Simulator"
+  },
+  fnafucn: {
+    type: "game",
+    url: "/static/games/fnaf/ucn.html",
+    icon: "/static/icons/fnafucn.webp",
+    title: "Fnaf Ultimate Custom Night"
+  },
   game2048: {
     type: "game",
     url: "https://emupedia.net/emupedia-game-2048",
@@ -294,11 +312,10 @@ export const appMap = {
     title: "Henry Stickmin Complex"
   },
   badIceCream: {
-    type: "game",
-    url: "/static/games/badIceCream/index.html",
+    type: "swf",
     swf: "/static/games/badIceCream/bic1.swf",
     icon: "/static/icons/bic1.webp",
-    title: "Bad Ice Cream[1-3]"
+    title: "Bad Ice Cream 1"
   },
   badIceCream2: {
     type: "game",

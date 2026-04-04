@@ -316,14 +316,6 @@ export class AppLauncher {
       clippySpeak(clippyEntry.message, clippyEntry.animation);
     }
 
-    if (app.includes(this.BIC)) {
-      if (swf) {
-        return this.openIframeApp({ appId: app, type: "swf", source: info.swf, originalName: app });
-      } else {
-        return this.openIframeApp({ appId: app, type: "game", source: info.url, originalName: app, analyticsBase });
-      }
-    }
-
     const urlParams = new URLSearchParams(window.location.search);
     if (info.type !== "system" && window.electronAPI?.launchGame && !urlParams.has("game"))
       return window.electronAPI.launchGame(app);
