@@ -218,6 +218,12 @@ export class BrowserApp extends BaseApp {
     this.renderBookmarks();
     this.createTab(startUrl, true);
 
+    this.tabStrip.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this.wm._showWindowContextMenu(e, this.win);
+    });
+
     this.wm.makeDraggable(this.win);
     this.wm.makeResizable(this.win);
     this.wm.setupWindowControls(this.win);

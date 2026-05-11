@@ -2,7 +2,7 @@ import { StorageKeys } from "../settings.js";
 import { desktop } from "../desktop.js";
 
 export function makeDraggable(win, wm) {
-  const headers = win.querySelectorAll(".window-header");
+  const headers = win.querySelectorAll(".window-header, .browser-tabbar");
 
   const isInteractive = (target) => {
     return !!target.closest(
@@ -91,7 +91,14 @@ export function makeDraggable(win, wm) {
     document.addEventListener("mouseup", onMouseUp);
   };
 
-  headers.forEach((h) => h.addEventListener("mousedown", startDrag));
+  headers.forEach((h) => {
+    h.addEventListener("mousedown", startDrag);
+    h.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      wm._showWindowContextMenu(e, win);
+    });
+  });
 }
 
 export function _getSnapZone(wm, x, y) {
