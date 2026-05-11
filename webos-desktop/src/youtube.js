@@ -1,3 +1,4 @@
+import { BaseApp } from "./core/BaseApp.js";
 import { desktop } from "./desktop.js";
 
 function clampInt(n, min, max) {
@@ -61,13 +62,11 @@ function parseYouTubeInput(input) {
 
   const startSeconds = parseTimeToSeconds(qp.get("t") || qp.get("start"));
 
-  // Playlist
   const list = qp.get("list");
   if (list && /playlist/i.test(path)) {
     return { kind: "playlist", videoId: null, playlistId: list, startSeconds, rawUrl: url.href };
   }
 
-  // youtu.be/<id>
   if (host === "youtu.be") {
     const videoId = path.split("/").filter(Boolean)[0] || null;
     return { kind: videoId ? "video" : null, videoId, playlistId: list, startSeconds, rawUrl: url.href };
@@ -80,22 +79,18 @@ function parseYouTubeInput(input) {
     return { kind: null, videoId: null, playlistId: null, startSeconds, rawUrl: url.href };
   }
 
-  // /watch?v=<id>
   if (path === "/watch") {
     const videoId = qp.get("v");
     if (videoId && list) {
-      // Ambiguous: treat as playlist, but keep videoId around for "watch on YouTube"
       return { kind: "playlist", videoId, playlistId: list, startSeconds, rawUrl: url.href };
     }
     return { kind: videoId ? "video" : null, videoId, playlistId: list, startSeconds, rawUrl: url.href };
   }
 
-  // /playlist?list=<id>
   if (path === "/playlist" && list) {
     return { kind: "playlist", videoId: null, playlistId: list, startSeconds, rawUrl: url.href };
   }
 
-  // /shorts/<id> or /embed/<id>
   const parts = path.split("/").filter(Boolean);
   if (parts[0] === "shorts" || parts[0] === "embed") {
     const videoId = parts[1] || null;
@@ -158,9 +153,9 @@ function buildWatchUrl({ kind, videoId, playlistId, startSeconds }) {
   return null;
 }
 
-export class YouTubeApp {
-  constructor(windowManager) {
-    this.wm = windowManager;
+export class YouTubeApp extends BaseApp {
+  constructor(services) {
+    super(services);
     this.browserApp = null;
     this.winId = "youtube-utils";
     this._els = null;

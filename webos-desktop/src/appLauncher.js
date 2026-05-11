@@ -12,13 +12,7 @@ import {
   getCurrentJsDelivrRepoBase
 } from "./shared/assetResolver.js";
 import { initClippy, speak as clippySpeak } from "./clippy.js";
-import {
-  initAnalytics,
-  getAnalyticsBase,
-  sendLaunchAnalytics,
-  sendAppInstallAnalytics,
-  recordUsage
-} from "./analytics.js";
+import { initAnalytics, getAnalyticsBase, sendLaunchAnalytics, recordUsage } from "./analytics.js";
 import { StorageKeys } from "./settings.js";
 import { getNewsContentSignature } from "./news.js";
 import { PROXIES, clampProxyIndex, buildProxyUrl } from "./proxies.js";
@@ -123,7 +117,7 @@ export class AppLauncher {
         action: () => this.cameraApp.open(),
         clippy: { message: "Smile! I'll help you look your best.", animation: "Congratulate" }
       },
-      settings: {
+      settingsApp: {
         type: "system",
         title: "Settings",
         action: () => this.settingsApp.open(),
@@ -179,24 +173,24 @@ export class AppLauncher {
       taskManagerApp: {
         type: "system",
         title: "Task Manager",
-        action: () => taskManagerApp.open(),
+        action: () => this.taskManagerApp.open(),
         clippy: { message: "Something's hogging resources. Want me to guess what?", animation: "Acknowledge" }
       },
       weatherApp: {
         type: "system",
         title: "Weather",
-        action: () => weatherApp.open(),
+        action: () => this.weatherApp.open(),
         clippy: { message: "Rain is expected today. Don't forget your umbrella!", animation: "Pleased" }
       },
       appCreatorApp: {
         type: "system",
         title: "App Creator",
-        action: () => appCreatorApp.open()
+        action: () => this.appCreatorApp.open()
       },
       officeApp: {
         type: "system",
         title: "Office",
-        action: () => officeApp.open(),
+        action: () => this.officeApp.open(),
         clippy: { message: "Need a hand creating a document or spreadsheet?", animation: "animate" }
       },
       jsDosApp: {
@@ -270,7 +264,14 @@ export class AppLauncher {
     );
 
     this.clippyMap["vscode"] = { message: "Ready to write some code!", animation: "Congratulate" };
-    this.appMap = { ...appMap, ...localAppMap };
+    this.appMap = { ...appMap };
+    for (const [key, value] of Object.entries(localAppMap)) {
+      if (this.appMap[key]) {
+        this.appMap[key] = { ...this.appMap[key], ...value };
+      } else {
+        this.appMap[key] = value;
+      }
+    }
     this._launchedAppIds = this._loadLaunchedApps();
     this._appSessions = new Map();
     this._initSteamTracking();
@@ -405,7 +406,7 @@ export class AppLauncher {
       genesis: () => this.openIframeApp({ appId: app, type: "segaMD", source: info.url, originalName: app }),
       game: () => {
         let source = info.url;
-        if (info?.proxyEnabled && typeof source === "string" && /^https?:\/\//i.test(source)) {
+        if (info?.proxyEnabled && typeof source === "string" && /^https?:\/\//.test(source)) {
           const proxyIndex = clampProxyIndex(info.proxyIndex, PROXIES);
           source = buildProxyUrl(source, proxyIndex, PROXIES);
         }
@@ -540,8 +541,6 @@ player.load("${swfPath}");
       let resolvedSource =
         shouldBypassResolution || bypassRewriteForApp ? source : await resolveUrl(source, isJsDelivrGh);
 
-      // When hosted on jsDelivr, absolute paths like `/static/...` would otherwise resolve to:
-      // `https://cdn.jsdelivr.net/static/...` (missing `/gh/<repo>@<ref>/`).
       if (bypassRewriteForApp && typeof resolvedSource === "string" && resolvedSource.startsWith("/")) {
         const repoBase = getCurrentJsDelivrRepoBase();
         if (repoBase) {
@@ -567,7 +566,7 @@ player.load("${swfPath}");
         iframeUrl = resolvedSource;
         if (
           looksLikeHtml(resolvedSource) &&
-          /^https?:\/\//i.test(resolvedSource) &&
+          /^https?:\/\//.test(resolvedSource) &&
           !isSameOrigin &&
           isJsDelivrGhUrl(resolvedSource)
         ) {
@@ -688,5 +687,3 @@ player.load("${swfPath}");
     recordUsage(`${id}-win`);
   }
 }
-
-export { sendAppInstallAnalytics };

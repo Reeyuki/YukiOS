@@ -176,7 +176,7 @@ export function setupStartMenu(appLauncher) {
 
     cat.onclick = () => {
       if (cat.dataset.cat === "settings") {
-        appLauncher.launch("settings");
+        appLauncher.launch("settingsApp");
         return;
       }
       if (cat.dataset.cat === "customize") {
@@ -213,6 +213,34 @@ export function setupStartMenu(appLauncher) {
   });
 
   setupStars();
+  setupStartUserHover();
+}
+
+export function setupStartUserHover() {
+  const startUser = document.querySelector(".start-user");
+  if (!startUser) return;
+
+  let tooltip = null;
+
+  startUser.addEventListener("mouseenter", () => {
+    const currentName = localStorage.getItem("yukiOS_username") || "Reeyuki";
+
+    tooltip = document.createElement("div");
+    tooltip.className = "user-tooltip";
+    tooltip.textContent = currentName;
+    document.body.appendChild(tooltip);
+
+    const rect = startUser.getBoundingClientRect();
+    tooltip.style.left = `${rect.right + 10}px`;
+    tooltip.style.top = `${rect.top + rect.height / 2}px`;
+  });
+
+  startUser.addEventListener("mouseleave", () => {
+    if (tooltip) {
+      tooltip.remove();
+      tooltip = null;
+    }
+  });
 }
 
 export function tryGetIcon(id) {

@@ -29,111 +29,112 @@ import { JsDosApp } from "./jsdos.js";
 import { V86App } from "./v86.js";
 import { AchievementsApp } from "./achievements.js";
 import { ProfileCustomizerApp } from "./profileCustomizer.js";
-import { sendAppInstallAnalytics } from "./analytics.js";
 import { setDesktopUI as setGamesDesktopUI } from "./games.js";
 import { AdsManager } from "./ads.js";
 import { registerPWA } from "./pwa.js";
-
-function initDownloadButton() {
-  return;
-  if (isMobile()) return;
-  const installBtn = document.createElement("div");
-  installBtn.id = "install-app";
-  installBtn.textContent = "Install Desktop App";
-  document.body.appendChild(installBtn);
-  setTimeout(() => {
-    if (installBtn) installBtn.remove();
-  }, 3000);
-  installBtn.addEventListener("click", () => {
-    sendAppInstallAnalytics();
-    fetch("https://api.github.com/repos/Reeyuki/YukiOS/releases/latest")
-      .then((res) => res.json())
-      .then((release) => {
-        const files = release.assets.map((asset) => ({
-          name: asset.name,
-          url: asset.browser_download_url
-        }));
-        const osFiles = {
-          linux: files.filter((f) => f.name.includes("linux")),
-          mac: files.filter((f) => f.name.includes("mac")),
-          windows: files.filter((f) => f.name.includes("windows"))
-        };
-        function downloadFile(fileUrl) {
-          const a = document.createElement("a");
-          a.href = fileUrl;
-          a.download = "";
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-        }
-        function askLinuxPackage(files) {
-          const choice = prompt(
-            "Linux detected. Choose install type:\n1 = .deb (debian based)\n2 = .zip (portable)",
-            "1"
-          );
-          if (choice === "2") {
-            const zipFile = files.find((f) => f.name.endsWith(".zip"));
-            if (zipFile) downloadFile(zipFile.url);
-          } else {
-            const debFile = files.find((f) => f.name.endsWith(".deb"));
-            if (debFile) downloadFile(debFile.url);
-          }
-        }
-        const os = detectOS();
-        if (isMobile()) return;
-        const osSpecificFiles = osFiles[os];
-        if (!osSpecificFiles || osSpecificFiles.length === 0) return;
-        if (os === "linux") {
-          askLinuxPackage(osSpecificFiles);
-        } else {
-          downloadFile(osSpecificFiles[0].url);
-        }
-      });
-  });
-}
-
-if (!window.electronAPI) {
-  initDownloadButton();
-}
 
 registerPWA();
 const notificationCenter = new NotificationCenter();
 const fileSystemManager = new FileSystemManager();
 const windowManager = new WindowManager(notificationCenter);
-const achievementsApp = new AchievementsApp(windowManager);
-const notepadApp = new NotepadApp(fileSystemManager, windowManager, null);
-const markdownApp = new MarkdownApp(windowManager);
-const youtubeApp = new YouTubeApp(windowManager);
-const explorerApp = new ExplorerApp(fileSystemManager, windowManager, notepadApp, markdownApp);
-const officeApp = new OfficeAppProxy(fileSystemManager, windowManager);
+
+const services = {
+  notificationCenter,
+  fileSystemManager,
+  windowManager,
+  get wm() {
+    return windowManager;
+  },
+  get fs() {
+    return fileSystemManager;
+  }
+};
+const achievementsApp = new AchievementsApp(services);
+services.achievementsApp = achievementsApp;
+
+const notepadApp = new NotepadApp(services);
+services.notepadApp = notepadApp;
+
+const markdownApp = new MarkdownApp(services);
+services.markdownApp = markdownApp;
+
+const youtubeApp = new YouTubeApp(services);
+services.youtubeApp = youtubeApp;
+
+const explorerApp = new ExplorerApp(services);
+services.explorerApp = explorerApp;
+
+const officeApp = new OfficeAppProxy(services);
+services.officeApp = officeApp;
+
 officeApp.setExplorer(explorerApp);
 explorerApp.setOfficeApp(officeApp);
-const calculatorApp = new CalculatorApp(windowManager);
-notepadApp.setExplorer(explorerApp);
-const browserApp = new BrowserApp(windowManager, fileSystemManager);
-youtubeApp.setBrowserApp(browserApp);
-const terminalApp = new TerminalApp(fileSystemManager, windowManager);
-const musicPlayer = new MusicPlayerApp();
-musicPlayer.setBrowserApp(browserApp);
-const jsDosApp = new JsDosApp(fileSystemManager, windowManager, explorerApp);
-explorerApp.setJsDos(jsDosApp);
-const v86app = new V86App(fileSystemManager, windowManager, explorerApp);
-explorerApp.setv86App(v86app);
-const cameraApp = new CameraApp(windowManager, fileSystemManager);
-const aboutApp = new AboutApp(windowManager);
-const newsApp = new NewsApp(windowManager);
-const settingsApp = new SettingsApp(windowManager);
-settingsApp.setFileSystemManager(fileSystemManager);
-const profileCustomizerApp = new ProfileCustomizerApp(windowManager, settingsApp);
-const taskManagerApp = new TaskManagerApp(windowManager);
-const weatherApp = new WeatherApp(windowManager);
-const adsApp = new AdsManager(windowManager);
-explorerApp.setBrowser(browserApp);
-const appCreatorApp = new AppCreatorApp(fileSystemManager, windowManager);
-const monacoApp = new MonacoApp(fileSystemManager, windowManager, explorerApp);
-const categoriesApp = new CategoriesApp();
 
-const model3dApp = new Model3DApp(fileSystemManager, windowManager, explorerApp);
+const calculatorApp = new CalculatorApp(services);
+services.calculatorApp = calculatorApp;
+
+notepadApp.setExplorer(explorerApp);
+
+const browserApp = new BrowserApp(services);
+services.browserApp = browserApp;
+
+youtubeApp.setBrowserApp(browserApp);
+
+const terminalApp = new TerminalApp(services);
+services.terminalApp = terminalApp;
+
+const musicPlayer = new MusicPlayerApp(services);
+services.musicPlayer = musicPlayer;
+
+musicPlayer.setBrowserApp(browserApp);
+
+const jsDosApp = new JsDosApp(services);
+services.jsDosApp = jsDosApp;
+explorerApp.setJsDos(jsDosApp);
+
+const v86app = new V86App(services);
+services.v86app = v86app;
+explorerApp.setv86App(v86app);
+
+const cameraApp = new CameraApp(services);
+services.cameraApp = cameraApp;
+
+const aboutApp = new AboutApp(services);
+services.aboutApp = aboutApp;
+
+const newsApp = new NewsApp(services);
+services.newsApp = newsApp;
+
+const settingsApp = new SettingsApp(services);
+services.settingsApp = settingsApp;
+settingsApp.setFileSystemManager(fileSystemManager);
+
+const profileCustomizerApp = new ProfileCustomizerApp(services);
+services.profileCustomizerApp = profileCustomizerApp;
+profileCustomizerApp.setSettingsApp(settingsApp);
+
+const taskManagerApp = new TaskManagerApp(services);
+services.taskManagerApp = taskManagerApp;
+
+const weatherApp = new WeatherApp(services);
+services.weatherApp = weatherApp;
+
+const adsApp = new AdsManager(services);
+services.adsApp = adsApp;
+
+explorerApp.setBrowser(browserApp);
+
+const appCreatorApp = new AppCreatorApp(services);
+services.appCreatorApp = appCreatorApp;
+
+const monacoApp = new MonacoApp(services);
+services.monacoApp = monacoApp;
+
+const categoriesApp = new CategoriesApp(services);
+services.categoriesApp = categoriesApp;
+
+const model3dApp = new Model3DApp(services);
+services.model3dApp = model3dApp;
 const appLauncher = new AppLauncher(
   windowManager,
   fileSystemManager,
@@ -194,3 +195,22 @@ if (steamParam) {
   }, 0);
 }
 setupStartMenu(appLauncher);
+
+// Initialize user profile from localStorage
+function initializeUserProfile() {
+  const savedUsername = localStorage.getItem("yukiOS_username") || "reeyuki";
+  const savedProfilePic = localStorage.getItem("yukiOS_profilePicture") || "static/icons/guest.webp";
+
+  const startUserSpan = document.querySelector(".start-user span");
+  if (startUserSpan) startUserSpan.textContent = savedUsername;
+
+  const startUserImg = document.querySelector(".start-user img");
+  if (startUserImg) startUserImg.src = savedProfilePic;
+}
+
+// Initialize profile when DOM is ready
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initializeUserProfile);
+} else {
+  initializeUserProfile();
+}

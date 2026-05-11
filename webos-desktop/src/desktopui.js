@@ -1,5 +1,6 @@
 import { updateFavoritesUI } from "./startMenu.js";
 import { desktop } from "./desktop.js";
+import { bus, BusEvents } from "./core/EventBus.js";
 import interact from "interactjs";
 import { isImageFile, buildFileIconHTML, openFileWith } from "./fileDisplay.js";
 import { FileKind } from "./fs.js";
@@ -12,6 +13,7 @@ import { resolveIconUrl } from "./assetUrl.js";
 import { resolveDesktopIcon } from "./shared/iconUtils.js";
 
 let sharedAppLauncher;
+export let toggleHideGames = () => {};
 const GRID_CONFIG = { width: 76, height: 96, gap: 7 };
 
 function isRightAlignedSystemApp(appMap, app) {
@@ -770,8 +772,7 @@ export class DesktopUI {
   }
 
   async openFolder(folderName) {
-    this.explorerApp.open();
-    await this.explorerApp.navigate(["Desktop", folderName]);
+    this.explorerApp.open(["Desktop", folderName]);
   }
 
   handleIconSelection(icon, isCtrlKey) {
@@ -897,7 +898,7 @@ export class DesktopUI {
   async onDragEnd() {
     if (!this.state.isUserDragging) return;
     this.state.isUserDragging = false;
-    window.achievements.incrementDesktopFile();
+    bus.emit(BusEvents.DESKTOP_ICON_ADDED);
 
     if (this.state.explorerDragTarget) {
       const explorerWin = this.state.explorerDragTarget;
@@ -1407,7 +1408,6 @@ export class DesktopUI {
         } else if (folderName) {
           await this.fs.deleteItem(["Desktop"], folderName);
         } else if (icon.dataset.app) {
-          // Hardcoded system icon
           DeletedIconsStore.add(key);
         }
       } catch (err) {
@@ -1589,7 +1589,6 @@ export class DesktopUI {
     icon.dataset.fileName = fileName;
     const displayName = fileName.endsWith(".desktop") ? fileName.slice(0, -8) : fileName;
     icon.innerHTML = `${iconHTML}<div>${displayName}</div>`;
-    // If it's a shortcut, try to find the app ID to support standard launch behavior
     if (fileName.endsWith(".desktop")) {
       const raw = await this.fs.getFileContent(["Desktop"], fileName);
       try {
@@ -1706,16 +1705,13 @@ export class DesktopUI {
   setupStartMenu() {
     const menuActions = {
       home: () => {
-        this.explorerApp.open();
-        this.explorerApp.navigate("");
+        this.explorerApp.open([]);
       },
       documents: () => {
-        this.explorerApp.open();
-        this.explorerApp.navigate(this.fs.resolveDir("Documents"));
+        this.explorerApp.open(["Documents"]);
       },
       pictures: () => {
-        this.explorerApp.open();
-        this.explorerApp.navigate(this.fs.resolveDir("Pictures"));
+        this.explorerApp.open(["Pictures"]);
       },
       notes: () => this.notepadApp.open()
     };
@@ -1745,7 +1741,7 @@ export class DesktopUI {
     const storedHidden = localStorage.getItem(hideGamesKey) === "true";
     applyHideGames(storedHidden);
 
-    window.__toggleHideGames = () => {
+    toggleHideGames = () => {
       const currentlyHidden = localStorage.getItem(hideGamesKey) === "true";
       const next = !currentlyHidden;
       localStorage.setItem(hideGamesKey, String(next));

@@ -1,5 +1,6 @@
 import { desktop } from "./desktop.js";
 import { getWeatherInfo } from "./shared/weatherCodes.js";
+import { BaseApp } from "./core/BaseApp.js";
 
 const WEATHER_CACHE_TTL = 10 * 60 * 1000;
 const LOCATION_CACHE_TTL = 24 * 60 * 60 * 1000;
@@ -40,9 +41,9 @@ export async function detectUserLocation() {
   setCache(cacheKey, loc);
   return loc;
 }
-export class WeatherApp {
-  constructor(windowManager) {
-    this.wm = windowManager;
+export class WeatherApp extends BaseApp {
+  constructor(services) {
+    super(services);
     this.unit = "metric";
     this.currentCity = null;
     this.currentCoords = null;
@@ -54,10 +55,15 @@ export class WeatherApp {
     const cacheKey = `wx_${latitude.toFixed(2)}_${longitude.toFixed(2)}_${this.unit}`;
     const cached = getCached(cacheKey);
     if (cached) return { ...cached, cityName, country };
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,precipitation&daily=weather_code,temperature_2m_max,temperature_2m_min&temperature_unit=${tempUnit}&wind_speed_unit=${windUnit}&timezone=auto&forecast_days=5`;
+
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,precipitation&daily=weather_code,temperature_2m_max,temperature_2m_min&temperature_unit=${tempUnit}&wind_speed_unit=${windUnit}&timezone=auto&forecast_days=10`;
+
     const res = await fetch(url);
+    if (!res.ok) throw new Error("Weather API failed");
+
     const data = await res.json();
     setCache(cacheKey, data);
+
     return { ...data, cityName, country };
   }
 
@@ -83,25 +89,26 @@ export class WeatherApp {
     if (index === 1) return "Tomorrow";
     return new Date(dateStr).toLocaleDateString("en-US", { weekday: "short" });
   }
-
   renderWeather(container, data) {
     const cur = data.current;
     const daily = data.daily;
+
     const unitSymbol = this.unit === "imperial" ? "°F" : "°C";
     const windUnitLabel = this.unit === "imperial" ? "mph" : "km/h";
+
     const wInfo = this.getWeatherInfo(cur.weather_code);
 
-    const forecastHTML = daily.time
-      .slice(0, 5)
+    const forecastHTML = (daily.time || [])
       .map((date, i) => {
-        const info = this.getWeatherInfo(daily.weather_code[i]);
+        const info = this.getWeatherInfo(daily.weather_code?.[i]);
+
         return `
         <div class="wx-forecast-day">
           <span class="wx-fday">${this.getDayName(date, i)}</span>
           <span class="wx-ficon">${info.icon}</span>
           <span class="wx-ftemp">
-            <span class="wx-fmax">${Math.round(daily.temperature_2m_max[i])}°</span>
-            <span class="wx-fmin">${Math.round(daily.temperature_2m_min[i])}°</span>
+            <span class="wx-fmax">${Math.round(daily.temperature_2m_max?.[i] ?? 0)}°</span>
+            <span class="wx-fmin">${Math.round(daily.temperature_2m_min?.[i] ?? 0)}°</span>
           </span>
         </div>
       `;
@@ -109,36 +116,41 @@ export class WeatherApp {
       .join("");
 
     container.innerHTML = `
-      <div class="wx-main">
-        <div class="wx-hero">
-          <div class="wx-location">${data.cityName}, ${data.country}</div>
-          <div class="wx-icon-big">${wInfo.icon}</div>
-          <div class="wx-temp-big">${Math.round(cur.temperature_2m)}${unitSymbol}</div>
-          <div class="wx-condition">${wInfo.label}</div>
-          <div class="wx-feels">Feels like ${Math.round(cur.apparent_temperature)}${unitSymbol}</div>
-        </div>
-        <div class="wx-stats">
-          <div class="wx-stat">
-            <span class="wx-stat-icon">💧</span>
-            <span class="wx-stat-val">${cur.relative_humidity_2m}%</span>
-            <span class="wx-stat-label">Humidity</span>
-          </div>
-          <div class="wx-stat">
-            <span class="wx-stat-icon">💨</span>
-            <span class="wx-stat-val">${Math.round(cur.wind_speed_10m)} ${windUnitLabel}</span>
-            <span class="wx-stat-label">Wind</span>
-          </div>
-          <div class="wx-stat">
-            <span class="wx-stat-icon">🌧️</span>
-            <span class="wx-stat-val">${cur.precipitation} mm</span>
-            <span class="wx-stat-label">Precip</span>
-          </div>
-        </div>
-        <div class="wx-forecast">${forecastHTML}</div>
+    <div class="wx-main">
+      <div class="wx-hero">
+        <div class="wx-location">${data.cityName}, ${data.country}</div>
+        <div class="wx-icon-big">${wInfo.icon}</div>
+        <div class="wx-temp-big">${Math.round(cur.temperature_2m)}${unitSymbol}</div>
+        <div class="wx-condition">${wInfo.label}</div>
+        <div class="wx-feels">Feels like ${Math.round(cur.apparent_temperature)}${unitSymbol}</div>
       </div>
-    `;
-  }
 
+      <div class="wx-stats">
+        <div class="wx-stat">
+          <span class="wx-stat-icon">💧</span>
+          <span class="wx-stat-val">${cur.relative_humidity_2m}%</span>
+          <span class="wx-stat-label">Humidity</span>
+        </div>
+
+        <div class="wx-stat">
+          <span class="wx-stat-icon">💨</span>
+          <span class="wx-stat-val">${Math.round(cur.wind_speed_10m)} ${windUnitLabel}</span>
+          <span class="wx-stat-label">Wind</span>
+        </div>
+
+        <div class="wx-stat">
+          <span class="wx-stat-icon">🌧️</span>
+          <span class="wx-stat-val">${cur.precipitation} mm</span>
+          <span class="wx-stat-label">Precip</span>
+        </div>
+      </div>
+
+      <div class="wx-forecast">
+        ${forecastHTML}
+      </div>
+    </div>
+  `;
+  }
   renderError(container, message) {
     container.innerHTML = `<div class="wx-error">⚠️ ${message}</div>`;
   }
@@ -188,14 +200,11 @@ export class WeatherApp {
     }
   }
 
-  open(windowManager) {
-    const wm = windowManager || this.wm;
-    if (document.getElementById("weather-win")) {
-      wm.bringToFront(document.getElementById("weather-win"));
-      return;
-    }
+  open() {
+    const winId = "weather-win";
+    if (this._isSingletonOpen(winId)) return;
 
-    const win = wm.createWindow("weather-win", "WEATHER", "420px", "560px");
+    const win = this.wm.createWindow("weather-win", "WEATHER", "420px", "560px");
     Object.assign(win.style, { left: "200px", top: "100px" });
 
     win.innerHTML = `
@@ -334,10 +343,10 @@ export class WeatherApp {
     `;
 
     desktop.appendChild(win);
-    wm.makeDraggable(win);
-    wm.makeResizable(win);
-    wm.setupWindowControls(win);
-    wm.addToTaskbar(win.id, "Weather", "fas fa-cloud");
+    this.wm.makeDraggable(win);
+    this.wm.makeResizable(win);
+    this.wm.setupWindowControls(win);
+    this.wm.addToTaskbar(win.id, "Weather", "fas fa-cloud");
 
     const body = win.querySelector("#wx-body");
     const searchInput = win.querySelector("#wx-search-input");

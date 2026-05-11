@@ -1,10 +1,10 @@
 import { detectUserLocation } from "./weather.js";
 import { getWeatherIcon } from "./shared/weatherCodes.js";
-import { getBrowser } from "./shared/platformUtils.js";
 import { StorageKeys } from "./settings.js";
 import { videos } from "./wallpaperList.js";
 import { createCalendarPopup, setCurrentCalendarMonth } from "./calendar.js";
 import { resolveWallpaperUrl } from "./shared/assetResolver.js";
+import { bus, BusEvents } from "./core/EventBus.js";
 
 function isBlob(obj) {
   if (!obj) return false;
@@ -159,13 +159,13 @@ class WallpaperManager {
       if (toggle) toggle.checked = false;
 
       this._applyBlob(wallpaperURL, type);
-      window.achievements.incrementWallpaper();
+      bus.emit(BusEvents.WALLPAPER_CHANGED, { url: "__blob__" });
       return;
     }
 
     wallpaperURL = this._normalizeWallpaperUrl(wallpaperURL);
 
-    window.achievements.incrementWallpaper();
+    bus.emit(BusEvents.WALLPAPER_CHANGED, { url: wallpaperURL });
 
     localStorage.setItem(StorageKeys.manualWallpaper, "true");
     localStorage.setItem(StorageKeys.cycleWallpaper, "false");

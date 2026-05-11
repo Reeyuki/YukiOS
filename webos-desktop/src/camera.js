@@ -1,9 +1,9 @@
+import { BaseApp } from "./core/BaseApp.js";
 import { desktop } from "./desktop.js";
 
-export class CameraApp {
-  constructor(windowManager, fileSystemManager) {
-    this.wm = windowManager;
-    this.fs = fileSystemManager;
+export class CameraApp extends BaseApp {
+  constructor(services) {
+    super(services);
     this.stream = null;
     this.mediaRecorder = null;
     this.recordedChunks = [];
@@ -130,7 +130,6 @@ export class CameraApp {
 
     this.startCamera();
 
-    // Mode switching
     this.modeBtns.forEach((btn) => {
       btn.onclick = () => {
         this.modeBtns.forEach((b) => b.classList.remove("active"));
@@ -141,7 +140,6 @@ export class CameraApp {
       };
     });
 
-    // Shutter button - action depends on current mode
     this.shutterBtn.onclick = () => {
       if (this.currentMode === "photo") {
         this.takePhoto();

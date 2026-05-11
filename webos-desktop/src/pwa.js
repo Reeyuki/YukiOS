@@ -40,8 +40,6 @@ export function registerPWA() {
       const tryUpdate = () => registration.update().catch(() => {});
       window.addEventListener("focus", tryUpdate);
       setInterval(tryUpdate, 60 * 60 * 1000);
-    } catch {
-      // ignore
-    }
+    } catch {}
   });
 }

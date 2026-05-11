@@ -1,5 +1,6 @@
-import { desktop } from "./desktop.js";
+import { BaseApp } from "./core/BaseApp.js";
 import { StorageKeys } from "./settings.js";
+import { desktop } from "./desktop.js";
 
 const NEWS_UPDATES = [
   {
@@ -231,9 +232,9 @@ export const getNewsContentSignature = () => {
   return hashStringDjb2(JSON.stringify(minimal));
 };
 
-export class NewsApp {
-  constructor(windowManager) {
-    this.wm = windowManager;
+export class NewsApp extends BaseApp {
+  constructor(services) {
+    super(services);
   }
 
   open() {
@@ -241,11 +242,7 @@ export class NewsApp {
     localStorage.setItem(StorageKeys.newsSeenKey, "true");
 
     const winId = "news-yukios";
-    const existing = document.getElementById(winId);
-    if (existing) {
-      this.wm.bringToFront(existing);
-      return;
-    }
+    if (this._isSingletonOpen(winId)) return;
 
     const win = this.wm.createWindow(winId, "What's New", "720px", "520px");
     Object.assign(win.style, { left: "180px", top: "70px" });

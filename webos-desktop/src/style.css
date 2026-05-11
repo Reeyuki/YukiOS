@@ -687,6 +687,34 @@ body.is-resizing * {
   white-space: nowrap;
 }
 
+.user-tooltip {
+  position: fixed;
+  background: rgba(20, 20, 25, 0.95);
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  z-index: 20000;
+  pointer-events: none;
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  transform: translateY(-50%);
+  animation: tooltipFadeIn 0.2s ease-out;
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50%) translateX(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+  }
+}
+
 .start-signout-btn {
   background: transparent;
   color: var(--tx2);
@@ -989,7 +1017,8 @@ body.is-resizing * {
 
 .explorer-container {
   display: flex;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
   color: var(--tx1);
   overflow: hidden;
 }
@@ -2505,51 +2534,6 @@ body.is-resizing * {
 
 .calc-history-item:hover {
   background: rgba(255, 255, 255, 0.1);
-}
-
-.tray-notify {
-  position: fixed;
-  bottom: 50px;
-  right: 10px;
-  width: 260px;
-  padding: 10px 1.1em;
-  background: #fff;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  color: #000;
-  font-size: 1.1em;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  z-index: 9999;
-  opacity: 0;
-  cursor: default;
-  transition:
-    bottom 0.5s,
-    opacity 0.5s;
-}
-
-#install-app {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  padding: 1.1em 20px;
-  border-radius: 16px;
-  backdrop-filter: blur(1.1em);
-  background: rgba(255, 255, 255, 0.15);
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-  cursor: pointer;
-  z-index: 9999;
-  transition:
-    transform 0.2s,
-    background 0.2s,
-    box-shadow 0.2s;
-}
-
-#install-app:hover {
-  transform: scale(1.05);
-  background: rgba(255, 255, 255, 0.25);
-  box-shadow: 0 1.1em 32px rgba(0, 0, 0, 0.3);
 }
 
 .ejs_canvas {
@@ -7290,13 +7274,63 @@ body.is-resizing * {
 #snap-ghost {
   position: absolute;
   display: none;
-  background: rgba(0, 120, 215, 0.25);
-  border: 2px solid rgba(0, 120, 215, 0.7);
-  border-radius: 6px;
+  background: rgba(79, 158, 255, 0.2);
+  border: 2px solid var(--brand);
+  border-radius: 8px;
   pointer-events: none;
   z-index: 11000;
-  transition: all 0.1s ease;
+  transition: all 0.15s ease;
   box-sizing: border-box;
+  box-shadow: 0 0 20px rgba(79, 158, 255, 0.2);
+}
+
+.snap-ghost-maximize {
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: calc(100vh - 48px);
+}
+
+.snap-ghost-left {
+  top: 0;
+  left: 0;
+  width: 50vw;
+  height: calc(100vh - 48px);
+}
+
+.snap-ghost-right {
+  top: 0;
+  left: 50vw;
+  width: 50vw;
+  height: calc(100vh - 48px);
+}
+
+.snap-ghost-top-left {
+  top: 0;
+  left: 0;
+  width: 50vw;
+  height: calc(50vh - 24px);
+}
+
+.snap-ghost-top-right {
+  top: 0;
+  left: 50vw;
+  width: 50vw;
+  height: calc(50vh - 24px);
+}
+
+.snap-ghost-bottom-left {
+  top: calc(50vh - 24px);
+  left: 0;
+  width: 50vw;
+  height: calc(50vh - 24px);
+}
+
+.snap-ghost-bottom-right {
+  top: calc(50vh - 24px);
+  left: 50vw;
+  width: 50vw;
+  height: calc(50vh - 24px);
 }
 
 .docked {

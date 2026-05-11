@@ -1,3 +1,4 @@
+import { BaseApp } from "./core/BaseApp.js";
 import { isImageFile } from "./fileDisplay.js";
 import { desktop } from "./desktop.js";
 import { refreshIcons } from "./shared/contextMenu.js";
@@ -82,12 +83,11 @@ function makeDesktopIconElement(appId, name, iconUrl) {
   return icon;
 }
 
-export class AppCreatorApp {
-  constructor(fileSystemManager, windowManager, appLauncher, desktopUI = null) {
-    this.fs = fileSystemManager;
-    this.wm = windowManager;
-    this.appLauncher = appLauncher;
-    this.desktopUI = desktopUI;
+export class AppCreatorApp extends BaseApp {
+  constructor(services) {
+    super(services);
+    this.appLauncher = services.appLauncher;
+    this.desktopUI = services.desktopUI || null;
   }
 
   setDesktopUI(desktopUI) {

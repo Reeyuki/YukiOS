@@ -1,8 +1,9 @@
+import { BaseApp } from "./core/BaseApp.js";
 import { desktop } from "./desktop.js";
 
-export class TaskManagerApp {
-  constructor(windowManager) {
-    this.wm = windowManager;
+export class TaskManagerApp extends BaseApp {
+  constructor(services) {
+    super(services);
     this.refreshInterval = null;
     this.sortKey = "title";
     this.sortAsc = true;

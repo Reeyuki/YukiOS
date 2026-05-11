@@ -1,7 +1,9 @@
+import { BaseApp } from "./core/BaseApp.js";
 import { desktop } from "./desktop.js";
 import { speak } from "./clippy.js";
 import JSZip from "https://esm.sh/jszip@3.10.1";
 import { Achievements } from "./achievements.js";
+import { bus, BusEvents } from "./core/EventBus.js";
 const SAMPLE_MODELS = [
   {
     name: "Stanford Bunny",
@@ -65,11 +67,10 @@ async function loadThree() {
   SkeletonHelper = THREE.SkeletonHelper;
 }
 
-export class Model3DApp {
-  constructor(fileSystemManager, windowManager, explorerApp) {
-    this.fs = fileSystemManager;
-    this.wm = windowManager;
-    this.explorerApp = explorerApp;
+export class Model3DApp extends BaseApp {
+  constructor(services) {
+    super(services);
+    this.explorerApp = services.explorerApp;
     this.currentModel = null;
     this.mixer = null;
     this.animations = [];
@@ -1206,7 +1207,7 @@ export class Model3DApp {
         this.updateModelInfo(object);
         this.updateStatus(fileName);
         this.addModelLabel(fileName);
-        window.achievements.trigger(Achievements.ModelViewer);
+        bus.emit(BusEvents.ACHIEVEMENT_TRIGGER, { key: Achievements.ModelViewer });
       }
     } catch (error) {
       console.error("Error loading model:", error);

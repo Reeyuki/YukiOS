@@ -2,6 +2,8 @@ import { desktop } from "./desktop.js";
 import { speak } from "./clippy.js";
 import { FileKind } from "./fs.js";
 import { Achievements } from "./achievements.js";
+import { BaseApp } from "./core/BaseApp.js";
+import { bus, BusEvents } from "./core/EventBus.js";
 import { getLibraryUrl } from "./shared/cdnConfig.js";
 class OfficeModuleLoader {
   constructor() {
@@ -1043,14 +1045,15 @@ class EditorRegistry {
   }
 }
 
-export class OfficeApp {
-  constructor(fileSystemManager, windowManager, explorerApp) {
-    this.fs = fileSystemManager;
-    this.wm = windowManager;
+export class OfficeApp extends BaseApp {
+  constructor(services) {
+    super(services);
+    this.fs = services.fileSystemManager;
+    this.wm = services.windowManager;
+    this.explorerApp = services.explorerApp;
     this.idleTimer = null;
     this.idleDelay = 15000;
     this.editors = {};
-    this.explorerApp = explorerApp;
     this.registry = new EditorRegistry();
     this.registry.register(new SpreadsheetEditor());
     this.registry.register(new DocxEditor());
@@ -1416,7 +1419,7 @@ export class OfficeApp {
 
   async saveFilesToDocuments(files) {
     if (!this.fs || !files || files.length === 0) return [];
-    window.achievements.trigger(Achievements.OfficeWorker);
+    bus.emit(BusEvents.ACHIEVEMENT_TRIGGER, { key: Achievements.OfficeWorker });
 
     const documentsPath = ["Documents"];
     await this.fs.ensureFolder(documentsPath);

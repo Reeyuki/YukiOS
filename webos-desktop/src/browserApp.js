@@ -1,13 +1,15 @@
 import { PROXIES, clampProxyIndex, buildProxyUrl } from "./proxies.js";
+import { BaseApp } from "./core/BaseApp.js";
+import { bus, BusEvents } from "./core/EventBus.js";
 
-export class BrowserApp {
+export class BrowserApp extends BaseApp {
   static refreshIcons(node) {
     if (window.FontAwesome && window.FontAwesome.dom && window.FontAwesome.dom.i2svg) {
       window.FontAwesome.dom.i2svg({ node });
     }
   }
-  constructor(windowManager) {
-    this.wm = windowManager;
+  constructor(services) {
+    super(services);
     this.winId = "browser-app-main";
     this.tabs = [];
     this.tabIdCounter = 0;
@@ -137,11 +139,7 @@ export class BrowserApp {
 
   open(title = "Yuki Browser", url = null) {
     this.injectStyles();
-    const existing = document.getElementById(this.winId);
-    if (existing) {
-      this.wm.bringToFront(existing);
-      return;
-    }
+    if (this._isSingletonOpen(this.winId)) return;
 
     this._destroyed = false;
 
@@ -238,6 +236,10 @@ export class BrowserApp {
     closeBtn.dataset.browserWrappedClose = "true";
   }
 
+  onClose() {
+    this.destroy();
+  }
+
   destroy() {
     if (this._destroyed) return;
     this._destroyed = true;
@@ -326,44 +328,6 @@ export class BrowserApp {
     }
 
     return win;
-  }
-  setupKeyboardShortcuts() {
-    this._kbListener = (e) => {
-      const inWin = this.win && this.win.contains(document.activeElement);
-      if (!inWin && document.activeElement !== document.body) return;
-
-      if (e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey && /^[1-9]$/.test(e.key)) {
-        e.preventDefault();
-        const index = parseInt(e.key, 10) - 1;
-        const tab = this.tabs[index];
-        if (tab) this.switchTab(tab.id);
-        return;
-      }
-
-      if (e.ctrlKey && e.key === "l") {
-        e.preventDefault();
-        this.addressBar.focus();
-        this.addressBar.select();
-      }
-
-      if (e.ctrlKey && e.key === "t") {
-        e.preventDefault();
-        this.createTab(this.homepageUrl, true);
-      }
-
-      if (e.ctrlKey && e.key === "w") {
-        e.preventDefault();
-        const tab = this.getActiveTab();
-        if (tab) this.closeTab(tab.id);
-      }
-
-      if (e.ctrlKey && e.shiftKey && e.key === "T") {
-        e.preventDefault();
-        this.reopenLastClosedTab();
-      }
-    };
-
-    document.addEventListener("keydown", this._kbListener);
   }
   setupNavEvents() {
     const backBtn = document.getElementById(`btn-back-${this.winId}`);
@@ -785,6 +749,15 @@ export class BrowserApp {
     this._kbListener = (e) => {
       const inWin = this.win && this.win.contains(document.activeElement);
       if (!inWin && document.activeElement !== document.body) return;
+
+      if (e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey && /^[1-9]$/.test(e.key)) {
+        e.preventDefault();
+        const index = parseInt(e.key, 10) - 1;
+        const tab = this.tabs[index];
+        if (tab) this.switchTab(tab.id);
+        return;
+      }
+
       if (e.ctrlKey && e.key === "l") {
         e.preventDefault();
         this.addressBar.focus();
@@ -1510,7 +1483,7 @@ export class BrowserApp {
     if (!val || typeof val !== 'string') return val;
     val = val.trim();
     if (/^(https?:|data:|blob:|javascript:|#|mailto:|tel:)/i.test(val)) return val;
-    if (val.startsWith('//')) return 'https:' + val;
+    if (val.startsWith('
     try { return new URL(val, __base).href; } catch(e) { return val; }
   }
 

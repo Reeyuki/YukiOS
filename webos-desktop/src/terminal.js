@@ -1,10 +1,11 @@
 import { Achievements } from "./achievements.js";
 import { desktop } from "./desktop.js";
+import { BaseApp } from "./core/BaseApp.js";
+import { bus, BusEvents } from "./core/EventBus.js";
 
-export class TerminalApp {
-  constructor(fileSystemManager, windowManager) {
-    this.fs = fileSystemManager;
-    this.wm = windowManager;
+export class TerminalApp extends BaseApp {
+  constructor(services) {
+    super(services);
     this.currentPath = ["home", "reeyuki"];
     this.history = [];
     this.historyIndex = -1;
@@ -210,9 +211,9 @@ export class TerminalApp {
     return capturedLines.join("\n");
   }
   async executeCommand(commandStr) {
-    window.achievements.triggerCommandExecution();
+    bus.emit(BusEvents.TERMINAL_CMD_EXECUTED, { command: commandStr });
     await this.enqueuePrint(commandStr, null, true, this.terminalPrompt.textContent);
-    window.achievements.trigger(Achievements.DeveloperMode);
+    bus.emit(BusEvents.ACHIEVEMENT_TRIGGER, { key: Achievements.DeveloperMode });
     const pipeline = this.parseCommand(commandStr);
     await this.executePipeline(pipeline);
 
@@ -562,7 +563,7 @@ export class TerminalApp {
   }
 
   async cmdNeofetch() {
-    window.achievements.trigger(Achievements.DeveloperModeSuper);
+    bus.emit(BusEvents.ACHIEVEMENT_TRIGGER, { key: Achievements.DeveloperModeSuper });
     const ua = navigator.userAgent;
     const platformRaw = navigator.userAgentData?.platform || navigator.platform || ua || "Unknown";
 

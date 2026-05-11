@@ -1,37 +1,17 @@
-/**
- * Centralized asset URL resolution and CDN management
- * Provides unified logic for resolving jsdelivr and other CDN URLs
- */
-
-// ============================================================================
-// Constants
-// ============================================================================
-
 export const CDN_BASES = {
   GAMES: "https://cdn.jsdelivr.net/gh/reeyuki/yukios-games@main",
   MAIN: "https://cdn.jsdelivr.net/gh/reeyuki/yukios@main",
   NPM: "https://cdn.jsdelivr.net/npm"
 };
 
-// Legacy constant names for backward compatibility
 export const JSDELIVR_BASE = CDN_BASES.GAMES;
 export const YUKIOS_JSDELIVR_BASE = CDN_BASES.MAIN;
 export const JSDELIVR_GH_BASE = CDN_BASES.MAIN;
 
-// ============================================================================
-// Helper Functions
-// ============================================================================
-
-/**
- * Check if a URL is a jsDelivr GitHub URL
- */
 export const isJsDelivrGhUrl = (url) =>
   typeof url === "string" &&
   (url.startsWith("https://cdn.jsdelivr.net/gh/") || url.startsWith("http://cdn.jsdelivr.net/gh/"));
 
-/**
- * Check if a hostname is a jsDelivr hostname (including subdomains)
- */
 export function isJsDelivrHostname(hostname) {
   if (typeof hostname !== "string") return false;
   return (
@@ -44,15 +24,8 @@ export function isJsDelivrHostname(hostname) {
   );
 }
 
-/**
- * Check if a URL looks like an HTML file
- */
 export const looksLikeHtml = (url) => typeof url === "string" && /\.html?([?#].*)?$/i.test(url);
 
-/**
- * Get the current jsDelivr repo base URL from window.location
- * Returns null if not on jsDelivr or if URL cannot be parsed
- */
 export function getCurrentJsDelivrRepoBase() {
   try {
     const here = new URL(window.location.href);
@@ -65,9 +38,6 @@ export function getCurrentJsDelivrRepoBase() {
   }
 }
 
-/**
- * Get jsDelivr repo base from a given URL
- */
 export function getJsDelivrRepoBase(url) {
   try {
     const uo = new URL(url);
@@ -81,14 +51,6 @@ export function getJsDelivrRepoBase(url) {
   return null;
 }
 
-// ============================================================================
-// Core URL Resolution Functions
-// ============================================================================
-
-/**
- * Resolve icon URLs to absolute jsDelivr URLs when needed
- * Handles data:, blob:, @content special cases
- */
 export function resolveIconUrl(url) {
   if (typeof url !== "string") return url;
   if (url.startsWith("data:") || url.startsWith("blob:") || url === "@content") return url;
@@ -101,7 +63,7 @@ export function resolveIconUrl(url) {
     }
   } catch {}
 
-  if (/^https?:\/\//i.test(url)) {
+  if (/^https?:\/\//.test(url)) {
     try {
       const u = new URL(url);
       const isJsdelivr = isJsDelivrHostname(u.hostname);
@@ -114,9 +76,6 @@ export function resolveIconUrl(url) {
   return url;
 }
 
-/**
- * Resolve wallpaper URLs to absolute jsDelivr URLs when needed
- */
 export function resolveWallpaperUrl(url) {
   if (typeof url !== "string") return null;
   if (url.startsWith("http://") || url.startsWith("https://")) {
@@ -137,10 +96,6 @@ export function resolveWallpaperUrl(url) {
   return url;
 }
 
-/**
- * General asset URL resolution with jsDelivr awareness
- * Handles both absolute and relative paths, HTML vs non-HTML distinction
- */
 export async function resolveUrl(url, isJsDelivrGh = false) {
   if (!url) return url;
   if (url.startsWith("blob:") || url.startsWith("data:")) return url;
@@ -177,14 +132,6 @@ export async function resolveUrl(url, isJsDelivrGh = false) {
   return `${isHtml ? CDN_BASES.MAIN : CDN_BASES.GAMES}${normalized}`;
 }
 
-// ============================================================================
-// HTML Fetch and Rewrite Logic
-// ============================================================================
-
-/**
- * Fetch HTML from a URL, rewrite relative paths, and return as blob URL
- * Handles jsDelivr GitHub URLs with proper base href and asset resolution
- */
 export async function fetchHtmlAsBlobUrl(url) {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`HTTP ${res.status} fetching ${url}`);
@@ -234,7 +181,6 @@ export async function fetchHtmlAsBlobUrl(url) {
   let rewritten = html;
   if (!isIgnored) {
     rewritten = html
-      // Next.js exports commonly use root-relative `/_next/...` paths
       .replace(/\b(src|poster|data)=([\"'])\/_next\/(?!\/)/gi, `$1=$2${assetDirBase}_next/`)
       .replace(/<(link|a|form)\b([^>]*?)\b(href|action)=([\"'])\/_next\/(?!\/)/gi, `<$1$2$3=$4${assetDirBase}_next/`)
       .replace(/\burl\(\s*([\"']?)\/_next\/(?!\/)/gi, `url($1${assetDirBase}_next/`)
@@ -252,7 +198,6 @@ export async function fetchHtmlAsBlobUrl(url) {
       .replace(/\burl\(\s*([\"']?)(?!https?:|data:|blob:|\/\/|#|\/)/gi, `url($1${assetDirBase}`);
   }
 
-  // Unity WebGL special handling
   const looksLikeUnityWebgl =
     /\bcreateUnityInstance\s*\(/.test(rewritten) ||
     /\bunityVersion\s*:\s*["']/.test(rewritten) ||
@@ -269,7 +214,6 @@ export async function fetchHtmlAsBlobUrl(url) {
     );
   }
 
-  // Inject runtime script for dynamic URL resolution
   const injectedScripts = `<script>
 (function() {
   const ROOT_BASE = "${rootBase}";
@@ -278,7 +222,7 @@ export async function fetchHtmlAsBlobUrl(url) {
 
   function resolve(url) {
     if (typeof url !== 'string' || !url) return url;
-    if (url.startsWith('blob:') || url.startsWith('data:') || url.startsWith('http://') || url.startsWith('https://') || url.startsWith('//') || url.startsWith('#')) return url;
+    if (url.startsWith('blob:') || url.startsWith('data:') || url.startsWith('http://') || url.startsWith('https://') || url.startsWith('
     let p = url;
     if (p.startsWith('/')) {
       p = p.slice(1);

@@ -1,10 +1,10 @@
 import { desktop } from "./desktop.js";
 import { appMap } from "./gamesList.js";
-import { tryGetIcon } from "./startMenu";
-import { fetchHtmlAsBlobUrl, looksLikeHtml, isJsDelivrGhUrl, CDN_BASES } from "./shared/assetResolver.js";
+import { fetchHtmlAsBlobUrl, looksLikeHtml, isJsDelivrGhUrl } from "./shared/assetResolver.js";
 import { sendLaunchAnalytics } from "./analytics.js";
-import { PROXIES } from "./proxies.js";
 import { refreshIcons } from "./shared/contextMenu.js";
+import { descriptionMap } from "./gameDescriptions.js";
+import { getAnalyticsBase } from "./analytics.js";
 
 let _launcher = null;
 let _desktopUI = null;
@@ -1302,7 +1302,6 @@ export class GameWindowRenderer {
     const winRoot = container.closest(".window");
     if (winRoot) {
       const header = winRoot.querySelector(".window-header:not(.steam-top-bar)");
-      // Find controls anywhere in the window (they might have been moved to a slot previously)
       let controls = winRoot.querySelector(".window-controls");
       const slot = container.querySelector(".steam-window-controls-slot");
 
@@ -1615,7 +1614,8 @@ export class SystemAppRenderer {
     this.appMap = appMap;
   }
   getSystemApps() {
-    return Object.entries(appMap)
+    const targetMap = this.appMap || appMap;
+    return Object.entries(targetMap)
       .filter(([id, data]) => data.type === "system" && data.icon && data.title)
       .map(([id, data]) => ({ app: id, ...data }));
   }

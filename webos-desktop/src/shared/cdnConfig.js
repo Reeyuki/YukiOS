@@ -1,8 +1,3 @@
-/**
- * CDN configuration for external libraries and repositories
- * Centralizes all version numbers and CDN paths for easy maintenance
- */
-
 export const CDN_CONFIG = {
   repos: {
     games: {
@@ -63,9 +58,6 @@ export const CDN_CONFIG = {
   }
 };
 
-/**
- * Helper to get full CDN URL for a library
- */
 export function getLibraryUrl(libraryName, type = "path") {
   const lib = CDN_CONFIG.libraries[libraryName];
   if (!lib) return null;
@@ -76,9 +68,6 @@ export function getLibraryUrl(libraryName, type = "path") {
   return `${CDN_CONFIG.repos.npm.base}/${path}`;
 }
 
-/**
- * Helper to get full CDN URL for a repo path
- */
 export function getRepoUrl(repoName, path) {
   const repo = CDN_CONFIG.repos[repoName];
   if (!repo) return null;

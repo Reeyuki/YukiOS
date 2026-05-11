@@ -524,6 +524,7 @@ export class FileSystemManager {
       await this.p("mkdir", current, { recursive: true }).catch(() => {});
     }
   }
+
   async getFolder(path) {
     await this.fsReady;
     const dir = this.resolveDir(path);
@@ -672,7 +673,7 @@ export class FileSystemManager {
     await this.notifyDesktopChange(path);
   }
 
-  async updateFile(path, name, content) {
+  async updateFile(path, name, content, meta = {}) {
     await this.fsReady;
     const dir = this.resolveDir(path);
     const filePath = this.join(dir, name);
@@ -830,9 +831,9 @@ export class FileSystemManager {
     return await this.pRead("readFile", filePath, "utf8");
   }
 
-  async exists(filePath) {
+  async exists(path) {
     try {
-      await this.pStat(filePath);
+      await this.pStat(path);
       return true;
     } catch {
       return false;

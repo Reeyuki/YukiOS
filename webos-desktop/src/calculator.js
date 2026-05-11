@@ -1,17 +1,15 @@
 import { desktop } from "./desktop.js";
+import { BaseApp } from "./core/BaseApp.js";
 
-export class CalculatorApp {
-  constructor(windowManager) {
-    this.wm = windowManager;
+export class CalculatorApp extends BaseApp {
+  constructor(services) {
+    super(services);
     this.keyHandler = null;
   }
 
   open() {
     const winId = "calculator-app";
-    if (document.getElementById(winId)) {
-      this.wm.bringToFront(document.getElementById(winId));
-      return;
-    }
+    if (this._isSingletonOpen(winId)) return;
 
     const win = this.wm.createWindow(winId, "Calculator", "360px", "560px");
     Object.assign(win.style, { left: "300px", top: "120px" });

@@ -18,7 +18,6 @@ function parseSpotifyInput(input) {
   const raw = String(input || "").trim();
   if (!raw) return { kind: null, id: null, rawUrl: null };
 
-  // spotify:track:<id>
   if (raw.startsWith("spotify:")) {
     const parts = raw.split(":").filter(Boolean);
     if (parts.length >= 3) {
@@ -28,7 +27,6 @@ function parseSpotifyInput(input) {
     }
   }
 
-  // bare id (assume track)
   if (!raw.includes("://") && isProbablySpotifyId(raw)) {
     return { kind: "track", id: raw, rawUrl: null };
   }
@@ -45,12 +43,10 @@ function parseSpotifyInput(input) {
 
   const parts = (url.pathname || "/").split("/").filter(Boolean);
 
-  // /embed/<kind>/<id>
   if (parts[0] === "embed" && parts.length >= 3) {
     return { kind: parts[1], id: parts[2], rawUrl: url.href };
   }
 
-  // /<kind>/<id>
   if (parts.length >= 2) {
     return { kind: parts[0], id: parts[1], rawUrl: url.href };
   }
@@ -407,7 +403,6 @@ export class MusicPlayerApp {
     if (!parsed) return;
     const uri = buildSpotifyUri(parsed);
     if (!uri) return;
-    // Works when Spotify desktop app is installed and browser allows it.
     window.location.href = uri;
   }
 

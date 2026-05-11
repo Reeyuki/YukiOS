@@ -1,27 +1,26 @@
 import { Achievements } from "./achievements.js";
+import { bus, BusEvents } from "./core/EventBus.js";
 import { desktop } from "./desktop.js";
+import { BaseApp } from "./core/BaseApp.js";
 
 const IMAGES_DIR = ["VMs"];
 
-export class V86App {
-  constructor(fileSystemManager, windowManager, explorerApp) {
-    this._fs = fileSystemManager;
-    this._windowManager = windowManager;
-    this._explorerApp = explorerApp;
+export class V86App extends BaseApp {
+  constructor(services) {
+    super(services);
+    this._explorerApp = services.explorerApp;
     this._v86LoadPromise = null;
   }
 
   open() {
-    if (document.getElementById("v86-win")) {
-      this._windowManager.bringToFront(document.getElementById("v86-win"));
-      return;
-    }
+    if (this._isSingletonOpen("v86-win")) return;
+
     this._loadV86Script();
-    const win = this._windowManager.createWindow("v86-win", "V86", "600px", "560px");
+    const win = this.wm.createWindow("v86-win", "V86", "600px", "560px");
     win.innerHTML = `
       <div class="window-header">
         <span>V86 Virtual Machine</span>
-        ${this._windowManager.getWindowControls()}
+        ${this.wm.getWindowControls()}
       </div>
       <div class="window-content" style="width:100%;height:100%;background:#1a1a2e;color:#eee;font-family:monospace;overflow-y:auto;overflow-x:hidden;">
         <div class="v86-header" style="display:flex;align-items:center;gap:16px;padding:24px 20px 16px;">
@@ -58,10 +57,10 @@ export class V86App {
       </div>`;
 
     desktop.appendChild(win);
-    this._windowManager.makeDraggable(win);
-    this._windowManager.makeResizable(win);
-    this._windowManager.setupWindowControls(win);
-    this._windowManager.addToTaskbar(win.id, "V86", "static/icons/v86.webp");
+    this.wm.makeDraggable(win);
+    this.wm.makeResizable(win);
+    this.wm.setupWindowControls(win);
+    this.wm.addToTaskbar(win.id, "V86", "static/icons/v86.webp");
 
     this._setupSystemCardListeners(win);
     this._setupUploadZone(win);
@@ -149,8 +148,8 @@ export class V86App {
 
     try {
       const blob = new Blob([await file.arrayBuffer()], { type: file.type || "application/octet-stream" });
-      await this._fs.writeBinaryFile(IMAGES_DIR, file.name, blob, "other", "/static/icons/v86.webp");
-      this._windowManager.sendNotify(`Saved ${file.name} at VMs/ directory.`);
+      await this.fs.writeBinaryFile(IMAGES_DIR, file.name, blob, "other", "/static/icons/v86.webp");
+      this.wm.sendNotify(`Saved ${file.name} at VMs/ directory.`);
       zone.innerHTML = `<i class="fa-solid fa-circle-check" style="font-size:20px;color:#4caf50;margin-bottom:8px;display:block;"></i><div style="font-size:13px;color:#bbb;">Saved!</div>`;
       await this._loadUserImages(win);
       setTimeout(() => {
@@ -174,10 +173,10 @@ export class V86App {
     if (!container) return;
 
     try {
-      await this._fs.fsReady;
-      const dir = this._fs.resolveDir(IMAGES_DIR);
-      await this._fs.p("mkdir", dir, { recursive: true }).catch(() => {});
-      const files = await this._fs.pRead("readdir", dir).catch(() => []);
+      await this.fs.fsReady;
+      const dir = this.fs.resolveDir(IMAGES_DIR);
+      await this.fs.p("mkdir", dir, { recursive: true }).catch(() => {});
+      const files = await this.fs.pRead("readdir", dir).catch(() => []);
       const imageFiles = files.filter(
         (f) =>
           !f.startsWith(".") &&
@@ -231,7 +230,7 @@ export class V86App {
         btn.addEventListener("click", async (e) => {
           e.stopPropagation();
           const fileName = btn.dataset.file;
-          await this._fs.deleteBinaryFile(IMAGES_DIR, fileName);
+          await this.fs.deleteBinaryFile(IMAGES_DIR, fileName);
           await this._loadUserImages(win);
         });
       });
@@ -253,7 +252,7 @@ export class V86App {
 
     const config = systemConfigs[systemId];
     if (!config) {
-      this._windowManager.sendNotify(`System ${systemId} not available.`);
+      this.wm.sendNotify(`System ${systemId} not available.`);
       return;
     }
 
@@ -268,9 +267,9 @@ export class V86App {
         : Object.values(path ?? {}).filter((v) => typeof v === "string");
 
     try {
-      const blob = await this._fs.readBinaryFile(normalizedPath, fileName);
+      const blob = await this.fs.readBinaryFile(normalizedPath, fileName);
       if (!blob || blob.size === 0) {
-        this._windowManager.sendNotify("Failed to read image file.");
+        this.wm.sendNotify("Failed to read image file.");
         return;
       }
 
@@ -297,17 +296,17 @@ export class V86App {
 
       this._launchV86(displayName, config);
     } catch (e) {
-      this._windowManager.sendNotify(`Error loading image: ${e.message}`);
+      this.wm.sendNotify(`Error loading image: ${e.message}`);
     }
   }
 
   async _launchV86(displayName, config) {
-    const wm = this._windowManager;
+    const wm = this.wm;
     const winId = `v86-${Date.now()}`;
     const win = wm.createWindow(winId, displayName, "800px", "600px");
 
-    if (window.achievements) {
-      window.achievements.trigger(Achievements.RetroPlayer);
+    if (true) {
+      bus.emit(BusEvents.ACHIEVEMENT_TRIGGER, { key: Achievements.RetroPlayer });
     }
 
     win.innerHTML = `

@@ -51,11 +51,6 @@ export function sendLaunchAnalytics(app) {
   sendAnalytics({ ...getAnalyticsBase(app), event: "launch" });
 }
 
-export function sendAppInstallAnalytics(app) {
-  if (isBlocked(app)) return;
-  sendAnalytics({ ...getAnalyticsBase(app ?? "unknown"), event: "installApp" });
-}
-
 export function recordUsage(winId) {
   const startTime = Date.now();
   const win = document.getElementById(winId);

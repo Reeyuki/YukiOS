@@ -1,26 +1,25 @@
 import { Achievements } from "./achievements.js";
+import { bus, BusEvents } from "./core/EventBus.js";
 import { desktop } from "./desktop.js";
 import JSZip from "jszip";
+import { BaseApp } from "./core/BaseApp.js";
 
 const GAMES_DIR = ["Games"];
 
-export class JsDosApp {
-  constructor(fileSystemManager, windowManager, explorerApp) {
-    this._fs = fileSystemManager;
-    this._windowManager = windowManager;
-    this._explorerApp = explorerApp;
+export class JsDosApp extends BaseApp {
+  constructor(services) {
+    super(services);
+    this._explorerApp = services.explorerApp;
   }
 
   open() {
-    if (document.getElementById("jsdos-win")) {
-      this._windowManager.bringToFront(document.getElementById("jsdos-win"));
-      return;
-    }
-    const win = this._windowManager.createWindow("jsdos-win", "JsDos", "600px", "560px");
+    if (this._isSingletonOpen("jsdos-win")) return;
+
+    const win = this.wm.createWindow("jsdos-win", "JsDos", "600px", "560px");
     win.innerHTML = `
       <div class="window-header">
         <span>JsDos Game Launcher</span>
-        ${this._windowManager.getWindowControls()}
+        ${this.wm.getWindowControls()}
       </div>
       <div class="window-content" style="width:100%;height:100%;background:#1a1a2e;color:#eee;font-family:monospace;overflow-y:auto;overflow-x:hidden;">
         <div class="jsdos-header">
@@ -57,10 +56,10 @@ export class JsDosApp {
       </div>`;
 
     desktop.appendChild(win);
-    this._windowManager.makeDraggable(win);
-    this._windowManager.makeResizable(win);
-    this._windowManager.setupWindowControls(win);
-    this._windowManager.addToTaskbar(win.id, "JsDos", "static/icons/jsdos.webp");
+    this.wm.makeDraggable(win);
+    this.wm.makeResizable(win);
+    this.wm.setupWindowControls(win);
+    this.wm.addToTaskbar(win.id, "JsDos", "static/icons/jsdos.webp");
 
     this._setupGameCardListeners(win);
     this._setupUploadZone(win);
@@ -140,8 +139,8 @@ export class JsDosApp {
 
     try {
       const blob = new Blob([await file.arrayBuffer()], { type: file.type || "application/octet-stream" });
-      await this._fs.writeBinaryFile(GAMES_DIR, file.name, blob, "other", "/static/icons/jsdos.webp");
-      this._windowManager.sendNotify(`Saved ${file.name} at Games/ directory. `);
+      await this.fs.writeBinaryFile(GAMES_DIR, file.name, blob, "other", "/static/icons/jsdos.webp");
+      this.wm.sendNotify(`Saved ${file.name} at Games/ directory. `);
       zone.innerHTML = `<i class="fa-solid fa-circle-check" style="font-size:20px;color:#4caf50;margin-bottom:8px;display:block;"></i><div style="font-size:13px;color:#bbb;">Saved!</div>`;
       await this._loadUserGames(win);
       setTimeout(() => {
@@ -165,10 +164,10 @@ export class JsDosApp {
     if (!container) return;
 
     try {
-      await this._fs.fsReady;
-      const dir = this._fs.resolveDir(GAMES_DIR);
-      await this._fs.p("mkdir", dir, { recursive: true }).catch(() => {});
-      const files = await this._fs.pRead("readdir", dir).catch(() => []);
+      await this.fs.fsReady;
+      const dir = this.fs.resolveDir(GAMES_DIR);
+      await this.fs.p("mkdir", dir, { recursive: true }).catch(() => {});
+      const files = await this.fs.pRead("readdir", dir).catch(() => []);
       const gameFiles = files.filter(
         (f) => !f.startsWith(".") && (f.endsWith(".jsdos") || f.endsWith(".exe") || f.endsWith(".com"))
       );
@@ -209,7 +208,7 @@ export class JsDosApp {
         btn.addEventListener("click", async (e) => {
           e.stopPropagation();
           const fileName = btn.dataset.file;
-          await this._fs.deleteBinaryFile(GAMES_DIR, fileName);
+          await this.fs.deleteBinaryFile(GAMES_DIR, fileName);
           await this._loadUserGames(win);
         });
       });
@@ -217,10 +216,10 @@ export class JsDosApp {
   }
 
   async launchGame(fileName, displayName) {
-    const wm = this._windowManager;
+    const wm = this.wm;
     const winId = `jsdos-${Date.now()}`;
     const win = wm.createWindow(winId, displayName, "800px", "600px");
-    window.achievements.trigger(Achievements.RetroPlayer);
+    bus.emit(BusEvents.ACHIEVEMENT_TRIGGER, { key: Achievements.RetroPlayer });
 
     win.innerHTML = `
     <div class="window-header">
@@ -371,10 +370,10 @@ export class JsDosApp {
   }
 
   async launchExe(name, path) {
-    const wm = this._windowManager;
+    const wm = this.wm;
     const winId = `jsdos-${Date.now()}`;
     const win = wm.createWindow(winId, name, "800px", "600px");
-    window.achievements.trigger(Achievements.RetroPlayer);
+    bus.emit(BusEvents.ACHIEVEMENT_TRIGGER, { key: Achievements.RetroPlayer });
     win.innerHTML = `
     <div class="window-header">
       <span>${name}</span>
@@ -439,7 +438,7 @@ export class JsDosApp {
           ? path.split("/").filter(Boolean)
           : Object.values(path ?? {}).filter((v) => typeof v === "string");
 
-      const blob = await this._fs.readBinaryFile(normalizedPath, name);
+      const blob = await this.fs.readBinaryFile(normalizedPath, name);
       if (!blob || blob.size === 0) {
         showError("Failed to read file.");
         return;

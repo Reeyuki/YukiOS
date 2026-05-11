@@ -1,10 +1,5 @@
 import { appMap } from "../gamesList.js";
 
-/**
- * Resolves the icon for a .desktop file based on its content.
- * @param {string|object} content The JSON content of the .desktop file.
- * @returns {string} The resolved icon path or font-awesome class.
- */
 export function resolveDesktopIcon(content, fileName = null) {
   let icon = null;
 

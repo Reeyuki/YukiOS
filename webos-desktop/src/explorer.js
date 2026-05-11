@@ -1,5 +1,7 @@
 import { zipSync } from "fflate";
 import { desktop } from "./desktop.js";
+import { BaseApp } from "./core/BaseApp.js";
+import { bus, BusEvents } from "./core/EventBus.js";
 import { FileKind } from "./fs.js";
 import { SystemUtilities } from "./system.js";
 import { appMap } from "./gamesList.js";
@@ -38,18 +40,19 @@ import { resolveDesktopIcon } from "./shared/iconUtils.js";
 const BINARY_OFFICE_EXTS = [".pdf", ".docx", ".xlsx", ".xls", ".pptx", ".ppt"];
 const ARCHIVE_EXTS = [".zip", ".gz", ".tgz", ".tar", ".rar", ".7z", ".bz2", ".xz"];
 
-export class ExplorerApp {
-  constructor(fileSystemManager, windowManager, notepadApp, markdownApp) {
-    this.fs = fileSystemManager;
-    this.wm = windowManager;
-    this.notepadApp = notepadApp;
-    this.markdownApp = markdownApp;
+export class ExplorerApp extends BaseApp {
+  constructor(services) {
+    super(services);
+    this.fs = services.fileSystemManager;
+    this.wm = services.windowManager;
+    this.notepadApp = services.notepadApp;
+    this.markdownApp = services.markdownApp;
     this.officeApp = null;
     this.browserApp = null;
     this.desktopUI = null;
     this.open = this.open.bind(this);
     this._instances = new Map();
-    this._archiveExtractor = new ArchiveExtractor(fileSystemManager, (msg) => windowManager.sendNotify(msg));
+    this._archiveExtractor = new ArchiveExtractor(this.fs, (msg) => this.wm.sendNotify(msg));
   }
   setBrowser(browserApp) {
     this.browserApp = browserApp;
@@ -147,17 +150,25 @@ export class ExplorerApp {
 
   _initExplorerView(win, winId) {
     const view = win.querySelector(`#${winId}-view`);
-    view.style.width = "600px";
-    view.style.height = "unset";
     return view;
   }
 
-  async open(callback = null, notepadRef = null) {
+  async open(path = [], callback = null, notepadRef = null) {
+    if (typeof path === "function") {
+      notepadRef = callback;
+      callback = path;
+      path = [];
+    }
+
     const isSelector = typeof callback === "function";
     const winId = isSelector ? `explorer-selector-${Date.now()}` : "explorer-win";
 
     if (!isSelector && document.getElementById(winId)) {
       this.wm.bringToFront(document.getElementById(winId));
+      if (path && path.length > 0) {
+        const inst = this._getInstance(winId);
+        if (inst) this.navigateInstance(inst, path);
+      }
       return;
     }
 
@@ -256,7 +267,7 @@ export class ExplorerApp {
     }
 
     this.setupExplorerControls(win, winId);
-    this.navigateInstance(inst, []);
+    this.navigateInstance(inst, path);
   }
 
   async openSaveDialog(defaultFileName = "Untitled.txt", onSave = null) {
@@ -607,7 +618,7 @@ export class ExplorerApp {
   }
 
   async _saveFilePayload(targetPath, name, kind, content, icon, isBinaryOffice = false, isBinary = false) {
-    window.achievements.incrementFileUploaded();
+    bus.emit(BusEvents.DESKTOP_ICON_ADDED, { name, kind });
     if (this._isBinaryWrite(kind, isBinaryOffice, isBinary)) {
       await this.fs.writeBinaryFile(targetPath, name, content, kind, icon);
     } else {
@@ -745,7 +756,7 @@ export class ExplorerApp {
   }
 
   async saveToWallpapers(name, content, kind, icon) {
-    window.achievements.trigger(Achievements.PersonalSpace);
+    bus.emit(BusEvents.ACHIEVEMENT_TRIGGER, { key: Achievements.PersonalSpace });
 
     const wallpapersPath = ["Pictures", "Wallpapers"];
     await this.fs.ensureFolder(wallpapersPath);
@@ -759,7 +770,15 @@ export class ExplorerApp {
   }
 
   navigateInstance(inst, path) {
-    inst.currentPath = [...path];
+    if (typeof path === "string") {
+      const root = this.fs.CONFIG.ROOT;
+      if (path.startsWith(root)) {
+        path = path.slice(root.length).split("/").filter(Boolean);
+      } else {
+        path = path.split("/").filter(Boolean);
+      }
+    }
+    inst.currentPath = Array.isArray(path) ? [...path] : [];
     inst.history = inst.history.slice(0, inst.historyIndex + 1);
     inst.history.push([...inst.currentPath]);
     inst.historyIndex = inst.history.length - 1;

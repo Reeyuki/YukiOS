@@ -1,5 +1,7 @@
 import { desktop } from "./desktop.js";
-import { SystemUtilities } from "./system.js";
+import { toggleHideGames } from "./desktopui.js";
+import { BaseApp } from "./core/BaseApp.js";
+import { bus, BusEvents } from "./core/EventBus.js";
 
 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
@@ -28,12 +30,13 @@ export const StorageKeys = {
   achievementKeys: "yukiOS_achievements",
   achievementCounters: "yukiOS_achievement_counters",
   deletedIconsKey: "yukiOS_desktop:deleted-icons",
-  analyticsDisabled: "yukiOS_analytics_disabled"
+  analyticsDisabled: "yukiOS_analytics_disabled",
+  dndKey: "wm_ntf_dnd"
 };
 
-export class SettingsApp {
-  constructor(windowManager) {
-    this.wm = windowManager;
+export class SettingsApp extends BaseApp {
+  constructor(services) {
+    super(services);
     this.fs = null;
 
     setTimeout(() => {
@@ -44,7 +47,6 @@ export class SettingsApp {
       const cursorSize = Number.isFinite(parsedCursorSize) && parsedCursorSize > 0 ? parsedCursorSize : 32;
 
       this._settings = {
-        username: localStorage.getItem(StorageKeys.username) ?? "",
         weather: localStorage.getItem(StorageKeys.weather) !== "false",
         cycleWallpaper: localStorage.getItem(StorageKeys.cycleWallpaper) !== "false",
         cursorDataUrl: cursorFromLegacyStorage,
@@ -57,12 +59,10 @@ export class SettingsApp {
         analyticsDisabled: localStorage.getItem(StorageKeys.analyticsDisabled) === "true"
       };
 
-      this._applyUsername(this._settings.username);
       this._applyCursor(this._settings.cursorDataUrl);
       this._applyDesktopStretchScrollDisabled(this._settings.disableDesktopStretchScroll);
       window._settings = this._settings;
 
-      // If we only had legacy cursor saved, persist it as the "original" so size adjustments work.
       if (cursorFromLegacyStorage && !cursorOriginalFromStorage) {
         try {
           localStorage.setItem(StorageKeys.cursorOriginalKey, cursorFromLegacyStorage);
@@ -158,27 +158,23 @@ export class SettingsApp {
 
       <div class="settings-body">
 
-        <div class="settings-card">
-          <div class="settings-card-header">
-            <i class="fas fa-user"></i>
-            <span>User</span>
-          </div>
-
-          <div class="settings-row settings-row--stacked">
-            <div class="settings-label-group">
-              <span class="settings-label-title">Username</span>
-              <span class="settings-label-desc">Displayed across the OS interface</span>
-            </div>
-            <input id="settingsUsername" type="text" class="settings-input" spellcheck="false"/>
-          </div>
-        </div>
 
         <div class="settings-card">
           <div class="settings-card-header">
             <i class="fas fa-cog"></i>
             <span>System</span>
           </div>
-
+<div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">YukiCord</span>
+              <span class="settings-label-desc">Join our Discord server</span>
+            </div>
+            <a href="https://discord.gg/2Z8Gvtqt7" target="_blank" rel="noopener noreferrer" class="settings-discord-link">
+              <button class="settings-btn settings-btn-discord">
+                <i class="fab fa-discord"></i> Join
+              </button>
+            </a>
+          </div>
           <div class="settings-row">
             <div class="settings-label-group">
               <span class="settings-label-title">Weather</span>
@@ -331,17 +327,7 @@ export class SettingsApp {
             </button>
           </div>
 
-          <div class="settings-row">
-            <div class="settings-label-group">
-              <span class="settings-label-title">YukiCord</span>
-              <span class="settings-label-desc">Join our Discord server</span>
-            </div>
-            <a href="https://discord.gg/2Z8Gvtqt7" target="_blank" rel="noopener noreferrer" class="settings-discord-link">
-              <button class="settings-btn settings-btn-discord">
-                <i class="fab fa-discord"></i> Join
-              </button>
-            </a>
-          </div>
+          
         </div>
 
       </div>
@@ -350,7 +336,6 @@ export class SettingsApp {
   }
 
   _bindControls(win) {
-    const usernameInput = win.querySelector("#settingsUsername");
     const weatherToggle = win.querySelector("#settingsWeather");
     const cycleWallpaperToggle = win.querySelector("#settingsCycleWallpaper");
     const macControlsToggle = win.querySelector("#settingsMacControls");
@@ -367,10 +352,7 @@ export class SettingsApp {
     const downloadPageBtn = win.querySelector("#settingsDownloadPageBtn");
     const status = win.querySelector("#settingsStatus");
 
-    // Setup menu system
     this._setupSettingsMenu(win, status);
-
-    usernameInput.value = this._settings.username;
 
     const showStatus = (msg = "Saved") => {
       status.textContent = msg;
@@ -381,11 +363,9 @@ export class SettingsApp {
       }, 2200);
     };
 
-    // Store showStatus for menu actions
     this._showSettingsStatus = showStatus;
 
     const save = () => {
-      const username = usernameInput.value.trim();
       const weather = weatherToggle.checked;
       const cycleWallpaper = cycleWallpaperToggle.checked;
       const macOsControls = macControlsToggle.checked;
@@ -394,7 +374,6 @@ export class SettingsApp {
       const analyticsDisabled = !analyticsToggle.checked;
       const disableDesktopStretchScroll = !!disableDesktopStretchScrollToggle?.checked;
 
-      localStorage.setItem(StorageKeys.username, username);
       localStorage.setItem(StorageKeys.weather, String(weather));
       localStorage.setItem(StorageKeys.cycleWallpaper, String(cycleWallpaper));
       localStorage.setItem(StorageKeys.macOsControls, String(macOsControls));
@@ -404,7 +383,6 @@ export class SettingsApp {
       localStorage.setItem(StorageKeys.analyticsDisabled, String(analyticsDisabled));
 
       Object.assign(this._settings, {
-        username,
         weather,
         cycleWallpaper,
         macOsControls,
@@ -414,10 +392,8 @@ export class SettingsApp {
         analyticsDisabled
       });
 
-      Object.assign(window._settings, this._settings);
-
-      this._applyUsername(username);
       this._applyDesktopStretchScrollDisabled(disableDesktopStretchScroll);
+      bus.emit(BusEvents.SETTINGS_CHANGED, this._settings);
       showStatus("Saved");
     };
 
@@ -452,6 +428,7 @@ export class SettingsApp {
       const cursorSize = Number(size);
       if (!Number.isFinite(cursorSize) || cursorSize < 16 || cursorSize > 128) return;
       this._settings.cursorSize = cursorSize;
+
       try {
         localStorage.setItem(StorageKeys.cursorSizeKey, String(cursorSize));
       } catch {}
@@ -497,7 +474,6 @@ export class SettingsApp {
 
           if (!dataUrl.startsWith("data:")) throw new Error("Invalid cursor file.");
 
-          // Browsers are picky about cursor formats and size; normalize to a small PNG.
           const normalized = await this._normalizeCursorDataUrl(dataUrl, { maxSize: this._settings.cursorSize || 32 });
           setCursor(normalized, dataUrl);
         } catch (e) {
@@ -510,7 +486,6 @@ export class SettingsApp {
     };
 
     const reset = () => {
-      usernameInput.value = this._settings.username;
       weatherToggle.checked = this._settings.weather;
       cycleWallpaperToggle.checked = this._settings.cycleWallpaper;
       macControlsToggle.checked = this._settings.macOsControls;
@@ -538,7 +513,6 @@ export class SettingsApp {
       showStatus("Toggles reset");
     };
 
-    // Menu actions are handled in _setupSettingsMenu
     if (cursorUploadBtn) cursorUploadBtn.addEventListener("click", uploadCursor);
     if (cursorClearBtn)
       cursorClearBtn.addEventListener("click", () => {
@@ -560,10 +534,8 @@ export class SettingsApp {
 
     if (hideGamesBtn) {
       hideGamesBtn.addEventListener("click", () => {
-        if (window.__toggleHideGames) {
-          window.__toggleHideGames();
-          showStatus("Games visibility toggled");
-        }
+        toggleHideGames();
+        showStatus("Games visibility toggled");
       });
     }
 
@@ -592,7 +564,6 @@ export class SettingsApp {
       });
     }
 
-    usernameInput.addEventListener("blur", save);
     weatherToggle.addEventListener("change", save);
     cycleWallpaperToggle.addEventListener("change", save);
     macControlsToggle.addEventListener("change", save);
@@ -632,7 +603,6 @@ export class SettingsApp {
       });
     });
 
-    // Handle menu actions
     win.querySelectorAll(".dropdown-item[data-action]").forEach((item) => {
       item.addEventListener("click", (e) => {
         e.stopPropagation();
@@ -641,8 +611,6 @@ export class SettingsApp {
 
         switch (action) {
           case "reset":
-            // Reset to saved values - handled in _bindControls via closure
-            win.querySelector("#settingsUsername").value = this._settings.username;
             win.querySelector("#settingsWeather").checked = this._settings.weather;
             win.querySelector("#settingsCycleWallpaper").checked = this._settings.cycleWallpaper;
             win.querySelector("#settingsMacControls").checked = this._settings.macOsControls;
@@ -662,7 +630,6 @@ export class SettingsApp {
             win.querySelector("#settingsAchievements").checked = true;
             win.querySelector("#settingsAnalytics").checked = true;
             if (desktopStretchToggle) desktopStretchToggle.checked = false;
-            // Trigger save
             win.querySelector("#settingsWeather").dispatchEvent(new Event("change"));
             showStatus("Toggles reset");
             break;
@@ -680,7 +647,6 @@ export class SettingsApp {
       });
     });
 
-    // Close menus when clicking outside
     const closeHandler = (e) => {
       if (!win.contains(e.target)) closeAllMenus();
     };
@@ -690,8 +656,6 @@ export class SettingsApp {
 
   _applyDesktopStretchScrollDisabled(disabled) {
     if (!desktop) return;
-    // Keep desktop scroll behavior unchanged; only prevent windows from affecting scroll size
-    // by switching windows between absolute (desktop-relative) and fixed (viewport-relative).
     desktop.style.overflow = "auto";
 
     const desktopRect = desktop.getBoundingClientRect();
@@ -1018,16 +982,6 @@ export class SettingsApp {
     Object.values(StorageKeys).forEach((key) => localStorage.removeItem(key));
     location.reload();
   };
-
-  _applyUsername(username) {
-    const start = document.querySelector(".start-user");
-    const startSpan = start?.querySelector("span");
-    if (startSpan) startSpan.textContent = username;
-  }
-
-  updateUsername(username) {
-    this._applyUsername(username);
-  }
 
   get(key) {
     return this._settings[key];

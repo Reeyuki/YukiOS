@@ -1,4 +1,15 @@
 import { isImageFile } from "./utils.js";
+import { StorageKeys } from "./settings.js";
+
+function escapeHtml(str) {
+  if (typeof str !== "string") return "";
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
 
 export class NotificationCenter {
   constructor() {
@@ -143,10 +154,10 @@ export class NotificationCenter {
         const isDataUrl = typeof notif.icon === "string" && notif.icon.startsWith("data:");
 
         if (isImagePath || isDataUrl) {
-          iconHtml = `<img src="${notif.icon}" class="ntf-card__glyph" />`;
+          iconHtml = `<img src="${escapeHtml(notif.icon)}" class="ntf-card__glyph" />`;
         } else if (typeof notif.icon === "string" && notif.icon.trim().length > 0) {
           const cls = notif.icon.startsWith("fa") ? notif.icon : `fa ${notif.icon}`;
-          iconHtml = `<i class="${cls} ntf-card__glyph"></i>`;
+          iconHtml = `<i class="${escapeHtml(cls)} ntf-card__glyph"></i>`;
         }
       } else {
         const iconMap = {
@@ -155,7 +166,7 @@ export class NotificationCenter {
           warning: "fas fa-exclamation-circle",
           error: "fas fa-times-circle"
         };
-        iconHtml = `<i class="${iconMap[notif.type]} ntf-card__glyph"></i>`;
+        iconHtml = `<i class="${iconMap[notif.type] ?? "fas fa-info-circle"} ntf-card__glyph"></i>`;
       }
 
       item.innerHTML = `
@@ -163,8 +174,8 @@ export class NotificationCenter {
           ${iconHtml}
         </div>
         <div class="ntf-card__body">
-          <div class="ntf-card__heading">${notif.title}</div>
-          <div class="ntf-card__text">${notif.message ?? ""}</div>
+          <div class="ntf-card__heading">${escapeHtml(notif.title)}</div>
+          <div class="ntf-card__text">${escapeHtml(notif.message ?? "")}</div>
           <div class="ntf-card__stamp">${timestamp}</div>
         </div>
         <button class="ntf-card__remove" title="Remove">×</button>
@@ -229,13 +240,10 @@ export class NotificationCenter {
   setDoNotDisturb(enabled) {
     this.doNotDisturb = Boolean(enabled);
     try {
-      localStorage.setItem("wm_ntf_dnd", this.doNotDisturb ? "1" : "0");
-    } catch {
-      // ignore
-    }
+      localStorage.setItem(StorageKeys.dndKey, this.doNotDisturb ? "1" : "0");
+    } catch {}
 
     if (!this.doNotDisturb && this.snoozedNotifications.length > 0) {
-      // Flush in reverse so the newest snoozed stays newest overall.
       for (let i = this.snoozedNotifications.length - 1; i >= 0; i--) {
         this.notifications.unshift(this.snoozedNotifications[i]);
       }
@@ -250,7 +258,7 @@ export class NotificationCenter {
 
   _loadDoNotDisturb() {
     try {
-      return localStorage.getItem("wm_ntf_dnd") === "1";
+      return localStorage.getItem(StorageKeys.dndKey) === "1";
     } catch {
       return false;
     }

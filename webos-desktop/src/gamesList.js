@@ -83,6 +83,12 @@ export const appMap = {
     icon: "/static/icons/minusThree.webp",
     title: "Minus Three"
   },
+  minusB: {
+    type: "game",
+    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/817-f.html?t=1778436600177",
+    icon: "/static/icons/minusB.webp",
+    title: "Minus B"
+  },
   three: {
     type: "game",
     url: "/static/games/html/three.html",
@@ -1124,12 +1130,6 @@ export const appMap = {
     icon: "/static/icons/vscode.webp"
   },
   model3dApp: { type: "system", title: "3D Model Viewer", icon: "/static/icons/3dmodel.webp" },
-  yukiConvert: {
-    type: "system",
-    title: "Yuki Convert",
-    icon: "fas fa-video",
-    url: "https://cdn.jsdelivr.net/gh/reeyuki/yukios@main/static/apps/yukiconvert/file-converter.html"
-  },
   jsDosApp: {
     type: "system",
     title: "JsDos",
@@ -1149,26 +1149,12 @@ export const appMap = {
   officeApp: {
     type: "system",
     title: "Office",
-    icon: "/static/icons/office.webp",
-    url: "/static/apps/office/index.html"
-  },
-  photopea: {
-    type: "system",
-    title: "Photopea",
-    icon: "/static/icons/photopea.webp",
-    url: "https://www.photopea.com/"
-  },
-  paint: {
-    type: "system",
-    title: "Paint",
-    icon: "/static/icons/paint.webp",
-    url: "https://jspaint.app"
+    icon: "/static/icons/office.webp"
   },
   appCreatorApp: {
     type: "system",
     title: "App Creator",
-    icon: "fas fa-cubes",
-    url: "/static/apps/appcreator/index.html"
+    icon: "fas fa-cubes"
   },
   achievementsApp: {
     type: "system",

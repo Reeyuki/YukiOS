@@ -1,11 +1,12 @@
 import { desktop } from "./desktop.js";
 import { speak } from "./clippy.js";
 import { Achievements } from "./achievements.js";
+import { BaseApp } from "./core/BaseApp.js";
+import { bus, BusEvents } from "./core/EventBus.js";
 
-export class NotepadApp {
-  constructor(fileSystemManager, windowManager) {
-    this.fs = fileSystemManager;
-    this.wm = windowManager;
+export class NotepadApp extends BaseApp {
+  constructor(services) {
+    super(services);
     this.idleTimer = null;
     this.idleDelay = 15000;
     this.instances = new Map();
@@ -344,7 +345,7 @@ export class NotepadApp {
     instance.modified = false;
     this.updateTitle(win, winId);
     speak("Great, your file has been saved!", "Save");
-    window.achievements?.trigger(Achievements.NoteTaker);
+    bus.emit(BusEvents.ACHIEVEMENT_TRIGGER, { key: Achievements.NoteTaker });
   }
 
   saveFile(win, winId) {

@@ -133,11 +133,6 @@
         <div>Calculator</div>
       </div>
 
-      <div class="icon selectable" data-app="emulatorApp">
-        <img src="static/icons/emulator.webp" />
-        <div>Emulator JS</div>
-      </div>
-
       <div class="icon selectable" data-app="steamApp">
         <img src="static/icons/steam.webp" />
         <div>Steam</div>
@@ -221,11 +216,6 @@
       <div class="icon selectable" data-app="slimeRancher">
         <img src="static/icons/slime.webp" />
         <div>Slime Rancher Alpha</div>
-      </div>
-
-      <div class="icon selectable" data-app="fnaf">
-        <img src="static/icons/fnaf1.webp" />
-        <div>FNAF [1-7]</div>
       </div>
 
       <div class="icon selectable" data-app="balatro">
@@ -389,115 +379,6 @@
     </div>
 
     <div id="context-menu"></div>
-
-    <style id="window-style">
-      [id^="explorer-"] {
-        background: rgba(14, 14, 20, 0.75) !important;
-        backdrop-filter: blur(32px) saturate(1.6) !important;
-        border: 1px solid rgba(255, 255, 255, 0.09) !important;
-        box-shadow:
-          0 24px 64px rgba(0, 0, 0, 0.65),
-          0 0 0 1px rgba(255, 255, 255, 0.06) inset,
-          0 0 60px rgba(79, 158, 255, 0.07) !important;
-        border-radius: 14px !important;
-        overflow: hidden !important;
-      }
-
-      /* Header, nav, container */
-      [id^="explorer-"] .window-header {
-        border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
-        color: rgba(255, 255, 255, 0.88) !important;
-        padding: 10px 14px !important;
-      }
-
-      [id^="explorer-"] .explorer-nav {
-        background: rgba(255, 255, 255, 0.03) !important;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
-        color: rgba(255, 255, 255, 0.5) !important;
-      }
-
-      [id^="explorer-"] .explorer-container {
-        background: transparent !important;
-      }
-
-      /* Main area */
-      [id^="explorer-"] .explorer-main {
-        background:
-          radial-gradient(ellipse at 70% 20%, rgba(79, 158, 255, 0.05) 0%, transparent 55%), rgba(10, 10, 16, 0.4) !important;
-      }
-
-      /* File items */
-      [id^="explorer-"] .file-item {
-        border: 1px solid rgba(255, 255, 255, 0.07) !important;
-        color: rgba(255, 255, 255, 0.65) !important;
-        border-radius: 10px !important;
-        transition: all 0.18s ease !important;
-      }
-
-      [id^="explorer-"] .file-item:hover {
-        background: rgba(79, 158, 255, 0.12) !important;
-        border-color: rgba(79, 158, 255, 0.35) !important;
-        color: rgba(255, 255, 255, 0.92) !important;
-        transform: translateY(-2px) !important;
-        box-shadow:
-          0 6px 20px rgba(0, 0, 0, 0.3),
-          0 0 0 1px rgba(79, 158, 255, 0.25) inset !important;
-      }
-
-      [id^="explorer-"] .file-item span {
-        color: inherit !important;
-      }
-
-      .file-item.explorer-selected {
-        background: rgba(79, 158, 255, 0.22) !important;
-        border-color: rgba(79, 158, 255, 0.6) !important;
-        color: rgba(255, 255, 255, 0.96) !important;
-        box-shadow:
-          0 0 0 1px rgba(79, 158, 255, 0.45) inset,
-          0 4px 14px rgba(0, 0, 0, 0.35) !important;
-      }
-
-      .file-item.explorer-selected:hover {
-        background: rgba(79, 158, 255, 0.28) !important;
-        transform: translateY(-2px) !important;
-      }
-
-      /* Nav / back buttons */
-      [id^="explorer-"] .back-btn {
-        background: rgba(255, 255, 255, 0.06) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        color: rgba(255, 255, 255, 0.6) !important;
-        border-radius: 6px !important;
-        padding: 3px 10px !important;
-      }
-
-      [id^="explorer-"] .back-btn:hover {
-        background: rgba(255, 255, 255, 0.1) !important;
-        color: rgba(255, 255, 255, 0.9) !important;
-      }
-
-      [id^="explorer-"] #exp-path {
-        color: rgba(255, 255, 255, 0.4) !important;
-      }
-
-      /* Window controls */
-      [id^="explorer-"] .window-controls button {
-        background: rgba(255, 255, 255, 0.06) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        color: rgba(255, 255, 255, 0.7) !important;
-        border-radius: 6px !important;
-      }
-
-      [id^="explorer-"] .window-controls button:hover {
-        background: rgba(255, 255, 255, 0.14) !important;
-        color: #fff !important;
-      }
-
-      [id^="explorer-"] .window-controls .close-btn:hover {
-        background: rgba(232, 17, 35, 0.85) !important;
-        border-color: rgba(232, 17, 35, 0.5) !important;
-      }
-    </style>
 
     <script>
       async function downloadPageFromHtml() {

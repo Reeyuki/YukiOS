@@ -1,15 +1,13 @@
-export class AboutApp {
-  constructor(windowManager) {
-    this.wm = windowManager;
+import { BaseApp } from "./core/BaseApp.js";
+
+export class AboutApp extends BaseApp {
+  constructor(services) {
+    super(services);
   }
 
   open() {
     const winId = "about-yukios";
-    const existing = document.getElementById(winId);
-    if (existing) {
-      this.wm.bringToFront(existing);
-      return;
-    }
+    if (this._isSingletonOpen(winId)) return;
 
     const win = this.wm.createWindow(winId, "About Yuki OS", "720px", "680px");
     Object.assign(win.style, { left: "180px", top: "60px" });

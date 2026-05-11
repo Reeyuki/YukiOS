@@ -1,6 +1,8 @@
 import { desktop } from "./desktop.js";
 import { StorageKeys } from "./settings.js";
 import confetti from "canvas-confetti";
+import { BaseApp } from "./core/BaseApp.js";
+import { bus, BusEvents } from "./core/EventBus.js";
 
 export const Achievements = {
   WelcomeAboard: "first_boot",
@@ -29,15 +31,16 @@ export const Achievements = {
   Completionist: "completionist"
 };
 
-export class AchievementsApp {
-  constructor(windowManager) {
-    this.wm = windowManager;
+export class AchievementsApp extends BaseApp {
+  constructor(services) {
+    super(services);
     this.achievements = this._createAchievements();
     this.unlocked = new Set();
     this.s1 = new Audio("static/audio/steam.mp3");
     this.s2 = new Audio("static/audio/slime1.mp3");
     this.s3 = new Audio("static/audio/slime2.mp3");
-    window.achievements = this;
+
+    this._initBusListeners();
     this._thresholds = {
       openWindows: [
         { at: 5, key: Achievements.MultiTasker },
@@ -70,6 +73,15 @@ export class AchievementsApp {
     this._isShowingAchievement = false;
     this._loadFromStorage();
     this.incrementSession();
+  }
+
+  _initBusListeners() {
+    bus.on(BusEvents.WINDOW_CREATED, () => this.incrementWindowOpen());
+    bus.on(BusEvents.APP_LAUNCHED, () => this.incrementAppLaunched());
+    bus.on(BusEvents.TERMINAL_CMD_EXECUTED, () => this.triggerCommandExecution());
+    bus.on(BusEvents.WALLPAPER_CHANGED, () => this.incrementWallpaper());
+    bus.on(BusEvents.DESKTOP_ICON_ADDED, () => this.incrementDesktopFile());
+    bus.on(BusEvents.ACHIEVEMENT_TRIGGER, ({ key }) => this.trigger(key));
   }
 
   _createAchievements() {
