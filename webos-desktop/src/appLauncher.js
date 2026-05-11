@@ -278,12 +278,12 @@ export class AppLauncher {
     populateStartMenu(this);
     initializeAppGrid(this);
 
-    if (!localStorage.getItem(StorageKeys.aboutLaunchKey)) {
-      setTimeout(() => {
-        this.aboutApp.open();
-        localStorage.setItem(StorageKeys.aboutLaunchKey, "true");
-      }, 300);
-    }
+    //if (!localStorage.getItem(StorageKeys.aboutLaunchKey)) {
+    //  setTimeout(() => {
+    //    this.aboutApp.open();
+    //    localStorage.setItem(StorageKeys.aboutLaunchKey, "true");
+    //  }, 300);
+    //}
 
     const currentNewsSig = getNewsContentSignature();
     const savedNewsSig = localStorage.getItem(StorageKeys.newsReadSignatureKey);

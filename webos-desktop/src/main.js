@@ -119,7 +119,7 @@ services.taskManagerApp = taskManagerApp;
 const weatherApp = new WeatherApp(services);
 services.weatherApp = weatherApp;
 
-const adsApp = new AdsManager(services);
+const adsApp = new AdsManager(windowManager);
 services.adsApp = adsApp;
 
 explorerApp.setBrowser(browserApp);

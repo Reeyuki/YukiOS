@@ -375,7 +375,7 @@ export class NewsApp extends BaseApp {
           .news-hero-title p {
             margin: 0;
             font-size: 0.85rem;
-            color: var(--text-secondary);
+            
             line-height: 1.35;
           }
 
@@ -431,7 +431,7 @@ export class NewsApp extends BaseApp {
 
           .news-label {
             font-size: 0.8rem;
-            color: var(--text-secondary);
+            
             white-space: nowrap;
           }
 
@@ -509,7 +509,6 @@ export class NewsApp extends BaseApp {
 
           .news-item-desc {
             font-size: 0.84rem;
-            color: var(--text-secondary);
             line-height: 1.4;
           }
         </style>

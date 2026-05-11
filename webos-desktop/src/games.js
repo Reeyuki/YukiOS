@@ -5,6 +5,7 @@ import { sendLaunchAnalytics } from "./analytics.js";
 import { refreshIcons } from "./shared/contextMenu.js";
 import { descriptionMap } from "./gameDescriptions.js";
 import { getAnalyticsBase } from "./analytics.js";
+import { shouldEnableAds } from "./ads.js";
 
 let _launcher = null;
 let _desktopUI = null;
@@ -195,7 +196,7 @@ const SteamDataManager = {
 
 export class GameWindowRenderer {
   constructor() {
-    this.history = ["library"];
+    this.history = ["store"];
     this.historyIndex = 0;
     this.sortBy = "popularity";
     this.sortReverse = false;
@@ -538,9 +539,24 @@ export class GameWindowRenderer {
         return { appId, title: name, url: fullUrl, thumb };
       });
 
-      this._archiveGamesCache.forEach((archiveGame) => {
-        this._appendArchiveGameToSidebar(container, archiveGame, onLaunch);
-      });
+      const CHUNK = 50;
+      let archiveIndex = 0;
+
+      const renderArchiveChunk = (deadline) => {
+        while (archiveIndex < this._archiveGamesCache.length && (deadline ? deadline.timeRemaining() > 2 : true)) {
+          const end = Math.min(archiveIndex + CHUNK, this._archiveGamesCache.length);
+          for (let i = archiveIndex; i < end; i++) {
+            this._appendArchiveGameToSidebar(container, this._archiveGamesCache[i], onLaunch);
+          }
+          archiveIndex = end;
+          if (!deadline) break;
+        }
+        if (archiveIndex < this._archiveGamesCache.length) {
+          requestIdleCallback(renderArchiveChunk, { timeout: 200 });
+        }
+      };
+
+      requestIdleCallback(renderArchiveChunk, { timeout: 100 });
 
       const cards = this._archiveGamesCache
         .map(({ appId, title, url: fullUrl, thumb }) => {
@@ -1212,6 +1228,55 @@ export class GameWindowRenderer {
     }
 
     container.innerHTML = `
+      <style>
+        .store-layout { display: flex; gap: 0; height: 100%; background: #1b2838; color: #c6d4df; }
+        .store-main-col { flex: 1; overflow-y: auto; padding: 20px 24px; min-width: 0; }
+        .store-side-col { width: 186px; flex-shrink: 0; background: #16202d; padding: 12px 8px; display: flex; flex-direction: column; gap: 16px; overflow-y: auto; }
+        .store-section-title { font-size: 14px; font-weight: 700; color: #c6d4df; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 12px 0; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .store-section-divider { height: 1px; background: rgba(255,255,255,0.08); margin: 24px 0; }
+        .store-featured-hero { display: flex; gap: 0; background: #16202d; border-radius: 4px; overflow: hidden; min-height: 220px; margin-bottom: 4px; }
+.store-hero-img-wrap {
+    width: 340px;
+    height: 340px;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.store-hero-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+}
+        .store-hero-info { flex: 1; padding: 24px 20px; display: flex; flex-direction: column; justify-content: flex-end; gap: 8px; background: linear-gradient(to right, #16202d, #1b2838); }
+        .store-hero-title { font-size: 26px; font-weight: 700; color: #fff; line-height: 1.2; }
+        .store-hero-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+        .store-tag { font-size: 11px; background: rgba(103,193,245,0.15); color: #67c1f5; padding: 2px 8px; border-radius: 2px; border: 1px solid rgba(103,193,245,0.3); }
+        .store-hero-desc { font-size: 12px; color: #8f98a0; line-height: 1.5; max-width: 360px; }
+        .store-play-btn { background: linear-gradient(90deg,#06bfff,#2d73ff); border: none; color: #fff; font-size: 13px; font-weight: 700; padding: 10px 24px; border-radius: 2px; cursor: pointer; align-self: flex-start; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; transition: opacity 0.15s; }
+        .store-play-btn:hover { opacity: 0.85; }
+        .store-hero-thumbs { display: flex; flex-direction: column; gap: 4px; width: 100px; flex-shrink: 0; background: #171d25; padding: 6px 4px; overflow-y: auto; }
+        .store-hero-thumb { cursor: pointer; border: 2px solid transparent; border-radius: 2px; overflow: hidden; flex-shrink: 0; }
+        .store-hero-thumb img { width: 100%; height: 54px; object-fit: cover; display: block; }
+        .store-hero-thumb.active { border-color: #67c1f5; }
+        .store-hero-thumb:hover:not(.active) { border-color: rgba(103,193,245,0.4); }
+        .store-games-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+        .store-game-card { background: #16202d; border-radius: 3px; overflow: hidden; display: flex; flex-direction: column; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }
+        .store-game-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.5); }
+        .store-game-card-img { height: 120px; overflow: hidden; }
+        .store-game-card-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .store-game-card-info { padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 6px; }
+        .store-game-card-title { font-size: 13px; font-weight: 600; color: #c6d4df; }
+        .store-game-card-tags { display: flex; gap: 4px; flex-wrap: wrap; }
+        .store-card-play-btn { background: #2a475e; border: none; color: #67c1f5; font-size: 11px; font-weight: 700; padding: 5px 12px; border-radius: 2px; cursor: pointer; align-self: flex-start; margin-top: 2px; text-transform: uppercase; transition: background 0.15s; }
+        .store-card-play-btn:hover { background: #3d6b8a; }
+        .store-ad-block { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .store-ad-label { font-size: 9px; color: #4a5a6a; text-transform: uppercase; letter-spacing: 1px; align-self: flex-start; }
+      </style>
+
       <div class="steam-loading-screen">
         <div class="steam-loading-logo">
           <div class="steam-spinner"></div>
@@ -1243,7 +1308,7 @@ export class GameWindowRenderer {
           </div>
           <div class="steam-tabs">
             <span class="steam-tab" data-page="store">Store</span>
-            <span class="steam-tab active" data-page="library">Library</span>
+            <span class="steam-tab" data-page="library">Library</span>
             <span class="steam-tab" data-page="community">Community</span>
             <span class="steam-tab" data-page="user">${username}</span>
           </div>
@@ -1268,8 +1333,44 @@ export class GameWindowRenderer {
 
           <div class="steam-main-content">
             <div class="steam-library-page"></div>
-            <div class="steam-store-page hidden" style="display:flex;align-items:center;justify-content:center;height:100%;font-size:24px;opacity:0.5;">
-               Steam Store
+            <div class="steam-store-page hidden">
+              <div class="store-layout">
+                <div class="store-main-col">
+                  <div class="store-featured-header">
+                    <h2 class="store-section-title">Featured &amp; Recommended</h2>
+                  </div>
+                  <div class="store-featured-hero">
+                    <div class="store-hero-img-wrap">
+                      <img src="${CDN_BASE}/static/icons/plague.webp" class="store-hero-img" id="store-hero-img" />
+                    </div>
+                    <div class="store-hero-info" id="store-hero-info">
+                      <div class="store-hero-title" id="store-hero-title">Plague Inc: Evolved</div>
+                      <div class="store-hero-tags" id="store-hero-tags">
+                        <span class="store-tag">Strategy</span>
+                        <span class="store-tag">Simulation</span>
+                        <span class="store-tag">Casual</span>
+                      </div>
+                      <div class="store-hero-desc" id="store-hero-desc"></div>
+                      <button class="store-play-btn" id="store-hero-play-btn" data-app="plagueIncEvolved">Play Now</button>
+                    </div>
+                    <div class="store-hero-thumbs" id="store-hero-thumbs"></div>
+                  </div>
+
+                  <div class="store-section-divider"></div>
+                  <h2 class="store-section-title">All Games</h2>
+                  <div class="store-games-grid" id="store-games-grid"></div>
+                </div>
+                <div class="store-side-col">
+                  <div class="store-ad-block">
+                    <div class="store-ad-label">Advertisement</div>
+                    <div id="store-ad-slot-1"></div>
+                  </div>
+                  <div class="store-ad-block">
+                    <div class="store-ad-label">Advertisement</div>
+                    <div id="store-ad-slot-2"></div>
+                  </div>
+                </div>
+              </div>
             </div>
             <div class="steam-community-page hidden" style="display:flex;align-items:center;justify-content:center;height:100%;font-size:24px;opacity:0.5;">
                Community Page
@@ -1386,6 +1487,7 @@ export class GameWindowRenderer {
       this.history = this.history.slice(0, this.historyIndex + 1);
       this.history.push(page);
       this.historyIndex++;
+      localStorage.setItem("steam_last_page", page);
       updatePageUI(page);
     };
 
@@ -1395,6 +1497,13 @@ export class GameWindowRenderer {
         this.currentArchiveGame = null;
         navigateTo(tab.dataset.page);
         this.renderGrid(container, onLaunch);
+        if (tab.dataset.page === "store") {
+          const sp = container.querySelector(".steam-store-page");
+          if (sp && !sp._storeInited) {
+            sp._storeInited = true;
+            _initStorePage(onLaunch);
+          }
+        }
       });
     });
 
@@ -1536,7 +1645,258 @@ export class GameWindowRenderer {
       true
     );
 
-    updatePageUI("library");
+    const _initStorePage = (onLaunch) => {
+      const STORE_GAMES = [
+        {
+          app: "plagueIncEvolved",
+          icon: `${CDN_BASE}/static/icons/plague.webp`,
+          title: "Plague Inc Evolved",
+          tags: ["Strategy", "Simulation"]
+        },
+        {
+          app: "fiveNightsAtFrickbears3",
+          icon: `${CDN_BASE}/static/icons/fiveNightsAtFrickbears.webp`,
+          title: "Five Nights At Frickbears 3",
+          tags: ["Horror", "Survival"]
+        },
+        {
+          app: "helltaker",
+          icon: `${CDN_BASE}/static/icons/helltaker.jpg`,
+          title: "Helltaker",
+          tags: ["Puzzle", "Anime"]
+        },
+        {
+          app: "inscryption",
+          icon: `${CDN_BASE}/static/icons/inscryption.webp`,
+          title: "Inscryption",
+          tags: ["Card Game", "Roguelike"]
+        },
+        {
+          app: "nightInTheWoods",
+          icon: `${CDN_BASE}/static/icons/night.webp`,
+          title: "Night In The Woods",
+          tags: ["Adventure", "Narrative"]
+        },
+        {
+          app: "daddy",
+          icon: `${CDN_BASE}/static/icons/daddy.webp`,
+          title: "Who's Your Daddy",
+          tags: ["Casual", "Multiplayer"]
+        },
+        {
+          app: "suicideGuy",
+          icon: `${CDN_BASE}/static/icons/suicideguy.webp`,
+          title: "Suicide Guy",
+          tags: ["Puzzle", "Platformer"]
+        },
+        {
+          app: "ytlifeomg",
+          icon: `${CDN_BASE}/static/icons/yt.webp`,
+          title: "Youtubers Life Omg",
+          tags: ["Simulation", "Management"]
+        },
+        {
+          app: "inStarsAndTime",
+          icon: `${CDN_BASE}/static/icons/star.webp`,
+          title: "In Stars And Time",
+          tags: ["RPG", "Story"]
+        },
+        {
+          app: "baldiBalds",
+          icon: `${CDN_BASE}/static/icons/baldiBalds.webp`,
+          title: "Baldi Balds The Universe",
+          tags: ["Horror", "Action"]
+        },
+        {
+          app: "baldisBasicsTeachingOnTwos",
+          icon: `${CDN_BASE}/static/icons/baldisBasicsTeachingOnTwos.webp`,
+          title: "Baldi's Basics: Teaching On Twos",
+          tags: ["Horror", "Education"]
+        },
+        {
+          app: "playtimeHellBear5van",
+          icon: `${CDN_BASE}/static/icons/playtimeHellBear5van.webp`,
+          title: "Playtime Hell & Bear 5 Van",
+          tags: ["Horror", "Action"]
+        },
+        {
+          app: "antidisestablishmentarianism",
+          icon: `${CDN_BASE}/static/icons/antiDisestablishism.webp`,
+          title: "Antidisestablishmentarianism",
+          tags: ["Puzzle", "Indie", "Education"]
+        },
+        {
+          app: "minusThree",
+          icon: `${CDN_BASE}/static/icons/minusThree.webp`,
+          title: "Minus Three",
+          tags: ["Puzzle", "Indie", "Education"]
+        },
+        {
+          app: "minusB",
+          icon: `${CDN_BASE}/static/icons/minusB.webp`,
+          title: "Minus B",
+          tags: ["Puzzle", "Indie", "Education"]
+        },
+        {
+          app: "three",
+          icon: `${CDN_BASE}/static/icons/three.webp`,
+          title: "Three",
+          tags: ["Puzzle", "Indie", "Education"]
+        },
+        {
+          app: "theMathIsLeaking",
+          icon: `${CDN_BASE}/static/icons/theMathIsLeaking.webp`,
+          title: "The Math Is Leaking",
+          tags: ["Puzzle", "Education"]
+        }
+      ];
+
+      const heroImgs = [
+        {
+          app: "plagueIncEvolved",
+          img: `${CDN_BASE}/static/icons/plague.webp`,
+          title: "Plague Inc: Evolved",
+          tags: ["Strategy", "Simulation", "Casual"],
+          desc: "A unique mix of high strategy and terrifyingly realistic simulation. Can you infect the world?"
+        },
+        {
+          app: "inscryption",
+          img: `${CDN_BASE}/static/icons/inscryption.webp`,
+          title: "Inscryption",
+          tags: ["Card Game", "Roguelike", "Dark"],
+          desc: "A deck-building roguelike where you're trapped playing a sinister card game with a mysterious figure."
+        },
+        {
+          app: "helltaker",
+          img: `${CDN_BASE}/static/icons/helltaker.jpg`,
+          title: "Helltaker",
+          tags: ["Puzzle", "Anime", "Free"],
+          desc: "A free game about making a harem of demon girls. Fight your way through hell one puzzle at a time."
+        },
+        {
+          app: "nightInTheWoods",
+          img: `${CDN_BASE}/static/icons/night.webp`,
+          title: "Night In The Woods",
+          tags: ["Adventure", "Narrative", "Indie"],
+          desc: "An adventure game focused on exploration, story and character, featuring a 20-something college dropout."
+        }
+      ];
+
+      const storePage = container.querySelector(".steam-store-page");
+      if (!storePage) return;
+
+      const heroImg = storePage.querySelector("#store-hero-img");
+      const heroTitle = storePage.querySelector("#store-hero-title");
+      const heroTagsEl = storePage.querySelector("#store-hero-tags");
+      const heroDesc = storePage.querySelector("#store-hero-desc");
+      const heroPlayBtn = storePage.querySelector("#store-hero-play-btn");
+      const heroThumbs = storePage.querySelector("#store-hero-thumbs");
+
+      heroDesc.textContent = descriptionMap[heroImgs[0].app] || heroImgs[0].desc;
+
+      heroImgs.forEach((h, i) => {
+        const thumb = document.createElement("div");
+        thumb.className = "store-hero-thumb" + (i === 0 ? " active" : "");
+        thumb.innerHTML = `<img src="${h.img}" />`;
+        thumb.addEventListener("click", () => {
+          storePage.querySelectorAll(".store-hero-thumb").forEach((t) => t.classList.remove("active"));
+          thumb.classList.add("active");
+          heroImg.src = h.img;
+          heroTitle.textContent = h.title;
+          heroDesc.textContent = descriptionMap[h.app] || h.desc;
+          heroPlayBtn.dataset.app = h.app;
+          heroTagsEl.innerHTML = h.tags.map((t) => `<span class="store-tag">${t}</span>`).join("");
+        });
+        heroThumbs.appendChild(thumb);
+      });
+
+      heroPlayBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        onLaunch(heroPlayBtn.dataset.app);
+      });
+
+      const heroInfo = storePage.querySelector("#store-hero-info");
+      if (heroInfo) {
+        heroInfo.style.cursor = "pointer";
+        heroInfo.addEventListener("click", (e) => {
+          if (e.target.closest(".store-play-btn")) return;
+          const appId = heroPlayBtn.dataset.app;
+          navigateTo("library");
+          this.currentGame = appId;
+          this.currentArchiveGame = null;
+          this.renderGameOverview(container, appId, onLaunch);
+        });
+      }
+
+      const grid = storePage.querySelector("#store-games-grid");
+      if (grid) {
+        STORE_GAMES.forEach((g) => {
+          const card = document.createElement("div");
+          card.className = "store-game-card";
+          card.innerHTML = `
+            <div class="store-game-card-img"><img data-src="${g.icon}" alt="${g.title}" /></div>
+            <div class="store-game-card-info">
+              <div class="store-game-card-title">${g.title}</div>
+              <div class="store-game-card-tags">${g.tags.map((t) => `<span class="store-tag">${t}</span>`).join("")}</div>
+              <button class="store-card-play-btn" data-app="${g.app}">Play</button>
+            </div>
+          `;
+          card.querySelector(".store-card-play-btn").addEventListener("click", (e) => {
+            e.stopPropagation();
+            onLaunch(g.app);
+          });
+          card.addEventListener("click", (e) => {
+            if (e.target.closest(".store-card-play-btn")) return;
+            navigateTo("library");
+            this.currentGame = g.app;
+            this.currentArchiveGame = null;
+            this.renderGameOverview(container, g.app, onLaunch);
+          });
+          grid.appendChild(card);
+          _imgObserver.observe(card.querySelector("img[data-src]"));
+        });
+      }
+
+      const _injectAd = (slotId, key, height, width) => {
+        if (!shouldEnableAds()) return;
+        const slot = storePage.querySelector(`#${slotId}`);
+        if (!slot) return;
+        const cfgScript = document.createElement("script");
+        cfgScript.text = `atOptions = { 'key': '${key}', 'format': 'iframe', 'height': ${height}, 'width': ${width}, 'params': {} };`;
+        slot.appendChild(cfgScript);
+        const invokeScript = document.createElement("script");
+        invokeScript.src = `https://www.highperformanceformat.com/${key}/invoke.js`;
+        invokeScript.async = true;
+        slot.appendChild(invokeScript);
+      };
+
+      _injectAd("store-ad-slot-1", "f88fd46583493c3820f283948e5e5391", 300, 160);
+      setTimeout(() => {
+        _injectAd("store-ad-slot-2", "ee9dc67de90729e2804aa8aba6454ec8", 600, 160);
+      }, 1000);
+    };
+
+    const _lastPage = localStorage.getItem("steam_last_page");
+    const _isReturning = !!localStorage.getItem("steam_visited");
+    localStorage.setItem("steam_visited", "1");
+
+    if (_isReturning && (_lastPage === "library" || _lastPage === "store")) {
+      this.currentGame = null;
+      this.currentArchiveGame = null;
+      updatePageUI(_lastPage);
+      if (_lastPage === "store") {
+        const sp = container.querySelector(".steam-store-page");
+        if (sp) sp._storeInited = true;
+        _initStorePage(onLaunch);
+      } else {
+        this.renderGrid(container, onLaunch);
+      }
+    } else {
+      const sp = container.querySelector(".steam-store-page");
+      if (sp) sp._storeInited = true;
+      updatePageUI("store");
+      _initStorePage(onLaunch);
+    }
   }
 
   openFriendsWindow(wm) {

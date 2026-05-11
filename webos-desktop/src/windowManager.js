@@ -633,6 +633,8 @@ export class WindowManager {
       if (this._taskbarPreviewShowTimer) clearTimeout(this._taskbarPreviewShowTimer);
       this._scheduleHideTaskbarPreview();
     });
+
+    document.getElementById("taskbar-windows").appendChild(taskbarItem);
   }
 
   _scheduleHideTaskbarPreview() {

@@ -8721,11 +8721,16 @@ body.is-resizing * {
   overflow-y: auto;
   background: radial-gradient(circle at top left, #2a475e 0%, #171a21 100%);
   padding: 20px;
+  padding-bottom: 60px;
   scrollbar-width: thin;
   scrollbar-color: #3d4450 #171a21;
 }
 
 .steam-bottom-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
   height: 40px;
   background: #171d25;
   display: flex;
@@ -8734,7 +8739,7 @@ body.is-resizing * {
   padding: 0 15px;
   font-size: 12px;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
-  flex-shrink: 0;
+  z-index: 10;
 }
 
 .steam-bottom-left,
@@ -10254,4 +10259,29 @@ body.is-resizing * {
 
 #history-list::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.2);
+}
+.ad-split-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.ad-section {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ad-top {
+  flex: 0 0 90px;
+}
+
+.ad-bottom {
+  flex: 1;
+}
+
+.ad-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
 }
