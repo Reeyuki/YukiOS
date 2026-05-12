@@ -4,12 +4,12 @@ import { speak } from "./clippy.js";
 import { decodeDataURLContent } from "./fileDisplay.js";
 import { showConflictDialog } from "./shared/conflictDialog.js";
 import { FileKind } from "./fs.js";
+import { BaseApp } from "./core/BaseApp.js";
 
-export class MonacoApp {
-  constructor(fileSystemManager, windowManager, explorerApp) {
-    this.fs = fileSystemManager;
-    this.wm = windowManager;
-    this.explorerApp = explorerApp;
+export class MonacoApp extends BaseApp {
+  constructor(services) {
+    super(services);
+    this.explorerApp = services.explorerApp;
     this.idleTimer = null;
     this.idleDelay = 15000;
     this.monacoLoaded = false;
@@ -19,7 +19,7 @@ export class MonacoApp {
     this.currentWindow = null;
     this.tabCounter = 0;
     this.findWidgetVisible = false;
-    this.icon = "/static/icons/vscode.webp";
+    this.icon = "static/icons/vscode.webp";
   }
 
   async loadMonaco() {
@@ -337,7 +337,7 @@ export class MonacoApp {
   getHeaderHTML(title) {
     return `
       <div class="window-header">
-        <span> Monaco Editor</span>
+        <span>Yuki Code</span>
         ${this.wm.getWindowControls()}
       </div>
     `;
@@ -376,7 +376,7 @@ export class MonacoApp {
       try {
         await this.loadMonaco();
       } catch (e) {
-        this.wm.sendNotify("Failed to load Monaco Editor");
+        this.wm.sendNotify("Failed to load Yuki Code");
         return;
       }
     }
@@ -390,11 +390,10 @@ export class MonacoApp {
 
   createNewWindow() {
     const winId = `monaco-window-${Date.now()}`;
-    const win = this.wm.createWindow(winId, "Monaco Editor", "900px", "650px");
-    Object.assign(win.style, { left: "150px", top: "80px" });
+    const win = this.wm.createWindow(winId, "Yuki Code", "900px", "650px");
 
     win.innerHTML = `
-      ${this.getHeaderHTML("Monaco Editor")}
+      ${this.getHeaderHTML("Yuki Code")}
       ${this.getMenuBarHTML()}
       <div class="monaco-tabs-container">
         <div class="monaco-tabs"></div>
@@ -419,7 +418,7 @@ export class MonacoApp {
     this.wm.makeDraggable(win);
     this.wm.makeResizable(win);
     this.wm.setupWindowControls(win);
-    this.wm.addToTaskbar(win.id, "Monaco Editor", this.icon);
+    this.wm.addToTaskbar(win.id, "Yuki Code", this.icon);
 
     this.currentWindow = win;
     this.setupMenuActions(win);
@@ -1117,8 +1116,8 @@ export class MonacoApp {
       },
       showDocs: () => window.open("https://code.visualstudio.com/docs", "_blank"),
       about: () => {
-        this.wm.sendNotify("Monaco Editor v0.45.0 - Professional code editing powered by VS Code");
-        speak("This is Monaco Editor, the code editor that powers VS Code!", "Explain");
+        this.wm.sendNotify("Yuki Code v0.45.0 - Professional code editing powered by VS Code");
+        speak("This is Yuki Code, the code editor that powers VS Code!", "Explain");
       }
     };
 

@@ -10,7 +10,9 @@ const NEWS_UPDATES = [
         icon: "fa-wand-magic-sparkles",
         title: "Features & Improvements",
         items: [
-          ["fa-star", "PWA Support", "Added progressive web app support for YukiOS"],
+          ["fa-star", "PWA Support", "Added progressive web app support for YukiOS."],
+          ["fa-star", "Taskbar Customization support", "Added taskbar alignment options."],
+          ["fa-user", "Profile Customization support", "Added Customize Profile app."],
           ["fa-cubes", "3D Renderer Assets", "Fixed sample files of 3D Model Viewer and JsDos roms"],
           ["fa-brands fa-steam", "Steam Improvement", "Added data pack install option steam and optimize load speed"],
           ["fa-arrow-pointer", "Cursor Support", "Added custom cursor support"],
@@ -96,7 +98,7 @@ const NEWS_UPDATES = [
             "Steam Launch from Search",
             "Launch Steam apps directly from the search/query experience."
           ],
-          ["fa-link", "CDN Reliability", "Fixed a jsDelivr URL used for loading assets."],
+          ["fa-link", "CDN Reliability", "Fixed a statically URL used for loading assets."],
           ["fa-book-open", "Game Descriptions", "Added game descriptions for better discovery."]
         ]
       }
@@ -145,7 +147,7 @@ const NEWS_UPDATES = [
         icon: "fa-rocket",
         title: "New Apps",
         items: [
-          ["fa-code", "Monaco Editor", "A powerful code editor is now available as a built-in app."],
+          ["fa-code", "Yuki Code", "A powerful code editor is now available as a built-in app."],
           ["fa-file-lines", "Markdown Viewer", "Open and read Markdown files directly in the system."],
           ["fa-cube", "3D Model Viewer", "View 3D models without any external software."],
           ["fa-file-word", "Full Office Suite", "Create and edit office documents right in your workspace."],
@@ -245,7 +247,6 @@ export class NewsApp extends BaseApp {
     if (this._isSingletonOpen(winId)) return;
 
     const win = this.wm.createWindow(winId, "What's New", "720px", "520px");
-    Object.assign(win.style, { left: "180px", top: "70px" });
 
     const updates = NEWS_UPDATES;
 

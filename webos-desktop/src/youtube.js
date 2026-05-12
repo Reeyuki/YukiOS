@@ -230,7 +230,6 @@ export class YouTubeApp extends BaseApp {
     }
 
     const win = this.wm.createWindow(this.winId, title, "980px", "640px");
-    Object.assign(win.style, { left: "140px", top: "70px" });
 
     win.innerHTML = `
       <div class="window-header" id="win-header-${this.winId}">

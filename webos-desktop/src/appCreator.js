@@ -42,16 +42,52 @@ function deriveFaviconUrl(appUrl) {
   }
 }
 
-async function tryLoadFavicon(appUrl) {
-  const faviconUrl = deriveFaviconUrl(appUrl);
-  if (!faviconUrl) return null;
+function parseFaviconFromHtml(html, baseUrl) {
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  const selectors = [
+    "link[rel~='icon']",
+    "link[rel='shortcut icon']",
+    "link[rel='apple-touch-icon']",
+    "link[rel='apple-touch-icon-precomposed']"
+  ];
+  for (const sel of selectors) {
+    const el = doc.querySelector(sel);
+    if (el?.href) {
+      try {
+        return new URL(el.getAttribute("href"), baseUrl).href;
+      } catch {
+        continue;
+      }
+    }
+  }
+  return null;
+}
 
+function probeImageUrl(url) {
   return new Promise((resolve) => {
     const img = new Image();
-    img.onload = () => resolve(faviconUrl);
+    img.onload = () => resolve(url);
     img.onerror = () => resolve(null);
-    img.src = faviconUrl;
+    img.src = url;
   });
+}
+
+async function tryLoadFavicon(appUrl) {
+  try {
+    const response = await fetch(appUrl, { method: "GET", redirect: "follow" });
+    if (response.ok) {
+      const html = await response.text();
+      const fromHtml = parseFaviconFromHtml(html, appUrl);
+      if (fromHtml) {
+        const verified = await probeImageUrl(fromHtml);
+        if (verified) return verified;
+      }
+    }
+  } catch {}
+
+  const fallbackUrl = deriveFaviconUrl(appUrl);
+  if (!fallbackUrl) return null;
+  return probeImageUrl(fallbackUrl);
 }
 
 function makeDesktopIconElement(appId, name, iconUrl) {
@@ -122,8 +158,6 @@ export class AppCreatorApp extends BaseApp {
     }
 
     const win = this.wm.createWindow(AC.WIN_ID, "App Creator", AC.WIN_WIDTH, AC.WIN_HEIGHT);
-    win.style.left = "200px";
-    win.style.top = "100px";
 
     win.innerHTML = `
       <div class="window-header">

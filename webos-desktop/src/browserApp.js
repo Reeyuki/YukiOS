@@ -146,7 +146,6 @@ export class BrowserApp extends BaseApp {
     const startUrl = url || this.homepageUrl;
 
     this.win = this.wm.createWindow(this.winId, title, "900px", "620px");
-    Object.assign(this.win.style, { left: "100px", top: "60px" });
 
     this.win.innerHTML = `
       <div class="window-header" id="win-header-${this.winId}">
@@ -280,7 +279,6 @@ export class BrowserApp extends BaseApp {
     const id = `file-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
     const win = this.wm.createWindow(id, name, "900px", "620px");
-    Object.assign(win.style, { left: "100px", top: "60px" });
 
     const html = typeof content === "string" ? content : "";
 

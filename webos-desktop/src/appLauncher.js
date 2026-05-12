@@ -7,23 +7,22 @@ import {
   fetchHtmlAsBlobUrl,
   resolveUrl,
   looksLikeHtml,
-  isJsDelivrGhUrl,
+  isCdnGhUrl,
   CDN_BASES,
-  getCurrentJsDelivrRepoBase
+  getCurrentJsdelivrRepoBase
 } from "./shared/assetResolver.js";
 import { initClippy, speak as clippySpeak } from "./clippy.js";
 import { initAnalytics, getAnalyticsBase, sendLaunchAnalytics, recordUsage } from "./analytics.js";
 import { StorageKeys } from "./settings.js";
 import { getNewsContentSignature } from "./news.js";
 import { PROXIES, clampProxyIndex, buildProxyUrl } from "./proxies.js";
-const JSDELIVR_BASE = "https://cdn.jsdelivr.net/gh/reeyuki/yukios-games@main";
-const YUKIOS_JSDELIVR_BASE = "https://cdn.jsdelivr.net/gh/reeyuki/yukios@main";
+const STATICALLY_BASE = "https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main";
+const YUKIOS_JSDELIVR_BASE = "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main";
 
 export class AppLauncher {
   constructor(
     windowManager,
     fileSystemManager,
-    musicPlayer,
     explorerApp,
     terminalApp,
     notepadApp,
@@ -45,11 +44,11 @@ export class AppLauncher {
     youtubeApp,
     achievementsApp,
     adsManager,
-    profileCustomizerApp
+    profileCustomizerApp,
+    markdownApp
   ) {
     this.wm = windowManager;
     this.fs = fileSystemManager;
-    this.musicPlayer = musicPlayer;
     this.explorerApp = explorerApp;
     this.terminalApp = terminalApp;
     this.notepadApp = notepadApp;
@@ -72,6 +71,7 @@ export class AppLauncher {
     this.achievementsApp = achievementsApp;
     this.adsManager = adsManager;
     this.profileCustomizerApp = profileCustomizerApp;
+    this.markdownApp = markdownApp;
     this.TRANSPARENCY_ALLOWED_APP_IDS = new Set(["paint", "photopea", "vscode", "liventcord"]);
 
     this.clippyPromise = initClippy();
@@ -105,9 +105,15 @@ export class AppLauncher {
         action: () => this.notepadApp.open(),
         clippy: { message: "It looks like you're writing something. Need help with that letter?", animation: "Pleased" }
       },
+      markdown: {
+        type: "system",
+        title: "Markdown",
+        action: () => this.markdownApp.open(),
+        clippy: { message: "Writing in Markdown? I can help you format your documents!", animation: "Pleased" }
+      },
       monaco: {
         type: "system",
-        title: "Monaco Editor",
+        title: "Yuki Code",
         action: () => this.monacoApp.open(),
         clippy: { message: "Would you like help starting with a 'Hello World?", animation: "Pleased" }
       },
@@ -140,12 +146,6 @@ export class AppLauncher {
         title: "What's New",
         action: () => this.newsApp.open()
       },
-      music: {
-        type: "system",
-        title: "Spotify",
-        action: () => this.musicPlayer.open(this.wm),
-        clippy: { message: "Paste a Spotify link and I'll embed it for you.", animation: "Pleased" }
-      },
       model3dApp: {
         type: "system",
         title: "3D Model Viewer",
@@ -173,7 +173,7 @@ export class AppLauncher {
       taskManagerApp: {
         type: "system",
         title: "Task Manager",
-        action: () => this.taskManagerApp.open(),
+        action: () => this.taskManager.open(),
         clippy: { message: "Something's hogging resources. Want me to guess what?", animation: "Acknowledge" }
       },
       weatherApp: {
@@ -298,18 +298,6 @@ export class AppLauncher {
         localStorage.setItem(StorageKeys.newsSeenKey, "true");
       }, 300);
     }
-    if (window.electronAPI) {
-      const tmnpIcon = document.createElement("div");
-      tmnpIcon.className = "icon selectable";
-      tmnpIcon.dataset.app = "TMNP";
-      tmnpIcon.draggable = false;
-      tmnpIcon.style.cssText = "user-select: none; left: 600px; top: 110px;";
-      tmnpIcon.append(
-        Object.assign(document.createElement("img"), { src: appMap.TMNP.icon }),
-        Object.assign(document.createElement("div"), { textContent: appMap.TMNP.title })
-      );
-      desktop.append(tmnpIcon);
-    }
 
     this._ensureIframeNavigateHandler();
   }
@@ -323,7 +311,6 @@ export class AppLauncher {
     this._iframeNavigateHandlerInstalled = true;
 
     const looksLikeHtml = (url) => typeof url === "string" && /\.html?([?#].*)?$/i.test(url);
-    const isJsDelivrGhUrl = (url) => typeof url === "string" && url.startsWith("https://cdn.jsdelivr.net/gh/");
 
     window.addEventListener("message", async (event) => {
       const data = event?.data;
@@ -342,7 +329,7 @@ export class AppLauncher {
       const prevSrc = sourceIframe.getAttribute("src") || "";
 
       try {
-        if (looksLikeHtml(nextUrl) && isJsDelivrGhUrl(nextUrl)) {
+        if (looksLikeHtml(nextUrl) && isCdnGhUrl(nextUrl)) {
           const blobUrl = await fetchHtmlAsBlobUrl(nextUrl);
           sourceIframe.src = blobUrl;
         } else {
@@ -383,8 +370,6 @@ export class AppLauncher {
     }
 
     const urlParams = new URLSearchParams(window.location.search);
-    if (info.type !== "system" && window.electronAPI?.launchGame && !urlParams.has("game"))
-      return window.electronAPI.launchGame(app);
 
     if (info.type === "system") {
       if (info.url) {
@@ -459,16 +444,12 @@ export class AppLauncher {
   }
 
   openRemoteApp(appUrl) {
-    const isJsDelivrGh = window.location.hostname === "cdn.jsdelivr.net" && window.location.pathname.includes("/gh/");
-    if (isJsDelivrGh && typeof appUrl === "string" && appUrl.startsWith("/")) {
-      appUrl = `${JSDELIVR_BASE}${appUrl}`;
+    const isStaticallyGh =
+      window.location.hostname === "cdn.statically.io" && window.location.pathname.includes("/gh/");
+    if (isStaticallyGh && typeof appUrl === "string" && appUrl.startsWith("/")) {
+      appUrl = `${STATICALLY_BASE}${appUrl}`;
     }
     sendLaunchAnalytics(appUrl);
-    if (window.electronAPI) {
-      location.href = appUrl;
-    } else {
-      window.open(appUrl, "_blank", "noopener,noreferrer");
-    }
   }
 
   openHtmlApp(appName, htmlContent, appMeta) {
@@ -502,7 +483,7 @@ export class AppLauncher {
 <head>
 <meta charset="UTF-8">
 <title>${gameName}</title>
-<script src="https://cdn.jsdelivr.net/npm/@ruffle-rs/ruffle@0.2.0-nightly.2026.3.15/ruffle.min.js"></script>
+<script src="https://cdn.statically.io/npm/@ruffle-rs/ruffle@0.2.0-nightly.2026.3.15/ruffle.min.js"></script>
 <style>html,body{margin:0;padding:0;width:100%;height:100%;background:black;overflow:hidden;}#player{width:100%;height:100%;}</style>
 </head>
 <body>
@@ -536,13 +517,17 @@ player.load("${swfPath}");
         !source.startsWith("/");
 
       const bypassRewriteForApp = type === "game";
+      const isStaticallyGh =
+        window.location.hostname === "cdn.statically.io" && window.location.pathname.includes("/gh/");
       const isJsDelivrGh = window.location.hostname === "cdn.jsdelivr.net" && window.location.pathname.includes("/gh/");
 
       let resolvedSource =
-        shouldBypassResolution || bypassRewriteForApp ? source : await resolveUrl(source, isJsDelivrGh);
+        shouldBypassResolution || bypassRewriteForApp
+          ? source
+          : await resolveUrl(source, isStaticallyGh || isJsDelivrGh);
 
       if (bypassRewriteForApp && typeof resolvedSource === "string" && resolvedSource.startsWith("/")) {
-        const repoBase = getCurrentJsDelivrRepoBase();
+        const repoBase = getCurrentJsdelivrRepoBase();
         if (repoBase) {
           resolvedSource = `${repoBase}${resolvedSource}`;
         } else {
@@ -562,13 +547,113 @@ player.load("${swfPath}");
 
       let iframeUrl;
 
+      if (type !== "game") {
+        contentHtml = `<iframe src="${resolvedSource}" ${IFRAME_ATTRS}></iframe>`;
+      }
+
       if (type === "game") {
-        iframeUrl = resolvedSource;
+        const displayTitle = this.appMap[appId]?.title || originalName;
+        const win = this.wm.createWindow(
+          `${id}-win`,
+          displayTitle,
+          "80vw",
+          "80vh",
+          this.isTransparencyBlocked(appId, { type })
+        );
+        if (appId) this._appSessions.set(`${id}-win`, { appId, startTime: Date.now() });
+
+        Object.assign(win.dataset, {
+          appType: type,
+          externalUrl: resolvedSource || "",
+          appId: appId || "",
+          swf: type === "swf" ? source : "",
+          isGame: this.isTransparencyBlocked(appId, { type }),
+          rom: type !== "game" && type !== "swf" ? source : "",
+          core: type !== "game" && type !== "swf" ? type : ""
+        });
+
+        win.innerHTML = `
+          <div class="window-header">
+            <span>${displayTitle}</span>
+            ${this.wm.getWindowControls(resolvedSource)}
+          </div>
+          <div class="window-content" style="width:100%; height:100%; overflow:hidden; display:flex; align-items:center; justify-content:center; background:#1a1a1a;">
+            <style>
+              .modern-loader {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 12px;
+              }
+              .loader-dots {
+                display: flex;
+                gap: 4px;
+              }
+              .loader-dot {
+                width: 8px;
+                height: 8px;
+                background: linear-gradient(45deg, #4a9eff, #00d4ff);
+                border-radius: 50%;
+                animation: loader-bounce 1.4s ease-in-out infinite both;
+              }
+              .loader-dot:nth-child(1) { animation-delay: -0.32s; }
+              .loader-dot:nth-child(2) { animation-delay: -0.16s; }
+              .loader-dot:nth-child(3) { animation-delay: 0s; }
+              
+              @keyframes loader-bounce {
+                0%, 80%, 100% {
+                  transform: scale(0.8);
+                  opacity: 0.5;
+                }
+                40% {
+                  transform: scale(1);
+                  opacity: 1;
+                }
+              }
+              
+              .loader-text {
+                color: #ccc;
+                font-size: 14px;
+                font-weight: 500;
+                letter-spacing: 0.5px;
+                animation: loader-pulse 2s ease-in-out infinite;
+              }
+              
+              @keyframes loader-pulse {
+                0%, 100% { opacity: 0.6; }
+                50% { opacity: 1; }
+              }
+            </style>
+            <div class="modern-loader">
+              <div class="loader-dots">
+                <div class="loader-dot"></div>
+                <div class="loader-dot"></div>
+                <div class="loader-dot"></div>
+              </div>
+              <div class="loader-text">Loading</div>
+            </div>
+          </div>
+        `;
+
+        desktop.appendChild(win);
+        this.wm.makeDraggable(win);
+        this.wm.makeResizable(win);
+        this.wm.setupWindowControls(win);
+        this.wm.bringToFront(win);
+        this.wm.addToTaskbar(`${id}-win`, displayTitle, this.appMap[appId]?.icon || "fas fa-gamepad");
+
+        win.querySelector(".external-btn")?.addEventListener("click", () => {
+          window.open(resolvedSource, "_blank");
+        });
+
         if (
           looksLikeHtml(resolvedSource) &&
           /^https?:\/\//.test(resolvedSource) &&
           !isSameOrigin &&
-          isJsDelivrGhUrl(resolvedSource)
+          (isCdnGhUrl(resolvedSource) ||
+            (window.location.hostname === "cdn.jsdelivr.net" &&
+              window.location.pathname.includes("/gh/") &&
+              resolvedSource.startsWith("https://cdn.jsdelivr.net/gh/")))
         ) {
           try {
             iframeUrl = await fetchHtmlAsBlobUrl(resolvedSource);
@@ -579,14 +664,21 @@ player.load("${swfPath}");
 <h2>Failed to fetch page</h2><p><strong>URL:</strong> <code>${resolvedSource}</code></p><p><strong>Error:</strong> <code>${message}</code></p>`;
             iframeUrl = URL.createObjectURL(new Blob([errHtml], { type: "text/html" }));
           }
+        } else {
+          iframeUrl = resolvedSource;
         }
+
+        const contentDiv = win.querySelector(".window-content");
+        if (contentDiv) {
+          contentDiv.innerHTML = `<iframe src="${iframeUrl}" ${IFRAME_ATTRS}></iframe>`;
+        }
+
+        if (type === "game") externalUrl = resolvedSource;
+        return;
       } else {
         alert("ROM emulation is not available.");
         return;
       }
-
-      contentHtml = `<iframe src="${iframeUrl}" ${IFRAME_ATTRS}></iframe>`;
-      if (type === "game") externalUrl = resolvedSource;
     }
 
     const displayTitle = this.appMap[appId]?.title || getGameName(originalName) || originalName;

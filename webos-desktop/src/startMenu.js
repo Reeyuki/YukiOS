@@ -175,7 +175,7 @@ export function setupStartMenu(appLauncher) {
     }
 
     cat.onclick = () => {
-      if (cat.dataset.cat === "settings") {
+      if (cat.dataset.cat === "settingsApp") {
         appLauncher.launch("settingsApp");
         return;
       }
@@ -247,13 +247,13 @@ export function tryGetIcon(id) {
   id = camelize(id);
 
   if (id === "explorer") {
-    return "https://cdn.jsdelivr.net/gh/reeyuki/yukios@main/static/icons/file.webp";
+    return "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/icons/file.webp";
   }
   if (id === "appCreatorApp") {
     return "fa fa-cubes";
   }
   if (id === "kiwiIRC") {
-    return "https://cdn.jsdelivr.net/gh/reeyuki/yukios@main/static/icons/kiwiirc.webp";
+    return "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/icons/kiwiirc.webp";
   }
   if (id === "yukiConvert") {
     return "fas fa-video";

@@ -60,7 +60,6 @@ export class MarkdownApp {
     }
 
     const win = this.wm.createWindow(winId, title, "750px", "550px");
-    Object.assign(win.style, { left: "180px", top: "80px" });
 
     const decodedContent = decodeDataURLContent(content);
     const renderedContent = this.marked.parse(decodedContent);

@@ -1,11 +1,11 @@
 export const CDN_CONFIG = {
   repos: {
     games: {
-      base: "https://cdn.jsdelivr.net/gh/reeyuki/yukios-games@main",
+      base: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main",
       ref: "main"
     },
     main: {
-      base: "https://cdn.jsdelivr.net/gh/reeyuki/yukios@main",
+      base: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main",
       ref: "main"
     },
     npm: {

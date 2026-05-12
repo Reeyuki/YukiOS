@@ -31,7 +31,8 @@ export const StorageKeys = {
   achievementCounters: "yukiOS_achievement_counters",
   deletedIconsKey: "yukiOS_desktop:deleted-icons",
   analyticsDisabled: "yukiOS_analytics_disabled",
-  dndKey: "wm_ntf_dnd"
+  dndKey: "wm_ntf_dnd",
+  taskbarPosition: "yukiOS_taskbar_position"
 };
 
 export class SettingsApp extends BaseApp {
@@ -81,7 +82,6 @@ export class SettingsApp extends BaseApp {
     }
 
     const win = this.wm.createWindow(winId, "Settings", "500px", "560px");
-    Object.assign(win.style, { left: "200px", top: "100px" });
     win.innerHTML = this._buildHTML();
 
     desktop.appendChild(win);

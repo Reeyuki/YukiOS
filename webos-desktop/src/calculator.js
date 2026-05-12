@@ -12,7 +12,6 @@ export class CalculatorApp extends BaseApp {
     if (this._isSingletonOpen(winId)) return;
 
     const win = this.wm.createWindow(winId, "Calculator", "360px", "560px");
-    Object.assign(win.style, { left: "300px", top: "120px" });
 
     win.innerHTML = `
       <div class="window-header calc-header">

@@ -122,13 +122,9 @@ export class AdsManager {
       return false;
     }
 
-    const win = this.wm.createWindow(winId, "Sponsored", "420px", "300px");
-
-    Object.assign(win.style, {
-      right: "40px",
-      bottom: "40px",
-      left: "auto",
-      top: "auto"
+    const win = this.wm.createWindow(winId, "Sponsored", "420px", "300px", false, {
+      position: { x: window.innerWidth - 420 - 40, y: window.innerHeight - 300 - 40 },
+      allowManualPosition: true
     });
 
     win.innerHTML = `
@@ -157,15 +153,11 @@ export class AdsManager {
   }
 
   createAdWindow() {
-    const win = this.wm.createWindow("ads_main_window", "Sponsored", "520px", "360px");
-
-    Object.assign(win.style, {
-      position: "absolute",
-      top: "40px",
-      left: "50%",
-      transform: "translateX(-50%)",
-      zIndex: 50
+    const win = this.wm.createWindow("ads_main_window", "Sponsored", "520px", "360px", false, {
+      position: { x: (window.innerWidth - 520) / 2, y: 40 },
+      allowManualPosition: true
     });
+    win.style.zIndex = 50;
 
     win.innerHTML = `
       <div class="window-header">

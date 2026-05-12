@@ -275,7 +275,6 @@ export class TerminalApp extends BaseApp {
     if (existingWin) return this.wm.bringToFront(existingWin);
 
     const win = this.wm.createWindow("terminal-win", "Terminal", "700px", "500px");
-    Object.assign(win.style, { left: "200px", top: "100px" });
 
     win.innerHTML = `
     <div class="window-header">

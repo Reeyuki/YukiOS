@@ -16,7 +16,7 @@ export class V86App extends BaseApp {
     if (this._isSingletonOpen("v86-win")) return;
 
     this._loadV86Script();
-    const win = this.wm.createWindow("v86-win", "V86", "600px", "560px");
+    const win = this.wm.createWindow("v86-win", "V86");
     win.innerHTML = `
       <div class="window-header">
         <span>V86 Virtual Machine</span>

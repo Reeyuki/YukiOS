@@ -106,14 +106,53 @@ export function _getSnapZone(wm, x, y) {
   const w = window.innerWidth;
   const h = window.innerHeight;
 
-  if (y < margin && x < margin) return "top-left";
-  if (y < margin && x > w - margin) return "top-right";
-  if (y > h - margin - 48 && x < margin) return "bottom-left";
-  if (y > h - margin - 48 && x > w - margin) return "bottom-right";
+  const taskbar = document.getElementById("taskbar");
+  let taskbarPosition = "bottom"; // fallback to bottom
+  let taskbarWidth = 0;
+  let taskbarHeight = 0;
 
-  if (y < margin) return "maximize";
-  if (x < margin) return "left";
-  if (x > w - margin) return "right";
+  if (taskbar) {
+    taskbarPosition = taskbar.classList.contains("position-left")
+      ? "left"
+      : taskbar.classList.contains("position-right")
+        ? "right"
+        : taskbar.classList.contains("position-top")
+          ? "top"
+          : "bottom";
+
+    if (taskbarPosition === "left" || taskbarPosition === "right") {
+      taskbarWidth = taskbar.offsetWidth;
+    } else {
+      taskbarHeight = taskbar.offsetHeight;
+    }
+  } else {
+    console.warn("Taskbar element not found for snap zone detection, using bottom position as fallback");
+    taskbarHeight = 48;
+  }
+
+  let leftBoundary = margin;
+  let rightBoundary = w - margin;
+  let topBoundary = margin;
+  let bottomBoundary = h - margin;
+
+  if (taskbarPosition === "left") {
+    leftBoundary = taskbarWidth + margin;
+  } else if (taskbarPosition === "right") {
+    rightBoundary = w - taskbarWidth - margin;
+  } else if (taskbarPosition === "top") {
+    topBoundary = taskbarHeight + margin;
+  } else {
+    bottomBoundary = h - taskbarHeight - margin;
+  }
+
+  if (y < topBoundary && x < leftBoundary) return "top-left";
+  if (y < topBoundary && x > rightBoundary) return "top-right";
+  if (y > bottomBoundary && x < leftBoundary) return "bottom-left";
+  if (y > bottomBoundary && x > rightBoundary) return "bottom-right";
+
+  if (y < topBoundary) return "maximize";
+  if (x < leftBoundary) return "left";
+  if (x > rightBoundary) return "right";
 
   return null;
 }
@@ -148,24 +187,84 @@ export function _applySnap(wm, win, zone) {
   win.dataset.snapZone = zone;
   win.dataset.oldStyle = win.getAttribute("style");
 
-  const taskbarHeight = 48;
-  const h = `calc(100vh - ${taskbarHeight}px)`;
-  const halfH = `calc(50vh - ${taskbarHeight / 2}px)`;
+  const taskbar = document.getElementById("taskbar");
+  let taskbarPosition = "bottom";
+
+  if (taskbar) {
+    taskbarPosition = taskbar.classList.contains("position-left")
+      ? "left"
+      : taskbar.classList.contains("position-right")
+        ? "right"
+        : taskbar.classList.contains("position-top")
+          ? "top"
+          : "bottom";
+  }
+
+  const root = document.documentElement;
+  const taskbarH = getComputedStyle(root).getPropertyValue("--taskbar-h").trim() || "3.2em";
+
+  let availableWidth, availableHeight;
+
+  if (taskbarPosition === "left" || taskbarPosition === "right") {
+    availableWidth = `calc(100vw - ${taskbarH})`;
+    availableHeight = "100vh";
+  } else {
+    availableWidth = "100vw";
+    availableHeight = `calc(100vh - ${taskbarH})`;
+  }
+
+  const halfW = taskbarPosition === "left" || taskbarPosition === "right" ? `calc(50vw - ${taskbarH} / 2)` : "50vw";
+  const halfH = taskbarPosition === "top" || taskbarPosition === "bottom" ? `calc(50vh - ${taskbarH} / 2)` : "50vh";
 
   if (zone === "maximize") {
-    Object.assign(win.style, { top: "0", left: "0", width: "100vw", height: h });
+    Object.assign(win.style, {
+      top: "0",
+      left: "0",
+      width: availableWidth,
+      height: availableHeight
+    });
   } else if (zone === "left") {
-    Object.assign(win.style, { top: "0", left: "0", width: "50vw", height: h });
+    Object.assign(win.style, {
+      top: "0",
+      left: "0",
+      width: halfW,
+      height: availableHeight
+    });
   } else if (zone === "right") {
-    Object.assign(win.style, { top: "0", left: "50vw", width: "50vw", height: h });
+    Object.assign(win.style, {
+      top: "0",
+      left: halfW,
+      width: halfW,
+      height: availableHeight
+    });
   } else if (zone === "top-left") {
-    Object.assign(win.style, { top: "0", left: "0", width: "50vw", height: halfH });
+    Object.assign(win.style, {
+      top: "0",
+      left: "0",
+      width: halfW,
+      height: halfH
+    });
   } else if (zone === "top-right") {
-    Object.assign(win.style, { top: "0", left: "50vw", width: "50vw", height: halfH });
+    Object.assign(win.style, {
+      top: "0",
+      left: halfW,
+      width: halfW,
+      height: halfH
+    });
   } else if (zone === "bottom-left") {
-    Object.assign(win.style, { top: halfH, left: "0", width: "50vw", height: halfH });
+    Object.assign(win.style, {
+      top: halfH,
+      left: "0",
+      width: halfW,
+      height: halfH
+    });
   } else if (zone === "bottom-right") {
-    Object.assign(win.style, { top: halfH, left: "50vw", width: "50vw", height: halfH });
+    Object.assign(win.style, {
+      top: halfH,
+      left: halfW,
+      width: halfW,
+      height: halfH
+    });
   }
 }
 

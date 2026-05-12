@@ -2,6 +2,7 @@
 
 :root {
   --taskbar-h: 3.2em;
+  --taskbar-v-w: 3.2em;
   --taskbar-padding-top: 0;
   --taskbar-padding-bottom: var(--taskbar-h);
   --taskbar-padding-left: 0;
@@ -483,7 +484,7 @@ body.is-resizing * {
   right: auto;
   top: 0;
   bottom: 0;
-  width: var(--taskbar-h);
+  width: var(--taskbar-v-w);
   height: 100%;
   flex-direction: column;
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.5);
@@ -494,7 +495,7 @@ body.is-resizing * {
   left: auto;
   top: 0;
   bottom: 0;
-  width: var(--taskbar-h);
+  width: var(--taskbar-v-w);
   height: 100%;
   flex-direction: column;
   box-shadow: -2px 0 8px rgba(0, 0, 0, 0.5);
@@ -515,8 +516,12 @@ body.is-resizing * {
 #taskbar.position-right #start-button {
   width: calc(var(--taskbar-h) - 16px);
   height: calc(var(--taskbar-h) - 16px);
-  margin: 8px;
+  margin: 8px auto;
   background-size: 28px;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 #taskbar.position-left #taskbar-windows,
@@ -545,24 +550,26 @@ body.is-resizing * {
 #taskbar.position-right #system-tray {
   flex-direction: column;
   gap: 4px;
-  padding: 8px;
+  padding: 8px 4px;
   align-items: center;
   justify-content: flex-end;
   min-height: 120px;
+  height: auto;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 #taskbar.position-left #system-tray #clock,
 #taskbar.position-right #system-tray #clock {
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
+  margin-top: 5px;
   font-size: 0.8em;
   text-align: center;
 }
 
 #taskbar.position-left #system-tray #date,
 #taskbar.position-right #system-tray #date {
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
+  margin-top: 2px;
   font-size: 0.7em;
   text-align: center;
   opacity: 0.8;
@@ -586,11 +593,54 @@ body.is-resizing * {
   height: 24px;
 }
 
+#taskbar.position-left #taskbar-weather,
+#taskbar.position-right #taskbar-weather,
 #taskbar.position-left .taskbar-weather,
 #taskbar.position-right .taskbar-weather {
   flex-direction: column;
   font-size: 0.8em;
   text-align: center;
+}
+
+#taskbar.position-left .ntf-tray-btn,
+#taskbar.position-right .ntf-tray-btn {
+  margin: 4px auto;
+  width: calc(var(--taskbar-h) - 16px);
+  height: calc(var(--taskbar-h) - 16px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#taskbar.position-left #audio-mixer-tray-btn,
+#taskbar.position-right #audio-mixer-tray-btn {
+  margin: 4px auto;
+  width: calc(var(--taskbar-h) - 16px);
+  height: calc(var(--taskbar-h) - 16px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8em;
+  text-align: center;
+}
+
+#taskbar.position-left #workspace-bar,
+#taskbar.position-right #workspace-bar {
+  flex-direction: column;
+  border-right: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-right: 0;
+  margin-bottom: 4px;
+  padding: 6px 0;
+  width: 100%;
+  justify-content: center;
+}
+
+#taskbar.position-left .workspace-sep,
+#taskbar.position-right .workspace-sep {
+  width: 16px;
+  height: 1px;
+  margin: 2px 0;
 }
 
 /* Taskbar context menu - uses shared styles with #context-menu */
@@ -2470,7 +2520,8 @@ body.is-resizing * {
 }
 
 #context-menu,
-#taskbar-context-menu {
+#taskbar-context-menu,
+#taskbar-pos-menu {
   position: absolute;
   display: none;
   z-index: 10000;
@@ -2489,7 +2540,8 @@ body.is-resizing * {
 }
 
 #context-menu div,
-#taskbar-context-menu .menu-item {
+#taskbar-context-menu .menu-item,
+#taskbar-pos-menu .context-menu-item {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -2502,32 +2554,37 @@ body.is-resizing * {
 }
 
 #context-menu div:hover,
-#taskbar-context-menu .menu-item:hover {
+#taskbar-context-menu .menu-item:hover,
+#taskbar-pos-menu .context-menu-item:hover {
   background: rgba(51, 153, 255, 0.18);
   color: #fff;
 }
 
 #context-menu div:active,
-#taskbar-context-menu .menu-item:active {
+#taskbar-context-menu .menu-item:active,
+#taskbar-pos-menu .context-menu-item:active {
   transform: scale(0.97);
   background: rgba(51, 153, 255, 0.3);
 }
 
 #context-menu hr,
-#taskbar-context-menu hr {
+#taskbar-context-menu hr,
+#taskbar-pos-menu hr {
   margin: 6px 4px;
   border: none;
   height: 1px;
   background: rgba(255, 255, 255, 0.08);
 }
 
-#taskbar-context-menu .menu-item i {
+#taskbar-context-menu .menu-item i,
+#taskbar-pos-menu .context-menu-item i {
   font-size: 14px;
   opacity: 0.7;
   transition: opacity 0.15s ease;
 }
 
-#taskbar-context-menu .menu-item:hover i {
+#taskbar-context-menu .menu-item:hover i,
+#taskbar-pos-menu .context-menu-item:hover i {
   opacity: 1;
 }
 
@@ -7464,50 +7521,50 @@ body.is-resizing * {
 .snap-ghost-maximize {
   top: 0;
   left: 0;
-  width: 100vw;
-  height: calc(100vh - 48px);
+  width: 100%;
+  height: 100%;
 }
 
 .snap-ghost-left {
   top: 0;
   left: 0;
-  width: 50vw;
-  height: calc(100vh - 48px);
+  width: 50%;
+  height: 100%;
 }
 
 .snap-ghost-right {
   top: 0;
-  left: 50vw;
-  width: 50vw;
-  height: calc(100vh - 48px);
+  left: 50%;
+  width: 50%;
+  height: 100%;
 }
 
 .snap-ghost-top-left {
   top: 0;
   left: 0;
-  width: 50vw;
-  height: calc(50vh - 24px);
+  width: 50%;
+  height: 50%;
 }
 
 .snap-ghost-top-right {
   top: 0;
-  left: 50vw;
-  width: 50vw;
-  height: calc(50vh - 24px);
+  left: 50%;
+  width: 50%;
+  height: 50%;
 }
 
 .snap-ghost-bottom-left {
-  top: calc(50vh - 24px);
+  top: 50%;
   left: 0;
-  width: 50vw;
-  height: calc(50vh - 24px);
+  width: 50%;
+  height: 50%;
 }
 
 .snap-ghost-bottom-right {
-  top: calc(50vh - 24px);
-  left: 50vw;
-  width: 50vw;
-  height: calc(50vh - 24px);
+  top: 50%;
+  left: 50%;
+  width: 50%;
+  height: 50%;
 }
 
 .docked {
@@ -10036,10 +10093,9 @@ body.is-resizing * {
   max-width: 520px;
 }
 
-/* Camera App - Modern App-Style Design */
 #camera-win {
-  min-width: 400px;
-  min-height: 400px;
+  min-width: 360px;
+  min-height: 360px;
   overflow: hidden;
 }
 
@@ -10055,13 +10111,14 @@ body.is-resizing * {
   display: flex;
   flex-direction: column;
   height: 100%;
+  min-height: 0;
   background: linear-gradient(180deg, #0d0d12 0%, #1a1a24 100%);
+  overflow: hidden;
 }
 
-/* Viewfinder Area */
 .camera-viewfinder {
   position: relative;
-  flex: 1;
+  flex: 1 1 0;
   min-height: 0;
   background: #000;
   overflow: hidden;
@@ -10074,7 +10131,6 @@ body.is-resizing * {
   display: block;
 }
 
-/* Recording Status */
 .camera-rec-status {
   position: absolute;
   top: 16px;
@@ -10122,7 +10178,6 @@ body.is-resizing * {
   letter-spacing: 0.5px;
 }
 
-/* Mode Indicator */
 .camera-mode-indicator {
   position: absolute;
   top: 16px;
@@ -10139,29 +10194,66 @@ body.is-resizing * {
   z-index: 10;
 }
 
-/* Toolbar Area */
+.camera-download-overlay {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+  pointer-events: none;
+}
+
+.download-link {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #4ade80;
+  text-decoration: none;
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid rgba(74, 222, 128, 0.4);
+  border-radius: 16px;
+  backdrop-filter: blur(12px);
+  transition: all 0.2s ease;
+  pointer-events: auto;
+  white-space: nowrap;
+}
+
+.download-link:hover {
+  background: rgba(74, 222, 128, 0.15);
+  border-color: rgba(74, 222, 128, 0.6);
+  transform: translateY(-2px);
+}
+
+.download-link::before {
+  content: "↓";
+  font-size: 14px;
+}
+
 .camera-toolbar {
-  padding: 16px 20px 20px;
+  flex: 0 0 auto;
+  padding: 14px 20px 18px;
   background: linear-gradient(180deg, rgba(26, 26, 36, 0.8) 0%, #1a1a24 100%);
   backdrop-filter: blur(20px);
   border-top: 1px solid rgba(255, 255, 255, 0.06);
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
-/* Mode Selector */
 .camera-modes {
   display: flex;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .cam-mode-btn {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 14px;
+  padding: 7px 13px;
   font-size: 12px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.5);
@@ -10191,15 +10283,30 @@ body.is-resizing * {
   opacity: 1;
 }
 
-/* Action Bar */
 .camera-actions {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 24px;
+  position: relative;
 }
 
-/* Secondary Action Buttons */
+.cam-actions-side {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cam-actions-left {
+  left: 0;
+}
+
+.cam-actions-right {
+  right: 0;
+}
+
 .cam-action-btn {
   width: 44px;
   height: 44px;
@@ -10225,10 +10332,10 @@ body.is-resizing * {
   cursor: not-allowed;
 }
 
-/* Shutter Button */
 .cam-shutter-btn {
   width: 72px;
   height: 72px;
+  flex-shrink: 0;
   border: 3px solid rgba(255, 255, 255, 0.3);
   border-radius: 50%;
   background: transparent;
@@ -10276,7 +10383,23 @@ body.is-resizing * {
   border-radius: 4px;
 }
 
-/* Recording state */
+.shutter-inner.stop {
+  background: #ff3b30;
+  border: 3px solid #fff;
+}
+
+.shutter-inner.stop::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 24px;
+  height: 24px;
+  background: #fff;
+  border-radius: 2px;
+}
+
 .cam-shutter-btn.recording .shutter-inner.video {
   background: #ff3b30;
   animation: shutter-rec 1s ease-in-out infinite;
@@ -10297,117 +10420,323 @@ body.is-resizing * {
     box-shadow: 0 0 0 8px rgba(255, 59, 48, 0);
   }
 }
-
-/* Download Link */
-#download-link {
-  position: absolute;
-  bottom: 100px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: none;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 18px;
-  font-size: 12px;
-  font-weight: 500;
-  color: #4ade80;
-  text-decoration: none;
-  background: rgba(0, 0, 0, 0.7);
-  border: 1px solid rgba(74, 222, 128, 0.4);
-  border-radius: 20px;
-  backdrop-filter: blur(12px);
-  transition: all 0.2s ease;
-  z-index: 20;
-}
-
-#download-link:hover {
-  background: rgba(74, 222, 128, 0.15);
-  border-color: rgba(74, 222, 128, 0.6);
-}
-
-#download-link::before {
-  content: "↓";
-  font-size: 14px;
-}
-
-/* History Window */
+/* Camera History Window */
 #history-win {
-  min-width: 320px;
-  min-height: 250px;
+  min-width: 500px;
+  min-height: 400px;
 }
 
-#history-list {
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  overflow-y: auto;
-  height: calc(100% - 40px);
+.history-count {
+  color: var(--tx2);
+  font-size: 12px;
+  font-weight: normal;
 }
 
-#history-list .history-item {
+/* History Controls */
+.history-controls {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 10px 12px;
+  align-items: center;
+  padding: 12px 16px;
   background: var(--glass);
+  border-bottom: 1px solid var(--glass-border);
+  gap: 12px;
+}
+
+.history-filter {
+  display: flex;
+  gap: 8px;
+}
+
+.history-filter-select,
+.history-sort-select {
+  padding: 6px 10px;
+  font-size: 12px;
   border: 1px solid var(--glass-border);
-  border-radius: var(--r-sm);
+  border-radius: 6px;
+  background: var(--glass);
+  color: var(--tx1);
+  cursor: pointer;
+}
+
+.history-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.history-btn {
+  padding: 6px 12px;
+  font-size: 12px;
+  border: 1px solid var(--glass-border);
+  border-radius: 6px;
+  background: var(--glass);
+  color: var(--tx1);
+  cursor: pointer;
   transition: all 0.15s ease;
 }
 
-#history-list .history-item:hover {
+.history-btn:hover {
   background: var(--glass-hover);
-  border-color: rgba(255, 255, 255, 0.2);
 }
 
-#history-list .history-item span {
-  font-size: 13px;
-  color: var(--tx1);
+.history-btn.danger {
+  color: var(--error);
+  border-color: var(--error-border);
+}
+
+.history-btn.danger:hover {
+  background: var(--error-bg);
+}
+
+.history-grid {
+  padding: 16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  overflow-y: auto;
+  height: calc(100% - 120px);
+}
+
+/* History Items */
+.history-item {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r);
+  overflow: hidden;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.history-item:hover {
+  background: var(--glass-hover);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.photo-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.video-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.history-thumbnail {
+  width: 100%;
+  height: 120px;
+  background: #1a1a24;
+  position: relative;
+  overflow: hidden;
+}
+
+.photo-item .history-thumbnail {
+  height: 150px;
+}
+
+.history-type-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  padding: 4px 8px;
+  font-size: 10px;
+  font-weight: 600;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  backdrop-filter: blur(8px);
+}
+
+.history-type-badge.photo {
+  background: rgba(74, 222, 128, 0.2);
+  color: #4ade80;
+  border: 1px solid rgba(74, 222, 128, 0.4);
+}
+
+.history-type-badge.video {
+  background: rgba(59, 130, 246, 0.2);
+  color: #3b82f6;
+  border: 1px solid rgba(59, 130, 246, 0.4);
+}
+
+.history-type-badge.screen {
+  background: rgba(168, 85, 247, 0.2);
+  color: #a855f7;
+  border: 1px solid rgba(168, 85, 247, 0.4);
+}
+
+.history-info {
+  padding: 12px;
   flex: 1;
+}
+
+.history-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--tx1);
+  cursor: pointer;
+  margin-bottom: 4px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  cursor: pointer;
 }
 
-#history-list .history-item span:hover {
+.history-title:hover {
   color: var(--brand);
 }
 
-#history-list .history-actions {
-  display: flex;
-  gap: 6px;
-}
-
-#history-list .history-actions button {
-  padding: 5px 10px;
+.history-timestamp {
   font-size: 11px;
-  border: 1px solid var(--glass-border);
-  border-radius: 4px;
-  background: var(--glass);
   color: var(--tx2);
-  cursor: pointer;
-  transition: all 0.15s ease;
+  margin-bottom: 2px;
 }
 
-#history-list .history-actions button:hover {
-  background: var(--glass-hover);
+.history-duration {
+  font-size: 11px;
+  color: var(--tx2);
+  font-weight: 500;
+}
+
+.history-item-actions {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.history-item:hover .history-item-actions {
+  opacity: 1;
+}
+
+.history-action-btn {
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--glass-border);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  color: var(--tx1);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+}
+
+.history-action-btn i {
+  font-size: 11px;
+}
+
+.history-action-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+}
+
+.history-action-btn.copy:hover {
+  background: rgba(74, 222, 128, 0.3);
+}
+
+.history-action-btn.rename:hover {
+  background: rgba(59, 130, 246, 0.3);
+}
+
+.history-action-btn.delete:hover {
+  background: rgba(239, 68, 68, 0.3);
+}
+
+.history-checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--brand);
+}
+
+.preview-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.preview-content {
+  background: var(--s2);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r);
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.preview-header span {
+  color: var(--tx1);
+  font-weight: 500;
+}
+
+.preview-close {
+  background: none;
+  border: none;
+  color: var(--tx2);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.preview-close:hover {
+  background: var(--glass);
   color: var(--tx1);
 }
 
-#history-list .history-actions button:first-child {
-  color: var(--brand);
+.preview-media {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  flex: 1;
+  min-height: 0;
 }
 
-#history-list .history-actions button:last-child {
-  color: var(--error);
+.preview-media img,
+.preview-media video {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: var(--r-sm);
 }
 
-#history-list .history-actions button:last-child:hover {
-  background: var(--error-bg);
-  border-color: var(--error-border);
+.preview-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-top: 1px solid var(--glass-border);
+  font-size: 12px;
+  color: var(--tx2);
 }
 
 /* Empty state */

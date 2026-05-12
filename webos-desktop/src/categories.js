@@ -106,13 +106,8 @@ export class CategoriesApp {
       return;
     }
 
-    const win = wm.createWindow(winId, "All Apps");
+    const win = wm.createWindow(winId, "All Apps", "800px", "600px");
     win.classList.add("window-root");
-    win.style.width = "900px";
-    win.style.height = "700px";
-    win.style.left = "50%";
-    win.style.top = "50%";
-    win.style.transform = "translate(-50%, -50%)";
 
     const systemRenderer = new SystemAppRenderer(appLauncher?.appMap);
     const systemCount = systemRenderer.getSystemApps().length;
@@ -123,6 +118,13 @@ export class CategoriesApp {
         ${wm.getWindowControls()}
       </div>
       <div class="window-content system-apps-window" style="width:100%;height:100%;overflow:auto;padding:24px;box-sizing:border-box;background: linear-gradient(180deg, rgba(20,20,30,0.95), rgba(15,15,25,0.98));">
+        <div style="margin-bottom:20px;">
+          <input type="text" class="games-search-input" placeholder="Search apps..." style="width:100%;max-width:400px;padding:12px 16px;border:1px solid rgba(255,255,255,0.2);border-radius:8px;background:rgba(255,255,255,0.1);color:#fff;font-size:14px;outline:none;transition:all 0.3s ease;" 
+                 onmouseover="this.style.borderColor='rgba(255,255,255,0.4)';this.style.background='rgba(255,255,255,0.15)'"
+                 onmouseout="this.style.borderColor='rgba(255,255,255,0.2)';this.style.background='rgba(255,255,255,0.1)'"
+                 onfocus="this.style.borderColor='#6677dd';this.style.background='rgba(255,255,255,0.2)';this.style.boxShadow='0 0 0 2px rgba(102,119,221,0.3)'"
+                 onblur="this.style.borderColor='rgba(255,255,255,0.2)';this.style.background='rgba(255,255,255,0.1)';this.style.boxShadow='none'" />
+        </div>
         <div id="system-app-container"></div>
       </div>`;
 

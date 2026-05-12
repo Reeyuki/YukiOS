@@ -1,5 +1,6 @@
 import { desktop } from "./desktop.js";
 import { BaseApp } from "./core/BaseApp.js";
+import { refreshSteamUI } from "./games.js";
 
 const STORAGE_KEYS = {
   username: "yukiOS_username",
@@ -7,15 +8,15 @@ const STORAGE_KEYS = {
 };
 
 const PREDEFINED_AVATARS = [
-  "https://cdn.jsdelivr.net/gh/reeyuki/yukios@main/static/icons/guest.webp",
-  "https://cdn.jsdelivr.net/gh/reeyuki/yukios@main/static/icons/helltaker.jpg",
-  "https://cdn.jsdelivr.net/gh/reeyuki/yukios@main/static/icons/stardew.webp",
-  "https://cdn.jsdelivr.net/gh/reeyuki/yukios@main/static/icons/hollowKnight.webp",
-  "https://cdn.jsdelivr.net/gh/reeyuki/yukios@main/static/icons/fancypants2.webp",
-  "https://cdn.jsdelivr.net/gh/reeyuki/yukios@main/static/icons/isaac.webp",
-  "https://cdn.jsdelivr.net/gh/reeyuki/yukios@main/static/icons/angryBirds.webp",
-  "https://cdn.jsdelivr.net/gh/reeyuki/yukios@main/static/icons/nso.webp",
-  "https://cdn.jsdelivr.net/gh/reeyuki/yukios@main/static/icons/alienHominid.webp"
+  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/icons/guest.webp",
+  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/icons/helltaker.jpg",
+  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/icons/stardew.webp",
+  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/icons/hollowKnight.webp",
+  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/icons/fancypants2.webp",
+  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/icons/isaac.webp",
+  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/icons/angryBirds.webp",
+  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/icons/nso.webp",
+  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/icons/alienHominid.webp"
 ];
 
 export class ProfileCustomizerApp extends BaseApp {
@@ -215,6 +216,8 @@ export class ProfileCustomizerApp extends BaseApp {
 
       const startUserImg = document.querySelector(".start-user img");
       if (startUserImg) startUserImg.src = newProfilePic;
+
+      refreshSteamUI();
 
       statusMsg.textContent = "Profile updated successfully!";
       statusMsg.style.opacity = "1";

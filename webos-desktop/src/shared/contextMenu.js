@@ -10,7 +10,30 @@ export function hideMenu() {
 }
 
 function positionMenu(menu, pageX, pageY) {
-  Object.assign(menu.style, { left: `${pageX}px`, top: `${pageY}px`, display: "block" });
+  const rect = menu.getBoundingClientRect();
+  const viewportWidth = window.innerWidth;
+  const viewportHeight = window.innerHeight;
+
+  let left = pageX;
+  let top = pageY;
+
+  if (left + rect.width > viewportWidth) {
+    left = Math.max(10, viewportWidth - rect.width - 10);
+  } else if (left < 0) {
+    left = 10;
+  }
+
+  if (top + rect.height > viewportHeight) {
+    top = Math.max(10, viewportHeight - rect.height - 10);
+  } else if (top < 0) {
+    top = 10;
+  }
+
+  Object.assign(menu.style, {
+    left: `${left}px`,
+    top: `${top}px`,
+    display: "block"
+  });
 }
 
 function bindDismissal() {
@@ -137,10 +160,26 @@ export function showStartStyleMenu(e, buildFn) {
   if (posX + rect.width > window.innerWidth) posX = window.innerWidth - rect.width - 10;
   if (posY < 0) posY = e.clientY;
 
-  const posBottom = window.innerHeight - posY - rect.height;
+  const viewportWidth = window.innerWidth;
+  const viewportHeight = window.innerHeight;
 
-  menu.style.setProperty("--ctx-left", `${posX}px`);
-  menu.style.setProperty("--ctx-bottom", `${posBottom}px`);
+  let left = e.clientX;
+  let top = e.clientY;
+
+  if (left + rect.width > viewportWidth) {
+    left = Math.max(10, viewportWidth - rect.width - 10);
+  } else if (left < 0) {
+    left = 10;
+  }
+
+  if (top + rect.height > viewportHeight) {
+    top = Math.max(10, viewportHeight - rect.height - 10);
+  } else if (top < 0) {
+    top = 10;
+  }
+
+  menu.style.setProperty("--ctx-left", `${left}px`);
+  menu.style.setProperty("--ctx-bottom", `${viewportHeight - top - rect.height}px`);
 
   document.addEventListener("click", function removeMenu() {
     menu.remove();

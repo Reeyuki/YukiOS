@@ -310,7 +310,6 @@ export const descriptionMap = {
     "OneShot is a 2016 puzzle adventure by Future Cat. Players guide a child named Niko through a dying world to restore the sun, with mechanics that break the fourth wall and use the player's own computer.",
   shark:
     "Hungry Shark Evolution is a fast-paced, 3D arcade action game where players control various sharks, starting from a small reef shark and evolving into massive predators like the Megalodon. The primary goal is to survive by eating fish, humans, and sea creatures while avoiding hazards like mines and fishermen",
-  TMNP: "Teenage Mutant Ninja Puppets is a parody fighting game inspired by the Teenage Mutant Ninja Turtles franchise, featuring puppet characters in slapstick combat scenarios.",
   tankTrouble:
     "Tank Trouble is a 2010 multiplayer top-down tank game by Mads Purup. Up to three players battle in compact mazes, bouncing shells off walls in chaotic short matches.",
   doodle:
@@ -404,8 +403,8 @@ export const descriptionMap = {
     "A curated YukiOS hub for classic Flash games, preserved through Ruffle and Flashpoint Archive technology after Flash Player's discontinuation.",
   vscode:
     "Visual Studio Code is a free, lightweight code editor by Microsoft, released in 2015. It supports virtually every programming language with extensions, debugging, and integrated Git.",
-  monaco:
-    "Monaco Editor is the open-source code editor that powers Visual Studio Code. This standalone version provides syntax highlighting, autocompletion, and editing for many languages directly in the browser.",
+  yukiCode:
+    "Yuki Code is a remake of the open-source code editor monaco editor that powers Visual Studio Code, and is integrated into Yuki OS",
   model3dApp:
     "A YukiOS 3D model viewer for inspecting and rotating 3D files like .obj and .glb directly in the browser, with lighting and camera controls.",
   yukiConvert:

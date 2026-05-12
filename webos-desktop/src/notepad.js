@@ -20,7 +20,6 @@ export class NotepadApp extends BaseApp {
     const winId = `notepad-${Date.now()}`;
     const win = this.wm.createWindow(winId, `${title} - Notepad`, "650px", "450px");
     win.classList.add("notepad-window");
-    Object.assign(win.style, { left: "250px", top: "150px" });
 
     this.instances.set(winId, {
       currentTitle: title,

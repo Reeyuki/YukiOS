@@ -1,6 +1,0 @@
-node_modules/
-resources/static
-resources/desktop
-resources/index.html
-dist/
-tauri-yukios/target

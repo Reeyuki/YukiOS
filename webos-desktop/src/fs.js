@@ -3,7 +3,7 @@ import { CDN_BASES, resolveWallpaperUrl } from "./shared/assetResolver.js";
 
 export const FileKind = { TEXT: "text", IMAGE: "image", VIDEO: "video", AUDIO: "audio", ROM: "rom", OTHER: "other" };
 
-const DEFAULT_JSDELIVR_GH_BASE = CDN_BASES.MAIN;
+const DEFAULT_STATICALLY_GH_BASE = CDN_BASES.MAIN;
 const DEFAULT_WALLPAPER_STATIC_DIR = "/static/wallpapers/";
 const DEFAULT_WALLPAPER_FILES = [
   "wallpaper1.webp",
@@ -24,11 +24,11 @@ const DEFAULT_WALLPAPER_FILES = [
 function defaultWallpaperUrl(nameOrPath) {
   if (typeof nameOrPath !== "string") return nameOrPath;
   if (nameOrPath.startsWith("http://") || nameOrPath.startsWith("https://")) return nameOrPath;
-  if (nameOrPath.startsWith(DEFAULT_WALLPAPER_STATIC_DIR)) return `${DEFAULT_JSDELIVR_GH_BASE}${nameOrPath}`;
-  return `${DEFAULT_JSDELIVR_GH_BASE}${DEFAULT_WALLPAPER_STATIC_DIR}${nameOrPath}`;
+  if (nameOrPath.startsWith(DEFAULT_WALLPAPER_STATIC_DIR)) return `${DEFAULT_STATICALLY_GH_BASE}${nameOrPath}`;
+  return `${DEFAULT_STATICALLY_GH_BASE}${DEFAULT_WALLPAPER_STATIC_DIR}${nameOrPath}`;
 }
 
-const WALLPAPER_JSDELIVR_GH_BASE = CDN_BASES.MAIN;
+const WALLPAPER_STATICALLY_GH_BASE = CDN_BASES.MAIN;
 function isBlob(obj) {
   if (!obj) return false;
   return (
@@ -208,6 +208,36 @@ export class FileSystemManager {
     });
   }
 
+  async safeWriteFile(path, content) {
+    try {
+      if (content instanceof Uint8Array) {
+        await this.p("writeFile", path, content);
+      } else if (typeof content === "string") {
+        await this.p("writeFile", path, content);
+      } else if (content && content.buffer) {
+        await this.p("writeFile", path, new Uint8Array(content.buffer));
+      } else {
+        const bytes = new Uint8Array(content || []);
+        await this.p("writeFile", path, bytes);
+      }
+    } catch (e) {
+      console.warn(`safeWriteFile failed for ${path}, trying alternative approach:`, e);
+      try {
+        if (content instanceof Uint8Array) {
+          const text = new TextDecoder("utf-8", { fatal: false }).decode(content);
+          await this.p("writeFile", path, text);
+        } else if (typeof content === "string") {
+          await this.p("writeFile", path, content);
+        } else {
+          await this.p("writeFile", path, String(content || ""));
+        }
+      } catch (e2) {
+        console.error(`All write attempts failed for ${path}:`, e2);
+        throw e2;
+      }
+    }
+  }
+
   pRead(method, ...args) {
     return new Promise((res, rej) => {
       this.fs[method](...args, (err, data) => (err ? rej(err) : res(data)));
@@ -336,11 +366,16 @@ export class FileSystemManager {
       await this.p("mkdir", this.dirname(f.path), { recursive: true }).catch(() => {});
       const bytes = this._base64ToUint8(f.dataB64 || "");
       if (f.isBlob) {
-        await this.p("writeFile", f.path, "").catch(() => {});
-        const mime = typeof f.mime === "string" && f.mime ? f.mime : "application/octet-stream";
-        await this._putBlob(f.path, new Blob([bytes], { type: mime }));
+        try {
+          await this.safeWriteFile(f.path, new Uint8Array([0]));
+          const mime = typeof f.mime === "string" && f.mime ? f.mime : "application/octet-stream";
+          await this._putBlob(f.path, new Blob([bytes], { type: mime }));
+        } catch (e) {
+          console.warn(`Failed to import blob file ${f.path}:`, e);
+          await this.safeWriteFile(f.path, bytes);
+        }
       } else {
-        await this.p("writeFile", f.path, bytes);
+        await this.safeWriteFile(f.path, bytes);
       }
     }
 

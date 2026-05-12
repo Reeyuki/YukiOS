@@ -10,7 +10,6 @@ export class AboutApp extends BaseApp {
     if (this._isSingletonOpen(winId)) return;
 
     const win = this.wm.createWindow(winId, "About Yuki OS", "720px", "680px");
-    Object.assign(win.style, { left: "180px", top: "60px" });
 
     const version = "1.1.0";
 
@@ -139,16 +138,6 @@ export class AboutApp extends BaseApp {
           align-items: flex-end;
           gap: 8px;
         }
-
-        #about-yukios .abx-pill {
-          font-family: ui-monospace, monospace;
-          font-size: 0.72rem;
-          padding: 8px 10px;
-          border-radius: 999px;
-          border: 1px solid rgba(255,255,255,0.12);
-          background: rgba(0,0,0,0.35);
-        }
-
         #about-yukios .abx-grid {
           display: grid;
           grid-template-columns: 1fr;
@@ -251,7 +240,6 @@ export class AboutApp extends BaseApp {
             </div>
             <div class="abx-meta">
               <div class="abx-pill">Version ${version}</div>
-              <div class="abx-pill">Web Build</div>
             </div>
           </div>
 

@@ -104,7 +104,7 @@ export const appMap = {
 
   stardew: {
     type: "game",
-    url: "/static/games/html/stardew.html",
+    url: "https://cdn.statically.io/gh/Reeyuki/yukios-games@main/html/stardew.html",
     icon: "/static/icons/stardew.webp",
     title: "Stardew Valley"
   },
@@ -159,7 +159,7 @@ export const appMap = {
   },
   undertaleSans: {
     type: "game",
-    url: "/static/games/gnmath/bts.html",
+    url: "https://cdn.statically.io/gh/reeyuki/yukios-games@main/gnmath/bts.html",
     icon: "/static/icons/undertale.webp",
     title: "Undertale Sans Fight"
   },
@@ -171,13 +171,13 @@ export const appMap = {
   },
   deltarune: {
     type: "game",
-    url: "/static/games/gnmath/deltraveler.html",
+    url: "https://cdn.statically.io/gh/reeyuki/yukios-games@main/gnmath/deltraveler.html",
     icon: "/static/icons/deltarune.png",
     title: "Deltarune"
   },
   balatro: {
     type: "game",
-    url: "/static/games/gnmath/balatro/balatro.html",
+    url: "https://cdn.statically.io/gh/reeyuki/yukios-games@main/gnmath/balatro/balatro.html",
     icon: "/static/icons/balatro.webp",
     title: "Balatro"
   },
@@ -219,7 +219,7 @@ export const appMap = {
   },
   celeste: {
     type: "game",
-    url: "/static/games/gnmath/celeste.html",
+    url: "https://cdn.statically.io/gh/reeyuki/yukios-games@main/gnmath/celeste.html",
     icon: "/static/icons/celeste.webp",
     title: "Celeste"
   },
@@ -325,10 +325,15 @@ export const appMap = {
     icon: "/static/icons/slime.webp",
     title: "Slime Rancher Alpha"
   },
-  omori: { type: "game", url: "/static/games/gnmath/omori.html", icon: "/static/icons/omori.webp", title: "Omori" },
+  omori: {
+    type: "game",
+    url: "https://cdn.statically.io/gh/reeyuki/yukios-games@main/gnmath/omori.html",
+    icon: "/static/icons/omori.webp",
+    title: "Omori"
+  },
   ultrakill: {
     type: "game",
-    url: "/static/games/gnmath/ultrakill.html",
+    url: "https://cdn.statically.io/gh/reeyuki/yukios-games@main/gnmath/ultrakill.html",
     icon: "/static/icons/ultrakill.webp",
     title: "Ultrakill"
   },
@@ -338,7 +343,12 @@ export const appMap = {
     icon: "/static/icons/baldi.webp",
     title: "Baldi's Basics"
   },
-  granny: { type: "game", url: "/static/games/gnmath/granny.html", icon: "/static/icons/granny.webp", title: "Granny" },
+  granny: {
+    type: "game",
+    url: "https://cdn.statically.io/gh/reeyuki/yukios-games@main/gnmath/granny.html",
+    icon: "/static/icons/granny.webp",
+    title: "Granny"
+  },
   bendy: {
     type: "game",
     url: "https://selenite.cc/resources/semag/bendy/index.html",
@@ -431,31 +441,31 @@ export const appMap = {
   },
   raft: {
     type: "game",
-    url: "/static/games/gnmath/raft.html",
+    url: "https://cdn.statically.io/gh/reeyuki/yukios-games@main/gnmath/raft.html",
     icon: "/static/icons/raft.webp",
     title: "Raft"
   },
   yandereSim: {
     type: "game",
-    url: "/static/games/gnmath/yandere.html",
+    url: "https://cdn.statically.io/gh/reeyuki/yukios-games@main/gnmath/yandere.html",
     icon: "/static/icons/yandere.webp",
     title: "Yandere Simulator"
   },
   tattletail: {
     type: "game",
-    url: "/static/games/gnmath/tattletail.html",
+    url: "https://cdn.statically.io/gh/reeyuki/yukios-games@main/gnmath/tattletail.html",
     icon: "/static/icons/tat.webp",
     title: "Tattletail"
   },
   kindergarten: {
     type: "game",
-    url: "/static/games/gnmath/kindergarten.html",
+    url: "https://cdn.statically.io/gh/reeyuki/yukios-games@main/gnmath/kindergarten.html",
     icon: "/static/icons/kind1.webp",
     title: "Kindergarten"
   },
   kindergarten2: {
     type: "game",
-    url: "/static/games/gnmath/kindergarten2.html",
+    url: "https://cdn.statically.io/gh/reeyuki/yukios-games@main/gnmath/kindergarten2.html",
     icon: "/static/icons/kind2.webp",
     title: "Kindergarten 2"
   },
@@ -467,23 +477,10 @@ export const appMap = {
   },
   goi: {
     type: "game",
-    url: "/static/games/gnmath/goi.html",
+    url: "https://cdn.statically.io/gh/reeyuki/yukios-games@main/gnmath/goi.html",
     icon: "/static/icons/goi.webp",
     title: "Getting Over It"
   },
-  milkInside: {
-    type: "game",
-    url: "/static/games/gnmath/milkInside.html",
-    icon: "/static/icons/inside.webp",
-    title: "Milk inside a bag of milk"
-  },
-  milkOutside: {
-    type: "game",
-    url: "/static/games/gnmath/milkOutside.html",
-    icon: "/static/icons/outside.webp",
-    title: "Milk outside a bag of milk"
-  },
-
   paint: {
     type: "game",
     url: "https://jspaint.app",
@@ -739,7 +736,12 @@ export const appMap = {
     title: "Zombie TD"
   },
   breach: { type: "swf", swf: "/static/games/swfGames/breach.swf", icon: "/static/icons/breach.webp", title: "Breach" },
-  trinitas: { type: "game", url: "/static/games/trinitas", icon: "/static/icons/trinitas.webp", title: "Trinitas" },
+  trinitas: {
+    type: "game",
+    url: "/static/games/trinitas/index.html",
+    icon: "/static/icons/trinitas.webp",
+    title: "Trinitas"
+  },
   newyorkShark: {
     type: "swf",
     swf: "https://cache.armorgames.com/files/games/new-york-shark-12969.swf?v=1373587527",
@@ -855,7 +857,12 @@ export const appMap = {
     title: "LiventCord"
   },
   roads: { type: "game", url: "https://slowroads.io", icon: "/static/icons/roads.svg", title: "Roads" },
-  repo: { type: "game", url: "/static/games/gnmath/repo.html", icon: "/static/icons/repo.webp", title: "R.E.P.O" },
+  repo: {
+    type: "game",
+    url: "https://cdn.statically.io/gh/reeyuki/yukios-games@main/gnmath/repo.html",
+    icon: "/static/icons/repo.webp",
+    title: "R.E.P.O"
+  },
   flight: { type: "swf", swf: "/static/games/swfGames/flight.swf", icon: "/static/icons/flight.webp", title: "Flight" },
   frogDares: {
     type: "swf",
@@ -871,7 +878,7 @@ export const appMap = {
   },
   oneshot: {
     type: "game",
-    url: "/static/games/gnmath/oneshot.html",
+    url: "https://cdn.statically.io/gh/reeyuki/yukios-games@main/gnmath/oneshot.html",
     icon: "/static/icons/oneshot.webp",
     title: "Oneshot"
   },
@@ -880,11 +887,6 @@ export const appMap = {
     url: "https://azgames.io/crazy-shark.embed",
     icon: "/static/icons/shark.webp",
     title: "Crazy Shark"
-  },
-  TMNP: {
-    type: "game",
-    icon: "/static/icons/tmnp.webp",
-    title: "Teenage Mutant Ninja Puppets"
   },
   tankTrouble: {
     type: "swf",
@@ -961,7 +963,7 @@ export const appMap = {
   },
   nso: {
     type: "game",
-    url: "/static/games/gnmath/nso.html",
+    url: "https://cdn.statically.io/gh/reeyuki/yukios-games@main/gnmath/nso.html",
     icon: "/static/icons/nso.webp",
     title: "Needy Streamer Overload"
   },
@@ -1113,7 +1115,6 @@ export const appMap = {
   notepad: { type: "system", title: "Notepad", icon: "static/icons/notepad.webp" },
   browserApp: { type: "system", title: "Yuki Browser", icon: "static/icons/firefox.webp" },
   terminal: { type: "system", title: "Terminal", icon: "/static/icons/terminal.webp" },
-  music: { type: "system", title: "Spotify", icon: "/static/icons/spot.webp" },
   youtube: { type: "system", title: "YouTube Utilities", icon: "/static/icons/youtube.webp" },
   cameraApp: { type: "system", title: "Camera", icon: "/static/icons/obs.webp" },
   steamApp: { type: "system", title: "Steam", icon: "static/icons/steam.webp" },
@@ -1126,7 +1127,7 @@ export const appMap = {
   },
   monaco: {
     type: "system",
-    title: "Monaco Editor",
+    title: "Yuki Code",
     icon: "/static/icons/vscode.webp"
   },
   model3dApp: { type: "system", title: "3D Model Viewer", icon: "/static/icons/3dmodel.webp" },
@@ -1192,91 +1193,91 @@ export const appMap = {
   },
   subwaySurfersbarcelona: {
     type: "game",
-    url: "https://cdn.jsdelivr.net/gh/reeyuki/yukios-games@main/subwaySurfers/clsubwaysurfersbarcelona.html",
+    url: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main/subwaySurfers/clsubwaysurfersbarcelona.html",
     icon: "/static/icons/barcelona.webp",
     title: "Subway Surfers Barcelona"
   },
   subwaySurfersbeijing: {
     type: "game",
-    url: "https://cdn.jsdelivr.net/gh/reeyuki/yukios-games@main/subwaySurfers/clsubwaysurfersbeijing.html",
+    url: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main/subwaySurfers/clsubwaysurfersbeijing.html",
     icon: "/static/icons/beijing.webp",
     title: "Subway Surfers Beijing"
   },
   subwaySurfersberlin: {
     type: "game",
-    url: "https://cdn.jsdelivr.net/gh/reeyuki/yukios-games@main/subwaySurfers/clsubwaysurfersberlin.html",
+    url: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main/subwaySurfers/clsubwaysurfersberlin.html",
     icon: "/static/icons/berlin.webp",
     title: "Subway Surfers Berlin"
   },
   subwaySurfersbuenosaires: {
     type: "game",
-    url: "https://cdn.jsdelivr.net/gh/reeyuki/yukios-games@main/subwaySurfers/clsubwaysurfersbuenosaires.html",
+    url: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main/subwaySurfers/clsubwaysurfersbuenosaires.html",
     icon: "/static/icons/buenos.webp",
     title: "Subway Surfers Buenos Aires"
   },
   subwaySurfershavana: {
     type: "game",
-    url: "https://cdn.jsdelivr.net/gh/reeyuki/yukios-games@main/subwaySurfers/clsubwaysurfershavana.html",
+    url: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main/subwaySurfers/clsubwaysurfershavana.html",
     icon: "/static/icons/havana.webp",
     title: "Subway Surfers Havana"
   },
   subwaySurfershouston: {
     type: "game",
-    url: "https://cdn.jsdelivr.net/gh/reeyuki/yukios-games@main/subwaySurfers/clsubwaysurfershouston.html",
+    url: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main/subwaySurfers/clsubwaysurfershouston.html",
     icon: "/static/icons/houston.webp",
     title: "Subway Surfers Houston"
   },
   subwaySurfersiceland: {
     type: "game",
-    url: "https://cdn.jsdelivr.net/gh/reeyuki/yukios-games@main/subwaySurfers/clsubwaysurfersiceland.html",
+    url: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main/subwaySurfers/clsubwaysurfersiceland.html",
     icon: "/static/icons/iceland.webp",
     title: "Subway Surfers Iceland"
   },
   subwaySurferslondon: {
     type: "game",
-    url: "https://cdn.jsdelivr.net/gh/reeyuki/yukios-games@main/subwaySurfers/clsubwaysurferslondon.html",
+    url: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main/subwaySurfers/clsubwaysurferslondon.html",
     icon: "/static/icons/london.webp",
     title: "Subway Surfers London"
   },
   subwaySurfersmexico: {
     type: "game",
-    url: "https://cdn.jsdelivr.net/gh/reeyuki/yukios-games@main/subwaySurfers/clsubwaysurfersmexico.html",
+    url: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main/subwaySurfers/clsubwaysurfersmexico.html",
     icon: "/static/icons/mexico.webp",
     title: "Subway Surfers Mexico"
   },
   subwaySurfersmiami: {
     type: "game",
-    url: "https://cdn.jsdelivr.net/gh/reeyuki/yukios-games@main/subwaySurfers/clsubwaysurfersmiami.html",
+    url: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main/subwaySurfers/clsubwaysurfersmiami.html",
     icon: "/static/icons/miami.webp",
     title: "Subway Surfers Miami"
   },
   subwaySurfersmonaco: {
     type: "game",
-    url: "https://cdn.jsdelivr.net/gh/reeyuki/yukios-games@main/subwaySurfers/clsubwaysurfersmonaco.html",
+    url: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main/subwaySurfers/clsubwaysurfersmonaco.html",
     icon: "/static/icons/monaco.webp",
     title: "Subway Surfers Monaco"
   },
   subwaySurfersneworeleans: {
     type: "game",
-    url: "https://cdn.jsdelivr.net/gh/reeyuki/yukios-games@main/subwaySurfers/clsubwaysurfersneworeleans.html",
+    url: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main/subwaySurfers/clsubwaysurfersneworeleans.html",
     icon: "/static/icons/oerlands.webp",
     title: "Subway Surfers New Orleans"
   },
   subwaySurfersstpetersburg: {
     type: "game",
-    url: "https://cdn.jsdelivr.net/gh/reeyuki/yukios-games@main/subwaySurfers/clsubwaysurfersstpetersburg.html",
+    url: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main/subwaySurfers/clsubwaysurfersstpetersburg.html",
     icon: "/static/icons/stpetersburg.webp",
     title: "Subway Surfers St Petersburg"
   },
   subwaySurferswinterholiday: {
     type: "game",
-    url: "https://cdn.jsdelivr.net/gh/reeyuki/yukios-games@main/subwaySurfers/clsubwaysurferswinterholiday.html",
+    url: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main/subwaySurfers/clsubwaysurferswinterholiday.html",
     icon: "/static/icons/winterHoliday.webp",
     title: "Subway Surfers Winter Holiday"
   },
   subwaySurferszurich: {
     type: "game",
-    url: "https://cdn.jsdelivr.net/gh/reeyuki/yukios-games@main/subwaySurfers/clsubwaysurferszurich.html",
+    url: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main/subwaySurfers/clsubwaysurferszurich.html",
     icon: "/static/icons/zurich.webp",
     title: "Subway Surfers Zurich"
   }

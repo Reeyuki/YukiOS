@@ -98,7 +98,6 @@ export class Model3DApp extends BaseApp {
     }
 
     const win = this.wm.createWindow(winId, `${title}`, "1000px", "750px");
-    Object.assign(win.style, { left: "150px", top: "60px" });
 
     win.innerHTML = `
       <div class="window-header">

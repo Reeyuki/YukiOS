@@ -24,7 +24,6 @@ import { MonacoApp } from "./monaco.js";
 import { Model3DApp } from "./model3d.js";
 import { NotificationCenter } from "./notificationCenter.js";
 import { CategoriesApp } from "./categories.js";
-import { MusicPlayerApp } from "./music.js";
 import { JsDosApp } from "./jsdos.js";
 import { V86App } from "./v86.js";
 import { AchievementsApp } from "./achievements.js";
@@ -52,6 +51,7 @@ const services = {
 };
 const achievementsApp = new AchievementsApp(services);
 services.achievementsApp = achievementsApp;
+window.achievements = achievementsApp;
 
 const notepadApp = new NotepadApp(services);
 services.notepadApp = notepadApp;
@@ -83,11 +83,6 @@ youtubeApp.setBrowserApp(browserApp);
 
 const terminalApp = new TerminalApp(services);
 services.terminalApp = terminalApp;
-
-const musicPlayer = new MusicPlayerApp(services);
-services.musicPlayer = musicPlayer;
-
-musicPlayer.setBrowserApp(browserApp);
 
 const jsDosApp = new JsDosApp(services);
 services.jsDosApp = jsDosApp;
@@ -139,7 +134,6 @@ services.model3dApp = model3dApp;
 const appLauncher = new AppLauncher(
   windowManager,
   fileSystemManager,
-  musicPlayer,
   explorerApp,
   terminalApp,
   notepadApp,
@@ -161,7 +155,8 @@ const appLauncher = new AppLauncher(
   youtubeApp,
   achievementsApp,
   adsApp,
-  profileCustomizerApp
+  profileCustomizerApp,
+  markdownApp
 );
 appCreatorApp.setAppLauncher(appLauncher);
 explorerApp.setAppLauncher(appLauncher);
@@ -197,7 +192,6 @@ if (steamParam) {
 }
 setupStartMenu(appLauncher);
 
-// Initialize user profile from localStorage
 function initializeUserProfile() {
   const savedUsername = localStorage.getItem("yukiOS_username") || "reeyuki";
   const savedProfilePic = localStorage.getItem("yukiOS_profilePicture") || "static/icons/guest.webp";
@@ -209,7 +203,6 @@ function initializeUserProfile() {
   if (startUserImg) startUserImg.src = savedProfilePic;
 }
 
-// Initialize profile when DOM is ready
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", initializeUserProfile);
 } else {

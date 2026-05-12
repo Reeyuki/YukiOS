@@ -106,6 +106,9 @@ export class WindowManager {
         this._applySnap(focused, "maximize");
       }
     });
+
+    this._lastSpawnedPosition = null;
+    this._lastSpawnTime = 0;
   }
 
   _initStartMenuKeybinds() {
@@ -468,7 +471,7 @@ export class WindowManager {
     return this.openWindows.size;
   }
 
-  createWindow(id, title, width = "80vw", height = "80vh", isGame = false) {
+  createWindow(id, title, width = "80vw", height = "80vh", isGame = false, options = {}) {
     const win = document.createElement("div");
     win.className = "window";
     win.id = id;
@@ -485,11 +488,12 @@ export class WindowManager {
       disableDesktopStretchScroll = localStorage.getItem(StorageKeys.disableDesktopStretchScroll) === "true";
     } catch {}
 
+    const position = this.calculateWindowPosition(vw, vh, options);
     Object.assign(win.style, {
       width: `${vw}px`,
       height: `${vh}px`,
-      left: "25vw",
-      top: "5vh",
+      left: `${position.left}px`,
+      top: `${position.top}px`,
       position: disableDesktopStretchScroll ? "fixed" : "absolute",
       zIndex: this.zIndexCounter++
     });
@@ -504,6 +508,125 @@ export class WindowManager {
     win.addEventListener("mousedown", () => this.bringToFront(win));
 
     return win;
+  }
+
+  calculateWindowPosition(windowWidth, windowHeight, options = {}) {
+    const {
+      position = "auto",
+      workspace = this.workspaceManager?.activeId || "default",
+      allowManualPosition = false
+    } = options;
+
+    if (allowManualPosition && position.x !== undefined && position.y !== undefined) {
+      const bounds = this._getScreenBounds();
+      return {
+        left: Math.max(bounds.minX, Math.min(bounds.maxX - windowWidth, position.x)),
+        top: Math.max(bounds.minY, Math.min(bounds.maxY - windowHeight, position.y))
+      };
+    }
+
+    if (position === "center") {
+      return this._getCenteredPosition(windowWidth, windowHeight);
+    }
+
+    if (typeof position === "object" && position.x !== undefined && position.y !== undefined) {
+      const bounds = this._getScreenBounds();
+      return {
+        left: Math.max(bounds.minX, Math.min(bounds.maxX - windowWidth, position.x)),
+        top: Math.max(bounds.minY, Math.min(bounds.maxY - windowHeight, position.y))
+      };
+    }
+
+    return this._getCascadePosition(windowWidth, windowHeight, workspace);
+  }
+
+  _getScreenBounds() {
+    const taskbarHeight = this._getTaskbarHeight();
+    const padding = 20;
+
+    return {
+      minX: padding,
+      minY: padding,
+      maxX: window.innerWidth - padding,
+      maxY: window.innerHeight - taskbarHeight - padding
+    };
+  }
+
+  _getTaskbarHeight() {
+    const taskbar = document.getElementById("taskbar");
+    if (!taskbar) return 0;
+
+    const rect = taskbar.getBoundingClientRect();
+    const taskbarPosition = localStorage.getItem("taskbarPosition") || "bottom";
+
+    return taskbarPosition === "bottom" ? rect.height : 0;
+  }
+
+  _getCenteredPosition(windowWidth, windowHeight) {
+    const bounds = this._getScreenBounds();
+
+    return {
+      left: bounds.minX + (bounds.maxX - bounds.minX - windowWidth) / 2,
+      top: bounds.minY + (bounds.maxY - bounds.minY - windowHeight) / 2
+    };
+  }
+
+  _getCascadePosition(windowWidth, windowHeight, workspace) {
+    const bounds = this._getScreenBounds();
+    const baseOffset = 30;
+    const now = Date.now();
+
+    this._lastSpawnTime = now;
+
+    const windows = Array.from(document.querySelectorAll(".window")).filter(
+      (win) => win.style.display !== "none" && win.style.visibility !== "hidden" && win.id !== "desktop"
+    );
+
+    // Only reset to center if no windows exist and we aren't mid-launch.
+    if (windows.length === 0) {
+      this._lastSpawnedPosition = null;
+    }
+
+    let referenceLeft = null;
+    let referenceTop = null;
+
+    if (this._lastSpawnedPosition) {
+      referenceLeft = this._lastSpawnedPosition.left;
+      referenceTop = this._lastSpawnedPosition.top;
+    } else if (windows.length > 0) {
+      const topWin = windows.reduce((prev, curr) => {
+        const zPrev = parseInt(prev.style.zIndex) || 0;
+        const zCurr = parseInt(curr.style.zIndex) || 0;
+        return zCurr > zPrev ? curr : prev;
+      });
+      referenceLeft = parseFloat(topWin.style.left);
+      referenceTop = parseFloat(topWin.style.top);
+    }
+
+    let targetLeft, targetTop;
+
+    if (referenceLeft !== null && !isNaN(referenceLeft)) {
+      targetLeft = referenceLeft + baseOffset;
+      targetTop = referenceTop + baseOffset;
+    } else {
+      const screenCenterX = (bounds.minX + bounds.maxX) / 2;
+      const screenCenterY = (bounds.minY + bounds.maxY) / 2;
+      targetLeft = screenCenterX - windowWidth / 2;
+      targetTop = screenCenterY - windowHeight / 2;
+    }
+
+    if (targetLeft + 150 > bounds.maxX || targetTop + 100 > bounds.maxY) {
+      targetLeft = bounds.minX + 60;
+      targetTop = bounds.minY + 60;
+    }
+
+    const finalPos = {
+      left: Math.max(bounds.minX, Math.min(bounds.maxX - windowWidth, targetLeft)),
+      top: Math.max(bounds.minY, Math.min(bounds.maxY - windowHeight, targetTop))
+    };
+
+    this._lastSpawnedPosition = finalPos;
+    return finalPos;
   }
 
   mountWindow(win, winId, title, iconValue, color = null) {

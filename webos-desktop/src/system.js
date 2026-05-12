@@ -387,6 +387,7 @@ export class SystemUtilities {
     if (!_weatherWidget) {
       const widget = document.createElement("div");
       widget.id = "taskbar-weather";
+      widget.className = "taskbar-weather";
       widget.textContent = "…";
       widget.addEventListener("click", () => {
         appLauncher?.launch("weatherApp");

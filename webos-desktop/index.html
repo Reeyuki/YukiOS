@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <base href="https://cdn.jsdelivr.net/gh/reeyuki/yukios@main/" />
+    <base href="https://cdn.statically.io/gh/reeyuki/yukios@main/" />
 
     <title>Yuki OS Browser Gaming Hub with Flash, GBA, NDS & HTML5 Games</title>
 
@@ -143,11 +143,6 @@
         <div>System Apps</div>
       </div>
 
-      <div class="icon selectable" data-app="flash">
-        <img src="static/icons/flash.webp" />
-        <div>Flash Games</div>
-      </div>
-
       <div class="icon selectable" data-app="minecraft">
         <img src="static/icons/minecraft.webp" />
         <div>Minecraft</div>
@@ -158,24 +153,9 @@
         <div>Stardew Valley</div>
       </div>
 
-      <div class="icon selectable" data-app="milkInside">
-        <img src="static/icons/inside.webp" />
-        <div>Milk inside a bag of milk</div>
-      </div>
-
-      <div class="icon selectable" data-app="milkOutside">
-        <img src="static/icons/outside.webp" />
-        <div>Milk outside a bag of milk</div>
-      </div>
-
       <div class="icon selectable" data-app="celeste">
         <img src="static/icons/celeste.webp" />
         <div>Celeste</div>
-      </div>
-
-      <div class="icon selectable" data-app="pvz">
-        <img src="static/icons/pvz.webp" />
-        <div>Plants vs. Zombies</div>
       </div>
 
       <div class="icon selectable" data-app="subwaySurfersmiami">
@@ -213,11 +193,6 @@
         <div>GTA Vice City</div>
       </div>
 
-      <div class="icon selectable" data-app="slimeRancher">
-        <img src="static/icons/slime.webp" />
-        <div>Slime Rancher Alpha</div>
-      </div>
-
       <div class="icon selectable" data-app="balatro">
         <img src="static/icons/balatro.webp" />
         <div>Balatro</div>
@@ -246,11 +221,6 @@
       <div class="icon selectable mygames" data-app="nightInTheWoods">
         <img src="static/icons/night.webp" />
         <div>Night In The Woods</div>
-      </div>
-
-      <div class="icon selectable mygames" data-app="inStarsAndTime">
-        <img src="static/icons/star.webp" />
-        <div>In Stars And Time</div>
       </div>
 
       <div class="icon selectable mygames" data-app="suicideGuy">
@@ -288,7 +258,7 @@
 
         <div class="start-cat" data-cat="customize"><i class="fas fa-circle-user"></i> Customize Profile</div>
 
-        <div class="start-cat" data-cat="settings"><i class="fas fa-cog"></i> Settings</div>
+        <div class="start-cat" data-cat="settingsApp"><i class="fas fa-cog"></i> Settings</div>
       </div>
 
       <div class="start-content">
@@ -341,41 +311,6 @@
         <div id="clock">12:00 PM</div>
         <div id="date">01/01/2026</div>
         <div id="social-bar-container"></div>
-        <script>
-          if (window.assets) {
-            const statusEl = document.createElement("div");
-            statusEl.id = "asset-status";
-            statusEl.textContent = "Syncing assets...";
-            const progressEl = document.createElement("progress");
-            progressEl.id = "asset-progress";
-            progressEl.max = 100;
-            progressEl.value = 0;
-            const tray = document.getElementById("system-tray");
-            tray.insertBefore(statusEl, tray.firstChild);
-            tray.insertBefore(progressEl, tray.firstChild.nextSibling);
-
-            window.assets.onProgress((data) => {
-              if (data.done) {
-                statusEl.textContent = "Assets up to date!";
-                progressEl.value = 100;
-
-                setTimeout(() => {
-                  statusEl.style.display = "none";
-                  progressEl.style.display = "none";
-                }, 10000);
-                return;
-              }
-
-              tray.style.display = "flex";
-
-              const fileName = data.file.split("/").pop().split("\\").pop();
-              const shortName = fileName.length > 10 ? fileName.slice(-10) : fileName;
-
-              statusEl.textContent = `Downloading …/${shortName}`;
-              progressEl.value = data.progress;
-            });
-          }
-        </script>
       </div>
     </div>
 
@@ -383,33 +318,46 @@
 
     <script>
       async function downloadPageFromHtml() {
-        const url = "https://yukios.vercel.app/";
+        const mirrors = [
+          "https://yukios.pages.dev/",
+          "https://yukios.neocities.org/",
+          "https://yukios.vercel.app/",
+          "https://yukios.netlify.app/"
+        ];
+
         const filename = "yukios.html";
 
-        try {
-          const response = await fetch(url);
+        for (const url of mirrors) {
+          try {
+            const response = await fetch(url);
 
-          if (!response.ok) {
-            throw new Error(`Response status: ${response.status}`);
+            if (!response.ok) {
+              throw new Error(`HTTP ${response.status}`);
+            }
+
+            const htmlContent = await response.text();
+
+            const blob = new Blob([htmlContent], { type: "text/html" });
+            const downloadUrl = URL.createObjectURL(blob);
+
+            const link = document.createElement("a");
+            link.href = downloadUrl;
+            link.download = filename;
+
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            URL.revokeObjectURL(downloadUrl);
+
+            console.log(`Downloaded from: ${url}`);
+            return;
+          } catch (error) {
+            console.warn(`Failed mirror: ${url}`, error.message);
           }
-
-          const htmlContent = await response.text();
-
-          const blob = new Blob([htmlContent], { type: "text/html" });
-          const downloadUrl = URL.createObjectURL(blob);
-
-          const link = document.createElement("a");
-          link.href = downloadUrl;
-          link.download = filename;
-
-          document.body.appendChild(link);
-          link.click();
-
-          document.body.removeChild(link);
-          URL.revokeObjectURL(downloadUrl);
-        } catch (error) {
-          console.error("Download failed:", error.message);
         }
+
+        console.error("All mirrors failed.");
       }
     </script>
   </body>

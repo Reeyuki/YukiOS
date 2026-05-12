@@ -36,6 +36,9 @@ export class CameraApp extends BaseApp {
             <span id="recording-timer"></span>
           </div>
           <div class="camera-mode-indicator" id="mode-indicator">Photo</div>
+          <div class="camera-download-overlay">
+            <a id="download-link" class="download-link"></a>
+          </div>
         </div>
 
         <div class="camera-toolbar">
@@ -66,25 +69,21 @@ export class CameraApp extends BaseApp {
           </div>
 
           <div class="camera-actions">
-            <button class="cam-action-btn secondary" id="open-history-btn" title="History">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 12"/>
-                <path d="M3 3v9h9"/>
-              </svg>
-            </button>
+            <div class="cam-actions-side cam-actions-left">
+              <button class="cam-action-btn secondary" id="open-history-btn" title="History">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 12"/>
+                  <path d="M3 3v9h9"/>
+                </svg>
+              </button>
+            </div>
 
             <button class="cam-shutter-btn" id="shutter-btn">
               <span class="shutter-inner"></span>
             </button>
 
-            <button class="cam-action-btn secondary" id="stop-record-btn" title="Stop" disabled>
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                <rect x="6" y="6" width="12" height="12" rx="2"/>
-              </svg>
-            </button>
+            <div class="cam-actions-side cam-actions-right"></div>
           </div>
-
-          <a id="download-link"></a>
         </div>
       </div>
     `;
@@ -110,7 +109,6 @@ export class CameraApp extends BaseApp {
 
     this.video = win.querySelector("#camera-video");
     this.shutterBtn = win.querySelector("#shutter-btn");
-    this.stopRecordBtn = win.querySelector("#stop-record-btn");
     this.downloadLink = win.querySelector("#download-link");
     this.recordingIcon = win.querySelector("#recording-icon");
     this.recordingTimer = win.querySelector("#recording-timer");
@@ -121,10 +119,6 @@ export class CameraApp extends BaseApp {
     this.currentMode = "photo";
     this.isRecording = false;
 
-    win.style.width = "560px";
-    win.style.height = "520px";
-    win.style.left = "30vw";
-    win.style.top = "15vh";
     win.style.minWidth = "400px";
     win.style.minHeight = "400px";
 
@@ -146,15 +140,18 @@ export class CameraApp extends BaseApp {
       } else if (this.currentMode === "video") {
         if (!this.isRecording) {
           this.startRecording();
+        } else {
+          this.stopRecording();
         }
       } else if (this.currentMode === "screen") {
         if (!this.isRecording) {
           this.startScreenRecording();
+        } else {
+          this.stopRecording();
         }
       }
     };
 
-    this.stopRecordBtn.onclick = () => this.stopRecording();
     this.historyBtn.onclick = () => this.openHistoryWindow();
 
     this.updateShutterButton();
@@ -167,7 +164,11 @@ export class CameraApp extends BaseApp {
     if (this.currentMode === "photo") {
       inner.classList.add("photo");
     } else if (this.currentMode === "video" || this.currentMode === "screen") {
-      inner.classList.add("video");
+      if (this.isRecording) {
+        inner.classList.add("stop");
+      } else {
+        inner.classList.add("video");
+      }
     }
   }
 
@@ -181,17 +182,24 @@ export class CameraApp extends BaseApp {
     }
   }
 
-  takePhoto() {
+  async takePhoto() {
     const canvas = document.createElement("canvas");
     canvas.width = this.video.videoWidth;
     canvas.height = this.video.videoHeight;
     canvas.getContext("2d").drawImage(this.video, 0, 0);
 
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+
+    const fileName = `photo-${Date.now()}.png`;
+    const savedName = await this.fs.writeBinaryFile(["Pictures", "Camera"], fileName, blob, "image", "@content");
+
     const dataUrl = canvas.toDataURL("image/png");
     this.downloadLink.href = dataUrl;
-    this.downloadLink.download = "photo.png";
+    this.downloadLink.download = fileName;
     this.downloadLink.textContent = "Download Photo";
     this.downloadLink.style.display = "flex";
+
+    this.addRecording(dataUrl, blob, savedName, fileName.replace(".png", ""));
   }
 
   startRecording() {
@@ -206,22 +214,32 @@ export class CameraApp extends BaseApp {
     this.mediaRecorder.onstop = () => {
       const blob = new Blob(this.recordedChunks, { type: "video/webm" });
       const url = URL.createObjectURL(blob);
-      this.addRecording(url, blob);
+
+      const fileName = `video-${Date.now()}.webm`;
+      const savedName = this.fs.writeBinaryFile(
+        ["Pictures", "Camera"],
+        fileName,
+        blob,
+        "video",
+        "/static/icons/obs.webp"
+      );
+
+      this.addRecording(url, blob, savedName, fileName.replace(".webm", ""));
 
       this.isRecording = false;
       this.stopTimer();
       this.shutterBtn.classList.remove("recording");
-      this.stopRecordBtn.disabled = true;
+      this.updateShutterButton();
       this.downloadLink.href = url;
-      this.downloadLink.download = `video-${Date.now()}.webm`;
+      this.downloadLink.download = fileName;
       this.downloadLink.textContent = "Download Video";
       this.downloadLink.style.display = "flex";
     };
 
     this.mediaRecorder.start();
     this.shutterBtn.classList.add("recording");
-    this.stopRecordBtn.disabled = false;
     this.recordingIcon.style.display = "block";
+    this.updateShutterButton();
     this.startTimer();
   }
 
@@ -247,17 +265,27 @@ export class CameraApp extends BaseApp {
       this.mediaRecorder.onstop = () => {
         const blob = new Blob(this.recordedChunks, { type: "video/webm" });
         const url = URL.createObjectURL(blob);
-        this.addRecording(url, blob);
+
+        const fileName = `screen-${Date.now()}.webm`;
+        const savedName = this.fs.writeBinaryFile(
+          ["Pictures", "Camera"],
+          fileName,
+          blob,
+          "video",
+          "/static/icons/obs.webp"
+        );
+
+        this.addRecording(url, blob, savedName, fileName.replace(".webm", ""));
 
         this.isRecording = false;
         this.downloadLink.href = url;
-        this.downloadLink.download = `screen-${Date.now()}.webm`;
+        this.downloadLink.download = fileName;
         this.downloadLink.textContent = "Download Screen Recording";
         this.downloadLink.style.display = "flex";
         this.stopTimer();
         this.recordingIcon.style.display = "none";
         this.shutterBtn.classList.remove("recording");
-        this.stopRecordBtn.disabled = true;
+        this.updateShutterButton();
         this.activeStream.getTracks().forEach((t) => t.stop());
         this.activeStream = null;
         this.video.srcObject = this.stream;
@@ -270,8 +298,8 @@ export class CameraApp extends BaseApp {
       this.isRecording = true;
       this.mediaRecorder.start();
       this.shutterBtn.classList.add("recording");
-      this.stopRecordBtn.disabled = false;
       this.recordingIcon.style.display = "block";
+      this.updateShutterButton();
       this.startTimer();
     } catch (e) {
       console.error(e);
@@ -295,10 +323,20 @@ export class CameraApp extends BaseApp {
     this.recordingTimer.textContent = "";
   }
 
-  async addRecording(url, blob) {
-    const displayName = `Recording ${new Date().toLocaleTimeString()}`;
-    const fileName = `recording-${Date.now()}.webm`;
-    const savedName = await this.fs.writeBinaryFile("Videos", fileName, blob, "video", "/static/icons/obs.webp");
+  async addRecording(url, blob, savedName = null, displayName = null) {
+    if (!displayName) {
+      displayName = `Recording ${new Date().toLocaleTimeString()}`;
+    }
+    if (!savedName) {
+      const fileName = `recording-${Date.now()}.webm`;
+      savedName = await this.fs.writeBinaryFile(
+        ["Pictures", "Camera"],
+        fileName,
+        blob,
+        "video",
+        "/static/icons/obs.webp"
+      );
+    }
 
     this.recordings.unshift({
       id: savedName,
@@ -322,10 +360,28 @@ export class CameraApp extends BaseApp {
 
     this.historyWin.innerHTML = `
       <div class="window-header">
-        <span>Recordings History</span>
+        <span>Recordings History <span id="history-count" class="history-count">(0)</span></span>
         ${this.wm.getWindowControls()}
       </div>
-      <div id="history-list"></div>
+      <div class="history-controls">
+        <div class="history-filter">
+          <select id="history-type-filter" class="history-filter-select">
+            <option value="all">All</option>
+            <option value="photo">Photos</option>
+            <option value="video">Videos</option>
+            <option value="screen">Screen</option>
+          </select>
+          <select id="history-sort" class="history-sort-select">
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+          </select>
+        </div>
+        <div class="history-actions">
+          <button id="bulk-select-btn" class="history-btn secondary">Bulk Select</button>
+          <button id="delete-selected-btn" class="history-btn danger" style="display: none;">Delete Selected</button>
+        </div>
+      </div>
+      <div id="history-list" class="history-grid"></div>
     `;
 
     desktop.appendChild(this.historyWin);
@@ -335,48 +391,284 @@ export class CameraApp extends BaseApp {
     this.wm.bringToFront(this.historyWin);
 
     this.historyWin.querySelector(".close-btn").onclick = () => {
+      this.closePreviewModal();
       this.historyWin.remove();
       this.historyWin = null;
     };
 
-    this.historyWin.style.width = "30vw";
-    this.historyWin.style.height = "50vh";
-    this.historyWin.style.left = "60vw";
-    this.historyWin.style.top = "20vh";
+    this.historyWin.style.width = "45vw";
+    this.historyWin.style.height = "70vh";
+    this.historyWin.style.left = "55vw";
+    this.historyWin.style.top = "15vh";
 
+    this.setupHistoryControls();
     this.renderHistory();
+  }
+
+  setupHistoryControls() {
+    const typeFilter = this.historyWin.querySelector("#history-type-filter");
+    const sortSelect = this.historyWin.querySelector("#history-sort");
+    const bulkSelectBtn = this.historyWin.querySelector("#bulk-select-btn");
+    const deleteSelectedBtn = this.historyWin.querySelector("#delete-selected-btn");
+
+    this.bulkSelectMode = false;
+    this.selectedItems = new Set();
+
+    typeFilter.onchange = () => this.renderHistory();
+    sortSelect.onchange = () => this.renderHistory();
+
+    bulkSelectBtn.onclick = () => {
+      this.bulkSelectMode = !this.bulkSelectMode;
+      bulkSelectBtn.textContent = this.bulkSelectMode ? "Cancel Select" : "Bulk Select";
+      deleteSelectedBtn.style.display = this.bulkSelectMode ? "block" : "none";
+      this.selectedItems.clear();
+      this.renderHistory();
+    };
+
+    deleteSelectedBtn.onclick = () => this.deleteSelected();
+  }
+
+  closePreviewModal() {
+    const modal = document.querySelector("#preview-modal");
+    if (modal) modal.remove();
   }
 
   renderHistory() {
     if (!this.historyWin) return;
     const list = this.historyWin.querySelector("#history-list");
+    const count = this.historyWin.querySelector("#history-count");
+    const typeFilter = this.historyWin.querySelector("#history-type-filter");
+    const sortSelect = this.historyWin.querySelector("#history-sort");
+
     list.innerHTML = "";
 
-    this.recordings.forEach((rec) => {
-      const row = document.createElement("div");
-      row.className = "history-item";
-
-      const title = document.createElement("span");
-      title.textContent = rec.name;
-      title.onclick = () => this.playRecording(rec.url);
-
-      const actions = document.createElement("div");
-      actions.className = "history-actions";
-
-      const renameBtn = document.createElement("button");
-      renameBtn.textContent = "Rename";
-      renameBtn.onclick = () => this.renameRecording(rec.id);
-
-      const deleteBtn = document.createElement("button");
-      deleteBtn.textContent = "Delete";
-      deleteBtn.onclick = () => this.deleteRecording(rec.id);
-
-      actions.appendChild(renameBtn);
-      actions.appendChild(deleteBtn);
-      row.appendChild(title);
-      row.appendChild(actions);
-      list.appendChild(row);
+    let filtered = this.recordings.filter((rec) => {
+      const type = this.getRecordingType(rec);
+      return typeFilter.value === "all" || type === typeFilter.value;
     });
+
+    filtered.sort((a, b) => {
+      const aTime = this.extractTimestamp(a.id);
+      const bTime = this.extractTimestamp(b.id);
+      return sortSelect.value === "newest" ? bTime - aTime : aTime - bTime;
+    });
+
+    count.textContent = `(${filtered.length})`;
+
+    filtered.forEach((rec) => {
+      const item = this.createHistoryItem(rec);
+      list.appendChild(item);
+    });
+  }
+
+  getRecordingType(rec) {
+    const id = String(rec.id || "");
+    const name = String(rec.name || "");
+    if (id.includes(".png") || id.includes(".jpg") || id.includes(".jpeg")) return "photo";
+    if (name.toLowerCase().includes("screen")) return "screen";
+    return "video";
+  }
+
+  extractTimestamp(id) {
+    const idStr = String(id || "");
+    const match = idStr.match(/\d+/);
+    return match ? parseInt(match[0]) : 0;
+  }
+
+  createHistoryItem(rec) {
+    const type = this.getRecordingType(rec);
+    const isPhoto = type === "photo";
+    const item = document.createElement("div");
+    item.className = `history-item ${isPhoto ? "photo-item" : "video-item"}`;
+
+    const thumbnail = document.createElement("div");
+    thumbnail.className = "history-thumbnail";
+
+    if (isPhoto) {
+      thumbnail.style.backgroundImage = `url(${rec.url})`;
+      thumbnail.style.backgroundSize = "cover";
+      thumbnail.style.backgroundPosition = "center";
+    } else {
+      const video = document.createElement("video");
+      video.src = rec.url;
+      video.muted = true;
+      video.currentTime = 1;
+      video.onloadeddata = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext("2d").drawImage(video, 0, 0);
+        thumbnail.style.backgroundImage = `url(${canvas.toDataURL()})`;
+        thumbnail.style.backgroundSize = "cover";
+        thumbnail.style.backgroundPosition = "center";
+      };
+    }
+
+    const typeBadge = document.createElement("span");
+    typeBadge.className = `history-type-badge ${type}`;
+    typeBadge.textContent = type.charAt(0).toUpperCase() + type.slice(1);
+
+    const info = document.createElement("div");
+    info.className = "history-info";
+
+    const title = document.createElement("div");
+    title.className = "history-title";
+    title.textContent = rec.name;
+    title.onclick = () => this.showPreview(rec);
+
+    const timestamp = document.createElement("div");
+    timestamp.className = "history-timestamp";
+    timestamp.textContent = this.formatTimestamp(rec.id);
+
+    info.appendChild(title);
+    info.appendChild(timestamp);
+
+    if (!isPhoto) {
+      const duration = document.createElement("div");
+      duration.className = "history-duration";
+      this.getVideoDuration(rec.url).then((d) => {
+        duration.textContent = this.formatDuration(d);
+      });
+      info.appendChild(duration);
+    }
+
+    const actions = document.createElement("div");
+    actions.className = "history-item-actions";
+
+    if (this.bulkSelectMode) {
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.className = "history-checkbox";
+      checkbox.checked = this.selectedItems.has(rec.id);
+      checkbox.onchange = () => {
+        if (checkbox.checked) {
+          this.selectedItems.add(rec.id);
+        } else {
+          this.selectedItems.delete(rec.id);
+        }
+      };
+      actions.appendChild(checkbox);
+    }
+
+    if (isPhoto) {
+      const copyBtn = document.createElement("button");
+      copyBtn.className = "history-action-btn copy";
+      copyBtn.innerHTML = '<i class="fas fa-copy"></i>';
+      copyBtn.title = "Copy to clipboard";
+      copyBtn.onclick = () => this.copyToClipboard(rec.url);
+      actions.appendChild(copyBtn);
+    }
+
+    const renameBtn = document.createElement("button");
+    renameBtn.className = "history-action-btn rename";
+    renameBtn.innerHTML = '<i class="fas fa-edit"></i>';
+    renameBtn.title = "Rename";
+    renameBtn.onclick = () => this.renameRecording(rec.id);
+    actions.appendChild(renameBtn);
+
+    const deleteBtn = document.createElement("button");
+    deleteBtn.className = "history-action-btn delete";
+    deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+    deleteBtn.title = "Delete";
+    deleteBtn.onclick = () => this.deleteRecording(rec.id);
+    actions.appendChild(deleteBtn);
+
+    item.appendChild(thumbnail);
+    item.appendChild(typeBadge);
+    item.appendChild(info);
+    item.appendChild(actions);
+
+    return item;
+  }
+
+  formatTimestamp(id) {
+    const timestamp = this.extractTimestamp(id);
+    const date = new Date(timestamp);
+    return date.toLocaleString();
+  }
+
+  async getVideoDuration(url) {
+    return new Promise((resolve) => {
+      const video = document.createElement("video");
+      video.src = url;
+      video.onloadedmetadata = () => {
+        resolve(video.duration);
+      };
+      video.onerror = () => resolve(0);
+    });
+  }
+
+  formatDuration(seconds) {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
+  }
+
+  async copyToClipboard(url) {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
+      this.wm.sendNotify("Image copied to clipboard");
+    } catch (e) {
+      console.error("Failed to copy to clipboard:", e);
+      this.wm.sendNotify("Failed to copy to clipboard");
+    }
+  }
+
+  showPreview(rec) {
+    this.closePreviewModal();
+
+    const modal = document.createElement("div");
+    modal.id = "preview-modal";
+    modal.className = "preview-modal";
+
+    const isPhoto = this.getRecordingType(rec) === "photo";
+
+    modal.innerHTML = `
+      <div class="preview-content">
+        <div class="preview-header">
+          <span>${rec.name}</span>
+          <button class="preview-close"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="preview-media">
+          ${isPhoto ? `<img src="${rec.url}" alt="${rec.name}" />` : `<video src="${rec.url}" controls autoplay></video>`}
+        </div>
+        <div class="preview-info">
+          <span>${this.formatTimestamp(rec.id)}</span>
+          ${!isPhoto ? `<span id="preview-duration">Loading...</span>` : ""}
+        </div>
+      </div>
+    `;
+
+    modal.querySelector(".preview-close").onclick = () => modal.remove();
+    modal.onclick = (e) => {
+      if (e.target === modal) modal.remove();
+    };
+
+    document.body.appendChild(modal);
+
+    if (!isPhoto) {
+      this.getVideoDuration(rec.url).then((duration) => {
+        const durationEl = modal.querySelector("#preview-duration");
+        if (durationEl) durationEl.textContent = this.formatDuration(duration);
+      });
+    }
+  }
+
+  async deleteSelected() {
+    if (this.selectedItems.size === 0) return;
+
+    const confirmed = confirm(`Delete ${this.selectedItems.size} selected items?`);
+    if (!confirmed) return;
+
+    const itemsToDelete = Array.from(this.selectedItems);
+    for (const id of itemsToDelete) {
+      await this.deleteRecording(id);
+    }
+
+    this.selectedItems.clear();
+    this.renderHistory();
   }
 
   async renameRecording(id) {
@@ -384,8 +676,16 @@ export class CameraApp extends BaseApp {
     if (!rec) return;
     const name = prompt("Rename recording:", rec.name);
     if (!name) return;
-    const newFileName = `${name}.webm`;
-    await this.fs.renameBinaryFile("Videos", rec.id, newFileName);
+
+    const ext = rec.id.includes(".png") ? ".png" : ".webm";
+    const newFileName = `${name}${ext}`;
+
+    try {
+      await this.fs.renameBinaryFile(["Pictures", "Camera"], rec.id, newFileName);
+    } catch {
+      await this.fs.renameBinaryFile("Videos", rec.id, newFileName);
+    }
+
     rec.id = newFileName;
     rec.name = name;
     this.renderHistory();
@@ -395,7 +695,13 @@ export class CameraApp extends BaseApp {
     const index = this.recordings.findIndex((r) => r.id === id);
     if (index === -1) return;
     URL.revokeObjectURL(this.recordings[index].url);
-    await this.fs.deleteBinaryFile("Videos", id);
+
+    try {
+      await this.fs.deleteBinaryFile(["Pictures", "Camera"], id);
+    } catch {
+      await this.fs.deleteBinaryFile("Videos", id);
+    }
+
     this.recordings.splice(index, 1);
     this.renderHistory();
   }
@@ -436,16 +742,26 @@ export class CameraApp extends BaseApp {
 
   async restoreHistory() {
     await this.fs.fsReady;
-    const folder = await this.fs.getFolder("Videos").catch(() => ({}));
-    const entries = Object.keys(folder).filter((k) => folder[k].type === "file");
+    const cameraFolder = await this.fs.getFolder(["Pictures", "Camera"]).catch(() => ({}));
+    const videosFolder = await this.fs.getFolder("Videos").catch(() => ({}));
+
+    const cameraEntries = Object.keys(cameraFolder).filter((k) => cameraFolder[k].type === "file");
+    const videoEntries = Object.keys(videosFolder).filter((k) => videosFolder[k].type === "file");
+    const allEntries = [...cameraEntries, ...videoEntries];
 
     this.recordings = [];
-    for (const name of entries) {
-      const blob = await this.fs.readBinaryFile("Videos", name);
+    for (const name of allEntries) {
+      let blob;
+
+      blob = await this.fs.readBinaryFile(["Pictures", "Camera"], name).catch(() => null);
+      if (!blob) {
+        blob = await this.fs.readBinaryFile("Videos", name).catch(() => null);
+      }
+
       if (!blob) continue;
       this.recordings.push({
         id: name,
-        name: name.replace(/\.webm$/, ""),
+        name: name.replace(/\.(png|webm|jpg|jpeg)$/, ""),
         url: URL.createObjectURL(blob),
         blob
       });

@@ -1,6 +1,6 @@
 import { desktop } from "./desktop.js";
 import { appMap } from "./gamesList.js";
-import { fetchHtmlAsBlobUrl, looksLikeHtml, isJsDelivrGhUrl } from "./shared/assetResolver.js";
+import { fetchHtmlAsBlobUrl, looksLikeHtml, isCdnGhUrl } from "./shared/assetResolver.js";
 import { sendLaunchAnalytics } from "./analytics.js";
 import { refreshIcons } from "./shared/contextMenu.js";
 import { descriptionMap } from "./gameDescriptions.js";
@@ -14,6 +14,40 @@ export function setGameLauncher(launcher) {
 }
 export function setDesktopUI(ui) {
   _desktopUI = ui;
+}
+
+export function refreshSteamUI() {
+  const username = localStorage.getItem("yukiOS_username") || "Reeyuki";
+  const profilePic = localStorage.getItem("yukiOS_profilePicture") || "static/icons/guest.webp";
+
+  const steamUserProfiles = document.querySelectorAll(".steam-user-profile span");
+  steamUserProfiles.forEach((span) => {
+    if (span && span.textContent !== username) {
+      span.textContent = username;
+    }
+  });
+
+  const userTab = document.querySelector('.steam-tab[data-page="user"]');
+  if (userTab && userTab.textContent !== username) {
+    userTab.textContent = username;
+  }
+
+  const steamProfileImgs = document.querySelectorAll(".steam-user-profile img");
+  steamProfileImgs.forEach((img) => {
+    if (img instanceof HTMLImageElement && img.src !== profilePic) {
+      img.src = profilePic;
+    }
+  });
+
+  const friendsName = document.querySelector(".friends-name");
+  if (friendsName && friendsName.textContent !== username) {
+    friendsName.textContent = username;
+  }
+
+  const friendsProfileImg = document.querySelector(".friends-profile img");
+  if (friendsProfileImg instanceof HTMLImageElement && friendsProfileImg.src !== profilePic) {
+    friendsProfileImg.src = profilePic;
+  }
 }
 
 const _imgObserver = new IntersectionObserver(
@@ -39,8 +73,8 @@ function observeLazyImages(root) {
   root.querySelectorAll("img[data-src]").forEach((img) => _imgObserver.observe(img));
 }
 
-const CDN_BASE_GAMES = "https://cdn.jsdelivr.net/gh/reeyuki/yukios-games@main";
-const CDN_BASE = "https://cdn.jsdelivr.net/gh/reeyuki/yukios@main";
+const CDN_BASE_GAMES = "https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main";
+const CDN_BASE = "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main";
 
 export function patchAppMap(appMap) {
   for (const key in appMap) {
@@ -48,7 +82,7 @@ export function patchAppMap(appMap) {
 
     if (app.icon && app.icon.startsWith("/static/")) {
       if (key.startsWith("subwaySurfers")) {
-        app.icon = `https://cdn.jsdelivr.net/gh/reeyuki/yukios-games@main/subwaySurfers/${app.icon.split("/").pop()}`;
+        app.icon = `https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main/subwaySurfers/${app.icon.split("/").pop()}`;
       } else {
         app.icon = `${CDN_BASE}${app.icon}`;
       }
@@ -418,7 +452,7 @@ export class GameWindowRenderer {
     }
 
     let iframeUrl = url;
-    if (looksLikeHtml(url) && isJsDelivrGhUrl(url)) {
+    if (looksLikeHtml(url) && isCdnGhUrl(url)) {
       try {
         iframeUrl = await fetchHtmlAsBlobUrl(url);
       } catch (err) {

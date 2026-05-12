@@ -1,32 +1,85 @@
-export const CDN_BASES = {
-  GAMES: "https://cdn.jsdelivr.net/gh/reeyuki/yukios-games@main",
-  MAIN: "https://cdn.jsdelivr.net/gh/reeyuki/yukios@main",
-  NPM: "https://cdn.jsdelivr.net/npm"
+// CDN Provider configurations
+const CDN_PROVIDERS = {
+  jsdelivr: {
+    GAMES: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main",
+    MAIN: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main",
+    NPM: "https://cdn.jsdelivr.net/npm",
+    PATTERN: /^https?:\/\/(cdn\.)?jsdelivr\.net\//,
+    HOSTNAMES: ["cdn.jsdelivr.net"],
+    GH_PATH: "/gh/"
+  },
+  statically: {
+    GAMES: "https://cdn.statically.io/gh/Reeyuki/yukios-games@main",
+    MAIN: "https://cdn.statically.io/gh/Reeyuki/yukios@main",
+    PATTERN: /^https?:\/\/(cdn\.)?statically\.io\//,
+    HOSTNAMES: ["cdn.statically.io"],
+    GH_PATH: "/gh/"
+  }
 };
 
+// Legacy exports for backward compatibility
+export const CDN_BASES = CDN_PROVIDERS.jsdelivr;
 export const JSDELIVR_BASE = CDN_BASES.GAMES;
 export const YUKIOS_JSDELIVR_BASE = CDN_BASES.MAIN;
 export const JSDELIVR_GH_BASE = CDN_BASES.MAIN;
 
-export const isJsDelivrGhUrl = (url) =>
+// Unified CDN detection functions
+export const isCdnGhUrl = (url) => {
+  if (typeof url !== "string") return false;
+  return Object.values(CDN_PROVIDERS).some((provider) => provider.PATTERN.test(url) && url.includes(provider.GH_PATH));
+};
+
+// Legacy exports for backward compatibility
+export const isJsdelivrGhUrl = (url) =>
   typeof url === "string" &&
   (url.startsWith("https://cdn.jsdelivr.net/gh/") || url.startsWith("http://cdn.jsdelivr.net/gh/"));
 
-export function isJsDelivrHostname(hostname) {
+export function isJsdelivrHostname(hostname) {
   if (typeof hostname !== "string") return false;
-  return (
-    hostname === "cdn.jsdelivr.net" ||
-    hostname.endsWith(".jsdelivr.net") ||
-    hostname.includes("quantil.jsdelivr.net") ||
-    hostname.includes("originfastly.jsdelivr.net") ||
-    hostname.includes("gcore.jsdelivr.net") ||
-    hostname.includes("cdn.staticdelivr.com")
+  return hostname === "cdn.jsdelivr.net" || hostname.endsWith(".jsdelivr.net");
+}
+
+export function isCdnHostname(hostname) {
+  if (typeof hostname !== "string") return false;
+  return Object.values(CDN_PROVIDERS).some(
+    (provider) => provider.HOSTNAMES.includes(hostname) || hostname.endsWith(`.${provider.HOSTNAMES[0].split(".")[1]}`)
   );
+}
+
+function getCdnProvider(url) {
+  if (typeof url !== "string") return null;
+
+  const urlObj = new URL(url);
+  return Object.values(CDN_PROVIDERS).find((provider) => provider.HOSTNAMES.includes(urlObj.hostname));
+}
+
+function getCdnProviderByHostname(hostname) {
+  if (typeof hostname !== "string") return null;
+  return Object.values(CDN_PROVIDERS).find((provider) => provider.HOSTNAMES.includes(hostname));
 }
 
 export const looksLikeHtml = (url) => typeof url === "string" && /\.html?([?#].*)?$/i.test(url);
 
-export function getCurrentJsDelivrRepoBase() {
+export function getCurrentCdnRepoBase() {
+  try {
+    const here = new URL(window.location.href);
+    const provider = getCdnProviderByHostname(here.hostname);
+    if (!provider) return null;
+
+    const p = here.pathname.split("/").filter(Boolean);
+    if (p[0] !== "gh" || !p[1] || !p[2]) return null;
+
+    const baseUrl = provider.HOSTNAMES[0].includes("jsdelivr")
+      ? "https://cdn.jsdelivr.net"
+      : "https://cdn.statically.io";
+    return `${baseUrl}${provider.GH_PATH}${p[1]}/${p[2]}`;
+  } catch {
+    return null;
+  }
+}
+
+// Legacy export for backward compatibility
+export function getCurrentJsdelivrRepoBase() {
   try {
     const here = new URL(window.location.href);
     if (here.hostname !== "cdn.jsdelivr.net") return null;
@@ -38,7 +91,25 @@ export function getCurrentJsDelivrRepoBase() {
   }
 }
 
-export function getJsDelivrRepoBase(url) {
+export function getCdnRepoBase(url) {
+  try {
+    const uo = new URL(url);
+    const provider = getCdnProvider(uo);
+    if (!provider) return null;
+
+    const p = uo.pathname.split("/").filter(Boolean);
+    if (p[0] === "gh" && p[1] && p[2]) {
+      const baseUrl = provider.HOSTNAMES[0].includes("jsdelivr")
+        ? "https://cdn.jsdelivr.net"
+        : "https://cdn.statically.io";
+      return `${baseUrl}${provider.GH_PATH}${p[1]}/${p[2]}/`;
+    }
+  } catch {}
+  return null;
+}
+
+// Legacy export for backward compatibility
+export function getJsdelivrRepoBase(url) {
   try {
     const uo = new URL(url);
     if (uo.hostname === "cdn.jsdelivr.net") {
@@ -57,18 +128,20 @@ export function resolveIconUrl(url) {
 
   try {
     const hostname = window.location?.hostname || "";
-    const isJsdelivr = isJsDelivrHostname(hostname);
-    if (isJsdelivr && url.startsWith("/static/")) {
-      return `${CDN_BASES.MAIN}${url}`;
+    const isCdn = isCdnHostname(hostname);
+    if (isCdn && url.startsWith("/static/")) {
+      const provider = getCdnProviderByHostname(hostname) || CDN_PROVIDERS.jsdelivr;
+      return `${provider.MAIN}${url}`;
     }
   } catch {}
 
   if (/^https?:\/\//.test(url)) {
     try {
       const u = new URL(url);
-      const isJsdelivr = isJsDelivrHostname(u.hostname);
-      if (isJsdelivr && u.pathname.startsWith("/static/")) {
-        return `${CDN_BASES.MAIN}${u.pathname}${u.search}${u.hash}`;
+      const isCdn = isCdnHostname(u.hostname);
+      if (isCdn && u.pathname.startsWith("/static/")) {
+        const provider = getCdnProvider(u) || CDN_PROVIDERS.jsdelivr;
+        return `${provider.MAIN}${u.pathname}${u.search}${u.hash}`;
       }
     } catch {}
   }
@@ -81,43 +154,48 @@ export function resolveWallpaperUrl(url) {
   if (url.startsWith("http://") || url.startsWith("https://")) {
     try {
       const u = new URL(url);
-      if (isJsDelivrHostname(u.hostname) && u.pathname.startsWith("/static/wallpapers/")) {
-        return `${CDN_BASES.MAIN}${u.pathname}${u.search}${u.hash}`;
+      if (isCdnHostname(u.hostname) && u.pathname.startsWith("/static/wallpapers/")) {
+        const provider = getCdnProvider(u) || CDN_PROVIDERS.jsdelivr;
+        return `${provider.MAIN}${u.pathname}${u.search}${u.hash}`;
       }
     } catch {}
     return url;
   }
   if (!url.startsWith("/static/wallpapers/")) return url;
   try {
-    if (window.location?.hostname === "cdn.jsdelivr.net") {
-      return `${CDN_BASES.MAIN}${url}`;
+    const hostname = window.location?.hostname;
+    if (isCdnHostname(hostname)) {
+      const provider = getCdnProviderByHostname(hostname) || CDN_PROVIDERS.jsdelivr;
+      return `${provider.MAIN}${url}`;
     }
   } catch {}
   return url;
 }
 
-export async function resolveUrl(url, isJsDelivrGh = false) {
+export async function resolveUrl(url, isCdnGh = false) {
   if (!url) return url;
   if (url.startsWith("blob:") || url.startsWith("data:")) return url;
   if (url.startsWith("http://") || url.startsWith("https://")) {
     return url;
   }
 
-  const currentRepoBase = getCurrentJsDelivrRepoBase();
+  const currentRepoBase = getCurrentCdnRepoBase();
+  const hostname = window.location?.hostname || "";
+  const currentProvider = getCdnProviderByHostname(hostname) || CDN_PROVIDERS.jsdelivr;
 
   if (url.startsWith("/")) {
     const repoBase = currentRepoBase;
     if (repoBase) return `${repoBase}${url}`;
-    if (isJsDelivrGh) return `${CDN_BASES.GAMES}${url}`;
+    if (isCdnGh) return `${currentProvider.GAMES}${url}`;
     if (looksLikeHtml(url)) {
       try {
         const origin = new URL(window.location.href).origin;
-        if (/^https:\/\/cdn\.jsdelivr\.net$/i.test(origin)) {
-          return `${CDN_BASES.GAMES}${url}`;
+        if (isCdnHostname(new URL(origin).hostname)) {
+          return `${currentProvider.GAMES}${url}`;
         }
         return new URL(url, window.location.href).href;
       } catch {
-        return `${CDN_BASES.GAMES}${url}`;
+        return `${currentProvider.GAMES}${url}`;
       }
     }
     try {
@@ -129,7 +207,7 @@ export async function resolveUrl(url, isJsDelivrGh = false) {
 
   const normalized = `/${url}`;
   const isHtml = looksLikeHtml(url);
-  return `${isHtml ? CDN_BASES.MAIN : CDN_BASES.GAMES}${normalized}`;
+  return `${isHtml ? currentProvider.MAIN : currentProvider.GAMES}${normalized}`;
 }
 
 export async function fetchHtmlAsBlobUrl(url) {
@@ -154,29 +232,37 @@ export async function fetchHtmlAsBlobUrl(url) {
   let assetDirBase;
   let rootBase;
 
-  if (isJsDelivrGhUrl(urlObj.href)) {
+  if (isCdnGhUrl(urlObj.href)) {
     const p = urlObj.pathname.split("/").filter(Boolean);
     const user = p[1];
     const repoWithRef = p[2];
     const path = p.slice(3).join("/");
     const dirPath = path.replace(/[^/]*$/, "");
-    const repoBase = `https://cdn.jsdelivr.net/gh/${user}/${repoWithRef}/`;
+    const provider = getCdnProvider(urlObj) || CDN_PROVIDERS.jsdelivr;
+    const baseUrl = provider.HOSTNAMES[0].includes("jsdelivr")
+      ? "https://cdn.jsdelivr.net"
+      : "https://cdn.statically.io";
+    const repoBase = `${baseUrl}${provider.GH_PATH}${user}/${repoWithRef}/`;
     assetDirBase = `${repoBase}${dirPath}`;
     rootBase = repoBase;
   } else {
     assetDirBase = baseHref;
-    rootBase = CDN_BASES.GAMES + "/";
+    const hostname = window.location?.hostname || "";
+    const currentProvider = getCdnProviderByHostname(hostname) || CDN_PROVIDERS.jsdelivr;
+    rootBase = currentProvider.GAMES + "/";
   }
 
   if (baseHrefFromDoc) {
     try {
       assetDirBase = baseHrefFromDoc.endsWith("/") ? baseHrefFromDoc : new URL(".", baseHrefFromDoc).href;
-      rootBase = getJsDelivrRepoBase(baseHrefFromDoc) || new URL("/", baseHrefFromDoc).href;
+      rootBase = getCdnRepoBase(baseHrefFromDoc) || new URL("/", baseHrefFromDoc).href;
     } catch {}
   }
 
   const isIgnored =
-    ["angrybirds", "subway"].some((p) => url.toLowerCase().includes(p.toLowerCase())) || html.includes("cdn.jsdelivr");
+    ["angrybirds", "subway"].some((p) => url.toLowerCase().includes(p.toLowerCase())) ||
+    html.includes("cdn.jsdelivr") ||
+    html.includes("cdn.statically.io");
 
   let rewritten = html;
   if (!isIgnored) {
@@ -219,6 +305,7 @@ export async function fetchHtmlAsBlobUrl(url) {
   const ROOT_BASE = "${rootBase}";
   const ASSET_DIR_BASE = "${assetDirBase}";
   const JSDELIVR_GH_BASE = "https://cdn.jsdelivr.net/gh/";
+  const STATICALLY_GH_BASE = "https://cdn.statically.io/gh/";
 
   function resolve(url) {
     if (typeof url !== 'string' || !url) return url;
@@ -277,8 +364,7 @@ export async function fetchHtmlAsBlobUrl(url) {
     if (!a) return;
     const rawHref = a.getAttribute('href');
     if (!rawHref || rawHref[0] === '#' || /^javascript:/i.test(rawHref)) return;
-    const url = a.href;
-    if (typeof url === 'string' && (url.startsWith(JSDELIVR_GH_BASE) || url.startsWith('blob:'))) {
+    if (typeof url === 'string' && (url.startsWith(JSDELIVR_GH_BASE) || url.startsWith(STATICALLY_GH_BASE) || url.startsWith('blob:'))) {
       e.preventDefault();
       postNavigate(url);
     }
@@ -290,7 +376,7 @@ export async function fetchHtmlAsBlobUrl(url) {
     const action = form.getAttribute('action') || document.baseURI;
     let url = null;
     try { url = new URL(action, document.baseURI).href; } catch { return; }
-    if (typeof url === 'string' && (url.startsWith(JSDELIVR_GH_BASE) || url.startsWith('blob:'))) {
+    if (typeof url === 'string' && (url.startsWith(JSDELIVR_GH_BASE) || url.startsWith(STATICALLY_GH_BASE) || url.startsWith('blob:'))) {
       e.preventDefault();
       postNavigate(url);
     }
