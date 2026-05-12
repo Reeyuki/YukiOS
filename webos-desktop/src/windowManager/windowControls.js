@@ -17,7 +17,13 @@ export function setupWindowControls(win, wm) {
   }
 
   if (maxBtn) {
-    maxBtn.onclick = () => wm.toggleFullscreen(win);
+    maxBtn.onclick = () => {
+      if (win.dataset.snapZone === "maximize") {
+        wm.toggleFullscreen(win);
+      } else {
+        wm._applySnap(win, "maximize");
+      }
+    };
   }
 
   if (minBtn) {

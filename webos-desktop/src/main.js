@@ -172,6 +172,7 @@ SystemUtilities.startClock();
 SystemUtilities.setSettings(settingsApp);
 SystemUtilities.startTaskbarWeather(appLauncher);
 await SystemUtilities.loadWallpaper();
+windowManager.restorePinnedItems();
 
 const ads = new AdsManager(windowManager);
 

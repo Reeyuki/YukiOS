@@ -1,7 +1,5 @@
-# AGENTS.md — Yuki OS Architecture Guide
-
-Must have rule: not use comment lines in the code
-
+# Yuki OS Architecture Guide
+Never add comments or docstrings
 ## Overview
 
 Yuki OS is a browser-based webOS-style desktop environment that emulates a complete operating system within the web browser. It provides a unified windowed interface for 30+ built-in applications, 100+ games, multiple emulators (DOS via JS-DOS, x86 via V86), productivity tools, and system utilities. Everything runs in a sandboxed environment with persistent file storage, notifications, settings, and a virtual filesystem.

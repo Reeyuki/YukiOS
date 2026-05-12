@@ -47,6 +47,7 @@ export class WindowManager {
 
     bus.on(BusEvents.SETTINGS_CHANGED, () => {
       this.updateTransparency();
+      this.updateTaskbarAlignment();
     });
 
     setTimeout(() => {
@@ -196,6 +197,37 @@ export class WindowManager {
 
   updateTransparency() {
     updateTransparency(this);
+  }
+
+  updateTaskbarAlignment() {
+    const taskbarWindows = document.getElementById("taskbar-windows");
+    if (taskbarWindows) {
+      const taskbarAlignment = localStorage.getItem("yukiOS_taskbar_alignment") || "center";
+      const taskbar = document.getElementById("taskbar");
+
+      if (taskbar) {
+        const isHorizontal =
+          taskbar.classList.contains("position-bottom") || taskbar.classList.contains("position-top");
+
+        if (isHorizontal) {
+          if (taskbarAlignment === "left") {
+            taskbarWindows.style.justifyContent = "flex-start";
+          } else if (taskbarAlignment === "center") {
+            taskbarWindows.style.justifyContent = "center";
+          } else if (taskbarAlignment === "right") {
+            taskbarWindows.style.justifyContent = "flex-end";
+          }
+        } else {
+          if (taskbarAlignment === "left") {
+            taskbarWindows.style.alignItems = "flex-start";
+          } else if (taskbarAlignment === "center") {
+            taskbarWindows.style.alignItems = "center";
+          } else if (taskbarAlignment === "right") {
+            taskbarWindows.style.alignItems = "flex-end";
+          }
+        }
+      }
+    }
   }
 
   _resolveIconType(iconValue) {
@@ -450,6 +482,18 @@ export class WindowManager {
     }
 
     addMenuItem("Properties", () => this._buildPropertiesWindow(winId), "fa-info-circle");
+
+    addSeparator();
+
+    const isPinned = this._isWindowPinned(winId);
+    addMenuItem(
+      isPinned ? "Unpin from Taskbar" : "Pin to Taskbar",
+      () => {
+        if (isPinned) this._unpinFromTaskbar(winId);
+        else this._pinToTaskbar(winId);
+      },
+      isPinned ? "fa-thumbtack" : "fa-thumbtack"
+    );
 
     addSeparator();
 
@@ -758,6 +802,35 @@ export class WindowManager {
     });
 
     document.getElementById("taskbar-windows").appendChild(taskbarItem);
+
+    const taskbarWindows = document.getElementById("taskbar-windows");
+    if (taskbarWindows) {
+      const taskbarAlignment = localStorage.getItem("yukiOS_taskbar_alignment") || "center";
+      const taskbar = document.getElementById("taskbar");
+
+      if (taskbar) {
+        const isHorizontal =
+          taskbar.classList.contains("position-bottom") || taskbar.classList.contains("position-top");
+
+        if (isHorizontal) {
+          if (taskbarAlignment === "left") {
+            taskbarWindows.style.justifyContent = "flex-start";
+          } else if (taskbarAlignment === "center") {
+            taskbarWindows.style.justifyContent = "center";
+          } else if (taskbarAlignment === "right") {
+            taskbarWindows.style.justifyContent = "flex-end";
+          }
+        } else {
+          if (taskbarAlignment === "left") {
+            taskbarWindows.style.alignItems = "flex-start";
+          } else if (taskbarAlignment === "center") {
+            taskbarWindows.style.alignItems = "center";
+          } else if (taskbarAlignment === "right") {
+            taskbarWindows.style.alignItems = "flex-end";
+          }
+        }
+      }
+    }
   }
 
   _scheduleHideTaskbarPreview() {
@@ -1170,5 +1243,123 @@ export class WindowManager {
 
   sendNotify(text) {
     sendNotify(this, text);
+  }
+
+  _isWindowPinned(winId) {
+    const pinnedItems = this._getPinnedItems();
+    return pinnedItems.some((item) => item.winId === winId);
+  }
+
+  _getPinnedItems() {
+    try {
+      const pinnedData = localStorage.getItem("yukiOS_pinned_taskbar_items");
+      return pinnedData ? JSON.parse(pinnedData) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  _savePinnedItems(pinnedItems) {
+    try {
+      localStorage.setItem("yukiOS_pinned_taskbar_items", JSON.stringify(pinnedItems));
+    } catch {}
+  }
+
+  _pinToTaskbar(winId) {
+    const entry = this.openWindows.get(winId);
+    if (!entry) return;
+
+    const pinnedItems = this._getPinnedItems();
+    if (pinnedItems.some((item) => item.winId === winId)) return;
+
+    pinnedItems.push({
+      winId,
+      title: entry.title,
+      iconValue: entry.iconValue,
+      color: entry.color
+    });
+
+    this._savePinnedItems(pinnedItems);
+    this._renderPinnedItems();
+  }
+
+  _unpinFromTaskbar(winId) {
+    const pinnedItems = this._getPinnedItems();
+    const filtered = pinnedItems.filter((item) => item.winId !== winId);
+    this._savePinnedItems(filtered);
+    this._renderPinnedItems();
+  }
+
+  _renderPinnedItems() {
+    const taskbarWindows = document.getElementById("taskbar-windows");
+    if (!taskbarWindows) return;
+
+    const existingPinnedContainer = document.getElementById("taskbar-pinned-container");
+    if (existingPinnedContainer) existingPinnedContainer.remove();
+
+    const pinnedItems = this._getPinnedItems();
+    if (pinnedItems.length === 0) return;
+
+    const pinnedContainer = document.createElement("div");
+    pinnedContainer.id = "taskbar-pinned-container";
+    pinnedContainer.className = "taskbar-pinned-container";
+
+    pinnedItems.forEach((item) => {
+      const isOpen = this.openWindows.has(item.winId);
+      if (isOpen) return;
+
+      const pinnedItem = document.createElement("div");
+      pinnedItem.className = "taskbar-item pinned";
+      pinnedItem.appendChild(this._buildTaskbarIcon(item.iconValue, item.title, item.color));
+
+      pinnedItem.onclick = () => {
+        if (window.appLauncher) {
+          const appId = this._findAppIdByWinId(item.winId);
+          if (appId) {
+            window.appLauncher.launch(appId);
+          }
+        }
+      };
+
+      pinnedItem.oncontextmenu = (e) => {
+        e.preventDefault();
+        showStartStyleMenu(e, (addMenuItem, addSeparator) => {
+          addMenuItem("Unpin from Taskbar", () => this._unpinFromTaskbar(item.winId), "fa-thumbtack");
+          addSeparator();
+          addMenuItem(
+            "Launch App",
+            () => {
+              if (window.appLauncher) {
+                const appId = this._findAppIdByWinId(item.winId);
+                if (appId) {
+                  window.appLauncher.launch(appId);
+                }
+              }
+            },
+            "fa-play"
+          );
+        });
+      };
+
+      pinnedContainer.appendChild(pinnedItem);
+    });
+
+    if (pinnedContainer.children.length > 0) {
+      taskbarWindows.insertBefore(pinnedContainer, taskbarWindows.firstChild);
+    }
+  }
+
+  _findAppIdByWinId(winId) {
+    const gamesList = window.gamesList;
+    if (!gamesList || !gamesList.appMap) return null;
+
+    for (const [appId, appData] of Object.entries(gamesList.appMap)) {
+      if (appData.id === winId) return appId;
+    }
+    return null;
+  }
+
+  restorePinnedItems() {
+    this._renderPinnedItems();
   }
 }

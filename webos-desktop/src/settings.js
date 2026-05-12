@@ -32,7 +32,9 @@ export const StorageKeys = {
   deletedIconsKey: "yukiOS_desktop:deleted-icons",
   analyticsDisabled: "yukiOS_analytics_disabled",
   dndKey: "wm_ntf_dnd",
-  taskbarPosition: "yukiOS_taskbar_position"
+  taskbarPosition: "yukiOS_taskbar_position",
+  taskbarAlignment: "yukiOS_taskbar_alignment",
+  pinnedTaskbarItems: "yukiOS_pinned_taskbar_items"
 };
 
 export class SettingsApp extends BaseApp {
@@ -57,7 +59,8 @@ export class SettingsApp extends BaseApp {
         clippy: localStorage.getItem(StorageKeys.clippy) === "true",
         disableDesktopStretchScroll: localStorage.getItem(StorageKeys.disableDesktopStretchScroll) === "true",
         achievementsDisabled: localStorage.getItem("yukiOS_achievements_disabled") === "true",
-        analyticsDisabled: localStorage.getItem(StorageKeys.analyticsDisabled) === "true"
+        analyticsDisabled: localStorage.getItem(StorageKeys.analyticsDisabled) === "true",
+        taskbarAlignment: localStorage.getItem(StorageKeys.taskbarAlignment) || "center"
       };
 
       this._applyCursor(this._settings.cursorDataUrl);
@@ -241,6 +244,24 @@ export class SettingsApp extends BaseApp {
             </label>
           </div>
 
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Taskbar Alignment</span>
+              <span class="settings-label-desc">Choose alignment for taskbar icons</span>
+            </div>
+            <div class="settings-button-group">
+              <button class="settings-btn ${this._settings.taskbarAlignment === "left" ? "active" : ""}" data-alignment="left">
+                <i class="fas fa-align-left"></i> Left
+              </button>
+              <button class="settings-btn ${this._settings.taskbarAlignment === "center" ? "active" : ""}" data-alignment="center">
+                <i class="fas fa-align-center"></i> Center
+              </button>
+              <button class="settings-btn ${this._settings.taskbarAlignment === "right" ? "active" : ""}" data-alignment="right">
+                <i class="fas fa-align-right"></i> Right
+              </button>
+            </div>
+          </div>
+
         </div>
 
         <div class="settings-card">
@@ -351,6 +372,9 @@ export class SettingsApp extends BaseApp {
     const hideGamesBtn = win.querySelector("#settingsHideGamesBtn");
     const downloadPageBtn = win.querySelector("#settingsDownloadPageBtn");
     const status = win.querySelector("#settingsStatus");
+    const alignmentLeftBtn = win.querySelector('[data-alignment="left"]');
+    const alignmentCenterBtn = win.querySelector('[data-alignment="center"]');
+    const alignmentRightBtn = win.querySelector('[data-alignment="right"]');
 
     this._setupSettingsMenu(win, status);
 
@@ -373,6 +397,8 @@ export class SettingsApp extends BaseApp {
       const achievementsDisabled = !achievementsToggle.checked;
       const analyticsDisabled = !analyticsToggle.checked;
       const disableDesktopStretchScroll = !!disableDesktopStretchScrollToggle?.checked;
+      const selectedAlignment =
+        document.querySelector(".settings-btn[data-alignment].active")?.dataset.alignment || "center";
 
       localStorage.setItem(StorageKeys.weather, String(weather));
       localStorage.setItem(StorageKeys.cycleWallpaper, String(cycleWallpaper));
@@ -381,6 +407,7 @@ export class SettingsApp extends BaseApp {
       localStorage.setItem(StorageKeys.disableDesktopStretchScroll, String(disableDesktopStretchScroll));
       localStorage.setItem("yukiOS_achievements_disabled", String(achievementsDisabled));
       localStorage.setItem(StorageKeys.analyticsDisabled, String(analyticsDisabled));
+      localStorage.setItem(StorageKeys.taskbarAlignment, selectedAlignment);
 
       Object.assign(this._settings, {
         weather,
@@ -389,7 +416,8 @@ export class SettingsApp extends BaseApp {
         clippy,
         disableDesktopStretchScroll,
         achievementsDisabled,
-        analyticsDisabled
+        analyticsDisabled,
+        taskbarAlignment: selectedAlignment
       });
 
       this._applyDesktopStretchScrollDisabled(disableDesktopStretchScroll);
@@ -563,6 +591,17 @@ export class SettingsApp extends BaseApp {
         }
       });
     }
+
+    const handleAlignmentClick = (alignment) => {
+      document.querySelectorAll(".settings-btn[data-alignment]").forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.alignment === alignment);
+      });
+      save();
+    };
+
+    if (alignmentLeftBtn) alignmentLeftBtn.addEventListener("click", () => handleAlignmentClick("left"));
+    if (alignmentCenterBtn) alignmentCenterBtn.addEventListener("click", () => handleAlignmentClick("center"));
+    if (alignmentRightBtn) alignmentRightBtn.addEventListener("click", () => handleAlignmentClick("right"));
 
     weatherToggle.addEventListener("change", save);
     cycleWallpaperToggle.addEventListener("change", save);

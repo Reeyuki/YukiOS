@@ -752,6 +752,27 @@ body.is-resizing * {
   background: rgba(255, 255, 255, 0.05);
 }
 
+.taskbar-pinned-container {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.taskbar-item.pinned {
+  position: relative;
+}
+
+.taskbar-item.pinned::after {
+  content: "";
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 6px;
+  height: 6px;
+  background: var(--brand);
+  border-radius: 50%;
+}
+
 .taskbar-preview {
   position: fixed;
   z-index: 999999;
@@ -6131,6 +6152,27 @@ body.is-resizing * {
   flex: 1;
   min-width: 100px;
   max-width: 150px;
+}
+
+.settings-btn[data-alignment] {
+  position: relative;
+}
+
+.settings-btn[data-alignment].active {
+  background: var(--brand);
+  color: white;
+}
+
+.settings-btn[data-alignment]:hover:not(.active) {
+  background: var(--glass-hover);
+}
+
+.settings-btn[data-alignment] i:first-child {
+  margin-right: 6px;
+}
+
+.settings-btn[data-alignment].active i:first-child {
+  color: white;
 }
 
 @keyframes slideInUp {
