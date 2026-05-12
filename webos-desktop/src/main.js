@@ -32,6 +32,7 @@ import { ProfileCustomizerApp } from "./profileCustomizer.js";
 import { setDesktopUI as setGamesDesktopUI } from "./games.js";
 import { AdsManager } from "./ads.js";
 import { registerPWA } from "./pwa.js";
+import { taskbarPositionManager } from "./taskbarPositionManager.js";
 
 registerPWA();
 const notificationCenter = new NotificationCenter();
