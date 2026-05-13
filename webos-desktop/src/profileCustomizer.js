@@ -1,6 +1,7 @@
 import { desktop } from "./desktop.js";
 import { BaseApp } from "./core/BaseApp.js";
 import { refreshSteamUI } from "./games.js";
+import { customAlert } from "./shared/dialogs.js";
 
 const STORAGE_KEYS = {
   username: "yukiOS_username",
@@ -163,7 +164,7 @@ export class ProfileCustomizerApp extends BaseApp {
 
         try {
           if (file.size > 2 * 1024 * 1024) {
-            alert("Image too large. Please use a file under 2MB.");
+            customAlert("Image too large. Please use a file under 2MB.");
             return;
           }
 

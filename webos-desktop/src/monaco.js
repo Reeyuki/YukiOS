@@ -5,6 +5,7 @@ import { decodeDataURLContent } from "./fileDisplay.js";
 import { showConflictDialog } from "./shared/conflictDialog.js";
 import { FileKind } from "./fs.js";
 import { BaseApp } from "./core/BaseApp.js";
+import { customConfirm } from "./shared/dialogs.js";
 
 export class MonacoApp extends BaseApp {
   constructor(services) {
@@ -522,12 +523,12 @@ export class MonacoApp extends BaseApp {
     this.updateStatusBar(editorData);
   }
 
-  closeTab(tabId) {
+  async closeTab(tabId) {
     const editorData = this.tabs.get(tabId);
     if (!editorData) return;
 
     if (editorData.isDirty) {
-      if (!confirm(`"${editorData.title}" has unsaved changes. Close anyway?`)) {
+      if (!(await customConfirm(`"${editorData.title}" has unsaved changes. Close anyway?`))) {
         return;
       }
     }
@@ -679,10 +680,10 @@ export class MonacoApp extends BaseApp {
     const closeBtn = win.querySelector('[data-action="close"]');
     if (closeBtn) {
       const originalClick = closeBtn.onclick;
-      closeBtn.onclick = (e) => {
+      closeBtn.onclick = async (e) => {
         const dirtyTabs = Array.from(this.tabs.values()).filter((t) => t.isDirty);
         if (dirtyTabs.length > 0) {
-          if (!confirm(`${dirtyTabs.length} tab(s) have unsaved changes. Close window anyway?`)) {
+          if (!(await customConfirm(`${dirtyTabs.length} tab(s) have unsaved changes. Close window anyway?`))) {
             return;
           }
         }

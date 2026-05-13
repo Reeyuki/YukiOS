@@ -3,6 +3,7 @@ import { HIGHLIGHTED_GAMES, getGameName, setGameLauncher } from "./games.js";
 import { appMap } from "./gamesList.js";
 import { initializeAppGrid, populateStartMenu, tryGetIcon } from "./startMenu";
 import { IFRAME_ATTRS } from "./shared/iframeAttrs.js";
+import { customAlert } from "./shared/dialogs.js";
 import {
   fetchHtmlAsBlobUrl,
   resolveUrl,
@@ -676,7 +677,7 @@ player.load("${swfPath}");
         if (type === "game") externalUrl = resolvedSource;
         return;
       } else {
-        alert("ROM emulation is not available.");
+        customAlert("ROM emulation is not available.");
         return;
       }
     }

@@ -3,6 +3,7 @@ import { isImageFile } from "./fileDisplay.js";
 import { desktop } from "./desktop.js";
 import { refreshIcons } from "./shared/contextMenu.js";
 import { PROXIES, clampProxyIndex, buildProxyUrl } from "./proxies.js";
+import { customConfirm } from "./shared/dialogs.js";
 
 const AC = {
   WIN_ID: "app-creator-win",
@@ -556,7 +557,7 @@ export class AppCreatorApp extends BaseApp {
     const meta = await this._loadAppMeta(appId);
     if (!meta) return;
 
-    if (!confirm(`Delete "${meta.name}"? The desktop icon will also be removed.`)) return;
+    if (!(await customConfirm(`Delete "${meta.name}"? The desktop icon will also be removed.`))) return;
 
     try {
       await this.fs.deleteItem(AC.FS_FOLDER, meta._fileName);

@@ -8,6 +8,7 @@ import { StorageKeys } from "./settings.js";
 import { showConflictDialog } from "./shared/conflictDialog.js";
 import { showContextMenu, showDynamicContextMenu, hideMenu } from "./shared/contextMenu.js";
 import { appMap } from "./gamesList.js";
+import { customPrompt } from "./shared/dialogs.js";
 
 import { resolveIconUrl } from "./assetUrl.js";
 import { resolveDesktopIcon } from "./shared/iconUtils.js";
@@ -1283,7 +1284,7 @@ export class DesktopUI {
       },
       deleteFolder: () => this.deleteSelectedIcons(selectedArray),
       renameFolder: async () => {
-        const newName = prompt("Enter new folder name:", folderIcon.dataset.folderName);
+        const newName = await customPrompt("Enter new folder name:", folderIcon.dataset.folderName);
         if (newName && newName !== folderIcon.dataset.folderName) {
           await this.fs.renameItem(["Desktop"], folderIcon.dataset.folderName, newName);
           const saved = PositionStore.load();
@@ -1352,7 +1353,7 @@ export class DesktopUI {
         item(
           "Rename",
           async () => {
-            const newName = prompt("Enter new name:", fileName);
+            const newName = await customPrompt("Enter new name:", fileName);
             if (newName && newName !== fileName) {
               await this.fs.renameItem(["Desktop"], fileName, newName);
               fileIcon.dataset.fileName = newName;
@@ -1477,7 +1478,7 @@ export class DesktopUI {
       newNotepad: () => this.notepadApp.open(),
       addFiles: () => this.addFiles(),
       newFolder: async () => {
-        const folderName = prompt("Enter folder name:", "New Folder");
+        const folderName = await customPrompt("Enter folder name:", "New Folder");
         if (folderName) {
           await this.fs.createFolder(["Desktop"], folderName);
           await this.createFolderIcon(folderName);

@@ -1,3 +1,5 @@
+import { customPrompt } from "../shared/dialogs.js";
+
 export class WorkspaceManager {
   constructor(windowManager) {
     this.wm = windowManager;
@@ -54,8 +56,8 @@ export class WorkspaceManager {
         if (e.target === btn) this.switchTo(ws.id);
       });
 
-      btn.addEventListener("dblclick", () => {
-        const newName = prompt("Rename workspace:", ws.name);
+      btn.addEventListener("dblclick", async () => {
+        const newName = await customPrompt("Rename workspace:", ws.name);
         if (newName && newName.trim()) {
           ws.name = newName.trim();
           this._render();

@@ -1,6 +1,7 @@
 import { FileKind } from "./fs.js";
 import { desktop } from "./desktop.js";
 import { resolveIconUrl } from "./assetUrl.js";
+import { customAlert } from "./shared/dialogs.js";
 
 export const IMAGE_EXTS = ["png", "jpg", "jpeg", "gif", "webp", "bmp", "svg", "avif", "ico"];
 export const VIDEO_EXTS = ["mp4", "webm", "ogv", "mov", "mkv", "avi", "m4v", "wmv", "flv"];
@@ -395,7 +396,7 @@ export async function openFileWith({
   }
 
   if (isRomFile(name)) {
-    alert("ROM emulation is not available.");
+    customAlert("ROM emulation is not available.");
     return;
   }
 

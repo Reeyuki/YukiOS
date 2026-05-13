@@ -1,6 +1,7 @@
 import { PROXIES, clampProxyIndex, buildProxyUrl } from "./proxies.js";
 import { BaseApp } from "./core/BaseApp.js";
 import { bus, BusEvents } from "./core/EventBus.js";
+import { customConfirm } from "./shared/dialogs.js";
 
 export class BrowserApp extends BaseApp {
   static refreshIcons(node) {
@@ -1832,8 +1833,8 @@ export class BrowserApp extends BaseApp {
     if (this.bookmarkBar) this.bookmarkBar.classList.toggle("hidden", !this.showBookmarkBar);
   }
 
-  clearBrowsingData() {
-    if (!confirm("Delete all history, downloads records, and bookmarks?")) return;
+  async clearBrowsingData() {
+    if (!(await customConfirm("Delete all history, downloads records, and bookmarks?"))) return;
     this.history = [];
     this.downloads = [];
     this.bookmarks = this.defaultBookmarks;

@@ -6,6 +6,7 @@ import { refreshIcons } from "./shared/contextMenu.js";
 import { descriptionMap } from "./gameDescriptions.js";
 import { getAnalyticsBase } from "./analytics.js";
 import { shouldEnableAds } from "./ads.js";
+import { customAlert, customPrompt } from "./shared/dialogs.js";
 
 let _launcher = null;
 let _desktopUI = null;
@@ -1040,8 +1041,8 @@ export class GameWindowRenderer {
       this.renderGrid(container, onLaunch);
       this._rebuildSidebar(container, onLaunch);
     };
-    menu.querySelector("#ctx-new-col").onclick = () => {
-      const name = prompt("Enter collection name:");
+    menu.querySelector("#ctx-new-col").onclick = async () => {
+      const name = await customPrompt("Enter collection name:");
       if (name && name.trim()) {
         SteamDataManager.createCollection(name.trim());
         SteamDataManager.addToCollection(name.trim(), appId);
@@ -1079,7 +1080,7 @@ export class GameWindowRenderer {
     menu.querySelector("#ctx-report").onclick = async () => {
       const game = this.getGames().find((g) => g.app === appId);
       const title = game ? game.title : appId;
-      const reason = prompt(`Report ${title} as broken? Please provide a reason:`);
+      const reason = await customPrompt(`Report ${title} as broken? Please provide a reason:`);
       if (reason === null) return;
 
       try {
@@ -1089,12 +1090,12 @@ export class GameWindowRenderer {
           body: JSON.stringify({ appId, title, reason })
         });
         if (res.ok) {
-          alert("Thank you! Your report has been sent to the developers.");
+          customAlert("Thank you! Your report has been sent to the developers.");
         } else {
-          alert("Failed to send report. Please try again later.");
+          customAlert("Failed to send report. Please try again later.");
         }
       } catch (err) {
-        alert("An error occurred while sending the report.");
+        customAlert("An error occurred while sending the report.");
       }
     };
   }

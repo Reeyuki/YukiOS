@@ -2,6 +2,7 @@ import { desktop } from "./desktop.js";
 import { toggleHideGames } from "./desktopui.js";
 import { BaseApp } from "./core/BaseApp.js";
 import { bus, BusEvents } from "./core/EventBus.js";
+import { customAlert, customConfirm, customPrompt } from "./shared/dialogs.js";
 
 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
@@ -489,7 +490,7 @@ export class SettingsApp extends BaseApp {
 
         try {
           if (file.size > 2 * 1024 * 1024) {
-            alert("Cursor image too large. Please use a file under 2MB.");
+            customAlert("Cursor image too large. Please use a file under 2MB.");
             return;
           }
 
@@ -506,7 +507,7 @@ export class SettingsApp extends BaseApp {
           setCursor(normalized, dataUrl);
         } catch (e) {
           console.error("Cursor upload failed:", e);
-          alert("Failed to set cursor. Check console for details.");
+          customAlert("Failed to set cursor. Check console for details.");
         }
       });
 
@@ -525,8 +526,8 @@ export class SettingsApp extends BaseApp {
       showStatus("Reset to saved values");
     };
 
-    const resetToggles = () => {
-      const confirmed = confirm("Reset toggles?");
+    const resetToggles = async () => {
+      const confirmed = await customConfirm("Reset toggles?");
       if (!confirmed) return;
 
       weatherToggle.checked = true;
@@ -661,16 +662,18 @@ export class SettingsApp extends BaseApp {
             showStatus("Reset to saved values");
             break;
           case "resetToggles":
-            if (!confirm("Reset toggles?")) break;
-            win.querySelector("#settingsWeather").checked = true;
-            win.querySelector("#settingsCycleWallpaper").checked = true;
-            win.querySelector("#settingsMacControls").checked = false;
-            win.querySelector("#settingsClippy").checked = false;
-            win.querySelector("#settingsAchievements").checked = true;
-            win.querySelector("#settingsAnalytics").checked = true;
-            if (desktopStretchToggle) desktopStretchToggle.checked = false;
-            win.querySelector("#settingsWeather").dispatchEvent(new Event("change"));
-            showStatus("Toggles reset");
+            (async () => {
+              if (!(await customConfirm("Reset toggles?"))) return;
+              win.querySelector("#settingsWeather").checked = true;
+              win.querySelector("#settingsCycleWallpaper").checked = true;
+              win.querySelector("#settingsMacControls").checked = false;
+              win.querySelector("#settingsClippy").checked = false;
+              win.querySelector("#settingsAchievements").checked = true;
+              win.querySelector("#settingsAnalytics").checked = true;
+              if (desktopStretchToggle) desktopStretchToggle.checked = false;
+              win.querySelector("#settingsWeather").dispatchEvent(new Event("change"));
+              showStatus("Toggles reset");
+            })();
             break;
           case "export":
             this.exportData(showStatus);
@@ -812,7 +815,7 @@ export class SettingsApp extends BaseApp {
 
   async exportData(showStatus = () => {}) {
     if (!this.fs) {
-      alert("Filesystem manager not available; cannot export filesystem data.");
+      customAlert("Filesystem manager not available; cannot export filesystem data.");
       return;
     }
     try {
@@ -832,18 +835,18 @@ export class SettingsApp extends BaseApp {
       showStatus("Exported");
     } catch (e) {
       console.error("Export failed:", e);
-      alert("Export failed. Check console for details.");
+      customAlert("Export failed. Check console for details.");
       showStatus("Export failed");
     }
   }
 
   async importData(showStatus = () => {}) {
     if (!this.fs) {
-      alert("Filesystem manager not available; cannot import filesystem data.");
+      customAlert("Filesystem manager not available; cannot import filesystem data.");
       return;
     }
-    const confirmed = confirm(
-      "Import Data?\n\nThis will overwrite your current settings and filesystem contents.\nThis action cannot be undone."
+    const confirmed = await customConfirm(
+      "This will overwrite your current settings and filesystem contents.\nThis action cannot be undone."
     );
     if (!confirmed) return;
 
@@ -880,7 +883,7 @@ export class SettingsApp extends BaseApp {
         setTimeout(() => location.reload(), 400);
       } catch (e) {
         console.error("Import failed:", e);
-        alert("Import failed. The file may be invalid or corrupted. Check console for details.");
+        customAlert("Import failed. The file may be invalid or corrupted. Check console for details.");
         showStatus("Import failed");
       }
     });
@@ -889,11 +892,11 @@ export class SettingsApp extends BaseApp {
   }
 
   deleteAllData = async () => {
-    const confirmed = confirm(
+    const confirmed = await customConfirm(
       "⚠️ WARNING: Delete All Data\n\n" +
         "This will permanently delete:\n" +
         "• All game progresses,saved files, settings, and preferences\n\n" +
-        "This action CANNOT be undone!\n\n" +
+        "This action cannot be undone.\n\n" +
         "Are you sure you want to continue?"
     );
     if (!confirmed) return;
@@ -941,7 +944,7 @@ export class SettingsApp extends BaseApp {
       location.reload();
     } catch (error) {
       console.error("Error deleting all data:", error);
-      alert("An error occurred while deleting data. Some data may remain. The page will now reload.");
+      customAlert("An error occurred while deleting data. Some data may remain. The page will now reload.");
       location.reload();
     }
   };
@@ -1014,8 +1017,8 @@ export class SettingsApp extends BaseApp {
     return variations;
   };
 
-  resetModuleData = () => {
-    const confirmed = confirm("This will reset OS settings defined by the module and reload. Continue?");
+  resetModuleData = async () => {
+    const confirmed = await customConfirm("This will reset OS settings defined by the module and reload. Continue?");
     if (!confirmed) return;
 
     Object.values(StorageKeys).forEach((key) => localStorage.removeItem(key));

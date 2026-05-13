@@ -1,5 +1,6 @@
 import { BaseApp } from "./core/BaseApp.js";
 import { desktop } from "./desktop.js";
+import { customPrompt, customConfirm } from "./shared/dialogs.js";
 
 export class CameraApp extends BaseApp {
   constructor(services) {
@@ -659,7 +660,7 @@ export class CameraApp extends BaseApp {
   async deleteSelected() {
     if (this.selectedItems.size === 0) return;
 
-    const confirmed = confirm(`Delete ${this.selectedItems.size} selected items?`);
+    const confirmed = await customConfirm(`Delete ${this.selectedItems.size} selected items?`);
     if (!confirmed) return;
 
     const itemsToDelete = Array.from(this.selectedItems);
@@ -674,7 +675,7 @@ export class CameraApp extends BaseApp {
   async renameRecording(id) {
     const rec = this.recordings.find((r) => r.id === id);
     if (!rec) return;
-    const name = prompt("Rename recording:", rec.name);
+    const name = await customPrompt("Rename recording:", rec.name);
     if (!name) return;
 
     const ext = rec.id.includes(".png") ? ".png" : ".webm";

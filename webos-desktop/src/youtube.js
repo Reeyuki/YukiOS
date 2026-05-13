@@ -1,5 +1,6 @@
 import { BaseApp } from "./core/BaseApp.js";
 import { desktop } from "./desktop.js";
+import { customPrompt } from "./shared/dialogs.js";
 
 function clampInt(n, min, max) {
   n = Number.parseInt(String(n), 10);
@@ -705,8 +706,8 @@ export class YouTubeApp extends BaseApp {
     }
   }
 
-  _importAll() {
-    const text = prompt("Paste YouTube Utilities JSON export:");
+  async _importAll() {
+    const text = await customPrompt("Paste YouTube Utilities JSON export:");
     if (!text) return;
     const data = safeJsonParse(text, null);
     if (!data || typeof data !== "object") {
