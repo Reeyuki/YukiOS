@@ -38,13 +38,13 @@ export class AchievementsApp extends BaseApp {
     this.achievements = this._createAchievements();
     this.unlocked = new Set();
     this.s1 = new Audio(
-      "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@a3efea2218a5d717290e72ea41cd341d14689ce5/static/audio/steam.mp3"
+      "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/audio/steam.mp3"
     );
     this.s2 = new Audio(
-      "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@a3efea2218a5d717290e72ea41cd341d14689ce5/static/audio/slime1.mp3"
+      "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/audio/slime1.mp3"
     );
     this.s3 = new Audio(
-      "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@a3efea2218a5d717290e72ea41cd341d14689ce5/static/audio/slime2.mp3"
+      "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/audio/slime2.mp3"
     );
 
     this._initBusListeners();

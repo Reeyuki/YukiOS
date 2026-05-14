@@ -2,7 +2,7 @@
 const CDN_PROVIDERS = {
   jsdelivr: {
     GAMES: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main",
-    MAIN: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@a3efea2218a5d717290e72ea41cd341d14689ce5",
+    MAIN: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511",
     NPM: "https://cdn.jsdelivr.net/npm",
     PATTERN: /^https?:\/\/(cdn\.)?jsdelivr\.net\//,
     HOSTNAMES: ["cdn.jsdelivr.net"],
@@ -10,7 +10,7 @@ const CDN_PROVIDERS = {
   },
   statically: {
     GAMES: "https://cdn.statically.io/gh/Reeyuki/yukios-games@main",
-    MAIN: "https://cdn.statically.io/gh/Reeyuki/yukios@a3efea2218a5d717290e72ea41cd341d14689ce5",
+    MAIN: "https://cdn.statically.io/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511",
     PATTERN: /^https?:\/\/(cdn\.)?statically\.io\//,
     HOSTNAMES: ["cdn.statically.io"],
     GH_PATH: "/gh/"

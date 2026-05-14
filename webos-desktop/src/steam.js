@@ -1,7 +1,7 @@
 import { descriptionMap } from "./gameDescriptions.js";
 import { shouldEnableAds } from "./ads.js";
 
-export const CDN_BASE = "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@a3efea2218a5d717290e72ea41cd341d14689ce5";
+export const CDN_BASE = "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511";
 
 export function buildSteamShell(container, username, profilePic, hiddenGamesCount, CDN_BASE_REF) {
   const settings = SteamSettings.load();

@@ -9,15 +9,15 @@ const STORAGE_KEYS = {
 };
 
 const PREDEFINED_AVATARS = [
-  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@a3efea2218a5d717290e72ea41cd341d14689ce5/static/icons/guest.webp",
-  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@a3efea2218a5d717290e72ea41cd341d14689ce5/static/icons/helltaker.jpg",
-  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@a3efea2218a5d717290e72ea41cd341d14689ce5/static/icons/stardew.webp",
-  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@a3efea2218a5d717290e72ea41cd341d14689ce5/static/icons/hollowKnight.webp",
-  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@a3efea2218a5d717290e72ea41cd341d14689ce5/static/icons/fancypants2.webp",
-  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@a3efea2218a5d717290e72ea41cd341d14689ce5/static/icons/isaac.webp",
-  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@a3efea2218a5d717290e72ea41cd341d14689ce5/static/icons/angryBirds.webp",
-  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@a3efea2218a5d717290e72ea41cd341d14689ce5/static/icons/nso.webp",
-  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@a3efea2218a5d717290e72ea41cd341d14689ce5/static/icons/alienHominid.webp"
+  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/icons/guest.webp",
+  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/icons/helltaker.jpg",
+  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/icons/stardew.webp",
+  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/icons/hollowKnight.webp",
+  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/icons/fancypants2.webp",
+  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/icons/isaac.webp",
+  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/icons/angryBirds.webp",
+  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/icons/nso.webp",
+  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/icons/alienHominid.webp"
 ];
 
 export class ProfileCustomizerApp extends BaseApp {

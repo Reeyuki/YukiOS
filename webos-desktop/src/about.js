@@ -226,7 +226,7 @@ export class AboutApp extends BaseApp {
 
           <div class="abx-top">
             <div class="abx-mark">
-              <img class="abx-badge" src="https://cdn.jsdelivr.net/gh/Reeyuki/yukios@a3efea2218a5d717290e72ea41cd341d14689ce5/static/icons/logo.webp">
+              <img class="abx-badge" src="https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/icons/logo.webp">
               <h1 class="abx-title">Yuki OS</h1>
               <p class="abx-sub">
                 Browser desktop environment with apps, games, and sandboxed runtime systems.
