@@ -360,33 +360,33 @@ export async function openFileWith({
   }
 
   if (isSwfFile(name)) {
-    if (!appLauncher) return;
+    const ruffleApp = appLauncher?.ruffleApp;
+    if (!ruffleApp) return;
     const SWF_MIME = "application/x-shockwave-flash";
-    let swfUrl = null;
+    let arrayBuffer = null;
 
     const blob = await fs.readBinaryFile(path, name);
     if (blob && blob.size > 0) {
-      swfUrl = URL.createObjectURL(new Blob([blob], { type: SWF_MIME }));
+      arrayBuffer = await blob.arrayBuffer();
     } else {
       const content = await fs.getFileContent(path, name);
       if (content instanceof Blob && content.size > 0) {
-        swfUrl = URL.createObjectURL(new Blob([content], { type: SWF_MIME }));
+        arrayBuffer = await content.arrayBuffer();
       } else if (content instanceof ArrayBuffer && content.byteLength > 0) {
-        swfUrl = URL.createObjectURL(new Blob([content], { type: SWF_MIME }));
+        arrayBuffer = content;
       } else if (typeof content === "string" && content) {
-        swfUrl = content.startsWith("data:")
-          ? URL.createObjectURL(base64ToBlob(content))
-          : URL.createObjectURL(new Blob([Uint8Array.from(content, (c) => c.charCodeAt(0))], { type: SWF_MIME }));
+        arrayBuffer = content.startsWith("data:")
+          ? await base64ToBlob(content).arrayBuffer()
+          : Uint8Array.from(content, (c) => c.charCodeAt(0)).buffer;
       }
     }
 
-    if (!swfUrl) return;
-    appLauncher.openIframeApp({
-      appId: `swf-${name}-${Date.now()}`,
-      type: "swf",
-      source: swfUrl,
-      originalName: name
-    });
+    if (!arrayBuffer) return;
+    const displayName = name
+      .replace(/\.[^.]+$/, "")
+      .replace(/[-_]/g, " ")
+      .replace(/\b\w/g, (c) => c.toUpperCase());
+    ruffleApp._launchRuffle(displayName, name, arrayBuffer);
     return;
   }
 

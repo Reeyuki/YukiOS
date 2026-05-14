@@ -140,9 +140,9 @@ export class RuffleApp extends BaseApp {
 
     try {
       await this.fs.fsReady;
-      const dir = this.fs.resolveDir(FLASH_DIR);
-      await this.fs.p("mkdir", dir, { recursive: true }).catch(() => {});
-      const files = await this.fs.pRead("readdir", dir).catch(() => []);
+      await this.fs.ensureFolder(FLASH_DIR);
+      const entries = await this.fs.getFolder(FLASH_DIR).catch(() => ({}));
+      const files = Object.keys(entries).filter((k) => entries[k]?.type === "file");
 
       const swfFiles = files.filter((f) => !f.startsWith(".") && f.toLowerCase().endsWith(".swf"));
 
