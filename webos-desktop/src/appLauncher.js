@@ -452,8 +452,7 @@ export class AppLauncher {
   }
 
   openRemoteApp(appUrl) {
-    const isStaticallyGh =
-      window.location.hostname === "cdn.statically.io" && window.location.pathname.includes("/gh/");
+    const isStaticallyGh = window.location.hostname === "cdn.jsdelivr.net" && window.location.pathname.includes("/gh/");
     if (isStaticallyGh && typeof appUrl === "string" && appUrl.startsWith("/")) {
       appUrl = `${STATICALLY_BASE}${appUrl}`;
     }
@@ -526,7 +525,7 @@ player.load("${swfPath}");
 
       const bypassRewriteForApp = type === "game";
       const isStaticallyGh =
-        window.location.hostname === "cdn.statically.io" && window.location.pathname.includes("/gh/");
+        window.location.hostname === "cdn.jsdelivr.net" && window.location.pathname.includes("/gh/");
       const isJsDelivrGh = window.location.hostname === "cdn.jsdelivr.net" && window.location.pathname.includes("/gh/");
 
       let resolvedSource =

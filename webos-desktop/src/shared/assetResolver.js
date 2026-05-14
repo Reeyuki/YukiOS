@@ -9,10 +9,10 @@ const CDN_PROVIDERS = {
     GH_PATH: "/gh/"
   },
   statically: {
-    GAMES: "https://cdn.statically.io/gh/Reeyuki/yukios-games@main",
-    MAIN: "https://cdn.statically.io/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511",
+    GAMES: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main",
+    MAIN: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511",
     PATTERN: /^https?:\/\/(cdn\.)?statically\.io\//,
-    HOSTNAMES: ["cdn.statically.io"],
+    HOSTNAMES: ["cdn.jsdelivr.net"],
     GH_PATH: "/gh/"
   }
 };
@@ -20,7 +20,7 @@ const CDN_PROVIDERS = {
 export const CDN_BASES = (() => {
   try {
     const hostname = window.location?.hostname || "";
-    if (hostname === "cdn.statically.io" || hostname.endsWith(".statically.io")) {
+    if (hostname === "cdn.jsdelivr.net" || hostname.endsWith(".statically.io")) {
       return CDN_PROVIDERS.statically;
     }
   } catch (e) {}
@@ -76,7 +76,7 @@ export function getCurrentCdnRepoBase() {
 
     const baseUrl = provider.HOSTNAMES[0].includes("jsdelivr")
       ? "https://cdn.jsdelivr.net"
-      : "https://cdn.statically.io";
+      : "https://cdn.jsdelivr.net";
     return `${baseUrl}${provider.GH_PATH}${p[1]}/${p[2]}`;
   } catch {
     return null;
@@ -106,7 +106,7 @@ export function getCdnRepoBase(url) {
     if (p[0] === "gh" && p[1] && p[2]) {
       const baseUrl = provider.HOSTNAMES[0].includes("jsdelivr")
         ? "https://cdn.jsdelivr.net"
-        : "https://cdn.statically.io";
+        : "https://cdn.jsdelivr.net";
       return `${baseUrl}${provider.GH_PATH}${p[1]}/${p[2]}/`;
     }
   } catch {}
@@ -246,7 +246,7 @@ export async function fetchHtmlAsBlobUrl(url) {
     const provider = getCdnProvider(urlObj) || CDN_PROVIDERS.jsdelivr;
     const baseUrl = provider.HOSTNAMES[0].includes("jsdelivr")
       ? "https://cdn.jsdelivr.net"
-      : "https://cdn.statically.io";
+      : "https://cdn.jsdelivr.net";
     const repoBase = `${baseUrl}${provider.GH_PATH}${user}/${repoWithRef}/`;
     assetDirBase = `${repoBase}${dirPath}`;
     rootBase = repoBase;
@@ -267,7 +267,7 @@ export async function fetchHtmlAsBlobUrl(url) {
   const isIgnored =
     ["angrybirds", "subway"].some((p) => url.toLowerCase().includes(p.toLowerCase())) ||
     html.includes("cdn.jsdelivr") ||
-    html.includes("cdn.statically.io");
+    html.includes("cdn.jsdelivr.net");
 
   let rewritten = html;
   if (!isIgnored) {
@@ -310,7 +310,7 @@ export async function fetchHtmlAsBlobUrl(url) {
   const ROOT_BASE = "${rootBase}";
   const ASSET_DIR_BASE = "${assetDirBase}";
   const JSDELIVR_GH_BASE = "https://cdn.jsdelivr.net/gh/";
-  const STATICALLY_GH_BASE = "https://cdn.statically.io/gh/";
+  const STATICALLY_GH_BASE = "https://cdn.jsdelivr.net/gh/";
 
   function resolve(url) {
     if (typeof url !== 'string' || !url) return url;

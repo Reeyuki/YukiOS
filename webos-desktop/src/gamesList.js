@@ -1,7 +1,7 @@
 export const appMap = {
   slimeRancher: {
     type: "game",
-    url: "/static/games/html/slime.html",
+    url: "https://raw.githack.com/Reeyuki/SlimeRanch/refs/heads/main/index.html",
     icon: "/static/icons/slime.webp",
     title: "Slime Rancher Full"
   },
@@ -116,7 +116,7 @@ export const appMap = {
 
   stardew: {
     type: "game",
-    url: "https://cdn.statically.io/gh/Reeyuki/yukios-games@main/html/stardew.html",
+    url: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main/html/stardew.html",
     icon: "/static/icons/stardew.webp",
     title: "Stardew Valley"
   },
@@ -177,7 +177,7 @@ export const appMap = {
   },
   undertaleSans: {
     type: "game",
-    url: "https://cdn.statically.io/gh/reeyuki/yukios-games@main/gnmath/bts.html",
+    url: "https://cdn.jsdelivr.net/gh/reeyuki/yukios-games@main/gnmath/bts.html",
     icon: "/static/icons/undertale.webp",
     title: "Undertale Sans Fight"
   },
@@ -189,13 +189,13 @@ export const appMap = {
   },
   deltarune: {
     type: "game",
-    url: "https://cdn.statically.io/gh/reeyuki/yukios-games@main/gnmath/deltraveler.html",
+    url: "https://cdn.jsdelivr.net/gh/reeyuki/yukios-games@main/gnmath/deltraveler.html",
     icon: "/static/icons/deltarune.png",
     title: "Deltarune"
   },
   balatro: {
     type: "game",
-    url: "https://cdn.statically.io/gh/reeyuki/yukios-games@main/gnmath/balatro/balatro.html",
+    url: "https://cdn.jsdelivr.net/gh/reeyuki/yukios-games@main/gnmath/balatro/balatro.html",
     icon: "/static/icons/balatro.webp",
     title: "Balatro"
   },
@@ -237,7 +237,7 @@ export const appMap = {
   },
   celeste: {
     type: "game",
-    url: "https://cdn.statically.io/gh/reeyuki/yukios-games@main/gnmath/celeste.html",
+    url: "https://cdn.jsdelivr.net/gh/reeyuki/yukios-games@main/gnmath/celeste.html",
     icon: "/static/icons/celeste.webp",
     title: "Celeste"
   },
@@ -345,13 +345,13 @@ export const appMap = {
   },
   omori: {
     type: "game",
-    url: "https://cdn.statically.io/gh/reeyuki/yukios-games@main/gnmath/omori.html",
+    url: "https://cdn.jsdelivr.net/gh/reeyuki/yukios-games@main/gnmath/omori.html",
     icon: "/static/icons/omori.webp",
     title: "Omori"
   },
   ultrakill: {
     type: "game",
-    url: "https://cdn.statically.io/gh/reeyuki/yukios-games@main/gnmath/ultrakill.html",
+    url: "https://cdn.jsdelivr.net/gh/reeyuki/yukios-games@main/gnmath/ultrakill.html",
     icon: "/static/icons/ultrakill.webp",
     title: "Ultrakill"
   },
@@ -363,7 +363,7 @@ export const appMap = {
   },
   granny: {
     type: "game",
-    url: "https://cdn.statically.io/gh/reeyuki/yukios-games@main/gnmath/granny.html",
+    url: "https://cdn.jsdelivr.net/gh/reeyuki/yukios-games@main/gnmath/granny.html",
     icon: "/static/icons/granny.webp",
     title: "Granny"
   },
@@ -459,31 +459,31 @@ export const appMap = {
   },
   raft: {
     type: "game",
-    url: "https://cdn.statically.io/gh/reeyuki/yukios-games@main/gnmath/raft.html",
+    url: "https://cdn.jsdelivr.net/gh/reeyuki/yukios-games@main/gnmath/raft.html",
     icon: "/static/icons/raft.webp",
     title: "Raft"
   },
   yandereSim: {
     type: "game",
-    url: "https://cdn.statically.io/gh/reeyuki/yukios-games@main/gnmath/yandere.html",
+    url: "https://cdn.jsdelivr.net/gh/reeyuki/yukios-games@main/gnmath/yandere.html",
     icon: "/static/icons/yandere.webp",
     title: "Yandere Simulator"
   },
   tattletail: {
     type: "game",
-    url: "https://cdn.statically.io/gh/reeyuki/yukios-games@main/gnmath/tattletail.html",
+    url: "https://cdn.jsdelivr.net/gh/reeyuki/yukios-games@main/gnmath/tattletail.html",
     icon: "/static/icons/tat.webp",
     title: "Tattletail"
   },
   kindergarten: {
     type: "game",
-    url: "https://cdn.statically.io/gh/reeyuki/yukios-games@main/gnmath/kindergarten.html",
+    url: "https://cdn.jsdelivr.net/gh/reeyuki/yukios-games@main/gnmath/kindergarten.html",
     icon: "/static/icons/kind1.webp",
     title: "Kindergarten"
   },
   kindergarten2: {
     type: "game",
-    url: "https://cdn.statically.io/gh/reeyuki/yukios-games@main/gnmath/kindergarten2.html",
+    url: "https://cdn.jsdelivr.net/gh/reeyuki/yukios-games@main/gnmath/kindergarten2.html",
     icon: "/static/icons/kind2.webp",
     title: "Kindergarten 2"
   },
@@ -495,7 +495,7 @@ export const appMap = {
   },
   goi: {
     type: "game",
-    url: "https://cdn.statically.io/gh/reeyuki/yukios-games@main/gnmath/goi.html",
+    url: "https://cdn.jsdelivr.net/gh/reeyuki/yukios-games@main/gnmath/goi.html",
     icon: "/static/icons/goi.webp",
     title: "Getting Over It"
   },
@@ -877,7 +877,7 @@ export const appMap = {
   roads: { type: "game", url: "https://slowroads.io", icon: "/static/icons/roads.svg", title: "Roads" },
   repo: {
     type: "game",
-    url: "https://cdn.statically.io/gh/reeyuki/yukios-games@main/gnmath/repo.html",
+    url: "https://cdn.jsdelivr.net/gh/reeyuki/yukios-games@main/gnmath/repo.html",
     icon: "/static/icons/repo.webp",
     title: "R.E.P.O"
   },
@@ -896,7 +896,7 @@ export const appMap = {
   },
   oneshot: {
     type: "game",
-    url: "https://cdn.statically.io/gh/reeyuki/yukios-games@main/gnmath/oneshot.html",
+    url: "https://cdn.jsdelivr.net/gh/reeyuki/yukios-games@main/gnmath/oneshot.html",
     icon: "/static/icons/oneshot.webp",
     title: "Oneshot"
   },
@@ -981,7 +981,7 @@ export const appMap = {
   },
   nso: {
     type: "game",
-    url: "https://cdn.statically.io/gh/reeyuki/yukios-games@main/gnmath/nso.html",
+    url: "https://cdn.jsdelivr.net/gh/reeyuki/yukios-games@main/gnmath/nso.html",
     icon: "/static/icons/nso.webp",
     title: "Needy Streamer Overload"
   },
