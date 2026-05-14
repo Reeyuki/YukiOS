@@ -362,7 +362,6 @@ export async function openFileWith({
   if (isSwfFile(name)) {
     const ruffleApp = appLauncher?.ruffleApp;
     if (!ruffleApp) return;
-    const SWF_MIME = "application/x-shockwave-flash";
     let arrayBuffer = null;
 
     const blob = await fs.readBinaryFile(path, name);
@@ -391,7 +390,12 @@ export async function openFileWith({
   }
 
   if (isRomFile(name)) {
-    customAlert("ROM emulation is not available.");
+    const emulatorApp = appLauncher?.emulatorApp;
+    if (emulatorApp) {
+      emulatorApp.launchROM(name, path);
+    } else {
+      customAlert("ROM emulation is not available.");
+    }
     return;
   }
 

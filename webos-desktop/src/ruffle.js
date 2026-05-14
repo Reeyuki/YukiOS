@@ -7,7 +7,6 @@ import { CDN_CONFIG } from "./shared/cdnConfig.js";
 
 const FLASH_DIR = ["Flash"];
 const DESKTOP_DIR = ["Desktop"];
-const SUPPORTED_EXTENSIONS = [".swf"];
 
 export class RuffleApp extends BaseApp {
   constructor(services) {

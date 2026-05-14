@@ -205,11 +205,11 @@ export const appMap = {
     icon: "/static/icons/brotato.webp",
     title: "Brotato"
   },
-  brotatoPaws: {
+  brotatoNewDawn: {
     type: "game",
-    url: "https://wasm.rip/files/bpac/index.html",
+    url: "/static/games/html/brotatoNew.html",
     icon: "/static/icons/brotato.webp",
-    title: "Brotato Paws And Claws"
+    title: "Brotato New Dawn"
   },
   geometryDash: {
     type: "game",
