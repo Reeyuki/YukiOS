@@ -1,5 +1,5 @@
 import { steamAppRenderer, FlashAppRenderer, SystemAppRenderer, handleGameUrlParam } from "./games.js";
-import { desktop } from "./desktop.js";
+import { WindowHelper } from "./utils/WindowHelper.js";
 
 const STEAM_WIN_ID = "games-app-win";
 
@@ -46,34 +46,18 @@ export class CategoriesApp {
     win.style.display = "flex";
     win.style.flexDirection = "column";
 
-    const gamesRenderer = new steamAppRenderer();
-    const gamesCount = gamesRenderer.getGames().length;
-
     win.innerHTML = `
-      <div class="window-header">
-        <span>${winTitle} <span class="games-app-count">${gamesCount + 2588}</span></span>
-        ${wm.getWindowControls()}
-      </div>
-      <div class="window-content games-app-window" style="flex:1;overflow:auto;padding:18px;box-sizing:border-box;">
+      <div class="window-content games-app-window" style="flex:1;overflow:auto;padding:0;box-sizing:border-box;">
         <div id="games-app-container" style="height:100%;"></div>
       </div>`;
 
-    desktop.appendChild(win);
-    wm.makeDraggable(win);
-    wm.makeResizable(win);
+    const gamesRenderer = new steamAppRenderer();
 
-    win.querySelector(".close-btn").onclick = () => {
-      win.style.display = "none";
-      const taskbarItem = document.getElementById(`taskbar-${STEAM_WIN_ID}`);
-      if (taskbarItem) {
-        taskbarItem.classList.remove("active");
-        taskbarItem.classList.add("minimized");
-      }
-    };
-    win.querySelector(".minimize-btn").onclick = () => wm.minimizeWindow(win);
-    win.querySelector(".maximize-btn").onclick = () => wm.toggleFullscreen(win);
-    const downloadBtn = win.querySelector(".download-btn");
-    if (downloadBtn) downloadBtn.onclick = () => wm._downloadWindowContent(win);
+    const windowHelper = new WindowHelper(wm);
+    windowHelper.mountWindow(win, STEAM_WIN_ID, winTitle, null, {
+      setupWindowControls: false,
+      addToTaskbar: false
+    });
 
     const taskbarIcon = focusCollection === "Flash Games" ? "static/icons/flash.webp" : "static/icons/steam.webp";
     wm.addToTaskbar(STEAM_WIN_ID, winTitle, taskbarIcon);
@@ -83,18 +67,31 @@ export class CategoriesApp {
       if (appLauncher) appLauncher.launch(appId);
     };
 
+    const setupSteamControls = () => {
+      const closeBtn = win.querySelector(".close-btn");
+      if (closeBtn) {
+        closeBtn.onclick = () => wm.minimizeWindow(win);
+      }
+    };
+
     const gameParam = new URLSearchParams(window.location.search).get("steam") || gameId;
     if (gameParam) {
       if (gameId && !new URLSearchParams(window.location.search).get("steam")) {
         gamesRenderer.render(container, onLaunch, wm, focusCollection);
+        wm.makeDraggable(win);
+        setupSteamControls();
         setTimeout(() => {
           gamesRenderer.renderGameOverview(container, gameId, onLaunch);
         }, 100);
       } else {
         handleGameUrlParam(gamesRenderer, container, onLaunch, wm);
+        wm.makeDraggable(win);
+        setupSteamControls();
       }
     } else {
       gamesRenderer.render(container, onLaunch, wm, focusCollection);
+      wm.makeDraggable(win);
+      setupSteamControls();
     }
   }
 
@@ -110,29 +107,18 @@ export class CategoriesApp {
     win.classList.add("window-root");
 
     const systemRenderer = new SystemAppRenderer(appLauncher?.appMap);
-    const systemCount = systemRenderer.getSystemApps().length;
 
     win.innerHTML = `
       <div class="window-header">
-        <span>All Apps <span class="games-app-count">${systemCount}</span></span>
+        <span>All Apps</span>
         ${wm.getWindowControls()}
       </div>
       <div class="window-content system-apps-window" style="width:100%;height:100%;overflow:auto;padding:24px;box-sizing:border-box;background: linear-gradient(180deg, rgba(20,20,30,0.95), rgba(15,15,25,0.98));">
-        <div style="margin-bottom:20px;">
-          <input type="text" class="games-search-input" placeholder="Search apps..." style="width:100%;max-width:400px;padding:12px 16px;border:1px solid rgba(255,255,255,0.2);border-radius:8px;background:rgba(255,255,255,0.1);color:#fff;font-size:14px;outline:none;transition:all 0.3s ease;" 
-                 onmouseover="this.style.borderColor='rgba(255,255,255,0.4)';this.style.background='rgba(255,255,255,0.15)'"
-                 onmouseout="this.style.borderColor='rgba(255,255,255,0.2)';this.style.background='rgba(255,255,255,0.1)'"
-                 onfocus="this.style.borderColor='#6677dd';this.style.background='rgba(255,255,255,0.2)';this.style.boxShadow='0 0 0 2px rgba(102,119,221,0.3)'"
-                 onblur="this.style.borderColor='rgba(255,255,255,0.2)';this.style.background='rgba(255,255,255,0.1)';this.style.boxShadow='none'" />
-        </div>
         <div id="system-app-container"></div>
       </div>`;
 
-    desktop.appendChild(win);
-    wm.makeDraggable(win);
-    wm.makeResizable(win);
-    wm.setupWindowControls(win);
-    wm.addToTaskbar(winId, "All Apps", "fas fa-desktop");
+    const windowHelper = new WindowHelper(wm);
+    windowHelper.mountWindow(win, winId, "All Apps", "fas fa-desktop");
 
     const container = win.querySelector("#system-app-container");
     systemRenderer.render(container, (appId) => {

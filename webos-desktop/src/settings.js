@@ -3,6 +3,7 @@ import { toggleHideGames } from "./desktopui.js";
 import { BaseApp } from "./core/BaseApp.js";
 import { bus, BusEvents } from "./core/EventBus.js";
 import { customAlert, customConfirm, customPrompt } from "./shared/dialogs.js";
+import { WindowHelper } from "./utils/WindowHelper.js";
 
 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
@@ -41,6 +42,7 @@ export const StorageKeys = {
 export class SettingsApp extends BaseApp {
   constructor(services) {
     super(services);
+    this.windowHelper = new WindowHelper(this.wm);
     this.fs = null;
 
     setTimeout(() => {
@@ -88,11 +90,7 @@ export class SettingsApp extends BaseApp {
     const win = this.wm.createWindow(winId, "Settings", "500px", "560px");
     win.innerHTML = this._buildHTML();
 
-    desktop.appendChild(win);
-    this.wm.makeDraggable(win);
-    this.wm.makeResizable(win);
-    this.wm.setupWindowControls(win);
-    this.wm.addToTaskbar(win.id, "Settings", "fas fa-cog");
+    this.windowHelper.mountWindow(win, winId, "Settings", "fas fa-cog");
     if (this.desktopUi !== undefined) this.desktopUI.closeAllMenus();
 
     this._bindControls(win);

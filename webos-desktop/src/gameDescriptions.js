@@ -1,4 +1,5 @@
 export const descriptionMap = {
+  tabs: "Totally Accurate Battle Simulator (TABS) is a physics based ragdoll tactics game developed by Landfall Games. Players pit armies of historical, mythological, and absurd units — from mammoths and squires to laser wielding raptors — against each other in a series of wobbly, unpredictable battles where the engine's chaotic physics are just as important as strategy.",
   plagueIncEvolved:
     "Plague Inc: Evolved is a real-time strategy simulation by Ndemic Creations, released in 2016. Players design and evolve a deadly pathogen — bacteria, virus, fungus, or more exotic threats — with the goal of infecting and exterminating the entire human population before a cure is developed.",
   fiveNightsAtFrickbears3:
@@ -407,8 +408,6 @@ export const descriptionMap = {
     "Yuki Code is a remake of the open-source code editor monaco editor that powers Visual Studio Code, and is integrated into Yuki OS",
   model3dApp:
     "A YukiOS 3D model viewer for inspecting and rotating 3D files like .obj and .glb directly in the browser, with lighting and camera controls.",
-  yukiConvert:
-    "Yuki Convert is a built-in YukiOS file converter that supports transforming between video, audio, and image formats — all entirely in the browser.",
   jsDosApp:
     "JsDos is a JavaScript port of the DOSBox emulator, allowing classic DOS programs and games to run natively inside a web browser.",
   v86app:

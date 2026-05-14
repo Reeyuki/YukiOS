@@ -1,11 +1,11 @@
-import { desktop } from "./desktop.js";
 import { speak } from "./clippy.js";
 import { FileKind } from "./fs.js";
 import { Achievements } from "./achievements.js";
 import { BaseApp } from "./core/BaseApp.js";
 import { bus, BusEvents } from "./core/EventBus.js";
 import { getLibraryUrl } from "./shared/cdnConfig.js";
-import { customPrompt, customConfirm } from "./shared/dialogs.js";
+import { customPrompt, customConfirm, customAlert } from "./shared/dialogs.js";
+import { WindowHelper } from "./utils/WindowHelper.js";
 class OfficeModuleLoader {
   constructor() {
     this.cache = new Map();
@@ -1049,6 +1049,7 @@ class EditorRegistry {
 export class OfficeApp extends BaseApp {
   constructor(services) {
     super(services);
+    this.windowHelper = new WindowHelper(this.wm);
     this.fs = services.fileSystemManager;
     this.wm = services.windowManager;
     this.explorerApp = services.explorerApp;
@@ -1076,15 +1077,9 @@ export class OfficeApp extends BaseApp {
     }
 
     const winId = `office-${safeTitle}-${Date.now()}`;
-    const ext = FileUtils.getExtension(title);
-    const win = this.wm.createWindow(winId, `${title} - Office`, "800px", "600px");
-    Object.assign(win.style, { left: "200px", top: "100px" });
+    const ext = FileUtils.getExtension(filePath || title);
 
-    win.innerHTML = `
-      <div class="window-header">
-        <span>${title} - Office</span>
-        ${this.wm.getWindowControls()}
-      </div>
+    const windowContent = `
 <div class="office-menu-bar">
   <div class="office-menu-dropdown">
     <button class="office-menu-dropdown__trigger">File</button>
@@ -1385,11 +1380,10 @@ export class OfficeApp extends BaseApp {
       </div>
     `;
 
-    desktop.appendChild(win);
-    this.wm.makeDraggable(win);
-    this.wm.makeResizable(win);
-    this.wm.setupWindowControls(win);
-    this.wm.addToTaskbar(win.id, `${title} - Office`, "static/icons/office.webp");
+    const win = this.windowHelper.createAndMountWindow(winId, `${title} - Office`, windowContent, "800px", "600px", {
+      icon: "static/icons/office.webp",
+      style: { left: "200px", top: "100px" }
+    });
     const editorArea = win.querySelector(".office-editor-area");
     const state = {
       winId,
@@ -1837,15 +1831,7 @@ export class OfficeApp extends BaseApp {
   }
 
   showAbout() {
-    this.wm.sendNotify(`
-    <div style="text-align:center">
-      <div style="font-size:24px;margin-bottom:8px"><i class="fas fa-file-alt"></i> Office App</div>
-      <div>Version 1.0.0</div>
-      <div style="color:#6c7086;margin-top:8px">
-        Supports DOCX, XLSX, CSV, ODT, PDF, ODP
-      </div>
-    </div>
-  `);
+    customAlert("Office app For YukiOS", "Office");
   }
 
   spellCheck(state) {

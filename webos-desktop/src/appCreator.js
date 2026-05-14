@@ -1,9 +1,9 @@
 import { BaseApp } from "./core/BaseApp.js";
 import { isImageFile } from "./fileDisplay.js";
-import { desktop } from "./desktop.js";
 import { refreshIcons } from "./shared/contextMenu.js";
 import { PROXIES, clampProxyIndex, buildProxyUrl } from "./proxies.js";
 import { customConfirm } from "./shared/dialogs.js";
+import { WindowHelper } from "./utils/WindowHelper.js";
 
 const AC = {
   WIN_ID: "app-creator-win",
@@ -123,6 +123,7 @@ function makeDesktopIconElement(appId, name, iconUrl) {
 export class AppCreatorApp extends BaseApp {
   constructor(services) {
     super(services);
+    this.windowHelper = new WindowHelper(this.wm);
     this.appLauncher = services.appLauncher;
     this.desktopUI = services.desktopUI || null;
   }
@@ -158,14 +159,7 @@ export class AppCreatorApp extends BaseApp {
       return;
     }
 
-    const win = this.wm.createWindow(AC.WIN_ID, "App Creator", AC.WIN_WIDTH, AC.WIN_HEIGHT);
-
-    win.innerHTML = `
-      <div class="window-header">
-        <span>App Creator</span>
-          ${this.wm.getWindowControls()}
-
-      </div>
+    const content = `
       <div class="window-content">
         <div class="ac-pane">
           <div id="app-creator-form">
@@ -229,11 +223,9 @@ export class AppCreatorApp extends BaseApp {
       </div>
     `;
 
-    desktop.appendChild(win);
-    this.wm.makeDraggable(win);
-    this.wm.makeResizable(win);
-    this.wm.setupWindowControls(win);
-    this.wm.addToTaskbar(win.id, "App Creator", AC.TASKBAR_ICON);
+    const win = this.windowHelper.createAndMountWindow(AC.WIN_ID, "App Creator", content, AC.WIN_WIDTH, AC.WIN_HEIGHT, {
+      icon: AC.TASKBAR_ICON
+    });
 
     this._setupControls(win);
     this._refreshInstalledList(win);
@@ -526,7 +518,7 @@ export class AppCreatorApp extends BaseApp {
     );
 
     try {
-      const dir = this.fs.resolveDir(AC.FS_FOLDER);
+      const dir = this.fs.resolveUserPath(AC.FS_FOLDER);
       const filePath = this.fs.join(dir, meta._fileName);
       await this.fs.p("writeFile", filePath, JSON.stringify(updated, null, 2));
     } catch (e) {
@@ -639,12 +631,7 @@ export class AppCreatorApp extends BaseApp {
         <iframe src="${url}" style="width:100%;height:100%;border:none;" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
       </div>
     `;
-    desktop.appendChild(win);
-    this.wm.makeDraggable(win);
-    this.wm.makeResizable(win);
-    this.wm.setupWindowControls(win);
-    this.wm.bringToFront(win);
-    this.wm.addToTaskbar(win.id, `${name} — Preview`, AC.TASKBAR_ICON);
+    this.windowHelper.mountWindow(win, winId, `${name} — Preview`, AC.TASKBAR_ICON);
   }
 
   async _installApp(name, url, iconUrl, proxyEnabled, proxyIndex, statusEl, win) {
@@ -663,7 +650,7 @@ export class AppCreatorApp extends BaseApp {
 
     try {
       await this.fs.ensureFolder(AC.FS_FOLDER);
-      const dir = this.fs.resolveDir(AC.FS_FOLDER);
+      const dir = this.fs.resolveUserPath(AC.FS_FOLDER);
       const filePath = this.fs.join(dir, fileName);
       await this.fs.p("writeFile", filePath, JSON.stringify(appMeta, null, 2));
       await this.fs.writeMeta(dir, fileName, { kind: "text", icon: AC.FALLBACK_ICON });

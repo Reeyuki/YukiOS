@@ -1,24 +1,20 @@
-import { desktop } from "./desktop.js";
 import { BaseApp } from "./core/BaseApp.js";
+import { WindowHelper } from "./utils/WindowHelper.js";
+import { EventHelper } from "./utils/EventHelper.js";
 
 export class CalculatorApp extends BaseApp {
   constructor(services) {
     super(services);
     this.keyHandler = null;
+    this.windowHelper = new WindowHelper(this.wm);
+    this.eventHelper = new EventHelper();
   }
 
   open() {
     const winId = "calculator-app";
     if (this._isSingletonOpen(winId)) return;
 
-    const win = this.wm.createWindow(winId, "Calculator", "360px", "560px");
-
-    win.innerHTML = `
-      <div class="window-header calc-header">
-        <span>Calculator</span>
-        ${this.wm.getWindowControls()}
-
-      </div>
+    const content = `
       <div class="calc-body">
         <div class="calc-history" id="calc-history-${winId}"></div>
         <div class="calc-display">
@@ -55,11 +51,11 @@ export class CalculatorApp extends BaseApp {
       </div>
     `;
 
-    desktop.appendChild(win);
-    this.wm.makeDraggable(win);
-    this.wm.makeResizable(win);
-    this.wm.setupWindowControls(win);
-    this.wm.addToTaskbar(win.id, "Calculator", "fa fa-calculator", "#6677dd");
+    const win = this.windowHelper.createAndMountWindow(winId, "Calculator", content, "360px", "560px", {
+      className: "calc-window",
+      icon: "fa fa-calculator",
+      iconColor: "#6677dd"
+    });
 
     this.setupCalcLogic(win, winId);
   }
@@ -128,7 +124,7 @@ export class CalculatorApp extends BaseApp {
       renderHistory();
     };
 
-    historyEl.addEventListener("click", (e) => {
+    this.eventHelper.addClickHandler(historyEl, (e) => {
       const item = e.target.closest(".calc-history-item");
       if (!item) return;
       const idx = Number(item.dataset.index);
@@ -322,7 +318,7 @@ export class CalculatorApp extends BaseApp {
     };
 
     win.querySelectorAll(".calc-btn").forEach((btn) => {
-      btn.addEventListener("click", () => {
+      this.eventHelper.addClickHandler(btn, () => {
         perform(btn.dataset.action, btn.dataset.value);
       });
     });

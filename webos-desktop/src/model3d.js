@@ -1,9 +1,9 @@
 import { BaseApp } from "./core/BaseApp.js";
-import { desktop } from "./desktop.js";
 import { speak } from "./clippy.js";
 import JSZip from "https://esm.sh/jszip@3.10.1";
 import { Achievements } from "./achievements.js";
 import { bus, BusEvents } from "./core/EventBus.js";
+import { WindowHelper } from "./utils/WindowHelper.js";
 const SAMPLE_MODELS = [
   {
     name: "Stanford Bunny",
@@ -70,6 +70,7 @@ async function loadThree() {
 export class Model3DApp extends BaseApp {
   constructor(services) {
     super(services);
+    this.windowHelper = new WindowHelper(this.wm);
     this.explorerApp = services.explorerApp;
     this.currentModel = null;
     this.mixer = null;
@@ -97,13 +98,7 @@ export class Model3DApp extends BaseApp {
       return;
     }
 
-    const win = this.wm.createWindow(winId, `${title}`, "1000px", "750px");
-
-    win.innerHTML = `
-      <div class="window-header">
-        <span>${title}</span>
-        ${this.wm.getWindowControls()}
-      </div>
+    const content = `
       <div class="model3d-toolbar">
         <div class="toolbar-group">
           <button class="model3d-btn" data-action="open" title="Open from Explorer">
@@ -293,11 +288,9 @@ export class Model3DApp extends BaseApp {
       </div>
     `;
 
-    desktop.appendChild(win);
-    this.wm.makeDraggable(win);
-    this.wm.makeResizable(win);
-    this.wm.setupWindowControls(win);
-    this.wm.addToTaskbar(win.id, title, "static/icons/3dmodel.webp");
+    const win = this.windowHelper.createAndMountWindow(winId, title, content, "1000px", "750px", {
+      icon: "static/icons/3dmodel.webp"
+    });
 
     this.win = win;
     await this.setupRenderer(win, filePath);

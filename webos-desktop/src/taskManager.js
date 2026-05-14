@@ -1,9 +1,10 @@
 import { BaseApp } from "./core/BaseApp.js";
-import { desktop } from "./desktop.js";
+import { WindowHelper } from "./utils/WindowHelper.js";
 
 export class TaskManagerApp extends BaseApp {
   constructor(services) {
     super(services);
+    this.windowHelper = new WindowHelper(this.wm);
     this.refreshInterval = null;
     this.sortKey = "title";
     this.sortAsc = true;
@@ -105,14 +106,7 @@ export class TaskManagerApp extends BaseApp {
       return;
     }
 
-    const win = this.wm.createWindow(winId, "Task Manager", "700px", "520px");
-    Object.assign(win.style, { left: "200px", top: "100px" });
-
-    win.innerHTML = `
-      <div class="window-header">
-        <span>Task Manager</span>
-        ${this.wm.getWindowControls()}
-      </div>
+    const content = `
       <div id="tm-root" style="
         display:flex; flex-direction:column; height:calc(100% - 32px);
         background:#0d0d0d; color:#c8c8c8; font-family:'Consolas','Courier New',monospace;
@@ -185,11 +179,10 @@ export class TaskManagerApp extends BaseApp {
       </div>
     `;
 
-    desktop.appendChild(win);
-    this.wm.makeDraggable(win);
-    this.wm.makeResizable(win);
-    this.wm.setupWindowControls(win);
-    this.wm.addToTaskbar(win.id, "Task Manager", "fa fa-tasks");
+    const win = this.windowHelper.createAndMountWindow(winId, "Task Manager", content, "700px", "520px", {
+      icon: "fa fa-tasks",
+      style: { left: "200px", top: "100px" }
+    });
 
     this._bindEvents(win);
     this._startRefresh(win);

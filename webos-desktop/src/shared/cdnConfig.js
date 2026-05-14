@@ -5,7 +5,7 @@ export const CDN_CONFIG = {
       ref: "main"
     },
     main: {
-      base: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main",
+      base: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@a3efea2218a5d717290e72ea41cd341d14689ce5",
       ref: "main"
     },
     npm: {
@@ -54,6 +54,11 @@ export const CDN_CONFIG = {
     ruffle: {
       version: "0.2.0-nightly.2026.3.15",
       path: "@ruffle-rs/ruffle@0.2.0-nightly.2026.3.15/ruffle.min.js"
+    },
+    emulatorjs: {
+      version: "stable",
+      loader: "https://cdn.emulatorjs.org/stable/data/loader.js",
+      data: "https://cdn.emulatorjs.org/stable/data/"
     }
   }
 };

@@ -1,4 +1,5 @@
 import { desktop } from "./desktop.js";
+import { WindowHelper } from "./utils/WindowHelper.js";
 import { HIGHLIGHTED_GAMES, getGameName, setGameLauncher } from "./games.js";
 import { appMap } from "./gamesList.js";
 import { initializeAppGrid, populateStartMenu, tryGetIcon } from "./startMenu";
@@ -18,7 +19,7 @@ import { StorageKeys } from "./settings.js";
 import { getNewsContentSignature } from "./news.js";
 import { PROXIES, clampProxyIndex, buildProxyUrl } from "./proxies.js";
 const STATICALLY_BASE = "https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main";
-const YUKIOS_JSDELIVR_BASE = "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main";
+const YUKIOS_JSDELIVR_BASE = "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@a3efea2218a5d717290e72ea41cd341d14689ce5";
 
 export class AppLauncher {
   constructor(
@@ -46,9 +47,12 @@ export class AppLauncher {
     achievementsApp,
     adsManager,
     profileCustomizerApp,
-    markdownApp
+    markdownApp,
+    emulatorApp,
+    ruffleApp
   ) {
     this.wm = windowManager;
+    this.windowHelper = new WindowHelper(this.wm);
     this.fs = fileSystemManager;
     this.explorerApp = explorerApp;
     this.terminalApp = terminalApp;
@@ -73,6 +77,8 @@ export class AppLauncher {
     this.adsManager = adsManager;
     this.profileCustomizerApp = profileCustomizerApp;
     this.markdownApp = markdownApp;
+    this.emulatorApp = emulatorApp;
+    this.ruffleApp = ruffleApp;
     this.TRANSPARENCY_ALLOWED_APP_IDS = new Set(["paint", "photopea", "vscode", "liventcord"]);
 
     this.clippyPromise = initClippy();
@@ -111,6 +117,18 @@ export class AppLauncher {
         title: "Markdown",
         action: () => this.markdownApp.open(),
         clippy: { message: "Writing in Markdown? I can help you format your documents!", animation: "Pleased" }
+      },
+      emulatorApp: {
+        type: "system",
+        title: "Emulator",
+        action: () => this.emulatorApp.open(),
+        clippy: { message: "Ready to play some classic games!", animation: "Pleased" }
+      },
+      ruffleApp: {
+        type: "system",
+        title: "Ruffle",
+        action: () => this.ruffleApp.open(),
+        clippy: { message: "Ready to play some classic games!", animation: "Pleased" }
       },
       monaco: {
         type: "system",
@@ -243,17 +261,6 @@ export class AppLauncher {
             type: "game",
             source: "/static/apps/kiwiirc/index.html",
             originalName: "Kivi IRC"
-          })
-      },
-      yukiConvert: {
-        type: "system",
-        title: "Yuki Convert",
-        action: () =>
-          this.openIframeApp({
-            appId: "yukiConvert",
-            type: "game",
-            source: `${YUKIOS_JSDELIVR_BASE}/static/apps/yukiconvert/file-converter.html`,
-            originalName: "Yuki Convert"
           })
       }
     };
@@ -636,12 +643,7 @@ player.load("${swfPath}");
           </div>
         `;
 
-        desktop.appendChild(win);
-        this.wm.makeDraggable(win);
-        this.wm.makeResizable(win);
-        this.wm.setupWindowControls(win);
-        this.wm.bringToFront(win);
-        this.wm.addToTaskbar(`${id}-win`, displayTitle, this.appMap[appId]?.icon || "fas fa-gamepad");
+        this.windowHelper.mountWindow(win, `${id}-win`, displayTitle, this.appMap[appId]?.icon || "fas fa-gamepad");
 
         win.querySelector(".external-btn")?.addEventListener("click", () => {
           window.open(resolvedSource, "_blank");
@@ -677,7 +679,7 @@ player.load("${swfPath}");
         if (type === "game") externalUrl = resolvedSource;
         return;
       } else {
-        customAlert("ROM emulation is not available.");
+        this.emulatorApp.launchFromUrl(resolvedSource, type);
         return;
       }
     }
@@ -757,11 +759,7 @@ player.load("${swfPath}");
       <div class="window-content" style="width:100%; height:100%; overflow:hidden;">${contentHtml}</div>
     `;
 
-    desktop.appendChild(win);
-    this.wm.makeDraggable(win);
-    this.wm.makeResizable(win);
-    this.wm.setupWindowControls(win);
-    this.wm.bringToFront(win);
+    this.windowHelper.mountWindow(win, win.id, title, null, { addToTaskbar: false });
 
     win.querySelector(".external-btn")?.addEventListener("click", () => {
       if (!appId) return;

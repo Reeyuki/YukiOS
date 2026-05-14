@@ -324,7 +324,7 @@ constructor(services) {
 ### Content Delivery
 
 **CDN Bases:**
-- Main: `https://cdn.statically.io/gh/reeyuki/yukios@main`
+- Main: `https://cdn.statically.io/gh/reeyuki/yukios@a3efea2218a5d717290e72ea41cd341d14689ce5`
 - Games: `https://cdn.statically.io/gh/reeyuki/yukios-games@main`
 
 **CORS Proxy:** Apps can enable proxy via appCreator for blocked URLs

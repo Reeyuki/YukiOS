@@ -18,8 +18,6 @@ export class NotepadApp extends BaseApp {
 
   open(title = "Untitled", content = "", filePath = null) {
     const winId = `notepad-${Date.now()}`;
-    const win = this.wm.createWindow(winId, `${title} - Notepad`, "650px", "450px");
-    win.classList.add("notepad-window");
 
     this.instances.set(winId, {
       currentTitle: title,
@@ -33,7 +31,7 @@ export class NotepadApp extends BaseApp {
       matchCase: false
     });
 
-    win.innerHTML = `
+    const htmlContent = `
       <div class="window-header">
         <span class="window-title-text">${title} - Notepad</span>
         ${this.wm.getWindowControls()}
@@ -97,6 +95,10 @@ export class NotepadApp extends BaseApp {
         </div>
       </div>
     `;
+
+    const win = this.wm.createWindow(winId, `${title} - Notepad`, "650px", "450px");
+    win.classList.add("notepad-window");
+    win.innerHTML = htmlContent;
 
     desktop.appendChild(win);
     this.wm.makeDraggable(win);

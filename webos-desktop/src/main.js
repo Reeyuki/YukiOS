@@ -15,7 +15,6 @@ import { CalculatorApp } from "./calculator.js";
 import { SettingsApp } from "./settings.js";
 import { TaskManagerApp } from "./taskManager.js";
 import { WeatherApp } from "./weather.js";
-import { detectOS, isMobile } from "./shared/platformUtils.js";
 import { AppCreatorApp } from "./appCreator.js";
 import { OfficeAppProxy } from "./officeLoader.js";
 import { MarkdownApp } from "./markdown.js";
@@ -26,12 +25,14 @@ import { NotificationCenter } from "./notificationCenter.js";
 import { CategoriesApp } from "./categories.js";
 import { JsDosApp } from "./jsdos.js";
 import { V86App } from "./v86.js";
+import { EmulatorApp } from "./emulator.js";
 import { AchievementsApp } from "./achievements.js";
 import { ProfileCustomizerApp } from "./profileCustomizer.js";
 import { setDesktopUI as setGamesDesktopUI } from "./games.js";
 import { AdsManager } from "./ads.js";
 import { registerPWA } from "./pwa.js";
-import { taskbarPositionManager } from "./taskbarPositionManager.js";
+import { RuffleApp } from "./ruffle.js";
+import "./taskbarPositionManager.js";
 
 registerPWA();
 const notificationCenter = new NotificationCenter();
@@ -92,6 +93,12 @@ const v86app = new V86App(services);
 services.v86app = v86app;
 explorerApp.setv86App(v86app);
 
+const emulatorApp = new EmulatorApp(services);
+services.emulatorApp = emulatorApp;
+
+const ruffleApp = new RuffleApp(services);
+services.ruffleApp = ruffleApp;
+
 const cameraApp = new CameraApp(services);
 services.cameraApp = cameraApp;
 
@@ -117,7 +124,7 @@ services.weatherApp = weatherApp;
 
 const adsApp = new AdsManager(windowManager);
 services.adsApp = adsApp;
-
+window.AdsManager = adsApp;
 explorerApp.setBrowser(browserApp);
 
 const appCreatorApp = new AppCreatorApp(services);
@@ -156,7 +163,9 @@ const appLauncher = new AppLauncher(
   achievementsApp,
   adsApp,
   profileCustomizerApp,
-  markdownApp
+  markdownApp,
+  emulatorApp,
+  ruffleApp
 );
 appCreatorApp.setAppLauncher(appLauncher);
 explorerApp.setAppLauncher(appLauncher);

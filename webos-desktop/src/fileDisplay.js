@@ -1,7 +1,7 @@
 import { FileKind } from "./fs.js";
-import { desktop } from "./desktop.js";
 import { resolveIconUrl } from "./assetUrl.js";
 import { customAlert } from "./shared/dialogs.js";
+import { WindowHelper } from "./utils/WindowHelper.js";
 
 export const IMAGE_EXTS = ["png", "jpg", "jpeg", "gif", "webp", "bmp", "svg", "avif", "ico"];
 export const VIDEO_EXTS = ["mp4", "webm", "ogv", "mov", "mkv", "avi", "m4v", "wmv", "flv"];
@@ -274,7 +274,7 @@ export function openMediaViewer(name, src, kind, windowManager) {
   const isAudio = kind === FileKind.AUDIO || isAudioFile(name);
 
   const [width, height] = isAudio ? ["400px", "120px"] : ["500px", "400px"];
-  const win = windowManager.createWindow(`media-${Date.now()}`, name, width, height);
+  const windowHelper = new WindowHelper(windowManager);
 
   let media;
   if (isVideo) {
@@ -285,20 +285,15 @@ export function openMediaViewer(name, src, kind, windowManager) {
     media = `<img src="${src}" style="max-width:100%;max-height:100%">`;
   }
 
-  win.innerHTML = `
-    <div class="window-header">
-      <span>${name}</span>
-      ${windowManager.getWindowControls()}
-    </div>
+  const content = `
     <div style="display:flex;justify-content:center;align-items:center;height:calc(100% - 30px);background:#111;">
       ${media}
     </div>
   `;
-  desktop.appendChild(win);
-  windowManager.makeDraggable(win);
-  windowManager.makeResizable(win);
-  windowManager.setupWindowControls(win);
-  windowManager.addToTaskbar(win.id, name, isAudio ? "/static/icons/spot.webp" : "static/icons/files.webp");
+
+  const win = windowHelper.createAndMountWindow(`media-${Date.now()}`, name, content, width, height, {
+    icon: isAudio ? "/static/icons/spot.webp" : "static/icons/files.webp"
+  });
 }
 
 function base64ToBlob(dataURL) {

@@ -1,10 +1,11 @@
 import { BaseApp } from "./core/BaseApp.js";
-import { desktop } from "./desktop.js";
 import { customPrompt, customConfirm } from "./shared/dialogs.js";
+import { WindowHelper } from "./utils/WindowHelper.js";
 
 export class CameraApp extends BaseApp {
   constructor(services) {
     super(services);
+    this.windowHelper = new WindowHelper(this.wm);
     this.stream = null;
     this.mediaRecorder = null;
     this.recordedChunks = [];
@@ -14,21 +15,7 @@ export class CameraApp extends BaseApp {
   }
 
   open() {
-    if (document.getElementById("camera-win")) {
-      this.wm.bringToFront(document.getElementById("camera-win"));
-      return;
-    }
-
-    const win = document.createElement("div");
-    win.className = "window";
-    win.id = "camera-win";
-    win.dataset.fullscreen = "false";
-
-    win.innerHTML = `
-      <div class="window-header">
-        <span>Camera</span>
-        ${this.wm.getWindowControls()}
-      </div>
+    const content = `
       <div class="camera-app">
         <div class="camera-viewfinder">
           <video id="camera-video" autoplay playsinline></video>
@@ -89,23 +76,17 @@ export class CameraApp extends BaseApp {
       </div>
     `;
 
-    desktop.appendChild(win);
-    this.wm.makeDraggable(win);
-    this.wm.makeResizable(win);
-    this.wm.setupWindowControls(win);
-    this.wm.addToTaskbar(win.id, "Camera", "static/icons/obs.webp");
-    this.wm.bringToFront(win);
+    const win = this.windowHelper.createAndMountWindow("camera-win", "Camera", content, "800px", "600px", {
+      icon: "static/icons/obs.webp",
+      style: { minWidth: "400px", minHeight: "400px" }
+    });
 
-    const closebtn = win.querySelector(".close-btn");
-    closebtn.addEventListener("click", () => {
+    win.querySelector(".close-btn").addEventListener("click", () => {
       this.stopCamera();
       if (this.historyWin) {
         this.historyWin.remove();
         this.historyWin = null;
       }
-      this.wm.removeFromTaskbar(win.id);
-      win.style.animation = "popUp 0.5s ease forwards";
-      setTimeout(() => win.remove(), 500);
     });
 
     this.video = win.querySelector("#camera-video");
@@ -355,15 +336,7 @@ export class CameraApp extends BaseApp {
       return;
     }
 
-    this.historyWin = document.createElement("div");
-    this.historyWin.className = "window";
-    this.historyWin.id = "history-win";
-
-    this.historyWin.innerHTML = `
-      <div class="window-header">
-        <span>Recordings History <span id="history-count" class="history-count">(0)</span></span>
-        ${this.wm.getWindowControls()}
-      </div>
+    const content = `
       <div class="history-controls">
         <div class="history-filter">
           <select id="history-type-filter" class="history-filter-select">
@@ -385,22 +358,22 @@ export class CameraApp extends BaseApp {
       <div id="history-list" class="history-grid"></div>
     `;
 
-    desktop.appendChild(this.historyWin);
-    this.wm.makeDraggable(this.historyWin);
-    this.wm.makeResizable(this.historyWin);
-    this.wm.setupWindowControls(this.historyWin);
-    this.wm.bringToFront(this.historyWin);
+    this.historyWin = this.windowHelper.createAndMountWindow(
+      "history-win",
+      `Recordings History <span id="history-count" class="history-count">(0)</span>`,
+      content,
+      "45vw",
+      "70vh",
+      {
+        addToTaskbar: false,
+        style: { left: "55vw", top: "15vh" }
+      }
+    );
 
-    this.historyWin.querySelector(".close-btn").onclick = () => {
+    this.historyWin.querySelector(".close-btn").addEventListener("click", () => {
       this.closePreviewModal();
-      this.historyWin.remove();
       this.historyWin = null;
-    };
-
-    this.historyWin.style.width = "45vw";
-    this.historyWin.style.height = "70vh";
-    this.historyWin.style.left = "55vw";
-    this.historyWin.style.top = "15vh";
+    });
 
     this.setupHistoryControls();
     this.renderHistory();
@@ -719,10 +692,9 @@ export class CameraApp extends BaseApp {
       <video controls autoplay style="width:100%; height:90%;"></video>
     `;
 
-    desktop.appendChild(playerWin);
-    this.wm.makeDraggable(playerWin);
-    this.wm.makeResizable(playerWin);
-    this.wm.bringToFront(playerWin);
+    this.windowHelper.mountWindow(playerWin, "camera-playback", "Playback", null, {
+      addToTaskbar: false
+    });
 
     playerWin.querySelector(".close-btn").onclick = () => playerWin.remove();
 

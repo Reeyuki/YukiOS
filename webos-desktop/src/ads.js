@@ -1,4 +1,4 @@
-import { desktop } from "./desktop.js";
+import { WindowHelper } from "./utils/WindowHelper.js";
 
 const AD_STORAGE_KEY = "yukios_ads_state";
 
@@ -7,6 +7,11 @@ export function shouldEnableAds() {
   return true;
 }
 
+let interactionCount = 0;
+let lastInteractionTime = Date.now();
+
+const POPUNDER_SCRIPT = "https://pl29443507.profitablecpmratenetwork.com/e1/d5/61/e1d56103a8984a6c28d083490860b574.js";
+
 function loadMeta() {
   try {
     return (
@@ -14,7 +19,10 @@ function loadMeta() {
         dailyCount: 0,
         lastShown: 0,
         lastReset: Date.now(),
-        initialized: false
+        initialized: false,
+        smartlinkShown: false,
+        popunderShown: false,
+        popunderDate: null
       }
     );
   } catch {
@@ -22,7 +30,10 @@ function loadMeta() {
       dailyCount: 0,
       lastShown: 0,
       lastReset: Date.now(),
-      initialized: false
+      initialized: false,
+      smartlinkShown: false,
+      popunderShown: false,
+      popunderDate: null
     };
   }
 }
@@ -32,14 +43,16 @@ function saveMeta(meta) {
 }
 
 function resetDaily(meta) {
-  const day = 1000 * 60 * 60 * 24;
+  const now = Date.now();
+  const window = 1000 * 60 * 60 * 4;
 
-  if (Date.now() - meta.lastReset > day) {
+  if (now - meta.lastReset > window) {
     meta.dailyCount = 0;
-    meta.lastReset = Date.now();
+    meta.lastReset = now;
+    meta.popunderShown = false;
+    meta.popunderDate = null;
   }
 }
-
 const ADS = {
   banner: {
     key: "66095aa642a3a95fbc1eda8716d518dd",
@@ -47,7 +60,6 @@ const ADS = {
     width: 468,
     height: 60
   },
-
   native: {
     containerId: "container-5f797791a9771b6940fb9385a69ce168",
     src: "https://pl29381085.profitablecpmratenetwork.com/5f797791a9771b6940fb9385a69ce168/invoke.js"
@@ -55,22 +67,28 @@ const ADS = {
 };
 
 export class AdsManager {
+  static instance = null;
+  static analyticsBuffer = {
+    usageTime: 0,
+    usageEvents: 0,
+    appSessions: 0
+  };
+
   constructor(windowManager) {
     this.wm = windowManager;
+    this.windowHelper = new WindowHelper(windowManager);
 
-    this.lastInteraction = Date.now();
-    this.minActiveTime = 30000;
+    AdsManager.instance = this;
 
-    this.maxPerDay = 80;
-    this.minInterval = 1000 * 60 * 3;
+    this.sessionStart = Date.now();
+    this.minActiveTime = 20000;
+
     this.providers = [
       {
-        type: "banner",
         containerId: "banner-slot",
         render: () => this.mountBanner()
       },
       {
-        type: "native",
         containerId: ADS.native.containerId,
         render: () => this.mountNative()
       }
@@ -79,21 +97,52 @@ export class AdsManager {
     setTimeout(() => this.init(), 100);
   }
 
-  init() {
-    if (!shouldEnableAds()) return;
+  static analyticsHook(data) {
+    if (!AdsManager.instance) return;
 
-    const meta = loadMeta();
-    if (meta.initialized) return;
+    if (data.event === "usage") {
+      AdsManager.analyticsBuffer.usageTime += data.durationMs || 0;
+      AdsManager.analyticsBuffer.usageEvents++;
+    }
 
-    this.createAdWindow();
-
-    meta.initialized = true;
-    saveMeta(meta);
-    this.startIdleSmartlink();
+    if (data.event === "launch") {
+      AdsManager.analyticsBuffer.appSessions++;
+    }
   }
 
-  userIsActiveLongEnough() {
-    return Date.now() - this.lastInteraction >= this.minActiveTime;
+  getEngagementScore() {
+    const now = Date.now();
+
+    const sessionTime = now - this.sessionStart;
+    const activeTime = Math.max(sessionTime - (now - lastInteractionTime), 0);
+
+    const interactionRate = interactionCount / Math.max(sessionTime / 60000, 1);
+
+    const analyticsBoost = Math.min(AdsManager.analyticsBuffer.usageTime / 600000, 1) * 30;
+
+    const sessionBoost = Math.min(AdsManager.analyticsBuffer.appSessions / 10, 1) * 15;
+
+    let score = 0;
+
+    score += Math.min(sessionTime / 600000, 1) * 30;
+    score += Math.min(interactionRate * 10, 25);
+    score += Math.min(activeTime / sessionTime, 1) * 20;
+    score += analyticsBoost;
+    score += sessionBoost;
+
+    return Math.min(score, 100);
+  }
+
+  getLimits(score) {
+    if (score < 30) {
+      return { maxPerDay: 20, minInterval: 1000 * 60 * 8, smartlink: 0 };
+    }
+
+    if (score < 70) {
+      return { maxPerDay: 60, minInterval: 1000 * 60 * 4, smartlink: 0.4 };
+    }
+
+    return { maxPerDay: 90, minInterval: 1000 * 60 * 2, smartlink: 0.9 };
   }
 
   pickProvider() {
@@ -106,42 +155,41 @@ export class AdsManager {
     const meta = loadMeta();
     resetDaily(meta);
 
-    const now = Date.now();
+    const score = this.getEngagementScore();
+    const limits = this.getLimits(score);
 
-    if (meta.dailyCount >= this.maxPerDay) return false;
-    if (now - meta.lastShown < this.minInterval) return false;
-    if (!this.userIsActiveLongEnough()) return false;
+    const now = Date.now();
+    const sessionTime = now - this.sessionStart;
+
+    if (meta.dailyCount >= limits.maxPerDay) return false;
+    if (now - meta.lastShown < limits.minInterval) return false;
+    if (sessionTime < this.minActiveTime) return false;
 
     const provider = this.pickProvider();
 
-    const winId = "ads-yukios";
-    const existing = document.getElementById(winId);
+    const existing = document.getElementById("ads-yukios");
+    if (existing) return false;
 
-    if (existing) {
-      this.wm.bringToFront(existing);
-      return false;
-    }
-
-    const win = this.wm.createWindow(winId, "Sponsored", "420px", "300px", false, {
-      position: { x: window.innerWidth - 420 - 40, y: window.innerHeight - 300 - 40 },
-      allowManualPosition: true
-    });
-
-    win.innerHTML = `
-      <div class="window-header">
-        <span>Sponsored</span>
-        ${this.wm.getWindowControls()}
-      </div>
+    const win = this.windowHelper.createAndMountWindow(
+      "ads-yukios",
+      "Sponsored",
+      `
       <div class="window-content" style="padding:12px;">
         <div id="${provider.containerId}"></div>
       </div>
-    `;
-
-    desktop.appendChild(win);
-
-    this.wm.makeDraggable(win);
-    this.wm.setupWindowControls(win);
-    this.wm.addToTaskbar(win.id, "Sponsored", "fa fa-bullhorn");
+      `,
+      "420px",
+      "300px",
+      {
+        icon: "fa fa-bullhorn",
+        style: {
+          position: "absolute",
+          left: `${window.innerWidth - 420 - 40}px`,
+          top: `${window.innerHeight - 300 - 40}px`,
+          zIndex: "50"
+        }
+      }
+    );
 
     provider.render();
 
@@ -152,19 +200,46 @@ export class AdsManager {
     return true;
   }
 
+  maybeFirePopunder() {
+    const meta = loadMeta();
+    resetDaily(meta);
+
+    const score = this.getEngagementScore();
+    const sessionTime = Date.now() - this.sessionStart;
+
+    const today = new Date().toDateString();
+
+    if (score < 70) return;
+    if (sessionTime < 60000) return;
+    if (meta.popunderDate === today && meta.popunderShown) return;
+
+    const script = document.createElement("script");
+    script.src = POPUNDER_SCRIPT;
+    script.async = true;
+
+    document.body.appendChild(script);
+
+    meta.popunderShown = true;
+    meta.popunderDate = today;
+    saveMeta(meta);
+  }
+
+  init() {
+    const meta = loadMeta();
+    if (meta.initialized) return;
+
+    this.createAdWindow();
+    meta.initialized = true;
+    saveMeta(meta);
+
+    setTimeout(() => this.maybeFirePopunder(), 5000);
+  }
+
   createAdWindow() {
-    const win = this.wm.createWindow("ads_main_window", "Sponsored", "520px", "360px", false, {
-      position: { x: (window.innerWidth - 520) / 2, y: 40 },
-      allowManualPosition: true
-    });
-    win.style.zIndex = 50;
-
-    win.innerHTML = `
-      <div class="window-header">
-        <span>Sponsored</span>
-        ${this.wm.getWindowControls()}
-      </div>
-
+    const win = this.windowHelper.createAndMountWindow(
+      "ads_main_window",
+      "Sponsored",
+      `
       <div class="window-content ad-split-container">
         <div class="ad-section">
           <div id="banner-slot"></div>
@@ -176,26 +251,32 @@ export class AdsManager {
           <div id="${ADS.native.containerId}"></div>
         </div>
       </div>
-    `;
-
-    desktop.appendChild(win);
-
-    this.wm.makeDraggable(win);
-    this.wm.setupWindowControls(win);
-    this.wm.addToTaskbar(win.id, "Sponsored", "fa fa-bullhorn");
+      `,
+      "520px",
+      "360px",
+      {
+        icon: "fa fa-bullhorn",
+        style: {
+          position: "absolute",
+          left: `${(window.innerWidth - 520) / 2}px`,
+          top: "40px",
+          zIndex: "50"
+        }
+      }
+    );
 
     this.mountBanner();
     this.mountNative();
   }
 
   mountBanner() {
-    const container = document.getElementById("banner-slot");
-    if (!container) return;
+    const c = document.getElementById("banner-slot");
+    if (!c) return;
 
-    container.innerHTML = "";
+    c.innerHTML = "";
 
-    const configScript = document.createElement("script");
-    configScript.innerHTML = `
+    const s1 = document.createElement("script");
+    s1.innerHTML = `
       atOptions = {
         key: '${ADS.banner.key}',
         format: 'iframe',
@@ -205,62 +286,25 @@ export class AdsManager {
       };
     `;
 
-    const adScript = document.createElement("script");
-    adScript.src = ADS.banner.src;
-    adScript.async = true;
+    const s2 = document.createElement("script");
+    s2.src = ADS.banner.src;
+    s2.async = true;
 
-    container.appendChild(configScript);
-    container.appendChild(adScript);
+    c.appendChild(s1);
+    c.appendChild(s2);
   }
 
   mountNative() {
-    const container = document.getElementById(ADS.native.containerId);
-    if (!container) return;
+    const c = document.getElementById(ADS.native.containerId);
+    if (!c) return;
 
-    container.innerHTML = "";
+    c.innerHTML = "";
 
-    const script = document.createElement("script");
-    script.async = true;
-    script.dataset.cfasync = "false";
-    script.src = ADS.native.src;
+    const s = document.createElement("script");
+    s.src = ADS.native.src;
+    s.async = true;
+    s.dataset.cfasync = "false";
 
-    container.appendChild(script);
-  }
-  injectSmartlinkOnce() {
-    if (!shouldEnableAds()) return;
-
-    const meta = loadMeta();
-    if (meta.smartlinkShown) return;
-
-    const a = document.createElement("a");
-    a.href = "https://www.profitablecpmratenetwork.com/t8h6qm0ki?key=0d9e57d41211b42cb2ae88e762a656c0";
-    a.target = "_blank";
-    a.rel = "noopener noreferrer";
-    a.style.display = "none";
-
-    document.body.appendChild(a);
-
-    a.click();
-
-    meta.smartlinkShown = true;
-    saveMeta(meta);
-  }
-  startIdleSmartlink() {
-    let idleTime = 0;
-
-    const reset = () => (idleTime = 0);
-
-    window.addEventListener("mousemove", reset);
-    window.addEventListener("keydown", reset);
-    window.addEventListener("click", reset);
-
-    setInterval(() => {
-      idleTime += 1;
-
-      if (idleTime > 120 && !this.smartlinkFired) {
-        this.injectSmartlinkOnce();
-        this.smartlinkFired = true;
-      }
-    }, 1000);
+    c.appendChild(s);
   }
 }

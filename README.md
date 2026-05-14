@@ -4,6 +4,12 @@
 
 Yuki OS is a fully-featured browser-based operating system that unifies games, emulators, productivity tools, and web applications into a single windowed desktop experience. Run Flash games, DOS emulation, modern web apps, and custom applications all side-by-side with a shared window manager, filesystem, and UI.
 
+
+![yukios-1-os](.github/yukios-1-os.webp)
+![notepadexplorerweather](.github/notepadexplorerweather.webp)
+![browser](.github/browser.webp)
+![achievements](.github/achievements.webp)
+
 ---
 
 ## ✨ Key Features
@@ -323,7 +329,7 @@ All files persist in IndexedDB between sessions.
 ## 🔗 Content Delivery
 
 **CDN Bases:**
-- Main assets: `https://cdn.statically.io/gh/reeyuki/yukios@main`
+- Main assets: `https://cdn.statically.io/gh/reeyuki/yukios@a3efea2218a5d717290e72ea41cd341d14689ce5`
 - Games: `https://cdn.statically.io/gh/reeyuki/yukios-games@main`
 
 **CORS Proxy:** Apps support proxy configuration for accessing restricted content.

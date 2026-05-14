@@ -2,7 +2,7 @@
 const CDN_PROVIDERS = {
   jsdelivr: {
     GAMES: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main",
-    MAIN: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main",
+    MAIN: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@a3efea2218a5d717290e72ea41cd341d14689ce5",
     NPM: "https://cdn.jsdelivr.net/npm",
     PATTERN: /^https?:\/\/(cdn\.)?jsdelivr\.net\//,
     HOSTNAMES: ["cdn.jsdelivr.net"],
@@ -10,26 +10,31 @@ const CDN_PROVIDERS = {
   },
   statically: {
     GAMES: "https://cdn.statically.io/gh/Reeyuki/yukios-games@main",
-    MAIN: "https://cdn.statically.io/gh/Reeyuki/yukios@main",
+    MAIN: "https://cdn.statically.io/gh/Reeyuki/yukios@a3efea2218a5d717290e72ea41cd341d14689ce5",
     PATTERN: /^https?:\/\/(cdn\.)?statically\.io\//,
     HOSTNAMES: ["cdn.statically.io"],
     GH_PATH: "/gh/"
   }
 };
 
-// Legacy exports for backward compatibility
-export const CDN_BASES = CDN_PROVIDERS.jsdelivr;
+export const CDN_BASES = (() => {
+  try {
+    const hostname = window.location?.hostname || "";
+    if (hostname === "cdn.statically.io" || hostname.endsWith(".statically.io")) {
+      return CDN_PROVIDERS.statically;
+    }
+  } catch (e) {}
+  return CDN_PROVIDERS.jsdelivr;
+})();
 export const JSDELIVR_BASE = CDN_BASES.GAMES;
 export const YUKIOS_JSDELIVR_BASE = CDN_BASES.MAIN;
 export const JSDELIVR_GH_BASE = CDN_BASES.MAIN;
 
-// Unified CDN detection functions
 export const isCdnGhUrl = (url) => {
   if (typeof url !== "string") return false;
   return Object.values(CDN_PROVIDERS).some((provider) => provider.PATTERN.test(url) && url.includes(provider.GH_PATH));
 };
 
-// Legacy exports for backward compatibility
 export const isJsdelivrGhUrl = (url) =>
   typeof url === "string" &&
   (url.startsWith("https://cdn.jsdelivr.net/gh/") || url.startsWith("http://cdn.jsdelivr.net/gh/"));

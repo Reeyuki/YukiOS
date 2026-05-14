@@ -1,26 +1,23 @@
 import { Achievements } from "./achievements.js";
 import { bus, BusEvents } from "./core/EventBus.js";
-import { desktop } from "./desktop.js";
 import JSZip from "jszip";
 import { BaseApp } from "./core/BaseApp.js";
+import { WindowHelper } from "./utils/WindowHelper.js";
+import { CDN_BASES } from "./shared/assetResolver.js";
 
 const GAMES_DIR = ["Games"];
 
 export class JsDosApp extends BaseApp {
   constructor(services) {
     super(services);
+    this.windowHelper = new WindowHelper(this.wm);
     this._explorerApp = services.explorerApp;
   }
 
   open() {
     if (this._isSingletonOpen("jsdos-win")) return;
 
-    const win = this.wm.createWindow("jsdos-win", "JsDos", "600px", "560px");
-    win.innerHTML = `
-      <div class="window-header">
-        <span>JsDos Game Launcher</span>
-        ${this.wm.getWindowControls()}
-      </div>
+    const content = `
       <div class="window-content" style="width:100%;height:100%;background:#1a1a2e;color:#eee;font-family:monospace;overflow-y:auto;overflow-x:hidden;">
         <div class="jsdos-header">
           <i class="fa-solid fa-gamepad jsdos-header-icon"></i>
@@ -55,11 +52,9 @@ export class JsDosApp extends BaseApp {
         </div>
       </div>`;
 
-    desktop.appendChild(win);
-    this.wm.makeDraggable(win);
-    this.wm.makeResizable(win);
-    this.wm.setupWindowControls(win);
-    this.wm.addToTaskbar(win.id, "JsDos", "static/icons/jsdos.webp");
+    const win = this.windowHelper.createAndMountWindow("jsdos-win", "JsDos Game Launcher", content, "600px", "560px", {
+      icon: "static/icons/jsdos.webp"
+    });
 
     this._setupGameCardListeners(win);
     this._setupUploadZone(win);
@@ -139,7 +134,7 @@ export class JsDosApp extends BaseApp {
 
     try {
       const blob = new Blob([await file.arrayBuffer()], { type: file.type || "application/octet-stream" });
-      await this.fs.writeBinaryFile(GAMES_DIR, file.name, blob, "other", "/static/icons/jsdos.webp");
+      await this.fs.writeBinaryFile(GAMES_DIR, file.name, blob, "other", CDN_BASES.MAIN + "/static/icons/jsdos.webp");
       this.wm.sendNotify(`Saved ${file.name} at Games/ directory. `);
       zone.innerHTML = `<i class="fa-solid fa-circle-check" style="font-size:20px;color:#4caf50;margin-bottom:8px;display:block;"></i><div style="font-size:13px;color:#bbb;">Saved!</div>`;
       await this._loadUserGames(win);
@@ -165,7 +160,7 @@ export class JsDosApp extends BaseApp {
 
     try {
       await this.fs.fsReady;
-      const dir = this.fs.resolveDir(GAMES_DIR);
+      const dir = this.fs.resolveUserPath(GAMES_DIR);
       await this.fs.p("mkdir", dir, { recursive: true }).catch(() => {});
       const files = await this.fs.pRead("readdir", dir).catch(() => []);
       const gameFiles = files.filter(
@@ -218,14 +213,7 @@ export class JsDosApp extends BaseApp {
   async launchGame(fileName, displayName) {
     const wm = this.wm;
     const winId = `jsdos-${Date.now()}`;
-    const win = wm.createWindow(winId, displayName, "800px", "600px");
-    bus.emit(BusEvents.ACHIEVEMENT_TRIGGER, { key: Achievements.RetroPlayer });
-
-    win.innerHTML = `
-    <div class="window-header">
-      <span>${displayName}</span>
-      ${wm.getWindowControls()}
-    </div>
+    const content = `
     <div class="window-content" style="width:100%;height:calc(100% - 30px);background:#000;position:relative;">
       <div id="${winId}-inner" style="width:100%;height:100%;" class="jsdos-loading">
         <i class="fa-solid fa-compact-disc jsdos-loading-spinner"></i>
@@ -234,10 +222,11 @@ export class JsDosApp extends BaseApp {
       </div>
     </div>`;
 
-    desktop.appendChild(win);
-    wm.makeDraggable(win);
-    wm.makeResizable(win);
-    wm.addToTaskbar(winId, displayName, "static/icons/jsdos.webp");
+    bus.emit(BusEvents.ACHIEVEMENT_TRIGGER, { key: Achievements.RetroPlayer });
+
+    const win = this.windowHelper.createAndMountWindow(winId, displayName, content, "800px", "600px", {
+      icon: "static/icons/jsdos.webp"
+    });
 
     const inner = win.querySelector(`#${winId}-inner`);
     const log = win.querySelector(`#${winId}-log`);
@@ -280,7 +269,7 @@ export class JsDosApp extends BaseApp {
 
     try {
       setLog("Downloading game…");
-      const gameUrl = `https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/apps/jsdos/${fileName}`;
+      const gameUrl = `${CDN_BASES.MAIN}/static/apps/jsdos/${fileName}`;
 
       const response = await fetch(gameUrl);
       if (!response.ok) {
@@ -372,13 +361,7 @@ export class JsDosApp extends BaseApp {
   async launchExe(name, path) {
     const wm = this.wm;
     const winId = `jsdos-${Date.now()}`;
-    const win = wm.createWindow(winId, name, "800px", "600px");
-    bus.emit(BusEvents.ACHIEVEMENT_TRIGGER, { key: Achievements.RetroPlayer });
-    win.innerHTML = `
-    <div class="window-header">
-      <span>${name}</span>
-      ${wm.getWindowControls()}
-    </div>
+    const content = `
     <div class="window-content" style="width:100%;height:calc(100% - 30px);background:#000;position:relative;">
       <div id="${winId}-inner" style="width:100%;height:100%;" class="jsdos-loading">
         <i class="fa-solid fa-compact-disc jsdos-loading-spinner"></i>
@@ -386,10 +369,12 @@ export class JsDosApp extends BaseApp {
         <div id="${winId}-log" style="font-size:11px;color:#888;max-width:400px;text-align:center;"></div>
       </div>
     </div>`;
-    desktop.appendChild(win);
-    wm.makeDraggable(win);
-    wm.makeResizable(win);
-    wm.addToTaskbar(winId, name, "/static/icons/jsdos.webp");
+
+    bus.emit(BusEvents.ACHIEVEMENT_TRIGGER, { key: Achievements.RetroPlayer });
+
+    const win = this.windowHelper.createAndMountWindow(winId, name, content, "800px", "600px", {
+      icon: CDN_BASES.MAIN + "/static/icons/jsdos.webp"
+    });
 
     const inner = win.querySelector(`#${winId}-inner`);
     const log = win.querySelector(`#${winId}-log`);

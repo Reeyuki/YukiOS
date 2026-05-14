@@ -18,7 +18,13 @@ const DEFAULT_WALLPAPER_FILES = [
   "wallpaper10.webp",
   "wallpaper11.webp",
   "wallpaper12.png",
-  "wallpaper13.png"
+  "wallpaper13.png",
+  "mint.webp",
+  "xp.webp",
+  "win7.webp",
+  "win10.webp",
+  "win11.webp",
+  "redwin10.jpg"
 ];
 
 function defaultWallpaperUrl(nameOrPath) {
@@ -192,7 +198,7 @@ export class FileSystemManager {
 
   isDesktopPath(path) {
     const desktopPath = this.join(this.CONFIG.ROOT, "Desktop");
-    const resolvedPath = this.resolveDir(path);
+    const resolvedPath = this.resolveUserPath(path);
     return resolvedPath === desktopPath || resolvedPath.startsWith(desktopPath + "/");
   }
 
@@ -418,7 +424,7 @@ export class FileSystemManager {
 
   async migrateDefaultWallpapers() {
     const folderPath = ["Pictures", "Wallpapers"];
-    const dir = this.resolveDir(folderPath);
+    const dir = this.resolveUserPath(folderPath);
 
     for (const name of DEFAULT_WALLPAPER_FILES) {
       const fullPath = this.join(dir, name);
@@ -541,7 +547,7 @@ export class FileSystemManager {
     return FileKind.OTHER;
   }
 
-  resolveDir(path = []) {
+  resolveUserPath(path = []) {
     if (typeof path === "string") {
       if (path.startsWith("/")) return path;
       path = [path];
@@ -551,7 +557,7 @@ export class FileSystemManager {
 
   async ensureFolder(path) {
     await this.fsReady;
-    const dir = this.resolveDir(path);
+    const dir = this.resolveUserPath(path);
     const segments = dir.split("/").filter(Boolean);
     let current = "";
     for (const seg of segments) {
@@ -562,7 +568,7 @@ export class FileSystemManager {
 
   async getFolder(path) {
     await this.fsReady;
-    const dir = this.resolveDir(path);
+    const dir = this.resolveUserPath(path);
 
     let entries;
     try {
@@ -595,7 +601,7 @@ export class FileSystemManager {
 
   async readTextFile(path, name) {
     await this.fsReady;
-    const dir = this.resolveDir(path);
+    const dir = this.resolveUserPath(path);
     const fullPath = this.join(dir, name);
     try {
       return await this.pRead("readFile", fullPath, "utf8");
@@ -606,7 +612,7 @@ export class FileSystemManager {
 
   async getUniqueFileName(path, name) {
     await this.fsReady;
-    const dir = this.resolveDir(path);
+    const dir = this.resolveUserPath(path);
     const dotIndex = name.lastIndexOf(".");
     const hasExt = dotIndex > 0;
     const base = hasExt ? name.slice(0, dotIndex) : name;
@@ -623,7 +629,7 @@ export class FileSystemManager {
   async createFile(path, name, content = "", kind = null, icon = null, faIcon = null) {
     await this.fsReady;
     const uniqueName = await this.getUniqueFileName(path, name);
-    const dir = this.resolveDir(path);
+    const dir = this.resolveUserPath(path);
     const filePath = this.join(dir, uniqueName);
     const fileKind = kind || this.inferKind(uniqueName);
     const fileIcon = icon || (fileKind === FileKind.TEXT ? "static/icons/notepad.webp" : "static/icons/file.webp");
@@ -644,7 +650,7 @@ export class FileSystemManager {
   async createFolder(path, name) {
     await this.fsReady;
     const uniqueName = await this.getUniqueFileName(path, name);
-    const dir = this.join(this.resolveDir(path), uniqueName);
+    const dir = this.join(this.resolveUserPath(path), uniqueName);
     await this.p("mkdir", dir, { recursive: true });
     await this.notifyDesktopChange(path);
     return uniqueName;
@@ -652,7 +658,7 @@ export class FileSystemManager {
 
   async deleteItem(path, name) {
     await this.fsReady;
-    const dir = this.resolveDir(path);
+    const dir = this.resolveUserPath(path);
     const target = this.join(dir, name);
     const stat = await this.pStat(target);
     if (stat.isDirectory()) {
@@ -682,7 +688,7 @@ export class FileSystemManager {
 
   async renameItem(path, oldName, newName) {
     await this.fsReady;
-    const dir = this.resolveDir(path);
+    const dir = this.resolveUserPath(path);
     const oldPath = this.join(dir, oldName);
     const newPath = this.join(dir, newName);
 
@@ -710,7 +716,7 @@ export class FileSystemManager {
 
   async updateFile(path, name, content, meta = {}) {
     await this.fsReady;
-    const dir = this.resolveDir(path);
+    const dir = this.resolveUserPath(path);
     const filePath = this.join(dir, name);
     const exists = await this.exists(filePath);
     if (!exists) {
@@ -801,7 +807,7 @@ export class FileSystemManager {
 
   async getFileContent(path, name) {
     await this.fsReady;
-    const dir = this.resolveDir(path);
+    const dir = this.resolveUserPath(path);
     const fullPath = this.join(dir, name);
 
     const blob = await this._getBlobByFullPath(fullPath);
@@ -834,25 +840,25 @@ export class FileSystemManager {
   }
   async getFileKind(path, name) {
     await this.fsReady;
-    const meta = await this.readMeta(this.resolveDir(path));
+    const meta = await this.readMeta(this.resolveUserPath(path));
     return meta[name]?.kind ?? null;
   }
 
   async getFileIcon(path, name) {
     await this.fsReady;
-    const meta = await this.readMeta(this.resolveDir(path));
+    const meta = await this.readMeta(this.resolveUserPath(path));
     return meta[name]?.icon ?? null;
   }
 
   async getFileFaIcon(path, name) {
     await this.fsReady;
-    const meta = await this.readMeta(this.resolveDir(path));
+    const meta = await this.readMeta(this.resolveUserPath(path));
     return meta[name]?.faIcon ?? null;
   }
 
   isFile(path, name) {
     try {
-      return this.fs.statSync(this.join(this.resolveDir(path), name)).isFile();
+      return this.fs.statSync(this.join(this.resolveUserPath(path), name)).isFile();
     } catch {
       return false;
     }
@@ -878,7 +884,7 @@ export class FileSystemManager {
   async writeBinaryFile(folderPath, name, blob, kind = null, icon = null) {
     await this.fsReady;
     const uniqueName = await this.getUniqueFileName(folderPath, name);
-    const dir = this.resolveDir(folderPath);
+    const dir = this.resolveUserPath(folderPath);
     const fullPath = this.join(dir, uniqueName);
     const fileKind = kind || this.inferKind(name);
 
@@ -901,7 +907,7 @@ export class FileSystemManager {
   }
   async readBinaryFile(folderPath, name) {
     await this.fsReady;
-    const dir = this.resolveDir(folderPath);
+    const dir = this.resolveUserPath(folderPath);
     const fullPath = this.join(dir, name);
     const blob = await this._getBlobByFullPath(fullPath);
     if (!blob) {
@@ -914,7 +920,7 @@ export class FileSystemManager {
 
   async deleteBinaryFile(folderPath, name) {
     await this.fsReady;
-    const dir = this.resolveDir(folderPath);
+    const dir = this.resolveUserPath(folderPath);
     const fullPath = this.join(dir, name);
     await this.p("unlink", fullPath).catch(() => {});
     await this.removeMeta(dir, name);
@@ -924,7 +930,7 @@ export class FileSystemManager {
 
   async renameBinaryFile(folderPath, oldName, newName) {
     await this.fsReady;
-    const dir = this.resolveDir(folderPath);
+    const dir = this.resolveUserPath(folderPath);
     const oldPath = this.join(dir, oldName);
     const newPath = this.join(dir, newName);
 

@@ -1,4 +1,4 @@
-import { desktop } from "./desktop.js";
+import { WindowHelper } from "./utils/WindowHelper.js";
 import { getLibraryUrl } from "./shared/cdnConfig.js";
 import { speak } from "./clippy.js";
 import { decodeDataURLContent } from "./fileDisplay.js";
@@ -10,6 +10,7 @@ import { customConfirm } from "./shared/dialogs.js";
 export class MonacoApp extends BaseApp {
   constructor(services) {
     super(services);
+    this.windowHelper = new WindowHelper(this.wm);
     this.explorerApp = services.explorerApp;
     this.idleTimer = null;
     this.idleDelay = 15000;
@@ -415,11 +416,7 @@ export class MonacoApp extends BaseApp {
       </div>
     `;
 
-    desktop.appendChild(win);
-    this.wm.makeDraggable(win);
-    this.wm.makeResizable(win);
-    this.wm.setupWindowControls(win);
-    this.wm.addToTaskbar(win.id, "Yuki Code", this.icon);
+    this.windowHelper.mountWindow(win, winId, "Yuki Code", this.icon);
 
     this.currentWindow = win;
     this.setupMenuActions(win);
@@ -1135,7 +1132,7 @@ export class MonacoApp extends BaseApp {
     }
 
     const content = editorData.editor.getValue();
-    const dir = this.fs.resolveDir(editorData.filePath);
+    const dir = this.fs.resolveUserPath(editorData.filePath);
     const filePath = this.fs.join(dir, editorData.title);
     const exists = await this.fs.exists(filePath);
 
@@ -1169,7 +1166,7 @@ export class MonacoApp extends BaseApp {
     const defaultName = editorData.title.includes(".") ? editorData.title : `${editorData.title}`;
     this.explorerApp.openSaveDialog(defaultName, async (path, fileName) => {
       const content = editorData.editor.getValue();
-      const dir = this.fs.resolveDir(path);
+      const dir = this.fs.resolveUserPath(path);
       const filePath = this.fs.join(dir, fileName);
       const exists = await this.fs.exists(filePath);
 

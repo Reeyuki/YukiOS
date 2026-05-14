@@ -1,6 +1,6 @@
 import { BaseApp } from "./core/BaseApp.js";
-import { desktop } from "./desktop.js";
-import { customPrompt } from "./shared/dialogs.js";
+import { customPrompt, customConfirm } from "./shared/dialogs.js";
+import { WindowHelper } from "./utils/WindowHelper.js";
 
 function clampInt(n, min, max) {
   n = Number.parseInt(String(n), 10);
@@ -157,6 +157,7 @@ function buildWatchUrl({ kind, videoId, playlistId, startSeconds }) {
 export class YouTubeApp extends BaseApp {
   constructor(services) {
     super(services);
+    this.windowHelper = new WindowHelper(this.wm);
     this.browserApp = null;
     this.winId = "youtube-utils";
     this._els = null;
@@ -230,13 +231,7 @@ export class YouTubeApp extends BaseApp {
       return;
     }
 
-    const win = this.wm.createWindow(this.winId, title, "980px", "640px");
-
-    win.innerHTML = `
-      <div class="window-header" id="win-header-${this.winId}">
-        <span>${title}</span>
-        ${this.wm.getWindowControls()}
-      </div>
+    const content = `
       <div class="window-content yt-utils">
         <div class="toolbar">
           <div class="row">
@@ -344,11 +339,10 @@ export class YouTubeApp extends BaseApp {
       </div>
     `;
 
-    desktop.appendChild(win);
-    this.wm.makeDraggable(win);
-    this.wm.makeResizable(win);
-    this.wm.setupWindowControls(win);
-    this.wm.addToTaskbar(win.id, "YouTube", "fab fa-youtube", "#ff2a2a");
+    const win = this.windowHelper.createAndMountWindow(this.winId, title, content, "980px", "640px", {
+      icon: "fab fa-youtube",
+      iconColor: "#ff2a2a"
+    });
 
     this._els = {
       win,

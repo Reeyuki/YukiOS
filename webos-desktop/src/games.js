@@ -1,18 +1,39 @@
-import { desktop } from "./desktop.js";
 import { appMap } from "./gamesList.js";
-import { fetchHtmlAsBlobUrl, looksLikeHtml, isCdnGhUrl } from "./shared/assetResolver.js";
-import { sendLaunchAnalytics } from "./analytics.js";
-import { refreshIcons } from "./shared/contextMenu.js";
 import { descriptionMap } from "./gameDescriptions.js";
-import { getAnalyticsBase } from "./analytics.js";
-import { shouldEnableAds } from "./ads.js";
+import { GameRenderer } from "./GameRenderer.js";
+import { GameLauncher } from "./GameLauncher.js";
+import { GameUI } from "./GameUI.js";
+import { buildSteamShell, initDropdowns, initStorePage, CDN_BASE, SteamSettings } from "./steam.js";
+import { sendLaunchAnalytics, getAnalyticsBase } from "./analytics.js";
+import { fetchHtmlAsBlobUrl, looksLikeHtml, isCdnGhUrl } from "./shared/assetResolver.js";
 import { customAlert, customPrompt } from "./shared/dialogs.js";
+import { WindowHelper } from "./utils/WindowHelper.js";
+import { refreshIcons } from "./shared/contextMenu.js";
 
-let _launcher = null;
-let _desktopUI = null;
+export let _launcher = null;
+export let _desktopUI = null;
+
 export function setGameLauncher(launcher) {
   _launcher = launcher;
+
+  setTimeout(() => {
+    const settings = SteamSettings.load();
+    if (settings.runOnStartup && !window._steamStartupHandled) {
+      window._steamStartupHandled = true;
+      launcher.launch("steamApp");
+
+      if (settings.startMinimized) {
+        setTimeout(() => {
+          const steamWin = document.getElementById("games-app-win");
+          if (steamWin && launcher && launcher.wm) {
+            launcher.wm.minimizeWindow(steamWin);
+          }
+        }, 500);
+      }
+    }
+  }, 1000);
 }
+
 export function setDesktopUI(ui) {
   _desktopUI = ui;
 }
@@ -66,16 +87,15 @@ const _imgObserver = new IntersectionObserver(
   { rootMargin: "200px" }
 );
 
-function lazyImg(src, attrs = "") {
+export function lazyImg(src, attrs = "") {
   return `<img data-src="${src}" ${attrs}/>`;
 }
 
-function observeLazyImages(root) {
+export function observeLazyImages(root) {
   root.querySelectorAll("img[data-src]").forEach((img) => _imgObserver.observe(img));
 }
 
-const CDN_BASE_GAMES = "https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main";
-const CDN_BASE = "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main";
+export const CDN_BASE_GAMES = "https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main";
 
 export function patchAppMap(appMap) {
   for (const key in appMap) {
@@ -100,7 +120,7 @@ export function patchAppMap(appMap) {
 }
 patchAppMap(appMap);
 
-const popularityMap = new Map(Object.keys(appMap).map((id, index) => [id, index]));
+export const popularityMap = new Map(Object.keys(appMap).map((id, index) => [id, index]));
 
 export function getGameName(appId) {
   return appMap[appId]?.title || null;
@@ -109,6 +129,7 @@ export function getGameName(appId) {
 const GAMES_APP_EXCLUDED = new Set(["TMNP", "vscode", "paint", "photopea", "liventcord"]);
 
 export const HIGHLIGHTED_GAMES = new Set([
+  "tabs",
   "plagueIncEvolved",
   "helltaker",
   "passpartout",
@@ -122,7 +143,7 @@ export const HIGHLIGHTED_GAMES = new Set([
   "antidisestablishmentarianism",
   "theMathIsLeaking",
   "minusThree",
-  "Three",
+  "three",
   "fiveNightsAtFrickbears3",
   "baldisBasicsTeachingOnTwos",
   "playtimeHellBear5van",
@@ -162,7 +183,7 @@ function isFlashGame(id, data) {
   return false;
 }
 
-const SteamDataManager = {
+export const SteamDataManager = {
   getStats: () => JSON.parse(localStorage.getItem("steam_stats") || "{}"),
   getFavorites: () => JSON.parse(localStorage.getItem("steam_favorites") || "[]"),
   setFavorites: (favs) => localStorage.setItem("steam_favorites", JSON.stringify(favs)),
@@ -239,6 +260,7 @@ export class GameWindowRenderer {
     this.currentArchiveGame = null;
     this._archiveGamesCache = [];
     this._hasRendered = false;
+    this._ctrlFBound = false;
     this.newsItems = [
       {
         image: `${CDN_BASE}/static/icons/steam.webp`,
@@ -247,1745 +269,112 @@ export class GameWindowRenderer {
         excerpt: "The Steam app is now available in YukiOS."
       }
     ];
+    this._imgObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          const img = entry.target;
+          if (img.dataset.src) {
+            img.src = img.dataset.src;
+            delete img.dataset.src;
+          }
+          this._imgObserver.unobserve(img);
+        });
+      },
+      { rootMargin: "200px" }
+    );
+
+    this.gameRenderer = new GameRenderer(this);
+    this.gameLauncher = new GameLauncher(this);
+    this.gameUI = new GameUI(this);
   }
 
   getGames() {
     return [];
   }
+
   getFlashGames() {
     return [];
-  }
-
-  createCard(game) {
-    const isHighlighted = HIGHLIGHTED_GAMES.has(game.app);
-    return `
-      <div class="steam-game-card ${isHighlighted ? "steam-game-card-highlight" : ""}" data-app="${game.app}">
-        <div class="steam-game-img-wrap">
-          ${lazyImg(game.icon, `alt="${game.title}"`)}
-        </div>
-        <div class="steam-game-title">${game.title}</div>
-      </div>`;
-  }
-
-  formatTime(min) {
-    if (!min) return "0min";
-    if (min < 60) return `${min}min`;
-    const h = Math.floor(min / 60);
-    const m = min % 60;
-    return m > 0 ? `${h}h ${m}m` : `${h}h`;
-  }
-
-  getSortedGames(games) {
-    const stats = SteamDataManager.getStats();
-    let sorted = [...games];
-    sorted.sort((a, b) => {
-      let valA, valB;
-      if (this.sortBy === "alphabetical") {
-        valA = a.title.toLowerCase();
-        valB = b.title.toLowerCase();
-      } else if (this.sortBy === "hours") {
-        valA = stats[a.app]?.totalMin || 0;
-        valB = stats[b.app]?.totalMin || 0;
-      } else if (this.sortBy === "lastPlayed") {
-        valA = stats[a.app]?.lastPlayed || 0;
-        valB = stats[b.app]?.lastPlayed || 0;
-      } else if (this.sortBy === "popularity") {
-        valA = popularityMap.get(a.app) ?? 999999;
-        valB = popularityMap.get(b.app) ?? 999999;
-      }
-      if (valA < valB) return this.sortReverse ? 1 : -1;
-      if (valA > valB) return this.sortReverse ? -1 : 1;
-      return 0;
-    });
-    return sorted;
-  }
-
-  renderGameOverview(container, appId, onLaunch) {
-    const game = this.getGames().find((g) => g.app === appId);
-    if (!game) return;
-
-    this.currentGame = appId;
-    this.currentArchiveGame = null;
-    const stats = SteamDataManager.getStats();
-    const gameStats = stats[appId] || { totalMin: 0, lastPlayed: 0 };
-    const target = container.querySelector(".steam-library-page");
-
-    target.innerHTML = `
-      <div class="steam-game-overview" style="background: #1b2838; min-height: 100%; color: #dcdedf; display: flex; flex-direction: column;">
-        <div class="overview-banner" style="height: 300px; position: relative; overflow: hidden; background: #171a21;">
-          <img src="${game.icon}" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.4; " />
-          <div class="banner-content" style="position: absolute; bottom: 0; left: 0; right: 0; padding: 40px; background: linear-gradient(transparent, rgba(27, 40, 56, 1)); display: flex; align-items: flex-end; gap: 30px;">
-            <img src="${game.icon}" style="width: 200px; height: 280px; object-fit: cover; border-radius: 4px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);" />
-            <div class="banner-info" style="flex: 1;">
-              <h1 style="font-size: 48px; margin: 0 0 10px 0; color: #fff; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-family: 'Motiva Sans', Sans-serif;">${game.title}</h1>
-              <div class="play-bar" style="display: flex; align-items: center; gap: 20px;">
-                <button class="steam-play-btn" style="background: linear-gradient(to right, #47b230, #5ab941); border: none; color: #fff; padding: 12px 60px; font-size: 20px; font-weight: 700; border-radius: 2px; cursor: pointer; text-transform: uppercase; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">Play</button>
-                <div class="overview-stats" style="display: flex; gap: 30px; font-size: 13px; color: #898989;">
-                  <div>
-                    <div style="text-transform: uppercase; margin-bottom: 4px;">Last Played</div>
-                    <div style="color: #fff;">${gameStats.lastPlayed ? new Date(gameStats.lastPlayed).toLocaleDateString() : "Never"}</div>
-                  </div>
-                  <div>
-                    <div style="text-transform: uppercase; margin-bottom: 4px;">Play Time</div>
-                    <div style="color: #fff;">${this.formatTime(gameStats.totalMin)}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="overview-content" style="padding: 40px; display: grid; grid-template-columns: 2fr 1fr; gap: 40px;">
-          <div class="overview-main">
-            <div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 4px; margin-bottom: 20px;">
-              <h3 style="margin-top: 0; color: #66c0f4; text-transform: uppercase; font-size: 14px;">Game Info</h3>
-              <p style="line-height: 1.6; color: #acb2b8;">${this.getGameDescription(game.app)}</p>
-            </div>
-            <div class="steam-whats-new-header" style="margin-bottom: 15px;">Recent Activity</div>
-            <div style="color: #898989; font-style: italic; font-size: 13px;">No recent activity to show.</div>
-          </div>
-          <div class="overview-sidebar">
-             <div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 4px;">
-               <h3 style="margin-top: 0; color: #fff; font-size: 14px; text-transform: uppercase;">Friends who play</h3>
-               <div style="color: #898989; font-size: 13px;">None of your friends have played this game.</div>
-             </div>
-          </div>
-        </div>
-      </div>
-    `;
-
-    target.querySelector(".steam-play-btn").onclick = () => onLaunch(appId);
-    this._setActiveSidebarItem(container, appId);
-  }
-
-  renderArchiveGameOverview(container, archiveGame, onLaunch) {
-    this.currentGame = null;
-    this.currentArchiveGame = archiveGame;
-
-    const stats = SteamDataManager.getStats();
-    const gameStats = stats[archiveGame.appId] || { totalMin: 0, lastPlayed: 0 };
-    const target = container.querySelector(".steam-library-page");
-    const thumb = archiveGame.thumb || "";
-
-    target.innerHTML = `
-      <div class="steam-game-overview" style="background: #1b2838; min-height: 100%; color: #dcdedf; display: flex; flex-direction: column;">
-        <div class="overview-banner" style="height: 300px; position: relative; overflow: hidden; background: #171a21;">
-          ${thumb ? `<img src="${thumb}" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.4; " />` : ""}
-          <div class="banner-content" style="position: absolute; bottom: 0; left: 0; right: 0; padding: 40px; background: linear-gradient(transparent, rgba(27, 40, 56, 1)); display: flex; align-items: flex-end; gap: 30px;">
-            ${
-              thumb
-                ? `<img src="${thumb}" style="width: 200px; height: 280px; object-fit: cover; border-radius: 4px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);" />`
-                : `<div style="width:200px;height:280px;background:#1b2838;border-radius:4px;display:flex;align-items:center;justify-content:center;"><i class="fas fa-gamepad" style="font-size:60px;color:#2a475e;"></i></div>`
-            }
-            <div class="banner-info" style="flex: 1;">
-              <h1 style="font-size: 48px; margin: 0 0 10px 0; color: #fff; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-family: 'Motiva Sans', Sans-serif;">${archiveGame.title}</h1>
-              <div class="play-bar" style="display: flex; align-items: center; gap: 20px;">
-                <button class="steam-play-btn" style="background: linear-gradient(to right, #47b230, #5ab941); border: none; color: #fff; padding: 12px 60px; font-size: 20px; font-weight: 700; border-radius: 2px; cursor: pointer; text-transform: uppercase; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">Play</button>
-                <div class="overview-stats" style="display: flex; gap: 30px; font-size: 13px; color: #898989;">
-                  <div>
-                    <div style="text-transform: uppercase; margin-bottom: 4px;">Last Played</div>
-                    <div style="color: #fff;">${gameStats.lastPlayed ? new Date(gameStats.lastPlayed).toLocaleDateString() : "Never"}</div>
-                  </div>
-                  <div>
-                    <div style="text-transform: uppercase; margin-bottom: 4px;">Play Time</div>
-                    <div style="color: #fff;">${this.formatTime(gameStats.totalMin)}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="overview-content" style="padding: 40px; display: grid; grid-template-columns: 2fr 1fr; gap: 40px;">
-          <div class="overview-main">
-            <div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 4px; margin-bottom: 20px;">
-              <h3 style="margin-top: 0; color: #66c0f4; text-transform: uppercase; font-size: 14px;">Game Info</h3>
-              <p style="line-height: 1.6; color: #acb2b8;">Experience ${archiveGame.title} on YukiOS. This game is part of the archive collection.</p>
-            </div>
-            <div class="steam-whats-new-header" style="margin-bottom: 15px;">Recent Activity</div>
-            <div style="color: #898989; font-style: italic; font-size: 13px;">No recent activity to show.</div>
-          </div>
-          <div class="overview-sidebar">
-             <div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 4px;">
-               <h3 style="margin-top: 0; color: #fff; font-size: 14px; text-transform: uppercase;">Friends who play</h3>
-               <div style="color: #898989; font-size: 13px;">None of your friends have played this game.</div>
-             </div>
-          </div>
-        </div>
-      </div>
-    `;
-
-    target.querySelector(".steam-play-btn").onclick = () => this.showGameOverlay(archiveGame.title, archiveGame.url);
-
-    this._setActiveSidebarItem(container, archiveGame.appId);
   }
 
   getGameDescription(appId) {
     if (descriptionMap[appId]) {
       return descriptionMap[appId];
     }
-
     const title = appMap[appId]?.title || appId;
     return `Experience ${title} on YukiOS. This game is part of your Steam library.`;
   }
 
-  async showGameOverlay(title, url) {
-    const gameId = url
-      .split("?")[0]
-      .replace(/\/index\.html$/, "")
-      .replace(/\.html$/, "")
-      .split("/")
-      .filter(Boolean)
-      .pop()
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "");
-    const analyticsBase = getAnalyticsBase(gameId);
-    sendLaunchAnalytics(gameId);
+  setCurrentGame(appId) {
+    this.gameLauncher.setCurrentGame(appId);
+  }
 
-    if (_launcher) {
-      _launcher.openIframeApp({ appId: gameId, type: "game", source: url, originalName: title, analyticsBase });
-      return;
-    }
-
-    let overlay = document.getElementById("game-overlay");
-    if (!overlay) {
-      overlay = document.createElement("div");
-      overlay.id = "game-overlay";
-      document.body.appendChild(overlay);
-    }
-
-    let iframeUrl = url;
-    if (looksLikeHtml(url) && isCdnGhUrl(url)) {
-      try {
-        iframeUrl = await fetchHtmlAsBlobUrl(url);
-      } catch (err) {
-        console.error("Failed to fetch game HTML:", err);
-      }
-    }
-
-    overlay.innerHTML = `
-      <div class="controls">
-        <span id="current-game-title">${title}</span>
-        <button class="close-btn">CLOSE GAME</button>
-      </div>
-      <iframe id="game-iframe" src="${iframeUrl}" allow="autoplay; fullscreen; clipboard-write; encrypted-media; picture-in-picture" sandbox="allow-forms allow-downloads allow-modals allow-pointer-lock allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation"></iframe>
-    `;
-
-    overlay.style.display = "flex";
-    overlay.querySelector(".close-btn").onclick = () => this.closeGame();
-    window.closeGame = () => this.closeGame();
+  showGameOverlay(title, url) {
+    return this.gameLauncher.showGameOverlay(title, url);
   }
 
   closeGame() {
-    const overlay = document.getElementById("game-overlay");
-    if (overlay) {
-      overlay.style.display = "none";
-      overlay.innerHTML = "";
-    }
+    return this.gameLauncher.closeGame();
   }
 
-  async fetchFirstJson(urls) {
-    let lastErr = null;
-    for (const url of urls) {
-      try {
-        const res = await fetch(url);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return await res.json();
-      } catch (e) {
-        lastErr = e;
-      }
-    }
-    throw lastErr || new Error("Failed to load JSON");
+  renderGameOverview(container, appId, onLaunch) {
+    return this.gameRenderer.renderGameOverview(container, appId, onLaunch);
   }
 
-  formatArchiveName(name, url) {
-    if (name && name !== "Yuki Game") return name;
-    const n = url
-      .split("/")
-      .pop()
-      .replace(/\.html$/, "");
-    return n.charAt(0).toUpperCase() + n.slice(1);
-  }
-
-  _archiveGameId(url) {
-    return url
-      .split("?")[0]
-      .replace(/\/index\.html$/, "")
-      .replace(/\.html$/, "")
-      .split("/")
-      .filter(Boolean)
-      .pop()
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "");
-  }
-
-  getArchiveBase() {
-    return `${CDN_BASE_GAMES}/archive/`;
-  }
-
-  _appendArchiveGameToSidebar(container, archiveGame, onLaunch) {
-    const sidebarList = container.querySelector(".sidebar-game-list");
-    if (!sidebarList) return;
-
-    const existing = sidebarList.querySelector(`.sidebar-game-item[data-app="${archiveGame.appId}"]`);
-    if (existing) return;
-
-    const item = this._makeSidebarItem(archiveGame, container, onLaunch, true);
-    item.classList.add("sidebar-archive-item");
-    sidebarList.appendChild(item);
-    observeLazyImages(item);
-  }
-
-  async _loadArchiveSection(container, onLaunch, collapsed) {
-    const target = container.querySelector(".steam-library-page");
-    if (!target) return;
-
-    const sectionTitle = "All Games (Archive)";
-    const sectionId = `steam-section-${sectionTitle.toLowerCase().replace(/\s+/g, "-")}`;
-    const isCollapsed = collapsed.includes(sectionTitle);
-    const base = this.getArchiveBase();
-
-    const yukiosContent = target.querySelector(".steam-yukios-content");
-    if (!yukiosContent) return;
-
-    const placeholder = document.createElement("div");
-    placeholder.id = "archive-section-placeholder";
-    placeholder.innerHTML = `
-      <div class="steam-section-header" id="${sectionId}" data-title="${sectionTitle}" style="cursor: pointer; display: flex; align-items: center; gap: 10px;">
-        <i class="fas fa-spinner fa-spin" style="font-size: 10px; color: #898989;"></i>
-        <div class="steam-section-title">${sectionTitle}</div>
-        <div style="height: 1px; flex: 1; background: rgba(255,255,255,0.1); margin-left: 10px;"></div>
-        <span style="font-size: 11px; color: #898989; margin-left: 8px;">Loading...</span>
-      </div>
-    `;
-    yukiosContent.appendChild(placeholder);
-
-    try {
-      const data = await this.fetchFirstJson([`${base}games.json`]);
-      const allGames = Array.isArray(data) ? data : data?.games || [];
-
-      this._archiveGamesCache = allGames.map((game) => {
-        const name = this.formatArchiveName(game.name, game.url);
-        const fullUrl = game.url.startsWith("http") ? game.url : base + game.url;
-        const appId = this._archiveGameId(fullUrl);
-        let thumb = game.thumbnail
-          ? game.thumbnail.startsWith("http")
-            ? game.thumbnail
-            : base.replace(/\/$/, "") + "/" + game.thumbnail.replace(/^\//, "")
-          : "";
-        return { appId, title: name, url: fullUrl, thumb };
-      });
-
-      const CHUNK = 50;
-      let archiveIndex = 0;
-
-      const renderArchiveChunk = (deadline) => {
-        while (archiveIndex < this._archiveGamesCache.length && (deadline ? deadline.timeRemaining() > 2 : true)) {
-          const end = Math.min(archiveIndex + CHUNK, this._archiveGamesCache.length);
-          for (let i = archiveIndex; i < end; i++) {
-            this._appendArchiveGameToSidebar(container, this._archiveGamesCache[i], onLaunch);
-          }
-          archiveIndex = end;
-          if (!deadline) break;
-        }
-        if (archiveIndex < this._archiveGamesCache.length) {
-          requestIdleCallback(renderArchiveChunk, { timeout: 200 });
-        }
-      };
-
-      requestIdleCallback(renderArchiveChunk, { timeout: 100 });
-
-      const cards = this._archiveGamesCache
-        .map(({ appId, title, url: fullUrl, thumb }) => {
-          return `
-          <div class="steam-game-card steam-archive-card" data-app="${appId}" data-url="${fullUrl}" title="${title}">
-            <div class="steam-game-img-wrap">
-              ${
-                thumb
-                  ? lazyImg(
-                      thumb,
-                      `alt="${title}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.innerHTML='<div style=\\'width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#1b2838;color:#2a475e;\\'><i class=\\'fas fa-gamepad\\' style=\\'font-size:40px;\\'></i></div>'"`
-                    )
-                  : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#1b2838;color:#2a475e;"><i class="fas fa-gamepad" style="font-size:40px;"></i></div>`
-              }
-            </div>
-            <div class="steam-game-title">${title}</div>
-          </div>`;
-        })
-        .join("");
-
-      placeholder.innerHTML = `
-        <div class="steam-section-header" id="${sectionId}" data-title="${sectionTitle}" style="cursor: pointer; display: flex; align-items: center; gap: 10px;">
-          <i class="fas ${isCollapsed ? "fa-chevron-right" : "fa-chevron-down"}" style="font-size: 10px; color: #898989;"></i>
-          <div class="steam-section-title">${sectionTitle}</div>
-          <div style="height: 1px; flex: 1; background: rgba(255,255,255,0.1); margin-left: 10px;"></div>
-          <span style="font-size: 11px; color: #898989; margin-left: 8px;">${allGames.length} games</span>
-        </div>
-        <div class="steam-game-grid steam-archive-grid" style="display: ${isCollapsed ? "none" : "grid"}">
-          ${cards}
-        </div>
-      `;
-
-      observeLazyImages(placeholder);
-
-      placeholder.querySelector(".steam-section-header").onclick = () => {
-        SteamDataManager.toggleCollapsed(sectionTitle);
-        const grid = placeholder.querySelector(".steam-archive-grid");
-        const icon = placeholder.querySelector(".steam-section-header i");
-        const nowCollapsed = SteamDataManager.getCollapsed().includes(sectionTitle);
-        grid.style.display = nowCollapsed ? "none" : "grid";
-        icon.className = `fas ${nowCollapsed ? "fa-chevron-right" : "fa-chevron-down"}`;
-        icon.style.cssText = "font-size: 10px; color: #898989;";
-      };
-
-      const popover = container.querySelector(".steam-game-popover");
-      const stats = SteamDataManager.getStats();
-
-      placeholder.querySelectorAll(".steam-archive-card").forEach((card) => {
-        const appId = card.dataset.app;
-        const cardUrl = card.dataset.url;
-        const cardTitle = card.querySelector(".steam-game-title")?.textContent || appId;
-        const thumbImg = card.querySelector("img")?.dataset.src || card.querySelector("img")?.src || "";
-        const archiveGame = { appId, title: cardTitle, url: cardUrl, thumb: thumbImg };
-
-        card.addEventListener("click", () => {
-          popover.style.display = "none";
-          this.renderArchiveGameOverview(container, archiveGame, onLaunch);
-        });
-
-        card.addEventListener("dblclick", async () => {
-          await this.showGameOverlay(cardTitle, cardUrl);
-        });
-
-        card.oncontextmenu = (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          this.showContextMenu(e, appId, container, () => this.showGameOverlay(cardTitle, cardUrl));
-        };
-
-        card.addEventListener("mouseenter", () => {
-          const rect = card.getBoundingClientRect();
-          const gameStats = stats[appId] || { totalMin: 0, recentMin: 0 };
-
-          popover.innerHTML = `
-            <img class="popover-banner" src="${thumbImg}" />
-            <div class="popover-content">
-              <div class="popover-title">${cardTitle}</div>
-              <div class="popover-stats">
-                <div class="popover-stat-item">
-                  <span class="popover-stat-label">Last two weeks:</span>
-                  <span class="popover-stat-value">${this.formatTime(gameStats.recentMin)}</span>
-                </div>
-                <div class="popover-stat-item">
-                  <span class="popover-stat-label">Total played:</span>
-                  <span class="popover-stat-value">${this.formatTime(gameStats.totalMin)}</span>
-                </div>
-              </div>
-            </div>
-          `;
-
-          popover.style.display = "block";
-          const containerRect = container.getBoundingClientRect();
-          popover.style.left = `${rect.right - containerRect.left + 10}px`;
-          popover.style.top = `${rect.top - containerRect.top}px`;
-
-          const popRect = popover.getBoundingClientRect();
-          if (popRect.right > window.innerWidth) {
-            popover.style.left = `${rect.left - popRect.width - 10}px`;
-          }
-          if (popRect.bottom > window.innerHeight) {
-            popover.style.top = `${window.innerHeight - popRect.height - 10}px`;
-          }
-        });
-
-        card.addEventListener("mouseleave", () => {
-          popover.style.display = "none";
-        });
-      });
-    } catch (err) {
-      console.error("Archive load failed:", err);
-      placeholder.innerHTML = `<div style="color:#898989;font-size:13px;padding:10px 0;">Failed to load archive games.</div>`;
-    }
+  renderArchiveGameOverview(container, archiveGame, onLaunch) {
+    return this.gameRenderer.renderArchiveGameOverview(container, archiveGame, onLaunch);
   }
 
   renderGrid(container, onLaunch, focusCollection = null) {
-    if (this.currentArchiveGame) {
-      this.renderArchiveGameOverview(container, this.currentArchiveGame, onLaunch);
-      return;
-    }
-    if (this.currentGame) {
-      this.renderGameOverview(container, this.currentGame, onLaunch);
-      return;
-    }
-    const allGames = this.getGames();
-    const stats = SteamDataManager.getStats();
-    const favorites = SteamDataManager.getFavorites();
-    const collections = SteamDataManager.getCollections();
-    const hidden = SteamDataManager.getHidden();
-    const collapsed = SteamDataManager.getCollapsed();
-
-    const filteredGames = allGames.filter((g) => !hidden.includes(g.app));
-    const sortedGames = this.getSortedGames(filteredGames);
-
-    const recentGames = filteredGames
-      .filter((g) => stats[g.app]?.lastPlayed)
-      .sort((a, b) => stats[b.app].lastPlayed - stats[a.app].lastPlayed)
-      .slice(0, 5);
-
-    const target = container.querySelector(".steam-library-page");
-    if (!target) return;
-
-    const isNewsCollapsed = collapsed.includes("What's New");
-
-    const shellHtml = `
-      <div class="steam-grid-controls-bar" style="margin-bottom: 20px; display: flex; justify-content: flex-end; align-items: center; gap: 15px;">
-        <div class="steam-grid-filters" style="display: flex; align-items: center; gap: 15px;">
-          <span class="steam-control-label">Sort by</span>
-          <select class="steam-sort-select">
-            <option value="popularity" ${this.sortBy === "popularity" ? "selected" : ""}>Popularity</option>
-            <option value="alphabetical" ${this.sortBy === "alphabetical" ? "selected" : ""}>Alphabetical</option>
-            <option value="hours" ${this.sortBy === "hours" ? "selected" : ""}>Hours Played</option>
-            <option value="lastPlayed" ${this.sortBy === "lastPlayed" ? "selected" : ""}>Last Played</option>
-          </select>
-          <button class="steam-sort-order-btn">
-            <i class="fas ${this.sortReverse ? "fa-sort-amount-up" : "fa-sort-amount-down"}"></i>
-          </button>
-        </div>
-      </div>
-      <div class="steam-yukios-content">
-        <div class="steam-whats-new">
-          <div class="steam-whats-new-header steam-section-header" data-title="What's New" style="cursor: pointer; display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
-            <i class="fas ${isNewsCollapsed ? "fa-chevron-right" : "fa-chevron-down"}" style="font-size: 10px; color: #898989;"></i>
-            <div class="steam-section-title">What's New</div>
-            <div style="height: 1px; flex: 1; background: rgba(255,255,255,0.1); margin-left: 10px;"></div>
-          </div>
-          <div class="steam-whats-new-list" style="display: ${isNewsCollapsed ? "none" : "flex"}">
-            ${this.newsItems
-              .map(
-                (item) => `
-              <div class="news-card">
-                <img src="${item.image}" />
-                <div class="news-info">
-                  <div class="news-title">${item.title}</div>
-                  <div class="news-date">${item.date}</div>
-                </div>
-              </div>`
-              )
-              .join("")}
-          </div>
-        </div>
-        <div id="steam-sections-host"></div>
-      </div>
-    `;
-
-    target.innerHTML = shellHtml;
-
-    const sectionsHost = target.querySelector("#steam-sections-host");
-
-    const webIds = collections["Webports/Html games"] || [];
-    const flashIds = collections["Flash Games"] || [];
-
-    const sections = [
-      { title: "Recent", games: recentGames },
-      { title: "Favorites", games: sortedGames.filter((g) => favorites.includes(g.app)) },
-      { title: "Webports/Html games", games: sortedGames.filter((g) => webIds.includes(g.app)) },
-      { title: "Flash Games", games: sortedGames.filter((g) => flashIds.includes(g.app)) },
-      ...Object.entries(collections)
-        .filter(([name]) => name !== "Webports/Html games" && name !== "Flash Games")
-        .map(([name, ids]) => ({ title: name, games: sortedGames.filter((g) => ids.includes(g.app)) })),
-      { title: "All Games", games: sortedGames }
-    ].filter((s) => s.games.length > 0);
-
-    sections.forEach(({ title, games }) => {
-      const sectionId = `steam-section-${title.toLowerCase().replace(/\s+/g, "-")}`;
-      const isCollapsed = collapsed.includes(title);
-      const wrapper = document.createElement("div");
-      wrapper.dataset.sectionWrapper = title;
-      wrapper.innerHTML = `
-        <div class="steam-section-header" id="${sectionId}" data-title="${title}" style="cursor: pointer; display: flex; align-items: center; gap: 10px;">
-          <i class="fas ${isCollapsed ? "fa-chevron-right" : "fa-chevron-down"}" style="font-size: 10px; color: #898989;"></i>
-          <div class="steam-section-title">${title}</div>
-          <div style="height: 1px; flex: 1; background: rgba(255,255,255,0.1); margin-left: 10px;"></div>
-        </div>
-        <div class="steam-game-grid" data-section="${title}" style="display: ${isCollapsed ? "none" : "grid"}"></div>
-      `;
-      sectionsHost.appendChild(wrapper);
-
-      if (!isCollapsed) {
-        this._fillGridLazy(wrapper.querySelector(".steam-game-grid"), games);
-      }
-    });
-
-    sectionsHost.appendChild(document.createComment("archive-placeholder"));
-    this._loadArchiveSection(container, onLaunch, collapsed);
-
-    const sidebar = container.querySelector(".steam-library-sidebar");
-    const mainContent = container.querySelector(".steam-main-content");
-
-    if (container.querySelector(".steam-tab[data-page='library']").classList.contains("active")) {
-      sidebar.classList.remove("hidden");
-    }
-    if (target) target.style.height = "auto";
-    if (mainContent) {
-      mainContent.style.padding = this.currentGame ? "0" : "20px";
-      mainContent.style.overflowY = "auto";
-    }
-
-    this._attachGridDelegation(container, onLaunch);
-
-    const sortSelect = target.querySelector(".steam-sort-select");
-    const sortBtn = target.querySelector(".steam-sort-order-btn");
-    if (sortSelect) {
-      sortSelect.addEventListener("change", () => {
-        this.sortBy = sortSelect.value;
-        this.renderGrid(container, onLaunch, focusCollection);
-      });
-    }
-    if (sortBtn) {
-      sortBtn.addEventListener("click", () => {
-        this.sortReverse = !this.sortReverse;
-        this.renderGrid(container, onLaunch, focusCollection);
-      });
-    }
-
-    if (this.currentGame) this._setActiveSidebarItem(container, this.currentGame);
-    else if (this.currentArchiveGame) this._setActiveSidebarItem(container, this.currentArchiveGame.appId);
-
-    target.querySelectorAll(".steam-section-header").forEach((header) => {
-      header.onclick = () => {
-        SteamDataManager.toggleCollapsed(header.dataset.title);
-        this.renderGrid(container, onLaunch, focusCollection);
-      };
-    });
-  }
-
-  _fillGridLazy(grid, games) {
-    const CHUNK = 30;
-    let index = 0;
-    const renderChunk = (deadline) => {
-      while (index < games.length && (deadline ? deadline.timeRemaining() > 1 : index === 0)) {
-        const end = Math.min(index + CHUNK, games.length);
-        const frag = document.createDocumentFragment();
-        const tmp = document.createElement("div");
-        tmp.innerHTML = games
-          .slice(index, end)
-          .map((g) => this.createCard(g))
-          .join("");
-        while (tmp.firstChild) frag.appendChild(tmp.firstChild);
-        grid.appendChild(frag);
-        observeLazyImages(grid);
-        index = end;
-        if (!deadline) break;
-      }
-      if (index < games.length) {
-        requestIdleCallback(renderChunk, { timeout: 500 });
-      }
-    };
-    requestIdleCallback(renderChunk, { timeout: 200 });
-  }
-
-  _attachGridDelegation(container, onLaunch) {
-    const mainContent = container.querySelector(".steam-main-content");
-    const popover = container.querySelector(".steam-game-popover");
-    const stats = SteamDataManager.getStats();
-    const allGames = this.getGames();
-    const gameMap = new Map(allGames.map((g) => [g.app, g]));
-
-    if (mainContent._steamDelegated) return;
-    mainContent._steamDelegated = true;
-
-    mainContent.addEventListener("click", (e) => {
-      const card = e.target.closest(".steam-game-card");
-      if (!card) return;
-      popover.style.display = "none";
-      const appId = card.dataset.app;
-      const game = gameMap.get(appId);
-      if (game) {
-        this.renderGameOverview(container, appId, onLaunch);
-        return;
-      }
-      const archiveGame = this._archiveGamesCache.find((g) => g.appId === appId);
-      if (archiveGame) {
-        this.renderArchiveGameOverview(container, archiveGame, onLaunch);
-      }
-    });
-
-    mainContent.addEventListener("dblclick", async (e) => {
-      const card = e.target.closest(".steam-game-card");
-      if (!card) return;
-      const appId = card.dataset.app;
-      const cardUrl = card.dataset.url || null;
-      if (cardUrl) {
-        const title = card.querySelector(".steam-game-title")?.textContent || appId;
-        await this.showGameOverlay(title, cardUrl);
-      } else {
-        onLaunch(appId);
-      }
-    });
-
-    mainContent.addEventListener("contextmenu", (e) => {
-      const card = e.target.closest(".steam-game-card");
-      if (!card) return;
-      e.preventDefault();
-      e.stopPropagation();
-      const appId = card.dataset.app;
-      this.showContextMenu(e, appId, container, onLaunch);
-    });
-
-    mainContent.addEventListener(
-      "mouseenter",
-      (e) => {
-        const card = e.target.closest(".steam-game-card");
-        if (!card) return;
-        const appId = card.dataset.app;
-        const game = gameMap.get(appId);
-        const gameStats = stats[appId] || { totalMin: 0, recentMin: 0 };
-        const icon = game?.icon || card.querySelector("img")?.src || card.querySelector("img")?.dataset.src || "";
-        const title = game?.title || card.querySelector(".steam-game-title")?.textContent || appId;
-
-        popover.innerHTML = `
-        <img class="popover-banner" src="${icon}" />
-        <div class="popover-content">
-          <div class="popover-title">${title}</div>
-          <div class="popover-stats">
-            <div class="popover-stat-item">
-              <span class="popover-stat-label">Last two weeks:</span>
-              <span class="popover-stat-value">${this.formatTime(gameStats.recentMin)}</span>
-            </div>
-            <div class="popover-stat-item">
-              <span class="popover-stat-label">Total played:</span>
-              <span class="popover-stat-value">${this.formatTime(gameStats.totalMin)}</span>
-            </div>
-          </div>
-        </div>
-      `;
-        popover.style.display = "block";
-        const rect = card.getBoundingClientRect();
-        const containerRect = container.getBoundingClientRect();
-        popover.style.left = `${rect.right - containerRect.left + 10}px`;
-        popover.style.top = `${rect.top - containerRect.top}px`;
-        const popRect = popover.getBoundingClientRect();
-        if (popRect.right > window.innerWidth) popover.style.left = `${rect.left - popRect.width - 10}px`;
-        if (popRect.bottom > window.innerHeight) popover.style.top = `${window.innerHeight - popRect.height - 10}px`;
-      },
-      true
-    );
-
-    mainContent.addEventListener(
-      "mouseleave",
-      (e) => {
-        const card = e.target.closest?.(".steam-game-card");
-        if (card) popover.style.display = "none";
-      },
-      true
-    );
-  }
-
-  showContextMenu(e, appId, container, onLaunch) {
-    const menu = container.querySelector(".steam-context-menu");
-    const favorites = SteamDataManager.getFavorites();
-    const collections = SteamDataManager.getCollections();
-    const isFav = favorites.includes(appId);
-    const isHidden = SteamDataManager.getHidden().includes(appId);
-
-    let html = `
-    <div class="steam-context-item" id="ctx-launch"><i class="fas fa-play" style="width:16px;margin-right:8px;opacity:0.6;"></i>Launch</div>
-    <div class="steam-context-item" id="ctx-fav"><i class="fas ${isFav ? "fa-star-half-alt" : "fa-star"}" style="width:16px;margin-right:8px;opacity:0.6;"></i>${isFav ? "Remove from Favorites" : "Add to Favorites"}</div>
-    <div class="steam-context-item" id="ctx-hide"><i class="fas ${isHidden ? "fa-eye" : "fa-eye-slash"}" style="width:16px;margin-right:8px;opacity:0.6;"></i>${isHidden ? "Unhide this game" : "Hide this game"}</div>
-    <div class="steam-context-item" id="ctx-add-home"><i class="fas fa-home" style="width:16px;margin-right:8px;opacity:0.6;"></i>Add to home screen</div>
-    <div class="steam-context-item" id="ctx-report" style="color: #ff4d4d;"><i class="fas fa-bug" style="width:16px;margin-right:8px;opacity:0.6;"></i>Report broken game</div>
-    <div class="steam-context-item">
-      <i class="fas fa-folder-plus" style="width:16px;margin-right:8px;opacity:0.6;"></i>Add to Collection <i class="fas fa-chevron-right" style="font-size:10px;margin-left:auto;"></i>
-      <div class="steam-context-submenu">
-        <div class="steam-context-item" id="ctx-new-col"><i class="fas fa-plus" style="width:16px;margin-right:8px;opacity:0.6;"></i><b>New Collection...</b></div>
-        ${Object.keys(collections)
-          .map(
-            (name) =>
-              `<div class="steam-context-item ctx-col-item" data-name="${name}"><i class="fas fa-folder" style="width:16px;margin-right:8px;opacity:0.6;"></i>${name}</div>`
-          )
-          .join("")}
-      </div>
-    </div>
-  `;
-
-    menu.innerHTML = html;
-    refreshIcons(menu);
-    menu.style.display = "block";
-
-    const containerRect = container.getBoundingClientRect();
-    let x = e.clientX - containerRect.left;
-    let y = e.clientY - containerRect.top;
-
-    menu.style.left = `${x}px`;
-    menu.style.top = `${y}px`;
-
-    const menuRect = menu.getBoundingClientRect();
-    if (menuRect.right > window.innerWidth) x -= menuRect.width;
-    if (menuRect.bottom > window.innerHeight) y -= menuRect.height;
-
-    menu.style.left = `${x}px`;
-    menu.style.top = `${y}px`;
-
-    const closeMenu = () => {
-      menu.style.display = "none";
-      document.removeEventListener("click", closeMenu);
-    };
-    setTimeout(() => document.addEventListener("click", closeMenu), 0);
-
-    menu.querySelector("#ctx-launch").onclick = () => onLaunch(appId);
-    menu.querySelector("#ctx-fav").onclick = () => {
-      SteamDataManager.toggleFavorite(appId);
-      this.renderGrid(container, onLaunch);
-      this._rebuildSidebar(container, onLaunch);
-    };
-    menu.querySelector("#ctx-hide").onclick = () => {
-      SteamDataManager.toggleHide(appId);
-      this.renderGrid(container, onLaunch);
-      this._rebuildSidebar(container, onLaunch);
-    };
-    menu.querySelector("#ctx-new-col").onclick = async () => {
-      const name = await customPrompt("Enter collection name:");
-      if (name && name.trim()) {
-        SteamDataManager.createCollection(name.trim());
-        SteamDataManager.addToCollection(name.trim(), appId);
-        this.renderGrid(container, onLaunch);
-      }
-    };
-    menu.querySelectorAll(".ctx-col-item").forEach((item) => {
-      item.onclick = () => {
-        SteamDataManager.addToCollection(item.dataset.name, appId);
-        this.renderGrid(container, onLaunch);
-      };
-    });
-
-    menu.querySelector("#ctx-add-home").onclick = async () => {
-      const game =
-        this.getGames().find((g) => g.app === appId) || this._archiveGamesCache.find((g) => g.appId === appId);
-      if (!game) return;
-      const title = game.title;
-      const icon = game.icon || game.thumb;
-      const fileName = `${title}.desktop`;
-      const fileContent = JSON.stringify({ app: "steamApp", steamGameId: appId, name: title, path: icon });
-
-      try {
-        await _launcher.fs.createFile(["Desktop"], fileName, fileContent, "text");
-        if (_desktopUI) {
-          await _desktopUI.createDesktopFileIcon(fileName);
-          _launcher.wm.sendNotify(`"${title}" added to home screen`);
-        }
-      } catch (err) {
-        console.error("Failed to add to home screen:", err);
-        _launcher.wm.sendNotify(`Failed to add "${title}" to home screen`);
-      }
-    };
-
-    menu.querySelector("#ctx-report").onclick = async () => {
-      const game = this.getGames().find((g) => g.app === appId);
-      const title = game ? game.title : appId;
-      const reason = await customPrompt(`Report ${title} as broken? Please provide a reason:`);
-      if (reason === null) return;
-
-      try {
-        const res = await fetch("https://analytics.liventcord-a60.workers.dev/api/report-broken", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ appId, title, reason })
-        });
-        if (res.ok) {
-          customAlert("Thank you! Your report has been sent to the developers.");
-        } else {
-          customAlert("Failed to send report. Please try again later.");
-        }
-      } catch (err) {
-        customAlert("An error occurred while sending the report.");
-      }
-    };
-  }
-
-  _rebuildSidebar(container, onLaunch) {
-    const allGames = this.getGames();
-    const hidden = SteamDataManager.getHidden();
-
-    const sidebarHiddenSection = container.querySelector(".sidebar-hidden-section");
-
-    const visibleGames = allGames.filter((g) => !hidden.includes(g.app));
-    this._renderSidebarChunked(container, visibleGames, onLaunch);
-
-    this._archiveGamesCache.forEach((archiveGame) => {
-      this._appendArchiveGameToSidebar(container, archiveGame, onLaunch);
-    });
-
-    if (sidebarHiddenSection) {
-      const hiddenGames = allGames.filter((g) => hidden.includes(g.app));
-      if (hiddenGames.length === 0) {
-        sidebarHiddenSection.style.display = "none";
-      } else {
-        sidebarHiddenSection.style.display = "block";
-        const countEl = sidebarHiddenSection.querySelector(".sidebar-hidden-count");
-        if (countEl) countEl.textContent = hiddenGames.length;
-        this._renderHiddenSidebar(container, hiddenGames, onLaunch);
-      }
-    }
-  }
-
-  _setActiveSidebarItem(container, appId) {
-    container.querySelectorAll(".sidebar-game-item").forEach((item) => {
-      item.classList.toggle("active", item.dataset.app === appId);
-    });
-  }
-
-  _makeSidebarItem(game, container, onLaunch, isArchive = false) {
-    const appId = isArchive ? game.appId : game.app;
-    const title = game.title;
-    const icon = isArchive ? game.thumb : game.icon;
-    const item = document.createElement("div");
-    item.className = "sidebar-game-item";
-    item.dataset.app = appId;
-    item.innerHTML = icon
-      ? `<img data-src="${icon}" /><span>${title}</span>`
-      : `<i class="fas fa-gamepad" style="font-size:16px;color:#2a475e;flex-shrink:0;"></i><span>${title}</span>`;
-
-    item.addEventListener("click", () => {
-      if (isArchive) {
-        this.renderArchiveGameOverview(container, game, onLaunch);
-      } else {
-        this.renderGameOverview(container, appId, onLaunch);
-      }
-    });
-    item.addEventListener("dblclick", () => {
-      if (isArchive) {
-        this.showGameOverlay(game.title, game.url);
-      } else {
-        onLaunch(appId);
-      }
-    });
-    item.oncontextmenu = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      const launchFn = isArchive ? () => this.showGameOverlay(game.title, game.url) : onLaunch;
-      this.showContextMenu(e, appId, container, launchFn);
-    };
-    return item;
-  }
-
-  _renderSidebarChunked(container, games, onLaunch) {
-    const sidebarList = container.querySelector(".sidebar-game-list");
-    if (!sidebarList) return;
-    sidebarList.innerHTML = "";
-
-    const CHUNK = 50;
-    let index = 0;
-
-    const renderChunk = (deadline) => {
-      while (index < games.length && (deadline ? deadline.timeRemaining() > 2 : true)) {
-        const end = Math.min(index + CHUNK, games.length);
-        const fragment = document.createDocumentFragment();
-        for (let i = index; i < end; i++) {
-          fragment.appendChild(this._makeSidebarItem(games[i], container, onLaunch, false));
-        }
-        sidebarList.appendChild(fragment);
-        observeLazyImages(sidebarList);
-        index = end;
-        if (!deadline) break;
-      }
-      if (index < games.length) {
-        requestIdleCallback(renderChunk, { timeout: 200 });
-      } else {
-        if (this.currentGame) this._setActiveSidebarItem(container, this.currentGame);
-        else if (this.currentArchiveGame) this._setActiveSidebarItem(container, this.currentArchiveGame.appId);
-      }
-    };
-
-    requestIdleCallback(renderChunk, { timeout: 100 });
-  }
-
-  _renderHiddenSidebar(container, hiddenGames, onLaunch) {
-    const hiddenList = container.querySelector(".sidebar-hidden-list");
-    if (!hiddenList) return;
-    hiddenList.innerHTML = "";
-    hiddenGames.forEach((g) => {
-      const item = this._makeSidebarItem(g, container, onLaunch, false);
-      item.classList.add("sidebar-hidden-item");
-      hiddenList.appendChild(item);
-    });
-    observeLazyImages(hiddenList);
-  }
-
-  _initSidebarDrag(container) {
-    const sidebar = container.querySelector(".steam-library-sidebar");
-    if (!sidebar || sidebar._dragInited) return;
-    sidebar._dragInited = true;
-
-    const handle = sidebar.querySelector(".sidebar-resize-handle");
-    if (!handle) return;
-
-    let startX = 0;
-    let startWidth = 0;
-    let isDragging = false;
-
-    handle.addEventListener("mousedown", (e) => {
-      isDragging = true;
-      startX = e.clientX;
-      startWidth = sidebar.offsetWidth;
-      document.body.style.cursor = "ew-resize";
-      document.body.style.userSelect = "none";
-    });
-
-    document.addEventListener("mousemove", (e) => {
-      if (!isDragging) return;
-      const delta = e.clientX - startX;
-      const newWidth = Math.max(140, Math.min(400, startWidth + delta));
-      sidebar.style.width = `${newWidth}px`;
-    });
-
-    document.addEventListener("mouseup", () => {
-      if (!isDragging) return;
-      isDragging = false;
-      document.body.style.cursor = "";
-      document.body.style.userSelect = "";
-    });
+    return this.gameRenderer.renderGrid(container, onLaunch, focusCollection);
   }
 
   render(container, onLaunch, wm = null, focusCollection = null) {
-    SteamDataManager.setupDefaultCollections();
-    const allGames = this.getGames();
-    const hidden = SteamDataManager.getHidden();
-    const visibleGames = allGames.filter((g) => !hidden.includes(g.app));
-    const hiddenGames = allGames.filter((g) => hidden.includes(g.app));
-    const username = localStorage.getItem("yukiOS_username") || "Reeyuki";
-    const profilePic = localStorage.getItem("yukiOS_profilePicture") || "static/icons/guest.webp";
-
-    container.classList.add("steam-app-root");
-    container.style.padding = "0";
-
-    const winRootn = container.closest(".window");
-    const existingControls = winRootn?.querySelector(".window-controls");
-    if (existingControls && container.contains(existingControls)) {
-      winRootn.appendChild(existingControls);
-    }
-
-    container.innerHTML = `
-      <style>
-        .store-layout { display: flex; gap: 0; height: 100%; background: #1b2838; color: #c6d4df; }
-        .store-main-col { flex: 1; overflow-y: auto; padding: 20px 24px; min-width: 0; }
-        .store-side-col { width: 186px; flex-shrink: 0; background: #16202d; padding: 12px 8px; display: flex; flex-direction: column; gap: 16px; overflow-y: auto; }
-        .store-section-title { font-size: 14px; font-weight: 700; color: #c6d4df; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 12px 0; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.08); }
-        .store-section-divider { height: 1px; background: rgba(255,255,255,0.08); margin: 24px 0; }
-        .store-featured-hero { display: flex; gap: 0; background: #16202d; border-radius: 4px; overflow: hidden; min-height: 220px; margin-bottom: 4px; }
-.store-hero-img-wrap {
-    width: 340px;
-    height: 340px;
-    flex-shrink: 0;
-    overflow: hidden;
-}
-
-.store-hero-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
-    display: block;
-    max-width: 100%;
-    max-height: 100%;
-}
-        .store-hero-info { flex: 1; padding: 24px 20px; display: flex; flex-direction: column; justify-content: flex-end; gap: 8px; background: linear-gradient(to right, #16202d, #1b2838); }
-        .store-hero-title { font-size: 26px; font-weight: 700; color: #fff; line-height: 1.2; }
-        .store-hero-tags { display: flex; gap: 6px; flex-wrap: wrap; }
-        .store-tag { font-size: 11px; background: rgba(103,193,245,0.15); color: #67c1f5; padding: 2px 8px; border-radius: 2px; border: 1px solid rgba(103,193,245,0.3); }
-        .store-hero-desc { font-size: 12px; color: #8f98a0; line-height: 1.5; max-width: 360px; }
-        .store-play-btn { background: linear-gradient(90deg,#06bfff,#2d73ff); border: none; color: #fff; font-size: 13px; font-weight: 700; padding: 10px 24px; border-radius: 2px; cursor: pointer; align-self: flex-start; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; transition: opacity 0.15s; }
-        .store-play-btn:hover { opacity: 0.85; }
-        .store-hero-thumbs { display: flex; flex-direction: column; gap: 4px; width: 100px; flex-shrink: 0; background: #171d25; padding: 6px 4px; overflow-y: auto; }
-        .store-hero-thumb { cursor: pointer; border: 2px solid transparent; border-radius: 2px; overflow: hidden; flex-shrink: 0; }
-        .store-hero-thumb img { width: 100%; height: 54px; object-fit: cover; display: block; }
-        .store-hero-thumb.active { border-color: #67c1f5; }
-        .store-hero-thumb:hover:not(.active) { border-color: rgba(103,193,245,0.4); }
-        .store-games-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
-        .store-game-card { background: #16202d; border-radius: 3px; overflow: hidden; display: flex; flex-direction: column; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }
-        .store-game-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.5); }
-        .store-game-card-img { height: 120px; overflow: hidden; }
-        .store-game-card-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .store-game-card-info { padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 6px; }
-        .store-game-card-title { font-size: 13px; font-weight: 600; color: #c6d4df; }
-        .store-game-card-tags { display: flex; gap: 4px; flex-wrap: wrap; }
-        .store-card-play-btn { background: #2a475e; border: none; color: #67c1f5; font-size: 11px; font-weight: 700; padding: 5px 12px; border-radius: 2px; cursor: pointer; align-self: flex-start; margin-top: 2px; text-transform: uppercase; transition: background 0.15s; }
-        .store-card-play-btn:hover { background: #3d6b8a; }
-        .store-ad-block { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-        .store-ad-label { font-size: 9px; color: #4a5a6a; text-transform: uppercase; letter-spacing: 1px; align-self: flex-start; }
-      </style>
-
-      <div class="steam-loading-screen">
-        <div class="steam-loading-logo">
-          <div class="steam-spinner"></div>
-          <i class="fab fa-steam"></i>
-        </div>
-      </div>
-
-      <div class="steam-main">
-        <div class="steam-top-bar window-header">
-          <div class="steam-menu-items">
-            <span class="steam-menu-item">Steam</span>
-            <span class="steam-menu-item">View</span>
-            <span class="steam-menu-item">Games</span>
-          </div>
-          <div class="steam-top-right">
-            <div class="steam-notifications"><i class="fas fa-bell"></i></div>
-            <div class="steam-user-profile">
-              <span>${username}</span>
-              <img src="${profilePic}" />
-            </div>
-            <div class="steam-window-controls-slot"></div>
-          </div>
-        </div>
-
-        <div class="steam-nav-bar">
-          <div class="steam-nav-buttons">
-            <button class="steam-nav-btn steam-back-btn"><i class="fas fa-arrow-left"></i></button>
-            <button class="steam-nav-btn steam-forward-btn"><i class="fas fa-arrow-right"></i></button>
-          </div>
-          <div class="steam-tabs">
-            <span class="steam-tab" data-page="store">Store</span>
-            <span class="steam-tab" data-page="library">Library</span>
-            <span class="steam-tab" data-page="community">Community</span>
-            <span class="steam-tab" data-page="user">${username}</span>
-          </div>
-        </div>
-
-        <div class="steam-content-area">
-          <div class="steam-library-sidebar hidden">
-            <div class="sidebar-search-container">
-               <input type="text" class="sidebar-search-input" placeholder="Search" />
-            </div>
-            <div class="sidebar-game-list"></div>
-            <div class="sidebar-hidden-section" style="display:${hiddenGames.length > 0 ? "block" : "none"};" data-collapsed="1">
-              <div class="sidebar-hidden-header">
-                <i class="fas fa-chevron-right sidebar-hidden-chevron"></i>
-                <span>Hidden Games</span>
-                <span class="sidebar-hidden-count">${hiddenGames.length}</span>
-              </div>
-              <div class="sidebar-hidden-list" style="display:none;"></div>
-            </div>
-            <div class="sidebar-resize-handle"></div>
-          </div>
-
-          <div class="steam-main-content">
-            <div class="steam-library-page"></div>
-            <div class="steam-store-page hidden">
-              <div class="store-layout">
-                <div class="store-main-col">
-                  <div class="store-featured-header">
-                    <h2 class="store-section-title">Featured &amp; Recommended</h2>
-                  </div>
-                  <div class="store-featured-hero">
-                    <div class="store-hero-img-wrap">
-                      <img src="${CDN_BASE}/static/icons/plague.webp" class="store-hero-img" id="store-hero-img" />
-                    </div>
-                    <div class="store-hero-info" id="store-hero-info">
-                      <div class="store-hero-title" id="store-hero-title">Plague Inc: Evolved</div>
-                      <div class="store-hero-tags" id="store-hero-tags">
-                        <span class="store-tag">Strategy</span>
-                        <span class="store-tag">Simulation</span>
-                        <span class="store-tag">Casual</span>
-                      </div>
-                      <div class="store-hero-desc" id="store-hero-desc"></div>
-                      <button class="store-play-btn" id="store-hero-play-btn" data-app="plagueIncEvolved">Play Now</button>
-                    </div>
-                    <div class="store-hero-thumbs" id="store-hero-thumbs"></div>
-                  </div>
-
-                  <div class="store-section-divider"></div>
-                  <h2 class="store-section-title">All Games</h2>
-                  <div class="store-games-grid" id="store-games-grid"></div>
-                </div>
-                <div class="store-side-col">
-                  <div class="store-ad-block">
-                    <div class="store-ad-label">Advertisement</div>
-                    <div id="store-ad-slot-1"></div>
-                  </div>
-                  <div class="store-ad-block">
-                    <div class="store-ad-label">Advertisement</div>
-                    <div id="store-ad-slot-2"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="steam-community-page hidden" style="display:flex;align-items:center;justify-content:center;height:100%;font-size:24px;opacity:0.5;">
-               Community Page
-            </div>
-            <div class="steam-downloads-page hidden" style="display:flex;align-items:center;justify-content:center;height:100%;font-size:24px;opacity:0.5;">
-               Downloads Center
-            </div>
-          </div>
-        </div>
-
-        <div class="steam-bottom-bar">
-          <div class="steam-bottom-left"></div>
-          <div class="steam-bottom-center">
-            <button class="steam-downloads-btn"><i class="fas fa-download"></i> DOWNLOADS</button>
-          </div>
-          <div class="steam-bottom-right">
-            <div class="steam-friends-btn">
-              <i class="fas fa-user-friends"></i>
-              <span>FRIENDS & CHAT</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="steam-game-popover"></div>
-      <div class="steam-context-menu"></div>
-      <div class="steam-scroll-top"><i class="fas fa-chevron-up"></i></div>
-    `;
-
-    const winRoot = container.closest(".window");
-    if (winRoot) {
-      const header = winRoot.querySelector(".window-header:not(.steam-top-bar)");
-      let controls = winRoot.querySelector(".window-controls");
-      const slot = container.querySelector(".steam-window-controls-slot");
-
-      if (controls && slot) {
-        slot.appendChild(controls);
-        if (header) header.style.display = "none";
-      }
-      if (wm) wm.makeDraggable(winRoot);
-    }
-
-    const loader = container.querySelector(".steam-loading-screen");
-    const main = container.querySelector(".steam-main");
-    const isFirstOpen = !this._hasRendered;
-    this._hasRendered = true;
-
-    const revealUI = () => {
-      if (main) main.classList.remove("hidden");
-      if (loader) {
-        loader.style.transition = "opacity 200ms ease";
-        loader.style.opacity = "0";
-        loader.addEventListener("transitionend", () => loader.classList.add("hidden"), { once: true });
-      }
-    };
-
-    if (isFirstOpen) {
-      setTimeout(() => {
-        this.renderGrid(container, onLaunch, focusCollection);
-        setTimeout(revealUI, 600);
-      }, 50);
-    } else {
-      this.renderGrid(container, onLaunch, focusCollection);
-      revealUI();
-    }
-
-    if (focusCollection) {
-      setTimeout(() => {
-        const sectionId = `steam-section-${focusCollection.toLowerCase().replace(/\s+/g, "-")}`;
-        const sectionEl = container.querySelector(`#${sectionId}`);
-        const mainContent = container.querySelector(".steam-main-content");
-        if (sectionEl && mainContent) {
-          mainContent.scrollTo({
-            top: sectionEl.offsetTop - 20,
-            behavior: "smooth"
-          });
-        }
-      }, 1500);
-    }
-
-    const sidebar = container.querySelector(".steam-library-sidebar");
-    const mainContent = container.querySelector(".steam-main-content");
-    const libraryPage = container.querySelector(".steam-library-page");
-    const storePage = container.querySelector(".steam-store-page");
-    const communityPage = container.querySelector(".steam-community-page");
-    const downloadsPage = container.querySelector(".steam-downloads-page");
-    const scrollTop = container.querySelector(".steam-scroll-top");
-    const tabs = container.querySelectorAll(".steam-tab");
-
-    const updatePageUI = (page) => {
-      [libraryPage, storePage, communityPage, downloadsPage].forEach((p) => p.classList.add("hidden"));
-      tabs.forEach((t) => t.classList.remove("active"));
-      sidebar.classList.add("hidden");
-      scrollTop.classList.remove("visible");
-
-      if (page === "library") {
-        libraryPage.classList.remove("hidden");
-        sidebar.classList.remove("hidden");
-        observeLazyImages(sidebar);
-        container.querySelector(".steam-tab[data-page='library']").classList.add("active");
-      } else if (page === "store") {
-        storePage.classList.remove("hidden");
-        container.querySelector(".steam-tab[data-page='store']").classList.add("active");
-      } else if (page === "community") {
-        communityPage.classList.remove("hidden");
-        container.querySelector(".steam-tab[data-page='community']").classList.add("active");
-      } else if (page === "downloads") {
-        downloadsPage.classList.remove("hidden");
-      }
-    };
-
-    const navigateTo = (page) => {
-      if (this.history[this.historyIndex] === page) return;
-      this.history = this.history.slice(0, this.historyIndex + 1);
-      this.history.push(page);
-      this.historyIndex++;
-      localStorage.setItem("steam_last_page", page);
-      updatePageUI(page);
-    };
-
-    tabs.forEach((tab) => {
-      tab.addEventListener("click", () => {
-        this.currentGame = null;
-        this.currentArchiveGame = null;
-        navigateTo(tab.dataset.page);
-        this.renderGrid(container, onLaunch);
-        if (tab.dataset.page === "store") {
-          const sp = container.querySelector(".steam-store-page");
-          if (sp && !sp._storeInited) {
-            sp._storeInited = true;
-            _initStorePage(onLaunch);
-          }
-        }
-      });
-    });
-
-    container.querySelector(".steam-back-btn").addEventListener("click", () => {
-      if (this.historyIndex > 0) {
-        this.historyIndex--;
-        updatePageUI(this.history[this.historyIndex]);
-      }
-    });
-
-    container.querySelector(".steam-forward-btn").addEventListener("click", () => {
-      if (this.historyIndex < this.history.length - 1) {
-        this.historyIndex++;
-        updatePageUI(this.history[this.historyIndex]);
-      }
-    });
-
-    mainContent.addEventListener("scroll", () => {
-      if (mainContent.scrollTop > 300) scrollTop.classList.add("visible");
-      else scrollTop.classList.remove("visible");
-    });
-
-    scrollTop.addEventListener("click", () => {
-      mainContent.scrollTo({ top: 0, behavior: "smooth" });
-    });
-
-    const sidebarSearch = container.querySelector(".sidebar-search-input");
-    sidebarSearch.addEventListener("input", () => {
-      const query = sidebarSearch.value.toLowerCase().trim();
-      const sidebarList = container.querySelector(".sidebar-game-list");
-
-      if (!query) {
-        this._renderSidebarChunked(container, visibleGames, onLaunch);
-        const gridCards = container.querySelectorAll(".steam-game-card");
-        gridCards.forEach((card) => {
-          card.style.display = "";
-        });
-        return;
-      }
-
-      const matchedGames = visibleGames.filter((g) => g.title.toLowerCase().includes(query));
-      const archiveMatches = this._archiveGamesCache.filter((g) => g.title.toLowerCase().includes(query));
-
-      sidebarList.innerHTML = "";
-      [...matchedGames, ...archiveMatches].forEach((g) => {
-        const isArchive = !g.app;
-        const appId = g.app || g.appId;
-        const title = g.title;
-        const icon = g.icon || g.thumb;
-        const item = document.createElement("div");
-        item.className = "sidebar-game-item";
-        item.dataset.app = appId;
-        item.innerHTML = icon
-          ? `<img data-src="${icon}" /><span>${title}</span>`
-          : `<i class="fas fa-gamepad" style="font-size:16px;color:#2a475e;flex-shrink:0;"></i><span>${title}</span>`;
-        item.addEventListener("click", () => {
-          if (isArchive) {
-            this.renderArchiveGameOverview(container, g, onLaunch);
-          } else {
-            this.renderGameOverview(container, appId, onLaunch);
-          }
-        });
-        sidebarList.appendChild(item);
-        observeLazyImages(item);
-      });
-
-      const gridCards = container.querySelectorAll(".steam-game-card");
-      gridCards.forEach((card) => {
-        const title = card.querySelector(".steam-game-title").textContent.toLowerCase();
-        card.style.display = title.includes(query) ? "" : "none";
-      });
-    });
-
-    this._renderSidebarChunked(container, visibleGames, onLaunch);
-    this._renderHiddenSidebar(container, hiddenGames, onLaunch);
-
-    const hiddenSection = container.querySelector(".sidebar-hidden-section");
-    const hiddenHeader = container.querySelector(".sidebar-hidden-header");
-    if (hiddenHeader && hiddenSection) {
-      hiddenHeader.addEventListener("click", () => {
-        const isCollapsed = hiddenSection.dataset.collapsed === "1";
-        const hiddenList = hiddenSection.querySelector(".sidebar-hidden-list");
-        const chevron = hiddenSection.querySelector(".sidebar-hidden-chevron");
-
-        if (isCollapsed) {
-          hiddenSection.dataset.collapsed = "0";
-          hiddenList.style.display = "block";
-          chevron.classList.remove("fa-chevron-right");
-          chevron.classList.add("fa-chevron-down");
-        } else {
-          hiddenSection.dataset.collapsed = "1";
-          hiddenList.style.display = "none";
-          chevron.classList.remove("fa-chevron-down");
-          chevron.classList.add("fa-chevron-right");
-        }
-      });
-    }
-
-    this._initSidebarDrag(container);
-
-    container.querySelector(".steam-downloads-btn").addEventListener("click", () => navigateTo("downloads"));
-    container.querySelector(".steam-friends-btn").addEventListener("click", (e) => {
-      e.stopPropagation();
-      this.openFriendsWindow(wm);
-    });
-
-    if (!this._ctrlFBound) {
-      this._ctrlFBound = true;
-
-      document.addEventListener(
-        "keydown",
-        (e) => {
-          const isFind = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "f";
-          if (!isFind) return;
-
-          const root = container;
-          if (!root || !document.body.contains(root)) return;
-
-          const input = root.querySelector(".sidebar-search-input");
-
-          if (!input) return;
-
-          e.preventDefault();
-          e.stopPropagation();
-
-          input.focus();
-          input.select?.();
-        },
-        true
-      );
-    }
-    window.addEventListener(
-      "beforeinput",
-      (e) => {
-        if (e.inputType === "insertText" && e.data === "f" && (e.ctrlKey || e.metaKey)) {
-          e.preventDefault();
-        }
-      },
-      true
-    );
-
-    const _initStorePage = (onLaunch) => {
-      const STORE_GAMES = [
-        {
-          app: "plagueIncEvolved",
-          icon: `${CDN_BASE}/static/icons/plague.webp`,
-          title: "Plague Inc Evolved",
-          tags: ["Strategy", "Simulation"]
-        },
-        {
-          app: "fiveNightsAtFrickbears3",
-          icon: `${CDN_BASE}/static/icons/fiveNightsAtFrickbears.webp`,
-          title: "Five Nights At Frickbears 3",
-          tags: ["Horror", "Survival"]
-        },
-        {
-          app: "helltaker",
-          icon: `${CDN_BASE}/static/icons/helltaker.jpg`,
-          title: "Helltaker",
-          tags: ["Puzzle", "Anime"]
-        },
-        {
-          app: "inscryption",
-          icon: `${CDN_BASE}/static/icons/inscryption.webp`,
-          title: "Inscryption",
-          tags: ["Card Game", "Roguelike"]
-        },
-        {
-          app: "nightInTheWoods",
-          icon: `${CDN_BASE}/static/icons/night.webp`,
-          title: "Night In The Woods",
-          tags: ["Adventure", "Narrative"]
-        },
-        {
-          app: "daddy",
-          icon: `${CDN_BASE}/static/icons/daddy.webp`,
-          title: "Who's Your Daddy",
-          tags: ["Casual", "Multiplayer"]
-        },
-        {
-          app: "suicideGuy",
-          icon: `${CDN_BASE}/static/icons/suicideguy.webp`,
-          title: "Suicide Guy",
-          tags: ["Puzzle", "Platformer"]
-        },
-        {
-          app: "ytlifeomg",
-          icon: `${CDN_BASE}/static/icons/yt.webp`,
-          title: "Youtubers Life Omg",
-          tags: ["Simulation", "Management"]
-        },
-        {
-          app: "inStarsAndTime",
-          icon: `${CDN_BASE}/static/icons/star.webp`,
-          title: "In Stars And Time",
-          tags: ["RPG", "Story"]
-        },
-        {
-          app: "baldiBalds",
-          icon: `${CDN_BASE}/static/icons/baldiBalds.webp`,
-          title: "Baldi Balds The Universe",
-          tags: ["Horror", "Action"]
-        },
-        {
-          app: "baldisBasicsTeachingOnTwos",
-          icon: `${CDN_BASE}/static/icons/baldisBasicsTeachingOnTwos.webp`,
-          title: "Baldi's Basics: Teaching On Twos",
-          tags: ["Horror", "Education"]
-        },
-        {
-          app: "playtimeHellBear5van",
-          icon: `${CDN_BASE}/static/icons/playtimeHellBear5van.webp`,
-          title: "Playtime Hell & Bear 5 Van",
-          tags: ["Horror", "Action"]
-        },
-        {
-          app: "antidisestablishmentarianism",
-          icon: `${CDN_BASE}/static/icons/antiDisestablishism.webp`,
-          title: "Antidisestablishmentarianism",
-          tags: ["Puzzle", "Indie", "Education"]
-        },
-        {
-          app: "minusThree",
-          icon: `${CDN_BASE}/static/icons/minusThree.webp`,
-          title: "Minus Three",
-          tags: ["Puzzle", "Indie", "Education"]
-        },
-        {
-          app: "minusB",
-          icon: `${CDN_BASE}/static/icons/minusB.webp`,
-          title: "Minus B",
-          tags: ["Puzzle", "Indie", "Education"]
-        },
-        {
-          app: "three",
-          icon: `${CDN_BASE}/static/icons/three.webp`,
-          title: "Three",
-          tags: ["Puzzle", "Indie", "Education"]
-        },
-        {
-          app: "theMathIsLeaking",
-          icon: `${CDN_BASE}/static/icons/theMathIsLeaking.webp`,
-          title: "The Math Is Leaking",
-          tags: ["Puzzle", "Education"]
-        }
-      ];
-
-      const heroImgs = [
-        {
-          app: "plagueIncEvolved",
-          img: `${CDN_BASE}/static/icons/plague.webp`,
-          title: "Plague Inc: Evolved",
-          tags: ["Strategy", "Simulation", "Casual"],
-          desc: "A unique mix of high strategy and terrifyingly realistic simulation. Can you infect the world?"
-        },
-        {
-          app: "inscryption",
-          img: `${CDN_BASE}/static/icons/inscryption.webp`,
-          title: "Inscryption",
-          tags: ["Card Game", "Roguelike", "Dark"],
-          desc: "A deck-building roguelike where you're trapped playing a sinister card game with a mysterious figure."
-        },
-        {
-          app: "helltaker",
-          img: `${CDN_BASE}/static/icons/helltaker.jpg`,
-          title: "Helltaker",
-          tags: ["Puzzle", "Anime", "Free"],
-          desc: "A free game about making a harem of demon girls. Fight your way through hell one puzzle at a time."
-        },
-        {
-          app: "nightInTheWoods",
-          img: `${CDN_BASE}/static/icons/night.webp`,
-          title: "Night In The Woods",
-          tags: ["Adventure", "Narrative", "Indie"],
-          desc: "An adventure game focused on exploration, story and character, featuring a 20-something college dropout."
-        }
-      ];
-
-      const storePage = container.querySelector(".steam-store-page");
-      if (!storePage) return;
-
-      const heroImg = storePage.querySelector("#store-hero-img");
-      const heroTitle = storePage.querySelector("#store-hero-title");
-      const heroTagsEl = storePage.querySelector("#store-hero-tags");
-      const heroDesc = storePage.querySelector("#store-hero-desc");
-      const heroPlayBtn = storePage.querySelector("#store-hero-play-btn");
-      const heroThumbs = storePage.querySelector("#store-hero-thumbs");
-
-      heroDesc.textContent = descriptionMap[heroImgs[0].app] || heroImgs[0].desc;
-
-      heroImgs.forEach((h, i) => {
-        const thumb = document.createElement("div");
-        thumb.className = "store-hero-thumb" + (i === 0 ? " active" : "");
-        thumb.innerHTML = `<img src="${h.img}" />`;
-        thumb.addEventListener("click", () => {
-          storePage.querySelectorAll(".store-hero-thumb").forEach((t) => t.classList.remove("active"));
-          thumb.classList.add("active");
-          heroImg.src = h.img;
-          heroTitle.textContent = h.title;
-          heroDesc.textContent = descriptionMap[h.app] || h.desc;
-          heroPlayBtn.dataset.app = h.app;
-          heroTagsEl.innerHTML = h.tags.map((t) => `<span class="store-tag">${t}</span>`).join("");
-        });
-        heroThumbs.appendChild(thumb);
-      });
-
-      heroPlayBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        onLaunch(heroPlayBtn.dataset.app);
-      });
-
-      const heroInfo = storePage.querySelector("#store-hero-info");
-      if (heroInfo) {
-        heroInfo.style.cursor = "pointer";
-        heroInfo.addEventListener("click", (e) => {
-          if (e.target.closest(".store-play-btn")) return;
-          const appId = heroPlayBtn.dataset.app;
-          navigateTo("library");
-          this.currentGame = appId;
-          this.currentArchiveGame = null;
-          this.renderGameOverview(container, appId, onLaunch);
-        });
-      }
-
-      const grid = storePage.querySelector("#store-games-grid");
-      if (grid) {
-        STORE_GAMES.forEach((g) => {
-          const card = document.createElement("div");
-          card.className = "store-game-card";
-          card.innerHTML = `
-            <div class="store-game-card-img"><img data-src="${g.icon}" alt="${g.title}" /></div>
-            <div class="store-game-card-info">
-              <div class="store-game-card-title">${g.title}</div>
-              <div class="store-game-card-tags">${g.tags.map((t) => `<span class="store-tag">${t}</span>`).join("")}</div>
-              <button class="store-card-play-btn" data-app="${g.app}">Play</button>
-            </div>
-          `;
-          card.querySelector(".store-card-play-btn").addEventListener("click", (e) => {
-            e.stopPropagation();
-            onLaunch(g.app);
-          });
-          card.addEventListener("click", (e) => {
-            if (e.target.closest(".store-card-play-btn")) return;
-            navigateTo("library");
-            this.currentGame = g.app;
-            this.currentArchiveGame = null;
-            this.renderGameOverview(container, g.app, onLaunch);
-          });
-          grid.appendChild(card);
-          _imgObserver.observe(card.querySelector("img[data-src]"));
-        });
-      }
-
-      const _injectAd = (slotId, key, height, width) => {
-        if (!shouldEnableAds()) return;
-        const slot = storePage.querySelector(`#${slotId}`);
-        if (!slot) return;
-        const cfgScript = document.createElement("script");
-        cfgScript.text = `atOptions = { 'key': '${key}', 'format': 'iframe', 'height': ${height}, 'width': ${width}, 'params': {} };`;
-        slot.appendChild(cfgScript);
-        const invokeScript = document.createElement("script");
-        invokeScript.src = `https://www.highperformanceformat.com/${key}/invoke.js`;
-        invokeScript.async = true;
-        slot.appendChild(invokeScript);
-      };
-
-      _injectAd("store-ad-slot-1", "f88fd46583493c3820f283948e5e5391", 300, 160);
-      setTimeout(() => {
-        _injectAd("store-ad-slot-2", "ee9dc67de90729e2804aa8aba6454ec8", 600, 160);
-      }, 1000);
-    };
-
-    const _lastPage = localStorage.getItem("steam_last_page");
-    const _isReturning = !!localStorage.getItem("steam_visited");
-    localStorage.setItem("steam_visited", "1");
-
-    if (_isReturning && (_lastPage === "library" || _lastPage === "store")) {
-      this.currentGame = null;
-      this.currentArchiveGame = null;
-      updatePageUI(_lastPage);
-      if (_lastPage === "store") {
-        const sp = container.querySelector(".steam-store-page");
-        if (sp) sp._storeInited = true;
-        _initStorePage(onLaunch);
-      } else {
-        this.renderGrid(container, onLaunch);
-      }
-    } else {
-      const sp = container.querySelector(".steam-store-page");
-      if (sp) sp._storeInited = true;
-      updatePageUI("store");
-      _initStorePage(onLaunch);
-    }
+    return this.gameUI.render(container, onLaunch, wm, focusCollection);
   }
 
   openFriendsWindow(wm) {
-    if (!wm) return;
-    const winId = "steam-friends-win";
-    const existing = document.getElementById(winId);
-    if (existing) {
-      wm.bringToFront(existing);
-      return;
-    }
+    return this.gameUI.openFriendsWindow(wm);
+  }
 
-    const win = wm.createWindow(winId, "Friends List", "280px", "450px");
-    win.classList.add("window-root");
-    win.style.background = "#1b2838";
+  _setActiveSidebarItem(container, appId) {
+    return this.gameUI._setActiveSidebarItem(container, appId);
+  }
 
-    const username = localStorage.getItem("yukiOS_username") || "Reeyuki";
-    const profilePic = localStorage.getItem("yukiOS_profilePicture") || "static/icons/guest.webp";
+  _makeSidebarItem(game, container, onLaunch, isArchive = false) {
+    return this.gameUI._makeSidebarItem(game, container, onLaunch, isArchive);
+  }
 
-    win.innerHTML = `
-      <div class="window-header" style="background: #171d25 !important; border-bottom: 1px solid rgba(255,255,255,0.1);">
-        <span>Friends</span>
-        ${wm.getWindowControls()}
-      </div>
-      <div class="window-content" style="display:flex; flex-direction:column; height:100%; color:#dcdedf;">
-        <div class="friends-header" style="padding: 15px; background: rgba(0,0,0,0.2); display: flex; align-items: center; gap: 12px;">
-          <div class="friends-profile-img" style="width: 48px; height: 48px; border: 2px solid #57cbde; padding: 2px; background: #171a21;">
-            <img src="${profilePic}" style="width:100%; height:100%;" />
-          </div>
-          <div class="friends-profile-info">
-            <div class="friends-name" style="font-size: 14px; font-weight: 700; color: #57cbde;">${username}</div>
-            <div class="friends-status" style="font-size: 12px; color: #66c0f4;">Online</div>
-          </div>
-        </div>
-        <div class="friends-search-bar" style="padding: 10px 15px; display: flex; align-items: center; gap: 10px; background: rgba(0,0,0,0.1);">
-          <span class="friends-title" style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #b8b6b4; white-space: nowrap;">Friends</span>
-          <input type="text" class="friends-search-input" placeholder="Search" style="flex: 1; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; padding: 4px 8px; color: #fff; font-size: 11px; outline: none;" />
-        </div>
-        <div class="friends-list-content" style="flex: 1; overflow-y: auto; padding: 10px 0;">
-          <div class="friend-item" style="padding: 8px 15px; display: flex; align-items: center; gap: 10px; cursor: pointer;">
-            <div class="friend-avatar" style="width: 32px; height: 32px; background: #57cbde; border: 1px solid rgba(255,255,255,0.2);"></div>
-            <div class="friend-info">
-              <span class="friend-name" style="font-size: 13px; color: #57cbde;">Gabe Newell</span>
-              <span class="friend-status-text" style="font-size: 11px; color: #898989;">In-game: Half-Life 3</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
+  _appendArchiveGameToSidebar(container, archiveGame, onLaunch) {
+    return this.gameLauncher._appendArchiveGameToSidebar(container, archiveGame, onLaunch);
+  }
 
-    desktop.appendChild(win);
-    wm.makeDraggable(win);
-    wm.makeResizable(win);
-    wm.setupWindowControls(win);
-    wm.bringToFront(win);
+  _loadArchiveSection(container, onLaunch, collapsed) {
+    return this.gameLauncher._loadArchiveSection(container, onLaunch, collapsed);
+  }
+
+  _attachGridDelegation(container, onLaunch) {
+    return this.gameUI._attachGridDelegation(container, onLaunch);
+  }
+
+  showContextMenu(e, appId, container, onLaunch) {
+    return this.gameUI.showContextMenu(e, appId, container, onLaunch);
+  }
+
+  _rebuildSidebar(container, onLaunch) {
+    return this.gameUI._rebuildSidebar(container, onLaunch);
+  }
+
+  _renderSidebarChunked(container, games, onLaunch) {
+    return this.gameUI._renderSidebarChunked(container, games, onLaunch);
+  }
+
+  _renderHiddenSidebar(container, hiddenGames, onLaunch) {
+    return this.gameUI._renderHiddenSidebar(container, hiddenGames, onLaunch);
+  }
+
+  _initSidebarDrag(container) {
+    return this.gameUI._initSidebarDrag(container);
   }
 }
 
@@ -2030,6 +419,13 @@ export class SystemAppRenderer {
   render(container, onLaunch, wm = null) {
     const apps = this.getSystemApps();
     container.innerHTML = `
+      <div style="margin-bottom:20px;">
+        <input type="text" class="games-search-input" placeholder="Search apps..." style="width:100%;max-width:400px;padding:12px 16px;border:1px solid rgba(255,255,255,0.2);border-radius:8px;background:rgba(255,255,255,0.1);color:#fff;font-size:14px;outline:none;transition:all 0.3s ease;" 
+               onmouseover="this.style.borderColor='rgba(255,255,255,0.4)';this.style.background='rgba(255,255,255,0.15)'"
+               onmouseout="this.style.borderColor='rgba(255,255,255,0.2)';this.style.background='rgba(255,255,255,0.1)'"
+               onfocus="this.style.borderColor='#6677dd';this.style.background='rgba(255,255,255,0.2)';this.style.boxShadow='0 0 0 2px rgba(102,119,221,0.3)'"
+               onblur="this.style.borderColor='rgba(255,255,255,0.2)';this.style.background='rgba(255,255,255,0.1)';this.style.boxShadow='none'" />
+      </div>
       <div class="games-app-grid">
         ${apps.map((a) => this.createCard(a)).join("")}
       </div>
@@ -2052,7 +448,6 @@ export class SystemAppRenderer {
       });
     };
 
-    updateCount(allCards.length);
     applyAnimations(allCards);
     attachCardHandlers(allCards);
 
@@ -2068,16 +463,9 @@ export class SystemAppRenderer {
           if (isMatch) visibleCount++;
         });
         noResults.style.display = visibleCount === 0 ? "block" : "none";
-        updateCount(visibleCount);
       });
     }
   }
-}
-
-function updateCount(count) {
-  count = count + 2588;
-  const countEl = document.querySelector(".games-app-count");
-  if (countEl) countEl.textContent = count;
 }
 
 export class FlashAppRenderer extends GameWindowRenderer {

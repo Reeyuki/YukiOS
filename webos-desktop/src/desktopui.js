@@ -9,6 +9,7 @@ import { showConflictDialog } from "./shared/conflictDialog.js";
 import { showContextMenu, showDynamicContextMenu, hideMenu } from "./shared/contextMenu.js";
 import { appMap } from "./gamesList.js";
 import { customPrompt } from "./shared/dialogs.js";
+import { WindowHelper } from "./utils/WindowHelper.js";
 
 import { resolveIconUrl } from "./assetUrl.js";
 import { resolveDesktopIcon } from "./shared/iconUtils.js";
@@ -243,6 +244,7 @@ class SelectionManager {
 export class DesktopUI {
   constructor(appLauncher, notepadApp, explorerApp, fileSystemManager) {
     this.appLauncher = appLauncher;
+    this.windowHelper = new WindowHelper(this.appLauncher.wm);
     sharedAppLauncher = appLauncher;
     this.notepadApp = notepadApp;
     this.explorerApp = explorerApp;
@@ -334,7 +336,7 @@ export class DesktopUI {
         const kind = await this.fs.getFileKind(sourcePath, name);
         const fileIcon = await this.fs.getFileIcon(sourcePath, name);
 
-        const destDir = this.fs.resolveDir(["Desktop"]);
+        const destDir = this.fs.resolveUserPath(["Desktop"]);
         const destPath = this.fs.join(destDir, name);
         const destExists = await this.fs.exists(destPath);
 
@@ -397,7 +399,7 @@ export class DesktopUI {
           const childKind = await this.fs.getFileKind([...sourcePath, name], childName);
           const childIcon = await this.fs.getFileIcon([...sourcePath, name], childName);
 
-          const destDir = this.fs.resolveDir(["Desktop", name]);
+          const destDir = this.fs.resolveUserPath(["Desktop", name]);
           const destFilePath = this.fs.join(destDir, childName);
           const childExists = await this.fs.exists(destFilePath);
 
@@ -664,7 +666,7 @@ export class DesktopUI {
       for (const file of files) {
         try {
           const { kind, content, icon } = await this.explorerApp._resolveFilePayload(file, file.name, ["Desktop"]);
-          const dir = this.fs.resolveDir(["Desktop"]);
+          const dir = this.fs.resolveUserPath(["Desktop"]);
           const destExists = await this.fs.exists(this.fs.join(dir, file.name));
 
           let finalName = file.name;
@@ -954,7 +956,7 @@ export class DesktopUI {
           const kind = await this.fs.getFileKind(["Desktop"], fileName);
           const fileIcon = await this.fs.getFileIcon(["Desktop"], fileName);
 
-          const destDir = this.fs.resolveDir(inst.currentPath);
+          const destDir = this.fs.resolveUserPath(inst.currentPath);
           const destFilePath = this.fs.join(destDir, fileName);
           const destExists = await this.fs.exists(destFilePath);
 
@@ -996,7 +998,7 @@ export class DesktopUI {
             const childKind = await this.fs.getFileKind(["Desktop", folderName], childName);
             const childIcon = await this.fs.getFileIcon(["Desktop", folderName], childName);
 
-            const destDir = this.fs.resolveDir([...destPath, folderName]);
+            const destDir = this.fs.resolveUserPath([...destPath, folderName]);
             const destFilePath = this.fs.join(destDir, childName);
             const childExists = await this.fs.exists(destFilePath);
 
@@ -1031,7 +1033,7 @@ export class DesktopUI {
           const fileName = `${name}.desktop`;
           const content = await this.fs.getFileContent(["Desktop"], fileName);
 
-          const destDir = this.fs.resolveDir(inst.currentPath);
+          const destDir = this.fs.resolveUserPath(inst.currentPath);
           const destFilePath = this.fs.join(destDir, fileName);
           const destExists = await this.fs.exists(destFilePath);
 
@@ -1113,7 +1115,7 @@ export class DesktopUI {
             const kind = await this.fs.getFileKind(srcPath, name);
             const fileIcon = await this.fs.getFileIcon(srcPath, name);
 
-            const destDir = this.fs.resolveDir(["Desktop"]);
+            const destDir = this.fs.resolveUserPath(["Desktop"]);
             const destFilePath = this.fs.join(destDir, name);
             const destExists = await this.fs.exists(destFilePath);
 
@@ -1160,7 +1162,7 @@ export class DesktopUI {
               const childKind = await this.fs.getFileKind([...srcPath, name], childName);
               const childIcon = await this.fs.getFileIcon([...srcPath, name], childName);
 
-              const destDir = this.fs.resolveDir(["Desktop", name]);
+              const destDir = this.fs.resolveUserPath(["Desktop", name]);
               const destFilePath = this.fs.join(destDir, childName);
               const childExists = await this.fs.exists(destFilePath);
 
@@ -1454,10 +1456,7 @@ export class DesktopUI {
       </div>
       <div class="window-content" style="width:100%;height:100%;overflow:auto;user-select:text;padding:10px;">${contentHtml}</div>
     `;
-    desktop.appendChild(propsWin);
-    this.appLauncher.wm.makeDraggable(propsWin);
-    this.appLauncher.wm.makeResizable(propsWin);
-    this.appLauncher.wm.setupWindowControls(propsWin);
+    this.windowHelper.mountWindow(propsWin, propsWin.id, title);
   }
   addFiles() {
     const input = document.createElement("input");

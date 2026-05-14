@@ -1,3 +1,5 @@
+import { AdsManager } from "./ads.js";
+
 let pageLoadTime = Date.now();
 
 const CLOSE_ANALYTICS_EXCLUDED_APPS = new Set(["aboutApp"]);
@@ -39,16 +41,28 @@ export function getAnalyticsBase(app) {
 
 export function sendAnalytics(data) {
   if (isBlocked(data?.app)) return;
+
+  if (window.AdsManager?.analyticsHook) {
+    window.AdsManager.analyticsHook(data);
+  }
+
   fetch("https://analytics.liventcord-a60.workers.dev/analytics", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data)
-  }).catch((err) => console.warn("Analytics failed:", err));
+  }).catch(() => {});
 }
 
 export function sendLaunchAnalytics(app) {
   if (isBlocked(app)) return;
-  sendAnalytics({ ...getAnalyticsBase(app), event: "launch" });
+
+  const data = { ...getAnalyticsBase(app), event: "launch" };
+
+  if (window.AdsManager?.analyticsHook) {
+    window.AdsManager.analyticsHook(data);
+  }
+
+  sendAnalytics(data);
 }
 
 export function recordUsage(winId) {
@@ -57,7 +71,6 @@ export function recordUsage(winId) {
   if (!win) return;
 
   const appId = win.dataset.appId || "";
-
   if (isBlocked(appId)) return;
 
   let sent = false;
@@ -65,13 +78,20 @@ export function recordUsage(winId) {
   const sendUsage = () => {
     if (sent) return;
     sent = true;
-    sendAnalytics({
+
+    const payload = {
       app: appId,
       event: "usage",
       durationMs: Date.now() - startTime,
       timestamp: Date.now(),
       sessionAgeMs: Date.now() - pageLoadTime
-    });
+    };
+
+    if (window.AdsManager?.analyticsHook) {
+      window.AdsManager.analyticsHook(payload);
+    }
+
+    sendAnalytics(payload);
   };
 
   win.querySelector(".close-btn")?.addEventListener("click", sendUsage);

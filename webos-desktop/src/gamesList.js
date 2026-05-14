@@ -1,4 +1,16 @@
 export const appMap = {
+  slimeRancher: {
+    type: "game",
+    url: "/static/games/html/slime.html",
+    icon: "/static/icons/slime.webp",
+    title: "Slime Rancher Full"
+  },
+  tabs: {
+    type: "game",
+    url: "https://reeyuki.github.io/Tabs",
+    icon: "/static/icons/tabs.webp",
+    title: "TABS: Totaly Accurate Battle Simulator"
+  },
   plagueIncEvolved: {
     type: "game",
     url: "/static/games/html/plague.html",
@@ -7,7 +19,7 @@ export const appMap = {
   },
   fiveNightsAtFrickbears3: {
     type: "game",
-    url: "/static/games/html/fiveNightsAtFrickbears.html",
+    url: "https://cdn.jsdelivr.net/gh/Reeyuki/Unblocked@main/frickbears3-stable.svg",
     icon: "/static/icons/fiveNightsAtFrickbears.webp",
     title: "Five Nights At Frickbears 3"
   },
@@ -137,6 +149,12 @@ export const appMap = {
     url: "https://pacman-e281c.firebaseapp.com",
     icon: "/static/icons/pac-man.webp",
     title: "Pac-Man"
+  },
+  portal: {
+    type: "game",
+    url: "/static/games/html/portal.html",
+    icon: "/static/icons/portal.webp",
+    title: "Portal"
   },
   sonic: { type: "swf", swf: "/static/games/swfGames/sonic.swf", icon: "/static/icons/sonic.webp", title: "Sonic" },
   terraria: {
@@ -290,7 +308,7 @@ export const appMap = {
     title: "Happy Room"
   },
   azahar: {
-    type: "game",
+    type: "system",
     url: "/static/games/html/azahar.html",
     icon: "/static/icons/azahar.webp",
     title: "Azahar"
@@ -319,7 +337,7 @@ export const appMap = {
     icon: "/static/icons/vampireSurvivors.webp",
     title: "Vampire Survivors"
   },
-  slimeRancher: {
+  slimeRancherAlpha: {
     type: "game",
     url: "https://dev.snubby.top/",
     icon: "/static/icons/slime.webp",
@@ -357,7 +375,7 @@ export const appMap = {
   },
   gtaVc: {
     type: "game",
-    url: "https://yukivcemu.vercel.app/revc/",
+    url: "/static/games/html/revc.html",
     icon: "/static/icons/gtavc.webp",
     title: "GTA Vice City"
   },
@@ -1166,6 +1184,21 @@ export const appMap = {
     type: "system",
     title: "Customize Profile",
     icon: "fas fa-circle-user"
+  },
+  markdown: {
+    type: "system",
+    title: "Markdown",
+    icon: "fab fa-markdown"
+  },
+  emulatorApp: {
+    type: "system",
+    title: "Emulator",
+    icon: "static/icons/emulator.webp"
+  },
+  ruffleApp: {
+    type: "system",
+    title: "Ruffle",
+    icon: "static/icons/ruffle.webp"
   },
   kiwiIRC: {
     type: "system",

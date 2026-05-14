@@ -1,8 +1,8 @@
-import { desktop } from "./desktop.js";
 import { StorageKeys } from "./settings.js";
 import confetti from "canvas-confetti";
 import { BaseApp } from "./core/BaseApp.js";
 import { bus, BusEvents } from "./core/EventBus.js";
+import { WindowHelper } from "./utils/WindowHelper.js";
 
 export const Achievements = {
   WelcomeAboard: "first_boot",
@@ -34,11 +34,18 @@ export const Achievements = {
 export class AchievementsApp extends BaseApp {
   constructor(services) {
     super(services);
+    this.windowHelper = new WindowHelper(this.wm);
     this.achievements = this._createAchievements();
     this.unlocked = new Set();
-    this.s1 = new Audio("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/audio/steam.mp3");
-    this.s2 = new Audio("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/audio/slime1.mp3");
-    this.s3 = new Audio("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/audio/slime2.mp3");
+    this.s1 = new Audio(
+      "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@a3efea2218a5d717290e72ea41cd341d14689ce5/static/audio/steam.mp3"
+    );
+    this.s2 = new Audio(
+      "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@a3efea2218a5d717290e72ea41cd341d14689ce5/static/audio/slime1.mp3"
+    );
+    this.s3 = new Audio(
+      "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@a3efea2218a5d717290e72ea41cd341d14689ce5/static/audio/slime2.mp3"
+    );
 
     this._initBusListeners();
     this._thresholds = {
@@ -414,14 +421,7 @@ export class AchievementsApp extends BaseApp {
 
     this._currentFilter = "all";
 
-    const win = this.wm.createWindow(winId, "Achievements", "920px", "750px");
-    Object.assign(win.style, { left: "200px", top: "90px" });
-
-    win.innerHTML = `
-      <div class="window-header">
-        <span>Achievements</span>
-        ${this.wm.getWindowControls()}
-      </div>
+    const content = `
       <div class="window-content achievements-content">
         <div class="achievements-scroll">
           ${this._renderHero()}
@@ -434,11 +434,10 @@ export class AchievementsApp extends BaseApp {
       </div>
     `;
 
-    desktop.appendChild(win);
-    this.wm.makeDraggable(win);
-    this.wm.makeResizable(win);
-    this.wm.setupWindowControls(win);
-    this.wm.addToTaskbar(win.id, "Achievements", "fa fa-trophy");
+    const win = this.windowHelper.createAndMountWindow(winId, "Achievements", content, "920px", "750px", {
+      icon: "fa fa-trophy",
+      style: { left: "200px", top: "90px" }
+    });
   }
   trigger(achievementKey, skipSound = false) {
     if (localStorage.getItem("yukiOS_achievements_disabled") === "true") return;

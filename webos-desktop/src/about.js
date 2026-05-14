@@ -1,17 +1,17 @@
 import { BaseApp } from "./core/BaseApp.js";
+import { WindowHelper } from "./utils/WindowHelper.js";
 
 export class AboutApp extends BaseApp {
   constructor(services) {
     super(services);
+    this.windowHelper = new WindowHelper(this.wm);
   }
 
   open() {
     const winId = "about-yukios";
     if (this._isSingletonOpen(winId)) return;
 
-    const win = this.wm.createWindow(winId, "About Yuki OS", "720px", "680px");
-
-    const version = "1.1.0";
+    const version = "1.2.0";
 
     const capabilities = [
       {
@@ -72,7 +72,7 @@ export class AboutApp extends BaseApp {
       • No selling or sharing of user data with advertisers
       `;
 
-    win.innerHTML = `
+    const content = `
       <style>
         #about-yukios .abx {
           background:
@@ -105,19 +105,19 @@ export class AboutApp extends BaseApp {
 
         #about-yukios .abx-mark {
           display: flex;
+          flex-direction: column;
           align-items: center;
+          justify-content: center;
           gap: 10px;
+          text-align: center;
         }
 
         #about-yukios .abx-badge {
-          width: 40px;
-          height: 40px;
-          border-radius: 12px;
-          background: linear-gradient(135deg, rgba(200,65,27,0.95), rgba(79,158,255,0.95));
-          display: grid;
-          place-items: center;
-          font-weight: 700;
-          font-size: 0.75rem;
+          width: 64px;
+          height: 64px;
+          border-radius: 16px;
+          display: block;
+          object-fit: cover;
         }
 
         #about-yukios .abx-title {
@@ -138,6 +138,7 @@ export class AboutApp extends BaseApp {
           align-items: flex-end;
           gap: 8px;
         }
+
         #about-yukios .abx-grid {
           display: grid;
           grid-template-columns: 1fr;
@@ -220,24 +221,18 @@ export class AboutApp extends BaseApp {
         }
       </style>
 
-      <div class="window-header">
-        <span>About Yuki OS</span>
-        ${this.wm.getWindowControls()}
-      </div>
-
       <div class="abx">
         <div class="abx-shell">
 
           <div class="abx-top">
-            <div>
-              <div class="abx-mark">
-                <div class="abx-badge">YO</div>
-                <h1 class="abx-title">Yuki OS</h1>
-              </div>
+            <div class="abx-mark">
+              <img class="abx-badge" src="https://cdn.jsdelivr.net/gh/Reeyuki/yukios@a3efea2218a5d717290e72ea41cd341d14689ce5/static/icons/logo.webp">
+              <h1 class="abx-title">Yuki OS</h1>
               <p class="abx-sub">
                 Browser desktop environment with apps, games, and sandboxed runtime systems.
               </p>
             </div>
+
             <div class="abx-meta">
               <div class="abx-pill">Version ${version}</div>
             </div>
@@ -282,10 +277,8 @@ export class AboutApp extends BaseApp {
       </div>
     `;
 
-    document.body.appendChild(win);
-    this.wm.makeDraggable(win);
-    this.wm.makeResizable(win);
-    this.wm.setupWindowControls(win);
-    this.wm.addToTaskbar(win.id, "About Yuki OS", "fa fa-circle-info");
+    this.windowHelper.createAndMountWindow(winId, "About Yuki OS", content, "720px", "680px", {
+      icon: "fa fa-circle-info"
+    });
   }
 }

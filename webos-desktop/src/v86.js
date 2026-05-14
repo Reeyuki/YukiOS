@@ -1,13 +1,15 @@
 import { Achievements } from "./achievements.js";
 import { bus, BusEvents } from "./core/EventBus.js";
-import { desktop } from "./desktop.js";
 import { BaseApp } from "./core/BaseApp.js";
+import { WindowHelper } from "./utils/WindowHelper.js";
+import { CDN_BASES } from "./shared/assetResolver.js";
 
 const IMAGES_DIR = ["VMs"];
 
 export class V86App extends BaseApp {
   constructor(services) {
     super(services);
+    this.windowHelper = new WindowHelper(this.wm);
     this._explorerApp = services.explorerApp;
     this._v86LoadPromise = null;
   }
@@ -16,12 +18,8 @@ export class V86App extends BaseApp {
     if (this._isSingletonOpen("v86-win")) return;
 
     this._loadV86Script();
-    const win = this.wm.createWindow("v86-win", "V86");
-    win.innerHTML = `
-      <div class="window-header">
-        <span>V86 Virtual Machine</span>
-        ${this.wm.getWindowControls()}
-      </div>
+
+    const content = `
       <div class="window-content" style="width:100%;height:100%;background:#1a1a2e;color:#eee;font-family:monospace;overflow-y:auto;overflow-x:hidden;">
         <div class="v86-header" style="display:flex;align-items:center;gap:16px;padding:24px 20px 16px;">
           <i class="fa-solid fa-microchip" style="font-size:38px;color:#7b5ea7;"></i>
@@ -30,25 +28,25 @@ export class V86App extends BaseApp {
             <div style="font-size:13px;color:#888;">Run x86 operating systems in your browser</div>
           </div>
         </div>
-        <div style="padding:16px 16px 8px;font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px;">My Images</div>
-        <div
+        <div 
           id="v86-upload-zone"
+          class="v86-upload-zone"
           style="
-            margin:0 16px 12px;
-            border:2px dashed #444;
+            border:2px dashed #7b5ea7;
             border-radius:8px;
+            margin:16px;
             padding:18px;
             text-align:center;
             cursor:pointer;
             transition:border-color .2s,background .2s;
             background:transparent;
-          "
-        >
+          ">
           <i class="fa-solid fa-upload" style="font-size:20px;color:#7b5ea7;margin-bottom:8px;display:block;"></i>
           <div style="font-size:13px;color:#bbb;">Drop a <strong style="color:#fff;">.iso</strong>, <strong style="color:#fff;">.img</strong>, or <strong style="color:#fff;">.bin</strong> file here</div>
           <div style="font-size:11px;color:#666;margin-top:4px;">or click to browse</div>
           <input type="file" id="v86-file-input" accept=".iso,.img,.bin,.state,.gz" style="display:none;">
         </div>
+        <div style="padding:16px 16px 8px;font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px;">My Images</div>
         <div id="v86-user-images" style="padding:0 16px 16px;display:flex;flex-wrap:wrap;gap:12px;"></div>
         <div style="padding:0 16px 8px;font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px;">Featured Systems</div>
         <div class="v86-system-grid" id="v86-system-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;padding:0 16px 20px;">
@@ -56,11 +54,9 @@ export class V86App extends BaseApp {
         </div>
       </div>`;
 
-    desktop.appendChild(win);
-    this.wm.makeDraggable(win);
-    this.wm.makeResizable(win);
-    this.wm.setupWindowControls(win);
-    this.wm.addToTaskbar(win.id, "V86", "static/icons/v86.webp");
+    const win = this.windowHelper.createAndMountWindow("v86-win", "V86", content, "800px", "600px", {
+      icon: "static/icons/v86.webp"
+    });
 
     this._setupSystemCardListeners(win);
     this._setupUploadZone(win);
@@ -148,7 +144,7 @@ export class V86App extends BaseApp {
 
     try {
       const blob = new Blob([await file.arrayBuffer()], { type: file.type || "application/octet-stream" });
-      await this.fs.writeBinaryFile(IMAGES_DIR, file.name, blob, "other", "/static/icons/v86.webp");
+      await this.fs.writeBinaryFile(IMAGES_DIR, file.name, blob, "other", CDN_BASES.MAIN + "/static/icons/v86.webp");
       this.wm.sendNotify(`Saved ${file.name} at VMs/ directory.`);
       zone.innerHTML = `<i class="fa-solid fa-circle-check" style="font-size:20px;color:#4caf50;margin-bottom:8px;display:block;"></i><div style="font-size:13px;color:#bbb;">Saved!</div>`;
       await this._loadUserImages(win);
@@ -174,7 +170,7 @@ export class V86App extends BaseApp {
 
     try {
       await this.fs.fsReady;
-      const dir = this.fs.resolveDir(IMAGES_DIR);
+      const dir = this.fs.resolveUserPath(IMAGES_DIR);
       await this.fs.p("mkdir", dir, { recursive: true }).catch(() => {});
       const files = await this.fs.pRead("readdir", dir).catch(() => []);
       const imageFiles = files.filter(
@@ -238,7 +234,7 @@ export class V86App extends BaseApp {
   }
 
   async launchSystem(systemId, displayName) {
-    const V86_PATH = "/static/apps/v86/images";
+    const V86_PATH = CDN_BASES.MAIN + "/static/apps/v86/images";
     const systemConfigs = {
       freedos: {
         fda: { url: `${V86_PATH}/freedos722.img`, size: 737280 },
@@ -323,10 +319,7 @@ export class V86App extends BaseApp {
       <div id="${winId}-screen" style="width:100%;height:100%;display:none;overflow:hidden;"></div>
     </div>`;
 
-    desktop.appendChild(win);
-    wm.makeDraggable(win);
-    wm.makeResizable(win);
-    wm.addToTaskbar(winId, displayName, "static/icons/v86.webp");
+    this.windowHelper.mountWindow(win, winId, displayName, "static/icons/v86.webp");
 
     const inner = win.querySelector(`#${winId}-inner`);
     const screenDiv = win.querySelector(`#${winId}-screen`);
@@ -384,12 +377,12 @@ export class V86App extends BaseApp {
       screenDiv.appendChild(screenContainer);
 
       const baseConfig = {
-        wasm_path: "/static/apps/v86/build/v86.wasm",
+        wasm_path: CDN_BASES.MAIN + "/static/apps/v86/build/v86.wasm",
         memory_size: 32 * 1024 * 1024,
         vga_memory_size: 2 * 1024 * 1024,
         screen_container: screenContainer,
-        bios: { url: "/static/apps/v86/bios/seabios.bin" },
-        vga_bios: { url: "/static/apps/v86/bios/vgabios.bin" },
+        bios: { url: CDN_BASES.MAIN + "/static/apps/v86/bios/seabios.bin" },
+        vga_bios: { url: CDN_BASES.MAIN + "/static/apps/v86/bios/vgabios.bin" },
         autostart: true,
         ...config
       };

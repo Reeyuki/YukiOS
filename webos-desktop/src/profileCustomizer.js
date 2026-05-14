@@ -1,7 +1,7 @@
-import { desktop } from "./desktop.js";
 import { BaseApp } from "./core/BaseApp.js";
 import { refreshSteamUI } from "./games.js";
 import { customAlert } from "./shared/dialogs.js";
+import { WindowHelper } from "./utils/WindowHelper.js";
 
 const STORAGE_KEYS = {
   username: "yukiOS_username",
@@ -9,20 +9,21 @@ const STORAGE_KEYS = {
 };
 
 const PREDEFINED_AVATARS = [
-  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/icons/guest.webp",
-  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/icons/helltaker.jpg",
-  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/icons/stardew.webp",
-  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/icons/hollowKnight.webp",
-  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/icons/fancypants2.webp",
-  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/icons/isaac.webp",
-  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/icons/angryBirds.webp",
-  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/icons/nso.webp",
-  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/icons/alienHominid.webp"
+  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@a3efea2218a5d717290e72ea41cd341d14689ce5/static/icons/guest.webp",
+  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@a3efea2218a5d717290e72ea41cd341d14689ce5/static/icons/helltaker.jpg",
+  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@a3efea2218a5d717290e72ea41cd341d14689ce5/static/icons/stardew.webp",
+  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@a3efea2218a5d717290e72ea41cd341d14689ce5/static/icons/hollowKnight.webp",
+  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@a3efea2218a5d717290e72ea41cd341d14689ce5/static/icons/fancypants2.webp",
+  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@a3efea2218a5d717290e72ea41cd341d14689ce5/static/icons/isaac.webp",
+  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@a3efea2218a5d717290e72ea41cd341d14689ce5/static/icons/angryBirds.webp",
+  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@a3efea2218a5d717290e72ea41cd341d14689ce5/static/icons/nso.webp",
+  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@a3efea2218a5d717290e72ea41cd341d14689ce5/static/icons/alienHominid.webp"
 ];
 
 export class ProfileCustomizerApp extends BaseApp {
   constructor(services) {
     super(services);
+    this.windowHelper = new WindowHelper(this.wm);
     this.settingsApp = null;
   }
 
@@ -37,14 +38,7 @@ export class ProfileCustomizerApp extends BaseApp {
     const currentUsername = localStorage.getItem(STORAGE_KEYS.username) || "Reeyuki";
     const currentProfilePic = localStorage.getItem(STORAGE_KEYS.profilePicture) || "static/icons/guest.webp";
 
-    const win = this.wm.createWindow(winId, "Customize Profile", "400px", "520px");
-    Object.assign(win.style, { left: "250px", top: "100px" });
-
-    win.innerHTML = `
-      <div class="window-header">
-        <span>Customize Profile</span>
-        ${this.wm.getWindowControls()}
-      </div>
+    const content = `
       <div class="profile-customizer-body" style="padding: 12px; display: flex; flex-direction: column; gap: 12px; height: calc(100% - 32px); box-sizing: border-box;">
         
         <div class="profile-preview" style="display: flex; align-items: center; gap: 10px; padding: 10px; background: rgba(79, 158, 255, 0.08); border-radius: 8px; border: 1px solid rgba(79, 158, 255, 0.15);">
@@ -100,11 +94,11 @@ export class ProfileCustomizerApp extends BaseApp {
       </div>
     `;
 
-    desktop.appendChild(win);
-    this.wm.makeDraggable(win);
-    this.wm.makeResizable(win);
-    this.wm.setupWindowControls(win);
-    this.wm.addToTaskbar(win.id, "Customize Profile", "fas fa-user-circle", "#4f9eff");
+    const win = this.windowHelper.createAndMountWindow(winId, "Customize Profile", content, "400px", "520px", {
+      icon: "fas fa-user-circle",
+      iconColor: "#4f9eff",
+      style: { left: "250px", top: "100px" }
+    });
 
     this._bindEvents(win, currentUsername, currentProfilePic);
   }

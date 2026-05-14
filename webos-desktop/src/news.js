@@ -1,8 +1,22 @@
 import { BaseApp } from "./core/BaseApp.js";
 import { StorageKeys } from "./settings.js";
-import { desktop } from "./desktop.js";
+import { WindowHelper } from "./utils/WindowHelper.js";
 
 const NEWS_UPDATES = [
+  {
+    date: "May 14, 2026",
+    sections: [
+      {
+        icon: "fa-wand-magic-sparkles",
+        title: "Features & Improvements",
+        items: [
+          ["fa-steam-symbol", "Steam Improvement", "Improved steam ui and added settings."],
+          ["fa-film", "Ruffle App", "Added ruffle."],
+          ["fa-star", "Slime Rancher and TABS", "Added Slime Rancher and TABS."]
+        ]
+      }
+    ]
+  },
   {
     date: "May 9, 2026",
     sections: [
@@ -10,17 +24,21 @@ const NEWS_UPDATES = [
         icon: "fa-wand-magic-sparkles",
         title: "Features & Improvements",
         items: [
-          ["fa-star", "PWA Support", "Added progressive web app support for YukiOS."],
-          ["fa-star", "Taskbar Customization support", "Added taskbar alignment options."],
+          ["fa-steam-symbol", "Steam Improvement", "Improved steam ui and added settings."],
+          ["fa-film", "Ruffle App", "Added ruffle."],
+          ["fa-mobile-screen", "PWA Support", "Added progressive web app support for YukiOS."],
+          ["fa-sliders", "Taskbar Customization support", "Added taskbar alignment options."],
           ["fa-user", "Profile Customization support", "Added Customize Profile app."],
           ["fa-cubes", "3D Renderer Assets", "Fixed sample files of 3D Model Viewer and JsDos roms"],
           ["fa-brands fa-steam", "Steam Improvement", "Added data pack install option steam and optimize load speed"],
           ["fa-arrow-pointer", "Cursor Support", "Added custom cursor support"],
           ["fa-route", "Add proxy support for custom apps", "Added proxy support for created web apps"],
           ["fa-wrench", "App Creator Improvements", "Improved the App Creator workflow and usability."],
-          ["fa-gamepad", "New Games: Azahar", "Added Azahar to the games collection."],
-          ["fa-gamepad", "New Games: Fez", "Added Fez to the games collection."],
-          ["fa-gamepad", "New Games: Happy Room", "Added Happy Room to the games collection."],
+          [
+            "fa-gamepad",
+            "New Games: Happy Room, Fez, Azahar Emu, TABS, Slime Rancher",
+            "Added Happy Room, Fez, Azahar Emu to the games collection."
+          ],
           [
             "fa-gamepad",
             "New Games: My Rusty Submarine, Upstream",
@@ -237,6 +255,7 @@ export const getNewsContentSignature = () => {
 export class NewsApp extends BaseApp {
   constructor(services) {
     super(services);
+    this.windowHelper = new WindowHelper(this.wm);
   }
 
   open() {
@@ -245,8 +264,6 @@ export class NewsApp extends BaseApp {
 
     const winId = "news-yukios";
     if (this._isSingletonOpen(winId)) return;
-
-    const win = this.wm.createWindow(winId, "What's New", "720px", "520px");
 
     const updates = NEWS_UPDATES;
 
@@ -295,11 +312,7 @@ export class NewsApp extends BaseApp {
       )
       .join("");
 
-    win.innerHTML = `
-      <div class="window-header">
-        <span>What's New</span>
-        ${this.wm.getWindowControls()}
-      </div>
+    const content = `
       <div class="window-content" style="padding:0; height: calc(100% - 40px); overflow: hidden;">
         <style>
           .news-root {
@@ -538,11 +551,9 @@ export class NewsApp extends BaseApp {
       </div>
     `;
 
-    desktop.appendChild(win);
-    this.wm.makeDraggable(win);
-    this.wm.makeResizable(win);
-    this.wm.setupWindowControls(win);
-    this.wm.addToTaskbar(win.id, "What's New", "fa fa-newspaper");
+    this.windowHelper.createAndMountWindow(winId, "What's New", content, "720px", "520px", {
+      icon: "fa fa-newspaper"
+    });
 
     window._newsApp = this;
   }

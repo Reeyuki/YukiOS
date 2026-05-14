@@ -2,6 +2,7 @@ import { PROXIES, clampProxyIndex, buildProxyUrl } from "./proxies.js";
 import { BaseApp } from "./core/BaseApp.js";
 import { bus, BusEvents } from "./core/EventBus.js";
 import { customConfirm } from "./shared/dialogs.js";
+import { WindowHelper } from "./utils/WindowHelper.js";
 
 export class BrowserApp extends BaseApp {
   static refreshIcons(node) {
@@ -11,6 +12,7 @@ export class BrowserApp extends BaseApp {
   }
   constructor(services) {
     super(services);
+    this.windowHelper = new WindowHelper(this.wm);
     this.winId = "browser-app-main";
     this.tabs = [];
     this.tabIdCounter = 0;
@@ -146,13 +148,7 @@ export class BrowserApp extends BaseApp {
 
     const startUrl = url || this.homepageUrl;
 
-    this.win = this.wm.createWindow(this.winId, title, "900px", "620px");
-
-    this.win.innerHTML = `
-      <div class="window-header" id="win-header-${this.winId}">
-        <span>Browser</span>
-        ${this.wm.getWindowControls()}
-      </div>
+    const content = `
       <div class="browser-root" id="browser-root-${this.winId}">
         <div class="browser-tabbar" id="tabbar-${this.winId}" style="display:flex;align-items:center;">
           <div id="tab-strip-${this.winId}" style="display:flex;flex:1;overflow:auto;align-items:center;min-width:0;"></div>
@@ -191,8 +187,9 @@ export class BrowserApp extends BaseApp {
       </div>
     `;
 
-    const desktop = document.getElementById("desktop") || document.body;
-    desktop.appendChild(this.win);
+    this.win = this.windowHelper.createAndMountWindow(this.winId, title, content, "900px", "620px", {
+      icon: "static/icons/firefox.webp"
+    });
 
     this.tabBar = document.getElementById(`tabbar-${this.winId}`);
     this.tabStrip = document.getElementById(`tab-strip-${this.winId}`);
@@ -204,7 +201,7 @@ export class BrowserApp extends BaseApp {
     this.bookmarkBar = document.getElementById(`bookmarkbar-${this.winId}`);
     this.loadingOverlay = document.getElementById(`loading-${this.winId}`);
 
-    const header = document.getElementById(`win-header-${this.winId}`);
+    const header = this.win.querySelector(".window-header");
     const controls = header?.querySelector(".window-controls");
     if (controls && this.controlsSlot) {
       this.controlsSlot.appendChild(controls);
@@ -218,17 +215,7 @@ export class BrowserApp extends BaseApp {
     this.renderBookmarks();
     this.createTab(startUrl, true);
 
-    this.tabStrip.addEventListener("contextmenu", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      this.wm._showWindowContextMenu(e, this.win);
-    });
-
-    this.wm.makeDraggable(this.win);
-    this.wm.makeResizable(this.win);
-    this.wm.setupWindowControls(this.win);
     this._wrapCloseButton();
-    this.wm.addToTaskbar(this.win.id, "Yuki Browser", "static/icons/firefox.webp");
   }
 
   _wrapCloseButton() {
@@ -319,9 +306,7 @@ export class BrowserApp extends BaseApp {
     </div>
   `;
 
-    document.getElementById("desktop").appendChild(win);
-
-    this.wm.mountWindow(win, id, name, "fas fa-file");
+    this.windowHelper.mountWindow(win, id, name, "fas fa-file");
 
     const iframe = win.querySelector("iframe");
     if (iframe) {
@@ -1488,7 +1473,7 @@ export class BrowserApp extends BaseApp {
     if (!val || typeof val !== 'string') return val;
     val = val.trim();
     if (/^(https?:|data:|blob:|javascript:|#|mailto:|tel:)/i.test(val)) return val;
-    if (val.startsWith('
+    if (val.startsWith('//')) return 'https:' + val;
     try { return new URL(val, __base).href; } catch(e) { return val; }
   }
 

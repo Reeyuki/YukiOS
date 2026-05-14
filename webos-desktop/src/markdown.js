@@ -1,9 +1,11 @@
-import { desktop } from "./desktop.js";
 import { decodeDataURLContent } from "./fileDisplay.js";
+import { WindowHelper } from "./utils/WindowHelper.js";
+import { BaseApp } from "./core/BaseApp.js";
 
-export class MarkdownApp {
-  constructor(windowManager) {
-    this.wm = windowManager;
+export class MarkdownApp extends BaseApp {
+  constructor(services) {
+    super(services);
+    this.windowHelper = new WindowHelper(this.wm);
     this.marked = null;
     this.cssLoaded = false;
   }
@@ -54,21 +56,16 @@ export class MarkdownApp {
     }
 
     const winId = `markdown-${title.replace(/[^a-zA-Z0-9]/g, "")}`;
+
     if (document.getElementById(winId)) {
       this.wm.bringToFront(document.getElementById(winId));
       return;
     }
 
-    const win = this.wm.createWindow(winId, title, "750px", "550px");
-
     const decodedContent = decodeDataURLContent(content);
     const renderedContent = this.marked.parse(decodedContent);
 
-    win.innerHTML = `
-      <div class="window-header">
-        <span>${title}</span>
-        ${this.wm.getWindowControls()}
-      </div>
+    const windowContent = `
       <div class="window-content markdown-container">
         <article class="markdown-body">
           ${renderedContent}
@@ -76,13 +73,10 @@ export class MarkdownApp {
       </div>
     `;
 
-    desktop.appendChild(win);
-    this.wm.makeDraggable(win);
-    this.wm.makeResizable(win);
-    this.wm.setupWindowControls(win);
-    this.wm.addToTaskbar(win.id, title, "fab fa-markdown", "#519aba");
-
-    this.wm.setupWindowControls(win, title, decodedContent, filePath);
+    const win = this.windowHelper.createAndMountWindow(winId, title, windowContent, "750px", "550px", {
+      icon: "fab fa-markdown",
+      iconColor: "#519aba"
+    });
   }
 
   loadContent(fileName, content, filePath) {

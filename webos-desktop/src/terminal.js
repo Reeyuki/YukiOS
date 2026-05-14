@@ -1,11 +1,12 @@
 import { Achievements } from "./achievements.js";
-import { desktop } from "./desktop.js";
 import { BaseApp } from "./core/BaseApp.js";
 import { bus, BusEvents } from "./core/EventBus.js";
+import { WindowHelper } from "./utils/WindowHelper.js";
 
 export class TerminalApp extends BaseApp {
   constructor(services) {
     super(services);
+    this.windowHelper = new WindowHelper(this.wm);
     this.currentPath = ["home", "reeyuki"];
     this.history = [];
     this.historyIndex = -1;
@@ -274,14 +275,7 @@ export class TerminalApp extends BaseApp {
     const existingWin = document.getElementById("terminal-win");
     if (existingWin) return this.wm.bringToFront(existingWin);
 
-    const win = this.wm.createWindow("terminal-win", "Terminal", "700px", "500px");
-
-    win.innerHTML = `
-    <div class="window-header">
-      <span>Terminal</span>
-        ${this.wm.getWindowControls()}
-
-    </div>
+    const content = `
     <div class="window-content" style="background:#000;color:white;font-family:monospace;padding:10px;overflow-y:auto;height:calc(100% - 40px);">
       <div id="terminal-output" style="white-space:pre;"></div>
       <div id="terminal-input-line" style="display:flex;">
@@ -291,11 +285,9 @@ export class TerminalApp extends BaseApp {
     </div>
   `;
 
-    desktop.appendChild(win);
-    this.wm.makeDraggable(win);
-    this.wm.makeResizable(win);
-    this.wm.setupWindowControls(win);
-    this.wm.addToTaskbar(win.id, "Terminal", "static/icons/terminal.webp");
+    const win = this.windowHelper.createAndMountWindow("terminal-win", "Terminal", content, "700px", "500px", {
+      icon: "static/icons/terminal.webp"
+    });
 
     this.terminalOutput = win.querySelector("#terminal-output");
     this.terminalInput = win.querySelector("#terminal-input");

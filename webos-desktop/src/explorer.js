@@ -1,10 +1,9 @@
 import { zipSync } from "fflate";
-import { desktop } from "./desktop.js";
 import { BaseApp } from "./core/BaseApp.js";
 import { bus, BusEvents } from "./core/EventBus.js";
+import { WindowHelper } from "./utils/WindowHelper.js";
 import { FileKind } from "./fs.js";
 import { SystemUtilities } from "./system.js";
-import { appMap } from "./gamesList.js";
 import {
   fileKindFromName,
   isImageFile,
@@ -43,6 +42,7 @@ const ARCHIVE_EXTS = [".zip", ".gz", ".tgz", ".tar", ".rar", ".7z", ".bz2", ".xz
 export class ExplorerApp extends BaseApp {
   constructor(services) {
     super(services);
+    this.windowHelper = new WindowHelper(this.wm);
     this.fs = services.fileSystemManager;
     this.wm = services.windowManager;
     this.notepadApp = services.notepadApp;
@@ -243,28 +243,23 @@ export class ExplorerApp extends BaseApp {
       }
     `;
 
-    desktop.appendChild(win);
     this._initExplorerView(win, winId);
 
-    this.wm.makeDraggable(win);
     const self = this;
-    this.wm.makeResizable(win, {
-      get style() {
-        const i = self._getInstance(winId);
-        if (i && i.currentPath.join("/") === "Pictures/Wallpapers") {
-          return win.querySelector(`#${winId}-view`).style;
+    this.windowHelper.mountWindow(win, winId, "File Explorer", "static/icons/files.webp", {
+      addToTaskbar: !isSelector,
+      resizeOptions: {
+        get style() {
+          const i = self._getInstance(winId);
+          if (i && i.currentPath.join("/") === "Pictures/Wallpapers") {
+            return win.querySelector(`#${winId}-view`).style;
+          }
+          return null;
         }
-        return null;
       }
     });
-    this.wm.setupWindowControls(win);
-    this.wm.bringToFront(win);
 
     this._watchWindowRemoval(winId);
-
-    if (!isSelector) {
-      this.wm.addToTaskbar(win.id, "File Explorer", "static/icons/files.webp");
-    }
 
     this.setupExplorerControls(win, winId);
     this.navigateInstance(inst, path);
@@ -329,13 +324,12 @@ export class ExplorerApp extends BaseApp {
       </div>
     `;
 
-    desktop.appendChild(win);
     this._initExplorerView(win, winId);
 
-    this.wm.makeDraggable(win);
-    this.wm.makeResizable(win);
-    this.wm.setupWindowControls(win);
-    this.wm.bringToFront(win);
+    this.windowHelper.mountWindow(win, winId, "Save As", null, {
+      addToTaskbar: false
+    });
+
     this._watchWindowRemoval(winId);
 
     const fileNameInput = win.querySelector(`#${winId}-filename-input`);
@@ -631,7 +625,7 @@ export class ExplorerApp extends BaseApp {
       await this.fs.deleteBinaryFile(targetPath, name).catch(() => {});
       await this.fs.writeBinaryFile(targetPath, name, content, kind, icon);
     } else {
-      const dir = this.fs.resolveDir(targetPath);
+      const dir = this.fs.resolveUserPath(targetPath);
       await this.fs.updateFile(targetPath, name, content);
       await this.fs.writeMeta(dir, name, { kind, icon });
     }
@@ -684,7 +678,7 @@ export class ExplorerApp extends BaseApp {
           continue;
         }
 
-        const existingPath = this.fs.join(this.fs.resolveDir(targetPath), name);
+        const existingPath = this.fs.join(this.fs.resolveUserPath(targetPath), name);
         const exists = await this.fs.exists(existingPath);
         const payload = await this._resolveFilePayload(file, name);
 
@@ -980,7 +974,7 @@ export class ExplorerApp extends BaseApp {
       const fileIcon = await this.fs.getFileIcon(srcPath, name);
       const isBinary = kind === FileKind.VIDEO || name.toLowerCase().endsWith(".pdf");
 
-      const destDir = this.fs.resolveDir(destPath);
+      const destDir = this.fs.resolveUserPath(destPath);
       const destFilePath = this.fs.join(destDir, name);
       const destExists = await this.fs.exists(destFilePath);
 
@@ -1003,7 +997,7 @@ export class ExplorerApp extends BaseApp {
         const content = await this.fs.getFileContent(srcPath, name);
         if (resolvedAction === "replace") {
           await this.fs.updateFile(destPath, name, content);
-          await this.fs.writeMeta(this.fs.resolveDir(destPath), name, { kind, icon: fileIcon });
+          await this.fs.writeMeta(this.fs.resolveUserPath(destPath), name, { kind, icon: fileIcon });
         } else {
           await this.fs.createFile(destPath, finalName, content, kind, fileIcon);
         }
@@ -1025,7 +1019,7 @@ export class ExplorerApp extends BaseApp {
         const childKind = await this.fs.getFileKind(childPath, childName);
         const childIcon = await this.fs.getFileIcon(childPath, childName);
         const destFolderPath = [...destPath, uniqueName];
-        const destDir = this.fs.resolveDir(destFolderPath);
+        const destDir = this.fs.resolveUserPath(destFolderPath);
         const childExists = await this.fs.exists(this.fs.join(destDir, childName));
 
         let resolvedAction = "replace";
@@ -1567,7 +1561,7 @@ export class ExplorerApp extends BaseApp {
   }
 
   async _buildFolderStats(inst) {
-    const dir = this.fs.resolveDir(inst.currentPath);
+    const dir = this.fs.resolveUserPath(inst.currentPath);
     const stats = {};
     try {
       const meta = await this.fs.readMeta(dir);

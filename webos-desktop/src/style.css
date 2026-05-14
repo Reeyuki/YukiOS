@@ -686,9 +686,9 @@ body.is-resizing * {
   width: 50px;
   height: 40px;
   flex-shrink: 0;
-  background: url("static/icons/liventcord.webp") no-repeat center / 35px;
+  background: url("static/icons/logo.png") no-repeat center / 35px;
   cursor: pointer;
-  border-radius: var(--r-sm);
+  border-radius: 20px;
   transition: filter 0.2s;
 }
 
@@ -3223,17 +3223,6 @@ body.is-resizing * {
   to {
     transform: translateX(200%);
   }
-}
-
-.games-app-count {
-  font-size: 11px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.45);
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  padding: 1px 7px;
-  margin-left: 6px;
-  vertical-align: middle;
 }
 
 .games-app-grid {
@@ -8781,6 +8770,7 @@ body.is-resizing * {
 }
 
 .steam-top-bar {
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -9523,58 +9513,6 @@ body.is-resizing * {
 
 .hidden {
   display: none !important;
-}
-
-#game-overlay {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: #000;
-  z-index: 100000;
-  flex-direction: column;
-}
-
-#game-overlay .controls {
-  background: #1b2838;
-  padding: 10px 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid #333;
-  color: #fff;
-  font-family: "Barlow", sans-serif;
-}
-
-#game-overlay #current-game-title {
-  font-weight: 600;
-  font-size: 16px;
-  color: #66c0f4;
-}
-
-#game-overlay .close-btn {
-  background: #c23b3b;
-  color: #fff;
-  border: none;
-  padding: 6px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 700;
-  font-size: 12px;
-  transition: background 0.2s;
-}
-
-#game-overlay .close-btn:hover {
-  background: #e64545;
-}
-
-#game-overlay iframe {
-  flex: 1;
-  border: none;
-  width: 100%;
-  height: 100%;
 }
 
 .steam-game-overview {

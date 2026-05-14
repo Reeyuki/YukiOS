@@ -1,4 +1,3 @@
-import { desktop } from "./desktop.js";
 import { StorageKeys } from "./settings.js";
 import { showStartStyleMenu } from "./shared/contextMenu.js";
 import { isImageFile } from "./utils.js";
@@ -707,7 +706,7 @@ export class WindowManager {
       icon.onerror = () => {
         const fallback = document.createElement("i");
         fallback.className = "fas fa-window-maximize";
-        fallback.style.color = color ?? "white";
+        fallback.style.color = color ?? "#6677dd";
         icon.replaceWith(fallback);
       };
       return icon;
@@ -721,7 +720,7 @@ export class WindowManager {
       icon.style.color = color ?? "white";
     } else {
       icon.className = "fas fa-window-maximize";
-      icon.style.color = "white";
+      icon.style.color = "#6677dd";
     }
 
     return icon;

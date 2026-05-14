@@ -1,6 +1,6 @@
-import { desktop } from "./desktop.js";
 import { getWeatherInfo } from "./shared/weatherCodes.js";
 import { BaseApp } from "./core/BaseApp.js";
+import { WindowHelper } from "./utils/WindowHelper.js";
 
 const WEATHER_CACHE_TTL = 10 * 60 * 1000;
 const LOCATION_CACHE_TTL = 24 * 60 * 60 * 1000;
@@ -44,6 +44,7 @@ export async function detectUserLocation() {
 export class WeatherApp extends BaseApp {
   constructor(services) {
     super(services);
+    this.windowHelper = new WindowHelper(this.wm);
     this.unit = "metric";
     this.currentCity = null;
     this.currentCoords = null;
@@ -204,10 +205,7 @@ export class WeatherApp extends BaseApp {
     const winId = "weather-win";
     if (this._isSingletonOpen(winId)) return;
 
-    const win = this.wm.createWindow("weather-win", "WEATHER", "420px", "560px");
-    Object.assign(win.style, { left: "200px", top: "100px" });
-
-    win.innerHTML = `
+    const content = `
       <style>
         #weather-win {
           font-family: 'Courier New', monospace;
@@ -326,11 +324,6 @@ export class WeatherApp extends BaseApp {
         @keyframes wx-spin { to { transform: rotate(360deg); } }
         .wx-error { padding: 40px 20px; text-align: center; color: #e06080; font-size: 13px; }
       </style>
-      <div class="window-header">
-        <span>WEATHER</span>
-        ${this.wm.getWindowControls()}
-
-      </div>
       <div class="window-content">
         <div class="wx-toolbar">
           <button class="wx-loc-btn" id="wx-loc-btn" title="Use my location"><svg width="10" height="12" viewBox="0 0 10 14" fill="currentColor"><path d="M5 0C2.24 0 0 2.24 0 5c0 3.75 5 9 5 9s5-5.25 5-9c0-2.76-2.24-5-5-5zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg></button>
@@ -342,11 +335,10 @@ export class WeatherApp extends BaseApp {
       </div>
     `;
 
-    desktop.appendChild(win);
-    this.wm.makeDraggable(win);
-    this.wm.makeResizable(win);
-    this.wm.setupWindowControls(win);
-    this.wm.addToTaskbar(win.id, "Weather", "fas fa-cloud");
+    const win = this.windowHelper.createAndMountWindow(winId, "Weather", content, "420px", "560px", {
+      icon: "fas fa-cloud",
+      style: { left: "200px", top: "100px" }
+    });
 
     const body = win.querySelector("#wx-body");
     const searchInput = win.querySelector("#wx-search-input");
