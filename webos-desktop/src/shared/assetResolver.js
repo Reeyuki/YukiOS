@@ -91,7 +91,7 @@ const CDN_PROVIDERS = {
       return resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main");
     },
     get MAIN() {
-      return resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511");
+      return resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@17e1c24b723b6e91f8cd20849da2048d58bdc044");
     },
     get NPM() {
       return resolveNpmUrl("https://cdn.jsdelivr.net/npm");
@@ -145,7 +145,7 @@ export function initializeMirrors(appMap) {
 
     // 4. Set global CSS variables
     const logoUrl = resolveGhUrl(
-      "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/icons/logo.png"
+      "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@17e1c24b723b6e91f8cd20849da2048d58bdc044/static/icons/logo.png"
     );
     document.documentElement.style.setProperty("--start-logo-url", `url("${logoUrl}")`);
   } catch (err) {
@@ -298,7 +298,7 @@ export function resolveWallpaperUrl(url) {
       return resolveGhUrl(`${provider.MAIN}${url}`);
     }
   } catch {}
-  return resolveGhUrl(`https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511${url}`);
+  return resolveGhUrl(`https://cdn.jsdelivr.net/gh/Reeyuki/yukios@17e1c24b723b6e91f8cd20849da2048d58bdc044${url}`);
 }
 
 export async function resolveUrl(url, isCdnGh = false) {

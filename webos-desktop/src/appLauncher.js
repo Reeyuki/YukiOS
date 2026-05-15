@@ -22,7 +22,7 @@ import { getNewsContentSignature } from "./news.js";
 import { PROXIES, clampProxyIndex, buildProxyUrl } from "./proxies.js";
 const STATICALLY_BASE = resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main");
 const YUKIOS_JSDELIVR_BASE = resolveGhUrl(
-  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511"
+  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@17e1c24b723b6e91f8cd20849da2048d58bdc044"
 );
 
 export class AppLauncher {
@@ -505,7 +505,7 @@ export class AppLauncher {
 <head>
 <meta charset="UTF-8">
 <title>${gameName}</title>
-<script src="${resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/libs/ruffle.js")}"></script>
+<script src="${resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@17e1c24b723b6e91f8cd20849da2048d58bdc044/static/libs/ruffle.js")}"></script>
 <style>html,body{margin:0;padding:0;width:100%;height:100%;background:black;overflow:hidden;}#player{width:100%;height:100%;}</style>
 </head>
 <body>

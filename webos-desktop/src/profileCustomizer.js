@@ -11,31 +11,31 @@ const STORAGE_KEYS = {
 
 const PREDEFINED_AVATARS = [
   resolveGhUrl(
-    "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/icons/guest.webp"
+    "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@17e1c24b723b6e91f8cd20849da2048d58bdc044/static/icons/guest.webp"
   ),
   resolveGhUrl(
-    "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/icons/helltaker.jpg"
+    "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@17e1c24b723b6e91f8cd20849da2048d58bdc044/static/icons/helltaker.jpg"
   ),
   resolveGhUrl(
-    "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/icons/stardew.webp"
+    "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@17e1c24b723b6e91f8cd20849da2048d58bdc044/static/icons/stardew.webp"
   ),
   resolveGhUrl(
-    "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/icons/hollowKnight.webp"
+    "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@17e1c24b723b6e91f8cd20849da2048d58bdc044/static/icons/hollowKnight.webp"
   ),
   resolveGhUrl(
-    "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/icons/fancypants2.webp"
+    "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@17e1c24b723b6e91f8cd20849da2048d58bdc044/static/icons/fancypants2.webp"
   ),
   resolveGhUrl(
-    "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/icons/isaac.webp"
+    "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@17e1c24b723b6e91f8cd20849da2048d58bdc044/static/icons/isaac.webp"
   ),
   resolveGhUrl(
-    "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/icons/angryBirds.webp"
+    "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@17e1c24b723b6e91f8cd20849da2048d58bdc044/static/icons/angryBirds.webp"
   ),
   resolveGhUrl(
-    "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/icons/nso.webp"
+    "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@17e1c24b723b6e91f8cd20849da2048d58bdc044/static/icons/nso.webp"
   ),
   resolveGhUrl(
-    "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/icons/alienHominid.webp"
+    "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@17e1c24b723b6e91f8cd20849da2048d58bdc044/static/icons/alienHominid.webp"
   )
 ];
 

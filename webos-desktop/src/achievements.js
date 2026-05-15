@@ -40,17 +40,17 @@ export class AchievementsApp extends BaseApp {
     this.unlocked = new Set();
     this.s1 = new Audio(
       resolveGhUrl(
-        "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/audio/steam.mp3"
+        "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@17e1c24b723b6e91f8cd20849da2048d58bdc044/static/audio/steam.mp3"
       )
     );
     this.s2 = new Audio(
       resolveGhUrl(
-        "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/audio/slime1.mp3"
+        "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@17e1c24b723b6e91f8cd20849da2048d58bdc044/static/audio/slime1.mp3"
       )
     );
     this.s3 = new Audio(
       resolveGhUrl(
-        "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/audio/slime2.mp3"
+        "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@17e1c24b723b6e91f8cd20849da2048d58bdc044/static/audio/slime2.mp3"
       )
     );
 

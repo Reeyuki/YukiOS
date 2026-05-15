@@ -248,7 +248,7 @@ export function tryGetIcon(id) {
 
   if (id === "explorer") {
     return resolveGhUrl(
-      "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/icons/file.webp"
+      "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@17e1c24b723b6e91f8cd20849da2048d58bdc044/static/icons/file.webp"
     );
   }
   if (id === "appCreatorApp") {
@@ -256,7 +256,7 @@ export function tryGetIcon(id) {
   }
   if (id === "kiwiIRC") {
     return resolveGhUrl(
-      "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/icons/kiwiirc.webp"
+      "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@17e1c24b723b6e91f8cd20849da2048d58bdc044/static/icons/kiwiirc.webp"
     );
   }
   if (id === "youtube") {

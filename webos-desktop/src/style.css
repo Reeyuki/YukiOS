@@ -688,7 +688,7 @@ body.is-resizing * {
   flex-shrink: 0;
   background: var(
       --start-logo-url,
-      url("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/icons/logo.png")
+      url("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@17e1c24b723b6e91f8cd20849da2048d58bdc044/static/icons/logo.png")
     )
     no-repeat center / 35px;
   cursor: pointer;
