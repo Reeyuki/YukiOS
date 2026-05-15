@@ -99,8 +99,73 @@ export class NotificationCenter {
     this._enforceMaxNotifications();
     this.updateNotificationCenter();
     this.updateBadge();
+    this.showToast(notification);
 
     return notification.id;
+  }
+
+  showToast(notif) {
+    if (this.doNotDisturb) return;
+
+    let container = document.getElementById("ntf-toast-container");
+    if (!container) {
+      container = document.createElement("div");
+      container.id = "ntf-toast-container";
+      container.className = "ntf-toast-container";
+      document.body.appendChild(container);
+    }
+
+    const toast = document.createElement("div");
+    const typeMap = {
+      info: "ntf-toast--info",
+      success: "ntf-toast--ok",
+      warning: "ntf-toast--warn",
+      error: "ntf-toast--fail"
+    };
+    toast.className = `ntf-toast ${typeMap[notif.type] || "ntf-toast--info"}`;
+
+    let iconHtml = "";
+    if (notif.icon) {
+      const isImagePath = isImageFile(notif.icon);
+      const isDataUrl = typeof notif.icon === "string" && notif.icon.startsWith("data:");
+
+      if (isImagePath || isDataUrl) {
+        iconHtml = `<img src="${escapeHtml(notif.icon)}" class="ntf-toast__glyph" style="width:16px;height:16px;object-fit:cover;" />`;
+      } else if (typeof notif.icon === "string" && notif.icon.trim().length > 0) {
+        const cls = notif.icon.startsWith("fa") ? notif.icon : `fa ${notif.icon}`;
+        iconHtml = `<i class="${escapeHtml(cls)} ntf-toast__glyph"></i>`;
+      }
+    } else {
+      const iconMap = {
+        info: "fas fa-info-circle",
+        success: "fas fa-check-circle",
+        warning: "fas fa-exclamation-circle",
+        error: "fas fa-times-circle"
+      };
+      iconHtml = `<i class="${iconMap[notif.type] ?? "fas fa-info-circle"} ntf-toast__glyph"></i>`;
+    }
+
+    toast.innerHTML = `
+      <div class="ntf-toast__glyph-wrap">${iconHtml}</div>
+      <div class="ntf-toast__body">
+        <div class="ntf-toast__heading">${escapeHtml(notif.title)}</div>
+        <div class="ntf-toast__text">${escapeHtml(notif.message ?? "")}</div>
+      </div>
+      <button class="ntf-toast__close" title="Dismiss">×</button>
+    `;
+
+    container.appendChild(toast);
+
+    let removed = false;
+    const removeToast = () => {
+      if (removed) return;
+      removed = true;
+      toast.classList.add("ntf-toast-out");
+      setTimeout(() => toast.remove(), 300);
+    };
+
+    toast.querySelector(".ntf-toast__close").addEventListener("click", removeToast);
+    setTimeout(removeToast, 4000);
   }
 
   removeNotification(id) {
@@ -279,7 +344,17 @@ export class NotificationCenter {
     if (dndBtn) dndBtn.classList.toggle("active", this.doNotDisturb);
 
     const trayBtn = document.getElementById("ntf-tray-btn");
-    if (trayBtn) trayBtn.classList.toggle("ntf-tray-btn--dnd", this.doNotDisturb);
+    if (trayBtn) {
+      trayBtn.classList.toggle("ntf-tray-btn--dnd", this.doNotDisturb);
+      const svg = trayBtn.querySelector("svg");
+      if (svg) {
+        if (this.doNotDisturb) {
+          svg.innerHTML = `<path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/><line x1="2" y1="2" x2="22" y2="22" stroke="#e0e0e0" stroke-width="2"/>`;
+        } else {
+          svg.innerHTML = `<path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>`;
+        }
+      }
+    }
   }
 
   formatTime(date) {

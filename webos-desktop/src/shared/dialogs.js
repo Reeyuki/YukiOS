@@ -155,3 +155,43 @@ export const customPrompt = async (message, defaultValue = "", title = "Prompt")
 export const customConfirm = async (message, title = "Confirm") => {
   return await showConfirm(title, message);
 };
+
+export function showCdnPrompt(mirrors, currentMirror) {
+  return new Promise((resolve) => {
+    const overlay = document.createElement("div");
+    overlay.className = "explorer-confirmation-overlay";
+    const optionsHtml = mirrors
+      .map((m) => `<option value="${m.id}" ${m.id === currentMirror ? "selected" : ""}>${m.name}</option>`)
+      .join("");
+
+    overlay.innerHTML = `
+      <div class="_fd-dialog">
+        <div class="_fd-dialog-title">Network Error</div>
+        <div class="_fd-dialog-label" style="font-size:13px;color:#ccc;line-height:1.5;">
+          Failed to load assets from the current CDN mirror. Your network might be blocking it. Please choose an alternative mirror:
+        </div>
+        <select class="_fd-dialog-input" id="cdn-picker" style="margin-top: 10px; background: rgba(0,0,0,0.3); color: white; border: 1px solid #555; padding: 5px; border-radius: 4px;">
+          ${optionsHtml}
+        </select>
+        <div class="_fd-dialog-actions" style="margin-top: 15px;">
+          <button class="_fd-btn _fd-btn-confirm" style="background:#313244;">Apply & Reload</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    const select = overlay.querySelector("#cdn-picker");
+    const confirmBtn = overlay.querySelector("._fd-btn-confirm");
+
+    const submit = () => {
+      overlay.remove();
+      resolve(select.value);
+    };
+
+    confirmBtn.onclick = submit;
+    overlay.onkeydown = (ev) => {
+      if (ev.key === "Enter") submit();
+    };
+    confirmBtn.focus();
+  });
+}

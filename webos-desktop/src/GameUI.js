@@ -1,9 +1,9 @@
 import { refreshIcons } from "./shared/contextMenu.js";
 import { customAlert, customPrompt } from "./shared/dialogs.js";
 import { SteamDataManager, _launcher, _desktopUI } from "./games.js";
-import { lazyImg, observeLazyImages } from "./games.js";
+import { observeLazyImages } from "./games.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
-import { buildSteamShell, initDropdowns, initStorePage, CDN_BASE, initSettingsPage } from "./steam.js";
+import { buildSteamShell, initDropdowns, initStorePage, getCdnBase, initSettingsPage } from "./steam.js";
 
 export class GameUI {
   constructor(renderer) {
@@ -392,7 +392,7 @@ export class GameUI {
       winRootn.appendChild(existingControls);
     }
 
-    container.innerHTML = buildSteamShell(container, username, profilePic, hiddenGames.length, CDN_BASE);
+    container.innerHTML = buildSteamShell(container, username, profilePic, hiddenGames.length, getCdnBase());
 
     const winRoot = container.closest(".window");
     if (winRoot) {
@@ -505,7 +505,7 @@ export class GameUI {
           const sp = container.querySelector(".steam-store-page");
           if (sp && !sp._storeInited) {
             sp._storeInited = true;
-            initStorePage(container, onLaunch, navigateTo, CDN_BASE, this.renderer._imgObserver);
+            initStorePage(container, onLaunch, navigateTo, getCdnBase(), this.renderer._imgObserver);
           }
         }
       });
@@ -660,7 +660,7 @@ export class GameUI {
       if (_lastPage === "store") {
         const sp = container.querySelector(".steam-store-page");
         if (sp) sp._storeInited = true;
-        initStorePage(container, onLaunch, navigateTo, CDN_BASE, this.renderer._imgObserver);
+        initStorePage(container, onLaunch, navigateTo, getCdnBase(), this.renderer._imgObserver);
       } else {
         this.renderer.gameRenderer.renderGrid(container, onLaunch);
       }
@@ -668,7 +668,7 @@ export class GameUI {
       const sp = container.querySelector(".steam-store-page");
       if (sp) sp._storeInited = true;
       updatePageUI("store");
-      initStorePage(container, onLaunch, navigateTo, CDN_BASE, this.renderer._imgObserver);
+      initStorePage(container, onLaunch, navigateTo, getCdnBase(), this.renderer._imgObserver);
     }
   }
 

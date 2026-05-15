@@ -97,6 +97,9 @@ class WallpaperStore {
 }
 
 const STATIC_FALLBACK_WALLPAPERS = [
+  "/static/wallpapers/mint.webp",
+  "/static/wallpapers/nier.webp",
+  "/static/wallpapers/redwin10.jpg",
   "/static/wallpapers/wallpaper1.webp",
   "/static/wallpapers/wallpaper2.webp",
   "/static/wallpapers/wallpaper3.webp",
@@ -109,7 +112,11 @@ const STATIC_FALLBACK_WALLPAPERS = [
   "/static/wallpapers/wallpaper10.webp",
   "/static/wallpapers/wallpaper11.webp",
   "/static/wallpapers/wallpaper12.png",
-  "/static/wallpapers/wallpaper13.png"
+  "/static/wallpapers/wallpaper13.png",
+  "/static/wallpapers/win7.webp",
+  "/static/wallpapers/win10.webp",
+  "/static/wallpapers/win11.webp",
+  "/static/wallpapers/xp.webp"
 ];
 
 class WallpaperManager {

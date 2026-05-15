@@ -6,6 +6,9 @@ export const FileKind = { TEXT: "text", IMAGE: "image", VIDEO: "video", AUDIO: "
 const DEFAULT_STATICALLY_GH_BASE = CDN_BASES.MAIN;
 const DEFAULT_WALLPAPER_STATIC_DIR = "/static/wallpapers/";
 const DEFAULT_WALLPAPER_FILES = [
+  "mint.webp",
+  "nier.webp",
+  "redwin10.jpg",
   "wallpaper1.webp",
   "wallpaper2.webp",
   "wallpaper3.webp",
@@ -19,12 +22,10 @@ const DEFAULT_WALLPAPER_FILES = [
   "wallpaper11.webp",
   "wallpaper12.png",
   "wallpaper13.png",
-  "mint.webp",
-  "xp.webp",
   "win7.webp",
   "win10.webp",
   "win11.webp",
-  "redwin10.jpg"
+  "xp.webp"
 ];
 
 function defaultWallpaperUrl(nameOrPath) {
@@ -142,6 +143,48 @@ export const defaultStorage = {
             content: defaultWallpaperUrl("wallpaper13.png"),
             kind: FileKind.IMAGE,
             icon: defaultWallpaperUrl("wallpaper13.png")
+          },
+          "mint.webp": {
+            type: "file",
+            content: defaultWallpaperUrl("mint.webp"),
+            kind: FileKind.IMAGE,
+            icon: defaultWallpaperUrl("mint.webp")
+          },
+          "nier.webp": {
+            type: "file",
+            content: defaultWallpaperUrl("nier.webp"),
+            kind: FileKind.IMAGE,
+            icon: defaultWallpaperUrl("nier.webp")
+          },
+          "redwin10.jpg": {
+            type: "file",
+            content: defaultWallpaperUrl("redwin10.jpg"),
+            kind: FileKind.IMAGE,
+            icon: defaultWallpaperUrl("redwin10.jpg")
+          },
+          "win7.webp": {
+            type: "file",
+            content: defaultWallpaperUrl("win7.webp"),
+            kind: FileKind.IMAGE,
+            icon: defaultWallpaperUrl("win7.webp")
+          },
+          "win10.webp": {
+            type: "file",
+            content: defaultWallpaperUrl("win10.webp"),
+            kind: FileKind.IMAGE,
+            icon: defaultWallpaperUrl("win10.webp")
+          },
+          "win11.webp": {
+            type: "file",
+            content: defaultWallpaperUrl("win11.webp"),
+            kind: FileKind.IMAGE,
+            icon: defaultWallpaperUrl("win11.webp")
+          },
+          "xp.webp": {
+            type: "file",
+            content: defaultWallpaperUrl("xp.webp"),
+            kind: FileKind.IMAGE,
+            icon: defaultWallpaperUrl("xp.webp")
           },
           "nier.mp4": {
             type: "file",
@@ -576,7 +619,15 @@ export class FileSystemManager {
         this.fs.readdir(dir, (e, list) => (e ? rej(e) : res(list)));
       });
     } catch {
-      throw new Error(`Invalid path: ${JSON.stringify(path)}`);
+      try {
+        await this.ensureFolder(path);
+        entries = await new Promise((res, rej) => {
+          this.fs.readdir(dir, (e, list) => (e ? rej(e) : res(list)));
+        });
+      } catch (err) {
+        console.warn(`Filesystem recovery failed for ${dir}:`, err);
+        return {};
+      }
     }
 
     const meta = await this.readMeta(dir);
@@ -585,7 +636,13 @@ export class FileSystemManager {
     for (const name of entries) {
       if (name === this.CONFIG.META_FILE) continue;
       const full = this.join(dir, name);
-      const stat = await this.pStat(full);
+      let stat;
+      try {
+        stat = await this.pStat(full);
+      } catch {
+        continue;
+      }
+
       if (stat.isDirectory()) {
         result[name] = {};
       } else {

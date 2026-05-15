@@ -4,13 +4,26 @@ import { WindowHelper } from "./utils/WindowHelper.js";
 
 const NEWS_UPDATES = [
   {
+    date: "May 15, 2026",
+    sections: [
+      {
+        icon: "fa-wand-magic-sparkles",
+        title: "Features & Improvements",
+        items: [
+          ["fa-wifi", "CDN Mirror Selection", "Added CDN Mirror Selection option."],
+          ["fa-gear", "Settings & UI Improvement", "Added setting categories and Theme Selection"]
+        ]
+      }
+    ]
+  },
+  {
     date: "May 14, 2026",
     sections: [
       {
         icon: "fa-wand-magic-sparkles",
         title: "Features & Improvements",
         items: [
-          ["fa-steam-symbol", "Steam Improvement", "Improved steam ui and added settings."],
+          ["fa-star", "Steam Improvement", "Improved steam ui and added settings."],
           ["fa-film", "Ruffle App", "Added ruffle."],
           ["fa-star", "Slime Rancher and TABS", "Added Slime Rancher and TABS."]
         ]

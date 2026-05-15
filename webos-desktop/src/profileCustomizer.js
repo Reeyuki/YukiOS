@@ -2,6 +2,7 @@ import { BaseApp } from "./core/BaseApp.js";
 import { refreshSteamUI } from "./games.js";
 import { customAlert } from "./shared/dialogs.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
+import { resolveGhUrl } from "./shared/assetResolver.js";
 
 const STORAGE_KEYS = {
   username: "yukiOS_username",
@@ -9,15 +10,33 @@ const STORAGE_KEYS = {
 };
 
 const PREDEFINED_AVATARS = [
-  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/icons/guest.webp",
-  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/icons/helltaker.jpg",
-  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/icons/stardew.webp",
-  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/icons/hollowKnight.webp",
-  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/icons/fancypants2.webp",
-  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/icons/isaac.webp",
-  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/icons/angryBirds.webp",
-  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/icons/nso.webp",
-  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/icons/alienHominid.webp"
+  resolveGhUrl(
+    "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/icons/guest.webp"
+  ),
+  resolveGhUrl(
+    "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/icons/helltaker.jpg"
+  ),
+  resolveGhUrl(
+    "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/icons/stardew.webp"
+  ),
+  resolveGhUrl(
+    "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/icons/hollowKnight.webp"
+  ),
+  resolveGhUrl(
+    "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/icons/fancypants2.webp"
+  ),
+  resolveGhUrl(
+    "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/icons/isaac.webp"
+  ),
+  resolveGhUrl(
+    "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/icons/angryBirds.webp"
+  ),
+  resolveGhUrl(
+    "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/icons/nso.webp"
+  ),
+  resolveGhUrl(
+    "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/icons/alienHominid.webp"
+  )
 ];
 
 export class ProfileCustomizerApp extends BaseApp {

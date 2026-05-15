@@ -19,7 +19,6 @@ import {
   isSwfFile,
   isZipFile
 } from "./fileDisplay.js";
-import { renderWallpapersPage } from "./wallpapers.js";
 import { showConflictDialog } from "./shared/conflictDialog.js";
 import { showDynamicContextMenu } from "./shared/contextMenu.js";
 import { speak } from "./clippy.js";
@@ -128,7 +127,6 @@ export class ExplorerApp extends BaseApp {
         <div class="start-item" data-path="Desktop"><i class="fas fa-desktop sidebar-icon-fa"></i>Desktop</div>
         <div class="start-item" data-path="Pictures"><i class="fas fa-image sidebar-icon-fa"></i>Pictures</div>
         <div class="start-item" data-path="Videos"><i class="fas fa-video sidebar-icon-fa"></i>Videos</div>
-        <div class="start-item" data-path="Pictures/Wallpapers"><i class="fas fa-panorama sidebar-icon-fa"></i>Wallpapers</div>
       </div>`;
   }
 
@@ -247,16 +245,7 @@ export class ExplorerApp extends BaseApp {
 
     const self = this;
     this.windowHelper.mountWindow(win, winId, "File Explorer", "static/icons/files.webp", {
-      addToTaskbar: !isSelector,
-      resizeOptions: {
-        get style() {
-          const i = self._getInstance(winId);
-          if (i && i.currentPath.join("/") === "Pictures/Wallpapers") {
-            return win.querySelector(`#${winId}-view`).style;
-          }
-          return null;
-        }
-      }
+      addToTaskbar: !isSelector
     });
 
     this._watchWindowRemoval(winId);
@@ -807,12 +796,6 @@ export class ExplorerApp extends BaseApp {
     view.classList.remove("games-page");
     pathDisplay.textContent = "/" + inst.currentPath.join("/");
 
-    if (inst.currentPath.join("/") === "Pictures/Wallpapers" && inst.mode === "browse") {
-      await renderWallpapersPage(this, view);
-      return;
-    }
-
-    view.classList.remove("wallpapers-page");
     if (view.style.height === "") view.style.height = "600px";
 
     const folder = await this.fs.getFolder(inst.currentPath);

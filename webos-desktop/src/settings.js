@@ -4,6 +4,10 @@ import { BaseApp } from "./core/BaseApp.js";
 import { bus, BusEvents } from "./core/EventBus.js";
 import { customAlert, customConfirm, customPrompt } from "./shared/dialogs.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
+import { CDN_MIRRORS, setCdnMirror, initializeMirrors } from "./shared/assetResolver.js";
+import { appMap } from "./gamesList.js";
+import { renderWallpapersPage } from "./wallpapers.js";
+import { audioMixer } from "./audioMixer.js";
 
 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
@@ -36,7 +40,12 @@ export const StorageKeys = {
   dndKey: "wm_ntf_dnd",
   taskbarPosition: "yukiOS_taskbar_position",
   taskbarAlignment: "yukiOS_taskbar_alignment",
-  pinnedTaskbarItems: "yukiOS_pinned_taskbar_items"
+  pinnedTaskbarItems: "yukiOS_pinned_taskbar_items",
+  cdnMirror: "yukiOS_cdnMirror",
+  theme: "yukiOS_theme",
+  windowTransparency: "yukiOS_window_transparency",
+  soundEnabled: "yukiOS_sound_enabled",
+  masterVolume: "yukiOS_master_volume"
 };
 
 export class SettingsApp extends BaseApp {
@@ -52,6 +61,9 @@ export class SettingsApp extends BaseApp {
       const parsedCursorSize = Number(localStorage.getItem(StorageKeys.cursorSizeKey));
       const cursorSize = Number.isFinite(parsedCursorSize) && parsedCursorSize > 0 ? parsedCursorSize : 32;
 
+      const rawTransparency = parseFloat(localStorage.getItem(StorageKeys.windowTransparency));
+      const rawMasterVol = parseFloat(localStorage.getItem(StorageKeys.masterVolume));
+
       this._settings = {
         weather: localStorage.getItem(StorageKeys.weather) !== "false",
         cycleWallpaper: localStorage.getItem(StorageKeys.cycleWallpaper) !== "false",
@@ -63,11 +75,21 @@ export class SettingsApp extends BaseApp {
         disableDesktopStretchScroll: localStorage.getItem(StorageKeys.disableDesktopStretchScroll) === "true",
         achievementsDisabled: localStorage.getItem("yukiOS_achievements_disabled") === "true",
         analyticsDisabled: localStorage.getItem(StorageKeys.analyticsDisabled) === "true",
-        taskbarAlignment: localStorage.getItem(StorageKeys.taskbarAlignment) || "center"
+        taskbarAlignment: localStorage.getItem(StorageKeys.taskbarAlignment) || "center",
+        cdnMirror: localStorage.getItem(StorageKeys.cdnMirror) || "jsdelivr",
+        theme: localStorage.getItem(StorageKeys.theme) || "auto",
+        windowTransparency: Number.isFinite(rawTransparency) ? Math.max(0.2, Math.min(1, rawTransparency)) : 1,
+        soundEnabled: localStorage.getItem(StorageKeys.soundEnabled) !== "false",
+        masterVolume: Number.isFinite(rawMasterVol) ? Math.max(0, Math.min(1, rawMasterVol)) : 1,
+        dnd: localStorage.getItem(StorageKeys.dndKey) === "1",
+        taskbarPosition: localStorage.getItem(StorageKeys.taskbarPosition) || "bottom"
       };
 
       this._applyCursor(this._settings.cursorDataUrl);
       this._applyDesktopStretchScrollDisabled(this._settings.disableDesktopStretchScroll);
+      this._applyTheme(this._settings.theme);
+      this._applyWindowTransparency(this._settings.windowTransparency);
+      this._applySound(this._settings.soundEnabled, this._settings.masterVolume);
       window._settings = this._settings;
 
       if (cursorFromLegacyStorage && !cursorOriginalFromStorage) {
@@ -87,7 +109,7 @@ export class SettingsApp extends BaseApp {
       return;
     }
 
-    const win = this.wm.createWindow(winId, "Settings", "500px", "560px");
+    const win = this.wm.createWindow(winId, "Settings", "700px", "600px");
     win.innerHTML = this._buildHTML();
 
     this.windowHelper.mountWindow(win, winId, "Settings", "fas fa-cog");
@@ -108,275 +130,442 @@ export class SettingsApp extends BaseApp {
     this.fs = fileSystemManager;
   }
 
-  _buildHTML() {
-    const {
-      weather,
-      cycleWallpaper,
-      cursorDataUrl,
-      cursorSize,
-      macOsControls,
-      clippy,
-      disableDesktopStretchScroll,
-      achievementsDisabled,
-      analyticsDisabled
-    } = this._settings;
+  setNotificationCenter(nc) {
+    this._notificationCenter = nc;
+  }
 
+  _buildHTML() {
     return `
+    <style>
+      .yuki-settings-layout { display: flex; height: calc(100% - 32px); background: var(--window-bg-color, #1e1e1e); color: var(--text-color, #fff); }
+      .yuki-settings-sidebar { width: 160px; background: rgba(0,0,0,0.15); border-right: 1px solid rgba(128,128,128,0.2); display: flex; flex-direction: column; }
+      .yuki-settings-search { padding: 15px; border-bottom: 1px solid rgba(128,128,128,0.2); }
+      .yuki-settings-search input { width: 100%; padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(128,128,128,0.3); background: rgba(0,0,0,0.2); color: inherit; outline: none; transition: border 0.2s;}
+      .yuki-settings-search input:focus { border-color: #0078d7; }
+      .yuki-settings-nav { list-style: none; padding: 10px 0; margin: 0; overflow-y: auto; flex: 1; }
+      .yuki-settings-nav li { padding: 12px 20px; cursor: pointer; display: flex; align-items: center; gap: 12px; font-size: 0.95em; transition: background 0.1s;}
+      .yuki-settings-nav li i { width: 16px; text-align: center; opacity: 0.8; }
+      .yuki-settings-nav li:hover { background: rgba(255,255,255,0.05); }
+      .yuki-settings-nav li.active { background: rgba(255,255,255,0.1); border-left: 3px solid #0078d7; font-weight: 500; }
+      .yuki-settings-content { flex: 1; overflow-y: auto; padding: 0 30px 30px; position: relative; }
+      .settings-category-pane { display: none; padding-top: 25px; }
+      .settings-category-pane.active { display: block; animation: fadeIn 0.2s ease; }
+      .settings-category-header { font-size: 1.8em; font-weight: 600; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid rgba(128,128,128,0.2); }
+      .settings-row.hidden-by-search { display: none !important; }
+      .yuki-settings-layout.is-searching .settings-category-pane { display: block !important; padding-top: 15px; }
+      .yuki-settings-layout.is-searching .settings-category-header { display: none !important; }
+      @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+      .settings-saved-badge-float { position: absolute; top: 15px; right: 25px; background: #0078d7; color: #fff; padding: 4px 10px; border-radius: 4px; font-size: 0.85em; opacity: 0; transition: opacity 0.3s; z-index: 100; pointer-events: none; }
+      .settings-select { width: auto; min-width: 140px; max-width: 220px; padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(128,128,128,0.3); background: rgba(0,0,0,0.2); color: inherit; outline: none; font-family: inherit; font-size: 0.95em; cursor: pointer; transition: border 0.2s; }
+      .settings-select:focus { border-color: #0078d7; }
+      .settings-select option { background: #1e1e1e; color: #fff; }
+
+      .wp-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+      .wp-title { font-size: 1.1em; font-weight: 500; }
+      .wp-random-btn { background: #0078d7; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; transition: background 0.2s; font-size: 0.9em;}
+      .wp-random-btn:hover { background: #006abc; }
+      .wp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; }
+      .wp-card { background: rgba(0,0,0,0.2); border: 1px solid rgba(128,128,128,0.2); border-radius: 6px; overflow: hidden; cursor: pointer; transition: transform 0.1s, border-color 0.2s; display: flex; flex-direction: column; }
+      .wp-card:hover { transform: translateY(-2px); border-color: rgba(255,255,255,0.2); }
+      .wp-thumb { height: 90px; background-size: cover; background-position: center; position: relative; }
+      .wp-thumb-video::after { content: "▶"; position: absolute; bottom: 5px; right: 5px; background: rgba(0,0,0,0.6); padding: 2px 6px; border-radius: 4px; font-size: 0.8em; }
+      .wp-thumb-img { width: 100%; height: 100%; object-fit: cover; }
+      .wp-card-name { padding: 8px 10px; font-size: 0.85em; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: inherit; }
+      .wp-card-actions { padding: 0 10px 10px; display: flex; justify-content: center; }
+      .wp-card-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1); color: inherit; padding: 4px 15px; border-radius: 4px; cursor: pointer; width: 100%; transition: background 0.2s; font-size: 0.9em; }
+      .wp-card-btn:hover { background: #0078d7; border-color: #0078d7; }
+      .wp-preview-active { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 10000; display: flex; align-items: center; justify-content: center; }
+      .wp-preview-inner { position: relative; width: 80%; height: 80%; max-width: 800px; display: flex; flex-direction: column; background: #1e1e1e; border-radius: 8px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+      .wp-preview-media { flex: 1; width: 100%; object-fit: contain; background: #000; }
+      .wp-preview-overlay { padding: 15px; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.5); }
+      .wp-preview-label { font-size: 1.1em; font-weight: 500; color: #fff; }
+      .wp-preview-btns { display: flex; gap: 10px; }
+      .wp-action-btn { padding: 6px 15px; border-radius: 4px; border: none; cursor: pointer; color: white; }
+      .wp-discard-btn { background: rgba(255,255,255,0.1); }
+      .wp-discard-btn:hover { background: rgba(255,255,255,0.2); }
+      .wp-save-btn { background: #0078d7; }
+      .wp-save-btn:hover { background: #006abc; }
+    </style>
+
     <div class="window-header">
       <span>Settings</span>
       ${this.wm.getWindowControls()}
     </div>
 
-    <div class="settings-shell">
-      <div class="settings-menubar">
-        <div class="settings-menu-item" data-menu="file">
-          <span>File</span>
-          <div class="settings-dropdown">
-            <div class="dropdown-item" data-action="export">
-              <i class="fas fa-file-export"></i> Export
-            </div>
-            <div class="dropdown-item" data-action="import">
-              <i class="fas fa-file-import"></i> Import
-            </div>
-            <div class="dropdown-separator"></div>
-            <div class="dropdown-item danger" data-action="deleteAll">
-              <i class="fas fa-trash"></i> Delete All Data
-            </div>
-          </div>
+    <div class="yuki-settings-layout">
+      <div class="yuki-settings-sidebar">
+        <div class="yuki-settings-search">
+          <input type="text" id="settingsSearch" placeholder="Find a setting...">
         </div>
-        <div class="settings-menu-item" data-menu="actions">
-          <span>Actions</span>
-          <div class="settings-dropdown">
-            <div class="dropdown-item" data-action="reset">
-              <i class="fas fa-undo"></i> Reset to Saved
-            </div>
-            <div class="dropdown-item warning" data-action="resetToggles">
-              <i class="fas fa-sliders-h"></i> Reset Toggles
-            </div>
-          </div>
-        </div>
-        <span id="settingsStatus" class="settings-saved-badge">Saved</span>
+        <ul class="yuki-settings-nav">
+          <li class="active" data-target="pane-system"><i class="fas fa-desktop"></i> System</li>
+          <li data-target="pane-desktop"><i class="fas fa-home"></i> Desktop</li>
+          <li data-target="pane-appearance"><i class="fas fa-paint-brush"></i> Appearance</li>
+          <li data-target="pane-tools"><i class="fas fa-toolbox"></i> Tools</li>
+          <li data-target="pane-data"><i class="fas fa-database"></i> Data</li>
+          <li data-target="pane-network"><i class="fas fa-network-wired"></i> Network</li>
+          <li data-target="pane-audio"><i class="fas fa-volume-high"></i> Audio</li>
+          <li data-target="pane-about"><i class="fas fa-circle-info"></i> About</li>
+        </ul>
       </div>
 
-      <div class="settings-body">
-
-
-        <div class="settings-card">
-          <div class="settings-card-header">
-            <i class="fas fa-cog"></i>
-            <span>System</span>
-          </div>
-<div class="settings-row">
-            <div class="settings-label-group">
-              <span class="settings-label-title">YukiCord</span>
-              <span class="settings-label-desc">Join our Discord server</span>
-            </div>
-            <a href="https://discord.gg/2Z8Gvtqt7" target="_blank" rel="noopener noreferrer" class="settings-discord-link">
-              <button class="settings-btn settings-btn-discord">
-                <i class="fab fa-discord"></i> Join
-              </button>
-            </a>
-          </div>
-          <div class="settings-row">
-            <div class="settings-label-group">
-              <span class="settings-label-title">Weather</span>
-              <span class="settings-label-desc">Show weather in the taskbar</span>
-            </div>
-            <label class="settings-toggle">
-              <input type="checkbox" id="settingsWeather" ${weather ? "checked" : ""}/>
-              <span class="settings-track"><span class="settings-thumb"></span></span>
-            </label>
-          </div>
-
-          <div class="settings-row">
-            <div class="settings-label-group">
-              <span class="settings-label-title">macOS Window Controls</span>
-              <span class="settings-label-desc">Use macOS-style traffic light buttons</span>
-            </div>
-            <label class="settings-toggle">
-              <input type="checkbox" id="settingsMacControls" ${macOsControls ? "checked" : ""}/>
-              <span class="settings-track"><span class="settings-thumb"></span></span>
-            </label>
-          </div>
-
-          <div class="settings-row">
-            <div class="settings-label-group">
-              <span class="settings-label-title">Clippy</span>
-              <span class="settings-label-desc">Show Clippy after boot</span>
-            </div>
-            <label class="settings-toggle">
-              <input type="checkbox" id="settingsClippy" ${clippy ? "checked" : ""}/>
-              <span class="settings-track"><span class="settings-thumb"></span></span>
-            </label>
-          </div>
-
-          <div class="settings-row">
-            <div class="settings-label-group">
-              <span class="settings-label-title">Achievements</span>
-              <span class="settings-label-desc">Enable or disable achievement system</span>
-            </div>
-            <label class="settings-toggle">
-              <input type="checkbox" id="settingsAchievements" ${!achievementsDisabled ? "checked" : ""}/>
-              <span class="settings-track"><span class="settings-thumb"></span></span>
-            </label>
-          </div>
-
-          <div class="settings-row">
-            <div class="settings-label-group">
-              <span class="settings-label-title">Analytics</span>
-              <span class="settings-label-desc">Allow usage analytics</span>
-            </div>
-            <label class="settings-toggle">
-              <input type="checkbox" id="settingsAnalytics" ${!analyticsDisabled ? "checked" : ""}/>
-              <span class="settings-track"><span class="settings-thumb"></span></span>
-            </label>
-          </div>
-
-          <div class="settings-row">
-            <div class="settings-label-group">
-              <span class="settings-label-title">Disable Desktop Stretch Scroll</span>
-              <span class="settings-label-desc">Prevent desktop page from expanding when windows are dragged out</span>
-            </div>
-            <label class="settings-toggle">
-              <input type="checkbox" id="settingsDisableDesktopStretchScroll" ${disableDesktopStretchScroll ? "checked" : ""}/>
-              <span class="settings-track"><span class="settings-thumb"></span></span>
-            </label>
-          </div>
-
-          <div class="settings-row">
-            <div class="settings-label-group">
-              <span class="settings-label-title">Taskbar Alignment</span>
-              <span class="settings-label-desc">Choose alignment for taskbar icons</span>
-            </div>
-            <div class="settings-button-group">
-              <button class="settings-btn ${this._settings.taskbarAlignment === "left" ? "active" : ""}" data-alignment="left">
-                <i class="fas fa-align-left"></i> Left
-              </button>
-              <button class="settings-btn ${this._settings.taskbarAlignment === "center" ? "active" : ""}" data-alignment="center">
-                <i class="fas fa-align-center"></i> Center
-              </button>
-              <button class="settings-btn ${this._settings.taskbarAlignment === "right" ? "active" : ""}" data-alignment="right">
-                <i class="fas fa-align-right"></i> Right
-              </button>
-            </div>
-          </div>
-
-        </div>
-
-        <div class="settings-card">
-          <div class="settings-card-header">
-            <i class="fas fa-image"></i>
-            <span>Wallpaper</span>
-          </div>
-
-          <div class="settings-row">
-            <div class="settings-label-group">
-              <span class="settings-label-title">Cycle Wallpapers on Start</span>
-            </div>
-            <label class="settings-toggle">
-              <input type="checkbox" id="settingsCycleWallpaper" ${cycleWallpaper ? "checked" : ""}/>
-              <span class="settings-track"><span class="settings-thumb"></span></span>
-            </label>
-          </div>
-
-        </div>
-
-        <div class="settings-card">
-          <div class="settings-card-header">
-            <i class="fas fa-mouse-pointer"></i>
-            <span>Cursor</span>
-          </div>
-
-          <div class="settings-row settings-row--stacked">
-            <div class="settings-label-group">
-              <span class="settings-label-title">Custom Cursor</span>
-              <span class="settings-label-desc">Upload a PNG/JPG/GIF/WEBP cursor image for the OS</span>
-            </div>
-            <div class="settings-button-group">
-              <button class="settings-btn" id="settingsCursorUploadBtn">
-                <i class="fas fa-upload"></i> Upload
-              </button>
-              <button class="settings-btn settings-btn-warning" id="settingsCursorClearBtn" ${
-                cursorDataUrl ? "" : "disabled"
-              }>
-                <i class="fas fa-times"></i> Clear
-              </button>
-              <span id="settingsCursorStatus" class="settings-status-text">
-                ${cursorDataUrl ? "Custom cursor enabled" : "Default cursor"}
-              </span>
-            </div>
-          </div>
-
-          <div class="settings-row">
-            <div class="settings-label-group">
-              <span class="settings-label-title">Cursor Size</span>
-              <span class="settings-label-desc">Scale the uploaded cursor image</span>
-            </div>
-            <div class="settings-range-group">
-              <input id="settingsCursorSize" type="range" min="16" max="128" step="1" value="${cursorSize}" ${
-                cursorDataUrl ? "" : "disabled"
-              }/>
-              <span id="settingsCursorSizeValue" class="settings-range-value">${cursorSize}px</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="settings-card">
-          <div class="settings-card-header">
-            <i class="fas fa-toolbox"></i>
-            <span>Tools</span>
-          </div>
-
-          <div class="settings-row">
-            <div class="settings-label-group">
-              <span class="settings-label-title">Hide Games</span>
-              <span class="settings-label-desc">Toggle visibility of game icons on desktop</span>
-            </div>
-            <button class="settings-btn" id="settingsHideGamesBtn">
-              <i class="fas fa-eye-slash"></i> Toggle
-            </button>
-          </div>
-
-          <div class="settings-row">
-            <div class="settings-label-group">
-              <span class="settings-label-title">Download Page</span>
-              <span class="settings-label-desc">Save a local copy of YukiOS</span>
-            </div>
-            <button class="settings-btn" id="settingsDownloadPageBtn">
-              <i class="fas fa-download"></i> Download
-            </button>
-          </div>
-
-          
-        </div>
-
+      <div class="yuki-settings-content">
+        <span id="settingsStatus" class="settings-saved-badge-float">Saved</span>
+        
+        ${this._renderSystemSettings()}
+        ${this._renderDesktopSettings()}
+        ${this._renderAppearanceSettings()}
+        ${this._renderToolsSettings()}
+        ${this._renderDataSettings()}
+        ${this._renderNetworkSettings()}
+        ${this._renderAudioSettings()}
+        ${this._renderAboutSettings()}
       </div>
     </div>
     `;
   }
 
+  _renderSystemSettings() {
+    return `
+      <div id="pane-system" class="settings-category-pane active">
+        <div class="settings-category-header">System</div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Weather</span>
+            <span class="settings-label-desc">Show weather in the taskbar</span>
+          </div>
+          <label class="settings-toggle">
+            <input type="checkbox" id="settingsWeather" ${this._settings.weather ? "checked" : ""}/>
+            <span class="settings-track"><span class="settings-thumb"></span></span>
+          </label>
+        </div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">macOS Window Controls</span>
+            <span class="settings-label-desc">Use macOS-style traffic light buttons</span>
+          </div>
+          <label class="settings-toggle">
+            <input type="checkbox" id="settingsMacControls" ${this._settings.macOsControls ? "checked" : ""}/>
+            <span class="settings-track"><span class="settings-thumb"></span></span>
+          </label>
+        </div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Clippy</span>
+            <span class="settings-label-desc">Show Clippy after boot</span>
+          </div>
+          <label class="settings-toggle">
+            <input type="checkbox" id="settingsClippy" ${this._settings.clippy ? "checked" : ""}/>
+            <span class="settings-track"><span class="settings-thumb"></span></span>
+          </label>
+        </div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Achievements</span>
+            <span class="settings-label-desc">Enable or disable achievement system</span>
+          </div>
+          <label class="settings-toggle">
+            <input type="checkbox" id="settingsAchievements" ${!this._settings.achievementsDisabled ? "checked" : ""}/>
+            <span class="settings-track"><span class="settings-thumb"></span></span>
+          </label>
+        </div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Analytics</span>
+            <span class="settings-label-desc">Allow usage analytics</span>
+          </div>
+          <label class="settings-toggle">
+            <input type="checkbox" id="settingsAnalytics" ${!this._settings.analyticsDisabled ? "checked" : ""}/>
+            <span class="settings-track"><span class="settings-thumb"></span></span>
+          </label>
+        </div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Do Not Disturb</span>
+            <span class="settings-label-desc">Silence all toast notifications</span>
+          </div>
+          <label class="settings-toggle">
+            <input type="checkbox" id="settingsDND" ${this._settings.dnd ? "checked" : ""}/>
+            <span class="settings-track"><span class="settings-thumb"></span></span>
+          </label>
+        </div>
+      </div>
+    `;
+  }
+
+  _renderDesktopSettings() {
+    return `
+      <div id="pane-desktop" class="settings-category-pane">
+        <div class="settings-category-header">Desktop</div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Disable Desktop Stretch Scroll</span>
+            <span class="settings-label-desc">Prevent desktop page from expanding when windows are dragged out</span>
+          </div>
+          <label class="settings-toggle">
+            <input type="checkbox" id="settingsDisableDesktopStretchScroll" ${this._settings.disableDesktopStretchScroll ? "checked" : ""}/>
+            <span class="settings-track"><span class="settings-thumb"></span></span>
+          </label>
+        </div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Taskbar Alignment</span>
+            <span class="settings-label-desc">Choose alignment for taskbar icons</span>
+          </div>
+          <div class="settings-button-group">
+            <button class="settings-btn ${this._settings.taskbarAlignment === "left" ? "active" : ""}" data-alignment="left">
+              <i class="fas fa-align-left"></i> Left
+            </button>
+            <button class="settings-btn ${this._settings.taskbarAlignment === "center" ? "active" : ""}" data-alignment="center">
+              <i class="fas fa-align-center"></i> Center
+            </button>
+            <button class="settings-btn ${this._settings.taskbarAlignment === "right" ? "active" : ""}" data-alignment="right">
+              <i class="fas fa-align-right"></i> Right
+            </button>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Taskbar Position</span>
+            <span class="settings-label-desc">Dock the taskbar to an edge</span>
+          </div>
+          <div class="settings-button-group">
+            <button class="settings-btn ${this._settings.taskbarPosition === "bottom" ? "active" : ""}" data-taskbar-pos="bottom"><i class="fas fa-arrow-down"></i> Bottom</button>
+            <button class="settings-btn ${this._settings.taskbarPosition === "top" ? "active" : ""}" data-taskbar-pos="top"><i class="fas fa-arrow-up"></i> Top</button>
+            <button class="settings-btn ${this._settings.taskbarPosition === "left" ? "active" : ""}" data-taskbar-pos="left"><i class="fas fa-arrow-left"></i> Left</button>
+            <button class="settings-btn ${this._settings.taskbarPosition === "right" ? "active" : ""}" data-taskbar-pos="right"><i class="fas fa-arrow-right"></i> Right</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  _renderAppearanceSettings() {
+    return `
+      <div id="pane-appearance" class="settings-category-pane">
+        <div class="settings-category-header">Appearance</div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Theme</span>
+            <span class="settings-label-desc">Set the OS color scheme</span>
+          </div>
+          <div class="settings-button-group">
+            <button class="settings-btn ${this._settings.theme === "dark" ? "active" : ""}" data-theme-val="dark"><i class="fas fa-moon"></i> Dark</button>
+            <button class="settings-btn ${this._settings.theme === "light" ? "active" : ""}" data-theme-val="light"><i class="fas fa-sun"></i> Light</button>
+            <button class="settings-btn ${this._settings.theme === "auto" ? "active" : ""}" data-theme-val="auto"><i class="fas fa-circle-half-stroke"></i> Auto</button>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Window Transparency</span>
+            <span class="settings-label-desc">Adjust window opacity</span>
+          </div>
+          <div class="settings-range-group">
+            <input id="settingsWindowTransparency" type="range" min="20" max="100" step="1" value="${Math.round(this._settings.windowTransparency * 100)}"/>
+            <span id="settingsWindowTransparencyValue" class="settings-range-value">${Math.round(this._settings.windowTransparency * 100)}%</span>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Cycle Wallpapers on Start</span>
+            <span class="settings-label-desc">Automatically switch wallpapers on boot</span>
+          </div>
+          <label class="settings-toggle">
+            <input type="checkbox" id="settingsCycleWallpaper" ${this._settings.cycleWallpaper ? "checked" : ""}/>
+            <span class="settings-track"><span class="settings-thumb"></span></span>
+          </label>
+        </div>
+        <div class="settings-row settings-row--stacked">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Custom Cursor</span>
+            <span class="settings-label-desc">Upload a PNG/JPG/GIF/WEBP cursor image for the OS</span>
+          </div>
+          <div class="settings-button-group" style="margin-top: 10px;">
+            <button class="settings-btn" id="settingsCursorUploadBtn">
+              <i class="fas fa-upload"></i> Upload
+            </button>
+            <button class="settings-btn settings-btn-warning" id="settingsCursorClearBtn" ${this._settings.cursorDataUrl ? "" : "disabled"}>
+              <i class="fas fa-times"></i> Clear
+            </button>
+            <span id="settingsCursorStatus" class="settings-status-text">
+              ${this._settings.cursorDataUrl ? "Custom cursor enabled" : "Default cursor"}
+            </span>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Cursor Size</span>
+            <span class="settings-label-desc">Scale the uploaded cursor image</span>
+          </div>
+          <div class="settings-range-group">
+            <input id="settingsCursorSize" type="range" min="16" max="128" step="1" value="${this._settings.cursorSize}" ${this._settings.cursorDataUrl ? "" : "disabled"}/>
+            <span id="settingsCursorSizeValue" class="settings-range-value">${this._settings.cursorSize}px</span>
+          </div>
+        </div>
+        <div id="settings-wallpapers-container" style="margin-top: 20px;"></div>
+      </div>
+    `;
+  }
+
+  _renderToolsSettings() {
+    return `
+      <div id="pane-tools" class="settings-category-pane">
+        <div class="settings-category-header">Tools</div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Hide Games</span>
+            <span class="settings-label-desc">Toggle visibility of game icons on desktop</span>
+          </div>
+          <button class="settings-btn" id="settingsHideGamesBtn">
+            <i class="fas fa-eye-slash"></i> Toggle
+          </button>
+        </div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Download Page</span>
+            <span class="settings-label-desc">Save a local copy of YukiOS</span>
+          </div>
+          <button class="settings-btn" id="settingsDownloadPageBtn">
+            <i class="fas fa-download"></i> Download
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  _renderDataSettings() {
+    return `
+      <div id="pane-data" class="settings-category-pane">
+        <div class="settings-category-header">Data & Storage</div>
+        
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Export Data</span>
+            <span class="settings-label-desc">Backup your system settings, files, and configuration</span>
+          </div>
+          <button class="settings-btn" id="btnExportData">
+            <i class="fas fa-file-export"></i> Export
+          </button>
+        </div>
+        
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Import Data</span>
+            <span class="settings-label-desc">Restore a previously saved system backup</span>
+          </div>
+          <button class="settings-btn" id="btnImportData">
+            <i class="fas fa-file-import"></i> Import
+          </button>
+        </div>
+
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Reset Toggles</span>
+            <span class="settings-label-desc">Revert all OS switches back to default</span>
+          </div>
+          <button class="settings-btn settings-btn-warning" id="btnResetToggles">
+            <i class="fas fa-sliders-h"></i> Reset
+          </button>
+        </div>
+        
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Reset to Saved</span>
+            <span class="settings-label-desc">Revert any unsaved changes to stored configuration</span>
+          </div>
+          <button class="settings-btn" id="btnResetSaved">
+            <i class="fas fa-undo"></i> Revert
+          </button>
+        </div>
+
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title" style="color: #ff4d4f;">Delete All Data</span>
+            <span class="settings-label-desc">Permanently wipe all games, files, and OS settings</span>
+          </div>
+          <button class="settings-btn danger" style="background: #ff4d4f; color: white; border: none;" id="btnDeleteAllData">
+            <i class="fas fa-trash"></i> Wipe
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  _renderNetworkSettings() {
+    return `
+      <div id="pane-network" class="settings-category-pane">
+        <div class="settings-category-header">Network</div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">CDN Mirror</span>
+            <span class="settings-label-desc">Choose a mirror for fetching game assets</span>
+          </div>
+          <select id="settingsCdnMirror" class="settings-select">
+            ${CDN_MIRRORS.map(
+              (m) => `<option value="${m.id}" ${this._settings.cdnMirror === m.id ? "selected" : ""}>${m.name}</option>`
+            ).join("")}
+          </select>
+        </div>
+      </div>
+    `;
+  }
+
+  _renderAudioSettings() {
+    const vol = Math.round((this._settings.soundEnabled ? this._settings.masterVolume : audioMixer.masterVolume) * 100);
+    return `
+      <div id="pane-audio" class="settings-category-pane">
+        <div class="settings-category-header">Audio</div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Sound</span>
+            <span class="settings-label-desc">Enable or mute all OS audio</span>
+          </div>
+          <label class="settings-toggle">
+            <input type="checkbox" id="settingsSoundEnabled" ${this._settings.soundEnabled ? "checked" : ""}/>
+            <span class="settings-track"><span class="settings-thumb"></span></span>
+          </label>
+        </div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Master Volume</span>
+            <span class="settings-label-desc">Global volume level for all apps</span>
+          </div>
+          <div class="settings-range-group">
+            <input id="settingsMasterVolume" type="range" min="0" max="100" step="1" value="${vol}" ${!this._settings.soundEnabled ? "disabled" : ""}/>
+            <span id="settingsMasterVolumeValue" class="settings-range-value">${vol}%</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  _renderAboutSettings() {
+    return `
+      <div id="pane-about" class="settings-category-pane">
+        <div class="settings-category-header">About</div>
+        <div class="settings-row" style="flex-direction: column; align-items: flex-start; gap: 10px;">
+          <h2 style="margin:0;font-size:1.4em;">Yuki OS <span style="font-size:0.6em;color:rgba(255,255,255,0.6);font-weight:normal;">v1.2.0</span></h2>
+          <p style="margin:0;color:rgba(255,255,255,0.8);font-size:0.95em;">
+            Browser desktop environment with apps, games, and sandboxed runtime systems.
+          </p>
+        </div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">YukiCord</span>
+            <span class="settings-label-desc">Join our Discord server</span>
+          </div>
+          <a href="https://discord.gg/2Z8Gvtqt7" target="_blank" rel="noopener noreferrer" class="settings-discord-link">
+            <button class="settings-btn settings-btn-discord">
+              <i class="fab fa-discord"></i> Join
+            </button>
+          </a>
+        </div>
+      </div>
+    `;
+  }
+
   _bindControls(win) {
-    const weatherToggle = win.querySelector("#settingsWeather");
-    const cycleWallpaperToggle = win.querySelector("#settingsCycleWallpaper");
-    const macControlsToggle = win.querySelector("#settingsMacControls");
-    const clippyToggle = win.querySelector("#settingsClippy");
-    const achievementsToggle = win.querySelector("#settingsAchievements");
-    const analyticsToggle = win.querySelector("#settingsAnalytics");
-    const disableDesktopStretchScrollToggle = win.querySelector("#settingsDisableDesktopStretchScroll");
-    const cursorUploadBtn = win.querySelector("#settingsCursorUploadBtn");
-    const cursorClearBtn = win.querySelector("#settingsCursorClearBtn");
-    const cursorStatus = win.querySelector("#settingsCursorStatus");
-    const cursorSizeInput = win.querySelector("#settingsCursorSize");
-    const cursorSizeValue = win.querySelector("#settingsCursorSizeValue");
-    const hideGamesBtn = win.querySelector("#settingsHideGamesBtn");
-    const downloadPageBtn = win.querySelector("#settingsDownloadPageBtn");
     const status = win.querySelector("#settingsStatus");
-    const alignmentLeftBtn = win.querySelector('[data-alignment="left"]');
-    const alignmentCenterBtn = win.querySelector('[data-alignment="center"]');
-    const alignmentRightBtn = win.querySelector('[data-alignment="right"]');
-
-    this._setupSettingsMenu(win, status);
-
     const showStatus = (msg = "Saved") => {
       status.textContent = msg;
       status.style.opacity = "1";
@@ -386,9 +575,16 @@ export class SettingsApp extends BaseApp {
       }, 2200);
     };
 
-    this._showSettingsStatus = showStatus;
-
     const save = () => {
+      const weatherToggle = win.querySelector("#settingsWeather");
+      const cycleWallpaperToggle = win.querySelector("#settingsCycleWallpaper");
+      const macControlsToggle = win.querySelector("#settingsMacControls");
+      const clippyToggle = win.querySelector("#settingsClippy");
+      const achievementsToggle = win.querySelector("#settingsAchievements");
+      const analyticsToggle = win.querySelector("#settingsAnalytics");
+      const disableDesktopStretchScrollToggle = win.querySelector("#settingsDisableDesktopStretchScroll");
+      const cdnMirrorSelect = win.querySelector("#settingsCdnMirror");
+
       const weather = weatherToggle.checked;
       const cycleWallpaper = cycleWallpaperToggle.checked;
       const macOsControls = macControlsToggle.checked;
@@ -397,7 +593,8 @@ export class SettingsApp extends BaseApp {
       const analyticsDisabled = !analyticsToggle.checked;
       const disableDesktopStretchScroll = !!disableDesktopStretchScrollToggle?.checked;
       const selectedAlignment =
-        document.querySelector(".settings-btn[data-alignment].active")?.dataset.alignment || "center";
+        win.querySelector(".settings-btn[data-alignment].active")?.dataset.alignment || "center";
+      const cdnMirror = cdnMirrorSelect.value;
 
       localStorage.setItem(StorageKeys.weather, String(weather));
       localStorage.setItem(StorageKeys.cycleWallpaper, String(cycleWallpaper));
@@ -407,6 +604,7 @@ export class SettingsApp extends BaseApp {
       localStorage.setItem("yukiOS_achievements_disabled", String(achievementsDisabled));
       localStorage.setItem(StorageKeys.analyticsDisabled, String(analyticsDisabled));
       localStorage.setItem(StorageKeys.taskbarAlignment, selectedAlignment);
+      localStorage.setItem(StorageKeys.cdnMirror, cdnMirror);
 
       Object.assign(this._settings, {
         weather,
@@ -416,13 +614,159 @@ export class SettingsApp extends BaseApp {
         disableDesktopStretchScroll,
         achievementsDisabled,
         analyticsDisabled,
-        taskbarAlignment: selectedAlignment
+        taskbarAlignment: selectedAlignment,
+        cdnMirror
       });
 
+      setCdnMirror(cdnMirror);
+      initializeMirrors(appMap);
       this._applyDesktopStretchScrollDisabled(disableDesktopStretchScroll);
       bus.emit(BusEvents.SETTINGS_CHANGED, this._settings);
-      showStatus("Saved");
+      // Reload page if CDN mirror changed to ensure all assets use the new base
+      if (this._settings.cdnMirror && this._settings.cdnMirror !== cdnMirror) {
+        showStatus("Reloading with new CDN...");
+        setTimeout(() => window.location.reload(), 500);
+      } else {
+        showStatus("Saved");
+      }
     };
+
+    this._bindNavigation(win);
+    this._bindSystemCategory(win, save);
+    this._bindDesktopCategory(win, save);
+    this._bindAppearanceCategory(win, save, showStatus);
+    this._bindToolsCategory(win, showStatus);
+    this._bindDataCategory(win, showStatus, save);
+    this._bindNetworkCategory(win, save);
+    this._bindAudioCategory(win, showStatus);
+  }
+
+  _bindNavigation(win) {
+    const layout = win.querySelector(".yuki-settings-layout");
+    const navItems = win.querySelectorAll(".yuki-settings-nav li");
+    const panes = win.querySelectorAll(".settings-category-pane");
+    const searchInput = win.querySelector("#settingsSearch");
+
+    navItems.forEach((item) => {
+      item.addEventListener("click", () => {
+        searchInput.value = "";
+        searchInput.dispatchEvent(new Event("input"));
+
+        navItems.forEach((n) => n.classList.remove("active"));
+        panes.forEach((p) => p.classList.remove("active"));
+        item.classList.add("active");
+        win.querySelector("#" + item.dataset.target).classList.add("active");
+      });
+    });
+
+    searchInput.addEventListener("input", (e) => {
+      const query = e.target.value.toLowerCase().trim();
+
+      if (!query) {
+        layout.classList.remove("is-searching");
+        win.querySelectorAll(".settings-row").forEach((row) => row.classList.remove("hidden-by-search"));
+        const activeNav = win.querySelector(".yuki-settings-nav li.active");
+        panes.forEach((p) => p.classList.remove("active"));
+        if (activeNav) win.querySelector("#" + activeNav.dataset.target).classList.add("active");
+      } else {
+        layout.classList.add("is-searching");
+        win.querySelectorAll(".settings-row").forEach((row) => {
+          const title = row.querySelector(".settings-label-title")?.textContent.toLowerCase() || "";
+          const desc = row.querySelector(".settings-label-desc")?.textContent.toLowerCase() || "";
+          if (title.includes(query) || desc.includes(query)) {
+            row.classList.remove("hidden-by-search");
+          } else {
+            row.classList.add("hidden-by-search");
+          }
+        });
+      }
+    });
+  }
+
+  _bindSystemCategory(win, save) {
+    win.querySelector("#settingsWeather").addEventListener("change", save);
+    win.querySelector("#settingsMacControls").addEventListener("change", save);
+    win.querySelector("#settingsClippy").addEventListener("change", save);
+    win.querySelector("#settingsAchievements").addEventListener("change", save);
+    win.querySelector("#settingsAnalytics").addEventListener("change", save);
+
+    const dndToggle = win.querySelector("#settingsDND");
+    if (dndToggle) {
+      dndToggle.addEventListener("change", () => {
+        const enabled = dndToggle.checked;
+        this._settings.dnd = enabled;
+        localStorage.setItem(StorageKeys.dndKey, enabled ? "1" : "0");
+        this._notificationCenter?.setDoNotDisturb(enabled);
+      });
+    }
+  }
+
+  _bindDesktopCategory(win, save) {
+    const stretchToggle = win.querySelector("#settingsDisableDesktopStretchScroll");
+    if (stretchToggle) stretchToggle.addEventListener("change", save);
+
+    const handleAlignmentClick = (alignment) => {
+      win.querySelectorAll(".settings-btn[data-alignment]").forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.alignment === alignment);
+      });
+      save();
+    };
+
+    win.querySelector('[data-alignment="left"]')?.addEventListener("click", () => handleAlignmentClick("left"));
+    win.querySelector('[data-alignment="center"]')?.addEventListener("click", () => handleAlignmentClick("center"));
+    win.querySelector('[data-alignment="right"]')?.addEventListener("click", () => handleAlignmentClick("right"));
+
+    win.querySelectorAll(".settings-btn[data-taskbar-pos]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const pos = btn.dataset.taskbarPos;
+        win.querySelectorAll(".settings-btn[data-taskbar-pos]").forEach((b) => b.classList.toggle("active", b === btn));
+        this._settings.taskbarPosition = pos;
+        localStorage.setItem(StorageKeys.taskbarPosition, pos);
+        const { taskbarPositionManager: tpm } = await import("./taskbarPositionManager.js");
+        tpm.setPosition(pos);
+      });
+    });
+  }
+
+  _bindAppearanceCategory(win, save, showStatus) {
+    win.querySelector("#settingsCycleWallpaper").addEventListener("change", save);
+
+    win.querySelectorAll(".settings-btn[data-theme-val]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const theme = btn.dataset.themeVal;
+        win.querySelectorAll(".settings-btn[data-theme-val]").forEach((b) => b.classList.toggle("active", b === btn));
+        this._settings.theme = theme;
+        localStorage.setItem(StorageKeys.theme, theme);
+        this._applyTheme(theme);
+        showStatus("Theme applied");
+      });
+    });
+
+    const transparencySlider = win.querySelector("#settingsWindowTransparency");
+    const transparencyValue = win.querySelector("#settingsWindowTransparencyValue");
+    if (transparencySlider) {
+      transparencySlider.addEventListener("input", () => {
+        if (transparencyValue) transparencyValue.textContent = `${transparencySlider.value}%`;
+      });
+      transparencySlider.addEventListener("change", () => {
+        const val = parseInt(transparencySlider.value) / 100;
+        this._settings.windowTransparency = val;
+        localStorage.setItem(StorageKeys.windowTransparency, String(val));
+        this._applyWindowTransparency(val);
+        showStatus("Saved");
+      });
+    }
+
+    const wallpapersContainer = win.querySelector("#settings-wallpapers-container");
+    if (wallpapersContainer && this.fs && this.wm) {
+      renderWallpapersPage(this.fs, this.wm, wallpapersContainer);
+    }
+
+    const cursorUploadBtn = win.querySelector("#settingsCursorUploadBtn");
+    const cursorClearBtn = win.querySelector("#settingsCursorClearBtn");
+    const cursorStatus = win.querySelector("#settingsCursorStatus");
+    const cursorSizeInput = win.querySelector("#settingsCursorSize");
+    const cursorSizeValue = win.querySelector("#settingsCursorSizeValue");
 
     const setCursor = (dataUrl, originalDataUrl = null) => {
       const cursorDataUrl = typeof dataUrl === "string" ? dataUrl : "";
@@ -472,75 +816,46 @@ export class SettingsApp extends BaseApp {
       }
     };
 
-    const uploadCursor = () => {
-      const input = document.createElement("input");
-      input.type = "file";
-      input.accept = "image/png,image/jpeg,image/gif,image/webp,image/svg+xml,.png,.jpg,.jpeg,.gif,.webp,.svg";
-      input.style.display = "none";
-      document.body.appendChild(input);
+    if (cursorUploadBtn)
+      cursorUploadBtn.addEventListener("click", () => {
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = "image/png,image/jpeg,image/gif,image/webp,image/svg+xml,.png,.jpg,.jpeg,.gif,.webp,.svg";
+        input.style.display = "none";
+        document.body.appendChild(input);
 
-      const cleanup = () => input.remove();
+        input.addEventListener("change", async () => {
+          const file = input.files?.[0];
+          input.remove();
+          if (!file) return;
 
-      input.addEventListener("change", async () => {
-        const file = input.files?.[0];
-        cleanup();
-        if (!file) return;
+          try {
+            if (file.size > 2 * 1024 * 1024) {
+              customAlert("Cursor image too large. Please use a file under 2MB.");
+              return;
+            }
 
-        try {
-          if (file.size > 2 * 1024 * 1024) {
-            customAlert("Cursor image too large. Please use a file under 2MB.");
-            return;
+            const dataUrl = await new Promise((resolve, reject) => {
+              const r = new FileReader();
+              r.onload = () => resolve(String(r.result || ""));
+              r.onerror = () => reject(new Error("Failed to read file"));
+              r.readAsDataURL(file);
+            });
+
+            if (!dataUrl.startsWith("data:")) throw new Error("Invalid cursor file.");
+            const normalized = await this._normalizeCursorDataUrl(dataUrl, {
+              maxSize: this._settings.cursorSize || 32
+            });
+            setCursor(normalized, dataUrl);
+          } catch (e) {
+            console.error("Cursor upload failed:", e);
+            customAlert("Failed to set cursor. Check console for details.");
           }
+        });
 
-          const dataUrl = await new Promise((resolve, reject) => {
-            const r = new FileReader();
-            r.onload = () => resolve(String(r.result || ""));
-            r.onerror = () => reject(new Error("Failed to read file"));
-            r.readAsDataURL(file);
-          });
-
-          if (!dataUrl.startsWith("data:")) throw new Error("Invalid cursor file.");
-
-          const normalized = await this._normalizeCursorDataUrl(dataUrl, { maxSize: this._settings.cursorSize || 32 });
-          setCursor(normalized, dataUrl);
-        } catch (e) {
-          console.error("Cursor upload failed:", e);
-          customAlert("Failed to set cursor. Check console for details.");
-        }
+        input.click();
       });
 
-      input.click();
-    };
-
-    const reset = () => {
-      weatherToggle.checked = this._settings.weather;
-      cycleWallpaperToggle.checked = this._settings.cycleWallpaper;
-      macControlsToggle.checked = this._settings.macOsControls;
-      clippyToggle.checked = this._settings.clippy;
-      achievementsToggle.checked = !this._settings.achievementsDisabled;
-      analyticsToggle.checked = !this._settings.analyticsDisabled;
-      if (disableDesktopStretchScrollToggle)
-        disableDesktopStretchScrollToggle.checked = !!this._settings.disableDesktopStretchScroll;
-      showStatus("Reset to saved values");
-    };
-
-    const resetToggles = async () => {
-      const confirmed = await customConfirm("Reset toggles?");
-      if (!confirmed) return;
-
-      weatherToggle.checked = true;
-      cycleWallpaperToggle.checked = true;
-      macControlsToggle.checked = false;
-      clippyToggle.checked = false;
-      achievementsToggle.checked = true;
-      analyticsToggle.checked = true;
-      if (disableDesktopStretchScrollToggle) disableDesktopStretchScrollToggle.checked = false;
-
-      save();
-      showStatus("Toggles reset");
-    };
-
-    if (cursorUploadBtn) cursorUploadBtn.addEventListener("click", uploadCursor);
     if (cursorClearBtn)
       cursorClearBtn.addEventListener("click", () => {
         try {
@@ -551,14 +866,17 @@ export class SettingsApp extends BaseApp {
         this._settings.cursorSize = 32;
         setCursor("", "");
       });
+
     if (cursorSizeInput) {
-      cursorSizeInput.value = String(this._settings.cursorSize || 32);
       cursorSizeInput.addEventListener("input", () => {
         if (cursorSizeValue) cursorSizeValue.textContent = `${cursorSizeInput.value}px`;
       });
       cursorSizeInput.addEventListener("change", () => setCursorSize(cursorSizeInput.value));
     }
+  }
 
+  _bindToolsCategory(win, showStatus) {
+    const hideGamesBtn = win.querySelector("#settingsHideGamesBtn");
     if (hideGamesBtn) {
       hideGamesBtn.addEventListener("click", () => {
         toggleHideGames();
@@ -566,6 +884,7 @@ export class SettingsApp extends BaseApp {
       });
     }
 
+    const downloadPageBtn = win.querySelector("#settingsDownloadPageBtn");
     if (downloadPageBtn) {
       downloadPageBtn.addEventListener("click", async () => {
         try {
@@ -590,108 +909,113 @@ export class SettingsApp extends BaseApp {
         }
       });
     }
-
-    const handleAlignmentClick = (alignment) => {
-      document.querySelectorAll(".settings-btn[data-alignment]").forEach((btn) => {
-        btn.classList.toggle("active", btn.dataset.alignment === alignment);
-      });
-      save();
-    };
-
-    if (alignmentLeftBtn) alignmentLeftBtn.addEventListener("click", () => handleAlignmentClick("left"));
-    if (alignmentCenterBtn) alignmentCenterBtn.addEventListener("click", () => handleAlignmentClick("center"));
-    if (alignmentRightBtn) alignmentRightBtn.addEventListener("click", () => handleAlignmentClick("right"));
-
-    weatherToggle.addEventListener("change", save);
-    cycleWallpaperToggle.addEventListener("change", save);
-    macControlsToggle.addEventListener("change", save);
-    clippyToggle.addEventListener("change", save);
-    achievementsToggle.addEventListener("change", save);
-    analyticsToggle.addEventListener("change", save);
-    if (disableDesktopStretchScrollToggle) disableDesktopStretchScrollToggle.addEventListener("change", save);
   }
 
-  _setupSettingsMenu(win, status) {
-    const menuItems = win.querySelectorAll(".settings-menu-item");
-    let activeMenu = null;
+  _bindDataCategory(win, showStatus, save) {
+    win.querySelector("#btnExportData")?.addEventListener("click", () => this.exportData(showStatus));
+    win.querySelector("#btnImportData")?.addEventListener("click", () => this.importData(showStatus));
+    win.querySelector("#btnDeleteAllData")?.addEventListener("click", () => this.deleteAllData());
 
-    const closeAllMenus = () => {
-      menuItems.forEach((m) => m.classList.remove("active"));
-      activeMenu = null;
-    };
-
-    menuItems.forEach((menuItem) => {
-      menuItem.addEventListener("click", (e) => {
-        e.stopPropagation();
-        if (menuItem.classList.contains("active")) {
-          closeAllMenus();
-        } else {
-          closeAllMenus();
-          menuItem.classList.add("active");
-          activeMenu = menuItem;
-        }
-      });
-
-      menuItem.addEventListener("mouseenter", () => {
-        if (activeMenu && activeMenu !== menuItem) {
-          closeAllMenus();
-          menuItem.classList.add("active");
-          activeMenu = menuItem;
-        }
-      });
+    win.querySelector("#btnResetSaved")?.addEventListener("click", () => {
+      win.querySelector("#settingsWeather").checked = this._settings.weather;
+      win.querySelector("#settingsCycleWallpaper").checked = this._settings.cycleWallpaper;
+      win.querySelector("#settingsMacControls").checked = this._settings.macOsControls;
+      win.querySelector("#settingsClippy").checked = this._settings.clippy;
+      win.querySelector("#settingsAchievements").checked = !this._settings.achievementsDisabled;
+      win.querySelector("#settingsAnalytics").checked = !this._settings.analyticsDisabled;
+      const stretchToggle = win.querySelector("#settingsDisableDesktopStretchScroll");
+      if (stretchToggle) stretchToggle.checked = !!this._settings.disableDesktopStretchScroll;
+      showStatus("Reset to saved values");
     });
 
-    win.querySelectorAll(".dropdown-item[data-action]").forEach((item) => {
-      item.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const action = item.dataset.action;
-        const showStatus = this._showSettingsStatus || (() => {});
+    win.querySelector("#btnResetToggles")?.addEventListener("click", async () => {
+      const confirmed = await customConfirm("Reset toggles?");
+      if (!confirmed) return;
 
-        switch (action) {
-          case "reset":
-            win.querySelector("#settingsWeather").checked = this._settings.weather;
-            win.querySelector("#settingsCycleWallpaper").checked = this._settings.cycleWallpaper;
-            win.querySelector("#settingsMacControls").checked = this._settings.macOsControls;
-            win.querySelector("#settingsClippy").checked = this._settings.clippy;
-            win.querySelector("#settingsAchievements").checked = !this._settings.achievementsDisabled;
-            win.querySelector("#settingsAnalytics").checked = !this._settings.analyticsDisabled;
-            const desktopStretchToggle = win.querySelector("#settingsDisableDesktopStretchScroll");
-            if (desktopStretchToggle) desktopStretchToggle.checked = !!this._settings.disableDesktopStretchScroll;
-            showStatus("Reset to saved values");
-            break;
-          case "resetToggles":
-            (async () => {
-              if (!(await customConfirm("Reset toggles?"))) return;
-              win.querySelector("#settingsWeather").checked = true;
-              win.querySelector("#settingsCycleWallpaper").checked = true;
-              win.querySelector("#settingsMacControls").checked = false;
-              win.querySelector("#settingsClippy").checked = false;
-              win.querySelector("#settingsAchievements").checked = true;
-              win.querySelector("#settingsAnalytics").checked = true;
-              if (desktopStretchToggle) desktopStretchToggle.checked = false;
-              win.querySelector("#settingsWeather").dispatchEvent(new Event("change"));
-              showStatus("Toggles reset");
-            })();
-            break;
-          case "export":
-            this.exportData(showStatus);
-            break;
-          case "import":
-            this.importData(showStatus);
-            break;
-          case "deleteAll":
-            this.deleteAllData();
-            break;
-        }
-        closeAllMenus();
-      });
+      win.querySelector("#settingsWeather").checked = true;
+      win.querySelector("#settingsCycleWallpaper").checked = true;
+      win.querySelector("#settingsMacControls").checked = false;
+      win.querySelector("#settingsClippy").checked = false;
+      win.querySelector("#settingsAchievements").checked = true;
+      win.querySelector("#settingsAnalytics").checked = true;
+      const stretchToggle = win.querySelector("#settingsDisableDesktopStretchScroll");
+      if (stretchToggle) stretchToggle.checked = false;
+
+      save();
+      showStatus("Toggles reset");
     });
+  }
 
-    const closeHandler = (e) => {
-      if (!win.contains(e.target)) closeAllMenus();
-    };
-    document.addEventListener("click", closeHandler);
-    win.addEventListener("remove", () => document.removeEventListener("click", closeHandler));
+  _bindNetworkCategory(win, save) {
+    const cdnMirrorSelect = win.querySelector("#settingsCdnMirror");
+    if (cdnMirrorSelect) cdnMirrorSelect.addEventListener("change", save);
+  }
+
+  _bindAudioCategory(win, showStatus) {
+    const soundToggle = win.querySelector("#settingsSoundEnabled");
+    const volumeSlider = win.querySelector("#settingsMasterVolume");
+    const volumeValue = win.querySelector("#settingsMasterVolumeValue");
+
+    if (soundToggle) {
+      soundToggle.addEventListener("change", () => {
+        const enabled = soundToggle.checked;
+        this._settings.soundEnabled = enabled;
+        localStorage.setItem(StorageKeys.soundEnabled, String(enabled));
+        if (volumeSlider) volumeSlider.disabled = !enabled;
+        this._applySound(enabled, this._settings.masterVolume);
+        showStatus("Saved");
+      });
+    }
+
+    if (volumeSlider) {
+      volumeSlider.addEventListener("input", () => {
+        if (volumeValue) volumeValue.textContent = `${volumeSlider.value}%`;
+      });
+      volumeSlider.addEventListener("change", () => {
+        const val = parseInt(volumeSlider.value) / 100;
+        this._settings.masterVolume = val;
+        localStorage.setItem(StorageKeys.masterVolume, String(val));
+        if (this._settings.soundEnabled) audioMixer.setMaster(val);
+        showStatus("Saved");
+      });
+    }
+  }
+
+  _applyTheme(theme) {
+    const prefersDark = window.matchMedia?.("(prefers-color-scheme: dark)").matches ?? true;
+    const effective = theme === "auto" ? (prefersDark ? "dark" : "light") : theme;
+    document.documentElement.setAttribute("data-theme", effective);
+
+    let styleEl = document.getElementById("yukios-theme-override");
+    if (!styleEl) {
+      styleEl = document.createElement("style");
+      styleEl.id = "yukios-theme-override";
+      document.head.appendChild(styleEl);
+    }
+
+    if (effective === "light") {
+      styleEl.textContent = `
+        :root { --window-bg-color: #f2f2f2; --text-color: #111; }
+      `;
+    } else {
+      styleEl.textContent = "";
+    }
+  }
+
+  _applyWindowTransparency(value) {
+    const opacity = Math.max(0.2, Math.min(1, Number(value)));
+    let styleEl = document.getElementById("yukios-transparency-override");
+    if (!styleEl) {
+      styleEl = document.createElement("style");
+      styleEl.id = "yukios-transparency-override";
+      document.head.appendChild(styleEl);
+    }
+    styleEl.textContent = opacity < 1 ? `.window { opacity: ${opacity} !important; }` : "";
+  }
+
+  _applySound(enabled, volume) {
+    const vol = Number.isFinite(volume) ? Math.max(0, Math.min(1, volume)) : 1;
+    audioMixer.setMaster(enabled ? vol : 0);
   }
 
   _applyDesktopStretchScrollDisabled(disabled) {

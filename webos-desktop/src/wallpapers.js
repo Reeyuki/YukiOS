@@ -48,10 +48,7 @@ function getThumbnailUrl(src) {
   return null;
 }
 
-export async function renderWallpapersPage(explorerInstance, view) {
-  const fs = explorerInstance.fs;
-  const wm = explorerInstance.wm;
-
+export async function renderWallpapersPage(fs, wm, view) {
   view.innerHTML = "";
   view.classList.add("wallpapers-page");
 
@@ -76,7 +73,7 @@ export async function renderWallpapersPage(explorerInstance, view) {
 
   await refreshWallpaperGrid(fs, grid, wm, previewZone);
 
-  header.querySelector("#wp-try-random").onclick = () => showRandomPreview(explorerInstance, previewZone, grid, fs, wm);
+  header.querySelector("#wp-try-random").onclick = () => showRandomPreview(previewZone, grid, fs, wm);
 }
 
 async function refreshWallpaperGrid(fs, grid, wm, previewZone) {
@@ -214,7 +211,7 @@ function showCardPreview(name, src, isVideo, previewZone, fs, wm) {
   previewZone.appendChild(inner);
 }
 
-function showRandomPreview(explorerInstance, previewZone, grid, fs, wm) {
+function showRandomPreview(previewZone, grid, fs, wm) {
   let selection = (() => {
     const src = videos[Math.floor(Math.random() * videos.length)];
     return {
@@ -309,8 +306,7 @@ function showRandomPreview(explorerInstance, previewZone, grid, fs, wm) {
     previewZone.innerHTML = "";
   };
 
-  overlay.querySelector(".wp-another-btn").onclick = () =>
-    showRandomPreview(explorerInstance, previewZone, grid, fs, wm);
+  overlay.querySelector(".wp-another-btn").onclick = () => showRandomPreview(previewZone, grid, fs, wm);
 
   overlay.querySelector(".wp-save-btn").onclick = async () => {
     await SystemUtilities.setWallpaper(selection.src);

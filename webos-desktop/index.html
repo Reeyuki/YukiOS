@@ -3,6 +3,35 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      (function () {
+        const CDN_TEMPLATES = {
+          jsdelivr: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/",
+          quantil: "https://quantil.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/",
+          originfastly: "https://originfastly.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/",
+          gcore: "https://gcore.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/",
+          esmsh: "https://esm.sh/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/",
+          statically: "https://cdn.statically.io/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/",
+          staticdelivr: "https://cdn.staticdelivr.com/gh/Reeyuki/yukios/857d9aa378415b8f2ea3c7f4c2c4fd671af35511/"
+        };
+
+        const savedMirror = localStorage.getItem("yukiOS_cdnMirror") || "jsdelivr";
+        const baseUrl = CDN_TEMPLATES[savedMirror] || CDN_TEMPLATES.jsdelivr;
+        const baseTag = document.querySelector("base");
+        if (baseTag && baseTag.href !== baseUrl) {
+          baseTag.href = baseUrl;
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+          document.querySelectorAll("img[src]").forEach((img) => {
+            const src = img.getAttribute("src");
+            if (src && !src.startsWith("http") && !src.startsWith("blob:") && !src.startsWith("data:")) {
+              img.setAttribute("src", baseUrl + (src.startsWith("/") ? src.slice(1) : src));
+            }
+          });
+        });
+      })();
+    </script>
     <base href="https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/" />
 
     <title>Yuki OS Browser Gaming Hub with Flash, GBA, NDS & HTML5 Games</title>

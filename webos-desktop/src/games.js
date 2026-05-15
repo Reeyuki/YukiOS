@@ -3,12 +3,17 @@ import { descriptionMap } from "./gameDescriptions.js";
 import { GameRenderer } from "./GameRenderer.js";
 import { GameLauncher } from "./GameLauncher.js";
 import { GameUI } from "./GameUI.js";
-import { buildSteamShell, initDropdowns, initStorePage, CDN_BASE, SteamSettings } from "./steam.js";
-import { sendLaunchAnalytics, getAnalyticsBase } from "./analytics.js";
-import { fetchHtmlAsBlobUrl, looksLikeHtml, isCdnGhUrl } from "./shared/assetResolver.js";
-import { customAlert, customPrompt } from "./shared/dialogs.js";
-import { WindowHelper } from "./utils/WindowHelper.js";
-import { refreshIcons } from "./shared/contextMenu.js";
+import { SteamSettings } from "./steam.js";
+import { resolveGhUrl } from "./shared/assetResolver.js";
+import { CDN_CONFIG } from "./shared/cdnConfig.js";
+
+export function getCdnBase() {
+  return CDN_CONFIG.repos.main.base;
+}
+
+export function getCdnBaseGames() {
+  return CDN_CONFIG.repos.games.base;
+}
 
 export let _launcher = null;
 export let _desktopUI = null;
@@ -95,24 +100,24 @@ export function observeLazyImages(root) {
   root.querySelectorAll("img[data-src]").forEach((img) => _imgObserver.observe(img));
 }
 
-export const CDN_BASE_GAMES = "https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main";
-
 export function patchAppMap(appMap) {
   for (const key in appMap) {
     const app = appMap[key];
 
     if (app.icon && app.icon.startsWith("/static/")) {
       if (key.startsWith("subwaySurfers")) {
-        app.icon = `https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main/subwaySurfers/${app.icon.split("/").pop()}`;
+        app.icon = resolveGhUrl(
+          `https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main/subwaySurfers/${app.icon.split("/").pop()}`
+        );
       } else {
-        app.icon = `${CDN_BASE}${app.icon}`;
+        app.icon = `${getCdnBase()}${app.icon}`;
       }
     }
     if (app.swf && app.swf.startsWith("/static/games/")) {
-      app.swf = CDN_BASE_GAMES + app.swf.replace("/static/games/", "/");
+      app.swf = getCdnBaseGames() + app.swf.replace("/static/games/", "/");
     }
     if (app.url && app.url.startsWith("/static/games/")) {
-      app.url = CDN_BASE_GAMES + app.url.replace("/static/games/", "/");
+      app.url = getCdnBaseGames() + app.url.replace("/static/games/", "/");
     }
   }
 
@@ -130,6 +135,7 @@ const GAMES_APP_EXCLUDED = new Set(["TMNP", "vscode", "paint", "photopea", "live
 
 export const HIGHLIGHTED_GAMES = new Set([
   "tabs",
+  "slimeRancher",
   "plagueIncEvolved",
   "helltaker",
   "passpartout",
@@ -263,7 +269,7 @@ export class GameWindowRenderer {
     this._ctrlFBound = false;
     this.newsItems = [
       {
-        image: `${CDN_BASE}/static/icons/steam.webp`,
+        image: `${getCdnBase()}/static/icons/steam.webp`,
         title: "Steam App Added",
         date: "May 1, 2026",
         excerpt: "The Steam app is now available in YukiOS."

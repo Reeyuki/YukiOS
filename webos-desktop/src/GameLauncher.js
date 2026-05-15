@@ -1,5 +1,6 @@
 import { sendLaunchAnalytics, getAnalyticsBase } from "./analytics.js";
-import { CDN_BASE_GAMES, lazyImg, observeLazyImages, SteamDataManager, _launcher } from "./games.js";
+import { CDN_CONFIG } from "./shared/cdnConfig.js";
+import { lazyImg, observeLazyImages, SteamDataManager, _launcher } from "./games.js";
 import { SteamSettings } from "./steam.js";
 
 export class GameLauncher {
@@ -72,7 +73,7 @@ export class GameLauncher {
   }
 
   getArchiveBase() {
-    return `${CDN_BASE_GAMES}/archive/`;
+    return `${CDN_CONFIG.repos.games.base}/archive/`;
   }
 
   _appendArchiveGameToSidebar(container, archiveGame, onLaunch) {

@@ -1,31 +1,159 @@
-// CDN Provider configurations
+export const CDN_MIRRORS = [
+  {
+    id: "jsdelivr",
+    name: "jsDelivr (Default)",
+    ghTemplate: "https://cdn.jsdelivr.net/gh/${u}/${r}@${b}/${p}",
+    npmTemplate: "https://cdn.jsdelivr.net/npm/${p}"
+  },
+  {
+    id: "quantil",
+    name: "Quantil (jsDelivr Mirror)",
+    ghTemplate: "https://quantil.jsdelivr.net/gh/${u}/${r}@${b}/${p}",
+    npmTemplate: "https://quantil.jsdelivr.net/npm/${p}"
+  },
+  {
+    id: "originfastly",
+    name: "Fastly (jsDelivr Mirror)",
+    ghTemplate: "https://originfastly.jsdelivr.net/gh/${u}/${r}@${b}/${p}",
+    npmTemplate: "https://originfastly.jsdelivr.net/npm/${p}"
+  },
+  {
+    id: "gcore",
+    name: "GCore (jsDelivr Mirror)",
+    ghTemplate: "https://gcore.jsdelivr.net/gh/${u}/${r}@${b}/${p}",
+    npmTemplate: "https://gcore.jsdelivr.net/npm/${p}"
+  },
+  {
+    id: "esmsh",
+    name: "esm.sh",
+    ghTemplate: "https://esm.sh/gh/${u}/${r}@${b}/${p}",
+    npmTemplate: "https://esm.sh/${p}"
+  },
+  {
+    id: "statically",
+    name: "Statically",
+    ghTemplate: "https://cdn.statically.io/gh/${u}/${r}@${b}/${p}",
+    npmTemplate: "https://cdn.statically.io/npm/${p}"
+  },
+  {
+    id: "staticdelivr",
+    name: "StaticDelivr",
+    ghTemplate: "https://cdn.staticdelivr.com/gh/${u}/${r}/${b}/${p}",
+    npmTemplate: "https://cdn.staticdelivr.com/npm/${p}"
+  }
+];
+
+let currentMirrorId = localStorage.getItem("yukiOS_cdnMirror") || "jsdelivr";
+
+export function getCdnMirror() {
+  return currentMirrorId;
+}
+
+export function setCdnMirror(id) {
+  if (CDN_MIRRORS.find((m) => m.id === id)) {
+    currentMirrorId = id;
+    localStorage.setItem("yukiOS_cdnMirror", id);
+  }
+}
+
+export function resolveGhUrl(url) {
+  if (typeof url !== "string") return url;
+  const match = url.match(
+    /https?:\/\/(cdn\.jsdelivr\.net|quantil\.jsdelivr\.net|originfastly\.jsdelivr\.net|gcore\.jsdelivr\.net|esm\.sh|cdn\.statically\.io|cdn\.staticdelivr\.com)\/gh\/([^/]+)\/([^/@]+)(?:@([^/]+))?\/(.*)/
+  );
+  if (!match) return url;
+
+  const u = match[2];
+  const r = match[3];
+  const b = match[4] || "main";
+  const p = match[5];
+
+  const mirror = CDN_MIRRORS.find((m) => m.id === currentMirrorId) || CDN_MIRRORS[0];
+  return mirror.ghTemplate.replace("${u}", u).replace("${r}", r).replace("${b}", b).replace("${p}", p);
+}
+
+export function resolveNpmUrl(url) {
+  if (typeof url !== "string") return url;
+  const match = url.match(
+    /https?:\/\/(cdn\.jsdelivr\.net|quantil\.jsdelivr\.net|originfastly\.jsdelivr\.net|gcore\.jsdelivr\.net|esm\.sh|cdn\.statically\.io|cdn\.staticdelivr\.com)\/(?:npm\/)?(.*)/
+  );
+  if (!match) return url;
+
+  const p = match[2];
+
+  const mirror = CDN_MIRRORS.find((m) => m.id === currentMirrorId) || CDN_MIRRORS[0];
+  return mirror.npmTemplate.replace("${p}", p);
+}
+
 const CDN_PROVIDERS = {
   jsdelivr: {
-    GAMES: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main",
-    MAIN: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511",
-    NPM: "https://cdn.jsdelivr.net/npm",
-    PATTERN: /^https?:\/\/(cdn\.)?jsdelivr\.net\//,
-    HOSTNAMES: ["cdn.jsdelivr.net"],
-    GH_PATH: "/gh/"
-  },
-  statically: {
-    GAMES: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main",
-    MAIN: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511",
-    PATTERN: /^https?:\/\/(cdn\.)?statically\.io\//,
-    HOSTNAMES: ["cdn.jsdelivr.net"],
+    get GAMES() {
+      return resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main");
+    },
+    get MAIN() {
+      return resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511");
+    },
+    get NPM() {
+      return resolveNpmUrl("https://cdn.jsdelivr.net/npm");
+    },
+    PATTERN:
+      /^https?:\/\/(cdn\.jsdelivr\.net|quantil\.jsdelivr\.net|originfastly\.jsdelivr\.net|gcore\.jsdelivr\.net|esm\.sh|cdn\.statically\.io|cdn\.staticdelivr\.com)\//,
+    HOSTNAMES: [
+      "cdn.jsdelivr.net",
+      "quantil.jsdelivr.net",
+      "originfastly.jsdelivr.net",
+      "gcore.jsdelivr.net",
+      "esm.sh",
+      "cdn.statically.io",
+      "cdn.staticdelivr.com"
+    ],
     GH_PATH: "/gh/"
   }
 };
 
-export const CDN_BASES = (() => {
+export function initializeMirrors(appMap) {
   try {
-    const hostname = window.location?.hostname || "";
-    if (hostname === "cdn.jsdelivr.net" || hostname.endsWith(".statically.io")) {
-      return CDN_PROVIDERS.statically;
+    // 1. Update <base> tag
+    const base = document.querySelector("base");
+    if (base && base.href.includes("cdn.jsdelivr.net/gh/")) {
+      base.href = resolveGhUrl(base.href);
     }
-  } catch (e) {}
-  return CDN_PROVIDERS.jsdelivr;
-})();
+
+    // 2. Update all img src attributes with relative paths to use the new CDN
+    document.querySelectorAll("img[src]").forEach((img) => {
+      const src = img.getAttribute("src");
+      if (src && !src.startsWith("http") && !src.startsWith("blob:") && !src.startsWith("data:")) {
+        // This is a relative URL, resolve it with the current CDN
+        const newSrc = resolveIconUrl(src);
+        if (newSrc !== src) {
+          img.setAttribute("src", newSrc);
+        }
+      }
+    });
+
+    // 3. Patch appMap icons
+    if (appMap) {
+      Object.values(appMap).forEach((app) => {
+        if (app.icon && typeof app.icon === "string" && app.icon.includes("cdn.jsdelivr.net/gh/")) {
+          app.icon = resolveGhUrl(app.icon);
+        }
+        if (app.url && typeof app.url === "string" && app.url.includes("cdn.jsdelivr.net/gh/")) {
+          app.url = resolveGhUrl(app.url);
+        }
+      });
+    }
+
+    // 4. Set global CSS variables
+    const logoUrl = resolveGhUrl(
+      "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/icons/logo.png"
+    );
+    document.documentElement.style.setProperty("--start-logo-url", `url("${logoUrl}")`);
+  } catch (err) {
+    console.error("Failed to initialize mirrors:", err);
+  }
+}
+
+export const CDN_BASES = CDN_PROVIDERS.jsdelivr;
 export const JSDELIVR_BASE = CDN_BASES.GAMES;
 export const YUKIOS_JSDELIVR_BASE = CDN_BASES.MAIN;
 export const JSDELIVR_GH_BASE = CDN_BASES.MAIN;
@@ -74,10 +202,7 @@ export function getCurrentCdnRepoBase() {
     const p = here.pathname.split("/").filter(Boolean);
     if (p[0] !== "gh" || !p[1] || !p[2]) return null;
 
-    const baseUrl = provider.HOSTNAMES[0].includes("jsdelivr")
-      ? "https://cdn.jsdelivr.net"
-      : "https://cdn.jsdelivr.net";
-    return `${baseUrl}${provider.GH_PATH}${p[1]}/${p[2]}`;
+    return `${here.origin}${provider.GH_PATH}${p[1]}/${p[2]}`;
   } catch {
     return null;
   }
@@ -104,10 +229,7 @@ export function getCdnRepoBase(url) {
 
     const p = uo.pathname.split("/").filter(Boolean);
     if (p[0] === "gh" && p[1] && p[2]) {
-      const baseUrl = provider.HOSTNAMES[0].includes("jsdelivr")
-        ? "https://cdn.jsdelivr.net"
-        : "https://cdn.jsdelivr.net";
-      return `${baseUrl}${provider.GH_PATH}${p[1]}/${p[2]}/`;
+      return `${uo.origin}${provider.GH_PATH}${p[1]}/${p[2]}/`;
     }
   } catch {}
   return null;
@@ -134,9 +256,10 @@ export function resolveIconUrl(url) {
   try {
     const hostname = window.location?.hostname || "";
     const isCdn = isCdnHostname(hostname);
-    if (isCdn && url.startsWith("/static/")) {
+    const normalizedUrl = url.startsWith("/") ? url : `/${url}`;
+    if (isCdn && normalizedUrl.startsWith("/static/")) {
       const provider = getCdnProviderByHostname(hostname) || CDN_PROVIDERS.jsdelivr;
-      return `${provider.MAIN}${url}`;
+      return resolveGhUrl(`${provider.MAIN}${normalizedUrl}`);
     }
   } catch {}
 
@@ -146,9 +269,10 @@ export function resolveIconUrl(url) {
       const isCdn = isCdnHostname(u.hostname);
       if (isCdn && u.pathname.startsWith("/static/")) {
         const provider = getCdnProvider(u) || CDN_PROVIDERS.jsdelivr;
-        return `${provider.MAIN}${u.pathname}${u.search}${u.hash}`;
+        return resolveGhUrl(`${provider.MAIN}${u.pathname}${u.search}${u.hash}`);
       }
     } catch {}
+    return resolveGhUrl(url);
   }
 
   return url;
@@ -161,27 +285,27 @@ export function resolveWallpaperUrl(url) {
       const u = new URL(url);
       if (isCdnHostname(u.hostname) && u.pathname.startsWith("/static/wallpapers/")) {
         const provider = getCdnProvider(u) || CDN_PROVIDERS.jsdelivr;
-        return `${provider.MAIN}${u.pathname}${u.search}${u.hash}`;
+        return resolveGhUrl(`${provider.MAIN}${u.pathname}${u.search}${u.hash}`);
       }
     } catch {}
-    return url;
+    return resolveGhUrl(url);
   }
   if (!url.startsWith("/static/wallpapers/")) return url;
   try {
     const hostname = window.location?.hostname;
     if (isCdnHostname(hostname)) {
       const provider = getCdnProviderByHostname(hostname) || CDN_PROVIDERS.jsdelivr;
-      return `${provider.MAIN}${url}`;
+      return resolveGhUrl(`${provider.MAIN}${url}`);
     }
   } catch {}
-  return url;
+  return resolveGhUrl(`https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511${url}`);
 }
 
 export async function resolveUrl(url, isCdnGh = false) {
   if (!url) return url;
   if (url.startsWith("blob:") || url.startsWith("data:")) return url;
   if (url.startsWith("http://") || url.startsWith("https://")) {
-    return url;
+    return resolveGhUrl(url);
   }
 
   const currentRepoBase = getCurrentCdnRepoBase();

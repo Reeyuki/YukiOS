@@ -11,15 +11,19 @@ import {
   looksLikeHtml,
   isCdnGhUrl,
   CDN_BASES,
-  getCurrentJsdelivrRepoBase
+  isCdnHostname,
+  getCurrentCdnRepoBase,
+  resolveGhUrl
 } from "./shared/assetResolver.js";
 import { initClippy, speak as clippySpeak } from "./clippy.js";
 import { initAnalytics, getAnalyticsBase, sendLaunchAnalytics, recordUsage } from "./analytics.js";
 import { StorageKeys } from "./settings.js";
 import { getNewsContentSignature } from "./news.js";
 import { PROXIES, clampProxyIndex, buildProxyUrl } from "./proxies.js";
-const STATICALLY_BASE = "https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main";
-const YUKIOS_JSDELIVR_BASE = "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511";
+const STATICALLY_BASE = resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main");
+const YUKIOS_JSDELIVR_BASE = resolveGhUrl(
+  "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511"
+);
 
 export class AppLauncher {
   constructor(
@@ -357,6 +361,16 @@ export class AppLauncher {
     const info = this.appMap[app];
     if (!info) return console.error(`App ${app} not found.`);
 
+    if (typeof info.url === "string" && isCdnGhUrl(info.url)) {
+      info.url = resolveGhUrl(info.url);
+    }
+    if (typeof info.swf === "string" && isCdnGhUrl(info.swf)) {
+      info.swf = resolveGhUrl(info.swf);
+    }
+    if (typeof info.html === "string" && isCdnGhUrl(info.html)) {
+      info.html = resolveGhUrl(info.html);
+    }
+
     if (!this._launchedAppIds.has(app)) {
       this._launchedAppIds.add(app);
       this._saveLaunchedApps();
@@ -452,11 +466,12 @@ export class AppLauncher {
   }
 
   openRemoteApp(appUrl) {
-    const isStaticallyGh = window.location.hostname === "cdn.jsdelivr.net" && window.location.pathname.includes("/gh/");
+    const isStaticallyGh = isCdnGhUrl(window.location.href);
     if (isStaticallyGh && typeof appUrl === "string" && appUrl.startsWith("/")) {
       appUrl = `${STATICALLY_BASE}${appUrl}`;
     }
     sendLaunchAnalytics(appUrl);
+    window.open(appUrl, "_blank", "noopener,noreferrer");
   }
 
   openHtmlApp(appName, htmlContent, appMeta) {
@@ -490,7 +505,7 @@ export class AppLauncher {
 <head>
 <meta charset="UTF-8">
 <title>${gameName}</title>
-<script src="https://cdn.jsdelivr.net/npm/@ruffle-rs/ruffle@0.2.0-nightly.2026.5.14/ruffle.min.js"></script>
+<script src="${resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/libs/ruffle.js")}"></script>
 <style>html,body{margin:0;padding:0;width:100%;height:100%;background:black;overflow:hidden;}#player{width:100%;height:100%;}</style>
 </head>
 <body>
@@ -523,18 +538,13 @@ player.load("${swfPath}");
         !source.startsWith("https://") &&
         !source.startsWith("/");
 
-      const bypassRewriteForApp = type === "game";
-      const isStaticallyGh =
-        window.location.hostname === "cdn.jsdelivr.net" && window.location.pathname.includes("/gh/");
-      const isJsDelivrGh = window.location.hostname === "cdn.jsdelivr.net" && window.location.pathname.includes("/gh/");
+      const isCdnGh = isCdnHostname(window.location.hostname) && window.location.pathname.includes("/gh/");
 
       let resolvedSource =
-        shouldBypassResolution || bypassRewriteForApp
-          ? source
-          : await resolveUrl(source, isStaticallyGh || isJsDelivrGh);
+        shouldBypassResolution || isCdnGh ? source : await resolveUrl(source, isCdnGhUrl(window.location.href));
 
-      if (bypassRewriteForApp && typeof resolvedSource === "string" && resolvedSource.startsWith("/")) {
-        const repoBase = getCurrentJsdelivrRepoBase();
+      if (isCdnGh && typeof resolvedSource === "string" && resolvedSource.startsWith("/")) {
+        const repoBase = getCurrentCdnRepoBase();
         if (repoBase) {
           resolvedSource = `${repoBase}${resolvedSource}`;
         } else {
@@ -652,10 +662,7 @@ player.load("${swfPath}");
           looksLikeHtml(resolvedSource) &&
           /^https?:\/\//.test(resolvedSource) &&
           !isSameOrigin &&
-          (isCdnGhUrl(resolvedSource) ||
-            (window.location.hostname === "cdn.jsdelivr.net" &&
-              window.location.pathname.includes("/gh/") &&
-              resolvedSource.startsWith("https://cdn.jsdelivr.net/gh/")))
+          (isCdnGhUrl(resolvedSource) || isCdnGhUrl(window.location.href))
         ) {
           try {
             iframeUrl = await fetchHtmlAsBlobUrl(resolvedSource);

@@ -3,7 +3,7 @@ import { bus, BusEvents } from "./core/EventBus.js";
 import { BaseApp } from "./core/BaseApp.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
 import { CDN_BASES } from "./shared/assetResolver.js";
-import { CDN_CONFIG } from "./shared/cdnConfig.js";
+import { CDN_CONFIG, getLibraryUrl } from "./shared/cdnConfig.js";
 
 const FLASH_DIR = ["Flash"];
 const DESKTOP_DIR = ["Desktop"];
@@ -284,9 +284,9 @@ export class RuffleApp extends BaseApp {
       setLog("Starting Flash player...");
 
       // Resolve the Ruffle script URL the same way _loadRuffleScript does
-      const ruffleScriptUrl = CDN_CONFIG.libraries.ruffle.path
-        ? `${CDN_CONFIG.repos.npm.base}/${CDN_CONFIG.libraries.ruffle.path}`
-        : `${CDN_CONFIG.repos.npm.base}/@ruffle-rs/ruffle@${CDN_CONFIG.libraries.ruffle.version}/ruffle.min.js`;
+      const ruffleScriptUrl =
+        getLibraryUrl("ruffle") ||
+        `${CDN_CONFIG.repos.npm.base}/@ruffle-rs/ruffle@${CDN_CONFIG.libraries.ruffle.version}/ruffle.min.js`;
 
       // Convert SWF binary to a blob URL so the iframe document can load it
       const swfBlob = new Blob([swfData], { type: "application/x-shockwave-flash" });
@@ -353,9 +353,9 @@ export class RuffleApp extends BaseApp {
       }
 
       const script = document.createElement("script");
-      script.src = CDN_CONFIG.libraries.ruffle.path
-        ? `${CDN_CONFIG.repos.npm.base}/${CDN_CONFIG.libraries.ruffle.path}`
-        : `${CDN_CONFIG.repos.npm.base}/@ruffle-rs/ruffle@${CDN_CONFIG.libraries.ruffle.version}/ruffle.min.js`;
+      script.src =
+        getLibraryUrl("ruffle") ||
+        `${CDN_CONFIG.repos.npm.base}/@ruffle-rs/ruffle@${CDN_CONFIG.libraries.ruffle.version}/ruffle.min.js`;
       script.onload = () => resolve();
       script.onerror = () => reject(new Error("Failed to load Ruffle"));
       document.head.appendChild(script);

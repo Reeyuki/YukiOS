@@ -4,32 +4,33 @@ import JSZip from "https://esm.sh/jszip@3.10.1";
 import { Achievements } from "./achievements.js";
 import { bus, BusEvents } from "./core/EventBus.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
+import { resolveGhUrl } from "./shared/assetResolver.js";
 const SAMPLE_MODELS = [
   {
     name: "Stanford Bunny",
     fileName: "bunny.obj",
-    url: "https://cdn.jsdelivr.net/gh/glmark2/glmark2@master/data/models/bunny.obj",
+    url: resolveGhUrl("https://cdn.jsdelivr.net/gh/glmark2/glmark2@master/data/models/bunny.obj"),
     icon: "fa-paw",
     description: "Classic Stanford Bunny mesh"
   },
   {
     name: "Cat",
     fileName: "cat.3ds",
-    url: "https://cdn.jsdelivr.net/gh/glmark2/glmark2@master/data/models/cat.3ds",
+    url: resolveGhUrl("https://cdn.jsdelivr.net/gh/glmark2/glmark2@master/data/models/cat.3ds"),
     icon: "fa-cat",
     description: "Cat model in 3DS format"
   },
   {
     name: "Cube",
     fileName: "cube.3ds",
-    url: "https://cdn.jsdelivr.net/gh/glmark2/glmark2@master/data/models/cube.3ds",
+    url: resolveGhUrl("https://cdn.jsdelivr.net/gh/glmark2/glmark2@master/data/models/cube.3ds"),
     icon: "fa-cube",
     description: "Simple cube primitive"
   },
   {
     name: "Horse",
     fileName: "horse.3ds",
-    url: "https://cdn.jsdelivr.net/gh/glmark2/glmark2@master/data/models/horse.3ds",
+    url: resolveGhUrl("https://cdn.jsdelivr.net/gh/glmark2/glmark2@master/data/models/horse.3ds"),
     icon: "fa-horse",
     description: "Horse model in 3DS format"
   }

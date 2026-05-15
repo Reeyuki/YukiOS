@@ -32,8 +32,13 @@ import { setDesktopUI as setGamesDesktopUI } from "./games.js";
 import { AdsManager } from "./ads.js";
 import { registerPWA } from "./pwa.js";
 import { RuffleApp } from "./ruffle.js";
+import { resolveGhUrl, initializeMirrors, CDN_MIRRORS, getCdnMirror, setCdnMirror } from "./shared/assetResolver.js";
+import { appMap } from "./gamesList.js";
 import "./taskbarPositionManager.js";
+import logoImg from "./assets/logo.png";
+import { showCdnPrompt } from "./shared/dialogs.js";
 
+initializeMirrors(appMap);
 registerPWA();
 const notificationCenter = new NotificationCenter();
 const fileSystemManager = new FileSystemManager();
@@ -170,6 +175,23 @@ const appLauncher = new AppLauncher(
 appCreatorApp.setAppLauncher(appLauncher);
 explorerApp.setAppLauncher(appLauncher);
 const desktopUI = new DesktopUI(appLauncher, notepadApp, explorerApp, fileSystemManager);
+
+document.documentElement.style.setProperty("--start-logo-url", `url("${logoImg}")`);
+
+// CDN Blockage Detection
+setTimeout(() => {
+  const testImg = new Image();
+  testImg.onload = () => {};
+  testImg.onerror = async () => {
+    const newMirror = await showCdnPrompt(CDN_MIRRORS, getCdnMirror());
+    if (newMirror) {
+      setCdnMirror(newMirror);
+      window.location.reload();
+    }
+  };
+  // Test loading a known icon from the current CDN
+  testImg.src = resolveGhUrl("static/icons/files.webp");
+}, 1500);
 setGamesDesktopUI(desktopUI);
 explorerApp.setDesktopUI(desktopUI);
 settingsApp.setDesktopUI(desktopUI);
@@ -204,13 +226,19 @@ setupStartMenu(appLauncher);
 
 function initializeUserProfile() {
   const savedUsername = localStorage.getItem("yukiOS_username") || "reeyuki";
-  const savedProfilePic = localStorage.getItem("yukiOS_profilePicture") || "static/icons/guest.webp";
+  const savedProfilePic = localStorage.getItem("yukiOS_profilePicture") || logoImg;
 
   const startUserSpan = document.querySelector(".start-user span");
   if (startUserSpan) startUserSpan.textContent = savedUsername;
 
   const startUserImg = document.querySelector(".start-user img");
-  if (startUserImg) startUserImg.src = savedProfilePic;
+  if (startUserImg) {
+    if (savedProfilePic && savedProfilePic.includes("cdn.jsdelivr.net/gh/")) {
+      startUserImg.src = resolveGhUrl(savedProfilePic);
+    } else {
+      startUserImg.src = savedProfilePic;
+    }
+  }
 }
 
 if (document.readyState === "loading") {

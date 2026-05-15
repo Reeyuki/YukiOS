@@ -1,17 +1,25 @@
+import { resolveGhUrl, resolveNpmUrl } from "./assetResolver.js";
 export const CDN_CONFIG = {
   repos: {
-    games: {
-      base: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main",
-      ref: "main"
+    get games() {
+      return {
+        base: resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main"),
+        ref: "main"
+      };
     },
-    main: {
-      base: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511",
-      ref: "main"
+    get main() {
+      return {
+        base: resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511"),
+        ref: "main"
+      };
     },
-    npm: {
-      base: "https://cdn.jsdelivr.net/npm"
+    get npm() {
+      return {
+        base: resolveNpmUrl("https://cdn.jsdelivr.net/npm")
+      };
     }
   },
+
   libraries: {
     mammoth: {
       version: "1.12.0",
@@ -52,8 +60,8 @@ export const CDN_CONFIG = {
       vs: "monaco-editor@0.45.0/min/vs"
     },
     ruffle: {
-      version: "0.2.0-nightly.2026.3.15",
-      path: "@ruffle-rs/ruffle@0.2.0-nightly.2026.3.15/ruffle.min.js"
+      version: "0.2.0-nightly.2026.5.15",
+      path: "@ruffle-rs/ruffle@0.2.0-nightly.2026.5.15/ruffle.js"
     },
     emulatorjs: {
       version: "stable",
@@ -69,6 +77,10 @@ export function getLibraryUrl(libraryName, type = "path") {
 
   const path = lib[type] || lib.path;
   if (!path) return null;
+
+  if (libraryName === "ruffle") {
+    return `https://unpkg.com/@ruffle-rs/ruffle/ruffle.js`;
+  }
 
   return `${CDN_CONFIG.repos.npm.base}/${path}`;
 }

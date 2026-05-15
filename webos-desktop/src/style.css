@@ -686,7 +686,10 @@ body.is-resizing * {
   width: 50px;
   height: 40px;
   flex-shrink: 0;
-  background: url("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/icons/logo.png")
+  background: var(
+      --start-logo-url,
+      url("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/icons/logo.png")
+    )
     no-repeat center / 35px;
   cursor: pointer;
   border-radius: 20px;
@@ -1713,269 +1716,6 @@ body.is-resizing * {
 
 .explorer-sidebar .start-item:hover .sidebar-icon-fa {
   color: rgba(79, 158, 255, 1) !important;
-}
-
-.wallpapers-page {
-  display: flex;
-  flex-direction: column;
-  padding: 0;
-  background: #0e0e14;
-  height: 100%;
-  overflow: hidden;
-}
-
-.wp-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 20px 1.1em;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  background: rgba(255, 255, 255, 0.02);
-  flex-shrink: 0;
-}
-
-.wp-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.4);
-}
-
-.wp-random-btn {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  padding: 7px 16px;
-  background: linear-gradient(135deg, #6c63ff, #a259f7);
-  border: none;
-  border-radius: 20px;
-  color: #fff;
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    opacity 0.15s,
-    transform 0.15s;
-  box-shadow: 0 2px 1.1em rgba(108, 99, 255, 0.35);
-  flex-shrink: 0;
-  margin-left: 20px;
-}
-
-.wp-random-btn:hover {
-  opacity: 0.88;
-  transform: translateY(-1px);
-}
-
-.wp-random-btn:active {
-  transform: scale(0.97);
-}
-
-.wp-btn-icon {
-  font-size: 14px;
-  line-height: 1;
-}
-
-.wp-preview-zone {
-  flex-shrink: 0;
-  width: 100%;
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.wp-preview-zone.wp-preview-active {
-  max-height: 300px;
-}
-
-.wp-preview-inner {
-  position: relative;
-  width: 100%;
-  height: 260px;
-  background: #000;
-  overflow: hidden;
-}
-
-.wp-preview-media {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.wp-preview-overlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-end;
-  padding-bottom: 18px;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.72) 0%, transparent 55%);
-}
-
-.wp-preview-label {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.5);
-  margin-bottom: 10px;
-}
-
-.wp-preview-btns {
-  display: flex;
-  gap: 10px;
-}
-
-.wp-action-btn {
-  padding: 7px 16px;
-  border-radius: 20px;
-  border: none;
-  font-size: 1.1em;
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    opacity 0.15s,
-    transform 0.12s;
-}
-
-.wp-action-btn:hover {
-  opacity: 0.85;
-  transform: translateY(-1px);
-}
-
-.wp-action-btn:active {
-  transform: scale(0.96);
-}
-
-.wp-discard-btn {
-  background: rgba(255, 255, 255, 0.12);
-  color: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(6px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-}
-
-.wp-another-btn {
-  background: rgba(255, 255, 255, 0.12);
-  color: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(6px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-}
-
-.wp-save-btn {
-  background: linear-gradient(135deg, #6c63ff, #a259f7);
-  color: #fff;
-  box-shadow: 0 2px 10px rgba(108, 99, 255, 0.4);
-}
-
-.wp-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-  gap: 1.1em;
-  padding: 16px 18px;
-  overflow-y: auto;
-  flex: 1 1 0;
-  min-height: 0;
-  align-content: start;
-  width: 100%;
-}
-
-.wp-card {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 10px;
-  overflow: hidden;
-  cursor: pointer;
-  transition:
-    border-color 0.15s,
-    background 0.15s,
-    transform 0.12s;
-  height: 10em;
-}
-
-.wp-card:hover {
-  background: rgba(255, 255, 255, 0.07);
-  border-color: rgba(108, 99, 255, 0.35);
-  transform: translateY(-2px);
-}
-
-.wp-card:active {
-  transform: scale(0.97);
-}
-
-.wp-thumb {
-  width: 100%;
-  height: 76px;
-  background-size: cover;
-  background-position: center;
-  background-color: #1a1a2a;
-  flex-shrink: 0;
-  position: relative;
-  overflow: hidden;
-}
-
-.wp-thumb-video {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #1a1a2a, #2a1a3a);
-}
-
-.wp-thumb-img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.wp-play-badge {
-  position: relative;
-  z-index: 1;
-  width: 28px;
-  height: 28px;
-  background: rgba(0, 0, 0, 0.45);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(4px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.wp-card-name {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.5);
-  padding: 0 8px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.wp-card-actions {
-  padding: 0 8px 8px;
-}
-
-.wp-card-btn {
-  width: 100%;
-  padding: 5px 0;
-  border-radius: 6px;
-  border: none;
-  font-size: 11px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-
-.wp-set-btn {
-  background: rgba(108, 99, 255, 0.2);
-  color: #a99fff;
-  border: 1px solid rgba(108, 99, 255, 0.3);
-}
-
-.wp-set-btn:hover {
-  background: rgba(108, 99, 255, 0.38);
 }
 
 .explorer-confirmation-overlay {
@@ -4605,6 +4345,122 @@ body.is-resizing * {
   transform: scale(0.95);
 }
 
+.ntf-toast-container {
+  position: fixed;
+  bottom: 60px;
+  right: 20px;
+  z-index: 100000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.ntf-toast {
+  pointer-events: auto;
+  width: 320px;
+  background: rgba(30, 30, 38, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  padding: 12px 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  animation: toastIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  transition:
+    opacity 0.3s,
+    transform 0.3s;
+}
+
+.ntf-toast.ntf-toast-out {
+  opacity: 0;
+  transform: translateX(120%);
+}
+
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.ntf-toast__glyph-wrap {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 50%;
+  margin-top: 2px;
+}
+
+.ntf-toast__glyph {
+  font-size: 16px;
+}
+
+.ntf-toast--info .ntf-toast__glyph {
+  color: #89b4fa;
+}
+.ntf-toast--ok .ntf-toast__glyph {
+  color: #a6e3a1;
+}
+.ntf-toast--warn .ntf-toast__glyph {
+  color: #f9e2af;
+}
+.ntf-toast--fail .ntf-toast__glyph {
+  color: #f38ba8;
+}
+
+.ntf-toast__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.ntf-toast__heading {
+  font-size: 14px;
+  font-weight: 600;
+  color: #cdd6f4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ntf-toast__text {
+  font-size: 12.5px;
+  color: #a6adc8;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.ntf-toast__close {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0;
+  margin-top: -2px;
+  margin-right: -4px;
+}
+
+.ntf-toast__close:hover {
+  color: #fff;
+}
+
 .anim-control-btn.active {
   background: linear-gradient(180deg, #4aff4a 0%, #3ae03a 100%);
   border-color: #5aff5a;
@@ -5642,18 +5498,6 @@ body.is-resizing * {
 
 .ntf-tray-btn.active {
   background: rgba(0, 120, 215, 0.25);
-}
-
-.ntf-tray-btn.ntf-tray-btn--dnd::after {
-  content: "";
-  position: absolute;
-  top: 6px;
-  left: 6px;
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  background: rgba(255, 68, 68, 0.95);
-  box-shadow: 0 0 0 2px rgba(30, 30, 30, 0.9);
 }
 
 .ntf-tray-btn svg {
@@ -10771,4 +10615,207 @@ body.is-resizing * {
 .ad-divider {
   height: 1px;
   background: rgba(255, 255, 255, 0.1);
+}
+
+/* --- Light Mode Overrides --- */
+html[data-theme="light"] {
+  --window-bg-color: #f2f2f2;
+  --text-color: #111;
+  --tx1: #111;
+  --tx2: #555;
+  --brand: #0078d7;
+}
+
+html[data-theme="light"] .window {
+  background: #f2f2f2 !important;
+  color: #111 !important;
+}
+html[data-theme="light"] #taskbar {
+  background: rgba(235, 235, 235, 0.9) !important;
+  color: #111 !important;
+  border-top: 1px solid rgba(0, 0, 0, 0.1) !important;
+}
+html[data-theme="light"] .taskbar-btn,
+html[data-theme="light"] .start-btn {
+  color: #111 !important;
+}
+html[data-theme="light"] .taskbar-btn:hover {
+  background: rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Settings App */
+html[data-theme="light"] .yuki-settings-layout {
+  background: #f2f2f2 !important;
+  color: #111 !important;
+}
+html[data-theme="light"] .yuki-settings-sidebar {
+  background: #e6e6e6 !important;
+  border-right: 1px solid rgba(0, 0, 0, 0.1) !important;
+}
+html[data-theme="light"] .yuki-settings-nav li {
+  color: #444 !important;
+  font-weight: 500 !important;
+}
+html[data-theme="light"] .yuki-settings-nav li i {
+  color: #666 !important;
+}
+html[data-theme="light"] .yuki-settings-nav li:hover {
+  background: rgba(0, 0, 0, 0.05) !important;
+  color: #111 !important;
+}
+html[data-theme="light"] .yuki-settings-nav li.active {
+  background: #fff !important;
+  color: var(--brand) !important;
+  border-left: 3px solid var(--brand) !important;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+}
+html[data-theme="light"] .settings-label-title {
+  color: #111 !important;
+}
+html[data-theme="light"] .settings-label-desc {
+  color: #666 !important;
+}
+html[data-theme="light"] .settings-category-header {
+  color: #111 !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+}
+html[data-theme="light"] .settings-card-header {
+  color: #555 !important;
+  background: rgba(0, 0, 0, 0.03) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+}
+html[data-theme="light"] .settings-row {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+}
+html[data-theme="light"] .settings-row:hover {
+  background: rgba(0, 0, 0, 0.02) !important;
+}
+html[data-theme="light"] .settings-input,
+html[data-theme="light"] .settings-select {
+  background: #fff !important;
+  color: #111 !important;
+  border: 1px solid #ccc !important;
+}
+
+/* Explorer App */
+html[data-theme="light"] .explorer-main {
+  background: #fff !important;
+  color: #111 !important;
+}
+html[data-theme="light"] .explorer-sidebar {
+  background: #f0f0f0 !important;
+  border-right: 1px solid #ddd !important;
+}
+html[data-theme="light"] .explorer-sidebar .start-item {
+  color: #555 !important;
+}
+html[data-theme="light"] .explorer-sidebar .start-item:hover {
+  background: rgba(0, 120, 215, 0.1) !important;
+  color: #000 !important;
+}
+html[data-theme="light"] .explorer-toolbar {
+  background: #f9f9f9 !important;
+  border-bottom: 1px solid #ddd !important;
+}
+html[data-theme="light"] .explorer-statusbar {
+  background: #f0f0f0 !important;
+  color: #666 !important;
+  border-top: 1px solid #ddd !important;
+}
+html[data-theme="light"] .file-item span,
+html[data-theme="light"] .explorer-item-name {
+  color: #111 !important;
+  text-shadow: none !important;
+}
+html[data-theme="light"] .explorer-breadcrumb-part {
+  color: #111 !important;
+}
+html[data-theme="light"] .explorer-sidebar-item {
+  color: #444 !important;
+}
+html[data-theme="light"] .explorer-sidebar-item:hover {
+  background: rgba(0, 0, 0, 0.05) !important;
+}
+html[data-theme="light"] .explorer-sidebar-item.active {
+  background: rgba(0, 0, 0, 0.1) !important;
+  color: #000 !important;
+}
+
+/* Notepad App */
+html[data-theme="light"] .notepad-window {
+  border: 1px solid #ccc !important;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15) !important;
+}
+html[data-theme="light"] .notepad-textarea {
+  background: #fff !important;
+  color: #111 !important;
+}
+html[data-theme="light"] .notepad-menubar {
+  background: #f0f0f0 !important;
+  border-bottom: 1px solid #ddd !important;
+}
+html[data-theme="light"] .notepad-menu-item {
+  color: #111 !important;
+}
+html[data-theme="light"] .notepad-menu-item:hover {
+  background: rgba(0, 0, 0, 0.1) !important;
+}
+html[data-theme="light"] .notepad-statusbar {
+  background: #f0f0f0 !important;
+  color: #666 !important;
+  border-top: 1px solid #ddd !important;
+}
+html[data-theme="light"] .notepad-dropdown {
+  background: #fff !important;
+  border: 1px solid #ccc !important;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1) !important;
+}
+html[data-theme="light"] .notepad-dropdown-item {
+  color: #111 !important;
+}
+html[data-theme="light"] .notepad-dropdown-item:hover {
+  background: #f0f0f0 !important;
+}
+html[data-theme="light"] .notepad-dialog {
+  background: #fff !important;
+  border: 1px solid #ccc !important;
+  color: #111 !important;
+}
+html[data-theme="light"] .notepad-dialog h3,
+html[data-theme="light"] .notepad-dialog label {
+  color: #111 !important;
+}
+
+/* Task Manager */
+html[data-theme="light"] .task-mgr-content {
+  background: #fff !important;
+  color: #111 !important;
+}
+html[data-theme="light"] .task-item {
+  border-bottom: 1px solid #eee !important;
+}
+html[data-theme="light"] .task-item:hover {
+  background: #f9f9f9 !important;
+}
+html[data-theme="light"] .task-item-name {
+  color: #111 !important;
+}
+
+/* Common UI Elements */
+html[data-theme="light"] .button-primary {
+  background: var(--brand) !important;
+  color: #fff !important;
+}
+html[data-theme="light"] .button-secondary {
+  background: #e0e0e0 !important;
+  color: #111 !important;
+}
+html[data-theme="light"] .scrollable::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15) !important;
+}
+html[data-theme="light"] .scrollable::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.25) !important;
 }

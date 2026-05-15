@@ -4,7 +4,7 @@ import { camelize } from "./utils.js";
 import { StorageKeys } from "./settings.js";
 import { speak } from "./clippy.js";
 import { isImageFile } from "./utils.js";
-import { resolveIconUrl } from "./shared/assetResolver.js";
+import { resolveIconUrl, resolveGhUrl } from "./shared/assetResolver.js";
 
 function getStartMenuEl() {
   return document.getElementById("start-menu") || document.querySelector(".start-menu");
@@ -247,13 +247,17 @@ export function tryGetIcon(id) {
   id = camelize(id);
 
   if (id === "explorer") {
-    return "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/icons/file.webp";
+    return resolveGhUrl(
+      "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/icons/file.webp"
+    );
   }
   if (id === "appCreatorApp") {
     return "fa fa-cubes";
   }
   if (id === "kiwiIRC") {
-    return "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/icons/kiwiirc.webp";
+    return resolveGhUrl(
+      "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@857d9aa378415b8f2ea3c7f4c2c4fd671af35511/static/icons/kiwiirc.webp"
+    );
   }
   if (id === "youtube") {
     return "fab fa-youtube";
