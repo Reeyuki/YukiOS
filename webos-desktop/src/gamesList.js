@@ -1,4 +1,9 @@
 export const appMap = {
+  yukiAI: {
+    type: "system",
+    title: "YukiAI",
+    icon: "fas fa-robot"
+  },
   slimeRancher: {
     type: "game",
     url: "https://raw.githack.com/Reeyuki/SlimeRanch/refs/heads/main/index.html",
@@ -88,6 +93,12 @@ export const appMap = {
     url: "/static/games/Antidisestablishmentarianism/index.html",
     icon: "/static/icons/antiDisestablishism.webp",
     title: "Antidisestablishmentarianism"
+  },
+  pneumo: {
+    type: "game",
+    url: "/static/games/html/pneumo.html",
+    icon: "/static/icons/pneumo.webp",
+    title: "Pneumonoultramicroscopicsilicovolcanoconiosis"
   },
   minusThree: {
     type: "game",
