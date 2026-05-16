@@ -1,5 +1,6 @@
 import { PROXIES, clampProxyIndex, buildProxyUrl } from "./proxies.js";
 import { BaseApp } from "./core/BaseApp.js";
+import { resolveIconUrl } from "./assetUrl.js";
 import { bus, BusEvents } from "./core/EventBus.js";
 import { customConfirm } from "./shared/dialogs.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
@@ -188,7 +189,7 @@ export class BrowserApp extends BaseApp {
     `;
 
     this.win = this.windowHelper.createAndMountWindow(this.winId, title, content, "900px", "620px", {
-      icon: "static/icons/firefox.webp"
+      icon: resolveIconUrl("static/icons/firefox.webp")
     });
 
     this.tabBar = document.getElementById(`tabbar-${this.winId}`);

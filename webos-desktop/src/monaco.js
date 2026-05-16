@@ -1,10 +1,11 @@
+import { BaseApp } from "./core/BaseApp.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
+import { resolveIconUrl } from "./assetUrl.js";
 import { getLibraryUrl } from "./shared/cdnConfig.js";
 import { speak } from "./clippy.js";
 import { decodeDataURLContent } from "./fileDisplay.js";
 import { showConflictDialog } from "./shared/conflictDialog.js";
 import { FileKind } from "./fs.js";
-import { BaseApp } from "./core/BaseApp.js";
 import { customConfirm } from "./shared/dialogs.js";
 
 export class MonacoApp extends BaseApp {
@@ -21,7 +22,7 @@ export class MonacoApp extends BaseApp {
     this.currentWindow = null;
     this.tabCounter = 0;
     this.findWidgetVisible = false;
-    this.icon = "static/icons/vscode.webp";
+    this.icon = resolveIconUrl("static/icons/vscode.webp");
   }
 
   async loadMonaco() {

@@ -59,7 +59,7 @@ export function setCdnMirror(id) {
 export function resolveGhUrl(url) {
   if (typeof url !== "string") return url;
   const match = url.match(
-    /https?:\/\/(cdn\.jsdelivr\.net|quantil\.jsdelivr\.net|originfastly\.jsdelivr\.net|gcore\.jsdelivr\.net|esm\.sh|cdn\.statically\.io|cdn\.staticdelivr\.com)\/gh\/([^/]+)\/([^/@]+)(?:@([^/]+))?\/(.*)/
+    /https?:\/\/(cdn\.jsdelivr\.net|quantil\.jsdelivr\.net|originfastly\.jsdelivr\.net|gcore\.jsdelivr\.net|esm\.sh|cdn\.statically\.io|cdn\.staticdelivr\.com)\/gh\/([^/]+)\/([^/@]+)(?:@([^/]+))?(?:\/(.*))?/i
   );
   if (!match) return url;
 
@@ -69,7 +69,13 @@ export function resolveGhUrl(url) {
   const p = match[5];
 
   const mirror = CDN_MIRRORS.find((m) => m.id === currentMirrorId) || CDN_MIRRORS[0];
-  return mirror.ghTemplate.replace("${u}", u).replace("${r}", r).replace("${b}", b).replace("${p}", p);
+  const cleanP = (p || "").startsWith("/") ? p.substring(1) : p || "";
+  let resolved = mirror.ghTemplate.replace("${u}", u).replace("${r}", r).replace("${b}", b).replace("${p}", cleanP);
+
+  if (!cleanP && resolved.endsWith("/")) {
+    resolved = resolved.slice(0, -1);
+  }
+  return resolved;
 }
 
 export function resolveNpmUrl(url) {
@@ -113,17 +119,14 @@ const CDN_PROVIDERS = {
 
 export function initializeMirrors(appMap) {
   try {
-    // 1. Update <base> tag
     const base = document.querySelector("base");
     if (base && base.href.includes("cdn.jsdelivr.net/gh/")) {
       base.href = resolveGhUrl(base.href);
     }
 
-    // 2. Update all img src attributes with relative paths to use the new CDN
     document.querySelectorAll("img[src]").forEach((img) => {
       const src = img.getAttribute("src");
       if (src && !src.startsWith("http") && !src.startsWith("blob:") && !src.startsWith("data:")) {
-        // This is a relative URL, resolve it with the current CDN
         const newSrc = resolveIconUrl(src);
         if (newSrc !== src) {
           img.setAttribute("src", newSrc);
@@ -131,22 +134,26 @@ export function initializeMirrors(appMap) {
       }
     });
 
-    // 3. Patch appMap icons
     if (appMap) {
       Object.values(appMap).forEach((app) => {
-        if (app.icon && typeof app.icon === "string" && app.icon.includes("cdn.jsdelivr.net/gh/")) {
-          app.icon = resolveGhUrl(app.icon);
+        if (app.icon && typeof app.icon === "string") {
+          if (app.icon.includes("cdn.jsdelivr.net/gh/")) {
+            app.icon = resolveGhUrl(app.icon);
+          } else if (app.icon.startsWith("/static/") || app.icon.startsWith("static/")) {
+            app.icon = resolveIconUrl(app.icon);
+          }
         }
-        if (app.url && typeof app.url === "string" && app.url.includes("cdn.jsdelivr.net/gh/")) {
-          app.url = resolveGhUrl(app.url);
+        if (app.url && typeof app.url === "string") {
+          if (app.url.includes("cdn.jsdelivr.net/gh/")) {
+            app.url = resolveGhUrl(app.url);
+          } else if (app.url.startsWith("/static/") || app.url.startsWith("static/")) {
+            app.url = resolveIconUrl(app.url);
+          }
         }
       });
     }
 
-    // 4. Set global CSS variables
-    const logoUrl = resolveGhUrl(
-      "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@17e1c24b723b6e91f8cd20849da2048d58bdc044/static/icons/logo.png"
-    );
+    const logoUrl = resolveYukiAsset("static/icons/logo.png");
     document.documentElement.style.setProperty("--start-logo-url", `url("${logoUrl}")`);
   } catch (err) {
     console.error("Failed to initialize mirrors:", err);
@@ -186,6 +193,24 @@ function getCdnProvider(url) {
   return Object.values(CDN_PROVIDERS).find((provider) => provider.HOSTNAMES.includes(urlObj.hostname));
 }
 
+export function resolveYukiAsset(path) {
+  if (typeof path !== "string") return path;
+
+  const cleanPath = path.startsWith("/") ? path.substring(1) : path;
+
+  const mirror = CDN_MIRRORS.find((m) => m.id === currentMirrorId) || CDN_MIRRORS[0];
+
+  const user = "Reeyuki";
+  const repo = "yukios";
+  const branch = "17e1c24b723b6e91f8cd20849da2048d58bdc044";
+
+  return mirror.ghTemplate
+    .replace("${u}", user)
+    .replace("${r}", repo)
+    .replace("${b}", branch)
+    .replace("${p}", cleanPath);
+}
+
 function getCdnProviderByHostname(hostname) {
   if (typeof hostname !== "string") return null;
   return Object.values(CDN_PROVIDERS).find((provider) => provider.HOSTNAMES.includes(hostname));
@@ -208,7 +233,6 @@ export function getCurrentCdnRepoBase() {
   }
 }
 
-// Legacy export for backward compatibility
 export function getCurrentJsdelivrRepoBase() {
   try {
     const here = new URL(window.location.href);
@@ -235,7 +259,6 @@ export function getCdnRepoBase(url) {
   return null;
 }
 
-// Legacy export for backward compatibility
 export function getJsdelivrRepoBase(url) {
   try {
     const uo = new URL(url);
@@ -253,23 +276,20 @@ export function resolveIconUrl(url) {
   if (typeof url !== "string") return url;
   if (url.startsWith("data:") || url.startsWith("blob:") || url === "@content") return url;
 
-  try {
-    const hostname = window.location?.hostname || "";
-    const isCdn = isCdnHostname(hostname);
-    const normalizedUrl = url.startsWith("/") ? url : `/${url}`;
-    if (isCdn && normalizedUrl.startsWith("/static/")) {
-      const provider = getCdnProviderByHostname(hostname) || CDN_PROVIDERS.jsdelivr;
-      return resolveGhUrl(`${provider.MAIN}${normalizedUrl}`);
-    }
-  } catch {}
+  const hostname = window.location?.hostname || "";
+  const isCdn = isCdnHostname(hostname);
+  const normalizedUrl = url.startsWith("/") ? url : `/${url}`;
+
+  if (normalizedUrl.startsWith("/static/")) {
+    return resolveYukiAsset(normalizedUrl);
+  }
 
   if (/^https?:\/\//.test(url)) {
     try {
       const u = new URL(url);
-      const isCdn = isCdnHostname(u.hostname);
-      if (isCdn && u.pathname.startsWith("/static/")) {
-        const provider = getCdnProvider(u) || CDN_PROVIDERS.jsdelivr;
-        return resolveGhUrl(`${provider.MAIN}${u.pathname}${u.search}${u.hash}`);
+      const isCdnUrl = isCdnHostname(u.hostname);
+      if (isCdnUrl && u.pathname.startsWith("/static/")) {
+        return resolveYukiAsset(u.pathname + u.search + u.hash);
       }
     } catch {}
     return resolveGhUrl(url);
@@ -284,21 +304,15 @@ export function resolveWallpaperUrl(url) {
     try {
       const u = new URL(url);
       if (isCdnHostname(u.hostname) && u.pathname.startsWith("/static/wallpapers/")) {
-        const provider = getCdnProvider(u) || CDN_PROVIDERS.jsdelivr;
-        return resolveGhUrl(`${provider.MAIN}${u.pathname}${u.search}${u.hash}`);
+        return resolveYukiAsset(u.pathname + u.search + u.hash);
       }
     } catch {}
     return resolveGhUrl(url);
   }
-  if (!url.startsWith("/static/wallpapers/")) return url;
-  try {
-    const hostname = window.location?.hostname;
-    if (isCdnHostname(hostname)) {
-      const provider = getCdnProviderByHostname(hostname) || CDN_PROVIDERS.jsdelivr;
-      return resolveGhUrl(`${provider.MAIN}${url}`);
-    }
-  } catch {}
-  return resolveGhUrl(`https://cdn.jsdelivr.net/gh/Reeyuki/yukios@17e1c24b723b6e91f8cd20849da2048d58bdc044${url}`);
+  if (url.startsWith("/static/wallpapers/") || url.startsWith("static/wallpapers/")) {
+    return resolveYukiAsset(url);
+  }
+  return url;
 }
 
 export async function resolveUrl(url, isCdnGh = false) {

@@ -1,5 +1,6 @@
 import { steamAppRenderer, FlashAppRenderer, SystemAppRenderer, handleGameUrlParam } from "./games.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
+import { resolveIconUrl } from "./assetUrl.js";
 
 const STEAM_WIN_ID = "games-app-win";
 
@@ -59,7 +60,10 @@ export class CategoriesApp {
       addToTaskbar: false
     });
 
-    const taskbarIcon = focusCollection === "Flash Games" ? "static/icons/flash.webp" : "static/icons/steam.webp";
+    const taskbarIcon =
+      focusCollection === "Flash Games"
+        ? resolveIconUrl("static/icons/flash.webp")
+        : resolveIconUrl("static/icons/steam.webp");
     wm.addToTaskbar(STEAM_WIN_ID, winTitle, taskbarIcon);
 
     const container = win.querySelector("#games-app-container");

@@ -3,6 +3,7 @@ import { bus, BusEvents } from "./core/EventBus.js";
 import { BaseApp } from "./core/BaseApp.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
 import { CDN_BASES } from "./shared/assetResolver.js";
+import { resolveIconUrl } from "./assetUrl.js";
 
 const IMAGES_DIR = ["VMs"];
 
@@ -55,7 +56,7 @@ export class V86App extends BaseApp {
       </div>`;
 
     const win = this.windowHelper.createAndMountWindow("v86-win", "V86", content, "800px", "600px", {
-      icon: "static/icons/v86.webp"
+      icon: resolveIconUrl("static/icons/v86.webp")
     });
 
     this._setupSystemCardListeners(win);
@@ -144,7 +145,7 @@ export class V86App extends BaseApp {
 
     try {
       const blob = new Blob([await file.arrayBuffer()], { type: file.type || "application/octet-stream" });
-      await this.fs.writeBinaryFile(IMAGES_DIR, file.name, blob, "other", CDN_BASES.MAIN + "/static/icons/v86.webp");
+      await this.fs.writeBinaryFile(IMAGES_DIR, file.name, blob, "other", resolveIconUrl("static/icons/v86.webp"));
       this.wm.sendNotify(`Saved ${file.name} at VMs/ directory.`);
       zone.innerHTML = `<i class="fa-solid fa-circle-check" style="font-size:20px;color:#4caf50;margin-bottom:8px;display:block;"></i><div style="font-size:13px;color:#bbb;">Saved!</div>`;
       await this._loadUserImages(win);
@@ -319,7 +320,7 @@ export class V86App extends BaseApp {
       <div id="${winId}-screen" style="width:100%;height:100%;display:none;overflow:hidden;"></div>
     </div>`;
 
-    this.windowHelper.mountWindow(win, winId, displayName, "static/icons/v86.webp");
+    this.windowHelper.mountWindow(win, winId, displayName, resolveIconUrl("static/icons/v86.webp"));
 
     const inner = win.querySelector(`#${winId}-inner`);
     const screenDiv = win.querySelector(`#${winId}-screen`);

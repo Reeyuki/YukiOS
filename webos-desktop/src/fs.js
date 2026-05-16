@@ -1,5 +1,5 @@
 import BrowserFS from "browserfs";
-import { CDN_BASES, resolveWallpaperUrl } from "./shared/assetResolver.js";
+import { CDN_BASES, resolveWallpaperUrl, resolveIconUrl } from "./shared/assetResolver.js";
 
 export const FileKind = { TEXT: "text", IMAGE: "image", VIDEO: "video", AUDIO: "audio", ROM: "rom", OTHER: "other" };
 
@@ -47,10 +47,6 @@ function isBlob(obj) {
   );
 }
 
-function resolveWallpaperCdnUrl(url) {
-  return resolveWallpaperUrl(url);
-}
-
 export const defaultStorage = {
   home: {
     reeyuki: {
@@ -65,6 +61,12 @@ export const defaultStorage = {
         }
       },
       Pictures: {
+        "gandalf.gif": {
+          type: "file",
+          content: resolveIconUrl("static/gandalf.gif"),
+          kind: FileKind.IMAGE,
+          icon: resolveIconUrl("static/gandalf.gif")
+        },
         Wallpapers: {
           "wallpaper1.webp": {
             type: "file",
@@ -647,7 +649,7 @@ export class FileSystemManager {
         result[name] = {};
       } else {
         const kind = meta[name]?.kind ?? this.inferKind(name);
-        const icon = resolveWallpaperCdnUrl(meta[name]?.icon) ?? "static/icons/file.webp";
+        const icon = resolveIconUrl(meta[name]?.icon) ?? "static/icons/file.webp";
         const faIcon = meta[name]?.faIcon ?? null;
         result[name] = { type: "file", kind, icon, faIcon, content: "" };
       }
@@ -888,7 +890,7 @@ export class FileSystemManager {
       ) {
         return null;
       }
-      return resolveWallpaperCdnUrl(text);
+      return resolveIconUrl(text);
     } catch {
       const entries = await this.pRead("readdir", dir).catch(() => []);
       console.warn(`getFileContent: "${name}" not found in "${dir}". Available:`, entries);

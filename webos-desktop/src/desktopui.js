@@ -189,24 +189,24 @@ class IconDataHelper {
   }
   static getIconPathMap() {
     return {
-      explorer: "static/icons/files.webp",
-      notepad: "static/icons/notepad.webp",
-      flash: "static/icons/flash.webp",
-      browser: "static/icons/firefox.webp",
-      terminal: "/static/icons/terminal.webp",
-      music: "/static/icons/spot.webp",
-      cameraApp: "/static/icons/obs.webp",
-      paint: "/static/icons/paint.webp",
-      photopea: "/static/icons/photopea.webp",
-      vscode: "/static/icons/vscode.webp",
-      liventcord: "/static/icons/liventcord.webp",
-      steamApp: "static/icons/files.webp",
-      return: "static/icons/files.webp"
+      explorer: resolveIconUrl("static/icons/files.webp"),
+      notepad: resolveIconUrl("static/icons/notepad.webp"),
+      flash: resolveIconUrl("static/icons/flash.webp"),
+      browser: resolveIconUrl("static/icons/firefox.webp"),
+      terminal: resolveIconUrl("static/icons/terminal.webp"),
+      music: resolveIconUrl("static/icons/spot.webp"),
+      cameraApp: resolveIconUrl("static/icons/obs.webp"),
+      paint: resolveIconUrl("static/icons/paint.webp"),
+      photopea: resolveIconUrl("static/icons/photopea.webp"),
+      vscode: resolveIconUrl("static/icons/vscode.webp"),
+      liventcord: resolveIconUrl("static/icons/liventcord.webp"),
+      steamApp: resolveIconUrl("static/icons/steam.webp"),
+      return: resolveIconUrl("static/icons/files.webp")
     };
   }
   static createDesktopFileData(app, name, path = null) {
     const iconPathMap = this.getIconPathMap();
-    const fallback = iconPathMap[app] || appMap[app]?.icon || "static/icons/files.webp";
+    const fallback = iconPathMap[app] || appMap[app]?.icon || resolveIconUrl("static/icons/files.webp");
     return JSON.stringify({ app, name, path: path || fallback });
   }
 }

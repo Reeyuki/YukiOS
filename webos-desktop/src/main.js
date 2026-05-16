@@ -32,7 +32,14 @@ import { setDesktopUI as setGamesDesktopUI } from "./games.js";
 import { AdsManager } from "./ads.js";
 import { registerPWA } from "./pwa.js";
 import { RuffleApp } from "./ruffle.js";
-import { resolveGhUrl, initializeMirrors, CDN_MIRRORS, getCdnMirror, setCdnMirror } from "./shared/assetResolver.js";
+import {
+  resolveGhUrl,
+  resolveIconUrl,
+  initializeMirrors,
+  CDN_MIRRORS,
+  getCdnMirror,
+  setCdnMirror
+} from "./shared/assetResolver.js";
 import { appMap } from "./gamesList.js";
 import "./taskbarPositionManager.js";
 import logoImg from "./assets/logo.png";
@@ -190,7 +197,7 @@ setTimeout(() => {
     }
   };
   // Test loading a known icon from the current CDN
-  testImg.src = resolveGhUrl("static/icons/files.webp");
+  testImg.src = resolveIconUrl("static/icons/files.webp");
 }, 1500);
 setGamesDesktopUI(desktopUI);
 explorerApp.setDesktopUI(desktopUI);

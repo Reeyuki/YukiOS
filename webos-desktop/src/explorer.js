@@ -34,6 +34,7 @@ import {
 } from "./utils.js";
 import { Achievements } from "./achievements.js";
 import { resolveDesktopIcon } from "./shared/iconUtils.js";
+import { resolveIconUrl } from "./assetUrl.js";
 
 const BINARY_OFFICE_EXTS = [".pdf", ".docx", ".xlsx", ".xls", ".pptx", ".ppt"];
 const ARCHIVE_EXTS = [".zip", ".gz", ".tgz", ".tar", ".rar", ".7z", ".bz2", ".xz"];
@@ -122,8 +123,8 @@ export class ExplorerApp extends BaseApp {
   _sidebarHTML() {
     return `
       <div class="explorer-sidebar">
-        <div class="start-item" data-path=""><img src="static/icons/files.webp" class="sidebar-icon">Home</div>
-        <div class="start-item" data-path="Documents"><img src="static/icons/notepad.webp" class="sidebar-icon">Documents</div>
+        <div class="start-item" data-path=""><img src="${resolveIconUrl("static/icons/files.webp")}" class="sidebar-icon">Home</div>
+        <div class="start-item" data-path="Documents"><img src="${resolveIconUrl("static/icons/notepad.webp")}" class="sidebar-icon">Documents</div>
         <div class="start-item" data-path="Desktop"><i class="fas fa-desktop sidebar-icon-fa"></i>Desktop</div>
         <div class="start-item" data-path="Pictures"><i class="fas fa-image sidebar-icon-fa"></i>Pictures</div>
         <div class="start-item" data-path="Videos"><i class="fas fa-video sidebar-icon-fa"></i>Videos</div>
@@ -244,7 +245,7 @@ export class ExplorerApp extends BaseApp {
     this._initExplorerView(win, winId);
 
     const self = this;
-    this.windowHelper.mountWindow(win, winId, "File Explorer", "static/icons/files.webp", {
+    this.windowHelper.mountWindow(win, winId, "File Explorer", resolveIconUrl("static/icons/files.webp"), {
       addToTaskbar: !isSelector
     });
 
@@ -273,8 +274,8 @@ export class ExplorerApp extends BaseApp {
       </div>
       <div class="explorer-container">
         <div class="explorer-sidebar">
-          <div class="start-item" data-path=""><img src="static/icons/files.webp" class="sidebar-icon">Home</div>
-          <div class="start-item" data-path="Documents"><img src="static/icons/notepad.webp" class="sidebar-icon">Documents</div>
+          <div class="start-item" data-path=""><img src="${resolveIconUrl("static/icons/files.webp")}" class="sidebar-icon">Home</div>
+          <div class="start-item" data-path="Documents"><img src="${resolveIconUrl("static/icons/notepad.webp")}" class="sidebar-icon">Documents</div>
           <div class="start-item" data-path="Desktop"><i class="fas fa-desktop sidebar-icon-fa"></i>Desktop</div>
           <div class="start-item" data-path="Pictures"><i class="fas fa-image sidebar-icon-fa"></i>Pictures</div>
         </div>
@@ -743,7 +744,7 @@ export class ExplorerApp extends BaseApp {
 
     const wallpapersPath = ["Pictures", "Wallpapers"];
     await this.fs.ensureFolder(wallpapersPath);
-    const safeIcon = kind === FileKind.IMAGE ? "@content" : icon || "static/icons/file.webp";
+    const safeIcon = kind === FileKind.IMAGE ? "@content" : icon || resolveIconUrl("static/icons/file.webp");
     await this.fs.createFile(wallpapersPath, name, content, kind, safeIcon);
   }
 
@@ -825,7 +826,7 @@ export class ExplorerApp extends BaseApp {
 
   async _buildItemIconHTML(name, isFile, itemData, inst) {
     if (!isFile) {
-      return `<img src="static/icons/file.webp" style="width:64px;height:64px;object-fit:cover;border-radius:8px">`;
+      return `<img src="${resolveIconUrl("static/icons/file.webp")}" style="width:64px;height:64px;object-fit:cover;border-radius:8px">`;
     }
 
     if (name.endsWith(".desktop")) {
@@ -1680,7 +1681,7 @@ export class ExplorerApp extends BaseApp {
     if (!view) return;
 
     const defaultName = isFile ? "New File.txt" : "New Folder";
-    const iconSrc = isFile ? "static/icons/notepad.webp" : "static/icons/file.webp";
+    const iconSrc = isFile ? resolveIconUrl("static/icons/notepad.webp") : resolveIconUrl("static/icons/file.webp");
 
     const item = document.createElement("div");
     item.className = "file-item is-renaming";

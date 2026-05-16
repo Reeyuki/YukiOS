@@ -4,6 +4,7 @@ import JSZip from "jszip";
 import { BaseApp } from "./core/BaseApp.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
 import { CDN_BASES } from "./shared/assetResolver.js";
+import { resolveIconUrl } from "./assetUrl.js";
 
 const GAMES_DIR = ["Games"];
 
@@ -53,7 +54,7 @@ export class JsDosApp extends BaseApp {
       </div>`;
 
     const win = this.windowHelper.createAndMountWindow("jsdos-win", "JsDos Game Launcher", content, "600px", "560px", {
-      icon: "static/icons/jsdos.webp"
+      icon: resolveIconUrl("static/icons/jsdos.webp")
     });
 
     this._setupGameCardListeners(win);
@@ -134,7 +135,7 @@ export class JsDosApp extends BaseApp {
 
     try {
       const blob = new Blob([await file.arrayBuffer()], { type: file.type || "application/octet-stream" });
-      await this.fs.writeBinaryFile(GAMES_DIR, file.name, blob, "other", CDN_BASES.MAIN + "/static/icons/jsdos.webp");
+      await this.fs.writeBinaryFile(GAMES_DIR, file.name, blob, "other", resolveIconUrl("static/icons/jsdos.webp"));
       this.wm.sendNotify(`Saved ${file.name} at Games/ directory. `);
       zone.innerHTML = `<i class="fa-solid fa-circle-check" style="font-size:20px;color:#4caf50;margin-bottom:8px;display:block;"></i><div style="font-size:13px;color:#bbb;">Saved!</div>`;
       await this._loadUserGames(win);
@@ -225,7 +226,7 @@ export class JsDosApp extends BaseApp {
     bus.emit(BusEvents.ACHIEVEMENT_TRIGGER, { key: Achievements.RetroPlayer });
 
     const win = this.windowHelper.createAndMountWindow(winId, displayName, content, "800px", "600px", {
-      icon: "static/icons/jsdos.webp"
+      icon: resolveIconUrl("static/icons/jsdos.webp")
     });
 
     const inner = win.querySelector(`#${winId}-inner`);
@@ -373,7 +374,7 @@ export class JsDosApp extends BaseApp {
     bus.emit(BusEvents.ACHIEVEMENT_TRIGGER, { key: Achievements.RetroPlayer });
 
     const win = this.windowHelper.createAndMountWindow(winId, name, content, "800px", "600px", {
-      icon: CDN_BASES.MAIN + "/static/icons/jsdos.webp"
+      icon: resolveIconUrl("static/icons/jsdos.webp")
     });
 
     const inner = win.querySelector(`#${winId}-inner`);

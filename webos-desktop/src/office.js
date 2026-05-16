@@ -124,7 +124,7 @@ const modules = new OfficeModuleLoader();
 
 const FileUtils = {
   getExtension(fileName) {
-    if (!fileName) return "";
+    if (!fileName || typeof fileName !== "string") return "";
     const parts = fileName.split(".");
     return parts.length < 2 ? "" : "." + parts.pop().toLowerCase();
   },
@@ -1077,7 +1077,7 @@ export class OfficeApp extends BaseApp {
     }
 
     const winId = `office-${safeTitle}-${Date.now()}`;
-    const ext = FileUtils.getExtension(filePath || title);
+    const ext = FileUtils.getExtension(typeof filePath === "string" ? filePath : title);
 
     const windowContent = `
 <div class="office-menu-bar">

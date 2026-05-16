@@ -174,6 +174,7 @@ export function showCdnPrompt(mirrors, currentMirror) {
           ${optionsHtml}
         </select>
         <div class="_fd-dialog-actions" style="margin-top: 15px;">
+          <button class="_fd-btn _fd-btn-cancel" style="background:#45475a;">Ignore</button>
           <button class="_fd-btn _fd-btn-confirm" style="background:#313244;">Apply & Reload</button>
         </div>
       </div>
@@ -182,15 +183,28 @@ export function showCdnPrompt(mirrors, currentMirror) {
 
     const select = overlay.querySelector("#cdn-picker");
     const confirmBtn = overlay.querySelector("._fd-btn-confirm");
+    const cancelBtn = overlay.querySelector("._fd-btn-cancel");
 
     const submit = () => {
       overlay.remove();
       resolve(select.value);
     };
 
+    const close = () => {
+      overlay.remove();
+      resolve(null);
+    };
+
     confirmBtn.onclick = submit;
+    cancelBtn.onclick = close;
+
+    overlay.onclick = (ev) => {
+      if (ev.target === overlay) close();
+    };
+
     overlay.onkeydown = (ev) => {
       if (ev.key === "Enter") submit();
+      if (ev.key === "Escape") close();
     };
     confirmBtn.focus();
   });

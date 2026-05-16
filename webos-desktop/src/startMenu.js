@@ -247,17 +247,13 @@ export function tryGetIcon(id) {
   id = camelize(id);
 
   if (id === "explorer") {
-    return resolveGhUrl(
-      "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@17e1c24b723b6e91f8cd20849da2048d58bdc044/static/icons/file.webp"
-    );
+    return resolveIconUrl("static/icons/files.webp");
   }
   if (id === "appCreatorApp") {
     return "fa fa-cubes";
   }
   if (id === "kiwiIRC") {
-    return resolveGhUrl(
-      "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@17e1c24b723b6e91f8cd20849da2048d58bdc044/static/icons/kiwiirc.webp"
-    );
+    return resolveIconUrl("static/icons/kiwiirc.webp");
   }
   if (id === "youtube") {
     return "fab fa-youtube";

@@ -1,4 +1,5 @@
 import { appMap } from "../gamesList.js";
+import { resolveIconUrl } from "../assetUrl.js";
 
 export function resolveDesktopIcon(content, fileName = null) {
   let icon = null;
@@ -28,5 +29,5 @@ export function resolveDesktopIcon(content, fileName = null) {
     }
   }
 
-  return icon || "static/icons/files.webp";
+  return icon || resolveIconUrl("static/icons/files.webp");
 }

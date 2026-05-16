@@ -179,15 +179,15 @@ export function isWallpaperPath(path) {
 
 export function resolveFileIcon(name) {
   if (isImageFile(name)) return "@content";
-  if (isVideoFile(name)) return resolveIconUrl("/static/icons/obs.webp");
-  if (isAudioFile(name)) return resolveIconUrl("/static/icons/spot.webp");
+  if (isVideoFile(name)) return resolveIconUrl("static/icons/obs.webp");
+  if (isAudioFile(name)) return resolveIconUrl("static/icons/spot.webp");
   if (isRomFile(name)) return "rom";
   if (isSwfFile(name)) return resolveIconUrl("static/icons/flash.webp");
-  if (isZipFile(name)) return resolveIconUrl("/static/icons/zip.webp");
-  if (isExeFile(name)) return resolveIconUrl("/static/icons/jsdos.webp");
-  if (isOfficeFile(name)) return resolveIconUrl("/static/icons/office.webp");
+  if (isZipFile(name)) return resolveIconUrl("static/icons/zip.webp");
+  if (isExeFile(name)) return resolveIconUrl("static/icons/jsdos.webp");
+  if (isOfficeFile(name)) return resolveIconUrl("static/icons/office.webp");
   if (isHtmlFile(name)) return resolveIconUrl("static/icons/firefox.webp");
-  if (isJsonFile(name)) return resolveIconUrl("/static/icons/json.webp");
+  if (isJsonFile(name)) return resolveIconUrl("static/icons/json.webp");
   return resolveIconUrl("static/icons/notepad.webp");
 }
 
@@ -236,13 +236,13 @@ export function buildFileIconHTML(name, { thumbnailSrc = null, size = 64, radius
     return `<img src="${resolveIconUrl("static/icons/flash.webp")}" style="${s}object-fit:cover;">`;
   }
   if (isZipFile(name)) {
-    return `<img src="${resolveIconUrl("/static/icons/zip.webp")}" style="${s}object-fit:cover;">`;
+    return `<img src="${resolveIconUrl("static/icons/zip.webp")}" style="${s}object-fit:cover;">`;
   }
   if (isExeFile(name)) {
-    return `<img src="${resolveIconUrl("/static/icons/jsdos.webp")}" style="${s}object-fit:cover;">`;
+    return `<img src="${resolveIconUrl("static/icons/jsdos.webp")}" style="${s}object-fit:cover;">`;
   }
   if (isAudioFile(name)) {
-    return `<img src="${resolveIconUrl("/static/icons/spot.webp")}" style="${s}object-fit:cover;">`;
+    return `<img src="${resolveIconUrl("static/icons/spot.webp")}" style="${s}object-fit:cover;">`;
   }
   if (isJsonFile(name)) {
     return `<img src="${resolveIconUrl("static/icons/notepad.webp")}" style="${s}object-fit:cover;">`;
@@ -261,7 +261,7 @@ export function buildFileIconHTML(name, { thumbnailSrc = null, size = 64, radius
     )}px;color:#aaa;"><i class="fas fa-film"></i></div>`;
   }
   if (isOfficeFile(name)) {
-    return `<img src="${resolveIconUrl("/static/icons/office.webp")}" style="${s}object-fit:cover;">`;
+    return `<img src="${resolveIconUrl("static/icons/office.webp")}" style="${s}object-fit:cover;">`;
   }
   if (storedIcon && storedIcon !== "@content" && storedIcon !== "rom") {
     return `<img src="${resolveIconUrl(storedIcon)}" style="${s}object-fit:cover;">`;
@@ -292,7 +292,7 @@ export function openMediaViewer(name, src, kind, windowManager) {
   `;
 
   const win = windowHelper.createAndMountWindow(`media-${Date.now()}`, name, content, width, height, {
-    icon: isAudio ? "/static/icons/spot.webp" : "static/icons/files.webp"
+    icon: isAudio ? resolveIconUrl("static/icons/spot.webp") : resolveIconUrl("static/icons/files.webp")
   });
 }
 
