@@ -2,7 +2,7 @@ import { BaseApp } from "./core/BaseApp.js";
 import { refreshSteamUI } from "./games.js";
 import { customAlert } from "./shared/dialogs.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
-import { resolveGhUrl } from "./shared/assetResolver.js";
+import { resolveGhUrl, resolveIconUrl } from "./shared/assetResolver.js";
 
 const STORAGE_KEYS = {
   username: "yukiOS_username",
@@ -10,15 +10,15 @@ const STORAGE_KEYS = {
 };
 
 const PREDEFINED_AVATARS = [
-  resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/icons/guest.webp"),
-  resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/icons/helltaker.jpg"),
-  resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/icons/stardew.webp"),
-  resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/icons/hollowKnight.webp"),
-  resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/icons/fancypants2.webp"),
-  resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/icons/isaac.webp"),
-  resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/icons/angryBirds.webp"),
-  resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/icons/nso.webp"),
-  resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/icons/alienHominid.webp")
+  resolveIconUrl("static/icons/guest.webp"),
+  resolveIconUrl("static/icons/helltaker.jpg"),
+  resolveIconUrl("static/icons/stardew.webp"),
+  resolveIconUrl("static/icons/hollowKnight.webp"),
+  resolveIconUrl("static/icons/fancypants2.webp"),
+  resolveIconUrl("static/icons/isaac.webp"),
+  resolveIconUrl("static/icons/angryBirds.webp"),
+  resolveIconUrl("static/icons/nso.webp"),
+  resolveIconUrl("static/icons/alienHominid.webp")
 ];
 
 export class ProfileCustomizerApp extends BaseApp {
@@ -37,7 +37,8 @@ export class ProfileCustomizerApp extends BaseApp {
     if (this._isSingletonOpen(winId)) return;
 
     const currentUsername = localStorage.getItem(STORAGE_KEYS.username) || "Reeyuki";
-    const currentProfilePic = localStorage.getItem(STORAGE_KEYS.profilePicture) || "static/icons/guest.webp";
+    const currentProfilePic =
+      localStorage.getItem(STORAGE_KEYS.profilePicture) || resolveIconUrl("static/icons/guest.webp");
 
     const content = `
       <div class="profile-customizer-body" style="padding: 12px; display: flex; flex-direction: column; gap: 12px; height: calc(100% - 32px); box-sizing: border-box;">

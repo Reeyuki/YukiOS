@@ -4,6 +4,7 @@ import { SteamDataManager, _launcher, _desktopUI } from "./games.js";
 import { observeLazyImages } from "./games.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
 import { buildSteamShell, initDropdowns, initStorePage, getCdnBase, initSettingsPage } from "./steam.js";
+import { resolveIconUrl } from "./shared/assetResolver.js";
 
 export class GameUI {
   constructor(renderer) {
@@ -381,7 +382,7 @@ export class GameUI {
     const visibleGames = allGames.filter((g) => !hidden.includes(g.app));
     const hiddenGames = allGames.filter((g) => hidden.includes(g.app));
     const username = localStorage.getItem("yukiOS_username") || "Reeyuki";
-    const profilePic = localStorage.getItem("yukiOS_profilePicture") || "static/icons/guest.webp";
+    const profilePic = localStorage.getItem("yukiOS_profilePicture") || resolveIconUrl("static/icons/guest.webp");
 
     container.classList.add("steam-app-root");
     container.style.padding = "0";
@@ -683,7 +684,7 @@ export class GameUI {
 
     const windowHelper = new WindowHelper(wm);
     const username = localStorage.getItem("yukiOS_username") || "Reeyuki";
-    const profilePic = localStorage.getItem("yukiOS_profilePicture") || "static/icons/guest.webp";
+    const profilePic = localStorage.getItem("yukiOS_profilePicture") || resolveIconUrl("static/icons/guest.webp");
 
     const content = `
       <div class="window-content" style="display:flex; flex-direction:column; height:100%; color:#dcdedf;">

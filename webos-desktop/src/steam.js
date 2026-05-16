@@ -1,6 +1,7 @@
 import { CDN_CONFIG } from "./shared/cdnConfig.js";
 import { descriptionMap } from "./gameDescriptions.js";
 import { shouldEnableAds } from "./ads.js";
+import { resolveIconUrl } from "./shared/assetResolver.js";
 
 export function getCdnBase() {
   return CDN_CONFIG.repos.main.base;
@@ -9,7 +10,6 @@ export function getCdnBase() {
 export function getCdnBaseGames() {
   return CDN_CONFIG.repos.games.base;
 }
-
 export function buildSteamShell(container, username, profilePic, hiddenGamesCount, CDN_BASE_REF) {
   const settings = SteamSettings.load();
   const showAnimation = settings.enableStartupAnimation !== false;
@@ -60,7 +60,6 @@ export function buildSteamShell(container, username, profilePic, hiddenGamesCoun
       .store-card-play-btn:hover { background: #3d6b8a; }
       .store-ad-block { display: flex; flex-direction: column; align-items: center; gap: 4px; }
       .store-ad-label { font-size: 9px; color: #4a5a6a; text-transform: uppercase; letter-spacing: 1px; align-self: flex-start; }
-
       .steam-dropdown {
         position: relative;
         display: inline-block;
@@ -131,23 +130,22 @@ export function buildSteamShell(container, username, profilePic, hiddenGamesCoun
         margin-left: auto !important;
       }
 
-      /* Settings Page Styles */
       .settings-container {
         background: rgba(0,0,0,0.2);
         border-radius: 4px;
         padding: 0;
         max-width: 800px;
       }
-      
+
       .settings-section {
         border-bottom: 1px solid rgba(255,255,255,0.08);
         padding: 24px;
       }
-      
+
       .settings-section:last-child {
         border-bottom: none;
       }
-      
+
       .settings-section-title {
         font-size: 16px;
         font-weight: 600;
@@ -156,32 +154,31 @@ export function buildSteamShell(container, username, profilePic, hiddenGamesCoun
         text-transform: uppercase;
         letter-spacing: 1px;
       }
-      
+
       .settings-item {
         display: flex;
         align-items: center;
         justify-content: space-between;
         padding: 12px 0;
       }
-      
+
       .settings-item-label {
         display: flex;
         flex-direction: column;
         gap: 4px;
       }
-      
+
       .settings-item-title {
         font-size: 14px;
         color: #c6d4df;
         font-weight: 500;
       }
-      
+
       .settings-item-description {
         font-size: 12px;
         color: #8f98a0;
       }
-      
-      /* Toggle Switch */
+
       .settings-toggle {
         position: relative;
         width: 48px;
@@ -192,11 +189,11 @@ export function buildSteamShell(container, username, profilePic, hiddenGamesCoun
         transition: background 0.2s;
         flex-shrink: 0;
       }
-      
+
       .settings-toggle.active {
         background: #5c9eff;
       }
-      
+
       .settings-toggle-slider {
         position: absolute;
         top: 2px;
@@ -208,12 +205,11 @@ export function buildSteamShell(container, username, profilePic, hiddenGamesCoun
         transition: transform 0.2s;
         box-shadow: 0 2px 4px rgba(0,0,0,0.3);
       }
-      
+
       .settings-toggle.active .settings-toggle-slider {
         transform: translateX(24px);
       }
-      
-      /* Select Dropdown */
+
       .settings-select {
         background: #2a475e;
         border: 1px solid rgba(255,255,255,0.1);
@@ -224,11 +220,11 @@ export function buildSteamShell(container, username, profilePic, hiddenGamesCoun
         cursor: pointer;
         min-width: 150px;
       }
-      
+
       .settings-select:hover {
         background: #3d6b8a;
       }
-      
+
       .settings-select option {
         background: #1b2838;
         color: #c6d4df;
@@ -316,11 +312,11 @@ export function buildSteamShell(container, username, profilePic, hiddenGamesCoun
             <div class="store-layout">
               <div class="store-main-col">
                 <div class="store-featured-header">
-                  <h2 class="store-section-title">Featured &amp; Recommended</h2>
+                  <h2 class="store-section-title">Reeyuki Ports Catalog</h2>
                 </div>
                 <div class="store-featured-hero">
                   <div class="store-hero-img-wrap">
-                    <img src="${CDN_BASE_REF}/static/icons/tabs.webp" class="store-hero-img" id="store-hero-img" />
+                    <img src="${resolveIconUrl("static/icons/tabs.webp")}" class="store-hero-img" id="store-hero-img" />
                   </div>
                   <div class="store-hero-info" id="store-hero-info">
                     <div class="store-hero-title" id="store-hero-title">TABS: Totaly Accurate Battle Simulator</div>
@@ -335,7 +331,7 @@ export function buildSteamShell(container, username, profilePic, hiddenGamesCoun
                   <div class="store-hero-thumbs" id="store-hero-thumbs"></div>
                 </div>
                 <div class="store-section-divider"></div>
-                <h2 class="store-section-title">All Games</h2>
+                <h2 class="store-section-title">All WebPorts</h2>
                 <div class="store-games-grid" id="store-games-grid"></div>
               </div>
               <div class="store-side-col">
@@ -361,7 +357,7 @@ export function buildSteamShell(container, username, profilePic, hiddenGamesCoun
             <div class="settings-container">
               <div class="settings-section">
                 <h3 class="settings-section-title">General</h3>
-                
+
                 <div class="settings-item">
                   <div class="settings-item-label">
                     <div class="settings-item-title">Run on Startup</div>
@@ -371,7 +367,7 @@ export function buildSteamShell(container, username, profilePic, hiddenGamesCoun
                     <div class="settings-toggle-slider"></div>
                   </div>
                 </div>
-                
+
                 <div class="settings-item">
                   <div class="settings-item-label">
                     <div class="settings-item-title">Start Minimized</div>
@@ -381,7 +377,7 @@ export function buildSteamShell(container, username, profilePic, hiddenGamesCoun
                     <div class="settings-toggle-slider"></div>
                   </div>
                 </div>
-                
+
                 <div class="settings-item">
                   <div class="settings-item-label">
                     <div class="settings-item-title">Enable Startup Animation</div>
@@ -392,10 +388,10 @@ export function buildSteamShell(container, username, profilePic, hiddenGamesCoun
                   </div>
                 </div>
               </div>
-              
+
               <div class="settings-section">
                 <h3 class="settings-section-title">Library</h3>
-                
+
                 <div class="settings-item">
                   <div class="settings-item-label">
                     <div class="settings-item-title">Recently Played Row</div>
@@ -405,7 +401,7 @@ export function buildSteamShell(container, username, profilePic, hiddenGamesCoun
                     <div class="settings-toggle-slider"></div>
                   </div>
                 </div>
-                
+
                 <div class="settings-item">
                   <div class="settings-item-label">
                     <div class="settings-item-title">Grid Size</div>
@@ -417,7 +413,7 @@ export function buildSteamShell(container, username, profilePic, hiddenGamesCoun
                     <option value="large">Large</option>
                   </select>
                 </div>
-                
+
                 <div class="settings-item">
                   <div class="settings-item-label">
                     <div class="settings-item-title">Hide Archive Games</div>
@@ -452,14 +448,13 @@ export function buildSteamShell(container, username, profilePic, hiddenGamesCoun
     <div class="steam-scroll-top"><i class="fas fa-chevron-up"></i></div>
   `;
 }
-
 // Settings Manager
 export class SteamSettings {
   static DEFAULTS = {
     runOnStartup: false,
     startMinimized: false,
     enableStartupAnimation: true,
-    recentlyPlayedRow: false,
+    recentlyPlayedRow: true,
     gridSize: "medium",
     hideArchiveGames: false
   };
@@ -613,152 +608,152 @@ export function initStorePage(container, onLaunch, navigateTo, CDN_BASE_REF, img
   const STORE_GAMES = [
     {
       app: "tabs",
-      icon: `${CDN_BASE_REF}/static/icons/tabs.webp`,
+      icon: resolveIconUrl("static/icons/tabs.webp"),
       title: "TABS: Totaly Accurate Battle Simulator",
       tags: ["Strategy", "Simulation", "War"]
     },
     {
       app: "slimeRancher",
-      icon: `${CDN_BASE_REF}/static/icons/slime.webp`,
+      icon: resolveIconUrl("static/icons/slime.webp"),
       title: "Slime Rancher",
       tags: ["Farming Sim", "Exploration", "First-Person"]
     },
     {
       app: "plagueIncEvolved",
-      icon: `${CDN_BASE_REF}/static/icons/plague.webp`,
+      icon: resolveIconUrl("static/icons/plague.webp"),
       title: "Plague Inc Evolved",
       tags: ["Strategy", "Simulation"]
     },
     {
       app: "fiveNightsAtFrickbears3",
-      icon: `${CDN_BASE_REF}/static/icons/fiveNightsAtFrickbears.webp`,
+      icon: resolveIconUrl("static/icons/fiveNightsAtFrickbears.webp"),
       title: "Five Nights At Frickbears 3",
       tags: ["Horror", "Survival"]
     },
     {
       app: "helltaker",
-      icon: `${CDN_BASE_REF}/static/icons/helltaker.jpg`,
+      icon: resolveIconUrl("static/icons/helltaker.jpg"),
       title: "Helltaker",
       tags: ["Puzzle", "Anime"]
     },
     {
       app: "inscryption",
-      icon: `${CDN_BASE_REF}/static/icons/inscryption.webp`,
+      icon: resolveIconUrl("static/icons/inscryption.webp"),
       title: "Inscryption",
       tags: ["Card Game", "Roguelike"]
     },
     {
       app: "nightInTheWoods",
-      icon: `${CDN_BASE_REF}/static/icons/night.webp`,
+      icon: resolveIconUrl("static/icons/night.webp"),
       title: "Night In The Woods",
       tags: ["Adventure", "Narrative"]
     },
     {
       app: "daddy",
-      icon: `${CDN_BASE_REF}/static/icons/daddy.webp`,
+      icon: resolveIconUrl("static/icons/daddy.webp"),
       title: "Who's Your Daddy",
       tags: ["Casual", "Multiplayer"]
     },
     {
       app: "suicideGuy",
-      icon: `${CDN_BASE_REF}/static/icons/suicideguy.webp`,
+      icon: resolveIconUrl("static/icons/suicideguy.webp"),
       title: "Suicide Guy",
       tags: ["Puzzle", "Platformer"]
     },
     {
       app: "ytlifeomg",
-      icon: `${CDN_BASE_REF}/static/icons/yt.webp`,
+      icon: resolveIconUrl("static/icons/yt.webp"),
       title: "Youtubers Life Omg",
       tags: ["Simulation", "Management"]
     },
     {
       app: "inStarsAndTime",
-      icon: `${CDN_BASE_REF}/static/icons/star.webp`,
+      icon: resolveIconUrl("static/icons/star.webp"),
       title: "In Stars And Time",
       tags: ["RPG", "Story"]
     },
     {
       app: "baldiBalds",
-      icon: `${CDN_BASE_REF}/static/icons/baldiBalds.webp`,
+      icon: resolveIconUrl("static/icons/baldiBalds.webp"),
       title: "Baldi Balds The Universe",
       tags: ["Horror", "Action"]
     },
     {
       app: "baldisBasicsTeachingOnTwos",
-      icon: `${CDN_BASE_REF}/static/icons/baldisBasicsTeachingOnTwos.webp`,
+      icon: resolveIconUrl("static/icons/baldisBasicsTeachingOnTwos.webp"),
       title: "Baldi's Basics: Teaching On Twos",
       tags: ["Horror", "Education"]
     },
     {
       app: "playtimeHellBear5van",
-      icon: `${CDN_BASE_REF}/static/icons/playtimeHellBear5van.webp`,
+      icon: resolveIconUrl("static/icons/playtimeHellBear5van.webp"),
       title: "Playtime Hell & Bear 5 Van",
       tags: ["Horror", "Action"]
     },
     {
       app: "antidisestablishmentarianism",
-      icon: `${CDN_BASE_REF}/static/icons/antiDisestablishism.webp`,
+      icon: resolveIconUrl("static/icons/antiDisestablishism.webp"),
       title: "Antidisestablishmentarianism",
       tags: ["Puzzle", "Indie", "Education"]
     },
     {
       app: "minusThree",
-      icon: `${CDN_BASE_REF}/static/icons/minusThree.webp`,
+      icon: resolveIconUrl("static/icons/minusThree.webp"),
       title: "Minus Three",
       tags: ["Puzzle", "Indie", "Education"]
     },
     {
-      app: "minusB",
-      icon: `${CDN_BASE_REF}/static/icons/minusB.webp`,
-      title: "Minus B",
-      tags: ["Puzzle", "Indie", "Education"]
-    },
-    {
       app: "three",
-      icon: `${CDN_BASE_REF}/static/icons/three.webp`,
+      icon: resolveIconUrl("static/icons/three.webp"),
       title: "Three",
       tags: ["Puzzle", "Indie", "Education"]
     },
     {
       app: "theMathIsLeaking",
-      icon: `${CDN_BASE_REF}/static/icons/theMathIsLeaking.webp`,
+      icon: resolveIconUrl("static/icons/theMathIsLeaking.webp"),
       title: "The Math Is Leaking",
       tags: ["Puzzle", "Education"]
+    },
+    {
+      app: "pneumonoultramicroscopicsilicovolcanoconiosis",
+      icon: resolveIconUrl("static/icons/pneumo.webp"),
+      title: "Pneumonoultramicroscopicsilicovolcanoconiosis",
+      tags: ["Puzzle", "Educational", "Word", "Indie"]
     }
   ];
 
   const heroImgs = [
     {
       app: "tabs",
-      img: `${CDN_BASE_REF}/static/icons/tabs.webp`,
+      img: resolveIconUrl("static/icons/tabs.webp"),
       title: "TABS: Totaly Accurate Battle Simulator",
       tags: ["Strategy", "Simulation", "War"],
       desc: "A physics based tactics game where wobbly historical and mythological armies clash in chaotic, ragdoll powered battles."
     },
     {
       app: "plagueIncEvolved",
-      img: `${CDN_BASE_REF}/static/icons/plague.webp`,
+      img: resolveIconUrl("static/icons/plague.webp"),
       title: "Plague Inc: Evolved",
       tags: ["Strategy", "Simulation"],
       desc: "A unique mix of high strategy and terrifyingly realistic simulation. Can you infect the world?"
     },
     {
       app: "inscryption",
-      img: `${CDN_BASE_REF}/static/icons/inscryption.webp`,
+      img: resolveIconUrl("static/icons/inscryption.webp"),
       title: "Inscryption",
       tags: ["Card Game", "Roguelike", "Dark"],
       desc: "A deck-building roguelike where you're trapped playing a sinister card game with a mysterious figure."
     },
     {
       app: "helltaker",
-      img: `${CDN_BASE_REF}/static/icons/helltaker.jpg`,
+      img: resolveIconUrl("static/icons/helltaker.jpg"),
       title: "Helltaker",
       tags: ["Puzzle", "Anime", "Free"],
       desc: "A free game about making a harem of demon girls. Fight your way through hell one puzzle at a time."
     },
     {
       app: "nightInTheWoods",
-      img: `${CDN_BASE_REF}/static/icons/night.webp`,
+      img: resolveIconUrl("static/icons/night.webp"),
       title: "Night In The Woods",
       tags: ["Adventure", "Narrative", "Indie"],
       desc: "An adventure game focused on exploration, story and character, featuring a 20-something college dropout."
@@ -781,18 +776,20 @@ export function initStorePage(container, onLaunch, navigateTo, CDN_BASE_REF, img
     const thumb = document.createElement("div");
     thumb.className = "store-hero-thumb" + (i === 0 ? " active" : "");
     thumb.innerHTML = `<img src="${h.img}" />`;
+
     thumb.addEventListener("click", () => {
       storePage.querySelectorAll(".store-hero-thumb").forEach((t) => t.classList.remove("active"));
       thumb.classList.add("active");
+
       heroImg.src = h.img;
       heroTitle.textContent = h.title;
       heroDesc.textContent = descriptionMap[h.app] || h.desc;
       heroPlayBtn.dataset.app = h.app;
       heroTagsEl.innerHTML = h.tags.map((t) => `<span class="store-tag">${t}</span>`).join("");
     });
+
     heroThumbs.appendChild(thumb);
   });
-
   heroPlayBtn.addEventListener("click", (e) => {
     e.stopPropagation();
     onLaunch(heroPlayBtn.dataset.app);
@@ -815,13 +812,22 @@ export function initStorePage(container, onLaunch, navigateTo, CDN_BASE_REF, img
       const card = document.createElement("div");
       card.className = "store-game-card";
       card.innerHTML = `
-        <div class="store-game-card-img"><img data-src="${g.icon}" alt="${g.title}" /></div>
-        <div class="store-game-card-info">
-          <div class="store-game-card-title">${g.title}</div>
-          <div class="store-game-card-tags">${g.tags.map((t) => `<span class="store-tag">${t}</span>`).join("")}</div>
-          <button class="store-card-play-btn" data-app="${g.app}">Play</button>
-        </div>
-      `;
+  <div class="store-game-card-img">
+    <img data-src="${g.icon}" alt="${g.title}" />
+    <div class="store-port-corner">Reeyuki Port</div>
+  </div>
+
+  <div class="store-game-card-info">
+    <div class="store-game-card-title">${g.title}</div>
+
+    <div class="store-game-card-tags">
+      ${g.tags.map((t) => `<span class="store-tag">${t}</span>`).join("")}
+    </div>
+    <button class="store-card-play-btn" data-app="${g.app}">
+      Play
+    </button>
+  </div>
+`;
       card.querySelector(".store-card-play-btn").addEventListener("click", (e) => {
         e.stopPropagation();
         onLaunch(g.app);

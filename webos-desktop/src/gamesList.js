@@ -1,9 +1,4 @@
 export const appMap = {
-  yukiAI: {
-    type: "system",
-    title: "YukiAI",
-    icon: "fas fa-robot"
-  },
   slimeRancher: {
     type: "game",
     url: "https://raw.githack.com/Reeyuki/SlimeRanch/refs/heads/main/index.html",
@@ -105,12 +100,6 @@ export const appMap = {
     url: "/static/games/html/minusThree.html",
     icon: "/static/icons/minusThree.webp",
     title: "Minus Three"
-  },
-  minusB: {
-    type: "game",
-    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/817-f.html?t=1778436600177",
-    icon: "/static/icons/minusB.webp",
-    title: "Minus B"
   },
   three: {
     type: "game",
@@ -251,6 +240,12 @@ export const appMap = {
     url: "https://cdn.jsdelivr.net/gh/reeyuki/yukios-games@main/gnmath/celeste.html",
     icon: "/static/icons/celeste.webp",
     title: "Celeste"
+  },
+  minusB: {
+    type: "game",
+    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/817-f.html?t=1778436600177",
+    icon: "/static/icons/minusB.webp",
+    title: "Minus B"
   },
   fnafSl: {
     type: "game",

@@ -11,13 +11,25 @@ export class GameRenderer {
 
   createCard(game) {
     const isHighlighted = HIGHLIGHTED_GAMES.has(game.app);
+
     return `
-      <div class="steam-game-card ${isHighlighted ? "steam-game-card-highlight" : ""}" data-app="${game.app}">
-        <div class="steam-game-img-wrap">
-          ${lazyImg(game.icon, `alt="${game.title}"`)}
-        </div>
-        <div class="steam-game-title">${game.title}</div>
-      </div>`;
+    <div class="steam-game-card ${isHighlighted ? "steam-game-card-highlight" : ""}" data-app="${game.app}">
+      <div class="steam-game-img-wrap">
+        ${lazyImg(game.icon, `alt="${game.title}"`)}
+
+        ${
+          isHighlighted
+            ? `
+          <div class="steam-reeyuki-badge">
+            <i class="fas fa-bolt"></i>
+          </div>
+        `
+            : ""
+        }
+      </div>
+
+      <div class="steam-game-title">${game.title}</div>
+    </div>`;
   }
 
   formatTime(min) {
@@ -59,52 +71,80 @@ export class GameRenderer {
 
     this.renderer.currentGame = appId;
     this.renderer.currentArchiveGame = null;
+
     const stats = SteamDataManager.getStats();
     const gameStats = stats[appId] || { totalMin: 0, lastPlayed: 0 };
     const target = container.querySelector(".steam-library-page");
+    const mainContent = container.querySelector(".steam-main-content");
+    if (mainContent) mainContent.scrollTop = 0;
 
     target.innerHTML = `
-      <div class="steam-game-overview" style="background: #1b2838; min-height: 100%; color: #dcdedf; display: flex; flex-direction: column;">
-        <div class="overview-banner" style="height: 300px; position: relative; overflow: hidden; background: #171a21;">
-          <img src="${game.icon}" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.4; " />
-          <div class="banner-content" style="position: absolute; bottom: 0; left: 0; right: 0; padding: 40px; background: linear-gradient(transparent, rgba(27, 40, 56, 1)); display: flex; align-items: flex-end; gap: 30px;">
-            <img src="${game.icon}" style="width: 200px; height: 280px; object-fit: cover; border-radius: 4px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);" />
-            <div class="banner-info" style="flex: 1;">
-              <h1 style="font-size: 48px; margin: 0 0 10px 0; color: #fff; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-family: 'Motiva Sans', Sans-serif;">${game.title}</h1>
-              <div class="play-bar" style="display: flex; align-items: center; gap: 20px;">
-                <button class="steam-play-btn" style="background: linear-gradient(to right, #47b230, #5ab941); border: none; color: #fff; padding: 12px 60px; font-size: 20px; font-weight: 700; border-radius: 2px; cursor: pointer; text-transform: uppercase; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">Play</button>
-                <div class="overview-stats" style="display: flex; gap: 30px; font-size: 13px; color: #898989;">
-                  <div>
-                    <div style="text-transform: uppercase; margin-bottom: 4px;">Last Played</div>
-                    <div style="color: #fff;">${gameStats.lastPlayed ? new Date(gameStats.lastPlayed).toLocaleDateString() : "Never"}</div>
+    <div class="steam-game-overview" style="background: #1b2838; min-height: 100%; color: #dcdedf; display: flex; flex-direction: column;">
+      <div class="overview-banner" style="height: 300px; position: relative; overflow: hidden; background: #171a21;">
+        <img src="${game.icon}" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.4;" />
+
+        <div class="banner-content" style="position: absolute; bottom: 0; left: 0; right: 0; padding: 40px; background: linear-gradient(transparent, rgba(27, 40, 56, 1)); display: flex; align-items: flex-end; gap: 30px;">
+          
+          <img src="${game.icon}" style="width: 200px; height: 280px; object-fit: cover; border-radius: 4px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);" />
+
+          <div class="banner-info" style="flex: 1;">
+            
+            <h1 style="font-size: 48px; margin: 0 0 6px 0; color: #fff; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-family: 'Motiva Sans', Sans-serif;">
+              ${game.title}
+            </h1>
+
+            ${this._getReeyukiBadge(game)}
+
+            <div class="play-bar" style="display: flex; align-items: center; gap: 20px;">
+              <button class="steam-play-btn" style="background: linear-gradient(to right, #47b230, #5ab941); border: none; color: #fff; padding: 12px 60px; font-size: 20px; font-weight: 700; border-radius: 2px; cursor: pointer; text-transform: uppercase; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+                Play
+              </button>
+
+              <div class="overview-stats" style="display: flex; gap: 30px; font-size: 13px; color: #898989;">
+                <div>
+                  <div style="text-transform: uppercase; margin-bottom: 4px;">Last Played</div>
+                  <div style="color: #fff;">
+                    ${gameStats.lastPlayed ? new Date(gameStats.lastPlayed).toLocaleDateString() : "Never"}
                   </div>
-                  <div>
-                    <div style="text-transform: uppercase; margin-bottom: 4px;">Play Time</div>
-                    <div style="color: #fff;">${this.formatTime(gameStats.totalMin)}</div>
+                </div>
+
+                <div>
+                  <div style="text-transform: uppercase; margin-bottom: 4px;">Play Time</div>
+                  <div style="color: #fff;">
+                    ${this.formatTime(gameStats.totalMin)}
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-        <div class="overview-content" style="padding: 40px; display: grid; grid-template-columns: 2fr 1fr; gap: 40px;">
-          <div class="overview-main">
-            <div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 4px; margin-bottom: 20px;">
-              <h3 style="margin-top: 0; color: #66c0f4; text-transform: uppercase; font-size: 14px;">Game Info</h3>
-              <p style="line-height: 1.6; color: #acb2b8;">${this.renderer.getGameDescription(game.app)}</p>
-            </div>
-            <div class="steam-whats-new-header" style="margin-bottom: 15px;">Recent Activity</div>
-            <div style="color: #898989; font-style: italic; font-size: 13px;">No recent activity to show.</div>
-          </div>
-          <div class="overview-sidebar">
-             <div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 4px;">
-               <h3 style="margin-top: 0; color: #fff; font-size: 14px; text-transform: uppercase;">Friends who play</h3>
-               <div style="color: #898989; font-size: 13px;">None of your friends have played this game.</div>
-             </div>
+
           </div>
         </div>
       </div>
-    `;
+
+      <div class="overview-content" style="padding: 40px; display: grid; grid-template-columns: 2fr 1fr; gap: 40px;">
+        <div class="overview-main">
+          <div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 4px; margin-bottom: 20px;">
+            <h3 style="margin-top: 0; color: #66c0f4; text-transform: uppercase; font-size: 14px;">Game Info</h3>
+            <p style="line-height: 1.6; color: #acb2b8;">
+              ${this.renderer.getGameDescription(game.app)}
+            </p>
+          </div>
+
+          <div class="steam-whats-new-header" style="margin-bottom: 15px;">Recent Activity</div>
+          <div style="color: #898989; font-style: italic; font-size: 13px;">No recent activity to show.</div>
+        </div>
+
+        <div class="overview-sidebar">
+          <div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 4px;">
+            <h3 style="margin-top: 0; color: #fff; font-size: 14px; text-transform: uppercase;">Friends who play</h3>
+            <div style="color: #898989; font-size: 13px;">None of your friends have played this game.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+    this._injectReeyukiStyle(target);
 
     target.querySelector(".steam-play-btn").onclick = () => onLaunch(appId);
     this.renderer._setActiveSidebarItem(container, appId);
@@ -327,7 +367,38 @@ export class GameRenderer {
       };
     });
   }
+  _getReeyukiBadge(game) {
+    if (!HIGHLIGHTED_GAMES.has(game.app)) return "";
 
+    return `
+    <div class="reeyuki-runtime-header">
+      ✨ Reeyuki Web Port ✨
+    </div>
+  `;
+  }
+
+  _injectReeyukiStyle(target) {
+    const style = document.createElement("style");
+    style.textContent = `
+      .reeyuki-runtime-header {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin: 6px 0 18px 0;
+        padding: 4px 10px;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        color: #7cc5ff;
+        background: rgba(103,193,245,0.08);
+        border: 1px solid rgba(103,193,245,0.2);
+        border-radius: 2px;
+        width: fit-content;
+      }
+    `;
+    target.appendChild(style);
+  }
   _fillGridLazy(grid, games) {
     const CHUNK = 30;
     let index = 0;

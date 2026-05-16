@@ -3,6 +3,7 @@ import { speak } from "./clippy.js";
 import { Achievements } from "./achievements.js";
 import { BaseApp } from "./core/BaseApp.js";
 import { bus, BusEvents } from "./core/EventBus.js";
+import { resolveIconUrl } from "./shared/assetResolver.js";
 
 export class NotepadApp extends BaseApp {
   constructor(services) {
@@ -770,7 +771,7 @@ export class NotepadApp extends BaseApp {
       win,
       `
       <div style="text-align:center;padding:20px;">
-        <div style="font-size:48px;margin-bottom:10px;"><img style="width:50px" src="static/icons/notepad.webp"></div>
+        <div style="font-size:48px;margin-bottom:10px;"><img style="width:50px" src="${resolveIconUrl("static/icons/notepad.webp")}"></div>
         <h2 style="margin:0 0 5px 0;font-weight:normal;">Notepad</h2>
         <p style="color:#888;margin:5px 0;">Version 1.0.0</p>
         <p style="font-size:12px;color:#666;margin:15px 0;">A simple text editor for yukios.</p>

@@ -4,7 +4,7 @@ import { GameRenderer } from "./GameRenderer.js";
 import { GameLauncher } from "./GameLauncher.js";
 import { GameUI } from "./GameUI.js";
 import { SteamSettings } from "./steam.js";
-import { resolveGhUrl } from "./shared/assetResolver.js";
+import { resolveGhUrl, resolveIconUrl } from "./shared/assetResolver.js";
 import { CDN_CONFIG } from "./shared/cdnConfig.js";
 
 export function getCdnBase() {
@@ -45,7 +45,7 @@ export function setDesktopUI(ui) {
 
 export function refreshSteamUI() {
   const username = localStorage.getItem("yukiOS_username") || "Reeyuki";
-  const profilePic = localStorage.getItem("yukiOS_profilePicture") || "static/icons/guest.webp";
+  const profilePic = localStorage.getItem("yukiOS_profilePicture") || resolveIconUrl("static/icons/guest.webp");
 
   const steamUserProfiles = document.querySelectorAll(".steam-user-profile span");
   steamUserProfiles.forEach((span) => {
@@ -153,7 +153,8 @@ export const HIGHLIGHTED_GAMES = new Set([
   "fiveNightsAtFrickbears3",
   "baldisBasicsTeachingOnTwos",
   "playtimeHellBear5van",
-  "baldiBalds"
+  "baldiBalds",
+  "pneumo"
 ]);
 
 const FLASH_EMUPEDIA_EXCLUDED = new Set([
@@ -191,6 +192,18 @@ function isFlashGame(id, data) {
 
 export const SteamDataManager = {
   getStats: () => JSON.parse(localStorage.getItem("steam_stats") || "{}"),
+
+  getRecentMinutes: (appId) => {
+    const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+    const now = Date.now();
+    try {
+      const sessions = JSON.parse(localStorage.getItem("steam_sessions") || "{}");
+      const appSessions = sessions[appId] || [];
+      return appSessions.filter((s) => now - s.ts < ONE_WEEK_MS).reduce((sum, s) => sum + s.min, 0);
+    } catch {
+      return 0;
+    }
+  },
   getFavorites: () => JSON.parse(localStorage.getItem("steam_favorites") || "[]"),
   setFavorites: (favs) => localStorage.setItem("steam_favorites", JSON.stringify(favs)),
   getCollections: () => JSON.parse(localStorage.getItem("steam_collections") || "{}"),

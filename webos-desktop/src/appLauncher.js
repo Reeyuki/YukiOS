@@ -452,14 +452,22 @@ export class AppLauncher {
 
   _updateSteamStats(appId, minutes) {
     try {
+      const now = Date.now();
+      const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+
       const stats = JSON.parse(localStorage.getItem("steam_stats") || "{}");
       if (!stats[appId]) {
-        stats[appId] = { totalMin: 0, recentMin: 0, lastPlayed: 0 };
+        stats[appId] = { totalMin: 0, lastPlayed: 0 };
       }
       stats[appId].totalMin += minutes;
-      stats[appId].recentMin += minutes;
-      stats[appId].lastPlayed = Date.now();
+      stats[appId].lastPlayed = now;
       localStorage.setItem("steam_stats", JSON.stringify(stats));
+
+      const sessions = JSON.parse(localStorage.getItem("steam_sessions") || "{}");
+      if (!sessions[appId]) sessions[appId] = [];
+      sessions[appId].push({ ts: now, min: minutes });
+      sessions[appId] = sessions[appId].filter((s) => now - s.ts < ONE_WEEK_MS);
+      localStorage.setItem("steam_sessions", JSON.stringify(sessions));
     } catch (e) {}
   }
 
