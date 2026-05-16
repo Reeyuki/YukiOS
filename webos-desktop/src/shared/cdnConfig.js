@@ -9,7 +9,7 @@ export const CDN_CONFIG = {
     },
     get main() {
       return {
-        base: resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@17e1c24b723b6e91f8cd20849da2048d58bdc044"),
+        base: resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main"),
         ref: "main"
       };
     },

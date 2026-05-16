@@ -10,33 +10,15 @@ const STORAGE_KEYS = {
 };
 
 const PREDEFINED_AVATARS = [
-  resolveGhUrl(
-    "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@17e1c24b723b6e91f8cd20849da2048d58bdc044/static/icons/guest.webp"
-  ),
-  resolveGhUrl(
-    "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@17e1c24b723b6e91f8cd20849da2048d58bdc044/static/icons/helltaker.jpg"
-  ),
-  resolveGhUrl(
-    "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@17e1c24b723b6e91f8cd20849da2048d58bdc044/static/icons/stardew.webp"
-  ),
-  resolveGhUrl(
-    "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@17e1c24b723b6e91f8cd20849da2048d58bdc044/static/icons/hollowKnight.webp"
-  ),
-  resolveGhUrl(
-    "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@17e1c24b723b6e91f8cd20849da2048d58bdc044/static/icons/fancypants2.webp"
-  ),
-  resolveGhUrl(
-    "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@17e1c24b723b6e91f8cd20849da2048d58bdc044/static/icons/isaac.webp"
-  ),
-  resolveGhUrl(
-    "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@17e1c24b723b6e91f8cd20849da2048d58bdc044/static/icons/angryBirds.webp"
-  ),
-  resolveGhUrl(
-    "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@17e1c24b723b6e91f8cd20849da2048d58bdc044/static/icons/nso.webp"
-  ),
-  resolveGhUrl(
-    "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@17e1c24b723b6e91f8cd20849da2048d58bdc044/static/icons/alienHominid.webp"
-  )
+  resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/icons/guest.webp"),
+  resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/icons/helltaker.jpg"),
+  resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/icons/stardew.webp"),
+  resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/icons/hollowKnight.webp"),
+  resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/icons/fancypants2.webp"),
+  resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/icons/isaac.webp"),
+  resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/icons/angryBirds.webp"),
+  resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/icons/nso.webp"),
+  resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/icons/alienHominid.webp")
 ];
 
 export class ProfileCustomizerApp extends BaseApp {

@@ -97,7 +97,7 @@ const CDN_PROVIDERS = {
       return resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main");
     },
     get MAIN() {
-      return resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@17e1c24b723b6e91f8cd20849da2048d58bdc044");
+      return resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main");
     },
     get NPM() {
       return resolveNpmUrl("https://cdn.jsdelivr.net/npm");
@@ -202,7 +202,7 @@ export function resolveYukiAsset(path) {
 
   const user = "Reeyuki";
   const repo = "yukios";
-  const branch = "17e1c24b723b6e91f8cd20849da2048d58bdc044";
+  const branch = "main";
 
   return mirror.ghTemplate
     .replace("${u}", user)
