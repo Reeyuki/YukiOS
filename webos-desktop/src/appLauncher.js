@@ -105,19 +105,19 @@ export class AppLauncher {
       terminal: {
         type: "system",
         title: "Terminal",
-        action: () => this.terminalApp.open(),
+        action: (extra) => this.terminalApp.open(extra),
         clippy: { message: "Be careful with commands!", animation: "Acknowledge" }
       },
       notepad: {
         type: "system",
         title: "Notepad",
-        action: () => this.notepadApp.open(),
+        action: (extra) => this.notepadApp.open(extra),
         clippy: { message: "It looks like you're writing something. Need help with that letter?", animation: "Pleased" }
       },
       markdown: {
         type: "system",
         title: "Markdown",
-        action: () => this.markdownApp.open(),
+        action: (extra) => this.markdownApp.open(extra),
         clippy: { message: "Writing in Markdown? I can help you format your documents!", animation: "Pleased" }
       },
       emulatorApp: {
@@ -135,42 +135,42 @@ export class AppLauncher {
       monaco: {
         type: "system",
         title: "Yuki Code",
-        action: () => this.monacoApp.open(),
+        action: (extra) => this.monacoApp.open(extra),
         clippy: { message: "Would you like help starting with a 'Hello World?", animation: "Pleased" }
       },
       cameraApp: {
         type: "system",
         title: "Camera App",
-        action: () => this.cameraApp.open(),
+        action: (extra) => this.cameraApp.open(extra),
         clippy: { message: "Smile! I'll help you look your best.", animation: "Congratulate" }
       },
       settingsApp: {
         type: "system",
         title: "Settings",
-        action: () => this.settingsApp.open(),
+        action: (extra) => this.settingsApp.open(extra),
         clippy: { message: "I can guide you through settings.", animation: "Acknowledge" }
       },
       calculatorApp: {
         type: "system",
         title: "Calculator",
-        action: () => this.calculatorApp.open(),
+        action: (extra) => this.calculatorApp.open(extra),
         clippy: { message: "I can do math too! ...Mostly.", animation: "Pleased" }
       },
       aboutApp: {
         type: "system",
         title: "About",
-        action: () => this.aboutApp.open(),
+        action: (extra) => this.aboutApp.open(extra),
         clippy: { message: "Your system is running smoothly.", animation: "Acknowledge" }
       },
       newsApp: {
         type: "system",
         title: "What's New",
-        action: () => this.newsApp.open()
+        action: (extra) => this.newsApp.open(extra)
       },
       model3dApp: {
         type: "system",
         title: "3D Model Viewer",
-        action: () => this.model3dApp.open(),
+        action: (extra) => this.model3dApp.open(extra),
         clippy: { message: "That caught my eye!", animation: "MoveLeft" }
       },
       flash: {
@@ -194,52 +194,52 @@ export class AppLauncher {
       taskManagerApp: {
         type: "system",
         title: "Task Manager",
-        action: () => this.taskManager.open(),
+        action: (extra) => this.taskManager.open(extra),
         clippy: { message: "Something's hogging resources. Want me to guess what?", animation: "Acknowledge" }
       },
       weatherApp: {
         type: "system",
         title: "Weather",
-        action: () => this.weatherApp.open(),
+        action: (extra) => this.weatherApp.open(extra),
         clippy: { message: "Rain is expected today. Don't forget your umbrella!", animation: "Pleased" }
       },
       appCreatorApp: {
         type: "system",
         title: "App Creator",
-        action: () => this.appCreatorApp.open()
+        action: (extra) => this.appCreatorApp.open(extra)
       },
       officeApp: {
         type: "system",
         title: "Office",
-        action: () => this.officeApp.open(),
+        action: (extra) => this.officeApp.open(extra),
         clippy: { message: "Need a hand creating a document or spreadsheet?", animation: "animate" }
       },
       jsDosApp: {
         type: "system",
         title: "JsDos",
-        action: () => this.jsDosApp.open()
+        action: (extra) => this.jsDosApp.open(extra)
       },
       v86app: {
         type: "system",
         title: "Virtual 86",
-        action: () => this.v86app.open()
+        action: (extra) => this.v86app.open(extra)
       },
       achievementsApp: {
         type: "system",
         title: "Achievements",
-        action: () => this.achievementsApp.open()
+        action: (extra) => this.achievementsApp.open(extra)
       },
       profileCustomizer: {
         type: "system",
         title: "Customize Profile",
         icon: "fas fa-user-circle",
-        action: () => this.profileCustomizerApp.open(),
+        action: (extra) => this.profileCustomizerApp.open(extra),
         clippy: { message: "Let's make your profile look great!", animation: "Congratulate" }
       },
       youtube: {
         type: "system",
         title: "YouTube Utilities",
-        action: () => this.youtubeApp.open(),
+        action: (extra) => this.youtubeApp.open(extra),
         clippy: { message: "Paste a YouTube link and I'll embed it for you.", animation: "Pleased" }
       },
       libreSprite: {
@@ -391,31 +391,43 @@ export class AppLauncher {
 
     const urlParams = new URLSearchParams(window.location.search);
 
+    const appExtra = { ...(extra || {}), appId: app, appType: info.type };
+    this.wm._pendingLaunchOptions = appExtra;
+
     if (info.type === "system") {
       if (info.url) {
         if (app === "libreSprite") {
           this.openRemoteApp(info.url);
         } else {
-          this.openIframeApp({ appId: app, type: "game", source: info.url, originalName: app, analyticsBase });
+          this.openIframeApp({
+            appId: app,
+            type: "game",
+            source: info.url,
+            originalName: app,
+            analyticsBase,
+            ...appExtra
+          });
         }
-      } else if (info.action) info.action(extra);
+      } else if (info.action) info.action(appExtra);
       return;
     }
 
     const handlers = {
-      swf: () => this.openIframeApp({ appId: app, type: "swf", source: info.swf, originalName: app }),
-      gba: () => this.openIframeApp({ appId: app, type: "gba", source: info.url, originalName: app }),
-      psp: () => this.openIframeApp({ appId: app, type: "psp", source: info.url, originalName: app }),
-      nds: () => this.openIframeApp({ appId: app, type: "nds", source: info.url, originalName: app }),
-      megadrive: () => this.openIframeApp({ appId: app, type: "segaMD", source: info.url, originalName: app }),
-      genesis: () => this.openIframeApp({ appId: app, type: "segaMD", source: info.url, originalName: app }),
+      swf: () => this.openIframeApp({ appId: app, type: "swf", source: info.swf, originalName: app, ...appExtra }),
+      gba: () => this.openIframeApp({ appId: app, type: "gba", source: info.url, originalName: app, ...appExtra }),
+      psp: () => this.openIframeApp({ appId: app, type: "psp", source: info.url, originalName: app, ...appExtra }),
+      nds: () => this.openIframeApp({ appId: app, type: "nds", source: info.url, originalName: app, ...appExtra }),
+      megadrive: () =>
+        this.openIframeApp({ appId: app, type: "segaMD", source: info.url, originalName: app, ...appExtra }),
+      genesis: () =>
+        this.openIframeApp({ appId: app, type: "segaMD", source: info.url, originalName: app, ...appExtra }),
       game: () => {
         let source = info.url;
         if (info?.proxyEnabled && typeof source === "string" && /^https?:\/\//.test(source)) {
           const proxyIndex = clampProxyIndex(info.proxyIndex, PROXIES);
           source = buildProxyUrl(source, proxyIndex, PROXIES);
         }
-        this.openIframeApp({ appId: app, type: "game", source, originalName: app, analyticsBase });
+        this.openIframeApp({ appId: app, type: "game", source, originalName: app, analyticsBase, ...appExtra });
       },
       html: () => this.openHtmlApp(app, info.html, info),
       remote: () => this.openRemoteApp(info.url)
@@ -492,7 +504,7 @@ export class AppLauncher {
     );
   }
 
-  async openIframeApp({ appId, type, source, originalName, analyticsBase = null }) {
+  async openIframeApp({ appId, type, source, originalName, analyticsBase = null, ...extra }) {
     this._fetchHtmlAsBlobUrl = fetchHtmlAsBlobUrl;
 
     let id;
@@ -577,11 +589,12 @@ player.load("${swfPath}");
       if (type === "game") {
         const displayTitle = this.appMap[appId]?.title || originalName;
         const win = this.wm.createWindow(
-          `${id}-win`,
+          extra.forceId || `${id}-win`,
           displayTitle,
-          "80vw",
-          "80vh",
-          this.isTransparencyBlocked(appId, { type })
+          extra.width || "80vw",
+          extra.height || "80vh",
+          this.isTransparencyBlocked(appId, { type }),
+          extra
         );
         if (appId) this._appSessions.set(`${id}-win`, { appId, startTime: Date.now() });
 

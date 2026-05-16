@@ -84,5 +84,6 @@ export const BusEvents = Object.freeze({
   WORKSPACE_ADDED: "workspace:added",
 
   WORKSPACE_REMOVED: "workspace:removed",
-  FILE_CHANGED: "file:changed"
+  FILE_CHANGED: "file:changed",
+  SESSION_INITIALIZED: "session:initialized"
 });

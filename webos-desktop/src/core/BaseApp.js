@@ -13,6 +13,12 @@ export class BaseApp {
 
   onClose(winId) {}
 
+  getSnapshot(winId) {
+    return null;
+  }
+
+  restoreSnapshot(winId, data) {}
+
   _isSingletonOpen(winId) {
     const existing = document.getElementById(winId);
     if (existing) {

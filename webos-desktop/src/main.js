@@ -32,6 +32,7 @@ import { setDesktopUI as setGamesDesktopUI } from "./games.js";
 import { AdsManager } from "./ads.js";
 import { registerPWA } from "./pwa.js";
 import { RuffleApp } from "./ruffle.js";
+import { SessionManager } from "./SessionManager.js";
 import {
   resolveGhUrl,
   resolveIconUrl,
@@ -50,16 +51,21 @@ registerPWA();
 const notificationCenter = new NotificationCenter();
 const fileSystemManager = new FileSystemManager();
 const windowManager = new WindowManager(notificationCenter);
+import { bus } from "./core/EventBus.js";
 
 const services = {
   notificationCenter,
   fileSystemManager,
   windowManager,
+  eventBus: bus,
   get wm() {
     return windowManager;
   },
   get fs() {
     return fileSystemManager;
+  },
+  get bus() {
+    return bus;
   }
 };
 const achievementsApp = new AchievementsApp(services);
@@ -179,9 +185,18 @@ const appLauncher = new AppLauncher(
   emulatorApp,
   ruffleApp
 );
+windowManager.setAppLauncher(appLauncher);
 appCreatorApp.setAppLauncher(appLauncher);
 explorerApp.setAppLauncher(appLauncher);
 const desktopUI = new DesktopUI(appLauncher, notepadApp, explorerApp, fileSystemManager);
+
+// --- Session Initialization ---
+const sessionManager = new SessionManager(services);
+services.sessionManager = sessionManager;
+
+// Start Login Flow
+await sessionManager.showLogin();
+// --- End Session Initialization ---
 
 document.documentElement.style.setProperty("--start-logo-url", `url("${logoImg}")`);
 
@@ -231,25 +246,5 @@ if (steamParam) {
 }
 setupStartMenu(appLauncher);
 
-function initializeUserProfile() {
-  const savedUsername = localStorage.getItem("yukiOS_username") || "reeyuki";
-  const savedProfilePic = localStorage.getItem("yukiOS_profilePicture") || logoImg;
-
-  const startUserSpan = document.querySelector(".start-user span");
-  if (startUserSpan) startUserSpan.textContent = savedUsername;
-
-  const startUserImg = document.querySelector(".start-user img");
-  if (startUserImg) {
-    if (savedProfilePic && savedProfilePic.includes("cdn.jsdelivr.net/gh/")) {
-      startUserImg.src = resolveGhUrl(savedProfilePic);
-    } else {
-      startUserImg.src = savedProfilePic;
-    }
-  }
-}
-
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initializeUserProfile);
-} else {
-  initializeUserProfile();
-}
+// initializeUserProfile is now handled by SESSION_INITIALIZED event in ProfileCustomizerApp
+// and the initial showLogin call.

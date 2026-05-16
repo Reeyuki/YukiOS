@@ -82,6 +82,7 @@ export function makeResizable(win, wm, setHeightUnsetElement = null) {
       document.body.classList.remove("is-resizing");
       document.removeEventListener("mousemove", doDrag);
       document.removeEventListener("mouseup", stopDrag);
+      if (wm.triggerSessionSave) wm.triggerSessionSave();
     };
 
     document.addEventListener("mousemove", doDrag);

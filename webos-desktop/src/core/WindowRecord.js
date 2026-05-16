@@ -1,38 +1,25 @@
 export class WindowRecord {
   constructor(id, title, opts = {}) {
     this.id = id;
-
     this.title = title;
-
     this.x = opts.x ?? 0;
-
     this.y = opts.y ?? 0;
-
     this.width = opts.width ?? 800;
-
     this.height = opts.height ?? 600;
-
     this.zIndex = opts.zIndex ?? 1000;
-
     this.minimized = false;
-
     this.fullscreen = false;
-
     this.snapZone = null;
-
     this.preSnapGeometry = null;
-
     this.workspaceId = opts.workspaceId ?? 0;
-
     this.appId = opts.appId ?? null;
-
     this.appType = opts.appType ?? null;
-
     this.isGame = opts.isGame ?? false;
-
     this.iconValue = opts.iconValue ?? "";
-
     this.color = opts.color ?? null;
+    this.appStateSnapshot = opts.appStateSnapshot ?? null;
+    this.scrollPosition = opts.scrollPosition ?? { x: 0, y: 0 };
+    this.focused = opts.focused ?? false;
   }
 
   setGeometry(x, y, w, h) {
@@ -76,7 +63,12 @@ export class WindowRecord {
       workspaceId: this.workspaceId,
       appId: this.appId,
       appType: this.appType,
-      isGame: this.isGame
+      isGame: this.isGame,
+      iconValue: this.iconValue,
+      color: this.color,
+      appStateSnapshot: this.appStateSnapshot,
+      scrollPosition: this.scrollPosition,
+      focused: this.focused
     };
   }
 }

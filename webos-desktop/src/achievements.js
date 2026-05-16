@@ -265,14 +265,14 @@ export class AchievementsApp extends BaseApp {
       if (saved) this.unlocked = new Set(JSON.parse(saved));
       const savedCounters = localStorage.getItem(StorageKeys.achievementCounters);
       if (savedCounters) this._counters = JSON.parse(savedCounters);
-    } catch (e) {}
+    } catch (e) { }
   }
 
   _saveToStorage() {
     try {
       localStorage.setItem(StorageKeys.achievements, JSON.stringify([...this.unlocked]));
       localStorage.setItem(StorageKeys.achievementCounters, JSON.stringify(this._counters));
-    } catch (e) {}
+    } catch (e) { }
   }
 
   _renderHero() {
@@ -289,16 +289,15 @@ export class AchievementsApp extends BaseApp {
         </div>
         <h1 class="achievements-hero__title">Achievements</h1>
         <p class="achievements-hero__subtitle">Track your progress in Yuki OS</p>
-        ${
-          disabled
-            ? `
+        ${disabled
+        ? `
           <div class="achievements-disabled-banner">
             <i class="fas fa-ban"></i>
             Achievements are currently disabled in Settings
           </div>
         `
-            : ""
-        }
+        : ""
+      }
       </div>
       <div class="achievements-hero__stats">
         <div class="achievements-hero__stat">
@@ -385,8 +384,8 @@ export class AchievementsApp extends BaseApp {
     return `
       <div class="achievements-toggle">
         ${opts
-          .map(
-            (o) => `
+        .map(
+          (o) => `
           <button
             class="achievements-toggle__btn ${current === o.val ? "achievements-toggle__btn--active" : ""}"
             onclick="window.achievements._setFilter('${o.val}')"
@@ -395,8 +394,8 @@ export class AchievementsApp extends BaseApp {
             <span>${o.label}</span>
           </button>
         `
-          )
-          .join("")}
+        )
+        .join("")}
       </div>
     `;
   }
@@ -490,7 +489,7 @@ export class AchievementsApp extends BaseApp {
         const pick = sounds[Math.floor(Math.random() * sounds.length)];
         pick.currentTime = 0;
         pick.play();
-      } catch (e) {}
+      } catch (e) { }
     }
 
     const popup = document.createElement("div");
@@ -523,7 +522,7 @@ export class AchievementsApp extends BaseApp {
 
     setTimeout(() => popup.classList.add("achievement-popup--show"), 10);
 
-    const displayDuration = 5000;
+    const displayDuration = 4000;
     const delayBetween = 500;
 
     setTimeout(() => {

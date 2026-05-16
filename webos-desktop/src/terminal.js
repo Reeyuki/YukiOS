@@ -7,18 +7,28 @@ export class TerminalApp extends BaseApp {
   constructor(services) {
     super(services);
     this.windowHelper = new WindowHelper(this.wm);
-    this.currentPath = ["home", "reeyuki"];
+    this.sessionKey = services.fileSystemManager?.sessionKey || "guest";
+    this.currentPath = ["ys", "users", this.sessionKey];
     this.history = [];
     this.historyIndex = -1;
-    this.username = "reeyuki";
-    this.hostname = "desktop-os";
+    this.username = this.sessionKey;
+    this.hostname = "yuki-os";
+    this._setupSessionListener();
     this.printQueue = Promise.resolve();
     this.commands = {};
     this.pageLoadTime = Date.now();
     this.isPrinting = false;
     this.inputBuffer = "";
-    this.printDepth = 0;
     this.registerDefaultCommands();
+  }
+
+  _setupSessionListener() {
+    bus.on("session:initialized", (session) => {
+      this.sessionKey = session.key;
+      this.username = session.key;
+      this.currentPath = ["ys", "users", session.key];
+      this.updatePrompt();
+    });
   }
 
   pathToString(path) {
@@ -309,6 +319,7 @@ export class TerminalApp extends BaseApp {
   }
 
   updatePrompt() {
+    if (!this.terminalPrompt) return;
     const path = this.currentPath.length ? "/" + this.currentPath.join("/") : "/";
     this.terminalPrompt.textContent = `${this.username}@${this.hostname}:${path}$ `;
   }

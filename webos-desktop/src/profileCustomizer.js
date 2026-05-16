@@ -4,12 +4,12 @@ import { customAlert } from "./shared/dialogs.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
 import { resolveGhUrl, resolveIconUrl } from "./shared/assetResolver.js";
 
-const STORAGE_KEYS = {
+export const STORAGE_KEYS = {
   username: "yukiOS_username",
   profilePicture: "yukiOS_profilePicture"
 };
 
-const PREDEFINED_AVATARS = [
+export const PREDEFINED_AVATARS = [
   resolveIconUrl("static/icons/guest.webp"),
   resolveIconUrl("static/icons/helltaker.jpg"),
   resolveIconUrl("static/icons/stardew.webp"),
@@ -26,6 +26,34 @@ export class ProfileCustomizerApp extends BaseApp {
     super(services);
     this.windowHelper = new WindowHelper(this.wm);
     this.settingsApp = null;
+    this._setupEventListener();
+  }
+
+  _setupEventListener() {
+    this._services.eventBus.on("SESSION_INITIALIZED", (session) => {
+      this.updateProfileState(session.name, session.avatar);
+    });
+  }
+
+  updateProfileState(username, profilePic) {
+    localStorage.setItem(STORAGE_KEYS.username, username);
+    localStorage.setItem(STORAGE_KEYS.profilePicture, profilePic);
+
+    if (window._settings) {
+      window._settings.username = username;
+    }
+
+    if (this.settingsApp) {
+      this.settingsApp.updateUsername?.(username);
+    }
+
+    const startUserSpan = document.querySelector(".start-user span");
+    if (startUserSpan) startUserSpan.textContent = username;
+
+    const startUserImg = document.querySelector(".start-user img");
+    if (startUserImg) startUserImg.src = profilePic;
+
+    refreshSteamUI();
   }
 
   setSettingsApp(settingsApp) {

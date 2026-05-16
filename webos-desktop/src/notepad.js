@@ -17,8 +17,19 @@ export class NotepadApp extends BaseApp {
     this.explorerApp = explorerApp;
   }
 
-  open(title = "Untitled", content = "", filePath = null) {
-    const winId = `notepad-${Date.now()}`;
+  open(titleOrOptions = "Untitled", content = "", filePath = null) {
+    let title = "Untitled";
+    let options = {};
+    if (titleOrOptions && typeof titleOrOptions === "object" && !Array.isArray(titleOrOptions)) {
+      options = titleOrOptions;
+      title = options.title || "Untitled";
+      content = options.content || "";
+      filePath = options.filePath || null;
+    } else {
+      title = titleOrOptions || "Untitled";
+    }
+
+    const winId = options.forceId || `notepad-${Date.now()}`;
 
     this.instances.set(winId, {
       currentTitle: title,
@@ -97,7 +108,14 @@ export class NotepadApp extends BaseApp {
       </div>
     `;
 
-    const win = this.wm.createWindow(winId, `${title} - Notepad`, "650px", "450px");
+    const win = this.wm.createWindow(
+      winId,
+      `${title} - Notepad`,
+      options.width || "650px",
+      options.height || "450px",
+      false,
+      options
+    );
     win.classList.add("notepad-window");
     win.innerHTML = htmlContent;
 

@@ -152,7 +152,16 @@ export class ExplorerApp extends BaseApp {
     return view;
   }
 
-  async open(path = [], callback = null, notepadRef = null) {
+  async open(pathOrOptions = [], callback = null, notepadRef = null) {
+    let path = [];
+    let options = {};
+    if (pathOrOptions && typeof pathOrOptions === "object" && !Array.isArray(pathOrOptions)) {
+      options = pathOrOptions;
+      path = options.path || [];
+    } else {
+      path = pathOrOptions || [];
+    }
+
     if (typeof path === "function") {
       notepadRef = callback;
       callback = path;
@@ -160,7 +169,7 @@ export class ExplorerApp extends BaseApp {
     }
 
     const isSelector = typeof callback === "function";
-    const winId = isSelector ? `explorer-selector-${Date.now()}` : "explorer-win";
+    const winId = options.forceId || (isSelector ? `explorer-selector-${Date.now()}` : "explorer-win");
 
     if (!isSelector && document.getElementById(winId)) {
       this.wm.bringToFront(document.getElementById(winId));
@@ -173,7 +182,7 @@ export class ExplorerApp extends BaseApp {
 
     const inst = this._createInstance(winId, callback, notepadRef, isSelector ? "select" : "browse");
     const title = isSelector ? "Select File" : "File Explorer";
-    const win = this.wm.createWindow(winId, title, "700px", "500px");
+    const win = this.wm.createWindow(winId, title, options.width || "700px", options.height || "500px", false, options);
     win.classList.add("explorer-window");
 
     win.innerHTML = `
@@ -804,6 +813,7 @@ export class ExplorerApp extends BaseApp {
     if (inst.mode === "browse") inst._cachedFolderStats = await this._buildFolderStats(inst);
 
     for (const [name, itemData] of Object.entries(folder)) {
+      if (name === "system" && inst.currentPath.length === 0) continue;
       const isFile = itemData?.type === "file";
       const iconEl = await this._buildItemIconHTML(name, isFile, itemData, inst);
 
@@ -1554,6 +1564,7 @@ export class ExplorerApp extends BaseApp {
       });
       for (const name of entries) {
         if (name === this.fs.CONFIG.META_FILE) continue;
+        if (name === "system" && inst.currentPath.length === 0) continue;
         try {
           const full = this.fs.join(dir, name);
           const s = await this.fs.pStat(full);

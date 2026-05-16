@@ -1065,8 +1065,19 @@ export class OfficeApp extends BaseApp {
     this.registry.register(new PlainTextEditor());
   }
 
-  open(title = "Untitled", content = null, filePath = null) {
-    const safeTitle = title.replace(/[^a-zA-Z0-9.-]/g, "_");
+  open(titleOrOptions = "Untitled", content = null, filePath = null) {
+    let title = "Untitled";
+    let options = {};
+    if (titleOrOptions && typeof titleOrOptions === "object" && !Array.isArray(titleOrOptions)) {
+      options = titleOrOptions;
+      title = options.title || "Untitled";
+      content = options.content || null;
+      filePath = options.filePath || null;
+    } else {
+      title = titleOrOptions || "Untitled";
+    }
+
+    const safeTitle = String(title).replace(/[^a-zA-Z0-9.-]/g, "_");
     const existingWindows = document.querySelectorAll('[id^="office-"]');
     for (const w of existingWindows) {
       const header = w.querySelector(".window-header span");
@@ -1076,7 +1087,7 @@ export class OfficeApp extends BaseApp {
       }
     }
 
-    const winId = `office-${safeTitle}-${Date.now()}`;
+    const winId = options.forceId || `office-${safeTitle}-${Date.now()}`;
     const ext = FileUtils.getExtension(typeof filePath === "string" ? filePath : title);
 
     const windowContent = `
@@ -1380,10 +1391,18 @@ export class OfficeApp extends BaseApp {
       </div>
     `;
 
-    const win = this.windowHelper.createAndMountWindow(winId, `${title} - Office`, windowContent, "800px", "600px", {
-      icon: "static/icons/office.webp",
-      style: { left: "200px", top: "100px" }
-    });
+    const win = this.windowHelper.createAndMountWindow(
+      winId,
+      `${title} - Office`,
+      windowContent,
+      options.width || "800px",
+      options.height || "600px",
+      {
+        icon: "static/icons/office.webp",
+        ...options,
+        style: { left: "200px", top: "100px", ...(options.style || {}) }
+      }
+    );
     const editorArea = win.querySelector(".office-editor-area");
     const state = {
       winId,

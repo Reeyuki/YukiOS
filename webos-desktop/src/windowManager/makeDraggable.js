@@ -85,6 +85,7 @@ export function makeDraggable(win, wm) {
         wm._activeSnapZone = null;
         wm._hideSnapGhost();
       }
+      if (wm.triggerSessionSave) wm.triggerSessionSave();
     };
 
     document.addEventListener("mousemove", onMouseMove);

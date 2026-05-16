@@ -212,11 +212,16 @@ export class FileSystemManager {
   constructor() {
     this.CONFIG = {
       GRID_SIZE: 80,
-      ROOT: "/home/reeyuki",
-      META_FILE: ".meta.json",
-      LEGACY_KEY: "desktopOS_fileSystem"
+      ROOT: "/home/guest",
+      USER_BASE: "/ys/users",
+      META_FILE: ".meta.json"
     };
-    this.fsReady = this.initFS();
+    this.sessionKey = "guest";
+    this.fs = null;
+    this._resolveFs = null;
+    this.fsReady = new Promise((res) => {
+      this._resolveFs = res;
+    });
     this.desktopUI = null;
   }
 
@@ -301,15 +306,36 @@ export class FileSystemManager {
     });
   }
 
-  async initFS() {
-    return new Promise((resolve) => {
+  async initFS(sessionKey = "guest") {
+    this.sessionKey = sessionKey;
+    this.CONFIG.ROOT = `${this.CONFIG.USER_BASE}/${sessionKey}`;
+
+    if (this.fs) return this.fsReady;
+
+    this.fsReady = new Promise((resolve) => {
       BrowserFS.configure({ fs: "IndexedDB", options: {} }, async () => {
         this.fs = BrowserFS.BFSRequire("fs");
         await this.initBlobDB();
         await this.ensureDefaults();
+        this._resolveFs();
         resolve();
       });
     });
+    return this.fsReady;
+  }
+
+  async setSession(sessionKey) {
+    this.sessionKey = sessionKey;
+    this.CONFIG.ROOT = `${this.CONFIG.USER_BASE}/${sessionKey}`;
+    // Re-ensure defaults for the new session root
+    if (this.fs) {
+      await this.ensureDefaults();
+    } else {
+      await this.initFS(sessionKey);
+    }
+    if (this.desktopUI) {
+      await this.desktopUI.loadDesktopItems();
+    }
   }
 
   async exportSnapshot() {
@@ -463,7 +489,20 @@ export class FileSystemManager {
   }
 
   async ensureDefaults() {
-    await this.createFromObject(defaultStorage, "/");
+    // Legacy support: if we are in "guest" session and /home/reeyuki exists but /ys/users/guest doesn't,
+    // we might want to migrate or just keep it.
+    // For now, let's just ensure the current root has the default structure.
+
+    const userHome = {
+      [this.sessionKey]: defaultStorage.home.reeyuki
+    };
+    const sessionDefaultStorage = {
+      ys: {
+        users: userHome
+      }
+    };
+
+    await this.createFromObject(sessionDefaultStorage, "/");
     await this.migrateDefaultWallpapers();
   }
 

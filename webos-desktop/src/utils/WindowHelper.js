@@ -4,7 +4,7 @@ export class WindowHelper {
   }
 
   createStandardWindow(winId, title, width = "800px", height = "600px", options = {}) {
-    const win = this.wm.createWindow(winId, title, width, height, options.isGame);
+    const win = this.wm.createWindow(winId, title, width, height, options.isGame, options);
 
     if (options.className) {
       win.classList.add(options.className);

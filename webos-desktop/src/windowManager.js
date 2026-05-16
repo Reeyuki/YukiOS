@@ -43,6 +43,10 @@ export class WindowManager {
     this.workspaceManager = new WorkspaceManager(this);
     this._lastFocusZone = "desktop";
     this._initStartMenuKeybinds();
+    this.fs = null;
+    this.appLauncher = null;
+    this._sessionSaveTimer = null;
+    this._isRestoring = false;
 
     bus.on(BusEvents.SETTINGS_CHANGED, () => {
       this.updateTransparency();
@@ -188,6 +192,279 @@ export class WindowManager {
 
   setNotificationCenter(notificationCenter) {
     this.notificationCenter = notificationCenter;
+  }
+
+  setFileSystemManager(fs) {
+    this.fs = fs;
+  }
+
+  setAppLauncher(appLauncher) {
+    this.appLauncher = appLauncher;
+  }
+
+  triggerSessionSave() {
+    if (this._isRestoring) return;
+    if (this._sessionSaveTimer) clearTimeout(this._sessionSaveTimer);
+    this._sessionSaveTimer = setTimeout(() => this.saveSession(), 500);
+  }
+
+  _guessAppIdFromWinId(winId) {
+    if (!winId) return null;
+    const mappings = {
+      taskmanager: "taskManagerApp",
+      "profile-customizer": "profileCustomizer",
+      office: "officeApp",
+      emulator: "emulatorApp",
+      calculator: "calculatorApp",
+      ruffle: "ruffleApp",
+      markdown: "markdown",
+      youtube: "youtube",
+      news: "newsApp",
+      weather: "weatherApp",
+      notepad: "notepad",
+      model3d: "model3dApp",
+      settings: "settingsApp",
+      "system-apps": "systemApps",
+      about: "aboutApp",
+      achievements: "achievementsApp",
+      explorer: "explorer",
+      monaco: "monaco",
+      "app-creator": "appCreatorApp",
+      jsdos: "jsDosApp",
+      v86: "v86app",
+      browser: "browserApp",
+      terminal: "terminal",
+      camera: "cameraApp"
+    };
+    const lowerId = winId.toLowerCase();
+    for (const [key, appId] of Object.entries(mappings)) {
+      if (lowerId.includes(key)) return appId;
+    }
+    return null;
+  }
+
+  async saveSession() {
+    if (!this.fs || !this.fs.sessionKey) return;
+    const sessionKey = this.fs.sessionKey;
+    const sessionPath = `/ys/users/${sessionKey}/system/windowSession.json`;
+
+    const windowStates = [];
+    const sortedWindows = Array.from(this.openWindows.keys())
+      .map((id) => document.getElementById(id))
+      .filter(Boolean)
+      .sort((a, b) => (parseInt(a.style.zIndex) || 0) - (parseInt(b.style.zIndex) || 0));
+
+    for (const win of sortedWindows) {
+      const entry = this.openWindows.get(win.id);
+      if (!entry || !entry.record) continue;
+
+      const record = entry.record;
+      const rect = win.getBoundingClientRect();
+      record.x = parseInt(win.style.left) || rect.left;
+      record.y = parseInt(win.style.top) || rect.top;
+      record.width = parseInt(win.style.width) || rect.width;
+      record.height = parseInt(win.style.height) || rect.height;
+      record.zIndex = parseInt(win.style.zIndex) || 1000;
+      record.minimized = win.style.display === "none";
+      record.fullscreen = win.dataset.fullscreen === "true";
+      record.focused = win.classList.contains("active");
+
+      const content = win.querySelector(".window-content");
+      if (content) {
+        record.scrollPosition = { x: content.scrollLeft, y: content.scrollTop };
+      }
+
+      const appId = win.dataset.appId || this._guessAppIdFromWinId(win.id);
+      if (appId && !win.dataset.appId) win.dataset.appId = appId; // Backfill for subsequent saves
+      if (appId && this.appLauncher) {
+        try {
+          localStorage.setItem(
+            `yukiOS_geometry_${appId}`,
+            JSON.stringify({
+              x: record.x,
+              y: record.y,
+              width: record.width,
+              height: record.height
+            })
+          );
+        } catch (e) {}
+
+        const appInstance = this.appLauncher[appId] || this.appLauncher[`${appId}App`];
+        if (appInstance && typeof appInstance.getSnapshot === "function") {
+          try {
+            record.appStateSnapshot = await appInstance.getSnapshot(win.id);
+          } catch (e) {
+            console.warn(`Failed to get snapshot for app ${appId}:`, e);
+          }
+        }
+      }
+
+      if (this.workspaceManager) {
+        let wsId = 0;
+        for (const ws of this.workspaceManager.workspaces) {
+          if (ws.windows.has(win.id)) {
+            wsId = ws.id;
+            break;
+          }
+        }
+        record.workspaceId = wsId;
+      }
+
+      windowStates.push(record.toJSON());
+    }
+
+    try {
+      await this.fs.ensureFolder(["system"]);
+      let sessionData = windowStates;
+      if (this.workspaceManager) {
+        sessionData = {
+          windows: windowStates,
+          workspaces: this.workspaceManager.workspaces.map((w) => ({ id: w.id, name: w.name })),
+          activeWorkspaceId: this.workspaceManager.activeId
+        };
+      }
+      await this.fs.safeWriteFile(sessionPath, JSON.stringify(sessionData));
+    } catch (e) {
+      console.error("Failed to save window session:", e);
+    }
+  }
+
+  async restoreSession() {
+    if (!this.fs || !this.fs.sessionKey || !this.appLauncher) return;
+    this._isRestoring = true;
+    const sessionKey = this.fs.sessionKey;
+    const sessionPath = `/ys/users/${sessionKey}/system/windowSession.json`;
+
+    try {
+      const exists = await this.fs.exists(sessionPath);
+      if (!exists) {
+        this._isRestoring = false;
+        return;
+      }
+
+      const data = await this.fs.pRead("readFile", sessionPath, "utf8");
+      const parsedData = JSON.parse(data);
+
+      let windowStates = [];
+      if (Array.isArray(parsedData)) {
+        windowStates = parsedData;
+      } else {
+        windowStates = parsedData.windows || [];
+        if (this.workspaceManager && parsedData.workspaces) {
+          this.workspaceManager.workspaces = parsedData.workspaces.map((w) => ({ ...w, windows: new Set() }));
+          this.workspaceManager.activeId = parsedData.activeWorkspaceId || 0;
+          this.workspaceManager._render();
+        }
+      }
+
+      if (!Array.isArray(windowStates)) {
+        this._isRestoring = false;
+        return;
+      }
+
+      let heavyAppCount = 0;
+      const queue = [];
+
+      for (const state of windowStates) {
+        const appId = state.appId || this._guessAppIdFromWinId(state.id);
+        if (!appId) continue;
+
+        if (this._isHeavyApp(appId, state.appType)) {
+          heavyAppCount++;
+          if (heavyAppCount > 4) {
+            queue.push({ state, appId });
+            continue;
+          }
+        }
+        await this._restoreSingleWindowState(state, appId);
+      }
+
+      if (queue.length > 0) {
+        this._processRestorationQueue(queue);
+      }
+
+      const lastFocused = windowStates.find((s) => s.focused);
+      if (lastFocused) {
+        const win = document.getElementById(lastFocused.id);
+        if (win) this.bringToFront(win);
+      }
+    } catch (e) {
+      console.error("Failed to restore window session:", e);
+    } finally {
+      this._isRestoring = false;
+    }
+  }
+
+  _isHeavyApp(appId, appType) {
+    const heavyTypes = ["game", "swf", "gba", "psp", "nds", "megadrive", "genesis", "segaMD"];
+    const heavySystemApps = [
+      "v86",
+      "v86app",
+      "jsdos",
+      "jsDosApp",
+      "emulator",
+      "emulatorApp",
+      "ruffle",
+      "ruffleApp",
+      "youtube",
+      "browser",
+      "browserApp",
+      "model3d",
+      "model3dApp"
+    ];
+    if (heavyTypes.includes(appType)) return true;
+    if (heavySystemApps.includes(appId)) return true;
+    return false;
+  }
+
+  async _processRestorationQueue(queue) {
+    for (const item of queue) {
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await this._restoreSingleWindowState(item.state, item.appId);
+    }
+  }
+
+  async _restoreSingleWindowState(state, appId) {
+    try {
+      const launchOptions = {
+        forceId: state.id,
+        position: { x: state.x, y: state.y },
+        width: state.width,
+        height: state.height,
+        allowManualPosition: true
+      };
+
+      await this.appLauncher.launch(appId, state.appType === "swf", launchOptions);
+
+      const win = document.getElementById(state.id);
+      if (win) {
+        if (state.minimized) this.minimizeWindow(win);
+        if (state.fullscreen) this.toggleFullscreen(win);
+        win.style.zIndex = state.zIndex;
+        this.zIndexCounter = Math.max(this.zIndexCounter, state.zIndex + 1);
+
+        if (this.workspaceManager && state.workspaceId !== undefined) {
+          this.workspaceManager.moveWindowTo(state.id, state.workspaceId);
+        }
+
+        if (state.appStateSnapshot) {
+          const appInstance = this.appLauncher[state.appId] || this.appLauncher[`${state.appId}App`];
+          if (appInstance && typeof appInstance.restoreSnapshot === "function") {
+            await appInstance.restoreSnapshot(win.id, state.appStateSnapshot);
+          }
+        }
+
+        if (state.scrollPosition) {
+          const content = win.querySelector(".window-content");
+          if (content) {
+            content.scrollLeft = state.scrollPosition.x;
+            content.scrollTop = state.scrollPosition.y;
+          }
+        }
+      }
+    } catch (e) {
+      console.error(`Failed to restore window ${state.id}:`, e);
+    }
   }
 
   notify(title, message, type = "info", duration = 5000, icon = null) {
@@ -514,11 +791,18 @@ export class WindowManager {
     return this.openWindows.size;
   }
 
-  createWindow(id, title, width = "80vw", height = "80vh", isGame = false, options = {}) {
+  createWindow(id, title, width = "80vw", height = "80vh", isGame = false, initialOptions = {}) {
+    const pendingOpts = this._pendingLaunchOptions || {};
+    // Only merge if we don't have appId, or if appId matches
+    const options = { ...pendingOpts, ...initialOptions };
+    this._pendingLaunchOptions = null; // consume it
+
     const win = document.createElement("div");
     win.className = "window";
     win.id = id;
     win.dataset.fullscreen = "false";
+    if (options.appId) win.dataset.appId = options.appId;
+    if (options.appType) win.dataset.appType = options.appType;
 
     const widthStr = width != null ? String(width) : "80vw";
     const heightStr = height != null ? String(height) : "80vh";
@@ -531,10 +815,27 @@ export class WindowManager {
       disableDesktopStretchScroll = localStorage.getItem(StorageKeys.disableDesktopStretchScroll) === "true";
     } catch {}
 
-    const position = this.calculateWindowPosition(vw, vh, options);
+    let finalW = vw;
+    let finalH = vh;
+    let position = this.calculateWindowPosition(vw, vh, options);
+
+    if (!options.forceId && options.appId) {
+      try {
+        const saved = localStorage.getItem(`yukiOS_geometry_${options.appId}`);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed && typeof parsed.x === "number" && typeof parsed.y === "number") {
+            position = { left: parsed.x, top: parsed.y };
+            if (parsed.width) finalW = parsed.width;
+            if (parsed.height) finalH = parsed.height;
+          }
+        }
+      } catch (e) {}
+    }
+
     Object.assign(win.style, {
-      width: `${vw}px`,
-      height: `${vh}px`,
+      width: `${finalW}px`,
+      height: `${finalH}px`,
       left: `${position.left}px`,
       top: `${position.top}px`,
       position: disableDesktopStretchScroll ? "fixed" : "absolute",
@@ -549,6 +850,7 @@ export class WindowManager {
       }, 0);
     }
     win.addEventListener("mousedown", () => this.bringToFront(win));
+    this.triggerSessionSave();
 
     return win;
   }
@@ -727,6 +1029,7 @@ export class WindowManager {
   }
 
   addToTaskbar(winId, title, iconValue, color = null) {
+    this.triggerSessionSave();
     if (document.getElementById(`taskbar-${winId}`)) return;
     if (iconValue === "fas fa-video") color = "6677dd";
 
@@ -992,11 +1295,31 @@ export class WindowManager {
     }
 
     win.style.zIndex = this.zIndexCounter++;
+    this.triggerSessionSave();
   }
 
   removeFromTaskbar(winId) {
     const taskbarItem = document.getElementById(`taskbar-${winId}`);
     if (taskbarItem) taskbarItem.remove();
+    const entry = this.openWindows.get(winId);
+    if (entry && entry.record) {
+      const win = document.getElementById(winId);
+      const appId = (win && win.dataset.appId) || this._guessAppIdFromWinId(winId);
+      if (appId) {
+        try {
+          const rect = win ? win.getBoundingClientRect() : null;
+          localStorage.setItem(
+            `yukiOS_geometry_${appId}`,
+            JSON.stringify({
+              x: rect ? parseInt(win.style.left) || rect.left : entry.record.x,
+              y: rect ? parseInt(win.style.top) || rect.top : entry.record.y,
+              width: rect ? parseInt(win.style.width) || rect.width : entry.record.width,
+              height: rect ? parseInt(win.style.height) || rect.height : entry.record.height
+            })
+          );
+        } catch (e) {}
+      }
+    }
     this.openWindows.delete(winId);
     this.workspaceManager?.unregisterWindow(winId);
     audioMixer.unregisterWindow(winId);
@@ -1008,6 +1331,7 @@ export class WindowManager {
       const lastWin = Array.from(this.openWindows.values()).pop();
       if (lastWin) this.updatePageFavicon(lastWin.iconValue, lastWin.title);
     }
+    this.triggerSessionSave();
   }
 
   minimizeWindow(win) {
@@ -1019,6 +1343,7 @@ export class WindowManager {
     }
     const entry = this.openWindows.get(win.id);
     if (entry?.record) entry.record.minimized = true;
+    this.triggerSessionSave();
   }
 
   toggleFullscreen(win) {
@@ -1074,6 +1399,7 @@ export class WindowManager {
 
       document.addEventListener("fullscreenchange", onFullscreenChange);
     }
+    this.triggerSessionSave();
   }
 
   setupWindowControls(win) {
