@@ -668,6 +668,12 @@ export function initStorePage(container, onLaunch, navigateTo, CDN_BASE_REF, img
       tags: ["RPG", "Story"]
     },
     {
+      app: "wheresBaldi",
+      icon: resolveIconUrl("static/icons/wheresBaldi.webp"),
+      title: "Where's Baldi",
+      tags: ["Horror", "Action"]
+    },
+    {
       app: "baldiBalds",
       icon: resolveIconUrl("static/icons/baldiBalds.webp"),
       title: "Baldi Balds The Universe",

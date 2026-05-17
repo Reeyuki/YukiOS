@@ -155,7 +155,8 @@ export const HIGHLIGHTED_GAMES = new Set([
   "baldisBasicsTeachingOnTwos",
   "playtimeHellBear5van",
   "baldiBalds",
-  "pneumo"
+  "pneumo",
+  "wheresBaldi"
 ]);
 
 const FLASH_EMUPEDIA_EXCLUDED = new Set([

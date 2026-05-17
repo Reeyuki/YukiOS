@@ -113,7 +113,12 @@ export const appMap = {
     icon: "/static/icons/theMathIsLeaking.webp",
     title: "The Math Is Leaking"
   },
-
+  wheresBaldi: {
+    type: "game",
+    url: "/static/games/html/wheresBaldi.html",
+    icon: "/static/icons/wheresBaldi.webp",
+    title: "Where's Baldi"
+  },
   stardew: {
     type: "game",
     url: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main/html/stardew.html",
