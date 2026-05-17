@@ -38,13 +38,13 @@
 
     <meta
       name="description"
-      content="Yuki OS is a browser-based gaming hub offering hundreds of games across Flash, GBA, NDS, and HTML5 platforms. Play instantly online with no downloads or installs."
+      content="Yuki OS is a browser-based gaming hub offering thousands of games across Flash, GBA, NDS, and HTML5 platforms. Play instantly online with no downloads or installs."
     />
 
     <meta property="og:title" content="Yuki OS – Browser Gaming Hub with Flash, GBA, NDS & HTML5 Games" />
     <meta
       property="og:description"
-      content="Experience hundreds of games in your browser with Yuki OS. Play Flash, GBA, NDS, HTML5, and more instantly online without downloads."
+      content="Experience thousands of games in your browser with Yuki OS. Play Flash, GBA, NDS, HTML5, and more instantly online without downloads."
     />
     <meta property="og:type" content="website" />
     <meta property="og:image" content="https://yukios.vercel.app/static/seo/preview.webp" />
@@ -56,14 +56,14 @@
     <meta name="twitter:title" content="Yuki OS – Browser Gaming Hub with Flash, GBA, NDS & HTML5 Games" />
     <meta
       name="twitter:description"
-      content="Yuki OS lets you play hundreds of games directly in your browser. Flash, GBA, NDS, and HTML5 games with no downloads required."
+      content="Yuki OS lets you play thousands of games directly in your browser. Flash, GBA, NDS, and HTML5 games with no downloads required."
     />
     <meta name="twitter:image" content="https://yukios.vercel.app/static/seo/preview.webp" />
 
     <meta name="application-name" content="Yuki OS" />
     <meta name="theme-color" content="#1e1e1e" />
     <link rel="canonical" href="https://yukios.vercel.app/" />
-    <link rel="icon" href="favicon.ico" />
+    <link rel="icon" href="favicon2.ico" />
     <script>
       (function () {
         try {
@@ -113,7 +113,7 @@
 
     <div id="desktop" class="desktop">
       <div class="icon selectable" data-app="explorer">
-        <img src="static/icons/files.webp" />
+        <img src="static/icons/file.webp" />
         <div>File Explorer</div>
       </div>
 
@@ -268,13 +268,6 @@
         <div class="start-user">
           <img src="static/icons/guest.webp" alt="User avatar" />
           <span>reeyuki</span>
-          <button
-            class="start-signout-btn"
-            onclick="window.open('https://github.com/Reeyuki/YukiOS', '_blank')"
-            title="GitHub Repository"
-          >
-            <i class="fab fa-github"></i>
-          </button>
         </div>
 
         <div class="start-cat active" data-cat="menu"><i class="fas fa-bars"></i> Menu</div>
@@ -288,6 +281,15 @@
         <div class="start-cat" data-cat="customize"><i class="fas fa-circle-user"></i> Customize Profile</div>
 
         <div class="start-cat" data-cat="settingsApp"><i class="fas fa-cog"></i> Settings</div>
+
+        <div class="start-footer-actions">
+          <button class="start-lock-btn" id="start-lock-btn" title="Lock System">
+            <i class="fas fa-lock"></i>
+          </button>
+          <button class="start-signout-btn" id="start-signout-btn" title="Sign Out">
+            <i class="fas fa-sign-out-alt"></i>
+          </button>
+        </div>
       </div>
 
       <div class="start-content">

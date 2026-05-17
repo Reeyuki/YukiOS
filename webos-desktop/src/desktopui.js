@@ -189,7 +189,7 @@ class IconDataHelper {
   }
   static getIconPathMap() {
     return {
-      explorer: resolveIconUrl("static/icons/files.webp"),
+      explorer: resolveIconUrl("static/icons/file.webp"),
       notepad: resolveIconUrl("static/icons/notepad.webp"),
       flash: resolveIconUrl("static/icons/flash.webp"),
       browser: resolveIconUrl("static/icons/firefox.webp"),
@@ -201,12 +201,12 @@ class IconDataHelper {
       vscode: resolveIconUrl("static/icons/vscode.webp"),
       liventcord: resolveIconUrl("static/icons/liventcord.webp"),
       steamApp: resolveIconUrl("static/icons/steam.webp"),
-      return: resolveIconUrl("static/icons/files.webp")
+      return: resolveIconUrl("static/icons/file.webp")
     };
   }
   static createDesktopFileData(app, name, path = null) {
     const iconPathMap = this.getIconPathMap();
-    const fallback = iconPathMap[app] || appMap[app]?.icon || resolveIconUrl("static/icons/files.webp");
+    const fallback = iconPathMap[app] || appMap[app]?.icon || resolveIconUrl("static/icons/file.webp");
     return JSON.stringify({ app, name, path: path || fallback });
   }
 }

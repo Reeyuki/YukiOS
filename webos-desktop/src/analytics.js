@@ -1,10 +1,10 @@
-import { AdsManager } from "./ads.js";
+import { StorageKeys } from "./settings.js";
 
 let pageLoadTime = Date.now();
 
 const CLOSE_ANALYTICS_EXCLUDED_APPS = new Set(["aboutApp"]);
 const CUSTOM_APP_PREFIX = "custom-";
-const ANALYTICS_DISABLED_KEY = "yukiOS_analytics_disabled";
+const ANALYTICS_DISABLED_KEY = StorageKeys.analyticsDisabled;
 
 function isAnalyticsDisabled() {
   return localStorage.getItem(ANALYTICS_DISABLED_KEY) === "true";

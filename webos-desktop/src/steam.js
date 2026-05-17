@@ -2,6 +2,7 @@ import { CDN_CONFIG } from "./shared/cdnConfig.js";
 import { descriptionMap } from "./gameDescriptions.js";
 import { shouldEnableAds } from "./ads.js";
 import { resolveIconUrl } from "./shared/assetResolver.js";
+import { StorageKeys } from "./settings.js";
 
 export function getCdnBase() {
   return CDN_CONFIG.repos.main.base;
@@ -448,7 +449,6 @@ export function buildSteamShell(container, username, profilePic, hiddenGamesCoun
     <div class="steam-scroll-top"><i class="fas fa-chevron-up"></i></div>
   `;
 }
-// Settings Manager
 export class SteamSettings {
   static DEFAULTS = {
     runOnStartup: false,
@@ -459,7 +459,7 @@ export class SteamSettings {
     hideArchiveGames: false
   };
 
-  static KEY = "yukios_steam_settings";
+  static KEY = StorageKeys.steamSettings;
 
   static load() {
     try {
@@ -499,14 +499,12 @@ export class SteamSettings {
   }
 }
 
-// Initialize settings page
 export function initSettingsPage(container) {
   const settingsPage = container.querySelector(".steam-settings-page");
   if (!settingsPage) return;
 
   const settings = SteamSettings.load();
 
-  // Initialize toggles
   settingsPage.querySelectorAll(".settings-toggle").forEach((toggle) => {
     if (toggle._inited) return;
     toggle._inited = true;
@@ -524,7 +522,6 @@ export function initSettingsPage(container) {
       toggle.classList.toggle("active");
       SteamSettings.set(setting, !isActive);
 
-      // Trigger events for settings that need immediate effect
       if (["hideArchiveGames", "recentlyPlayedRow"].includes(setting)) {
         window.dispatchEvent(
           new CustomEvent("steam-settings-changed", {
@@ -535,7 +532,6 @@ export function initSettingsPage(container) {
     });
   });
 
-  // Initialize selects
   settingsPage.querySelectorAll(".settings-select").forEach((select) => {
     if (select._inited) return;
     select._inited = true;
@@ -547,7 +543,6 @@ export function initSettingsPage(container) {
     select.addEventListener("change", (e) => {
       SteamSettings.set(setting, e.target.value);
 
-      // Trigger events for settings that need immediate effect
       if (setting === "gridSize") {
         window.dispatchEvent(
           new CustomEvent("steam-settings-changed", {

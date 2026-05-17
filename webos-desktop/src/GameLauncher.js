@@ -33,9 +33,7 @@ export class GameLauncher {
     }
   }
 
-  closeGame() {
-    // Managed by window manager now
-  }
+  closeGame() {}
 
   async fetchFirstJson(urls) {
     let lastErr = null;

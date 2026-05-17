@@ -7,7 +7,7 @@ function asUrl(path) {
 const PRECACHE_URLS = [
   asUrl("./"),
   asUrl("./index.html"),
-  asUrl("./favicon.ico"),
+  asUrl("./favicon2.ico"),
   asUrl("./manifest.webmanifest"),
   asUrl("./icons/icon-128.png"),
   asUrl("./icons/icon-256.png")

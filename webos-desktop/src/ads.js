@@ -3,10 +3,12 @@ import { WindowHelper } from "./utils/WindowHelper.js";
 const AD_STORAGE_KEY = "yukios_ads_state";
 
 export function shouldEnableAds() {
-  if (window.location.hostname.includes("vercel")) return false;
+  const hostname = window.location.hostname;
+  if (hostname.includes("vercel") || hostname === "localhost" || hostname === "127.0.0.1" || hostname === "[::1]") {
+    return false;
+  }
   return true;
 }
-
 let interactionCount = 0;
 let lastInteractionTime = Date.now();
 

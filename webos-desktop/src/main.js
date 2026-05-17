@@ -33,6 +33,8 @@ import { AdsManager } from "./ads.js";
 import { registerPWA } from "./pwa.js";
 import { RuffleApp } from "./ruffle.js";
 import { SessionManager } from "./SessionManager.js";
+import { CommandPalette } from "./commandPalette.js";
+import { ShortcutsApp } from "./shortcuts.js";
 import {
   resolveGhUrl,
   resolveIconUrl,
@@ -123,6 +125,9 @@ services.cameraApp = cameraApp;
 const aboutApp = new AboutApp(services);
 services.aboutApp = aboutApp;
 
+const shortcutsApp = new ShortcutsApp(services);
+services.shortcutsApp = shortcutsApp;
+
 const newsApp = new NewsApp(services);
 services.newsApp = newsApp;
 
@@ -183,24 +188,24 @@ const appLauncher = new AppLauncher(
   profileCustomizerApp,
   markdownApp,
   emulatorApp,
-  ruffleApp
+  ruffleApp,
+  shortcutsApp
 );
 windowManager.setAppLauncher(appLauncher);
 appCreatorApp.setAppLauncher(appLauncher);
 explorerApp.setAppLauncher(appLauncher);
 const desktopUI = new DesktopUI(appLauncher, notepadApp, explorerApp, fileSystemManager);
 
-// --- Session Initialization ---
 const sessionManager = new SessionManager(services);
 services.sessionManager = sessionManager;
 
-// Start Login Flow
+const commandPalette = new CommandPalette(services);
+services.commandPalette = commandPalette;
+
 await sessionManager.showLogin();
-// --- End Session Initialization ---
 
 document.documentElement.style.setProperty("--start-logo-url", `url("${logoImg}")`);
 
-// CDN Blockage Detection
 setTimeout(() => {
   const testImg = new Image();
   testImg.onload = () => {};
@@ -211,8 +216,7 @@ setTimeout(() => {
       window.location.reload();
     }
   };
-  // Test loading a known icon from the current CDN
-  testImg.src = resolveIconUrl("static/icons/files.webp");
+  testImg.src = resolveIconUrl("static/icons/file.webp");
 }, 1500);
 setGamesDesktopUI(desktopUI);
 explorerApp.setDesktopUI(desktopUI);
@@ -244,7 +248,4 @@ if (steamParam) {
     appLauncher.launch(game, swf);
   }, 0);
 }
-setupStartMenu(appLauncher);
-
-// initializeUserProfile is now handled by SESSION_INITIALIZED event in ProfileCustomizerApp
-// and the initial showLogin call.
+setupStartMenu(appLauncher, sessionManager);

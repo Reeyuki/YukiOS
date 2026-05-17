@@ -4,6 +4,42 @@ import { WindowHelper } from "./utils/WindowHelper.js";
 
 const NEWS_UPDATES = [
   {
+    date: "May 17, 2026",
+    sections: [
+      {
+        icon: "fa-wand-magic-sparkles",
+        title: "Features & Improvements",
+        items: [
+          [
+            "fa-user-circle",
+            "New Login Screen",
+            "Added nickname and profile selection on startup to initialize your session."
+          ],
+          [
+            "fa-lock",
+            "Desktop Lock Screen",
+            "Lock your session quickly to prevent unauthorized access while keeping your workspace running."
+          ],
+          [
+            "fa-terminal",
+            "Unified Command Palette",
+            "Launch apps, open files, apply themes, or run system commands globally via Ctrl+K or F1."
+          ],
+          [
+            "fa-keyboard",
+            "Keyboard Shortcuts App",
+            "Explore all global hotkeys and built-in application shortcuts in one central utility."
+          ],
+          [
+            "fa-window-restore",
+            "Window Session Persistence",
+            "Automatically saves and restores open window states, layout, and positioning across reloads."
+          ]
+        ]
+      }
+    ]
+  },
+  {
     date: "May 15, 2026",
     sections: [
       {

@@ -9,45 +9,9 @@ import { appMap } from "./gamesList.js";
 import { renderWallpapersPage } from "./wallpapers.js";
 import { audioMixer } from "./audioMixer.js";
 
-const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-const shouldDisableClippy = isMobile || isLocalhost;
-
-export const StorageKeys = {
-  username: "yukiOS_username",
-  profilePicture: "yukiOS_profilePicture",
-  weather: "yukiOS_weather",
-  positionsKey: "yukiOS_desktop:icon-positions",
-  favoritesKey: "yukiOS_Favorites",
-  wallpaperKey: "yukiOS_selectedWallpaper",
-  wallpaperIndexKey: "yukiOS_wallpaperIndex",
-  cycleWallpaper: "yukiOS_cycleWallpaper",
-  manualWallpaper: "yukiOS_manualWallpaper",
-  cursorKey: "yukiOS_customCursor",
-  cursorOriginalKey: "yukiOS_customCursor_original",
-  cursorSizeKey: "yukiOS_customCursor_size",
-  macOsControls: "yukiOS_macOsControls",
-  clippy: "yukiOS_clippy",
-  disableDesktopStretchScroll: "yukiOS_disable_desktop_stretch_scroll",
-  calendarEvents: "yukiOS_calendar_events",
-  aboutLaunchKey: "yukiOS_about_seen",
-  newsSeenKey: "yukiOS_news_seen",
-  newsReadSignatureKey: "yukiOS_news_read_signature",
-  achievementKeys: "yukiOS_achievements",
-  achievementCounters: "yukiOS_achievement_counters",
-  deletedIconsKey: "yukiOS_desktop:deleted-icons",
-  analyticsDisabled: "yukiOS_analytics_disabled",
-  dndKey: "wm_ntf_dnd",
-  taskbarPosition: "yukiOS_taskbar_position",
-  taskbarAlignment: "yukiOS_taskbar_alignment",
-  pinnedTaskbarItems: "yukiOS_pinned_taskbar_items",
-  cdnMirror: "yukiOS_cdnMirror",
-  theme: "yukiOS_theme",
-  windowTransparency: "yukiOS_window_transparency",
-  soundEnabled: "yukiOS_sound_enabled",
-  masterVolume: "yukiOS_master_volume"
-};
-
+import { StorageKeys } from "./StorageKeys.js";
+import { YUKIOS_VERSION } from "./about.js";
+export { StorageKeys };
 export class SettingsApp extends BaseApp {
   constructor(services) {
     super(services);
@@ -73,7 +37,7 @@ export class SettingsApp extends BaseApp {
         macOsControls: localStorage.getItem(StorageKeys.macOsControls) === "true",
         clippy: localStorage.getItem(StorageKeys.clippy) === "true",
         disableDesktopStretchScroll: localStorage.getItem(StorageKeys.disableDesktopStretchScroll) === "true",
-        achievementsDisabled: localStorage.getItem("yukiOS_achievements_disabled") === "true",
+        achievementsDisabled: localStorage.getItem(StorageKeys.achievementsDisabled) === "true",
         analyticsDisabled: localStorage.getItem(StorageKeys.analyticsDisabled) === "true",
         taskbarAlignment: localStorage.getItem(StorageKeys.taskbarAlignment) || "center",
         cdnMirror: localStorage.getItem(StorageKeys.cdnMirror) || "jsdelivr",
@@ -82,7 +46,9 @@ export class SettingsApp extends BaseApp {
         soundEnabled: localStorage.getItem(StorageKeys.soundEnabled) !== "false",
         masterVolume: Number.isFinite(rawMasterVol) ? Math.max(0, Math.min(1, rawMasterVol)) : 1,
         dnd: localStorage.getItem(StorageKeys.dndKey) === "1",
-        taskbarPosition: localStorage.getItem(StorageKeys.taskbarPosition) || "bottom"
+        taskbarPosition: localStorage.getItem(StorageKeys.taskbarPosition) || "bottom",
+        disableBootScreen: localStorage.getItem(StorageKeys.disableBootScreen) === "true",
+        windowSessionPersistence: localStorage.getItem(StorageKeys.windowSessionPersistence) !== "false"
       };
 
       this._applyCursor(this._settings.cursorDataUrl);
@@ -286,6 +252,26 @@ export class SettingsApp extends BaseApp {
           </div>
           <label class="settings-toggle">
             <input type="checkbox" id="settingsDND" ${this._settings.dnd ? "checked" : ""}/>
+            <span class="settings-track"><span class="settings-thumb"></span></span>
+          </label>
+        </div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Skip Boot Screen</span>
+            <span class="settings-label-desc">Bypass the login screen on startup</span>
+          </div>
+          <label class="settings-toggle">
+            <input type="checkbox" id="settingsDisableBootScreen" ${this._settings.disableBootScreen ? "checked" : ""}/>
+            <span class="settings-track"><span class="settings-thumb"></span></span>
+          </label>
+        </div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Window Session Persistence</span>
+            <span class="settings-label-desc">Remember and restore open windows on startup</span>
+          </div>
+          <label class="settings-toggle">
+            <input type="checkbox" id="settingsWindowSessionPersistence" ${this._settings.windowSessionPersistence ? "checked" : ""}/>
             <span class="settings-track"><span class="settings-thumb"></span></span>
           </label>
         </div>
@@ -544,7 +530,7 @@ export class SettingsApp extends BaseApp {
       <div id="pane-about" class="settings-category-pane">
         <div class="settings-category-header">About</div>
         <div class="settings-row" style="flex-direction: column; align-items: flex-start; gap: 10px;">
-          <h2 style="margin:0;font-size:1.4em;">Yuki OS <span style="font-size:0.6em;color:rgba(255,255,255,0.6);font-weight:normal;">v1.2.0</span></h2>
+          <h2 style="margin:0;font-size:1.4em;">Yuki OS <span style="font-size:0.6em;color:rgba(255,255,255,0.6);font-weight:normal;">${YUKIOS_VERSION}</span></h2>
           <p style="margin:0;color:rgba(255,255,255,0.8);font-size:0.95em;">
             Browser desktop environment with apps, games, and sandboxed runtime systems.
           </p>
@@ -601,10 +587,17 @@ export class SettingsApp extends BaseApp {
       localStorage.setItem(StorageKeys.macOsControls, String(macOsControls));
       localStorage.setItem(StorageKeys.clippy, String(clippy));
       localStorage.setItem(StorageKeys.disableDesktopStretchScroll, String(disableDesktopStretchScroll));
-      localStorage.setItem("yukiOS_achievements_disabled", String(achievementsDisabled));
+      localStorage.setItem(StorageKeys.achievementsDisabled, String(achievementsDisabled));
       localStorage.setItem(StorageKeys.analyticsDisabled, String(analyticsDisabled));
       localStorage.setItem(StorageKeys.taskbarAlignment, selectedAlignment);
       localStorage.setItem(StorageKeys.cdnMirror, cdnMirror);
+      const disableBootScreenToggle = win.querySelector("#settingsDisableBootScreen");
+      const disableBootScreen = !!disableBootScreenToggle?.checked;
+      localStorage.setItem(StorageKeys.disableBootScreen, String(disableBootScreen));
+
+      const windowSessionPersistenceToggle = win.querySelector("#settingsWindowSessionPersistence");
+      const windowSessionPersistence = !!windowSessionPersistenceToggle?.checked;
+      localStorage.setItem(StorageKeys.windowSessionPersistence, String(windowSessionPersistence));
 
       Object.assign(this._settings, {
         weather,
@@ -615,14 +608,17 @@ export class SettingsApp extends BaseApp {
         achievementsDisabled,
         analyticsDisabled,
         taskbarAlignment: selectedAlignment,
-        cdnMirror
+        cdnMirror,
+        disableBootScreen,
+        windowSessionPersistence
       });
+
+      this.wm.saveSession();
 
       setCdnMirror(cdnMirror);
       initializeMirrors(appMap);
       this._applyDesktopStretchScrollDisabled(disableDesktopStretchScroll);
       bus.emit(BusEvents.SETTINGS_CHANGED, this._settings);
-      // Reload page if CDN mirror changed to ensure all assets use the new base
       if (this._settings.cdnMirror && this._settings.cdnMirror !== cdnMirror) {
         showStatus("Reloading with new CDN...");
         setTimeout(() => window.location.reload(), 500);
@@ -689,6 +685,8 @@ export class SettingsApp extends BaseApp {
     win.querySelector("#settingsClippy").addEventListener("change", save);
     win.querySelector("#settingsAchievements").addEventListener("change", save);
     win.querySelector("#settingsAnalytics").addEventListener("change", save);
+    win.querySelector("#settingsDisableBootScreen")?.addEventListener("change", save);
+    win.querySelector("#settingsWindowSessionPersistence")?.addEventListener("change", save);
 
     const dndToggle = win.querySelector("#settingsDND");
     if (dndToggle) {
@@ -925,6 +923,8 @@ export class SettingsApp extends BaseApp {
       win.querySelector("#settingsAnalytics").checked = !this._settings.analyticsDisabled;
       const stretchToggle = win.querySelector("#settingsDisableDesktopStretchScroll");
       if (stretchToggle) stretchToggle.checked = !!this._settings.disableDesktopStretchScroll;
+      const disableBootScreenToggle = win.querySelector("#settingsDisableBootScreen");
+      if (disableBootScreenToggle) disableBootScreenToggle.checked = !!this._settings.disableBootScreen;
       showStatus("Reset to saved values");
     });
 
@@ -940,6 +940,8 @@ export class SettingsApp extends BaseApp {
       win.querySelector("#settingsAnalytics").checked = true;
       const stretchToggle = win.querySelector("#settingsDisableDesktopStretchScroll");
       if (stretchToggle) stretchToggle.checked = false;
+      const disableBootScreenToggle = win.querySelector("#settingsDisableBootScreen");
+      if (disableBootScreenToggle) disableBootScreenToggle.checked = false;
 
       save();
       showStatus("Toggles reset");

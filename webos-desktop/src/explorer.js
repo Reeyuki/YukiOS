@@ -1,4 +1,5 @@
-import { zipSync } from "fflate";
+import { zipSync, gzipSync } from "fflate";
+import SevenZip from "7z-wasm";
 import { BaseApp } from "./core/BaseApp.js";
 import { bus, BusEvents } from "./core/EventBus.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
@@ -123,7 +124,7 @@ export class ExplorerApp extends BaseApp {
   _sidebarHTML() {
     return `
       <div class="explorer-sidebar">
-        <div class="start-item" data-path=""><img src="${resolveIconUrl("static/icons/files.webp")}" class="sidebar-icon">Home</div>
+        <div class="start-item" data-path=""><img src="${resolveIconUrl("static/icons/file.webp")}" class="sidebar-icon">Home</div>
         <div class="start-item" data-path="Documents"><img src="${resolveIconUrl("static/icons/notepad.webp")}" class="sidebar-icon">Documents</div>
         <div class="start-item" data-path="Desktop"><i class="fas fa-desktop sidebar-icon-fa"></i>Desktop</div>
         <div class="start-item" data-path="Pictures"><i class="fas fa-image sidebar-icon-fa"></i>Pictures</div>
@@ -254,7 +255,7 @@ export class ExplorerApp extends BaseApp {
     this._initExplorerView(win, winId);
 
     const self = this;
-    this.windowHelper.mountWindow(win, winId, "File Explorer", resolveIconUrl("static/icons/files.webp"), {
+    this.windowHelper.mountWindow(win, winId, "File Explorer", resolveIconUrl("static/icons/file.webp"), {
       addToTaskbar: !isSelector
     });
 
@@ -283,7 +284,7 @@ export class ExplorerApp extends BaseApp {
       </div>
       <div class="explorer-container">
         <div class="explorer-sidebar">
-          <div class="start-item" data-path=""><img src="${resolveIconUrl("static/icons/files.webp")}" class="sidebar-icon">Home</div>
+          <div class="start-item" data-path=""><img src="${resolveIconUrl("static/icons/file.webp")}" class="sidebar-icon">Home</div>
           <div class="start-item" data-path="Documents"><img src="${resolveIconUrl("static/icons/notepad.webp")}" class="sidebar-icon">Documents</div>
           <div class="start-item" data-path="Desktop"><i class="fas fa-desktop sidebar-icon-fa"></i>Desktop</div>
           <div class="start-item" data-path="Pictures"><i class="fas fa-image sidebar-icon-fa"></i>Pictures</div>
@@ -1188,21 +1189,37 @@ export class ExplorerApp extends BaseApp {
       menu.appendChild(hr());
 
       menu.appendChild(item("Download", () => this._downloadItems(itemName, isFile, inst), "fa-download"));
+      menu.appendChild(
+        item("Create Archive", () => this._createArchiveFromItems(itemName, isFile, inst), "fa-file-archive")
+      );
       menu.appendChild(hr());
 
       menu.appendChild(
         item(
           "Delete",
           () => {
-            const msg = isFile ? `Delete "${itemName}"?` : `Delete folder "${itemName}" and all its contents?`;
+            const effectiveItems =
+              inst.selectedItems.size > 1 && inst.selectedItems.has(itemName) ? [...inst.selectedItems] : [itemName];
+            const msg =
+              effectiveItems.length > 1
+                ? `Delete ${effectiveItems.length} items and all their contents?`
+                : isFile
+                  ? `Delete "${itemName}"?`
+                  : `Delete folder "${itemName}" and all its contents?`;
             this._showConfirmDialog({
               title: "Confirm Delete",
               message: msg,
               confirmText: "Delete",
               onConfirm: async () => {
-                await this.fs.deleteItem(inst.currentPath, itemName);
+                for (const name of effectiveItems) {
+                  await this.fs.deleteItem(inst.currentPath, name);
+                }
                 await this.renderInstance(inst);
-                this.wm.sendNotify(`"${itemName}" deleted`);
+                if (effectiveItems.length > 1) {
+                  this.wm.sendNotify(`${effectiveItems.length} items deleted`);
+                } else {
+                  this.wm.sendNotify(`"${itemName}" deleted`);
+                }
               }
             });
           },
@@ -1787,5 +1804,325 @@ export class ExplorerApp extends BaseApp {
     input.onblur = () => setTimeout(() => commit(), 120);
     input.onclick = (ev) => ev.stopPropagation();
     input.ondblclick = (ev) => ev.stopPropagation();
+  }
+
+  async _createArchiveFromItems(itemName, isFile, inst) {
+    const effectiveItems =
+      inst.selectedItems.size > 1 && inst.selectedItems.has(itemName) ? [...inst.selectedItems] : [itemName];
+
+    let defaultName = "archive";
+    if (effectiveItems.length === 1) {
+      const singleItem = effectiveItems[0];
+      const dotIndex = singleItem.lastIndexOf(".");
+      defaultName = dotIndex > 0 ? singleItem.substring(0, dotIndex) : singleItem;
+    }
+
+    this._showArchiveDialog({
+      title: "Create Archive",
+      defaultValue: defaultName,
+      onConfirm: async (archiveName, archiveType, compressionLevel) => {
+        this.wm.sendNotify("Creating archive...");
+        const filesMap = {};
+
+        const folder = inst._cachedFolder || (await this.fs.getFolder(inst.currentPath));
+
+        for (const item of effectiveItems) {
+          const itemData = folder[item];
+          const itemIsFile = itemData?.type === "file";
+          await this._collectFilesRecursively(inst.currentPath, item, itemIsFile, "", filesMap);
+        }
+
+        let zipped;
+        if (archiveType === "zip") {
+          zipped = zipSync(filesMap, { level: compressionLevel });
+        } else if (archiveType === "tar") {
+          zipped = this._createTar(filesMap);
+        } else if (archiveType === "tar.gz") {
+          const tarBytes = this._createTar(filesMap);
+          zipped = gzipSync(tarBytes, { level: compressionLevel });
+        } else if (archiveType === "7z") {
+          zipped = await this._create7z(filesMap, compressionLevel);
+        }
+
+        const fullName = `${archiveName}.${archiveType}`;
+        const uniqueName = await this.fs.getUniqueFileName(inst.currentPath, fullName);
+        const blob = new Blob([zipped]);
+        const fileKind = FileKind.OTHER;
+        const icon = "fa-file-archive";
+
+        await this.fs.writeBinaryFile(inst.currentPath, uniqueName, blob, fileKind, icon);
+        await this.renderInstance(inst);
+        this.wm.sendNotify(`Archive "${uniqueName}" created`);
+      }
+    });
+  }
+
+  async _collectFilesRecursively(pathParts, itemName, isFile, prefix, filesMap) {
+    const subPath = [...pathParts, itemName];
+    if (isFile) {
+      const blob = await this.fs.readBinaryFile(pathParts, itemName);
+      let bytes;
+      if (blob) {
+        bytes = new Uint8Array(await blob.arrayBuffer());
+      } else {
+        const text = await this.fs.getFileContent(pathParts, itemName);
+        bytes = new TextEncoder().encode(typeof text === "string" ? text : "");
+      }
+      filesMap[prefix + itemName] = bytes;
+    } else {
+      const folderEntries = await this.fs.getFolder(subPath).catch(() => ({}));
+      for (const [childName, childData] of Object.entries(folderEntries)) {
+        const childIsFile = childData?.type === "file";
+        await this._collectFilesRecursively(subPath, childName, childIsFile, prefix + itemName + "/", filesMap);
+      }
+    }
+  }
+
+  _createTar(filesMap) {
+    const chunks = [];
+    const writeString = (buf, offset, str, len) => {
+      for (let i = 0; i < len && i < str.length; i++) {
+        buf[offset + i] = str.charCodeAt(i);
+      }
+    };
+    for (const [path, bytes] of Object.entries(filesMap)) {
+      const header = new Uint8Array(512);
+      writeString(header, 0, path, 100);
+      writeString(header, 100, "0000644\0", 8);
+      writeString(header, 108, "0000000\0", 8);
+      writeString(header, 116, "0000000\0", 8);
+      const sizeStr = bytes.length.toString(8).padStart(11, "0") + " ";
+      writeString(header, 124, sizeStr, 12);
+      writeString(header, 136, "00000000000\0", 12);
+      header[156] = 48;
+      for (let i = 0; i < 8; i++) header[148 + i] = 32;
+      let checksum = 0;
+      for (let i = 0; i < 512; i++) {
+        checksum += header[i];
+      }
+      const checksumStr = checksum.toString(8).padStart(6, "0") + "\0 ";
+      writeString(header, 148, checksumStr, 8);
+      chunks.push(header);
+      chunks.push(bytes);
+      const padding = (512 - (bytes.length % 512)) % 512;
+      if (padding > 0) {
+        chunks.push(new Uint8Array(padding));
+      }
+    }
+    chunks.push(new Uint8Array(1024));
+    let totalLen = 0;
+    for (const c of chunks) totalLen += c.length;
+    const result = new Uint8Array(totalLen);
+    let offset = 0;
+    for (const c of chunks) {
+      result.set(c, offset);
+      offset += c.length;
+    }
+    return result;
+  }
+
+  async _create7z(filesMap, compressionLevel) {
+    const sevenZip = await SevenZip();
+    const tempDir = "/7z_temp";
+    try {
+      sevenZip.FS.mkdir(tempDir);
+    } catch (e) {}
+
+    const writeToFS = (dirPath, filename, bytes) => {
+      const parts = dirPath.split("/").filter(Boolean);
+      let current = tempDir;
+      for (const p of parts) {
+        current += "/" + p;
+        try {
+          sevenZip.FS.mkdir(current);
+        } catch (e) {}
+      }
+      const fullPath = `${current}/${filename}`;
+      const stream = sevenZip.FS.open(fullPath, "w+");
+      sevenZip.FS.write(stream, bytes, 0, bytes.length);
+      sevenZip.FS.close(stream);
+    };
+
+    const filesToCompress = [];
+    for (const [relPath, bytes] of Object.entries(filesMap)) {
+      const slashIndex = relPath.lastIndexOf("/");
+      const dirPath = slashIndex > 0 ? relPath.substring(0, slashIndex) : "";
+      const filename = slashIndex > 0 ? relPath.substring(slashIndex + 1) : relPath;
+      writeToFS(dirPath, filename, bytes);
+      const topLevelName = relPath.split("/")[0];
+      if (!filesToCompress.includes(topLevelName)) {
+        filesToCompress.push(topLevelName);
+      }
+    }
+
+    const archiveFile = "/output.7z";
+    try {
+      sevenZip.FS.unlink(archiveFile);
+    } catch (e) {}
+
+    sevenZip.callMain([
+      "a",
+      archiveFile,
+      ...filesToCompress.map((f) => `${tempDir}/${f}`),
+      `-mx=${compressionLevel}`,
+      "-y"
+    ]);
+
+    const result = new Uint8Array(sevenZip.FS.readFile(archiveFile));
+
+    try {
+      sevenZip.FS.unlink(archiveFile);
+    } catch (e) {}
+    const cleanupDir = (currentPath) => {
+      try {
+        const entries = sevenZip.FS.readdir(currentPath).filter((e) => e !== "." && e !== "..");
+        for (const entry of entries) {
+          const full = `${currentPath}/${entry}`;
+          const stat = sevenZip.FS.stat(full);
+          if (sevenZip.FS.isDir(stat.mode)) {
+            cleanupDir(full);
+            sevenZip.FS.rmdir(full);
+          } else {
+            sevenZip.FS.unlink(full);
+          }
+        }
+      } catch (e) {}
+    };
+    cleanupDir(tempDir);
+
+    return result;
+  }
+
+  _showArchiveDialog({ title, defaultValue, onConfirm }) {
+    const overlay = document.createElement("div");
+    overlay.className = "explorer-confirmation-overlay";
+    overlay.innerHTML = `
+      <div class="_fd-dialog" style="width: 360px;">
+        <div class="_fd-dialog-title">${title}</div>
+        <div style="display:flex; flex-direction:column; gap:12px; margin-top:8px;">
+          <div>
+            <div class="_fd-dialog-label">Archive Name</div>
+            <input class="_fd-dialog-input archive-name-input" type="text" value="${defaultValue}" spellcheck="false" style="width:100%;">
+          </div>
+          <div>
+            <div class="_fd-dialog-label">Archive Format</div>
+            <select class="archive-type-select" style="
+              width: 100%;
+              padding: 8px 12px;
+              border-radius: 6px;
+              border: 1px solid rgba(255, 255, 255, 0.15);
+              background: rgba(30, 30, 46, 0.9);
+              color: #cdd6f4;
+              font-family: inherit;
+              font-size: 13px;
+              outline: none;
+            ">
+              <option value="zip">ZIP (.zip)</option>
+              <option value="7z">7z (.7z)</option>
+              <option value="tar">TAR (.tar)</option>
+              <option value="tar.gz">TAR.GZ (.tar.gz)</option>
+            </select>
+          </div>
+          <div class="archive-level-container" style="transition: opacity 0.18s ease;">
+            <div style="display:flex; justify-content:space-between;">
+              <div class="_fd-dialog-label">Compression Level</div>
+              <span class="compression-level-value" style="font-size:12px; color:#a6adc8; font-weight:bold;">Normal (6)</span>
+            </div>
+            <input class="archive-level-input" type="range" min="0" max="9" value="6" style="
+              width: 100%;
+              margin-top: 6px;
+              background: rgba(255, 255, 255, 0.1);
+              height: 4px;
+              border-radius: 2px;
+              outline: none;
+              cursor: pointer;
+            ">
+          </div>
+        </div>
+        <div class="_fd-dialog-error" style="display:none;font-size:12px;color:#e06c75;margin-top:6px;"></div>
+        <div class="_fd-dialog-actions" style="margin-top:16px;">
+          <button class="_fd-btn _fd-btn-cancel">Cancel</button>
+          <button class="_fd-btn _fd-btn-confirm">Create</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    const nameInput = overlay.querySelector(".archive-name-input");
+    const select = overlay.querySelector(".archive-type-select");
+    const levelContainer = overlay.querySelector(".archive-level-container");
+    const levelInput = overlay.querySelector(".archive-level-input");
+    const levelValEl = overlay.querySelector(".compression-level-value");
+    const confirmBtn = overlay.querySelector("._fd-btn-confirm");
+    const cancelBtn = overlay.querySelector("._fd-btn-cancel");
+    const errorEl = overlay.querySelector("._fd-dialog-error");
+
+    nameInput.select();
+    nameInput.focus();
+
+    const close = () => overlay.remove();
+
+    const levelTexts = {
+      0: "Store (No Compression)",
+      1: "Fastest (1)",
+      2: "Fastest (2)",
+      3: "Fast (3)",
+      4: "Fast (4)",
+      5: "Normal (5)",
+      6: "Normal (6)",
+      7: "High (7)",
+      8: "High (8)",
+      9: "Ultra (Maximum)"
+    };
+
+    levelInput.oninput = () => {
+      levelValEl.textContent = levelTexts[levelInput.value];
+    };
+
+    select.onchange = () => {
+      if (select.value === "tar") {
+        levelContainer.style.opacity = "0.38";
+        levelContainer.style.pointerEvents = "none";
+      } else {
+        levelContainer.style.opacity = "";
+        levelContainer.style.pointerEvents = "";
+      }
+    };
+
+    cancelBtn.onclick = close;
+
+    const showError = (msg) => {
+      errorEl.textContent = msg;
+      errorEl.style.display = "block";
+      nameInput.style.borderColor = "#e06c75";
+      confirmBtn.disabled = false;
+    };
+
+    confirmBtn.onclick = async () => {
+      const archiveName = nameInput.value.trim();
+      if (!archiveName) {
+        nameInput.style.borderColor = "#e06c75";
+        return;
+      }
+      confirmBtn.disabled = true;
+      const type = select.value;
+      const level = parseInt(levelInput.value);
+
+      try {
+        await onConfirm(archiveName, type, level);
+        close();
+      } catch (err) {
+        showError(err.message || "Failed to create archive");
+      }
+    };
+
+    overlay.onclick = (ev) => {
+      if (ev.target === overlay) close();
+    };
+
+    overlay.onkeydown = (ev) => {
+      if (ev.key === "Escape") close();
+      if (ev.key === "Enter") confirmBtn.click();
+    };
   }
 }

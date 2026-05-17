@@ -248,6 +248,17 @@ export class WindowManager {
     const sessionKey = this.fs.sessionKey;
     const sessionPath = `/ys/users/${sessionKey}/system/windowSession.json`;
 
+    const persistenceEnabled = localStorage.getItem(StorageKeys.windowSessionPersistence) !== "false";
+    if (!persistenceEnabled) {
+      try {
+        const exists = await this.fs.exists(sessionPath);
+        if (exists) {
+          await this.fs.unlink(sessionPath);
+        }
+      } catch (e) {}
+      return;
+    }
+
     const windowStates = [];
     const sortedWindows = Array.from(this.openWindows.keys())
       .map((id) => document.getElementById(id))
@@ -275,11 +286,11 @@ export class WindowManager {
       }
 
       const appId = win.dataset.appId || this._guessAppIdFromWinId(win.id);
-      if (appId && !win.dataset.appId) win.dataset.appId = appId; // Backfill for subsequent saves
+      if (appId && !win.dataset.appId) win.dataset.appId = appId;
       if (appId && this.appLauncher) {
         try {
           localStorage.setItem(
-            `yukiOS_geometry_${appId}`,
+            `${StorageKeys.geometryPrefix}${appId}`,
             JSON.stringify({
               x: record.x,
               y: record.y,
@@ -331,6 +342,8 @@ export class WindowManager {
 
   async restoreSession() {
     if (!this.fs || !this.fs.sessionKey || !this.appLauncher) return;
+    const persistenceEnabled = localStorage.getItem(StorageKeys.windowSessionPersistence) !== "false";
+    if (!persistenceEnabled) return;
     this._isRestoring = true;
     const sessionKey = this.fs.sessionKey;
     const sessionPath = `/ys/users/${sessionKey}/system/windowSession.json`;
@@ -478,7 +491,7 @@ export class WindowManager {
   updateTaskbarAlignment() {
     const taskbarWindows = document.getElementById("taskbar-windows");
     if (taskbarWindows) {
-      const taskbarAlignment = localStorage.getItem("yukiOS_taskbar_alignment") || "center";
+      const taskbarAlignment = localStorage.getItem(StorageKeys.taskbarAlignment) || "center";
       const taskbar = document.getElementById("taskbar");
 
       if (taskbar) {
@@ -793,9 +806,8 @@ export class WindowManager {
 
   createWindow(id, title, width = "80vw", height = "80vh", isGame = false, initialOptions = {}) {
     const pendingOpts = this._pendingLaunchOptions || {};
-    // Only merge if we don't have appId, or if appId matches
     const options = { ...pendingOpts, ...initialOptions };
-    this._pendingLaunchOptions = null; // consume it
+    this._pendingLaunchOptions = null;
 
     const win = document.createElement("div");
     win.className = "window";
@@ -821,7 +833,7 @@ export class WindowManager {
 
     if (!options.forceId && options.appId) {
       try {
-        const saved = localStorage.getItem(`yukiOS_geometry_${options.appId}`);
+        const saved = localStorage.getItem(`${StorageKeys.geometryPrefix}${options.appId}`);
         if (saved) {
           const parsed = JSON.parse(saved);
           if (parsed && typeof parsed.x === "number" && typeof parsed.y === "number") {
@@ -902,7 +914,7 @@ export class WindowManager {
     if (!taskbar) return 0;
 
     const rect = taskbar.getBoundingClientRect();
-    const taskbarPosition = localStorage.getItem("taskbarPosition") || "bottom";
+    const taskbarPosition = localStorage.getItem(StorageKeys.taskbarPosition) || "bottom";
 
     return taskbarPosition === "bottom" ? rect.height : 0;
   }
@@ -927,7 +939,6 @@ export class WindowManager {
       (win) => win.style.display !== "none" && win.style.visibility !== "hidden" && win.id !== "desktop"
     );
 
-    // Only reset to center if no windows exist and we aren't mid-launch.
     if (windows.length === 0) {
       this._lastSpawnedPosition = null;
     }
@@ -1107,7 +1118,7 @@ export class WindowManager {
 
     const taskbarWindows = document.getElementById("taskbar-windows");
     if (taskbarWindows) {
-      const taskbarAlignment = localStorage.getItem("yukiOS_taskbar_alignment") || "center";
+      const taskbarAlignment = localStorage.getItem(StorageKeys.taskbarAlignment) || "center";
       const taskbar = document.getElementById("taskbar");
 
       if (taskbar) {
@@ -1309,7 +1320,7 @@ export class WindowManager {
         try {
           const rect = win ? win.getBoundingClientRect() : null;
           localStorage.setItem(
-            `yukiOS_geometry_${appId}`,
+            `${StorageKeys.geometryPrefix}${appId}`,
             JSON.stringify({
               x: rect ? parseInt(win.style.left) || rect.left : entry.record.x,
               y: rect ? parseInt(win.style.top) || rect.top : entry.record.y,
@@ -1577,7 +1588,7 @@ export class WindowManager {
 
   _getPinnedItems() {
     try {
-      const pinnedData = localStorage.getItem("yukiOS_pinned_taskbar_items");
+      const pinnedData = localStorage.getItem(StorageKeys.pinnedTaskbarItems);
       return pinnedData ? JSON.parse(pinnedData) : [];
     } catch {
       return [];
@@ -1586,7 +1597,7 @@ export class WindowManager {
 
   _savePinnedItems(pinnedItems) {
     try {
-      localStorage.setItem("yukiOS_pinned_taskbar_items", JSON.stringify(pinnedItems));
+      localStorage.setItem(StorageKeys.pinnedTaskbarItems, JSON.stringify(pinnedItems));
     } catch {}
   }
 
@@ -1682,6 +1693,18 @@ export class WindowManager {
       if (appData.id === winId) return appId;
     }
     return null;
+  }
+
+  closeAll() {
+    const winIds = Array.from(this.openWindows.keys());
+    for (const winId of winIds) {
+      const win = document.getElementById(winId);
+      if (win) {
+        this._silenceWindow(win);
+        win.remove();
+      }
+      this.removeFromTaskbar(winId);
+    }
   }
 
   restorePinnedItems() {

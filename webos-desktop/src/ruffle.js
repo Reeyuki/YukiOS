@@ -283,16 +283,13 @@ export class RuffleApp extends BaseApp {
 
       setLog("Starting Flash player...");
 
-      // Resolve the Ruffle script URL the same way _loadRuffleScript does
       const ruffleScriptUrl =
         getLibraryUrl("ruffle") ||
         `${CDN_CONFIG.repos.npm.base}/@ruffle-rs/ruffle@${CDN_CONFIG.libraries.ruffle.version}/ruffle.min.js`;
 
-      // Convert SWF binary to a blob URL so the iframe document can load it
       const swfBlob = new Blob([swfData], { type: "application/x-shockwave-flash" });
       const swfUrl = URL.createObjectURL(swfBlob);
 
-      // Build a self-contained HTML document that boots Ruffle inside the iframe
       const iframeDoc = `<!DOCTYPE html>
 <html>
 <head>
@@ -322,7 +319,6 @@ export class RuffleApp extends BaseApp {
       const iframeUrl = URL.createObjectURL(iframeBlob);
 
       frame.onload = () => {
-        // Revoke the iframe blob URL after it has loaded; keep swfUrl alive for the player
         URL.revokeObjectURL(iframeUrl);
       };
 
@@ -330,7 +326,6 @@ export class RuffleApp extends BaseApp {
       frame.style.display = "block";
       frame.src = iframeUrl;
 
-      // Clean up swfUrl when the window element is removed from the DOM
       const observer = new MutationObserver(() => {
         if (!document.contains(win)) {
           URL.revokeObjectURL(swfUrl);

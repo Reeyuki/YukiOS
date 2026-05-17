@@ -56,10 +56,16 @@ export async function renderWallpapersPage(fs, wm, view) {
   header.className = "wp-header";
   header.innerHTML = `
     <div class="wp-title">Wallpapers</div>
-    <button class="wp-random-btn" id="wp-try-random">
-      <span class="wp-btn-icon">✦</span>
-      Try Random Wallpaper
-    </button>
+    <div style="display:flex;gap:10px;">
+      <button class="wp-random-btn" id="wp-try-random">
+        <span class="wp-btn-icon">✦</span>
+        Try Random Wallpaper
+      </button>
+      <button class="wp-random-btn" id="wp-reset-login">
+        <span class="wp-btn-icon">↺</span>
+        Reset Login Wallpaper
+      </button>
+    </div>
   `;
   view.appendChild(header);
 
@@ -74,6 +80,10 @@ export async function renderWallpapersPage(fs, wm, view) {
   await refreshWallpaperGrid(fs, grid, wm, previewZone);
 
   header.querySelector("#wp-try-random").onclick = () => showRandomPreview(previewZone, grid, fs, wm);
+  header.querySelector("#wp-reset-login").onclick = async () => {
+    await SystemUtilities.setLoginWallpaper("none");
+    wm.sendNotify("Login wallpaper reset to default");
+  };
 }
 
 async function refreshWallpaperGrid(fs, grid, wm, previewZone) {
@@ -132,18 +142,33 @@ async function refreshWallpaperGrid(fs, grid, wm, previewZone) {
 
     const setBtn = document.createElement("button");
     setBtn.className = "wp-card-btn wp-set-btn";
-    setBtn.textContent = "Set";
+    setBtn.textContent = "Desktop";
     setBtn.onclick = async (e) => {
       e.stopPropagation();
       const content = await fs.getFileContent(["Pictures", "Wallpapers"], name);
       const url = toBlobUrl(content);
       if (content) {
         await SystemUtilities.setWallpaper(content);
-        wm.sendNotify(`Wallpaper set to "${name}"`);
+        wm.sendNotify(`Desktop wallpaper set to "${name}"`);
+      }
+    };
+
+    const setLoginBtn = document.createElement("button");
+    setLoginBtn.className = "wp-card-btn wp-set-btn";
+    setLoginBtn.textContent = "Login";
+    setLoginBtn.style.marginLeft = "4px";
+    setLoginBtn.onclick = async (e) => {
+      e.stopPropagation();
+      const content = await fs.getFileContent(["Pictures", "Wallpapers"], name);
+      const url = toBlobUrl(content);
+      if (content) {
+        await SystemUtilities.setLoginWallpaper(content);
+        wm.sendNotify(`Login wallpaper set to "${name}"`);
       }
     };
 
     actions.appendChild(setBtn);
+    actions.appendChild(setLoginBtn);
 
     card.appendChild(thumbEl);
     card.appendChild(nameEl);
@@ -186,7 +211,8 @@ function showCardPreview(name, src, isVideo, previewZone, fs, wm) {
     <div class="wp-preview-label">${name}</div>
     <div class="wp-preview-btns">
       <button class="wp-action-btn wp-discard-btn">✕ Close</button>
-      <button class="wp-action-btn wp-save-btn">✔ Set Wallpaper</button>
+      <button class="wp-action-btn wp-save-login-btn">✔ Set Login</button>
+      <button class="wp-action-btn wp-save-btn">✔ Set Desktop</button>
     </div>
   `;
 
@@ -200,7 +226,18 @@ function showCardPreview(name, src, isVideo, previewZone, fs, wm) {
     const url = toBlobUrl(content);
     if (content) {
       await SystemUtilities.setWallpaper(content);
-      wm.sendNotify(`Wallpaper set to "${name}"`);
+      wm.sendNotify(`Desktop wallpaper set to "${name}"`);
+    }
+    previewZone.classList.remove("wp-preview-active");
+    previewZone.innerHTML = "";
+  };
+
+  overlay.querySelector(".wp-save-login-btn").onclick = async () => {
+    const content = await fs.getFileContent(["Pictures", "Wallpapers"], name);
+    const url = toBlobUrl(content);
+    if (content) {
+      await SystemUtilities.setLoginWallpaper(content);
+      wm.sendNotify(`Login wallpaper set to "${name}"`);
     }
     previewZone.classList.remove("wp-preview-active");
     previewZone.innerHTML = "";
@@ -297,7 +334,8 @@ function showRandomPreview(previewZone, grid, fs, wm) {
     <div class="wp-preview-btns">
       <button class="wp-action-btn wp-discard-btn">✕ Discard</button>
       <button class="wp-action-btn wp-another-btn">↻ Another</button>
-      <button class="wp-action-btn wp-save-btn">✔ Set Wallpaper</button>
+      <button class="wp-action-btn wp-save-login-btn">✔ Set Login</button>
+      <button class="wp-action-btn wp-save-btn">✔ Set Desktop</button>
     </div>
   `;
 
@@ -308,8 +346,12 @@ function showRandomPreview(previewZone, grid, fs, wm) {
 
   overlay.querySelector(".wp-another-btn").onclick = () => showRandomPreview(previewZone, grid, fs, wm);
 
-  overlay.querySelector(".wp-save-btn").onclick = async () => {
-    await SystemUtilities.setWallpaper(selection.src);
+  const saveRandomWallpaper = async (isLogin) => {
+    if (isLogin) {
+      await SystemUtilities.setLoginWallpaper(selection.src);
+    } else {
+      await SystemUtilities.setWallpaper(selection.src);
+    }
 
     if (!selection.fromLibrary) {
       const urlParts = selection.src.split("/");
@@ -333,13 +375,16 @@ function showRandomPreview(previewZone, grid, fs, wm) {
 
       wm.sendNotify(`Saved as "${fileName}"`);
     } else {
-      wm.sendNotify(`Wallpaper set to "${selection.label}"`);
+      wm.sendNotify(`${isLogin ? "Login" : "Desktop"} wallpaper set to "${selection.label}"`);
     }
 
     previewZone.classList.remove("wp-preview-active");
     previewZone.innerHTML = "";
     await refreshWallpaperGrid(fs, grid, wm, previewZone);
   };
+
+  overlay.querySelector(".wp-save-btn").onclick = () => saveRandomWallpaper(false);
+  overlay.querySelector(".wp-save-login-btn").onclick = () => saveRandomWallpaper(true);
 
   inner.appendChild(media);
   inner.appendChild(overlay);

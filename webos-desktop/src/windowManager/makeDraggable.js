@@ -108,7 +108,7 @@ export function _getSnapZone(wm, x, y) {
   const h = window.innerHeight;
 
   const taskbar = document.getElementById("taskbar");
-  let taskbarPosition = "bottom"; // fallback to bottom
+  let taskbarPosition = "bottom";
   let taskbarWidth = 0;
   let taskbarHeight = 0;
 

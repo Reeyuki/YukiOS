@@ -74,6 +74,7 @@ export const BusEvents = Object.freeze({
   TERMINAL_CMD_EXECUTED: "terminal:cmd-executed",
 
   WALLPAPER_CHANGED: "desktop:wallpaper-changed",
+  LOGIN_WALLPAPER_CHANGED: "desktop:login-wallpaper-changed",
 
   DESKTOP_ICON_ADDED: "desktop:icon-added",
 
@@ -85,5 +86,7 @@ export const BusEvents = Object.freeze({
 
   WORKSPACE_REMOVED: "workspace:removed",
   FILE_CHANGED: "file:changed",
-  SESSION_INITIALIZED: "session:initialized"
+  SESSION_INITIALIZED: "session:initialized",
+  SYSTEM_LOCKED: "system:locked",
+  SYSTEM_UNLOCKED: "system:unlocked"
 });

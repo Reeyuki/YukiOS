@@ -327,7 +327,6 @@ export class FileSystemManager {
   async setSession(sessionKey) {
     this.sessionKey = sessionKey;
     this.CONFIG.ROOT = `${this.CONFIG.USER_BASE}/${sessionKey}`;
-    // Re-ensure defaults for the new session root
     if (this.fs) {
       await this.ensureDefaults();
     } else {
@@ -489,10 +488,6 @@ export class FileSystemManager {
   }
 
   async ensureDefaults() {
-    // Legacy support: if we are in "guest" session and /home/reeyuki exists but /ys/users/guest doesn't,
-    // we might want to migrate or just keep it.
-    // For now, let's just ensure the current root has the default structure.
-
     const userHome = {
       [this.sessionKey]: defaultStorage.home.reeyuki
     };

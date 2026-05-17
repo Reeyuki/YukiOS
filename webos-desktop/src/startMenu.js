@@ -165,9 +165,19 @@ function setupStars() {
   });
 }
 
-export function setupStartMenu(appLauncher) {
+export function setupStartMenu(appLauncher, sessionManager) {
   sharedAppLauncher = appLauncher;
   document.querySelector(".start-menu")?.addEventListener("contextmenu", (e) => e.preventDefault());
+
+  document.getElementById("start-lock-btn")?.addEventListener("click", () => {
+    closeStartMenu();
+    sessionManager?.lockSession();
+  });
+
+  document.getElementById("start-signout-btn")?.addEventListener("click", () => {
+    closeStartMenu();
+    sessionManager?.lockToLoginScreen();
+  });
 
   document.querySelectorAll(".start-cat").forEach((cat) => {
     if (cat.classList.contains("docked") || !cat.dataset.cat) {
@@ -247,7 +257,7 @@ export function tryGetIcon(id) {
   id = camelize(id);
 
   if (id === "explorer") {
-    return resolveIconUrl("static/icons/files.webp");
+    return resolveIconUrl("static/icons/file.webp");
   }
   if (id === "appCreatorApp") {
     return "fa fa-cubes";

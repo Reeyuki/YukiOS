@@ -201,7 +201,7 @@ const FileUtils = {
     if (content instanceof Uint8Array) return content.buffer;
     if (content instanceof Blob) return content.arrayBuffer();
     if (typeof content === "string") {
-      if (content.startsWith("data:")) {
+      if (content.startsWith("data:") || content.startsWith("http") || content.startsWith("/")) {
         const resp = await fetch(content);
         return resp.arrayBuffer();
       }

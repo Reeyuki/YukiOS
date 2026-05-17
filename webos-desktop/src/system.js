@@ -19,16 +19,25 @@ function isBlob(obj) {
 
 class WallpaperStore {
   static _currentWallpaperBlobUrl = null;
+  static _currentLoginWallpaperBlobUrl = null;
   static WP_BLOB_DB_NAME = "wallpaper-blobs-db";
   static WP_BLOB_DB_VERSION = 1;
   static WP_BLOB_STORE = "wallpapers";
   static WP_BLOB_KEY = "current";
+  static WP_LOGIN_BLOB_KEY = "login_current";
   static _wpBlobDB = null;
 
-  static _revokeWallpaperBlob() {
-    if (this._currentWallpaperBlobUrl) {
-      URL.revokeObjectURL(this._currentWallpaperBlobUrl);
-      this._currentWallpaperBlobUrl = null;
+  static _revokeWallpaperBlob(isLogin = false) {
+    if (isLogin) {
+      if (this._currentLoginWallpaperBlobUrl) {
+        URL.revokeObjectURL(this._currentLoginWallpaperBlobUrl);
+        this._currentLoginWallpaperBlobUrl = null;
+      }
+    } else {
+      if (this._currentWallpaperBlobUrl) {
+        URL.revokeObjectURL(this._currentWallpaperBlobUrl);
+        this._currentWallpaperBlobUrl = null;
+      }
     }
   }
 
@@ -65,31 +74,31 @@ class WallpaperStore {
     });
   }
 
-  static async _storeWallpaperBlob(blob) {
+  static async _storeWallpaperBlob(blob, key = this.WP_BLOB_KEY) {
     const db = await this._openWpBlobDB();
     return new Promise((resolve, reject) => {
       const tx = db.transaction(this.WP_BLOB_STORE, "readwrite");
-      tx.objectStore(this.WP_BLOB_STORE).put(blob, this.WP_BLOB_KEY);
+      tx.objectStore(this.WP_BLOB_STORE).put(blob, key);
       tx.oncomplete = () => resolve();
       tx.onerror = (e) => reject(e);
     });
   }
 
-  static async _loadWallpaperBlob() {
+  static async _loadWallpaperBlob(key = this.WP_BLOB_KEY) {
     const db = await this._openWpBlobDB();
     return new Promise((resolve, reject) => {
       const tx = db.transaction(this.WP_BLOB_STORE, "readonly");
-      const req = tx.objectStore(this.WP_BLOB_STORE).get(this.WP_BLOB_KEY);
+      const req = tx.objectStore(this.WP_BLOB_STORE).get(key);
       req.onsuccess = () => resolve(req.result ?? null);
       req.onerror = (e) => reject(e);
     });
   }
 
-  static async _clearWallpaperBlob() {
+  static async _clearWallpaperBlob(key = this.WP_BLOB_KEY) {
     const db = await this._openWpBlobDB();
     return new Promise((resolve, reject) => {
       const tx = db.transaction(this.WP_BLOB_STORE, "readwrite");
-      tx.objectStore(this.WP_BLOB_STORE).delete(this.WP_BLOB_KEY);
+      tx.objectStore(this.WP_BLOB_STORE).delete(key);
       tx.oncomplete = () => resolve();
       tx.onerror = (e) => reject(e);
     });
@@ -201,6 +210,72 @@ class WallpaperManager {
       localStorage.setItem(StorageKeys.wallpaperKey, wallpaperURL);
       this.applyWallpaper(wallpaperURL);
     }
+  }
+
+  static async setLoginWallpaper(wallpaperURL) {
+    if (wallpaperURL === "none" || !wallpaperURL) {
+      localStorage.removeItem(StorageKeys.loginWallpaperKey);
+      await WallpaperStore._clearWallpaperBlob(WallpaperStore.WP_LOGIN_BLOB_KEY).catch(() => {});
+      bus.emit(BusEvents.LOGIN_WALLPAPER_CHANGED, { url: null });
+      return;
+    }
+
+    if (isBlob(wallpaperURL)) {
+      const type = wallpaperURL.type.startsWith("video/") ? "video" : "img";
+      await WallpaperStore._storeWallpaperBlob(wallpaperURL, WallpaperStore.WP_LOGIN_BLOB_KEY);
+      localStorage.setItem(StorageKeys.loginWallpaperKey, type === "video" ? "__blob_video__" : "__blob_image__");
+      bus.emit(BusEvents.LOGIN_WALLPAPER_CHANGED, { url: "__blob__" });
+      return;
+    }
+
+    wallpaperURL = this._normalizeWallpaperUrl(wallpaperURL);
+    localStorage.setItem(StorageKeys.loginWallpaperKey, wallpaperURL);
+    bus.emit(BusEvents.LOGIN_WALLPAPER_CHANGED, { url: wallpaperURL });
+
+    if (WallpaperStore._isBase64Video(wallpaperURL)) {
+      const blob = this._dataURItoBlob(wallpaperURL);
+      await WallpaperStore._storeWallpaperBlob(blob, WallpaperStore.WP_LOGIN_BLOB_KEY);
+      localStorage.setItem(StorageKeys.loginWallpaperKey, "__blob_video__");
+    } else if (WallpaperStore._isBase64Image(wallpaperURL)) {
+      if (wallpaperURL.length > 524288) {
+        const blob = this._dataURItoBlob(wallpaperURL);
+        await WallpaperStore._storeWallpaperBlob(blob, WallpaperStore.WP_LOGIN_BLOB_KEY);
+        localStorage.setItem(StorageKeys.loginWallpaperKey, "__blob_image__");
+      } else {
+        await WallpaperStore._clearWallpaperBlob(WallpaperStore.WP_LOGIN_BLOB_KEY).catch(() => {});
+      }
+    } else {
+      await WallpaperStore._clearWallpaperBlob(WallpaperStore.WP_LOGIN_BLOB_KEY).catch(() => {});
+    }
+  }
+
+  static async getLoginWallpaper() {
+    const saved = localStorage.getItem(StorageKeys.loginWallpaperKey);
+    if (!saved || saved === "none") return null;
+    if (saved === "__blob_video__" || saved === "__blob_image__") {
+      try {
+        const blob = await WallpaperStore._loadWallpaperBlob(WallpaperStore.WP_LOGIN_BLOB_KEY);
+        if (blob) {
+          WallpaperStore._revokeWallpaperBlob(true);
+          WallpaperStore._currentLoginWallpaperBlobUrl = URL.createObjectURL(blob);
+          return { url: WallpaperStore._currentLoginWallpaperBlobUrl, isVideo: saved === "__blob_video__" };
+        }
+      } catch (e) {}
+      return null;
+    }
+    if (WallpaperStore._isBase64Video(saved)) {
+      WallpaperStore._revokeWallpaperBlob(true);
+      WallpaperStore._currentLoginWallpaperBlobUrl = WallpaperStore._base64ToBlobUrl(saved);
+      return { url: WallpaperStore._currentLoginWallpaperBlobUrl, isVideo: true };
+    }
+    if (WallpaperStore._isBase64Image(saved)) {
+      WallpaperStore._revokeWallpaperBlob(true);
+      WallpaperStore._currentLoginWallpaperBlobUrl = WallpaperStore._base64ToBlobUrl(saved);
+      return { url: WallpaperStore._currentLoginWallpaperBlobUrl, isVideo: false };
+    }
+    const isVideo =
+      typeof saved === "string" && (saved.toLowerCase().endsWith(".mp4") || saved.toLowerCase().endsWith(".webm"));
+    return { url: saved, isVideo };
   }
 
   static _dataURItoBlob(dataUrl) {
@@ -438,5 +513,11 @@ export class SystemUtilities {
   }
   static async setWallpaper(url) {
     await WallpaperManager.setWallpaper(url);
+  }
+  static async setLoginWallpaper(url) {
+    await WallpaperManager.setLoginWallpaper(url);
+  }
+  static async getLoginWallpaper() {
+    return await WallpaperManager.getLoginWallpaper();
   }
 }

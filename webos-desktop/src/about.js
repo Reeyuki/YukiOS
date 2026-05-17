@@ -1,7 +1,7 @@
 import { BaseApp } from "./core/BaseApp.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
 import { resolveGhUrl } from "./shared/assetResolver.js";
-
+export const YUKIOS_VERSION = "v1.3.0";
 export class AboutApp extends BaseApp {
   constructor(services) {
     super(services);
@@ -11,8 +11,6 @@ export class AboutApp extends BaseApp {
   open() {
     const winId = "about-yukios";
     if (this._isSingletonOpen(winId)) return;
-
-    const version = "1.2.0";
 
     const capabilities = [
       {
@@ -235,7 +233,7 @@ export class AboutApp extends BaseApp {
             </div>
 
             <div class="abx-meta">
-              <div class="abx-pill">Version ${version}</div>
+              <div class="abx-pill">Version ${YUKIOS_VERSION}</div>
             </div>
           </div>
 

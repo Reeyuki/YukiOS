@@ -363,7 +363,6 @@ export class EmulatorApp extends BaseApp {
   }
 
   async _handleZipFile(arrayBuffer, fileName) {
-    // Would need JSZip or similar library to handle zip extraction
     this.wm.sendNotify("ZIP file support requires additional library. Please extract and upload individual ROMs.");
   }
 

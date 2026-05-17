@@ -1,9 +1,9 @@
 import { PROXIES, clampProxyIndex, buildProxyUrl } from "./proxies.js";
 import { BaseApp } from "./core/BaseApp.js";
 import { resolveIconUrl } from "./assetUrl.js";
-import { bus, BusEvents } from "./core/EventBus.js";
 import { customConfirm } from "./shared/dialogs.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
+import { StorageKeys } from "./settings.js";
 
 export class BrowserApp extends BaseApp {
   static refreshIcons(node) {
@@ -55,15 +55,18 @@ export class BrowserApp extends BaseApp {
 
   _loadPrefs() {
     try {
-      this.bookmarks = JSON.parse(localStorage.getItem("browser_bookmarks")) || [];
-      this.downloads = JSON.parse(localStorage.getItem("browser_downloads")) || [];
-      this.history = JSON.parse(localStorage.getItem("browser_history")) || [];
-      this.showBookmarkBar = localStorage.getItem("browser_show_bookmarks") !== "false";
-      this.zoomLevel = parseFloat(localStorage.getItem("browser_zoom")) || 1.0;
-      this.currentProxyIndex = clampProxyIndex(parseInt(localStorage.getItem("browser_proxy_index")), this.proxies);
-      this.darkModeEnabled = localStorage.getItem("browser_dark_mode") === "true";
-      this.darkModeExclusions = JSON.parse(localStorage.getItem("browser_dark_exclusions") || "{}");
-      this.homepageUrl = localStorage.getItem("browser_homepage") || "yuki://home";
+      this.bookmarks = JSON.parse(localStorage.getItem(StorageKeys.browserBookmarks)) || [];
+      this.downloads = JSON.parse(localStorage.getItem(StorageKeys.browserDownloads)) || [];
+      this.history = JSON.parse(localStorage.getItem(StorageKeys.browserHistory)) || [];
+      this.showBookmarkBar = localStorage.getItem(StorageKeys.browserShowBookmarks) !== "false";
+      this.zoomLevel = parseFloat(localStorage.getItem(StorageKeys.browserZoom)) || 1.0;
+      this.currentProxyIndex = clampProxyIndex(
+        parseInt(localStorage.getItem(StorageKeys.browserProxyIndex)),
+        this.proxies
+      );
+      this.darkModeEnabled = localStorage.getItem(StorageKeys.browserDarkMode) === "true";
+      this.darkModeExclusions = JSON.parse(localStorage.getItem(StorageKeys.browserDarkExclusions) || "{}");
+      this.homepageUrl = localStorage.getItem(StorageKeys.browserHomepage) || "yuki://home";
     } catch (e) {
       this.bookmarks = [];
       this.downloads = [];
@@ -78,27 +81,27 @@ export class BrowserApp extends BaseApp {
 
     if (!Array.isArray(this.bookmarks) || this.bookmarks.length === 0) {
       this.bookmarks = this.defaultBookmarks;
-      localStorage.setItem("browser_bookmarks", JSON.stringify(this.bookmarks));
+      localStorage.setItem(StorageKeys.browserBookmarks, JSON.stringify(this.bookmarks));
     }
   }
 
   _saveBookmarks() {
-    localStorage.setItem("browser_bookmarks", JSON.stringify(this.bookmarks));
+    localStorage.setItem(StorageKeys.browserBookmarks, JSON.stringify(this.bookmarks));
   }
   _saveDownloads() {
-    localStorage.setItem("browser_downloads", JSON.stringify(this.downloads));
+    localStorage.setItem(StorageKeys.browserDownloads, JSON.stringify(this.downloads));
   }
   _saveHistory() {
-    localStorage.setItem("browser_history", JSON.stringify(this.history.slice(-500)));
+    localStorage.setItem(StorageKeys.browserHistory, JSON.stringify(this.history.slice(-500)));
   }
 
   _savePrefs() {
-    localStorage.setItem("browser_show_bookmarks", String(this.showBookmarkBar));
-    localStorage.setItem("browser_zoom", String(this.zoomLevel));
-    localStorage.setItem("browser_proxy_index", String(this.currentProxyIndex));
-    localStorage.setItem("browser_dark_mode", String(this.darkModeEnabled));
-    localStorage.setItem("browser_dark_exclusions", JSON.stringify(this.darkModeExclusions));
-    localStorage.setItem("browser_homepage", this.homepageUrl);
+    localStorage.setItem(StorageKeys.browserShowBookmarks, String(this.showBookmarkBar));
+    localStorage.setItem(StorageKeys.browserZoom, String(this.zoomLevel));
+    localStorage.setItem(StorageKeys.browserProxyIndex, String(this.currentProxyIndex));
+    localStorage.setItem(StorageKeys.browserDarkMode, String(this.darkModeEnabled));
+    localStorage.setItem(StorageKeys.browserDarkExclusions, JSON.stringify(this.darkModeExclusions));
+    localStorage.setItem(StorageKeys.browserHomepage, this.homepageUrl);
   }
 
   _addToHistory(url, title) {
@@ -133,16 +136,7 @@ export class BrowserApp extends BaseApp {
     return url === "yuki://home";
   }
 
-  injectStyles() {
-    if (document.getElementById("browser-app-styles")) return;
-    const style = document.createElement("style");
-    style.id = "browser-app-styles";
-    style.textContent = ``;
-    document.head.appendChild(style);
-  }
-
   open(title = "Yuki Browser", url = null) {
-    this.injectStyles();
     if (this._isSingletonOpen(this.winId)) return;
 
     this._destroyed = false;

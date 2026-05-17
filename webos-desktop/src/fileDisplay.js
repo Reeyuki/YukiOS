@@ -292,7 +292,7 @@ export function openMediaViewer(name, src, kind, windowManager) {
   `;
 
   const win = windowHelper.createAndMountWindow(`media-${Date.now()}`, name, content, width, height, {
-    icon: isAudio ? resolveIconUrl("static/icons/spot.webp") : resolveIconUrl("static/icons/files.webp")
+    icon: isAudio ? resolveIconUrl("static/icons/spot.webp") : resolveIconUrl("static/icons/file.webp")
   });
 }
 

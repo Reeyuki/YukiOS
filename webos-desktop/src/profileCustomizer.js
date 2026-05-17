@@ -1,4 +1,5 @@
 import { BaseApp } from "./core/BaseApp.js";
+import { BusEvents } from "./core/EventBus.js";
 import { refreshSteamUI } from "./games.js";
 import { customAlert } from "./shared/dialogs.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
@@ -30,7 +31,7 @@ export class ProfileCustomizerApp extends BaseApp {
   }
 
   _setupEventListener() {
-    this._services.eventBus.on("SESSION_INITIALIZED", (session) => {
+    this._services.eventBus.on(BusEvents.SESSION_INITIALIZED, (session) => {
       this.updateProfileState(session.name, session.avatar);
     });
   }

@@ -29,5 +29,5 @@ export function resolveDesktopIcon(content, fileName = null) {
     }
   }
 
-  return icon || resolveIconUrl("static/icons/files.webp");
+  return icon || resolveIconUrl("static/icons/file.webp");
 }

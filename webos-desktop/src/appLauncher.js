@@ -51,7 +51,8 @@ export class AppLauncher {
     profileCustomizerApp,
     markdownApp,
     emulatorApp,
-    ruffleApp
+    ruffleApp,
+    shortcutsApp
   ) {
     this.wm = windowManager;
     this.windowHelper = new WindowHelper(this.wm);
@@ -81,6 +82,7 @@ export class AppLauncher {
     this.markdownApp = markdownApp;
     this.emulatorApp = emulatorApp;
     this.ruffleApp = ruffleApp;
+    this.shortcutsApp = shortcutsApp;
     this.TRANSPARENCY_ALLOWED_APP_IDS = new Set(["paint", "photopea", "vscode", "liventcord"]);
 
     this.clippyPromise = initClippy();
@@ -161,6 +163,12 @@ export class AppLauncher {
         title: "About",
         action: (extra) => this.aboutApp.open(extra),
         clippy: { message: "Your system is running smoothly.", animation: "Acknowledge" }
+      },
+      shortcutsApp: {
+        type: "system",
+        title: "Shortcuts",
+        action: (extra) => this.shortcutsApp.open(extra),
+        clippy: { message: "Press Ctrl+K to open Command Palette!", animation: "animate" }
       },
       newsApp: {
         type: "system",
@@ -467,19 +475,19 @@ export class AppLauncher {
       const now = Date.now();
       const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
-      const stats = JSON.parse(localStorage.getItem("steam_stats") || "{}");
+      const stats = JSON.parse(localStorage.getItem(StorageKeys.steamStats) || "{}");
       if (!stats[appId]) {
         stats[appId] = { totalMin: 0, lastPlayed: 0 };
       }
       stats[appId].totalMin += minutes;
       stats[appId].lastPlayed = now;
-      localStorage.setItem("steam_stats", JSON.stringify(stats));
+      localStorage.setItem(StorageKeys.steamStats, JSON.stringify(stats));
 
-      const sessions = JSON.parse(localStorage.getItem("steam_sessions") || "{}");
+      const sessions = JSON.parse(localStorage.getItem(StorageKeys.steamSessions) || "{}");
       if (!sessions[appId]) sessions[appId] = [];
       sessions[appId].push({ ts: now, min: minutes });
       sessions[appId] = sessions[appId].filter((s) => now - s.ts < ONE_WEEK_MS);
-      localStorage.setItem("steam_sessions", JSON.stringify(sessions));
+      localStorage.setItem(StorageKeys.steamSessions, JSON.stringify(sessions));
     } catch (e) {}
   }
 

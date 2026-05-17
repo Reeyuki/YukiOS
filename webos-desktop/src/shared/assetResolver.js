@@ -1,3 +1,5 @@
+import { StorageKeys } from "../StorageKeys.js";
+
 export const CDN_MIRRORS = [
   {
     id: "jsdelivr",
@@ -43,16 +45,19 @@ export const CDN_MIRRORS = [
   }
 ];
 
-let currentMirrorId = localStorage.getItem("yukiOS_cdnMirror") || "jsdelivr";
+let currentMirrorId = null;
 
 export function getCdnMirror() {
+  if (currentMirrorId === null) {
+    currentMirrorId = localStorage.getItem(StorageKeys.cdnMirror) || "jsdelivr";
+  }
   return currentMirrorId;
 }
 
 export function setCdnMirror(id) {
   if (CDN_MIRRORS.find((m) => m.id === id)) {
     currentMirrorId = id;
-    localStorage.setItem("yukiOS_cdnMirror", id);
+    localStorage.setItem(StorageKeys.cdnMirror, id);
   }
 }
 
@@ -68,7 +73,7 @@ export function resolveGhUrl(url) {
   const b = match[4] || "main";
   const p = match[5];
 
-  const mirror = CDN_MIRRORS.find((m) => m.id === currentMirrorId) || CDN_MIRRORS[0];
+  const mirror = CDN_MIRRORS.find((m) => m.id === getCdnMirror()) || CDN_MIRRORS[0];
   const cleanP = (p || "").startsWith("/") ? p.substring(1) : p || "";
   let resolved = mirror.ghTemplate.replace("${u}", u).replace("${r}", r).replace("${b}", b).replace("${p}", cleanP);
 
@@ -87,7 +92,7 @@ export function resolveNpmUrl(url) {
 
   const p = match[2];
 
-  const mirror = CDN_MIRRORS.find((m) => m.id === currentMirrorId) || CDN_MIRRORS[0];
+  const mirror = CDN_MIRRORS.find((m) => m.id === getCdnMirror()) || CDN_MIRRORS[0];
   return mirror.npmTemplate.replace("${p}", p);
 }
 
@@ -198,7 +203,7 @@ export function resolveYukiAsset(path) {
 
   const cleanPath = path.startsWith("/") ? path.substring(1) : path;
 
-  const mirror = CDN_MIRRORS.find((m) => m.id === currentMirrorId) || CDN_MIRRORS[0];
+  const mirror = CDN_MIRRORS.find((m) => m.id === getCdnMirror()) || CDN_MIRRORS[0];
 
   const user = "Reeyuki";
   const repo = "yukios";

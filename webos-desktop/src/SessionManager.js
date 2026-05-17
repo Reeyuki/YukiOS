@@ -1,22 +1,39 @@
 import { bus, BusEvents } from "./core/EventBus.js";
 import { PREDEFINED_AVATARS, STORAGE_KEYS } from "./profileCustomizer.js";
 import { resolveIconUrl } from "./shared/assetResolver.js";
+import { StorageKeys } from "./settings.js";
+import { SystemUtilities } from "./system.js";
 
 export class SessionManager {
   constructor(services) {
     this.services = services;
     this.currentSession = null;
     this.container = null;
+    this.isLocked = false;
+    this.lockContainer = null;
+    this.timeInterval = null;
   }
 
   async showLogin() {
+    if (localStorage.getItem(StorageKeys.disableBootScreen) === "true") {
+      const lastUsername = localStorage.getItem(STORAGE_KEYS.username) || "";
+      const lastAvatar = localStorage.getItem(STORAGE_KEYS.profilePicture) || PREDEFINED_AVATARS[0];
+      const displayName = lastUsername || "Guest";
+      const sessionKey = lastUsername.toLowerCase().replace(/[^a-z0-9]/g, "") || "guest";
+      this.currentSession = {
+        name: displayName,
+        key: sessionKey,
+        avatar: lastAvatar
+      };
+      await this._initializeSession();
+      return this.currentSession;
+    }
     return new Promise((resolve) => {
       this._createUI(resolve);
     });
   }
 
   _createUI(onComplete) {
-    // Prevent multiple login screens
     if (document.getElementById("login-screen-container")) return;
 
     this.container = document.createElement("div");
@@ -79,6 +96,33 @@ export class SessionManager {
     document.body.appendChild(this.container);
     this._injectStyles();
     this._bindEvents(onComplete);
+    this._applyLoginWallpaper(this.container);
+  }
+
+  async _applyLoginWallpaper(container) {
+    const wp = await SystemUtilities.getLoginWallpaper();
+    let bgEl = container.querySelector(".login-wallpaper-bg");
+    if (!wp) {
+      if (bgEl) bgEl.remove();
+      return;
+    }
+    if (!bgEl) {
+      bgEl = wp.isVideo ? document.createElement("video") : document.createElement("img");
+      bgEl.className = "login-wallpaper-bg";
+      container.insertBefore(bgEl, container.firstChild);
+    } else if (wp.isVideo !== (bgEl.tagName.toLowerCase() === "video")) {
+      bgEl.remove();
+      bgEl = wp.isVideo ? document.createElement("video") : document.createElement("img");
+      bgEl.className = "login-wallpaper-bg";
+      container.insertBefore(bgEl, container.firstChild);
+    }
+    bgEl.src = wp.url;
+    if (wp.isVideo) {
+      bgEl.autoplay = true;
+      bgEl.loop = true;
+      bgEl.muted = true;
+      bgEl.playsInline = true;
+    }
   }
 
   _injectStyles() {
@@ -97,6 +141,15 @@ export class SessionManager {
         animation: fadeIn 0.8s ease-out;
         font-family: 'Inter', system-ui, -apple-system, sans-serif;
         color: #fff;
+      }
+
+      .login-wallpaper-bg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: -1;
       }
 
       @keyframes fadeIn {
@@ -182,7 +235,7 @@ export class SessionManager {
         background: rgba(255, 255, 255, 0.05);
         border: 1px solid rgba(255, 255, 255, 0.1);
         border-radius: 12px;
-        padding: 12px 12px 12px 42px;
+        padding: 12px 12px 12px 12px;
         color: #fff;
         font-size: 14px;
         transition: all 0.2s;
@@ -350,7 +403,6 @@ export class SessionManager {
 
     let selectedAvatar = localStorage.getItem(STORAGE_KEYS.profilePicture) || PREDEFINED_AVATARS[0];
 
-    // Avatar selection
     grid.addEventListener("click", (e) => {
       const tile = e.target.closest(".avatar-tile");
       if (!tile) return;
@@ -360,7 +412,6 @@ export class SessionManager {
       selectedAvatar = tile.dataset.url;
     });
 
-    // Upload
     uploadBtn.addEventListener("click", () => {
       const input = document.createElement("input");
       input.type = "file";
@@ -374,7 +425,6 @@ export class SessionManager {
           const dataUrl = event.target.result;
           selectedAvatar = dataUrl;
 
-          // Add to grid
           const newTile = document.createElement("div");
           newTile.className = "avatar-tile active";
           newTile.dataset.url = dataUrl;
@@ -392,7 +442,6 @@ export class SessionManager {
       input.click();
     });
 
-    // Continue
     const handleContinue = async () => {
       const nickname = nicknameInput.value.trim();
       const displayName = nickname || "Guest";
@@ -404,10 +453,8 @@ export class SessionManager {
         avatar: selectedAvatar
       };
 
-      // Fade out
       this.container.classList.add("exit");
 
-      // Initialize systems
       await this._initializeSession();
 
       setTimeout(() => {
@@ -417,26 +464,232 @@ export class SessionManager {
     };
 
     continueBtn.addEventListener("click", handleContinue);
-    nicknameInput.addEventListener("keypress", (e) => {
-      if (e.key === "Enter") handleContinue();
+    nicknameInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        continueBtn.click();
+      }
     });
   }
 
   async _initializeSession() {
     const { name, key, avatar } = this.currentSession;
 
-    // 1. Update Filesystem
     if (this.services.fileSystemManager) {
       await this.services.fileSystemManager.setSession(key);
     }
 
-    // 2. Update Profile State (will be picked up by EventBus listener in ProfileCustomizerApp)
-    // But we also want to emit it now for other systems
     bus.emit(BusEvents.SESSION_INITIALIZED, this.currentSession);
 
     if (this.services.windowManager) {
       this.services.windowManager.setFileSystemManager(this.services.fileSystemManager);
       await this.services.windowManager.restoreSession();
     }
+  }
+
+  lockToLoginScreen() {
+    if (this.isLocked) return;
+    this.isLocked = true;
+
+    if (this.services.windowManager && typeof this.services.windowManager.closeAll === "function") {
+      this.services.windowManager.closeAll();
+    }
+
+    const startMenu = document.getElementById("start-menu");
+    if (startMenu) {
+      startMenu.style.display = "none";
+      startMenu.classList.remove("closing");
+    }
+
+    return new Promise((resolve) => {
+      this._createUI((session) => {
+        this.isLocked = false;
+        resolve(session);
+      });
+    });
+  }
+
+  lockSession() {
+    if (!this.currentSession || this.isLocked) return;
+    this.isLocked = true;
+
+    this.lastActiveWindow = document.querySelector(".window.active") || null;
+
+    this._createLockUI();
+
+    bus.emit(BusEvents.SYSTEM_LOCKED, this.currentSession);
+  }
+
+  unlockSession() {
+    if (!this.isLocked) return;
+    this.isLocked = false;
+
+    if (this.lockContainer) {
+      this.lockContainer.remove();
+      this.lockContainer = null;
+    }
+
+    if (this.timeInterval) {
+      clearInterval(this.timeInterval);
+      this.timeInterval = null;
+    }
+
+    if (this.lastActiveWindow && this.services.windowManager) {
+      this.services.windowManager.bringToFront(this.lastActiveWindow);
+    }
+    this.lastActiveWindow = null;
+
+    bus.emit(BusEvents.SYSTEM_UNLOCKED, this.currentSession);
+  }
+
+  _createLockUI() {
+    if (document.getElementById("lock-screen-container")) return;
+
+    this.lockContainer = document.createElement("div");
+    this.lockContainer.id = "lock-screen-container";
+    this.lockContainer.className = "lock-screen-overlay";
+
+    const { name, avatar } = this.currentSession;
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    const dateStr = now.toLocaleDateString([], { weekday: "long", month: "short", day: "numeric" });
+
+    this.lockContainer.innerHTML = `
+      <div class="lock-background"></div>
+      <div class="lock-content">
+        <div class="lock-time">${timeStr}</div>
+        <div class="lock-date">${dateStr}</div>
+        <div class="lock-user">
+          <img src="${avatar}" alt="Avatar">
+          <h2>${name}</h2>
+        </div>
+        <button class="btn-primary" id="lock-unlock-btn">
+          Unlock <i class="fas fa-unlock"></i>
+        </button>
+      </div>
+    `;
+
+    document.body.appendChild(this.lockContainer);
+    this._injectLockStyles();
+    this._applyLoginWallpaper(this.lockContainer);
+
+    const unlockBtn = this.lockContainer.querySelector("#lock-unlock-btn");
+    unlockBtn.addEventListener("click", () => this.unlockSession());
+
+    this.timeInterval = setInterval(() => {
+      if (!this.isLocked || !this.lockContainer) {
+        clearInterval(this.timeInterval);
+        return;
+      }
+      const timeEl = this.lockContainer.querySelector(".lock-time");
+      if (timeEl) {
+        const d = new Date();
+        timeEl.textContent = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      }
+    }, 1000 * 60);
+
+    unlockBtn.focus();
+  }
+
+  _injectLockStyles() {
+    if (document.getElementById("lock-screen-styles")) return;
+    const style = document.createElement("style");
+    style.id = "lock-screen-styles";
+    style.textContent = `
+      .lock-screen-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 9999999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        color: #fff;
+        animation: fadeIn 0.3s ease-out;
+      }
+
+      .lock-background {
+        position: absolute;
+        inset: 0;
+        background: inherit;
+        backdrop-filter: blur(20px) brightness(0.5);
+        z-index: -1;
+      }
+
+      .lock-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 24px;
+        z-index: 1;
+      }
+
+      .lock-time {
+        font-size: 80px;
+        font-weight: 200;
+        letter-spacing: -2px;
+        text-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      }
+
+      .lock-date {
+        font-size: 24px;
+        font-weight: 400;
+        margin-top: -16px;
+        text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        margin-bottom: 32px;
+      }
+
+      .lock-user {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .lock-user img {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid rgba(255,255,255,0.2);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+      }
+
+      .lock-user h2 {
+        font-size: 28px;
+        font-weight: 600;
+        margin: 0;
+        text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+      }
+
+      #lock-unlock-btn {
+        margin-top: 32px;
+        padding: 12px 32px;
+        border-radius: 24px;
+        background: rgba(255,255,255,0.1);
+        border: 1px solid rgba(255,255,255,0.2);
+        backdrop-filter: blur(10px);
+        color: white;
+        font-size: 18px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      #lock-unlock-btn:hover {
+        background: rgba(255,255,255,0.2);
+        transform: translateY(-2px);
+      }
+      
+      #lock-unlock-btn:focus {
+        outline: 2px solid white;
+        outline-offset: 4px;
+      }
+    `;
+    document.head.appendChild(style);
   }
 }

@@ -3,6 +3,7 @@ import { customAlert, customPrompt } from "./shared/dialogs.js";
 import { SteamDataManager, _launcher, _desktopUI } from "./games.js";
 import { observeLazyImages } from "./games.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
+import { StorageKeys } from "./settings.js";
 import { buildSteamShell, initDropdowns, initStorePage, getCdnBase, initSettingsPage } from "./steam.js";
 import { resolveIconUrl } from "./shared/assetResolver.js";
 
@@ -381,8 +382,8 @@ export class GameUI {
     const hidden = SteamDataManager.getHidden();
     const visibleGames = allGames.filter((g) => !hidden.includes(g.app));
     const hiddenGames = allGames.filter((g) => hidden.includes(g.app));
-    const username = localStorage.getItem("yukiOS_username") || "Reeyuki";
-    const profilePic = localStorage.getItem("yukiOS_profilePicture") || resolveIconUrl("static/icons/guest.webp");
+    const username = localStorage.getItem(StorageKeys.username) || "Reeyuki";
+    const profilePic = localStorage.getItem(StorageKeys.profilePicture) || resolveIconUrl("static/icons/guest.webp");
 
     container.classList.add("steam-app-root");
     container.style.padding = "0";
@@ -489,7 +490,7 @@ export class GameUI {
         this.renderer.history = this.renderer.history.slice(0, this.renderer.historyIndex + 1);
         this.renderer.history.push(page);
         this.renderer.historyIndex++;
-        localStorage.setItem("steam_last_page", page);
+        localStorage.setItem(StorageKeys.steamLastPage, page);
       }
       updatePageUI(page);
     };
@@ -650,9 +651,9 @@ export class GameUI {
       true
     );
 
-    const _lastPage = localStorage.getItem("steam_last_page");
-    const _isReturning = !!localStorage.getItem("steam_visited");
-    localStorage.setItem("steam_visited", "1");
+    const _lastPage = localStorage.getItem(StorageKeys.steamLastPage);
+    const _isReturning = !!localStorage.getItem(StorageKeys.steamVisited);
+    localStorage.setItem(StorageKeys.steamVisited, "1");
 
     if (_isReturning && (_lastPage === "library" || _lastPage === "store")) {
       this.renderer.currentGame = null;
@@ -683,8 +684,8 @@ export class GameUI {
     }
 
     const windowHelper = new WindowHelper(wm);
-    const username = localStorage.getItem("yukiOS_username") || "Reeyuki";
-    const profilePic = localStorage.getItem("yukiOS_profilePicture") || resolveIconUrl("static/icons/guest.webp");
+    const username = localStorage.getItem(StorageKeys.username) || "Reeyuki";
+    const profilePic = localStorage.getItem(StorageKeys.profilePicture) || resolveIconUrl("static/icons/guest.webp");
 
     const content = `
       <div class="window-content" style="display:flex; flex-direction:column; height:100%; color:#dcdedf;">
