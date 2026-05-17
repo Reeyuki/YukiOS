@@ -850,7 +850,7 @@ export class ExplorerApp extends BaseApp {
     if (isImageFile(name)) {
       if (itemData.icon === "@content") {
         const content = await this.fs.getFileContent(inst.currentPath, name);
-        thumbnailSrc = content instanceof Blob ? URL.createObjectURL(content) : content;
+        thumbnailSrc = content instanceof Blob ? await readFileAsDataURL(content) : content;
       } else {
         thumbnailSrc = itemData.icon || itemData.content;
       }

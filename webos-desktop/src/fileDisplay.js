@@ -424,21 +424,29 @@ export async function openFileWith({
         ? (VIDEO_MIME_MAP[getExt(name)] ?? "application/octet-stream")
         : (IMAGE_MIME_MAP[ext] ?? "application/octet-stream");
 
-    const ensureTypedBlobURL = (b) => URL.createObjectURL(b.type ? b : new Blob([b], { type: mime }));
+    const getMediaSrc = async (b) => {
+      const typedBlob = b.type ? b : new Blob([b], { type: mime });
+      return await readFileAsDataURL(typedBlob);
+    };
+
     const blob = await fs.readBinaryFile(path, name);
     if (blob && blob.size > 0) {
-      openMediaViewer(name, ensureTypedBlobURL(blob), kind, windowManager);
+      openMediaViewer(name, await getMediaSrc(blob), kind, windowManager);
       return;
     }
     const content = await fs.getFileContent(path, name);
     if (content instanceof Blob && content.size > 0) {
-      openMediaViewer(name, ensureTypedBlobURL(content), kind, windowManager);
+      openMediaViewer(name, await getMediaSrc(content), kind, windowManager);
       return;
     }
     if (typeof content === "string" && content) {
-      const src = content.startsWith("data:")
-        ? URL.createObjectURL(base64ToBlob(content))
-        : URL.createObjectURL(new Blob([Uint8Array.from(content, (c) => c.charCodeAt(0))], { type: mime }));
+      let src;
+      if (content.startsWith("http") || content.startsWith("/") || content.startsWith("data:")) {
+        src = content;
+      } else {
+        const typedBlob = new Blob([Uint8Array.from(content, (c) => c.charCodeAt(0))], { type: mime });
+        src = await getMediaSrc(typedBlob);
+      }
       openMediaViewer(name, src, kind, windowManager);
     }
     return;

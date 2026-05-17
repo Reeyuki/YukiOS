@@ -4,6 +4,16 @@ import { WindowHelper } from "./utils/WindowHelper.js";
 
 const NEWS_UPDATES = [
   {
+    date: "May 18, 2026",
+    sections: [
+      {
+        icon: "fa-wand-magic-sparkles",
+        title: "Features & Improvements",
+        items: [["fa-star", "Angry Birds 2", "Added angry birds 2."]]
+      }
+    ]
+  },
+  {
     date: "May 17, 2026",
     sections: [
       {

@@ -233,6 +233,12 @@ windowManager.restorePinnedItems();
 
 const ads = new AdsManager(windowManager);
 
+if (location.hostname.endsWith("neocities.org")) {
+  alert(
+    "Neocities does not support loading assets from other domains! OS will be severely limited to load apps and data."
+  );
+}
+
 const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
 const game = urlParams.get("game");

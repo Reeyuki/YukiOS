@@ -2,7 +2,7 @@ import { updateFavoritesUI } from "./startMenu.js";
 import { desktop } from "./desktop.js";
 import { bus, BusEvents } from "./core/EventBus.js";
 import interact from "interactjs";
-import { isImageFile, buildFileIconHTML, openFileWith } from "./fileDisplay.js";
+import { isImageFile, buildFileIconHTML, openFileWith, readFileAsDataURL } from "./fileDisplay.js";
 import { FileKind } from "./fs.js";
 import { StorageKeys } from "./settings.js";
 import { showConflictDialog } from "./shared/conflictDialog.js";
@@ -1573,12 +1573,12 @@ export class DesktopUI {
     } else if (isImageFile(fileName)) {
       if (itemData?.icon === "@content") {
         const content = await this.fs.getFileContent(["Desktop"], fileName);
-        thumbnailSrc = content instanceof Blob ? URL.createObjectURL(content) : content;
+        thumbnailSrc = content instanceof Blob ? await readFileAsDataURL(content) : content;
       } else {
         thumbnailSrc = itemData?.content || itemData?.icon;
         if (!thumbnailSrc) {
           const content = await this.fs.getFileContent(["Desktop"], fileName);
-          thumbnailSrc = content instanceof Blob ? URL.createObjectURL(content) : content;
+          thumbnailSrc = content instanceof Blob ? await readFileAsDataURL(content) : content;
         }
       }
     }
