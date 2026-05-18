@@ -616,9 +616,16 @@ export function initStorePage(container, onLaunch, navigateTo, CDN_BASE_REF, img
     {
       app: "angryBirds2",
       icon: resolveIconUrl("static/icons/angryBirds2.webp"),
-      title: "Angry Birds 2 ",
+      title: "Angry Birds 2",
       tags: ["Slingshot", "Physics", "Puzzle"]
     },
+    {
+      app: "lobotomyCorporation",
+      icon: resolveIconUrl("static/icons/lobotomy.webp"),
+      title: "Lobotomy Corporation,",
+      tags: ["Strategy", "Simulation"]
+    },
+
     {
       app: "plagueIncEvolved",
       icon: resolveIconUrl("static/icons/plague.webp"),

@@ -11,6 +11,12 @@ export const appMap = {
     icon: "/static/icons/slime.webp",
     title: "Slime Rancher Full"
   },
+  lobotomyCorporation: {
+    type: "game",
+    url: "/static/games/html/lobotomy.html",
+    icon: "/static/icons/lobotomy.webp",
+    title: "Lobotomy Corporation"
+  },
   tabs: {
     type: "game",
     url: "https://reeyuki.github.io/Tabs",

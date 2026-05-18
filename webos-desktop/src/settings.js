@@ -408,7 +408,7 @@ export class SettingsApp extends BaseApp {
 
             <div class="settings-label-group">
             <span class="settings-label-title">Hide System Apps</span>
-            <span class="settings-label-desc">Toggle visibility of game icons on desktop</span>
+            <span class="settings-label-desc">Toggle visibility of system apps on desktop</span>
           </div>
           <button class="settings-btn" id="settingsHideAppsBtn">
             <i class="fas fa-eye-slash"></i> Toggle
