@@ -16,6 +16,7 @@ import { resolveDesktopIcon } from "./shared/iconUtils.js";
 
 let sharedAppLauncher;
 export let toggleHideGames = () => {};
+export let toggleHideSystemApps = () => {};
 const GRID_CONFIG = { width: 76, height: 96, gap: 7 };
 
 function isRightAlignedSystemApp(appMap, app) {
@@ -1746,6 +1747,30 @@ export class DesktopUI {
       const next = !currentlyHidden;
       localStorage.setItem(hideGamesKey, String(next));
       applyHideGames(next);
+    };
+
+    const hideSystemKey = "yukios_hide_system";
+    const hideSystemBtn = document.getElementById("hide-system-btn");
+
+    const applyHideSystemApps = (hidden) => {
+      document.querySelectorAll("#desktop .icon").forEach((icon) => {
+        if (appMap[icon.dataset.app] && appMap[icon.dataset.app].type === "system") {
+          icon.style.display = hidden ? "none" : "";
+          if (hidden) this.selectionManager.remove(icon);
+        }
+      });
+      if (hideSystemBtn) hideSystemBtn.textContent = hidden ? "⚙️ Show System Apps" : "⚙️ Hide System Apps";
+      layoutIconsCall();
+    };
+
+    const storedSystemHidden = localStorage.getItem(hideSystemKey) === "true";
+    applyHideSystemApps(storedSystemHidden);
+
+    toggleHideSystemApps = () => {
+      const currentlyHidden = localStorage.getItem(hideSystemKey) === "true";
+      const next = !currentlyHidden;
+      localStorage.setItem(hideSystemKey, String(next));
+      applyHideSystemApps(next);
     };
   }
 }

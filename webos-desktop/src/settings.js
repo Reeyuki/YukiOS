@@ -1,5 +1,5 @@
 import { desktop } from "./desktop.js";
-import { toggleHideGames } from "./desktopui.js";
+import { toggleHideGames, toggleHideSystemApps } from "./desktopui.js";
 import { BaseApp } from "./core/BaseApp.js";
 import { bus, BusEvents } from "./core/EventBus.js";
 import { customAlert, customConfirm, customPrompt } from "./shared/dialogs.js";
@@ -403,6 +403,14 @@ export class SettingsApp extends BaseApp {
             <span class="settings-label-desc">Toggle visibility of game icons on desktop</span>
           </div>
           <button class="settings-btn" id="settingsHideGamesBtn">
+            <i class="fas fa-eye-slash"></i> Toggle
+          </button>
+
+            <div class="settings-label-group">
+            <span class="settings-label-title">Hide System Apps</span>
+            <span class="settings-label-desc">Toggle visibility of game icons on desktop</span>
+          </div>
+          <button class="settings-btn" id="settingsHideAppsBtn">
             <i class="fas fa-eye-slash"></i> Toggle
           </button>
         </div>
@@ -879,6 +887,13 @@ export class SettingsApp extends BaseApp {
       hideGamesBtn.addEventListener("click", () => {
         toggleHideGames();
         showStatus("Games visibility toggled");
+      });
+    }
+    const hideAppsBtn = win.querySelector("#settingsHideAppsBtn");
+    if (hideAppsBtn) {
+      hideAppsBtn.addEventListener("click", () => {
+        toggleHideSystemApps();
+        showStatus("Apps visibility toggled");
       });
     }
 
