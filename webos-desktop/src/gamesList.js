@@ -398,7 +398,7 @@ export const appMap = {
   },
   gtaVc: {
     type: "game",
-    url: "/static/games/html/revc.html",
+    url: "https://yukivcemu.vercel.app/revc",
     icon: "/static/icons/gtavc.webp",
     title: "GTA Vice City"
   },
