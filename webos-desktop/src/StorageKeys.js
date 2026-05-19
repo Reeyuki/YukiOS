@@ -61,5 +61,6 @@ export const StorageKeys = {
   geometryPrefix: "yukiOS_geometry_",
   startMenuWidth: "yukiOS_startMenuWidth",
   startMenuHeight: "yukiOS_startMenuHeight",
-  startMenuCats: "yukiOS_startMenuCats"
+  startMenuCats: "yukiOS_startMenuCats",
+  performanceMode: "yukiOS_performance_mode"
 };

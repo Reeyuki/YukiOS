@@ -225,7 +225,13 @@ export class YouTubeApp extends BaseApp {
     this._renderLists();
   }
 
-  open(title = "YouTube Utilities") {
+  open(titleOrOptions = "YouTube Utilities") {
+    let title = "YouTube Utilities";
+    if (titleOrOptions && typeof titleOrOptions === "object" && !Array.isArray(titleOrOptions)) {
+      title = titleOrOptions.title || "YouTube Utilities";
+    } else if (typeof titleOrOptions === "string") {
+      title = titleOrOptions;
+    }
     const existing = document.getElementById(this.winId);
     if (existing) {
       this.wm.bringToFront(existing);

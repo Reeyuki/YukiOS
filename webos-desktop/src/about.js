@@ -1,7 +1,7 @@
 import { BaseApp } from "./core/BaseApp.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
 import { resolveGhUrl } from "./shared/assetResolver.js";
-export const YUKIOS_VERSION = "v1.3.0";
+export const YUKIOS_VERSION = "v1.3.1";
 export class AboutApp extends BaseApp {
   constructor(services) {
     super(services);
@@ -138,6 +138,43 @@ export class AboutApp extends BaseApp {
           gap: 8px;
         }
 
+        #about-yukios .abx-pill {
+          background: rgba(255, 255, 255, 0.08);
+          padding: 4px 10px;
+          border-radius: 999px;
+          font-size: 0.75rem;
+          font-weight: 500;
+          border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        #about-yukios .abx-discord-link {
+          text-decoration: none;
+          margin-top: 4px;
+        }
+
+        #about-yukios .abx-btn-discord {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 6px 14px;
+          font-size: 0.8rem;
+          font-weight: 600;
+          color: #fff;
+          background: #5865f2;
+          border: 1px solid rgba(88, 101, 242, 0.5);
+          border-radius: 999px;
+          cursor: pointer;
+          transition: background 0.15s ease, transform 0.1s ease;
+        }
+
+        #about-yukios .abx-btn-discord:hover {
+          background: #4752c4;
+        }
+
+        #about-yukios .abx-btn-discord:active {
+          transform: scale(0.97);
+        }
+
         #about-yukios .abx-grid {
           display: grid;
           grid-template-columns: 1fr;
@@ -234,6 +271,11 @@ export class AboutApp extends BaseApp {
 
             <div class="abx-meta">
               <div class="abx-pill">Version ${YUKIOS_VERSION}</div>
+              <a class="abx-discord-link" target="_blank" rel="noopener noreferrer" href="https://discord.gg/2Z8Gvtqt7">
+                <button class="abx-btn-discord">
+                  <i class="fab fa-discord"></i> Join Discord
+                </button>
+              </a>
             </div>
           </div>
 

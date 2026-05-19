@@ -165,17 +165,14 @@ export function _showSnapGhost(wm, zone) {
     ghost.id = "snap-ghost";
     document.getElementById("desktop")?.appendChild(ghost) || document.body.appendChild(ghost);
   }
-  ghost.style.display = "block";
-  ghost.className = "";
-  ghost.classList.add("snap-ghost-active");
-  ghost.classList.add(`snap-ghost-${zone}`);
+  ghost.style.display = "";
+  ghost.className = `snap-ghost-${zone} snap-ghost-active`;
 }
 
 export function _hideSnapGhost(wm) {
   const ghost = document.getElementById("snap-ghost");
   if (ghost) {
-    ghost.style.display = "none";
-    ghost.className = "";
+    ghost.classList.remove("snap-ghost-active");
   }
 }
 

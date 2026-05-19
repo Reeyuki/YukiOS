@@ -234,6 +234,16 @@
   opacity: 1;
 }
 
+#system-tray {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  height: 100%;
+  flex-shrink: 0;
+  color: #fff;
+  font-size: 1em;
+}
+
 #start-button {
   width: 50px;
   height: 40px;
@@ -495,4 +505,36 @@
   height: 100%;
   opacity: 0.12;
   pointer-events: none;
+}
+
+html[data-theme="light"] #taskbar {
+  background: rgba(235, 235, 235, 0.9) !important;
+  color: #111 !important;
+  border-top: 1px solid rgba(0, 0, 0, 0.1) !important;
+}
+
+html[data-theme="light"] .taskbar-btn,
+html[data-theme="light"] .start-btn {
+  color: #111 !important;
+}
+
+html[data-theme="light"] .taskbar-btn:hover {
+  background: rgba(0, 0, 0, 0.05) !important;
+}
+
+html[data-theme="light"] .task-mgr-content {
+  background: #fff !important;
+  color: #111 !important;
+}
+
+html[data-theme="light"] .task-item {
+  border-bottom: 1px solid #eee !important;
+}
+
+html[data-theme="light"] .task-item:hover {
+  background: #f9f9f9 !important;
+}
+
+html[data-theme="light"] .task-item-name {
+  color: #111 !important;
 }

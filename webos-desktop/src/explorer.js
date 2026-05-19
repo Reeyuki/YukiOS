@@ -124,14 +124,13 @@ export class ExplorerApp extends BaseApp {
   _sidebarHTML() {
     return `
       <div class="explorer-sidebar">
-        <div class="start-item" data-path=""><img src="${resolveIconUrl("static/icons/file.webp")}" class="sidebar-icon">Home</div>
-        <div class="start-item" data-path="Documents"><img src="${resolveIconUrl("static/icons/notepad.webp")}" class="sidebar-icon">Documents</div>
+        <div class="start-item" data-path=""><i class="fas fa-home sidebar-icon-fa"></i>Home</div>
+        <div class="start-item" data-path="Documents"><i class="fas fa-file-alt sidebar-icon-fa"></i>Documents</div>
         <div class="start-item" data-path="Desktop"><i class="fas fa-desktop sidebar-icon-fa"></i>Desktop</div>
         <div class="start-item" data-path="Pictures"><i class="fas fa-image sidebar-icon-fa"></i>Pictures</div>
         <div class="start-item" data-path="Videos"><i class="fas fa-video sidebar-icon-fa"></i>Videos</div>
       </div>`;
   }
-
   _bindSidebar(win, inst) {
     win.querySelectorAll(".explorer-sidebar .start-item").forEach((item) => {
       item.onclick = () => this.navigateInstance(inst, item.dataset.path.split("/").filter(Boolean));
@@ -194,7 +193,12 @@ export class ExplorerApp extends BaseApp {
       <div class="explorer-nav">
         <div class="back-btn" id="${winId}-back">← Back</div>
         <div class="back-btn" id="${winId}-next" style="margin-left:4px">→ Next</div>
-        <div style="white-space:pre width:50px" id="${winId}-path"></div>
+        <input
+          type="text"
+          class="explorer-win-path"
+          id="${winId}-path"
+          spellcheck="false"
+        >
         <input
           type="text"
           id="${winId}-search"
@@ -280,7 +284,12 @@ export class ExplorerApp extends BaseApp {
       </div>
       <div class="explorer-nav">
         <div class="back-btn" id="${winId}-back">← Back</div>
-        <div id="${winId}-path"></div>
+        <input
+          type="text"
+          class="explorer-win-path"
+          id="${winId}-path"
+          spellcheck="false"
+        >
       </div>
       <div class="explorer-container">
         <div class="explorer-sidebar">
@@ -364,6 +373,7 @@ export class ExplorerApp extends BaseApp {
 
     this._bindBackButton(win, inst);
     this._bindSidebar(win, inst);
+    this._setupPathInput(win, inst);
     this.navigateInstance(inst, []);
   }
 
@@ -371,6 +381,7 @@ export class ExplorerApp extends BaseApp {
     const inst = this._getInstance(winId);
 
     this._bindBackButton(win, inst);
+    this._setupPathInput(win, inst);
 
     const nextBtn = win.querySelector(`#${winId}-next`);
     if (nextBtn) {
@@ -464,6 +475,51 @@ export class ExplorerApp extends BaseApp {
     this._setupSelectionBox(win, winId);
     this._setupDropZone(win, winId);
     this._setupUploadInputs(win, winId, inst);
+  }
+
+  _setupPathInput(win, inst) {
+    const pathInput = win.querySelector(`#${inst.winId}-path`);
+    if (!pathInput || pathInput.tagName !== "INPUT") return;
+
+    pathInput.addEventListener("keydown", async (e) => {
+      e.stopPropagation();
+      if (e.key === "Enter") {
+        const val = pathInput.value.trim();
+        if (!val || val === "/") {
+          this.navigateInstance(inst, []);
+          return;
+        }
+
+        const targetParts = val.split("/").filter(Boolean);
+        const userDir = this.fs.resolveUserPath(targetParts);
+        try {
+          const exists = await this.fs.exists(userDir);
+          if (exists) {
+            const stat = await this.fs.pStat(userDir);
+            if (stat.isDirectory()) {
+              this.navigateInstance(inst, targetParts);
+            } else {
+              this.wm.sendNotify(`"${val}" is a file, not a directory.`);
+              pathInput.value = "/" + inst.currentPath.join("/");
+            }
+          } else {
+            this.wm.sendNotify(`Directory not found: ${val}`);
+            pathInput.value = "/" + inst.currentPath.join("/");
+          }
+        } catch (err) {
+          this.wm.sendNotify(`Failed to open directory: ${val}`);
+          pathInput.value = "/" + inst.currentPath.join("/");
+        }
+        pathInput.blur();
+      } else if (e.key === "Escape") {
+        pathInput.value = "/" + inst.currentPath.join("/");
+        pathInput.blur();
+      }
+    });
+
+    pathInput.addEventListener("focus", () => {
+      pathInput.select();
+    });
   }
 
   _setupSelectionBox(win, winId) {
@@ -805,7 +861,13 @@ export class ExplorerApp extends BaseApp {
 
     view.innerHTML = "";
     view.classList.remove("games-page");
-    pathDisplay.textContent = "/" + inst.currentPath.join("/");
+    if (pathDisplay) {
+      if (pathDisplay.tagName === "INPUT") {
+        pathDisplay.value = "/" + inst.currentPath.join("/");
+      } else {
+        pathDisplay.textContent = "/" + inst.currentPath.join("/");
+      }
+    }
 
     if (view.style.height === "") view.style.height = "600px";
 

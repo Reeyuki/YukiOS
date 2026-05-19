@@ -678,3 +678,88 @@
   z-index: 9999;
   pointer-events: none;
 }
+
+html[data-theme="light"] .explorer-main {
+  background: #fff !important;
+  color: #111 !important;
+}
+
+html[data-theme="light"] .explorer-sidebar {
+  background: #f0f0f0 !important;
+  border-right: 1px solid #ddd !important;
+}
+
+html[data-theme="light"] .explorer-sidebar .start-item {
+  color: #555 !important;
+}
+
+html[data-theme="light"] .explorer-sidebar .start-item:hover {
+  background: rgba(0, 120, 215, 0.1) !important;
+  color: #000 !important;
+}
+
+html[data-theme="light"] .explorer-toolbar {
+  background: #f9f9f9 !important;
+  border-bottom: 1px solid #ddd !important;
+}
+
+html[data-theme="light"] .explorer-statusbar {
+  background: #f0f0f0 !important;
+  color: #666 !important;
+  border-top: 1px solid #ddd !important;
+}
+
+html[data-theme="light"] .file-item span,
+html[data-theme="light"] .explorer-item-name {
+  color: #111 !important;
+  text-shadow: none !important;
+}
+
+html[data-theme="light"] .explorer-breadcrumb-part {
+  color: #111 !important;
+}
+
+html[data-theme="light"] .explorer-sidebar-item {
+  color: #444 !important;
+}
+
+html[data-theme="light"] .explorer-sidebar-item:hover {
+  background: rgba(0, 0, 0, 0.05) !important;
+}
+
+html[data-theme="light"] .explorer-sidebar-item.active {
+  background: rgba(0, 0, 0, 0.1) !important;
+  color: #000 !important;
+}
+
+.explorer-win-path {
+  flex: 1;
+  padding: 4px 10px;
+  border-radius: var(--r-sm, 6px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: #fff;
+  font-size: 12px;
+  outline: none;
+  font-family: inherit;
+  min-width: 100px;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+}
+
+.explorer-win-path:focus {
+  border-color: rgba(79, 158, 255, 0.5);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+html[data-theme="light"] .explorer-win-path {
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  color: #111;
+}
+
+html[data-theme="light"] .explorer-win-path:focus {
+  border-color: rgba(0, 120, 215, 0.5);
+  background: rgba(0, 0, 0, 0.08);
+}

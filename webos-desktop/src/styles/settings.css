@@ -424,3 +424,71 @@
 .settings-btn[data-alignment].active i:first-child {
   color: white;
 }
+
+html[data-theme="light"] .yuki-settings-layout {
+  background: #f2f2f2 !important;
+  color: #111 !important;
+}
+
+html[data-theme="light"] .yuki-settings-sidebar {
+  background: #e6e6e6 !important;
+  border-right: 1px solid rgba(0, 0, 0, 0.1) !important;
+}
+
+html[data-theme="light"] .yuki-settings-nav li {
+  color: #444 !important;
+  font-weight: 500 !important;
+}
+
+html[data-theme="light"] .yuki-settings-nav li i {
+  color: #666 !important;
+}
+
+html[data-theme="light"] .yuki-settings-nav li:hover {
+  background: rgba(0, 0, 0, 0.05) !important;
+  color: #111 !important;
+}
+
+html[data-theme="light"] .yuki-settings-nav li.active {
+  background: #fff !important;
+  color: var(--brand) !important;
+  border-left: 3px solid var(--brand) !important;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+}
+
+html[data-theme="light"] .settings-label-title {
+  color: #111 !important;
+}
+
+html[data-theme="light"] .settings-label-desc {
+  color: #666 !important;
+}
+
+html[data-theme="light"] .settings-category-header {
+  color: #111 !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+}
+
+html[data-theme="light"] .settings-card-header {
+  color: #555 !important;
+  background: rgba(0, 0, 0, 0.03) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+}
+
+html[data-theme="light"] .settings-row {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+}
+
+html[data-theme="light"] .settings-row:hover {
+  background: rgba(0, 0, 0, 0.02) !important;
+}
+
+html[data-theme="light"] .settings-input,
+html[data-theme="light"] .settings-select {
+  background: #fff !important;
+  color: #111 !important;
+  border: 1px solid #ccc !important;
+}

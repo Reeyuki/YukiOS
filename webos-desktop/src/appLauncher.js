@@ -124,7 +124,7 @@ export class AppLauncher {
       },
       emulatorApp: {
         type: "system",
-        title: "Emulator",
+        title: "Yuki Emulator",
         action: () => this.emulatorApp.open(),
         clippy: { message: "Ready to play some classic games!", animation: "Pleased" }
       },

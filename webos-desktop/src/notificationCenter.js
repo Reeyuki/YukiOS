@@ -115,6 +115,13 @@ export class NotificationCenter {
       document.body.appendChild(container);
     }
 
+    while (container.children.length >= 4) {
+      const oldest = container.firstChild;
+      if (oldest) {
+        oldest.remove();
+      }
+    }
+
     const toast = document.createElement("div");
     const typeMap = {
       info: "ntf-toast--info",
@@ -284,7 +291,9 @@ export class NotificationCenter {
     const center = document.getElementById("ntf-panel");
     if (!center) return;
 
-    center.style.display = "block";
+    center.style.display = "flex";
+    center.offsetHeight;
+    center.classList.add("open");
     this.isOpen = true;
 
     const btn = document.getElementById("ntf-tray-btn");
@@ -295,7 +304,12 @@ export class NotificationCenter {
     const center = document.getElementById("ntf-panel");
     if (!center) return;
 
-    center.style.display = "none";
+    center.classList.remove("open");
+    setTimeout(() => {
+      if (!this.isOpen) {
+        center.style.display = "none";
+      }
+    }, 300);
     this.isOpen = false;
 
     const btn = document.getElementById("ntf-tray-btn");

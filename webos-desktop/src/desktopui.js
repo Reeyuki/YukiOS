@@ -1486,11 +1486,11 @@ export class DesktopUI {
         }
       },
       openExplorer: () => this.explorerApp.open(),
-      setWallpaper: async () => {
-        await this.explorerApp.open();
-        setTimeout(() => {
-          this.explorerApp.navigate(["Pictures", "Wallpapers"]);
-        }, 1000);
+      setWallpaper: () => {
+        this.appLauncher.launch("settingsApp", false, {
+          section: "pane-appearance",
+          target: "settings-wallpaper-card"
+        });
       },
       paste: async () => {
         await this._pasteToDesktop();

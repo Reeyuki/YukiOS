@@ -53,7 +53,8 @@ export class NotepadApp extends BaseApp {
           <span>File</span>
           <div class="notepad-dropdown">
             <div class="dropdown-item" data-action="new">New</div>
-            <div class="dropdown-item" data-action="open">Open...<span class="shortcut">Ctrl+O</span></div>
+            <div class="dropdown-item" data-action="open">Open from YukiOS<span class="shortcut">Ctrl+O</span></div>
+            <div class="dropdown-item" data-action="openFromComputer">Open from Computer</div>
             <div class="dropdown-item" data-action="save">Save<span class="shortcut">Ctrl+S</span></div>
             <div class="dropdown-item" data-action="saveAs">Save As...<span class="shortcut">Ctrl+Shift+S</span></div>
             <div class="dropdown-separator"></div>
@@ -130,6 +131,15 @@ export class NotepadApp extends BaseApp {
     this.setupKeyboardShortcuts(win, winId);
     this.setupIdleDetection(win);
     this.setupCleanup(win, winId);
+
+    const closeBtn = win.querySelector(".close-btn");
+    if (closeBtn) {
+      const originalClick = closeBtn.onclick;
+      closeBtn.onclick = (e) => {
+        if (e) e.stopPropagation();
+        this.closeWindow(win, winId, originalClick);
+      };
+    }
 
     const textarea = win.querySelector(".notepad-textarea");
     textarea.style.whiteSpace = "pre-wrap";
@@ -291,6 +301,7 @@ export class NotepadApp extends BaseApp {
     const actions = {
       new: () => this.newFile(win, winId),
       open: () => this.openFileDialog(win, winId),
+      openFromComputer: () => this.openFromComputer(win, winId),
       save: () => this.saveFile(win, winId),
       saveAs: () => this.saveAsFile(win, winId),
       exit: () => this.closeWindow(win, winId),
@@ -330,7 +341,7 @@ export class NotepadApp extends BaseApp {
     this.updateStatusBar(win, winId);
   }
 
-  showSaveConfirmDialog(win, winId, onDiscard) {
+  showSaveConfirmDialog(win, winId, onDiscard, onSave = null) {
     const instance = this.instances.get(winId);
     const dialog = this.createDialog(
       win,
@@ -348,7 +359,11 @@ export class NotepadApp extends BaseApp {
     this.bindDialogButtons(dialog, {
       ".save-btn": () => {
         dialog.remove();
-        this.saveFile(win, winId);
+        if (onSave) {
+          onSave();
+        } else {
+          this.saveFile(win, winId);
+        }
       },
       ".dont-save-btn": () => {
         dialog.remove();
@@ -368,20 +383,30 @@ export class NotepadApp extends BaseApp {
     bus.emit(BusEvents.ACHIEVEMENT_TRIGGER, { key: Achievements.NoteTaker });
   }
 
-  saveFile(win, winId) {
+  saveFile(win, winId, onSuccess = null) {
     const instance = this.instances.get(winId);
     if (!instance.currentPath) {
-      this.saveAsFile(win, winId);
+      this.saveAsFile(win, winId, onSuccess);
       return;
     }
 
     const content = win.querySelector(".notepad-textarea").value;
-    this.fs.updateFile(instance.currentPath, instance.currentTitle, content);
-    this.onFileSaved(win, winId, instance.currentTitle, instance.currentPath);
-    this.wm.sendNotify(`File saved: ${instance.currentTitle}`);
+    this.fs
+      .updateFile(instance.currentPath, instance.currentTitle, content)
+      .then(() => {
+        this.onFileSaved(win, winId, instance.currentTitle, instance.currentPath);
+        this.wm.sendNotify(`File saved: ${instance.currentTitle}`);
+        if (onSuccess) {
+          onSuccess();
+        }
+      })
+      .catch((e) => {
+        console.error(e);
+        this.wm.sendNotify("Error saving file.");
+      });
   }
 
-  saveAsFile(win, winId) {
+  saveAsFile(win, winId, onSuccess = null) {
     const instance = this.instances.get(winId);
     const defaultName = instance.currentTitle.includes(".") ? instance.currentTitle : `${instance.currentTitle}.txt`;
 
@@ -393,6 +418,9 @@ export class NotepadApp extends BaseApp {
           this.onFileSaved(win, winId, fileName, path);
           const pathStr = path.length ? `/${path.join("/")}/${fileName}` : `/${fileName}`;
           this.wm.sendNotify(`File saved: ${pathStr}`);
+          if (onSuccess) {
+            onSuccess();
+          }
         })
         .catch((e) => {
           console.error(e);
@@ -416,13 +444,74 @@ export class NotepadApp extends BaseApp {
     }, this);
   }
 
-  closeWindow(win, winId) {
+  openFromComputer(win, winId) {
     const instance = this.instances.get(winId);
+    if (!instance) return;
+    const triggerFilePicker = () => {
+      const input = document.createElement("input");
+      input.type = "file";
+      input.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          const content = ev.target.result;
+          const textarea = win.querySelector(".notepad-textarea");
+          textarea.value = content;
+          instance.currentTitle = file.name;
+          instance.currentPath = null;
+          instance.modified = false;
+          this.updateTitle(win, winId);
+          this.updateStatusBar(win, winId);
+        };
+        reader.readAsText(file);
+      };
+      input.click();
+    };
+
     if (instance.modified) {
-      this.showSaveConfirmDialog(win, winId, () => win.querySelector(".close-btn")?.click());
+      this.showSaveConfirmDialog(win, winId, triggerFilePicker, () => {
+        this.saveFile(win, winId, triggerFilePicker);
+      });
+    } else {
+      triggerFilePicker();
+    }
+  }
+
+  closeWindow(win, winId, onConfirmClose = null) {
+    const instance = this.instances.get(winId);
+    if (!instance) return;
+
+    const doClose = () => {
+      if (onConfirmClose) {
+        onConfirmClose();
+      } else {
+        this.wm._silenceWindow(win);
+        this.wm.removeFromTaskbar(winId);
+        if (win.dataset.isGame === "true") {
+          this.wm.gameWindowCount = Math.max(0, this.wm.gameWindowCount - 1);
+        }
+        this.wm.updateTransparency();
+        this.wm._animateAndRemove(win);
+      }
+    };
+
+    if (instance.modified) {
+      this.showSaveConfirmDialog(
+        win,
+        winId,
+        () => {
+          doClose();
+        },
+        () => {
+          this.saveFile(win, winId, () => {
+            doClose();
+          });
+        }
+      );
       return;
     }
-    win.querySelector(".close-btn")?.click();
+    doClose();
   }
 
   showFindDialog(win, winId) {

@@ -57,7 +57,8 @@ export class SettingsApp extends BaseApp {
           } catch {
             return {};
           }
-        })()
+        })(),
+        performanceMode: localStorage.getItem(StorageKeys.performanceMode) || "high"
       };
 
       this._applyCursor(this._settings.cursorDataUrl);
@@ -67,6 +68,7 @@ export class SettingsApp extends BaseApp {
       this._applySound(this._settings.soundEnabled, this._settings.masterVolume);
       this._applyStartMenuSize(this._settings.startMenuWidth, this._settings.startMenuHeight);
       this._applyStartMenuCats(this._settings.startMenuCats);
+      this._applyPerformanceMode(this._settings.performanceMode);
       window._settings = this._settings;
 
       if (cursorFromLegacyStorage && !cursorOriginalFromStorage) {
@@ -78,21 +80,45 @@ export class SettingsApp extends BaseApp {
     }, 0);
   }
 
-  open() {
+  open(options = {}) {
     const winId = "yukiOS-settings";
     const existing = document.getElementById(winId);
     if (existing) {
       this.wm.bringToFront(existing);
+      if (options && typeof options.section === "string") {
+        this.navigateToSection(existing, options.section, options.target);
+      }
       return;
     }
 
-    const win = this.wm.createWindow(winId, "Settings", "700px", "600px");
+    const win = this.wm.createWindow(winId, "Settings", "805px", "600px");
     win.innerHTML = this._buildHTML();
 
     this.windowHelper.mountWindow(win, winId, "Settings", "fas fa-cog");
     if (this.desktopUi !== undefined) this.desktopUI.closeAllMenus();
 
     this._bindControls(win);
+
+    if (options && typeof options.section === "string") {
+      this.navigateToSection(win, options.section, options.target);
+    }
+  }
+
+  navigateToSection(win, section, target) {
+    const navItem = win.querySelector(`.yuki-settings-nav li[data-target="${section}"]`);
+    if (navItem) {
+      navItem.click();
+    }
+    if (target) {
+      setTimeout(() => {
+        const targetEl = win.querySelector(`#${target}`);
+        if (targetEl) {
+          targetEl.scrollIntoView({ behavior: "smooth", block: "start" });
+          targetEl.setAttribute("tabindex", "-1");
+          targetEl.focus({ preventScroll: true });
+        }
+      }, 100);
+    }
   }
 
   setDesktopUI(desktopUi) {
@@ -265,23 +291,35 @@ export class SettingsApp extends BaseApp {
         justify-content: space-between;
         align-items: center;
         margin-bottom: 15px;
+        flex-wrap: wrap;
+        gap: 10px;
       }
       .wp-title {
         font-size: 1.1em;
         font-weight: 500;
       }
       .wp-random-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
         background: var(--brand, #0078d7);
         color: white;
-        border: none;
-        padding: 6px 12px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        padding: 6px 14px;
         border-radius: 6px;
         cursor: pointer;
-        transition: background 0.2s;
-        font-size: 0.9em;
+        transition: background 0.2s, border-color 0.2s, transform 0.1s;
+        font-size: 12px;
+        font-weight: 500;
+        white-space: nowrap;
+        flex-shrink: 0;
       }
       .wp-random-btn:hover {
         background: var(--brand-hover, #006abc);
+        border-color: rgba(255, 255, 255, 0.25);
+      }
+      .wp-random-btn:active {
+        transform: scale(0.97);
       }
       .wp-grid {
         display: grid;
@@ -423,6 +461,9 @@ export class SettingsApp extends BaseApp {
         border-radius: 8px;
         overflow: hidden;
         transition: all 0.2s ease;
+      }
+      .settings-card:focus {
+        outline: none;
       }
       .settings-card:hover {
         border-color: rgba(255, 255, 255, 0.08);
@@ -690,6 +731,17 @@ export class SettingsApp extends BaseApp {
               <span class="settings-track"><span class="settings-thumb"></span></span>
             </label>
           </div>
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Performance Mode</span>
+              <span class="settings-label-desc">Reduce heavy visual effects and animations</span>
+            </div>
+            <div class="settings-button-group">
+              <button class="settings-btn ${this._settings.performanceMode === "high" ? "active" : ""}" data-perf-val="high"><i class="fas fa-tachometer-alt"></i> Quality</button>
+              <button class="settings-btn ${this._settings.performanceMode === "balanced" ? "active" : ""}" data-perf-val="balanced"><i class="fas fa-balance-scale"></i> Balanced</button>
+              <button class="settings-btn ${this._settings.performanceMode === "performance" ? "active" : ""}" data-perf-val="performance"><i class="fas fa-bolt"></i> Performance</button>
+            </div>
+          </div>
         </div>
 
         <div class="settings-card" style="margin-top: 16px;">
@@ -913,7 +965,7 @@ export class SettingsApp extends BaseApp {
           </div>
         </div>
 
-        <div class="settings-card" style="margin-top: 16px;">
+        <div id="settings-wallpaper-card" class="settings-card" style="margin-top: 16px;">
           <div class="settings-card-header"><i class="fas fa-images"></i> Wallpaper</div>
           <div class="settings-row">
             <div class="settings-label-group">
@@ -1186,6 +1238,10 @@ export class SettingsApp extends BaseApp {
       const windowSessionPersistence = !!windowSessionPersistenceToggle?.checked;
       localStorage.setItem(StorageKeys.windowSessionPersistence, String(windowSessionPersistence));
 
+      const selectedPerformanceMode =
+        win.querySelector(".settings-btn[data-perf-val].active")?.dataset.perfVal || "high";
+      localStorage.setItem(StorageKeys.performanceMode, selectedPerformanceMode);
+
       const startMenuWidthInput = win.querySelector("#settingsStartMenuWidth");
       const startMenuHeightInput = win.querySelector("#settingsStartMenuHeight");
       const startMenuWidth = startMenuWidthInput ? Number(startMenuWidthInput.value) : 650;
@@ -1214,7 +1270,8 @@ export class SettingsApp extends BaseApp {
         windowSessionPersistence,
         startMenuWidth,
         startMenuHeight,
-        startMenuCats
+        startMenuCats,
+        performanceMode: selectedPerformanceMode
       });
 
       this.wm.saveSession();
@@ -1224,6 +1281,7 @@ export class SettingsApp extends BaseApp {
       this._applyDesktopStretchScrollDisabled(disableDesktopStretchScroll);
       this._applyStartMenuSize(startMenuWidth, startMenuHeight);
       this._applyStartMenuCats(startMenuCats);
+      this._applyPerformanceMode(selectedPerformanceMode);
       bus.emit(BusEvents.SETTINGS_CHANGED, this._settings);
       if (this._settings.cdnMirror && this._settings.cdnMirror !== cdnMirror) {
         showStatus("Reloading with new CDN...");
@@ -1327,6 +1385,13 @@ export class SettingsApp extends BaseApp {
     win.querySelector("#settingsAnalytics").addEventListener("change", save);
     win.querySelector("#settingsDisableBootScreen")?.addEventListener("change", save);
     win.querySelector("#settingsWindowSessionPersistence")?.addEventListener("change", save);
+
+    win.querySelectorAll(".settings-btn[data-perf-val]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        win.querySelectorAll(".settings-btn[data-perf-val]").forEach((b) => b.classList.toggle("active", b === btn));
+        save();
+      });
+    });
 
     const dndToggle = win.querySelector("#settingsDND");
     if (dndToggle) {
@@ -1594,6 +1659,9 @@ export class SettingsApp extends BaseApp {
       if (stretchToggle) stretchToggle.checked = !!this._settings.disableDesktopStretchScroll;
       const disableBootScreenToggle = win.querySelector("#settingsDisableBootScreen");
       if (disableBootScreenToggle) disableBootScreenToggle.checked = !!this._settings.disableBootScreen;
+      win.querySelectorAll(".settings-btn[data-perf-val]").forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.perfVal === this._settings.performanceMode);
+      });
       showStatus("Reset to saved values");
     });
 
@@ -1611,6 +1679,9 @@ export class SettingsApp extends BaseApp {
       if (stretchToggle) stretchToggle.checked = false;
       const disableBootScreenToggle = win.querySelector("#settingsDisableBootScreen");
       if (disableBootScreenToggle) disableBootScreenToggle.checked = false;
+      win.querySelectorAll(".settings-btn[data-perf-val]").forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.perfVal === "high");
+      });
 
       save();
       showStatus("Toggles reset");
@@ -2039,6 +2110,90 @@ export class SettingsApp extends BaseApp {
     Object.values(StorageKeys).forEach((key) => localStorage.removeItem(key));
     location.reload();
   };
+
+  _applyPerformanceMode(mode) {
+    const effective = mode || "high";
+    document.documentElement.setAttribute("data-performance", effective);
+
+    let styleEl = document.getElementById("yukios-performance-override");
+    if (!styleEl) {
+      styleEl = document.createElement("style");
+      styleEl.id = "yukios-performance-override";
+      document.head.appendChild(styleEl);
+    }
+
+    if (effective === "performance") {
+      styleEl.textContent = `
+        html[data-performance="performance"] *:not(.start-menu):not(.start-menu *),
+        html[data-performance="performance"] *:not(.start-menu):not(.start-menu *)::before,
+        html[data-performance="performance"] *:not(.start-menu):not(.start-menu *)::after {
+          animation: none !important;
+          transition: none !important;
+        }
+        html[data-performance="performance"] .window,
+        html[data-performance="performance"] .window-header,
+        html[data-performance="performance"] .taskbar-preview,
+        html[data-performance="performance"] .context-menu {
+          backdrop-filter: none !important;
+          -webkit-backdrop-filter: none !important;
+        }
+        html[data-performance="performance"] .window,
+        html[data-performance="performance"] .taskbar-preview,
+        html[data-performance="performance"] .context-menu {
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+        }
+        html[data-performance="performance"] *:not(.start-menu):not(.start-menu *) {
+          text-shadow: none !important;
+        }
+        html[data-performance="performance"] .window:hover {
+          transform: none !important;
+        }
+        html[data-performance="performance"] .icon:hover img {
+          transform: none !important;
+        }
+        html[data-performance="performance"] #snap-ghost {
+          transition: none !important;
+          transform: none !important;
+        }
+        html[data-performance="performance"] #snap-ghost:not(.snap-ghost-active) {
+          display: none !important;
+        }
+      `;
+    } else if (effective === "balanced") {
+      styleEl.textContent = `
+        html[data-performance="balanced"] *:not(.start-menu):not(.start-menu *),
+        html[data-performance="balanced"] *:not(.start-menu):not(.start-menu *)::before,
+        html[data-performance="balanced"] *:not(.start-menu):not(.start-menu *)::after {
+          animation-duration: 0.15s !important;
+          transition-duration: 0.15s !important;
+        }
+        html[data-performance="balanced"] .window {
+          backdrop-filter: blur(12px) !important;
+          -webkit-backdrop-filter: blur(12px) !important;
+        }
+        html[data-performance="balanced"] .window-header {
+          backdrop-filter: blur(8px) saturate(1.1) !important;
+          -webkit-backdrop-filter: blur(8px) saturate(1.1) !important;
+        }
+        html[data-performance="balanced"] .window,
+        html[data-performance="balanced"] .taskbar-preview,
+        html[data-performance="balanced"] .context-menu {
+          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5) !important;
+        }
+        html[data-performance="balanced"] .window:hover {
+          transform: none !important;
+        }
+        html[data-performance="balanced"] .icon:hover img {
+          transform: scale(1.02) !important;
+        }
+        html[data-performance="balanced"] #snap-ghost {
+          transition-duration: 0.1s !important;
+        }
+      `;
+    } else {
+      styleEl.textContent = "";
+    }
+  }
 
   get(key) {
     return this._settings[key];

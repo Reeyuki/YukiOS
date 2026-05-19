@@ -136,7 +136,7 @@ export class EmulatorApp extends BaseApp {
         <div id="emulator-user-roms" style="padding:0 16px 16px;display:flex;flex-wrap:wrap;gap:12px;"></div>
       </div>`;
 
-    const win = this.windowHelper.createAndMountWindow("emulator-win", "Emulator", content, "800px", "600px", {
+    const win = this.windowHelper.createAndMountWindow("emulator-win", "Yuki Emulator", content, "800px", "600px", {
       icon: "static/icons/emulator.webp"
     });
 

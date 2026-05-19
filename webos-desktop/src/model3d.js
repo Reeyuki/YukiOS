@@ -92,7 +92,18 @@ export class Model3DApp extends BaseApp {
     this.sampleCache = new Map();
   }
 
-  async open(title = "3D Model Viewer", filePath = null) {
+  async open(titleOrOptions = "3D Model Viewer", filePath = null) {
+    let title = "3D Model Viewer";
+    let fileData = null;
+    let fileName = "";
+    if (titleOrOptions && typeof titleOrOptions === "object" && !Array.isArray(titleOrOptions)) {
+      title = titleOrOptions.title || "3D Model Viewer";
+      filePath = titleOrOptions.filePath || filePath;
+      fileData = titleOrOptions.fileData || titleOrOptions.content || null;
+      fileName = titleOrOptions.fileName || titleOrOptions.name || "";
+    } else if (typeof titleOrOptions === "string") {
+      title = titleOrOptions;
+    }
     const winId = `model3d-${Date.now()}`;
     if (document.getElementById(winId)) {
       this.wm.bringToFront(document.getElementById(winId));
@@ -294,7 +305,7 @@ export class Model3DApp extends BaseApp {
     });
 
     this.win = win;
-    await this.setupRenderer(win, filePath);
+    await this.setupRenderer(win, filePath, fileData, fileName);
     this.setupControls(win);
     this.setupAnimationControls(win);
     this.setupDragDrop(win);
@@ -490,7 +501,7 @@ export class Model3DApp extends BaseApp {
     }
   }
 
-  async setupRenderer(win, filePath) {
+  async setupRenderer(win, filePath, fileData = null, fileName = "") {
     await loadThree();
 
     const container = win.querySelector(".model3d-container");
@@ -541,8 +552,31 @@ export class Model3DApp extends BaseApp {
 
     this.container = container;
 
-    if (filePath) {
-      await this.loadModel(filePath, "");
+    if (!fileData && filePath) {
+      try {
+        const path = Array.isArray(filePath) ? filePath : [filePath];
+        const actualFileName =
+          fileName || (typeof filePath === "string" ? filePath.split("/").pop() : path[path.length - 1]);
+        const parentPath = typeof filePath === "string" ? filePath.split("/").slice(0, -1) : path.slice(0, -1);
+
+        const blob = await this.fs.readBinaryFile(parentPath, actualFileName);
+        if (blob && blob.size > 0) {
+          fileData = await blob.arrayBuffer();
+          fileName = actualFileName;
+        } else {
+          const content = await this.fs.getFileContent(parentPath, actualFileName, "arraybuffer");
+          if (content) {
+            fileData = content;
+            fileName = actualFileName;
+          }
+        }
+      } catch (err) {
+        console.error("Error reading file path in Model3DApp:", err);
+      }
+    }
+
+    if (fileData) {
+      await this.loadModel(fileData, fileName);
     }
   }
 

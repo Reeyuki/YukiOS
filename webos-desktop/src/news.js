@@ -9,7 +9,12 @@ const NEWS_UPDATES = [
       {
         icon: "fa-wand-magic-sparkles",
         title: "Features & Improvements",
-        items: [["fa-star", "Start Menu Customization", "Add option to customize start menu categories and items."]]
+        items: [
+          ["fa-star", "Start Menu Customization", "Add option to customize start menu categories and items."],
+          ["fa-rocket", "Performance Mode", "Added performance mode to os."],
+          ["fa-star", "Reworked settings app"],
+          ["fa-star", "Added window drag animations"]
+        ]
       }
     ]
   },

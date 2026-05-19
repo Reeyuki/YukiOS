@@ -534,8 +534,16 @@ export class WindowManager {
   }
 
   _animateAndRemove(win) {
-    win.style.animation = "popUp 0.5s ease forwards";
-    setTimeout(() => win.remove(), 500);
+    const performanceMode = localStorage.getItem(StorageKeys.performanceMode) || "high";
+    if (performanceMode === "performance") {
+      win.remove();
+    } else if (performanceMode === "balanced") {
+      win.style.animation = "popUp 0.15s ease forwards";
+      setTimeout(() => win.remove(), 150);
+    } else {
+      win.style.animation = "popUp 0.5s ease forwards";
+      setTimeout(() => win.remove(), 500);
+    }
   }
   _buildPropertiesWindow(winId) {
     const win = document.getElementById(winId);

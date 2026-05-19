@@ -1216,7 +1216,7 @@ export const appMap = {
   },
   emulatorApp: {
     type: "system",
-    title: "Emulator",
+    title: "Yuki Emulator",
     icon: "static/icons/emulator.webp"
   },
   ruffleApp: {

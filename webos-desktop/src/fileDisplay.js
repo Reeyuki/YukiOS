@@ -10,6 +10,7 @@ export const OFFICE_EXTS = ["docx", "doc", "xlsx", "xls", "slx", "csv", "odt", "
 export const ZIP_EXTS = ["zip", "gz", "tgz", "tar", "rar", "7z", "bz2", "xz"];
 export const EXE_EXTS = ["exe", "msi", "com", "bat", "cmd", "jsdos"];
 export const SWF_EXTS = ["swf"];
+export const MODEL3D_EXTS = ["obj", "gltf", "glb", "fbx", "dae", "3ds"];
 
 import { ROM_EXTS } from "./shared/coreMap.js";
 export { ROM_EXTS };
@@ -114,6 +115,9 @@ export function isExeFile(name) {
 export function isSwfFile(name) {
   return SWF_EXTS.includes(getExt(name));
 }
+export function isModel3DFile(name) {
+  return MODEL3D_EXTS.includes(getExt(name));
+}
 export function isBinaryOfficeFile(name) {
   return BINARY_OFFICE_EXTS.includes(getExt(name));
 }
@@ -183,6 +187,7 @@ export function resolveFileIcon(name) {
   if (isAudioFile(name)) return resolveIconUrl("static/icons/spot.webp");
   if (isRomFile(name)) return "rom";
   if (isSwfFile(name)) return resolveIconUrl("static/icons/flash.webp");
+  if (isModel3DFile(name)) return resolveIconUrl("static/icons/3dmodel.webp");
   if (isZipFile(name)) return resolveIconUrl("static/icons/zip.webp");
   if (isExeFile(name)) return resolveIconUrl("static/icons/jsdos.webp");
   if (isOfficeFile(name)) return resolveIconUrl("static/icons/office.webp");
@@ -234,6 +239,9 @@ export function buildFileIconHTML(name, { thumbnailSrc = null, size = 64, radius
   }
   if (isSwfFile(name)) {
     return `<img src="${resolveIconUrl("static/icons/flash.webp")}" style="${s}object-fit:cover;">`;
+  }
+  if (isModel3DFile(name)) {
+    return `<img src="${resolveIconUrl("static/icons/3dmodel.webp")}" style="${s}object-fit:cover;">`;
   }
   if (isZipFile(name)) {
     return `<img src="${resolveIconUrl("static/icons/zip.webp")}" style="${s}object-fit:cover;">`;
@@ -352,6 +360,39 @@ export async function openFileWith({
 }) {
   if (isZipFile(name)) return;
   console.log("Open file with: ", name, path);
+
+  if (isModel3DFile(name)) {
+    const model3dApp = appLauncher?.model3dApp;
+    if (model3dApp) {
+      let arrayBuffer = null;
+      try {
+        const blob = await fs.readBinaryFile(path, name);
+        if (blob && blob.size > 0) {
+          arrayBuffer = await blob.arrayBuffer();
+        } else {
+          const content = await fs.getFileContent(path, name);
+          if (content instanceof Blob) {
+            arrayBuffer = await content.arrayBuffer();
+          } else if (content instanceof ArrayBuffer) {
+            arrayBuffer = content;
+          } else if (typeof content === "string") {
+            arrayBuffer = new TextEncoder().encode(content).buffer;
+          }
+        }
+      } catch (e) {
+        console.error("Error loading 3D file content:", e);
+      }
+      model3dApp.open({
+        title: name,
+        filePath: path,
+        fileName: name,
+        fileData: arrayBuffer
+      });
+    } else {
+      customAlert("3D Model Viewer is not available.");
+    }
+    return;
+  }
 
   if (isExeFile(name)) {
     if (!jsDosApp) return;
