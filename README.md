@@ -1,5 +1,7 @@
 # Yuki OS — Browser-Based Desktop Environment
 
+https://discord.gg/uFuGfseB9Z
+
 > A webOS-style desktop environment running in the browser, featuring 30+ applications, 2700+ games, multiple emulators, and a service-oriented architecture for seamless multitasking.
 
 Yuki OS is a fully-featured browser-based operating system that unifies games, emulators, productivity tools, and web applications into a single windowed desktop experience. Run Flash games, DOS emulation, modern web apps, and custom applications all side-by-side with a shared window manager, filesystem, and UI.
