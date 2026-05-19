@@ -47,6 +47,7 @@ export default {
     }
 
     async function sendEmbed(embed) {
+      return;
       if (!env.DISCORD_WEBHOOK_URL) return;
       await fetch(env.DISCORD_WEBHOOK_URL, {
         method: "POST",
@@ -138,35 +139,48 @@ export default {
       if (ipBlocked(clientIP)) {
         return jsonResponse({ error: "Forbidden" }, 403);
       }
+
       let payload;
       try {
         payload = await request.json();
       } catch {
         return jsonResponse({ error: "invalid json" }, 400);
       }
+
       if (payload.app) {
         payload.app = normalizeApp(payload.app);
       }
+
       const id = crypto.randomUUID();
       const timestamp = new Date().toISOString();
       const dailyId = await deriveDailyId(clientIP);
-      await env.DB.prepare("INSERT INTO analytics (id, daily_id, timestamp, data) VALUES (?, ?, ?, ?)")
-        .bind(id, dailyId, timestamp, JSON.stringify(payload))
-        .run();
-      await sendEmbed({
-        title: "New Analytics Event",
-        color: 3066993,
-        fields: [
-          { name: "ID", value: id, inline: false },
-          { name: "Day Token", value: dailyId, inline: false },
-          { name: "Timestamp", value: timestamp, inline: false }
-        ],
-        description: "```json\n" + JSON.stringify(payload, null, 2) + "\n```",
-        timestamp
-      });
+
+      const insert = env.DB.prepare("INSERT INTO analytics (id, daily_id, timestamp, data) VALUES (?, ?, ?, ?)").bind(
+        id,
+        dailyId,
+        timestamp,
+        JSON.stringify(payload)
+      );
+
+      const writePromise = insert.run();
+
+      if (env.DISCORD_WEBHOOK_URL) {
+        const embed = {
+          title: "Analytics Event",
+          fields: [
+            { name: "App", value: payload.app || "unknown", inline: true },
+            { name: "Event", value: payload.event || "none", inline: true }
+          ],
+          timestamp
+        };
+
+        env.ANALYTICS_QUEUE?.send?.(JSON.stringify(embed));
+      }
+
+      await writePromise;
+
       return jsonResponse({ status: "ok", id });
     }
-
     if (url.pathname === "/admin/stats" && request.method === "GET") {
       const range = url.searchParams.get("range") || "30d";
       let days = 30;
@@ -642,16 +656,6 @@ function corsHeaders(type) {
   if (type === "text/html") return { ...base, "Content-Type": "text/html" };
   if (type === "text/plain") return { ...base, "Content-Type": "text/plain" };
   return { ...base, "Content-Type": "application/json" };
-}
-
-function fmtMs(ms) {
-  if (!ms || ms <= 0) return "0s";
-  const s = Math.floor(ms / 1000);
-  const m = Math.floor(s / 60);
-  const h = Math.floor(m / 60);
-  if (h > 0) return h + "h " + (m % 60) + "m";
-  if (m > 0) return m + "m " + (s % 60) + "s";
-  return s + "s";
 }
 
 function adminHTML() {

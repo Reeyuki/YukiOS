@@ -61,6 +61,11 @@ const SHITTIFY_BRIDGE_SCRIPT = `
     try {
       var d = e.data;
       if (!d || d.__shittify_cmd !== true) return;
+      if (d.cmd === 'volume') {
+        var v = Math.max(0, Math.min(1, Number(d.value) || 0));
+        if (_currentAudio) _currentAudio.volume = v;
+        return;
+      }
       if (!_currentAudio) return;
       if (d.cmd === 'play') { try { _currentAudio.play(); } catch(ex) {} }
       else if (d.cmd === 'pause') { try { _currentAudio.pause(); } catch(ex) {} }
@@ -111,7 +116,18 @@ export class ShittifyApp extends BaseApp {
     try {
       const res = await fetch(resolvedUrl);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const html = await res.text();
+      let html = await res.text();
+
+      html = html.replace(
+        /https?:\/\/(cdn\.jsdelivr\.net|quantil\.jsdelivr\.net|originfastly\.jsdelivr\.net|gcore\.jsdelivr\.net|esm\.sh|cdn\.statically\.io|cdn\.staticdelivr\.com)\/gh\/[^"'\s\)]+/gi,
+        (match) => {
+          let url = match;
+          if (/\/shittifylol\//i.test(url) && !url.includes("@")) {
+            url = url.replace(/\/shittifylol\//i, "/shittifylol@master/");
+          }
+          return resolveGhUrl(url);
+        }
+      );
 
       const injected = html.replace(/<\/head>/i, `${SHITTIFY_BRIDGE_SCRIPT}</head>`);
       const blobUrl = URL.createObjectURL(new Blob([injected], { type: "text/html" }));

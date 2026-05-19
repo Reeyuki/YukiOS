@@ -78,6 +78,8 @@ class AudioMixer {
           if (rufflePlayer && typeof rufflePlayer.volume !== "undefined") {
             rufflePlayer.volume = effectiveVolume;
           }
+
+          iframe.contentWindow?.postMessage({ __shittify_cmd: true, cmd: "volume", value: effectiveVolume }, "*");
         } catch (e) {}
       } else {
         console.log("Not our domain!", iframe.src);

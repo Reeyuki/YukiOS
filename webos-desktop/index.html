@@ -34,18 +34,27 @@
     </script>
     <base href="https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/" />
 
-    <title>Yuki OS Browser Gaming Hub with Flash, GBA, NDS & HTML5 Games</title>
+    <title>Yuki OS</title>
 
     <meta
       name="description"
-      content="Yuki OS is a browser-based gaming hub offering thousands of games across Flash, GBA, NDS, and HTML5 platforms. Play instantly online with no downloads or installs."
+      content="Yuki OS is a browser-based webOS desktop environment with 30+ built-in apps, 2700+ games, emulators, a virtual filesystem, windowed multitasking, and persistent storage — all running directly in your browser."
     />
 
-    <meta property="og:title" content="Yuki OS – Browser Gaming Hub with Flash, GBA, NDS & HTML5 Games" />
+    <meta property="og:title" content="Yuki OS – Browser-Based WebOS Desktop with Apps, Emulators & Games" />
+
     <meta
       property="og:description"
-      content="Experience thousands of games in your browser with Yuki OS. Play Flash, GBA, NDS, HTML5, and more instantly online without downloads."
+      content="Experience a complete browser operating system with windowed apps, emulators, games, file management, notifications, settings, and persistent storage powered entirely by web technologies."
     />
+
+    <meta name="twitter:title" content="Yuki OS – Browser-Based WebOS Desktop with Apps, Emulators & Games" />
+
+    <meta
+      name="twitter:description"
+      content="Yuki OS transforms your browser into a full desktop environment with apps, emulators, multiplayer-ready games, virtual storage, customization, and productivity tools."
+    />
+
     <meta property="og:type" content="website" />
     <meta property="og:image" content="https://yukios.vercel.app/static/seo/preview.webp" />
     <meta property="og:site_name" content="Yuki OS" />
@@ -53,7 +62,6 @@
     <meta property="og:locale" content="en_US" />
 
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Yuki OS – Browser Gaming Hub with Flash, GBA, NDS & HTML5 Games" />
     <meta
       name="twitter:description"
       content="Yuki OS lets you play thousands of games directly in your browser. Flash, GBA, NDS, and HTML5 games with no downloads required."
@@ -86,17 +94,30 @@
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
-        "@type": "WebSite",
+        "@type": "SoftwareApplication",
         "name": "Yuki OS",
+        "applicationCategory": "WebApplication",
+        "operatingSystem": "Web Browser",
         "url": "https://yukios.vercel.app",
-        "description": "Browser-based gaming hub offering Flash, GBA, NDS, and HTML5 games playable instantly online without downloads.",
+        "description": "Yuki OS is a browser-based desktop operating system with windowed multitasking, a virtual filesystem, built-in applications, emulators, and thousands of playable games.",
+        "featureList": [
+          "Windowed desktop environment",
+          "Virtual filesystem with persistent storage",
+          "30+ built-in applications",
+          "2700+ browser-playable games",
+          "DOS and x86 emulation",
+          "Browser-based code editor",
+          "Integrated terminal",
+          "Desktop notifications",
+          "PWA support",
+          "Custom wallpapers and themes"
+        ],
         "publisher": {
           "@type": "Organization",
           "name": "Yuki OS"
         }
       }
     </script>
-
     <link href="src/styles/style.css" rel="stylesheet" />
     <link href="src/styles/desktop.css" rel="stylesheet" />
     <link href="src/styles/startMenu.css" rel="stylesheet" />
@@ -143,34 +164,19 @@
         <div>Notepad</div>
       </div>
 
-      <div class="icon selectable" data-app="cameraApp">
-        <img src="static/icons/obs.webp" />
-        <div>Camera</div>
-      </div>
-
-      <div class="icon selectable" data-app="photopea">
-        <img src="static/icons/photopea.webp" />
-        <div>Photopea</div>
-      </div>
-
-      <div class="icon selectable" data-app="paint">
-        <img src="static/icons/paint.webp" />
-        <div>Paint</div>
-      </div>
-
       <div class="icon selectable" data-app="libreSprite">
         <img src="static/icons/libresprite.webp" />
         <div>LibreSprite</div>
       </div>
 
-      <div class="icon selectable" data-app="officeApp">
-        <img src="static/icons/office.webp" />
-        <div>Office</div>
-      </div>
-
       <div class="icon selectable" data-app="browserApp">
         <img src="static/icons/firefox.webp" />
         <div>Yuki Browser</div>
+      </div>
+
+      <div class="icon selectable" data-app="shittify">
+        <img src="static/icons/shittify.webp" />
+        <div>Shittify</div>
       </div>
 
       <div class="icon selectable" data-app="emulatorApp">

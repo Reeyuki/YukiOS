@@ -1,36 +1,10 @@
-import { StorageKeys } from "./settings.js";
+const ANALYTICS_QUEUE_KEY = "yuki_analytics_queue";
+const ENDPOINT = "https://analytics.liventcord-a60.workers.dev/analytics";
 
 let pageLoadTime = Date.now();
-
-const CLOSE_ANALYTICS_EXCLUDED_APPS = new Set(["aboutApp"]);
-const CUSTOM_APP_PREFIX = "custom-";
-const ANALYTICS_DISABLED_KEY = StorageKeys.analyticsDisabled;
-
-function isAnalyticsDisabled() {
-  return localStorage.getItem(ANALYTICS_DISABLED_KEY) === "true";
-}
-
-function shouldIgnoreApp(app) {
-  if (!app) return false;
-  return CLOSE_ANALYTICS_EXCLUDED_APPS.has(app) || app.startsWith(CUSTOM_APP_PREFIX);
-}
-
-function isBlocked(app) {
-  if (isAnalyticsDisabled()) return true;
-  if (shouldIgnoreApp(app)) return true;
-  if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") return true;
-  return false;
-}
-
-export function initAnalytics() {
-  pageLoadTime = Date.now();
-  const base = getAnalyticsBase("hit-page");
-  if (isBlocked(base.app)) return;
-  sendAnalytics({ ...base, event: "start" });
-}
-
 export function getAnalyticsBase(app) {
   const now = Date.now();
+
   return {
     app: app ?? "unknown",
     name: document.querySelector(".start-user span")?.textContent ?? "",
@@ -38,61 +12,103 @@ export function getAnalyticsBase(app) {
     sessionAgeMs: now - pageLoadTime
   };
 }
+function loadQueue() {
+  try {
+    return JSON.parse(localStorage.getItem(ANALYTICS_QUEUE_KEY) || "[]");
+  } catch {
+    return [];
+  }
+}
 
-export function sendAnalytics(data) {
-  if (isBlocked(data?.app)) return;
+function saveQueue(q) {
+  localStorage.setItem(ANALYTICS_QUEUE_KEY, JSON.stringify(q));
+}
 
-  if (window.AdsManager?.analyticsHook) {
-    window.AdsManager.analyticsHook(data);
+function flushQueue() {
+  const queue = loadQueue();
+  if (queue.length === 0) return;
+
+  const payload = JSON.stringify(queue);
+
+  const sent = navigator.sendBeacon ? navigator.sendBeacon(ENDPOINT, payload) : false;
+
+  if (sent) {
+    localStorage.removeItem(ANALYTICS_QUEUE_KEY);
+    return;
   }
 
-  fetch("https://analytics.liventcord-a60.workers.dev/analytics", {
+  fetch(ENDPOINT, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data)
-  }).catch(() => {});
+    body: payload
+  })
+    .then(() => {
+      localStorage.removeItem(ANALYTICS_QUEUE_KEY);
+    })
+    .catch(() => {});
+}
+
+function queueEvent(event) {
+  const queue = loadQueue();
+  queue.push(event);
+  saveQueue(queue);
+
+  const single = JSON.stringify(event);
+
+  const sent = navigator.sendBeacon ? navigator.sendBeacon(ENDPOINT, single) : false;
+
+  if (!sent) {
+    fetch(ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: single
+    }).catch(() => {});
+  }
+}
+
+export function initAnalytics() {
+  pageLoadTime = Date.now();
+
+  flushQueue();
+
+  queueEvent({
+    app: "hit-page",
+    event: "start",
+    timestamp: Date.now(),
+    sessionAgeMs: 0
+  });
 }
 
 export function sendLaunchAnalytics(app) {
-  if (isBlocked(app)) return;
-
-  const data = { ...getAnalyticsBase(app), event: "launch" };
-
-  if (window.AdsManager?.analyticsHook) {
-    window.AdsManager.analyticsHook(data);
-  }
-
-  sendAnalytics(data);
+  queueEvent({
+    app,
+    event: "launch",
+    timestamp: Date.now(),
+    sessionAgeMs: Date.now() - pageLoadTime
+  });
 }
 
 export function recordUsage(winId) {
-  const startTime = Date.now();
+  const start = Date.now();
   const win = document.getElementById(winId);
   if (!win) return;
 
-  const appId = win.dataset.appId || "";
-  if (isBlocked(appId)) return;
+  const appId = win.dataset.appId;
 
   let sent = false;
 
-  const sendUsage = () => {
+  const send = () => {
     if (sent) return;
     sent = true;
 
-    const payload = {
+    queueEvent({
       app: appId,
       event: "usage",
-      durationMs: Date.now() - startTime,
+      durationMs: Date.now() - start,
       timestamp: Date.now(),
       sessionAgeMs: Date.now() - pageLoadTime
-    };
-
-    if (window.AdsManager?.analyticsHook) {
-      window.AdsManager.analyticsHook(payload);
-    }
-
-    sendAnalytics(payload);
+    });
   };
 
-  win.querySelector(".close-btn")?.addEventListener("click", sendUsage);
+  win.querySelector(".close-btn")?.addEventListener("click", send);
 }
