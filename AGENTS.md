@@ -3,7 +3,7 @@ Never add comments or docstrings
 Never spawn a browser for testing
 ## Overview
 
-Yuki OS is a browser-based webOS-style desktop environment that emulates a complete operating system within the web browser. It provides a unified windowed interface for 30+ built-in applications, 100+ games, multiple emulators (DOS via JS-DOS, x86 via V86), productivity tools, and system utilities. Everything runs in a sandboxed environment with persistent file storage, notifications, settings, and a virtual filesystem.
+Yuki OS is a browser-based webOS-style desktop environment that emulates a complete operating system within the web browser. It provides a unified windowed interface for 30+ built-in applications, 2700+ games, multiple emulators (DOS via JS-DOS, x86 via V86), productivity tools, and system utilities. Everything runs in a sandboxed environment with persistent file storage, notifications, settings, and a virtual filesystem.
 
 **Key Capabilities:**
 - Windowed desktop with drag, resize, snap, minimize/maximize
@@ -178,7 +178,7 @@ Reusable cross-app helpers live under `webos-desktop/src/shared` and should be p
 - Method: `launch(appId, swf, extra)` → main entry point
 
 **gamesList** (`gamesList.js`)
-- Registry of 100+ games/apps with metadata
+- Registry of 2700+ games/apps with metadata
 - `appMap` object where each key is app ID with type, title, url, icon
 
 **gameDescriptions** (`gameDescriptions.js`)

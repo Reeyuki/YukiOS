@@ -4,7 +4,7 @@ import { BaseApp } from "./core/BaseApp.js";
 import { bus, BusEvents } from "./core/EventBus.js";
 import { customAlert, customConfirm, customPrompt } from "./shared/dialogs.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
-import { CDN_MIRRORS, setCdnMirror, initializeMirrors } from "./shared/assetResolver.js";
+import { CDN_MIRRORS, setCdnMirror, initializeMirrors, resolveGhUrl } from "./shared/assetResolver.js";
 import { appMap } from "./gamesList.js";
 import { renderWallpapersPage } from "./wallpapers.js";
 import { audioMixer } from "./audioMixer.js";
@@ -114,89 +114,531 @@ export class SettingsApp extends BaseApp {
   _buildHTML() {
     return `
     <style>
-      .yuki-settings-layout { display: flex; height: calc(100% - 32px); background: var(--window-bg-color, #1e1e1e); color: var(--text-color, #fff); }
-      .yuki-settings-sidebar { width: 160px; background: rgba(0,0,0,0.15); border-right: 1px solid rgba(128,128,128,0.2); display: flex; flex-direction: column; }
-      .yuki-settings-search { padding: 15px; border-bottom: 1px solid rgba(128,128,128,0.2); }
-      .yuki-settings-search input { width: 100%; padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(128,128,128,0.3); background: rgba(0,0,0,0.2); color: inherit; outline: none; transition: border 0.2s;}
-      .yuki-settings-search input:focus { border-color: #0078d7; }
-      .yuki-settings-nav { list-style: none; padding: 10px 0; margin: 0; overflow-y: auto; flex: 1; }
-      .yuki-settings-nav li { padding: 12px 20px; cursor: pointer; display: flex; align-items: center; gap: 12px; font-size: 0.95em; transition: background 0.1s;}
-      .yuki-settings-nav li i { width: 16px; text-align: center; opacity: 0.8; }
-      .yuki-settings-nav li:hover { background: rgba(255,255,255,0.05); }
-      .yuki-settings-nav li.active { background: rgba(255,255,255,0.1); border-left: 3px solid #0078d7; font-weight: 500; }
-      .yuki-settings-content { flex: 1; overflow-y: auto; padding: 0 30px 30px; position: relative; }
-      .settings-category-pane { display: none; padding-top: 25px; }
-      .settings-category-pane.active { display: block; animation: fadeIn 0.2s ease; }
-      .settings-category-header { font-size: 1.8em; font-weight: 600; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid rgba(128,128,128,0.2); }
-      .settings-row.hidden-by-search { display: none !important; }
-      .yuki-settings-layout.is-searching .settings-category-pane { display: block !important; padding-top: 15px; }
-      .yuki-settings-layout.is-searching .settings-category-header { display: none !important; }
-      @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-      .settings-saved-badge-float { position: absolute; top: 15px; right: 25px; background: #0078d7; color: #fff; padding: 4px 10px; border-radius: 4px; font-size: 0.85em; opacity: 0; transition: opacity 0.3s; z-index: 100; pointer-events: none; }
-      .settings-select { width: auto; min-width: 140px; max-width: 220px; padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(128,128,128,0.3); background: rgba(0,0,0,0.2); color: inherit; outline: none; font-family: inherit; font-size: 0.95em; cursor: pointer; transition: border 0.2s; }
-      .settings-select:focus { border-color: #0078d7; }
-      .settings-select option { background: #1e1e1e; color: #fff; }
+      .window-content {
+        background: var(--window-bg-color, #1e1e1e);
+        color: var(--text-color, #fff);
+      }
+      .yuki-settings-layout {
+        display: flex;
+        flex: 1;
+        min-height: 0;
+        width: 100%;
+        height: 100%;
+      }
+      .yuki-settings-sidebar {
+        width: 200px;
+        background: rgba(0, 0, 0, 0.18);
+        border-right: 1px solid rgba(255, 255, 255, 0.05);
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 0;
+      }
+      .yuki-settings-search {
+        padding: 16px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      .yuki-settings-search input {
+        width: 100%;
+        padding: 8px 12px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(0, 0, 0, 0.25);
+        color: inherit;
+        outline: none;
+        font-size: 0.9em;
+        transition: all 0.2s ease;
+      }
+      .yuki-settings-search input:focus {
+        border-color: var(--brand, #0078d7);
+        box-shadow: 0 0 0 2px var(--brand-glow, rgba(0, 120, 215, 0.2));
+        background: rgba(0, 0, 0, 0.35);
+      }
+      .yuki-settings-nav {
+        list-style: none;
+        padding: 8px;
+        margin: 0;
+        overflow-y: auto;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .yuki-settings-nav li {
+        padding: 10px 14px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 0.9em;
+        border-radius: 6px;
+        color: rgba(255, 255, 255, 0.7);
+        transition: all 0.15s ease;
+      }
+      .yuki-settings-nav li i {
+        width: 16px;
+        text-align: center;
+        font-size: 1.1em;
+        opacity: 0.8;
+      }
+      .yuki-settings-nav li:hover {
+        background: rgba(255, 255, 255, 0.04);
+        color: #fff;
+      }
+      .yuki-settings-nav li.active {
+        background: var(--brand-dim, rgba(0, 120, 215, 0.15));
+        color: var(--brand, #0078d7);
+        font-weight: 500;
+      }
+      .yuki-settings-content {
+        flex: 1;
+        overflow-y: auto;
+        padding: 24px 32px 32px;
+        position: relative;
+        scroll-behavior: smooth;
+      }
+      .settings-category-pane {
+        display: none;
+      }
+      .settings-category-pane.active {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        animation: fadeIn 0.25s ease;
+      }
+      .settings-category-header {
+        font-size: 1.6em;
+        font-weight: 600;
+        margin-bottom: 8px;
+        padding-bottom: 8px;
+        color: #fff;
+      }
+      .settings-row.hidden-by-search {
+        display: none !important;
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(6px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .settings-saved-badge-float {
+        position: absolute;
+        top: 24px;
+        right: 32px;
+        background: var(--brand, #0078d7);
+        color: #fff;
+        padding: 4px 12px;
+        border-radius: 6px;
+        font-size: 0.8em;
+        font-weight: 500;
+        opacity: 0;
+        transform: translateY(-5px);
+        transition: all 0.25s ease;
+        z-index: 100;
+        pointer-events: none;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+      }
+      .settings-select {
+        width: auto;
+        min-width: 140px;
+        max-width: 220px;
+        padding: 6px 12px;
+        border-radius: 6px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(0,0,0,0.2);
+        color: inherit;
+        outline: none;
+        font-family: inherit;
+        font-size: 0.9em;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+      .settings-select:focus {
+        border-color: var(--brand, #0078d7);
+        box-shadow: 0 0 0 2px var(--brand-glow, rgba(0, 120, 215, 0.2));
+      }
+      .settings-select option {
+        background: #1e1e1e;
+        color: #fff;
+      }
 
-      .wp-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-      .wp-title { font-size: 1.1em; font-weight: 500; }
-      .wp-random-btn { background: #0078d7; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; transition: background 0.2s; font-size: 0.9em;}
-      .wp-random-btn:hover { background: #006abc; }
-      .wp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; }
-      .wp-card { background: rgba(0,0,0,0.2); border: 1px solid rgba(128,128,128,0.2); border-radius: 6px; overflow: hidden; cursor: pointer; transition: transform 0.1s, border-color 0.2s; display: flex; flex-direction: column; }
-      .wp-card:hover { transform: translateY(-2px); border-color: rgba(255,255,255,0.2); }
-      .wp-thumb { height: 90px; background-size: cover; background-position: center; position: relative; }
-      .wp-thumb-video::after { content: "▶"; position: absolute; bottom: 5px; right: 5px; background: rgba(0,0,0,0.6); padding: 2px 6px; border-radius: 4px; font-size: 0.8em; }
-      .wp-thumb-img { width: 100%; height: 100%; object-fit: cover; }
-      .wp-card-name { padding: 8px 10px; font-size: 0.85em; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: inherit; }
-      .wp-card-actions { padding: 0 10px 10px; display: flex; justify-content: center; }
-      .wp-card-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1); color: inherit; padding: 4px 15px; border-radius: 4px; cursor: pointer; width: 100%; transition: background 0.2s; font-size: 0.9em; }
-      .wp-card-btn:hover { background: #0078d7; border-color: #0078d7; }
-      .wp-preview-active { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 10000; display: flex; align-items: center; justify-content: center; }
-      .wp-preview-inner { position: relative; width: 80%; height: 80%; max-width: 800px; display: flex; flex-direction: column; background: #1e1e1e; border-radius: 8px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-      .wp-preview-media { flex: 1; width: 100%; object-fit: contain; background: #000; }
-      .wp-preview-overlay { padding: 15px; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.5); }
-      .wp-preview-label { font-size: 1.1em; font-weight: 500; color: #fff; }
-      .wp-preview-btns { display: flex; gap: 10px; }
-      .wp-action-btn { padding: 6px 15px; border-radius: 4px; border: none; cursor: pointer; color: white; }
-      .wp-discard-btn { background: rgba(255,255,255,0.1); }
-      .wp-discard-btn:hover { background: rgba(255,255,255,0.2); }
-      .wp-save-btn { background: #0078d7; }
-      .wp-save-btn:hover { background: #006abc; }
+      .wp-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+      .wp-title {
+        font-size: 1.1em;
+        font-weight: 500;
+      }
+      .wp-random-btn {
+        background: var(--brand, #0078d7);
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background 0.2s;
+        font-size: 0.9em;
+      }
+      .wp-random-btn:hover {
+        background: var(--brand-hover, #006abc);
+      }
+      .wp-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 15px;
+      }
+      .wp-card {
+        background: rgba(0,0,0,0.25);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 8px;
+        overflow: hidden;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        flex-direction: column;
+      }
+      .wp-card:hover {
+        transform: translateY(-2px);
+        border-color: rgba(255, 255, 255, 0.15);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      }
+      .wp-thumb {
+        height: 90px;
+        background-size: cover;
+        background-position: center;
+        position: relative;
+      }
+      .wp-thumb-video::after {
+        content: "▶";
+        position: absolute;
+        bottom: 5px;
+        right: 5px;
+        background: rgba(0,0,0,0.6);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 0.8em;
+      }
+      .wp-thumb-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .wp-card-name {
+        padding: 8px 10px;
+        font-size: 0.85em;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: inherit;
+      }
+      .wp-card-actions {
+        padding: 0 10px 10px;
+        display: flex;
+        justify-content: center;
+      }
+      .wp-card-btn {
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: inherit;
+        padding: 6px 15px;
+        border-radius: 6px;
+        cursor: pointer;
+        width: 100%;
+        transition: all 0.2s ease;
+        font-size: 0.9em;
+      }
+      .wp-card-btn:hover {
+        background: var(--brand, #0078d7);
+        border-color: var(--brand, #0078d7);
+        color: #fff;
+      }
+      .wp-preview-active {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.8);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .wp-preview-inner {
+        position: relative;
+        width: 80%;
+        height: 80%;
+        max-width: 800px;
+        display: flex;
+        flex-direction: column;
+        background: #1e1e1e;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      }
+      .wp-preview-media {
+        flex: 1;
+        width: 100%;
+        object-fit: contain;
+        background: #000;
+      }
+      .wp-preview-overlay {
+        padding: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(0,0,0,0.5);
+      }
+      .wp-preview-label {
+        font-size: 1.1em;
+        font-weight: 500;
+        color: #fff;
+      }
+      .wp-preview-btns {
+        display: flex;
+        gap: 10px;
+      }
+      .wp-action-btn {
+        padding: 6px 15px;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        color: white;
+      }
+      .wp-discard-btn {
+        background: rgba(255, 255, 255, 0.1);
+      }
+      .wp-discard-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+      }
+      .wp-save-btn {
+        background: var(--brand, #0078d7);
+      }
+      .wp-save-btn:hover {
+        background: var(--brand-hover, #006abc);
+      }
+
+      .settings-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        overflow: hidden;
+        transition: all 0.2s ease;
+      }
+      .settings-card:hover {
+        border-color: rgba(255, 255, 255, 0.08);
+      }
+      .settings-card-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 14px;
+        background: rgba(255, 255, 255, 0.02);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.5);
+      }
+      .settings-card-header i {
+        color: var(--brand, #0078d7);
+        font-size: 1.1em;
+      }
+
+      .settings-grid-toggle {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(0, 0, 0, 0.15);
+        padding: 8px 12px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.04);
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+      .settings-grid-toggle:hover {
+        background: rgba(255, 255, 255, 0.04);
+        border-color: rgba(255, 255, 255, 0.08);
+      }
+
+      .settings-range-group input[type="range"] {
+        -webkit-appearance: none;
+        appearance: none;
+        background: rgba(255, 255, 255, 0.1);
+        height: 6px;
+        border-radius: 3px;
+        outline: none;
+        transition: background 0.15s ease;
+      }
+      .settings-range-group input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: var(--brand, #0078d7);
+        cursor: pointer;
+        transition: transform 0.1s ease;
+      }
+      .settings-range-group input[type="range"]::-webkit-slider-thumb:hover {
+        transform: scale(1.25);
+      }
+      .settings-btn.active {
+        background: var(--brand, #0078d7) !important;
+        border-color: var(--brand, #0078d7) !important;
+        color: #fff !important;
+      }
+      .settings-range-group input[type="range"]:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+      .settings-range-group input[type="range"]:disabled::-webkit-slider-thumb {
+        background: #555 !important;
+        cursor: not-allowed;
+      }
+
+      html[data-theme="light"] .yuki-settings-layout {
+        background: #f2f2f2 !important;
+        color: #111 !important;
+      }
+      html[data-theme="light"] .yuki-settings-sidebar {
+        background: rgba(0, 0, 0, 0.04) !important;
+        border-right: 1px solid rgba(0, 0, 0, 0.08) !important;
+      }
+      html[data-theme="light"] .yuki-settings-search input {
+        border: 1px solid rgba(0, 0, 0, 0.12) !important;
+        background: #fff !important;
+      }
+      html[data-theme="light"] .yuki-settings-nav li {
+        color: #444 !important;
+      }
+      html[data-theme="light"] .yuki-settings-nav li:hover {
+        background: rgba(0, 0, 0, 0.04) !important;
+        color: #111 !important;
+      }
+      html[data-theme="light"] .yuki-settings-nav li.active {
+        background: var(--brand-dim, rgba(0, 120, 215, 0.1)) !important;
+        color: var(--brand, #0078d7) !important;
+      }
+      html[data-theme="light"] .settings-category-header {
+        color: #111 !important;
+      }
+      html[data-theme="light"] .settings-card {
+        background: #fff !important;
+        border: 1px solid rgba(0, 0, 0, 0.08) !important;
+      }
+      html[data-theme="light"] .settings-card:hover {
+        border-color: rgba(0, 0, 0, 0.12) !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04) !important;
+      }
+      html[data-theme="light"] .settings-card-header {
+        background: rgba(0, 0, 0, 0.01) !important;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+        color: rgba(0, 0, 0, 0.6) !important;
+      }
+      html[data-theme="light"] .settings-grid-toggle {
+        background: rgba(0, 0, 0, 0.02) !important;
+        border-color: rgba(0, 0, 0, 0.06) !important;
+      }
+      html[data-theme="light"] .settings-grid-toggle:hover {
+        background: rgba(0, 0, 0, 0.04) !important;
+        border-color: rgba(0, 0, 0, 0.1) !important;
+      }
+      html[data-theme="light"] .settings-range-value {
+        color: #555 !important;
+      }
+      html[data-theme="light"] .wp-card {
+        background: #fff !important;
+        border-color: rgba(0, 0, 0, 0.08) !important;
+      }
+      html[data-theme="light"] .wp-card:hover {
+        border-color: rgba(0, 0, 0, 0.15) !important;
+      }
+      html[data-theme="light"] .wp-card-btn {
+        background: rgba(0, 0, 0, 0.02) !important;
+        border-color: rgba(0, 0, 0, 0.06) !important;
+      }
+      html[data-theme="light"] .wp-card-btn:hover {
+        background: var(--brand, #0078d7) !important;
+        border-color: var(--brand, #0078d7) !important;
+        color: #fff !important;
+      }
+      html[data-theme="light"] .settings-select option {
+        background: #fff;
+        color: #111;
+      }
+      html[data-theme="light"] .settings-btn {
+        background: rgba(0, 0, 0, 0.05) !important;
+        border: 1px solid rgba(0, 0, 0, 0.08) !important;
+        color: #111 !important;
+      }
+      html[data-theme="light"] .settings-btn:hover:not(:disabled) {
+        background: rgba(0, 0, 0, 0.08) !important;
+        border-color: rgba(0, 0, 0, 0.12) !important;
+        color: #000 !important;
+      }
+      html[data-theme="light"] .settings-btn:disabled {
+        opacity: 0.4 !important;
+        color: rgba(0, 0, 0, 0.4) !important;
+        background: rgba(0, 0, 0, 0.02) !important;
+        border-color: rgba(0, 0, 0, 0.05) !important;
+      }
+      html[data-theme="light"] .settings-btn-warning {
+        color: #b45309 !important;
+        background: rgba(217, 119, 6, 0.08) !important;
+        border-color: rgba(217, 119, 6, 0.2) !important;
+      }
+      html[data-theme="light"] .settings-btn-warning:hover:not(:disabled) {
+        background: rgba(217, 119, 6, 0.12) !important;
+        border-color: rgba(217, 119, 6, 0.3) !important;
+        color: #b45309 !important;
+      }
+      html[data-theme="light"] .settings-range-group input[type="range"] {
+        background: rgba(0, 0, 0, 0.1) !important;
+      }
+      html[data-theme="light"] .settings-range-group input[type="range"]:disabled::-webkit-slider-thumb {
+        background: #ccc !important;
+      }
+      html[data-theme="light"] .settings-track {
+        background: rgba(0, 0, 0, 0.08) !important;
+        border: 1px solid rgba(0, 0, 0, 0.15) !important;
+      }
     </style>
 
     <div class="window-header">
       <span>Settings</span>
       ${this.wm.getWindowControls()}
     </div>
-
-    <div class="yuki-settings-layout">
-      <div class="yuki-settings-sidebar">
-        <div class="yuki-settings-search">
-          <input type="text" id="settingsSearch" placeholder="Find a setting...">
+    <div class="window-content" style="padding: 0; gap: 0;">
+      <div class="yuki-settings-layout">
+        <div class="yuki-settings-sidebar">
+          <div class="yuki-settings-search">
+            <input type="text" id="settingsSearch" placeholder="Find a setting...">
+          </div>
+          <ul class="yuki-settings-nav">
+            <li class="active" data-target="pane-system"><i class="fas fa-desktop"></i> System</li>
+            <li data-target="pane-desktop"><i class="fas fa-home"></i> Desktop</li>
+            <li data-target="pane-appearance"><i class="fas fa-paint-brush"></i> Appearance</li>
+            <li data-target="pane-tools"><i class="fas fa-toolbox"></i> Tools</li>
+            <li data-target="pane-data"><i class="fas fa-database"></i> Data</li>
+            <li data-target="pane-network"><i class="fas fa-network-wired"></i> Network</li>
+            <li data-target="pane-audio"><i class="fas fa-volume-high"></i> Audio</li>
+            <li data-target="pane-about"><i class="fas fa-circle-info"></i> About</li>
+          </ul>
         </div>
-        <ul class="yuki-settings-nav">
-          <li class="active" data-target="pane-system"><i class="fas fa-desktop"></i> System</li>
-          <li data-target="pane-desktop"><i class="fas fa-home"></i> Desktop</li>
-          <li data-target="pane-appearance"><i class="fas fa-paint-brush"></i> Appearance</li>
-          <li data-target="pane-tools"><i class="fas fa-toolbox"></i> Tools</li>
-          <li data-target="pane-data"><i class="fas fa-database"></i> Data</li>
-          <li data-target="pane-network"><i class="fas fa-network-wired"></i> Network</li>
-          <li data-target="pane-audio"><i class="fas fa-volume-high"></i> Audio</li>
-          <li data-target="pane-about"><i class="fas fa-circle-info"></i> About</li>
-        </ul>
-      </div>
 
-      <div class="yuki-settings-content">
-        <span id="settingsStatus" class="settings-saved-badge-float">Saved</span>
-        
-        ${this._renderSystemSettings()}
-        ${this._renderDesktopSettings()}
-        ${this._renderAppearanceSettings()}
-        ${this._renderToolsSettings()}
-        ${this._renderDataSettings()}
-        ${this._renderNetworkSettings()}
-        ${this._renderAudioSettings()}
-        ${this._renderAboutSettings()}
+        <div class="yuki-settings-content">
+          <span id="settingsStatus" class="settings-saved-badge-float">Saved</span>
+          
+          ${this._renderSystemSettings()}
+          ${this._renderDesktopSettings()}
+          ${this._renderAppearanceSettings()}
+          ${this._renderToolsSettings()}
+          ${this._renderDataSettings()}
+          ${this._renderNetworkSettings()}
+          ${this._renderAudioSettings()}
+          ${this._renderAboutSettings()}
+        </div>
       </div>
     </div>
     `;
@@ -206,85 +648,92 @@ export class SettingsApp extends BaseApp {
     return `
       <div id="pane-system" class="settings-category-pane active">
         <div class="settings-category-header">System</div>
-        <div class="settings-row">
-          <div class="settings-label-group">
-            <span class="settings-label-title">Weather</span>
-            <span class="settings-label-desc">Show weather in the taskbar</span>
+        <div class="settings-card">
+          <div class="settings-card-header"><i class="fas fa-sliders-h"></i> General Behavior</div>
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Weather</span>
+              <span class="settings-label-desc">Show weather in the taskbar</span>
+            </div>
+            <label class="settings-toggle">
+              <input type="checkbox" id="settingsWeather" ${this._settings.weather ? "checked" : ""}/>
+              <span class="settings-track"><span class="settings-thumb"></span></span>
+            </label>
           </div>
-          <label class="settings-toggle">
-            <input type="checkbox" id="settingsWeather" ${this._settings.weather ? "checked" : ""}/>
-            <span class="settings-track"><span class="settings-thumb"></span></span>
-          </label>
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Clippy</span>
+              <span class="settings-label-desc">Show Clippy after boot</span>
+            </div>
+            <label class="settings-toggle">
+              <input type="checkbox" id="settingsClippy" ${this._settings.clippy ? "checked" : ""}/>
+              <span class="settings-track"><span class="settings-thumb"></span></span>
+            </label>
+          </div>
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Skip Boot Screen</span>
+              <span class="settings-label-desc">Bypass the login screen on startup</span>
+            </div>
+            <label class="settings-toggle">
+              <input type="checkbox" id="settingsDisableBootScreen" ${this._settings.disableBootScreen ? "checked" : ""}/>
+              <span class="settings-track"><span class="settings-thumb"></span></span>
+            </label>
+          </div>
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Window Session Persistence</span>
+              <span class="settings-label-desc">Remember and restore open windows on startup</span>
+            </div>
+            <label class="settings-toggle">
+              <input type="checkbox" id="settingsWindowSessionPersistence" ${this._settings.windowSessionPersistence ? "checked" : ""}/>
+              <span class="settings-track"><span class="settings-thumb"></span></span>
+            </label>
+          </div>
         </div>
-        <div class="settings-row">
-          <div class="settings-label-group">
-            <span class="settings-label-title">macOS Window Controls</span>
-            <span class="settings-label-desc">Use macOS-style traffic light buttons</span>
+
+        <div class="settings-card" style="margin-top: 16px;">
+          <div class="settings-card-header"><i class="fas fa-shield-alt"></i> Integration & Privacy</div>
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">macOS Window Controls</span>
+              <span class="settings-label-desc">Use macOS-style traffic light buttons</span>
+            </div>
+            <label class="settings-toggle">
+              <input type="checkbox" id="settingsMacControls" ${this._settings.macOsControls ? "checked" : ""}/>
+              <span class="settings-track"><span class="settings-thumb"></span></span>
+            </label>
           </div>
-          <label class="settings-toggle">
-            <input type="checkbox" id="settingsMacControls" ${this._settings.macOsControls ? "checked" : ""}/>
-            <span class="settings-track"><span class="settings-thumb"></span></span>
-          </label>
-        </div>
-        <div class="settings-row">
-          <div class="settings-label-group">
-            <span class="settings-label-title">Clippy</span>
-            <span class="settings-label-desc">Show Clippy after boot</span>
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Achievements</span>
+              <span class="settings-label-desc">Enable or disable achievement system</span>
+            </div>
+            <label class="settings-toggle">
+              <input type="checkbox" id="settingsAchievements" ${!this._settings.achievementsDisabled ? "checked" : ""}/>
+              <span class="settings-track"><span class="settings-thumb"></span></span>
+            </label>
           </div>
-          <label class="settings-toggle">
-            <input type="checkbox" id="settingsClippy" ${this._settings.clippy ? "checked" : ""}/>
-            <span class="settings-track"><span class="settings-thumb"></span></span>
-          </label>
-        </div>
-        <div class="settings-row">
-          <div class="settings-label-group">
-            <span class="settings-label-title">Achievements</span>
-            <span class="settings-label-desc">Enable or disable achievement system</span>
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Analytics</span>
+              <span class="settings-label-desc">Allow usage analytics</span>
+            </div>
+            <label class="settings-toggle">
+              <input type="checkbox" id="settingsAnalytics" ${!this._settings.analyticsDisabled ? "checked" : ""}/>
+              <span class="settings-track"><span class="settings-thumb"></span></span>
+            </label>
           </div>
-          <label class="settings-toggle">
-            <input type="checkbox" id="settingsAchievements" ${!this._settings.achievementsDisabled ? "checked" : ""}/>
-            <span class="settings-track"><span class="settings-thumb"></span></span>
-          </label>
-        </div>
-        <div class="settings-row">
-          <div class="settings-label-group">
-            <span class="settings-label-title">Analytics</span>
-            <span class="settings-label-desc">Allow usage analytics</span>
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Do Not Disturb</span>
+              <span class="settings-label-desc">Silence all toast notifications</span>
+            </div>
+            <label class="settings-toggle">
+              <input type="checkbox" id="settingsDND" ${this._settings.dnd ? "checked" : ""}/>
+              <span class="settings-track"><span class="settings-thumb"></span></span>
+            </label>
           </div>
-          <label class="settings-toggle">
-            <input type="checkbox" id="settingsAnalytics" ${!this._settings.analyticsDisabled ? "checked" : ""}/>
-            <span class="settings-track"><span class="settings-thumb"></span></span>
-          </label>
-        </div>
-        <div class="settings-row">
-          <div class="settings-label-group">
-            <span class="settings-label-title">Do Not Disturb</span>
-            <span class="settings-label-desc">Silence all toast notifications</span>
-          </div>
-          <label class="settings-toggle">
-            <input type="checkbox" id="settingsDND" ${this._settings.dnd ? "checked" : ""}/>
-            <span class="settings-track"><span class="settings-thumb"></span></span>
-          </label>
-        </div>
-        <div class="settings-row">
-          <div class="settings-label-group">
-            <span class="settings-label-title">Skip Boot Screen</span>
-            <span class="settings-label-desc">Bypass the login screen on startup</span>
-          </div>
-          <label class="settings-toggle">
-            <input type="checkbox" id="settingsDisableBootScreen" ${this._settings.disableBootScreen ? "checked" : ""}/>
-            <span class="settings-track"><span class="settings-thumb"></span></span>
-          </label>
-        </div>
-        <div class="settings-row">
-          <div class="settings-label-group">
-            <span class="settings-label-title">Window Session Persistence</span>
-            <span class="settings-label-desc">Remember and restore open windows on startup</span>
-          </div>
-          <label class="settings-toggle">
-            <input type="checkbox" id="settingsWindowSessionPersistence" ${this._settings.windowSessionPersistence ? "checked" : ""}/>
-            <span class="settings-track"><span class="settings-thumb"></span></span>
-          </label>
         </div>
       </div>
     `;
@@ -294,101 +743,109 @@ export class SettingsApp extends BaseApp {
     return `
       <div id="pane-desktop" class="settings-category-pane">
         <div class="settings-category-header">Desktop</div>
-        <div class="settings-row">
-          <div class="settings-label-group">
-            <span class="settings-label-title">Disable Desktop Stretch Scroll</span>
-            <span class="settings-label-desc">Prevent desktop page from expanding when windows are dragged out</span>
+        
+        <div class="settings-card">
+          <div class="settings-card-header"><i class="fas fa-arrows-alt"></i> Layout & Alignment</div>
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Disable Desktop Stretch Scroll</span>
+              <span class="settings-label-desc">Prevent desktop page from expanding when windows are dragged out</span>
+            </div>
+            <label class="settings-toggle">
+              <input type="checkbox" id="settingsDisableDesktopStretchScroll" ${this._settings.disableDesktopStretchScroll ? "checked" : ""}/>
+              <span class="settings-track"><span class="settings-thumb"></span></span>
+            </label>
           </div>
-          <label class="settings-toggle">
-            <input type="checkbox" id="settingsDisableDesktopStretchScroll" ${this._settings.disableDesktopStretchScroll ? "checked" : ""}/>
-            <span class="settings-track"><span class="settings-thumb"></span></span>
-          </label>
-        </div>
-        <div class="settings-row">
-          <div class="settings-label-group">
-            <span class="settings-label-title">Taskbar Alignment</span>
-            <span class="settings-label-desc">Choose alignment for taskbar icons</span>
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Taskbar Position</span>
+              <span class="settings-label-desc">Dock the taskbar to an edge</span>
+            </div>
+            <div class="settings-button-group">
+              <button class="settings-btn ${this._settings.taskbarPosition === "bottom" ? "active" : ""}" data-taskbar-pos="bottom"><i class="fas fa-arrow-down"></i> Bottom</button>
+              <button class="settings-btn ${this._settings.taskbarPosition === "top" ? "active" : ""}" data-taskbar-pos="top"><i class="fas fa-arrow-up"></i> Top</button>
+              <button class="settings-btn ${this._settings.taskbarPosition === "left" ? "active" : ""}" data-taskbar-pos="left"><i class="fas fa-arrow-left"></i> Left</button>
+              <button class="settings-btn ${this._settings.taskbarPosition === "right" ? "active" : ""}" data-taskbar-pos="right"><i class="fas fa-arrow-right"></i> Right</button>
+            </div>
           </div>
-          <div class="settings-button-group">
-            <button class="settings-btn ${this._settings.taskbarAlignment === "left" ? "active" : ""}" data-alignment="left">
-              <i class="fas fa-align-left"></i> Left
-            </button>
-            <button class="settings-btn ${this._settings.taskbarAlignment === "center" ? "active" : ""}" data-alignment="center">
-              <i class="fas fa-align-center"></i> Center
-            </button>
-            <button class="settings-btn ${this._settings.taskbarAlignment === "right" ? "active" : ""}" data-alignment="right">
-              <i class="fas fa-align-right"></i> Right
-            </button>
-          </div>
-        </div>
-        <div class="settings-row">
-          <div class="settings-label-group">
-            <span class="settings-label-title">Start Menu Width</span>
-            <span class="settings-label-desc">Adjust the width of the start menu</span>
-          </div>
-          <div class="settings-range-group">
-            <input id="settingsStartMenuWidth" type="range" min="400" max="1000" step="10" value="${this._settings.startMenuWidth}"/>
-            <span id="settingsStartMenuWidthValue" class="settings-range-value">${this._settings.startMenuWidth}px</span>
-          </div>
-        </div>
-        <div class="settings-row">
-          <div class="settings-label-group">
-            <span class="settings-label-title">Start Menu Height</span>
-            <span class="settings-label-desc">Adjust the height of the start menu</span>
-          </div>
-          <div class="settings-range-group">
-            <input id="settingsStartMenuHeight" type="range" min="300" max="900" step="10" value="${this._settings.startMenuHeight}"/>
-            <span id="settingsStartMenuHeightValue" class="settings-range-value">${this._settings.startMenuHeight}px</span>
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Taskbar Alignment</span>
+              <span class="settings-label-desc">Choose alignment for taskbar icons</span>
+            </div>
+            <div class="settings-button-group">
+              <button class="settings-btn ${this._settings.taskbarAlignment === "left" ? "active" : ""}" data-alignment="left">
+                <i class="fas fa-align-left"></i> Left
+              </button>
+              <button class="settings-btn ${this._settings.taskbarAlignment === "center" ? "active" : ""}" data-alignment="center">
+                <i class="fas fa-align-center"></i> Center
+              </button>
+              <button class="settings-btn ${this._settings.taskbarAlignment === "right" ? "active" : ""}" data-alignment="right">
+                <i class="fas fa-align-right"></i> Right
+              </button>
+            </div>
           </div>
         </div>
-        <div class="settings-row settings-row--stacked">
-          <div class="settings-label-group">
-            <span class="settings-label-title">Start Menu Categories</span>
-            <span class="settings-label-desc">Toggle visibility of categories in the start menu sidebar</span>
+
+        <div class="settings-card" style="margin-top: 16px;">
+          <div class="settings-card-header"><i class="fas fa-bars"></i> Start Menu</div>
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Start Menu Width</span>
+              <span class="settings-label-desc">Adjust the width of the start menu</span>
+            </div>
+            <div class="settings-range-group">
+              <input id="settingsStartMenuWidth" type="range" min="400" max="1000" step="10" value="${this._settings.startMenuWidth}"/>
+              <span id="settingsStartMenuWidthValue" class="settings-range-value">${this._settings.startMenuWidth}px</span>
+            </div>
           </div>
-          <div style="margin-top: 10px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; width: 100%;">
-            <label class="settings-toggle" style="justify-content: space-between; background: rgba(0,0,0,0.1); padding: 8px 12px; border-radius: 6px;">
-              <span>Menu</span>
-              <input type="checkbox" class="settings-start-cat-toggle" data-cat="menu" ${this._settings.startMenuCats.menu !== false ? "checked" : ""}/>
-              <span class="settings-track"><span class="settings-thumb"></span></span>
-            </label>
-            <label class="settings-toggle" style="justify-content: space-between; background: rgba(0,0,0,0.1); padding: 8px 12px; border-radius: 6px;">
-              <span>Games</span>
-              <input type="checkbox" class="settings-start-cat-toggle" data-cat="games" ${this._settings.startMenuCats.games !== false ? "checked" : ""}/>
-              <span class="settings-track"><span class="settings-thumb"></span></span>
-            </label>
-            <label class="settings-toggle" style="justify-content: space-between; background: rgba(0,0,0,0.1); padding: 8px 12px; border-radius: 6px;">
-              <span>System</span>
-              <input type="checkbox" class="settings-start-cat-toggle" data-cat="system" ${this._settings.startMenuCats.system !== false ? "checked" : ""}/>
-              <span class="settings-track"><span class="settings-thumb"></span></span>
-            </label>
-            <label class="settings-toggle" style="justify-content: space-between; background: rgba(0,0,0,0.1); padding: 8px 12px; border-radius: 6px;">
-              <span>Favorites</span>
-              <input type="checkbox" class="settings-start-cat-toggle" data-cat="favorites" ${this._settings.startMenuCats.favorites !== false ? "checked" : ""}/>
-              <span class="settings-track"><span class="settings-thumb"></span></span>
-            </label>
-            <label class="settings-toggle" style="justify-content: space-between; background: rgba(0,0,0,0.1); padding: 8px 12px; border-radius: 6px;">
-              <span>Customize Profile</span>
-              <input type="checkbox" class="settings-start-cat-toggle" data-cat="customize" ${this._settings.startMenuCats.customize !== false ? "checked" : ""}/>
-              <span class="settings-track"><span class="settings-thumb"></span></span>
-            </label>
-            <label class="settings-toggle" style="justify-content: space-between; background: rgba(0,0,0,0.1); padding: 8px 12px; border-radius: 6px;">
-              <span>Settings</span>
-              <input type="checkbox" class="settings-start-cat-toggle" data-cat="settingsApp" ${this._settings.startMenuCats.settingsApp !== false ? "checked" : ""}/>
-              <span class="settings-track"><span class="settings-thumb"></span></span>
-            </label>
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Start Menu Height</span>
+              <span class="settings-label-desc">Adjust the height of the start menu</span>
+            </div>
+            <div class="settings-range-group">
+              <input id="settingsStartMenuHeight" type="range" min="300" max="900" step="10" value="${this._settings.startMenuHeight}"/>
+              <span id="settingsStartMenuHeightValue" class="settings-range-value">${this._settings.startMenuHeight}px</span>
+            </div>
           </div>
-        </div>
-        <div class="settings-row">
-          <div class="settings-label-group">
-            <span class="settings-label-title">Taskbar Position</span>
-            <span class="settings-label-desc">Dock the taskbar to an edge</span>
-          </div>
-          <div class="settings-button-group">
-            <button class="settings-btn ${this._settings.taskbarPosition === "bottom" ? "active" : ""}" data-taskbar-pos="bottom"><i class="fas fa-arrow-down"></i> Bottom</button>
-            <button class="settings-btn ${this._settings.taskbarPosition === "top" ? "active" : ""}" data-taskbar-pos="top"><i class="fas fa-arrow-up"></i> Top</button>
-            <button class="settings-btn ${this._settings.taskbarPosition === "left" ? "active" : ""}" data-taskbar-pos="left"><i class="fas fa-arrow-left"></i> Left</button>
-            <button class="settings-btn ${this._settings.taskbarPosition === "right" ? "active" : ""}" data-taskbar-pos="right"><i class="fas fa-arrow-right"></i> Right</button>
+          <div class="settings-row settings-row--stacked">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Start Menu Categories</span>
+              <span class="settings-label-desc">Toggle visibility of categories in the start menu sidebar</span>
+            </div>
+            <div style="margin-top: 10px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; width: 100%;">
+              <label class="settings-grid-toggle">
+                <span>Menu</span>
+                <input type="checkbox" class="settings-start-cat-toggle" data-cat="menu" ${this._settings.startMenuCats.menu !== false ? "checked" : ""} style="display:none;"/>
+                <span class="settings-track"><span class="settings-thumb"></span></span>
+              </label>
+              <label class="settings-grid-toggle">
+                <span>Games</span>
+                <input type="checkbox" class="settings-start-cat-toggle" data-cat="games" ${this._settings.startMenuCats.games !== false ? "checked" : ""} style="display:none;"/>
+                <span class="settings-track"><span class="settings-thumb"></span></span>
+              </label>
+              <label class="settings-grid-toggle">
+                <span>System</span>
+                <input type="checkbox" class="settings-start-cat-toggle" data-cat="system" ${this._settings.startMenuCats.system !== false ? "checked" : ""} style="display:none;"/>
+                <span class="settings-track"><span class="settings-thumb"></span></span>
+              </label>
+              <label class="settings-grid-toggle">
+                <span>Favorites</span>
+                <input type="checkbox" class="settings-start-cat-toggle" data-cat="favorites" ${this._settings.startMenuCats.favorites !== false ? "checked" : ""} style="display:none;"/>
+                <span class="settings-track"><span class="settings-thumb"></span></span>
+              </label>
+              <label class="settings-grid-toggle">
+                <span>Customize Profile</span>
+                <input type="checkbox" class="settings-start-cat-toggle" data-cat="customize" ${this._settings.startMenuCats.customize !== false ? "checked" : ""} style="display:none;"/>
+                <span class="settings-track"><span class="settings-thumb"></span></span>
+              </label>
+              <label class="settings-grid-toggle">
+                <span>Settings</span>
+                <input type="checkbox" class="settings-start-cat-toggle" data-cat="settingsApp" ${this._settings.startMenuCats.settingsApp !== false ? "checked" : ""} style="display:none;"/>
+                <span class="settings-track"><span class="settings-thumb"></span></span>
+              </label>
+            </div>
           </div>
         </div>
       </div>
@@ -399,65 +856,79 @@ export class SettingsApp extends BaseApp {
     return `
       <div id="pane-appearance" class="settings-category-pane">
         <div class="settings-category-header">Appearance</div>
-        <div class="settings-row">
-          <div class="settings-label-group">
-            <span class="settings-label-title">Theme</span>
-            <span class="settings-label-desc">Set the OS color scheme</span>
+        
+        <div class="settings-card">
+          <div class="settings-card-header"><i class="fas fa-palette"></i> Style & Transparency</div>
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Theme</span>
+              <span class="settings-label-desc">Set the OS color scheme</span>
+            </div>
+            <div class="settings-button-group">
+              <button class="settings-btn ${this._settings.theme === "dark" ? "active" : ""}" data-theme-val="dark"><i class="fas fa-moon"></i> Dark</button>
+              <button class="settings-btn ${this._settings.theme === "light" ? "active" : ""}" data-theme-val="light"><i class="fas fa-sun"></i> Light</button>
+              <button class="settings-btn ${this._settings.theme === "auto" ? "active" : ""}" data-theme-val="auto"><i class="fas fa-circle-half-stroke"></i> Auto</button>
+            </div>
           </div>
-          <div class="settings-button-group">
-            <button class="settings-btn ${this._settings.theme === "dark" ? "active" : ""}" data-theme-val="dark"><i class="fas fa-moon"></i> Dark</button>
-            <button class="settings-btn ${this._settings.theme === "light" ? "active" : ""}" data-theme-val="light"><i class="fas fa-sun"></i> Light</button>
-            <button class="settings-btn ${this._settings.theme === "auto" ? "active" : ""}" data-theme-val="auto"><i class="fas fa-circle-half-stroke"></i> Auto</button>
-          </div>
-        </div>
-        <div class="settings-row">
-          <div class="settings-label-group">
-            <span class="settings-label-title">Window Transparency</span>
-            <span class="settings-label-desc">Adjust window opacity</span>
-          </div>
-          <div class="settings-range-group">
-            <input id="settingsWindowTransparency" type="range" min="20" max="100" step="1" value="${Math.round(this._settings.windowTransparency * 100)}"/>
-            <span id="settingsWindowTransparencyValue" class="settings-range-value">${Math.round(this._settings.windowTransparency * 100)}%</span>
-          </div>
-        </div>
-        <div class="settings-row">
-          <div class="settings-label-group">
-            <span class="settings-label-title">Cycle Wallpapers on Start</span>
-            <span class="settings-label-desc">Automatically switch wallpapers on boot</span>
-          </div>
-          <label class="settings-toggle">
-            <input type="checkbox" id="settingsCycleWallpaper" ${this._settings.cycleWallpaper ? "checked" : ""}/>
-            <span class="settings-track"><span class="settings-thumb"></span></span>
-          </label>
-        </div>
-        <div class="settings-row settings-row--stacked">
-          <div class="settings-label-group">
-            <span class="settings-label-title">Custom Cursor</span>
-            <span class="settings-label-desc">Upload a PNG/JPG/GIF/WEBP cursor image for the OS</span>
-          </div>
-          <div class="settings-button-group" style="margin-top: 10px;">
-            <button class="settings-btn" id="settingsCursorUploadBtn">
-              <i class="fas fa-upload"></i> Upload
-            </button>
-            <button class="settings-btn settings-btn-warning" id="settingsCursorClearBtn" ${this._settings.cursorDataUrl ? "" : "disabled"}>
-              <i class="fas fa-times"></i> Clear
-            </button>
-            <span id="settingsCursorStatus" class="settings-status-text">
-              ${this._settings.cursorDataUrl ? "Custom cursor enabled" : "Default cursor"}
-            </span>
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Window Transparency</span>
+              <span class="settings-label-desc">Adjust window opacity</span>
+            </div>
+            <div class="settings-range-group">
+              <input id="settingsWindowTransparency" type="range" min="20" max="100" step="1" value="${Math.round(this._settings.windowTransparency * 100)}"/>
+              <span id="settingsWindowTransparencyValue" class="settings-range-value">${Math.round(this._settings.windowTransparency * 100)}%</span>
+            </div>
           </div>
         </div>
-        <div class="settings-row">
-          <div class="settings-label-group">
-            <span class="settings-label-title">Cursor Size</span>
-            <span class="settings-label-desc">Scale the uploaded cursor image</span>
+
+        <div class="settings-card" style="margin-top: 16px;">
+          <div class="settings-card-header"><i class="fas fa-mouse-pointer"></i> Custom Cursor</div>
+          <div class="settings-row settings-row--stacked">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Custom Cursor</span>
+              <span class="settings-label-desc">Upload a PNG/JPG/GIF/WEBP cursor image for the OS</span>
+            </div>
+            <div class="settings-button-group" style="margin-top: 10px;">
+              <button class="settings-btn" id="settingsCursorUploadBtn">
+                <i class="fas fa-upload"></i> Upload
+              </button>
+              <button class="settings-btn settings-btn-warning" id="settingsCursorClearBtn" ${this._settings.cursorDataUrl ? "" : "disabled"}>
+                <i class="fas fa-times"></i> Clear
+              </button>
+              <span id="settingsCursorStatus" class="settings-status-text">
+                ${this._settings.cursorDataUrl ? "Custom cursor enabled" : "Default cursor"}
+              </span>
+            </div>
           </div>
-          <div class="settings-range-group">
-            <input id="settingsCursorSize" type="range" min="16" max="128" step="1" value="${this._settings.cursorSize}" ${this._settings.cursorDataUrl ? "" : "disabled"}/>
-            <span id="settingsCursorSizeValue" class="settings-range-value">${this._settings.cursorSize}px</span>
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Cursor Size</span>
+              <span class="settings-label-desc">Scale the uploaded cursor image</span>
+            </div>
+            <div class="settings-range-group">
+              <input id="settingsCursorSize" type="range" min="16" max="128" step="1" value="${this._settings.cursorSize}" ${this._settings.cursorDataUrl ? "" : "disabled"}/>
+              <span id="settingsCursorSizeValue" class="settings-range-value">${this._settings.cursorSize}px</span>
+            </div>
           </div>
         </div>
-        <div id="settings-wallpapers-container" style="margin-top: 20px;"></div>
+
+        <div class="settings-card" style="margin-top: 16px;">
+          <div class="settings-card-header"><i class="fas fa-images"></i> Wallpaper</div>
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Cycle Wallpapers on Start</span>
+              <span class="settings-label-desc">Automatically switch wallpapers on boot</span>
+            </div>
+            <label class="settings-toggle">
+              <input type="checkbox" id="settingsCycleWallpaper" ${this._settings.cycleWallpaper ? "checked" : ""}/>
+              <span class="settings-track"><span class="settings-thumb"></span></span>
+            </label>
+          </div>
+          <div style="padding: 16px;">
+            <div id="settings-wallpapers-container"></div>
+          </div>
+        </div>
       </div>
     `;
   }
@@ -466,31 +937,40 @@ export class SettingsApp extends BaseApp {
     return `
       <div id="pane-tools" class="settings-category-pane">
         <div class="settings-category-header">Tools</div>
-        <div class="settings-row">
-          <div class="settings-label-group">
-            <span class="settings-label-title">Hide Games</span>
-            <span class="settings-label-desc">Toggle visibility of game icons on desktop</span>
-          </div>
-          <button class="settings-btn" id="settingsHideGamesBtn">
-            <i class="fas fa-eye-slash"></i> Toggle
-          </button>
-
+        
+        <div class="settings-card">
+          <div class="settings-card-header"><i class="fas fa-eye-slash"></i> Desktop Visibility</div>
+          <div class="settings-row">
             <div class="settings-label-group">
-            <span class="settings-label-title">Hide System Apps</span>
-            <span class="settings-label-desc">Toggle visibility of system apps on desktop</span>
+              <span class="settings-label-title">Hide Games</span>
+              <span class="settings-label-desc">Toggle visibility of game icons on desktop</span>
+            </div>
+            <button class="settings-btn" id="settingsHideGamesBtn">
+              <i class="fas fa-eye-slash"></i> Toggle
+            </button>
           </div>
-          <button class="settings-btn" id="settingsHideAppsBtn">
-            <i class="fas fa-eye-slash"></i> Toggle
-          </button>
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Hide System Apps</span>
+              <span class="settings-label-desc">Toggle visibility of system apps on desktop</span>
+            </div>
+            <button class="settings-btn" id="settingsHideAppsBtn">
+              <i class="fas fa-eye-slash"></i> Toggle
+            </button>
+          </div>
         </div>
-        <div class="settings-row">
-          <div class="settings-label-group">
-            <span class="settings-label-title">Download Page</span>
-            <span class="settings-label-desc">Save a local copy of YukiOS</span>
+
+        <div class="settings-card" style="margin-top: 16px;">
+          <div class="settings-card-header"><i class="fas fa-download"></i> Save Yuki OS</div>
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Download Page</span>
+              <span class="settings-label-desc">Save a local copy of YukiOS</span>
+            </div>
+            <button class="settings-btn" id="settingsDownloadPageBtn">
+              <i class="fas fa-download"></i> Download
+            </button>
           </div>
-          <button class="settings-btn" id="settingsDownloadPageBtn">
-            <i class="fas fa-download"></i> Download
-          </button>
         </div>
       </div>
     `;
@@ -501,54 +981,61 @@ export class SettingsApp extends BaseApp {
       <div id="pane-data" class="settings-category-pane">
         <div class="settings-category-header">Data & Storage</div>
         
-        <div class="settings-row">
-          <div class="settings-label-group">
-            <span class="settings-label-title">Export Data</span>
-            <span class="settings-label-desc">Backup your system settings, files, and configuration</span>
+        <div class="settings-card">
+          <div class="settings-card-header"><i class="fas fa-copy"></i> Import / Export</div>
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Export Data</span>
+              <span class="settings-label-desc">Backup your system settings, files, and configuration</span>
+            </div>
+            <button class="settings-btn" id="btnExportData">
+              <i class="fas fa-file-export"></i> Export
+            </button>
           </div>
-          <button class="settings-btn" id="btnExportData">
-            <i class="fas fa-file-export"></i> Export
-          </button>
-        </div>
-        
-        <div class="settings-row">
-          <div class="settings-label-group">
-            <span class="settings-label-title">Import Data</span>
-            <span class="settings-label-desc">Restore a previously saved system backup</span>
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Import Data</span>
+              <span class="settings-label-desc">Restore a previously saved system backup</span>
+            </div>
+            <button class="settings-btn" id="btnImportData">
+              <i class="fas fa-file-import"></i> Import
+            </button>
           </div>
-          <button class="settings-btn" id="btnImportData">
-            <i class="fas fa-file-import"></i> Import
-          </button>
-        </div>
-
-        <div class="settings-row">
-          <div class="settings-label-group">
-            <span class="settings-label-title">Reset Toggles</span>
-            <span class="settings-label-desc">Revert all OS switches back to default</span>
-          </div>
-          <button class="settings-btn settings-btn-warning" id="btnResetToggles">
-            <i class="fas fa-sliders-h"></i> Reset
-          </button>
-        </div>
-        
-        <div class="settings-row">
-          <div class="settings-label-group">
-            <span class="settings-label-title">Reset to Saved</span>
-            <span class="settings-label-desc">Revert any unsaved changes to stored configuration</span>
-          </div>
-          <button class="settings-btn" id="btnResetSaved">
-            <i class="fas fa-undo"></i> Revert
-          </button>
         </div>
 
-        <div class="settings-row">
-          <div class="settings-label-group">
-            <span class="settings-label-title" style="color: #ff4d4f;">Delete All Data</span>
-            <span class="settings-label-desc">Permanently wipe all games, files, and OS settings</span>
+        <div class="settings-card" style="margin-top: 16px;">
+          <div class="settings-card-header"><i class="fas fa-undo-alt"></i> Revert Options</div>
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Reset Toggles</span>
+              <span class="settings-label-desc">Revert all OS switches back to default</span>
+            </div>
+            <button class="settings-btn settings-btn-warning" id="btnResetToggles">
+              <i class="fas fa-sliders-h"></i> Reset
+            </button>
           </div>
-          <button class="settings-btn danger" style="background: #ff4d4f; color: white; border: none;" id="btnDeleteAllData">
-            <i class="fas fa-trash"></i> Wipe
-          </button>
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Reset to Saved</span>
+              <span class="settings-label-desc">Revert any unsaved changes to stored configuration</span>
+            </div>
+            <button class="settings-btn" id="btnResetSaved">
+              <i class="fas fa-undo"></i> Revert
+            </button>
+          </div>
+        </div>
+
+        <div class="settings-card" style="margin-top: 16px; border-color: rgba(255, 77, 79, 0.25);">
+          <div class="settings-card-header" style="color: #ff4d4f;"><i class="fas fa-exclamation-triangle"></i> Danger Zone</div>
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title" style="color: #ff4d4f;">Delete All Data</span>
+              <span class="settings-label-desc">Permanently wipe all games, files, and OS settings</span>
+            </div>
+            <button class="settings-btn danger" style="background: #ff4d4f; color: white; border: none;" id="btnDeleteAllData">
+              <i class="fas fa-trash"></i> Wipe
+            </button>
+          </div>
         </div>
       </div>
     `;
@@ -558,16 +1045,21 @@ export class SettingsApp extends BaseApp {
     return `
       <div id="pane-network" class="settings-category-pane">
         <div class="settings-category-header">Network</div>
-        <div class="settings-row">
-          <div class="settings-label-group">
-            <span class="settings-label-title">CDN Mirror</span>
-            <span class="settings-label-desc">Choose a mirror for fetching game assets</span>
+        
+        <div class="settings-card">
+          <div class="settings-card-header"><i class="fas fa-server"></i> Content Delivery Network</div>
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">CDN Mirror</span>
+              <span class="settings-label-desc">Choose a mirror for fetching game assets</span>
+            </div>
+            <select id="settingsCdnMirror" class="settings-select">
+              ${CDN_MIRRORS.map(
+                (m) =>
+                  `<option value="${m.id}" ${this._settings.cdnMirror === m.id ? "selected" : ""}>${m.name}</option>`
+              ).join("")}
+            </select>
           </div>
-          <select id="settingsCdnMirror" class="settings-select">
-            ${CDN_MIRRORS.map(
-              (m) => `<option value="${m.id}" ${this._settings.cdnMirror === m.id ? "selected" : ""}>${m.name}</option>`
-            ).join("")}
-          </select>
         </div>
       </div>
     `;
@@ -578,24 +1070,28 @@ export class SettingsApp extends BaseApp {
     return `
       <div id="pane-audio" class="settings-category-pane">
         <div class="settings-category-header">Audio</div>
-        <div class="settings-row">
-          <div class="settings-label-group">
-            <span class="settings-label-title">Sound</span>
-            <span class="settings-label-desc">Enable or mute all OS audio</span>
+        
+        <div class="settings-card">
+          <div class="settings-card-header"><i class="fas fa-volume-up"></i> Volume Control</div>
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Sound</span>
+              <span class="settings-label-desc">Enable or mute all OS audio</span>
+            </div>
+            <label class="settings-toggle">
+              <input type="checkbox" id="settingsSoundEnabled" ${this._settings.soundEnabled ? "checked" : ""}/>
+              <span class="settings-track"><span class="settings-thumb"></span></span>
+            </label>
           </div>
-          <label class="settings-toggle">
-            <input type="checkbox" id="settingsSoundEnabled" ${this._settings.soundEnabled ? "checked" : ""}/>
-            <span class="settings-track"><span class="settings-thumb"></span></span>
-          </label>
-        </div>
-        <div class="settings-row">
-          <div class="settings-label-group">
-            <span class="settings-label-title">Master Volume</span>
-            <span class="settings-label-desc">Global volume level for all apps</span>
-          </div>
-          <div class="settings-range-group">
-            <input id="settingsMasterVolume" type="range" min="0" max="100" step="1" value="${vol}" ${!this._settings.soundEnabled ? "disabled" : ""}/>
-            <span id="settingsMasterVolumeValue" class="settings-range-value">${vol}%</span>
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Master Volume</span>
+              <span class="settings-label-desc">Global volume level for all apps</span>
+            </div>
+            <div class="settings-range-group">
+              <input id="settingsMasterVolume" type="range" min="0" max="100" step="1" value="${vol}" ${!this._settings.soundEnabled ? "disabled" : ""}/>
+              <span id="settingsMasterVolumeValue" class="settings-range-value">${vol}%</span>
+            </div>
           </div>
         </div>
       </div>
@@ -606,22 +1102,36 @@ export class SettingsApp extends BaseApp {
     return `
       <div id="pane-about" class="settings-category-pane">
         <div class="settings-category-header">About</div>
-        <div class="settings-row" style="flex-direction: column; align-items: flex-start; gap: 10px;">
-          <h2 style="margin:0;font-size:1.4em;">Yuki OS <span style="font-size:0.6em;color:rgba(255,255,255,0.6);font-weight:normal;">${YUKIOS_VERSION}</span></h2>
-          <p style="margin:0;color:rgba(255,255,255,0.8);font-size:0.95em;">
-            Browser desktop environment with apps, games, and sandboxed runtime systems.
-          </p>
-        </div>
-        <div class="settings-row">
-          <div class="settings-label-group">
-            <span class="settings-label-title">YukiCord</span>
-            <span class="settings-label-desc">Join our Discord server</span>
+        
+        <div class="settings-card">
+          <div class="settings-card-header"><i class="fas fa-info-circle"></i> OS Information</div>
+          <div class="settings-row" style="flex-direction: column; align-items: flex-start; gap: 12px; padding: 20px;">
+            <div style="display: flex; align-items: center; gap: 16px;">
+              <img src="${resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/icons/logo.png")}" style="width: 48px; height: 48px; object-fit: contain;" onerror="this.src='favicon.ico'"/>
+              <div>
+                <h2 style="margin:0;font-size:1.3em;font-weight:600;display:flex;align-items:center;gap:8px;color:#fff;">Yuki OS <span style="font-size:0.65em;background:var(--brand-dim, rgba(0, 120, 215, 0.1));color:var(--brand, #0078d7);padding:2px 8px;border-radius:4px;font-weight:500;">${YUKIOS_VERSION}</span></h2>
+                <p style="margin:4px 0 0 0;color:rgba(255,255,255,0.5);font-size:0.8em;">Browser desktop environment</p>
+              </div>
+            </div>
+            <p style="margin:0;color:rgba(255,255,255,0.75);font-size:0.9em;line-height:1.5;">
+              A fully featured desktop OS experience running directly in your web browser. Includes emulators, tools, PWA support, virtual filesystem, and 2700+ classic games.
+            </p>
           </div>
-          <a href="https://discord.gg/2Z8Gvtqt7" target="_blank" rel="noopener noreferrer" class="settings-discord-link">
-            <button class="settings-btn settings-btn-discord">
-              <i class="fab fa-discord"></i> Join
-            </button>
-          </a>
+        </div>
+
+        <div class="settings-card" style="margin-top: 16px;">
+          <div class="settings-card-header"><i class="fab fa-discord"></i> Community</div>
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">YukiCord</span>
+              <span class="settings-label-desc">Join our Discord server</span>
+            </div>
+            <a href="https://discord.gg/2Z8Gvtqt7" target="_blank" rel="noopener noreferrer" class="settings-discord-link">
+              <button class="settings-btn settings-btn-discord">
+                <i class="fab fa-discord"></i> Join
+              </button>
+            </a>
+          </div>
         </div>
       </div>
     `;
@@ -757,8 +1267,14 @@ export class SettingsApp extends BaseApp {
       if (!query) {
         layout.classList.remove("is-searching");
         win.querySelectorAll(".settings-row").forEach((row) => row.classList.remove("hidden-by-search"));
+        panes.forEach((p) => {
+          p.classList.remove("active");
+          p.style.display = "";
+          p.querySelectorAll(".settings-card").forEach((card) => {
+            card.style.display = "";
+          });
+        });
         const activeNav = win.querySelector(".yuki-settings-nav li.active");
-        panes.forEach((p) => p.classList.remove("active"));
         if (activeNav) win.querySelector("#" + activeNav.dataset.target).classList.add("active");
       } else {
         layout.classList.add("is-searching");
@@ -769,6 +1285,34 @@ export class SettingsApp extends BaseApp {
             row.classList.remove("hidden-by-search");
           } else {
             row.classList.add("hidden-by-search");
+          }
+        });
+
+        panes.forEach((pane) => {
+          let paneHasVisibleRows = false;
+          pane.querySelectorAll(".settings-card").forEach((card) => {
+            const visibleRowsInCard = card.querySelectorAll(".settings-row:not(.hidden-by-search)");
+            if (visibleRowsInCard.length > 0) {
+              card.style.display = "";
+              paneHasVisibleRows = true;
+            } else {
+              card.style.display = "none";
+            }
+          });
+
+          const visibleStandaloneRows = pane.querySelectorAll(
+            ".settings-category-pane > .settings-row:not(.hidden-by-search)"
+          );
+          if (visibleStandaloneRows.length > 0) {
+            paneHasVisibleRows = true;
+          }
+
+          if (paneHasVisibleRows) {
+            pane.style.display = "block";
+            pane.classList.add("active");
+          } else {
+            pane.style.display = "none";
+            pane.classList.remove("active");
           }
         });
       }

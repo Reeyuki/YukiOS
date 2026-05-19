@@ -67,13 +67,13 @@ export class SessionManager {
             <div class="avatar-grid-wrapper">
               <div class="avatar-grid" id="login-avatar-grid">
                 ${PREDEFINED_AVATARS.map(
-      (url) => `
+                  (url) => `
                   <div class="avatar-tile ${url === lastAvatar ? "active" : ""}" data-url="${url}">
                     <img src="${url}" alt="Avatar">
                     <div class="tile-check"><i class="fas fa-check"></i></div>
                   </div>
                 `
-    ).join("")}
+                ).join("")}
               </div>
             </div>
             
