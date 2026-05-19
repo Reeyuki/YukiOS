@@ -80,6 +80,10 @@ export class AdsManager {
     this.wm = windowManager;
     this.windowHelper = new WindowHelper(windowManager);
 
+    if (!shouldEnableAds()) {
+      return;
+    }
+
     AdsManager.instance = this;
 
     this.sessionStart = Date.now();
@@ -203,6 +207,7 @@ export class AdsManager {
   }
 
   maybeFirePopunder() {
+    if (!shouldEnableAds()) return;
     const meta = loadMeta();
     resetDaily(meta);
 
@@ -238,7 +243,8 @@ export class AdsManager {
   }
 
   createAdWindow() {
-    const win = this.windowHelper.createAndMountWindow(
+    if (!shouldEnableAds()) return;
+    this.windowHelper.createAndMountWindow(
       "ads_main_window",
       "Sponsored",
       `
@@ -272,6 +278,7 @@ export class AdsManager {
   }
 
   mountBanner() {
+    if (!shouldEnableAds()) return;
     const c = document.getElementById("banner-slot");
     if (!c) return;
 
@@ -297,6 +304,7 @@ export class AdsManager {
   }
 
   mountNative() {
+    if (!shouldEnableAds()) return;
     const c = document.getElementById(ADS.native.containerId);
     if (!c) return;
 

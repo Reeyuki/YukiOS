@@ -67,13 +67,13 @@ export class SessionManager {
             <div class="avatar-grid-wrapper">
               <div class="avatar-grid" id="login-avatar-grid">
                 ${PREDEFINED_AVATARS.map(
-                  (url) => `
+      (url) => `
                   <div class="avatar-tile ${url === lastAvatar ? "active" : ""}" data-url="${url}">
                     <img src="${url}" alt="Avatar">
                     <div class="tile-check"><i class="fas fa-check"></i></div>
                   </div>
                 `
-                ).join("")}
+    ).join("")}
               </div>
             </div>
             
@@ -130,28 +130,37 @@ export class SessionManager {
     const style = document.createElement("style");
     style.id = "login-screen-styles";
     style.textContent = `
-      .login-screen-overlay {
-        position: fixed;
-        inset: 0;
-        z-index: 999999;
-        background: radial-gradient(circle at center, #1a1a2e 0%, #0f0f1a 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        animation: fadeIn 0.8s ease-out;
-        font-family: 'Inter', system-ui, -apple-system, sans-serif;
-        color: #fff;
-      }
+    .login-screen-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 999999;
+      background: radial-gradient(circle at center, #1a1a2e 0%, #0f0f1a 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      color: #fff;
+      opacity: 1;
+      transform: scale(1);
+    }
 
-      .login-wallpaper-bg {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        z-index: -1;
-      }
+    .login-wallpaper-bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+    }
 
+    .login-screen-overlay.exit {
+      animation: fadeOut 0.6s ease-in forwards;
+    }
+
+    @keyframes fadeOut {
+      from { opacity: 1; transform: scale(1); }
+      to { opacity: 0; transform: scale(0.98); }
+    }
       @keyframes fadeIn {
         from { opacity: 0; transform: scale(1.05); }
         to { opacity: 1; transform: scale(1); }

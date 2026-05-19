@@ -441,8 +441,10 @@ export class SystemUtilities {
     const uptime = document.getElementById("uptime");
     if (!clock || !date) return;
 
-    date.style.cursor = "pointer";
-    date.addEventListener("click", (e) => {
+    const timeContainer = document.getElementById("time-container");
+    const clickTarget = timeContainer || date;
+    clickTarget.style.cursor = "pointer";
+    clickTarget.addEventListener("click", (e) => {
       e.stopPropagation();
       setCurrentCalendarMonth();
       createCalendarPopup();
@@ -474,8 +476,8 @@ export class SystemUtilities {
       widget.addEventListener("click", () => {
         appLauncher?.launch("weatherApp");
       });
-      const clock = document.getElementById("clock");
-      clock ? tray.insertBefore(widget, clock) : tray.prepend(widget);
+      const ref = document.getElementById("time-container") || document.getElementById("clock");
+      ref ? tray.insertBefore(widget, ref) : tray.prepend(widget);
       _weatherWidget = widget;
     }
 

@@ -58,5 +58,8 @@ export const StorageKeys = {
   achievementsDisabled: "yukiOS_achievements_disabled",
   steamSettings: "yukios_steam_settings",
   windowSessionPersistence: "yukiOS_window_session_persistence",
-  geometryPrefix: "yukiOS_geometry_"
+  geometryPrefix: "yukiOS_geometry_",
+  startMenuWidth: "yukiOS_startMenuWidth",
+  startMenuHeight: "yukiOS_startMenuHeight",
+  startMenuCats: "yukiOS_startMenuCats"
 };

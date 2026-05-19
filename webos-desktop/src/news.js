@@ -4,12 +4,22 @@ import { WindowHelper } from "./utils/WindowHelper.js";
 
 const NEWS_UPDATES = [
   {
+    date: "May 19, 2026",
+    sections: [
+      {
+        icon: "fa-wand-magic-sparkles",
+        title: "Features & Improvements",
+        items: [["fa-star", "Start Menu Customization", "Add option to customize start menu categories and items."]]
+      }
+    ]
+  },
+  {
     date: "May 18, 2026",
     sections: [
       {
         icon: "fa-wand-magic-sparkles",
         title: "Features & Improvements",
-        items: [["fa-star", "Angry Birds 2", "Added angry birds 2."]]
+        items: [["fa-star", "Angry Birds 2", "Added angry birds 2 / Lobotomy Corp."]]
       }
     ]
   },

@@ -129,6 +129,44 @@ Global pub-sub for cross-app communication without tight coupling.
 
 ---
 
+## Shared Utilities (`webos-desktop/src/shared`)
+
+Reusable cross-app helpers live under `webos-desktop/src/shared` and should be preferred over duplicating logic.
+
+### Dialog APIs
+
+**File:** `webos-desktop/src/shared/dialogs.js`
+
+| Function | Purpose | Return |
+|--------|---------|---------|
+| `showAlert(title, message, buttonText)` | Custom modal alert UI | `Promise<void>` |
+| `showPrompt(title, message, defaultValue, confirmText)` | Custom input prompt with validation | `Promise<string \| null>` |
+| `showConfirm(title, message, confirmText, cancelText)` | Custom confirm dialog | `Promise<boolean>` |
+| `customAlert(message, title)` | Convenience wrapper for alert | `Promise<void>` |
+| `customPrompt(message, defaultValue, title)` | Convenience wrapper for prompt | `Promise<string \| null>` |
+| `customConfirm(message, title)` | Convenience wrapper for confirm | `Promise<boolean>` |
+
+**File:** `webos-desktop/src/shared/conflictDialog.js`
+
+| Function | Purpose | Return |
+|--------|---------|---------|
+| `showConflictDialog(fileName)` | File conflict action picker (`replace`/`keep`/`skip`) with apply-to-all option | `Promise<{ action, applyToAll }>` |
+| `resolveConflicts(items, existsCheck, getKey, applyToAllInit)` | Batch conflict resolver for copy/extract flows | `Promise<Array<{ item, action }>>` |
+
+### Other Shared Helpers
+
+- `contextMenu.js`: `showContextMenu`, `showDynamicContextMenu`, `showStartStyleMenu`, `hideMenu`, `refreshIcons`
+- `assetResolver.js`: `resolveUrl`, `resolveYukiAsset`, `fetchHtmlAsBlobUrl`, `resolveIconUrl`, `resolveWallpaperUrl`, mirror selection helpers
+- `iframeUtils.js`: `resolveUrl`, `fetchHtmlAsBlobUrl`, `looksLikeHtml`, `isCdnGhUrl`
+- `cdnConfig.js`: `CDN_CONFIG`, `getLibraryUrl`, `getRepoUrl`
+- `iconUtils.js`: `resolveDesktopIcon`
+- `platformUtils.js`: `detectOS`, `isMobile`, `getBrowser`
+- `coreMap.js`: `detectCore`, `coreLabel`, `ROM_EXTS`
+- `weatherCodes.js`: `WEATHER_CODES`, `getWeatherIcon`, `getWeatherInfo`
+- `iframeAttrs.js`: `IFRAME_ATTRS`
+
+---
+
 ## Key Agents by Category
 
 ### Application Management

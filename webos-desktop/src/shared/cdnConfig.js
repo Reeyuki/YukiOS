@@ -15,7 +15,7 @@ export const CDN_CONFIG = {
     },
     get npm() {
       return {
-        base: resolveNpmUrl("https://cdn.jsdelivr.net/npm")
+        base: resolveNpmUrl("https://cdn.jsdelivr.net/npm/")
       };
     }
   },

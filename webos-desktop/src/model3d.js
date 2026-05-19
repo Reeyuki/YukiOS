@@ -1,6 +1,6 @@
 import { BaseApp } from "./core/BaseApp.js";
 import { speak } from "./clippy.js";
-import JSZip from "https://esm.sh/jszip@3.10.1";
+import { unzipSync } from "fflate";
 import { Achievements } from "./achievements.js";
 import { bus, BusEvents } from "./core/EventBus.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
@@ -1048,15 +1048,18 @@ export class Model3DApp extends BaseApp {
 
   async handleZipFile(fileData) {
     try {
-      const zip = await JSZip.loadAsync(fileData);
+      const unzipped = unzipSync(new Uint8Array(fileData));
       const supportedExtensions = ["obj", "gltf", "glb", "fbx", "dae", "3ds"];
 
-      for (const [filename, file] of Object.entries(zip.files)) {
-        if (file.dir) continue;
+      for (const [filename, contentBytes] of Object.entries(unzipped)) {
+        if (filename.endsWith("/")) continue;
 
         const ext = this.getFileExtension(filename);
         if (supportedExtensions.includes(ext)) {
-          const content = await file.async("arraybuffer");
+          const content = contentBytes.buffer.slice(
+            contentBytes.byteOffset,
+            contentBytes.byteOffset + contentBytes.byteLength
+          );
           await this.loadModel(content, filename);
           speak(`Loaded ${filename} from zip`, "Load");
           return true;

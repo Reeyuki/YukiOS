@@ -123,7 +123,7 @@ function closeCalendarPopup() {
 function positionCalendarPopup() {
   if (!_calendarPopup) return;
 
-  const dateEl = document.getElementById("date");
+  const dateEl = document.getElementById("time-container") || document.getElementById("date");
   const rect = dateEl.getBoundingClientRect();
   const popupRect = _calendarPopup.getBoundingClientRect();
 
@@ -177,7 +177,13 @@ function handleCalendarKeydown(e) {
 
 function closeCalendarOnClickOutside(e) {
   if (e.target.closest(".calendar-modal-overlay")) return;
-  if (_calendarPopup && !_calendarPopup.contains(e.target) && e.target.id !== "date") {
+  if (
+    _calendarPopup &&
+    !_calendarPopup.contains(e.target) &&
+    e.target.id !== "date" &&
+    e.target.id !== "clock" &&
+    !e.target.closest("#time-container")
+  ) {
     closeCalendarPopup();
   }
 }

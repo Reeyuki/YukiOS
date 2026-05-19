@@ -2319,7 +2319,7 @@ body.is-resizing * {
 #taskbar-pos-menu {
   position: absolute;
   display: none;
-  z-index: 10000;
+  z-index: 30000;
   min-width: 160px;
 
   padding: 6px;
@@ -3780,13 +3780,28 @@ body.is-resizing * {
   background: rgba(255, 255, 255, 0.2);
 }
 
-#date {
-  cursor: pointer !important;
+#time-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+#time-container #clock {
+  font-size: 0.9em;
+  text-align: center;
+}
+
+#time-container #date {
+  font-size: 0.75em;
+  text-align: center;
+  opacity: 0.8;
   transition: opacity 0.2s ease;
 }
 
-#date:hover {
-  opacity: 0.7;
+#time-container:hover #date {
+  opacity: 1;
 }
 
 .calendar-agenda::-webkit-scrollbar {

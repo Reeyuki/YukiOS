@@ -48,7 +48,16 @@ export class SettingsApp extends BaseApp {
         dnd: localStorage.getItem(StorageKeys.dndKey) === "1",
         taskbarPosition: localStorage.getItem(StorageKeys.taskbarPosition) || "bottom",
         disableBootScreen: localStorage.getItem(StorageKeys.disableBootScreen) === "true",
-        windowSessionPersistence: localStorage.getItem(StorageKeys.windowSessionPersistence) !== "false"
+        windowSessionPersistence: localStorage.getItem(StorageKeys.windowSessionPersistence) !== "false",
+        startMenuWidth: Number(localStorage.getItem(StorageKeys.startMenuWidth)) || 650,
+        startMenuHeight: Number(localStorage.getItem(StorageKeys.startMenuHeight)) || 500,
+        startMenuCats: (() => {
+          try {
+            return JSON.parse(localStorage.getItem(StorageKeys.startMenuCats)) || {};
+          } catch {
+            return {};
+          }
+        })()
       };
 
       this._applyCursor(this._settings.cursorDataUrl);
@@ -56,6 +65,8 @@ export class SettingsApp extends BaseApp {
       this._applyTheme(this._settings.theme);
       this._applyWindowTransparency(this._settings.windowTransparency);
       this._applySound(this._settings.soundEnabled, this._settings.masterVolume);
+      this._applyStartMenuSize(this._settings.startMenuWidth, this._settings.startMenuHeight);
+      this._applyStartMenuCats(this._settings.startMenuCats);
       window._settings = this._settings;
 
       if (cursorFromLegacyStorage && !cursorOriginalFromStorage) {
@@ -308,6 +319,64 @@ export class SettingsApp extends BaseApp {
             <button class="settings-btn ${this._settings.taskbarAlignment === "right" ? "active" : ""}" data-alignment="right">
               <i class="fas fa-align-right"></i> Right
             </button>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Start Menu Width</span>
+            <span class="settings-label-desc">Adjust the width of the start menu</span>
+          </div>
+          <div class="settings-range-group">
+            <input id="settingsStartMenuWidth" type="range" min="400" max="1000" step="10" value="${this._settings.startMenuWidth}"/>
+            <span id="settingsStartMenuWidthValue" class="settings-range-value">${this._settings.startMenuWidth}px</span>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Start Menu Height</span>
+            <span class="settings-label-desc">Adjust the height of the start menu</span>
+          </div>
+          <div class="settings-range-group">
+            <input id="settingsStartMenuHeight" type="range" min="300" max="900" step="10" value="${this._settings.startMenuHeight}"/>
+            <span id="settingsStartMenuHeightValue" class="settings-range-value">${this._settings.startMenuHeight}px</span>
+          </div>
+        </div>
+        <div class="settings-row settings-row--stacked">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Start Menu Categories</span>
+            <span class="settings-label-desc">Toggle visibility of categories in the start menu sidebar</span>
+          </div>
+          <div style="margin-top: 10px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; width: 100%;">
+            <label class="settings-toggle" style="justify-content: space-between; background: rgba(0,0,0,0.1); padding: 8px 12px; border-radius: 6px;">
+              <span>Menu</span>
+              <input type="checkbox" class="settings-start-cat-toggle" data-cat="menu" ${this._settings.startMenuCats.menu !== false ? "checked" : ""}/>
+              <span class="settings-track"><span class="settings-thumb"></span></span>
+            </label>
+            <label class="settings-toggle" style="justify-content: space-between; background: rgba(0,0,0,0.1); padding: 8px 12px; border-radius: 6px;">
+              <span>Games</span>
+              <input type="checkbox" class="settings-start-cat-toggle" data-cat="games" ${this._settings.startMenuCats.games !== false ? "checked" : ""}/>
+              <span class="settings-track"><span class="settings-thumb"></span></span>
+            </label>
+            <label class="settings-toggle" style="justify-content: space-between; background: rgba(0,0,0,0.1); padding: 8px 12px; border-radius: 6px;">
+              <span>System</span>
+              <input type="checkbox" class="settings-start-cat-toggle" data-cat="system" ${this._settings.startMenuCats.system !== false ? "checked" : ""}/>
+              <span class="settings-track"><span class="settings-thumb"></span></span>
+            </label>
+            <label class="settings-toggle" style="justify-content: space-between; background: rgba(0,0,0,0.1); padding: 8px 12px; border-radius: 6px;">
+              <span>Favorites</span>
+              <input type="checkbox" class="settings-start-cat-toggle" data-cat="favorites" ${this._settings.startMenuCats.favorites !== false ? "checked" : ""}/>
+              <span class="settings-track"><span class="settings-thumb"></span></span>
+            </label>
+            <label class="settings-toggle" style="justify-content: space-between; background: rgba(0,0,0,0.1); padding: 8px 12px; border-radius: 6px;">
+              <span>Customize Profile</span>
+              <input type="checkbox" class="settings-start-cat-toggle" data-cat="customize" ${this._settings.startMenuCats.customize !== false ? "checked" : ""}/>
+              <span class="settings-track"><span class="settings-thumb"></span></span>
+            </label>
+            <label class="settings-toggle" style="justify-content: space-between; background: rgba(0,0,0,0.1); padding: 8px 12px; border-radius: 6px;">
+              <span>Settings</span>
+              <input type="checkbox" class="settings-start-cat-toggle" data-cat="settingsApp" ${this._settings.startMenuCats.settingsApp !== false ? "checked" : ""}/>
+              <span class="settings-track"><span class="settings-thumb"></span></span>
+            </label>
           </div>
         </div>
         <div class="settings-row">
@@ -607,6 +676,20 @@ export class SettingsApp extends BaseApp {
       const windowSessionPersistence = !!windowSessionPersistenceToggle?.checked;
       localStorage.setItem(StorageKeys.windowSessionPersistence, String(windowSessionPersistence));
 
+      const startMenuWidthInput = win.querySelector("#settingsStartMenuWidth");
+      const startMenuHeightInput = win.querySelector("#settingsStartMenuHeight");
+      const startMenuWidth = startMenuWidthInput ? Number(startMenuWidthInput.value) : 650;
+      const startMenuHeight = startMenuHeightInput ? Number(startMenuHeightInput.value) : 500;
+
+      const startMenuCats = {};
+      win.querySelectorAll(".settings-start-cat-toggle").forEach((chk) => {
+        startMenuCats[chk.dataset.cat] = chk.checked;
+      });
+
+      localStorage.setItem(StorageKeys.startMenuWidth, String(startMenuWidth));
+      localStorage.setItem(StorageKeys.startMenuHeight, String(startMenuHeight));
+      localStorage.setItem(StorageKeys.startMenuCats, JSON.stringify(startMenuCats));
+
       Object.assign(this._settings, {
         weather,
         cycleWallpaper,
@@ -618,7 +701,10 @@ export class SettingsApp extends BaseApp {
         taskbarAlignment: selectedAlignment,
         cdnMirror,
         disableBootScreen,
-        windowSessionPersistence
+        windowSessionPersistence,
+        startMenuWidth,
+        startMenuHeight,
+        startMenuCats
       });
 
       this.wm.saveSession();
@@ -626,6 +712,8 @@ export class SettingsApp extends BaseApp {
       setCdnMirror(cdnMirror);
       initializeMirrors(appMap);
       this._applyDesktopStretchScrollDisabled(disableDesktopStretchScroll);
+      this._applyStartMenuSize(startMenuWidth, startMenuHeight);
+      this._applyStartMenuCats(startMenuCats);
       bus.emit(BusEvents.SETTINGS_CHANGED, this._settings);
       if (this._settings.cdnMirror && this._settings.cdnMirror !== cdnMirror) {
         showStatus("Reloading with new CDN...");
@@ -731,6 +819,28 @@ export class SettingsApp extends BaseApp {
         const { taskbarPositionManager: tpm } = await import("./taskbarPositionManager.js");
         tpm.setPosition(pos);
       });
+    });
+
+    const widthSlider = win.querySelector("#settingsStartMenuWidth");
+    const widthValue = win.querySelector("#settingsStartMenuWidthValue");
+    if (widthSlider) {
+      widthSlider.addEventListener("input", () => {
+        if (widthValue) widthValue.textContent = `${widthSlider.value}px`;
+      });
+      widthSlider.addEventListener("change", save);
+    }
+
+    const heightSlider = win.querySelector("#settingsStartMenuHeight");
+    const heightValue = win.querySelector("#settingsStartMenuHeightValue");
+    if (heightSlider) {
+      heightSlider.addEventListener("input", () => {
+        if (heightValue) heightValue.textContent = `${heightSlider.value}px`;
+      });
+      heightSlider.addEventListener("change", save);
+    }
+
+    win.querySelectorAll(".settings-start-cat-toggle").forEach((chk) => {
+      chk.addEventListener("change", save);
     });
   }
 
@@ -1063,6 +1173,28 @@ export class SettingsApp extends BaseApp {
         win.style.position = "absolute";
       }
     });
+  }
+
+  _applyStartMenuSize(width, height) {
+    const el = document.getElementById("start-menu") || document.querySelector(".start-menu");
+    if (el) {
+      el.style.width = `${width}px`;
+      el.style.height = `${height}px`;
+    }
+  }
+
+  _applyStartMenuCats(cats) {
+    const el = document.getElementById("start-menu") || document.querySelector(".start-menu");
+    if (el) {
+      const catNames = ["menu", "games", "system", "favorites", "customize", "settingsApp"];
+      catNames.forEach((catName) => {
+        const isEnabled = cats[catName] !== false;
+        const catEl = el.querySelector(`.start-cat[data-cat="${catName}"]`);
+        if (catEl) {
+          catEl.style.display = isEnabled ? "flex" : "none";
+        }
+      });
+    }
   }
 
   _applyCursor(dataUrl) {

@@ -202,56 +202,59 @@ services.sessionManager = sessionManager;
 const commandPalette = new CommandPalette(services);
 services.commandPalette = commandPalette;
 
-await sessionManager.showLogin();
+async function start() {
+  await sessionManager.showLogin();
 
-document.documentElement.style.setProperty("--start-logo-url", `url("${logoImg}")`);
+  document.documentElement.style.setProperty("--start-logo-url", `url("${logoImg}")`);
 
-setTimeout(() => {
-  const testImg = new Image();
-  testImg.onload = () => {};
-  testImg.onerror = async () => {
-    const newMirror = await showCdnPrompt(CDN_MIRRORS, getCdnMirror());
-    if (newMirror) {
-      setCdnMirror(newMirror);
-      window.location.reload();
-    }
-  };
-  testImg.src = resolveIconUrl("static/icons/file.webp");
-}, 1500);
-setGamesDesktopUI(desktopUI);
-explorerApp.setDesktopUI(desktopUI);
-settingsApp.setDesktopUI(desktopUI);
-settingsApp.setAppLauncher(appLauncher);
-profileCustomizerApp.setSettingsApp(settingsApp);
-appCreatorApp.setDesktopUI(desktopUI);
-appCreatorApp.restoreInstalledApps();
-SystemUtilities.startClock();
-SystemUtilities.setSettings(settingsApp);
-SystemUtilities.startTaskbarWeather(appLauncher);
-await SystemUtilities.loadWallpaper();
-windowManager.restorePinnedItems();
+  setTimeout(() => {
+    const testImg = new Image();
+    testImg.onload = () => {};
+    testImg.onerror = async () => {
+      const newMirror = await showCdnPrompt(CDN_MIRRORS, getCdnMirror());
+      if (newMirror) {
+        setCdnMirror(newMirror);
+        window.location.reload();
+      }
+    };
+    testImg.src = resolveIconUrl("static/icons/file.webp");
+  }, 1500);
+  setGamesDesktopUI(desktopUI);
+  explorerApp.setDesktopUI(desktopUI);
+  settingsApp.setDesktopUI(desktopUI);
+  settingsApp.setAppLauncher(appLauncher);
+  profileCustomizerApp.setSettingsApp(settingsApp);
+  appCreatorApp.setDesktopUI(desktopUI);
+  appCreatorApp.setAppLauncher(appLauncher);
+  appCreatorApp.restoreInstalledApps();
+  SystemUtilities.startClock();
+  SystemUtilities.setSettings(settingsApp);
+  SystemUtilities.startTaskbarWeather(appLauncher);
+  await SystemUtilities.loadWallpaper();
+  windowManager.restorePinnedItems();
 
-const ads = new AdsManager(windowManager);
+  if (location.hostname.endsWith("neocities.org")) {
+    alert(
+      "Neocities does not support loading assets from other domains! OS will be severely limited to load apps and data."
+    );
+  }
 
-if (location.hostname.endsWith("neocities.org")) {
-  alert(
-    "Neocities does not support loading assets from other domains! OS will be severely limited to load apps and data."
-  );
+  const queryString = window.location.search;
+  const urlParams = new URLSearchParams(queryString);
+  const game = urlParams.get("game");
+  const swf = urlParams.get("swf") === "true";
+  const steamParam = urlParams.get("steam");
+
+  if (steamParam) {
+    setTimeout(() => {
+      categoriesApp.initUrlParamHandling(appLauncher, windowManager);
+    }, 0);
+  } else if (game) {
+    setTimeout(() => {
+      appLauncher.launch(game, swf);
+    }, 0);
+  }
+  setupStartMenu(appLauncher, sessionManager);
 }
 
-const queryString = window.location.search;
-const urlParams = new URLSearchParams(queryString);
-const game = urlParams.get("game");
-const swf = urlParams.get("swf") === "true";
-const steamParam = urlParams.get("steam");
-
-if (steamParam) {
-  setTimeout(() => {
-    categoriesApp.initUrlParamHandling(appLauncher, windowManager);
-  }, 0);
-} else if (game) {
-  setTimeout(() => {
-    appLauncher.launch(game, swf);
-  }, 0);
-}
-setupStartMenu(appLauncher, sessionManager);
+start();

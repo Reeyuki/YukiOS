@@ -78,7 +78,9 @@ export function resolveGhUrl(url) {
   let resolved = mirror.ghTemplate.replace("${u}", u).replace("${r}", r).replace("${b}", b).replace("${p}", cleanP);
 
   if (!cleanP && resolved.endsWith("/")) {
-    resolved = resolved.slice(0, -1);
+    if (!url.endsWith("/")) {
+      resolved = resolved.slice(0, -1);
+    }
   }
   return resolved;
 }
@@ -86,7 +88,7 @@ export function resolveGhUrl(url) {
 export function resolveNpmUrl(url) {
   if (typeof url !== "string") return url;
   const match = url.match(
-    /https?:\/\/(cdn\.jsdelivr\.net|quantil\.jsdelivr\.net|originfastly\.jsdelivr\.net|gcore\.jsdelivr\.net|esm\.sh|cdn\.statically\.io|cdn\.staticdelivr\.com)\/(?:npm\/)?(.*)/
+    /https?:\/\/(cdn\.jsdelivr\.net|quantil\.jsdelivr\.net|originfastly\.jsdelivr\.net|gcore\.jsdelivr\.net|esm\.sh|cdn\.statically\.io|cdn\.staticdelivr\.com)\/(?:npm(?:\/|$))?(.*)/
   );
   if (!match) return url;
 

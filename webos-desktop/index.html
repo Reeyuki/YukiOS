@@ -63,7 +63,7 @@
     <meta name="application-name" content="Yuki OS" />
     <meta name="theme-color" content="#1e1e1e" />
     <link rel="canonical" href="https://yukios.vercel.app/" />
-    <link rel="icon" href="favicon2.ico" />
+    <link rel="icon" href="webos-desktop/public/favicon2.ico" />
     <script>
       (function () {
         try {
@@ -150,11 +150,6 @@
       <div class="icon selectable" data-app="browserApp">
         <img src="static/icons/firefox.webp" />
         <div>Yuki Browser</div>
-      </div>
-
-      <div class="icon selectable" data-app="azahar">
-        <i style="color: #f46363" class="fas fa-gamepad"></i>
-        <div>Azahar Emulator</div>
       </div>
 
       <div class="icon selectable" data-app="emulatorApp">
@@ -339,8 +334,10 @@
       <div id="start-button"></div>
       <div id="taskbar-windows" style="display: flex"></div>
       <div id="system-tray">
-        <div id="clock">12:00 PM</div>
-        <div id="date">01/01/2026</div>
+        <div id="time-container">
+          <div id="clock">12:00 PM</div>
+          <div id="date">01/01/2026</div>
+        </div>
         <div id="social-bar-container"></div>
       </div>
     </div>

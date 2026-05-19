@@ -183,9 +183,9 @@ class AudioMixer {
       this.toggle();
     });
 
-    const clock = tray.querySelector("#clock");
-    if (clock) {
-      tray.insertBefore(this.trayBtn, clock);
+    const ref = tray.querySelector("#time-container") || tray.querySelector("#clock");
+    if (ref) {
+      tray.insertBefore(this.trayBtn, ref);
     }
   }
 

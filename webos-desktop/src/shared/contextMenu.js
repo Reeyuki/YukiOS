@@ -66,7 +66,8 @@ export function showContextMenu(e, items, handlers) {
     if (typeof item === "string" || (item.condition && !item.condition())) return;
     const el = document.getElementById(item.id);
     if (el && handlers[item.action]) {
-      el.onclick = () => {
+      el.onclick = (event) => {
+        if (event) event.stopPropagation();
         hideMenu();
         handlers[item.action]();
       };
@@ -96,7 +97,8 @@ export function showDynamicContextMenu(e, buildFn) {
     const label = document.createElement("span");
     label.textContent = text;
     el.appendChild(label);
-    el.onclick = () => {
+    el.onclick = (event) => {
+      if (event) event.stopPropagation();
       hideMenu();
       onclick();
     };

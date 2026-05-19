@@ -1,6 +1,6 @@
 import { Achievements } from "./achievements.js";
 import { bus, BusEvents } from "./core/EventBus.js";
-import JSZip from "jszip";
+import { zipSync } from "fflate";
 import { BaseApp } from "./core/BaseApp.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
 import { CDN_BASES } from "./shared/assetResolver.js";
@@ -336,7 +336,6 @@ export class JsDosApp extends BaseApp {
   }
 
   async _buildBundle(name, arrayBuffer) {
-    const zip = new JSZip();
     const conf = [
       "[sdl]",
       "output=surface",
@@ -354,9 +353,14 @@ export class JsDosApp extends BaseApp {
       `c:`,
       `${name}`
     ].join("\n");
-    zip.folder(".jsdos").file("dosbox.conf", conf);
-    zip.file(name, arrayBuffer);
-    return zip.generateAsync({ type: "blob" });
+    const zipEntries = {
+      ".jsdos": {
+        "dosbox.conf": new TextEncoder().encode(conf)
+      },
+      [name]: new Uint8Array(arrayBuffer)
+    };
+    const zipped = zipSync(zipEntries);
+    return new Blob([zipped], { type: "application/zip" });
   }
 
   async launchExe(name, path) {
