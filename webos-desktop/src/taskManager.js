@@ -9,7 +9,7 @@ export class TaskManagerApp extends BaseApp {
     this.sortKey = "title";
     this.sortAsc = true;
     this.filter = "";
-    this.selectedId = null;
+    this.selectedIds = new Set();
     this.cpuHistory = Array(30).fill(0);
     this.memHistory = Array(30).fill(0);
     this.usageCache = new Map();
@@ -107,27 +107,20 @@ export class TaskManagerApp extends BaseApp {
     }
 
     const content = `
-      <div id="tm-root" style="
-        display:flex; flex-direction:column; height:calc(100% - 32px);
-        background:#0d0d0d; color:#c8c8c8; font-family:'Consolas','Courier New',monospace;
-        font-size:12px; overflow:hidden;
-      ">
-        <div style="display:flex; gap:0; border-bottom:1px solid #222;">
+      <div id="tm-root">
+        <div class="tm-tabs">
           <button id="tm-tab-proc" class="tm-tab tm-tab-active">Processes</button>
           <button id="tm-tab-perf" class="tm-tab">Performance</button>
         </div>
 
-        <div id="tm-panel-proc" style="display:flex; flex-direction:column; flex:1; overflow:hidden;">
-          <div style="display:flex; align-items:center; gap:8px; padding:6px 10px; border-bottom:1px solid #1e1e1e; background:#111;">
-            <span style="color:#555; font-size:11px;">⌕</span>
-            <input id="tm-filter" placeholder="Filter processes…" style="
-              background:transparent; border:none; outline:none; color:#c8c8c8;
-              font-family:inherit; font-size:12px; flex:1;
-            "/>
-            <span id="tm-count" style="color:#444; font-size:11px;"></span>
+        <div id="tm-panel-proc" class="tm-panel-proc">
+          <div class="tm-toolbar">
+            <span class="tm-search-icon">⌕</span>
+            <input id="tm-filter" class="tm-filter-input" placeholder="Filter processes…"/>
+            <span id="tm-count" class="tm-count"></span>
           </div>
-          <div style="overflow-y:auto; flex:1;">
-            <table id="tm-table" style="width:100%; border-collapse:collapse; table-layout:fixed;">
+          <div class="tm-table-wrap">
+            <table id="tm-table" class="tm-table">
               <colgroup>
                 <col style="width:40%">
                 <col style="width:20%">
@@ -135,45 +128,46 @@ export class TaskManagerApp extends BaseApp {
                 <col style="width:20%">
               </colgroup>
               <thead>
-                <tr style="background:#111; position:sticky; top:0; z-index:2;">
-                  <th class="tm-th" data-key="title" style="text-align:left; padding:6px 10px; color:#888; font-weight:normal; border-bottom:1px solid #222; cursor:pointer;">Name</th>
-                  <th class="tm-th" data-key="cpu" style="text-align:right; padding:6px 10px; color:#888; font-weight:normal; border-bottom:1px solid #222; cursor:pointer;">CPU</th>
-                  <th class="tm-th" data-key="mem" style="text-align:right; padding:6px 10px; color:#888; font-weight:normal; border-bottom:1px solid #222; cursor:pointer;">Memory</th>
-                  <th class="tm-th" data-key="status" style="text-align:right; padding:6px 10px; color:#888; font-weight:normal; border-bottom:1px solid #222; cursor:pointer;">Status</th>
+                <tr class="tm-thead-row">
+                  <th class="tm-th" data-key="title">Name</th>
+                  <th class="tm-th tm-th-right" data-key="cpu">CPU</th>
+                  <th class="tm-th tm-th-right" data-key="mem">Memory</th>
+                  <th class="tm-th tm-th-right" data-key="status">Status</th>
                 </tr>
               </thead>
               <tbody id="tm-tbody"></tbody>
             </table>
           </div>
-          <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 10px; border-top:1px solid #1e1e1e; background:#111;">
-            <span id="tm-selected-label" style="color:#555; font-size:11px;">No process selected</span>
-            <div style="display:flex; gap:6px;">
+          <div class="tm-footer">
+            <span id="tm-selected-label" class="tm-selected-label">No process selected</span>
+            <div class="tm-footer-actions">
+              <button id="tm-btn-select-all" class="tm-action-btn">☰ Select All</button>
               <button id="tm-btn-refresh" class="tm-action-btn">↺ Refresh</button>
               <button id="tm-btn-kill" class="tm-action-btn tm-kill-btn" disabled>✕ End Task</button>
             </div>
           </div>
         </div>
 
-        <div id="tm-panel-perf" style="display:none; flex:1; padding:16px; overflow-y:auto; gap:16px; flex-direction:column;">
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+        <div id="tm-panel-perf" class="tm-panel-perf">
+          <div class="tm-perf-grid">
             <div class="tm-perf-card">
-              <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;">
-                <span style="color:#888; font-size:11px; letter-spacing:1px; text-transform:uppercase;">CPU Usage</span>
-                <span id="tm-cpu-val" style="color:#4fc3f7; font-size:20px; font-weight:bold;">0%</span>
+              <div class="tm-perf-card-header">
+                <span class="tm-perf-label">CPU Usage</span>
+                <span id="tm-cpu-val" class="tm-perf-val tm-perf-val-cpu">0%</span>
               </div>
-              <canvas id="tm-cpu-graph" width="280" height="80" style="width:100%; height:80px; display:block;"></canvas>
+              <canvas id="tm-cpu-graph" width="280" height="80" class="tm-graph"></canvas>
             </div>
             <div class="tm-perf-card">
-              <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;">
-                <span style="color:#888; font-size:11px; letter-spacing:1px; text-transform:uppercase;">Memory</span>
-                <span id="tm-mem-val" style="color:#81c995; font-size:20px; font-weight:bold;">0%</span>
+              <div class="tm-perf-card-header">
+                <span class="tm-perf-label">Memory</span>
+                <span id="tm-mem-val" class="tm-perf-val tm-perf-val-mem">0%</span>
               </div>
-              <canvas id="tm-mem-graph" width="280" height="80" style="width:100%; height:80px; display:block;"></canvas>
+              <canvas id="tm-mem-graph" width="280" height="80" class="tm-graph"></canvas>
             </div>
           </div>
           <div class="tm-perf-card">
-            <div style="color:#888; font-size:11px; letter-spacing:1px; text-transform:uppercase; margin-bottom:10px;">System Info</div>
-            <div id="tm-sysinfo" style="display:grid; grid-template-columns:1fr 1fr; gap:6px 20px;"></div>
+            <div class="tm-perf-section-title">System Info</div>
+            <div id="tm-sysinfo" class="tm-sysinfo-grid"></div>
           </div>
         </div>
       </div>
@@ -205,6 +199,7 @@ export class TaskManagerApp extends BaseApp {
       panelProc.style.display = "flex";
       panelPerf.style.display = "none";
     };
+
     tabPerf.onclick = () => {
       tabPerf.classList.add("tm-tab-active");
       tabProc.classList.remove("tm-tab-active");
@@ -220,20 +215,35 @@ export class TaskManagerApp extends BaseApp {
 
     win.querySelector("#tm-btn-refresh").onclick = () => this._renderProcesses(win);
 
-    win.querySelector("#tm-btn-kill").onclick = () => {
-      if (!this.selectedId) return;
-      const w = document.getElementById(this.selectedId);
-      const proc = this._getProcesses().find((p) => p.winId === this.selectedId);
-      const title = proc?.title || this.selectedId;
-      if (w) {
-        const iframe = w.querySelector("iframe");
-        if (iframe) iframe.src = "about:blank";
-        w.style.animation = "popUp 0.5s ease forwards";
-        setTimeout(() => w.remove(), 500);
+    win.querySelector("#tm-btn-select-all").onclick = () => {
+      const procs = this._getProcesses().filter((p) => !this.filter || p.title.toLowerCase().includes(this.filter));
+      const allSelected = procs.every((p) => this.selectedIds.has(p.winId));
+      if (allSelected) {
+        this.selectedIds.clear();
+      } else {
+        procs.forEach((p) => this.selectedIds.add(p.winId));
       }
-      this.wm.removeFromTaskbar(this.selectedId);
-      this.wm.sendNotify(`"${title}" ended`);
-      this.selectedId = null;
+      this._renderProcesses(win);
+    };
+
+    win.querySelector("#tm-btn-kill").onclick = () => {
+      if (this.selectedIds.size === 0) return;
+      const ids = Array.from(this.selectedIds);
+      const procs = this._getProcesses();
+      ids.forEach((id) => {
+        const w = document.getElementById(id);
+        const proc = procs.find((p) => p.winId === id);
+        const title = proc?.title || id;
+        if (w) {
+          const iframe = w.querySelector("iframe");
+          if (iframe) iframe.src = "about:blank";
+          w.style.animation = "popUp 0.5s ease forwards";
+          setTimeout(() => w.remove(), 500);
+        }
+        this.wm.removeFromTaskbar(id);
+        this.wm.sendNotify(`"${title}" ended`);
+      });
+      this.selectedIds.clear();
       this._renderProcesses(win);
     };
 
@@ -297,7 +307,8 @@ export class TaskManagerApp extends BaseApp {
     });
 
     if (procs.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#444; padding:30px;">No processes running</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="4" class="tm-empty-row">No processes running</td></tr>`;
+      this._updateSelectionUI(win);
       return;
     }
 
@@ -306,7 +317,7 @@ export class TaskManagerApp extends BaseApp {
 
     tbody.innerHTML = procs
       .map((p) => {
-        const selected = p.winId === this.selectedId ? "tm-row-selected" : "";
+        const selected = this.selectedIds.has(p.winId) ? "tm-row-selected" : "";
         const cpuPct = (p.cpu / maxCpu) * 100;
         const memPct = (p.mem / maxMem) * 100;
         const cpuColor = p.cpu > 50 ? "#ef5350" : p.cpu > 20 ? "#ffa726" : "#4fc3f7";
@@ -314,41 +325,57 @@ export class TaskManagerApp extends BaseApp {
 
         const iconHtml = p.icon
           ? p.icon.startsWith("http") || p.icon.startsWith("/")
-            ? `<img src="${p.icon}" style="width:14px;height:14px;margin-right:6px;vertical-align:middle;object-fit:contain;">`
-            : `<i class="${p.icon}" style="font-size:12px;margin-right:6px;color:#888;vertical-align:middle;"></i>`
-          : `<span style="display:inline-block;width:14px;margin-right:6px;"></span>`;
+            ? `<img src="${p.icon}" class="tm-proc-icon-img">`
+            : `<i class="${p.icon} tm-proc-icon-fa"></i>`
+          : `<span class="tm-proc-icon-placeholder"></span>`;
 
         return `<tr class="tm-row ${selected}" data-id="${p.winId}">
-        <td style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; position:relative;">
-          <div class="tm-bar" style="width:${cpuPct}%; background:${cpuColor};"></div>
-          <span style="position:relative;">${iconHtml}${p.title}</span>
-        </td>
-        <td style="text-align:right; color:${cpuColor}; position:relative;">
-          <div class="tm-bar" style="width:${cpuPct}%; background:${cpuColor};"></div>
-          <span style="position:relative;">${p.cpu.toFixed(1)}%</span>
-        </td>
-        <td style="text-align:right; color:#81c995; position:relative;">
-          <div class="tm-bar" style="width:${memPct}%; background:#81c995;"></div>
-          <span style="position:relative;">${p.mem} MB</span>
-        </td>
-        <td style="text-align:right; color:${statusColor};">${p.status}</td>
-      </tr>`;
+          <td class="tm-td tm-td-name tm-bar-cell">
+            <div class="tm-bar" style="width:${cpuPct}%; background:${cpuColor};"></div>
+            <span class="tm-bar-content">${iconHtml}${p.title}</span>
+          </td>
+          <td class="tm-td tm-td-right tm-bar-cell" style="color:${cpuColor};">
+            <div class="tm-bar" style="width:${cpuPct}%; background:${cpuColor};"></div>
+            <span class="tm-bar-content">${p.cpu.toFixed(1)}%</span>
+          </td>
+          <td class="tm-td tm-td-right tm-bar-cell tm-td-mem">
+            <div class="tm-bar" style="width:${memPct}%; background:#81c995;"></div>
+            <span class="tm-bar-content">${p.mem} MB</span>
+          </td>
+          <td class="tm-td tm-td-right" style="color:${statusColor};">${p.status}</td>
+        </tr>`;
       })
       .join("");
 
     tbody.querySelectorAll(".tm-row").forEach((row) => {
-      row.onclick = () => {
-        this.selectedId = row.dataset.id;
-        tbody.querySelectorAll(".tm-row").forEach((r) => r.classList.remove("tm-row-selected"));
-        row.classList.add("tm-row-selected");
-
-        const proc = procs.find((p) => p.winId === this.selectedId);
-        const label = win.querySelector("#tm-selected-label");
-        label.textContent = proc ? `Selected: ${proc.title}` : "No process selected";
-        label.style.color = "#aaa";
-
-        const killBtn = win.querySelector("#tm-btn-kill");
-        killBtn.disabled = !this.selectedId;
+      row.onclick = (e) => {
+        const id = row.dataset.id;
+        if (e.ctrlKey || e.metaKey) {
+          if (this.selectedIds.has(id)) {
+            this.selectedIds.delete(id);
+          } else {
+            this.selectedIds.add(id);
+          }
+        } else if (e.shiftKey && this.selectedIds.size > 0) {
+          const rows = Array.from(tbody.querySelectorAll(".tm-row"));
+          const ids = rows.map((r) => r.dataset.id);
+          const lastSelected = Array.from(this.selectedIds).pop();
+          const fromIdx = ids.indexOf(lastSelected);
+          const toIdx = ids.indexOf(id);
+          const [start, end] = fromIdx < toIdx ? [fromIdx, toIdx] : [toIdx, fromIdx];
+          ids.slice(start, end + 1).forEach((sid) => this.selectedIds.add(sid));
+        } else {
+          if (this.selectedIds.size === 1 && this.selectedIds.has(id)) {
+            this.selectedIds.clear();
+          } else {
+            this.selectedIds.clear();
+            this.selectedIds.add(id);
+          }
+        }
+        this._updateSelectionUI(win);
+        tbody.querySelectorAll(".tm-row").forEach((r) => {
+          r.classList.toggle("tm-row-selected", this.selectedIds.has(r.dataset.id));
+        });
       };
 
       row.ondblclick = () => {
@@ -359,6 +386,36 @@ export class TaskManagerApp extends BaseApp {
         }
       };
     });
+
+    this._updateSelectionUI(win);
+  }
+
+  _updateSelectionUI(win) {
+    const label = win.querySelector("#tm-selected-label");
+    const killBtn = win.querySelector("#tm-btn-kill");
+    const selectAllBtn = win.querySelector("#tm-btn-select-all");
+    const count = this.selectedIds.size;
+
+    if (count === 0) {
+      label.textContent = "No process selected";
+      label.classList.remove("tm-selected-label-active");
+    } else if (count === 1) {
+      const id = Array.from(this.selectedIds)[0];
+      const proc = this._getProcesses().find((p) => p.winId === id);
+      label.textContent = proc ? `Selected: ${proc.title}` : "1 selected";
+      label.classList.add("tm-selected-label-active");
+    } else {
+      label.textContent = `${count} processes selected`;
+      label.classList.add("tm-selected-label-active");
+    }
+
+    killBtn.disabled = count === 0;
+
+    const visibleProcs = this._getProcesses().filter(
+      (p) => !this.filter || p.title.toLowerCase().includes(this.filter)
+    );
+    const allSelected = visibleProcs.length > 0 && visibleProcs.every((p) => this.selectedIds.has(p.winId));
+    selectAllBtn.textContent = allSelected ? "☐ Deselect All" : "☰ Select All";
   }
 
   _drawGraph(canvas, history, color) {
@@ -468,10 +525,8 @@ export class TaskManagerApp extends BaseApp {
     const el = win.querySelector("#tm-sysinfo");
     if (el) {
       el.innerHTML =
-        info
-          .map(([k, v]) => `<div style="color:#555;font-size:11px;">${k}</div><div style="color:#aaa;">${v}</div>`)
-          .join("") +
-        `<div style="grid-column:span 2;margin-top:8px;color:#3a3a3a;font-size:10px;letter-spacing:0.04em;">⬡ ${sourceNote}</div>`;
+        info.map(([k, v]) => `<div class="tm-sysinfo-key">${k}</div><div class="tm-sysinfo-val">${v}</div>`).join("") +
+        `<div class="tm-sysinfo-note">⬡ ${sourceNote}</div>`;
     }
   }
 
