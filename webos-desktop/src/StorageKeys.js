@@ -65,5 +65,10 @@ export const StorageKeys = {
   performanceMode: "yukiOS_performance_mode",
   showWorkspace: "yukiOS_show_workspace",
   startMenuGridItems: "yukiOS_startMenuGridItems",
-  lastLaunchTime: "yukiOS_lastLaunchTime"
+  lastLaunchTime: "yukiOS_lastLaunchTime",
+  notificationsEnabled: "yukiOS_notifications_enabled",
+  notificationsRemoveTimeout: "yukiOS_notifications_remove_timeout",
+  notificationsPopAnimation: "yukiOS_notifications_pop_animation",
+  notificationsOverFullscreen: "yukiOS_notifications_over_fullscreen",
+  notificationsDuration: "yukiOS_notifications_duration"
 };

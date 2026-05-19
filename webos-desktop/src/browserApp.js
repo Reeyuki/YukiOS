@@ -30,6 +30,7 @@ export class BrowserApp extends BaseApp {
       { name: "DustinnWin10", url: "https://dustinbrett.com" },
       { name: "Win 11", url: "https://selenite.cc/resources/sppa/11/index.html" }
     ];
+    this.proxyExclusionList = ["dustinbrett.com"];
     this.currentProxyIndex = 0;
     this.win = null;
     this.tabBar = null;
@@ -129,7 +130,15 @@ export class BrowserApp extends BaseApp {
   }
 
   isDirectLoadUrl(url) {
-    return this.isGoogleUrl(url) || this.isWikipediaUrl(url);
+    if (this.isGoogleUrl(url) || this.isWikipediaUrl(url)) {
+      return true;
+    }
+    try {
+      const host = new URL(url).hostname.toLowerCase();
+      return this.proxyExclusionList.some((domain) => host === domain || host.endsWith("." + domain));
+    } catch (e) {
+      return false;
+    }
   }
 
   isYukiHome(url) {
@@ -1190,7 +1199,11 @@ export class BrowserApp extends BaseApp {
           this.showLoading(true);
           tab.title = "Loading…";
           this.renderTabs();
-          this.loadWithFallback(tab, resolved, this.currentProxyIndex);
+          if (this.isDirectLoadUrl(resolved)) {
+            this.loadDirect(tab, resolved);
+          } else {
+            this.loadWithFallback(tab, resolved, this.currentProxyIndex);
+          }
         },
         true
       );
@@ -1576,6 +1589,9 @@ export class BrowserApp extends BaseApp {
     this.downloads.push(downloadEntry);
     this._saveDownloads();
     try {
+      if (this.isDirectLoadUrl(url)) {
+        throw new Error("Direct load URL");
+      }
       const proxyUrl = this.buildProxyUrl(url, this.currentProxyIndex);
       const res = await fetch(proxyUrl);
       if (!res.ok) throw new Error("Fetch failed");

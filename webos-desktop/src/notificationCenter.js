@@ -24,6 +24,21 @@ export class NotificationCenter {
     this.updateDoNotDisturbUI();
   }
 
+  _getSetting(key, defaultValue) {
+    if (window._settings && window._settings[key] !== undefined) {
+      return window._settings[key];
+    }
+    const storageKey = StorageKeys[key];
+    if (!storageKey) return defaultValue;
+    const val = localStorage.getItem(storageKey);
+    if (val === null) return defaultValue;
+    if (val === "true") return true;
+    if (val === "false") return false;
+    const num = Number(val);
+    if (!isNaN(num)) return num;
+    return val;
+  }
+
   createNotificationCenterUI() {
     const centerContainer = document.createElement("div");
     centerContainer.id = "ntf-panel";
@@ -80,6 +95,9 @@ export class NotificationCenter {
   }
 
   addNotification(title, message, type = "info", duration = 5000, icon = null) {
+    const enabled = this._getSetting("notificationsEnabled", true);
+    if (!enabled) return null;
+
     const notification = {
       id: this.notificationId++,
       title,
@@ -129,7 +147,8 @@ export class NotificationCenter {
       warning: "ntf-toast--warn",
       error: "ntf-toast--fail"
     };
-    toast.className = `ntf-toast ${typeMap[notif.type] || "ntf-toast--info"}`;
+    const showAnim = this._getSetting("notificationsPopAnimation", true);
+    toast.className = `ntf-toast ${typeMap[notif.type] || "ntf-toast--info"}${showAnim ? "" : " ntf-toast--no-animation"}`;
 
     let iconHtml = "";
     if (notif.icon) {
@@ -172,7 +191,12 @@ export class NotificationCenter {
     };
 
     toast.querySelector(".ntf-toast__close").addEventListener("click", removeToast);
-    setTimeout(removeToast, 4000);
+
+    const removeTimeout = this._getSetting("notificationsRemoveTimeout", false);
+    if (removeTimeout) {
+      const durationSec = this._getSetting("notificationsDuration", 5);
+      setTimeout(removeToast, durationSec * 1000);
+    }
   }
 
   removeNotification(id) {

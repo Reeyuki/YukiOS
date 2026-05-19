@@ -1409,13 +1409,16 @@ export class WindowManager {
     const header = win.querySelector(".window-header");
 
     if (wasFullscreen) {
-      if (document.fullscreenElement === win) document.exitFullscreen();
+      if (document.fullscreenElement === win || document.fullscreenElement === document.documentElement) {
+        document.exitFullscreen();
+      }
 
       Object.assign(win.style, {
         width: win.dataset.prevWidth,
         height: win.dataset.prevHeight,
         left: win.dataset.prevLeft,
-        top: win.dataset.prevTop
+        top: win.dataset.prevTop,
+        zIndex: win.dataset.prevZIndex || win.style.zIndex
       });
 
       if (header) header.style.display = "";
@@ -1427,18 +1430,35 @@ export class WindowManager {
         prevWidth: win.style.width,
         prevHeight: win.style.height,
         prevLeft: win.style.left,
-        prevTop: win.style.top
+        prevTop: win.style.top,
+        prevZIndex: win.style.zIndex
       });
 
+      const overFullscreen = window._settings?.notificationsOverFullscreen === true;
+
       const makeFullscreen = () => {
-        Object.assign(win.style, { width: "100vw", height: "100vh", left: "0", top: "0" });
+        Object.assign(win.style, {
+          width: "100vw",
+          height: "100vh",
+          left: "0",
+          top: "0",
+          zIndex: overFullscreen ? "99999" : win.style.zIndex
+        });
         if (header) header.style.display = "none";
       };
 
-      if (win.requestFullscreen) {
-        win.requestFullscreen().then(makeFullscreen).catch(makeFullscreen);
+      if (overFullscreen) {
+        if (document.documentElement.requestFullscreen) {
+          document.documentElement.requestFullscreen().then(makeFullscreen).catch(makeFullscreen);
+        } else {
+          makeFullscreen();
+        }
       } else {
-        makeFullscreen();
+        if (win.requestFullscreen) {
+          win.requestFullscreen().then(makeFullscreen).catch(makeFullscreen);
+        } else {
+          makeFullscreen();
+        }
       }
 
       win.dataset.fullscreen = "true";
@@ -1448,6 +1468,13 @@ export class WindowManager {
       const onFullscreenChange = () => {
         if (!document.fullscreenElement) {
           if (header) header.style.display = "";
+          Object.assign(win.style, {
+            width: win.dataset.prevWidth || win.style.width,
+            height: win.dataset.prevHeight || win.style.height,
+            left: win.dataset.prevLeft || win.style.left,
+            top: win.dataset.prevTop || win.style.top,
+            zIndex: win.dataset.prevZIndex || win.style.zIndex
+          });
           win.dataset.fullscreen = "false";
           const entry = this.openWindows.get(win.id);
           if (entry?.record) entry.record.fullscreen = false;

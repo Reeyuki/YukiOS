@@ -59,7 +59,12 @@ export class SettingsApp extends BaseApp {
           }
         })(),
         performanceMode: localStorage.getItem(StorageKeys.performanceMode) || "high",
-        showWorkspace: localStorage.getItem(StorageKeys.showWorkspace) !== "false"
+        showWorkspace: localStorage.getItem(StorageKeys.showWorkspace) !== "false",
+        notificationsEnabled: localStorage.getItem(StorageKeys.notificationsEnabled) !== "false",
+        notificationsRemoveTimeout: localStorage.getItem(StorageKeys.notificationsRemoveTimeout) === "true",
+        notificationsPopAnimation: localStorage.getItem(StorageKeys.notificationsPopAnimation) !== "false",
+        notificationsOverFullscreen: localStorage.getItem(StorageKeys.notificationsOverFullscreen) === "true",
+        notificationsDuration: Number(localStorage.getItem(StorageKeys.notificationsDuration)) || 5
       };
 
       this._applyCursor(this._settings.cursorDataUrl);
@@ -788,6 +793,60 @@ export class SettingsApp extends BaseApp {
             </label>
           </div>
         </div>
+
+        <div class="settings-card" style="margin-top: 16px;">
+          <div class="settings-card-header"><i class="fas fa-bell"></i> Notifications</div>
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Enable Notifications</span>
+              <span class="settings-label-desc">Allow applications to show notifications</span>
+            </div>
+            <label class="settings-toggle">
+              <input type="checkbox" id="settingsNotificationsEnabled" ${this._settings.notificationsEnabled ? "checked" : ""}/>
+              <span class="settings-track"><span class="settings-thumb"></span></span>
+            </label>
+          </div>
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Remove After Timeout</span>
+              <span class="settings-label-desc">Automatically dismiss toast notifications after they expire</span>
+            </div>
+            <label class="settings-toggle">
+              <input type="checkbox" id="settingsNotificationsRemoveTimeout" ${this._settings.notificationsRemoveTimeout ? "checked" : ""}/>
+              <span class="settings-track"><span class="settings-thumb"></span></span>
+            </label>
+          </div>
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Pop Animation</span>
+              <span class="settings-label-desc">Show sliding pop animation when notifications appear</span>
+            </div>
+            <label class="settings-toggle">
+              <input type="checkbox" id="settingsNotificationsPopAnimation" ${this._settings.notificationsPopAnimation ? "checked" : ""}/>
+              <span class="settings-track"><span class="settings-thumb"></span></span>
+            </label>
+          </div>
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Display Over Fullscreen</span>
+              <span class="settings-label-desc">Show notifications over active fullscreen windows</span>
+            </div>
+            <label class="settings-toggle">
+              <input type="checkbox" id="settingsNotificationsOverFullscreen" ${this._settings.notificationsOverFullscreen ? "checked" : ""}/>
+              <span class="settings-track"><span class="settings-thumb"></span></span>
+            </label>
+          </div>
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Notification Duration</span>
+              <span class="settings-label-desc">Time in seconds before a notification expires</span>
+            </div>
+            <div class="settings-range-group" style="display: flex; align-items: center; gap: 12px;">
+              <input type="range" id="settingsNotificationsDuration" min="1" max="30" step="1" value="${this._settings.notificationsDuration}" style="width: 120px;"/>
+              <span class="settings-range-value" id="settingsNotificationsDurationVal" style="min-width: 24px; text-align: right; font-size: 0.9em; font-weight: 500;">${this._settings.notificationsDuration}s</span>
+            </div>
+          </div>
+        </div>
       </div>
     `;
   }
@@ -1222,6 +1281,12 @@ export class SettingsApp extends BaseApp {
       const showWorkspaceToggle = win.querySelector("#settingsShowWorkspace");
       const cdnMirrorSelect = win.querySelector("#settingsCdnMirror");
 
+      const notificationsEnabledToggle = win.querySelector("#settingsNotificationsEnabled");
+      const notificationsRemoveTimeoutToggle = win.querySelector("#settingsNotificationsRemoveTimeout");
+      const notificationsPopAnimationToggle = win.querySelector("#settingsNotificationsPopAnimation");
+      const notificationsOverFullscreenToggle = win.querySelector("#settingsNotificationsOverFullscreen");
+      const notificationsDurationSlider = win.querySelector("#settingsNotificationsDuration");
+
       const weather = weatherToggle.checked;
       const cycleWallpaper = cycleWallpaperToggle.checked;
       const macOsControls = macControlsToggle.checked;
@@ -1234,6 +1299,12 @@ export class SettingsApp extends BaseApp {
         win.querySelector(".settings-btn[data-alignment].active")?.dataset.alignment || "center";
       const cdnMirror = cdnMirrorSelect.value;
 
+      const notificationsEnabled = !!notificationsEnabledToggle?.checked;
+      const notificationsRemoveTimeout = !!notificationsRemoveTimeoutToggle?.checked;
+      const notificationsPopAnimation = !!notificationsPopAnimationToggle?.checked;
+      const notificationsOverFullscreen = !!notificationsOverFullscreenToggle?.checked;
+      const notificationsDuration = notificationsDurationSlider ? Number(notificationsDurationSlider.value) : 5;
+
       localStorage.setItem(StorageKeys.weather, String(weather));
       localStorage.setItem(StorageKeys.cycleWallpaper, String(cycleWallpaper));
       localStorage.setItem(StorageKeys.macOsControls, String(macOsControls));
@@ -1244,6 +1315,11 @@ export class SettingsApp extends BaseApp {
       localStorage.setItem(StorageKeys.analyticsDisabled, String(analyticsDisabled));
       localStorage.setItem(StorageKeys.taskbarAlignment, selectedAlignment);
       localStorage.setItem(StorageKeys.cdnMirror, cdnMirror);
+      localStorage.setItem(StorageKeys.notificationsEnabled, String(notificationsEnabled));
+      localStorage.setItem(StorageKeys.notificationsRemoveTimeout, String(notificationsRemoveTimeout));
+      localStorage.setItem(StorageKeys.notificationsPopAnimation, String(notificationsPopAnimation));
+      localStorage.setItem(StorageKeys.notificationsOverFullscreen, String(notificationsOverFullscreen));
+      localStorage.setItem(StorageKeys.notificationsDuration, String(notificationsDuration));
       const disableBootScreenToggle = win.querySelector("#settingsDisableBootScreen");
       const disableBootScreen = !!disableBootScreenToggle?.checked;
       localStorage.setItem(StorageKeys.disableBootScreen, String(disableBootScreen));
@@ -1286,7 +1362,12 @@ export class SettingsApp extends BaseApp {
         startMenuWidth,
         startMenuHeight,
         startMenuCats,
-        performanceMode: selectedPerformanceMode
+        performanceMode: selectedPerformanceMode,
+        notificationsEnabled,
+        notificationsRemoveTimeout,
+        notificationsPopAnimation,
+        notificationsOverFullscreen,
+        notificationsDuration
       });
 
       this.wm.saveSession();
@@ -1416,6 +1497,20 @@ export class SettingsApp extends BaseApp {
         localStorage.setItem(StorageKeys.dndKey, enabled ? "1" : "0");
         this._notificationCenter?.setDoNotDisturb(enabled);
       });
+    }
+
+    win.querySelector("#settingsNotificationsEnabled")?.addEventListener("change", save);
+    win.querySelector("#settingsNotificationsRemoveTimeout")?.addEventListener("change", save);
+    win.querySelector("#settingsNotificationsPopAnimation")?.addEventListener("change", save);
+    win.querySelector("#settingsNotificationsOverFullscreen")?.addEventListener("change", save);
+
+    const durationInput = win.querySelector("#settingsNotificationsDuration");
+    const durationVal = win.querySelector("#settingsNotificationsDurationVal");
+    if (durationInput) {
+      durationInput.addEventListener("input", () => {
+        if (durationVal) durationVal.textContent = `${durationInput.value}s`;
+      });
+      durationInput.addEventListener("change", save);
     }
   }
 

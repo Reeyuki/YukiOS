@@ -165,7 +165,7 @@
     0 0 0 1px rgba(255, 255, 255, 0.05) inset;
   display: flex;
   flex-direction: column;
-  z-index: 10000;
+  z-index: 100001;
   opacity: 0;
   transform: translateY(20px) scale(0.96);
   transition:
@@ -685,4 +685,9 @@ html[data-theme="light"] .ntf-toast__close {
 
 html[data-theme="light"] .ntf-toast__close:hover {
   color: #000000;
+}
+
+.ntf-toast.ntf-toast--no-animation {
+  animation: none !important;
+  transition: none !important;
 }
