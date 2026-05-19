@@ -121,9 +121,21 @@ class AudioMixer {
 
   registerWindow(winId, title, iconHtml) {
     const savedVol = this.savedChannels[winId] ?? 1.0;
-    this.channels.set(winId, { title, iconHtml, volume: savedVol });
+    this.channels.set(winId, { title, iconHtml, volume: savedVol, nowPlaying: null, _sendCommand: null });
     this._applyVolumeToWindow(winId);
     if (this.panel) this._renderSliders();
+  }
+
+  updateChannelMeta(winId, nowPlaying) {
+    const ch = this.channels.get(winId);
+    if (!ch) return;
+    ch.nowPlaying = nowPlaying;
+    if (this.isOpen && this.panel) this._renderSliders();
+  }
+
+  setChannelCommandHandler(winId, fn) {
+    const ch = this.channels.get(winId);
+    if (ch) ch._sendCommand = fn;
   }
 
   unregisterWindow(winId) {
@@ -256,6 +268,26 @@ class AudioMixer {
       row.className = "am-channel-row";
 
       const pct = Math.round(ch.volume * 100);
+      const np = ch.nowPlaying;
+      const hasNowPlaying = np && (np.track || np.artist);
+      const isPlaying = np && np.playbackState === "playing";
+
+      const nowPlayingHtml = hasNowPlaying
+        ? `
+        <div class="am-now-playing" style="display:flex;align-items:center;gap:8px;padding:6px 0 4px;border-top:1px solid rgba(255,255,255,0.06);margin-top:4px;">
+          ${np.artwork ? `<img src="${np.artwork}" style="width:32px;height:32px;border-radius:4px;object-fit:cover;flex-shrink:0;" />` : `<div style="width:32px;height:32px;border-radius:4px;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-music" style="opacity:0.4;font-size:13px;"></i></div>`}
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:0.82em;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${np.track}">${np.track || "—"}</div>
+            <div style="font-size:0.75em;opacity:0.55;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${np.artist}">${np.artist || ""}</div>
+          </div>
+          <div class="am-np-controls" style="display:flex;gap:4px;flex-shrink:0;">
+            <button class="am-np-btn" data-cmd="previoustrack" title="Previous" style="background:none;border:none;color:inherit;cursor:pointer;opacity:0.7;padding:2px 4px;font-size:12px;"><i class="fas fa-backward-step"></i></button>
+            <button class="am-np-btn" data-cmd="${isPlaying ? "pause" : "play"}" title="${isPlaying ? "Pause" : "Play"}" style="background:rgba(29,185,84,0.15);border:1px solid rgba(29,185,84,0.3);color:#1db954;cursor:pointer;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:10px;padding:0;"><i class="fas fa-${isPlaying ? "pause" : "play"}"></i></button>
+            <button class="am-np-btn" data-cmd="nexttrack" title="Next" style="background:none;border:none;color:inherit;cursor:pointer;opacity:0.7;padding:2px 4px;font-size:12px;"><i class="fas fa-forward-step"></i></button>
+          </div>
+        </div>
+      `
+        : "";
 
       row.innerHTML = `
         <div class="am-channel-label">
@@ -266,6 +298,7 @@ class AudioMixer {
           <input type="range" class="am-slider" min="0" max="100" step="1" value="${pct}" data-win="${winId}" />
           <span class="am-vol-label">${pct}%</span>
         </div>
+        ${nowPlayingHtml}
       `;
 
       const slider = row.querySelector(".am-slider");
@@ -275,6 +308,13 @@ class AudioMixer {
         const val = parseInt(e.target.value) / 100;
         label.textContent = `${e.target.value}%`;
         this.setChannel(winId, val);
+      });
+
+      row.querySelectorAll(".am-np-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const cmd = btn.dataset.cmd;
+          if (ch._sendCommand) ch._sendCommand(cmd);
+        });
       });
 
       container.appendChild(row);

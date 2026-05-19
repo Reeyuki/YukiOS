@@ -19,6 +19,7 @@ import { AppCreatorApp } from "./appCreator.js";
 import { OfficeAppProxy } from "./officeLoader.js";
 import { MarkdownApp } from "./markdown.js";
 import { YouTubeApp } from "./youtube.js";
+import { ShittifyApp } from "./shittify.js";
 import { MonacoApp } from "./monaco.js";
 import { Model3DApp } from "./model3d.js";
 import { NotificationCenter } from "./notificationCenter.js";
@@ -156,6 +157,7 @@ services.appCreatorApp = appCreatorApp;
 const monacoApp = new MonacoApp(services);
 services.monacoApp = monacoApp;
 
+const shittifyApp = new ShittifyApp(services);
 const categoriesApp = new CategoriesApp(services);
 services.categoriesApp = categoriesApp;
 
@@ -177,6 +179,7 @@ const appLauncher = new AppLauncher(
   weatherApp,
   appCreatorApp,
   officeApp,
+  shittifyApp,
   monacoApp,
   model3dApp,
   categoriesApp,

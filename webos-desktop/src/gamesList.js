@@ -97,7 +97,7 @@ export const appMap = {
   },
   antidisestablishmentarianism: {
     type: "game",
-    url: "/static/games/Antidisestablishmentarianism/index.html",
+    url: "/Antidisestablishmentarianism/index.html",
     icon: "/static/icons/antiDisestablishism.webp",
     title: "Antidisestablishmentarianism"
   },
@@ -1193,6 +1193,11 @@ export const appMap = {
     type: "system",
     title: "Office",
     icon: "/static/icons/office.webp"
+  },
+  shittify: {
+    type: "system",
+    title: "Shittify",
+    icon: "/static/icons/shittify.webp"
   },
   appCreatorApp: {
     type: "system",

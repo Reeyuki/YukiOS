@@ -13,7 +13,6 @@ export const SWF_EXTS = ["swf"];
 export const MODEL3D_EXTS = ["obj", "gltf", "glb", "fbx", "dae", "3ds"];
 
 import { ROM_EXTS } from "./shared/coreMap.js";
-export { ROM_EXTS };
 
 export const HTML_EXTS = ["html", "htm", "xhtml"];
 export const MARKDOWN_EXTS = ["md", "markdown"];

@@ -839,7 +839,11 @@ export class WindowManager {
     let finalH = vh;
     let position = this.calculateWindowPosition(vw, vh, options);
 
-    if (!options.forceId && options.appId) {
+    if (options.forceId) {
+      if (options.width != null) finalW = options.width;
+      if (options.height != null) finalH = options.height;
+      if (options.position) position = { left: options.position.x, top: options.position.y };
+    } else if (options.appId) {
       try {
         const saved = localStorage.getItem(`${StorageKeys.geometryPrefix}${options.appId}`);
         if (saved) {

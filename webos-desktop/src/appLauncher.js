@@ -40,6 +40,7 @@ export class AppLauncher {
     weatherApp,
     appCreatorApp,
     officeApp,
+    shittifyApp,
     monaco,
     model3dApp,
     categoriesApp,
@@ -70,6 +71,7 @@ export class AppLauncher {
     this.weatherApp = weatherApp;
     this.appCreatorApp = appCreatorApp;
     this.officeApp = officeApp;
+    this.shittifyApp = shittifyApp;
     this.monacoApp = monaco;
     this.model3dApp = model3dApp;
     this.categoriesApp = categoriesApp;
@@ -221,6 +223,12 @@ export class AppLauncher {
         title: "Office",
         action: (extra) => this.officeApp.open(extra),
         clippy: { message: "Need a hand creating a document or spreadsheet?", animation: "animate" }
+      },
+      shittify: {
+        type: "system",
+        title: "Shittify",
+        icon: "/static/icons/shittify.webp",
+        action: (extra) => this.shittifyApp.open(extra)
       },
       jsDosApp: {
         type: "system",
