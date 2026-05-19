@@ -1,4 +1,5 @@
 import { customPrompt } from "../shared/dialogs.js";
+import { StorageKeys } from "../StorageKeys.js";
 
 export class WorkspaceManager {
   constructor(windowManager) {
@@ -10,6 +11,20 @@ export class WorkspaceManager {
     this._overviewOpen = false;
     this._dragState = null;
     this._render();
+
+    import("../core/EventBus.js").then(({ bus, BusEvents }) => {
+      bus.on(BusEvents.SETTINGS_CHANGED, (settings) => {
+        this.updateVisibility(settings.showWorkspace);
+      });
+      const showWorkspace = localStorage.getItem(StorageKeys.showWorkspace) !== "false";
+      this.updateVisibility(showWorkspace);
+    });
+  }
+
+  updateVisibility(showWorkspace) {
+    if (this._barEl) {
+      this._barEl.style.display = showWorkspace ? "flex" : "none";
+    }
   }
 
   get active() {
@@ -28,6 +43,8 @@ export class WorkspaceManager {
       if (taskbar) {
         taskbar.insertBefore(this._barEl, document.getElementById("system-tray"));
       }
+      const showWorkspace = localStorage.getItem(StorageKeys.showWorkspace) !== "false";
+      this.updateVisibility(showWorkspace);
     }
 
     this._barEl.innerHTML = "";

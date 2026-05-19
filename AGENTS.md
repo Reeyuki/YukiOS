@@ -373,6 +373,21 @@ constructor(services) {
 
 ---
 
+## System Traybar
+
+Yuki OS supports a background-capable traybar system located in the taskbar. Applications can "minimize to tray" instead of being terminated when their close button is pressed.
+
+### API in BaseApp
+Any application inheriting from `BaseApp` can access these tray operations:
+
+- `registerTray(winId, icon, label)`: Register the application window to the system tray.
+- `unregisterTray(winId)`: Unregister the application window from the system tray.
+- `sendToTray(winId)`: Hide the window and taskbar item, moving it to the system tray.
+- `restoreFromTray(winId)`: Restore the window and taskbar item from the system tray.
+
+
+---
+
 ## Troubleshooting
 
 **App not in start menu?** → Check gamesList.js registration and AppLauncher constructor

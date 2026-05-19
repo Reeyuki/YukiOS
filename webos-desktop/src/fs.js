@@ -488,6 +488,14 @@ export class FileSystemManager {
   }
 
   async ensureDefaults() {
+    const defaultsCreatedKey = `yukiOS_defaults_created_${this.sessionKey}`;
+    if (localStorage.getItem(defaultsCreatedKey) === "true") {
+      const homeExists = await this.exists(this.CONFIG.ROOT);
+      if (homeExists) {
+        return;
+      }
+    }
+
     const userHome = {
       [this.sessionKey]: defaultStorage.home.reeyuki
     };
@@ -499,9 +507,15 @@ export class FileSystemManager {
 
     await this.createFromObject(sessionDefaultStorage, "/");
     await this.migrateDefaultWallpapers();
+    localStorage.setItem(defaultsCreatedKey, "true");
   }
 
   async migrateDefaultWallpapers() {
+    const migrationKey = `yukiOS_wallpaper_migrated_${this.sessionKey}`;
+    if (localStorage.getItem(migrationKey) === "true") {
+      return;
+    }
+
     const folderPath = ["Pictures", "Wallpapers"];
     const dir = this.resolveUserPath(folderPath);
 
@@ -522,6 +536,7 @@ export class FileSystemManager {
         await this.p("writeFile", fullPath, defaultWallpaperUrl(name));
       }
     }
+    localStorage.setItem(migrationKey, "true");
   }
 
   async createFromObject(obj, basePath) {
@@ -529,14 +544,17 @@ export class FileSystemManager {
       const value = obj[key];
       const fullPath = this.join(basePath, key);
       if (value.type === "file") {
-        await this.p("mkdir", this.dirname(fullPath), { recursive: true }).catch(() => {});
         const exists = await this.exists(fullPath);
         if (!exists) {
+          await this.p("mkdir", this.dirname(fullPath), { recursive: true }).catch(() => {});
           await this.p("writeFile", fullPath, value.content ?? "");
+          await this.writeMeta(this.dirname(fullPath), key, value);
         }
-        await this.writeMeta(this.dirname(fullPath), key, value);
       } else {
-        await this.p("mkdir", fullPath, { recursive: true }).catch(() => {});
+        const exists = await this.exists(fullPath);
+        if (!exists) {
+          await this.p("mkdir", fullPath, { recursive: true }).catch(() => {});
+        }
         await this.createFromObject(value, fullPath);
       }
     }

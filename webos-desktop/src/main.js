@@ -55,6 +55,8 @@ const notificationCenter = new NotificationCenter();
 const fileSystemManager = new FileSystemManager();
 const windowManager = new WindowManager(notificationCenter);
 import { bus } from "./core/EventBus.js";
+import { trayManager } from "./tray.js";
+trayManager.init(windowManager);
 
 const services = {
   notificationCenter,

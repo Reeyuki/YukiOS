@@ -27,6 +27,7 @@
 
 .login-screen-overlay.exit {
   animation: fadeOut 0.5s forwards ease-in;
+  pointer-events: none;
 }
 
 @keyframes fadeOut {

@@ -89,7 +89,12 @@ export class ShittifyApp extends BaseApp {
     const winId = this._winId;
 
     if (document.getElementById(winId)) {
-      this.wm.bringToFront(document.getElementById(winId));
+      const win = document.getElementById(winId);
+      if (win.style.display === "none") {
+        this.restoreFromTray(winId);
+      } else {
+        this.wm.bringToFront(win);
+      }
       return;
     }
 
@@ -104,6 +109,8 @@ export class ShittifyApp extends BaseApp {
     const win = this.windowHelper.createAndMountWindow(winId, "Shittify", loadingContent, "820px", "600px", {
       icon: SHITTIFY_ICON
     });
+
+    this.registerTray(winId, SHITTIFY_ICON, "Shittify", { showInTray: true });
 
     audioMixer.registerWindow(
       winId,
@@ -176,6 +183,7 @@ export class ShittifyApp extends BaseApp {
     }
     this._iframe = null;
     audioMixer.unregisterWindow(winId);
+    this.unregisterTray(winId);
   }
 
   loadContent() {

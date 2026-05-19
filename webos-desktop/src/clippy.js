@@ -1,4 +1,5 @@
 import { getLibraryUrl } from "./shared/cdnConfig.js";
+import { bus, BusEvents } from "./core/EventBus.js";
 
 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 const isLocalhost = ["localhost", "127.0.0.1"].includes(window.location.hostname);
@@ -79,6 +80,12 @@ export function initClippy() {
   if (!clippyEventBound) {
     clippyEventBound = true;
     window.addEventListener("yukios:clippy-toggle", (e) => setClippyEnabled(!!e?.detail?.enabled));
+
+    bus.on(BusEvents.SETTINGS_CHANGED, (settings) => {
+      if (settings && typeof settings.clippy !== "undefined") {
+        setClippyEnabled(settings.clippy);
+      }
+    });
   }
 
   clippyPromise = new Promise((resolve) => {

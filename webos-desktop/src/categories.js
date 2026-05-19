@@ -1,6 +1,7 @@
 import { steamAppRenderer, FlashAppRenderer, SystemAppRenderer, handleGameUrlParam } from "./games.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
 import { resolveIconUrl } from "./assetUrl.js";
+import { trayManager } from "./tray.js";
 
 const STEAM_WIN_ID = "games-app-win";
 
@@ -12,10 +13,17 @@ export class CategoriesApp {
   opensteamApp(appLauncher, wm, focusCollection = null, gameId = null) {
     const existing = document.getElementById(STEAM_WIN_ID);
     if (existing) {
-      existing.style.display = "flex";
-      wm.bringToFront(existing);
+      if (existing.style.display === "none") {
+        trayManager.restoreFromTray(STEAM_WIN_ID);
+      } else {
+        existing.style.display = "flex";
+        wm.bringToFront(existing);
+      }
       const taskbarItem = document.getElementById(`taskbar-${STEAM_WIN_ID}`);
-      if (taskbarItem) taskbarItem.classList.remove("minimized");
+      if (taskbarItem) {
+        taskbarItem.style.display = "";
+        taskbarItem.classList.remove("minimized");
+      }
 
       if (gameId) {
         const container = existing.querySelector("#games-app-container");
@@ -66,6 +74,8 @@ export class CategoriesApp {
         : resolveIconUrl("static/icons/steam.webp");
     wm.addToTaskbar(STEAM_WIN_ID, winTitle, taskbarIcon);
 
+    trayManager.register(STEAM_WIN_ID, taskbarIcon, winTitle, { showInTray: true });
+
     const container = win.querySelector("#games-app-container");
     const onLaunch = (appId) => {
       if (appLauncher) appLauncher.launch(appId);
@@ -74,7 +84,9 @@ export class CategoriesApp {
     const setupSteamControls = () => {
       const closeBtn = win.querySelector(".close-btn");
       if (closeBtn) {
-        closeBtn.onclick = () => wm.minimizeWindow(win);
+        closeBtn.onclick = () => {
+          trayManager.sendToTray(STEAM_WIN_ID);
+        };
       }
     };
 

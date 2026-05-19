@@ -10,6 +10,7 @@ export function hideMenu() {
 }
 
 function positionMenu(menu, pageX, pageY) {
+  menu.style.display = "block";
   const rect = menu.getBoundingClientRect();
   const viewportWidth = window.innerWidth;
   const viewportHeight = window.innerHeight;

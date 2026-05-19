@@ -5,6 +5,7 @@ import { videos } from "./wallpaperList.js";
 import { createCalendarPopup, setCurrentCalendarMonth } from "./calendar.js";
 import { resolveWallpaperUrl } from "./shared/assetResolver.js";
 import { bus, BusEvents } from "./core/EventBus.js";
+import { trayManager } from "./tray.js";
 
 function isBlob(obj) {
   if (!obj) return false;
@@ -425,7 +426,6 @@ function getGreeting(username) {
 }
 
 let _weatherIntervalId = null;
-let _weatherWidget = null;
 
 export class SystemUtilities {
   static async loadWallpaper() {
@@ -463,23 +463,32 @@ export class SystemUtilities {
   }
 
   static async startTaskbarWeather(appLauncher) {
+    SystemUtilities._appLauncher = appLauncher;
+    if (!SystemUtilities._weatherEventBound) {
+      SystemUtilities._weatherEventBound = true;
+      bus.on(BusEvents.SETTINGS_CHANGED, (settings) => {
+        if (settings && typeof settings.weather !== "undefined") {
+          if (settings.weather) {
+            SystemUtilities.stopTaskbarWeather();
+            SystemUtilities.startTaskbarWeather(SystemUtilities._appLauncher);
+          } else {
+            SystemUtilities.stopTaskbarWeather();
+          }
+        }
+      });
+    }
+
     if (localStorage.getItem(StorageKeys.weather) === "false") return;
 
-    const tray = document.getElementById("system-tray");
-    if (!tray) return;
-
-    if (!_weatherWidget) {
-      const widget = document.createElement("div");
-      widget.id = "taskbar-weather";
-      widget.className = "taskbar-weather";
-      widget.textContent = "…";
-      widget.addEventListener("click", () => {
+    trayManager.register("weatherApp", "…", "Loading weather...", {
+      resident: true,
+      onClick: () => {
         appLauncher?.launch("weatherApp");
-      });
-      const ref = document.getElementById("time-container") || document.getElementById("clock");
-      ref ? tray.insertBefore(widget, ref) : tray.prepend(widget);
-      _weatherWidget = widget;
-    }
+      },
+      onQuit: () => {
+        SystemUtilities.stopTaskbarWeather();
+      }
+    });
 
     const fetchAndRender = async () => {
       try {
@@ -490,12 +499,20 @@ export class SystemUtilities {
         const weatherData = await weatherRes.json();
         const temp = Math.round(weatherData.current.temperature_2m);
         const icon = getWeatherIcon(weatherData.current.weather_code);
-        _weatherWidget.textContent = `${icon} ${temp}°C`;
-        _weatherWidget.title = `${loc.city}, ${loc.country} — click to open`;
-        _weatherWidget.style.cursor = "pointer";
+        const weatherText = `${icon} ${temp}°C`;
+        const weatherLabel = `${loc.city}, ${loc.country}`;
+
+        trayManager.register("weatherApp", weatherText, weatherLabel, {
+          resident: true,
+          onClick: () => {
+            appLauncher?.launch("weatherApp");
+          },
+          onQuit: () => {
+            SystemUtilities.stopTaskbarWeather();
+          }
+        });
       } catch {
-        _weatherWidget.textContent = "";
-        _weatherWidget.style.display = "none";
+        trayManager.unregister("weatherApp");
       }
     };
 
@@ -508,10 +525,7 @@ export class SystemUtilities {
       clearInterval(_weatherIntervalId);
       _weatherIntervalId = null;
     }
-    if (_weatherWidget) {
-      _weatherWidget.remove();
-      _weatherWidget = null;
-    }
+    trayManager.unregister("weatherApp");
   }
   static async setWallpaper(url) {
     await WallpaperManager.setWallpaper(url);

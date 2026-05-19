@@ -10,6 +10,7 @@ const NEWS_UPDATES = [
         icon: "fa-wand-magic-sparkles",
         title: "Features & Improvements",
         items: [
+          ["fa-window-maximize", "Add Tray Bar", "Added a new tray bar managing background applications."],
           [
             "fa-table-cells-large",
             "Start Menu Customization",

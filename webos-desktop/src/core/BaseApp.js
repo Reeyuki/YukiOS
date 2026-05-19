@@ -1,3 +1,5 @@
+import { trayManager } from "../tray.js";
+
 export class BaseApp {
   constructor(services = {}) {
     this._services = services;
@@ -32,5 +34,21 @@ export class BaseApp {
     if (this.wm?.notify) {
       this.wm.notify(title, message, type, duration, icon);
     }
+  }
+
+  registerTray(winId, icon, label, options = {}) {
+    trayManager.register(winId, icon, label, options);
+  }
+
+  unregisterTray(winId) {
+    trayManager.unregister(winId);
+  }
+
+  sendToTray(winId) {
+    trayManager.sendToTray(winId);
+  }
+
+  restoreFromTray(winId) {
+    trayManager.restoreFromTray(winId);
   }
 }

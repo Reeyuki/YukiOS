@@ -35,12 +35,12 @@ export function closeStartMenu() {
 
 export function applyStartMenuSettings(el) {
   if (!el) return;
-  const width = localStorage.getItem("yukiOS_startMenuWidth") || "650";
-  const height = localStorage.getItem("yukiOS_startMenuHeight") || "500";
+  const width = localStorage.getItem(StorageKeys.startMenuWidth) || "650";
+  const height = localStorage.getItem(StorageKeys.startMenuHeight) || "500";
   el.style.width = `${width}px`;
   el.style.height = `${height}px`;
 
-  const catsData = localStorage.getItem("yukiOS_startMenuCats");
+  const catsData = localStorage.getItem(StorageKeys.startMenuCats);
   let cats = {};
   if (catsData) {
     try {
@@ -68,7 +68,7 @@ export function openStartMenu({ focusSearch = false, openDefaultPage = true } = 
   updateFavoritesUI();
 
   if (openDefaultPage) {
-    const catsData = localStorage.getItem("yukiOS_startMenuCats");
+    const catsData = localStorage.getItem(StorageKeys.startMenuCats);
     let cats = {};
     if (catsData) {
       try {
@@ -278,7 +278,7 @@ export function setupStartUserHover() {
   let tooltip = null;
 
   startUser.addEventListener("mouseenter", () => {
-    const currentName = localStorage.getItem("yukiOS_username") || "Reeyuki";
+    const currentName = localStorage.getItem(StorageKeys.username) || "Reeyuki";
 
     tooltip = document.createElement("div");
     tooltip.className = "user-tooltip";
@@ -356,7 +356,7 @@ export function tryGetIcon(id) {
 }
 
 function getGridItems() {
-  const saved = localStorage.getItem("yukiOS_startMenuGridItems");
+  const saved = localStorage.getItem(StorageKeys.startMenuGridItems);
   if (saved) {
     try {
       return JSON.parse(saved);
@@ -381,7 +381,7 @@ function getGridItems() {
 }
 
 function saveGridItems(items) {
-  localStorage.setItem("yukiOS_startMenuGridItems", JSON.stringify(items));
+  localStorage.setItem(StorageKeys.startMenuGridItems, JSON.stringify(items));
 }
 
 function showStartItemEditor(appLauncher, currentItem) {

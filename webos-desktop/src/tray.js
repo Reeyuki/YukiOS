@@ -1,0 +1,303 @@
+import { bus, BusEvents } from "./core/EventBus.js";
+import { showDynamicContextMenu } from "./shared/contextMenu.js";
+
+class TrayManager {
+  constructor() {
+    this._items = new Map();
+    this._el = null;
+    this._popupEl = null;
+    this._popupVisible = false;
+    this._wm = null;
+    this.MAX_VISIBLE = 4;
+  }
+
+  init(wm) {
+    this._wm = wm;
+    const sysTray = document.getElementById("system-tray");
+    if (!sysTray) return;
+    this._el = document.createElement("div");
+    this._el.id = "app-tray";
+    sysTray.insertBefore(this._el, sysTray.firstChild);
+
+    document.addEventListener("click", (e) => {
+      if (!e.target.closest("#app-tray") && !e.target.closest("#tray-overflow-popup")) {
+        this._hidePopup();
+      }
+    });
+
+    bus.on(BusEvents.WINDOW_CLOSED, ({ winId }) => {
+      if (this._items.has(winId)) {
+        this._items.delete(winId);
+        this._render();
+      }
+    });
+  }
+
+  register(winId, icon, label, options = {}) {
+    const inTray = options.resident || options.showInTray || false;
+    this._items.set(winId, {
+      icon,
+      label,
+      inTray,
+      resident: options.resident || false,
+      showInTray: options.showInTray || false,
+      onClick: options.onClick || null,
+      onQuit: options.onQuit || null
+    });
+    this._render();
+  }
+
+  unregister(winId) {
+    if (!this._items.has(winId)) return;
+    this._items.delete(winId);
+    this._render();
+  }
+
+  sendToTray(winId) {
+    const item = this._items.get(winId);
+    if (!item) return false;
+    const win = document.getElementById(winId);
+    const taskbarItem = document.getElementById(`taskbar-${winId}`);
+    if (win) win.style.display = "none";
+    if (taskbarItem) taskbarItem.style.display = "none";
+    item.inTray = true;
+    this._render();
+    return true;
+  }
+
+  restoreFromTray(winId) {
+    const item = this._items.get(winId);
+    if (!item || !item.inTray) return false;
+    if (item.resident) {
+      if (item.onClick) item.onClick();
+      return true;
+    }
+    const win = document.getElementById(winId);
+    const taskbarItem = document.getElementById(`taskbar-${winId}`);
+    if (win) {
+      if (winId === "games-app-win" || win.classList.contains("window-root")) {
+        win.style.display = "flex";
+      } else {
+        win.style.display = "block";
+      }
+      if (this._wm) this._wm.bringToFront(win);
+    }
+    if (taskbarItem) {
+      taskbarItem.style.display = "";
+      taskbarItem.classList.remove("minimized");
+    }
+    if (!item.showInTray) {
+      item.inTray = false;
+    }
+    this._render();
+    return true;
+  }
+
+  isRegistered(winId) {
+    return this._items.has(winId);
+  }
+
+  isInTray(winId) {
+    return this._items.get(winId)?.inTray === true;
+  }
+
+  getTrayItems() {
+    return Array.from(this._items.entries())
+      .filter(([, item]) => item.inTray)
+      .map(([winId, item]) => ({ winId, ...item }));
+  }
+
+  _buildIcon(winId, icon, label) {
+    const btn = document.createElement("button");
+    btn.className = "tray-icon-btn";
+    btn.title = label;
+    btn.dataset.winId = winId;
+    const isUrl =
+      typeof icon === "string" &&
+      (icon.startsWith("http") ||
+        icon.startsWith("data:") ||
+        icon.startsWith("/") ||
+        /\.(webp|png|jpg|jpeg|gif|svg)/.test(icon));
+    const isFontAwesome =
+      typeof icon === "string" &&
+      (icon.startsWith("fa-") ||
+        icon.startsWith("fas") ||
+        icon.startsWith("fab") ||
+        icon.startsWith("far") ||
+        icon.startsWith("fa "));
+    if (isUrl) {
+      btn.innerHTML = `<img src="${icon}" alt="${label}" />`;
+    } else if (isFontAwesome) {
+      btn.innerHTML = `<i class="${icon}"></i>`;
+    } else {
+      btn.innerHTML = `<span>${icon}</span>`;
+      btn.style.width = "auto";
+      btn.style.padding = "0 6px";
+      btn.style.fontSize = "12px";
+      btn.style.whiteSpace = "nowrap";
+    }
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const item = this._items.get(winId);
+      if (item && item.onClick) {
+        item.onClick();
+      } else {
+        this.restoreFromTray(winId);
+      }
+    });
+    btn.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this._showContextMenu(e, winId, label);
+    });
+    return btn;
+  }
+
+  _render() {
+    if (!this._el) return;
+    this._el.innerHTML = "";
+    const trayItems = this.getTrayItems();
+    if (trayItems.length === 0) {
+      this._el.style.display = "none";
+      this._hidePopup();
+      return;
+    }
+    this._el.style.display = "flex";
+    const visible = trayItems.slice(0, this.MAX_VISIBLE);
+    const overflow = trayItems.slice(this.MAX_VISIBLE);
+    visible.forEach(({ winId, icon, label }) => {
+      this._el.appendChild(this._buildIcon(winId, icon, label));
+    });
+    if (overflow.length > 0) {
+      const btn = document.createElement("button");
+      btn.className = "tray-overflow-btn";
+      btn.title = `${overflow.length} more`;
+      btn.innerHTML = `<i class="fas fa-chevron-up"></i><span class="tray-overflow-count">${overflow.length}</span>`;
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (this._popupVisible) {
+          this._hidePopup();
+        } else {
+          this._showPopup(overflow);
+        }
+      });
+      this._el.appendChild(btn);
+    } else {
+      this._hidePopup();
+    }
+  }
+
+  _showPopup(items) {
+    if (!this._popupEl) {
+      this._popupEl = document.createElement("div");
+      this._popupEl.id = "tray-overflow-popup";
+      document.body.appendChild(this._popupEl);
+    }
+    this._popupEl.innerHTML = "";
+    items.forEach(({ winId, icon, label }) => {
+      const row = document.createElement("div");
+      row.className = "tray-popup-item";
+      const isUrl =
+        typeof icon === "string" &&
+        (icon.startsWith("http") ||
+          icon.startsWith("data:") ||
+          icon.startsWith("/") ||
+          /\.(webp|png|jpg|jpeg|gif|svg)/.test(icon));
+      const isFontAwesome =
+        typeof icon === "string" &&
+        (icon.startsWith("fa-") ||
+          icon.startsWith("fas") ||
+          icon.startsWith("fab") ||
+          icon.startsWith("far") ||
+          icon.startsWith("fa "));
+      if (isUrl) {
+        row.innerHTML = `<img src="${icon}" alt="${label}" /><span>${label}</span>`;
+      } else if (isFontAwesome) {
+        row.innerHTML = `<i class="${icon}"></i><span>${label}</span>`;
+      } else {
+        row.innerHTML = `<span style="font-size:12px;margin-right:6px;">${icon}</span><span>${label}</span>`;
+      }
+      row.addEventListener("click", () => {
+        this.restoreFromTray(winId);
+        this._hidePopup();
+      });
+      row.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this._showContextMenu(e, winId, label);
+      });
+      this._popupEl.appendChild(row);
+    });
+    const trayRect = this._el.getBoundingClientRect();
+    this._popupEl.style.bottom = `${window.innerHeight - trayRect.top + 6}px`;
+    this._popupEl.style.right = `${window.innerWidth - trayRect.right}px`;
+    this._popupEl.style.display = "block";
+    this._popupVisible = true;
+  }
+
+  quitApp(winId) {
+    const item = this._items.get(winId);
+    if (item && item.onQuit) {
+      item.onQuit();
+    }
+    this.unregister(winId);
+    const win = document.getElementById(winId);
+    if (!win) return;
+    if (this._wm) {
+      this._wm._silenceWindow(win);
+      this._wm.removeFromTaskbar(winId);
+      if (win.dataset.isGame === "true") {
+        this._wm.gameWindowCount = Math.max(0, this._wm.gameWindowCount - 1);
+      }
+      this._wm.updateTransparency();
+      this._wm._animateAndRemove(win);
+    }
+  }
+
+  _showContextMenu(e, winId, label) {
+    showDynamicContextMenu(e, (menu, item, hr) => {
+      const header = document.createElement("div");
+      header.style.padding = "6px 12px";
+      header.style.fontSize = "11px";
+      header.style.fontWeight = "bold";
+      header.style.color = "rgba(255, 255, 255, 0.4)";
+      header.style.textTransform = "uppercase";
+      header.style.letterSpacing = "0.5px";
+      header.style.borderBottom = "1px solid rgba(255, 255, 255, 0.08)";
+      header.style.marginBottom = "4px";
+      header.style.cursor = "default";
+      header.style.userSelect = "none";
+      header.textContent = label;
+      menu.appendChild(header);
+
+      menu.appendChild(
+        item(
+          "Open",
+          () => {
+            this.restoreFromTray(winId);
+            this._hidePopup();
+          },
+          "fa-window-maximize"
+        )
+      );
+
+      menu.appendChild(
+        item(
+          "Quit",
+          () => {
+            this.quitApp(winId);
+            this._hidePopup();
+          },
+          "fa-power-off"
+        )
+      );
+    });
+  }
+
+  _hidePopup() {
+    if (this._popupEl) this._popupEl.style.display = "none";
+    this._popupVisible = false;
+  }
+}
+
+export const trayManager = new TrayManager();

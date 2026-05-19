@@ -1,3 +1,5 @@
+import { trayManager } from "../tray.js";
+
 export function setupWindowControls(win, wm) {
   const closeBtn = win.querySelector(".close-btn");
   const maxBtn = win.querySelector(".maximize-btn");
@@ -6,6 +8,10 @@ export function setupWindowControls(win, wm) {
 
   if (closeBtn) {
     closeBtn.onclick = () => {
+      if (trayManager.isRegistered(win.id)) {
+        trayManager.sendToTray(win.id);
+        return;
+      }
       wm._silenceWindow(win);
       wm.removeFromTaskbar(win.id);
       if (win.dataset.isGame === "true") {

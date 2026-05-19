@@ -15,7 +15,12 @@ export class SessionManager {
   }
 
   async showLogin() {
-    if (localStorage.getItem(StorageKeys.disableBootScreen) === "true") {
+    const lastLaunch = localStorage.getItem(StorageKeys.lastLaunchTime);
+    const now = Date.now();
+    const isWithin15Mins = lastLaunch && now - Number(lastLaunch) < 15 * 60 * 1000;
+    localStorage.setItem(StorageKeys.lastLaunchTime, now.toString());
+
+    if (localStorage.getItem(StorageKeys.disableBootScreen) === "true" || isWithin15Mins) {
       const lastUsername = localStorage.getItem(STORAGE_KEYS.username) || "";
       const lastAvatar = localStorage.getItem(STORAGE_KEYS.profilePicture) || PREDEFINED_AVATARS[0];
       const displayName = lastUsername || "Guest";
@@ -172,6 +177,7 @@ export class SessionManager {
     });
 
     const handleContinue = async () => {
+      if (continueBtn.disabled) return;
       const nickname = nicknameInput.value.trim();
       const displayName = nickname || "Guest";
       const sessionKey = nickname.toLowerCase().replace(/[^a-z0-9]/g, "") || "guest";
@@ -182,9 +188,15 @@ export class SessionManager {
         avatar: selectedAvatar
       };
 
-      this.container.classList.add("exit");
+      continueBtn.disabled = true;
+      continueBtn.innerHTML = `Signing in... <i class="fas fa-spinner fa-spin"></i>`;
+      nicknameInput.disabled = true;
+      grid.style.pointerEvents = "none";
+      uploadBtn.disabled = true;
 
       await this._initializeSession();
+
+      this.container.classList.add("exit");
 
       setTimeout(() => {
         this.container.remove();
@@ -204,6 +216,8 @@ export class SessionManager {
   async _initializeSession() {
     const { name, key, avatar } = this.currentSession;
 
+    localStorage.setItem(StorageKeys.lastLaunchTime, Date.now().toString());
+
     if (this.services.fileSystemManager) {
       await this.services.fileSystemManager.setSession(key);
     }
@@ -212,7 +226,7 @@ export class SessionManager {
 
     if (this.services.windowManager) {
       this.services.windowManager.setFileSystemManager(this.services.fileSystemManager);
-      await this.services.windowManager.restoreSession();
+      this.services.windowManager.restoreSession();
     }
   }
 

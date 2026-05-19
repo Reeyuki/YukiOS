@@ -58,7 +58,8 @@ export class SettingsApp extends BaseApp {
             return {};
           }
         })(),
-        performanceMode: localStorage.getItem(StorageKeys.performanceMode) || "high"
+        performanceMode: localStorage.getItem(StorageKeys.performanceMode) || "high",
+        showWorkspace: localStorage.getItem(StorageKeys.showWorkspace) !== "false"
       };
 
       this._applyCursor(this._settings.cursorDataUrl);
@@ -810,6 +811,16 @@ export class SettingsApp extends BaseApp {
           </div>
           <div class="settings-row">
             <div class="settings-label-group">
+              <span class="settings-label-title">Show Workspaces</span>
+              <span class="settings-label-desc">Show the workspaces area in the taskbar</span>
+            </div>
+            <label class="settings-toggle">
+              <input type="checkbox" id="settingsShowWorkspace" ${this._settings.showWorkspace ? "checked" : ""}/>
+              <span class="settings-track"><span class="settings-thumb"></span></span>
+            </label>
+          </div>
+          <div class="settings-row">
+            <div class="settings-label-group">
               <span class="settings-label-title">Taskbar Position</span>
               <span class="settings-label-desc">Dock the taskbar to an edge</span>
             </div>
@@ -1208,6 +1219,7 @@ export class SettingsApp extends BaseApp {
       const achievementsToggle = win.querySelector("#settingsAchievements");
       const analyticsToggle = win.querySelector("#settingsAnalytics");
       const disableDesktopStretchScrollToggle = win.querySelector("#settingsDisableDesktopStretchScroll");
+      const showWorkspaceToggle = win.querySelector("#settingsShowWorkspace");
       const cdnMirrorSelect = win.querySelector("#settingsCdnMirror");
 
       const weather = weatherToggle.checked;
@@ -1217,6 +1229,7 @@ export class SettingsApp extends BaseApp {
       const achievementsDisabled = !achievementsToggle.checked;
       const analyticsDisabled = !analyticsToggle.checked;
       const disableDesktopStretchScroll = !!disableDesktopStretchScrollToggle?.checked;
+      const showWorkspace = showWorkspaceToggle ? showWorkspaceToggle.checked : true;
       const selectedAlignment =
         win.querySelector(".settings-btn[data-alignment].active")?.dataset.alignment || "center";
       const cdnMirror = cdnMirrorSelect.value;
@@ -1226,6 +1239,7 @@ export class SettingsApp extends BaseApp {
       localStorage.setItem(StorageKeys.macOsControls, String(macOsControls));
       localStorage.setItem(StorageKeys.clippy, String(clippy));
       localStorage.setItem(StorageKeys.disableDesktopStretchScroll, String(disableDesktopStretchScroll));
+      localStorage.setItem("yukiOS_show_workspace", String(showWorkspace));
       localStorage.setItem(StorageKeys.achievementsDisabled, String(achievementsDisabled));
       localStorage.setItem(StorageKeys.analyticsDisabled, String(analyticsDisabled));
       localStorage.setItem(StorageKeys.taskbarAlignment, selectedAlignment);
@@ -1262,6 +1276,7 @@ export class SettingsApp extends BaseApp {
         macOsControls,
         clippy,
         disableDesktopStretchScroll,
+        showWorkspace,
         achievementsDisabled,
         analyticsDisabled,
         taskbarAlignment: selectedAlignment,
@@ -1407,6 +1422,9 @@ export class SettingsApp extends BaseApp {
   _bindDesktopCategory(win, save) {
     const stretchToggle = win.querySelector("#settingsDisableDesktopStretchScroll");
     if (stretchToggle) stretchToggle.addEventListener("change", save);
+
+    const workspaceToggle = win.querySelector("#settingsShowWorkspace");
+    if (workspaceToggle) workspaceToggle.addEventListener("change", save);
 
     const handleAlignmentClick = (alignment) => {
       win.querySelectorAll(".settings-btn[data-alignment]").forEach((btn) => {
@@ -1657,6 +1675,8 @@ export class SettingsApp extends BaseApp {
       win.querySelector("#settingsAnalytics").checked = !this._settings.analyticsDisabled;
       const stretchToggle = win.querySelector("#settingsDisableDesktopStretchScroll");
       if (stretchToggle) stretchToggle.checked = !!this._settings.disableDesktopStretchScroll;
+      const workspaceToggle = win.querySelector("#settingsShowWorkspace");
+      if (workspaceToggle) workspaceToggle.checked = !!this._settings.showWorkspace;
       const disableBootScreenToggle = win.querySelector("#settingsDisableBootScreen");
       if (disableBootScreenToggle) disableBootScreenToggle.checked = !!this._settings.disableBootScreen;
       win.querySelectorAll(".settings-btn[data-perf-val]").forEach((btn) => {
@@ -1677,6 +1697,8 @@ export class SettingsApp extends BaseApp {
       win.querySelector("#settingsAnalytics").checked = true;
       const stretchToggle = win.querySelector("#settingsDisableDesktopStretchScroll");
       if (stretchToggle) stretchToggle.checked = false;
+      const workspaceToggle2 = win.querySelector("#settingsShowWorkspace");
+      if (workspaceToggle2) workspaceToggle2.checked = true;
       const disableBootScreenToggle = win.querySelector("#settingsDisableBootScreen");
       if (disableBootScreenToggle) disableBootScreenToggle.checked = false;
       win.querySelectorAll(".settings-btn[data-perf-val]").forEach((btn) => {
