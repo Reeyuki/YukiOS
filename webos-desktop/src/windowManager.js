@@ -270,12 +270,13 @@ export class WindowManager {
       if (!entry || !entry.record) continue;
 
       const record = entry.record;
-      const rect = win.getBoundingClientRect();
-      record.x = parseInt(win.style.left) || rect.left;
-      record.y = parseInt(win.style.top) || rect.top;
-      record.width = parseInt(win.style.width) || rect.width;
-      record.height = parseInt(win.style.height) || rect.height;
+      const geom = this._getWindowNormalGeometry(win);
+      record.x = geom.x;
+      record.y = geom.y;
+      record.width = geom.width;
+      record.height = geom.height;
       record.zIndex = parseInt(win.style.zIndex) || 1000;
+      record.snapZone = win.dataset.snapZone || null;
       record.minimized = win.style.display === "none";
       record.fullscreen = win.dataset.fullscreen === "true";
       record.focused = win.classList.contains("active");
@@ -453,6 +454,7 @@ export class WindowManager {
       if (win) {
         if (state.minimized) this.minimizeWindow(win);
         if (state.fullscreen) this.toggleFullscreen(win);
+        if (state.snapZone) this._applySnap(win, state.snapZone);
         win.style.zIndex = state.zIndex;
         this.zIndexCounter = Math.max(this.zIndexCounter, state.zIndex + 1);
 
@@ -812,6 +814,39 @@ export class WindowManager {
     return this.openWindows.size;
   }
 
+  _getWindowNormalGeometry(win) {
+    const entry = this.openWindows.get(win.id);
+    const rect = win.getBoundingClientRect();
+    let x = rect.left;
+    let y = rect.top;
+    let width = rect.width;
+    let height = rect.height;
+    const parsePixelVal = (val, fallback) => {
+      if (typeof val === "string" && val.endsWith("px")) {
+        const num = parseInt(val);
+        if (!isNaN(num)) return num;
+      }
+      return fallback;
+    };
+    if (win.dataset.snapZone && entry?.record?.preSnapGeometry) {
+      x = entry.record.preSnapGeometry.x ?? x;
+      y = entry.record.preSnapGeometry.y ?? y;
+      width = entry.record.preSnapGeometry.width ?? width;
+      height = entry.record.preSnapGeometry.height ?? height;
+    } else if (win.dataset.fullscreen === "true") {
+      x = parsePixelVal(win.dataset.prevLeft, x);
+      y = parsePixelVal(win.dataset.prevTop, y);
+      width = parsePixelVal(win.dataset.prevWidth, width);
+      height = parsePixelVal(win.dataset.prevHeight, height);
+    } else {
+      x = parsePixelVal(win.style.left, x);
+      y = parsePixelVal(win.style.top, y);
+      width = parsePixelVal(win.style.width, width);
+      height = parsePixelVal(win.style.height, height);
+    }
+    return { x, y, width, height };
+  }
+
   createWindow(id, title, width = "80vw", height = "80vh", isGame = false, initialOptions = {}) {
     const pendingOpts = this._pendingLaunchOptions || {};
     const options = { ...pendingOpts, ...initialOptions };
@@ -1085,12 +1120,12 @@ export class WindowManager {
     const win = document.getElementById(winId);
     let geometry = {};
     if (win) {
-      const rect = win.getBoundingClientRect();
+      const geom = this._getWindowNormalGeometry(win);
       geometry = {
-        x: parseInt(win.style.left) || rect.left,
-        y: parseInt(win.style.top) || rect.top,
-        width: parseInt(win.style.width) || rect.width,
-        height: parseInt(win.style.height) || rect.height,
+        x: geom.x,
+        y: geom.y,
+        width: geom.width,
+        height: geom.height,
         zIndex: parseInt(win.style.zIndex) || 1000
       };
     }
@@ -1330,14 +1365,14 @@ export class WindowManager {
       const appId = (win && win.dataset.appId) || this._guessAppIdFromWinId(winId);
       if (appId) {
         try {
-          const rect = win ? win.getBoundingClientRect() : null;
+          const geom = win ? this._getWindowNormalGeometry(win) : entry.record;
           localStorage.setItem(
             `${StorageKeys.geometryPrefix}${appId}`,
             JSON.stringify({
-              x: rect ? parseInt(win.style.left) || rect.left : entry.record.x,
-              y: rect ? parseInt(win.style.top) || rect.top : entry.record.y,
-              width: rect ? parseInt(win.style.width) || rect.width : entry.record.width,
-              height: rect ? parseInt(win.style.height) || rect.height : entry.record.height
+              x: geom.x,
+              y: geom.y,
+              width: geom.width,
+              height: geom.height
             })
           );
         } catch (e) {}
