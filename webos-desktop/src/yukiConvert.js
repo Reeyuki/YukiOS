@@ -94,7 +94,9 @@ export class YukiConvertApp extends BaseApp {
       }
 
       win.querySelector(".close-btn").click();
-      openFileConverter(fileNames, path, this._services);
+      for (const fileName of fileNames) {
+        openFileConverter(fileName, path, this._services);
+      }
     };
 
     btnYuki.onclick = () => {
