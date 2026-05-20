@@ -729,7 +729,7 @@ export const appMap = {
   },
   isaacRebirth: {
     type: "remote",
-    url: "https://yukios.vercel.app/static/isaacRebirth.html",
+    url: "https://yukios.netlify.app/static/isaacRebirth.html",
     icon: "/static/icons/isaac.webp",
     title: "Isaac Rebirth"
   },
@@ -1180,7 +1180,7 @@ export const appMap = {
     type: "system",
     title: "LibreSprite",
     icon: "/static/icons/libresprite.webp",
-    url: "https://yukios.vercel.app/static/apps/libresprite/index.html"
+    url: "https://yukios.netlify.app/static/apps/libresprite/index.html"
   },
   officeApp: {
     type: "system",

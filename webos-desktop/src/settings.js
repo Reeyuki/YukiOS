@@ -1226,7 +1226,7 @@ export class SettingsApp extends BaseApp {
     if (downloadPageBtn) {
       downloadPageBtn.addEventListener("click", async () => {
         try {
-          const url = "https://yukios.vercel.app/";
+          const url = "https://yukios.netlify.app/";
           const filename = "yukios.html";
           const response = await fetch(url);
           if (!response.ok) throw new Error(`Response status: ${response.status}`);

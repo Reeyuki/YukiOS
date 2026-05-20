@@ -275,12 +275,12 @@ export class AppLauncher {
       libreSprite: {
         type: "system",
         title: "LibreSprite",
-        url: "https://yukios.vercel.app/static/apps/libresprite/index.html",
+        url: "https://yukios.netlify.app/static/apps/libresprite/index.html",
         action: () =>
           this.openIframeApp({
             appId: "libreSprite",
             type: "game",
-            source: "https://yukios.vercel.app/static/apps/libresprite/index.html",
+            source: "https://yukios.netlify.app/static/apps/libresprite/index.html",
             originalName: "libreSprite"
           })
       },
