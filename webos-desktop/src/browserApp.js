@@ -1081,7 +1081,112 @@ export class BrowserApp extends BaseApp {
 <head>
 <meta charset="utf-8">
 <title>Yuki — New Tab</title>
-
+<style>
+.bg-orb {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.4;
+  pointer-events: none;
+  z-index: -1;
+}
+.bg-orb-1 {
+  width: 400px;
+  height: 400px;
+  background: #8ab4f8;
+  top: -100px;
+  left: -100px;
+}
+.bg-orb-2 {
+  width: 300px;
+  height: 300px;
+  background: #fdd663;
+  bottom: -50px;
+  right: -50px;
+}
+.bg-orb-3 {
+  width: 250px;
+  height: 250px;
+  background: #81c995;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  text-align: center;
+}
+.logo {
+  font-size: 64px;
+  margin-bottom: 16px;
+}
+.main h1 {
+  font-size: 32px;
+  font-weight: 600;
+  color: #e8eaed;
+  margin: 0 0 8px 0;
+}
+.tagline {
+  font-size: 16px;
+  color: #9aa0a6;
+  margin: 0 0 32px 0;
+}
+.time {
+  font-size: 48px;
+  font-weight: 300;
+  color: #e8eaed;
+  margin: 0 0 8px 0;
+}
+.date {
+  font-size: 14px;
+  color: #9aa0a6;
+  margin: 0 0 40px 0;
+}
+.quick-links {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 600px;
+}
+.quick-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 20px;
+  background: rgba(42, 42, 46, 0.8);
+  border: 1px solid #3c3c40;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+  min-width: 80px;
+}
+.quick-link:hover {
+  background: rgba(53, 53, 58, 0.9);
+  border-color: #5f6368;
+  transform: translateY(-2px);
+}
+.quick-link-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+.quick-link-label {
+  font-size: 12px;
+  color: #e8eaed;
+}
+body {
+  margin: 0;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  background: #202124;
+  color: #e8eaed;
+}
+</style>
 </head>
 <body>
 <div class="bg-orb bg-orb-1"></div>
