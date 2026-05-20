@@ -1022,8 +1022,8 @@ export class FileSystemManager {
     const fullPath = this.join(dir, name);
     const blob = await this._getBlobByFullPath(fullPath);
     if (!blob) {
-      const entries = await this.pRead("readdir", dir).catch(() => []);
-      console.warn(`readBinaryFile: "${name}" not found in "${dir}". Available:`, entries);
+      //const entries = await this.pRead("readdir", dir).catch(() => []);
+      //console.warn(`readBinaryFile: "${name}" not found in "${dir}". Available:`, entries);
       return null;
     }
     return blob.type ? blob : new Blob([blob], { type: this._mimeFromName(name) });

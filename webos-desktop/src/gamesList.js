@@ -1,4 +1,9 @@
 export const appMap = {
+  yukiConvert: {
+    type: "system",
+    title: "Yuki Convert",
+    icon: "fas fa-exchange-alt"
+  },
   angryBirds2: {
     type: "game",
     url: "/static/games/html/angry2.html",
@@ -890,12 +895,6 @@ export const appMap = {
     url: "/static/flashpointarchive.html?fpGameName=angryGranToss",
     icon: "/static/icons/angrygran.webp",
     title: "Angry Gran Toss"
-  },
-  liventcord: {
-    type: "game",
-    url: "https://liventcord.github.io",
-    icon: "/static/icons/liventcord.webp",
-    title: "LiventCord"
   },
   roads: { type: "game", url: "https://slowroads.io", icon: "/static/icons/roads.svg", title: "Roads" },
   repo: {

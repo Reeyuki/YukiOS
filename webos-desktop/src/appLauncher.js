@@ -53,7 +53,8 @@ export class AppLauncher {
     markdownApp,
     emulatorApp,
     ruffleApp,
-    shortcutsApp
+    shortcutsApp,
+    yukiConvertApp
   ) {
     this.wm = windowManager;
     this.windowHelper = new WindowHelper(this.wm);
@@ -85,6 +86,7 @@ export class AppLauncher {
     this.emulatorApp = emulatorApp;
     this.ruffleApp = ruffleApp;
     this.shortcutsApp = shortcutsApp;
+    this.yukiConvertApp = yukiConvertApp;
     this.TRANSPARENCY_ALLOWED_APP_IDS = new Set(["paint", "photopea", "vscode", "liventcord"]);
 
     this.clippyPromise = initClippy();
@@ -105,6 +107,11 @@ export class AppLauncher {
         type: "system",
         title: "Explorer",
         action: () => this.explorerApp.open()
+      },
+      yukiConvert: {
+        type: "system",
+        title: "Yuki Convert",
+        action: () => this.yukiConvertApp.open()
       },
       terminal: {
         type: "system",

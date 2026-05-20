@@ -1324,6 +1324,58 @@ export class DesktopUI {
         }
       } catch {}
 
+      const effectiveFiles = selectedArray.map((el) => el.dataset.fileName);
+      const convertableFiles = effectiveFiles.filter((name) => {
+        const ext = name.split(".").pop().toLowerCase();
+        return [
+          "png",
+          "jpg",
+          "jpeg",
+          "webp",
+          "bmp",
+          "svg",
+          "gif",
+          "txt",
+          "md",
+          "html",
+          "json",
+          "log",
+          "csv",
+          "xml",
+          "yaml",
+          "yml",
+          "tsv"
+        ].includes(ext);
+      });
+
+      if (convertableFiles.length > 0) {
+        menu.appendChild(
+          item(
+            convertableFiles.length > 1 ? `Convert ${convertableFiles.length} items...` : "Convert / Transform...",
+            async () => {
+              const { openFileConverter } = await import("./utils/fileConverter.js");
+              const services = {
+                windowManager: this.appLauncher.wm,
+                fileSystemManager: this.fs,
+                notepadApp: this.appLauncher.notepadApp,
+                browserApp: this.appLauncher.browserApp,
+                officeApp: this.appLauncher.officeApp,
+                markdownApp: this.appLauncher.markdownApp,
+                jsDosApp: this.appLauncher.jsDosApp,
+                appLauncher: this.appLauncher
+              };
+              convertableFiles.forEach((name) => {
+                openFileConverter(name, ["Desktop"], services, () => {
+                  document.querySelectorAll(".folder-icon, .desktop-file-icon").forEach((i) => i.remove());
+                  this.loadDesktopItems();
+                });
+              });
+            },
+            "fa-exchange-alt"
+          )
+        );
+      }
+
       menu.appendChild(hr());
 
       menu.appendChild(

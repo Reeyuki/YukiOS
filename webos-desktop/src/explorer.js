@@ -1229,6 +1229,59 @@ export class ExplorerApp extends BaseApp {
         menu.appendChild(hr());
       }
 
+      const effectiveItems =
+        inst.selectedItems.size > 1 && inst.selectedItems.has(itemName) ? [...inst.selectedItems] : [itemName];
+      const convertableItems = effectiveItems.filter((item) => {
+        const ext = item.split(".").pop().toLowerCase();
+        return [
+          "png",
+          "jpg",
+          "jpeg",
+          "webp",
+          "bmp",
+          "svg",
+          "gif",
+          "txt",
+          "md",
+          "html",
+          "json",
+          "log",
+          "csv",
+          "xml",
+          "yaml",
+          "yml",
+          "tsv"
+        ].includes(ext);
+      });
+
+      if (isFile && convertableItems.length > 0) {
+        menu.appendChild(
+          item(
+            convertableItems.length > 1 ? `Convert ${convertableItems.length} items...` : "Convert / Transform...",
+            async () => {
+              const { openFileConverter } = await import("./utils/fileConverter.js");
+              const services = {
+                windowManager: this.wm,
+                fileSystemManager: this.fs,
+                notepadApp: this.notepadApp,
+                browserApp: this.browserApp,
+                officeApp: this.officeApp,
+                markdownApp: this.markdownApp,
+                jsDosApp: this.jsDosApp,
+                appLauncher: this.appLauncher
+              };
+              convertableItems.forEach((convertItem) => {
+                openFileConverter(convertItem, inst.currentPath, services, () => {
+                  this.renderInstance(inst);
+                });
+              });
+            },
+            "fa-exchange-alt"
+          )
+        );
+        menu.appendChild(hr());
+      }
+
       const buildClipItem = (action) => {
         const view = document.getElementById(inst.winId)?.querySelector(`#${inst.winId}-view`);
         const icons = buildClipboardIcons(inst.selectedItems, itemName, isFile, view, inst.currentPath);

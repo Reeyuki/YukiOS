@@ -36,6 +36,7 @@ import { RuffleApp } from "./ruffle.js";
 import { SessionManager } from "./SessionManager.js";
 import { CommandPalette } from "./commandPalette.js";
 import { ShortcutsApp } from "./shortcuts.js";
+import { YukiConvertApp } from "./yukiConvert.js";
 import {
   resolveGhUrl,
   resolveIconUrl,
@@ -131,6 +132,9 @@ services.aboutApp = aboutApp;
 const shortcutsApp = new ShortcutsApp(services);
 services.shortcutsApp = shortcutsApp;
 
+const yukiConvertApp = new YukiConvertApp(services);
+services.yukiConvertApp = yukiConvertApp;
+
 const newsApp = new NewsApp(services);
 services.newsApp = newsApp;
 
@@ -194,8 +198,10 @@ const appLauncher = new AppLauncher(
   markdownApp,
   emulatorApp,
   ruffleApp,
-  shortcutsApp
+  shortcutsApp,
+  yukiConvertApp
 );
+window.appLauncher = appLauncher;
 windowManager.setAppLauncher(appLauncher);
 appCreatorApp.setAppLauncher(appLauncher);
 explorerApp.setAppLauncher(appLauncher);

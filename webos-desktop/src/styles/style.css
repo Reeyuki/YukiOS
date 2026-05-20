@@ -18,11 +18,11 @@
 
   --tx1: oklch(100% 0 0 / 0.92);
   --tx2: oklch(100% 0 0 / 0.5);
-  --brand: oklch(58% 0.2 264);
-  --brand-hover: oklch(52% 0.2 264);
-  --brand-dark: oklch(42% 0.2 264);
-  --brand-glow: oklch(55% 0.22 264 / 0.35);
-  --brand-dim: oklch(55% 0.22 264 / 0.15);
+  --brand: oklch(55% 0.11 264);
+  --brand-hover: oklch(48% 0.11 264);
+  --brand-dark: oklch(38% 0.11 264);
+  --brand-glow: oklch(55% 0.11 264 / 0.35);
+  --brand-dim: oklch(55% 0.11 264 / 0.15);
   --r: 10px;
   --r-sm: 6px;
 
