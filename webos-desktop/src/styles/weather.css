@@ -1,0 +1,261 @@
+/* Weather App Styles */
+
+#weather-win {
+  font-family: "Courier New", monospace;
+  background: #0a0a12;
+  color: #e8e0f0;
+  overflow: hidden;
+}
+
+#weather-win .window-content {
+  padding: 0;
+  overflow: hidden;
+  height: calc(100% - 32px);
+  display: flex;
+  flex-direction: column;
+}
+
+.wx-toolbar {
+  display: flex;
+  gap: 6px;
+  padding: 8px 10px;
+  background: #111120;
+  border-bottom: 1px solid #2a2a3a;
+  align-items: center;
+}
+
+.wx-search {
+  flex: 1;
+  background: #1a1a2e;
+  border: 1px solid #3a3a5c;
+  color: #e8e0f0;
+  padding: 4px 8px;
+  font-family: "Courier New", monospace;
+  font-size: 1em;
+  outline: none;
+}
+
+.wx-search:focus {
+  border-color: #7b68ee;
+}
+
+.wx-btn {
+  background: #7b68ee;
+  border: none;
+  color: #fff;
+  padding: 4px 10px;
+  cursor: pointer;
+  font-family: "Courier New", monospace;
+  font-size: 11px;
+}
+
+.wx-btn:hover {
+  background: #9985f5;
+}
+
+.wx-loc-btn {
+  background: #1a1a2e;
+  border: 1px solid #3a3a5c;
+  color: #b0a8d0;
+  padding: 4px 7px;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.wx-loc-btn:hover {
+  border-color: #7b68ee;
+  color: #e8e0f0;
+}
+
+.wx-unit-toggle {
+  background: #1a1a2e;
+  border: 1px solid #3a3a5c;
+  color: #b0a8d0;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-family: "Courier New", monospace;
+  font-size: 11px;
+}
+
+.wx-unit-toggle:hover {
+  border-color: #7b68ee;
+  color: #e8e0f0;
+}
+
+.wx-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.wx-body::-webkit-scrollbar {
+  width: 4px;
+}
+
+.wx-body::-webkit-scrollbar-track {
+  background: #0a0a12;
+}
+
+.wx-body::-webkit-scrollbar-thumb {
+  background: #3a3a5c;
+}
+
+.wx-main {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.wx-hero {
+  background: linear-gradient(160deg, #1a0a3a 0%, #0a1a3a 100%);
+  padding: 28px 20px 20px;
+  text-align: center;
+  border-bottom: 1px solid #2a2a4a;
+}
+
+.wx-location {
+  font-size: 13px;
+  color: #9985f5;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.wx-icon-big {
+  font-size: 56px;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.wx-temp-big {
+  font-size: 52px;
+  font-weight: bold;
+  letter-spacing: -2px;
+  color: #fff;
+  line-height: 1;
+}
+
+.wx-condition {
+  font-size: 14px;
+  color: #b0a8d0;
+  margin-top: 6px;
+}
+
+.wx-feels {
+  font-size: 1em;
+  color: #6a6280;
+  margin-top: 4px;
+}
+
+.wx-stats {
+  display: flex;
+  justify-content: space-around;
+  padding: 16px 10px;
+  border-bottom: 1px solid #1a1a2e;
+  background: #0e0e1e;
+}
+
+.wx-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.wx-stat-icon {
+  font-size: 18px;
+}
+
+.wx-stat-val {
+  font-size: 13px;
+  font-weight: bold;
+  color: #e8e0f0;
+}
+
+.wx-stat-label {
+  font-size: 10px;
+  color: #6a6280;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.wx-forecast {
+  padding: 1em 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.wx-forecast-day {
+  display: flex;
+  align-items: center;
+  padding: 8px 1em;
+  background: #111120;
+  border: 1px solid #1e1e32;
+  gap: 10px;
+}
+
+.wx-fday {
+  width: 72px;
+  font-size: 1em;
+  color: #9985f5;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.wx-ficon {
+  font-size: 20px;
+  flex: 1;
+  text-align: center;
+}
+
+.wx-ftemp {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.wx-fmax {
+  font-size: 14px;
+  font-weight: bold;
+  color: #e8e0f0;
+}
+
+.wx-fmin {
+  font-size: 1em;
+  color: #6a6280;
+}
+
+.wx-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  gap: 14px;
+  color: #6a6280;
+  font-size: 13px;
+}
+
+.wx-spinner {
+  width: 28px;
+  height: 28px;
+  border: 2px solid #2a2a4a;
+  border-top-color: #7b68ee;
+  border-radius: 50%;
+  animation: wx-spin 0.8s linear infinite;
+}
+
+@keyframes wx-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.wx-error {
+  padding: 40px 20px;
+  text-align: center;
+  color: #e06080;
+  font-size: 13px;
+}

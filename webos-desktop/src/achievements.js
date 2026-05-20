@@ -4,6 +4,7 @@ import { BaseApp } from "./core/BaseApp.js";
 import { bus, BusEvents } from "./core/EventBus.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
 import { resolveGhUrl } from "./shared/assetResolver.js";
+import { PersistenceTypes } from "./runtime/AppSchema.js";
 
 export const Achievements = {
   WelcomeAboard: "first_boot",
@@ -75,6 +76,138 @@ export class AchievementsApp extends BaseApp {
     this._isShowingAchievement = false;
     this._loadFromStorage();
     this.incrementSession();
+    this._declarativeApp = null;
+  }
+
+  getDeclarativeSchema(opts) {
+    return {
+      id: "achievements-yukios",
+      name: "Achievements",
+      icon: "fa fa-trophy",
+      windows: [
+        {
+          id: "achievements-yukios",
+          title: "Achievements",
+          size: ["920px", "750px"],
+          icon: "fa fa-trophy",
+          style: { left: "200px", top: "90px" },
+          ui: `<div class="window-content achievements-content">
+        <div class="achievements-scroll">
+          <div class="achievements-hero">
+            <div class="achievements-hero__bg"></div>
+            <div class="achievements-hero__content">
+              <div class="achievements-hero__icon-wrapper">
+                <div class="achievements-hero__icon-glow"></div>
+                <i class="fas fa-trophy achievements-hero__icon"></i>
+              </div>
+              <h1 class="achievements-hero__title">Achievements</h1>
+              <p class="achievements-hero__subtitle">Track your progress in Yuki OS</p>
+            </div>
+            <div class="achievements-hero__stats">
+              <div class="achievements-hero__stat">
+                <div class="achievements-hero__stat-value">0</div>
+                <div class="achievements-hero__stat-label">Unlocked</div>
+              </div>
+              <div class="achievements-hero__stat">
+                <div class="achievements-hero__stat-value">0%</div>
+                <div class="achievements-hero__stat-label">Complete</div>
+              </div>
+              <div class="achievements-hero__stat">
+                <div class="achievements-hero__stat-value">0</div>
+                <div class="achievements-hero__stat-label">Remaining</div>
+              </div>
+            </div>
+          </div>
+          <div class="achievements-progress">
+            <div class="achievements-progress__header">
+              <span class="achievements-progress__label">Overall Progress</span>
+              <span class="achievements-progress__counter">0 / 0</span>
+            </div>
+            <div class="achievements-progress__bar-wrapper">
+              <div class="achievements-progress__bar">
+                <div class="achievements-progress__fill" style="width: 0%">
+                  <div class="achievements-progress__shine"></div>
+                </div>
+              </div>
+              <span class="achievements-progress__percentage">0%</span>
+            </div>
+          </div>
+          <div class="achievements-toggle">
+            <button class="achievements-toggle__btn achievements-toggle__btn--active" data-filter="all">
+              <i class="fas fa-list"></i>
+              <span>All</span>
+            </button>
+            <button class="achievements-toggle__btn" data-filter="unlocked">
+              <i class="fas fa-check-circle"></i>
+              <span>Unlocked</span>
+            </button>
+            <button class="achievements-toggle__btn" data-filter="locked">
+              <i class="fas fa-lock"></i>
+              <span>Locked</span>
+            </button>
+          </div>
+          <div class="achievements-grid" id="achievements-grid"></div>
+        </div>
+      </div>`,
+          events: {
+            ".achievements-toggle__btn": {
+              click: {
+                type: "custom:setFilter",
+                stopPropagation: true
+              }
+            }
+          }
+        }
+      ],
+      state: {
+        initial: {
+          currentFilter: "all",
+          unlocked: [],
+          counters: {}
+        },
+        persistence: PersistenceTypes.LOCAL_STORAGE
+      },
+      actions: {
+        setFilter: (payload, event, element, state) => {
+          const filter = element.dataset.filter || "all";
+          state.currentFilter = filter;
+          this._currentFilter = filter;
+          this.refresh();
+        }
+      },
+      onMount: "initAchievements"
+    };
+  }
+
+  initAchievements(payload, event, element, state) {}
+
+  open() {
+    const winId = "achievements-yukios";
+    const existing = document.getElementById(winId);
+    if (existing) {
+      this.wm.bringToFront(existing);
+      return;
+    }
+
+    this._currentFilter = "all";
+
+    const content = `
+      <div class="window-content achievements-content">
+        <div class="achievements-scroll">
+          ${this._renderHero()}
+          ${this._renderProgress()}
+          ${this._renderToggle(this._currentFilter)}
+          <div class="achievements-grid">
+            ${this._renderGrid(this._currentFilter)}
+          </div>
+        </div>
+      </div>
+    `;
+
+    const win = this.windowHelper.createAndMountWindow(winId, "Achievements", content, "920px", "750px", {
+      icon: "fa fa-trophy",
+      style: { left: "200px", top: "90px" }
+    });
   }
 
   _initBusListeners() {
@@ -406,34 +539,6 @@ export class AchievementsApp extends BaseApp {
     this.refresh();
   }
 
-  open() {
-    const winId = "achievements-yukios";
-    const existing = document.getElementById(winId);
-    if (existing) {
-      this.wm.bringToFront(existing);
-      return;
-    }
-
-    this._currentFilter = "all";
-
-    const content = `
-      <div class="window-content achievements-content">
-        <div class="achievements-scroll">
-          ${this._renderHero()}
-          ${this._renderProgress()}
-          ${this._renderToggle(this._currentFilter)}
-          <div class="achievements-grid">
-            ${this._renderGrid(this._currentFilter)}
-          </div>
-        </div>
-      </div>
-    `;
-
-    const win = this.windowHelper.createAndMountWindow(winId, "Achievements", content, "920px", "750px", {
-      icon: "fa fa-trophy",
-      style: { left: "200px", top: "90px" }
-    });
-  }
   trigger(achievementKey, skipSound = false) {
     if (localStorage.getItem(StorageKeys.achievementsDisabled) === "true") return;
 

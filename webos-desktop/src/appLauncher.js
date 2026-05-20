@@ -4,13 +4,11 @@ import { HIGHLIGHTED_GAMES, getGameName, setGameLauncher } from "./games.js";
 import { appMap } from "./gamesList.js";
 import { initializeAppGrid, populateStartMenu, tryGetIcon } from "./startMenu";
 import { IFRAME_ATTRS } from "./shared/iframeAttrs.js";
-import { customAlert } from "./shared/dialogs.js";
 import {
   fetchHtmlAsBlobUrl,
   resolveUrl,
   looksLikeHtml,
   isCdnGhUrl,
-  CDN_BASES,
   isCdnHostname,
   getCurrentCdnRepoBase,
   resolveGhUrl
@@ -20,8 +18,8 @@ import { initAnalytics, getAnalyticsBase, sendLaunchAnalytics, recordUsage } fro
 import { StorageKeys } from "./settings.js";
 import { getNewsContentSignature } from "./news.js";
 import { PROXIES, clampProxyIndex, buildProxyUrl } from "./proxies.js";
+import { AppRuntime } from "./runtime/AppRuntime.js";
 const STATICALLY_BASE = resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main");
-const YUKIOS_JSDELIVR_BASE = resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main");
 
 export class AppLauncher {
   constructor(
@@ -93,6 +91,16 @@ export class AppLauncher {
 
     initAnalytics();
     setGameLauncher(this);
+
+    this.appRuntime = new AppRuntime({
+      wm: this.wm,
+      fs: this.fs,
+      bus: null,
+      notifications: null,
+      WindowHelper: WindowHelper
+    });
+
+    this._registerLegacyApps();
 
     this.BIC = "badIceCream";
 
@@ -233,8 +241,7 @@ export class AppLauncher {
       },
       shittify: {
         type: "system",
-        title: "Shittify",
-        icon: "/static/icons/shittify.webp",
+        title: "Evil Spotify",
         action: (extra) => this.shittifyApp.open(extra)
       },
       jsDosApp: {
@@ -335,6 +342,75 @@ export class AppLauncher {
     this._ensureIframeNavigateHandler();
   }
 
+  _registerLegacyApps() {
+    this.appRuntime.registerLegacy("browserApp", this.browserApp);
+    this.appRuntime.registerLegacy("explorer", this.explorerApp);
+    this.appRuntime.registerLegacy("terminal", this.terminalApp);
+    this.appRuntime.registerLegacy("notepad", this.notepadApp);
+    this.appRuntime.registerLegacy("markdown", this.markdownApp);
+    this.appRuntime.registerLegacy("emulatorApp", this.emulatorApp);
+    this.appRuntime.registerLegacy("ruffleApp", this.ruffleApp);
+    this.appRuntime.registerLegacy("monaco", this.monacoApp);
+    this.appRuntime.registerLegacy("cameraApp", this.cameraApp);
+    this.appRuntime.registerLegacy("settingsApp", this.settingsApp);
+    this.appRuntime.registerLegacy("calculatorApp", this.calculatorApp);
+    this.appRuntime.registerLegacy("aboutApp", this.aboutApp);
+    this.appRuntime.registerLegacy("shortcutsApp", this.shortcutsApp);
+    this.appRuntime.registerLegacy("newsApp", this.newsApp);
+    this.appRuntime.registerLegacy("model3dApp", this.model3dApp);
+    this.appRuntime.registerLegacy("flash", this.categoriesApp);
+    this.appRuntime.registerLegacy("steamApp", this.categoriesApp);
+    this.appRuntime.registerLegacy("taskManager", this.taskManager);
+    this.appRuntime.registerLegacy("weather", this.weatherApp);
+    this.appRuntime.registerLegacy("appCreator", this.appCreatorApp);
+    this.appRuntime.registerLegacy("office", this.officeApp);
+    this.appRuntime.registerLegacy("shittify", this.shittifyApp);
+    this.appRuntime.registerLegacy("jsDos", this.jsDosApp);
+    this.appRuntime.registerLegacy("v86", this.v86app);
+    this.appRuntime.registerLegacy("youtube", this.youtubeApp);
+    this.appRuntime.registerLegacy("achievements", this.achievementsApp);
+    this.appRuntime.registerLegacy("profileCustomizer", this.profileCustomizerApp);
+    this.appRuntime.registerLegacy("yukiConvert", this.yukiConvertApp);
+  }
+
+  _tryLaunchDeclarative(appId, opts) {
+    const appInstance = this.appRuntime.getLegacy(appId);
+    if (!appInstance) return null;
+
+    if (typeof appInstance.getDeclarativeSchema === "function") {
+      try {
+        const schema = appInstance.getDeclarativeSchema(opts);
+        if (schema && typeof schema === "object") {
+          if (
+            schema.onMount &&
+            typeof schema.onMount === "string" &&
+            typeof appInstance[schema.onMount] === "function"
+          ) {
+            if (!schema.actions) {
+              schema.actions = {};
+            }
+            if (!schema.actions[schema.onMount]) {
+              schema.actions[schema.onMount] = (payload, event, element, state) => {
+                return appInstance[schema.onMount](payload, event, element, state);
+              };
+            }
+          }
+          if (!schema.onClose && typeof appInstance.onClose === "function") {
+            schema.onClose = (winId, state) => {
+              return appInstance.onClose(winId, state);
+            };
+          }
+          this.appRuntime.registerDeclarative(schema);
+          return this.appRuntime.launch(schema.id, opts);
+        }
+      } catch (e) {
+        console.warn(`Failed to use declarative schema for ${appId}, falling back to imperative`, e);
+      }
+    }
+
+    return null;
+  }
+
   async speak(message, animation) {
     await clippySpeak(message, animation);
   }
@@ -431,7 +507,12 @@ export class AppLauncher {
             ...appExtra
           });
         }
-      } else if (info.action) info.action(appExtra);
+      } else if (info.action) {
+        const result = this._tryLaunchDeclarative(app, appExtra);
+        if (!result) {
+          info.action(appExtra);
+        }
+      }
       return;
     }
 
@@ -637,52 +718,7 @@ player.load("${swfPath}");
             ${this.wm.getWindowControls(resolvedSource)}
           </div>
           <div class="window-content" style="width:100%; height:100%; overflow:hidden; display:flex; align-items:center; justify-content:center; background:#1a1a1a;">
-            <style>
-              .modern-loader {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 12px;
-              }
-              .loader-dots {
-                display: flex;
-                gap: 4px;
-              }
-              .loader-dot {
-                width: 8px;
-                height: 8px;
-                background: linear-gradient(45deg, #4a9eff, #00d4ff);
-                border-radius: 50%;
-                animation: loader-bounce 1.4s ease-in-out infinite both;
-              }
-              .loader-dot:nth-child(1) { animation-delay: -0.32s; }
-              .loader-dot:nth-child(2) { animation-delay: -0.16s; }
-              .loader-dot:nth-child(3) { animation-delay: 0s; }
-              
-              @keyframes loader-bounce {
-                0%, 80%, 100% {
-                  transform: scale(0.8);
-                  opacity: 0.5;
-                }
-                40% {
-                  transform: scale(1);
-                  opacity: 1;
-                }
-              }
-              
-              .loader-text {
-                color: #ccc;
-                font-size: 14px;
-                font-weight: 500;
-                letter-spacing: 0.5px;
-                animation: loader-pulse 2s ease-in-out infinite;
-              }
-              
-              @keyframes loader-pulse {
-                0%, 100% { opacity: 0.6; }
-                50% { opacity: 1; }
-              }
-            </style>
+            <link rel="stylesheet" href="styles/gamesAndApps.css">
             <div class="modern-loader">
               <div class="loader-dots">
                 <div class="loader-dot"></div>

@@ -1,5 +1,6 @@
 import { BaseApp } from "./core/BaseApp.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
+import { PersistenceTypes } from "./runtime/AppSchema.js";
 
 export class TaskManagerApp extends BaseApp {
   constructor(services) {
@@ -18,6 +19,7 @@ export class TaskManagerApp extends BaseApp {
     this.longTaskBudget = 0;
     this._startFrameMonitor();
     this._startLongTaskMonitor();
+    this._declarativeApp = null;
   }
 
   _startFrameMonitor() {
@@ -50,64 +52,18 @@ export class TaskManagerApp extends BaseApp {
     return v;
   }
 
-  _measureWindow(winId, win) {
-    const now = performance.now();
-    if (!this.windowBirthTimes.has(winId)) this.windowBirthTimes.set(winId, now);
-
-    const isMinimized = win.style.display === "none";
-    const hasIframe = !!win.querySelector("iframe");
-    const hasVideo = !!win.querySelector("video");
-    const hasCanvas = !!win.querySelector("canvas");
-    const domNodes = win.querySelectorAll("*").length;
-    const uptimeMins = (now - this.windowBirthTimes.get(winId)) / 60000;
-    const prev = this.usageCache.get(winId) || { cpu: 0, mem: 0, domNodes };
-    const domDelta = Math.abs(domNodes - prev.domNodes);
-
-    let baseMem = 8 + domNodes * 0.04;
-    if (hasIframe) baseMem += 35;
-    if (hasVideo) baseMem += 18;
-    if (hasCanvas) baseMem += 12;
-    baseMem += Math.min(uptimeMins * 0.4, 20);
-    baseMem += (Math.random() - 0.5) * 2;
-    baseMem = Math.max(4, baseMem);
-
-    if (performance.memory) {
-      const totalHeapMB = performance.memory.usedJSHeapSize / 1048576;
-      const allWins = document.querySelectorAll(".window");
-      const totalNodes = Array.from(allWins).reduce((s, w) => s + w.querySelectorAll("*").length, 1);
-      const share = domNodes / totalNodes;
-      baseMem = Math.max(baseMem, totalHeapMB * share * 0.6);
-    }
-
-    const frameStress = Math.min(100, this.frameDropScore * 1.8);
-    const longTaskStress = Math.min(60, this._drainLongTaskBudget() / 10);
-    const activityStress = Math.min(40, domDelta * 2);
-
-    let cpuShare = isMinimized ? 0.05 : domNodes / Math.max(1, document.querySelectorAll(".window *").length);
-    if (hasIframe && !isMinimized) cpuShare *= 2.2;
-    if (hasVideo && !isMinimized) cpuShare *= 1.8;
-    if (hasCanvas && !isMinimized) cpuShare *= 1.5;
-
-    const systemCpuSignal = frameStress * 0.5 + longTaskStress * 0.5;
-    let cpu = systemCpuSignal * cpuShare * 3 + activityStress * cpuShare;
-    cpu = prev.cpu * 0.55 + cpu * 0.45;
-    cpu += (Math.random() - 0.5) * 1.2;
-    cpu = Math.max(0.1, Math.min(99, isMinimized ? Math.min(cpu, 1.5) : cpu));
-
-    const result = { cpu, mem: Math.round(baseMem * 10) / 10, domNodes };
-    this.usageCache.set(winId, result);
-    return result;
-  }
-
-  open() {
-    const winId = "taskmanager-app";
-    if (document.getElementById(winId)) {
-      this.wm.bringToFront(document.getElementById(winId));
-      return;
-    }
-
-    const content = `
-      <div id="tm-root">
+  getDeclarativeSchema(opts) {
+    return {
+      id: "taskmanager-app",
+      name: "Task Manager",
+      icon: "fa fa-tasks",
+      windows: [
+        {
+          id: "taskmanager-app",
+          title: "Task Manager",
+          size: ["700px", "520px"],
+          icon: "fa fa-tasks",
+          ui: `<div id="tm-root">
         <div class="tm-tabs">
           <button id="tm-tab-proc" class="tm-tab tm-tab-active">Processes</button>
           <button id="tm-tab-perf" class="tm-tab">Performance</button>
@@ -170,6 +126,199 @@ export class TaskManagerApp extends BaseApp {
             <div id="tm-sysinfo" class="tm-sysinfo-grid"></div>
           </div>
         </div>
+      </div>`,
+          events: {
+            "#tm-tab-proc": {
+              click: {
+                type: "custom:switchTab",
+                stopPropagation: true
+              }
+            },
+            "#tm-tab-perf": {
+              click: {
+                type: "custom:switchTab",
+                stopPropagation: true
+              }
+            },
+            "#tm-filter": {
+              input: {
+                type: "custom:filterProcesses",
+                stopPropagation: false
+              }
+            },
+            "#tm-btn-refresh": {
+              click: {
+                type: "custom:refresh",
+                stopPropagation: true
+              }
+            },
+            "#tm-btn-select-all": {
+              click: {
+                type: "custom:selectAll",
+                stopPropagation: true
+              }
+            },
+            "#tm-btn-kill": {
+              click: {
+                type: "custom:killProcess",
+                stopPropagation: true
+              }
+            }
+          }
+        }
+      ],
+      state: {
+        initial: {
+          sortKey: "title",
+          sortAsc: true,
+          filter: "",
+          selectedIds: [],
+          cpuHistory: Array(30).fill(0),
+          memHistory: Array(30).fill(0)
+        },
+        persistence: PersistenceTypes.MEMORY
+      },
+      actions: {
+        switchTab: (payload, event, element, state) => {
+          const tabProc = document.getElementById("tm-tab-proc");
+          const tabPerf = document.getElementById("tm-tab-perf");
+          const panelProc = document.getElementById("tm-panel-proc");
+          const panelPerf = document.getElementById("tm-panel-perf");
+          const tabId = element.dataset.tab;
+
+          if (tabId === "proc") {
+            tabProc.classList.add("tm-tab-active");
+            tabPerf.classList.remove("tm-tab-active");
+            panelProc.style.display = "flex";
+            panelPerf.style.display = "none";
+          } else if (tabId === "perf") {
+            tabPerf.classList.add("tm-tab-active");
+            tabProc.classList.remove("tm-tab-active");
+            panelPerf.style.display = "flex";
+            panelProc.style.display = "none";
+          }
+        },
+        filterProcesses: (payload, event, element, state) => {
+          state.filter = event.target.value.toLowerCase();
+          this._renderProcesses(document.getElementById("taskmanager-app"));
+        },
+        refresh: (payload, event, element, state) => {
+          this._renderProcesses(document.getElementById("taskmanager-app"));
+          this._renderPerf(document.getElementById("taskmanager-app"));
+        },
+        selectAll: (payload, event, element, state) => {
+          const win = document.getElementById("taskmanager-app");
+          const tbody = win.querySelector("#tm-proc-tbody");
+          const visibleProcs = this._getProcesses().filter(
+            (p) => !state.filter || p.title.toLowerCase().includes(state.filter)
+          );
+          const allSelected = visibleProcs.length > 0 && visibleProcs.every((p) => state.selectedIds.includes(p.winId));
+
+          if (allSelected) {
+            state.selectedIds = [];
+          } else {
+            state.selectedIds = visibleProcs.map((p) => p.winId);
+          }
+
+          tbody.querySelectorAll(".tm-row").forEach((r) => {
+            r.classList.toggle("tm-row-selected", state.selectedIds.includes(r.dataset.id));
+          });
+
+          this._updateSelectionUI(win);
+        },
+        killProcess: (payload, event, element, state) => {
+          const win = document.getElementById("taskmanager-app");
+          const idsToKill = state.selectedIds.length > 0 ? Array.from(state.selectedIds) : [element.dataset.id];
+
+          idsToKill.forEach((id) => {
+            const w = document.getElementById(id);
+            if (w) {
+              const closeBtn = w.querySelector(".close-btn");
+              if (closeBtn) closeBtn.click();
+            }
+          });
+
+          state.selectedIds = [];
+          this._updateSelectionUI(win);
+          setTimeout(() => this._renderProcesses(win), 200);
+        }
+      },
+      onMount: "initTaskManager"
+    };
+  }
+
+  initTaskManager(payload, event, element, state) {}
+
+  open() {
+    const winId = "taskmanager-app";
+    if (document.getElementById(winId)) {
+      this.wm.bringToFront(document.getElementById(winId));
+      return;
+    }
+
+    const content = `
+      <div id="tm-root">
+        <div class="tm-tabs">
+          <button id="tm-tab-proc" class="tm-tab tm-tab-active">Processes</button>
+          <button id="tm-tab-perf" class="tm-tab">Performance</button>
+        </div>
+
+        <div id="tm-panel-proc" class="tm-panel-proc">
+          <div class="tm-toolbar">
+            <span class="tm-search-icon">⌕</span>
+            <input id="tm-filter" class="tm-filter-input" placeholder="Filter processes…"/>
+            <span id="tm-count" class="tm-count"></span>
+          </div>
+          <div class="tm-table-wrap">
+            <table id="tm-table" class="tm-table">
+              <colgroup>
+                <col style="width:40%">
+                <col style="width:20%">
+                <col style="width:20%">
+                <col style="width:20%">
+              </colgroup>
+              <thead>
+                <tr class="tm-thead-row">
+                  <th class="tm-th" data-key="title">Name</th>
+                  <th class="tm-th tm-th-right" data-key="cpu">CPU</th>
+                  <th class="tm-th tm-th-right" data-key="mem">Memory</th>
+                  <th class="tm-th tm-th-right" data-key="status">Status</th>
+                </tr>
+              </thead>
+              <tbody id="tm-tbody"></tbody>
+            </table>
+          </div>
+          <div class="tm-footer">
+            <span id="tm-selected-label" class="tm-selected-label">No process selected</span>
+            <div class="tm-footer-actions">
+              <button id="tm-btn-select-all" class="tm-action-btn">☰ Select All</button>
+              <button id="tm-btn-refresh" class="tm-action-btn">↺ Refresh</button>
+              <button id="tm-btn-kill" class="tm-action-btn tm-kill-btn" disabled>✕ End Task</button>
+            </div>
+          </div>
+        </div>
+        <div id="tm-panel-perf" class="tm-panel-perf">
+          <div class="tm-perf-grid">
+            <div class="tm-perf-card">
+              <div class="tm-perf-card-header">
+                <span class="tm-perf-label">CPU Usage</span>
+                <span id="tm-cpu-val" class="tm-perf-val tm-perf-val-cpu">0%</span>
+              </div>
+              <canvas id="tm-cpu-graph" width="280" height="80" class="tm-graph"></canvas>
+            </div>
+            <div class="tm-perf-card">
+              <div class="tm-perf-card-header">
+                <span class="tm-perf-label">Memory</span>
+                <span id="tm-mem-val" class="tm-perf-val tm-perf-val-mem">0%</span>
+              </div>
+              <canvas id="tm-mem-graph" width="280" height="80" class="tm-graph"></canvas>
+            </div>
+          </div>
+          <div class="tm-perf-card">
+            <div class="tm-perf-section-title">System Info</div>
+            <div id="tm-sysinfo" class="tm-sysinfo-grid"></div>
+          </div>
+        </div>
       </div>
     `;
 
@@ -185,6 +334,55 @@ export class TaskManagerApp extends BaseApp {
       clearInterval(this.refreshInterval);
       this.refreshInterval = null;
     });
+  }
+
+  _measureWindow(winId, win) {
+    const now = performance.now();
+    if (!this.windowBirthTimes.has(winId)) this.windowBirthTimes.set(winId, now);
+
+    const isMinimized = win.style.display === "none";
+    const hasIframe = !!win.querySelector("iframe");
+    const hasVideo = !!win.querySelector("video");
+    const hasCanvas = !!win.querySelector("canvas");
+    const domNodes = win.querySelectorAll("*").length;
+    const uptimeMins = (now - this.windowBirthTimes.get(winId)) / 60000;
+    const prev = this.usageCache.get(winId) || { cpu: 0, mem: 0, domNodes };
+    const domDelta = Math.abs(domNodes - prev.domNodes);
+
+    let baseMem = 8 + domNodes * 0.04;
+    if (hasIframe) baseMem += 35;
+    if (hasVideo) baseMem += 18;
+    if (hasCanvas) baseMem += 12;
+    baseMem += Math.min(uptimeMins * 0.4, 20);
+    baseMem += (Math.random() - 0.5) * 2;
+    baseMem = Math.max(4, baseMem);
+
+    if (performance.memory) {
+      const totalHeapMB = performance.memory.usedJSHeapSize / 1048576;
+      const allWins = document.querySelectorAll(".window");
+      const totalNodes = Array.from(allWins).reduce((s, w) => s + w.querySelectorAll("*").length, 1);
+      const share = domNodes / totalNodes;
+      baseMem = Math.max(baseMem, totalHeapMB * share * 0.6);
+    }
+
+    const frameStress = Math.min(100, this.frameDropScore * 1.8);
+    const longTaskStress = Math.min(60, this._drainLongTaskBudget() / 10);
+    const activityStress = Math.min(40, domDelta * 2);
+
+    let cpuShare = isMinimized ? 0.05 : domNodes / Math.max(1, document.querySelectorAll(".window *").length);
+    if (hasIframe && !isMinimized) cpuShare *= 2.2;
+    if (hasVideo && !isMinimized) cpuShare *= 1.8;
+    if (hasCanvas && !isMinimized) cpuShare *= 1.5;
+
+    const systemCpuSignal = frameStress * 0.5 + longTaskStress * 0.5;
+    let cpu = systemCpuSignal * cpuShare * 3 + activityStress * cpuShare;
+    cpu = prev.cpu * 0.55 + cpu * 0.45;
+    cpu += (Math.random() - 0.5) * 1.2;
+    cpu = Math.max(0.1, Math.min(99, isMinimized ? Math.min(cpu, 1.5) : cpu));
+
+    const result = { cpu, mem: Math.round(baseMem * 10) / 10, domNodes };
+    this.usageCache.set(winId, result);
+    return result;
   }
 
   _bindEvents(win) {

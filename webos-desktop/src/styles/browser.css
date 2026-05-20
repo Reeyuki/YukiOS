@@ -1025,3 +1025,17 @@
 .homepage-dialog-btns button.primary:hover {
   background: #a8c8fb;
 }
+
+/* Dark Mode Injection Styles */
+.__yuki_dark_mode__ html {
+  filter: invert(1) hue-rotate(180deg) !important;
+}
+
+.__yuki_dark_mode__ img,
+.__yuki_dark_mode__ video,
+.__yuki_dark_mode__ canvas,
+.__yuki_dark_mode__ svg,
+.__yuki_dark_mode__ picture,
+.__yuki_dark_mode__ iframe {
+  filter: invert(1) hue-rotate(180deg) !important;
+}

@@ -2,6 +2,7 @@ import { Achievements } from "./achievements.js";
 import { BaseApp } from "./core/BaseApp.js";
 import { bus, BusEvents } from "./core/EventBus.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
+import { PersistenceTypes } from "./runtime/AppSchema.js";
 
 export class TerminalApp extends BaseApp {
   constructor(services) {
@@ -20,6 +21,109 @@ export class TerminalApp extends BaseApp {
     this.isPrinting = false;
     this.inputBuffer = "";
     this.registerDefaultCommands();
+    this._declarativeApp = null;
+  }
+
+  getDeclarativeSchema(opts) {
+    return {
+      id: "terminal-win",
+      name: "Terminal",
+      icon: "static/icons/terminal.webp",
+      windows: [
+        {
+          id: "terminal-win",
+          title: "Terminal",
+          size: ["700px", "500px"],
+          icon: "static/icons/terminal.webp",
+          ui: `<div class="window-content" style="background:#000;color:white;font-family:monospace;padding:10px;overflow-y:auto;height:calc(100% - 40px);">
+        <div id="terminal-output" style="white-space:pre;"></div>
+        <div id="terminal-input-line" style="display:flex;">
+          <span id="terminal-prompt"></span>
+          <input id="terminal-input" style="flex:1;background:transparent;border:none;color:white;font-family:monospace;outline:none;margin-left:5px;">
+        </div>
+      </div>`,
+          events: {
+            "#terminal-input": {
+              keydown: {
+                type: "custom:terminalKeydown",
+                stopPropagation: false
+              }
+            },
+            "#terminal-output": {
+              contextmenu: {
+                type: "custom:terminalContextmenu",
+                stopPropagation: true
+              }
+            }
+          }
+        }
+      ],
+      state: {
+        initial: {
+          currentPath: ["ys", "users", "guest"],
+          history: [],
+          historyIndex: -1,
+          username: "guest",
+          hostname: "yuki-os"
+        },
+        persistence: PersistenceTypes.NONE
+      },
+      actions: {
+        terminalKeydown: (payload, event, element, state) => {
+          console.log("Terminal keydown:", event.key);
+        },
+        terminalContextmenu: (payload, event, element, state) => {
+          event.preventDefault();
+        }
+      },
+      onMount: "initTerminal"
+    };
+  }
+
+  initTerminal(payload, event, element, state) {
+    this.terminalOutput = document.getElementById("terminal-output");
+    this.terminalInput = document.getElementById("terminal-input");
+    this.terminalPrompt = document.getElementById("terminal-prompt");
+    this.terminalInputLine = document.getElementById("terminal-input-line");
+    this.updatePrompt();
+    this.setupEventHandlers();
+  }
+
+  open() {
+    const existingWin = document.getElementById("terminal-win");
+    if (existingWin) return this.wm.bringToFront(existingWin);
+
+    const content = `
+    <div class="window-content" style="background:#000;color:white;font-family:monospace;padding:10px;overflow-y:auto;height:calc(100% - 40px);">
+      <div id="terminal-output" style="white-space:pre;"></div>
+      <div id="terminal-input-line" style="display:flex;">
+        <span id="terminal-prompt"></span>
+        <input id="terminal-input" style="flex:1;background:transparent;border:none;color:white;font-family:monospace;outline:none;margin-left:5px;">
+      </div>
+    </div>
+  `;
+
+    const win = this.windowHelper.createAndMountWindow("terminal-win", "Terminal", content, "700px", "500px", {
+      icon: "static/icons/terminal.webp"
+    });
+
+    this.terminalOutput = win.querySelector("#terminal-output");
+    this.terminalInput = win.querySelector("#terminal-input");
+    this.terminalPrompt = win.querySelector("#terminal-prompt");
+    this.terminalInputLine = win.querySelector("#terminal-input-line");
+
+    this.terminalOutput.addEventListener("contextmenu", (e) => {
+      e.stopPropagation();
+    });
+
+    this.terminalOutput.style.userSelect = "text";
+    this.terminalInput.style.userSelect = "text";
+
+    this.updatePrompt();
+    this.print("Welcome to Reeyuki's terminal");
+    this.print("Type 'help' for available commands\n");
+    this.setupEventHandlers();
+    this.terminalInput.focus();
   }
 
   _setupSessionListener() {
@@ -279,43 +383,6 @@ export class TerminalApp extends BaseApp {
         await this.print(matches.join("  "));
       }
     }
-  }
-
-  open() {
-    const existingWin = document.getElementById("terminal-win");
-    if (existingWin) return this.wm.bringToFront(existingWin);
-
-    const content = `
-    <div class="window-content" style="background:#000;color:white;font-family:monospace;padding:10px;overflow-y:auto;height:calc(100% - 40px);">
-      <div id="terminal-output" style="white-space:pre;"></div>
-      <div id="terminal-input-line" style="display:flex;">
-        <span id="terminal-prompt"></span>
-        <input id="terminal-input" style="flex:1;background:transparent;border:none;color:white;font-family:monospace;outline:none;margin-left:5px;">
-      </div>
-    </div>
-  `;
-
-    const win = this.windowHelper.createAndMountWindow("terminal-win", "Terminal", content, "700px", "500px", {
-      icon: "static/icons/terminal.webp"
-    });
-
-    this.terminalOutput = win.querySelector("#terminal-output");
-    this.terminalInput = win.querySelector("#terminal-input");
-    this.terminalPrompt = win.querySelector("#terminal-prompt");
-    this.terminalInputLine = win.querySelector("#terminal-input-line");
-
-    this.terminalOutput.addEventListener("contextmenu", (e) => {
-      e.stopPropagation();
-    });
-
-    this.terminalOutput.style.userSelect = "text";
-    this.terminalInput.style.userSelect = "text";
-
-    this.updatePrompt();
-    this.print("Welcome to Reeyuki's terminal");
-    this.print("Type 'help' for available commands\n");
-    this.setupEventHandlers();
-    this.terminalInput.focus();
   }
 
   updatePrompt() {

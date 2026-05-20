@@ -1,6 +1,7 @@
 import { BaseApp } from "./core/BaseApp.js";
 import { customPrompt, customConfirm } from "./shared/dialogs.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
+import { PersistenceTypes } from "./runtime/AppSchema.js";
 
 export class CameraApp extends BaseApp {
   constructor(services) {
@@ -12,6 +13,168 @@ export class CameraApp extends BaseApp {
     this.recordings = [];
     this.recordingInterval = null;
     this.historyWin = null;
+    this._declarativeApp = null;
+  }
+
+  getDeclarativeSchema(opts) {
+    return {
+      id: "camera-win",
+      name: "Camera",
+      icon: "static/icons/obs.webp",
+      windows: [
+        {
+          id: "camera-win",
+          title: "Camera",
+          size: ["800px", "600px"],
+          icon: "static/icons/obs.webp",
+          style: { minWidth: "400px", minHeight: "400px" },
+          ui: `<div class="camera-app">
+        <div class="camera-viewfinder">
+          <video id="camera-video" autoplay playsinline></video>
+          <div class="camera-rec-status">
+            <span id="recording-icon"></span>
+            <span id="recording-timer"></span>
+          </div>
+          <div class="camera-mode-indicator" id="mode-indicator">Photo</div>
+          <div class="camera-download-overlay">
+            <a id="download-link" class="download-link"></a>
+          </div>
+        </div>
+        <div class="camera-toolbar">
+          <div class="camera-modes">
+            <button class="cam-mode-btn active" data-mode="photo" id="mode-photo">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="6" width="18" height="12" rx="2"/>
+                <circle cx="12" cy="12" r="3"/>
+                <circle cx="17" cy="7" r="1" fill="currentColor" stroke="none"/>
+              </svg>
+              <span>Photo</span>
+            </button>
+            <button class="cam-mode-btn" data-mode="video" id="mode-video">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="6" width="14" height="12" rx="2"/>
+                <polygon points="17,10 21,8 21,16 17,14" fill="currentColor" stroke="none"/>
+              </svg>
+              <span>Video</span>
+            </button>
+            <button class="cam-mode-btn" data-mode="screen" id="mode-screen">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="4" width="20" height="14" rx="2"/>
+                <line x1="8" y1="21" x2="16" y2="21"/>
+                <line x1="12" y1="18" x2="12" y2="21"/>
+              </svg>
+              <span>Screen</span>
+            </button>
+          </div>
+          <div class="camera-actions">
+            <div class="cam-actions-side cam-actions-left">
+              <button class="cam-action-btn secondary" id="open-history-btn" title="History">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 12"/>
+                  <path d="M3 3v9h9"/>
+                </svg>
+              </button>
+            </div>
+            <button class="cam-shutter-btn" id="shutter-btn">
+              <span class="shutter-inner"></span>
+            </button>
+            <div class="cam-actions-side cam-actions-right"></div>
+          </div>
+        </div>
+      </div>`,
+          events: {
+            ".cam-mode-btn": {
+              click: {
+                type: "custom:modeClick",
+                stopPropagation: true
+              }
+            },
+            "#shutter-btn": {
+              click: {
+                type: "custom:shutterClick",
+                stopPropagation: true
+              }
+            },
+            "#open-history-btn": {
+              click: {
+                type: "custom:historyClick",
+                stopPropagation: true
+              }
+            }
+          }
+        }
+      ],
+      state: {
+        initial: {
+          currentMode: "photo",
+          isRecording: false,
+          recordings: []
+        },
+        persistence: PersistenceTypes.NONE
+      },
+      actions: {
+        modeClick: (payload, event, element, state) => {
+          const mode = element.dataset.mode;
+          document.querySelectorAll(".cam-mode-btn").forEach((b) => b.classList.remove("active"));
+          element.classList.add("active");
+          state.currentMode = mode;
+          document.getElementById("mode-indicator").textContent = element.querySelector("span").textContent;
+          this.updateShutterButton(state);
+        },
+        shutterClick: (payload, event, element, state) => {
+          if (state.currentMode === "photo") {
+            this.takePhoto();
+          } else if (state.currentMode === "video") {
+            if (!state.isRecording) {
+              this.startRecording(state);
+            } else {
+              this.stopRecording();
+            }
+          } else if (state.currentMode === "screen") {
+            if (!state.isRecording) {
+              this.startScreenRecording(state);
+            } else {
+              this.stopRecording();
+            }
+          }
+        },
+        historyClick: (payload, event, element, state) => {
+          this.openHistoryWindow();
+        }
+      },
+      onMount: "initCamera"
+    };
+  }
+
+  updateShutterButton(state) {
+    const shutterBtn = document.getElementById("shutter-btn");
+    const inner = shutterBtn.querySelector(".shutter-inner");
+    inner.className = "shutter-inner";
+    if (state.currentMode === "photo") {
+      inner.classList.add("photo");
+    } else if (state.currentMode === "video" || state.currentMode === "screen") {
+      if (state.isRecording) {
+        inner.classList.add("stop");
+      } else {
+        inner.classList.add("video");
+      }
+    }
+  }
+
+  async initCamera(payload, event, element, state) {
+    this.video = document.getElementById("camera-video");
+    this.shutterBtn = document.getElementById("shutter-btn");
+    this.downloadLink = document.getElementById("download-link");
+    this.recordingIcon = document.getElementById("recording-icon");
+    this.recordingTimer = document.getElementById("recording-timer");
+    this.modeIndicator = document.getElementById("mode-indicator");
+
+    state.currentMode = "photo";
+    state.isRecording = false;
+
+    await this.startCamera();
+    this.updateShutterButton(state);
+    await this.restoreHistory();
   }
 
   open() {
@@ -95,8 +258,8 @@ export class CameraApp extends BaseApp {
     this.recordingIcon = win.querySelector("#recording-icon");
     this.recordingTimer = win.querySelector("#recording-timer");
     this.historyBtn = win.querySelector("#open-history-btn");
-    this.modeIndicator = win.querySelector("#mode-indicator");
     this.modeBtns = win.querySelectorAll(".cam-mode-btn");
+    this.modeIndicator = win.querySelector("#mode-indicator");
 
     this.currentMode = "photo";
     this.isRecording = false;
@@ -140,20 +303,6 @@ export class CameraApp extends BaseApp {
     this.restoreHistory();
   }
 
-  updateShutterButton() {
-    const inner = this.shutterBtn.querySelector(".shutter-inner");
-    inner.className = "shutter-inner";
-    if (this.currentMode === "photo") {
-      inner.classList.add("photo");
-    } else if (this.currentMode === "video" || this.currentMode === "screen") {
-      if (this.isRecording) {
-        inner.classList.add("stop");
-      } else {
-        inner.classList.add("video");
-      }
-    }
-  }
-
   async startCamera() {
     try {
       this.stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
@@ -184,10 +333,10 @@ export class CameraApp extends BaseApp {
     this.addRecording(dataUrl, blob, savedName, fileName.replace(".png", ""));
   }
 
-  startRecording() {
-    if (!this.stream || this.isRecording) return;
+  startRecording(state) {
+    if (!this.stream || state.isRecording) return;
 
-    this.isRecording = true;
+    state.isRecording = true;
     this.recordedChunks = [];
     this.mediaRecorder = new MediaRecorder(this.stream);
     this.mediaRecorder.ondataavailable = (e) => {
@@ -208,10 +357,10 @@ export class CameraApp extends BaseApp {
 
       this.addRecording(url, blob, savedName, fileName.replace(".webm", ""));
 
-      this.isRecording = false;
+      state.isRecording = false;
       this.stopTimer();
       this.shutterBtn.classList.remove("recording");
-      this.updateShutterButton();
+      this.updateShutterButton(state);
       this.downloadLink.href = url;
       this.downloadLink.download = fileName;
       this.downloadLink.textContent = "Download Video";
@@ -221,7 +370,7 @@ export class CameraApp extends BaseApp {
     this.mediaRecorder.start();
     this.shutterBtn.classList.add("recording");
     this.recordingIcon.style.display = "block";
-    this.updateShutterButton();
+    this.updateShutterButton(state);
     this.startTimer();
   }
 
@@ -231,7 +380,7 @@ export class CameraApp extends BaseApp {
     }
   }
 
-  async startScreenRecording() {
+  async startScreenRecording(state) {
     try {
       const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
       this.activeStream = screenStream;
@@ -259,7 +408,7 @@ export class CameraApp extends BaseApp {
 
         this.addRecording(url, blob, savedName, fileName.replace(".webm", ""));
 
-        this.isRecording = false;
+        state.isRecording = false;
         this.downloadLink.href = url;
         this.downloadLink.download = fileName;
         this.downloadLink.textContent = "Download Screen Recording";
@@ -267,7 +416,7 @@ export class CameraApp extends BaseApp {
         this.stopTimer();
         this.recordingIcon.style.display = "none";
         this.shutterBtn.classList.remove("recording");
-        this.updateShutterButton();
+        this.updateShutterButton(state);
         this.activeStream.getTracks().forEach((t) => t.stop());
         this.activeStream = null;
         this.video.srcObject = this.stream;
@@ -277,11 +426,11 @@ export class CameraApp extends BaseApp {
         if (this.mediaRecorder.state !== "inactive") this.mediaRecorder.stop();
       };
 
-      this.isRecording = true;
+      state.isRecording = true;
       this.mediaRecorder.start();
       this.shutterBtn.classList.add("recording");
       this.recordingIcon.style.display = "block";
-      this.updateShutterButton();
+      this.updateShutterButton(state);
       this.startTimer();
     } catch (e) {
       console.error(e);

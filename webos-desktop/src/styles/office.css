@@ -717,3 +717,72 @@
   background-color: #f9e2af !important;
   outline: 2px solid #fab387;
 }
+
+/* ODT Viewer Iframe Content Styles */
+.office-odt-content {
+  font-family: serif;
+  font-size: 14px;
+  line-height: 1.6;
+  padding: 20px 40px;
+  margin: 0;
+  background: #1e1e2e;
+  color: #cdd6f4;
+}
+
+.office-odt-content h1,
+.office-odt-content h2,
+.office-odt-content h3,
+.office-odt-content h4,
+.office-odt-content h5,
+.office-odt-content h6 {
+  color: #cba6f7;
+}
+
+.office-odt-content p {
+  margin: 0.3em 0;
+}
+
+.office-odt-content table {
+  border-collapse: collapse;
+  margin: 8px 0;
+}
+
+.office-odt-content td,
+.office-odt-content th {
+  border: 1px solid #45475a;
+  padding: 4px 8px;
+}
+
+.office-odt-content img {
+  max-width: 100%;
+}
+
+.office-odt-content ul,
+.office-odt-content ol {
+  margin: 0.3em 0;
+  padding-left: 2em;
+}
+
+.office-odt-content a {
+  color: #89b4fa;
+}
+
+/* Print Preview Styles */
+.office-print-content {
+  font-family: serif;
+  padding: 20px;
+}
+
+@media print {
+  .office-print-content {
+    margin: 0;
+  }
+}
+
+/* Document Export Styles */
+.office-doc-export {
+  font-family: serif;
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 20px;
+}

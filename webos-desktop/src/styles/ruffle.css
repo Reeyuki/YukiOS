@@ -1,0 +1,165 @@
+/* Ruffle Flash Emulator Styles */
+
+#ruffle-win .ruf-container {
+  width: 100%;
+  height: 100%;
+  background:
+    radial-gradient(circle at 20% 0%, rgba(255, 107, 157, 0.12), transparent 50%), linear-gradient(#141424, #10101a);
+  color: var(--text-primary, #eee);
+  font-family:
+    "Barlow",
+    system-ui,
+    -apple-system,
+    sans-serif;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+#ruffle-win .ruf-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
+  background: var(--bg-secondary, rgba(255, 255, 255, 0.04));
+  backdrop-filter: blur(18px);
+  margin-bottom: 20px;
+}
+
+#ruffle-win .ruf-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin: 0;
+}
+
+#ruffle-win .ruf-subtitle {
+  font-size: 0.88rem;
+  color: var(--text-secondary, #888);
+  margin-top: 4px;
+}
+
+#ruffle-win .ruf-icon-main {
+  font-size: 38px;
+  color: var(--brand, #ff6b9d);
+}
+
+#ruffle-win .ruf-upload-zone {
+  border: 2px dashed var(--brand, #ff6b9d);
+  border-radius: 14px;
+  padding: 32px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: var(--glass, rgba(255, 255, 255, 0.02));
+  margin-bottom: 24px;
+}
+
+#ruffle-win .ruf-upload-zone:hover {
+  background: var(--glass-hover, rgba(255, 107, 157, 0.07));
+  border-color: var(--brand-hover, #ff4785);
+}
+
+#ruffle-win .ruf-upload-icon {
+  font-size: 32px;
+  color: var(--brand, #ff6b9d);
+  margin-bottom: 12px;
+  display: block;
+}
+
+#ruffle-win .ruf-upload-text {
+  font-size: 14px;
+  color: var(--text-primary, #bbb);
+  margin-bottom: 8px;
+}
+
+#ruffle-win .ruf-upload-subtext {
+  font-size: 11px;
+  color: var(--text-secondary, #666);
+}
+
+#ruffle-win .ruf-section-title {
+  font-size: 11px;
+  color: var(--text-secondary, #888);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+  padding-left: 4px;
+  font-weight: 600;
+}
+
+#ruffle-win .ruf-file-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+#ruffle-win .ruf-file-card {
+  background: var(--bg-secondary, #252540);
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    border-color 0.15s ease;
+  position: relative;
+}
+
+#ruffle-win .ruf-file-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px var(--brand-dim, rgba(255, 107, 157, 0.2));
+  border-color: var(--brand, #ff6b9d);
+}
+
+#ruffle-win .ruf-file-icon {
+  font-size: 22px;
+  color: var(--brand, #ff6b9d);
+}
+
+#ruffle-win .ruf-file-info {
+  flex: 1;
+  overflow: hidden;
+}
+
+#ruffle-win .ruf-file-name {
+  font-size: 13px;
+  color: var(--text-primary, #fff);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+#ruffle-win .ruf-file-type {
+  font-size: 10px;
+  color: var(--text-secondary, #666);
+  margin-top: 4px;
+}
+
+#ruffle-win .ruf-delete-btn {
+  background: var(--glass, rgba(255, 255, 255, 0.05));
+  border: 1px solid transparent;
+  color: var(--text-secondary, #666);
+  cursor: pointer;
+  font-size: 12px;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+#ruffle-win .ruf-delete-btn:hover {
+  color: var(--error, #ff6b6b);
+  background: var(--error-bg, rgba(255, 107, 107, 0.1));
+  border-color: var(--error-border, rgba(255, 107, 107, 0.3));
+}

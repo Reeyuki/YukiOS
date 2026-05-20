@@ -7,10 +7,15 @@ export class BaseApp {
     this.fs = services.fs || services.fileSystemManager;
     this.bus = services.bus;
     this.notifications = services.notifications || services.notificationCenter;
+    this._isDeclarative = false;
   }
 
   open(opts) {
     throw new Error(`${this.constructor.name}.open() is not implemented.`);
+  }
+
+  getDeclarativeSchema(opts) {
+    return null;
   }
 
   onClose(winId) {}

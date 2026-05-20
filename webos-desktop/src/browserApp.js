@@ -50,8 +50,85 @@ export class BrowserApp extends BaseApp {
     this.darkModeEnabled = false;
     this.darkModeExclusions = {};
     this.homepageUrl = "yuki://home";
+    this._declarativeApp = null;
 
     this._loadPrefs();
+  }
+
+  open(title = "Yuki Browser", url = null) {
+    if (this._isSingletonOpen(this.winId)) return;
+
+    this._destroyed = false;
+
+    const startUrl = url || this.homepageUrl;
+
+    const content = `
+      <div class="browser-root" id="browser-root-${this.winId}">
+        <div class="browser-tabbar" id="tabbar-${this.winId}" style="display:flex;align-items:center;">
+          <div id="tab-strip-${this.winId}" style="display:flex;flex:1;overflow:auto;align-items:center;min-width:0;"></div>
+          <div id="controls-slot-${this.winId}" style="display:flex;align-items:center;flex-shrink:0;"></div>
+        </div>
+        <div class="browser-navbar" id="navbar-${this.winId}">
+          <button class="nav-btn" id="btn-back-${this.winId}" title="Back (Right-click for history)">&#8592;</button>
+          <button class="nav-btn" id="btn-fwd-${this.winId}" title="Forward (Right-click for history)">&#8594;</button>
+          <button class="nav-btn" id="btn-reload-${this.winId}" title="Reload">&#8635;</button>
+          <button class="nav-btn" id="btn-home-${this.winId}" title="Home">⌂</button>
+          <div class="address-bar-wrap">
+            <input class="address-bar" id="address-${this.winId}" type="text" placeholder="Search or enter URL..." spellcheck="false" autocomplete="off"/>
+            <button class="bookmark-star" id="btn-star-${this.winId}" title="Bookmark this page">☆</button>
+          </div>
+          <select class="proxy-select" id="proxy-${this.winId}">
+            <option value="-1"${this.currentProxyIndex === -1 ? " selected" : ""}>No proxy</option>
+            ${this.proxies.map((p, i) => `<option value="${i}"${i === this.currentProxyIndex ? " selected" : ""}>${p.label}</option>`).join("")}
+          </select>
+          <div class="zoom-controls">
+            <button class="zoom-btn" id="btn-zoom-out-${this.winId}" title="Zoom out">−</button>
+            <span class="zoom-label" id="zoom-label-${this.winId}">${Math.round(this.zoomLevel * 100)}%</span>
+            <button class="zoom-btn" id="btn-zoom-in-${this.winId}" title="Zoom in">+</button>
+          </div>
+          <button class="nav-btn" id="btn-darkmode-${this.winId}" title="Dark Mode" style="font-size:14px">🌙</button>
+          <button class="nav-btn" id="btn-screenshot-${this.winId}" title="Screenshot">📷</button>
+          <button class="nav-btn" id="btn-fullscreen-${this.winId}" title="Fullscreen iframe">⛶</button>
+          <button class="browser-menu-btn" id="btn-menu-${this.winId}" title="Menu">⋮</button>
+        </div>
+        <div class="bookmark-bar${this.showBookmarkBar ? "" : " hidden"}" id="bookmarkbar-${this.winId}"></div>
+        <div class="browser-content" id="content-${this.winId}">
+          <div class="iframe-loading-overlay" id="loading-${this.winId}">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Loading...</div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    this.win = this.windowHelper.createAndMountWindow(this.winId, title, content, "900px", "620px", {
+      icon: resolveIconUrl("static/icons/firefox.webp")
+    });
+
+    this.tabBar = document.getElementById(`tabbar-${this.winId}`);
+    this.tabStrip = document.getElementById(`tab-strip-${this.winId}`);
+    this.controlsSlot = document.getElementById(`controls-slot-${this.winId}`);
+    this.addressBar = document.getElementById(`address-${this.winId}`);
+    this.proxySelect = document.getElementById(`proxy-${this.winId}`);
+    this.iframeContainer = document.getElementById(`content-${this.winId}`);
+    this.bookmarkBar = document.getElementById(`bookmarkbar-${this.winId}`);
+    this.loadingOverlay = document.getElementById(`loading-${this.winId}`);
+
+    const header = this.win.querySelector(".window-header");
+    const controls = header?.querySelector(".window-controls");
+    if (controls && this.controlsSlot) {
+      this.controlsSlot.appendChild(controls);
+      header.style.display = "none";
+    }
+
+    this.setupNavEvents();
+    this.setupKeyboardShortcuts();
+    this.setupMessageListener();
+    this.setupKeyboardShortcuts();
+    this.renderBookmarks();
+    this.createTab(startUrl, true);
+
+    this._wrapCloseButton();
   }
 
   _loadPrefs() {
@@ -143,83 +220,6 @@ export class BrowserApp extends BaseApp {
 
   isYukiHome(url) {
     return url === "yuki://home";
-  }
-
-  open(title = "Yuki Browser", url = null) {
-    if (this._isSingletonOpen(this.winId)) return;
-
-    this._destroyed = false;
-
-    const startUrl = url || this.homepageUrl;
-
-    const content = `
-      <div class="browser-root" id="browser-root-${this.winId}">
-        <div class="browser-tabbar" id="tabbar-${this.winId}" style="display:flex;align-items:center;">
-          <div id="tab-strip-${this.winId}" style="display:flex;flex:1;overflow:auto;align-items:center;min-width:0;"></div>
-          <div id="controls-slot-${this.winId}" style="display:flex;align-items:center;flex-shrink:0;"></div>
-        </div>
-        <div class="browser-navbar" id="navbar-${this.winId}">
-          <button class="nav-btn" id="btn-back-${this.winId}" title="Back (Right-click for history)">&#8592;</button>
-          <button class="nav-btn" id="btn-fwd-${this.winId}" title="Forward (Right-click for history)">&#8594;</button>
-          <button class="nav-btn" id="btn-reload-${this.winId}" title="Reload">&#8635;</button>
-          <button class="nav-btn" id="btn-home-${this.winId}" title="Home">⌂</button>
-          <div class="address-bar-wrap">
-            <input class="address-bar" id="address-${this.winId}" type="text" placeholder="Search or enter URL..." spellcheck="false" autocomplete="off"/>
-            <button class="bookmark-star" id="btn-star-${this.winId}" title="Bookmark this page">☆</button>
-          </div>
-          <select class="proxy-select" id="proxy-${this.winId}">
-            <option value="-1"${this.currentProxyIndex === -1 ? " selected" : ""}>No proxy</option>
-            ${this.proxies.map((p, i) => `<option value="${i}"${i === this.currentProxyIndex ? " selected" : ""}>${p.label}</option>`).join("")}
-          </select>
-          <div class="zoom-controls">
-            <button class="zoom-btn" id="btn-zoom-out-${this.winId}" title="Zoom out">−</button>
-            <span class="zoom-label" id="zoom-label-${this.winId}">${Math.round(this.zoomLevel * 100)}%</span>
-            <button class="zoom-btn" id="btn-zoom-in-${this.winId}" title="Zoom in">+</button>
-          </div>
-          <button class="nav-btn" id="btn-darkmode-${this.winId}" title="Dark Mode" style="font-size:14px">🌙</button>
-          <button class="nav-btn" id="btn-screenshot-${this.winId}" title="Screenshot">📷</button>
-          <button class="nav-btn" id="btn-fullscreen-${this.winId}" title="Fullscreen iframe">⛶</button>
-          <button class="browser-menu-btn" id="btn-menu-${this.winId}" title="Menu">⋮</button>
-        </div>
-        <div class="bookmark-bar${this.showBookmarkBar ? "" : " hidden"}" id="bookmarkbar-${this.winId}"></div>
-        <div class="browser-content" id="content-${this.winId}">
-          <div class="iframe-loading-overlay" id="loading-${this.winId}">
-            <div class="loading-spinner"></div>
-            <div class="loading-text">Loading...</div>
-          </div>
-        </div>
-      </div>
-    `;
-
-    this.win = this.windowHelper.createAndMountWindow(this.winId, title, content, "900px", "620px", {
-      icon: resolveIconUrl("static/icons/firefox.webp")
-    });
-
-    this.tabBar = document.getElementById(`tabbar-${this.winId}`);
-    this.tabStrip = document.getElementById(`tab-strip-${this.winId}`);
-    this.controlsSlot = document.getElementById(`controls-slot-${this.winId}`);
-
-    this.addressBar = document.getElementById(`address-${this.winId}`);
-    this.proxySelect = document.getElementById(`proxy-${this.winId}`);
-    this.iframeContainer = document.getElementById(`content-${this.winId}`);
-    this.bookmarkBar = document.getElementById(`bookmarkbar-${this.winId}`);
-    this.loadingOverlay = document.getElementById(`loading-${this.winId}`);
-
-    const header = this.win.querySelector(".window-header");
-    const controls = header?.querySelector(".window-controls");
-    if (controls && this.controlsSlot) {
-      this.controlsSlot.appendChild(controls);
-      header.style.display = "none";
-    }
-
-    this.setupNavEvents();
-    this.setupKeyboardShortcuts();
-    this.setupMessageListener();
-    this.setupKeyboardShortcuts();
-    this.renderBookmarks();
-    this.createTab(startUrl, true);
-
-    this._wrapCloseButton();
   }
 
   _wrapCloseButton() {
@@ -1081,40 +1081,7 @@ export class BrowserApp extends BaseApp {
 <head>
 <meta charset="utf-8">
 <title>Yuki — New Tab</title>
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    min-height: 100vh; background: #0e0e12;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-    color: #e8eaed; overflow: hidden;
-    position: relative;
-  }
-  .bg-orb { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.18; pointer-events: none; }
-  .bg-orb-1 { width: 500px; height: 500px; background: #8ab4f8; top: -100px; left: -100px; }
-  .bg-orb-2 { width: 400px; height: 400px; background: #c58af9; bottom: -80px; right: -80px; }
-  .bg-orb-3 { width: 300px; height: 300px; background: #f8a4b8; top: 40%; left: 30%; }
-  .main { position: relative; z-index: 1; text-align: center; }
-  .logo { font-size: 72px; margin-bottom: 8px; animation: float 4s ease-in-out infinite; }
-  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
-  h1 { font-size: 42px; font-weight: 700; letter-spacing: -1px; margin-bottom: 4px;
-    background: linear-gradient(135deg, #8ab4f8, #c58af9, #f8a4b8);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-  .tagline { font-size: 15px; color: #9aa0a6; font-weight: 300; margin-bottom: 48px; }
-  .time { font-size: 64px; font-weight: 300; letter-spacing: -2px; margin-bottom: 8px; opacity: 0.9; }
-  .date { font-size: 14px; color: #9aa0a6; margin-bottom: 52px; font-weight: 300; }
-  .quick-links { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; max-width: 600px; }
-  .quick-link {
-    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
-    padding: 16px 20px; min-width: 80px;
-    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px;
-    text-decoration: none; color: #e8eaed; cursor: pointer; font-family: inherit; border: none; outline: none;
-    transition: background 0.2s, transform 0.2s, border-color 0.2s;
-  }
-  .quick-link:hover { background: rgba(255,255,255,0.1); border-color: rgba(138,180,248,0.4); transform: translateY(-3px); }
-  .quick-link-icon { width: 32px; height: 32px; object-fit: contain; display: block; }
-  .quick-link-label { font-size: 11px; color: #9aa0a6; }
-</style>
+
 </head>
 <body>
 <div class="bg-orb bg-orb-1"></div>

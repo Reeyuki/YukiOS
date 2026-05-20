@@ -335,12 +335,6 @@ export const appMap = {
     icon: "/static/icons/happyRoom.webp",
     title: "Happy Room"
   },
-  azahar: {
-    type: "system",
-    url: "/static/games/html/azahar.html",
-    icon: "/static/icons/azahar.webp",
-    title: "Azahar"
-  },
   myRustySubmarine: {
     type: "game",
     url: "/static/games/html/myRustySubmarine.html",
@@ -403,7 +397,7 @@ export const appMap = {
   },
   gtaVc: {
     type: "game",
-    url: "https://yukivcemu.vercel.app/revc",
+    url: "/static/games/html/revc.html",
     icon: "/static/icons/gtavc.webp",
     title: "GTA Vice City"
   },
@@ -1195,7 +1189,7 @@ export const appMap = {
   },
   shittify: {
     type: "system",
-    title: "Shittify",
+    title: "Evil Spotify",
     icon: "/static/icons/shittify.webp"
   },
   appCreatorApp: {

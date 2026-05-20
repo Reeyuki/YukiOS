@@ -13,10 +13,6 @@ export class NotepadApp extends BaseApp {
     this.instances = new Map();
   }
 
-  setExplorer(explorerApp) {
-    this.explorerApp = explorerApp;
-  }
-
   open(titleOrOptions = "Untitled", content = "", filePath = null) {
     let title = "Untitled";
     let options = {};
@@ -147,6 +143,10 @@ export class NotepadApp extends BaseApp {
     textarea.style.fontSize = this.instances.get(winId).baseFontSize + "px";
 
     this.updateStatusBar(win, winId);
+  }
+
+  setExplorer(explorerApp) {
+    this.explorerApp = explorerApp;
   }
 
   escapeHtml(text) {
@@ -881,7 +881,7 @@ export class NotepadApp extends BaseApp {
         <div style="font-size:48px;margin-bottom:10px;"><img style="width:50px" src="${resolveIconUrl("static/icons/notepad.webp")}"></div>
         <h2 style="margin:0 0 5px 0;font-weight:normal;">Notepad</h2>
         <p style="color:#888;margin:5px 0;">Version 1.0.0</p>
-        <p style="font-size:12px;color:#666;margin:15px 0;">A simple text editor for yukios.</p>
+        <p style="font-size:12px;color:#666;margin:15px 0;">A simple text editor for YukiOS.</p>
         <div class="notepad-dialog-buttons" style="justify-content:center;margin-top:20px;">
           <button class="ok-btn primary">OK</button>
         </div>

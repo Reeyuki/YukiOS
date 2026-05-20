@@ -741,12 +741,9 @@ class OdtViewer extends EditorStrategy {
       container.appendChild(wrapper);
       const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
       iframeDoc.open();
-      iframeDoc.write(`<!DOCTYPE html><html><head><style>
-        body{font-family:serif;font-size:14px;line-height:1.6;padding:20px 40px;margin:0;background:#1e1e2e;color:#cdd6f4;}
-        h1,h2,h3,h4,h5,h6{color:#cba6f7;}p{margin:.3em 0;}
-        table{border-collapse:collapse;margin:8px 0;}td,th{border:1px solid #45475a;padding:4px 8px;}
-        img{max-width:100%;}ul,ol{margin:.3em 0;padding-left:2em;}a{color:#89b4fa;}
-      </style></head><body>${htmlContent}</body></html>`);
+      iframeDoc.write(
+        `<!DOCTYPE html><html><head><link rel="stylesheet" href="../styles/office.css"></head><body class="office-odt-content">${htmlContent}</body></html>`
+      );
       iframeDoc.close();
       state.editor = iframe;
       state.odtHtml = htmlContent;
@@ -2012,12 +2009,9 @@ export class OfficeApp extends BaseApp {
     <html>
       <head>
         <title>${state.title}</title>
-        <style>
-          body { font-family: serif; padding: 20px; }
-          @media print { body { margin: 0; } }
-        </style>
+        <link rel="stylesheet" href="styles/office.css">
       </head>
-      <body>${content}</body>
+      <body class="office-print-content">${content}</body>
     </html>
   `);
     printWindow.document.close();
@@ -2107,11 +2101,9 @@ export class OfficeApp extends BaseApp {
 <head>
   <meta charset="UTF-8">
   <title>${state.title}</title>
-  <style>
-    body { font-family: serif; max-width: 800px; margin: 20px auto; padding: 20px; }
-  </style>
+  <link rel="stylesheet" href="styles/office.css">
 </head>
-<body>${html}</body>
+<body class="office-doc-export">${html}</body>
 </html>`;
 
     FileIO.triggerDownload(`${state.title}.html`, fullHTML);

@@ -192,7 +192,7 @@ export class NotificationCenter {
 
     toast.querySelector(".ntf-toast__close").addEventListener("click", removeToast);
 
-    const removeTimeout = this._getSetting("notificationsRemoveTimeout", false);
+    const removeTimeout = this._getSetting("notificationsRemoveTimeout", true);
     if (removeTimeout) {
       const durationSec = this._getSetting("notificationsDuration", 5);
       setTimeout(removeToast, durationSec * 1000);

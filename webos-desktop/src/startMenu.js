@@ -370,7 +370,7 @@ function getGridItems() {
     { app: "settingsApp", title: "Settings", icon: "fas fa-cog" },
     { app: "notepad", title: "Notepad", icon: "fas fa-edit" },
     { app: "newsApp", title: "What's New", icon: "fas fa-newspaper" },
-    { app: "music", title: "Music", icon: "fas fa-music" },
+    { app: "shittify", title: "Music", icon: "fas fa-music" },
     { app: "appCreatorApp", title: "AppCreator", icon: "fas fa-cubes" },
     { app: "calculatorApp", title: "Calculator", icon: "fas fa-calculator" },
     { app: "taskManagerApp", title: "Task Manager", icon: "fas fa-list-check" },
@@ -400,7 +400,6 @@ function showStartItemEditor(appLauncher, currentItem) {
       .sort((a, b) => a.title.localeCompare(b.title));
 
     const tApps = performance.now();
-    console.log(`showStartItemEditor: apps list mapped and sorted in ${(tApps - t0).toFixed(2)}ms`);
 
     const selectOptions = apps
       .map(
@@ -475,7 +474,6 @@ function showStartItemEditor(appLauncher, currentItem) {
     `;
 
     const tHtml = performance.now();
-    console.log(`showStartItemEditor: overlay HTML constructed in ${(tHtml - tApps).toFixed(2)}ms`);
 
     const selectEl = overlay.querySelector("#editor-app-select");
     const customSelect = overlay.querySelector("#custom-app-select");
@@ -568,12 +566,10 @@ function showStartItemEditor(appLauncher, currentItem) {
     });
 
     const tOptions = performance.now();
-    console.log(`showStartItemEditor: option elements pre-rendered in ${(tOptions - tHtml).toFixed(2)}ms`);
 
     document.body.appendChild(overlay);
 
     const tMount = performance.now();
-    console.log(`showStartItemEditor: overlay mounted in ${(tMount - tOptions).toFixed(2)}ms`);
 
     const updateSelectedStyles = () => {
       optionItems.forEach((item) => {
@@ -761,8 +757,6 @@ function showStartItemEditor(appLauncher, currentItem) {
         confirmBtn.click();
       }
     };
-
-    console.log(`showStartItemEditor: total spawn time ${(performance.now() - t0).toFixed(2)}ms`);
   });
 }
 

@@ -4,6 +4,7 @@ import { BaseApp } from "./core/BaseApp.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
 import { CDN_BASES } from "./shared/assetResolver.js";
 import { CDN_CONFIG } from "./shared/cdnConfig.js";
+import { PersistenceTypes } from "./runtime/AppSchema.js";
 
 const ROMS_DIR = ["ROMs"];
 const DESKTOP_DIR = ["Desktop"];
@@ -90,97 +91,193 @@ export class EmulatorApp extends BaseApp {
     super(services);
     this.windowHelper = new WindowHelper(this.wm);
     this._explorerApp = services.explorerApp;
+    this._declarativeApp = null;
   }
 
-  open() {
-    if (this._isSingletonOpen("emulator-win")) return;
-
+  getDeclarativeSchema(opts) {
     const allExtensions = new Set();
     Object.values(supportedExtensions).forEach((exts) => {
       exts.forEach((ext) => allExtensions.add(ext));
     });
     const extList = Array.from(allExtensions).sort().join(", ");
 
-    const content = `
-      <div class="window-content" style="width:100%;height:100%;background:#1a1a2e;color:#eee;font-family:monospace;overflow-y:auto;overflow-x:hidden;">
-        <div class="emulator-header" style="display:flex;align-items:center;gap:16px;padding:24px 20px 16px;">
-          <i class="fa-solid fa-gamepad" style="font-size:38px;color:#ff6b9d;"></i>
+    return {
+      id: "emulator-win",
+      name: "Yuki Emulator",
+      icon: "static/icons/emulator.webp",
+      windows: [
+        {
+          id: "emulator-win",
+          title: "Yuki Emulator",
+          size: ["800px", "600px"],
+          icon: "static/icons/emulator.webp",
+          ui: `
+      <link rel="stylesheet" href="styles/emulator.css">
+      <div class="emu-container">
+        <div class="emu-header">
+          <i class="fa-solid fa-gamepad emu-icon-main"></i>
           <div>
-            <div style="font-size:20px;font-weight:bold;color:#fff;">Emulator JS</div>
-            <div style="font-size:13px;color:#888;">Play classic games in your browser</div>
+            <div class="emu-title">Emulator JS</div>
+            <div class="emu-subtitle">Play classic games in your browser</div>
           </div>
         </div>
-        <div 
-          id="emulator-upload-zone"
-          class="emulator-upload-zone"
-          style="
-            border:2px dashed #ff6b9d;
-            border-radius:8px;
-            margin:16px;
-            padding:24px;
-            text-align:center;
-            cursor:pointer;
-            transition:border-color .2s,background .2s;
-            background:transparent;
-          ">
-          <i class="fa-solid fa-gamepad" style="font-size:32px;color:#ff6b9d;margin-bottom:12px;display:block;"></i>
-          <div style="font-size:14px;color:#bbb;margin-bottom:8px;">Drop a ROM or click to browse</div>
-          <div style="font-size:11px;color:#666;margin-bottom:12px;">Supports multiple files and .zip archives</div>
-          <div style="font-size:10px;color:#555;line-height:1.6;max-width:600px;margin:0 auto;">
-            <strong style="color:#888;">Supported formats:</strong><br>
+        
+        <div id="emulator-upload-zone" class="emu-upload-zone">
+          <i class="fa-solid fa-file-arrow-up emu-upload-icon"></i>
+          <div class="emu-upload-text">Drop a ROM or click to browse</div>
+          <div class="emu-upload-subtext">Supports multiple files and .zip archives</div>
+          <div class="emu-upload-formats">
+            <strong style="color:var(--text-primary, #888);">Supported formats:</strong><br>
             ${extList}
           </div>
           <input type="file" id="emulator-file-input" accept="${Array.from(allExtensions).join(",")}, .zip" multiple style="display:none;">
         </div>
-        <div style="padding:16px 16px 8px;font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px;">My ROMs</div>
-        <div id="emulator-user-roms" style="padding:0 16px 16px;display:flex;flex-wrap:wrap;gap:12px;"></div>
-      </div>`;
-
-    const win = this.windowHelper.createAndMountWindow("emulator-win", "Yuki Emulator", content, "800px", "600px", {
-      icon: "static/icons/emulator.webp"
-    });
-
-    this._setupUploadZone(win);
-    this._loadUserRoms(win);
+        
+        <div class="emu-section-title">My ROMs</div>
+        <div id="emulator-user-roms" class="emu-file-grid"></div>
+      </div>`,
+          events: {
+            "#emulator-upload-zone": {
+              click: {
+                type: "custom:uploadZoneClick",
+                stopPropagation: true
+              },
+              dragover: {
+                type: "custom:uploadZoneDragover",
+                stopPropagation: false
+              },
+              dragleave: {
+                type: "custom:uploadZoneDragleave",
+                stopPropagation: false
+              },
+              drop: {
+                type: "custom:uploadZoneDrop",
+                stopPropagation: false
+              }
+            },
+            "#emulator-file-input": {
+              change: {
+                type: "custom:fileInputChange",
+                stopPropagation: false
+              }
+            }
+          }
+        }
+      ],
+      state: {
+        initial: {
+          userRoms: []
+        },
+        persistence: PersistenceTypes.NONE
+      },
+      actions: {
+        uploadZoneClick: (payload, event, element, state) => {
+          const input = document.getElementById("emulator-file-input");
+          if (input) input.click();
+        },
+        uploadZoneDragover: (payload, event, element, state) => {
+          event.preventDefault();
+          element.style.borderColor = "var(--brand-hover)";
+          element.style.background = "var(--glass-hover)";
+        },
+        uploadZoneDragleave: (payload, event, element, state) => {
+          element.style.borderColor = "";
+          element.style.background = "";
+        },
+        uploadZoneDrop: async (payload, event, element, state) => {
+          event.preventDefault();
+          element.style.borderColor = "";
+          element.style.background = "";
+          const files = Array.from(event.dataTransfer.files);
+          if (files.length > 0) await this._handleUploadedFiles(files, element);
+        },
+        fileInputChange: async (payload, event, element, state) => {
+          const files = Array.from(element.files);
+          if (files.length > 0) await this._handleUploadedFiles(files, document.getElementById("emulator-upload-zone"));
+          element.value = "";
+        },
+        loadUserRoms: async (payload, event, element, state) => {
+          await this.loadUserRoms();
+        }
+      },
+      onMount: "loadUserRoms"
+    };
   }
 
-  _setupUploadZone(win) {
-    const zone = win.querySelector("#emulator-upload-zone");
-    const input = win.querySelector("#emulator-file-input");
+  async loadUserRoms() {
+    const container = document.getElementById("emulator-user-roms");
+    if (!container) return;
 
-    zone.addEventListener("click", () => input.click());
+    try {
+      await this.fs.fsReady;
+      const dir = this.fs.resolveUserPath(ROMS_DIR);
+      await this.fs.p("mkdir", dir, { recursive: true }).catch(() => {});
+      const files = await this.fs.pRead("readdir", dir).catch(() => []);
 
-    zone.addEventListener("dragover", (e) => {
-      e.preventDefault();
-      zone.style.borderColor = "#ff6b9d";
-      zone.style.background = "rgba(255,107,157,0.07)";
-    });
+      const allExts = new Set();
+      Object.values(supportedExtensions).forEach((exts) => {
+        exts.forEach((ext) => allExts.add(ext));
+      });
+      allExts.add(".zip");
 
-    zone.addEventListener("dragleave", () => {
-      zone.style.borderColor = "#ff6b9d";
-      zone.style.background = "transparent";
-    });
+      const romFiles = files.filter(
+        (f) => !f.startsWith(".") && Array.from(allExts).some((ext) => f.toLowerCase().endsWith(ext))
+      );
 
-    zone.addEventListener("drop", (e) => {
-      e.preventDefault();
-      zone.style.borderColor = "#ff6b9d";
-      zone.style.background = "transparent";
-      const files = Array.from(e.dataTransfer.files);
-      if (files.length > 0) this._handleUploadedFiles(files, win);
-    });
+      if (romFiles.length === 0) {
+        container.innerHTML = `<div style="font-size:12px;color:var(--text-secondary, #555);padding:4px 0;">No ROMs uploaded yet.</div>`;
+        return;
+      }
 
-    input.addEventListener("change", () => {
-      const files = Array.from(input.files);
-      if (files.length > 0) this._handleUploadedFiles(files, win);
-      input.value = "";
-    });
+      container.innerHTML = romFiles
+        .map((f) => {
+          const displayName = f
+            .replace(/\.[^.]+$/, "")
+            .replace(/[-_]/g, " ")
+            .replace(/\b\w/g, (c) => c.toUpperCase());
+
+          const ext = f.toLowerCase().split(".").pop();
+          const system = this._detectSystem(ext);
+          const icon = system ? "fa-gamepad" : "fa-file-zipper";
+
+          return `
+            <div class="emu-file-card" data-user-file="${f}">
+              <i class="fa-solid ${icon} emu-file-icon"></i>
+              <div class="emu-file-info">
+                <div class="emu-file-name">${displayName}</div>
+                <div class="emu-file-type">${ext.toUpperCase()}${system ? ` • ${system}` : ""}</div>
+              </div>
+              <button class="emu-delete-btn" data-file="${f}" title="Delete">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+          `;
+        })
+        .join("");
+
+      container.querySelectorAll(".emu-file-card").forEach((card) => {
+        card.addEventListener("click", (e) => {
+          const target = e.target;
+          if (target.closest(".emu-delete-btn")) return;
+          const fileName = card.dataset.userFile;
+          this.launchROM(fileName, ROMS_DIR);
+        });
+      });
+
+      container.querySelectorAll(".emu-delete-btn").forEach((btn) => {
+        btn.addEventListener("click", async (e) => {
+          e.stopPropagation();
+          const fileName = btn.dataset.file;
+          await this.fs.deleteBinaryFile(ROMS_DIR, fileName);
+          this.loadUserRoms();
+        });
+      });
+    } catch {}
   }
 
-  async _handleUploadedFiles(files, win) {
-    const zone = win.querySelector("#emulator-upload-zone");
+  async _handleUploadedFiles(files, zone) {
     const originalHTML = zone.innerHTML;
-
-    zone.innerHTML = `<i class="fa-solid fa-spinner fa-spin" style="font-size:24px;color:#ff6b9d;margin-bottom:12px;display:block;"></i><div style="font-size:13px;color:#bbb;">Saving ${files.length} file(s)…</div>`;
+    zone.innerHTML = `<i class="fa-solid fa-spinner fa-spin emu-upload-icon"></i><div class="emu-upload-text">Saving ${files.length} file(s)…</div>`;
 
     try {
       for (const file of files) {
@@ -203,102 +300,23 @@ export class EmulatorApp extends BaseApp {
       }
 
       this.wm.sendNotify(`Saved ${files.length} file(s) to ROMs/ directory.`);
-      zone.innerHTML = `<i class="fa-solid fa-circle-check" style="font-size:24px;color:#4caf50;margin-bottom:12px;display:block;"></i><div style="font-size:13px;color:#bbb;">Saved ${files.length} file(s)!</div>`;
-      await this._loadUserRoms(win);
+      zone.innerHTML = `<i class="fa-solid fa-circle-check" style="font-size:32px;color:var(--brand, #4caf50);margin-bottom:12px;display:block;"></i><div class="emu-upload-text">Saved ${files.length} file(s)!</div>`;
 
       setTimeout(() => {
         zone.innerHTML = originalHTML;
-        this._setupUploadZone(win);
+        this.loadUserRoms();
       }, 1500);
     } catch (err) {
-      zone.innerHTML = `<i class="fa-solid fa-triangle-exclamation" style="font-size:24px;color:#ff6b6b;margin-bottom:12px;display:block;"></i><div style="font-size:13px;color:#ff6b6b;">${err.message}</div>`;
+      zone.innerHTML = `<i class="fa-solid fa-triangle-exclamation" style="font-size:32px;color:var(--error, #ff6b6b);margin-bottom:12px;display:block;"></i><div class="emu-upload-text" style="color:var(--error, #ff6b6b);">${err.message}</div>`;
       setTimeout(() => {
         zone.innerHTML = originalHTML;
-        this._setupUploadZone(win);
       }, 2500);
     }
   }
 
-  async _loadUserRoms(win) {
-    const container = win.querySelector("#emulator-user-roms");
-    if (!container) return;
-
-    try {
-      await this.fs.fsReady;
-      const dir = this.fs.resolveUserPath(ROMS_DIR);
-      await this.fs.p("mkdir", dir, { recursive: true }).catch(() => {});
-      const files = await this.fs.pRead("readdir", dir).catch(() => []);
-
-      const allExts = new Set();
-      Object.values(supportedExtensions).forEach((exts) => {
-        exts.forEach((ext) => allExts.add(ext));
-      });
-      allExts.add(".zip");
-
-      const romFiles = files.filter(
-        (f) => !f.startsWith(".") && Array.from(allExts).some((ext) => f.toLowerCase().endsWith(ext))
-      );
-
-      if (romFiles.length === 0) {
-        container.innerHTML = `<div style="font-size:12px;color:#555;padding:4px 0;">No ROMs uploaded yet.</div>`;
-        return;
-      }
-
-      container.innerHTML = romFiles
-        .map((f) => {
-          const displayName = f
-            .replace(/\.[^.]+$/, "")
-            .replace(/[-_]/g, " ")
-            .replace(/\b\w/g, (c) => c.toUpperCase());
-
-          const ext = f.toLowerCase().split(".").pop();
-          const system = this._detectSystem(ext);
-          const icon = system ? "fa-gamepad" : "fa-file-zipper";
-
-          return `
-        <div class="emulator-rom-card" data-user-file="${f}" style="
-          background:#252540;border-radius:10px;padding:14px 16px;
-          display:flex;align-items:center;gap:12px;cursor:pointer;
-          transition:transform .15s,box-shadow .15s;position:relative;min-width:200px;
-        ">
-          <i class="fa-solid ${icon}" style="font-size:22px;color:#ff6b9d;"></i>
-          <div style="flex:1;overflow:hidden;">
-            <div style="font-size:13px;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${displayName}</div>
-            <div style="font-size:10px;color:#666;margin-top:2px;">${ext.toUpperCase()}${system ? ` • ${system}` : ""}</div>
-          </div>
-          <button class="emulator-delete-btn" data-file="${f}" title="Delete" style="
-            background:none;border:none;color:#666;cursor:pointer;font-size:13px;padding:2px 4px;line-height:1;
-          "><i class="fa-solid fa-xmark"></i></button>
-        </div>
-      `;
-        })
-        .join("");
-
-      container.querySelectorAll(".emulator-rom-card").forEach((card) => {
-        card.addEventListener("click", (e) => {
-          if (e.target.closest(".emulator-delete-btn")) return;
-          const fileName = card.dataset.userFile;
-          this.launchROM(fileName, ROMS_DIR);
-        });
-        card.addEventListener("mouseenter", () => {
-          card.style.transform = "translateY(-2px)";
-          card.style.boxShadow = "0 4px 12px rgba(255,107,157,0.2)";
-        });
-        card.addEventListener("mouseleave", () => {
-          card.style.transform = "";
-          card.style.boxShadow = "";
-        });
-      });
-
-      container.querySelectorAll(".emulator-delete-btn").forEach((btn) => {
-        btn.addEventListener("click", async (e) => {
-          e.stopPropagation();
-          const fileName = btn.dataset.file;
-          await this.fs.deleteBinaryFile(ROMS_DIR, fileName);
-          await this._loadUserRoms(win);
-        });
-      });
-    } catch {}
+  open() {
+    if (this._isSingletonOpen("emulator-win")) return;
+    return super.open();
   }
 
   _detectSystem(ext) {
@@ -378,11 +396,11 @@ export class EmulatorApp extends BaseApp {
       <span>${displayName}</span>
       ${wm.getWindowControls()}
     </div>
-    <div class="window-content" style="width:100%;height:calc(100% - 30px);background:#000;position:relative;overflow:hidden;">
+    <div class="window-content" style="width:100%;height:calc(100% - 30px);background:#141424;position:relative;overflow:hidden;">
       <div id="${winId}-inner" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;">
-        <i class="fa-solid fa-gamepad fa-spin" style="font-size:32px;color:#ff6b9d;"></i>
-        <div style="font-size:15px;color:#ff6b9d;">Loading <strong style="color:#fff;">${displayName}</strong>…</div>
-        <div id="${winId}-log" style="font-size:11px;color:#888;max-width:400px;text-align:center;"></div>
+        <i class="fa-solid fa-gamepad fa-spin" style="font-size:32px;color:var(--brand, #ff6b9d);"></i>
+        <div style="font-size:15px;color:var(--brand, #ff6b9d);">Loading <strong style="color:var(--text-primary, #fff);">${displayName}</strong>…</div>
+        <div id="${winId}-log" style="font-size:11px;color:var(--text-secondary, #888);max-width:400px;text-align:center;"></div>
       </div>
       <div id="${winId}-screen" style="width:100%;height:100%;display:none;"></div>
     </div>`;
@@ -401,8 +419,8 @@ export class EmulatorApp extends BaseApp {
       if (inner)
         inner.innerHTML = `
       <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;">
-        <i class="fa-solid fa-triangle-exclamation" style="font-size:32px;color:#ff6b6b;"></i>
-        <div style="color:#ff6b6b;font-size:14px;font-family:monospace;max-width:80%;text-align:center;">${msg}</div>
+        <i class="fa-solid fa-triangle-exclamation" style="font-size:32px;color:var(--error, #ff6b6b);"></i>
+        <div style="color:var(--error, #ff6b6b);font-size:14px;font-family:monospace;max-width:80%;text-align:center;">${msg}</div>
       </div>`;
     };
 
@@ -481,7 +499,7 @@ export class EmulatorApp extends BaseApp {
       screenDiv.style.display = "block";
 
       const iframeDoc = `<!DOCTYPE html>
-<html><head><style>*{margin:0;padding:0;box-sizing:border-box;}html,body{width:100%;height:100%;background:#000;overflow:hidden;}</style></head>
+<html><head><style>*{margin:0;padding:0;box-sizing:border-box;}html,body{width:100%;height:100%;background:#141424;overflow:hidden;}</style></head>
 <body>
 <div id="game" style="width:100%;height:100%;"></div>
 <script>

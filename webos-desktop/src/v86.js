@@ -4,6 +4,7 @@ import { BaseApp } from "./core/BaseApp.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
 import { CDN_BASES } from "./shared/assetResolver.js";
 import { resolveIconUrl } from "./assetUrl.js";
+import { PersistenceTypes } from "./runtime/AppSchema.js";
 
 const IMAGES_DIR = ["VMs"];
 
@@ -13,6 +14,143 @@ export class V86App extends BaseApp {
     this.windowHelper = new WindowHelper(this.wm);
     this._explorerApp = services.explorerApp;
     this._v86LoadPromise = null;
+  }
+
+  getDeclarativeSchema(opts) {
+    const systems = [
+      { id: "freedos", name: "FreeDOS", icon: "fa-solid fa-terminal" },
+      { id: "openbsd", name: "OpenBSD", icon: "fa-solid fa-fish" }
+    ];
+
+    return {
+      id: "v86-win",
+      name: "V86",
+      icon: resolveIconUrl("static/icons/v86.webp"),
+      windows: [
+        {
+          id: "v86-win",
+          title: "V86",
+          size: ["800px", "600px"],
+          icon: resolveIconUrl("static/icons/v86.webp"),
+          ui: `<div class="window-content" style="width:100%;height:100%;background:#1a1a2e;color:#eee;font-family:monospace;overflow-y:auto;overflow-x:hidden;">
+        <div class="v86-header" style="display:flex;align-items:center;gap:16px;padding:24px 20px 16px;">
+          <i class="fa-solid fa-microchip" style="font-size:38px;color:#7b5ea7;"></i>
+          <div>
+            <div style="font-size:20px;font-weight:bold;color:#fff;">V86 Emulator</div>
+            <div style="font-size:13px;color:#888;">Run x86 operating systems in your browser</div>
+          </div>
+        </div>
+        <div 
+          id="v86-upload-zone"
+          class="v86-upload-zone"
+          style="
+            border:2px dashed #7b5ea7;
+            border-radius:8px;
+            margin:16px;
+            padding:18px;
+            text-align:center;
+            cursor:pointer;
+            transition:border-color .2s,background .2s;
+            background:transparent;
+          ">
+          <i class="fa-solid fa-upload" style="font-size:20px;color:#7b5ea7;margin-bottom:8px;display:block;"></i>
+          <div style="font-size:13px;color:#bbb;">Drop a <strong style="color:#fff;">.iso</strong>, <strong style="color:#fff;">.img</strong>, or <strong style="color:#fff;">.bin</strong> file here</div>
+          <div style="font-size:11px;color:#666;margin-top:4px;">or click to browse</div>
+          <input type="file" id="v86-file-input" accept=".iso,.img,.bin,.state,.gz" style="display:none;">
+        </div>
+        <div style="padding:16px 16px 8px;font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px;">My Images</div>
+        <div id="v86-user-images" style="padding:0 16px 16px;display:flex;flex-wrap:wrap;gap:12px;"></div>
+        <div style="padding:0 16px 8px;font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px;">Featured Systems</div>
+        <div class="v86-system-grid" id="v86-system-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;padding:0 16px 20px;">
+          ${systems
+            .map(
+              (sys) => `
+      <div class="v86-system-card" data-system="${sys.id}" style="
+        background:#252540;border-radius:10px;padding:18px 12px;
+        display:flex;flex-direction:column;align-items:center;gap:10px;
+        cursor:pointer;transition:transform .15s,box-shadow .15s;
+      ">
+        <i class="${sys.icon}" style="font-size:28px;color:#c77dff;"></i>
+        <div style="font-size:13px;color:#fff;text-align:center;">${sys.name}</div>
+      </div>
+    `
+            )
+            .join("")}
+        </div>
+      </div>`,
+          events: {
+            "#v86-upload-zone": {
+              click: {
+                type: "custom:uploadClick",
+                stopPropagation: true
+              },
+              dragover: {
+                type: "custom:dragOver",
+                stopPropagation: false
+              },
+              dragleave: {
+                type: "custom:dragLeave",
+                stopPropagation: false
+              },
+              drop: {
+                type: "custom:dropFile",
+                stopPropagation: false
+              }
+            },
+            "#v86-file-input": {
+              change: {
+                type: "custom:fileChange",
+                stopPropagation: false
+              }
+            },
+            ".v86-system-card": {
+              click: {
+                type: "custom:launchSystem",
+                stopPropagation: true
+              }
+            }
+          }
+        }
+      ],
+      state: {
+        initial: {
+          userImages: []
+        },
+        persistence: PersistenceTypes.MEMORY
+      },
+      actions: {
+        uploadClick: (payload, event, element, state) => {
+          const input = document.getElementById("v86-file-input");
+          if (input) input.click();
+        },
+        dragOver: (payload, event, element, state) => {
+          event.preventDefault();
+          element.style.borderColor = "#c77dff";
+          element.style.background = "rgba(199,125,255,0.07)";
+        },
+        dragLeave: (payload, event, element, state) => {
+          element.style.borderColor = "#444";
+          element.style.background = "transparent";
+        },
+        dropFile: async (payload, event, element, state) => {
+          event.preventDefault();
+          element.style.borderColor = "#444";
+          element.style.background = "transparent";
+          const file = event.dataTransfer.files[0];
+          if (file) await this._handleUploadedFile(file, element);
+        },
+        fileChange: async (payload, event, element, state) => {
+          const file = element.files[0];
+          if (file) await this._handleUploadedFile(file, document.getElementById("v86-upload-zone"));
+          element.value = "";
+        },
+        launchSystem: (payload, event, element, state) => {
+          const systemId = element.dataset.system;
+          const systemName = element.querySelector("div").textContent;
+          this.launchSystem(systemId, systemName);
+        }
+      }
+    };
   }
 
   open() {
@@ -137,8 +275,7 @@ export class V86App extends BaseApp {
     });
   }
 
-  async _handleUploadedFile(file, win) {
-    const zone = win.querySelector("#v86-upload-zone");
+  async _handleUploadedFile(file, zone) {
     const originalHTML = zone.innerHTML;
 
     zone.innerHTML = `<i class="fa-solid fa-spinner fa-spin" style="font-size:20px;color:#c77dff;margin-bottom:8px;display:block;"></i><div style="font-size:13px;color:#bbb;">Saving <strong style="color:#fff;">${file.name}</strong>…</div>`;
@@ -148,14 +285,9 @@ export class V86App extends BaseApp {
       await this.fs.writeBinaryFile(IMAGES_DIR, file.name, blob, "other", resolveIconUrl("static/icons/v86.webp"));
       this.wm.sendNotify(`Saved ${file.name} at VMs/ directory.`);
       zone.innerHTML = `<i class="fa-solid fa-circle-check" style="font-size:20px;color:#4caf50;margin-bottom:8px;display:block;"></i><div style="font-size:13px;color:#bbb;">Saved!</div>`;
-      await this._loadUserImages(win);
+      await this._loadUserImages(document.querySelector("#v86-win"));
       setTimeout(() => {
         zone.innerHTML = originalHTML;
-        win.querySelector("#v86-file-input").addEventListener("change", (e) => {
-          const f = e.target.files[0];
-          if (f) this._handleUploadedFile(f, win);
-          e.target.value = "";
-        });
       }, 1500);
     } catch (err) {
       zone.innerHTML = `<i class="fa-solid fa-triangle-exclamation" style="font-size:20px;color:#ff6b6b;margin-bottom:8px;display:block;"></i><div style="font-size:13px;color:#ff6b6b;">${err.message}</div>`;

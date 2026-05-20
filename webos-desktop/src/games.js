@@ -31,8 +31,9 @@ export function setGameLauncher(launcher) {
       if (settings.startMinimized) {
         setTimeout(() => {
           const steamWin = document.getElementById("games-app-win");
-          if (steamWin && launcher && launcher.wm) {
-            launcher.wm.minimizeWindow(steamWin);
+          if (steamWin) {
+            const closeBtn = steamWin.querySelector(".close-btn");
+            if (closeBtn) closeBtn.click();
           }
         }, 500);
       }

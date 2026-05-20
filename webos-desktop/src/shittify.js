@@ -102,19 +102,18 @@ export class ShittifyApp extends BaseApp {
 
     const loadingContent = `
       <div class="window-content" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">
-        <span style="opacity:0.5;font-size:0.9em;"><i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i>Loading Shittify...</span>
+        <span style="opacity:0.5;font-size:0.9em;"><i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i>Loading Evil Spotify...</span>
       </div>
     `;
 
-    const win = this.windowHelper.createAndMountWindow(winId, "Shittify", loadingContent, "820px", "600px", {
+    const win = this.windowHelper.createAndMountWindow(winId, "Evil Spotify", loadingContent, "820px", "600px", {
       icon: SHITTIFY_ICON
     });
 
-    this.registerTray(winId, SHITTIFY_ICON, "Shittify", { showInTray: true });
-
+    this.registerTray(winId, SHITTIFY_ICON, "Evil Spotify", { showInTray: true });
     audioMixer.registerWindow(
       winId,
-      "Shittify",
+      "Evil Spotify",
       `<img src="${SHITTIFY_ICON}" style="width:14px;height:14px;border-radius:2px;object-fit:contain;vertical-align:middle;" />`
     );
     audioMixer.setChannelCommandHandler(winId, (cmd) => this.sendCommand(cmd));
@@ -147,7 +146,7 @@ export class ShittifyApp extends BaseApp {
     } catch (err) {
       const content = win.querySelector(".window-content");
       if (content) {
-        content.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;flex-direction:column;gap:12px;opacity:0.6;"><i class="fas fa-exclamation-circle" style="font-size:2em;"></i><span>Failed to load Shittify</span><span style="font-size:0.75em;opacity:0.6;">${err.message}</span></div>`;
+        content.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;flex-direction:column;gap:12px;opacity:0.6;"><i class="fas fa-exclamation-circle" style="font-size:2em;"></i><span>Failed to load Evil Spotify</span><span style="font-size:0.75em;opacity:0.6;">${err.message}</span></div>`;
       }
     }
   }

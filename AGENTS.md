@@ -388,6 +388,69 @@ Any application inheriting from `BaseApp` can access these tray operations:
 
 ---
 
+## Declarative Apps Framework
+Yuki OS supports a hybrid declarative runtime allowing applications to define their structure, windows, states, and operations in a declarative format rather than imperative code.
+
+### Schema Definition
+Applications define a declarative schema by implementing the `getDeclarativeSchema(opts)` method:
+
+```javascript
+getDeclarativeSchema(opts) {
+  return {
+    id: "my-app",
+    name: "My App",
+    icon: "fas fa-star",
+    windows: [
+      {
+        id: "my-app",
+        title: "My App",
+        size: ["400px", "300px"],
+        icon: "fas fa-star",
+        iconColor: "#4f9eff",
+        ui: "<div>App UI</div>",
+        events: {
+          "#my-button": {
+            click: {
+              type: "custom:myAction",
+              stopPropagation: true
+            }
+          }
+        }
+      }
+    ],
+    state: {
+      initial: {
+        value: 0
+      },
+      persistence: "memory"
+    },
+    actions: {
+      myAction: (payload, event, element, state) => {
+        state.value = state.value + 1;
+      }
+    },
+    onMount: "initMyApp"
+  };
+}
+```
+
+### Key Components of Declarative Architecture
+1. **StateManager** (`runtime/StateManager.js`) — Manages local application state, reacting to events and optionally persisting state values.
+2. **AppRenderer** (`runtime/AppRenderer.js`) — Parses the window configurations and mounts them dynamically into the DOM using WindowHelper.
+3. **EventBinder** (`runtime/EventBinder.js`) — Maps standard element events to designated actions.
+4. **ActionExecutor** (`runtime/ActionExecutor.js`) — Dispatches and runs actions, modifying the application state and performing system operations.
+
+---
+
+## App Registry & HybridAdapter
+The `HybridAdapter` (`runtime/HybridAdapter.js`) bridges traditional imperative `BaseApp` applications and the newer Declarative Apps runtime.
+
+### Functionality
+- **`enhanceBaseApp(BaseAppClass)`**: Wraps the class prototype's `open()` method at launch. When an application is opened, it checks for a declarative schema. If present, it creates a `DeclarativeApp` instance and intercepts rendering. If no schema is found, it transparently falls back to the original imperative `open()` method.
+- **Argument & Options Forwarding**: Translates multi-parameter legacy launch signatures (like `open(title, content, filePath)`) into structured `opts` objects so that declarative schemas can seamlessly resolve system parameters.
+
+---
+
 ## Troubleshooting
 
 **App not in start menu?** → Check gamesList.js registration and AppLauncher constructor

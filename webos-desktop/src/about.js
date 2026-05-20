@@ -1,262 +1,87 @@
 import { BaseApp } from "./core/BaseApp.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
 import { resolveGhUrl } from "./shared/assetResolver.js";
-export const YUKIOS_VERSION = "v1.3.1";
+import { PersistenceTypes } from "./runtime/AppSchema.js";
+export const YUKIOS_VERSION = "v1.3.2";
+
+const capabilities = [
+  {
+    tag: "WM",
+    title: "Windowed Multitasking",
+    desc: "Drag, resize, and layer apps like a real desktop."
+  },
+  {
+    tag: "VFS",
+    title: "Virtual Filesystem",
+    desc: "Explorer + app storage living in the browser."
+  },
+  {
+    tag: "PLAY",
+    title: "Games Library",
+    desc: "A growing catalog of ready-to-play games."
+  },
+  {
+    tag: "APPS",
+    title: "Built-in Apps",
+    desc: "Terminal, browser, editor, paint, calculator, and more."
+  },
+  {
+    tag: "RUN",
+    title: "Multi-Runtime",
+    desc: "HTML5, WASM, emulation, flash and more in one place."
+  },
+  {
+    tag: "LOOK",
+    title: "Personalization",
+    desc: "Bring your own wallpapers and tweak the vibe."
+  }
+];
+
+const privacyText = `
+  Yuki OS collects minimal usage data required for stability and analytics.
+
+  What is collected:
+  • Anonymous daily identifier derived from IP (rotates every UTC day using HMAC)
+  • Event analytics such as app launches, session duration, and feature usage
+  • Timestamps of interactions
+
+  What is NOT stored:
+  • Raw IP addresses are not permanently stored in the database
+  • No passwords, files, or personal content are collected
+
+  How data is used:
+  • To measure performance and usage trends
+  • To detect broken games or errors reported by users
+  • To improve app stability and features
+
+  Data retention:
+  • Analytics can be automatically purged by admin settings
+  • Old records can be deleted by retention rules
+
+  Third parties:
+  • Optional Discord webhook logging may be enabled for admin monitoring
+  • No selling or sharing of user data with advertisers
+  `;
+
 export class AboutApp extends BaseApp {
   constructor(services) {
     super(services);
     this.windowHelper = new WindowHelper(this.wm);
   }
 
-  open() {
-    const winId = "about-yukios";
-    if (this._isSingletonOpen(winId)) return;
-
-    const capabilities = [
-      {
-        tag: "WM",
-        title: "Windowed Multitasking",
-        desc: "Drag, resize, and layer apps like a real desktop."
-      },
-      {
-        tag: "VFS",
-        title: "Virtual Filesystem",
-        desc: "Explorer + app storage living in the browser."
-      },
-      {
-        tag: "PLAY",
-        title: "Games Library",
-        desc: "A growing catalog of ready-to-play games."
-      },
-      {
-        tag: "APPS",
-        title: "Built-in Apps",
-        desc: "Terminal, browser, editor, paint, calculator, and more."
-      },
-      {
-        tag: "RUN",
-        title: "Multi-Runtime",
-        desc: "HTML5, WASM, emulation, flash and more in one place."
-      },
-      {
-        tag: "LOOK",
-        title: "Personalization",
-        desc: "Bring your own wallpapers and tweak the vibe."
-      }
-    ];
-
-    const privacyText = `
-      Yuki OS collects minimal usage data required for stability and analytics.
-
-      What is collected:
-      • Anonymous daily identifier derived from IP (rotates every UTC day using HMAC)
-      • Event analytics such as app launches, session duration, and feature usage
-      • Timestamps of interactions
-
-      What is NOT stored:
-      • Raw IP addresses are not permanently stored in the database
-      • No passwords, files, or personal content are collected
-
-      How data is used:
-      • To measure performance and usage trends
-      • To detect broken games or errors reported by users
-      • To improve app stability and features
-
-      Data retention:
-      • Analytics can be automatically purged by admin settings
-      • Old records can be deleted by retention rules
-
-      Third parties:
-      • Optional Discord webhook logging may be enabled for admin monitoring
-      • No selling or sharing of user data with advertisers
-      `;
-
-    const content = `
-      <style>
-        #about-yukios .abx {
-          background:
-            radial-gradient(circle at 20% 0%, rgba(200, 65, 27, 0.12), transparent 55%),
-            linear-gradient(#0b0b10, #0b0b10);
-          color: rgba(255, 255, 255, 0.92);
-          height: calc(100% - 40px);
-          overflow-y: auto;
-          box-sizing: border-box;
-          font-family: "Barlow", system-ui, -apple-system, "Segoe UI", sans-serif;
-        }
-
-        #about-yukios .abx-shell {
-          padding: 18px;
-          display: grid;
-          gap: 14px;
-        }
-
-        #about-yukios .abx-top {
-          display: grid;
-          grid-template-columns: 1fr auto;
-          gap: 12px;
-          align-items: start;
-          padding: 14px;
-          border-radius: 14px;
-          border: 1px solid rgba(255,255,255,0.1);
-          background: rgba(255,255,255,0.04);
-          backdrop-filter: blur(18px);
-        }
-
-        #about-yukios .abx-mark {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          gap: 10px;
-          text-align: center;
-        }
-
-        #about-yukios .abx-badge {
-          width: 64px;
-          height: 64px;
-          border-radius: 16px;
-          display: block;
-          object-fit: cover;
-        }
-
-        #about-yukios .abx-title {
-          margin: 0;
-          font-weight: 800;
-          font-size: 1.5rem;
-        }
-
-        #about-yukios .abx-sub {
-          margin: 6px 0 0;
-          color: rgba(255,255,255,0.66);
-          font-size: 0.88rem;
-        }
-
-        #about-yukios .abx-meta {
-          display: flex;
-          flex-direction: column;
-          align-items: flex-end;
-          gap: 8px;
-        }
-
-        #about-yukios .abx-pill {
-          background: rgba(255, 255, 255, 0.08);
-          padding: 4px 10px;
-          border-radius: 999px;
-          font-size: 0.75rem;
-          font-weight: 500;
-          border: 1px solid rgba(255, 255, 255, 0.12);
-        }
-
-        #about-yukios .abx-discord-link {
-          text-decoration: none;
-          margin-top: 4px;
-        }
-
-        #about-yukios .abx-btn-discord {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          padding: 6px 14px;
-          font-size: 0.8rem;
-          font-weight: 600;
-          color: #fff;
-          background: #5865f2;
-          border: 1px solid rgba(88, 101, 242, 0.5);
-          border-radius: 999px;
-          cursor: pointer;
-          transition: background 0.15s ease, transform 0.1s ease;
-        }
-
-        #about-yukios .abx-btn-discord:hover {
-          background: #4752c4;
-        }
-
-        #about-yukios .abx-btn-discord:active {
-          transform: scale(0.97);
-        }
-
-        #about-yukios .abx-grid {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 14px;
-        }
-
-        #about-yukios .abx-panel {
-          border-radius: 14px;
-          border: 1px solid rgba(255,255,255,0.1);
-          background: rgba(255,255,255,0.04);
-          backdrop-filter: blur(18px);
-          overflow: hidden;
-        }
-
-        #about-yukios .abx-panel-h {
-          display: flex;
-          justify-content: space-between;
-          padding: 12px 14px;
-          border-bottom: 1px solid rgba(255,255,255,0.08);
-          background: rgba(0,0,0,0.18);
-          font-weight: 700;
-        }
-
-        #about-yukios .abx-panel-b {
-          padding: 12px 14px;
-        }
-
-        #about-yukios .abx-caps {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 10px;
-        }
-
-        #about-yukios .abx-cap {
-          border-radius: 12px;
-          padding: 10px;
-          border: 1px solid rgba(255,255,255,0.1);
-          background: rgba(0,0,0,0.22);
-        }
-
-        #about-yukios .abx-cap-tag {
-          font-size: 0.68rem;
-          text-transform: uppercase;
-          opacity: 0.7;
-        }
-
-        #about-yukios .abx-cap-title {
-          font-weight: 700;
-          font-size: 0.92rem;
-        }
-
-        #about-yukios .abx-cap-desc {
-          font-size: 0.82rem;
-          color: rgba(255,255,255,0.64);
-        }
-
-        #about-yukios .abx-legal {
-          font-size: 0.84rem;
-          color: rgba(255,255,255,0.75);
-          white-space: pre-wrap;
-          line-height: 1.6;
-        }
-
-        #about-yukios .abx-foot {
-          display: flex;
-          justify-content: space-between;
-          padding: 12px 14px;
-          border-radius: 14px;
-          border: 1px solid rgba(255,255,255,0.1);
-          background: rgba(255,255,255,0.04);
-        }
-
-        #about-yukios .abx-link {
-          text-decoration: none;
-          font-size: 0.72rem;
-          padding: 0.45rem 0.8rem;
-          border-radius: 999px;
-          border: 1px solid rgba(255,255,255,0.16);
-          color: rgba(255,255,255,0.92);
-        }
-      </style>
-
+  getDeclarativeSchema(opts) {
+    return {
+      id: "about-yukios",
+      name: "About Yuki OS",
+      icon: "fa fa-circle-info",
+      windows: [
+        {
+          id: "about-yukios",
+          title: "About Yuki OS",
+          size: ["720px", "680px"],
+          icon: "fa fa-circle-info",
+          ui: `
+     
       <div class="abx">
         <div class="abx-shell">
 
@@ -316,10 +141,18 @@ export class AboutApp extends BaseApp {
 
         </div>
       </div>
-    `;
+    `
+        }
+      ],
+      state: {
+        initial: {},
+        persistence: PersistenceTypes.NONE
+      },
+      onMount: "init"
+    };
+  }
 
-    this.windowHelper.createAndMountWindow(winId, "About Yuki OS", content, "720px", "680px", {
-      icon: "fa fa-circle-info"
-    });
+  open() {
+    if (this._isSingletonOpen("about-yukios")) return;
   }
 }

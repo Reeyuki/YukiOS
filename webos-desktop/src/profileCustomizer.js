@@ -4,6 +4,7 @@ import { refreshSteamUI } from "./games.js";
 import { customAlert } from "./shared/dialogs.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
 import { resolveGhUrl, resolveIconUrl } from "./shared/assetResolver.js";
+import { PersistenceTypes } from "./runtime/AppSchema.js";
 
 export const STORAGE_KEYS = {
   username: "yukiOS_username",
@@ -28,49 +29,27 @@ export class ProfileCustomizerApp extends BaseApp {
     this.windowHelper = new WindowHelper(this.wm);
     this.settingsApp = null;
     this._setupEventListener();
+    this._declarativeApp = null;
   }
 
-  _setupEventListener() {
-    this._services.eventBus.on(BusEvents.SESSION_INITIALIZED, (session) => {
-      this.updateProfileState(session.name, session.avatar);
-    });
-  }
-
-  updateProfileState(username, profilePic) {
-    localStorage.setItem(STORAGE_KEYS.username, username);
-    localStorage.setItem(STORAGE_KEYS.profilePicture, profilePic);
-
-    if (window._settings) {
-      window._settings.username = username;
-    }
-
-    if (this.settingsApp) {
-      this.settingsApp.updateUsername?.(username);
-    }
-
-    const startUserSpan = document.querySelector(".start-user span");
-    if (startUserSpan) startUserSpan.textContent = username;
-
-    const startUserImg = document.querySelector(".start-user img");
-    if (startUserImg) startUserImg.src = profilePic;
-
-    refreshSteamUI();
-  }
-
-  setSettingsApp(settingsApp) {
-    this.settingsApp = settingsApp;
-  }
-
-  open() {
-    const winId = "profile-customizer";
-    if (this._isSingletonOpen(winId)) return;
-
+  getDeclarativeSchema(opts) {
     const currentUsername = localStorage.getItem(STORAGE_KEYS.username) || "Reeyuki";
     const currentProfilePic =
       localStorage.getItem(STORAGE_KEYS.profilePicture) || resolveIconUrl("static/icons/guest.webp");
 
-    const content = `
-      <div class="profile-customizer-body" style="padding: 12px; display: flex; flex-direction: column; gap: 12px; height: calc(100% - 32px); box-sizing: border-box;">
+    return {
+      id: "profile-customizer",
+      name: "Customize Profile",
+      icon: "fas fa-user-circle",
+      windows: [
+        {
+          id: "profile-customizer",
+          title: "Customize Profile",
+          size: ["400px", "520px"],
+          icon: "fas fa-user-circle",
+          iconColor: "#4f9eff",
+          style: { left: "250px", top: "100px" },
+          ui: `<div class="profile-customizer-body" style="padding: 12px; display: flex; flex-direction: column; gap: 12px; height: calc(100% - 32px); box-sizing: border-box;">
         
         <div class="profile-preview" style="display: flex; align-items: center; gap: 10px; padding: 10px; background: rgba(79, 158, 255, 0.08); border-radius: 8px; border: 1px solid rgba(79, 158, 255, 0.15);">
           <div class="profile-preview-img" style="width: 42px; height: 42px; border-radius: 50%; overflow: hidden; border: 2px solid var(--brand); flex-shrink: 0;">
@@ -122,16 +101,115 @@ export class ProfileCustomizerApp extends BaseApp {
         </div>
 
         <div id="profile-status" style="text-align: center; font-size: 11px; color: #5ab941; opacity: 0; transition: opacity 0.3s; height: 14px; margin-top: -4px;">Profile updated!</div>
-      </div>
-    `;
+      </div>`,
+          events: {
+            "#profile-username-input": {
+              input: {
+                type: "custom:updatePreviewName",
+                stopPropagation: false
+              }
+            },
+            "#profile-upload-btn": {
+              click: {
+                type: "custom:uploadImage",
+                stopPropagation: true
+              }
+            },
+            ".avatar-option": {
+              click: {
+                type: "custom:selectAvatar",
+                stopPropagation: true
+              }
+            },
+            "#profile-save-btn": {
+              click: {
+                type: "custom:saveProfile",
+                stopPropagation: true
+              }
+            },
+            "#profile-reset-btn": {
+              click: {
+                type: "custom:resetProfile",
+                stopPropagation: true
+              }
+            }
+          }
+        }
+      ],
+      state: {
+        initial: {
+          username: currentUsername,
+          profilePicture: currentProfilePic,
+          selectedAvatar: currentProfilePic,
+          customImageDataUrl: null
+        },
+        persistence: PersistenceTypes.LOCAL_STORAGE
+      },
+      actions: {
+        initProfileCustomizer: (payload, event, element, state) => {
+          this.initProfileCustomizer(payload, event, element, state);
+        },
+        updatePreviewName: (payload, event, element, state) => {
+          console.log("Update preview name");
+        },
+        uploadImage: (payload, event, element, state) => {
+          console.log("Upload image clicked");
+        },
+        selectAvatar: (payload, event, element, state) => {
+          console.log("Select avatar clicked");
+        },
+        saveProfile: (payload, event, element, state) => {
+          console.log("Save profile clicked");
+        },
+        resetProfile: (payload, event, element, state) => {
+          console.log("Reset profile clicked");
+        }
+      },
+      onMount: "initProfileCustomizer"
+    };
+  }
 
-    const win = this.windowHelper.createAndMountWindow(winId, "Customize Profile", content, "400px", "520px", {
-      icon: "fas fa-user-circle",
-      iconColor: "#4f9eff",
-      style: { left: "250px", top: "100px" }
+  initProfileCustomizer(payload, event, element, state) {
+    const currentUsername = localStorage.getItem(STORAGE_KEYS.username) || "Reeyuki";
+    const currentProfilePic =
+      localStorage.getItem(STORAGE_KEYS.profilePicture) || resolveIconUrl("static/icons/guest.webp");
+    this._bindEvents(element, currentUsername, currentProfilePic);
+  }
+
+  open() {
+    if (this._isSingletonOpen("profile-customizer")) return;
+    return super.open();
+  }
+
+  _setupEventListener() {
+    this._services.eventBus.on(BusEvents.SESSION_INITIALIZED, (session) => {
+      this.updateProfileState(session.name, session.avatar);
     });
+  }
 
-    this._bindEvents(win, currentUsername, currentProfilePic);
+  updateProfileState(username, profilePic) {
+    localStorage.setItem(STORAGE_KEYS.username, username);
+    localStorage.setItem(STORAGE_KEYS.profilePicture, profilePic);
+
+    if (window._settings) {
+      window._settings.username = username;
+    }
+
+    if (this.settingsApp) {
+      this.settingsApp.updateUsername?.(username);
+    }
+
+    const startUserSpan = document.querySelector(".start-user span");
+    if (startUserSpan) startUserSpan.textContent = username;
+
+    const startUserImg = document.querySelector(".start-user img");
+    if (startUserImg) startUserImg.src = profilePic;
+
+    refreshSteamUI();
+  }
+
+  setSettingsApp(settingsApp) {
+    this.settingsApp = settingsApp;
   }
 
   _bindEvents(win, originalUsername, originalProfilePic) {

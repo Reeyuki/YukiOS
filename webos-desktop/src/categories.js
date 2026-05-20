@@ -45,7 +45,7 @@ export class CategoriesApp {
       return;
     }
 
-    const winTitle = focusCollection || "Games";
+    const winTitle = "Steam";
     const win = wm.createWindow(STEAM_WIN_ID, winTitle);
     win.classList.add("window-root");
     win.style.width = "90%";

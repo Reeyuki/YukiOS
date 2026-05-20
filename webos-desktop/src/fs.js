@@ -202,7 +202,6 @@ export const defaultStorage = {
           }
         }
       },
-      Music: {},
       Videos: {}
     }
   }

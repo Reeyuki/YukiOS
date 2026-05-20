@@ -1,6 +1,7 @@
 import { decodeDataURLContent } from "./fileDisplay.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
 import { BaseApp } from "./core/BaseApp.js";
+import { PersistenceTypes } from "./runtime/AppSchema.js";
 
 export class MarkdownApp extends BaseApp {
   constructor(services) {
@@ -46,37 +47,62 @@ export class MarkdownApp extends BaseApp {
     this.cssLoaded = true;
   }
 
-  async open(title = "README.md", content = "", filePath = null) {
-    try {
-      await this.loadMarked();
-      this.loadMarkdownCSS();
-    } catch (error) {
-      this.wm.sendNotify("Markdown renderer unavailable.");
-      return;
-    }
+  getDeclarativeSchema(opts) {
+    const title = opts.title || "README.md";
+    const content = opts.content || "";
+    const filePath = opts.filePath || null;
 
-    const winId = `markdown-${title.replace(/[^a-zA-Z0-9]/g, "")}`;
-
-    if (document.getElementById(winId)) {
-      this.wm.bringToFront(document.getElementById(winId));
-      return;
-    }
-
-    const decodedContent = decodeDataURLContent(content);
-    const renderedContent = this.marked.parse(decodedContent);
-
-    const windowContent = `
-      <div class="window-content markdown-container">
-        <article class="markdown-body">
-          ${renderedContent}
-        </article>
-      </div>
-    `;
-
-    const win = this.windowHelper.createAndMountWindow(winId, title, windowContent, "750px", "550px", {
+    return {
+      id: `markdown-${title.replace(/[^a-zA-Z0-9]/g, "")}`,
+      name: "Markdown",
       icon: "fab fa-markdown",
-      iconColor: "#519aba"
-    });
+      windows: [
+        {
+          id: `markdown-${title.replace(/[^a-zA-Z0-9]/g, "")}`,
+          title: title,
+          size: ["750px", "550px"],
+          icon: "fab fa-markdown",
+          iconColor: "#519aba",
+          ui: `<div class="window-content markdown-container">
+        <article class="markdown-body" id="markdown-content"></article>
+      </div>`,
+          events: {}
+        }
+      ],
+      state: {
+        initial: {
+          content: content,
+          title: title,
+          filePath: filePath
+        },
+        persistence: PersistenceTypes.NONE
+      },
+      actions: {
+        init: async (payload, event, element, state) => {
+          try {
+            await this.loadMarked();
+            this.loadMarkdownCSS();
+          } catch (error) {
+            this.wm.sendNotify("Markdown renderer unavailable.");
+            return;
+          }
+
+          const decodedContent = decodeDataURLContent(state.content);
+          const renderedContent = this.marked.parse(decodedContent);
+          const contentEl = document.getElementById("markdown-content");
+          if (contentEl) {
+            contentEl.innerHTML = renderedContent;
+          }
+        }
+      },
+      onMount: "init"
+    };
+  }
+
+  async open(title = "README.md", content = "", filePath = null) {
+    const safeTitle = title && typeof title === "string" ? title : "README.md";
+    if (this._isSingletonOpen(`markdown-${safeTitle.replace(/[^a-zA-Z0-9]/g, "")}`)) return;
+    return super.open({ title: safeTitle, content, filePath });
   }
 
   loadContent(fileName, content, filePath) {

@@ -4,6 +4,7 @@ import { BaseApp } from "./core/BaseApp.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
 import { CDN_BASES } from "./shared/assetResolver.js";
 import { CDN_CONFIG, getLibraryUrl } from "./shared/cdnConfig.js";
+import { PersistenceTypes } from "./runtime/AppSchema.js";
 
 const FLASH_DIR = ["Flash"];
 const DESKTOP_DIR = ["Desktop"];
@@ -13,88 +14,170 @@ export class RuffleApp extends BaseApp {
     super(services);
     this.windowHelper = new WindowHelper(this.wm);
     this._ruffleLoadPromise = null;
+    this._declarativeApp = null;
   }
 
-  open() {
-    if (this._isSingletonOpen("ruffle-win")) return;
-
-    this._loadRuffleScript();
-
-    const content = `
-      <div class="window-content" style="width:100%;height:100%;background:#1a1a2e;color:#eee;font-family:monospace;overflow-y:auto;overflow-x:hidden;">
-        <div style="display:flex;align-items:center;gap:16px;padding:24px 20px 16px;">
-          <i class="fa-solid fa-film" style="font-size:38px;color:#ff6b9d;"></i>
+  getDeclarativeSchema(opts) {
+    return {
+      id: "ruffle-win",
+      name: "Ruffle",
+      icon: "static/icons/ruffle.webp",
+      windows: [
+        {
+          id: "ruffle-win",
+          title: "Ruffle",
+          size: ["800px", "600px"],
+          icon: "static/icons/ruffle.webp",
+          ui: `
+      <link rel="stylesheet" href="styles/ruffle.css">
+      <div class="ruf-container">
+        <div class="ruf-header">
+          <i class="fa-solid fa-film ruf-icon-main"></i>
           <div>
-            <div style="font-size:20px;font-weight:bold;color:#fff;">Ruffle</div>
-            <div style="font-size:13px;color:#888;">Flash emulator powered by Ruffle</div>
+            <div class="ruf-title">Ruffle</div>
+            <div class="ruf-subtitle">Flash emulator powered by Ruffle</div>
           </div>
         </div>
-        <div
-          id="ruffle-upload-zone"
-          style="
-            border:2px dashed #ff6b9d;
-            border-radius:8px;
-            margin:16px;
-            padding:24px;
-            text-align:center;
-            cursor:pointer;
-            transition:border-color .2s,background .2s;
-            background:transparent;
-          ">
-          <i class="fa-solid fa-film" style="font-size:32px;color:#ff6b9d;margin-bottom:12px;display:block;"></i>
-          <div style="font-size:14px;color:#bbb;margin-bottom:8px;">Drop a SWF file or click to browse</div>
-          <div style="font-size:11px;color:#666;">Supported format: .swf</div>
+        
+        <div id="ruffle-upload-zone" class="ruf-upload-zone">
+          <i class="fa-solid fa-file-arrow-up ruf-upload-icon"></i>
+          <div class="ruf-upload-text">Drop a SWF file or click to browse</div>
+          <div class="ruf-upload-subtext">Supported format: .swf</div>
           <input type="file" id="ruffle-file-input" accept=".swf" multiple style="display:none;">
         </div>
-        <div style="padding:16px 16px 8px;font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px;">My Flash Files</div>
-        <div id="ruffle-user-files" style="padding:0 16px 16px;display:flex;flex-wrap:wrap;gap:12px;"></div>
-      </div>`;
-
-    const win = this.windowHelper.createAndMountWindow("ruffle-win", "Ruffle", content, "800px", "600px", {
-      icon: "static/icons/ruffle.webp"
-    });
-
-    this._setupUploadZone(win);
-    this._loadUserFiles(win);
+        
+        <div class="ruf-section-title">My Flash Files</div>
+        <div id="ruffle-user-files" class="ruf-file-grid"></div>
+      </div>`,
+          events: {
+            "#ruffle-upload-zone": {
+              click: {
+                type: "custom:uploadZoneClick",
+                stopPropagation: true
+              },
+              dragover: {
+                type: "custom:uploadZoneDragover",
+                stopPropagation: false
+              },
+              dragleave: {
+                type: "custom:uploadZoneDragleave",
+                stopPropagation: false
+              },
+              drop: {
+                type: "custom:uploadZoneDrop",
+                stopPropagation: false
+              }
+            },
+            "#ruffle-file-input": {
+              change: {
+                type: "custom:fileInputChange",
+                stopPropagation: false
+              }
+            }
+          }
+        }
+      ],
+      state: {
+        initial: {
+          userFiles: []
+        },
+        persistence: PersistenceTypes.NONE
+      },
+      actions: {
+        uploadZoneClick: (payload, event, element, state) => {
+          const input = document.getElementById("ruffle-file-input");
+          if (input) input.click();
+        },
+        uploadZoneDragover: (payload, event, element, state) => {
+          event.preventDefault();
+          element.style.borderColor = "var(--brand-hover)";
+          element.style.background = "var(--glass-hover)";
+        },
+        uploadZoneDragleave: (payload, event, element, state) => {
+          element.style.borderColor = "";
+          element.style.background = "";
+        },
+        uploadZoneDrop: async (payload, event, element, state) => {
+          event.preventDefault();
+          element.style.borderColor = "";
+          element.style.background = "";
+          const files = Array.from(event.dataTransfer.files).filter((f) => f.name.toLowerCase().endsWith(".swf"));
+          if (files.length > 0) await this._handleUploadedFiles(files, element);
+        },
+        fileInputChange: async (payload, event, element, state) => {
+          const files = Array.from(element.files);
+          if (files.length > 0) await this._handleUploadedFiles(files, document.getElementById("ruffle-upload-zone"));
+          element.value = "";
+        },
+        loadUserFiles: async (payload, event, element, state) => {
+          await this.loadUserFiles();
+        }
+      },
+      onMount: "loadUserFiles"
+    };
   }
 
-  _setupUploadZone(win) {
-    const zone = win.querySelector("#ruffle-upload-zone");
-    const input = win.querySelector("#ruffle-file-input");
+  async loadUserFiles() {
+    const container = document.getElementById("ruffle-user-files");
+    if (!container) return;
 
-    zone.addEventListener("click", () => input.click());
+    try {
+      await this.fs.fsReady;
+      await this.fs.ensureFolder(FLASH_DIR);
+      const entries = await this.fs.getFolder(FLASH_DIR).catch(() => ({}));
+      const files = Object.keys(entries).filter((k) => entries[k]?.type === "file");
 
-    zone.addEventListener("dragover", (e) => {
-      e.preventDefault();
-      zone.style.borderColor = "#ff6b9d";
-      zone.style.background = "rgba(255,107,157,0.07)";
-    });
+      const swfFiles = files.filter((f) => !f.startsWith(".") && f.toLowerCase().endsWith(".swf"));
 
-    zone.addEventListener("dragleave", () => {
-      zone.style.borderColor = "#ff6b9d";
-      zone.style.background = "transparent";
-    });
+      if (swfFiles.length === 0) {
+        container.innerHTML = `<div style="font-size:12px;color:var(--text-secondary, #555);padding:4px 0;">No Flash files uploaded yet.</div>`;
+        return;
+      }
 
-    zone.addEventListener("drop", (e) => {
-      e.preventDefault();
-      zone.style.borderColor = "#ff6b9d";
-      zone.style.background = "transparent";
-      const files = Array.from(e.dataTransfer.files).filter((f) => f.name.toLowerCase().endsWith(".swf"));
-      if (files.length > 0) this._handleUploadedFiles(files, win);
-    });
+      container.innerHTML = swfFiles
+        .map((f) => {
+          const displayName = f
+            .replace(/\.[^.]+$/, "")
+            .replace(/[-_]/g, " ")
+            .replace(/\b\w/g, (c) => c.toUpperCase());
 
-    input.addEventListener("change", () => {
-      const files = Array.from(input.files);
-      if (files.length > 0) this._handleUploadedFiles(files, win);
-      input.value = "";
-    });
+          return `
+            <div class="ruf-file-card" data-user-file="${f}">
+              <i class="fa-solid fa-film ruf-file-icon"></i>
+              <div class="ruf-file-info">
+                <div class="ruf-file-name">${displayName}</div>
+                <div class="ruf-file-type">SWF • Flash</div>
+              </div>
+              <button class="ruf-delete-btn" data-file="${f}" title="Delete">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+          `;
+        })
+        .join("");
+
+      container.querySelectorAll(".ruf-file-card").forEach((card) => {
+        card.addEventListener("click", (e) => {
+          if (e.target.closest(".ruf-delete-btn")) return;
+          const fileName = card.dataset.userFile;
+          this.launchSWF(fileName, FLASH_DIR);
+        });
+      });
+
+      container.querySelectorAll(".ruf-delete-btn").forEach((btn) => {
+        btn.addEventListener("click", async (e) => {
+          e.stopPropagation();
+          const fileName = btn.dataset.file;
+          await this.fs.deleteBinaryFile(FLASH_DIR, fileName);
+          this.loadUserFiles();
+        });
+      });
+    } catch {}
   }
 
-  async _handleUploadedFiles(files, win) {
-    const zone = win.querySelector("#ruffle-upload-zone");
+  async _handleUploadedFiles(files, zone) {
     const originalHTML = zone.innerHTML;
-
-    zone.innerHTML = `<i class="fa-solid fa-spinner fa-spin" style="font-size:24px;color:#ff6b9d;margin-bottom:12px;display:block;"></i><div style="font-size:13px;color:#bbb;">Saving ${files.length} file(s)...</div>`;
+    zone.innerHTML = `<i class="fa-solid fa-spinner fa-spin ruf-upload-icon"></i><div class="ruf-upload-text">Saving ${files.length} file(s)...</div>`;
 
     try {
       for (const file of files) {
@@ -117,90 +200,25 @@ export class RuffleApp extends BaseApp {
       }
 
       this.wm.sendNotify(`Saved ${files.length} file(s) to Flash/ directory.`);
-      zone.innerHTML = `<i class="fa-solid fa-circle-check" style="font-size:24px;color:#4caf50;margin-bottom:12px;display:block;"></i><div style="font-size:13px;color:#bbb;">Saved ${files.length} file(s)!</div>`;
-      await this._loadUserFiles(win);
+      zone.innerHTML = `<i class="fa-solid fa-circle-check" style="font-size:32px;color:var(--brand, #4caf50);margin-bottom:12px;display:block;"></i><div class="ruf-upload-text">Saved ${files.length} file(s)!</div>`;
 
       setTimeout(() => {
         zone.innerHTML = originalHTML;
-        this._setupUploadZone(win);
+        this.loadUserFiles();
       }, 1500);
     } catch (err) {
-      zone.innerHTML = `<i class="fa-solid fa-triangle-exclamation" style="font-size:24px;color:#ff6b6b;margin-bottom:12px;display:block;"></i><div style="font-size:13px;color:#ff6b6b;">${err.message}</div>`;
+      zone.innerHTML = `<i class="fa-solid fa-triangle-exclamation" style="font-size:32px;color:var(--error, #ff6b6b);margin-bottom:12px;display:block;"></i><div class="ruf-upload-text" style="color:var(--error, #ff6b6b);">${err.message}</div>`;
       setTimeout(() => {
         zone.innerHTML = originalHTML;
-        this._setupUploadZone(win);
       }, 2500);
     }
   }
 
-  async _loadUserFiles(win) {
-    const container = win.querySelector("#ruffle-user-files");
-    if (!container) return;
+  open() {
+    if (this._isSingletonOpen("ruffle-win")) return;
 
-    try {
-      await this.fs.fsReady;
-      await this.fs.ensureFolder(FLASH_DIR);
-      const entries = await this.fs.getFolder(FLASH_DIR).catch(() => ({}));
-      const files = Object.keys(entries).filter((k) => entries[k]?.type === "file");
-
-      const swfFiles = files.filter((f) => !f.startsWith(".") && f.toLowerCase().endsWith(".swf"));
-
-      if (swfFiles.length === 0) {
-        container.innerHTML = `<div style="font-size:12px;color:#555;padding:4px 0;">No Flash files uploaded yet.</div>`;
-        return;
-      }
-
-      container.innerHTML = swfFiles
-        .map((f) => {
-          const displayName = f
-            .replace(/\.[^.]+$/, "")
-            .replace(/[-_]/g, " ")
-            .replace(/\b\w/g, (c) => c.toUpperCase());
-
-          return `
-          <div class="ruffle-file-card" data-user-file="${f}" style="
-            background:#252540;border-radius:10px;padding:14px 16px;
-            display:flex;align-items:center;gap:12px;cursor:pointer;
-            transition:transform .15s,box-shadow .15s;position:relative;min-width:200px;
-          ">
-            <i class="fa-solid fa-film" style="font-size:22px;color:#ff6b9d;"></i>
-            <div style="flex:1;overflow:hidden;">
-              <div style="font-size:13px;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${displayName}</div>
-              <div style="font-size:10px;color:#666;margin-top:2px;">SWF • Flash</div>
-            </div>
-            <button class="ruffle-delete-btn" data-file="${f}" title="Delete" style="
-              background:none;border:none;color:#666;cursor:pointer;font-size:13px;padding:2px 4px;line-height:1;
-            "><i class="fa-solid fa-xmark"></i></button>
-          </div>
-        `;
-        })
-        .join("");
-
-      container.querySelectorAll(".ruffle-file-card").forEach((card) => {
-        card.addEventListener("click", (e) => {
-          if (e.target.closest(".ruffle-delete-btn")) return;
-          const fileName = card.dataset.userFile;
-          this.launchSWF(fileName, FLASH_DIR);
-        });
-        card.addEventListener("mouseenter", () => {
-          card.style.transform = "translateY(-2px)";
-          card.style.boxShadow = "0 4px 12px rgba(255,107,157,0.2)";
-        });
-        card.addEventListener("mouseleave", () => {
-          card.style.transform = "";
-          card.style.boxShadow = "";
-        });
-      });
-
-      container.querySelectorAll(".ruffle-delete-btn").forEach((btn) => {
-        btn.addEventListener("click", async (e) => {
-          e.stopPropagation();
-          const fileName = btn.dataset.file;
-          await this.fs.deleteBinaryFile(FLASH_DIR, fileName);
-          await this._loadUserFiles(win);
-        });
-      });
-    } catch {}
+    this._loadRuffleScript();
+    return super.open();
   }
 
   async launchSWF(fileName, path) {
@@ -241,11 +259,11 @@ export class RuffleApp extends BaseApp {
       <span>${displayName}</span>
       ${wm.getWindowControls()}
     </div>
-    <div class="window-content" style="width:100%;height:calc(100% - 30px);background:#000;position:relative;overflow:hidden;">
+    <div class="window-content" style="width:100%;height:calc(100% - 30px);background:#141424;position:relative;overflow:hidden;">
       <div id="${winId}-inner" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;">
-        <i class="fa-solid fa-film fa-spin" style="font-size:32px;color:#ff6b9d;"></i>
-        <div style="font-size:15px;color:#ff6b9d;">Loading <strong style="color:#fff;">${displayName}</strong>...</div>
-        <div id="${winId}-log" style="font-size:11px;color:#888;max-width:400px;text-align:center;"></div>
+        <i class="fa-solid fa-film fa-spin" style="font-size:32px;color:var(--brand, #ff6b9d);"></i>
+        <div style="font-size:15px;color:var(--brand, #ff6b9d);">Loading <strong style="color:var(--text-primary, #fff);">${displayName}</strong>...</div>
+        <div id="${winId}-log" style="font-size:11px;color:var(--text-secondary, #888);max-width:400px;text-align:center;"></div>
       </div>
       <iframe
         id="${winId}-frame"
@@ -268,8 +286,8 @@ export class RuffleApp extends BaseApp {
       if (inner)
         inner.innerHTML = `
         <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;">
-          <i class="fa-solid fa-triangle-exclamation" style="font-size:32px;color:#ff6b6b;"></i>
-          <div style="color:#ff6b6b;font-size:14px;font-family:monospace;max-width:80%;text-align:center;">${msg}</div>
+          <i class="fa-solid fa-triangle-exclamation" style="font-size:32px;color:var(--error, #ff6b6b);"></i>
+          <div style="color:var(--error, #ff6b6b);font-size:14px;font-family:monospace;max-width:80%;text-align:center;">${msg}</div>
         </div>`;
       inner.style.display = "flex";
       frame.style.display = "none";
@@ -296,7 +314,7 @@ export class RuffleApp extends BaseApp {
   <meta charset="utf-8">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { width: 100%; height: 100%; background: #000; overflow: hidden; }
+    html, body { width: 100%; height: 100%; background: #141424; overflow: hidden; }
     ruffle-player { width: 100%; height: 100%; display: block; }
   </style>
 </head>

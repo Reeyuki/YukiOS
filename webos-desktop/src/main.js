@@ -37,6 +37,7 @@ import { SessionManager } from "./SessionManager.js";
 import { CommandPalette } from "./commandPalette.js";
 import { ShortcutsApp } from "./shortcuts.js";
 import { YukiConvertApp } from "./yukiConvert.js";
+import { HybridAdapter } from "./runtime/HybridAdapter.js";
 import {
   resolveGhUrl,
   resolveIconUrl,
@@ -74,14 +75,26 @@ const services = {
     return bus;
   }
 };
+
+const EnhancedBrowserApp = HybridAdapter.enhanceBaseApp(BrowserApp);
+const EnhancedTerminalApp = HybridAdapter.enhanceBaseApp(TerminalApp);
+const EnhancedNotepadApp = HybridAdapter.enhanceBaseApp(NotepadApp);
+const EnhancedMarkdownApp = HybridAdapter.enhanceBaseApp(MarkdownApp);
+const EnhancedEmulatorApp = HybridAdapter.enhanceBaseApp(EmulatorApp);
+const EnhancedRuffleApp = HybridAdapter.enhanceBaseApp(RuffleApp);
+const EnhancedMonacoApp = HybridAdapter.enhanceBaseApp(MonacoApp);
+const EnhancedCameraApp = HybridAdapter.enhanceBaseApp(CameraApp);
+const EnhancedSettingsApp = HybridAdapter.enhanceBaseApp(SettingsApp);
+const EnhancedCalculatorApp = HybridAdapter.enhanceBaseApp(CalculatorApp);
+
 const achievementsApp = new AchievementsApp(services);
 services.achievementsApp = achievementsApp;
 window.achievements = achievementsApp;
 
-const notepadApp = new NotepadApp(services);
+const notepadApp = new EnhancedNotepadApp(services);
 services.notepadApp = notepadApp;
 
-const markdownApp = new MarkdownApp(services);
+const markdownApp = new EnhancedMarkdownApp(services);
 services.markdownApp = markdownApp;
 
 const youtubeApp = new YouTubeApp(services);
@@ -96,17 +109,17 @@ services.officeApp = officeApp;
 officeApp.setExplorer(explorerApp);
 explorerApp.setOfficeApp(officeApp);
 
-const calculatorApp = new CalculatorApp(services);
+const calculatorApp = new EnhancedCalculatorApp(services);
 services.calculatorApp = calculatorApp;
 
 notepadApp.setExplorer(explorerApp);
 
-const browserApp = new BrowserApp(services);
+const browserApp = new EnhancedBrowserApp(services);
 services.browserApp = browserApp;
 
 youtubeApp.setBrowserApp(browserApp);
 
-const terminalApp = new TerminalApp(services);
+const terminalApp = new EnhancedTerminalApp(services);
 services.terminalApp = terminalApp;
 
 const jsDosApp = new JsDosApp(services);
@@ -117,13 +130,13 @@ const v86app = new V86App(services);
 services.v86app = v86app;
 explorerApp.setv86App(v86app);
 
-const emulatorApp = new EmulatorApp(services);
+const emulatorApp = new EnhancedEmulatorApp(services);
 services.emulatorApp = emulatorApp;
 
-const ruffleApp = new RuffleApp(services);
+const ruffleApp = new EnhancedRuffleApp(services);
 services.ruffleApp = ruffleApp;
 
-const cameraApp = new CameraApp(services);
+const cameraApp = new EnhancedCameraApp(services);
 services.cameraApp = cameraApp;
 
 const aboutApp = new AboutApp(services);
@@ -138,7 +151,7 @@ services.yukiConvertApp = yukiConvertApp;
 const newsApp = new NewsApp(services);
 services.newsApp = newsApp;
 
-const settingsApp = new SettingsApp(services);
+const settingsApp = new EnhancedSettingsApp(services);
 services.settingsApp = settingsApp;
 settingsApp.setFileSystemManager(fileSystemManager);
 
@@ -160,7 +173,7 @@ explorerApp.setBrowser(browserApp);
 const appCreatorApp = new AppCreatorApp(services);
 services.appCreatorApp = appCreatorApp;
 
-const monacoApp = new MonacoApp(services);
+const monacoApp = new EnhancedMonacoApp(services);
 services.monacoApp = monacoApp;
 
 const shittifyApp = new ShittifyApp(services);

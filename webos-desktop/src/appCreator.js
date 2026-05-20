@@ -4,6 +4,7 @@ import { refreshIcons } from "./shared/contextMenu.js";
 import { PROXIES, clampProxyIndex, buildProxyUrl } from "./proxies.js";
 import { customConfirm } from "./shared/dialogs.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
+import { PersistenceTypes } from "./runtime/AppSchema.js";
 
 const AC = {
   WIN_ID: "app-creator-win",
@@ -126,29 +127,280 @@ export class AppCreatorApp extends BaseApp {
     this.windowHelper = new WindowHelper(this.wm);
     this.appLauncher = services.appLauncher;
     this.desktopUI = services.desktopUI || null;
+    this._declarativeApp = null;
   }
 
-  setDesktopUI(desktopUI) {
-    this.desktopUI = desktopUI;
+  getDeclarativeSchema(opts) {
+    return {
+      id: "app-creator-win",
+      name: "App Creator",
+      icon: "fas fa-cubes",
+      windows: [
+        {
+          id: "app-creator-win",
+          title: "App Creator",
+          size: ["560px", "620px"],
+          icon: "fas fa-cubes",
+          ui: `<div class="window-content">
+        <div class="ac-pane">
+          <div id="app-creator-form">
+            <div class="ac-section-title" id="ac-form-title">Install Custom App</div>
+
+            <div class="ac-edit-banner" id="ac-edit-banner">
+              <span id="ac-edit-label">Editing: </span>
+              <button class="ac-btn ac-btn-secondary ac-cancel-edit-btn" id="ac-cancel-edit-btn">Cancel Edit</button>
+            </div>
+
+            <div>
+              <label class="ac-label" for="ac-name">App Name</label>
+              <input class="ac-input" id="ac-name" type="text" placeholder="My App" spellcheck="false" />
+            </div>
+
+            <div>
+              <label class="ac-label" for="ac-url">App URL</label>
+              <input class="ac-input" id="ac-url" type="url" placeholder="https://example.com" spellcheck="false" />
+            </div>
+
+            <div>
+              <label class="ac-label">Proxy</label>
+              <div class="ac-proxy-row">
+                <label class="ac-checkbox">
+                  <input type="checkbox" id="ac-proxy-enabled" />
+                  <span>Use proxy for this app</span>
+                </label>
+                <select class="ac-input ac-proxy-select" id="ac-proxy-select">
+                  ${PROXIES.map((p, i) => `<option value="${i}">${p.label}</option>`).join("")}
+                </select>
+              </div>
+              <p class="ac-hint">If the app is blocked by CORS, try enabling a proxy.</p>
+            </div>
+
+            <div>
+              <label class="ac-label">Icon</label>
+              <div class="ac-icon-row">
+                <div class="ac-icon-preview" id="ac-icon-preview"><span>📦</span></div>
+                <input class="ac-input" id="ac-icon-url" type="url" placeholder="https://example.com/icon.png" spellcheck="false" />
+              </div>
+              <p class="ac-hint">Or upload a local icon file:</p>
+              <input class="ac-icon-file-input" type="file" id="ac-icon-file" accept="image/*" />
+            </div>
+
+            <hr class="ac-divider" />
+            <div id="ac-status" class="ac-status"></div>
+
+            <div class="ac-btn-row">
+              <button class="ac-btn ac-btn-secondary" id="ac-preview-btn">Preview</button>
+              <button class="ac-btn ac-btn-primary" id="ac-install-btn">Install App</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="ac-pane ac-installed-pane">
+          <div class="ac-section-title ac-installed-title">Installed Custom Apps</div>
+          <div class="ac-installed-list" id="ac-installed-list">
+            <div class="ac-empty">Loading...</div>
+          </div>
+        </div>
+      </div>`,
+          events: {
+            "#ac-cancel-edit-btn": {
+              click: {
+                type: "custom:cancelEdit",
+                stopPropagation: true
+              }
+            },
+            "#ac-proxy-enabled": {
+              change: {
+                type: "custom:toggleProxy",
+                stopPropagation: false
+              }
+            },
+            "#ac-url": {
+              input: {
+                type: "custom:loadFavicon",
+                stopPropagation: false
+              }
+            },
+            "#ac-icon-url": {
+              change: {
+                type: "custom:updateIconUrl",
+                stopPropagation: false
+              }
+            },
+            "#ac-icon-file": {
+              change: {
+                type: "custom:uploadIcon",
+                stopPropagation: false
+              }
+            },
+            "#ac-preview-btn": {
+              click: {
+                type: "custom:previewApp",
+                stopPropagation: true
+              }
+            },
+            "#ac-install-btn": {
+              click: {
+                type: "custom:installApp",
+                stopPropagation: true
+              }
+            }
+          }
+        }
+      ],
+      state: {
+        initial: {
+          editingAppId: null,
+          resolvedIconDataUrl: null,
+          faviconLoadedUrl: null
+        },
+        persistence: PersistenceTypes.MEMORY
+      },
+      actions: {
+        cancelEdit: (payload, event, element, state) => {
+          const win = document.getElementById(AC.WIN_ID);
+          if (!win) return;
+          const iconUrlInput = win.querySelector("#ac-icon-url");
+          const iconPreview = win.querySelector("#ac-icon-preview");
+          const appUrlInput = win.querySelector("#ac-url");
+          const proxyEnabledInput = win.querySelector("#ac-proxy-enabled");
+          const proxySelect = win.querySelector("#ac-proxy-select");
+          const installBtn = win.querySelector("#ac-install-btn");
+
+          state.editingAppId = null;
+          state.resolvedIconDataUrl = null;
+          state.faviconLoadedUrl = null;
+          win.querySelector("#ac-name").value = "";
+          appUrlInput.value = "";
+          if (proxyEnabledInput) proxyEnabledInput.checked = false;
+          if (proxySelect) proxySelect.value = "0";
+          if (proxySelect) proxySelect.disabled = true;
+          iconUrlInput.value = "";
+          iconPreview.innerHTML = `<span>📦</span>`;
+          win.querySelector("#ac-edit-banner").classList.remove("active");
+          win.querySelector("#ac-form-title").textContent = "Install Custom App";
+          installBtn.textContent = "Install App";
+        },
+        toggleProxy: (payload, event, element, state) => {
+          const proxySelect = document.getElementById("ac-proxy-select");
+          if (proxySelect) proxySelect.disabled = !event.target.checked;
+        },
+        loadFavicon: (payload, event, element, state) => {
+          clearTimeout(this.faviconDebounceTimer);
+          const url = event.target.value.trim();
+          if (!url || state.resolvedIconDataUrl) return;
+
+          this.faviconDebounceTimer = setTimeout(async () => {
+            const loaded = await tryLoadFavicon(url);
+            if (!loaded) return;
+            if (state.resolvedIconDataUrl) return;
+            state.faviconLoadedUrl = loaded;
+            const iconPreview = document.getElementById("ac-icon-preview");
+            if (iconPreview) {
+              if (isImageIcon(loaded)) {
+                iconPreview.innerHTML = `<img src="${loaded}" onerror="this.parentElement.innerHTML='<span>📦</span>'" />`;
+              } else {
+                iconPreview.innerHTML = `<i class="${loaded}" style="font-size:22px;"></i>`;
+              }
+            }
+          }, 600);
+        },
+        updateIconUrl: (payload, event, element, state) => {
+          const url = event.target.value.trim();
+          if (url) {
+            state.resolvedIconDataUrl = null;
+            state.faviconLoadedUrl = null;
+            const iconPreview = document.getElementById("ac-icon-preview");
+            if (iconPreview) {
+              if (isImageIcon(url)) {
+                iconPreview.innerHTML = `<img src="${url}" onerror="this.parentElement.innerHTML='<span>📦</span>'" />`;
+              } else {
+                iconPreview.innerHTML = `<i class="${url}" style="font-size:22px;"></i>`;
+              }
+            }
+          }
+        },
+        uploadIcon: (payload, event, element, state) => {
+          const file = event.target.files?.[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            state.resolvedIconDataUrl = e.target.result;
+            state.faviconLoadedUrl = null;
+            const iconPreview = document.getElementById("ac-icon-preview");
+            if (iconPreview) {
+              if (isImageIcon(e.target.result)) {
+                iconPreview.innerHTML = `<img src="${e.target.result}" onerror="this.parentElement.innerHTML='<span>📦</span>'" />`;
+              } else {
+                iconPreview.innerHTML = `<i class="${e.target.result}" style="font-size:22px;"></i>`;
+              }
+            }
+          };
+          reader.readAsDataURL(file);
+        },
+        previewApp: (payload, event, element, state) => {
+          const win = document.getElementById(AC.WIN_ID);
+          if (!win) return;
+          const appUrlInput = win.querySelector("#ac-url");
+          const proxyEnabledInput = win.querySelector("#ac-proxy-enabled");
+          const proxySelect = win.querySelector("#ac-proxy-select");
+          const status = win.querySelector("#ac-status");
+
+          const url = appUrlInput.value.trim();
+          const name = win.querySelector("#ac-name").value.trim() || "Preview";
+          if (!url) {
+            this._showStatus(status, "error", "Please enter a URL to preview.");
+            return;
+          }
+          const useProxy = !!proxyEnabledInput?.checked;
+          const proxyIndex = clampProxyIndex(parseInt(proxySelect?.value), PROXIES);
+          const finalUrl = useProxy ? buildProxyUrl(url, proxyIndex, PROXIES) : url;
+          this._openPreviewWindow(name, finalUrl);
+        },
+        installApp: async (payload, event, element, state) => {
+          const win = document.getElementById(AC.WIN_ID);
+          if (!win) return;
+          const status = win.querySelector("#ac-status");
+          const appUrlInput = win.querySelector("#ac-url");
+          const iconUrlInput = win.querySelector("#ac-icon-url");
+          const proxyEnabledInput = win.querySelector("#ac-proxy-enabled");
+          const proxySelect = win.querySelector("#ac-proxy-select");
+
+          const name = win.querySelector("#ac-name").value.trim();
+          const url = appUrlInput.value.trim();
+          const iconUrl = resolvedIcon(
+            state.resolvedIconDataUrl || iconUrlInput.value.trim() || state.faviconLoadedUrl
+          );
+          const proxyEnabled = !!proxyEnabledInput?.checked;
+          const proxyIndex = clampProxyIndex(parseInt(proxySelect?.value), PROXIES);
+
+          if (!name) {
+            this._showStatus(status, "error", "App name is required.");
+            return;
+          }
+          if (!url) {
+            this._showStatus(status, "error", "App URL is required.");
+            return;
+          }
+          try {
+            new URL(url);
+          } catch {
+            this._showStatus(status, "error", "Invalid URL format.");
+            return;
+          }
+
+          const task = state.editingAppId
+            ? this._saveEdit(state.editingAppId, name, url, iconUrl, proxyEnabled, proxyIndex, status, win)
+            : this._installApp(name, url, iconUrl, proxyEnabled, proxyIndex, status, win);
+          task.catch(console.error);
+        }
+      },
+      onMount: "initAppCreator"
+    };
   }
 
-  setAppLauncher(appLauncher) {
-    this.appLauncher = appLauncher;
-  }
-
-  async restoreInstalledApps() {
-    const apps = await this._loadAllCustomApps();
-    for (const app of apps) {
-      this.appLauncher.appMap[app.appId] = buildAppMapEntry(
-        app.name,
-        app.url,
-        app.icon,
-        app.faviconUrl,
-        !!app.proxyEnabled,
-        clampProxyIndex(app.proxyIndex, PROXIES)
-      );
-      this._addToDesktop(app.appId, app.name, app.icon, app.faviconUrl);
-    }
+  initAppCreator(payload, event, element, state) {
+    this.restoreInstalledApps();
   }
 
   open(editAppId = null) {
@@ -164,7 +416,6 @@ export class AppCreatorApp extends BaseApp {
         <div class="ac-pane">
           <div id="app-creator-form">
             <div class="ac-section-title" id="ac-form-title">Install Custom App</div>
-
             <div class="ac-edit-banner" id="ac-edit-banner">
               <span id="ac-edit-label">Editing: </span>
               <button class="ac-btn ac-btn-secondary ac-cancel-edit-btn" id="ac-cancel-edit-btn">Cancel Edit</button>
@@ -231,6 +482,29 @@ export class AppCreatorApp extends BaseApp {
     this._refreshInstalledList(win);
 
     if (editAppId) this._enterEditMode(win, editAppId);
+  }
+
+  setDesktopUI(desktopUI) {
+    this.desktopUI = desktopUI;
+  }
+
+  setAppLauncher(appLauncher) {
+    this.appLauncher = appLauncher;
+  }
+
+  async restoreInstalledApps() {
+    const apps = await this._loadAllCustomApps();
+    for (const app of apps) {
+      this.appLauncher.appMap[app.appId] = buildAppMapEntry(
+        app.name,
+        app.url,
+        app.icon,
+        app.faviconUrl,
+        !!app.proxyEnabled,
+        clampProxyIndex(app.proxyIndex, PROXIES)
+      );
+      this._addToDesktop(app.appId, app.name, app.icon, app.faviconUrl);
+    }
   }
 
   _setupControls(win) {

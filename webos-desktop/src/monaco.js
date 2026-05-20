@@ -7,6 +7,7 @@ import { decodeDataURLContent } from "./fileDisplay.js";
 import { showConflictDialog } from "./shared/conflictDialog.js";
 import { FileKind } from "./fs.js";
 import { customConfirm } from "./shared/dialogs.js";
+import { PersistenceTypes } from "./runtime/AppSchema.js";
 
 export class MonacoApp extends BaseApp {
   constructor(services) {
@@ -23,6 +24,71 @@ export class MonacoApp extends BaseApp {
     this.tabCounter = 0;
     this.findWidgetVisible = false;
     this.icon = resolveIconUrl("static/icons/vscode.webp");
+    this._declarativeApp = null;
+  }
+
+  getDeclarativeSchema(opts) {
+    return {
+      id: "monaco-window",
+      name: "Yuki Code",
+      icon: this.icon,
+      windows: [
+        {
+          id: "monaco-window",
+          title: "Yuki Code",
+          size: ["900px", "650px"],
+          icon: this.icon,
+          ui: `<div class="monaco-tabs-container">
+        <div class="monaco-tabs"></div>
+        <button class="monaco-new-tab-btn" title="New File (Ctrl+N)">
+          <i class="fas fa-plus"></i>
+        </button>
+      </div>
+      <div class="window-content monaco-window-content">
+        <div class="monaco-editors-wrapper"></div>
+      </div>
+      <div class="monaco-statusbar">
+        <span class="monaco-status-position">Ln 1, Col 1</span>
+        <span class="monaco-status-selection"></span>
+        <span class="monaco-status-encoding">UTF-8</span>
+        <span class="monaco-status-eol">LF</span>
+        <span class="monaco-status-language">JavaScript</span>
+        <span class="monaco-status-indent">Spaces: 2</span>
+      </div>`,
+          events: {
+            ".monaco-new-tab-btn": {
+              click: {
+                type: "custom:newTabClick",
+                stopPropagation: true
+              }
+            }
+          }
+        }
+      ],
+      state: {
+        initial: {
+          tabs: [],
+          activeTabId: null,
+          monacoLoaded: false
+        },
+        persistence: PersistenceTypes.NONE
+      },
+      actions: {
+        newTabClick: (payload, event, element, state) => {
+          this.createNewTab();
+        }
+      },
+      onMount: "initMonaco"
+    };
+  }
+
+  async initMonaco(payload, event, element, state) {
+    await this.loadMonaco();
+    this.currentWindow = document.getElementById("monaco-window");
+  }
+
+  open(title = "Untitled", content = "", filePath = null) {
+    if (this._isSingletonOpen("monaco-window")) return;
   }
 
   async loadMonaco() {
@@ -557,6 +623,7 @@ export class MonacoApp extends BaseApp {
   }
 
   detectLanguage(fileName) {
+    if (!fileName || typeof fileName !== "string") return "plaintext";
     const ext = fileName.split(".").pop().toLowerCase();
     const langMap = {
       js: "javascript",

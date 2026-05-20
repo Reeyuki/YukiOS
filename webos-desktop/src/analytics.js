@@ -1,7 +1,11 @@
 const ANALYTICS_QUEUE_KEY = "yuki_analytics_queue";
 const ENDPOINT = "https://analytics.liventcord-a60.workers.dev/analytics";
 
+const hostname = window.location.hostname;
+const ANALYTICS_DISABLED = hostname === "localhost" || hostname === "127.0.0.1" || hostname === "[::1]";
+
 let pageLoadTime = Date.now();
+
 export function getAnalyticsBase(app) {
   const now = Date.now();
 
@@ -12,7 +16,10 @@ export function getAnalyticsBase(app) {
     sessionAgeMs: now - pageLoadTime
   };
 }
+
 function loadQueue() {
+  if (ANALYTICS_DISABLED) return [];
+
   try {
     return JSON.parse(localStorage.getItem(ANALYTICS_QUEUE_KEY) || "[]");
   } catch {
@@ -21,10 +28,13 @@ function loadQueue() {
 }
 
 function saveQueue(q) {
+  if (ANALYTICS_DISABLED) return;
   localStorage.setItem(ANALYTICS_QUEUE_KEY, JSON.stringify(q));
 }
 
 function flushQueue() {
+  if (ANALYTICS_DISABLED) return;
+
   const queue = loadQueue();
   if (queue.length === 0) return;
 
@@ -49,6 +59,8 @@ function flushQueue() {
 }
 
 function queueEvent(event) {
+  if (ANALYTICS_DISABLED) return;
+
   const queue = loadQueue();
   queue.push(event);
   saveQueue(queue);
@@ -67,6 +79,8 @@ function queueEvent(event) {
 }
 
 export function initAnalytics() {
+  if (ANALYTICS_DISABLED) return;
+
   pageLoadTime = Date.now();
 
   flushQueue();
@@ -80,6 +94,8 @@ export function initAnalytics() {
 }
 
 export function sendLaunchAnalytics(app) {
+  if (ANALYTICS_DISABLED) return;
+
   queueEvent({
     app,
     event: "launch",
@@ -89,6 +105,8 @@ export function sendLaunchAnalytics(app) {
 }
 
 export function recordUsage(winId) {
+  if (ANALYTICS_DISABLED) return;
+
   const start = Date.now();
   const win = document.getElementById(winId);
   if (!win) return;

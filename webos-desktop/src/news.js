@@ -1,8 +1,19 @@
 import { BaseApp } from "./core/BaseApp.js";
 import { StorageKeys } from "./settings.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
+import { PersistenceTypes } from "./runtime/AppSchema.js";
 
 const NEWS_UPDATES = [
+  {
+    date: "May 20, 2026",
+    sections: [
+      {
+        icon: "fa-wand-magic-sparkles",
+        title: "Features & Improvements",
+        items: [["fa-rocket", "Fixed GTAVC", "Fixed GTA VC"]]
+      }
+    ]
+  },
   {
     date: "May 19, 2026",
     sections: [
@@ -335,15 +346,10 @@ export class NewsApp extends BaseApp {
   constructor(services) {
     super(services);
     this.windowHelper = new WindowHelper(this.wm);
+    this._declarativeApp = null;
   }
 
-  open() {
-    localStorage.setItem(StorageKeys.newsReadSignatureKey, getNewsContentSignature());
-    localStorage.setItem(StorageKeys.newsSeenKey, "true");
-
-    const winId = "news-yukios";
-    if (this._isSingletonOpen(winId)) return;
-
+  getDeclarativeSchema(opts) {
     const updates = NEWS_UPDATES;
 
     const renderSections = (sections) =>
@@ -393,218 +399,7 @@ export class NewsApp extends BaseApp {
 
     const content = `
       <div class="window-content" style="padding:0; height: calc(100% - 40px); overflow: hidden;">
-        <style>
-          .news-root {
-            padding: 1.25rem 1.25rem 2.5rem;
-            max-height: 100%;
-            overflow-y: auto;
-            box-sizing: border-box;
-            background:
-              radial-gradient(circle at 20% 0%, color-mix(in oklch, var(--brand) 16%, transparent), transparent 55%),
-              radial-gradient(circle at 90% 25%, color-mix(in oklch, var(--brand) 10%, transparent), transparent 60%),
-              linear-gradient(to bottom, rgba(255, 255, 255, 0.04), transparent 40%),
-              rgba(0, 0, 0, 0.12);
-          }
-
-          .news-hero {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 1rem;
-            padding: 1rem 1rem;
-            margin-bottom: 1.25rem;
-            border-radius: 14px;
-            border: 1px solid color-mix(in oklch, var(--border) 40%, transparent);
-            background:
-              linear-gradient(
-                135deg,
-                color-mix(in oklch, var(--brand) 20%, rgba(255, 255, 255, 0.06)),
-                rgba(255, 255, 255, 0.03)
-              );
-            box-shadow:
-              0 10px 30px rgba(0, 0, 0, 0.28),
-              0 0 0 3px color-mix(in oklch, var(--brand) 12%, transparent);
-          }
-
-          .news-hero-left {
-            display: flex;
-            align-items: center;
-            gap: 0.9rem;
-            min-width: 0;
-          }
-
-          .news-hero-icon {
-            width: 46px;
-            height: 46px;
-            border-radius: 12px;
-            display: grid;
-            place-items: center;
-            flex-shrink: 0;
-            background: linear-gradient(135deg, var(--brand), var(--brand-hover));
-            box-shadow: 0 10px 24px var(--brand-glow);
-          }
-
-          .news-hero-icon i {
-            font-size: 1.2rem;
-            color: rgba(0, 0, 0, 0.85);
-          }
-
-          .news-hero-title {
-            display: flex;
-            flex-direction: column;
-            gap: 0.15rem;
-            min-width: 0;
-          }
-
-          .news-hero-title h1 {
-            margin: 0;
-            font-size: 1.15rem;
-            font-weight: 700;
-            letter-spacing: 0.2px;
-            color: var(--text-primary);
-            line-height: 1.2;
-          }
-
-          .news-hero-title p {
-            margin: 0;
-            font-size: 0.85rem;
-            
-            line-height: 1.35;
-          }
-
-          .news-hero-meta {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-            justify-content: flex-end;
-          }
-
-          .news-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.45rem;
-            padding: 0.35rem 0.6rem;
-            border-radius: 999px;
-            font-size: 0.78rem;
-            color: var(--text-primary);
-            border: 1px solid color-mix(in oklch, var(--border) 45%, transparent);
-            background: color-mix(in oklch, var(--brand) 10%, rgba(255, 255, 255, 0.04));
-          }
-
-          .news-pill i {
-            color: var(--brand);
-          }
-
-          .news-update {
-            padding: 1rem 1rem 0.75rem;
-            border-radius: 14px;
-            border: 1px solid color-mix(in oklch, var(--border) 38%, transparent);
-            background: rgba(255, 255, 255, 0.035);
-            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
-            margin-bottom: 1rem;
-          }
-
-          .news-update-head {
-            display: flex;
-            align-items: baseline;
-            justify-content: space-between;
-            gap: 0.75rem;
-            margin-bottom: 0.75rem;
-            padding-bottom: 0.65rem;
-            border-bottom: 1px solid color-mix(in oklch, var(--border) 28%, transparent);
-          }
-
-          .news-date {
-            font-weight: 800;
-            font-size: 0.92rem;
-            color: var(--text-primary);
-            letter-spacing: 0.2px;
-          }
-
-          .news-label {
-            font-size: 0.8rem;
-            
-            white-space: nowrap;
-          }
-
-          .news-section {
-            margin-top: 0.9rem;
-          }
-
-          .news-section-title {
-            display: flex;
-            align-items: center;
-            gap: 0.55rem;
-            margin: 0 0 0.65rem;
-            font-size: 0.95rem;
-            font-weight: 800;
-            color: var(--text-primary);
-          }
-
-          .news-section-title i {
-            color: var(--brand);
-          }
-
-          .news-items {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 0.55rem;
-          }
-
-          .news-item {
-            display: flex;
-            align-items: flex-start;
-            gap: 0.75rem;
-            padding: 0.75rem 0.85rem;
-            border-radius: 12px;
-            border: 1px solid color-mix(in oklch, var(--border) 30%, transparent);
-            background: rgba(0, 0, 0, 0.18);
-            transition:
-              transform 0.12s ease,
-              background 0.12s ease,
-              border-color 0.12s ease;
-          }
-
-          .news-item:hover {
-            transform: translateY(-1px);
-            background: rgba(0, 0, 0, 0.24);
-            border-color: color-mix(in oklch, var(--brand) 35%, var(--border));
-          }
-
-          .news-item-icon {
-            width: 34px;
-            height: 34px;
-            border-radius: 10px;
-            display: grid;
-            place-items: center;
-            flex-shrink: 0;
-            background: color-mix(in oklch, var(--brand) 12%, rgba(255, 255, 255, 0.03));
-            border: 1px solid color-mix(in oklch, var(--brand) 22%, transparent);
-          }
-
-          .news-item-icon i {
-            font-size: 0.95rem;
-            color: var(--brand);
-          }
-
-          .news-item-body {
-            min-width: 0;
-          }
-
-          .news-item-title {
-            font-size: 0.9rem;
-            font-weight: 800;
-            color: var(--text-primary);
-            line-height: 1.2;
-            margin-bottom: 0.1rem;
-          }
-
-          .news-item-desc {
-            font-size: 0.84rem;
-            line-height: 1.4;
-          }
-        </style>
+      
 
         <div class="news-root">
           <div class="news-hero">
@@ -613,7 +408,7 @@ export class NewsApp extends BaseApp {
                 <i class="fas fa-newspaper"></i>
               </div>
               <div class="news-hero-title">
-                <h1>What’s New</h1>
+                <h1>What's New</h1>
                 <p>Fresh features, improvements, and fixes in your desktop.</p>
               </div>
             </div>
@@ -630,10 +425,34 @@ export class NewsApp extends BaseApp {
       </div>
     `;
 
-    this.windowHelper.createAndMountWindow(winId, "What's New", content, "720px", "520px", {
-      icon: "fa fa-newspaper"
-    });
+    return {
+      id: "news-yukios",
+      name: "What's New",
+      icon: "fa fa-newspaper",
+      windows: [
+        {
+          id: "news-yukios",
+          title: "What's New",
+          size: ["720px", "520px"],
+          icon: "fa fa-newspaper",
+          ui: content
+        }
+      ],
+      state: {
+        initial: {},
+        persistence: PersistenceTypes.NONE
+      },
+      onMount: "initNews"
+    };
+  }
 
+  initNews(payload, event, element, state) {
+    localStorage.setItem(StorageKeys.newsReadSignatureKey, getNewsContentSignature());
+    localStorage.setItem(StorageKeys.newsSeenKey, "true");
     window._newsApp = this;
+  }
+
+  open() {
+    if (this._isSingletonOpen("news-yukios")) return;
   }
 }

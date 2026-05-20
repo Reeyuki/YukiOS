@@ -2,6 +2,7 @@ import { BaseApp } from "./core/BaseApp.js";
 import { customPrompt, customConfirm } from "./shared/dialogs.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
 import { StorageKeys } from "./settings.js";
+import { PersistenceTypes } from "./runtime/AppSchema.js";
 
 function clampInt(n, min, max) {
   n = Number.parseInt(String(n), 10);
@@ -166,6 +167,351 @@ export class YouTubeApp extends BaseApp {
     this._preset = this._loadPreset();
     this._recent = this._loadRecent();
     this._favorites = this._loadFavorites();
+    this._declarativeApp = null;
+  }
+
+  getDeclarativeSchema(opts) {
+    return {
+      id: "youtube-utils",
+      name: "YouTube Utilities",
+      icon: "fab fa-youtube",
+      windows: [
+        {
+          id: "youtube-utils",
+          title: "YouTube Utilities",
+          size: ["980px", "640px"],
+          icon: "fab fa-youtube",
+          iconColor: "#ff2a2a",
+          ui: `<div class="window-content yt-utils">
+        <div class="toolbar">
+          <div class="row">
+            <input id="yt-input" type="text" spellcheck="false" autocomplete="off"
+              placeholder="Paste a YouTube video/shorts/playlist URL (or a video id)"/>
+            <button id="yt-load">Load</button>
+            <button id="yt-paste" title="Paste from clipboard">Paste</button>
+            <button id="yt-clear" title="Clear embed">Clear</button>
+          </div>
+          <div class="row meta" style="justify-content:space-between;margin-top:10px">
+            <div class="row">
+              <label class="toggle" title="Use youtube-nocookie.com for embeds">
+                <input id="yt-nocookie" type="checkbox" checked/>
+                <span>No-Cookie</span>
+              </label>
+              <label class="toggle" title="Autoplay when loaded (some browsers block unless muted)">
+                <input id="yt-autoplay" type="checkbox"/>
+                <span>Autoplay</span>
+              </label>
+              <label class="toggle" title="Show player controls">
+                <input id="yt-controls" type="checkbox" checked/>
+                <span>Controls</span>
+              </label>
+              <label class="toggle" title="Mute when autoplay is enabled">
+                <input id="yt-mute" type="checkbox"/>
+                <span>Mute</span>
+              </label>
+              <label class="toggle" title="Open links inside Yuki Browser instead of a new tab">
+                <input id="yt-open-in-browser" type="checkbox"/>
+                <span>Internal Browser</span>
+              </label>
+            </div>
+            <div class="row">
+              <span id="yt-status" class="meta"></span>
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:10px">
+            <div class="yt-preview" id="yt-preview" style="display:none">
+              <img id="yt-preview-img" alt="" />
+              <div class="yt-preview-txt">
+                <div class="yt-preview-title" id="yt-preview-title"></div>
+                <div class="yt-preview-sub meta" id="yt-preview-sub"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row meta" style="margin-top:10px;justify-content:space-between">
+            <div class="row">
+              <label class="toggle" title="Timestamp tool">
+                <span>Time</span>
+                <input id="yt-time" type="text" placeholder="1:23 or 1m23s" style="width:140px" />
+              </label>
+              <button class="mini" id="yt-copy-time" title="Copy watch link at time">Copy Link @ Time</button>
+              <button class="mini" id="yt-jump-time" title="Reload embed starting at time">Jump</button>
+            </div>
+            <div class="row">
+              <label class="toggle" title="End time (seconds or 1m30s)">
+                <span>End</span>
+                <input id="yt-end" type="text" placeholder="(optional)" style="width:140px" />
+              </label>
+              <label class="toggle" title="Loop playback">
+                <input id="yt-loop" type="checkbox"/>
+                <span>Loop</span>
+              </label>
+              <button class="mini" id="yt-save-preset" title="Save loop/end as default">Save Preset</button>
+              <button class="mini" id="yt-reset-preset" title="Reset preset">Reset</button>
+            </div>
+          </div>
+        </div>
+        <div class="split">
+          <div class="panel embed">
+            <div class="panel-h">
+              <span>Embed</span>
+              <div class="row">
+                <button class="mini" id="yt-pin" title="Pin/unpin current item">Pin</button>
+                <button class="mini" id="yt-copy-embed" title="Copy embed URL">Copy Embed URL</button>
+                <button class="mini" id="yt-open-yt" title="Open watch page">Open</button>
+              </div>
+            </div>
+            <div class="panel-b" style="padding:0">
+              <iframe id="yt-iframe" title="YouTube embed" allow="autoplay; encrypted-media; picture-in-picture; fullscreen"></iframe>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-h">
+              <div class="row" style="gap:8px">
+                <button class="mini yt-tab-btn" id="yt-tab-recent" data-tab="recent">Recent</button>
+                <button class="mini yt-tab-btn" id="yt-tab-fav" data-tab="fav">Pinned</button>
+              </div>
+              <div class="row">
+                <button class="mini" id="yt-export" title="Copy export JSON to clipboard">Export</button>
+                <button class="mini" id="yt-import" title="Import JSON from clipboard/paste">Import</button>
+                <button class="mini" id="yt-clear-list">Clear</button>
+              </div>
+            </div>
+            <div class="panel-b" id="yt-list"></div>
+          </div>
+        </div>
+        <div class="meta">
+          Tips: Supports <code>watch</code>, <code>youtu.be</code>, <code>shorts</code>, <code>embed</code>, and playlists. Time params like <code>&t=1m30s</code> or <code>&start=90</code> are respected.
+        </div>
+      </div>`,
+          events: {
+            "#yt-load": {
+              click: {
+                type: "custom:load",
+                stopPropagation: true
+              }
+            },
+            "#yt-paste": {
+              click: {
+                type: "custom:paste",
+                stopPropagation: true
+              }
+            },
+            "#yt-clear": {
+              click: {
+                type: "custom:clear",
+                stopPropagation: true
+              }
+            },
+            "#yt-copy-embed": {
+              click: {
+                type: "custom:copyEmbed",
+                stopPropagation: true
+              }
+            },
+            "#yt-open-yt": {
+              click: {
+                type: "custom:openYt",
+                stopPropagation: true
+              }
+            },
+            "#yt-pin": {
+              click: {
+                type: "custom:pin",
+                stopPropagation: true
+              }
+            },
+            "#yt-tab-recent": {
+              click: {
+                type: "custom:tabRecent",
+                stopPropagation: true
+              }
+            },
+            "#yt-tab-fav": {
+              click: {
+                type: "custom:tabFav",
+                stopPropagation: true
+              }
+            },
+            "#yt-export": {
+              click: {
+                type: "custom:export",
+                stopPropagation: true
+              }
+            },
+            "#yt-import": {
+              click: {
+                type: "custom:import",
+                stopPropagation: true
+              }
+            },
+            "#yt-clear-list": {
+              click: {
+                type: "custom:clearList",
+                stopPropagation: true
+              }
+            },
+            "#yt-copy-time": {
+              click: {
+                type: "custom:copyTime",
+                stopPropagation: true
+              }
+            },
+            "#yt-jump-time": {
+              click: {
+                type: "custom:jumpTime",
+                stopPropagation: true
+              }
+            },
+            "#yt-save-preset": {
+              click: {
+                type: "custom:savePreset",
+                stopPropagation: true
+              }
+            },
+            "#yt-reset-preset": {
+              click: {
+                type: "custom:resetPreset",
+                stopPropagation: true
+              }
+            },
+            "#yt-input": {
+              keydown: {
+                type: "custom:inputKeydown",
+                stopPropagation: false
+              }
+            }
+          }
+        }
+      ],
+      state: {
+        initial: {
+          prefs: {
+            nocookie: true,
+            autoplay: false,
+            controls: true,
+            mute: false,
+            openInBrowserApp: false
+          },
+          preset: {
+            endSeconds: 0,
+            loop: false
+          },
+          recent: [],
+          favorites: []
+        },
+        persistence: PersistenceTypes.LOCAL_STORAGE
+      },
+      actions: {
+        load: (payload, event, element, state) => {
+          this._loadFromInput();
+        },
+        paste: async (payload, event, element, state) => {
+          await this._pasteFromClipboard();
+        },
+        clear: (payload, event, element, state) => {
+          this._clearEmbed();
+        },
+        copyEmbed: async (payload, event, element, state) => {
+          await this._copyEmbedUrl();
+        },
+        openYt: (payload, event, element, state) => {
+          this._openOnYouTube();
+        },
+        pin: (payload, event, element, state) => {
+          this._togglePin();
+        },
+        tabRecent: (payload, event, element, state) => {
+          this._setActiveTab("recent");
+        },
+        tabFav: (payload, event, element, state) => {
+          this._setActiveTab("fav");
+        },
+        export: async (payload, event, element, state) => {
+          await this._exportAll();
+        },
+        import: async (payload, event, element, state) => {
+          await this._importAll();
+        },
+        clearList: (payload, event, element, state) => {
+          if (this._activeTab === "fav") {
+            this._favorites = [];
+            this._saveFavorites();
+          } else {
+            this._recent = [];
+            this._saveRecent();
+          }
+          this._renderLists();
+        },
+        copyTime: async (payload, event, element, state) => {
+          await this._copyWatchUrlAtTime();
+        },
+        jumpTime: (payload, event, element, state) => {
+          this._jumpToTime();
+        },
+        savePreset: (payload, event, element, state) => {
+          this._savePresetFromUI();
+        },
+        resetPreset: (payload, event, element, state) => {
+          this._resetPreset();
+        },
+        inputKeydown: (payload, event, element, state) => {
+          if (event.key === "Enter") {
+            this._loadFromInput();
+          }
+        },
+        initYoutube: (payload, event, element, state) => {
+          this.initYoutube(payload, event, element, state);
+        }
+      },
+      onMount: "initYoutube"
+    };
+  }
+
+  initYoutube(payload, event, element, state) {
+    this._els = {
+      win: document.getElementById("youtube-utils"),
+      input: document.getElementById("yt-input"),
+      loadBtn: document.getElementById("yt-load"),
+      pasteBtn: document.getElementById("yt-paste"),
+      clearBtn: document.getElementById("yt-clear"),
+      nocookie: document.getElementById("yt-nocookie"),
+      autoplay: document.getElementById("yt-autoplay"),
+      controls: document.getElementById("yt-controls"),
+      mute: document.getElementById("yt-mute"),
+      openInBrowser: document.getElementById("yt-open-in-browser"),
+      preview: document.getElementById("yt-preview"),
+      previewImg: document.getElementById("yt-preview-img"),
+      previewTitle: document.getElementById("yt-preview-title"),
+      previewSub: document.getElementById("yt-preview-sub"),
+      timeInput: document.getElementById("yt-time"),
+      copyTimeBtn: document.getElementById("yt-copy-time"),
+      jumpTimeBtn: document.getElementById("yt-jump-time"),
+      endInput: document.getElementById("yt-end"),
+      loop: document.getElementById("yt-loop"),
+      savePreset: document.getElementById("yt-save-preset"),
+      resetPreset: document.getElementById("yt-reset-preset"),
+      iframe: document.getElementById("yt-iframe"),
+      status: document.getElementById("yt-status"),
+      pinBtn: document.getElementById("yt-pin"),
+      copyEmbedBtn: document.getElementById("yt-copy-embed"),
+      openYtBtn: document.getElementById("yt-open-yt"),
+      tabRecent: document.getElementById("yt-tab-recent"),
+      tabFav: document.getElementById("yt-tab-fav"),
+      list: document.getElementById("yt-list"),
+      exportBtn: document.getElementById("yt-export"),
+      importBtn: document.getElementById("yt-import"),
+      clearListBtn: document.getElementById("yt-clear-list")
+    };
+    this._activeTab = "recent";
+    this._bindEvents();
+    this._renderLists();
+  }
+
+  open() {
+    if (this._isSingletonOpen("youtube-utils")) return;
+    return super.open();
   }
 
   setBrowserApp(browserApp) {
@@ -222,173 +568,6 @@ export class YouTubeApp extends BaseApp {
     this._recent = this._recent.filter((x) => x.key !== key);
     this._recent.push({ ...item, key, time: Date.now() });
     this._saveRecent();
-    this._renderLists();
-  }
-
-  open(titleOrOptions = "YouTube Utilities") {
-    let title = "YouTube Utilities";
-    if (titleOrOptions && typeof titleOrOptions === "object" && !Array.isArray(titleOrOptions)) {
-      title = titleOrOptions.title || "YouTube Utilities";
-    } else if (typeof titleOrOptions === "string") {
-      title = titleOrOptions;
-    }
-    const existing = document.getElementById(this.winId);
-    if (existing) {
-      this.wm.bringToFront(existing);
-      return;
-    }
-
-    const content = `
-      <div class="window-content yt-utils">
-        <div class="toolbar">
-          <div class="row">
-            <input id="yt-input-${this.winId}" type="text" spellcheck="false" autocomplete="off"
-              placeholder="Paste a YouTube video/shorts/playlist URL (or a video id)"/>
-            <button id="yt-load-${this.winId}">Load</button>
-            <button id="yt-paste-${this.winId}" title="Paste from clipboard">Paste</button>
-            <button id="yt-clear-${this.winId}" title="Clear embed">Clear</button>
-          </div>
-          <div class="row meta" style="justify-content:space-between;margin-top:10px">
-            <div class="row">
-              <label class="toggle" title="Use youtube-nocookie.com for embeds">
-                <input id="yt-nocookie-${this.winId}" type="checkbox" ${this._prefs.nocookie ? "checked" : ""}/>
-                <span>No-Cookie</span>
-              </label>
-              <label class="toggle" title="Autoplay when loaded (some browsers block unless muted)">
-                <input id="yt-autoplay-${this.winId}" type="checkbox" ${this._prefs.autoplay ? "checked" : ""}/>
-                <span>Autoplay</span>
-              </label>
-              <label class="toggle" title="Show player controls">
-                <input id="yt-controls-${this.winId}" type="checkbox" ${this._prefs.controls ? "checked" : ""}/>
-                <span>Controls</span>
-              </label>
-              <label class="toggle" title="Mute when autoplay is enabled">
-                <input id="yt-mute-${this.winId}" type="checkbox" ${this._prefs.mute ? "checked" : ""}/>
-                <span>Mute</span>
-              </label>
-              <label class="toggle" title="Open links inside Yuki Browser instead of a new tab">
-                <input id="yt-open-in-browser-${this.winId}" type="checkbox" ${
-                  this._prefs.openInBrowserApp ? "checked" : ""
-                }/>
-                <span>Internal Browser</span>
-              </label>
-            </div>
-            <div class="row">
-              <span id="yt-status-${this.winId}" class="meta"></span>
-            </div>
-          </div>
-
-          <div class="row" style="margin-top:10px">
-            <div class="yt-preview" id="yt-preview-${this.winId}" style="display:none">
-              <img id="yt-preview-img-${this.winId}" alt="" />
-              <div class="yt-preview-txt">
-                <div class="yt-preview-title" id="yt-preview-title-${this.winId}"></div>
-                <div class="yt-preview-sub meta" id="yt-preview-sub-${this.winId}"></div>
-              </div>
-            </div>
-          </div>
-
-          <div class="row meta" style="margin-top:10px;justify-content:space-between">
-            <div class="row">
-              <label class="toggle" title="Timestamp tool">
-                <span>Time</span>
-                <input id="yt-time-${this.winId}" type="text" placeholder="1:23 or 1m23s" style="width:140px" />
-              </label>
-              <button class="mini" id="yt-copy-time-${this.winId}" title="Copy watch link at time">Copy Link @ Time</button>
-              <button class="mini" id="yt-jump-time-${this.winId}" title="Reload embed starting at time">Jump</button>
-            </div>
-            <div class="row">
-              <label class="toggle" title="End time (seconds or 1m30s)">
-                <span>End</span>
-                <input id="yt-end-${this.winId}" type="text" placeholder="(optional)" style="width:140px" />
-              </label>
-              <label class="toggle" title="Loop playback">
-                <input id="yt-loop-${this.winId}" type="checkbox" ${this._preset.loop ? "checked" : ""}/>
-                <span>Loop</span>
-              </label>
-              <button class="mini" id="yt-save-preset-${this.winId}" title="Save loop/end as default">Save Preset</button>
-              <button class="mini" id="yt-reset-preset-${this.winId}" title="Reset preset">Reset</button>
-            </div>
-          </div>
-        </div>
-        <div class="split">
-          <div class="panel embed">
-            <div class="panel-h">
-              <span>Embed</span>
-              <div class="row">
-                <button class="mini" id="yt-pin-${this.winId}" title="Pin/unpin current item">Pin</button>
-                <button class="mini" id="yt-copy-embed-${this.winId}" title="Copy embed URL">Copy Embed URL</button>
-                <button class="mini" id="yt-open-yt-${this.winId}" title="Open watch page">Open</button>
-              </div>
-            </div>
-            <div class="panel-b" style="padding:0">
-              <iframe id="yt-iframe-${this.winId}" title="YouTube embed" allow="autoplay; encrypted-media; picture-in-picture; fullscreen"></iframe>
-            </div>
-          </div>
-          <div class="panel">
-            <div class="panel-h">
-              <div class="row" style="gap:8px">
-                <button class="mini yt-tab-btn" id="yt-tab-recent-${this.winId}" data-tab="recent">Recent</button>
-                <button class="mini yt-tab-btn" id="yt-tab-fav-${this.winId}" data-tab="fav">Pinned</button>
-              </div>
-              <div class="row">
-                <button class="mini" id="yt-export-${this.winId}" title="Copy export JSON to clipboard">Export</button>
-                <button class="mini" id="yt-import-${this.winId}" title="Import JSON from clipboard/paste">Import</button>
-                <button class="mini" id="yt-clear-list-${this.winId}">Clear</button>
-              </div>
-            </div>
-            <div class="panel-b" id="yt-list-${this.winId}"></div>
-          </div>
-        </div>
-        <div class="meta">
-          Tips: Supports <code>watch</code>, <code>youtu.be</code>, <code>shorts</code>, <code>embed</code>, and playlists. Time params like <code>&t=1m30s</code> or <code>&start=90</code> are respected.
-        </div>
-      </div>
-    `;
-
-    const win = this.windowHelper.createAndMountWindow(this.winId, title, content, "980px", "640px", {
-      icon: "fab fa-youtube",
-      iconColor: "#ff2a2a"
-    });
-
-    this._els = {
-      win,
-      input: document.getElementById(`yt-input-${this.winId}`),
-      loadBtn: document.getElementById(`yt-load-${this.winId}`),
-      pasteBtn: document.getElementById(`yt-paste-${this.winId}`),
-      clearBtn: document.getElementById(`yt-clear-${this.winId}`),
-      nocookie: document.getElementById(`yt-nocookie-${this.winId}`),
-      autoplay: document.getElementById(`yt-autoplay-${this.winId}`),
-      controls: document.getElementById(`yt-controls-${this.winId}`),
-      mute: document.getElementById(`yt-mute-${this.winId}`),
-      openInBrowser: document.getElementById(`yt-open-in-browser-${this.winId}`),
-      preview: document.getElementById(`yt-preview-${this.winId}`),
-      previewImg: document.getElementById(`yt-preview-img-${this.winId}`),
-      previewTitle: document.getElementById(`yt-preview-title-${this.winId}`),
-      previewSub: document.getElementById(`yt-preview-sub-${this.winId}`),
-      timeInput: document.getElementById(`yt-time-${this.winId}`),
-      copyTimeBtn: document.getElementById(`yt-copy-time-${this.winId}`),
-      jumpTimeBtn: document.getElementById(`yt-jump-time-${this.winId}`),
-      endInput: document.getElementById(`yt-end-${this.winId}`),
-      loop: document.getElementById(`yt-loop-${this.winId}`),
-      savePreset: document.getElementById(`yt-save-preset-${this.winId}`),
-      resetPreset: document.getElementById(`yt-reset-preset-${this.winId}`),
-      iframe: document.getElementById(`yt-iframe-${this.winId}`),
-      status: document.getElementById(`yt-status-${this.winId}`),
-      pinBtn: document.getElementById(`yt-pin-${this.winId}`),
-      copyEmbedBtn: document.getElementById(`yt-copy-embed-${this.winId}`),
-      openYtBtn: document.getElementById(`yt-open-yt-${this.winId}`),
-      tabRecent: document.getElementById(`yt-tab-recent-${this.winId}`),
-      tabFav: document.getElementById(`yt-tab-fav-${this.winId}`),
-      list: document.getElementById(`yt-list-${this.winId}`),
-      exportBtn: document.getElementById(`yt-export-${this.winId}`),
-      importBtn: document.getElementById(`yt-import-${this.winId}`),
-      clearListBtn: document.getElementById(`yt-clear-list-${this.winId}`)
-    };
-
-    this._activeTab = "recent";
-    this._els.endInput.value = this._preset.endSeconds ? String(this._preset.endSeconds) : "";
-    this._bindEvents();
     this._renderLists();
   }
 
