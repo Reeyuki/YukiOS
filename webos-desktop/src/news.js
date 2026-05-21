@@ -11,7 +11,8 @@ const NEWS_UPDATES = [
         icon: "fa-wand-magic-sparkles",
         title: "Features & Improvements",
         items: [
-          ["fa-pin", "Taskbar Pinning Behaviour Improvement", "Improved taskbar pinning behaviour"],
+          ["fa-thumbtack", "Taskbar Pinning Behaviour Improvement", "Improved taskbar pinning behaviour"],
+          ["fa-gamepad", "Games Migration", "Fix 1000+ games images/loading"],
           ["fa-image", "Fix wallpapers display", "Fixed wallpapers display issue"],
           ["fa-trophy", "Improve achievements app ui", "Improved achievements app styling"]
         ]

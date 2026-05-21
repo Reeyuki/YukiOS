@@ -381,50 +381,5 @@
     </div>
 
     <div id="context-menu"></div>
-
-    <script>
-      async function downloadPageFromHtml() {
-        const mirrors = [
-          "https://yukios.pages.dev/",
-          "https://yukios.neocities.org/",
-          "https://yukios.netlify.app/",
-          "https://yukios.netlify.app/"
-        ];
-
-        const filename = "yukios.html";
-
-        for (const url of mirrors) {
-          try {
-            const response = await fetch(url);
-
-            if (!response.ok) {
-              throw new Error(`HTTP ${response.status}`);
-            }
-
-            const htmlContent = await response.text();
-
-            const blob = new Blob([htmlContent], { type: "text/html" });
-            const downloadUrl = URL.createObjectURL(blob);
-
-            const link = document.createElement("a");
-            link.href = downloadUrl;
-            link.download = filename;
-
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-
-            URL.revokeObjectURL(downloadUrl);
-
-            console.log(`Downloaded from: ${url}`);
-            return;
-          } catch (error) {
-            console.warn(`Failed mirror: ${url}`, error.message);
-          }
-        }
-
-        console.error("All mirrors failed.");
-      }
-    </script>
   </body>
 </html>

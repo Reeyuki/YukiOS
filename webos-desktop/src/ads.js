@@ -86,7 +86,7 @@ export class AdsManager {
     AdsManager.instance = this;
 
     this.sessionStart = Date.now();
-    this.minActiveTime = 20000;
+    this.minActiveTime = 5000;
 
     this.providers = [
       {
@@ -140,9 +140,9 @@ export class AdsManager {
 
   getLimits(score) {
     return {
-      maxPerDay: 40,
-      minInterval: 1000 * 60 * 3,
-      smartlink: 0.4
+      maxPerDay: 100,
+      minInterval: 1000 * 30,
+      smartlink: 0.7
     };
   }
   pickProvider() {
@@ -267,7 +267,7 @@ export class AdsManager {
 
     const today = new Date().toDateString();
 
-    if (sessionTime < 120000) return;
+    if (sessionTime < 30000) return;
     if (meta.popunderDate === today) return;
 
     const script = document.createElement("script");
@@ -290,6 +290,8 @@ export class AdsManager {
     saveMeta(meta);
 
     setTimeout(() => this.maybeFirePopunder(), 5000);
+
+    setInterval(() => this.maybeSpawnAd(), 35000);
   }
 
   createAdWindow() {
@@ -324,9 +326,7 @@ export class AdsManager {
     );
 
     this.mountBanner();
-    if (Math.random() < 0.4) {
-      this.mountNative();
-    }
+    this.mountNative();
   }
 
   mountBanner() {

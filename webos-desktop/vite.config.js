@@ -1,9 +1,21 @@
 import { defineConfig } from "vite";
 import { viteSingleFile } from "vite-plugin-singlefile";
+import { execSync } from "child_process";
+
+const commitHash = (() => {
+  try {
+    return execSync("git rev-parse --short HEAD").toString().trim();
+  } catch {
+    return "unknown";
+  }
+})();
 
 export default defineConfig({
   base: "./",
   plugins: [viteSingleFile()],
+  define: {
+    __GIT_COMMIT__: JSON.stringify(commitHash)
+  },
   build: {
     target: "esnext",
     minify: true,
