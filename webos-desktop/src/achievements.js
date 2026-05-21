@@ -88,9 +88,9 @@ export class AchievementsApp extends BaseApp {
         {
           id: "achievements-yukios",
           title: "Achievements",
-          size: ["920px", "750px"],
+          size: ["800px", "40em"],
           icon: "fa fa-trophy",
-          style: { left: "200px", top: "90px" },
+          style: { left: "200px", top: "30px" },
           ui: `<div class="window-content achievements-content">
         <div class="achievements-scroll">
           <div class="achievements-hero">
@@ -179,35 +179,8 @@ export class AchievementsApp extends BaseApp {
     };
   }
 
-  initAchievements(payload, event, element, state) {}
-
-  open() {
-    const winId = "achievements-yukios";
-    const existing = document.getElementById(winId);
-    if (existing) {
-      this.wm.bringToFront(existing);
-      return;
-    }
-
-    this._currentFilter = "all";
-
-    const content = `
-      <div class="window-content achievements-content">
-        <div class="achievements-scroll">
-          ${this._renderHero()}
-          ${this._renderProgress()}
-          ${this._renderToggle(this._currentFilter)}
-          <div class="achievements-grid">
-            ${this._renderGrid(this._currentFilter)}
-          </div>
-        </div>
-      </div>
-    `;
-
-    const win = this.windowHelper.createAndMountWindow(winId, "Achievements", content, "920px", "750px", {
-      icon: "fa fa-trophy",
-      style: { left: "200px", top: "90px" }
-    });
+  initAchievements(payload, event, element, state) {
+    this.refresh();
   }
 
   _initBusListeners() {

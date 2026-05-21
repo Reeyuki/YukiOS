@@ -5,6 +5,20 @@ import { PersistenceTypes } from "./runtime/AppSchema.js";
 
 const NEWS_UPDATES = [
   {
+    date: "May 21, 2026",
+    sections: [
+      {
+        icon: "fa-wand-magic-sparkles",
+        title: "Features & Improvements",
+        items: [
+          ["fa-pin", "Taskbar Pinning Behaviour Improvement", "Improved taskbar pinning behaviour"],
+          ["fa-image", "Fix wallpapers display", "Fixed wallpapers display issue"],
+          ["fa-trophy", "Improve achievements app ui", "Improved achievements app styling"]
+        ]
+      }
+    ]
+  },
+  {
     date: "May 20, 2026",
     sections: [
       {

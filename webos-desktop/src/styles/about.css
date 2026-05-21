@@ -22,10 +22,10 @@
 }
 
 #about-yukios .abx-top {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 12px;
-  align-items: start;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   padding: 14px;
   border-radius: 14px;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -40,6 +40,7 @@
   justify-content: center;
   gap: 10px;
   text-align: center;
+  max-width: 70%;
 }
 
 #about-yukios .abx-badge {
@@ -63,6 +64,9 @@
 }
 
 #about-yukios .abx-meta {
+  position: absolute;
+  top: 14px;
+  right: 14px;
   display: flex;
   flex-direction: column;
   align-items: flex-end;

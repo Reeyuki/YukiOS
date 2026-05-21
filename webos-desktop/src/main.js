@@ -86,8 +86,10 @@ const EnhancedMonacoApp = HybridAdapter.enhanceBaseApp(MonacoApp);
 const EnhancedCameraApp = HybridAdapter.enhanceBaseApp(CameraApp);
 const EnhancedSettingsApp = HybridAdapter.enhanceBaseApp(SettingsApp);
 const EnhancedCalculatorApp = HybridAdapter.enhanceBaseApp(CalculatorApp);
+const EnhancedAchievementsApp = HybridAdapter.enhanceBaseApp(AchievementsApp);
+const EnhancedNewsApp = HybridAdapter.enhanceBaseApp(NewsApp);
 
-const achievementsApp = new AchievementsApp(services);
+const achievementsApp = new EnhancedAchievementsApp(services);
 services.achievementsApp = achievementsApp;
 window.achievements = achievementsApp;
 
@@ -148,7 +150,7 @@ services.shortcutsApp = shortcutsApp;
 const yukiConvertApp = new YukiConvertApp(services);
 services.yukiConvertApp = yukiConvertApp;
 
-const newsApp = new NewsApp(services);
+const newsApp = new EnhancedNewsApp(services);
 services.newsApp = newsApp;
 
 const settingsApp = new EnhancedSettingsApp(services);

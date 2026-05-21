@@ -766,11 +766,27 @@ export class WindowManager {
     if (options.appId) win.dataset.appId = options.appId;
     if (options.appType) win.dataset.appType = options.appType;
 
+    const resolveToPx = (val, isHeight) => {
+      if (val == null) return isHeight ? window.innerHeight * 0.8 : window.innerWidth * 0.8;
+      const str = String(val).trim();
+      if (str.endsWith("vw")) return (window.innerWidth * parseFloat(str)) / 100;
+      if (str.endsWith("vh")) return (window.innerHeight * parseFloat(str)) / 100;
+      if (str.endsWith("em") || str.endsWith("rem")) {
+        const baseFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+        return parseFloat(str) * baseFontSize;
+      }
+      if (str.endsWith("%")) {
+        const base = isHeight ? window.innerHeight : window.innerWidth;
+        return (base * parseFloat(str)) / 100;
+      }
+      return parseInt(str) || (isHeight ? 600 : 800);
+    };
+
     const widthStr = width != null ? String(width) : "80vw";
     const heightStr = height != null ? String(height) : "80vh";
 
-    const vw = widthStr.includes("vw") ? (window.innerWidth * parseFloat(widthStr)) / 100 : parseInt(widthStr);
-    const vh = heightStr.includes("vh") ? (window.innerHeight * parseFloat(heightStr)) / 100 : parseInt(heightStr);
+    const vw = resolveToPx(widthStr, false);
+    const vh = resolveToPx(heightStr, true);
 
     let disableDesktopStretchScroll = false;
     try {
@@ -782,8 +798,8 @@ export class WindowManager {
     let position = this.calculateWindowPosition(vw, vh, options);
 
     if (options.forceId) {
-      if (options.width != null) finalW = options.width;
-      if (options.height != null) finalH = options.height;
+      if (options.width != null) finalW = resolveToPx(options.width, false);
+      if (options.height != null) finalH = resolveToPx(options.height, true);
       if (options.position) position = { left: options.position.x, top: options.position.y };
     } else if (options.appId) {
       try {
@@ -792,8 +808,8 @@ export class WindowManager {
           const parsed = JSON.parse(saved);
           if (parsed && typeof parsed.x === "number" && typeof parsed.y === "number") {
             position = { left: parsed.x, top: parsed.y };
-            if (parsed.width) finalW = parsed.width;
-            if (parsed.height) finalH = parsed.height;
+            if (parsed.width) finalW = resolveToPx(parsed.width, false);
+            if (parsed.height) finalH = resolveToPx(parsed.height, true);
           }
         }
       } catch (e) {}
@@ -1289,6 +1305,7 @@ export class WindowManager {
     this.workspaceManager?.unregisterWindow(winId);
     audioMixer.unregisterWindow(winId);
     bus.emit(BusEvents.WINDOW_CLOSED, { winId });
+    this._renderPinnedItems();
 
     if (this.openWindows.size === 0) {
       this.resetToDefaultState();
@@ -1586,11 +1603,15 @@ export class WindowManager {
     const entry = this.openWindows.get(winId);
     if (!entry) return;
 
+    const win = document.getElementById(winId);
+    const appId = win?.dataset?.appId || this._guessAppIdFromWinId(winId);
+
     const pinnedItems = this._getPinnedItems();
     if (pinnedItems.some((item) => item.winId === winId)) return;
 
     pinnedItems.push({
       winId,
+      appId,
       title: entry.title,
       iconValue: entry.iconValue,
       color: entry.color
@@ -1622,19 +1643,13 @@ export class WindowManager {
     pinnedContainer.className = "taskbar-pinned-container";
 
     pinnedItems.forEach((item) => {
-      const isOpen = this.openWindows.has(item.winId);
-      if (isOpen) return;
-
       const pinnedItem = document.createElement("div");
       pinnedItem.className = "taskbar-item pinned";
       pinnedItem.appendChild(this._buildTaskbarIcon(item.iconValue, item.title, item.color));
 
       pinnedItem.onclick = () => {
-        if (window.appLauncher) {
-          const appId = this._findAppIdByWinId(item.winId);
-          if (appId) {
-            window.appLauncher.launch(appId);
-          }
+        if (window.appLauncher && item.appId) {
+          window.appLauncher.launch(item.appId);
         }
       };
 
@@ -1646,11 +1661,8 @@ export class WindowManager {
           addMenuItem(
             "Launch App",
             () => {
-              if (window.appLauncher) {
-                const appId = this._findAppIdByWinId(item.winId);
-                if (appId) {
-                  window.appLauncher.launch(appId);
-                }
+              if (window.appLauncher && item.appId) {
+                window.appLauncher.launch(item.appId);
               }
             },
             "fa-play"

@@ -68,6 +68,10 @@ export class TaskbarPositionManager {
     const taskbar = document.getElementById("taskbar");
 
     taskbar.addEventListener("contextmenu", (e) => {
+      const target = e.target;
+      if (target instanceof Element && target.closest(".taskbar-item")) {
+        return;
+      }
       e.preventDefault();
       this.showContextMenu(e.clientX, e.clientY);
     });

@@ -719,7 +719,6 @@ player.load("${swfPath}");
             ${this.wm.getWindowControls(resolvedSource)}
           </div>
           <div class="window-content" style="width:100%; height:100%; overflow:hidden; display:flex; align-items:center; justify-content:center; background:#1a1a1a;">
-            <link rel="stylesheet" href="styles/gamesAndApps.css">
             <div class="modern-loader">
               <div class="loader-dots">
                 <div class="loader-dot"></div>
