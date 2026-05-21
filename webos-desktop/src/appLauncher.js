@@ -4,6 +4,7 @@ import { HIGHLIGHTED_GAMES, getGameName, setGameLauncher } from "./games.js";
 import { appMap } from "./gamesList.js";
 import { initializeAppGrid, populateStartMenu, tryGetIcon } from "./startMenu";
 import { IFRAME_ATTRS } from "./shared/iframeAttrs.js";
+import { getLibraryUrl } from "./shared/cdnConfig.js";
 import {
   fetchHtmlAsBlobUrl,
   resolveUrl,
@@ -627,7 +628,7 @@ export class AppLauncher {
 <head>
 <meta charset="UTF-8">
 <title>${gameName}</title>
-<script src="${resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/libs/ruffle.js")}"></script>
+<script src="${getLibraryUrl("ruffle") || "https://unpkg.com/@ruffle-rs/ruffle/ruffle.js"}"></script>
 <style>html,body{margin:0;padding:0;width:100%;height:100%;background:black;overflow:hidden;}#player{width:100%;height:100%;}</style>
 </head>
 <body>

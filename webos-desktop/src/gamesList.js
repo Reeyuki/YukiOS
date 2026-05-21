@@ -1033,7 +1033,7 @@ export const appMap = {
   },
   tinyFishing: {
     type: "game",
-    url: "/static/games/html/tinyfishing.html",
+    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/108.html",
     icon: "/static/icons/tinyFishing.webp",
     title: "Tiny Fishing"
   },
