@@ -71,7 +71,7 @@ export class GameLauncher {
   }
 
   getArchiveBase() {
-    return `${CDN_CONFIG.repos.games.base}/archive/`;
+    return `${CDN_CONFIG.repos.games.archiveBase}/archive/`;
   }
 
   _appendArchiveGameToSidebar(container, archiveGame, onLaunch) {

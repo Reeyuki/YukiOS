@@ -4,6 +4,9 @@ export const CDN_CONFIG = {
     get games() {
       return {
         base: resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main"),
+        archiveBase: resolveGhUrl(
+          "https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@1a4843dd9c0eb267d802625234e54fd6f9a6c9b7"
+        ),
         ref: "main"
       };
     },
