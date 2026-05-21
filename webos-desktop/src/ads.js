@@ -1,7 +1,6 @@
 import { WindowHelper } from "./utils/WindowHelper.js";
 
 const AD_STORAGE_KEY = "yukios_ads_state";
-
 export function shouldEnableAds() {
   const hostname = window.location.hostname;
   if (hostname.includes("vercel") || hostname === "localhost" || hostname === "127.0.0.1" || hostname === "[::1]") {
@@ -140,15 +139,11 @@ export class AdsManager {
   }
 
   getLimits(score) {
-    if (score < 30) {
-      return { maxPerDay: 20, minInterval: 1000 * 60 * 8, smartlink: 0 };
-    }
-
-    if (score < 70) {
-      return { maxPerDay: 60, minInterval: 1000 * 60 * 4, smartlink: 0.4 };
-    }
-
-    return { maxPerDay: 90, minInterval: 1000 * 60 * 2, smartlink: 0.9 };
+    return {
+      maxPerDay: 10,
+      minInterval: 1000 * 60 * 7,
+      smartlink: 0.2
+    };
   }
 
   pickProvider() {
@@ -161,64 +156,120 @@ export class AdsManager {
     const meta = loadMeta();
     resetDaily(meta);
 
-    const score = this.getEngagementScore();
-    const limits = this.getLimits(score);
-
     const now = Date.now();
     const sessionTime = now - this.sessionStart;
+
+    const limits = this.getLimits(0);
 
     if (meta.dailyCount >= limits.maxPerDay) return false;
     if (now - meta.lastShown < limits.minInterval) return false;
     if (sessionTime < this.minActiveTime) return false;
 
-    const provider = this.pickProvider();
-
     const existing = document.getElementById("ads-yukios");
     if (existing) return false;
+
+    const activeAds = document.querySelectorAll(".ad-window-active");
+    if (activeAds.length > 0) return false;
+
+    const useNative = Math.random() < 0.25;
+
+    const containerId = "banner-slot-single";
 
     const win = this.windowHelper.createAndMountWindow(
       "ads-yukios",
       "Sponsored",
       `
-      <div class="window-content" style="padding:12px;">
-        <div id="${provider.containerId}"></div>
+      <div class="window-content ad-window-active" style="padding:12px;">
+        <div id="${containerId}"></div>
       </div>
-      `,
+    `,
       "420px",
       "300px",
       {
         icon: "fa fa-bullhorn",
         style: {
           position: "absolute",
-          left: `${window.innerWidth - 420 - 40}px`,
-          top: `${window.innerHeight - 300 - 40}px`,
+          left: `${Math.max(20, window.innerWidth - 420 - 40)}px`,
+          top: `${Math.max(20, window.innerHeight - 300 - 40)}px`,
           zIndex: "50"
         }
       }
     );
 
-    provider.render();
+    if (useNative) {
+      this.mountNativeSingle(containerId);
+    } else {
+      this.mountBannerSingle(containerId);
+    }
 
     meta.dailyCount++;
-    meta.lastShown = Date.now();
+    meta.lastShown = now;
+    meta.lastAdType = useNative ? "native" : "banner";
+
     saveMeta(meta);
 
+    setTimeout(() => {
+      const el = document.querySelector(".ad-window-active");
+      if (el) el.classList.remove("ad-window-active");
+    }, 60000);
+
     return true;
+  }
+  mountNativeSingle(id) {
+    if (!shouldEnableAds()) return;
+
+    const c = document.getElementById(id);
+    if (!c) return;
+
+    c.innerHTML = "";
+
+    const s = document.createElement("script");
+    s.src = ADS.native.src;
+    s.async = true;
+    s.dataset.cfasync = "false";
+
+    c.appendChild(s);
+  }
+  mountBannerSingle(id) {
+    if (!shouldEnableAds()) return;
+
+    const c = document.getElementById(id);
+    if (!c) return;
+
+    c.innerHTML = "";
+
+    const s1 = document.createElement("script");
+    s1.innerHTML = `
+    atOptions = {
+      key: '${ADS.banner.key}',
+      format: 'iframe',
+      height: ${ADS.banner.height},
+      width: ${ADS.banner.width},
+      params: {}
+    };
+  `;
+
+    const s2 = document.createElement("script");
+    s2.src = ADS.banner.src;
+    s2.async = true;
+
+    c.appendChild(s1);
+    c.appendChild(s2);
   }
 
   maybeFirePopunder() {
     if (!shouldEnableAds()) return;
+
     const meta = loadMeta();
     resetDaily(meta);
 
-    const score = this.getEngagementScore();
-    const sessionTime = Date.now() - this.sessionStart;
+    const now = Date.now();
+    const sessionTime = now - this.sessionStart;
 
     const today = new Date().toDateString();
 
-    if (score < 70) return;
-    if (sessionTime < 60000) return;
-    if (meta.popunderDate === today && meta.popunderShown) return;
+    if (sessionTime < 120000) return;
+    if (meta.popunderDate === today) return;
 
     const script = document.createElement("script");
     script.src = POPUNDER_SCRIPT;
@@ -274,7 +325,9 @@ export class AdsManager {
     );
 
     this.mountBanner();
-    this.mountNative();
+    if (Math.random() < 0.4) {
+      this.mountNative();
+    }
   }
 
   mountBanner() {
@@ -302,9 +355,12 @@ export class AdsManager {
     c.appendChild(s1);
     c.appendChild(s2);
   }
-
   mountNative() {
     if (!shouldEnableAds()) return;
+    if (this.nativeShown) return;
+
+    this.nativeShown = true;
+
     const c = document.getElementById(ADS.native.containerId);
     if (!c) return;
 
