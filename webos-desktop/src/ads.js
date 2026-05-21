@@ -140,12 +140,11 @@ export class AdsManager {
 
   getLimits(score) {
     return {
-      maxPerDay: 10,
-      minInterval: 1000 * 60 * 7,
-      smartlink: 0.2
+      maxPerDay: 40,
+      minInterval: 1000 * 60 * 3,
+      smartlink: 0.4
     };
   }
-
   pickProvider() {
     return this.providers[Math.floor(Math.random() * this.providers.length)];
   }
@@ -171,7 +170,7 @@ export class AdsManager {
     const activeAds = document.querySelectorAll(".ad-window-active");
     if (activeAds.length > 0) return false;
 
-    const useNative = Math.random() < 0.25;
+    const useNative = Math.random() < 0.7;
 
     const containerId = "banner-slot-single";
 

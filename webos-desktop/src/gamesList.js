@@ -185,18 +185,6 @@ export const appMap = {
     icon: "/static/icons/ter.webp",
     title: "Terraria"
   },
-  pvz: {
-    type: "game",
-    url: "https://emupedia.net/emupedia-game-pvz",
-    icon: "/static/icons/pvz.webp",
-    title: "Plants vs. Zombies"
-  },
-  pvzGe: {
-    type: "game",
-    url: "https://truffled.lol/games/pvzge/index.html",
-    icon: "/static/icons/pvzGe.webp",
-    title: "Plants vs. Zombies 2 Gardenless"
-  },
   undertaleSans: {
     type: "game",
     url: "https://cdn.jsdelivr.net/gh/reeyuki/yukios-games@main/gnmath/bts.html",
@@ -235,7 +223,7 @@ export const appMap = {
   },
   geometryDash: {
     type: "game",
-    url: "https://emupedia.net/emupedia-game-geometry-dash",
+    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/27-f.html",
     icon: "/static/icons/geometryDash.webp",
     title: "Geometry Dash"
   },
@@ -295,13 +283,13 @@ export const appMap = {
   },
   game2048: {
     type: "game",
-    url: "https://emupedia.net/emupedia-game-2048",
+    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/375.html",
     icon: "/static/icons/2048.webp",
     title: "2048"
   },
   flappyBird: {
     type: "game",
-    url: "https://emupedia.net/emupedia-game-flappy-bird",
+    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/129.html",
     icon: "/static/icons/flappy.webp",
     title: "Flappy Bird"
   },
@@ -319,13 +307,13 @@ export const appMap = {
   },
   cutTheRope: {
     type: "game",
-    url: "https://emupedia.net/emupedia-game-cut-the-rope2",
+    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/85-f.html",
     icon: "/static/icons/ctr2.webp",
     title: "Cut The Rope 2"
   },
   happyWheels: {
     type: "game",
-    url: "https://emupedia.net/emupedia-game-happy-wheels/flash",
+    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/624.html",
     icon: "/static/icons/happyWheels.webp",
     title: "Happy Wheels"
   },
@@ -463,7 +451,7 @@ export const appMap = {
   },
   pinball: {
     type: "game",
-    url: "https://emupedia.net/emupedia-game-space-cadet-pinball",
+    url: "https://selenite.cc/resources/semag/pinball/index.html",
     icon: "/static/icons/pinball.webp",
     title: "Pinball"
   },
@@ -1003,7 +991,7 @@ export const appMap = {
   },
   doom: {
     type: "game",
-    url: "https://emupedia.net/emupedia-game-doom1",
+    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/203-a.html",
     icon: "/static/icons/doom.webp",
     title: "Doom"
   },
@@ -1042,6 +1030,12 @@ export const appMap = {
     url: "https://selenite.cc/resources/semag/ddlc/index.html",
     icon: "/static/icons/ddlc.webp",
     title: "Doki Doki Literature Club"
+  },
+  ddlcPlus: {
+    type: "game",
+    url: "https://selenite.cc/resources/semag/ddlcplus/index.html",
+    icon: "/static/icons/ddlc.webp",
+    title: "Doki Doki Literature Club Plus"
   },
   amongUs: {
     type: "game",

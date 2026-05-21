@@ -643,6 +643,113 @@ export default {
       });
     }
 
+    if (url.pathname === "/admin/export" && request.method === "GET") {
+      const headers = {
+        ...corsHeaders("application/json"),
+        "Content-Disposition": `attachment; filename="yukios-analytics-${new Date().toISOString().slice(0, 10)}.json"`
+      };
+
+      const encoder = new TextEncoder();
+      const stream = new ReadableStream({
+        async start(controller) {
+          try {
+            controller.enqueue(
+              encoder.encode('{"version":"1.0","exported_at":"' + new Date().toISOString() + '","total_records":')
+            );
+
+            const countResult = await env.DB.prepare(`SELECT COUNT(*) as count FROM analytics`).first();
+            controller.enqueue(encoder.encode(countResult.count.toString()));
+            controller.enqueue(encoder.encode(',"records":['));
+
+            let first = true;
+            let offset = 0;
+            const BATCH_SIZE = 500;
+
+            while (true) {
+              const batch = await env.DB.prepare(
+                `SELECT id, daily_id, timestamp, data FROM analytics ORDER BY timestamp ASC LIMIT ? OFFSET ?`
+              )
+                .bind(BATCH_SIZE, offset)
+                .all();
+
+              if (batch.results.length === 0) break;
+
+              for (const row of batch.results) {
+                if (!first) {
+                  controller.enqueue(encoder.encode(","));
+                }
+                first = false;
+                controller.enqueue(encoder.encode(JSON.stringify(row)));
+              }
+
+              offset += BATCH_SIZE;
+            }
+
+            controller.enqueue(encoder.encode("]}"));
+            controller.close();
+          } catch (error) {
+            controller.error(error);
+          }
+        }
+      });
+
+      return new Response(stream, { headers });
+    }
+
+    if (url.pathname === "/admin/import" && request.method === "POST") {
+      let payload;
+      try {
+        payload = await request.json();
+      } catch {
+        return jsonResponse({ error: "invalid json" }, 400);
+      }
+
+      if (!payload.records || !Array.isArray(payload.records)) {
+        return jsonResponse({ error: "missing records array" }, 400);
+      }
+
+      const records = payload.records;
+      const BATCH_SIZE = 100;
+      let imported = 0;
+      let skipped = 0;
+      let errors = [];
+
+      for (let i = 0; i < records.length; i += BATCH_SIZE) {
+        const batch = records.slice(i, i + BATCH_SIZE);
+        const statements = [];
+
+        for (const record of batch) {
+          if (!record.id || !record.daily_id || !record.timestamp || !record.data) {
+            skipped++;
+            continue;
+          }
+
+          statements.push(
+            env.DB.prepare(`INSERT OR REPLACE INTO analytics (id, daily_id, timestamp, data) VALUES (?, ?, ?, ?)`).bind(
+              record.id,
+              record.daily_id,
+              record.timestamp,
+              record.data
+            )
+          );
+        }
+
+        try {
+          await env.DB.batch(statements);
+          imported += statements.length;
+        } catch (e) {
+          errors.push(`Batch ${i / BATCH_SIZE}: ${e.message}`);
+        }
+      }
+
+      return jsonResponse({
+        success: true,
+        imported,
+        skipped,
+        errors: errors.length > 0 ? errors : undefined
+      });
+    }
+
     return new Response("Not Found", { status: 404, headers: corsHeaders("text/plain") });
   }
 };
@@ -884,6 +991,10 @@ canvas{width:100%!important;height:100%!important}
       <div class="nav-item" data-panel="exploration" onclick="switchPanel('exploration',this)">
         <i class="fa-solid fa-compass"></i>Exploration
       </div>
+      <div class="nav-section-label">Admin</div>
+      <div class="nav-item" data-panel="data" onclick="switchPanel('data',this)">
+        <i class="fa-solid fa-database"></i>Data Management
+      </div>
     </nav>
     <div class="sidebar-footer">
       <div class="live-badge"><span class="live-dot"></span>Live monitoring</div>
@@ -1032,6 +1143,26 @@ canvas{width:100%!important;height:100%!important}
         <div class="explore-grid" id="exploreGrid"><div class="empty-state"><i class="fa-solid fa-compass"></i>Load data to see exploration stats.</div></div>
       </div>
 
+      <div id="panel-data" class="panel">
+        <div class="section-header">
+          <div class="section-title"><i class="fa-solid fa-database"></i>Data Management</div>
+        </div>
+        <div class="cards-grid">
+          <div class="stat-card">
+            <div class="sc-label"><i class="fa-solid fa-download" style="margin-right:6px;color:var(--accent)"></i>Export Data</div>
+            <div class="sc-sub" style="margin-bottom:12px">Download all analytics data as JSON</div>
+            <button class="btn-load" onclick="exportData()" style="width:100%;justify-content:center"><i class="fa-solid fa-download"></i>Export</button>
+          </div>
+          <div class="stat-card">
+            <div class="sc-label"><i class="fa-solid fa-upload" style="margin-right:6px;color:var(--accent)"></i>Import Data</div>
+            <div class="sc-sub" style="margin-bottom:12px">Restore analytics from JSON file</div>
+            <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(this)">
+            <button class="btn-load" onclick="document.getElementById('importFile').click()" style="width:100%;justify-content:center"><i class="fa-solid fa-upload"></i>Import</button>
+          </div>
+        </div>
+        <div id="importStatus" style="margin-top:20px"></div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -1057,7 +1188,8 @@ var panelTitles={
   sessions:"Session Analytics",
   flows:"Navigation Flows",
   entryexit:"Entry / Exit Apps",
-  exploration:"Exploration Stats"
+  exploration:"Exploration Stats",
+  data:"Data Management"
 };
 
 function switchPanel(id,el){
@@ -1396,6 +1528,60 @@ function renderExploration(data){
     });
   } else {diverse.innerHTML+='<div style="font-size:11px;color:var(--muted);margin-top:8px">No data</div>';}
   grid.appendChild(diverse);
+}
+
+function exportData(){
+  fetch("/admin/export",{headers:getHeaders()})
+    .then(function(r){return r.blob();})
+    .then(function(blob){
+      var url=URL.createObjectURL(blob);
+      var a=document.createElement("a");
+      a.href=url;
+      a.download="yukios-analytics-"+new Date().toISOString().slice(0,10)+".json";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    })
+    .catch(function(e){
+      alert("Export failed: "+e.message);
+    });
+}
+
+function importData(input){
+  var file=input.files[0];
+  if(!file){return;}
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var data=JSON.parse(e.target.result);
+      if(!data.records||!Array.isArray(data.records)){
+        alert("Invalid file format");
+        return;
+      }
+      var statusDiv=document.getElementById("importStatus");
+      statusDiv.innerHTML='<div style="color:var(--muted);font-size:13px">Importing '+data.records.length+' records...</div>';
+      fetch("/admin/import",{method:"POST",headers:{"Authorization":"Bearer "+token,"Content-Type":"application/json"},body:JSON.stringify(data)})
+        .then(function(r){return r.json();})
+        .then(function(res){
+          if(res.success){
+            statusDiv.innerHTML='<div style="color:var(--green);font-size:13px;font-weight:700"><i class="fa-solid fa-check-circle"></i> Import complete: '+res.imported+' imported, '+res.skipped+' skipped</div>';
+            if(res.errors&&res.errors.length){
+              statusDiv.innerHTML+='<div style="color:var(--red);font-size:11px;margin-top:8px">Errors: '+res.errors.join(", ")+'</div>';
+            }
+          }else{
+            statusDiv.innerHTML='<div style="color:var(--red);font-size:13px">Import failed</div>';
+          }
+        })
+        .catch(function(err){
+          statusDiv.innerHTML='<div style="color:var(--red);font-size:13px">Import failed: '+err.message+'</div>';
+        });
+    }catch(err){
+      alert("Failed to parse file: "+err.message);
+    }
+  };
+  reader.readAsText(file);
+  input.value="";
 }
 <\/script>
 </body>
