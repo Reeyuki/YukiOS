@@ -677,7 +677,12 @@ player.load("${swfPath}");
       let resolvedSource =
         shouldBypassResolution || isCdnGh ? source : await resolveUrl(source, isCdnGhUrl(window.location.href));
 
-      if (isCdnGh && typeof resolvedSource === "string" && resolvedSource.startsWith("/") && !resolvedSource.startsWith("/static/apps/azahar/")) {
+      if (
+        isCdnGh &&
+        typeof resolvedSource === "string" &&
+        resolvedSource.startsWith("/") &&
+        !resolvedSource.startsWith("/static/apps/azahar/")
+      ) {
         const repoBase = getCurrentCdnRepoBase();
         if (repoBase) {
           resolvedSource = `${repoBase}${resolvedSource}`;

@@ -459,7 +459,7 @@ export async function fetchHtmlAsBlobUrl(url) {
 
   function resolve(url) {
     if (typeof url !== 'string' || !url) return url;
-    if (url.startsWith('blob:') || url.startsWith('data:') || url.startsWith('http://') || url.startsWith('https://') || url.startsWith('
+    if (url.startsWith('blob:') || url.startsWith('data:') || url.startsWith('http://') || url.startsWith('https://') || url.startsWith('//')) return url;
     let p = url;
     if (p.startsWith('/')) {
       p = p.slice(1);
