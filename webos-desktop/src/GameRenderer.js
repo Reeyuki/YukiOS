@@ -368,6 +368,7 @@ export class GameRenderer {
 
     sectionsHost.appendChild(document.createComment("archive-placeholder"));
     this.renderer._loadArchiveSection(container, onLaunch, collapsed);
+    this.renderer._loadLuminSDKSection(container, collapsed);
 
     const sidebar = container.querySelector(".steam-library-sidebar");
     const mainContent = container.querySelector(".steam-main-content");

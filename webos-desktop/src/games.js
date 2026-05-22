@@ -385,6 +385,10 @@ export class GameWindowRenderer {
     return this.gameLauncher._loadArchiveSection(container, onLaunch, collapsed);
   }
 
+  _loadLuminSDKSection(container, collapsed) {
+    return this.gameLauncher._loadLuminSDKSection(container, collapsed);
+  }
+
   _attachGridDelegation(container, onLaunch) {
     return this.gameUI._attachGridDelegation(container, onLaunch);
   }

@@ -289,4 +289,70 @@ export class GameLauncher {
       placeholder.innerHTML = `<div style="color:#898989;font-size:13px;padding:10px 0;">Failed to load archive games.</div>`;
     }
   }
+
+  _loadLuminSDKSection(container, collapsed) {
+    const target = container.querySelector(".steam-library-page");
+    if (!target) return;
+
+    const sectionTitle = "LuminSDK Games";
+    const sectionId = `steam-section-${sectionTitle.toLowerCase().replace(/\s+/g, "-")}`;
+    const isExpanded = collapsed.includes(sectionTitle);
+
+    const yukiosContent = target.querySelector(".steam-yukios-content");
+    if (!yukiosContent) return;
+
+    const placeholder = document.createElement("div");
+    placeholder.id = "luminsdk-section-placeholder";
+    placeholder.innerHTML = `
+      <div class="steam-section-header" id="${sectionId}" data-title="${sectionTitle}" style="cursor: pointer; display: flex; align-items: center; gap: 10px;">
+        <i class="fas ${isExpanded ? "fa-chevron-down" : "fa-chevron-right"}" style="font-size: 10px; color: #898989;"></i>
+        <div class="steam-section-title">${sectionTitle}</div>
+        <div style="height: 1px; flex: 1; background: rgba(255,255,255,0.1); margin-left: 10px;"></div>
+      </div>
+      <div class="steam-luminsdk-container" style="display: ${isExpanded ? "block" : "none"}; padding: 20px 0;">
+        <iframe id="luminsdk-iframe" style="width: 100%; height: 600px; border: none; background: #1b2838;"></iframe>
+      </div>
+    `;
+    yukiosContent.appendChild(placeholder);
+
+    const iframe = placeholder.querySelector("#luminsdk-iframe");
+    if (iframe) {
+      const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+      iframeDoc.open();
+      iframeDoc.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { margin: 0; padding: 0; background: #1b2838; }
+            #games { width: 100%; height: 100%; }
+          </style>
+        </head>
+        <body>
+          <div id="games"></div>
+          <script src="https://cdn.jsdelivr.net/gh/luminsdk/script@latest/lumin.min.js"><\/script>
+          <script>
+            Lumin.init({
+              container: '#games',
+              theme: 'dark'
+            });
+          <\/script>
+        </body>
+        </html>
+      `);
+      iframeDoc.close();
+    }
+
+    placeholder.querySelector(".steam-section-header").onclick = () => {
+      SteamDataManager.toggleCollapsed(sectionTitle);
+      const content = placeholder.querySelector(".steam-luminsdk-container");
+      const icon = placeholder.querySelector(".steam-section-header i");
+      const nowExpanded = SteamDataManager.getCollapsed().includes(sectionTitle);
+      content.style.display = nowExpanded ? "block" : "none";
+      if (icon) {
+        icon.className = `fas ${nowExpanded ? "fa-chevron-down" : "fa-chevron-right"}`;
+        icon.style.cssText = "font-size: 10px; color: #898989;";
+      }
+    };
+  }
 }
