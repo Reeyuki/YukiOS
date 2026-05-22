@@ -53,7 +53,8 @@ export class AppLauncher {
     emulatorApp,
     ruffleApp,
     shortcutsApp,
-    yukiConvertApp
+    yukiConvertApp,
+    setupApp
   ) {
     this.wm = windowManager;
     this.windowHelper = new WindowHelper(this.wm);
@@ -86,6 +87,7 @@ export class AppLauncher {
     this.ruffleApp = ruffleApp;
     this.shortcutsApp = shortcutsApp;
     this.yukiConvertApp = yukiConvertApp;
+    this.setupApp = setupApp;
     this.TRANSPARENCY_ALLOWED_APP_IDS = new Set(["paint", "photopea", "vscode", "liventcord"]);
 
     this.clippyPromise = initClippy();
@@ -306,6 +308,12 @@ export class AppLauncher {
             source: "/static/apps/azahar/index.html",
             originalName: "Azahar"
           })
+      },
+      setupApp: {
+        type: "system",
+        title: "Setup Wizard",
+        action: () => this.setupApp.open(),
+        clippy: { message: "Let me walk you through setting up Yuki OS!", animation: "Pleased" }
       }
     };
 
@@ -384,6 +392,7 @@ export class AppLauncher {
     this.appRuntime.registerLegacy("achievements", this.achievementsApp);
     this.appRuntime.registerLegacy("profileCustomizer", this.profileCustomizerApp);
     this.appRuntime.registerLegacy("yukiConvert", this.yukiConvertApp);
+    this.appRuntime.registerLegacy("setupApp", this.setupApp);
   }
 
   _tryLaunchDeclarative(appId, opts) {

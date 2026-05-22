@@ -185,6 +185,10 @@ services.categoriesApp = categoriesApp;
 
 const model3dApp = new Model3DApp(services);
 services.model3dApp = model3dApp;
+
+const setupApp = new SetupApp(services);
+services.setupApp = setupApp;
+
 const appLauncher = new AppLauncher(
   windowManager,
   fileSystemManager,
@@ -215,7 +219,8 @@ const appLauncher = new AppLauncher(
   emulatorApp,
   ruffleApp,
   shortcutsApp,
-  yukiConvertApp
+  yukiConvertApp,
+  setupApp
 );
 window.appLauncher = appLauncher;
 windowManager.setAppLauncher(appLauncher);
@@ -228,9 +233,6 @@ services.sessionManager = sessionManager;
 
 const commandPalette = new CommandPalette(services);
 services.commandPalette = commandPalette;
-
-const setupApp = new SetupApp(services);
-services.setupApp = setupApp;
 
 async function start() {
   await sessionManager.showLogin();

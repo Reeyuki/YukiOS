@@ -516,13 +516,13 @@ export const appMap = {
     title: "Getting Over It"
   },
   paint: {
-    type: "game",
+    type: "system",
     url: "https://jspaint.app",
     icon: "/static/icons/paint.webp",
     title: "Paint"
   },
   photopea: {
-    type: "game",
+    type: "system",
     url: "https://www.photopea.com/",
     icon: "/static/icons/photopea.webp",
     title: "Photopea"
@@ -1227,6 +1227,11 @@ export const appMap = {
     title: "kiwiIRC",
     icon: "/static/icons/kiwiirc.webp",
     url: "/static/apps/kiwiirc/index.html"
+  },
+  setupApp: {
+    type: "system",
+    title: "Setup Wizard",
+    icon: "fas fa-rocket"
   },
   slitherIO: {
     type: "game",
