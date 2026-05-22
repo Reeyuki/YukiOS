@@ -115,7 +115,10 @@ async function getCreateAzaharModule() {
     return window.createAzaharModule;
   }
   if (!createAzaharModuleFactoryPromise) {
-    const moduleUrl = new URL("./Build/azahar_libretro.js", window.location.href).href;
+    const baseUrl = window.location.hostname.includes("jsdelivr") || window.location.hostname.includes("cdn") 
+      ? "/static/apps/azahar/" 
+      : window.location.href;
+    const moduleUrl = new URL("./Build/azahar_libretro.js", baseUrl).href;
     createAzaharModuleFactoryPromise = (async () => {
       const runtimeFormat = await detectAzaharRuntimeFormat(moduleUrl);
       if (runtimeFormat === "classic") {
@@ -1902,7 +1905,12 @@ async function loadCore() {
     onAbort: (reason) => {
       reportRuntimeFailure("Wasm abort", reason);
     },
-    locateFile: (path) => new URL(`./Build/${path}`, window.location.href).href,
+    locateFile: (path) => {
+      const baseUrl = window.location.hostname.includes("jsdelivr") || window.location.hostname.includes("cdn") 
+        ? "/static/apps/azahar/" 
+        : window.location.href;
+      return new URL(`./Build/${path}`, baseUrl).href;
+    },
   });
   ensureFsDirectory("/save");
   ensureFsDirectory("/system");
