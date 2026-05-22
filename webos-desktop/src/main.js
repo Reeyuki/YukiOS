@@ -38,6 +38,7 @@ import { CommandPalette } from "./commandPalette.js";
 import { ShortcutsApp } from "./shortcuts.js";
 import { YukiConvertApp } from "./yukiConvert.js";
 import { HybridAdapter } from "./runtime/HybridAdapter.js";
+import { SetupApp } from "./setupApp.js";
 import {
   resolveGhUrl,
   resolveIconUrl,
@@ -227,6 +228,9 @@ services.sessionManager = sessionManager;
 
 const commandPalette = new CommandPalette(services);
 services.commandPalette = commandPalette;
+
+const setupApp = new SetupApp(services);
+services.setupApp = setupApp;
 
 async function start() {
   await sessionManager.showLogin();

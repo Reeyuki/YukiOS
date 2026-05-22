@@ -213,7 +213,7 @@ export class AppLauncher {
       },
       systemApps: {
         type: "system",
-        title: "All Apps",
+        title: "System Apps",
         action: () => this.categoriesApp.openSystemsApp(this, this.explorerApp.wm)
       },
 
@@ -340,10 +340,11 @@ export class AppLauncher {
     const currentNewsSig = getNewsContentSignature();
     const savedNewsSig = localStorage.getItem(StorageKeys.newsReadSignatureKey);
     const legacyNewsSeen = localStorage.getItem(StorageKeys.newsSeenKey) === "true";
+    const setupCompleted = localStorage.getItem(StorageKeys.setupCompleted) === "true";
 
     if (!savedNewsSig && legacyNewsSeen) {
       localStorage.setItem(StorageKeys.newsReadSignatureKey, currentNewsSig);
-    } else if (savedNewsSig !== currentNewsSig) {
+    } else if (savedNewsSig !== currentNewsSig && setupCompleted) {
       setTimeout(() => {
         this.newsApp.open();
         localStorage.setItem(StorageKeys.newsReadSignatureKey, currentNewsSig);

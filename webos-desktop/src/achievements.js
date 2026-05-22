@@ -30,7 +30,8 @@ export const Achievements = {
   FileHoarder: "file_hoarder",
   RegularUser: "regular_user",
   SystemVeteran: "system_veteran",
-  Completionist: "completionist"
+  Completionist: "completionist",
+  SetupComplete: "setup_complete"
 };
 
 export class AchievementsApp extends BaseApp {
@@ -361,6 +362,13 @@ export class AchievementsApp extends BaseApp {
         desc: "Unlock all achievements",
         icon: "fa-trophy",
         rarity: "legendary"
+      },
+      {
+        id: Achievements.SetupComplete,
+        title: "System Ready",
+        desc: "Finish Yuki OS setup wizard",
+        icon: "fa-flag-checkered",
+        rarity: "uncommon"
       }
     ];
   }

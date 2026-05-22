@@ -119,14 +119,14 @@ export class CategoriesApp {
       return;
     }
 
-    const win = wm.createWindow(winId, "All Apps", "800px", "600px");
+    const win = wm.createWindow(winId, "System Apps", "800px", "600px");
     win.classList.add("window-root");
 
     const systemRenderer = new SystemAppRenderer(appLauncher?.appMap);
 
     win.innerHTML = `
       <div class="window-header">
-        <span>All Apps</span>
+        <span>System Apps</span>
         ${wm.getWindowControls()}
       </div>
       <div class="window-content system-apps-window" style="width:100%;height:100%;overflow:auto;padding:24px;box-sizing:border-box;background: linear-gradient(180deg, rgba(20,20,30,0.95), rgba(15,15,25,0.98));">
@@ -134,7 +134,7 @@ export class CategoriesApp {
       </div>`;
 
     const windowHelper = new WindowHelper(wm);
-    windowHelper.mountWindow(win, winId, "All Apps", "fas fa-desktop");
+    windowHelper.mountWindow(win, winId, "System Apps", "fas fa-desktop");
 
     const container = win.querySelector("#system-app-container");
     systemRenderer.render(container, (appId) => {

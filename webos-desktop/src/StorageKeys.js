@@ -70,5 +70,6 @@ export const StorageKeys = {
   notificationsRemoveTimeout: "yukiOS_notifications_remove_timeout",
   notificationsPopAnimation: "yukiOS_notifications_pop_animation",
   notificationsOverFullscreen: "yukiOS_notifications_over_fullscreen",
-  notificationsDuration: "yukiOS_notifications_duration"
+  notificationsDuration: "yukiOS_notifications_duration",
+  setupCompleted: "yukiOS_setup_completed"
 };

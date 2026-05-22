@@ -27,7 +27,7 @@ export function buildSteamShell(container, username, profilePic, hiddenGamesCoun
     </div>
 
     <div class="steam-main">
-      <div class="steam-top-bar window-header">
+      <div class="steam-top-bar">
         <i class="fab fa-steam" style="font-size: 20px; margin-right: 8px;"></i>
         <div class="steam-menu-items">
           <div class="steam-dropdown">

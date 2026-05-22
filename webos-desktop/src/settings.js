@@ -41,7 +41,7 @@ export class SettingsApp extends BaseApp {
         analyticsDisabled: localStorage.getItem(StorageKeys.analyticsDisabled) === "true",
         taskbarAlignment: localStorage.getItem(StorageKeys.taskbarAlignment) || "center",
         cdnMirror: localStorage.getItem(StorageKeys.cdnMirror) || "jsdelivr",
-        theme: localStorage.getItem(StorageKeys.theme) || "auto",
+        theme: localStorage.getItem(StorageKeys.theme) || "dark",
         windowTransparency: Number.isFinite(rawTransparency) ? Math.max(0.2, Math.min(1, rawTransparency)) : 1,
         soundEnabled: localStorage.getItem(StorageKeys.soundEnabled) !== "false",
         masterVolume: Number.isFinite(rawMasterVol) ? Math.max(0, Math.min(1, rawMasterVol)) : 1,

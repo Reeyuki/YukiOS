@@ -410,18 +410,154 @@
 }
 
 html[data-theme="light"] #taskbar {
-  background: rgba(235, 235, 235, 0.9) !important;
+  background: rgba(235, 235, 235, 0.92) !important;
   color: #111 !important;
   border-top: 1px solid rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.12) !important;
 }
 
-html[data-theme="light"] .taskbar-btn,
-html[data-theme="light"] .start-btn {
+html[data-theme="light"] #taskbar.position-top {
+  border-top: none !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12) !important;
+}
+
+html[data-theme="light"] #taskbar.position-left {
+  border-right: 1px solid rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.12) !important;
+}
+
+html[data-theme="light"] #taskbar.position-right {
+  border-left: 1px solid rgba(0, 0, 0, 0.1) !important;
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.12) !important;
+}
+
+html[data-theme="light"] #system-tray {
+  color: #222 !important;
+}
+
+html[data-theme="light"] #clock,
+html[data-theme="light"] #date {
+  color: #222 !important;
+}
+
+html[data-theme="light"] .tray-icon-btn,
+html[data-theme="light"] .tray-overflow-btn {
+  color: rgba(0, 0, 0, 0.75) !important;
+}
+
+html[data-theme="light"] .tray-icon-btn:hover,
+html[data-theme="light"] .tray-overflow-btn:hover {
+  background: rgba(0, 0, 0, 0.08) !important;
   color: #111 !important;
 }
 
-html[data-theme="light"] .taskbar-btn:hover {
+html[data-theme="light"] #audio-mixer-tray-btn {
+  color: rgba(0, 0, 0, 0.75) !important;
+}
+
+html[data-theme="light"] #audio-mixer-tray-btn:hover {
+  background: rgba(0, 0, 0, 0.08) !important;
+  color: #111 !important;
+}
+
+html[data-theme="light"] .ntf-tray-btn {
+  color: rgba(0, 0, 0, 0.75) !important;
+}
+
+html[data-theme="light"] .ntf-tray-btn:hover {
+  background: rgba(0, 0, 0, 0.08) !important;
+  color: #111 !important;
+}
+
+html[data-theme="light"] .ntf-count {
+  background: var(--brand) !important;
+  color: #fff !important;
+}
+
+html[data-theme="light"] .taskbar-item {
+  color: #111 !important;
+}
+
+html[data-theme="light"] .taskbar-item.active {
+  background: rgba(0, 0, 0, 0.15) !important;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+html[data-theme="light"] .taskbar-item.minimized {
+  opacity: 0.55 !important;
   background: rgba(0, 0, 0, 0.05) !important;
+}
+
+html[data-theme="light"] #taskbar-windows {
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent !important;
+}
+
+html[data-theme="light"] #taskbar-windows::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2) !important;
+}
+
+html[data-theme="light"] #taskbar.position-left #taskbar-windows,
+html[data-theme="light"] #taskbar.position-right #taskbar-windows {
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent !important;
+}
+
+html[data-theme="light"] #taskbar.position-left #taskbar-windows::-webkit-scrollbar-thumb,
+html[data-theme="light"] #taskbar.position-right #taskbar-windows::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2) !important;
+}
+
+html[data-theme="light"] #workspace-bar {
+  border-right-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+html[data-theme="light"] #taskbar.position-left #workspace-bar,
+html[data-theme="light"] #taskbar.position-right #workspace-bar {
+  border-bottom-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+html[data-theme="light"] .workspace-btn {
+  color: rgba(0, 0, 0, 0.65) !important;
+}
+
+html[data-theme="light"] .workspace-btn:hover {
+  background: rgba(0, 0, 0, 0.08) !important;
+  color: #111 !important;
+}
+
+html[data-theme="light"] .workspace-btn.active {
+  background: rgba(0, 0, 0, 0.12) !important;
+  color: #111 !important;
+}
+
+html[data-theme="light"] .workspace-sep {
+  background: rgba(0, 0, 0, 0.12) !important;
+}
+
+html[data-theme="light"] .taskbar-preview {
+  background: rgba(240, 240, 245, 0.92) !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.18) !important;
+}
+
+html[data-theme="light"] .taskbar-preview__title {
+  color: rgba(0, 0, 0, 0.85) !important;
+  border-bottom-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+html[data-theme="light"] #tray-overflow-popup {
+  background: rgba(240, 240, 245, 0.96) !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+}
+
+html[data-theme="light"] .tray-popup-item {
+  color: rgba(0, 0, 0, 0.8) !important;
+}
+
+html[data-theme="light"] .tray-popup-item:hover {
+  background: rgba(0, 0, 0, 0.07) !important;
+  color: #111 !important;
 }
 
 html[data-theme="light"] .task-mgr-content {

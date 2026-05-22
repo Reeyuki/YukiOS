@@ -228,6 +228,10 @@ export class SessionManager {
       this.services.windowManager.setFileSystemManager(this.services.fileSystemManager);
       this.services.windowManager.restoreSession();
     }
+
+    if (!localStorage.getItem(StorageKeys.setupCompleted) && this.services.setupApp) {
+      setTimeout(() => this.services.setupApp.open(), 1000);
+    }
   }
 
   lockToLoginScreen() {

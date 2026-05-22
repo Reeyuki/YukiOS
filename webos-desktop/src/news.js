@@ -10,7 +10,10 @@ const NEWS_UPDATES = [
       {
         icon: "fa-wand-magic-sparkles",
         title: "Features & Improvements",
-        items: [["fa-gamepad", "Azahar Emulator", "Add azahar emulator with 3ds support"]]
+        items: [
+          ["fa-gamepad", "Azahar Emulator", "Add azahar emulator with 3ds support"],
+          ["fa-rocket", "Setup Wizard", "Introduced first-time setup wizard for system personalization"]
+        ]
       }
     ]
   },
@@ -35,7 +38,7 @@ const NEWS_UPDATES = [
       {
         icon: "fa-wand-magic-sparkles",
         title: "Features & Improvements",
-        items: [["fa-rocket", "Fixed GTAVC", "Fixed GTA VC"]]
+        items: [["fa-car", "Fixed GTAVC", "Fixed GTA VC"]]
       }
     ]
   },

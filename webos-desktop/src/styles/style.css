@@ -6,9 +6,9 @@
   --taskbar-padding-left: 0;
   --taskbar-padding-right: 0;
 
-  --s1: oklch(14% 0.03 265 / 0.85);
-  --s2: oklch(17% 0.03 265 / 0.8);
-  --s3: oklch(20% 0.03 265 / 0.75);
+  --s1: oklch(18% 0.03 265 / 0.85);
+  --s2: oklch(22% 0.03 265 / 0.8);
+  --s3: oklch(26% 0.03 265 / 0.75);
 
   --glass: oklch(100% 0 0 / 0.06);
   --glass-hover: oklch(100% 0 0 / 0.1);
@@ -16,18 +16,22 @@
 
   --tx1: oklch(100% 0 0 / 0.92);
   --tx2: oklch(100% 0 0 / 0.5);
+
   --brand: oklch(55% 0.11 264);
   --brand-hover: oklch(48% 0.11 264);
   --brand-dark: oklch(38% 0.11 264);
-  --brand-glow: oklch(55% 0.11 264 / 0.35);
+  --brand-glow: oklch(55% 0.08 264 / 0.2);
   --brand-dim: oklch(55% 0.11 264 / 0.15);
+
   --r: 10px;
   --r-sm: 6px;
 
-  --bg-primary: black;
-  --bg-secondary: oklch(14% 0.03 265);
-  --text-primary: oklch(92% 0.01 240);
-  --text-secondary: oklch(65% 0.01 240);
+  --bg-primary: oklch(10% 0.02 265);
+  --bg-secondary: oklch(18% 0.03 265);
+
+  --text-primary: oklch(95% 0.01 240);
+  --text-secondary: oklch(72% 0.01 240);
+
   --border: oklch(79% 0.09 185);
 
   --error: oklch(60% 0.2 25);
@@ -69,8 +73,8 @@ body {
 }
 
 #selection-box {
-  border: 1px solid #0078d7;
-  background: rgba(0, 120, 215, 0.3);
+  border: 1px solid oklch(65% 0.12 230);
+  background: oklch(65% 0.12 230 / 0.18);
   position: absolute;
   pointer-events: none;
   display: none;
@@ -99,12 +103,12 @@ body {
 }
 
 *::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.35);
+  background: oklch(35% 0.02 265 / 0.45);
   border-radius: 6px;
 }
 
 *::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.55);
+  background: oklch(45% 0.02 265 / 0.55);
 }
 
 html[data-theme="light"] {
@@ -113,6 +117,10 @@ html[data-theme="light"] {
   --tx1: #111;
   --tx2: #555;
   --brand: #0078d7;
+  --bg-primary: #f4f4f4;
+  --bg-secondary: #e6e6e6;
+  --text-primary: #111;
+  --text-secondary: #555;
 }
 
 html[data-theme="light"] .button-primary {

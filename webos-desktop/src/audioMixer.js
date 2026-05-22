@@ -20,6 +20,7 @@ class AudioMixer {
     } catch (e) {
       this.savedChannels = {};
     }
+    this._muted = localStorage.getItem("yukiOS_sound_enabled") === "false";
   }
 
   _save() {
@@ -53,7 +54,7 @@ class AudioMixer {
     const ch = this.channels.get(winId);
     if (!ch) return;
 
-    const effectiveVolume = this.masterVolume * ch.volume;
+    const effectiveVolume = this._muted ? 0 : this.masterVolume * ch.volume;
     const win = document.getElementById(winId);
     if (!win) return;
 
@@ -65,7 +66,7 @@ class AudioMixer {
           if (iframe.contentWindow?.__yukioGain) {
             iframe.contentWindow.__yukioGain.gain.setTargetAtTime(
               effectiveVolume,
-              this.audioCtx?.currentTime ?? 0,
+              iframe.contentWindow.__yukioGain.context.currentTime,
               0.01
             );
           }
@@ -124,7 +125,41 @@ class AudioMixer {
     const savedVol = this.savedChannels[winId] ?? 1.0;
     this.channels.set(winId, { title, iconHtml, volume: savedVol, nowPlaying: null, _sendCommand: null });
     this._applyVolumeToWindow(winId);
+    this._watchIframesInWindow(winId);
     if (this.panel) this._renderSliders();
+  }
+
+  _watchIframesInWindow(winId) {
+    const win = document.getElementById(winId);
+    if (!win) return;
+
+    const applyOnLoad = (iframe) => {
+      iframe.addEventListener("load", () => this._applyVolumeToWindow(winId));
+    };
+
+    win.querySelectorAll("iframe").forEach(applyOnLoad);
+
+    if (!this._iframeObservers) this._iframeObservers = new Map();
+    if (this._iframeObservers.has(winId)) this._iframeObservers.get(winId).disconnect();
+
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((m) => {
+        m.addedNodes.forEach((node) => {
+          if (node.tagName === "IFRAME") {
+            applyOnLoad(node);
+            this._applyVolumeToWindow(winId);
+          } else if (node.querySelectorAll) {
+            node.querySelectorAll("iframe").forEach((iframe) => {
+              applyOnLoad(iframe);
+              this._applyVolumeToWindow(winId);
+            });
+          }
+        });
+      });
+    });
+
+    observer.observe(win, { childList: true, subtree: true });
+    this._iframeObservers.set(winId, observer);
   }
 
   updateChannelMeta(winId, nowPlaying) {
@@ -152,6 +187,10 @@ class AudioMixer {
       } catch (e) {}
       this.gainNodes.delete(k);
     });
+    if (this._iframeObservers?.has(winId)) {
+      this._iframeObservers.get(winId).disconnect();
+      this._iframeObservers.delete(winId);
+    }
     this._save();
     if (this.panel) this._renderSliders();
   }
@@ -179,6 +218,12 @@ class AudioMixer {
       if (this.isOpen && this.panel && !this.panel.contains(e.target) && !this.trayBtn.contains(e.target)) {
         this.close();
       }
+    });
+    document.addEventListener("AUDIO_SETTINGS_CHANGED", (e) => {
+      if (!e.detail) return;
+      this._muted = e.detail.soundEnabled === false;
+      this._applyMasterToAll();
+      this._updateMasterLabel();
     });
   }
 
@@ -223,8 +268,8 @@ class AudioMixer {
           <span>Master</span>
         </div>
         <div class="am-slider-row">
-          <input type="range" class="am-slider am-master-slider" min="0" max="100" step="1" value="${Math.round(this.masterVolume * 100)}" />
-          <span class="am-vol-label" id="am-master-label">${Math.round(this.masterVolume * 100)}%</span>
+          <input type="range" class="am-slider am-master-slider" min="0" max="100" step="1" value="${this._muted ? 0 : Math.round(this.masterVolume * 100)}" />
+          <span class="am-vol-label" id="am-master-label">${this._muted ? 0 : Math.round(this.masterVolume * 100)}%</span>
         </div>
       </div>
       <div class="am-divider"></div>
@@ -247,8 +292,9 @@ class AudioMixer {
   _updateMasterLabel() {
     const label = document.getElementById("am-master-label");
     const slider = this.panel?.querySelector(".am-master-slider");
-    if (label) label.textContent = `${Math.round(this.masterVolume * 100)}%`;
-    if (slider) slider.value = Math.round(this.masterVolume * 100);
+    const displayValue = this._muted ? 0 : Math.round(this.masterVolume * 100);
+    if (label) label.textContent = `${displayValue}%`;
+    if (slider) slider.value = displayValue;
   }
 
   _renderSliders() {
@@ -342,7 +388,7 @@ class AudioMixer {
 
         const gainNode = instance.createGain();
         const ch = self.channels.get(winId);
-        gainNode.gain.value = self.masterVolume * (ch?.volume ?? 1.0);
+        gainNode.gain.value = self._muted ? 0 : self.masterVolume * (ch?.volume ?? 1.0);
         gainNode.connect(realDestination);
 
         Object.defineProperty(instance, "destination", {

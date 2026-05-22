@@ -195,6 +195,15 @@ body.is-resizing * {
   white-space: nowrap;
 }
 
+.window-header.steam-top-bar {
+  display: flex !important;
+  grid-template-columns: unset !important;
+  grid-template-rows: unset !important;
+  grid: unset !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+}
+
 .window-header:active {
   cursor: var(--wm-header-cursor-active, grabbing);
 }

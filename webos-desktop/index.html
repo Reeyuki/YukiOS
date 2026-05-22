@@ -162,6 +162,7 @@
     <link href="src/styles/taskManager.css" rel="stylesheet" />
     <link href="src/styles/weather.css" rel="stylesheet" />
     <link href="src/styles/widgets.css" rel="stylesheet" />
+    <link href="src/styles/setup.css" rel="stylesheet" />
     <script type="module" src="src/main.js"></script>
 
     <style>
@@ -177,32 +178,7 @@
     <div id="desktop" class="desktop">
       <div class="icon selectable" data-app="explorer">
         <img src="static/icons/file.webp" />
-        <div>File Explorer</div>
-      </div>
-
-      <div class="icon selectable" data-app="notepad">
-        <img src="static/icons/notepad.webp" />
-        <div>Notepad</div>
-      </div>
-
-      <div class="icon selectable" data-app="libreSprite">
-        <img src="static/icons/libresprite.webp" />
-        <div>LibreSprite</div>
-      </div>
-
-      <div class="icon selectable" data-app="browserApp">
-        <img src="static/icons/firefox.webp" />
-        <div>Yuki Browser</div>
-      </div>
-
-      <div class="icon selectable" data-app="shittify">
-        <img src="static/icons/shittify.webp" />
-        <div>Evil Spotify</div>
-      </div>
-
-      <div class="icon selectable" data-app="emulatorApp">
-        <i style="color: #6677dd" class="fas fa-gamepad"></i>
-        <div>Yuki Emulator</div>
+        <div>Files</div>
       </div>
 
       <div class="icon selectable" data-app="steamApp">
@@ -210,9 +186,34 @@
         <div>Steam</div>
       </div>
 
+      <div class="icon selectable" data-app="browserApp">
+        <img src="static/icons/firefox.webp" />
+        <div>Browser</div>
+      </div>
+
       <div class="icon selectable" data-app="systemApps">
         <i style="color: #6677dd" class="fas fa-tools"></i>
-        <div>System Apps</div>
+        <div>System</div>
+      </div>
+
+      <div class="icon selectable" data-app="notepad">
+        <img src="static/icons/notepad.webp" />
+        <div>Notepad</div>
+      </div>
+
+      <div class="icon selectable" data-app="shittify">
+        <img src="static/icons/shittify.webp" />
+        <div>Music</div>
+      </div>
+
+      <div class="icon selectable" data-app="newsApp">
+        <i class="fas fa-newspaper"></i>
+        <div>What's New</div>
+      </div>
+
+      <div class="icon selectable" data-app="appCreatorApp">
+        <i class="fas fa-cubes"></i>
+        <div>App Creator</div>
       </div>
 
       <div class="icon selectable" data-app="minecraft">
@@ -225,44 +226,18 @@
         <div>Stardew Valley</div>
       </div>
 
-      <div class="icon selectable" data-app="celeste">
-        <img src="static/icons/celeste.webp" />
-        <div>Celeste</div>
-      </div>
-
-      <div class="icon selectable" data-app="subwaySurfersmiami">
-        <img src="static/icons/subway.webp" />
-        <div>Subway Surfers</div>
-      </div>
-
       <div class="icon selectable" data-app="undertale">
         <img src="static/icons/undertale.png" />
         <div>Undertale</div>
-      </div>
-
-      <div class="icon selectable" data-app="deltarune">
-        <img src="static/icons/deltarune.png" />
-        <div>Deltarune</div>
       </div>
 
       <div class="icon selectable" data-app="cuphead">
         <img src="static/icons/cup.webp" />
         <div>Cuphead</div>
       </div>
-
-      <div class="icon selectable" data-app="hollowKnightSS">
-        <img src="static/icons/hollowKnightSS.webp" />
-        <div>Hollow Knight: Silksong</div>
-      </div>
-
       <div class="icon selectable" data-app="isaacRebirth">
         <img src="static/icons/isaac.webp" />
         <div>TBOI : Rebirth</div>
-      </div>
-
-      <div class="icon selectable" data-app="gtaVc">
-        <img src="static/icons/gtavc.webp" />
-        <div>GTA Vice City</div>
       </div>
 
       <div class="icon selectable" data-app="balatro">
@@ -270,29 +245,14 @@
         <div>Balatro</div>
       </div>
 
-      <div class="icon selectable" data-app="garrysMod">
-        <img src="static/icons/garrysMod.webp" />
-        <div>Garry's Mod</div>
+      <div class="icon selectable" data-app="gtaVc">
+        <img src="static/icons/gtavc.webp" />
+        <div>GTA Vice City</div>
       </div>
 
-      <div class="icon selectable" data-app="helltaker">
-        <img src="static/icons/helltaker.jpg" />
-        <div>Helltaker</div>
-      </div>
-
-      <div class="icon selectable" data-app="inscryption">
-        <img src="static/icons/inscryption.webp" />
-        <div>Inscryption</div>
-      </div>
-
-      <div class="icon selectable" data-app="plagueIncEvolved">
-        <img src="static/icons/plague.webp" />
-        <div>Plague Inc Evolved</div>
-      </div>
-
-      <div class="icon selectable" data-app="fiveNightsAtFrickbears3">
-        <img src="static/icons/fiveNightsAtFrickbears.webp" />
-        <div>Five Nights At Frickbears 3</div>
+      <div class="icon selectable" data-app="hollowKnightSS">
+        <img src="static/icons/hollowKnightSS.webp" />
+        <div>Hollow Knight</div>
       </div>
     </div>
 
@@ -350,8 +310,8 @@
             <div class="start-menu-item" data-app="appCreatorApp">
               <i class="fas fa-cubes"></i> <span>AppCreator</span>
             </div>
-            <div class="start-menu-item" data-app="calculatorApp">
-              <i class="fas fa-calculator"></i> <span>Calculator</span>
+            <div class="start-menu-item" data-app="systemApps">
+              <i class="fas fa-screwdriver-wrench"></i> <span>System Apps</span>
             </div>
             <div class="start-menu-item" data-app="taskManagerApp">
               <i class="fas fa-list-check"></i> <span>Task Manager</span>

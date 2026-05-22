@@ -372,7 +372,7 @@ function getGridItems() {
     { app: "newsApp", title: "What's New", icon: "fas fa-newspaper" },
     { app: "shittify", title: "Music", icon: "fas fa-music" },
     { app: "appCreatorApp", title: "AppCreator", icon: "fas fa-cubes" },
-    { app: "calculatorApp", title: "Calculator", icon: "fas fa-calculator" },
+    { app: "systemApps", title: "System Apps", icon: "fas fa-screwdriver-wrench" },
     { app: "taskManagerApp", title: "Task Manager", icon: "fas fa-list-check" },
     { app: "terminal", title: "Terminal", icon: "fas fa-terminal" },
     { app: "aboutApp", title: "About YukiOS", icon: "fas fa-info-circle" },
