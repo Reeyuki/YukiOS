@@ -5,6 +5,16 @@ import { PersistenceTypes } from "./runtime/AppSchema.js";
 
 const NEWS_UPDATES = [
   {
+    date: "May 22, 2026",
+    sections: [
+      {
+        icon: "fa-wand-magic-sparkles",
+        title: "Features & Improvements",
+        items: [["fa-gamepad", "Azahar Emulator", "Add azahar emulator with 3ds support"]]
+      }
+    ]
+  },
+  {
     date: "May 21, 2026",
     sections: [
       {
@@ -141,8 +151,8 @@ const NEWS_UPDATES = [
           ["fa-wrench", "App Creator Improvements", "Improved the App Creator workflow and usability."],
           [
             "fa-gamepad",
-            "New Games: Happy Room, Fez, Azahar Emu, TABS, Slime Rancher",
-            "Added Happy Room, Fez, Azahar Emu to the games collection."
+            "New Games: Happy Room, Fez, TABS, Slime Rancher",
+            "Added Happy Room, Fez,TABS,Slime Rancher to the games collection."
           ],
           [
             "fa-gamepad",

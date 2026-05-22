@@ -295,6 +295,17 @@ export class AppLauncher {
             source: "/static/apps/kiwiirc/index.html",
             originalName: "Kivi IRC"
           })
+      },
+      azahar: {
+        type: "system",
+        title: "Azahar (3DS Emulator)",
+        action: () =>
+          this.openIframeApp({
+            appId: "azahar",
+            type: "game",
+            source: "/static/apps/azahar/index.html",
+            originalName: "Azahar"
+          })
       }
     };
 

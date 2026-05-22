@@ -4,6 +4,12 @@ export const appMap = {
     title: "Yuki Convert",
     icon: "fas fa-exchange-alt"
   },
+  azahar: {
+    type: "system",
+    title: "Azahar (3DS Emulator)",
+    url: "/static/apps/azahar/index.html",
+    icon: "/static/icons/azahar.webp"
+  },
   angryBirds2: {
     type: "game",
     url: "/static/games/html/angry2.html",
