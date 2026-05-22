@@ -215,7 +215,15 @@ export const SteamDataManager = {
   setCollections: (cols) => localStorage.setItem(StorageKeys.steamCollections, JSON.stringify(cols)),
   getHidden: () => JSON.parse(localStorage.getItem(StorageKeys.steamHidden) || "[]"),
   setHidden: (hidden) => localStorage.setItem(StorageKeys.steamHidden, JSON.stringify(hidden)),
-  getCollapsed: () => JSON.parse(localStorage.getItem(StorageKeys.steamCollapsed) || "[]"),
+  getCollapsed: () => {
+    const stored = localStorage.getItem(StorageKeys.steamCollapsed);
+    if (stored === null) {
+      const defaultExpanded = ["Webports/Html games"];
+      localStorage.setItem(StorageKeys.steamCollapsed, JSON.stringify(defaultExpanded));
+      return defaultExpanded;
+    }
+    return JSON.parse(stored || "[]");
+  },
   setCollapsed: (collapsed) => localStorage.setItem(StorageKeys.steamCollapsed, JSON.stringify(collapsed)),
 
   setupDefaultCollections: () => {
@@ -278,7 +286,7 @@ export class GameWindowRenderer {
   constructor() {
     this.history = ["store"];
     this.historyIndex = 0;
-    this.sortBy = "popularity";
+    this.sortBy = "relevant";
     this.sortReverse = false;
     this.currentGame = null;
     this.currentArchiveGame = null;

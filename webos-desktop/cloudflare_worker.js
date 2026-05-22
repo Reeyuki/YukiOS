@@ -279,6 +279,24 @@ export default {
       return jsonResponse({ results: result.results });
     }
 
+    if (url.pathname === "/api/game-play-counts" && request.method === "GET") {
+      const result = await env.DB.prepare(
+        `SELECT
+           lower(trim(json_extract(data, '$.app'))) AS app,
+           COUNT(*)                                  AS count
+         FROM analytics
+         WHERE json_extract(data, '$.event') = 'launch'
+         GROUP BY app
+         ORDER BY count DESC`
+      ).all();
+      const playCounts = {};
+      for (const row of result.results) {
+        const normalizedApp = row.app.toLowerCase().trim();
+        playCounts[normalizedApp] = row.count;
+      }
+      return jsonResponse(playCounts);
+    }
+
     if (url.pathname === "/admin/games" && request.method === "GET") {
       const result = await env.DB.prepare(
         `SELECT

@@ -1,4 +1,4 @@
-import { sendLaunchAnalytics, getAnalyticsBase } from "./analytics.js";
+import { sendLaunchAnalytics, getAnalyticsBase, fetchGamePlayCounts, getCachedPlayCounts } from "./analytics.js";
 import { CDN_CONFIG } from "./shared/cdnConfig.js";
 import { lazyImg, observeLazyImages, SteamDataManager, _launcher } from "./games.js";
 import { SteamSettings } from "./steam.js";
@@ -6,6 +6,24 @@ import { SteamSettings } from "./steam.js";
 export class GameLauncher {
   constructor(renderer) {
     this.renderer = renderer;
+    this.playCounts = getCachedPlayCounts();
+  }
+
+  loadPlayCounts() {
+    fetchGamePlayCounts().then((counts) => {
+      this.playCounts = counts;
+      this.updateAllBadges();
+    });
+  }
+
+  updateAllBadges() {
+    document.querySelectorAll(".steam-play-count-badge").forEach((badge) => {
+      const card = badge.closest(".steam-game-card");
+      if (card) {
+        const appId = card.dataset.app.toLowerCase().trim();
+        badge.textContent = this.playCounts[appId] || 0;
+      }
+    });
   }
 
   setCurrentGame(appId) {
@@ -88,6 +106,8 @@ export class GameLauncher {
   }
 
   async _loadArchiveSection(container, onLaunch, collapsed) {
+    this.loadPlayCounts();
+
     const target = container.querySelector(".steam-library-page");
     if (!target) return;
 
@@ -96,7 +116,7 @@ export class GameLauncher {
 
     const sectionTitle = "All Games (Archive)";
     const sectionId = `steam-section-${sectionTitle.toLowerCase().replace(/\s+/g, "-")}`;
-    const isCollapsed = collapsed.includes(sectionTitle);
+    const isExpanded = collapsed.includes(sectionTitle);
     const base = this.getArchiveBase();
 
     const yukiosContent = target.querySelector(".steam-yukios-content");
@@ -154,6 +174,8 @@ export class GameLauncher {
 
       const cards = this.renderer._archiveGamesCache
         .map(({ appId, title, url: fullUrl, thumb }) => {
+          const normalizedApp = appId.toLowerCase().trim();
+          const playCount = this.playCounts[normalizedApp] || 0;
           return `
           <div class="steam-game-card steam-archive-card" data-app="${appId}" data-url="${fullUrl}" title="${title}">
             <div class="steam-game-img-wrap">
@@ -165,6 +187,7 @@ export class GameLauncher {
                     )
                   : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#1b2838;color:#2a475e;"><i class="fas fa-gamepad" style="font-size:40px;"></i></div>`
               }
+              <div class="steam-play-count-badge">${playCount}</div>
             </div>
             <div class="steam-game-title">${title}</div>
           </div>`;
@@ -173,12 +196,12 @@ export class GameLauncher {
 
       placeholder.innerHTML = `
         <div class="steam-section-header" id="${sectionId}" data-title="${sectionTitle}" style="cursor: pointer; display: flex; align-items: center; gap: 10px;">
-          <i class="fas ${isCollapsed ? "fa-chevron-right" : "fa-chevron-down"}" style="font-size: 10px; color: #898989;"></i>
+          <i class="fas ${isExpanded ? "fa-chevron-down" : "fa-chevron-right"}" style="font-size: 10px; color: #898989;"></i>
           <div class="steam-section-title">${sectionTitle}</div>
           <div style="height: 1px; flex: 1; background: rgba(255,255,255,0.1); margin-left: 10px;"></div>
           <span style="font-size: 11px; color: #898989; margin-left: 8px;">${allGames.length} games</span>
         </div>
-        <div class="steam-game-grid steam-archive-grid" style="display: ${isCollapsed ? "none" : "grid"}">
+        <div class="steam-game-grid steam-archive-grid" style="display: ${isExpanded ? "grid" : "none"}">
           ${cards}
         </div>
       `;
@@ -189,10 +212,12 @@ export class GameLauncher {
         SteamDataManager.toggleCollapsed(sectionTitle);
         const grid = placeholder.querySelector(".steam-archive-grid");
         const icon = placeholder.querySelector(".steam-section-header i");
-        const nowCollapsed = SteamDataManager.getCollapsed().includes(sectionTitle);
-        grid.style.display = nowCollapsed ? "none" : "grid";
-        icon.className = `fas ${nowCollapsed ? "fa-chevron-right" : "fa-chevron-down"}`;
-        icon.style.cssText = "font-size: 10px; color: #898989;";
+        const nowExpanded = SteamDataManager.getCollapsed().includes(sectionTitle);
+        grid.style.display = nowExpanded ? "grid" : "none";
+        if (icon) {
+          icon.className = `fas ${nowExpanded ? "fa-chevron-down" : "fa-chevron-right"}`;
+          icon.style.cssText = "font-size: 10px; color: #898989;";
+        }
       };
 
       const popover = container.querySelector(".steam-game-popover");

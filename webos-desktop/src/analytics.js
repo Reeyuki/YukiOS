@@ -1,9 +1,13 @@
 const ANALYTICS_QUEUE_KEY = "yuki_analytics_queue";
-const ENDPOINT = "https://analytics.liventcord-a60.workers.dev/analytics";
-const hostname = window.location.hostname;
-const ANALYTICS_DISABLED = hostname === "localhost" || hostname === "127.0.0.1" || hostname === "[::1]";
+const ENDPOINT_BASE = "https://analytics.liventcord-a60.workers.dev";
+const ENDPOINT = ENDPOINT_BASE + "/analytics";
+const hostname = hostname === "localhost" || hostname === "127.0.0.1" || hostname === "[::1]";
+const ANALYTICS_DISABLED = false;
 const FLUSH_INTERVAL_MS = 30000;
 const MAX_QUEUE_SIZE = 15;
+
+let cachedPlayCounts = null;
+let playCountsPromise = null;
 
 let pageLoadTime = Date.now();
 let flushTimer = null;
@@ -123,4 +127,31 @@ export function recordUsage(winId) {
     });
   };
   win.querySelector(".close-btn")?.addEventListener("click", send);
+}
+
+export async function fetchGamePlayCounts() {
+  if (ANALYTICS_DISABLED) {
+    console.error("Analytics disabled, skipping gameplay count fetch");
+    return {};
+  }
+  if (cachedPlayCounts) return cachedPlayCounts;
+  if (playCountsPromise) return playCountsPromise;
+
+  playCountsPromise = (async () => {
+    try {
+      const res = await fetch(ENDPOINT_BASE + "/api/game-play-counts");
+      if (!res.ok) return {};
+      const data = await res.json();
+      cachedPlayCounts = data;
+      return data;
+    } catch {
+      return {};
+    }
+  })();
+
+  return playCountsPromise;
+}
+
+export function getCachedPlayCounts() {
+  return cachedPlayCounts || {};
 }

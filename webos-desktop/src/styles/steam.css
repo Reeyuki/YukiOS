@@ -777,6 +777,7 @@
   overflow: hidden;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
   height: 200px;
+  position: relative;
 }
 
 .steam-game-img-wrap img {
@@ -812,6 +813,19 @@
   padding: 2px 5px;
   border-radius: 2px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.steam-play-count-badge {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  background: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 6px;
+  border-radius: 3px;
+  backdrop-filter: blur(4px);
 }
 
 .steam-game-card-highlight .steam-game-title {

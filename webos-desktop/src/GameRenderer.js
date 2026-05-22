@@ -3,14 +3,43 @@ import { SteamDataManager } from "./games.js";
 import { popularityMap } from "./games.js";
 import { SteamSettings } from "./steam.js";
 import { lazyImg, observeLazyImages } from "./games.js";
+import { fetchGamePlayCounts, getCachedPlayCounts } from "./analytics.js";
 
 export class GameRenderer {
   constructor(renderer) {
     this.renderer = renderer;
+    this.playCounts = getCachedPlayCounts();
+  }
+
+  loadPlayCounts() {
+    fetchGamePlayCounts().then((counts) => {
+      const previousCounts = this.playCounts;
+      this.playCounts = counts;
+      this.updateAllBadges();
+      if (this.renderer.sortBy === "popularity" && Object.keys(previousCounts).length === 0) {
+        const container = document.querySelector(".steam-library-page");
+        if (container) {
+          const onLaunch = (appId) => this.renderer.launch(appId);
+          this.renderGrid(container, onLaunch, this.renderer.focusCollection);
+        }
+      }
+    });
+  }
+
+  updateAllBadges() {
+    document.querySelectorAll(".steam-play-count-badge").forEach((badge) => {
+      const card = badge.closest(".steam-game-card");
+      if (card) {
+        const appId = card.dataset.app.toLowerCase().trim();
+        badge.textContent = this.playCounts[appId] || 0;
+      }
+    });
   }
 
   createCard(game) {
     const isHighlighted = HIGHLIGHTED_GAMES.has(game.app);
+    const normalizedApp = game.app.toLowerCase().trim();
+    const playCount = this.playCounts[normalizedApp] || 0;
 
     return `
     <div class="steam-game-card ${isHighlighted ? "steam-game-card-highlight" : ""}" data-app="${game.app}">
@@ -26,6 +55,7 @@ export class GameRenderer {
         `
             : ""
         }
+        <div class="steam-play-count-badge">${playCount}</div>
       </div>
 
       <div class="steam-game-title">${game.title}</div>
@@ -54,9 +84,18 @@ export class GameRenderer {
       } else if (sortBy === "lastPlayed") {
         valA = stats[a.app]?.lastPlayed || 0;
         valB = stats[b.app]?.lastPlayed || 0;
-      } else if (sortBy === "popularity") {
+      } else if (sortBy === "relevant") {
         valA = popularityMap.get(a.app) ?? 999999;
         valB = popularityMap.get(b.app) ?? 999999;
+      } else if (sortBy === "popularity") {
+        const normalizedAppA = a.app.toLowerCase().trim();
+        const normalizedAppB = b.app.toLowerCase().trim();
+        valA = this.playCounts[normalizedAppA] || 0;
+        valB = this.playCounts[normalizedAppB] || 0;
+        const effectiveReverse = !sortReverse;
+        if (valA < valB) return effectiveReverse ? 1 : -1;
+        if (valA > valB) return effectiveReverse ? -1 : 1;
+        return 0;
       }
       if (valA < valB) return sortReverse ? 1 : -1;
       if (valA > valB) return sortReverse ? -1 : 1;
@@ -212,6 +251,8 @@ export class GameRenderer {
   }
 
   renderGrid(container, onLaunch, focusCollection = null) {
+    this.loadPlayCounts();
+
     if (this.renderer.currentArchiveGame) {
       this.renderArchiveGameOverview(container, this.renderer.currentArchiveGame, onLaunch);
       return;
@@ -243,13 +284,14 @@ export class GameRenderer {
     const target = container.querySelector(".steam-library-page");
     if (!target) return;
 
-    const isNewsCollapsed = collapsed.includes("What's New");
+    const isNewsExpanded = collapsed.includes("What's New");
 
     const shellHtml = `
       <div class="steam-grid-controls-bar" style="margin-bottom: 20px; display: flex; justify-content: flex-end; align-items: center; gap: 15px;">
         <div class="steam-grid-filters" style="display: flex; align-items: center; gap: 15px;">
           <span class="steam-control-label">Sort by</span>
           <select class="steam-sort-select">
+            <option value="relevant" ${this.renderer.sortBy === "relevant" ? "selected" : ""}>Relevant</option>
             <option value="popularity" ${this.renderer.sortBy === "popularity" ? "selected" : ""}>Popularity</option>
             <option value="alphabetical" ${this.renderer.sortBy === "alphabetical" ? "selected" : ""}>Alphabetical</option>
             <option value="hours" ${this.renderer.sortBy === "hours" ? "selected" : ""}>Hours Played</option>
@@ -263,11 +305,11 @@ export class GameRenderer {
       <div class="steam-yukios-content">
         <div class="steam-whats-new">
           <div class="steam-whats-new-header steam-section-header" data-title="What's New" style="cursor: pointer; display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
-            <i class="fas ${isNewsCollapsed ? "fa-chevron-right" : "fa-chevron-down"}" style="font-size: 10px; color: #898989;"></i>
+            <i class="fas ${isNewsExpanded ? "fa-chevron-down" : "fa-chevron-right"}" style="font-size: 10px; color: #898989;"></i>
             <div class="steam-section-title">What's New</div>
             <div style="height: 1px; flex: 1; background: rgba(255,255,255,0.1); margin-left: 10px;"></div>
           </div>
-          <div class="steam-whats-new-list" style="display: ${isNewsCollapsed ? "none" : "flex"}">
+          <div class="steam-whats-new-list" style="display: ${isNewsExpanded ? "flex" : "none"}">
             ${this.renderer.newsItems
               .map(
                 (item) => `
@@ -306,20 +348,20 @@ export class GameRenderer {
 
     sections.forEach(({ title, games }) => {
       const sectionId = `steam-section-${title.toLowerCase().replace(/\s+/g, "-")}`;
-      const isCollapsed = collapsed.includes(title);
+      const isExpanded = collapsed.includes(title);
       const wrapper = document.createElement("div");
       wrapper.dataset.sectionWrapper = title;
       wrapper.innerHTML = `
         <div class="steam-section-header" id="${sectionId}" data-title="${title}" style="cursor: pointer; display: flex; align-items: center; gap: 10px;">
-          <i class="fas ${isCollapsed ? "fa-chevron-right" : "fa-chevron-down"}" style="font-size: 10px; color: #898989;"></i>
+          <i class="fas ${isExpanded ? "fa-chevron-down" : "fa-chevron-right"}" style="font-size: 10px; color: #898989;"></i>
           <div class="steam-section-title">${title}</div>
           <div style="height: 1px; flex: 1; background: rgba(255,255,255,0.1); margin-left: 10px;"></div>
         </div>
-        <div class="steam-game-grid" data-section="${title}" style="display: ${isCollapsed ? "none" : "grid"}"></div>
+        <div class="steam-game-grid" data-section="${title}" style="display: ${isExpanded ? "grid" : "none"}"></div>
       `;
       sectionsHost.appendChild(wrapper);
 
-      if (!isCollapsed) {
+      if (isExpanded) {
         this._fillGridLazy(wrapper.querySelector(".steam-game-grid"), games);
       }
     });

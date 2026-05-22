@@ -1239,6 +1239,12 @@ export const appMap = {
     url: "https://slither.io",
     icon: "/static/icons/slitherio.webp"
   },
+  diepIO: {
+    type: "game",
+    title: "Diep IO",
+    url: "https://diep.io",
+    icon: "/static/icons/diep.webp"
+  },
   yorgIO: {
     type: "game",
     title: "Yorg.io",

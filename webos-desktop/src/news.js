@@ -13,6 +13,7 @@ const NEWS_UPDATES = [
         items: [
           ["fa-gamepad", "Azahar Emulator", "Add azahar emulator with 3ds support"],
           ["fa-rocket", "Setup Wizard", "Introduced first-time setup wizard for system personalization"],
+          ["fa-steam", "Steam Play Counts", "Introduced steam play counts for every game."],
           ["fa-video", "Yuki Convert Upgrade", "Added video and audio format support for file conversion"],
           ["fa-window-maximize", "Context Menu Fixes", "Fixed desktop context menu overflow issues"]
         ]
