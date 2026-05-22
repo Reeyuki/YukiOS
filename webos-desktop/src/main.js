@@ -268,6 +268,12 @@ async function start() {
       "Neocities does not support loading assets from other domains! OS will be severely limited to load apps and data."
     );
   }
+  const url = new URL(location.href);
+
+  if (url.hostname === "yukios.vercel.app") {
+    url.hostname = "yukios.netlify.app";
+    location.replace(url.toString());
+  }
 
   const queryString = window.location.search;
   const urlParams = new URLSearchParams(queryString);

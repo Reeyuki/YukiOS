@@ -270,6 +270,7 @@ export class DesktopUI {
         { id: "ctx-cut", label: "Cut", action: "cut", icon: "fa-cut" },
         "hr",
         { id: "ctx-delete", label: "Delete", action: "delete", icon: "fa-trash-alt" },
+        { id: "ctx-rename", label: "Rename", action: "rename", icon: "fa-edit" },
         { id: "ctx-properties", label: "Properties", action: "properties", icon: "fa-info-circle" }
       ],
       folderContextMenu: [
@@ -1414,7 +1415,7 @@ export class DesktopUI {
             if (newName && newName !== fileName) {
               await this.fs.renameItem(["Desktop"], fileName, newName);
               fileIcon.dataset.fileName = newName;
-              fileIcon.querySelector("span").textContent = newName;
+              fileIcon.querySelector("span, div").textContent = newName;
               this.appLauncher.wm.sendNotify(`Renamed to "${newName}"`);
             }
           },
@@ -1470,6 +1471,18 @@ export class DesktopUI {
         this.appLauncher.wm.sendNotify(`${selectedArray.length} item${selectedArray.length !== 1 ? "s" : ""} cut`);
       },
       delete: () => this.deleteSelectedIcons(selectedArray),
+      rename: async () => {
+        const currentName = IconDataHelper.getIconName(last);
+        const newName = await customPrompt("Enter new name:", currentName);
+        if (newName && newName !== currentName) {
+          if (last.dataset.fileName) {
+            await this.fs.renameItem(["Desktop"], last.dataset.fileName, `${newName}.desktop`);
+            last.dataset.fileName = `${newName}.desktop`;
+          }
+          last.querySelector("span, div").textContent = newName;
+          this.appLauncher.wm.sendNotify(`Renamed to "${newName}"`);
+        }
+      },
       properties: () => this.showPropertiesDialog(last)
     });
   }
