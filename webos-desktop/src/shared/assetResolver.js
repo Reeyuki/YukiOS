@@ -287,6 +287,10 @@ export function resolveIconUrl(url) {
   const isCdn = isCdnHostname(hostname);
   const normalizedUrl = url.startsWith("/") ? url : `/${url}`;
 
+  if (normalizedUrl === "/static/apps/azahar/index.html") {
+    return normalizedUrl;
+  }
+
   if (normalizedUrl.startsWith("/static/")) {
     return resolveYukiAsset(normalizedUrl);
   }
@@ -410,7 +414,7 @@ export async function fetchHtmlAsBlobUrl(url) {
   }
 
   const isIgnored =
-    ["angrybirds", "subway"].some((p) => url.toLowerCase().includes(p.toLowerCase())) ||
+    ["angrybirds", "subway", "azahar"].some((p) => url.toLowerCase().includes(p.toLowerCase())) ||
     html.includes("cdn.jsdelivr") ||
     html.includes("cdn.jsdelivr.net");
 
