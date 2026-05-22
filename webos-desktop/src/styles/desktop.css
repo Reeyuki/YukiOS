@@ -193,6 +193,13 @@ body.is-resizing * {
   font-size: 14px;
   user-select: var(--wm-header-select, none);
   white-space: nowrap;
+  overflow: hidden;
+}
+
+.window-header > :first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .window-header.steam-top-bar {

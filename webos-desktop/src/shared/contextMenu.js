@@ -11,20 +11,40 @@ export function hideMenu() {
 
 function positionMenu(menu, pageX, pageY) {
   menu.style.display = "block";
+  menu.style.maxHeight = "";
+  menu.style.overflowY = "";
+
   const rect = menu.getBoundingClientRect();
   const viewportWidth = window.innerWidth;
   const viewportHeight = window.innerHeight;
+  const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+  const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
 
   let left = pageX;
   let top = pageY;
 
-  if (left + rect.width > viewportWidth) {
+  const spaceRight = viewportWidth - pageX;
+  const spaceLeft = pageX;
+  const spaceBelow = viewportHeight - pageY;
+  const spaceAbove = pageY;
+
+  if (rect.width > spaceRight && spaceLeft >= rect.width) {
+    left = pageX - rect.width;
+  } else if (rect.width > spaceRight && spaceLeft < rect.width) {
+    left = Math.max(10, viewportWidth - rect.width - 10);
+  } else if (left + rect.width > viewportWidth) {
     left = Math.max(10, viewportWidth - rect.width - 10);
   } else if (left < 0) {
     left = 10;
   }
 
-  if (top + rect.height > viewportHeight) {
+  if (rect.height > spaceBelow && spaceAbove >= rect.height) {
+    top = pageY - rect.height;
+  } else if (rect.height > spaceBelow && spaceAbove < rect.height) {
+    top = 10;
+    menu.style.maxHeight = `${viewportHeight - 20}px`;
+    menu.style.overflowY = "auto";
+  } else if (top + rect.height > viewportHeight) {
     top = Math.max(10, viewportHeight - rect.height - 10);
   } else if (top < 0) {
     top = 10;
@@ -154,28 +174,38 @@ export function showStartStyleMenu(e, buildFn) {
   document.body.appendChild(menu);
 
   menu.style.display = "block";
+  menu.style.maxHeight = "";
+  menu.style.overflowY = "";
 
   const rect = menu.getBoundingClientRect();
-
-  let posX = e.clientX;
-  let posY = e.clientY - rect.height;
-
-  if (posX + rect.width > window.innerWidth) posX = window.innerWidth - rect.width - 10;
-  if (posY < 0) posY = e.clientY;
-
   const viewportWidth = window.innerWidth;
   const viewportHeight = window.innerHeight;
+
+  const spaceRight = viewportWidth - e.clientX;
+  const spaceLeft = e.clientX;
+  const spaceBelow = viewportHeight - e.clientY;
+  const spaceAbove = e.clientY;
 
   let left = e.clientX;
   let top = e.clientY;
 
-  if (left + rect.width > viewportWidth) {
+  if (rect.width > spaceRight && spaceLeft >= rect.width) {
+    left = e.clientX - rect.width;
+  } else if (rect.width > spaceRight && spaceLeft < rect.width) {
+    left = Math.max(10, viewportWidth - rect.width - 10);
+  } else if (left + rect.width > viewportWidth) {
     left = Math.max(10, viewportWidth - rect.width - 10);
   } else if (left < 0) {
     left = 10;
   }
 
-  if (top + rect.height > viewportHeight) {
+  if (rect.height > spaceBelow && spaceAbove >= rect.height) {
+    top = e.clientY - rect.height;
+  } else if (rect.height > spaceBelow && spaceAbove < rect.height) {
+    top = 10;
+    menu.style.maxHeight = `${viewportHeight - 20}px`;
+    menu.style.overflowY = "auto";
+  } else if (top + rect.height > viewportHeight) {
     top = Math.max(10, viewportHeight - rect.height - 10);
   } else if (top < 0) {
     top = 10;

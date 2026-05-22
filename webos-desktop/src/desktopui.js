@@ -10,6 +10,8 @@ import { showContextMenu, showDynamicContextMenu, hideMenu } from "./shared/cont
 import { appMap } from "./gamesList.js";
 import { customPrompt } from "./shared/dialogs.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
+import { SystemUtilities } from "./system.js";
+import { Achievements } from "./achievements.js";
 
 import { resolveIconUrl } from "./assetUrl.js";
 import { resolveDesktopIcon } from "./shared/iconUtils.js";
@@ -1419,6 +1421,33 @@ export class DesktopUI {
           "fa-edit"
         )
       );
+
+      try {
+        const kind = await this.fs.getFileKind(["Desktop"], fileName);
+        if (kind === FileKind.IMAGE || kind === FileKind.VIDEO) {
+          const content = await this.fs.getFileContent(["Desktop"], fileName);
+          menu.appendChild(
+            item(
+              "Set Wallpaper",
+              () => {
+                SystemUtilities.setWallpaper(content);
+                this.appLauncher.wm.sendNotify(`Wallpaper set to "${fileName}"`);
+              },
+              "fa-image"
+            )
+          );
+          menu.appendChild(
+            item(
+              "Save as Wallpaper",
+              async () => {
+                await this.saveToWallpapers(fileName, content, await this.fs.getFileKind(["Desktop"], fileName));
+                this.appLauncher.wm.sendNotify(`"${fileName}" saved to Wallpapers`);
+              },
+              "fa-save"
+            )
+          );
+        }
+      } catch {}
     });
   }
 
@@ -1681,6 +1710,15 @@ export class DesktopUI {
       console.error("Failed to open desktop file in Notepad:", e);
       this.appLauncher.wm.sendNotify(`Could not open "${fileName}"`);
     }
+  }
+
+  async saveToWallpapers(name, content, kind, icon) {
+    bus.emit(BusEvents.ACHIEVEMENT_TRIGGER, { key: Achievements.PersonalSpace });
+
+    const wallpapersPath = ["Pictures", "Wallpapers"];
+    await this.fs.ensureFolder(wallpapersPath);
+    const safeIcon = kind === FileKind.IMAGE ? "@content" : icon || resolveIconUrl("static/icons/file.webp");
+    await this.fs.createFile(wallpapersPath, name, content, kind, safeIcon);
   }
 
   async createFolderIcon(folderName) {

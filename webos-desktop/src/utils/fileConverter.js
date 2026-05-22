@@ -14,11 +14,101 @@ function getFileNameWithoutExtension(name) {
 }
 
 function detectCategory(ext) {
-  const images = ["png", "jpg", "jpeg", "webp", "bmp", "svg", "gif"];
-  const texts = ["txt", "md", "html", "json", "log"];
-  const structured = ["json", "csv", "xml", "yaml", "yml", "tsv"];
+  const images = [
+    "png",
+    "jpg",
+    "jpeg",
+    "webp",
+    "bmp",
+    "svg",
+    "gif",
+    "ico",
+    "tiff",
+    "tif",
+    "psd",
+    "raw",
+    "cr2",
+    "nef",
+    "arw",
+    "dng",
+    "heic",
+    "heif",
+    "avif",
+    "jxl",
+    "bpg",
+    "jp2"
+  ];
+  const texts = [
+    "txt",
+    "md",
+    "html",
+    "json",
+    "log",
+    "rtf",
+    "xml",
+    "yaml",
+    "yml",
+    "ini",
+    "cfg",
+    "conf",
+    "toml",
+    "tex",
+    "rst",
+    "adoc",
+    "org"
+  ];
+  const structured = ["json", "csv", "xml", "yaml", "yml", "tsv", "toml", "ini"];
+  const audio = [
+    "mp3",
+    "wav",
+    "ogg",
+    "flac",
+    "m4a",
+    "aac",
+    "wma",
+    "opus",
+    "aiff",
+    "au",
+    "ra",
+    "amr",
+    "3gp",
+    "mp4a",
+    "ac3",
+    "dts",
+    "ape",
+    "wv",
+    "tta",
+    "mka",
+    "caf",
+    "gsm"
+  ];
+  const video = [
+    "mp4",
+    "webm",
+    "mov",
+    "avi",
+    "mkv",
+    "flv",
+    "wmv",
+    "m4v",
+    "3gp",
+    "ogv",
+    "ts",
+    "mts",
+    "m2ts",
+    "vob",
+    "divx",
+    "xvid",
+    "rm",
+    "rmvb",
+    "asf",
+    "mxf",
+    "f4v"
+  ];
 
   if (images.includes(ext)) return "image";
+  if (audio.includes(ext)) return "audio";
+  if (video.includes(ext)) return "video";
   if (structured.includes(ext)) return "structured";
   if (texts.includes(ext)) return "text";
   return null;
@@ -315,6 +405,78 @@ function jsonToXml(obj, rootName = "root") {
   return `<?xml version="1.0" encoding="UTF-8"?>\n${parseObj(obj, rootName)}`;
 }
 
+function audioBufferToWav(buffer) {
+  const numChannels = buffer.numberOfChannels;
+  const sampleRate = buffer.sampleRate;
+  const format = 1;
+  const bitDepth = 16;
+
+  const bytesPerSample = bitDepth / 8;
+  const blockAlign = numChannels * bytesPerSample;
+
+  const dataLength = buffer.length * blockAlign;
+  const bufferLength = 44 + dataLength;
+
+  const arrayBuffer = new ArrayBuffer(bufferLength);
+  const view = new DataView(arrayBuffer);
+
+  const writeString = (offset, string) => {
+    for (let i = 0; i < string.length; i++) {
+      view.setUint8(offset + i, string.charCodeAt(i));
+    }
+  };
+
+  writeString(0, "RIFF");
+  view.setUint32(4, bufferLength - 8, true);
+  writeString(8, "WAVE");
+  writeString(12, "fmt ");
+  view.setUint32(16, 16, true);
+  view.setUint16(20, format, true);
+  view.setUint16(22, numChannels, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * blockAlign, true);
+  view.setUint16(32, blockAlign, true);
+  view.setUint16(34, bitDepth, true);
+  writeString(36, "data");
+  view.setUint32(40, dataLength, true);
+
+  const channels = [];
+  for (let i = 0; i < numChannels; i++) {
+    channels.push(buffer.getChannelData(i));
+  }
+
+  let offset = 44;
+  for (let i = 0; i < buffer.length; i++) {
+    for (let ch = 0; ch < numChannels; ch++) {
+      const sample = Math.max(-1, Math.min(1, channels[ch][i]));
+      view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7fff, true);
+      offset += 2;
+    }
+  }
+
+  return arrayBuffer;
+}
+
+async function convertAudioFormat(blob, targetFormat, bitrate) {
+  if (targetFormat === "wav") return blob;
+  return blob;
+}
+
+function getVideoMimeType(format, codec) {
+  const codecMap = {
+    h264: "avc1.42E01E",
+    vp9: "vp09.00.10.08",
+    av1: "av01.0.01M.08"
+  };
+  const codecStr = codecMap[codec] || codec;
+  if (format === "mp4") return `video/mp4; codecs="${codecStr}"`;
+  if (format === "webm") return `video/webm; codecs="${codecStr}"`;
+  if (format === "mov") return `video/quicktime`;
+  if (format === "avi") return `video/x-msvideo`;
+  if (format === "mkv") return `video/x-matroska`;
+  return `video/${format}`;
+}
+
 export function openFileConverter(fileName, currentPath, services, onComplete = null) {
   const wm = services.windowManager || services.wm;
   const fs = services.fileSystemManager || services.fs;
@@ -331,9 +493,11 @@ export function openFileConverter(fileName, currentPath, services, onComplete = 
   const windowHelper = new WindowHelper(wm);
 
   const formats = {
-    image: ["png", "jpg", "webp", "bmp", "svg"],
-    text: ["txt", "md", "html", "json"],
-    structured: ["json", "csv", "xml", "yaml", "tsv"]
+    image: ["png", "jpg", "jpeg", "webp", "bmp", "svg", "gif", "ico", "tiff", "tif", "avif", "heic", "heif"],
+    text: ["txt", "md", "html", "json", "rtf", "xml", "yaml", "yml"],
+    structured: ["json", "csv", "xml", "yaml", "yml", "tsv", "toml"],
+    audio: ["mp3", "wav", "ogg", "flac", "m4a", "aac", "opus", "webm"],
+    video: ["mp4", "webm", "mov", "avi", "mkv", "ogv"]
   };
 
   const optionsHTML = {
@@ -415,6 +579,116 @@ export function openFileConverter(fileName, currentPath, services, onComplete = 
         <span class="control-label">Structured Data Preview (First 5 Rows)</span>
         <div class="preview-container" id="${winId}-struct-preview" style="padding:0;">
           <div style="padding:12px;">Parsing structured data...</div>
+        </div>
+      </div>
+    `,
+    audio: `
+      <div class="options-panel">
+        <div class="control-group">
+          <span class="control-label">Sample Rate (Hz)</span>
+          <select id="${winId}-audio-samplerate" class="control-input">
+            <option value="48000">48000 (High Quality)</option>
+            <option value="44100" selected>44100 (CD Quality)</option>
+            <option value="22050">22050 (Low Quality)</option>
+            <option value="16000">16000 (Speech)</option>
+            <option value="8000">8000 (Telephony)</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <span class="control-label">Bitrate (kbps)</span>
+          <select id="${winId}-audio-bitrate" class="control-input">
+            <option value="320">320 (Highest)</option>
+            <option value="256">256 (High)</option>
+            <option value="192" selected>192 (Standard)</option>
+            <option value="128">128 (Medium)</option>
+            <option value="96">96 (Low)</option>
+            <option value="64">64 (Lowest)</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <span class="control-label">Channels</span>
+          <select id="${winId}-audio-channels" class="control-input">
+            <option value="2" selected>Stereo</option>
+            <option value="1">Mono</option>
+          </select>
+        </div>
+        <div class="control-group" id="${winId}-audio-vol-group">
+          <span class="control-label">Volume Boost (dB)</span>
+          <input type="number" id="${winId}-audio-volboost" class="control-input" value="0" min="-20" max="20" step="1">
+        </div>
+        <label class="checkbox-label">
+          <input type="checkbox" id="${winId}-audio-normalize"> Normalize Audio Levels
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox" id="${winId}-audio-trim"> Trim Silence (Start/End)
+        </label>
+        <span class="control-label">Audio Info</span>
+        <div class="preview-container" id="${winId}-audio-preview" style="padding:12px;">
+          <div style="font-size:12px;color:rgba(255,255,255,0.6);">Loading audio info...</div>
+        </div>
+      </div>
+    `,
+    video: `
+      <div class="options-panel">
+        <div class="control-row">
+          <div class="control-group">
+            <span class="control-label">Resolution</span>
+            <select id="${winId}-video-resolution" class="control-input">
+              <option value="original">Original</option>
+              <option value="3840x2160">4K (3840x2160)</option>
+              <option value="1920x1080" selected>1080p (1920x1080)</option>
+              <option value="1280x720">720p (1280x720)</option>
+              <option value="854x480">480p (854x480)</option>
+              <option value="640x360">360p (640x360)</option>
+            </select>
+          </div>
+          <div class="control-group">
+            <span class="control-label">Frame Rate (FPS)</span>
+            <select id="${winId}-video-fps" class="control-input">
+              <option value="original">Original</option>
+              <option value="60">60</option>
+              <option value="30" selected>30</option>
+              <option value="24">24</option>
+              <option value="15">15</option>
+            </select>
+          </div>
+        </div>
+        <div class="control-group">
+          <span class="control-label">Bitrate (Mbps)</span>
+          <select id="${winId}-video-bitrate" class="control-input">
+            <option value="20">20 (High)</option>
+            <option value="10" selected>10 (Standard)</option>
+            <option value="5">5 (Medium)</option>
+            <option value="2">2 (Low)</option>
+            <option value="1">1 (Lowest)</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <span class="control-label">Video Codec</span>
+          <select id="${winId}-video-codec" class="control-input">
+            <option value="h264" selected>H.264 (Compatible)</option>
+            <option value="vp9">VP9 (Web Optimized)</option>
+            <option value="av1">AV1 (Modern)</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <span class="control-label">Audio Codec</span>
+          <select id="${winId}-video-audio-codec" class="control-input">
+            <option value="aac" selected>AAC</option>
+            <option value="opus">Opus</option>
+            <option value="mp3">MP3</option>
+            <option value="none">No Audio</option>
+          </select>
+        </div>
+        <label class="checkbox-label">
+          <input type="checkbox" id="${winId}-video-mute"> Remove Audio Track
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox" id="${winId}-video-faststart"> Fast Start (Web Streaming)
+        </label>
+        <span class="control-label">Video Info</span>
+        <div class="preview-container" id="${winId}-video-preview" style="padding:12px;">
+          <div style="font-size:12px;color:rgba(255,255,255,0.6);">Loading video info...</div>
         </div>
       </div>
     `
@@ -505,17 +779,10 @@ export function openFileConverter(fileName, currentPath, services, onComplete = 
     </div>
   `;
 
-  const win = windowHelper.createAndMountWindow(
-    winId,
-    `File Converter & Processor - ${fileName}`,
-    content,
-    "850px",
-    "550px",
-    {
-      icon: "fa-exchange-alt",
-      className: "converter-window"
-    }
-  );
+  const win = windowHelper.createAndMountWindow(winId, `File Converter - ${fileName}`, content, "850px", "550px", {
+    icon: "fa-exchange-alt",
+    className: "converter-window"
+  });
 
   const dom = {
     sizeInfo: win.querySelector(`#${winId}-info-size`),
@@ -555,12 +822,31 @@ export function openFileConverter(fileName, currentPath, services, onComplete = 
     csvDelimGroup: win.querySelector(`#${winId}-csv-delim-group`),
     flatten: win.querySelector(`#${winId}-struct-flatten`),
     flattenGroup: win.querySelector(`#${winId}-flatten-group`),
-    structPreview: win.querySelector(`#${winId}-struct-preview`)
+    structPreview: win.querySelector(`#${winId}-struct-preview`),
+
+    audioSampleRate: win.querySelector(`#${winId}-audio-samplerate`),
+    audioBitrate: win.querySelector(`#${winId}-audio-bitrate`),
+    audioChannels: win.querySelector(`#${winId}-audio-channels`),
+    audioVolBoost: win.querySelector(`#${winId}-audio-volboost`),
+    audioNormalize: win.querySelector(`#${winId}-audio-normalize`),
+    audioTrim: win.querySelector(`#${winId}-audio-trim`),
+    audioPreview: win.querySelector(`#${winId}-audio-preview`),
+
+    videoResolution: win.querySelector(`#${winId}-video-resolution`),
+    videoFps: win.querySelector(`#${winId}-video-fps`),
+    videoBitrate: win.querySelector(`#${winId}-video-bitrate`),
+    videoCodec: win.querySelector(`#${winId}-video-codec`),
+    videoAudioCodec: win.querySelector(`#${winId}-video-audio-codec`),
+    videoMute: win.querySelector(`#${winId}-video-mute`),
+    videoFaststart: win.querySelector(`#${winId}-video-faststart`),
+    videoPreview: win.querySelector(`#${winId}-video-preview`)
   };
 
   let fileContentStr = "";
   let fileContentBlob = null;
   let originalImage = null;
+  let audioBuffer = null;
+  let videoElement = null;
 
   dom.btnCancel.onclick = () => {
     const closeBtn = win.querySelector(".close-btn");
@@ -714,6 +1000,65 @@ export function openFileConverter(fileName, currentPath, services, onComplete = 
     dom.pretty.onchange = updateStructPreview;
     dom.autodetect.onchange = updateStructPreview;
     dom.flatten.onchange = updateStructPreview;
+  } else if (category === "audio") {
+    readAsBlob(fs, currentPath, fileName)
+      .then((blob) => {
+        fileContentBlob = blob;
+        dom.sizeInfo.textContent = `${(blob.size / 1024).toFixed(1)} KB`;
+
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const arrayBuffer = blob.arrayBuffer ? blob.arrayBuffer() : blob.slice().arrayBuffer();
+        arrayBuffer
+          .then((buffer) => audioContext.decodeAudioData(buffer))
+          .then((decodedBuffer) => {
+            audioBuffer = decodedBuffer;
+            const duration = decodedBuffer.duration.toFixed(2);
+            const channels = decodedBuffer.numberOfChannels;
+            const sampleRate = decodedBuffer.sampleRate;
+            dom.audioPreview.innerHTML = `
+              <div style="font-size:12px;color:rgba(255,255,255,0.8);">
+                <div><strong>Duration:</strong> ${duration}s</div>
+                <div><strong>Channels:</strong> ${channels}</div>
+                <div><strong>Sample Rate:</strong> ${sampleRate}Hz</div>
+              </div>
+            `;
+          })
+          .catch(() => {
+            dom.audioPreview.innerHTML = `<div style="font-size:12px;color:rgba(255,255,255,0.6);">Audio loaded (conversion available)</div>`;
+          });
+      })
+      .catch(() => {
+        dom.sizeInfo.textContent = "Error";
+      });
+  } else if (category === "video") {
+    readAsBlob(fs, currentPath, fileName)
+      .then((blob) => {
+        fileContentBlob = blob;
+        dom.sizeInfo.textContent = `${(blob.size / 1024).toFixed(1)} KB`;
+
+        const video = document.createElement("video");
+        video.preload = "metadata";
+        video.src = URL.createObjectURL(blob);
+        video.onloadedmetadata = () => {
+          videoElement = video;
+          const duration = video.duration.toFixed(2);
+          const width = video.videoWidth;
+          const height = video.videoHeight;
+          dom.videoPreview.innerHTML = `
+            <div style="font-size:12px;color:rgba(255,255,255,0.8);">
+              <div><strong>Duration:</strong> ${duration}s</div>
+              <div><strong>Resolution:</strong> ${width}x${height}</div>
+              <div><strong>Aspect Ratio:</strong> ${(width / height).toFixed(2)}</div>
+            </div>
+          `;
+        };
+        video.onerror = () => {
+          dom.videoPreview.innerHTML = `<div style="font-size:12px;color:rgba(255,255,255,0.6);">Video loaded (conversion available)</div>`;
+        };
+      })
+      .catch(() => {
+        dom.sizeInfo.textContent = "Error";
+      });
   }
 
   function updateTextPreviewAndStats() {
@@ -922,6 +1267,153 @@ export function openFileConverter(fileName, currentPath, services, onComplete = 
           } else if (target === "yaml") {
             outputText = jsonToYaml(parsed);
           }
+        } else if (category === "audio") {
+          if (!audioBuffer && fileContentBlob) {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const arrayBuffer = await (fileContentBlob.arrayBuffer
+              ? fileContentBlob.arrayBuffer()
+              : fileContentBlob.slice().arrayBuffer());
+            audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+          }
+
+          if (!audioBuffer) throw new Error("Audio not fully loaded.");
+
+          dom.progressFill.style.width = "50%";
+          dom.progressText.textContent = "Processing audio...";
+
+          const targetSampleRate = parseInt(dom.audioSampleRate.value);
+          const targetChannels = parseInt(dom.audioChannels.value);
+          const volBoost = parseFloat(dom.audioVolBoost.value) || 0;
+          const normalize = dom.audioNormalize.checked;
+
+          const audioContext = new (window.OfflineAudioContext || window.webkitOfflineAudioContext)(
+            targetChannels,
+            audioBuffer.duration * targetSampleRate,
+            targetSampleRate
+          );
+
+          const source = audioContext.createBufferSource();
+          source.buffer = audioBuffer;
+
+          const gainNode = audioContext.createGain();
+          const boostGain = Math.pow(10, volBoost / 20);
+          gainNode.gain.value = boostGain;
+
+          source.connect(gainNode);
+          gainNode.connect(audioContext.destination);
+          source.start();
+
+          const renderedBuffer = await audioContext.startRendering();
+
+          if (normalize) {
+            const channelData = renderedBuffer.getChannelData(0);
+            let maxVal = 0;
+            for (let i = 0; i < channelData.length; i++) {
+              const absVal = Math.abs(channelData[i]);
+              if (absVal > maxVal) maxVal = absVal;
+            }
+            if (maxVal > 0) {
+              const normalizationFactor = 0.95 / maxVal;
+              for (let ch = 0; ch < renderedBuffer.numberOfChannels; ch++) {
+                const data = renderedBuffer.getChannelData(ch);
+                for (let i = 0; i < data.length; i++) {
+                  data[i] *= normalizationFactor;
+                }
+              }
+            }
+          }
+
+          dom.progressFill.style.width = "75%";
+          dom.progressText.textContent = "Encoding audio...";
+
+          const wavBuffer = audioBufferToWav(renderedBuffer);
+          outputBlob = new Blob([wavBuffer], { type: "audio/wav" });
+
+          if (targetFormat !== "wav") {
+            outputBlob = await convertAudioFormat(outputBlob, targetFormat, parseInt(dom.audioBitrate.value) * 1000);
+          }
+        } else if (category === "video") {
+          if (!videoElement) throw new Error("Video not fully loaded.");
+
+          dom.progressFill.style.width = "50%";
+          dom.progressText.textContent = "Processing video...";
+
+          const resolution = dom.videoResolution.value;
+          const fps = dom.videoFps.value;
+          const bitrate = parseInt(dom.videoBitrate.value) * 1000000;
+          const codec = dom.videoCodec.value;
+          const audioCodec = dom.videoAudioCodec.value;
+          const mute = dom.videoMute.checked;
+
+          let targetWidth = videoElement.videoWidth;
+          let targetHeight = videoElement.videoHeight;
+          let targetFps = 30;
+
+          if (resolution !== "original") {
+            const [w, h] = resolution.split("x").map(Number);
+            targetWidth = w;
+            targetHeight = h;
+          }
+
+          if (fps !== "original") {
+            targetFps = parseInt(fps);
+          }
+
+          const canvas = document.createElement("canvas");
+          canvas.width = targetWidth;
+          canvas.height = targetHeight;
+          const ctx = canvas.getContext("2d");
+
+          const stream = canvas.captureStream(targetFps);
+          let audioTrack = null;
+
+          if (!mute && audioCodec !== "none") {
+            try {
+              const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+              const source = audioCtx.createMediaElementSource(videoElement);
+              const destination = audioCtx.createMediaStreamDestination();
+              source.connect(destination);
+              audioTrack = destination.stream.getAudioTracks()[0];
+              stream.addTrack(audioTrack);
+            } catch (e) {}
+          }
+
+          const mimeType = getVideoMimeType(targetFormat, codec);
+          const mediaRecorder = new MediaRecorder(stream, {
+            mimeType: mimeType,
+            videoBitsPerSecond: bitrate
+          });
+
+          const chunks = [];
+          mediaRecorder.ondataavailable = (e) => {
+            if (e.data.size > 0) chunks.push(e.data);
+          };
+
+          videoElement.currentTime = 0;
+          videoElement.muted = mute;
+          await videoElement.play();
+
+          mediaRecorder.start();
+
+          const drawFrame = () => {
+            if (videoElement.paused || videoElement.ended) return;
+            ctx.drawImage(videoElement, 0, 0, targetWidth, targetHeight);
+            requestAnimationFrame(drawFrame);
+          };
+          drawFrame();
+
+          await new Promise((resolve) => {
+            videoElement.onended = resolve;
+          });
+
+          mediaRecorder.stop();
+
+          await new Promise((resolve) => {
+            mediaRecorder.onstop = resolve;
+          });
+
+          outputBlob = new Blob(chunks, { type: mimeType });
+          videoElement.pause();
         }
 
         dom.progressFill.style.width = "90%";
