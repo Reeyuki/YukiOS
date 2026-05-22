@@ -993,7 +993,11 @@ export class ExplorerApp extends BaseApp {
       try {
         const raw = await this.fs.getFileContent(inst.currentPath, name);
         const content = JSON.parse(raw);
-        if (content && content.app) this.appLauncher.launch(content.app);
+        if (content && content.app) {
+          this.appLauncher.launch(content.app);
+        } else if (content && content.type === "youtube-embed") {
+          this._openYouTubeEmbedDesktop(content);
+        }
       } catch (e) {
         console.error("Failed to parse desktop file JSON:", e);
       }
@@ -1016,6 +1020,45 @@ export class ExplorerApp extends BaseApp {
 
   openMediaViewer(name, src, kind) {
     openMediaViewer(name, src, kind, this.wm);
+  }
+
+  _openYouTubeEmbedDesktop(content) {
+    const winId = `yt-embed-${Date.now()}`;
+    const win = this.wm.createWindow(winId, content.name || "YouTube Embed", "800px", "600px");
+
+    const base = content.nocookie ? "https://www.youtube-nocookie.com" : "https://www.youtube.com";
+    const params = new URLSearchParams();
+    if (content.autoplay) params.set("autoplay", "1");
+    if (!content.controls) params.set("controls", "0");
+    if (content.mute && content.autoplay) params.set("mute", "1");
+    if (content.startSeconds > 0) params.set("start", String(content.startSeconds));
+    if (content.endSeconds > 0) params.set("end", String(content.endSeconds));
+    if (content.loop) params.set("loop", "1");
+    params.set("rel", "0");
+
+    let embedUrl;
+    if (content.kind === "playlist" && content.playlistId) {
+      params.set("list", content.playlistId);
+      embedUrl = `${base}/embed/videoseries?${params.toString()}`;
+    } else if (content.kind === "video" && content.videoId) {
+      if (content.loop) params.set("playlist", content.videoId);
+      embedUrl = `${base}/embed/${encodeURIComponent(content.videoId)}?${params.toString()}`;
+    } else {
+      this.wm.sendNotify("Invalid YouTube embed data", "Missing videoId or playlistId");
+      return;
+    }
+
+    win.innerHTML = `
+      <div class="window-header">
+        <span>${content.name || "YouTube Embed"}</span>
+        ${this.wm.getWindowControls()}
+      </div>
+      <div class="window-content" style="width:100%; height:100%; overflow:hidden; display:flex; align-items:center; justify-content:center; background:#000;">
+        <iframe src="${embedUrl}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" style="width:100%; height:100%; border:none;"></iframe>
+      </div>
+    `;
+
+    this.wm.mountWindow(win, winId, content.name || "YouTube Embed", "fab fa-youtube");
   }
 
   async _pasteToPath(destPath, inst) {

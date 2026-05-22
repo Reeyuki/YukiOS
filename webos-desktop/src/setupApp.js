@@ -690,7 +690,7 @@ Your setup is complete. Here's what you configured:
 - Notifications: ${this.userChoices.notifications ? "Enabled" : "Disabled"}
 
 Quick Tips:
-• Click the Start Menu to explore 30+ apps and 2700+ games
+• Click the Start Menu to explore 30+ apps and 3700+ games
 • Right-click the desktop for context menu options
 • Use the Settings app to customize further anytime
 • Your files persist in the virtual filesystem

@@ -260,6 +260,7 @@ export class YouTubeApp extends BaseApp {
                 <button class="mini" id="yt-pin" title="Pin/unpin current item">Pin</button>
                 <button class="mini" id="yt-copy-embed" title="Copy embed URL">Copy Embed URL</button>
                 <button class="mini" id="yt-open-yt" title="Open watch page">Open</button>
+                <button class="mini" id="yt-create-desktop" title="Create desktop entry">Create Desktop Entry</button>
               </div>
             </div>
             <div class="panel-b" style="padding:0">
@@ -313,6 +314,12 @@ export class YouTubeApp extends BaseApp {
             "#yt-open-yt": {
               click: {
                 type: "custom:openYt",
+                stopPropagation: true
+              }
+            },
+            "#yt-create-desktop": {
+              click: {
+                type: "custom:createDesktop",
                 stopPropagation: true
               }
             },
@@ -418,6 +425,9 @@ export class YouTubeApp extends BaseApp {
         },
         openYt: (payload, event, element, state) => {
           this._openOnYouTube();
+        },
+        createDesktop: async (payload, event, element, state) => {
+          await this._createDesktopEntry();
         },
         pin: (payload, event, element, state) => {
           this._togglePin();
@@ -919,6 +929,53 @@ export class YouTubeApp extends BaseApp {
     this._els.endInput.value = this._preset.endSeconds ? String(this._preset.endSeconds) : "";
     this._renderLists();
     this._setStatus("Imported.");
+  }
+
+  async _createDesktopEntry() {
+    const parsed = this._currentParsedFromIframe();
+    if (!parsed) {
+      this._setStatus("No video loaded to create desktop entry.", { warn: true });
+      return;
+    }
+
+    const name = await customPrompt(
+      "Enter name for desktop entry:",
+      parsed.kind === "playlist" ? "YouTube Playlist" : "YouTube Video"
+    );
+    if (!name) return;
+
+    const desktopEntry = {
+      type: "youtube-embed",
+      name: name,
+      videoId: parsed.videoId || null,
+      playlistId: parsed.playlistId || null,
+      kind: parsed.kind,
+      startSeconds: parsed.startSeconds || 0,
+      endSeconds: parsed.endSeconds || 0,
+      loop: parsed.loop || false,
+      nocookie: this._prefs.nocookie,
+      autoplay: this._prefs.autoplay,
+      controls: this._prefs.controls,
+      mute: this._prefs.mute
+    };
+
+    const fileName = `${name.replace(/[^a-zA-Z0-9_-]/g, "_")}.desktop`;
+    const desktopDir = this.fs.resolveUserPath(["Desktop"]);
+    const filePath = this.fs.join(desktopDir, fileName);
+
+    try {
+      await this.fs.writeFile(filePath, JSON.stringify(desktopEntry, null, 2));
+      await this.fs.writeMeta(desktopDir, fileName, {
+        kind: "OTHER",
+        icon: "static/icons/youtube.webp",
+        faIcon: "fab fa-youtube"
+      });
+      this._setStatus(`Desktop entry "${fileName}" created.`);
+      this.notify("Desktop Entry Created", `${name} has been added to your desktop.`);
+    } catch (e) {
+      console.error("Failed to create desktop entry:", e);
+      this._setStatus("Failed to create desktop entry.", { warn: true });
+    }
   }
 
   _bindEvents() {

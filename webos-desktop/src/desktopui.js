@@ -1661,11 +1661,15 @@ export class DesktopUI {
   async createDesktopFileIcon(fileName, itemData = null) {
     if (document.querySelector(`.desktop-file-icon[data-file-name="${CSS.escape(fileName)}"]`)) return;
 
-    let thumbnailSrc = itemData?.icon;
+    let thumbnailSrc = null;
     if (fileName.endsWith(".desktop")) {
       const raw = await this.fs.getFileContent(["Desktop"], fileName);
       thumbnailSrc = resolveDesktopIcon(raw, fileName);
-    } else if (isImageFile(fileName)) {
+    } else {
+      thumbnailSrc = itemData?.icon;
+    }
+
+    if (isImageFile(fileName)) {
       if (itemData?.icon === "@content") {
         const content = await this.fs.getFileContent(["Desktop"], fileName);
         thumbnailSrc = content instanceof Blob ? await readFileAsDataURL(content) : content;
@@ -1705,6 +1709,21 @@ export class DesktopUI {
   }
 
   async _openDesktopFile(fileName) {
+    if (fileName.endsWith(".desktop")) {
+      try {
+        const raw = await this.fs.getFileContent(["Desktop"], fileName);
+        const content = JSON.parse(raw);
+        if (content && content.app) {
+          this.appLauncher.launch(content.app);
+          return;
+        } else if (content && content.type === "youtube-embed") {
+          this._openYouTubeEmbedDesktop(content);
+          return;
+        }
+      } catch (e) {
+        console.error("Failed to parse desktop file JSON:", e);
+      }
+    }
     await openFileWith({
       name: fileName,
       path: ["Desktop"],
@@ -1713,6 +1732,46 @@ export class DesktopUI {
       windowManager: this.appLauncher.wm,
       appLauncher: this.appLauncher
     });
+  }
+
+  _openYouTubeEmbedDesktop(content) {
+    const winId = `yt-embed-${Date.now()}`;
+    const win = this.appLauncher.wm.createWindow(winId, content.name || "YouTube Embed", "800px", "600px");
+
+    const base = content.nocookie ? "https://www.youtube-nocookie.com" : "https://www.youtube.com";
+    const params = new URLSearchParams();
+    if (content.autoplay) params.set("autoplay", "1");
+    if (!content.controls) params.set("controls", "0");
+    if (content.mute && content.autoplay) params.set("mute", "1");
+    if (content.startSeconds > 0) params.set("start", String(content.startSeconds));
+    if (content.endSeconds > 0) params.set("end", String(content.endSeconds));
+    if (content.loop) params.set("loop", "1");
+    params.set("rel", "0");
+
+    let embedUrl;
+    if (content.kind === "playlist" && content.playlistId) {
+      params.set("list", content.playlistId);
+      embedUrl = `${base}/embed/videoseries?${params.toString()}`;
+    } else if (content.kind === "video" && content.videoId) {
+      if (content.loop) params.set("playlist", content.videoId);
+      embedUrl = `${base}/embed/${encodeURIComponent(content.videoId)}?${params.toString()}`;
+    } else {
+      this.appLauncher.wm.sendNotify("Invalid YouTube embed data", "Missing videoId or playlistId");
+      return;
+    }
+
+    win.innerHTML = `
+      <div class="window-header">
+        <span>${content.name || "YouTube Embed"}</span>
+        ${this.appLauncher.wm.getWindowControls()}
+      </div>
+      <div class="window-content" style="width:100%; height:100%; overflow:hidden; display:flex; align-items:center; justify-content:center; background:#000;">
+        <iframe src="${embedUrl}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" style="width:100%; height:100%; border:none;"></iframe>
+      </div>
+    `;
+
+    document.body.appendChild(win);
+    this.appLauncher.wm.mountWindow(win, winId, content.name || "YouTube Embed", "fab fa-youtube");
   }
 
   async _editDesktopFileWithNotepad(fileName) {

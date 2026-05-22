@@ -8,7 +8,11 @@ export function resolveDesktopIcon(content, fileName = null) {
     try {
       const parsed = typeof content === "string" ? JSON.parse(content) : content;
       if (parsed) {
-        icon = parsed.path || appMap[parsed.app]?.icon;
+        if (parsed.type === "youtube-embed") {
+          icon = resolveIconUrl("static/icons/youtube.webp");
+        } else {
+          icon = parsed.path || appMap[parsed.app]?.icon;
+        }
       }
     } catch (e) {}
   }

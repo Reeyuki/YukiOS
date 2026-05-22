@@ -742,7 +742,7 @@ export class SettingsApp extends BaseApp {
               </div>
             </div>
             <p style="margin:0;color:rgba(255,255,255,0.75);font-size:0.9em;line-height:1.5;">
-              A fully featured desktop OS experience running directly in your web browser. Includes emulators, tools, PWA support, virtual filesystem, and 2700+ classic games.
+              A fully featured desktop OS experience running directly in your web browser. Includes emulators, tools, PWA support, virtual filesystem, and 3700+ classic games.
             </p>
             <div style="display:flex;align-items:center;gap:8px;">
               <span style="color:rgba(255,255,255,0.4);font-size:0.78em;font-weight:500;">Build</span>

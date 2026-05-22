@@ -2,7 +2,7 @@
 
 https://discord.gg/uFuGfseB9Z
 
-> A webOS-style desktop environment running in the browser, featuring 30+ applications, 2700+ games, multiple emulators, and a service-oriented architecture for seamless multitasking.
+> A webOS-style desktop environment running in the browser, featuring 30+ applications, 3700+ games, multiple emulators, and a service-oriented architecture for seamless multitasking.
 
 Yuki OS is a fully-featured browser-based operating system that unifies games, emulators, productivity tools, and web applications into a single windowed desktop experience. Run Flash games, DOS emulation, modern web apps, and custom applications all side-by-side with a shared window manager, filesystem, and UI.
 
@@ -26,7 +26,7 @@ Yuki OS is a fully-featured browser-based operating system that unifies games, e
 
 ### Application System
 - **30+ built-in apps** — File explorer, terminal, editor, settings, media players, utilities
-- **2700+ games** — Browser games, emulated classics, Flash content via Ruffle
+- **3700+ games** — Browser games, emulated classics, Flash content via Ruffle
 - **Service-oriented architecture** — WindowManager, FileSystemManager, NotificationCenter, EventBus
 - **Modular & extensible** — Add new apps without modifying core
 - **Dependency injection** — Clean service access, loose coupling
@@ -102,7 +102,7 @@ yukios/
 │   │   ├── core/EventBus.js   (pub-sub event system)
 │   │   │
 │   │   ├── appLauncher.js      (central app dispatcher)
-│   │   ├── gamesList.js        (2700+ game registry)
+│   │   ├── gamesList.js        (3700+ game registry)
 │   │   ├── gameDescriptions.js (game metadata)
 │   │   │
 │   │   ├── explorer.js         (file manager)
@@ -222,7 +222,7 @@ For detailed steps, see [AGENTS.md — How to Add a New Application](AGENTS.md#h
 - **About** — System information
 
 ### Emulators & Games (20+)
-- **Steam Game Launcher** — Browse 2700+ games
+- **Steam Game Launcher** — Browse 3700+ games
 - **JS-DOS** — DOS game emulation with Ruffle Flash
 - **V86** — Full x86-64 system emulation
 - **Categories** — Game organization by genre
