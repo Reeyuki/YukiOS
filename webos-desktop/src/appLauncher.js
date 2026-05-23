@@ -54,7 +54,8 @@ export class AppLauncher {
     ruffleApp,
     shortcutsApp,
     yukiConvertApp,
-    setupApp
+    setupApp,
+    dataEditorApp
   ) {
     this.wm = windowManager;
     this.windowHelper = new WindowHelper(this.wm);
@@ -88,6 +89,7 @@ export class AppLauncher {
     this.shortcutsApp = shortcutsApp;
     this.yukiConvertApp = yukiConvertApp;
     this.setupApp = setupApp;
+    this.dataEditorApp = dataEditorApp;
     this.TRANSPARENCY_ALLOWED_APP_IDS = new Set(["paint", "photopea", "vscode", "liventcord"]);
 
     this.clippyPromise = initClippy();
@@ -532,7 +534,7 @@ export class AppLauncher {
       } else if (info.action) {
         const result = this._tryLaunchDeclarative(app, appExtra);
         if (!result) {
-          info.action(appExtra);
+          info.action.call(this, appExtra);
         }
       }
       return;

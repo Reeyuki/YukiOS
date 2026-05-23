@@ -10,7 +10,10 @@ const NEWS_UPDATES = [
       {
         icon: "fa-wand-magic-sparkles",
         title: "Features & Improvements",
-        items: [["fa-cube", "Yuki Blender", "Added new blender app with enchanced 3d functionality."]]
+        items: [
+          ["fa-cube", "Yuki Blender", "Added new blender app with enchanced 3d functionality."],
+          ["fa-database", "Storage Editor", "Added new Storage Editor app."]
+        ]
       }
     ]
   },

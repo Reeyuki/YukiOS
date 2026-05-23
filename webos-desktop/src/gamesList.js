@@ -4,6 +4,11 @@ export const appMap = {
     title: "Yuki Convert",
     icon: "fas fa-exchange-alt"
   },
+  dataEditor: {
+    type: "system",
+    title: "Storage Editor",
+    icon: "fas fa-database"
+  },
   azahar: {
     type: "system",
     title: "Azahar (3DS Emulator)",

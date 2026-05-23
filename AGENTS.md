@@ -2,6 +2,21 @@
 Never add comments or docstrings
 Never spawn a browser for testing
 Never run any npm/pnpm format or npm/pnpm bf commands
+Always use CSS variables from src/styles/style.css for styling instead of hardcoded colors. Use variables like --brand, --text-primary, --text-secondary, --bg-primary, --bg-secondary, --glass, --glass-border, --error, etc.
+When making significant changes or new features, register them to the current day under the NEWS_UPDATES variable in src/news.js with an appropriate icon, title, and description.
+
+## Yuki OS Styling System
+
+Yuki OS uses a dark glassmorphism theme with the following characteristics:
+- **Colors**: Use CSS variables from style.css (--brand for accents, --text-primary/--text-secondary for text, --bg-primary/--bg-secondary for backgrounds, --glass/--glass-border for subtle effects, --error for destructive actions)
+- **Glassmorphism**: Backdrop blur (32px+), semi-transparent backgrounds (rgba with 0.6-0.98 opacity), subtle borders (rgba(255,255,255,0.08-0.12))
+- **Depth**: Box shadows with multiple layers (0 24px 64px rgba(0,0,0,0.65) + inset highlights)
+- **Typography**: System fonts or JetBrains Mono for code, 11-14px base size, varying opacity for hierarchy (0.7-0.9 for secondary text)
+- **Radius**: Rounded corners (6-14px depending on element size)
+- **Transitions**: 0.1-0.2s for hover states, subtle background/border changes
+- **Light Theme**: Support via html[data-theme="light"] overrides with solid colors (#fff, #f0f0f0, #111, #666)
+- **Scrollbars**: Custom thin styling (8px width, rgba(255,255,255,0.12) thumb)
+- **Checkboxes**: Never use native browser checkboxes, plain inputs or dropdowns. Always style with appearance: none, -webkit-appearance: none, custom border/background, and ::after pseudo-element for checkmark using CSS variables
 ## Overview
 
 Yuki OS is a browser-based webOS-style desktop environment that emulates a complete operating system within the web browser. It provides a unified windowed interface for 30+ built-in applications, 3700+ games, multiple emulators (DOS via JS-DOS, x86 via V86), productivity tools, and system utilities. Everything runs in a sandboxed environment with persistent file storage, notifications, settings, and a virtual filesystem.

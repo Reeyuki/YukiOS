@@ -239,7 +239,7 @@ export class WeatherApp extends BaseApp {
   async fetchWeatherByCoords(latitude, longitude, cityName, country) {
     const tempUnit = this.unit === "imperial" ? "fahrenheit" : "celsius";
     const windUnit = this.unit === "imperial" ? "mph" : "kmh";
-    const cacheKey = `wx_${latitude.toFixed(2)}_${longitude.toFixed(2)}_${this.unit}`;
+    const cacheKey = `yukiOS_weather_${latitude.toFixed(2)}_${longitude.toFixed(2)}_${this.unit}`;
     const cached = getCached(cacheKey);
     if (cached) return { ...cached, cityName, country };
 

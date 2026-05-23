@@ -39,6 +39,7 @@ import { ShortcutsApp } from "./shortcuts.js";
 import { YukiConvertApp } from "./yukiConvert.js";
 import { HybridAdapter } from "./runtime/HybridAdapter.js";
 import { SetupApp } from "./setupApp.js";
+import { DataEditorApp } from "./dataEditor.js";
 import {
   resolveGhUrl,
   resolveIconUrl,
@@ -189,6 +190,9 @@ services.model3dApp = model3dApp;
 const setupApp = new SetupApp(services);
 services.setupApp = setupApp;
 
+const dataEditorApp = new DataEditorApp(services);
+services.dataEditorApp = dataEditorApp;
+
 const appLauncher = new AppLauncher(
   windowManager,
   fileSystemManager,
@@ -220,7 +224,8 @@ const appLauncher = new AppLauncher(
   ruffleApp,
   shortcutsApp,
   yukiConvertApp,
-  setupApp
+  setupApp,
+  dataEditorApp
 );
 window.appLauncher = appLauncher;
 windowManager.setAppLauncher(appLauncher);
