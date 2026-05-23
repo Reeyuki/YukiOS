@@ -339,7 +339,7 @@
 .taskbar-preview {
   position: fixed;
   z-index: 100000;
-  width: 360px;
+  width: 240px;
   border-radius: 14px;
   background: rgba(25, 25, 30, 0.82);
   border: 1px solid rgba(255, 255, 255, 0.14);
@@ -364,13 +364,13 @@
 }
 
 .taskbar-preview__thumb {
-  height: 210px;
-  padding: 10px;
+  height: 140px;
   background: radial-gradient(120% 100% at 50% 0%, rgba(255, 255, 255, 0.06), transparent 60%);
   overflow: hidden;
   display: flex;
   align-items: flex-start;
   justify-content: center;
+  position: relative;
 }
 
 .taskbar-preview__winclone {

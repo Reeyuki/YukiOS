@@ -1136,7 +1136,7 @@ export class WindowManager {
 
   _showTaskbarPreview(winId, anchorEl) {
     const win = document.getElementById(winId);
-    if (!win || !anchorEl) return;
+    if (!win || !anchorEl || anchorEl.classList.contains("minimized")) return;
 
     if (this._taskbarPreviewWinId !== winId) this._hideTaskbarPreview();
 
@@ -1156,17 +1156,40 @@ export class WindowManager {
     const clone = win.cloneNode(true);
     clone.removeAttribute("id");
     clone.classList.add("taskbar-preview__winclone");
-    clone.style.position = "relative";
-    clone.style.left = "0";
-    clone.style.top = "0";
-    clone.style.right = "auto";
-    clone.style.bottom = "auto";
+    clone.style.position = "absolute";
+    clone.style.left = "50%";
+    clone.style.top = "50%";
     clone.style.margin = "0";
     clone.style.maxWidth = "none";
     clone.style.maxHeight = "none";
+    clone.style.transformOrigin = "center";
     clone.querySelectorAll("[id]").forEach((n) => n.removeAttribute("id"));
     clone.querySelectorAll(".window-controls").forEach((n) => n.remove());
     clone.querySelectorAll("input,textarea,button,select").forEach((n) => n.setAttribute("disabled", "disabled"));
+
+    // Filter active elements that shouldn't run in thumbnail
+    clone.querySelectorAll("iframe, video, audio, canvas").forEach((n) => {
+      const placeholder = document.createElement("div");
+      placeholder.style.width = "100%";
+      placeholder.style.height = "100%";
+      placeholder.style.background = "var(--bg-secondary, rgba(0,0,0,0.5))";
+      placeholder.style.display = "flex";
+      placeholder.style.alignItems = "center";
+      placeholder.style.justifyContent = "center";
+
+      const tempDiv = document.createElement("div");
+      tempDiv.innerHTML = this.getWindowIconHtml(meta?.iconValue, meta?.color || "white");
+      const iconEl = tempDiv.firstElementChild;
+      if (iconEl) {
+        iconEl.style.fontSize = "48px";
+        iconEl.style.width = "48px";
+        iconEl.style.height = "48px";
+        iconEl.style.opacity = "0.7";
+        placeholder.appendChild(iconEl);
+      }
+      n.replaceWith(placeholder);
+    });
+
     thumb.appendChild(clone);
 
     document.body.appendChild(preview);
@@ -1186,13 +1209,14 @@ export class WindowManager {
     preview.style.top = `${top}px`;
 
     const winRect = win.getBoundingClientRect();
-    const innerW = 360 - 20;
-    const innerH = 210 - 20;
+    const innerW = 240;
+    const innerH = 140;
     const scaleX = innerW / Math.max(1, winRect.width);
     const scaleY = innerH / Math.max(1, winRect.height);
-    const scale = Math.min(scaleX, scaleY, 0.32);
-    clone.style.transformOrigin = "top left";
-    clone.style.transform = `scale(${scale})`;
+    // Remove the 0.32 clamp and use min to contain perfectly, or max to cover.
+    // We use min to ensure the whole window is visible, but at max possible size.
+    const scale = Math.min(scaleX, scaleY);
+    clone.style.transform = `translate(-50%, -50%) scale(${scale})`;
 
     preview.addEventListener("mouseenter", () => {
       this._taskbarPreviewHovering = true;
@@ -1207,11 +1231,13 @@ export class WindowManager {
     preview.addEventListener("click", () => {
       const w = document.getElementById(winId);
       if (!w) return;
+
       if (w.style.display === "none") {
         w.style.display = "block";
         const taskbarItem = document.getElementById(`taskbar-${winId}`);
         if (taskbarItem) taskbarItem.classList.remove("minimized");
       }
+
       this.bringToFront(w);
       this._hideTaskbarPreview();
     });

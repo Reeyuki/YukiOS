@@ -17,7 +17,8 @@ const NEWS_UPDATES = [
             "fa-film",
             "Window Animation System",
             "Added 35-effect window animation engine: customize open, close, and minimize animations plus click bubble feedback."
-          ]
+          ],
+          ["fa-window-maximize", "Improve taskbar previews", "Improved taskbar window previews."]
         ]
       }
     ]

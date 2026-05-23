@@ -1,7 +1,8 @@
+Never run any npm/pnpm format or npm/pnpm bf commands
 # Yuki OS Architecture Guide
 Never add any comments or docstrings or "/*" blocks in css or js or html
 Never spawn a browser for testing
-Never run any npm/pnpm format or npm/pnpm bf commands
+
 Before finalizing any code changes, the implementation must successfully pass a pnpm build in webos-desktop/ directory. If a change would break the build process, it is considered incomplete and must be corrected before completion.
 Always use CSS variables from src/styles/style.css for styling instead of hardcoded colors. Use variables like --brand, --text-primary, --text-secondary, --bg-primary, --bg-secondary, --glass, --glass-border, --error, etc.
 When making significant changes or new features, register them to the current day under the NEWS_UPDATES variable in src/news.js with an appropriate icon, title, and description.
