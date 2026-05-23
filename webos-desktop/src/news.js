@@ -5,6 +5,16 @@ import { PersistenceTypes } from "./runtime/AppSchema.js";
 
 const NEWS_UPDATES = [
   {
+    date: "May 23, 2026",
+    sections: [
+      {
+        icon: "fa-wand-magic-sparkles",
+        title: "Features & Improvements",
+        items: [["fa-cube", "Yuki Blender", "Added new blender app with enchanced 3d functionality."]]
+      }
+    ]
+  },
+  {
     date: "May 22, 2026",
     sections: [
       {
@@ -12,10 +22,11 @@ const NEWS_UPDATES = [
         title: "Features & Improvements",
         items: [
           ["fa-gamepad", "Azahar Emulator", "Add azahar emulator with 3ds support"],
-          ["fa-rocket", "Setup Wizard", "Introduced first-time setup wizard for system personalization"],
-          ["fa-steam", "Steam Play Counts", "Introduced steam play counts for every game."],
-          ["fa-video", "Yuki Convert Upgrade", "Added video and audio format support for file conversion"],
-          ["fa-window-maximize", "Context Menu Fixes", "Fixed desktop context menu overflow issues"]
+          ["fa-rocket", "Setup Wizard", "Introduced first-time setup wizard for system personalization."],
+          ["fa-steam", "Steam Play Counts", "Introduced steam play count display for every game."],
+          ["fa-gamepad", "LuminSDK Catalog", "Added LuminSDK with 1000+ games catalog to steam app."],
+          ["fa-video", "Yuki Convert Upgrade", "Added video and audio format support for file conversion."],
+          ["fa-window-maximize", "Context Menu Fixes", "Fixed desktop context menu overflow issues."]
         ]
       }
     ]
@@ -27,21 +38,11 @@ const NEWS_UPDATES = [
         icon: "fa-wand-magic-sparkles",
         title: "Features & Improvements",
         items: [
-          ["fa-thumbtack", "Taskbar Pinning Behaviour Improvement", "Improved taskbar pinning behaviour"],
-          ["fa-gamepad", "Games Migration", "Fix 1000+ games images/loading"],
-          ["fa-image", "Fix wallpapers display", "Fixed wallpapers display issue"],
-          ["fa-trophy", "Improve achievements app ui", "Improved achievements app styling"]
+          ["fa-thumbtack", "Taskbar Pinning Behaviour Improvement", "Improved taskbar pinning behaviour."],
+          ["fa-gamepad", "Games Migration", "Fix 1000+ games images/loading."],
+          ["fa-image", "Fix wallpapers display", "Fixed wallpapers display issue."],
+          ["fa-trophy", "Improve achievements app ui", "Improved achievements app styling."]
         ]
-      }
-    ]
-  },
-  {
-    date: "May 20, 2026",
-    sections: [
-      {
-        icon: "fa-wand-magic-sparkles",
-        title: "Features & Improvements",
-        items: [["fa-car", "Fixed GTAVC", "Fixed GTA VC"]]
       }
     ]
   },
@@ -150,7 +151,6 @@ const NEWS_UPDATES = [
           ["fa-mobile-screen", "PWA Support", "Added progressive web app support for YukiOS."],
           ["fa-sliders", "Taskbar Customization support", "Added taskbar alignment options."],
           ["fa-user", "Profile Customization support", "Added Customize Profile app."],
-          ["fa-cubes", "3D Renderer Assets", "Fixed sample files of 3D Model Viewer and JsDos roms"],
           ["fa-brands fa-steam", "Steam Improvement", "Added data pack install option steam and optimize load speed"],
           ["fa-arrow-pointer", "Cursor Support", "Added custom cursor support"],
           ["fa-route", "Add proxy support for custom apps", "Added proxy support for created web apps"],

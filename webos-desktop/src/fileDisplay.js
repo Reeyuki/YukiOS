@@ -388,7 +388,7 @@ export async function openFileWith({
         fileData: arrayBuffer
       });
     } else {
-      customAlert("3D Model Viewer is not available.");
+      customAlert("Yuki Blender is not available.");
     }
     return;
   }

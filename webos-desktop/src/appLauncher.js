@@ -197,7 +197,7 @@ export class AppLauncher {
       },
       model3dApp: {
         type: "system",
-        title: "3D Model Viewer",
+        title: "Yuki Blender",
         action: (extra) => this.model3dApp.open(extra),
         clippy: { message: "That caught my eye!", animation: "MoveLeft" }
       },
@@ -687,12 +687,27 @@ player.load("${swfPath}");
       let resolvedSource =
         shouldBypassResolution || isCdnGh ? source : await resolveUrl(source, isCdnGhUrl(window.location.href));
 
-      if (
-        isCdnGh &&
-        typeof resolvedSource === "string" &&
-        resolvedSource.startsWith("/") &&
-        !resolvedSource.startsWith("/static/apps/azahar/")
-      ) {
+      if (typeof resolvedSource === "string" && resolvedSource.includes("static/apps/azahar")) {
+        const mirrors = [
+          "https://yukios.netlify.app/",
+          "https://yukios.pages.dev/",
+          "https://yukios.neocities.org/",
+          "https://yukios.vercel.app/"
+        ];
+
+        for (const mirror of mirrors) {
+          try {
+            const testUrl = new URL("static/apps/azahar/index.html", mirror).href;
+            const res = await fetch(testUrl, { method: "HEAD" });
+            if (res.ok) {
+              resolvedSource = testUrl;
+              break;
+            }
+          } catch (e) {
+            // continue to next mirror
+          }
+        }
+      } else if (isCdnGh && typeof resolvedSource === "string" && resolvedSource.startsWith("/")) {
         const repoBase = getCurrentCdnRepoBase();
         if (repoBase) {
           resolvedSource = `${repoBase}${resolvedSource}`;

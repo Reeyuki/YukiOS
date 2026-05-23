@@ -1,8 +1,8 @@
 #calculator-app {
-  border-radius: 16px;
+  border-radius: var(--r);
   overflow: hidden;
   box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.06),
+    0 0 0 1px var(--glass-border),
     0 32px 80px rgba(0, 0, 0, 0.7),
     0 8px 24px rgba(0, 0, 0, 0.5);
   min-width: 280px;
@@ -13,14 +13,14 @@
   display: flex;
   flex-direction: column;
   height: calc(100% - 41px);
-  background: #111113;
+  background: var(--bg-secondary);
 }
 
 .calc-display {
   flex: 0 0 auto;
   padding: 20px 20px 1.1em;
-  background: #0a0a0c;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--glass-border);
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -31,7 +31,7 @@
 .calc-expression {
   font-family: "DM Mono", monospace;
   font-size: 0.8rem;
-  color: rgba(255, 165, 50, 0.45);
+  color: var(--tx2);
   min-height: 1.2em;
 }
 
@@ -39,18 +39,36 @@
   font-family: "DM Mono", monospace;
   font-size: 2.4rem;
   font-weight: 300;
-  color: #ffd280;
+  color: var(--brand);
   line-height: 1;
   word-break: break-all;
   text-align: right;
   transition: font-size 0.15s;
 }
 
+.calc-history {
+  height: 80px;
+  overflow-y: auto;
+  font-size: 1.1em;
+  opacity: 0.85;
+  margin-bottom: 6px;
+  color: var(--text-secondary);
+}
+
+.calc-history-item {
+  cursor: pointer;
+  padding: 2px 4px;
+}
+
+.calc-history-item:hover {
+  background: var(--glass-hover);
+}
+
 .calc-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 1px;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--glass-border);
   flex: 1;
   padding: 1px;
 }
@@ -64,8 +82,8 @@
   font-family: "DM Mono", monospace;
   font-size: 1.05rem;
   font-weight: 400;
-  color: #e8e8e8;
-  background: #18181c;
+  color: var(--text-primary);
+  background: var(--glass);
   user-select: none;
   position: relative;
   overflow: hidden;
@@ -89,7 +107,7 @@
 }
 
 .calc-btn:hover {
-  background: #222228;
+  background: var(--glass-hover);
 }
 
 .calc-btn:active {
@@ -97,37 +115,37 @@
 }
 
 .calc-btn.func {
-  background: #1f1f25;
-  color: #c0b8e0;
+  background: var(--s2);
+  color: var(--tx2);
   font-size: 0.9rem;
 }
 
 .calc-btn.func:hover {
-  background: #2a2a34;
-  color: #d8d0ff;
+  background: var(--s3);
+  color: var(--text-primary);
 }
 
 .calc-btn.op {
-  background: #1c1a10;
-  color: #ffc84a;
+  background: var(--brand-dim);
+  color: var(--brand);
 }
 
 .calc-btn.op:hover {
-  background: #28250f;
-  color: #ffd97a;
+  background: var(--brand-glow);
+  color: var(--brand-hover);
 }
 
 .calc-btn.equals {
-  background: linear-gradient(135deg, #e8960a 0%, #f5b730 100%);
-  color: #0e0a00;
+  background: linear-gradient(135deg, var(--brand-dark) 0%, var(--brand) 100%);
+  color: var(--text-primary);
   font-size: 1.3rem;
   font-weight: 500;
   grid-column: span 4;
-  border-radius: 0 0 4px 4px;
+  border-radius: 0 0 var(--r-sm) var(--r-sm);
 }
 
 .calc-btn.equals:hover {
-  background: linear-gradient(135deg, #f5a50c 0%, #ffc840 100%);
+  background: linear-gradient(135deg, var(--brand) 0%, var(--brand-hover) 100%);
 }
 
 .calc-btn.equals:active {
@@ -146,21 +164,4 @@
   .calc-result {
     font-size: 1.8rem;
   }
-}
-
-.calc-history {
-  height: 80px;
-  overflow-y: auto;
-  font-size: 1.1em;
-  opacity: 0.7;
-  margin-bottom: 6px;
-}
-
-.calc-history-item {
-  cursor: pointer;
-  padding: 2px 4px;
-}
-
-.calc-history-item:hover {
-  background: rgba(255, 255, 255, 0.1);
 }

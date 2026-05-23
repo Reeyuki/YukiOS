@@ -257,6 +257,7 @@ export class AdsManager {
   }
 
   maybeFirePopunder() {
+    return;
     if (!shouldEnableAds()) return;
 
     const meta = loadMeta();

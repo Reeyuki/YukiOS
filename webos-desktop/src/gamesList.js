@@ -1165,7 +1165,7 @@ export const appMap = {
     title: "Yuki Code",
     icon: "/static/icons/vscode.webp"
   },
-  model3dApp: { type: "system", title: "3D Model Viewer", icon: "/static/icons/3dmodel.webp" },
+  model3dApp: { type: "system", title: "Yuki Blender", icon: "/static/icons/3dmodel.webp" },
   jsDosApp: {
     type: "system",
     title: "JsDos",

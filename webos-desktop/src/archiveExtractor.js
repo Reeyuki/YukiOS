@@ -1,5 +1,5 @@
 import { unzip, gunzip, strFromU8 } from "fflate";
-import SevenZip from "7z-wasm";
+import { getLibraryUrl } from "./shared/cdnConfig.js";
 import { FileKind } from "./fs.js";
 import { archiveBaseName, bytesToStoreContent, tarStr } from "./utils.js";
 
@@ -10,7 +10,16 @@ function toOwnedBytes(data) {
 let _7zipModule = null;
 async function get7zip() {
   if (!_7zipModule) {
-    _7zipModule = await SevenZip();
+    const libUrl = getLibraryUrl("7z-wasm");
+    const { default: SevenZip } = await import(/* @vite-ignore */ `${libUrl}`);
+    _7zipModule = await SevenZip({
+      locateFile: (path, prefix) => {
+        if (path.endsWith(".wasm")) {
+          return libUrl.replace("7zz.es6.js", "7zz.wasm");
+        }
+        return prefix + path;
+      }
+    });
   }
   return _7zipModule;
 }

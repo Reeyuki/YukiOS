@@ -70,6 +70,15 @@ export const CDN_CONFIG = {
       version: "stable",
       loader: "https://cdn.emulatorjs.org/stable/data/loader.js",
       data: "https://cdn.emulatorjs.org/stable/data/"
+    },
+    three: {
+      version: "0.160.0",
+      base: "https://esm.sh/three@0.160.0"
+    },
+    "7z-wasm": {
+      version: "1.2.0",
+      path: "7z-wasm@1.2.0/7zz.es6.js",
+      wasm: "7z-wasm@1.2.0/7zz.wasm"
     }
   }
 };
@@ -78,11 +87,19 @@ export function getLibraryUrl(libraryName, type = "path") {
   const lib = CDN_CONFIG.libraries[libraryName];
   if (!lib) return null;
 
+  if (libraryName === "three") {
+    return lib.base;
+  }
+
   const path = lib[type] || lib.path;
   if (!path) return null;
 
   if (libraryName === "ruffle") {
     return `https://unpkg.com/@ruffle-rs/ruffle/ruffle.js`;
+  }
+
+  if (libraryName === "7z-wasm") {
+    return `https://unpkg.com/${path}`;
   }
 
   return `${CDN_CONFIG.repos.npm.base}/${path}`;

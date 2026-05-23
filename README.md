@@ -6,6 +6,7 @@ https://discord.gg/uFuGfseB9Z
 
 Yuki OS is a fully-featured browser-based operating system that unifies games, emulators, productivity tools, and web applications into a single windowed desktop experience. Run Flash games, DOS emulation, modern web apps, and custom applications all side-by-side with a shared window manager, filesystem, and UI.
 
+Its built entirely in pure, framework-free vanilla JS.
 
 ![yukios-1-os](.github/yukios-1-os.webp)
 ![notepadexplorerweather](.github/notepadexplorerweather.webp)

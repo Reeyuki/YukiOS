@@ -1,5 +1,5 @@
 import { zipSync, gzipSync } from "fflate";
-import SevenZip from "7z-wasm";
+import { getLibraryUrl } from "./shared/cdnConfig.js";
 import { BaseApp } from "./core/BaseApp.js";
 import { bus, BusEvents } from "./core/EventBus.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
@@ -2080,7 +2080,16 @@ export class ExplorerApp extends BaseApp {
   }
 
   async _create7z(filesMap, compressionLevel) {
-    const sevenZip = await SevenZip();
+    const libUrl = getLibraryUrl("7z-wasm");
+    const { default: SevenZip } = await import(/* @vite-ignore */ `${libUrl}`);
+    const sevenZip = await SevenZip({
+      locateFile: (path, prefix) => {
+        if (path.endsWith(".wasm")) {
+          return libUrl.replace("7zz.es6.js", "7zz.wasm");
+        }
+        return prefix + path;
+      }
+    });
     const tempDir = "/7z_temp";
     try {
       sevenZip.FS.mkdir(tempDir);
