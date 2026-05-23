@@ -69,9 +69,7 @@ export class TerminalApp extends BaseApp {
         persistence: PersistenceTypes.NONE
       },
       actions: {
-        terminalKeydown: (payload, event, element, state) => {
-          console.log("Terminal keydown:", event.key);
-        },
+        terminalKeydown: (payload, event, element, state) => {},
         terminalContextmenu: (payload, event, element, state) => {
           event.preventDefault();
         }

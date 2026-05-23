@@ -169,16 +169,7 @@ export class ExplorerApp extends BaseApp {
     }
 
     const isSelector = typeof callback === "function";
-    const winId = options.forceId || (isSelector ? `explorer-selector-${Date.now()}` : "explorer-win");
-
-    if (!isSelector && document.getElementById(winId)) {
-      this.wm.bringToFront(document.getElementById(winId));
-      if (path && path.length > 0) {
-        const inst = this._getInstance(winId);
-        if (inst) this.navigateInstance(inst, path);
-      }
-      return;
-    }
+    const winId = options.forceId || (isSelector ? `explorer-selector-${Date.now()}` : `explorer-${Date.now()}`);
 
     const inst = this._createInstance(winId, callback, notepadRef, isSelector ? "select" : "browse");
     const title = isSelector ? "Select File" : "File Explorer";

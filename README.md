@@ -268,15 +268,21 @@ Serve `dist/index.html` from:
 - Subdirectory: `https://example.com/desktop/`
 
 **Tech Stack:**
-- **Vite 7.3.1** — Fast build tool
-- **viteSingleFile** — Single-file bundling
-- **BrowserFS** — Virtual filesystem
-- **IndexedDB** — Persistent storage
-- **interactjs** — Window dragging/resizing
-- **Ruffle** — Flash emulation
-- **Monaco** — Code editor
-- **Three.js** — 3D rendering
-- **fflate** — Compression (ZIP/deflate)
+
+* **Vite** — Fast build tool
+* **viteSingleFile** — Single-file bundling
+* **BrowserFS** — Virtual filesystem
+* **IndexedDB** — Persistent storage
+* **interactjs** — Window dragging/resizing
+* **Ruffle** — Flash emulation
+* **EmulatorJS** — Retro video game console emulation
+* **Monaco** — Code editor
+* **Three.js** — 3D rendering
+* **PDF.js** — PDF rendering and viewing
+* **Mammoth.js & docx** — Word document processing
+* **SheetJS (xlsx) & Handsontable** — Spreadsheet data parsing and viewing grids
+* **7z-wasm & JSZip & fflate** — High-performance archive extraction (7z, zip, deflate)
+* **Clippy.js** — Interactive desktop assistant animations
 
 ---
 

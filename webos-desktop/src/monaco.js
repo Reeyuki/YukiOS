@@ -7,7 +7,7 @@ import { decodeDataURLContent } from "./fileDisplay.js";
 import { showConflictDialog } from "./shared/conflictDialog.js";
 import { FileKind } from "./fs.js";
 import { customConfirm } from "./shared/dialogs.js";
-import { PersistenceTypes } from "./runtime/AppSchema.js";
+import { Shell } from "./shared/shell.js";
 
 export class MonacoApp extends BaseApp {
   constructor(services) {
@@ -25,70 +25,32 @@ export class MonacoApp extends BaseApp {
     this.findWidgetVisible = false;
     this.icon = resolveIconUrl("static/icons/vscode.webp");
     this._declarativeApp = null;
+    this.sessionKey = services.fileSystemManager?.sessionKey || "guest";
+    this.setupTerminalCore();
   }
 
-  getDeclarativeSchema(opts) {
-    return {
-      id: "monaco-window",
-      name: "Yuki Code",
-      icon: this.icon,
-      windows: [
-        {
-          id: "monaco-window",
-          title: "Yuki Code",
-          size: ["900px", "650px"],
-          icon: this.icon,
-          ui: `<div class="monaco-tabs-container">
-        <div class="monaco-tabs"></div>
-        <button class="monaco-new-tab-btn" title="New File (Ctrl+N)">
-          <i class="fas fa-plus"></i>
-        </button>
-      </div>
-      <div class="window-content monaco-window-content">
-        <div class="monaco-editors-wrapper"></div>
-      </div>
-      <div class="monaco-statusbar">
-        <span class="monaco-status-position">Ln 1, Col 1</span>
-        <span class="monaco-status-selection"></span>
-        <span class="monaco-status-encoding">UTF-8</span>
-        <span class="monaco-status-eol">LF</span>
-        <span class="monaco-status-language">JavaScript</span>
-        <span class="monaco-status-indent">Spaces: 2</span>
-      </div>`,
-          events: {
-            ".monaco-new-tab-btn": {
-              click: {
-                type: "custom:newTabClick",
-                stopPropagation: true
-              }
-            }
-          }
-        }
-      ],
-      state: {
-        initial: {
-          tabs: [],
-          activeTabId: null,
-          monacoLoaded: false
-        },
-        persistence: PersistenceTypes.NONE
-      },
-      actions: {
-        newTabClick: (payload, event, element, state) => {
-          this.createNewTab();
-        }
-      },
-      onMount: "initMonaco"
-    };
-  }
+  async open(title = "Untitled", content = "", filePath = null) {
+    if (typeof title === "object" && title !== null) {
+      const opts = title;
+      title = opts.title || "Untitled";
+      content = opts.content || "";
+      filePath = opts.filePath || null;
+    }
 
-  async initMonaco(payload, event, element, state) {
-    await this.loadMonaco();
-    this.currentWindow = document.getElementById("monaco-window");
-  }
+    if (!this.monacoLoaded) {
+      try {
+        await this.loadMonaco();
+      } catch (e) {
+        this.wm.sendNotify("Failed to load Yuki Code");
+        return;
+      }
+    }
 
-  open(title = "Untitled", content = "", filePath = null) {
-    if (this._isSingletonOpen("monaco-window")) return;
+    if (!this.currentWindow || !document.body.contains(this.currentWindow)) {
+      this.createNewWindow();
+    }
+
+    this.createNewTab(title, content, filePath);
   }
 
   async loadMonaco() {
@@ -220,12 +182,32 @@ export class MonacoApp extends BaseApp {
             </div>
           </div>
         </div>
-        
+
+        <div class="monaco-menu-item" data-menu="terminal">
+          <span>Terminal</span>
+          <div class="monaco-dropdown">
+            <div class="monaco-dropdown-item" data-action="toggleTerminal">
+              <i class="fas fa-terminal"></i><span>Toggle Terminal</span><span class="shortcut">Ctrl+\`</span>
+            </div>
+            <div class="monaco-dropdown-item" data-action="spawnTerminalWindow">
+              <i class="fas fa-window-restore"></i><span>New Terminal Window</span><span class="shortcut"></span>
+            </div>
+            <div class="monaco-dropdown-divider"></div>
+            <div class="monaco-dropdown-item" data-action="terminalClear">
+              <i class="fas fa-eraser"></i><span>Clear Terminal</span><span class="shortcut"></span>
+            </div>
+          </div>
+        </div>
+
         <div class="monaco-menu-item" data-menu="view">
           <span>View</span>
           <div class="monaco-dropdown">
             <div class="monaco-dropdown-item" data-action="commandPalette">
               <i class="fas fa-terminal"></i><span>Command Palette</span><span class="shortcut">F1</span>
+            </div>
+            <div class="monaco-dropdown-divider"></div>
+            <div class="monaco-dropdown-item" data-action="toggleTerminal">
+              <i class="fas fa-terminal"></i><span>Toggle Terminal</span><span class="shortcut">Ctrl+\`</span>
             </div>
             <div class="monaco-dropdown-divider"></div>
             <div class="monaco-dropdown-item" data-action="zoomIn">
@@ -440,23 +422,6 @@ export class MonacoApp extends BaseApp {
     return tab;
   }
 
-  async open(title = "Untitled", content = "", filePath = null) {
-    if (!this.monacoLoaded) {
-      try {
-        await this.loadMonaco();
-      } catch (e) {
-        this.wm.sendNotify("Failed to load Yuki Code");
-        return;
-      }
-    }
-
-    if (!this.currentWindow || !document.body.contains(this.currentWindow)) {
-      this.createNewWindow();
-    }
-
-    this.createNewTab(title, content, filePath);
-  }
-
   createNewWindow() {
     const winId = `monaco-window-${Date.now()}`;
     const win = this.wm.createWindow(winId, "Yuki Code", "900px", "650px");
@@ -472,6 +437,18 @@ export class MonacoApp extends BaseApp {
       </div>
       <div class="window-content monaco-window-content">
         <div class="monaco-editors-wrapper"></div>
+        <div class="monaco-terminal-panel" style="display:none;flex:0 0 200px;border-top:1px solid rgba(255,255,255,0.1);background:#000;color:white;font-family:monospace;overflow:hidden;flex-direction:column;min-height:100px;">
+          <div class="monaco-terminal-header" style="display:flex;align-items:center;padding:4px 8px;background:rgba(255,255,255,0.05);border-bottom:1px solid rgba(255,255,255,0.1);cursor:ns-resize;">
+            <span style="font-size:11px;color:rgba(255,255,255,0.7);margin-right:auto;">TERMINAL</span>
+            <button class="monaco-terminal-close" style="background:none;border:none;color:rgba(255,255,255,0.5);cursor:pointer;padding:2px 6px;font-size:12px;">✕</button>
+          </div>
+          <div id="monaco-terminal-output" style="flex:1;overflow-y:auto;padding:8px;font-size:12px;white-space:pre;user-select:text;-webkit-user-select:text;"></div>
+          <div id="monaco-terminal-input-line" style="display:flex;padding:4px 8px;background:rgba(0,0,0,0.3);">
+            <span id="monaco-terminal-prompt" style="color:#4ec9b0;"></span>
+            <input id="monaco-terminal-input" style="flex:1;background:transparent;border:none;color:white;font-family:monospace;outline:none;margin-left:5px;font-size:12px;">
+          </div>
+          <div class="monaco-terminal-resize-handle" style="height:4px;background:rgba(255,255,255,0.1);cursor:ns-resize;"></div>
+        </div>
       </div>
       <div class="monaco-statusbar">
         <span class="monaco-status-position">Ln 1, Col 1</span>
@@ -493,7 +470,490 @@ export class MonacoApp extends BaseApp {
       this.createNewTab();
     });
 
+    win.querySelector(".monaco-terminal-close").addEventListener("click", () => {
+      this.toggleTerminalPanel();
+    });
+
     document.addEventListener("click", () => this.closeAllMenus(win));
+
+    this.setupTerminalPanel(win);
+
+    win.addEventListener("keydown", (e) => {
+      if (e.ctrlKey && e.key === "`") {
+        e.preventDefault();
+        this.toggleTerminalPanel();
+      }
+    });
+  }
+
+  toggleTerminalPanel() {
+    const terminalPanel = this.currentWindow.querySelector(".monaco-terminal-panel");
+    if (!terminalPanel) return;
+
+    const isHidden = terminalPanel.style.display === "none";
+    terminalPanel.style.display = isHidden ? "flex" : "none";
+
+    if (isHidden) {
+      this.initTerminal();
+    }
+  }
+
+  setupTerminalPanel(win) {
+    const terminalInput = win.querySelector("#monaco-terminal-input");
+    const terminalOutput = win.querySelector("#monaco-terminal-output");
+    const terminalPrompt = win.querySelector("#monaco-terminal-prompt");
+    const terminalPanel = win.querySelector(".monaco-terminal-panel");
+
+    if (terminalInput) {
+      terminalInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          const command = terminalInput.value.trim();
+          if (!command) return;
+          this.executeTerminalCommand(command);
+          terminalInput.value = "";
+        }
+      });
+    }
+
+    if (terminalPanel) {
+      terminalPanel.addEventListener("click", (e) => {
+        if (terminalInput && e.target !== terminalInput) {
+          terminalInput.focus();
+        }
+      });
+
+      const terminalHeader = win.querySelector(".monaco-terminal-header");
+      if (terminalHeader) {
+        let isHeaderResizing = false;
+        let headerStartY = 0;
+        let headerStartHeight = 0;
+
+        terminalHeader.addEventListener("mousedown", (e) => {
+          if (e.target.classList.contains("monaco-terminal-close")) return;
+          isHeaderResizing = true;
+          headerStartY = e.clientY;
+          headerStartHeight = terminalPanel.offsetHeight;
+          e.preventDefault();
+        });
+
+        document.addEventListener("mousemove", (e) => {
+          if (!isHeaderResizing) return;
+          const deltaY = (headerStartY - e.clientY) * 2;
+          const newHeight = Math.max(100, headerStartHeight + deltaY);
+          terminalPanel.style.flex = `0 0 ${newHeight}px`;
+        });
+
+        document.addEventListener("mouseup", () => {
+          isHeaderResizing = false;
+        });
+      }
+
+      const resizeHandle = win.querySelector(".monaco-terminal-resize-handle");
+      if (resizeHandle) {
+        let isHandleResizing = false;
+        let handleStartY = 0;
+        let handleStartHeight = 0;
+
+        resizeHandle.addEventListener("mousedown", (e) => {
+          isHandleResizing = true;
+          handleStartY = e.clientY;
+          handleStartHeight = terminalPanel.offsetHeight;
+          e.preventDefault();
+        });
+
+        document.addEventListener("mousemove", (e) => {
+          if (!isHandleResizing) return;
+          const deltaY = e.clientY - handleStartY;
+          const newHeight = Math.max(100, handleStartHeight + deltaY);
+          terminalPanel.style.flex = `0 0 ${newHeight}px`;
+        });
+
+        document.addEventListener("mouseup", () => {
+          isHandleResizing = false;
+        });
+      }
+    }
+
+    this.terminalOutput = terminalOutput;
+    this.terminalInput = terminalInput;
+    this.terminalPrompt = terminalPrompt;
+    this.terminalHistory = [];
+    this.terminalHistoryIndex = -1;
+    this.updateTerminalPrompt();
+  }
+
+  initTerminal() {
+    if (!this.terminalOutput) return;
+    this.terminalOutput.innerHTML = "";
+    this.printToTerminal("Welcome to Yuki OS Terminal");
+    this.printToTerminal("Type 'help' for available commands");
+    this.updateTerminalPrompt();
+  }
+
+  async printToTerminal(text, color = "white") {
+    if (!this.terminalOutput) return;
+    const line = document.createElement("div");
+    line.style.color = color;
+    this.terminalOutput.appendChild(line);
+
+    for (let i = 0; i < text.length; i++) {
+      line.textContent += text[i];
+      this.terminalOutput.scrollTop = this.terminalOutput.scrollHeight;
+      await new Promise((resolve) => setTimeout(resolve, 5));
+    }
+  }
+
+  printToTerminalSync(text, color = "white") {
+    if (!this.terminalOutput) return;
+    const line = document.createElement("div");
+    line.style.color = color;
+    line.textContent = text;
+    this.terminalOutput.appendChild(line);
+    this.terminalOutput.scrollTop = this.terminalOutput.scrollHeight;
+  }
+
+  updateTerminalPrompt() {
+    if (!this.terminalPrompt) return;
+    this.terminalPrompt.textContent = `${this.shell.currentPath.join("/")} $ `;
+  }
+
+  async executeTerminalCommand(command) {
+    if (!this.terminalOutput) return;
+
+    this.printToTerminalSync(`${this.shell.currentPath.join("/")} $ ${command}`, "#4ec9b0");
+
+    const outputCallback = (text, color = "white") => {
+      this.printToTerminalSync(text, color);
+    };
+
+    await this.shell.executeCommand(command, outputCallback);
+    this.updateTerminalPrompt();
+  }
+
+  showCommandPalette() {
+    const existingPalette = document.querySelector(".monaco-command-palette");
+    if (existingPalette) {
+      existingPalette.remove();
+      return;
+    }
+
+    const palette = document.createElement("div");
+    palette.className = "monaco-command-palette";
+    palette.style.cssText = `
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 600px;
+      max-height: 400px;
+      background: rgba(30, 30, 30, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.65);
+      z-index: 10000;
+      display: flex;
+      flex-direction: column;
+      backdrop-filter: blur(32px);
+    `;
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.placeholder = "Type '>' for commands, or search actions...";
+    input.style.cssText = `
+      background: rgba(0, 0, 0, 0.3);
+      border: none;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      color: white;
+      padding: 12px 16px;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      border-radius: 8px 8px 0 0;
+    `;
+
+    const list = document.createElement("div");
+    list.style.cssText = `
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 0;
+    `;
+
+    const commands = [
+      {
+        category: "Terminal",
+        items: [
+          { label: "Toggle Terminal", action: () => this.toggleTerminalPanel() },
+          { label: "New Terminal Window", action: () => this.spawnTerminalWindow() }
+        ]
+      },
+      {
+        category: "File",
+        items: [
+          { label: "New File", action: () => this.createNewTab() },
+          { label: "Open File", action: () => this.openFileDialog() },
+          { label: "Save", action: () => this.executeAction("save") },
+          { label: "Save As", action: () => this.executeAction("saveAs") }
+        ]
+      },
+      {
+        category: "Edit",
+        items: [
+          { label: "Undo", action: () => this.executeAction("undo") },
+          { label: "Redo", action: () => this.executeAction("redo") },
+          { label: "Cut", action: () => this.executeAction("cut") },
+          { label: "Copy", action: () => this.executeAction("copy") },
+          { label: "Paste", action: () => this.executeAction("paste") }
+        ]
+      },
+      {
+        category: "View",
+        items: [
+          { label: "Toggle Minimap", action: () => this.executeAction("toggleMinimap") },
+          { label: "Toggle Word Wrap", action: () => this.executeAction("toggleWordWrap") },
+          { label: "Toggle Line Numbers", action: () => this.executeAction("toggleLineNumbers") },
+          { label: "Toggle Whitespace", action: () => this.executeAction("toggleWhitespace") }
+        ]
+      }
+    ];
+
+    let selectedIndex = 0;
+    let filteredItems = [];
+
+    const renderList = (filter = "") => {
+      list.innerHTML = "";
+      filteredItems = [];
+
+      if (filter.startsWith(">")) {
+        const searchTerm = filter.slice(1).toLowerCase().trim();
+        const terminalCommands = [
+          {
+            label: "help",
+            action: () => {
+              if (this.terminalInput) {
+                this.terminalInput.value = "help";
+                this.executeTerminalCommand("help");
+                this.terminalInput.value = "";
+              }
+            }
+          },
+          {
+            label: "clear",
+            action: () => {
+              if (this.terminalInput) {
+                this.terminalInput.value = "clear";
+                this.executeTerminalCommand("clear");
+                this.terminalInput.value = "";
+              }
+            }
+          },
+          {
+            label: "ls",
+            action: () => {
+              if (this.terminalInput) {
+                this.terminalInput.value = "ls";
+                this.executeTerminalCommand("ls");
+                this.terminalInput.value = "";
+              }
+            }
+          },
+          {
+            label: "pwd",
+            action: () => {
+              if (this.terminalInput) {
+                this.terminalInput.value = "pwd";
+                this.executeTerminalCommand("pwd");
+                this.terminalInput.value = "";
+              }
+            }
+          },
+          {
+            label: "cd",
+            action: () => {
+              if (this.terminalInput) {
+                this.terminalInput.value = "cd";
+                this.executeTerminalCommand("cd");
+                this.terminalInput.value = "";
+              }
+            }
+          },
+          {
+            label: "cat",
+            action: () => {
+              if (this.terminalInput) {
+                this.terminalInput.value = "cat";
+                this.executeTerminalCommand("cat");
+                this.terminalInput.value = "";
+              }
+            }
+          },
+          {
+            label: "mkdir",
+            action: () => {
+              if (this.terminalInput) {
+                this.terminalInput.value = "mkdir";
+                this.executeTerminalCommand("mkdir");
+                this.terminalInput.value = "";
+              }
+            }
+          },
+          {
+            label: "touch",
+            action: () => {
+              if (this.terminalInput) {
+                this.terminalInput.value = "touch";
+                this.executeTerminalCommand("touch");
+                this.terminalInput.value = "";
+              }
+            }
+          },
+          {
+            label: "rm",
+            action: () => {
+              if (this.terminalInput) {
+                this.terminalInput.value = "rm";
+                this.executeTerminalCommand("rm");
+                this.terminalInput.value = "";
+              }
+            }
+          },
+          {
+            label: "echo",
+            action: () => {
+              if (this.terminalInput) {
+                this.terminalInput.value = "echo";
+                this.executeTerminalCommand("echo");
+                this.terminalInput.value = "";
+              }
+            }
+          },
+          {
+            label: "whoami",
+            action: () => {
+              if (this.terminalInput) {
+                this.terminalInput.value = "whoami";
+                this.executeTerminalCommand("whoami");
+                this.terminalInput.value = "";
+              }
+            }
+          },
+          {
+            label: "hostname",
+            action: () => {
+              if (this.terminalInput) {
+                this.terminalInput.value = "hostname";
+                this.executeTerminalCommand("hostname");
+                this.terminalInput.value = "";
+              }
+            }
+          },
+          {
+            label: "date",
+            action: () => {
+              if (this.terminalInput) {
+                this.terminalInput.value = "date";
+                this.executeTerminalCommand("date");
+                this.terminalInput.value = "";
+              }
+            }
+          }
+        ];
+
+        filteredItems = terminalCommands.filter((cmd) => cmd.label.includes(searchTerm));
+      } else {
+        commands.forEach((category) => {
+          category.items.forEach((item) => {
+            if (item.label.toLowerCase().includes(filter.toLowerCase())) {
+              filteredItems.push({ ...item, category: category.category });
+            }
+          });
+        });
+      }
+
+      filteredItems.forEach((item, index) => {
+        const itemEl = document.createElement("div");
+        itemEl.style.cssText = `
+          padding: 8px 16px;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          ${index === selectedIndex ? "background: rgba(255, 255, 255, 0.1);" : ""}
+        `;
+        itemEl.innerHTML = `
+          <span style="color: rgba(255, 255, 255, 0.5); font-size: 11px; min-width: 60px;">${item.category || "TERMINAL"}</span>
+          <span style="color: white;">${item.label}</span>
+        `;
+        itemEl.addEventListener("click", () => {
+          item.action();
+          palette.remove();
+        });
+        itemEl.addEventListener("mouseenter", () => {
+          selectedIndex = index;
+          renderList(input.value);
+        });
+        list.appendChild(itemEl);
+      });
+    };
+
+    input.addEventListener("input", (e) => {
+      selectedIndex = 0;
+      renderList(e.target.value);
+    });
+
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        selectedIndex = Math.min(selectedIndex + 1, filteredItems.length - 1);
+        renderList(input.value);
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        selectedIndex = Math.max(selectedIndex - 1, 0);
+        renderList(input.value);
+      } else if (e.key === "Enter") {
+        e.preventDefault();
+        if (filteredItems[selectedIndex]) {
+          filteredItems[selectedIndex].action();
+          palette.remove();
+        }
+      } else if (e.key === "Escape") {
+        palette.remove();
+      }
+    });
+
+    palette.appendChild(input);
+    palette.appendChild(list);
+    document.body.appendChild(palette);
+    input.focus();
+    renderList();
+
+    document.addEventListener(
+      "click",
+      (e) => {
+        if (!palette.contains(e.target)) {
+          palette.remove();
+        }
+      },
+      { once: true }
+    );
+  }
+
+  spawnTerminalWindow() {
+    const terminalApp = this._services?.terminalApp;
+    if (terminalApp) {
+      terminalApp.open();
+    } else {
+      this.wm.sendNotify("Terminal app not found");
+    }
+  }
+
+  setupTerminalCore() {
+    this.shell = new Shell(this.fs, this.sessionKey);
+    this.shell.setClearCallback(() => {
+      if (this.terminalOutput) {
+        this.terminalOutput.innerHTML = "";
+      }
+    });
   }
 
   createNewTab(title = `Untitled-${++this.tabCounter}`, content = "", filePath = null) {
@@ -869,7 +1329,20 @@ export class MonacoApp extends BaseApp {
       addCursorAbove: () => editor.trigger("keyboard", "editor.action.insertCursorAbove"),
       addCursorBelow: () => editor.trigger("keyboard", "editor.action.insertCursorBelow"),
 
-      commandPalette: () => editor.trigger("keyboard", "editor.action.quickCommand"),
+      commandPalette: () => {
+        this.showCommandPalette();
+      },
+      toggleTerminal: () => {
+        this.toggleTerminalPanel();
+      },
+      spawnTerminalWindow: () => {
+        this.spawnTerminalWindow();
+      },
+      terminalClear: () => {
+        if (this.terminalOutput) {
+          this.terminalOutput.innerHTML = "";
+        }
+      },
       zoomIn: () => {
         editorData.settings.fontSize += 2;
         editor.updateOptions({ fontSize: editorData.settings.fontSize });
@@ -1182,7 +1655,7 @@ export class MonacoApp extends BaseApp {
       },
       showDocs: () => window.open("https://code.visualstudio.com/docs", "_blank"),
       about: () => {
-        this.wm.sendNotify("Yuki Code v0.45.0 - Professional code editing powered by VS Code");
+        this.wm.sendNotify("Yuki Code v1.0 - Professional code editing powered by VS Code");
         speak("This is Yuki Code, the code editor that powers VS Code!", "Explain");
       }
     };

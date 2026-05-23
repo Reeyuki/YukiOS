@@ -1,27 +1,9 @@
-/* ============================================================
-   OFFICE APP - DARK THEME
-   Color palette: Catppuccin Mocha inspired
-   Base:    #1e1e2e
-   Surface: #181825
-   Overlay: #313244
-   Text:    #cdd6f4
-   Subtext: #a6adc8
-   Accent:  #89b4fa (blue)
-   Green:   #a6e3a1
-   Yellow:  #f9e2af
-   Red:     #f38ba8
-   Mauve:   #cba6f7
-   ============================================================ */
-
-/* ----------------------------------------------------------
-   Menu bar
----------------------------------------------------------- */
 .office-menu-bar {
   display: flex;
   gap: 4px;
   padding: 4px 8px;
-  background: #181825;
-  border-bottom: 1px solid #313244;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--glass-border);
   flex-wrap: wrap;
   flex-shrink: 0;
 }
@@ -29,81 +11,67 @@
 .office-menu-btn {
   cursor: pointer;
   padding: 4px 12px;
-  background: #313244;
-  color: #cdd6f4;
-  border: 1px solid #45475a;
-  border-radius: 4px;
+  background: var(--glass);
+  color: var(--text-primary);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-sm);
   font-size: 12px;
   font-family: inherit;
   transition:
     background 0.15s,
-    border-color 0.15s;
+    border-color 0.15s,
+    color 0.15s;
 }
 
 .office-menu-btn:hover {
-  background: #45475a;
-  border-color: #89b4fa;
-  color: #cdd6f4;
+  background: var(--glass-hover);
+  border-color: var(--brand);
+  color: var(--text-primary);
 }
 
 .office-menu-btn:active {
-  background: #89b4fa;
-  color: #1e1e2e;
+  background: var(--brand);
+  color: var(--bg-primary);
 }
 
-/* ----------------------------------------------------------
-   Window content area
----------------------------------------------------------- */
 .office-window-content {
   height: calc(100% - 80px);
   overflow: auto;
-  background: #1e1e2e;
+  background: var(--bg-primary);
 }
 
-/* ----------------------------------------------------------
-   Editor area
----------------------------------------------------------- */
 .office-editor-area {
   width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: #1e1e2e;
+  background: var(--bg-primary);
 }
 
-/* ----------------------------------------------------------
-   Loading indicator
----------------------------------------------------------- */
 .office-loading-indicator {
   display: flex;
   align-items: center;
   justify-content: center;
   height: 100%;
   font-size: 16px;
-  color: #a6adc8;
-  background: #1e1e2e;
+  color: var(--text-secondary);
+  background: var(--bg-primary);
 }
 
-/* ----------------------------------------------------------
-   Messages: error / info
----------------------------------------------------------- */
 .office-error-msg {
   padding: 20px;
-  color: #f38ba8;
-  background: #1e1e2e;
+  color: var(--error);
+  background: var(--bg-primary);
   font-size: 14px;
 }
 
 .office-info-msg {
   padding: 20px;
-  color: #a6adc8;
-  background: #1e1e2e;
+  color: var(--text-secondary);
+  background: var(--bg-primary);
   font-size: 14px;
 }
 
-/* ----------------------------------------------------------
-   Drop zone
----------------------------------------------------------- */
 .office-dropzone {
   width: 100%;
   height: 100%;
@@ -111,25 +79,25 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  border: 3px dashed #45475a;
-  border-radius: 12px;
+  border: 2px dashed var(--glass-border);
+  border-radius: var(--r);
   margin: 10px;
   box-sizing: border-box;
   cursor: pointer;
   transition:
     border-color 0.2s,
     background 0.2s;
-  background: #181825;
+  background: var(--bg-secondary);
 }
 
 .office-dropzone:hover {
-  border-color: #89b4fa;
-  background: #1e1e2e;
+  border-color: var(--brand);
+  background: var(--glass-hover);
 }
 
 .office-dropzone--active {
-  border-color: #89b4fa;
-  background: #24273a;
+  border-color: var(--brand);
+  background: var(--brand-dim);
 }
 
 .office-dropzone__icon {
@@ -140,40 +108,36 @@
 
 .office-dropzone__title {
   font-size: 18px;
-  color: #cdd6f4;
+  color: var(--text-primary);
   margin-bottom: 8px;
 }
 
 .office-dropzone__subtitle {
   font-size: 13px;
-  color: #6c7086;
+  color: var(--text-secondary);
 }
 
-/* Match the dynamic div children created in showDropZone */
 .office-dropzone > div:first-child {
   font-size: 48px;
-  color: #6c7086;
+  color: var(--text-secondary);
   margin-bottom: 16px;
 }
 .office-dropzone > div:nth-child(2) {
   font-size: 18px;
-  color: #cdd6f4;
+  color: var(--text-primary);
   margin-bottom: 8px;
 }
 .office-dropzone > div:nth-child(3) {
   font-size: 13px;
-  color: #6c7086;
+  color: var(--text-secondary);
 }
 
-/* ----------------------------------------------------------
-   Rich-text toolbar
----------------------------------------------------------- */
 .office-toolbar {
   display: flex;
   gap: 4px;
   padding: 6px 8px;
-  background: #181825;
-  border-bottom: 1px solid #313244;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--glass-border);
   flex-wrap: wrap;
   flex-shrink: 0;
 }
@@ -181,10 +145,10 @@
 .office-toolbar__btn {
   cursor: pointer;
   padding: 3px 8px;
-  background: #313244;
-  color: #cdd6f4;
-  border: 1px solid #45475a;
-  border-radius: 3px;
+  background: var(--glass);
+  color: var(--text-primary);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-sm);
   font-size: 12px;
   min-width: 28px;
   font-family: inherit;
@@ -194,13 +158,13 @@
 }
 
 .office-toolbar__btn:hover {
-  background: #45475a;
-  border-color: #89b4fa;
+  background: var(--glass-hover);
+  border-color: var(--brand);
 }
 
 .office-toolbar__btn:active {
-  background: #89b4fa;
-  color: #1e1e2e;
+  background: var(--brand);
+  color: var(--bg-primary);
 }
 
 .office-toolbar__btn--bold {
@@ -218,23 +182,26 @@
 
 .office-toolbar__select {
   font-size: 12px;
-  background: #313244;
-  color: #cdd6f4;
-  border: 1px solid #45475a;
-  border-radius: 3px;
-  padding: 2px 4px;
+  background: var(--glass);
+  color: var(--text-primary);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-sm);
+  padding: 2px 24px 2px 8px;
   font-family: inherit;
   cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 12px;
 }
 
 .office-toolbar__select:focus {
   outline: none;
-  border-color: #89b4fa;
+  border-color: var(--brand);
 }
 
-/* ----------------------------------------------------------
-   Rich-text editor (contenteditable)
----------------------------------------------------------- */
 .office-richtext-editor {
   flex: 1;
   min-height: 200px;
@@ -245,46 +212,42 @@
   line-height: 1.7;
   overflow: auto;
   outline: none;
-  background: #1e1e2e;
-  color: #cdd6f4;
-  caret-color: #89b4fa;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  caret-color: var(--brand);
 }
 
 .office-richtext-editor:focus {
-  background: #1e1e2e;
+  background: var(--bg-primary);
 }
 
-/* Links inside editor */
 .office-richtext-editor a {
-  color: #89b4fa;
+  color: var(--brand);
 }
 
-/* ----------------------------------------------------------
-   Spreadsheet
----------------------------------------------------------- */
 .office-sheet-wrapper {
   width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: #1e1e2e;
+  background: var(--bg-primary);
 }
 
 .office-sheet-tabs {
   display: flex;
   gap: 2px;
   padding: 4px 6px;
-  background: #181825;
-  border-bottom: 1px solid #313244;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--glass-border);
   flex-shrink: 0;
 }
 
 .office-sheet-tab {
   padding: 4px 14px;
-  background: #313244;
-  color: #a6adc8;
-  border: 1px solid #45475a;
-  border-radius: 4px 4px 0 0;
+  background: var(--glass);
+  color: var(--text-secondary);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-sm) var(--r-sm) 0 0;
   cursor: pointer;
   font-size: 12px;
   font-family: inherit;
@@ -292,14 +255,15 @@
 }
 
 .office-sheet-tab:hover {
-  background: #45475a;
-  color: #cdd6f4;
+  background: var(--glass-hover);
+  color: var(--text-primary);
 }
 
 .office-sheet-tab--active {
-  background: #1e1e2e;
-  color: #89b4fa;
-  border-bottom-color: #1e1e2e;
+  background: var(--bg-primary);
+  color: var(--brand);
+  border-bottom-color: var(--bg-primary);
+  border-color: var(--glass-border) var(--glass-border) var(--bg-primary) var(--glass-border);
 }
 
 .office-sheet-scroll {
@@ -311,12 +275,12 @@
   border-collapse: collapse;
   font-family: "Courier New", monospace;
   font-size: 13px;
-  color: #cdd6f4;
+  color: var(--text-primary);
 }
 
 .office-spreadsheet__corner {
-  border: 1px solid #45475a;
-  background: #181825;
+  border: 1px solid var(--glass-border);
+  background: var(--bg-secondary);
   padding: 2px 8px;
   position: sticky;
   top: 0;
@@ -326,9 +290,9 @@
 }
 
 .office-spreadsheet__col-header {
-  border: 1px solid #45475a;
-  background: #181825;
-  color: #a6adc8;
+  border: 1px solid var(--glass-border);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
   padding: 2px 8px;
   position: sticky;
   top: 0;
@@ -340,9 +304,9 @@
 }
 
 .office-spreadsheet__row-header {
-  border: 1px solid #45475a;
-  background: #181825;
-  color: #a6adc8;
+  border: 1px solid var(--glass-border);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
   padding: 2px 8px;
   position: sticky;
   left: 0;
@@ -353,63 +317,57 @@
 }
 
 .office-spreadsheet__cell {
-  border: 1px solid #313244;
+  border: 1px solid var(--glass-border);
   padding: 2px 6px;
   min-width: 80px;
   max-width: 200px;
   white-space: nowrap;
   overflow: hidden;
   outline: none;
-  background: #1e1e2e;
-  color: #cdd6f4;
-  caret-color: #89b4fa;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  caret-color: var(--brand);
 }
 
 .office-spreadsheet__cell:hover {
-  background: #24273a;
+  background: var(--glass-hover);
 }
 
 .office-spreadsheet__cell--focused {
-  outline: 2px solid #89b4fa !important;
+  outline: 2px solid var(--brand) !important;
   outline-offset: -1px;
-  background: #24273a;
+  background: var(--glass-hover);
   z-index: 1;
   position: relative;
 }
 
-/* ----------------------------------------------------------
-   ODT viewer
----------------------------------------------------------- */
 .office-odt-wrapper {
   width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: #1e1e2e;
+  background: var(--bg-primary);
 }
 
 .office-odt-iframe {
   width: 100%;
   flex: 1;
   border: none;
-  background: #1e1e2e;
+  background: var(--bg-primary);
 }
 
-/* ----------------------------------------------------------
-   PDF viewer
----------------------------------------------------------- */
 .office-pdf-viewer {
   width: 100%;
   height: 100%;
   overflow: auto;
-  background: #181825;
+  background: var(--bg-primary);
   padding: 10px;
   box-sizing: border-box;
 }
 
 .office-pdf-info {
   text-align: center;
-  color: #a6adc8;
+  color: var(--text-secondary);
   padding: 8px;
   font-size: 14px;
 }
@@ -417,8 +375,8 @@
 .office-pdf-page {
   position: relative;
   margin: 10px auto;
-  background: #2a2a2a;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+  background: var(--bg-secondary);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
 }
 
 .office-pdf-text-layer {
@@ -432,26 +390,23 @@
 
 .office-pdf-page-label {
   text-align: center;
-  color: #6c7086;
+  color: var(--text-secondary);
   padding: 4px;
   font-size: 12px;
 }
 
-/* ----------------------------------------------------------
-   Presentation viewer (PPTX / ODP)
----------------------------------------------------------- */
 .office-presentation-viewer {
   width: 100%;
   height: 100%;
   overflow: auto;
-  background: #181825;
+  background: var(--bg-primary);
   padding: 10px;
   box-sizing: border-box;
 }
 
 .office-presentation-info {
   text-align: center;
-  color: #a6adc8;
+  color: var(--text-secondary);
   padding: 8px;
   font-size: 14px;
 }
@@ -461,11 +416,11 @@
   width: 960px;
   height: 540px;
   margin: 16px auto;
-  background: #ffffff;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+  background: var(--bg-secondary);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
   overflow: hidden;
-  border-radius: 2px;
-  border: 1px solid #45475a;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--glass-border);
 }
 
 .office-slide-content {
@@ -476,14 +431,11 @@
 
 .office-slide-label {
   text-align: center;
-  color: #6c7086;
+  color: var(--text-secondary);
   padding: 4px;
   font-size: 12px;
 }
 
-/* ----------------------------------------------------------
-   Scrollbar styling (Webkit)
----------------------------------------------------------- */
 .office-richtext-editor::-webkit-scrollbar,
 .office-sheet-scroll::-webkit-scrollbar,
 .office-pdf-viewer::-webkit-scrollbar,
@@ -500,7 +452,7 @@
 .office-presentation-viewer::-webkit-scrollbar-track,
 .office-doc-content::-webkit-scrollbar-track,
 .office-window-content::-webkit-scrollbar-track {
-  background: #181825;
+  background: var(--bg-primary);
 }
 
 .office-richtext-editor::-webkit-scrollbar-thumb,
@@ -509,7 +461,7 @@
 .office-presentation-viewer::-webkit-scrollbar-thumb,
 .office-doc-content::-webkit-scrollbar-thumb,
 .office-window-content::-webkit-scrollbar-thumb {
-  background: #45475a;
+  background: var(--glass-border);
   border-radius: 4px;
 }
 
@@ -519,21 +471,18 @@
 .office-presentation-viewer::-webkit-scrollbar-thumb:hover,
 .office-doc-content::-webkit-scrollbar-thumb:hover,
 .office-window-content::-webkit-scrollbar-thumb:hover {
-  background: #6c7086;
+  background: var(--text-secondary);
 }
 
-/* ----------------------------------------------------------
-   Selection color
----------------------------------------------------------- */
 .office-richtext-editor ::selection,
 .office-spreadsheet__cell ::selection {
-  background: #89b4fa44;
-  color: #cdd6f4;
+  background: var(--brand-dim);
+  color: var(--text-primary);
 }
 
 .office-cell-highlight {
-  background-color: #f9e2af !important;
-  outline: 2px solid #fab387;
+  background-color: var(--brand-dim) !important;
+  outline: 2px solid var(--brand);
 }
 
 .office-fullscreen {
@@ -542,29 +491,14 @@
 
 .office-menu-bar {
   display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  padding: 8px;
-  border-bottom: 1px solid #45475a;
-}
-
-.office-menu-btn {
-  font-size: 12px;
-  padding: 6px 10px;
-}
-
-/* Menu Bar */
-.office-menu-bar {
-  display: flex;
   align-items: center;
-  background: #1e1e2e;
-  border-bottom: 1px solid #45475a;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--glass-border);
   padding: 0;
   height: 28px;
   user-select: none;
 }
 
-/* Dropdown Container */
 .office-menu-dropdown {
   position: relative;
   height: 100%;
@@ -573,7 +507,7 @@
 .office-menu-dropdown__trigger {
   background: transparent;
   border: none;
-  color: #cdd6f4;
+  color: var(--text-primary);
   padding: 0 12px;
   height: 100%;
   font-size: 13px;
@@ -583,29 +517,28 @@
 
 .office-menu-dropdown__trigger:hover,
 .office-menu-dropdown.active .office-menu-dropdown__trigger {
-  background: #313244;
+  background: var(--glass-hover);
 }
 
-/* Dropdown Content */
 .office-menu-dropdown__content {
   display: none;
   position: absolute;
   top: 100%;
   left: 0;
   min-width: 220px;
-  background: #1e1e2e;
-  border: 1px solid #45475a;
-  border-radius: 0 0 6px 6px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  background: var(--bg-secondary);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-sm);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
   z-index: 1000;
   padding: 4px 0;
+  backdrop-filter: blur(20px);
 }
 
 .office-menu-dropdown.active .office-menu-dropdown__content {
   display: block;
 }
 
-/* Menu Items */
 .office-menu-item {
   display: flex;
   align-items: center;
@@ -613,7 +546,7 @@
   padding: 6px 12px;
   background: transparent;
   border: none;
-  color: #cdd6f4;
+  color: var(--text-primary);
   font-size: 13px;
   cursor: pointer;
   text-align: left;
@@ -622,11 +555,12 @@
 }
 
 .office-menu-item:hover {
-  background: #313244;
+  background: var(--glass-hover);
 }
 
 .office-menu-item:disabled {
-  color: #6c7086;
+  color: var(--text-secondary);
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
@@ -641,30 +575,28 @@
 }
 
 .office-menu-item__shortcut {
-  color: #6c7086;
+  color: var(--text-secondary);
   font-size: 11px;
   margin-left: auto;
 }
 
 .office-menu-item__arrow {
-  color: #6c7086;
+  color: var(--text-secondary);
   font-size: 10px;
 }
 
 .office-menu-item__check {
   width: 16px;
   text-align: center;
-  color: #a6e3a1;
+  color: var(--brand);
 }
 
-/* Menu Divider */
 .office-menu-divider {
   height: 1px;
-  background: #45475a;
+  background: var(--glass-border);
   margin: 4px 8px;
 }
 
-/* Submenu */
 .office-menu-submenu {
   position: relative;
 }
@@ -675,19 +607,19 @@
   left: 100%;
   top: 0;
   min-width: 180px;
-  background: #1e1e2e;
-  border: 1px solid #45475a;
-  border-radius: 6px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  background: var(--bg-secondary);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-sm);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
   padding: 4px 0;
   z-index: 1001;
+  backdrop-filter: blur(20px);
 }
 
 .office-menu-submenu:hover .office-menu-submenu__content {
   display: block;
 }
 
-/* Context-specific items (hidden by default) */
 .office-menu-item--spreadsheet,
 .office-menu-item--document {
   display: none;
@@ -701,7 +633,6 @@
   display: flex;
 }
 
-/* Fullscreen mode */
 .office-fullscreen {
   position: fixed !important;
   left: 0 !important;
@@ -712,21 +643,19 @@
   border-radius: 0 !important;
 }
 
-/* Highlight for search */
 .office-cell-highlight {
-  background-color: #f9e2af !important;
-  outline: 2px solid #fab387;
+  background-color: var(--brand-dim) !important;
+  outline: 2px solid var(--brand);
 }
 
-/* ODT Viewer Iframe Content Styles */
 .office-odt-content {
   font-family: serif;
   font-size: 14px;
   line-height: 1.6;
   padding: 20px 40px;
   margin: 0;
-  background: #1e1e2e;
-  color: #cdd6f4;
+  background: var(--bg-primary);
+  color: var(--text-primary);
 }
 
 .office-odt-content h1,
@@ -735,7 +664,7 @@
 .office-odt-content h4,
 .office-odt-content h5,
 .office-odt-content h6 {
-  color: #cba6f7;
+  color: var(--brand);
 }
 
 .office-odt-content p {
@@ -749,8 +678,10 @@
 
 .office-odt-content td,
 .office-odt-content th {
-  border: 1px solid #45475a;
+  border: 1px solid var(--glass-border);
   padding: 4px 8px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
 }
 
 .office-odt-content img {
@@ -764,10 +695,9 @@
 }
 
 .office-odt-content a {
-  color: #89b4fa;
+  color: var(--brand);
 }
 
-/* Print Preview Styles */
 .office-print-content {
   font-family: serif;
   padding: 20px;
@@ -779,10 +709,57 @@
   }
 }
 
-/* Document Export Styles */
 .office-doc-export {
   font-family: serif;
   max-width: 800px;
   margin: 20px auto;
   padding: 20px;
+}
+
+html[data-theme="light"] .office-menu-bar {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--glass-border);
+}
+
+html[data-theme="light"] .office-menu-btn {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--glass-border);
+}
+
+html[data-theme="light"] .office-menu-btn:hover {
+  background: var(--bg-primary);
+  border-color: var(--brand);
+}
+
+html[data-theme="light"] .office-menu-dropdown__trigger {
+  color: var(--text-primary);
+}
+
+html[data-theme="light"] .office-menu-dropdown__trigger:hover,
+html[data-theme="light"] .office-menu-dropdown.active .office-menu-dropdown__trigger {
+  background: var(--glass-hover);
+}
+
+html[data-theme="light"] .office-menu-dropdown__content,
+html[data-theme="light"] .office-menu-submenu__content {
+  background: var(--bg-secondary);
+  border-color: var(--glass-border);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
+
+html[data-theme="light"] .office-menu-item {
+  color: var(--text-primary);
+}
+
+html[data-theme="light"] .office-menu-item:hover {
+  background: var(--glass-hover);
+}
+
+html[data-theme="light"] .office-menu-divider {
+  background: var(--glass-border);
+}
+
+html[data-theme="light"] .office-toolbar__select {
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
 }

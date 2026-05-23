@@ -338,7 +338,7 @@
 
 .taskbar-preview {
   position: fixed;
-  z-index: 999999;
+  z-index: 100000;
   width: 360px;
   border-radius: 14px;
   background: rgba(25, 25, 30, 0.82);

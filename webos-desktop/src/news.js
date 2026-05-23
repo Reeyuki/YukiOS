@@ -12,7 +12,7 @@ const NEWS_UPDATES = [
         title: "Features & Improvements",
         items: [
           ["fa-cube", "Yuki Blender", "Added new blender app with enchanced 3d functionality."],
-          ["fa-database", "Storage Editor", "Added new Storage Editor app."]
+          ["fa-database", "Storage Editor", "Added new Storage Editor app."],
         ]
       }
     ]

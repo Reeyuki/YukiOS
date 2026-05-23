@@ -154,9 +154,9 @@ export class V86App extends BaseApp {
   }
 
   open() {
-    if (this._isSingletonOpen("v86-win")) return;
-
     this._loadV86Script();
+
+    const winId = `v86-${Date.now()}`;
 
     const content = `
       <div class="window-content" style="width:100%;height:100%;background:#1a1a2e;color:#eee;font-family:monospace;overflow-y:auto;overflow-x:hidden;">
@@ -193,7 +193,7 @@ export class V86App extends BaseApp {
         </div>
       </div>`;
 
-    const win = this.windowHelper.createAndMountWindow("v86-win", "V86", content, "800px", "600px", {
+    const win = this.windowHelper.createAndMountWindow(winId, "V86", content, "800px", "600px", {
       icon: resolveIconUrl("static/icons/v86.webp")
     });
 

@@ -742,7 +742,7 @@ class OdtViewer extends EditorStrategy {
       const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
       iframeDoc.open();
       iframeDoc.write(
-        `<!DOCTYPE html><html><head><link rel="stylesheet" href="../styles/office.css"></head><body class="office-odt-content">${htmlContent}</body></html>`
+        `<!DOCTYPE html><html><head><link rel="stylesheet" href="../styles/style.css"><link rel="stylesheet" href="../styles/office.css"></head><body class="office-odt-content">${htmlContent}</body></html>`
       );
       iframeDoc.close();
       state.editor = iframe;
