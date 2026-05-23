@@ -1,3 +1,5 @@
+import { animateWindowOpen } from "../windowManager/AnimationSystem.js";
+
 export class WindowHelper {
   constructor(servicesOrWM) {
     this.wm = servicesOrWM.windowManager || servicesOrWM.wm || servicesOrWM;
@@ -63,6 +65,8 @@ export class WindowHelper {
     if (options.bringToFront !== false) {
       this.wm.bringToFront(win);
     }
+
+    requestAnimationFrame(() => animateWindowOpen(win));
 
     return win;
   }

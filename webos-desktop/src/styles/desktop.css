@@ -120,33 +120,420 @@
   box-shadow: 0 1.1em 40px rgba(0, 0, 0, 0.6);
   color: var(--tx1);
   transition:
-    transform 0.2s,
-    box-shadow 0.2s;
-  animation: popDown 0.35s cubic-bezier(0.25, 1.2, 0.5, 1) forwards;
+    box-shadow 0.2s,
+    filter 0.2s;
 }
 
-body.is-dragging iframe,
-body.is-resizing iframe {
-  pointer-events: none !important;
+@keyframes wa-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
-body.is-dragging *,
-body.is-resizing * {
-  user-select: none !important;
+@keyframes wa-scale-in {
+  from {
+    transform: scale(0.82);
+    opacity: 0;
+  }
+
+  60% {
+    transform: scale(1.03);
+    opacity: 1;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
-.window:fullscreen {
-  border: none;
-  border-radius: 0;
-  box-shadow: none;
-  backdrop-filter: none;
+@keyframes wa-source-in {
+  from {
+    transform: translate(var(--wa-ox, 0), var(--wa-oy, 0)) scale(0.1);
+    opacity: 0;
+  }
+
+  60% {
+    transform: translate(0, 0) scale(1.04);
+    opacity: 1;
+  }
+
+  to {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
 }
 
-.window:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+@keyframes wa-slide-up-in {
+  from {
+    transform: translateY(60px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
+@keyframes wa-slide-left-in {
+  from {
+    transform: translateX(-60px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes wa-slide-right-in {
+  from {
+    transform: translateX(60px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes wa-glass-blur-in {
+  from {
+    filter: blur(14px);
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  60% {
+    filter: blur(2px);
+    opacity: 1;
+    transform: scale(1.02);
+  }
+
+  to {
+    filter: blur(0);
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ===================== CLOSE ANIMATIONS ===================== */
+@keyframes wa-fade-out {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes wa-scale-out {
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  to {
+    transform: scale(0.82);
+    opacity: 0;
+  }
+}
+
+@keyframes wa-source-out {
+  from {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+
+  to {
+    transform: translate(var(--wa-ox, 0), var(--wa-oy, 0)) scale(0.05);
+    opacity: 0;
+  }
+}
+
+@keyframes wa-slide-down-out {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  to {
+    transform: translateY(80px);
+    opacity: 0;
+  }
+}
+
+@keyframes wa-burn-out {
+  0% {
+    filter: brightness(1) contrast(1) saturate(1);
+    opacity: 1;
+    clip-path: inset(0 0 0 0 round 8px);
+  }
+
+  30% {
+    filter: brightness(2.5) contrast(1.4) saturate(2);
+  }
+
+  60% {
+    filter: brightness(4) contrast(2) saturate(3) hue-rotate(30deg);
+    clip-path: inset(0 0 60% 0 round 8px);
+    opacity: 0.6;
+  }
+
+  100% {
+    filter: brightness(8) contrast(3) saturate(4);
+    clip-path: inset(0 0 100% 0 round 8px);
+    opacity: 0;
+  }
+}
+
+/* ===================== MINIMIZE ANIMATIONS ===================== */
+@keyframes wa-dock-zoom-out {
+  from {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+
+  to {
+    transform: translate(var(--wa-ox, 0), var(--wa-oy, 0)) scale(0.1) skewY(8deg);
+    opacity: 0;
+  }
+}
+
+@keyframes wa-magic-lamp {
+  0% {
+    transform: translate(0, 0) scale(1) perspective(600px) rotateX(0deg);
+    opacity: 1;
+  }
+
+  40% {
+    transform: translate(calc(var(--wa-ox, 0) * 0.3), calc(var(--wa-oy, 0) * 0.3)) scale(0.7) perspective(600px)
+      rotateX(12deg);
+    opacity: 0.8;
+  }
+
+  100% {
+    transform: translate(var(--wa-ox, 0), var(--wa-oy, 0)) scale(0.04) perspective(600px) rotateX(30deg);
+    opacity: 0;
+  }
+}
+
+/* ===================== FOCUS EFFECTS ===================== */
+.wa-focus-glow {
+  animation: wa-focus-pulse 0.5s ease-out forwards;
+}
+
+@keyframes wa-focus-pulse {
+  0% {
+    box-shadow:
+      0 1.1em 40px rgba(0, 0, 0, 0.6),
+      0 0 0 3px rgba(var(--brand-rgb, 79, 158, 255), 0.6);
+  }
+
+  60% {
+    box-shadow:
+      0 1.1em 40px rgba(0, 0, 0, 0.6),
+      0 0 0 8px rgba(var(--brand-rgb, 79, 158, 255), 0.15);
+  }
+
+  100% {
+    box-shadow: 0 1.1em 40px rgba(0, 0, 0, 0.6);
+  }
+}
+
+.wa-z-lift {
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.75),
+    0 8px 24px rgba(0, 0, 0, 0.45) !important;
+}
+
+.wa-dimmed {
+  filter: brightness(0.6) saturate(0.7);
+  transition: filter 0.2s ease;
+}
+
+.wa-spotlight {
+  filter: none;
+  transition: filter 0.2s ease;
+}
+
+/* ===================== DRAG EFFECTS ===================== */
+.wa-wobble-drag {
+  filter: blur(0.4px) brightness(1.04);
+  transform-origin: top center;
+}
+
+.wa-wobble-settle {
+  animation: wa-wobble-settle-anim 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) forwards !important;
+}
+
+@keyframes wa-wobble-settle-anim {
+  0% {
+    transform: skewX(-3deg) scaleX(1.02);
+  }
+
+  25% {
+    transform: skewX(2deg) scaleX(0.99);
+  }
+
+  50% {
+    transform: skewX(-1deg) scaleX(1.005);
+  }
+
+  75% {
+    transform: skewX(0.5deg);
+  }
+
+  100% {
+    transform: skewX(0);
+  }
+}
+
+/* ===================== UI PANEL ANIMATIONS ===================== */
+@keyframes wa-start-expand {
+  from {
+    transform: scale(0.94) translateY(8px);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes wa-start-collapse {
+  from {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+
+  to {
+    transform: scale(0.94) translateY(8px);
+    opacity: 0;
+  }
+}
+
+@keyframes wa-ctx-pop {
+  from {
+    transform: scale(0.88);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes wa-notif-in {
+  from {
+    transform: translateX(110%);
+    opacity: 0;
+  }
+
+  60% {
+    transform: translateX(-6%);
+    opacity: 1;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* ===================== WORKSPACE TRANSITIONS ===================== */
+.wa-ws-slide-left {
+  animation: wa-ws-left 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.wa-ws-slide-right {
+  animation: wa-ws-right 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes wa-ws-left {
+  0% {
+    transform: translateX(0);
+  }
+
+  40% {
+    transform: translateX(-30px);
+  }
+
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes wa-ws-right {
+  0% {
+    transform: translateX(0);
+  }
+
+  40% {
+    transform: translateX(30px);
+  }
+
+  100% {
+    transform: translateX(0);
+  }
+}
+
+/* ===================== RIPPLE CLICK EFFECT ===================== */
+.wa-ripple {
+  position: fixed;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(var(--brand-rgb, 79, 158, 255), 0.45);
+  transform: translate(-50%, -50%) scale(0);
+  pointer-events: none;
+  z-index: 999999;
+  animation: wa-ripple-expand 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes wa-ripple-expand {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0.8;
+  }
+
+  60% {
+    transform: translate(-50%, -50%) scale(28);
+    opacity: 0.3;
+  }
+
+  100% {
+    transform: translate(-50%, -50%) scale(40);
+    opacity: 0;
+  }
+}
+
+/* ===================== SCREEN FREEZE OVERLAY ===================== */
+.wa-freeze-overlay {
+  position: fixed;
+  inset: 0;
+  backdrop-filter: blur(18px) brightness(0.85);
+  z-index: 99998;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.25s ease;
+}
+
+.wa-freeze-overlay.wa-freeze-resolve {
+  opacity: 0;
+}
+
+/* ===================== LEGACY (RETAINED FOR COMPAT) ===================== */
 @keyframes popDown {
   0% {
     transform: scale(0.85);
@@ -174,6 +561,23 @@ body.is-resizing * {
     transform: scale(0.85);
     opacity: 0;
   }
+}
+
+body.is-dragging iframe,
+body.is-resizing iframe {
+  pointer-events: none !important;
+}
+
+body.is-dragging *,
+body.is-resizing * {
+  user-select: none !important;
+}
+
+.window:fullscreen {
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  backdrop-filter: none;
 }
 
 .window-header {

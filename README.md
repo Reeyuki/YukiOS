@@ -272,6 +272,7 @@ Serve `dist/index.html` from:
 * **Vite** — Fast build tool
 * **viteSingleFile** — Single-file bundling
 * **BrowserFS** — Virtual filesystem
+* **Font Awesome** — Icon Pack
 * **IndexedDB** — Persistent storage
 * **interactjs** — Window dragging/resizing
 * **Ruffle** — Flash emulation

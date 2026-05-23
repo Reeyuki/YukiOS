@@ -1,5 +1,5 @@
 # Yuki OS Architecture Guide
-Never add comments or docstrings
+Never add any comments or docstrings or "/*" blocks in css or js or html
 Never spawn a browser for testing
 Never run any npm/pnpm format or npm/pnpm bf commands
 Before finalizing any code changes, the implementation must successfully pass a pnpm build in webos-desktop/ directory. If a change would break the build process, it is considered incomplete and must be corrected before completion.
@@ -364,18 +364,6 @@ constructor(services) {
   this.services.appLauncher         // App dispatcher
 }
 ```
-
-### Storage Keys (Settings)
-
-| Key | Type | Default |
-|-----|------|---------|
-| theme | "light"\|"dark"\|"auto" | "auto" |
-| wallpaper | string | "wallpaper1.webp" |
-| taskbarPosition | "top"\|"bottom" | "bottom" |
-| soundEnabled | boolean | true |
-| dnd | boolean | false |
-| windowTransparency | 0-1 | 1 |
-| language | string | "en" |
 
 ### Content Delivery
 

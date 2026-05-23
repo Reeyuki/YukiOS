@@ -293,7 +293,7 @@
 .settings-toggle input:checked + .settings-track {
   background: var(--brand);
   border-color: var(--brand);
-  box-shadow: 0 0 10px rgba(79, 158, 255, 0.4);
+  box-shadow: 0 0 10px rgba(79, 158, 255, 0.25);
 }
 
 .settings-thumb {
@@ -308,6 +308,30 @@
 
 .settings-toggle input:checked + .settings-track .settings-thumb {
   transform: translateX(18px);
+}
+
+.settings-grid-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+
+.settings-grid-toggle:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.settings-grid-toggle span:first-child {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 500;
 }
 
 .settings-btn {
@@ -616,6 +640,7 @@ html[data-theme="light"] .settings-select {
     opacity: 0;
     transform: translateY(6px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);

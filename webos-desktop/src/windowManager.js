@@ -19,6 +19,14 @@ import { notify, sendNotify } from "./windowManager/notificationBridge.js";
 import { updateTransparency } from "./windowManager/transparencyManager.js";
 import { bus, BusEvents } from "./core/EventBus.js";
 import { WindowRecord } from "./core/WindowRecord.js";
+import {
+  animateWindowOpen,
+  animateWindowClose,
+  animateWindowMinimize,
+  applyFocusGlow,
+  applyZDepthLift,
+  initClickBubble
+} from "./windowManager/AnimationSystem.js";
 
 export class WindowManager {
   constructor(notificationCenter = null) {
@@ -47,6 +55,8 @@ export class WindowManager {
     this.appLauncher = null;
     this._sessionSaveTimer = null;
     this._isRestoring = false;
+
+    initClickBubble();
 
     bus.on(BusEvents.SETTINGS_CHANGED, () => {
       this.updateTransparency();
@@ -536,16 +546,7 @@ export class WindowManager {
   }
 
   _animateAndRemove(win) {
-    const performanceMode = localStorage.getItem(StorageKeys.performanceMode) || "high";
-    if (performanceMode === "performance") {
-      win.remove();
-    } else if (performanceMode === "balanced") {
-      win.style.animation = "popUp 0.15s ease forwards";
-      setTimeout(() => win.remove(), 150);
-    } else {
-      win.style.animation = "popUp 0.5s ease forwards";
-      setTimeout(() => win.remove(), 500);
-    }
+    animateWindowClose(win, () => win.remove());
   }
   _buildPropertiesWindow(winId) {
     const win = document.getElementById(winId);
@@ -961,6 +962,7 @@ export class WindowManager {
     this.setupWindowControls(win);
     this.addToTaskbar(winId, title, iconValue, color);
     this.bringToFront(win);
+    requestAnimationFrame(() => animateWindowOpen(win));
   }
 
   getWindowIconHtml(iconValue, color = null) {
@@ -1030,6 +1032,7 @@ export class WindowManager {
         winTask.style.display = "block";
         taskbarItem.classList.remove("minimized");
         if (entry?.record) entry.record.minimized = false;
+        requestAnimationFrame(() => animateWindowOpen(winTask));
       }
       this.bringToFront(winTask);
     };
@@ -1263,6 +1266,11 @@ export class WindowManager {
   bringToFront(win) {
     if (!win) return;
 
+    const allWins = Array.from(this.openWindows.keys())
+      .map((id) => document.getElementById(id))
+      .filter(Boolean);
+    allWins.forEach((w) => applyZDepthLift(w, false));
+
     this.openWindows.forEach(({ taskbarItem }) => taskbarItem.classList.remove("active"));
 
     const entry = this.openWindows.get(win.id);
@@ -1275,6 +1283,8 @@ export class WindowManager {
       bus.emit(BusEvents.WINDOW_FOCUSED, { winId: win.id, title: entry.title, iconValue: entry.iconValue });
     }
 
+    applyFocusGlow(win);
+    applyZDepthLift(win, true);
     win.style.zIndex = this.zIndexCounter++;
     this.triggerSessionSave();
   }
@@ -1317,7 +1327,6 @@ export class WindowManager {
   }
 
   minimizeWindow(win) {
-    win.style.display = "none";
     const taskbarItem = document.getElementById(`taskbar-${win.id}`);
     if (taskbarItem) {
       taskbarItem.classList.remove("active");
@@ -1325,6 +1334,13 @@ export class WindowManager {
     }
     const entry = this.openWindows.get(win.id);
     if (entry?.record) entry.record.minimized = true;
+    animateWindowMinimize(win, () => {
+      win.style.display = "none";
+      win.style.pointerEvents = "";
+      win.style.animation = "";
+      win.style.transform = "";
+      win.style.opacity = "";
+    });
     this.triggerSessionSave();
   }
 

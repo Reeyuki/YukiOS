@@ -13,6 +13,11 @@ const NEWS_UPDATES = [
         items: [
           ["fa-cube", "Yuki Blender", "Added new blender app with enchanced 3d functionality."],
           ["fa-database", "Storage Editor", "Added new Storage Editor app."],
+          [
+            "fa-film",
+            "Window Animation System",
+            "Added 35-effect window animation engine: customize open, close, and minimize animations plus click bubble feedback."
+          ]
         ]
       }
     ]

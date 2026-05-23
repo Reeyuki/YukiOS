@@ -340,6 +340,80 @@ export class SettingsApp extends BaseApp {
             </div>
           </div>
         </div>
+
+        <div class="settings-card" style="margin-top: 16px;">
+          <div class="settings-card-header"><i class="fas fa-wand-magic-sparkles"></i> Window Animations</div>
+
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Open Animation</span>
+              <span class="settings-label-desc">Effect when a window opens or is restored</span>
+            </div>
+            <select id="settingsOpenAnimation" class="settings-select">
+              <option value="instant" ${(localStorage.getItem("yukiOS_window_open_animation") || "scaleCenter") === "instant" ? "selected" : ""}>Instant (No Animation)</option>
+              <option value="fade" ${(localStorage.getItem("yukiOS_window_open_animation") || "scaleCenter") === "fade" ? "selected" : ""}>Fade In</option>
+              <option value="scaleCenter" ${(localStorage.getItem("yukiOS_window_open_animation") || "scaleCenter") === "scaleCenter" ? "selected" : ""}>Scale Center</option>
+              <option value="scaleFromSource" ${(localStorage.getItem("yukiOS_window_open_animation") || "scaleCenter") === "scaleFromSource" ? "selected" : ""}>Scale From Taskbar</option>
+              <option value="slideUp" ${(localStorage.getItem("yukiOS_window_open_animation") || "scaleCenter") === "slideUp" ? "selected" : ""}>Slide Up</option>
+              <option value="slideLeft" ${(localStorage.getItem("yukiOS_window_open_animation") || "scaleCenter") === "slideLeft" ? "selected" : ""}>Slide In From Left</option>
+              <option value="slideRight" ${(localStorage.getItem("yukiOS_window_open_animation") || "scaleCenter") === "slideRight" ? "selected" : ""}>Slide In From Right</option>
+              <option value="glassBlurin" ${(localStorage.getItem("yukiOS_window_open_animation") || "scaleCenter") === "glassBlurin" ? "selected" : ""}>Glass Blur Transition</option>
+            </select>
+          </div>
+
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Close Animation</span>
+              <span class="settings-label-desc">Effect when a window is closed</span>
+            </div>
+            <select id="settingsCloseAnimation" class="settings-select">
+              <option value="instant" ${(localStorage.getItem("yukiOS_window_close_animation") || "scaleDownCenter") === "instant" ? "selected" : ""}>Instant (No Animation)</option>
+              <option value="scaleDownCenter" ${(localStorage.getItem("yukiOS_window_close_animation") || "scaleDownCenter") === "scaleDownCenter" ? "selected" : ""}>Scale Down Center</option>
+              <option value="scaleToOrigin" ${(localStorage.getItem("yukiOS_window_close_animation") || "scaleDownCenter") === "scaleToOrigin" ? "selected" : ""}>Scale to Taskbar Origin</option>
+              <option value="fadeOut" ${(localStorage.getItem("yukiOS_window_close_animation") || "scaleDownCenter") === "fadeOut" ? "selected" : ""}>Fade Out Only</option>
+              <option value="slideDown" ${(localStorage.getItem("yukiOS_window_close_animation") || "scaleDownCenter") === "slideDown" ? "selected" : ""}>Slide Down Exit</option>
+              <option value="burn" ${(localStorage.getItem("yukiOS_window_close_animation") || "scaleDownCenter") === "burn" ? "selected" : ""}>Window Burn Close</option>
+            </select>
+          </div>
+
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Minimize Animation</span>
+              <span class="settings-label-desc">Effect when a window is minimized</span>
+            </div>
+            <select id="settingsMinimizeAnimation" class="settings-select">
+              <option value="instant" ${(localStorage.getItem("yukiOS_window_minimize_animation") || "taskbarShrink") === "instant" ? "selected" : ""}>Instant (No Animation)</option>
+              <option value="taskbarShrink" ${(localStorage.getItem("yukiOS_window_minimize_animation") || "taskbarShrink") === "taskbarShrink" ? "selected" : ""}>Taskbar Shrink</option>
+              <option value="dockZoomShrink" ${(localStorage.getItem("yukiOS_window_minimize_animation") || "taskbarShrink") === "dockZoomShrink" ? "selected" : ""}>Dock Zoom Shrink</option>
+              <option value="magicLamp" ${(localStorage.getItem("yukiOS_window_minimize_animation") || "taskbarShrink") === "magicLamp" ? "selected" : ""}>Magic Lamp Warp</option>
+              <option value="fadeToTaskbar" ${(localStorage.getItem("yukiOS_window_minimize_animation") || "taskbarShrink") === "fadeToTaskbar" ? "selected" : ""}>Fade to Taskbar</option>
+            </select>
+          </div>
+
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Animation Speed</span>
+              <span class="settings-label-desc">Control how fast window animations play</span>
+            </div>
+            <select id="settingsAnimationSpeed" class="settings-select">
+              <option value="slow" ${(localStorage.getItem("yukiOS_window_animation_speed") || "normal") === "slow" ? "selected" : ""}>Slow (0.5x)</option>
+              <option value="normal" ${(localStorage.getItem("yukiOS_window_animation_speed") || "normal") === "normal" ? "selected" : ""}>Normal (1x)</option>
+              <option value="fast" ${(localStorage.getItem("yukiOS_window_animation_speed") || "normal") === "fast" ? "selected" : ""}>Fast (1.5x)</option>
+              <option value="very_fast" ${(localStorage.getItem("yukiOS_window_animation_speed") || "normal") === "very_fast" ? "selected" : ""}>Very Fast (2x)</option>
+            </select>
+          </div>
+
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Click Bubble Feedback</span>
+              <span class="settings-label-desc">Show ripple effect under cursor on click (disabled by default)</span>
+            </div>
+            <label class="settings-toggle">
+              <input type="checkbox" id="settingsClickBubble" ${localStorage.getItem("yukiOS_click_bubble_feedback") === "true" ? "checked" : ""}/>
+              <span class="settings-track"><span class="settings-thumb"></span></span>
+            </label>
+          </div>
+        </div>
       </div>
     `;
   }
@@ -430,36 +504,48 @@ export class SettingsApp extends BaseApp {
               <span class="settings-label-desc">Toggle visibility of categories in the start menu sidebar</span>
             </div>
             <div style="margin-top: 10px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; width: 100%;">
-              <label class="settings-grid-toggle">
+              <div class="settings-grid-toggle">
                 <span>Menu</span>
-                <input type="checkbox" class="settings-start-cat-toggle" data-cat="menu" ${this._settings.startMenuCats.menu !== false ? "checked" : ""} style="display:none;"/>
-                <span class="settings-track"><span class="settings-thumb"></span></span>
-              </label>
-              <label class="settings-grid-toggle">
+                <label class="settings-toggle">
+                  <input type="checkbox" class="settings-start-cat-toggle" data-cat="menu" ${this._settings.startMenuCats.menu !== false ? "checked" : ""}/>
+                  <span class="settings-track"><span class="settings-thumb"></span></span>
+                </label>
+              </div>
+              <div class="settings-grid-toggle">
                 <span>Games</span>
-                <input type="checkbox" class="settings-start-cat-toggle" data-cat="games" ${this._settings.startMenuCats.games !== false ? "checked" : ""} style="display:none;"/>
-                <span class="settings-track"><span class="settings-thumb"></span></span>
-              </label>
-              <label class="settings-grid-toggle">
+                <label class="settings-toggle">
+                  <input type="checkbox" class="settings-start-cat-toggle" data-cat="games" ${this._settings.startMenuCats.games !== false ? "checked" : ""}/>
+                  <span class="settings-track"><span class="settings-thumb"></span></span>
+                </label>
+              </div>
+              <div class="settings-grid-toggle">
                 <span>System</span>
-                <input type="checkbox" class="settings-start-cat-toggle" data-cat="system" ${this._settings.startMenuCats.system !== false ? "checked" : ""} style="display:none;"/>
-                <span class="settings-track"><span class="settings-thumb"></span></span>
-              </label>
-              <label class="settings-grid-toggle">
+                <label class="settings-toggle">
+                  <input type="checkbox" class="settings-start-cat-toggle" data-cat="system" ${this._settings.startMenuCats.system !== false ? "checked" : ""}/>
+                  <span class="settings-track"><span class="settings-thumb"></span></span>
+                </label>
+              </div>
+              <div class="settings-grid-toggle">
                 <span>Favorites</span>
-                <input type="checkbox" class="settings-start-cat-toggle" data-cat="favorites" ${this._settings.startMenuCats.favorites !== false ? "checked" : ""} style="display:none;"/>
-                <span class="settings-track"><span class="settings-thumb"></span></span>
-              </label>
-              <label class="settings-grid-toggle">
+                <label class="settings-toggle">
+                  <input type="checkbox" class="settings-start-cat-toggle" data-cat="favorites" ${this._settings.startMenuCats.favorites !== false ? "checked" : ""}/>
+                  <span class="settings-track"><span class="settings-thumb"></span></span>
+                </label>
+              </div>
+              <div class="settings-grid-toggle">
                 <span>Customize Profile</span>
-                <input type="checkbox" class="settings-start-cat-toggle" data-cat="customize" ${this._settings.startMenuCats.customize !== false ? "checked" : ""} style="display:none;"/>
-                <span class="settings-track"><span class="settings-thumb"></span></span>
-              </label>
-              <label class="settings-grid-toggle">
+                <label class="settings-toggle">
+                  <input type="checkbox" class="settings-start-cat-toggle" data-cat="customize" ${this._settings.startMenuCats.customize !== false ? "checked" : ""}/>
+                  <span class="settings-track"><span class="settings-thumb"></span></span>
+                </label>
+              </div>
+              <div class="settings-grid-toggle">
                 <span>Settings</span>
-                <input type="checkbox" class="settings-start-cat-toggle" data-cat="settingsApp" ${this._settings.startMenuCats.settingsApp !== false ? "checked" : ""} style="display:none;"/>
-                <span class="settings-track"><span class="settings-thumb"></span></span>
-              </label>
+                <label class="settings-toggle">
+                  <input type="checkbox" class="settings-start-cat-toggle" data-cat="settingsApp" ${this._settings.startMenuCats.settingsApp !== false ? "checked" : ""}/>
+                  <span class="settings-track"><span class="settings-thumb"></span></span>
+                </label>
+              </div>
             </div>
           </div>
         </div>
@@ -886,7 +972,7 @@ export class SettingsApp extends BaseApp {
     };
 
     this._bindNavigation(win);
-    this._bindSystemCategory(win, save);
+    this._bindSystemCategory(win, save, showStatus);
     this._bindDesktopCategory(win, save);
     this._bindAppearanceCategory(win, save, showStatus);
     this._bindToolsCategory(win, showStatus);
@@ -971,7 +1057,7 @@ export class SettingsApp extends BaseApp {
     });
   }
 
-  _bindSystemCategory(win, save) {
+  _bindSystemCategory(win, save, showStatus) {
     win.querySelector("#settingsWeather").addEventListener("change", save);
     win.querySelector("#settingsMacControls").addEventListener("change", save);
     win.querySelector("#settingsClippy").addEventListener("change", save);
@@ -1009,6 +1095,47 @@ export class SettingsApp extends BaseApp {
         if (durationVal) durationVal.textContent = `${durationInput.value}s`;
       });
       durationInput.addEventListener("change", save);
+    }
+
+    const openAnimSelect = win.querySelector("#settingsOpenAnimation");
+    if (openAnimSelect) {
+      openAnimSelect.addEventListener("change", () => {
+        localStorage.setItem(StorageKeys.windowOpenAnimation, openAnimSelect.value);
+        showStatus("Saved");
+      });
+    }
+
+    const closeAnimSelect = win.querySelector("#settingsCloseAnimation");
+    if (closeAnimSelect) {
+      closeAnimSelect.addEventListener("change", () => {
+        localStorage.setItem(StorageKeys.windowCloseAnimation, closeAnimSelect.value);
+        showStatus("Saved");
+      });
+    }
+
+    const minimizeAnimSelect = win.querySelector("#settingsMinimizeAnimation");
+    if (minimizeAnimSelect) {
+      minimizeAnimSelect.addEventListener("change", () => {
+        localStorage.setItem(StorageKeys.windowMinimizeAnimation, minimizeAnimSelect.value);
+        showStatus("Saved");
+      });
+    }
+
+    const animationSpeedSelect = win.querySelector("#settingsAnimationSpeed");
+    if (animationSpeedSelect) {
+      animationSpeedSelect.addEventListener("change", () => {
+        localStorage.setItem(StorageKeys.windowAnimationSpeed, animationSpeedSelect.value);
+        showStatus("Saved");
+      });
+    }
+
+    const clickBubbleToggle = win.querySelector("#settingsClickBubble");
+    if (clickBubbleToggle) {
+      clickBubbleToggle.addEventListener("change", async () => {
+        const { applyAnimationSettings } = await import("./windowManager/AnimationSystem.js");
+        applyAnimationSettings({ clickBubble: clickBubbleToggle.checked });
+        showStatus("Saved");
+      });
     }
   }
 

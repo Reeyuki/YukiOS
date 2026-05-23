@@ -71,5 +71,10 @@ export const StorageKeys = {
   notificationsPopAnimation: "yukiOS_notifications_pop_animation",
   notificationsOverFullscreen: "yukiOS_notifications_over_fullscreen",
   notificationsDuration: "yukiOS_notifications_duration",
-  setupCompleted: "yukiOS_setup_completed"
+  setupCompleted: "yukiOS_setup_completed",
+  windowOpenAnimation: "yukiOS_window_open_animation",
+  windowCloseAnimation: "yukiOS_window_close_animation",
+  windowMinimizeAnimation: "yukiOS_window_minimize_animation",
+  windowAnimationSpeed: "yukiOS_window_animation_speed",
+  clickBubbleFeedback: "yukiOS_click_bubble_feedback"
 };
