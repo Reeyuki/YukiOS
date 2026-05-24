@@ -19,8 +19,14 @@ Its built entirely in pure, framework-free vanilla JS.
 
 ### Desktop Environment
 - **Windowed multitasking** — Drag, resize, snap, minimize, maximize windows
+- **Drag-to-snap** — Drag windows to edges (half screen) or corners (quarter screen)
+- **Keyboard snapping** — Win+Left/Right (snap halves), Win+Up (maximize), Win+Down (restore/minimize)
+- **Alt+Tab** — Switch between open windows
+- **Win+D** — Show/hide desktop (minimize or restore all windows)
+- **File drag-and-drop** — Drag files from host OS to desktop
 - **Virtual filesystem** — BrowserFS-backed persistent storage (IndexedDB)
 - **Start menu & taskbar** — Launch apps, view running windows, manage focus
+- **Window preview on taskbar hover** — Tab peek-style window previews
 - **Desktop icons** — Shortcut organization with auto-refresh
 - **Wallpapers & themes** — 13 built-in + custom wallpaper support
 - **User profiles** — Custom username, profile picture, desktop colors
@@ -28,9 +34,9 @@ Its built entirely in pure, framework-free vanilla JS.
 ### Application System
 - **30+ built-in apps** — File explorer, terminal, editor, settings, media players, utilities
 - **3700+ games** — Browser games, emulated classics, Flash content via Ruffle
-- **Service-oriented architecture** — WindowManager, FileSystemManager, NotificationCenter, EventBus
-- **Modular & extensible** — Add new apps without modifying core
-- **Dependency injection** — Clean service access, loose coupling
+- **AppLauncher** — Central dispatcher that routes app IDs to app instances or iframe games
+- **gamesList.js** — Registry of all apps/games with metadata (title, icon, type, URL)
+- **BaseApp inheritance** — All system apps extend BaseApp with open() and onClose() lifecycle
 
 ### Multi-Runtime Support
 - **Ruffle Flash emulation** — Play .swf files
@@ -48,6 +54,23 @@ Its built entirely in pure, framework-free vanilla JS.
 - **Analytics** — Usage statistics and event tracking
 - **Audio mixer** — Per-app volume control with master volume
 - **CORS proxy** — Access restricted content via proxy configuration
+- **Command Palette** — Global launcher and system shell via Ctrl+K / F1
+- **Session Persistence** — Restores windows, layout, and app state across reloads
+- **Import / Export System** — Backup and migrate full system state and user configuration
+- **Workspace System** — Multiple virtual desktops for organizing tasks and workflows
+- **PWA & Offline Support** — Installable webOS with full offline capability via service worker
+- **Turbo Mode** — Performance optimization for resource-intensive applications
+- **Window Management Engine** — Advanced z-ordering, drag system, snapping, and lifecycle control
+- **Unified System Ecosystem** — Core system apps interconnected through shared services for consistency
+- **URL Parameters** — Direct launch via `?app=appId` or `?game=gameId`
+- **Calendar System** — Calendar popup with event management and date tracking
+- **Clippy Assistant** — Animated desktop helper with contextual tips
+- **Global Keyboard Shortcuts** — Ctrl+D (show/hide desktop), Ctrl+arrows (window snapping), file operations shortcuts
+- **Session Management** — Login screen with user sessions and 15-minute auto-login
+- **Window Transparency** — Dynamic transparency that hides when games are running
+- **Right-Click Context Menus** — Context menus for desktop, files, and apps
+- **Taskbar Positioning** — Configurable taskbar position (bottom/top/left/right)
+- **Window Snapping** — Keyboard-based window snapping to screen edges
 
 ---
 
@@ -83,61 +106,66 @@ npm run preview      # Test production build
 
 ## 🏗️ Architecture Overview
 
-Yuki OS uses **service-oriented, event-driven architecture**:
+**main.js** initializes core services and app instances:
 
 ```
-Services Container
-├── WindowManager       — Window lifecycle, dragging, z-ordering
-├── FileSystemManager   — Virtual filesystem operations
-├── NotificationCenter  — Desktop notifications
-└── EventBus           — Global pub-sub events
-
-↓ (dependency injection)
-
-30+ Applications (all inherit BaseApp)
-├── System Apps (Explorer, Terminal, Settings, etc.)
-├── Game Launchers (AppLauncher, games.js)
-├── Emulators (JsDosApp, V86App)
-├── Productivity (Notepad, Monaco, Calculator)
-└── Utilities (Music, Camera, News, Weather, etc.)
-
-↓ (renders)
-
-Desktop UI
-├── Desktop background & icons
-├── Taskbar
-├── Start menu
-└── Window chrome
+main.js
+├── Services initialization
+│   ├── WindowManager (windowManager.js)
+│   ├── FileSystemManager (fs.js)
+│   ├── NotificationCenter (notificationCenter.js)
+│   └── EventBus (core/EventBus.js)
+├── App instantiation
+│   ├── System apps (Explorer, Terminal, Notepad, etc.)
+│   ├── Emulators (JsDosApp, V86App, emulatorApp)
+│   └── Utilities (Settings, TaskManager, Weather, etc.)
+└── AppLauncher registration
+    └── Routes app IDs to instances or iframe games
 ```
 
-**Key Pattern:** All applications receive services in constructor:
+**App pattern:** System apps receive individual service references in constructor:
 
 ```javascript
-class MyApp extends BaseApp {
-  constructor(services) {
-    this.services = services;
+class ExplorerApp extends BaseApp {
+  constructor(wm, fs, bus, notifications) {
+    super(wm, fs, bus, notifications);
+    this.wm = wm;
+    this.fs = fs;
+    this.bus = bus;
+    this.notifications = notifications;
   }
-  
-  open() {
-    const win = this.services.windowManager.createWindow(...);
-    this.services.fileSystem.readFile(...);
-    this.services.notificationCenter.notify(...);
-    this.services.eventBus.on('SETTINGS_CHANGED', handler);
+
+  open(path) {
+    const win = this.wm.createWindow(...);
+    // app logic
+  }
+
+  onClose(winId) {
+    // cleanup
   }
 }
 ```
+
+**Games and external apps** are registered in `gamesList.js` with type (game/swf/html/remote/system) and launched via `AppLauncher.launch(appId)`.
 
 ---
 
 ## 🛠️ Adding a New Application
 
-**5-step process:**
+**For system apps (with custom UI):**
 
-1. **Create app class** (inherit BaseApp, implement `open()` and `onClose()`)
-2. **Register in main.js** (instantiate and add to services)
-3. **Add metadata to gamesList.js** (title, icon, action)
-4. **Implement lifecycle hooks** (window creation, cleanup)
-5. **Use injected services** (file I/O, notifications, events)
+1. Create app class in `src/apps/` extending BaseApp
+2. Implement `open()` method that creates window via `this.wm.createWindow()`
+3. Implement `onClose(winId)` for cleanup
+4. Add to AppLauncher constructor in `src/appLauncher.js`
+5. Add entry to `localAppMap` in AppLauncher with title and action
+
+**For external games/apps (iframe-based):**
+
+1. Add entry to `appMap` in `src/gamesList.js`
+2. Set type: `game` (HTML), `swf` (Flash), or `remote` (external link)
+3. Provide URL and icon path
+4. AppLauncher handles iframe creation automatically
 
 For detailed steps, see [AGENTS.md — How to Add a New Application](AGENTS.md#how-to-add-a-new-application)
 
@@ -145,36 +173,49 @@ For detailed steps, see [AGENTS.md — How to Add a New Application](AGENTS.md#h
 
 ## 📦 Built-in Applications
 
-### System Tools (10+)
+### System Tools (20+)
 - **Explorer** — File manager with thumbnails and drag-drop
 - **Terminal** — CLI shell with commands (ls, cd, mkdir, rm, etc.)
 - **Notepad** — Text editor with save/load
 - **Markdown Editor** — Live preview markdown
-- **Monaco** — VS Code-powered code editor
+- **Yuki Code (Monaco)** — VS Code-powered code editor
 - **Calculator** — Scientific calculator
 - **Settings** — User preferences and configuration
 - **Task Manager** — Window monitoring and control
-- **Terminal** — Shell interface
 - **About** — System information
+- **Shortcuts** — Keyboard shortcut management and command palette
+- **Yuki Convert** — Unit converter and calculation tool
+- **Storage Editor** — Direct filesystem and database editing
+- **Setup Wizard** — Initial system configuration and onboarding
+- **Customize Profile** — User profile and avatar customization
+- **What's New** — System news and updates viewer
+- **System Apps** — Central app organization and launcher
 
-### Emulators & Games (20+)
-- **Steam Game Launcher** — Browse 3700+ games
-- **JS-DOS** — DOS game emulation with Ruffle Flash
-- **V86** — Full x86-64 system emulation
-- **Categories** — Game organization by genre
-- Flash games via Ruffle
+### Emulators & Games (15+)
+- **Steam Game Launcher** — Browse 3700+ games with store pages
+- **JS-DOS** — DOS game emulation with Ruffle Flash support
+- **V86 (Virtual 86)** — Full x86-64 system emulation
+- **Yuki Emulator** — Retro console emulation (GBA, NDS, SNES, PSP, Sega)
+- **Ruffle** — Flash game and animation player
+- **Azahar** — Nintendo 3DS emulator
+- **Categories** — Game organization by genre and tag
+- **Flash Games** — Classic Flash content via Ruffle
 
-### Media & Utilities (10+)
-- **Music Player** — Audio playback with playlists
-- **Camera** — Webcam capture
-- **3D Viewer** — Three.js for OBJ/GLTF models
-- **YouTube** — Video integration
-- **Browser** — Lightweight web browser
-- **News** — News aggregation
-- **Weather** — Weather forecasting
-- **Office Viewer** — DOCX/XLSX/PPTX support
-- **Archive Extractor** — ZIP/7z extraction
-- **App Creator** — Custom app shortcuts
+### Media & Utilities (15+)
+- **Yuki Browser** — Lightweight web browser
+- **Camera** — Webcam capture and photo taking
+- **Yuki Blender (3D Viewer)** — Three.js for OBJ/GLTF/GLB models
+- **YouTube Utilities** — Video embedding and playback
+- **News** — News aggregation and categories
+- **Weather** — Weather forecasting and current conditions
+- **Office Viewer** — DOCX, XLSX, XLS, CSV, ODT, PDF, ODP, PPTX, PPT, TXT, HTML
+- **Archive Extractor** — ZIP/7z extraction utility
+- **App Creator** — Custom app shortcuts to external URLs
+- **Paint** — Image editing and drawing tool
+- **Photopea** — Advanced photo editing (PSD support)
+- **LibreSprite** — Pixel art and sprite editor
+- **kiwiIRC** — IRC chat client
+- **Evil Spotify** — Music streaming interface
 
 ---
 
@@ -225,17 +266,10 @@ Serve `dist/index.html` from:
 ## 📚 Documentation
 
 - **[AGENTS.md](AGENTS.md)** — Complete architecture reference, all services and agents, integration guide
-- **Source files** — Each module is self-documented with clear structure
 
 ---
 
 ## 🎮 Playing Games
-
-### Browse Games
-1. Open Start Menu
-2. Click "Games" or "Categories"
-3. Browse by genre or search
-4. Click to launch
 
 ### Adding Custom Games
 1. Open **App Creator**
@@ -250,36 +284,6 @@ Serve `dist/index.html` from:
 - DOS games (via JS-DOS)
 - GBA, NDS, SNES ROMs (via emulators)
 - WebAssembly applications
-
----
-
-## 💾 File System
-
-Virtual filesystem mounted at `/home/reeyuki/`:
-
-```
-/home/reeyuki/
-├── Desktop/              (desktop icons)
-├── Documents/
-│   └── INFO.txt
-├── Pictures/
-│   └── Wallpapers/       (13 default + custom)
-└── Apps/                 (user-created apps)
-```
-
-All files persist in IndexedDB between sessions.
-
----
-
-## 🔗 Content Delivery
-
-**CDN Bases:**
-- Main assets: `https://cdn.statically.io/gh/reeyuki/yukios@a3efea2218a5d717290e72ea41cd341d14689ce5`
-- Games: `https://cdn.statically.io/gh/reeyuki/yukios-games@main`
-
-**CORS Proxy:** Apps support proxy configuration for accessing restricted content.
-
----
 
 ## 🚦 Development Workflow
 
@@ -296,31 +300,6 @@ npm run format     # Format code with Prettier
 
 npm run lint       # Check and fix ESLint issues
 ```
-
----
-
-## 🤝 Contributing
-
-To extend Yuki OS:
-
-1. **Add a new app** — Follow the 5-step process in [AGENTS.md](AGENTS.md)
-2. **Modify a service** — Update WindowManager, FileSystemManager, etc.
-3. **Add games** — Update gamesList.js and CDN links
-4. **Fix bugs** — Submit issues and PRs
-5. **Improve docs** — Keep AGENTS.md and README current
-
----
-
-## 📋 Project Metadata
-
-- **Framework** — Vanilla JavaScript (ES modules)
-- **Package Manager** — pnpm
-- **Build Tool** — Vite 7.3.1
-- **Node Version** — 16+
-- **Browser Support** — Modern browsers (ES Next)
-
----
-
 ## 📜 License
 
 Platform code is licensed under the project license.
@@ -337,13 +316,9 @@ External components remain under their respective licenses:
 
 ## 🌟 Highlights
 
-- **Single-file deployment** — All code and assets in one HTML file
-- **No build complexity** — Vite handles all bundling automatically
-- **Progressive Web App** — Works offline with service worker
-- **Persistent storage** — IndexedDB-backed filesystem
-- **Sandboxed execution** — Games and apps run in isolated iframes
-- **Extensible architecture** — Add apps without core changes
-
----
-
-**Ready to explore?** Start with [AGENTS.md](AGENTS.md) for detailed architecture and integration patterns.
+- **Single-file deployment** — Vite bundles everything into `dist/index.html` (JS, CSS, assets inlined)
+- **BrowserFS filesystem** — IndexedDB-backed virtual storage with directory structure
+- **AppLauncher routing** — Single dispatcher handles system apps, iframe games, and external URLs
+- **Window management** — Drag, resize, snap, minimize, maximize with z-ordering
+- **Multi-runtime support** — Ruffle (Flash), JS-DOS (DOS), V86 (x86), EmulatorJS (consoles)
+- **Setup wizard** — First-run configuration for theme, wallpaper, taskbar, and settings

@@ -5,6 +5,22 @@ import { PersistenceTypes } from "./runtime/AppSchema.js";
 
 const NEWS_UPDATES = [
   {
+    date: "May 24, 2026",
+    sections: [
+      {
+        icon: "fa-wand-magic-sparkles",
+        title: "Features & Improvements",
+        items: [
+          [
+            "fa-rocket",
+            "Setup Wizard Enhancement",
+            "Enhanced setup wizard with keyboard shortcuts reference, filesystem introduction, performance mode selection, start menu pinning, and transparency level options."
+          ]
+        ]
+      }
+    ]
+  },
+  {
     date: "May 23, 2026",
     sections: [
       {

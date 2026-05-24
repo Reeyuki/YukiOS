@@ -285,12 +285,17 @@ async function start() {
   const queryString = window.location.search;
   const urlParams = new URLSearchParams(queryString);
   const game = urlParams.get("game");
+  const app = urlParams.get("app");
   const swf = urlParams.get("swf") === "true";
   const steamParam = urlParams.get("steam");
 
   if (steamParam) {
     setTimeout(() => {
       categoriesApp.initUrlParamHandling(appLauncher, windowManager);
+    }, 0);
+  } else if (app) {
+    setTimeout(() => {
+      appLauncher.launch(app);
     }, 0);
   } else if (game) {
     setTimeout(() => {

@@ -4,6 +4,217 @@ import { resolveIconUrl, resolveWallpaperUrl } from "./shared/assetResolver.js";
 import { SystemUtilities } from "./system.js";
 import { Achievements } from "./achievements.js";
 
+const FEATURE_DATA = {
+  step2: [
+    {
+      icon: "fas fa-desktop",
+      title: "True Desktop Experience",
+      desc: "Full windowed multitasking with drag, resize, snap, minimize, maximize",
+      animation: "tilt-card"
+    },
+    {
+      icon: "fas fa-gamepad",
+      title: "3700+ Games & Emulators",
+      desc: "JS-DOS, V86, Ruffle Flash, Azahar 3DS, and retro console emulation",
+      animation: "spin-card"
+    },
+    {
+      icon: "fas fa-folder-tree",
+      title: "Persistent Filesystem",
+      desc: "BrowserFS + IndexedDB storage that survives browser restarts",
+      animation: "bounce-card"
+    },
+    {
+      icon: "fas fa-cloud",
+      title: "Works Offline",
+      desc: "PWA with service worker — install and use without internet",
+      animation: "pulse-card"
+    },
+    {
+      icon: "fas fa-box-archive",
+      title: "30+ Built-in Apps",
+      desc: "Notepad, Terminal, Browser, Office viewer, Calculator, and more",
+      animation: "glow-card"
+    },
+    {
+      icon: "fas fa-keyboard",
+      title: "Keyboard Shortcuts",
+      desc: "Ctrl+K (command palette), Ctrl+D (desktop), Ctrl+arrows (snap)",
+      animation: "slide-card"
+    }
+  ],
+  step3: [
+    {
+      icon: "fas fa-keyboard",
+      title: "Command Palette",
+      desc: "Global launcher and system shell via Ctrl+K / F1"
+    },
+    {
+      icon: "fas fa-save",
+      title: "Session Persistence",
+      desc: "Restores windows, layout, and app state across reloads"
+    },
+    {
+      icon: "fas fa-paint-brush",
+      title: "Full Customization",
+      desc: "Themes, wallpapers, UI scaling, and Turbo Mode"
+    },
+    {
+      icon: "fas fa-bell",
+      title: "Notifications",
+      desc: "Toast notifications with Do Not Disturb mode"
+    },
+    {
+      icon: "fas fa-sliders-h",
+      title: "Audio Mixer",
+      desc: "Per-app volume control with master volume"
+    },
+    {
+      icon: "fas fa-download",
+      title: "Import / Export",
+      desc: "Backup and migrate full system configuration"
+    }
+  ],
+  step3b: [
+    {
+      icon: "fas fa-layer-group",
+      title: "Taskbar & Start Menu",
+      desc: "Launch apps, manage windows, switch workspaces"
+    },
+    {
+      icon: "fas fa-eye",
+      title: "Window Preview",
+      desc: "Hover taskbar for live window previews (Tab Peek)"
+    },
+    {
+      icon: "fas fa-window-restore",
+      title: "Window Management",
+      desc: "Advanced z-ordering, drag system, lifecycle control"
+    },
+    {
+      icon: "fas fa-arrows-alt",
+      title: "Window Snapping",
+      desc: "Drag to edges/corners, keyboard snap with Ctrl+arrows"
+    },
+    {
+      icon: "fas fa-upload",
+      title: "File Drag-and-Drop",
+      desc: "Drag files from host OS to desktop"
+    },
+    {
+      icon: "fas fa-network-wired",
+      title: "Unified Ecosystem",
+      desc: "Core apps interconnected through shared services"
+    },
+    {
+      icon: "fas fa-cloud",
+      title: "PWA & Offline",
+      desc: "Installable webOS with full offline capability"
+    },
+    {
+      icon: "fas fa-arrows-up-down-left-right",
+      title: "Workspace System",
+      desc: "Multiple virtual desktops for organizing tasks"
+    },
+    {
+      icon: "fas fa-code-branch",
+      title: "App Creator",
+      desc: "Add custom apps with proxies and icons"
+    },
+    {
+      icon: "fas fa-gamepad",
+      title: "Steam Game Hub",
+      desc: "Browse 3700+ games with store pages"
+    },
+    {
+      icon: "fas fa-microchip",
+      title: "Multi-Runtime Engine",
+      desc: "JS-DOS, V86, Azahar 3DS, Ruffle, WebAssembly"
+    },
+    {
+      icon: "fas fa-trophy",
+      title: "Stats & Achievements",
+      desc: "Track usage, milestones, playtime"
+    },
+    {
+      icon: "fas fa-calendar-alt",
+      title: "Calendar System",
+      desc: "Calendar popup with event management"
+    },
+    {
+      icon: "fas fa-robot",
+      title: "Clippy Assistant",
+      desc: "Animated desktop helper with tips"
+    },
+    {
+      icon: "fas fa-user-lock",
+      title: "Session Management",
+      desc: "Login screen with 15-minute auto-login"
+    },
+    {
+      icon: "fas fa-adjust",
+      title: "Window Transparency",
+      desc: "Dynamic transparency, hides when gaming"
+    },
+    {
+      icon: "fas fa-mouse-pointer",
+      title: "Context Menus",
+      desc: "Right-click menus for desktop, files, apps"
+    },
+    {
+      icon: "fas fa-arrows-alt",
+      title: "Taskbar Positioning",
+      desc: "Configurable: bottom, top, left, right"
+    }
+  ],
+  step6: {
+    keyboardShortcuts: [
+      { keys: "Ctrl+K", desc: "Open Command Palette" },
+      { keys: "Ctrl+P", desc: "Open Command Palette" },
+      { keys: "F1", desc: "Open Command Palette" },
+      { keys: "Ctrl+D", desc: "Show/Hide Desktop" },
+      { keys: "Ctrl+←", desc: "Snap window left" },
+      { keys: "Ctrl+→", desc: "Snap window right" },
+      { keys: "Ctrl+↑", desc: "Maximize window" },
+      { keys: "Ctrl+C", desc: "Copy files" },
+      { keys: "Ctrl+X", desc: "Cut files" },
+      { keys: "Ctrl+V", desc: "Paste files" },
+      { keys: "Delete", desc: "Delete files" },
+      { keys: "F2", desc: "Rename file" },
+      { keys: "Ctrl+S", desc: "Save file (Notepad)" },
+      { keys: "Ctrl+F", desc: "Find text" }
+    ],
+    filesystem: {
+      title: "Virtual Filesystem",
+      description:
+        "Yuki OS uses BrowserFS with IndexedDB for persistent storage. Your files are stored locally in your browser and survive page reloads.",
+      structure: [
+        { path: "/home/reeyuki/Desktop", desc: "Desktop icons and shortcuts" },
+        { path: "/home/reeyuki/Documents", desc: "Your documents and text files" },
+        { path: "/home/reeyuki/Pictures", desc: "Images and wallpapers" },
+        { path: "/home/reeyuki/Apps", desc: "Custom app shortcuts" }
+      ]
+    },
+    performanceModes: [
+      { value: "balanced", title: "Balanced", desc: "Recommended for most users" },
+      { value: "performance", title: "Performance", desc: "Maximize speed, reduce effects" },
+      { value: "quality", title: "Quality", desc: "Best visuals, may be slower" }
+    ],
+    suggestedApps: [
+      { id: "notepad", title: "Notepad", icon: "fas fa-file-alt" },
+      { id: "terminal", title: "Terminal", icon: "fas fa-terminal" },
+      { id: "browser", title: "Browser", icon: "fas fa-globe" },
+      { id: "explorer", title: "File Explorer", icon: "fas fa-folder" },
+      { id: "settings", title: "Settings", icon: "fas fa-cog" }
+    ],
+    transparencyLevels: [
+      { value: "high", title: "High Transparency", desc: "More glass effect" },
+      { value: "medium", title: "Medium Transparency", desc: "Balanced look" },
+      { value: "low", title: "Low Transparency", desc: "More solid windows" }
+    ]
+  }
+};
+
 export class SetupApp extends BaseApp {
   constructor(services) {
     super(services);
@@ -16,7 +227,10 @@ export class SetupApp extends BaseApp {
       notifications: true,
       sound: true,
       achievements: true,
-      analytics: true
+      analytics: true,
+      performanceMode: "balanced",
+      transparency: "medium",
+      pinnedApps: []
     };
     this.openWindows = new Set();
     this.wallpapers = [];
@@ -28,6 +242,14 @@ export class SetupApp extends BaseApp {
   async open(options = {}) {
     const winId = "setup-wizard";
     if (this._isSingletonOpen(winId)) return;
+
+    // Reset state to prevent issues when reopening
+    this.currentStep = 0;
+    this.isTransitioning = false;
+    if (this.stepTransitionTimer) {
+      clearTimeout(this.stepTransitionTimer);
+      this.stepTransitionTimer = null;
+    }
 
     await this._loadWallpapers();
 
@@ -52,7 +274,7 @@ export class SetupApp extends BaseApp {
       </div>
       <div class="window-content setup-wizard">
         <div class="setup-progress">
-          ${[1, 2, 3, 4, 5, 6]
+          ${[1, 2, 3, 4, 5, 6, 7]
             .map(
               (i) => `
             <div class="progress-step ${i === 1 ? "active" : ""}" data-step="${i}">
@@ -60,7 +282,7 @@ export class SetupApp extends BaseApp {
                 <span class="progress-number">${i}</span>
                 <i class="fas fa-check progress-check"></i>
               </div>
-              ${i < 6 ? '<div class="progress-line"></div>' : ""}
+              ${i < 7 ? '<div class="progress-line"></div>' : ""}
             </div>
           `
             )
@@ -71,6 +293,7 @@ export class SetupApp extends BaseApp {
           ${this._buildStep1()}
           ${this._buildStep2()}
           ${this._buildStep3()}
+          ${this._buildStep3b()}
           ${this._buildStep4()}
           ${this._buildStep5()}
           ${this._buildStep6()}
@@ -109,189 +332,80 @@ export class SetupApp extends BaseApp {
   }
 
   _buildStep2() {
+    const cardsHtml = FEATURE_DATA.step2
+      .map(
+        (feature) => `
+        <div class="feature-card ${feature.animation || ""}">
+          <div class="feature-icon ${feature.animation?.replace("-card", "-icon") || ""}">
+            <i class="${feature.icon}"></i>
+          </div>
+          <h3>${feature.title}</h3>
+          <p>${feature.desc}</p>
+        </div>
+      `
+      )
+      .join("");
+
     return `
     <div class="setup-step" data-step="2">
       <h2 class="step-title feature-title">
         <i class="fas fa-star"></i>
-        Core Features
+        What Makes Yuki OS Different
       </h2>
-
-      <div class="feature-grid">
-
-        <div class="feature-card tilt-card">
-          <div class="feature-icon tilt-icon">
-            <i class="fas fa-desktop"></i>
-          </div>
-
-          <h3>Windowed Desktop Environment</h3>
-
-          <p>
-            Drag, resize, snap, and manage apps in a true multi-window OS shell
-          </p>
-        </div>
-
-        <div class="feature-card spin-card">
-          <div class="feature-icon spin-icon">
-            <i class="fas fa-layer-group"></i>
-          </div>
-
-          <h3>Taskbar & Start Menu System</h3>
-
-          <p>
-            Launch apps, manage running windows, and switch workspaces instantly
-          </p>
-        </div>
-
-        <div class="feature-card bounce-card">
-          <div class="feature-icon bounce-icon">
-            <i class="fas fa-folder-tree"></i>
-          </div>
-
-          <h3>Virtual Filesystem</h3>
-
-          <p>
-            BrowserFS + IndexedDB persistent storage with full directory structure
-          </p>
-        </div>
-
-        <div class="feature-card glow-card">
-          <div class="feature-icon glow-icon">
-            <i class="fas fa-window-restore"></i>
-          </div>
-
-          <h3>Window Management Engine</h3>
-
-          <p>
-            Advanced z-ordering, drag system, snapping, and lifecycle control
-          </p>
-        </div>
-
-        <div class="feature-card slide-card">
-          <div class="feature-icon slide-icon">
-            <i class="fas fa-network-wired"></i>
-          </div>
-
-          <h3>Unified System Ecosystem</h3>
-
-          <p>
-            Core system apps interconnected through shared services for consistency
-          </p>
-        </div>
-
-        <div class="feature-card pulse-card">
-          <div class="feature-icon pulse-icon">
-            <i class="fas fa-cloud"></i>
-          </div>
-
-          <h3>PWA & Offline Support</h3>
-
-          <p>
-            Installable webOS with full offline capability via service worker
-          </p>
-        </div>
-
-        <div class="feature-card skew-card">
-          <div class="feature-icon skew-icon">
-            <i class="fas fa-arrows-up-down-left-right"></i>
-          </div>
-
-          <h3>Workspace System</h3>
-
-          <p>
-            Multiple virtual desktops for organizing tasks and workflows
-          </p>
-        </div>
-
-        <div class="feature-card wiggle-card">
-          <div class="feature-icon wiggle-icon">
-            <i class="fas fa-code-branch"></i>
-          </div>
-
-          <h3>App Creator System</h3>
-
-          <p>
-            Add new applications with support for proxies, custom icons,
-            and direct desktop integration
-          </p>
-        </div>
-
-        <div class="feature-card orbit-card">
-          <div class="feature-icon orbit-icon">
-            <i class="fas fa-gamepad"></i>
-          </div>
-
-          <h3>Steam Game Hub</h3>
-
-          <p>
-            Browse a massive game library with store pages and track playtime
-          </p>
-        </div>
-
-      </div>
+      <div class="feature-grid">${cardsHtml}</div>
     </div>
   `;
   }
 
   _buildStep3() {
+    const cardsHtml = FEATURE_DATA.step3
+      .map(
+        (feature) => `
+        <div class="feature-card">
+          <div class="feature-icon"><i class="${feature.icon}"></i></div>
+          <h3>${feature.title}</h3>
+          <p>${feature.desc}</p>
+        </div>
+      `
+      )
+      .join("");
+
     return `
       <div class="setup-step" data-step="3">
         <h2 class="step-title" style="justify-content: center; margin-bottom: 20px;">
-          <i class="fas fa-puzzle-piece"></i> Built-in Features
+          <i class="fas fa-puzzle-piece"></i> System Features
         </h2>
-        <div class="feature-grid">
-          <div class="feature-card">
-            <div class="feature-icon"><i class="fas fa-microchip"></i></div>
-            <h3>Multi-Runtime Engine</h3>
-            <p>JS-DOS, V86, Azahar 3DS, Ruffle Flash, and WebAssembly support</p>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon"><i class="fas fa-box-archive"></i></div>
-            <h3>30+ Applications</h3>
-            <p>Productivity tools, utilities, media apps, and system-level utilities</p>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon"><i class="fas fa-keyboard"></i></div>
-            <h3>Command Palette</h3>
-            <p>Global launcher and system shell via Ctrl+K / F1</p>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon"><i class="fas fa-sliders-h"></i></div>
-            <h3>Audio & System Control</h3>
-            <p>Per-app volume mixer, system settings, and runtime controls</p>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon"><i class="fas fa-bell"></i></div>
-            <h3>Notification System</h3>
-            <p>Centralized toast notifications with Do Not Disturb support</p>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon"><i class="fas fa-save"></i></div>
-            <h3>Session Persistence</h3>
-            <p>Restores windows, layout, and app state across reloads</p>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon"><i class="fas fa-paint-brush"></i></div>
-            <h3>Full Customization</h3>
-            <p>Themes, wallpapers, UI scaling, and performance modes including Turbo Mode</p>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon"><i class="fas fa-trophy"></i></div>
-            <h3>Stats & Achievements</h3>
-            <p>Track usage, milestones, playtime, and system engagement</p>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon"><i class="fas fa-download"></i></div>
-            <h3>Import / Export System</h3>
-            <p>Backup and migrate full system state and user configuration</p>
-          </div>
+        <div class="feature-grid">${cardsHtml}</div>
+      </div>
+    `;
+  }
+
+  _buildStep3b() {
+    const cardsHtml = FEATURE_DATA.step3b
+      .map(
+        (feature) => `
+        <div class="feature-card">
+          <div class="feature-icon"><i class="${feature.icon}"></i></div>
+          <h3>${feature.title}</h3>
+          <p>${feature.desc}</p>
         </div>
+      `
+      )
+      .join("");
+
+    return `
+      <div class="setup-step" data-step="4">
+        <h2 class="step-title" style="justify-content: center; margin-bottom: 20px;">
+          <i class="fas fa-plus-circle"></i> More Features
+        </h2>
+        <div class="feature-grid">${cardsHtml}</div>
       </div>
     `;
   }
 
   _buildStep4() {
     return `
-      <div class="setup-step" data-step="4">
+      <div class="setup-step" data-step="5">
         <h2 class="step-title">
           <i class="fas fa-paint-brush"></i> Personalize Your Experience
         </h2>
@@ -373,8 +487,64 @@ export class SetupApp extends BaseApp {
   }
 
   _buildStep5() {
+    const shortcutsHtml = FEATURE_DATA.step6.keyboardShortcuts
+      .map(
+        (s) => `
+        <div class="shortcut-item">
+          <kbd>${s.keys}</kbd>
+          <span>${s.desc}</span>
+        </div>
+      `
+      )
+      .join("");
+
+    const filesystemHtml = FEATURE_DATA.step6.filesystem.structure
+      .map(
+        (f) => `
+        <div class="filesystem-item">
+          <code>${f.path}</code>
+          <span>${f.desc}</span>
+        </div>
+      `
+      )
+      .join("");
+
+    const performanceHtml = FEATURE_DATA.step6.performanceModes
+      .map(
+        (m) => `
+        <button class="perf-btn ${this.userChoices.performanceMode === m.value ? "active" : ""}" data-mode="${m.value}">
+          <div class="perf-title">${m.title}</div>
+          <div class="perf-desc">${m.desc}</div>
+        </button>
+      `
+      )
+      .join("");
+
+    const appsHtml = FEATURE_DATA.step6.suggestedApps
+      .map(
+        (a) => `
+        <div class="app-pin-item ${this.userChoices.pinnedApps.includes(a.id) ? "pinned" : ""}" data-app="${a.id}">
+          <i class="${a.icon}"></i>
+          <span>${a.title}</span>
+          <i class="fas fa-thumbtack pin-icon"></i>
+        </div>
+      `
+      )
+      .join("");
+
+    const transparencyHtml = FEATURE_DATA.step6.transparencyLevels
+      .map(
+        (t) => `
+        <button class="transparency-btn ${this.userChoices.transparency === t.value ? "active" : ""}" data-transparency="${t.value}">
+          <div class="transparency-title">${t.title}</div>
+          <div class="transparency-desc">${t.desc}</div>
+        </button>
+      `
+      )
+      .join("");
+
     return `
-      <div class="setup-step" data-step="5">
+      <div class="setup-step" data-step="6">
         <h2 class="step-title">
           <i class="fas fa-sliders-h"></i> Quick Settings
         </h2>
@@ -450,13 +620,40 @@ export class SetupApp extends BaseApp {
             </label>
           </div>
         </div>
+
+        <div class="personalize-section">
+          <label class="section-label">Performance Mode</label>
+          <div class="perf-selector">${performanceHtml}</div>
+        </div>
+
+        <div class="personalize-section">
+          <label class="section-label">Window Transparency</label>
+          <div class="transparency-selector">${transparencyHtml}</div>
+        </div>
+
+        <div class="personalize-section">
+          <label class="section-label">Pin Apps to Start Menu</label>
+          <div class="apps-pinning">${appsHtml}</div>
+          <p style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">Click to pin/unpin apps for quick access</p>
+        </div>
+
+        <div class="personalize-section">
+          <label class="section-label">Keyboard Shortcuts Reference</label>
+          <div class="shortcuts-reference">${shortcutsHtml}</div>
+        </div>
+
+        <div class="personalize-section">
+          <label class="section-label">${FEATURE_DATA.step6.filesystem.title}</label>
+          <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;">${FEATURE_DATA.step6.filesystem.description}</p>
+          <div class="filesystem-structure">${filesystemHtml}</div>
+        </div>
       </div>
     `;
   }
 
   _buildStep6() {
     return `
-      <div class="setup-step" data-step="6">
+      <div class="setup-step" data-step="7">
         <div class="complete-hero">
           <div class="complete-icon">
             <i class="fas fa-rocket"></i>
@@ -557,6 +754,44 @@ export class SetupApp extends BaseApp {
     if (uploadBtn) {
       uploadBtn.addEventListener("click", () => this._handleWallpaperUpload(win));
     }
+
+    // Performance mode selection
+    const perfBtns = win.querySelectorAll(".perf-btn");
+    perfBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const mode = btn.dataset.mode;
+        this.userChoices.performanceMode = mode;
+        perfBtns.forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+      });
+    });
+
+    // Transparency level selection
+    const transparencyBtns = win.querySelectorAll(".transparency-btn");
+    transparencyBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const transparency = btn.dataset.transparency;
+        this.userChoices.transparency = transparency;
+        transparencyBtns.forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+      });
+    });
+
+    // App pinning
+    const appPinItems = win.querySelectorAll(".app-pin-item");
+    appPinItems.forEach((item) => {
+      item.addEventListener("click", () => {
+        const appId = item.dataset.app;
+        const index = this.userChoices.pinnedApps.indexOf(appId);
+        if (index > -1) {
+          this.userChoices.pinnedApps.splice(index, 1);
+          item.classList.remove("pinned");
+        } else {
+          this.userChoices.pinnedApps.push(appId);
+          item.classList.add("pinned");
+        }
+      });
+    });
   }
 
   _nextStep(win) {
@@ -663,6 +898,11 @@ export class SetupApp extends BaseApp {
     localStorage.setItem(StorageKeys.analyticsDisabled, (!this.userChoices.analytics).toString());
     localStorage.setItem(StorageKeys.setupCompleted, "true");
 
+    // Save new options
+    localStorage.setItem("yukiOS_performanceMode", this.userChoices.performanceMode);
+    localStorage.setItem("yukiOS_transparency", this.userChoices.transparency);
+    localStorage.setItem("yukiOS_pinnedApps", JSON.stringify(this.userChoices.pinnedApps));
+
     this._services.achievementsApp?.trigger(Achievements.SetupComplete);
 
     if (this.userChoices.wallpaper) {
@@ -686,8 +926,11 @@ export class SetupApp extends BaseApp {
 Your setup is complete. Here's what you configured:
 - Theme: ${this.userChoices.theme}
 - Taskbar: ${this.userChoices.taskbarPosition}
+- Performance Mode: ${this.userChoices.performanceMode}
+- Transparency: ${this.userChoices.transparency}
 - Weather: ${this.userChoices.weather ? "Enabled" : "Disabled"}
 - Notifications: ${this.userChoices.notifications ? "Enabled" : "Disabled"}
+- Pinned Apps: ${this.userChoices.pinnedApps.length} apps
 
 Quick Tips:
 • Click the Start Menu to explore 30+ apps and 3700+ games

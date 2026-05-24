@@ -774,3 +774,293 @@ html[data-theme="light"] ::-webkit-scrollbar-thumb {
 html[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.28);
 }
+
+.shortcuts-reference {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  padding-right: 5px;
+}
+
+.shortcut-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+.shortcut-item kbd {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  color: var(--brand);
+  min-width: 70px;
+  text-align: center;
+}
+
+.shortcut-item span {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Filesystem structure */
+.filesystem-structure {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filesystem-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+.filesystem-item code {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  color: var(--brand);
+  min-width: 140px;
+}
+
+.filesystem-item span {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Performance mode selector */
+.perf-selector {
+  display: flex;
+  gap: 10px;
+}
+
+.perf-btn {
+  flex: 1;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.perf-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.perf-btn.active {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+  box-shadow: 0 5px 15px var(--brand-glow);
+}
+
+.perf-title {
+  font-weight: 600;
+}
+
+.perf-desc {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.perf-btn.active .perf-desc {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Transparency selector */
+.transparency-selector {
+  display: flex;
+  gap: 10px;
+}
+
+.transparency-btn {
+  flex: 1;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.transparency-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.transparency-btn.active {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+  box-shadow: 0 5px 15px var(--brand-glow);
+}
+
+.transparency-title {
+  font-weight: 600;
+}
+
+.transparency-desc {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.transparency-btn.active .transparency-desc {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* App pinning */
+.apps-pinning {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.app-pin-item {
+  flex: 1;
+  min-width: 100px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+}
+
+.app-pin-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.app-pin-item.pinned {
+  background: var(--brand-glow);
+  border-color: var(--brand);
+  color: #fff;
+}
+
+.app-pin-item i:first-child {
+  font-size: 18px;
+}
+
+.app-pin-item span {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.pin-icon {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  font-size: 10px;
+  opacity: 0;
+  transition: opacity 0.3s;
+  color: var(--brand);
+}
+
+.app-pin-item.pinned .pin-icon {
+  opacity: 1;
+  color: #fff;
+}
+
+/* Light theme overrides for new elements */
+html[data-theme="light"] .shortcut-item {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+html[data-theme="light"] .shortcut-item kbd {
+  background: rgba(0, 0, 0, 0.08);
+  border-color: rgba(0, 0, 0, 0.15);
+}
+
+html[data-theme="light"] .shortcut-item span {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+html[data-theme="light"] .filesystem-item {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+html[data-theme="light"] .filesystem-item code {
+  background: rgba(0, 0, 0, 0.08);
+  border-color: rgba(0, 0, 0, 0.15);
+}
+
+html[data-theme="light"] .filesystem-item span {
+  color: rgba(0, 0, 0, 0.55);
+}
+
+html[data-theme="light"] .perf-btn,
+html[data-theme="light"] .transparency-btn {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.12);
+  color: rgba(0, 0, 0, 0.8);
+}
+
+html[data-theme="light"] .perf-btn:hover,
+html[data-theme="light"] .transparency-btn:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+html[data-theme="light"] .perf-desc,
+html[data-theme="light"] .transparency-desc {
+  color: rgba(0, 0, 0, 0.55);
+}
+
+html[data-theme="light"] .perf-btn.active .perf-desc,
+html[data-theme="light"] .transparency-btn.active .transparency-desc {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+html[data-theme="light"] .app-pin-item {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.1);
+  color: rgba(0, 0, 0, 0.8);
+}
+
+html[data-theme="light"] .app-pin-item:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+html[data-theme="light"] .app-pin-item.pinned {
+  background: var(--brand-glow);
+  border-color: var(--brand);
+  color: #fff;
+}
