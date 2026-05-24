@@ -31,7 +31,7 @@ export class SetupApp extends BaseApp {
 
     await this._loadWallpapers();
 
-    const win = this.wm.createWindow(winId, "Welcome to Yuki OS", "900px", "650px", false, { position: "center" });
+    const win = this.wm.createWindow(winId, "Welcome to Yuki OS", "900px", "600px", false, { position: "center" });
     win.innerHTML = this._buildUI();
     document.body.appendChild(win);
     this.wm.mountWindow(win, winId, "Setup", "fas fa-rocket");

@@ -125,6 +125,7 @@ export class AppRenderer {
 
     if (events) {
       element._schemaEvents = events;
+      element.setAttribute("_schemaEvents", "");
     }
 
     return element;

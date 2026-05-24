@@ -22,10 +22,39 @@ export class WindowHelper {
   createWindowWithContent(winId, title, content, width = "800px", height = "600px", options = {}) {
     const win = this.createStandardWindow(winId, title, width, height, options);
 
-    const headerHTML = this.createWindowHeader(title, options.externalUrl);
-    const contentHTML = typeof content === "string" ? content : this.createWindowContent(content);
+    const headerDiv = document.createElement("div");
+    headerDiv.innerHTML = this.createWindowHeader(title, options.externalUrl);
+    win.appendChild(headerDiv);
 
-    win.innerHTML = headerHTML + contentHTML;
+    if (typeof content === "string") {
+      const contentDiv = document.createElement("div");
+      contentDiv.className = "window-content";
+      contentDiv.style.cssText = "width:100%; height:100%; overflow:hidden;";
+      contentDiv.innerHTML = content;
+      win.appendChild(contentDiv);
+    } else if (content instanceof DocumentFragment) {
+      const contentDiv = document.createElement("div");
+      contentDiv.className = "window-content";
+      contentDiv.style.cssText = "width:100%; height:100%; overflow:hidden;";
+      contentDiv.appendChild(content);
+      win.appendChild(contentDiv);
+    } else if (content instanceof Element) {
+      if (content.classList && content.classList.contains("window-content")) {
+        win.appendChild(content);
+      } else {
+        const contentDiv = document.createElement("div");
+        contentDiv.className = "window-content";
+        contentDiv.style.cssText = "width:100%; height:100%; overflow:hidden;";
+        contentDiv.appendChild(content);
+        win.appendChild(contentDiv);
+      }
+    } else {
+      const contentDiv = document.createElement("div");
+      contentDiv.className = "window-content";
+      contentDiv.style.cssText = "width:100%; height:100%; overflow:hidden;";
+      contentDiv.innerHTML = content;
+      win.appendChild(contentDiv);
+    }
 
     return win;
   }

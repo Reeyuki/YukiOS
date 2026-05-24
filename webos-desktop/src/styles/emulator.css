@@ -1,13 +1,9 @@
-/* Emulator Styles */
-
-#emulator-win .emu-container {
+.emu-container {
   width: 100%;
   height: 100%;
-  background:
-    radial-gradient(circle at 20% 0%, rgba(255, 107, 157, 0.12), transparent 50%), linear-gradient(#141424, #10101a);
-  color: var(--text-primary, #eee);
+  background: var(--bg-primary);
+  color: var(--text-primary);
   font-family:
-    "Barlow",
     system-ui,
     -apple-system,
     sans-serif;
@@ -17,82 +13,82 @@
   box-sizing: border-box;
 }
 
-#emulator-win .emu-header {
+.emu-header {
   display: flex;
   align-items: center;
   gap: 16px;
   padding: 16px;
   border-radius: 14px;
-  border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
-  background: var(--bg-secondary, rgba(255, 255, 255, 0.04));
-  backdrop-filter: blur(18px);
+  border: 1px solid var(--glass-border);
+  background: var(--bg-secondary);
+  backdrop-filter: blur(32px);
   margin-bottom: 20px;
 }
 
-#emulator-win .emu-title {
+.emu-icon-main {
+  font-size: 38px;
+  color: var(--brand);
+}
+
+.emu-title {
   font-size: 1.5rem;
   font-weight: 800;
   margin: 0;
-  color: #fff;
+  color: var(--text-primary);
 }
 
-#emulator-win .emu-subtitle {
+.emu-subtitle {
   font-size: 0.88rem;
-  color: var(--text-secondary, #888);
+  color: var(--text-secondary);
   margin-top: 4px;
 }
 
-#emulator-win .emu-icon-main {
-  font-size: 38px;
-  color: var(--brand, #ff6b9d);
-}
-
-#emulator-win .emu-upload-zone {
-  border: 2px dashed var(--brand, #ff6b9d);
+.emu-upload-zone {
+  border: 2px dashed var(--glass-border);
   border-radius: 14px;
   padding: 32px;
   text-align: center;
   cursor: pointer;
-  transition: all 0.2s ease;
-  background: var(--glass, rgba(255, 255, 255, 0.02));
+  transition: all 0.15s ease;
+  background: var(--glass);
   margin-bottom: 24px;
 }
 
-#emulator-win .emu-upload-zone:hover {
-  background: var(--glass-hover, rgba(255, 107, 157, 0.07));
-  border-color: var(--brand-hover, #ff4785);
+.emu-upload-zone:hover {
+  background: var(--glass-hover);
+  border-color: var(--brand);
 }
 
-#emulator-win .emu-upload-icon {
+.emu-upload-icon {
   font-size: 32px;
-  color: var(--brand, #ff6b9d);
+  color: var(--brand);
   margin-bottom: 12px;
   display: block;
 }
 
-#emulator-win .emu-upload-text {
+.emu-upload-text {
   font-size: 14px;
-  color: var(--text-primary, #bbb);
+  color: var(--text-primary);
   margin-bottom: 8px;
 }
 
-#emulator-win .emu-upload-subtext {
+.emu-upload-subtext {
   font-size: 11px;
-  color: var(--text-secondary, #666);
+  color: var(--text-secondary);
   margin-bottom: 12px;
 }
 
-#emulator-win .emu-upload-formats {
+.emu-upload-formats {
   font-size: 10px;
-  color: var(--text-secondary, #555);
+  color: var(--text-secondary);
   line-height: 1.6;
   max-width: 600px;
   margin: 0 auto;
 }
 
-#emulator-win .emu-section-title {
+.emu-section-title {
   font-size: 11px;
-  color: var(--text-secondary, #888);
+  color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 1px;
   margin-bottom: 12px;
@@ -100,15 +96,15 @@
   font-weight: 600;
 }
 
-#emulator-win .emu-file-grid {
+.emu-file-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 12px;
 }
 
-#emulator-win .emu-file-card {
-  background: var(--bg-secondary, #252540);
-  border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
+.emu-file-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--glass-border);
   border-radius: 12px;
   padding: 14px 16px;
   display: flex;
@@ -122,41 +118,41 @@
   position: relative;
 }
 
-#emulator-win .emu-file-card:hover {
+.emu-file-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px var(--brand-dim, rgba(255, 107, 157, 0.2));
-  border-color: var(--brand, #ff6b9d);
+  box-shadow: 0 4px 12px var(--brand-dim);
+  border-color: var(--brand);
 }
 
-#emulator-win .emu-file-icon {
+.emu-file-icon {
   font-size: 22px;
-  color: var(--brand, #ff6b9d);
+  color: var(--brand);
 }
 
-#emulator-win .emu-file-info {
+.emu-file-info {
   flex: 1;
   overflow: hidden;
 }
 
-#emulator-win .emu-file-name {
+.emu-file-name {
   font-size: 13px;
-  color: var(--text-primary, #fff);
+  color: var(--text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   font-weight: 600;
 }
 
-#emulator-win .emu-file-type {
+.emu-file-type {
   font-size: 10px;
-  color: var(--text-secondary, #666);
+  color: var(--text-secondary);
   margin-top: 4px;
 }
 
-#emulator-win .emu-delete-btn {
-  background: var(--glass, rgba(255, 255, 255, 0.05));
+.emu-delete-btn {
+  background: var(--glass);
   border: 1px solid transparent;
-  color: var(--text-secondary, #666);
+  color: var(--text-secondary);
   cursor: pointer;
   font-size: 12px;
   width: 26px;
@@ -165,11 +161,282 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
 }
 
-#emulator-win .emu-delete-btn:hover {
-  color: var(--error, #ff6b6b);
-  background: var(--error-bg, rgba(255, 107, 107, 0.1));
-  border-color: var(--error-border, rgba(255, 107, 107, 0.3));
+.emu-delete-btn:hover {
+  color: var(--error);
+  background: var(--error-bg);
+  border-color: var(--error-border);
+}
+
+.jsdos-container {
+  width: 100%;
+  height: 100%;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: monospace;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.jsdos-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid var(--glass-border);
+  background: var(--bg-secondary);
+  backdrop-filter: blur(32px);
+  margin-bottom: 20px;
+}
+
+.jsdos-header-icon {
+  font-size: 38px;
+  color: var(--brand);
+}
+
+.jsdos-header-text {
+  flex: 1;
+}
+
+.jsdos-header-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.jsdos-header-subtitle {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.jsdos-section-title {
+  padding: 16px 16px 8px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.jsdos-upload-zone {
+  margin: 0 16px 12px;
+  border: 2px dashed var(--glass-border);
+  border-radius: 14px;
+  padding: 18px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  background: var(--glass);
+}
+
+.jsdos-upload-zone-dragover {
+  background: var(--glass-hover);
+  border-color: var(--brand);
+}
+
+.jsdos-upload-icon {
+  font-size: 20px;
+  color: var(--brand);
+  margin-bottom: 8px;
+  display: block;
+}
+
+.jsdos-upload-text {
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.jsdos-upload-text strong {
+  color: var(--text-primary);
+}
+
+.jsdos-upload-subtext {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.jsdos-empty-text {
+  font-size: 12px;
+  color: var(--text-secondary);
+  padding: 4px 0;
+}
+
+.jsdos-game-grid {
+  padding: 0 16px 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.jsdos-game-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    border-color 0.15s ease;
+  position: relative;
+}
+
+.jsdos-game-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px var(--brand-dim);
+  border-color: var(--brand);
+}
+
+.jsdos-game-icon {
+  font-size: 22px;
+  color: var(--brand);
+}
+
+.jsdos-game-title {
+  font-size: 13px;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.jsdos-delete-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: var(--glass);
+  border: 1px solid transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 13px;
+  padding: 2px 4px;
+  line-height: 1;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.jsdos-delete-btn:hover {
+  color: var(--error);
+  background: var(--error-bg);
+  border-color: var(--error-border);
+}
+
+.jsdos-game-window {
+  width: 100%;
+  height: calc(100% - 30px);
+  background: var(--bg-primary);
+  position: relative;
+}
+
+.jsdos-loading {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.jsdos-loading-spinner {
+  font-size: 32px;
+  color: var(--brand);
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.jsdos-loading-icon {
+  font-size: 20px;
+  color: var(--brand);
+  margin-bottom: 8px;
+  display: block;
+}
+
+.jsdos-loading-text {
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.jsdos-loading-text strong {
+  color: var(--text-primary);
+}
+
+.jsdos-success-icon {
+  font-size: 20px;
+  color: var(--brand);
+  margin-bottom: 8px;
+  display: block;
+}
+
+.jsdos-success-text {
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.jsdos-error-icon {
+  font-size: 20px;
+  color: var(--error);
+  margin-bottom: 8px;
+  display: block;
+}
+
+.jsdos-error-text {
+  font-size: 13px;
+  color: var(--error);
+}
+
+.jsdos-game-loading-text {
+  font-size: 15px;
+  color: var(--brand);
+}
+
+.jsdos-game-loading-text strong {
+  color: var(--text-primary);
+}
+
+.jsdos-game-log {
+  font-size: 11px;
+  color: var(--text-secondary);
+  max-width: 400px;
+  text-align: center;
+}
+
+.jsdos-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.jsdos-error-inline {
+  gap: 12px;
+}
+
+.jsdos-error .jsdos-error-icon {
+  font-size: 32px;
+  margin-bottom: 0;
+}
+
+.jsdos-error-msg {
+  color: var(--error);
+  font-size: 14px;
+  font-family: monospace;
 }

@@ -10,6 +10,8 @@ const commitHash = (() => {
   }
 })();
 
+const isDevBuild = process.env.VITE_DEV_BUILD === "true";
+
 export default defineConfig({
   base: "./",
   plugins: [viteSingleFile()],
@@ -18,12 +20,12 @@ export default defineConfig({
   },
   build: {
     target: "esnext",
-    minify: true,
+    minify: !isDevBuild,
     sourcemap: false,
     cssCodeSplit: false,
     assetsInlineLimit: 100000000,
     rollupOptions: {
-      treeshake: false,
+      treeshake: !isDevBuild,
       external: ["three", /^three\/.*/],
       output: {
         inlineDynamicImports: true,
@@ -35,8 +37,8 @@ export default defineConfig({
     }
   },
   esbuild: {
-    minify: true,
-    treeShaking: false,
-    legalComments: "none"
+    minify: !isDevBuild,
+    treeShaking: !isDevBuild,
+    legalComments: isDevBuild ? "linked" : "none"
   }
 });

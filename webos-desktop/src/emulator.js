@@ -112,7 +112,6 @@ export class EmulatorApp extends BaseApp {
           size: ["800px", "600px"],
           icon: "static/icons/emulator.webp",
           ui: `
-      <link rel="stylesheet" href="styles/emulator.css">
       <div class="emu-container">
         <div class="emu-header">
           <i class="fa-solid fa-gamepad emu-icon-main"></i>

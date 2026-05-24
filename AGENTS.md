@@ -3,7 +3,7 @@ Never run any npm/pnpm format or npm/pnpm bf commands
 Never add any comments or docstrings or "/*" blocks in css or js or html
 Never spawn a browser for testing
 
-Before finalizing any code changes, the implementation must successfully pass a pnpm build in webos-desktop/ directory. If a change would break the build process, it is considered incomplete and must be corrected before completion.
+Before finalizing any code changes, the implementation must successfully pass a pnpm build:dev command in webos-desktop/ directory. If a change would break the build process, it is considered incomplete and must be corrected before completion.
 Always use CSS variables from src/styles/style.css for styling instead of hardcoded colors. Use variables like --brand, --text-primary, --text-secondary, --bg-primary, --bg-secondary, --glass, --glass-border, --error, etc.
 When making significant changes or new features, register them to the current day under the NEWS_UPDATES variable in src/news.js with an appropriate icon, title, and description.
 
@@ -11,6 +11,7 @@ When making significant changes or new features, register them to the current da
 
 Yuki OS uses a dark glassmorphism theme with the following characteristics:
 - **Colors**: Use CSS variables from style.css (--brand for accents, --text-primary/--text-secondary for text, --bg-primary/--bg-secondary for backgrounds, --glass/--glass-border for subtle effects, --error for destructive actions)
+- **Color Consistency**: All colors use a unified hue (265 purple) to avoid gray/blue mixing. Never introduce new hues or hardcoded colors. Always use the predefined CSS variables.
 - **Glassmorphism**: Backdrop blur (32px+), semi-transparent backgrounds (rgba with 0.6-0.98 opacity), subtle borders (rgba(255,255,255,0.08-0.12))
 - **Depth**: Box shadows with multiple layers (0 24px 64px rgba(0,0,0,0.65) + inset highlights)
 - **Typography**: System fonts or JetBrains Mono for code, 11-14px base size, varying opacity for hierarchy (0.7-0.9 for secondary text)

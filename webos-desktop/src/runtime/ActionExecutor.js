@@ -85,7 +85,7 @@ export class ActionExecutor {
     }
 
     try {
-      handler(payload, event, element, this.stateManager.state);
+      handler(payload, event, element, this.stateManager.state, this);
     } catch (err) {
       console.error(`Custom action failed: ${actionName}`, err);
     }

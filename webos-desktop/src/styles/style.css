@@ -29,10 +29,10 @@
   --bg-primary: oklch(10% 0.02 265);
   --bg-secondary: oklch(18% 0.03 265);
 
-  --text-primary: oklch(95% 0.01 240);
-  --text-secondary: oklch(72% 0.01 240);
+  --text-primary: oklch(95% 0.01 265);
+  --text-secondary: oklch(72% 0.01 265);
 
-  --border: oklch(79% 0.09 185);
+  --border: oklch(79% 0.09 265);
 
   --error: oklch(60% 0.2 25);
   --error-hover: oklch(53% 0.2 25);

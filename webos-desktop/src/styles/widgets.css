@@ -15,140 +15,16 @@
 }
 
 .markdown-container .markdown-body::-webkit-scrollbar-track {
-  background: #0d1117;
+  background: var(--bg-primary);
 }
 
 .markdown-container .markdown-body::-webkit-scrollbar-thumb {
-  background: #30363d;
+  background: var(--glass-border);
   border-radius: 5px;
 }
 
 .markdown-container .markdown-body::-webkit-scrollbar-thumb:hover {
-  background: #484f58;
-}
-
-.jsdos-game-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 16px;
-  padding: 24px;
-}
-
-.jsdos-game-card {
-  background: linear-gradient(145deg, #2a2a40, #1e1e30);
-  border: 2px solid #3a3a50;
-  border-radius: 8px;
-  padding: 16px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-}
-
-.jsdos-game-card:hover {
-  border-color: #c77dff;
-  transform: translateY(-4px);
-  box-shadow: 0 8px 16px rgba(199, 125, 255, 0.3);
-}
-
-.jsdos-game-card:hover .jsdos-game-icon {
-  color: #c77dff;
-  transform: scale(1.1);
-}
-
-.jsdos-game-icon {
-  font-size: 42px;
-  margin-bottom: 8px;
-  color: #888;
-  transition: all 0.3s ease;
-}
-
-.jsdos-game-title {
-  color: #c77dff;
-  font-weight: bold;
-  font-size: 14px;
-  font-family: monospace;
-}
-
-.jsdos-header {
-  background: linear-gradient(145deg, #1e1e30, #151520);
-  padding: 20px 24px;
-  border-bottom: 2px solid #3a3a50;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.jsdos-header-icon {
-  font-size: 32px;
-  color: #c77dff;
-}
-
-.jsdos-header-text {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.jsdos-header-title {
-  font-size: 20px;
-  font-weight: bold;
-  color: #c77dff;
-  font-family: monospace;
-}
-
-.jsdos-header-subtitle {
-  color: #aaa;
-  font-size: 13px;
-  font-family: monospace;
-}
-
-.jsdos-loading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  color: #ccc;
-  font-family: monospace;
-}
-
-.jsdos-loading-spinner {
-  font-size: 36px;
-  color: #c77dff;
-  animation: spin 1.5s linear infinite;
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-.jsdos-error {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-}
-
-.jsdos-error-icon {
-  font-size: 32px;
-  color: #ff6b6b;
-}
-
-.jsdos-error-msg {
-  color: #ff6b6b;
-  font-size: 14px;
-  font-family: monospace;
+  background: var(--border);
 }
 
 .ad-split-container {

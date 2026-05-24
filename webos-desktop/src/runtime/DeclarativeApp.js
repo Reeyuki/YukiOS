@@ -33,7 +33,7 @@ export class DeclarativeApp {
   }
 
   _getWindowHelper() {
-    return WindowHelper;
+    return new WindowHelper(this.wm);
   }
 
   _registerCustomActions() {
@@ -42,19 +42,31 @@ export class DeclarativeApp {
         this.actionExecutor.registerCustomAction(name, handler);
       });
     }
+    if (this.definition.actions._appInstance) {
+      this.actionExecutor.appInstance = this.definition.actions._appInstance;
+    }
   }
 
   open(opts = {}) {
     const windowConfig = this._resolveWindowConfig(opts);
     const win = this.appRenderer.renderWindow(windowConfig, this.services);
 
+    if (!win) {
+      console.error("Failed to create window for", windowConfig.id);
+      return null;
+    }
+
     this._bindEvents(win, windowConfig);
     this.openWindows.add(windowConfig.id);
 
-    if (this.definition.onMount && typeof this.definition.onMount === "string") {
-      const action = this.actionExecutor.customActions.get(this.definition.onMount);
-      if (action) {
-        action(null, null, win, this.stateManager.state);
+    if (this.definition.onMount) {
+      if (typeof this.definition.onMount === "string") {
+        const action = this.actionExecutor.customActions.get(this.definition.onMount);
+        if (action) {
+          action(null, null, win, this.stateManager.state, this.actionExecutor);
+        }
+      } else if (typeof this.definition.onMount === "function") {
+        this.definition.onMount(win, this.stateManager.state, this.actionExecutor);
       }
     }
 

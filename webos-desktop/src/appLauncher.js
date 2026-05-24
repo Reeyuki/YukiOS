@@ -388,7 +388,7 @@ export class AppLauncher {
     this.appRuntime.registerLegacy("appCreator", this.appCreatorApp);
     this.appRuntime.registerLegacy("office", this.officeApp);
     this.appRuntime.registerLegacy("shittify", this.shittifyApp);
-    this.appRuntime.registerLegacy("jsDos", this.jsDosApp);
+    this.appRuntime.registerLegacy("jsDosApp", this.jsDosApp);
     this.appRuntime.registerLegacy("v86", this.v86app);
     this.appRuntime.registerLegacy("youtube", this.youtubeApp);
     this.appRuntime.registerLegacy("achievements", this.achievementsApp);
@@ -405,18 +405,19 @@ export class AppLauncher {
       try {
         const schema = appInstance.getDeclarativeSchema(opts);
         if (schema && typeof schema === "object") {
-          if (
-            schema.onMount &&
-            typeof schema.onMount === "string" &&
-            typeof appInstance[schema.onMount] === "function"
-          ) {
-            if (!schema.actions) {
-              schema.actions = {};
-            }
-            if (!schema.actions[schema.onMount]) {
-              schema.actions[schema.onMount] = (payload, event, element, state) => {
-                return appInstance[schema.onMount](payload, event, element, state);
-              };
+          if (!schema.actions) {
+            schema.actions = {};
+          }
+          if (schema.onMount) {
+            if (typeof schema.onMount === "string" && typeof appInstance[schema.onMount] === "function") {
+              if (!schema.actions[schema.onMount]) {
+                schema.actions[schema.onMount] = (payload, event, element, state) => {
+                  return appInstance[schema.onMount](payload, event, element, state);
+                };
+              }
+            } else if (typeof schema.onMount === "function") {
+              schema.actions._onMount = schema.onMount;
+              schema.onMount = "_onMount";
             }
           }
           if (!schema.onClose && typeof appInstance.onClose === "function") {
@@ -424,6 +425,7 @@ export class AppLauncher {
               return appInstance.onClose(winId, state);
             };
           }
+          schema.actions._appInstance = appInstance;
           this.appRuntime.registerDeclarative(schema);
           return this.appRuntime.launch(schema.id, opts);
         }

@@ -1,27 +1,63 @@
 import { Achievements } from "./achievements.js";
 import { bus, BusEvents } from "./core/EventBus.js";
+import { desktop } from "./desktop.js";
 import { zipSync } from "fflate";
 import { BaseApp } from "./core/BaseApp.js";
-import { WindowHelper } from "./utils/WindowHelper.js";
-import { CDN_BASES } from "./shared/assetResolver.js";
-import { resolveIconUrl } from "./assetUrl.js";
-import { PersistenceTypes } from "./runtime/AppSchema.js";
 
 const GAMES_DIR = ["Games"];
 
 export class JsDosApp extends BaseApp {
   constructor(services) {
     super(services);
-    this.windowHelper = new WindowHelper(this.wm);
     this._explorerApp = services.explorerApp;
   }
 
-  open(opts = {}) {
+  open() {
     if (this._isSingletonOpen("jsdos-win")) return;
-    this._isDeclarative = true;
+
+    const win = this.wm.createWindow("jsdos-win", "JsDos", "600px", "560px");
+    win.innerHTML = `
+      <div class="window-header">
+        <span>JsDos Game Launcher</span>
+        ${this.wm.getWindowControls()}
+      </div>
+      <div class="window-content jsdos-container">
+        <div class="jsdos-header">
+          <i class="fa-solid fa-gamepad jsdos-header-icon"></i>
+          <div class="jsdos-header-text">
+            <div class="jsdos-header-title">JsDos Game Library</div>
+            <div class="jsdos-header-subtitle">Select a game to launch</div>
+          </div>
+        </div>
+        <div class="jsdos-section-title">My Games</div>
+        <div
+          id="jsdos-upload-zone"
+          class="jsdos-upload-zone"
+        >
+          <i class="fa-solid fa-upload jsdos-upload-icon"></i>
+          <div class="jsdos-upload-text">Drop a <strong>.jsdos</strong> or <strong>.exe</strong> file here</div>
+          <div class="jsdos-upload-subtext">or click to browse</div>
+          <input type="file" id="jsdos-file-input" accept=".jsdos,.exe,.com,.bat" style="display:none;">
+        </div>
+        <div id="jsdos-user-games" style="padding:0 16px 16px;display:flex;flex-wrap:wrap;gap:12px;"></div>
+        <div class="jsdos-section-title">Featured Games</div>
+        <div class="jsdos-game-grid" id="jsdos-game-grid">
+          ${this._generateGameCards()}
+        </div>
+      </div>`;
+
+    desktop.appendChild(win);
+    this.wm.makeDraggable(win);
+    this.wm.makeResizable(win);
+    this.wm.setupWindowControls(win);
+    this.wm.addToTaskbar(win.id, "JsDos", "static/icons/jsdos.webp");
+
+    this._setupGameCardListeners(win);
+    this._setupUploadZone(win);
+    this._loadUserGames(win);
   }
 
-  getDeclarativeSchema(opts) {
+  _generateGameCards() {
     const games = [
       { file: "dn3d.jsdos", name: "Duke Nukem 3D", icon: "fa-solid fa-crosshairs" },
       { file: "doom.jsdos", name: "DOOM", icon: "fa-solid fa-skull" },
@@ -31,330 +67,80 @@ export class JsDosApp extends BaseApp {
       { file: "skyroads.jsdos", name: "SkyRoads", icon: "fa-solid fa-rocket" }
     ];
 
-    const self = this;
-
-    return {
-      id: "jsdos-win",
-      name: "JsDos Game Launcher",
-      icon: resolveIconUrl("static/icons/jsdos.webp"),
-      windows: [
-        {
-          id: "jsdos-win",
-          title: "JsDos Game Launcher",
-          size: ["600px", "560px"],
-          icon: resolveIconUrl("static/icons/jsdos.webp"),
-          ui: {
-            type: "element",
-            tag: "div",
-            props: {
-              className: "window-content",
-              style: {
-                width: "100%",
-                height: "100%",
-                background: "#1a1a2e",
-                color: "#eee",
-                fontFamily: "monospace",
-                overflowY: "auto",
-                overflowX: "hidden"
-              }
-            },
-            children: [
-              {
-                type: "element",
-                tag: "div",
-                props: {
-                  className: "jsdos-header"
-                },
-                children: [
-                  {
-                    type: "element",
-                    tag: "i",
-                    props: {
-                      className: "fa-solid fa-gamepad jsdos-header-icon"
-                    }
-                  },
-                  {
-                    type: "element",
-                    tag: "div",
-                    props: {
-                      className: "jsdos-header-text"
-                    },
-                    children: [
-                      {
-                        type: "element",
-                        tag: "div",
-                        props: {
-                          className: "jsdos-header-title"
-                        },
-                        text: "JsDos Game Library"
-                      },
-                      {
-                        type: "element",
-                        tag: "div",
-                        props: {
-                          className: "jsdos-header-subtitle"
-                        },
-                        text: "Select a game to launch"
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                type: "element",
-                tag: "div",
-                props: {
-                  style: {
-                    padding: "16px 16px 8px",
-                    fontSize: "11px",
-                    color: "#888",
-                    textTransform: "uppercase",
-                    letterSpacing: "1px"
-                  }
-                },
-                text: "My Games"
-              },
-              {
-                type: "element",
-                tag: "div",
-                props: {
-                  id: "jsdos-upload-zone",
-                  style: {
-                    margin: "0 16px 12px",
-                    border: "2px dashed #444",
-                    borderRadius: "8px",
-                    padding: "18px",
-                    textAlign: "center",
-                    cursor: "pointer",
-                    transition: "border-color .2s,background .2s",
-                    background: "transparent"
-                  }
-                },
-                children: [
-                  {
-                    type: "element",
-                    tag: "i",
-                    props: {
-                      className: "fa-solid fa-upload",
-                      style: {
-                        fontSize: "20px",
-                        color: "#7b5ea7",
-                        marginBottom: "8px",
-                        display: "block"
-                      }
-                    }
-                  },
-                  {
-                    type: "element",
-                    tag: "div",
-                    props: {
-                      style: {
-                        fontSize: "13px",
-                        color: "#bbb"
-                      }
-                    },
-                    children: [
-                      { text: "Drop a " },
-                      {
-                        type: "element",
-                        tag: "strong",
-                        props: {
-                          style: { color: "#fff" }
-                        },
-                        text: ".jsdos"
-                      },
-                      { text: " or " },
-                      {
-                        type: "element",
-                        tag: "strong",
-                        props: {
-                          style: { color: "#fff" }
-                        },
-                        text: ".exe"
-                      },
-                      { text: " file here" }
-                    ]
-                  },
-                  {
-                    type: "element",
-                    tag: "div",
-                    props: {
-                      style: {
-                        fontSize: "11px",
-                        color: "#666",
-                        marginTop: "4px"
-                      }
-                    },
-                    text: "or click to browse"
-                  },
-                  {
-                    type: "element",
-                    tag: "input",
-                    props: {
-                      id: "jsdos-file-input",
-                      type: "file",
-                      accept: ".jsdos,.exe,.com,.bat",
-                      style: { display: "none" }
-                    }
-                  }
-                ],
-                events: {
-                  click: {
-                    type: "custom:uploadClick",
-                    stopPropagation: true
-                  },
-                  dragover: {
-                    type: "custom:dragOver",
-                    stopPropagation: false
-                  },
-                  dragleave: {
-                    type: "custom:dragLeave",
-                    stopPropagation: false
-                  },
-                  drop: {
-                    type: "custom:dropFile",
-                    stopPropagation: false
-                  }
-                }
-              },
-              {
-                type: "element",
-                tag: "div",
-                props: {
-                  id: "jsdos-user-games",
-                  style: {
-                    padding: "0 16px 16px",
-                    display: "flex",
-                    flexWrap: "wrap",
-                    gap: "12px"
-                  }
-                }
-              },
-              {
-                type: "element",
-                tag: "div",
-                props: {
-                  style: {
-                    padding: "0 16px 8px",
-                    fontSize: "11px",
-                    color: "#888",
-                    textTransform: "uppercase",
-                    letterSpacing: "1px"
-                  }
-                },
-                text: "Featured Games"
-              },
-              {
-                type: "element",
-                tag: "div",
-                props: {
-                  className: "jsdos-game-grid",
-                  id: "jsdos-game-grid"
-                },
-                children: games.map((game) => ({
-                  type: "element",
-                  tag: "div",
-                  props: {
-                    className: "jsdos-game-card",
-                    "data-game": game.file
-                  },
-                  events: {
-                    click: {
-                      type: "custom:launchGame",
-                      stopPropagation: true
-                    }
-                  },
-                  children: [
-                    {
-                      type: "element",
-                      tag: "i",
-                      props: {
-                        className: `${game.icon} jsdos-game-icon`
-                      }
-                    },
-                    {
-                      type: "element",
-                      tag: "div",
-                      props: {
-                        className: "jsdos-game-title"
-                      },
-                      text: game.name
-                    }
-                  ]
-                }))
-              }
-            ]
-          },
-          events: {
-            "#jsdos-file-input": {
-              change: {
-                type: "custom:fileChange",
-                stopPropagation: false
-              }
-            }
-          }
-        }
-      ],
-      state: {
-        initial: {
-          userGames: []
-        },
-        persistence: PersistenceTypes.MEMORY
-      },
-      actions: {
-        uploadClick: (payload, event, element, state) => {
-          const input = document.getElementById("jsdos-file-input");
-          if (input) input.click();
-        },
-        dragOver: (payload, event, element, state) => {
-          event.preventDefault();
-          element.style.borderColor = "#c77dff";
-          element.style.background = "rgba(199,125,255,0.07)";
-        },
-        dragLeave: (payload, event, element, state) => {
-          element.style.borderColor = "#444";
-          element.style.background = "transparent";
-        },
-        dropFile: async (payload, event, element, state) => {
-          event.preventDefault();
-          element.style.borderColor = "#444";
-          element.style.background = "transparent";
-          const file = event.dataTransfer.files[0];
-          if (file) await self._handleUploadedFile(file, element);
-        },
-        fileChange: async (payload, event, element, state) => {
-          const file = element.files[0];
-          if (file) await self._handleUploadedFile(file, document.getElementById("jsdos-upload-zone"));
-          element.value = "";
-        },
-        launchGame: (payload, event, element, state) => {
-          const gameFile = element.dataset.game;
-          const gameName = element.querySelector(".jsdos-game-title").textContent;
-          self.launchGame(gameFile, gameName);
-        }
-      },
-      onMount: (winId, state) => {
-        self._loadUserGames(document.getElementById(winId));
-      }
-    };
+    return games
+      .map(
+        (game) => `
+      <div class="jsdos-game-card" data-game="${game.file}">
+        <i class="${game.icon} jsdos-game-icon"></i>
+        <div class="jsdos-game-title">${game.name}</div>
+      </div>
+    `
+      )
+      .join("");
   }
 
-  async _handleUploadedFile(file, zone) {
+  _setupGameCardListeners(win) {
+    const cards = win.querySelectorAll(".jsdos-game-card");
+    cards.forEach((card) => {
+      card.addEventListener("click", () => {
+        const gameFile = card.dataset.game;
+        const gameName = card.querySelector(".jsdos-game-title").textContent;
+        this.launchGame(gameFile, gameName);
+      });
+    });
+  }
+
+  _setupUploadZone(win) {
+    const zone = win.querySelector("#jsdos-upload-zone");
+    const input = win.querySelector("#jsdos-file-input");
+
+    zone.addEventListener("click", () => input.click());
+
+    zone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      zone.classList.add("jsdos-upload-zone-dragover");
+    });
+
+    zone.addEventListener("dragleave", () => {
+      zone.classList.remove("jsdos-upload-zone-dragover");
+    });
+
+    zone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      zone.classList.remove("jsdos-upload-zone-dragover");
+      const file = e.dataTransfer.files[0];
+      if (file) this._handleUploadedFile(file, win);
+    });
+
+    input.addEventListener("change", () => {
+      const file = input.files[0];
+      if (file) this._handleUploadedFile(file, win);
+      input.value = "";
+    });
+  }
+
+  async _handleUploadedFile(file, win) {
+    const zone = win.querySelector("#jsdos-upload-zone");
     const originalHTML = zone.innerHTML;
 
-    zone.innerHTML = `<i class="fa-solid fa-spinner fa-spin" style="font-size:20px;color:#c77dff;margin-bottom:8px;display:block;"></i><div style="font-size:13px;color:#bbb;">Saving <strong style="color:#fff;">${file.name}</strong>…</div>`;
+    zone.innerHTML = `<i class="fa-solid fa-spinner fa-spin jsdos-loading-icon"></i><div class="jsdos-loading-text">Saving <strong>${file.name}</strong>…</div>`;
 
     try {
       const blob = new Blob([await file.arrayBuffer()], { type: file.type || "application/octet-stream" });
-      await this.fs.writeBinaryFile(GAMES_DIR, file.name, blob, "other", resolveIconUrl("static/icons/jsdos.webp"));
+      await this.fs.writeBinaryFile(GAMES_DIR, file.name, blob, "other", "/static/icons/jsdos.webp");
       this.wm.sendNotify(`Saved ${file.name} at Games/ directory. `);
-      zone.innerHTML = `<i class="fa-solid fa-circle-check" style="font-size:20px;color:#4caf50;margin-bottom:8px;display:block;"></i><div style="font-size:13px;color:#bbb;">Saved!</div>`;
-      await this._loadUserGames(document.querySelector("#jsdos-win"));
+      zone.innerHTML = `<i class="fa-solid fa-circle-check jsdos-success-icon"></i><div class="jsdos-success-text">Saved!</div>`;
+      await this._loadUserGames(win);
       setTimeout(() => {
         zone.innerHTML = originalHTML;
+        win.querySelector("#jsdos-file-input").addEventListener("change", (e) => {
+          const f = e.target.files[0];
+          if (f) this._handleUploadedFile(f, win);
+          e.target.value = "";
+        });
       }, 1500);
     } catch (err) {
-      zone.innerHTML = `<i class="fa-solid fa-triangle-exclamation" style="font-size:20px;color:#ff6b6b;margin-bottom:8px;display:block;"></i><div style="font-size:13px;color:#ff6b6b;">${err.message}</div>`;
+      zone.innerHTML = `<i class="fa-solid fa-triangle-exclamation jsdos-error-icon"></i><div class="jsdos-error-text">${err.message}</div>`;
       setTimeout(() => {
         zone.innerHTML = originalHTML;
       }, 2500);
@@ -367,7 +153,7 @@ export class JsDosApp extends BaseApp {
 
     try {
       await this.fs.fsReady;
-      const dir = this.fs.resolveUserPath(GAMES_DIR);
+      const dir = this.fs.resolveDir(GAMES_DIR);
       await this.fs.p("mkdir", dir, { recursive: true }).catch(() => {});
       const files = await this.fs.pRead("readdir", dir).catch(() => []);
       const gameFiles = files.filter(
@@ -375,7 +161,7 @@ export class JsDosApp extends BaseApp {
       );
 
       if (gameFiles.length === 0) {
-        container.innerHTML = `<div style="font-size:12px;color:#555;padding:4px 0;">No uploaded games yet.</div>`;
+        container.innerHTML = `<div class="jsdos-empty-text">No uploaded games yet.</div>`;
         return;
       }
 
@@ -387,12 +173,9 @@ export class JsDosApp extends BaseApp {
             .replace(/\b\w/g, (c) => c.toUpperCase());
           return `
         <div class="jsdos-game-card jsdos-user-card" data-user-file="${f}" style="position:relative;">
-          <i class="fa-solid fa-floppy-disk jsdos-game-icon" style="color:#c77dff;"></i>
+          <i class="fa-solid fa-floppy-disk jsdos-game-icon"></i>
           <div class="jsdos-game-title">${displayName}</div>
-          <button class="jsdos-delete-btn" data-file="${f}" title="Delete" style="
-            position:absolute;top:6px;right:6px;background:none;border:none;
-            color:#666;cursor:pointer;font-size:13px;padding:2px 4px;line-height:1;
-          "><i class="fa-solid fa-xmark"></i></button>
+          <button class="jsdos-delete-btn" data-file="${f}" title="Delete"><i class="fa-solid fa-xmark"></i></button>
         </div>
       `;
         })
@@ -420,20 +203,26 @@ export class JsDosApp extends BaseApp {
   async launchGame(fileName, displayName) {
     const wm = this.wm;
     const winId = `jsdos-${Date.now()}`;
-    const content = `
-    <div class="window-content" style="width:100%;height:calc(100% - 30px);background:#000;position:relative;">
+    const win = wm.createWindow(winId, displayName, "800px", "600px");
+    bus.emit(BusEvents.ACHIEVEMENT_TRIGGER, { key: Achievements.RetroPlayer });
+
+    win.innerHTML = `
+    <div class="window-header">
+      <span>${displayName}</span>
+      ${wm.getWindowControls()}
+    </div>
+    <div class="window-content jsdos-game-window">
       <div id="${winId}-inner" style="width:100%;height:100%;" class="jsdos-loading">
         <i class="fa-solid fa-compact-disc jsdos-loading-spinner"></i>
-        <div style="font-size:15px;color:#c77dff;">Loading <strong style="color:#fff;">${displayName}</strong>…</div>
-        <div id="${winId}-log" style="font-size:11px;color:#888;max-width:400px;text-align:center;"></div>
+        <div class="jsdos-game-loading-text">Loading <strong>${displayName}</strong>…</div>
+        <div id="${winId}-log" class="jsdos-game-log"></div>
       </div>
     </div>`;
 
-    bus.emit(BusEvents.ACHIEVEMENT_TRIGGER, { key: Achievements.RetroPlayer });
-
-    const win = this.windowHelper.createAndMountWindow(winId, displayName, content, "800px", "600px", {
-      icon: resolveIconUrl("static/icons/jsdos.webp")
-    });
+    desktop.appendChild(win);
+    wm.makeDraggable(win);
+    wm.makeResizable(win);
+    wm.addToTaskbar(winId, displayName, "static/icons/jsdos.webp");
 
     const inner = win.querySelector(`#${winId}-inner`);
     const log = win.querySelector(`#${winId}-log`);
@@ -476,7 +265,7 @@ export class JsDosApp extends BaseApp {
 
     try {
       setLog("Downloading game…");
-      const gameUrl = `${CDN_BASES.MAIN}/static/apps/jsdos/${fileName}`;
+      const gameUrl = `https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/apps/jsdos/${fileName}`;
 
       const response = await fetch(gameUrl);
       if (!response.ok) {
@@ -514,7 +303,11 @@ export class JsDosApp extends BaseApp {
 <html>
 <head>
 <meta charset="utf-8">
-
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; background: #000; overflow: hidden; }
+  #dos { width: 100%; height: 100%; }
+</style>
 <link rel="stylesheet" href="https://v8.js-dos.com/latest/js-dos.css">
 </head>
 <body>
@@ -562,26 +355,30 @@ export class JsDosApp extends BaseApp {
       [name]: new Uint8Array(arrayBuffer)
     };
     const zipped = zipSync(zipEntries);
-    return new Blob([zipped], { type: "application/zip" });
+    return new Blob([zipped.buffer], { type: "application/zip" });
   }
 
   async launchExe(name, path) {
     const wm = this.wm;
     const winId = `jsdos-${Date.now()}`;
-    const content = `
-    <div class="window-content" style="width:100%;height:calc(100% - 30px);background:#000;position:relative;">
+    const win = wm.createWindow(winId, name, "800px", "600px");
+    bus.emit(BusEvents.ACHIEVEMENT_TRIGGER, { key: Achievements.RetroPlayer });
+    win.innerHTML = `
+    <div class="window-header">
+      <span>${name}</span>
+      ${wm.getWindowControls()}
+    </div>
+    <div class="window-content jsdos-game-window">
       <div id="${winId}-inner" style="width:100%;height:100%;" class="jsdos-loading">
         <i class="fa-solid fa-compact-disc jsdos-loading-spinner"></i>
-        <div style="font-size:15px;color:#c77dff;">Loading <strong style="color:#fff;">${name}</strong>…</div>
-        <div id="${winId}-log" style="font-size:11px;color:#888;max-width:400px;text-align:center;"></div>
+        <div class="jsdos-game-loading-text">Loading <strong>${name}</strong>…</div>
+        <div id="${winId}-log" class="jsdos-game-log"></div>
       </div>
     </div>`;
-
-    bus.emit(BusEvents.ACHIEVEMENT_TRIGGER, { key: Achievements.RetroPlayer });
-
-    const win = this.windowHelper.createAndMountWindow(winId, name, content, "800px", "600px", {
-      icon: resolveIconUrl("static/icons/jsdos.webp")
-    });
+    desktop.appendChild(win);
+    wm.makeDraggable(win);
+    wm.makeResizable(win);
+    wm.addToTaskbar(winId, name, "/static/icons/jsdos.webp");
 
     const inner = win.querySelector(`#${winId}-inner`);
     const log = win.querySelector(`#${winId}-log`);
@@ -591,9 +388,9 @@ export class JsDosApp extends BaseApp {
     const showError = (msg) => {
       if (inner)
         inner.innerHTML = `
-      <div class="jsdos-error" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;">
-        <i class="fa-solid fa-triangle-exclamation" style="font-size:32px;color:#ff6b6b;"></i>
-        <div style="color:#ff6b6b;font-size:14px;font-family:monospace;">${msg}</div>
+      <div class="jsdos-error jsdos-error-inline">
+        <i class="fa-solid fa-triangle-exclamation jsdos-error-icon"></i>
+        <div class="jsdos-error-msg">${msg}</div>
       </div>`;
     };
 
