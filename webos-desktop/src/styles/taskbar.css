@@ -197,43 +197,6 @@
   margin: 2px 0;
 }
 
-.context-menu-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  color: #e6e6e6;
-  cursor: pointer;
-  border-radius: 6px;
-  font-size: 14px;
-  transition:
-    background 0.12s ease,
-    transform 0.05s ease;
-  user-select: none;
-}
-
-.context-menu-item:hover {
-  background: rgba(51, 153, 255, 0.18);
-  color: #fff;
-}
-
-.context-menu-item:active {
-  transform: scale(0.97);
-  background: rgba(51, 153, 255, 0.3);
-}
-
-.context-menu-item i {
-  width: 14px;
-  text-align: center;
-  opacity: 0.7;
-  font-size: 14px;
-  transition: opacity 0.15s ease;
-}
-
-.context-menu-item:hover i {
-  opacity: 1;
-}
-
 #system-tray {
   display: flex;
   align-items: center;

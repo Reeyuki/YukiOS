@@ -560,16 +560,45 @@ export class SettingsApp extends BaseApp {
         
         <div class="settings-card">
           <div class="settings-card-header"><i class="fas fa-palette"></i> Style & Transparency</div>
-          <div class="settings-row">
+          <div class="settings-row settings-row--stacked">
             <div class="settings-label-group">
               <span class="settings-label-title">Theme</span>
               <span class="settings-label-desc">Set the OS color scheme</span>
             </div>
-            <div class="settings-button-group">
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px;">
               <button class="settings-btn ${this._settings.theme === "dark" ? "active" : ""}" data-theme-val="dark"><i class="fas fa-moon"></i> Dark</button>
               <button class="settings-btn ${this._settings.theme === "light" ? "active" : ""}" data-theme-val="light"><i class="fas fa-sun"></i> Light</button>
               <button class="settings-btn ${this._settings.theme === "auto" ? "active" : ""}" data-theme-val="auto"><i class="fas fa-circle-half-stroke"></i> Auto</button>
             </div>
+          </div>
+          <div class="settings-row settings-row--stacked">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Special Themes</span>
+              <span class="settings-label-desc">Additional color schemes</span>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px;">
+              <button class="settings-btn ${this._settings.theme === "cyber" ? "active" : ""}" data-theme-val="cyber"><i class="fas fa-bolt"></i> Cyber</button>
+              <button class="settings-btn ${this._settings.theme === "arctic" ? "active" : ""}" data-theme-val="arctic"><i class="fas fa-snowflake"></i> Arctic</button>
+              <button class="settings-btn ${this._settings.theme === "crt" ? "active" : ""}" data-theme-val="crt"><i class="fas fa-terminal"></i> CRT</button>
+              <button class="settings-btn ${this._settings.theme === "sakura" ? "active" : ""}" data-theme-val="sakura"><i class="fas fa-fan"></i> Sakura</button>
+              <button class="settings-btn ${this._settings.theme === "oled" ? "active" : ""}" data-theme-val="oled"><i class="fas fa-tv"></i> OLED</button>
+              <button class="settings-btn ${this._settings.theme === "synthwave" ? "active" : ""}" data-theme-val="synthwave"><i class="fas fa-music"></i> Synthwave</button>
+              <button class="settings-btn ${this._settings.theme === "nordic" ? "active" : ""}" data-theme-val="nordic"><i class="fas fa-mountain"></i> Nordic</button>
+              <button class="settings-btn ${this._settings.theme === "forest" ? "active" : ""}" data-theme-val="forest"><i class="fas fa-tree"></i> Forest</button>
+              <button class="settings-btn ${this._settings.theme === "high-contrast" ? "active" : ""}" data-theme-val="high-contrast"><i class="fas fa-adjust"></i> High Contrast</button>
+              <button class="settings-btn ${this._settings.theme === "vaporwave" ? "active" : ""}" data-theme-val="vaporwave"><i class="fas fa-sun"></i> Vaporwave</button>
+              <button class="settings-btn ${this._settings.theme === "gameboy" ? "active" : ""}" data-theme-val="gameboy"><i class="fas fa-gamepad"></i> Gameboy</button>
+              <button class="settings-btn ${this._settings.theme === "frutiger-aero" ? "active" : ""}" data-theme-val="frutiger-aero"><i class="fas fa-apple-whole"></i> Frutiger Aero</button>
+            </div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Custom Colors</span>
+              <span class="settings-label-desc">Override theme colors manually</span>
+            </div>
+            <button class="settings-btn" id="settingsCustomColorsBtn">
+              <i class="fas fa-palette"></i> Customize
+            </button>
           </div>
           <div class="settings-row">
             <div class="settings-label-group">
@@ -1205,6 +1234,13 @@ export class SettingsApp extends BaseApp {
       });
     });
 
+    const customColorsBtn = win.querySelector("#settingsCustomColorsBtn");
+    if (customColorsBtn) {
+      customColorsBtn.addEventListener("click", () => {
+        this._showCustomColorsDialog(win);
+      });
+    }
+
     const transparencySlider = win.querySelector("#settingsWindowTransparency");
     const transparencyValue = win.querySelector("#settingsWindowTransparencyValue");
     if (transparencySlider) {
@@ -1499,13 +1535,119 @@ export class SettingsApp extends BaseApp {
       document.head.appendChild(styleEl);
     }
 
+    let customCSS = "";
     if (effective === "light") {
-      styleEl.textContent = `
+      customCSS = `
         :root { --window-bg-color: #f2f2f2; --text-color: #111; }
       `;
-    } else {
-      styleEl.textContent = "";
     }
+
+    const customColors = this._getCustomColors();
+    if (customColors) {
+      Object.entries(customColors).forEach(([varName, value]) => {
+        customCSS += `:root { --${varName}: ${value}; }\n`;
+      });
+    }
+
+    styleEl.textContent = customCSS;
+  }
+
+  _getCustomColors() {
+    try {
+      const stored = localStorage.getItem("yukios_custom_colors");
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  _setCustomColors(colors) {
+    try {
+      localStorage.setItem("yukios_custom_colors", JSON.stringify(colors));
+      this._applyTheme(this._settings.theme);
+    } catch {}
+  }
+
+  _showCustomColorsDialog(win) {
+    const customColors = this._getCustomColors() || {};
+    const overlay = document.createElement("div");
+    overlay.className = "explorer-confirmation-overlay";
+    overlay.style.zIndex = "999999";
+
+    const dialog = document.createElement("div");
+    dialog.className = "overlay-dialog";
+    dialog.innerHTML = `
+      <div class="conflict-header">
+        <i class="fas fa-palette conflict-icon"></i>
+        <span class="conflict-title">Custom Colors</span>
+      </div>
+      <div class="conflict-message">Override theme colors manually. Changes apply on top of the selected theme.</div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+        <div>
+          <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 6px;">Brand Color</label>
+          <input type="color" id="custom-brand" value="${customColors.brand || "#6b5ce7"}" style="width: 100%; height: 36px; border: 1px solid var(--glass-border); border-radius: 6px; cursor: pointer; background: var(--glass);">
+        </div>
+        <div>
+          <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 6px;">Background Primary</label>
+          <input type="color" id="custom-bg-primary" value="${customColors["bg-primary"] || "#1a1a2e"}" style="width: 100%; height: 36px; border: 1px solid var(--glass-border); border-radius: 6px; cursor: pointer; background: var(--glass);">
+        </div>
+        <div>
+          <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 6px;">Background Secondary</label>
+          <input type="color" id="custom-bg-secondary" value="${customColors["bg-secondary"] || "#252540"}" style="width: 100%; height: 36px; border: 1px solid var(--glass-border); border-radius: 6px; cursor: pointer; background: var(--glass);">
+        </div>
+        <div>
+          <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 6px;">Text Primary</label>
+          <input type="color" id="custom-text-primary" value="${customColors["text-primary"] || "#ffffff"}" style="width: 100%; height: 36px; border: 1px solid var(--glass-border); border-radius: 6px; cursor: pointer; background: var(--glass);">
+        </div>
+        <div>
+          <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 6px;">Text Secondary</label>
+          <input type="color" id="custom-text-secondary" value="${customColors["text-secondary"] || "#a0a0b0"}" style="width: 100%; height: 36px; border: 1px solid var(--glass-border); border-radius: 6px; cursor: pointer; background: var(--glass);">
+        </div>
+        <div>
+          <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 6px;">Glass</label>
+          <input type="color" id="custom-glass" value="${customColors.glass || "#ffffff"}" style="width: 100%; height: 36px; border: 1px solid var(--glass-border); border-radius: 6px; cursor: pointer; background: var(--glass);">
+        </div>
+      </div>
+      <div class="conflict-actions">
+        <button class="conflict-btn conflict-btn-skip" id="custom-colors-reset">
+          <i class="fas fa-undo conflict-btn-icon"></i> Reset to Theme
+        </button>
+        <button class="conflict-btn conflict-btn-keep" id="custom-colors-apply">
+          <i class="fas fa-check conflict-btn-icon"></i> Apply
+        </button>
+      </div>
+    `;
+
+    overlay.appendChild(dialog);
+    document.body.appendChild(overlay);
+
+    const resetBtn = dialog.querySelector("#custom-colors-reset");
+    const applyBtn = dialog.querySelector("#custom-colors-apply");
+
+    resetBtn.addEventListener("click", () => {
+      localStorage.removeItem("yukios_custom_colors");
+      this._applyTheme(this._settings.theme);
+      overlay.remove();
+    });
+
+    applyBtn.addEventListener("click", () => {
+      const newColors = {
+        brand: dialog.querySelector("#custom-brand").value,
+        "bg-primary": dialog.querySelector("#custom-bg-primary").value,
+        "bg-secondary": dialog.querySelector("#custom-bg-secondary").value,
+        "text-primary": dialog.querySelector("#custom-text-primary").value,
+        "text-secondary": dialog.querySelector("#custom-text-secondary").value,
+        glass: dialog.querySelector("#custom-glass").value
+      };
+      this._setCustomColors(newColors);
+      overlay.remove();
+    });
+
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) {
+        overlay.remove();
+      }
+    });
   }
 
   _applyWindowTransparency(value) {

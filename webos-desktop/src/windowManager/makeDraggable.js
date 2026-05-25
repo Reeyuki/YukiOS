@@ -18,13 +18,105 @@ export function makeDraggable(win, wm) {
     }
   };
 
-  const startDrag = (e) => {
-    if (e.button !== 0) return;
+  const startResize = (e) => {
+    if (e.button !== 2) return;
+    if (!(e.altKey || e.metaKey)) return;
     if (isInteractive(e.target)) return;
 
     wm.bringToFront(win);
     e.preventDefault();
     e.stopPropagation();
+
+    wm.isDraggingWindow = true;
+    document.body.classList.add("is-resizing");
+
+    const wasSnapped = !!win.dataset.snapZone;
+    if (wasSnapped) wm._unsnap(win);
+
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const rect = win.getBoundingClientRect();
+    const startWidth = rect.width;
+    const startHeight = rect.height;
+    const MIN_SIZE = 300;
+
+    const onMouseMove = (e) => {
+      const newWidth = Math.max(MIN_SIZE, startWidth + (e.clientX - startX));
+      const newHeight = Math.max(MIN_SIZE, startHeight + (e.clientY - startY));
+      win.style.width = `${newWidth}px`;
+      win.style.height = `${newHeight}px`;
+
+      const entry = wm.openWindows.get(win.id);
+      if (entry?.record) {
+        entry.record.setGeometry(rect.left, rect.top, newWidth, newHeight);
+      }
+    };
+
+    const onMouseUp = () => {
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onMouseUp);
+      wm.isDraggingWindow = false;
+      document.body.classList.remove("is-resizing");
+      if (wm.triggerSessionSave) wm.triggerSessionSave();
+    };
+
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
+  };
+
+  const startDrag = (e) => {
+    const isAltResize = e.altKey || e.metaKey;
+
+    if (isAltResize) {
+      if (e.button !== 2) return;
+    } else {
+      if (e.button !== 0) return;
+    }
+
+    if (isInteractive(e.target)) return;
+
+    wm.bringToFront(win);
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (isAltResize) {
+      wm.isDraggingWindow = true;
+      document.body.classList.add("is-resizing");
+
+      const wasSnapped = !!win.dataset.snapZone;
+      if (wasSnapped) wm._unsnap(win);
+
+      const startX = e.clientX;
+      const startY = e.clientY;
+      const rect = win.getBoundingClientRect();
+      const startWidth = rect.width;
+      const startHeight = rect.height;
+      const MIN_SIZE = 300;
+
+      const onMouseMove = (e) => {
+        const newWidth = Math.max(MIN_SIZE, startWidth + (e.clientX - startX));
+        const newHeight = Math.max(MIN_SIZE, startHeight + (e.clientY - startY));
+        win.style.width = `${newWidth}px`;
+        win.style.height = `${newHeight}px`;
+
+        const entry = wm.openWindows.get(win.id);
+        if (entry?.record) {
+          entry.record.setGeometry(rect.left, rect.top, newWidth, newHeight);
+        }
+      };
+
+      const onMouseUp = () => {
+        document.removeEventListener("mousemove", onMouseMove);
+        document.removeEventListener("mouseup", onMouseUp);
+        wm.isDraggingWindow = false;
+        document.body.classList.remove("is-resizing");
+        if (wm.triggerSessionSave) wm.triggerSessionSave();
+      };
+
+      document.addEventListener("mousemove", onMouseMove);
+      document.addEventListener("mouseup", onMouseUp);
+      return;
+    }
 
     wm.isDraggingWindow = true;
     document.body.classList.add("is-dragging");
@@ -99,6 +191,14 @@ export function makeDraggable(win, wm) {
       e.stopPropagation();
       wm._showWindowContextMenu(e, win);
     });
+  });
+
+  win.addEventListener("mousedown", startResize);
+  win.addEventListener("contextmenu", (e) => {
+    if (e.altKey || e.metaKey) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
   });
 }
 

@@ -69,6 +69,7 @@ export function refreshIcons(node = document) {
 export function showContextMenu(e, items, handlers) {
   const menu = getMenu();
   if (!menu) return;
+  menu.classList.add("context-menu-glass");
 
   menu.innerHTML = items
     .filter((item) => typeof item === "string" || !item.condition || item.condition())
@@ -104,6 +105,7 @@ export function showDynamicContextMenu(e, buildFn) {
   if (!menu) return;
 
   menu.innerHTML = "";
+  menu.classList.add("context-menu-glass");
 
   const item = (text, onclick, icon = null) => {
     const el = document.createElement("div");
@@ -140,6 +142,7 @@ export function showStartStyleMenu(e, buildFn) {
 
   const menu = document.createElement("div");
   menu.id = "taskbar-context-menu";
+  menu.classList.add("context-menu-glass");
 
   const addMenuItem = (text, action, icon = null) => {
     const menuItem = document.createElement("div");

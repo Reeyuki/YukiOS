@@ -20,9 +20,19 @@ export class HybridAdapter {
     return typeof baseAppInstance.getDeclarativeSchema === "function";
   }
 
-  static openWithSchema(baseAppInstance, opts = {}) {
+  static async openWithSchema(baseAppInstance, opts = {}) {
     if (this.supportsDeclarativeOpen(baseAppInstance)) {
       try {
+        const services = baseAppInstance._services;
+
+        if (!services || !services.wm) {
+          return null;
+        }
+
+        if (services.fs && services.fs.fsReady) {
+          await services.fs.fsReady;
+        }
+
         const schema = baseAppInstance.getDeclarativeSchema(opts);
         if (schema && typeof schema === "object") {
           if (
@@ -64,8 +74,8 @@ export class HybridAdapter {
   }
 
   static wrapLegacyOpen(baseAppInstance, originalOpen) {
-    return function (opts = {}) {
-      const declarativeWin = HybridAdapter.openWithSchema(baseAppInstance, opts);
+    return async function (opts = {}) {
+      const declarativeWin = await HybridAdapter.openWithSchema(baseAppInstance, opts);
 
       if (declarativeWin) {
         return declarativeWin;
@@ -79,13 +89,13 @@ export class HybridAdapter {
     const originalPrototype = BaseAppClass.prototype;
     const originalOpen = originalPrototype.open;
 
-    originalPrototype.open = function (opts = {}, ...args) {
+    originalPrototype.open = async function (opts = {}, ...args) {
       let resolvedOpts = opts;
       if (typeof opts === "string") {
         resolvedOpts = { title: opts, content: args[0], filePath: args[1] };
       }
 
-      const declarativeWin = HybridAdapter.openWithSchema(this, resolvedOpts);
+      const declarativeWin = await HybridAdapter.openWithSchema(this, resolvedOpts);
 
       if (declarativeWin) {
         return declarativeWin;

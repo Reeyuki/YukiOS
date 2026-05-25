@@ -2,16 +2,12 @@
   position: fixed;
   inset: 0;
   z-index: 999999;
-  background: radial-gradient(circle at center, #1a1a2e 0%, #0f0f1a 100%);
+  background: radial-gradient(circle at center, var(--bg-secondary) 0%, var(--bg-primary) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family:
-    "Inter",
-    system-ui,
-    -apple-system,
-    sans-serif;
-  color: #fff;
+  font-family: "Sora", sans-serif;
+  color: var(--text-primary);
   opacity: 1;
   transform: scale(1);
 }
@@ -58,14 +54,14 @@
   width: 100%;
   max-width: 440px;
   padding: 40px;
-  border-radius: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  border: 1px solid var(--glass-border);
   display: flex;
   flex-direction: column;
   gap: 32px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(20px);
-  background: rgba(255, 255, 255, 0.03);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(32px);
+  background: var(--glass);
 }
 
 .login-header {
@@ -75,28 +71,26 @@
 .login-logo {
   width: 64px;
   height: 64px;
-  background: linear-gradient(135deg, #4f9eff 0%, #a259ff 100%);
-  border-radius: 16px;
+  background: var(--brand);
+  border-radius: 12px;
   margin: 0 auto 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 32px;
-  box-shadow: 0 10px 20px rgba(79, 158, 255, 0.3);
+  box-shadow: 0 10px 20px var(--brand-glow);
 }
 
 .login-header h1 {
-  font-size: 28px;
-  font-weight: 800;
+  font-size: 24px;
+  font-weight: 700;
   margin-bottom: 8px;
   letter-spacing: -0.02em;
-  background: linear-gradient(to bottom, #fff, #ccc);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--text-primary);
 }
 
 .login-header p {
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-secondary);
   font-size: 14px;
 }
 
@@ -111,7 +105,7 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--text-secondary);
 }
 
 .input-wrapper {
@@ -123,17 +117,17 @@
 .input-wrapper i {
   position: absolute;
   left: 16px;
-  color: rgba(255, 255, 255, 0.3);
+  color: var(--text-secondary);
   font-size: 14px;
 }
 
 .input-wrapper input {
   width: 100%;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
   padding: 12px;
-  color: #fff;
+  color: var(--text-primary);
   font-size: 14px;
   transition: all 0.2s;
   outline: none;
@@ -143,9 +137,9 @@
 }
 
 .input-wrapper input:focus {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(79, 158, 255, 0.5);
-  box-shadow: 0 0 0 4px rgba(79, 158, 255, 0.1);
+  background: var(--glass-hover);
+  border-color: var(--brand);
+  box-shadow: 0 0 0 4px var(--brand-glow);
 }
 
 .avatar-section {
@@ -159,14 +153,14 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--text-secondary);
 }
 
 .avatar-grid-wrapper {
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 16px;
+  background: var(--bg-secondary);
+  border-radius: 12px;
   padding: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
 }
 
 .avatar-grid {
@@ -179,17 +173,21 @@
 }
 
 .avatar-grid::-webkit-scrollbar {
-  width: 4px;
+  width: 8px;
 }
 
 .avatar-grid::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
+  background: oklch(35% 0.02 265 / 0.45);
+  border-radius: 6px;
+}
+
+.avatar-grid::-webkit-scrollbar-thumb:hover {
+  background: oklch(45% 0.02 265 / 0.55);
 }
 
 .avatar-tile {
   aspect-ratio: 1;
-  border-radius: 12px;
+  border-radius: 10px;
   overflow: hidden;
   cursor: pointer;
   position: relative;
@@ -205,18 +203,18 @@
 
 .avatar-tile:hover {
   transform: scale(1.05);
-  border-color: rgba(255, 255, 255, 0.2);
+  border-color: var(--glass-border);
 }
 
 .avatar-tile.active {
-  border-color: #4f9eff;
-  box-shadow: 0 0 15px rgba(79, 158, 255, 0.3);
+  border-color: var(--brand);
+  box-shadow: 0 0 15px var(--brand-glow);
 }
 
 .tile-check {
   position: absolute;
   inset: 0;
-  background: rgba(79, 158, 255, 0.4);
+  background: var(--brand-dim);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -235,8 +233,8 @@
 
 .btn-secondary {
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.7);
+  border: 1px solid var(--glass-border);
+  color: var(--text-secondary);
   padding: 8px 16px;
   border-radius: 8px;
   font-size: 12px;
@@ -249,18 +247,18 @@
 }
 
 .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: #fff;
-  border-color: rgba(255, 255, 255, 0.2);
+  background: var(--glass-hover);
+  color: var(--text-primary);
+  border-color: var(--glass-border);
 }
 
 .btn-primary {
   width: 100%;
-  background: linear-gradient(135deg, #4f9eff 0%, #3482f6 100%);
+  background: var(--brand);
   border: none;
-  color: #fff;
+  color: var(--text-primary);
   padding: 16px;
-  border-radius: 12px;
+  border-radius: 10px;
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
@@ -269,12 +267,13 @@
   align-items: center;
   justify-content: center;
   gap: 12px;
-  box-shadow: 0 4px 15px rgba(79, 158, 255, 0.3);
+  box-shadow: 0 4px 15px var(--brand-glow);
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(79, 158, 255, 0.4);
+  background: var(--brand-hover);
+  box-shadow: 0 8px 25px var(--brand-glow);
 }
 
 .btn-primary:active {
@@ -289,12 +288,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-family:
-    "Inter",
-    system-ui,
-    -apple-system,
-    sans-serif;
-  color: #fff;
+  font-family: "Sora", sans-serif;
+  color: var(--text-primary);
   animation: fadeIn 0.3s ease-out;
 }
 
@@ -341,8 +336,8 @@
   height: 100px;
   border-radius: 50%;
   object-fit: cover;
-  border: 3px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  border: 3px solid var(--glass-border);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.65);
 }
 
 .lock-user h2 {
@@ -356,10 +351,10 @@
   margin-top: 32px;
   padding: 12px 32px;
   border-radius: 24px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(10px);
-  color: white;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(32px);
+  color: var(--text-primary);
   font-size: 18px;
   font-weight: 500;
   cursor: pointer;
@@ -370,7 +365,7 @@
 }
 
 #lock-unlock-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--glass-hover);
   transform: translateY(-2px);
 }
 

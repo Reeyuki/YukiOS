@@ -1,3 +1,17 @@
+.context-menu-glass {
+  background: rgba(20, 20, 20, 0.45);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r);
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  font-size: 14px;
+  color: var(--text-primary);
+  overflow: hidden;
+  animation: cmFadeIn 120ms ease-out;
+}
 #context-menu,
 #taskbar-context-menu,
 #taskbar-pos-menu {
@@ -6,15 +20,6 @@
   z-index: 30000;
   min-width: 160px;
   padding: 6px;
-  background: rgba(24, 24, 24, 0.95);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-  font-size: 14px;
-  color: #e6e6e6;
-  overflow: hidden;
-  animation: cmFadeIn 120ms ease-out;
 }
 
 #context-menu div,
@@ -25,7 +30,7 @@
   gap: 10px;
   padding: 10px 12px;
   cursor: pointer;
-  border-radius: 6px;
+  border-radius: var(--r-sm);
   transition:
     background 0.12s ease,
     transform 0.05s ease;
@@ -34,15 +39,15 @@
 #context-menu div:hover,
 #taskbar-context-menu .menu-item:hover,
 #taskbar-pos-menu .context-menu-item:hover {
-  background: rgba(51, 153, 255, 0.18);
-  color: #fff;
+  background: var(--glass-hover);
+  color: var(--text-primary);
 }
 
 #context-menu div:active,
 #taskbar-context-menu .menu-item:active,
 #taskbar-pos-menu .context-menu-item:active {
   transform: scale(0.97);
-  background: rgba(51, 153, 255, 0.3);
+  background: var(--glass);
 }
 
 #context-menu hr,
@@ -51,7 +56,7 @@
   margin: 6px 4px;
   border: none;
   height: 1px;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--glass-border);
 }
 
 #taskbar-context-menu .menu-item i,

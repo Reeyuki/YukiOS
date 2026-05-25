@@ -5,6 +5,33 @@ import { PersistenceTypes } from "./runtime/AppSchema.js";
 
 const NEWS_UPDATES = [
   {
+    date: "May 25, 2026",
+    sections: [
+      {
+        icon: "fa-palette",
+        title: "Theming System",
+        items: [
+          [
+            "fa-swatchbook",
+            "Theme Presets & Custom Themes",
+            "Expanded theming system with improved consistency across all themes and better custom theme support."
+          ]
+        ]
+      },
+      {
+        icon: "fa-wand-magic-sparkles",
+        title: "Features & Improvements",
+        items: [
+          [
+            "fa-up-right-and-down-left-from-center",
+            "Alt+Right-Click Window Resize",
+            "Hold Alt or Super key and right-click drag anywhere on a window to resize it quickly."
+          ]
+        ]
+      }
+    ]
+  },
+  {
     date: "May 24, 2026",
     sections: [
       {

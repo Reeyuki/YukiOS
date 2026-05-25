@@ -43,6 +43,17 @@
   --icon-h: 84px;
   --icon-img-s: 64px;
   --icon-gap: 10px;
+
+  --surface-1: oklch(18% 0.03 265 / 0.85);
+  --surface-2: oklch(22% 0.03 265 / 0.8);
+  --surface-3: oklch(26% 0.03 265 / 0.75);
+  --surface-hover: oklch(30% 0.03 265 / 0.7);
+  --text-muted: oklch(60% 0.01 265);
+  --text-on-brand: oklch(100% 0 0 / 0.98);
+  --shadow-color: oklch(0% 0 0 / 0.65);
+  --overlay-bg: oklch(0% 0 0 / 0.5);
+  --menu-bg: oklch(18% 0.03 265 / 0.95);
+  --window-bg: oklch(18% 0.03 265 / 0.92);
 }
 
 *,
@@ -113,24 +124,37 @@ body {
 
 html[data-theme="light"] {
   --window-bg-color: #f2f2f2;
-  --text-color: #111;
-  --tx1: #111;
-  --tx2: #555;
+  --text-color: #333;
+  --tx1: #333;
+  --tx2: #666;
   --brand: #0078d7;
   --bg-primary: #f4f4f4;
   --bg-secondary: #e6e6e6;
-  --text-primary: #111;
-  --text-secondary: #555;
+  --text-primary: #333;
+  --text-secondary: #666;
+  --surface-1: #e6e6e6;
+  --surface-2: #dcdcdc;
+  --surface-3: #d0d0d0;
+  --surface-hover: #c8c8c8;
+  --text-muted: #777;
+  --text-on-brand: #fff;
+  --shadow-color: rgba(0, 0, 0, 0.15);
+  --overlay-bg: rgba(0, 0, 0, 0.3);
+  --menu-bg: rgba(255, 255, 255, 0.95);
+  --window-bg: rgba(255, 255, 255, 0.92);
+  --glass: rgba(0, 0, 0, 0.04);
+  --glass-hover: rgba(0, 0, 0, 0.08);
+  --glass-border: rgba(0, 0, 0, 0.12);
 }
 
 html[data-theme="light"] .button-primary {
   background: var(--brand) !important;
-  color: #fff !important;
+  color: var(--text-on-brand) !important;
 }
 
 html[data-theme="light"] .button-secondary {
   background: #e0e0e0 !important;
-  color: #111 !important;
+  color: var(--text-primary) !important;
 }
 
 html[data-theme="light"] .scrollable::-webkit-scrollbar-thumb {
@@ -139,4 +163,1774 @@ html[data-theme="light"] .scrollable::-webkit-scrollbar-thumb {
 
 html[data-theme="light"] .scrollable::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.25) !important;
+}
+
+html[data-theme="cyber"] {
+  --brand: oklch(70% 0.25 300);
+  --brand-hover: oklch(65% 0.25 300);
+  --brand-dark: oklch(55% 0.25 300);
+  --brand-glow: oklch(70% 0.2 300 / 0.4);
+  --brand-dim: oklch(70% 0.25 300 / 0.25);
+  --bg-primary: oklch(8% 0.02 280);
+  --bg-secondary: oklch(12% 0.03 280);
+  --text-primary: oklch(95% 0.01 280);
+  --text-secondary: oklch(70% 0.02 280);
+  --glass: oklch(100% 0 0 / 0.08);
+  --glass-hover: oklch(100% 0 0 / 0.12);
+  --glass-border: oklch(70% 0.2 300 / 0.3);
+  --tx1: oklch(95% 0.01 280);
+  --tx2: oklch(70% 0.02 280);
+  --surface-1: oklch(12% 0.03 280 / 0.9);
+  --surface-2: oklch(15% 0.03 280 / 0.85);
+  --surface-3: oklch(18% 0.03 280 / 0.8);
+  --surface-hover: oklch(20% 0.03 280 / 0.75);
+  --text-muted: oklch(55% 0.02 280);
+  --text-on-brand: oklch(100% 0 0 / 0.98);
+  --shadow-color: oklch(0% 0 0 / 0.7);
+  --overlay-bg: oklch(0% 0 0 / 0.6);
+  --menu-bg: oklch(12% 0.03 280 / 0.95);
+  --window-bg: oklch(12% 0.03 280 / 0.92);
+}
+
+html[data-theme="arctic"] {
+  --brand: oklch(45% 0.12 220);
+  --brand-hover: oklch(40% 0.12 220);
+  --brand-dark: oklch(35% 0.12 220);
+  --brand-glow: oklch(45% 0.08 220 / 0.15);
+  --brand-dim: oklch(45% 0.12 220 / 0.1);
+  --bg-primary: oklch(98% 0.005 220);
+  --bg-secondary: oklch(94% 0.01 220);
+  --text-primary: oklch(25% 0.01 220);
+  --text-secondary: oklch(45% 0.01 220);
+  --glass: oklch(0% 0 0 / 0.4);
+  --glass-hover: oklch(0% 0 0 / 0.5);
+  --glass-border: oklch(0% 0 0 / 0.15);
+  --tx1: oklch(25% 0.01 220);
+  --tx2: oklch(45% 0.01 220);
+  --surface-1: oklch(94% 0.01 220 / 0.95);
+  --surface-2: oklch(90% 0.01 220 / 0.9);
+  --surface-3: oklch(86% 0.01 220 / 0.85);
+  --surface-hover: oklch(82% 0.01 220 / 0.8);
+  --text-muted: oklch(40% 0.01 220);
+  --text-on-brand: oklch(100% 0 0 / 0.98);
+  --shadow-color: oklch(0% 0 0 / 0.1);
+  --overlay-bg: oklch(0% 0 0 / 0.25);
+  --menu-bg: oklch(100% 0 0 / 0.95);
+  --window-bg: oklch(100% 0 0 / 0.92);
+}
+
+html[data-theme="crt"] {
+  --brand: oklch(65% 0.15 145);
+  --brand-hover: oklch(60% 0.15 145);
+  --brand-dark: oklch(50% 0.15 145);
+  --brand-glow: oklch(65% 0.1 145 / 0.3);
+  --brand-dim: oklch(65% 0.15 145 / 0.2);
+  --bg-primary: oklch(5% 0.02 145);
+  --bg-secondary: oklch(8% 0.03 145);
+  --text-primary: oklch(75% 0.1 145);
+  --text-secondary: oklch(55% 0.08 145);
+  --glass: oklch(75% 0.1 145 / 0.1);
+  --glass-hover: oklch(75% 0.1 145 / 0.15);
+  --glass-border: oklch(75% 0.1 145 / 0.25);
+  --tx1: oklch(75% 0.1 145);
+  --tx2: oklch(55% 0.08 145);
+  --surface-1: oklch(8% 0.03 145 / 0.9);
+  --surface-2: oklch(10% 0.03 145 / 0.85);
+  --surface-3: oklch(12% 0.03 145 / 0.8);
+  --surface-hover: oklch(14% 0.03 145 / 0.75);
+  --text-muted: oklch(45% 0.08 145);
+  --text-on-brand: oklch(5% 0.02 145);
+  --shadow-color: oklch(0% 0 0 / 0.6);
+  --overlay-bg: oklch(0% 0 0 / 0.5);
+  --menu-bg: oklch(8% 0.03 145 / 0.95);
+  --window-bg: oklch(8% 0.03 145 / 0.92);
+}
+
+html[data-theme="sakura"] {
+  --brand: oklch(60% 0.15 350);
+  --brand-hover: oklch(55% 0.15 350);
+  --brand-dark: oklch(45% 0.15 350);
+  --brand-glow: oklch(60% 0.1 350 / 0.25);
+  --brand-dim: oklch(60% 0.15 350 / 0.15);
+  --bg-primary: oklch(96% 0.02 350);
+  --bg-secondary: oklch(92% 0.03 350);
+  --text-primary: oklch(35% 0.02 350);
+  --text-secondary: oklch(50% 0.02 350);
+  --glass: oklch(60% 0.1 350 / 0.2);
+  --glass-hover: oklch(60% 0.1 350 / 0.3);
+  --glass-border: oklch(60% 0.1 350 / 0.3);
+  --tx1: oklch(35% 0.02 350);
+  --tx2: oklch(50% 0.02 350);
+  --surface-1: oklch(92% 0.03 350 / 0.9);
+  --surface-2: oklch(88% 0.03 350 / 0.85);
+  --surface-3: oklch(84% 0.03 350 / 0.8);
+  --surface-hover: oklch(80% 0.03 350 / 0.75);
+  --text-muted: oklch(45% 0.02 350);
+  --text-on-brand: oklch(100% 0 0 / 0.98);
+  --shadow-color: oklch(0% 0 0 / 0.12);
+  --overlay-bg: oklch(0% 0 0 / 0.3);
+  --menu-bg: oklch(100% 0 0 / 0.9);
+  --window-bg: oklch(100% 0 0 / 0.85);
+}
+
+html[data-theme="oled"] {
+  --brand: oklch(55% 0.11 264);
+  --brand-hover: oklch(48% 0.11 264);
+  --brand-dark: oklch(38% 0.11 264);
+  --brand-glow: oklch(55% 0.08 264 / 0.15);
+  --brand-dim: oklch(55% 0.11 264 / 0.1);
+  --bg-primary: oklch(0% 0 0);
+  --bg-secondary: oklch(3% 0.01 265);
+  --text-primary: oklch(90% 0.01 265);
+  --text-secondary: oklch(60% 0.01 265);
+  --glass: oklch(100% 0 0 / 0.03);
+  --glass-hover: oklch(100% 0 0 / 0.05);
+  --glass-border: oklch(100% 0 0 / 0.08);
+  --tx1: oklch(90% 0.01 265);
+  --tx2: oklch(60% 0.01 265);
+  --surface-1: oklch(3% 0.01 265 / 0.9);
+  --surface-2: oklch(5% 0.01 265 / 0.85);
+  --surface-3: oklch(7% 0.01 265 / 0.8);
+  --surface-hover: oklch(9% 0.01 265 / 0.75);
+  --text-muted: oklch(50% 0.01 265);
+  --text-on-brand: oklch(100% 0 0 / 0.98);
+  --shadow-color: oklch(0% 0 0 / 0.5);
+  --overlay-bg: oklch(0% 0 0 / 0.4);
+  --menu-bg: oklch(3% 0.01 265 / 0.95);
+  --window-bg: oklch(3% 0.01 265 / 0.92);
+}
+
+html[data-theme="synthwave"] {
+  --brand: oklch(65% 0.25 320);
+  --brand-hover: oklch(60% 0.25 320);
+  --brand-dark: oklch(50% 0.25 320);
+  --brand-glow: oklch(65% 0.2 320 / 0.4);
+  --brand-dim: oklch(65% 0.25 320 / 0.25);
+  --bg-primary: oklch(8% 0.05 280);
+  --bg-secondary: oklch(12% 0.08 280);
+  --text-primary: oklch(85% 0.05 320);
+  --text-secondary: oklch(65% 0.08 320);
+  --glass: oklch(65% 0.15 320 / 0.1);
+  --glass-hover: oklch(65% 0.15 320 / 0.15);
+  --glass-border: oklch(65% 0.2 320 / 0.35);
+  --tx1: oklch(85% 0.05 320);
+  --tx2: oklch(65% 0.08 320);
+  --surface-1: oklch(12% 0.08 280 / 0.9);
+  --surface-2: oklch(15% 0.1 280 / 0.85);
+  --surface-3: oklch(18% 0.12 280 / 0.8);
+  --surface-hover: oklch(20% 0.15 280 / 0.75);
+  --text-muted: oklch(50% 0.08 320);
+  --text-on-brand: oklch(100% 0 0 / 0.98);
+  --shadow-color: oklch(0% 0 0 / 0.7);
+  --overlay-bg: oklch(0% 0 0 / 0.6);
+  --menu-bg: oklch(12% 0.08 280 / 0.95);
+  --window-bg: oklch(12% 0.08 280 / 0.92);
+}
+
+html[data-theme="nordic"] {
+  --brand: oklch(40% 0.08 200);
+  --brand-hover: oklch(35% 0.08 200);
+  --brand-dark: oklch(30% 0.08 200);
+  --brand-glow: oklch(40% 0.05 200 / 0.12);
+  --brand-dim: oklch(40% 0.08 200 / 0.08);
+  --bg-primary: oklch(95% 0.005 220);
+  --bg-secondary: oklch(90% 0.01 220);
+  --text-primary: oklch(20% 0.01 220);
+  --text-secondary: oklch(40% 0.01 220);
+  --glass: oklch(0% 0 0 / 0.35);
+  --glass-hover: oklch(0% 0 0 / 0.45);
+  --glass-border: oklch(0% 0 0 / 0.12);
+  --tx1: oklch(20% 0.01 220);
+  --tx2: oklch(40% 0.01 220);
+  --surface-1: oklch(90% 0.01 220 / 0.92);
+  --surface-2: oklch(85% 0.01 220 / 0.88);
+  --surface-3: oklch(80% 0.01 220 / 0.84);
+  --surface-hover: oklch(75% 0.01 220 / 0.8);
+  --text-muted: oklch(35% 0.01 220);
+  --text-on-brand: oklch(100% 0 0 / 0.98);
+  --shadow-color: oklch(0% 0 0 / 0.08);
+  --overlay-bg: oklch(0% 0 0 / 0.2);
+  --menu-bg: oklch(100% 0 0 / 0.92);
+  --window-bg: oklch(100% 0 0 / 0.88);
+}
+
+html[data-theme="forest"] {
+  --brand: oklch(50% 0.15 145);
+  --brand-hover: oklch(45% 0.15 145);
+  --brand-dark: oklch(35% 0.15 145);
+  --brand-glow: oklch(50% 0.1 145 / 0.25);
+  --brand-dim: oklch(50% 0.15 145 / 0.15);
+  --bg-primary: oklch(12% 0.04 140);
+  --bg-secondary: oklch(18% 0.06 140);
+  --text-primary: oklch(85% 0.02 140);
+  --text-secondary: oklch(60% 0.03 140);
+  --glass: oklch(50% 0.1 145 / 0.12);
+  --glass-hover: oklch(50% 0.1 145 / 0.18);
+  --glass-border: oklch(50% 0.12 145 / 0.28);
+  --tx1: oklch(85% 0.02 140);
+  --tx2: oklch(60% 0.03 140);
+  --surface-1: oklch(18% 0.06 140 / 0.9);
+  --surface-2: oklch(22% 0.08 140 / 0.85);
+  --surface-3: oklch(26% 0.1 140 / 0.8);
+  --surface-hover: oklch(30% 0.12 140 / 0.75);
+  --text-muted: oklch(45% 0.03 140);
+  --text-on-brand: oklch(100% 0 0 / 0.98);
+  --shadow-color: oklch(0% 0 0 / 0.55);
+  --overlay-bg: oklch(0% 0 0 / 0.45);
+  --menu-bg: oklch(18% 0.06 140 / 0.95);
+  --window-bg: oklch(18% 0.06 140 / 0.92);
+}
+
+html[data-theme="high-contrast"] {
+  --brand: oklch(70% 0.25 280);
+  --brand-hover: oklch(65% 0.25 280);
+  --brand-dark: oklch(55% 0.25 280);
+  --brand-glow: oklch(70% 0.2 280 / 0.5);
+  --brand-dim: oklch(70% 0.25 280 / 0.3);
+  --bg-primary: oklch(0% 0 0);
+  --bg-secondary: oklch(5% 0 0);
+  --text-primary: oklch(100% 0 0);
+  --text-secondary: oklch(85% 0 0);
+  --glass: oklch(15% 0 0 / 0.9);
+  --glass-hover: oklch(20% 0 0 / 0.95);
+  --glass-border: oklch(100% 0 0 / 1);
+  --tx1: oklch(100% 0 0);
+  --tx2: oklch(85% 0 0);
+  --surface-1: oklch(5% 0 0 / 0.95);
+  --surface-2: oklch(10% 0 0 / 0.9);
+  --surface-3: oklch(15% 0 0 / 0.85);
+  --surface-hover: oklch(20% 0 0 / 0.8);
+  --text-muted: oklch(70% 0 0);
+  --text-on-brand: oklch(0% 0 0);
+  --shadow-color: oklch(0% 0 0 / 0.8);
+  --overlay-bg: oklch(0% 0 0 / 0.7);
+  --menu-bg: oklch(5% 0 0 / 0.98);
+  --window-bg: oklch(5% 0 0 / 0.95);
+}
+
+html[data-theme="vaporwave"] {
+  --brand: oklch(65% 0.25 330);
+  --brand-hover: oklch(60% 0.25 330);
+  --brand-dark: oklch(50% 0.25 330);
+  --brand-glow: oklch(65% 0.2 330 / 0.45);
+  --brand-dim: oklch(65% 0.25 330 / 0.28);
+  --bg-primary: oklch(10% 0.08 290);
+  --bg-secondary: oklch(15% 0.12 290);
+  --text-primary: oklch(90% 0.08 330);
+  --text-secondary: oklch(70% 0.12 330);
+  --glass: oklch(70% 0.18 330 / 0.12);
+  --glass-hover: oklch(70% 0.18 330 / 0.18);
+  --glass-border: oklch(70% 0.22 330 / 0.4);
+  --tx1: oklch(90% 0.08 330);
+  --tx2: oklch(70% 0.12 330);
+  --surface-1: oklch(15% 0.12 290 / 0.88);
+  --surface-2: oklch(20% 0.15 290 / 0.83);
+  --surface-3: oklch(25% 0.18 290 / 0.78);
+  --surface-hover: oklch(30% 0.22 290 / 0.73);
+  --text-muted: oklch(55% 0.12 330);
+  --text-on-brand: oklch(100% 0 0 / 0.98);
+  --shadow-color: oklch(0% 0 0 / 0.75);
+  --overlay-bg: oklch(0% 0 0 / 0.65);
+  --menu-bg: oklch(15% 0.12 290 / 0.93);
+  --window-bg: oklch(15% 0.12 290 / 0.9);
+}
+
+html[data-theme="gameboy"] {
+  --brand: oklch(55% 0.12 145);
+  --brand-hover: oklch(50% 0.12 145);
+  --brand-dark: oklch(40% 0.12 145);
+  --brand-glow: oklch(55% 0.08 145 / 0.25);
+  --brand-dim: oklch(55% 0.12 145 / 0.15);
+  --bg-primary: oklch(88% 0.02 145);
+  --bg-secondary: oklch(82% 0.04 145);
+  --text-primary: oklch(25% 0.08 145);
+  --text-secondary: oklch(40% 0.06 145);
+  --glass: oklch(55% 0.1 145 / 0.15);
+  --glass-hover: oklch(55% 0.1 145 / 0.22);
+  --glass-border: oklch(55% 0.12 145 / 0.3);
+  --tx1: oklch(25% 0.08 145);
+  --tx2: oklch(40% 0.06 145);
+  --surface-1: oklch(82% 0.04 145 / 0.88);
+  --surface-2: oklch(76% 0.06 145 / 0.83);
+  --surface-3: oklch(70% 0.08 145 / 0.78);
+  --surface-hover: oklch(64% 0.1 145 / 0.73);
+  --text-muted: oklch(35% 0.06 145);
+  --text-on-brand: oklch(100% 0 0 / 0.98);
+  --shadow-color: oklch(0% 0 0 / 0.2);
+  --overlay-bg: oklch(0% 0 0 / 0.15);
+  --menu-bg: oklch(82% 0.04 145 / 0.93);
+  --window-bg: oklch(82% 0.04 145 / 0.9);
+}
+html[data-theme="frutiger-aero"] {
+  --brand: oklch(72% 0.16 220);
+  --brand-hover: oklch(66% 0.18 220);
+  --brand-dark: oklch(58% 0.15 220);
+  --brand-glow: oklch(78% 0.12 220 / 0.35);
+  --brand-dim: oklch(72% 0.16 220 / 0.2);
+
+  --bg-primary: oklch(97% 0.01 210);
+  --bg-secondary: oklch(94% 0.02 210);
+
+  --text-primary: #1a1a2e;
+  --text-secondary: #3a3a5e;
+
+  --glass: oklch(100% 0 0 / 0.65);
+  --glass-hover: oklch(100% 0 0 / 0.75);
+  --glass-border: oklch(100% 0 0 / 0.85);
+
+  --tx1: #1a1a2e;
+  --tx2: #3a3a5e;
+
+  --surface-1: oklch(92% 0.04 210 / 0.92);
+  --surface-2: oklch(88% 0.06 210 / 0.88);
+  --surface-3: oklch(84% 0.08 210 / 0.84);
+  --surface-hover: oklch(80% 0.1 210 / 0.8);
+
+  --text-muted: #4a4a6e;
+  --text-on-brand: #ffffff;
+
+  --shadow-color: oklch(40% 0.08 220 / 0.25);
+
+  --overlay-bg: oklch(30% 0.02 220 / 0.4);
+
+  --menu-bg: oklch(92% 0.04 210 / 0.92);
+  --window-bg: oklch(94% 0.03 210 / 0.9);
+
+  --s1: oklch(90% 0.06 200 / 0.93);
+  --s2: oklch(86% 0.08 195 / 0.9);
+  --s3: oklch(82% 0.1 190 / 0.87);
+}
+html[data-theme="frutiger-aero"] .window,
+html[data-theme="frutiger-aero"] .context-menu,
+html[data-theme="frutiger-aero"] .taskbar {
+  backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid oklch(100% 0 0 / 0.7);
+  box-shadow:
+    0 10px 30px oklch(60% 0.08 220 / 0.18),
+    inset 0 1px 0 oklch(100% 0 0 / 0.85),
+    inset 0 -1px 0 oklch(70% 0.08 210 / 0.12);
+  color: #1a1a2e !important;
+}
+html[data-theme="frutiger-aero"] .window-header,
+html[data-theme="frutiger-aero"] .window-content {
+  color: #1a1a2e !important;
+}
+html[data-theme="frutiger-aero"] .settings-label-title,
+html[data-theme="frutiger-aero"] .settings-label-desc {
+  color: #1a1a2e !important;
+}
+html[data-theme="frutiger-aero"] .settings-btn {
+  color: #1a1a2e !important;
+}
+html[data-theme="frutiger-aero"] button {
+  color: #1a1a2e !important;
+}
+html[data-theme="frutiger-aero"] .button-primary {
+  background: linear-gradient(to bottom, oklch(88% 0.08 210), oklch(72% 0.16 220));
+  color: white !important;
+  border: 1px solid oklch(100% 0 0 / 0.6);
+  box-shadow:
+    inset 0 1px 0 oklch(100% 0 0 / 0.7),
+    0 4px 12px oklch(72% 0.16 220 / 0.3);
+}
+
+html[data-theme="frutiger-aero"] .workspace-btn {
+  background: rgba(0, 0, 0, 0.05) !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+  color: #1a1a2e !important;
+}
+
+html[data-theme="frutiger-aero"] .workspace-btn:hover {
+  background: rgba(0, 0, 0, 0.1) !important;
+  color: #1a1a2e !important;
+}
+
+html[data-theme="frutiger-aero"] .workspace-btn.active {
+  background: rgba(72, 16, 220, 0.15) !important;
+  border-color: rgba(72, 16, 220, 0.4) !important;
+  color: #1a1a2e !important;
+}
+
+html[data-theme="frutiger-aero"] .workspace-btn.workspace-add {
+  background: transparent !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+  color: #4a4a6e !important;
+}
+
+html[data-theme="frutiger-aero"] .workspace-btn.workspace-add:hover {
+  color: #1a1a2e !important;
+  background: rgba(0, 0, 0, 0.05) !important;
+}
+
+html[data-theme="frutiger-aero"] .ov-label {
+  color: #1a1a2e !important;
+  background: rgba(255, 255, 255, 0.85) !important;
+}
+
+html[data-theme="frutiger-aero"] .ov-window-header {
+  color: #1a1a2e !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+}
+
+html[data-theme="frutiger-aero"] .ov-window-body {
+  background: rgba(245, 245, 255, 0.9) !important;
+}
+
+html[data-theme="frutiger-aero"] .ov-add-ws {
+  background: rgba(0, 0, 0, 0.03) !important;
+  border: 2px dashed rgba(0, 0, 0, 0.15) !important;
+  color: #4a4a6e !important;
+}
+
+html[data-theme="frutiger-aero"] .ov-add-ws:hover {
+  background: rgba(72, 16, 220, 0.08) !important;
+  border-color: rgba(72, 16, 220, 0.3) !important;
+  color: #1a1a2e !important;
+}
+
+html[data-theme="frutiger-aero"] #audio-mixer-tray-btn {
+  color: #1a1a2e !important;
+}
+
+html[data-theme="frutiger-aero"] #audio-mixer-tray-btn:hover,
+html[data-theme="frutiger-aero"] #audio-mixer-tray-btn.active {
+  background: rgba(0, 0, 0, 0.08) !important;
+  color: #1a1a2e !important;
+}
+
+html[data-theme="frutiger-aero"] #audio-mixer-panel {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+  color: #1a1a2e !important;
+}
+
+html[data-theme="frutiger-aero"] .am-title {
+  color: #1a1a2e !important;
+}
+
+html[data-theme="frutiger-aero"] .am-close-btn {
+  color: #4a4a6e !important;
+}
+
+html[data-theme="frutiger-aero"] .am-close-btn:hover {
+  background: rgba(220, 50, 50, 0.15) !important;
+  color: #1a1a2e !important;
+}
+
+html[data-theme="frutiger-aero"] .am-app-name {
+  color: #4a4a6e !important;
+}
+
+html[data-theme="frutiger-aero"] .am-vol-label {
+  color: #4a4a6e !important;
+}
+
+html[data-theme="frutiger-aero"] .am-empty {
+  color: #5a5a7e !important;
+}
+
+html[data-theme="frutiger-aero"] .am-slider {
+  background: rgba(0, 0, 0, 0.12) !important;
+}
+
+html[data-theme="frutiger-aero"] .am-slider::-webkit-slider-thumb {
+  background: #1a1a2e !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2) !important;
+}
+
+html[data-theme="frutiger-aero"] .am-slider::-moz-range-thumb {
+  background: #1a1a2e !important;
+}
+
+html[data-theme="frutiger-aero"] .docked {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(240, 240, 255, 0.95)) !important;
+  border: 2px solid #4810dc !important;
+  box-shadow: 0 0 20px rgba(72, 16, 220, 0.25) !important;
+}
+
+html[data-theme="frutiger-aero"] .docked-btn,
+html[data-theme="frutiger-aero"] .docked a {
+  color: #1a1a2e !important;
+  background: rgba(72, 16, 220, 0.1) !important;
+}
+
+html[data-theme="frutiger-aero"] .docked-btn:hover,
+html[data-theme="frutiger-aero"] .docked a:hover {
+  background: rgba(72, 16, 220, 0.2) !important;
+  color: #1a1a2e !important;
+}
+
+html[data-theme="frutiger-aero"] .settings-btn.danger {
+  background: #ff4d4f !important;
+  color: white !important;
+}
+
+html[data-theme="frutiger-aero"] .settings-card-header[style*="color: #ff4d4f"] {
+  color: #ff4d4f !important;
+}
+
+html[data-theme="frutiger-aero"] .settings-label-title[style*="color: #ff4d4f"] {
+  color: #ff4d4f !important;
+}
+
+html[data-theme="frutiger-aero"] h2[style*="color:#fff"] {
+  color: #1a1a2e !important;
+}
+
+html[data-theme="frutiger-aero"] p[style*="color:rgba(255,255,255,0.5)"],
+html[data-theme="frutiger-aero"] p[style*="color:rgba(255,255,255,0.75)"] {
+  color: #4a4a6e !important;
+}
+
+html[data-theme="frutiger-aero"] span[style*="color:rgba(255,255,255,0.4)"] {
+  color: #5a5a7e !important;
+}
+
+html[data-theme="frutiger-aero"] .start-menu-item:hover {
+  color: #1a1a2e !important;
+}
+
+html[data-theme="frutiger-aero"] .start-menu-item:hover svg {
+  color: #1a1a2e !important;
+}
+
+html[data-theme="frutiger-aero"] .start-menu-item:hover span {
+  color: #1a1a2e !important;
+}
+
+html[data-theme="frutiger-aero"] .start-cat.active {
+  color: #1a1a2e !important;
+}
+
+html[data-theme="frutiger-aero"] .start-cat.active i {
+  color: var(--brand) !important;
+}
+
+html[data-theme="frutiger-aero"] .start-cat:hover {
+  color: #1a1a2e !important;
+}
+
+html[data-theme="frutiger-aero"] .start-item:hover {
+  color: #1a1a2e !important;
+}
+
+html[data-theme="frutiger-aero"] .start-signout-btn:hover,
+html[data-theme="frutiger-aero"] .start-lock-btn:hover {
+  color: #1a1a2e !important;
+}
+
+html[data-theme="frutiger-aero"] .user-tooltip {
+  color: #1a1a2e !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+}
+
+html[data-theme="frutiger-aero"] .settings-menu-item {
+  color: #4a4a6e !important;
+}
+
+html[data-theme="frutiger-aero"] .settings-menu-item:hover {
+  color: #1a1a2e !important;
+}
+
+html[data-theme="frutiger-aero"] .settings-menu-item.active {
+  color: #1a1a2e !important;
+}
+
+html[data-theme="frutiger-aero"] .settings-dropdown {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+}
+
+html[data-theme="frutiger-aero"] .settings-dropdown .dropdown-item {
+  color: #4a4a6e !important;
+}
+
+html[data-theme="frutiger-aero"] .settings-dropdown .dropdown-item:hover {
+  color: #1a1a2e !important;
+}
+
+html[data-theme="frutiger-aero"] .settings-label-title {
+  color: #1a1a2e !important;
+}
+
+html[data-theme="frutiger-aero"] .settings-label-desc {
+  color: #4a4a6e !important;
+}
+
+html[data-theme="frutiger-aero"] .settings-card-header {
+  color: #4a4a6e !important;
+  background: rgba(0, 0, 0, 0.02) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+html[data-theme="frutiger-aero"] .settings-input {
+  background: rgba(255, 255, 255, 0.8) !important;
+  color: #1a1a2e !important;
+  border: 1px solid rgba(0, 0, 0, 0.15) !important;
+}
+
+html[data-theme="frutiger-aero"] .settings-input::placeholder {
+  color: #5a5a7e !important;
+}
+
+html[data-theme="frutiger-aero"] .settings-btn {
+  color: #1a1a2e !important;
+  background: rgba(0, 0, 0, 0.05) !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+}
+
+html[data-theme="frutiger-aero"] .settings-btn:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.08) !important;
+  border-color: rgba(0, 0, 0, 0.18) !important;
+}
+
+html[data-theme="frutiger-aero"] .settings-btn[data-alignment].active {
+  color: white !important;
+}
+
+html[data-theme="frutiger-aero"] .settings-btn[data-alignment].active i:first-child {
+  color: white !important;
+}
+
+html[data-theme="frutiger-aero"] .settings-grid-toggle {
+  background: rgba(0, 0, 0, 0.02) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+html[data-theme="frutiger-aero"] .settings-grid-toggle span:first-child {
+  color: #4a4a6e !important;
+}
+
+html[data-theme="frutiger-aero"] .settings-grid-toggle:hover {
+  background: rgba(0, 0, 0, 0.04) !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
+}
+
+html[data-theme="frutiger-aero"] .settings-status-text {
+  color: #5a5a7e !important;
+}
+
+html[data-theme="frutiger-aero"] .settings-range-value {
+  color: #4a4a6e !important;
+}
+
+html[data-theme="frutiger-aero"] .settings-select {
+  background: rgba(255, 255, 255, 0.8) !important;
+  color: #1a1a2e !important;
+  border: 1px solid rgba(0, 0, 0, 0.15) !important;
+}
+
+html[data-theme="frutiger-aero"] .settings-select option {
+  background: #fff !important;
+  color: #1a1a2e !important;
+}
+
+html[data-theme="frutiger-aero"] .settings-category-header {
+  color: #1a1a2e !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+}
+
+html[data-theme="frutiger-aero"] .yuki-settings-sidebar {
+  background: rgba(0, 0, 0, 0.03) !important;
+  border-right: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+html[data-theme="frutiger-aero"] .yuki-settings-search input {
+  background: rgba(255, 255, 255, 0.8) !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+  color: #1a1a2e !important;
+}
+
+html[data-theme="frutiger-aero"] .yuki-settings-nav li {
+  color: #4a4a6e !important;
+}
+
+html[data-theme="frutiger-aero"] .yuki-settings-nav li:hover {
+  color: #1a1a2e !important;
+  background: rgba(0, 0, 0, 0.04) !important;
+}
+
+html[data-theme="frutiger-aero"] .yuki-settings-nav li.active {
+  color: var(--brand) !important;
+}
+
+html[data-theme="frutiger-aero"] .wp-card-name {
+  color: #1a1a2e !important;
+}
+
+html[data-theme="frutiger-aero"] .wp-card-btn {
+  color: #4a4a6e !important;
+  background: rgba(0, 0, 0, 0.05) !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+}
+
+html[data-theme="frutiger-aero"] .wp-card-btn:hover {
+  background: rgba(0, 0, 0, 0.08) !important;
+  border-color: rgba(0, 0, 0, 0.18) !important;
+  color: #1a1a2e !important;
+}
+
+html[data-theme="frutiger-aero"] .wp-preview-label {
+  color: #1a1a2e !important;
+}
+
+html[data-theme="frutiger-aero"] .wp-action-btn {
+  color: #4a4a6e !important;
+  background: rgba(0, 0, 0, 0.05) !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+}
+
+html[data-theme="frutiger-aero"] .wp-action-btn:hover {
+  background: rgba(0, 0, 0, 0.08) !important;
+  border-color: rgba(0, 0, 0, 0.18) !important;
+  color: #1a1a2e !important;
+}
+
+html[data-theme="arctic"] .settings-menu-item {
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme="arctic"] .settings-menu-item:hover {
+  color: var(--text-primary) !important;
+}
+
+html[data-theme="arctic"] .settings-menu-item.active {
+  color: var(--text-primary) !important;
+}
+
+html[data-theme="arctic"] .settings-dropdown {
+  background: var(--menu-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+
+html[data-theme="arctic"] .settings-dropdown .dropdown-item {
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme="arctic"] .settings-dropdown .dropdown-item:hover {
+  color: var(--text-primary) !important;
+}
+
+html[data-theme="arctic"] .settings-label-title {
+  color: var(--text-primary) !important;
+}
+
+html[data-theme="arctic"] .settings-label-desc {
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme="arctic"] .settings-card-header {
+  color: var(--text-secondary) !important;
+  background: var(--glass) !important;
+  border-bottom: 1px solid var(--glass-border) !important;
+}
+
+html[data-theme="arctic"] .settings-input {
+  background: var(--surface-1) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+
+html[data-theme="arctic"] .settings-input::placeholder {
+  color: var(--text-muted) !important;
+}
+
+html[data-theme="arctic"] .settings-btn {
+  color: var(--text-primary) !important;
+  background: var(--glass) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+
+html[data-theme="arctic"] .settings-btn:hover:not(:disabled) {
+  background: var(--glass-hover) !important;
+  border-color: var(--glass-border) !important;
+}
+
+html[data-theme="arctic"] .settings-btn[data-alignment].active {
+  color: var(--text-on-brand) !important;
+}
+
+html[data-theme="arctic"] .settings-btn[data-alignment].active i:first-child {
+  color: var(--text-on-brand) !important;
+}
+
+html[data-theme="arctic"] .settings-grid-toggle {
+  background: var(--glass) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+
+html[data-theme="arctic"] .settings-grid-toggle span:first-child {
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme="arctic"] .settings-grid-toggle:hover {
+  background: var(--glass-hover) !important;
+  border-color: var(--glass-border) !important;
+}
+
+html[data-theme="arctic"] .settings-status-text {
+  color: var(--text-muted) !important;
+}
+
+html[data-theme="arctic"] .settings-range-value {
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme="arctic"] .settings-select {
+  background: var(--surface-1) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+
+html[data-theme="arctic"] .settings-select option {
+  background: var(--surface-1) !important;
+  color: var(--text-primary) !important;
+}
+
+html[data-theme="arctic"] .settings-category-header {
+  color: var(--text-primary) !important;
+  border-bottom: 1px solid var(--glass-border) !important;
+}
+
+html[data-theme="arctic"] .yuki-settings-sidebar {
+  background: var(--surface-1) !important;
+  border-right: 1px solid var(--glass-border) !important;
+}
+
+html[data-theme="arctic"] .yuki-settings-search input {
+  background: var(--surface-1) !important;
+  border: 1px solid var(--glass-border) !important;
+  color: var(--text-primary) !important;
+}
+
+html[data-theme="arctic"] .yuki-settings-nav li {
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme="arctic"] .yuki-settings-nav li:hover {
+  color: var(--text-primary) !important;
+  background: var(--glass-hover) !important;
+}
+
+html[data-theme="arctic"] .yuki-settings-nav li.active {
+  color: var(--brand) !important;
+}
+
+html[data-theme="arctic"] .wp-card-name {
+  color: var(--text-primary) !important;
+}
+
+html[data-theme="arctic"] .wp-card-btn {
+  color: var(--text-secondary) !important;
+  background: var(--glass) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+
+html[data-theme="arctic"] .wp-card-btn:hover {
+  background: var(--glass-hover) !important;
+  border-color: var(--glass-border) !important;
+  color: var(--text-primary) !important;
+}
+
+html[data-theme="arctic"] .wp-preview-label {
+  color: var(--text-primary) !important;
+}
+
+html[data-theme="arctic"] .wp-action-btn {
+  color: var(--text-secondary) !important;
+  background: var(--glass) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+
+html[data-theme="arctic"] .wp-action-btn:hover {
+  background: var(--glass-hover) !important;
+  border-color: var(--glass-border) !important;
+  color: var(--text-primary) !important;
+}
+
+html[data-theme="sakura"] .settings-menu-item {
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme="sakura"] .settings-menu-item:hover {
+  color: var(--text-primary) !important;
+}
+
+html[data-theme="sakura"] .settings-menu-item.active {
+  color: var(--text-primary) !important;
+}
+
+html[data-theme="sakura"] .settings-dropdown {
+  background: var(--menu-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+
+html[data-theme="sakura"] .settings-dropdown .dropdown-item {
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme="sakura"] .settings-dropdown .dropdown-item:hover {
+  color: var(--text-primary) !important;
+}
+
+html[data-theme="sakura"] .settings-label-title {
+  color: var(--text-primary) !important;
+}
+
+html[data-theme="sakura"] .settings-label-desc {
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme="sakura"] .settings-card-header {
+  color: var(--text-secondary) !important;
+  background: var(--glass) !important;
+  border-bottom: 1px solid var(--glass-border) !important;
+}
+
+html[data-theme="sakura"] .settings-input {
+  background: var(--surface-1) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+
+html[data-theme="sakura"] .settings-input::placeholder {
+  color: var(--text-muted) !important;
+}
+
+html[data-theme="sakura"] .settings-btn {
+  color: var(--text-primary) !important;
+  background: var(--glass) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+
+html[data-theme="sakura"] .settings-btn:hover:not(:disabled) {
+  background: var(--glass-hover) !important;
+  border-color: var(--glass-border) !important;
+}
+
+html[data-theme="sakura"] .settings-btn[data-alignment].active {
+  color: var(--text-on-brand) !important;
+}
+
+html[data-theme="sakura"] .settings-btn[data-alignment].active i:first-child {
+  color: var(--text-on-brand) !important;
+}
+
+html[data-theme="sakura"] .settings-grid-toggle {
+  background: var(--glass) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+
+html[data-theme="sakura"] .settings-grid-toggle span:first-child {
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme="sakura"] .settings-grid-toggle:hover {
+  background: var(--glass-hover) !important;
+  border-color: var(--glass-border) !important;
+}
+
+html[data-theme="sakura"] .settings-status-text {
+  color: var(--text-muted) !important;
+}
+
+html[data-theme="sakura"] .settings-range-value {
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme="sakura"] .settings-select {
+  background: var(--surface-1) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+
+html[data-theme="sakura"] .settings-select option {
+  background: var(--surface-1) !important;
+  color: var(--text-primary) !important;
+}
+
+html[data-theme="sakura"] .settings-category-header {
+  color: var(--text-primary) !important;
+  border-bottom: 1px solid var(--glass-border) !important;
+}
+
+html[data-theme="sakura"] .yuki-settings-sidebar {
+  background: var(--surface-1) !important;
+  border-right: 1px solid var(--glass-border) !important;
+}
+
+html[data-theme="sakura"] .yuki-settings-search input {
+  background: var(--surface-1) !important;
+  border: 1px solid var(--glass-border) !important;
+  color: var(--text-primary) !important;
+}
+
+html[data-theme="sakura"] .yuki-settings-nav li {
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme="sakura"] .yuki-settings-nav li:hover {
+  color: var(--text-primary) !important;
+  background: var(--glass-hover) !important;
+}
+
+html[data-theme="sakura"] .yuki-settings-nav li.active {
+  color: var(--brand) !important;
+}
+
+html[data-theme="sakura"] .wp-card-name {
+  color: var(--text-primary) !important;
+}
+
+html[data-theme="sakura"] .wp-card-btn {
+  color: var(--text-secondary) !important;
+  background: var(--glass) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+
+html[data-theme="sakura"] .wp-card-btn:hover {
+  background: var(--glass-hover) !important;
+  border-color: var(--glass-border) !important;
+  color: var(--text-primary) !important;
+}
+
+html[data-theme="sakura"] .wp-preview-label {
+  color: var(--text-primary) !important;
+}
+
+html[data-theme="sakura"] .wp-action-btn {
+  color: var(--text-secondary) !important;
+  background: var(--glass) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+
+html[data-theme="sakura"] .wp-action-btn:hover {
+  background: var(--glass-hover) !important;
+  border-color: var(--glass-border) !important;
+  color: var(--text-primary) !important;
+}
+
+html[data-theme="nordic"] .settings-menu-item {
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme="nordic"] .settings-menu-item:hover {
+  color: var(--text-primary) !important;
+}
+
+html[data-theme="nordic"] .settings-menu-item.active {
+  color: var(--text-primary) !important;
+}
+
+html[data-theme="nordic"] .settings-dropdown {
+  background: var(--menu-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+
+html[data-theme="nordic"] .settings-dropdown .dropdown-item {
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme="nordic"] .settings-dropdown .dropdown-item:hover {
+  color: var(--text-primary) !important;
+}
+
+html[data-theme="nordic"] .settings-label-title {
+  color: var(--text-primary) !important;
+}
+
+html[data-theme="nordic"] .settings-label-desc {
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme="nordic"] .settings-card-header {
+  color: var(--text-secondary) !important;
+  background: var(--glass) !important;
+  border-bottom: 1px solid var(--glass-border) !important;
+}
+
+html[data-theme="nordic"] .settings-input {
+  background: var(--surface-1) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+
+html[data-theme="nordic"] .settings-input::placeholder {
+  color: var(--text-muted) !important;
+}
+
+html[data-theme="nordic"] .settings-btn {
+  color: var(--text-primary) !important;
+  background: var(--glass) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+
+html[data-theme="nordic"] .settings-btn:hover:not(:disabled) {
+  background: var(--glass-hover) !important;
+  border-color: var(--glass-border) !important;
+}
+
+html[data-theme="nordic"] .settings-btn[data-alignment].active {
+  color: var(--text-on-brand) !important;
+}
+
+html[data-theme="nordic"] .settings-btn[data-alignment].active i:first-child {
+  color: var(--text-on-brand) !important;
+}
+
+html[data-theme="nordic"] .settings-grid-toggle {
+  background: var(--glass) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+
+html[data-theme="nordic"] .settings-grid-toggle span:first-child {
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme="nordic"] .settings-grid-toggle:hover {
+  background: var(--glass-hover) !important;
+  border-color: var(--glass-border) !important;
+}
+
+html[data-theme="nordic"] .settings-status-text {
+  color: var(--text-muted) !important;
+}
+
+html[data-theme="nordic"] .settings-range-value {
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme="nordic"] .settings-select {
+  background: var(--surface-1) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+
+html[data-theme="nordic"] .settings-select option {
+  background: var(--surface-1) !important;
+  color: var(--text-primary) !important;
+}
+
+html[data-theme="nordic"] .settings-category-header {
+  color: var(--text-primary) !important;
+  border-bottom: 1px solid var(--glass-border) !important;
+}
+
+html[data-theme="nordic"] .yuki-settings-sidebar {
+  background: var(--surface-1) !important;
+  border-right: 1px solid var(--glass-border) !important;
+}
+
+html[data-theme="nordic"] .yuki-settings-search input {
+  background: var(--surface-1) !important;
+  border: 1px solid var(--glass-border) !important;
+  color: var(--text-primary) !important;
+}
+
+html[data-theme="nordic"] .yuki-settings-nav li {
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme="nordic"] .yuki-settings-nav li:hover {
+  color: var(--text-primary) !important;
+  background: var(--glass-hover) !important;
+}
+
+html[data-theme="nordic"] .yuki-settings-nav li.active {
+  color: var(--brand) !important;
+}
+
+html[data-theme="nordic"] .wp-card-name {
+  color: var(--text-primary) !important;
+}
+
+html[data-theme="nordic"] .wp-card-btn {
+  color: var(--text-secondary) !important;
+  background: var(--glass) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+
+html[data-theme="nordic"] .wp-card-btn:hover {
+  background: var(--glass-hover) !important;
+  border-color: var(--glass-border) !important;
+  color: var(--text-primary) !important;
+}
+
+html[data-theme="nordic"] .wp-preview-label {
+  color: var(--text-primary) !important;
+}
+
+html[data-theme="nordic"] .wp-action-btn {
+  color: var(--text-secondary) !important;
+  background: var(--glass) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+
+html[data-theme="nordic"] .wp-action-btn:hover {
+  background: var(--glass-hover) !important;
+  border-color: var(--glass-border) !important;
+  color: var(--text-primary) !important;
+}
+
+html[data-theme="gameboy"] .settings-menu-item {
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme="gameboy"] .settings-menu-item:hover {
+  color: var(--text-primary) !important;
+}
+
+html[data-theme="gameboy"] .settings-menu-item.active {
+  color: var(--text-primary) !important;
+}
+
+html[data-theme="gameboy"] .settings-dropdown {
+  background: var(--menu-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+
+html[data-theme="gameboy"] .settings-dropdown .dropdown-item {
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme="gameboy"] .settings-dropdown .dropdown-item:hover {
+  color: var(--text-primary) !important;
+}
+
+html[data-theme="gameboy"] .settings-label-title {
+  color: var(--text-primary) !important;
+}
+
+html[data-theme="gameboy"] .settings-label-desc {
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme="gameboy"] .settings-card-header {
+  color: var(--text-secondary) !important;
+  background: var(--glass) !important;
+  border-bottom: 1px solid var(--glass-border) !important;
+}
+
+html[data-theme="gameboy"] .settings-input {
+  background: var(--surface-1) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+
+html[data-theme="gameboy"] .settings-input::placeholder {
+  color: var(--text-muted) !important;
+}
+
+html[data-theme="gameboy"] .settings-btn {
+  color: var(--text-primary) !important;
+  background: var(--glass) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+
+html[data-theme="gameboy"] .settings-btn:hover:not(:disabled) {
+  background: var(--glass-hover) !important;
+  border-color: var(--glass-border) !important;
+}
+
+html[data-theme="gameboy"] .settings-btn[data-alignment].active {
+  color: var(--text-on-brand) !important;
+}
+
+html[data-theme="gameboy"] .settings-btn[data-alignment].active i:first-child {
+  color: var(--text-on-brand) !important;
+}
+
+html[data-theme="gameboy"] .settings-grid-toggle {
+  background: var(--glass) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+
+html[data-theme="gameboy"] .settings-grid-toggle span:first-child {
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme="gameboy"] .settings-grid-toggle:hover {
+  background: var(--glass-hover) !important;
+  border-color: var(--glass-border) !important;
+}
+
+html[data-theme="gameboy"] .settings-status-text {
+  color: var(--text-muted) !important;
+}
+
+html[data-theme="gameboy"] .settings-range-value {
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme="gameboy"] .settings-select {
+  background: var(--surface-1) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+
+html[data-theme="gameboy"] .settings-select option {
+  background: var(--surface-1) !important;
+  color: var(--text-primary) !important;
+}
+
+html[data-theme="gameboy"] .settings-category-header {
+  color: var(--text-primary) !important;
+  border-bottom: 1px solid var(--glass-border) !important;
+}
+
+html[data-theme="gameboy"] .yuki-settings-sidebar {
+  background: var(--surface-1) !important;
+  border-right: 1px solid var(--glass-border) !important;
+}
+
+html[data-theme="gameboy"] .yuki-settings-search input {
+  background: var(--surface-1) !important;
+  border: 1px solid var(--glass-border) !important;
+  color: var(--text-primary) !important;
+}
+
+html[data-theme="gameboy"] .yuki-settings-nav li {
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme="gameboy"] .yuki-settings-nav li:hover {
+  color: var(--text-primary) !important;
+  background: var(--glass-hover) !important;
+}
+
+html[data-theme="gameboy"] .yuki-settings-nav li.active {
+  color: var(--brand) !important;
+}
+
+html[data-theme="gameboy"] .wp-card-name {
+  color: var(--text-primary) !important;
+}
+
+html[data-theme="gameboy"] .wp-card-btn {
+  color: var(--text-secondary) !important;
+  background: var(--glass) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+
+html[data-theme="gameboy"] .wp-card-btn:hover {
+  background: var(--glass-hover) !important;
+  border-color: var(--glass-border) !important;
+  color: var(--text-primary) !important;
+}
+
+html[data-theme="gameboy"] .wp-preview-label {
+  color: var(--text-primary) !important;
+}
+
+html[data-theme="gameboy"] .wp-action-btn {
+  color: var(--text-secondary) !important;
+  background: var(--glass) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+
+html[data-theme="gameboy"] .wp-action-btn:hover {
+  background: var(--glass-hover) !important;
+  border-color: var(--glass-border) !important;
+  color: var(--text-primary) !important;
+}
+
+html[data-theme] .window {
+  background: var(--window-bg);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border: 1px solid var(--glass-border);
+  box-shadow:
+    0 24px 64px var(--shadow-color),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+}
+
+html[data-theme] .window-header {
+  background: var(--surface-1);
+  border-bottom: 1px solid var(--glass-border);
+  color: var(--text-primary);
+}
+
+html[data-theme] .window-content {
+  background: var(--surface-2);
+  color: var(--text-primary);
+}
+
+html[data-theme] .context-menu-glass {
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border: 1px solid var(--glass-border);
+  box-shadow:
+    0 24px 64px var(--shadow-color),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+}
+
+html[data-theme] .context-menu-item {
+  color: var(--text-primary);
+}
+
+html[data-theme] .context-menu-item:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+html[data-theme] #taskbar {
+  background: var(--surface-1);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 -4px 32px var(--shadow-color);
+  color: var(--text-primary);
+}
+
+html[data-theme] .taskbar-icon {
+  color: var(--text-primary);
+}
+
+html[data-theme] .taskbar-icon:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+html[data-theme] button {
+  background: var(--surface-2);
+  color: var(--text-primary);
+  border: 1px solid var(--glass-border);
+}
+
+html[data-theme] button:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+  border-color: var(--brand);
+}
+
+html[data-theme] .button-primary {
+  background: var(--brand);
+  color: var(--text-on-brand);
+  border: 1px solid var(--brand);
+}
+
+html[data-theme] .button-primary:hover {
+  background: var(--brand-hover);
+  color: var(--text-on-brand);
+}
+
+html[data-theme] input,
+html[data-theme] textarea,
+html[data-theme] select {
+  background: var(--surface-1);
+  color: var(--text-primary);
+  border: 1px solid var(--glass-border);
+}
+
+html[data-theme] input:focus,
+html[data-theme] textarea:focus,
+html[data-theme] select:focus {
+  background: var(--surface-2);
+  color: var(--text-primary);
+  border-color: var(--brand);
+  outline: none;
+}
+
+html[data-theme] input::placeholder,
+html[data-theme] textarea::placeholder {
+  color: var(--text-muted);
+}
+
+html[data-theme] .explorer-sidebar {
+  background: var(--surface-1);
+  border-right: 1px solid var(--glass-border);
+  color: var(--text-primary);
+}
+
+html[data-theme] .explorer-sidebar .start-item {
+  color: var(--text-secondary);
+}
+
+html[data-theme] .explorer-sidebar .start-item:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+html[data-theme] .explorer-sidebar .start-item.active {
+  background: var(--brand-dim);
+  color: var(--brand);
+}
+
+html[data-theme] .tooltip {
+  background: var(--surface-3);
+  color: var(--text-primary);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 8px 32px var(--shadow-color);
+}
+
+html[data-theme] .settings-card {
+  background: var(--surface-1);
+  border: 1px solid var(--glass-border);
+  color: var(--text-primary);
+}
+
+html[data-theme] .settings-card-header {
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--glass-border);
+}
+
+html[data-theme] .settings-label-title {
+  color: var(--text-primary);
+}
+
+html[data-theme] .settings-label-desc {
+  color: var(--text-secondary);
+}
+
+html[data-theme] .glass {
+  background: var(--glass);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border: 1px solid var(--glass-border);
+  color: var(--text-primary);
+}
+
+html[data-theme] .glass:hover {
+  background: var(--glass-hover);
+  color: var(--text-primary);
+}
+
+html[data-theme] .titlebar {
+  background: var(--surface-1);
+  border-bottom: 1px solid var(--glass-border);
+  color: var(--text-primary);
+}
+
+html[data-theme] .dropdown {
+  background: var(--menu-bg);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 8px 32px var(--shadow-color);
+  color: var(--text-primary);
+}
+
+html[data-theme] .dropdown-item {
+  color: var(--text-primary);
+}
+
+html[data-theme] .dropdown-item:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+html[data-theme] *::-webkit-scrollbar-thumb {
+  background: var(--surface-3);
+  border-radius: 6px;
+}
+
+html[data-theme] *::-webkit-scrollbar-thumb:hover {
+  background: var(--surface-hover);
+}
+
+html[data-theme] .notification {
+  background: var(--surface-1);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 8px 32px var(--shadow-color);
+  color: var(--text-primary);
+}
+
+html[data-theme] .notification-title {
+  color: var(--text-primary);
+}
+
+html[data-theme] .notification-message {
+  color: var(--text-secondary);
+}
+
+html[data-theme] .overlay-dialog {
+  background: var(--surface-1);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 24px 64px var(--shadow-color);
+  color: var(--text-primary);
+}
+
+html[data-theme] .explorer-confirmation-overlay {
+  background: var(--overlay-bg);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+html[data-theme] .desktop-icon {
+  color: var(--text-primary);
+}
+
+html[data-theme] .desktop-icon:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+html[data-theme] .desktop-icon.selected {
+  background: var(--brand-dim);
+  color: var(--brand);
+  border: 1px solid var(--brand);
+}
+
+html[data-theme] .file-item {
+  color: var(--text-primary);
+}
+
+html[data-theme] .file-item:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+html[data-theme] .file-item.selected {
+  background: var(--brand-dim);
+  color: var(--brand);
+  border: 1px solid var(--brand);
+}
+
+html[data-theme] .conflict-header {
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--glass-border);
+}
+
+html[data-theme] .conflict-title {
+  color: var(--text-primary);
+}
+
+html[data-theme] .conflict-message {
+  color: var(--text-secondary);
+}
+
+html[data-theme] .conflict-file {
+  color: var(--brand);
+}
+
+html[data-theme] .conflict-btn {
+  background: var(--surface-2);
+  color: var(--text-primary);
+  border: 1px solid var(--glass-border);
+}
+
+html[data-theme] .conflict-btn:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+  border-color: var(--brand);
+}
+
+html[data-theme] .conflict-btn-replace {
+  color: var(--error);
+}
+
+html[data-theme] .conflict-btn-keep {
+  color: var(--brand);
+}
+
+html[data-theme] .conflict-btn-skip {
+  color: var(--text-secondary);
+}
+
+html[data-theme] .conflict-footer {
+  color: var(--text-secondary);
+}
+
+html[data-theme] .login-card {
+  background: var(--surface-1);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 24px 64px var(--shadow-color);
+  color: var(--text-primary);
+}
+
+html[data-theme] .login-header h1 {
+  color: var(--text-primary);
+}
+
+html[data-theme] .login-header p {
+  color: var(--text-secondary);
+}
+
+html[data-theme] .login-input {
+  background: var(--surface-2);
+  color: var(--text-primary);
+  border: 1px solid var(--glass-border);
+}
+
+html[data-theme] .login-input:focus {
+  background: var(--surface-3);
+  color: var(--text-primary);
+  border-color: var(--brand);
+}
+
+html[data-theme] .login-input::placeholder {
+  color: var(--text-muted);
+}
+
+html[data-theme] .avatar-item {
+  border: 2px solid var(--glass-border);
+}
+
+html[data-theme] .avatar-item:hover {
+  border-color: var(--brand);
+}
+
+html[data-theme] .avatar-item.selected {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 2px var(--brand-dim);
+}
+
+html[data-theme] #lock-unlock-btn {
+  background: var(--surface-2);
+  color: var(--text-primary);
+  border: 1px solid var(--glass-border);
+}
+
+html[data-theme] #lock-unlock-btn:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+  border-color: var(--brand);
+}
+
+html[data-theme] .lock-user {
+  color: var(--text-primary);
+}
+
+html[data-theme] .lock-time {
+  color: var(--text-secondary);
+}
+
+html[data-theme] .start-menu {
+  background: var(--menu-bg);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 24px 64px var(--shadow-color);
+  color: var(--text-primary);
+}
+
+html[data-theme] .start-menu-item {
+  color: var(--text-primary);
+}
+
+html[data-theme] .start-menu-item:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+html[data-theme] .start-menu-category {
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--glass-border);
+}
+
+html[data-theme] .sidebar-icon-fa {
+  color: var(--brand);
+}
+
+html[data-theme] .explorer-sidebar .start-item:hover .sidebar-icon-fa {
+  color: var(--brand-hover);
 }

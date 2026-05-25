@@ -37,7 +37,7 @@ export class TaskbarPositionManager {
   setupContextMenu() {
     this.contextMenu = document.createElement("div");
     this.contextMenu.id = "taskbar-pos-menu";
-    this.contextMenu.className = "taskbar-context-menu";
+    this.contextMenu.className = "taskbar-context-menu context-menu-glass";
     this.contextMenu.innerHTML = `
       <div class="context-menu-item" data-position="bottom">
         <i class="fas fa-arrow-down"></i> Move to Bottom

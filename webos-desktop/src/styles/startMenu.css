@@ -345,7 +345,7 @@
   width: 1.875rem;
   height: 1.875rem;
   display: block;
-  color: white;
+  color: var(--text-primary);
 }
 
 .start-menu-item span {

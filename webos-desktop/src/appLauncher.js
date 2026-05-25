@@ -397,9 +397,18 @@ export class AppLauncher {
     this.appRuntime.registerLegacy("setupApp", this.setupApp);
   }
 
-  _tryLaunchDeclarative(appId, opts) {
+  async _tryLaunchDeclarative(appId, opts) {
     const appInstance = this.appRuntime.getLegacy(appId);
     if (!appInstance) return null;
+
+    const services = appInstance._services;
+    if (!services || !services.wm) {
+      return null;
+    }
+
+    if (services.fs && services.fs.fsReady) {
+      await services.fs.fsReady;
+    }
 
     if (typeof appInstance.getDeclarativeSchema === "function") {
       try {
@@ -534,7 +543,7 @@ export class AppLauncher {
           });
         }
       } else if (info.action) {
-        const result = this._tryLaunchDeclarative(app, appExtra);
+        const result = await this._tryLaunchDeclarative(app, appExtra);
         if (!result) {
           info.action.call(this, appExtra);
         }
