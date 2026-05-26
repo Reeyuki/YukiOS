@@ -55,7 +55,8 @@ export class AppLauncher {
     shortcutsApp,
     yukiConvertApp,
     setupApp,
-    dataEditorApp
+    dataEditorApp,
+    installedAppsApp
   ) {
     this.wm = windowManager;
     this.windowHelper = new WindowHelper(this.wm);
@@ -90,6 +91,7 @@ export class AppLauncher {
     this.yukiConvertApp = yukiConvertApp;
     this.setupApp = setupApp;
     this.dataEditorApp = dataEditorApp;
+    this.installedAppsApp = installedAppsApp;
     this.TRANSPARENCY_ALLOWED_APP_IDS = new Set(["paint", "photopea", "vscode", "liventcord"]);
 
     this.clippyPromise = initClippy();
@@ -126,6 +128,12 @@ export class AppLauncher {
         title: "Yuki Convert",
         action: () => this.yukiConvertApp.open()
       },
+      dataEditor: {
+        type: "system",
+        title: "Storage Editor",
+        action: (extra) => this.dataEditorApp.open(extra)
+      },
+
       terminal: {
         type: "system",
         title: "Terminal",
@@ -316,6 +324,14 @@ export class AppLauncher {
         title: "Setup Wizard",
         action: () => this.setupApp.open(),
         clippy: { message: "Let me walk you through setting up Yuki OS!", animation: "Pleased" }
+      },
+      installedApps: {
+        type: "system",
+        title: "Installed Apps",
+        action: () => this.installedAppsApp.open(),
+        icon: "fas fa-th-list",
+        clippy: { message: "Manage your installed applications here!", animation: "GetAttention" },
+        excludeFromInstalledApps: true
       }
     };
 
@@ -395,6 +411,7 @@ export class AppLauncher {
     this.appRuntime.registerLegacy("profileCustomizer", this.profileCustomizerApp);
     this.appRuntime.registerLegacy("yukiConvert", this.yukiConvertApp);
     this.appRuntime.registerLegacy("setupApp", this.setupApp);
+    this.appRuntime.registerLegacy("installedApps", this.installedAppsApp);
   }
 
   async _tryLaunchDeclarative(appId, opts) {
@@ -697,8 +714,13 @@ player.load("${swfPath}");
 
       const isCdnGh = isCdnHostname(window.location.hostname) && window.location.pathname.includes("/gh/");
 
-      let resolvedSource =
-        shouldBypassResolution || isCdnGh ? source : await resolveUrl(source, isCdnGhUrl(window.location.href));
+      // Skip resolution for localhost:4000 URLs to prevent double processing
+      const isLocalhostUrl = typeof source === "string" && source.includes("localhost:4000");
+
+      let resolvedSource = source;
+      if (!shouldBypassResolution && !isCdnGh && !isLocalhostUrl) {
+        resolvedSource = await resolveUrl(source, isCdnGhUrl(window.location.href));
+      }
 
       if (typeof resolvedSource === "string" && resolvedSource.includes("static/apps/azahar")) {
         const mirrors = [
@@ -721,13 +743,16 @@ player.load("${swfPath}");
           }
         }
       } else if (isCdnGh && typeof resolvedSource === "string" && resolvedSource.startsWith("/")) {
-        const repoBase = getCurrentCdnRepoBase();
-        if (repoBase) {
-          resolvedSource = `${repoBase}${resolvedSource}`;
-        } else {
-          try {
-            resolvedSource = new URL(resolvedSource, window.location.href).href;
-          } catch {}
+        // Skip CDN repo base resolution for localhost:4000 URLs
+        if (!resolvedSource.includes("localhost:4000")) {
+          const repoBase = getCurrentCdnRepoBase();
+          if (repoBase) {
+            resolvedSource = `${repoBase}${resolvedSource}`;
+          } else {
+            try {
+              resolvedSource = new URL(resolvedSource, window.location.href).href;
+            } catch {}
+          }
         }
       }
 

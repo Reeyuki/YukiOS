@@ -7,6 +7,7 @@ import { isImageFile } from "./utils.js";
 import { resolveIconUrl, resolveGhUrl } from "./shared/assetResolver.js";
 import { showDynamicContextMenu, refreshIcons } from "./shared/contextMenu.js";
 import { CDN_CONFIG } from "./shared/cdnConfig.js";
+import { getAppRegistry } from "./appRegistry.js";
 
 function getStartMenuEl() {
   return document.getElementById("start-menu") || document.querySelector(".start-menu");
@@ -66,6 +67,10 @@ export function openStartMenu({ focusSearch = false, openDefaultPage = true } = 
   el.classList.remove("closing");
   el.style.display = "flex";
   updateFavoritesUI();
+
+  if (sharedAppLauncher) {
+    populateStartMenu(sharedAppLauncher);
+  }
 
   if (openDefaultPage) {
     const catsData = localStorage.getItem(StorageKeys.startMenuCats);
@@ -262,8 +267,18 @@ export function setupStartMenu(appLauncher, sessionManager) {
 
   searchInput.addEventListener("input", (e) => {
     const q = e.target.value.toLowerCase();
+    const appRegistry = getAppRegistry();
     document.querySelectorAll(".start-item").forEach((item) => {
-      item.style.display = item.textContent.toLowerCase().includes(q) ? "" : "none";
+      const appId = item.dataset.app;
+      const isUninstalled = appRegistry.isAppUninstalled(appId);
+      const isDisabled = appRegistry.isAppDisabled(appId);
+      const matchesSearch = item.textContent.toLowerCase().includes(q);
+      const isAvailable = !isUninstalled && !isDisabled;
+      if (q === "") {
+        item.style.display = isAvailable ? "" : "none";
+      } else {
+        item.style.display = matchesSearch && isAvailable ? "" : "none";
+      }
     });
   });
 
@@ -997,7 +1012,10 @@ export function populateStartMenu(appLauncher) {
     if (pageMap[cat]) pageMap[cat].innerHTML = "";
   });
 
+  const appRegistry = getAppRegistry();
   Object.entries(appLauncher.appMap).forEach(([appName, appData]) => {
+    if (appRegistry.isAppUninstalled(appName) || appRegistry.isAppDisabled(appName)) return;
+
     const item = document.createElement("div");
     item.classList.add("start-item");
     item.dataset.app = appName;

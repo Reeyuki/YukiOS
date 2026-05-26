@@ -1155,6 +1155,8 @@ export const appMap = {
   notepad: { type: "system", title: "Notepad", icon: "static/icons/notepad.webp" },
   browserApp: { type: "system", title: "Yuki Browser", icon: "static/icons/firefox.webp" },
   terminal: { type: "system", title: "Terminal", icon: "/static/icons/terminal.webp" },
+  installedApps: { type: "system", title: "Installed Apps", icon: "fas fa-th-list" },
+  systemApps: { type: "system", title: "System Apps", icon: "fas fa-screwdriver-wrench" },
   youtube: { type: "system", title: "YouTube Utilities", icon: "/static/icons/youtube.webp" },
   cameraApp: { type: "system", title: "Camera", icon: "/static/icons/obs.webp" },
   steamApp: { type: "system", title: "Steam", icon: "static/icons/steam.webp" },

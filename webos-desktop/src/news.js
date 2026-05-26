@@ -1,9 +1,24 @@
 import { BaseApp } from "./core/BaseApp.js";
 import { StorageKeys } from "./settings.js";
-import { WindowHelper } from "./utils/WindowHelper.js";
-import { PersistenceTypes } from "./runtime/AppSchema.js";
+import { desktop } from "./desktop.js";
 
 const NEWS_UPDATES = [
+  {
+    date: "May 26, 2026",
+    sections: [
+      {
+        icon: "fa-wand-magic-sparkles",
+        title: "New App",
+        items: [
+          [
+            "fa-th-list",
+            "Installed Apps",
+            "Manage all your apps in one place. Rename, enable/disable, and uninstall apps with bulk selection support."
+          ]
+        ]
+      }
+    ]
+  },
   {
     date: "May 25, 2026",
     sections: [
@@ -428,11 +443,17 @@ export const getNewsContentSignature = () => {
 export class NewsApp extends BaseApp {
   constructor(services) {
     super(services);
-    this.windowHelper = new WindowHelper(this.wm);
-    this._declarativeApp = null;
   }
 
-  getDeclarativeSchema(opts) {
+  initNews() {
+    localStorage.setItem(StorageKeys.newsReadSignatureKey, getNewsContentSignature());
+    localStorage.setItem(StorageKeys.newsSeenKey, "true");
+    window._newsApp = this;
+  }
+
+  open() {
+    if (this._isSingletonOpen("news-yukios")) return;
+
     const updates = NEWS_UPDATES;
 
     const renderSections = (sections) =>
@@ -481,9 +502,11 @@ export class NewsApp extends BaseApp {
       .join("");
 
     const content = `
+      <div class="window-header">
+        <span>What's New</span>
+        ${this.wm.getWindowControls()}
+      </div>
       <div class="window-content" style="padding:0; height: calc(100% - 40px); overflow: hidden;">
-      
-
         <div class="news-root">
           <div class="news-hero">
             <div class="news-hero-left">
@@ -508,34 +531,15 @@ export class NewsApp extends BaseApp {
       </div>
     `;
 
-    return {
-      id: "news-yukios",
-      name: "What's New",
-      icon: "fa fa-newspaper",
-      windows: [
-        {
-          id: "news-yukios",
-          title: "What's New",
-          size: ["720px", "520px"],
-          icon: "fa fa-newspaper",
-          ui: content
-        }
-      ],
-      state: {
-        initial: {},
-        persistence: PersistenceTypes.NONE
-      },
-      onMount: "initNews"
-    };
-  }
+    const win = this.wm.createWindow("news-yukios", "What's New", "720px", "520px");
+    win.innerHTML = content;
+    desktop.appendChild(win);
+    this.wm.makeDraggable(win);
+    this.wm.makeResizable(win);
+    this.wm.setupWindowControls(win);
+    this.wm.addToTaskbar(win.id, "What's New", "fa fa-newspaper");
+    this.wm.bringToFront(win);
 
-  initNews(payload, event, element, state) {
-    localStorage.setItem(StorageKeys.newsReadSignatureKey, getNewsContentSignature());
-    localStorage.setItem(StorageKeys.newsSeenKey, "true");
-    window._newsApp = this;
-  }
-
-  open() {
-    if (this._isSingletonOpen("news-yukios")) return;
+    this.initNews();
   }
 }

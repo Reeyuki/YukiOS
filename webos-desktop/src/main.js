@@ -40,6 +40,7 @@ import { YukiConvertApp } from "./yukiConvert.js";
 import { HybridAdapter } from "./runtime/HybridAdapter.js";
 import { SetupApp } from "./setupApp.js";
 import { DataEditorApp } from "./dataEditor.js";
+import { InstalledAppsApp } from "./installedApps.js";
 import {
   resolveGhUrl,
   resolveIconUrl,
@@ -193,6 +194,9 @@ services.setupApp = setupApp;
 const dataEditorApp = new DataEditorApp(services);
 services.dataEditorApp = dataEditorApp;
 
+const installedAppsApp = new InstalledAppsApp(services);
+services.installedAppsApp = installedAppsApp;
+
 const appLauncher = new AppLauncher(
   windowManager,
   fileSystemManager,
@@ -225,12 +229,14 @@ const appLauncher = new AppLauncher(
   shortcutsApp,
   yukiConvertApp,
   setupApp,
-  dataEditorApp
+  dataEditorApp,
+  installedAppsApp
 );
 window.appLauncher = appLauncher;
 windowManager.setAppLauncher(appLauncher);
 appCreatorApp.setAppLauncher(appLauncher);
 explorerApp.setAppLauncher(appLauncher);
+installedAppsApp.setAppLauncher(appLauncher);
 const desktopUI = new DesktopUI(appLauncher, notepadApp, explorerApp, fileSystemManager);
 
 const sessionManager = new SessionManager(services);

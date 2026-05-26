@@ -7,6 +7,7 @@ import { SteamSettings } from "./steam.js";
 import { resolveGhUrl, resolveIconUrl } from "./shared/assetResolver.js";
 import { CDN_CONFIG } from "./shared/cdnConfig.js";
 import { StorageKeys } from "./settings.js";
+import { getAppRegistry } from "./appRegistry.js";
 
 export function getCdnBase() {
   return CDN_CONFIG.repos.main.base;
@@ -417,11 +418,13 @@ export class GameWindowRenderer {
 export class steamAppRenderer extends GameWindowRenderer {
   getGames() {
     if (this._gamesCache) return this._gamesCache;
+    const appRegistry = getAppRegistry();
     this._gamesCache = Object.entries(appMap)
       .filter(([id, data]) => {
         if (data.type === "system") return false;
         if (GAMES_APP_EXCLUDED.has(id)) return false;
         if (!data.icon || !data.title) return false;
+        if (appRegistry.isAppUninstalled(id) || appRegistry.isAppDisabled(id)) return false;
         return true;
       })
       .map(([id, data]) => ({ app: id, ...data }));
@@ -435,8 +438,13 @@ export class SystemAppRenderer {
   }
   getSystemApps() {
     const targetMap = this.appMap || appMap;
+    const appRegistry = getAppRegistry();
     return Object.entries(targetMap)
-      .filter(([id, data]) => data.type === "system" && data.icon && data.title)
+      .filter(([id, data]) => {
+        if (data.type !== "system" || !data.icon || !data.title) return false;
+        if (appRegistry.isAppUninstalled(id) || appRegistry.isAppDisabled(id)) return false;
+        return true;
+      })
       .map(([id, data]) => ({ app: id, ...data }));
   }
 
