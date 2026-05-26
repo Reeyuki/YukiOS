@@ -19,6 +19,11 @@ const NEWS_UPDATES = [
             "fa-th-list",
             "Installed Apps",
             "Manage all your apps in one place. Rename, enable/disable, and uninstall apps with bulk selection support."
+          ],
+          [
+            "fa-clipboard",
+            "Clipboard Manager",
+            "System-wide clipboard with history support. Access via tray icon, view history, copy items, and clear clipboard."
           ]
         ]
       },
@@ -30,7 +35,9 @@ const NEWS_UPDATES = [
             "fa-eye-slash",
             "Transparent UI Toggle",
             "Make your taskbar and start menu fully transparent with the new Transparent UI setting in the appearance options."
-          ]
+          ],
+          ["fa-bell", "Smart Notification Icons", "Notifications now automatically use app icons."],
+          ["fa-maximize", "GUI Scaling", "Adjust the scale of your user interface."]
         ]
       }
     ]

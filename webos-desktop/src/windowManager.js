@@ -492,8 +492,8 @@ export class WindowManager {
     }
   }
 
-  notify(title, message, type = "info", duration = 5000, icon = null) {
-    notify(this, title, message, type, duration, icon);
+  notify(title, message, type = "info", duration = 5000, icon = null, appSource = null) {
+    notify(this, title, message, type, duration, icon, appSource);
   }
 
   updateTransparency() {
@@ -1617,8 +1617,8 @@ export class WindowManager {
     </div>`;
   }
 
-  sendNotify(text) {
-    sendNotify(this, text);
+  sendNotify(text, appSource = null) {
+    sendNotify(this, text, appSource);
   }
 
   _isWindowPinned(winId) {

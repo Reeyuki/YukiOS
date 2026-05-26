@@ -88,5 +88,8 @@ export const BusEvents = Object.freeze({
   FILE_CHANGED: "file:changed",
   SESSION_INITIALIZED: "session:initialized",
   SYSTEM_LOCKED: "system:locked",
-  SYSTEM_UNLOCKED: "system:unlocked"
+  SYSTEM_UNLOCKED: "system:unlocked",
+  CLIPBOARD_UPDATE: "clipboard:update",
+  CLIPBOARD_READ: "clipboard:read",
+  CLIPBOARD_CLEAR: "clipboard:clear"
 });

@@ -42,6 +42,8 @@ export const APP_DESCRIPTIONS = {
   shittifyApp: "A spotify alternative",
   profileCustomizer: "Profile - Customize username, profile picture, desktop colors, and personal settings.",
   yukiOsGuide: "Yuki OS Guide - Comprehensive documentation and feature discovery hub for Yuki OS.",
+  clipboardManager:
+    "Clipboard Manager - System-wide clipboard history with tray icon support for managing copied text and data.",
   kiwiIRC: "KiwiIRC - IRC client for connecting to IRC servers and chat rooms.",
   azahar: "Azahar - Nintendo 3DS emulator for playing 3DS games in the browser.",
   paint: "Paint - Basic image editor with drawing tools, colors, and save functionality.",

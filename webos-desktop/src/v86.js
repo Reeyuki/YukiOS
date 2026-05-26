@@ -2,6 +2,7 @@ import { Achievements } from "./achievements.js";
 import { bus, BusEvents } from "./core/EventBus.js";
 import { BaseApp } from "./core/BaseApp.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
+import { AppSource } from "./AppSource.js";
 import { CDN_BASES } from "./shared/assetResolver.js";
 import { resolveIconUrl } from "./assetUrl.js";
 import { PersistenceTypes } from "./runtime/AppSchema.js";
@@ -283,7 +284,7 @@ export class V86App extends BaseApp {
     try {
       const blob = new Blob([await file.arrayBuffer()], { type: file.type || "application/octet-stream" });
       await this.fs.writeBinaryFile(IMAGES_DIR, file.name, blob, "other", resolveIconUrl("static/icons/v86.webp"));
-      this.wm.sendNotify(`Saved ${file.name} at VMs/ directory.`);
+      this.wm.sendNotify(`Saved ${file.name} at VMs/ directory.`, AppSource.V86);
       zone.innerHTML = `<i class="fa-solid fa-circle-check" style="font-size:20px;color:#4caf50;margin-bottom:8px;display:block;"></i><div style="font-size:13px;color:#bbb;">Saved!</div>`;
       await this._loadUserImages(document.querySelector("#v86-win"));
       setTimeout(() => {
@@ -425,7 +426,7 @@ export class V86App extends BaseApp {
 
       this._launchV86(displayName, config);
     } catch (e) {
-      this.wm.sendNotify(`Error loading image: ${e.message}`);
+      this.wm.sendNotify(`Error loading image: ${e.message}`, AppSource.V86);
     }
   }
 

@@ -30,6 +30,12 @@ export class AppRegistry {
     }
   }
 
+  refresh() {
+    this._disabledApps = this._loadDisabledApps();
+    this._renamedApps = this._loadRenamedApps();
+    this._uninstalledApps = this._loadUninstalledApps();
+  }
+
   _saveDisabledApps() {
     try {
       localStorage.setItem(APP_REGISTRY_DISABLED_KEY, JSON.stringify([...this._disabledApps]));

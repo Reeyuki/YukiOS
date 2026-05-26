@@ -426,7 +426,13 @@ export class InstalledAppsApp extends BaseApp {
 
     if (toggledCount > 0) {
       this._loadApps(inst);
-      this.notify("Apps Toggled", `${toggledCount} app${toggledCount !== 1 ? "s" : ""} status updated`, "success");
+      this.notify(
+        "Apps Toggled",
+        `${toggledCount} app${toggledCount !== 1 ? "s" : ""} status updated`,
+        "success",
+        5000,
+        "fas fa-toggle-on"
+      );
     }
   }
 
@@ -454,7 +460,9 @@ export class InstalledAppsApp extends BaseApp {
         this.notify(
           "Apps Uninstalled",
           `${uninstalledCount} app${uninstalledCount !== 1 ? "s" : ""} uninstalled`,
-          "success"
+          "success",
+          5000,
+          "fas fa-trash-alt"
         );
       }
     }
@@ -466,7 +474,7 @@ export class InstalledAppsApp extends BaseApp {
     if (newName !== null && newName.trim() !== "") {
       this.appRegistry.setAppName(app.id, newName.trim());
       this._loadApps(inst);
-      this.notify("App Renamed", `"${app.displayName}" is now "${newName.trim()}"`, "success");
+      this.notify("App Renamed", `"${app.displayName}" is now "${newName.trim()}"`, "success", 5000, "fas fa-edit");
     }
   }
 
@@ -478,7 +486,9 @@ export class InstalledAppsApp extends BaseApp {
       this.notify(
         `App ${action.charAt(0).toUpperCase() + action.slice(1)}d`,
         `"${app.displayName}" has been ${action}d`,
-        "success"
+        "success",
+        5000,
+        action === "enable" ? "fas fa-unlock" : "fas fa-lock"
       );
     }
   }
@@ -493,7 +503,7 @@ export class InstalledAppsApp extends BaseApp {
       const success = this.appRegistry.uninstallApp(app.id);
       if (success) {
         this._loadApps(inst);
-        this.notify("App Uninstalled", `"${app.displayName}" has been uninstalled`, "success");
+        this.notify("App Uninstalled", `"${app.displayName}" has been uninstalled`, "success", 5000, "fas fa-trash");
       }
     }
   }

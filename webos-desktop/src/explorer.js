@@ -36,6 +36,7 @@ import {
 import { Achievements } from "./achievements.js";
 import { resolveDesktopIcon } from "./shared/iconUtils.js";
 import { resolveIconUrl } from "./assetUrl.js";
+import { AppSource } from "./AppSource.js";
 
 const BINARY_OFFICE_EXTS = [".pdf", ".docx", ".xlsx", ".xls", ".pptx", ".ppt"];
 const ARCHIVE_EXTS = [".zip", ".gz", ".tgz", ".tar", ".rar", ".7z", ".bz2", ".xz"];
@@ -53,7 +54,7 @@ export class ExplorerApp extends BaseApp {
     this.desktopUI = null;
     this.open = this.open.bind(this);
     this._instances = new Map();
-    this._archiveExtractor = new ArchiveExtractor(this.fs, (msg) => this.wm.sendNotify(msg));
+    this._archiveExtractor = new ArchiveExtractor(this.fs, (msg) => this.wm.sendNotify(msg), AppSource.EXPLORER);
   }
   setBrowser(browserApp) {
     this.browserApp = browserApp;

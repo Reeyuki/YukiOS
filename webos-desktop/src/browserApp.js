@@ -4,6 +4,7 @@ import { resolveIconUrl } from "./assetUrl.js";
 import { customConfirm } from "./shared/dialogs.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
 import { StorageKeys } from "./settings.js";
+import { AppSource } from "./AppSource.js";
 
 export class BrowserApp extends BaseApp {
   static refreshIcons(node) {
@@ -391,8 +392,14 @@ export class BrowserApp extends BaseApp {
     });
 
     this.proxySelect.addEventListener("change", () => {
+      const oldProxyIndex = this.currentProxyIndex;
       this.currentProxyIndex = parseInt(this.proxySelect.value);
       this._savePrefs();
+
+      const proxyName =
+        this.currentProxyIndex === -1 ? "No proxy" : this.proxies[this.currentProxyIndex]?.label || "Unknown";
+      this.notify("Proxy Changed", `Switched to ${proxyName}`, "info", 3000);
+
       const tab = this.getActiveTab();
       if (tab && tab.url && !this.isYukiHome(tab.url)) {
         this.showLoading(true);

@@ -1,5 +1,6 @@
 import { BaseApp } from "./core/BaseApp.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
+import { AppSource } from "./AppSource.js";
 import { resolveIconUrl } from "./assetUrl.js";
 import { getLibraryUrl } from "./shared/cdnConfig.js";
 import { speak } from "./clippy.js";
@@ -41,7 +42,7 @@ export class MonacoApp extends BaseApp {
       try {
         await this.loadMonaco();
       } catch (e) {
-        this.wm.sendNotify("Failed to load Yuki Code");
+        this.wm.sendNotify("Failed to load Yuki Code", AppSource.MONACO);
         return;
       }
     }
@@ -943,7 +944,7 @@ export class MonacoApp extends BaseApp {
     if (terminalApp) {
       terminalApp.open();
     } else {
-      this.wm.sendNotify("Terminal app not found");
+      this.wm.sendNotify("Terminal app not found", AppSource.MONACO);
     }
   }
 

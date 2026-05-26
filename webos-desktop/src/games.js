@@ -439,6 +439,7 @@ export class SystemAppRenderer {
   getSystemApps() {
     const targetMap = this.appMap || appMap;
     const appRegistry = getAppRegistry();
+    appRegistry.refresh();
     return Object.entries(targetMap)
       .filter(([id, data]) => {
         if (data.type !== "system" || !data.icon || !data.title) return false;

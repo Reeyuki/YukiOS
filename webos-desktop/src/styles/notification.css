@@ -114,6 +114,14 @@
   min-width: 0;
 }
 
+.ntf-toast__source {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
 .ntf-toast__heading {
   font-size: 14px;
   font-weight: 600;
@@ -385,6 +393,14 @@
   gap: 3px;
 }
 
+.ntf-card__source {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
 .ntf-card__heading {
   font-weight: 600;
   font-size: 13px;
@@ -627,6 +643,10 @@ html[data-theme="light"] .ntf-card__glyph-wrap {
   background: rgba(0, 0, 0, 0.03);
 }
 
+html[data-theme="light"] .ntf-card__source {
+  color: rgba(0, 0, 0, 0.5);
+}
+
 html[data-theme="light"] .ntf-card__heading {
   color: #1a1a1a;
 }
@@ -669,6 +689,10 @@ html[data-theme="light"] .ntf-toast {
   box-shadow:
     0 16px 32px rgba(0, 0, 0, 0.1),
     0 0 0 1px rgba(255, 255, 255, 0.6) inset;
+}
+
+html[data-theme="light"] .ntf-toast__source {
+  color: rgba(0, 0, 0, 0.5);
 }
 
 html[data-theme="light"] .ntf-toast__heading {

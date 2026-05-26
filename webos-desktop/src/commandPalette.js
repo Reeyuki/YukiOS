@@ -3,6 +3,7 @@ import { StorageKeys } from "./StorageKeys.js";
 import { bus, BusEvents } from "./core/EventBus.js";
 import { openFileWith } from "./fileDisplay.js";
 import { resolveIconUrl } from "./shared/assetResolver.js";
+import { AppSource } from "./AppSource.js";
 
 export class CommandPalette {
   constructor(services) {
@@ -631,7 +632,14 @@ export class CommandPalette {
         execute: () => {
           SystemUtilities.setWallpaper(w.url);
           if (this.services.notificationCenter) {
-            this.services.notificationCenter.notify("Wallpaper Changed", `Background updated to ${w.name}`, "success");
+            this.services.notificationCenter.notify(
+              "Wallpaper Changed",
+              `Background updated to ${w.name}`,
+              "success",
+              5000,
+              "fas fa-image",
+              AppSource.COMMAND_PALETTE
+            );
           }
         }
       });
@@ -695,7 +703,14 @@ export class CommandPalette {
     document.documentElement.setAttribute("data-theme", effective);
     bus.emit(BusEvents.SETTINGS_CHANGED);
     if (this.services.notificationCenter) {
-      this.services.notificationCenter.notify("Theme Changed", `System appearance set to ${val}`, "success");
+      this.services.notificationCenter.notify(
+        "Theme Changed",
+        `System appearance set to ${val}`,
+        "success",
+        5000,
+        "fas fa-palette",
+        AppSource.COMMAND_PALETTE
+      );
     }
   }
 
@@ -706,7 +721,9 @@ export class CommandPalette {
       this.services.notificationCenter.notify(
         "Sound Settings",
         `System audio feedback is now ${val ? "enabled" : "disabled"}`,
-        "info"
+        "info",
+        5000,
+        "fas fa-volume-up"
       );
     }
   }
@@ -720,7 +737,10 @@ export class CommandPalette {
       this.services.notificationCenter.notify(
         "Do Not Disturb",
         `Silence state is now ${val ? "activated" : "deactivated"}`,
-        "info"
+        "info",
+        5000,
+        "fas fa-bell-slash",
+        AppSource.COMMAND_PALETTE
       );
     }
   }

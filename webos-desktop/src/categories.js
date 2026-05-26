@@ -129,7 +129,7 @@ export class CategoriesApp {
         <span>System Apps</span>
         ${wm.getWindowControls()}
       </div>
-      <div class="window-content system-apps-window" style="width:100%;height:100%;overflow:auto;padding:24px;box-sizing:border-box;background: linear-gradient(180deg, rgba(20,20,30,0.95), rgba(15,15,25,0.98));">
+      <div class="window-content system-apps-window" style="width:100%;height:100%;overflow:auto;padding:24px;box-sizing:border-box;">
         <div id="system-app-container"></div>
       </div>`;
 

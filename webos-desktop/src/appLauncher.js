@@ -57,7 +57,8 @@ export class AppLauncher {
     setupApp,
     dataEditorApp,
     installedAppsApp,
-    yukiOsGuideApp
+    yukiOsGuideApp,
+    clipboardManagerApp
   ) {
     this.wm = windowManager;
     this.windowHelper = new WindowHelper(this.wm);
@@ -94,6 +95,7 @@ export class AppLauncher {
     this.dataEditorApp = dataEditorApp;
     this.installedAppsApp = installedAppsApp;
     this.yukiOsGuideApp = yukiOsGuideApp;
+    this.clipboardManagerApp = clipboardManagerApp;
     this.TRANSPARENCY_ALLOWED_APP_IDS = new Set(["paint", "photopea", "vscode", "liventcord"]);
 
     this.clippyPromise = initClippy();
@@ -341,6 +343,12 @@ export class AppLauncher {
         action: () => this.yukiOsGuideApp.open(),
         icon: "fas fa-book-open",
         clippy: { message: "Discover what Yuki OS can do!", animation: "Pleased" }
+      },
+      clipboardManager: {
+        type: "system",
+        title: "Clipboard Manager",
+        action: (extra) => this.clipboardManagerApp.open(extra),
+        icon: "fas fa-paste"
       }
     };
 

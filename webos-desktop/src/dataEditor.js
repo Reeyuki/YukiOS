@@ -645,6 +645,7 @@ export class DataEditorApp extends BaseApp {
         showEditorStatus(`Deleted ${selectedKeys.size} cookies`, "#52c41a");
         loadCookies();
       }
+      this.notify("Storage Editor", `Deleted ${selectedKeys.size} items`, "info", 3000, "fas fa-trash");
       selectedKeys.clear();
       updateSelectedCount();
     });
@@ -675,6 +676,7 @@ export class DataEditorApp extends BaseApp {
       a.click();
       URL.revokeObjectURL(url);
       showEditorStatus(`Exported ${selectedKeys.size} items`, "#52c41a");
+      this.notify("Storage Editor", `Exported ${selectedKeys.size} items`, "success", 3000, "fas fa-download");
     });
 
     addKeyBtn.addEventListener("click", () => {

@@ -1,0 +1,375 @@
+#app-creator-win .ac-cancel-edit-btn {
+  padding: 4px 10px;
+  font-size: 11px;
+}
+
+#app-creator-win .window-content {
+  overflow-y: auto;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  height: calc(100% - 40px);
+  box-sizing: border-box;
+}
+
+.ac-pane {
+  padding: 20px 22px;
+}
+
+.ac-installed-pane {
+  border-top: 1px solid var(--glass-border);
+  padding-top: 18px;
+}
+
+#app-creator-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ac-section-title {
+  font-size: 11px;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--glass-border);
+  padding-bottom: 8px;
+  margin-bottom: 2px;
+  font-weight: 600;
+}
+
+.ac-installed-title {
+  margin-bottom: 1.1em;
+}
+
+.ac-edit-banner {
+  background: var(--brand-dim);
+  border: 1px solid var(--brand-glow);
+  border-radius: var(--r-sm);
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--brand);
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.ac-edit-banner.active {
+  display: flex;
+}
+
+.ac-label {
+  font-size: 1.1em;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+  display: block;
+  font-weight: 500;
+}
+
+.ac-input {
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--bg-secondary);
+  border: 1px solid var(--glass-border);
+  color: var(--text-primary);
+  font-size: 14px;
+  padding: 9px 1.1em;
+  border-radius: var(--r-sm);
+  outline: none;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+.ac-input:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px var(--brand-dim);
+}
+
+.ac-input::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.6;
+}
+
+.ac-icon-row {
+  display: flex;
+  gap: 1.1em;
+  align-items: center;
+}
+
+.ac-icon-preview {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--r-sm);
+  background: var(--bg-secondary);
+  border: 1px solid var(--glass-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+  font-size: 22px;
+}
+
+.ac-icon-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ac-hint {
+  font-size: 1.1em;
+  color: var(--text-secondary);
+  margin-top: -8px;
+  opacity: 0.7;
+}
+
+.ac-icon-file-input {
+  font-size: 13px;
+  color: var(--text-secondary);
+  width: 100%;
+}
+
+.ac-icon-file-input::file-selector-button {
+  margin-right: 10px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass);
+  color: var(--text-primary);
+  padding: 8px 12px;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    transform 0.05s;
+}
+
+.ac-icon-file-input::-webkit-file-upload-button {
+  margin-right: 10px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass);
+  color: var(--text-primary);
+  padding: 8px 12px;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    transform 0.05s;
+}
+
+.ac-icon-file-input::file-selector-button:hover,
+.ac-icon-file-input::-webkit-file-upload-button:hover {
+  background: var(--glass-hover);
+  border-color: var(--glass-border);
+}
+
+.ac-icon-file-input::file-selector-button:active,
+.ac-icon-file-input::-webkit-file-upload-button:active {
+  transform: translateY(1px);
+}
+
+.ac-proxy-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.ac-proxy-select {
+  max-width: 260px;
+  flex: 1 1 260px;
+}
+
+.ac-checkbox {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 13px;
+  color: var(--text-primary);
+  user-select: none;
+}
+
+.ac-checkbox input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--brand);
+}
+
+.ac-divider {
+  border: none;
+  border-top: 1px solid var(--glass-border);
+  margin: 2px 0;
+}
+
+.ac-status {
+  font-size: 13px;
+  padding: 10px 14px;
+  border-radius: var(--r-sm);
+  display: none;
+}
+
+.ac-status.success {
+  background: var(--brand-dim);
+  color: var(--brand);
+  border: 1px solid var(--brand-glow);
+  display: block;
+}
+
+.ac-status.error {
+  background: var(--brand-dim);
+  color: var(--error);
+  border: 1px solid var(--error);
+  display: block;
+}
+
+.ac-btn-row {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.ac-btn {
+  padding: 9px 18px;
+  border: none;
+  border-radius: var(--r-sm);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    transform 0.1s,
+    box-shadow 0.2s;
+}
+
+.ac-btn:active {
+  transform: scale(0.97);
+}
+
+.ac-btn-primary {
+  background: var(--brand);
+  color: var(--text-on-brand);
+  box-shadow: 0 2px 10px var(--brand-glow);
+}
+
+.ac-btn-primary:hover {
+  background: var(--brand-hover);
+  box-shadow: 0 4px 16px var(--brand-glow);
+}
+
+.ac-btn-secondary {
+  background: var(--glass);
+  color: var(--text-primary);
+  border: 1px solid var(--glass-border);
+}
+
+.ac-btn-secondary:hover {
+  background: var(--glass-hover);
+}
+
+.ac-cancel-edit-btn {
+  padding: 5px 1.1em;
+  font-size: 1.1em;
+}
+
+.ac-installed-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ac-empty {
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-align: center;
+  padding: 20px 0;
+  opacity: 0.6;
+}
+
+.ac-app-row {
+  display: flex;
+  align-items: center;
+  gap: 1.1em;
+  padding: 10px 1.1em;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-sm);
+  transition:
+    background 0.2s,
+    border-color 0.2s;
+}
+
+.ac-app-row:hover {
+  background: var(--glass-hover);
+  border-color: var(--glass-border);
+}
+
+.ac-app-row-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-sm);
+  object-fit: contain;
+  flex-shrink: 0;
+  background: var(--bg-secondary);
+}
+
+.ac-app-row-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.ac-app-row-name {
+  font-size: 14px;
+  color: var(--text-primary);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ac-app-row-url {
+  font-size: 11px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
+.ac-app-row-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.ac-row-btn {
+  padding: 5px 1.1em;
+  font-size: 1.1em;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  font-weight: 500;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
+}
+
+.ac-row-btn-edit {
+  background: var(--brand-dim);
+  color: var(--brand);
+  border-color: var(--brand-glow);
+}
+
+.ac-row-btn-edit:hover {
+  background: var(--brand-dim);
+  border-color: var(--brand);
+}
+
+.ac-row-btn-delete {
+  background: var(--brand-dim);
+  color: var(--error);
+  border-color: var(--error);
+}
+
+.ac-row-btn-delete:hover {
+  background: var(--brand-dim);
+  border-color: var(--error);
+}

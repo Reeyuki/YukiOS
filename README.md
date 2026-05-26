@@ -206,6 +206,8 @@ Storage Editor
 
 Yuki Convert
 
+Clipboard Manager
+
 Categories
 
 Weather

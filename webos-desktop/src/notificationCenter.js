@@ -1,5 +1,6 @@
 import { isImageFile } from "./utils.js";
 import { StorageKeys } from "./settings.js";
+import { appMap } from "./gamesList.js";
 
 function escapeHtml(str) {
   if (typeof str !== "string") return "";
@@ -10,6 +11,45 @@ function escapeHtml(str) {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
 }
+
+// Map AppSource enum values to appMap keys
+const APP_SOURCE_TO_APP_MAP_KEY = {
+  CommandPalette: "commandPalette",
+  "Clipboard Manager": "clipboardManager",
+  Explorer: "explorer",
+  "Yuki Convert": "yukiConvert",
+  YouTube: "youtube",
+  Setup: "setupApp",
+  "Installed Apps": "installedApps",
+  "Archive Extractor": "archiveExtractor",
+  Settings: "settingsApp",
+  Notepad: "notepad",
+  Terminal: "terminal",
+  Browser: "browserApp",
+  Calculator: "calculatorApp",
+  Calendar: "calendar",
+  Camera: "cameraApp",
+  Markdown: "markdown",
+  Office: "officeApp",
+  "Data Editor": "dataEditor",
+  "3D Model Viewer": "model3dApp",
+  "Task Manager": "taskManagerApp",
+  Achievements: "achievementsApp",
+  About: "aboutApp",
+  News: "newsApp",
+  Weather: "weatherApp",
+  Categories: "systemApps",
+  "Profile Customizer": "profileCustomizer",
+  Shortcuts: "shortcutsApp",
+  "App Creator": "appCreatorApp",
+  "Yuki OS Guide": "yukiOsGuide",
+  System: "system",
+  V86App: "v86app",
+  JsDosApp: "jsDosApp",
+  RuffleApp: "ruffleApp",
+  MonacoApp: "monaco",
+  "Evil Spotify": "shittify"
+};
 
 export class NotificationCenter {
   constructor() {
@@ -94,9 +134,25 @@ export class NotificationCenter {
     systemTray.insertBefore(notificationBtn, systemTray.lastChild);
   }
 
-  addNotification(title, message, type = "info", duration = 5000, icon = null) {
+  addNotification(title, message, type = "info", duration = 5000, icon = null, appSource = null) {
     const enabled = this._getSetting("notificationsEnabled", true);
     if (!enabled) return null;
+
+    // Auto-fallback to app icon from appMap if no icon provided
+    if (!icon && appSource) {
+      const appMapKey = APP_SOURCE_TO_APP_MAP_KEY[appSource];
+      if (appMapKey && appMap[appMapKey]) {
+        icon = appMap[appMapKey].icon;
+      } else {
+        // Fallback: search appMap by title if direct key lookup fails
+        for (const [key, app] of Object.entries(appMap)) {
+          if (app.title === appSource) {
+            icon = app.icon;
+            break;
+          }
+        }
+      }
+    }
 
     const notification = {
       id: this.notificationId++,
@@ -104,7 +160,8 @@ export class NotificationCenter {
       message,
       type,
       timestamp: new Date(),
-      icon
+      icon,
+      appSource
     };
 
     if (this.doNotDisturb) {
@@ -158,7 +215,12 @@ export class NotificationCenter {
       if (isImagePath || isDataUrl) {
         iconHtml = `<img src="${escapeHtml(notif.icon)}" class="ntf-toast__glyph" style="width:16px;height:16px;object-fit:cover;" />`;
       } else if (typeof notif.icon === "string" && notif.icon.trim().length > 0) {
-        const cls = notif.icon.startsWith("fa") ? notif.icon : `fa ${notif.icon}`;
+        let cls = notif.icon;
+        if (cls.startsWith("fa-") && !cls.startsWith("fas ") && !cls.startsWith("far ") && !cls.startsWith("fab ")) {
+          cls = `fas ${cls}`;
+        } else if (!cls.startsWith("fa")) {
+          cls = `fa ${cls}`;
+        }
         iconHtml = `<i class="${escapeHtml(cls)} ntf-toast__glyph"></i>`;
       }
     } else {
@@ -174,6 +236,7 @@ export class NotificationCenter {
     toast.innerHTML = `
       <div class="ntf-toast__glyph-wrap">${iconHtml}</div>
       <div class="ntf-toast__body">
+        ${notif.appSource ? `<div class="ntf-toast__source">${escapeHtml(notif.appSource)}</div>` : ""}
         <div class="ntf-toast__heading">${escapeHtml(notif.title)}</div>
         <div class="ntf-toast__text">${escapeHtml(notif.message ?? "")}</div>
       </div>
@@ -252,7 +315,12 @@ export class NotificationCenter {
         if (isImagePath || isDataUrl) {
           iconHtml = `<img src="${escapeHtml(notif.icon)}" class="ntf-card__glyph" />`;
         } else if (typeof notif.icon === "string" && notif.icon.trim().length > 0) {
-          const cls = notif.icon.startsWith("fa") ? notif.icon : `fa ${notif.icon}`;
+          let cls = notif.icon;
+          if (cls.startsWith("fa-") && !cls.startsWith("fas ") && !cls.startsWith("far ") && !cls.startsWith("fab ")) {
+            cls = `fas ${cls}`;
+          } else if (!cls.startsWith("fa")) {
+            cls = `fa ${cls}`;
+          }
           iconHtml = `<i class="${escapeHtml(cls)} ntf-card__glyph"></i>`;
         }
       } else {
@@ -270,6 +338,7 @@ export class NotificationCenter {
           ${iconHtml}
         </div>
         <div class="ntf-card__body">
+          ${notif.appSource ? `<div class="ntf-card__source">${escapeHtml(notif.appSource)}</div>` : ""}
           <div class="ntf-card__heading">${escapeHtml(notif.title)}</div>
           <div class="ntf-card__text">${escapeHtml(notif.message ?? "")}</div>
           <div class="ntf-card__stamp">${timestamp}</div>

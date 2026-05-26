@@ -42,6 +42,8 @@ import { SetupApp } from "./setupApp.js";
 import { DataEditorApp } from "./dataEditor.js";
 import { InstalledAppsApp } from "./installedApps.js";
 import { YukiOsGuideApp } from "./yukiOsGuide.js";
+import { ClipboardManager } from "./clipboardManager.js";
+import { ClipboardManagerApp } from "./clipboardApp.js";
 import {
   resolveGhUrl,
   resolveIconUrl,
@@ -63,12 +65,14 @@ const windowManager = new WindowManager(notificationCenter);
 import { bus } from "./core/EventBus.js";
 import { trayManager } from "./tray.js";
 trayManager.init(windowManager);
+const clipboardManager = new ClipboardManager(bus);
 
 const services = {
   notificationCenter,
   fileSystemManager,
   windowManager,
   eventBus: bus,
+  clipboardManager,
   get wm() {
     return windowManager;
   },
@@ -201,6 +205,9 @@ services.installedAppsApp = installedAppsApp;
 const yukiOsGuideApp = new YukiOsGuideApp(services);
 services.yukiOsGuideApp = yukiOsGuideApp;
 
+const clipboardManagerApp = new ClipboardManagerApp(services);
+services.clipboardManagerApp = clipboardManagerApp;
+
 const appLauncher = new AppLauncher(
   windowManager,
   fileSystemManager,
@@ -235,7 +242,8 @@ const appLauncher = new AppLauncher(
   setupApp,
   dataEditorApp,
   installedAppsApp,
-  yukiOsGuideApp
+  yukiOsGuideApp,
+  clipboardManagerApp
 );
 window.appLauncher = appLauncher;
 windowManager.setAppLauncher(appLauncher);
@@ -251,6 +259,7 @@ const commandPalette = new CommandPalette(services);
 services.commandPalette = commandPalette;
 
 async function start() {
+  await clipboardManager.init();
   await sessionManager.showLogin();
 
   document.documentElement.style.setProperty("--start-logo-url", `url("${logoImg}")`);

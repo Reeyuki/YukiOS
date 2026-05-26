@@ -26,7 +26,8 @@ class TrayManager {
     });
 
     bus.on(BusEvents.WINDOW_CLOSED, ({ winId }) => {
-      if (this._items.has(winId)) {
+      const item = this._items.get(winId);
+      if (item && !item.resident) {
         this._items.delete(winId);
         this._render();
       }

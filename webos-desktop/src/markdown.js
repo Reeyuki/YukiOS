@@ -2,6 +2,7 @@ import { decodeDataURLContent } from "./fileDisplay.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
 import { BaseApp } from "./core/BaseApp.js";
 import { PersistenceTypes } from "./runtime/AppSchema.js";
+import { AppSource } from "./AppSource.js";
 
 export class MarkdownApp extends BaseApp {
   constructor(services) {
@@ -83,7 +84,7 @@ export class MarkdownApp extends BaseApp {
             await this.loadMarked();
             this.loadMarkdownCSS();
           } catch (error) {
-            this.wm.sendNotify("Markdown renderer unavailable.");
+            this.wm.sendNotify("Markdown renderer unavailable.", AppSource.MARKDOWN);
             return;
           }
 

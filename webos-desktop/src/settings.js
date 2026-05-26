@@ -8,6 +8,7 @@ import { CDN_MIRRORS, setCdnMirror, initializeMirrors, resolveGhUrl } from "./sh
 import { appMap } from "./gamesList.js";
 import { renderWallpapersPage } from "./wallpapers.js";
 import { audioMixer } from "./audioMixer.js";
+import { AppSource } from "./AppSource.js";
 
 import { StorageKeys } from "./StorageKeys.js";
 import { YUKIOS_VERSION } from "./about.js";
@@ -65,7 +66,9 @@ export class SettingsApp extends BaseApp {
         notificationsPopAnimation: localStorage.getItem(StorageKeys.notificationsPopAnimation) !== "false",
         notificationsOverFullscreen: localStorage.getItem(StorageKeys.notificationsOverFullscreen) === "true",
         notificationsDuration: Number(localStorage.getItem(StorageKeys.notificationsDuration)) || 5,
-        transparentUI: localStorage.getItem(StorageKeys.transparentUI) === "true"
+        transparentUI: localStorage.getItem(StorageKeys.transparentUI) === "true",
+        clipboardManagerEnabled: localStorage.getItem(StorageKeys.clipboardManagerEnabled) !== "false",
+        guiScale: Number(localStorage.getItem(StorageKeys.guiScale)) || 100
       };
 
       this._applyCursor(this._settings.cursorDataUrl);
@@ -77,6 +80,7 @@ export class SettingsApp extends BaseApp {
       this._applyStartMenuCats(this._settings.startMenuCats);
       this._applyPerformanceMode(this._settings.performanceMode);
       this._applyTransparentUI(this._settings.transparentUI);
+      this._applyGuiScale(this._settings.guiScale);
       window._settings = this._settings;
 
       if (cursorFromLegacyStorage && !cursorOriginalFromStorage) {
@@ -170,8 +174,6 @@ export class SettingsApp extends BaseApp {
         </div>
 
         <div class="yuki-settings-content">
-          <span id="settingsStatus" class="settings-saved-badge-float">Saved</span>
-          
           ${this._renderSystemSettings()}
           ${this._renderDesktopSettings()}
           ${this._renderAppearanceSettings()}
@@ -583,6 +585,7 @@ export class SettingsApp extends BaseApp {
               <button class="settings-btn ${this._settings.theme === "arctic" ? "active" : ""}" data-theme-val="arctic"><i class="fas fa-snowflake"></i> Arctic</button>
               <button class="settings-btn ${this._settings.theme === "crt" ? "active" : ""}" data-theme-val="crt"><i class="fas fa-terminal"></i> CRT</button>
               <button class="settings-btn ${this._settings.theme === "sakura" ? "active" : ""}" data-theme-val="sakura"><i class="fas fa-fan"></i> Sakura</button>
+              <button class="settings-btn ${this._settings.theme === "cherry" ? "active" : ""}" data-theme-val="cherry"><i class="fas fa-heart"></i> Cherry</button>
               <button class="settings-btn ${this._settings.theme === "oled" ? "active" : ""}" data-theme-val="oled"><i class="fas fa-tv"></i> OLED</button>
               <button class="settings-btn ${this._settings.theme === "synthwave" ? "active" : ""}" data-theme-val="synthwave"><i class="fas fa-music"></i> Synthwave</button>
               <button class="settings-btn ${this._settings.theme === "nordic" ? "active" : ""}" data-theme-val="nordic"><i class="fas fa-mountain"></i> Nordic</button>
@@ -591,6 +594,18 @@ export class SettingsApp extends BaseApp {
               <button class="settings-btn ${this._settings.theme === "vaporwave" ? "active" : ""}" data-theme-val="vaporwave"><i class="fas fa-sun"></i> Vaporwave</button>
               <button class="settings-btn ${this._settings.theme === "gameboy" ? "active" : ""}" data-theme-val="gameboy"><i class="fas fa-gamepad"></i> Gameboy</button>
               <button class="settings-btn ${this._settings.theme === "frutiger-aero" ? "active" : ""}" data-theme-val="frutiger-aero"><i class="fas fa-apple-whole"></i> Frutiger Aero</button>
+              <button class="settings-btn ${this._settings.theme === "dracula" ? "active" : ""}" data-theme-val="dracula"><i class="fas fa-skull"></i> Dracula</button>
+              <button class="settings-btn ${this._settings.theme === "solarized-dark" ? "active" : ""}" data-theme-val="solarized-dark"><i class="fas fa-sun"></i> Solarized Dark</button>
+              <button class="settings-btn ${this._settings.theme === "solarized-light" ? "active" : ""}" data-theme-val="solarized-light"><i class="fas fa-cloud-sun"></i> Solarized Light</button>
+              <button class="settings-btn ${this._settings.theme === "github-light" ? "active" : ""}" data-theme-val="github-light"><i class="fab fa-github"></i> GitHub Light</button>
+              <button class="settings-btn ${this._settings.theme === "github-dark" ? "active" : ""}" data-theme-val="github-dark"><i class="fab fa-github"></i> GitHub Dark</button>
+              <button class="settings-btn ${this._settings.theme === "minimal-gray" ? "active" : ""}" data-theme-val="minimal-gray"><i class="fas fa-circle"></i> Minimal Gray</button>
+              <button class="settings-btn ${this._settings.theme === "paper" ? "active" : ""}" data-theme-val="paper"><i class="fas fa-file-alt"></i> Paper</button>
+              <button class="settings-btn ${this._settings.theme === "macos-fluent" ? "active" : ""}" data-theme-val="macos-fluent"><i class="fab fa-apple"></i> MacOS Fluent</button>
+              <button class="settings-btn ${this._settings.theme === "windows-fluent" ? "active" : ""}" data-theme-val="windows-fluent"><i class="fab fa-windows"></i> Windows Fluent</button>
+              <button class="settings-btn ${this._settings.theme === "material-you" ? "active" : ""}" data-theme-val="material-you"><i class="fas fa-palette"></i> Material You</button>
+              <button class="settings-btn ${this._settings.theme === "sepia" ? "active" : ""}" data-theme-val="sepia"><i class="fas fa-book"></i> Sepia</button>
+              <button class="settings-btn ${this._settings.theme === "warm-night" ? "active" : ""}" data-theme-val="warm-night"><i class="fas fa-moon"></i> Warm Night</button>
             </div>
           </div>
           <div class="settings-row">
@@ -621,6 +636,26 @@ export class SettingsApp extends BaseApp {
               <input type="checkbox" id="settingsTransparentUI" ${this._settings.transparentUI ? "checked" : ""}/>
               <span class="settings-track"><span class="settings-thumb"></span></span>
             </label>
+          </div>
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Clipboard Manager</span>
+              <span class="settings-label-desc">Enable system-wide clipboard history with tray icon</span>
+            </div>
+            <label class="settings-toggle">
+              <input type="checkbox" id="settingsClipboardManager" ${this._settings.clipboardManagerEnabled ? "checked" : ""}/>
+              <span class="settings-track"><span class="settings-thumb"></span></span>
+            </label>
+          </div>
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">GUI Scale</span>
+              <span class="settings-label-desc">Scale the entire interface</span>
+            </div>
+            <div class="settings-range-group">
+              <input id="settingsGuiScale" type="range" min="50" max="150" step="5" value="${this._settings.guiScale}"/>
+              <span id="settingsGuiScaleValue" class="settings-range-value">${this._settings.guiScale}%</span>
+            </div>
           </div>
         </div>
 
@@ -885,14 +920,8 @@ export class SettingsApp extends BaseApp {
   }
 
   _bindControls(win) {
-    const status = win.querySelector("#settingsStatus");
     const showStatus = (msg = "Saved") => {
-      status.textContent = msg;
-      status.style.opacity = "1";
-      clearTimeout(this._statusTimer);
-      this._statusTimer = setTimeout(() => {
-        status.style.opacity = "0";
-      }, 2200);
+      this.notify("Settings", msg, "info", 3000, "fas fa-check-circle", AppSource.SETTINGS);
     };
 
     const save = () => {
@@ -1282,6 +1311,31 @@ export class SettingsApp extends BaseApp {
         this._settings.transparentUI = enabled;
         localStorage.setItem(StorageKeys.transparentUI, String(enabled));
         this._applyTransparentUI(enabled);
+        showStatus("Saved");
+      });
+    }
+
+    const clipboardManagerToggle = win.querySelector("#settingsClipboardManager");
+    if (clipboardManagerToggle) {
+      clipboardManagerToggle.addEventListener("change", () => {
+        const enabled = clipboardManagerToggle.checked;
+        this._settings.clipboardManagerEnabled = enabled;
+        localStorage.setItem(StorageKeys.clipboardManagerEnabled, String(enabled));
+        showStatus("Saved");
+      });
+    }
+
+    const guiScaleSlider = win.querySelector("#settingsGuiScale");
+    const guiScaleValue = win.querySelector("#settingsGuiScaleValue");
+    if (guiScaleSlider) {
+      guiScaleSlider.addEventListener("input", () => {
+        if (guiScaleValue) guiScaleValue.textContent = `${guiScaleSlider.value}%`;
+      });
+      guiScaleSlider.addEventListener("change", () => {
+        const val = parseInt(guiScaleSlider.value);
+        this._settings.guiScale = val;
+        localStorage.setItem(StorageKeys.guiScale, String(val));
+        this._applyGuiScale(val);
         showStatus("Saved");
       });
     }
@@ -2053,6 +2107,15 @@ export class SettingsApp extends BaseApp {
     } else {
       document.documentElement.classList.remove("transparent-ui");
     }
+  }
+
+  _applyGuiScale(scale) {
+    const scaleValue = scale / 100;
+    document.documentElement.style.setProperty("--gui-scale", String(scaleValue));
+    document.documentElement.style.transform = `scale(${scaleValue})`;
+    document.documentElement.style.transformOrigin = "top left";
+    document.documentElement.style.width = `${100 / scaleValue}%`;
+    document.documentElement.style.height = `${100 / scaleValue}%`;
   }
 
   _applyPerformanceMode(mode) {

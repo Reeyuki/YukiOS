@@ -5,6 +5,7 @@ import { PROXIES, clampProxyIndex, buildProxyUrl } from "./proxies.js";
 import { customConfirm } from "./shared/dialogs.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
 import { PersistenceTypes } from "./runtime/AppSchema.js";
+import { AppSource } from "./AppSource.js";
 
 const AC = {
   WIN_ID: "app-creator-win",
@@ -13,7 +14,7 @@ const AC = {
   TASKBAR_ICON: "fas fa-cubes",
   FALLBACK_ICON: "fas fa-window-maximize",
   WIN_WIDTH: "560px",
-  WIN_HEIGHT: "620px"
+  WIN_HEIGHT: "680px"
 };
 
 function resolvedIcon(iconUrl) {
@@ -776,7 +777,7 @@ export class AppCreatorApp extends BaseApp {
     const meta = await this._loadAppMeta(appId);
     if (!meta) {
       this._showStatus(statusEl, "error", "Could not find app to edit.");
-      this.wm.sendNotify(`Failed to update "${name}": app not found.`);
+      this.wm.sendNotify(`Failed to update "${name}": app not found.`, AppSource.APP_CREATOR);
       return;
     }
 
@@ -829,7 +830,7 @@ export class AppCreatorApp extends BaseApp {
       await this.fs.deleteItem(AC.FS_FOLDER, meta._fileName);
     } catch (e) {
       console.warn("AppCreator: fs delete failed", e);
-      this.wm.sendNotify(`Failed to delete "${meta.name}" from filesystem.`);
+      this.wm.sendNotify(`Failed to delete "${meta.name}" from filesystem.`, AppSource.APP_CREATOR);
     }
 
     delete this.appLauncher?.appMap?.[appId];

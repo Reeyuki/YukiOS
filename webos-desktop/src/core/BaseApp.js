@@ -1,4 +1,5 @@
 import { trayManager } from "../tray.js";
+import { AppSource } from "../AppSource.js";
 
 export class BaseApp {
   constructor(services = {}) {
@@ -35,9 +36,72 @@ export class BaseApp {
     return false;
   }
 
-  notify(title, message = "", type = "info", duration = 5000, icon = null) {
+  notify(title, message = "", type = "info", duration = 5000, icon = null, appSource = null) {
     if (this.wm?.notify) {
-      this.wm.notify(title, message, type, duration, icon);
+      const source = appSource || this._getAppSource();
+      this.wm.notify(title, message, type, duration, icon, source);
+    }
+  }
+
+  _getAppSource() {
+    const className = this.constructor.name;
+    switch (className) {
+      case "ClipboardManagerApp":
+        return AppSource.CLIPBOARD_MANAGER;
+      case "ExplorerApp":
+        return AppSource.EXPLORER;
+      case "YukiConvertApp":
+        return AppSource.YUKI_CONVERT;
+      case "YouTubeApp":
+        return AppSource.YOUTUBE;
+      case "SetupApp":
+        return AppSource.SETUP;
+      case "InstalledAppsApp":
+        return AppSource.INSTALLED_APPS;
+      case "SettingsApp":
+        return AppSource.SETTINGS;
+      case "NotepadApp":
+        return AppSource.NOTEPAD;
+      case "TerminalApp":
+        return AppSource.TERMINAL;
+      case "BrowserApp":
+        return AppSource.BROWSER;
+      case "CalculatorApp":
+        return AppSource.CALCULATOR;
+      case "CalendarApp":
+        return AppSource.CALENDAR;
+      case "CameraApp":
+        return AppSource.CAMERA;
+      case "MarkdownApp":
+        return AppSource.MARKDOWN;
+      case "OfficeAppProxy":
+        return AppSource.OFFICE;
+      case "DataEditorApp":
+        return AppSource.DATA_EDITOR;
+      case "Model3DApp":
+        return AppSource.MODEL_3D;
+      case "TaskManagerApp":
+        return AppSource.TASK_MANAGER;
+      case "AchievementsApp":
+        return AppSource.ACHIEVEMENTS;
+      case "AboutApp":
+        return AppSource.ABOUT;
+      case "NewsApp":
+        return AppSource.NEWS;
+      case "WeatherApp":
+        return AppSource.WEATHER;
+      case "CategoriesApp":
+        return AppSource.CATEGORIES;
+      case "ProfileCustomizerApp":
+        return AppSource.PROFILE_CUSTOMIZER;
+      case "ShortcutsApp":
+        return AppSource.SHORTCUTS;
+      case "AppCreatorApp":
+        return AppSource.APP_CREATOR;
+      case "YukiOsGuideApp":
+        return AppSource.YUKI_OS_GUIDE;
+      default:
+        return AppSource.SYSTEM;
     }
   }
 

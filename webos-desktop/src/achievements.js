@@ -98,7 +98,6 @@ export class AchievementsApp extends BaseApp {
             <div class="achievements-hero__bg"></div>
             <div class="achievements-hero__content">
               <div class="achievements-hero__icon-wrapper">
-                <div class="achievements-hero__icon-glow"></div>
                 <i class="fas fa-trophy achievements-hero__icon"></i>
               </div>
               <h1 class="achievements-hero__title">Achievements</h1>
@@ -398,7 +397,6 @@ export class AchievementsApp extends BaseApp {
       <div class="achievements-hero__bg"></div>
       <div class="achievements-hero__content">
         <div class="achievements-hero__icon-wrapper">
-          <div class="achievements-hero__icon-glow"></div>
           <i class="fas fa-trophy achievements-hero__icon"></i>
         </div>
         <h1 class="achievements-hero__title">Achievements</h1>

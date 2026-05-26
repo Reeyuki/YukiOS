@@ -19,7 +19,7 @@ Yuki OS uses a dark glassmorphism theme. All rules below are non-negotiable.
 - **Color Hue**: All colors use unified hue 265 (purple). Never mix in gray or blue hues.
 - **Glassmorphism**: `backdrop-filter: blur(32px+)`, semi-transparent `rgba` backgrounds (0.6–0.98 opacity), subtle borders (`rgba(255,255,255,0.08–0.12)`).
 - **Depth**: Multi-layer box shadows — `0 24px 64px rgba(0,0,0,0.65)` + inset highlight.
-- **Typography**: System fonts or JetBrains Mono for code. 11–14px base. Opacity 0.7–0.9 for secondary text.
+- **Typography**: System fonts or JetBrains Mono for code. 13–16px base (minimum 12px for any readable text). Opacity 0.7–0.9 for secondary text. Never use font-size below 12px for user-facing content unless absolutely necessary (e.g., badges, timestamps).
 - **Radius**: 6–14px depending on element size.
 - **Transitions**: 0.1–0.2s for hover states.
 - **Light Theme**: Override via `html[data-theme="light"]` with solid colors (`#fff`, `#f0f0f0`, `#111`, `#666`).

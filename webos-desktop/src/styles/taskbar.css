@@ -559,8 +559,8 @@ html[data-theme="light"] .task-item-name {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   padding: 0;
   border-radius: 4px;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -583,6 +583,10 @@ html[data-theme="light"] .task-item-name {
 .tray-icon-btn i,
 .tray-overflow-btn i {
   font-size: 14px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .tray-overflow-btn {

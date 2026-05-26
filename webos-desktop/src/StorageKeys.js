@@ -77,5 +77,9 @@ export const StorageKeys = {
   windowMinimizeAnimation: "yukiOS_window_minimize_animation",
   windowAnimationSpeed: "yukiOS_window_animation_speed",
   clickBubbleFeedback: "yukiOS_click_bubble_feedback",
-  transparentUI: "yukiOS_transparent_ui"
+  transparentUI: "yukiOS_transparent_ui",
+  clipboardManagerEnabled: "yukiOS_clipboard_manager_enabled",
+  clipboardCurrent: "yukiOS_clipboard_current",
+  clipboardHistory: "yukiOS_clipboard_history",
+  guiScale: "yukiOS_gui_scale"
 };

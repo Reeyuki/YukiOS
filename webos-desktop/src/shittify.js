@@ -85,6 +85,10 @@ export class ShittifyApp extends BaseApp {
     this._winId = "shittify-window";
   }
 
+  _getAppSource() {
+    return "Evil Spotify";
+  }
+
   async open() {
     const winId = this._winId;
 
@@ -97,6 +101,8 @@ export class ShittifyApp extends BaseApp {
       }
       return;
     }
+
+    this.notify("Evil Spotify", "Opening music player...", "info", 3000);
 
     const resolvedUrl = resolveGhUrl(SHITTIFY_CDN_URL);
 
@@ -144,6 +150,7 @@ export class ShittifyApp extends BaseApp {
         this._iframe = content.querySelector("iframe");
       }
     } catch (err) {
+      this.notify("Evil Spotify", `Failed to load: ${err.message}`, "error", 5000);
       const content = win.querySelector(".window-content");
       if (content) {
         content.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;flex-direction:column;gap:12px;opacity:0.6;"><i class="fas fa-exclamation-circle" style="font-size:2em;"></i><span>Failed to load Evil Spotify</span><span style="font-size:0.75em;opacity:0.6;">${err.message}</span></div>`;
@@ -183,6 +190,7 @@ export class ShittifyApp extends BaseApp {
     this._iframe = null;
     audioMixer.unregisterWindow(winId);
     this.unregisterTray(winId);
+    this.notify("Evil Spotify", "Music player closed", "info", 3000);
   }
 
   loadContent() {

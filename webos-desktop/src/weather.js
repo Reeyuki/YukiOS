@@ -367,6 +367,7 @@ export class WeatherApp extends BaseApp {
       this.renderWeather(container, data);
     } catch (e) {
       this.renderError(container, e.message || "Failed to load weather.");
+      this.notify("Weather", `City not found: ${city}`, "error", 4000, "fas fa-search");
     }
   }
 

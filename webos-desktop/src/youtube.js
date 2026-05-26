@@ -971,7 +971,13 @@ export class YouTubeApp extends BaseApp {
         faIcon: "fab fa-youtube"
       });
       this._setStatus(`Desktop entry "${fileName}" created.`);
-      this.notify("Desktop Entry Created", `${name} has been added to your desktop.`);
+      this.notify(
+        "Desktop Entry Created",
+        `${name} has been added to your desktop.`,
+        "success",
+        5000,
+        "fab fa-youtube"
+      );
     } catch (e) {
       console.error("Failed to create desktop entry:", e);
       this._setStatus("Failed to create desktop entry.", { warn: true });

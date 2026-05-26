@@ -24,19 +24,28 @@ async function get7zip() {
   return _7zipModule;
 }
 
+import { AppSource } from "./AppSource.js";
+
 export class ArchiveExtractor {
-  constructor(fs, notify) {
+  constructor(fs, notify, appSource = AppSource.ARCHIVE_EXTRACTOR) {
     this.fs = fs;
     this.notify = notify;
+    this.appSource = appSource;
   }
 
   async extract(itemName, currentPath, onComplete) {
     const lower = itemName.toLowerCase();
-    this.notify(`Extracting "${itemName}"...`);
+    this.notify(`Extracting "${itemName}"...`, "info", 5000, null, this.appSource);
     try {
       const blob = await this.fs.readBinaryFile(currentPath, itemName);
       if (!blob) {
-        this.notify(`Could not read "${itemName}" — was it uploaded as a binary file?`);
+        this.notify(
+          `Could not read "${itemName}" — was it uploaded as a binary file?`,
+          "error",
+          5000,
+          "fas fa-exclamation-triangle",
+          this.appSource
+        );
         return;
       }
       const bytes = new Uint8Array(await blob.arrayBuffer());
@@ -62,14 +71,26 @@ export class ArchiveExtractor {
       } else if (lower.endsWith(".7z")) {
         await this._extract7z(toOwnedBytes(bytes), destPath);
       } else {
-        this.notify(`Format not supported in browser: ${itemName}\nSupported: ZIP, GZ, TAR, TAR.GZ, TGZ, TAR.XZ, 7Z`);
+        this.notify(
+          `Format not supported in browser: ${itemName}\nSupported: ZIP, GZ, TAR, TAR.GZ, TGZ, TAR.XZ, 7Z`,
+          "error",
+          5000,
+          "fas fa-file-excel",
+          this.appSource
+        );
         return;
       }
-      this.notify(`Extracted to "${baseName}/"`);
+      this.notify(`Extracted to "${baseName}/"`, "success", 5000, null, this.appSource);
       if (onComplete) await onComplete();
     } catch (err) {
       console.error("Extraction error:", err);
-      this.notify(`Failed to extract "${itemName}": ${err.message || err}`);
+      this.notify(
+        `Failed to extract "${itemName}": ${err.message || err}`,
+        "error",
+        5000,
+        "fas fa-times-circle",
+        this.appSource
+      );
     }
   }
 

@@ -3,6 +3,7 @@ import { StorageKeys } from "./StorageKeys.js";
 import { resolveIconUrl, resolveWallpaperUrl } from "./shared/assetResolver.js";
 import { SystemUtilities } from "./system.js";
 import { Achievements } from "./achievements.js";
+import { AppSource } from "./AppSource.js";
 
 export const FEATURE_DATA = {
   step2: [
@@ -434,6 +435,48 @@ export class SetupApp extends BaseApp {
   }
 
   _buildStep4() {
+    const themes = [
+      { value: "dark", icon: "fas fa-moon", label: "Dark" },
+      { value: "light", icon: "fas fa-sun", label: "Light" },
+      { value: "auto", icon: "fas fa-circle-half-stroke", label: "Auto" },
+      { value: "cyber", icon: "fas fa-bolt", label: "Cyber" },
+      { value: "arctic", icon: "fas fa-snowflake", label: "Arctic" },
+      { value: "crt", icon: "fas fa-terminal", label: "CRT" },
+      { value: "sakura", icon: "fas fa-fan", label: "Sakura" },
+      { value: "cherry", icon: "fas fa-heart", label: "Cherry" },
+      { value: "oled", icon: "fas fa-tv", label: "OLED" },
+      { value: "synthwave", icon: "fas fa-music", label: "Synthwave" },
+      { value: "nordic", icon: "fas fa-mountain", label: "Nordic" },
+      { value: "forest", icon: "fas fa-tree", label: "Forest" },
+      { value: "high-contrast", icon: "fas fa-adjust", label: "High Contrast" },
+      { value: "vaporwave", icon: "fas fa-sun", label: "Vaporwave" },
+      { value: "gameboy", icon: "fas fa-gamepad", label: "Gameboy" },
+      { value: "frutiger-aero", icon: "fas fa-apple-whole", label: "Frutiger Aero" },
+      { value: "dracula", icon: "fas fa-skull", label: "Dracula" },
+      { value: "solarized-dark", icon: "fas fa-sun", label: "Solarized Dark" },
+      { value: "solarized-light", icon: "fas fa-cloud-sun", label: "Solarized Light" },
+      { value: "github-light", icon: "fab fa-github", label: "GitHub Light" },
+      { value: "github-dark", icon: "fab fa-github", label: "GitHub Dark" },
+      { value: "minimal-gray", icon: "fas fa-circle", label: "Minimal Gray" },
+      { value: "paper", icon: "fas fa-file-alt", label: "Paper" },
+      { value: "macos-fluent", icon: "fab fa-apple", label: "MacOS Fluent" },
+      { value: "windows-fluent", icon: "fab fa-windows", label: "Windows Fluent" },
+      { value: "material-you", icon: "fas fa-palette", label: "Material You" },
+      { value: "sepia", icon: "fas fa-book", label: "Sepia" },
+      { value: "warm-night", icon: "fas fa-moon", label: "Warm Night" }
+    ];
+
+    const themeButtons = themes
+      .map(
+        (theme) => `
+        <button class="theme-btn ${this.userChoices.theme === theme.value ? "active" : ""}" data-theme="${theme.value}">
+          <i class="${theme.icon}"></i>
+          <span>${theme.label}</span>
+        </button>
+      `
+      )
+      .join("");
+
     return `
       <div class="setup-step" data-step="5">
         <h2 class="step-title">
@@ -442,19 +485,8 @@ export class SetupApp extends BaseApp {
 
         <div class="personalize-section">
           <label class="section-label">Choose Theme</label>
-          <div class="theme-selector">
-            <button class="theme-btn ${this.userChoices.theme === "dark" ? "active" : ""}" data-theme="dark">
-              <i class="fas fa-moon"></i>
-              <span>Dark</span>
-            </button>
-            <button class="theme-btn ${this.userChoices.theme === "light" ? "active" : ""}" data-theme="light">
-              <i class="fas fa-sun"></i>
-              <span>Light</span>
-            </button>
-            <button class="theme-btn ${this.userChoices.theme === "auto" ? "active" : ""}" data-theme="auto">
-              <i class="fas fa-circle-half-stroke"></i>
-              <span>Auto</span>
-            </button>
+          <div class="theme-selector" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+            ${themeButtons}
           </div>
         </div>
 
@@ -912,8 +944,9 @@ export class SetupApp extends BaseApp {
   }
 
   _applyTheme(theme) {
-    localStorage.setItem(StorageKeys.theme, theme);
-    this.bus.emit("SETTINGS_CHANGED", { theme });
+    const prefersDark = window.matchMedia?.("(prefers-color-scheme: dark)").matches ?? true;
+    const effective = theme === "auto" ? (prefersDark ? "dark" : "light") : theme;
+    document.documentElement.setAttribute("data-theme", effective);
   }
 
   async _completeSetup(win) {
@@ -978,7 +1011,8 @@ Enjoy exploring Yuki OS!`;
       "Setup complete. Click Start Menu to begin exploring!",
       "success",
       8000,
-      "fas fa-rocket"
+      "fas fa-rocket",
+      AppSource.SETUP
     );
 
     win.style.transition = "opacity 0.5s, transform 0.5s";

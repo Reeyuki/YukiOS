@@ -3,6 +3,7 @@ import { bus, BusEvents } from "./core/EventBus.js";
 import { desktop } from "./desktop.js";
 import { zipSync } from "fflate";
 import { BaseApp } from "./core/BaseApp.js";
+import { AppSource } from "./AppSource.js";
 
 const GAMES_DIR = ["Games"];
 
@@ -277,7 +278,7 @@ export class JsDosApp extends BaseApp {
       const bundleBlob = new Blob([arrayBuffer], { type: "application/zip" });
       bundleUrl = URL.createObjectURL(bundleBlob);
 
-      wm.sendNotify(`Saved ${fileName} jsdos game at Games/ directory. `);
+      wm.sendNotify(`Saved ${fileName} jsdos game at Games/ directory. `, AppSource.JSDOS);
       setLog("Launching…");
 
       const iframeHTML = this._buildIframeHTML(bundleUrl);

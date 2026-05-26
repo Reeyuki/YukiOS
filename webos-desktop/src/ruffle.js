@@ -2,6 +2,7 @@ import { Achievements } from "./achievements.js";
 import { bus, BusEvents } from "./core/EventBus.js";
 import { BaseApp } from "./core/BaseApp.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
+import { AppSource } from "./AppSource.js";
 import { CDN_BASES } from "./shared/assetResolver.js";
 import { CDN_CONFIG, getLibraryUrl } from "./shared/cdnConfig.js";
 import { PersistenceTypes } from "./runtime/AppSchema.js";
@@ -379,7 +380,7 @@ export class RuffleApp extends BaseApp {
 
   async launchFromFile(file) {
     if (!file.name.toLowerCase().endsWith(".swf")) {
-      this.wm.sendNotify("Ruffle only supports .swf files.");
+      this.wm.sendNotify("Ruffle only supports .swf files.", AppSource.RUFFLE);
       return;
     }
     const arrayBuffer = await file.arrayBuffer();

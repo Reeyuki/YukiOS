@@ -77,25 +77,26 @@ export class YukiConvertApp extends BaseApp {
         persistence: PersistenceTypes.NONE
       },
       actions: {
-        selectLocalFiles: (payload, event, element, state) => {
+        selectLocalFiles(payload, event, element, state) {
           const fileInput = document.getElementById("yuki-convert-file-input");
           if (fileInput) fileInput.click();
         },
-        browseYukiOS: (payload, event, element, state) => {
+        browseYukiOS(payload, event, element, state) {
           const win = document.querySelector("#yuki-convert");
           if (win) {
             const closeBtn = win.querySelector(".close-btn");
             if (closeBtn) closeBtn.click();
           }
           this._services.appLauncher.launch("explorer");
-          this._services.notificationCenter.notify(
+          this.notify(
             "Yuki Convert",
             "Select one or more files, right-click, and choose 'Convert / Transform...'",
             "info",
-            5000
+            5000,
+            "fas fa-exchange-alt"
           );
         },
-        handleFileInput: async (payload, event, element, state) => {
+        async handleFileInput(payload, event, element, state) {
           const files = Array.from(element.files);
           if (files.length === 0) return;
 

@@ -3,7 +3,7 @@ import { BusEvents } from "./core/EventBus.js";
 import { refreshSteamUI } from "./games.js";
 import { customAlert } from "./shared/dialogs.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
-import { resolveGhUrl, resolveIconUrl } from "./shared/assetResolver.js";
+import { resolveIconUrl } from "./shared/assetResolver.js";
 import { PersistenceTypes } from "./runtime/AppSchema.js";
 
 export const STORAGE_KEYS = {
@@ -47,60 +47,60 @@ export class ProfileCustomizerApp extends BaseApp {
           title: "Customize Profile",
           size: ["400px", "520px"],
           icon: "fas fa-user-circle",
-          iconColor: "#4f9eff",
+          iconColor: "var(--brand)",
           style: { left: "250px", top: "100px" },
           ui: `<div class="profile-customizer-body" style="padding: 12px; display: flex; flex-direction: column; gap: 12px; height: calc(100% - 32px); box-sizing: border-box;">
         
-        <div class="profile-preview" style="display: flex; align-items: center; gap: 10px; padding: 10px; background: rgba(79, 158, 255, 0.08); border-radius: 8px; border: 1px solid rgba(79, 158, 255, 0.15);">
+        <div class="profile-preview" style="display: flex; align-items: center; gap: 10px; padding: 10px; background: var(--brand-dim); border-radius: 8px; border: 1px solid var(--brand);">
           <div class="profile-preview-img" style="width: 42px; height: 42px; border-radius: 50%; overflow: hidden; border: 2px solid var(--brand); flex-shrink: 0;">
             <img id="profile-preview-img" src="${currentProfilePic}" style="width: 100%; height: 100%; object-fit: cover;" />
           </div>
           <div class="profile-preview-info" style="flex: 1; min-width: 0;">
-            <div id="profile-preview-name" style="font-size: 15px; font-weight: 600; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${currentUsername}</div>
-            <div style="font-size: 11px; color: var(--tx2);">Profile Preview</div>
+            <div id="profile-preview-name" style="font-size: 15px; font-weight: 600; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${currentUsername}</div>
+            <div style="font-size: 11px; color: var(--text-secondary);">Profile Preview</div>
           </div>
         </div>
 
         <div class="profile-section" style="display: flex; flex-direction: column; gap: 6px;">
-          <div style="font-size: 12px; font-weight: 600; color: var(--tx1); display: flex; align-items: center; gap: 6px;">
+          <div style="font-size: 12px; font-weight: 600; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
             <i class="fas fa-user"></i> Nickname
           </div>
-          <input id="profile-username-input" type="text" value="${currentUsername}" placeholder="Enter your nickname" style="padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: #fff; font-size: 14px; outline: none; transition: border-color 0.15s; width: 100%; box-sizing: border-box;" />
+          <input id="profile-username-input" type="text" value="${currentUsername}" placeholder="Enter your nickname" style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--glass-border); background: var(--surface-1); color: var(--text-primary); font-size: 14px; outline: none; transition: border-color 0.15s; width: 100%; box-sizing: border-box;" />
         </div>
 
         <div class="profile-section" style="display: flex; flex-direction: column; gap: 8px; flex: 1; min-height: 0;">
-          <div style="font-size: 12px; font-weight: 600; color: var(--tx1); display: flex; align-items: center; gap: 6px;">
+          <div style="font-size: 12px; font-weight: 600; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
             <i class="fas fa-image"></i> Profile Picture
           </div>
-          
-          <button id="profile-upload-btn" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 8px; background: rgba(79, 158, 255, 0.1); border: 1px dashed rgba(79, 158, 255, 0.4); border-radius: 6px; color: var(--tx1); cursor: pointer; transition: all 0.15s; font-size: 12px;">
+
+          <button id="profile-upload-btn" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 8px; background: var(--brand-dim); border: 1px dashed var(--brand); border-radius: 6px; color: var(--text-primary); cursor: pointer; transition: all 0.15s; font-size: 12px;">
             <i class="fas fa-cloud-upload-alt"></i>
             <span>Upload Custom</span>
           </button>
           
-          <div style="font-size: 11px; color: var(--tx2);">Choose an avatar:</div>
+          <div style="font-size: 11px; color: var(--text-secondary);">Choose an avatar:</div>
           <div class="avatar-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(45px, 1fr)); gap: 8px; overflow-y: auto; padding: 2px; flex: 1;">
             ${PREDEFINED_AVATARS.map(
               (avatar) => `
               <div class="avatar-option ${avatar === currentProfilePic ? "selected" : ""}" data-src="${avatar}" style="width: 100%; aspect-ratio: 1; border-radius: 50%; overflow: hidden; cursor: pointer; border: 2px solid ${avatar === currentProfilePic ? "var(--brand)" : "transparent"}; transition: all 0.15s; position: relative;">
                 <img src="${avatar}" style="width: 100%; height: 100%; object-fit: cover;" />
-                ${avatar === currentProfilePic ? '<div style="position: absolute; inset: 0; background: rgba(79, 158, 255, 0.3); display: flex; align-items: center; justify-content: center;"><i class="fas fa-check" style="color: #fff; font-size: 12px;"></i></div>' : ""}
+                ${avatar === currentProfilePic ? '<div style="position: absolute; inset: 0; background: var(--brand-dim); display: flex; align-items: center; justify-content: center;"><i class="fas fa-check" style="color: var(--text-on-brand); font-size: 12px;"></i></div>' : ""}
               </div>
             `
             ).join("")}
           </div>
         </div>
 
-        <div style="display: flex; gap: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.08); flex-shrink: 0;">
-          <button id="profile-save-btn" style="flex: 2; padding: 10px; background: linear-gradient(to right, #47b230, #5ab941); border: none; border-radius: 6px; color: #fff; font-weight: 600; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px;">
+        <div style="display: flex; gap: 8px; padding-top: 8px; border-top: 1px solid var(--glass-border); flex-shrink: 0;">
+          <button id="profile-save-btn" style="flex: 2; padding: 10px; background: var(--brand); border: none; border-radius: 6px; color: var(--text-on-brand); font-weight: 600; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px;">
             <i class="fas fa-save"></i> Save Changes
           </button>
-          <button id="profile-reset-btn" style="flex: 1; padding: 10px; background: rgba(255,255,255,0.08); border: none; border-radius: 6px; color: var(--tx2); cursor: pointer; transition: all 0.15s; font-size: 13px;">
+          <button id="profile-reset-btn" style="flex: 1; padding: 10px; background: var(--glass); border: none; border-radius: 6px; color: var(--text-secondary); cursor: pointer; transition: all 0.15s; font-size: 13px;">
             <i class="fas fa-undo"></i> Reset
           </button>
         </div>
 
-        <div id="profile-status" style="text-align: center; font-size: 11px; color: #5ab941; opacity: 0; transition: opacity 0.3s; height: 14px; margin-top: -4px;">Profile updated!</div>
+        <div id="profile-status" style="text-align: center; font-size: 11px; color: var(--brand); opacity: 0; transition: opacity 0.3s; height: 14px; margin-top: -4px;">Profile updated!</div>
       </div>`,
           events: {
             "#profile-username-input": {
@@ -244,8 +244,8 @@ export class ProfileCustomizerApp extends BaseApp {
         customImageDataUrl = null;
 
         option.innerHTML += `
-          <div style="position: absolute; inset: 0; background: rgba(79, 158, 255, 0.3); display: flex; align-items: center; justify-content: center;">
-            <i class="fas fa-check" style="color: #fff; font-size: 12px;"></i>
+          <div style="position: absolute; inset: 0; background: var(--brand-dim); display: flex; align-items: center; justify-content: center;">
+            <i class="fas fa-check" style="color: var(--text-on-brand); font-size: 12px;"></i>
           </div>
         `;
 
@@ -326,6 +326,8 @@ export class ProfileCustomizerApp extends BaseApp {
       statusMsg.textContent = "Profile updated successfully!";
       statusMsg.style.opacity = "1";
       setTimeout(() => (statusMsg.style.opacity = "0"), 2200);
+
+      this.notify("Profile", "Profile updated successfully", "success", 3000);
     });
 
     resetBtn.addEventListener("click", () => {
@@ -345,8 +347,8 @@ export class ProfileCustomizerApp extends BaseApp {
           opt.classList.add("selected");
           opt.style.borderColor = "var(--brand)";
           opt.innerHTML += `
-            <div style="position: absolute; inset: 0; background: rgba(79, 158, 255, 0.3); display: flex; align-items: center; justify-content: center;">
-              <i class="fas fa-check" style="color: #fff; font-size: 12px;"></i>
+            <div style="position: absolute; inset: 0; background: var(--brand-dim); display: flex; align-items: center; justify-content: center;">
+              <i class="fas fa-check" style="color: var(--text-on-brand); font-size: 12px;"></i>
             </div>
           `;
         }

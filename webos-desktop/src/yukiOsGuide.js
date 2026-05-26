@@ -560,10 +560,10 @@ export class YukiOsGuideApp extends BaseApp {
 
         <div class="guide-subsection">
           <h2><i class="fas fa-rocket"></i> System Capabilities</h2>
-          <div class="capabilities-grid">
+          <div class="capabilities-grid" id="capabilities-grid">
             ${SYSTEM_CAPABILITIES.map(
               (cap) => `
-              <div class="capability-card">
+              <div class="capability-card" data-search="${cap.title.toLowerCase()} ${cap.desc.toLowerCase()} ${cap.tag.toLowerCase()}">
                 <div class="capability-tag">${cap.tag}</div>
                 <h3>${cap.title}</h3>
                 <p>${cap.desc}</p>
@@ -952,6 +952,22 @@ export class YukiOsGuideApp extends BaseApp {
     );
   }
 
+  _filterCapabilities(win) {
+    const searchLower = this.searchQuery.toLowerCase();
+    const capabilitiesGrid = win.querySelector("#capabilities-grid");
+    if (!capabilitiesGrid) return;
+
+    const cards = capabilitiesGrid.querySelectorAll(".capability-card");
+    cards.forEach((card) => {
+      const searchData = card.dataset.search || "";
+      if (searchData.includes(searchLower) || searchLower === "") {
+        card.style.display = "";
+      } else {
+        card.style.display = "none";
+      }
+    });
+  }
+
   _categorizeApps(apps) {
     const categories = {
       productivity: [],
@@ -992,6 +1008,7 @@ export class YukiOsGuideApp extends BaseApp {
       shortcuts: "system",
       archiveExtractor: "system",
       categories: "system",
+      clipboardManager: "system",
 
       cameraApp: "media",
       model3dApp: "media",
@@ -1046,6 +1063,7 @@ export class YukiOsGuideApp extends BaseApp {
     searchInput.addEventListener("input", (e) => {
       this.searchQuery = e.target.value;
       this._refreshContent(win);
+      this._filterCapabilities(win);
     });
 
     navBtns.forEach((btn) => {
@@ -1057,6 +1075,7 @@ export class YukiOsGuideApp extends BaseApp {
         btn.classList.add("active");
 
         this._refreshContent(win);
+        this._filterCapabilities(win);
       });
     });
 
@@ -1095,6 +1114,8 @@ export class YukiOsGuideApp extends BaseApp {
       if (this._appCardBinder) {
         this._appCardBinder();
       }
+
+      this._filterCapabilities(win);
     }
   }
 }
