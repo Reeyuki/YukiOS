@@ -4,7 +4,7 @@ import { resolveIconUrl, resolveWallpaperUrl } from "./shared/assetResolver.js";
 import { SystemUtilities } from "./system.js";
 import { Achievements } from "./achievements.js";
 
-const FEATURE_DATA = {
+export const FEATURE_DATA = {
   step2: [
     {
       icon: "fas fa-desktop",
@@ -169,20 +169,49 @@ const FEATURE_DATA = {
   ],
   step6: {
     keyboardShortcuts: [
-      { keys: "Ctrl+K", desc: "Open Command Palette" },
-      { keys: "Ctrl+P", desc: "Open Command Palette" },
-      { keys: "F1", desc: "Open Command Palette" },
-      { keys: "Ctrl+D", desc: "Show/Hide Desktop" },
-      { keys: "Ctrl+←", desc: "Snap window left" },
-      { keys: "Ctrl+→", desc: "Snap window right" },
-      { keys: "Ctrl+↑", desc: "Maximize window" },
-      { keys: "Ctrl+C", desc: "Copy files" },
-      { keys: "Ctrl+X", desc: "Cut files" },
-      { keys: "Ctrl+V", desc: "Paste files" },
-      { keys: "Delete", desc: "Delete files" },
-      { keys: "F2", desc: "Rename file" },
-      { keys: "Ctrl+S", desc: "Save file (Notepad)" },
-      { keys: "Ctrl+F", desc: "Find text" }
+      { keys: "Ctrl+K", desc: "Open Unified Command Palette" },
+      { keys: "Ctrl+P", desc: "Open Unified Command Palette" },
+      { keys: "F1", desc: "Open Unified Command Palette" },
+      { keys: "Ctrl+D", desc: "Show / Hide Desktop (Minimize or restore all windows)" },
+      { keys: "Ctrl+←", desc: "Snap active window to the left half of the screen" },
+      { keys: "Ctrl+→", desc: "Snap active window to the right half of the screen" },
+      { keys: "Ctrl+↑", desc: "Maximize active window" },
+      { keys: "Control", desc: "Toggle Start Menu (when desktop is focused)" },
+      { keys: "Tab", desc: "Toggle Start Menu (when desktop is focused)" },
+      { keys: "Space", desc: "Toggle Start Menu (when desktop is focused)" },
+      { keys: "Ctrl+C", desc: "Copy selected files or folders" },
+      { keys: "Ctrl+X", desc: "Cut selected files or folders" },
+      { keys: "Ctrl+V", desc: "Paste copied or cut files/folders into desktop or explorer" },
+      { keys: "Delete", desc: "Delete selected icons/files on the desktop" },
+      { keys: "F2", desc: "Start inline renaming of selected file/folder" },
+      { keys: "Ctrl+O", desc: "Open file inside Notepad" },
+      { keys: "Ctrl+S", desc: "Save active file in Notepad" },
+      { keys: "Ctrl+Shift+S", desc: "Save active file as new file in Notepad" },
+      { keys: "Ctrl+F", desc: "Open Find Text search dialog in Notepad" },
+      { keys: "F3", desc: "Find next occurrence of matched text" },
+      { keys: "Shift+F3", desc: "Find previous occurrence of matched text" },
+      { keys: "Ctrl+H", desc: "Open Replace dialog in Notepad" },
+      { keys: "Ctrl+G", desc: "Go to line dialog in Notepad" },
+      { keys: "Ctrl++", desc: "Zoom in text editor" },
+      { keys: "Ctrl+-", desc: "Zoom out text editor" },
+      { keys: "Ctrl+0", desc: "Reset zoom factor to default in Notepad" },
+      { keys: "Escape", desc: "Close active Notepad dialogs / popups" },
+      { keys: "Alt+1-9", desc: "Switch directly to browser Tab 1-9" },
+      { keys: "Ctrl+L", desc: "Focus browser address/URL bar & select" },
+      { keys: "Ctrl+T", desc: "Create new browser tab" },
+      { keys: "Ctrl+W", desc: "Close active browser tab" },
+      { keys: "Ctrl+Shift+T", desc: "Reopen last closed browser tab" },
+      { keys: "Ctrl+V", desc: "Paste & evaluate math expression from clipboard (Calculator)" },
+      { keys: "0-9", desc: "Press calculator digit keys" },
+      { keys: ".", desc: "Decimal points button" },
+      { keys: "+, -, *, /", desc: "Press arithmetic operator buttons (+, −, ×, ÷)" },
+      { keys: "%", desc: "Percent calculations button" },
+      { keys: "Enter, =", desc: "Equals / Evaluate calculations" },
+      { keys: "Backspace", desc: "Backspace / delete last digit in Calculator" },
+      { keys: "Escape, Delete", desc: "Clear calculator (AC button)" },
+      { keys: "Escape", desc: "Close calendar popup" },
+      { keys: "←, →", desc: "Navigate previous or next month in Calendar" },
+      { keys: "↑, ↓", desc: "Navigate previous or next year in Calendar" }
     ],
     filesystem: {
       title: "Virtual Filesystem",
@@ -205,7 +234,8 @@ const FEATURE_DATA = {
       { id: "terminal", title: "Terminal", icon: "fas fa-terminal" },
       { id: "browser", title: "Browser", icon: "fas fa-globe" },
       { id: "explorer", title: "File Explorer", icon: "fas fa-folder" },
-      { id: "settings", title: "Settings", icon: "fas fa-cog" }
+      { id: "settings", title: "Settings", icon: "fas fa-cog" },
+      { id: "yukiOsGuide", title: "Yuki OS Guide", icon: "fas fa-book-open" }
     ],
     transparencyLevels: [
       { value: "high", title: "High Transparency", desc: "More glass effect" },
@@ -229,8 +259,7 @@ export class SetupApp extends BaseApp {
       achievements: true,
       analytics: true,
       performanceMode: "balanced",
-      transparency: "medium",
-      pinnedApps: []
+      transparency: "medium"
     };
     this.openWindows = new Set();
     this.wallpapers = [];
@@ -297,6 +326,7 @@ export class SetupApp extends BaseApp {
           ${this._buildStep4()}
           ${this._buildStep5()}
           ${this._buildStep6()}
+          ${this._buildStep7()}
         </div>
 
         <div class="setup-footer">
@@ -509,133 +539,11 @@ export class SetupApp extends BaseApp {
       )
       .join("");
 
-    const performanceHtml = FEATURE_DATA.step6.performanceModes
-      .map(
-        (m) => `
-        <button class="perf-btn ${this.userChoices.performanceMode === m.value ? "active" : ""}" data-mode="${m.value}">
-          <div class="perf-title">${m.title}</div>
-          <div class="perf-desc">${m.desc}</div>
-        </button>
-      `
-      )
-      .join("");
-
-    const appsHtml = FEATURE_DATA.step6.suggestedApps
-      .map(
-        (a) => `
-        <div class="app-pin-item ${this.userChoices.pinnedApps.includes(a.id) ? "pinned" : ""}" data-app="${a.id}">
-          <i class="${a.icon}"></i>
-          <span>${a.title}</span>
-          <i class="fas fa-thumbtack pin-icon"></i>
-        </div>
-      `
-      )
-      .join("");
-
-    const transparencyHtml = FEATURE_DATA.step6.transparencyLevels
-      .map(
-        (t) => `
-        <button class="transparency-btn ${this.userChoices.transparency === t.value ? "active" : ""}" data-transparency="${t.value}">
-          <div class="transparency-title">${t.title}</div>
-          <div class="transparency-desc">${t.desc}</div>
-        </button>
-      `
-      )
-      .join("");
-
     return `
       <div class="setup-step" data-step="6">
         <h2 class="step-title">
-          <i class="fas fa-sliders-h"></i> Quick Settings
+          <i class="fas fa-info-circle"></i> System Info
         </h2>
-
-        <div class="settings-list">
-          <div class="setting-item">
-            <div class="setting-info">
-              <i class="fas fa-cloud-sun setting-icon"></i>
-              <div>
-                <h4>Weather Widget</h4>
-                <p>Show weather in taskbar</p>
-              </div>
-            </div>
-            <label class="setting-toggle">
-              <input type="checkbox" ${this.userChoices.weather ? "checked" : ""} data-setting="weather">
-              <span class="toggle-track"><span class="toggle-thumb"></span></span>
-            </label>
-          </div>
-
-          <div class="setting-item">
-            <div class="setting-info">
-              <i class="fas fa-bell setting-icon"></i>
-              <div>
-                <h4>Notifications</h4>
-                <p>Enable desktop notifications</p>
-              </div>
-            </div>
-            <label class="setting-toggle">
-              <input type="checkbox" ${this.userChoices.notifications ? "checked" : ""} data-setting="notifications">
-              <span class="toggle-track"><span class="toggle-thumb"></span></span>
-            </label>
-          </div>
-
-          <div class="setting-item">
-            <div class="setting-info">
-              <i class="fas fa-volume-high setting-icon"></i>
-              <div>
-                <h4>Sound</h4>
-                <p>Enable system sounds</p>
-              </div>
-            </div>
-            <label class="setting-toggle">
-              <input type="checkbox" ${this.userChoices.sound ? "checked" : ""} data-setting="sound">
-              <span class="toggle-track"><span class="toggle-thumb"></span></span>
-            </label>
-          </div>
-
-          <div class="setting-item">
-            <div class="setting-info">
-              <i class="fas fa-trophy setting-icon"></i>
-              <div>
-                <h4>Achievements</h4>
-                <p>Track your milestones</p>
-              </div>
-            </div>
-            <label class="setting-toggle">
-              <input type="checkbox" ${this.userChoices.achievements ? "checked" : ""} data-setting="achievements">
-              <span class="toggle-track"><span class="toggle-thumb"></span></span>
-            </label>
-          </div>
-
-          <div class="setting-item">
-            <div class="setting-info">
-              <i class="fas fa-chart-line setting-icon"></i>
-              <div>
-                <h4>Analytics</h4>
-                <p>Help improve Yuki OS (anonymous)</p>
-              </div>
-            </div>
-            <label class="setting-toggle">
-              <input type="checkbox" ${this.userChoices.analytics ? "checked" : ""} data-setting="analytics">
-              <span class="toggle-track"><span class="toggle-thumb"></span></span>
-            </label>
-          </div>
-        </div>
-
-        <div class="personalize-section">
-          <label class="section-label">Performance Mode</label>
-          <div class="perf-selector">${performanceHtml}</div>
-        </div>
-
-        <div class="personalize-section">
-          <label class="section-label">Window Transparency</label>
-          <div class="transparency-selector">${transparencyHtml}</div>
-        </div>
-
-        <div class="personalize-section">
-          <label class="section-label">Pin Apps to Start Menu</label>
-          <div class="apps-pinning">${appsHtml}</div>
-          <p style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">Click to pin/unpin apps for quick access</p>
-        </div>
 
         <div class="personalize-section">
           <label class="section-label">Keyboard Shortcuts Reference</label>
@@ -652,8 +560,116 @@ export class SetupApp extends BaseApp {
   }
 
   _buildStep6() {
+    const performanceHtml = FEATURE_DATA.step6.performanceModes
+      .map(
+        (m) => `
+        <button class="perf-btn ${this.userChoices.performanceMode === m.value ? "active" : ""}" data-mode="${m.value}">
+          <div class="perf-title">${m.title}</div>
+        </button>
+      `
+      )
+      .join("");
+
+    const transparencyHtml = FEATURE_DATA.step6.transparencyLevels
+      .map(
+        (t) => `
+        <button class="transparency-btn ${this.userChoices.transparency === t.value ? "active" : ""}" data-transparency="${t.value}">
+          <div class="transparency-title">${t.title}</div>
+        </button>
+      `
+      )
+      .join("");
+
     return `
       <div class="setup-step" data-step="7">
+        <h2 class="step-title">
+          <i class="fas fa-sliders-h"></i> Quick Settings
+        </h2>
+
+        <div class="settings-grid">
+          <div class="setting-item">
+            <div class="setting-info">
+              <i class="fas fa-cloud-sun setting-icon"></i>
+              <div>
+                <h4>Weather</h4>
+              </div>
+            </div>
+            <label class="setting-toggle">
+              <input type="checkbox" ${this.userChoices.weather ? "checked" : ""} data-setting="weather">
+              <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            </label>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <i class="fas fa-bell setting-icon"></i>
+              <div>
+                <h4>Notifications</h4>
+              </div>
+            </div>
+            <label class="setting-toggle">
+              <input type="checkbox" ${this.userChoices.notifications ? "checked" : ""} data-setting="notifications">
+              <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            </label>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <i class="fas fa-volume-high setting-icon"></i>
+              <div>
+                <h4>Sound</h4>
+              </div>
+            </div>
+            <label class="setting-toggle">
+              <input type="checkbox" ${this.userChoices.sound ? "checked" : ""} data-setting="sound">
+              <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            </label>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <i class="fas fa-trophy setting-icon"></i>
+              <div>
+                <h4>Achievements</h4>
+              </div>
+            </div>
+            <label class="setting-toggle">
+              <input type="checkbox" ${this.userChoices.achievements ? "checked" : ""} data-setting="achievements">
+              <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            </label>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <i class="fas fa-chart-line setting-icon"></i>
+              <div>
+                <h4>Analytics</h4>
+              </div>
+            </div>
+            <label class="setting-toggle">
+              <input type="checkbox" ${this.userChoices.analytics ? "checked" : ""} data-setting="analytics">
+              <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="settings-row">
+          <div class="settings-half">
+            <label class="section-label">Performance</label>
+            <div class="perf-selector">${performanceHtml}</div>
+          </div>
+          <div class="settings-half">
+            <label class="section-label">Transparency</label>
+            <div class="transparency-selector">${transparencyHtml}</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  _buildStep7() {
+    return `
+      <div class="setup-step" data-step="8">
         <div class="complete-hero">
           <div class="complete-icon">
             <i class="fas fa-rocket"></i>
@@ -662,7 +678,7 @@ export class SetupApp extends BaseApp {
           <p class="complete-subtitle">Yuki OS is ready to explore</p>
         </div>
 
-        <div class="summary-list">
+        <div class="summary-grid">
           <div class="summary-item">
             <i class="fas fa-palette"></i>
             <span>Theme: ${this.userChoices.theme}</span>
@@ -675,21 +691,41 @@ export class SetupApp extends BaseApp {
             <i class="fas fa-arrows-alt"></i>
             <span>Taskbar: ${this.userChoices.taskbarPosition}</span>
           </div>
+          <div class="summary-item">
+            <i class="fas fa-cloud-sun"></i>
+            <span>Weather: ${this.userChoices.weather ? "On" : "Off"}</span>
+          </div>
+          <div class="summary-item">
+            <i class="fas fa-bell"></i>
+            <span>Notifications: ${this.userChoices.notifications ? "On" : "Off"}</span>
+          </div>
+          <div class="summary-item">
+            <i class="fas fa-volume-high"></i>
+            <span>Sound: ${this.userChoices.sound ? "On" : "Off"}</span>
+          </div>
+          <div class="summary-item">
+            <i class="fas fa-trophy"></i>
+            <span>Achievements: ${this.userChoices.achievements ? "On" : "Off"}</span>
+          </div>
+          <div class="summary-item">
+            <i class="fas fa-chart-line"></i>
+            <span>Analytics: ${this.userChoices.analytics ? "On" : "Off"}</span>
+          </div>
+          <div class="summary-item">
+            <i class="fas fa-tachometer-alt"></i>
+            <span>Performance: ${this.userChoices.performanceMode}</span>
+          </div>
+          <div class="summary-item">
+            <i class="fas fa-adjust"></i>
+            <span>Transparency: ${this.userChoices.transparency}</span>
+          </div>
         </div>
 
-        <div class="complete-tips">
-          <h4><i class="fas fa-lightbulb"></i> Quick Tips</h4>
-
-          <div class="tip-category">
-            <ul>
-              <li>Right-click desktop for extended system actions</li>
-              <li>Use Ctrl+K to open the command palette</li>
-              <li>Pin frequently used apps to the taskbar for quick access</li>
-              <li>Use workspace separation for different tasks or contexts</li>
-              <li>Explore Settings for advanced system controls</li>
-            </ul>
-          </div>
-
+        <div class="complete-actions">
+          <button id="setup-launch-guide" class="setup-guide-btn">
+            <i class="fas fa-book-open"></i>
+            <span>Open Yuki OS Guide</span>
+          </button>
         </div>
       </div>
     `;
@@ -777,27 +813,19 @@ export class SetupApp extends BaseApp {
       });
     });
 
-    // App pinning
-    const appPinItems = win.querySelectorAll(".app-pin-item");
-    appPinItems.forEach((item) => {
-      item.addEventListener("click", () => {
-        const appId = item.dataset.app;
-        const index = this.userChoices.pinnedApps.indexOf(appId);
-        if (index > -1) {
-          this.userChoices.pinnedApps.splice(index, 1);
-          item.classList.remove("pinned");
-        } else {
-          this.userChoices.pinnedApps.push(appId);
-          item.classList.add("pinned");
-        }
+    // Launch Yuki OS Guide button
+    const launchGuideBtn = win.querySelector("#setup-launch-guide");
+    if (launchGuideBtn) {
+      launchGuideBtn.addEventListener("click", () => {
+        this._services.yukiOsGuideApp.open();
       });
-    });
+    }
   }
 
   _nextStep(win) {
     if (this.isTransitioning) return;
 
-    if (this.currentStep < 5) {
+    if (this.currentStep < 7) {
       this.isTransitioning = true;
 
       const currentStepEl = win.querySelector(`.setup-step[data-step="${this.currentStep + 1}"]`);
@@ -869,7 +897,7 @@ export class SetupApp extends BaseApp {
 
     backBtn.style.display = this.currentStep > 0 ? "flex" : "none";
 
-    if (this.currentStep === 5) {
+    if (this.currentStep === 7) {
       nextBtn.innerHTML = 'Start Exploring <i class="fas fa-rocket"></i>';
     } else {
       nextBtn.innerHTML = 'Continue <i class="fas fa-arrow-right"></i>';
@@ -901,7 +929,6 @@ export class SetupApp extends BaseApp {
     // Save new options
     localStorage.setItem("yukiOS_performanceMode", this.userChoices.performanceMode);
     localStorage.setItem("yukiOS_transparency", this.userChoices.transparency);
-    localStorage.setItem("yukiOS_pinnedApps", JSON.stringify(this.userChoices.pinnedApps));
 
     this._services.achievementsApp?.trigger(Achievements.SetupComplete);
 
@@ -930,7 +957,6 @@ Your setup is complete. Here's what you configured:
 - Transparency: ${this.userChoices.transparency}
 - Weather: ${this.userChoices.weather ? "Enabled" : "Disabled"}
 - Notifications: ${this.userChoices.notifications ? "Enabled" : "Disabled"}
-- Pinned Apps: ${this.userChoices.pinnedApps.length} apps
 
 Quick Tips:
 • Click the Start Menu to explore 30+ apps and 3700+ games

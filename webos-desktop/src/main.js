@@ -41,6 +41,7 @@ import { HybridAdapter } from "./runtime/HybridAdapter.js";
 import { SetupApp } from "./setupApp.js";
 import { DataEditorApp } from "./dataEditor.js";
 import { InstalledAppsApp } from "./installedApps.js";
+import { YukiOsGuideApp } from "./yukiOsGuide.js";
 import {
   resolveGhUrl,
   resolveIconUrl,
@@ -197,6 +198,9 @@ services.dataEditorApp = dataEditorApp;
 const installedAppsApp = new InstalledAppsApp(services);
 services.installedAppsApp = installedAppsApp;
 
+const yukiOsGuideApp = new YukiOsGuideApp(services);
+services.yukiOsGuideApp = yukiOsGuideApp;
+
 const appLauncher = new AppLauncher(
   windowManager,
   fileSystemManager,
@@ -230,7 +234,8 @@ const appLauncher = new AppLauncher(
   yukiConvertApp,
   setupApp,
   dataEditorApp,
-  installedAppsApp
+  installedAppsApp,
+  yukiOsGuideApp
 );
 window.appLauncher = appLauncher;
 windowManager.setAppLauncher(appLauncher);

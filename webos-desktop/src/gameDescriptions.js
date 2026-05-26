@@ -1,3 +1,59 @@
+export const APP_DESCRIPTIONS = {
+  browserApp:
+    "Yuki Browser - Web browser with bookmarks, history, and tab management for internet access within Yuki OS.",
+  explorer:
+    "File Explorer - Browse and manage the virtual filesystem at /home/reeyuki/ with support for file operations, archives, and drag-drop.",
+  terminal:
+    "Terminal - Command-line interface supporting ls, cd, mkdir, rm, cp, mv, cat, pwd, and more for system operations.",
+  notepad: "Notepad - Simple text editor for quick notes and plain text documents with save/load functionality.",
+  markdown: "Markdown Editor - Split-pane editor with live preview for writing and viewing Markdown documents.",
+  monaco:
+    "Yuki Code - Full-featured code editor powered by VS Code engine with syntax highlighting, auto-completion, and multi-file support.",
+  settingsApp:
+    "Settings - Configure themes, wallpapers, window animations, taskbar behavior, sound, language, and system preferences.",
+  calculatorApp:
+    "Calculator - Scientific calculator with memory functions, trigonometry, and basic arithmetic operations.",
+  cameraApp: "Camera - Access webcam for photo capture with basic image controls and save to filesystem.",
+  officeApp: "Office Viewer - View .docx, .xlsx, and .pptx documents using Office 365 integration.",
+  aboutApp: "About - System information including version, capabilities, credits, and privacy policy.",
+  taskManagerApp:
+    "Task Manager - View and manage running applications, processes, and system resources with ability to close apps.",
+  weatherApp: "Weather - Current weather conditions and forecast with location-based data.",
+  appCreatorApp:
+    "App Creator - Create custom shortcuts to external URLs with auto-detection of favicons and per-app CORS proxy.",
+  model3dApp: "3D Model Viewer - View OBJ, GLTF, and GLB 3D models using Three.js with rotation and zoom controls.",
+  categoriesApp: "Steam - Browse and launch 3700+ games organized by genre with Steam-like interface.",
+  jsDosApp: "JS-DOS - DOS emulator for running classic DOS games and applications.",
+  v86app: "V86 - x86-64 full system emulator for running operating systems and legacy software.",
+  youtubeApp: "YouTube - YouTube integration for watching videos within Yuki OS.",
+  achievementsApp: "Achievements - Track playtime milestones and system usage achievements.",
+  profileCustomizerApp: "Profile - Customize username, profile picture, desktop colors, and personal settings.",
+  emulatorApp: "Yuki Emulator - Multi-platform game emulator supporting various console systems.",
+  ruffleApp: "Ruffle - Flash game player using modern Ruffle engine for SWF content.",
+  shortcutsApp: "Shortcuts - View and manage keyboard shortcuts for system-wide commands.",
+  yukiConvertApp: "Yuki Convert - Unit converter for various measurements and calculations.",
+  setupApp: "Setup Wizard - Initial setup guide for new users to configure Yuki OS preferences.",
+  dataEditorApp: "Storage Editor - View and edit IndexedDB storage data for debugging and advanced users.",
+  dataEditor: "Storage Editor - View and edit IndexedDB storage data for debugging and advanced users.",
+  installedAppsApp: "Installed Apps - Manage installed applications with rename, disable, and uninstall options.",
+  installedApps: "Installed Apps - Manage installed applications with rename, disable, and uninstall options.",
+  systemApps: "System Apps - Access and manage core system applications and utilities.",
+  shittify: "A spotify alternative",
+  shittifyApp: "A spotify alternative",
+  profileCustomizer: "Profile - Customize username, profile picture, desktop colors, and personal settings.",
+  yukiOsGuide: "Yuki OS Guide - Comprehensive documentation and feature discovery hub for Yuki OS.",
+  kiwiIRC: "KiwiIRC - IRC client for connecting to IRC servers and chat rooms.",
+  azahar: "Azahar - Nintendo 3DS emulator for playing 3DS games in the browser.",
+  paint: "Paint - Basic image editor with drawing tools, colors, and save functionality.",
+  photopea: "Photopea - Advanced photo editor with layers, filters, and PSD support.",
+  youtube: "YouTube Utilities - YouTube tools and utilities for video management and playback.",
+  system: "System - Core system components and utilities for Yuki OS operation.",
+
+  steam: "Steam - Game library and launcher with 3700+ titles organized by genre and collection.",
+  flash: "Flash Games - Classic Flash games played via Ruffle emulator for nostalgia and retro gaming.",
+
+  game: "Game - Playable game content from the Yuki OS library of 3700+ titles across multiple platforms."
+};
 export const descriptionMap = {
   tabs: "Totally Accurate Battle Simulator (TABS) is a physics based ragdoll tactics game developed by Landfall Games. Players pit armies of historical, mythological, and absurd units — from mammoths and squires to laser wielding raptors — against each other in a series of wobbly, unpredictable battles where the engine's chaotic physics are just as important as strategy.",
   plagueIncEvolved:
@@ -6,6 +62,7 @@ export const descriptionMap = {
     "A fan-made parody inspired by Scott Cawthon's Five Nights at Freddy's series. Players sit in a security office, monitor cameras, and survive five nights against haunted animatronics that grow more aggressive as the hours pass.",
   baldisBasicsTeachingOnTwos:
     "A community spin-off of Baldi's Basics in Education and Learning, originally created by Micah McGonigal in 2018. Players collect notebooks and solve increasingly impossible math problems while avoiding Baldi, a teacher who chases them with a ruler whenever an answer is wrong.",
+  baldiBalds: "A weird baldi mod.",
   playtimeHellBear5van:
     "The Sprinting Bear5 [PLAYTIME HELL & BEAR5 VAN] is a *Baldi’s Basics* mod focused on fast movement and constant pressure. It features chaotic scenarios like Playtime Hell and Bear5 Van, where quick reactions and tight navigation are key.The mod also includes Freddy Fazbear character, adding to the unpredictable encounters and increasing the overall difficulty",
   antidisestablishmentarianism:
@@ -63,10 +120,14 @@ export const descriptionMap = {
     "Plants vs. Zombies 2 Gardenless is a fan-made remix of PopCap's 2013 sequel that strips away energy systems and gardens, focusing purely on the tower defense action across the original's time-traveling worlds.",
   subwaySurfers:
     "Subway Surfers is a 2012 endless runner mobile game by Kiloo and SYBO Games. Players control a young graffiti artist fleeing a grumpy inspector, dodging trains and obstacles while collecting coins.",
+  subwaySurfersmonaco:
+    "Subway Surfers: Monaco is a location-themed expansion of the endless runner, transporting players to the glamorous streets of Monaco. The game retains the core dodge-and-collect gameplay with new visuals, obstacles, and themed characters inspired by the principality.",
   undertaleSans:
     "A standalone fan recreation of the legendary Sans boss fight from Undertale's Genocide route. Considered one of the most difficult battles in modern gaming, it tests reflexes, pattern memory, and persistence.",
   undertale:
     "Undertale is a 2015 RPG developed solo by Toby Fox. Players control a child who falls into the Underground, a realm of monsters, and choose whether to fight or befriend them in a story that adapts to every decision.",
+  upstream:
+    "Upstream is a puzzle-platformer game where players navigate through challenging levels by manipulating water currents and environmental elements. The game combines physics-based puzzles with platforming mechanics as players guide their character upstream against the flow.",
   deltarune:
     "Deltarune is an episodic RPG by Toby Fox, the creator of Undertale, with the first chapter released in 2018. Players follow Kris and friends through alternate worlds in a story that builds on Undertale's universe with new mechanics and themes.",
   balatro:
@@ -266,6 +327,8 @@ export const descriptionMap = {
     "Moby Dick: The Video Game is a destruction game inspired by Herman Melville's novel. Players control the legendary white whale, devouring fishermen and sinking ships across the ocean.",
   mobyDick2:
     "Moby Dick 2 is the sequel that expands on the original ship-destruction sandbox with new locations, more abilities, and bigger boats to sink.",
+  myRustySubmarine:
+    "My Rusty Submarine is an underwater exploration game where players pilot a deteriorating submarine through ocean depths, managing oxygen, repairs, and encounters with sea creatures in a survival adventure.",
   elfStory:
     "Elf Story is a 2013 indie platformer that follows a small elf on a heartfelt journey through a stylized fantasy world full of light puzzles and atmospheric storytelling.",
   swarmQueen:
@@ -330,6 +393,8 @@ export const descriptionMap = {
     "Angry Birds Halloween, also known as Angry Birds Seasons: Trick or Treat, is a 2010 spooky DLC for Rovio's franchise, featuring jack-o'-lanterns and Halloween-themed pig fortresses.",
   angryBirdsEpic:
     "Angry Birds Epic is a 2014 turn-based RPG by Rovio and Chimera Entertainment. Players assemble parties of birds with classes and equipment to battle across a fantasy version of Piggy Island.",
+  angryBirds2:
+    "Angry Birds 2 is a 2015 sequel by Rovio Entertainment. The classic slingshot puzzle gameplay returns with enhanced graphics, new bird abilities, multi-stage levels, and competitive multiplayer modes.",
   badPiggies:
     "Bad Piggies is a 2012 physics-based construction game by Rovio. Players build wacky vehicles for the green pigs to navigate obstacle courses and steal eggs from the Angry Birds.",
   holeio:
@@ -370,8 +435,11 @@ export const descriptionMap = {
     "Cloverpit is a horror game where players are trapped in a strange room and must operate eerie slot machines to escape, blending gambling mechanics with psychological dread.",
   littleAlchemy2:
     "Little Alchemy 2 is a 2017 crafting puzzle game by Recloak. Players combine basic elements like fire, water, earth, and air to discover hundreds of items, creatures, and concepts.",
+  lobotomyCorporation:
+    "Lobotomy Corporation is a 2018 management simulation by Project Moon. Players run a facility containing dangerous supernatural creatures called Abnormalities, balancing containment, energy production, and employee safety in a dark sci-fi setting.",
   clusterRush:
     "Cluster Rush is a 2021 first-person platformer by Landfall Games. Players leap across a swarm of moving trucks, using momentum and quick reflexes to avoid plummeting to their doom.",
+  fez: "Fez is a 2012 puzzle-platformer by Polytron Corporation. Players control Gomez, a 2D creature living in a 2D world who discovers a third dimension, rotating the world in 3D to navigate puzzles and uncover secrets.",
   smashComputer:
     "Smash Your Computer is a casual stress-relief game where players destroy a virtual PC with various weapons, satisfying the impulse to break technology without consequences.",
   years400:
@@ -425,5 +493,51 @@ export const descriptionMap = {
   yorgIO:
     "Yorg.io is a 2018 multiplayer real-time strategy game by Tobias Springer. Players build defenses against waves of zombies while expanding their base across a procedurally generated map.",
   yorg3IO:
-    "Yorg 3.io is the 2022 third entry in the Yorg series. It refines the base-building strategy of its predecessors with new units, improved visuals, and deeper progression."
+    "Yorg 3.io is the 2022 third entry in the Yorg series. It refines the base-building strategy of its predecessors with new units, improved visuals, and deeper progression.",
+  pneumo: "A weird baldi mod.",
+  three: "A weird baldi mod.",
+  wheresBaldi:
+    "Where's Baldi is a Baldi's Basics mod inspired by Where's Waldo, challenging players to find Baldi hidden in chaotic environments while avoiding his pursuit.",
+  portal:
+    "Portal is a puzzle-platformer game by Valve. Players use a portal gun to create interconnected portals on surfaces, solving spatial puzzles to escape the Aperture Science facility.",
+  brotatoAllPain:
+    "Brotato: All Pain No Gain + Abyssal Terrors is a hardcore mod for Brotato that dramatically increases difficulty with stronger enemies, limited resources, and new abyssal threats.",
+  minusB:
+    "Minus B is a number-based Baldi's Basics mod following the pattern of THREE and MINUS THREE, introducing negative number mechanics and increasingly impossible math challenges.",
+  happyRoom:
+    "Happy Room is a physics-based torture chamber simulator where players test various weapons and traps on ragdoll characters in a sandbox environment.",
+  slimeRancherAlpha:
+    "Slime Rancher Alpha is an early version of the farming simulation game, featuring core mechanics of vacuuming slimes, feeding them, and selling their plorts on the Far, Far Range.",
+  ddlcPlus:
+    "Doki Doki Literature Club Plus is an enhanced version of the psychological horror visual novel, featuring new side stories, gallery content, and quality of life improvements.",
+  diepIO:
+    "Diep.io is a 2016 multiplayer tank shooter .io game by Sidney de Vries. Players control tanks, shoot shapes to level up, and upgrade their stats and weapons in competitive arena battles.",
+  subwaySurfersbarcelona:
+    "Subway Surfers: Barcelona is a location-themed expansion set in the Spanish city, featuring Catalan architecture, Gaudi-inspired visuals, and new obstacles themed around Barcelona's landmarks.",
+  subwaySurfersbeijing:
+    "Subway Surfers: Beijing transports players to China's capital, with visuals inspired by the Great Wall, Forbidden City, and traditional Chinese architecture as the backdrop for endless running.",
+  subwaySurfersberlin:
+    "Subway Surfers: Berlin brings the endless runner to Germany's capital, featuring Brandenburg Gate, Berlin Wall imagery, and industrial aesthetics characteristic of the city.",
+  subwaySurfersbuenosaires:
+    "Subway Surfers: Buenos Aires takes players to Argentina's vibrant capital, with colorful streets, tango-inspired themes, and landmarks like the Obelisk and Casa Rosada.",
+  subwaySurfershavana:
+    "Subway Surfers: Havana explores the Cuban capital with vintage cars, colonial architecture, and tropical vibes throughout the endless running gameplay.",
+  subwaySurfershouston:
+    "Subway Surfers: Houston brings the action to Texas, featuring space center imagery, oil industry themes, and the distinctive urban sprawl of America's fourth-largest city.",
+  subwaySurfersiceland:
+    "Subway Surfers: Iceland transports players to the Nordic island nation, with glaciers, volcanoes, aurora borealis visuals, and rugged Nordic landscapes as the running backdrop.",
+  subwaySurferslondon:
+    "Subway Surfers: London features the iconic British capital with Big Ben, Tower Bridge, red phone booths, and double-decker buses throughout the endless running course.",
+  subwaySurfersmexico:
+    "Subway Surfers: Mexico celebrates Mexican culture with Day of the Dead imagery, colorful alebrijes, pyramids, and vibrant street art as players run through the endless course.",
+  subwaySurfersmiami:
+    "Subway Surfers: Miami brings the endless runner to Florida's coastal city, featuring Art Deco architecture, palm-lined streets, beach vibes, and pastel colors inspired by South Beach.",
+  subwaySurfersneworeleans:
+    "Subway Surfers: New Orleans captures the spirit of Louisiana with jazz themes, French Quarter architecture, Mardi Gras imagery, and swamp-inspired visuals throughout the gameplay.",
+  subwaySurfersstpetersburg:
+    "Subway Surfers: St Petersburg takes players to Russia's cultural capital, featuring Hermitage Museum-inspired architecture, canals, and imperial Russian aesthetics.",
+  subwaySurferswinterholiday:
+    "Subway Surfers: Winter Holiday is a seasonal expansion with snow-covered tracks, festive decorations, holiday-themed obstacles, and winter wonderland visuals.",
+  subwaySurferszurich:
+    "Subway Surfers: Zurich brings the endless runner to Switzerland's largest city, featuring Alpine scenery, European architecture, and clean urban design throughout the course."
 };

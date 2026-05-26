@@ -19,6 +19,7 @@ function loadMeta() {
       JSON.parse(localStorage.getItem(AD_STORAGE_KEY)) || {
         dailyCount: 0,
         lastShown: 0,
+        lastClosed: 0, // Option A: track when user closed the ad
         lastReset: Date.now(),
         initialized: false,
         smartlinkShown: false,
@@ -30,6 +31,7 @@ function loadMeta() {
     return {
       dailyCount: 0,
       lastShown: 0,
+      lastClosed: 0,
       lastReset: Date.now(),
       initialized: false,
       smartlinkShown: false,
@@ -54,6 +56,7 @@ function resetDaily(meta) {
     meta.popunderDate = null;
   }
 }
+
 const ADS = {
   banner: {
     key: "66095aa642a3a95fbc1eda8716d518dd",
@@ -66,6 +69,20 @@ const ADS = {
     src: "https://pl29381085.profitablecpmratenetwork.com/5f797791a9771b6940fb9385a69ce168/invoke.js"
   }
 };
+
+// Option C: engagement thresholds that gate ad behavior
+const ENGAGEMENT_TIERS = {
+  //         score range   maxPerDay  minInterval (ms)   postCloseCooldown (ms)
+  cold: { min: 0, max: 39, maxPerDay: 2, minInterval: 20 * 60 * 1000, postCloseCooldown: 15 * 60 * 1000 },
+  warm: { min: 40, max: 69, maxPerDay: 5, minInterval: 8 * 60 * 1000, postCloseCooldown: 8 * 60 * 1000 },
+  hot: { min: 70, max: 100, maxPerDay: 10, minInterval: 4 * 60 * 1000, postCloseCooldown: 5 * 60 * 1000 }
+};
+
+function getTier(score) {
+  if (score >= ENGAGEMENT_TIERS.hot.min) return ENGAGEMENT_TIERS.hot;
+  if (score >= ENGAGEMENT_TIERS.warm.min) return ENGAGEMENT_TIERS.warm;
+  return ENGAGEMENT_TIERS.cold;
+}
 
 export class AdsManager {
   static instance = null;
@@ -138,15 +155,25 @@ export class AdsManager {
     return Math.min(score, 100);
   }
 
+  // Option C: limits are now driven by actual engagement score
   getLimits(score) {
+    const tier = getTier(score);
     return {
-      maxPerDay: 100,
-      minInterval: 1000 * 30,
-      smartlink: 0.7
+      maxPerDay: tier.maxPerDay,
+      minInterval: tier.minInterval,
+      postCloseCooldown: tier.postCloseCooldown
     };
   }
+
   pickProvider() {
     return this.providers[Math.floor(Math.random() * this.providers.length)];
+  }
+
+  // Option A: call this when the user closes an ad window
+  recordAdClosed() {
+    const meta = loadMeta();
+    meta.lastClosed = Date.now();
+    saveMeta(meta);
   }
 
   maybeSpawnAd() {
@@ -158,10 +185,19 @@ export class AdsManager {
     const now = Date.now();
     const sessionTime = now - this.sessionStart;
 
-    const limits = this.getLimits(0);
+    // Option C: score-driven limits
+    const score = this.getEngagementScore();
+    const limits = this.getLimits(score);
+
+    // Option C: cold users don't see ads until they're engaged enough
+    if (score < ENGAGEMENT_TIERS.cold.min) return false;
 
     if (meta.dailyCount >= limits.maxPerDay) return false;
     if (now - meta.lastShown < limits.minInterval) return false;
+
+    // Option A: respect post-close cooldown independent of minInterval
+    if (meta.lastClosed && now - meta.lastClosed < limits.postCloseCooldown) return false;
+
     if (sessionTime < this.minActiveTime) return false;
 
     const existing = document.getElementById("ads-yukios");
@@ -171,7 +207,6 @@ export class AdsManager {
     if (activeAds.length > 0) return false;
 
     const useNative = Math.random() < 0.7;
-
     const containerId = "banner-slot-single";
 
     const win = this.windowHelper.createAndMountWindow(
@@ -195,6 +230,22 @@ export class AdsManager {
       }
     );
 
+    // Option A: hook into the window's close event to record dismissal time
+    if (win) {
+      const closeBtn = win.querySelector(".window-close, [data-action='close'], .close-btn");
+      if (closeBtn) {
+        closeBtn.addEventListener("click", () => this.recordAdClosed(), { once: true });
+      }
+      // Fallback: observe DOM removal
+      const observer = new MutationObserver(() => {
+        if (!document.getElementById("ads-yukios")) {
+          this.recordAdClosed();
+          observer.disconnect();
+        }
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+    }
+
     if (useNative) {
       this.mountNativeSingle(containerId);
     } else {
@@ -214,6 +265,7 @@ export class AdsManager {
 
     return true;
   }
+
   mountNativeSingle(id) {
     if (!shouldEnableAds()) return;
 
@@ -229,6 +281,7 @@ export class AdsManager {
 
     c.appendChild(s);
   }
+
   mountBannerSingle(id) {
     if (!shouldEnableAds()) return;
 
@@ -355,6 +408,7 @@ export class AdsManager {
     c.appendChild(s1);
     c.appendChild(s2);
   }
+
   mountNative() {
     if (!shouldEnableAds()) return;
     if (this.nativeShown) return;

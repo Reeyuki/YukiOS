@@ -8,32 +8,32 @@ const capabilities = [
   {
     tag: "WM",
     title: "Windowed Multitasking",
-    desc: "Drag, resize, and layer apps like a real desktop."
+    desc: "Drag, resize, snap, minimize, maximize, and layer apps like a real desktop with window animations."
   },
   {
     tag: "VFS",
     title: "Virtual Filesystem",
-    desc: "Explorer + app storage living in the browser."
+    desc: "BrowserFS + IndexedDB provides persistent storage at /home/reeyuki/ that survives browser restarts."
   },
   {
     tag: "PLAY",
     title: "Games Library",
-    desc: "A growing catalog of ready-to-play games."
+    desc: "3700+ games via Steam integration, Flash (Ruffle), DOS (JS-DOS), and console emulation."
   },
   {
     tag: "APPS",
-    title: "Built-in Apps",
-    desc: "Terminal, browser, editor, paint, calculator, and more."
+    title: "30+ Built-in Apps",
+    desc: "Terminal, browser, editors (Notepad, Markdown, Monaco), paint, calculator, office viewer, and more."
   },
   {
     tag: "RUN",
-    title: "Multi-Runtime",
-    desc: "HTML5, WASM, emulation, flash and more in one place."
+    title: "Multi-Runtime Engine",
+    desc: "HTML5, WebAssembly, emulation (JS-DOS, V86, Azahar 3DS), Flash (Ruffle) in one place."
   },
   {
-    tag: "LOOK",
-    title: "Personalization",
-    desc: "Bring your own wallpapers and tweak the vibe."
+    tag: "WORK",
+    title: "Virtual Workspaces",
+    desc: "Multiple virtual desktops for organizing different tasks and contexts with window assignment."
   }
 ];
 

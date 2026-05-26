@@ -56,7 +56,8 @@ export class AppLauncher {
     yukiConvertApp,
     setupApp,
     dataEditorApp,
-    installedAppsApp
+    installedAppsApp,
+    yukiOsGuideApp
   ) {
     this.wm = windowManager;
     this.windowHelper = new WindowHelper(this.wm);
@@ -92,6 +93,7 @@ export class AppLauncher {
     this.setupApp = setupApp;
     this.dataEditorApp = dataEditorApp;
     this.installedAppsApp = installedAppsApp;
+    this.yukiOsGuideApp = yukiOsGuideApp;
     this.TRANSPARENCY_ALLOWED_APP_IDS = new Set(["paint", "photopea", "vscode", "liventcord"]);
 
     this.clippyPromise = initClippy();
@@ -332,6 +334,13 @@ export class AppLauncher {
         icon: "fas fa-th-list",
         clippy: { message: "Manage your installed applications here!", animation: "GetAttention" },
         excludeFromInstalledApps: true
+      },
+      yukiOsGuide: {
+        type: "system",
+        title: "Yuki OS Guide",
+        action: () => this.yukiOsGuideApp.open(),
+        icon: "fas fa-book-open",
+        clippy: { message: "Discover what Yuki OS can do!", animation: "Pleased" }
       }
     };
 
@@ -412,6 +421,7 @@ export class AppLauncher {
     this.appRuntime.registerLegacy("yukiConvert", this.yukiConvertApp);
     this.appRuntime.registerLegacy("setupApp", this.setupApp);
     this.appRuntime.registerLegacy("installedApps", this.installedAppsApp);
+    this.appRuntime.registerLegacy("yukiOsGuide", this.yukiOsGuideApp);
   }
 
   async _tryLaunchDeclarative(appId, opts) {

@@ -11,6 +11,11 @@ const NEWS_UPDATES = [
         title: "New App",
         items: [
           [
+            "fa-book-open",
+            "Yuki OS Guide",
+            "Discover what Yuki OS can do with the new system-wide guide. Browse apps, explore features, and understand the system architecture."
+          ],
+          [
             "fa-th-list",
             "Installed Apps",
             "Manage all your apps in one place. Rename, enable/disable, and uninstall apps with bulk selection support."

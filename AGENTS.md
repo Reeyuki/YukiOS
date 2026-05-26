@@ -7,6 +7,7 @@
 - Before finalizing any code changes, run `pnpm build:dev` in `webos-desktop/`. A change that breaks the build is incomplete.
 - Always use CSS variables from `src/styles/style.css`. Never hardcode colors.
 - When making significant changes, new features, or new apps: register them in `src/news.js` under `NEWS_UPDATES` for the current day with an appropriate icon, title, and short user-facing description.
+- Whenever you define a new app to appJauncher or gamesJist, define description for it on gameDescriptions.js
 
 ---
 
@@ -343,15 +344,6 @@ getDeclarativeSchema(opts) {
 | `runtime/ActionExecutor.js` | Dispatches actions, modifies state, runs system ops |
 
 **HybridAdapter** (`runtime/HybridAdapter.js`) — `enhanceBaseApp(BaseAppClass)` wraps `open()` to check for a declarative schema first; falls back transparently to imperative `open()` if none found. Also translates legacy multi-parameter signatures (e.g. `open(title, content, filePath)`) into structured `opts` objects.
-
----
-
-## Content Delivery
-
-| Purpose | Base URL |
-|---------|---------|
-| Main CDN | `https://cdn.statically.io/gh/reeyuki/yukios@a3efea2218a5d717290e72ea41cd341d14689ce5` |
-| Games CDN | `https://cdn.statically.io/gh/reeyuki/yukios-games@main` |
 
 - **CORS Proxy**: Configurable per app via `appCreator`
 - **HTML Sandboxing**: Use `fetchHtmlAsBlobUrl()` to convert HTML → `blob://` for secure execution
