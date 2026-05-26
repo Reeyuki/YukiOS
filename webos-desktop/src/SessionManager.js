@@ -272,8 +272,11 @@ export class SessionManager {
     this.isLocked = false;
 
     if (this.lockContainer) {
-      this.lockContainer.remove();
-      this.lockContainer = null;
+      this.lockContainer.classList.add("exit");
+      setTimeout(() => {
+        this.lockContainer.remove();
+        this.lockContainer = null;
+      }, 500);
     }
 
     if (this.timeInterval) {

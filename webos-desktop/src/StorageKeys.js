@@ -76,5 +76,6 @@ export const StorageKeys = {
   windowCloseAnimation: "yukiOS_window_close_animation",
   windowMinimizeAnimation: "yukiOS_window_minimize_animation",
   windowAnimationSpeed: "yukiOS_window_animation_speed",
-  clickBubbleFeedback: "yukiOS_click_bubble_feedback"
+  clickBubbleFeedback: "yukiOS_click_bubble_feedback",
+  transparentUI: "yukiOS_transparent_ui"
 };

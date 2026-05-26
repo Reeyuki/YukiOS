@@ -64,7 +64,8 @@ export class SettingsApp extends BaseApp {
         notificationsRemoveTimeout: localStorage.getItem(StorageKeys.notificationsRemoveTimeout) !== "false",
         notificationsPopAnimation: localStorage.getItem(StorageKeys.notificationsPopAnimation) !== "false",
         notificationsOverFullscreen: localStorage.getItem(StorageKeys.notificationsOverFullscreen) === "true",
-        notificationsDuration: Number(localStorage.getItem(StorageKeys.notificationsDuration)) || 5
+        notificationsDuration: Number(localStorage.getItem(StorageKeys.notificationsDuration)) || 5,
+        transparentUI: localStorage.getItem(StorageKeys.transparentUI) === "true"
       };
 
       this._applyCursor(this._settings.cursorDataUrl);
@@ -75,6 +76,7 @@ export class SettingsApp extends BaseApp {
       this._applyStartMenuSize(this._settings.startMenuWidth, this._settings.startMenuHeight);
       this._applyStartMenuCats(this._settings.startMenuCats);
       this._applyPerformanceMode(this._settings.performanceMode);
+      this._applyTransparentUI(this._settings.transparentUI);
       window._settings = this._settings;
 
       if (cursorFromLegacyStorage && !cursorOriginalFromStorage) {
@@ -610,6 +612,16 @@ export class SettingsApp extends BaseApp {
               <span id="settingsWindowTransparencyValue" class="settings-range-value">${Math.round(this._settings.windowTransparency * 100)}%</span>
             </div>
           </div>
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Transparent OS UI</span>
+              <span class="settings-label-desc">Make taskbar and start menu fully transparent</span>
+            </div>
+            <label class="settings-toggle">
+              <input type="checkbox" id="settingsTransparentUI" ${this._settings.transparentUI ? "checked" : ""}/>
+              <span class="settings-track"><span class="settings-thumb"></span></span>
+            </label>
+          </div>
         </div>
 
         <div class="settings-card" style="margin-top: 16px;">
@@ -933,6 +945,11 @@ export class SettingsApp extends BaseApp {
       localStorage.setItem(StorageKeys.notificationsPopAnimation, String(notificationsPopAnimation));
       localStorage.setItem(StorageKeys.notificationsOverFullscreen, String(notificationsOverFullscreen));
       localStorage.setItem(StorageKeys.notificationsDuration, String(notificationsDuration));
+
+      const transparentUIToggle = win.querySelector("#settingsTransparentUI");
+      const transparentUI = !!transparentUIToggle?.checked;
+      localStorage.setItem(StorageKeys.transparentUI, String(transparentUI));
+
       const disableBootScreenToggle = win.querySelector("#settingsDisableBootScreen");
       const disableBootScreen = !!disableBootScreenToggle?.checked;
       localStorage.setItem(StorageKeys.disableBootScreen, String(disableBootScreen));
@@ -980,7 +997,8 @@ export class SettingsApp extends BaseApp {
         notificationsRemoveTimeout,
         notificationsPopAnimation,
         notificationsOverFullscreen,
-        notificationsDuration
+        notificationsDuration,
+        transparentUI
       });
 
       this.wm.saveSession();
@@ -991,6 +1009,7 @@ export class SettingsApp extends BaseApp {
       this._applyStartMenuSize(startMenuWidth, startMenuHeight);
       this._applyStartMenuCats(startMenuCats);
       this._applyPerformanceMode(selectedPerformanceMode);
+      this._applyTransparentUI(transparentUI);
       bus.emit(BusEvents.SETTINGS_CHANGED, this._settings);
       if (this._settings.cdnMirror && this._settings.cdnMirror !== cdnMirror) {
         showStatus("Reloading with new CDN...");
@@ -1252,6 +1271,17 @@ export class SettingsApp extends BaseApp {
         this._settings.windowTransparency = val;
         localStorage.setItem(StorageKeys.windowTransparency, String(val));
         this._applyWindowTransparency(val);
+        showStatus("Saved");
+      });
+    }
+
+    const transparentUIToggle = win.querySelector("#settingsTransparentUI");
+    if (transparentUIToggle) {
+      transparentUIToggle.addEventListener("change", () => {
+        const enabled = transparentUIToggle.checked;
+        this._settings.transparentUI = enabled;
+        localStorage.setItem(StorageKeys.transparentUI, String(enabled));
+        this._applyTransparentUI(enabled);
         showStatus("Saved");
       });
     }
@@ -2016,6 +2046,14 @@ export class SettingsApp extends BaseApp {
     Object.values(StorageKeys).forEach((key) => localStorage.removeItem(key));
     location.reload();
   };
+
+  _applyTransparentUI(enabled) {
+    if (enabled) {
+      document.documentElement.classList.add("transparent-ui");
+    } else {
+      document.documentElement.classList.remove("transparent-ui");
+    }
+  }
 
   _applyPerformanceMode(mode) {
     const effective = mode || "high";

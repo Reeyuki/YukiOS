@@ -29,13 +29,11 @@
 @keyframes fadeOut {
   from {
     opacity: 1;
-    transform: scale(1);
-    filter: blur(0);
+    transform: translateY(0);
   }
   to {
     opacity: 0;
-    transform: scale(1.1);
-    filter: blur(10px);
+    transform: translateY(-100%);
   }
 }
 
@@ -291,6 +289,11 @@
   font-family: "Sora", sans-serif;
   color: var(--text-primary);
   animation: fadeIn 0.3s ease-out;
+}
+
+.lock-screen-overlay.exit {
+  animation: fadeOut 0.5s forwards ease-in;
+  pointer-events: none;
 }
 
 .lock-background {

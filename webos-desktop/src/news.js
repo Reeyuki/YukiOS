@@ -21,6 +21,17 @@ const NEWS_UPDATES = [
             "Manage all your apps in one place. Rename, enable/disable, and uninstall apps with bulk selection support."
           ]
         ]
+      },
+      {
+        icon: "fa-wand-magic-sparkles",
+        title: "Features & Improvements",
+        items: [
+          [
+            "fa-eye-slash",
+            "Transparent UI Toggle",
+            "Make your taskbar and start menu fully transparent with the new Transparent UI setting in the appearance options."
+          ]
+        ]
       }
     ]
   },
@@ -276,24 +287,6 @@ const NEWS_UPDATES = [
           ["fa-house", "Steam Home Button", "Added a add to home button in the Steam app."],
           ["fa-ellipsis", "Menus & Explorer Polish", "Improved context menus and refined explorer styling."]
         ]
-      },
-      {
-        icon: "fa-bug-slash",
-        title: "Fixes",
-        items: [
-          ["fa-trash", "Desktop Icon Deletion", "Fixed desktop icon deletion logic for deleting multiple icons."],
-          ["fa-file-image", "File Thumbnails", "Fixed file image display issues in the explorer."]
-        ]
-      }
-    ]
-  },
-  {
-    date: "May 3, 2026",
-    sections: [
-      {
-        icon: "fa-bug-slash",
-        title: "Fixes",
-        items: [["fa-ghost", "Game Fixes", "Fixed issues affecting Bendy and Isaac Rebirth."]]
       }
     ]
   },
@@ -396,7 +389,6 @@ const NEWS_UPDATES = [
             "Archive Support",
             "Extract 7z and .tar.xz archives, in addition to zip files now available via right-click context menu."
           ],
-          ["fa-bolt", "ROM Caching", "Games load faster thanks to local ROM caching."],
           ["fa-bolt", "File Download", "You can now download files from explorer right clicking to files."],
           ["fa-image", "Dynamic Favicon", "The browser tab icon now updates to reflect what you're doing."],
           ["fa-video", "Yuki Convert", "Convert any file to other formats fuly locally without uploading to a server."],
@@ -410,15 +402,6 @@ const NEWS_UPDATES = [
             "The desktop now automatically reflects file changes without a manual refresh."
           ],
           ["fa-film", "Video Performance", "Smoother video playback across the system."]
-        ]
-      },
-      {
-        icon: "fa-bug-slash",
-        title: "Bug Fixes",
-        items: [
-          ["fa-file-pdf", "PDF Support", "Fixed an issue with PDF file support."],
-          ["fa-panorama", "Wallpaper Shuffle", "Resolved a bug where wallpapers would sometimes skip unexpectedly."],
-          ["fa-toolbox", "App Creator", "Corrected an import bug in the App Creator."]
         ]
       }
     ]

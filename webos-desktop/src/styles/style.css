@@ -1913,6 +1913,18 @@ html[data-theme] .start-menu {
   color: var(--text-primary);
 }
 
+html.transparent-ui[data-theme] #taskbar {
+  background: transparent !important;
+}
+
+html.transparent-ui[data-theme] .start-menu {
+  background: transparent !important;
+}
+
+html.transparent-ui[data-theme] .window-header {
+  background: transparent !important;
+}
+
 html[data-theme] .start-menu-item {
   color: var(--text-primary);
 }
