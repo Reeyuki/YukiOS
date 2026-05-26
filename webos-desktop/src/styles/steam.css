@@ -236,6 +236,7 @@
 }
 
 .sidebar-search-container {
+  position: relative;
   padding: 10px;
   background: rgba(0, 0, 0, 0.1);
 }
@@ -1217,14 +1218,17 @@
 
 .sidebar-search-icon {
   position: absolute;
-  left: 10px;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
   color: #8f98a0;
   font-size: 12px;
   pointer-events: none;
+  z-index: 1;
 }
 
 .sidebar-search-input {
-  padding-left: 28px !important;
+  padding-left: 36px !important;
 }
 
 .settings-container {

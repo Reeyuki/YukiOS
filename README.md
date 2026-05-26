@@ -9,6 +9,13 @@ Yuki OS is a full browser-based operating system built entirely in vanilla JavaS
 
 Run Flash games, DOS applications, 3DS emulation, retro console games, office tools, coding environments, and browser apps side-by-side inside a unified desktop shell.
 
+Its built entirely in vanilla JS.
+
+![Steam interface](.github/steam.png)
+![Setup](.github/setupsettings.png)
+![Achievements](.github/browserachieve.png)
+![Music player](.github/music.png)
+![Applications](.github/apps.png)
 
 ---
 

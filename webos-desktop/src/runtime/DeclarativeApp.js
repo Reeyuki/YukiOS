@@ -33,7 +33,7 @@ export class DeclarativeApp {
   }
 
   _getWindowHelper() {
-    return new WindowHelper(this.wm);
+    return WindowHelper;
   }
 
   _registerCustomActions() {
