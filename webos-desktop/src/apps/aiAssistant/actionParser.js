@@ -70,13 +70,13 @@ export class ActionParser {
 
   _extractInlineActions(text, existingActions) {
     const patterns = [
-      { regex: /open\s+(?:the\s+)?(\w+)/i, action: "open_app" },
-      { regex: /close\s+(?:the\s+)?(\w+)/i, action: "close_app" },
-      { regex: /switch\s+to\s+(\w+)/i, action: "open_app" },
-      { regex: /change\s+theme\s+to\s+(\w+)/i, action: "set_theme" },
-      { regex: /switch\s+workspace(?:\s+to\s+(\w+))?/i, action: "switch_workspace" },
-      { regex: /next\s+workspace/i, action: "switch_workspace", target: "next" },
-      { regex: /previous\s+workspace|prev\s+workspace/i, action: "switch_workspace", target: "prev" }
+      { regex: /open\s+(?:the\s+)?(\w+)/gi, action: "open_app" },
+      { regex: /close\s+(?:the\s+)?(\w+)/gi, action: "close_app" },
+      { regex: /switch\s+to\s+(\w+)/gi, action: "open_app" },
+      { regex: /change\s+theme\s+to\s+(\w+)/gi, action: "set_theme" },
+      { regex: /switch\s+workspace(?:\s+to\s+(\w+))?/gi, action: "switch_workspace" },
+      { regex: /next\s+workspace/gi, action: "switch_workspace", target: "next" },
+      { regex: /previous\s+workspace|prev\s+workspace/gi, action: "switch_workspace", target: "prev" }
     ];
 
     patterns.forEach(({ regex, action, target: staticTarget }) => {

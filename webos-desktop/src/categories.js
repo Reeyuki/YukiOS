@@ -55,12 +55,12 @@ export class CategoriesApp {
     win.style.display = "flex";
     win.style.flexDirection = "column";
 
+    const gamesRenderer = new steamAppRenderer();
+
     win.innerHTML = `
       <div class="window-content games-app-window" style="flex:1;overflow:auto;padding:0;box-sizing:border-box;">
         <div id="games-app-container" style="height:100%;"></div>
       </div>`;
-
-    const gamesRenderer = new steamAppRenderer();
 
     const windowHelper = new WindowHelper(wm);
     windowHelper.mountWindow(win, STEAM_WIN_ID, winTitle, null, {

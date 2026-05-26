@@ -222,7 +222,6 @@
   flex: 1;
   display: flex;
   overflow: hidden;
-  position: relative;
 }
 
 .steam-library-sidebar {
@@ -1182,9 +1181,7 @@
 
 .steam-dropdown-menu {
   display: none;
-  position: absolute;
-  top: 100%;
-  left: 0;
+  position: fixed;
   background: #171a21;
   border: 1px solid rgba(255, 255, 255, 0.1);
   min-width: 160px;

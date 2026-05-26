@@ -27,7 +27,7 @@ export function buildSteamShell(container, username, profilePic, hiddenGamesCoun
     </div>
 
     <div class="steam-main">
-      <div class="steam-top-bar">
+      <div class="steam-top-bar window-header">
         <i class="fab fa-steam" style="font-size: 20px; margin-right: 8px;"></i>
         <div class="steam-menu-items">
           <div class="steam-dropdown">
@@ -344,7 +344,15 @@ export function initSettingsPage(container) {
 export function initDropdowns(container, navigateTo, openFriendsWindow, wm) {
   const allDropdownMenus = container.querySelectorAll(".steam-dropdown-menu");
 
-  const closeAll = () => allDropdownMenus.forEach((m) => m.classList.remove("visible"));
+  const closeAll = () =>
+    allDropdownMenus.forEach((m) => {
+      m.classList.remove("visible");
+      if (m.dataset.movedToBody === "true") {
+        m.remove();
+        m.dataset.movedToBody = "false";
+        container.appendChild(m);
+      }
+    });
 
   container.querySelectorAll(".steam-dropdown-trigger").forEach((trigger) => {
     trigger.addEventListener("click", (e) => {
@@ -353,7 +361,16 @@ export function initDropdowns(container, navigateTo, openFriendsWindow, wm) {
       const menu = container.querySelector(`#${dropdownId}`);
       const isVisible = menu.classList.contains("visible");
       closeAll();
-      if (!isVisible) menu.classList.add("visible");
+      if (!isVisible) {
+        const rect = trigger.getBoundingClientRect();
+        menu.style.top = `${rect.bottom}px`;
+        menu.style.left = `${rect.left}px`;
+        menu.style.position = "fixed";
+        menu.style.zIndex = "99999";
+        document.body.appendChild(menu);
+        menu.dataset.movedToBody = "true";
+        menu.classList.add("visible");
+      }
     });
   });
 

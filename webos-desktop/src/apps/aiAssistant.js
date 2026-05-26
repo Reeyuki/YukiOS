@@ -49,6 +49,7 @@ export class AIAssistantApp extends BaseApp {
     };
 
     win.innerHTML = this._buildSetupUI(state);
+
     this.wm.mountWindow(win, winId, "Yuki AI Assistant", "fas fa-robot");
 
     this._setupSetupEventListeners(win, state);
