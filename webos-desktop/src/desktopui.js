@@ -1770,7 +1770,6 @@ export class DesktopUI {
       </div>
     `;
 
-    document.body.appendChild(win);
     this.appLauncher.wm.mountWindow(win, winId, content.name || "YouTube Embed", "fab fa-youtube");
   }
 

@@ -56,7 +56,6 @@ class ClipboardManagerApp extends BaseApp {
       </div>
     `;
 
-    document.body.appendChild(win);
     this.wm.mountWindow(win, this.winId, "Clipboard Manager", "fas fa-paste");
 
     this.openWindows.add(this.winId);

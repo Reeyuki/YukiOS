@@ -861,7 +861,7 @@ class PdfViewer extends EditorStrategy {
       viewer.className = "office-pdf-viewer";
       const info = document.createElement("div");
       info.className = "office-pdf-info";
-      info.textContent = `PDF — ${pdf.numPages} page(s)`;
+      info.textContent = `PDF - ${pdf.numPages} page(s)`;
       viewer.appendChild(info);
       container.innerHTML = "";
       container.appendChild(viewer);
@@ -933,7 +933,7 @@ class OdpViewer extends EditorStrategy {
       viewer.className = "office-presentation-viewer";
       const info = document.createElement("div");
       info.className = "office-presentation-info";
-      info.textContent = `Presentation — ${pages.length} slide(s)`;
+      info.textContent = `Presentation - ${pages.length} slide(s)`;
       viewer.appendChild(info);
       for (let i = 0; i < pages.length; i++) {
         const slideHtml = OdpViewer.renderSlide(pages[i], odpStyles, mediaMap);

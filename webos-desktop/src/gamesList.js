@@ -1,6 +1,7 @@
 export const appMap = {
   yukiOsGuide: { type: "system", title: "Yuki OS Guide", icon: "fas fa-book-open" },
   clipboardManager: { type: "system", title: "Clipboard Manager", icon: "fas fa-paste" },
+  aiAssistant: { type: "system", title: "Yuki AI Assistant", icon: "fas fa-robot" },
   yukiConvert: {
     type: "system",
     title: "Yuki Convert",

@@ -1,9 +1,8 @@
-/* About Yuki OS Styles */
-
 #about-yukios .abx {
   background:
-    radial-gradient(circle at 20% 0%, rgba(200, 65, 27, 0.12), transparent 55%), linear-gradient(#0b0b10, #0b0b10);
-  color: rgba(255, 255, 255, 0.92);
+    radial-gradient(circle at 20% 0%, var(--brand-dim), transparent 55%),
+    linear-gradient(var(--bg-primary), var(--bg-primary));
+  color: var(--text-primary);
   height: calc(100% - 40px);
   overflow-y: auto;
   box-sizing: border-box;
@@ -28,9 +27,12 @@
   align-items: center;
   padding: 14px;
   border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(18px);
+  border: 1px solid var(--glass-border);
+  background: var(--glass);
+  backdrop-filter: blur(32px);
+  box-shadow:
+    0 24px 64px var(--shadow-color),
+    inset 0 1px 0 var(--glass-border);
 }
 
 #about-yukios .abx-mark {
@@ -46,7 +48,7 @@
 #about-yukios .abx-badge {
   width: 64px;
   height: 64px;
-  border-radius: 16px;
+  border-radius: 14px;
   display: block;
   object-fit: cover;
 }
@@ -55,11 +57,12 @@
   margin: 0;
   font-weight: 800;
   font-size: 1.5rem;
+  color: var(--text-primary);
 }
 
 #about-yukios .abx-sub {
   margin: 6px 0 0;
-  color: rgba(255, 255, 255, 0.66);
+  color: var(--text-secondary);
   font-size: 0.88rem;
 }
 
@@ -74,12 +77,13 @@
 }
 
 #about-yukios .abx-pill {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--glass);
   padding: 4px 10px;
   border-radius: 999px;
   font-size: 0.75rem;
   font-weight: 500;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid var(--glass-border);
+  color: var(--text-primary);
 }
 
 #about-yukios .abx-discord-link {
@@ -94,9 +98,9 @@
   padding: 6px 14px;
   font-size: 0.8rem;
   font-weight: 600;
-  color: #fff;
-  background: #5865f2;
-  border: 1px solid rgba(88, 101, 242, 0.5);
+  color: var(--text-on-brand);
+  background: var(--brand);
+  border: 1px solid var(--brand-dark);
   border-radius: 999px;
   cursor: pointer;
   transition:
@@ -105,7 +109,7 @@
 }
 
 #about-yukios .abx-btn-discord:hover {
-  background: #4752c4;
+  background: var(--brand-hover);
 }
 
 #about-yukios .abx-btn-discord:active {
@@ -120,19 +124,23 @@
 
 #about-yukios .abx-panel {
   border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(18px);
+  border: 1px solid var(--glass-border);
+  background: var(--glass);
+  backdrop-filter: blur(32px);
   overflow: hidden;
+  box-shadow:
+    0 24px 64px var(--shadow-color),
+    inset 0 1px 0 var(--glass-border);
 }
 
 #about-yukios .abx-panel-h {
   display: flex;
   justify-content: space-between;
   padding: 12px 14px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(0, 0, 0, 0.18);
+  border-bottom: 1px solid var(--glass-border);
+  background: var(--s1);
   font-weight: 700;
+  color: var(--text-primary);
 }
 
 #about-yukios .abx-panel-b {
@@ -148,29 +156,30 @@
 #about-yukios .abx-cap {
   border-radius: 12px;
   padding: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid var(--glass-border);
+  background: var(--s2);
 }
 
 #about-yukios .abx-cap-tag {
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
-  opacity: 0.7;
+  color: var(--text-secondary);
 }
 
 #about-yukios .abx-cap-title {
   font-weight: 700;
   font-size: 0.92rem;
+  color: var(--text-primary);
 }
 
 #about-yukios .abx-cap-desc {
   font-size: 0.82rem;
-  color: rgba(255, 255, 255, 0.64);
+  color: var(--text-secondary);
 }
 
 #about-yukios .abx-legal {
   font-size: 0.84rem;
-  color: rgba(255, 255, 255, 0.75);
+  color: var(--text-secondary);
   white-space: pre-wrap;
   line-height: 1.6;
 }
@@ -180,15 +189,49 @@
   justify-content: space-between;
   padding: 12px 14px;
   border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--glass-border);
+  background: var(--glass);
+  backdrop-filter: blur(32px);
+  box-shadow:
+    0 24px 64px var(--shadow-color),
+    inset 0 1px 0 var(--glass-border);
 }
 
 #about-yukios .abx-link {
   text-decoration: none;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   padding: 0.45rem 0.8rem;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  color: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--glass-border);
+  color: var(--text-primary);
+  background: var(--glass);
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+#about-yukios .abx-link:hover {
+  background: var(--glass-hover);
+  border-color: var(--brand);
+}
+
+html[data-theme="light"] #about-yukios .abx-top,
+html[data-theme="light"] #about-yukios .abx-panel,
+html[data-theme="light"] #about-yukios .abx-foot {
+  background: #fff;
+  border-color: #e0e0e0;
+}
+
+html[data-theme="light"] #about-yukios .abx-pill,
+html[data-theme="light"] #about-yukios .abx-link {
+  background: #f0f0f0;
+  border-color: #d8d8d8;
+  color: #111;
+}
+
+html[data-theme="light"] #about-yukios .abx-sub,
+html[data-theme="light"] #about-yukios .abx-cap-tag,
+html[data-theme="light"] #about-yukios .abx-cap-desc,
+html[data-theme="light"] #about-yukios .abx-legal {
+  color: #666;
 }

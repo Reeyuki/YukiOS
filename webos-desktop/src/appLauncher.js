@@ -58,7 +58,8 @@ export class AppLauncher {
     dataEditorApp,
     installedAppsApp,
     yukiOsGuideApp,
-    clipboardManagerApp
+    clipboardManagerApp,
+    aiAssistantApp
   ) {
     this.wm = windowManager;
     this.windowHelper = new WindowHelper(this.wm);
@@ -96,6 +97,7 @@ export class AppLauncher {
     this.installedAppsApp = installedAppsApp;
     this.yukiOsGuideApp = yukiOsGuideApp;
     this.clipboardManagerApp = clipboardManagerApp;
+    this.aiAssistantApp = aiAssistantApp;
     this.TRANSPARENCY_ALLOWED_APP_IDS = new Set(["paint", "photopea", "vscode", "liventcord"]);
 
     this.clippyPromise = initClippy();
@@ -349,6 +351,13 @@ export class AppLauncher {
         title: "Clipboard Manager",
         action: (extra) => this.clipboardManagerApp.open(extra),
         icon: "fas fa-paste"
+      },
+      aiAssistant: {
+        type: "system",
+        title: "Yuki AI Assistant",
+        action: (extra) => this.aiAssistantApp.open(extra),
+        icon: "fas fa-robot",
+        clippy: { message: "I'm here to help you with anything!", animation: "Pleased" }
       }
     };
 
@@ -434,6 +443,7 @@ export class AppLauncher {
     this.appRuntime.registerLegacy("setupApp", this.setupApp);
     this.appRuntime.registerLegacy("installedApps", this.installedAppsApp);
     this.appRuntime.registerLegacy("yukiOsGuide", this.yukiOsGuideApp);
+    this.appRuntime.registerLegacy("aiAssistant", this.aiAssistantApp);
   }
 
   async _tryLaunchDeclarative(appId, opts) {

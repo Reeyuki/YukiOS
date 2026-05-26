@@ -11,6 +11,16 @@ const NEWS_UPDATES = [
         title: "New App",
         items: [
           [
+            "fa-robot",
+            "Yuki AI Assistant",
+            "Intelligent Local AI assistant powered by WebLLM. Execute OS actions, workspace controls, app launches, manage files, and get contextual help with automation support."
+          ],
+          [
+            "fa-user-gear",
+            "Setup Profile Step",
+            "You can now choose your nickname and avatar during your first-time setup, with a final preview of your profile before you finish."
+          ],
+          [
             "fa-book-open",
             "Yuki OS Guide",
             "Discover what Yuki OS can do with the new system-wide guide. Browse apps, explore features, and understand the system architecture."
@@ -529,7 +539,7 @@ export class NewsApp extends BaseApp {
             <div class="news-hero-meta">
               <div class="news-pill" title="Latest update shown first">
                 <i class="fas fa-clock"></i>
-                <span>Latest: ${updates[0]?.date ?? "—"}</span>
+                <span>Latest: ${updates[0]?.date ?? "-"}</span>
               </div>
             </div>
           </div>

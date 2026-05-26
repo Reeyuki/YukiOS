@@ -1087,7 +1087,7 @@ export class BrowserApp extends BaseApp {
 <html>
 <head>
 <meta charset="utf-8">
-<title>Yuki — New Tab</title>
+<title>Yuki - New Tab</title>
 <style>
 .bg-orb {
   position: fixed;
@@ -1244,7 +1244,7 @@ body {
     const onLoad = () => {
       tab.iframe.removeEventListener("load", onLoad);
       this.showLoading(false);
-      tab.title = "Yuki — New Tab";
+      tab.title = "Yuki - New Tab";
       tab.faviconUrl = null;
       this.renderTabs();
       if (this.activeTabId === tab.id) this.updateAddressBar("yuki://home");

@@ -15,6 +15,20 @@ export class SessionManager {
   }
 
   async showLogin() {
+    if (!localStorage.getItem(StorageKeys.setupCompleted)) {
+      const lastUsername = localStorage.getItem(STORAGE_KEYS.username) || "";
+      const lastAvatar = localStorage.getItem(STORAGE_KEYS.profilePicture) || PREDEFINED_AVATARS[0];
+      const displayName = lastUsername || "Guest";
+      const sessionKey = lastUsername.toLowerCase().replace(/[^a-z0-9]/g, "") || "guest";
+      this.currentSession = {
+        name: displayName,
+        key: sessionKey,
+        avatar: lastAvatar
+      };
+      await this._initializeSession();
+      return this.currentSession;
+    }
+
     const lastLaunch = localStorage.getItem(StorageKeys.lastLaunchTime);
     const now = Date.now();
     const isWithin15Mins = lastLaunch && now - Number(lastLaunch) < 15 * 60 * 1000;
@@ -70,10 +84,10 @@ export class SessionManager {
           <div class="avatar-section">
             <label>Select Avatar</label>
             <div class="avatar-grid-wrapper">
-              <div class="avatar-grid" id="login-avatar-grid">
+              <div class="login-avatar-grid" id="login-avatar-grid">
                 ${PREDEFINED_AVATARS.map(
                   (url) => `
-                  <div class="avatar-tile ${url === lastAvatar ? "active" : ""}" data-url="${url}">
+                  <div class="login-avatar-tile ${url === lastAvatar ? "active" : ""}" data-url="${url}">
                     <img src="${url}" alt="Avatar">
                     <div class="tile-check"><i class="fas fa-check"></i></div>
                   </div>
@@ -138,10 +152,10 @@ export class SessionManager {
     let selectedAvatar = localStorage.getItem(STORAGE_KEYS.profilePicture) || PREDEFINED_AVATARS[0];
 
     grid.addEventListener("click", (e) => {
-      const tile = e.target.closest(".avatar-tile");
+      const tile = e.target.closest(".login-avatar-tile");
       if (!tile) return;
 
-      grid.querySelectorAll(".avatar-tile").forEach((t) => t.classList.remove("active"));
+      grid.querySelectorAll(".login-avatar-tile").forEach((t) => t.classList.remove("active"));
       tile.classList.add("active");
       selectedAvatar = tile.dataset.url;
     });
@@ -160,14 +174,14 @@ export class SessionManager {
           selectedAvatar = dataUrl;
 
           const newTile = document.createElement("div");
-          newTile.className = "avatar-tile active";
+          newTile.className = "login-avatar-tile active";
           newTile.dataset.url = dataUrl;
           newTile.innerHTML = `
             <img src="${dataUrl}" alt="Avatar">
             <div class="tile-check"><i class="fas fa-check"></i></div>
           `;
 
-          grid.querySelectorAll(".avatar-tile").forEach((t) => t.classList.remove("active"));
+          grid.querySelectorAll(".login-avatar-tile").forEach((t) => t.classList.remove("active"));
           grid.prepend(newTile);
           grid.scrollTop = 0;
         };

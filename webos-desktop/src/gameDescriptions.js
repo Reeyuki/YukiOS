@@ -44,6 +44,8 @@ export const APP_DESCRIPTIONS = {
   yukiOsGuide: "Yuki OS Guide - Comprehensive documentation and feature discovery hub for Yuki OS.",
   clipboardManager:
     "Clipboard Manager - System-wide clipboard history with tray icon support for managing copied text and data.",
+  aiAssistant:
+    "Yuki AI Assistant - Intelligent AI assistant powered by WebLLM for client-side inference. Execute OS actions, manage files, and get contextual help with automation support.",
   kiwiIRC: "KiwiIRC - IRC client for connecting to IRC servers and chat rooms.",
   azahar: "Azahar - Nintendo 3DS emulator for playing 3DS games in the browser.",
   paint: "Paint - Basic image editor with drawing tools, colors, and save functionality.",
@@ -57,9 +59,9 @@ export const APP_DESCRIPTIONS = {
   game: "Game - Playable game content from the Yuki OS library of 3700+ titles across multiple platforms."
 };
 export const descriptionMap = {
-  tabs: "Totally Accurate Battle Simulator (TABS) is a physics based ragdoll tactics game developed by Landfall Games. Players pit armies of historical, mythological, and absurd units — from mammoths and squires to laser wielding raptors — against each other in a series of wobbly, unpredictable battles where the engine's chaotic physics are just as important as strategy.",
+  tabs: "Totally Accurate Battle Simulator (TABS) is a physics based ragdoll tactics game developed by Landfall Games. Players pit armies of historical, mythological, and absurd units - from mammoths and squires to laser wielding raptors - against each other in a series of wobbly, unpredictable battles where the engine's chaotic physics are just as important as strategy.",
   plagueIncEvolved:
-    "Plague Inc: Evolved is a real-time strategy simulation by Ndemic Creations, released in 2016. Players design and evolve a deadly pathogen — bacteria, virus, fungus, or more exotic threats — with the goal of infecting and exterminating the entire human population before a cure is developed.",
+    "Plague Inc: Evolved is a real-time strategy simulation by Ndemic Creations, released in 2016. Players design and evolve a deadly pathogen - bacteria, virus, fungus, or more exotic threats - with the goal of infecting and exterminating the entire human population before a cure is developed.",
   fiveNightsAtFrickbears3:
     "A fan-made parody inspired by Scott Cawthon's Five Nights at Freddy's series. Players sit in a security office, monitor cameras, and survive five nights against haunted animatronics that grow more aggressive as the hours pass.",
   baldisBasicsTeachingOnTwos:
@@ -92,7 +94,7 @@ export const descriptionMap = {
   minecraft:
     "Minecraft is a sandbox game originally created by Markus 'Notch' Persson and released by Mojang in 2011. Players gather blocks, craft tools, build structures, and survive against monsters in procedurally generated worlds, becoming the best-selling video game of all time.",
   purplePlace:
-    "Purble Place is a 2007 children's puzzle game bundled with Windows Vista and 7. It includes three minigames — Purble Pairs, Comfy Cakes, and Purble Shop — all designed to teach memory, logic, and pattern recognition.",
+    "Purble Place is a 2007 children's puzzle game bundled with Windows Vista and 7. It includes three minigames - Purble Pairs, Comfy Cakes, and Purble Shop - all designed to teach memory, logic, and pattern recognition.",
   pokemon:
     "Pokémon is a long-running monster-collecting RPG franchise created by Satoshi Tajiri and released by Game Freak in 1996. Players capture, train, and battle creatures called Pokémon while exploring vast regions and challenging Gym Leaders.",
   pokemonRed:
@@ -180,7 +182,7 @@ export const descriptionMap = {
   baldi:
     "Baldi's Basics in Education and Learning is a 2018 horror-parody game by Micah McGonigal. Built to mimic 1990s edutainment software, players collect notebooks and answer math questions while being pursued by an angry teacher.",
   granny:
-    "Granny is a 2017 horror game by DVloper. Players are trapped in a creepy old house with five days to escape, while Granny — an elderly woman with extremely sharp hearing — patrols the rooms.",
+    "Granny is a 2017 horror game by DVloper. Players are trapped in a creepy old house with five days to escape, while Granny - an elderly woman with extremely sharp hearing - patrols the rooms.",
   bendy:
     "Bendy and the Ink Machine is a 2017 first-person horror game by Joey Drew Studios. Players explore an abandoned 1930s-style cartoon studio, uncovering its dark secrets while being hunted by ink-soaked creatures.",
   gtaVc:

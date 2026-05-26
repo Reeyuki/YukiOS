@@ -14,7 +14,6 @@ export class CalculatorApp extends BaseApp {
 
     const win = this.wm.createWindow(winId, "Calculator", 360, 560);
     win.innerHTML = this.buildUI();
-    document.body.appendChild(win);
     this.wm.mountWindow(win, winId, "Calculator", "fa-calculator");
 
     this.initializeState();

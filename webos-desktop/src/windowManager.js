@@ -575,9 +575,9 @@ export class WindowManager {
       identity: [
         ["Window ID", winId],
         ["Title", appInfo.title],
-        ["Type", dataset.appType || "—"],
-        ["App ID", dataset.appId || "—"],
-        ["URL", dataset.externalUrl || "—"]
+        ["Type", dataset.appType || "-"],
+        ["App ID", dataset.appId || "-"],
+        ["URL", dataset.externalUrl || "-"]
       ],
       geometry: [
         ["Width", `${Math.round(rect.width)}px`],
@@ -586,11 +586,11 @@ export class WindowManager {
         ["Top", `${Math.round(rect.top)}px`]
       ],
       system: [
-        ["Z-Index", win.style.zIndex || "—"],
+        ["Z-Index", win.style.zIndex || "-"],
         ["Fullscreen", dataset.fullscreen === "true" ? "Yes" : "No"],
-        ["SWF", dataset.swf || "—"],
-        ["ROM", dataset.rom || "—"],
-        ["Core", dataset.core || "—"]
+        ["SWF", dataset.swf || "-"],
+        ["ROM", dataset.rom || "-"],
+        ["Core", dataset.core || "-"]
       ]
     };
 
@@ -957,6 +957,9 @@ export class WindowManager {
   }
 
   mountWindow(win, winId, title, iconValue, color = null) {
+    if (!document.body.contains(win)) {
+      document.body.appendChild(win);
+    }
     this.makeDraggable(win);
     this.makeResizable(win);
     this.setupWindowControls(win);

@@ -1,4 +1,4 @@
-# Yuki OS — Global Rules
+# Yuki OS - Global Rules
 
 ## Hard Rules
 
@@ -8,8 +8,9 @@
 - Before finalizing any code changes, run `pnpm build:dev` in `webos-desktop/`. A change that breaks the build is
   incomplete.
 - Always use CSS variables from `src/styles/style.css`. Never hardcode colors.
-- When making significant changes, new features, or new apps: register them in `src/news.js` under `NEWS_UPDATES` for
-  the current day with an appropriate icon, title, and short user-facing description.
+- When making significant changes, new features, or new apps: register them in src/news.js with an icon, title, and a
+  punchy, active-voice description under 15 words. Bad: 'First-time setup now includes a dedicated profile step...'
+  Good: 'Choose your nickname and avatar during setup, with a quick final preview!'
 - Whenever you define a new app to appLauncher or gamesList, define description for it on gameDescriptions.js
 
 ---
@@ -54,7 +55,7 @@ Yuki OS uses a dark glassmorphism theme. All rules below are non-negotiable.
 - **Color Hue**: All colors use unified hue 265 (purple). Never mix in gray or blue hues.
 - **Glassmorphism**: `backdrop-filter: blur(32px+)`, semi-transparent `rgba` backgrounds (0.6–0.98 opacity), subtle
   borders (`rgba(255,255,255,0.08–0.12)`).
-- **Depth**: Multi-layer box shadows — `0 24px 64px rgba(0,0,0,0.65)` + inset highlight.
+- **Depth**: Multi-layer box shadows - `0 24px 64px rgba(0,0,0,0.65)` + inset highlight.
 - **Typography**: System fonts or JetBrains Mono for code. 13–16px base (minimum 12px for any readable text). Opacity
   0.7–0.9 for secondary text. Never use font-size below 12px for user-facing content unless absolutely necessary (e.g.,
   badges, timestamps).
@@ -81,11 +82,11 @@ Desktop UI renders windows, taskbar, start menu
 
 **App lifecycle:**
 
-1. **Instantiation** — `new MyApp(services)`
-2. **Registration** — App attached to `services` object in `main.js`
-3. **Launch** — `AppLauncher.launch(appId)` dispatches
-4. **Open** — `app.open()` creates window via `WindowManager`
-5. **Close** — `onClose(winId)` cleanup hook called
+1. **Instantiation** - `new MyApp(services)`
+2. **Registration** - App attached to `services` object in `main.js`
+3. **Launch** - `AppLauncher.launch(appId)` dispatches
+4. **Open** - `app.open()` creates window via `WindowManager`
+5. **Close** - `onClose(winId)` cleanup hook called
 
 ---
 
@@ -102,7 +103,7 @@ constructor(services) {
 }
 ```
 
-### WindowManager — `src/windowManager.js`
+### WindowManager - `src/windowManager.js`
 
 | Method                                           | Purpose                                                  |
 | ------------------------------------------------ | -------------------------------------------------------- |
@@ -117,7 +118,7 @@ Features: window snapping (Win+Arrow), workspace management, taskbar preview.
 
 ---
 
-### FileSystemManager — `src/fs.js`
+### FileSystemManager - `src/fs.js`
 
 Virtual filesystem backed by BrowserFS, persisted via IndexedDB.
 
@@ -146,7 +147,7 @@ Virtual filesystem backed by BrowserFS, persisted via IndexedDB.
 
 ---
 
-### NotificationCenter — `src/notificationCenter.js`
+### NotificationCenter - `src/notificationCenter.js`
 
 | Method                                         | Purpose                  |
 | ---------------------------------------------- | ------------------------ |
@@ -156,7 +157,7 @@ Virtual filesystem backed by BrowserFS, persisted via IndexedDB.
 
 ---
 
-### EventBus — `src/core/EventBus.js`
+### EventBus - `src/core/EventBus.js`
 
 | Method                     | Purpose                     |
 | -------------------------- | --------------------------- |
@@ -168,7 +169,7 @@ Virtual filesystem backed by BrowserFS, persisted via IndexedDB.
 
 ---
 
-## Shared Utilities — `src/shared/`
+## Shared Utilities - `src/shared/`
 
 Always prefer these over reimplementing logic.
 
@@ -187,7 +188,7 @@ Always prefer these over reimplementing logic.
 
 | Function                                                       | Return                                                              |
 | -------------------------------------------------------------- | ------------------------------------------------------------------- |
-| `showConflictDialog(fileName)`                                 | `Promise<{ action, applyToAll }>` — action: `replace`/`keep`/`skip` |
+| `showConflictDialog(fileName)`                                 | `Promise<{ action, applyToAll }>` - action: `replace`/`keep`/`skip` |
 | `resolveConflicts(items, existsCheck, getKey, applyToAllInit)` | `Promise<Array<{ item, action }>>`                                  |
 
 ### Other shared helpers
@@ -208,22 +209,22 @@ Always prefer these over reimplementing logic.
 
 ## App Registry
 
-### AppLauncher — `appLauncher.js`
+### AppLauncher - `appLauncher.js`
 
 Central dispatcher. `launch(appId, swf, extra)` is the main entry point. Routes to app instance or creates sandboxed
 iframe for games. Handles analytics, achievements, Steam stats.
 
-### gamesList — `gamesList.js`
+### gamesList - `gamesList.js`
 
 Registry of 3700+ games/apps. `appMap[appId]` contains `{ type, title, url, icon, action }`.
 
 - Types: `"system"`, `"game"`, `"html"`, `"remote"`
 
-### gameDescriptions — `gameDescriptions.js`
+### gameDescriptions - `gameDescriptions.js`
 
 Rich metadata per app: title, description, genre, year, developer.
 
-### appCreator — `appCreator.js`
+### appCreator - `appCreator.js`
 
 UI to create custom shortcuts to external URLs. Auto-detects favicon, supports per-app CORS proxy. Saves to
 `/home/reeyuki/Apps/`.
@@ -244,19 +245,19 @@ UI to create custom shortcuts to external URLs. Auto-detects favicon, supports p
 
 | App            | File        | Notes                                     |
 | -------------- | ----------- | ----------------------------------------- |
-| NotepadApp     | —           | Text editor, file save/load               |
-| MarkdownApp    | —           | Split-pane editor with live preview       |
+| NotepadApp     | -           | Text editor, file save/load               |
+| MarkdownApp    | -           | Split-pane editor with live preview       |
 | YukiCode       | `monaco.js` | Monaco editor (VSCode engine) integration |
-| CalculatorApp  | —           | Scientific calculator with memory         |
+| CalculatorApp  | -           | Scientific calculator with memory         |
 | OfficeAppProxy | `office.js` | Office 365 viewer for .docx/.xlsx/.pptx   |
 
 ### Media & Emulators
 
 | App        | File         | Notes                              |
 | ---------- | ------------ | ---------------------------------- |
-| Camera     | —            | Webcam access, photo capture       |
+| Camera     | -            | Webcam access, photo capture       |
 | Model3DApp | `model3d.js` | Three.js viewer for OBJ, GLTF, GLB |
-| YouTubeApp | —            | YouTube integration                |
+| YouTubeApp | -            | YouTube integration                |
 | JsDosApp   | `jsdos.js`   | DOS emulation + Ruffle Flash       |
 | V86App     | `v86.js`     | x86-64 full system emulation       |
 
@@ -264,12 +265,12 @@ UI to create custom shortcuts to external URLs. Auto-detects favicon, supports p
 
 | App                  | File            | Notes                                           |
 | -------------------- | --------------- | ----------------------------------------------- |
-| TerminalApp          | —               | CLI: ls, cd, mkdir, rm, cp, mv, cat, pwd, etc.  |
-| TaskManagerApp       | —               | Window/process list, close apps                 |
-| SettingsApp          | —               | Theme, wallpaper, taskbar, sound, DND, language |
-| ProfileCustomizerApp | —               | Username, profile picture, desktop colors       |
-| AchievementsApp      | —               | Tracks launches, playtime milestones            |
-| AboutApp             | —               | System info, version, credits                   |
+| TerminalApp          | -               | CLI: ls, cd, mkdir, rm, cp, mv, cat, pwd, etc.  |
+| TaskManagerApp       | -               | Window/process list, close apps                 |
+| SettingsApp          | -               | Theme, wallpaper, taskbar, sound, DND, language |
+| ProfileCustomizerApp | -               | Username, profile picture, desktop colors       |
+| AchievementsApp      | -               | Tracks launches, playtime milestones            |
+| AboutApp             | -               | System info, version, credits                   |
 | newsApp              | `news.js`       | News aggregation with categories                |
 | WeatherApp           | `weather.js`    | Current weather and forecast                    |
 | CategoriesApp        | `categories.js` | Organize games by genre/tag                     |
@@ -280,13 +281,13 @@ UI to create custom shortcuts to external URLs. Auto-detects favicon, supports p
 | ------------- | -------------- | ---------------------------------------------------------- |
 | DesktopUI     | `desktopui.js` | Desktop background, taskbar, start menu                    |
 | startMenu     | `startMenu.js` | Start menu and app grid UI                                 |
-| system.js     | —              | Wallpaper and theme management                             |
-| wallpapers.js | —              | Wallpaper store (13 default + custom)                      |
-| settings.js   | —              | Preference storage (localStorage wrapper)                  |
-| audioMixer.js | —              | Global audio, per-app volume via `createAudioTrack(appId)` |
-| analytics.js  | —              | Usage tracking (launches, playtime, features)              |
-| clippy.js     | —              | Virtual assistant with contextual tips                     |
-| BrowserApp    | —              | Lightweight web browser with bookmarks                     |
+| system.js     | -              | Wallpaper and theme management                             |
+| wallpapers.js | -              | Wallpaper store (13 default + custom)                      |
+| settings.js   | -              | Preference storage (localStorage wrapper)                  |
+| audioMixer.js | -              | Global audio, per-app volume via `createAudioTrack(appId)` |
+| analytics.js  | -              | Usage tracking (launches, playtime, features)              |
+| clippy.js     | -              | Virtual assistant with contextual tips                     |
+| BrowserApp    | -              | Lightweight web browser with bookmarks                     |
 
 ---
 
@@ -399,7 +400,7 @@ persistence | | `runtime/AppRenderer.js` | Parses window configs, mounts into DO
 `runtime/EventBinder.js` | Maps element events to actions | | `runtime/ActionExecutor.js` | Dispatches actions, modifies
 state, runs system ops |
 
-**HybridAdapter** (`runtime/HybridAdapter.js`) — `enhanceBaseApp(BaseAppClass)` wraps `open()` to check for a
+**HybridAdapter** (`runtime/HybridAdapter.js`) - `enhanceBaseApp(BaseAppClass)` wraps `open()` to check for a
 declarative schema first; falls back transparently to imperative `open()` if none found. Also translates legacy
 multi-parameter signatures (e.g. `open(title, content, filePath)`) into structured `opts` objects.
 

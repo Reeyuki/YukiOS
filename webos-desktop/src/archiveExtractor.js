@@ -40,7 +40,7 @@ export class ArchiveExtractor {
       const blob = await this.fs.readBinaryFile(currentPath, itemName);
       if (!blob) {
         this.notify(
-          `Could not read "${itemName}" — was it uploaded as a binary file?`,
+          `Could not read "${itemName}" - was it uploaded as a binary file?`,
           "error",
           5000,
           "fas fa-exclamation-triangle",

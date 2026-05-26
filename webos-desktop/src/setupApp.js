@@ -4,6 +4,7 @@ import { resolveIconUrl, resolveWallpaperUrl } from "./shared/assetResolver.js";
 import { SystemUtilities } from "./system.js";
 import { Achievements } from "./achievements.js";
 import { AppSource } from "./AppSource.js";
+import { PREDEFINED_AVATARS, STORAGE_KEYS } from "./profileCustomizer.js";
 
 export const FEATURE_DATA = {
   step2: [
@@ -28,7 +29,7 @@ export const FEATURE_DATA = {
     {
       icon: "fas fa-cloud",
       title: "Works Offline",
-      desc: "PWA with service worker — install and use without internet",
+      desc: "PWA with service worker - install and use without internet",
       animation: "pulse-card"
     },
     {
@@ -160,7 +161,22 @@ export const FEATURE_DATA = {
     {
       icon: "fas fa-mouse-pointer",
       title: "Context Menus",
-      desc: "Right-click menus for desktop, files, apps"
+      desc: "Right-click menus for desktop, explorer, taskbar, tray, start menu, and Steam library"
+    },
+    {
+      icon: "fas fa-file-export",
+      title: "File Actions Menu",
+      desc: "Convert/transform files, create archives, download selected items, and quick wallpaper actions"
+    },
+    {
+      icon: "fas fa-window-maximize",
+      title: "Window Control Menu",
+      desc: "Snap left/right/maximize, move windows between workspaces, pin/unpin taskbar, and open properties"
+    },
+    {
+      icon: "fas fa-gamepad",
+      title: "Steam Context Actions",
+      desc: "Favorites, hide/unhide, collections, add game shortcuts to desktop, and report broken games"
     },
     {
       icon: "fas fa-arrows-alt",
@@ -249,6 +265,7 @@ export const FEATURE_DATA = {
 export class SetupApp extends BaseApp {
   constructor(services) {
     super(services);
+    this.totalSetupSteps = 9;
     this.currentStep = 0;
     this.userChoices = {
       theme: "dark",
@@ -260,7 +277,9 @@ export class SetupApp extends BaseApp {
       achievements: true,
       analytics: true,
       performanceMode: "balanced",
-      transparency: "medium"
+      transparency: "medium",
+      username: localStorage.getItem(STORAGE_KEYS.username) || "Guest",
+      profilePicture: localStorage.getItem(STORAGE_KEYS.profilePicture) || PREDEFINED_AVATARS[0]
     };
     this.openWindows = new Set();
     this.wallpapers = [];
@@ -285,7 +304,6 @@ export class SetupApp extends BaseApp {
 
     const win = this.wm.createWindow(winId, "Welcome to Yuki OS", "900px", "600px", false, { position: "center" });
     win.innerHTML = this._buildUI();
-    document.body.appendChild(win);
     this.wm.mountWindow(win, winId, "Setup", "fas fa-rocket");
     this.openWindows.add(winId);
     this._bindEvents(win);
@@ -304,7 +322,7 @@ export class SetupApp extends BaseApp {
       </div>
       <div class="window-content setup-wizard">
         <div class="setup-progress">
-          ${[1, 2, 3, 4, 5, 6, 7]
+          ${Array.from({ length: this.totalSetupSteps - 1 }, (_, idx) => idx + 1)
             .map(
               (i) => `
             <div class="progress-step ${i === 1 ? "active" : ""}" data-step="${i}">
@@ -312,7 +330,7 @@ export class SetupApp extends BaseApp {
                 <span class="progress-number">${i}</span>
                 <i class="fas fa-check progress-check"></i>
               </div>
-              ${i < 7 ? '<div class="progress-line"></div>' : ""}
+              ${i < this.totalSetupSteps - 1 ? '<div class="progress-line"></div>' : ""}
             </div>
           `
             )
@@ -328,6 +346,7 @@ export class SetupApp extends BaseApp {
           ${this._buildStep5()}
           ${this._buildStep6()}
           ${this._buildStep7()}
+          ${this._buildStep8()}
         </div>
 
         <div class="setup-footer">
@@ -700,8 +719,52 @@ export class SetupApp extends BaseApp {
   }
 
   _buildStep7() {
+    const username = this.userChoices.username || "Guest";
+    const profilePic = this.userChoices.profilePicture || PREDEFINED_AVATARS[0];
+    const avatarsHtml = PREDEFINED_AVATARS.map(
+      (avatar) => `
+        <div class="setup-avatar-option ${avatar === profilePic ? "selected" : ""}" data-src="${avatar}" style="border-radius: 50%; overflow: hidden; cursor: pointer; border: 2px solid var(--glass-border); transition: all 0.15s; width: 56px; height: 56px; position: relative;">
+          <img src="${avatar}" style="width: 100%; height: 100%; object-fit: cover;" />
+          <div style="position: absolute; inset: 0; display: ${avatar === profilePic ? "flex" : "none"}; align-items: center; justify-content: center; background: color-mix(in srgb, var(--brand) 55%, transparent); color: var(--text-on-brand); font-size: 12px;"><i class="fas fa-check"></i></div>
+        </div>
+      `
+    ).join("");
+
     return `
       <div class="setup-step" data-step="8">
+        <h2 class="step-title">
+          <i class="fas fa-user-circle"></i> Profile Setup
+        </h2>
+        <div class="personalize-section" style="display: flex; flex-direction: column; gap: 12px;">
+          <div style="display: flex; align-items: center; gap: 10px; padding: 10px; background: var(--brand-dim); border-radius: 8px; border: 1px solid var(--brand);">
+            <div style="width: 46px; height: 46px; border-radius: 50%; overflow: hidden; border: 2px solid var(--brand); flex-shrink: 0;">
+              <img id="setup-profile-preview-img" src="${profilePic}" style="width: 100%; height: 100%; object-fit: cover;" />
+            </div>
+            <div style="min-width: 0;">
+              <div id="setup-profile-preview-name" style="font-size: 15px; color: var(--text-primary); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${username}</div>
+              <div style="font-size: 12px; color: var(--text-secondary);">Profile Preview</div>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <label class="section-label">Nickname</label>
+            <input id="setup-profile-name" type="text" value="${username}" placeholder="Enter your nickname" style="padding: 8px 10px; border-radius: 6px; border: 1px solid var(--glass-border); background: var(--surface-1); color: var(--text-primary); font-size: 14px; outline: none;" />
+          </div>
+          <button class="setup-btn setup-btn-secondary" id="setup-profile-upload" style="width: 100%;">
+            <i class="fas fa-upload"></i> Upload Custom Avatar
+          </button>
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(56px, 1fr)); gap: 8px; max-height: 210px; overflow-y: auto;">
+            ${avatarsHtml}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  _buildStep8() {
+    const username = this.userChoices.username || "Guest";
+    const profilePic = this.userChoices.profilePicture || PREDEFINED_AVATARS[0];
+    return `
+      <div class="setup-step" data-step="9">
         <div class="complete-hero">
           <div class="complete-icon">
             <i class="fas fa-rocket"></i>
@@ -711,6 +774,10 @@ export class SetupApp extends BaseApp {
         </div>
 
         <div class="summary-grid">
+          <div class="summary-item" style="grid-column: 1 / -1; display: flex; align-items: center; gap: 10px;">
+            <img id="setup-summary-profile-img" src="${profilePic}" alt="${username}" style="width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--glass-border); object-fit: cover;">
+            <span id="setup-summary-profile-name">Profile: ${username}</span>
+          </div>
           <div class="summary-item">
             <i class="fas fa-palette"></i>
             <span>Theme: ${this.userChoices.theme}</span>
@@ -852,12 +919,14 @@ export class SetupApp extends BaseApp {
         this._services.yukiOsGuideApp.open();
       });
     }
+
+    this._bindProfileStepEvents(win);
   }
 
   _nextStep(win) {
     if (this.isTransitioning) return;
 
-    if (this.currentStep < 7) {
+    if (this.currentStep < this.totalSetupSteps - 1) {
       this.isTransitioning = true;
 
       const currentStepEl = win.querySelector(`.setup-step[data-step="${this.currentStep + 1}"]`);
@@ -929,11 +998,13 @@ export class SetupApp extends BaseApp {
 
     backBtn.style.display = this.currentStep > 0 ? "flex" : "none";
 
-    if (this.currentStep === 7) {
+    if (this.currentStep === this.totalSetupSteps - 1) {
       nextBtn.innerHTML = 'Start Exploring <i class="fas fa-rocket"></i>';
     } else {
       nextBtn.innerHTML = 'Continue <i class="fas fa-arrow-right"></i>';
     }
+
+    this._refreshProfileSummary(win);
   }
 
   _animateStepIn() {
@@ -950,6 +1021,22 @@ export class SetupApp extends BaseApp {
   }
 
   async _completeSetup(win) {
+    const finalizedName = (this.userChoices.username || "").trim() || "Guest";
+    const finalizedAvatar = this.userChoices.profilePicture || PREDEFINED_AVATARS[0];
+    this.userChoices.username = finalizedName;
+    this.userChoices.profilePicture = finalizedAvatar;
+    localStorage.setItem(STORAGE_KEYS.username, finalizedName);
+    localStorage.setItem(STORAGE_KEYS.profilePicture, finalizedAvatar);
+
+    if (this._services.sessionManager?.currentSession) {
+      this._services.sessionManager.currentSession.name = finalizedName;
+      this._services.sessionManager.currentSession.key =
+        finalizedName.toLowerCase().replace(/[^a-z0-9]/g, "") || "guest";
+      this._services.sessionManager.currentSession.avatar = finalizedAvatar;
+    }
+
+    this._services.profileCustomizerApp?.updateProfileState(finalizedName, finalizedAvatar);
+
     localStorage.setItem(StorageKeys.theme, this.userChoices.theme);
     localStorage.setItem(StorageKeys.taskbarPosition, this.userChoices.taskbarPosition);
     localStorage.setItem(StorageKeys.weather, this.userChoices.weather.toString());
@@ -1107,5 +1194,68 @@ Enjoy exploring Yuki OS!`;
       reader.readAsDataURL(file);
     };
     input.click();
+  }
+
+  _bindProfileStepEvents(win) {
+    const nameInput = win.querySelector("#setup-profile-name");
+    const uploadBtn = win.querySelector("#setup-profile-upload");
+    const previewName = win.querySelector("#setup-profile-preview-name");
+    const previewImg = win.querySelector("#setup-profile-preview-img");
+    const avatarOptions = win.querySelectorAll(".setup-avatar-option");
+
+    if (!nameInput || !uploadBtn || !previewName || !previewImg) return;
+
+    nameInput.addEventListener("input", () => {
+      const nextName = nameInput.value || "Guest";
+      previewName.textContent = nextName;
+      this.userChoices.username = nextName;
+      this._refreshProfileSummary(win);
+    });
+
+    const selectAvatar = (src) => {
+      this.userChoices.profilePicture = src;
+      previewImg.src = src;
+      avatarOptions.forEach((option) => {
+        option.classList.toggle("selected", option.dataset.src === src);
+        const badge = option.querySelector("div");
+        if (badge) {
+          badge.style.display = option.dataset.src === src ? "flex" : "none";
+        }
+      });
+      this._refreshProfileSummary(win);
+    };
+
+    avatarOptions.forEach((option) => {
+      option.addEventListener("click", () => {
+        selectAvatar(option.dataset.src);
+      });
+    });
+
+    uploadBtn.addEventListener("click", () => {
+      const input = document.createElement("input");
+      input.type = "file";
+      input.accept = "image/*";
+      input.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const dataUrl = event.target.result;
+          if (!dataUrl) return;
+          this.userChoices.profilePicture = dataUrl;
+          previewImg.src = dataUrl;
+          this._refreshProfileSummary(win);
+        };
+        reader.readAsDataURL(file);
+      };
+      input.click();
+    });
+  }
+
+  _refreshProfileSummary(win) {
+    const summaryImg = win.querySelector("#setup-summary-profile-img");
+    const summaryName = win.querySelector("#setup-summary-profile-name");
+    if (summaryImg) summaryImg.src = this.userChoices.profilePicture || PREDEFINED_AVATARS[0];
+    if (summaryName) summaryName.textContent = `Profile: ${this.userChoices.username || "Guest"}`;
   }
 }

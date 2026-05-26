@@ -254,6 +254,26 @@ const SYSTEM_CAPABILITIES = [
     desc: "Improved context menus with better organization and overflow handling."
   },
   {
+    tag: "CTXFILE",
+    title: "Explorer File Actions",
+    desc: "Right-click supports convert/transform, create archive, bulk download ZIP, extract archives, and wallpaper actions."
+  },
+  {
+    tag: "CTXWIN",
+    title: "Window Context Controls",
+    desc: "Taskbar and window menus include snap actions, workspace move, properties, and pin/unpin taskbar."
+  },
+  {
+    tag: "CTXTRAY",
+    title: "Tray & Start Menu Context",
+    desc: "Tray menu supports open/quit and start menu grid menu supports add/edit/remove shortcuts."
+  },
+  {
+    tag: "CTXSTEAM",
+    title: "Steam Library Context",
+    desc: "Steam game menus support favorites, hide/unhide, collections, add to desktop, and broken game reports."
+  },
+  {
     tag: "EXPLORER",
     title: "Explorer Styling",
     desc: "Refined explorer appearance with improved visual consistency."
@@ -400,7 +420,6 @@ export class YukiOsGuideApp extends BaseApp {
 
     const win = this.wm.createWindow(winId, "Yuki OS Guide", "900px", "650px", false);
     win.innerHTML = this._buildUI();
-    document.body.appendChild(win);
     this.wm.mountWindow(win, winId, "Yuki OS Guide", "fas fa-book-open");
     this.openWindows.add(winId);
     this._bindEvents(win);

@@ -705,10 +705,10 @@ export class AppCreatorApp extends BaseApp {
     }
 
     const winId = `app-creator-preview-${Date.now()}`;
-    const win = this.wm.createWindow(winId, `${name} — Preview`, "80vw", "80vh", true);
+    const win = this.wm.createWindow(winId, `${name} - Preview`, "80vw", "80vh", true);
     win.innerHTML = `
       <div class="window-header">
-        <span>${name} — Preview</span>
+        <span>${name} - Preview</span>
         ${this.wm.getWindowControls()}
 
       </div>
@@ -716,7 +716,7 @@ export class AppCreatorApp extends BaseApp {
         <iframe src="${finalUrl}" style="width:100%;height:100%;border:none;" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
       </div>
     `;
-    this.windowHelper.mountWindow(win, winId, `${name} — Preview`, AC.TASKBAR_ICON);
+    this.windowHelper.mountWindow(win, winId, `${name} - Preview`, AC.TASKBAR_ICON);
   }
 
   async _installApp(name, url, iconUrl, proxyEnabled, proxyIndex, statusEl, win) {

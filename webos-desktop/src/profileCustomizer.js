@@ -103,12 +103,12 @@ export class ProfileCustomizerApp extends BaseApp {
           </button>
           
           <div style="font-size: 11px; color: var(--text-secondary);">Choose an avatar:</div>
-          <div class="avatar-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(45px, 1fr)); gap: 8px; overflow-y: auto; padding: 2px; flex: 1;">
+          <div class="profile-avatar-grid" style="overflow-y: auto; padding: 2px; flex: 1; min-height: 0;">
             ${PREDEFINED_AVATARS.map(
               (avatar) => `
-              <div class="avatar-option ${avatar === currentProfilePic ? "selected" : ""}" data-src="${avatar}" style="width: 100%; aspect-ratio: 1; border-radius: 50%; overflow: hidden; cursor: pointer; border: 2px solid ${avatar === currentProfilePic ? "var(--brand)" : "transparent"}; transition: all 0.15s; position: relative;">
+              <div class="profile-avatar-option ${avatar === currentProfilePic ? "selected" : ""}" data-src="${avatar}" style="border-radius: 50%; overflow: hidden; cursor: pointer; border: 2px solid var(--glass-border); transition: all 0.15s; position: relative;">
                 <img src="${avatar}" style="width: 100%; height: 100%; object-fit: cover;" />
-                ${avatar === currentProfilePic ? '<div style="position: absolute; inset: 0; background: var(--brand-dim); display: flex; align-items: center; justify-content: center;"><i class="fas fa-check" style="color: var(--text-on-brand); font-size: 12px;"></i></div>' : ""}
+                <div class="profile-avatar-check"><i class="fas fa-check"></i></div>
               </div>
             `
             ).join("")}
@@ -139,7 +139,7 @@ export class ProfileCustomizerApp extends BaseApp {
                 stopPropagation: true
               }
             },
-            ".avatar-option": {
+            ".profile-avatar-option": {
               click: {
                 type: "custom:selectAvatar",
                 stopPropagation: true
@@ -243,7 +243,7 @@ export class ProfileCustomizerApp extends BaseApp {
     const resetBtn = win.querySelector("#profile-reset-btn");
     const previewImg = win.querySelector("#profile-preview-img");
     const previewName = win.querySelector("#profile-preview-name");
-    const avatarOptions = win.querySelectorAll(".avatar-option");
+    const avatarOptions = win.querySelectorAll(".profile-avatar-option");
     const statusMsg = win.querySelector("#profile-status");
 
     let selectedAvatar = originalProfilePic;
@@ -257,21 +257,11 @@ export class ProfileCustomizerApp extends BaseApp {
       option.addEventListener("click", () => {
         avatarOptions.forEach((opt) => {
           opt.classList.remove("selected");
-          opt.style.borderColor = "transparent";
-          const check = opt.querySelector("div");
-          if (check) check.remove();
         });
 
         option.classList.add("selected");
-        option.style.borderColor = "var(--brand)";
         selectedAvatar = option.dataset.src;
         customImageDataUrl = null;
-
-        option.innerHTML += `
-          <div style="position: absolute; inset: 0; background: var(--brand-dim); display: flex; align-items: center; justify-content: center;">
-            <i class="fas fa-check" style="color: var(--text-on-brand); font-size: 12px;"></i>
-          </div>
-        `;
 
         previewImg.src = selectedAvatar;
       });
@@ -308,9 +298,6 @@ export class ProfileCustomizerApp extends BaseApp {
 
           avatarOptions.forEach((opt) => {
             opt.classList.remove("selected");
-            opt.style.borderColor = "transparent";
-            const check = opt.querySelector("div");
-            if (check) check.remove();
           });
 
           statusMsg.textContent = "Image uploaded!";

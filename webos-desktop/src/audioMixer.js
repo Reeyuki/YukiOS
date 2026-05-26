@@ -324,7 +324,7 @@ class AudioMixer {
         <div class="am-now-playing" style="display:flex;align-items:center;gap:8px;padding:6px 0 4px;border-top:1px solid rgba(255,255,255,0.06);margin-top:4px;">
           ${np.artwork ? `<img src="${np.artwork}" style="width:32px;height:32px;border-radius:4px;object-fit:cover;flex-shrink:0;" />` : `<div style="width:32px;height:32px;border-radius:4px;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-music" style="opacity:0.4;font-size:13px;"></i></div>`}
           <div style="flex:1;min-width:0;">
-            <div style="font-size:0.82em;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${np.track}">${np.track || "—"}</div>
+            <div style="font-size:0.82em;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${np.track}">${np.track || "-"}</div>
             <div style="font-size:0.75em;opacity:0.55;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${np.artist}">${np.artist || ""}</div>
           </div>
           <div class="am-np-controls" style="display:flex;gap:4px;flex-shrink:0;">
