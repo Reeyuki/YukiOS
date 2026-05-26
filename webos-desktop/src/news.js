@@ -37,7 +37,8 @@ const NEWS_UPDATES = [
             "Make your taskbar and start menu fully transparent with the new Transparent UI setting in the appearance options."
           ],
           ["fa-bell", "Smart Notification Icons", "Notifications now automatically use app icons."],
-          ["fa-maximize", "GUI Scaling", "Adjust the scale of your user interface."]
+          ["fa-maximize", "GUI Scaling", "Adjust the scale of your user interface."],
+          ["fa-cubes", "App Creator Improvements", "Fixed URL validation to auto-add https://, improved proxy."]
         ]
       }
     ]
@@ -435,6 +436,17 @@ export const getNewsContentSignature = () => {
   return hashStringDjb2(JSON.stringify(minimal));
 };
 
+export const updateNewsBadge = () => {
+  const currentSignature = getNewsContentSignature();
+  const storedSignature = localStorage.getItem(StorageKeys.newsReadSignatureKey);
+  const hasUnreadNews = currentSignature !== storedSignature;
+
+  const badge = document.querySelector(".news-badge");
+  if (badge) {
+    badge.style.display = hasUnreadNews ? "flex" : "none";
+  }
+};
+
 export class NewsApp extends BaseApp {
   constructor(services) {
     super(services);
@@ -444,6 +456,7 @@ export class NewsApp extends BaseApp {
     localStorage.setItem(StorageKeys.newsReadSignatureKey, getNewsContentSignature());
     localStorage.setItem(StorageKeys.newsSeenKey, "true");
     window._newsApp = this;
+    updateNewsBadge();
   }
 
   open() {

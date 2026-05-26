@@ -17,8 +17,8 @@ import {
 import { initClippy, speak as clippySpeak } from "./clippy.js";
 import { initAnalytics, getAnalyticsBase, sendLaunchAnalytics, recordUsage } from "./analytics.js";
 import { StorageKeys } from "./settings.js";
-import { getNewsContentSignature } from "./news.js";
-import { PROXIES, clampProxyIndex, buildProxyUrl } from "./proxies.js";
+import { getNewsContentSignature, updateNewsBadge } from "./news.js";
+import { PROXIES, clampProxyIndex, buildProxyUrl, fetchHtmlThroughProxy } from "./proxies.js";
 import { AppRuntime } from "./runtime/AppRuntime.js";
 const STATICALLY_BASE = resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main");
 
@@ -395,6 +395,10 @@ export class AppLauncher {
       }, 300);
     }
 
+    setTimeout(() => {
+      updateNewsBadge();
+    }, 500);
+
     this._ensureIframeNavigateHandler();
   }
 
@@ -595,18 +599,32 @@ export class AppLauncher {
         this.openIframeApp({ appId: app, type: "segaMD", source: info.url, originalName: app, ...appExtra }),
       genesis: () =>
         this.openIframeApp({ appId: app, type: "segaMD", source: info.url, originalName: app, ...appExtra }),
-      game: () => {
+      game: async () => {
         let source = info.url;
+        console.log("[AppLauncher Game] Launching app:", app, "Proxy enabled:", info?.proxyEnabled, "Source:", source);
         if (info?.proxyEnabled && typeof source === "string" && /^https?:\/\//.test(source)) {
           const proxyIndex = clampProxyIndex(info.proxyIndex, PROXIES);
-          source = buildProxyUrl(source, proxyIndex, PROXIES);
+          console.log("[AppLauncher Game] Fetching through proxy, index:", proxyIndex);
+          try {
+            source = await fetchHtmlThroughProxy(source, proxyIndex, PROXIES);
+            console.log("[AppLauncher Game] Got blob URL:", source);
+          } catch (e) {
+            console.error("[AppLauncher Game] Failed to fetch through proxy:", e);
+            console.log("[AppLauncher Game] Falling back to direct proxy URL");
+            source = buildProxyUrl(source, proxyIndex, PROXIES);
+            console.log("[AppLauncher Game] Fallback URL:", source);
+          }
         }
+        console.log("[AppLauncher Game] Calling openIframeApp with source:", source);
         this.openIframeApp({ appId: app, type: "game", source, originalName: app, analyticsBase, ...appExtra });
       },
       html: () => this.openHtmlApp(app, info.html, info),
       remote: () => this.openRemoteApp(info.url)
     };
-    handlers[info.type]?.();
+    const handler = handlers[info.type];
+    if (handler) {
+      await handler();
+    }
   }
 
   _loadLaunchedApps() {
@@ -833,7 +851,9 @@ player.load("${swfPath}");
           window.open(resolvedSource, "_blank");
         });
 
-        if (
+        if (resolvedSource.startsWith("blob:")) {
+          iframeUrl = resolvedSource;
+        } else if (
           looksLikeHtml(resolvedSource) &&
           /^https?:\/\//.test(resolvedSource) &&
           !isSameOrigin &&

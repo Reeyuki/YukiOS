@@ -11,6 +11,25 @@
 
 ---
 
+## Code Quality Guidelines
+
+Write modular, clean, and DRY code. Follow these principles:
+
+- **Modularity**: Separate concerns into focused modules. Each file should have a single, clear responsibility. Avoid monolithic files that handle multiple unrelated concerns.
+- **Single Responsibility**: Functions and classes should do one thing well. If a function does more than one thing, split it into smaller, focused functions.
+- **DRY (Don't Repeat Yourself)**: Never duplicate logic. Use shared utilities from `src/shared/` instead of reimplementing common functionality. If you find yourself writing the same code in multiple places, extract it into a reusable function.
+- **Prefer Existing Utilities**: Before writing new utility functions, check `src/shared/` for existing helpers. Common patterns like dialogs, asset resolution, and platform detection already have implementations.
+- **Clean Function Names**: Use descriptive, action-oriented function names. `installApp()` is better than `doIt()`. `validateUrl()` is better than `check()`.
+- **Avoid Deep Nesting**: More than 3 levels of nesting indicates a need for refactoring. Use early returns and guard clauses to reduce nesting.
+- **Keep Functions Small**: Functions should fit on a screen (typically < 50 lines). If a function is longer, consider splitting it into smaller helper functions.
+- **Use Meaningful Variables**: Variable names should reveal intent. `userList` is better than `data`. `isValid` is better than `flag`.
+- **Avoid Magic Numbers/Strings**: Extract constants to the top of the file or a constants file. Use CSS variables for styling values.
+- **Consistent Patterns**: Follow existing patterns in the codebase. If similar apps use a certain structure, follow that structure for new apps.
+- **Error Handling**: Use try-catch for async operations that can fail. Provide meaningful error messages. Don't silently swallow errors.
+- **Type Safety**: Use JSDoc comments for complex function signatures to improve IDE support and catch bugs early.
+
+---
+
 ## Styling System
 
 Yuki OS uses a dark glassmorphism theme. All rules below are non-negotiable.

@@ -756,7 +756,6 @@ body.is-resizing * {
   justify-content: space-between;
   padding: 10px 12px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  user-select: none;
 }
 
 .window-props-title {

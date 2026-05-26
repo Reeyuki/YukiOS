@@ -34,3 +34,42 @@ export class ProxyRegistry {
     return buildProxyUrl(url, proxyIndex, this.proxies);
   }
 }
+
+export async function fetchHtmlThroughProxy(url, proxyIndex = 0, proxies = PROXIES) {
+  const proxyUrl = buildProxyUrl(url, proxyIndex, proxies);
+  const res = await fetch(proxyUrl);
+  if (!res.ok) throw new Error(`HTTP ${res.status} fetching ${proxyUrl}`);
+
+  let html = await res.text();
+
+  const urlObj = new URL(url);
+  const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
+  const proxyPrefix = proxies[clampProxyIndex(proxyIndex, proxies)].prefix;
+
+  const rewriteUrl = (resourceUrl) => {
+    if (!resourceUrl) return resourceUrl;
+    try {
+      const absoluteUrl = new URL(resourceUrl, baseUrl);
+      return proxyPrefix + encodeURIComponent(absoluteUrl.href);
+    } catch {
+      return resourceUrl;
+    }
+  };
+
+  html = html.replace(/(src=|href=|action=|content=)(["'])([^"']+)\2/gi, (match, attr, quote, url) => {
+    if (url.startsWith("data:") || url.startsWith("blob:") || url.startsWith("#")) {
+      return match;
+    }
+    return `${attr}${quote}${rewriteUrl(url)}${quote}`;
+  });
+
+  html = html.replace(/url\((["']?)([^"')]+)\1\)/gi, (match, quote, url) => {
+    if (url.startsWith("data:") || url.startsWith("blob:") || url.startsWith("#")) {
+      return match;
+    }
+    return `url(${quote}${rewriteUrl(url)}${quote})`;
+  });
+
+  const blob = new Blob([html], { type: "text/html" });
+  return URL.createObjectURL(blob);
+}

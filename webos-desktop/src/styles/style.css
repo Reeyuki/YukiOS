@@ -6,6 +6,9 @@
   --taskbar-padding-left: 0;
   --taskbar-padding-right: 0;
 
+  --font-size-scale: 1;
+  --gui-scale: 1;
+
   --s1: oklch(18% 0.03 265 / 0.85);
   --s2: oklch(22% 0.03 265 / 0.8);
   --s3: oklch(26% 0.03 265 / 0.75);
@@ -74,6 +77,10 @@ body {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+}
+
+html {
+  font-size: calc(16px * var(--font-size-scale)) !important;
 }
 
 body {

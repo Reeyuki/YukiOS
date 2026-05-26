@@ -329,6 +329,7 @@
   text-align: center;
   padding: 0.75rem 0.5rem;
   box-sizing: border-box;
+  position: relative;
 }
 
 .start-menu-item:hover {
@@ -415,4 +416,34 @@
   color: var(--brand);
   font-size: 1.2rem;
   pointer-events: none;
+}
+
+.news-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: var(--brand);
+  color: #fff;
+  border-radius: 10px;
+  min-width: 18px;
+  height: 18px;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  box-shadow: 0 4px 10px rgba(74, 144, 217, 0.4);
+  border: 1.5px solid var(--glass-border);
+  animation: pulse-news-badge 2s infinite;
+}
+
+@keyframes pulse-news-badge {
+  0%,
+  100% {
+    box-shadow: 0 4px 10px rgba(74, 144, 217, 0.4);
+  }
+  50% {
+    box-shadow: 0 4px 14px rgba(74, 144, 217, 0.7);
+  }
 }

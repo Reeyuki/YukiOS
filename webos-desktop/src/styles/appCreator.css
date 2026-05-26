@@ -17,17 +17,27 @@
 .ac-pane {
   padding: 12px;
   border-bottom: 1px solid var(--glass-border);
-  flex-shrink: 0;
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
 }
 
-.ac-installed-pane {
-  border-bottom: none;
-  flex: 1;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  padding: 12px;
+.ac-pane::-webkit-scrollbar {
+  width: 6px;
+}
+
+.ac-pane::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+  border-radius: 3px;
+}
+
+.ac-pane::-webkit-scrollbar-thumb {
+  background: var(--glass-border);
+  border-radius: 3px;
+}
+
+.ac-pane::-webkit-scrollbar-thumb:hover {
+  background: var(--brand);
 }
 
 #app-creator-form {
@@ -241,6 +251,56 @@
   transform: scale(0.98);
 }
 
+.ac-avatar-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+  max-height: 150px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.ac-avatar-grid::-webkit-scrollbar {
+  width: 6px;
+}
+
+.ac-avatar-grid::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+  border-radius: 3px;
+}
+
+.ac-avatar-grid::-webkit-scrollbar-thumb {
+  background: var(--glass-border);
+  border-radius: 3px;
+}
+
+.ac-avatar-grid::-webkit-scrollbar-thumb:hover {
+  background: var(--brand);
+}
+
+.ac-avatar-option {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid var(--glass-border);
+  transition: all 0.2s ease;
+  background: var(--bg-secondary);
+}
+
+.ac-avatar-option:hover {
+  border-color: var(--brand);
+  transform: scale(1.05);
+}
+
+.ac-avatar-option img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .ac-divider {
   border: none;
   border-top: 1px solid var(--glass-border);
@@ -327,7 +387,7 @@
 }
 
 .ac-installed-list {
-  flex: 1;
+  max-height: 200px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;

@@ -68,7 +68,8 @@ export class SettingsApp extends BaseApp {
         notificationsDuration: Number(localStorage.getItem(StorageKeys.notificationsDuration)) || 5,
         transparentUI: localStorage.getItem(StorageKeys.transparentUI) === "true",
         clipboardManagerEnabled: localStorage.getItem(StorageKeys.clipboardManagerEnabled) !== "false",
-        guiScale: Number(localStorage.getItem(StorageKeys.guiScale)) || 100
+        guiScale: Number(localStorage.getItem(StorageKeys.guiScale)) || 100,
+        fontSize: Number(localStorage.getItem(StorageKeys.fontSize)) || 100
       };
 
       this._applyCursor(this._settings.cursorDataUrl);
@@ -81,6 +82,7 @@ export class SettingsApp extends BaseApp {
       this._applyPerformanceMode(this._settings.performanceMode);
       this._applyTransparentUI(this._settings.transparentUI);
       this._applyGuiScale(this._settings.guiScale);
+      this._applyFontSize(this._settings.fontSize);
       window._settings = this._settings;
 
       if (cursorFromLegacyStorage && !cursorOriginalFromStorage) {
@@ -655,6 +657,16 @@ export class SettingsApp extends BaseApp {
             <div class="settings-range-group">
               <input id="settingsGuiScale" type="range" min="50" max="150" step="5" value="${this._settings.guiScale}"/>
               <span id="settingsGuiScaleValue" class="settings-range-value">${this._settings.guiScale}%</span>
+            </div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Font Size</span>
+              <span class="settings-label-desc">Adjust the base font size</span>
+            </div>
+            <div class="settings-range-group">
+              <input id="settingsFontSize" type="range" min="75" max="150" step="5" value="${this._settings.fontSize}"/>
+              <span id="settingsFontSizeValue" class="settings-range-value">${this._settings.fontSize}%</span>
             </div>
           </div>
         </div>
@@ -1336,6 +1348,21 @@ export class SettingsApp extends BaseApp {
         this._settings.guiScale = val;
         localStorage.setItem(StorageKeys.guiScale, String(val));
         this._applyGuiScale(val);
+        showStatus("Saved");
+      });
+    }
+
+    const fontSizeSlider = win.querySelector("#settingsFontSize");
+    const fontSizeValue = win.querySelector("#settingsFontSizeValue");
+    if (fontSizeSlider) {
+      fontSizeSlider.addEventListener("input", () => {
+        if (fontSizeValue) fontSizeValue.textContent = `${fontSizeSlider.value}%`;
+      });
+      fontSizeSlider.addEventListener("change", () => {
+        const val = parseInt(fontSizeSlider.value);
+        this._settings.fontSize = val;
+        localStorage.setItem(StorageKeys.fontSize, String(val));
+        this._applyFontSize(val);
         showStatus("Saved");
       });
     }
@@ -2116,6 +2143,11 @@ export class SettingsApp extends BaseApp {
     document.documentElement.style.transformOrigin = "top left";
     document.documentElement.style.width = `${100 / scaleValue}%`;
     document.documentElement.style.height = `${100 / scaleValue}%`;
+  }
+
+  _applyFontSize(size) {
+    const sizeValue = size / 100;
+    document.documentElement.style.setProperty("--font-size-scale", String(sizeValue));
   }
 
   _applyPerformanceMode(mode) {

@@ -81,5 +81,6 @@ export const StorageKeys = {
   clipboardManagerEnabled: "yukiOS_clipboard_manager_enabled",
   clipboardCurrent: "yukiOS_clipboard_current",
   clipboardHistory: "yukiOS_clipboard_history",
-  guiScale: "yukiOS_gui_scale"
+  guiScale: "yukiOS_gui_scale",
+  fontSize: "yukiOS_font_size"
 };

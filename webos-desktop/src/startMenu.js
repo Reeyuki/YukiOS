@@ -901,6 +901,13 @@ export function initializeAppGrid(appLauncher) {
     spanEl.textContent = itemData.title;
     item.appendChild(spanEl);
 
+    if (itemData.app === "newsApp") {
+      const badge = document.createElement("span");
+      badge.className = "news-badge";
+      badge.style.display = "none";
+      item.appendChild(badge);
+    }
+
     item.draggable = true;
 
     item.addEventListener("dragstart", (e) => {
