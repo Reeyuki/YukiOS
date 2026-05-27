@@ -11,6 +11,7 @@ class ClipboardManager {
     this.storageKey = StorageKeys.clipboardCurrent;
     this.historyKey = StorageKeys.clipboardHistory;
     this.initialized = false;
+    this.starredItems = new Set();
   }
 
   async init() {
@@ -18,6 +19,7 @@ class ClipboardManager {
 
     this.setupBroadcastChannel();
     this.loadFromStorage();
+    this.loadStarredItems();
     this.setupGlobalInterception();
     this.initialized = true;
   }
@@ -62,7 +64,8 @@ class ClipboardManager {
     const item = {
       data,
       type,
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      id: Date.now() + Math.random()
     };
 
     this.currentItem = item;
@@ -170,6 +173,61 @@ class ClipboardManager {
       localStorage.removeItem(this.historyKey);
     } catch (e) {
       console.warn("[ClipboardManager] Failed to clear storage:", e);
+    }
+  }
+
+  removeFromHistory(index) {
+    if (index >= 0 && index < this.history.length) {
+      this.history.splice(index, 1);
+      this.saveToStorage();
+      this.notifyChange(this.currentItem);
+      this.eventBus.emit("clipboard:history-changed");
+    }
+  }
+
+  updateItem(index, newData) {
+    if (index >= 0 && index < this.history.length) {
+      this.history[index].data = newData;
+      this.history[index].timestamp = Date.now();
+      if (index === 0) {
+        this.currentItem = this.history[index];
+      }
+      this.saveToStorage();
+      this.notifyChange(this.currentItem);
+      this.eventBus.emit("clipboard:history-changed");
+    }
+  }
+
+  toggleStar(itemId) {
+    if (this.starredItems.has(itemId)) {
+      this.starredItems.delete(itemId);
+    } else {
+      this.starredItems.add(itemId);
+    }
+    this.saveStarredItems();
+    return this.starredItems.has(itemId);
+  }
+
+  isStarred(itemId) {
+    return this.starredItems.has(itemId);
+  }
+
+  saveStarredItems() {
+    try {
+      localStorage.setItem("yukios_clipboard_starred", JSON.stringify([...this.starredItems]));
+    } catch (e) {
+      console.warn("[ClipboardManager] Failed to save starred items:", e);
+    }
+  }
+
+  loadStarredItems() {
+    try {
+      const starred = localStorage.getItem("yukios_clipboard_starred");
+      if (starred) {
+        this.starredItems = new Set(JSON.parse(starred));
+      }
+    } catch (e) {
+      console.warn("[ClipboardManager] Failed to load starred items:", e);
     }
   }
 }

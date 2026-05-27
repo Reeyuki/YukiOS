@@ -100,6 +100,8 @@ export class BaseApp {
         return AppSource.APP_CREATOR;
       case "YukiOsGuideApp":
         return AppSource.YUKI_OS_GUIDE;
+      case "AIAssistantApp":
+        return AppSource.AI_ASSISTANT;
       default:
         return AppSource.SYSTEM;
     }

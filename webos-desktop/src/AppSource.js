@@ -28,5 +28,6 @@ export const AppSource = {
   SHORTCUTS: "Shortcuts",
   APP_CREATOR: "App Creator",
   YUKI_OS_GUIDE: "Yuki OS Guide",
+  AI_ASSISTANT: "Yuki AI",
   SYSTEM: "System"
 };

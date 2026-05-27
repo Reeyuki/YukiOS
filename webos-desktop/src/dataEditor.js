@@ -1,5 +1,6 @@
 import { BaseApp } from "./core/BaseApp.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
+import { showConfirm, showPrompt } from "./shared/dialogs.js";
 
 export class DataEditorApp extends BaseApp {
   constructor(services) {
@@ -554,10 +555,10 @@ export class DataEditorApp extends BaseApp {
       }
     });
 
-    renameBtn.addEventListener("click", () => {
+    renameBtn.addEventListener("click", async () => {
       const oldKey = keyInput.value.trim();
       if (!oldKey) return;
-      const newKey = prompt("Enter new key name:", oldKey);
+      const newKey = await showPrompt("Rename Key", "Enter new key name:", oldKey, "Rename");
       if (!newKey || newKey === oldKey) return;
 
       const val = valInput.value;
@@ -628,7 +629,13 @@ export class DataEditorApp extends BaseApp {
 
     bulkDeleteBtn.addEventListener("click", async () => {
       if (selectedKeys.size === 0) return;
-      if (!confirm(`Delete ${selectedKeys.size} selected items?`)) return;
+      const confirmed = await showConfirm(
+        "Delete Items",
+        `Delete ${selectedKeys.size} selected items?`,
+        "Delete",
+        "Cancel"
+      );
+      if (!confirmed) return;
 
       if (currentTab === "ls") {
         selectedKeys.forEach((item) => localStorage.removeItem(item.key));

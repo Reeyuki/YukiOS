@@ -1,6 +1,6 @@
 import { FileKind } from "./fs.js";
 import { resolveIconUrl } from "./assetUrl.js";
-import { customAlert } from "./shared/dialogs.js";
+import { customAlert, showConfirm } from "./shared/dialogs.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
 
 export const IMAGE_EXTS = ["png", "jpg", "jpeg", "gif", "webp", "bmp", "svg", "avif", "ico"];
@@ -340,8 +340,11 @@ function getContentSize(content) {
 
 async function confirmLargeFile(name, size) {
   const sizeStr = formatFileSize(size);
-  return confirm(
-    `The file "${name}" is quite large (${sizeStr}).\n\nOpening it in Notepad may cause performance issues.\n\nDo you want to continue?`
+  return showConfirm(
+    "Large File Warning",
+    `The file "${name}" is quite large (${sizeStr}).\n\nOpening it in Notepad may cause performance issues.\n\nDo you want to continue?`,
+    "Continue",
+    "Cancel"
   );
 }
 

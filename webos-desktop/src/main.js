@@ -28,6 +28,7 @@ import { JsDosApp } from "./jsdos.js";
 import { V86App } from "./v86.js";
 import { EmulatorApp } from "./emulator.js";
 import { AchievementsApp } from "./achievements.js";
+import { customAlert } from "./shared/dialogs.js";
 import { ProfileCustomizerApp } from "./profileCustomizer.js";
 import { setDesktopUI as setGamesDesktopUI } from "./games.js";
 import { AdsManager } from "./ads.js";
@@ -296,8 +297,9 @@ async function start() {
   windowManager.restorePinnedItems();
 
   if (location.hostname.endsWith("neocities.org")) {
-    alert(
-      "Neocities does not support loading assets from other domains! OS will be severely limited to load apps and data."
+    customAlert(
+      "Neocities does not support loading assets from other domains! OS will be severely limited to load apps and data.",
+      "Neocities Warning"
     );
   }
   const url = new URL(location.href);

@@ -214,6 +214,8 @@ Achievements
 
 Profile Customizer
 
+Yuki AI
+
 Storage Editor
 
 Yuki Convert

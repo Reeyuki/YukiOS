@@ -1,20 +1,19 @@
 .window.notepad-window {
-  background: rgba(13, 13, 19, 0.92);
+  background: var(--window-bg);
   backdrop-filter: blur(32px) saturate(1.5);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--glass-border);
   box-shadow:
-    0 24px 64px rgba(0, 0, 0, 0.65),
-    0 0 0 1px rgba(255, 255, 255, 0.05) inset,
-    0 0 60px rgba(120, 180, 255, 0.05);
-  border-radius: 14px;
+    0 24px 64px var(--shadow-color),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  border-radius: var(--r);
   overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 
 .notepad-window .window-header {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-  color: rgba(255, 255, 255, 0.85);
+  border-bottom: 1px solid var(--glass-border);
+  color: var(--text-primary);
   padding: 10px 14px;
   font-size: 13px;
   letter-spacing: 0.02em;
@@ -25,8 +24,8 @@
   display: flex;
   gap: 2px;
   padding: 4px 8px;
-  background: rgba(255, 255, 255, 0.025);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--surface-1);
+  border-bottom: 1px solid var(--glass-border);
   font-size: 12px;
   user-select: none;
   flex-shrink: 0;
@@ -36,19 +35,19 @@
   position: relative;
   padding: 4px 10px;
   cursor: default;
-  color: rgba(255, 255, 255, 0.75);
-  border-radius: 4px;
+  color: var(--text-secondary);
+  border-radius: var(--r-sm);
   transition: background 0.1s;
 }
 
 .notepad-menu-item:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.9);
+  background: var(--glass-hover);
+  color: var(--text-primary);
 }
 
 .notepad-menu-item.active {
-  background: rgba(79, 158, 255, 0.25);
-  color: #fff;
+  background: var(--brand-dim);
+  color: var(--text-primary);
 }
 
 .notepad-dropdown {
@@ -56,14 +55,14 @@
   position: absolute;
   top: 100%;
   left: 0;
-  background: rgba(30, 30, 38, 0.98);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  background: var(--menu-bg);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 8px 32px var(--shadow-color);
   min-width: 220px;
   z-index: 10000;
   padding: 4px 0;
-  border-radius: 8px;
-  backdrop-filter: blur(20px);
+  border-radius: var(--r);
+  backdrop-filter: blur(32px);
 }
 
 .notepad-menu-item.active .notepad-dropdown {
@@ -78,17 +77,17 @@
   align-items: center;
   position: relative;
   white-space: nowrap;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--text-primary);
   transition: background 0.1s;
 }
 
 .dropdown-item:hover {
-  background: rgba(79, 158, 255, 0.3);
-  color: #fff;
+  background: var(--brand-dim);
+  color: var(--text-primary);
 }
 
 .dropdown-item.disabled {
-  color: rgba(255, 255, 255, 0.3);
+  color: var(--text-muted);
   pointer-events: none;
 }
 
@@ -96,27 +95,27 @@
   position: absolute;
   left: 10px;
   font-size: 10px;
-  color: rgba(79, 200, 180, 0.9);
+  color: var(--brand);
 }
 
 .dropdown-item .shortcut {
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--text-secondary);
   font-size: 11px;
   margin-left: 30px;
 }
 
 .dropdown-item:hover .shortcut {
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-primary);
 }
 
 .dropdown-item .arrow {
   font-size: 8px;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--text-secondary);
 }
 
 .dropdown-separator {
   height: 1px;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--glass-border);
   margin: 4px 8px;
 }
 
@@ -129,13 +128,13 @@
   position: absolute;
   left: 100%;
   top: 0;
-  background: rgba(30, 30, 38, 0.98);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  background: var(--menu-bg);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 8px 32px var(--shadow-color);
   min-width: 180px;
   padding: 4px 0;
-  border-radius: 8px;
-  backdrop-filter: blur(20px);
+  border-radius: var(--r);
+  backdrop-filter: blur(32px);
 }
 
 .dropdown-submenu:hover .submenu {
@@ -159,24 +158,24 @@
   padding: 16px 20px;
   border: none;
   outline: none;
-  background: rgba(8, 8, 14, 0.6);
-  color: rgba(220, 230, 245, 0.9);
+  background: var(--surface-1);
+  color: var(--text-primary);
   font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
   font-size: 14px;
   line-height: 1.7;
-  caret-color: rgba(79, 158, 255, 0.9);
+  caret-color: var(--brand);
   box-sizing: border-box;
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+  scrollbar-color: var(--glass-border) transparent;
 }
 
 .notepad-textarea::selection {
-  background: rgba(79, 158, 255, 0.28);
-  color: #fff;
+  background: var(--brand-dim);
+  color: var(--text-primary);
 }
 
 .notepad-textarea::placeholder {
-  color: rgba(255, 255, 255, 0.2);
+  color: var(--text-muted);
 }
 
 .notepad-textarea::-webkit-scrollbar {
@@ -189,12 +188,12 @@
 }
 
 .notepad-textarea::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.12);
+  background: var(--glass-border);
   border-radius: 99px;
 }
 
 .notepad-textarea::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.22);
+  background: var(--glass-hover);
 }
 
 .notepad-textarea::-webkit-scrollbar-corner {
@@ -206,10 +205,10 @@
   justify-content: flex-end;
   gap: 20px;
   padding: 5px 16px;
-  background: rgba(79, 158, 255, 0.15);
-  border-top: 1px solid rgba(79, 158, 255, 0.2);
+  background: var(--brand-dim);
+  border-top: 1px solid var(--glass-border);
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--text-secondary);
   flex-shrink: 0;
 }
 
@@ -219,26 +218,26 @@
 
 .notepad-dialog {
   position: absolute;
-  background: rgba(35, 35, 45, 0.98);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
+  background: var(--menu-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r);
   padding: 18px;
-  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 12px 48px var(--shadow-color);
   z-index: 20000;
   min-width: 350px;
-  color: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(20px);
+  color: var(--text-primary);
+  backdrop-filter: blur(32px);
 }
 
 .notepad-dialog h3 {
   margin: 0 0 15px 0;
   font-size: 14px;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--text-primary);
 }
 
 .notepad-dialog h2 {
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--text-primary);
   font-weight: 400;
 }
 
@@ -251,7 +250,7 @@
 
 .notepad-dialog-row label {
   min-width: 85px;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--text-secondary);
   font-size: 13px;
 }
 
@@ -259,10 +258,10 @@
 .notepad-dialog input[type="number"] {
   flex: 1;
   padding: 8px 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
-  background: rgba(0, 0, 0, 0.3);
-  color: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-sm);
+  background: var(--surface-1);
+  color: var(--text-primary);
   outline: none;
   font-size: 13px;
   transition:
@@ -272,16 +271,16 @@
 
 .notepad-dialog input[type="text"]:focus,
 .notepad-dialog input[type="number"]:focus {
-  border-color: rgba(79, 158, 255, 0.5);
-  background: rgba(0, 0, 0, 0.4);
+  border-color: var(--brand);
+  background: var(--surface-2);
 }
 
 .notepad-dialog select {
   padding: 8px 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
-  background: rgba(0, 0, 0, 0.3);
-  color: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-sm);
+  background: var(--surface-1);
+  color: var(--text-primary);
   outline: none;
   cursor: pointer;
   font-size: 13px;
@@ -289,12 +288,12 @@
 }
 
 .notepad-dialog select:focus {
-  border-color: rgba(79, 158, 255, 0.5);
+  border-color: var(--brand);
 }
 
 .notepad-dialog select option {
-  background: #2a2a35;
-  color: rgba(255, 255, 255, 0.9);
+  background: var(--surface-2);
+  color: var(--text-primary);
 }
 
 .notepad-dialog-buttons {
@@ -307,9 +306,9 @@
 .notepad-dialog button {
   padding: 8px 20px;
   cursor: pointer;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-sm);
+  background: var(--glass);
   font-size: 13px;
   transition:
     background 0.15s,
@@ -317,19 +316,19 @@
 }
 
 .notepad-dialog button:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.15);
+  background: var(--glass-hover);
+  border-color: var(--glass-border);
 }
 
 .notepad-dialog button.primary {
-  background: rgba(79, 158, 255, 0.3);
-  color: #fff;
-  border-color: rgba(79, 158, 255, 0.4);
+  background: var(--brand-dim);
+  color: var(--text-primary);
+  border-color: var(--brand);
 }
 
 .notepad-dialog button.primary:hover {
-  background: rgba(79, 158, 255, 0.4);
-  border-color: rgba(79, 158, 255, 0.5);
+  background: var(--brand);
+  border-color: var(--brand-hover);
 }
 
 .notepad-dialog-checkbox {
@@ -343,67 +342,67 @@
 .notepad-dialog-checkbox input[type="checkbox"] {
   width: 16px;
   height: 16px;
-  accent-color: rgba(79, 158, 255, 0.8);
+  accent-color: var(--brand);
   cursor: pointer;
 }
 
 .font-preview {
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
-  color: rgba(255, 255, 255, 0.85);
+  background: var(--surface-1);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-sm);
+  color: var(--text-primary);
 }
 
 html[data-theme="light"] .notepad-window {
-  border: 1px solid #ccc !important;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15) !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: 0 5px 20px var(--shadow-color) !important;
 }
 
 html[data-theme="light"] .notepad-textarea {
-  background: #fff !important;
-  color: #111 !important;
+  background: var(--window-bg) !important;
+  color: var(--text-primary) !important;
 }
 
 html[data-theme="light"] .notepad-menubar {
-  background: #f0f0f0 !important;
-  border-bottom: 1px solid #ddd !important;
+  background: var(--surface-1) !important;
+  border-bottom: 1px solid var(--glass-border) !important;
 }
 
 html[data-theme="light"] .notepad-menu-item {
-  color: #111 !important;
+  color: var(--text-primary) !important;
 }
 
 html[data-theme="light"] .notepad-menu-item:hover {
-  background: rgba(0, 0, 0, 0.1) !important;
+  background: var(--glass-hover) !important;
 }
 
 html[data-theme="light"] .notepad-statusbar {
-  background: #f0f0f0 !important;
-  color: #666 !important;
-  border-top: 1px solid #ddd !important;
+  background: var(--surface-1) !important;
+  color: var(--text-secondary) !important;
+  border-top: 1px solid var(--glass-border) !important;
 }
 
 html[data-theme="light"] .notepad-dropdown {
-  background: #fff !important;
-  border: 1px solid #ccc !important;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1) !important;
+  background: var(--menu-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: 0 3px 10px var(--shadow-color) !important;
 }
 
 html[data-theme="light"] .notepad-dropdown-item {
-  color: #111 !important;
+  color: var(--text-primary) !important;
 }
 
 html[data-theme="light"] .notepad-dropdown-item:hover {
-  background: #f0f0f0 !important;
+  background: var(--surface-2) !important;
 }
 
 html[data-theme="light"] .notepad-dialog {
-  background: #fff !important;
-  border: 1px solid #ccc !important;
-  color: #111 !important;
+  background: var(--menu-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  color: var(--text-primary) !important;
 }
 
 html[data-theme="light"] .notepad-dialog h3,
 html[data-theme="light"] .notepad-dialog label {
-  color: #111 !important;
+  color: var(--text-primary) !important;
 }

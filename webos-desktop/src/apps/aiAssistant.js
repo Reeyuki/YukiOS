@@ -20,11 +20,20 @@ export class AIAssistantApp extends BaseApp {
     this.windowFocusedHandler = null;
     this.windowClosedHandler = null;
     this.settingsChangedHandler = null;
+    this.winId = "ai-assistant-window";
+    this.enabled = localStorage.getItem("yukiOS_ai_assistant_enabled") !== "false";
   }
 
   async open(opts = {}) {
-    const winId = "ai-assistant-window";
+    const winId = this.winId;
     if (this._isSingletonOpen(winId)) return;
+
+    if (this.enabled) {
+      this.registerTray(this.winId, "fas fa-robot", "Yuki AI", {
+        resident: true,
+        showInTray: true
+      });
+    }
 
     const win = this.wm.createWindow(winId, "Yuki AI Assistant", "800px", "600px", false);
     this.windows.set(winId, win);
@@ -82,7 +91,6 @@ export class AIAssistantApp extends BaseApp {
                 <li>Modern browser with WebGPU support (Chrome 113+, Edge 113+)</li>
                 <li>At least 4GB RAM recommended for low model</li>
                 <li>Discrete GPU preferred for better performance</li>
-                <li>Initial model download: ~600MB - 4GB depending on model</li>
               </ul>
             </div>
 
@@ -920,5 +928,6 @@ Always explain what you're doing before executing actions. Ask for confirmation 
       this.bus.off("SETTINGS_CHANGED", this.settingsChangedHandler);
       this.systemHandlersBound = false;
     }
+    this.unregisterTray(winId);
   }
 }

@@ -1,9 +1,7 @@
-/* Weather App Styles */
-
 #weather-win {
   font-family: "Courier New", monospace;
-  background: #0a0a12;
-  color: #e8e0f0;
+  background: var(--bg-primary);
+  color: var(--text-primary);
   overflow: hidden;
 }
 
@@ -19,16 +17,16 @@
   display: flex;
   gap: 6px;
   padding: 8px 10px;
-  background: #111120;
-  border-bottom: 1px solid #2a2a3a;
+  background: var(--surface-1);
+  border-bottom: 1px solid var(--glass-border);
   align-items: center;
 }
 
 .wx-search {
   flex: 1;
-  background: #1a1a2e;
-  border: 1px solid #3a3a5c;
-  color: #e8e0f0;
+  background: var(--surface-2);
+  border: 1px solid var(--glass-border);
+  color: var(--text-primary);
   padding: 4px 8px;
   font-family: "Courier New", monospace;
   font-size: 1em;
@@ -36,13 +34,13 @@
 }
 
 .wx-search:focus {
-  border-color: #7b68ee;
+  border-color: var(--brand);
 }
 
 .wx-btn {
-  background: #7b68ee;
+  background: var(--brand);
   border: none;
-  color: #fff;
+  color: var(--text-on-brand);
   padding: 4px 10px;
   cursor: pointer;
   font-family: "Courier New", monospace;
@@ -50,13 +48,13 @@
 }
 
 .wx-btn:hover {
-  background: #9985f5;
+  background: var(--brand-hover);
 }
 
 .wx-loc-btn {
-  background: #1a1a2e;
-  border: 1px solid #3a3a5c;
-  color: #b0a8d0;
+  background: var(--surface-2);
+  border: 1px solid var(--glass-border);
+  color: var(--text-secondary);
   padding: 4px 7px;
   cursor: pointer;
   font-size: 14px;
@@ -64,14 +62,14 @@
 }
 
 .wx-loc-btn:hover {
-  border-color: #7b68ee;
-  color: #e8e0f0;
+  border-color: var(--brand);
+  color: var(--text-primary);
 }
 
 .wx-unit-toggle {
-  background: #1a1a2e;
-  border: 1px solid #3a3a5c;
-  color: #b0a8d0;
+  background: var(--surface-2);
+  border: 1px solid var(--glass-border);
+  color: var(--text-secondary);
   padding: 4px 8px;
   cursor: pointer;
   font-family: "Courier New", monospace;
@@ -79,8 +77,8 @@
 }
 
 .wx-unit-toggle:hover {
-  border-color: #7b68ee;
-  color: #e8e0f0;
+  border-color: var(--brand);
+  color: var(--text-primary);
 }
 
 .wx-body {
@@ -94,11 +92,11 @@
 }
 
 .wx-body::-webkit-scrollbar-track {
-  background: #0a0a12;
+  background: transparent;
 }
 
 .wx-body::-webkit-scrollbar-thumb {
-  background: #3a3a5c;
+  background: var(--glass-border);
 }
 
 .wx-main {
@@ -108,15 +106,15 @@
 }
 
 .wx-hero {
-  background: linear-gradient(160deg, #1a0a3a 0%, #0a1a3a 100%);
+  background: linear-gradient(160deg, var(--surface-2) 0%, var(--surface-3) 100%);
   padding: 28px 20px 20px;
   text-align: center;
-  border-bottom: 1px solid #2a2a4a;
+  border-bottom: 1px solid var(--glass-border);
 }
 
 .wx-location {
   font-size: 13px;
-  color: #9985f5;
+  color: var(--brand);
   letter-spacing: 2px;
   text-transform: uppercase;
   margin-bottom: 10px;
@@ -132,19 +130,19 @@
   font-size: 52px;
   font-weight: bold;
   letter-spacing: -2px;
-  color: #fff;
+  color: var(--text-primary);
   line-height: 1;
 }
 
 .wx-condition {
   font-size: 14px;
-  color: #b0a8d0;
+  color: var(--text-secondary);
   margin-top: 6px;
 }
 
 .wx-feels {
   font-size: 1em;
-  color: #6a6280;
+  color: var(--text-muted);
   margin-top: 4px;
 }
 
@@ -152,8 +150,8 @@
   display: flex;
   justify-content: space-around;
   padding: 16px 10px;
-  border-bottom: 1px solid #1a1a2e;
-  background: #0e0e1e;
+  border-bottom: 1px solid var(--glass-border);
+  background: var(--surface-1);
 }
 
 .wx-stat {
@@ -170,12 +168,12 @@
 .wx-stat-val {
   font-size: 13px;
   font-weight: bold;
-  color: #e8e0f0;
+  color: var(--text-primary);
 }
 
 .wx-stat-label {
   font-size: 10px;
-  color: #6a6280;
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 1px;
 }
@@ -191,15 +189,15 @@
   display: flex;
   align-items: center;
   padding: 8px 1em;
-  background: #111120;
-  border: 1px solid #1e1e32;
+  background: var(--surface-1);
+  border: 1px solid var(--glass-border);
   gap: 10px;
 }
 
 .wx-fday {
   width: 72px;
   font-size: 1em;
-  color: #9985f5;
+  color: var(--brand);
   text-transform: uppercase;
   letter-spacing: 1px;
 }
@@ -219,12 +217,12 @@
 .wx-fmax {
   font-size: 14px;
   font-weight: bold;
-  color: #e8e0f0;
+  color: var(--text-primary);
 }
 
 .wx-fmin {
   font-size: 1em;
-  color: #6a6280;
+  color: var(--text-muted);
 }
 
 .wx-loading {
@@ -234,15 +232,15 @@
   justify-content: center;
   height: 300px;
   gap: 14px;
-  color: #6a6280;
+  color: var(--text-muted);
   font-size: 13px;
 }
 
 .wx-spinner {
   width: 28px;
   height: 28px;
-  border: 2px solid #2a2a4a;
-  border-top-color: #7b68ee;
+  border: 2px solid var(--glass-border);
+  border-top-color: var(--brand);
   border-radius: 50%;
   animation: wx-spin 0.8s linear infinite;
 }
@@ -256,6 +254,6 @@
 .wx-error {
   padding: 40px 20px;
   text-align: center;
-  color: #e06080;
+  color: var(--error);
   font-size: 13px;
 }

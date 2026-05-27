@@ -948,27 +948,27 @@ html[data-theme="frutiger-aero"] .ov-add-ws:hover {
 }
 
 html[data-theme="frutiger-aero"] #audio-mixer-tray-btn {
-  color: #1a1a2e !important;
+  color: var(--text-primary) !important;
 }
 
 html[data-theme="frutiger-aero"] #audio-mixer-tray-btn:hover,
 html[data-theme="frutiger-aero"] #audio-mixer-tray-btn.active {
-  background: rgba(0, 0, 0, 0.08) !important;
-  color: #1a1a2e !important;
+  background: var(--glass-hover) !important;
+  color: var(--text-primary) !important;
 }
 
 html[data-theme="frutiger-aero"] #audio-mixer-panel {
-  background: rgba(255, 255, 255, 0.95) !important;
-  border: 1px solid rgba(0, 0, 0, 0.12) !important;
-  color: #1a1a2e !important;
+  background: var(--window-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  color: var(--text-primary) !important;
 }
 
 html[data-theme="frutiger-aero"] .am-title {
-  color: #1a1a2e !important;
+  color: var(--text-primary) !important;
 }
 
 html[data-theme="frutiger-aero"] .am-close-btn {
-  color: #4a4a6e !important;
+  color: var(--text-secondary) !important;
 }
 
 html[data-theme="frutiger-aero"] .am-close-btn:hover {
