@@ -160,8 +160,8 @@ const SYSTEM_CAPABILITIES = [
   },
   {
     tag: "PERF",
-    title: "Performance Mode",
-    desc: "Choose Balanced, Performance, or Quality mode to optimize system behavior."
+    title: "Turbo Mode",
+    desc: "Choose Balanced, Turbo, or Quality mode to optimize system behavior."
   },
   {
     tag: "STRETCH",
@@ -235,7 +235,7 @@ const SYSTEM_CAPABILITIES = [
   },
   {
     tag: "VIDEO",
-    title: "Video Performance",
+    title: "Video Turbo",
     desc: "Smoother video playback across the system with optimized rendering."
   },
   {

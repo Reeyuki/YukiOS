@@ -1,22 +1,16 @@
-/* ═══════════════════════════════════════════════════════════════════════════
-   Yuki Blender – Professional 3D Editor CSS
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-/* ── Window container ───────────────────────────────────────────────────── */
 .yb-window {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  font-size: 11px;
+  font-size: 13px;
   font-family: inherit;
 }
 
-/* ── Menubar ─────────────────────────────────────────────────────────────── */
 .yb-menubar {
   display: flex;
   align-items: stretch;
-  background: oklch(12% 0.015 265);
-  border-bottom: 1px solid oklch(7% 0.01 265);
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--glass-border);
   height: 24px;
   flex-shrink: 0;
   position: relative;
@@ -35,18 +29,18 @@
   padding: 0 9px;
   height: 24px;
   line-height: 24px;
-  font-size: 11px;
-  color: oklch(58% 0.025 265);
+  font-size: 13px;
+  color: var(--text-secondary);
   cursor: pointer;
   transition:
-    background 0.08s,
-    color 0.08s;
+    background 0.15s,
+    color 0.15s;
 }
 
 .yb-menu-item > span:hover,
 .yb-menu-item.active > span {
-  background: oklch(20% 0.025 265);
-  color: oklch(88% 0.015 265);
+  background: var(--surface-hover);
+  color: var(--text-primary);
 }
 
 .yb-dropdown {
@@ -54,11 +48,11 @@
   position: absolute;
   top: 24px;
   left: 0;
-  background: oklch(14% 0.018 265);
-  border: 1px solid oklch(24% 0.02 265);
-  border-radius: 0 0 4px 4px;
+  background: var(--menu-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 0 0 6px 6px;
   min-width: 220px;
-  box-shadow: 0 10px 32px oklch(0% 0 0 / 0.6);
+  box-shadow: 0 24px 64px var(--shadow-color);
   z-index: 1000;
   padding: 3px 0;
 }
@@ -72,30 +66,30 @@
   align-items: center;
   gap: 8px;
   padding: 4px 12px 4px 10px;
-  font-size: 11px;
-  color: oklch(58% 0.025 265);
+  font-size: 13px;
+  color: var(--text-secondary);
   cursor: pointer;
   transition:
-    background 0.07s,
-    color 0.07s;
+    background 0.15s,
+    color 0.15s;
   white-space: nowrap;
 }
 
 .yb-dropdown-item:hover {
-  background: oklch(22% 0.025 265);
-  color: oklch(88% 0.015 265);
+  background: var(--surface-hover);
+  color: var(--text-primary);
 }
 
 .yb-dropdown-item i {
   width: 13px;
-  font-size: 11px;
-  color: oklch(40% 0.04 265);
+  font-size: 13px;
+  color: var(--text-muted);
   flex-shrink: 0;
 }
 
 .yb-check {
   width: 13px;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--brand);
   flex-shrink: 0;
   text-align: center;
@@ -103,34 +97,33 @@
 
 .yb-shortcut {
   margin-left: auto;
-  font-size: 11px;
-  color: oklch(35% 0.02 265);
+  font-size: 12px;
+  color: var(--text-muted);
   font-family: "Courier New", monospace;
 }
 
 .yb-dropdown-sep {
   height: 1px;
-  background: oklch(20% 0.018 265);
+  background: var(--glass-border);
   margin: 3px 0;
 }
 
 .yb-dropdown-label {
   padding: 5px 12px 2px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1.1px;
-  color: oklch(38% 0.025 265);
+  color: var(--text-muted);
 }
 
-/* ── Toolbar ─────────────────────────────────────────────────────────────── */
 .yb-toolbar {
   display: flex;
   align-items: center;
   gap: 1px;
   padding: 0 6px;
-  background: oklch(13% 0.018 265);
-  border-bottom: 1px solid oklch(8% 0.01 265);
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--glass-border);
   height: 30px;
   flex-shrink: 0;
   user-select: none;
@@ -144,7 +137,7 @@
 
 .yb-toolbar-sep {
   width: 1px;
-  background: oklch(20% 0.018 265);
+  background: var(--glass-border);
   height: 16px;
   margin: 0 4px;
   flex-shrink: 0;
@@ -162,42 +155,41 @@
   height: 22px;
   background: transparent;
   border: 1px solid transparent;
-  border-radius: 3px;
-  color: oklch(50% 0.025 265);
-  font-size: 11px;
+  border-radius: 6px;
+  color: var(--text-secondary);
+  font-size: 12px;
   cursor: pointer;
   transition:
-    background 0.08s,
-    color 0.08s,
-    border-color 0.08s;
+    background 0.15s,
+    color 0.15s,
+    border-color 0.15s;
   font-family: inherit;
   white-space: nowrap;
 }
 
 .yb-tool-btn:hover {
-  background: oklch(20% 0.022 265);
-  color: oklch(78% 0.02 265);
-  border-color: oklch(26% 0.02 265);
+  background: var(--surface-hover);
+  color: var(--text-primary);
+  border-color: var(--glass-border);
 }
 
 .yb-tool-btn.active {
-  background: color-mix(in oklch, var(--brand) 18%, oklch(14% 0.02 265));
-  border-color: color-mix(in oklch, var(--brand) 45%, transparent);
+  background: var(--brand-dim);
+  border-color: var(--brand);
   color: var(--brand);
 }
 
 .yb-tool-btn i {
-  font-size: 11px;
+  font-size: 12px;
   flex-shrink: 0;
 }
 
 .yb-tool-label {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.5px;
 }
 
-/* ── Body layout ─────────────────────────────────────────────────────────── */
 .window-content.yb-body,
 .yb-body {
   display: flex !important;
@@ -208,26 +200,25 @@
   min-height: 0;
 }
 
-/* ── Side panels ─────────────────────────────────────────────────────────── */
 .yb-panel {
   display: flex;
   flex-direction: column;
-  background: oklch(11.5% 0.017 265);
+  background: var(--bg-secondary);
   flex-shrink: 0;
   overflow: hidden;
 }
 
 .yb-panel-left {
   width: 196px;
-  border-right: 1px solid oklch(7% 0.01 265);
+  border-right: 1px solid var(--glass-border);
 }
 
 .yb-panel-right {
   width: 220px;
-  border-left: 1px solid oklch(7% 0.01 265);
+  border-left: 1px solid var(--glass-border);
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: oklch(24% 0.018 265) transparent;
+  scrollbar-color: var(--glass-border) transparent;
 }
 
 .yb-panel-header {
@@ -236,10 +227,10 @@
   justify-content: space-between;
   padding: 0 8px;
   height: 26px;
-  background: oklch(10% 0.015 265);
-  border-bottom: 1px solid oklch(8% 0.01 265);
-  color: oklch(48% 0.025 265);
-  font-size: 11px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--glass-border);
+  color: var(--text-secondary);
+  font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -248,7 +239,7 @@
 
 .yb-panel-header i {
   color: var(--brand);
-  font-size: 11px;
+  font-size: 12px;
   margin-right: 3px;
 }
 
@@ -256,37 +247,36 @@
   width: 18px;
   height: 18px;
   background: transparent;
-  border: 1px solid oklch(24% 0.02 265);
-  border-radius: 2px;
-  color: oklch(45% 0.025 265);
-  font-size: 11px;
+  border: 1px solid var(--glass-border);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  font-size: 12px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition:
-    background 0.08s,
-    color 0.08s;
+    background 0.15s,
+    color 0.15s;
 }
 
 .yb-panel-btn:hover {
-  background: oklch(22% 0.022 265);
-  color: oklch(75% 0.02 265);
+  background: var(--surface-hover);
+  color: var(--text-primary);
 }
 
-/* ── Outliner ────────────────────────────────────────────────────────────── */
 .yb-outliner {
   flex: 1;
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: oklch(22% 0.018 265) transparent;
+  scrollbar-color: var(--glass-border) transparent;
   padding: 2px 0;
 }
 
 .yb-outliner-empty {
   padding: 12px 10px;
-  font-size: 11px;
-  color: oklch(30% 0.02 265);
+  font-size: 12px;
+  color: var(--text-muted);
   font-style: italic;
   text-align: center;
 }
@@ -297,16 +287,16 @@
   gap: 5px;
   padding: 3px 8px;
   cursor: pointer;
-  transition: background 0.07s;
+  transition: background 0.15s;
   border-left: 2px solid transparent;
 }
 
 .yb-outliner-row:hover {
-  background: oklch(16% 0.02 265);
+  background: var(--surface-2);
 }
 
 .yb-outliner-row.selected {
-  background: color-mix(in oklch, var(--brand) 14%, oklch(12% 0.02 265));
+  background: var(--brand-dim);
   border-left-color: var(--brand);
 }
 
@@ -315,34 +305,34 @@
 }
 
 .yb-outliner-row.hidden .yb-ol-vis-btn {
-  color: oklch(55% 0.15 25);
+  color: var(--error);
 }
 
 .yb-ol-type-icon {
   color: var(--brand);
-  font-size: 11px;
+  font-size: 12px;
   width: 12px;
   flex-shrink: 0;
 }
 
 .yb-ol-name {
   flex: 1;
-  font-size: 11px;
-  color: oklch(68% 0.02 265);
+  font-size: 12px;
+  color: var(--text-secondary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .yb-outliner-row.selected .yb-ol-name {
-  color: oklch(88% 0.02 265);
+  color: var(--text-primary);
 }
 
 .yb-ol-actions {
   display: flex;
   gap: 2px;
   opacity: 0;
-  transition: opacity 0.1s;
+  transition: opacity 0.15s;
 }
 
 .yb-outliner-row:hover .yb-ol-actions,
@@ -353,23 +343,22 @@
 .yb-ol-vis-btn {
   background: transparent;
   border: none;
-  color: oklch(40% 0.02 265);
-  font-size: 11px;
+  color: var(--text-muted);
+  font-size: 12px;
   cursor: pointer;
   width: 16px;
   height: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 2px;
-  transition: color 0.08s;
+  border-radius: 6px;
+  transition: color 0.15s;
 }
 
 .yb-ol-vis-btn:hover {
-  color: oklch(70% 0.02 265);
+  color: var(--text-primary);
 }
 
-/* ── Collections ─────────────────────────────────────────────────────────── */
 .yb-collections {
   padding: 3px 0;
   flex-shrink: 0;
@@ -380,24 +369,23 @@
   align-items: center;
   gap: 6px;
   padding: 4px 10px;
-  font-size: 11px;
-  color: oklch(50% 0.025 265);
+  font-size: 12px;
+  color: var(--text-secondary);
   cursor: pointer;
-  transition: background 0.07s;
+  transition: background 0.15s;
 }
 
 .yb-collection-row:hover,
 .yb-collection-row.active {
-  background: oklch(16% 0.02 265);
-  color: oklch(72% 0.02 265);
+  background: var(--surface-2);
+  color: var(--text-primary);
 }
 
 .yb-collection-row i {
-  font-size: 11px;
-  color: oklch(50% 0.08 55);
+  font-size: 12px;
+  color: var(--brand);
 }
 
-/* ── Viewport area ───────────────────────────────────────────────────────── */
 .yb-viewport-wrap {
   flex: 1;
   display: flex;
@@ -410,7 +398,7 @@
   flex: 1;
   position: relative;
   overflow: hidden;
-  background: oklch(8% 0.01 265);
+  background: var(--bg-primary);
 }
 
 .yb-canvas-host {
@@ -424,16 +412,15 @@
   height: 100% !important;
 }
 
-/* ── HUD ─────────────────────────────────────────────────────────────────── */
 .yb-hud {
   position: absolute;
   top: 8px;
   left: 8px;
   pointer-events: none;
-  background: oklch(7% 0.01 265 / 0.78);
-  backdrop-filter: blur(8px);
-  border: 1px solid oklch(20% 0.018 265 / 0.6);
-  border-radius: 4px;
+  background: var(--window-bg);
+  backdrop-filter: blur(32px);
+  border: 1px solid var(--glass-border);
+  border-radius: 6px;
   padding: 5px 8px;
   min-width: 100px;
 }
@@ -446,18 +433,17 @@
 }
 
 .yb-hl {
-  font-size: 11px;
-  color: oklch(40% 0.025 265);
+  font-size: 12px;
+  color: var(--text-muted);
 }
 
 .yb-hud-row span:last-child {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--brand);
   font-family: "Courier New", monospace;
   font-weight: 600;
 }
 
-/* ── Nav gizmo ───────────────────────────────────────────────────────────── */
 .yb-nav-gizmo {
   position: absolute;
   top: 8px;
@@ -465,9 +451,9 @@
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  background: oklch(10% 0.015 265 / 0.7);
-  backdrop-filter: blur(6px);
-  border: 1px solid oklch(22% 0.02 265 / 0.5);
+  background: var(--window-bg);
+  backdrop-filter: blur(32px);
+  border: 1px solid var(--glass-border);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -477,51 +463,49 @@
 
 .yb-nav-axis {
   position: absolute;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.2px;
 }
 
 .yb-axis-x {
-  color: oklch(65% 0.22 25);
+  color: var(--error);
   right: 8px;
   top: 50%;
   transform: translateY(-50%);
 }
 
 .yb-axis-y {
-  color: oklch(65% 0.22 145);
+  color: var(--brand);
   top: 6px;
   left: 50%;
   transform: translateX(-50%);
 }
 
 .yb-axis-z {
-  color: oklch(65% 0.22 260);
+  color: var(--brand);
   bottom: 6px;
   left: 50%;
   transform: translateX(-50%);
 }
 
-/* ── Active tool badge ───────────────────────────────────────────────────── */
 .yb-active-tool-badge {
   position: absolute;
   bottom: 10px;
   left: 50%;
   transform: translateX(-50%);
-  background: oklch(7% 0.01 265 / 0.75);
-  backdrop-filter: blur(6px);
-  border: 1px solid oklch(22% 0.02 265 / 0.5);
-  border-radius: 3px;
+  background: var(--window-bg);
+  backdrop-filter: blur(32px);
+  border: 1px solid var(--glass-border);
+  border-radius: 6px;
   padding: 2px 8px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
-  color: oklch(45% 0.025 265);
+  color: var(--text-secondary);
   letter-spacing: 1.2px;
   pointer-events: none;
 }
 
-/* ── Drag overlay ────────────────────────────────────────────────────────── */
 .yb-drag-overlay {
   position: absolute;
   inset: 0;
@@ -530,7 +514,7 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  background: oklch(5% 0.01 265 / 0.8);
+  background: var(--overlay-bg);
   border: 2px dashed var(--brand);
   font-size: 14px;
   color: var(--brand);
@@ -548,7 +532,6 @@
   display: flex;
 }
 
-/* ── Loading overlay ─────────────────────────────────────────────────────── */
 .yb-loading-overlay {
   position: absolute;
   inset: 0;
@@ -557,16 +540,16 @@
   align-items: center;
   justify-content: center;
   gap: 14px;
-  background: oklch(5% 0.01 265 / 0.85);
+  background: var(--overlay-bg);
   z-index: 60;
-  color: oklch(60% 0.025 265);
+  color: var(--text-secondary);
   font-size: 12px;
 }
 
 .yb-spinner {
   width: 32px;
   height: 32px;
-  border: 2px solid oklch(20% 0.018 265);
+  border: 2px solid var(--glass-border);
   border-top-color: var(--brand);
   border-radius: 50%;
   animation: yb-spin 0.7s linear infinite;
@@ -578,14 +561,13 @@
   }
 }
 
-/* ── Welcome screen ──────────────────────────────────────────────────────── */
 .yb-welcome {
   position: absolute;
   inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: oklch(8% 0.012 265);
+  background: var(--bg-primary);
 }
 
 .yb-welcome-inner {
@@ -598,7 +580,7 @@
 
 .yb-welcome-logo {
   font-size: 48px;
-  color: oklch(28% 0.04 265);
+  color: var(--text-muted);
   animation: yb-float 4s ease-in-out infinite;
   margin-bottom: 4px;
 }
@@ -618,14 +600,14 @@
   margin: 0;
   font-size: 22px;
   font-weight: 800;
-  color: oklch(82% 0.015 265);
+  color: var(--text-primary);
   letter-spacing: 0.5px;
 }
 
 .yb-welcome-inner p {
   margin: 0;
-  font-size: 11px;
-  color: oklch(38% 0.022 265);
+  font-size: 12px;
+  color: var(--text-muted);
 }
 
 .yb-welcome-formats {
@@ -638,11 +620,11 @@
 
 .yb-welcome-formats span {
   padding: 2px 6px;
-  background: oklch(14% 0.018 265);
-  border: 1px solid oklch(22% 0.018 265);
-  border-radius: 3px;
-  font-size: 11px;
-  color: oklch(46% 0.035 265);
+  background: var(--surface-2);
+  border: 1px solid var(--glass-border);
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
   font-family: "Courier New", monospace;
 }
 
@@ -654,11 +636,11 @@
 
 .yb-welcome-btn {
   padding: 6px 14px;
-  border-radius: 4px;
-  border: 1px solid oklch(26% 0.02 265);
-  background: oklch(16% 0.018 265);
-  color: oklch(56% 0.025 265);
-  font-size: 11px;
+  border-radius: 6px;
+  border: 1px solid var(--glass-border);
+  background: var(--surface-2);
+  color: var(--text-secondary);
+  font-size: 12px;
   font-family: inherit;
   font-weight: 500;
   cursor: pointer;
@@ -666,49 +648,48 @@
   align-items: center;
   gap: 6px;
   transition:
-    background 0.1s,
-    color 0.1s,
-    border-color 0.1s;
+    background 0.15s,
+    color 0.15s,
+    border-color 0.15s;
 }
 
 .yb-welcome-btn:hover {
-  background: oklch(22% 0.022 265);
-  color: oklch(80% 0.018 265);
-  border-color: oklch(34% 0.025 265);
+  background: var(--surface-hover);
+  color: var(--text-primary);
+  border-color: var(--glass-border);
 }
 
 .yb-welcome-btn.yb-btn-primary {
-  background: color-mix(in oklch, var(--brand) 18%, oklch(14% 0.02 265));
-  border-color: color-mix(in oklch, var(--brand) 50%, transparent);
+  background: var(--brand-dim);
+  border-color: var(--brand);
   color: var(--brand);
 }
 
 .yb-welcome-btn.yb-btn-primary:hover {
-  background: color-mix(in oklch, var(--brand) 28%, oklch(14% 0.02 265));
+  background: var(--brand);
+  color: var(--text-on-brand);
 }
 
-/* ── Selection info badge ────────────────────────────────────────────────── */
 .yb-selection-info {
   position: absolute;
   bottom: 36px;
   left: 50%;
   transform: translateX(-50%);
-  background: oklch(7% 0.01 265 / 0.78);
-  backdrop-filter: blur(6px);
-  border: 1px solid oklch(20% 0.018 265 / 0.5);
-  border-radius: 3px;
+  background: var(--window-bg);
+  backdrop-filter: blur(32px);
+  border: 1px solid var(--glass-border);
+  border-radius: 6px;
   padding: 2px 10px;
-  font-size: 11px;
-  color: oklch(62% 0.025 265);
+  font-size: 12px;
+  color: var(--text-secondary);
   pointer-events: none;
   display: flex;
   align-items: center;
 }
 
-/* ── Timeline / Animation panel ──────────────────────────────────────────── */
 .yb-timeline {
-  background: oklch(10% 0.015 265);
-  border-top: 1px solid oklch(7% 0.01 265);
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--glass-border);
   flex-shrink: 0;
 }
 
@@ -718,12 +699,12 @@
   gap: 8px;
   padding: 0 8px;
   height: 30px;
-  border-bottom: 1px solid oklch(14% 0.015 265);
+  border-bottom: 1px solid var(--glass-border);
 }
 
 .yb-tl-title {
-  font-size: 11px;
-  color: oklch(50% 0.025 265);
+  font-size: 12px;
+  color: var(--text-secondary);
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -744,24 +725,24 @@
 .yb-tl-btn {
   width: 22px;
   height: 22px;
-  background: oklch(16% 0.018 265);
-  border: 1px solid oklch(24% 0.02 265);
-  border-radius: 3px;
-  color: oklch(52% 0.025 265);
-  font-size: 11px;
+  background: var(--surface-2);
+  border: 1px solid var(--glass-border);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  font-size: 12px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition:
-    background 0.08s,
-    color 0.08s;
+    background 0.15s,
+    color 0.15s;
   font-family: inherit;
 }
 
 .yb-tl-btn:hover {
-  background: oklch(24% 0.025 265);
-  color: oklch(78% 0.02 265);
+  background: var(--surface-hover);
+  color: var(--text-primary);
 }
 
 .yb-tl-btn:active {
@@ -769,14 +750,14 @@
 }
 
 .yb-tl-play {
-  background: color-mix(in oklch, var(--brand) 16%, oklch(14% 0.02 265));
-  border-color: color-mix(in oklch, var(--brand) 40%, transparent);
+  background: var(--brand-dim);
+  border-color: var(--brand);
   color: var(--brand);
 }
 
 .yb-tl-time {
-  font-size: 11px;
-  color: oklch(40% 0.025 265);
+  font-size: 12px;
+  color: var(--text-muted);
   font-family: "Courier New", monospace;
   flex-shrink: 0;
 }
@@ -793,29 +774,53 @@
 }
 
 .yb-tl-select {
-  background: oklch(15% 0.017 265);
-  border: 1px solid oklch(24% 0.02 265);
-  border-radius: 3px;
-  color: oklch(55% 0.025 265);
-  font-size: 11px;
+  background: var(--surface-2);
+  border: 1px solid var(--glass-border);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  font-size: 12px;
   font-family: inherit;
   padding: 2px 4px;
   cursor: pointer;
   outline: none;
+  appearance: none;
+  -webkit-appearance: none;
 }
 
 .yb-tl-loop {
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 11px;
-  color: oklch(48% 0.025 265);
+  font-size: 12px;
+  color: var(--text-secondary);
   cursor: pointer;
 }
 
 .yb-tl-loop input {
   accent-color: var(--brand);
   cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--glass-border);
+  border-radius: 6px;
+  background: var(--surface-2);
+}
+
+.yb-tl-loop input:checked {
+  background: var(--brand);
+  border-color: var(--brand);
+}
+
+.yb-tl-loop input:checked::after {
+  content: "";
+  display: block;
+  width: 8px;
+  height: 8px;
+  background: var(--text-on-brand);
+  border-radius: 2px;
+  margin: 2px auto;
 }
 
 .yb-tl-close {
@@ -833,8 +838,8 @@
   height: 4px;
   -webkit-appearance: none;
   appearance: none;
-  background: oklch(18% 0.018 265);
-  border-radius: 2px;
+  background: var(--surface-2);
+  border-radius: 6px;
   outline: none;
   cursor: pointer;
 }
@@ -846,16 +851,15 @@
   background: var(--brand);
   border-radius: 50%;
   cursor: pointer;
-  box-shadow: 0 0 6px color-mix(in oklch, var(--brand) 60%, transparent);
+  box-shadow: 0 0 6px var(--brand-glow);
 }
 
-/* ── Dope sheet ──────────────────────────────────────────────────────────── */
 .yb-tl-dopesheet {
   padding: 2px 8px 4px;
   overflow-y: auto;
   max-height: 70px;
   scrollbar-width: thin;
-  scrollbar-color: oklch(22% 0.018 265) transparent;
+  scrollbar-color: var(--glass-border) transparent;
 }
 
 .yb-ds-track {
@@ -868,8 +872,8 @@
 
 .yb-ds-track-label {
   width: 100px;
-  font-size: 11px;
-  color: oklch(40% 0.025 265);
+  font-size: 12px;
+  color: var(--text-muted);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -879,7 +883,7 @@
 .yb-ds-track-keys {
   flex: 1;
   height: 10px;
-  background: oklch(14% 0.015 265);
+  background: var(--surface-2);
   border-radius: 2px;
   position: relative;
   overflow: hidden;
@@ -892,16 +896,15 @@
   width: 6px;
   height: 6px;
   background: var(--brand);
-  border-radius: 1px;
+  border-radius: 2px;
   rotate: 45deg;
   opacity: 0.7;
 }
 
-/* ── Inspector ───────────────────────────────────────────────────────────── */
 .yb-inspector-tabs {
   display: flex;
-  background: oklch(10% 0.015 265);
-  border-bottom: 1px solid oklch(7% 0.01 265);
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--glass-border);
   flex-shrink: 0;
 }
 
@@ -911,19 +914,19 @@
   background: transparent;
   border: none;
   border-bottom: 2px solid transparent;
-  color: oklch(38% 0.022 265);
-  font-size: 11px;
+  color: var(--text-muted);
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.8px;
   cursor: pointer;
   font-family: inherit;
   transition:
-    color 0.08s,
-    border-color 0.08s;
+    color 0.15s,
+    border-color 0.15s;
 }
 
 .yb-ins-tab:hover {
-  color: oklch(60% 0.025 265);
+  color: var(--text-secondary);
 }
 
 .yb-ins-tab.active {
@@ -942,15 +945,15 @@
 
 .yb-ins-section {
   padding: 7px 9px;
-  border-bottom: 1px solid oklch(15% 0.015 265);
+  border-bottom: 1px solid var(--glass-border);
 }
 
 .yb-ins-header {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: oklch(45% 0.025 265);
+  color: var(--text-secondary);
   margin-bottom: 7px;
   display: flex;
   align-items: center;
@@ -966,8 +969,8 @@
 }
 
 .yb-ins-row > label {
-  font-size: 11px;
-  color: oklch(42% 0.022 265);
+  font-size: 12px;
+  color: var(--text-secondary);
   display: block;
   margin-bottom: 4px;
 }
@@ -980,8 +983,8 @@
 }
 
 .yb-ins-row-inline > label {
-  font-size: 11px;
-  color: oklch(48% 0.022 265);
+  font-size: 12px;
+  color: var(--text-secondary);
 }
 
 .yb-ins-slider-row {
@@ -992,14 +995,14 @@
 }
 
 .yb-ins-slider-row > label {
-  font-size: 11px;
-  color: oklch(42% 0.022 265);
+  font-size: 12px;
+  color: var(--text-secondary);
   width: 62px;
   flex-shrink: 0;
 }
 
 .yb-slider-val {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--brand);
   font-family: "Courier New", monospace;
   width: 28px;
@@ -1007,7 +1010,6 @@
   flex-shrink: 0;
 }
 
-/* ── XYZ transform fields ────────────────────────────────────────────────── */
 .yb-xyz-row {
   display: flex;
   gap: 3px;
@@ -1017,34 +1019,34 @@
   flex: 1;
   display: flex;
   align-items: center;
-  background: oklch(9% 0.012 265);
-  border: 1px solid oklch(20% 0.018 265);
-  border-radius: 3px;
+  background: var(--surface-2);
+  border: 1px solid var(--glass-border);
+  border-radius: 6px;
   overflow: hidden;
 }
 
 .yb-xyz-lbl {
   width: 14px;
   text-align: center;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   flex-shrink: 0;
   line-height: 20px;
 }
 
 .yb-xyz-lbl.x {
-  color: oklch(65% 0.22 25);
-  background: oklch(14% 0.05 25);
+  color: var(--error);
+  background: var(--error-bg);
 }
 
 .yb-xyz-lbl.y {
-  color: oklch(65% 0.22 145);
-  background: oklch(14% 0.05 145);
+  color: var(--brand);
+  background: var(--brand-dim);
 }
 
 .yb-xyz-lbl.z {
-  color: oklch(65% 0.22 260);
-  background: oklch(14% 0.05 260);
+  color: var(--brand);
+  background: var(--brand-dim);
 }
 
 .yb-xyz-inp {
@@ -1053,8 +1055,8 @@
   padding: 0 3px;
   background: transparent;
   border: none;
-  color: oklch(72% 0.02 265);
-  font-size: 11px;
+  color: var(--text-secondary);
+  font-size: 12px;
   font-family: "Courier New", monospace;
   outline: none;
   width: 0;
@@ -1069,17 +1071,16 @@
 }
 
 .yb-xyz-inp:focus {
-  background: oklch(14% 0.018 265);
+  background: var(--surface-3);
 }
 
-/* ── Generic slider ──────────────────────────────────────────────────────── */
 .yb-slider {
   flex: 1;
   height: 3px;
   -webkit-appearance: none;
   appearance: none;
-  background: oklch(20% 0.018 265);
-  border-radius: 2px;
+  background: var(--surface-2);
+  border-radius: 6px;
   outline: none;
   cursor: pointer;
   min-width: 0;
@@ -1094,24 +1095,43 @@
   cursor: pointer;
 }
 
-/* ── Toggle checkbox ─────────────────────────────────────────────────────── */
 .yb-toggle {
   accent-color: var(--brand);
   cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--glass-border);
+  border-radius: 6px;
+  background: var(--surface-2);
 }
 
-/* ── Color picker ────────────────────────────────────────────────────────── */
+.yb-toggle:checked {
+  background: var(--brand);
+  border-color: var(--brand);
+}
+
+.yb-toggle:checked::after {
+  content: "";
+  display: block;
+  width: 8px;
+  height: 8px;
+  background: var(--text-on-brand);
+  border-radius: 2px;
+  margin: 2px auto;
+}
+
 .yb-color-pick {
   width: 100%;
   height: 24px;
   padding: 1px;
-  border: 1px solid oklch(22% 0.02 265);
-  border-radius: 3px;
-  background: oklch(10% 0.012 265);
+  border: 1px solid var(--glass-border);
+  border-radius: 6px;
+  background: var(--surface-2);
   cursor: pointer;
 }
 
-/* ── Material slots ──────────────────────────────────────────────────────── */
 .yb-mat-slots {
   display: flex;
   flex-direction: column;
@@ -1123,34 +1143,33 @@
   align-items: center;
   gap: 6px;
   padding: 3px 6px;
-  background: oklch(14% 0.016 265);
-  border: 1px solid oklch(20% 0.018 265);
-  border-radius: 3px;
-  font-size: 11px;
-  color: oklch(58% 0.022 265);
+  background: var(--surface-2);
+  border: 1px solid var(--glass-border);
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
   cursor: pointer;
 }
 
 .yb-mat-slot.active {
-  border-color: color-mix(in oklch, var(--brand) 40%, transparent);
-  color: oklch(78% 0.02 265);
+  border-color: var(--brand);
+  color: var(--text-primary);
 }
 
 .yb-mat-swatch {
   width: 14px;
   height: 14px;
-  border-radius: 2px;
-  border: 1px solid oklch(30% 0.02 265);
+  border-radius: 6px;
+  border: 1px solid var(--glass-border);
   flex-shrink: 0;
 }
 
-/* ── Texture slots ───────────────────────────────────────────────────────── */
 .yb-tex-slot {
   display: flex;
   align-items: center;
   gap: 6px;
   padding: 4px 0;
-  border-bottom: 1px solid oklch(14% 0.015 265);
+  border-bottom: 1px solid var(--glass-border);
 }
 
 .yb-tex-slot:last-child {
@@ -1158,16 +1177,16 @@
 }
 
 .yb-tex-type {
-  font-size: 11px;
-  color: oklch(40% 0.022 265);
+  font-size: 12px;
+  color: var(--text-muted);
   width: 54px;
   flex-shrink: 0;
 }
 
 .yb-tex-name {
   flex: 1;
-  font-size: 11px;
-  color: oklch(55% 0.025 265);
+  font-size: 12px;
+  color: var(--text-secondary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1178,25 +1197,24 @@
   width: 18px;
   height: 18px;
   background: transparent;
-  border: 1px solid oklch(24% 0.02 265);
-  border-radius: 2px;
-  color: oklch(42% 0.025 265);
-  font-size: 11px;
+  border: 1px solid var(--glass-border);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  font-size: 12px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition:
-    background 0.08s,
-    color 0.08s;
+    background 0.15s,
+    color 0.15s;
 }
 
 .yb-tex-btn:hover {
-  background: oklch(22% 0.022 265);
-  color: oklch(70% 0.02 265);
+  background: var(--surface-hover);
+  color: var(--text-primary);
 }
 
-/* ── Stats grid ──────────────────────────────────────────────────────────── */
 .yb-stats-grid {
   display: flex;
   flex-direction: column;
@@ -1210,17 +1228,16 @@
 }
 
 .yb-stat-row .yb-hl {
-  font-size: 11px;
-  color: oklch(40% 0.022 265);
+  font-size: 12px;
+  color: var(--text-muted);
 }
 
 .yb-mono {
   font-family: "Courier New", monospace;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--brand);
 }
 
-/* ── Animation list ──────────────────────────────────────────────────────── */
 .yb-anim-list {
   display: flex;
   flex-direction: column;
@@ -1232,36 +1249,36 @@
   align-items: center;
   gap: 6px;
   padding: 4px 6px;
-  background: oklch(14% 0.016 265);
-  border: 1px solid oklch(20% 0.018 265);
-  border-radius: 3px;
+  background: var(--surface-2);
+  border: 1px solid var(--glass-border);
+  border-radius: 6px;
   cursor: pointer;
-  font-size: 11px;
-  color: oklch(55% 0.022 265);
+  font-size: 12px;
+  color: var(--text-secondary);
   transition:
-    background 0.08s,
-    color 0.08s;
+    background 0.15s,
+    color 0.15s;
 }
 
 .yb-anim-row:hover {
-  background: oklch(20% 0.022 265);
-  color: oklch(76% 0.02 265);
+  background: var(--surface-hover);
+  color: var(--text-primary);
 }
 
 .yb-anim-row.active {
-  background: color-mix(in oklch, oklch(55% 0.18 145) 14%, oklch(12% 0.018 265));
-  border-color: oklch(45% 0.18 145 / 0.4);
-  color: oklch(65% 0.18 145);
+  background: var(--brand-dim);
+  border-color: var(--brand);
+  color: var(--brand);
 }
 
 .yb-anim-row i {
-  font-size: 11px;
-  color: oklch(42% 0.025 265);
+  font-size: 12px;
+  color: var(--text-secondary);
   flex-shrink: 0;
 }
 
 .yb-anim-row.active i {
-  color: oklch(65% 0.18 145);
+  color: var(--brand);
 }
 
 .yb-anim-rowname {
@@ -1272,30 +1289,28 @@
 }
 
 .yb-anim-dur {
-  font-size: 11px;
-  color: oklch(35% 0.02 265);
+  font-size: 12px;
+  color: var(--text-muted);
   font-family: "Courier New", monospace;
   flex-shrink: 0;
 }
 
-/* ── Bone tree ───────────────────────────────────────────────────────────── */
 .yb-bone-tree {
   max-height: 120px;
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: oklch(22% 0.018 265) transparent;
+  scrollbar-color: var(--glass-border) transparent;
 }
 
 .yb-bone-item {
   padding: 2px 0;
-  font-size: 11px;
-  color: oklch(44% 0.022 265);
-  border-left: 1px solid oklch(18% 0.018 265);
+  font-size: 12px;
+  color: var(--text-secondary);
+  border-left: 1px solid var(--glass-border);
   margin-left: 6px;
   padding-left: 6px;
 }
 
-/* ── Empty messages ──────────────────────────────────────────────────────── */
 .yb-ins-empty-msg {
   display: flex;
   flex-direction: column;
@@ -1303,8 +1318,8 @@
   justify-content: center;
   gap: 8px;
   padding: 20px 10px;
-  color: oklch(28% 0.02 265);
-  font-size: 11px;
+  color: var(--text-muted);
+  font-size: 12px;
   text-align: center;
   line-height: 1.6;
 }
@@ -1315,22 +1330,21 @@
 }
 
 .yb-empty-label {
-  font-size: 11px;
-  color: oklch(28% 0.02 265);
+  font-size: 12px;
+  color: var(--text-muted);
   font-style: italic;
 }
 
-/* ── Status bar ──────────────────────────────────────────────────────────── */
 .yb-statusbar {
   display: flex;
   align-items: center;
   padding: 0 6px;
-  background: oklch(9% 0.012 265);
-  border-top: 1px solid oklch(7% 0.01 265);
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--glass-border);
   height: 20px;
   flex-shrink: 0;
-  font-size: 11px;
-  color: oklch(36% 0.022 265);
+  font-size: 12px;
+  color: var(--text-muted);
   gap: 0;
 }
 
@@ -1343,55 +1357,54 @@
 }
 
 .yb-sb-item i {
-  font-size: 8px;
+  font-size: 12px;
 }
 
 .yb-sb-sep {
   width: 1px;
-  background: oklch(15% 0.015 265);
+  background: var(--glass-border);
   height: 10px;
   flex-shrink: 0;
 }
 
 #sb-fps {
-  color: oklch(58% 0.18 145);
+  color: var(--brand);
   font-family: "Courier New", monospace;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 #sb-mode {
-  color: oklch(50% 0.025 265);
+  color: var(--text-secondary);
   font-weight: 600;
 }
 
 #sb-file {
   flex: 1;
-  color: oklch(45% 0.025 265);
+  color: var(--text-secondary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 #sb-sel {
-  color: oklch(55% 0.025 265);
+  color: var(--text-secondary);
 }
 
 #sb-anim {
-  color: oklch(58% 0.12 55);
+  color: var(--brand);
 }
 
 #sb-renderer {
-  color: oklch(35% 0.02 265);
+  color: var(--text-muted);
 }
 
-/* ── Context menu ────────────────────────────────────────────────────────── */
 .yb-context-menu {
   position: fixed;
-  background: oklch(14% 0.018 265);
-  border: 1px solid oklch(24% 0.022 265);
-  border-radius: 4px;
+  background: var(--menu-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 6px;
   min-width: 160px;
-  box-shadow: 0 8px 24px oklch(0% 0 0 / 0.55);
+  box-shadow: 0 24px 64px var(--shadow-color);
   z-index: 100000;
   padding: 3px 0;
 }
@@ -1401,42 +1414,41 @@
   align-items: center;
   gap: 8px;
   padding: 5px 12px;
-  font-size: 11px;
-  color: oklch(58% 0.025 265);
+  font-size: 12px;
+  color: var(--text-secondary);
   cursor: pointer;
   transition:
-    background 0.07s,
-    color 0.07s;
+    background 0.15s,
+    color 0.15s;
 }
 
 .yb-ctx-item:hover {
-  background: oklch(22% 0.025 265);
-  color: oklch(86% 0.018 265);
+  background: var(--surface-hover);
+  color: var(--text-primary);
 }
 
 .yb-ctx-item i {
   width: 12px;
-  font-size: 11px;
-  color: oklch(40% 0.025 265);
+  font-size: 12px;
+  color: var(--text-muted);
   flex-shrink: 0;
 }
 
 .yb-ctx-danger {
-  color: oklch(58% 0.18 25);
+  color: var(--error);
 }
 
 .yb-ctx-danger:hover {
-  background: oklch(60% 0.18 25 / 0.12);
-  color: oklch(68% 0.18 25);
+  background: var(--error-bg);
+  color: var(--error-hover);
 }
 
 .yb-ctx-sep {
   height: 1px;
-  background: oklch(20% 0.018 265);
+  background: var(--glass-border);
   margin: 3px 0;
 }
 
-/* ── Sample models modal ─────────────────────────────────────────────────── */
 .yb-samples-backdrop {
   position: fixed;
   inset: 0;
@@ -1449,19 +1461,19 @@
 }
 
 .yb-samples-backdrop.visible {
-  background: oklch(0% 0 0 / 0.65);
-  backdrop-filter: blur(3px);
+  background: var(--overlay-bg);
+  backdrop-filter: blur(32px);
 }
 
 .yb-samples-modal {
-  background: oklch(13% 0.018 265);
-  border: 1px solid oklch(22% 0.02 265);
-  border-radius: 5px;
+  background: var(--window-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 6px;
   width: 480px;
   max-width: 92vw;
   max-height: 82vh;
   overflow: hidden;
-  box-shadow: 0 24px 60px oklch(0% 0 0 / 0.6);
+  box-shadow: 0 24px 64px var(--shadow-color);
   display: flex;
   flex-direction: column;
   transform: translateY(20px) scale(0.97);
@@ -1481,15 +1493,15 @@
   align-items: center;
   justify-content: space-between;
   padding: 10px 14px;
-  border-bottom: 1px solid oklch(20% 0.018 265);
-  background: oklch(11% 0.015 265);
+  border-bottom: 1px solid var(--glass-border);
+  background: var(--bg-secondary);
 }
 
 .yb-samples-header h3 {
   margin: 0;
   font-size: 12px;
   font-weight: 700;
-  color: oklch(82% 0.015 265);
+  color: var(--text-primary);
   display: flex;
   align-items: center;
   gap: 7px;
@@ -1499,30 +1511,30 @@
 
 .yb-samples-header h3 i {
   color: var(--brand);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .yb-samples-close {
   background: none;
   border: 1px solid transparent;
-  color: oklch(38% 0.022 265);
+  color: var(--text-muted);
   font-size: 12px;
   cursor: pointer;
   width: 24px;
   height: 24px;
-  border-radius: 3px;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
   transition:
-    background 0.1s,
-    color 0.1s;
+    background 0.15s,
+    color 0.15s;
 }
 
 .yb-samples-close:hover {
-  background: oklch(60% 0.18 25 / 0.15);
-  color: oklch(65% 0.18 25);
-  border-color: oklch(60% 0.18 25 / 0.3);
+  background: var(--error-bg);
+  color: var(--error);
+  border-color: var(--error-border);
 }
 
 .yb-samples-body {
@@ -1530,13 +1542,13 @@
   overflow-y: auto;
   flex: 1;
   scrollbar-width: thin;
-  scrollbar-color: oklch(26% 0.018 265) transparent;
+  scrollbar-color: var(--glass-border) transparent;
 }
 
 .yb-samples-desc {
   margin: 0 0 10px;
-  font-size: 11px;
-  color: oklch(42% 0.022 265);
+  font-size: 12px;
+  color: var(--text-muted);
 }
 
 .yb-samples-grid {
@@ -1550,27 +1562,27 @@
   align-items: center;
   gap: 10px;
   padding: 8px 10px;
-  background: oklch(15% 0.018 265);
-  border: 1px solid oklch(21% 0.02 265);
-  border-radius: 4px;
+  background: var(--surface-2);
+  border: 1px solid var(--glass-border);
+  border-radius: 6px;
   position: relative;
   overflow: hidden;
   transition:
-    background 0.1s,
-    border-color 0.1s;
+    background 0.15s,
+    border-color 0.15s;
 }
 
 .yb-sample-card:hover {
-  background: oklch(18% 0.02 265);
-  border-color: oklch(28% 0.022 265);
+  background: var(--surface-hover);
+  border-color: var(--glass-border);
 }
 
 .yb-sample-icon {
   width: 32px;
   height: 32px;
-  border-radius: 4px;
-  background: oklch(18% 0.018 265);
-  border: 1px solid oklch(26% 0.02 265);
+  border-radius: 6px;
+  background: var(--surface-2);
+  border: 1px solid var(--glass-border);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1585,50 +1597,50 @@
 }
 
 .yb-sample-name {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
-  color: oklch(78% 0.018 265);
+  color: var(--text-primary);
   margin-bottom: 2px;
 }
 
 .yb-sample-desc {
-  font-size: 11px;
-  color: oklch(42% 0.022 265);
+  font-size: 12px;
+  color: var(--text-muted);
   margin-bottom: 2px;
 }
 
 .yb-sample-file {
-  font-size: 11px;
-  color: oklch(38% 0.022 265);
+  font-size: 12px;
+  color: var(--text-muted);
   font-family: "Courier New", monospace;
-  background: oklch(10% 0.012 265);
+  background: var(--surface-2);
   padding: 1px 4px;
-  border-radius: 2px;
+  border-radius: 6px;
 }
 
 .yb-sample-load-btn {
   width: 28px;
   height: 28px;
   flex-shrink: 0;
-  border-radius: 3px;
-  border: 1px solid oklch(28% 0.02 265);
-  background: oklch(18% 0.018 265);
-  color: oklch(52% 0.025 265);
-  font-size: 11px;
+  border-radius: 6px;
+  border: 1px solid var(--glass-border);
+  background: var(--surface-2);
+  color: var(--text-secondary);
+  font-size: 12px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition:
-    background 0.08s,
-    color 0.08s,
-    border-color 0.08s;
+    background 0.15s,
+    color 0.15s,
+    border-color 0.15s;
 }
 
 .yb-sample-load-btn:hover {
-  background: color-mix(in oklch, var(--brand) 18%, oklch(16% 0.018 265));
+  background: var(--brand-dim);
   color: var(--brand);
-  border-color: color-mix(in oklch, var(--brand) 45%, transparent);
+  border-color: var(--brand);
 }
 
 .yb-sample-progress {
@@ -1637,7 +1649,7 @@
   left: 0;
   right: 0;
   padding: 4px 10px 6px;
-  background: linear-gradient(transparent, oklch(12% 0.018 265 / 0.95));
+  background: linear-gradient(transparent, var(--bg-secondary));
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1647,8 +1659,8 @@
 .yb-sp-bar {
   width: 100%;
   height: 3px;
-  background: oklch(16% 0.016 265);
-  border-radius: 2px;
+  background: var(--surface-2);
+  border-radius: 6px;
   overflow: hidden;
 }
 
@@ -1656,51 +1668,50 @@
   height: 100%;
   width: 0%;
   background: var(--brand);
-  border-radius: 2px;
+  border-radius: 6px;
   transition: width 0.25s ease;
 }
 
 .yb-sp-text {
-  font-size: 11px;
-  color: oklch(45% 0.022 265);
+  font-size: 12px;
+  color: var(--text-muted);
   font-family: "Courier New", monospace;
 }
 
 .yb-samples-footer {
   padding: 8px 14px;
-  border-top: 1px solid oklch(18% 0.018 265);
+  border-top: 1px solid var(--glass-border);
   display: flex;
   justify-content: flex-end;
-  background: oklch(11% 0.014 265);
+  background: var(--bg-secondary);
 }
 
 .yb-btn-cancel {
   padding: 5px 14px;
-  border-radius: 3px;
-  border: 1px solid oklch(26% 0.02 265);
-  background: oklch(16% 0.016 265);
-  color: oklch(55% 0.022 265);
-  font-size: 11px;
+  border-radius: 6px;
+  border: 1px solid var(--glass-border);
+  background: var(--surface-2);
+  color: var(--text-secondary);
+  font-size: 12px;
   font-family: inherit;
   cursor: pointer;
   transition:
-    background 0.08s,
-    color 0.08s;
+    background 0.15s,
+    color 0.15s;
 }
 
 .yb-btn-cancel:hover {
-  background: oklch(22% 0.022 265);
-  color: oklch(78% 0.018 265);
+  background: var(--surface-hover);
+  color: var(--text-primary);
 }
 
-/* ── Scrollbar styling ───────────────────────────────────────────────────── */
 .yb-panel-right::-webkit-scrollbar,
 .yb-outliner::-webkit-scrollbar,
 .yb-bone-tree::-webkit-scrollbar,
 .yb-tl-dopesheet::-webkit-scrollbar,
 .yb-anim-list::-webkit-scrollbar,
 .yb-samples-body::-webkit-scrollbar {
-  width: 4px;
+  width: 8px;
 }
 
 .yb-panel-right::-webkit-scrollbar-track,
@@ -1710,6 +1721,6 @@
 
 .yb-panel-right::-webkit-scrollbar-thumb,
 .yb-outliner::-webkit-scrollbar-thumb {
-  background: oklch(22% 0.018 265);
-  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
 }

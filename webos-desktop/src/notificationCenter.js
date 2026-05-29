@@ -79,6 +79,25 @@ export class NotificationCenter {
     return val;
   }
 
+  _applyNotificationPosition(container) {
+    const position = this._getSetting("notificationsPosition", "bottom-right");
+    container.className = "ntf-toast-container";
+
+    switch (position) {
+      case "bottom-left":
+        container.classList.add("ntf-toast-container--bottom-left");
+        break;
+      case "top-right":
+        container.classList.add("ntf-toast-container--top-right");
+        break;
+      case "top-left":
+        container.classList.add("ntf-toast-container--top-left");
+        break;
+      default:
+        container.classList.add("ntf-toast-container--bottom-right");
+    }
+  }
+
   createNotificationCenterUI() {
     const centerContainer = document.createElement("div");
     centerContainer.id = "ntf-panel";
@@ -187,7 +206,10 @@ export class NotificationCenter {
       container = document.createElement("div");
       container.id = "ntf-toast-container";
       container.className = "ntf-toast-container";
+      this._applyNotificationPosition(container);
       document.body.appendChild(container);
+    } else {
+      this._applyNotificationPosition(container);
     }
 
     while (container.children.length >= 4) {

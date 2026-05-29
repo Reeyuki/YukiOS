@@ -116,9 +116,9 @@
 }
 
 .workspace-btn.active {
-  background: rgba(100, 120, 220, 0.35);
-  border-color: rgba(100, 120, 220, 0.6);
-  color: #fff;
+  background: var(--brand-dim);
+  border-color: var(--brand);
+  color: var(--text-primary);
 }
 
 .workspace-overview-btn {
@@ -149,23 +149,39 @@
 
 .workspace-close:hover {
   opacity: 1;
-  background: rgba(232, 17, 35, 0.7);
+  background: var(--error-bg);
 }
 
 #workspace-overview {
   position: fixed;
   inset: 0;
-  bottom: 40px;
-  background: rgba(10, 10, 18, 0.92);
-  backdrop-filter: blur(20px);
+  background: var(--overlay-bg);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
   z-index: 10000;
   display: none;
   align-items: center;
   justify-content: center;
   gap: 24px;
-  padding: 32px 24px 24px;
+  padding: 32px 24px;
   flex-wrap: wrap;
   animation: ov-fadein 0.18s ease;
+}
+
+.taskbar-bottom #workspace-overview {
+  bottom: var(--taskbar-padding-bottom);
+}
+
+.taskbar-top #workspace-overview {
+  top: var(--taskbar-padding-top);
+}
+
+.taskbar-left #workspace-overview {
+  left: var(--taskbar-padding-left);
+}
+
+.taskbar-right #workspace-overview {
+  right: var(--taskbar-padding-right);
 }
 
 @keyframes ov-fadein {
@@ -182,9 +198,9 @@
 
 .ov-panel {
   position: relative;
-  border-radius: 10px;
-  border: 2px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.04);
+  border-radius: var(--r);
+  border: 2px solid var(--glass-border);
+  background: var(--glass);
   overflow: hidden;
   cursor: pointer;
   transition:
@@ -194,25 +210,25 @@
 }
 
 .ov-panel:hover {
-  border-color: rgba(100, 120, 220, 0.5);
+  border-color: var(--brand);
   box-shadow:
-    0 0 0 1px rgba(100, 120, 220, 0.3),
-    0 8px 32px rgba(0, 0, 0, 0.5);
+    0 0 0 1px var(--brand-glow),
+    0 24px 64px var(--shadow-color);
 }
 
 .ov-panel.ov-active {
-  border-color: rgba(100, 120, 220, 0.8);
+  border-color: var(--brand);
   box-shadow:
-    0 0 0 2px rgba(100, 120, 220, 0.4),
-    0 8px 32px rgba(0, 0, 0, 0.5);
+    0 0 0 2px var(--brand-glow),
+    0 24px 64px var(--shadow-color);
 }
 
 .ov-panel.ov-drop-target {
-  border-color: rgba(80, 200, 120, 0.9);
+  border-color: var(--brand);
   box-shadow:
-    0 0 0 2px rgba(80, 200, 120, 0.4),
-    0 8px 32px rgba(0, 0, 0, 0.5);
-  background: rgba(80, 200, 120, 0.07);
+    0 0 0 2px var(--brand-glow),
+    0 24px 64px var(--shadow-color);
+  background: var(--brand-dim);
 }
 
 .ov-label {
@@ -221,10 +237,10 @@
   left: 0;
   right: 0;
   text-align: center;
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+  color: var(--text-secondary);
   padding: 4px 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: var(--surface-3);
   z-index: 10;
   pointer-events: none;
   letter-spacing: 0.03em;
@@ -239,11 +255,11 @@
 
 .ov-window {
   position: absolute;
-  background: rgba(30, 32, 48, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 6px;
+  background: var(--surface-2);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-sm);
   overflow: hidden;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 4px 16px var(--shadow-color);
   cursor: grab;
   pointer-events: all;
   transition:
@@ -252,8 +268,8 @@
 }
 
 .ov-window:hover {
-  box-shadow: 0 4px 24px rgba(100, 120, 220, 0.4);
-  border-color: rgba(100, 120, 220, 0.5);
+  box-shadow: 0 4px 24px var(--brand-glow);
+  border-color: var(--brand);
 }
 
 .ov-window.ov-dragging {
@@ -262,19 +278,19 @@
 }
 
 .ov-window-header {
-  background: rgba(255, 255, 255, 0.07);
+  background: var(--glass);
   padding: 6px 10px;
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  border-bottom: 1px solid var(--glass-border);
   pointer-events: none;
 }
 
 .ov-window-body {
-  background: rgba(20, 22, 34, 0.8);
+  background: var(--surface-1);
   flex: 1;
   min-height: 40px;
   height: calc(100% - 33px);
@@ -282,10 +298,10 @@
 }
 
 .ov-add-ws {
-  background: rgba(255, 255, 255, 0.05);
-  border: 2px dashed rgba(255, 255, 255, 0.15);
-  border-radius: 10px;
-  color: rgba(255, 255, 255, 0.4);
+  background: var(--glass);
+  border: 2px dashed var(--glass-border);
+  border-radius: var(--r);
+  color: var(--text-secondary);
   font-size: 13px;
   padding: 16px 24px;
   cursor: pointer;
@@ -297,30 +313,8 @@
 }
 
 .ov-add-ws:hover {
-  background: rgba(100, 120, 220, 0.15);
-  border-color: rgba(100, 120, 220, 0.5);
-  color: #fff;
-}
-
-#audio-mixer-tray-btn {
-  background: transparent;
-  border: none;
-  color: var(--text-secondary);
-  cursor: pointer;
-  padding: 4px 6px;
-  border-radius: var(--r-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition:
-    background 0.15s,
-    color 0.15s;
-  line-height: 1;
-}
-
-#audio-mixer-tray-btn:hover,
-#audio-mixer-tray-btn.active {
-  background: var(--glass-hover);
+  background: var(--brand-dim);
+  border-color: var(--brand);
   color: var(--text-primary);
 }
 

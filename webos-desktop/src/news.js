@@ -4,6 +4,75 @@ import { desktop } from "./desktop.js";
 
 const NEWS_UPDATES = [
   {
+    date: "May 29, 2026",
+    sections: [
+      {
+        icon: "fa-wand-magic-sparkles",
+        title: "New App",
+        items: [
+          [
+            "fa-bolt",
+            "Power Indicator",
+            "New tray app for power management. Switch between Turbo, Balanced, and Quality modes with a single click."
+          ]
+        ]
+      },
+      {
+        icon: "fa-wand-magic-sparkles",
+        title: "Features & Improvements",
+        items: [
+          [
+            "fa-sun",
+            "Brightness App",
+            "Quick controls for brightness and temperature, advanced toggle for contrast, gamma, and night mode."
+          ],
+          [
+            "fa-arrows-alt",
+            "Notification Position",
+            "Choose where notifications appear: Bottom Right (default), Bottom Left, Top Right, or Top Left. Smart notification suppression for default position."
+          ],
+          [
+            "fa-mouse-pointer",
+            "Tray Context Menus",
+            "Right-click tray icons for quick actions. Power modes, brightness presets, Steam library/store, and recent games."
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    date: "May 29, 2026",
+    sections: [
+      {
+        icon: "fa-wand-magic-sparkles",
+        title: "New App",
+        items: [
+          [
+            "fa-bolt",
+            "Power Indicator",
+            "New tray app for power management. Switch between Turbo, Balanced, and Quality modes with a single click."
+          ]
+        ]
+      },
+      {
+        icon: "fa-wand-magic-sparkles",
+        title: "Features & Improvements",
+        items: [
+          [
+            "fa-sun",
+            "Brightness App Redesign",
+            "Compact width-oriented design like real tray apps. Quick controls for brightness and temperature, advanced toggle for contrast, gamma, and night mode."
+          ],
+          [
+            "fa-arrows-alt",
+            "Notification Position",
+            "Choose where notifications appear: Bottom Right (default), Bottom Left, Top Right, or Top Left. Smart notification suppression for default position."
+          ]
+        ]
+      }
+    ]
+  },
+  {
     date: "May 26, 2026",
     sections: [
       {
@@ -90,7 +159,7 @@ const NEWS_UPDATES = [
           [
             "fa-rocket",
             "Setup Wizard Enhancement",
-            "Enhanced setup wizard with keyboard shortcuts reference, filesystem introduction, performance mode selection, start menu pinning, and transparency level options."
+            "Enhanced setup wizard with keyboard shortcuts reference, filesystem introduction, turbo mode selection, start menu pinning, and transparency level options."
           ]
         ]
       }
@@ -160,7 +229,7 @@ const NEWS_UPDATES = [
             "Start Menu Customization",
             "Add option to customize start menu categories and items."
           ],
-          ["fa-rocket", "Performance Mode", "Added performance mode to os."],
+          ["fa-rocket", "Turbo Mode", "Added turbo mode to os."],
           ["fa-gear", "Settings App", "Reworked settings app interface and navigation."],
           ["fa-minimize", "Window Animations", "Added smooth window drag animations."]
         ]
@@ -419,7 +488,7 @@ const NEWS_UPDATES = [
             "Desktop Auto-Refresh",
             "The desktop now automatically reflects file changes without a manual refresh."
           ],
-          ["fa-film", "Video Performance", "Smoother video playback across the system."]
+          ["fa-film", "Video Turbo", "Smoother video playback across the system."]
         ]
       }
     ]

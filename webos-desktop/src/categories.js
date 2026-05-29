@@ -6,6 +6,62 @@ import { trayManager } from "./tray.js";
 const STEAM_WIN_ID = "games-app-win";
 
 export class CategoriesApp {
+  constructor(services) {
+    this.services = services;
+    this._recentGames = this._loadRecentGames();
+  }
+
+  _loadRecentGames() {
+    try {
+      const stored = localStorage.getItem("yukiOS_steam_recent_games");
+      return stored ? JSON.parse(stored) : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  _saveRecentGames() {
+    try {
+      localStorage.setItem("yukiOS_steam_recent_games", JSON.stringify(this._recentGames));
+    } catch (e) {
+      console.warn("Failed to save recent games:", e);
+    }
+  }
+
+  _addRecentGame(gameId, gameTitle) {
+    const existingIndex = this._recentGames.findIndex((g) => g.id === gameId);
+    if (existingIndex !== -1) {
+      this._recentGames.splice(existingIndex, 1);
+    }
+    this._recentGames.unshift({ id: gameId, title: gameTitle, timestamp: Date.now() });
+    this._recentGames = this._recentGames.slice(0, 10);
+    this._saveRecentGames();
+  }
+
+  _getSteamContextMenuItems(appLauncher) {
+    const items = [
+      { label: "Library", icon: "fa-book", action: () => this.opensteamApp(appLauncher, this.services.windowManager) },
+      { label: "Store", icon: "fa-store", action: () => this.opensteamApp(appLauncher, this.services.windowManager) },
+      { type: "divider" }
+    ];
+
+    if (this._recentGames.length > 0) {
+      items.push({ label: "Recent Games", icon: "fa-clock", action: null });
+      this._recentGames.forEach((game) => {
+        items.push({
+          label: game.title,
+          icon: "fa-gamepad",
+          action: () => {
+            appLauncher.launch(game.id);
+          }
+        });
+      });
+      items.push({ type: "divider" });
+    }
+
+    return items;
+  }
+
   openFlash(appLauncher, wm) {
     this.opensteamApp(appLauncher, wm, "Flash Games");
   }
@@ -74,11 +130,21 @@ export class CategoriesApp {
         : resolveIconUrl("static/icons/steam.webp");
     wm.addToTaskbar(STEAM_WIN_ID, winTitle, taskbarIcon);
 
-    trayManager.register(STEAM_WIN_ID, taskbarIcon, winTitle, { showInTray: true });
+    trayManager.register(STEAM_WIN_ID, taskbarIcon, winTitle, {
+      showInTray: true,
+      contextMenuItems: this._getSteamContextMenuItems(appLauncher),
+      priority: 100
+    });
 
     const container = win.querySelector("#games-app-container");
     const onLaunch = (appId) => {
-      if (appLauncher) appLauncher.launch(appId);
+      if (appLauncher) {
+        const game = appLauncher.appMap?.[appId];
+        if (game) {
+          this._addRecentGame(appId, game.title);
+        }
+        appLauncher.launch(appId);
+      }
     };
 
     const setupSteamControls = () => {

@@ -63,9 +63,9 @@ function isClickBubbleEnabled() {
   return getSetting(StorageKeys.clickBubbleFeedback, "false") === "true";
 }
 
-function isPerformanceMode() {
-  const mode = getSetting(StorageKeys.performanceMode, "high");
-  return mode === "performance";
+function isTurboMode() {
+  const mode = getSetting(StorageKeys.turboMode, "high");
+  return mode === "turbo";
 }
 
 export function getTaskbarIconRect(winId) {
@@ -75,7 +75,7 @@ export function getTaskbarIconRect(winId) {
 }
 
 export function animateWindowOpen(win) {
-  if (isPerformanceMode()) return;
+  if (isTurboMode()) return;
   const anim = getOpenAnim();
   if (anim === OPEN_ANIMATIONS.instant) return;
 
@@ -114,7 +114,7 @@ export function animateWindowOpen(win) {
 }
 
 export function animateWindowClose(win, onDone) {
-  if (isPerformanceMode()) {
+  if (isTurboMode()) {
     onDone?.();
     return;
   }
@@ -145,7 +145,7 @@ export function animateWindowClose(win, onDone) {
 }
 
 export function animateWindowMinimize(win, onDone) {
-  if (isPerformanceMode()) {
+  if (isTurboMode()) {
     onDone?.();
     return;
   }
@@ -266,11 +266,11 @@ function _animateMagicLamp(win, onDone) {
 }
 
 export function initFocusEffects(wm) {
-  if (isPerformanceMode()) return;
+  if (isTurboMode()) return;
 }
 
 export function applyFocusGlow(win) {
-  if (isPerformanceMode()) return;
+  if (isTurboMode()) return;
   win.classList.add("wa-focus-glow");
   const tid = setTimeout(() => win.classList.remove("wa-focus-glow"), 600);
   win._focusTid = tid;
@@ -285,7 +285,7 @@ export function applyZDepthLift(win, active) {
 }
 
 export function applyBackgroundDim(allWins, focusedWin) {
-  if (isPerformanceMode()) return;
+  if (isTurboMode()) return;
   allWins.forEach((w) => {
     if (w === focusedWin) {
       w.classList.remove("wa-dimmed");
@@ -304,11 +304,11 @@ export function clearFocusEffects(allWins) {
 }
 
 export function initWobblyDrag(win, wm) {
-  if (isPerformanceMode()) return;
+  if (isTurboMode()) return;
 }
 
 export function applyWobblyDragStart(win) {
-  if (isPerformanceMode()) return;
+  if (isTurboMode()) return;
   win.classList.add("wa-wobble-drag");
 }
 
@@ -319,7 +319,7 @@ export function applyWobblyDragEnd(win) {
 }
 
 export function applyPhysicsInertia(win, vx, vy) {
-  if (isPerformanceMode()) return;
+  if (isTurboMode()) return;
   const decayMs = 400;
   const startTime = performance.now();
   let lastX = parseFloat(win.style.left) || 0;
@@ -360,31 +360,31 @@ function _handleClickBubble(e) {
 }
 
 export function animateStartMenuOpen(el) {
-  if (isPerformanceMode()) return;
+  if (isTurboMode()) return;
   el.style.animation = "none";
   void el.offsetWidth;
   el.style.animation = "wa-start-expand 0.2s cubic-bezier(0.16,1,0.3,1) forwards";
 }
 
 export function animateStartMenuClose(el) {
-  if (isPerformanceMode()) return;
+  if (isTurboMode()) return;
   el.style.animation = "wa-start-collapse 0.15s ease-in forwards";
 }
 
 export function animateContextMenuPop(el) {
-  if (isPerformanceMode()) return;
+  if (isTurboMode()) return;
   el.style.animation = "none";
   void el.offsetWidth;
   el.style.animation = "wa-ctx-pop 0.12s cubic-bezier(0.16,1,0.3,1) forwards";
 }
 
 export function animateNotificationIn(el) {
-  if (isPerformanceMode()) return;
+  if (isTurboMode()) return;
   el.style.animation = "wa-notif-in 0.25s cubic-bezier(0.16,1,0.3,1) forwards";
 }
 
 export function animateWorkspaceSlide(direction, onDone) {
-  if (isPerformanceMode()) {
+  if (isTurboMode()) {
     onDone?.();
     return;
   }
@@ -402,7 +402,7 @@ export function animateWorkspaceSlide(direction, onDone) {
 }
 
 export function animateScreenFreezeBlur(onDone) {
-  if (isPerformanceMode()) {
+  if (isTurboMode()) {
     onDone?.();
     return;
   }

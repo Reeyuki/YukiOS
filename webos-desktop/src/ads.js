@@ -6,6 +6,10 @@ export function shouldEnableAds() {
   if (hostname.includes("vercel") || hostname === "localhost" || hostname === "127.0.0.1" || hostname === "[::1]") {
     return false;
   }
+  const adsDisabled = localStorage.getItem("yukiOS_ads_disabled") === "true";
+  if (adsDisabled) {
+    return false;
+  }
   return true;
 }
 let interactionCount = 0;
@@ -19,7 +23,7 @@ function loadMeta() {
       JSON.parse(localStorage.getItem(AD_STORAGE_KEY)) || {
         dailyCount: 0,
         lastShown: 0,
-        lastClosed: 0, // Option A: track when user closed the ad
+        lastClosed: 0,
         lastReset: Date.now(),
         initialized: false,
         smartlinkShown: false,
@@ -70,9 +74,7 @@ const ADS = {
   }
 };
 
-// Option C: engagement thresholds that gate ad behavior
 const ENGAGEMENT_TIERS = {
-  //         score range   maxPerDay  minInterval (ms)   postCloseCooldown (ms)
   cold: { min: 0, max: 39, maxPerDay: 2, minInterval: 20 * 60 * 1000, postCloseCooldown: 15 * 60 * 1000 },
   warm: { min: 40, max: 69, maxPerDay: 5, minInterval: 8 * 60 * 1000, postCloseCooldown: 8 * 60 * 1000 },
   hot: { min: 70, max: 100, maxPerDay: 10, minInterval: 4 * 60 * 1000, postCloseCooldown: 5 * 60 * 1000 }
@@ -136,32 +138,36 @@ export class AdsManager {
     const now = Date.now();
 
     const sessionTime = now - this.sessionStart;
-    const activeTime = Math.max(sessionTime - (now - lastInteractionTime), 0);
 
     const interactionRate = interactionCount / Math.max(sessionTime / 60000, 1);
 
-    const analyticsBoost = Math.min(AdsManager.analyticsBuffer.usageTime / 600000, 1) * 30;
+    const analyticsBoost = Math.min(AdsManager.analyticsBuffer.usageTime / 300000, 1) * 25;
 
-    const sessionBoost = Math.min(AdsManager.analyticsBuffer.appSessions / 10, 1) * 15;
+    const sessionBoost = Math.min(AdsManager.analyticsBuffer.appSessions / 8, 1) * 15;
+
+    const timeScore = Math.min(sessionTime / 300000, 1) * 35;
+
+    const interactionScore = Math.min(interactionRate * 8, 25);
 
     let score = 0;
 
-    score += Math.min(sessionTime / 600000, 1) * 30;
-    score += Math.min(interactionRate * 10, 25);
-    score += Math.min(activeTime / sessionTime, 1) * 20;
+    score += timeScore;
+    score += interactionScore;
     score += analyticsBoost;
     score += sessionBoost;
 
     return Math.min(score, 100);
   }
 
-  // Option C: limits are now driven by actual engagement score
   getLimits(score) {
     const tier = getTier(score);
+
+    const boost = score / 100;
+
     return {
-      maxPerDay: tier.maxPerDay,
-      minInterval: tier.minInterval,
-      postCloseCooldown: tier.postCloseCooldown
+      maxPerDay: Math.round(tier.maxPerDay * (1 + boost)),
+      minInterval: Math.max(3 * 60 * 1000, tier.minInterval * (1 - boost * 0.4)),
+      postCloseCooldown: Math.max(2 * 60 * 1000, tier.postCloseCooldown * (1 - boost * 0.5))
     };
   }
 
@@ -169,7 +175,6 @@ export class AdsManager {
     return this.providers[Math.floor(Math.random() * this.providers.length)];
   }
 
-  // Option A: call this when the user closes an ad window
   recordAdClosed() {
     const meta = loadMeta();
     meta.lastClosed = Date.now();
@@ -185,28 +190,20 @@ export class AdsManager {
     const now = Date.now();
     const sessionTime = now - this.sessionStart;
 
-    // Option C: score-driven limits
     const score = this.getEngagementScore();
     const limits = this.getLimits(score);
 
-    // Option C: cold users don't see ads until they're engaged enough
-    if (score < ENGAGEMENT_TIERS.cold.min) return false;
-
     if (meta.dailyCount >= limits.maxPerDay) return false;
+
     if (now - meta.lastShown < limits.minInterval) return false;
 
-    // Option A: respect post-close cooldown independent of minInterval
     if (meta.lastClosed && now - meta.lastClosed < limits.postCloseCooldown) return false;
 
     if (sessionTime < this.minActiveTime) return false;
 
-    const existing = document.getElementById("ads-yukios");
-    if (existing) return false;
+    const recentAds = document.querySelectorAll(".ad-window-active");
+    if (recentAds.length >= 2) return false;
 
-    const activeAds = document.querySelectorAll(".ad-window-active");
-    if (activeAds.length > 0) return false;
-
-    const useNative = Math.random() < 0.7;
     const containerId = "banner-slot-single";
 
     const win = this.windowHelper.createAndMountWindow(
@@ -230,21 +227,24 @@ export class AdsManager {
       }
     );
 
-    // Option A: hook into the window's close event to record dismissal time
     if (win) {
       const closeBtn = win.querySelector(".window-close, [data-action='close'], .close-btn");
+
       if (closeBtn) {
         closeBtn.addEventListener("click", () => this.recordAdClosed(), { once: true });
       }
-      // Fallback: observe DOM removal
+
       const observer = new MutationObserver(() => {
         if (!document.getElementById("ads-yukios")) {
           this.recordAdClosed();
           observer.disconnect();
         }
       });
+
       observer.observe(document.body, { childList: true, subtree: true });
     }
+
+    const useNative = Math.random() < 0.65;
 
     if (useNative) {
       this.mountNativeSingle(containerId);
@@ -258,14 +258,15 @@ export class AdsManager {
 
     saveMeta(meta);
 
+    document.body.setAttribute("data-last-ad", now.toString());
+
     setTimeout(() => {
       const el = document.querySelector(".ad-window-active");
       if (el) el.classList.remove("ad-window-active");
-    }, 60000);
+    }, 45000);
 
     return true;
   }
-
   mountNativeSingle(id) {
     if (!shouldEnableAds()) return;
 

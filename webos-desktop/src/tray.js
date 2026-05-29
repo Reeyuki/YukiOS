@@ -1,5 +1,6 @@
 import { bus, BusEvents } from "./core/EventBus.js";
 import { showDynamicContextMenu } from "./shared/contextMenu.js";
+import { StorageKeys } from "./StorageKeys.js";
 
 class TrayManager {
   constructor() {
@@ -43,7 +44,9 @@ class TrayManager {
       resident: options.resident || false,
       showInTray: options.showInTray || false,
       onClick: options.onClick || null,
-      onQuit: options.onQuit || null
+      onQuit: options.onQuit || null,
+      contextMenuItems: options.contextMenuItems || null,
+      priority: options.priority || 0
     });
     this._render();
   }
@@ -157,15 +160,33 @@ class TrayManager {
   _render() {
     if (!this._el) return;
     this._el.innerHTML = "";
-    const trayItems = this.getTrayItems();
+
+    const trayEnabled = localStorage.getItem(StorageKeys.trayEnabled) !== "false";
+    if (!trayEnabled) {
+      this._el.style.display = "none";
+      this._hidePopup();
+      return;
+    }
+
+    const trayAppVisibility = (() => {
+      try {
+        return JSON.parse(localStorage.getItem(StorageKeys.trayAppVisibility)) || {};
+      } catch {
+        return {};
+      }
+    })();
+
+    const trayItems = this.getTrayItems().filter((item) => trayAppVisibility[item.winId] !== false);
+
     if (trayItems.length === 0) {
       this._el.style.display = "none";
       this._hidePopup();
       return;
     }
     this._el.style.display = "flex";
-    const visible = trayItems.slice(0, this.MAX_VISIBLE);
-    const overflow = trayItems.slice(this.MAX_VISIBLE);
+    const sortedItems = [...trayItems].sort((a, b) => (b.priority || 0) - (a.priority || 0));
+    const visible = sortedItems.slice(0, this.MAX_VISIBLE);
+    const overflow = sortedItems.slice(this.MAX_VISIBLE);
     visible.forEach(({ winId, icon, label }) => {
       this._el.appendChild(this._buildIcon(winId, icon, label));
     });
@@ -256,6 +277,7 @@ class TrayManager {
   }
 
   _showContextMenu(e, winId, label) {
+    const trayItem = this._items.get(winId);
     showDynamicContextMenu(e, (menu, item, hr) => {
       const header = document.createElement("div");
       header.style.padding = "6px 12px";
@@ -271,6 +293,17 @@ class TrayManager {
       header.textContent = label;
       menu.appendChild(header);
 
+      if (trayItem && trayItem.contextMenuItems) {
+        trayItem.contextMenuItems.forEach((menuItem) => {
+          if (menuItem.type === "divider") {
+            menu.appendChild(hr());
+          } else {
+            menu.appendChild(item(menuItem.label, menuItem.action, menuItem.icon));
+          }
+        });
+        menu.appendChild(hr());
+      }
+
       menu.appendChild(
         item(
           "Open",
@@ -279,17 +312,6 @@ class TrayManager {
             this._hidePopup();
           },
           "fa-window-maximize"
-        )
-      );
-
-      menu.appendChild(
-        item(
-          "Quit",
-          () => {
-            this.quitApp(winId);
-            this._hidePopup();
-          },
-          "fa-power-off"
         )
       );
     });

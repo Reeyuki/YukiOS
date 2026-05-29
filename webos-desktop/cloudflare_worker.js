@@ -147,39 +147,25 @@ export default {
         return jsonResponse({ error: "invalid json" }, 400);
       }
 
-      if (payload.app) {
-        payload.app = normalizeApp(payload.app);
-      }
+      const events = Array.isArray(payload) ? payload : [payload];
 
-      const id = crypto.randomUUID();
       const timestamp = new Date().toISOString();
       const dailyId = await deriveDailyId(clientIP);
 
-      const insert = env.DB.prepare("INSERT INTO analytics (id, daily_id, timestamp, data) VALUES (?, ?, ?, ?)").bind(
-        id,
-        dailyId,
-        timestamp,
-        JSON.stringify(payload)
-      );
+      const inserts = events.map((event) => {
+        if (event.app) event.app = normalizeApp(event.app);
+        const id = crypto.randomUUID();
+        return env.DB.prepare("INSERT INTO analytics (id, daily_id, timestamp, data) VALUES (?, ?, ?, ?)").bind(
+          id,
+          dailyId,
+          timestamp,
+          JSON.stringify(event)
+        );
+      });
 
-      const writePromise = insert.run();
+      await env.DB.batch(inserts);
 
-      if (env.DISCORD_WEBHOOK_URL) {
-        const embed = {
-          title: "Analytics Event",
-          fields: [
-            { name: "App", value: payload.app || "unknown", inline: true },
-            { name: "Event", value: payload.event || "none", inline: true }
-          ],
-          timestamp
-        };
-
-        env.ANALYTICS_QUEUE?.send?.(JSON.stringify(embed));
-      }
-
-      await writePromise;
-
-      return jsonResponse({ status: "ok", id });
+      return jsonResponse({ status: "ok", count: events.length });
     }
     if (url.pathname === "/admin/stats" && request.method === "GET") {
       const range = url.searchParams.get("range") || "30d";

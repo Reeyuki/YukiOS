@@ -6,6 +6,7 @@ class ClipboardManager {
     this.currentItem = null;
     this.history = [];
     this.maxHistorySize = 20;
+    this.persistenceEnabled = localStorage.getItem(StorageKeys.clipboardSaveHistory) !== "false";
     this.changeCallbacks = new Set();
     this.broadcastChannel = null;
     this.storageKey = StorageKeys.clipboardCurrent;
@@ -143,6 +144,7 @@ class ClipboardManager {
   }
 
   saveToStorage() {
+    if (!this.persistenceEnabled) return;
     try {
       localStorage.setItem(this.storageKey, JSON.stringify(this.currentItem));
       localStorage.setItem(this.historyKey, JSON.stringify(this.history));
@@ -152,6 +154,7 @@ class ClipboardManager {
   }
 
   loadFromStorage() {
+    if (!this.persistenceEnabled) return;
     try {
       const current = localStorage.getItem(this.storageKey);
       const history = localStorage.getItem(this.historyKey);
@@ -165,6 +168,21 @@ class ClipboardManager {
     } catch (e) {
       console.warn("[ClipboardManager] Failed to load from storage:", e);
     }
+  }
+
+  setPersistenceEnabled(enabled) {
+    this.persistenceEnabled = enabled;
+    if (!enabled) {
+      this.clearStorage();
+    }
+  }
+
+  setMaxHistorySize(size) {
+    this.maxHistorySize = size;
+    while (this.history.length > this.maxHistorySize) {
+      this.history.pop();
+    }
+    this.saveToStorage();
   }
 
   clearStorage() {

@@ -35,9 +35,9 @@ export class TaskManagerApp extends BaseApp {
   }
 
   _startLongTaskMonitor() {
-    if (!window.PerformanceObserver) return;
+    if (!window.TurboObserver) return;
     try {
-      const obs = new PerformanceObserver((list) => {
+      const obs = new TurboObserver((list) => {
         for (const entry of list.getEntries()) {
           this.longTaskBudget += entry.duration;
         }
@@ -66,7 +66,7 @@ export class TaskManagerApp extends BaseApp {
           ui: `<div id="tm-root">
         <div class="tm-tabs">
           <button id="tm-tab-proc" class="tm-tab tm-tab-active">Processes</button>
-          <button id="tm-tab-perf" class="tm-tab">Performance</button>
+          <button id="tm-tab-perf" class="tm-tab">Turbo</button>
         </div>
 
         <div id="tm-panel-proc" class="tm-panel-proc">
@@ -260,7 +260,7 @@ export class TaskManagerApp extends BaseApp {
       <div id="tm-root">
         <div class="tm-tabs">
           <button id="tm-tab-proc" class="tm-tab tm-tab-active">Processes</button>
-          <button id="tm-tab-perf" class="tm-tab">Performance</button>
+          <button id="tm-tab-perf" class="tm-tab">Turbo</button>
         </div>
 
         <div id="tm-panel-proc" class="tm-panel-proc">
@@ -693,7 +693,7 @@ export class TaskManagerApp extends BaseApp {
 
   _renderSysInfo(win) {
     const hasRealMem = !!performance.memory;
-    const hasLongTask = !!window.PerformanceObserver;
+    const hasLongTask = !!window.TurboObserver;
 
     const heapUsed = hasRealMem ? `${(performance.memory.usedJSHeapSize / 1048576).toFixed(1)} MB` : "N/A";
     const heapTotal = hasRealMem ? `${(performance.memory.jsHeapSizeLimit / 1048576).toFixed(0)} MB` : "N/A";

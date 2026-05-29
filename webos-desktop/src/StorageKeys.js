@@ -23,6 +23,7 @@ export const StorageKeys = {
   achievementCounters: "yukiOS_achievement_counters",
   deletedIconsKey: "yukiOS_desktop:deleted-icons",
   analyticsDisabled: "yukiOS_analytics_disabled",
+  adsDisabled: "yukiOS_ads_disabled",
   dndKey: "wm_ntf_dnd",
   taskbarPosition: "yukiOS_taskbar_position",
   taskbarAlignment: "yukiOS_taskbar_alignment",
@@ -62,7 +63,7 @@ export const StorageKeys = {
   startMenuWidth: "yukiOS_startMenuWidth",
   startMenuHeight: "yukiOS_startMenuHeight",
   startMenuCats: "yukiOS_startMenuCats",
-  performanceMode: "yukiOS_performance_mode",
+  turboMode: "yukiOS_turbo_mode",
   showWorkspace: "yukiOS_show_workspace",
   startMenuGridItems: "yukiOS_startMenuGridItems",
   lastLaunchTime: "yukiOS_lastLaunchTime",
@@ -71,6 +72,7 @@ export const StorageKeys = {
   notificationsPopAnimation: "yukiOS_notifications_pop_animation",
   notificationsOverFullscreen: "yukiOS_notifications_over_fullscreen",
   notificationsDuration: "yukiOS_notifications_duration",
+  notificationsPosition: "yukiOS_notifications_position",
   setupCompleted: "yukiOS_setup_completed",
   windowOpenAnimation: "yukiOS_window_open_animation",
   windowCloseAnimation: "yukiOS_window_close_animation",
@@ -81,6 +83,11 @@ export const StorageKeys = {
   clipboardManagerEnabled: "yukiOS_clipboard_manager_enabled",
   clipboardCurrent: "yukiOS_clipboard_current",
   clipboardHistory: "yukiOS_clipboard_history",
+  clipboardSaveHistory: "yukiOS_clipboard_save_history",
+  clipboardHistorySize: "yukiOS_clipboard_history_size",
+  powerMode: "yukiOS_power_mode",
   guiScale: "yukiOS_gui_scale",
-  fontSize: "yukiOS_font_size"
+  fontSize: "yukiOS_font_size",
+  trayEnabled: "yukiOS_tray_enabled",
+  trayAppVisibility: "yukiOS_tray_app_visibility"
 };

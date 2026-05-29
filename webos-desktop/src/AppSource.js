@@ -29,5 +29,6 @@ export const AppSource = {
   APP_CREATOR: "App Creator",
   YUKI_OS_GUIDE: "Yuki OS Guide",
   AI_ASSISTANT: "Yuki AI",
+  BRIGHTNESS: "Brightness",
   SYSTEM: "System"
 };

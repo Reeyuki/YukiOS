@@ -59,7 +59,8 @@ export class AppLauncher {
     installedAppsApp,
     yukiOsGuideApp,
     clipboardManagerApp,
-    aiAssistantApp
+    aiAssistantApp,
+    brightnessApp
   ) {
     this.wm = windowManager;
     this.windowHelper = new WindowHelper(this.wm);
@@ -98,6 +99,7 @@ export class AppLauncher {
     this.yukiOsGuideApp = yukiOsGuideApp;
     this.clipboardManagerApp = clipboardManagerApp;
     this.aiAssistantApp = aiAssistantApp;
+    this.brightnessApp = brightnessApp;
     this.TRANSPARENCY_ALLOWED_APP_IDS = new Set(["paint", "photopea", "vscode", "liventcord"]);
 
     this.clippyPromise = initClippy();

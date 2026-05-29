@@ -9,10 +9,11 @@ import { appMap } from "./gamesList.js";
 import { renderWallpapersPage } from "./wallpapers.js";
 import { audioMixer } from "./audioMixer.js";
 import { AppSource } from "./AppSource.js";
-
 import { StorageKeys } from "./StorageKeys.js";
 import { YUKIOS_VERSION } from "./about.js";
+import { trayManager } from "./tray.js";
 export { StorageKeys };
+
 export class SettingsApp extends BaseApp {
   constructor(services) {
     super(services);
@@ -40,6 +41,7 @@ export class SettingsApp extends BaseApp {
         disableDesktopStretchScroll: localStorage.getItem(StorageKeys.disableDesktopStretchScroll) === "true",
         achievementsDisabled: localStorage.getItem(StorageKeys.achievementsDisabled) === "true",
         analyticsDisabled: localStorage.getItem(StorageKeys.analyticsDisabled) === "true",
+        adsDisabled: localStorage.getItem(StorageKeys.adsDisabled) === "true",
         taskbarAlignment: localStorage.getItem(StorageKeys.taskbarAlignment) || "center",
         cdnMirror: localStorage.getItem(StorageKeys.cdnMirror) || "jsdelivr",
         theme: localStorage.getItem(StorageKeys.theme) || "dark",
@@ -59,17 +61,26 @@ export class SettingsApp extends BaseApp {
             return {};
           }
         })(),
-        performanceMode: localStorage.getItem(StorageKeys.performanceMode) || "high",
+        turboMode: localStorage.getItem(StorageKeys.turboMode) || "high",
         showWorkspace: localStorage.getItem(StorageKeys.showWorkspace) !== "false",
         notificationsEnabled: localStorage.getItem(StorageKeys.notificationsEnabled) !== "false",
         notificationsRemoveTimeout: localStorage.getItem(StorageKeys.notificationsRemoveTimeout) !== "false",
         notificationsPopAnimation: localStorage.getItem(StorageKeys.notificationsPopAnimation) !== "false",
         notificationsOverFullscreen: localStorage.getItem(StorageKeys.notificationsOverFullscreen) === "true",
         notificationsDuration: Number(localStorage.getItem(StorageKeys.notificationsDuration)) || 5,
+        notificationsPosition: localStorage.getItem(StorageKeys.notificationsPosition) || "bottom-right",
         transparentUI: localStorage.getItem(StorageKeys.transparentUI) === "true",
         clipboardManagerEnabled: localStorage.getItem(StorageKeys.clipboardManagerEnabled) !== "false",
         guiScale: Number(localStorage.getItem(StorageKeys.guiScale)) || 100,
-        fontSize: Number(localStorage.getItem(StorageKeys.fontSize)) || 100
+        fontSize: Number(localStorage.getItem(StorageKeys.fontSize)) || 100,
+        trayEnabled: localStorage.getItem(StorageKeys.trayEnabled) !== "false",
+        trayAppVisibility: (() => {
+          try {
+            return JSON.parse(localStorage.getItem(StorageKeys.trayAppVisibility)) || {};
+          } catch {
+            return {};
+          }
+        })()
       };
 
       this._applyCursor(this._settings.cursorDataUrl);
@@ -79,10 +90,11 @@ export class SettingsApp extends BaseApp {
       this._applySound(this._settings.soundEnabled, this._settings.masterVolume);
       this._applyStartMenuSize(this._settings.startMenuWidth, this._settings.startMenuHeight);
       this._applyStartMenuCats(this._settings.startMenuCats);
-      this._applyPerformanceMode(this._settings.performanceMode);
+      this._applyTurboMode(this._settings.turboMode);
       this._applyTransparentUI(this._settings.transparentUI);
       this._applyGuiScale(this._settings.guiScale);
       this._applyFontSize(this._settings.fontSize);
+      this._applyTrayEnabled(this._settings.trayEnabled);
       window._settings = this._settings;
 
       if (cursorFromLegacyStorage && !cursorOriginalFromStorage) {
@@ -238,13 +250,13 @@ export class SettingsApp extends BaseApp {
           </div>
           <div class="settings-row">
             <div class="settings-label-group">
-              <span class="settings-label-title">Performance Mode</span>
+              <span class="settings-label-title">Turbo Mode</span>
               <span class="settings-label-desc">Reduce heavy visual effects and animations</span>
             </div>
             <div class="settings-button-group">
-              <button class="settings-btn ${this._settings.performanceMode === "high" ? "active" : ""}" data-perf-val="high"><i class="fas fa-tachometer-alt"></i> Quality</button>
-              <button class="settings-btn ${this._settings.performanceMode === "balanced" ? "active" : ""}" data-perf-val="balanced"><i class="fas fa-balance-scale"></i> Balanced</button>
-              <button class="settings-btn ${this._settings.performanceMode === "performance" ? "active" : ""}" data-perf-val="performance"><i class="fas fa-bolt"></i> Performance</button>
+              <button class="settings-btn ${this._settings.turboMode === "high" ? "active" : ""}" data-turbo-val="high"><i class="fas fa-tachometer-alt"></i> Quality</button>
+              <button class="settings-btn ${this._settings.turboMode === "balanced" ? "active" : ""}" data-turbo-val="balanced"><i class="fas fa-balance-scale"></i> Balanced</button>
+              <button class="settings-btn ${this._settings.turboMode === "turbo" ? "active" : ""}" data-turbo-val="turbo"><i class="fas fa-bolt"></i> Turbo</button>
             </div>
           </div>
         </div>
@@ -278,6 +290,16 @@ export class SettingsApp extends BaseApp {
             </div>
             <label class="settings-toggle">
               <input type="checkbox" id="settingsAnalytics" ${!this._settings.analyticsDisabled ? "checked" : ""}/>
+              <span class="settings-track"><span class="settings-thumb"></span></span>
+            </label>
+          </div>
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Ads</span>
+              <span class="settings-label-desc">Show sponsored content 🥺</span>
+            </div>
+            <label class="settings-toggle">
+              <input type="checkbox" id="settingsAds" ${!this._settings.adsDisabled ? "checked" : ""}/>
               <span class="settings-track"><span class="settings-thumb"></span></span>
             </label>
           </div>
@@ -344,6 +366,18 @@ export class SettingsApp extends BaseApp {
               <input type="range" id="settingsNotificationsDuration" min="1" max="30" step="1" value="${this._settings.notificationsDuration}" style="width: 120px;"/>
               <span class="settings-range-value" id="settingsNotificationsDurationVal" style="min-width: 24px; text-align: right; font-size: 0.9em; font-weight: 500;">${this._settings.notificationsDuration}s</span>
             </div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Notification Position</span>
+              <span class="settings-label-desc">Choose which corner notifications appear in</span>
+            </div>
+            <select id="settingsNotificationsPosition" class="settings-select">
+              <option value="bottom-right" ${this._settings.notificationsPosition === "bottom-right" ? "selected" : ""}>Bottom Right (Default)</option>
+              <option value="bottom-left" ${this._settings.notificationsPosition === "bottom-left" ? "selected" : ""}>Bottom Left</option>
+              <option value="top-right" ${this._settings.notificationsPosition === "top-right" ? "selected" : ""}>Top Right</option>
+              <option value="top-left" ${this._settings.notificationsPosition === "top-left" ? "selected" : ""}>Top Left</option>
+            </select>
           </div>
         </div>
 
@@ -418,6 +452,29 @@ export class SettingsApp extends BaseApp {
               <input type="checkbox" id="settingsClickBubble" ${localStorage.getItem("yukiOS_click_bubble_feedback") === "true" ? "checked" : ""}/>
               <span class="settings-track"><span class="settings-thumb"></span></span>
             </label>
+          </div>
+        </div>
+
+        <div class="settings-card" style="margin-top: 16px;">
+          <div class="settings-card-header"><i class="fas fa-window-minimize"></i> System Tray</div>
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Enable Tray</span>
+              <span class="settings-label-desc">Show system tray in the taskbar</span>
+            </div>
+            <label class="settings-toggle">
+              <input type="checkbox" id="settingsTrayEnabled" ${this._settings.trayEnabled ? "checked" : ""}/>
+              <span class="settings-track"><span class="settings-thumb"></span></span>
+            </label>
+          </div>
+          <div class="settings-row settings-row--stacked">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Tray Apps</span>
+              <span class="settings-label-desc">Toggle visibility of individual tray applications</span>
+            </div>
+            <div id="trayAppsList" style="margin-top: 10px; width: 100%;">
+              <div style="padding: 12px; color: rgba(255,255,255,0.5); font-size: 13px; text-align: center;">No tray apps registered</div>
+            </div>
           </div>
         </div>
       </div>
@@ -932,8 +989,12 @@ export class SettingsApp extends BaseApp {
   }
 
   _bindControls(win) {
-    const showStatus = (msg = "Saved") => {
+    const showStatus = (msg) => {
       this.notify("Settings", msg, "info", 3000, "fas fa-check-circle", AppSource.SETTINGS);
+    };
+
+    const showSavedMessage = () => {
+      this._showSavedMessage(win);
     };
 
     const save = () => {
@@ -943,6 +1004,7 @@ export class SettingsApp extends BaseApp {
       const clippyToggle = win.querySelector("#settingsClippy");
       const achievementsToggle = win.querySelector("#settingsAchievements");
       const analyticsToggle = win.querySelector("#settingsAnalytics");
+      const adsToggle = win.querySelector("#settingsAds");
       const disableDesktopStretchScrollToggle = win.querySelector("#settingsDisableDesktopStretchScroll");
       const showWorkspaceToggle = win.querySelector("#settingsShowWorkspace");
       const cdnMirrorSelect = win.querySelector("#settingsCdnMirror");
@@ -952,6 +1014,7 @@ export class SettingsApp extends BaseApp {
       const notificationsPopAnimationToggle = win.querySelector("#settingsNotificationsPopAnimation");
       const notificationsOverFullscreenToggle = win.querySelector("#settingsNotificationsOverFullscreen");
       const notificationsDurationSlider = win.querySelector("#settingsNotificationsDuration");
+      const notificationsPositionSelect = win.querySelector("#settingsNotificationsPosition");
 
       const weather = weatherToggle.checked;
       const cycleWallpaper = cycleWallpaperToggle.checked;
@@ -959,6 +1022,7 @@ export class SettingsApp extends BaseApp {
       const clippy = clippyToggle.checked;
       const achievementsDisabled = !achievementsToggle.checked;
       const analyticsDisabled = !analyticsToggle.checked;
+      const adsDisabled = !adsToggle.checked;
       const disableDesktopStretchScroll = !!disableDesktopStretchScrollToggle?.checked;
       const showWorkspace = showWorkspaceToggle ? showWorkspaceToggle.checked : true;
       const selectedAlignment =
@@ -970,6 +1034,7 @@ export class SettingsApp extends BaseApp {
       const notificationsPopAnimation = !!notificationsPopAnimationToggle?.checked;
       const notificationsOverFullscreen = !!notificationsOverFullscreenToggle?.checked;
       const notificationsDuration = notificationsDurationSlider ? Number(notificationsDurationSlider.value) : 5;
+      const notificationsPosition = notificationsPositionSelect ? notificationsPositionSelect.value : "bottom-right";
 
       localStorage.setItem(StorageKeys.weather, String(weather));
       localStorage.setItem(StorageKeys.cycleWallpaper, String(cycleWallpaper));
@@ -979,6 +1044,7 @@ export class SettingsApp extends BaseApp {
       localStorage.setItem("yukiOS_show_workspace", String(showWorkspace));
       localStorage.setItem(StorageKeys.achievementsDisabled, String(achievementsDisabled));
       localStorage.setItem(StorageKeys.analyticsDisabled, String(analyticsDisabled));
+      localStorage.setItem(StorageKeys.adsDisabled, String(adsDisabled));
       localStorage.setItem(StorageKeys.taskbarAlignment, selectedAlignment);
       localStorage.setItem(StorageKeys.cdnMirror, cdnMirror);
       localStorage.setItem(StorageKeys.notificationsEnabled, String(notificationsEnabled));
@@ -986,6 +1052,7 @@ export class SettingsApp extends BaseApp {
       localStorage.setItem(StorageKeys.notificationsPopAnimation, String(notificationsPopAnimation));
       localStorage.setItem(StorageKeys.notificationsOverFullscreen, String(notificationsOverFullscreen));
       localStorage.setItem(StorageKeys.notificationsDuration, String(notificationsDuration));
+      localStorage.setItem(StorageKeys.notificationsPosition, notificationsPosition);
 
       const transparentUIToggle = win.querySelector("#settingsTransparentUI");
       const transparentUI = !!transparentUIToggle?.checked;
@@ -999,9 +1066,8 @@ export class SettingsApp extends BaseApp {
       const windowSessionPersistence = !!windowSessionPersistenceToggle?.checked;
       localStorage.setItem(StorageKeys.windowSessionPersistence, String(windowSessionPersistence));
 
-      const selectedPerformanceMode =
-        win.querySelector(".settings-btn[data-perf-val].active")?.dataset.perfVal || "high";
-      localStorage.setItem(StorageKeys.performanceMode, selectedPerformanceMode);
+      const selectedTurboMode = win.querySelector(".settings-btn[data-turbo-val].active")?.dataset.perfVal || "high";
+      localStorage.setItem(StorageKeys.turboMode, selectedTurboMode);
 
       const startMenuWidthInput = win.querySelector("#settingsStartMenuWidth");
       const startMenuHeightInput = win.querySelector("#settingsStartMenuHeight");
@@ -1026,6 +1092,7 @@ export class SettingsApp extends BaseApp {
         showWorkspace,
         achievementsDisabled,
         analyticsDisabled,
+        adsDisabled,
         taskbarAlignment: selectedAlignment,
         cdnMirror,
         disableBootScreen,
@@ -1033,12 +1100,13 @@ export class SettingsApp extends BaseApp {
         startMenuWidth,
         startMenuHeight,
         startMenuCats,
-        performanceMode: selectedPerformanceMode,
+        turboMode: selectedTurboMode,
         notificationsEnabled,
         notificationsRemoveTimeout,
         notificationsPopAnimation,
         notificationsOverFullscreen,
         notificationsDuration,
+        notificationsPosition,
         transparentUI
       });
 
@@ -1049,25 +1117,25 @@ export class SettingsApp extends BaseApp {
       this._applyDesktopStretchScrollDisabled(disableDesktopStretchScroll);
       this._applyStartMenuSize(startMenuWidth, startMenuHeight);
       this._applyStartMenuCats(startMenuCats);
-      this._applyPerformanceMode(selectedPerformanceMode);
+      this._applyTurboMode(selectedTurboMode);
       this._applyTransparentUI(transparentUI);
       bus.emit(BusEvents.SETTINGS_CHANGED, this._settings);
       if (this._settings.cdnMirror && this._settings.cdnMirror !== cdnMirror) {
         showStatus("Reloading with new CDN...");
         setTimeout(() => window.location.reload(), 500);
       } else {
-        showStatus("Saved");
+        showSavedMessage();
       }
     };
 
     this._bindNavigation(win);
-    this._bindSystemCategory(win, save, showStatus);
-    this._bindDesktopCategory(win, save);
-    this._bindAppearanceCategory(win, save, showStatus);
-    this._bindToolsCategory(win, showStatus);
-    this._bindDataCategory(win, showStatus, save);
-    this._bindNetworkCategory(win, save);
-    this._bindAudioCategory(win, showStatus);
+    this._bindSystemCategory(win, save, showStatus, showSavedMessage);
+    this._bindDesktopCategory(win, save, showSavedMessage);
+    this._bindAppearanceCategory(win, save, showStatus, showSavedMessage);
+    this._bindToolsCategory(win, showStatus, showSavedMessage);
+    this._bindDataCategory(win, showStatus, save, showSavedMessage);
+    this._bindNetworkCategory(win, save, showSavedMessage);
+    this._bindAudioCategory(win, showStatus, showSavedMessage);
   }
 
   _bindNavigation(win) {
@@ -1146,18 +1214,19 @@ export class SettingsApp extends BaseApp {
     });
   }
 
-  _bindSystemCategory(win, save, showStatus) {
+  _bindSystemCategory(win, save, showStatus, showSavedMessage) {
     win.querySelector("#settingsWeather").addEventListener("change", save);
     win.querySelector("#settingsMacControls").addEventListener("change", save);
     win.querySelector("#settingsClippy").addEventListener("change", save);
     win.querySelector("#settingsAchievements").addEventListener("change", save);
     win.querySelector("#settingsAnalytics").addEventListener("change", save);
+    win.querySelector("#settingsAds").addEventListener("change", save);
     win.querySelector("#settingsDisableBootScreen")?.addEventListener("change", save);
     win.querySelector("#settingsWindowSessionPersistence")?.addEventListener("change", save);
 
-    win.querySelectorAll(".settings-btn[data-perf-val]").forEach((btn) => {
+    win.querySelectorAll(".settings-btn[data-turbo-val]").forEach((btn) => {
       btn.addEventListener("click", () => {
-        win.querySelectorAll(".settings-btn[data-perf-val]").forEach((b) => b.classList.toggle("active", b === btn));
+        win.querySelectorAll(".settings-btn[data-turbo-val]").forEach((b) => b.classList.toggle("active", b === btn));
         save();
       });
     });
@@ -1176,6 +1245,7 @@ export class SettingsApp extends BaseApp {
     win.querySelector("#settingsNotificationsRemoveTimeout")?.addEventListener("change", save);
     win.querySelector("#settingsNotificationsPopAnimation")?.addEventListener("change", save);
     win.querySelector("#settingsNotificationsOverFullscreen")?.addEventListener("change", save);
+    win.querySelector("#settingsNotificationsPosition")?.addEventListener("change", save);
 
     const durationInput = win.querySelector("#settingsNotificationsDuration");
     const durationVal = win.querySelector("#settingsNotificationsDurationVal");
@@ -1190,7 +1260,7 @@ export class SettingsApp extends BaseApp {
     if (openAnimSelect) {
       openAnimSelect.addEventListener("change", () => {
         localStorage.setItem(StorageKeys.windowOpenAnimation, openAnimSelect.value);
-        showStatus("Saved");
+        showSavedMessage();
       });
     }
 
@@ -1198,7 +1268,7 @@ export class SettingsApp extends BaseApp {
     if (closeAnimSelect) {
       closeAnimSelect.addEventListener("change", () => {
         localStorage.setItem(StorageKeys.windowCloseAnimation, closeAnimSelect.value);
-        showStatus("Saved");
+        showSavedMessage();
       });
     }
 
@@ -1206,7 +1276,7 @@ export class SettingsApp extends BaseApp {
     if (minimizeAnimSelect) {
       minimizeAnimSelect.addEventListener("change", () => {
         localStorage.setItem(StorageKeys.windowMinimizeAnimation, minimizeAnimSelect.value);
-        showStatus("Saved");
+        showSavedMessage();
       });
     }
 
@@ -1214,7 +1284,7 @@ export class SettingsApp extends BaseApp {
     if (animationSpeedSelect) {
       animationSpeedSelect.addEventListener("change", () => {
         localStorage.setItem(StorageKeys.windowAnimationSpeed, animationSpeedSelect.value);
-        showStatus("Saved");
+        showSavedMessage();
       });
     }
 
@@ -1223,12 +1293,141 @@ export class SettingsApp extends BaseApp {
       clickBubbleToggle.addEventListener("change", async () => {
         const { applyAnimationSettings } = await import("./windowManager/AnimationSystem.js");
         applyAnimationSettings({ clickBubble: clickBubbleToggle.checked });
-        showStatus("Saved");
+        showSavedMessage();
       });
+    }
+
+    const trayEnabledToggle = win.querySelector("#settingsTrayEnabled");
+    if (trayEnabledToggle) {
+      trayEnabledToggle.addEventListener("change", () => {
+        const enabled = trayEnabledToggle.checked;
+        this._settings.trayEnabled = enabled;
+        localStorage.setItem(StorageKeys.trayEnabled, String(enabled));
+        this._applyTrayEnabled(enabled);
+        showSavedMessage();
+      });
+    }
+
+    this._renderTrayAppsList(win);
+  }
+
+  _applyTrayEnabled(enabled) {
+    const trayEl = document.getElementById("app-tray");
+    if (trayEl) {
+      trayEl.style.display = enabled ? "flex" : "none";
     }
   }
 
-  _bindDesktopCategory(win, save) {
+  _renderTrayAppsList(win) {
+    const trayAppsList = win.querySelector("#trayAppsList");
+    if (!trayAppsList) return;
+
+    const trayItems = trayManager.getTrayItems();
+
+    if (trayItems.length === 0) {
+      trayAppsList.innerHTML = `<div style="padding: 12px; color: rgba(255,255,255,0.5); font-size: 13px; text-align: center;">No tray apps registered</div>`;
+      return;
+    }
+
+    trayAppsList.innerHTML = "";
+    trayItems.forEach(({ winId, label, icon }) => {
+      const row = document.createElement("div");
+      row.className = "settings-grid-toggle";
+      row.style.padding = "8px 12px";
+      row.style.borderRadius = "6px";
+      row.style.background = "rgba(255,255,255,0.03)";
+      row.style.display = "flex";
+      row.style.alignItems = "center";
+      row.style.justifyContent = "space-between";
+      row.style.marginBottom = "6px";
+
+      const isUrl =
+        typeof icon === "string" &&
+        (icon.startsWith("http") ||
+          icon.startsWith("data:") ||
+          icon.startsWith("/") ||
+          /\.(webp|png|jpg|jpeg|gif|svg)/.test(icon));
+      const isFontAwesome =
+        typeof icon === "string" &&
+        (icon.startsWith("fa-") ||
+          icon.startsWith("fas") ||
+          icon.startsWith("fab") ||
+          icon.startsWith("far") ||
+          icon.startsWith("fa "));
+
+      let iconHtml = "";
+      if (isUrl) {
+        iconHtml = `<img src="${icon}" alt="${label}" style="width: 16px; height: 16px; margin-right: 8px;"/>`;
+      } else if (isFontAwesome) {
+        iconHtml = `<i class="${icon}" style="margin-right: 8px;"></i>`;
+      } else {
+        iconHtml = `<span style="font-size: 12px; margin-right: 8px;">${icon}</span>`;
+      }
+
+      const isVisible = this._settings.trayAppVisibility[winId] !== false;
+
+      row.innerHTML = `
+        <div style="display: flex; align-items: center;">
+          ${iconHtml}
+          <span style="font-size: 13px; color: rgba(255,255,255,0.9);">${label}</span>
+        </div>
+        <label class="settings-toggle">
+          <input type="checkbox" class="tray-app-toggle" data-win-id="${winId}" ${isVisible ? "checked" : ""}/>
+          <span class="settings-track"><span class="settings-thumb"></span></span>
+        </label>
+      `;
+
+      trayAppsList.appendChild(row);
+    });
+
+    trayAppsList.querySelectorAll(".tray-app-toggle").forEach((toggle) => {
+      toggle.addEventListener("change", () => {
+        const winId = toggle.dataset.winId;
+        const isVisible = toggle.checked;
+        this._settings.trayAppVisibility[winId] = isVisible;
+        localStorage.setItem(StorageKeys.trayAppVisibility, JSON.stringify(this._settings.trayAppVisibility));
+        this._applyTrayAppVisibility(winId, isVisible);
+      });
+    });
+  }
+
+  _applyTrayAppVisibility(winId, isVisible) {
+    const item = trayManager._items.get(winId);
+    if (item) {
+      item.visibleInSettings = isVisible;
+      trayManager._render();
+    }
+  }
+
+  _showSavedMessage(win) {
+    let toast = win.querySelector(".settings-saved-toast");
+    if (toast) {
+      clearTimeout(toast._timeout);
+      toast.remove();
+    }
+
+    toast = document.createElement("div");
+    toast.className = "settings-saved-toast";
+    toast.innerHTML = `<i class="fas fa-check-circle"></i> Saved`;
+    const content = win.querySelector(".window-content");
+    if (content) {
+      content.style.position = "relative";
+      content.appendChild(toast);
+    }
+
+    requestAnimationFrame(() => {
+      toast.style.opacity = "1";
+      toast.style.transform = "translateY(0)";
+    });
+
+    toast._timeout = setTimeout(() => {
+      toast.style.opacity = "0";
+      toast.style.transform = "translateY(-10px)";
+      setTimeout(() => toast.remove(), 200);
+    }, 2000);
+  }
+
+  _bindDesktopCategory(win, save, showSavedMessage) {
     const stretchToggle = win.querySelector("#settingsDisableDesktopStretchScroll");
     if (stretchToggle) stretchToggle.addEventListener("change", save);
 
@@ -1280,7 +1479,7 @@ export class SettingsApp extends BaseApp {
     });
   }
 
-  _bindAppearanceCategory(win, save, showStatus) {
+  _bindAppearanceCategory(win, save, showStatus, showSavedMessage) {
     win.querySelector("#settingsCycleWallpaper").addEventListener("change", save);
 
     win.querySelectorAll(".settings-btn[data-theme-val]").forEach((btn) => {
@@ -1312,7 +1511,7 @@ export class SettingsApp extends BaseApp {
         this._settings.windowTransparency = val;
         localStorage.setItem(StorageKeys.windowTransparency, String(val));
         this._applyWindowTransparency(val);
-        showStatus("Saved");
+        showSavedMessage();
       });
     }
 
@@ -1323,7 +1522,7 @@ export class SettingsApp extends BaseApp {
         this._settings.transparentUI = enabled;
         localStorage.setItem(StorageKeys.transparentUI, String(enabled));
         this._applyTransparentUI(enabled);
-        showStatus("Saved");
+        showSavedMessage();
       });
     }
 
@@ -1333,7 +1532,7 @@ export class SettingsApp extends BaseApp {
         const enabled = clipboardManagerToggle.checked;
         this._settings.clipboardManagerEnabled = enabled;
         localStorage.setItem(StorageKeys.clipboardManagerEnabled, String(enabled));
-        showStatus("Saved");
+        showSavedMessage();
       });
     }
 
@@ -1348,7 +1547,7 @@ export class SettingsApp extends BaseApp {
         this._settings.guiScale = val;
         localStorage.setItem(StorageKeys.guiScale, String(val));
         this._applyGuiScale(val);
-        showStatus("Saved");
+        showSavedMessage();
       });
     }
 
@@ -1363,7 +1562,7 @@ export class SettingsApp extends BaseApp {
         this._settings.fontSize = val;
         localStorage.setItem(StorageKeys.fontSize, String(val));
         this._applyFontSize(val);
-        showStatus("Saved");
+        showSavedMessage();
       });
     }
 
@@ -1402,7 +1601,7 @@ export class SettingsApp extends BaseApp {
       if (cursorClearBtn) cursorClearBtn.disabled = !cursorDataUrl;
       if (cursorStatus) cursorStatus.textContent = cursorDataUrl ? "Custom cursor enabled" : "Default cursor";
       if (cursorSizeInput) cursorSizeInput.disabled = !cursorDataUrl;
-      showStatus("Saved");
+      showSavedMessage();
     };
 
     const setCursorSize = async (size) => {
@@ -1485,7 +1684,7 @@ export class SettingsApp extends BaseApp {
     }
   }
 
-  _bindToolsCategory(win, showStatus) {
+  _bindToolsCategory(win, showStatus, showSavedMessage) {
     const hideGamesBtn = win.querySelector("#settingsHideGamesBtn");
     if (hideGamesBtn) {
       hideGamesBtn.addEventListener("click", () => {
@@ -1550,7 +1749,7 @@ export class SettingsApp extends BaseApp {
     }
   }
 
-  _bindDataCategory(win, showStatus, save) {
+  _bindDataCategory(win, showStatus, save, showSavedMessage) {
     win.querySelector("#btnExportData")?.addEventListener("click", () => this.exportData(showStatus));
     win.querySelector("#btnImportData")?.addEventListener("click", () => this.importData(showStatus));
     win.querySelector("#btnDeleteAllData")?.addEventListener("click", () => this.deleteAllData());
@@ -1562,14 +1761,15 @@ export class SettingsApp extends BaseApp {
       win.querySelector("#settingsClippy").checked = this._settings.clippy;
       win.querySelector("#settingsAchievements").checked = !this._settings.achievementsDisabled;
       win.querySelector("#settingsAnalytics").checked = !this._settings.analyticsDisabled;
+      win.querySelector("#settingsAds").checked = !this._settings.adsDisabled;
       const stretchToggle = win.querySelector("#settingsDisableDesktopStretchScroll");
       if (stretchToggle) stretchToggle.checked = !!this._settings.disableDesktopStretchScroll;
       const workspaceToggle = win.querySelector("#settingsShowWorkspace");
       if (workspaceToggle) workspaceToggle.checked = !!this._settings.showWorkspace;
       const disableBootScreenToggle = win.querySelector("#settingsDisableBootScreen");
       if (disableBootScreenToggle) disableBootScreenToggle.checked = !!this._settings.disableBootScreen;
-      win.querySelectorAll(".settings-btn[data-perf-val]").forEach((btn) => {
-        btn.classList.toggle("active", btn.dataset.perfVal === this._settings.performanceMode);
+      win.querySelectorAll(".settings-btn[data-turbo-val]").forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.perfVal === this._settings.turboMode);
       });
       showStatus("Reset to saved values");
     });
@@ -1584,13 +1784,14 @@ export class SettingsApp extends BaseApp {
       win.querySelector("#settingsClippy").checked = false;
       win.querySelector("#settingsAchievements").checked = true;
       win.querySelector("#settingsAnalytics").checked = true;
+      win.querySelector("#settingsAds").checked = true;
       const stretchToggle = win.querySelector("#settingsDisableDesktopStretchScroll");
       if (stretchToggle) stretchToggle.checked = false;
       const workspaceToggle2 = win.querySelector("#settingsShowWorkspace");
       if (workspaceToggle2) workspaceToggle2.checked = true;
       const disableBootScreenToggle = win.querySelector("#settingsDisableBootScreen");
       if (disableBootScreenToggle) disableBootScreenToggle.checked = false;
-      win.querySelectorAll(".settings-btn[data-perf-val]").forEach((btn) => {
+      win.querySelectorAll(".settings-btn[data-turbo-val]").forEach((btn) => {
         btn.classList.toggle("active", btn.dataset.perfVal === "high");
       });
 
@@ -1599,12 +1800,12 @@ export class SettingsApp extends BaseApp {
     });
   }
 
-  _bindNetworkCategory(win, save) {
+  _bindNetworkCategory(win, save, showSavedMessage) {
     const cdnMirrorSelect = win.querySelector("#settingsCdnMirror");
     if (cdnMirrorSelect) cdnMirrorSelect.addEventListener("change", save);
   }
 
-  _bindAudioCategory(win, showStatus) {
+  _bindAudioCategory(win, showStatus, showSavedMessage) {
     const soundToggle = win.querySelector("#settingsSoundEnabled");
     const volumeSlider = win.querySelector("#settingsMasterVolume");
     const volumeValue = win.querySelector("#settingsMasterVolumeValue");
@@ -1616,7 +1817,7 @@ export class SettingsApp extends BaseApp {
         localStorage.setItem(StorageKeys.soundEnabled, String(enabled));
         if (volumeSlider) volumeSlider.disabled = !enabled;
         this._applySound(enabled, this._settings.masterVolume);
-        showStatus("Saved");
+        showSavedMessage();
       });
     }
 
@@ -1629,7 +1830,7 @@ export class SettingsApp extends BaseApp {
         this._settings.masterVolume = val;
         localStorage.setItem(StorageKeys.masterVolume, String(val));
         if (this._settings.soundEnabled) audioMixer.setMaster(val);
-        showStatus("Saved");
+        showSavedMessage();
       });
     }
   }
@@ -2150,87 +2351,9 @@ export class SettingsApp extends BaseApp {
     document.documentElement.style.setProperty("--font-size-scale", String(sizeValue));
   }
 
-  _applyPerformanceMode(mode) {
-    const effective = mode || "high";
-    document.documentElement.setAttribute("data-performance", effective);
-
-    let styleEl = document.getElementById("yukios-performance-override");
-    if (!styleEl) {
-      styleEl = document.createElement("style");
-      styleEl.id = "yukios-performance-override";
-      document.head.appendChild(styleEl);
-    }
-
-    if (effective === "performance") {
-      styleEl.textContent = `
-        html[data-performance="performance"] *:not(.start-menu):not(.start-menu *),
-        html[data-performance="performance"] *:not(.start-menu):not(.start-menu *)::before,
-        html[data-performance="performance"] *:not(.start-menu):not(.start-menu *)::after {
-          animation: none !important;
-          transition: none !important;
-        }
-        html[data-performance="performance"] .window,
-        html[data-performance="performance"] .window-header,
-        html[data-performance="performance"] .taskbar-preview,
-        html[data-performance="performance"] .context-menu {
-          backdrop-filter: none !important;
-          -webkit-backdrop-filter: none !important;
-        }
-        html[data-performance="performance"] .window,
-        html[data-performance="performance"] .taskbar-preview,
-        html[data-performance="performance"] .context-menu {
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
-        }
-        html[data-performance="performance"] *:not(.start-menu):not(.start-menu *) {
-          text-shadow: none !important;
-        }
-        html[data-performance="performance"] .window:hover {
-          transform: none !important;
-        }
-        html[data-performance="performance"] .icon:hover img {
-          transform: none !important;
-        }
-        html[data-performance="performance"] #snap-ghost {
-          transition: none !important;
-          transform: none !important;
-        }
-        html[data-performance="performance"] #snap-ghost:not(.snap-ghost-active) {
-          display: none !important;
-        }
-      `;
-    } else if (effective === "balanced") {
-      styleEl.textContent = `
-        html[data-performance="balanced"] *:not(.start-menu):not(.start-menu *),
-        html[data-performance="balanced"] *:not(.start-menu):not(.start-menu *)::before,
-        html[data-performance="balanced"] *:not(.start-menu):not(.start-menu *)::after {
-          animation-duration: 0.15s !important;
-          transition-duration: 0.15s !important;
-        }
-        html[data-performance="balanced"] .window {
-          backdrop-filter: blur(12px) !important;
-          -webkit-backdrop-filter: blur(12px) !important;
-        }
-        html[data-performance="balanced"] .window-header {
-          backdrop-filter: blur(8px) saturate(1.1) !important;
-          -webkit-backdrop-filter: blur(8px) saturate(1.1) !important;
-        }
-        html[data-performance="balanced"] .window,
-        html[data-performance="balanced"] .taskbar-preview,
-        html[data-performance="balanced"] .context-menu {
-          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5) !important;
-        }
-        html[data-performance="balanced"] .window:hover {
-          transform: none !important;
-        }
-        html[data-performance="balanced"] .icon:hover img {
-          transform: scale(1.02) !important;
-        }
-        html[data-performance="balanced"] #snap-ghost {
-          transition-duration: 0.1s !important;
-        }
-      `;
-    } else {
-      styleEl.textContent = "";
+  _applyTurboMode(mode) {
+    if (this._services.powerApp) {
+      this._services.powerApp._applyTurboMode(mode);
     }
   }
 

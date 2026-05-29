@@ -46,6 +46,8 @@ import { YukiOsGuideApp } from "./yukiOsGuide.js";
 import { ClipboardManager } from "./clipboardManager.js";
 import { ClipboardManagerApp } from "./clipboardApp.js";
 import { AIAssistantApp } from "./apps/aiAssistant.js";
+import { BrightnessApp } from "./brightnessApp.js";
+import { PowerApp } from "./powerApp.js";
 import {
   resolveGhUrl,
   resolveIconUrl,
@@ -213,6 +215,12 @@ services.clipboardManagerApp = clipboardManagerApp;
 const aiAssistantApp = new AIAssistantApp(services);
 services.aiAssistantApp = aiAssistantApp;
 
+const brightnessApp = new BrightnessApp(services);
+services.brightnessApp = brightnessApp;
+
+const powerApp = new PowerApp(services);
+services.powerApp = powerApp;
+
 const appLauncher = new AppLauncher(
   windowManager,
   fileSystemManager,
@@ -249,7 +257,8 @@ const appLauncher = new AppLauncher(
   installedAppsApp,
   yukiOsGuideApp,
   clipboardManagerApp,
-  aiAssistantApp
+  aiAssistantApp,
+  brightnessApp
 );
 window.appLauncher = appLauncher;
 windowManager.setAppLauncher(appLauncher);

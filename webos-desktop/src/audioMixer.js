@@ -1,3 +1,5 @@
+import { trayManager } from "./tray.js";
+
 const STORAGE_KEY = "yukios_audio_mixer_v1";
 
 class AudioMixer {
@@ -7,7 +9,6 @@ class AudioMixer {
     this.gainNodes = new Map();
     this.audioCtx = null;
     this.panel = null;
-    this.trayBtn = null;
     this.isOpen = false;
     this._load();
   }
@@ -211,12 +212,15 @@ class AudioMixer {
   }
 
   init() {
-    this._createTrayButton();
+    this._initTray();
     this._createPanel();
 
     document.addEventListener("click", (e) => {
-      if (this.isOpen && this.panel && !this.panel.contains(e.target) && !this.trayBtn.contains(e.target)) {
-        this.close();
+      if (this.isOpen && this.panel && !this.panel.contains(e.target)) {
+        const btn = document.querySelector('[data-win-id="audio-mixer"]');
+        if (!btn || !btn.contains(e.target)) {
+          this.close();
+        }
       }
     });
     document.addEventListener("AUDIO_SETTINGS_CHANGED", (e) => {
@@ -227,24 +231,14 @@ class AudioMixer {
     });
   }
 
-  _createTrayButton() {
-    const tray = document.getElementById("system-tray");
-    if (!tray) return;
-
-    this.trayBtn = document.createElement("button");
-    this.trayBtn.id = "audio-mixer-tray-btn";
-    this.trayBtn.title = "Audio Mixer";
-    this.trayBtn.innerHTML = `<i style="transform:scale(2);" class="fa-solid fa-bullhorn"></i>`;
-
-    this.trayBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      this.toggle();
+  _initTray() {
+    trayManager.register("audio-mixer", "fa-solid fa-bullhorn", "Audio Mixer", {
+      resident: true,
+      showInTray: true,
+      onClick: () => {
+        this.toggle();
+      }
     });
-
-    const ref = tray.querySelector("#time-container") || tray.querySelector("#clock");
-    if (ref) {
-      tray.insertBefore(this.trayBtn, ref);
-    }
   }
 
   _createPanel() {
@@ -420,7 +414,8 @@ class AudioMixer {
   open() {
     this.isOpen = true;
     this.panel.style.display = "flex";
-    this.trayBtn?.classList.add("active");
+    const btn = document.querySelector('[data-win-id="audio-mixer"]');
+    if (btn) btn.classList.add("active");
     this._renderSliders();
     this._positionPanel();
   }
@@ -428,12 +423,14 @@ class AudioMixer {
   close() {
     this.isOpen = false;
     this.panel.style.display = "none";
-    this.trayBtn?.classList.remove("active");
+    const btn = document.querySelector('[data-win-id="audio-mixer"]');
+    if (btn) btn.classList.remove("active");
   }
 
   _positionPanel() {
-    if (!this.trayBtn || !this.panel) return;
-    const btnRect = this.trayBtn.getBoundingClientRect();
+    const btn = document.querySelector('[data-win-id="audio-mixer"]');
+    if (!btn || !this.panel) return;
+    const btnRect = btn.getBoundingClientRect();
     const panelW = 280;
     let left = btnRect.right - panelW;
     if (left < 8) left = 8;

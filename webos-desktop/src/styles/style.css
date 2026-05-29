@@ -947,16 +947,6 @@ html[data-theme="frutiger-aero"] .ov-add-ws:hover {
   color: #1a1a2e !important;
 }
 
-html[data-theme="frutiger-aero"] #audio-mixer-tray-btn {
-  color: var(--text-primary) !important;
-}
-
-html[data-theme="frutiger-aero"] #audio-mixer-tray-btn:hover,
-html[data-theme="frutiger-aero"] #audio-mixer-tray-btn.active {
-  background: var(--glass-hover) !important;
-  color: var(--text-primary) !important;
-}
-
 html[data-theme="frutiger-aero"] #audio-mixer-panel {
   background: var(--window-bg) !important;
   border: 1px solid var(--glass-border) !important;

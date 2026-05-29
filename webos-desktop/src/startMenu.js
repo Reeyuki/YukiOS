@@ -267,19 +267,33 @@ export function setupStartMenu(appLauncher, sessionManager) {
 
   searchInput.addEventListener("input", (e) => {
     const q = e.target.value.toLowerCase();
-    const appRegistry = getAppRegistry();
-    document.querySelectorAll(".start-item").forEach((item) => {
-      const appId = item.dataset.app;
-      const isUninstalled = appRegistry.isAppUninstalled(appId);
-      const isDisabled = appRegistry.isAppDisabled(appId);
-      const matchesSearch = item.textContent.toLowerCase().includes(q);
-      const isAvailable = !isUninstalled && !isDisabled;
-      if (q === "") {
-        item.style.display = isAvailable ? "" : "none";
-      } else {
-        item.style.display = matchesSearch && isAvailable ? "" : "none";
-      }
-    });
+    const activeCat = document.querySelector(".start-cat.active");
+    const isMenuCategory = activeCat && activeCat.dataset.cat === "menu";
+
+    if (isMenuCategory) {
+      document.querySelectorAll(".start-menu-item").forEach((item) => {
+        const matchesSearch = item.textContent.toLowerCase().includes(q);
+        if (q === "") {
+          item.style.display = "";
+        } else {
+          item.style.display = matchesSearch ? "" : "none";
+        }
+      });
+    } else {
+      const appRegistry = getAppRegistry();
+      document.querySelectorAll(".start-item").forEach((item) => {
+        const appId = item.dataset.app;
+        const isUninstalled = appRegistry.isAppUninstalled(appId);
+        const isDisabled = appRegistry.isAppDisabled(appId);
+        const matchesSearch = item.textContent.toLowerCase().includes(q);
+        const isAvailable = !isUninstalled && !isDisabled;
+        if (q === "") {
+          item.style.display = isAvailable ? "" : "none";
+        } else {
+          item.style.display = matchesSearch && isAvailable ? "" : "none";
+        }
+      });
+    }
   });
 
   setupStars();

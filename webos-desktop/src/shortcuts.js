@@ -260,6 +260,30 @@ const SHORTCUTS_DATA = [
     desc: "Navigate previous or next year in Calendar",
     cat: "calendar",
     icon: "fas fa-arrow-up"
+  },
+  {
+    keys: ["Ctrl", "Alt", "↑"],
+    desc: "Increase display brightness",
+    cat: "global",
+    icon: "fas fa-sun"
+  },
+  {
+    keys: ["Ctrl", "Alt", "↓"],
+    desc: "Decrease display brightness",
+    cat: "global",
+    icon: "fas fa-sun"
+  },
+  {
+    keys: ["Ctrl", "Alt", "←"],
+    desc: "Decrease color temperature (warmer)",
+    cat: "global",
+    icon: "fas fa-temperature-half"
+  },
+  {
+    keys: ["Ctrl", "Alt", "→"],
+    desc: "Increase color temperature (cooler)",
+    cat: "global",
+    icon: "fas fa-temperature-half"
   }
 ];
 

@@ -1,5 +1,6 @@
 import { BaseApp } from "./core/BaseApp.js";
 import { showConfirm, showPrompt } from "./shared/dialogs.js";
+import { StorageKeys } from "./StorageKeys.js";
 
 class ClipboardManagerApp extends BaseApp {
   constructor(services) {
@@ -8,9 +9,18 @@ class ClipboardManagerApp extends BaseApp {
     this.clipboardManager = services.clipboardManager;
     this.winId = "clipboard-manager-window";
     this.popupId = "clipboard-tray-popup";
-    this.enabled = localStorage.getItem("yukiOS_clipboard_manager_enabled") !== "false";
+    this.enabled = localStorage.getItem(StorageKeys.clipboardManagerEnabled) !== "false";
+    this.saveHistoryAcrossSessions = localStorage.getItem(StorageKeys.clipboardSaveHistory) !== "false";
+    this.historySize = parseInt(localStorage.getItem(StorageKeys.clipboardHistorySize)) || 20;
     this._popupVisible = false;
+    this._dialogOpen = false;
     this._initTray();
+    this._applySettings();
+  }
+
+  _shouldSuppressNotification() {
+    const position = localStorage.getItem(StorageKeys.notificationsPosition) || "bottom-right";
+    return position === "bottom-right";
   }
 
   _initTray() {
@@ -23,6 +33,16 @@ class ClipboardManagerApp extends BaseApp {
         }
       });
     }
+  }
+
+  _applySettings() {
+    this.clipboardManager.setPersistenceEnabled(this.saveHistoryAcrossSessions);
+    this.clipboardManager.setMaxHistorySize(this.historySize);
+  }
+
+  _saveSettings() {
+    localStorage.setItem(StorageKeys.clipboardSaveHistory, this.saveHistoryAcrossSessions.toString());
+    localStorage.setItem(StorageKeys.clipboardHistorySize, this.historySize.toString());
   }
 
   togglePopup() {
@@ -53,6 +73,28 @@ class ClipboardManagerApp extends BaseApp {
         <button id="clear-clipboard" class="clipboard-clear-btn">
           <i class="fas fa-trash"></i>
         </button>
+      </div>
+      <div class="clipboard-settings-section">
+        <div class="clipboard-setting-row">
+          <div class="clipboard-setting-label">
+            <i class="fas fa-save"></i>
+            <span>Save history across sessions</span>
+          </div>
+          <label class="clipboard-toggle">
+            <input type="checkbox" id="save-history-toggle" ${this.saveHistoryAcrossSessions ? "checked" : ""}/>
+            <span class="clipboard-toggle-track"><span class="clipboard-toggle-thumb"></span></span>
+          </label>
+        </div>
+        <div class="clipboard-setting-row">
+          <div class="clipboard-setting-label">
+            <i class="fas fa-list-ol"></i>
+            <span>History size</span>
+          </div>
+          <div class="clipboard-history-size-input">
+            <input type="number" id="history-size-input" min="5" max="100" value="${this.historySize}" />
+            <span class="clipboard-history-size-label">items</span>
+          </div>
+        </div>
       </div>
       <div id="clipboard-history" class="clipboard-history-list">
         ${history.length === 0 ? '<div class="clipboard-empty">No clipboard history</div>' : ""}
@@ -96,6 +138,7 @@ class ClipboardManagerApp extends BaseApp {
   }
 
   _handleOutsideClick = (e) => {
+    if (this._dialogOpen) return;
     const popup = document.getElementById(this.popupId);
     const trayEl = document.getElementById("app-tray");
     if (popup && !e.target.closest("#clipboard-tray-popup") && !e.target.closest("#app-tray")) {
@@ -205,16 +248,20 @@ class ClipboardManagerApp extends BaseApp {
         const index = parseInt(btn.dataset.index);
         const item = history[index];
         if (item) {
+          this._dialogOpen = true;
           const newData = await showPrompt(
             "Edit Clipboard Contents",
             "Edit clipboard contents:",
             String(item.data),
             "Save"
           );
+          this._dialogOpen = false;
           if (newData !== null && newData !== item.data) {
             this.clipboardManager.updateItem(index, newData);
             this._renderHistory(currentPopup, this.clipboardManager.getHistory(), this.clipboardManager.get());
-            this.notify("Updated", "Clipboard item updated", "success", 2000, "fa-pen");
+            if (!this._shouldSuppressNotification()) {
+              this.notify("Updated", "Clipboard item updated", "success", 2000, "fa-pen");
+            }
           }
         }
       });
@@ -224,11 +271,15 @@ class ClipboardManagerApp extends BaseApp {
       btn.addEventListener("click", async (e) => {
         e.stopPropagation();
         const index = parseInt(btn.dataset.index);
+        this._dialogOpen = true;
         const confirmed = await showConfirm("Remove Item", "Remove this item from history?", "Remove", "Cancel");
+        this._dialogOpen = false;
         if (confirmed) {
           this.clipboardManager.removeFromHistory(index);
           this._renderHistory(currentPopup, this.clipboardManager.getHistory(), this.clipboardManager.get());
-          this.notify("Removed", "Item removed from history", "info", 2000, "fa-trash");
+          if (!this._shouldSuppressNotification()) {
+            this.notify("Removed", "Item removed from history", "info", 2000, "fa-trash");
+          }
         }
       });
     });
@@ -241,13 +292,15 @@ class ClipboardManagerApp extends BaseApp {
         if (item) {
           const isStarred = this.clipboardManager.toggleStar(item.id);
           this._renderHistory(currentPopup, this.clipboardManager.getHistory(), this.clipboardManager.get());
-          this.notify(
-            isStarred ? "Starred" : "Unstarred",
-            isStarred ? "Item starred" : "Item unstarred",
-            "success",
-            2000,
-            "fa-star"
-          );
+          if (!this._shouldSuppressNotification()) {
+            this.notify(
+              isStarred ? "Starred" : "Unstarred",
+              isStarred ? "Item starred" : "Item unstarred",
+              "success",
+              2000,
+              "fa-star"
+            );
+          }
         }
       });
     });
@@ -284,11 +337,66 @@ class ClipboardManagerApp extends BaseApp {
 
   _bindEvents(popup, popupId) {
     const clearBtn = popup.querySelector("#clear-clipboard");
+    const saveHistoryToggle = popup.querySelector("#save-history-toggle");
+    const historySizeInput = popup.querySelector("#history-size-input");
+
     if (clearBtn) {
       clearBtn.addEventListener("click", () => {
         this.clipboardManager.clear();
         this._renderHistory(popup, this.clipboardManager.getHistory(), this.clipboardManager.get());
-        this.notify("Cleared", "Clipboard cleared", "info", 2000, "fa-trash");
+        if (!this._shouldSuppressNotification()) {
+          this.notify("Cleared", "Clipboard cleared", "info", 2000, "fa-trash");
+        }
+      });
+    }
+
+    if (saveHistoryToggle) {
+      saveHistoryToggle.addEventListener("change", (e) => {
+        this.saveHistoryAcrossSessions = e.target.checked;
+        this._applySettings();
+        this._saveSettings();
+        if (!this._shouldSuppressNotification()) {
+          this.notify(
+            "Settings Updated",
+            this.saveHistoryAcrossSessions
+              ? "History will be saved across sessions"
+              : "History will not be saved across sessions",
+            "info",
+            2000,
+            "fa-save"
+          );
+        }
+      });
+    }
+
+    if (historySizeInput) {
+      historySizeInput.addEventListener("change", (e) => {
+        const newSize = parseInt(e.target.value);
+        if (newSize >= 5 && newSize <= 100) {
+          this.historySize = newSize;
+          this._applySettings();
+          this._saveSettings();
+          if (!this._shouldSuppressNotification()) {
+            this.notify(
+              "Settings Updated",
+              `History size set to ${this.historySize} items`,
+              "info",
+              2000,
+              "fa-list-ol"
+            );
+          }
+        } else {
+          historySizeInput.value = this.historySize;
+          if (!this._shouldSuppressNotification()) {
+            this.notify(
+              "Invalid Value",
+              "History size must be between 5 and 100",
+              "error",
+              2000,
+              "fa-exclamation-triangle"
+            );
+          }
+        }
       });
     }
 

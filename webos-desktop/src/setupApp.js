@@ -241,9 +241,9 @@ export const FEATURE_DATA = {
         { path: "/home/reeyuki/Apps", desc: "Custom app shortcuts" }
       ]
     },
-    performanceModes: [
+    turboModes: [
       { value: "balanced", title: "Balanced", desc: "Recommended for most users" },
-      { value: "performance", title: "Performance", desc: "Maximize speed, reduce effects" },
+      { value: "turbo", title: "Turbo", desc: "Maximize speed, reduce effects" },
       { value: "quality", title: "Quality", desc: "Best visuals, may be slower" }
     ],
     suggestedApps: [
@@ -276,7 +276,7 @@ export class SetupApp extends BaseApp {
       sound: true,
       achievements: true,
       analytics: true,
-      performanceMode: "balanced",
+      turboMode: "balanced",
       transparency: "medium",
       username: localStorage.getItem(STORAGE_KEYS.username) || "Guest",
       profilePicture: localStorage.getItem(STORAGE_KEYS.profilePicture) || PREDEFINED_AVATARS[0]
@@ -611,11 +611,11 @@ export class SetupApp extends BaseApp {
   }
 
   _buildStep6() {
-    const performanceHtml = FEATURE_DATA.step6.performanceModes
+    const turboHtml = FEATURE_DATA.step6.turboModes
       .map(
         (m) => `
-        <button class="perf-btn ${this.userChoices.performanceMode === m.value ? "active" : ""}" data-mode="${m.value}">
-          <div class="perf-title">${m.title}</div>
+        <button class="turbo-btn ${this.userChoices.turboMode === m.value ? "active" : ""}" data-mode="${m.value}">
+          <div class="turbo-title">${m.title}</div>
         </button>
       `
       )
@@ -706,8 +706,8 @@ export class SetupApp extends BaseApp {
 
         <div class="settings-row">
           <div class="settings-half">
-            <label class="section-label">Performance</label>
-            <div class="perf-selector">${performanceHtml}</div>
+            <label class="section-label">Turbo</label>
+            <div class="turbo-selector">${turboHtml}</div>
           </div>
           <div class="settings-half">
             <label class="section-label">Transparency</label>
@@ -812,7 +812,7 @@ export class SetupApp extends BaseApp {
           </div>
           <div class="summary-item">
             <i class="fas fa-tachometer-alt"></i>
-            <span>Performance: ${this.userChoices.performanceMode}</span>
+            <span>Turbo: ${this.userChoices.turboMode}</span>
           </div>
           <div class="summary-item">
             <i class="fas fa-adjust"></i>
@@ -890,12 +890,12 @@ export class SetupApp extends BaseApp {
       uploadBtn.addEventListener("click", () => this._handleWallpaperUpload(win));
     }
 
-    // Performance mode selection
-    const perfBtns = win.querySelectorAll(".perf-btn");
+    // Turbo mode selection
+    const perfBtns = win.querySelectorAll(".turbo-btn");
     perfBtns.forEach((btn) => {
       btn.addEventListener("click", () => {
         const mode = btn.dataset.mode;
-        this.userChoices.performanceMode = mode;
+        this.userChoices.turboMode = mode;
         perfBtns.forEach((b) => b.classList.remove("active"));
         btn.classList.add("active");
       });
@@ -1047,7 +1047,7 @@ export class SetupApp extends BaseApp {
     localStorage.setItem(StorageKeys.setupCompleted, "true");
 
     // Save new options
-    localStorage.setItem("yukiOS_performanceMode", this.userChoices.performanceMode);
+    localStorage.setItem("yukiOS_turboMode", this.userChoices.turboMode);
     localStorage.setItem("yukiOS_transparency", this.userChoices.transparency);
 
     this._services.achievementsApp?.trigger(Achievements.SetupComplete);
@@ -1073,7 +1073,7 @@ export class SetupApp extends BaseApp {
 Your setup is complete. Here's what you configured:
 - Theme: ${this.userChoices.theme}
 - Taskbar: ${this.userChoices.taskbarPosition}
-- Performance Mode: ${this.userChoices.performanceMode}
+- Turbo Mode: ${this.userChoices.turboMode}
 - Transparency: ${this.userChoices.transparency}
 - Weather: ${this.userChoices.weather ? "Enabled" : "Disabled"}
 - Notifications: ${this.userChoices.notifications ? "Enabled" : "Disabled"}
