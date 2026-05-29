@@ -5,6 +5,7 @@ import { WindowHelper } from "./utils/WindowHelper.js";
 import { CDN_BASES } from "./shared/assetResolver.js";
 import { CDN_CONFIG } from "./shared/cdnConfig.js";
 import { PersistenceTypes } from "./runtime/AppSchema.js";
+import { audioMixer } from "./audioMixer.js";
 
 const ROMS_DIR = ["ROMs"];
 const DESKTOP_DIR = ["Desktop"];
@@ -356,6 +357,7 @@ export class EmulatorApp extends BaseApp {
     try {
       const blob = await this.fs.readBinaryFile(normalizedPath, fileName);
       if (!blob || blob.size === 0) {
+        audioMixer.playCriticalWarning();
         this.wm.sendNotify("Failed to read ROM file.");
         return;
       }
@@ -375,6 +377,7 @@ export class EmulatorApp extends BaseApp {
 
       this._launchEmulator(displayName, fileName, arrayBuffer);
     } catch (e) {
+      audioMixer.playCriticalWarning();
       this.wm.sendNotify(`Error loading ROM: ${e.message}`);
     }
   }

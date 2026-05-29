@@ -7,7 +7,7 @@ import { WindowHelper } from "./utils/WindowHelper.js";
 import { CDN_MIRRORS, setCdnMirror, initializeMirrors, resolveGhUrl } from "./shared/assetResolver.js";
 import { appMap } from "./gamesList.js";
 import { renderWallpapersPage } from "./wallpapers.js";
-import { audioMixer } from "./audioMixer.js";
+import { audioMixer, SystemAudio } from "./audioMixer.js";
 import { AppSource } from "./AppSource.js";
 import { StorageKeys } from "./StorageKeys.js";
 import { YUKIOS_VERSION } from "./about.js";
@@ -29,6 +29,7 @@ export class SettingsApp extends BaseApp {
 
       const rawTransparency = parseFloat(localStorage.getItem(StorageKeys.windowTransparency));
       const rawMasterVol = parseFloat(localStorage.getItem(StorageKeys.masterVolume));
+      const rawSystemVol = parseFloat(localStorage.getItem(StorageKeys.systemVolume));
 
       this._settings = {
         weather: localStorage.getItem(StorageKeys.weather) !== "false",
@@ -48,6 +49,8 @@ export class SettingsApp extends BaseApp {
         windowTransparency: Number.isFinite(rawTransparency) ? Math.max(0.2, Math.min(1, rawTransparency)) : 1,
         soundEnabled: localStorage.getItem(StorageKeys.soundEnabled) !== "false",
         masterVolume: Number.isFinite(rawMasterVol) ? Math.max(0, Math.min(1, rawMasterVol)) : 1,
+        systemAudioEnabled: localStorage.getItem(StorageKeys.systemAudioEnabled) !== "false",
+        systemVolume: Number.isFinite(rawSystemVol) ? Math.max(0, Math.min(1, rawSystemVol)) : 1,
         dnd: localStorage.getItem(StorageKeys.dndKey) === "1",
         taskbarPosition: localStorage.getItem(StorageKeys.taskbarPosition) || "bottom",
         disableBootScreen: localStorage.getItem(StorageKeys.disableBootScreen) === "true",
@@ -914,6 +917,9 @@ export class SettingsApp extends BaseApp {
 
   _renderAudioSettings() {
     const vol = Math.round((this._settings.soundEnabled ? this._settings.masterVolume : audioMixer.masterVolume) * 100);
+    const sysVol = Math.round(
+      (this._settings.systemAudioEnabled ? this._settings.systemVolume : audioMixer.systemVolume) * 100
+    );
     return `
       <div id="pane-audio" class="settings-category-pane">
         <div class="settings-category-header">Audio</div>
@@ -938,6 +944,30 @@ export class SettingsApp extends BaseApp {
             <div class="settings-range-group">
               <input id="settingsMasterVolume" type="range" min="0" max="100" step="1" value="${vol}" ${!this._settings.soundEnabled ? "disabled" : ""}/>
               <span id="settingsMasterVolumeValue" class="settings-range-value">${vol}%</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-card">
+          <div class="settings-card-header"><i class="fas fa-bell"></i> System Sounds</div>
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">System Audio</span>
+              <span class="settings-label-desc">Enable login, logout, error, and warning sounds</span>
+            </div>
+            <label class="settings-toggle">
+              <input type="checkbox" id="settingsSystemAudioEnabled" ${this._settings.systemAudioEnabled ? "checked" : ""}/>
+              <span class="settings-track"><span class="settings-thumb"></span></span>
+            </label>
+          </div>
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">System Volume</span>
+              <span class="settings-label-desc">Volume for system sounds only</span>
+            </div>
+            <div class="settings-range-group">
+              <input id="settingsSystemVolume" type="range" min="0" max="100" step="1" value="${sysVol}" ${!this._settings.systemAudioEnabled ? "disabled" : ""}/>
+              <span id="settingsSystemVolumeValue" class="settings-range-value">${sysVol}%</span>
             </div>
           </div>
         </div>
@@ -1489,6 +1519,7 @@ export class SettingsApp extends BaseApp {
         this._settings.theme = theme;
         localStorage.setItem(StorageKeys.theme, theme);
         this._applyTheme(theme);
+        audioMixer.playSystemSound(SystemAudio.DESKTOP_CHANGE);
         showStatus("Theme applied");
       });
     });
@@ -1809,6 +1840,9 @@ export class SettingsApp extends BaseApp {
     const soundToggle = win.querySelector("#settingsSoundEnabled");
     const volumeSlider = win.querySelector("#settingsMasterVolume");
     const volumeValue = win.querySelector("#settingsMasterVolumeValue");
+    const systemAudioToggle = win.querySelector("#settingsSystemAudioEnabled");
+    const systemVolumeSlider = win.querySelector("#settingsSystemVolume");
+    const systemVolumeValue = win.querySelector("#settingsSystemVolumeValue");
 
     if (soundToggle) {
       soundToggle.addEventListener("change", () => {
@@ -1825,11 +1859,37 @@ export class SettingsApp extends BaseApp {
       volumeSlider.addEventListener("input", () => {
         if (volumeValue) volumeValue.textContent = `${volumeSlider.value}%`;
       });
+
       volumeSlider.addEventListener("change", () => {
         const val = parseInt(volumeSlider.value) / 100;
         this._settings.masterVolume = val;
         localStorage.setItem(StorageKeys.masterVolume, String(val));
         if (this._settings.soundEnabled) audioMixer.setMaster(val);
+        showSavedMessage();
+      });
+    }
+
+    if (systemAudioToggle) {
+      systemAudioToggle.addEventListener("change", () => {
+        const enabled = systemAudioToggle.checked;
+        this._settings.systemAudioEnabled = enabled;
+        localStorage.setItem(StorageKeys.systemAudioEnabled, String(enabled));
+        audioMixer.systemAudioEnabled = enabled;
+        if (systemVolumeSlider) systemVolumeSlider.disabled = !enabled;
+        showSavedMessage();
+      });
+    }
+
+    if (systemVolumeSlider) {
+      systemVolumeSlider.addEventListener("input", () => {
+        if (systemVolumeValue) systemVolumeValue.textContent = `${systemVolumeSlider.value}%`;
+      });
+
+      systemVolumeSlider.addEventListener("change", () => {
+        const val = parseInt(systemVolumeSlider.value) / 100;
+        this._settings.systemVolume = val;
+        localStorage.setItem(StorageKeys.systemVolume, String(val));
+        audioMixer.systemVolume = val;
         showSavedMessage();
       });
     }
@@ -2187,6 +2247,7 @@ export class SettingsApp extends BaseApp {
         setTimeout(() => location.reload(), 400);
       } catch (e) {
         console.error("Import failed:", e);
+        audioMixer.playCriticalWarning();
         customAlert("Import failed. The file may be invalid or corrupted. Check console for details.");
         showStatus("Import failed");
       }

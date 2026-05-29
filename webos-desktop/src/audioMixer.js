@@ -1,10 +1,21 @@
 import { trayManager } from "./tray.js";
+import { resolveGhUrl } from "./shared/assetResolver.js";
+
+export const SystemAudio = Object.freeze({
+  START: "static/audio/start.wav",
+  SHUTDOWN: "static/audio/shutdown.wav",
+  ERROR: "static/audio/error.mp3",
+  WARNING: "static/audio/warning.mpga",
+  DESKTOP_CHANGE: "static/audio/desktopchange.mpga"
+});
 
 const STORAGE_KEY = "yukios_audio_mixer_v1";
 
 class AudioMixer {
   constructor() {
     this.masterVolume = 1.0;
+    this.systemVolume = 1.0;
+    this.systemAudioEnabled = localStorage.getItem("yukiOS_system_audio_enabled") !== "false";
     this.channels = new Map();
     this.gainNodes = new Map();
     this.audioCtx = null;
@@ -17,6 +28,7 @@ class AudioMixer {
     try {
       const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
       this.masterVolume = saved.master ?? 1.0;
+      this.systemVolume = saved.systemVolume ?? 1.0;
       this.savedChannels = saved.channels || {};
     } catch (e) {
       this.savedChannels = {};
@@ -29,7 +41,10 @@ class AudioMixer {
     this.channels.forEach((ch, winId) => {
       channels[winId] = ch.volume;
     });
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ master: this.masterVolume, channels }));
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ master: this.masterVolume, systemVolume: this.systemVolume, channels })
+    );
   }
 
   _getOrCreateAudioCtx() {
@@ -120,6 +135,7 @@ class AudioMixer {
 
   _applyMasterToAll() {
     this.channels.forEach((_, winId) => this._applyVolumeToWindow(winId));
+    this._updateSystemLabel();
   }
 
   registerWindow(winId, title, iconHtml) {
@@ -228,6 +244,7 @@ class AudioMixer {
       this._muted = e.detail.soundEnabled === false;
       this._applyMasterToAll();
       this._updateMasterLabel();
+      this._updateSystemLabel();
     });
   }
 
@@ -266,6 +283,16 @@ class AudioMixer {
           <span class="am-vol-label" id="am-master-label">${this._muted ? 0 : Math.round(this.masterVolume * 100)}%</span>
         </div>
       </div>
+      <div class="am-master-section">
+        <div class="am-channel-label">
+          <span class="am-icon"><i class="fa-solid fa-bell"></i></span>
+          <span>System</span>
+        </div>
+        <div class="am-slider-row">
+          <input type="range" class="am-slider am-system-slider" min="0" max="100" step="1" value="${!this.systemAudioEnabled ? 0 : Math.round(this.systemVolume * 100)}" ${!this.systemAudioEnabled ? "disabled" : ""} />
+          <span class="am-vol-label" id="am-system-label">${!this.systemAudioEnabled ? 0 : Math.round(this.systemVolume * 100)}%</span>
+        </div>
+      </div>
       <div class="am-divider"></div>
       <div class="am-channels" id="am-channels"></div>
       <div class="am-empty" id="am-empty">No apps open</div>
@@ -280,6 +307,13 @@ class AudioMixer {
       this.setMaster(parseInt(e.target.value) / 100);
     });
 
+    const systemSlider = this.panel.querySelector(".am-system-slider");
+    systemSlider.addEventListener("input", (e) => {
+      this.systemVolume = parseInt(e.target.value) / 100;
+      this._updateSystemLabel();
+      this._save();
+    });
+
     this._renderSliders();
   }
 
@@ -289,6 +323,17 @@ class AudioMixer {
     const displayValue = this._muted ? 0 : Math.round(this.masterVolume * 100);
     if (label) label.textContent = `${displayValue}%`;
     if (slider) slider.value = displayValue;
+  }
+
+  _updateSystemLabel() {
+    const label = document.getElementById("am-system-label");
+    const slider = this.panel?.querySelector(".am-system-slider");
+    const displayValue = !this.systemAudioEnabled ? 0 : Math.round(this.systemVolume * 100);
+    if (label) label.textContent = `${displayValue}%`;
+    if (slider) {
+      slider.value = displayValue;
+      slider.disabled = !this.systemAudioEnabled;
+    }
   }
 
   _renderSliders() {
@@ -450,6 +495,39 @@ class AudioMixer {
       return `<img src="${iconValue}" style="width:14px;height:14px;border-radius:2px;vertical-align:middle;object-fit:contain;" />`;
     if (iconValue.startsWith("fa")) return `<i class="${iconValue}" style="font-size:12px;"></i>`;
     return "🖥";
+  }
+
+  playSystemSound(audioKey) {
+    try {
+      if (this._muted || !this.systemAudioEnabled) return;
+
+      const soundPath = SystemAudio[audioKey] || audioKey;
+      const audio = new Audio(resolveGhUrl(`https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/${soundPath}`));
+      audio.volume = this.masterVolume * this.systemVolume;
+      audio.play().catch(() => {});
+    } catch (e) {}
+  }
+
+  playCriticalWarning() {
+    try {
+      if (this._muted || !this.systemAudioEnabled) return;
+
+      const audio = new Audio(resolveGhUrl(`https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/${SystemAudio.WARNING}`));
+      audio.volume = this.masterVolume * this.systemVolume;
+      audio.play().catch(() => {});
+    } catch (e) {}
+  }
+
+  safeLocalStorageSetItem(key, value) {
+    try {
+      localStorage.setItem(key, value);
+      return true;
+    } catch (e) {
+      if (e.name === "QuotaExceededError") {
+        this.playCriticalWarning();
+      }
+      return false;
+    }
   }
 }
 

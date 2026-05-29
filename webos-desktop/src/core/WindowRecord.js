@@ -7,10 +7,10 @@ export class WindowRecord {
     this.width = opts.width ?? 800;
     this.height = opts.height ?? 600;
     this.zIndex = opts.zIndex ?? 1000;
-    this.minimized = false;
-    this.fullscreen = false;
-    this.snapZone = null;
-    this.preSnapGeometry = null;
+    this.minimized = opts.minimized ?? false;
+    this.fullscreen = opts.fullscreen ?? false;
+    this.snapZone = opts.snapZone ?? null;
+    this.preSnapGeometry = opts.preSnapGeometry ?? null;
     this.workspaceId = opts.workspaceId ?? 0;
     this.appId = opts.appId ?? null;
     this.appType = opts.appType ?? null;
@@ -60,6 +60,7 @@ export class WindowRecord {
       minimized: this.minimized,
       fullscreen: this.fullscreen,
       snapZone: this.snapZone,
+      preSnapGeometry: this.preSnapGeometry,
       workspaceId: this.workspaceId,
       appId: this.appId,
       appType: this.appType,

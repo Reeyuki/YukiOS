@@ -757,7 +757,7 @@ export class CameraApp extends BaseApp {
         <div class="preview-media">
           ${isPhoto ? `<img src="${rec.url}" alt="${rec.name}" />` : `<video src="${rec.url}" controls autoplay></video>`}
         </div>
-        <div class="preview-info">
+        <div class="preview-info-cam">
           <span>${this.formatTimestamp(rec.id)}</span>
           ${!isPhoto ? `<span id="preview-duration">Loading...</span>` : ""}
         </div>

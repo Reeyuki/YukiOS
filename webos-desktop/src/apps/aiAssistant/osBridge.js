@@ -1,3 +1,5 @@
+import { audioMixer } from "../../audioMixer.js";
+
 export class OSBridge {
   constructor(services) {
     this.services = services;
@@ -12,6 +14,7 @@ export class OSBridge {
     const { action: actionType, target, params } = action;
 
     if (!this._checkPermission(actionType, target)) {
+      audioMixer.playCriticalWarning();
       throw new Error(`Permission denied for ${actionType} on ${target}`);
     }
 

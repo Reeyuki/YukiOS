@@ -8,6 +8,17 @@ const NEWS_UPDATES = [
     sections: [
       {
         icon: "fa-wand-magic-sparkles",
+        title: "New Audio System",
+        items: [
+          [
+            "fa-volume-high",
+            "System Sounds",
+            "New audio system with dedicated system audio controls and interaction noises."
+          ]
+        ]
+      },
+      {
+        icon: "fa-wand-magic-sparkles",
         title: "New App",
         items: [
           [

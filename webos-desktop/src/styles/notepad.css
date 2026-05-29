@@ -14,7 +14,6 @@
 .notepad-window .window-header {
   border-bottom: 1px solid var(--glass-border);
   color: var(--text-primary);
-  padding: 10px 14px;
   font-size: 13px;
   letter-spacing: 0.02em;
   flex-shrink: 0;

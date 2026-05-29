@@ -84,7 +84,13 @@ class TrayManager {
       } else {
         win.style.display = "block";
       }
-      if (this._wm) this._wm.bringToFront(win);
+      if (this._wm) {
+        this._wm.bringToFront(win);
+        const entry = this._wm.openWindows.get(winId);
+        if (entry?.record?.snapZone) {
+          this._wm._applySnap(win, entry.record.snapZone);
+        }
+      }
     }
     if (taskbarItem) {
       taskbarItem.style.display = "";
@@ -312,6 +318,17 @@ class TrayManager {
             this._hidePopup();
           },
           "fa-window-maximize"
+        )
+      );
+      menu.appendChild(hr());
+      menu.appendChild(
+        item(
+          "Quit",
+          () => {
+            this.quitApp(winId);
+            this._hidePopup();
+          },
+          "fa-times"
         )
       );
     });

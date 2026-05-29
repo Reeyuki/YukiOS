@@ -1,6 +1,7 @@
 import { isImageFile } from "./utils.js";
 import { StorageKeys } from "./settings.js";
 import { appMap } from "./gamesList.js";
+import { audioMixer, SystemAudio } from "./audioMixer.js";
 
 function escapeHtml(str) {
   if (typeof str !== "string") return "";
@@ -200,6 +201,10 @@ export class NotificationCenter {
 
   showToast(notif) {
     if (this.doNotDisturb) return;
+
+    if (notif.type === "warning") {
+      audioMixer.playSystemSound(SystemAudio.WARNING);
+    }
 
     let container = document.getElementById("ntf-toast-container");
     if (!container) {

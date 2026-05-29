@@ -6,6 +6,7 @@ import { bus, BusEvents } from "./core/EventBus.js";
 import { getLibraryUrl } from "./shared/cdnConfig.js";
 import { customPrompt, customConfirm, customAlert } from "./shared/dialogs.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
+import { audioMixer } from "./audioMixer.js";
 class OfficeModuleLoader {
   constructor() {
     this.cache = new Map();
@@ -2325,6 +2326,7 @@ export class OfficeApp extends BaseApp {
       }
     } catch (e) {
       console.error("Save error:", e);
+      audioMixer.playCriticalWarning();
       this.wm.sendNotify("Error saving file.");
     }
   }
@@ -2353,6 +2355,7 @@ export class OfficeApp extends BaseApp {
           speak("Great, your file has been saved!", "Save");
           window.achievements.trigger(Achievements.OfficeWorker);
         } catch {
+          audioMixer.playCriticalWarning();
           this.wm.sendNotify("Error saving file.");
         }
       });
@@ -2370,6 +2373,7 @@ export class OfficeApp extends BaseApp {
       this.wm.sendNotify(`Downloaded: ${fileName}`);
       speak("Great, your file has been downloaded!", "Save");
     } catch {
+      audioMixer.playCriticalWarning();
       this.wm.sendNotify("Error downloading file.");
     }
   }

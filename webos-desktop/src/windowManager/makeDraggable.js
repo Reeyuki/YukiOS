@@ -276,10 +276,12 @@ export function _hideSnapGhost(wm) {
   }
 }
 
-export function _applySnap(wm, win, zone) {
+export function _applySnap(wm, win, zone, skipSavePreSnap = false) {
   const entry = wm.openWindows.get(win.id);
   if (entry?.record) {
-    entry.record.savePreSnapGeometry();
+    if (!skipSavePreSnap) {
+      entry.record.savePreSnapGeometry();
+    }
     entry.record.snapZone = zone;
   }
   win.dataset.snapZone = zone;

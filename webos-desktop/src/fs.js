@@ -1,5 +1,6 @@
 import BrowserFS from "browserfs";
 import { CDN_BASES, resolveWallpaperUrl, resolveIconUrl } from "./shared/assetResolver.js";
+import { audioMixer } from "./audioMixer.js";
 
 export const FileKind = { TEXT: "text", IMAGE: "image", VIDEO: "video", AUDIO: "audio", ROM: "rom", OTHER: "other" };
 
@@ -54,8 +55,7 @@ export const defaultStorage = {
       Documents: {
         "INFO.txt": {
           type: "file",
-          content:
-            "This is an example text file.\n\nYou can edit this file using the Text Editor app.\n\nTry creating your own files by:\n1. Opening the Text Editor\n2. Writing your content\n3. Clicking Save As and entering a filename\n\nHave fun exploring YukiOS!",
+          content: "Welcome to Yuki OS.\n\nYou can write and save text files using the Text Editor app.",
           kind: FileKind.TEXT,
           icon: "static/icons/notepad.webp"
         }
@@ -414,9 +414,11 @@ export class FileSystemManager {
   async importSnapshot(snapshot, { wipe = true } = {}) {
     await this.fsReady;
     if (!snapshot || snapshot.version !== 1 || !Array.isArray(snapshot.entries) || typeof snapshot.root !== "string") {
+      audioMixer.playCriticalWarning();
       throw new Error("Invalid snapshot format.");
     }
     if (snapshot.root !== this.CONFIG.ROOT) {
+      audioMixer.playCriticalWarning();
       throw new Error(`Snapshot root mismatch. Expected ${this.CONFIG.ROOT}, got ${snapshot.root}.`);
     }
 

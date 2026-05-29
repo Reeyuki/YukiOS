@@ -2,8 +2,11 @@
  * Custom dialog functions that replace native browser dialogs
  */
 
+import { audioMixer, SystemAudio } from "../audioMixer.js";
+
 export function showAlert(title, message, buttonText = "OK") {
   return new Promise((resolve) => {
+    audioMixer.playSystemSound(SystemAudio.ERROR);
     const overlay = document.createElement("div");
     overlay.className = "explorer-confirmation-overlay";
     overlay.innerHTML = `
@@ -66,6 +69,7 @@ export function showPrompt(title, message, defaultValue = "", confirmText = "OK"
     };
 
     const showError = (msg) => {
+      audioMixer.playSystemSound(SystemAudio.ERROR);
       errorEl.textContent = msg;
       errorEl.style.display = "block";
       input.style.borderColor = "#e06c75";
@@ -158,6 +162,7 @@ export const customConfirm = async (message, title = "Confirm") => {
 
 export function showCdnPrompt(mirrors, currentMirror) {
   return new Promise((resolve) => {
+    audioMixer.playSystemSound(SystemAudio.ERROR);
     const overlay = document.createElement("div");
     overlay.className = "explorer-confirmation-overlay";
     const optionsHtml = mirrors

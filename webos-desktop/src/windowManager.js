@@ -452,9 +452,9 @@ export class WindowManager {
     try {
       const launchOptions = {
         forceId: state.id,
-        position: { x: state.x, y: state.y },
-        width: state.width,
-        height: state.height,
+        position: state.snapZone ? undefined : { x: state.x, y: state.y },
+        width: state.snapZone ? undefined : state.width,
+        height: state.snapZone ? undefined : state.height,
         allowManualPosition: true
       };
 
@@ -462,9 +462,16 @@ export class WindowManager {
 
       const win = document.getElementById(state.id);
       if (win) {
+        const entry = this.openWindows.get(state.id);
+        if (entry?.record) {
+          if (state.preSnapGeometry) {
+            entry.record.preSnapGeometry = state.preSnapGeometry;
+          }
+        }
+
         if (state.minimized) this.minimizeWindow(win);
         if (state.fullscreen) this.toggleFullscreen(win);
-        if (state.snapZone) this._applySnap(win, state.snapZone);
+        if (state.snapZone) this._applySnap(win, state.snapZone, true);
         win.style.zIndex = state.zIndex;
         this.zIndexCounter = Math.max(this.zIndexCounter, state.zIndex + 1);
 
@@ -1042,6 +1049,7 @@ export class WindowManager {
 
     taskbarItem.oncontextmenu = (e) => {
       e.preventDefault();
+      this._hideTaskbarPreview();
       const win = document.getElementById(winId);
       showStartStyleMenu(e, (addMenuItem, addSeparator) => this._buildContextMenuItems(addMenuItem, addSeparator, win));
     };

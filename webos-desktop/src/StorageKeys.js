@@ -33,6 +33,8 @@ export const StorageKeys = {
   windowTransparency: "yukiOS_window_transparency",
   soundEnabled: "yukiOS_sound_enabled",
   masterVolume: "yukiOS_master_volume",
+  systemAudioEnabled: "yukiOS_system_audio_enabled",
+  systemVolume: "yukiOS_system_volume",
   disableBootScreen: "yukiOS_disable_boot_screen",
   browserBookmarks: "browser_bookmarks",
   browserDownloads: "browser_downloads",
@@ -89,5 +91,6 @@ export const StorageKeys = {
   guiScale: "yukiOS_gui_scale",
   fontSize: "yukiOS_font_size",
   trayEnabled: "yukiOS_tray_enabled",
-  trayAppVisibility: "yukiOS_tray_app_visibility"
+  trayAppVisibility: "yukiOS_tray_app_visibility",
+  userHistory: "yukiOS_user_history"
 };
