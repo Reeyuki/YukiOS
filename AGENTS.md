@@ -48,7 +48,7 @@ Write modular, clean, and DRY code. Follow these principles:
 
 ## Styling System
 
-Yuki OS uses a dark glassmorphism theme. All rules below are non-negotiable.
+Yuki OS uses a dark glassmorphism theme with a comprehensive theming system. All rules below are non-negotiable.
 
 - **CSS Variables**: Use `--brand` (accent), `--text-primary`, `--text-secondary`, `--bg-primary`, `--bg-secondary`,
   `--glass`, `--glass-border`, `--error`. Never introduce new hues or hardcoded values.
@@ -65,6 +65,8 @@ Yuki OS uses a dark glassmorphism theme. All rules below are non-negotiable.
 - **Scrollbars**: 8px width, `rgba(255,255,255,0.12)` thumb.
 - **Checkboxes/Inputs**: Never use native browser checkboxes, plain inputs, or dropdowns. Always use `appearance: none`,
   `-webkit-appearance: none`, custom border/background, and `::after` pseudo-element for checkmarks via CSS variables.
+- **Theming System**: Comprehensive theme engine with 25+ built-in themes, transparent UI toggle, advanced brightness controls,
+  and GUI scale options. Themes are managed via `settings.js` and applied through CSS variables.
 
 ---
 
@@ -155,6 +157,8 @@ Virtual filesystem backed by BrowserFS, persisted via IndexedDB.
 | `setDND(enabled)`                              | Toggle Do-Not-Disturb    |
 | `getNotifications()`                           | Get notification history |
 
+Features: notification positioning, slider controls, app icons on notifications.
+
 ---
 
 ### EventBus - `src/core/EventBus.js`
@@ -212,7 +216,7 @@ Always prefer these over reimplementing logic.
 ### AppLauncher - `appLauncher.js`
 
 Central dispatcher. `launch(appId, swf, extra)` is the main entry point. Routes to app instance or creates sandboxed
-iframe for games. Handles analytics, achievements, Steam stats.
+iframe for games. Handles analytics, achievements, Steam stats. Integrates with installed apps registry for app management.
 
 ### gamesList - `gamesList.js`
 
@@ -228,6 +232,11 @@ Rich metadata per app: title, description, genre, year, developer.
 
 UI to create custom shortcuts to external URLs. Auto-detects favicon, supports per-app CORS proxy. Saves to
 `/home/reeyuki/Apps/`.
+
+### installedApps - `installedApps.js`
+
+App registry system for managing installed/uninstalled apps. Provides dynamic app metadata, disable/uninstall support,
+and custom naming. Integrates with AppLauncher for app management.
 
 ---
 
@@ -267,13 +276,15 @@ UI to create custom shortcuts to external URLs. Auto-detects favicon, supports p
 | -------------------- | --------------- | ----------------------------------------------- |
 | TerminalApp          | -               | CLI: ls, cd, mkdir, rm, cp, mv, cat, pwd, etc.  |
 | TaskManagerApp       | -               | Window/process list, close apps                 |
-| SettingsApp          | -               | Theme, wallpaper, taskbar, sound, DND, language |
+| SettingsApp          | -               | Theme, wallpaper, taskbar, sound, DND, language, GUI scale, brightness, transparency |
 | ProfileCustomizerApp | -               | Username, profile picture, desktop colors       |
-| AchievementsApp      | -               | Tracks launches, playtime milestones            |
+| AchievementsApp      | -               | Tracks launches, playtime milestones, friend stats            |
 | AboutApp             | -               | System info, version, credits                   |
-| newsApp              | `news.js`       | News aggregation with categories                |
+| newsApp              | `news.js`       | News aggregation with categories, unread bubble                |
 | WeatherApp           | `weather.js`    | Current weather and forecast                    |
 | CategoriesApp        | `categories.js` | Organize games by genre/tag                     |
+| GuideApp             | `yukiOsGuide.js` | Interactive guide and tutorial system           |
+| ClipboardManagerApp  | `clipboardManager.js` | Clipboard history and management              |
 
 ### System Services
 
@@ -285,9 +296,12 @@ UI to create custom shortcuts to external URLs. Auto-detects favicon, supports p
 | wallpapers.js | -              | Wallpaper store (13 default + custom)                      |
 | settings.js   | -              | Preference storage (localStorage wrapper)                  |
 | audioMixer.js | -              | Global audio, per-app volume via `createAudioTrack(appId)` |
-| analytics.js  | -              | Usage tracking (launches, playtime, features)              |
+| analytics.js  | -              | Usage tracking (launches, playtime, features, friend stats) |
 | clippy.js     | -              | Virtual assistant with contextual tips                     |
 | BrowserApp    | -              | Lightweight web browser with bookmarks                     |
+| installedApps | `installedApps.js` | App registry for installed/uninstalled apps management    |
+| networkTray   | `networkTray.js` | Network status display in system tray                     |
+| powerTray     | `powerTray.js` | Battery/power indicator in system tray                     |
 
 ---
 

@@ -57,6 +57,12 @@ Start menu context editing - Add, edit, remove, and reorder custom Start grid sh
 
 Tray context controls - Open or quit background/resident tray applications
 
+Tray context menus - Right-click tray icons for quick actions and controls
+
+Network tray display - Real-time network status and connection info
+
+Power indicator tray app - Battery/power status with quick access to power settings
+
 Steam library context actions - Favorites, hide/unhide, collection management, add game shortcut to desktop
 
 Taskbar positioning - Bottom/top/left/right taskbar layouts
@@ -103,19 +109,19 @@ Virtual filesystem - IndexedDB-backed BrowserFS persistent storage
 
 File explorer - Thumbnails, drag-drop, file operations, previews
 
-Notifications - Toasts, notification center, Do-Not-Disturb mode
+Notifications - Toasts, notification center, Do-Not-Disturb mode, notification positioning, app icons
 
-Audio mixer - Per-app audio routing and volume control
+Audio mixer - Per-app audio routing and volume control, system audios
 
-Analytics & achievements - Usage tracking, milestones, playtime systems
+Analytics & achievements - Usage tracking, milestones, playtime systems, friend stats
 
 Import/export backups - Full system migration and restore
 
-User profiles - Username, avatar, theme personalization
+User profiles - Username, avatar, theme personalization, GUI scale option
 
 Setup wizard - First-run onboarding and configuration
 
-Theme engine - Glassmorphism desktop styling with light/dark variants
+Theme engine - Glassmorphism desktop styling with light/dark variants, transparent UI toggle, advanced brightness controls
 
 Wallpaper system - Built-in and custom wallpapers
 
@@ -200,6 +206,8 @@ Settings
 
 Task Manager
 
+Installed Apps
+
 Calculator
 
 About
@@ -227,6 +235,8 @@ Categories
 Weather
 
 News
+
+Yuki OS Guide
 
 
 Creative & Media
