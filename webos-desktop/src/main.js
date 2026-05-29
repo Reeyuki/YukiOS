@@ -48,6 +48,7 @@ import { ClipboardManagerApp } from "./clipboardApp.js";
 import { AIAssistantApp } from "./apps/aiAssistant.js";
 import { BrightnessApp } from "./brightnessApp.js";
 import { PowerApp } from "./powerApp.js";
+import { NetworkTrayApp } from "./networkTray.js";
 import {
   resolveGhUrl,
   resolveIconUrl,
@@ -221,6 +222,9 @@ services.brightnessApp = brightnessApp;
 const powerApp = new PowerApp(services);
 services.powerApp = powerApp;
 
+const networkTrayApp = new NetworkTrayApp(services);
+services.networkTrayApp = networkTrayApp;
+
 const appLauncher = new AppLauncher(
   windowManager,
   fileSystemManager,
@@ -261,6 +265,7 @@ const appLauncher = new AppLauncher(
   brightnessApp
 );
 window.appLauncher = appLauncher;
+services.appLauncher = appLauncher;
 windowManager.setAppLauncher(appLauncher);
 appCreatorApp.setAppLauncher(appLauncher);
 explorerApp.setAppLauncher(appLauncher);
@@ -307,7 +312,7 @@ async function start() {
 
   if (location.hostname.endsWith("neocities.org")) {
     customAlert(
-      "Neocities does not support loading assets from other domains! OS will be severely limited to load apps and data.",
+      "Neocities does not suppo rt loading assets from other domains! OS will be severely limited to load apps and data.",
       "Neocities Warning"
     );
   }

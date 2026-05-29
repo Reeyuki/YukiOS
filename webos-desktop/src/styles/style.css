@@ -1942,9 +1942,7 @@ html[data-theme] .taskbar-icon:hover {
 }
 
 html[data-theme] button {
-  background: var(--surface-2);
   color: var(--text-primary);
-  border: 1px solid var(--glass-border);
 }
 
 html[data-theme] button:hover {

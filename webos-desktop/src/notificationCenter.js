@@ -268,6 +268,7 @@ export class NotificationCenter {
         <div class="ntf-toast__text">${escapeHtml(notif.message ?? "")}</div>
       </div>
       <button class="ntf-toast__close" title="Dismiss">×</button>
+      <div class="ntf-toast__progress"></div>
     `;
 
     container.appendChild(toast);
@@ -285,6 +286,10 @@ export class NotificationCenter {
     const removeTimeout = this._getSetting("notificationsRemoveTimeout", true);
     if (removeTimeout) {
       const durationSec = this._getSetting("notificationsDuration", 5);
+      const progressBar = toast.querySelector(".ntf-toast__progress");
+      if (progressBar) {
+        progressBar.style.animation = `toastProgress ${durationSec}s linear forwards`;
+      }
       setTimeout(removeToast, durationSec * 1000);
     }
   }

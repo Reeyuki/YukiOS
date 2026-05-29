@@ -10,6 +10,11 @@ const MAX_QUEUE_SIZE = 15;
 let cachedPlayCounts = null;
 let playCountsPromise = null;
 
+const LIVE_STATS_TTL_MS = 5 * 60 * 1000;
+let cachedLiveStats = null;
+let liveStatsCacheTime = 0;
+let liveStatsPromise = null;
+
 let pageLoadTime = Date.now();
 let flushTimer = null;
 
@@ -155,4 +160,26 @@ export async function fetchGamePlayCounts() {
 
 export function getCachedPlayCounts() {
   return cachedPlayCounts || {};
+}
+
+export async function fetchLiveStats() {
+  if (ANALYTICS_DISABLED) return null;
+  const now = Date.now();
+  if (cachedLiveStats && now - liveStatsCacheTime < LIVE_STATS_TTL_MS) return cachedLiveStats;
+  if (liveStatsPromise) return liveStatsPromise;
+  liveStatsPromise = (async () => {
+    try {
+      const res = await fetch(ENDPOINT_BASE + "/live");
+      if (!res.ok) return null;
+      const data = await res.json();
+      cachedLiveStats = data;
+      liveStatsCacheTime = Date.now();
+      return data;
+    } catch {
+      return null;
+    } finally {
+      liveStatsPromise = null;
+    }
+  })();
+  return liveStatsPromise;
 }

@@ -25,6 +25,8 @@ function setCache(key, data) {
   } catch {}
 }
 
+export { getCached, setCache };
+
 export async function detectUserLocation() {
   const cacheKey = "wx_user_location";
   const cached = getCached(cacheKey, LOCATION_CACHE_TTL);

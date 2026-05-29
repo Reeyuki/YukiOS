@@ -599,7 +599,7 @@ export default {
       });
     }
 
-    if (url.pathname === "/admin/live" && request.method === "GET") {
+    if (url.pathname === "/live" && request.method === "GET") {
       const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
 
       const activeUsers = await env.DB.prepare(

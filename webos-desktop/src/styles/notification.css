@@ -750,3 +750,43 @@ html[data-theme="light"] .ntf-toast__close:hover {
   animation: none !important;
   transition: none !important;
 }
+
+.ntf-toast__progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  width: 100%;
+  background: var(--brand, oklch(55% 0.11 264));
+  transform-origin: right;
+  animation: toastProgress linear forwards;
+}
+
+@keyframes toastProgress {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+
+.ntf-toast--info .ntf-toast__progress {
+  background: #89b4fa;
+}
+
+.ntf-toast--ok .ntf-toast__progress {
+  background: #a6e3a1;
+}
+
+.ntf-toast--warn .ntf-toast__progress {
+  background: #f9e2af;
+}
+
+.ntf-toast--fail .ntf-toast__progress {
+  background: #f38ba8;
+}
+
+html[data-theme="light"] .ntf-toast__progress {
+  background: var(--brand, oklch(55% 0.11 264));
+}

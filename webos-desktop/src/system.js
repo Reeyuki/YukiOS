@@ -1,4 +1,4 @@
-import { detectUserLocation } from "./weather.js";
+import { detectUserLocation, getCached, setCache } from "./weather.js";
 import { getWeatherIcon } from "./shared/weatherCodes.js";
 import { StorageKeys } from "./settings.js";
 import { videos } from "./wallpaperList.js";
@@ -480,7 +480,7 @@ export class SystemUtilities {
 
     if (localStorage.getItem(StorageKeys.weather) === "false") return;
 
-    trayManager.register("weatherApp", "…", "Loading weather...", {
+    trayManager.register("weatherApp", "🌡️", "Loading weather...", {
       resident: true,
       onClick: () => {
         appLauncher?.launch("weatherApp");
@@ -493,24 +493,26 @@ export class SystemUtilities {
     const fetchAndRender = async () => {
       try {
         const loc = await detectUserLocation();
-        const weatherRes = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${loc.latitude}&longitude=${loc.longitude}&current=temperature_2m,weather_code`
-        );
-        const weatherData = await weatherRes.json();
+        const cacheKey = `yukiOS_weather_taskbar_${loc.latitude.toFixed(2)}_${loc.longitude.toFixed(2)}`;
+        const cached = getCached(cacheKey);
+
+        let weatherData;
+        if (cached) {
+          weatherData = cached;
+        } else {
+          const weatherRes = await fetch(
+            `https://api.open-meteo.com/v1/forecast?latitude=${loc.latitude}&longitude=${loc.longitude}&current=temperature_2m,weather_code`
+          );
+          weatherData = await weatherRes.json();
+          setCache(cacheKey, weatherData);
+        }
+
         const temp = Math.round(weatherData.current.temperature_2m);
         const icon = getWeatherIcon(weatherData.current.weather_code);
-        const weatherText = `${icon} ${temp}°C`;
         const weatherLabel = `${loc.city}, ${loc.country}`;
 
-        trayManager.register("weatherApp", weatherText, weatherLabel, {
-          resident: true,
-          onClick: () => {
-            appLauncher?.launch("weatherApp");
-          },
-          onQuit: () => {
-            SystemUtilities.stopTaskbarWeather();
-          }
-        });
+        trayManager.updateIcon("weatherApp", icon);
+        trayManager.updateLabel("weatherApp", `${temp}°C`);
       } catch {
         trayManager.unregister("weatherApp");
       }

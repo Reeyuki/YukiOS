@@ -245,13 +245,12 @@
 }
 
 .taskbar-item:hover {
-  background: var(--glass-hover);
+  background: #2d627e68;
   transform: translateY(-1px);
 }
 
 .taskbar-item.active {
-  background: var(--glass-hover);
-  box-shadow: 0 0 8px var(--glass-border);
+  background: #2d617e;
 }
 
 .taskbar-item img,
@@ -522,7 +521,6 @@ html[data-theme="light"] .task-item-name {
 #app-tray {
   display: none;
   align-items: center;
-  gap: 6px;
   border-radius: 8px;
   padding: 2px 6px;
   margin-right: 8px;
@@ -588,13 +586,14 @@ html[data-theme="light"] .task-item-name {
   backdrop-filter: blur(12px) saturate(180%);
   -webkit-backdrop-filter: blur(12px) saturate(180%);
   border: 1px solid var(--glass-border);
-  border-radius: 12px;
-  padding: 6px;
+  border-radius: 8px;
+  padding: 4px;
   box-shadow:
     0 10px 30px var(--shadow-color),
     0 0 0 1px var(--glass-border);
   z-index: 9999;
-  min-width: 140px;
+  min-width: 40px;
+  max-width: 200px;
   animation: trayPopupIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
@@ -610,22 +609,37 @@ html[data-theme="light"] .task-item-name {
   }
 }
 
-.tray-popup-item {
+#tray-overflow-popup .tray-popup-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
+  justify-content: center;
+  gap: 0;
+  padding: 4px;
   color: var(--text-primary);
   font-size: 13px;
   font-family: inherit;
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: 4px;
   transition: all 0.15s ease;
   user-select: none;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
 }
 
-.tray-popup-item:hover {
+#tray-overflow-popup .tray-popup-item:hover {
   background: var(--glass-hover);
+}
+
+#tray-overflow-popup .tray-popup-item img,
+#tray-overflow-popup .tray-popup-item i,
+#tray-overflow-popup .tray-popup-item span {
+  width: 20px;
+  height: 20px;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 #clipboard-tray-popup {
@@ -1741,4 +1755,241 @@ html[data-theme="light"] .task-item-name {
   font-size: 14px;
   width: 16px;
   text-align: center;
+}
+
+#network-tray-popup {
+  position: fixed;
+  display: none;
+  width: 340px;
+  background: var(--menu-bg);
+  backdrop-filter: blur(32px) saturate(180%);
+  -webkit-backdrop-filter: blur(32px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  box-shadow:
+    0 24px 64px var(--shadow-color),
+    0 0 0 1px rgba(255, 255, 255, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  z-index: 9999;
+  animation: networkPopupIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  overflow: hidden;
+}
+
+#network-tray-popup.closing {
+  animation: networkPopupOut 0.2s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+@keyframes networkPopupIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes networkPopupOut {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(8px) scale(0.95);
+  }
+}
+
+.network-popup-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.network-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--glass-border);
+  background: var(--surface-1);
+}
+
+.network-header i {
+  font-size: 16px;
+  color: var(--brand);
+}
+
+.network-header span {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.network-list {
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.network-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  position: relative;
+}
+
+.network-item:hover {
+  background: var(--glass-hover);
+}
+
+.network-item.connected {
+  background: var(--brand-dim);
+  border: 1px solid var(--brand);
+}
+
+.network-item.connecting {
+  background: var(--surface-2);
+  cursor: wait;
+}
+
+.network-signal {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  width: 20px;
+  height: 20px;
+}
+
+.signal-bar {
+  width: 4px;
+  background: var(--text-secondary);
+  border-radius: 1px;
+  transition: all 0.15s ease;
+}
+
+.signal-bar:nth-child(1) {
+  height: 4px;
+}
+
+.signal-bar:nth-child(2) {
+  height: 8px;
+}
+
+.signal-bar:nth-child(3) {
+  height: 12px;
+}
+
+.signal-bar:nth-child(4) {
+  height: 16px;
+}
+
+.signal-bar.active {
+  background: var(--brand);
+}
+
+.network-item.connected .signal-bar.active {
+  background: var(--brand);
+}
+
+.network-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.network-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.network-status {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.network-item.connected .network-status {
+  color: var(--brand);
+  font-weight: 500;
+}
+
+.network-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: var(--brand);
+  border-radius: 50%;
+  color: var(--text-on-brand);
+  font-size: 10px;
+}
+
+.connecting-spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+}
+
+.connecting-spinner i {
+  font-size: 14px;
+  color: var(--brand);
+}
+
+.network-footer {
+  padding: 12px 16px;
+  border-top: 1px solid var(--glass-border);
+  background: var(--surface-1);
+}
+
+.network-settings-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.network-settings-btn:hover {
+  background: var(--glass-hover);
+  border-color: var(--brand);
+}
+
+.network-settings-btn i {
+  font-size: 14px;
+}
+
+html[data-theme="light"] .network-item.connected {
+  background: rgba(124, 58, 237, 0.1);
+  border-color: rgba(124, 58, 237, 0.3);
+}
+
+html[data-theme="light"] .network-item.connected .network-status {
+  color: rgba(124, 58, 237, 0.9);
+}
+
+html[data-theme="light"] .signal-bar.active {
+  background: rgba(124, 58, 237, 0.9);
+}
+
+html[data-theme="light"] .network-badge {
+  background: rgba(124, 58, 237, 0.9);
 }

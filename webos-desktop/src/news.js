@@ -45,7 +45,12 @@ const NEWS_UPDATES = [
           [
             "fa-mouse-pointer",
             "Tray Context Menus",
-            "Right-click tray icons for quick actions. Power modes, brightness presets, Steam library/store, and recent games."
+            "Right-click tray icons for quick actions. Power modes, brightness presets,network settings, clipboard app, Steam library/store, and recent games."
+          ],
+          [
+            "fa-user-friends",
+            "Live Friends Stats",
+            "Track active users and trending OS apps inside your Steam Friends List."
           ]
         ]
       }
@@ -220,8 +225,6 @@ const NEWS_UPDATES = [
         title: "Features & Improvements",
         items: [
           ["fa-thumbtack", "Taskbar Pinning Behaviour Improvement", "Improved taskbar pinning behaviour."],
-          ["fa-gamepad", "Games Migration", "Fix 1000+ games images/loading."],
-          ["fa-image", "Fix wallpapers display", "Fixed wallpapers display issue."],
           ["fa-trophy", "Improve achievements app ui", "Improved achievements app styling."]
         ]
       }
@@ -400,7 +403,6 @@ const NEWS_UPDATES = [
             "Steam Launch from Search",
             "Launch Steam apps directly from the search/query experience."
           ],
-          ["fa-link", "CDN Reliability", "Fixed a statically URL used for loading assets."],
           ["fa-book-open", "Game Descriptions", "Added game descriptions for better discovery."]
         ]
       }

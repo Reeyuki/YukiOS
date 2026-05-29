@@ -51,6 +51,22 @@ class TrayManager {
     this._render();
   }
 
+  updateIcon(winId, newIcon) {
+    const item = this._items.get(winId);
+    if (item) {
+      item.icon = newIcon;
+      this._render();
+    }
+  }
+
+  updateLabel(winId, newLabel) {
+    const item = this._items.get(winId);
+    if (item) {
+      item.label = newLabel;
+      this._render();
+    }
+  }
+
   unregister(winId) {
     if (!this._items.has(winId)) return;
     this._items.delete(winId);
@@ -210,21 +226,22 @@ class TrayManager {
         }
       });
       this._el.appendChild(btn);
+
+      if (this._popupVisible && this._popupEl) {
+        this._updatePopupContent(overflow);
+      }
     } else {
       this._hidePopup();
     }
   }
 
-  _showPopup(items) {
-    if (!this._popupEl) {
-      this._popupEl = document.createElement("div");
-      this._popupEl.id = "tray-overflow-popup";
-      document.body.appendChild(this._popupEl);
-    }
+  _updatePopupContent(items) {
+    if (!this._popupEl) return;
     this._popupEl.innerHTML = "";
     items.forEach(({ winId, icon, label }) => {
       const row = document.createElement("div");
       row.className = "tray-popup-item";
+      row.title = label;
       const isUrl =
         typeof icon === "string" &&
         (icon.startsWith("http") ||
@@ -239,11 +256,11 @@ class TrayManager {
           icon.startsWith("far") ||
           icon.startsWith("fa "));
       if (isUrl) {
-        row.innerHTML = `<img src="${icon}" alt="${label}" /><span>${label}</span>`;
+        row.innerHTML = `<img src="${icon}" alt="${label}" />`;
       } else if (isFontAwesome) {
-        row.innerHTML = `<i class="${icon}"></i><span>${label}</span>`;
+        row.innerHTML = `<i class="${icon}"></i>`;
       } else {
-        row.innerHTML = `<span style="font-size:12px;margin-right:6px;">${icon}</span><span>${label}</span>`;
+        row.innerHTML = `<span style="font-size:12px;">${icon}</span>`;
       }
       row.addEventListener("click", () => {
         this.restoreFromTray(winId);
@@ -256,10 +273,21 @@ class TrayManager {
       });
       this._popupEl.appendChild(row);
     });
+  }
+
+  _showPopup(items) {
+    if (!this._popupEl) {
+      this._popupEl = document.createElement("div");
+      this._popupEl.id = "tray-overflow-popup";
+      document.body.appendChild(this._popupEl);
+    }
+    this._updatePopupContent(items);
     const trayRect = this._el.getBoundingClientRect();
     this._popupEl.style.bottom = `${window.innerHeight - trayRect.top + 6}px`;
     this._popupEl.style.right = `${window.innerWidth - trayRect.right}px`;
-    this._popupEl.style.display = "block";
+    this._popupEl.style.display = "flex";
+    this._popupEl.style.flexWrap = "wrap";
+    this._popupEl.style.gap = "2px";
     this._popupVisible = true;
   }
 

@@ -6,6 +6,8 @@ import { WindowHelper } from "./utils/WindowHelper.js";
 import { StorageKeys } from "./settings.js";
 import { buildSteamShell, initDropdowns, initStorePage, getCdnBase, initSettingsPage } from "./steam.js";
 import { resolveIconUrl } from "./shared/assetResolver.js";
+import { fetchLiveStats } from "./analytics.js";
+import { appMap } from "./gamesList.js";
 
 export class GameUI {
   constructor(renderer) {
@@ -698,30 +700,95 @@ export class GameUI {
             <div class="friends-status" style="font-size: 12px; color: #66c0f4;">Online</div>
           </div>
         </div>
-        <div class="friends-search-bar" style="padding: 10px 15px; display: flex; align-items: center; gap: 10px; background: rgba(0,0,0,0.1);">
-          <span class="friends-title" style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #b8b6b4; white-space: nowrap;">Friends</span>
-          <input type="text" class="friends-search-input" placeholder="Search" style="flex: 1; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; padding: 4px 8px; color: #fff; font-size: 11px; outline: none;" />
+        <div style="padding: 8px 15px; background: rgba(0,0,0,0.15);">
+          <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #b8b6b4;">Online Now</span>
         </div>
-        <div class="friends-list-content" style="flex: 1; overflow-y: auto; padding: 10px 0;">
-          <div class="friend-item" style="padding: 8px 15px; display: flex; align-items: center; gap: 10px; cursor: pointer;">
-            <div class="friend-avatar" style="width: 32px; height: 32px; background: #57cbde; border: 1px solid rgba(255,255,255,0.2);"></div>
-            <div class="friend-info">
-              <span class="friend-name" style="font-size: 13px; color: #57cbde;">Gabe Newell</span>
-              <span class="friend-status-text" style="font-size: 11px; color: #898989;">In-game: Half-Life 3</span>
-            </div>
-          </div>
+        <div class="friends-live-panel" style="flex: 1; overflow-y: auto; padding: 12px 15px;">
+          <div style="color: #898989; font-size: 12px; text-align: center; padding-top: 24px;">Loading...</div>
         </div>
       </div>
     `;
 
     const win = windowHelper.createAndMountWindow(winId, "Friends List", content, "301px", "401px", {
       className: "window-root",
-      style: { background: "#1b2838" }
+      style: { background: "#1b2838" },
+      icon: "fas fa-user-friends"
     });
 
     const downloadBtn = win.querySelector(".download-btn");
     if (downloadBtn) downloadBtn.remove();
 
     wm.bringToFront(win);
+    this._loadFriendsLiveStats(win);
+  }
+
+  async _loadFriendsLiveStats(win) {
+    const panel = win.querySelector(".friends-live-panel");
+    if (!panel) return;
+
+    const stats = await fetchLiveStats();
+    if (!win.isConnected) return;
+
+    if (!stats) {
+      panel.innerHTML = `<div style="color: #898989; font-size: 12px; text-align: center; padding-top: 24px;">Could not load live stats.</div>`;
+      return;
+    }
+
+    const appLookup = new Map();
+    for (const [key, val] of Object.entries(appMap)) {
+      appLookup.set(key.toLowerCase(), { id: key, ...val });
+    }
+
+    const renderAppIcon = (appId) => {
+      const entry = appLookup.get(appId.toLowerCase());
+      if (!entry) {
+        return `<div style="width:24px;height:24px;background:#2a475e;border-radius:4px;flex-shrink:0;"></div>`;
+      }
+      const icon = entry.icon;
+      if (!icon) {
+        return `<i class="fas fa-gamepad" style="font-size:15px;color:#57cbde;width:24px;text-align:center;flex-shrink:0;"></i>`;
+      }
+      if (typeof icon === "string" && icon.startsWith("fa")) {
+        return `<i class="${icon}" style="font-size:15px;color:#57cbde;width:24px;text-align:center;flex-shrink:0;"></i>`;
+      }
+      return `<img src="${resolveIconUrl(icon)}" style="width:24px;height:24px;border-radius:4px;object-fit:cover;flex-shrink:0;" />`;
+    };
+
+    const formatAppName = (appId) => {
+      const entry = appLookup.get(appId.toLowerCase());
+      if (entry?.title) return entry.title;
+      return appId.replace(/app$/i, " App").replace(/([a-z])([A-Z])/g, "$1 $2");
+    };
+
+    const topApps = (stats.top_active_apps || []).slice(0, 5);
+    const trendingHtml = topApps.length
+      ? topApps
+          .map(
+            ({ app, count }) => `
+        <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+          ${renderAppIcon(app)}
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:12px;color:#dcdedf;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${formatAppName(app)}</div>
+          </div>
+          <div style="font-size:11px;color:#66c0f4;font-weight:600;flex-shrink:0;">${count}</div>
+        </div>`
+          )
+          .join("")
+      : `<div style="color:#898989;font-size:12px;">No trending data.</div>`;
+
+    panel.innerHTML = `
+      <div style="display:flex;gap:8px;margin-bottom:16px;">
+        <div style="flex:1;background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:10px 6px;text-align:center;">
+          <div style="font-size:24px;font-weight:700;color:#57cbde;line-height:1.1;">${stats.active_users_5min}</div>
+          <div style="font-size:10px;color:#898989;text-transform:uppercase;margin-top:3px;letter-spacing:.4px;">Active Users</div>
+        </div>
+        <div style="flex:1;background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:10px 6px;text-align:center;">
+          <div style="font-size:24px;font-weight:700;color:#57cbde;line-height:1.1;">${stats.active_sessions}</div>
+          <div style="font-size:10px;color:#898989;text-transform:uppercase;margin-top:3px;letter-spacing:.4px;">Active Sessions</div>
+        </div>
+      </div>
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#b8b6b4;margin-bottom:8px;letter-spacing:.5px;">Trending Now</div>
+      ${trendingHtml}
+    `;
   }
 }

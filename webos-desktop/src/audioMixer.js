@@ -21,6 +21,7 @@ class AudioMixer {
     this.audioCtx = null;
     this.panel = null;
     this.isOpen = false;
+    this._justOpened = false;
     this._load();
   }
 
@@ -232,6 +233,7 @@ class AudioMixer {
     this._createPanel();
 
     document.addEventListener("click", (e) => {
+      if (this._justOpened) return;
       if (this.isOpen && this.panel && !this.panel.contains(e.target)) {
         const btn = document.querySelector('[data-win-id="audio-mixer"]');
         if (!btn || !btn.contains(e.target)) {
@@ -458,6 +460,13 @@ class AudioMixer {
 
   open() {
     this.isOpen = true;
+    this._justOpened = true;
+    setTimeout(() => {
+      this._justOpened = false;
+    }, 100);
+    if (!this.panel) {
+      return;
+    }
     this.panel.style.display = "flex";
     const btn = document.querySelector('[data-win-id="audio-mixer"]');
     if (btn) btn.classList.add("active");
@@ -474,15 +483,32 @@ class AudioMixer {
 
   _positionPanel() {
     const btn = document.querySelector('[data-win-id="audio-mixer"]');
-    if (!btn || !this.panel) return;
-    const btnRect = btn.getBoundingClientRect();
-    const panelW = 280;
-    let left = btnRect.right - panelW;
-    if (left < 8) left = 8;
-    const bottom = window.innerHeight - btnRect.top + 6;
-    this.panel.style.left = `${left}px`;
-    this.panel.style.bottom = `${bottom}px`;
-    this.panel.style.top = "auto";
+    if (!this.panel) return;
+
+    if (btn) {
+      const btnRect = btn.getBoundingClientRect();
+      const panelW = 280;
+      let left = btnRect.right - panelW;
+      if (left < 8) left = 8;
+      const bottom = window.innerHeight - btnRect.top + 6;
+      this.panel.style.left = `${left}px`;
+      this.panel.style.bottom = `${bottom}px`;
+      this.panel.style.top = "auto";
+    } else {
+      const trayEl = document.getElementById("app-tray");
+      if (trayEl) {
+        const trayRect = trayEl.getBoundingClientRect();
+        this.panel.style.right = `${window.innerWidth - trayRect.right}px`;
+        this.panel.style.bottom = `${window.innerHeight - trayRect.top + 8}px`;
+        this.panel.style.left = "auto";
+        this.panel.style.top = "auto";
+      } else {
+        this.panel.style.right = "16px";
+        this.panel.style.bottom = "48px";
+        this.panel.style.left = "auto";
+        this.panel.style.top = "auto";
+      }
+    }
   }
 
   getIconHtmlForTaskbar(win, iconValue) {
