@@ -36,6 +36,14 @@ export class CategoriesApp {
     this._recentGames.unshift({ id: gameId, title: gameTitle, timestamp: Date.now() });
     this._recentGames = this._recentGames.slice(0, 10);
     this._saveRecentGames();
+    this._updateTrayContextMenu();
+  }
+
+  _updateTrayContextMenu() {
+    const appLauncher = this.services.appLauncher;
+    if (appLauncher) {
+      trayManager.updateContextMenuItems(STEAM_WIN_ID, this._getSteamContextMenuItems(appLauncher));
+    }
   }
 
   _getSteamContextMenuItems(appLauncher) {

@@ -254,6 +254,7 @@ class AudioMixer {
     trayManager.register("audio-mixer", "fa-solid fa-bullhorn", "Audio Mixer", {
       resident: true,
       showInTray: true,
+      priority: 100,
       onClick: () => {
         this.toggle();
       }

@@ -67,6 +67,13 @@ class TrayManager {
     }
   }
 
+  updateContextMenuItems(winId, newContextMenuItems) {
+    const item = this._items.get(winId);
+    if (item) {
+      item.contextMenuItems = newContextMenuItems;
+    }
+  }
+
   unregister(winId) {
     if (!this._items.has(winId)) return;
     this._items.delete(winId);

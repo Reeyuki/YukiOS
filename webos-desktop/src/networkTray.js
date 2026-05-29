@@ -236,7 +236,6 @@ class NetworkTrayApp extends BaseApp {
     }
 
     this._updateTrayIcon();
-    this.closePopup();
     this._connecting = false;
   }
 
