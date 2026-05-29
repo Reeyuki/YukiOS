@@ -51,7 +51,8 @@ const NEWS_UPDATES = [
             "fa-user-friends",
             "Live Friends Stats",
             "Track active users and trending OS apps inside your Steam Friends List."
-          ]
+          ],
+          ["fa-mask", "Incognito mode", "Add incognito mode in browser"]
         ]
       }
     ]

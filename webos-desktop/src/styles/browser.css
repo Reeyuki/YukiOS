@@ -1045,3 +1045,353 @@
 .__yuki_dark_mode__ iframe {
   filter: invert(1) hue-rotate(180deg) !important;
 }
+
+.browser-root.incognito-mode {
+  background: #1a1a2e;
+}
+
+.browser-root.incognito-mode .browser-tabbar {
+  background: #16213e;
+}
+
+.browser-root.incognito-mode .browser-navbar {
+  background: #1a1a2e;
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+.browser-root.incognito-mode .browser-tab {
+  background: #0f3460;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.browser-root.incognito-mode .browser-tab:hover {
+  background: #1a1a2e;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.browser-root.incognito-mode .browser-tab.active {
+  background: #1a1a2e;
+  color: rgba(255, 255, 255, 0.95);
+  border-color: rgba(255, 255, 255, 0.15);
+  border-bottom-color: #e94560;
+}
+
+.browser-root.incognito-mode .address-bar {
+  background: #0f3460;
+  border-color: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.browser-root.incognito-mode .address-bar:focus {
+  background: #1a1a2e;
+  border-color: #e94560;
+  box-shadow: 0 0 0 2px rgba(233, 69, 96, 0.3);
+}
+
+.browser-root.incognito-mode .nav-btn,
+.browser-root.incognito-mode .browser-menu-btn,
+.browser-root.incognito-mode .zoom-btn {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.browser-root.incognito-mode .nav-btn:hover,
+.browser-root.incognito-mode .browser-menu-btn:hover,
+.browser-root.incognito-mode .zoom-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.browser-root.incognito-mode .proxy-select {
+  background: #0f3460;
+  border-color: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.browser-root.incognito-mode .bookmark-bar {
+  background: #1a1a2e;
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+.browser-root.incognito-mode .bookmark-item {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.browser-root.incognito-mode .bookmark-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.browser-root.incognito-mode .browser-content {
+  background: #0f0f1a;
+}
+
+.browser-root.incognito-mode .iframe-loading-overlay {
+  background: #1a1a2e;
+}
+
+.browser-root.incognito-mode .loading-text {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.browser-root.incognito-mode .browser-dropdown {
+  background: #16213e;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.browser-root.incognito-mode .browser-dropdown-section {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+.browser-root.incognito-mode .browser-dropdown-item {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.browser-root.incognito-mode .browser-dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.browser-root.incognito-mode .browser-dropdown-item .di-badge {
+  background: #e94560;
+  color: #fff;
+}
+
+.browser-root.incognito-mode .browser-panel {
+  background: #1a1a2e;
+  border-left-color: rgba(255, 255, 255, 0.08);
+}
+
+.browser-root.incognito-mode .browser-panel-header {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+.browser-root.incognito-mode .browser-panel-title {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.browser-root.incognito-mode .browser-panel-close {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.browser-root.incognito-mode .browser-panel-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.browser-root.incognito-mode .panel-search {
+  background: #0f3460;
+  border-color: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.browser-root.incognito-mode .panel-search:focus {
+  border-color: #e94560;
+}
+
+.browser-root.incognito-mode .panel-item {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+.browser-root.incognito-mode .panel-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.browser-root.incognito-mode .panel-item-title {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.browser-root.incognito-mode .panel-item-sub {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.browser-root.incognito-mode .panel-item-action {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.browser-root.incognito-mode .panel-item-action:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.browser-root.incognito-mode .panel-empty {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.browser-root.incognito-mode .panel-section-label {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.browser-root.incognito-mode .panel-footer {
+  border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+.browser-root.incognito-mode .panel-action-btn {
+  border-color: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.browser-root.incognito-mode .panel-action-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.browser-root.incognito-mode .panel-action-btn.danger {
+  border-color: #e94560;
+  color: #e94560;
+}
+
+.browser-root.incognito-mode .panel-action-btn.danger:hover {
+  background: rgba(233, 69, 96, 0.15);
+}
+
+.browser-root.incognito-mode .ctx-menu {
+  background: #16213e;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.browser-root.incognito-mode .ctx-menu-item {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.browser-root.incognito-mode .ctx-menu-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.browser-root.incognito-mode .ctx-menu-sep {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.browser-root.incognito-mode .ctx-menu-section {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.browser-root.incognito-mode .ctx-history-item {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.browser-root.incognito-mode .ctx-history-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.browser-root.incognito-mode .omnibox-dropdown {
+  background: #16213e;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.browser-root.incognito-mode .omnibox-item {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.browser-root.incognito-mode .omnibox-item:hover,
+.browser-root.incognito-mode .omnibox-item.selected {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.browser-root.incognito-mode .omnibox-item-icon {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.browser-root.incognito-mode .omnibox-item-url {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.browser-root.incognito-mode .dark-mode-popup {
+  background: #16213e;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.browser-root.incognito-mode .dm-title {
+  color: rgba(255, 255, 255, 0.6);
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+.browser-root.incognito-mode .dm-row {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.browser-root.incognito-mode .dm-row:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.browser-root.incognito-mode .dm-toggle {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.browser-root.incognito-mode .dm-toggle.on {
+  background: #e94560;
+}
+
+.browser-root.incognito-mode .homepage-dialog {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.browser-root.incognito-mode .homepage-dialog-box {
+  background: #16213e;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.browser-root.incognito-mode .homepage-dialog-title {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.browser-root.incognito-mode .homepage-dialog input {
+  background: #0f3460;
+  border-color: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.browser-root.incognito-mode .homepage-dialog input:focus {
+  border-color: #e94560;
+}
+
+.browser-root.incognito-mode .homepage-dialog-btns button {
+  border-color: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.browser-root.incognito-mode .homepage-dialog-btns button:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.browser-root.incognito-mode .homepage-dialog-btns button.primary {
+  background: #e94560;
+  color: #fff;
+  border-color: #e94560;
+}
+
+.browser-root.incognito-mode .homepage-dialog-btns button.primary:hover {
+  background: #ff6b6b;
+}
+
+/* Scrollbar Styling for Chromium Browsers */
+.browser-root ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.browser-root ::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+  border-radius: 5px;
+}
+
+.browser-root ::-webkit-scrollbar-thumb {
+  background: var(--glass-border);
+  border-radius: 5px;
+  border: 2px solid var(--bg-primary);
+}
+
+.browser-root ::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+.browser-root.incognito-mode ::-webkit-scrollbar-track {
+  background: #1a1a2e;
+}
+
+.browser-root.incognito-mode ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border: 2px solid #1a1a2e;
+}
+
+.browser-root.incognito-mode ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}

@@ -1,5 +1,4 @@
 export const PROXIES = [
-  { label: "YukiProxy", prefix: "https://proxy.yukios-os.workers.dev/?quest=" },
   { label: "Codetabs", prefix: "https://api.codetabs.com/v1/proxy?quest=" },
   { label: "WhateverOrigin", prefix: "https://whateverorigin.org/get?url=" },
   { label: "proxy.2677929.xyz", prefix: "https://proxy.2677929.xyz/" }

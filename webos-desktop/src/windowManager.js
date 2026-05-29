@@ -1,32 +1,20 @@
 import { StorageKeys } from "./settings.js";
-import { showStartStyleMenu } from "./shared/contextMenu.js";
-import { isImageFile } from "./utils.js";
 import { audioMixer } from "./audioMixer.js";
-import { resolveIconUrl } from "./assetUrl.js";
-import { toggleStartMenu } from "./startMenu.js";
 import { WorkspaceManager } from "./windowManager/WorkspaceManager.js";
-import {
-  makeDraggable,
-  _getSnapZone,
-  _showSnapGhost,
-  _hideSnapGhost,
-  _applySnap,
-  _unsnap
-} from "./windowManager/makeDraggable.js";
 import { makeResizable } from "./windowManager/makeResizable.js";
 import { setupWindowControls } from "./windowManager/windowControls.js";
 import { notify, sendNotify } from "./windowManager/notificationBridge.js";
-import { updateTransparency } from "./windowManager/transparencyManager.js";
 import { bus, BusEvents } from "./core/EventBus.js";
-import { WindowRecord } from "./core/WindowRecord.js";
-import {
-  animateWindowOpen,
-  animateWindowClose,
-  animateWindowMinimize,
-  applyFocusGlow,
-  applyZDepthLift,
-  initClickBubble
-} from "./windowManager/AnimationSystem.js";
+import { animateWindowOpen, initClickBubble } from "./windowManager/AnimationSystem.js";
+
+import { InputHandler } from "./windowManager/InputHandler.js";
+import { LayoutManager } from "./windowManager/LayoutManager.js";
+import { SnapSystem } from "./windowManager/SnapSystem.js";
+import { TaskbarSystem } from "./windowManager/TaskbarSystem.js";
+import { SessionManager } from "./windowManager/SessionManager.js";
+import { WindowStateManager } from "./windowManager/WindowStateManager.js";
+import { ContextMenuManager } from "./windowManager/ContextMenuManager.js";
+import { WindowManagerUtils } from "./windowManager/WindowManagerUtils.js";
 
 export class WindowManager {
   constructor(notificationCenter = null) {
@@ -46,15 +34,28 @@ export class WindowManager {
     this._taskbarPreviewHideTimer = null;
     this._taskbarPreviewShowTimer = null;
     this._taskbarPreviewHovering = false;
-    this._initSnapGhost();
-    this._initVisibilityTracking();
-    this.workspaceManager = new WorkspaceManager(this);
     this._lastFocusZone = "desktop";
-    this._initStartMenuKeybinds();
     this.fs = null;
     this.appLauncher = null;
     this._sessionSaveTimer = null;
     this._isRestoring = false;
+    this._lastSpawnedPosition = null;
+    this._lastSpawnTime = 0;
+
+    this.inputHandler = new InputHandler(this);
+    this.layoutManager = new LayoutManager(this);
+    this.snapSystem = new SnapSystem(this);
+    this.taskbarSystem = new TaskbarSystem(this);
+    this.sessionManager = new SessionManager(this);
+    this.windowStateManager = new WindowStateManager(this);
+    this.contextMenuManager = new ContextMenuManager(this);
+    this.utils = new WindowManagerUtils(this);
+
+    this.snapSystem.init();
+    this.inputHandler.init();
+    this.utils.init();
+
+    this.workspaceManager = new WorkspaceManager(this);
 
     initClickBubble();
 
@@ -66,138 +67,10 @@ export class WindowManager {
     setTimeout(() => {
       audioMixer.init();
     }, 0);
-    document.addEventListener("keydown", (e) => {
-      if (
-        e.key.toLowerCase() === "d" &&
-        e.metaKey === false &&
-        e.ctrlKey === false &&
-        e.altKey === false &&
-        e.shiftKey === false &&
-        e.getModifierState("Meta") === false &&
-        e.getModifierState("Control") === false &&
-        e.getModifierState("Alt") === false &&
-        e.getModifierState("Shift") === false &&
-        e.getModifierState("OS")
-      )
-        return;
-      if (e.key.toLowerCase() === "d" && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-
-        const allWindows = Array.from(this.openWindows.keys())
-          .map((id) => document.getElementById(id))
-          .filter(Boolean);
-
-        const anyVisible = allWindows.some((w) => w.style.display !== "none");
-
-        if (anyVisible) {
-          allWindows.forEach((win) => this.minimizeWindow(win));
-        } else {
-          allWindows.forEach((win) => {
-            win.style.display = "block";
-            const taskbarItem = document.getElementById(`taskbar-${win.id}`);
-            if (taskbarItem) taskbarItem.classList.remove("minimized");
-          });
-        }
-      }
-    });
-    document.addEventListener("keydown", (e) => {
-      if (!e.metaKey && !e.ctrlKey) return;
-      const focused = Array.from(this.openWindows.keys())
-        .map((id) => document.getElementById(id))
-        .filter(Boolean)
-        .sort((a, b) => parseInt(b.style.zIndex) - parseInt(a.style.zIndex))[0];
-      if (!focused) return;
-      if (e.key === "ArrowLeft") {
-        e.preventDefault();
-        this._applySnap(focused, "left");
-      }
-      if (e.key === "ArrowRight") {
-        e.preventDefault();
-        this._applySnap(focused, "right");
-      }
-      if (e.key === "ArrowUp") {
-        e.preventDefault();
-        this._applySnap(focused, "maximize");
-      }
-    });
-
-    this._lastSpawnedPosition = null;
-    this._lastSpawnTime = 0;
-  }
-
-  _initStartMenuKeybinds() {
-    document.addEventListener(
-      "pointerdown",
-      (e) => {
-        const target = e.target;
-        if (target?.closest?.(".window")) this._lastFocusZone = "window";
-        else if (target?.closest?.("#start-menu")) this._lastFocusZone = "start-menu";
-        else this._lastFocusZone = "desktop";
-
-        if (this._lastFocusZone === "desktop") {
-          this.openWindows.forEach(({ taskbarItem }) => taskbarItem?.classList?.remove("active"));
-        }
-      },
-      { capture: true }
-    );
-
-    document.addEventListener("keydown", (e) => {
-      if (!this._shouldOpenStartMenuFromKeyEvent(e)) return;
-      e.preventDefault();
-      toggleStartMenu({ focusSearch: true, openDefaultPage: true });
-    });
-  }
-
-  _shouldOpenStartMenuFromKeyEvent(e) {
-    const key = e.key;
-    const isTrigger = key === "Control" || key === "Tab" || key === " " || key === "Spacebar";
-    if (!isTrigger) return false;
-
-    const otherMods = e.altKey || e.metaKey || e.shiftKey;
-    if (otherMods) return false;
-
-    if (key !== "Control" && e.ctrlKey) return false;
-
-    const active = document.activeElement;
-    if (active) {
-      const tag = active.tagName;
-      const isEditable = tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || active.isContentEditable === true;
-      if (isEditable) return false;
-      if (tag === "IFRAME") return false;
-      if (active.closest?.(".window")) return false;
-      if (active.closest?.("#start-menu")) return false;
-    }
-
-    if (this._lastFocusZone !== "desktop") return false;
-
-    const anyWindowActive = Array.from(this.openWindows.values()).some((v) =>
-      v.taskbarItem?.classList?.contains("active")
-    );
-    if (anyWindowActive) return false;
-
-    return true;
   }
 
   applyWindowLayout(win) {
-    const root = win.querySelector(".browser-root");
-    if (!root) return;
-
-    const header = win.querySelector(".window-header");
-    const tabbar = root.querySelector(".browser-tabbar");
-
-    if (!header || !tabbar) return;
-
-    const controls = header.querySelector(".window-controls");
-    if (!controls) return;
-
-    tabbar.appendChild(controls);
-
-    header.style.display = "none";
-
-    controls.style.marginLeft = "auto";
-    controls.style.display = "flex";
-    controls.style.alignItems = "center";
-    controls.style.height = "100%";
+    this.utils.applyWindowLayout(win);
   }
 
   setNotificationCenter(notificationCenter) {
@@ -213,290 +86,31 @@ export class WindowManager {
   }
 
   triggerSessionSave() {
-    if (this._isRestoring) return;
-    if (this._sessionSaveTimer) clearTimeout(this._sessionSaveTimer);
-    this._sessionSaveTimer = setTimeout(() => this.saveSession(), 500);
+    this.sessionManager.triggerSessionSave();
   }
 
   _guessAppIdFromWinId(winId) {
-    if (!winId) return null;
-    const mappings = {
-      taskmanager: "taskManagerApp",
-      "profile-customizer": "profileCustomizer",
-      office: "officeApp",
-      emulator: "emulatorApp",
-      calculator: "calculatorApp",
-      ruffle: "ruffleApp",
-      markdown: "markdown",
-      youtube: "youtube",
-      news: "newsApp",
-      weather: "weatherApp",
-      notepad: "notepad",
-      model3d: "model3dApp",
-      settings: "settingsApp",
-      "system-apps": "systemApps",
-      about: "aboutApp",
-      achievements: "achievementsApp",
-      explorer: "explorer",
-      monaco: "monaco",
-      "app-creator": "appCreatorApp",
-      jsdos: "jsDosApp",
-      v86: "v86app",
-      browser: "browserApp",
-      terminal: "terminal",
-      camera: "cameraApp"
-    };
-    const lowerId = winId.toLowerCase();
-    for (const [key, appId] of Object.entries(mappings)) {
-      if (lowerId.includes(key)) return appId;
-    }
-    return null;
+    return this.sessionManager._guessAppIdFromWinId(winId);
   }
 
-  async saveSession() {
-    if (!this.fs || !this.fs.sessionKey) return;
-    const sessionKey = this.fs.sessionKey;
-    const sessionPath = `/ys/users/${sessionKey}/system/windowSession.json`;
-
-    const persistenceEnabled = localStorage.getItem(StorageKeys.windowSessionPersistence) !== "false";
-    if (!persistenceEnabled) {
-      try {
-        const exists = await this.fs.exists(sessionPath);
-        if (exists) {
-          await this.fs.unlink(sessionPath);
-        }
-      } catch (e) {}
-      return;
-    }
-
-    const windowStates = [];
-    const sortedWindows = Array.from(this.openWindows.keys())
-      .map((id) => document.getElementById(id))
-      .filter(Boolean)
-      .sort((a, b) => (parseInt(a.style.zIndex) || 0) - (parseInt(b.style.zIndex) || 0));
-
-    for (const win of sortedWindows) {
-      const entry = this.openWindows.get(win.id);
-      if (!entry || !entry.record) continue;
-
-      const record = entry.record;
-      const geom = this._getWindowNormalGeometry(win);
-      record.x = geom.x;
-      record.y = geom.y;
-      record.width = geom.width;
-      record.height = geom.height;
-      record.zIndex = parseInt(win.style.zIndex) || 1000;
-      record.snapZone = win.dataset.snapZone || null;
-      record.minimized = win.style.display === "none";
-      record.fullscreen = win.dataset.fullscreen === "true";
-      record.focused = win.classList.contains("active");
-
-      const content = win.querySelector(".window-content");
-      if (content) {
-        record.scrollPosition = { x: content.scrollLeft, y: content.scrollTop };
-      }
-
-      const appId = win.dataset.appId || this._guessAppIdFromWinId(win.id);
-      if (appId && !win.dataset.appId) win.dataset.appId = appId;
-      if (appId && this.appLauncher) {
-        try {
-          localStorage.setItem(
-            `${StorageKeys.geometryPrefix}${appId}`,
-            JSON.stringify({
-              x: record.x,
-              y: record.y,
-              width: record.width,
-              height: record.height
-            })
-          );
-        } catch (e) {}
-
-        const appInstance = this.appLauncher[appId] || this.appLauncher[`${appId}App`];
-        if (appInstance && typeof appInstance.getSnapshot === "function") {
-          try {
-            record.appStateSnapshot = await appInstance.getSnapshot(win.id);
-          } catch (e) {
-            console.warn(`Failed to get snapshot for app ${appId}:`, e);
-          }
-        }
-      }
-
-      if (this.workspaceManager) {
-        let wsId = 0;
-        for (const ws of this.workspaceManager.workspaces) {
-          if (ws.windows.has(win.id)) {
-            wsId = ws.id;
-            break;
-          }
-        }
-        record.workspaceId = wsId;
-      }
-
-      windowStates.push(record.toJSON());
-    }
-
-    try {
-      await this.fs.ensureFolder(["system"]);
-      let sessionData = windowStates;
-      if (this.workspaceManager) {
-        sessionData = {
-          windows: windowStates,
-          workspaces: this.workspaceManager.workspaces.map((w) => ({ id: w.id, name: w.name })),
-          activeWorkspaceId: this.workspaceManager.activeId
-        };
-      }
-      await this.fs.safeWriteFile(sessionPath, JSON.stringify(sessionData));
-    } catch (e) {
-      console.error("Failed to save window session:", e);
-    }
+  saveSession() {
+    return this.sessionManager.saveSession();
   }
 
-  async restoreSession() {
-    if (!this.fs || !this.fs.sessionKey || !this.appLauncher) return;
-    const persistenceEnabled = localStorage.getItem(StorageKeys.windowSessionPersistence) !== "false";
-    if (!persistenceEnabled) return;
-    this._isRestoring = true;
-    const sessionKey = this.fs.sessionKey;
-    const sessionPath = `/ys/users/${sessionKey}/system/windowSession.json`;
-
-    try {
-      const exists = await this.fs.exists(sessionPath);
-      if (!exists) {
-        this._isRestoring = false;
-        return;
-      }
-
-      const data = await this.fs.pRead("readFile", sessionPath, "utf8");
-      const parsedData = JSON.parse(data);
-
-      let windowStates = [];
-      if (Array.isArray(parsedData)) {
-        windowStates = parsedData;
-      } else {
-        windowStates = parsedData.windows || [];
-        if (this.workspaceManager && parsedData.workspaces) {
-          this.workspaceManager.workspaces = parsedData.workspaces.map((w) => ({ ...w, windows: new Set() }));
-          this.workspaceManager.activeId = parsedData.activeWorkspaceId || 0;
-          this.workspaceManager._render();
-        }
-      }
-
-      if (!Array.isArray(windowStates)) {
-        this._isRestoring = false;
-        return;
-      }
-
-      let heavyAppCount = 0;
-      const queue = [];
-
-      for (const state of windowStates) {
-        const appId = state.appId || this._guessAppIdFromWinId(state.id);
-        if (!appId) continue;
-
-        if (this._isHeavyApp(appId, state.appType)) {
-          heavyAppCount++;
-          if (heavyAppCount > 4) {
-            queue.push({ state, appId });
-            continue;
-          }
-        }
-        await this._restoreSingleWindowState(state, appId);
-      }
-
-      if (queue.length > 0) {
-        this._processRestorationQueue(queue);
-      }
-
-      const lastFocused = windowStates.find((s) => s.focused);
-      if (lastFocused) {
-        const win = document.getElementById(lastFocused.id);
-        if (win) this.bringToFront(win);
-      }
-    } catch (e) {
-      console.error("Failed to restore window session:", e);
-    } finally {
-      this._isRestoring = false;
-    }
+  restoreSession() {
+    return this.sessionManager.restoreSession();
   }
 
   _isHeavyApp(appId, appType) {
-    const heavyTypes = ["game", "swf", "gba", "psp", "nds", "megadrive", "genesis", "segaMD"];
-    const heavySystemApps = [
-      "v86",
-      "v86app",
-      "jsdos",
-      "jsDosApp",
-      "emulator",
-      "emulatorApp",
-      "ruffle",
-      "ruffleApp",
-      "youtube",
-      "browser",
-      "browserApp",
-      "model3d",
-      "model3dApp"
-    ];
-    if (heavyTypes.includes(appType)) return true;
-    if (heavySystemApps.includes(appId)) return true;
-    return false;
+    return this.sessionManager._isHeavyApp(appId, appType);
   }
 
-  async _processRestorationQueue(queue) {
-    for (const item of queue) {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      await this._restoreSingleWindowState(item.state, item.appId);
-    }
+  _processRestorationQueue(queue) {
+    return this.sessionManager._processRestorationQueue(queue);
   }
 
-  async _restoreSingleWindowState(state, appId) {
-    try {
-      const launchOptions = {
-        forceId: state.id,
-        position: state.snapZone ? undefined : { x: state.x, y: state.y },
-        width: state.snapZone ? undefined : state.width,
-        height: state.snapZone ? undefined : state.height,
-        allowManualPosition: true
-      };
-
-      await this.appLauncher.launch(appId, state.appType === "swf", launchOptions);
-
-      const win = document.getElementById(state.id);
-      if (win) {
-        const entry = this.openWindows.get(state.id);
-        if (entry?.record) {
-          if (state.preSnapGeometry) {
-            entry.record.preSnapGeometry = state.preSnapGeometry;
-          }
-        }
-
-        if (state.minimized) this.minimizeWindow(win);
-        if (state.fullscreen) this.toggleFullscreen(win);
-        if (state.snapZone) this._applySnap(win, state.snapZone, true);
-        win.style.zIndex = state.zIndex;
-        this.zIndexCounter = Math.max(this.zIndexCounter, state.zIndex + 1);
-
-        if (this.workspaceManager && state.workspaceId !== undefined) {
-          this.workspaceManager.moveWindowTo(state.id, state.workspaceId);
-        }
-
-        if (state.appStateSnapshot) {
-          const appInstance = this.appLauncher[state.appId] || this.appLauncher[`${state.appId}App`];
-          if (appInstance && typeof appInstance.restoreSnapshot === "function") {
-            await appInstance.restoreSnapshot(win.id, state.appStateSnapshot);
-          }
-        }
-
-        if (state.scrollPosition) {
-          const content = win.querySelector(".window-content");
-          if (content) {
-            content.scrollLeft = state.scrollPosition.x;
-            content.scrollTop = state.scrollPosition.y;
-          }
-        }
-      }
-    } catch (e) {
-      console.error(`Failed to restore window ${state.id}:`, e);
-    }
+  _restoreSingleWindowState(state, appId) {
+    return this.sessionManager._restoreSingleWindowState(state, appId);
   }
 
   notify(title, message, type = "info", duration = 5000, icon = null, appSource = null) {
@@ -504,262 +118,39 @@ export class WindowManager {
   }
 
   updateTransparency() {
-    updateTransparency(this);
+    this.utils.updateTransparency();
   }
 
   updateTaskbarAlignment() {
-    const taskbarWindows = document.getElementById("taskbar-windows");
-    if (taskbarWindows) {
-      const taskbarAlignment = localStorage.getItem(StorageKeys.taskbarAlignment) || "center";
-      const taskbar = document.getElementById("taskbar");
-
-      if (taskbar) {
-        const isHorizontal =
-          taskbar.classList.contains("position-bottom") || taskbar.classList.contains("position-top");
-
-        if (isHorizontal) {
-          if (taskbarAlignment === "left") {
-            taskbarWindows.style.justifyContent = "flex-start";
-          } else if (taskbarAlignment === "center") {
-            taskbarWindows.style.justifyContent = "center";
-          } else if (taskbarAlignment === "right") {
-            taskbarWindows.style.justifyContent = "flex-end";
-          }
-        } else {
-          if (taskbarAlignment === "left") {
-            taskbarWindows.style.alignItems = "flex-start";
-          } else if (taskbarAlignment === "center") {
-            taskbarWindows.style.alignItems = "center";
-          } else if (taskbarAlignment === "right") {
-            taskbarWindows.style.alignItems = "flex-end";
-          }
-        }
-      }
-    }
+    this.taskbarSystem.updateTaskbarAlignment();
   }
 
   _resolveIconType(iconValue) {
-    const isDataUrl = typeof iconValue === "string" && iconValue.startsWith("data:");
-    const isHttpUrl = typeof iconValue === "string" && /^https?:\/\//.test(iconValue);
-    return {
-      isImage: isImageFile(iconValue) || isHttpUrl,
-      isDataUrl
-    };
+    return this.utils._resolveIconType(iconValue);
   }
 
   _getFaviconLink() {
-    let link = document.querySelector("link[rel~='icon']");
-    return link;
+    return this.utils._getFaviconLink();
   }
 
   _animateAndRemove(win) {
-    animateWindowClose(win, () => win.remove());
+    this.windowStateManager._animateAndRemove(win);
   }
+
   _buildPropertiesWindow(winId) {
-    const win = document.getElementById(winId);
-    if (!win) return;
-
-    const appInfo = this.openWindows.get(winId);
-    if (!appInfo) return;
-
-    const content = win.querySelector(".window-content");
-    if (!content) return;
-
-    const existingOverlay = win.querySelector(":scope > .window-props-overlay");
-    if (existingOverlay) {
-      try {
-        existingOverlay.remove();
-      } finally {
-        content.style.display = content.dataset.prevDisplay || "";
-        delete content.dataset.prevDisplay;
-      }
-    }
-
-    const dataset = win.dataset;
-    const rect = win.getBoundingClientRect();
-
-    const info = {
-      identity: [
-        ["Window ID", winId],
-        ["Title", appInfo.title],
-        ["Type", dataset.appType || "-"],
-        ["App ID", dataset.appId || "-"],
-        ["URL", dataset.externalUrl || "-"]
-      ],
-      geometry: [
-        ["Width", `${Math.round(rect.width)}px`],
-        ["Height", `${Math.round(rect.height)}px`],
-        ["Left", `${Math.round(rect.left)}px`],
-        ["Top", `${Math.round(rect.top)}px`]
-      ],
-      system: [
-        ["Z-Index", win.style.zIndex || "-"],
-        ["Fullscreen", dataset.fullscreen === "true" ? "Yes" : "No"],
-        ["SWF", dataset.swf || "-"],
-        ["ROM", dataset.rom || "-"],
-        ["Core", dataset.core || "-"]
-      ]
-    };
-
-    const buildSection = (title, rows) => `
-    <div class="props-section">
-      <div class="props-section-title">${title}</div>
-      ${rows
-        .map(
-          ([k, v]) => `
-        <div class="props-row">
-          <div class="props-key">${k}</div>
-          <div class="props-val">${v}</div>
-        </div>
-      `
-        )
-        .join("")}
-    </div>
-  `;
-
-    const overlayHtml = `
-    <div class="window-props-header">
-      <div class="window-props-title">Properties</div>
-      <button type="button" class="window-props-close">Close</button>
-    </div>
-    <div class="props-content">
-      ${buildSection("Identity", info.identity)}
-      ${buildSection("Geometry", info.geometry)}
-      ${buildSection("System", info.system)}
-    </div>
-  `;
-
-    const overlay = document.createElement("div");
-    overlay.className = "window-props-overlay";
-    overlay.innerHTML = overlayHtml;
-
-    if (!content.dataset.prevDisplay) content.dataset.prevDisplay = content.style.display || "";
-    content.style.display = "none";
-
-    win.appendChild(overlay);
-    overlay.querySelector(".window-props-close")?.addEventListener("click", () => {
-      try {
-        overlay.remove();
-      } finally {
-        content.style.display = content.dataset.prevDisplay || "";
-        delete content.dataset.prevDisplay;
-      }
-    });
+    this.contextMenuManager._buildPropertiesWindow(winId);
   }
+
   _buildContextMenuItems(addMenuItem, addSeparator, win) {
-    const winId = win.id;
-    const isMinimized = win.style.display === "none";
-    const isFullscreen = win.dataset.fullscreen === "true";
-
-    addMenuItem(
-      isMinimized ? "Restore" : "Minimize",
-      () => {
-        if (isMinimized) win.style.display = "block";
-        else this.minimizeWindow(win);
-        this.bringToFront(win);
-      },
-      isMinimized ? "fa-window-restore" : "fa-window-minimize"
-    );
-
-    addMenuItem(
-      isFullscreen ? "Restore Size" : "Maximize",
-      () => {
-        this.toggleFullscreen(win);
-        this.bringToFront(win);
-      },
-      isFullscreen ? "fa-compress" : "fa-window-maximize"
-    );
-
-    addMenuItem("Bring to Front", () => this.bringToFront(win), "fa-layer-group");
-
-    addSeparator();
-
-    addMenuItem("Snap Left", () => this._applySnap(win, "left"), "fa-columns");
-    addMenuItem("Snap Right", () => this._applySnap(win, "right"), "fa-columns");
-    addMenuItem("Snap Maximize", () => this._applySnap(win, "maximize"), "fa-expand-arrows-alt");
-
-    addSeparator();
-
-    if (this.workspaceManager && this.workspaceManager.workspaces.length > 1) {
-      this.workspaceManager.workspaces.forEach((ws) => {
-        if (ws.id !== this.workspaceManager.activeId) {
-          addMenuItem(
-            `Move to ${ws.name}`,
-            () => {
-              this.workspaceManager.moveWindowTo(winId, ws.id);
-            },
-            "fa-exchange-alt"
-          );
-        }
-      });
-      addSeparator();
-    }
-
-    addMenuItem("Properties", () => this._buildPropertiesWindow(winId), "fa-info-circle");
-
-    addSeparator();
-
-    const isPinned = this._isWindowPinned(winId);
-    addMenuItem(
-      isPinned ? "Unpin from Taskbar" : "Pin to Taskbar",
-      () => {
-        if (isPinned) this._unpinFromTaskbar(winId);
-        else this._pinToTaskbar(winId);
-      },
-      isPinned ? "fa-thumbtack" : "fa-thumbtack"
-    );
-
-    addSeparator();
-
-    addMenuItem(
-      "Close Window",
-      () => {
-        const winToClose = document.getElementById(winId);
-        if (winToClose) {
-          this._silenceWindow(winToClose);
-          this.removeFromTaskbar(winId);
-          this._animateAndRemove(winToClose);
-        }
-      },
-      "fa-times-circle"
-    );
+    this.contextMenuManager._buildContextMenuItems(addMenuItem, addSeparator, win);
   }
 
   getOpenWindowCount() {
-    return this.openWindows.size;
+    return this.utils.getOpenWindowCount();
   }
 
   _getWindowNormalGeometry(win) {
-    const entry = this.openWindows.get(win.id);
-    const rect = win.getBoundingClientRect();
-    let x = rect.left;
-    let y = rect.top;
-    let width = rect.width;
-    let height = rect.height;
-    const parsePixelVal = (val, fallback) => {
-      if (typeof val === "string" && val.endsWith("px")) {
-        const num = parseInt(val);
-        if (!isNaN(num)) return num;
-      }
-      return fallback;
-    };
-    if (win.dataset.snapZone && entry?.record?.preSnapGeometry) {
-      x = entry.record.preSnapGeometry.x ?? x;
-      y = entry.record.preSnapGeometry.y ?? y;
-      width = entry.record.preSnapGeometry.width ?? width;
-      height = entry.record.preSnapGeometry.height ?? height;
-    } else if (win.dataset.fullscreen === "true") {
-      x = parsePixelVal(win.dataset.prevLeft, x);
-      y = parsePixelVal(win.dataset.prevTop, y);
-      width = parsePixelVal(win.dataset.prevWidth, width);
-      height = parsePixelVal(win.dataset.prevHeight, height);
-    } else {
-      x = parsePixelVal(win.style.left, x);
-      y = parsePixelVal(win.style.top, y);
-      width = parsePixelVal(win.style.width, width);
-      height = parsePixelVal(win.style.height, height);
-    }
-    return { x, y, width, height };
+    return this.utils._getWindowNormalGeometry(win);
   }
 
   createWindow(id, title, width = "80vw", height = "80vh", isGame = false, initialOptions = {}) {
@@ -846,121 +237,23 @@ export class WindowManager {
   }
 
   calculateWindowPosition(windowWidth, windowHeight, options = {}) {
-    const {
-      position = "auto",
-      workspace = this.workspaceManager?.activeId || "default",
-      allowManualPosition = false
-    } = options;
-
-    if (allowManualPosition && position.x !== undefined && position.y !== undefined) {
-      const bounds = this._getScreenBounds();
-      return {
-        left: Math.max(bounds.minX, Math.min(bounds.maxX - windowWidth, position.x)),
-        top: Math.max(bounds.minY, Math.min(bounds.maxY - windowHeight, position.y))
-      };
-    }
-
-    if (position === "center") {
-      return this._getCenteredPosition(windowWidth, windowHeight);
-    }
-
-    if (typeof position === "object" && position.x !== undefined && position.y !== undefined) {
-      const bounds = this._getScreenBounds();
-      return {
-        left: Math.max(bounds.minX, Math.min(bounds.maxX - windowWidth, position.x)),
-        top: Math.max(bounds.minY, Math.min(bounds.maxY - windowHeight, position.y))
-      };
-    }
-
-    return this._getCascadePosition(windowWidth, windowHeight, workspace);
+    return this.layoutManager.calculateWindowPosition(windowWidth, windowHeight, options);
   }
 
   _getScreenBounds() {
-    const taskbarHeight = this._getTaskbarHeight();
-    const padding = 20;
-
-    return {
-      minX: padding,
-      minY: padding,
-      maxX: window.innerWidth - padding,
-      maxY: window.innerHeight - taskbarHeight - padding
-    };
+    return this.layoutManager._getScreenBounds();
   }
 
   _getTaskbarHeight() {
-    const taskbar = document.getElementById("taskbar");
-    if (!taskbar) return 0;
-
-    const rect = taskbar.getBoundingClientRect();
-    const taskbarPosition = localStorage.getItem(StorageKeys.taskbarPosition) || "bottom";
-
-    return taskbarPosition === "bottom" ? rect.height : 0;
+    return this.layoutManager._getTaskbarHeight();
   }
 
   _getCenteredPosition(windowWidth, windowHeight) {
-    const bounds = this._getScreenBounds();
-
-    return {
-      left: bounds.minX + (bounds.maxX - bounds.minX - windowWidth) / 2,
-      top: bounds.minY + (bounds.maxY - bounds.minY - windowHeight) / 2
-    };
+    return this.layoutManager._getCenteredPosition(windowWidth, windowHeight);
   }
 
   _getCascadePosition(windowWidth, windowHeight, workspace) {
-    const bounds = this._getScreenBounds();
-    const baseOffset = 30;
-    const now = Date.now();
-
-    this._lastSpawnTime = now;
-
-    const windows = Array.from(document.querySelectorAll(".window")).filter(
-      (win) => win.style.display !== "none" && win.style.visibility !== "hidden" && win.id !== "desktop"
-    );
-
-    if (windows.length === 0) {
-      this._lastSpawnedPosition = null;
-    }
-
-    let referenceLeft = null;
-    let referenceTop = null;
-
-    if (this._lastSpawnedPosition) {
-      referenceLeft = this._lastSpawnedPosition.left;
-      referenceTop = this._lastSpawnedPosition.top;
-    } else if (windows.length > 0) {
-      const topWin = windows.reduce((prev, curr) => {
-        const zPrev = parseInt(prev.style.zIndex) || 0;
-        const zCurr = parseInt(curr.style.zIndex) || 0;
-        return zCurr > zPrev ? curr : prev;
-      });
-      referenceLeft = parseFloat(topWin.style.left);
-      referenceTop = parseFloat(topWin.style.top);
-    }
-
-    let targetLeft, targetTop;
-
-    if (referenceLeft !== null && !isNaN(referenceLeft)) {
-      targetLeft = referenceLeft + baseOffset;
-      targetTop = referenceTop + baseOffset;
-    } else {
-      const screenCenterX = (bounds.minX + bounds.maxX) / 2;
-      const screenCenterY = (bounds.minY + bounds.maxY) / 2;
-      targetLeft = screenCenterX - windowWidth / 2;
-      targetTop = screenCenterY - windowHeight / 2;
-    }
-
-    if (targetLeft + 150 > bounds.maxX || targetTop + 100 > bounds.maxY) {
-      targetLeft = bounds.minX + 60;
-      targetTop = bounds.minY + 60;
-    }
-
-    const finalPos = {
-      left: Math.max(bounds.minX, Math.min(bounds.maxX - windowWidth, targetLeft)),
-      top: Math.max(bounds.minY, Math.min(bounds.maxY - windowHeight, targetTop))
-    };
-
-    this._lastSpawnedPosition = finalPos;
-    return finalPos;
+    return this.layoutManager._getCascadePosition(windowWidth, windowHeight, workspace);
   }
 
   mountWindow(win, winId, title, iconValue, color = null) {
@@ -976,492 +269,59 @@ export class WindowManager {
   }
 
   getWindowIconHtml(iconValue, color = null) {
-    if (!iconValue) return "";
-    iconValue = resolveIconUrl(iconValue);
-    const size = 25;
-    const { isImage, isDataUrl } = this._resolveIconType(iconValue);
-
-    if (isImage || isDataUrl) {
-      return `<img src="${iconValue}" style="width:${size}px;height:${size}px;margin-right:6px;vertical-align:middle;object-fit:contain;" />`;
-    } else if (typeof iconValue === "string" && iconValue.length > 0) {
-      const cls = iconValue.startsWith("fa") ? iconValue : `fa ${iconValue}`;
-      const clr = color ?? "white";
-      return `<i class="${cls}" style="color:${clr};margin-right:6px;font-size:${size}px;vertical-align:middle;"></i>`;
-    }
-    return "";
+    return this.utils.getWindowIconHtml(iconValue, color);
   }
 
   _buildTaskbarIcon(iconValue, title, color) {
-    iconValue = resolveIconUrl(iconValue);
-    const { isImage, isDataUrl } = this._resolveIconType(iconValue);
-
-    if (isImage || isDataUrl) {
-      const icon = document.createElement("img");
-      icon.src = iconValue;
-      icon.onerror = () => {
-        const fallback = document.createElement("i");
-        fallback.className = "fas fa-window-maximize";
-        fallback.style.color = color ?? "#6677dd";
-        icon.replaceWith(fallback);
-      };
-      return icon;
-    }
-
-    const icon = document.createElement("i");
-    icon.alt = title;
-
-    if (typeof iconValue === "string" && iconValue.length > 0) {
-      icon.className = iconValue.startsWith("fa") ? iconValue : `fa ${iconValue}`;
-      icon.style.color = color ?? "white";
-    } else {
-      icon.className = "fas fa-window-maximize";
-      icon.style.color = "#6677dd";
-    }
-
-    return icon;
+    return this.taskbarSystem._buildTaskbarIcon(iconValue, title, color);
   }
 
   addToTaskbar(winId, title, iconValue, color = null) {
-    this.triggerSessionSave();
-    if (document.getElementById(`taskbar-${winId}`)) return;
-    if (iconValue === "fas fa-video") color = "6677dd";
-
-    iconValue = resolveIconUrl(iconValue);
-
-    const taskbarItem = document.createElement("div");
-    taskbarItem.id = `taskbar-${winId}`;
-    taskbarItem.className = "taskbar-item";
-    taskbarItem.appendChild(this._buildTaskbarIcon(iconValue, title, color));
-    bus.emit(BusEvents.WINDOW_CREATED, { winId, title });
-
-    taskbarItem.onclick = () => {
-      const winTask = document.getElementById(winId);
-      if (!winTask) return;
-      const entry = this.openWindows.get(winId);
-      if (winTask.style.display === "none") {
-        winTask.style.display = "block";
-        taskbarItem.classList.remove("minimized");
-        if (entry?.record) entry.record.minimized = false;
-        requestAnimationFrame(() => animateWindowOpen(winTask));
-      }
-      this.bringToFront(winTask);
-    };
-
-    taskbarItem.oncontextmenu = (e) => {
-      e.preventDefault();
-      this._hideTaskbarPreview();
-      const win = document.getElementById(winId);
-      showStartStyleMenu(e, (addMenuItem, addSeparator) => this._buildContextMenuItems(addMenuItem, addSeparator, win));
-    };
-
-    const win = document.getElementById(winId);
-    let geometry = {};
-    if (win) {
-      const geom = this._getWindowNormalGeometry(win);
-      geometry = {
-        x: geom.x,
-        y: geom.y,
-        width: geom.width,
-        height: geom.height,
-        zIndex: parseInt(win.style.zIndex) || 1000
-      };
-    }
-
-    const record = new WindowRecord(winId, title, { ...geometry, iconValue, color });
-    this.openWindows.set(winId, { taskbarItem, title, iconValue, color, record });
-    this.workspaceManager?.registerWindow(winId);
-
-    audioMixer.registerWindow(winId, title, audioMixer.getIconHtmlForTaskbar(null, iconValue));
-
-    if (win) {
-      const headerSpan = win.querySelector(".window-header > span");
-      if (headerSpan) {
-        const iconHtml = this.getWindowIconHtml(iconValue, color);
-        if (iconHtml) {
-          const temp = document.createElement("div");
-          temp.innerHTML = iconHtml;
-          const iconEl = temp.firstElementChild;
-          if (iconEl) headerSpan.insertBefore(iconEl, headerSpan.firstChild);
-        }
-      }
-    }
-
-    taskbarItem.addEventListener("mouseenter", () => {
-      if (this._taskbarPreviewShowTimer) clearTimeout(this._taskbarPreviewShowTimer);
-      this._taskbarPreviewShowTimer = setTimeout(() => {
-        this._showTaskbarPreview(winId, taskbarItem);
-      }, 220);
-    });
-
-    taskbarItem.addEventListener("mouseleave", () => {
-      if (this._taskbarPreviewShowTimer) clearTimeout(this._taskbarPreviewShowTimer);
-      this._scheduleHideTaskbarPreview();
-    });
-
-    document.getElementById("taskbar-windows").appendChild(taskbarItem);
-
-    const taskbarWindows = document.getElementById("taskbar-windows");
-    if (taskbarWindows) {
-      const taskbarAlignment = localStorage.getItem(StorageKeys.taskbarAlignment) || "center";
-      const taskbar = document.getElementById("taskbar");
-
-      if (taskbar) {
-        const isHorizontal =
-          taskbar.classList.contains("position-bottom") || taskbar.classList.contains("position-top");
-
-        if (isHorizontal) {
-          if (taskbarAlignment === "left") {
-            taskbarWindows.style.justifyContent = "flex-start";
-          } else if (taskbarAlignment === "center") {
-            taskbarWindows.style.justifyContent = "center";
-          } else if (taskbarAlignment === "right") {
-            taskbarWindows.style.justifyContent = "flex-end";
-          }
-        } else {
-          if (taskbarAlignment === "left") {
-            taskbarWindows.style.alignItems = "flex-start";
-          } else if (taskbarAlignment === "center") {
-            taskbarWindows.style.alignItems = "center";
-          } else if (taskbarAlignment === "right") {
-            taskbarWindows.style.alignItems = "flex-end";
-          }
-        }
-      }
-    }
+    this.taskbarSystem.addToTaskbar(winId, title, iconValue, color);
   }
 
   _scheduleHideTaskbarPreview() {
-    if (this._taskbarPreviewHideTimer) clearTimeout(this._taskbarPreviewHideTimer);
-    this._taskbarPreviewHideTimer = setTimeout(() => {
-      if (!this._taskbarPreviewHovering) this._hideTaskbarPreview();
-    }, 160);
+    this.taskbarSystem._scheduleHideTaskbarPreview();
   }
 
   _hideTaskbarPreview() {
-    if (!this._taskbarPreview) return;
-    this._taskbarPreview.remove();
-    this._taskbarPreview = null;
-    this._taskbarPreviewWinId = null;
-    this._taskbarPreviewHovering = false;
+    this.taskbarSystem._hideTaskbarPreview();
   }
 
   _showTaskbarPreview(winId, anchorEl) {
-    const win = document.getElementById(winId);
-    if (!win || !anchorEl || anchorEl.classList.contains("minimized")) return;
-
-    if (this._taskbarPreviewWinId !== winId) this._hideTaskbarPreview();
-
-    const meta = this.openWindows.get(winId);
-    const title = meta?.title || winId;
-
-    const preview = document.createElement("div");
-    preview.className = "taskbar-preview";
-    preview.dataset.winId = winId;
-    preview.innerHTML = `
-      <div class="taskbar-preview__title"></div>
-      <div class="taskbar-preview__thumb"></div>
-    `;
-    preview.querySelector(".taskbar-preview__title").textContent = title;
-
-    const thumb = preview.querySelector(".taskbar-preview__thumb");
-    const clone = win.cloneNode(true);
-    clone.removeAttribute("id");
-    clone.classList.add("taskbar-preview__winclone");
-    clone.style.position = "absolute";
-    clone.style.left = "50%";
-    clone.style.top = "50%";
-    clone.style.margin = "0";
-    clone.style.maxWidth = "none";
-    clone.style.maxHeight = "none";
-    clone.style.transformOrigin = "center";
-    clone.querySelectorAll("[id]").forEach((n) => n.removeAttribute("id"));
-    clone.querySelectorAll(".window-controls").forEach((n) => n.remove());
-    clone.querySelectorAll("input,textarea,button,select").forEach((n) => n.setAttribute("disabled", "disabled"));
-
-    // Filter active elements that shouldn't run in thumbnail
-    clone.querySelectorAll("iframe, video, audio, canvas").forEach((n) => {
-      const placeholder = document.createElement("div");
-      placeholder.style.width = "100%";
-      placeholder.style.height = "100%";
-      placeholder.style.background = "var(--bg-secondary, rgba(0,0,0,0.5))";
-      placeholder.style.display = "flex";
-      placeholder.style.alignItems = "center";
-      placeholder.style.justifyContent = "center";
-
-      const tempDiv = document.createElement("div");
-      tempDiv.innerHTML = this.getWindowIconHtml(meta?.iconValue, meta?.color || "white");
-      const iconEl = tempDiv.firstElementChild;
-      if (iconEl) {
-        iconEl.style.fontSize = "48px";
-        iconEl.style.width = "48px";
-        iconEl.style.height = "48px";
-        iconEl.style.opacity = "0.7";
-        placeholder.appendChild(iconEl);
-      }
-      n.replaceWith(placeholder);
-    });
-
-    thumb.appendChild(clone);
-
-    document.body.appendChild(preview);
-    this._taskbarPreview = preview;
-    this._taskbarPreviewWinId = winId;
-
-    const rect = anchorEl.getBoundingClientRect();
-    const pRect = preview.getBoundingClientRect();
-
-    const left = Math.max(
-      8,
-      Math.min(rect.left + rect.width / 2 - pRect.width / 2, window.innerWidth - pRect.width - 8)
-    );
-    const top = Math.max(8, rect.top - pRect.height - 10);
-
-    preview.style.left = `${left}px`;
-    preview.style.top = `${top}px`;
-
-    const winRect = win.getBoundingClientRect();
-    const innerW = 240;
-    const innerH = 140;
-    const scaleX = innerW / Math.max(1, winRect.width);
-    const scaleY = innerH / Math.max(1, winRect.height);
-    // Remove the 0.32 clamp and use min to contain perfectly, or max to cover.
-    // We use min to ensure the whole window is visible, but at max possible size.
-    const scale = Math.min(scaleX, scaleY);
-    clone.style.transform = `translate(-50%, -50%) scale(${scale})`;
-
-    preview.addEventListener("mouseenter", () => {
-      this._taskbarPreviewHovering = true;
-      if (this._taskbarPreviewHideTimer) clearTimeout(this._taskbarPreviewHideTimer);
-    });
-    preview.addEventListener("mouseleave", () => {
-      this._taskbarPreviewHovering = false;
-      this._scheduleHideTaskbarPreview();
-    });
-
-    preview.addEventListener("mousedown", (e) => e.preventDefault());
-    preview.addEventListener("click", () => {
-      const w = document.getElementById(winId);
-      if (!w) return;
-
-      if (w.style.display === "none") {
-        w.style.display = "block";
-        const taskbarItem = document.getElementById(`taskbar-${winId}`);
-        if (taskbarItem) taskbarItem.classList.remove("minimized");
-      }
-
-      this.bringToFront(w);
-      this._hideTaskbarPreview();
-    });
+    this.taskbarSystem._showTaskbarPreview(winId, anchorEl);
   }
 
   registerCloseWindow(closeButton, winId) {
-    closeButton.addEventListener("click", () => {
-      const win = document.getElementById(winId);
-      if (!win) return;
-      this._animateAndRemove(win);
-      this.removeFromTaskbar(winId);
-    });
+    this.windowStateManager.registerCloseWindow(closeButton, winId);
   }
 
   updatePageFavicon(iconValue, title) {
-    document.title = title || this.initialTitle;
-    const link = this._getFaviconLink();
-    iconValue = resolveIconUrl(iconValue);
-    const { isImage, isDataUrl } = this._resolveIconType(iconValue);
-    if (isImage || isDataUrl) {
-      link.href = iconValue;
-    } else {
-      link.href = this.initialFavicon || "";
-    }
+    this.utils.updatePageFavicon(iconValue, title);
   }
 
   resetToDefaultState() {
-    document.title = this.initialTitle;
-    const link = this._getFaviconLink();
-    link.href = this.initialFavicon || "";
+    this.utils.resetToDefaultState();
   }
 
   _initVisibilityTracking() {
-    document.addEventListener("visibilitychange", () => {
-      if (document.hidden) {
-        document.title = this.initialTitle;
-        this._getFaviconLink().href = this.initialFavicon || "";
-      } else {
-        if (this.openWindows.size === 0) {
-          this.resetToDefaultState();
-        } else {
-          const activeEntry =
-            Array.from(this.openWindows.values()).findLast((entry) =>
-              entry.taskbarItem?.classList.contains("active")
-            ) ?? Array.from(this.openWindows.values()).pop();
-          if (activeEntry) this.updatePageFavicon(activeEntry.iconValue, activeEntry.title);
-        }
-      }
-    });
+    this.utils._initVisibilityTracking();
   }
 
   bringToFront(win) {
-    if (!win) return;
-
-    const allWins = Array.from(this.openWindows.keys())
-      .map((id) => document.getElementById(id))
-      .filter(Boolean);
-    allWins.forEach((w) => applyZDepthLift(w, false));
-
-    this.openWindows.forEach(({ taskbarItem }) => taskbarItem.classList.remove("active"));
-
-    const entry = this.openWindows.get(win.id);
-    if (entry?.taskbarItem) {
-      entry.taskbarItem.classList.add("active");
-      entry.taskbarItem.classList.remove("minimized");
-      this.updatePageFavicon(entry.iconValue, entry.title);
-      document.title = entry.title || "YukiOS";
-      if (entry.record) entry.record.zIndex = this.zIndexCounter;
-      bus.emit(BusEvents.WINDOW_FOCUSED, { winId: win.id, title: entry.title, iconValue: entry.iconValue });
-    }
-
-    applyFocusGlow(win);
-    applyZDepthLift(win, true);
-    win.style.zIndex = this.zIndexCounter++;
-    this.triggerSessionSave();
+    this.windowStateManager.bringToFront(win);
   }
 
   removeFromTaskbar(winId) {
-    const taskbarItem = document.getElementById(`taskbar-${winId}`);
-    if (taskbarItem) taskbarItem.remove();
-    const entry = this.openWindows.get(winId);
-    if (entry && entry.record) {
-      const win = document.getElementById(winId);
-      const appId = (win && win.dataset.appId) || this._guessAppIdFromWinId(winId);
-      if (appId) {
-        try {
-          const geom = win ? this._getWindowNormalGeometry(win) : entry.record;
-          localStorage.setItem(
-            `${StorageKeys.geometryPrefix}${appId}`,
-            JSON.stringify({
-              x: geom.x,
-              y: geom.y,
-              width: geom.width,
-              height: geom.height
-            })
-          );
-        } catch (e) {}
-      }
-    }
-    this.openWindows.delete(winId);
-    this.workspaceManager?.unregisterWindow(winId);
-    audioMixer.unregisterWindow(winId);
-    bus.emit(BusEvents.WINDOW_CLOSED, { winId });
-    this._renderPinnedItems();
-
-    if (this.openWindows.size === 0) {
-      this.resetToDefaultState();
-    } else {
-      const lastWin = Array.from(this.openWindows.values()).pop();
-      if (lastWin) this.updatePageFavicon(lastWin.iconValue, lastWin.title);
-    }
-    this.triggerSessionSave();
+    this.taskbarSystem.removeFromTaskbar(winId);
   }
 
   minimizeWindow(win) {
-    const taskbarItem = document.getElementById(`taskbar-${win.id}`);
-    if (taskbarItem) {
-      taskbarItem.classList.remove("active");
-      taskbarItem.classList.add("minimized");
-    }
-    const entry = this.openWindows.get(win.id);
-    if (entry?.record) entry.record.minimized = true;
-    animateWindowMinimize(win, () => {
-      win.style.display = "none";
-      win.style.pointerEvents = "";
-      win.style.animation = "";
-      win.style.transform = "";
-      win.style.opacity = "";
-    });
-    this.triggerSessionSave();
+    this.windowStateManager.minimizeWindow(win);
   }
 
   toggleFullscreen(win) {
-    const wasFullscreen = win.dataset.fullscreen === "true";
-    const header = win.querySelector(".window-header");
-
-    if (wasFullscreen) {
-      if (document.fullscreenElement === win || document.fullscreenElement === document.documentElement) {
-        document.exitFullscreen();
-      }
-
-      Object.assign(win.style, {
-        width: win.dataset.prevWidth,
-        height: win.dataset.prevHeight,
-        left: win.dataset.prevLeft,
-        top: win.dataset.prevTop,
-        zIndex: win.dataset.prevZIndex || win.style.zIndex
-      });
-
-      if (header) header.style.display = "";
-      win.dataset.fullscreen = "false";
-      const entry = this.openWindows.get(win.id);
-      if (entry?.record) entry.record.fullscreen = false;
-    } else {
-      Object.assign(win.dataset, {
-        prevWidth: win.style.width,
-        prevHeight: win.style.height,
-        prevLeft: win.style.left,
-        prevTop: win.style.top,
-        prevZIndex: win.style.zIndex
-      });
-
-      const overFullscreen = window._settings?.notificationsOverFullscreen === true;
-
-      const makeFullscreen = () => {
-        Object.assign(win.style, {
-          width: "100vw",
-          height: "100vh",
-          left: "0",
-          top: "0",
-          zIndex: overFullscreen ? "99999" : win.style.zIndex
-        });
-        if (header) header.style.display = "none";
-      };
-
-      if (overFullscreen) {
-        if (document.documentElement.requestFullscreen) {
-          document.documentElement.requestFullscreen().then(makeFullscreen).catch(makeFullscreen);
-        } else {
-          makeFullscreen();
-        }
-      } else {
-        if (win.requestFullscreen) {
-          win.requestFullscreen().then(makeFullscreen).catch(makeFullscreen);
-        } else {
-          makeFullscreen();
-        }
-      }
-
-      win.dataset.fullscreen = "true";
-      const entry = this.openWindows.get(win.id);
-      if (entry?.record) entry.record.fullscreen = true;
-
-      const onFullscreenChange = () => {
-        if (!document.fullscreenElement) {
-          if (header) header.style.display = "";
-          Object.assign(win.style, {
-            width: win.dataset.prevWidth || win.style.width,
-            height: win.dataset.prevHeight || win.style.height,
-            left: win.dataset.prevLeft || win.style.left,
-            top: win.dataset.prevTop || win.style.top,
-            zIndex: win.dataset.prevZIndex || win.style.zIndex
-          });
-          win.dataset.fullscreen = "false";
-          const entry = this.openWindows.get(win.id);
-          if (entry?.record) entry.record.fullscreen = false;
-          document.removeEventListener("fullscreenchange", onFullscreenChange);
-        }
-      };
-
-      document.addEventListener("fullscreenchange", onFullscreenChange);
-    }
-    this.triggerSessionSave();
+    this.windowStateManager.toggleFullscreen(win);
   }
 
   setupWindowControls(win) {
@@ -1469,58 +329,39 @@ export class WindowManager {
   }
 
   _silenceWindow(win) {
-    const iframes = win.querySelectorAll("iframe");
-    iframes.forEach((iframe) => {
-      try {
-        iframe.src = "about:blank";
-        iframe.remove();
-      } catch (e) {
-        iframe.src = "about:blank";
-      }
-    });
-
-    const media = win.querySelectorAll("video, audio");
-    media.forEach((m) => {
-      m.pause();
-      m.src = "";
-      m.load();
-      m.remove();
-    });
+    this.windowStateManager._silenceWindow(win);
   }
 
   _showWindowContextMenu(e, win) {
-    showStartStyleMenu(e, (addMenuItem, addSeparator) => this._buildContextMenuItems(addMenuItem, addSeparator, win));
+    this.contextMenuManager._showWindowContextMenu(e, win);
   }
 
   _initSnapGhost() {
-    const ghost = document.createElement("div");
-    ghost.id = "snap-ghost";
-    document.getElementById("desktop").appendChild(ghost);
-    this._snapGhost = ghost;
+    this.snapSystem._initSnapGhost();
   }
 
   makeDraggable(win) {
-    makeDraggable(win, this);
+    this.snapSystem.makeDraggable(win);
   }
 
   _getSnapZone(x, y) {
-    return _getSnapZone(this, x, y);
+    return this.snapSystem._getSnapZone(x, y);
   }
 
   _showSnapGhost(zone) {
-    _showSnapGhost(this, zone);
+    this.snapSystem._showSnapGhost(zone);
   }
 
   _hideSnapGhost() {
-    _hideSnapGhost(this);
+    this.snapSystem._hideSnapGhost();
   }
 
   _applySnap(win, zone) {
-    _applySnap(this, win, zone);
+    this.snapSystem._applySnap(win, zone);
   }
 
   _unsnap(win) {
-    _unsnap(this, win);
+    this.snapSystem._unsnap(win);
   }
 
   makeResizable(win, setHeightUnsetElement = null) {
@@ -1528,104 +369,11 @@ export class WindowManager {
   }
 
   _downloadWindowContent(win) {
-    const filename =
-      (win.querySelector(".window-header span")?.textContent?.trim() || win.id).replace(/[^\w\s-]/g, "").trim() ||
-      "window";
-
-    const iframe = win.querySelector("iframe");
-    if (iframe) {
-      const src = iframe.src || "";
-
-      if (!src || src === "about:blank" || src === "") {
-        return;
-      }
-
-      if (src.startsWith("blob:")) {
-        try {
-          const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-          if (iframeDoc) {
-            const html = iframeDoc.documentElement?.outerHTML ?? "";
-            const blob = new Blob([html], { type: "text/html" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = filename + ".html";
-            a.click();
-            setTimeout(() => URL.revokeObjectURL(url), 1000);
-          }
-        } catch (e) {}
-        return;
-      }
-
-      if (src.startsWith("data:")) {
-        const a = document.createElement("a");
-        a.href = src;
-        a.download = filename + ".html";
-        a.click();
-        return;
-      }
-
-      try {
-        const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-        if (iframeDoc) {
-          const html = iframeDoc.documentElement?.outerHTML ?? "";
-          const blob = new Blob([html], { type: "text/html" });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = filename + ".html";
-          a.click();
-          setTimeout(() => URL.revokeObjectURL(url), 1000);
-          return;
-        }
-      } catch (e) {}
-
-      const a = document.createElement("a");
-      a.href = src;
-      a.download = filename + ".html";
-      a.target = "_blank";
-      a.rel = "noopener noreferrer";
-      a.click();
-      return;
-    }
-
-    const content = win.querySelector(".window-content");
-    const html = content ? content.innerHTML : win.outerHTML;
-    const blob = new Blob([html], { type: "text/html" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename + ".html";
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    this.utils._downloadWindowContent(win);
   }
 
   getWindowControls(externalUrl) {
-    const externalBtn = externalUrl ? `<button class="external-btn" title="Open in External">↗</button>` : "";
-
-    const downloadBtn = `<button class="download-btn" title="Download">
-      <svg viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg">
-        <path d="M5 7L1.5 3.5h2V0h3v3.5h2L5 7zM0 9h10v1H0z"/>
-      </svg>
-    </button>`;
-
-    if (window._settings?.macOsControls) {
-      return `<div class="window-controls mac-controls">
-        <button class="close-btn mac-btn mac-close" title="Close"></button>
-        ${externalBtn}
-        <button class="minimize-btn mac-btn mac-minimize" title="Minimize"></button>
-        ${downloadBtn}
-        <button class="maximize-btn mac-btn mac-maximize" title="Maximize"></button>
-      </div>`;
-    }
-
-    return `<div class="window-controls">
-      <button class="minimize-btn" title="Minimize"><svg viewBox="0 0 10 1" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h10v1H0z"></path></svg></button>
-      ${externalBtn}
-      ${downloadBtn}
-      <button class="maximize-btn" title="Maximize"><svg viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg"><path d="M0 0v10h10V0H0zm1 1h8v8H1V1z"></path></svg></button>
-      <button class="close-btn" title="Close"><svg viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg"><path d="M10.2.7L9.5 0 5.1 4.4.7 0 0 .7l4.4 4.4L0 9.5l.7.7 4.4-4.4 4.4 4.4.7-.7-4.4-4.4z"></path></svg></button>
-    </div>`;
+    return this.utils.getWindowControls(externalUrl);
   }
 
   sendNotify(text, appSource = null) {
@@ -1633,127 +381,38 @@ export class WindowManager {
   }
 
   _isWindowPinned(winId) {
-    const pinnedItems = this._getPinnedItems();
-    return pinnedItems.some((item) => item.winId === winId);
+    return this.taskbarSystem._isWindowPinned(winId);
   }
 
   _getPinnedItems() {
-    try {
-      const pinnedData = localStorage.getItem(StorageKeys.pinnedTaskbarItems);
-      return pinnedData ? JSON.parse(pinnedData) : [];
-    } catch {
-      return [];
-    }
+    return this.taskbarSystem._getPinnedItems();
   }
 
   _savePinnedItems(pinnedItems) {
-    try {
-      localStorage.setItem(StorageKeys.pinnedTaskbarItems, JSON.stringify(pinnedItems));
-    } catch {}
+    this.taskbarSystem._savePinnedItems(pinnedItems);
   }
 
   _pinToTaskbar(winId) {
-    const entry = this.openWindows.get(winId);
-    if (!entry) return;
-
-    const win = document.getElementById(winId);
-    const appId = win?.dataset?.appId || this._guessAppIdFromWinId(winId);
-
-    const pinnedItems = this._getPinnedItems();
-    if (pinnedItems.some((item) => item.winId === winId)) return;
-
-    pinnedItems.push({
-      winId,
-      appId,
-      title: entry.title,
-      iconValue: entry.iconValue,
-      color: entry.color
-    });
-
-    this._savePinnedItems(pinnedItems);
-    this._renderPinnedItems();
+    this.taskbarSystem._pinToTaskbar(winId);
   }
 
   _unpinFromTaskbar(winId) {
-    const pinnedItems = this._getPinnedItems();
-    const filtered = pinnedItems.filter((item) => item.winId !== winId);
-    this._savePinnedItems(filtered);
-    this._renderPinnedItems();
+    this.taskbarSystem._unpinFromTaskbar(winId);
   }
 
   _renderPinnedItems() {
-    const taskbarWindows = document.getElementById("taskbar-windows");
-    if (!taskbarWindows) return;
-
-    const existingPinnedContainer = document.getElementById("taskbar-pinned-container");
-    if (existingPinnedContainer) existingPinnedContainer.remove();
-
-    const pinnedItems = this._getPinnedItems();
-    if (pinnedItems.length === 0) return;
-
-    const pinnedContainer = document.createElement("div");
-    pinnedContainer.id = "taskbar-pinned-container";
-    pinnedContainer.className = "taskbar-pinned-container";
-
-    pinnedItems.forEach((item) => {
-      const pinnedItem = document.createElement("div");
-      pinnedItem.className = "taskbar-item pinned";
-      pinnedItem.appendChild(this._buildTaskbarIcon(item.iconValue, item.title, item.color));
-
-      pinnedItem.onclick = () => {
-        if (window.appLauncher && item.appId) {
-          window.appLauncher.launch(item.appId);
-        }
-      };
-
-      pinnedItem.oncontextmenu = (e) => {
-        e.preventDefault();
-        showStartStyleMenu(e, (addMenuItem, addSeparator) => {
-          addMenuItem("Unpin from Taskbar", () => this._unpinFromTaskbar(item.winId), "fa-thumbtack");
-          addSeparator();
-          addMenuItem(
-            "Launch App",
-            () => {
-              if (window.appLauncher && item.appId) {
-                window.appLauncher.launch(item.appId);
-              }
-            },
-            "fa-play"
-          );
-        });
-      };
-
-      pinnedContainer.appendChild(pinnedItem);
-    });
-
-    if (pinnedContainer.children.length > 0) {
-      taskbarWindows.insertBefore(pinnedContainer, taskbarWindows.firstChild);
-    }
+    this.taskbarSystem._renderPinnedItems();
   }
 
   _findAppIdByWinId(winId) {
-    const gamesList = window.gamesList;
-    if (!gamesList || !gamesList.appMap) return null;
-
-    for (const [appId, appData] of Object.entries(gamesList.appMap)) {
-      if (appData.id === winId) return appId;
-    }
-    return null;
+    return this.utils._findAppIdByWinId(winId);
   }
 
   closeAll() {
-    const winIds = Array.from(this.openWindows.keys());
-    for (const winId of winIds) {
-      const win = document.getElementById(winId);
-      if (win) {
-        this._silenceWindow(win);
-        win.remove();
-      }
-      this.removeFromTaskbar(winId);
-    }
+    this.windowStateManager.closeAll();
   }
 
   restorePinnedItems() {
-    this._renderPinnedItems();
+    this.taskbarSystem.restorePinnedItems();
   }
 }

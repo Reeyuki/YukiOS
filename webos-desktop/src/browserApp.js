@@ -15,12 +15,13 @@ export class BrowserApp extends BaseApp {
   constructor(services) {
     super(services);
     this.windowHelper = new WindowHelper(this.wm);
-    this.winId = "browser-app-main";
+    this.winId = `browser-app-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     this.tabs = [];
     this.tabIdCounter = 0;
     this.activeTabId = null;
     this.dragSrcTabId = null;
     this._destroyed = false;
+    this.isIncognito = false;
     this.proxies = PROXIES;
     this.defaultBookmarks = [
       { name: "Google", url: "https://www.google.com/webhp?igu=1" },
@@ -52,19 +53,24 @@ export class BrowserApp extends BaseApp {
     this.darkModeExclusions = {};
     this.homepageUrl = "yuki://home";
     this._declarativeApp = null;
+    this.incognitoHistory = [];
+    this.incognitoDownloads = [];
+    this.incognitoBookmarks = [];
 
     this._loadPrefs();
   }
 
-  open(title = "Yuki Browser", url = null) {
+  open(title = "Yuki Browser", url = null, isIncognito = false) {
+    this.isIncognito = isIncognito;
     if (this._isSingletonOpen(this.winId)) return;
 
     this._destroyed = false;
 
     const startUrl = url || this.homepageUrl;
+    const displayTitle = String(isIncognito ? "🕵️ Incognito - " + title : title);
 
     const content = `
-      <div class="browser-root" id="browser-root-${this.winId}">
+      <div class="browser-root${isIncognito ? " incognito-mode" : ""}" id="browser-root-${this.winId}">
         <div class="browser-tabbar" id="tabbar-${this.winId}" style="display:flex;align-items:center;">
           <div id="tab-strip-${this.winId}" style="display:flex;flex:1;overflow:auto;align-items:center;min-width:0;"></div>
           <div id="controls-slot-${this.winId}" style="display:flex;align-items:center;flex-shrink:0;"></div>
@@ -102,7 +108,7 @@ export class BrowserApp extends BaseApp {
       </div>
     `;
 
-    this.win = this.windowHelper.createAndMountWindow(this.winId, title, content, "900px", "620px", {
+    this.win = this.windowHelper.createAndMountWindow(this.winId, displayTitle, content, "900px", "620px", {
       icon: resolveIconUrl("static/icons/firefox.webp")
     });
 
@@ -165,12 +171,15 @@ export class BrowserApp extends BaseApp {
   }
 
   _saveBookmarks() {
+    if (this.isIncognito) return;
     localStorage.setItem(StorageKeys.browserBookmarks, JSON.stringify(this.bookmarks));
   }
   _saveDownloads() {
+    if (this.isIncognito) return;
     localStorage.setItem(StorageKeys.browserDownloads, JSON.stringify(this.downloads));
   }
   _saveHistory() {
+    if (this.isIncognito) return;
     localStorage.setItem(StorageKeys.browserHistory, JSON.stringify(this.history.slice(-500)));
   }
 
@@ -185,6 +194,10 @@ export class BrowserApp extends BaseApp {
 
   _addToHistory(url, title) {
     if (url === "yuki://home") return;
+    if (this.isIncognito) {
+      this.incognitoHistory.push({ url, title: title || url, time: Date.now() });
+      return;
+    }
     this.history.push({ url, title: title || url, time: Date.now() });
     this._saveHistory();
   }
@@ -1083,7 +1096,22 @@ export class BrowserApp extends BaseApp {
     tab.isGoogle = false;
     tab.iframe.removeAttribute("src");
 
-    const homeSrcdoc = `<!DOCTYPE html>
+    const homeSrcdoc = this.isIncognito ? this.getIncognitoHomeSrcdoc() : this.getRegularHomeSrcdoc();
+
+    const onLoad = () => {
+      tab.iframe.removeEventListener("load", onLoad);
+      this.showLoading(false);
+      tab.title = this.isIncognito ? "Incognito - New Tab" : "Yuki - New Tab";
+      tab.faviconUrl = null;
+      this.renderTabs();
+      if (this.activeTabId === tab.id) this.updateAddressBar("yuki://home");
+    };
+    tab.iframe.addEventListener("load", onLoad);
+    tab.iframe.srcdoc = homeSrcdoc;
+  }
+
+  getRegularHomeSrcdoc() {
+    return `<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
@@ -1202,7 +1230,7 @@ body {
 <div class="main">
   <div class="logo">🌸</div>
   <h1>Yuki Browser</h1>
-  <p class="tagline">Your serene corner of the web</p>
+  <p class="tagline">Your web-based desktop experience</p>
   <div class="time" id="clock">--:--</div>
   <div class="date" id="datestr"></div>
   <div class="quick-links">
@@ -1237,20 +1265,182 @@ body {
       window.parent.postMessage({ type: 'browser-navigate', url: btn.getAttribute('data-nav') }, '*');
     });
   });
-<\/script>
+</script>
 </body>
 </html>`;
+  }
 
-    const onLoad = () => {
-      tab.iframe.removeEventListener("load", onLoad);
-      this.showLoading(false);
-      tab.title = "Yuki - New Tab";
-      tab.faviconUrl = null;
-      this.renderTabs();
-      if (this.activeTabId === tab.id) this.updateAddressBar("yuki://home");
-    };
-    tab.iframe.addEventListener("load", onLoad);
-    tab.iframe.srcdoc = homeSrcdoc;
+  getIncognitoHomeSrcdoc() {
+    return `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Incognito - New Tab</title>
+<style>
+.bg-orb {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.3;
+  pointer-events: none;
+  z-index: -1;
+}
+.bg-orb-1 {
+  width: 400px;
+  height: 400px;
+  background: #e94560;
+  top: -100px;
+  left: -100px;
+}
+.bg-orb-2 {
+  width: 300px;
+  height: 300px;
+  background: #0f3460;
+  bottom: -50px;
+  right: -50px;
+}
+.bg-orb-3 {
+  width: 250px;
+  height: 250px;
+  background: #16213e;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  text-align: center;
+}
+.logo {
+  font-size: 64px;
+  margin-bottom: 16px;
+}
+.main h1 {
+  font-size: 32px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+  margin: 0 0 8px 0;
+}
+.tagline {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0 0 32px 0;
+}
+.privacy-notice {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0 0 32px 0;
+  padding: 12px 20px;
+  background: rgba(233, 69, 96, 0.15);
+  border: 1px solid rgba(233, 69, 96, 0.3);
+  border-radius: 8px;
+  max-width: 400px;
+}
+.time {
+  font-size: 48px;
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.95);
+  margin: 0 0 8px 0;
+}
+.date {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0 0 40px 0;
+}
+.quick-links {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 600px;
+}
+.quick-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 20px;
+  background: rgba(15, 52, 96, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+  min-width: 80px;
+}
+.quick-link:hover {
+  background: rgba(233, 69, 96, 0.2);
+  border-color: rgba(233, 69, 96, 0.4);
+  transform: translateY(-2px);
+}
+.quick-link-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+.quick-link-label {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.9);
+}
+body {
+  margin: 0;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  background: #0f0f1a;
+  color: rgba(255, 255, 255, 0.9);
+}
+</style>
+</head>
+<body>
+<div class="bg-orb bg-orb-1"></div>
+<div class="bg-orb bg-orb-2"></div>
+<div class="bg-orb bg-orb-3"></div>
+<div class="main">
+  <div class="logo">🕵️</div>
+  <h1>Incognito Mode</h1>
+  <p class="tagline">Private browsing in your web-based desktop</p>
+  <div class="privacy-notice">
+    🔒 Your browsing history, cookies, and site data won't be saved after you close this window.
+  </div>
+  <div class="time" id="clock">--:--</div>
+  <div class="date" id="datestr"></div>
+  <div class="quick-links">
+    <button class="quick-link" data-nav="https://www.google.com/webhp?igu=1">
+      <img class="quick-link-icon" src="https://www.google.com/favicon.ico" onerror="this.style.display='none'" />
+      <div class="quick-link-label">Google</div>
+    </button>
+    <button class="quick-link" data-nav="https://www.wikipedia.org">
+      <img class="quick-link-icon" src="https://www.wikipedia.org/favicon.ico" onerror="this.style.display='none'" />
+      <div class="quick-link-label">Wikipedia</div>
+    </button>
+    <button class="quick-link" data-nav="https://www.github.com">
+      <img class="quick-link-icon" src="https://www.github.com/favicon.ico" onerror="this.style.display='none'" />
+      <div class="quick-link-label">GitHub</div>
+    </button>
+    <button class="quick-link" data-nav="https://www.reddit.com">
+      <img class="quick-link-icon" src="https://www.reddit.com/favicon.ico" onerror="this.style.display='none'" />
+      <div class="quick-link-label">Reddit</div>
+    </button>
+  </div>
+</div>
+<script>
+  function tick() {
+    var now = new Date();
+    document.getElementById('clock').textContent = now.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+    document.getElementById('datestr').textContent = now.toLocaleDateString([], {weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  }
+  tick();
+  setInterval(tick, 1000);
+  document.querySelectorAll('[data-nav]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      window.parent.postMessage({ type: 'browser-navigate', url: btn.getAttribute('data-nav') }, '*');
+    });
+  });
+</script>
+</body>
+</html>`;
   }
 
   interceptGoogleLinks(tab) {
@@ -1841,6 +2031,20 @@ body {
     menu.style.right = window.innerWidth - rect.right + "px";
     menu.innerHTML = `
       <div class="browser-dropdown-section">
+        <div class="browser-dropdown-item" data-action="new-tab">
+          <i class="fas fa-plus di-icon" style="width:16px;margin-right:8px;opacity:0.6;"></i>
+          <span class="di-label">New Tab</span>
+        </div>
+        <div class="browser-dropdown-item" data-action="new-window">
+          <i class="fas fa-window-maximize di-icon" style="width:16px;margin-right:8px;opacity:0.6;"></i>
+          <span class="di-label">New Window</span>
+        </div>
+        <div class="browser-dropdown-item" data-action="new-private-window">
+          <i class="fas fa-user-secret di-icon" style="width:16px;margin-right:8px;opacity:0.6;"></i>
+          <span class="di-label">New Private Window</span>
+        </div>
+      </div>
+      <div class="browser-dropdown-section">
         <div class="browser-dropdown-item" data-action="downloads">
           <i class="fas fa-download di-icon" style="width:16px;margin-right:8px;opacity:0.6;"></i>
           <span class="di-label">Downloads</span>
@@ -1881,7 +2085,10 @@ body {
         e.stopPropagation();
         const action = item.dataset.action;
         this._closeDropdown();
-        if (action === "downloads") this.openDownloadsPanel();
+        if (action === "new-tab") this.createTab(this.homepageUrl, true);
+        else if (action === "new-window") this.createNewWindow();
+        else if (action === "new-private-window") this.createNewPrivateWindow();
+        else if (action === "downloads") this.openDownloadsPanel();
         else if (action === "history") this.openHistoryPanel();
         else if (action === "bookmarks") this.openBookmarksPanel();
         else if (action === "toggle-bookmarkbar") this.toggleBookmarkBar();
@@ -1961,13 +2168,18 @@ body {
     this._closePanel();
     const panel = this._createPanel("History", (searchVal) => this._renderHistoryBody(searchVal), true);
     const footer = panel.querySelector(".panel-footer");
-    if (this.history.length > 0) {
+    const historyToUse = this.isIncognito ? this.incognitoHistory : this.history;
+    if (historyToUse.length > 0) {
       const clearBtn = document.createElement("button");
       clearBtn.className = "panel-action-btn danger";
       clearBtn.textContent = "Clear History";
       clearBtn.addEventListener("click", () => {
-        this.history = [];
-        this._saveHistory();
+        if (this.isIncognito) {
+          this.incognitoHistory = [];
+        } else {
+          this.history = [];
+          this._saveHistory();
+        }
         this._closePanel();
         this.openHistoryPanel();
       });
@@ -1976,7 +2188,7 @@ body {
   }
 
   _renderHistoryBody(filter) {
-    let items = [...this.history].reverse();
+    let items = [...(this.isIncognito ? this.incognitoHistory : this.history)].reverse();
     if (filter) {
       const q = filter.toLowerCase();
       items = items.filter((h) => h.url.toLowerCase().includes(q) || (h.title || "").toLowerCase().includes(q));
@@ -2163,6 +2375,16 @@ body {
       }
     };
     setTimeout(() => document.addEventListener("click", close), 0);
+  }
+
+  createNewWindow() {
+    const newBrowser = new BrowserApp(this._services);
+    newBrowser.open("Yuki Browser", this.homepageUrl, false);
+  }
+
+  createNewPrivateWindow() {
+    const newBrowser = new BrowserApp(this._services);
+    newBrowser.open("Yuki Browser", this.homepageUrl, true);
   }
 
   renderTabs() {

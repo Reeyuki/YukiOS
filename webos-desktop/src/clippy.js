@@ -90,7 +90,7 @@ export function initClippy() {
 
   clippyPromise = new Promise((resolve) => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get("game") || isMobile || isLocalhost || !isExplicitlyEnabled()) return resolve(null);
+    if (params.get("game") || isMobile || !isExplicitlyEnabled()) return resolve(null);
     waitForBootAndInit(resolve);
   });
 
