@@ -65,8 +65,8 @@ Yuki OS uses a dark glassmorphism theme with a comprehensive theming system. All
 - **Scrollbars**: 8px width, `rgba(255,255,255,0.12)` thumb.
 - **Checkboxes/Inputs**: Never use native browser checkboxes, plain inputs, or dropdowns. Always use `appearance: none`,
   `-webkit-appearance: none`, custom border/background, and `::after` pseudo-element for checkmarks via CSS variables.
-- **Theming System**: Comprehensive theme engine with 25+ built-in themes, transparent UI toggle, advanced brightness controls,
-  and GUI scale options. Themes are managed via `settings.js` and applied through CSS variables.
+- **Theming System**: Comprehensive theme engine with 25+ built-in themes, transparent UI toggle, advanced brightness
+  controls, and GUI scale options. Themes are managed via `settings.js` and applied through CSS variables.
 
 ---
 
@@ -216,7 +216,8 @@ Always prefer these over reimplementing logic.
 ### AppLauncher - `appLauncher.js`
 
 Central dispatcher. `launch(appId, swf, extra)` is the main entry point. Routes to app instance or creates sandboxed
-iframe for games. Handles analytics, achievements, Steam stats. Integrates with installed apps registry for app management.
+iframe for games. Handles analytics, achievements, Steam stats. Integrates with installed apps registry for app
+management.
 
 ### gamesList - `gamesList.js`
 
@@ -272,36 +273,36 @@ and custom naming. Integrates with AppLauncher for app management.
 
 ### System Utilities
 
-| App                  | File            | Notes                                           |
-| -------------------- | --------------- | ----------------------------------------------- |
-| TerminalApp          | -               | CLI: ls, cd, mkdir, rm, cp, mv, cat, pwd, etc.  |
-| TaskManagerApp       | -               | Window/process list, close apps                 |
-| SettingsApp          | -               | Theme, wallpaper, taskbar, sound, DND, language, GUI scale, brightness, transparency |
-| ProfileCustomizerApp | -               | Username, profile picture, desktop colors       |
-| AchievementsApp      | -               | Tracks launches, playtime milestones, friend stats            |
-| AboutApp             | -               | System info, version, credits                   |
-| newsApp              | `news.js`       | News aggregation with categories, unread bubble                |
-| WeatherApp           | `weather.js`    | Current weather and forecast                    |
-| CategoriesApp        | `categories.js` | Organize games by genre/tag                     |
-| GuideApp             | `yukiOsGuide.js` | Interactive guide and tutorial system           |
-| ClipboardManagerApp  | `clipboardManager.js` | Clipboard history and management              |
+| App                  | File                  | Notes                                                                                |
+| -------------------- | --------------------- | ------------------------------------------------------------------------------------ |
+| TerminalApp          | -                     | CLI: ls, cd, mkdir, rm, cp, mv, cat, pwd, etc.                                       |
+| TaskManagerApp       | -                     | Window/process list, close apps                                                      |
+| SettingsApp          | -                     | Theme, wallpaper, taskbar, sound, DND, language, GUI scale, brightness, transparency |
+| ProfileCustomizerApp | -                     | Username, profile picture, desktop colors                                            |
+| AchievementsApp      | -                     | Tracks launches, playtime milestones, friend stats                                   |
+| AboutApp             | -                     | System info, version, credits                                                        |
+| newsApp              | `news.js`             | News aggregation with categories, unread bubble                                      |
+| WeatherApp           | `weather.js`          | Current weather and forecast                                                         |
+| CategoriesApp        | `categories.js`       | Organize games by genre/tag                                                          |
+| GuideApp             | `yukiOsGuide.js`      | Interactive guide and tutorial system                                                |
+| ClipboardManagerApp  | `clipboardManager.js` | Clipboard history and management                                                     |
 
 ### System Services
 
-| Service       | File           | Role                                                       |
-| ------------- | -------------- | ---------------------------------------------------------- |
-| DesktopUI     | `desktopui.js` | Desktop background, taskbar, start menu                    |
-| startMenu     | `startMenu.js` | Start menu and app grid UI                                 |
-| system.js     | -              | Wallpaper and theme management                             |
-| wallpapers.js | -              | Wallpaper store (13 default + custom)                      |
-| settings.js   | -              | Preference storage (localStorage wrapper)                  |
-| audioMixer.js | -              | Global audio, per-app volume via `createAudioTrack(appId)` |
-| analytics.js  | -              | Usage tracking (launches, playtime, features, friend stats) |
-| clippy.js     | -              | Virtual assistant with contextual tips                     |
-| BrowserApp    | -              | Lightweight web browser with bookmarks                     |
-| installedApps | `installedApps.js` | App registry for installed/uninstalled apps management    |
-| networkTray   | `networkTray.js` | Network status display in system tray                     |
-| powerTray     | `powerTray.js` | Battery/power indicator in system tray                     |
+| Service       | File               | Role                                                        |
+| ------------- | ------------------ | ----------------------------------------------------------- |
+| DesktopUI     | `desktopui.js`     | Desktop background, taskbar, start menu                     |
+| startMenu     | `startMenu.js`     | Start menu and app grid UI                                  |
+| system.js     | -                  | Wallpaper and theme management                              |
+| wallpapers.js | -                  | Wallpaper store (13 default + custom)                       |
+| settings.js   | -                  | Preference storage (localStorage wrapper)                   |
+| audioMixer.js | -                  | Global audio, per-app volume via `createAudioTrack(appId)`  |
+| analytics.js  | -                  | Usage tracking (launches, playtime, features, friend stats) |
+| clippy.js     | -                  | Virtual assistant with contextual tips                      |
+| BrowserApp    | -                  | Lightweight web browser with bookmarks                      |
+| installedApps | `installedApps.js` | App registry for installed/uninstalled apps management      |
+| networkTray   | `networkTray.js`   | Network status display in system tray                       |
+| powerTray     | `powerTray.js`     | Battery/power indicator in system tray                      |
 
 ---
 
@@ -358,14 +359,32 @@ NEWS_UPDATES["2025-01-15"] = [{ icon: "fa-star", title: "My App", description: "
 
 ---
 
-## System Tray API (via BaseApp)
+## System Tray API
 
-| Method                             | Purpose                                 |
-| ---------------------------------- | --------------------------------------- |
-| `registerTray(winId, icon, label)` | Register window to system tray          |
-| `unregisterTray(winId)`            | Remove window from system tray          |
-| `sendToTray(winId)`                | Hide window + taskbar item → tray       |
-| `restoreFromTray(winId)`           | Restore window + taskbar item from tray |
+Accessed via `trayManager` singleton from `src/tray.js`.
+
+| Method                                               | Purpose                                                                                                         |
+| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `register(winId, icon, label, options = {})`         | Register window to system tray with options (resident, showInTray, onClick, onQuit, contextMenuItems, priority) |
+| `unregister(winId)`                                  | Remove window from system tray                                                                                  |
+| `sendToTray(winId)`                                  | Hide window + taskbar item → tray                                                                               |
+| `restoreFromTray(winId)`                             | Restore window + taskbar item from tray                                                                         |
+| `updateIcon(winId, newIcon)`                         | Update tray icon for registered item                                                                            |
+| `updateLabel(winId, newLabel)`                       | Update tray label for registered item                                                                           |
+| `updateContextMenuItems(winId, newContextMenuItems)` | Update context menu items for registered item                                                                   |
+| `isRegistered(winId)`                                | Check if window is registered in tray                                                                           |
+| `isInTray(winId)`                                    | Check if window is currently in tray                                                                            |
+| `getTrayItems()`                                     | Get array of all tray items                                                                                     |
+| `quitApp(winId)`                                     | Quit app and remove from tray                                                                                   |
+
+**Register options:**
+
+- `resident: boolean` - App stays in tray permanently (cannot be restored to window)
+- `showInTray: boolean` - App shows in tray icon area
+- `onClick: function` - Callback when tray icon clicked
+- `onQuit: function` - Callback when app is quit from tray
+- `contextMenuItems: array` - Custom context menu items (objects with label, action, icon, type)
+- `priority: number` - Sorting priority (higher = more prominent)
 
 ---
 

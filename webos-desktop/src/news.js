@@ -4,6 +4,22 @@ import { desktop } from "./desktop.js";
 
 const NEWS_UPDATES = [
   {
+    date: "May 30, 2026",
+    sections: [
+      {
+        icon: "fa-wand-magic-sparkles",
+        title: "Features & Improvements",
+        items: [
+          [
+            "fa-stack",
+            "Alt + Q Window Switching",
+            "Added Alt + Q behaviour for switching focused windows like alt+tab behaviour of desktops."
+          ]
+        ]
+      }
+    ]
+  },
+  {
     date: "May 29, 2026",
     sections: [
       {
@@ -54,12 +70,7 @@ const NEWS_UPDATES = [
           ],
           ["fa-mask", "Incognito mode", "Add incognito mode in browser"]
         ]
-      }
-    ]
-  },
-  {
-    date: "May 29, 2026",
-    sections: [
+      },
       {
         icon: "fa-wand-magic-sparkles",
         title: "New App",

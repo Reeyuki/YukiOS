@@ -92,5 +92,8 @@ export const StorageKeys = {
   fontSize: "yukiOS_font_size",
   trayEnabled: "yukiOS_tray_enabled",
   trayAppVisibility: "yukiOS_tray_app_visibility",
-  userHistory: "yukiOS_user_history"
+  userHistory: "yukiOS_user_history",
+  windowSwitcherMode: "yukiOS_window_switcher_mode",
+  windowSwitcherUI: "yukiOS_window_switcher_ui",
+  windowSwitcherIncludeMinimized: "yukiOS_window_switcher_include_minimized"
 };

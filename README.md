@@ -1,386 +1,254 @@
-Yuki OS - Browser-Based Desktop Environment
+# Yuki OS - Browser-Based Desktop Environment
 
 https://discord.gg/uFuGfseB9Z
 
-> A desktop environment running entirely inside a single web page, featuring 30+ integrated applications, 3700+ games, emulators, persistent storage, workspaces, and a modular service-oriented architecture.
+> A desktop environment running entirely inside a single web page, featuring 30+ integrated applications, 3700+ games,
+> emulators, persistent storage, workspaces, and a modular service-oriented architecture.
 
+Yuki OS is a full browser-based operating system built entirely in vanilla JavaScript with no frontend frameworks. It
+transforms a browser tab into a persistent desktop environment with draggable windows, multitasking, emulators,
+productivity tools, filesystem APIs, custom applications, and runtime services.
 
-Yuki OS is a full browser-based operating system built entirely in vanilla JavaScript with no frontend frameworks. It transforms a browser tab into a persistent desktop environment with draggable windows, multitasking, emulators, productivity tools, filesystem APIs, custom applications, and runtime services.
-
-Run Flash games, DOS applications, 3DS emulation, retro console games, office tools, coding environments, and browser apps side-by-side inside a unified desktop shell.
+Run Flash games, DOS applications, 3DS emulation, retro console games, office tools, coding environments, and browser
+apps side-by-side inside a unified desktop shell.
 
 Its built entirely in vanilla JS.
 
-![Steam interface](.github/steam.png)
-![Setup](.github/setupsettings.png)
-![Achievements](.github/browserachieve.png)
-![Music player](.github/music.png)
-![Applications](.github/apps.png)
+![Steam interface](.github/steam.png) ![Setup](.github/setupsettings.png) ![Achievements](.github/browserachieve.png)
+![Music player](.github/music.png) ![Applications](.github/apps.png)
 
 ---
 
-✨ Key Features
+# ✨ Key Features
 
-Desktop Environment
+## Desktop Environment
 
-Real multitasking desktop - Draggable, resizable, minimizable, maximizable windows
+- Real multitasking desktop - Draggable, resizable, minimizable, maximizable windows
+- Advanced snapping system - Half-screen, quarter-screen, maximize, restore, keyboard snapping
+- Workspace system - Multiple virtual desktops with isolated layouts
+- Taskbar & start menu - Running app management, pinning, previews, tray integration
+- Traybar system - Apps can minimize to tray and continue running in background
+- Alt+Q switching - Window cycling and focus management
+- Session persistence - Restore windows, layouts, settings, and workspace state after reload
+- Desktop icons - Persistent shortcuts with refresh and drag-drop support
+- Dynamic transparency - Adaptive transparency system that reacts to running apps/games
+- Window previews - Live taskbar previews similar to Aero Peek
+- Global command palette - Fast launcher and command system via Ctrl+K / F1
+- Right-click context menus - Desktop, file, taskbar, and app context systems
+- Advanced file menus - Convert/transform files, create archives, extract archives, bulk-download selections as ZIP,
+  set/save wallpapers
+- Archive support - Extract: `.zip`, `.gz`, `.tar`, `.tar.gz`, `.tgz`, `.tar.xz`, `.7z`; Create: `.zip`, `.7z`, `.tar`,
+  `.tar.gz`
+- Window action menus - Snap left/right/maximize, move windows between workspaces, open properties, pin/unpin taskbar
+  apps
+- Start menu context editing - Add, edit, remove, and reorder custom Start grid shortcuts
+- Tray context controls - Open or quit background/resident tray applications
+- Tray context menus - Right-click tray icons for quick actions and controls
+- Network tray display - Real-time network status and connection info
+- Power indicator tray app - Battery/power status with quick access to power settings
+- Steam library context actions - Favorites, hide/unhide, collection management, add game shortcut to desktop
+- Taskbar positioning - Bottom/top/left/right taskbar layouts
+- PWA support - Installable as a standalone offline-capable application
+- Single-file deployment - Entire OS bundled into one HTML file
 
-Advanced snapping system - Half-screen, quarter-screen, maximize, restore, keyboard snapping
+## Application System
 
-Workspace system - Multiple virtual desktops with isolated layouts
+- 30+ built-in applications
+- 3700+ integrated games
+- App registry system - Dynamic app metadata, disable/uninstall support, custom naming
+- Sandboxed iframe apps - Secure isolation for external content
+- App Creator - Create persistent shortcuts to websites and external apps
+- URL launch support - Launch directly using `?app=` and `?game=` parameters
 
-Taskbar & start menu - Running app management, pinning, previews, tray integration
+## Multi-Runtime & Emulation
 
-Traybar system - Apps can minimize to tray and continue running in background
+- Ruffle - Flash emulation
+- JS-DOS - DOS runtime and DOS game emulation
+- V86 - Full x86 virtualization in browser
+- Azahar - Nintendo 3DS emulation
+- EmulatorJS integration - GBA, NDS, SNES, PSP, Sega, and more
+- WebAssembly application support
+- HTML5/WebGL runtime support
 
-Alt+Tab switching - Window cycling and focus management
+## System Features
 
-Session persistence - Restore windows, layouts, settings, and workspace state after reload
-
-Desktop icons - Persistent shortcuts with refresh and drag-drop support
-
-Dynamic transparency - Adaptive transparency system that reacts to running apps/games
-
-Window previews - Live taskbar previews similar to Aero Peek
-
-Global command palette - Fast launcher and command system via Ctrl+K / F1
-
-Right-click context menus - Desktop, file, taskbar, and app context systems
-
-Advanced file menus - Convert/transform files, create archives, extract archives, bulk-download selections as ZIP, set/save wallpapers
-
-Archive support - Extract: `.zip`, `.gz`, `.tar`, `.tar.gz`, `.tgz`, `.tar.xz`, `.7z`; Create: `.zip`, `.7z`, `.tar`, `.tar.gz`
-
-Window action menus - Snap left/right/maximize, move windows between workspaces, open properties, pin/unpin taskbar apps
-
-Start menu context editing - Add, edit, remove, and reorder custom Start grid shortcuts
-
-Tray context controls - Open or quit background/resident tray applications
-
-Tray context menus - Right-click tray icons for quick actions and controls
-
-Network tray display - Real-time network status and connection info
-
-Power indicator tray app - Battery/power status with quick access to power settings
-
-Steam library context actions - Favorites, hide/unhide, collection management, add game shortcut to desktop
-
-Taskbar positioning - Bottom/top/left/right taskbar layouts
-
-PWA support - Installable as a standalone offline-capable application
-
-Single-file deployment - Entire OS bundled into one HTML file
-
-
-Application System
-
-30+ built-in applications
-
-3700+ integrated games
-
-App registry system - Dynamic app metadata, disable/uninstall support, custom naming
-
-Sandboxed iframe apps - Secure isolation for external content
-
-App Creator - Create persistent shortcuts to websites and external apps
-
-URL launch support - Launch directly using ?app= and ?game= parameters
-
-Multi-Runtime & Emulation
-
-Ruffle - Flash emulation
-
-JS-DOS - DOS runtime and DOS game emulation
-
-V86 - Full x86 virtualization in browser
-
-Azahar - Nintendo 3DS emulation
-
-EmulatorJS integration - GBA, NDS, SNES, PSP, Sega, and more
-
-WebAssembly application support
-
-HTML5/WebGL runtime support
-
-
-System Features
-
-Virtual filesystem - IndexedDB-backed BrowserFS persistent storage
-
-File explorer - Thumbnails, drag-drop, file operations, previews
-
-Notifications - Toasts, notification center, Do-Not-Disturb mode, notification positioning, app icons
-
-Audio mixer - Per-app audio routing and volume control, system audios
-
-Analytics & achievements - Usage tracking, milestones, playtime systems, friend stats
-
-Import/export backups - Full system migration and restore
-
-User profiles - Username, avatar, theme personalization, GUI scale option
-
-Setup wizard - First-run onboarding and configuration
-
-Theme engine - Glassmorphism desktop styling with light/dark variants, transparent UI toggle, advanced brightness controls
-
-Wallpaper system - Built-in and custom wallpapers
-
-Calendar system - Events and date popup support
-
-Clippy assistant - Animated contextual desktop assistant
-
-Cross-app event system - EventBus-driven communication architecture
-
-Offline support - Service worker caching and installability
-
-
+- Virtual filesystem - IndexedDB-backed BrowserFS persistent storage
+- File explorer - Thumbnails, drag-drop, file operations, previews
+- Notifications - Toasts, notification center, Do-Not-Disturb mode, notification positioning, app icons
+- Audio mixer - Per-app audio routing and volume control, system audios
+- Analytics & achievements - Usage tracking, milestones, playtime systems, friend stats
+- Import/export backups - Full system migration and restore
+- User profiles - Username, avatar, theme personalization, GUI scale option
+- Setup wizard - First-run onboarding and configuration
+- Theme engine - Glassmorphism desktop styling with light/dark variants, transparent UI toggle, advanced brightness
+  controls
+- Wallpaper system - Built-in and custom wallpapers
+- Calendar system - Events and date popup support
+- Clippy assistant - Animated contextual desktop assistant
+- Cross-app event system - EventBus-driven communication architecture
+- Offline support - Service worker caching and installability
 
 ---
 
-🏗 Architecture
+# 🏗 Architecture
 
 Yuki OS uses a modular service-oriented architecture centered around shared runtime services.
 
-Core Runtime Services
+## Core Runtime Services
 
-WindowManager - Window lifecycle, snapping, z-ordering, drag/resize
+- WindowManager - Window lifecycle, snapping, z-ordering, drag/resize
+- FileSystemManager - Persistent BrowserFS virtual filesystem
+- NotificationCenter - Notifications and DND state
+- EventBus - Cross-application event system
+- AppLauncher - Centralized application dispatcher
+- DesktopUI - Desktop/taskbar/start menu renderer
 
-FileSystemManager - Persistent BrowserFS virtual filesystem
+## Storage
 
-NotificationCenter - Notifications and DND state
+- IndexedDB persistence via BrowserFS
+- LocalStorage-backed preference layer
+- Persistent desktop/workspace/session state
 
-EventBus - Cross-application event system
+---
 
-AppLauncher - Centralized application dispatcher
+# For Building
 
-DesktopUI - Desktop/taskbar/start menu renderer
+## Requirements
 
-Storage
+- Node.js 18+
+- npm or pnpm
 
-IndexedDB persistence via BrowserFS
+## Setup
 
-LocalStorage-backed preference layer
-
-Persistent desktop/workspace/session state
-
-
-For Building
-
-Requirements
-
-Node.js 18+
-npm or pnpm
-
-Setup
-
+```bash
 cd webos-desktop
-
 npm install
 
 npm run dev
-
 npm run build:dev
-
 npm run build
-
+```
 
 ---
 
-📦 Built-in Applications
+# 📦 Built-in Applications
 
-Productivity & System
+## Productivity & System
 
-Explorer
+- Explorer
+- Terminal
+- Notepad
+- Markdown Editor
+- Yuki Code
+- VS Code integration
+- Settings
+- Task Manager
+- Installed Apps
+- Calculator
+- About
+- Shortcuts
+- Setup Wizard
+- What's New
+- Achievements
+- Profile Customizer
+- Yuki AI
+- Storage Editor
+- Yuki Convert
+- Clipboard Manager
+- Categories
+- Weather
+- News
+- Yuki OS Guide
 
-Terminal
+## Creative & Media
 
-Notepad
+- Paint
+- Photopea
+- LibreSprite
+- Camera
+- Office Viewer
+- Yuki Blender
+- YouTube Utilities
 
-Markdown Editor
+## Browser & Internet
 
-Yuki Code
+- Yuki Browser
+- kiwiIRC
+- Steam integration
+- App Creator
 
-VS Code integration
+## Emulation & Games
 
-Settings
+- EmulatorJS
+- Ruffle
+- JS-DOS
+- V86
+- Azahar
 
-Task Manager
-
-Installed Apps
-
-Calculator
-
-About
-
-Shortcuts
-
-Setup Wizard
-
-What's New
-
-Achievements
-
-Profile Customizer
-
-Yuki AI
-
-Storage Editor
-
-Yuki Convert
-
-Clipboard Manager
-
-Categories
-
-Weather
-
-News
-
-Yuki OS Guide
-
-
-Creative & Media
-
-Paint
-
-Photopea
-
-LibreSprite
-
-Camera
-
-Office Viewer
-
-Yuki Blender
-
-YouTube Utilities
-
-
-Browser & Internet
-
-Yuki Browser
-
-kiwiIRC
-
-Steam integration
-
-App Creator
-
-
-Emulation & Games
-
-EmulatorJS
-
-Ruffle
-
-JS-DOS
-
-V86
-
-Azahar
-
-
-Tray API
+## Tray API
 
 Apps can:
 
-minimize to tray
-
-restore from tray
-
-register tray icons
-
-continue running in background
-
-
+- minimize to tray
+- restore from tray
+- register tray icons
+- continue running in background
 
 ---
 
-🔧 Build & Deployment
+# 🔧 Build & Deployment
 
-Build Commands
+## Build Commands
 
+```bash
 npm run dev
-
 npm run build:dev
-
 npm run build
-
 npm run preview
+```
 
 ---
 
-🛠 Tech Stack
+# 🛠 Tech Stack
 
-Vite
-
-viteSingleFile
-
-BrowserFS
-
-IndexedDB
-
-interactjs
-
-Ruffle
-
-EmulatorJS
-
-Monaco Editor
-
-Three.js
-
-PDF.js
-
-JSZip
-
-fflate
-
-7z-wasm
-
-Handsontable
-
-Mammoth.js
-
-Font Awesome
-
-
+- Vite
+- viteSingleFile
+- BrowserFS
+- IndexedDB
+- interactjs
+- Ruffle
+- EmulatorJS
+- Monaco Editor
+- Three.js
+- PDF.js
+- JSZip
+- fflate
+- 7z-wasm
+- Handsontable
+- Mammoth.js
+- Font Awesome
 
 ---
 
-🎮 Supported Content
+# 🎮 Supported Content
 
-Supported Application Types
+## Supported Application Types
 
-Vanilla JS applications
+- Vanilla JS applications
+- WebAssembly apps
+- HTML5/WebGL games
+- Flash applications
+- DOS software
+- Emulator ROMs
+- Remote web apps
 
-WebAssembly apps
+## Supported File Types
 
-HTML5/WebGL games
-
-Flash applications
-
-DOS software
-
-Emulator ROMs
-
-Remote web apps
-
-
-Supported File Types
-
-Images
-
-Audio
-
-Video
-
-PDFs
-
-Markdown
-
-Office documents
-
-Archives
-
-ROM files
+- Images
+- Audio
+- Video
+- PDFs
+- Markdown
+- Office documents
+- Archives
+- ROM files

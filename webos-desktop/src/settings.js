@@ -83,7 +83,10 @@ export class SettingsApp extends BaseApp {
           } catch {
             return {};
           }
-        })()
+        })(),
+        windowSwitcherMode: localStorage.getItem(StorageKeys.windowSwitcherMode) || "mru",
+        windowSwitcherUI: localStorage.getItem(StorageKeys.windowSwitcherUI) || "overlay",
+        windowSwitcherIncludeMinimized: localStorage.getItem(StorageKeys.windowSwitcherIncludeMinimized) !== "false"
       };
 
       this._applyCursor(this._settings.cursorDataUrl);
@@ -478,6 +481,49 @@ export class SettingsApp extends BaseApp {
             <div id="trayAppsList" style="margin-top: 10px; width: 100%;">
               <div style="padding: 12px; color: rgba(255,255,255,0.5); font-size: 13px; text-align: center;">No tray apps registered</div>
             </div>
+          </div>
+        </div>
+
+        <div class="settings-card" style="margin-top: 16px;">
+          <div class="settings-card-header"><i class="fas fa-exchange-alt"></i> Window Switcher (Alt+Q)</div>
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Switching Logic</span>
+              <span class="settings-label-desc">Order mode for cycling through windows</span>
+            </div>
+            <select id="settingsWindowSwitcherMode" class="settings-select">
+              <option value="mru" ${this._settings.windowSwitcherMode === "mru" ? "selected" : ""}>Most Recently Used (MRU)</option>
+              <option value="stack" ${this._settings.windowSwitcherMode === "stack" ? "selected" : ""}>Cycle / Stack Order</option>
+            </select>
+          </div>
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">UI Display Mode</span>
+              <span class="settings-label-desc">Visual representation while cycling</span>
+            </div>
+            <select id="settingsWindowSwitcherUI" class="settings-select">
+              <option value="overlay" ${this._settings.windowSwitcherUI === "overlay" ? "selected" : ""}>
+                App Switcher Overlay (shows previews)
+              </option>
+
+              <option value="direct" ${this._settings.windowSwitcherUI === "direct" ? "selected" : ""}>
+                Fast Switching (no visual UI)
+              </option>
+
+              <option value="taskbar" ${this._settings.windowSwitcherUI === "taskbar" ? "selected" : ""}>
+                Switch using Taskbar highlight
+              </option>
+            </select>
+          </div>
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Include Minimized Windows</span>
+              <span class="settings-label-desc">Show minimized windows in the switcher</span>
+            </div>
+            <label class="settings-toggle">
+              <input type="checkbox" id="settingsWindowSwitcherIncludeMinimized" ${this._settings.windowSwitcherIncludeMinimized ? "checked" : ""}/>
+              <span class="settings-track"><span class="settings-thumb"></span></span>
+            </label>
           </div>
         </div>
       </div>
@@ -1339,6 +1385,36 @@ export class SettingsApp extends BaseApp {
     }
 
     this._renderTrayAppsList(win);
+
+    const windowSwitcherModeSelect = win.querySelector("#settingsWindowSwitcherMode");
+    if (windowSwitcherModeSelect) {
+      windowSwitcherModeSelect.addEventListener("change", () => {
+        this._settings.windowSwitcherMode = windowSwitcherModeSelect.value;
+        localStorage.setItem(StorageKeys.windowSwitcherMode, windowSwitcherModeSelect.value);
+        showSavedMessage();
+      });
+    }
+
+    const windowSwitcherUISelect = win.querySelector("#settingsWindowSwitcherUI");
+    if (windowSwitcherUISelect) {
+      windowSwitcherUISelect.addEventListener("change", () => {
+        this._settings.windowSwitcherUI = windowSwitcherUISelect.value;
+        localStorage.setItem(StorageKeys.windowSwitcherUI, windowSwitcherUISelect.value);
+        showSavedMessage();
+      });
+    }
+
+    const windowSwitcherIncludeMinimizedToggle = win.querySelector("#settingsWindowSwitcherIncludeMinimized");
+    if (windowSwitcherIncludeMinimizedToggle) {
+      windowSwitcherIncludeMinimizedToggle.addEventListener("change", () => {
+        this._settings.windowSwitcherIncludeMinimized = windowSwitcherIncludeMinimizedToggle.checked;
+        localStorage.setItem(
+          StorageKeys.windowSwitcherIncludeMinimized,
+          String(windowSwitcherIncludeMinimizedToggle.checked)
+        );
+        showSavedMessage();
+      });
+    }
   }
 
   _applyTrayEnabled(enabled) {

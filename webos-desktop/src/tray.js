@@ -269,7 +269,8 @@ class TrayManager {
       } else {
         row.innerHTML = `<span style="font-size:12px;">${icon}</span>`;
       }
-      row.addEventListener("click", () => {
+      row.addEventListener("click", (e) => {
+        e.stopPropagation();
         this.restoreFromTray(winId);
         this._hidePopup();
       });

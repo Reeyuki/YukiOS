@@ -284,6 +284,12 @@ const SHORTCUTS_DATA = [
     desc: "Increase color temperature (cooler)",
     cat: "global",
     icon: "fas fa-temperature-half"
+  },
+  {
+    keys: ["Alt", "Q"],
+    desc: "Cycle through open windows (configurable in Settings)",
+    cat: "global",
+    icon: "fas fa-exchange-alt"
   }
 ];
 
