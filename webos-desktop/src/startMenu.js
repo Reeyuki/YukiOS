@@ -4,7 +4,7 @@ import { camelize } from "./utils.js";
 import { StorageKeys } from "./settings/settings.js";
 import { speak } from "./clippy.js";
 import { isImageFile } from "./utils.js";
-import { resolveIconUrl, resolveGhUrl } from "./shared/assetResolver.js";
+import { resolveIconUrl } from "./shared/assetResolver.js";
 import { showDynamicContextMenu, refreshIcons } from "./shared/contextMenu.js";
 import { CDN_CONFIG } from "./shared/cdnConfig.js";
 import { getAppRegistry } from "./appRegistry.js";
@@ -424,12 +424,12 @@ function getGridItems() {
 function saveGridItems(items) {
   localStorage.setItem(StorageKeys.startMenuGridItems, JSON.stringify(items));
 }
-
 function showStartItemEditor(appLauncher, currentItem) {
   return new Promise((resolve) => {
     const t0 = performance.now();
+
     const overlay = document.createElement("div");
-    overlay.className = "explorer-confirmation-overlay";
+    overlay.className = "explorer-confirmation-overlay start-editor-overlay";
     overlay.style.zIndex = "20002";
 
     const apps = Object.entries(appLauncher.appMap)
@@ -440,12 +440,12 @@ function showStartItemEditor(appLauncher, currentItem) {
       }))
       .sort((a, b) => a.title.localeCompare(b.title));
 
-    const tApps = performance.now();
-
     const selectOptions = apps
       .map(
         (app) =>
-          `<option value="${app.id}" ${currentItem && currentItem.app === app.id ? "selected" : ""}>${app.title} (${app.id})</option>`
+          `<option value="${app.id}" ${
+            currentItem && currentItem.app === app.id ? "selected" : ""
+          }>${app.title} (${app.id})</option>`
       )
       .join("");
 
@@ -460,61 +460,101 @@ function showStartItemEditor(appLauncher, currentItem) {
     };
 
     const dialogTitle = currentItem ? "Edit Start Menu Item" : "Add Start Menu Item";
+
     const titleVal = currentItem ? currentItem.title : apps[0]?.title || "";
+
     const iconVal = getCleanIcon(currentItem ? currentItem.app : apps[0]?.id, currentItem?.icon);
 
     let uploadedIconDataUrl = null;
+
     if (currentItem && currentItem.icon && isCdnOrUrl(currentItem.icon)) {
       uploadedIconDataUrl = currentItem.icon;
     }
 
     overlay.innerHTML = `
-      <div class="_fd-dialog" style="max-width:450px;overflow:visible;">
+      <div class="start-editor-dialog">
         <div class="_fd-dialog-title">${dialogTitle}</div>
-        <div style="margin-bottom:12px;position:relative;">
-          <label style="display:block;font-size:11px;color:#aaa;margin-bottom:4px;">Select Application</label>
-          <select id="editor-app-select" style="display:none;">
+
+        <!-- App select -->
+        <div class="start-editor-field">
+          <label class="start-editor-label">Select Application</label>
+
+          <select id="editor-app-select" class="start-editor-hidden-select">
             ${selectOptions}
           </select>
-          <div id="custom-app-select" style="background:#2a2a2a;color:#fff;border:1px solid rgba(255,255,255,0.15);width:100%;padding:7px;border-radius:5px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;box-sizing:border-box;font-size:12px;height:34px;">
+
+          <div id="custom-app-select" class="start-editor-select-box">
             <span id="custom-app-select-label">Select Application...</span>
-            <span style="font-size:10px;color:#aaa;margin-left:8px;">▼</span>
+            <span class="start-editor-select-arrow">▼</span>
           </div>
-          <div id="custom-app-dropdown-list" style="display:none;position:absolute;top:100%;left:0;right:0;background:#1e1e1e;border:1px solid rgba(255,255,255,0.15);border-top:none;border-radius:0 0 5px 5px;max-height:180px;overflow-y:auto;z-index:20003;box-shadow:0 4px 12px rgba(0,0,0,0.5);margin-top:2px;">
-            <div style="padding:6px;border-bottom:1px solid rgba(255,255,255,0.1);position:sticky;top:0;background:#1e1e1e;z-index:2;">
-              <input id="custom-app-search" type="text" placeholder="Search application..." style="width:100%;background:#2a2a2a;border:1px solid rgba(255,255,255,0.15);border-radius:3px;padding:5px 7px;color:#fff;font-size:12px;box-sizing:border-box;outline:none;">
+
+          <div id="custom-app-dropdown-list" class="start-editor-dropdown">
+            <div class="start-editor-dropdown-search">
+              <input
+                id="custom-app-search"
+                type="text"
+                placeholder="Search application..."
+                class="start-editor-search-input"
+              />
             </div>
             <div id="custom-app-options-container"></div>
           </div>
         </div>
-        <div style="margin-bottom:12px;">
-          <label style="display:block;font-size:11px;color:#aaa;margin-bottom:4px;">Display Title</label>
-          <input id="editor-title-input" class="_fd-dialog-input" type="text" value="${titleVal}" style="width:100%;">
+
+        <!-- Title -->
+        <div class="start-editor-field">
+          <label class="start-editor-label">Display Title</label>
+          <input id="editor-title-input"
+                 class="_fd-dialog-input start-editor-input"
+                 type="text"
+                 value="${titleVal}" />
         </div>
-        <div style="margin-bottom:12px;">
-          <label style="display:block;font-size:11px;color:#aaa;margin-bottom:4px;">FontAwesome Icon Class</label>
-          <input id="editor-icon-input" class="_fd-dialog-input" type="text" value="${iconVal}" style="width:100%;">
-          <div id="editor-icon-error" style="color:#ff6b6b;font-size:10px;margin-top:4px;display:none;">Must start with 'fa' (e.g. 'fas fa-star')</div>
-        </div>
-        <div style="margin-bottom:16px;">
-          <label style="display:block;font-size:11px;color:#aaa;margin-bottom:4px;">Or Upload Custom Image Icon</label>
-          <div style="display:flex;align-items:center;gap:10px;">
-            <input id="editor-icon-file" type="file" accept="image/*" style="display:none;">
-            <button id="editor-upload-btn" class="_fd-btn" style="background:#2a2a2a;color:#fff;border:1px solid rgba(255,255,255,0.15);padding:6px 12px;border-radius:4px;cursor:pointer;font-size:12px;height:32px;">Choose Image...</button>
-            <div id="editor-image-preview" style="width:32px;height:32px;border-radius:4px;background:#1e1e1e;border:1px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;overflow:hidden;">
-              <span id="editor-preview-placeholder" style="font-size:10px;color:#666;">None</span>
-            </div>
-            <button id="editor-clear-upload-btn" class="_fd-btn" style="background:#ff6b6b;color:#fff;padding:6px 12px;border-radius:4px;cursor:pointer;font-size:12px;display:none;height:32px;">Clear</button>
+
+        <!-- Icon -->
+        <div class="start-editor-field">
+          <label class="start-editor-label">FontAwesome Icon Class</label>
+          <input id="editor-icon-input"
+                 class="_fd-dialog-input start-editor-input"
+                 type="text"
+                 value="${iconVal}" />
+          <div id="editor-icon-error" class="start-editor-error">
+            Must start with 'fa' (e.g. 'fas fa-star')
           </div>
         </div>
+
+        <!-- Upload -->
+        <div class="start-editor-field">
+          <label class="start-editor-label">
+            Or Upload Custom Image Icon
+          </label>
+
+          <div class="start-editor-upload-row">
+            <input id="editor-icon-file" type="file" accept="image/*" hidden />
+
+            <button id="editor-upload-btn" class="_fd-btn start-editor-btn">
+              Choose Image...
+            </button>
+
+            <div id="editor-image-preview" class="start-editor-preview">
+              <span id="editor-preview-placeholder">None</span>
+            </div>
+
+            <button id="editor-clear-upload-btn"
+                    class="_fd-btn start-editor-clear-btn">
+              Clear
+            </button>
+          </div>
+        </div>
+
+        <!-- Actions -->
         <div class="_fd-dialog-actions">
           <button class="_fd-btn _fd-btn-cancel">Cancel</button>
-          <button class="_fd-btn _fd-btn-confirm" style="background:var(--brand,#4a90d9);color:#fff;">Save</button>
+          <button class="_fd-btn _fd-btn-confirm start-editor-save-btn">
+            Save
+          </button>
         </div>
       </div>
     `;
-
-    const tHtml = performance.now();
 
     const selectEl = overlay.querySelector("#editor-app-select");
     const customSelect = overlay.querySelector("#custom-app-select");
@@ -533,65 +573,18 @@ function showStartItemEditor(appLauncher, currentItem) {
 
     const optionItems = apps.map((app) => {
       const opt = document.createElement("div");
-      opt.style.padding = "8px 12px";
-      opt.style.cursor = "pointer";
-      opt.style.fontSize = "12px";
-      opt.style.display = "flex";
-      opt.style.alignItems = "center";
-      opt.style.gap = "8px";
-      opt.style.color = "#fff";
-      opt.style.transition = "background 0.15s";
-
-      opt.addEventListener("mouseenter", () => {
-        if (selectEl.value !== app.id) {
-          opt.style.background = "rgba(255,255,255,0.08)";
-        }
-      });
-      opt.addEventListener("mouseleave", () => {
-        if (selectEl.value !== app.id) {
-          opt.style.background = "";
-        }
-      });
-
-      let iconHtml = "";
-      const cleanIcon = app.icon && !isCdnOrUrl(app.icon) ? app.icon : null;
-      if (cleanIcon) {
-        iconHtml = `<i class="${cleanIcon}" style="width:14px;text-align:center;color:#aaa;"></i>`;
-      } else {
-        const appData = appLauncher.appMap[app.id];
-        const iconVal = appData?.icon || "";
-        const isImage =
-          isImageFile(iconVal) ||
-          iconVal.startsWith("http") ||
-          iconVal.startsWith("data:") ||
-          iconVal.startsWith("blob:") ||
-          iconVal.startsWith("/");
-        if (isImage) {
-          let iconSrc = iconVal;
-          if (iconVal.startsWith("static/") || iconVal.startsWith("/static/")) {
-            const cleanPath = iconVal.startsWith("/") ? iconVal.substring(1) : iconVal;
-            iconSrc = `${CDN_CONFIG.repos.main.base}/${cleanPath}`;
-          } else {
-            iconSrc = resolveIconUrl(iconVal);
-          }
-          iconHtml = `<img src="${iconSrc}" style="width:14px;height:14px;object-fit:contain;" alt="">`;
-        } else {
-          iconHtml = `<i class="fas fa-star" style="width:14px;text-align:center;color:#aaa;"></i>`;
-        }
-      }
+      opt.className = "start-editor-option";
 
       opt.innerHTML = `
-        ${iconHtml}
-        <div style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
-          ${app.title} <span style="font-size:10px;color:#888;">(${app.id})</span>
+        <div class="start-editor-option-title">
+          ${app.title}
+          <span class="start-editor-option-id">(${app.id})</span>
         </div>
       `;
 
       opt.addEventListener("click", (e) => {
         e.stopPropagation();
         selectEl.value = app.id;
-        updateSelectedLabel();
-        updateSelectedStyles();
         dropdownList.style.display = "none";
         selectEl.dispatchEvent(new Event("change"));
       });
@@ -606,168 +599,7 @@ function showStartItemEditor(appLauncher, currentItem) {
       };
     });
 
-    const tOptions = performance.now();
-
     document.body.appendChild(overlay);
-
-    const tMount = performance.now();
-
-    const updateSelectedStyles = () => {
-      optionItems.forEach((item) => {
-        if (item.id === selectEl.value) {
-          item.element.style.background = "var(--brand, #4a90d9)";
-        } else {
-          item.element.style.background = "";
-        }
-      });
-    };
-
-    const updateSelectedLabel = () => {
-      const selectedId = selectEl.value;
-      const selectedApp = apps.find((a) => a.id === selectedId);
-      if (selectedApp) {
-        customSelectLabel.textContent = `${selectedApp.title} (${selectedApp.id})`;
-      } else {
-        customSelectLabel.textContent = "Select Application...";
-      }
-    };
-
-    const filterOptions = (filterText = "") => {
-      const query = filterText.toLowerCase().trim();
-      let hasResults = false;
-      optionItems.forEach((item) => {
-        const matches = item.title.includes(query) || item.idLower.includes(query);
-        item.element.style.display = matches ? "flex" : "none";
-        if (matches) hasResults = true;
-      });
-
-      let noResultEl = optionsContainer.querySelector("#custom-select-no-result");
-      if (!hasResults) {
-        if (!noResultEl) {
-          noResultEl = document.createElement("div");
-          noResultEl.id = "custom-select-no-result";
-          noResultEl.style.padding = "8px 12px";
-          noResultEl.style.color = "#888";
-          noResultEl.style.fontSize = "12px";
-          noResultEl.textContent = "No applications found";
-          optionsContainer.appendChild(noResultEl);
-        }
-      } else if (noResultEl) {
-        noResultEl.remove();
-      }
-    };
-
-    updateSelectedLabel();
-    updateSelectedStyles();
-
-    customSelect.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const isOpen = dropdownList.style.display === "block";
-      if (isOpen) {
-        dropdownList.style.display = "none";
-      } else {
-        dropdownList.style.display = "block";
-        filterOptions(searchInput.value);
-        searchInput.focus();
-      }
-    });
-
-    searchInput.addEventListener("input", () => {
-      filterOptions(searchInput.value);
-    });
-
-    searchInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        e.stopPropagation();
-        const firstOpt = optionItems.find((item) => item.element.style.display !== "none");
-        if (firstOpt) {
-          firstOpt.element.click();
-        }
-      }
-    });
-
-    overlay.addEventListener("click", (e) => {
-      if (!customSelect.contains(e.target) && !dropdownList.contains(e.target)) {
-        dropdownList.style.display = "none";
-      }
-    });
-
-    const validate = () => {
-      if (uploadedIconDataUrl) {
-        confirmBtn.disabled = false;
-        confirmBtn.style.opacity = "1";
-        return;
-      }
-      const val = iconInput.value.trim();
-      const isValid = val.startsWith("fa");
-      if (isValid) {
-        iconInput.style.borderColor = "";
-        overlay.querySelector("#editor-icon-error").style.display = "none";
-        confirmBtn.disabled = false;
-        confirmBtn.style.opacity = "1";
-      } else {
-        iconInput.style.borderColor = "#ff6b6b";
-        overlay.querySelector("#editor-icon-error").style.display = "block";
-        confirmBtn.disabled = true;
-        confirmBtn.style.opacity = "0.5";
-      }
-    };
-
-    const updatePreview = () => {
-      if (uploadedIconDataUrl) {
-        imagePreview.innerHTML = `<img src="${uploadedIconDataUrl}" style="width:100%;height:100%;object-fit:contain;" />`;
-        clearBtn.style.display = "block";
-        iconInput.disabled = true;
-        iconInput.style.opacity = "0.5";
-        iconInput.style.borderColor = "";
-        overlay.querySelector("#editor-icon-error").style.display = "none";
-        confirmBtn.disabled = false;
-        confirmBtn.style.opacity = "1";
-      } else {
-        imagePreview.innerHTML = `<span id="editor-preview-placeholder" style="font-size:10px;color:#666;">None</span>`;
-        clearBtn.style.display = "none";
-        iconInput.disabled = false;
-        iconInput.style.opacity = "1";
-        validate();
-      }
-    };
-
-    updatePreview();
-    iconInput.addEventListener("input", validate);
-
-    uploadBtn.addEventListener("click", () => {
-      fileInput.click();
-    });
-
-    fileInput.addEventListener("change", () => {
-      const file = fileInput.files?.[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        uploadedIconDataUrl = e.target.result;
-        updatePreview();
-      };
-      reader.readAsDataURL(file);
-    });
-
-    clearBtn.addEventListener("click", () => {
-      uploadedIconDataUrl = null;
-      fileInput.value = "";
-      updatePreview();
-    });
-
-    if (!currentItem) {
-      selectEl.addEventListener("change", () => {
-        const selectedId = selectEl.value;
-        const selectedApp = apps.find((a) => a.id === selectedId);
-        if (selectedApp) {
-          titleInput.value = selectedApp.title;
-          iconInput.value = getCleanIcon(selectedId);
-          validate();
-        }
-      });
-    }
 
     const close = () => {
       overlay.remove();
@@ -778,25 +610,23 @@ function showStartItemEditor(appLauncher, currentItem) {
       const app = selectEl.value;
       const title = titleInput.value.trim();
       const icon = uploadedIconDataUrl || iconInput.value.trim();
+
       if (!app || !title) return;
       if (!uploadedIconDataUrl && !icon.startsWith("fa")) return;
+
       overlay.remove();
       resolve({ app, title, icon });
     };
 
     cancelBtn.onclick = close;
-    overlay.addEventListener("click", (ev) => {
-      ev.stopPropagation();
-      if (ev.target === overlay) close();
+
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) close();
     });
-    overlay.addEventListener("mousedown", (ev) => {
-      ev.stopPropagation();
-    });
+
     overlay.onkeydown = (ev) => {
       if (ev.key === "Escape") close();
-      if (ev.key === "Enter" && ev.target !== selectEl && ev.target !== searchInput) {
-        confirmBtn.click();
-      }
+      if (ev.key === "Enter") confirmBtn.click();
     };
   });
 }

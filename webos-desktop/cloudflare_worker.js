@@ -1,3 +1,451 @@
+let parsedBlacklist = null;
+let lastBlacklistRaw = null;
+let cachedKey = null;
+let cachedKeySecret = null;
+
+const Caches = {
+  sessions: { data: null, time: 0, promise: null },
+  games: { data: null, time: 0, promise: null },
+  topTime: { data: null, time: 0, promise: null },
+  stats: {},
+  live: { data: null, time: 0, promise: null }
+};
+
+const CACHE_TTL = 60 * 1000;
+
+async function withCache(cacheObj, key, fetcher, ttl = CACHE_TTL) {
+  const now = Date.now();
+  let entry = key ? cacheObj[key] : cacheObj;
+  if (!entry) {
+    entry = { data: null, time: 0, promise: null };
+    if (key) cacheObj[key] = entry;
+  }
+
+  if (entry.data && now - entry.time < ttl) {
+    return entry.data;
+  }
+
+  if (!entry.promise) {
+    entry.promise = fetcher()
+      .then((data) => {
+        entry.data = data;
+        entry.time = Date.now();
+        entry.promise = null;
+        return data;
+      })
+      .catch((err) => {
+        entry.promise = null;
+        throw err;
+      });
+  }
+  return entry.promise;
+}
+
+function ipBlocked(env, ip) {
+  const raw = env.BLACKLIST_IPS || "";
+  if (lastBlacklistRaw !== raw) {
+    parsedBlacklist = raw
+      .split(",")
+      .map((v) => v.trim())
+      .filter(Boolean);
+    lastBlacklistRaw = raw;
+  }
+  for (const rule of parsedBlacklist) {
+    if (rule === ip) return true;
+    if (rule.includes("*")) {
+      const prefix = rule.split("*")[0];
+      if (ip.startsWith(prefix)) return true;
+    }
+  }
+  return false;
+}
+
+async function deriveDailyId(env, ip) {
+  const secret = env.FINGERPRINT_SECRET;
+  if (!secret) return "no-secret-configured";
+
+  if (!cachedKey || cachedKeySecret !== secret) {
+    cachedKey = await crypto.subtle.importKey(
+      "raw",
+      new TextEncoder().encode(secret),
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["sign"]
+    );
+    cachedKeySecret = secret;
+  }
+
+  const date = new Date().toISOString().slice(0, 10);
+  const message = `${date}:${ip}`;
+  const signature = await crypto.subtle.sign("HMAC", cachedKey, new TextEncoder().encode(message));
+  const hex = Array.from(new Uint8Array(signature))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+  return hex.slice(0, 32);
+}
+
+async function sendEmbed(embed) {
+  return;
+}
+
+async function sendReportEmbed(env, embed) {
+  const webhook = env.DISCORD_REPORT_WEBHOOK_URL || env.DISCORD_WEBHOOK_URL;
+  if (!webhook) return;
+  await fetch(webhook, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ embeds: [embed] })
+  });
+}
+
+function jsonResponse(data, status = 200) {
+  return new Response(JSON.stringify(data), { status, headers: corsHeaders() });
+}
+
+function normalizeApp(name) {
+  if (!name) return "unknown";
+  return name.toLowerCase().trim();
+}
+
+function checkAuth(env, req) {
+  const authSecret = env.KV_AUTH_SECRET;
+  const authHeader = req.headers.get("Authorization");
+  return authHeader === `Bearer ${authSecret}`;
+}
+
+async function fetchStatsData(env, range) {
+  let days = 30;
+  if (range === "7d") days = 7;
+  if (range === "90d") days = 90;
+  if (range === "1y") days = 365;
+
+  const daily = await env.DB.prepare(
+    `SELECT
+       date(timestamp)          AS day,
+       COUNT(*)                 AS requests,
+       COUNT(DISTINCT daily_id) AS unique_players
+     FROM analytics
+     WHERE timestamp >= datetime('now', '-' || ? || ' days')
+     GROUP BY day
+     ORDER BY day DESC`
+  )
+    .bind(days)
+    .all();
+
+  const topGames = await env.DB.prepare(
+    `SELECT
+       date(timestamp)                                          AS day,
+       lower(trim(json_extract(data, '$.app')))                AS app,
+       COUNT(*)                                                 AS count
+     FROM analytics
+     WHERE timestamp >= datetime('now', '-' || ? || ' days')
+       AND json_extract(data, '$.event') = 'launch'
+     GROUP BY day, app`
+  )
+    .bind(days)
+    .all();
+
+  const sessionsByDay = await env.DB.prepare(
+    `WITH ordered AS (
+       SELECT
+         daily_id,
+         timestamp,
+         date(timestamp) AS day,
+         LAG(timestamp) OVER (PARTITION BY daily_id ORDER BY timestamp) AS prev_ts
+       FROM analytics
+       WHERE timestamp >= datetime('now', '-' || ? || ' days')
+     ),
+     sessions AS (
+       SELECT
+         day,
+         daily_id,
+         SUM(CASE WHEN prev_ts IS NULL OR
+           (julianday(timestamp) - julianday(prev_ts)) * 86400 > 1800
+           THEN 1 ELSE 0 END) AS session_count
+       FROM ordered
+       GROUP BY day, daily_id
+     )
+     SELECT day, SUM(session_count) AS total_sessions
+     FROM sessions
+     GROUP BY day
+     ORDER BY day DESC`
+  )
+    .bind(days)
+    .all();
+
+  const sessionMap = {};
+  for (const row of sessionsByDay.results) {
+    sessionMap[row.day] = row.total_sessions;
+  }
+
+  const gamesByDay = {};
+  for (const row of topGames.results) {
+    if (!gamesByDay[row.day]) gamesByDay[row.day] = [];
+    gamesByDay[row.day].push({ app: row.app, count: row.count });
+  }
+  for (const day in gamesByDay) {
+    gamesByDay[day].sort((a, b) => b.count - a.count);
+  }
+
+  const enrichedDaily = daily.results.map((d) => ({
+    ...d,
+    requests_per_user: d.unique_players > 0 ? Math.round((d.requests / d.unique_players) * 10) / 10 : 0,
+    inferred_sessions: sessionMap[d.day] || 0
+  }));
+
+  return { daily: enrichedDaily, topGames: gamesByDay };
+}
+
+async function fetchGameCounts(env) {
+  const result = await env.DB.prepare(
+    `SELECT
+       lower(trim(json_extract(data, '$.app'))) AS app,
+       COUNT(*)                                  AS count
+     FROM analytics
+     WHERE json_extract(data, '$.event') = 'launch'
+     GROUP BY app
+     ORDER BY count DESC`
+  ).all();
+  return result.results;
+}
+
+async function fetchTopTime(env) {
+  const result = await env.DB.prepare(
+    `SELECT
+       lower(trim(json_extract(data, '$.app')))                  AS app,
+       COUNT(*)                                                   AS event_count,
+       SUM(
+         CASE
+           WHEN json_extract(data, '$.durationMs') IS NOT NULL
+           THEN CAST(json_extract(data, '$.durationMs') AS REAL)
+           ELSE 0
+         END
+       )                                                          AS total_time_ms
+     FROM analytics
+     WHERE json_extract(data, '$.durationMs') IS NOT NULL
+       AND json_extract(data, '$.app')        IS NOT NULL
+     GROUP BY app
+     ORDER BY total_time_ms DESC
+     LIMIT 30`
+  ).all();
+  return result.results;
+}
+
+async function buildAggregatedData(env) {
+  const allEvents = await env.DB.prepare(
+    `SELECT
+       daily_id,
+       timestamp,
+       lower(trim(json_extract(data, '$.event')))    AS event,
+       lower(trim(json_extract(data, '$.app')))      AS app,
+       json_extract(data, '$.durationMs')            AS duration_ms
+     FROM analytics
+     ORDER BY daily_id, timestamp ASC`
+  ).all();
+
+  const userEvents = {};
+  for (const row of allEvents.results) {
+    if (!userEvents[row.daily_id]) userEvents[row.daily_id] = [];
+    userEvents[row.daily_id].push(row);
+  }
+
+  const SESSION_GAP_MS = 30 * 60 * 1000;
+  const BOUNCE_DURATION_MS = 20 * 1000;
+
+  const sessions = [];
+  const userSessionCounts = {};
+  let totalDuration = 0;
+  let longest = 0;
+  let shortest = Infinity;
+  let bounceCount = 0;
+  let totalApps = 0;
+
+  const flowMap = {};
+  const entryMap = {};
+  const exitMap = {};
+  const sessionDiversity = [];
+  const userExploration = {};
+
+  for (const [dailyId, events] of Object.entries(userEvents)) {
+    let sessionEvents = [];
+    let sessionStart = null;
+
+    for (const ev of events) {
+      const ts = new Date(ev.timestamp).getTime();
+
+      if (sessionStart === null) {
+        sessionStart = ts;
+        sessionEvents = [ev];
+      } else {
+        const prevTs = new Date(sessionEvents[sessionEvents.length - 1].timestamp).getTime();
+        if (ts - prevTs > SESSION_GAP_MS) {
+          processSession(dailyId, sessionEvents, sessionStart, prevTs);
+          sessionStart = ts;
+          sessionEvents = [ev];
+        } else {
+          if (ev.event === "launch") {
+            let lastLaunchApp = null;
+            for (let i = sessionEvents.length - 1; i >= 0; i--) {
+              if (sessionEvents[i].event === "launch") {
+                lastLaunchApp = sessionEvents[i].app;
+                break;
+              }
+            }
+            if (lastLaunchApp && ev.app && lastLaunchApp !== ev.app) {
+              const key = `${lastLaunchApp}|||${ev.app}`;
+              flowMap[key] = (flowMap[key] || 0) + 1;
+            }
+          }
+          sessionEvents.push(ev);
+        }
+      }
+    }
+    if (sessionStart !== null && sessionEvents.length > 0) {
+      const endMs = new Date(sessionEvents[sessionEvents.length - 1].timestamp).getTime();
+      processSession(dailyId, sessionEvents, sessionStart, endMs);
+    }
+  }
+
+  function processSession(dailyId, sessionEvents, startMs, endMs) {
+    sessions.push({ dailyId, events: sessionEvents, startMs, endMs });
+
+    const dur = endMs - startMs;
+    const launchEvents = sessionEvents.filter((e) => e.event === "launch");
+    const launchCount = launchEvents.length;
+
+    if (dur > longest) longest = dur;
+    if (dur < shortest) shortest = dur;
+    totalDuration += dur;
+    totalApps += launchCount;
+    if (sessionEvents.length <= 1 || dur < BOUNCE_DURATION_MS) bounceCount++;
+
+    if (!userSessionCounts[dailyId]) userSessionCounts[dailyId] = { days: {}, totalEvents: 0 };
+    const day = new Date(startMs).toISOString().slice(0, 10);
+    if (!userSessionCounts[dailyId].days[day]) userSessionCounts[dailyId].days[day] = 0;
+    userSessionCounts[dailyId].days[day] += sessionEvents.length;
+
+    if (launchEvents.length > 0) {
+      const entryApp = launchEvents[0].app;
+      const exitApp = launchEvents[launchEvents.length - 1].app;
+      if (entryApp) entryMap[entryApp] = (entryMap[entryApp] || 0) + 1;
+      if (exitApp) exitMap[exitApp] = (exitMap[exitApp] || 0) + 1;
+    }
+
+    const uniqueApps = new Set(launchEvents.map((e) => e.app).filter(Boolean)).size;
+    sessionDiversity.push({ dailyId, unique_apps: uniqueApps, event_count: sessionEvents.length });
+
+    if (!userExploration[dailyId]) userExploration[dailyId] = { total: 0, sessions: 0 };
+    userExploration[dailyId].total += uniqueApps;
+    userExploration[dailyId].sessions += 1;
+  }
+
+  const powerUsers = Object.values(userSessionCounts).filter((u) =>
+    Object.values(u.days).some((count) => count >= 20)
+  ).length;
+
+  const count = sessions.length;
+  const avgDuration = count > 0 ? Math.round(totalDuration / count) : 0;
+  const avgApps = count > 0 ? Math.round((totalApps / count) * 10) / 10 : 0;
+
+  const sessionsResponse = {
+    total_sessions: count,
+    avg_duration_ms: avgDuration,
+    avg_apps_per_session: avgApps,
+    longest_session_ms: count > 0 ? longest : 0,
+    shortest_session_ms: count > 0 && shortest !== Infinity ? shortest : 0,
+    bounce_sessions: bounceCount,
+    power_users: powerUsers
+  };
+
+  const flowsResponse = {
+    flows: Object.entries(flowMap)
+      .map(([key, c]) => {
+        const [src, dst] = key.split("|||");
+        return { source: src, destination: dst, count: c };
+      })
+      .sort((a, b) => b.count - a.count)
+  };
+
+  const toSorted = (map) =>
+    Object.entries(map)
+      .map(([app, c]) => ({ app, count: c }))
+      .sort((a, b) => b.count - a.count);
+
+  const entryExitResponse = {
+    top_entry_apps: toSorted(entryMap).slice(0, 10),
+    top_exit_apps: toSorted(exitMap).slice(0, 10)
+  };
+
+  const avgUnique =
+    sessionDiversity.length > 0
+      ? Math.round((sessionDiversity.reduce((a, b) => a + b.unique_apps, 0) / sessionDiversity.length) * 10) / 10
+      : 0;
+
+  const topExplorers = Object.entries(userExploration)
+    .map(([id, v]) => ({
+      user_id: id.slice(0, 8) + "...",
+      avg_unique: Math.round((v.total / v.sessions) * 10) / 10
+    }))
+    .sort((a, b) => b.avg_unique - a.avg_unique)
+    .slice(0, 5);
+
+  const topDiverseSessions = sessionDiversity
+    .sort((a, b) => b.unique_apps - a.unique_apps)
+    .slice(0, 5)
+    .map((s) => ({ user_id: s.dailyId.slice(0, 8) + "...", unique_apps: s.unique_apps }));
+
+  const explorationResponse = {
+    avg_unique_apps_per_session: avgUnique,
+    top_explorers: topExplorers,
+    top_diverse_sessions: topDiverseSessions
+  };
+
+  return {
+    sessionsResponse,
+    flowsResponse,
+    entryExitResponse,
+    explorationResponse
+  };
+}
+
+async function fetchLive(env) {
+  const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+
+  const activeUsers = await env.DB.prepare(
+    `SELECT COUNT(DISTINCT daily_id) AS count FROM analytics WHERE timestamp >= ?`
+  )
+    .bind(fiveMinAgo)
+    .all();
+
+  const topActive = await env.DB.prepare(
+    `SELECT lower(trim(json_extract(data, '$.app'))) AS app, COUNT(*) AS count
+     FROM analytics WHERE timestamp >= ? AND json_extract(data, '$.event') = 'launch'
+     GROUP BY app ORDER BY count DESC LIMIT 5`
+  )
+    .bind(fiveMinAgo)
+    .all();
+
+  const recentSessions = await env.DB.prepare(
+    `SELECT daily_id, MIN(timestamp) AS first, MAX(timestamp) AS last
+     FROM analytics WHERE timestamp >= ? GROUP BY daily_id`
+  )
+    .bind(fiveMinAgo)
+    .all();
+
+  const SESSION_GAP_MS = 30 * 60 * 1000;
+  let activeSessions = 0;
+  for (const row of recentSessions.results) {
+    const diff = new Date(row.last).getTime() - new Date(row.first).getTime();
+    if (diff < SESSION_GAP_MS) activeSessions++;
+  }
+
+  return {
+    active_users_5min: activeUsers.results[0]?.count || 0,
+    active_sessions: activeSessions,
+    top_active_apps: topActive.results
+  };
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -11,90 +459,6 @@ export default {
       return new Response(null, { status: 204, headers: corsHeaders() });
     }
 
-    const rawBlacklist = (env.BLACKLIST_IPS || "")
-      .split(",")
-      .map((v) => v.trim())
-      .filter(Boolean);
-
-    function ipBlocked(ip) {
-      for (const rule of rawBlacklist) {
-        if (rule === ip) return true;
-        if (rule.includes("*")) {
-          const prefix = rule.split("*")[0];
-          if (ip.startsWith(prefix)) return true;
-        }
-      }
-      return false;
-    }
-
-    async function deriveDailyId(ip) {
-      const secret = env.FINGERPRINT_SECRET;
-      if (!secret) return "no-secret-configured";
-      const date = new Date().toISOString().slice(0, 10);
-      const message = `${date}:${ip}`;
-      const keyMaterial = await crypto.subtle.importKey(
-        "raw",
-        new TextEncoder().encode(secret),
-        { name: "HMAC", hash: "SHA-256" },
-        false,
-        ["sign"]
-      );
-      const signature = await crypto.subtle.sign("HMAC", keyMaterial, new TextEncoder().encode(message));
-      const hex = Array.from(new Uint8Array(signature))
-        .map((b) => b.toString(16).padStart(2, "0"))
-        .join("");
-      return hex.slice(0, 32);
-    }
-
-    async function sendEmbed(embed) {
-      return;
-      if (!env.DISCORD_WEBHOOK_URL) return;
-      await fetch(env.DISCORD_WEBHOOK_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ embeds: [embed] })
-      });
-    }
-
-    async function sendReportEmbed(embed) {
-      const webhook = env.DISCORD_REPORT_WEBHOOK_URL || env.DISCORD_WEBHOOK_URL;
-      if (!webhook) return;
-      await fetch(webhook, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ embeds: [embed] })
-      });
-    }
-
-    function jsonResponse(data, status = 200) {
-      return new Response(JSON.stringify(data), { status, headers: corsHeaders() });
-    }
-
-    function normalizeApp(name) {
-      if (!name) return "unknown";
-      return name.toLowerCase().trim();
-    }
-
-    function displayApp(name) {
-      if (!name) return "Unknown";
-      let s = name.trim();
-      if (s.toLowerCase().endsWith("app")) {
-        s = s.slice(0, -3).trim();
-        s = s.replace(/([a-z])([A-Z])/g, "$1 $2");
-        s = s.charAt(0).toUpperCase() + s.slice(1);
-        return s + " App";
-      }
-      s = s.replace(/([a-z])([A-Z])/g, "$1 $2");
-      return s.charAt(0).toUpperCase() + s.slice(1);
-    }
-
-    const authSecret = env.KV_AUTH_SECRET;
-
-    function checkAuth(req) {
-      const authHeader = req.headers.get("Authorization");
-      return authHeader === `Bearer ${authSecret}`;
-    }
-
     if (url.pathname === "/") {
       return new Response("Api is working!", { headers: corsHeaders("text/plain") });
     }
@@ -104,7 +468,7 @@ export default {
     }
 
     if (url.pathname.startsWith("/admin/")) {
-      if (!checkAuth(request)) {
+      if (!checkAuth(env, request)) {
         return jsonResponse({ error: "Unauthorized" }, 401);
       }
     }
@@ -120,8 +484,8 @@ export default {
       if (!appId || !title) {
         return jsonResponse({ error: "missing appId or title" }, 400);
       }
-      const ipHash = (await deriveDailyId(clientIP)).slice(0, 12);
-      await sendReportEmbed({
+      const ipHash = (await deriveDailyId(env, clientIP)).slice(0, 12);
+      await sendReportEmbed(env, {
         title: "🚨 Broken Game Reported",
         color: 15158332,
         fields: [
@@ -136,7 +500,7 @@ export default {
     }
 
     if (url.pathname === "/analytics" && request.method === "POST") {
-      if (ipBlocked(clientIP)) {
+      if (ipBlocked(env, clientIP)) {
         return jsonResponse({ error: "Forbidden" }, 403);
       }
 
@@ -148,9 +512,8 @@ export default {
       }
 
       const events = Array.isArray(payload) ? payload : [payload];
-
       const timestamp = new Date().toISOString();
-      const dailyId = await deriveDailyId(clientIP);
+      const dailyId = await deriveDailyId(env, clientIP);
 
       const inserts = events.map((event) => {
         if (event.app) event.app = normalizeApp(event.app);
@@ -164,91 +527,13 @@ export default {
       });
 
       await env.DB.batch(inserts);
-
       return jsonResponse({ status: "ok", count: events.length });
     }
+
     if (url.pathname === "/admin/stats" && request.method === "GET") {
       const range = url.searchParams.get("range") || "30d";
-      let days = 30;
-      if (range === "7d") days = 7;
-      if (range === "90d") days = 90;
-      if (range === "1y") days = 365;
-
-      const daily = await env.DB.prepare(
-        `SELECT
-           date(timestamp)          AS day,
-           COUNT(*)                 AS requests,
-           COUNT(DISTINCT daily_id) AS unique_players
-         FROM analytics
-         WHERE timestamp >= datetime('now', '-' || ? || ' days')
-         GROUP BY day
-         ORDER BY day DESC`
-      )
-        .bind(days)
-        .all();
-
-      const topGames = await env.DB.prepare(
-        `SELECT
-           date(timestamp)                                          AS day,
-           lower(trim(json_extract(data, '$.app')))                AS app,
-           COUNT(*)                                                 AS count
-         FROM analytics
-         WHERE timestamp >= datetime('now', '-' || ? || ' days')
-           AND json_extract(data, '$.event') = 'launch'
-         GROUP BY day, app`
-      )
-        .bind(days)
-        .all();
-
-      const sessionsByDay = await env.DB.prepare(
-        `WITH ordered AS (
-           SELECT
-             daily_id,
-             timestamp,
-             date(timestamp) AS day,
-             LAG(timestamp) OVER (PARTITION BY daily_id ORDER BY timestamp) AS prev_ts
-           FROM analytics
-           WHERE timestamp >= datetime('now', '-' || ? || ' days')
-         ),
-         sessions AS (
-           SELECT
-             day,
-             daily_id,
-             SUM(CASE WHEN prev_ts IS NULL OR
-               (julianday(timestamp) - julianday(prev_ts)) * 86400 > 1800
-               THEN 1 ELSE 0 END) AS session_count
-           FROM ordered
-           GROUP BY day, daily_id
-         )
-         SELECT day, SUM(session_count) AS total_sessions
-         FROM sessions
-         GROUP BY day
-         ORDER BY day DESC`
-      )
-        .bind(days)
-        .all();
-
-      const sessionMap = {};
-      for (const row of sessionsByDay.results) {
-        sessionMap[row.day] = row.total_sessions;
-      }
-
-      const gamesByDay = {};
-      for (const row of topGames.results) {
-        if (!gamesByDay[row.day]) gamesByDay[row.day] = [];
-        gamesByDay[row.day].push({ app: row.app, count: row.count });
-      }
-      for (const day in gamesByDay) {
-        gamesByDay[day].sort((a, b) => b.count - a.count);
-      }
-
-      const enrichedDaily = daily.results.map((d) => ({
-        ...d,
-        requests_per_user: d.unique_players > 0 ? Math.round((d.requests / d.unique_players) * 10) / 10 : 0,
-        inferred_sessions: sessionMap[d.day] || 0
-      }));
-
-      return jsonResponse({ daily: enrichedDaily, topGames: gamesByDay });
+      const result = await withCache(Caches.stats, range, () => fetchStatsData(env, range));
+      return jsonResponse(result);
     }
 
     if (url.pathname === "/admin/list" && request.method === "GET") {
@@ -266,385 +551,49 @@ export default {
     }
 
     if (url.pathname === "/api/game-play-counts" && request.method === "GET") {
-      const result = await env.DB.prepare(
-        `SELECT
-           lower(trim(json_extract(data, '$.app'))) AS app,
-           COUNT(*)                                  AS count
-         FROM analytics
-         WHERE json_extract(data, '$.event') = 'launch'
-         GROUP BY app
-         ORDER BY count DESC`
-      ).all();
+      const results = await withCache(Caches.games, null, () => fetchGameCounts(env));
       const playCounts = {};
-      for (const row of result.results) {
-        const normalizedApp = row.app.toLowerCase().trim();
-        playCounts[normalizedApp] = row.count;
+      for (const row of results) {
+        if (row.app) {
+          playCounts[row.app] = row.count;
+        }
       }
       return jsonResponse(playCounts);
     }
 
     if (url.pathname === "/admin/games" && request.method === "GET") {
-      const result = await env.DB.prepare(
-        `SELECT
-           lower(trim(json_extract(data, '$.app'))) AS app,
-           COUNT(*)                                  AS count
-         FROM analytics
-         WHERE json_extract(data, '$.event') = 'launch'
-         GROUP BY app
-         ORDER BY count DESC`
-      ).all();
-      return jsonResponse({ results: result.results });
+      const results = await withCache(Caches.games, null, () => fetchGameCounts(env));
+      return jsonResponse({ results });
     }
 
     if (url.pathname === "/admin/top-played-time-games" && request.method === "GET") {
-      const result = await env.DB.prepare(
-        `SELECT
-           lower(trim(json_extract(data, '$.app')))                  AS app,
-           COUNT(*)                                                   AS event_count,
-           SUM(
-             CASE
-               WHEN json_extract(data, '$.durationMs') IS NOT NULL
-               THEN CAST(json_extract(data, '$.durationMs') AS REAL)
-               ELSE 0
-             END
-           )                                                          AS total_time_ms
-         FROM analytics
-         WHERE json_extract(data, '$.durationMs') IS NOT NULL
-           AND json_extract(data, '$.app')        IS NOT NULL
-         GROUP BY app
-         ORDER BY total_time_ms DESC
-         LIMIT 30`
-      ).all();
-      return jsonResponse({ results: result.results });
+      const results = await withCache(Caches.topTime, null, () => fetchTopTime(env));
+      return jsonResponse({ results });
     }
 
     if (url.pathname === "/admin/sessions" && request.method === "GET") {
-      const allEvents = await env.DB.prepare(
-        `SELECT
-           daily_id,
-           timestamp,
-           lower(trim(json_extract(data, '$.event')))    AS event,
-           lower(trim(json_extract(data, '$.app')))      AS app,
-           json_extract(data, '$.durationMs')            AS duration_ms
-         FROM analytics
-         ORDER BY daily_id, timestamp ASC`
-      ).all();
-
-      const userEvents = {};
-      for (const row of allEvents.results) {
-        if (!userEvents[row.daily_id]) userEvents[row.daily_id] = [];
-        userEvents[row.daily_id].push(row);
-      }
-
-      const sessions = [];
-      const SESSION_GAP_MS = 30 * 60 * 1000;
-      const BOUNCE_DURATION_MS = 20 * 1000;
-
-      for (const [dailyId, events] of Object.entries(userEvents)) {
-        let sessionStart = null;
-        let sessionEvents = [];
-
-        for (const ev of events) {
-          const ts = new Date(ev.timestamp).getTime();
-          if (sessionStart === null) {
-            sessionStart = ts;
-            sessionEvents = [ev];
-          } else {
-            const prev = new Date(sessionEvents[sessionEvents.length - 1].timestamp).getTime();
-            if (ts - prev > SESSION_GAP_MS) {
-              sessions.push({ dailyId, events: sessionEvents, startMs: sessionStart, endMs: prev });
-              sessionStart = ts;
-              sessionEvents = [ev];
-            } else {
-              sessionEvents.push(ev);
-            }
-          }
-        }
-        if (sessionStart !== null && sessionEvents.length > 0) {
-          const endMs = new Date(sessionEvents[sessionEvents.length - 1].timestamp).getTime();
-          sessions.push({ dailyId, events: sessionEvents, startMs: sessionStart, endMs });
-        }
-      }
-
-      const userSessionCounts = {};
-      let totalDuration = 0;
-      let longest = 0;
-      let shortest = Infinity;
-      let bounceCount = 0;
-      let totalApps = 0;
-
-      for (const s of sessions) {
-        const dur = s.endMs - s.startMs;
-        const launchCount = s.events.filter((e) => e.event === "launch").length;
-        if (dur > longest) longest = dur;
-        if (dur < shortest) shortest = dur;
-        totalDuration += dur;
-        totalApps += launchCount;
-        if (s.events.length <= 1 || dur < BOUNCE_DURATION_MS) bounceCount++;
-        if (!userSessionCounts[s.dailyId]) userSessionCounts[s.dailyId] = { days: {}, totalEvents: 0 };
-        const day = new Date(s.startMs).toISOString().slice(0, 10);
-        if (!userSessionCounts[s.dailyId].days[day]) userSessionCounts[s.dailyId].days[day] = 0;
-        userSessionCounts[s.dailyId].days[day] += s.events.length;
-      }
-
-      const powerUsers = Object.values(userSessionCounts).filter((u) =>
-        Object.values(u.days).some((count) => count >= 20)
-      ).length;
-
-      const count = sessions.length;
-      const avgDuration = count > 0 ? Math.round(totalDuration / count) : 0;
-      const avgApps = count > 0 ? Math.round((totalApps / count) * 10) / 10 : 0;
-
-      return jsonResponse({
-        total_sessions: count,
-        avg_duration_ms: avgDuration,
-        avg_apps_per_session: avgApps,
-        longest_session_ms: count > 0 ? longest : 0,
-        shortest_session_ms: count > 0 && shortest !== Infinity ? shortest : 0,
-        bounce_sessions: bounceCount,
-        power_users: powerUsers
-      });
+      const data = await withCache(Caches.sessions, null, () => buildAggregatedData(env));
+      return jsonResponse(data.sessionsResponse);
     }
 
     if (url.pathname === "/admin/flows" && request.method === "GET") {
-      const allEvents = await env.DB.prepare(
-        `SELECT
-           daily_id,
-           timestamp,
-           lower(trim(json_extract(data, '$.event'))) AS event,
-           lower(trim(json_extract(data, '$.app')))   AS app
-         FROM analytics
-         WHERE json_extract(data, '$.event') = 'launch'
-         ORDER BY daily_id, timestamp ASC`
-      ).all();
-
-      const userEvents = {};
-      for (const row of allEvents.results) {
-        if (!userEvents[row.daily_id]) userEvents[row.daily_id] = [];
-        userEvents[row.daily_id].push(row);
-      }
-
-      const SESSION_GAP_MS = 30 * 60 * 1000;
-      const flowMap = {};
-
-      for (const events of Object.values(userEvents)) {
-        let sessionEvents = [];
-        for (const ev of events) {
-          const ts = new Date(ev.timestamp).getTime();
-          if (sessionEvents.length === 0) {
-            sessionEvents = [ev];
-          } else {
-            const prevTs = new Date(sessionEvents[sessionEvents.length - 1].timestamp).getTime();
-            if (ts - prevTs > SESSION_GAP_MS) {
-              sessionEvents = [ev];
-            } else {
-              const src = sessionEvents[sessionEvents.length - 1].app;
-              const dst = ev.app;
-              if (src && dst && src !== dst) {
-                const key = `${src}|||${dst}`;
-                flowMap[key] = (flowMap[key] || 0) + 1;
-              }
-              sessionEvents.push(ev);
-            }
-          }
-        }
-      }
-
-      const flows = Object.entries(flowMap)
-        .map(([key, count]) => {
-          const [src, dst] = key.split("|||");
-          return { source: src, destination: dst, count };
-        })
-        .sort((a, b) => b.count - a.count);
-
-      return jsonResponse({ flows });
+      const data = await withCache(Caches.sessions, null, () => buildAggregatedData(env));
+      return jsonResponse(data.flowsResponse);
     }
 
     if (url.pathname === "/admin/entry-exit" && request.method === "GET") {
-      const allEvents = await env.DB.prepare(
-        `SELECT
-           daily_id,
-           timestamp,
-           lower(trim(json_extract(data, '$.app'))) AS app
-         FROM analytics
-         WHERE json_extract(data, '$.event') = 'launch'
-         ORDER BY daily_id, timestamp ASC`
-      ).all();
-
-      const userEvents = {};
-      for (const row of allEvents.results) {
-        if (!userEvents[row.daily_id]) userEvents[row.daily_id] = [];
-        userEvents[row.daily_id].push(row);
-      }
-
-      const SESSION_GAP_MS = 30 * 60 * 1000;
-      const entryMap = {};
-      const exitMap = {};
-
-      for (const events of Object.values(userEvents)) {
-        let sessionEvents = [];
-        for (const ev of events) {
-          const ts = new Date(ev.timestamp).getTime();
-          if (sessionEvents.length === 0) {
-            sessionEvents = [ev];
-          } else {
-            const prevTs = new Date(sessionEvents[sessionEvents.length - 1].timestamp).getTime();
-            if (ts - prevTs > SESSION_GAP_MS) {
-              const exitApp = sessionEvents[sessionEvents.length - 1].app;
-              if (exitApp) exitMap[exitApp] = (exitMap[exitApp] || 0) + 1;
-              entryMap[ev.app] = (entryMap[ev.app] || 0) + 1;
-              sessionEvents = [ev];
-            } else {
-              sessionEvents.push(ev);
-            }
-          }
-        }
-        if (sessionEvents.length > 0) {
-          const entryApp = sessionEvents[0].app;
-          const exitApp = sessionEvents[sessionEvents.length - 1].app;
-          if (entryApp) entryMap[entryApp] = (entryMap[entryApp] || 0) + 1;
-          if (exitApp) exitMap[exitApp] = (exitMap[exitApp] || 0) + 1;
-        }
-      }
-
-      const toSorted = (map) =>
-        Object.entries(map)
-          .map(([app, count]) => ({ app, count }))
-          .sort((a, b) => b.count - a.count);
-
-      return jsonResponse({
-        top_entry_apps: toSorted(entryMap).slice(0, 10),
-        top_exit_apps: toSorted(exitMap).slice(0, 10)
-      });
+      const data = await withCache(Caches.sessions, null, () => buildAggregatedData(env));
+      return jsonResponse(data.entryExitResponse);
     }
 
     if (url.pathname === "/admin/exploration" && request.method === "GET") {
-      const allEvents = await env.DB.prepare(
-        `SELECT
-           daily_id,
-           timestamp,
-           lower(trim(json_extract(data, '$.app'))) AS app
-         FROM analytics
-         WHERE json_extract(data, '$.event') = 'launch'
-         ORDER BY daily_id, timestamp ASC`
-      ).all();
-
-      const userEvents = {};
-      for (const row of allEvents.results) {
-        if (!userEvents[row.daily_id]) userEvents[row.daily_id] = [];
-        userEvents[row.daily_id].push(row);
-      }
-
-      const SESSION_GAP_MS = 30 * 60 * 1000;
-      const sessions = [];
-
-      for (const [dailyId, events] of Object.entries(userEvents)) {
-        let sessionEvents = [];
-        let sessionStart = null;
-        for (const ev of events) {
-          const ts = new Date(ev.timestamp).getTime();
-          if (sessionStart === null) {
-            sessionStart = ts;
-            sessionEvents = [ev];
-          } else {
-            const prevTs = new Date(sessionEvents[sessionEvents.length - 1].timestamp).getTime();
-            if (ts - prevTs > SESSION_GAP_MS) {
-              sessions.push({ dailyId, events: sessionEvents });
-              sessionStart = ts;
-              sessionEvents = [ev];
-            } else {
-              sessionEvents.push(ev);
-            }
-          }
-        }
-        if (sessionStart !== null) {
-          sessions.push({ dailyId, events: sessionEvents });
-        }
-      }
-
-      const sessionDiversity = sessions.map((s) => {
-        const unique = new Set(s.events.map((e) => e.app)).size;
-        return { dailyId: s.dailyId, unique_apps: unique, event_count: s.events.length };
-      });
-
-      const avgUnique =
-        sessionDiversity.length > 0
-          ? Math.round((sessionDiversity.reduce((a, b) => a + b.unique_apps, 0) / sessionDiversity.length) * 10) / 10
-          : 0;
-
-      const userExploration = {};
-      for (const s of sessionDiversity) {
-        if (!userExploration[s.dailyId]) userExploration[s.dailyId] = { total: 0, sessions: 0 };
-        userExploration[s.dailyId].total += s.unique_apps;
-        userExploration[s.dailyId].sessions += 1;
-      }
-
-      const topExplorers = Object.entries(userExploration)
-        .map(([id, v]) => ({
-          user_id: id.slice(0, 8) + "...",
-          avg_unique: Math.round((v.total / v.sessions) * 10) / 10
-        }))
-        .sort((a, b) => b.avg_unique - a.avg_unique)
-        .slice(0, 5);
-
-      const topDiverseSessions = sessionDiversity
-        .sort((a, b) => b.unique_apps - a.unique_apps)
-        .slice(0, 5)
-        .map((s) => ({ user_id: s.dailyId.slice(0, 8) + "...", unique_apps: s.unique_apps }));
-
-      return jsonResponse({
-        avg_unique_apps_per_session: avgUnique,
-        top_explorers: topExplorers,
-        top_diverse_sessions: topDiverseSessions
-      });
+      const data = await withCache(Caches.sessions, null, () => buildAggregatedData(env));
+      return jsonResponse(data.explorationResponse);
     }
 
-    if (url.pathname === "/live" && request.method === "GET") {
-      const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
-
-      const activeUsers = await env.DB.prepare(
-        `SELECT COUNT(DISTINCT daily_id) AS count
-         FROM analytics
-         WHERE timestamp >= ?`
-      )
-        .bind(fiveMinAgo)
-        .all();
-
-      const topActive = await env.DB.prepare(
-        `SELECT
-           lower(trim(json_extract(data, '$.app'))) AS app,
-           COUNT(*)                                  AS count
-         FROM analytics
-         WHERE timestamp >= ?
-           AND json_extract(data, '$.event') = 'launch'
-         GROUP BY app
-         ORDER BY count DESC
-         LIMIT 5`
-      )
-        .bind(fiveMinAgo)
-        .all();
-
-      const recentSessions = await env.DB.prepare(
-        `SELECT daily_id, MIN(timestamp) AS first, MAX(timestamp) AS last
-         FROM analytics
-         WHERE timestamp >= ?
-         GROUP BY daily_id`
-      )
-        .bind(fiveMinAgo)
-        .all();
-
-      const SESSION_GAP_MS = 30 * 60 * 1000;
-      let activeSessions = 0;
-      for (const row of recentSessions.results) {
-        const diff = new Date(row.last).getTime() - new Date(row.first).getTime();
-        if (diff < SESSION_GAP_MS) activeSessions++;
-      }
-
-      return jsonResponse({
-        active_users_5min: activeUsers.results[0]?.count || 0,
-        active_sessions: activeSessions,
-        top_active_apps: topActive.results
-      });
+    if ((url.pathname === "/live" || url.pathname === "/admin/live") && request.method === "GET") {
+      const result = await withCache(Caches.live, null, () => fetchLive(env), 15000);
+      return jsonResponse(result);
     }
 
     if (url.pathname === "/admin/export" && request.method === "GET") {
@@ -745,6 +694,12 @@ export default {
           errors.push(`Batch ${i / BATCH_SIZE}: ${e.message}`);
         }
       }
+
+      Caches.sessions = { data: null, time: 0, promise: null };
+      Caches.games = { data: null, time: 0, promise: null };
+      Caches.topTime = { data: null, time: 0, promise: null };
+      Caches.stats = {};
+      Caches.live = { data: null, time: 0, promise: null };
 
       return jsonResponse({
         success: true,

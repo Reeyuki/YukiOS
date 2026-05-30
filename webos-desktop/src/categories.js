@@ -1,4 +1,4 @@
-import { steamAppRenderer, FlashAppRenderer, SystemAppRenderer, handleGameUrlParam } from "./games.js";
+import { steamAppRenderer, SystemAppRenderer, handleGameUrlParam } from "./games.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
 import { resolveIconUrl } from "./assetUrl.js";
 import { trayManager } from "./tray.js";

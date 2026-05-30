@@ -124,15 +124,31 @@ Features: window snapping (Win+Arrow), workspace management, taskbar preview.
 
 Virtual filesystem backed by BrowserFS, persisted via IndexedDB.
 
+**CRITICAL: Always use the correct public API methods. Do NOT use internal BrowserFS methods directly.**
+
 | Method                               | Purpose                           |
 | ------------------------------------ | --------------------------------- |
 | `async readFile(path)`               | Read file content                 |
 | `async safeWriteFile(path, content)` | Write file (string or Uint8Array) |
-| `async readdir(path)`                | List directory contents           |
-| `async mkdir(path)`                  | Create directory                  |
-| `async unlink(path)`                 | Delete file                       |
-| `async stat(path)`                   | Get file metadata                 |
-| `async copy(src, dst)`               | Copy file/directory               |
+| `async writeFile(path, content)`     | Write file content                |
+| `async exists(path)`                 | Check if path exists              |
+| `async ensureFolder(path)`           | Create directory recursively      |
+| `async getFolder(path)`              | Get directory contents (object)   |
+| `async deleteItem(path, name)`       | Delete file or directory          |
+| `async createFile(path, name, ...)`  | Create new file                   |
+| `async readTextFile(path, name)`    | Read text file from directory     |
+
+**Common mistakes to avoid:**
+- ❌ `this.fs.stat()` - Does not exist. Use `this.fs.exists()` instead
+- ❌ `this.fs.mkdir()` - Does not exist. Use `this.fs.ensureFolder()` instead
+- ❌ `this.fs.readdir()` - Does not exist. Use `this.fs.getFolder()` instead
+- ❌ `this.fs.unlink()` - Does not exist. Use `this.fs.deleteItem()` instead
+- ✅ `this.fs.exists(path)` - Check if file/directory exists
+- ✅ `this.fs.ensureFolder(path)` - Create directory recursively
+- ✅ `this.fs.getFolder(path)` - Get directory contents as object
+- ✅ `this.fs.deleteItem(path, name)` - Delete file or directory
+- ✅ `this.fs.readFile(path)` - Read file content
+- ✅ `this.fs.safeWriteFile(path, content)` - Write file content
 
 **Default structure:**
 
@@ -321,7 +337,6 @@ class MyApp extends BaseApp {
     const winId = "myapp-window";
     const win = this.services.windowManager.createWindow(winId, "Title", 800, 600);
     win.innerHTML = `...ui...`;
-    document.body.appendChild(win);
     this.services.windowManager.mountWindow(win, winId, "Title", "fa-star");
     this.openWindows.add(winId);
   }

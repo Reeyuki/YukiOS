@@ -326,10 +326,6 @@ export class GameWindowRenderer {
     return [];
   }
 
-  getFlashGames() {
-    return [];
-  }
-
   getGameDescription(appId) {
     if (descriptionMap[appId]) {
       return descriptionMap[appId];
@@ -510,19 +506,6 @@ export class SystemAppRenderer {
         noResults.style.display = visibleCount === 0 ? "block" : "none";
       });
     }
-  }
-}
-
-export class FlashAppRenderer extends GameWindowRenderer {
-  getGames() {
-    return Object.entries(appMap)
-      .filter(([id, data]) => {
-        if (!isFlashGame(id, data)) return false;
-        if (GAMES_APP_EXCLUDED.has(id)) return false;
-        if (!data.icon || !data.title) return false;
-        return true;
-      })
-      .map(([id, data]) => ({ app: id, ...data }));
   }
 }
 
