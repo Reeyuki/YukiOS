@@ -4,7 +4,7 @@ import { bus, BusEvents } from "./core/EventBus.js";
 import interact from "interactjs";
 import { isImageFile, buildFileIconHTML, openFileWith, readFileAsDataURL } from "./fileDisplay.js";
 import { FileKind } from "./fs.js";
-import { StorageKeys } from "./settings.js";
+import { StorageKeys } from "./settings/settings.js";
 import { showConflictDialog } from "./shared/conflictDialog.js";
 import { showContextMenu, showDynamicContextMenu, hideMenu } from "./shared/contextMenu.js";
 import { appMap } from "./gamesList.js";

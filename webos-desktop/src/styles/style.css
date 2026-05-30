@@ -73,7 +73,6 @@ body {
   height: 100%;
   overflow: hidden;
   font-family: "Sora", sans-serif;
-  cursor: url("static/icons/cursor.webp"), auto;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -495,6 +494,7 @@ html[data-theme="gameboy"] {
   --menu-bg: oklch(82% 0.04 145 / 0.93);
   --window-bg: oklch(82% 0.04 145 / 0.9);
 }
+
 html[data-theme="frutiger-aero"] {
   --brand: oklch(72% 0.16 220);
   --brand-hover: oklch(66% 0.18 220);
@@ -870,20 +870,25 @@ html[data-theme="frutiger-aero"] .taskbar {
     inset 0 -1px 0 oklch(70% 0.08 210 / 0.12);
   color: #1a1a2e !important;
 }
+
 html[data-theme="frutiger-aero"] .window-header,
 html[data-theme="frutiger-aero"] .window-content {
   color: #1a1a2e !important;
 }
+
 html[data-theme="frutiger-aero"] .settings-label-title,
 html[data-theme="frutiger-aero"] .settings-label-desc {
   color: #1a1a2e !important;
 }
+
 html[data-theme="frutiger-aero"] .settings-btn {
   color: #1a1a2e !important;
 }
+
 html[data-theme="frutiger-aero"] button {
   color: #1a1a2e !important;
 }
+
 html[data-theme="frutiger-aero"] .button-primary {
   background: linear-gradient(to bottom, oklch(88% 0.08 210), oklch(72% 0.16 220));
   color: white !important;
@@ -2108,19 +2113,48 @@ html[data-theme] .explorer-confirmation-overlay {
   -webkit-backdrop-filter: blur(8px);
 }
 
-html[data-theme] .desktop-icon {
-  color: var(--text-primary);
-}
-
-html[data-theme] .desktop-icon:hover {
+html[data-theme] .icon.selectable:hover {
   background: var(--surface-hover);
   color: var(--text-primary);
 }
 
-html[data-theme] .desktop-icon.selected {
-  background: var(--brand-dim);
-  color: var(--brand);
-  border: 1px solid var(--brand);
+html[data-theme] .icon.selectable.selected {
+  background: var(--brand-dim) !important;
+  color: var(--brand) !important;
+  border: 1px solid var(--brand) !important;
+}
+
+html[data-theme="light"] .icon.selectable,
+html[data-theme="light"] .icon.selectable div,
+html[data-theme="cherry"] .icon.selectable,
+html[data-theme="cherry"] .icon.selectable div,
+html[data-theme="github-light"] .icon.selectable,
+html[data-theme="github-light"] .icon.selectable div,
+html[data-theme="minimal-gray"] .icon.selectable,
+html[data-theme="minimal-gray"] .icon.selectable div,
+html[data-theme="paper"] .icon.selectable,
+html[data-theme="paper"] .icon.selectable div,
+html[data-theme="macos-fluent"] .icon.selectable,
+html[data-theme="macos-fluent"] .icon.selectable div,
+html[data-theme="windows-fluent"] .icon.selectable,
+html[data-theme="windows-fluent"] .icon.selectable div,
+html[data-theme="material-you"] .icon.selectable,
+html[data-theme="material-you"] .icon.selectable div,
+html[data-theme="sepia"] .icon.selectable,
+html[data-theme="sepia"] .icon.selectable div,
+html[data-theme="sakura"] .icon.selectable,
+html[data-theme="sakura"] .icon.selectable div,
+html[data-theme="arctic"] .icon.selectable,
+html[data-theme="arctic"] .icon.selectable div,
+html[data-theme="nordic"] .icon.selectable,
+html[data-theme="nordic"] .icon.selectable div,
+html[data-theme="gameboy"] .icon.selectable,
+html[data-theme="gameboy"] .icon.selectable div,
+html[data-theme="frutiger-aero"] .icon.selectable,
+html[data-theme="frutiger-aero"] .icon.selectable div,
+html[data-theme="solarized-light"] .icon.selectable,
+html[data-theme="solarized-light"] .icon.selectable div {
+  text-shadow: none !important;
 }
 
 html[data-theme] .file-item {

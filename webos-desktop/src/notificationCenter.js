@@ -1,5 +1,5 @@
 import { isImageFile } from "./utils.js";
-import { StorageKeys } from "./settings.js";
+import { StorageKeys } from "./settings/settings.js";
 import { appMap } from "./gamesList.js";
 import { audioMixer, SystemAudio } from "./audioMixer.js";
 

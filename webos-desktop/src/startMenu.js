@@ -1,7 +1,7 @@
 import { appMap } from "./gamesList.js";
 
 import { camelize } from "./utils.js";
-import { StorageKeys } from "./settings.js";
+import { StorageKeys } from "./settings/settings.js";
 import { speak } from "./clippy.js";
 import { isImageFile } from "./utils.js";
 import { resolveIconUrl, resolveGhUrl } from "./shared/assetResolver.js";

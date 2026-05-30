@@ -3,7 +3,7 @@ import { customAlert, customPrompt } from "./shared/dialogs.js";
 import { SteamDataManager, _launcher, _desktopUI } from "./games.js";
 import { observeLazyImages } from "./games.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
-import { StorageKeys } from "./settings.js";
+import { StorageKeys } from "./settings/settings.js";
 import { buildSteamShell, initDropdowns, initStorePage, getCdnBase, initSettingsPage } from "./steam.js";
 import { resolveIconUrl } from "./shared/assetResolver.js";
 import { fetchLiveStats } from "./analytics.js";

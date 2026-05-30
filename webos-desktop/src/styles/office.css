@@ -716,50 +716,218 @@
   padding: 20px;
 }
 
-html[data-theme="light"] .office-menu-bar {
+html[data-theme="light"] .office-menu-bar,
+html[data-theme="cherry"] .office-menu-bar,
+html[data-theme="github-light"] .office-menu-bar,
+html[data-theme="minimal-gray"] .office-menu-bar,
+html[data-theme="paper"] .office-menu-bar,
+html[data-theme="macos-fluent"] .office-menu-bar,
+html[data-theme="windows-fluent"] .office-menu-bar,
+html[data-theme="material-you"] .office-menu-bar,
+html[data-theme="sepia"] .office-menu-bar,
+html[data-theme="sakura"] .office-menu-bar,
+html[data-theme="arctic"] .office-menu-bar,
+html[data-theme="nordic"] .office-menu-bar,
+html[data-theme="gameboy"] .office-menu-bar,
+html[data-theme="frutiger-aero"] .office-menu-bar,
+html[data-theme="solarized-light"] .office-menu-bar {
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--glass-border);
 }
 
-html[data-theme="light"] .office-menu-btn {
+html[data-theme="light"] .office-menu-btn,
+html[data-theme="cherry"] .office-menu-btn,
+html[data-theme="github-light"] .office-menu-btn,
+html[data-theme="minimal-gray"] .office-menu-btn,
+html[data-theme="paper"] .office-menu-btn,
+html[data-theme="macos-fluent"] .office-menu-btn,
+html[data-theme="windows-fluent"] .office-menu-btn,
+html[data-theme="material-you"] .office-menu-btn,
+html[data-theme="sepia"] .office-menu-btn,
+html[data-theme="sakura"] .office-menu-btn,
+html[data-theme="arctic"] .office-menu-btn,
+html[data-theme="nordic"] .office-menu-btn,
+html[data-theme="gameboy"] .office-menu-btn,
+html[data-theme="frutiger-aero"] .office-menu-btn,
+html[data-theme="solarized-light"] .office-menu-btn {
   background: var(--bg-secondary);
   color: var(--text-primary);
   border-color: var(--glass-border);
 }
 
-html[data-theme="light"] .office-menu-btn:hover {
+html[data-theme="light"] .office-menu-btn:hover,
+html[data-theme="cherry"] .office-menu-btn:hover,
+html[data-theme="github-light"] .office-menu-btn:hover,
+html[data-theme="minimal-gray"] .office-menu-btn:hover,
+html[data-theme="paper"] .office-menu-btn:hover,
+html[data-theme="macos-fluent"] .office-menu-btn:hover,
+html[data-theme="windows-fluent"] .office-menu-btn:hover,
+html[data-theme="material-you"] .office-menu-btn:hover,
+html[data-theme="sepia"] .office-menu-btn:hover,
+html[data-theme="sakura"] .office-menu-btn:hover,
+html[data-theme="arctic"] .office-menu-btn:hover,
+html[data-theme="nordic"] .office-menu-btn:hover,
+html[data-theme="gameboy"] .office-menu-btn:hover,
+html[data-theme="frutiger-aero"] .office-menu-btn:hover,
+html[data-theme="solarized-light"] .office-menu-btn:hover {
   background: var(--bg-primary);
   border-color: var(--brand);
 }
 
-html[data-theme="light"] .office-menu-dropdown__trigger {
+html[data-theme="light"] .office-menu-dropdown__trigger,
+html[data-theme="cherry"] .office-menu-dropdown__trigger,
+html[data-theme="github-light"] .office-menu-dropdown__trigger,
+html[data-theme="minimal-gray"] .office-menu-dropdown__trigger,
+html[data-theme="paper"] .office-menu-dropdown__trigger,
+html[data-theme="macos-fluent"] .office-menu-dropdown__trigger,
+html[data-theme="windows-fluent"] .office-menu-dropdown__trigger,
+html[data-theme="material-you"] .office-menu-dropdown__trigger,
+html[data-theme="sepia"] .office-menu-dropdown__trigger,
+html[data-theme="sakura"] .office-menu-dropdown__trigger,
+html[data-theme="arctic"] .office-menu-dropdown__trigger,
+html[data-theme="nordic"] .office-menu-dropdown__trigger,
+html[data-theme="gameboy"] .office-menu-dropdown__trigger,
+html[data-theme="frutiger-aero"] .office-menu-dropdown__trigger,
+html[data-theme="solarized-light"] .office-menu-dropdown__trigger {
   color: var(--text-primary);
 }
 
 html[data-theme="light"] .office-menu-dropdown__trigger:hover,
-html[data-theme="light"] .office-menu-dropdown.active .office-menu-dropdown__trigger {
+html[data-theme="light"] .office-menu-dropdown.active .office-menu-dropdown__trigger,
+html[data-theme="cherry"] .office-menu-dropdown__trigger:hover,
+html[data-theme="cherry"] .office-menu-dropdown.active .office-menu-dropdown__trigger,
+html[data-theme="github-light"] .office-menu-dropdown__trigger:hover,
+html[data-theme="github-light"] .office-menu-dropdown.active .office-menu-dropdown__trigger,
+html[data-theme="minimal-gray"] .office-menu-dropdown__trigger:hover,
+html[data-theme="minimal-gray"] .office-menu-dropdown.active .office-menu-dropdown__trigger,
+html[data-theme="paper"] .office-menu-dropdown__trigger:hover,
+html[data-theme="paper"] .office-menu-dropdown.active .office-menu-dropdown__trigger,
+html[data-theme="macos-fluent"] .office-menu-dropdown__trigger:hover,
+html[data-theme="macos-fluent"] .office-menu-dropdown.active .office-menu-dropdown__trigger,
+html[data-theme="windows-fluent"] .office-menu-dropdown__trigger:hover,
+html[data-theme="windows-fluent"] .office-menu-dropdown.active .office-menu-dropdown__trigger,
+html[data-theme="material-you"] .office-menu-dropdown__trigger:hover,
+html[data-theme="material-you"] .office-menu-dropdown.active .office-menu-dropdown__trigger,
+html[data-theme="sepia"] .office-menu-dropdown__trigger:hover,
+html[data-theme="sepia"] .office-menu-dropdown.active .office-menu-dropdown__trigger,
+html[data-theme="sakura"] .office-menu-dropdown__trigger:hover,
+html[data-theme="sakura"] .office-menu-dropdown.active .office-menu-dropdown__trigger,
+html[data-theme="arctic"] .office-menu-dropdown__trigger:hover,
+html[data-theme="arctic"] .office-menu-dropdown.active .office-menu-dropdown__trigger,
+html[data-theme="nordic"] .office-menu-dropdown__trigger:hover,
+html[data-theme="nordic"] .office-menu-dropdown.active .office-menu-dropdown__trigger,
+html[data-theme="gameboy"] .office-menu-dropdown__trigger:hover,
+html[data-theme="gameboy"] .office-menu-dropdown.active .office-menu-dropdown__trigger,
+html[data-theme="frutiger-aero"] .office-menu-dropdown__trigger:hover,
+html[data-theme="frutiger-aero"] .office-menu-dropdown.active .office-menu-dropdown__trigger,
+html[data-theme="solarized-light"] .office-menu-dropdown__trigger:hover,
+html[data-theme="solarized-light"] .office-menu-dropdown.active .office-menu-dropdown__trigger {
   background: var(--glass-hover);
 }
 
 html[data-theme="light"] .office-menu-dropdown__content,
-html[data-theme="light"] .office-menu-submenu__content {
+html[data-theme="light"] .office-menu-submenu__content,
+html[data-theme="cherry"] .office-menu-dropdown__content,
+html[data-theme="cherry"] .office-menu-submenu__content,
+html[data-theme="github-light"] .office-menu-dropdown__content,
+html[data-theme="github-light"] .office-menu-submenu__content,
+html[data-theme="minimal-gray"] .office-menu-dropdown__content,
+html[data-theme="minimal-gray"] .office-menu-submenu__content,
+html[data-theme="paper"] .office-menu-dropdown__content,
+html[data-theme="paper"] .office-menu-submenu__content,
+html[data-theme="macos-fluent"] .office-menu-dropdown__content,
+html[data-theme="macos-fluent"] .office-menu-submenu__content,
+html[data-theme="windows-fluent"] .office-menu-dropdown__content,
+html[data-theme="windows-fluent"] .office-menu-submenu__content,
+html[data-theme="material-you"] .office-menu-dropdown__content,
+html[data-theme="material-you"] .office-menu-submenu__content,
+html[data-theme="sepia"] .office-menu-dropdown__content,
+html[data-theme="sepia"] .office-menu-submenu__content,
+html[data-theme="sakura"] .office-menu-dropdown__content,
+html[data-theme="sakura"] .office-menu-submenu__content,
+html[data-theme="arctic"] .office-menu-dropdown__content,
+html[data-theme="arctic"] .office-menu-submenu__content,
+html[data-theme="nordic"] .office-menu-dropdown__content,
+html[data-theme="nordic"] .office-menu-submenu__content,
+html[data-theme="gameboy"] .office-menu-dropdown__content,
+html[data-theme="gameboy"] .office-menu-submenu__content,
+html[data-theme="frutiger-aero"] .office-menu-dropdown__content,
+html[data-theme="frutiger-aero"] .office-menu-submenu__content,
+html[data-theme="solarized-light"] .office-menu-dropdown__content,
+html[data-theme="solarized-light"] .office-menu-submenu__content {
   background: var(--bg-secondary);
   border-color: var(--glass-border);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 32px var(--shadow-color);
 }
 
-html[data-theme="light"] .office-menu-item {
+html[data-theme="light"] .office-menu-item,
+html[data-theme="cherry"] .office-menu-item,
+html[data-theme="github-light"] .office-menu-item,
+html[data-theme="minimal-gray"] .office-menu-item,
+html[data-theme="paper"] .office-menu-item,
+html[data-theme="macos-fluent"] .office-menu-item,
+html[data-theme="windows-fluent"] .office-menu-item,
+html[data-theme="material-you"] .office-menu-item,
+html[data-theme="sepia"] .office-menu-item,
+html[data-theme="sakura"] .office-menu-item,
+html[data-theme="arctic"] .office-menu-item,
+html[data-theme="nordic"] .office-menu-item,
+html[data-theme="gameboy"] .office-menu-item,
+html[data-theme="frutiger-aero"] .office-menu-item,
+html[data-theme="solarized-light"] .office-menu-item {
   color: var(--text-primary);
 }
 
-html[data-theme="light"] .office-menu-item:hover {
+html[data-theme="light"] .office-menu-item:hover,
+html[data-theme="cherry"] .office-menu-item:hover,
+html[data-theme="github-light"] .office-menu-item:hover,
+html[data-theme="minimal-gray"] .office-menu-item:hover,
+html[data-theme="paper"] .office-menu-item:hover,
+html[data-theme="macos-fluent"] .office-menu-item:hover,
+html[data-theme="windows-fluent"] .office-menu-item:hover,
+html[data-theme="material-you"] .office-menu-item:hover,
+html[data-theme="sepia"] .office-menu-item:hover,
+html[data-theme="sakura"] .office-menu-item:hover,
+html[data-theme="arctic"] .office-menu-item:hover,
+html[data-theme="nordic"] .office-menu-item:hover,
+html[data-theme="gameboy"] .office-menu-item:hover,
+html[data-theme="frutiger-aero"] .office-menu-item:hover,
+html[data-theme="solarized-light"] .office-menu-item:hover {
   background: var(--glass-hover);
 }
 
-html[data-theme="light"] .office-menu-divider {
+html[data-theme="light"] .office-menu-divider,
+html[data-theme="cherry"] .office-menu-divider,
+html[data-theme="github-light"] .office-menu-divider,
+html[data-theme="minimal-gray"] .office-menu-divider,
+html[data-theme="paper"] .office-menu-divider,
+html[data-theme="macos-fluent"] .office-menu-divider,
+html[data-theme="windows-fluent"] .office-menu-divider,
+html[data-theme="material-you"] .office-menu-divider,
+html[data-theme="sepia"] .office-menu-divider,
+html[data-theme="sakura"] .office-menu-divider,
+html[data-theme="arctic"] .office-menu-divider,
+html[data-theme="nordic"] .office-menu-divider,
+html[data-theme="gameboy"] .office-menu-divider,
+html[data-theme="frutiger-aero"] .office-menu-divider,
+html[data-theme="solarized-light"] .office-menu-divider {
   background: var(--glass-border);
 }
 
-html[data-theme="light"] .office-toolbar__select {
+html[data-theme="light"] .office-toolbar__select,
+html[data-theme="cherry"] .office-toolbar__select,
+html[data-theme="github-light"] .office-toolbar__select,
+html[data-theme="minimal-gray"] .office-toolbar__select,
+html[data-theme="paper"] .office-toolbar__select,
+html[data-theme="macos-fluent"] .office-toolbar__select,
+html[data-theme="windows-fluent"] .office-toolbar__select,
+html[data-theme="material-you"] .office-toolbar__select,
+html[data-theme="sepia"] .office-toolbar__select,
+html[data-theme="sakura"] .office-toolbar__select,
+html[data-theme="arctic"] .office-toolbar__select,
+html[data-theme="nordic"] .office-toolbar__select,
+html[data-theme="gameboy"] .office-toolbar__select,
+html[data-theme="frutiger-aero"] .office-toolbar__select,
+html[data-theme="solarized-light"] .office-toolbar__select {
   background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
 }

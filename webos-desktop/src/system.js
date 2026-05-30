@@ -1,6 +1,6 @@
 import { detectUserLocation, getCached, setCache } from "./weather.js";
 import { getWeatherIcon } from "./shared/weatherCodes.js";
-import { StorageKeys } from "./settings.js";
+import { StorageKeys } from "./settings/settings.js";
 import { videos } from "./wallpaperList.js";
 import { createCalendarPopup, setCurrentCalendarMonth } from "./calendar.js";
 import { resolveWallpaperUrl } from "./shared/assetResolver.js";

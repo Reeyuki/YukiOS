@@ -1,4 +1,4 @@
-import { StorageKeys } from "./settings.js";
+import { StorageKeys } from "./settings/settings.js";
 import { audioMixer } from "./audioMixer.js";
 import { WorkspaceManager } from "./windowManager/WorkspaceManager.js";
 import { makeResizable } from "./windowManager/makeResizable.js";

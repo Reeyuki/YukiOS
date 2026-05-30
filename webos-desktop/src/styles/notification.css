@@ -566,184 +566,702 @@
   }
 }
 
-html[data-theme="light"] #ntf-panel {
-  background: rgba(245, 245, 248, 0.85);
-  border-color: rgba(0, 0, 0, 0.08);
+html[data-theme="light"] #ntf-panel,
+html[data-theme="cherry"] #ntf-panel,
+html[data-theme="github-light"] #ntf-panel,
+html[data-theme="minimal-gray"] #ntf-panel,
+html[data-theme="paper"] #ntf-panel,
+html[data-theme="macos-fluent"] #ntf-panel,
+html[data-theme="windows-fluent"] #ntf-panel,
+html[data-theme="material-you"] #ntf-panel,
+html[data-theme="sepia"] #ntf-panel,
+html[data-theme="sakura"] #ntf-panel,
+html[data-theme="arctic"] #ntf-panel,
+html[data-theme="nordic"] #ntf-panel,
+html[data-theme="gameboy"] #ntf-panel,
+html[data-theme="frutiger-aero"] #ntf-panel,
+html[data-theme="solarized-light"] #ntf-panel {
+  background: var(--bg-secondary) !important;
+  border-color: var(--glass-border) !important;
   box-shadow:
-    0 24px 64px rgba(0, 0, 0, 0.15),
-    0 0 0 1px rgba(255, 255, 255, 0.6) inset;
+    0 24px 64px var(--shadow-color) !important,
+    0 0 0 1px var(--glass-border) inset !important;
 }
 
-html[data-theme="light"] .ntf-panel__head {
-  color: #1e1e2e;
-  border-bottom-color: rgba(0, 0, 0, 0.06);
+html[data-theme="light"] .ntf-panel__head,
+html[data-theme="cherry"] .ntf-panel__head,
+html[data-theme="github-light"] .ntf-panel__head,
+html[data-theme="minimal-gray"] .ntf-panel__head,
+html[data-theme="paper"] .ntf-panel__head,
+html[data-theme="macos-fluent"] .ntf-panel__head,
+html[data-theme="windows-fluent"] .ntf-panel__head,
+html[data-theme="material-you"] .ntf-panel__head,
+html[data-theme="sepia"] .ntf-panel__head,
+html[data-theme="sakura"] .ntf-panel__head,
+html[data-theme="arctic"] .ntf-panel__head,
+html[data-theme="nordic"] .ntf-panel__head,
+html[data-theme="gameboy"] .ntf-panel__head,
+html[data-theme="frutiger-aero"] .ntf-panel__head,
+html[data-theme="solarized-light"] .ntf-panel__head {
+  color: var(--text-primary) !important;
+  border-bottom-color: var(--glass-border) !important;
 }
 
-html[data-theme="light"] .ntf-panel__dnd {
-  background: rgba(0, 0, 0, 0.04);
-  border-color: rgba(0, 0, 0, 0.06);
-  color: #555555;
+html[data-theme="light"] .ntf-panel__dnd,
+html[data-theme="cherry"] .ntf-panel__dnd,
+html[data-theme="github-light"] .ntf-panel__dnd,
+html[data-theme="minimal-gray"] .ntf-panel__dnd,
+html[data-theme="paper"] .ntf-panel__dnd,
+html[data-theme="macos-fluent"] .ntf-panel__dnd,
+html[data-theme="windows-fluent"] .ntf-panel__dnd,
+html[data-theme="material-you"] .ntf-panel__dnd,
+html[data-theme="sepia"] .ntf-panel__dnd,
+html[data-theme="sakura"] .ntf-panel__dnd,
+html[data-theme="arctic"] .ntf-panel__dnd,
+html[data-theme="nordic"] .ntf-panel__dnd,
+html[data-theme="gameboy"] .ntf-panel__dnd,
+html[data-theme="frutiger-aero"] .ntf-panel__dnd,
+html[data-theme="solarized-light"] .ntf-panel__dnd {
+  background: var(--glass) !important;
+  border-color: var(--glass-border) !important;
+  color: var(--text-secondary) !important;
 }
 
-html[data-theme="light"] .ntf-panel__dnd:hover {
-  background: rgba(0, 0, 0, 0.08);
-  color: #111111;
-  border-color: rgba(0, 0, 0, 0.12);
+html[data-theme="light"] .ntf-panel__dnd:hover,
+html[data-theme="cherry"] .ntf-panel__dnd:hover,
+html[data-theme="github-light"] .ntf-panel__dnd:hover,
+html[data-theme="minimal-gray"] .ntf-panel__dnd:hover,
+html[data-theme="paper"] .ntf-panel__dnd:hover,
+html[data-theme="macos-fluent"] .ntf-panel__dnd:hover,
+html[data-theme="windows-fluent"] .ntf-panel__dnd:hover,
+html[data-theme="material-you"] .ntf-panel__dnd:hover,
+html[data-theme="sepia"] .ntf-panel__dnd:hover,
+html[data-theme="sakura"] .ntf-panel__dnd:hover,
+html[data-theme="arctic"] .ntf-panel__dnd:hover,
+html[data-theme="nordic"] .ntf-panel__dnd:hover,
+html[data-theme="gameboy"] .ntf-panel__dnd:hover,
+html[data-theme="frutiger-aero"] .ntf-panel__dnd:hover,
+html[data-theme="solarized-light"] .ntf-panel__dnd:hover {
+  background: var(--glass-hover) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--glass-border) !important;
 }
 
-html[data-theme="light"] .ntf-panel__dnd.active {
-  background: rgba(243, 139, 168, 0.15);
-  border-color: rgba(243, 139, 168, 0.3);
-  color: #f38ba8;
+html[data-theme="light"] .ntf-panel__dnd.active,
+html[data-theme="cherry"] .ntf-panel__dnd.active,
+html[data-theme="github-light"] .ntf-panel__dnd.active,
+html[data-theme="minimal-gray"] .ntf-panel__dnd.active,
+html[data-theme="paper"] .ntf-panel__dnd.active,
+html[data-theme="macos-fluent"] .ntf-panel__dnd.active,
+html[data-theme="windows-fluent"] .ntf-panel__dnd.active,
+html[data-theme="material-you"] .ntf-panel__dnd.active,
+html[data-theme="sepia"] .ntf-panel__dnd.active,
+html[data-theme="sakura"] .ntf-panel__dnd.active,
+html[data-theme="arctic"] .ntf-panel__dnd.active,
+html[data-theme="nordic"] .ntf-panel__dnd.active,
+html[data-theme="gameboy"] .ntf-panel__dnd.active,
+html[data-theme="frutiger-aero"] .ntf-panel__dnd.active,
+html[data-theme="solarized-light"] .ntf-panel__dnd.active {
+  background: rgba(243, 139, 168, 0.15) !important;
+  border-color: rgba(243, 139, 168, 0.3) !important;
+  color: #f38ba8 !important;
 }
 
-html[data-theme="light"] .ntf-panel__dismiss {
-  color: rgba(0, 0, 0, 0.4);
+html[data-theme="light"] .ntf-panel__dismiss,
+html[data-theme="cherry"] .ntf-panel__dismiss,
+html[data-theme="github-light"] .ntf-panel__dismiss,
+html[data-theme="minimal-gray"] .ntf-panel__dismiss,
+html[data-theme="paper"] .ntf-panel__dismiss,
+html[data-theme="macos-fluent"] .ntf-panel__dismiss,
+html[data-theme="windows-fluent"] .ntf-panel__dismiss,
+html[data-theme="material-you"] .ntf-panel__dismiss,
+html[data-theme="sepia"] .ntf-panel__dismiss,
+html[data-theme="sakura"] .ntf-panel__dismiss,
+html[data-theme="arctic"] .ntf-panel__dismiss,
+html[data-theme="nordic"] .ntf-panel__dismiss,
+html[data-theme="gameboy"] .ntf-panel__dismiss,
+html[data-theme="frutiger-aero"] .ntf-panel__dismiss,
+html[data-theme="solarized-light"] .ntf-panel__dismiss {
+  color: var(--text-secondary) !important;
 }
 
-html[data-theme="light"] .ntf-panel__dismiss:hover {
-  background: rgba(0, 0, 0, 0.06);
-  color: #000000;
+html[data-theme="light"] .ntf-panel__dismiss:hover,
+html[data-theme="cherry"] .ntf-panel__dismiss:hover,
+html[data-theme="github-light"] .ntf-panel__dismiss:hover,
+html[data-theme="minimal-gray"] .ntf-panel__dismiss:hover,
+html[data-theme="paper"] .ntf-panel__dismiss:hover,
+html[data-theme="macos-fluent"] .ntf-panel__dismiss:hover,
+html[data-theme="windows-fluent"] .ntf-panel__dismiss:hover,
+html[data-theme="material-you"] .ntf-panel__dismiss:hover,
+html[data-theme="sepia"] .ntf-panel__dismiss:hover,
+html[data-theme="sakura"] .ntf-panel__dismiss:hover,
+html[data-theme="arctic"] .ntf-panel__dismiss:hover,
+html[data-theme="nordic"] .ntf-panel__dismiss:hover,
+html[data-theme="gameboy"] .ntf-panel__dismiss:hover,
+html[data-theme="frutiger-aero"] .ntf-panel__dismiss:hover,
+html[data-theme="solarized-light"] .ntf-panel__dismiss:hover {
+  background: var(--glass-hover) !important;
+  color: var(--text-primary) !important;
 }
 
-html[data-theme="light"] .ntf-panel__feed {
-  scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
+html[data-theme="light"] .ntf-panel__feed,
+html[data-theme="cherry"] .ntf-panel__feed,
+html[data-theme="github-light"] .ntf-panel__feed,
+html[data-theme="minimal-gray"] .ntf-panel__feed,
+html[data-theme="paper"] .ntf-panel__feed,
+html[data-theme="macos-fluent"] .ntf-panel__feed,
+html[data-theme="windows-fluent"] .ntf-panel__feed,
+html[data-theme="material-you"] .ntf-panel__feed,
+html[data-theme="sepia"] .ntf-panel__feed,
+html[data-theme="sakura"] .ntf-panel__feed,
+html[data-theme="arctic"] .ntf-panel__feed,
+html[data-theme="nordic"] .ntf-panel__feed,
+html[data-theme="gameboy"] .ntf-panel__feed,
+html[data-theme="frutiger-aero"] .ntf-panel__feed,
+html[data-theme="solarized-light"] .ntf-panel__feed {
+  scrollbar-color: var(--glass-border) transparent !important;
 }
 
-html[data-theme="light"] .ntf-panel__feed::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.1);
+html[data-theme="light"] .ntf-panel__feed::-webkit-scrollbar-thumb,
+html[data-theme="cherry"] .ntf-panel__feed::-webkit-scrollbar-thumb,
+html[data-theme="github-light"] .ntf-panel__feed::-webkit-scrollbar-thumb,
+html[data-theme="minimal-gray"] .ntf-panel__feed::-webkit-scrollbar-thumb,
+html[data-theme="paper"] .ntf-panel__feed::-webkit-scrollbar-thumb,
+html[data-theme="macos-fluent"] .ntf-panel__feed::-webkit-scrollbar-thumb,
+html[data-theme="windows-fluent"] .ntf-panel__feed::-webkit-scrollbar-thumb,
+html[data-theme="material-you"] .ntf-panel__feed::-webkit-scrollbar-thumb,
+html[data-theme="sepia"] .ntf-panel__feed::-webkit-scrollbar-thumb,
+html[data-theme="sakura"] .ntf-panel__feed::-webkit-scrollbar-thumb,
+html[data-theme="arctic"] .ntf-panel__feed::-webkit-scrollbar-thumb,
+html[data-theme="nordic"] .ntf-panel__feed::-webkit-scrollbar-thumb,
+html[data-theme="gameboy"] .ntf-panel__feed::-webkit-scrollbar-thumb,
+html[data-theme="frutiger-aero"] .ntf-panel__feed::-webkit-scrollbar-thumb,
+html[data-theme="solarized-light"] .ntf-panel__feed::-webkit-scrollbar-thumb {
+  background: var(--glass-border) !important;
 }
 
-html[data-theme="light"] .ntf-panel__feed::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.2);
+html[data-theme="light"] .ntf-panel__feed::-webkit-scrollbar-thumb:hover,
+html[data-theme="cherry"] .ntf-panel__feed::-webkit-scrollbar-thumb:hover,
+html[data-theme="github-light"] .ntf-panel__feed::-webkit-scrollbar-thumb:hover,
+html[data-theme="minimal-gray"] .ntf-panel__feed::-webkit-scrollbar-thumb:hover,
+html[data-theme="paper"] .ntf-panel__feed::-webkit-scrollbar-thumb:hover,
+html[data-theme="macos-fluent"] .ntf-panel__feed::-webkit-scrollbar-thumb:hover,
+html[data-theme="windows-fluent"] .ntf-panel__feed::-webkit-scrollbar-thumb:hover,
+html[data-theme="material-you"] .ntf-panel__feed::-webkit-scrollbar-thumb:hover,
+html[data-theme="sepia"] .ntf-panel__feed::-webkit-scrollbar-thumb:hover,
+html[data-theme="sakura"] .ntf-panel__feed::-webkit-scrollbar-thumb:hover,
+html[data-theme="arctic"] .ntf-panel__feed::-webkit-scrollbar-thumb:hover,
+html[data-theme="nordic"] .ntf-panel__feed::-webkit-scrollbar-thumb:hover,
+html[data-theme="gameboy"] .ntf-panel__feed::-webkit-scrollbar-thumb:hover,
+html[data-theme="frutiger-aero"] .ntf-panel__feed::-webkit-scrollbar-thumb:hover,
+html[data-theme="solarized-light"] .ntf-panel__feed::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary) !important;
 }
 
-html[data-theme="light"] .ntf-panel__blank {
-  color: rgba(0, 0, 0, 0.4);
+html[data-theme="light"] .ntf-panel__blank,
+html[data-theme="cherry"] .ntf-panel__blank,
+html[data-theme="github-light"] .ntf-panel__blank,
+html[data-theme="minimal-gray"] .ntf-panel__blank,
+html[data-theme="paper"] .ntf-panel__blank,
+html[data-theme="macos-fluent"] .ntf-panel__blank,
+html[data-theme="windows-fluent"] .ntf-panel__blank,
+html[data-theme="material-you"] .ntf-panel__blank,
+html[data-theme="sepia"] .ntf-panel__blank,
+html[data-theme="sakura"] .ntf-panel__blank,
+html[data-theme="arctic"] .ntf-panel__blank,
+html[data-theme="nordic"] .ntf-panel__blank,
+html[data-theme="gameboy"] .ntf-panel__blank,
+html[data-theme="frutiger-aero"] .ntf-panel__blank,
+html[data-theme="solarized-light"] .ntf-panel__blank {
+  color: var(--text-secondary) !important;
 }
 
-html[data-theme="light"] .ntf-card {
-  background: rgba(0, 0, 0, 0.02);
-  border: 1px solid rgba(0, 0, 0, 0.04);
+html[data-theme="light"] .ntf-card,
+html[data-theme="cherry"] .ntf-card,
+html[data-theme="github-light"] .ntf-card,
+html[data-theme="minimal-gray"] .ntf-card,
+html[data-theme="paper"] .ntf-card,
+html[data-theme="macos-fluent"] .ntf-card,
+html[data-theme="windows-fluent"] .ntf-card,
+html[data-theme="material-you"] .ntf-card,
+html[data-theme="sepia"] .ntf-card,
+html[data-theme="sakura"] .ntf-card,
+html[data-theme="arctic"] .ntf-card,
+html[data-theme="nordic"] .ntf-card,
+html[data-theme="gameboy"] .ntf-card,
+html[data-theme="frutiger-aero"] .ntf-card,
+html[data-theme="solarized-light"] .ntf-card {
+  background: var(--surface-1) !important;
+  border: 1px solid var(--glass-border) !important;
 }
 
-html[data-theme="light"] .ntf-card:hover {
-  background: rgba(0, 0, 0, 0.04);
-  border-color: rgba(0, 0, 0, 0.08);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+html[data-theme="light"] .ntf-card:hover,
+html[data-theme="cherry"] .ntf-card:hover,
+html[data-theme="github-light"] .ntf-card:hover,
+html[data-theme="minimal-gray"] .ntf-card:hover,
+html[data-theme="paper"] .ntf-card:hover,
+html[data-theme="macos-fluent"] .ntf-card:hover,
+html[data-theme="windows-fluent"] .ntf-card:hover,
+html[data-theme="material-you"] .ntf-card:hover,
+html[data-theme="sepia"] .ntf-card:hover,
+html[data-theme="sakura"] .ntf-card:hover,
+html[data-theme="arctic"] .ntf-card:hover,
+html[data-theme="nordic"] .ntf-card:hover,
+html[data-theme="gameboy"] .ntf-card:hover,
+html[data-theme="frutiger-aero"] .ntf-card:hover,
+html[data-theme="solarized-light"] .ntf-card:hover {
+  background: var(--surface-hover) !important;
+  border-color: var(--glass-border) !important;
+  box-shadow: 0 8px 20px var(--shadow-color) !important;
 }
 
-html[data-theme="light"] .ntf-card--info {
-  background: rgba(137, 180, 250, 0.04);
-  border-color: rgba(137, 180, 250, 0.12);
+html[data-theme="light"] .ntf-card--info,
+html[data-theme="cherry"] .ntf-card--info,
+html[data-theme="github-light"] .ntf-card--info,
+html[data-theme="minimal-gray"] .ntf-card--info,
+html[data-theme="paper"] .ntf-card--info,
+html[data-theme="macos-fluent"] .ntf-card--info,
+html[data-theme="windows-fluent"] .ntf-card--info,
+html[data-theme="material-you"] .ntf-card--info,
+html[data-theme="sepia"] .ntf-card--info,
+html[data-theme="sakura"] .ntf-card--info,
+html[data-theme="arctic"] .ntf-card--info,
+html[data-theme="nordic"] .ntf-card--info,
+html[data-theme="gameboy"] .ntf-card--info,
+html[data-theme="frutiger-aero"] .ntf-card--info,
+html[data-theme="solarized-light"] .ntf-card--info {
+  background: rgba(137, 180, 250, 0.04) !important;
+  border-color: rgba(137, 180, 250, 0.12) !important;
 }
 
-html[data-theme="light"] .ntf-card--info:hover {
-  background: rgba(137, 180, 250, 0.08);
-  border-color: rgba(137, 180, 250, 0.22);
+html[data-theme="light"] .ntf-card--info:hover,
+html[data-theme="cherry"] .ntf-card--info:hover,
+html[data-theme="github-light"] .ntf-card--info:hover,
+html[data-theme="minimal-gray"] .ntf-card--info:hover,
+html[data-theme="paper"] .ntf-card--info:hover,
+html[data-theme="macos-fluent"] .ntf-card--info:hover,
+html[data-theme="windows-fluent"] .ntf-card--info:hover,
+html[data-theme="material-you"] .ntf-card--info:hover,
+html[data-theme="sepia"] .ntf-card--info:hover,
+html[data-theme="sakura"] .ntf-card--info:hover,
+html[data-theme="arctic"] .ntf-card--info:hover,
+html[data-theme="nordic"] .ntf-card--info:hover,
+html[data-theme="gameboy"] .ntf-card--info:hover,
+html[data-theme="frutiger-aero"] .ntf-card--info:hover,
+html[data-theme="solarized-light"] .ntf-card--info:hover {
+  background: rgba(137, 180, 250, 0.08) !important;
+  border-color: rgba(137, 180, 250, 0.22) !important;
 }
 
-html[data-theme="light"] .ntf-card--ok {
-  background: rgba(166, 227, 161, 0.04);
-  border-color: rgba(166, 227, 161, 0.12);
+html[data-theme="light"] .ntf-card--ok,
+html[data-theme="cherry"] .ntf-card--ok,
+html[data-theme="github-light"] .ntf-card--ok,
+html[data-theme="minimal-gray"] .ntf-card--ok,
+html[data-theme="paper"] .ntf-card--ok,
+html[data-theme="macos-fluent"] .ntf-card--ok,
+html[data-theme="windows-fluent"] .ntf-card--ok,
+html[data-theme="material-you"] .ntf-card--ok,
+html[data-theme="sepia"] .ntf-card--ok,
+html[data-theme="sakura"] .ntf-card--ok,
+html[data-theme="arctic"] .ntf-card--ok,
+html[data-theme="nordic"] .ntf-card--ok,
+html[data-theme="gameboy"] .ntf-card--ok,
+html[data-theme="frutiger-aero"] .ntf-card--ok,
+html[data-theme="solarized-light"] .ntf-card--ok {
+  background: rgba(166, 227, 161, 0.04) !important;
+  border-color: rgba(166, 227, 161, 0.12) !important;
 }
 
-html[data-theme="light"] .ntf-card--ok:hover {
-  background: rgba(166, 227, 161, 0.08);
-  border-color: rgba(166, 227, 161, 0.22);
+html[data-theme="light"] .ntf-card--ok:hover,
+html[data-theme="cherry"] .ntf-card--ok:hover,
+html[data-theme="github-light"] .ntf-card--ok:hover,
+html[data-theme="minimal-gray"] .ntf-card--ok:hover,
+html[data-theme="paper"] .ntf-card--ok:hover,
+html[data-theme="macos-fluent"] .ntf-card--ok:hover,
+html[data-theme="windows-fluent"] .ntf-card--ok:hover,
+html[data-theme="material-you"] .ntf-card--ok:hover,
+html[data-theme="sepia"] .ntf-card--ok:hover,
+html[data-theme="sakura"] .ntf-card--ok:hover,
+html[data-theme="arctic"] .ntf-card--ok:hover,
+html[data-theme="nordic"] .ntf-card--ok:hover,
+html[data-theme="gameboy"] .ntf-card--ok:hover,
+html[data-theme="frutiger-aero"] .ntf-card--ok:hover,
+html[data-theme="solarized-light"] .ntf-card--ok:hover {
+  background: rgba(166, 227, 161, 0.08) !important;
+  border-color: rgba(166, 227, 161, 0.22) !important;
 }
 
-html[data-theme="light"] .ntf-card--warn {
-  background: rgba(249, 226, 175, 0.04);
-  border-color: rgba(249, 226, 175, 0.12);
+html[data-theme="light"] .ntf-card--warn,
+html[data-theme="cherry"] .ntf-card--warn,
+html[data-theme="github-light"] .ntf-card--warn,
+html[data-theme="minimal-gray"] .ntf-card--warn,
+html[data-theme="paper"] .ntf-card--warn,
+html[data-theme="macos-fluent"] .ntf-card--warn,
+html[data-theme="windows-fluent"] .ntf-card--warn,
+html[data-theme="material-you"] .ntf-card--warn,
+html[data-theme="sepia"] .ntf-card--warn,
+html[data-theme="sakura"] .ntf-card--warn,
+html[data-theme="arctic"] .ntf-card--warn,
+html[data-theme="nordic"] .ntf-card--warn,
+html[data-theme="gameboy"] .ntf-card--warn,
+html[data-theme="frutiger-aero"] .ntf-card--warn,
+html[data-theme="solarized-light"] .ntf-card--warn {
+  background: rgba(249, 226, 175, 0.04) !important;
+  border-color: rgba(249, 226, 175, 0.12) !important;
 }
 
-html[data-theme="light"] .ntf-card--warn:hover {
-  background: rgba(249, 226, 175, 0.08);
-  border-color: rgba(249, 226, 175, 0.22);
+html[data-theme="light"] .ntf-card--warn:hover,
+html[data-theme="cherry"] .ntf-card--warn:hover,
+html[data-theme="github-light"] .ntf-card--warn:hover,
+html[data-theme="minimal-gray"] .ntf-card--warn:hover,
+html[data-theme="paper"] .ntf-card--warn:hover,
+html[data-theme="macos-fluent"] .ntf-card--warn:hover,
+html[data-theme="windows-fluent"] .ntf-card--warn:hover,
+html[data-theme="material-you"] .ntf-card--warn:hover,
+html[data-theme="sepia"] .ntf-card--warn:hover,
+html[data-theme="sakura"] .ntf-card--warn:hover,
+html[data-theme="arctic"] .ntf-card--warn:hover,
+html[data-theme="nordic"] .ntf-card--warn:hover,
+html[data-theme="gameboy"] .ntf-card--warn:hover,
+html[data-theme="frutiger-aero"] .ntf-card--warn:hover,
+html[data-theme="solarized-light"] .ntf-card--warn:hover {
+  background: rgba(249, 226, 175, 0.08) !important;
+  border-color: rgba(249, 226, 175, 0.22) !important;
 }
 
-html[data-theme="light"] .ntf-card--fail {
-  background: rgba(243, 139, 168, 0.04);
-  border-color: rgba(243, 139, 168, 0.12);
+html[data-theme="light"] .ntf-card--fail,
+html[data-theme="cherry"] .ntf-card--fail,
+html[data-theme="github-light"] .ntf-card--fail,
+html[data-theme="minimal-gray"] .ntf-card--fail,
+html[data-theme="paper"] .ntf-card--fail,
+html[data-theme="macos-fluent"] .ntf-card--fail,
+html[data-theme="windows-fluent"] .ntf-card--fail,
+html[data-theme="material-you"] .ntf-card--fail,
+html[data-theme="sepia"] .ntf-card--fail,
+html[data-theme="sakura"] .ntf-card--fail,
+html[data-theme="arctic"] .ntf-card--fail,
+html[data-theme="nordic"] .ntf-card--fail,
+html[data-theme="gameboy"] .ntf-card--fail,
+html[data-theme="frutiger-aero"] .ntf-card--fail,
+html[data-theme="solarized-light"] .ntf-card--fail {
+  background: rgba(243, 139, 168, 0.04) !important;
+  border-color: rgba(243, 139, 168, 0.12) !important;
 }
 
-html[data-theme="light"] .ntf-card--fail:hover {
-  background: rgba(243, 139, 168, 0.08);
-  border-color: rgba(243, 139, 168, 0.22);
+html[data-theme="light"] .ntf-card--fail:hover,
+html[data-theme="cherry"] .ntf-card--fail:hover,
+html[data-theme="github-light"] .ntf-card--fail:hover,
+html[data-theme="minimal-gray"] .ntf-card--fail:hover,
+html[data-theme="paper"] .ntf-card--fail:hover,
+html[data-theme="macos-fluent"] .ntf-card--fail:hover,
+html[data-theme="windows-fluent"] .ntf-card--fail:hover,
+html[data-theme="material-you"] .ntf-card--fail:hover,
+html[data-theme="sepia"] .ntf-card--fail:hover,
+html[data-theme="sakura"] .ntf-card--fail:hover,
+html[data-theme="arctic"] .ntf-card--fail:hover,
+html[data-theme="nordic"] .ntf-card--fail:hover,
+html[data-theme="gameboy"] .ntf-card--fail:hover,
+html[data-theme="frutiger-aero"] .ntf-card--fail:hover,
+html[data-theme="solarized-light"] .ntf-card--fail:hover {
+  background: rgba(243, 139, 168, 0.08) !important;
+  border-color: rgba(243, 139, 168, 0.22) !important;
 }
 
-html[data-theme="light"] .ntf-card__glyph-wrap {
-  background: rgba(0, 0, 0, 0.03);
+html[data-theme="light"] .ntf-card__glyph-wrap,
+html[data-theme="cherry"] .ntf-card__glyph-wrap,
+html[data-theme="github-light"] .ntf-card__glyph-wrap,
+html[data-theme="minimal-gray"] .ntf-card__glyph-wrap,
+html[data-theme="paper"] .ntf-card__glyph-wrap,
+html[data-theme="macos-fluent"] .ntf-card__glyph-wrap,
+html[data-theme="windows-fluent"] .ntf-card__glyph-wrap,
+html[data-theme="material-you"] .ntf-card__glyph-wrap,
+html[data-theme="sepia"] .ntf-card__glyph-wrap,
+html[data-theme="sakura"] .ntf-card__glyph-wrap,
+html[data-theme="arctic"] .ntf-card__glyph-wrap,
+html[data-theme="nordic"] .ntf-card__glyph-wrap,
+html[data-theme="gameboy"] .ntf-card__glyph-wrap,
+html[data-theme="frutiger-aero"] .ntf-card__glyph-wrap,
+html[data-theme="solarized-light"] .ntf-card__glyph-wrap {
+  background: var(--glass) !important;
 }
 
-html[data-theme="light"] .ntf-card__source {
-  color: rgba(0, 0, 0, 0.5);
+html[data-theme="light"] .ntf-card__source,
+html[data-theme="cherry"] .ntf-card__source,
+html[data-theme="github-light"] .ntf-card__source,
+html[data-theme="minimal-gray"] .ntf-card__source,
+html[data-theme="paper"] .ntf-card__source,
+html[data-theme="macos-fluent"] .ntf-card__source,
+html[data-theme="windows-fluent"] .ntf-card__source,
+html[data-theme="material-you"] .ntf-card__source,
+html[data-theme="sepia"] .ntf-card__source,
+html[data-theme="sakura"] .ntf-card__source,
+html[data-theme="arctic"] .ntf-card__source,
+html[data-theme="nordic"] .ntf-card__source,
+html[data-theme="gameboy"] .ntf-card__source,
+html[data-theme="frutiger-aero"] .ntf-card__source,
+html[data-theme="solarized-light"] .ntf-card__source {
+  color: var(--text-secondary) !important;
 }
 
-html[data-theme="light"] .ntf-card__heading {
-  color: #1a1a1a;
+html[data-theme="light"] .ntf-card__heading,
+html[data-theme="cherry"] .ntf-card__heading,
+html[data-theme="github-light"] .ntf-card__heading,
+html[data-theme="minimal-gray"] .ntf-card__heading,
+html[data-theme="paper"] .ntf-card__heading,
+html[data-theme="macos-fluent"] .ntf-card__heading,
+html[data-theme="windows-fluent"] .ntf-card__heading,
+html[data-theme="material-you"] .ntf-card__heading,
+html[data-theme="sepia"] .ntf-card__heading,
+html[data-theme="sakura"] .ntf-card__heading,
+html[data-theme="arctic"] .ntf-card__heading,
+html[data-theme="nordic"] .ntf-card__heading,
+html[data-theme="gameboy"] .ntf-card__heading,
+html[data-theme="frutiger-aero"] .ntf-card__heading,
+html[data-theme="solarized-light"] .ntf-card__heading {
+  color: var(--text-primary) !important;
 }
 
-html[data-theme="light"] .ntf-card__text {
-  color: #4a4a4a;
+html[data-theme="light"] .ntf-card__text,
+html[data-theme="cherry"] .ntf-card__text,
+html[data-theme="github-light"] .ntf-card__text,
+html[data-theme="minimal-gray"] .ntf-card__text,
+html[data-theme="paper"] .ntf-card__text,
+html[data-theme="macos-fluent"] .ntf-card__text,
+html[data-theme="windows-fluent"] .ntf-card__text,
+html[data-theme="material-you"] .ntf-card__text,
+html[data-theme="sepia"] .ntf-card__text,
+html[data-theme="sakura"] .ntf-card__text,
+html[data-theme="arctic"] .ntf-card__text,
+html[data-theme="nordic"] .ntf-card__text,
+html[data-theme="gameboy"] .ntf-card__text,
+html[data-theme="frutiger-aero"] .ntf-card__text,
+html[data-theme="solarized-light"] .ntf-card__text {
+  color: var(--text-secondary) !important;
 }
 
-html[data-theme="light"] .ntf-card__stamp {
-  color: #8a8a8a;
+html[data-theme="light"] .ntf-card__stamp,
+html[data-theme="cherry"] .ntf-card__stamp,
+html[data-theme="github-light"] .ntf-card__stamp,
+html[data-theme="minimal-gray"] .ntf-card__stamp,
+html[data-theme="paper"] .ntf-card__stamp,
+html[data-theme="macos-fluent"] .ntf-card__stamp,
+html[data-theme="windows-fluent"] .ntf-card__stamp,
+html[data-theme="material-you"] .ntf-card__stamp,
+html[data-theme="sepia"] .ntf-card__stamp,
+html[data-theme="sakura"] .ntf-card__stamp,
+html[data-theme="arctic"] .ntf-card__stamp,
+html[data-theme="nordic"] .ntf-card__stamp,
+html[data-theme="gameboy"] .ntf-card__stamp,
+html[data-theme="frutiger-aero"] .ntf-card__stamp,
+html[data-theme="solarized-light"] .ntf-card__stamp {
+  color: var(--text-secondary) !important;
 }
 
-html[data-theme="light"] .ntf-card__remove {
-  color: rgba(0, 0, 0, 0.3);
+html[data-theme="light"] .ntf-card__remove,
+html[data-theme="cherry"] .ntf-card__remove,
+html[data-theme="github-light"] .ntf-card__remove,
+html[data-theme="minimal-gray"] .ntf-card__remove,
+html[data-theme="paper"] .ntf-card__remove,
+html[data-theme="macos-fluent"] .ntf-card__remove,
+html[data-theme="windows-fluent"] .ntf-card__remove,
+html[data-theme="material-you"] .ntf-card__remove,
+html[data-theme="sepia"] .ntf-card__remove,
+html[data-theme="sakura"] .ntf-card__remove,
+html[data-theme="arctic"] .ntf-card__remove,
+html[data-theme="nordic"] .ntf-card__remove,
+html[data-theme="gameboy"] .ntf-card__remove,
+html[data-theme="frutiger-aero"] .ntf-card__remove,
+html[data-theme="solarized-light"] .ntf-card__remove {
+  color: var(--text-secondary) !important;
 }
 
-html[data-theme="light"] .ntf-card__remove:hover {
-  background: rgba(0, 0, 0, 0.06);
-  color: #000000;
+html[data-theme="light"] .ntf-card__remove:hover,
+html[data-theme="cherry"] .ntf-card__remove:hover,
+html[data-theme="github-light"] .ntf-card__remove:hover,
+html[data-theme="minimal-gray"] .ntf-card__remove:hover,
+html[data-theme="paper"] .ntf-card__remove:hover,
+html[data-theme="macos-fluent"] .ntf-card__remove:hover,
+html[data-theme="windows-fluent"] .ntf-card__remove:hover,
+html[data-theme="material-you"] .ntf-card__remove:hover,
+html[data-theme="sepia"] .ntf-card__remove:hover,
+html[data-theme="sakura"] .ntf-card__remove:hover,
+html[data-theme="arctic"] .ntf-card__remove:hover,
+html[data-theme="nordic"] .ntf-card__remove:hover,
+html[data-theme="gameboy"] .ntf-card__remove:hover,
+html[data-theme="frutiger-aero"] .ntf-card__remove:hover,
+html[data-theme="solarized-light"] .ntf-card__remove:hover {
+  background: var(--glass-hover) !important;
+  color: var(--text-primary) !important;
 }
 
-html[data-theme="light"] .ntf-panel__foot {
-  border-top-color: rgba(0, 0, 0, 0.06);
+html[data-theme="light"] .ntf-panel__foot,
+html[data-theme="cherry"] .ntf-panel__foot,
+html[data-theme="github-light"] .ntf-panel__foot,
+html[data-theme="minimal-gray"] .ntf-panel__foot,
+html[data-theme="paper"] .ntf-panel__foot,
+html[data-theme="macos-fluent"] .ntf-panel__foot,
+html[data-theme="windows-fluent"] .ntf-panel__foot,
+html[data-theme="material-you"] .ntf-panel__foot,
+html[data-theme="sepia"] .ntf-panel__foot,
+html[data-theme="sakura"] .ntf-panel__foot,
+html[data-theme="arctic"] .ntf-panel__foot,
+html[data-theme="nordic"] .ntf-panel__foot,
+html[data-theme="gameboy"] .ntf-panel__foot,
+html[data-theme="frutiger-aero"] .ntf-panel__foot,
+html[data-theme="solarized-light"] .ntf-panel__foot {
+  border-top-color: var(--glass-border) !important;
 }
 
-html[data-theme="light"] .ntf-purge-btn {
-  background: rgba(0, 0, 0, 0.03);
-  border-color: rgba(0, 0, 0, 0.06);
-  color: #333333;
+html[data-theme="light"] .ntf-purge-btn,
+html[data-theme="cherry"] .ntf-purge-btn,
+html[data-theme="github-light"] .ntf-purge-btn,
+html[data-theme="minimal-gray"] .ntf-purge-btn,
+html[data-theme="paper"] .ntf-purge-btn,
+html[data-theme="macos-fluent"] .ntf-purge-btn,
+html[data-theme="windows-fluent"] .ntf-purge-btn,
+html[data-theme="material-you"] .ntf-purge-btn,
+html[data-theme="sepia"] .ntf-purge-btn,
+html[data-theme="sakura"] .ntf-purge-btn,
+html[data-theme="arctic"] .ntf-purge-btn,
+html[data-theme="nordic"] .ntf-purge-btn,
+html[data-theme="gameboy"] .ntf-purge-btn,
+html[data-theme="frutiger-aero"] .ntf-purge-btn,
+html[data-theme="solarized-light"] .ntf-purge-btn {
+  background: var(--glass) !important;
+  border-color: var(--glass-border) !important;
+  color: var(--text-primary) !important;
 }
 
-html[data-theme="light"] .ntf-purge-btn:hover {
-  background: rgba(0, 0, 0, 0.06);
-  border-color: rgba(0, 0, 0, 0.1);
+html[data-theme="light"] .ntf-purge-btn:hover,
+html[data-theme="cherry"] .ntf-purge-btn:hover,
+html[data-theme="github-light"] .ntf-purge-btn:hover,
+html[data-theme="minimal-gray"] .ntf-purge-btn:hover,
+html[data-theme="paper"] .ntf-purge-btn:hover,
+html[data-theme="macos-fluent"] .ntf-purge-btn:hover,
+html[data-theme="windows-fluent"] .ntf-purge-btn:hover,
+html[data-theme="material-you"] .ntf-purge-btn:hover,
+html[data-theme="sepia"] .ntf-purge-btn:hover,
+html[data-theme="sakura"] .ntf-purge-btn:hover,
+html[data-theme="arctic"] .ntf-purge-btn:hover,
+html[data-theme="nordic"] .ntf-purge-btn:hover,
+html[data-theme="gameboy"] .ntf-purge-btn:hover,
+html[data-theme="frutiger-aero"] .ntf-purge-btn:hover,
+html[data-theme="solarized-light"] .ntf-purge-btn:hover {
+  background: var(--glass-hover) !important;
+  border-color: var(--glass-border) !important;
 }
 
-html[data-theme="light"] .ntf-toast {
-  background: rgba(245, 245, 248, 0.9);
-  border-color: rgba(0, 0, 0, 0.08);
+html[data-theme="light"] .ntf-toast,
+html[data-theme="cherry"] .ntf-toast,
+html[data-theme="github-light"] .ntf-toast,
+html[data-theme="minimal-gray"] .ntf-toast,
+html[data-theme="paper"] .ntf-toast,
+html[data-theme="macos-fluent"] .ntf-toast,
+html[data-theme="windows-fluent"] .ntf-toast,
+html[data-theme="material-you"] .ntf-toast,
+html[data-theme="sepia"] .ntf-toast,
+html[data-theme="sakura"] .ntf-toast,
+html[data-theme="arctic"] .ntf-toast,
+html[data-theme="nordic"] .ntf-toast,
+html[data-theme="gameboy"] .ntf-toast,
+html[data-theme="frutiger-aero"] .ntf-toast,
+html[data-theme="solarized-light"] .ntf-toast {
+  background: var(--bg-secondary) !important;
+  border-color: var(--glass-border) !important;
   box-shadow:
-    0 16px 32px rgba(0, 0, 0, 0.1),
-    0 0 0 1px rgba(255, 255, 255, 0.6) inset;
+    0 16px 32px var(--shadow-color) !important,
+    0 0 0 1px var(--glass-border) inset !important;
 }
 
-html[data-theme="light"] .ntf-toast__source {
-  color: rgba(0, 0, 0, 0.5);
+html[data-theme="light"] .ntf-toast__source,
+html[data-theme="cherry"] .ntf-toast__source,
+html[data-theme="github-light"] .ntf-toast__source,
+html[data-theme="minimal-gray"] .ntf-toast__source,
+html[data-theme="paper"] .ntf-toast__source,
+html[data-theme="macos-fluent"] .ntf-toast__source,
+html[data-theme="windows-fluent"] .ntf-toast__source,
+html[data-theme="material-you"] .ntf-toast__source,
+html[data-theme="sepia"] .ntf-toast__source,
+html[data-theme="sakura"] .ntf-toast__source,
+html[data-theme="arctic"] .ntf-toast__source,
+html[data-theme="nordic"] .ntf-toast__source,
+html[data-theme="gameboy"] .ntf-toast__source,
+html[data-theme="frutiger-aero"] .ntf-toast__source,
+html[data-theme="solarized-light"] .ntf-toast__source {
+  color: var(--text-secondary) !important;
 }
 
-html[data-theme="light"] .ntf-toast__heading {
-  color: #1a1a1a;
+html[data-theme="light"] .ntf-toast__heading,
+html[data-theme="cherry"] .ntf-toast__heading,
+html[data-theme="github-light"] .ntf-toast__heading,
+html[data-theme="minimal-gray"] .ntf-toast__heading,
+html[data-theme="paper"] .ntf-toast__heading,
+html[data-theme="macos-fluent"] .ntf-toast__heading,
+html[data-theme="windows-fluent"] .ntf-toast__heading,
+html[data-theme="material-you"] .ntf-toast__heading,
+html[data-theme="sepia"] .ntf-toast__heading,
+html[data-theme="sakura"] .ntf-toast__heading,
+html[data-theme="arctic"] .ntf-toast__heading,
+html[data-theme="nordic"] .ntf-toast__heading,
+html[data-theme="gameboy"] .ntf-toast__heading,
+html[data-theme="frutiger-aero"] .ntf-toast__heading,
+html[data-theme="solarized-light"] .ntf-toast__heading {
+  color: var(--text-primary) !important;
 }
 
-html[data-theme="light"] .ntf-toast__text {
-  color: #4a4a4a;
+html[data-theme="light"] .ntf-toast__text,
+html[data-theme="cherry"] .ntf-toast__text,
+html[data-theme="github-light"] .ntf-toast__text,
+html[data-theme="minimal-gray"] .ntf-toast__text,
+html[data-theme="paper"] .ntf-toast__text,
+html[data-theme="macos-fluent"] .ntf-toast__text,
+html[data-theme="windows-fluent"] .ntf-toast__text,
+html[data-theme="material-you"] .ntf-toast__text,
+html[data-theme="sepia"] .ntf-toast__text,
+html[data-theme="sakura"] .ntf-toast__text,
+html[data-theme="arctic"] .ntf-toast__text,
+html[data-theme="nordic"] .ntf-toast__text,
+html[data-theme="gameboy"] .ntf-toast__text,
+html[data-theme="frutiger-aero"] .ntf-toast__text,
+html[data-theme="solarized-light"] .ntf-toast__text {
+  color: var(--text-secondary) !important;
 }
 
-html[data-theme="light"] .ntf-toast__close {
-  color: rgba(0, 0, 0, 0.3);
+html[data-theme="light"] .ntf-toast__close,
+html[data-theme="cherry"] .ntf-toast__close,
+html[data-theme="github-light"] .ntf-toast__close,
+html[data-theme="minimal-gray"] .ntf-toast__close,
+html[data-theme="paper"] .ntf-toast__close,
+html[data-theme="macos-fluent"] .ntf-toast__close,
+html[data-theme="windows-fluent"] .ntf-toast__close,
+html[data-theme="material-you"] .ntf-toast__close,
+html[data-theme="sepia"] .ntf-toast__close,
+html[data-theme="sakura"] .ntf-toast__close,
+html[data-theme="arctic"] .ntf-toast__close,
+html[data-theme="nordic"] .ntf-toast__close,
+html[data-theme="gameboy"] .ntf-toast__close,
+html[data-theme="frutiger-aero"] .ntf-toast__close,
+html[data-theme="solarized-light"] .ntf-toast__close {
+  color: var(--text-secondary) !important;
 }
 
-html[data-theme="light"] .ntf-toast__close:hover {
-  background: rgba(0, 0, 0, 0.06);
-  color: #000000;
+html[data-theme="light"] .ntf-toast__close:hover,
+html[data-theme="cherry"] .ntf-toast__close:hover,
+html[data-theme="github-light"] .ntf-toast__close:hover,
+html[data-theme="minimal-gray"] .ntf-toast__close:hover,
+html[data-theme="paper"] .ntf-toast__close:hover,
+html[data-theme="macos-fluent"] .ntf-toast__close:hover,
+html[data-theme="windows-fluent"] .ntf-toast__close:hover,
+html[data-theme="material-you"] .ntf-toast__close:hover,
+html[data-theme="sepia"] .ntf-toast__close:hover,
+html[data-theme="sakura"] .ntf-toast__close:hover,
+html[data-theme="arctic"] .ntf-toast__close:hover,
+html[data-theme="nordic"] .ntf-toast__close:hover,
+html[data-theme="gameboy"] .ntf-toast__close:hover,
+html[data-theme="frutiger-aero"] .ntf-toast__close:hover,
+html[data-theme="solarized-light"] .ntf-toast__close:hover {
+  background: var(--glass-hover) !important;
+  color: var(--text-primary) !important;
 }
 
 .ntf-toast.ntf-toast--no-animation {

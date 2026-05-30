@@ -1,7 +1,7 @@
 import { bus, BusEvents } from "./core/EventBus.js";
 import { PREDEFINED_AVATARS, STORAGE_KEYS } from "./profileCustomizer.js";
 import { resolveIconUrl } from "./shared/assetResolver.js";
-import { StorageKeys } from "./settings.js";
+import { StorageKeys } from "./settings/settings.js";
 import { SystemUtilities } from "./system.js";
 import { audioMixer, SystemAudio } from "./audioMixer.js";
 

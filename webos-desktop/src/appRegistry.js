@@ -1,4 +1,4 @@
-import { StorageKeys } from "./settings.js";
+import { StorageKeys } from "./settings/settings.js";
 
 const APP_REGISTRY_DISABLED_KEY = "yukiOS_app_registry_disabled";
 const APP_REGISTRY_RENAMED_KEY = "yukiOS_app_registry_renamed";

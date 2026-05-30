@@ -1,5 +1,5 @@
 import { toggleStartMenu } from "../startMenu.js";
-import { StorageKeys } from "../settings.js";
+import { StorageKeys } from "../settings/settings.js";
 import { resolveIconUrl } from "../assetUrl.js";
 
 export class InputHandler {

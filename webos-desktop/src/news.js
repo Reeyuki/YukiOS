@@ -1,5 +1,5 @@
 import { BaseApp } from "./core/BaseApp.js";
-import { StorageKeys } from "./settings.js";
+import { StorageKeys } from "./settings/settings.js";
 import { desktop } from "./desktop.js";
 
 const NEWS_UPDATES = [
@@ -14,6 +14,14 @@ const NEWS_UPDATES = [
             "fa-stack",
             "Alt + Q Window Switching",
             "Added Alt + Q behaviour for switching focused windows like alt+tab behaviour of desktops."
+          ],
+          ["fa-gear", "Settings Reorganized", "Settings sections are now grouped more clearly for easier navigation."],
+          ["fa-robot", "Clippy Fixed", "Fixed Clippy assistant so it works reliably again."],
+          ["fa-sun", "Light Theme Text Colors", "Improved text contrast and readability across all light themes."],
+          [
+            "fa-arrow-pointer",
+            "Miku Cursor Toggle",
+            "Toggle the Hatsune Miku cursor on or off from Settings → Appearance → Custom Cursor."
           ]
         ]
       }

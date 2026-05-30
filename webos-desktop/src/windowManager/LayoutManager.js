@@ -1,4 +1,4 @@
-import { StorageKeys } from "../settings.js";
+import { StorageKeys } from "../settings/settings.js";
 
 export class LayoutManager {
   constructor(manager) {

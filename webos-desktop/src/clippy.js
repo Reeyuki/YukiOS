@@ -2,7 +2,6 @@ import { getLibraryUrl } from "./shared/cdnConfig.js";
 import { bus, BusEvents } from "./core/EventBus.js";
 
 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-const isLocalhost = ["localhost", "127.0.0.1"].includes(window.location.hostname);
 
 const CLIPPY_STORAGE_KEY = "yukiOS_clippy";
 const SPEAK_COOLDOWN_MS = 50_000;
@@ -98,7 +97,14 @@ export function initClippy() {
 }
 
 export function setClippyEnabled(enabled) {
-  if (enabled) return window.clippyAgent ? Promise.resolve(window.clippyAgent) : enableClippyLive();
+  if (enabled) {
+    if (window.clippyAgent) return Promise.resolve(window.clippyAgent);
+    setupClippy().then((agent) => {
+      window.clippyAgent = agent;
+      clippyPromise = Promise.resolve(agent);
+    });
+    return enableClippyLive();
+  }
   return disableClippyLive();
 }
 

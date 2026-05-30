@@ -1,4 +1,4 @@
-import { StorageKeys } from "./settings.js";
+import { StorageKeys } from "./settings/settings.js";
 import confetti from "canvas-confetti";
 import { BaseApp } from "./core/BaseApp.js";
 import { bus, BusEvents } from "./core/EventBus.js";

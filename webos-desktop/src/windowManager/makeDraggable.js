@@ -1,4 +1,4 @@
-import { StorageKeys } from "../settings.js";
+import { StorageKeys } from "../settings/settings.js";
 import { desktop } from "../desktop.js";
 
 export function makeDraggable(win, wm) {

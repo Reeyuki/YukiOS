@@ -1,4 +1,4 @@
-import { StorageKeys } from "../settings.js";
+import { StorageKeys } from "../settings/settings.js";
 import { resolveIconUrl } from "../assetUrl.js";
 import { bus, BusEvents } from "../core/EventBus.js";
 import { WindowRecord } from "../core/WindowRecord.js";

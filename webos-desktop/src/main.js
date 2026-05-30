@@ -12,7 +12,7 @@ import { FileSystemManager } from "./fs.js";
 import { setupStartMenu } from "./startMenu.js";
 import { DesktopUI } from "./desktopui.js";
 import { CalculatorApp } from "./calculator.js";
-import { SettingsApp } from "./settings.js";
+import { SettingsApp } from "./settings/settings.js";
 import { TaskManagerApp } from "./taskManager.js";
 import { WeatherApp } from "./weather.js";
 import { AppCreatorApp } from "./appCreator.js";

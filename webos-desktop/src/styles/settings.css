@@ -450,72 +450,265 @@
   color: white;
 }
 
-html[data-theme="light"] .yuki-settings-layout {
-  background: #f2f2f2 !important;
-  color: #111 !important;
+html[data-theme="light"] .yuki-settings-layout,
+html[data-theme="cherry"] .yuki-settings-layout,
+html[data-theme="github-light"] .yuki-settings-layout,
+html[data-theme="minimal-gray"] .yuki-settings-layout,
+html[data-theme="paper"] .yuki-settings-layout,
+html[data-theme="macos-fluent"] .yuki-settings-layout,
+html[data-theme="windows-fluent"] .yuki-settings-layout,
+html[data-theme="material-you"] .yuki-settings-layout,
+html[data-theme="sepia"] .yuki-settings-layout,
+html[data-theme="sakura"] .yuki-settings-layout,
+html[data-theme="arctic"] .yuki-settings-layout,
+html[data-theme="nordic"] .yuki-settings-layout,
+html[data-theme="gameboy"] .yuki-settings-layout,
+html[data-theme="frutiger-aero"] .yuki-settings-layout,
+html[data-theme="solarized-light"] .yuki-settings-layout {
+  background: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
 }
 
-html[data-theme="light"] .yuki-settings-sidebar {
-  background: #e6e6e6 !important;
-  border-right: 1px solid rgba(0, 0, 0, 0.1) !important;
+html[data-theme="light"] .yuki-settings-sidebar,
+html[data-theme="cherry"] .yuki-settings-sidebar,
+html[data-theme="github-light"] .yuki-settings-sidebar,
+html[data-theme="minimal-gray"] .yuki-settings-sidebar,
+html[data-theme="paper"] .yuki-settings-sidebar,
+html[data-theme="macos-fluent"] .yuki-settings-sidebar,
+html[data-theme="windows-fluent"] .yuki-settings-sidebar,
+html[data-theme="material-you"] .yuki-settings-sidebar,
+html[data-theme="sepia"] .yuki-settings-sidebar,
+html[data-theme="sakura"] .yuki-settings-sidebar,
+html[data-theme="arctic"] .yuki-settings-sidebar,
+html[data-theme="nordic"] .yuki-settings-sidebar,
+html[data-theme="gameboy"] .yuki-settings-sidebar,
+html[data-theme="frutiger-aero"] .yuki-settings-sidebar,
+html[data-theme="solarized-light"] .yuki-settings-sidebar {
+  background: var(--bg-secondary) !important;
+  border-right: 1px solid var(--glass-border) !important;
 }
 
-html[data-theme="light"] .yuki-settings-nav li {
-  color: #444 !important;
+html[data-theme="light"] .yuki-settings-nav li,
+html[data-theme="cherry"] .yuki-settings-nav li,
+html[data-theme="github-light"] .yuki-settings-nav li,
+html[data-theme="minimal-gray"] .yuki-settings-nav li,
+html[data-theme="paper"] .yuki-settings-nav li,
+html[data-theme="macos-fluent"] .yuki-settings-nav li,
+html[data-theme="windows-fluent"] .yuki-settings-nav li,
+html[data-theme="material-you"] .yuki-settings-nav li,
+html[data-theme="sepia"] .yuki-settings-nav li,
+html[data-theme="sakura"] .yuki-settings-nav li,
+html[data-theme="arctic"] .yuki-settings-nav li,
+html[data-theme="nordic"] .yuki-settings-nav li,
+html[data-theme="gameboy"] .yuki-settings-nav li,
+html[data-theme="frutiger-aero"] .yuki-settings-nav li,
+html[data-theme="solarized-light"] .yuki-settings-nav li {
+  color: var(--text-secondary) !important;
   font-weight: 500 !important;
 }
 
-html[data-theme="light"] .yuki-settings-nav li i {
-  color: #666 !important;
+html[data-theme="light"] .yuki-settings-nav li i,
+html[data-theme="cherry"] .yuki-settings-nav li i,
+html[data-theme="github-light"] .yuki-settings-nav li i,
+html[data-theme="minimal-gray"] .yuki-settings-nav li i,
+html[data-theme="paper"] .yuki-settings-nav li i,
+html[data-theme="macos-fluent"] .yuki-settings-nav li i,
+html[data-theme="windows-fluent"] .yuki-settings-nav li i,
+html[data-theme="material-you"] .yuki-settings-nav li i,
+html[data-theme="sepia"] .yuki-settings-nav li i,
+html[data-theme="sakura"] .yuki-settings-nav li i,
+html[data-theme="arctic"] .yuki-settings-nav li i,
+html[data-theme="nordic"] .yuki-settings-nav li i,
+html[data-theme="gameboy"] .yuki-settings-nav li i,
+html[data-theme="frutiger-aero"] .yuki-settings-nav li i,
+html[data-theme="solarized-light"] .yuki-settings-nav li i {
+  color: var(--text-secondary) !important;
 }
 
-html[data-theme="light"] .yuki-settings-nav li:hover {
-  background: rgba(0, 0, 0, 0.05) !important;
-  color: #111 !important;
+html[data-theme="light"] .yuki-settings-nav li:hover,
+html[data-theme="cherry"] .yuki-settings-nav li:hover,
+html[data-theme="github-light"] .yuki-settings-nav li:hover,
+html[data-theme="minimal-gray"] .yuki-settings-nav li:hover,
+html[data-theme="paper"] .yuki-settings-nav li:hover,
+html[data-theme="macos-fluent"] .yuki-settings-nav li:hover,
+html[data-theme="windows-fluent"] .yuki-settings-nav li:hover,
+html[data-theme="material-you"] .yuki-settings-nav li:hover,
+html[data-theme="sepia"] .yuki-settings-nav li:hover,
+html[data-theme="sakura"] .yuki-settings-nav li:hover,
+html[data-theme="arctic"] .yuki-settings-nav li:hover,
+html[data-theme="nordic"] .yuki-settings-nav li:hover,
+html[data-theme="gameboy"] .yuki-settings-nav li:hover,
+html[data-theme="frutiger-aero"] .yuki-settings-nav li:hover,
+html[data-theme="solarized-light"] .yuki-settings-nav li:hover {
+  background: var(--surface-hover) !important;
+  color: var(--text-primary) !important;
 }
 
-html[data-theme="light"] .yuki-settings-nav li.active {
-  background: #fff !important;
+html[data-theme="light"] .yuki-settings-nav li.active,
+html[data-theme="cherry"] .yuki-settings-nav li.active,
+html[data-theme="github-light"] .yuki-settings-nav li.active,
+html[data-theme="minimal-gray"] .yuki-settings-nav li.active,
+html[data-theme="paper"] .yuki-settings-nav li.active,
+html[data-theme="macos-fluent"] .yuki-settings-nav li.active,
+html[data-theme="windows-fluent"] .yuki-settings-nav li.active,
+html[data-theme="material-you"] .yuki-settings-nav li.active,
+html[data-theme="sepia"] .yuki-settings-nav li.active,
+html[data-theme="sakura"] .yuki-settings-nav li.active,
+html[data-theme="arctic"] .yuki-settings-nav li.active,
+html[data-theme="nordic"] .yuki-settings-nav li.active,
+html[data-theme="gameboy"] .yuki-settings-nav li.active,
+html[data-theme="frutiger-aero"] .yuki-settings-nav li.active,
+html[data-theme="solarized-light"] .yuki-settings-nav li.active {
+  background: var(--brand-dim) !important;
   color: var(--brand) !important;
   border-left: 3px solid var(--brand) !important;
-  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+  box-shadow: 2px 0 5px var(--shadow-color);
 }
 
-html[data-theme="light"] .settings-label-title {
-  color: #111 !important;
+html[data-theme="light"] .settings-label-title,
+html[data-theme="cherry"] .settings-label-title,
+html[data-theme="github-light"] .settings-label-title,
+html[data-theme="minimal-gray"] .settings-label-title,
+html[data-theme="paper"] .settings-label-title,
+html[data-theme="macos-fluent"] .settings-label-title,
+html[data-theme="windows-fluent"] .settings-label-title,
+html[data-theme="material-you"] .settings-label-title,
+html[data-theme="sepia"] .settings-label-title,
+html[data-theme="sakura"] .settings-label-title,
+html[data-theme="arctic"] .settings-label-title,
+html[data-theme="nordic"] .settings-label-title,
+html[data-theme="gameboy"] .settings-label-title,
+html[data-theme="frutiger-aero"] .settings-label-title,
+html[data-theme="solarized-light"] .settings-label-title {
+  color: var(--text-primary) !important;
 }
 
-html[data-theme="light"] .settings-label-desc {
-  color: #666 !important;
+html[data-theme="light"] .settings-label-desc,
+html[data-theme="cherry"] .settings-label-desc,
+html[data-theme="github-light"] .settings-label-desc,
+html[data-theme="minimal-gray"] .settings-label-desc,
+html[data-theme="paper"] .settings-label-desc,
+html[data-theme="macos-fluent"] .settings-label-desc,
+html[data-theme="windows-fluent"] .settings-label-desc,
+html[data-theme="material-you"] .settings-label-desc,
+html[data-theme="sepia"] .settings-label-desc,
+html[data-theme="sakura"] .settings-label-desc,
+html[data-theme="arctic"] .settings-label-desc,
+html[data-theme="nordic"] .settings-label-desc,
+html[data-theme="gameboy"] .settings-label-desc,
+html[data-theme="frutiger-aero"] .settings-label-desc,
+html[data-theme="solarized-light"] .settings-label-desc {
+  color: var(--text-secondary) !important;
 }
 
-html[data-theme="light"] .settings-category-header {
-  color: #111 !important;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+html[data-theme="light"] .settings-category-header,
+html[data-theme="cherry"] .settings-category-header,
+html[data-theme="github-light"] .settings-category-header,
+html[data-theme="minimal-gray"] .settings-category-header,
+html[data-theme="paper"] .settings-category-header,
+html[data-theme="macos-fluent"] .settings-category-header,
+html[data-theme="windows-fluent"] .settings-category-header,
+html[data-theme="material-you"] .settings-category-header,
+html[data-theme="sepia"] .settings-category-header,
+html[data-theme="sakura"] .settings-category-header,
+html[data-theme="arctic"] .settings-category-header,
+html[data-theme="nordic"] .settings-category-header,
+html[data-theme="gameboy"] .settings-category-header,
+html[data-theme="frutiger-aero"] .settings-category-header,
+html[data-theme="solarized-light"] .settings-category-header {
+  color: var(--text-primary) !important;
+  border-bottom: 1px solid var(--glass-border) !important;
 }
 
-html[data-theme="light"] .settings-card-header {
-  color: #555 !important;
-  background: rgba(0, 0, 0, 0.03) !important;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
-  text-transform: uppercase;
-  font-size: 11px;
-  letter-spacing: 0.05em;
+html[data-theme="light"] .settings-card-header,
+html[data-theme="cherry"] .settings-card-header,
+html[data-theme="github-light"] .settings-card-header,
+html[data-theme="minimal-gray"] .settings-card-header,
+html[data-theme="paper"] .settings-card-header,
+html[data-theme="macos-fluent"] .settings-card-header,
+html[data-theme="windows-fluent"] .settings-card-header,
+html[data-theme="material-you"] .settings-card-header,
+html[data-theme="sepia"] .settings-card-header,
+html[data-theme="sakura"] .settings-card-header,
+html[data-theme="arctic"] .settings-card-header,
+html[data-theme="nordic"] .settings-card-header,
+html[data-theme="gameboy"] .settings-card-header,
+html[data-theme="frutiger-aero"] .settings-card-header,
+html[data-theme="solarized-light"] .settings-card-header {
+  color: var(--text-secondary) !important;
+  background: var(--surface-1) !important;
+  border-bottom: 1px solid var(--glass-border) !important;
 }
 
-html[data-theme="light"] .settings-row {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+html[data-theme="light"] .settings-row,
+html[data-theme="cherry"] .settings-row,
+html[data-theme="github-light"] .settings-row,
+html[data-theme="minimal-gray"] .settings-row,
+html[data-theme="paper"] .settings-row,
+html[data-theme="macos-fluent"] .settings-row,
+html[data-theme="windows-fluent"] .settings-row,
+html[data-theme="material-you"] .settings-row,
+html[data-theme="sepia"] .settings-row,
+html[data-theme="sakura"] .settings-row,
+html[data-theme="arctic"] .settings-row,
+html[data-theme="nordic"] .settings-row,
+html[data-theme="gameboy"] .settings-row,
+html[data-theme="frutiger-aero"] .settings-row,
+html[data-theme="solarized-light"] .settings-row {
+  border-bottom: 1px solid var(--glass-border) !important;
 }
 
-html[data-theme="light"] .settings-row:hover {
-  background: rgba(0, 0, 0, 0.02) !important;
+html[data-theme="light"] .settings-row:hover,
+html[data-theme="cherry"] .settings-row:hover,
+html[data-theme="github-light"] .settings-row:hover,
+html[data-theme="minimal-gray"] .settings-row:hover,
+html[data-theme="paper"] .settings-row:hover,
+html[data-theme="macos-fluent"] .settings-row:hover,
+html[data-theme="windows-fluent"] .settings-row:hover,
+html[data-theme="material-you"] .settings-row:hover,
+html[data-theme="sepia"] .settings-row:hover,
+html[data-theme="sakura"] .settings-row:hover,
+html[data-theme="arctic"] .settings-row:hover,
+html[data-theme="nordic"] .settings-row:hover,
+html[data-theme="gameboy"] .settings-row:hover,
+html[data-theme="frutiger-aero"] .settings-row:hover,
+html[data-theme="solarized-light"] .settings-row:hover {
+  background: var(--surface-hover) !important;
 }
 
 html[data-theme="light"] .settings-input,
-html[data-theme="light"] .settings-select {
-  background: #fff !important;
-  color: #111 !important;
-  border: 1px solid #ccc !important;
+html[data-theme="light"] .settings-select,
+html[data-theme="cherry"] .settings-input,
+html[data-theme="cherry"] .settings-select,
+html[data-theme="github-light"] .settings-input,
+html[data-theme="github-light"] .settings-select,
+html[data-theme="minimal-gray"] .settings-input,
+html[data-theme="minimal-gray"] .settings-select,
+html[data-theme="paper"] .settings-input,
+html[data-theme="paper"] .settings-select,
+html[data-theme="macos-fluent"] .settings-input,
+html[data-theme="macos-fluent"] .settings-select,
+html[data-theme="windows-fluent"] .settings-input,
+html[data-theme="windows-fluent"] .settings-select,
+html[data-theme="material-you"] .settings-input,
+html[data-theme="material-you"] .settings-select,
+html[data-theme="sepia"] .settings-input,
+html[data-theme="sepia"] .settings-select,
+html[data-theme="sakura"] .settings-input,
+html[data-theme="sakura"] .settings-select,
+html[data-theme="arctic"] .settings-input,
+html[data-theme="arctic"] .settings-select,
+html[data-theme="nordic"] .settings-input,
+html[data-theme="nordic"] .settings-select,
+html[data-theme="gameboy"] .settings-input,
+html[data-theme="gameboy"] .settings-select,
+html[data-theme="frutiger-aero"] .settings-input,
+html[data-theme="frutiger-aero"] .settings-select,
+html[data-theme="solarized-light"] .settings-input,
+html[data-theme="solarized-light"] .settings-select {
+  background: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--glass-border) !important;
 }
 
 /* Settings Layout Styles from settings.js */

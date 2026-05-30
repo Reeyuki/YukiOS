@@ -1,7 +1,7 @@
 import { BaseApp } from "./core/BaseApp.js";
 import { customPrompt, customConfirm } from "./shared/dialogs.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
-import { StorageKeys } from "./settings.js";
+import { StorageKeys } from "./settings/settings.js";
 import { PersistenceTypes } from "./runtime/AppSchema.js";
 
 function clampInt(n, min, max) {

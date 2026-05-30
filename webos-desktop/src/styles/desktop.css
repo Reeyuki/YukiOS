@@ -643,8 +643,8 @@ body.is-resizing * {
   justify-content: center;
   border: none;
   border-radius: 6px;
-  background-color: black;
-  color: #e3e3e3;
+  background-color: var(--glass);
+  color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -652,24 +652,24 @@ body.is-resizing * {
 .window-controls button svg {
   width: 10px;
   height: 10px;
-  fill: #e3e3e3;
+  fill: var(--text-secondary);
   transition: fill 0.2s ease;
 }
 
 .window-controls .minimize-btn:hover,
 .window-controls .maximize-btn:hover,
 .window-controls .external-btn:hover {
-  background: #1a1a1a;
+  background: var(--surface-hover);
   transform: scale(1.1);
 }
 
 .window-controls .close-btn:hover {
-  background: rgba(232, 17, 35, 0.9);
+  background: var(--error);
   transform: scale(1.1);
 }
 
 .window-controls .close-btn:hover svg {
-  fill: #fff;
+  fill: var(--text-on-brand);
 }
 
 .window-controls.mac-controls {

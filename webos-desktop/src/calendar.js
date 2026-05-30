@@ -1,4 +1,4 @@
-import { StorageKeys } from "./settings.js";
+import { StorageKeys } from "./settings/settings.js";
 
 let _calendarPopup = null;
 let _currentCalendarMonth = new Date();

@@ -3,8 +3,7 @@ import { BaseApp } from "./core/BaseApp.js";
 import { resolveIconUrl } from "./assetUrl.js";
 import { customConfirm } from "./shared/dialogs.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
-import { StorageKeys } from "./settings.js";
-import { AppSource } from "./AppSource.js";
+import { StorageKeys } from "./settings/settings.js";
 
 export class BrowserApp extends BaseApp {
   static refreshIcons(node) {

@@ -16,7 +16,7 @@ import {
 } from "./shared/assetResolver.js";
 import { initClippy, speak as clippySpeak } from "./clippy.js";
 import { initAnalytics, getAnalyticsBase, sendLaunchAnalytics, recordUsage } from "./analytics.js";
-import { StorageKeys } from "./settings.js";
+import { StorageKeys } from "./settings/settings.js";
 import { getNewsContentSignature, updateNewsBadge } from "./news.js";
 import { PROXIES, clampProxyIndex, buildProxyUrl, fetchHtmlThroughProxy } from "./proxies.js";
 import { AppRuntime } from "./runtime/AppRuntime.js";

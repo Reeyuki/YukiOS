@@ -102,6 +102,10 @@ export function getLibraryUrl(libraryName, type = "path") {
     return `https://unpkg.com/${path}`;
   }
 
+  if (libraryName === "clippyjs") {
+    return `https://esm.sh/${path}`;
+  }
+
   return `${CDN_CONFIG.repos.npm.base}/${path}`;
 }
 
