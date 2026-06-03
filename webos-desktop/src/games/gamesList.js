@@ -1,24 +1,4 @@
 export const appMap = {
-  yukiOsGuide: { type: "system", title: "Yuki OS Guide", icon: "fas fa-book-open" },
-  clipboardManager: { type: "system", title: "Clipboard Manager", icon: "fas fa-paste" },
-  aiAssistant: { type: "system", title: "Yuki AI Assistant", icon: "fas fa-robot" },
-  emojiSelector: { type: "system", title: "Emoji Selector", icon: "fas fa-face-smile" },
-  yukiConvert: {
-    type: "system",
-    title: "Yuki Convert",
-    icon: "fas fa-exchange-alt"
-  },
-  dataEditor: {
-    type: "system",
-    title: "Storage Editor",
-    icon: "fas fa-database"
-  },
-  azahar: {
-    type: "system",
-    title: "Azahar (3DS Emulator)",
-    url: "/static/apps/azahar/index.html",
-    icon: "/static/icons/azahar.webp"
-  },
   angryBirds2: {
     type: "game",
     url: "/static/games/html/angry2.html",
@@ -517,18 +497,6 @@ export const appMap = {
     url: "https://cdn.jsdelivr.net/gh/reeyuki/yukios-games@main/gnmath/goi.html",
     icon: "/static/icons/goi.webp",
     title: "Getting Over It"
-  },
-  paint: {
-    type: "system",
-    url: "https://jspaint.app",
-    icon: "/static/icons/paint.webp",
-    title: "Paint"
-  },
-  photopea: {
-    type: "system",
-    url: "https://www.photopea.com/",
-    icon: "/static/icons/photopea.webp",
-    title: "Photopea"
   },
   worldBox: {
     type: "game",
@@ -1153,102 +1121,6 @@ export const appMap = {
     url: "https://www.box10.com/downloads/html5/smashycity/",
     icon: "/static/icons/smashyCity.webp",
     title: "Smashy City"
-  },
-  taskManagerApp: { type: "system", title: "Task Manager", icon: "fa fa-list-check" },
-  weatherApp: { type: "system", title: "Weather App", icon: "fa fa-cloud" },
-  calculatorApp: { type: "system", title: "Calculator", icon: "fa fa-calculator" },
-  settingsApp: { type: "system", title: "Settings", icon: "fa fa-cog" },
-  aboutApp: { type: "system", title: "About", icon: "fa fa-circle-info" },
-  shortcutsApp: { type: "system", title: "Shortcuts", icon: "fa fa-keyboard" },
-  newsApp: { type: "system", title: "What's New", icon: "fa fa-newspaper" },
-  explorer: { type: "system", title: "File Explorer", icon: "static/icons/file.webp" },
-  notepad: { type: "system", title: "Notepad", icon: "static/icons/notepad.webp" },
-  browserApp: { type: "system", title: "Yuki Browser", icon: "fas fa-snowflake" },
-  yukiDevTools: { type: "system", title: "Yuki Dev Tools", icon: "fas fa-code" },
-  terminal: { type: "system", title: "Terminal", icon: "/static/icons/terminal.webp" },
-  installedApps: { type: "system", title: "Installed Apps", icon: "fas fa-th-list" },
-  systemApps: { type: "system", title: "System Apps", icon: "fas fa-screwdriver-wrench" },
-  youtube: { type: "system", title: "YouTube Utilities", icon: "/static/icons/youtube.webp" },
-  cameraApp: { type: "system", title: "Camera", icon: "fas fa-camera" },
-  steamApp: { type: "system", title: "Steam", icon: "static/icons/steam.webp" },
-  vscode: {
-    type: "system",
-    url: "https://emupedia.net/emupedia-app-vscode",
-    icon: "/static/icons/vscode.webp",
-    title: "Vs Code"
-  },
-  monaco: {
-    type: "system",
-    title: "Yuki Code",
-    icon: "fas fa-code"
-  },
-  model3dApp: { type: "system", title: "Yuki Blender", icon: "/static/icons/3dmodel.webp" },
-  jsDosApp: {
-    type: "system",
-    title: "JsDos",
-    icon: "/static/icons/jsdos.webp"
-  },
-  v86app: {
-    type: "system",
-    title: "Virtual 86",
-    icon: "/static/icons/v86.webp"
-  },
-  libreSprite: {
-    type: "system",
-    title: "LibreSprite",
-    icon: "/static/icons/libresprite.webp",
-    url: "https://yukios.netlify.app/static/apps/libresprite/index.html"
-  },
-  officeApp: {
-    type: "system",
-    title: "Office",
-    icon: "/static/icons/office.webp"
-  },
-  shittify: {
-    type: "system",
-    title: "Evil Spotify",
-    icon: "/static/icons/shittify.webp"
-  },
-  appCreatorApp: {
-    type: "system",
-    title: "App Creator",
-    icon: "fas fa-cubes"
-  },
-  achievementsApp: {
-    type: "system",
-    title: "Achievements",
-    icon: "fas fa-trophy"
-  },
-  profileCustomizer: {
-    type: "system",
-    title: "Customize Profile",
-    icon: "fas fa-circle-user"
-  },
-  markdown: {
-    type: "system",
-    title: "Markdown",
-    icon: "fab fa-markdown"
-  },
-  emulatorApp: {
-    type: "system",
-    title: "Yuki Emulator",
-    icon: "static/icons/emulator.webp"
-  },
-  ruffleApp: {
-    type: "system",
-    title: "Ruffle",
-    icon: "static/icons/ruffle.webp"
-  },
-  kiwiIRC: {
-    type: "system",
-    title: "kiwiIRC",
-    icon: "/static/icons/kiwiirc.webp",
-    url: "/static/apps/kiwiirc/index.html"
-  },
-  setupApp: {
-    type: "system",
-    title: "Setup Wizard",
-    icon: "fas fa-rocket"
   },
   slitherIO: {
     type: "game",

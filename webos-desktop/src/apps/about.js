@@ -94,7 +94,9 @@ export class AboutApp extends BaseApp {
 
             <div class="abx-meta">
               <div class="abx-pill">Version ${YUKIOS_VERSION}</div>
-
+              <div class="abx-pill">
+                35k+ Total Users
+              </div>
               <a
                 class="abx-meta-link"
                 target="_blank"

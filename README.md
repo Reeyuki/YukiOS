@@ -1,5 +1,7 @@
 # Yuki OS - Browser Desktop Environment
 
+![Users](https://img.shields.io/badge/Users-35k+-brightgreen)
+---
 [https://discord.gg/uFuGfseB9Z](https://discord.gg/uFuGfseB9Z)
 
 > A browser-based desktop environment running in a single web page, combining windowed multitasking, persistent storage, emulators, tools, and a large collection of applications and games.

@@ -434,24 +434,6 @@ export class CommandPalette {
         tag: "dnd",
         icon: "fas fa-bell",
         execute: () => this._toggleDND(false)
-      },
-      {
-        title: "Customize Profile",
-        subtitle: "Modify username, avatar, and background appearance",
-        tag: "settings",
-        icon: "fas fa-user-circle",
-        execute: () => {
-          os.app.launch("profileCustomizer");
-        }
-      },
-      {
-        title: "Open Settings",
-        subtitle: "Edit system wallpapers, transparency, DND preferences",
-        tag: "settings",
-        icon: "fas fa-cog",
-        execute: () => {
-          os.app.launch("settingsApp");
-        }
       }
     ];
 

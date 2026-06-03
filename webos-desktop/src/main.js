@@ -230,9 +230,7 @@ services.emojiSelectorApp = emojiSelectorApp;
 const systemAppsApp = new SystemAppsApp(services);
 services.systemAppsApp = systemAppsApp;
 
-const appLauncher = new AppLauncher(
-  windowManager,
-  fileSystemManager,
+const appLauncher = new AppLauncher(windowManager, fileSystemManager, {
   explorerApp,
   terminalApp,
   notepadApp,
@@ -247,13 +245,13 @@ const appLauncher = new AppLauncher(
   appCreatorApp,
   officeApp,
   shittifyApp,
-  monacoApp,
+  monaco: monacoApp,
   model3dApp,
   jsDosApp,
   v86app,
   youtubeApp,
   achievementsApp,
-  adsApp,
+  adsManager: adsApp,
   profileCustomizerApp,
   markdownApp,
   emulatorApp,
@@ -266,10 +264,10 @@ const appLauncher = new AppLauncher(
   yukiOsGuideApp,
   clipboardManagerApp,
   aiAssistantApp,
-  displayPerformanceApp,
+  brightnessApp: displayPerformanceApp,
   emojiSelectorApp,
   systemAppsApp
-);
+});
 services.appLauncher = appLauncher;
 windowManager.setAppLauncher(appLauncher);
 appCreatorApp.setAppLauncher(appLauncher);

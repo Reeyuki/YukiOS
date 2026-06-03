@@ -11,7 +11,7 @@ const Caches = {
   live: { data: null, time: 0, promise: null }
 };
 
-const CACHE_TTL = 60 * 1000;
+const CACHE_TTL = 5 * 60 * 1000;
 
 async function withCache(cacheObj, key, fetcher, ttl = CACHE_TTL) {
   const now = Date.now();
@@ -232,179 +232,221 @@ async function fetchTopTime(env) {
 }
 
 async function buildAggregatedData(env) {
-  const allEvents = await env.DB.prepare(
-    `SELECT
-       daily_id,
-       timestamp,
-       lower(trim(json_extract(data, '$.event')))    AS event,
-       lower(trim(json_extract(data, '$.app')))      AS app,
-       json_extract(data, '$.durationMs')            AS duration_ms
-     FROM analytics
-     ORDER BY daily_id, timestamp ASC`
+  const SESSION_GAP_S = 1800;
+  const BOUNCE_DURATION_MS = 20000;
+
+  const sessionsRaw = await env.DB.prepare(
+    `
+    WITH ordered AS (
+      SELECT
+        daily_id,
+        timestamp,
+        lower(trim(json_extract(data, '$.event'))) AS event,
+        lower(trim(json_extract(data, '$.app')))   AS app,
+        LAG(timestamp) OVER (PARTITION BY daily_id ORDER BY timestamp) AS prev_ts
+      FROM analytics
+    ),
+    session_starts AS (
+      SELECT
+        daily_id,
+        timestamp,
+        event,
+        app,
+        prev_ts,
+        CASE
+          WHEN prev_ts IS NULL
+            OR (julianday(timestamp) - julianday(prev_ts)) * 86400 > ?
+          THEN 1 ELSE 0
+        END AS is_new_session
+      FROM ordered
+    ),
+    with_session_id AS (
+      SELECT
+        daily_id,
+        timestamp,
+        event,
+        app,
+        SUM(is_new_session) OVER (PARTITION BY daily_id ORDER BY timestamp) AS session_num
+      FROM session_starts
+    ),
+    session_bounds AS (
+      SELECT
+        daily_id,
+        session_num,
+        MIN(timestamp) AS session_start,
+        MAX(timestamp) AS session_end,
+        COUNT(*)       AS event_count,
+        COUNT(CASE WHEN event = 'launch' THEN 1 END) AS launch_count,
+        (julianday(MAX(timestamp)) - julianday(MIN(timestamp))) * 86400000 AS duration_ms,
+        date(MIN(timestamp)) AS day
+      FROM with_session_id
+      GROUP BY daily_id, session_num
+    )
+    SELECT
+      COUNT(*)                          AS total_sessions,
+      AVG(duration_ms)                  AS avg_duration_ms,
+      AVG(launch_count)                 AS avg_apps_per_session,
+      MAX(duration_ms)                  AS longest_session_ms,
+      MIN(duration_ms)                  AS shortest_session_ms,
+      SUM(CASE WHEN event_count <= 1 OR duration_ms < ? THEN 1 ELSE 0 END) AS bounce_sessions
+    FROM session_bounds
+  `
+  )
+    .bind(SESSION_GAP_S, BOUNCE_DURATION_MS)
+    .first();
+
+  const powerUsersRaw = await env.DB.prepare(
+    `
+    WITH daily_counts AS (
+      SELECT daily_id, date(timestamp) AS day, COUNT(*) AS event_count
+      FROM analytics
+      GROUP BY daily_id, day
+    )
+    SELECT COUNT(DISTINCT daily_id) AS power_users
+    FROM daily_counts
+    WHERE event_count >= 20
+  `
+  ).first();
+
+  const flowsRaw = await env.DB.prepare(
+    `
+    WITH launches AS (
+      SELECT
+        daily_id,
+        timestamp,
+        lower(trim(json_extract(data, '$.app'))) AS app,
+        LAG(timestamp) OVER (PARTITION BY daily_id ORDER BY timestamp) AS prev_ts,
+        LAG(lower(trim(json_extract(data, '$.app')))) OVER (PARTITION BY daily_id ORDER BY timestamp) AS prev_app
+      FROM analytics
+      WHERE lower(trim(json_extract(data, '$.event'))) = 'launch'
+    )
+    SELECT prev_app AS source, app AS destination, COUNT(*) AS count
+    FROM launches
+    WHERE prev_app IS NOT NULL
+      AND app IS NOT NULL
+      AND prev_app != app
+      AND (julianday(timestamp) - julianday(prev_ts)) * 86400 <= ?
+    GROUP BY source, destination
+    ORDER BY count DESC
+    LIMIT 50
+  `
+  )
+    .bind(SESSION_GAP_S)
+    .all();
+
+  const entryRaw = await env.DB.prepare(
+    `
+    WITH ordered_launches AS (
+      SELECT
+        daily_id,
+        lower(trim(json_extract(data, '$.app'))) AS app,
+        ROW_NUMBER() OVER (PARTITION BY daily_id ORDER BY timestamp ASC) AS rn
+      FROM analytics
+      WHERE lower(trim(json_extract(data, '$.event'))) = 'launch'
+    )
+    SELECT app, COUNT(*) AS count
+    FROM ordered_launches
+    WHERE rn = 1 AND app IS NOT NULL
+    GROUP BY app
+    ORDER BY count DESC
+    LIMIT 10
+  `
   ).all();
 
-  const userEvents = {};
-  for (const row of allEvents.results) {
-    if (!userEvents[row.daily_id]) userEvents[row.daily_id] = [];
-    userEvents[row.daily_id].push(row);
-  }
+  const exitRaw = await env.DB.prepare(
+    `
+    WITH ordered_launches AS (
+      SELECT
+        daily_id,
+        lower(trim(json_extract(data, '$.app'))) AS app,
+        ROW_NUMBER() OVER (PARTITION BY daily_id ORDER BY timestamp DESC) AS rn
+      FROM analytics
+      WHERE lower(trim(json_extract(data, '$.event'))) = 'launch'
+    )
+    SELECT app, COUNT(*) AS count
+    FROM ordered_launches
+    WHERE rn = 1 AND app IS NOT NULL
+    GROUP BY app
+    ORDER BY count DESC
+    LIMIT 10
+  `
+  ).all();
 
-  const SESSION_GAP_MS = 30 * 60 * 1000;
-  const BOUNCE_DURATION_MS = 20 * 1000;
+  const explorationRaw = await env.DB.prepare(
+    `
+    WITH session_apps AS (
+      SELECT
+        daily_id,
+        SUM(CASE
+          WHEN prev_ts IS NULL OR (julianday(timestamp) - julianday(prev_ts)) * 86400 > ?
+          THEN 1 ELSE 0
+        END) OVER (PARTITION BY daily_id ORDER BY timestamp) AS session_num,
+        lower(trim(json_extract(data, '$.app'))) AS app
+      FROM (
+        SELECT
+          daily_id,
+          timestamp,
+          LAG(timestamp) OVER (PARTITION BY daily_id ORDER BY timestamp) AS prev_ts,
+          data
+        FROM analytics
+        WHERE lower(trim(json_extract(data, '$.event'))) = 'launch'
+      )
+    ),
+    session_diversity AS (
+      SELECT daily_id, session_num, COUNT(DISTINCT app) AS unique_apps
+      FROM session_apps
+      WHERE app IS NOT NULL
+      GROUP BY daily_id, session_num
+    ),
+    user_exploration AS (
+      SELECT daily_id, AVG(unique_apps) AS avg_unique
+      FROM session_diversity
+      GROUP BY daily_id
+    )
+    SELECT
+      (SELECT AVG(unique_apps) FROM session_diversity) AS avg_unique_apps_per_session,
+      daily_id,
+      avg_unique
+    FROM user_exploration
+    ORDER BY avg_unique DESC
+    LIMIT 5
+  `
+  )
+    .bind(SESSION_GAP_S)
+    .all();
 
-  const sessions = [];
-  const userSessionCounts = {};
-  let totalDuration = 0;
-  let longest = 0;
-  let shortest = Infinity;
-  let bounceCount = 0;
-  let totalApps = 0;
-
-  const flowMap = {};
-  const entryMap = {};
-  const exitMap = {};
-  const sessionDiversity = [];
-  const userExploration = {};
-
-  for (const [dailyId, events] of Object.entries(userEvents)) {
-    let sessionEvents = [];
-    let sessionStart = null;
-
-    for (const ev of events) {
-      const ts = new Date(ev.timestamp).getTime();
-
-      if (sessionStart === null) {
-        sessionStart = ts;
-        sessionEvents = [ev];
-      } else {
-        const prevTs = new Date(sessionEvents[sessionEvents.length - 1].timestamp).getTime();
-        if (ts - prevTs > SESSION_GAP_MS) {
-          processSession(dailyId, sessionEvents, sessionStart, prevTs);
-          sessionStart = ts;
-          sessionEvents = [ev];
-        } else {
-          if (ev.event === "launch") {
-            let lastLaunchApp = null;
-            for (let i = sessionEvents.length - 1; i >= 0; i--) {
-              if (sessionEvents[i].event === "launch") {
-                lastLaunchApp = sessionEvents[i].app;
-                break;
-              }
-            }
-            if (lastLaunchApp && ev.app && lastLaunchApp !== ev.app) {
-              const key = `${lastLaunchApp}|||${ev.app}`;
-              flowMap[key] = (flowMap[key] || 0) + 1;
-            }
-          }
-          sessionEvents.push(ev);
-        }
-      }
-    }
-    if (sessionStart !== null && sessionEvents.length > 0) {
-      const endMs = new Date(sessionEvents[sessionEvents.length - 1].timestamp).getTime();
-      processSession(dailyId, sessionEvents, sessionStart, endMs);
-    }
-  }
-
-  function processSession(dailyId, sessionEvents, startMs, endMs) {
-    sessions.push({ dailyId, events: sessionEvents, startMs, endMs });
-
-    const dur = endMs - startMs;
-    const launchEvents = sessionEvents.filter((e) => e.event === "launch");
-    const launchCount = launchEvents.length;
-
-    if (dur > longest) longest = dur;
-    if (dur < shortest) shortest = dur;
-    totalDuration += dur;
-    totalApps += launchCount;
-    if (sessionEvents.length <= 1 || dur < BOUNCE_DURATION_MS) bounceCount++;
-
-    if (!userSessionCounts[dailyId]) userSessionCounts[dailyId] = { days: {}, totalEvents: 0 };
-    const day = new Date(startMs).toISOString().slice(0, 10);
-    if (!userSessionCounts[dailyId].days[day]) userSessionCounts[dailyId].days[day] = 0;
-    userSessionCounts[dailyId].days[day] += sessionEvents.length;
-
-    if (launchEvents.length > 0) {
-      const entryApp = launchEvents[0].app;
-      const exitApp = launchEvents[launchEvents.length - 1].app;
-      if (entryApp) entryMap[entryApp] = (entryMap[entryApp] || 0) + 1;
-      if (exitApp) exitMap[exitApp] = (exitMap[exitApp] || 0) + 1;
-    }
-
-    const uniqueApps = new Set(launchEvents.map((e) => e.app).filter(Boolean)).size;
-    sessionDiversity.push({ dailyId, unique_apps: uniqueApps, event_count: sessionEvents.length });
-
-    if (!userExploration[dailyId]) userExploration[dailyId] = { total: 0, sessions: 0 };
-    userExploration[dailyId].total += uniqueApps;
-    userExploration[dailyId].sessions += 1;
-  }
-
-  const powerUsers = Object.values(userSessionCounts).filter((u) =>
-    Object.values(u.days).some((count) => count >= 20)
-  ).length;
-
-  const count = sessions.length;
-  const avgDuration = count > 0 ? Math.round(totalDuration / count) : 0;
-  const avgApps = count > 0 ? Math.round((totalApps / count) * 10) / 10 : 0;
-
-  const sessionsResponse = {
-    total_sessions: count,
-    avg_duration_ms: avgDuration,
-    avg_apps_per_session: avgApps,
-    longest_session_ms: count > 0 ? longest : 0,
-    shortest_session_ms: count > 0 && shortest !== Infinity ? shortest : 0,
-    bounce_sessions: bounceCount,
-    power_users: powerUsers
-  };
-
-  const flowsResponse = {
-    flows: Object.entries(flowMap)
-      .map(([key, c]) => {
-        const [src, dst] = key.split("|||");
-        return { source: src, destination: dst, count: c };
-      })
-      .sort((a, b) => b.count - a.count)
-  };
-
-  const toSorted = (map) =>
-    Object.entries(map)
-      .map(([app, c]) => ({ app, count: c }))
-      .sort((a, b) => b.count - a.count);
-
-  const entryExitResponse = {
-    top_entry_apps: toSorted(entryMap).slice(0, 10),
-    top_exit_apps: toSorted(exitMap).slice(0, 10)
-  };
-
-  const avgUnique =
-    sessionDiversity.length > 0
-      ? Math.round((sessionDiversity.reduce((a, b) => a + b.unique_apps, 0) / sessionDiversity.length) * 10) / 10
-      : 0;
-
-  const topExplorers = Object.entries(userExploration)
-    .map(([id, v]) => ({
-      user_id: id.slice(0, 8) + "...",
-      avg_unique: Math.round((v.total / v.sessions) * 10) / 10
-    }))
-    .sort((a, b) => b.avg_unique - a.avg_unique)
-    .slice(0, 5);
-
-  const topDiverseSessions = sessionDiversity
-    .sort((a, b) => b.unique_apps - a.unique_apps)
-    .slice(0, 5)
-    .map((s) => ({ user_id: s.dailyId.slice(0, 8) + "...", unique_apps: s.unique_apps }));
-
-  const explorationResponse = {
-    avg_unique_apps_per_session: avgUnique,
-    top_explorers: topExplorers,
-    top_diverse_sessions: topDiverseSessions
-  };
+  const avgUnique = explorationRaw.results[0]?.avg_unique_apps_per_session || 0;
+  const topExplorers = explorationRaw.results.map((r) => ({
+    user_id: r.daily_id.slice(0, 8) + "...",
+    avg_unique: Math.round((r.avg_unique || 0) * 10) / 10
+  }));
 
   return {
-    sessionsResponse,
-    flowsResponse,
-    entryExitResponse,
-    explorationResponse
+    sessionsResponse: {
+      total_sessions: sessionsRaw?.total_sessions || 0,
+      avg_duration_ms: Math.round(sessionsRaw?.avg_duration_ms || 0),
+      avg_apps_per_session: Math.round((sessionsRaw?.avg_apps_per_session || 0) * 10) / 10,
+      longest_session_ms: sessionsRaw?.longest_session_ms || 0,
+      shortest_session_ms: sessionsRaw?.shortest_session_ms || 0,
+      bounce_sessions: sessionsRaw?.bounce_sessions || 0,
+      power_users: powerUsersRaw?.power_users || 0
+    },
+    flowsResponse: {
+      flows: (flowsRaw.results || []).map((r) => ({
+        source: r.source,
+        destination: r.destination,
+        count: r.count
+      }))
+    },
+    entryExitResponse: {
+      top_entry_apps: entryRaw.results || [],
+      top_exit_apps: exitRaw.results || []
+    },
+    explorationResponse: {
+      avg_unique_apps_per_session: Math.round((avgUnique || 0) * 10) / 10,
+      top_explorers: topExplorers,
+      top_diverse_sessions: []
+    }
   };
 }
 

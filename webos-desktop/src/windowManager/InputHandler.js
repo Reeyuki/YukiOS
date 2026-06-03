@@ -45,6 +45,10 @@ export class InputHandler {
         } else {
           allWindows.forEach((win) => {
             win.style.display = "block";
+            win.style.opacity = "";
+            win.style.transform = "";
+            win.style.filter = "";
+            win.getAnimations().forEach((anim) => anim.cancel());
             const taskbarItem = document.getElementById(`taskbar-${win.id}`);
             if (taskbarItem) taskbarItem.classList.remove("minimized");
           });

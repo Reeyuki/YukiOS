@@ -20,6 +20,10 @@ let liveStatsPromise = null;
 let pageLoadTime = Date.now();
 let flushTimer = null;
 
+function shouldExcludeFromAnalytics(app) {
+  return app?.startsWith("custom-");
+}
+
 export function getAnalyticsBase(app) {
   const now = Date.now();
   return {
@@ -108,6 +112,7 @@ export function initAnalytics() {
 
 export function sendLaunchAnalytics(app) {
   if (ANALYTICS_DISABLED) return;
+  if (shouldExcludeFromAnalytics(app)) return;
   queueEvent({
     app,
     event: "launch",
@@ -122,6 +127,7 @@ export function recordUsage(winId) {
   const win = document.getElementById(winId);
   if (!win) return;
   const appId = win.dataset.appId;
+  if (shouldExcludeFromAnalytics(appId)) return;
   let sent = false;
   const send = () => {
     if (sent) return;
