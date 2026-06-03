@@ -2,6 +2,7 @@ import { BaseApp } from "../core/BaseApp.js";
 import { customPrompt, customConfirm } from "../shared/dialogs.js";
 import { StorageKeys } from "../settings/settings.js";
 import { PersistenceTypes } from "../runtime/AppSchema.js";
+import { os } from "../os/index.js";
 
 function clampInt(n, min, max) {
   n = Number.parseInt(String(n), 10);
@@ -521,7 +522,7 @@ export class YouTubeApp extends BaseApp {
   }
 
   _loadPrefs() {
-    const prefs = safeJsonParse(localStorage.getItem(StorageKeys.youtubePrefs), {});
+    const prefs = os.storage.get(StorageKeys.youtubePrefs) || {};
     return {
       nocookie: prefs.nocookie !== false,
       autoplay: prefs.autoplay === true,
@@ -532,11 +533,11 @@ export class YouTubeApp extends BaseApp {
   }
 
   _savePrefs() {
-    localStorage.setItem(StorageKeys.youtubePrefs, JSON.stringify(this._prefs));
+    os.storage.set(StorageKeys.youtubePrefs, this._prefs);
   }
 
   _loadPreset() {
-    const preset = safeJsonParse(localStorage.getItem(StorageKeys.youtubePreset), {});
+    const preset = os.storage.get(StorageKeys.youtubePreset) || {};
     return {
       endSeconds: typeof preset.endSeconds === "number" ? preset.endSeconds : 0,
       loop: preset.loop === true
@@ -544,25 +545,25 @@ export class YouTubeApp extends BaseApp {
   }
 
   _savePreset() {
-    localStorage.setItem(StorageKeys.youtubePreset, JSON.stringify(this._preset));
+    os.storage.set(StorageKeys.youtubePreset, this._preset);
   }
 
   _loadRecent() {
-    const items = safeJsonParse(localStorage.getItem(StorageKeys.youtubeRecent), []);
+    const items = os.storage.get(StorageKeys.youtubeRecent) || [];
     return Array.isArray(items) ? items.slice(-30) : [];
   }
 
   _saveRecent() {
-    localStorage.setItem(StorageKeys.youtubeRecent, JSON.stringify(this._recent.slice(-30)));
+    os.storage.set(StorageKeys.youtubeRecent, this._recent.slice(-30));
   }
 
   _loadFavorites() {
-    const items = safeJsonParse(localStorage.getItem(StorageKeys.youtubeFavorites), []);
+    const items = os.storage.get(StorageKeys.youtubeFavorites) || [];
     return Array.isArray(items) ? items.slice(-100) : [];
   }
 
   _saveFavorites() {
-    localStorage.setItem(StorageKeys.youtubeFavorites, JSON.stringify(this._favorites.slice(-100)));
+    os.storage.set(StorageKeys.youtubeFavorites, this._favorites.slice(-100));
   }
 
   _pushRecent(item) {

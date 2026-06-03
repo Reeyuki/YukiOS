@@ -1433,7 +1433,7 @@ export class OfficeApp extends BaseApp {
 
   async saveFilesToDocuments(files) {
     if (!this.fs || !files || files.length === 0) return [];
-    os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { key: Achievements.OfficeWorker });
+    os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { achievementId: Achievements.OfficeWorker });
 
     const documentsPath = ["Documents"];
     await os.fs.mkdir(documentsPath);

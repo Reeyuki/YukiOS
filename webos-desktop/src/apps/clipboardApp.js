@@ -10,9 +10,9 @@ class ClipboardManagerApp extends BaseApp {
     this.clipboardManager = services.clipboardManager;
     this.winId = "clipboard-manager-window";
     this.popupId = "clipboard-tray-popup";
-    this.enabled = localStorage.getItem(StorageKeys.clipboardManagerEnabled) !== "false";
-    this.saveHistoryAcrossSessions = localStorage.getItem(StorageKeys.clipboardSaveHistory) !== "false";
-    this.historySize = parseInt(localStorage.getItem(StorageKeys.clipboardHistorySize)) || 20;
+    this.enabled = os.storage.get(StorageKeys.clipboardManagerEnabled) !== "false";
+    this.saveHistoryAcrossSessions = os.storage.get(StorageKeys.clipboardSaveHistory) !== "false";
+    this.historySize = os.storage.get(StorageKeys.clipboardHistorySize) || 20;
     this._popupVisible = false;
     this._dialogOpen = false;
     this._initTray();
@@ -20,7 +20,7 @@ class ClipboardManagerApp extends BaseApp {
   }
 
   _shouldSuppressNotification() {
-    const position = localStorage.getItem(StorageKeys.notificationsPosition) || "bottom-right";
+    const position = os.storage.get(StorageKeys.notificationsPosition) || "bottom-right";
     return position === "bottom-right";
   }
 
@@ -42,8 +42,8 @@ class ClipboardManagerApp extends BaseApp {
   }
 
   _saveSettings() {
-    localStorage.setItem(StorageKeys.clipboardSaveHistory, this.saveHistoryAcrossSessions.toString());
-    localStorage.setItem(StorageKeys.clipboardHistorySize, this.historySize.toString());
+    os.storage.set(StorageKeys.clipboardSaveHistory, this.saveHistoryAcrossSessions.toString());
+    os.storage.set(StorageKeys.clipboardHistorySize, this.historySize.toString());
   }
 
   togglePopup() {
@@ -346,7 +346,7 @@ class ClipboardManagerApp extends BaseApp {
         this.clipboardManager.clear();
         this._renderHistory(popup, this.clipboardManager.getHistory(), this.clipboardManager.get());
         if (!this._shouldSuppressNotification()) {
-          os.notify.send("Cleared", "Clipboard cleared", "info", 2000, "fa-trash");
+          os.notify.send("Cleared", "Clipboard cleared", { type: "info", duration: 2000, icon: "fa-trash" });
         }
       });
     }

@@ -232,18 +232,7 @@ export class JsDosApp extends BaseApp {
       if (iframePageUrl) URL.revokeObjectURL(iframePageUrl);
     };
 
-    win.querySelector(".close-btn").addEventListener("click", () => {
-      cleanup();
-      os.window.removeFromTaskbar(winId);
-      win.remove();
-    });
-
-    win.querySelector(".minimize-btn").addEventListener("click", () => {
-      try {
-        iframeEl?.contentWindow?.postMessage("mute", "*");
-      } catch {}
-      os.window.minimize(win);
-    });
+    this.onClose(winId, cleanup);
 
     try {
       setLog("Downloading game…");
@@ -380,18 +369,7 @@ export class JsDosApp extends BaseApp {
       if (iframePageUrl) URL.revokeObjectURL(iframePageUrl);
     };
 
-    win.querySelector(".close-btn").addEventListener("click", () => {
-      cleanup();
-      os.window.removeFromTaskbar(winId);
-      win.remove();
-    });
-
-    win.querySelector(".minimize-btn").addEventListener("click", () => {
-      try {
-        iframeEl?.contentWindow?.postMessage("mute", "*");
-      } catch {}
-      os.window.minimize(win);
-    });
+    this.onClose(winId, cleanup);
 
     try {
       setLog("Reading file…");

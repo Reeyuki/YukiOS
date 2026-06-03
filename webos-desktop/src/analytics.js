@@ -1,3 +1,5 @@
+import { os } from "./os/index.js";
+
 const ANALYTICS_QUEUE_KEY = "yuki_analytics_queue";
 const ENDPOINT_BASE = "https://analytics.liventcord-a60.workers.dev";
 const ENDPOINT = ENDPOINT_BASE + "/analytics";
@@ -31,7 +33,7 @@ export function getAnalyticsBase(app) {
 function loadQueue() {
   if (ANALYTICS_DISABLED) return [];
   try {
-    return JSON.parse(localStorage.getItem(ANALYTICS_QUEUE_KEY) || "[]");
+    return os.storage.get(ANALYTICS_QUEUE_KEY) || [];
   } catch {
     return [];
   }
@@ -39,7 +41,7 @@ function loadQueue() {
 
 function saveQueue(q) {
   if (ANALYTICS_DISABLED) return;
-  localStorage.setItem(ANALYTICS_QUEUE_KEY, JSON.stringify(q));
+  os.storage.set(ANALYTICS_QUEUE_KEY, q);
 }
 
 function sendBatch(events) {
@@ -59,7 +61,7 @@ export function flushQueue() {
   if (ANALYTICS_DISABLED) return;
   const queue = loadQueue();
   if (!queue.length) return;
-  localStorage.removeItem(ANALYTICS_QUEUE_KEY);
+  os.storage.remove(ANALYTICS_QUEUE_KEY);
   sendBatch(queue);
 }
 
@@ -76,7 +78,7 @@ function queueEvent(event) {
   const queue = loadQueue();
   queue.push(event);
   if (queue.length >= MAX_QUEUE_SIZE) {
-    localStorage.removeItem(ANALYTICS_QUEUE_KEY);
+    os.storage.remove(ANALYTICS_QUEUE_KEY);
     sendBatch(queue);
     if (flushTimer) {
       clearTimeout(flushTimer);

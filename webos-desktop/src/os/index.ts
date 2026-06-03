@@ -4,6 +4,7 @@ import { NotificationAPI } from "./notify.js";
 import { TrayAPI } from "./tray.js";
 import { AppAPI } from "./app.js";
 import { EventAPI } from "./events.js";
+import { StorageAPI } from "./storage.js";
 
 let windowAPI: WindowAPI | null = null;
 let fileSystemAPI: FileSystemAPI | null = null;
@@ -11,6 +12,85 @@ let notificationAPI: NotificationAPI | null = null;
 let trayAPI: TrayAPI | null = null;
 let appAPI: AppAPI | null = null;
 let eventAPI: EventAPI | null = null;
+const storageAPI = new StorageAPI();
+
+interface OSBridge {
+  window: {
+    create: WindowAPI["create"];
+    close: WindowAPI["close"];
+    focus: WindowAPI["focus"];
+    minimize: WindowAPI["minimize"];
+    maximize: WindowAPI["maximize"];
+    bringToFront: WindowAPI["bringToFront"];
+    addToTaskbar: WindowAPI["addToTaskbar"];
+    removeFromTaskbar: WindowAPI["removeFromTaskbar"];
+    getWindowControls: WindowAPI["getWindowControls"];
+  };
+  fs: {
+    read: FileSystemAPI["read"];
+    write: FileSystemAPI["write"];
+    readdir: FileSystemAPI["readdir"];
+    mkdir: FileSystemAPI["mkdir"];
+    delete: FileSystemAPI["delete"];
+    exists: FileSystemAPI["exists"];
+    copy: FileSystemAPI["copy"];
+    rename: FileSystemAPI["rename"];
+    isFile: FileSystemAPI["isFile"];
+    getFileKind: FileSystemAPI["getFileKind"];
+    getFileIcon: FileSystemAPI["getFileIcon"];
+    writeBinaryFile: FileSystemAPI["writeBinaryFile"];
+    readBinaryFile: FileSystemAPI["readBinaryFile"];
+    deleteBinaryFile: FileSystemAPI["deleteBinaryFile"];
+    renameBinaryFile: FileSystemAPI["renameBinaryFile"];
+    createFile: FileSystemAPI["createFile"];
+    createFolder: FileSystemAPI["createFolder"];
+    deleteItem: FileSystemAPI["deleteItem"];
+    renameItem: FileSystemAPI["renameItem"];
+    updateFile: FileSystemAPI["updateFile"];
+  };
+  notify: {
+    send: NotificationAPI["send"];
+    clear: NotificationAPI["clear"];
+    clearAll: NotificationAPI["clearAll"];
+  };
+  tray: {
+    register: TrayAPI["register"];
+    unregister: TrayAPI["unregister"];
+    updateIcon: TrayAPI["updateIcon"];
+    updateLabel: TrayAPI["updateLabel"];
+    updateContextMenuItems: TrayAPI["updateContextMenuItems"];
+    sendToTray: TrayAPI["sendToTray"];
+    restoreFromTray: TrayAPI["restoreFromTray"];
+    getTrayItems: TrayAPI["getTrayItems"];
+    updateItemVisibility: TrayAPI["updateItemVisibility"];
+    isRegistered: TrayAPI["isRegistered"];
+  };
+  app: {
+    launch: AppAPI["launch"];
+    close: AppAPI["close"];
+    getRunningApps: AppAPI["getRunningApps"];
+    getAllApps: AppAPI["getAllApps"];
+    getAppInfo: AppAPI["getAppInfo"];
+  };
+  events: {
+    on: EventAPI["on"];
+    off: EventAPI["off"];
+    emit: EventAPI["emit"];
+    once: EventAPI["once"];
+  };
+  storage: {
+    get: StorageAPI["get"];
+    set: StorageAPI["set"];
+    remove: StorageAPI["remove"];
+    clear: StorageAPI["clear"];
+    has: StorageAPI["has"];
+  };
+  telemetry: {
+    getLegacyCalls: typeof getLegacyAPICalls;
+    getStats: typeof getLegacyAPICallStats;
+    clearCalls: typeof clearLegacyAPICalls;
+  };
+}
 
 interface LegacyAPICall {
   timestamp: number;
@@ -162,10 +242,18 @@ export function getEventAPI(): EventAPI {
 }
 
 /**
+ * Get the storage API
+ * Storage API is always available as it doesn't require initialization
+ */
+export function getStorageAPI(): StorageAPI {
+  return storageAPI;
+}
+
+/**
  * Unified OS API surface for applications
  * This is the primary export that apps should use
  */
-export const os = {
+export const os: OSBridge = {
   window: {
     get create() {
       return getWindowAPI().create.bind(getWindowAPI());
@@ -337,6 +425,24 @@ export const os = {
     }
   },
 
+  storage: {
+    get get() {
+      return getStorageAPI().get.bind(getStorageAPI());
+    },
+    get set() {
+      return getStorageAPI().set.bind(getStorageAPI());
+    },
+    get remove() {
+      return getStorageAPI().remove.bind(getStorageAPI());
+    },
+    get clear() {
+      return getStorageAPI().clear.bind(getStorageAPI());
+    },
+    get has() {
+      return getStorageAPI().has.bind(getStorageAPI());
+    }
+  },
+
   telemetry: {
     getLegacyCalls: getLegacyAPICalls,
     getStats: getLegacyAPICallStats,
@@ -350,5 +456,6 @@ export { NotificationAPI } from "./notify.js";
 export { TrayAPI } from "./tray.js";
 export { AppAPI } from "./app.js";
 export { EventAPI } from "./events.js";
+export { StorageAPI } from "./storage.js";
 
 export type * from "./types.js";

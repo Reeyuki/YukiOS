@@ -373,23 +373,23 @@ export class AchievementsApp extends BaseApp {
 
   _loadFromStorage() {
     try {
-      const saved = localStorage.getItem(StorageKeys.achievements);
-      if (saved) this.unlocked = new Set(JSON.parse(saved));
-      const savedCounters = localStorage.getItem(StorageKeys.achievementCounters);
-      if (savedCounters) this._counters = JSON.parse(savedCounters);
+      const saved = os.storage.get(StorageKeys.achievements);
+      if (saved) this.unlocked = new Set(saved);
+      const savedCounters = os.storage.get(StorageKeys.achievementCounters);
+      if (savedCounters) this._counters = savedCounters;
     } catch (e) {}
   }
 
   _saveToStorage() {
     try {
-      localStorage.setItem(StorageKeys.achievements, JSON.stringify([...this.unlocked]));
-      localStorage.setItem(StorageKeys.achievementCounters, JSON.stringify(this._counters));
+      os.storage.set(StorageKeys.achievements, [...this.unlocked]);
+      os.storage.set(StorageKeys.achievementCounters, this._counters);
     } catch (e) {}
   }
 
   _renderHero() {
     const stats = this.getStats();
-    const disabled = localStorage.getItem(StorageKeys.achievementsDisabled) === "true";
+    const disabled = os.storage.get(StorageKeys.achievementsDisabled) === "true";
 
     return `
     <div class="achievements-hero">
@@ -430,7 +430,7 @@ export class AchievementsApp extends BaseApp {
   }
 
   _renderGrid(filter) {
-    const disabled = localStorage.getItem(StorageKeys.achievementsDisabled) === "true";
+    const disabled = os.storage.get(StorageKeys.achievementsDisabled) === "true";
 
     return this.achievements
       .filter((a) => {
@@ -467,7 +467,7 @@ export class AchievementsApp extends BaseApp {
     const total = this.achievements.length;
     const done = this.unlocked.size;
     const pct = Math.round((done / total) * 100);
-    const disabled = localStorage.getItem(StorageKeys.achievementsDisabled) === "true";
+    const disabled = os.storage.get(StorageKeys.achievementsDisabled) === "true";
 
     return `
     <div class="achievements-progress ${disabled ? "achievements-progress--disabled" : ""}">
@@ -518,7 +518,7 @@ export class AchievementsApp extends BaseApp {
   }
 
   trigger(achievementKey, skipSound = false) {
-    if (localStorage.getItem(StorageKeys.achievementsDisabled) === "true") return;
+    if (os.storage.get(StorageKeys.achievementsDisabled) === "true") return;
 
     if (!this.achievements.find((a) => a.id === achievementKey)) return;
     if (this.unlocked.has(achievementKey)) return;

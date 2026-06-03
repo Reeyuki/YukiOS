@@ -3,6 +3,7 @@ import { audioMixer } from "../audioMixer.js";
 import { resolveGhUrl } from "../shared/assetResolver.js";
 import { YUKIOS_VERSION } from "../apps/about.js";
 import { StorageKeys } from "../StorageKeys.js";
+import { os } from "../os/index.js";
 export function buildSettingsHTML(settings, wm) {
   return `
   <div class="window-header">
@@ -557,18 +558,18 @@ export function renderAppearanceSettings(s) {
             <span class="settings-label-desc">Effect when a window opens or is restored</span>
           </div>
           <select id="settingsOpenAnimation" class="settings-select">
-            <option value="instant"        ${(localStorage.getItem(StorageKeys.windowOpenAnimation) || "scaleCenter") === "instant" ? "selected" : ""}>Instant (No Animation)</option>
-            <option value="fade"           ${(localStorage.getItem(StorageKeys.windowOpenAnimation) || "scaleCenter") === "fade" ? "selected" : ""}>Fade In</option>
-            <option value="scaleCenter"    ${(localStorage.getItem(StorageKeys.windowOpenAnimation) || "scaleCenter") === "scaleCenter" ? "selected" : ""}>Scale Center</option>
-            <option value="scaleFromSource"${(localStorage.getItem(StorageKeys.windowOpenAnimation) || "scaleCenter") === "scaleFromSource" ? "selected" : ""}>Scale From Taskbar</option>
-            <option value="slideUp"        ${(localStorage.getItem(StorageKeys.windowOpenAnimation) || "scaleCenter") === "slideUp" ? "selected" : ""}>Slide Up</option>
-            <option value="slideLeft"      ${(localStorage.getItem(StorageKeys.windowOpenAnimation) || "scaleCenter") === "slideLeft" ? "selected" : ""}>Slide In From Left</option>
-            <option value="slideRight"     ${(localStorage.getItem(StorageKeys.windowOpenAnimation) || "scaleCenter") === "slideRight" ? "selected" : ""}>Slide In From Right</option>
-            <option value="glassBlurin"    ${(localStorage.getItem(StorageKeys.windowOpenAnimation) || "scaleCenter") === "glassBlurin" ? "selected" : ""}>Glass Blur Transition</option>
-            <option value="elasticBounce"  ${(localStorage.getItem(StorageKeys.windowOpenAnimation) || "scaleCenter") === "elasticBounce" ? "selected" : ""}>Elastic Bounce</option>
-            <option value="blurReveal"     ${(localStorage.getItem(StorageKeys.windowOpenAnimation) || "scaleCenter") === "blurReveal" ? "selected" : ""}>Blur Reveal</option>
-            <option value="perspective3D"  ${(localStorage.getItem(StorageKeys.windowOpenAnimation) || "scaleCenter") === "perspective3D" ? "selected" : ""}>Perspective 3D</option>
-            <option value="cornerUnfold"   ${(localStorage.getItem(StorageKeys.windowOpenAnimation) || "scaleCenter") === "cornerUnfold" ? "selected" : ""}>Corner Unfold</option>
+            <option value="instant"        ${(os.storage.get(StorageKeys.windowOpenAnimation) || "scaleCenter") === "instant" ? "selected" : ""}>Instant (No Animation)</option>
+            <option value="fade"           ${(os.storage.get(StorageKeys.windowOpenAnimation) || "scaleCenter") === "fade" ? "selected" : ""}>Fade In</option>
+            <option value="scaleCenter"    ${(os.storage.get(StorageKeys.windowOpenAnimation) || "scaleCenter") === "scaleCenter" ? "selected" : ""}>Scale Center</option>
+            <option value="scaleFromSource"${(os.storage.get(StorageKeys.windowOpenAnimation) || "scaleCenter") === "scaleFromSource" ? "selected" : ""}>Scale From Taskbar</option>
+            <option value="slideUp"        ${(os.storage.get(StorageKeys.windowOpenAnimation) || "scaleCenter") === "slideUp" ? "selected" : ""}>Slide Up</option>
+            <option value="slideLeft"      ${(os.storage.get(StorageKeys.windowOpenAnimation) || "scaleCenter") === "slideLeft" ? "selected" : ""}>Slide In From Left</option>
+            <option value="slideRight"     ${(os.storage.get(StorageKeys.windowOpenAnimation) || "scaleCenter") === "slideRight" ? "selected" : ""}>Slide In From Right</option>
+            <option value="glassBlurin"    ${(os.storage.get(StorageKeys.windowOpenAnimation) || "scaleCenter") === "glassBlurin" ? "selected" : ""}>Glass Blur Transition</option>
+            <option value="elasticBounce"  ${(os.storage.get(StorageKeys.windowOpenAnimation) || "scaleCenter") === "elasticBounce" ? "selected" : ""}>Elastic Bounce</option>
+            <option value="blurReveal"     ${(os.storage.get(StorageKeys.windowOpenAnimation) || "scaleCenter") === "blurReveal" ? "selected" : ""}>Blur Reveal</option>
+            <option value="perspective3D"  ${(os.storage.get(StorageKeys.windowOpenAnimation) || "scaleCenter") === "perspective3D" ? "selected" : ""}>Perspective 3D</option>
+            <option value="cornerUnfold"   ${(os.storage.get(StorageKeys.windowOpenAnimation) || "scaleCenter") === "cornerUnfold" ? "selected" : ""}>Corner Unfold</option>
           </select>
         </div>
         <div class="settings-row">
@@ -577,14 +578,14 @@ export function renderAppearanceSettings(s) {
             <span class="settings-label-desc">Effect when a window is closed</span>
           </div>
           <select id="settingsCloseAnimation" class="settings-select">
-            <option value="instant"        ${(localStorage.getItem(StorageKeys.windowCloseAnimation) || "scaleDownCenter") === "instant" ? "selected" : ""}>Instant (No Animation)</option>
-            <option value="scaleDownCenter"${(localStorage.getItem(StorageKeys.windowCloseAnimation) || "scaleDownCenter") === "scaleDownCenter" ? "selected" : ""}>Scale Down Center</option>
-            <option value="scaleToOrigin"  ${(localStorage.getItem(StorageKeys.windowCloseAnimation) || "scaleDownCenter") === "scaleToOrigin" ? "selected" : ""}>Scale to Taskbar Origin</option>
-            <option value="fadeOut"        ${(localStorage.getItem(StorageKeys.windowCloseAnimation) || "scaleDownCenter") === "fadeOut" ? "selected" : ""}>Fade Out Only</option>
-            <option value="slideDown"      ${(localStorage.getItem(StorageKeys.windowCloseAnimation) || "scaleDownCenter") === "slideDown" ? "selected" : ""}>Slide Down Exit</option>
-            <option value="burn"           ${(localStorage.getItem(StorageKeys.windowCloseAnimation) || "scaleDownCenter") === "burn" ? "selected" : ""}>Window Burn Close</option>
-            <option value="shrinkToPoint"  ${(localStorage.getItem(StorageKeys.windowCloseAnimation) || "scaleDownCenter") === "shrinkToPoint" ? "selected" : ""}>Shrink to Point</option>
-            <option value="dissolveBlur"   ${(localStorage.getItem(StorageKeys.windowCloseAnimation) || "scaleDownCenter") === "dissolveBlur" ? "selected" : ""}>Dissolve with Blur</option>
+            <option value="instant"        ${(os.storage.get(StorageKeys.windowCloseAnimation) || "scaleDownCenter") === "instant" ? "selected" : ""}>Instant (No Animation)</option>
+            <option value="scaleDownCenter"${(os.storage.get(StorageKeys.windowCloseAnimation) || "scaleDownCenter") === "scaleDownCenter" ? "selected" : ""}>Scale Down Center</option>
+            <option value="scaleToOrigin"  ${(os.storage.get(StorageKeys.windowCloseAnimation) || "scaleDownCenter") === "scaleToOrigin" ? "selected" : ""}>Scale to Taskbar Origin</option>
+            <option value="fadeOut"        ${(os.storage.get(StorageKeys.windowCloseAnimation) || "scaleDownCenter") === "fadeOut" ? "selected" : ""}>Fade Out Only</option>
+            <option value="slideDown"      ${(os.storage.get(StorageKeys.windowCloseAnimation) || "scaleDownCenter") === "slideDown" ? "selected" : ""}>Slide Down Exit</option>
+            <option value="burn"           ${(os.storage.get(StorageKeys.windowCloseAnimation) || "scaleDownCenter") === "burn" ? "selected" : ""}>Window Burn Close</option>
+            <option value="shrinkToPoint"  ${(os.storage.get(StorageKeys.windowCloseAnimation) || "scaleDownCenter") === "shrinkToPoint" ? "selected" : ""}>Shrink to Point</option>
+            <option value="dissolveBlur"   ${(os.storage.get(StorageKeys.windowCloseAnimation) || "scaleDownCenter") === "dissolveBlur" ? "selected" : ""}>Dissolve with Blur</option>
           </select>
         </div>
         <div class="settings-row">
@@ -593,13 +594,13 @@ export function renderAppearanceSettings(s) {
             <span class="settings-label-desc">Effect when a window is minimized</span>
           </div>
           <select id="settingsMinimizeAnimation" class="settings-select">
-            <option value="instant"       ${(localStorage.getItem(StorageKeys.windowMinimizeAnimation) || "taskbarShrink") === "instant" ? "selected" : ""}>Instant (No Animation)</option>
-            <option value="taskbarShrink" ${(localStorage.getItem(StorageKeys.windowMinimizeAnimation) || "taskbarShrink") === "taskbarShrink" ? "selected" : ""}>Taskbar Shrink</option>
-            <option value="dockZoomShrink"${(localStorage.getItem(StorageKeys.windowMinimizeAnimation) || "taskbarShrink") === "dockZoomShrink" ? "selected" : ""}>Dock Zoom Shrink</option>
-            <option value="magicLamp"     ${(localStorage.getItem(StorageKeys.windowMinimizeAnimation) || "taskbarShrink") === "magicLamp" ? "selected" : ""}>Magic Lamp Warp</option>
-            <option value="fadeToTaskbar" ${(localStorage.getItem(StorageKeys.windowMinimizeAnimation) || "taskbarShrink") === "fadeToTaskbar" ? "selected" : ""}>Fade to Taskbar</option>
-            <option value="elasticStretch"${(localStorage.getItem(StorageKeys.windowMinimizeAnimation) || "taskbarShrink") === "elasticStretch" ? "selected" : ""}>Elastic Stretch</option>
-            <option value="spiralDown"    ${(localStorage.getItem(StorageKeys.windowMinimizeAnimation) || "taskbarShrink") === "spiralDown" ? "selected" : ""}>Spiral Down</option>
+            <option value="instant"       ${(os.storage.get(StorageKeys.windowMinimizeAnimation) || "taskbarShrink") === "instant" ? "selected" : ""}>Instant (No Animation)</option>
+            <option value="taskbarShrink" ${(os.storage.get(StorageKeys.windowMinimizeAnimation) || "taskbarShrink") === "taskbarShrink" ? "selected" : ""}>Taskbar Shrink</option>
+            <option value="dockZoomShrink"${(os.storage.get(StorageKeys.windowMinimizeAnimation) || "taskbarShrink") === "dockZoomShrink" ? "selected" : ""}>Dock Zoom Shrink</option>
+            <option value="magicLamp"     ${(os.storage.get(StorageKeys.windowMinimizeAnimation) || "taskbarShrink") === "magicLamp" ? "selected" : ""}>Magic Lamp Warp</option>
+            <option value="fadeToTaskbar" ${(os.storage.get(StorageKeys.windowMinimizeAnimation) || "taskbarShrink") === "fadeToTaskbar" ? "selected" : ""}>Fade to Taskbar</option>
+            <option value="elasticStretch"${(os.storage.get(StorageKeys.windowMinimizeAnimation) || "taskbarShrink") === "elasticStretch" ? "selected" : ""}>Elastic Stretch</option>
+            <option value="spiralDown"    ${(os.storage.get(StorageKeys.windowMinimizeAnimation) || "taskbarShrink") === "spiralDown" ? "selected" : ""}>Spiral Down</option>
           </select>
         </div>
         <div class="settings-row">
@@ -608,10 +609,10 @@ export function renderAppearanceSettings(s) {
             <span class="settings-label-desc">Control how fast window animations play</span>
           </div>
           <select id="settingsAnimationSpeed" class="settings-select">
-            <option value="slow"      ${(localStorage.getItem(StorageKeys.windowAnimationSpeed) || "normal") === "slow" ? "selected" : ""}>Slow (0.5x)</option>
-            <option value="normal"    ${(localStorage.getItem(StorageKeys.windowAnimationSpeed) || "normal") === "normal" ? "selected" : ""}>Normal (1x)</option>
-            <option value="fast"      ${(localStorage.getItem(StorageKeys.windowAnimationSpeed) || "normal") === "fast" ? "selected" : ""}>Fast (1.5x)</option>
-            <option value="very_fast" ${(localStorage.getItem(StorageKeys.windowAnimationSpeed) || "normal") === "very_fast" ? "selected" : ""}>Very Fast (2x)</option>
+            <option value="slow"      ${(os.storage.get(StorageKeys.windowAnimationSpeed) || "normal") === "slow" ? "selected" : ""}>Slow (0.5x)</option>
+            <option value="normal"    ${(os.storage.get(StorageKeys.windowAnimationSpeed) || "normal") === "normal" ? "selected" : ""}>Normal (1x)</option>
+            <option value="fast"      ${(os.storage.get(StorageKeys.windowAnimationSpeed) || "normal") === "fast" ? "selected" : ""}>Fast (1.5x)</option>
+            <option value="very_fast" ${(os.storage.get(StorageKeys.windowAnimationSpeed) || "normal") === "very_fast" ? "selected" : ""}>Very Fast (2x)</option>
           </select>
         </div>
         <div class="settings-row">
@@ -620,7 +621,7 @@ export function renderAppearanceSettings(s) {
             <span class="settings-label-desc">Show ripple effect under cursor on click (disabled by default)</span>
           </div>
           <label class="settings-toggle">
-            <input type="checkbox" id="settingsClickBubble" ${localStorage.getItem(StorageKeys.clickBubbleFeedback) === "true" ? "checked" : ""}/>
+            <input type="checkbox" id="settingsClickBubble" ${os.storage.get(StorageKeys.clickBubbleFeedback) === "true" ? "checked" : ""}/>
             <span class="settings-track"><span class="settings-thumb"></span></span>
           </label>
         </div>

@@ -1,4 +1,5 @@
 import { StorageKeys } from "../settings/settings.js";
+import { os } from "../os/index.js";
 const desktop = document.getElementById("desktop");
 
 export function makeDraggable(win, wm) {
@@ -12,7 +13,7 @@ export function makeDraggable(win, wm) {
 
   const isDesktopStretchScrollDisabled = () => {
     try {
-      return localStorage.getItem(StorageKeys.disableDesktopStretchScroll) === "true";
+      return os.storage.get(StorageKeys.disableDesktopStretchScroll) === "true";
     } catch {
       return false;
     }

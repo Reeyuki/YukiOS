@@ -190,7 +190,7 @@ class TrayManager {
     if (!this._el) return;
     this._el.innerHTML = "";
 
-    const trayEnabled = localStorage.getItem(StorageKeys.trayEnabled) !== "false";
+    const trayEnabled = os.storage.get(StorageKeys.trayEnabled) !== "false";
     if (!trayEnabled) {
       this._el.style.display = "none";
       this._hidePopup();
@@ -199,7 +199,7 @@ class TrayManager {
 
     const trayAppVisibility = (() => {
       try {
-        return JSON.parse(localStorage.getItem(StorageKeys.trayAppVisibility)) || {};
+        return os.storage.get(StorageKeys.trayAppVisibility) || {};
       } catch {
         return {};
       }

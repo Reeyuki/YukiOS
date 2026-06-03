@@ -37,16 +37,16 @@ export function closeStartMenu() {
 
 export function applyStartMenuSettings(el) {
   if (!el) return;
-  const width = localStorage.getItem(StorageKeys.startMenuWidth) || "650";
-  const height = localStorage.getItem(StorageKeys.startMenuHeight) || "500";
+  const width = os.storage.get(StorageKeys.startMenuWidth) || "650";
+  const height = os.storage.get(StorageKeys.startMenuHeight) || "500";
   el.style.width = `${width}px`;
   el.style.height = `${height}px`;
 
-  const catsData = localStorage.getItem(StorageKeys.startMenuCats);
+  const catsData = os.storage.get(StorageKeys.startMenuCats);
   let cats = {};
   if (catsData) {
     try {
-      cats = JSON.parse(catsData);
+      cats = catsData;
     } catch (e) {}
   }
   const catNames = ["menu", "games", "system", "favorites", "customize", "settingsApp"];
@@ -74,11 +74,11 @@ export function openStartMenu({ focusSearch = false, openDefaultPage = true } = 
   }
 
   if (openDefaultPage) {
-    const catsData = localStorage.getItem(StorageKeys.startMenuCats);
+    const catsData = os.storage.get(StorageKeys.startMenuCats);
     let cats = {};
     if (catsData) {
       try {
-        cats = JSON.parse(catsData);
+        cats = catsData;
       } catch (e) {}
     }
     let defaultCat = "menu";
@@ -101,11 +101,11 @@ export function toggleStartMenu(opts) {
 }
 
 function getFavorites() {
-  return JSON.parse(localStorage.getItem(StorageKeys.favoritesKey)) || [];
+  return os.storage.get(StorageKeys.favoritesKey) || [];
 }
 
 function saveFavorites(favorites) {
-  localStorage.setItem(StorageKeys.favoritesKey, JSON.stringify(favorites));
+  os.storage.set(StorageKeys.favoritesKey, favorites);
 }
 
 function favoriteApp(appName) {
@@ -406,7 +406,7 @@ export function setupStartUserHover() {
   let tooltip = null;
 
   startUser.addEventListener("mouseenter", () => {
-    const currentName = localStorage.getItem(StorageKeys.username) || "Reeyuki";
+    const currentName = os.storage.get(StorageKeys.username) || "Reeyuki";
 
     tooltip = document.createElement("div");
     tooltip.className = "user-tooltip";
@@ -484,10 +484,10 @@ export function tryGetIcon(id) {
 }
 
 function getGridItems() {
-  const saved = localStorage.getItem(StorageKeys.startMenuGridItems);
+  const saved = os.storage.get(StorageKeys.startMenuGridItems);
   if (saved) {
     try {
-      return JSON.parse(saved);
+      return saved;
     } catch (e) {
       console.error(e);
     }
@@ -521,7 +521,7 @@ function getGridItems() {
 }
 
 function saveGridItems(items) {
-  localStorage.setItem(StorageKeys.startMenuGridItems, JSON.stringify(items));
+  os.storage.set(StorageKeys.startMenuGridItems, items);
 }
 function showStartItemEditor(appLauncher, currentItem) {
   return new Promise((resolve) => {

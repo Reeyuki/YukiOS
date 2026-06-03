@@ -19,17 +19,15 @@ class DisplayPerformanceApp extends BaseApp {
     this.popupId = "display-performance-tray-popup";
     this._popupVisible = false;
 
-    // Power mode
     this.powerMode = turboManager.getMode();
 
-    // Display settings
-    this.brightness = parseFloat(localStorage.getItem(StorageKeys.brightness)) || 100;
-    this.contrast = parseFloat(localStorage.getItem(StorageKeys.contrast)) || 1;
-    this.gamma = parseFloat(localStorage.getItem(StorageKeys.gamma)) || 1;
-    this.temperature = parseFloat(localStorage.getItem(StorageKeys.temperature)) || 50;
-    this.nightModeEnabled = localStorage.getItem(StorageKeys.nightModeEnabled) === "true";
-    this.nightModeStart = localStorage.getItem(StorageKeys.nightModeStart) || "20:00";
-    this.nightModeEnd = localStorage.getItem(StorageKeys.nightModeEnd) || "07:00";
+    this.brightness = os.storage.get(StorageKeys.brightness) || 100;
+    this.contrast = os.storage.get(StorageKeys.contrast) || 1;
+    this.gamma = os.storage.get(StorageKeys.gamma) || 1;
+    this.temperature = os.storage.get(StorageKeys.temperature) || 50;
+    this.nightModeEnabled = os.storage.get(StorageKeys.nightModeEnabled) === "true";
+    this.nightModeStart = os.storage.get(StorageKeys.nightModeStart) || "20:00";
+    this.nightModeEnd = os.storage.get(StorageKeys.nightModeEnd) || "07:00";
 
     this._initTray();
     this._applyDisplaySettings();
@@ -38,7 +36,7 @@ class DisplayPerformanceApp extends BaseApp {
   }
 
   _shouldSuppressNotification() {
-    const position = localStorage.getItem(StorageKeys.notificationsPosition) || "bottom-right";
+    const position = os.storage.get(StorageKeys.notificationsPosition) || "bottom-right";
     return position === "bottom-right";
   }
 
@@ -63,13 +61,13 @@ class DisplayPerformanceApp extends BaseApp {
   }
 
   _saveSettings() {
-    localStorage.setItem(StorageKeys.brightness, this.brightness.toString());
-    localStorage.setItem(StorageKeys.contrast, this.contrast.toString());
-    localStorage.setItem(StorageKeys.gamma, this.gamma.toString());
-    localStorage.setItem(StorageKeys.temperature, this.temperature.toString());
-    localStorage.setItem(StorageKeys.nightModeEnabled, this.nightModeEnabled.toString());
-    localStorage.setItem(StorageKeys.nightModeStart, this.nightModeStart);
-    localStorage.setItem(StorageKeys.nightModeEnd, this.nightModeEnd);
+    os.storage.set(StorageKeys.brightness, this.brightness.toString());
+    os.storage.set(StorageKeys.contrast, this.contrast.toString());
+    os.storage.set(StorageKeys.gamma, this.gamma.toString());
+    os.storage.set(StorageKeys.temperature, this.temperature.toString());
+    os.storage.set(StorageKeys.nightModeEnabled, this.nightModeEnabled.toString());
+    os.storage.set(StorageKeys.nightModeStart, this.nightModeStart);
+    os.storage.set(StorageKeys.nightModeEnd, this.nightModeEnd);
   }
 
   _applyDisplaySettings() {
@@ -150,7 +148,7 @@ class DisplayPerformanceApp extends BaseApp {
     this._saveSettings();
     this._updatePopupSliders();
     if (!this._shouldSuppressNotification()) {
-      os.notify.send("Brightness", `${Math.round(this.brightness)}%`, "info", 1000, "fa-sun");
+      os.notify.send("Brightness", `${Math.round(this.brightness)}%`, { type: "info", duration: 1000, icon: "fa-sun" });
     }
   }
 
@@ -160,7 +158,11 @@ class DisplayPerformanceApp extends BaseApp {
     this._saveSettings();
     this._updatePopupSliders();
     if (!this._shouldSuppressNotification()) {
-      os.notify.send("Temperature", this._getTemperatureLabel(this.temperature), "info", 1000, "fa-temperature-half");
+      os.notify.send("Temperature", this._getTemperatureLabel(this.temperature), {
+        type: "info",
+        duration: 1000,
+        icon: "fa-temperature-half"
+      });
     }
   }
 
@@ -183,13 +185,11 @@ class DisplayPerformanceApp extends BaseApp {
     this._saveSettings();
     this._updatePopupSliders();
     if (!this._shouldSuppressNotification()) {
-      os.notify.send(
-        "Preset Applied",
-        presetName.charAt(0).toUpperCase() + presetName.slice(1),
-        "success",
-        1500,
-        "fa-check"
-      );
+      os.notify.send("Preset Applied", presetName.charAt(0).toUpperCase() + presetName.slice(1), {
+        type: "success",
+        duration: 1500,
+        icon: "fa-check"
+      });
     }
   }
 
@@ -204,7 +204,11 @@ class DisplayPerformanceApp extends BaseApp {
     };
 
     if (!this._shouldSuppressNotification()) {
-      os.notify.send("Power Mode", `Switched to ${modeNames[mode]} mode`, "info", 2000, "fa-bolt");
+      os.notify.send("Power Mode", `Switched to ${modeNames[mode]} mode`, {
+        type: "info",
+        duration: 2000,
+        icon: "fa-bolt"
+      });
     }
 
     this._updatePowerModeButtons();
@@ -397,7 +401,6 @@ class DisplayPerformanceApp extends BaseApp {
   }
 
   _bindEvents(popup) {
-    // Power mode buttons
     const modeBtns = popup.querySelectorAll(".power-mode-btn");
     modeBtns.forEach((btn) => {
       btn.addEventListener("click", () => {
@@ -406,7 +409,6 @@ class DisplayPerformanceApp extends BaseApp {
       });
     });
 
-    // Display sliders
     const brightnessSlider = popup.querySelector("#brightness-slider");
     const contrastSlider = popup.querySelector("#contrast-slider");
     const gammaSlider = popup.querySelector("#gamma-slider");
@@ -481,11 +483,19 @@ class DisplayPerformanceApp extends BaseApp {
         if (this.nightModeEnabled) {
           this._checkNightMode();
           if (!this._shouldSuppressNotification()) {
-            os.notify.send("Night Mode", "Scheduled night mode enabled", "info", 2000, "fa-moon");
+            os.notify.send("Night Mode", "Scheduled night mode enabled", {
+              type: "info",
+              duration: 2000,
+              icon: "fa-moon"
+            });
           }
         } else {
           if (!this._shouldSuppressNotification()) {
-            os.notify.send("Night Mode", "Scheduled night mode disabled", "info", 2000, "fa-sun");
+            os.notify.send("Night Mode", "Scheduled night mode disabled", {
+              type: "info",
+              duration: 2000,
+              icon: "fa-sun"
+            });
           }
         }
       });
@@ -530,7 +540,11 @@ class DisplayPerformanceApp extends BaseApp {
         this._saveSettings();
 
         if (!this._shouldSuppressNotification()) {
-          os.notify.send("Reset", "Display settings reset to default", "info", 2000, "fa-undo");
+          os.notify.send("Reset", "Display settings reset to default", {
+            type: "info",
+            duration: 2000,
+            icon: "fa-undo"
+          });
         }
       });
     }

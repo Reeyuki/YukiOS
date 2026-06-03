@@ -1,15 +1,16 @@
 import { StorageKeys } from "../settings/settings.js";
+import { os } from "../os/index.js";
 
 let _calendarPopup = null;
 let _currentCalendarMonth = new Date();
 let _calendarEvents;
 setTimeout(() => {
-  _calendarEvents = JSON.parse(localStorage.getItem(StorageKeys.calendarEvents) || "{}");
+  _calendarEvents = os.storage.get(StorageKeys.calendarEvents) || {};
 }, 0);
 let _calendarTimeInterval = null;
 
 function saveCalendarEvents() {
-  localStorage.setItem(StorageKeys.calendarEvents, JSON.stringify(_calendarEvents));
+  os.storage.set(StorageKeys.calendarEvents, _calendarEvents);
 }
 
 function getEventKey(year, month, day) {

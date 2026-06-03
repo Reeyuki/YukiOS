@@ -187,7 +187,6 @@ services.weatherApp = weatherApp;
 
 const adsApp = new AdsManager(windowManager);
 services.adsApp = adsApp;
-window.AdsManager = adsApp;
 explorerApp.setBrowser(browserApp);
 
 const appCreatorApp = new AppCreatorApp(services);
@@ -271,7 +270,6 @@ const appLauncher = new AppLauncher(
   emojiSelectorApp,
   systemAppsApp
 );
-window.appLauncher = appLauncher;
 services.appLauncher = appLauncher;
 windowManager.setAppLauncher(appLauncher);
 appCreatorApp.setAppLauncher(appLauncher);

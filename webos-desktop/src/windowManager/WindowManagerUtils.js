@@ -1,6 +1,7 @@
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { isImageFile } from "../utils/utils.js";
 import { updateTransparency as extUpdateTransparency } from "./transparencyManager.js";
+import { getSetting } from "../shared/settings.js";
 
 export class WindowManagerUtils {
   constructor(manager) {
@@ -225,7 +226,7 @@ export class WindowManagerUtils {
       </svg>
     </button>`;
 
-    if (window._settings?.macOsControls) {
+    if (getSetting("macOsControls", false)) {
       return `<div class="window-controls mac-controls">
         <button class="close-btn mac-btn mac-close" title="Close"></button>
         ${externalBtn}

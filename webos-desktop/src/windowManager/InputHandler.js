@@ -1,5 +1,7 @@
 import { toggleStartMenu } from "../desktopui/startMenu.js";
 import { StorageKeys } from "../settings/settings.js";
+import { os } from "../os/index.js";
+import { resolveIconUrl } from "../shared/assetResolver.js";
 
 export class InputHandler {
   constructor(manager) {
@@ -146,9 +148,9 @@ export class InputHandler {
 
   _getSwitcherSettings() {
     return {
-      mode: localStorage.getItem(StorageKeys.windowSwitcherMode) || "mru",
-      ui: localStorage.getItem(StorageKeys.windowSwitcherUI) || "overlay",
-      includeMinimized: localStorage.getItem(StorageKeys.windowSwitcherIncludeMinimized) !== "false"
+      mode: os.storage.get(StorageKeys.windowSwitcherMode) || "mru",
+      ui: os.storage.get(StorageKeys.windowSwitcherUI) || "overlay",
+      includeMinimized: os.storage.get(StorageKeys.windowSwitcherIncludeMinimized) !== "false"
     };
   }
 

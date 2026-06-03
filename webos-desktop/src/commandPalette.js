@@ -628,14 +628,12 @@ export class CommandPalette {
         icon: "fas fa-image",
         execute: () => {
           SystemUtilities.setWallpaper(w.url);
-          os.notify.send(
-            "Wallpaper Changed",
-            `Background updated to ${w.name}`,
-            "success",
-            5000,
-            "fas fa-image",
-            AppSource.COMMAND_PALETTE
-          );
+          os.notify.send("Wallpaper Changed", `Background updated to ${w.name}`, {
+            type: "success",
+            duration: 5000,
+            icon: "fas fa-image",
+            appSource: AppSource.COMMAND_PALETTE
+          });
         }
       });
     }
@@ -692,43 +690,37 @@ export class CommandPalette {
   }
 
   _setSystemTheme(val) {
-    localStorage.setItem(StorageKeys.theme, val);
+    os.storage.set(StorageKeys.theme, val);
     const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     const effective = val === "auto" ? (prefersDark ? "dark" : "light") : val;
     document.documentElement.setAttribute("data-theme", effective);
-    os.events.emit(BusEvents.SETTINGS_CHANGED);
-    os.notify.send(
-      "Theme Changed",
-      `System appearance set to ${val}`,
-      "success",
-      5000,
-      "fas fa-palette",
-      AppSource.COMMAND_PALETTE
-    );
+    os.events.emit(BusEvents.SETTINGS_CHANGED, { key: "theme", value: val });
+    os.notify.send("Theme Changed", `System appearance set to ${val}`, {
+      type: "success",
+      duration: 5000,
+      icon: "fas fa-palette",
+      appSource: AppSource.COMMAND_PALETTE
+    });
   }
 
   _toggleSound(val) {
-    localStorage.setItem(StorageKeys.soundEnabled, val ? "true" : "false");
-    os.events.emit(BusEvents.SETTINGS_CHANGED);
-    os.notify.send(
-      "Sound Settings",
-      `System audio feedback is now ${val ? "enabled" : "disabled"}`,
-      "info",
-      5000,
-      "fas fa-volume-up"
-    );
+    os.storage.set(StorageKeys.soundEnabled, val ? "true" : "false");
+    os.events.emit(BusEvents.SETTINGS_CHANGED, { key: "soundEnabled", value: val ? "true" : "false" });
+    os.notify.send("Sound Settings", `System audio feedback is now ${val ? "enabled" : "disabled"}`, {
+      type: "info",
+      duration: 5000,
+      icon: "fas fa-volume-up"
+    });
   }
 
   _toggleDND(val) {
-    localStorage.setItem(StorageKeys.dndKey, val ? "true" : "false");
-    os.notify.send(
-      "Do Not Disturb",
-      `Silence state is now ${val ? "activated" : "deactivated"}`,
-      "info",
-      5000,
-      "fas fa-bell-slash",
-      AppSource.COMMAND_PALETTE
-    );
+    os.storage.set(StorageKeys.dndKey, val ? "true" : "false");
+    os.notify.send("Do Not Disturb", `Silence state is now ${val ? "activated" : "deactivated"}`, {
+      type: "info",
+      duration: 5000,
+      icon: "fas fa-bell-slash",
+      appSource: AppSource.COMMAND_PALETTE
+    });
   }
 
   _updateActiveSelection() {

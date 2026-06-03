@@ -62,7 +62,7 @@ Its built entirely in vanilla JS (With some libraries of course!)
 
 # 📦 Applications
 
-* 30+ built-in applications
+* 40+ built-in applications
 * Web apps, utilities, tools, editors, and system apps
 * App registry with metadata and launch handling
 * Website and external app shortcuts via App Creator

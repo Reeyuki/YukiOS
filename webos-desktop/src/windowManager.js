@@ -1,5 +1,6 @@
 import { StorageKeys } from "./settings/settings.js";
 import { audioMixer } from "./audioMixer.js";
+import { os } from "./os/index.js";
 import { WorkspaceManager } from "./windowManager/WorkspaceManager.js";
 import { makeResizable } from "./windowManager/makeResizable.js";
 import { setupWindowControls } from "./windowManager/windowControls.js";
@@ -195,7 +196,7 @@ export class WindowManager {
 
     let disableDesktopStretchScroll = false;
     try {
-      disableDesktopStretchScroll = localStorage.getItem(StorageKeys.disableDesktopStretchScroll) === "true";
+      disableDesktopStretchScroll = os.storage.get(StorageKeys.disableDesktopStretchScroll) === "true";
     } catch {}
 
     let finalW = vw;
@@ -208,13 +209,12 @@ export class WindowManager {
       if (options.position) position = { left: options.position.x, top: options.position.y };
     } else if (options.appId) {
       try {
-        const saved = localStorage.getItem(`${StorageKeys.geometryPrefix}${options.appId}`);
+        const saved = os.storage.get(`${StorageKeys.geometryPrefix}${options.appId}`);
         if (saved) {
-          const parsed = JSON.parse(saved);
-          if (parsed && typeof parsed.x === "number" && typeof parsed.y === "number") {
-            position = { left: parsed.x, top: parsed.y };
-            if (parsed.width) finalW = resolveToPx(parsed.width, false);
-            if (parsed.height) finalH = resolveToPx(parsed.height, true);
+          if (saved && typeof saved.x === "number" && typeof saved.y === "number") {
+            position = { left: saved.x, top: saved.y };
+            if (saved.width) finalW = resolveToPx(saved.width, false);
+            if (saved.height) finalH = resolveToPx(saved.height, true);
           }
         }
       } catch (e) {}
@@ -271,7 +271,6 @@ export class WindowManager {
     this.setupWindowControls(win);
     this.addToTaskbar(winId, title, iconValue, color);
     this.bringToFront(win);
-    // Animation is now handled by os.window.create() to ensure proper timing
   }
 
   getWindowIconHtml(iconValue, color = null) {

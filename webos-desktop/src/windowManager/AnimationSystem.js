@@ -1,4 +1,5 @@
 import { StorageKeys } from "../settings/settings.js";
+import { os } from "../os/index.js";
 
 export const OPEN_ANIMATIONS = {
   fade: "fade",
@@ -37,7 +38,7 @@ export const MINIMIZE_ANIMATIONS = {
 };
 
 function getSetting(key, fallback) {
-  return localStorage.getItem(key) ?? fallback;
+  return os.storage.get(key) ?? fallback;
 }
 
 function getOpenAnim() {
@@ -558,12 +559,12 @@ export function getAnimationSettings() {
 }
 
 export function applyAnimationSettings(settings) {
-  if (settings.openAnimation) localStorage.setItem(StorageKeys.windowOpenAnimation, settings.openAnimation);
-  if (settings.closeAnimation) localStorage.setItem(StorageKeys.windowCloseAnimation, settings.closeAnimation);
-  if (settings.minimizeAnimation) localStorage.setItem(StorageKeys.windowMinimizeAnimation, settings.minimizeAnimation);
-  if (settings.animationSpeed) localStorage.setItem(StorageKeys.windowAnimationSpeed, settings.animationSpeed);
+  if (settings.openAnimation) os.storage.set(StorageKeys.windowOpenAnimation, settings.openAnimation);
+  if (settings.closeAnimation) os.storage.set(StorageKeys.windowCloseAnimation, settings.closeAnimation);
+  if (settings.minimizeAnimation) os.storage.set(StorageKeys.windowMinimizeAnimation, settings.minimizeAnimation);
+  if (settings.animationSpeed) os.storage.set(StorageKeys.windowAnimationSpeed, settings.animationSpeed);
   if (typeof settings.clickBubble === "boolean") {
-    localStorage.setItem(StorageKeys.clickBubbleFeedback, String(settings.clickBubble));
+    os.storage.set(StorageKeys.clickBubbleFeedback, String(settings.clickBubble));
     if (settings.clickBubble) {
       initClickBubble();
     } else {

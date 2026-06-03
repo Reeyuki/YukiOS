@@ -1,5 +1,7 @@
-import { bus, BusEvents } from "../core/EventBus.js";
+import { os } from "../os/index.js";
+import { BusEvents } from "../core/EventBus.js";
 import { animateWindowClose, animateWindowMinimize, applyFocusGlow, applyZDepthLift } from "./AnimationSystem.js";
+import { getSetting } from "../shared/settings.js";
 
 export class WindowStateManager {
   constructor(manager) {
@@ -23,7 +25,7 @@ export class WindowStateManager {
       this.manager.updatePageFavicon(entry.iconValue, entry.title);
       document.title = entry.title || "YukiOS";
       if (entry.record) entry.record.zIndex = this.manager.zIndexCounter;
-      os.events.emit(BusEvents.WINDOW_FOCUSED, { winId: win.id, title: entry.title, iconValue: entry.iconValue });
+      os.events.emit(BusEvents.WINDOW_FOCUSED, { winId: win.id });
     }
 
     applyFocusGlow(win);
@@ -80,7 +82,7 @@ export class WindowStateManager {
         prevZIndex: win.style.zIndex
       });
 
-      const overFullscreen = window._settings?.notificationsOverFullscreen === true;
+      const overFullscreen = getSetting("notificationsOverFullscreen", false) === true;
 
       const makeFullscreen = () => {
         Object.assign(win.style, {

@@ -643,7 +643,7 @@ export class TerminalApp extends BaseApp {
   }
 
   async cmdNeofetch() {
-    os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { key: Achievements.DeveloperModeSuper });
+    os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { achievementId: Achievements.DeveloperModeSuper });
     const ua = navigator.userAgent;
     const platformRaw = navigator.userAgentData?.platform || navigator.platform || ua || "Unknown";
 

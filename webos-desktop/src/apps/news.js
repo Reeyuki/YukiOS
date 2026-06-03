@@ -1,6 +1,7 @@
 import { BaseApp } from "../core/BaseApp.js";
 import { StorageKeys } from "../settings/settings.js";
 import { PersistenceTypes } from "../runtime/AppSchema.js";
+import { os } from "../os/index.js";
 
 const NEWS_UPDATES = [
   {
@@ -588,7 +589,7 @@ export const getNewsContentSignature = () => {
 
 export const updateNewsBadge = () => {
   const currentSignature = getNewsContentSignature();
-  const storedSignature = localStorage.getItem(StorageKeys.newsReadSignatureKey);
+  const storedSignature = os.storage.get(StorageKeys.newsReadSignatureKey);
   const hasUnreadNews = currentSignature !== storedSignature;
 
   const badge = document.querySelector(".news-badge");
@@ -698,9 +699,9 @@ export class NewsApp extends BaseApp {
     };
   }
 
-  initNews(payload, event, element, state) {
-    localStorage.setItem(StorageKeys.newsReadSignatureKey, getNewsContentSignature());
-    localStorage.setItem(StorageKeys.newsSeenKey, "true");
+  initNews(payload, vt, element, state) {
+    os.storage.set(StorageKeys.newsReadSignatureKey, getNewsContentSignature());
+    os.storage.set(StorageKeys.newsSeenKey, "true");
     window._newsApp = this;
     updateNewsBadge();
   }

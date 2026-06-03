@@ -17,7 +17,7 @@ export class WorkspaceManager {
       os.events.on(BusEvents.SETTINGS_CHANGED, (settings) => {
         this.updateVisibility(settings.showWorkspace);
       });
-      const showWorkspace = localStorage.getItem(StorageKeys.showWorkspace) !== "false";
+      const showWorkspace = os.storage.get(StorageKeys.showWorkspace) !== "false";
       this.updateVisibility(showWorkspace);
     });
   }
@@ -44,7 +44,7 @@ export class WorkspaceManager {
       if (taskbar) {
         taskbar.insertBefore(this._barEl, document.getElementById("system-tray"));
       }
-      const showWorkspace = localStorage.getItem(StorageKeys.showWorkspace) !== "false";
+      const showWorkspace = os.storage.get(StorageKeys.showWorkspace) !== "false";
       this.updateVisibility(showWorkspace);
     }
 

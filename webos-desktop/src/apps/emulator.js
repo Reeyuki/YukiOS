@@ -286,7 +286,7 @@ export class EmulatorApp extends BaseApp {
           "rom",
           CDN_BASES.MAIN + "/static/icons/emulator.webp"
         );
-        os.events.emit(BusEvents.FILE_CHANGED, { path: file.name, kind: "created" });
+        os.events.emit(BusEvents.FILE_CHANGED, { path: file.name });
       }
 
       os.notify.send("", `Saved ${files.length} file(s) to ROMs/ directory.`);
@@ -382,7 +382,7 @@ export class EmulatorApp extends BaseApp {
       icon: "static/icons/emulator.webp"
     });
 
-    os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { key: Achievements.RetroPlayer });
+    os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { achievementId: Achievements.RetroPlayer });
 
     win.innerHTML = `
     <div class="window-content emu-window ruf-window">

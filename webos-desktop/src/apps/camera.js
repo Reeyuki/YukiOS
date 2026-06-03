@@ -615,7 +615,7 @@ export class CameraApp extends BaseApp {
       this.stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
       this.video.srcObject = this.stream;
     } catch (err) {
-      os.notify.send("Camera access denied or not available.");
+      os.notify.send("No camera permission", "Camera access denied or not available.");
       console.error(err);
     }
   }
@@ -729,7 +729,7 @@ export class CameraApp extends BaseApp {
       this.startTimer();
     } catch (e) {
       console.error(e);
-      os.notify.send("Screen capture cancelled or not allowed");
+      os.notify.send("No camera permission", "Screen capture cancelled or not allowed");
     }
   }
 
@@ -802,7 +802,6 @@ export class CameraApp extends BaseApp {
 
     if (count) count.textContent = `(${filtered.length})`;
 
-    // Pagination
     const totalPages = Math.ceil(filtered.length / state.itemsPerPage);
     const startIndex = (state.currentPage - 1) * state.itemsPerPage;
     const endIndex = startIndex + state.itemsPerPage;
@@ -813,7 +812,6 @@ export class CameraApp extends BaseApp {
       list.appendChild(item);
     });
 
-    // Update pagination controls
     if (prevPageBtn) prevPageBtn.disabled = state.currentPage <= 1;
     if (nextPageBtn) nextPageBtn.disabled = state.currentPage >= totalPages;
     if (pageInfo) pageInfo.textContent = `Page ${state.currentPage} of ${totalPages || 1}`;
@@ -949,7 +947,7 @@ export class CameraApp extends BaseApp {
       await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
     } catch (e) {
       console.error("Failed to copy to clipboard:", e);
-      os.notify.send("Failed to copy to clipboard");
+      os.notify.send("Clipboard failure", "Failed to copy to clipboard");
     }
   }
 

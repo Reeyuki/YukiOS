@@ -19,8 +19,8 @@ export class SessionManager {
 
   _loadUserHistory() {
     try {
-      const history = localStorage.getItem(StorageKeys.userHistory);
-      return history ? JSON.parse(history) : [];
+      const history = os.storage.get(StorageKeys.userHistory);
+      return history || [];
     } catch (e) {
       return [];
     }
@@ -28,7 +28,7 @@ export class SessionManager {
 
   _saveUserHistory() {
     try {
-      localStorage.setItem(StorageKeys.userHistory, JSON.stringify(this.userHistory));
+      os.storage.set(StorageKeys.userHistory, this.userHistory);
     } catch (e) {}
   }
 
@@ -52,9 +52,9 @@ export class SessionManager {
   }
 
   async showLogin() {
-    if (!localStorage.getItem(StorageKeys.setupCompleted)) {
-      const lastUsername = localStorage.getItem(StorageKeys.username) || "";
-      const lastAvatar = localStorage.getItem(StorageKeys.profilePicture) || PREDEFINED_AVATARS[0];
+    if (!os.storage.get(StorageKeys.setupCompleted)) {
+      const lastUsername = os.storage.get(StorageKeys.username) || "";
+      const lastAvatar = os.storage.get(StorageKeys.profilePicture) || PREDEFINED_AVATARS[0];
       const displayName = lastUsername || "Guest";
       const sessionKey = lastUsername.toLowerCase().replace(/[^a-z0-9]/g, "") || "guest";
       this.currentSession = {
@@ -66,14 +66,14 @@ export class SessionManager {
       return this.currentSession;
     }
 
-    const lastLaunch = localStorage.getItem(StorageKeys.lastLaunchTime);
+    const lastLaunch = os.storage.get(StorageKeys.lastLaunchTime);
     const now = Date.now();
     const isWithin15Mins = lastLaunch && now - Number(lastLaunch) < 15 * 60 * 1000;
-    localStorage.setItem(StorageKeys.lastLaunchTime, now.toString());
+    os.storage.set(StorageKeys.lastLaunchTime, now.toString());
 
-    if (localStorage.getItem(StorageKeys.disableBootScreen) === "true" || isWithin15Mins) {
-      const lastUsername = localStorage.getItem(StorageKeys.username) || "";
-      const lastAvatar = localStorage.getItem(StorageKeys.profilePicture) || PREDEFINED_AVATARS[0];
+    if (os.storage.get(StorageKeys.disableBootScreen) === "true" || isWithin15Mins) {
+      const lastUsername = os.storage.get(StorageKeys.username) || "";
+      const lastAvatar = os.storage.get(StorageKeys.profilePicture) || PREDEFINED_AVATARS[0];
       const displayName = lastUsername || "Guest";
       const sessionKey = lastUsername.toLowerCase().replace(/[^a-z0-9]/g, "") || "guest";
       this.currentSession = {
@@ -96,8 +96,8 @@ export class SessionManager {
     this.container.id = "login-screen-container";
     this.container.className = "login-screen-overlay";
 
-    const lastUsername = localStorage.getItem(StorageKeys.username) || "";
-    const lastAvatar = localStorage.getItem(StorageKeys.profilePicture) || PREDEFINED_AVATARS[0];
+    const lastUsername = os.storage.get(StorageKeys.username) || "";
+    const lastAvatar = os.storage.get(StorageKeys.profilePicture) || PREDEFINED_AVATARS[0];
     const displayName = lastUsername || "Guest";
 
     const userHistoryHtml =
@@ -247,7 +247,7 @@ export class SessionManager {
     const previewAvatar = this.container.querySelector("#preview-avatar");
     const previewName = this.container.querySelector("#preview-name");
 
-    let selectedAvatar = localStorage.getItem(StorageKeys.profilePicture) || PREDEFINED_AVATARS[0];
+    let selectedAvatar = os.storage.get(StorageKeys.profilePicture) || PREDEFINED_AVATARS[0];
 
     const updatePreview = () => {
       const name = nicknameInput.value.trim() || "Guest";
@@ -377,7 +377,7 @@ export class SessionManager {
   async _initializeSession() {
     const { name, key, avatar } = this.currentSession;
 
-    localStorage.setItem(StorageKeys.lastLaunchTime, Date.now().toString());
+    os.storage.set(StorageKeys.lastLaunchTime, Date.now().toString());
     this._addToUserHistory(this.currentSession);
 
     if (this.services.fileSystemManager) {
@@ -393,7 +393,7 @@ export class SessionManager {
 
     audioMixer.playSystemSound(SystemAudio.START);
 
-    if (!localStorage.getItem(StorageKeys.setupCompleted) && this.services.setupApp) {
+    if (!os.storage.get(StorageKeys.setupCompleted) && this.services.setupApp) {
       setTimeout(() => this.services.setupApp.open(), 1000);
     }
   }
@@ -430,7 +430,7 @@ export class SessionManager {
 
     this._createLockUI();
 
-    os.events.emit(BusEvents.SYSTEM_LOCKED, this.currentSession);
+    os.events.emit(BusEvents.SYSTEM_LOCKED, {});
   }
 
   unlockSession() {
@@ -455,7 +455,7 @@ export class SessionManager {
     }
     this.lastActiveWindow = null;
 
-    os.events.emit(BusEvents.SYSTEM_UNLOCKED, this.currentSession);
+    os.events.emit(BusEvents.SYSTEM_UNLOCKED, {});
   }
 
   _createLockUI() {

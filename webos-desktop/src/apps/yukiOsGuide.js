@@ -444,9 +444,7 @@ export class YukiOsGuideApp extends BaseApp {
     this._bindEvents(element);
   }
 
-  onClose(winId) {
-    // Cleanup if needed
-  }
+  onClose(winId) {}
 
   _buildUI() {
     const appMap = this._services.appLauncher?.appMap || gamesListAppMap || {};

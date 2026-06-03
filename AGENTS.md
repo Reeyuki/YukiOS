@@ -14,6 +14,7 @@
 - Whenever you define a new app to appJauncher or gamesJist, define description for it on gameDescriptions.js
 - Always use StorageKeys from `src/StorageKeys.js` for localStorage access. Never hardcode localStorage key strings.
   Import StorageKeys and use the defined constants. If a new key is needed, add it to StorageKeys.js first.
+- Always use `os.storage` API instead of bare `localStorage`; the storage module handles serialization/deserialization automatically.
 - Never use browser native alerts, prompts, or confirms (alert(), prompt(), confirm()). Always use the shared
   dialog utilities from `src/shared/dialogs.js` instead. Import and use `showAlert`, `showPrompt`, `showConfirm`,
   `customAlert`, `customPrompt`, or `customConfirm` as appropriate.
@@ -98,7 +99,7 @@ main.js initializes services
     ↓
 Services Container (WindowManager, FileSystemManager, NotificationCenter, EventBus)
     ↓
-30+ Applications (all inherit BaseApp, receive injected services)
+40+ Applications (all inherit BaseApp, receive injected services)
     ↓
 Desktop UI renders windows, taskbar, start menu
 ```

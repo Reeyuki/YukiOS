@@ -5,6 +5,7 @@ import { WindowRecord } from "../core/WindowRecord.js";
 import { audioMixer } from "../audioMixer.js";
 import { showStartStyleMenu } from "../shared/contextMenu.js";
 import { animateWindowOpen } from "./AnimationSystem.js";
+import { os } from "../os/index.js";
 
 export class TaskbarSystem {
   constructor(manager) {
@@ -14,7 +15,7 @@ export class TaskbarSystem {
   updateTaskbarAlignment() {
     const taskbarWindows = document.getElementById("taskbar-windows");
     if (taskbarWindows) {
-      const taskbarAlignment = localStorage.getItem(StorageKeys.taskbarAlignment) || "center";
+      const taskbarAlignment = os.storage.get(StorageKeys.taskbarAlignment) || "center";
       const taskbar = document.getElementById("taskbar");
 
       if (taskbar) {
@@ -83,7 +84,7 @@ export class TaskbarSystem {
     taskbarItem.id = `taskbar-${winId}`;
     taskbarItem.className = "taskbar-item";
     taskbarItem.appendChild(this._buildTaskbarIcon(iconValue, title, color));
-    os.events.emit(BusEvents.WINDOW_CREATED, { winId, title });
+    os.events.emit(BusEvents.WINDOW_CREATED, { winId });
 
     taskbarItem.onclick = () => {
       const winTask = document.getElementById(winId);
@@ -158,7 +159,7 @@ export class TaskbarSystem {
 
     const taskbarWindows = document.getElementById("taskbar-windows");
     if (taskbarWindows) {
-      const taskbarAlignment = localStorage.getItem(StorageKeys.taskbarAlignment) || "center";
+      const taskbarAlignment = os.storage.get(StorageKeys.taskbarAlignment) || "center";
       const taskbar = document.getElementById("taskbar");
 
       if (taskbar) {
@@ -317,15 +318,12 @@ export class TaskbarSystem {
       if (appId) {
         try {
           const geom = win ? this.manager._getWindowNormalGeometry(win) : entry.record;
-          localStorage.setItem(
-            `${StorageKeys.geometryPrefix}${appId}`,
-            JSON.stringify({
-              x: geom.x,
-              y: geom.y,
-              width: geom.width,
-              height: geom.height
-            })
-          );
+          os.storage.set(`${StorageKeys.geometryPrefix}${appId}`, {
+            x: geom.x,
+            y: geom.y,
+            width: geom.width,
+            height: geom.height
+          });
         } catch (e) {}
       }
     }
@@ -351,8 +349,8 @@ export class TaskbarSystem {
 
   _getPinnedItems() {
     try {
-      const pinnedData = localStorage.getItem(StorageKeys.pinnedTaskbarItems);
-      return pinnedData ? JSON.parse(pinnedData) : [];
+      const pinnedData = os.storage.get(StorageKeys.pinnedTaskbarItems);
+      return pinnedData || [];
     } catch {
       return [];
     }
@@ -360,7 +358,7 @@ export class TaskbarSystem {
 
   _savePinnedItems(pinnedItems) {
     try {
-      localStorage.setItem(StorageKeys.pinnedTaskbarItems, JSON.stringify(pinnedItems));
+      os.storage.set(StorageKeys.pinnedTaskbarItems, pinnedItems);
     } catch {}
   }
 
@@ -413,7 +411,7 @@ export class TaskbarSystem {
       pinnedItem.appendChild(this._buildTaskbarIcon(item.iconValue, item.title, item.color));
 
       pinnedItem.onclick = () => {
-        if (window.appLauncher && item.appId) {
+        if (item.appId) {
           os.app.launch(item.appId);
         }
       };
@@ -426,7 +424,7 @@ export class TaskbarSystem {
           addMenuItem(
             "Launch App",
             () => {
-              if (window.appLauncher && item.appId) {
+              if (item.appId) {
                 os.app.launch(item.appId);
               }
             },

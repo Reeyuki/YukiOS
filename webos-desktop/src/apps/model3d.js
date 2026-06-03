@@ -1897,7 +1897,7 @@ export class Model3DApp extends BaseApp {
         const hud = $("#yb-hud", this.win);
         if (hud) hud.style.display = "block";
 
-        os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { key: Achievements.ModelViewer });
+        os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { achievementId: Achievements.ModelViewer });
       }
     } catch (err) {
       console.error("Yuki Blender load error:", err);

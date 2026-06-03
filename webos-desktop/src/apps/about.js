@@ -99,7 +99,7 @@ export class AboutApp extends BaseApp {
                 class="abx-meta-link"
                 target="_blank"
                 rel="noopener noreferrer"
-                href="https://discord.gg/2Z8Gvtqt7"
+                href="https://discord.gg/uFuGfseB9Z"
               >
                 <i class="fab fa-discord"></i> Join Discord
               </a>

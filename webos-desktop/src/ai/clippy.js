@@ -39,7 +39,7 @@ let lastSpokenAt = 0;
 
 function isExplicitlyEnabled() {
   try {
-    return localStorage.getItem(CLIPPY_STORAGE_KEY) === "true";
+    return os.storage.get(CLIPPY_STORAGE_KEY) === "true";
   } catch {
     return false;
   }

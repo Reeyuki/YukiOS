@@ -134,6 +134,14 @@ export interface OSServices {
   eventBus: any;
 }
 
+export interface StorageAPI {
+  get(key: string): any;
+  set(key: string, value: any): void;
+  remove(key: string): void;
+  clear(): void;
+  has(key: string): boolean;
+}
+
 declare global {
   interface Window {
     __osBridgeLegacyWarnings?: boolean;

@@ -82,7 +82,7 @@ export async function renderWallpapersPage(fs, wm, view) {
   header.querySelector("#wp-try-random").onclick = () => showRandomPreview(previewZone, grid, fs, wm);
   header.querySelector("#wp-reset-login").onclick = async () => {
     await SystemUtilities.setLoginWallpaper("none");
-    os.notify.send("Login wallpaper reset to default");
+    os.notify.send("Login wallpaper reset to default", { type: "info" });
   };
 }
 
@@ -149,7 +149,7 @@ async function refreshWallpaperGrid(fs, grid, wm, previewZone) {
       const url = toBlobUrl(content);
       if (content) {
         await SystemUtilities.setWallpaper(content);
-        os.notify.send(`Desktop wallpaper set to "${name}"`);
+        os.notify.send(`Desktop wallpaper set to "${name}"`, { type: "info" });
       }
     };
 
@@ -163,7 +163,7 @@ async function refreshWallpaperGrid(fs, grid, wm, previewZone) {
       const url = toBlobUrl(content);
       if (content) {
         await SystemUtilities.setLoginWallpaper(content);
-        os.notify.send(`Login wallpaper set to "${name}"`);
+        os.notify.send(`Login wallpaper set to "${name}"`, { type: "info" });
       }
     };
 
@@ -237,7 +237,7 @@ function showCardPreview(name, src, isVideo, previewZone, fs, wm) {
     const url = toBlobUrl(content);
     if (content) {
       await SystemUtilities.setLoginWallpaper(content);
-      os.notify.send(`Login wallpaper set to "${name}"`);
+      os.notify.send(`Login wallpaper set to "${name}"`, { type: "info" });
     }
     previewZone.classList.remove("wp-preview-active");
     previewZone.innerHTML = "";
@@ -373,9 +373,9 @@ function showRandomPreview(previewZone, grid, fs, wm) {
         selection.isVideo ? "static/icons/file.webp" : selection.src
       );
 
-      os.notify.send(`Saved as "${fileName}"`);
+      os.notify.send(`Saved as "${fileName}"`, { type: "info" });
     } else {
-      os.notify.send(`${isLogin ? "Login" : "Desktop"} wallpaper set to "${selection.label}"`);
+      os.notify.send(`${isLogin ? "Login" : "Desktop"} wallpaper set to "${selection.label}"`, { type: "info" });
     }
 
     previewZone.classList.remove("wp-preview-active");

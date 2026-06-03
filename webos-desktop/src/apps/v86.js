@@ -437,15 +437,7 @@ export class V86App extends BaseApp {
       }
     };
 
-    win.querySelector(".close-btn").addEventListener("click", () => {
-      cleanup();
-      os.window.removeFromTaskbar(winId);
-      win.remove();
-    });
-
-    win.querySelector(".minimize-btn").addEventListener("click", () => {
-      os.window.minimize(win);
-    });
+    this.onClose(winId, cleanup);
 
     try {
       await this._loadV86Script();

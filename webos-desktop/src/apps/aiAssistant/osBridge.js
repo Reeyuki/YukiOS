@@ -325,7 +325,7 @@ export class OSBridge {
   }
   async _setTheme(themeName, params) {
     try {
-      localStorage.setItem("theme", themeName);
+      os.storage.set("theme", themeName);
       os.events.emit("SETTINGS_CHANGED", { theme: themeName });
       return { success: true, message: `Set theme to ${themeName}` };
     } catch (error) {
@@ -335,9 +335,9 @@ export class OSBridge {
 
   async _toggleSetting(settingKey, params) {
     try {
-      const currentValue = localStorage.getItem(settingKey);
+      const currentValue = os.storage.get(settingKey);
       const newValue = currentValue === "true" ? "false" : "true";
-      localStorage.setItem(settingKey, newValue);
+      os.storage.set(settingKey, newValue);
       os.events.emit("SETTINGS_CHANGED", { [settingKey]: newValue });
       return { success: true, message: `Toggled ${settingKey} to ${newValue}` };
     } catch (error) {
@@ -369,7 +369,7 @@ export class OSBridge {
       windows,
       runningApps,
       workspaces: workspaceState,
-      theme: localStorage.getItem("theme") || "dark",
+      theme: os.storage.get("theme") || "dark",
       settings: this._getSettings()
     };
   }

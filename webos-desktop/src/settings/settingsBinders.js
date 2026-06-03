@@ -108,7 +108,7 @@ export function bindSystemCategory(win, save, settings, notificationCenter, show
     bindEvent(dndToggle, "change", () => {
       const enabled = dndToggle.checked;
       settings.dnd = enabled;
-      localStorage.setItem(StorageKeys.dndKey, enabled ? "1" : "0");
+      os.storage.set(StorageKeys.dndKey, enabled ? "1" : "0");
       notificationCenter?.setDoNotDisturb(enabled);
     });
   }
@@ -136,7 +136,7 @@ export function bindSystemCategory(win, save, settings, notificationCenter, show
     bindEvent(clipboardManagerToggle, "change", () => {
       const enabled = clipboardManagerToggle.checked;
       settings.clipboardManagerEnabled = enabled;
-      localStorage.setItem(StorageKeys.clipboardManagerEnabled, String(enabled));
+      os.storage.set(StorageKeys.clipboardManagerEnabled, String(enabled));
       showSaved();
     });
   }
@@ -161,7 +161,7 @@ export function bindDesktopCategory(win, save, settings, showSaved) {
       const pos = btn.dataset.taskbarPos;
       $$(".settings-btn[data-taskbar-pos]", win).forEach((b) => toggleClass(b, "active", b === btn));
       settings.taskbarPosition = pos;
-      localStorage.setItem(StorageKeys.taskbarPosition, pos);
+      os.storage.set(StorageKeys.taskbarPosition, pos);
       const { taskbarPositionManager: tpm } = await import("../desktopui/taskbarPositionManager.js");
       tpm.setPosition(pos);
     });
@@ -194,7 +194,7 @@ export function bindDesktopCategory(win, save, settings, showSaved) {
     bindEvent(trayEnabledToggle, "change", () => {
       const enabled = trayEnabledToggle.checked;
       settings.trayEnabled = enabled;
-      localStorage.setItem(StorageKeys.trayEnabled, String(enabled));
+      os.storage.set(StorageKeys.trayEnabled, String(enabled));
       applyTrayEnabled(enabled);
       showSaved();
     });
@@ -205,7 +205,7 @@ export function bindDesktopCategory(win, save, settings, showSaved) {
   if (windowSwitcherModeSelect) {
     bindEvent(windowSwitcherModeSelect, "change", () => {
       settings.windowSwitcherMode = windowSwitcherModeSelect.value;
-      localStorage.setItem(StorageKeys.windowSwitcherMode, windowSwitcherModeSelect.value);
+      os.storage.set(StorageKeys.windowSwitcherMode, windowSwitcherModeSelect.value);
       showSaved();
     });
   }
@@ -214,7 +214,7 @@ export function bindDesktopCategory(win, save, settings, showSaved) {
   if (windowSwitcherUISelect) {
     bindEvent(windowSwitcherUISelect, "change", () => {
       settings.windowSwitcherUI = windowSwitcherUISelect.value;
-      localStorage.setItem(StorageKeys.windowSwitcherUI, windowSwitcherUISelect.value);
+      os.storage.set(StorageKeys.windowSwitcherUI, windowSwitcherUISelect.value);
       showSaved();
     });
   }
@@ -223,10 +223,7 @@ export function bindDesktopCategory(win, save, settings, showSaved) {
   if (windowSwitcherIncludeMinimizedToggle) {
     bindEvent(windowSwitcherIncludeMinimizedToggle, "change", () => {
       settings.windowSwitcherIncludeMinimized = windowSwitcherIncludeMinimizedToggle.checked;
-      localStorage.setItem(
-        StorageKeys.windowSwitcherIncludeMinimized,
-        String(windowSwitcherIncludeMinimizedToggle.checked)
-      );
+      os.storage.set(StorageKeys.windowSwitcherIncludeMinimized, String(windowSwitcherIncludeMinimizedToggle.checked));
       showSaved();
     });
   }
@@ -268,7 +265,7 @@ export function bindAppearanceCategory(
       const theme = btn.dataset.themeVal;
       $$(".settings-btn[data-theme-val]", win).forEach((b) => toggleClass(b, "active", b === btn));
       settings.theme = theme;
-      localStorage.setItem(StorageKeys.theme, theme);
+      os.storage.set(StorageKeys.theme, theme);
       applyTheme(theme, getCustomColors);
       audioMixer.playSystemSound(SystemAudio.DESKTOP_CHANGE);
       showStatus("Theme applied");
@@ -289,7 +286,7 @@ export function bindAppearanceCategory(
     bindEvent(transparencySlider, "change", () => {
       const val = parseInt(transparencySlider.value) / 100;
       settings.windowTransparency = val;
-      localStorage.setItem(StorageKeys.windowTransparency, String(val));
+      os.storage.set(StorageKeys.windowTransparency, String(val));
       applyWindowTransparency(val);
       showSaved();
     });
@@ -300,7 +297,7 @@ export function bindAppearanceCategory(
     bindEvent(transparentUIToggle, "change", () => {
       const enabled = transparentUIToggle.checked;
       settings.transparentUI = enabled;
-      localStorage.setItem(StorageKeys.transparentUI, String(enabled));
+      os.storage.set(StorageKeys.transparentUI, String(enabled));
       applyTransparentUI(enabled);
       showSaved();
     });
@@ -315,7 +312,7 @@ export function bindAppearanceCategory(
     bindEvent(guiScaleSlider, "change", () => {
       const val = parseInt(guiScaleSlider.value);
       settings.guiScale = val;
-      localStorage.setItem(StorageKeys.guiScale, String(val));
+      os.storage.set(StorageKeys.guiScale, String(val));
       applyGuiScale(val);
       showSaved();
     });
@@ -330,7 +327,7 @@ export function bindAppearanceCategory(
     bindEvent(fontSizeSlider, "change", () => {
       const val = parseInt(fontSizeSlider.value);
       settings.fontSize = val;
-      localStorage.setItem(StorageKeys.fontSize, String(val));
+      os.storage.set(StorageKeys.fontSize, String(val));
       applyFontSize(val);
       showSaved();
     });
@@ -341,7 +338,7 @@ export function bindAppearanceCategory(
     bindEvent(btn, "click", () => {
       const density = btn.dataset.uiDensity;
       settings.uiDensity = density;
-      localStorage.setItem(StorageKeys.uiDensity, density);
+      os.storage.set(StorageKeys.uiDensity, density);
       applyUiDensity(density);
       uiDensityButtons.forEach((b) => b.classList.remove("active"));
       btn.classList.add("active");
@@ -352,7 +349,7 @@ export function bindAppearanceCategory(
   const openAnimSelect = $("#settingsOpenAnimation", win);
   if (openAnimSelect) {
     bindEvent(openAnimSelect, "change", () => {
-      localStorage.setItem(StorageKeys.windowOpenAnimation, openAnimSelect.value);
+      os.storage.set(StorageKeys.windowOpenAnimation, openAnimSelect.value);
       showSaved();
     });
   }
@@ -360,7 +357,7 @@ export function bindAppearanceCategory(
   const closeAnimSelect = $("#settingsCloseAnimation", win);
   if (closeAnimSelect) {
     bindEvent(closeAnimSelect, "change", () => {
-      localStorage.setItem(StorageKeys.windowCloseAnimation, closeAnimSelect.value);
+      os.storage.set(StorageKeys.windowCloseAnimation, closeAnimSelect.value);
       showSaved();
     });
   }
@@ -368,7 +365,7 @@ export function bindAppearanceCategory(
   const minimizeAnimSelect = $("#settingsMinimizeAnimation", win);
   if (minimizeAnimSelect) {
     bindEvent(minimizeAnimSelect, "change", () => {
-      localStorage.setItem(StorageKeys.windowMinimizeAnimation, minimizeAnimSelect.value);
+      os.storage.set(StorageKeys.windowMinimizeAnimation, minimizeAnimSelect.value);
       showSaved();
     });
   }
@@ -376,7 +373,7 @@ export function bindAppearanceCategory(
   const animationSpeedSelect = $("#settingsAnimationSpeed", win);
   if (animationSpeedSelect) {
     bindEvent(animationSpeedSelect, "change", () => {
-      localStorage.setItem(StorageKeys.windowAnimationSpeed, animationSpeedSelect.value);
+      os.storage.set(StorageKeys.windowAnimationSpeed, animationSpeedSelect.value);
       showSaved();
     });
   }
@@ -395,7 +392,7 @@ export function bindAppearanceCategory(
       const fontFamily = btn.dataset.fontFamily;
       $$(".settings-btn[data-font-family]", win).forEach((b) => toggleClass(b, "active", b === btn));
       settings.fontFamily = fontFamily;
-      localStorage.setItem(StorageKeys.fontFamily, fontFamily);
+      os.storage.set(StorageKeys.fontFamily, fontFamily);
       applyFontFamily(fontFamily);
       showSaved();
     });
@@ -425,15 +422,14 @@ function bindCursorControls(win, settings, showSaved, normalizeCursorDataUrl) {
           ? originalDataUrl
           : "";
 
-    if (cursorDataUrl) localStorage.setItem(StorageKeys.cursorKey, cursorDataUrl);
-    else localStorage.removeItem(StorageKeys.cursorKey);
+    if (cursorDataUrl) os.storage.set(StorageKeys.cursorKey, cursorDataUrl);
+    else os.storage.remove(StorageKeys.cursorKey);
 
-    if (cursorOriginalDataUrl) localStorage.setItem(StorageKeys.cursorOriginalKey, cursorOriginalDataUrl);
-    else localStorage.removeItem(StorageKeys.cursorOriginalKey);
+    if (cursorOriginalDataUrl) os.storage.set(StorageKeys.cursorOriginalKey, cursorOriginalDataUrl);
+    else os.storage.remove(StorageKeys.cursorOriginalKey);
 
     settings.cursorDataUrl = cursorDataUrl;
     settings.cursorOriginalDataUrl = cursorOriginalDataUrl;
-    Object.assign(window._settings, settings);
 
     applyCursor(cursorDataUrl);
 
@@ -448,10 +444,9 @@ function bindCursorControls(win, settings, showSaved, normalizeCursorDataUrl) {
     if (!Number.isFinite(cursorSize) || cursorSize < 16 || cursorSize > 128) return;
     settings.cursorSize = cursorSize;
     try {
-      localStorage.setItem(StorageKeys.cursorSizeKey, String(cursorSize));
+      os.storage.set(StorageKeys.cursorSizeKey, String(cursorSize));
     } catch {}
     if (cursorSizeValue) setText(cursorSizeValue, `${cursorSize}px`);
-    Object.assign(window._settings, settings);
 
     const original = settings.cursorOriginalDataUrl;
     if (!original) return;
@@ -507,7 +502,7 @@ function bindCursorControls(win, settings, showSaved, normalizeCursorDataUrl) {
   if (cursorClearBtn) {
     bindEvent(cursorClearBtn, "click", () => {
       try {
-        localStorage.removeItem(StorageKeys.cursorSizeKey);
+        os.storage.remove(StorageKeys.cursorSizeKey);
       } catch {}
       if (cursorSizeInput) cursorSizeInput.value = "32";
       if (cursorSizeValue) setText(cursorSizeValue, "32px");
@@ -528,7 +523,7 @@ function bindCursorControls(win, settings, showSaved, normalizeCursorDataUrl) {
     bindEvent(mikuCursorToggle, "change", () => {
       const enabled = mikuCursorToggle.checked;
       settings.mikuCursor = enabled;
-      localStorage.setItem(StorageKeys.mikuCursor, String(enabled));
+      os.storage.set(StorageKeys.mikuCursor, String(enabled));
       applyMikuCursor(enabled);
       showSaved();
     });
@@ -669,7 +664,7 @@ export function bindAudioCategory(win, settings, showSaved) {
     bindEvent(soundToggle, "change", () => {
       const enabled = soundToggle.checked;
       settings.soundEnabled = enabled;
-      localStorage.setItem(StorageKeys.soundEnabled, String(enabled));
+      os.storage.set(StorageKeys.soundEnabled, String(enabled));
       if (volumeSlider) volumeSlider.disabled = !enabled;
       audioMixer.setMaster(enabled ? settings.masterVolume : 0);
       showSaved();
@@ -683,7 +678,7 @@ export function bindAudioCategory(win, settings, showSaved) {
     bindEvent(volumeSlider, "change", () => {
       const val = parseInt(volumeSlider.value) / 100;
       settings.masterVolume = val;
-      localStorage.setItem(StorageKeys.masterVolume, String(val));
+      os.storage.set(StorageKeys.masterVolume, String(val));
       if (settings.soundEnabled) audioMixer.setMaster(val);
       showSaved();
     });
@@ -694,7 +689,7 @@ export function bindAudioCategory(win, settings, showSaved) {
       const enabled = systemAudioToggle.checked;
       settings.systemAudioEnabled = enabled;
       audioMixer.systemAudioEnabled = enabled;
-      localStorage.setItem(StorageKeys.systemAudioEnabled, String(enabled));
+      os.storage.set(StorageKeys.systemAudioEnabled, String(enabled));
       if (systemVolumeSlider) systemVolumeSlider.disabled = !enabled;
       showSaved();
     });
@@ -708,7 +703,7 @@ export function bindAudioCategory(win, settings, showSaved) {
       const val = parseInt(systemVolumeSlider.value) / 100;
       settings.systemVolume = val;
       audioMixer.systemVolume = val;
-      localStorage.setItem(StorageKeys.systemVolume, String(val));
+      os.storage.set(StorageKeys.systemVolume, String(val));
       showSaved();
     });
   }
@@ -769,7 +764,7 @@ export function renderTrayAppsList(win, settings) {
       const wId = toggle.dataset.winId;
       const visible = toggle.checked;
       settings.trayAppVisibility[wId] = visible;
-      localStorage.setItem(StorageKeys.trayAppVisibility, JSON.stringify(settings.trayAppVisibility));
+      os.storage.set(StorageKeys.trayAppVisibility, settings.trayAppVisibility);
       os.tray.updateItemVisibility(wId, visible);
     });
   });

@@ -1304,7 +1304,11 @@ export class DataEditorApp extends BaseApp {
       this.showEditorStatus(win, `Deleted ${this.selectedKeys.size} cookies`, "#52c41a");
       this.loadCookies(win);
     }
-    os.notify.send("Storage Editor", `Deleted ${this.selectedKeys.size} items`, "info", 3000, "fas fa-trash");
+    os.notify.send("Storage Editor", `Deleted ${this.selectedKeys.size} items`, {
+      type: "info",
+      duration: 3000,
+      icon: "fas fa-trash"
+    });
     this.selectedKeys.clear();
     this.updateSelectedCount(win);
   }
@@ -1336,6 +1340,10 @@ export class DataEditorApp extends BaseApp {
     a.click();
     URL.revokeObjectURL(url);
     this.showEditorStatus(win, `Exported ${this.selectedKeys.size} items`, "#52c41a");
-    os.notify.send("Storage Editor", `Exported ${this.selectedKeys.size} items`, "success", 3000, "fas fa-download");
+    os.notify.send("Storage Editor", `Exported ${this.selectedKeys.size} items`, {
+      type: "success",
+      duration: 3000,
+      icon: "fas fa-download"
+    });
   }
 }

@@ -51,9 +51,8 @@ export class ProfileCustomizerApp extends BaseApp {
   }
 
   getDeclarativeSchema(opts) {
-    const currentUsername = localStorage.getItem(StorageKeys.username) || "Reeyuki";
-    const currentProfilePic =
-      localStorage.getItem(StorageKeys.profilePicture) || resolveIconUrl("static/icons/guest.webp");
+    const currentUsername = os.storage.get(StorageKeys.username) || "Reeyuki";
+    const currentProfilePic = os.storage.get(StorageKeys.profilePicture) || resolveIconUrl("static/icons/guest.webp");
 
     return {
       id: "profile-customizer",
@@ -188,9 +187,8 @@ export class ProfileCustomizerApp extends BaseApp {
   }
 
   initProfileCustomizer(payload, event, element, state) {
-    const currentUsername = localStorage.getItem(StorageKeys.username) || "Reeyuki";
-    const currentProfilePic =
-      localStorage.getItem(StorageKeys.profilePicture) || resolveIconUrl("static/icons/guest.webp");
+    const currentUsername = os.storage.get(StorageKeys.username) || "Reeyuki";
+    const currentProfilePic = os.storage.get(StorageKeys.profilePicture) || resolveIconUrl("static/icons/guest.webp");
     this._bindEvents(element, currentUsername, currentProfilePic);
   }
 
@@ -201,12 +199,8 @@ export class ProfileCustomizerApp extends BaseApp {
   }
 
   updateProfileState(username, profilePic) {
-    localStorage.setItem(StorageKeys.username, username);
-    localStorage.setItem(StorageKeys.profilePicture, profilePic);
-
-    if (window._settings) {
-      window._settings.username = username;
-    }
+    os.storage.set(StorageKeys.username, username);
+    os.storage.set(StorageKeys.profilePicture, profilePic);
 
     if (this.settingsApp) {
       this.settingsApp.updateUsername?.(username);
@@ -304,12 +298,8 @@ export class ProfileCustomizerApp extends BaseApp {
       const newUsername = usernameInput.value.trim() || "Reeyuki";
       const newProfilePic = customImageDataUrl || selectedAvatar;
 
-      localStorage.setItem(StorageKeys.username, newUsername);
-      localStorage.setItem(StorageKeys.profilePicture, newProfilePic);
-
-      if (window._settings) {
-        window._settings.username = newUsername;
-      }
+      os.storage.set(StorageKeys.username, newUsername);
+      os.storage.set(StorageKeys.profilePicture, newProfilePic);
 
       if (this.settingsApp) {
         this.settingsApp.updateUsername?.(newUsername);
@@ -327,7 +317,7 @@ export class ProfileCustomizerApp extends BaseApp {
       statusMsg.style.opacity = "1";
       setTimeout(() => (statusMsg.style.opacity = "0"), 2200);
 
-      os.notify.send("Profile", "Profile updated successfully", "success", 3000);
+      os.notify.send("Profile", "Profile updated successfully", { type: "success", duration: 3000 });
     });
 
     resetBtn.addEventListener("click", () => {

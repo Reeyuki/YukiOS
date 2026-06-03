@@ -6,7 +6,7 @@ class ClipboardManager {
     this.currentItem = null;
     this.history = [];
     this.maxHistorySize = 20;
-    this.persistenceEnabled = localStorage.getItem(StorageKeys.clipboardSaveHistory) !== "false";
+    this.persistenceEnabled = os.storage.get(StorageKeys.clipboardSaveHistory) !== "false";
     this.changeCallbacks = new Set();
     this.broadcastChannel = null;
     this.storageKey = StorageKeys.clipboardCurrent;
@@ -146,8 +146,8 @@ class ClipboardManager {
   saveToStorage() {
     if (!this.persistenceEnabled) return;
     try {
-      localStorage.setItem(this.storageKey, JSON.stringify(this.currentItem));
-      localStorage.setItem(this.historyKey, JSON.stringify(this.history));
+      os.storage.set(this.storageKey, this.currentItem);
+      os.storage.set(this.historyKey, this.history);
     } catch (e) {
       console.warn("[ClipboardManager] Failed to save to storage:", e);
     }
@@ -156,14 +156,14 @@ class ClipboardManager {
   loadFromStorage() {
     if (!this.persistenceEnabled) return;
     try {
-      const current = localStorage.getItem(this.storageKey);
-      const history = localStorage.getItem(this.historyKey);
+      const current = os.storage.get(this.storageKey);
+      const history = os.storage.get(this.historyKey);
 
       if (current) {
-        this.currentItem = JSON.parse(current);
+        this.currentItem = current;
       }
       if (history) {
-        this.history = JSON.parse(history);
+        this.history = history;
       }
     } catch (e) {
       console.warn("[ClipboardManager] Failed to load from storage:", e);
@@ -187,8 +187,8 @@ class ClipboardManager {
 
   clearStorage() {
     try {
-      localStorage.removeItem(this.storageKey);
-      localStorage.removeItem(this.historyKey);
+      os.storage.remove(this.storageKey);
+      os.storage.remove(this.historyKey);
     } catch (e) {
       console.warn("[ClipboardManager] Failed to clear storage:", e);
     }
@@ -232,7 +232,7 @@ class ClipboardManager {
 
   saveStarredItems() {
     try {
-      localStorage.setItem(StorageKeys.clipboardStarred, JSON.stringify([...this.starredItems]));
+      os.storage.set(StorageKeys.clipboardStarred, [...this.starredItems]);
     } catch (e) {
       console.warn("[ClipboardManager] Failed to save starred items:", e);
     }
@@ -240,9 +240,9 @@ class ClipboardManager {
 
   loadStarredItems() {
     try {
-      const starred = localStorage.getItem(StorageKeys.clipboardStarred);
+      const starred = os.storage.get(StorageKeys.clipboardStarred);
       if (starred) {
-        this.starredItems = new Set(JSON.parse(starred));
+        this.starredItems = new Set(starred);
       }
     } catch (e) {
       console.warn("[ClipboardManager] Failed to load starred items:", e);

@@ -1,5 +1,6 @@
 import { WindowHelper } from "./utils/WindowHelper.js";
 import { StorageKeys } from "./StorageKeys.js";
+import { os } from "./os/index.js";
 
 const AD_STORAGE_KEY = StorageKeys.adStorageState;
 export function shouldEnableAds() {
@@ -7,7 +8,7 @@ export function shouldEnableAds() {
   if (hostname.includes("vercel") || hostname === "localhost" || hostname === "127.0.0.1" || hostname === "[::1]") {
     return false;
   }
-  const adsDisabled = localStorage.getItem(StorageKeys.adsDisabled) === "true";
+  const adsDisabled = os.storage.get(StorageKeys.adsDisabled) === "true";
   if (adsDisabled) {
     return false;
   }
@@ -21,7 +22,7 @@ const POPUNDER_SCRIPT = "https://pl29443507.profitablecpmratenetwork.com/e1/d5/6
 function loadMeta() {
   try {
     return (
-      JSON.parse(localStorage.getItem(AD_STORAGE_KEY)) || {
+      os.storage.get(AD_STORAGE_KEY) || {
         dailyCount: 0,
         lastShown: 0,
         lastClosed: 0,
@@ -47,7 +48,7 @@ function loadMeta() {
 }
 
 function saveMeta(meta) {
-  localStorage.setItem(AD_STORAGE_KEY, JSON.stringify(meta));
+  os.storage.set(AD_STORAGE_KEY, meta);
 }
 
 function resetDaily(meta) {

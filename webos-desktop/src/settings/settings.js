@@ -42,75 +42,63 @@ export class SettingsApp extends BaseApp {
     this.fs = null;
 
     setTimeout(() => {
-      const cursorOriginalFromStorage = localStorage.getItem(StorageKeys.cursorOriginalKey) ?? "";
-      const cursorFromLegacyStorage = localStorage.getItem(StorageKeys.cursorKey) ?? "";
+      const cursorOriginalFromStorage = os.storage.get(StorageKeys.cursorOriginalKey) ?? "";
+      const cursorFromLegacyStorage = os.storage.get(StorageKeys.cursorKey) ?? "";
       const cursorOriginalDataUrl = cursorOriginalFromStorage || cursorFromLegacyStorage || "";
-      const parsedCursorSize = Number(localStorage.getItem(StorageKeys.cursorSizeKey));
+      const parsedCursorSize = os.storage.get(StorageKeys.cursorSizeKey);
       const cursorSize = Number.isFinite(parsedCursorSize) && parsedCursorSize > 0 ? parsedCursorSize : 32;
 
-      const rawTransparency = parseFloat(localStorage.getItem(StorageKeys.windowTransparency));
-      const rawMasterVol = parseFloat(localStorage.getItem(StorageKeys.masterVolume));
-      const rawSystemVol = parseFloat(localStorage.getItem(StorageKeys.systemVolume));
+      const rawTransparency = os.storage.get(StorageKeys.windowTransparency);
+      const rawMasterVol = os.storage.get(StorageKeys.masterVolume);
+      const rawSystemVol = os.storage.get(StorageKeys.systemVolume);
 
       this._settings = {
-        weather: localStorage.getItem(StorageKeys.weather) !== "false",
-        cycleWallpaper: localStorage.getItem(StorageKeys.cycleWallpaper) !== "false",
+        weather: os.storage.get(StorageKeys.weather) !== "false",
+        cycleWallpaper: os.storage.get(StorageKeys.cycleWallpaper) !== "false",
         cursorDataUrl: cursorFromLegacyStorage,
         cursorOriginalDataUrl,
         cursorSize,
-        macOsControls: localStorage.getItem(StorageKeys.macOsControls) === "true",
-        clippy: localStorage.getItem(StorageKeys.clippy) === "true",
-        disableDesktopStretchScroll: localStorage.getItem(StorageKeys.disableDesktopStretchScroll) === "true",
-        achievementsDisabled: localStorage.getItem(StorageKeys.achievementsDisabled) === "true",
-        analyticsDisabled: localStorage.getItem(StorageKeys.analyticsDisabled) === "true",
-        adsDisabled: localStorage.getItem(StorageKeys.adsDisabled) === "true",
-        taskbarAlignment: localStorage.getItem(StorageKeys.taskbarAlignment) || "center",
-        cdnMirror: localStorage.getItem(StorageKeys.cdnMirror) || "jsdelivr",
-        theme: localStorage.getItem(StorageKeys.theme) || "dark",
+        macOsControls: os.storage.get(StorageKeys.macOsControls) === "true",
+        clippy: os.storage.get(StorageKeys.clippy) === "true",
+        disableDesktopStretchScroll: os.storage.get(StorageKeys.disableDesktopStretchScroll) === "true",
+        achievementsDisabled: os.storage.get(StorageKeys.achievementsDisabled) === "true",
+        analyticsDisabled: os.storage.get(StorageKeys.analyticsDisabled) === "true",
+        adsDisabled: os.storage.get(StorageKeys.adsDisabled) === "true",
+        taskbarAlignment: os.storage.get(StorageKeys.taskbarAlignment) || "center",
+        cdnMirror: os.storage.get(StorageKeys.cdnMirror) || "jsdelivr",
+        theme: os.storage.get(StorageKeys.theme) || "dark",
         windowTransparency: Number.isFinite(rawTransparency) ? Math.max(0.2, Math.min(1, rawTransparency)) : 1,
-        soundEnabled: localStorage.getItem(StorageKeys.soundEnabled) !== "false",
+        soundEnabled: os.storage.get(StorageKeys.soundEnabled) !== "false",
         masterVolume: Number.isFinite(rawMasterVol) ? Math.max(0, Math.min(1, rawMasterVol)) : 1,
-        systemAudioEnabled: localStorage.getItem(StorageKeys.systemAudioEnabled) !== "false",
+        systemAudioEnabled: os.storage.get(StorageKeys.systemAudioEnabled) !== "false",
         systemVolume: Number.isFinite(rawSystemVol) ? Math.max(0, Math.min(1, rawSystemVol)) : 1,
-        dnd: localStorage.getItem(StorageKeys.dndKey) === "1",
-        taskbarPosition: localStorage.getItem(StorageKeys.taskbarPosition) || "bottom",
-        disableBootScreen: localStorage.getItem(StorageKeys.disableBootScreen) === "true",
-        windowSessionPersistence: localStorage.getItem(StorageKeys.windowSessionPersistence) !== "false",
-        startMenuWidth: Number(localStorage.getItem(StorageKeys.startMenuWidth)) || 650,
-        startMenuHeight: Number(localStorage.getItem(StorageKeys.startMenuHeight)) || 500,
-        startMenuCats: (() => {
-          try {
-            return JSON.parse(localStorage.getItem(StorageKeys.startMenuCats)) || {};
-          } catch {
-            return {};
-          }
-        })(),
+        dnd: os.storage.get(StorageKeys.dndKey) === "1",
+        taskbarPosition: os.storage.get(StorageKeys.taskbarPosition) || "bottom",
+        disableBootScreen: os.storage.get(StorageKeys.disableBootScreen) === "true",
+        windowSessionPersistence: os.storage.get(StorageKeys.windowSessionPersistence) !== "false",
+        startMenuWidth: Number(os.storage.get(StorageKeys.startMenuWidth)) || 650,
+        startMenuHeight: Number(os.storage.get(StorageKeys.startMenuHeight)) || 500,
+        startMenuCats: os.storage.get(StorageKeys.startMenuCats) || {},
         turboMode: turboManager.getMode(),
-        showWorkspace: localStorage.getItem(StorageKeys.showWorkspace) !== "false",
-        notificationsEnabled: localStorage.getItem(StorageKeys.notificationsEnabled) !== "false",
-        notificationsRemoveTimeout: localStorage.getItem(StorageKeys.notificationsRemoveTimeout) !== "false",
-        notificationsPopAnimation: localStorage.getItem(StorageKeys.notificationsPopAnimation) !== "false",
-        notificationsOverFullscreen: localStorage.getItem(StorageKeys.notificationsOverFullscreen) === "true",
-        notificationsDuration: Number(localStorage.getItem(StorageKeys.notificationsDuration)) || 5,
-        notificationsPosition: localStorage.getItem(StorageKeys.notificationsPosition) || "bottom-right",
-        transparentUI: localStorage.getItem(StorageKeys.transparentUI) === "true",
-        clipboardManagerEnabled: localStorage.getItem(StorageKeys.clipboardManagerEnabled) !== "false",
-        guiScale: Number(localStorage.getItem(StorageKeys.guiScale)) || 100,
-        fontSize: Number(localStorage.getItem(StorageKeys.fontSize)) || 100,
-        trayEnabled: localStorage.getItem(StorageKeys.trayEnabled) !== "false",
-        trayAppVisibility: (() => {
-          try {
-            return JSON.parse(localStorage.getItem(StorageKeys.trayAppVisibility)) || {};
-          } catch {
-            return {};
-          }
-        })(),
-        windowSwitcherMode: localStorage.getItem(StorageKeys.windowSwitcherMode) || "mru",
-        windowSwitcherUI: localStorage.getItem(StorageKeys.windowSwitcherUI) || "overlay",
-        windowSwitcherIncludeMinimized: localStorage.getItem(StorageKeys.windowSwitcherIncludeMinimized) !== "false",
-        mikuCursor: localStorage.getItem(StorageKeys.mikuCursor) !== "false",
-        fontFamily: localStorage.getItem(StorageKeys.fontFamily) || "opensans",
-        uiDensity: localStorage.getItem(StorageKeys.uiDensity) || "comfortable"
+        showWorkspace: os.storage.get(StorageKeys.showWorkspace) !== "false",
+        notificationsEnabled: os.storage.get(StorageKeys.notificationsEnabled) !== "false",
+        notificationsRemoveTimeout: os.storage.get(StorageKeys.notificationsRemoveTimeout) !== "false",
+        notificationsPopAnimation: os.storage.get(StorageKeys.notificationsPopAnimation) !== "false",
+        notificationsOverFullscreen: os.storage.get(StorageKeys.notificationsOverFullscreen) === "true",
+        notificationsDuration: Number(os.storage.get(StorageKeys.notificationsDuration)) || 5,
+        notificationsPosition: os.storage.get(StorageKeys.notificationsPosition) || "bottom-right",
+        transparentUI: os.storage.get(StorageKeys.transparentUI) === "true",
+        clipboardManagerEnabled: os.storage.get(StorageKeys.clipboardManagerEnabled) !== "false",
+        guiScale: Number(os.storage.get(StorageKeys.guiScale)) || 100,
+        fontSize: Number(os.storage.get(StorageKeys.fontSize)) || 100,
+        trayEnabled: os.storage.get(StorageKeys.trayEnabled) !== "false",
+        trayAppVisibility: os.storage.get(StorageKeys.trayAppVisibility) || {},
+        windowSwitcherMode: os.storage.get(StorageKeys.windowSwitcherMode) || "mru",
+        windowSwitcherUI: os.storage.get(StorageKeys.windowSwitcherUI) || "overlay",
+        windowSwitcherIncludeMinimized: os.storage.get(StorageKeys.windowSwitcherIncludeMinimized) !== "false",
+        mikuCursor: os.storage.get(StorageKeys.mikuCursor) !== "false",
+        fontFamily: os.storage.get(StorageKeys.fontFamily) || "opensans",
+        uiDensity: os.storage.get(StorageKeys.uiDensity) || "comfortable"
       };
 
       applyCursor(this._settings.cursorDataUrl);
@@ -126,11 +114,10 @@ export class SettingsApp extends BaseApp {
       applyFontSize(this._settings.fontSize);
       applyTrayEnabled(this._settings.trayEnabled);
       applyUiDensity(this._settings.uiDensity);
-      window._settings = this._settings;
 
       if (cursorFromLegacyStorage && !cursorOriginalFromStorage) {
         try {
-          localStorage.setItem(StorageKeys.cursorOriginalKey, cursorFromLegacyStorage);
+          os.storage.set(StorageKeys.cursorOriginalKey, cursorFromLegacyStorage);
           this._settings.cursorOriginalDataUrl = cursorFromLegacyStorage;
         } catch {}
       }
@@ -209,7 +196,7 @@ export class SettingsApp extends BaseApp {
       await import("../shared/dialogs.js")
     ).customConfirm("This will reset OS settings defined by the module and reload. Continue?");
     if (!confirmed) return;
-    Object.values(StorageKeys).forEach((key) => localStorage.removeItem(key));
+    Object.values(StorageKeys).forEach((key) => os.storage.remove(key));
     location.reload();
   };
 
@@ -250,31 +237,30 @@ export class SettingsApp extends BaseApp {
         startMenuCats[chk.dataset.cat] = chk.checked;
       });
 
-      const ls = localStorage;
-      ls.setItem(StorageKeys.weather, String(weather));
-      ls.setItem(StorageKeys.cycleWallpaper, String(cycleWallpaper));
-      ls.setItem(StorageKeys.macOsControls, String(macOsControls));
-      ls.setItem(StorageKeys.clippy, String(clippy));
-      ls.setItem(StorageKeys.disableDesktopStretchScroll, String(disableDesktopStretchScroll));
-      ls.setItem(StorageKeys.showWorkspace, String(showWorkspace));
-      ls.setItem(StorageKeys.achievementsDisabled, String(achievementsDisabled));
-      ls.setItem(StorageKeys.analyticsDisabled, String(analyticsDisabled));
-      ls.setItem(StorageKeys.adsDisabled, String(adsDisabled));
-      ls.setItem(StorageKeys.taskbarAlignment, selectedAlignment);
-      ls.setItem(StorageKeys.cdnMirror, cdnMirror);
-      ls.setItem(StorageKeys.notificationsEnabled, String(notificationsEnabled));
-      ls.setItem(StorageKeys.notificationsRemoveTimeout, String(notificationsRemoveTimeout));
-      ls.setItem(StorageKeys.notificationsPopAnimation, String(notificationsPopAnimation));
-      ls.setItem(StorageKeys.notificationsOverFullscreen, String(notificationsOverFullscreen));
-      ls.setItem(StorageKeys.notificationsDuration, String(notificationsDuration));
-      ls.setItem(StorageKeys.notificationsPosition, notificationsPosition);
-      ls.setItem(StorageKeys.transparentUI, String(transparentUI));
-      ls.setItem(StorageKeys.disableBootScreen, String(disableBootScreen));
-      ls.setItem(StorageKeys.windowSessionPersistence, String(windowSessionPersistence));
-      ls.setItem(StorageKeys.turboMode, selectedTurboMode);
-      ls.setItem(StorageKeys.startMenuWidth, String(startMenuWidth));
-      ls.setItem(StorageKeys.startMenuHeight, String(startMenuHeight));
-      ls.setItem(StorageKeys.startMenuCats, JSON.stringify(startMenuCats));
+      os.storage.set(StorageKeys.weather, String(weather));
+      os.storage.set(StorageKeys.cycleWallpaper, String(cycleWallpaper));
+      os.storage.set(StorageKeys.macOsControls, String(macOsControls));
+      os.storage.set(StorageKeys.clippy, String(clippy));
+      os.storage.set(StorageKeys.disableDesktopStretchScroll, String(disableDesktopStretchScroll));
+      os.storage.set(StorageKeys.showWorkspace, String(showWorkspace));
+      os.storage.set(StorageKeys.achievementsDisabled, String(achievementsDisabled));
+      os.storage.set(StorageKeys.analyticsDisabled, String(analyticsDisabled));
+      os.storage.set(StorageKeys.adsDisabled, String(adsDisabled));
+      os.storage.set(StorageKeys.taskbarAlignment, selectedAlignment);
+      os.storage.set(StorageKeys.cdnMirror, cdnMirror);
+      os.storage.set(StorageKeys.notificationsEnabled, String(notificationsEnabled));
+      os.storage.set(StorageKeys.notificationsRemoveTimeout, String(notificationsRemoveTimeout));
+      os.storage.set(StorageKeys.notificationsPopAnimation, String(notificationsPopAnimation));
+      os.storage.set(StorageKeys.notificationsOverFullscreen, String(notificationsOverFullscreen));
+      os.storage.set(StorageKeys.notificationsDuration, String(notificationsDuration));
+      os.storage.set(StorageKeys.notificationsPosition, notificationsPosition);
+      os.storage.set(StorageKeys.transparentUI, String(transparentUI));
+      os.storage.set(StorageKeys.disableBootScreen, String(disableBootScreen));
+      os.storage.set(StorageKeys.windowSessionPersistence, String(windowSessionPersistence));
+      os.storage.set(StorageKeys.turboMode, selectedTurboMode);
+      os.storage.set(StorageKeys.startMenuWidth, String(startMenuWidth));
+      os.storage.set(StorageKeys.startMenuHeight, String(startMenuHeight));
+      os.storage.set(StorageKeys.startMenuCats, startMenuCats);
 
       Object.assign(this._settings, {
         weather,
@@ -318,7 +304,8 @@ export class SettingsApp extends BaseApp {
   }
 
   _bindControls(win) {
-    const showStatus = (msg) => os.notify.send("Settings", msg, "info", 3000, "fas fa-check-circle");
+    const showStatus = (msg) =>
+      os.notify.send("Settings", msg, { type: "info", duration: 3000, icon: "fas fa-check-circle" });
     const showSaved = () => this._showSavedMessage(win);
     const save = this._buildSaveCallback(win);
 
@@ -376,17 +363,12 @@ export class SettingsApp extends BaseApp {
   }
 
   _getCustomColors() {
-    try {
-      const stored = localStorage.getItem(StorageKeys.customColors);
-      return stored ? JSON.parse(stored) : null;
-    } catch {
-      return null;
-    }
+    return os.storage.get(StorageKeys.customColors) || null;
   }
 
   _setCustomColors(colors) {
     try {
-      localStorage.setItem(StorageKeys.customColors, JSON.stringify(colors));
+      os.storage.set(StorageKeys.customColors, colors);
       applyTheme(this._settings.theme, () => this._getCustomColors());
     } catch {}
   }
@@ -441,7 +423,7 @@ export class SettingsApp extends BaseApp {
     document.body.appendChild(overlay);
 
     dialog.querySelector("#custom-colors-reset").addEventListener("click", () => {
-      localStorage.removeItem("yukios_custom_colors");
+      os.storage.remove(StorageKeys.customColors);
       applyTheme(this._settings.theme, () => this._getCustomColors());
       overlay.remove();
     });

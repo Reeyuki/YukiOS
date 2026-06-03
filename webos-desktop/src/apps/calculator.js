@@ -858,9 +858,7 @@ export class CalculatorApp extends BaseApp {
           }
         }
       },
-      onMount: (win, state, actionExecutor) => {
-        // No-op - elements are accessed dynamically via element.closest()
-      }
+      onMount: (win, state, actionExecutor) => {}
     };
   }
 

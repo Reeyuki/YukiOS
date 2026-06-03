@@ -142,23 +142,23 @@ class WallpaperManager {
   }
 
   static setSequentialWallpaper() {
-    const isManual = localStorage.getItem(StorageKeys.manualWallpaper) === "true";
+    const isManual = os.storage.get(StorageKeys.manualWallpaper) === "true";
     if (isManual) return;
 
-    const shouldCycle = localStorage.getItem(StorageKeys.cycleWallpaper) !== "false";
-    const existing = localStorage.getItem(StorageKeys.wallpaperKey);
+    const shouldCycle = os.storage.get(StorageKeys.cycleWallpaper) !== "false";
+    const existing = os.storage.get(StorageKeys.wallpaperKey);
     if (!shouldCycle && existing) return;
 
     if (typeof videos === "undefined" || !videos.length) return;
 
-    let index = parseInt(localStorage.getItem(StorageKeys.wallpaperIndexKey)) || 0;
+    let index = os.storage.get(StorageKeys.wallpaperIndexKey) || 0;
     if (shouldCycle) {
       index = (index + 1) % videos.length;
-      localStorage.setItem(StorageKeys.wallpaperIndexKey, String(index));
+      os.storage.set(StorageKeys.wallpaperIndexKey, String(index));
     }
 
     const wallpaper = videos[index];
-    localStorage.setItem(StorageKeys.wallpaperKey, wallpaper);
+    os.storage.set(StorageKeys.wallpaperKey, wallpaper);
     WallpaperStore._clearWallpaperBlob().catch(() => {});
     this.applyWallpaper(wallpaper);
   }
@@ -169,14 +169,14 @@ class WallpaperManager {
     if (isBlob(wallpaperURL)) {
       const type = wallpaperURL.type.startsWith("video/") ? "video" : "img";
       await WallpaperStore._storeWallpaperBlob(wallpaperURL);
-      localStorage.setItem(StorageKeys.wallpaperKey, type === "video" ? "__blob_video__" : "__blob_image__");
-      localStorage.setItem(StorageKeys.manualWallpaper, "true");
-      localStorage.setItem(StorageKeys.cycleWallpaper, "false");
+      os.storage.set(StorageKeys.wallpaperKey, type === "video" ? "__blob_video__" : "__blob_image__");
+      os.storage.set(StorageKeys.manualWallpaper, "true");
+      os.storage.set(StorageKeys.cycleWallpaper, "false");
       const toggle = document.getElementById("settingsCycleWallpaper");
       if (toggle) toggle.checked = false;
 
       this._applyBlob(wallpaperURL, type);
-      os.events.emit(BusEvents.WALLPAPER_CHANGED, { url: "__blob__" });
+      os.events.emit(BusEvents.WALLPAPER_CHANGED, { wallpaper: "__blob__" });
       return;
     }
 
@@ -184,8 +184,8 @@ class WallpaperManager {
 
     os.events.emit(BusEvents.WALLPAPER_CHANGED, { url: wallpaperURL });
 
-    localStorage.setItem(StorageKeys.manualWallpaper, "true");
-    localStorage.setItem(StorageKeys.cycleWallpaper, "false");
+    os.storage.set(StorageKeys.manualWallpaper, "true");
+    os.storage.set(StorageKeys.cycleWallpaper, "false");
 
     const toggle = document.getElementById("settingsCycleWallpaper");
     if (toggle) toggle.checked = false;
@@ -193,55 +193,55 @@ class WallpaperManager {
     if (WallpaperStore._isBase64Video(wallpaperURL)) {
       const blob = this._dataURItoBlob(wallpaperURL);
       await WallpaperStore._storeWallpaperBlob(blob);
-      localStorage.setItem(StorageKeys.wallpaperKey, "__blob_video__");
+      os.storage.set(StorageKeys.wallpaperKey, "__blob_video__");
       this._applyBlob(blob, "video");
     } else if (WallpaperStore._isBase64Image(wallpaperURL)) {
       if (wallpaperURL.length > 524288) {
         const blob = this._dataURItoBlob(wallpaperURL);
         await WallpaperStore._storeWallpaperBlob(blob);
-        localStorage.setItem(StorageKeys.wallpaperKey, "__blob_image__");
+        os.storage.set(StorageKeys.wallpaperKey, "__blob_image__");
         this._applyBlob(blob, "img");
       } else {
         await WallpaperStore._clearWallpaperBlob().catch(() => {});
-        localStorage.setItem(StorageKeys.wallpaperKey, wallpaperURL);
+        os.storage.set(StorageKeys.wallpaperKey, wallpaperURL);
         this.applyWallpaper(wallpaperURL);
       }
     } else {
       await WallpaperStore._clearWallpaperBlob().catch(() => {});
-      localStorage.setItem(StorageKeys.wallpaperKey, wallpaperURL);
+      os.storage.set(StorageKeys.wallpaperKey, wallpaperURL);
       this.applyWallpaper(wallpaperURL);
     }
   }
 
   static async setLoginWallpaper(wallpaperURL) {
     if (wallpaperURL === "none" || !wallpaperURL) {
-      localStorage.removeItem(StorageKeys.loginWallpaperKey);
+      os.storage.remove(StorageKeys.loginWallpaperKey);
       await WallpaperStore._clearWallpaperBlob(WallpaperStore.WP_LOGIN_BLOB_KEY).catch(() => {});
-      os.events.emit(BusEvents.LOGIN_WALLPAPER_CHANGED, { url: null });
+      os.events.emit(BusEvents.LOGIN_WALLPAPER_CHANGED, { wallpaper: null });
       return;
     }
 
     if (isBlob(wallpaperURL)) {
       const type = wallpaperURL.type.startsWith("video/") ? "video" : "img";
       await WallpaperStore._storeWallpaperBlob(wallpaperURL, WallpaperStore.WP_LOGIN_BLOB_KEY);
-      localStorage.setItem(StorageKeys.loginWallpaperKey, type === "video" ? "__blob_video__" : "__blob_image__");
-      os.events.emit(BusEvents.LOGIN_WALLPAPER_CHANGED, { url: "__blob__" });
+      os.storage.set(StorageKeys.loginWallpaperKey, type === "video" ? "__blob_video__" : "__blob_image__");
+      os.events.emit(BusEvents.LOGIN_WALLPAPER_CHANGED, { wallpaper: "__blob__" });
       return;
     }
 
     wallpaperURL = this._normalizeWallpaperUrl(wallpaperURL);
-    localStorage.setItem(StorageKeys.loginWallpaperKey, wallpaperURL);
-    os.events.emit(BusEvents.LOGIN_WALLPAPER_CHANGED, { url: wallpaperURL });
+    os.storage.set(StorageKeys.loginWallpaperKey, wallpaperURL);
+    os.events.emit(BusEvents.LOGIN_WALLPAPER_CHANGED, { wallpaper: wallpaperURL });
 
     if (WallpaperStore._isBase64Video(wallpaperURL)) {
       const blob = this._dataURItoBlob(wallpaperURL);
       await WallpaperStore._storeWallpaperBlob(blob, WallpaperStore.WP_LOGIN_BLOB_KEY);
-      localStorage.setItem(StorageKeys.loginWallpaperKey, "__blob_video__");
+      os.storage.set(StorageKeys.loginWallpaperKey, "__blob_video__");
     } else if (WallpaperStore._isBase64Image(wallpaperURL)) {
       if (wallpaperURL.length > 524288) {
         const blob = this._dataURItoBlob(wallpaperURL);
         await WallpaperStore._storeWallpaperBlob(blob, WallpaperStore.WP_LOGIN_BLOB_KEY);
-        localStorage.setItem(StorageKeys.loginWallpaperKey, "__blob_image__");
+        os.storage.set(StorageKeys.loginWallpaperKey, "__blob_image__");
       } else {
         await WallpaperStore._clearWallpaperBlob(WallpaperStore.WP_LOGIN_BLOB_KEY).catch(() => {});
       }
@@ -251,7 +251,7 @@ class WallpaperManager {
   }
 
   static async getLoginWallpaper() {
-    const saved = localStorage.getItem(StorageKeys.loginWallpaperKey);
+    const saved = os.storage.get(StorageKeys.loginWallpaperKey);
     if (!saved || saved === "none") return null;
     if (saved === "__blob_video__" || saved === "__blob_image__") {
       try {
@@ -318,7 +318,7 @@ class WallpaperManager {
       (wallpaperURL.toLowerCase().endsWith(".mp4") ||
         wallpaperURL.toLowerCase().endsWith(".webm") ||
         wallpaperURL.startsWith("data:video") ||
-        (wallpaperURL.startsWith("blob:") && localStorage.getItem(StorageKeys.wallpaperKey) === "__blob_video__"));
+        (wallpaperURL.startsWith("blob:") && os.storage.get(StorageKeys.wallpaperKey) === "__blob_video__"));
     this._renderElement(isVideo ? "video" : "img", wallpaperURL);
   }
 
@@ -385,9 +385,9 @@ class WallpaperManager {
   }
 
   static async loadWallpaper() {
-    const shouldCycle = localStorage.getItem(StorageKeys.cycleWallpaper) !== "false";
-    const isManual = localStorage.getItem(StorageKeys.manualWallpaper) === "true";
-    const saved = localStorage.getItem(StorageKeys.wallpaperKey);
+    const shouldCycle = os.storage.get(StorageKeys.cycleWallpaper) !== "false";
+    const isManual = os.storage.get(StorageKeys.manualWallpaper) === "true";
+    const saved = os.storage.get(StorageKeys.wallpaperKey);
 
     if (saved === "__blob_video__" || saved === "__blob_image__") {
       try {
@@ -405,7 +405,7 @@ class WallpaperManager {
 
     if ((isManual && saved) || (!shouldCycle && saved)) {
       const normalized = this._normalizeWallpaperUrl(saved);
-      if (normalized !== saved) localStorage.setItem(StorageKeys.wallpaperKey, normalized);
+      if (normalized !== saved) os.storage.set(StorageKeys.wallpaperKey, normalized);
       this.applyWallpaper(normalized);
     } else {
       this.setSequentialWallpaper();
@@ -478,7 +478,7 @@ export class SystemUtilities {
       });
     }
 
-    if (localStorage.getItem(StorageKeys.weather) === "false") return;
+    if (os.storage.get(StorageKeys.weather) === "false") return;
 
     os.tray.register("weatherApp", "🌡️", "Loading weather...", {
       resident: true,

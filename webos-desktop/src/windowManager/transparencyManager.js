@@ -1,3 +1,5 @@
+import { getSetting } from "../shared/settings.js";
+
 const styleEl = document.getElementById("window-style");
 const styleParent = styleEl?.parentNode;
 
@@ -10,7 +12,7 @@ export function restoreTransparency() {
 }
 
 export function updateTransparency(wm) {
-  const transparencyEnabled = window._settings?.transparency !== false;
+  const transparencyEnabled = getSetting("transparency", true) !== false;
   if (wm.gameWindowCount > 0 || !transparencyEnabled) {
     hideTransparency();
   } else {

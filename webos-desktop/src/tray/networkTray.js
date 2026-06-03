@@ -15,7 +15,7 @@ class NetworkTrayApp extends BaseApp {
   }
 
   _shouldSuppressNotification() {
-    const position = localStorage.getItem(StorageKeys.notificationsPosition) || "bottom-right";
+    const position = os.storage.get(StorageKeys.notificationsPosition) || "bottom-right";
     return position === "bottom-right";
   }
 

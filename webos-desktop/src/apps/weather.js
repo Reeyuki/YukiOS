@@ -2,16 +2,17 @@ import { getWeatherInfo } from "../shared/weatherCodes.js";
 import { BaseApp } from "../core/BaseApp.js";
 import { WindowHelper } from "../utils/WindowHelper.js";
 import { PersistenceTypes } from "../runtime/AppSchema.js";
+import { os } from "../os/index.js";
 
 const WEATHER_CACHE_TTL = 10 * 60 * 1000;
 const LOCATION_CACHE_TTL = 24 * 60 * 60 * 1000;
 function getCached(key, ttl = WEATHER_CACHE_TTL) {
   try {
-    const raw = localStorage.getItem(key);
+    const raw = os.storage.get(key);
     if (!raw) return null;
-    const { ts, data } = JSON.parse(raw);
+    const { ts, data } = raw;
     if (Date.now() - ts > ttl) {
-      localStorage.removeItem(key);
+      os.storage.remove(key);
       return null;
     }
     return data;
@@ -21,7 +22,7 @@ function getCached(key, ttl = WEATHER_CACHE_TTL) {
 }
 function setCache(key, data) {
   try {
-    localStorage.setItem(key, JSON.stringify({ ts: Date.now(), data }));
+    os.storage.set(key, { ts: Date.now(), data });
   } catch {}
 }
 

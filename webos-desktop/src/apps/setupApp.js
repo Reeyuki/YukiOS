@@ -281,8 +281,8 @@ export class SetupApp extends BaseApp {
       analytics: true,
       turboMode: "balanced",
       transparency: "medium",
-      username: localStorage.getItem(StorageKeys.username) || "Guest",
-      profilePicture: localStorage.getItem(StorageKeys.profilePicture) || PREDEFINED_AVATARS[0],
+      username: os.storage.get(StorageKeys.username) || "Guest",
+      profilePicture: os.storage.get(StorageKeys.profilePicture) || PREDEFINED_AVATARS[0],
       fontFamily: "opensans",
       macOsControls: false,
       mikuCursor: false,
@@ -376,7 +376,7 @@ export class SetupApp extends BaseApp {
   }
 
   _buildStep1() {
-    const nickname = localStorage.getItem(StorageKeys.username) || "Guest";
+    const nickname = os.storage.get(StorageKeys.username) || "Guest";
     return `
       <div class="setup-step active" data-step="1">
         <div class="step-hero" style="margin-top: 50px;">
@@ -1139,8 +1139,8 @@ export class SetupApp extends BaseApp {
     const finalizedAvatar = this.userChoices.profilePicture || PREDEFINED_AVATARS[0];
     this.userChoices.username = finalizedName;
     this.userChoices.profilePicture = finalizedAvatar;
-    localStorage.setItem(StorageKeys.username, finalizedName);
-    localStorage.setItem(StorageKeys.profilePicture, finalizedAvatar);
+    os.storage.set(StorageKeys.username, finalizedName);
+    os.storage.set(StorageKeys.profilePicture, finalizedAvatar);
 
     if (this._services.sessionManager?.currentSession) {
       this._services.sessionManager.currentSession.name = finalizedName;
@@ -1151,23 +1151,23 @@ export class SetupApp extends BaseApp {
 
     this._services.profileCustomizerApp?.updateProfileState(finalizedName, finalizedAvatar);
 
-    localStorage.setItem(StorageKeys.theme, this.userChoices.theme);
-    localStorage.setItem(StorageKeys.taskbarPosition, this.userChoices.taskbarPosition);
-    localStorage.setItem(StorageKeys.weather, this.userChoices.weather.toString());
-    localStorage.setItem(StorageKeys.notificationsEnabled, this.userChoices.notifications.toString());
-    localStorage.setItem(StorageKeys.soundEnabled, this.userChoices.sound.toString());
-    localStorage.setItem(StorageKeys.achievementsDisabled, (!this.userChoices.achievements).toString());
-    localStorage.setItem(StorageKeys.analyticsDisabled, (!this.userChoices.analytics).toString());
-    localStorage.setItem(StorageKeys.setupCompleted, "true");
+    os.storage.set(StorageKeys.theme, this.userChoices.theme);
+    os.storage.set(StorageKeys.taskbarPosition, this.userChoices.taskbarPosition);
+    os.storage.set(StorageKeys.weather, this.userChoices.weather.toString());
+    os.storage.set(StorageKeys.notificationsEnabled, this.userChoices.notifications.toString());
+    os.storage.set(StorageKeys.soundEnabled, this.userChoices.sound.toString());
+    os.storage.set(StorageKeys.achievementsDisabled, (!this.userChoices.achievements).toString());
+    os.storage.set(StorageKeys.analyticsDisabled, (!this.userChoices.analytics).toString());
+    os.storage.set(StorageKeys.setupCompleted, "true");
 
-    localStorage.setItem(StorageKeys.turboMode, this.userChoices.turboMode);
-    localStorage.setItem(StorageKeys.transparency, this.userChoices.transparency);
+    os.storage.set(StorageKeys.turboMode, this.userChoices.turboMode);
+    os.storage.set(StorageKeys.transparency, this.userChoices.transparency);
 
-    localStorage.setItem(StorageKeys.fontFamily, this.userChoices.fontFamily);
-    localStorage.setItem(StorageKeys.macOsControls, this.userChoices.macOsControls.toString());
-    localStorage.setItem(StorageKeys.mikuCursor, this.userChoices.mikuCursor.toString());
-    localStorage.setItem(StorageKeys.clippy, this.userChoices.clippy.toString());
-    localStorage.setItem(StorageKeys.clipboardManagerEnabled, this.userChoices.clipboardManager.toString());
+    os.storage.set(StorageKeys.fontFamily, this.userChoices.fontFamily);
+    os.storage.set(StorageKeys.macOsControls, this.userChoices.macOsControls.toString());
+    os.storage.set(StorageKeys.mikuCursor, this.userChoices.mikuCursor.toString());
+    os.storage.set(StorageKeys.clippy, this.userChoices.clippy.toString());
+    os.storage.set(StorageKeys.clipboardManagerEnabled, this.userChoices.clipboardManager.toString());
 
     this._services.achievementsApp?.trigger(Achievements.SetupComplete);
 
@@ -1232,7 +1232,7 @@ Enjoy exploring Yuki OS!`;
   }
 
   _skipSetup(win) {
-    localStorage.setItem(StorageKeys.setupCompleted, "true");
+    os.storage.set(StorageKeys.setupCompleted, "true");
 
     this._services.achievementsApp?.trigger(Achievements.SetupComplete);
     os.window.close(win);

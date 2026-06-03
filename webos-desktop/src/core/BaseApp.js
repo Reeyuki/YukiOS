@@ -44,7 +44,12 @@ export class BaseApp {
   _isSingletonOpen(winId) {
     const existing = document.getElementById(winId);
     if (existing) {
-      os.window.focus(existing);
+      try {
+        os.window.focus(existing);
+      } catch (e) {
+        // OS bridge not initialized yet, just focus the window directly
+        existing.style.zIndex = "10000";
+      }
       return true;
     }
     return false;

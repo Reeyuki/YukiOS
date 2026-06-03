@@ -48,8 +48,8 @@ export function setDesktopUI(ui) {
 }
 
 export function refreshSteamUI() {
-  const username = localStorage.getItem(StorageKeys.username) || "Reeyuki";
-  const profilePic = localStorage.getItem(StorageKeys.profilePicture) || resolveIconUrl("static/icons/guest.webp");
+  const username = os.storage.get(StorageKeys.username) || "Reeyuki";
+  const profilePic = os.storage.get(StorageKeys.profilePicture) || resolveIconUrl("static/icons/guest.webp");
 
   const steamUserProfiles = document.querySelectorAll(".steam-user-profile span");
   steamUserProfiles.forEach((span) => {
@@ -198,35 +198,35 @@ function isFlashGame(id, data) {
 }
 
 export const SteamDataManager = {
-  getStats: () => JSON.parse(localStorage.getItem(StorageKeys.steamStats) || "{}"),
+  getStats: () => os.storage.get(StorageKeys.steamStats) || {},
 
   getRecentMinutes: (appId) => {
     const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
     const now = Date.now();
     try {
-      const sessions = JSON.parse(localStorage.getItem(StorageKeys.steamSessions) || "{}");
+      const sessions = os.storage.get(StorageKeys.steamSessions) || {};
       const appSessions = sessions[appId] || [];
       return appSessions.filter((s) => now - s.ts < ONE_WEEK_MS).reduce((sum, s) => sum + s.min, 0);
     } catch {
       return 0;
     }
   },
-  getFavorites: () => JSON.parse(localStorage.getItem(StorageKeys.steamFavorites) || "[]"),
-  setFavorites: (favs) => localStorage.setItem(StorageKeys.steamFavorites, JSON.stringify(favs)),
-  getCollections: () => JSON.parse(localStorage.getItem(StorageKeys.steamCollections) || "{}"),
-  setCollections: (cols) => localStorage.setItem(StorageKeys.steamCollections, JSON.stringify(cols)),
-  getHidden: () => JSON.parse(localStorage.getItem(StorageKeys.steamHidden) || "[]"),
-  setHidden: (hidden) => localStorage.setItem(StorageKeys.steamHidden, JSON.stringify(hidden)),
+  getFavorites: () => os.storage.get(StorageKeys.steamFavorites) || [],
+  setFavorites: (favs) => os.storage.set(StorageKeys.steamFavorites, favs),
+  getCollections: () => os.storage.get(StorageKeys.steamCollections) || {},
+  setCollections: (cols) => os.storage.set(StorageKeys.steamCollections, cols),
+  getHidden: () => os.storage.get(StorageKeys.steamHidden) || [],
+  setHidden: (hidden) => os.storage.set(StorageKeys.steamHidden, hidden),
   getCollapsed: () => {
-    const stored = localStorage.getItem(StorageKeys.steamCollapsed);
+    const stored = os.storage.get(StorageKeys.steamCollapsed);
     if (stored === null) {
       const defaultExpanded = ["Webports/Html games"];
-      localStorage.setItem(StorageKeys.steamCollapsed, JSON.stringify(defaultExpanded));
+      os.storage.set(StorageKeys.steamCollapsed, defaultExpanded);
       return defaultExpanded;
     }
-    return JSON.parse(stored || "[]");
+    return stored || [];
   },
-  setCollapsed: (collapsed) => localStorage.setItem(StorageKeys.steamCollapsed, JSON.stringify(collapsed)),
+  setCollapsed: (collapsed) => os.storage.set(StorageKeys.steamCollapsed, collapsed),
 
   setupDefaultCollections: () => {
     const cols = SteamDataManager.getCollections();
@@ -284,15 +284,15 @@ export const SteamDataManager = {
   },
   getRecentGames: () => {
     try {
-      const stored = localStorage.getItem(StorageKeys.steamRecentGames);
-      return stored ? JSON.parse(stored) : [];
+      const stored = os.storage.get(StorageKeys.steamRecentGames);
+      return stored || [];
     } catch (e) {
       return [];
     }
   },
   setRecentGames: (games) => {
     try {
-      localStorage.setItem(StorageKeys.steamRecentGames, JSON.stringify(games));
+      os.storage.set(StorageKeys.steamRecentGames, games);
     } catch (e) {
       console.warn("Failed to save recent games:", e);
     }

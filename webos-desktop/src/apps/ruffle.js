@@ -186,7 +186,7 @@ export class RuffleApp extends BaseApp {
           "other",
           CDN_BASES.MAIN + "/static/icons/ruffle.webp"
         );
-        os.events.emit(BusEvents.FILE_CHANGED, { path: file.name, kind: "created" });
+        os.events.emit(BusEvents.FILE_CHANGED, { path: file.name });
       }
 
       os.notify.send(`Saved ${files.length} file(s) to Flash/ directory.`);
@@ -243,7 +243,7 @@ export class RuffleApp extends BaseApp {
       icon: "static/icons/ruffle.webp"
     });
 
-    os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { key: Achievements.RetroPlayer });
+    os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { achievementId: Achievements.RetroPlayer });
 
     win.innerHTML = `
     <div class="window-content emu-window ruf-window">

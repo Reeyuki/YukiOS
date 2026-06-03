@@ -146,15 +146,15 @@ class PositionHelper {
 
 export class DeletedIconsStore {
   static load() {
-    const raw = localStorage.getItem(StorageKeys.deletedIconsKey);
+    const raw = os.storage.get(StorageKeys.deletedIconsKey);
     try {
-      return raw ? JSON.parse(raw) : [];
+      return raw || [];
     } catch {
       return [];
     }
   }
   static save(data) {
-    localStorage.setItem(StorageKeys.deletedIconsKey, JSON.stringify(data));
+    os.storage.set(StorageKeys.deletedIconsKey, data);
   }
   static add(key) {
     const list = this.load();
@@ -168,13 +168,13 @@ export class DeletedIconsStore {
 export class PositionStore {
   static load() {
     try {
-      return JSON.parse(localStorage.getItem(StorageKeys.positionsKey)) || {};
+      return os.storage.get(StorageKeys.positionsKey) || {};
     } catch {
       return {};
     }
   }
   static save(map) {
-    localStorage.setItem(StorageKeys.positionsKey, JSON.stringify(map));
+    os.storage.set(StorageKeys.positionsKey, map);
   }
   static getKey(icon) {
     return icon.dataset.folderName
@@ -906,7 +906,10 @@ export class DesktopUI {
   async onDragEnd() {
     if (!this.state.isUserDragging) return;
     this.state.isUserDragging = false;
-    os.events.emit(BusEvents.DESKTOP_ICON_ADDED);
+    const addedIcons = this.selectionManager.toArray();
+    addedIcons.forEach((icon) => {
+      os.events.emit(BusEvents.DESKTOP_ICON_ADDED, { icon: icon.dataset.icon || icon.querySelector("img")?.src || "" });
+    });
 
     if (this.state.explorerDragTarget) {
       const explorerWin = this.state.explorerDragTarget;
@@ -1777,7 +1780,7 @@ export class DesktopUI {
   }
 
   async saveToWallpapers(name, content, kind, icon) {
-    os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { key: Achievements.PersonalSpace });
+    os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { achievementId: Achievements.PersonalSpace });
 
     const wallpapersPath = ["Pictures", "Wallpapers"];
     await os.fs.mkdir(wallpapersPath);
@@ -1896,13 +1899,13 @@ export class DesktopUI {
       layoutIconsCall();
     };
 
-    const storedHidden = localStorage.getItem(hideGamesKey) === "true";
+    const storedHidden = os.storage.get(hideGamesKey) === "true";
     applyHideGames(storedHidden);
 
     toggleHideGames = () => {
-      const currentlyHidden = localStorage.getItem(hideGamesKey) === "true";
+      const currentlyHidden = os.storage.get(hideGamesKey) === "true";
       const next = !currentlyHidden;
-      localStorage.setItem(hideGamesKey, String(next));
+      os.storage.set(hideGamesKey, String(next));
       applyHideGames(next);
     };
 
@@ -1923,13 +1926,13 @@ export class DesktopUI {
       layoutIconsCall();
     };
 
-    const storedSystemHidden = localStorage.getItem(hideSystemKey) === "true";
+    const storedSystemHidden = os.storage.get(hideSystemKey) === "true";
     applyHideSystemApps(storedSystemHidden);
 
     toggleHideSystemApps = () => {
-      const currentlyHidden = localStorage.getItem(hideSystemKey) === "true";
+      const currentlyHidden = os.storage.get(hideSystemKey) === "true";
       const next = !currentlyHidden;
-      localStorage.setItem(hideSystemKey, String(next));
+      os.storage.set(hideSystemKey, String(next));
       applyHideSystemApps(next);
     };
   }

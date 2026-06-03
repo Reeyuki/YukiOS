@@ -385,8 +385,8 @@ export class GameUI {
     const hidden = SteamDataManager.getHidden();
     const visibleGames = allGames.filter((g) => !hidden.includes(g.app));
     const hiddenGames = allGames.filter((g) => hidden.includes(g.app));
-    const username = localStorage.getItem(StorageKeys.username) || "Reeyuki";
-    const profilePic = localStorage.getItem(StorageKeys.profilePicture) || resolveIconUrl("static/icons/guest.webp");
+    const username = os.storage.get(StorageKeys.username) || "Reeyuki";
+    const profilePic = os.storage.get(StorageKeys.profilePicture) || resolveIconUrl("static/icons/guest.webp");
 
     container.classList.add("steam-app-root");
     container.style.padding = "0";
@@ -492,7 +492,7 @@ export class GameUI {
         this.renderer.history = this.renderer.history.slice(0, this.renderer.historyIndex + 1);
         this.renderer.history.push(page);
         this.renderer.historyIndex++;
-        localStorage.setItem(StorageKeys.steamLastPage, page);
+        os.storage.set(StorageKeys.steamLastPage, page);
       }
       updatePageUI(page);
     };
@@ -653,9 +653,9 @@ export class GameUI {
       true
     );
 
-    const _lastPage = localStorage.getItem(StorageKeys.steamLastPage);
-    const _isReturning = !!localStorage.getItem(StorageKeys.steamVisited);
-    localStorage.setItem(StorageKeys.steamVisited, "1");
+    const _lastPage = os.storage.get(StorageKeys.steamLastPage);
+    const _isReturning = !!os.storage.get(StorageKeys.steamVisited);
+    os.storage.set(StorageKeys.steamVisited, "1");
 
     if (_isReturning && (_lastPage === "library" || _lastPage === "store")) {
       this.renderer.currentGame = null;
@@ -686,8 +686,8 @@ export class GameUI {
     }
 
     const windowHelper = new WindowHelper(wm);
-    const username = localStorage.getItem(StorageKeys.username) || "Reeyuki";
-    const profilePic = localStorage.getItem(StorageKeys.profilePicture) || resolveIconUrl("static/icons/guest.webp");
+    const username = os.storage.get(StorageKeys.username) || "Reeyuki";
+    const profilePic = os.storage.get(StorageKeys.profilePicture) || resolveIconUrl("static/icons/guest.webp");
 
     const content = `
       <div class="window-content" style="display:flex; flex-direction:column; height:100%; color:#dcdedf;">

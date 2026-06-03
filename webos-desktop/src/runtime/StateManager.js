@@ -1,4 +1,5 @@
 import { PersistenceTypes } from "./AppSchema.js";
+import { os } from "../os/index.js";
 
 export class StateManager {
   constructor(appId, initialState = {}, persistence = PersistenceTypes.MEMORY) {
@@ -16,9 +17,9 @@ export class StateManager {
   _loadPersistedState() {
     try {
       if (this.persistence === PersistenceTypes.LOCAL_STORAGE) {
-        const saved = localStorage.getItem(this.storageKey);
+        const saved = os.storage.get(this.storageKey);
         if (saved) {
-          this.state = { ...this.state, ...JSON.parse(saved) };
+          this.state = { ...this.state, ...saved };
         }
       } else if (this.persistence === PersistenceTypes.SESSION_STORAGE) {
         const saved = sessionStorage.getItem(this.storageKey);
@@ -37,7 +38,7 @@ export class StateManager {
     try {
       const serialized = JSON.stringify(this.state);
       if (this.persistence === PersistenceTypes.LOCAL_STORAGE) {
-        localStorage.setItem(this.storageKey, serialized);
+        os.storage.set(this.storageKey, serialized);
       } else if (this.persistence === PersistenceTypes.SESSION_STORAGE) {
         sessionStorage.setItem(this.storageKey, serialized);
       }

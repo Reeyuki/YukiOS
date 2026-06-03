@@ -2,6 +2,7 @@ import BrowserFS from "browserfs";
 import { CDN_BASES, resolveIconUrl } from "./shared/assetResolver.js";
 import { audioMixer } from "./audioMixer.js";
 import { StorageKeys } from "./StorageKeys.js";
+import { os } from "./os/index.js";
 
 export const FileKind = { TEXT: "text", IMAGE: "image", VIDEO: "video", AUDIO: "audio", ROM: "rom", OTHER: "other" };
 
@@ -540,7 +541,7 @@ export class FileSystemManager {
 
   async ensureDefaults() {
     const defaultsCreatedKey = StorageKeys.defaultsCreatedPrefix + this.sessionKey;
-    if (localStorage.getItem(defaultsCreatedKey) === "true") {
+    if (os.storage.get(defaultsCreatedKey) === "true") {
       const homeExists = await this.exists(this.CONFIG.ROOT);
       if (homeExists) {
         return;
@@ -558,12 +559,12 @@ export class FileSystemManager {
 
     await this.createFromObject(sessionDefaultStorage, "/");
     await this.migrateDefaultWallpapers();
-    localStorage.setItem(defaultsCreatedKey, "true");
+    os.storage.set(defaultsCreatedKey, "true");
   }
 
   async migrateDefaultWallpapers() {
     const migrationKey = StorageKeys.wallpaperMigratedPrefix + this.sessionKey;
-    if (localStorage.getItem(migrationKey) === "true") {
+    if (os.storage.get(migrationKey) === "true") {
       return;
     }
 
@@ -587,7 +588,7 @@ export class FileSystemManager {
         await this.p("writeFile", fullPath, defaultWallpaperUrl(name));
       }
     }
-    localStorage.setItem(migrationKey, "true");
+    os.storage.set(migrationKey, "true");
   }
 
   async createFromObject(obj, basePath) {

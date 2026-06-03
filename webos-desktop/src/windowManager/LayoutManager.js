@@ -1,4 +1,5 @@
 import { StorageKeys } from "../settings/settings.js";
+import { os } from "../os/index.js";
 
 export class LayoutManager {
   constructor(manager) {
@@ -52,7 +53,7 @@ export class LayoutManager {
     if (!taskbar) return 0;
 
     const rect = taskbar.getBoundingClientRect();
-    const taskbarPosition = localStorage.getItem(StorageKeys.taskbarPosition) || "bottom";
+    const taskbarPosition = os.storage.get(StorageKeys.taskbarPosition) || "bottom";
 
     return taskbarPosition === "bottom" ? rect.height : 0;
   }

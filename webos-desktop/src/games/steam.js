@@ -3,6 +3,7 @@ import { descriptionMap } from "./gameDescriptions.js";
 import { shouldEnableAds } from "../ads.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { StorageKeys } from "../settings/settings.js";
+import { os } from "../os/index.js";
 
 export function getCdnBase() {
   return CDN_CONFIG.repos.main.base;
@@ -261,9 +262,9 @@ export class SteamSettings {
 
   static load() {
     try {
-      const saved = localStorage.getItem(this.KEY);
+      const saved = os.storage.get(this.KEY);
       if (saved) {
-        return { ...this.DEFAULTS, ...JSON.parse(saved) };
+        return { ...this.DEFAULTS, ...saved };
       }
     } catch (e) {
       console.error("Failed to load settings:", e);
@@ -273,7 +274,7 @@ export class SteamSettings {
 
   static save(settings) {
     try {
-      localStorage.setItem(this.KEY, JSON.stringify(settings));
+      os.storage.set(this.KEY, settings);
       return true;
     } catch (e) {
       console.error("Failed to save settings:", e);

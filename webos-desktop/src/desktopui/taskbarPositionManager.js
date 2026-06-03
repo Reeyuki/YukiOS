@@ -1,9 +1,10 @@
 import { StorageKeys } from "../settings/settings.js";
+import { os } from "../os/index.js";
 
 export class TaskbarPositionManager {
   constructor() {
     this.positions = ["bottom", "top", "left", "right"];
-    this.currentPosition = localStorage.getItem(StorageKeys.taskbarPosition) || "bottom";
+    this.currentPosition = os.storage.get(StorageKeys.taskbarPosition) || "bottom";
     this.contextMenu = null;
     this.initialized = false;
 
@@ -145,7 +146,7 @@ export class TaskbarPositionManager {
     if (!this.positions.includes(position)) return;
 
     this.currentPosition = position;
-    localStorage.setItem(StorageKeys.taskbarPosition, position);
+    os.storage.set(StorageKeys.taskbarPosition, position);
     this.applyPosition(position);
   }
 

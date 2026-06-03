@@ -463,17 +463,17 @@ export class AppLauncher {
     //}
 
     const currentNewsSig = getNewsContentSignature();
-    const savedNewsSig = localStorage.getItem(StorageKeys.newsReadSignatureKey);
-    const legacyNewsSeen = localStorage.getItem(StorageKeys.newsSeenKey) === "true";
-    const setupCompleted = localStorage.getItem(StorageKeys.setupCompleted) === "true";
+    const savedNewsSig = os.storage.get(StorageKeys.newsReadSignatureKey);
+    const legacyNewsSeen = os.storage.get(StorageKeys.newsSeenKey) === "true";
+    const setupCompleted = os.storage.get(StorageKeys.setupCompleted) === "true";
 
     if (!savedNewsSig && legacyNewsSeen) {
-      localStorage.setItem(StorageKeys.newsReadSignatureKey, currentNewsSig);
+      os.storage.set(StorageKeys.newsReadSignatureKey, currentNewsSig);
     } else if (savedNewsSig !== currentNewsSig && setupCompleted) {
       setTimeout(() => {
         this.newsApp.open();
-        localStorage.setItem(StorageKeys.newsReadSignatureKey, currentNewsSig);
-        localStorage.setItem(StorageKeys.newsSeenKey, "true");
+        os.storage.set(StorageKeys.newsReadSignatureKey, currentNewsSig);
+        os.storage.set(StorageKeys.newsSeenKey, "true");
       }, 300);
     }
 
@@ -646,8 +646,6 @@ export class AppLauncher {
     const urlParams = new URLSearchParams(window.location.search);
 
     const appExtra = { ...(extra || {}), appId: app, appType: info.type };
-    // Store pending launch options for window creation
-    // Note: _pendingLaunchOptions is internal WM state, keeping as-is for now
 
     if (info.type === "system") {
       if (info.url) {
@@ -711,15 +709,15 @@ export class AppLauncher {
 
   _loadLaunchedApps() {
     try {
-      const saved = localStorage.getItem(StorageKeys.launchedApps);
-      if (saved) return new Set(JSON.parse(saved));
+      const saved = os.storage.get(StorageKeys.launchedApps);
+      if (saved) return new Set(saved);
     } catch (e) {}
     return new Set();
   }
 
   _saveLaunchedApps() {
     try {
-      localStorage.setItem(StorageKeys.launchedApps, JSON.stringify([...this._launchedAppIds]));
+      os.storage.set(StorageKeys.launchedApps, [...this._launchedAppIds]);
     } catch (e) {}
   }
 
@@ -741,19 +739,19 @@ export class AppLauncher {
       const now = Date.now();
       const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
-      const stats = JSON.parse(localStorage.getItem(StorageKeys.steamStats) || "{}");
+      const stats = os.storage.get(StorageKeys.steamStats) || {};
       if (!stats[appId]) {
         stats[appId] = { totalMin: 0, lastPlayed: 0 };
       }
       stats[appId].totalMin += minutes;
       stats[appId].lastPlayed = now;
-      localStorage.setItem(StorageKeys.steamStats, JSON.stringify(stats));
+      os.storage.set(StorageKeys.steamStats, stats);
 
-      const sessions = JSON.parse(localStorage.getItem(StorageKeys.steamSessions) || "{}");
+      const sessions = os.storage.get(StorageKeys.steamSessions) || {};
       if (!sessions[appId]) sessions[appId] = [];
       sessions[appId].push({ ts: now, min: minutes });
       sessions[appId] = sessions[appId].filter((s) => now - s.ts < ONE_WEEK_MS);
-      localStorage.setItem(StorageKeys.steamSessions, JSON.stringify(sessions));
+      os.storage.set(StorageKeys.steamSessions, sessions);
     } catch (e) {}
   }
 

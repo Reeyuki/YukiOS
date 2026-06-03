@@ -1,4 +1,5 @@
 import { StorageKeys } from "../settings/settings.js";
+import { os } from "../os/index.js";
 
 export class SessionManager {
   constructor(manager) {
@@ -51,7 +52,7 @@ export class SessionManager {
     const sessionKey = this.manager.fs.sessionKey;
     const sessionPath = `/ys/users/${sessionKey}/system/windowSession.json`;
 
-    const persistenceEnabled = localStorage.getItem(StorageKeys.windowSessionPersistence) !== "false";
+    const persistenceEnabled = os.storage.get(StorageKeys.windowSessionPersistence) !== "false";
     if (!persistenceEnabled) {
       try {
         const exists = await this.manager.fs.exists(sessionPath);
@@ -93,15 +94,12 @@ export class SessionManager {
       if (appId && !win.dataset.appId) win.dataset.appId = appId;
       if (appId && this.manager.appLauncher) {
         try {
-          localStorage.setItem(
-            `${StorageKeys.geometryPrefix}${appId}`,
-            JSON.stringify({
-              x: record.x,
-              y: record.y,
-              width: record.width,
-              height: record.height
-            })
-          );
+          os.storage.set(`${StorageKeys.geometryPrefix}${appId}`, {
+            x: record.x,
+            y: record.y,
+            width: record.width,
+            height: record.height
+          });
         } catch (e) {}
 
         const appInstance = this.manager.appLauncher[appId] || this.manager.appLauncher[`${appId}App`];
@@ -146,7 +144,7 @@ export class SessionManager {
 
   async restoreSession() {
     if (!this.manager.fs || !this.manager.fs.sessionKey || !this.manager.appLauncher) return;
-    const persistenceEnabled = localStorage.getItem(StorageKeys.windowSessionPersistence) !== "false";
+    const persistenceEnabled = os.storage.get(StorageKeys.windowSessionPersistence) !== "false";
     if (!persistenceEnabled) return;
     this.manager._isRestoring = true;
     const sessionKey = this.manager.fs.sessionKey;

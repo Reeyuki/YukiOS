@@ -14,7 +14,7 @@ class PowerApp extends BaseApp {
   }
 
   _shouldSuppressNotification() {
-    const position = localStorage.getItem(StorageKeys.notificationsPosition) || "bottom-right";
+    const position = os.storage.get(StorageKeys.notificationsPosition) || "bottom-right";
     return position === "bottom-right";
   }
 
@@ -151,7 +151,11 @@ class PowerApp extends BaseApp {
     };
 
     if (!this._shouldSuppressNotification()) {
-      os.notify.send("Power Mode", `Switched to ${modeNames[mode]} mode`, "info", 2000, "fa-bolt");
+      os.notify.send("Power Mode", `Switched to ${modeNames[mode]} mode`, {
+        type: "info",
+        duration: 2000,
+        icon: "fa-bolt"
+      });
     }
   }
 

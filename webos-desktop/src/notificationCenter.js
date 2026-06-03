@@ -2,6 +2,8 @@ import { isImageFile } from "./utils/utils.js";
 import { StorageKeys } from "./settings/settings.js";
 import { appMap } from "./games/gamesList.js";
 import { audioMixer, SystemAudio } from "./audioMixer.js";
+import { os } from "./os/index.js";
+import { getSetting } from "./shared/settings.js";
 
 function escapeHtml(str) {
   if (typeof str !== "string") return "";
@@ -68,18 +70,7 @@ export class NotificationCenter {
   }
 
   _getSetting(key, defaultValue) {
-    if (window._settings && window._settings[key] !== undefined) {
-      return window._settings[key];
-    }
-    const storageKey = StorageKeys[key];
-    if (!storageKey) return defaultValue;
-    const val = localStorage.getItem(storageKey);
-    if (val === null) return defaultValue;
-    if (val === "true") return true;
-    if (val === "false") return false;
-    const num = Number(val);
-    if (!isNaN(num)) return num;
-    return val;
+    return getSetting(key, defaultValue);
   }
 
   _applyNotificationPosition(container) {
@@ -444,7 +435,7 @@ export class NotificationCenter {
   setDoNotDisturb(enabled) {
     this.doNotDisturb = Boolean(enabled);
     try {
-      localStorage.setItem(StorageKeys.dndKey, this.doNotDisturb ? "1" : "0");
+      os.storage.set(StorageKeys.dndKey, this.doNotDisturb ? "1" : "0");
     } catch {}
 
     if (!this.doNotDisturb && this.snoozedNotifications.length > 0) {
@@ -462,7 +453,7 @@ export class NotificationCenter {
 
   _loadDoNotDisturb() {
     try {
-      return localStorage.getItem(StorageKeys.dndKey) === "1";
+      return os.storage.get(StorageKeys.dndKey) === "1";
     } catch {
       return false;
     }

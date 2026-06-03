@@ -24,7 +24,7 @@ export class AIAssistantApp extends BaseApp {
     this.windowClosedHandler = null;
     this.settingsChangedHandler = null;
     this.winId = "ai-assistant-window";
-    this.enabled = localStorage.getItem(StorageKeys.aiAssistantEnabled) !== "false";
+    this.enabled = os.storage.get(StorageKeys.aiAssistantEnabled) !== "false";
   }
 
   async open(opts = {}) {

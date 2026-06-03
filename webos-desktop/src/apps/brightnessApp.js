@@ -43,24 +43,24 @@ class BrightnessApp extends BaseApp {
   }
 
   _loadSettings() {
-    this.brightness = parseFloat(localStorage.getItem(StorageKeys.brightness)) || 100;
-    this.contrast = parseFloat(localStorage.getItem(StorageKeys.contrast)) || 1;
-    this.gamma = parseFloat(localStorage.getItem(StorageKeys.gamma)) || 1;
-    this.temperature = parseFloat(localStorage.getItem(StorageKeys.temperature)) || 50;
-    this.nightModeEnabled = localStorage.getItem(StorageKeys.nightModeEnabled) === "true";
-    this.nightModeStart = localStorage.getItem(StorageKeys.nightModeStart) || "20:00";
-    this.nightModeEnd = localStorage.getItem(StorageKeys.nightModeEnd) || "07:00";
+    this.brightness = os.storage.get(StorageKeys.brightness) || 100;
+    this.contrast = os.storage.get(StorageKeys.contrast) || 1;
+    this.gamma = os.storage.get(StorageKeys.gamma) || 1;
+    this.temperature = os.storage.get(StorageKeys.temperature) || 50;
+    this.nightModeEnabled = os.storage.get(StorageKeys.nightModeEnabled) === "true";
+    this.nightModeStart = os.storage.get(StorageKeys.nightModeStart) || "20:00";
+    this.nightModeEnd = os.storage.get(StorageKeys.nightModeEnd) || "07:00";
     this._applyDisplaySettings();
   }
 
   _saveSettings() {
-    localStorage.setItem(StorageKeys.brightness, this.brightness.toString());
-    localStorage.setItem(StorageKeys.contrast, this.contrast.toString());
-    localStorage.setItem(StorageKeys.gamma, this.gamma.toString());
-    localStorage.setItem(StorageKeys.temperature, this.temperature.toString());
-    localStorage.setItem(StorageKeys.nightModeEnabled, this.nightModeEnabled.toString());
-    localStorage.setItem(StorageKeys.nightModeStart, this.nightModeStart);
-    localStorage.setItem(StorageKeys.nightModeEnd, this.nightModeEnd);
+    os.storage.set(StorageKeys.brightness, this.brightness.toString());
+    os.storage.set(StorageKeys.contrast, this.contrast.toString());
+    os.storage.set(StorageKeys.gamma, this.gamma.toString());
+    os.storage.set(StorageKeys.temperature, this.temperature.toString());
+    os.storage.set(StorageKeys.nightModeEnabled, this.nightModeEnabled.toString());
+    os.storage.set(StorageKeys.nightModeStart, this.nightModeStart);
+    os.storage.set(StorageKeys.nightModeEnd, this.nightModeEnd);
   }
 
   _applyDisplaySettings() {
@@ -107,7 +107,7 @@ class BrightnessApp extends BaseApp {
   }
 
   _shouldSuppressNotification() {
-    const position = localStorage.getItem(StorageKeys.notificationsPosition) || "bottom-right";
+    const position = os.storage.get(StorageKeys.notificationsPosition) || "bottom-right";
     return position === "bottom-right";
   }
 
@@ -452,7 +452,11 @@ class BrightnessApp extends BaseApp {
         this._saveSettings();
 
         if (!this._shouldSuppressNotification()) {
-          os.notify.send("Reset", "Display settings reset to default", "info", 2000, "fa-undo");
+          os.notify.send("Reset", "Display settings reset to default", {
+            type: "info",
+            duration: 2000,
+            icon: "fa-undo"
+          });
         }
       });
     }

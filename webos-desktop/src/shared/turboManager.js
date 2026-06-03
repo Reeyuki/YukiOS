@@ -1,8 +1,9 @@
 import { StorageKeys } from "../StorageKeys.js";
+import { os } from "../os/index.js";
 
 class TurboManager {
   constructor() {
-    this._currentMode = localStorage.getItem(StorageKeys.turboMode) || "high";
+    this._currentMode = os.storage.get(StorageKeys.turboMode) || "high";
     this._styleEl = null;
     this._init();
   }
@@ -17,7 +18,11 @@ class TurboManager {
 
   setMode(mode) {
     this._currentMode = mode;
-    localStorage.setItem(StorageKeys.turboMode, mode);
+    try {
+      os.storage.set(StorageKeys.turboMode, mode);
+    } catch {
+      localStorage.setItem(StorageKeys.turboMode, mode);
+    }
     document.documentElement.setAttribute("data-turbo", mode);
     this._applyTurboMode(mode);
   }

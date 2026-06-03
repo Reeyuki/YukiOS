@@ -16,7 +16,7 @@ class AudioMixer {
   constructor() {
     this.masterVolume = 1.0;
     this.systemVolume = 1.0;
-    this.systemAudioEnabled = localStorage.getItem(StorageKeys.systemAudioEnabled) !== "false";
+    this.systemAudioEnabled = os.storage.get(StorageKeys.systemAudioEnabled) !== "false";
     this.channels = new Map();
     this.gainNodes = new Map();
     this.audioCtx = null;
@@ -28,18 +28,18 @@ class AudioMixer {
 
   _load() {
     try {
-      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      const saved = os.storage.get(STORAGE_KEY) || {};
       this.masterVolume = saved.master ?? 1.0;
       this.systemVolume = saved.systemVolume ?? 1.0;
       this.savedChannels = saved.channels || {};
     } catch (e) {
       this.savedChannels = {};
     }
-    const settingsSystemVolume = parseFloat(localStorage.getItem(StorageKeys.systemVolume));
+    const settingsSystemVolume = os.storage.get(StorageKeys.systemVolume);
     if (Number.isFinite(settingsSystemVolume)) {
       this.systemVolume = settingsSystemVolume;
     }
-    this._muted = localStorage.getItem(StorageKeys.soundEnabled) === "false";
+    this._muted = os.storage.get(StorageKeys.soundEnabled) === "false";
   }
 
   _save() {
@@ -47,10 +47,7 @@ class AudioMixer {
     this.channels.forEach((ch, winId) => {
       channels[winId] = ch.volume;
     });
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify({ master: this.masterVolume, systemVolume: this.systemVolume, channels })
-    );
+    os.storage.set(STORAGE_KEY, { master: this.masterVolume, systemVolume: this.systemVolume, channels });
   }
 
   _getOrCreateAudioCtx() {
@@ -552,7 +549,7 @@ class AudioMixer {
 
   safeLocalStorageSetItem(key, value) {
     try {
-      localStorage.setItem(key, value);
+      os.storage.set(key, value);
       return true;
     } catch (e) {
       if (e.name === "QuotaExceededError") {

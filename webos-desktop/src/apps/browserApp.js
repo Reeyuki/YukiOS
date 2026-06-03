@@ -151,18 +151,15 @@ export class BrowserApp extends BaseApp {
 
   _loadPrefs() {
     try {
-      this.bookmarks = JSON.parse(localStorage.getItem(StorageKeys.browserBookmarks)) || [];
-      this.downloads = JSON.parse(localStorage.getItem(StorageKeys.browserDownloads)) || [];
-      this.history = JSON.parse(localStorage.getItem(StorageKeys.browserHistory)) || [];
-      this.showBookmarkBar = localStorage.getItem(StorageKeys.browserShowBookmarks) !== "false";
-      this.zoomLevel = parseFloat(localStorage.getItem(StorageKeys.browserZoom)) || 1.0;
-      this.currentProxyIndex = clampProxyIndex(
-        parseInt(localStorage.getItem(StorageKeys.browserProxyIndex)),
-        this.proxies
-      );
-      this.darkModeEnabled = localStorage.getItem(StorageKeys.browserDarkMode) === "true";
-      this.darkModeExclusions = JSON.parse(localStorage.getItem(StorageKeys.browserDarkExclusions) || "{}");
-      this.homepageUrl = localStorage.getItem(StorageKeys.browserHomepage) || "yuki://home";
+      this.bookmarks = os.storage.get(StorageKeys.browserBookmarks) || [];
+      this.downloads = os.storage.get(StorageKeys.browserDownloads) || [];
+      this.history = os.storage.get(StorageKeys.browserHistory) || [];
+      this.showBookmarkBar = os.storage.get(StorageKeys.browserShowBookmarks) !== "false";
+      this.zoomLevel = os.storage.get(StorageKeys.browserZoom) || 1.0;
+      this.currentProxyIndex = clampProxyIndex(os.storage.get(StorageKeys.browserProxyIndex), this.proxies);
+      this.darkModeEnabled = os.storage.get(StorageKeys.browserDarkMode) === "true";
+      this.darkModeExclusions = os.storage.get(StorageKeys.browserDarkExclusions) || {};
+      this.homepageUrl = os.storage.get(StorageKeys.browserHomepage) || "yuki://home";
     } catch (e) {
       this.bookmarks = [];
       this.downloads = [];
@@ -177,30 +174,30 @@ export class BrowserApp extends BaseApp {
 
     if (!Array.isArray(this.bookmarks) || this.bookmarks.length === 0) {
       this.bookmarks = this.defaultBookmarks;
-      localStorage.setItem(StorageKeys.browserBookmarks, JSON.stringify(this.bookmarks));
+      os.storage.set(StorageKeys.browserBookmarks, this.bookmarks);
     }
   }
 
   _saveBookmarks() {
     if (this.isIncognito) return;
-    localStorage.setItem(StorageKeys.browserBookmarks, JSON.stringify(this.bookmarks));
+    os.storage.set(StorageKeys.browserBookmarks, this.bookmarks);
   }
   _saveDownloads() {
     if (this.isIncognito) return;
-    localStorage.setItem(StorageKeys.browserDownloads, JSON.stringify(this.downloads));
+    os.storage.set(StorageKeys.browserDownloads, this.downloads);
   }
   _saveHistory() {
     if (this.isIncognito) return;
-    localStorage.setItem(StorageKeys.browserHistory, JSON.stringify(this.history.slice(-500)));
+    os.storage.set(StorageKeys.browserHistory, this.history.slice(-500));
   }
 
   _savePrefs() {
-    localStorage.setItem(StorageKeys.browserShowBookmarks, String(this.showBookmarkBar));
-    localStorage.setItem(StorageKeys.browserZoom, String(this.zoomLevel));
-    localStorage.setItem(StorageKeys.browserProxyIndex, String(this.currentProxyIndex));
-    localStorage.setItem(StorageKeys.browserDarkMode, String(this.darkModeEnabled));
-    localStorage.setItem(StorageKeys.browserDarkExclusions, JSON.stringify(this.darkModeExclusions));
-    localStorage.setItem(StorageKeys.browserHomepage, this.homepageUrl);
+    os.storage.set(StorageKeys.browserShowBookmarks, String(this.showBookmarkBar));
+    os.storage.set(StorageKeys.browserZoom, String(this.zoomLevel));
+    os.storage.set(StorageKeys.browserProxyIndex, String(this.currentProxyIndex));
+    os.storage.set(StorageKeys.browserDarkMode, String(this.darkModeEnabled));
+    os.storage.set(StorageKeys.browserDarkExclusions, this.darkModeExclusions);
+    os.storage.set(StorageKeys.browserHomepage, this.homepageUrl);
   }
 
   _addToHistory(url, title) {
@@ -422,7 +419,7 @@ export class BrowserApp extends BaseApp {
 
       const proxyName =
         this.currentProxyIndex === -1 ? "No proxy" : this.proxies[this.currentProxyIndex]?.label || "Unknown";
-      os.notify.send("Proxy Changed", `Switched to ${proxyName}`, "info", 3000);
+      os.notify.send("Proxy Changed", `Switched to ${proxyName}`, { type: "info", duration: 3000 });
 
       const tab = this.getActiveTab();
       if (tab && tab.url && !this.isYukiHome(tab.url)) {
@@ -2131,9 +2128,9 @@ body {
     this.history = [];
     this.downloads = [];
     this.bookmarks = this.defaultBookmarks;
-    localStorage.removeItem("browser_history");
-    localStorage.removeItem("browser_downloads");
-    localStorage.removeItem("browser_bookmarks");
+    os.storage.remove("browser_history");
+    os.storage.remove("browser_downloads");
+    os.storage.remove("browser_bookmarks");
     this.renderBookmarks();
     this.updateStarButton(this.getActiveTab()?.url || "");
   }

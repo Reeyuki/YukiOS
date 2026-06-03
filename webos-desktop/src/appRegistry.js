@@ -1,4 +1,5 @@
 import { StorageKeys } from "./StorageKeys.js";
+import { os } from "./os/index.js";
 
 const APP_REGISTRY_DISABLED_KEY = StorageKeys.appRegistryDisabled;
 const APP_REGISTRY_RENAMED_KEY = StorageKeys.appRegistryRenamed;
@@ -15,8 +16,8 @@ export class AppRegistry {
 
   _loadDisabledApps() {
     try {
-      const saved = localStorage.getItem(APP_REGISTRY_DISABLED_KEY);
-      return saved ? new Set(JSON.parse(saved)) : new Set();
+      const saved = os.storage.get(APP_REGISTRY_DISABLED_KEY);
+      return saved ? new Set(saved) : new Set();
     } catch (e) {
       return new Set();
     }
@@ -30,14 +31,14 @@ export class AppRegistry {
 
   _saveDisabledApps() {
     try {
-      localStorage.setItem(APP_REGISTRY_DISABLED_KEY, JSON.stringify([...this._disabledApps]));
+      os.storage.set(APP_REGISTRY_DISABLED_KEY, [...this._disabledApps]);
     } catch (e) {}
   }
 
   _loadRenamedApps() {
     try {
-      const saved = localStorage.getItem(APP_REGISTRY_RENAMED_KEY);
-      return saved ? JSON.parse(saved) : {};
+      const saved = os.storage.get(APP_REGISTRY_RENAMED_KEY);
+      return saved || {};
     } catch (e) {
       return {};
     }
@@ -45,14 +46,14 @@ export class AppRegistry {
 
   _saveRenamedApps() {
     try {
-      localStorage.setItem(APP_REGISTRY_RENAMED_KEY, JSON.stringify(this._renamedApps));
+      os.storage.set(APP_REGISTRY_RENAMED_KEY, this._renamedApps);
     } catch (e) {}
   }
 
   _loadUninstalledApps() {
     try {
-      const saved = localStorage.getItem(APP_REGISTRY_UNINSTALLED_KEY);
-      return saved ? new Set(JSON.parse(saved)) : new Set();
+      const saved = os.storage.get(APP_REGISTRY_UNINSTALLED_KEY);
+      return saved ? new Set(saved) : new Set();
     } catch (e) {
       return new Set();
     }
@@ -60,7 +61,7 @@ export class AppRegistry {
 
   _saveUninstalledApps() {
     try {
-      localStorage.setItem(APP_REGISTRY_UNINSTALLED_KEY, JSON.stringify([...this._uninstalledApps]));
+      os.storage.set(APP_REGISTRY_UNINSTALLED_KEY, [...this._uninstalledApps]);
     } catch (e) {}
   }
 

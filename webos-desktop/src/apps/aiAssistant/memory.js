@@ -1,3 +1,5 @@
+import { os } from "../../os/index.js";
+
 export class AIMemory {
   constructor() {
     this.sessionMemory = new Map();
@@ -40,10 +42,9 @@ export class AIMemory {
 
   async loadPreferences() {
     try {
-      const saved = localStorage.getItem(this.PREFS_KEY);
+      const saved = os.storage.get(this.PREFS_KEY);
       if (saved) {
-        const parsed = JSON.parse(saved);
-        this.preferences = new Map(Object.entries(parsed));
+        this.preferences = new Map(Object.entries(saved));
         return Object.fromEntries(this.preferences);
       }
     } catch (error) {
@@ -55,7 +56,7 @@ export class AIMemory {
   _savePreferences() {
     try {
       const obj = Object.fromEntries(this.preferences);
-      localStorage.setItem(this.PREFS_KEY, JSON.stringify(obj));
+      os.storage.set(this.PREFS_KEY, Object.fromEntries(this.preferences));
     } catch (error) {
       console.warn("[AIMemory] Failed to save preferences:", error);
     }
@@ -64,7 +65,7 @@ export class AIMemory {
   async saveChatHistory(history) {
     try {
       const trimmed = history.slice(-50);
-      localStorage.setItem(this.CHAT_KEY, JSON.stringify(trimmed));
+      os.storage.set(this.CHAT_KEY, trimmed);
     } catch (error) {
       console.warn("[AIMemory] Failed to save chat history:", error);
     }
@@ -72,9 +73,9 @@ export class AIMemory {
 
   async loadChatHistory() {
     try {
-      const saved = localStorage.getItem(this.CHAT_KEY);
+      const saved = os.storage.get(this.CHAT_KEY);
       if (saved) {
-        return JSON.parse(saved);
+        return saved;
       }
     } catch (error) {
       console.warn("[AIMemory] Failed to load chat history:", error);
@@ -84,18 +85,18 @@ export class AIMemory {
 
   clearChatHistory() {
     this.chatHistory = [];
-    localStorage.removeItem(this.CHAT_KEY);
+    os.storage.remove(this.CHAT_KEY);
   }
 
   async savePersistentMemory(key, value) {
     try {
       let memory = {};
-      const saved = localStorage.getItem(this.STORAGE_KEY);
+      const saved = os.storage.get(this.STORAGE_KEY);
       if (saved) {
-        memory = JSON.parse(saved);
+        memory = saved;
       }
       memory[key] = value;
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(memory));
+      os.storage.set(this.STORAGE_KEY, memory);
     } catch (error) {
       console.warn("[AIMemory] Failed to save persistent memory:", error);
     }
@@ -103,10 +104,9 @@ export class AIMemory {
 
   async loadPersistentMemory(key) {
     try {
-      const saved = localStorage.getItem(this.STORAGE_KEY);
+      const saved = os.storage.get(this.STORAGE_KEY);
       if (saved) {
-        const memory = JSON.parse(saved);
-        return memory[key];
+        return saved[key];
       }
     } catch (error) {
       console.warn("[AIMemory] Failed to load persistent memory:", error);
@@ -115,7 +115,7 @@ export class AIMemory {
   }
 
   async clearPersistentMemory() {
-    localStorage.removeItem(this.STORAGE_KEY);
+    os.storage.remove(this.STORAGE_KEY);
   }
 
   getFullContext() {
