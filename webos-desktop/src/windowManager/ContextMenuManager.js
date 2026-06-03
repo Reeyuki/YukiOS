@@ -228,7 +228,7 @@ export class DesktopContextMenuManager {
           id: "ctx-paste",
           label: "Paste",
           action: "paste",
-          condition: () => !!this.desktopUI.state.clipboard,
+          condition: () => !!this.desktopUI.getClipboard(),
           icon: "fa-paste"
         },
         "hr",
@@ -264,11 +264,11 @@ export class DesktopContextMenuManager {
     showContextMenu(e, this.templates.folderContextMenu, {
       openFolder: () => this.desktopUI.openFolder(folderName),
       copyFolder: () => {
-        this.desktopUI.state.clipboard = this.desktopUI._buildDesktopClipboard("copy", selectedArray);
+        this.desktopUI.setClipboard(this.desktopUI._buildDesktopClipboard("copy", selectedArray));
         os.notify.send(`${selectedArray.length} item${selectedArray.length !== 1 ? "s" : ""} copied`);
       },
       cutFolder: () => {
-        this.desktopUI.state.clipboard = this.desktopUI._buildDesktopClipboard("cut", selectedArray);
+        this.desktopUI.setClipboard(this.desktopUI._buildDesktopClipboard("cut", selectedArray));
         selectedArray.forEach((i) => (i.style.opacity = "0.5"));
         os.notify.send(`${selectedArray.length} item${selectedArray.length !== 1 ? "s" : ""} cut`);
       },
@@ -373,7 +373,7 @@ export class DesktopContextMenuManager {
         item(
           "Copy",
           () => {
-            this.desktopUI.state.clipboard = this.desktopUI._buildDesktopClipboard("copy", selectedArray);
+            this.desktopUI.setClipboard(this.desktopUI._buildDesktopClipboard("copy", selectedArray));
             os.notify.send(`${selectedArray.length} item${selectedArray.length !== 1 ? "s" : ""} copied`);
           },
           "fa-copy"
@@ -383,7 +383,7 @@ export class DesktopContextMenuManager {
         item(
           "Cut",
           () => {
-            this.desktopUI.state.clipboard = this.desktopUI._buildDesktopClipboard("cut", selectedArray);
+            this.desktopUI.setClipboard(this.desktopUI._buildDesktopClipboard("cut", selectedArray));
             selectedArray.forEach((i) => (i.style.opacity = "0.5"));
             os.notify.send(`${selectedArray.length} item${selectedArray.length !== 1 ? "s" : ""} cut`);
           },
@@ -455,11 +455,11 @@ export class DesktopContextMenuManager {
     showContextMenu(e, this.templates.iconContextMenu, {
       open: () => os.app.launch(last.dataset.app),
       copy: () => {
-        this.desktopUI.state.clipboard = this.desktopUI._buildDesktopClipboard("copy", selectedArray);
+        this.desktopUI.setClipboard(this.desktopUI._buildDesktopClipboard("copy", selectedArray));
         os.notify.send(`${selectedArray.length} item${selectedArray.length !== 1 ? "s" : ""} copied`);
       },
       cut: () => {
-        this.desktopUI.state.clipboard = this.desktopUI._buildDesktopClipboard("cut", selectedArray);
+        this.desktopUI.setClipboard(this.desktopUI._buildDesktopClipboard("cut", selectedArray));
         selectedArray.forEach((i) => (i.style.opacity = "0.5"));
         os.notify.send(`${selectedArray.length} item${selectedArray.length !== 1 ? "s" : ""} cut`);
       },
