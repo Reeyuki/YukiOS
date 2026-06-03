@@ -220,6 +220,7 @@ Single-file build output is supported for easy deployment.
 * Mammoth.js
 * Font Awesome
 * Emoji Mart
+* Vanta.js
 
 ---
 

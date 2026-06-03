@@ -22,7 +22,8 @@
   utility functions from `src/shared/domUtils.js` instead. Import and use `$` (querySelector), `$$` (querySelectorAll),
   `bindEvent`, `toggleClass`, `setText`, `setHTML`, `createElement`, etc. For general utility functions, use `src/utils/utils.js`
   (e.g., `formatSize`, `isImageFile`, `isTextFile`, `pluralize`).
-
+- Use os.notify.send() for discrete, user-facing application events that represent a state change or completion, and ensure notifications are not emitted from high-frequency, repeating, or continuously-updating processes.
+- If a change introduces a new system, abstraction, manager, API surface, or reusable capability, create a new file and integrate it via imports. Only modify existing files if the change is a direct refinement of existing logic without introducing a new responsibility boundary.
 ---
 
 ## Code Quality Guidelines
@@ -641,5 +642,3 @@ state, runs system ops |
 declarative schema first; falls back transparently to imperative `open()` if none found. Also translates legacy
 multi-parameter signatures (e.g. `open(title, content, filePath)`) into structured `opts` objects.
 
-- **CORS Proxy**: Configurable per app via `appCreator`
-- **HTML Sandboxing**: Use `fetchHtmlAsBlobUrl()` to convert HTML → `blob://` for secure execution

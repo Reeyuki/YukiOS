@@ -1167,10 +1167,303 @@ html[data-theme="solarized-light"] .settings-select {
     0 24px 64px rgba(0, 0, 0, 0.65),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
   z-index: 1000;
-  opacity: 0;
-  transform: translateY(-10px) scale(0.98);
-  transition:
-    opacity 0.2s ease,
-    transform 0.2s ease,
-    background 0.2s ease;
+}
+
+.wp-section-title {
+  padding: 20px 12px 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.wp-vanta-section {
+  margin-top: 8px;
+}
+
+.wp-vanta-grid {
+  margin-bottom: 24px;
+}
+
+.wp-vanta-card {
+  border-color: rgba(79, 158, 255, 0.15);
+}
+
+.wp-vanta-card:hover {
+  border-color: rgba(79, 158, 255, 0.3);
+  box-shadow: 0 4px 16px rgba(79, 158, 255, 0.15);
+}
+
+.wp-vanta-thumb {
+  position: relative;
+}
+
+.wp-vanta-icon {
+  font-size: 32px;
+  color: rgba(255, 255, 255, 0.6);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.1);
+  }
+}
+
+.wp-vanta-preview-container {
+  width: 800px;
+  height: 450px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.wp-vanta-preview-icon {
+  font-size: 64px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 16px;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.wp-vanta-preview-label {
+  font-size: 18px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+@keyframes wavePreview {
+  0%,
+  100% {
+    background-position: 0% 0%;
+  }
+  50% {
+    background-position: 0% 100%;
+  }
+}
+
+@keyframes birdsPreview {
+  0%,
+  100% {
+    background-position:
+      30% 30%,
+      70% 60%,
+      50% 80%;
+  }
+  50% {
+    background-position:
+      70% 60%,
+      30% 30%,
+      50% 80%;
+  }
+}
+
+@keyframes dotsPreview {
+  0%,
+  100% {
+    background-position:
+      0 0,
+      10px 10px;
+  }
+  50% {
+    background-position:
+      10px 10px,
+      0 0;
+  }
+}
+
+@keyframes globePreview {
+  0% {
+    background-position: 50% 50%;
+  }
+  50% {
+    background-position: 55% 45%;
+  }
+  100% {
+    background-position: 50% 50%;
+  }
+}
+
+@keyframes haloPreview {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes fogPreview {
+  0%,
+  100% {
+    background-position: 0% 0%;
+  }
+  50% {
+    background-position: 0% 100%;
+  }
+}
+
+@keyframes cellsPreview {
+  0%,
+  100% {
+    background-position:
+      50% 50%,
+      0% 0%,
+      100% 0%,
+      0% 100%,
+      100% 100%;
+  }
+  50% {
+    background-position:
+      55% 55%,
+      5% 5%,
+      95% 5%,
+      5% 95%,
+      95% 95%;
+  }
+}
+
+.wp-vanta-customize-dialog {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 500px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.65),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.wp-customize-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.wp-customize-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.wp-customize-close {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.15s;
+}
+
+.wp-customize-close:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+}
+
+.wp-customize-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.wp-control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.wp-control-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.wp-control-input {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  padding: 8px 12px;
+  color: var(--text-primary);
+  font-size: 13px;
+  transition: all 0.15s;
+}
+
+.wp-control-input[type="color"] {
+  height: 36px;
+  cursor: pointer;
+}
+
+.wp-control-input[type="range"] {
+  cursor: pointer;
+}
+
+.wp-control-input:focus {
+  outline: none;
+  border-color: var(--brand);
+  box-shadow: 0 0 0 2px rgba(79, 158, 255, 0.2);
+}
+
+.wp-control-value {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-family:
+    JetBrains Mono,
+    monospace;
+}
+
+.wp-customize-footer {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.wp-customize-btn {
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.wp-customize-cancel {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-secondary);
+}
+
+.wp-customize-cancel:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--text-primary);
+}
+
+.wp-customize-apply {
+  background: var(--brand);
+  border-color: rgba(79, 158, 255, 0.3);
+  color: #fff;
+}
+
+.wp-customize-apply:hover {
+  background: var(--brand-hover);
+  border-color: rgba(79, 158, 255, 0.5);
 }

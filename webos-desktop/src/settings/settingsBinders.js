@@ -5,6 +5,7 @@ import { audioMixer, SystemAudio } from "../audioMixer.js";
 import { customAlert, customConfirm, customPrompt } from "../shared/dialogs.js";
 import { renderWallpapersPage } from "../wallpapers.js";
 import { applyTrayEnabled } from "./settingsApply.js";
+import { FileKind } from "../fs.js";
 import {
   applyTheme,
   applyWindowTransparency,
@@ -451,6 +452,39 @@ export function bindAppearanceCategory(
   const wallpapersContainer = $("#settings-wallpapers-container", win);
   if (wallpapersContainer && fs && wm) {
     renderWallpapersPage(fs, wm, wallpapersContainer);
+  }
+
+  const uploadWallpaperBtn = $("#settingsUploadWallpaperBtn", win);
+  const wallpaperFileInput = $("#settingsWallpaperFileInput", win);
+  if (uploadWallpaperBtn && wallpaperFileInput && fs) {
+    bindEvent(uploadWallpaperBtn, "click", () => {
+      wallpaperFileInput.click();
+    });
+
+    bindEvent(wallpaperFileInput, "change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      try {
+        await fs.ensureFolder(["Pictures", "Wallpapers"]);
+
+        const fileKind = file.type.startsWith("video") ? FileKind.VIDEO : FileKind.IMAGE;
+        const icon = file.type.startsWith("video") ? "static/icons/file.webp" : "@content";
+
+        await fs.createFile(["Pictures", "Wallpapers"], file.name, file, fileKind, icon);
+
+        os.notify.send("Wallpaper Uploaded", `Wallpaper "${file.name}" uploaded successfully`, { type: "info" });
+
+        if (wallpapersContainer) {
+          await renderWallpapersPage(fs, wm, wallpapersContainer);
+        }
+      } catch (err) {
+        console.error("Failed to upload wallpaper:", err);
+        os.notify.send("Upload Failed", "Failed to upload wallpaper", { type: "error" });
+      }
+
+      wallpaperFileInput.value = "";
+    });
   }
 
   bindCursorControls(win, settings, showSaved, normalizeCursorDataUrl);
