@@ -1,7 +1,6 @@
 import { appMap } from "./gamesList.js";
 import { descriptionMap } from "./gameDescriptions.js";
 import { GameRenderer } from "./GameRenderer.js";
-import { GameLauncher } from "./GameLauncher.js";
 import { GameUI } from "./GameUI.js";
 import { SteamSettings } from "./steam.js";
 import { resolveGhUrl, resolveIconUrl } from "../shared/assetResolver.js";
@@ -18,30 +17,7 @@ export function getCdnBaseGames() {
   return CDN_CONFIG.repos.games.base;
 }
 
-export let _launcher = null;
 export let _desktopUI = null;
-
-export function setGameLauncher(launcher) {
-  _launcher = launcher;
-
-  setTimeout(() => {
-    const settings = SteamSettings.load();
-    if (settings.runOnStartup && !window._steamStartupHandled) {
-      window._steamStartupHandled = true;
-      launcher.launch("steamApp");
-
-      if (settings.startMinimized) {
-        setTimeout(() => {
-          const steamWin = document.getElementById("games-app-win");
-          if (steamWin) {
-            const closeBtn = steamWin.querySelector(".close-btn");
-            if (closeBtn) closeBtn.click();
-          }
-        }, 500);
-      }
-    }
-  }, 1000);
-}
 
 export function setDesktopUI(ui) {
   _desktopUI = ui;
@@ -484,7 +460,6 @@ export class GameWindowRenderer {
     );
 
     this.gameRenderer = new GameRenderer(this);
-    this.gameLauncher = new GameLauncher(this);
     this.gameUI = new GameUI(this);
   }
 
@@ -501,15 +476,8 @@ export class GameWindowRenderer {
   }
 
   setCurrentGame(appId) {
-    this.gameLauncher.setCurrentGame(appId);
-  }
-
-  showGameOverlay(title, url) {
-    return this.gameLauncher.showGameOverlay(title, url);
-  }
-
-  closeGame() {
-    return this.gameLauncher.closeGame();
+    this.currentGame = appId;
+    this.currentArchiveGame = null;
   }
 
   renderGameOverview(container, appId, onLaunch) {
@@ -541,15 +509,28 @@ export class GameWindowRenderer {
   }
 
   _appendArchiveGameToSidebar(container, archiveGame, onLaunch) {
-    return this.gameLauncher._appendArchiveGameToSidebar(container, archiveGame, onLaunch);
+    const sidebarList = container.querySelector(".sidebar-game-list");
+    if (!sidebarList) return;
+
+    const existing = sidebarList.querySelector(`.sidebar-game-item[data-app="${archiveGame.appId}"]`);
+    if (existing) return;
+
+    const item = this._makeSidebarItem(archiveGame, container, onLaunch, true);
+    item.classList.add("sidebar-archive-item");
+    sidebarList.appendChild(item);
+    observeLazyImages(item);
   }
 
-  _loadArchiveSection(container, onLaunch, collapsed) {
-    return this.gameLauncher._loadArchiveSection(container, onLaunch, collapsed);
+  async _loadArchiveSection(container, onLaunch, collapsed) {
+    const { GameLauncher } = await import("./GameLauncher.js");
+    const launcher = new GameLauncher(this);
+    return launcher._loadArchiveSection(container, onLaunch, collapsed);
   }
 
-  _loadLuminSDKSection(container, collapsed) {
-    return this.gameLauncher._loadLuminSDKSection(container, collapsed);
+  async _loadLuminSDKSection(container, collapsed) {
+    const { GameLauncher } = await import("./GameLauncher.js");
+    const launcher = new GameLauncher(this);
+    return launcher._loadLuminSDKSection(container, collapsed);
   }
 
   _attachGridDelegation(container, onLaunch) {
@@ -617,7 +598,7 @@ export class SystemAppRenderer {
       typeof icon === "string" && (icon.startsWith("fa ") || icon.startsWith("fas ") || icon.startsWith("fab "));
     return `<div class="games-app-card" data-app="${app.app}" title="${app.title}">
       <div class="games-app-card-img-wrap">
-        ${isFontAwesome ? `<i style="color:#6677dd;" class="icon ${icon}"></i>` : `<img src="${icon}" alt="${app.title}" loading="lazy" />`}
+        ${isFontAwesome ? `<i style="color:var(--brand);" class="icon ${icon}"></i>` : `<img src="${icon}" alt="${app.title}" loading="lazy" />`}
       </div>
       <div class="games-app-card-title">${app.title}</div>
     </div>`;
@@ -630,7 +611,7 @@ export class SystemAppRenderer {
         <input type="text" class="games-search-input" placeholder="Search apps..." style="width:100%;max-width:400px;padding:12px 16px;border:1px solid rgba(255,255,255,0.2);border-radius:8px;background:rgba(255,255,255,0.1);color:#fff;font-size:14px;outline:none;transition:all 0.3s ease;" 
                onmouseover="this.style.borderColor='rgba(255,255,255,0.4)';this.style.background='rgba(255,255,255,0.15)'"
                onmouseout="this.style.borderColor='rgba(255,255,255,0.2)';this.style.background='rgba(255,255,255,0.1)'"
-               onfocus="this.style.borderColor='#6677dd';this.style.background='rgba(255,255,255,0.2)';this.style.boxShadow='0 0 0 2px rgba(102,119,221,0.3)'"
+               onfocus="this.style.borderColor='var(--brand)';this.style.background='rgba(255,255,255,0.2)';this.style.boxShadow='0 0 0 2px var(--brand-glow)'"
                onblur="this.style.borderColor='rgba(255,255,255,0.2)';this.style.background='rgba(255,255,255,0.1)';this.style.boxShadow='none'" />
         <div class="games-app-count" style="margin-top:8px;color:rgba(255,255,255,0.5);font-size:12px;">${apps.length} apps</div>
       </div>

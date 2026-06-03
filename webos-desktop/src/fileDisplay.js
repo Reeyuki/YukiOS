@@ -375,7 +375,9 @@ export function buildFileIconHTML(name, { thumbnailSrc = null, size = 64, radius
   }
 
   if (isHtmlFile(name)) {
-    return `<img src="${resolveIconUrl("static/icons/firefox.webp")}" style="${s}object-fit:cover;">`;
+    return `<div style="${s}display:flex;align-items:center;justify-content:center;font-size:${Math.round(
+      size * 0.5
+    )}px;color:#519aba;background:#1e1e1e;border:1px solid #333;"><i class="fab fa-snowflake"></i></div>`;
   }
   if (isMarkdownFile(name)) {
     return `<div style="${s}display:flex;align-items:center;justify-content:center;font-size:${Math.round(
@@ -385,7 +387,7 @@ export function buildFileIconHTML(name, { thumbnailSrc = null, size = 64, radius
   if (isRomFile(name)) {
     return `<div style="${s}display:flex;align-items:center;justify-content:center;font-size:${Math.round(
       size * 0.44
-    )}px;color:#6677dd;"><i class="fas fa-gamepad"></i></div>`;
+    )}px;color:var(--brand);"><i class="fas fa-gamepad"></i></div>`;
   }
   if (isSwfFile(name)) {
     return `<img src="${resolveIconUrl("static/icons/flash.webp")}" style="${s}object-fit:cover;">`;

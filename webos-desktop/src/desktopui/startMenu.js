@@ -1,5 +1,4 @@
 import { appMap } from "../games/gamesList.js";
-
 import { camelize } from "../utils/utils.js";
 import { StorageKeys } from "../settings/settings.js";
 import { ClippyAnimation, speak } from "../ai/clippy.js";
@@ -212,7 +211,7 @@ function setupStars() {
   });
 }
 
-export function setupStartMenu(appLauncher, sessionManager) {
+export function setupStartMenu(appLauncher, sessionManager, explorerApp, notepadApp, selectionManager) {
   sharedAppLauncher = appLauncher;
   const menuEl = document.getElementById("start-menu") || document.querySelector(".start-menu");
   if (menuEl) {
@@ -397,6 +396,100 @@ export function setupStartMenu(appLauncher, sessionManager) {
 
   setupStars();
   setupStartUserHover();
+
+  if (explorerApp && notepadApp) {
+    setupDesktopStartMenuActions(explorerApp, notepadApp);
+  }
+
+  if (selectionManager) {
+    setupDesktopStartMenuToggles(selectionManager);
+  }
+}
+
+function setupDesktopStartMenuActions(explorerApp, notepadApp) {
+  const menuActions = {
+    home: () => {
+      explorerApp.open([]);
+    },
+    documents: () => {
+      explorerApp.open(["Documents"]);
+    },
+    pictures: () => {
+      explorerApp.open(["Pictures"]);
+    },
+    notes: () => notepadApp.open()
+  };
+  const menuEl = getStartMenuEl();
+  if (!menuEl) return;
+  menuEl.querySelectorAll(".start-item").forEach((item) => {
+    item.onclick = (e) => {
+      e.stopPropagation();
+      const app = item.dataset.path;
+      if (menuActions[app]) menuActions[app]();
+      closeStartMenu();
+    };
+  });
+}
+
+let toggleHideGamesFn = () => {};
+let toggleHideSystemAppsFn = () => {};
+
+export function getToggleHideGames() {
+  return toggleHideGamesFn;
+}
+
+export function getToggleHideSystemApps() {
+  return toggleHideSystemAppsFn;
+}
+
+function setupDesktopStartMenuToggles(selectionManager) {
+  const hideGamesKey = StorageKeys.hideGames;
+  const hideGamesBtn = document.getElementById("hide-games-btn");
+
+  const applyHideGames = (hidden) => {
+    document.querySelectorAll("#desktop .icon").forEach((icon) => {
+      if (sharedAppLauncher.appMap[icon.dataset.app] && sharedAppLauncher.appMap[icon.dataset.app].type !== "system") {
+        icon.style.display = hidden ? "none" : "";
+        if (hidden && selectionManager) selectionManager.remove(icon);
+      }
+    });
+    if (hideGamesBtn) hideGamesBtn.textContent = hidden ? "🎮 Show Games" : "🎮 Hide Games";
+    if (typeof layoutIconsCall === "function") layoutIconsCall();
+  };
+
+  const storedHidden = os.storage.get(hideGamesKey) === "true";
+  applyHideGames(storedHidden);
+
+  toggleHideGamesFn = () => {
+    const currentlyHidden = os.storage.get(hideGamesKey) === "true";
+    const next = !currentlyHidden;
+    os.storage.set(hideGamesKey, String(next));
+    applyHideGames(next);
+  };
+
+  const hideSystemKey = StorageKeys.hideSystem;
+  const hideSystemBtn = document.getElementById("hide-system-btn");
+
+  const applyHideSystemApps = (hidden) => {
+    document.querySelectorAll("#desktop .icon").forEach((icon) => {
+      if (sharedAppLauncher.appMap[icon.dataset.app] && sharedAppLauncher.appMap[icon.dataset.app].type === "system") {
+        icon.style.display = hidden ? "none" : "";
+        if (hidden && selectionManager) selectionManager.remove(icon);
+      }
+    });
+    if (hideSystemBtn) hideSystemBtn.textContent = hidden ? "⚙️ Show System Apps" : "⚙️ Hide System Apps";
+    if (typeof layoutIconsCall === "function") layoutIconsCall();
+  };
+
+  const storedSystemHidden = os.storage.get(hideSystemKey) === "true";
+  applyHideSystemApps(storedSystemHidden);
+
+  toggleHideSystemAppsFn = () => {
+    const currentlyHidden = os.storage.get(hideSystemKey) === "true";
+    const next = !currentlyHidden;
+    os.storage.set(hideSystemKey, String(next));
+    applyHideSystemApps(next);
+  };
 }
 
 export function setupStartUserHover() {

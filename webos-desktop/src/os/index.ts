@@ -67,6 +67,7 @@ interface OSBridge {
   };
   app: {
     launch: AppAPI["launch"];
+    launchGame: AppAPI["launchGame"];
     close: AppAPI["close"];
     getRunningApps: AppAPI["getRunningApps"];
     getAllApps: AppAPI["getAllApps"];
@@ -395,6 +396,9 @@ export const os: OSBridge = {
   app: {
     get launch() {
       return getAppAPI().launch.bind(getAppAPI());
+    },
+    get launchGame() {
+      return getAppAPI().launchGame.bind(getAppAPI());
     },
     get close() {
       return getAppAPI().close.bind(getAppAPI());

@@ -3,12 +3,13 @@ import { os } from "../os/index.js";
 
 class TurboManager {
   constructor() {
-    this._currentMode = os.storage.get(StorageKeys.turboMode) || "high";
+    this._currentMode = os.storage.get(StorageKeys.turboMode) || "balanced";
     this._styleEl = null;
     this._init();
   }
 
   _init() {
+    document.documentElement.setAttribute("data-turbo", this._currentMode);
     this._applyTurboMode(this._currentMode);
   }
 
@@ -100,6 +101,9 @@ class TurboManager {
         html[data-turbo="balanced"] .taskbar-preview,
         html[data-turbo="balanced"] .context-menu {
           box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5) !important;
+        }
+        html[data-turbo="balanced"] .wa-z-lift {
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45) !important;
         }
         html[data-turbo="balanced"] .window:hover {
           transform: none !important;

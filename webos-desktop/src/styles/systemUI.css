@@ -700,5 +700,5 @@
 }
 
 .ws-icon.fallback {
-  color: #6677dd;
+  color: var(--brand);
 }

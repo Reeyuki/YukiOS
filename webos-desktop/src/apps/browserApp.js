@@ -108,7 +108,7 @@ export class BrowserApp extends BaseApp {
     `;
 
     this.win = os.window.create(this.winId, displayTitle, "900px", "620px", {
-      icon: resolveIconUrl("static/icons/firefox.webp"),
+      icon: "fas fa-snowflake",
       autoMount: false,
       skipHeader: true
     });
@@ -132,7 +132,7 @@ export class BrowserApp extends BaseApp {
       this.controlsSlot.innerHTML = os.window.getWindowControls();
     }
 
-    this.wm.addToTaskbar(this.winId, displayTitle, resolveIconUrl("static/icons/firefox.webp"));
+    this.wm.addToTaskbar(this.winId, displayTitle, "fas fa-snowflake");
     this.wm.makeDraggable(this.win);
     this.wm.makeResizable(this.win);
     this.wm.setupWindowControls(this.win);
@@ -1236,7 +1236,7 @@ body {
 <div class="bg-orb bg-orb-2"></div>
 <div class="bg-orb bg-orb-3"></div>
 <div class="main">
-  <div class="logo">🌸</div>
+  <div class="logo">❄️</div>
   <h1>Yuki Browser</h1>
   <p class="tagline">Your web-based desktop experience</p>
   <div class="time" id="clock">--:--</div>
@@ -2416,7 +2416,7 @@ body {
         };
         favicon.appendChild(img);
       } else {
-        favicon.textContent = tab.url === "yuki://home" ? "🌸" : "🌐";
+        favicon.textContent = tab.url === "yuki://home" ? "❄️" : "🌐";
       }
 
       const titleEl = document.createElement("span");

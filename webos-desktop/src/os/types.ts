@@ -94,6 +94,10 @@ export interface LaunchOptions {
   width?: string | number;
   height?: string | number;
   steamGameId?: string;
+  source?: string;
+  originalName?: string;
+  analyticsBase?: any;
+  type?: string;
 }
 
 export type EventHandler = (data?: any) => void;

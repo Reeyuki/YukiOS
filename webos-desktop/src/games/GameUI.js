@@ -1,12 +1,12 @@
 import { refreshIcons } from "../shared/contextMenu.js";
 import { customAlert, customPrompt } from "../shared/dialogs.js";
-import { SteamDataManager, _launcher, _desktopUI } from "./games.js";
+import { SteamDataManager, _desktopUI } from "./games.js";
 import { observeLazyImages } from "./games.js";
 import { WindowHelper } from "../utils/WindowHelper.js";
 import { StorageKeys } from "../settings/settings.js";
 import { buildSteamShell, initDropdowns, initStorePage, getCdnBase, initSettingsPage } from "./steam.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
-import { fetchLiveStats } from "../analytics.js";
+import { fetchLiveStats, sendLaunchAnalytics, getAnalyticsBase } from "../analytics.js";
 import { appMap } from "./gamesList.js";
 import { os } from "../os/index.js";
 
@@ -67,7 +67,18 @@ export class GameUI {
     });
     item.addEventListener("dblclick", () => {
       if (isArchive) {
-        this.renderer.gameLauncher.showGameOverlay(game.title, game.url);
+        const gameId = game.url
+          .split("?")[0]
+          .replace(/\/index\.html$/, "")
+          .replace(/\.html$/, "")
+          .split("/")
+          .filter(Boolean)
+          .pop()
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "");
+        const analyticsBase = getAnalyticsBase(gameId);
+        sendLaunchAnalytics(gameId);
+        os.app.launchGame(gameId, false, { source: game.url, originalName: game.title, analyticsBase });
       } else {
         onLaunch(appId);
       }
@@ -75,7 +86,22 @@ export class GameUI {
     item.oncontextmenu = (e) => {
       e.preventDefault();
       e.stopPropagation();
-      const launchFn = isArchive ? () => this.renderer.gameLauncher.showGameOverlay(game.title, game.url) : onLaunch;
+      const launchFn = isArchive
+        ? () => {
+            const gameId = game.url
+              .split("?")[0]
+              .replace(/\/index\.html$/, "")
+              .replace(/\.html$/, "")
+              .split("/")
+              .filter(Boolean)
+              .pop()
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, "");
+            const analyticsBase = getAnalyticsBase(gameId);
+            sendLaunchAnalytics(gameId);
+            os.app.launchGame(gameId, false, { source: game.url, originalName: game.title, analyticsBase });
+          }
+        : onLaunch;
       this.showContextMenu(e, appId, container, launchFn);
     };
     return item;
@@ -315,7 +341,18 @@ export class GameUI {
       const cardUrl = card.dataset.url || null;
       if (cardUrl) {
         const title = card.querySelector(".steam-game-title")?.textContent || appId;
-        await this.renderer.gameLauncher.showGameOverlay(title, cardUrl);
+        const gameId = cardUrl
+          .split("?")[0]
+          .replace(/\/index\.html$/, "")
+          .replace(/\.html$/, "")
+          .split("/")
+          .filter(Boolean)
+          .pop()
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "");
+        const analyticsBase = getAnalyticsBase(gameId);
+        sendLaunchAnalytics(gameId);
+        await os.app.launchGame(gameId, false, { source: cardUrl, originalName: title, analyticsBase });
       } else {
         onLaunch(appId);
       }

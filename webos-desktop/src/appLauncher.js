@@ -1,5 +1,5 @@
 import { WindowHelper } from "./utils/WindowHelper.js";
-import { HIGHLIGHTED_GAMES, getGameName, setGameLauncher, openSteamWindow } from "./games/games.js";
+import { HIGHLIGHTED_GAMES, getGameName, openSteamWindow } from "./games/games.js";
 import { appMap } from "./games/gamesList.js";
 import { initializeAppGrid, populateStartMenu, tryGetIcon } from "./desktopui/startMenu.js";
 import { IFRAME_ATTRS } from "./shared/iframeAttrs.js";
@@ -18,6 +18,7 @@ import { ClippyAnimation, initClippy, speak as clippySpeak } from "./ai/clippy.j
 import { initAnalytics, getAnalyticsBase, sendLaunchAnalytics, recordUsage } from "./analytics.js";
 import { StorageKeys } from "./settings/settings.js";
 import { getNewsContentSignature, updateNewsBadge } from "./apps/news.js";
+import { SteamSettings } from "./games/steam.js";
 import { os } from "./os/index.js";
 import { PROXIES, clampProxyIndex, buildProxyUrl, fetchHtmlThroughProxy } from "./proxies.js";
 import { AppRuntime } from "./runtime/AppRuntime.js";
@@ -108,7 +109,23 @@ export class AppLauncher {
     this.clippyPromise = initClippy();
 
     initAnalytics();
-    setGameLauncher(this);
+
+    const settings = SteamSettings.load();
+    if (settings.runOnStartup && !window._steamStartupHandled) {
+      window._steamStartupHandled = true;
+      setTimeout(() => {
+        this.launch("steamApp");
+        if (settings.startMinimized) {
+          setTimeout(() => {
+            const steamWin = document.getElementById("games-app-win");
+            if (steamWin) {
+              const wm = this.wm;
+              wm.minimize(steamWin);
+            }
+          }, 500);
+        }
+      }, 1000);
+    }
 
     this.appRuntime = new AppRuntime({
       wm: this.wm,

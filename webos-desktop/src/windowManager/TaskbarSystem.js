@@ -53,7 +53,7 @@ export class TaskbarSystem {
       icon.onerror = () => {
         const fallback = document.createElement("i");
         fallback.className = "fas fa-window-maximize";
-        fallback.style.color = color ?? "#6677dd";
+        fallback.style.color = color ?? "var(--brand)";
         icon.replaceWith(fallback);
       };
       return icon;
@@ -67,7 +67,7 @@ export class TaskbarSystem {
       icon.style.color = color ?? "white";
     } else {
       icon.className = "fas fa-window-maximize";
-      icon.style.color = "#6677dd";
+      icon.style.color = "var(--brand)";
     }
 
     return icon;
@@ -76,7 +76,7 @@ export class TaskbarSystem {
   addToTaskbar(winId, title, iconValue, color = null) {
     this.manager.triggerSessionSave();
     if (document.getElementById(`taskbar-${winId}`)) return;
-    if (iconValue === "fas fa-video") color = "6677dd";
+    if (iconValue === "fas fa-video") color = "var(--brand)";
 
     iconValue = resolveIconUrl(iconValue);
 

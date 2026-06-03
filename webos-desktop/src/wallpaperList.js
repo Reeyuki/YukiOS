@@ -10,7 +10,6 @@ export const videos = [
   "https://motionbgs.com/media/9274/reze-midnight-reflection.1920x1080.mp4",
   "https://motionbgs.com/media/9265/minecraft-rainy-cabin.1920x1080.mp4",
   "https://motionbgs.com/media/9167/echoes-of-a-fallen-world.1920x1080.mp4",
-  "https://motionbgs.com/media/9292/satoru-gojo-shattered-sky.1920x1080.mp4",
   "https://motionbgs.com/media/9207/batman-black-judgment.1920x1080.mp4",
   "https://motionbgs.com/media/9269/minecraft-falling-snow.1920x1080.mp4",
   "https://motionbgs.com/media/9217/evelyn.1920x1080.mp4",

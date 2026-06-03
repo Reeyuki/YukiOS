@@ -530,6 +530,18 @@ export const appMap = {
     icon: "/static/icons/photopea.webp",
     title: "Photopea"
   },
+  worldBox: {
+    type: "game",
+    url: "https://dry-hill-cb24.liventcord-a60.workers.dev",
+    icon: "/static/icons/wf.webp",
+    title: "WorldBox"
+  },
+  talkingBen: {
+    type: "remote",
+    url: "https://html-classic.itch.zone/html/5627906/index.html",
+    icon: "/static/icons/ben.webp",
+    title: "Talking Ben"
+  },
   fancyPants: {
     type: "swf",
     swf: "/static/games/swfGames/fancypantsadventure.swf",
@@ -1151,7 +1163,7 @@ export const appMap = {
   newsApp: { type: "system", title: "What's New", icon: "fa fa-newspaper" },
   explorer: { type: "system", title: "File Explorer", icon: "static/icons/file.webp" },
   notepad: { type: "system", title: "Notepad", icon: "static/icons/notepad.webp" },
-  browserApp: { type: "system", title: "Yuki Browser", icon: "static/icons/firefox.webp" },
+  browserApp: { type: "system", title: "Yuki Browser", icon: "fas fa-snowflake" },
   yukiDevTools: { type: "system", title: "Yuki Dev Tools", icon: "fas fa-code" },
   terminal: { type: "system", title: "Terminal", icon: "/static/icons/terminal.webp" },
   installedApps: { type: "system", title: "Installed Apps", icon: "fas fa-th-list" },

@@ -1,24 +1,25 @@
-import { updateFavoritesUI } from "./startMenu.js";
+import {
+  updateFavoritesUI,
+  getToggleHideGames,
+  getToggleHideSystemApps,
+  setupStartMenu as setupStartMenuFn
+} from "./startMenu.js";
 import { desktop } from "./desktop.js";
-import { BusEvents } from "../core/EventBus.js";
 import interact from "interactjs";
-import { isImageFile, buildFileIconHTML, openFileWith, readFileAsDataURL } from "../fileDisplay.js";
-import { FileKind } from "../fs.js";
 import { StorageKeys } from "../StorageKeys.js";
-import { showConflictDialog } from "../shared/conflictDialog.js";
-import { showContextMenu, showDynamicContextMenu, hideMenu } from "../shared/contextMenu.js";
+import { hideMenu } from "../shared/contextMenu.js";
 import { os } from "../os/index.js";
-import { customPrompt } from "../shared/dialogs.js";
 import { WindowHelper } from "../utils/WindowHelper.js";
-import { SystemUtilities } from "../system.js";
-import { Achievements } from "../achievements.js";
-
+import { DesktopContextMenuManager } from "../windowManager/ContextMenuManager.js";
+import { IconManager } from "./iconManager.js";
+import { DragDropManager } from "./dragDropManager.js";
+import { ClipboardManager } from "./clipboardManager.js";
+import { showPropertiesDialog } from "./propertiesDialog.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
-import { resolveDesktopIcon } from "../shared/iconUtils.js";
 
 let sharedAppLauncher;
-export let toggleHideGames = () => {};
-export let toggleHideSystemApps = () => {};
+export let toggleHideGames = getToggleHideGames();
+export let toggleHideSystemApps = getToggleHideSystemApps();
 const GRID_CONFIG = { width: 76, height: 96, gap: 7 };
 
 function isRightAlignedSystemApp(appMap, app) {
@@ -195,7 +196,7 @@ class IconDataHelper {
       explorer: resolveIconUrl("static/icons/file.webp"),
       notepad: resolveIconUrl("static/icons/notepad.webp"),
       flash: resolveIconUrl("static/icons/flash.webp"),
-      browser: resolveIconUrl("static/icons/firefox.webp"),
+      browser: resolveIconUrl("fas fa-snowflake"),
       terminal: resolveIconUrl("static/icons/terminal.webp"),
       music: resolveIconUrl("static/icons/spot.webp"),
       cameraApp: resolveIconUrl("static/icons/obs.webp"),
@@ -261,192 +262,53 @@ export class DesktopUI {
     this.positionHelper = new PositionHelper(this.desktop, GRID_CONFIG);
     this.selectionManager = new SelectionManager();
 
-    this.state = { clipboard: null, dragTarget: null, explorerDragTarget: null, isUserDragging: false };
+    this.iconManager = new IconManager(
+      this.desktop,
+      this.fs,
+      this.positionHelper,
+      PositionStore,
+      this.selectionManager,
+      this.notepadApp,
+      this.explorerApp,
+      this.appLauncher
+    );
 
-    this.templates = {
-      iconContextMenu: [
-        { id: "ctx-open", label: "Open", action: "open", icon: "fa-external-link-alt" },
-        "hr",
-        { id: "ctx-copy", label: "Copy", action: "copy", icon: "fa-copy" },
-        { id: "ctx-cut", label: "Cut", action: "cut", icon: "fa-cut" },
-        "hr",
-        { id: "ctx-delete", label: "Delete", action: "delete", icon: "fa-trash-alt" },
-        { id: "ctx-rename", label: "Rename", action: "rename", icon: "fa-edit" },
-        { id: "ctx-properties", label: "Properties", action: "properties", icon: "fa-info-circle" }
-      ],
-      folderContextMenu: [
-        { id: "ctx-open-folder", label: "Open", action: "openFolder", icon: "fa-folder-open" },
-        "hr",
-        { id: "ctx-copy-folder", label: "Copy", action: "copyFolder", icon: "fa-copy" },
-        { id: "ctx-cut-folder", label: "Cut", action: "cutFolder", icon: "fa-cut" },
-        "hr",
-        { id: "ctx-delete-folder", label: "Delete", action: "deleteFolder", icon: "fa-trash-alt" },
-        { id: "ctx-rename-folder", label: "Rename", action: "renameFolder", icon: "fa-edit" }
-      ],
-      fileIconContextMenu: [
-        { id: "ctx-open-file", label: "Open", action: "openFile", icon: "fa-file-alt" },
-        "hr",
-        { id: "ctx-copy-file", label: "Copy", action: "copyFile", icon: "fa-copy" },
-        { id: "ctx-cut-file", label: "Cut", action: "cutFile", icon: "fa-cut" },
-        "hr",
-        { id: "ctx-delete-file", label: "Delete", action: "deleteFile", icon: "fa-trash-alt" },
-        { id: "ctx-rename-file", label: "Rename", action: "renameFile", icon: "fa-edit" }
-      ],
-      desktopContextMenu: [
-        { id: "ctx-add-files", label: "Add file(s)", action: "addFiles", icon: "fa-file-upload" },
-        { id: "ctx-new-notepad", label: "New Notepad", action: "newNotepad", icon: "fa-file-medical" },
-        { id: "ctx-new-folder", label: "New Folder", action: "newFolder", icon: "fa-folder-plus" },
-        { id: "ctx-open-explorer", label: "Open File Explorer", action: "openExplorer", icon: "fa-folder-open" },
-        { id: "ctx-set-wallpaper", label: "Set Wallpaper", action: "setWallpaper", icon: "fa-image" },
-        "hr",
-        {
-          id: "ctx-paste",
-          label: "Paste",
-          action: "paste",
-          condition: () => !!this.state.clipboard,
-          icon: "fa-paste"
-        },
-        "hr",
-        { id: "ctx-refresh", label: "Refresh", action: "refresh", icon: "fa-sync-alt" }
-      ]
-    };
+    this.dragDropManager = new DragDropManager(
+      this.desktop,
+      this.fs,
+      this.positionHelper,
+      PositionStore,
+      this.selectionManager,
+      this.iconManager,
+      IconDataHelper,
+      this.explorerApp
+    );
+
+    this.clipboardManager = new ClipboardManager(
+      this.fs,
+      PositionStore,
+      DeletedIconsStore,
+      this.iconManager,
+      IconDataHelper,
+      this.explorerApp
+    );
+
+    this.contextMenuManager = new DesktopContextMenuManager(this, PositionStore, IconDataHelper);
 
     this.setupEventListeners();
     this.initializeDesktopFiles();
   }
 
   setClipboard(data) {
-    this.state.clipboard = data;
+    this.clipboardManager.setClipboard(data);
   }
 
   getClipboard() {
-    return this.state.clipboard;
+    return this.clipboardManager.getClipboard();
   }
 
   async dropFromExplorer(name, isFile, sourcePath, clientX, clientY) {
-    const rect = this.desktop.getBoundingClientRect();
-    const leftPx = clientX - rect.left;
-    const topPx = clientY - rect.top;
-
-    if (isFile) {
-      const existingIcon = document.querySelector(`.desktop-file-icon[data-file-name="${CSS.escape(name)}"]`);
-      if (existingIcon) {
-        this.positionHelper.setPosition(existingIcon, leftPx - 40, topPx - 40);
-        this.positionHelper.snap(existingIcon);
-        return;
-      }
-
-      try {
-        const content = await os.fs.read([...sourcePath, name]);
-        const kind = await os.fs.getFileKind([...sourcePath, name]);
-        const fileIcon = await os.fs.getFileIcon([...sourcePath, name]);
-
-        const destDir = this.fs.resolveUserPath(["Desktop"]);
-        const destPath = this.fs.join(destDir, name);
-        const destExists = await os.fs.exists(destPath);
-
-        let action = "replace";
-        if (destExists) {
-          const result = await showConflictDialog(name);
-          action = result.action;
-        }
-
-        if (action === "skip") return;
-
-        let finalName = name;
-        if (action === "keep") {
-          finalName = await this.fs.getUniqueFileName(["Desktop"], name);
-        }
-
-        if (action === "replace") {
-          await os.fs.write(["Desktop", name], content);
-          await this.fs.writeMeta(destDir, name, { kind, icon: fileIcon });
-        } else {
-          await os.fs.write(["Desktop", finalName], content);
-        }
-
-        await os.fs.delete(sourcePath, name);
-
-        const icon = await this.createDesktopFileIcon(finalName, { content, kind, icon: fileIcon });
-        if (icon) {
-          this.positionHelper.setPosition(icon, leftPx - 40, topPx - 40);
-          this.positionHelper.snap(icon);
-          const { col, row } = this.positionHelper.pixelsToCell(
-            parseFloat(icon.style.left) || 0,
-            parseFloat(icon.style.top) || 0
-          );
-          const saved = PositionStore.load();
-          saved[PositionStore.getKey(icon)] = { col, row };
-          PositionStore.save(saved);
-        }
-        os.notify.send(`"${finalName}" moved to Desktop`);
-      } catch {
-        os.notify.send(`Could not move "${name}" to Desktop`);
-      }
-    } else {
-      const existingIcon = document.querySelector(`.folder-icon[data-folder-name="${CSS.escape(name)}"]`);
-      if (existingIcon) {
-        this.positionHelper.setPosition(existingIcon, leftPx - 40, topPx - 40);
-        this.positionHelper.snap(existingIcon);
-        return;
-      }
-
-      try {
-        await os.fs.mkdir(["Desktop", name]);
-        const srcEntries = await os.fs.readdir([...sourcePath, name]).catch(() => ({}));
-
-        let applyToAllAction = null;
-
-        for (const [childName, childData] of Object.entries(srcEntries)) {
-          if (childData?.type !== "file") continue;
-
-          const childContent = await this.fs.getFileContent([...sourcePath, name], childName);
-          const childKind = await this.fs.getFileKind([...sourcePath, name], childName);
-          const childIcon = await this.fs.getFileIcon([...sourcePath, name], childName);
-
-          const destDir = this.fs.resolveUserPath(["Desktop", name]);
-          const destFilePath = this.fs.join(destDir, childName);
-          const childExists = await os.fs.exists(destFilePath);
-
-          let action = "replace";
-          if (childExists) {
-            if (applyToAllAction) {
-              action = applyToAllAction;
-            } else {
-              const result = await showConflictDialog(childName);
-              if (result.applyToAll) applyToAllAction = result.action;
-              action = result.action;
-            }
-          }
-
-          if (action === "skip") continue;
-
-          if (action === "replace") {
-            await this.fs.updateFile(["Desktop", name], childName, childContent);
-            await this.fs.writeMeta(destDir, childName, { kind: childKind, icon: childIcon });
-          } else {
-            await this.fs.createFile(["Desktop", name], childName, childContent, childKind, childIcon);
-          }
-        }
-
-        await os.fs.delete(sourcePath, name);
-        const icon = await this.createFolderIcon(name);
-        if (icon) {
-          this.positionHelper.setPosition(icon, leftPx - 40, topPx - 40);
-          this.positionHelper.snap(icon);
-          const { col, row } = this.positionHelper.pixelsToCell(
-            parseFloat(icon.style.left) || 0,
-            parseFloat(icon.style.top) || 0
-          );
-          const saved = PositionStore.load();
-          saved[PositionStore.getKey(icon)] = { col, row };
-          PositionStore.save(saved);
-        }
-        os.notify.send(`"${name}" folder moved to Desktop`);
-      } catch {
-        os.notify.send(`Could not move "${name}" to Desktop`);
-      }
-    }
+    return this.dragDropManager.dropFromExplorer(name, isFile, sourcePath, clientX, clientY);
   }
 
   setupEventListeners() {
@@ -476,7 +338,8 @@ export class DesktopUI {
       if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA" || active.isContentEditable)) return;
       if (e.ctrlKey && e.code === "KeyV") {
         e.preventDefault();
-        if (!this.state.clipboard) return;
+        const clipboard = this.clipboardManager.getClipboard();
+        if (!clipboard) return;
         const explorerWins = document.querySelectorAll("[id^='explorer-']");
         let targetExplorerWin = null;
 
@@ -498,10 +361,10 @@ export class DesktopUI {
           const winId = targetExplorerWin.id;
           const inst = this.explorerApp?._getInstance(winId);
           if (inst) {
-            const iconsData = this.state.clipboard.icons;
-            const action = this.state.clipboard.action;
-            const source = this.state.clipboard.source;
-            const sourceInst = this.state.clipboard.sourceInst;
+            const iconsData = clipboard.icons;
+            const action = clipboard.action;
+            const source = clipboard.source;
+            const sourceInst = clipboard.sourceInst;
             (async () => {
               if (source === "explorer") {
                 for (const iconData of iconsData) {
@@ -518,7 +381,7 @@ export class DesktopUI {
                   } catch {}
                 }
                 if (action === "cut") {
-                  this.state.clipboard = null;
+                  this.clipboardManager.setClipboard(null);
                   if (sourceInst) await this.explorerApp.renderInstance(sourceInst);
                 }
               } else {
@@ -533,7 +396,7 @@ export class DesktopUI {
                   await os.fs.write([...inst.currentPath, fileName], fileContent);
                   if (action === "cut" && iconData.element) iconData.element.remove();
                 }
-                if (action === "cut") this.state.clipboard = null;
+                if (action === "cut") this.clipboardManager.setClipboard(null);
               }
               await this.explorerApp.renderInstance(inst);
               os.notify.send(`${iconsData.length} item${iconsData.length !== 1 ? "s" : ""} pasted`);
@@ -541,16 +404,16 @@ export class DesktopUI {
             return;
           }
         }
-        if (this.state.clipboard.source === "explorer") {
-          const iconsData = this.state.clipboard.icons;
-          const action = this.state.clipboard.action;
-          const sourceInst = this.state.clipboard.sourceInst;
+        if (clipboard.source === "explorer") {
+          const iconsData = clipboard.icons;
+          const action = clipboard.action;
+          const sourceInst = clipboard.sourceInst;
           (async () => {
             for (const iconData of iconsData) {
               await this.dropFromExplorer(iconData.data.name, true, iconData.data.path, lastMousePos.x, lastMousePos.y);
             }
             if (action === "cut") {
-              this.state.clipboard = null;
+              this.clipboardManager.setClipboard(null);
               if (sourceInst) await this.explorerApp.renderInstance(sourceInst);
             }
           })();
@@ -562,7 +425,7 @@ export class DesktopUI {
         const selectedArray = this.selectionManager.toArray();
         if (selectedArray.length > 0) {
           e.preventDefault();
-          this.deleteSelectedIcons(selectedArray);
+          this.clipboardManager.deleteSelectedIcons(selectedArray, this.selectionManager);
         }
       }
     });
@@ -730,19 +593,7 @@ export class DesktopUI {
   }
 
   handleContextMenu(e) {
-    if (e.target.closest(".desktop-file-icon")) {
-      e.preventDefault();
-      this.showFileIconContextMenu(e, e.target.closest(".desktop-file-icon"));
-    } else if (e.target.classList.contains("folder-icon")) {
-      e.preventDefault();
-      this.showFolderContextMenu(e, e.target);
-    } else if (e.target.classList.contains("selectable")) {
-      e.preventDefault();
-      this.showIconContextMenu(e, e.target);
-    } else if (e.target === this.desktop) {
-      e.preventDefault();
-      this.showDesktopContextMenu(e);
-    }
+    this.contextMenuManager.handleContextMenu(e);
   }
 
   setupIconHandlers() {
@@ -753,34 +604,8 @@ export class DesktopUI {
         icon.remove();
         return;
       }
-      this.makeIconInteractable(icon);
+      this.iconManager.makeIconInteractable(icon);
     });
-  }
-
-  makeIconInteractable(icon, ignoreDrag = false) {
-    icon.draggable = false;
-    Object.assign(icon.style, { userSelect: "none", webkitUserDrag: "none", cursor: "default" });
-    if (!ignoreDrag) this.setupInteractDrag(icon);
-    this.attachIconEvents(icon);
-  }
-
-  attachIconEvents(icon) {
-    icon.addEventListener("dblclick", (e) => {
-      e.stopPropagation();
-      if (icon.classList.contains("folder-icon")) {
-        this.openFolder(icon.dataset.folderName);
-      } else if (icon.dataset.app) {
-        const extra = icon.dataset.steamGameId ? { steamGameId: icon.dataset.steamGameId } : null;
-        os.app.launch(icon.dataset.app, false, extra);
-      } else if (icon.dataset.fileName) {
-        this._openDesktopFile(icon.dataset.fileName);
-      }
-    });
-    icon.addEventListener("mousedown", (e) => this.handleIconSelection(icon, e.ctrlKey));
-  }
-
-  async openFolder(folderName) {
-    this.explorerApp.open(["Desktop", folderName]);
   }
 
   handleIconSelection(icon, isCtrlKey) {
@@ -808,999 +633,11 @@ export class DesktopUI {
         autoScroll: false,
         cursorChecker: () => null,
         listeners: {
-          start: () => this.onDragStart(),
-          move: (event) => this.onDragMove(event),
-          end: () => this.onDragEnd()
+          start: () => this.dragDropManager.onDragStart(),
+          move: (event) => this.dragDropManager.onDragMove(event),
+          end: () => this.dragDropManager.onDragEnd()
         }
       });
-  }
-
-  onDragStart() {
-    this.state.isUserDragging = true;
-    this.selectionManager.forEach((icon) =>
-      Object.assign(icon.style, { opacity: "0.7", zIndex: "1200", cursor: "move" })
-    );
-  }
-
-  onDragMove(event) {
-    const { dx, dy } = event;
-    this.selectionManager.forEach((icon) => {
-      this.positionHelper.setPosition(
-        icon,
-        Math.max(0, (parseFloat(icon.style.left) || 0) + dx),
-        Math.max(0, (parseFloat(icon.style.top) || 0) + dy)
-      );
-    });
-    this.updateDragTarget(event);
-  }
-
-  updateDragTarget(event) {
-    let foundFolder = null;
-    document.querySelectorAll(".folder-icon").forEach((folder) => {
-      if (this.selectionManager.has(folder)) return;
-      const rect = folder.getBoundingClientRect();
-      if (
-        event.clientX >= rect.left &&
-        event.clientX <= rect.right &&
-        event.clientY >= rect.top &&
-        event.clientY <= rect.bottom
-      )
-        foundFolder = folder;
-    });
-
-    if (this.state.dragTarget) this.state.dragTarget.style.outline = "";
-    if (foundFolder && !this.selectionManager.has(foundFolder)) {
-      foundFolder.style.outline = "2px solid #0078d7";
-      this.state.dragTarget = foundFolder;
-    } else {
-      this.state.dragTarget = null;
-    }
-
-    let foundExplorer = null;
-    if (!foundFolder) {
-      document.querySelectorAll("[id^='explorer-']").forEach((win) => {
-        const view = win.querySelector("[id$='-view']");
-        if (!view) return;
-        const rect = view.getBoundingClientRect();
-        if (
-          event.clientX >= rect.left &&
-          event.clientX <= rect.right &&
-          event.clientY >= rect.top &&
-          event.clientY <= rect.bottom
-        )
-          foundExplorer = win;
-      });
-    }
-
-    if (this.state.explorerDragTarget && this.state.explorerDragTarget !== foundExplorer) {
-      this.state.explorerDragTarget.querySelector("[id$='-view']")?.style.setProperty("outline", "");
-    }
-    if (foundExplorer) {
-      foundExplorer.querySelector("[id$='-view']").style.outline = "2px solid rgba(79,158,255,0.8)";
-      this.state.explorerDragTarget = foundExplorer;
-    } else {
-      this.state.explorerDragTarget = null;
-    }
-  }
-
-  async moveIconsToFolder(icons, folderName) {
-    const saved = PositionStore.load();
-    let moved = 0;
-    for (const icon of icons) {
-      if (icon.classList.contains("folder-icon")) continue;
-      const name = IconDataHelper.getIconName(icon);
-      const fileName = `${name}.desktop`;
-      const fileContent = await os.fs.read(["Desktop", fileName]);
-      await os.fs.write(["Desktop", folderName, fileName], fileContent);
-      await os.fs.delete(["Desktop"], fileName);
-      delete saved[PositionStore.getKey(icon)];
-      icon.remove();
-      this.selectionManager.remove(icon);
-      moved++;
-    }
-    PositionStore.save(saved);
-    this.selectionManager.clear();
-    if (moved > 0) os.notify.send(`${moved} item${moved !== 1 ? "s" : ""} moved to "${folderName}"`);
-  }
-
-  async onDragEnd() {
-    if (!this.state.isUserDragging) return;
-    this.state.isUserDragging = false;
-    const addedIcons = this.selectionManager.toArray();
-    addedIcons.forEach((icon) => {
-      os.events.emit(BusEvents.DESKTOP_ICON_ADDED, { icon: icon.dataset.icon || icon.querySelector("img")?.src || "" });
-    });
-
-    if (this.state.explorerDragTarget) {
-      const explorerWin = this.state.explorerDragTarget;
-      explorerWin.querySelector("[id$='-view']")?.style.setProperty("outline", "");
-      this.state.explorerDragTarget = null;
-      this.selectionManager.forEach((icon) =>
-        Object.assign(icon.style, { opacity: "1", zIndex: "1", cursor: "default" })
-      );
-      await this.moveIconsToExplorer(this.selectionManager.toArray(), explorerWin.id);
-      return;
-    }
-
-    if (this.state.dragTarget) {
-      await this.moveIconsToFolder(this.selectionManager.toArray(), this.state.dragTarget.dataset.folderName);
-      this.state.dragTarget.style.outline = "";
-      this.state.dragTarget = null;
-    } else {
-      const saved = PositionStore.load();
-      this.selectionManager.forEach((icon) => {
-        this.positionHelper.snap(icon);
-        Object.assign(icon.style, { opacity: "1", zIndex: "1", cursor: "default" });
-        const { col, row } = this.positionHelper.pixelsToCell(
-          parseFloat(icon.style.left) || 0,
-          parseFloat(icon.style.top) || 0
-        );
-        saved[PositionStore.getKey(icon)] = { col, row };
-      });
-      PositionStore.save(saved);
-    }
-  }
-
-  async moveIconsToExplorer(icons, explorerWinId) {
-    if (!this.explorerApp) return;
-    const inst = this.explorerApp._getInstance(explorerWinId);
-    if (!inst) return;
-
-    await os.fs.mkdir(["Desktop"]);
-    await os.fs.mkdir(inst.currentPath.length ? inst.currentPath : []);
-
-    const saved = PositionStore.load();
-    let moved = 0;
-    let applyToAllAction = null;
-
-    for (const icon of icons) {
-      const isDesktopFile = icon.classList.contains("desktop-file-icon");
-      const isFolderIcon = icon.classList.contains("folder-icon");
-
-      try {
-        if (isDesktopFile) {
-          const fileName = icon.dataset.fileName;
-          const content = await this.fs.getFileContent(["Desktop"], fileName);
-          const kind = await this.fs.getFileKind(["Desktop"], fileName);
-          const fileIcon = await this.fs.getFileIcon(["Desktop"], fileName);
-
-          const destDir = this.fs.resolveUserPath(inst.currentPath);
-          const destFilePath = this.fs.join(destDir, fileName);
-          const destExists = await os.fs.exists(destFilePath);
-
-          let action = "replace";
-          if (destExists) {
-            if (applyToAllAction) {
-              action = applyToAllAction;
-            } else {
-              const result = await showConflictDialog(fileName);
-              if (result.applyToAll) applyToAllAction = result.action;
-              action = result.action;
-            }
-          }
-
-          if (action === "skip") continue;
-
-          if (action === "replace") {
-            await this.fs.updateFile(inst.currentPath, fileName, content);
-            await this.fs.writeMeta(destDir, fileName, { kind, icon: fileIcon });
-          } else {
-            await this.fs.createFile(inst.currentPath, fileName, content, kind, fileIcon);
-          }
-
-          await os.fs.delete(["Desktop"], fileName);
-          delete saved[PositionStore.getKey(icon)];
-          icon.remove();
-          this.selectionManager.remove(icon);
-          moved++;
-        } else if (isFolderIcon) {
-          const folderName = icon.dataset.folderName;
-          const destPath = inst.currentPath.length ? inst.currentPath : [];
-          await os.fs.mkdir([...destPath, folderName]);
-          const srcEntries = await os.fs.readdir(["Desktop", folderName]).catch(() => ({}));
-
-          for (const [childName, childData] of Object.entries(srcEntries)) {
-            if (childData?.type !== "file") continue;
-
-            const childContent = await this.fs.getFileContent(["Desktop", folderName], childName);
-            const childKind = await this.fs.getFileKind(["Desktop", folderName], childName);
-            const childIcon = await this.fs.getFileIcon(["Desktop", folderName], childName);
-
-            const destDir = this.fs.resolveUserPath([...destPath, folderName]);
-            const destFilePath = this.fs.join(destDir, childName);
-            const childExists = await os.fs.exists(destFilePath);
-
-            let action = "replace";
-            if (childExists) {
-              if (applyToAllAction) {
-                action = applyToAllAction;
-              } else {
-                const result = await showConflictDialog(childName);
-                if (result.applyToAll) applyToAllAction = result.action;
-                action = result.action;
-              }
-            }
-
-            if (action === "skip") continue;
-
-            if (action === "replace") {
-              await this.fs.updateFile([...destPath, folderName], childName, childContent);
-              await this.fs.writeMeta(destDir, childName, { kind: childKind, icon: childIcon });
-            } else {
-              await this.fs.createFile([...destPath, folderName], childName, childContent, childKind, childIcon);
-            }
-          }
-
-          await os.fs.delete(["Desktop"], folderName);
-          delete saved[PositionStore.getKey(icon)];
-          icon.remove();
-          this.selectionManager.remove(icon);
-          moved++;
-        } else {
-          const name = IconDataHelper.getIconName(icon);
-          const fileName = `${name}.desktop`;
-          const content = await this.fs.getFileContent(["Desktop"], fileName);
-
-          const destDir = this.fs.resolveUserPath(inst.currentPath);
-          const destFilePath = this.fs.join(destDir, fileName);
-          const destExists = await os.fs.exists(destFilePath);
-
-          let action = "replace";
-          if (destExists) {
-            if (applyToAllAction) {
-              action = applyToAllAction;
-            } else {
-              const result = await showConflictDialog(fileName);
-              if (result.applyToAll) applyToAllAction = result.action;
-              action = result.action;
-            }
-          }
-
-          if (action === "skip") continue;
-
-          if (action === "replace") {
-            await this.fs.updateFile(inst.currentPath, fileName, content);
-          } else {
-            await this.fs.createFile(inst.currentPath, fileName, content, "text");
-          }
-
-          await os.fs.delete(["Desktop"], fileName);
-          delete saved[PositionStore.getKey(icon)];
-          icon.remove();
-          this.selectionManager.remove(icon);
-          moved++;
-        }
-      } catch (err) {
-        console.error("moveIconsToExplorer error for icon:", err);
-      }
-    }
-
-    PositionStore.save(saved);
-    this.selectionManager.clear();
-    if (moved > 0) {
-      const pathLabel = inst.currentPath.length ? inst.currentPath.join("/") : "Home";
-      os.notify.send(`${moved} item${moved !== 1 ? "s" : ""} moved to ${pathLabel}`);
-      await this.explorerApp.renderInstance(inst);
-    }
-  }
-
-  _buildDesktopClipboard(action, icons) {
-    return {
-      source: "desktop",
-      action,
-      icons: icons.map((icon) => ({
-        element: icon,
-        data: {
-          app: icon.dataset.app,
-          name: icon.dataset.fileName || IconDataHelper.getIconName(icon),
-          fileName: icon.dataset.fileName || null,
-          folderName: icon.dataset.folderName || null,
-          isDesktopFile: icon.classList.contains("desktop-file-icon"),
-          isFolderIcon: icon.classList.contains("folder-icon"),
-          innerHTML: icon.innerHTML
-        }
-      })),
-      sourceInst: null
-    };
-  }
-
-  async _pasteToDesktop() {
-    if (!this.state.clipboard) return;
-    const cb = this.state.clipboard;
-    const action = cb.action;
-    let pastedCount = 0;
-    let applyToAllAction = null;
-
-    if (cb.source === "explorer") {
-      for (const iconData of cb.icons) {
-        const name = iconData.data.name;
-        const srcPath = iconData.data.path;
-        const isFile = iconData.data.isFile !== false;
-
-        try {
-          if (isFile) {
-            const content = await this.fs.getFileContent(srcPath, name);
-            const kind = await this.fs.getFileKind(srcPath, name);
-            const fileIcon = await this.fs.getFileIcon(srcPath, name);
-
-            const destDir = this.fs.resolveUserPath(["Desktop"]);
-            const destFilePath = this.fs.join(destDir, name);
-            const destExists = await os.fs.exists(destFilePath);
-
-            let resolvedAction = "replace";
-            if (destExists) {
-              if (applyToAllAction) {
-                resolvedAction = applyToAllAction;
-              } else {
-                const result = await showConflictDialog(name);
-                if (result.applyToAll) applyToAllAction = result.action;
-                resolvedAction = result.action;
-              }
-            }
-
-            if (resolvedAction === "skip") continue;
-
-            let finalName = name;
-            if (resolvedAction === "keep") {
-              finalName = await this.fs.getUniqueFileName(["Desktop"], name);
-            }
-
-            if (resolvedAction === "replace") {
-              await os.fs.write(["Desktop", name], content);
-              await this.fs.writeMeta(destDir, name, { kind, icon: fileIcon });
-            } else {
-              await os.fs.write(["Desktop", finalName], content);
-            }
-
-            if (action === "cut") await os.fs.delete(srcPath, name);
-
-            const existingIcon = document.querySelector(
-              `.desktop-file-icon[data-file-name="${CSS.escape(finalName)}"]`
-            );
-            if (!existingIcon) await this.createDesktopFileIcon(finalName, { content, kind, icon: fileIcon });
-            pastedCount++;
-          } else {
-            await os.fs.mkdir(["Desktop", name]);
-            const srcEntries = await os.fs.readdir([...srcPath, name]).catch(() => ({}));
-
-            for (const [childName, childData] of Object.entries(srcEntries)) {
-              if (childData?.type !== "file") continue;
-
-              const childContent = await this.fs.getFileContent([...srcPath, name], childName);
-              const childKind = await this.fs.getFileKind([...srcPath, name], childName);
-              const childIcon = await this.fs.getFileIcon([...srcPath, name], childName);
-
-              const destDir = this.fs.resolveUserPath(["Desktop", name]);
-              const destFilePath = this.fs.join(destDir, childName);
-              const childExists = await os.fs.exists(destFilePath);
-
-              let resolvedAction = "replace";
-              if (childExists) {
-                if (applyToAllAction) {
-                  resolvedAction = applyToAllAction;
-                } else {
-                  const result = await showConflictDialog(childName);
-                  if (result.applyToAll) applyToAllAction = result.action;
-                  resolvedAction = result.action;
-                }
-              }
-
-              if (resolvedAction === "skip") continue;
-
-              if (resolvedAction === "replace") {
-                await this.fs.updateFile(["Desktop", name], childName, childContent);
-                await this.fs.writeMeta(destDir, childName, { kind: childKind, icon: childIcon });
-              } else {
-                await this.fs.createFile(["Desktop", name], childName, childContent, childKind, childIcon);
-              }
-            }
-
-            if (action === "cut") await os.fs.delete(srcPath, name);
-
-            const existingFolder = document.querySelector(`.folder-icon[data-folder-name="${CSS.escape(name)}"]`);
-            if (!existingFolder) await this.createFolderIcon(name);
-            pastedCount++;
-          }
-        } catch {
-          os.notify.send(`Could not paste "${name}"`);
-        }
-      }
-
-      if (action === "cut") {
-        this.state.clipboard = null;
-        if (cb.sourceInst) await this.explorerApp.renderInstance(cb.sourceInst);
-      }
-    } else if (cb.source === "desktop") {
-      for (const iconData of cb.icons) {
-        const { isDesktopFile, isFolderIcon, fileName, folderName, app, name, innerHTML } = iconData.data;
-        const element = iconData.element;
-
-        try {
-          if (isDesktopFile) {
-            const srcName = fileName;
-            const content = await this.fs.getFileContent(["Desktop"], srcName);
-            const kind = await this.fs.getFileKind(["Desktop"], srcName);
-            const fileIcon = await this.fs.getFileIcon(["Desktop"], srcName);
-
-            if (action === "copy") {
-              const uniqueName = await this.fs.getUniqueFileName(["Desktop"], srcName);
-              await this.fs.createFile(["Desktop"], uniqueName, content, kind, fileIcon);
-              await this.createDesktopFileIcon(uniqueName, { content, kind, icon: fileIcon });
-            }
-            pastedCount++;
-          } else if (isFolderIcon) {
-            const srcName = folderName;
-
-            if (action === "copy") {
-              let uniqueName = await this.fs.getUniqueFileName(["Desktop"], srcName);
-              await os.fs.mkdir(["Desktop", uniqueName]);
-              const srcEntries = await os.fs.readdir(["Desktop", srcName]).catch(() => ({}));
-
-              for (const [childName, childData] of Object.entries(srcEntries)) {
-                if (childData?.type !== "file") continue;
-                const childContent = await this.fs.getFileContent(["Desktop", srcName], childName);
-                const childKind = await this.fs.getFileKind(["Desktop", srcName], childName);
-                const childIcon = await this.fs.getFileIcon(["Desktop", srcName], childName);
-                await os.fs.write(["Desktop", uniqueName, childName], childContent);
-              }
-
-              await this.createFolderIcon(uniqueName);
-            }
-            pastedCount++;
-          } else {
-            const iconName = name || IconDataHelper.getIconName(element || { querySelector: () => null });
-            const srcFileName = `${iconName}.desktop`;
-            const content = await os.fs.read(["Desktop", srcFileName]);
-
-            if (action === "copy") {
-              const uniqueName = await this.fs.getUniqueFileName(["Desktop"], srcFileName);
-              await os.fs.write(["Desktop"], uniqueName, content);
-            }
-            pastedCount++;
-          }
-        } catch {
-          os.notify.send(`Could not paste item`);
-        }
-      }
-
-      if (action === "cut") {
-        this.state.clipboard = null;
-      }
-    }
-
-    if (pastedCount > 0) {
-      os.notify.send(`${pastedCount} item${pastedCount !== 1 ? "s" : ""} pasted`);
-    }
-  }
-
-  showFolderContextMenu(e, folderIcon) {
-    if (!this.selectionManager.has(folderIcon)) {
-      this.selectionManager.clear();
-      this.selectionManager.add(folderIcon);
-    }
-    const selectedArray = this.selectionManager.toArray();
-    const folderName = folderIcon.dataset.folderName;
-
-    showContextMenu(e, this.templates.folderContextMenu, {
-      openFolder: () => this.openFolder(folderName),
-      copyFolder: () => {
-        this.state.clipboard = this._buildDesktopClipboard("copy", selectedArray);
-        os.notify.send(`${selectedArray.length} item${selectedArray.length !== 1 ? "s" : ""} copied`);
-      },
-      cutFolder: () => {
-        this.state.clipboard = this._buildDesktopClipboard("cut", selectedArray);
-        selectedArray.forEach((i) => (i.style.opacity = "0.5"));
-        os.notify.send(`${selectedArray.length} item${selectedArray.length !== 1 ? "s" : ""} cut`);
-      },
-      deleteFolder: () => this.deleteSelectedIcons(selectedArray),
-      renameFolder: async () => {
-        const newName = await customPrompt("Enter new folder name:", folderIcon.dataset.folderName);
-        if (newName && newName !== folderIcon.dataset.folderName) {
-          await this.fs.renameItem(["Desktop"], folderIcon.dataset.folderName, newName);
-          const saved = PositionStore.load();
-          const oldKey = PositionStore.getKey(folderIcon);
-          folderIcon.dataset.folderName = newName;
-          folderIcon.querySelector("span, div").textContent = newName;
-          const newKey = PositionStore.getKey(folderIcon);
-          if (saved[oldKey]) {
-            saved[newKey] = saved[oldKey];
-            delete saved[oldKey];
-            PositionStore.save(saved);
-          }
-          os.notify.send(`Renamed to "${newName}"`);
-        }
-      }
-    });
-  }
-
-  showFileIconContextMenu(e, fileIcon) {
-    if (!this.selectionManager.has(fileIcon)) {
-      this.selectionManager.clear();
-      this.selectionManager.add(fileIcon);
-    }
-    const selectedArray = this.selectionManager.toArray();
-    const fileName = fileIcon.dataset.fileName;
-
-    showDynamicContextMenu(e, async (menu, item, hr) => {
-      menu.appendChild(item("Open", () => this._openDesktopFile(fileName), "fa-file-alt"));
-
-      try {
-        const kind = await this.fs.getFileKind(["Desktop"], fileName);
-        if (kind === FileKind.TEXT) {
-          menu.appendChild(item("Edit with Notepad", () => this._editDesktopFileWithNotepad(fileName), "fa-edit"));
-        }
-      } catch {}
-
-      const effectiveFiles = selectedArray.map((el) => el.dataset.fileName);
-      const convertableFiles = effectiveFiles.filter((name) => {
-        const ext = name.split(".").pop().toLowerCase();
-        return [
-          "png",
-          "jpg",
-          "jpeg",
-          "webp",
-          "bmp",
-          "svg",
-          "gif",
-          "txt",
-          "md",
-          "html",
-          "json",
-          "log",
-          "csv",
-          "xml",
-          "yaml",
-          "yml",
-          "tsv"
-        ].includes(ext);
-      });
-
-      if (convertableFiles.length > 0) {
-        menu.appendChild(
-          item(
-            convertableFiles.length > 1 ? `Convert ${convertableFiles.length} items...` : "Convert / Transform...",
-            async () => {
-              const { openFileConverter } = await import("../utils/fileConverter.js");
-              const services = {
-                windowManager: this.appLauncher.wm,
-                fileSystemManager: this.fs,
-                notepadApp: this.appLauncher.notepadApp,
-                browserApp: this.appLauncher.browserApp,
-                officeApp: this.appLauncher.officeApp,
-                markdownApp: this.appLauncher.markdownApp,
-                jsDosApp: this.appLauncher.jsDosApp,
-                appLauncher: this.appLauncher
-              };
-              convertableFiles.forEach((name) => {
-                openFileConverter(name, ["Desktop"], services, () => {
-                  document.querySelectorAll(".folder-icon, .desktop-file-icon").forEach((i) => i.remove());
-                  this.loadDesktopItems();
-                });
-              });
-            },
-            "fa-exchange-alt"
-          )
-        );
-      }
-
-      menu.appendChild(hr());
-
-      menu.appendChild(
-        item(
-          "Copy",
-          () => {
-            this.state.clipboard = this._buildDesktopClipboard("copy", selectedArray);
-            os.notify.send(`${selectedArray.length} item${selectedArray.length !== 1 ? "s" : ""} copied`);
-          },
-          "fa-copy"
-        )
-      );
-      menu.appendChild(
-        item(
-          "Cut",
-          () => {
-            this.state.clipboard = this._buildDesktopClipboard("cut", selectedArray);
-            selectedArray.forEach((i) => (i.style.opacity = "0.5"));
-            os.notify.send(`${selectedArray.length} item${selectedArray.length !== 1 ? "s" : ""} cut`);
-          },
-          "fa-cut"
-        )
-      );
-      menu.appendChild(hr());
-
-      menu.appendChild(item("Delete", () => this.deleteSelectedIcons(selectedArray), "fa-trash-alt"));
-      menu.appendChild(
-        item(
-          "Rename",
-          async () => {
-            const newName = await customPrompt("Enter new name:", fileName);
-            if (newName && newName !== fileName) {
-              await this.fs.renameItem(["Desktop"], fileName, newName);
-              fileIcon.dataset.fileName = newName;
-              fileIcon.querySelector("span, div").textContent = newName;
-              os.notify.send(`Renamed to "${newName}"`);
-            }
-          },
-          "fa-edit"
-        )
-      );
-
-      try {
-        const kind = await this.fs.getFileKind(["Desktop"], fileName);
-        if (kind === FileKind.IMAGE || kind === FileKind.VIDEO) {
-          const content = await this.fs.getFileContent(["Desktop"], fileName);
-          menu.appendChild(
-            item(
-              "Set Wallpaper",
-              () => {
-                SystemUtilities.setWallpaper(content);
-                os.notify.send(`Wallpaper set to "${fileName}"`);
-              },
-              "fa-image"
-            )
-          );
-          menu.appendChild(
-            item(
-              "Save as Wallpaper",
-              async () => {
-                await this.saveToWallpapers(fileName, content, await this.fs.getFileKind(["Desktop"], fileName));
-                os.notify.send(`"${fileName}" saved to Wallpapers`);
-              },
-              "fa-save"
-            )
-          );
-        }
-      } catch {}
-    });
-  }
-
-  showIconContextMenu(e, icon) {
-    if (!this.selectionManager.has(icon)) {
-      this.selectionManager.clear();
-      this.selectionManager.add(icon);
-    }
-    const selectedArray = this.selectionManager.toArray();
-    const last = selectedArray[selectedArray.length - 1];
-    showContextMenu(e, this.templates.iconContextMenu, {
-      open: () => os.app.launch(last.dataset.app),
-      copy: () => {
-        this.state.clipboard = this._buildDesktopClipboard("copy", selectedArray);
-        os.notify.send(`${selectedArray.length} item${selectedArray.length !== 1 ? "s" : ""} copied`);
-      },
-      cut: () => {
-        this.state.clipboard = this._buildDesktopClipboard("cut", selectedArray);
-        selectedArray.forEach((i) => (i.style.opacity = "0.5"));
-        os.notify.send(`${selectedArray.length} item${selectedArray.length !== 1 ? "s" : ""} cut`);
-      },
-      delete: () => this.deleteSelectedIcons(selectedArray),
-      rename: async () => {
-        const currentName = IconDataHelper.getIconName(last);
-        const newName = await customPrompt("Enter new name:", currentName);
-        if (newName && newName !== currentName) {
-          if (last.dataset.fileName) {
-            await this.fs.renameItem(["Desktop"], last.dataset.fileName, `${newName}.desktop`);
-            last.dataset.fileName = `${newName}.desktop`;
-          }
-          last.querySelector("span, div").textContent = newName;
-          os.notify.send(`Renamed to "${newName}"`);
-        }
-      },
-      properties: () => this.showPropertiesDialog(last)
-    });
-  }
-
-  async deleteSelectedIcons(selectedArray) {
-    if (!selectedArray || selectedArray.length === 0) return;
-
-    const saved = PositionStore.load();
-    const count = selectedArray.length;
-
-    for (const icon of selectedArray) {
-      const key = PositionStore.getKey(icon);
-      delete saved[key];
-
-      const fileName = icon.dataset.fileName;
-      const folderName = icon.dataset.folderName;
-
-      try {
-        if (fileName) {
-          await os.fs.delete(["Desktop"], fileName);
-        } else if (folderName) {
-          await os.fs.delete(["Desktop"], folderName);
-        } else if (icon.dataset.app) {
-          DeletedIconsStore.add(key);
-        }
-      } catch (err) {
-        console.error("Failed to delete desktop item:", err);
-      }
-
-      this.selectionManager.remove(icon);
-      icon.remove();
-    }
-
-    PositionStore.save(saved);
-    os.notify.send(`${count} item${count !== 1 ? "s" : ""} deleted`);
-  }
-
-  showPropertiesDialog(icon) {
-    const rect = icon.getBoundingClientRect();
-    const appId = icon.dataset.app;
-    const appInfo = this.appLauncher?.appMap?.[appId] ?? {};
-    const name = IconDataHelper.getIconName(icon);
-    const pathMap = IconDataHelper.getIconPathMap();
-    const props = {
-      Name: name,
-      Type: appId || "Application",
-      Path: pathMap[appId] || "static/icons/file.webp",
-      "App Type": appInfo.type,
-      "SWF Path": appInfo.swf,
-      URL: appInfo.url,
-      Width: `${Math.round(rect.width)}px`,
-      Height: `${Math.round(rect.height)}px`,
-      Left: `${Math.round(rect.left)}px`,
-      Top: `${Math.round(rect.top)}px`,
-      "Z-Index": icon.style.zIndex || "0"
-    };
-    const contentHtml = Object.entries(props)
-      .filter(([, v]) => v !== undefined && v !== "")
-      .map(([k, v]) => `<div style="margin:2px 0;">${k}: ${v}</div>`)
-      .join("");
-    const title = `Properties: ${name}`;
-    const propsWin = os.window.create(`${icon.id || Date.now()}-props`, title, "300px", "auto");
-    propsWin.innerHTML = `
-      <div class="window-header"><span>${title}</span>
-        ${os.window.getWindowControls()}
-      </div>
-      <div class="window-content" style="width:100%;height:100%;overflow:auto;user-select:text;padding:10px;">${contentHtml}</div>
-    `;
-    this.windowHelper.mountWindow(propsWin, propsWin.id, title);
-  }
-  addFiles() {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.multiple = true;
-    input.addEventListener("change", async () => {
-      const files = Array.from(input.files);
-      if (!files.length) return;
-      await this.explorerApp.handleFileUpload(files, false, null, null);
-      document.querySelectorAll(".folder-icon, .desktop-file-icon").forEach((i) => i.remove());
-      await this.loadDesktopItems();
-    });
-    input.click();
-  }
-
-  showDesktopContextMenu(e) {
-    showContextMenu(e, this.templates.desktopContextMenu, {
-      newNotepad: () => this.notepadApp.open(),
-      addFiles: () => this.addFiles(),
-      newFolder: async () => {
-        const folderName = await customPrompt("Enter folder name:", "New Folder");
-        if (folderName) {
-          await os.fs.mkdir(["Desktop", folderName]);
-          await this.createFolderIcon(folderName);
-          os.notify.send(`Folder "${folderName}" created`);
-        }
-      },
-      openExplorer: () => this.explorerApp.open(),
-      setWallpaper: () => {
-        os.app.launch("settingsApp", false, {
-          section: "pane-appearance",
-          target: "settings-wallpaper-card"
-        });
-      },
-      paste: async () => {
-        await this._pasteToDesktop();
-      },
-      refresh: async () => {
-        document.querySelectorAll(".folder-icon, .desktop-file-icon").forEach((i) => i.remove());
-        await this.loadDesktopItems();
-      }
-    });
-  }
-
-  async initializeDesktopFiles() {
-    await os.fs.mkdir(["Desktop"]);
-    const saved = PositionStore.load();
-    const icons = Array.from(document.querySelectorAll(".icon.selectable:not(.folder-icon):not(.desktop-file-icon)"));
-
-    const systemIcons = [];
-    const regularIcons = [];
-
-    for (const icon of icons) {
-      const name = IconDataHelper.getIconName(icon);
-      const app = icon.dataset.app;
-      const fileName = `${name}.desktop`;
-
-      const img = icon.querySelector("img");
-      const fa = icon.querySelector("i");
-      let iconPath = null;
-      if (img) iconPath = img.getAttribute("src");
-      else if (fa) iconPath = Array.from(fa.classList).join(" ");
-
-      await os.fs.write(["Desktop", fileName], IconDataHelper.createDesktopFileData(app, name, iconPath));
-
-      const key = PositionStore.getKey(icon);
-
-      if (saved[key]) {
-        this.positionHelper.placeAtCell(icon, saved[key].col, saved[key].row, icon);
-        continue;
-      }
-
-      if (icon.style.display !== "none") {
-        if (isRightAlignedSystemApp(sharedAppLauncher.appMap, app)) {
-          systemIcons.push(icon);
-        } else {
-          regularIcons.push(icon);
-        }
-      }
-    }
-
-    if (regularIcons.length) this.positionHelper.layout(regularIcons);
-    if (systemIcons.length) this.positionHelper.layoutRight(systemIcons);
-
-    await this.loadDesktopItems();
-  }
-
-  async loadDesktopItems() {
-    const desktopFolder = await os.fs.readdir(["Desktop"]);
-    for (const [name, itemData] of Object.entries(desktopFolder)) {
-      if (!itemData.type) {
-        await this.createFolderIcon(name);
-      } else if (itemData.type === "file") {
-        if (name.endsWith(".desktop")) {
-          const label = name.replace(".desktop", "");
-          const isHardcoded = Array.from(document.querySelectorAll(".icon.selectable:not(.desktop-file-icon)")).some(
-            (i) => IconDataHelper.getIconName(i) === label
-          );
-
-          if (isHardcoded) continue;
-        }
-        await this.createDesktopFileIcon(name, itemData);
-      }
-    }
-  }
-
-  async createDesktopFileIcon(fileName, itemData = null) {
-    if (document.querySelector(`.desktop-file-icon[data-file-name="${CSS.escape(fileName)}"]`)) return;
-
-    let thumbnailSrc = null;
-    if (fileName.endsWith(".desktop")) {
-      const raw = await this.fs.getFileContent(["Desktop"], fileName);
-      thumbnailSrc = resolveDesktopIcon(raw, fileName);
-    } else {
-      thumbnailSrc = itemData?.icon;
-    }
-
-    if (isImageFile(fileName)) {
-      try {
-        const content = await this.fs.getFileContent(["Desktop"], fileName);
-        thumbnailSrc = content instanceof Blob ? await readFileAsDataURL(content) : content;
-      } catch (e) {
-        console.error("Failed to load image thumbnail:", e);
-      }
-    }
-
-    const iconHTML = buildFileIconHTML(fileName, { thumbnailSrc, size: 64, radius: 12, storedIcon: thumbnailSrc });
-    const icon = document.createElement("div");
-    icon.className = "icon selectable desktop-file-icon";
-    icon.dataset.fileName = fileName;
-    const displayName = fileName.endsWith(".desktop") ? fileName.slice(0, -8) : fileName;
-    icon.innerHTML = `${iconHTML}<div>${displayName}</div>`;
-    if (fileName.endsWith(".desktop")) {
-      const raw = await this.fs.getFileContent(["Desktop"], fileName);
-      try {
-        const parsed = JSON.parse(raw);
-        if (parsed && parsed.app) icon.dataset.app = parsed.app;
-        if (parsed && parsed.steamGameId) icon.dataset.steamGameId = parsed.steamGameId;
-      } catch (e) {}
-    }
-
-    this.desktop.appendChild(icon);
-    this.makeIconInteractable(icon);
-
-    const saved = PositionStore.load();
-    const key = PositionStore.getKey(icon);
-    if (saved[key]) this.positionHelper.placeAtCell(icon, saved[key].col, saved[key].row, icon);
-    else this.positionHelper.snap(icon);
-
-    return icon;
-  }
-
-  async _openDesktopFile(fileName) {
-    if (fileName.endsWith(".desktop")) {
-      try {
-        const raw = await this.fs.getFileContent(["Desktop"], fileName);
-        const content = JSON.parse(raw);
-        if (content && content.app) {
-          os.app.launch(content.app);
-          return;
-        } else if (content && content.type === "youtube-embed") {
-          this._openYouTubeEmbedDesktop(content);
-          return;
-        }
-      } catch (e) {
-        console.error("Failed to parse desktop file JSON:", e);
-      }
-    }
-    await openFileWith({
-      name: fileName,
-      path: ["Desktop"],
-      fs: this.fs,
-      notepadApp: this.notepadApp,
-      windowManager: this.appLauncher.wm,
-      appLauncher: this.appLauncher
-    });
-  }
-
-  _openYouTubeEmbedDesktop(content) {
-    const winId = `yt-embed-${Date.now()}`;
-    const win = os.window.create(winId, content.name || "YouTube Embed", "800px", "600px");
-
-    const base = content.nocookie ? "https://www.youtube-nocookie.com" : "https://www.youtube.com";
-    const params = new URLSearchParams();
-    if (content.autoplay) params.set("autoplay", "1");
-    if (!content.controls) params.set("controls", "0");
-    if (content.mute && content.autoplay) params.set("mute", "1");
-    if (content.startSeconds > 0) params.set("start", String(content.startSeconds));
-    if (content.endSeconds > 0) params.set("end", String(content.endSeconds));
-    if (content.loop) params.set("loop", "1");
-    params.set("rel", "0");
-
-    let embedUrl;
-    if (content.kind === "playlist" && content.playlistId) {
-      params.set("list", content.playlistId);
-      embedUrl = `${base}/embed/videoseries?${params.toString()}`;
-    } else if (content.kind === "video" && content.videoId) {
-      if (content.loop) params.set("playlist", content.videoId);
-      embedUrl = `${base}/embed/${encodeURIComponent(content.videoId)}?${params.toString()}`;
-    } else {
-      os.notify.send("Invalid YouTube embed data", "Missing videoId or playlistId");
-      return;
-    }
-
-    win.innerHTML = `
-      <div class="window-header">
-        <span>${content.name || "YouTube Embed"}</span>
-        ${os.window.getWindowControls()}
-      </div>
-      <div class="window-content" style="width:100%; height:100%; overflow:hidden; display:flex; align-items:center; justify-content:center; background:#000;">
-        <iframe src="${embedUrl}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" style="width:100%; height:100%; border:none;"></iframe>
-      </div>
-    `;
-  }
-
-  async _editDesktopFileWithNotepad(fileName) {
-    try {
-      const content = await this.fs.getFileContent(["Desktop"], fileName);
-      this.notepadApp.open(fileName, content, ["Desktop"]);
-    } catch (e) {
-      console.error("Failed to open desktop file in Notepad:", e);
-      os.notify.send(`Could not open "${fileName}"`);
-    }
-  }
-
-  async saveToWallpapers(name, content, kind, icon) {
-    os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { achievementId: Achievements.PersonalSpace });
-
-    const wallpapersPath = ["Pictures", "Wallpapers"];
-    await os.fs.mkdir(wallpapersPath);
-    const safeIcon = kind === FileKind.IMAGE ? "@content" : icon || resolveIconUrl("static/icons/file.webp");
-    await os.fs.write(wallpapersPath, name, content, kind, safeIcon);
-  }
-
-  async createFolderIcon(folderName) {
-    if (document.querySelector(`.folder-icon[data-folder-name="${CSS.escape(folderName)}"]`)) return;
-    const folderIcon = document.createElement("div");
-    folderIcon.className = "icon selectable folder-icon";
-    folderIcon.dataset.folderName = folderName;
-    folderIcon.innerHTML = `<img src="${resolveIconUrl("static/icons/file.webp")}"><div>${folderName}</div>`;
-    this.desktop.appendChild(folderIcon);
-    this.makeIconInteractable(folderIcon);
-    const saved = PositionStore.load();
-    const key = PositionStore.getKey(folderIcon);
-    if (saved[key]) this.positionHelper.placeAtCell(folderIcon, saved[key].col, saved[key].row, folderIcon);
-    else this.positionHelper.snap(folderIcon);
-    return folderIcon;
   }
 
   setupInteractableSelection() {
@@ -1861,80 +698,59 @@ export class DesktopUI {
   }
 
   setupStartMenu() {
-    const menuActions = {
-      home: () => {
-        this.explorerApp.open([]);
-      },
-      documents: () => {
-        this.explorerApp.open(["Documents"]);
-      },
-      pictures: () => {
-        this.explorerApp.open(["Pictures"]);
-      },
-      notes: () => this.notepadApp.open()
-    };
-    this.startMenu.querySelectorAll(".start-item").forEach((item) => {
-      item.onclick = (e) => {
-        e.stopPropagation();
-        const app = item.dataset.path;
-        if (menuActions[app]) menuActions[app]();
-        this.closeStartMenu();
-      };
-    });
+    setupStartMenuFn(this.appLauncher, null, this.explorerApp, this.notepadApp, this.selectionManager);
+  }
 
-    const hideGamesKey = StorageKeys.hideGames;
-    const hideGamesBtn = document.getElementById("hide-games-btn");
+  async initializeDesktopFiles() {
+    await this.iconManager.initializeDesktopFiles(sharedAppLauncher, isRightAlignedSystemApp);
+  }
 
-    const applyHideGames = (hidden) => {
-      document.querySelectorAll("#desktop .icon").forEach((icon) => {
-        if (
-          sharedAppLauncher.appMap[icon.dataset.app] &&
-          sharedAppLauncher.appMap[icon.dataset.app].type !== "system"
-        ) {
-          icon.style.display = hidden ? "none" : "";
-          if (hidden) this.selectionManager.remove(icon);
-        }
-      });
-      if (hideGamesBtn) hideGamesBtn.textContent = hidden ? "🎮 Show Games" : "🎮 Hide Games";
-      layoutIconsCall();
-    };
+  async loadDesktopItems() {
+    await this.iconManager.loadDesktopItems();
+  }
 
-    const storedHidden = os.storage.get(hideGamesKey) === "true";
-    applyHideGames(storedHidden);
+  async createFolderIcon(folderName) {
+    return this.iconManager.createFolderIcon(folderName);
+  }
 
-    toggleHideGames = () => {
-      const currentlyHidden = os.storage.get(hideGamesKey) === "true";
-      const next = !currentlyHidden;
-      os.storage.set(hideGamesKey, String(next));
-      applyHideGames(next);
-    };
+  async createDesktopFileIcon(fileName, itemData = null) {
+    return this.iconManager.createDesktopFileIcon(fileName, itemData);
+  }
 
-    const hideSystemKey = StorageKeys.hideSystem;
-    const hideSystemBtn = document.getElementById("hide-system-btn");
+  async _openDesktopFile(fileName) {
+    return this.iconManager._openDesktopFile(fileName);
+  }
 
-    const applyHideSystemApps = (hidden) => {
-      document.querySelectorAll("#desktop .icon").forEach((icon) => {
-        if (
-          sharedAppLauncher.appMap[icon.dataset.app] &&
-          sharedAppLauncher.appMap[icon.dataset.app].type === "system"
-        ) {
-          icon.style.display = hidden ? "none" : "";
-          if (hidden) this.selectionManager.remove(icon);
-        }
-      });
-      if (hideSystemBtn) hideSystemBtn.textContent = hidden ? "⚙️ Show System Apps" : "⚙️ Hide System Apps";
-      layoutIconsCall();
-    };
+  _openYouTubeEmbedDesktop(content) {
+    this.iconManager._openYouTubeEmbedDesktop(content);
+  }
 
-    const storedSystemHidden = os.storage.get(hideSystemKey) === "true";
-    applyHideSystemApps(storedSystemHidden);
+  async _editDesktopFileWithNotepad(fileName) {
+    return this.iconManager._editDesktopFileWithNotepad(fileName);
+  }
 
-    toggleHideSystemApps = () => {
-      const currentlyHidden = os.storage.get(hideSystemKey) === "true";
-      const next = !currentlyHidden;
-      os.storage.set(hideSystemKey, String(next));
-      applyHideSystemApps(next);
-    };
+  async saveToWallpapers(name, content, kind, icon) {
+    return this.iconManager.saveToWallpapers(name, content, kind, icon);
+  }
+
+  addFiles() {
+    this.iconManager.addFiles();
+  }
+
+  showPropertiesDialog(icon) {
+    showPropertiesDialog(icon, this.appLauncher, IconDataHelper, this.windowHelper);
+  }
+
+  deleteSelectedIcons(selectedArray) {
+    return this.clipboardManager.deleteSelectedIcons(selectedArray, this.selectionManager);
+  }
+
+  _buildDesktopClipboard(action, icons) {
+    return this.clipboardManager._buildDesktopClipboard(action, icons);
+  }
+
+  _pasteToDesktop() {
+    return this.clipboardManager._pasteToDesktop();
   }
 }
 
