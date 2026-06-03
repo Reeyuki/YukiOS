@@ -1,5 +1,6 @@
-import { trayManager } from "./tray.js";
 import { resolveGhUrl } from "./shared/assetResolver.js";
+import { os } from "./os/index.js";
+import { StorageKeys } from "./StorageKeys.js";
 
 export const SystemAudio = Object.freeze({
   START: "static/audio/start.wav",
@@ -9,13 +10,13 @@ export const SystemAudio = Object.freeze({
   DESKTOP_CHANGE: "static/audio/desktopchange.mpga"
 });
 
-const STORAGE_KEY = "yukios_audio_mixer_v1";
+const STORAGE_KEY = StorageKeys.audioMixerV1;
 
 class AudioMixer {
   constructor() {
     this.masterVolume = 1.0;
     this.systemVolume = 1.0;
-    this.systemAudioEnabled = localStorage.getItem("yukiOS_system_audio_enabled") !== "false";
+    this.systemAudioEnabled = localStorage.getItem(StorageKeys.systemAudioEnabled) !== "false";
     this.channels = new Map();
     this.gainNodes = new Map();
     this.audioCtx = null;
@@ -34,7 +35,11 @@ class AudioMixer {
     } catch (e) {
       this.savedChannels = {};
     }
-    this._muted = localStorage.getItem("yukiOS_sound_enabled") === "false";
+    const settingsSystemVolume = parseFloat(localStorage.getItem(StorageKeys.systemVolume));
+    if (Number.isFinite(settingsSystemVolume)) {
+      this.systemVolume = settingsSystemVolume;
+    }
+    this._muted = localStorage.getItem(StorageKeys.soundEnabled) === "false";
   }
 
   _save() {
@@ -251,7 +256,7 @@ class AudioMixer {
   }
 
   _initTray() {
-    trayManager.register("audio-mixer", "fa-solid fa-bullhorn", "Audio Mixer", {
+    os.tray.register("audio-mixer", "fa-solid fa-bullhorn", "Audio Mixer", {
       resident: true,
       showInTray: true,
       priority: 100,

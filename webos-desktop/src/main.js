@@ -1,66 +1,61 @@
-import { TerminalApp } from "./terminal.js";
-import { ExplorerApp } from "./explorer.js";
+import { TerminalApp } from "./apps/terminal.js";
+import { ExplorerApp } from "./apps/explorer.js";
 import { WindowManager } from "./windowManager.js";
 import { AppLauncher } from "./appLauncher.js";
-import { BrowserApp } from "./browserApp.js";
-import { NotepadApp } from "./notepad.js";
-import { CameraApp } from "./camera.js";
-import { AboutApp } from "./about.js";
-import { NewsApp } from "./news.js";
+import { BrowserApp } from "./apps/browserApp.js";
+import { NotepadApp } from "./apps/notepad.js";
+import { CameraApp } from "./apps/camera.js";
+import { AboutApp } from "./apps/about.js";
+import { NewsApp } from "./apps/news.js";
 import { SystemUtilities } from "./system.js";
 import { FileSystemManager } from "./fs.js";
-import { setupStartMenu } from "./startMenu.js";
-import { DesktopUI } from "./desktopui.js";
-import { CalculatorApp } from "./calculator.js";
+import { setupStartMenu } from "./desktopui/startMenu.js";
+import { DesktopUI } from "./desktopui/desktopui.js";
+import { CalculatorApp } from "./apps/calculator.js";
 import { SettingsApp } from "./settings/settings.js";
-import { TaskManagerApp } from "./taskManager.js";
-import { WeatherApp } from "./weather.js";
-import { AppCreatorApp } from "./appCreator.js";
-import { OfficeAppProxy } from "./officeLoader.js";
-import { MarkdownApp } from "./markdown.js";
-import { YouTubeApp } from "./youtube.js";
-import { ShittifyApp } from "./shittify.js";
-import { MonacoApp } from "./monaco.js";
-import { Model3DApp } from "./model3d.js";
+import { TaskManagerApp } from "./apps/taskManager.js";
+import { WeatherApp } from "./apps/weather.js";
+import { AppCreatorApp } from "./apps/appCreator.js";
+import { OfficeAppProxy } from "./office/officeLoader.js";
+import { MarkdownApp } from "./apps/markdown.js";
+import { YouTubeApp } from "./apps/youtube.js";
+import { ShittifyApp } from "./apps/shittify.js";
+import { MonacoApp } from "./apps/monaco.js";
+import { Model3DApp } from "./apps/model3d.js";
 import { NotificationCenter } from "./notificationCenter.js";
-import { CategoriesApp } from "./categories.js";
-import { JsDosApp } from "./jsdos.js";
-import { V86App } from "./v86.js";
-import { EmulatorApp } from "./emulator.js";
+import { JsDosApp } from "./apps/jsdos.js";
+import { V86App } from "./apps/v86.js";
+import { EmulatorApp } from "./apps/emulator.js";
 import { AchievementsApp } from "./achievements.js";
 import { customAlert } from "./shared/dialogs.js";
-import { ProfileCustomizerApp } from "./profileCustomizer.js";
-import { setDesktopUI as setGamesDesktopUI } from "./games.js";
+import { ProfileCustomizerApp } from "./apps/profileCustomizer.js";
+import { setDesktopUI as setGamesDesktopUI, handleSteamUrlParam } from "./games/games.js";
 import { AdsManager } from "./ads.js";
-import { registerPWA } from "./pwa.js";
-import { RuffleApp } from "./ruffle.js";
+import { registerPWA } from "./pwa/pwa.js";
+import { RuffleApp } from "./apps/ruffle.js";
 import { SessionManager } from "./SessionManager.js";
 import { CommandPalette } from "./commandPalette.js";
-import { ShortcutsApp } from "./shortcuts.js";
-import { YukiConvertApp } from "./yukiConvert.js";
+import { ShortcutsApp } from "./apps/shortcuts.js";
+import { YukiConvertApp } from "./apps/yukiConvert.js";
 import { HybridAdapter } from "./runtime/HybridAdapter.js";
-import { SetupApp } from "./setupApp.js";
-import { DataEditorApp } from "./dataEditor.js";
-import { InstalledAppsApp } from "./installedApps.js";
-import { YukiOsGuideApp } from "./yukiOsGuide.js";
+import { SetupApp } from "./apps/setupApp.js";
+import { DataEditorApp } from "./apps/dataEditor.js";
+import { InstalledAppsApp } from "./apps/installedApps.js";
+import { YukiOsGuideApp } from "./apps/yukiOsGuide.js";
 import { ClipboardManager } from "./clipboardManager.js";
-import { ClipboardManagerApp } from "./clipboardApp.js";
+import { ClipboardManagerApp } from "./apps/clipboardApp.js";
 import { AIAssistantApp } from "./apps/aiAssistant.js";
-import { BrightnessApp } from "./brightnessApp.js";
-import { PowerApp } from "./powerApp.js";
-import { NetworkTrayApp } from "./networkTray.js";
-import {
-  resolveGhUrl,
-  resolveIconUrl,
-  initializeMirrors,
-  CDN_MIRRORS,
-  getCdnMirror,
-  setCdnMirror
-} from "./shared/assetResolver.js";
-import { appMap } from "./gamesList.js";
-import "./taskbarPositionManager.js";
+import { DisplayPerformanceApp } from "./apps/displayPerformanceApp.js";
+import { NetworkTrayApp } from "./tray/networkTray.js";
+import { EmojiSelectorApp } from "./apps/emojiSelector.js";
+import { SystemAppsApp } from "./apps/systemApps.js";
+import "./osBridgeTelemetry.js";
+import { resolveIconUrl, initializeMirrors, CDN_MIRRORS, getCdnMirror, setCdnMirror } from "./shared/assetResolver.js";
+import { appMap } from "./games/gamesList.js";
+import "./desktopui/taskbarPositionManager.js";
 import logoImg from "./assets/logo.png";
 import { showCdnPrompt } from "./shared/dialogs.js";
+import { initializeOSBridge } from "./os/index.js";
 
 initializeMirrors(appMap);
 registerPWA();
@@ -68,7 +63,14 @@ const notificationCenter = new NotificationCenter();
 const fileSystemManager = new FileSystemManager();
 const windowManager = new WindowManager(notificationCenter);
 import { bus } from "./core/EventBus.js";
-import { trayManager } from "./tray.js";
+import { trayManager } from "./tray/tray.js";
+initializeOSBridge({
+  windowManager,
+  fileSystemManager,
+  notificationCenter,
+  appLauncher: null,
+  eventBus: bus
+});
 trayManager.init(windowManager);
 const clipboardManager = new ClipboardManager(bus);
 
@@ -101,6 +103,9 @@ const EnhancedSettingsApp = HybridAdapter.enhanceBaseApp(SettingsApp);
 const EnhancedCalculatorApp = HybridAdapter.enhanceBaseApp(CalculatorApp);
 const EnhancedAchievementsApp = HybridAdapter.enhanceBaseApp(AchievementsApp);
 const EnhancedNewsApp = HybridAdapter.enhanceBaseApp(NewsApp);
+const EnhancedEmojiSelectorApp = HybridAdapter.enhanceBaseApp(EmojiSelectorApp);
+const EnhancedDataEditorApp = HybridAdapter.enhanceBaseApp(DataEditorApp);
+const EnhancedYukiOsGuideApp = HybridAdapter.enhanceBaseApp(YukiOsGuideApp);
 
 const achievementsApp = new EnhancedAchievementsApp(services);
 services.achievementsApp = achievementsApp;
@@ -192,8 +197,6 @@ const monacoApp = new EnhancedMonacoApp(services);
 services.monacoApp = monacoApp;
 
 const shittifyApp = new ShittifyApp(services);
-const categoriesApp = new CategoriesApp(services);
-services.categoriesApp = categoriesApp;
 
 const model3dApp = new Model3DApp(services);
 services.model3dApp = model3dApp;
@@ -201,13 +204,13 @@ services.model3dApp = model3dApp;
 const setupApp = new SetupApp(services);
 services.setupApp = setupApp;
 
-const dataEditorApp = new DataEditorApp(services);
+const dataEditorApp = new EnhancedDataEditorApp(services);
 services.dataEditorApp = dataEditorApp;
 
 const installedAppsApp = new InstalledAppsApp(services);
 services.installedAppsApp = installedAppsApp;
 
-const yukiOsGuideApp = new YukiOsGuideApp(services);
+const yukiOsGuideApp = new EnhancedYukiOsGuideApp(services);
 services.yukiOsGuideApp = yukiOsGuideApp;
 
 const clipboardManagerApp = new ClipboardManagerApp(services);
@@ -216,14 +219,17 @@ services.clipboardManagerApp = clipboardManagerApp;
 const aiAssistantApp = new AIAssistantApp(services);
 services.aiAssistantApp = aiAssistantApp;
 
-const brightnessApp = new BrightnessApp(services);
-services.brightnessApp = brightnessApp;
-
-const powerApp = new PowerApp(services);
-services.powerApp = powerApp;
+const displayPerformanceApp = new DisplayPerformanceApp(services);
+services.displayPerformanceApp = displayPerformanceApp;
 
 const networkTrayApp = new NetworkTrayApp(services);
 services.networkTrayApp = networkTrayApp;
+
+const emojiSelectorApp = new EnhancedEmojiSelectorApp(services);
+services.emojiSelectorApp = emojiSelectorApp;
+
+const systemAppsApp = new SystemAppsApp(services);
+services.systemAppsApp = systemAppsApp;
 
 const appLauncher = new AppLauncher(
   windowManager,
@@ -244,7 +250,6 @@ const appLauncher = new AppLauncher(
   shittifyApp,
   monacoApp,
   model3dApp,
-  categoriesApp,
   jsDosApp,
   v86app,
   youtubeApp,
@@ -262,7 +267,9 @@ const appLauncher = new AppLauncher(
   yukiOsGuideApp,
   clipboardManagerApp,
   aiAssistantApp,
-  brightnessApp
+  displayPerformanceApp,
+  emojiSelectorApp,
+  systemAppsApp
 );
 window.appLauncher = appLauncher;
 services.appLauncher = appLauncher;
@@ -270,6 +277,30 @@ windowManager.setAppLauncher(appLauncher);
 appCreatorApp.setAppLauncher(appLauncher);
 explorerApp.setAppLauncher(appLauncher);
 installedAppsApp.setAppLauncher(appLauncher);
+
+initializeOSBridge({
+  windowManager,
+  fileSystemManager,
+  notificationCenter,
+  appLauncher,
+  eventBus: bus
+});
+
+import {
+  trackLegacyCall as trackLegacyCallImport,
+  getLegacyAPICalls,
+  getLegacyAPICallStats,
+  clearLegacyAPICalls
+} from "./os/index.js";
+
+window.trackLegacyCall = trackLegacyCallImport;
+
+window.osBridgeTelemetry = {
+  getLegacyCalls: getLegacyAPICalls,
+  getStats: getLegacyAPICallStats,
+  clearCalls: clearLegacyAPICalls
+};
+
 const desktopUI = new DesktopUI(appLauncher, notepadApp, explorerApp, fileSystemManager);
 
 const sessionManager = new SessionManager(services);
@@ -312,7 +343,7 @@ async function start() {
 
   if (location.hostname.endsWith("neocities.org")) {
     customAlert(
-      "Neocities does not suppo rt loading assets from other domains! OS will be severely limited to load apps and data.",
+      "Neocities does not support loading assets from other domains! OS will be severely limited to load apps and data.",
       "Neocities Warning"
     );
   }
@@ -332,7 +363,7 @@ async function start() {
 
   if (steamParam) {
     setTimeout(() => {
-      categoriesApp.initUrlParamHandling(appLauncher, windowManager);
+      handleSteamUrlParam(appLauncher, windowManager);
     }, 0);
   } else if (app) {
     setTimeout(() => {

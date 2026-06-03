@@ -1,0 +1,122 @@
+.emoji-selector-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--bg-secondary);
+  padding: 0;
+  gap: 0;
+}
+
+.emoji-mart-container {
+  flex: 1;
+  overflow: hidden;
+}
+
+.emoji-mart-picker {
+  height: 100%;
+}
+
+.emoji-mart {
+  background: var(--bg-secondary) !important;
+  border: none !important;
+  font-family: inherit !important;
+}
+
+.emoji-mart-scroll {
+  padding: 8px !important;
+}
+
+.emoji-mart-category-label {
+  background: var(--bg-secondary) !important;
+  color: var(--text-secondary) !important;
+  padding: 8px 12px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  border-top: 1px solid var(--glass-border) !important;
+}
+
+.emoji-mart-search {
+  background: var(--bg-primary) !important;
+  border: 1px solid var(--glass-border) !important;
+  color: var(--text-primary) !important;
+  padding: 8px 12px !important;
+  margin: 8px !important;
+  border-radius: var(--r-sm) !important;
+}
+
+.emoji-mart-search input {
+  background: transparent !important;
+  color: var(--text-primary) !important;
+  font-size: 14px !important;
+}
+
+.emoji-mart-search input::placeholder {
+  color: var(--text-secondary) !important;
+}
+
+.emoji-mart-emoji {
+  padding: 4px !important;
+}
+
+.emoji-mart-emoji:hover {
+  background: var(--glass) !important;
+}
+
+.emoji-mart-preview {
+  background: var(--bg-primary) !important;
+  border-top: 1px solid var(--glass-border) !important;
+  padding: 8px !important;
+}
+
+.emoji-mart-preview-data {
+  color: var(--text-primary) !important;
+}
+
+.emoji-mart-preview-name {
+  color: var(--text-secondary) !important;
+}
+
+.emoji-mart-nav {
+  background: var(--bg-primary) !important;
+  border-top: 1px solid var(--glass-border) !important;
+  padding: 4px !important;
+}
+
+.emoji-mart-nav-button {
+  color: var(--text-secondary) !important;
+}
+
+.emoji-mart-nav-button:hover,
+.emoji-mart-nav-button-selected {
+  color: var(--brand) !important;
+}
+
+.emoji-mart-skin {
+  background: var(--bg-primary) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+
+.emoji-preview {
+  flex: 0 0 auto;
+  min-height: 24px;
+  font-size: 14px;
+  color: var(--brand);
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.2s;
+  padding: 8px;
+}
+
+.emoji-preview.visible {
+  opacity: 1;
+}
+
+.emoji-selector-copy-buffer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}

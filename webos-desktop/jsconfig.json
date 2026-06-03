@@ -1,14 +1,39 @@
 {
   "compilerOptions": {
+    "target": "ES2022",
     "module": "ESNext",
-    "target": "ESNext",
-    "moduleResolution": "Node",
-    "checkJs": true,
-    "strict": false,
+    "moduleResolution": "Bundler",
+
     "baseUrl": ".",
     "paths": {
       "*": ["src/*"]
-    }
+    },
+
+    "allowJs": true,
+    "checkJs": true,
+
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "useUnknownInCatchVariables": true,
+
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+
+    "esModuleInterop": true,
+    "skipLibCheck": true
   },
   "exclude": ["node_modules", "dist"]
 }

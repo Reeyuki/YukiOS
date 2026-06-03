@@ -1,92 +1,97 @@
-.emu-container {
+.emu-shell,
+.jsdos-container,
+.ruf-container,
+.v86-shell {
   width: 100%;
   height: 100%;
-  background: var(--bg-primary);
+  background:
+    radial-gradient(circle at top, var(--brand-dim), transparent 40%),
+    linear-gradient(180deg, var(--bg-secondary), var(--bg-primary));
   color: var(--text-primary);
-  font-family:
-    system-ui,
-    -apple-system,
-    sans-serif;
+  font-family: var(--font-ui);
   overflow-y: auto;
   overflow-x: hidden;
   padding: 20px;
   box-sizing: border-box;
 }
 
-.emu-header {
+.emu-shell--game,
+.emu-window,
+.jsdos-game-window,
+.v86-window {
+  width: 100%;
+  height: calc(100% - 30px);
+  background:
+    radial-gradient(circle at top, var(--brand-dim), transparent 45%),
+    linear-gradient(180deg, var(--bg-secondary), var(--bg-primary));
+  color: var(--text-primary);
+  position: relative;
+  overflow: hidden;
+  padding: 0;
+}
+
+.emu-header,
+.jsdos-header,
+.v86-header,
+.ruf-header {
   display: flex;
   align-items: center;
   gap: 16px;
   padding: 16px;
   border-radius: 14px;
   border: 1px solid var(--glass-border);
-  background: var(--bg-secondary);
+  background: var(--glass);
   backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
   margin-bottom: 20px;
+  box-shadow:
+    0 24px 64px var(--shadow-color),
+    inset 0 1px 0 var(--glass-border);
 }
 
-.emu-icon-main {
+.emu-header-icon,
+.jsdos-header-icon,
+.v86-header-icon,
+.v86-header i.fa-microchip,
+.ruf-icon-main {
   font-size: 38px;
   color: var(--brand);
+  flex-shrink: 0;
 }
 
-.emu-title {
+.emu-header-text,
+.jsdos-header-text,
+.v86-header-text,
+.v86-header-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.emu-title,
+.jsdos-header-title,
+.v86-title,
+.ruf-title {
   font-size: 1.5rem;
   font-weight: 800;
   margin: 0;
   color: var(--text-primary);
+  line-height: 1.15;
 }
 
-.emu-subtitle {
+.emu-subtitle,
+.jsdos-header-subtitle,
+.v86-subtitle,
+.ruf-subtitle {
   font-size: 0.88rem;
   color: var(--text-secondary);
   margin-top: 4px;
+  line-height: 1.4;
 }
 
-.emu-upload-zone {
-  border: 2px dashed var(--glass-border);
-  border-radius: 14px;
-  padding: 32px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  background: var(--glass);
-  margin-bottom: 24px;
-}
-
-.emu-upload-zone:hover {
-  background: var(--glass-hover);
-  border-color: var(--brand);
-}
-
-.emu-upload-icon {
-  font-size: 32px;
-  color: var(--brand);
-  margin-bottom: 12px;
-  display: block;
-}
-
-.emu-upload-text {
-  font-size: 14px;
-  color: var(--text-primary);
-  margin-bottom: 8px;
-}
-
-.emu-upload-subtext {
-  font-size: 11px;
-  color: var(--text-secondary);
-  margin-bottom: 12px;
-}
-
-.emu-upload-formats {
-  font-size: 10px;
-  color: var(--text-secondary);
-  line-height: 1.6;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.emu-section-title {
+.emu-section-title,
+.jsdos-section-title,
+.v86-section-title,
+.ruf-section-title {
   font-size: 11px;
   color: var(--text-secondary);
   text-transform: uppercase;
@@ -96,13 +101,104 @@
   font-weight: 600;
 }
 
-.emu-file-grid {
+.emu-upload-zone,
+.jsdos-upload-zone,
+.v86-upload-zone,
+.ruf-upload-zone {
+  border: 2px dashed var(--glass-border);
+  border-radius: 14px;
+  padding: 24px 20px;
+  min-height: 116px;
+  text-align: center;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    border-color 0.15s ease,
+    background 0.15s ease;
+  background: var(--glass);
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  box-shadow:
+    0 18px 48px var(--shadow-color),
+    inset 0 1px 0 var(--glass-border);
+}
+
+.emu-upload-zone--compact {
+  padding: 18px;
+  min-height: 104px;
+}
+
+.emu-upload-zone:hover,
+.emu-upload-zone--dragover,
+.jsdos-upload-zone-dragover,
+.v86-upload-zone-dragover {
+  background: var(--glass-hover);
+  border-color: var(--brand);
+  transform: translateY(-1px);
+}
+
+.emu-upload-icon,
+.jsdos-upload-icon,
+.v86-upload-zone i.fa-upload,
+.ruf-upload-icon {
+  font-size: 32px;
+  color: var(--brand);
+  margin-bottom: 8px;
+  display: block;
+}
+
+.emu-upload-text,
+.jsdos-upload-text,
+.v86-upload-text,
+.ruf-upload-text {
+  font-size: 14px;
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+.emu-upload-text strong,
+.jsdos-upload-text strong,
+.v86-upload-text strong,
+.ruf-upload-text strong {
+  color: var(--text-primary);
+}
+
+.emu-upload-subtext,
+.jsdos-upload-subtext,
+.v86-upload-subtext,
+.ruf-upload-subtext {
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.emu-file-input {
+  display: none;
+}
+
+.emu-grid,
+.jsdos-game-grid,
+.v86-system-grid,
+.ruf-file-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(var(--emu-grid-min, 220px), 1fr));
   gap: 12px;
 }
 
-.emu-file-card {
+.emu-grid--compact {
+  --emu-grid-min: 180px;
+}
+
+.emu-card,
+.jsdos-game-card,
+.v86-system-card,
+.v86-image-card,
+.ruf-file-card {
   background: var(--bg-secondary);
   border: 1px solid var(--glass-border);
   border-radius: 12px;
@@ -114,42 +210,90 @@
   transition:
     transform 0.15s ease,
     box-shadow 0.15s ease,
-    border-color 0.15s ease;
+    border-color 0.15s ease,
+    background 0.15s ease;
   position: relative;
+  box-shadow:
+    0 12px 32px var(--shadow-color),
+    inset 0 1px 0 var(--glass-border);
 }
 
-.emu-file-card:hover {
+.emu-card:hover,
+.jsdos-game-card:hover,
+.v86-system-card:hover,
+.v86-image-card:hover,
+.ruf-file-card:hover,
+.emu-card--hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px var(--brand-dim);
+  box-shadow:
+    0 20px 48px var(--shadow-color),
+    inset 0 1px 0 var(--glass-border);
   border-color: var(--brand);
 }
 
-.emu-file-icon {
+.emu-card--removable,
+.jsdos-user-card,
+.v86-image-card,
+.ruf-file-card {
+  padding-right: 42px;
+}
+
+.emu-card-icon,
+.jsdos-game-icon,
+.v86-system-icon,
+.v86-image-icon,
+.v86-system-card i,
+.v86-image-card i,
+.ruf-file-icon {
   font-size: 22px;
   color: var(--brand);
+  flex-shrink: 0;
 }
 
-.emu-file-info {
-  flex: 1;
-  overflow: hidden;
+.emu-card-icon--hero,
+.v86-header i.fa-microchip {
+  font-size: 38px;
 }
 
-.emu-file-name {
+.emu-card-title,
+.jsdos-game-title,
+.v86-system-name,
+.v86-image-name,
+.v86-system-card div,
+.v86-image-card div,
+.ruf-file-name {
   font-size: 13px;
   color: var(--text-primary);
+  font-weight: 600;
+  line-height: 1.35;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-weight: 600;
 }
 
-.emu-file-type {
-  font-size: 10px;
+.emu-card-meta,
+.ruf-file-type,
+.emu-empty,
+.jsdos-empty-text,
+.v86-empty-text {
+  font-size: 12px;
   color: var(--text-secondary);
-  margin-top: 4px;
+  line-height: 1.4;
+  padding: 4px 0;
 }
 
-.emu-delete-btn {
+.emu-card-body,
+.ruf-file-info,
+.v86-image-card > div:first-of-type {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.emu-delete-btn,
+.jsdos-delete-btn,
+.v86-delete-btn,
+.ruf-delete-btn {
   background: var(--glass);
   border: 1px solid transparent;
   color: var(--text-secondary);
@@ -161,183 +305,39 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.15s ease;
-}
-
-.emu-delete-btn:hover {
-  color: var(--error);
-  background: var(--error-bg);
-  border-color: var(--error-border);
-}
-
-.jsdos-container {
-  width: 100%;
-  height: 100%;
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  font-family: monospace;
-  overflow-y: auto;
-  overflow-x: hidden;
-}
-
-.jsdos-header {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 16px;
-  border-radius: 14px;
-  border: 1px solid var(--glass-border);
-  background: var(--bg-secondary);
-  backdrop-filter: blur(32px);
-  margin-bottom: 20px;
-}
-
-.jsdos-header-icon {
-  font-size: 38px;
-  color: var(--brand);
-}
-
-.jsdos-header-text {
-  flex: 1;
-}
-
-.jsdos-header-title {
-  font-size: 1.5rem;
-  font-weight: 800;
-  margin: 0;
-  color: var(--text-primary);
-}
-
-.jsdos-header-subtitle {
-  font-size: 0.88rem;
-  color: var(--text-secondary);
-  margin-top: 4px;
-}
-
-.jsdos-section-title {
-  padding: 16px 16px 8px;
-  font-size: 11px;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.jsdos-upload-zone {
-  margin: 0 16px 12px;
-  border: 2px dashed var(--glass-border);
-  border-radius: 14px;
-  padding: 18px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  background: var(--glass);
-}
-
-.jsdos-upload-zone-dragover {
-  background: var(--glass-hover);
-  border-color: var(--brand);
-}
-
-.jsdos-upload-icon {
-  font-size: 20px;
-  color: var(--brand);
-  margin-bottom: 8px;
-  display: block;
-}
-
-.jsdos-upload-text {
-  font-size: 13px;
-  color: var(--text-primary);
-}
-
-.jsdos-upload-text strong {
-  color: var(--text-primary);
-}
-
-.jsdos-upload-subtext {
-  font-size: 11px;
-  color: var(--text-secondary);
-  margin-top: 4px;
-}
-
-.jsdos-empty-text {
-  font-size: 12px;
-  color: var(--text-secondary);
-  padding: 4px 0;
-}
-
-.jsdos-game-grid {
-  padding: 0 16px 16px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.jsdos-game-card {
-  background: var(--bg-secondary);
-  border: 1px solid var(--glass-border);
-  border-radius: 12px;
-  padding: 14px 16px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  cursor: pointer;
   transition:
     transform 0.15s ease,
-    box-shadow 0.15s ease,
+    color 0.15s ease,
+    background 0.15s ease,
     border-color 0.15s ease;
-  position: relative;
-}
-
-.jsdos-game-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px var(--brand-dim);
-  border-color: var(--brand);
-}
-
-.jsdos-game-icon {
-  font-size: 22px;
-  color: var(--brand);
-}
-
-.jsdos-game-title {
-  font-size: 13px;
-  color: var(--text-primary);
-  font-weight: 600;
-}
-
-.jsdos-delete-btn {
   position: absolute;
-  top: 6px;
-  right: 6px;
-  background: var(--glass);
-  border: 1px solid transparent;
-  color: var(--text-secondary);
-  cursor: pointer;
-  font-size: 13px;
-  padding: 2px 4px;
-  line-height: 1;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.15s ease;
+  top: 8px;
+  right: 8px;
 }
 
-.jsdos-delete-btn:hover {
+.emu-delete-btn:hover,
+.jsdos-delete-btn:hover,
+.v86-delete-btn:hover,
+.ruf-delete-btn:hover {
   color: var(--error);
   background: var(--error-bg);
   border-color: var(--error-border);
 }
 
-.jsdos-game-window {
+.emu-window-screen,
+.v86-screen {
   width: 100%;
-  height: calc(100% - 30px);
-  background: var(--bg-primary);
-  position: relative;
+  height: 100%;
+  overflow: hidden;
 }
 
-.jsdos-loading {
+.emu-state,
+.jsdos-loading,
+.v86-loading,
+.ruf-loading,
+.emu-error,
+.jsdos-error,
+.v86-error {
   width: 100%;
   height: 100%;
   display: flex;
@@ -345,98 +345,143 @@
   align-items: center;
   justify-content: center;
   gap: 12px;
+  text-align: center;
 }
 
-.jsdos-loading-spinner {
+.emu-state-icon,
+.jsdos-loading-spinner,
+.jsdos-loading-icon,
+.jsdos-success-icon,
+.jsdos-error-icon,
+.v86-state-icon,
+.v86-loading-icon,
+.v86-success-icon,
+.v86-error-icon,
+.ruf-state-icon {
   font-size: 32px;
   color: var(--brand);
-  animation: spin 1s linear infinite;
+  flex-shrink: 0;
 }
 
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.emu-state-text,
+.jsdos-loading-text,
+.jsdos-success-text,
+.jsdos-game-loading-text,
+.v86-state-text,
+.v86-loading-text,
+.v86-success-text,
+.v86-error-text,
+.ruf-upload-text,
+.ruf-state-text {
+  font-size: 14px;
+  color: var(--text-primary);
+  line-height: 1.45;
 }
 
-.jsdos-loading-icon {
-  font-size: 20px;
-  color: var(--brand);
-  margin-bottom: 8px;
-  display: block;
-}
-
-.jsdos-loading-text {
-  font-size: 13px;
+.emu-state-text strong,
+.jsdos-loading-text strong,
+.jsdos-success-text strong,
+.jsdos-game-loading-text strong,
+.v86-state-text strong,
+.v86-loading-text strong,
+.v86-success-text strong,
+.ruf-state-text strong {
   color: var(--text-primary);
 }
 
-.jsdos-loading-text strong {
-  color: var(--text-primary);
-}
-
-.jsdos-success-icon {
-  font-size: 20px;
-  color: var(--brand);
-  margin-bottom: 8px;
-  display: block;
-}
-
-.jsdos-success-text {
-  font-size: 13px;
-  color: var(--text-primary);
-}
-
-.jsdos-error-icon {
-  font-size: 20px;
-  color: var(--error);
-  margin-bottom: 8px;
-  display: block;
-}
-
-.jsdos-error-text {
-  font-size: 13px;
-  color: var(--error);
-}
-
-.jsdos-game-loading-text {
-  font-size: 15px;
+.emu-state-text--accent,
+.jsdos-game-loading-text,
+.v86-state-text--accent {
   color: var(--brand);
 }
 
-.jsdos-game-loading-text strong {
-  color: var(--text-primary);
-}
-
-.jsdos-game-log {
+.emu-state-text--muted,
+.jsdos-game-log,
+.v86-log,
+.ruf-log {
   font-size: 11px;
   color: var(--text-secondary);
   max-width: 400px;
   text-align: center;
+  line-height: 1.45;
 }
 
-.jsdos-error {
+.emu-state--error,
+.jsdos-error,
+.v86-error {
+  color: var(--error);
+}
+
+.v86-error-msg {
+  color: var(--error);
+  font-family: var(--font-mono);
+  max-width: 80%;
+}
+
+.emu-state--error .emu-state-icon,
+.jsdos-error-icon,
+.v86-error .v86-state-icon,
+.v86-error-icon {
+  color: var(--error);
+}
+
+.emu-state--error .emu-state-text,
+.jsdos-error-msg,
+.v86-error .emu-state-text,
+.v86-error-text {
+  color: var(--error);
+  font-family: var(--font-mono);
+  max-width: 80%;
+}
+
+.emu-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+  position: absolute;
+  inset: 0;
+}
+
+.emu-load-wrap {
+  width: 100%;
+  height: 100%;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
+  flex-direction: column;
   gap: 12px;
 }
 
-.jsdos-error-inline {
-  gap: 12px;
+.is-hidden {
+  display: none !important;
 }
 
-.jsdos-error .jsdos-error-icon {
-  font-size: 32px;
+.emu-upload-zone .emu-state-icon,
+.emu-upload-zone .jsdos-loading-spinner,
+.emu-upload-zone .jsdos-loading-icon,
+.emu-upload-zone .jsdos-success-icon,
+.emu-upload-zone .jsdos-error-icon,
+.emu-upload-zone .v86-state-icon,
+.emu-upload-zone .v86-loading-icon,
+.emu-upload-zone .v86-success-icon,
+.emu-upload-zone .v86-error-icon,
+.emu-upload-zone .ruf-state-icon {
+  font-size: 24px;
   margin-bottom: 0;
 }
 
-.jsdos-error-msg {
-  color: var(--error);
-  font-size: 14px;
-  font-family: monospace;
+.emu-upload-formats {
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  margin-top: 8px;
+  padding: 8px;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  border: 1px solid var(--glass-border);
+}
+
+.emu-upload-formats strong {
+  color: var(--text-primary);
 }

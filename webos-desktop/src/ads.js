@@ -1,12 +1,13 @@
 import { WindowHelper } from "./utils/WindowHelper.js";
+import { StorageKeys } from "./StorageKeys.js";
 
-const AD_STORAGE_KEY = "yukios_ads_state";
+const AD_STORAGE_KEY = StorageKeys.adStorageState;
 export function shouldEnableAds() {
   const hostname = window.location.hostname;
   if (hostname.includes("vercel") || hostname === "localhost" || hostname === "127.0.0.1" || hostname === "[::1]") {
     return false;
   }
-  const adsDisabled = localStorage.getItem("yukiOS_ads_disabled") === "true";
+  const adsDisabled = localStorage.getItem(StorageKeys.adsDisabled) === "true";
   if (adsDisabled) {
     return false;
   }

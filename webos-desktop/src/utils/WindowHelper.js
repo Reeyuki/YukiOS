@@ -1,4 +1,5 @@
 import { animateWindowOpen } from "../windowManager/AnimationSystem.js";
+import { os } from "../os/index.js";
 
 export class WindowHelper {
   constructor(servicesOrWM) {
@@ -6,7 +7,7 @@ export class WindowHelper {
   }
 
   createStandardWindow(winId, title, width = "800px", height = "600px", options = {}) {
-    const win = this.wm.createWindow(winId, title, width, height, options.isGame, options);
+    const win = os.window.create(winId, title, width, height, options.isGame, options);
 
     if (options.className) {
       win.classList.add(options.className);
@@ -63,7 +64,7 @@ export class WindowHelper {
     return `
       <div class="window-header">
         <span>${title}</span>
-        ${this.wm.getWindowControls(externalUrl)}
+        ${os.window.getWindowControls(externalUrl)}
       </div>
     `;
   }
@@ -80,22 +81,18 @@ export class WindowHelper {
     const desktop = document.getElementById("desktop") || document.body;
     desktop.appendChild(win);
 
-    this.wm.makeDraggable(win);
-    this.wm.makeResizable(win, options.resizeOptions);
-
-    if (options.setupWindowControls !== false) {
-      this.wm.setupWindowControls(win);
-    }
-
     if (options.addToTaskbar !== false) {
-      this.wm.addToTaskbar(winId, title, icon || "fas fa-window-maximize", options.iconColor);
+      os.window.addToTaskbar(winId, title, icon || "fas fa-window-maximize", options.iconColor);
     }
 
     if (options.bringToFront !== false) {
-      this.wm.bringToFront(win);
+      os.window.focus(win);
     }
 
-    requestAnimationFrame(() => animateWindowOpen(win));
+    // Exclude browser app from animations
+    if (!win.id || !win.id.startsWith("browser-app-")) {
+      requestAnimationFrame(() => animateWindowOpen(win));
+    }
 
     return win;
   }

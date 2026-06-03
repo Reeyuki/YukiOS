@@ -37,7 +37,7 @@ export class Shell {
   }
 
   async expandGlob(pattern, path) {
-    const items = Object.keys(await this.fs.getFolder(this.pathToString(path)));
+    const items = Object.keys(await os.fs.readdir(this.pathToString(path)));
     const regex = new RegExp("^" + pattern.replace(/\*/g, ".*").replace(/\?/g, ".") + "$");
     return items.filter((item) => regex.test(item));
   }
@@ -186,7 +186,7 @@ export class Shell {
     };
 
     try {
-      const items = await this.fs.getFolder(this.pathToString(this.currentPath));
+      const items = await os.fs.readdir(this.pathToString(this.currentPath));
       const filtered = showAll ? items : Object.keys(items).filter((k) => !k.startsWith("."));
 
       if (longFormat) {
@@ -241,7 +241,7 @@ export class Shell {
     }
     try {
       const filePath = this.fs.resolvePath(args[0], this.currentPath);
-      const content = await this.fs.readFile(this.pathToString(filePath));
+      const content = await os.fs.read(this.pathToString(filePath));
       output(content);
     } catch (e) {
       output(`cat: ${args[0]}: No such file`);
@@ -269,7 +269,7 @@ export class Shell {
     }
     try {
       const filePath = this.fs.resolvePath(args[0], this.currentPath);
-      await this.fs.safeWriteFile(this.pathToString(filePath), "");
+      await os.fs.write(this.pathToString(filePath), "");
       output(`File created: ${args[0]}`);
     } catch (e) {
       output(`touch: ${args[0]}: ${e.message}`);
@@ -309,7 +309,7 @@ export class Shell {
   async cmdTree(output) {
     const listTree = async (path, prefix = "") => {
       try {
-        const items = Object.keys(await this.fs.getFolder(this.pathToString(path)));
+        const items = Object.keys(await os.fs.readdir(this.pathToString(path)));
         for (let i = 0; i < items.length; i++) {
           const item = items[i];
           const isFile = await this.fs.isFile(path, item);

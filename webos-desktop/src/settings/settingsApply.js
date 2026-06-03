@@ -1,6 +1,6 @@
-import { desktop } from "../desktop.js";
 import { audioMixer } from "../audioMixer.js";
 import { turboManager } from "../shared/turboManager.js";
+const desktop = document.getElementById("desktop");
 
 export function applyTheme(theme, getCustomColors) {
   const prefersDark = window.matchMedia?.("(prefers-color-scheme: dark)").matches ?? true;
@@ -151,4 +151,75 @@ export function applyTurboMode(mode, services) {
 export function applyTrayEnabled(enabled) {
   const trayEl = document.getElementById("app-tray");
   if (trayEl) trayEl.style.display = enabled ? "flex" : "none";
+}
+
+export function applyFontFamily(fontFamily) {
+  const fontMap = {
+    opensans: {
+      family: "Open Sans",
+      stack: '"Open Sans", sans-serif',
+      url: "https://cdn.jsdelivr.net/fontsource/fonts/open-sans:vf@latest/latin-wght-normal.woff2",
+      format: "woff2-variations",
+      weight: "300 800"
+    },
+    inter: {
+      family: "Inter",
+      stack: '"Inter", sans-serif',
+      url: "https://cdn.jsdelivr.net/gh/rsms/inter@master/docs/font-files/Inter-Regular.woff2",
+      format: "woff2"
+    },
+    rubik: {
+      family: "Rubik",
+      stack: '"Rubik", sans-serif',
+      url: "https://cdn.jsdelivr.net/gh/google/fonts/ofl/rubik/Rubik-Regular.ttf",
+      format: "truetype"
+    },
+    sora: {
+      family: "Sora",
+      stack: '"Sora", sans-serif',
+      url: "https://cdn.jsdelivr.net/fontsource/fonts/sora:vf@latest/latin-wght-normal.woff2",
+      format: "woff2-variations",
+      weight: "100 800"
+    },
+    jetbrainsmono: {
+      family: "JetBrains Mono",
+      stack: '"JetBrains Mono", monospace',
+      url: "https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/web/woff2/JetBrainsMono-Regular.woff2",
+      format: "woff2"
+    },
+    monocraft: {
+      family: "Monocraft",
+      stack: '"Monocraft", monospace',
+      url: "https://cdn.jsdelivr.net/gh/IdreesInc/Monocraft@main/dist/Monocraft-ttf/Monocraft.ttf",
+      format: "truetype"
+    }
+  };
+
+  const fontConfig = fontMap[fontFamily] || fontMap.opensans;
+
+  const style = document.createElement("style");
+  style.textContent = `
+@font-face {
+    font-family: '${fontConfig.family}';
+    src: url('${fontConfig.url}') format('${fontConfig.format}');
+    font-weight: ${fontConfig.weight || "normal"};
+    font-style: normal;
+}
+*, *::before, *::after {
+    font-family: ${fontConfig.stack} !important;
+}
+`;
+  document.head.appendChild(style);
+
+  document.documentElement.style.setProperty("--font-ui", fontConfig.stack);
+}
+
+export function applyUiDensity(density) {
+  const densityMap = {
+    compact: 0.75,
+    comfortable: 1,
+    spacious: 1.25
+  };
+  const densityValue = densityMap[density] || 1;
+  document.documentElement.style.setProperty("--spacing-scale", String(densityValue));
 }

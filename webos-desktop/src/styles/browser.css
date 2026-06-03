@@ -3,13 +3,7 @@
   flex-direction: column;
   height: 100%;
   background: var(--bg-primary);
-  font-family:
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    Roboto,
-    sans-serif;
+  font-family: var(--font-ui);
   color: var(--text-primary);
   overflow: hidden;
 }

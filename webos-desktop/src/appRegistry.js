@@ -1,16 +1,8 @@
-import { StorageKeys } from "./settings/settings.js";
+import { StorageKeys } from "./StorageKeys.js";
 
-const APP_REGISTRY_DISABLED_KEY = "yukiOS_app_registry_disabled";
-const APP_REGISTRY_RENAMED_KEY = "yukiOS_app_registry_renamed";
-const APP_REGISTRY_UNINSTALLED_KEY = "yukiOS_app_registry_uninstalled";
-
-const CORE_SYSTEM_APPS = new Set([
-  "windowManager",
-  "fileSystemManager",
-  "eventBus",
-  "notificationCenter",
-  "appLauncher"
-]);
+const APP_REGISTRY_DISABLED_KEY = StorageKeys.appRegistryDisabled;
+const APP_REGISTRY_RENAMED_KEY = StorageKeys.appRegistryRenamed;
+const APP_REGISTRY_UNINSTALLED_KEY = StorageKeys.appRegistryUninstalled;
 
 const PROTECTED_APPS = new Set(["browserApp", "explorer", "terminal", "notepad", "settingsApp", "taskManagerApp"]);
 

@@ -267,6 +267,27 @@
   gap: 10px;
 }
 
+.theme-selector-scroll {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  max-height: 214px;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.font-selector-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.taskbar-selector-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
 .theme-btn,
 .taskbar-btn {
   flex: 1;
@@ -279,14 +300,18 @@
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 6px;
+  justify-content: flex-start;
+  gap: 8px;
+  min-height: 42px;
+  text-align: left;
 }
 
 .theme-btn i,
 .taskbar-btn i {
-  font-size: 18px;
+  font-size: 16px;
+  flex-shrink: 0;
 }
 
 .theme-btn:hover,
@@ -303,12 +328,47 @@
   box-shadow: 0 5px 15px var(--brand-glow);
 }
 
+.font-selector {
+  display: grid;
+}
+
+.font-btn {
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.setup-upload-button {
+  width: auto;
+  align-self: flex-start;
+  margin-top: 12px;
+  padding: 8px 14px;
+}
+
+.font-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.font-btn.active {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+  box-shadow: 0 5px 15px var(--brand-glow);
+}
+
 .wallpaper-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: 12px;
-  max-height: 320px;
-  overflow-y: auto;
   padding-right: 8px;
 }
 
@@ -1197,7 +1257,7 @@ html[data-theme="solarized-light"] ::-webkit-scrollbar-thumb:hover {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 8px;
-  max-height: 200px;
+  max-height: 180px;
   overflow-y: auto;
   padding-right: 5px;
 }
@@ -1234,6 +1294,9 @@ html[data-theme="solarized-light"] ::-webkit-scrollbar-thumb:hover {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  max-height: 180px;
+  overflow-y: auto;
+  padding-right: 5px;
 }
 
 .filesystem-item {
@@ -1628,6 +1691,18 @@ html[data-theme="frutiger-aero"] .transparency-desc,
 html[data-theme="solarized-light"] .turbo-desc,
 html[data-theme="solarized-light"] .transparency-desc {
   color: rgba(0, 0, 0, 0.55);
+}
+
+.system-info-copy {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 0 0 12px;
+}
+
+.theme-selector-scroll::-webkit-scrollbar,
+.shortcuts-reference::-webkit-scrollbar,
+.filesystem-structure::-webkit-scrollbar {
+  width: 8px;
 }
 
 html[data-theme="light"] .turbo-btn.active .turbo-desc,

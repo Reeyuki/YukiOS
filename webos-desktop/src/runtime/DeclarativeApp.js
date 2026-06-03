@@ -39,7 +39,9 @@ export class DeclarativeApp {
   _registerCustomActions() {
     if (this.definition.actions) {
       Object.entries(this.definition.actions).forEach(([name, handler]) => {
-        this.actionExecutor.registerCustomAction(name, handler);
+        if (typeof handler === "function" && name !== "_appInstance") {
+          this.actionExecutor.registerCustomAction(name, handler);
+        }
       });
     }
     if (this.definition.actions._appInstance) {

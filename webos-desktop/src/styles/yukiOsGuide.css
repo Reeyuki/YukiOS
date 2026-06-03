@@ -3,11 +3,9 @@
   height: 100%;
   background: var(--bg-primary);
   color: var(--text-primary);
-  font-family: "JetBrains Mono", ui-monospace, "Cascadia Code", monospace;
+  font-family: var(--font-mono);
   overflow: hidden;
 }
-
-/* ── Sidebar ─────────────────────────────────────────────── */
 
 .yuki-guide-sidebar {
   width: 240px;
@@ -25,8 +23,6 @@
   position: relative;
   z-index: 2;
 }
-
-/* ── Search ──────────────────────────────────────────────── */
 
 .yuki-guide-search {
   position: relative;
@@ -78,8 +74,6 @@
   width: 14px;
   height: 14px;
 }
-
-/* ── Nav ─────────────────────────────────────────────────── */
 
 .guide-nav {
   display: flex;
@@ -193,8 +187,6 @@
   opacity: 1;
 }
 
-/* ── Main content area ───────────────────────────────────── */
-
 .yuki-guide-main {
   flex: 1;
   overflow-y: auto;
@@ -223,8 +215,6 @@
   max-width: 920px;
   margin: 0 auto;
 }
-
-/* ── Hero ────────────────────────────────────────────────── */
 
 .guide-hero {
   display: flex;
@@ -327,8 +317,6 @@
   opacity: 0.9;
 }
 
-/* ── Stats ───────────────────────────────────────────────── */
-
 .guide-stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
@@ -400,8 +388,6 @@
   letter-spacing: 0.08em;
 }
 
-/* ── Subsections ─────────────────────────────────────────── */
-
 .guide-subsection {
   margin-bottom: 36px;
 }
@@ -424,8 +410,6 @@
   opacity: 0.85;
   font-size: 15px;
 }
-
-/* ── Architecture grid ───────────────────────────────────── */
 
 .architecture-grid {
   display: grid;
@@ -465,8 +449,6 @@
   line-height: 1.5;
   opacity: 0.9;
 }
-
-/* ── Capabilities ────────────────────────────────────────── */
 
 .capabilities-grid {
   display: grid;
@@ -525,8 +507,6 @@
   line-height: 1.6;
   margin: 0;
 }
-
-/* ── Services ────────────────────────────────────────────── */
 
 .services-grid {
   display: grid;
@@ -595,8 +575,6 @@
   opacity: 1;
 }
 
-/* ── Quick start ─────────────────────────────────────────── */
-
 .quick-start-list {
   display: flex;
   flex-direction: column;
@@ -646,8 +624,6 @@
   line-height: 1.5;
   margin: 0;
 }
-
-/* ── Feature cards ───────────────────────────────────────── */
 
 .feature-grid {
   display: grid;
@@ -708,8 +684,6 @@
   line-height: 1.6;
   margin: 0;
 }
-
-/* ── Apps grid ───────────────────────────────────────────── */
 
 .apps-grid {
   display: grid;
@@ -829,8 +803,6 @@
   opacity: 0.8;
 }
 
-/* ── Shortcuts ───────────────────────────────────────────── */
-
 .shortcuts-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -861,7 +833,7 @@
   border: 1px solid var(--glass-border);
   border-radius: 6px;
   border-bottom-width: 2px;
-  font-family: "JetBrains Mono", monospace;
+  font-family: var(--font-mono);
   font-size: 11px;
   color: var(--brand);
   white-space: nowrap;
@@ -876,8 +848,6 @@
   opacity: 0.8;
   line-height: 1.4;
 }
-
-/* ── System layers ───────────────────────────────────────── */
 
 .system-overview {
   display: flex;
@@ -963,8 +933,6 @@
   opacity: 1;
 }
 
-/* ── Connection cards ────────────────────────────────────── */
-
 .connection-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -1043,8 +1011,6 @@
   opacity: 0.85;
 }
 
-/* ── Filesystem ──────────────────────────────────────────── */
-
 .filesystem-structure {
   display: flex;
   flex-direction: column;
@@ -1074,7 +1040,7 @@
   background: var(--bg-secondary);
   border: 1px solid var(--glass-border);
   border-radius: 6px;
-  font-family: "JetBrains Mono", monospace;
+  font-family: var(--font-mono);
   font-size: 11px;
   color: var(--brand);
   white-space: nowrap;
@@ -1087,8 +1053,6 @@
   opacity: 0.8;
   line-height: 1.4;
 }
-
-/* ── Page header ─────────────────────────────────────────── */
 
 .guide-header {
   margin-bottom: 28px;
@@ -1109,8 +1073,6 @@
   margin: 0;
   line-height: 1.6;
 }
-
-/* ── Empty / no-results states ───────────────────────────── */
 
 .guide-empty {
   text-align: center;
@@ -1244,8 +1206,6 @@ select:focus {
   border-color: var(--brand);
   box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.18);
 }
-
-/* ── Light theme override ────────────────────────────────── */
 
 html[data-theme="light"] .yuki-guide-container,
 html[data-theme="cherry"] .yuki-guide-container,

@@ -1,5 +1,5 @@
-import { appMap } from "../gamesList.js";
-import { resolveIconUrl } from "../assetUrl.js";
+import { appMap } from "../games/gamesList.js";
+import { resolveIconUrl } from "../shared/assetResolver.js";
 
 export function resolveDesktopIcon(content, fileName = null) {
   let icon = null;

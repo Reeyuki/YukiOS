@@ -79,7 +79,7 @@
   font-size: 14px;
   font-weight: 600;
   color: var(--error);
-  font-family: "Share Tech Mono", monospace;
+  font-family: var(--font-mono);
   text-shadow: 0 0 8px var(--error-dim);
   letter-spacing: 0.5px;
 }

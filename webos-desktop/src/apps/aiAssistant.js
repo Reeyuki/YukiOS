@@ -4,6 +4,9 @@ import { ActionParser } from "./aiAssistant/actionParser.js";
 import { OSBridge } from "./aiAssistant/osBridge.js";
 import { AIMemory } from "./aiAssistant/memory.js";
 import { showConfirm } from "../shared/dialogs.js";
+import { os } from "../os/index.js";
+import { StorageKeys } from "../StorageKeys.js";
+import { $, $$, bindEvent, setText, setHTML, toggleClass } from "../shared/domUtils.js";
 import "./aiAssistant/aiAssistant.css";
 
 export class AIAssistantApp extends BaseApp {
@@ -21,7 +24,7 @@ export class AIAssistantApp extends BaseApp {
     this.windowClosedHandler = null;
     this.settingsChangedHandler = null;
     this.winId = "ai-assistant-window";
-    this.enabled = localStorage.getItem("yukiOS_ai_assistant_enabled") !== "false";
+    this.enabled = localStorage.getItem(StorageKeys.aiAssistantEnabled) !== "false";
   }
 
   async open(opts = {}) {
@@ -35,7 +38,9 @@ export class AIAssistantApp extends BaseApp {
       });
     }
 
-    const win = this.wm.createWindow(winId, "Yuki AI Assistant", "800px", "600px", false);
+    const win = os.window.create(winId, "Yuki AI Assistant", "800px", "600px", {
+      icon: "fas fa-robot"
+    });
     this.windows.set(winId, win);
 
     const state = {
@@ -59,8 +64,6 @@ export class AIAssistantApp extends BaseApp {
 
     win.innerHTML = this._buildSetupUI(state);
 
-    this.wm.mountWindow(win, winId, "Yuki AI Assistant", "fas fa-robot");
-
     this._setupSetupEventListeners(win, state);
     this._subscribeToSystemEvents();
 
@@ -71,7 +74,7 @@ export class AIAssistantApp extends BaseApp {
     return `
       <div class="window-header">
         <span>Yuki AI Assistant</span>
-        ${this.wm.getWindowControls()}
+        ${os.window.getWindowControls()}
       </div>
       <div class="ai-assistant-container">
         <div class="ai-setup-screen">
@@ -133,7 +136,7 @@ export class AIAssistantApp extends BaseApp {
     return `
       <div class="window-header">
         <span>Yuki AI Assistant</span>
-        ${this.wm.getWindowControls()}
+        ${os.window.getWindowControls()}
       </div>
       <div class="ai-assistant-container">
         <div class="ai-header">
@@ -202,12 +205,12 @@ export class AIAssistantApp extends BaseApp {
   }
 
   _setupSetupEventListeners(win, state) {
-    const initBtn = win.querySelector("#ai-init-btn");
-    const modelRadios = win.querySelectorAll('input[name="ai-model"]');
-    const initStatus = win.querySelector("#ai-init-status");
-    const initProgress = win.querySelector("#ai-init-progress");
-    const progressBar = win.querySelector(".ai-progress-fill");
-    const progressText = win.querySelector(".ai-progress-text");
+    const initBtn = $("#ai-init-btn", win);
+    const modelRadios = $$('input[name="ai-model"]', win);
+    const initStatus = $("#ai-init-status", win);
+    const initProgress = $("#ai-init-progress", win);
+    const progressBar = $(".ai-progress-fill", win);
+    const progressText = $(".ai-progress-text", win);
 
     modelRadios.forEach((radio) => {
       radio.addEventListener("change", (e) => {
@@ -324,13 +327,13 @@ export class AIAssistantApp extends BaseApp {
   }
 
   _setupEventListeners(win, state) {
-    const webgpuToggle = win.querySelector("#ai-webgpu-toggle");
-    const automationToggle = win.querySelector("#ai-automation-toggle");
-    const reasoningToggle = win.querySelector("#ai-reasoning-toggle");
-    const input = win.querySelector("#ai-input");
-    const sendBtn = win.querySelector("#ai-send");
-    const quickBtns = win.querySelectorAll(".ai-quick-btn");
-    const quickFilter = win.querySelector("#ai-quick-filter");
+    const webgpuToggle = $("#ai-webgpu-toggle", win);
+    const automationToggle = $("#ai-automation-toggle", win);
+    const reasoningToggle = $("#ai-reasoning-toggle", win);
+    const input = $("#ai-input", win);
+    const sendBtn = $("#ai-send", win);
+    const quickBtns = $$(".ai-quick-btn", win);
+    const quickFilter = $("#ai-quick-filter", win);
 
     webgpuToggle.addEventListener("click", async () => {
       state.webGPUEnabled = !state.webGPUEnabled;
@@ -353,8 +356,9 @@ export class AIAssistantApp extends BaseApp {
 
     reasoningToggle.addEventListener("click", () => {
       state.showReasoning = !state.showReasoning;
-      reasoningToggle.classList.toggle("active", state.showReasoning);
-      win.querySelector("#ai-reasoning-panel").classList.toggle("visible", state.showReasoning);
+      toggleClass(reasoningToggle, "active", state.showReasoning);
+      const reasoningPanel = $("#ai-reasoning-panel", win);
+      if (reasoningPanel) toggleClass(reasoningPanel, "visible", state.showReasoning);
       this.memory.setPreference("showReasoning", state.showReasoning);
     });
 
@@ -402,9 +406,9 @@ export class AIAssistantApp extends BaseApp {
       this.memory.setContext("settings", settings);
     };
 
-    this.bus.on("WINDOW_FOCUSED", this.windowFocusedHandler);
-    this.bus.on("WINDOW_CLOSED", this.windowClosedHandler);
-    this.bus.on("SETTINGS_CHANGED", this.settingsChangedHandler);
+    os.events.on("WINDOW_FOCUSED", this.windowFocusedHandler);
+    os.events.on("WINDOW_CLOSED", this.windowClosedHandler);
+    os.events.on("SETTINGS_CHANGED", this.settingsChangedHandler);
     this.systemHandlersBound = true;
   }
 
@@ -606,7 +610,7 @@ Always explain what you're doing before executing actions. Ask for confirmation 
           this.osBridge.revokePermission(action.action, action.target);
         }
         this._logAction(action, result, win);
-        this.bus.emit("AI_ACTION_EXECUTED", { action, result });
+        os.events.emit("AI_ACTION_EXECUTED", { action, result });
       } catch (error) {
         if (this._requiresConfirmation(action)) {
           this.osBridge.revokePermission(action.action, action.target);
@@ -617,7 +621,7 @@ Always explain what you're doing before executing actions. Ask for confirmation 
   }
 
   _showPendingActions(actions, win) {
-    const logContainer = win.querySelector("#ai-action-log");
+    const logContainer = $("#ai-action-log", win);
     actions.forEach((action) => {
       const item = document.createElement("div");
       item.className = "ai-log-item pending";
@@ -648,7 +652,7 @@ Always explain what you're doing before executing actions. Ask for confirmation 
           }
           btn.parentElement.classList.remove("pending");
           btn.parentElement.classList.add("success");
-          this.bus.emit("AI_ACTION_EXECUTED", { action, result });
+          os.events.emit("AI_ACTION_EXECUTED", { action, result });
         } catch (error) {
           if (this._requiresConfirmation(action)) {
             this.osBridge.revokePermission(action.action, action.target);
@@ -660,7 +664,7 @@ Always explain what you're doing before executing actions. Ask for confirmation 
   }
 
   _logAction(action, result, win) {
-    const logContainer = win.querySelector("#ai-action-log");
+    const logContainer = $("#ai-action-log", win);
     const item = document.createElement("div");
     item.className = `ai-log-item ${result.error ? "error" : "success"}`;
     item.innerHTML = `
@@ -687,7 +691,7 @@ Always explain what you're doing before executing actions. Ask for confirmation 
   }
 
   _appendPendingAssistantMessage(win, text) {
-    const historyContainer = win.querySelector("#ai-chat-history");
+    const historyContainer = $("#ai-chat-history", win);
     if (!historyContainer) return null;
 
     const pendingId = `ai-pending-${Date.now()}`;
@@ -712,24 +716,24 @@ Always explain what you're doing before executing actions. Ask for confirmation 
 
   _removePendingAssistantMessage(win, state) {
     if (!state.pendingMessageId) return;
-    const pendingMessage = win.querySelector(`[data-pending-id="${state.pendingMessageId}"]`);
+    const pendingMessage = $(`[data-pending-id="${state.pendingMessageId}"]`, win);
     pendingMessage?.remove();
     state.pendingMessageId = null;
   }
 
   _renderChatHistory(state, win) {
-    const historyContainer = win?.querySelector("#ai-chat-history") || document.querySelector("#ai-chat-history");
+    const historyContainer = $("#ai-chat-history", win) || $("#ai-chat-history");
     if (!historyContainer) return;
-    historyContainer.innerHTML = "";
+    setHTML(historyContainer, "");
     state.chatHistory.forEach((msg) => {
       this._addMessageToChat(msg.role, msg.content, state, win);
     });
   }
 
   _renderReasoning(reasoning, win) {
-    const reasoningContent = win.querySelector("#ai-reasoning-content");
+    const reasoningContent = $("#ai-reasoning-content", win);
     if (reasoningContent) {
-      reasoningContent.textContent = reasoning;
+      setText(reasoningContent, reasoning);
     }
   }
 
@@ -861,39 +865,42 @@ Always explain what you're doing before executing actions. Ask for confirmation 
   }
 
   _renderRuntimeUI(win, state) {
-    const runtimeBadge = win.querySelector("#ai-runtime-badge");
-    const runtimeDetail = win.querySelector("#ai-runtime-detail");
-    const runtimeProgress = win.querySelector("#ai-runtime-progress");
-    const runtimeProgressFill = win.querySelector("#ai-runtime-progress-fill");
-    const liveIndicator = win.querySelector("#ai-live-indicator");
-    const liveText = win.querySelector("#ai-live-text");
-    const input = win.querySelector("#ai-input");
-    const sendBtn = win.querySelector("#ai-send");
-    const webgpuToggle = win.querySelector("#ai-webgpu-toggle");
+    const runtimeBadge = $("#ai-runtime-badge", win);
+    const runtimeDetail = $("#ai-runtime-detail", win);
+    const runtimeProgress = $("#ai-runtime-progress", win);
+    const runtimeProgressFill = $("#ai-runtime-progress-fill", win);
+    const liveIndicator = $("#ai-live-indicator", win);
+    const liveText = $("#ai-live-text", win);
+    const input = $("#ai-input", win);
+    const sendBtn = $("#ai-send", win);
+    const webgpuToggle = $("#ai-webgpu-toggle", win);
 
     if (runtimeBadge) {
       runtimeBadge.className = `ai-runtime-badge ai-runtime-badge-${state.statusTone}`;
-      runtimeBadge.textContent = state.statusText;
+      setText(runtimeBadge, state.statusText);
     }
 
     if (runtimeDetail) {
-      runtimeDetail.textContent = state.statusDetail;
+      setText(runtimeDetail, state.statusDetail);
     }
 
     if (runtimeProgress && runtimeProgressFill) {
       const showProgress = state.engineLoading && typeof state.progress === "number";
-      runtimeProgress.classList.toggle("visible", showProgress);
+      toggleClass(runtimeProgress, "visible", showProgress);
       runtimeProgressFill.style.width = `${showProgress ? state.progress : 0}%`;
     }
 
     if (liveIndicator && liveText) {
       const visible = state.engineLoading || state.isGenerating;
-      liveIndicator.classList.toggle("visible", visible);
-      liveText.textContent = state.engineLoading
-        ? state.progressText || "Loading local model..."
-        : state.isGenerating
-          ? "Generating response..."
-          : "Idle";
+      toggleClass(liveIndicator, "visible", visible);
+      setText(
+        liveText,
+        state.engineLoading
+          ? state.progressText || "Loading local model..."
+          : state.isGenerating
+            ? "Generating response..."
+            : "Idle"
+      );
     }
 
     if (input) {
@@ -909,9 +916,10 @@ Always explain what you're doing before executing actions. Ask for confirmation 
 
     if (sendBtn) {
       sendBtn.disabled = !state.engineInitialized || state.engineLoading || state.isGenerating;
-      sendBtn.innerHTML = state.isGenerating
-        ? '<i class="fas fa-spinner fa-spin"></i>'
-        : '<i class="fas fa-paper-plane"></i>';
+      setHTML(
+        sendBtn,
+        state.isGenerating ? '<i class="fas fa-spinner fa-spin"></i>' : '<i class="fas fa-paper-plane"></i>'
+      );
     }
 
     if (webgpuToggle) {
@@ -923,9 +931,9 @@ Always explain what you're doing before executing actions. Ask for confirmation 
     this.windows.delete(winId);
     this.aiCore.dispose();
     if (this.systemHandlersBound) {
-      this.bus.off("WINDOW_FOCUSED", this.windowFocusedHandler);
-      this.bus.off("WINDOW_CLOSED", this.windowClosedHandler);
-      this.bus.off("SETTINGS_CHANGED", this.settingsChangedHandler);
+      os.events.off("WINDOW_FOCUSED", this.windowFocusedHandler);
+      os.events.off("WINDOW_CLOSED", this.windowClosedHandler);
+      os.events.off("SETTINGS_CHANGED", this.settingsChangedHandler);
       this.systemHandlersBound = false;
     }
     this.unregisterTray(winId);

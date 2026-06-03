@@ -212,7 +212,7 @@
 }
 
 .notepad-statusbar span {
-  font-family: "JetBrains Mono", "Fira Code", monospace;
+  font-family: var(--font-mono);
 }
 
 .notepad-dialog {

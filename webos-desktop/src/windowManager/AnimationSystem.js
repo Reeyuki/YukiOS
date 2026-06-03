@@ -8,7 +8,11 @@ export const OPEN_ANIMATIONS = {
   slideLeft: "slideLeft",
   slideRight: "slideRight",
   instant: "instant",
-  glassBlurin: "glassBlurin"
+  glassBlurin: "glassBlurin",
+  elasticBounce: "elasticBounce",
+  blurReveal: "blurReveal",
+  perspective3D: "perspective3D",
+  cornerUnfold: "cornerUnfold"
 };
 
 export const CLOSE_ANIMATIONS = {
@@ -17,7 +21,9 @@ export const CLOSE_ANIMATIONS = {
   fadeOut: "fadeOut",
   slideDown: "slideDown",
   burn: "burn",
-  instant: "instant"
+  instant: "instant",
+  shrinkToPoint: "shrinkToPoint",
+  dissolveBlur: "dissolveBlur"
 };
 
 export const MINIMIZE_ANIMATIONS = {
@@ -25,7 +31,9 @@ export const MINIMIZE_ANIMATIONS = {
   dockZoomShrink: "dockZoomShrink",
   magicLamp: "magicLamp",
   fadeToTaskbar: "fadeToTaskbar",
-  instant: "instant"
+  instant: "instant",
+  elasticStretch: "elasticStretch",
+  spiralDown: "spiralDown"
 };
 
 function getSetting(key, fallback) {
@@ -76,40 +84,102 @@ export function getTaskbarIconRect(winId) {
 
 export function animateWindowOpen(win) {
   if (isTurboMode()) return;
+
+  // Exclude browser app from animations
+  if (win.id && win.id.startsWith("browser-app-")) return;
+
   const anim = getOpenAnim();
   if (anim === OPEN_ANIMATIONS.instant) return;
 
-  win.classList.remove("wa-focus-glow");
-  win.style.animation = "none";
-  win.style.opacity = "";
-  win.style.transform = "";
-  win.style.filter = "";
-  void win.offsetWidth;
+  const duration = 300 * getAnimationSpeed();
 
-  switch (anim) {
+  win.getAnimations().forEach((anim) => anim.cancel());
+
+  const keyframes = getOpenKeyframes(anim, win);
+
+  const animation = win.animate(keyframes, {
+    duration: duration,
+    easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+    fill: "forwards"
+  });
+
+  animation.onfinish = () => {
+    win.style.opacity = "";
+    win.style.transform = "";
+    win.style.filter = "";
+  };
+}
+
+function getOpenKeyframes(animType, win) {
+  switch (animType) {
     case OPEN_ANIMATIONS.fade:
-      _applyKeyframes(win, "wa-fade-in", 0.22);
-      break;
+      return [{ opacity: 0 }, { opacity: 1 }];
     case OPEN_ANIMATIONS.scaleCenter:
-      _applyKeyframes(win, "wa-scale-in", 0.3);
-      break;
+      return [
+        { opacity: 0, transform: "scale(0.9)" },
+        { opacity: 1, transform: "scale(1)" }
+      ];
     case OPEN_ANIMATIONS.scaleFromSource:
-      _animateOpenFromTaskbar(win);
-      break;
+      const taskbarItem = document.getElementById(`taskbar-${win.id}`);
+      if (taskbarItem) {
+        const tbRect = taskbarItem.getBoundingClientRect();
+        const winRect = win.getBoundingClientRect();
+        const dx = tbRect.left + tbRect.width / 2 - (winRect.left + winRect.width / 2);
+        const dy = tbRect.top + tbRect.height / 2 - (winRect.top + winRect.height / 2);
+        return [
+          { opacity: 0, transform: `translate(${dx}px, ${dy}px) scale(0.5)` },
+          { opacity: 1, transform: "translate(0, 0) scale(1)" }
+        ];
+      }
+      return [
+        { opacity: 0, transform: "scale(0.9)" },
+        { opacity: 1, transform: "scale(1)" }
+      ];
     case OPEN_ANIMATIONS.slideUp:
-      _applyKeyframes(win, "wa-slide-up-in", 0.3);
-      break;
+      return [
+        { opacity: 0, transform: "translateY(20px)" },
+        { opacity: 1, transform: "translateY(0)" }
+      ];
     case OPEN_ANIMATIONS.slideLeft:
-      _applyKeyframes(win, "wa-slide-left-in", 0.28);
-      break;
+      return [
+        { opacity: 0, transform: "translateX(20px)" },
+        { opacity: 1, transform: "translateX(0)" }
+      ];
     case OPEN_ANIMATIONS.slideRight:
-      _applyKeyframes(win, "wa-slide-right-in", 0.28);
-      break;
+      return [
+        { opacity: 0, transform: "translateX(-20px)" },
+        { opacity: 1, transform: "translateX(0)" }
+      ];
     case OPEN_ANIMATIONS.glassBlurin:
-      _applyKeyframes(win, "wa-glass-blur-in", 0.35);
-      break;
+      return [
+        { opacity: 0, filter: "blur(10px)", transform: "scale(0.95)" },
+        { opacity: 1, filter: "blur(0)", transform: "scale(1)" }
+      ];
+    case OPEN_ANIMATIONS.elasticBounce:
+      return [
+        { opacity: 0, transform: "scale(0.1)" },
+        { opacity: 1, transform: "scale(1.3)", offset: 0.5 },
+        { opacity: 1, transform: "scale(0.9)", offset: 0.75 },
+        { opacity: 1, transform: "scale(1)" }
+      ];
+    case OPEN_ANIMATIONS.blurReveal:
+      return [
+        { opacity: 0, filter: "blur(40px)", transform: "scale(0.5)" },
+        { opacity: 0.5, filter: "blur(20px)", transform: "scale(0.8)", offset: 0.5 },
+        { opacity: 1, filter: "blur(0)", transform: "scale(1)" }
+      ];
+    case OPEN_ANIMATIONS.perspective3D:
+      return [
+        { opacity: 0, transform: "perspective(1000px) rotateX(-30deg) rotateY(-15deg) scale(0.5)" },
+        { opacity: 1, transform: "perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)" }
+      ];
+    case OPEN_ANIMATIONS.cornerUnfold:
+      return [
+        { opacity: 0, transform: "scale(0) rotate(-45deg)", transformOrigin: "top left" },
+        { opacity: 1, transform: "scale(1) rotate(0deg)", transformOrigin: "top left" }
+      ];
     default:
-      break;
+      return [{ opacity: 0 }, { opacity: 1 }];
   }
 }
 
@@ -121,26 +191,72 @@ export function animateWindowClose(win, onDone) {
   const anim = getCloseAnim();
   win.style.pointerEvents = "none";
 
-  switch (anim) {
+  const duration = 220 * getAnimationSpeed();
+
+  win.getAnimations().forEach((anim) => anim.cancel());
+
+  const keyframes = getCloseKeyframes(anim, win);
+
+  const animation = win.animate(keyframes, {
+    duration: duration,
+    easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+    fill: "forwards"
+  });
+
+  animation.onfinish = () => {
+    onDone?.();
+  };
+}
+
+function getCloseKeyframes(animType, win) {
+  switch (animType) {
     case CLOSE_ANIMATIONS.scaleDownCenter:
-      _applyKeyframes(win, "wa-scale-out", 0.22, onDone);
-      break;
+      return [
+        { opacity: 1, transform: "scale(1)" },
+        { opacity: 0, transform: "scale(0.9)" }
+      ];
     case CLOSE_ANIMATIONS.scaleToOrigin:
-      _animateCloseToTaskbar(win, onDone);
-      break;
+      const taskbarItem = document.getElementById(`taskbar-${win.id}`);
+      if (taskbarItem) {
+        const tbRect = taskbarItem.getBoundingClientRect();
+        const winRect = win.getBoundingClientRect();
+        const dx = tbRect.left + tbRect.width / 2 - (winRect.left + winRect.width / 2);
+        const dy = tbRect.top + tbRect.height / 2 - (winRect.top + winRect.height / 2);
+        return [
+          { opacity: 1, transform: "translate(0, 0) scale(1)" },
+          { opacity: 0, transform: `translate(${dx}px, ${dy}px) scale(0.5)` }
+        ];
+      }
+      return [
+        { opacity: 1, transform: "scale(1)" },
+        { opacity: 0, transform: "scale(0.9)" }
+      ];
     case CLOSE_ANIMATIONS.fadeOut:
-      _applyKeyframes(win, "wa-fade-out", 0.2, onDone);
-      break;
+      return [{ opacity: 1 }, { opacity: 0 }];
     case CLOSE_ANIMATIONS.slideDown:
-      _applyKeyframes(win, "wa-slide-down-out", 0.28, onDone);
-      break;
+      return [
+        { opacity: 1, transform: "translateY(0)" },
+        { opacity: 0, transform: "translateY(20px)" }
+      ];
     case CLOSE_ANIMATIONS.burn:
-      _applyKeyframes(win, "wa-burn-out", 0.65, onDone);
-      break;
-    case CLOSE_ANIMATIONS.instant:
+      return [
+        { opacity: 1, filter: "brightness(1)" },
+        { opacity: 0, filter: "brightness(2) blur(5px)" }
+      ];
+    case CLOSE_ANIMATIONS.shrinkToPoint:
+      return [
+        { opacity: 1, transform: "scale(1)" },
+        { opacity: 0.5, transform: "scale(0.3)", offset: 0.5 },
+        { opacity: 0, transform: "scale(0)" }
+      ];
+    case CLOSE_ANIMATIONS.dissolveBlur:
+      return [
+        { opacity: 1, filter: "blur(0)" },
+        { opacity: 0.5, filter: "blur(15px)", offset: 0.5 },
+        { opacity: 0, filter: "blur(30px)" }
+      ];
     default:
-      onDone?.();
-      break;
+      return [{ opacity: 1 }, { opacity: 0 }];
   }
 }
 
@@ -152,117 +268,101 @@ export function animateWindowMinimize(win, onDone) {
   const anim = getMinimizeAnim();
   win.style.pointerEvents = "none";
 
-  switch (anim) {
+  const duration = 300 * getAnimationSpeed();
+
+  win.getAnimations().forEach((anim) => anim.cancel());
+
+  const keyframes = getMinimizeKeyframes(anim, win);
+
+  const animation = win.animate(keyframes, {
+    duration: duration,
+    easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+    fill: "forwards"
+  });
+
+  animation.onfinish = () => {
+    onDone?.();
+  };
+}
+
+function getMinimizeKeyframes(animType, win) {
+  switch (animType) {
     case MINIMIZE_ANIMATIONS.taskbarShrink:
-      _animateMinimizeToTaskbar(win, onDone);
-      break;
+      const taskbarItem = document.getElementById(`taskbar-${win.id}`);
+      if (taskbarItem) {
+        const tbRect = taskbarItem.getBoundingClientRect();
+        const winRect = win.getBoundingClientRect();
+        const dx = tbRect.left + tbRect.width / 2 - (winRect.left + winRect.width / 2);
+        const dy = tbRect.top + tbRect.height / 2 - (winRect.top + winRect.height / 2);
+        return [
+          { opacity: 1, transform: "translate(0, 0) scale(1)" },
+          { opacity: 0, transform: `translate(${dx}px, ${dy}px) scale(0.1)` }
+        ];
+      }
+      return [{ opacity: 1 }, { opacity: 0 }];
     case MINIMIZE_ANIMATIONS.dockZoomShrink:
-      _animateDockZoomShrink(win, onDone);
-      break;
+      const taskbar = document.getElementById("taskbar");
+      const isBottom = !taskbar || taskbar.classList.contains("position-bottom");
+      return [
+        { opacity: 1, transform: "scale(1)" },
+        { opacity: 0, transform: isBottom ? "scaleY(0)" : "scaleX(0)" }
+      ];
     case MINIMIZE_ANIMATIONS.magicLamp:
-      _animateMagicLamp(win, onDone);
-      break;
+      const tbItem = document.getElementById(`taskbar-${win.id}`);
+      if (tbItem) {
+        const tbRect = tbItem.getBoundingClientRect();
+        const winRect = win.getBoundingClientRect();
+        const dx = tbRect.left + tbRect.width / 2 - (winRect.left + winRect.width / 2);
+        return [
+          { opacity: 1, transform: "translateX(0)" },
+          { opacity: 0, transform: `translateX(${dx}px) scaleX(0.1)` }
+        ];
+      }
+      return [{ opacity: 1 }, { opacity: 0 }];
     case MINIMIZE_ANIMATIONS.fadeToTaskbar:
-      _applyKeyframes(win, "wa-fade-out", 0.22, onDone);
-      break;
-    case MINIMIZE_ANIMATIONS.instant:
+      return [{ opacity: 1 }, { opacity: 0 }];
+    case MINIMIZE_ANIMATIONS.elasticStretch:
+      const elasticTaskbarItem = document.getElementById(`taskbar-${win.id}`);
+      if (elasticTaskbarItem) {
+        const tbRect = elasticTaskbarItem.getBoundingClientRect();
+        const winRect = win.getBoundingClientRect();
+        const dx = tbRect.left + tbRect.width / 2 - (winRect.left + winRect.width / 2);
+        const dy = tbRect.top + tbRect.height / 2 - (winRect.top + winRect.height / 2);
+        return [
+          { opacity: 1, transform: "translate(0, 0) scale(1)" },
+          { opacity: 1, transform: `translate(${dx * 0.4}px, ${dy * 0.4}px) scale(1.4)`, offset: 0.4 },
+          { opacity: 1, transform: `translate(${dx * 0.7}px, ${dy * 0.7}px) scale(0.8)`, offset: 0.7 },
+          { opacity: 0, transform: `translate(${dx}px, ${dy}px) scale(0.1)` }
+        ];
+      }
+      return [{ opacity: 1 }, { opacity: 0 }];
+    case MINIMIZE_ANIMATIONS.spiralDown:
+      const spiralTaskbarItem = document.getElementById(`taskbar-${win.id}`);
+      if (spiralTaskbarItem) {
+        const tbRect = spiralTaskbarItem.getBoundingClientRect();
+        const winRect = win.getBoundingClientRect();
+        const dx = tbRect.left + tbRect.width / 2 - (winRect.left + winRect.width / 2);
+        const dy = tbRect.top + tbRect.height / 2 - (winRect.top + winRect.height / 2);
+        return [
+          { opacity: 1, transform: "translate(0, 0) rotate(0deg) scale(1)" },
+          {
+            opacity: 0.8,
+            transform: `translate(${dx * 0.3}px, ${dy * 0.3}px) rotate(120deg) scale(0.7)`,
+            offset: 0.25
+          },
+          { opacity: 0.5, transform: `translate(${dx * 0.6}px, ${dy * 0.6}px) rotate(240deg) scale(0.4)`, offset: 0.5 },
+          {
+            opacity: 0.2,
+            transform: `translate(${dx * 0.8}px, ${dy * 0.8}px) rotate(360deg) scale(0.2)`,
+            offset: 0.75
+          },
+          { opacity: 0, transform: `translate(${dx}px, ${dy}px) rotate(480deg) scale(0.1)` }
+        ];
+      }
+      return [{ opacity: 1 }, { opacity: 0 }];
     default:
-      onDone?.();
-      break;
+      return [{ opacity: 1 }, { opacity: 0 }];
   }
-}
-
-function _applyKeyframes(win, name, baseDuration, onDone = null) {
-  const duration = baseDuration * getAnimationSpeed();
-  win.style.animation = `${name} ${duration}s cubic-bezier(0.22,1,0.36,1) forwards`;
-  const tid = setTimeout(
-    () => {
-      win.style.animation = "";
-      onDone?.();
-    },
-    duration * 1000 + 16
-  );
-  if (onDone) win._animTid = tid;
-}
-
-function _animateOpenFromTaskbar(win) {
-  const taskbarItem = document.getElementById(`taskbar-${win.id}`);
-  if (!taskbarItem) {
-    _applyKeyframes(win, "wa-scale-in", 0.3);
-    return;
-  }
-  const tbRect = taskbarItem.getBoundingClientRect();
-  const winRect = win.getBoundingClientRect();
-  const dx = tbRect.left + tbRect.width / 2 - (winRect.left + winRect.width / 2);
-  const dy = tbRect.top + tbRect.height / 2 - (winRect.top + winRect.height / 2);
-  win.style.transformOrigin = "center center";
-  win.style.setProperty("--wa-ox", `${dx}px`);
-  win.style.setProperty("--wa-oy", `${dy}px`);
-  _applyKeyframes(win, "wa-source-in", 0.35);
-}
-
-function _animateCloseToTaskbar(win, onDone) {
-  const taskbarItem = document.getElementById(`taskbar-${win.id}`);
-  if (!taskbarItem) {
-    _applyKeyframes(win, "wa-scale-out", 0.22, onDone);
-    return;
-  }
-  const tbRect = taskbarItem.getBoundingClientRect();
-  const winRect = win.getBoundingClientRect();
-  const dx = tbRect.left + tbRect.width / 2 - (winRect.left + winRect.width / 2);
-  const dy = tbRect.top + tbRect.height / 2 - (winRect.top + winRect.height / 2);
-  win.style.transformOrigin = "center center";
-  win.style.setProperty("--wa-ox", `${dx}px`);
-  win.style.setProperty("--wa-oy", `${dy}px`);
-  _applyKeyframes(win, "wa-source-out", 0.3, onDone);
-}
-
-function _animateMinimizeToTaskbar(win, onDone) {
-  const taskbarItem = document.getElementById(`taskbar-${win.id}`);
-  if (!taskbarItem) {
-    _applyKeyframes(win, "wa-fade-out", 0.22, onDone);
-    return;
-  }
-  const tbRect = taskbarItem.getBoundingClientRect();
-  const winRect = win.getBoundingClientRect();
-  const dx = tbRect.left + tbRect.width / 2 - (winRect.left + winRect.width / 2);
-  const dy = tbRect.top + tbRect.height / 2 - (winRect.top + winRect.height / 2);
-  win.style.transformOrigin = "center center";
-  win.style.setProperty("--wa-ox", `${dx}px`);
-  win.style.setProperty("--wa-oy", `${dy}px`);
-  _applyKeyframes(win, "wa-source-out", 0.3, onDone);
-}
-
-function _animateDockZoomShrink(win, onDone) {
-  const taskbarItem = document.getElementById(`taskbar-${win.id}`);
-  if (!taskbarItem) {
-    _applyKeyframes(win, "wa-scale-out", 0.3, onDone);
-    return;
-  }
-  const tbRect = taskbarItem.getBoundingClientRect();
-  const winRect = win.getBoundingClientRect();
-  const taskbar = document.getElementById("taskbar");
-  const isBottom = !taskbar || taskbar.classList.contains("position-bottom");
-  const dy = isBottom ? tbRect.top - (winRect.top + winRect.height / 2) : tbRect.bottom - winRect.top;
-  win.style.setProperty("--wa-oy", `${dy}px`);
-  win.style.transformOrigin = "center center";
-  _applyKeyframes(win, "wa-dock-zoom-out", 0.32, onDone);
-}
-
-function _animateMagicLamp(win, onDone) {
-  const taskbarItem = document.getElementById(`taskbar-${win.id}`);
-  if (!taskbarItem) {
-    _applyKeyframes(win, "wa-slide-down-out", 0.4, onDone);
-    return;
-  }
-  const tbRect = taskbarItem.getBoundingClientRect();
-  const winRect = win.getBoundingClientRect();
-  const dx = tbRect.left + tbRect.width / 2 - (winRect.left + winRect.width / 2);
-  const dy = tbRect.top + tbRect.height / 2 - (winRect.top + winRect.height / 2);
-  win.style.setProperty("--wa-ox", `${dx}px`);
-  win.style.setProperty("--wa-oy", `${dy}px`);
-  win.style.transformOrigin = "center center";
-  _applyKeyframes(win, "wa-magic-lamp", 0.5, onDone);
 }
 
 export function initFocusEffects(wm) {
@@ -301,21 +401,6 @@ export function clearFocusEffects(allWins) {
   allWins.forEach((w) => {
     w.classList.remove("wa-dimmed", "wa-spotlight", "wa-z-lift", "wa-focus-glow");
   });
-}
-
-export function initWobblyDrag(win, wm) {
-  if (isTurboMode()) return;
-}
-
-export function applyWobblyDragStart(win) {
-  if (isTurboMode()) return;
-  win.classList.add("wa-wobble-drag");
-}
-
-export function applyWobblyDragEnd(win) {
-  win.classList.remove("wa-wobble-drag");
-  win.classList.add("wa-wobble-settle");
-  setTimeout(() => win.classList.remove("wa-wobble-settle"), 500);
 }
 
 export function applyPhysicsInertia(win, vx, vy) {
@@ -361,26 +446,62 @@ function _handleClickBubble(e) {
 
 export function animateStartMenuOpen(el) {
   if (isTurboMode()) return;
-  el.style.animation = "none";
-  void el.offsetWidth;
-  el.style.animation = "wa-start-expand 0.2s cubic-bezier(0.16,1,0.3,1) forwards";
+  el.animate(
+    [
+      { opacity: 0, transform: "scale(0.95)" },
+      { opacity: 1, transform: "scale(1)" }
+    ],
+    {
+      duration: 200,
+      easing: "cubic-bezier(0.16, 1, 0.3, 1)",
+      fill: "forwards"
+    }
+  );
 }
 
 export function animateStartMenuClose(el) {
   if (isTurboMode()) return;
-  el.style.animation = "wa-start-collapse 0.15s ease-in forwards";
+  el.animate(
+    [
+      { opacity: 1, transform: "scale(1)" },
+      { opacity: 0, transform: "scale(0.95)" }
+    ],
+    {
+      duration: 150,
+      easing: "ease-in",
+      fill: "forwards"
+    }
+  );
 }
 
 export function animateContextMenuPop(el) {
   if (isTurboMode()) return;
-  el.style.animation = "none";
-  void el.offsetWidth;
-  el.style.animation = "wa-ctx-pop 0.12s cubic-bezier(0.16,1,0.3,1) forwards";
+  el.animate(
+    [
+      { opacity: 0, transform: "scale(0.95)" },
+      { opacity: 1, transform: "scale(1)" }
+    ],
+    {
+      duration: 120,
+      easing: "cubic-bezier(0.16, 1, 0.3, 1)",
+      fill: "forwards"
+    }
+  );
 }
 
 export function animateNotificationIn(el) {
   if (isTurboMode()) return;
-  el.style.animation = "wa-notif-in 0.25s cubic-bezier(0.16,1,0.3,1) forwards";
+  el.animate(
+    [
+      { opacity: 0, transform: "translateY(10px)" },
+      { opacity: 1, transform: "translateY(0)" }
+    ],
+    {
+      duration: 250,
+      easing: "cubic-bezier(0.16, 1, 0.3, 1)",
+      fill: "forwards"
+    }
+  );
 }
 
 export function animateWorkspaceSlide(direction, onDone) {
@@ -393,12 +514,14 @@ export function animateWorkspaceSlide(direction, onDone) {
     onDone?.();
     return;
   }
-  const cls = direction === "left" ? "wa-ws-slide-left" : "wa-ws-slide-right";
-  desktop.classList.add(cls);
-  setTimeout(() => {
-    desktop.classList.remove(cls);
-    onDone?.();
-  }, 350);
+  const translateX = direction === "left" ? "-20px" : "20px";
+  desktop.animate(
+    [{ transform: "translateX(0)" }, { transform: `translateX(${translateX})` }, { transform: "translateX(0)" }],
+    {
+      duration: 350,
+      easing: "ease-in-out"
+    }
+  ).onfinish = () => onDone?.();
 }
 
 export function animateScreenFreezeBlur(onDone) {
@@ -409,13 +532,19 @@ export function animateScreenFreezeBlur(onDone) {
   const overlay = document.createElement("div");
   overlay.className = "wa-freeze-overlay";
   document.body.appendChild(overlay);
-  setTimeout(() => {
-    overlay.classList.add("wa-freeze-resolve");
-    setTimeout(() => {
+
+  overlay.animate([{ opacity: 0 }, { opacity: 1 }], {
+    duration: 80,
+    fill: "forwards"
+  }).onfinish = () => {
+    overlay.animate([{ opacity: 1 }, { opacity: 0 }], {
+      duration: 250,
+      fill: "forwards"
+    }).onfinish = () => {
       overlay.remove();
       onDone?.();
-    }, 250);
-  }, 80);
+    };
+  };
 }
 
 export function getAnimationSettings() {

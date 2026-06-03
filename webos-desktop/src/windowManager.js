@@ -16,6 +16,9 @@ import { WindowStateManager } from "./windowManager/WindowStateManager.js";
 import { ContextMenuManager } from "./windowManager/ContextMenuManager.js";
 import { WindowManagerUtils } from "./windowManager/WindowManagerUtils.js";
 
+/**
+ * @deprecated Use os.window API instead. Direct access to WindowManager is deprecated.
+ */
 export class WindowManager {
   constructor(notificationCenter = null) {
     this.openWindows = new Map();
@@ -162,6 +165,9 @@ export class WindowManager {
     win.className = "window";
     win.id = id;
     win.dataset.fullscreen = "false";
+    if (!id.startsWith("browser-app-") && id !== "games-app-win") {
+      win.style.opacity = "0";
+    }
     if (options.appId) win.dataset.appId = options.appId;
     if (options.appType) win.dataset.appType = options.appType;
 
@@ -265,7 +271,7 @@ export class WindowManager {
     this.setupWindowControls(win);
     this.addToTaskbar(winId, title, iconValue, color);
     this.bringToFront(win);
-    requestAnimationFrame(() => animateWindowOpen(win));
+    // Animation is now handled by os.window.create() to ensure proper timing
   }
 
   getWindowIconHtml(iconValue, color = null) {
@@ -406,6 +412,20 @@ export class WindowManager {
 
   _findAppIdByWinId(winId) {
     return this.utils._findAppIdByWinId(winId);
+  }
+
+  closeWindow(win) {
+    if (typeof win === "string") {
+      win = document.getElementById(win);
+    }
+    if (!win) return;
+    this._silenceWindow(win);
+    this.removeFromTaskbar(win.id);
+    if (win.dataset.isGame === "true") {
+      this.gameWindowCount = Math.max(0, this.gameWindowCount - 1);
+    }
+    this.updateTransparency();
+    this._animateAndRemove(win);
   }
 
   closeAll() {

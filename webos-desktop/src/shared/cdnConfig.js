@@ -18,7 +18,7 @@ export const CDN_CONFIG = {
     },
     get npm() {
       return {
-        base: resolveNpmUrl("https://cdn.jsdelivr.net/npm/")
+        base: resolveNpmUrl("https://cdn.jsdelivr.net/npm")
       };
     }
   },
@@ -49,8 +49,8 @@ export const CDN_CONFIG = {
       path: "jszip@3.10.1/dist/jszip.min.js"
     },
     docx: {
-      version: "9.6.1",
-      path: "docx@9.6.1/build/index.js"
+      version: "8.5.0",
+      path: "docx@8.5.0/build/index.js"
     },
     clippyjs: {
       version: "latest",
@@ -79,6 +79,14 @@ export const CDN_CONFIG = {
       version: "1.2.0",
       path: "7z-wasm@1.2.0/7zz.es6.js",
       wasm: "7z-wasm@1.2.0/7zz.wasm"
+    },
+    "archive-wasm": {
+      version: "1.7.0",
+      path: "archive-wasm@1.7.0/dist/archive-wasm.umd.cjs"
+    },
+    emojiMart: {
+      version: "latest",
+      path: "emoji-mart@latest/dist/browser.js"
     }
   }
 };
@@ -106,7 +114,12 @@ export function getLibraryUrl(libraryName, type = "path") {
     return `https://esm.sh/${path}`;
   }
 
-  return `${CDN_CONFIG.repos.npm.base}/${path}`;
+  if (libraryName === "docx") {
+    return `https://esm.sh/docx@8.5.0`;
+  }
+
+  const npmBase = CDN_CONFIG.repos.npm.base;
+  return npmBase.endsWith("/") ? `${npmBase}${path}` : `${npmBase}/${path}`;
 }
 
 export function getRepoUrl(repoName, path) {

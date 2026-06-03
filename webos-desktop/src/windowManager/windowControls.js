@@ -1,4 +1,4 @@
-import { trayManager } from "../tray.js";
+import { os } from "../os/index.js";
 
 export function setupWindowControls(win, wm) {
   const closeBtn = win.querySelector(".close-btn");
@@ -8,8 +8,8 @@ export function setupWindowControls(win, wm) {
 
   if (closeBtn) {
     closeBtn.onclick = () => {
-      if (trayManager.isRegistered(win.id)) {
-        trayManager.sendToTray(win.id);
+      if (os.tray.isRegistered(win.id)) {
+        os.tray.sendToTray(win.id);
         return;
       }
       wm._silenceWindow(win);

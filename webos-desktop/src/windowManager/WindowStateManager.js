@@ -23,7 +23,7 @@ export class WindowStateManager {
       this.manager.updatePageFavicon(entry.iconValue, entry.title);
       document.title = entry.title || "YukiOS";
       if (entry.record) entry.record.zIndex = this.manager.zIndexCounter;
-      bus.emit(BusEvents.WINDOW_FOCUSED, { winId: win.id, title: entry.title, iconValue: entry.iconValue });
+      os.events.emit(BusEvents.WINDOW_FOCUSED, { winId: win.id, title: entry.title, iconValue: entry.iconValue });
     }
 
     applyFocusGlow(win);

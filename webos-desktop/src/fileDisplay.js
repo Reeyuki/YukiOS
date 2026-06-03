@@ -1,18 +1,113 @@
 import { FileKind } from "./fs.js";
-import { resolveIconUrl } from "./assetUrl.js";
 import { customAlert, showConfirm } from "./shared/dialogs.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
-
-export const IMAGE_EXTS = ["png", "jpg", "jpeg", "gif", "webp", "bmp", "svg", "avif", "ico"];
-export const VIDEO_EXTS = ["mp4", "webm", "ogv", "mov", "mkv", "avi", "m4v", "wmv", "flv"];
-export const AUDIO_EXTS = ["mp3", "ogg", "wav", "flac", "aac", "m4a", "opus", "wma"];
-export const OFFICE_EXTS = ["docx", "doc", "xlsx", "xls", "slx", "csv", "odt", "ods", "pdf", "odp", "pptx", "ppt"];
-export const ZIP_EXTS = ["zip", "gz", "tgz", "tar", "rar", "7z", "bz2", "xz"];
+import { ROM_EXTS } from "./shared/coreMap.js";
+import { resolveIconUrl } from "./shared/assetResolver.js";
+export const IMAGE_EXTS = [
+  "png",
+  "jpg",
+  "jpeg",
+  "gif",
+  "webp",
+  "bmp",
+  "svg",
+  "avif",
+  "ico",
+  "heic",
+  "heif",
+  "tiff",
+  "tif",
+  "raw",
+  "cr2",
+  "nef",
+  "dng",
+  "arw",
+  "psd",
+  "ai",
+  "eps"
+];
+export const VIDEO_EXTS = [
+  "mp4",
+  "webm",
+  "ogv",
+  "mov",
+  "mkv",
+  "avi",
+  "m4v",
+  "wmv",
+  "flv",
+  "hevc",
+  "mpg",
+  "mpeg",
+  "m2ts",
+  "ts",
+  "3gp",
+  "asf"
+];
+export const AUDIO_EXTS = [
+  "mp3",
+  "ogg",
+  "wav",
+  "flac",
+  "aac",
+  "m4a",
+  "opus",
+  "wma",
+  "alac",
+  "mid",
+  "midi",
+  "aiff",
+  "caf"
+];
+export const OFFICE_EXTS = [
+  "docx",
+  "doc",
+  "xlsx",
+  "xls",
+  "sldx",
+  "csv",
+  "odt",
+  "ods",
+  "pdf",
+  "odp",
+  "pptx",
+  "ppt",
+  "odg",
+  "ott",
+  "ots",
+  "otp",
+  "vsd",
+  "vsdx",
+  "pub",
+  "xps",
+  "wpd",
+  "rtfx"
+];
+export const ZIP_EXTS = [
+  "zip",
+  "gz",
+  "tgz",
+  "tar",
+  "rar",
+  "7z",
+  "bz2",
+  "xz",
+  "lz",
+  "lzma",
+  "zst",
+  "cab",
+  "iso",
+  "dmg",
+  "pak"
+];
 export const EXE_EXTS = ["exe", "msi", "com", "bat", "cmd", "jsdos"];
 export const SWF_EXTS = ["swf"];
-export const MODEL3D_EXTS = ["obj", "gltf", "glb", "fbx", "dae", "3ds"];
+export const MODEL3D_EXTS = ["obj", "gltf", "glb", "fbx", "dae", "3ds", "usdz", "stl", "ply", "x", "blend"];
 
-import { ROM_EXTS } from "./shared/coreMap.js";
+export const EBOOK_EXTS = ["epub", "mobi", "azw", "azw3", "fb2"];
+export const FONT_EXTS = ["ttf", "otf", "woff", "woff2"];
+export const DISK_EXTS = ["vhd", "vhdx", "vmdk", "img", "qcow2"];
+export const SHORTCUT_EXTS = ["torrent", "url", "webloc", "lnk"];
 
 export const HTML_EXTS = ["html", "htm", "xhtml"];
 export const MARKDOWN_EXTS = ["md", "markdown"];
@@ -47,7 +142,22 @@ export const TEXT_EXTS = [
   "hpp",
   "go",
   "rs",
-  "php"
+  "php",
+  "scala",
+  "sc",
+  "lua",
+  "elm",
+  "nim",
+  "asm",
+  "v",
+  "zig",
+  "astro",
+  "solid",
+  "mdx",
+  "jsonc",
+  "toml",
+  "conf",
+  "config"
 ];
 
 const BINARY_OFFICE_EXTS = ["pdf", "docx", "xlsx", "xls", "pptx", "ppt"];
@@ -63,7 +173,14 @@ const VIDEO_MIME_MAP = {
   avi: "video/x-msvideo",
   m4v: "video/x-m4v",
   wmv: "video/x-ms-wmv",
-  flv: "video/x-flv"
+  flv: "video/x-flv",
+  hevc: "video/hevc",
+  mpg: "video/mpeg",
+  mpeg: "video/mpeg",
+  m2ts: "video/mp2t",
+  ts: "video/mp2t",
+  "3gp": "video/3gpp",
+  asf: "video/x-ms-asf"
 };
 
 export function getExt(name) {
@@ -78,6 +195,10 @@ export function fileKindFromName(name) {
   if (ROM_EXTS.includes(ext)) return FileKind.ROM;
   if (SWF_EXTS.includes(ext)) return FileKind.OTHER;
   if (ZIP_EXTS.includes(ext)) return FileKind.OTHER;
+  if (EBOOK_EXTS.includes(ext)) return FileKind.OTHER;
+  if (FONT_EXTS.includes(ext)) return FileKind.OTHER;
+  if (DISK_EXTS.includes(ext)) return FileKind.OTHER;
+  if (SHORTCUT_EXTS.includes(ext)) return FileKind.OTHER;
   if (HTML_EXTS.includes(ext)) return FileKind.HTML ?? FileKind.TEXT;
   if (MARKDOWN_EXTS.includes(ext)) return FileKind.TEXT;
   if (TEXT_EXTS.includes(ext)) return FileKind.TEXT;
@@ -119,6 +240,18 @@ export function isModel3DFile(name) {
 }
 export function isBinaryOfficeFile(name) {
   return BINARY_OFFICE_EXTS.includes(getExt(name));
+}
+export function isEbookFile(name) {
+  return EBOOK_EXTS.includes(getExt(name));
+}
+export function isFontFile(name) {
+  return FONT_EXTS.includes(getExt(name));
+}
+export function isDiskFile(name) {
+  return DISK_EXTS.includes(getExt(name));
+}
+export function isShortcutFile(name) {
+  return SHORTCUT_EXTS.includes(getExt(name));
 }
 export function isMediaFile(name) {
   return isImageFile(name) || isVideoFile(name);
@@ -168,7 +301,21 @@ export function isCodeFile(name) {
     "dockerfile",
     "makefile",
     "yml",
-    "yaml"
+    "yaml",
+    "scala",
+    "sc",
+    "lua",
+    "elm",
+    "nim",
+    "asm",
+    "v",
+    "zig",
+    "astro",
+    "solid",
+    "mdx",
+    "jsonc",
+    "conf",
+    "config"
   ].includes(getExt(name));
 }
 export function isWallpaperPath(path) {
@@ -190,6 +337,10 @@ export function resolveFileIcon(name) {
   if (isZipFile(name)) return resolveIconUrl("static/icons/zip.webp");
   if (isExeFile(name)) return resolveIconUrl("static/icons/jsdos.webp");
   if (isOfficeFile(name)) return resolveIconUrl("static/icons/office.webp");
+  if (isEbookFile(name)) return resolveIconUrl("static/icons/office.webp");
+  if (isFontFile(name)) return resolveIconUrl("static/icons/office.webp");
+  if (isDiskFile(name)) return resolveIconUrl("static/icons/zip.webp");
+  if (isShortcutFile(name)) return resolveIconUrl("static/icons/notepad.webp");
   if (isHtmlFile(name)) return resolveIconUrl("static/icons/firefox.webp");
   if (isJsonFile(name)) return resolveIconUrl("static/icons/json.webp");
   return resolveIconUrl("static/icons/notepad.webp");
@@ -270,6 +421,26 @@ export function buildFileIconHTML(name, { thumbnailSrc = null, size = 64, radius
   if (isOfficeFile(name)) {
     return `<img src="${resolveIconUrl("static/icons/office.webp")}" style="${s}object-fit:cover;">`;
   }
+  if (isEbookFile(name)) {
+    return `<div style="${s}display:flex;align-items:center;justify-content:center;font-size:${Math.round(
+      size * 0.44
+    )}px;color:#ff6b6b;background:#1e1e1e;border:1px solid #333;"><i class="fas fa-book"></i></div>`;
+  }
+  if (isFontFile(name)) {
+    return `<div style="${s}display:flex;align-items:center;justify-content:center;font-size:${Math.round(
+      size * 0.44
+    )}px;color:#4ecdc4;background:#1e1e1e;border:1px solid #333;"><i class="fas fa-font"></i></div>`;
+  }
+  if (isDiskFile(name)) {
+    return `<div style="${s}display:flex;align-items:center;justify-content:center;font-size:${Math.round(
+      size * 0.44
+    )}px;color:#f39c12;background:#1e1e1e;border:1px solid #333;"><i class="fas fa-hdd"></i></div>`;
+  }
+  if (isShortcutFile(name)) {
+    return `<div style="${s}display:flex;align-items:center;justify-content:center;font-size:${Math.round(
+      size * 0.44
+    )}px;color:#9b59b6;background:#1e1e1e;border:1px solid #333;"><i class="fas fa-link"></i></div>`;
+  }
   if (storedIcon && storedIcon !== "@content" && storedIcon !== "rom") {
     return `<img src="${resolveIconUrl(storedIcon)}" style="${s}object-fit:cover;">`;
   }
@@ -319,7 +490,12 @@ function audioExtToMime(name) {
     aac: "audio/aac",
     m4a: "audio/mp4",
     opus: "audio/opus",
-    wma: "audio/x-ms-wma"
+    wma: "audio/x-ms-wma",
+    alac: "audio/alac",
+    mid: "audio/midi",
+    midi: "audio/midi",
+    aiff: "audio/aiff",
+    caf: "audio/x-caf"
   };
   return map[getExt(name)] ?? "audio/octet-stream";
 }
@@ -456,7 +632,17 @@ export async function openFileWith({
       avif: "image/avif",
       ico: "image/x-icon",
       tif: "image/tiff",
-      tiff: "image/tiff"
+      tiff: "image/tiff",
+      heic: "image/heic",
+      heif: "image/heif",
+      raw: "image/raw",
+      cr2: "image/x-canon-cr2",
+      nef: "image/x-nikon-nef",
+      dng: "image/x-adobe-dng",
+      arw: "image/x-sony-arw",
+      psd: "image/vnd.adobe.photoshop",
+      ai: "application/postscript",
+      eps: "application/postscript"
     };
 
     const kind = isVideoFile(name) ? FileKind.VIDEO : isAudioFile(name) ? FileKind.AUDIO : FileKind.IMAGE;

@@ -1,5 +1,5 @@
 import { StorageKeys } from "../settings/settings.js";
-import { desktop } from "../desktop.js";
+const desktop = document.getElementById("desktop");
 
 export function makeDraggable(win, wm) {
   const headers = win.querySelectorAll(".window-header, .browser-tabbar");

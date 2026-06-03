@@ -1,6 +1,7 @@
 import BrowserFS from "browserfs";
-import { CDN_BASES, resolveWallpaperUrl, resolveIconUrl } from "./shared/assetResolver.js";
+import { CDN_BASES, resolveIconUrl } from "./shared/assetResolver.js";
 import { audioMixer } from "./audioMixer.js";
+import { StorageKeys } from "./StorageKeys.js";
 
 export const FileKind = { TEXT: "text", IMAGE: "image", VIDEO: "video", AUDIO: "audio", ROM: "rom", OTHER: "other" };
 
@@ -58,6 +59,14 @@ export const defaultStorage = {
           content: "Welcome to Yuki OS.\n\nYou can write and save text files using the Text Editor app.",
           kind: FileKind.TEXT,
           icon: "static/icons/notepad.webp"
+        }
+      },
+      Music: {
+        "new_look_mii_maker_lofi_mix.mp3": {
+          type: "file",
+          content: resolveIconUrl("static/audio/new_look_mii_maker_lofi_mix.mp3"),
+          kind: FileKind.AUDIO,
+          icon: resolveIconUrl("static/audio/new_look_mii_maker_lofi_mix.mp3")
         }
       },
       Pictures: {
@@ -207,6 +216,9 @@ export const defaultStorage = {
   }
 };
 
+/**
+ * @deprecated Use os.fs API instead. Direct access to FileSystemManager is deprecated.
+ */
 export class FileSystemManager {
   constructor() {
     this.CONFIG = {
@@ -311,16 +323,54 @@ export class FileSystemManager {
 
     if (this.fs) return this.fsReady;
 
-    this.fsReady = new Promise((resolve) => {
-      BrowserFS.configure({ fs: "IndexedDB", options: {} }, async () => {
-        this.fs = BrowserFS.BFSRequire("fs");
-        await this.initBlobDB();
-        await this.ensureDefaults();
-        this._resolveFs();
-        resolve();
-      });
+    this.fsReady = new Promise((resolve, reject) => {
+      const attemptInit = () => {
+        BrowserFS.configure(
+          {
+            fs: "IndexedDB",
+            options: {}
+          },
+          async (e) => {
+            if (e) {
+              console.error("BrowserFS initialization failed:", e);
+              try {
+                await this._clearIndexedDB();
+                console.log("Cleared IndexedDB, retrying initialization...");
+                setTimeout(attemptInit, 100);
+              } catch (clearErr) {
+                console.error("Failed to clear IndexedDB:", clearErr);
+                reject(e);
+              }
+              return;
+            }
+            this.fs = BrowserFS.BFSRequire("fs");
+            try {
+              await this.initBlobDB();
+              await this.ensureDefaults();
+              this._resolveFs();
+              resolve();
+            } catch (initErr) {
+              console.error("Post-initialization failed:", initErr);
+              reject(initErr);
+            }
+          }
+        );
+      };
+      attemptInit();
     });
     return this.fsReady;
+  }
+
+  async _clearIndexedDB() {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.deleteDatabase("browserfs");
+      req.onsuccess = () => resolve();
+      req.onerror = () => reject(req.error);
+      req.onblocked = () => {
+        console.warn("IndexedDB deletion blocked, will retry on next reload");
+        resolve();
+      };
+    });
   }
 
   async setSession(sessionKey) {
@@ -489,7 +539,7 @@ export class FileSystemManager {
   }
 
   async ensureDefaults() {
-    const defaultsCreatedKey = `yukiOS_defaults_created_${this.sessionKey}`;
+    const defaultsCreatedKey = StorageKeys.defaultsCreatedPrefix + this.sessionKey;
     if (localStorage.getItem(defaultsCreatedKey) === "true") {
       const homeExists = await this.exists(this.CONFIG.ROOT);
       if (homeExists) {
@@ -512,7 +562,7 @@ export class FileSystemManager {
   }
 
   async migrateDefaultWallpapers() {
-    const migrationKey = `yukiOS_wallpaper_migrated_${this.sessionKey}`;
+    const migrationKey = StorageKeys.wallpaperMigratedPrefix + this.sessionKey;
     if (localStorage.getItem(migrationKey) === "true") {
       return;
     }
@@ -567,6 +617,11 @@ export class FileSystemManager {
 
   dirname(path) {
     return path.split("/").slice(0, -1).join("/") || "/";
+  }
+
+  basename(path) {
+    const parts = path.split("/");
+    return parts[parts.length - 1] || "";
   }
 
   _acquireMeta(dir) {
@@ -1002,7 +1057,7 @@ export class FileSystemManager {
 
     const iconMap = {
       [FileKind.IMAGE]: "@content",
-      [FileKind.VIDEO]: "/static/icons/obs.webp",
+      [FileKind.VIDEO]: "fas fa-camera",
       [FileKind.AUDIO]: "/static/icons/spot.webp",
       [FileKind.TEXT]: "static/icons/notepad.webp"
     };

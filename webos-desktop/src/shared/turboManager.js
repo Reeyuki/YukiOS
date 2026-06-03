@@ -62,8 +62,7 @@ class TurboManager {
           display: none !important;
         }
         html[data-turbo="turbo"] #tray-overflow-popup,
-        html[data-turbo="turbo"] #power-tray-popup,
-        html[data-turbo="turbo"] #brightness-tray-popup,
+        html[data-turbo="turbo"] #display-performance-tray-popup,
         html[data-turbo="turbo"] #clipboard-tray-popup,
         html[data-turbo="turbo"] #audio-mixer-panel {
           backdrop-filter: none !important;

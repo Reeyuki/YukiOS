@@ -11,10 +11,7 @@
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   color: #f1f1f7;
-  font-family:
-    system-ui,
-    -apple-system,
-    sans-serif;
+  font-family: var(--font-ui);
   user-select: none;
   overflow: hidden;
 }
@@ -145,7 +142,7 @@
 
 .slider-val {
   font-size: 13px;
-  font-family: monospace;
+  font-family: var(--font-mono);
   min-width: 32px;
 }
 
@@ -168,7 +165,7 @@
   padding: 12px;
   max-height: 200px;
   overflow: auto;
-  font-family: monospace;
+  font-family: var(--font-mono);
   font-size: 12px;
   white-space: pre-wrap;
 }

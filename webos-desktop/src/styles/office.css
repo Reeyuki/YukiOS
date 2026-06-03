@@ -35,7 +35,7 @@
 }
 
 .office-window-content {
-  height: calc(100% - 80px);
+  height: 100%;
   overflow: auto;
   background: var(--bg-primary);
 }
@@ -207,7 +207,7 @@
   min-height: 200px;
   border: none;
   padding: 20px 24px;
-  font-family: Georgia, serif;
+  font-family: var(--font-serif);
   font-size: 14px;
   line-height: 1.7;
   overflow: auto;
@@ -273,7 +273,7 @@
 
 .office-spreadsheet {
   border-collapse: collapse;
-  font-family: "Courier New", monospace;
+  font-family: var(--font-mono);
   font-size: 13px;
   color: var(--text-primary);
 }
@@ -710,7 +710,7 @@
 }
 
 .office-doc-export {
-  font-family: serif;
+  font-family: var(--font-serif);
   max-width: 800px;
   margin: 20px auto;
   padding: 20px;

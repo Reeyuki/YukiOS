@@ -1,9 +1,10 @@
-import { bus, BusEvents } from "./core/EventBus.js";
-import { PREDEFINED_AVATARS, STORAGE_KEYS } from "./profileCustomizer.js";
+import { BusEvents } from "./core/EventBus.js";
+import { PREDEFINED_AVATARS } from "./apps/profileCustomizer.js";
 import { resolveIconUrl } from "./shared/assetResolver.js";
-import { StorageKeys } from "./settings/settings.js";
+import { StorageKeys } from "./StorageKeys.js";
 import { SystemUtilities } from "./system.js";
 import { audioMixer, SystemAudio } from "./audioMixer.js";
+import { os } from "./os/index.js";
 
 export class SessionManager {
   constructor(services) {
@@ -52,8 +53,8 @@ export class SessionManager {
 
   async showLogin() {
     if (!localStorage.getItem(StorageKeys.setupCompleted)) {
-      const lastUsername = localStorage.getItem(STORAGE_KEYS.username) || "";
-      const lastAvatar = localStorage.getItem(STORAGE_KEYS.profilePicture) || PREDEFINED_AVATARS[0];
+      const lastUsername = localStorage.getItem(StorageKeys.username) || "";
+      const lastAvatar = localStorage.getItem(StorageKeys.profilePicture) || PREDEFINED_AVATARS[0];
       const displayName = lastUsername || "Guest";
       const sessionKey = lastUsername.toLowerCase().replace(/[^a-z0-9]/g, "") || "guest";
       this.currentSession = {
@@ -71,8 +72,8 @@ export class SessionManager {
     localStorage.setItem(StorageKeys.lastLaunchTime, now.toString());
 
     if (localStorage.getItem(StorageKeys.disableBootScreen) === "true" || isWithin15Mins) {
-      const lastUsername = localStorage.getItem(STORAGE_KEYS.username) || "";
-      const lastAvatar = localStorage.getItem(STORAGE_KEYS.profilePicture) || PREDEFINED_AVATARS[0];
+      const lastUsername = localStorage.getItem(StorageKeys.username) || "";
+      const lastAvatar = localStorage.getItem(StorageKeys.profilePicture) || PREDEFINED_AVATARS[0];
       const displayName = lastUsername || "Guest";
       const sessionKey = lastUsername.toLowerCase().replace(/[^a-z0-9]/g, "") || "guest";
       this.currentSession = {
@@ -95,8 +96,8 @@ export class SessionManager {
     this.container.id = "login-screen-container";
     this.container.className = "login-screen-overlay";
 
-    const lastUsername = localStorage.getItem(STORAGE_KEYS.username) || "";
-    const lastAvatar = localStorage.getItem(STORAGE_KEYS.profilePicture) || PREDEFINED_AVATARS[0];
+    const lastUsername = localStorage.getItem(StorageKeys.username) || "";
+    const lastAvatar = localStorage.getItem(StorageKeys.profilePicture) || PREDEFINED_AVATARS[0];
     const displayName = lastUsername || "Guest";
 
     const userHistoryHtml =
@@ -246,7 +247,7 @@ export class SessionManager {
     const previewAvatar = this.container.querySelector("#preview-avatar");
     const previewName = this.container.querySelector("#preview-name");
 
-    let selectedAvatar = localStorage.getItem(STORAGE_KEYS.profilePicture) || PREDEFINED_AVATARS[0];
+    let selectedAvatar = localStorage.getItem(StorageKeys.profilePicture) || PREDEFINED_AVATARS[0];
 
     const updatePreview = () => {
       const name = nicknameInput.value.trim() || "Guest";
@@ -383,7 +384,7 @@ export class SessionManager {
       await this.services.fileSystemManager.setSession(key);
     }
 
-    bus.emit(BusEvents.SESSION_INITIALIZED, this.currentSession);
+    os.events.emit(BusEvents.SESSION_INITIALIZED, this.currentSession);
 
     if (this.services.windowManager) {
       this.services.windowManager.setFileSystemManager(this.services.fileSystemManager);
@@ -429,7 +430,7 @@ export class SessionManager {
 
     this._createLockUI();
 
-    bus.emit(BusEvents.SYSTEM_LOCKED, this.currentSession);
+    os.events.emit(BusEvents.SYSTEM_LOCKED, this.currentSession);
   }
 
   unlockSession() {
@@ -454,7 +455,7 @@ export class SessionManager {
     }
     this.lastActiveWindow = null;
 
-    bus.emit(BusEvents.SYSTEM_UNLOCKED, this.currentSession);
+    os.events.emit(BusEvents.SYSTEM_UNLOCKED, this.currentSession);
   }
 
   _createLockUI() {

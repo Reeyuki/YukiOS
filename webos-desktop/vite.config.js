@@ -38,7 +38,6 @@ export default defineConfig({
   },
   esbuild: {
     minify: !isDevBuild,
-    treeShaking: !isDevBuild,
-    legalComments: isDevBuild ? "linked" : "none"
+    legalComments: "inline"
   }
 });

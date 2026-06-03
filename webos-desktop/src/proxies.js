@@ -1,7 +1,8 @@
 export const PROXIES = [
   { label: "Codetabs", prefix: "https://api.codetabs.com/v1/proxy?quest=" },
   { label: "WhateverOrigin", prefix: "https://whateverorigin.org/get?url=" },
-  { label: "proxy.2677929.xyz", prefix: "https://proxy.2677929.xyz/" }
+  { label: "proxy.2677929.xyz", prefix: "https://proxy.2677929.xyz/" },
+  { label: "cors-anywhere.herokuapp", prefix: "cors-anywhere.herokuapp.com/" }
 ];
 
 export function clampProxyIndex(index, proxies = PROXIES) {

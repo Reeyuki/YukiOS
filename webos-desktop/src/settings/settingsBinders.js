@@ -1,6 +1,6 @@
 import { StorageKeys } from "../StorageKeys.js";
-import { trayManager } from "../tray.js";
-import { toggleHideGames, toggleHideSystemApps } from "../desktopui.js";
+import { os } from "../os/index.js";
+import { toggleHideGames, toggleHideSystemApps } from "../desktopui/desktopui.js";
 import { audioMixer, SystemAudio } from "../audioMixer.js";
 import { customAlert, customConfirm } from "../shared/dialogs.js";
 import { renderWallpapersPage } from "../wallpapers.js";
@@ -12,60 +12,63 @@ import {
   applyGuiScale,
   applyFontSize,
   applyCursor,
-  applyMikuCursor
+  applyMikuCursor,
+  applyFontFamily,
+  applyUiDensity
 } from "./settingsApply.js";
 import { exportData, importData, deleteAllData } from "./settingsData.js";
+import { $, $$, bindEvent, toggleClass, setText, createElement, setHTML } from "../shared/domUtils.js";
 
 export function bindNavigation(win) {
-  const layout = win.querySelector(".yuki-settings-layout");
-  const navItems = win.querySelectorAll(".yuki-settings-nav li");
-  const panes = win.querySelectorAll(".settings-category-pane");
-  const searchInput = win.querySelector("#settingsSearch");
+  const layout = $(".yuki-settings-layout", win);
+  const navItems = $$(".yuki-settings-nav li", win);
+  const panes = $$(".settings-category-pane", win);
+  const searchInput = $("#settingsSearch", win);
 
   navItems.forEach((item) => {
-    item.addEventListener("click", () => {
+    bindEvent(item, "click", () => {
       searchInput.value = "";
       searchInput.dispatchEvent(new Event("input"));
 
       navItems.forEach((n) => n.classList.remove("active"));
       panes.forEach((p) => p.classList.remove("active"));
       item.classList.add("active");
-      win.querySelector("#" + item.dataset.target).classList.add("active");
+      $(`#${item.dataset.target}`, win)?.classList.add("active");
     });
   });
 
-  searchInput.addEventListener("input", (e) => {
+  bindEvent(searchInput, "input", (e) => {
     const query = e.target.value.toLowerCase().trim();
 
     if (!query) {
       layout.classList.remove("is-searching");
-      win.querySelectorAll(".settings-row").forEach((row) => row.classList.remove("hidden-by-search"));
+      $$(".settings-row", win).forEach((row) => row.classList.remove("hidden-by-search"));
       panes.forEach((p) => {
         p.classList.remove("active");
         p.style.display = "";
-        p.querySelectorAll(".settings-card").forEach((card) => {
+        $$(".settings-card", p).forEach((card) => {
           card.style.display = "";
         });
       });
-      const activeNav = win.querySelector(".yuki-settings-nav li.active");
-      if (activeNav) win.querySelector("#" + activeNav.dataset.target).classList.add("active");
+      const activeNav = $(".yuki-settings-nav li.active", win);
+      if (activeNav) $(`#${activeNav.dataset.target}`, win)?.classList.add("active");
     } else {
       layout.classList.add("is-searching");
-      win.querySelectorAll(".settings-row").forEach((row) => {
-        const title = row.querySelector(".settings-label-title")?.textContent.toLowerCase() || "";
-        const desc = row.querySelector(".settings-label-desc")?.textContent.toLowerCase() || "";
+      $$(".settings-row", win).forEach((row) => {
+        const title = $(".settings-label-title", row)?.textContent.toLowerCase() || "";
+        const desc = $(".settings-label-desc", row)?.textContent.toLowerCase() || "";
         row.classList.toggle("hidden-by-search", !(title.includes(query) || desc.includes(query)));
       });
 
       panes.forEach((pane) => {
         let paneHasVisibleRows = false;
-        pane.querySelectorAll(".settings-card").forEach((card) => {
-          const visible = card.querySelectorAll(".settings-row:not(.hidden-by-search)");
+        $$(".settings-card", pane).forEach((card) => {
+          const visible = $$(".settings-row:not(.hidden-by-search)", card);
           card.style.display = visible.length > 0 ? "" : "none";
           if (visible.length > 0) paneHasVisibleRows = true;
         });
 
-        const standaloneRows = pane.querySelectorAll(".settings-category-pane > .settings-row:not(.hidden-by-search)");
+        const standaloneRows = $$(".settings-category-pane > .settings-row:not(.hidden-by-search)", pane);
         if (standaloneRows.length > 0) paneHasVisibleRows = true;
 
         if (paneHasVisibleRows) {
@@ -81,25 +84,28 @@ export function bindNavigation(win) {
 }
 
 export function bindSystemCategory(win, save, settings, notificationCenter, showSaved) {
-  win.querySelector("#settingsWeather")?.addEventListener("change", save);
-  win.querySelector("#settingsMacControls")?.addEventListener("change", save);
-  win.querySelector("#settingsClippy")?.addEventListener("change", save);
-  win.querySelector("#settingsAchievements")?.addEventListener("change", save);
-  win.querySelector("#settingsAnalytics")?.addEventListener("change", save);
-  win.querySelector("#settingsAds")?.addEventListener("change", save);
-  win.querySelector("#settingsDisableBootScreen")?.addEventListener("change", save);
-  win.querySelector("#settingsWindowSessionPersistence")?.addEventListener("change", save);
+  const systemSettings = [
+    "#settingsWeather",
+    "#settingsMacControls",
+    "#settingsClippy",
+    "#settingsAchievements",
+    "#settingsAnalytics",
+    "#settingsAds",
+    "#settingsDisableBootScreen",
+    "#settingsWindowSessionPersistence"
+  ];
+  systemSettings.forEach((id) => bindEvent($(id, win), "change", save));
 
-  win.querySelectorAll(".settings-btn[data-turbo-val]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      win.querySelectorAll(".settings-btn[data-turbo-val]").forEach((b) => b.classList.toggle("active", b === btn));
+  $$(".settings-btn[data-turbo-val]", win).forEach((btn) => {
+    bindEvent(btn, "click", () => {
+      $$(".settings-btn[data-turbo-val]", win).forEach((b) => toggleClass(b, "active", b === btn));
       save();
     });
   });
 
-  const dndToggle = win.querySelector("#settingsDND");
+  const dndToggle = $("#settingsDND", win);
   if (dndToggle) {
-    dndToggle.addEventListener("change", () => {
+    bindEvent(dndToggle, "change", () => {
       const enabled = dndToggle.checked;
       settings.dnd = enabled;
       localStorage.setItem(StorageKeys.dndKey, enabled ? "1" : "0");
@@ -107,24 +113,27 @@ export function bindSystemCategory(win, save, settings, notificationCenter, show
     });
   }
 
-  win.querySelector("#settingsNotificationsEnabled")?.addEventListener("change", save);
-  win.querySelector("#settingsNotificationsRemoveTimeout")?.addEventListener("change", save);
-  win.querySelector("#settingsNotificationsPopAnimation")?.addEventListener("change", save);
-  win.querySelector("#settingsNotificationsOverFullscreen")?.addEventListener("change", save);
-  win.querySelector("#settingsNotificationsPosition")?.addEventListener("change", save);
+  const notificationSettings = [
+    "#settingsNotificationsEnabled",
+    "#settingsNotificationsRemoveTimeout",
+    "#settingsNotificationsPopAnimation",
+    "#settingsNotificationsOverFullscreen",
+    "#settingsNotificationsPosition"
+  ];
+  notificationSettings.forEach((id) => bindEvent($(id, win), "change", save));
 
-  const durationInput = win.querySelector("#settingsNotificationsDuration");
-  const durationVal = win.querySelector("#settingsNotificationsDurationVal");
+  const durationInput = $("#settingsNotificationsDuration", win);
+  const durationVal = $("#settingsNotificationsDurationVal", win);
   if (durationInput) {
-    durationInput.addEventListener("input", () => {
-      if (durationVal) durationVal.textContent = `${durationInput.value}s`;
+    bindEvent(durationInput, "input", () => {
+      if (durationVal) setText(durationVal, `${durationInput.value}s`);
     });
-    durationInput.addEventListener("change", save);
+    bindEvent(durationInput, "change", save);
   }
 
-  const clipboardManagerToggle = win.querySelector("#settingsClipboardManager");
+  const clipboardManagerToggle = $("#settingsClipboardManager", win);
   if (clipboardManagerToggle) {
-    clipboardManagerToggle.addEventListener("change", () => {
+    bindEvent(clipboardManagerToggle, "change", () => {
       const enabled = clipboardManagerToggle.checked;
       settings.clipboardManagerEnabled = enabled;
       localStorage.setItem(StorageKeys.clipboardManagerEnabled, String(enabled));
@@ -134,55 +143,55 @@ export function bindSystemCategory(win, save, settings, notificationCenter, show
 }
 
 export function bindDesktopCategory(win, save, settings, showSaved) {
-  win.querySelector("#settingsDisableDesktopStretchScroll")?.addEventListener("change", save);
-  win.querySelector("#settingsShowWorkspace")?.addEventListener("change", save);
+  bindEvent($("#settingsDisableDesktopStretchScroll", win), "change", save);
+  bindEvent($("#settingsShowWorkspace", win), "change", save);
 
   const handleAlignmentClick = (alignment) => {
-    win.querySelectorAll(".settings-btn[data-alignment]").forEach((btn) => {
-      btn.classList.toggle("active", btn.dataset.alignment === alignment);
+    $$(".settings-btn[data-alignment]", win).forEach((btn) => {
+      toggleClass(btn, "active", btn.dataset.alignment === alignment);
     });
     save();
   };
-  win.querySelector('[data-alignment="left"]')?.addEventListener("click", () => handleAlignmentClick("left"));
-  win.querySelector('[data-alignment="center"]')?.addEventListener("click", () => handleAlignmentClick("center"));
-  win.querySelector('[data-alignment="right"]')?.addEventListener("click", () => handleAlignmentClick("right"));
+  bindEvent($('[data-alignment="left"]', win), "click", () => handleAlignmentClick("left"));
+  bindEvent($('[data-alignment="center"]', win), "click", () => handleAlignmentClick("center"));
+  bindEvent($('[data-alignment="right"]', win), "click", () => handleAlignmentClick("right"));
 
-  win.querySelectorAll(".settings-btn[data-taskbar-pos]").forEach((btn) => {
-    btn.addEventListener("click", async () => {
+  $$(".settings-btn[data-taskbar-pos]", win).forEach((btn) => {
+    bindEvent(btn, "click", async () => {
       const pos = btn.dataset.taskbarPos;
-      win.querySelectorAll(".settings-btn[data-taskbar-pos]").forEach((b) => b.classList.toggle("active", b === btn));
+      $$(".settings-btn[data-taskbar-pos]", win).forEach((b) => toggleClass(b, "active", b === btn));
       settings.taskbarPosition = pos;
       localStorage.setItem(StorageKeys.taskbarPosition, pos);
-      const { taskbarPositionManager: tpm } = await import("../taskbarPositionManager.js");
+      const { taskbarPositionManager: tpm } = await import("../desktopui/taskbarPositionManager.js");
       tpm.setPosition(pos);
     });
   });
 
-  const widthSlider = win.querySelector("#settingsStartMenuWidth");
-  const widthValue = win.querySelector("#settingsStartMenuWidthValue");
+  const widthSlider = $("#settingsStartMenuWidth", win);
+  const widthValue = $("#settingsStartMenuWidthValue", win);
   if (widthSlider) {
-    widthSlider.addEventListener("input", () => {
-      if (widthValue) widthValue.textContent = `${widthSlider.value}px`;
+    bindEvent(widthSlider, "input", () => {
+      if (widthValue) setText(widthValue, `${widthSlider.value}px`);
     });
-    widthSlider.addEventListener("change", save);
+    bindEvent(widthSlider, "change", save);
   }
 
-  const heightSlider = win.querySelector("#settingsStartMenuHeight");
-  const heightValue = win.querySelector("#settingsStartMenuHeightValue");
+  const heightSlider = $("#settingsStartMenuHeight", win);
+  const heightValue = $("#settingsStartMenuHeightValue", win);
   if (heightSlider) {
-    heightSlider.addEventListener("input", () => {
-      if (heightValue) heightValue.textContent = `${heightSlider.value}px`;
+    bindEvent(heightSlider, "input", () => {
+      if (heightValue) setText(heightValue, `${heightSlider.value}px`);
     });
-    heightSlider.addEventListener("change", save);
+    bindEvent(heightSlider, "change", save);
   }
 
-  win.querySelectorAll(".settings-start-cat-toggle").forEach((chk) => {
-    chk.addEventListener("change", save);
+  $$(".settings-start-cat-toggle", win).forEach((chk) => {
+    bindEvent(chk, "change", save);
   });
 
-  const trayEnabledToggle = win.querySelector("#settingsTrayEnabled");
+  const trayEnabledToggle = $("#settingsTrayEnabled", win);
   if (trayEnabledToggle) {
-    trayEnabledToggle.addEventListener("change", () => {
+    bindEvent(trayEnabledToggle, "change", () => {
       const enabled = trayEnabledToggle.checked;
       settings.trayEnabled = enabled;
       localStorage.setItem(StorageKeys.trayEnabled, String(enabled));
@@ -192,27 +201,27 @@ export function bindDesktopCategory(win, save, settings, showSaved) {
   }
   renderTrayAppsList(win, settings);
 
-  const windowSwitcherModeSelect = win.querySelector("#settingsWindowSwitcherMode");
+  const windowSwitcherModeSelect = $("#settingsWindowSwitcherMode", win);
   if (windowSwitcherModeSelect) {
-    windowSwitcherModeSelect.addEventListener("change", () => {
+    bindEvent(windowSwitcherModeSelect, "change", () => {
       settings.windowSwitcherMode = windowSwitcherModeSelect.value;
       localStorage.setItem(StorageKeys.windowSwitcherMode, windowSwitcherModeSelect.value);
       showSaved();
     });
   }
 
-  const windowSwitcherUISelect = win.querySelector("#settingsWindowSwitcherUI");
+  const windowSwitcherUISelect = $("#settingsWindowSwitcherUI", win);
   if (windowSwitcherUISelect) {
-    windowSwitcherUISelect.addEventListener("change", () => {
+    bindEvent(windowSwitcherUISelect, "change", () => {
       settings.windowSwitcherUI = windowSwitcherUISelect.value;
       localStorage.setItem(StorageKeys.windowSwitcherUI, windowSwitcherUISelect.value);
       showSaved();
     });
   }
 
-  const windowSwitcherIncludeMinimizedToggle = win.querySelector("#settingsWindowSwitcherIncludeMinimized");
+  const windowSwitcherIncludeMinimizedToggle = $("#settingsWindowSwitcherIncludeMinimized", win);
   if (windowSwitcherIncludeMinimizedToggle) {
-    windowSwitcherIncludeMinimizedToggle.addEventListener("change", () => {
+    bindEvent(windowSwitcherIncludeMinimizedToggle, "change", () => {
       settings.windowSwitcherIncludeMinimized = windowSwitcherIncludeMinimizedToggle.checked;
       localStorage.setItem(
         StorageKeys.windowSwitcherIncludeMinimized,
@@ -222,16 +231,16 @@ export function bindDesktopCategory(win, save, settings, showSaved) {
     });
   }
 
-  const hideGamesBtn = win.querySelector("#settingsHideGamesBtn");
+  const hideGamesBtn = $("#settingsHideGamesBtn", win);
   if (hideGamesBtn) {
-    hideGamesBtn.addEventListener("click", () => {
+    bindEvent(hideGamesBtn, "click", () => {
       toggleHideGames();
       showSaved();
     });
   }
-  const hideAppsBtn = win.querySelector("#settingsHideAppsBtn");
+  const hideAppsBtn = $("#settingsHideAppsBtn", win);
   if (hideAppsBtn) {
-    hideAppsBtn.addEventListener("click", () => {
+    bindEvent(hideAppsBtn, "click", () => {
       toggleHideSystemApps();
       showSaved();
     });
@@ -251,14 +260,13 @@ export function bindAppearanceCategory(
   normalizeCursorDataUrl,
   showCustomColorsDialog
 ) {
-  win.querySelector("#settingsMacControls")?.addEventListener("change", save);
+  bindEvent($("#settingsMacControls", win), "change", save);
+  bindEvent($("#settingsCycleWallpaper", win), "change", save);
 
-  win.querySelector("#settingsCycleWallpaper")?.addEventListener("change", save);
-
-  win.querySelectorAll(".settings-btn[data-theme-val]").forEach((btn) => {
-    btn.addEventListener("click", () => {
+  $$(".settings-btn[data-theme-val]", win).forEach((btn) => {
+    bindEvent(btn, "click", () => {
       const theme = btn.dataset.themeVal;
-      win.querySelectorAll(".settings-btn[data-theme-val]").forEach((b) => b.classList.toggle("active", b === btn));
+      $$(".settings-btn[data-theme-val]", win).forEach((b) => toggleClass(b, "active", b === btn));
       settings.theme = theme;
       localStorage.setItem(StorageKeys.theme, theme);
       applyTheme(theme, getCustomColors);
@@ -267,18 +275,18 @@ export function bindAppearanceCategory(
     });
   });
 
-  const customColorsBtn = win.querySelector("#settingsCustomColorsBtn");
+  const customColorsBtn = $("#settingsCustomColorsBtn", win);
   if (customColorsBtn) {
-    customColorsBtn.addEventListener("click", () => showCustomColorsDialog(win));
+    bindEvent(customColorsBtn, "click", () => showCustomColorsDialog(win));
   }
 
-  const transparencySlider = win.querySelector("#settingsWindowTransparency");
-  const transparencyValue = win.querySelector("#settingsWindowTransparencyValue");
+  const transparencySlider = $("#settingsWindowTransparency", win);
+  const transparencyValue = $("#settingsWindowTransparencyValue", win);
   if (transparencySlider) {
-    transparencySlider.addEventListener("input", () => {
-      if (transparencyValue) transparencyValue.textContent = `${transparencySlider.value}%`;
+    bindEvent(transparencySlider, "input", () => {
+      if (transparencyValue) setText(transparencyValue, `${transparencySlider.value}%`);
     });
-    transparencySlider.addEventListener("change", () => {
+    bindEvent(transparencySlider, "change", () => {
       const val = parseInt(transparencySlider.value) / 100;
       settings.windowTransparency = val;
       localStorage.setItem(StorageKeys.windowTransparency, String(val));
@@ -287,9 +295,9 @@ export function bindAppearanceCategory(
     });
   }
 
-  const transparentUIToggle = win.querySelector("#settingsTransparentUI");
+  const transparentUIToggle = $("#settingsTransparentUI", win);
   if (transparentUIToggle) {
-    transparentUIToggle.addEventListener("change", () => {
+    bindEvent(transparentUIToggle, "change", () => {
       const enabled = transparentUIToggle.checked;
       settings.transparentUI = enabled;
       localStorage.setItem(StorageKeys.transparentUI, String(enabled));
@@ -298,13 +306,13 @@ export function bindAppearanceCategory(
     });
   }
 
-  const guiScaleSlider = win.querySelector("#settingsGuiScale");
-  const guiScaleValue = win.querySelector("#settingsGuiScaleValue");
+  const guiScaleSlider = $("#settingsGuiScale", win);
+  const guiScaleValue = $("#settingsGuiScaleValue", win);
   if (guiScaleSlider) {
-    guiScaleSlider.addEventListener("input", () => {
-      if (guiScaleValue) guiScaleValue.textContent = `${guiScaleSlider.value}%`;
+    bindEvent(guiScaleSlider, "input", () => {
+      if (guiScaleValue) setText(guiScaleValue, `${guiScaleSlider.value}%`);
     });
-    guiScaleSlider.addEventListener("change", () => {
+    bindEvent(guiScaleSlider, "change", () => {
       const val = parseInt(guiScaleSlider.value);
       settings.guiScale = val;
       localStorage.setItem(StorageKeys.guiScale, String(val));
@@ -313,13 +321,13 @@ export function bindAppearanceCategory(
     });
   }
 
-  const fontSizeSlider = win.querySelector("#settingsFontSize");
-  const fontSizeValue = win.querySelector("#settingsFontSizeValue");
+  const fontSizeSlider = $("#settingsFontSize", win);
+  const fontSizeValue = $("#settingsFontSizeValue", win);
   if (fontSizeSlider) {
-    fontSizeSlider.addEventListener("input", () => {
-      if (fontSizeValue) fontSizeValue.textContent = `${fontSizeSlider.value}%`;
+    bindEvent(fontSizeSlider, "input", () => {
+      if (fontSizeValue) setText(fontSizeValue, `${fontSizeSlider.value}%`);
     });
-    fontSizeSlider.addEventListener("change", () => {
+    bindEvent(fontSizeSlider, "change", () => {
       const val = parseInt(fontSizeSlider.value);
       settings.fontSize = val;
       localStorage.setItem(StorageKeys.fontSize, String(val));
@@ -328,48 +336,72 @@ export function bindAppearanceCategory(
     });
   }
 
-  const openAnimSelect = win.querySelector("#settingsOpenAnimation");
+  const uiDensityButtons = $$(".settings-btn[data-ui-density]", win);
+  uiDensityButtons.forEach((btn) => {
+    bindEvent(btn, "click", () => {
+      const density = btn.dataset.uiDensity;
+      settings.uiDensity = density;
+      localStorage.setItem(StorageKeys.uiDensity, density);
+      applyUiDensity(density);
+      uiDensityButtons.forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      showSaved();
+    });
+  });
+
+  const openAnimSelect = $("#settingsOpenAnimation", win);
   if (openAnimSelect) {
-    openAnimSelect.addEventListener("change", () => {
+    bindEvent(openAnimSelect, "change", () => {
       localStorage.setItem(StorageKeys.windowOpenAnimation, openAnimSelect.value);
       showSaved();
     });
   }
 
-  const closeAnimSelect = win.querySelector("#settingsCloseAnimation");
+  const closeAnimSelect = $("#settingsCloseAnimation", win);
   if (closeAnimSelect) {
-    closeAnimSelect.addEventListener("change", () => {
+    bindEvent(closeAnimSelect, "change", () => {
       localStorage.setItem(StorageKeys.windowCloseAnimation, closeAnimSelect.value);
       showSaved();
     });
   }
 
-  const minimizeAnimSelect = win.querySelector("#settingsMinimizeAnimation");
+  const minimizeAnimSelect = $("#settingsMinimizeAnimation", win);
   if (minimizeAnimSelect) {
-    minimizeAnimSelect.addEventListener("change", () => {
+    bindEvent(minimizeAnimSelect, "change", () => {
       localStorage.setItem(StorageKeys.windowMinimizeAnimation, minimizeAnimSelect.value);
       showSaved();
     });
   }
 
-  const animationSpeedSelect = win.querySelector("#settingsAnimationSpeed");
+  const animationSpeedSelect = $("#settingsAnimationSpeed", win);
   if (animationSpeedSelect) {
-    animationSpeedSelect.addEventListener("change", () => {
+    bindEvent(animationSpeedSelect, "change", () => {
       localStorage.setItem(StorageKeys.windowAnimationSpeed, animationSpeedSelect.value);
       showSaved();
     });
   }
 
-  const clickBubbleToggle = win.querySelector("#settingsClickBubble");
+  const clickBubbleToggle = $("#settingsClickBubble", win);
   if (clickBubbleToggle) {
-    clickBubbleToggle.addEventListener("change", async () => {
+    bindEvent(clickBubbleToggle, "change", async () => {
       const { applyAnimationSettings } = await import("../windowManager/AnimationSystem.js");
       applyAnimationSettings({ clickBubble: clickBubbleToggle.checked });
       showSaved();
     });
   }
 
-  const wallpapersContainer = win.querySelector("#settings-wallpapers-container");
+  $$(".settings-btn[data-font-family]", win).forEach((btn) => {
+    bindEvent(btn, "click", () => {
+      const fontFamily = btn.dataset.fontFamily;
+      $$(".settings-btn[data-font-family]", win).forEach((b) => toggleClass(b, "active", b === btn));
+      settings.fontFamily = fontFamily;
+      localStorage.setItem(StorageKeys.fontFamily, fontFamily);
+      applyFontFamily(fontFamily);
+      showSaved();
+    });
+  });
+
+  const wallpapersContainer = $("#settings-wallpapers-container", win);
   if (wallpapersContainer && fs && wm) {
     renderWallpapersPage(fs, wm, wallpapersContainer);
   }
@@ -378,11 +410,11 @@ export function bindAppearanceCategory(
 }
 
 function bindCursorControls(win, settings, showSaved, normalizeCursorDataUrl) {
-  const cursorUploadBtn = win.querySelector("#settingsCursorUploadBtn");
-  const cursorClearBtn = win.querySelector("#settingsCursorClearBtn");
-  const cursorStatus = win.querySelector("#settingsCursorStatus");
-  const cursorSizeInput = win.querySelector("#settingsCursorSize");
-  const cursorSizeValue = win.querySelector("#settingsCursorSizeValue");
+  const cursorUploadBtn = $("#settingsCursorUploadBtn", win);
+  const cursorClearBtn = $("#settingsCursorClearBtn", win);
+  const cursorStatus = $("#settingsCursorStatus", win);
+  const cursorSizeInput = $("#settingsCursorSize", win);
+  const cursorSizeValue = $("#settingsCursorSizeValue", win);
 
   const setCursor = (dataUrl, originalDataUrl = null) => {
     const cursorDataUrl = typeof dataUrl === "string" ? dataUrl : "";
@@ -406,7 +438,7 @@ function bindCursorControls(win, settings, showSaved, normalizeCursorDataUrl) {
     applyCursor(cursorDataUrl);
 
     if (cursorClearBtn) cursorClearBtn.disabled = !cursorDataUrl;
-    if (cursorStatus) cursorStatus.textContent = cursorDataUrl ? "Custom cursor enabled" : "Default cursor";
+    if (cursorStatus) setText(cursorStatus, cursorDataUrl ? "Custom cursor enabled" : "Default cursor");
     if (cursorSizeInput) cursorSizeInput.disabled = !cursorDataUrl;
     showSaved();
   };
@@ -418,7 +450,7 @@ function bindCursorControls(win, settings, showSaved, normalizeCursorDataUrl) {
     try {
       localStorage.setItem(StorageKeys.cursorSizeKey, String(cursorSize));
     } catch {}
-    if (cursorSizeValue) cursorSizeValue.textContent = `${cursorSize}px`;
+    if (cursorSizeValue) setText(cursorSizeValue, `${cursorSize}px`);
     Object.assign(window._settings, settings);
 
     const original = settings.cursorOriginalDataUrl;
@@ -432,14 +464,17 @@ function bindCursorControls(win, settings, showSaved, normalizeCursorDataUrl) {
   };
 
   if (cursorUploadBtn) {
-    cursorUploadBtn.addEventListener("click", () => {
-      const input = document.createElement("input");
-      input.type = "file";
-      input.accept = "image/png,image/jpeg,image/gif,image/webp,image/svg+xml,.png,.jpg,.jpeg,.gif,.webp,.svg";
-      input.style.display = "none";
+    bindEvent(cursorUploadBtn, "click", () => {
+      const input = createElement("input", {
+        attributes: {
+          type: "file",
+          accept: "image/png,image/jpeg,image/gif,image/webp,image/svg+xml,.png,.jpg,.jpeg,.gif,.webp,.svg"
+        },
+        styles: { display: "none" }
+      });
       document.body.appendChild(input);
 
-      input.addEventListener("change", async () => {
+      bindEvent(input, "change", async () => {
         const file = input.files?.[0];
         input.remove();
         if (!file) return;
@@ -470,27 +505,27 @@ function bindCursorControls(win, settings, showSaved, normalizeCursorDataUrl) {
   }
 
   if (cursorClearBtn) {
-    cursorClearBtn.addEventListener("click", () => {
+    bindEvent(cursorClearBtn, "click", () => {
       try {
         localStorage.removeItem(StorageKeys.cursorSizeKey);
       } catch {}
       if (cursorSizeInput) cursorSizeInput.value = "32";
-      if (cursorSizeValue) cursorSizeValue.textContent = "32px";
+      if (cursorSizeValue) setText(cursorSizeValue, "32px");
       settings.cursorSize = 32;
       setCursor("", "");
     });
   }
 
   if (cursorSizeInput) {
-    cursorSizeInput.addEventListener("input", () => {
-      if (cursorSizeValue) cursorSizeValue.textContent = `${cursorSizeInput.value}px`;
+    bindEvent(cursorSizeInput, "input", () => {
+      if (cursorSizeValue) setText(cursorSizeValue, `${cursorSizeInput.value}px`);
     });
-    cursorSizeInput.addEventListener("change", () => setCursorSize(cursorSizeInput.value));
+    bindEvent(cursorSizeInput, "change", () => setCursorSize(cursorSizeInput.value));
   }
 
-  const mikuCursorToggle = win.querySelector("#settingsMikuCursor");
+  const mikuCursorToggle = $("#settingsMikuCursor", win);
   if (mikuCursorToggle) {
-    mikuCursorToggle.addEventListener("change", () => {
+    bindEvent(mikuCursorToggle, "change", () => {
       const enabled = mikuCursorToggle.checked;
       settings.mikuCursor = enabled;
       localStorage.setItem(StorageKeys.mikuCursor, String(enabled));
@@ -501,45 +536,69 @@ function bindCursorControls(win, settings, showSaved, normalizeCursorDataUrl) {
 }
 
 export function bindDataCategory(win, save, settings, fs, showStatus, showSaved) {
-  win.querySelector("#btnExportData")?.addEventListener("click", () => exportData(fs, showStatus));
-  win.querySelector("#btnImportData")?.addEventListener("click", () => importData(fs, showStatus));
-  win.querySelector("#btnDeleteAllData")?.addEventListener("click", () => deleteAllData());
+  bindEvent($("#btnExportData", win), "click", () => exportData(fs, showStatus));
+  bindEvent($("#btnImportData", win), "click", () => importData(fs, showStatus));
+  bindEvent($("#btnDeleteAllData", win), "click", () => deleteAllData());
 
-  const downloadPageBtn = win.querySelector("#settingsDownloadPageBtn");
+  const downloadPageBtn = $("#settingsDownloadPageBtn", win);
+
   if (downloadPageBtn) {
-    downloadPageBtn.addEventListener("click", async () => {
-      const mirrors = [
+    bindEvent(downloadPageBtn, "click", async () => {
+      const u = "Reeyuki";
+      const r = "YukiOsSingleHtml";
+      const b = "main";
+      const p = "index.html";
+      const f = "";
+
+      const gitMirrors = [
+        `https://cdn.jsdelivr.net/gh/${u}/${r}@${b}/${p}${f}`,
+        `https://quantil.jsdelivr.net/gh/${u}/${r}@${b}/${p}${f}`,
+        `https://originfastly.jsdelivr.net/gh/${u}/${r}@${b}/${p}${f}`,
+        `https://gcore.jsdelivr.net/gh/${u}/${r}@${b}/${p}${f}`,
+        `https://esm.sh/gh/${u}/${r}@${b}/${p}${f}`,
+        `https://cdn.statically.io/gh/${u}/${r}@${b}/${p}${f}`,
+        `https://cdn.staticdelivr.com/gh/${u}/${r}/${b}/${p}${f}`
+      ];
+
+      const siteMirrors = [
         "https://yukios.pages.dev/",
         "https://yukios.neocities.org/",
         "https://yukios.netlify.app/",
         "https://yukios.vercel.app/"
       ];
+
+      const sources = [...siteMirrors, ...gitMirrors];
+
       let htmlContent = null;
-      for (const mirrorUrl of mirrors) {
+
+      for (const url of sources) {
         try {
-          const response = await fetch(mirrorUrl);
-          if (response.ok) {
-            htmlContent = await response.text();
+          const res = await fetch(url + "?v=" + Date.now());
+          if (res.ok) {
+            htmlContent = await res.text();
             break;
           }
-        } catch (e) {
-          console.warn(`Mirror failed: ${mirrorUrl}`, e);
-        }
+        } catch (e) {}
       }
+
       if (!htmlContent) {
-        console.error("All mirrors failed.");
+        console.error("All sources failed.");
         showStatus("Download failed");
         return;
       }
+
       try {
         const blob = new Blob([htmlContent], { type: "text/html" });
         const downloadUrl = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = downloadUrl;
-        link.download = "yukios.html";
+
+        const link = createElement("a", {
+          attributes: { href: downloadUrl, download: "yukios.html" }
+        });
+
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+
         URL.revokeObjectURL(downloadUrl);
         showStatus("Download started");
       } catch (error) {
@@ -549,45 +608,45 @@ export function bindDataCategory(win, save, settings, fs, showStatus, showSaved)
     });
   }
 
-  win.querySelector("#btnResetSaved")?.addEventListener("click", () => {
-    win.querySelector("#settingsWeather").checked = settings.weather;
-    win.querySelector("#settingsCycleWallpaper").checked = settings.cycleWallpaper;
-    win.querySelector("#settingsMacControls").checked = settings.macOsControls;
-    win.querySelector("#settingsClippy").checked = settings.clippy;
-    win.querySelector("#settingsAchievements").checked = !settings.achievementsDisabled;
-    win.querySelector("#settingsAnalytics").checked = !settings.analyticsDisabled;
-    win.querySelector("#settingsAds").checked = !settings.adsDisabled;
-    const stretchToggle = win.querySelector("#settingsDisableDesktopStretchScroll");
+  bindEvent($("#btnResetSaved", win), "click", () => {
+    $("#settingsWeather", win).checked = settings.weather;
+    $("#settingsCycleWallpaper", win).checked = settings.cycleWallpaper;
+    $("#settingsMacControls", win).checked = settings.macOsControls;
+    $("#settingsClippy", win).checked = settings.clippy;
+    $("#settingsAchievements", win).checked = !settings.achievementsDisabled;
+    $("#settingsAnalytics", win).checked = !settings.analyticsDisabled;
+    $("#settingsAds", win).checked = !settings.adsDisabled;
+    const stretchToggle = $("#settingsDisableDesktopStretchScroll", win);
     if (stretchToggle) stretchToggle.checked = !!settings.disableDesktopStretchScroll;
-    const workspaceToggle = win.querySelector("#settingsShowWorkspace");
+    const workspaceToggle = $("#settingsShowWorkspace", win);
     if (workspaceToggle) workspaceToggle.checked = !!settings.showWorkspace;
-    const bootToggle = win.querySelector("#settingsDisableBootScreen");
+    const bootToggle = $("#settingsDisableBootScreen", win);
     if (bootToggle) bootToggle.checked = !!settings.disableBootScreen;
-    win.querySelectorAll(".settings-btn[data-turbo-val]").forEach((btn) => {
-      btn.classList.toggle("active", btn.dataset.perfVal === settings.turboMode);
+    $$(".settings-btn[data-turbo-val]", win).forEach((btn) => {
+      toggleClass(btn, "active", btn.dataset.perfVal === settings.turboMode);
     });
     showStatus("Reset to saved values");
   });
 
-  win.querySelector("#btnResetToggles")?.addEventListener("click", async () => {
+  bindEvent($("#btnResetToggles", win), "click", async () => {
     const confirmed = await customConfirm("Reset toggles?");
     if (!confirmed) return;
 
-    win.querySelector("#settingsWeather").checked = true;
-    win.querySelector("#settingsCycleWallpaper").checked = true;
-    win.querySelector("#settingsMacControls").checked = false;
-    win.querySelector("#settingsClippy").checked = false;
-    win.querySelector("#settingsAchievements").checked = true;
-    win.querySelector("#settingsAnalytics").checked = true;
-    win.querySelector("#settingsAds").checked = true;
-    const stretchToggle = win.querySelector("#settingsDisableDesktopStretchScroll");
+    $("#settingsWeather", win).checked = true;
+    $("#settingsCycleWallpaper", win).checked = true;
+    $("#settingsMacControls", win).checked = false;
+    $("#settingsClippy", win).checked = false;
+    $("#settingsAchievements", win).checked = true;
+    $("#settingsAnalytics", win).checked = true;
+    $("#settingsAds", win).checked = true;
+    const stretchToggle = $("#settingsDisableDesktopStretchScroll", win);
     if (stretchToggle) stretchToggle.checked = false;
-    const workspaceToggle = win.querySelector("#settingsShowWorkspace");
+    const workspaceToggle = $("#settingsShowWorkspace", win);
     if (workspaceToggle) workspaceToggle.checked = true;
-    const bootToggle = win.querySelector("#settingsDisableBootScreen");
+    const bootToggle = $("#settingsDisableBootScreen", win);
     if (bootToggle) bootToggle.checked = false;
-    win.querySelectorAll(".settings-btn[data-turbo-val]").forEach((btn) => {
-      btn.classList.toggle("active", btn.dataset.perfVal === "high");
+    $$(".settings-btn[data-turbo-val]", win).forEach((btn) => {
+      toggleClass(btn, "active", btn.dataset.perfVal === "high");
     });
     save();
     showStatus("Toggles reset");
@@ -595,19 +654,19 @@ export function bindDataCategory(win, save, settings, fs, showStatus, showSaved)
 }
 
 export function bindNetworkCategory(win, save) {
-  win.querySelector("#settingsCdnMirror")?.addEventListener("change", save);
+  bindEvent($("#settingsCdnMirror", win), "change", save);
 }
 
 export function bindAudioCategory(win, settings, showSaved) {
-  const soundToggle = win.querySelector("#settingsSoundEnabled");
-  const volumeSlider = win.querySelector("#settingsMasterVolume");
-  const volumeValue = win.querySelector("#settingsMasterVolumeValue");
-  const systemAudioToggle = win.querySelector("#settingsSystemAudioEnabled");
-  const systemVolumeSlider = win.querySelector("#settingsSystemVolume");
-  const systemVolumeValue = win.querySelector("#settingsSystemVolumeValue");
+  const soundToggle = $("#settingsSoundEnabled", win);
+  const volumeSlider = $("#settingsMasterVolume", win);
+  const volumeValue = $("#settingsMasterVolumeValue", win);
+  const systemAudioToggle = $("#settingsSystemAudioEnabled", win);
+  const systemVolumeSlider = $("#settingsSystemVolume", win);
+  const systemVolumeValue = $("#settingsSystemVolumeValue", win);
 
   if (soundToggle) {
-    soundToggle.addEventListener("change", () => {
+    bindEvent(soundToggle, "change", () => {
       const enabled = soundToggle.checked;
       settings.soundEnabled = enabled;
       localStorage.setItem(StorageKeys.soundEnabled, String(enabled));
@@ -618,10 +677,10 @@ export function bindAudioCategory(win, settings, showSaved) {
   }
 
   if (volumeSlider) {
-    volumeSlider.addEventListener("input", () => {
-      if (volumeValue) volumeValue.textContent = `${volumeSlider.value}%`;
+    bindEvent(volumeSlider, "input", () => {
+      if (volumeValue) setText(volumeValue, `${volumeSlider.value}%`);
     });
-    volumeSlider.addEventListener("change", () => {
+    bindEvent(volumeSlider, "change", () => {
       const val = parseInt(volumeSlider.value) / 100;
       settings.masterVolume = val;
       localStorage.setItem(StorageKeys.masterVolume, String(val));
@@ -631,7 +690,7 @@ export function bindAudioCategory(win, settings, showSaved) {
   }
 
   if (systemAudioToggle) {
-    systemAudioToggle.addEventListener("change", () => {
+    bindEvent(systemAudioToggle, "change", () => {
       const enabled = systemAudioToggle.checked;
       settings.systemAudioEnabled = enabled;
       audioMixer.systemAudioEnabled = enabled;
@@ -642,10 +701,10 @@ export function bindAudioCategory(win, settings, showSaved) {
   }
 
   if (systemVolumeSlider) {
-    systemVolumeSlider.addEventListener("input", () => {
-      if (systemVolumeValue) systemVolumeValue.textContent = `${systemVolumeSlider.value}%`;
+    bindEvent(systemVolumeSlider, "input", () => {
+      if (systemVolumeValue) setText(systemVolumeValue, `${systemVolumeSlider.value}%`);
     });
-    systemVolumeSlider.addEventListener("change", () => {
+    bindEvent(systemVolumeSlider, "change", () => {
       const val = parseInt(systemVolumeSlider.value) / 100;
       settings.systemVolume = val;
       audioMixer.systemVolume = val;
@@ -656,21 +715,32 @@ export function bindAudioCategory(win, settings, showSaved) {
 }
 
 export function renderTrayAppsList(win, settings) {
-  const trayAppsList = win.querySelector("#trayAppsList");
+  const trayAppsList = $("#trayAppsList", win);
   if (!trayAppsList) return;
 
-  const trayItems = trayManager.getTrayItems();
+  const trayItems = os.tray.getTrayItems();
   if (trayItems.length === 0) {
-    trayAppsList.innerHTML = `<div style="padding: 12px; color: rgba(255,255,255,0.5); font-size: 13px; text-align: center;">No tray apps registered</div>`;
+    setHTML(
+      trayAppsList,
+      `<div style="padding: 12px; color: rgba(255,255,255,0.5); font-size: 13px; text-align: center;">No tray apps registered</div>`
+    );
     return;
   }
 
-  trayAppsList.innerHTML = "";
+  setHTML(trayAppsList, "");
   trayItems.forEach(({ winId, label, icon }) => {
-    const row = document.createElement("div");
-    row.className = "settings-grid-toggle";
-    row.style.cssText =
-      "padding:8px 12px;border-radius:6px;background:rgba(255,255,255,0.03);display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;";
+    const row = createElement("div", {
+      className: "settings-grid-toggle",
+      styles: {
+        padding: "8px 12px",
+        borderRadius: "6px",
+        background: "rgba(255,255,255,0.03)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        marginBottom: "6px"
+      }
+    });
 
     const isUrl = typeof icon === "string" && /^(https?|data:|\/|.*\.(webp|png|jpg|jpeg|gif|svg))/.test(icon);
     const isFontAwesome = typeof icon === "string" && /^(fa-|fas|fab|far|fa )/.test(icon);
@@ -681,27 +751,26 @@ export function renderTrayAppsList(win, settings) {
     else iconHtml = `<span style="font-size:12px;margin-right:8px;">${icon}</span>`;
 
     const isVisible = settings.trayAppVisibility[winId] !== false;
-    row.innerHTML = `
+    setHTML(
+      row,
+      `
       <div style="display:flex;align-items:center;">${iconHtml}<span style="font-size:13px;color:rgba(255,255,255,0.9);">${label}</span></div>
       <label class="settings-toggle">
         <input type="checkbox" class="tray-app-toggle" data-win-id="${winId}" ${isVisible ? "checked" : ""}/>
         <span class="settings-track"><span class="settings-thumb"></span></span>
       </label>
-    `;
+    `
+    );
     trayAppsList.appendChild(row);
   });
 
-  trayAppsList.querySelectorAll(".tray-app-toggle").forEach((toggle) => {
-    toggle.addEventListener("change", () => {
+  $$(".tray-app-toggle", trayAppsList).forEach((toggle) => {
+    bindEvent(toggle, "change", () => {
       const wId = toggle.dataset.winId;
       const visible = toggle.checked;
       settings.trayAppVisibility[wId] = visible;
       localStorage.setItem(StorageKeys.trayAppVisibility, JSON.stringify(settings.trayAppVisibility));
-      const item = trayManager._items.get(wId);
-      if (item) {
-        item.visibleInSettings = visible;
-        trayManager._render();
-      }
+      os.tray.updateItemVisibility(wId, visible);
     });
   });
 }

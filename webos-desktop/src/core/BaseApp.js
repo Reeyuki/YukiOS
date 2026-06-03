@@ -1,9 +1,23 @@
-import { trayManager } from "../tray.js";
+import { trayManager } from "../tray/tray.js";
 import { AppSource } from "../AppSource.js";
 
 export class BaseApp {
   constructor(services = {}) {
     this._services = services;
+    if (services.windowManager && !services.windowManager.__isProxied) {
+      services.windowManager = new Proxy(services.windowManager, {
+        get: (target, prop) => {
+          if (prop === "sendNotify") {
+            return (text, appSource = null) => {
+              const source = appSource || this._getAppSource();
+              os.notify.send("", text, { appSource: source });
+            };
+          }
+          if (prop === "__isProxied") return true;
+          return target[prop];
+        }
+      });
+    }
     this.wm = services.wm || services.windowManager;
     this.fs = services.fs || services.fileSystemManager;
     this.bus = services.bus;
@@ -30,17 +44,15 @@ export class BaseApp {
   _isSingletonOpen(winId) {
     const existing = document.getElementById(winId);
     if (existing) {
-      this.wm?.bringToFront(existing);
+      os.window.focus(existing);
       return true;
     }
     return false;
   }
 
   notify(title, message = "", type = "info", duration = 5000, icon = null, appSource = null) {
-    if (this.wm?.notify) {
-      const source = appSource || this._getAppSource();
-      this.wm.notify(title, message, type, duration, icon, source);
-    }
+    const source = appSource || this._getAppSource();
+    os.notify.send(title, message, { type, duration, icon, appSource: source });
   }
 
   _getAppSource() {
@@ -90,8 +102,6 @@ export class BaseApp {
         return AppSource.NEWS;
       case "WeatherApp":
         return AppSource.WEATHER;
-      case "CategoriesApp":
-        return AppSource.CATEGORIES;
       case "ProfileCustomizerApp":
         return AppSource.PROFILE_CUSTOMIZER;
       case "ShortcutsApp":

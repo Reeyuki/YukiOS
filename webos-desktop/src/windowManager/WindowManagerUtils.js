@@ -1,5 +1,5 @@
-import { resolveIconUrl } from "../assetUrl.js";
-import { isImageFile } from "../utils.js";
+import { resolveIconUrl } from "../shared/assetResolver.js";
+import { isImageFile } from "../utils/utils.js";
 import { updateTransparency as extUpdateTransparency } from "./transparencyManager.js";
 
 export class WindowManagerUtils {
@@ -98,6 +98,12 @@ export class WindowManagerUtils {
       return `<i class="${cls}" style="color:${clr};margin-right:6px;font-size:${size}px;vertical-align:middle;"></i>`;
     }
     return "";
+  }
+
+  generateWindowHeader(title, iconValue, color = null, externalUrl = null) {
+    const iconHtml = this.getWindowIconHtml(iconValue, color);
+    const controlsHtml = this.getWindowControls(externalUrl);
+    return `<div class="window-header"><span>${iconHtml}${title}</span>${controlsHtml}</div>`;
   }
 
   updatePageFavicon(iconValue, title) {

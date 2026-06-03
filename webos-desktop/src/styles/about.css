@@ -6,12 +6,7 @@
   height: calc(100% - 40px);
   overflow-y: auto;
   box-sizing: border-box;
-  font-family:
-    "Barlow",
-    system-ui,
-    -apple-system,
-    "Segoe UI",
-    sans-serif;
+  font-family: var(--font-ui);
 }
 
 #about-yukios .abx-shell {
@@ -21,10 +16,10 @@
 }
 
 #about-yukios .abx-top {
-  position: relative;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
+  gap: 12px;
   padding: 14px;
   border-radius: 14px;
   border: 1px solid var(--glass-border);
@@ -66,19 +61,19 @@
   font-size: 0.88rem;
 }
 
+/* TOP META BAR (Version + Discord + GitHub) */
 #about-yukios .abx-meta {
-  position: absolute;
-  top: 14px;
-  right: 14px;
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+  flex-direction: row;
   gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
 }
 
 #about-yukios .abx-pill {
   background: var(--glass);
-  padding: 4px 10px;
+  padding: 6px 12px;
   border-radius: 999px;
   font-size: 0.75rem;
   font-weight: 500;
@@ -86,33 +81,30 @@
   color: var(--text-primary);
 }
 
-#about-yukios .abx-discord-link {
-  text-decoration: none;
-  margin-top: 4px;
-}
-
-#about-yukios .abx-btn-discord {
+#about-yukios .abx-meta-link {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 14px;
+  padding: 6px 12px;
+  border-radius: 999px;
   font-size: 0.8rem;
   font-weight: 600;
-  color: var(--text-on-brand);
-  background: var(--brand);
-  border: 1px solid var(--brand-dark);
-  border-radius: 999px;
-  cursor: pointer;
+  color: var(--text-primary);
+  text-decoration: none;
+  border: 1px solid var(--glass-border);
+  background: var(--glass);
   transition:
     background 0.15s ease,
-    transform 0.1s ease;
+    transform 0.1s ease,
+    border-color 0.15s ease;
 }
 
-#about-yukios .abx-btn-discord:hover {
-  background: var(--brand-hover);
+#about-yukios .abx-meta-link:hover {
+  background: var(--glass-hover);
+  border-color: var(--brand);
 }
 
-#about-yukios .abx-btn-discord:active {
+#about-yukios .abx-meta-link:active {
   transform: scale(0.97);
 }
 
@@ -215,6 +207,7 @@
   border-color: var(--brand);
 }
 
+/* LIGHT / THEME OVERRIDES */
 html[data-theme="light"] #about-yukios .abx-top,
 html[data-theme="light"] #about-yukios .abx-panel,
 html[data-theme="light"] #about-yukios .abx-foot,
@@ -265,35 +258,35 @@ html[data-theme="solarized-light"] #about-yukios .abx-foot {
 }
 
 html[data-theme="light"] #about-yukios .abx-pill,
-html[data-theme="light"] #about-yukios .abx-link,
+html[data-theme="light"] #about-yukios .abx-meta-link,
 html[data-theme="cherry"] #about-yukios .abx-pill,
-html[data-theme="cherry"] #about-yukios .abx-link,
+html[data-theme="cherry"] #about-yukios .abx-meta-link,
 html[data-theme="github-light"] #about-yukios .abx-pill,
-html[data-theme="github-light"] #about-yukios .abx-link,
+html[data-theme="github-light"] #about-yukios .abx-meta-link,
 html[data-theme="minimal-gray"] #about-yukios .abx-pill,
-html[data-theme="minimal-gray"] #about-yukios .abx-link,
+html[data-theme="minimal-gray"] #about-yukios .abx-meta-link,
 html[data-theme="paper"] #about-yukios .abx-pill,
-html[data-theme="paper"] #about-yukios .abx-link,
+html[data-theme="paper"] #about-yukios .abx-meta-link,
 html[data-theme="macos-fluent"] #about-yukios .abx-pill,
-html[data-theme="macos-fluent"] #about-yukios .abx-link,
+html[data-theme="macos-fluent"] #about-yukios .abx-meta-link,
 html[data-theme="windows-fluent"] #about-yukios .abx-pill,
-html[data-theme="windows-fluent"] #about-yukios .abx-link,
+html[data-theme="windows-fluent"] #about-yukios .abx-meta-link,
 html[data-theme="material-you"] #about-yukios .abx-pill,
-html[data-theme="material-you"] #about-yukios .abx-link,
+html[data-theme="material-you"] #about-yukios .abx-meta-link,
 html[data-theme="sepia"] #about-yukios .abx-pill,
-html[data-theme="sepia"] #about-yukios .abx-link,
+html[data-theme="sepia"] #about-yukios .abx-meta-link,
 html[data-theme="sakura"] #about-yukios .abx-pill,
-html[data-theme="sakura"] #about-yukios .abx-link,
+html[data-theme="sakura"] #about-yukios .abx-meta-link,
 html[data-theme="arctic"] #about-yukios .abx-pill,
-html[data-theme="arctic"] #about-yukios .abx-link,
+html[data-theme="arctic"] #about-yukios .abx-meta-link,
 html[data-theme="nordic"] #about-yukios .abx-pill,
-html[data-theme="nordic"] #about-yukios .abx-link,
+html[data-theme="nordic"] #about-yukios .abx-meta-link,
 html[data-theme="gameboy"] #about-yukios .abx-pill,
-html[data-theme="gameboy"] #about-yukios .abx-link,
+html[data-theme="gameboy"] #about-yukios .abx-meta-link,
 html[data-theme="frutiger-aero"] #about-yukios .abx-pill,
-html[data-theme="frutiger-aero"] #about-yukios .abx-link,
+html[data-theme="frutiger-aero"] #about-yukios .abx-meta-link,
 html[data-theme="solarized-light"] #about-yukios .abx-pill,
-html[data-theme="solarized-light"] #about-yukios .abx-link {
+html[data-theme="solarized-light"] #about-yukios .abx-meta-link {
   background: var(--bg-secondary);
   border-color: var(--glass-border);
   color: var(--text-primary);

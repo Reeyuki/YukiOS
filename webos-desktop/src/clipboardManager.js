@@ -1,8 +1,8 @@
 import { StorageKeys } from "./StorageKeys.js";
+import { os } from "./os/index.js";
 
 class ClipboardManager {
-  constructor(eventBus) {
-    this.eventBus = eventBus;
+  constructor() {
     this.currentItem = null;
     this.history = [];
     this.maxHistorySize = 20;
@@ -81,7 +81,7 @@ class ClipboardManager {
 
     this.broadcastUpdate(item);
     this.notifyChange(item);
-    this.eventBus.emit("clipboard:update", item);
+    os.events.emit("clipboard:update", item);
   }
 
   get() {
@@ -102,7 +102,7 @@ class ClipboardManager {
     }
 
     this.notifyChange(null);
-    this.eventBus.emit("clipboard:clear");
+    os.events.emit("clipboard:clear");
   }
 
   onChange(callback) {
@@ -199,7 +199,7 @@ class ClipboardManager {
       this.history.splice(index, 1);
       this.saveToStorage();
       this.notifyChange(this.currentItem);
-      this.eventBus.emit("clipboard:history-changed");
+      os.events.emit("clipboard:history-changed");
     }
   }
 
@@ -212,7 +212,7 @@ class ClipboardManager {
       }
       this.saveToStorage();
       this.notifyChange(this.currentItem);
-      this.eventBus.emit("clipboard:history-changed");
+      os.events.emit("clipboard:history-changed");
     }
   }
 
@@ -232,7 +232,7 @@ class ClipboardManager {
 
   saveStarredItems() {
     try {
-      localStorage.setItem("yukios_clipboard_starred", JSON.stringify([...this.starredItems]));
+      localStorage.setItem(StorageKeys.clipboardStarred, JSON.stringify([...this.starredItems]));
     } catch (e) {
       console.warn("[ClipboardManager] Failed to save starred items:", e);
     }
@@ -240,7 +240,7 @@ class ClipboardManager {
 
   loadStarredItems() {
     try {
-      const starred = localStorage.getItem("yukios_clipboard_starred");
+      const starred = localStorage.getItem(StorageKeys.clipboardStarred);
       if (starred) {
         this.starredItems = new Set(JSON.parse(starred));
       }

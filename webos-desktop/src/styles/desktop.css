@@ -780,6 +780,7 @@ body.is-resizing * {
 
 .props-content {
   padding: 12px;
+  user-select: text;
   font-family:
     system-ui,
     -apple-system,
@@ -826,7 +827,7 @@ body.is-resizing * {
 
 .props-val {
   color: #fff;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: var(--font-mono);
   text-align: right;
   max-width: 60%;
   overflow: hidden;

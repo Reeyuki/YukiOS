@@ -12,7 +12,7 @@
 .calc-body {
   display: flex;
   flex-direction: column;
-  height: calc(100% - 41px);
+  height: 100%;
   background: var(--bg-secondary);
 }
 
@@ -29,14 +29,14 @@
 }
 
 .calc-expression {
-  font-family: "DM Mono", monospace;
+  font-family: var(--font-mono);
   font-size: 0.8rem;
   color: var(--tx2);
   min-height: 1.2em;
 }
 
 .calc-result {
-  font-family: "DM Mono", monospace;
+  font-family: var(--font-mono);
   font-size: 2.4rem;
   font-weight: 300;
   color: var(--brand);
@@ -79,7 +79,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: "DM Mono", monospace;
+  font-family: var(--font-mono);
   font-size: 1.05rem;
   font-weight: 400;
   color: var(--text-primary);

@@ -1,10 +1,11 @@
 import { StorageKeys } from "./settings/settings.js";
 import confetti from "canvas-confetti";
 import { BaseApp } from "./core/BaseApp.js";
-import { bus, BusEvents } from "./core/EventBus.js";
-import { WindowHelper } from "./utils/WindowHelper.js";
+import { BusEvents } from "./core/EventBus.js";
 import { resolveGhUrl } from "./shared/assetResolver.js";
 import { PersistenceTypes } from "./runtime/AppSchema.js";
+import { os } from "./os/index.js";
+import { audioMixer } from "./audioMixer.js";
 
 export const Achievements = {
   WelcomeAboard: "first_boot",
@@ -37,7 +38,6 @@ export const Achievements = {
 export class AchievementsApp extends BaseApp {
   constructor(services) {
     super(services);
-    this.windowHelper = new WindowHelper(this.wm);
     this.achievements = this._createAchievements();
     this.unlocked = new Set();
     this.s1 = new Audio(resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/audio/steam.mp3"));
@@ -77,7 +77,6 @@ export class AchievementsApp extends BaseApp {
     this._isShowingAchievement = false;
     this._loadFromStorage();
     this.incrementSession();
-    this._declarativeApp = null;
   }
 
   getDeclarativeSchema(opts) {
@@ -184,12 +183,12 @@ export class AchievementsApp extends BaseApp {
   }
 
   _initBusListeners() {
-    bus.on(BusEvents.WINDOW_CREATED, () => this.incrementWindowOpen());
-    bus.on(BusEvents.APP_LAUNCHED, () => this.incrementAppLaunched());
-    bus.on(BusEvents.TERMINAL_CMD_EXECUTED, () => this.triggerCommandExecution());
-    bus.on(BusEvents.WALLPAPER_CHANGED, () => this.incrementWallpaper());
-    bus.on(BusEvents.DESKTOP_ICON_ADDED, () => this.incrementDesktopFile());
-    bus.on(BusEvents.ACHIEVEMENT_TRIGGER, ({ key }) => this.trigger(key));
+    os.events.on(BusEvents.WINDOW_CREATED, () => this.incrementWindowOpen());
+    os.events.on(BusEvents.APP_LAUNCHED, () => this.incrementAppLaunched());
+    os.events.on(BusEvents.TERMINAL_CMD_EXECUTED, () => this.triggerCommandExecution());
+    os.events.on(BusEvents.WALLPAPER_CHANGED, () => this.incrementWallpaper());
+    os.events.on(BusEvents.DESKTOP_ICON_ADDED, () => this.incrementDesktopFile());
+    os.events.on(BusEvents.ACHIEVEMENT_TRIGGER, ({ key }) => this.trigger(key));
   }
 
   _createAchievements() {
@@ -573,6 +572,7 @@ export class AchievementsApp extends BaseApp {
         const sounds = [this.s1, this.s2, this.s3];
         const pick = sounds[Math.floor(Math.random() * sounds.length)];
         pick.currentTime = 0;
+        pick.volume = audioMixer.masterVolume * audioMixer.systemVolume;
         pick.play();
       } catch (e) {}
     }
@@ -668,7 +668,7 @@ export class AchievementsApp extends BaseApp {
   }
 
   incrementWindowOpen() {
-    const count = this.wm.getOpenWindowCount();
+    const count = document.querySelectorAll(".window").length;
     if (count >= 5) this.trigger(this._thresholds.openWindows[0].key);
     if (count >= 10) this.trigger(this._thresholds.openWindows[1].key);
   }

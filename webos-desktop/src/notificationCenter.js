@@ -1,6 +1,6 @@
-import { isImageFile } from "./utils.js";
+import { isImageFile } from "./utils/utils.js";
 import { StorageKeys } from "./settings/settings.js";
-import { appMap } from "./gamesList.js";
+import { appMap } from "./games/gamesList.js";
 import { audioMixer, SystemAudio } from "./audioMixer.js";
 
 function escapeHtml(str) {
@@ -13,7 +13,6 @@ function escapeHtml(str) {
     .replace(/'/g, "&#39;");
 }
 
-// Map AppSource enum values to appMap keys
 const APP_SOURCE_TO_APP_MAP_KEY = {
   CommandPalette: "commandPalette",
   "Clipboard Manager": "clipboardManager",
@@ -52,6 +51,9 @@ const APP_SOURCE_TO_APP_MAP_KEY = {
   "Evil Spotify": "shittify"
 };
 
+/**
+ * @deprecated Use os.notify API instead. Direct access to NotificationCenter is deprecated.
+ */
 export class NotificationCenter {
   constructor() {
     this.notifications = [];
@@ -158,13 +160,11 @@ export class NotificationCenter {
     const enabled = this._getSetting("notificationsEnabled", true);
     if (!enabled) return null;
 
-    // Auto-fallback to app icon from appMap if no icon provided
     if (!icon && appSource) {
       const appMapKey = APP_SOURCE_TO_APP_MAP_KEY[appSource];
       if (appMapKey && appMap[appMapKey]) {
         icon = appMap[appMapKey].icon;
       } else {
-        // Fallback: search appMap by title if direct key lookup fails
         for (const [key, app] of Object.entries(appMap)) {
           if (app.title === appSource) {
             icon = app.icon;

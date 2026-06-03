@@ -3,15 +3,20 @@
 ## Hard Rules
 
 - Never run `npm/pnpm format` or `npm/pnpm bf`
-- Never add comments, docstrings, or `/* */` blocks in CSS, JS, or HTML
+- Never add comments, docstrings, or `/* */` blocks in CSS, JS, or HTML other than "JSDoc" for complex functions
 - Never spawn a browser for testing
 - Before finalizing any code changes, run `pnpm build:dev` in `webos-desktop/`. A change that breaks the build is
   incomplete.
 - Always use CSS variables from `src/styles/style.css`. Never hardcode colors.
-- When making significant changes, new features, or new apps: register them in src/news.js with an icon, title, and a
+- When making significant changes, new features, or new apps: you must register them in src/news.js with an icon, title, and a
   punchy, active-voice description under 15 words. Bad: 'First-time setup now includes a dedicated profile step...'
   Good: 'Choose your nickname and avatar during setup, with a quick final preview!'
 - Whenever you define a new app to appJauncher or gamesJist, define description for it on gameDescriptions.js
+- Always use StorageKeys from `src/StorageKeys.js` for localStorage access. Never hardcode localStorage key strings.
+  Import StorageKeys and use the defined constants. If a new key is needed, add it to StorageKeys.js first.
+- Never use browser native alerts, prompts, or confirms (alert(), prompt(), confirm()). Always use the shared
+  dialog utilities from `src/shared/dialogs.js` instead. Import and use `showAlert`, `showPrompt`, `showConfirm`,
+  `customAlert`, `customPrompt`, or `customConfirm` as appropriate.
 
 ---
 
@@ -38,11 +43,8 @@ Write modular, clean, and DRY code. Follow these principles:
   better than `flag`.
 - **Avoid Magic Numbers/Strings**: Extract constants to the top of the file or a constants file. Use CSS variables for
   styling values.
-- **Consistent Patterns**: Follow existing patterns in the codebase. If similar apps use a certain structure, follow
-  that structure for new apps.
-- **Error Handling**: Use try-catch for async operations that can fail. Provide meaningful error messages. Don't
-  silently swallow errors.
-- **Type Safety**: Use JSDoc comments for complex function signatures to improve IDE support and catch bugs early.
+- **Consistent Patterns**: Follow existing patterns in the codebase. If similar apps use a certain structure, follow that structure for new apps.
+
 
 ---
 
@@ -67,7 +69,26 @@ Yuki OS uses a dark glassmorphism theme with a comprehensive theming system. All
   `-webkit-appearance: none`, custom border/background, and `::after` pseudo-element for checkmarks via CSS variables.
 - **Theming System**: Comprehensive theme engine with 25+ built-in themes, transparent UI toggle, advanced brightness
   controls, and GUI scale options. Themes are managed via `settings.js` and applied through CSS variables.
+- Never introduce new inline styles.
+- Prefer CSS classes.
+- Existing inline styles may be migrated to css classes when touched.
+- New declarative UI definitions should use class names instead of style objects.
 
+## File Size Guidelines
+
+Target maximums:
+
+- Utility modules: <300 lines
+- Runtime modules: <500 lines
+- Apps: <1000 lines
+
+When a file exceeds these sizes:
+
+- Prefer extracting focused modules.
+- Prefer composition over adding more methods.
+- New features should be added to extracted modules when possible.
+
+Do not increase file size when a clean extraction is feasible.
 ---
 
 ## Architecture
@@ -92,100 +113,106 @@ Desktop UI renders windows, taskbar, start menu
 
 ---
 
-## Services (injected into every app constructor)
+## OS Bridge API
 
+The OS Bridge provides a unified API surface for applications to interact with system services. Instead of directly accessing kernel services (WindowManager, FileSystemManager, NotificationCenter, EventBus, TrayManager, AppLauncher), apps should use the `os.*` bridge.
+
+**Import:**
 ```javascript
-constructor(services) {
-  this.services = services;
-  this.services.windowManager       // Window lifecycle
-  this.services.fileSystem           // File operations
-  this.services.notificationCenter   // Notifications
-  this.services.eventBus             // Event pub-sub
-  this.services.appLauncher          // App dispatcher
-}
+import { os } from "./os/index.js";
 ```
 
-### WindowManager - `src/windowManager.js`
+### Window API - `os.window`
 
-| Method                                           | Purpose                                                  |
-| ------------------------------------------------ | -------------------------------------------------------- |
-| `createWindow(id, title, width, height, isGame)` | Create styled window element                             |
-| `mountWindow(win, winId, title, iconValue)`      | Attach to desktop, enable drag/resize, add taskbar entry |
-| `bringToFront(win)`                              | Raise z-index, focus window                              |
-| `closeWindow(win)`                               | Close window, cleanup, remove taskbar entry              |
-| `minimizeWindow(win)`                            | Hide window, mark taskbar minimized                      |
-| `maximizeWindow(win)`                            | Expand/restore window                                    |
+| Method                    | Purpose                           |
+| ------------------------- | --------------------------------- |
+| `create(id, title, width, height, options)` | Create styled window element     |
+| `close(win)`              | Close window, cleanup, remove taskbar entry |
+| `focus(win)`              | Raise z-index, focus window       |
+| `minimize(win)`           | Hide window, mark taskbar minimized |
+| `maximize(win)`           | Expand/restore window             |
+| `bringToFront(win)`        | Raise z-index, focus window       |
+| `addToTaskbar(winId, title, icon)` | Add window to taskbar          |
+| `removeFromTaskbar(winId)` | Remove window from taskbar        |
+| `getWindowControls(source)` | Get window control buttons HTML   |
 
-Features: window snapping (Win+Arrow), workspace management, taskbar preview.
+### Filesystem API - `os.fs`
 
----
+| Method                    | Purpose                           |
+| ------------------------- | --------------------------------- |
+| `read(path)`              | Read file content                 |
+| `write(path, content)`     | Write file content                |
+| `readdir(path)`           | Get directory contents            |
+| `mkdir(path)`             | Create directory recursively      |
+| `delete(path)`            | Delete file or directory         |
+| `exists(path)`            | Check if path exists             |
+| `copy(src, dest)`         | Copy file/directory              |
+| `rename(old, new)`        | Rename file/directory            |
+| `isFile(path)`            | Check if path is a file          |
+| `getFileKind(path)`       | Get file kind/metadata           |
+| `getFileIcon(path)`       | Get file icon path                |
+| `writeBinaryFile(path, content)` | Write binary file content      |
+| `readBinaryFile(path)`    | Read binary file content          |
+| `deleteBinaryFile(path)`  | Delete binary file                |
+| `renameBinaryFile(old, new)` | Rename binary file              |
+| `createFile(path, content)` | Create file                      |
+| `createFolder(path)`      | Create folder                     |
+| `deleteItem(path)`        | Delete item (file or folder)      |
+| `renameItem(old, new)`    | Rename item                       |
+| `updateFile(path, content)` | Update file                      |
 
-### FileSystemManager - `src/fs.js`
+### Notification API - `os.notify`
 
-Virtual filesystem backed by BrowserFS, persisted via IndexedDB.
+| Method                    | Purpose                           |
+| ------------------------- | --------------------------------- |
+| `send(title, message, type, duration, icon)` | Show toast notification |
+| `clear()`                 | Clear specific notifications       |
+| `clearAll()`              | Clear all notifications           |
 
-**CRITICAL: Always use the correct public API methods. Do NOT use internal BrowserFS methods directly.**
+### Tray API - `os.tray`
 
-| Method                               | Purpose                           |
-| ------------------------------------ | --------------------------------- |
-| `async readFile(path)`               | Read file content                 |
-| `async safeWriteFile(path, content)` | Write file (string or Uint8Array) |
-| `async writeFile(path, content)`     | Write file content                |
-| `async exists(path)`                 | Check if path exists              |
-| `async ensureFolder(path)`           | Create directory recursively      |
-| `async getFolder(path)`              | Get directory contents (object)   |
-| `async deleteItem(path, name)`       | Delete file or directory          |
-| `async createFile(path, name, ...)`  | Create new file                   |
-| `async readTextFile(path, name)`    | Read text file from directory     |
+| Method                    | Purpose                           |
+| ------------------------- | --------------------------------- |
+| `register(winId, icon, label, options)` | Register window to system tray |
+| `unregister(winId)`        | Remove window from system tray    |
+| `updateIcon(winId, newIcon)` | Update tray icon                 |
+| `updateLabel(winId, newLabel)` | Update tray label               |
+| `updateContextMenuItems(winId, items)` | Update context menu items    |
+| `sendToTray(winId)`        | Hide window + taskbar → tray     |
+| `restoreFromTray(winId)`   | Restore window + taskbar from tray |
+| `getTrayItems()`           | Get array of all tray items      |
+| `updateItemVisibility(winId, visible)` | Update item visibility      |
+| `isRegistered(winId)`      | Check if window is registered    |
+## Tray Register options:
 
-**Common mistakes to avoid:**
-- ❌ `this.fs.stat()` - Does not exist. Use `this.fs.exists()` instead
-- ❌ `this.fs.mkdir()` - Does not exist. Use `this.fs.ensureFolder()` instead
-- ❌ `this.fs.readdir()` - Does not exist. Use `this.fs.getFolder()` instead
-- ❌ `this.fs.unlink()` - Does not exist. Use `this.fs.deleteItem()` instead
-- ✅ `this.fs.exists(path)` - Check if file/directory exists
-- ✅ `this.fs.ensureFolder(path)` - Create directory recursively
-- ✅ `this.fs.getFolder(path)` - Get directory contents as object
-- ✅ `this.fs.deleteItem(path, name)` - Delete file or directory
-- ✅ `this.fs.readFile(path)` - Read file content
-- ✅ `this.fs.safeWriteFile(path, content)` - Write file content
+- `resident: boolean` - App stays in tray permanently (cannot be restored to window)
+- `showInTray: boolean` - App shows in tray icon area
+- `onClick: function` - Callback when tray icon clicked
+- `onQuit: function` - Callback when app is quit from tray
+- `contextMenuItems: array` - Custom context menu items (objects with label, action, icon, type)
+- `priority: number` - Sorting priority (higher = more prominent)
 
-**Default structure:**
 
-```
-/home/reeyuki/
-├── Desktop/              (desktop icons)
-├── Documents/INFO.txt
-├── Pictures/Wallpapers/  (13 default + custom)
-└── Apps/                 (user-created shortcuts)
-```
+### App API - `os.app`
 
-**FileKind values:** `TEXT` (.txt .md .json .js .css), `IMAGE` (.png .jpg .webp .gif), `VIDEO` (.mp4 .webm .mov .avi),
-`AUDIO` (.mp3 .wav .ogg .flac), `ROM` (.bin .gba .nds .snes), `OTHER` (.zip .exe, unknown)
+| Method                    | Purpose                           |
+| ------------------------- | --------------------------------- |
+| `launch(appId, extra)`     | Launch app by ID                  |
+| `close(appId)`             | Close app by ID                   |
+| `getRunningApps()`         | Get list of running apps         |
+| `getAllApps()`             | Get all registered apps          |
+| `getAppInfo(appId)`        | Get app metadata                 |
 
----
+### Events API - `os.events`
 
-### NotificationCenter - `src/notificationCenter.js`
+| Method                    | Purpose                           |
+| ------------------------- | --------------------------------- |
+| `on(eventType, handler)`   | Register listener                 |
+| `off(eventType, handler)`  | Unregister listener               |
+| `emit(eventType, ...args)` | Fire event to all listeners      |
+| `once(eventType, handler)` | Register one-time listener        |
 
-| Method                                         | Purpose                  |
-| ---------------------------------------------- | ------------------------ |
-| `notify(title, message, type, duration, icon)` | Show toast notification  |
-| `setDND(enabled)`                              | Toggle Do-Not-Disturb    |
-| `getNotifications()`                           | Get notification history |
-
-Features: notification positioning, slider controls, app icons on notifications.
-
----
-
-### EventBus - `src/core/EventBus.js`
-
-| Method                     | Purpose                     |
-| -------------------------- | --------------------------- |
-| `on(eventType, handler)`   | Register listener           |
-| `off(eventType, handler)`  | Unregister listener         |
-| `emit(eventType, ...args)` | Fire event to all listeners |
-
-**Standard events:** `SETTINGS_CHANGED`, `WINDOW_CREATED`, `WINDOW_FOCUSED`, `WINDOW_CLOSED`, `FILE_CHANGED`
+**Standard events:** `SETTINGS_CHANGED`, `WINDOW_CREATED`, `WINDOW_FOCUSED`, `WINDOW_CLOSED`, `FILE_CHANGED`, `SESSION_INITIALIZED`, `AI_ACTION_EXECUTED`
 
 ---
 
@@ -322,32 +349,187 @@ and custom naming. Integrates with AppLauncher for app management.
 
 ---
 
-## Adding a New Application
+## Adding a New Declarative App
 
-**1. Create app class**
+Follow these steps to add a new app using the declarative framework:
+
+### 1. Create App File
+
+Create `src/myApp.js`:
 
 ```javascript
-class MyApp extends BaseApp {
+import { BaseApp } from "./core/BaseApp.js";
+import { PersistenceTypes } from "./runtime/AppSchema.js";
+
+export class MyApp extends BaseApp {
   constructor(services) {
     super(services);
-    this.openWindows = new Set();
   }
 
-  open(options = {}) {
-    const winId = "myapp-window";
-    const win = this.services.windowManager.createWindow(winId, "Title", 800, 600);
-    win.innerHTML = `...ui...`;
-    this.services.windowManager.mountWindow(win, winId, "Title", "fa-star");
-    this.openWindows.add(winId);
+  getDeclarativeSchema(opts) {
+    return {
+      id: "my-app",
+      name: "My App",
+      icon: "fas fa-star",
+      windows: [{
+        id: "my-app-window",
+        title: "My App",
+        size: ["500px", "400px"],
+        icon: "fas fa-star",
+        ui: {
+          type: "element",
+          tag: "div",
+          props: {
+            className: "my-app-container"
+          },
+          children: [
+            {
+              type: "element",
+              tag: "button",
+              props: {
+                textContent: "Click Me"
+              },
+              events: {
+                click: {
+                  type: "custom:myAction",
+                  stopPropagation: true
+                }
+              }
+            }
+          ]
+        },
+        events: {
+          window: {
+            keydown: {
+              type: "custom:handleKeydown",
+              stopPropagation: false
+            }
+          }
+        }
+      }],
+      state: {
+        initial: {
+          count: 0
+        },
+        persistence: PersistenceTypes.MEMORY
+      },
+      actions: {
+        myAction: (payload, event, element, state) => {
+          state.count += 1;
+        },
+        handleKeydown: (payload, event, element, state) => {
+          if (event.key === "Enter") {
+            // Handle enter key
+          }
+        }
+      },
+      onMount: (win, state, actionExecutor) => {
+        // Optional initialization logic
+      }
+    };
   }
 
-  onClose(winId) {
-    this.openWindows.delete(winId);
-  }
+  onClose(winId) {}
 }
 ```
 
-**2. Register in `main.js`**
+### 2. Register in AppSource.js
+
+Add constant to `src/AppSource.js`:
+
+```javascript
+export const AppSource = {
+  // ... existing entries
+  MY_APP: "My App"
+};
+```
+
+### 3. Import in main.js
+
+Add import at top of `src/main.js`:
+
+```javascript
+import { MyApp } from "./myApp.js";
+```
+
+### 4. Instantiate in main.js
+
+Add instantiation after other apps:
+
+```javascript
+const myApp = new MyApp(services);
+services.myApp = myApp;
+```
+
+### 5. Add to AppLauncher Constructor
+
+Add parameter to AppLauncher constructor call in `src/main.js`:
+
+```javascript
+const appLauncher = new AppLauncher(
+  // ... existing parameters
+  myApp
+);
+```
+
+### 6. Update AppLauncher Constructor
+
+Add parameter to constructor in `src/appLauncher.js`:
+
+```javascript
+constructor(
+  // ... existing parameters
+  myApp
+) {
+  // ... existing assignments
+  this.myApp = myApp;
+}
+and then register it to "localAppMap" variable of applauncher like this
+  yukiOsGuide: {
+    type: "system",
+    title: "Yuki OS Guide",
+    action: () => this.yukiOsGuideApp.open(),
+    icon: "fas fa-book-open",
+    clippy: { message: "Discover what Yuki OS can do!", animation: "Pleased" }
+  },
+```
+
+### 7. Add CSS Styling
+
+Create `src/styles/myApp.css` with Yuki OS styling:
+
+```css
+.my-app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--bg-secondary);
+  padding: 16px;
+  gap: 16px;
+}
+```
+
+### 8. Import CSS in index.html
+
+Add link tag to `index.html`:
+
+```html
+<link href="src/styles/myApp.css" rel="stylesheet" />
+```
+
+### 9. Add Description to gameDescriptions.js
+
+Add entry to `src/gameDescriptions.js`:
+
+```javascript
+export const APP_DESCRIPTIONS = {
+  // ... existing entries
+  myApp: "Brief description under 15 words."
+};
+```
+
+
+### 10. Register in `main.js`**
 
 ```javascript
 const myApp = new MyApp(services);
@@ -355,7 +537,7 @@ services.myApp = myApp;
 // Pass to AppLauncher constructor, then update appLauncher.js
 ```
 
-**3. Add to `gamesList.js`**
+### 11. Add to `gamesList.js`**
 
 ```javascript
 appMap.myAppId = {
@@ -366,46 +548,51 @@ appMap.myAppId = {
 };
 ```
 
-**4. Register news update in `src/news.js`**
+### 1. Register news update in `src/news.js`**
 
 ```javascript
 NEWS_UPDATES["2025-01-15"] = [{ icon: "fa-star", title: "My App", description: "New app added." }];
 ```
 
----
+### 10. Register in news.js
 
-## System Tray API
+Add entry to `NEWS_UPDATES` in `src/news.js`:
 
-Accessed via `trayManager` singleton from `src/tray.js`.
+```javascript
+const NEWS_UPDATES = [
+  {
+    date: "CURRENT_DATE",
+    sections: [
+      {
+        icon: "fa-wand-magic-sparkles",
+        title: "New App",
+        items: [
+          [
+            "fa-star",
+            "My App",
+            "Punchy, active-voice description under 15 words."
+          ]
+        ]
+      }
+    ]
+  },
+  // ... existing entries
+];
+```
 
-| Method                                               | Purpose                                                                                                         |
-| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `register(winId, icon, label, options = {})`         | Register window to system tray with options (resident, showInTray, onClick, onQuit, contextMenuItems, priority) |
-| `unregister(winId)`                                  | Remove window from system tray                                                                                  |
-| `sendToTray(winId)`                                  | Hide window + taskbar item → tray                                                                               |
-| `restoreFromTray(winId)`                             | Restore window + taskbar item from tray                                                                         |
-| `updateIcon(winId, newIcon)`                         | Update tray icon for registered item                                                                            |
-| `updateLabel(winId, newLabel)`                       | Update tray label for registered item                                                                           |
-| `updateContextMenuItems(winId, newContextMenuItems)` | Update context menu items for registered item                                                                   |
-| `isRegistered(winId)`                                | Check if window is registered in tray                                                                           |
-| `isInTray(winId)`                                    | Check if window is currently in tray                                                                            |
-| `getTrayItems()`                                     | Get array of all tray items                                                                                     |
-| `quitApp(winId)`                                     | Quit app and remove from tray                                                                                   |
+### 11. Verify Build
 
-**Register options:**
+Run build to verify:
 
-- `resident: boolean` - App stays in tray permanently (cannot be restored to window)
-- `showInTray: boolean` - App shows in tray icon area
-- `onClick: function` - Callback when tray icon clicked
-- `onQuit: function` - Callback when app is quit from tray
-- `contextMenuItems: array` - Custom context menu items (objects with label, action, icon, type)
-- `priority: number` - Sorting priority (higher = more prominent)
+```bash
+cd webos-desktop && pnpm build:dev
+```
 
 ---
 
 ## Declarative Apps Framework
 
-Apps can define structure declaratively via `getDeclarativeSchema(opts)` instead of imperative code.
+Apps must define structure declaratively via `getDeclarativeSchema(opts)` instead of imperative code.
 
 ```javascript
 getDeclarativeSchema(opts) {

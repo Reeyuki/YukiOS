@@ -1,116 +1,121 @@
-# Yuki OS - Browser-Based Desktop Environment
+# Yuki OS - Browser Desktop Environment
 
 [https://discord.gg/uFuGfseB9Z](https://discord.gg/uFuGfseB9Z)
 
-> A desktop environment running entirely inside a single web page, featuring 30+ integrated applications, 3700+ games,
-> emulators, persistent storage, workspaces, and a modular service-oriented architecture.
+> A browser-based desktop environment running in a single web page, combining windowed multitasking, persistent storage, emulators, tools, and a large collection of applications and games.
 
-Yuki OS is a full browser-based operating system built entirely in vanilla JavaScript with no frontend frameworks. It
-transforms a browser tab into a persistent desktop environment with draggable windows, multitasking, emulators,
-productivity tools, filesystem APIs, custom applications, and runtime services.
+Yuki OS turns a browser tab into a working desktop-style space with draggable windows, multitasking, file handling, emulators, productivity tools, and interactive apps. Everything runs locally in the browser with persistent storage and session state.
 
-Run Flash games, DOS applications, 3DS emulation, retro console games, office tools, coding environments, and browser
-apps side-by-side inside a unified desktop shell.
+It supports running Flash content, DOS programs, console emulation, WebAssembly apps, and standard web applications side by side.
 
-Its built entirely in vanilla JS.
+Its built entirely in vanilla JS (With some libraries of course!)
 
 ![Steam interface](.github/steam.png) ![Setup](.github/setupsettings.png) ![Achievements](.github/browserachieve.png)
 ![Music player](.github/music.png) ![Applications](.github/apps.png)
 
 ---
 
-# ✨ Core Platform Capabilities
+# ✨ Desktop Experience
 
-## 🖥 Desktop Experience & Window Management
+* Draggable, resizable, minimizable, maximizable windows
+* Window snapping (half screen, quarter screen, fullscreen)
+* Multiple workspaces with independent layouts
+* Window switching and focus cycling (Alt+Q)
+* Live taskbar previews
+* Window context menus (snap, move, pin, workspace transfer)
+* Taskbar positioned on any edge of the screen
+* System tray with background-running apps
+* Tray controls and quick actions
+* Global command palette (Ctrl+K / F1)
+* Desktop shortcuts with drag-and-drop support
 
-* Real multitasking desktop - Draggable, resizable, minimizable, maximizable windows
-* Advanced snapping system - Half-screen, quarter-screen, maximize, restore, keyboard snapping
-* Workspace system - Multiple virtual desktops with isolated layouts
-* Alt+Q switching - Window cycling and focus management
-* Window previews - Live taskbar previews similar to Aero Peek
-* Window action menus - Snap left/right/maximize, move windows between workspaces, open properties, pin/unpin taskbar apps
-* Dynamic transparency - Adaptive transparency system that reacts to running apps/games
+---
 
-## 🧭 Taskbar, Start Menu & Navigation
+# 🧭 Navigation & UI
 
-* Taskbar & start menu - Running app management, pinning, previews, tray integration
-* Taskbar positioning - Bottom/top/left/right taskbar layouts
-* Traybar system - Apps can minimize to tray and continue running in background
-* Tray context controls - Open or quit background/resident tray applications
-* Tray context menus - Right-click tray icons for quick actions and controls
-* Global command palette - Fast launcher and command system via Ctrl+K / F1
-* Desktop icons - Persistent shortcuts with refresh and drag-drop support
+* Taskbar with pinned and running apps
+* Start menu for launching and managing apps
+* App search and quick switching
+* Desktop icon system with persistent shortcuts
+* Notification center with grouped messages
+* Do Not Disturb mode
+* Notification positioning controls
+* Context menus across desktop and apps
+* Animated UI with adaptive transparency effects
 
-## 📁 Filesystem & File Management
+---
 
-* Virtual filesystem - IndexedDB-backed BrowserFS persistent storage
-* File explorer - Thumbnails, drag-drop, file operations, previews
-* Advanced file menus - Convert/transform files, create archives, extract archives, bulk-download selections as ZIP, set/save wallpapers
-* Archive support - Extract: `.zip`, `.gz`, `.tar`, `.tar.gz`, `.tgz`, `.tar.xz`, `.7z`; Create: `.zip`, `.7z`, `.tar`, `.tar.gz`
+# 📁 Files & Storage
 
-## 📦 Applications & App System
+* Persistent browser storage using IndexedDB
+* File explorer with thumbnails and previews
+* Drag-and-drop file operations from host os
+* Create, move, rename, delete, and organize files
+* Archive support:
+
+* Archive support: `.zip`, `.gz`, `.tar`, `.tar.gz`, `.tgz`, `.tar.xz`, `.7z`, `.bz2`, `.tar.bz2`, `.xz`, `.rar`; Create: `.zip`, `.7z`, `.tar`, `.tar.gz`, `.tar.bz2`, `.gz`, `.bz2`; Password-protected ZIP support (Archive creation and extraction)
+
+* Bulk file actions, download file support
+* File-based actions like setting wallpapers and conversions
+
+---
+
+# 📦 Applications
 
 * 30+ built-in applications
-* App registry system - Dynamic app metadata, disable/uninstall support, custom naming
-* Sandboxed iframe apps - Secure isolation for external content
-* App Creator - Create persistent shortcuts to websites and external apps
-* URL launch support - Launch directly using `?app=` and `?game=` parameters
-
-## 🎮 Emulation & Runtime Engines
-
-* Ruffle - Flash emulation
-* JS-DOS - DOS runtime and DOS game emulation
-* V86 - Full x86 virtualization in browser
-* Azahar - Nintendo 3DS emulation
-* EmulatorJS integration - GBA, NDS, SNES, PSP, Sega, and more
-* WebAssembly application support
-* HTML5/WebGL runtime support
-
-## ⚙️ System Services & UX Layer
-
-* Notifications - Toasts, notification center, Do-Not-Disturb mode, notification positioning, app icons
-* Audio mixer - Per-app audio routing and volume control, system audios
-* Analytics & achievements - Usage tracking, milestones, playtime systems, friend stats
-* Cross-app event system - EventBus-driven communication architecture
-* Clippy assistant - Animated contextual desktop assistant
-* Setup wizard - First-run onboarding and configuration
-* Theme engine - Glassmorphism desktop styling with light/dark variants, transparent UI toggle, advanced brightness controls
-* Wallpaper system - Built-in and custom wallpapers
-* Calendar system - Events and date popup support
-* PWA support - Installable as a standalone offline-capable application
-* Single-file deployment - Entire OS bundled into one HTML file
-* Offline support - Service worker caching and installability
-
-## 💾 Storage & Persistence
-
-* IndexedDB persistence via BrowserFS
-* LocalStorage-backed preference layer
-* Persistent desktop/workspace/session state
-* Import/export backups - Full system migration and restore
-* User profiles - Username, avatar, theme personalization, GUI scale option
+* Web apps, utilities, tools, editors, and system apps
+* App registry with metadata and launch handling
+* Website and external app shortcuts via App Creator
+* Sandboxed iframe-based apps
+* Direct launch via URL parameters (`?app=` and `?game=`)
 
 ---
 
-# 🏗 Architecture Overview
+# 🎮 Emulation & Runtime Support
 
-Yuki OS uses a modular service-oriented architecture centered around shared runtime services.
-
-## Core Runtime Services
-
-* WindowManager - Window lifecycle, snapping, z-ordering, drag/resize
-* FileSystemManager - Persistent BrowserFS virtual filesystem
-* NotificationCenter - Notifications and DND state
-* EventBus - Cross-application event system
-* AppLauncher - Centralized application dispatcher
-* DesktopUI - Desktop/taskbar/start menu renderer
-
-## Storage Layer
-
-* IndexedDB persistence via BrowserFS
-* LocalStorage-backed preference layer
-* Persistent desktop/workspace/session state
+* Flash content support via Ruffle
+* DOS applications via JS-DOS
+* Full x86 environments via V86
+* Nintendo 3DS emulation via Azahar
+* Multi-system game emulation (GBA, SNES, NDS, PSP, Sega, etc.)
+* WebAssembly runtime support
+* WebGL and HTML5 game support
 
 ---
+
+# ⚙️ System Features
+
+* Cross-app event communication
+* Notification system with app icons and actions
+* Background audio control per application
+* Achievement tracking and usage milestones
+* Setup flow for first-time configuration
+* Theme system with light/dark and transparency modes
+* Wallpaper customization
+* Calendar and date utilities
+* PWA install and offline caching support
+* Single-file deployment build option
+
+---
+
+# 💾 Persistence
+
+* Session persistence for windows and workspaces
+* User profiles with settings and personalization
+* Backup and restore of system state
+* Local storage preferences
+* IndexedDB-backed virtual filesystem
+
+---
+
+# 🧠 Core Runtime
+
+* Window lifecycle handling (create, move, resize, close)
+* File system handling for persistent storage
+* Notification handling and state
+* Event-based communication between apps
+* Central app launcher and registry
+* Desktop rendering and taskbar management
 
 # 📦 Built-in Applications
 
@@ -137,6 +142,8 @@ Yuki OS uses a modular service-oriented architecture centered around shared runt
 * Yuki Convert
 * Clipboard Manager
 * Categories
+* Emoji Selector
+* YukiDevTools (IT - TOOLS)
 * Weather
 * News
 * Yuki OS Guide
@@ -167,20 +174,19 @@ Yuki OS uses a modular service-oriented architecture centered around shared runt
 * V86
 * Azahar
 
-## 🔌 Tray System API
+---
 
-Apps can:
+# 🔌 Extensibility
 
-* minimize to tray
-* restore from tray
-* register tray icons
-* continue running in background
+* Apps can register tray icons and background behavior
+* Apps can communicate through shared events
+* External web apps can be launched as windows
+* Apps can persist state through storage APIs
+* Modular loading of tools and utilities
 
 ---
 
-# 🔧 Build & Deployment
-
-## Build Commands
+# 🛠 Build & Deployment
 
 ```bash
 npm run dev
@@ -189,7 +195,10 @@ npm run build
 npm run preview
 ```
 
+Single-file build output is supported for easy deployment.
+
 ---
+
 
 # 🛠 Tech Stack
 
@@ -205,32 +214,22 @@ npm run preview
 * PDF.js
 * JSZip
 * fflate
+* archive-wasm
 * 7z-wasm
 * Handsontable
 * Mammoth.js
 * Font Awesome
+* Emoji Mart
 
 ---
 
-# 🎮 Supported Content
+# 🎮 Content Support
 
-## Application Types
-
-* Vanilla JS applications
-* WebAssembly apps
-* HTML5/WebGL games
+* Web apps and tools
+* WebAssembly applications
+* HTML5 and WebGL games
 * Flash applications
 * DOS software
 * Emulator ROMs
-* Remote web apps
-
-## File Types
-
-* Images
-* Audio
-* Video
-* PDFs
-* Markdown
-* Office documents
-* Archives
-* ROM files
+* Media and document formats
+* Archive files and compressed formats

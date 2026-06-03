@@ -1,6 +1,6 @@
 import { StorageKeys } from "../settings/settings.js";
-import { resolveIconUrl } from "../assetUrl.js";
-import { bus, BusEvents } from "../core/EventBus.js";
+import { resolveIconUrl } from "../shared/assetResolver.js";
+import { BusEvents } from "../core/EventBus.js";
 import { WindowRecord } from "../core/WindowRecord.js";
 import { audioMixer } from "../audioMixer.js";
 import { showStartStyleMenu } from "../shared/contextMenu.js";
@@ -83,7 +83,7 @@ export class TaskbarSystem {
     taskbarItem.id = `taskbar-${winId}`;
     taskbarItem.className = "taskbar-item";
     taskbarItem.appendChild(this._buildTaskbarIcon(iconValue, title, color));
-    bus.emit(BusEvents.WINDOW_CREATED, { winId, title });
+    os.events.emit(BusEvents.WINDOW_CREATED, { winId, title });
 
     taskbarItem.onclick = () => {
       const winTask = document.getElementById(winId);
@@ -93,7 +93,10 @@ export class TaskbarSystem {
         winTask.style.display = "block";
         taskbarItem.classList.remove("minimized");
         if (entry?.record) entry.record.minimized = false;
-        requestAnimationFrame(() => animateWindowOpen(winTask));
+        // Exclude browser app from animations
+        if (!winTask.id || !winTask.id.startsWith("browser-app-")) {
+          requestAnimationFrame(() => animateWindowOpen(winTask));
+        }
       }
       this.manager.bringToFront(winTask);
     };
@@ -329,7 +332,7 @@ export class TaskbarSystem {
     this.manager.openWindows.delete(winId);
     this.manager.workspaceManager?.unregisterWindow(winId);
     audioMixer.unregisterWindow(winId);
-    bus.emit(BusEvents.WINDOW_CLOSED, { winId });
+    os.events.emit(BusEvents.WINDOW_CLOSED, { winId });
     this._renderPinnedItems();
 
     if (this.manager.openWindows.size === 0) {
@@ -411,7 +414,7 @@ export class TaskbarSystem {
 
       pinnedItem.onclick = () => {
         if (window.appLauncher && item.appId) {
-          window.appLauncher.launch(item.appId);
+          os.app.launch(item.appId);
         }
       };
 
@@ -424,7 +427,7 @@ export class TaskbarSystem {
             "Launch App",
             () => {
               if (window.appLauncher && item.appId) {
-                window.appLauncher.launch(item.appId);
+                os.app.launch(item.appId);
               }
             },
             "fa-play"

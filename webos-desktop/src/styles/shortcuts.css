@@ -1,11 +1,7 @@
 #shortcuts-app .sc-app-wrapper {
   display: flex;
   height: calc(100% - 40px);
-  font-family:
-    "Inter",
-    system-ui,
-    -apple-system,
-    sans-serif;
+  font-family: var(--font-ui);
   color: var(--text-primary);
   background: var(--bg-primary);
   overflow: hidden;
@@ -209,7 +205,7 @@
   background: var(--surface-2);
   border: 1px solid var(--glass-border);
   font-size: 11px;
-  font-family: "Inter", system-ui, sans-serif;
+  font-family: var(--font-ui);
   color: var(--text-primary);
   font-weight: 500;
 }

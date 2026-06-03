@@ -99,7 +99,7 @@
   margin-left: auto;
   font-size: 12px;
   color: var(--text-muted);
-  font-family: "Courier New", monospace;
+  font-family: var(--font-mono);
 }
 
 .yb-dropdown-sep {
@@ -625,7 +625,7 @@
   border-radius: 6px;
   font-size: 12px;
   color: var(--text-secondary);
-  font-family: "Courier New", monospace;
+  font-family: var(--font-mono);
 }
 
 .yb-welcome-actions {
@@ -1004,7 +1004,7 @@
 .yb-slider-val {
   font-size: 12px;
   color: var(--brand);
-  font-family: "Courier New", monospace;
+  font-family: var(--font-mono);
   width: 28px;
   text-align: right;
   flex-shrink: 0;
@@ -1057,7 +1057,7 @@
   border: none;
   color: var(--text-secondary);
   font-size: 12px;
-  font-family: "Courier New", monospace;
+  font-family: var(--font-mono);
   outline: none;
   width: 0;
   -moz-appearance: textfield;
@@ -1190,7 +1190,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-family: "Courier New", monospace;
+  font-family: var(--font-mono);
 }
 
 .yb-tex-btn {
@@ -1369,7 +1369,7 @@
 
 #sb-fps {
   color: var(--brand);
-  font-family: "Courier New", monospace;
+  font-family: var(--font-mono);
   font-size: 12px;
 }
 

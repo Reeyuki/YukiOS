@@ -1,11 +1,12 @@
 import { CDN_MIRRORS } from "../shared/assetResolver.js";
 import { audioMixer } from "../audioMixer.js";
 import { resolveGhUrl } from "../shared/assetResolver.js";
-import { YUKIOS_VERSION } from "../about.js";
+import { YUKIOS_VERSION } from "../apps/about.js";
+import { StorageKeys } from "../StorageKeys.js";
 export function buildSettingsHTML(settings, wm) {
   return `
   <div class="window-header">
-    <span>Settings</span>
+    <span><i class="fas fa-cog" style="color:white;margin-right:6px;font-size:25px;vertical-align:middle;"></i>Settings</span>
     ${wm.getWindowControls()}
   </div>
   <div class="window-content" style="padding: 0; gap: 0;">
@@ -148,7 +149,6 @@ export function renderSystemSettings(s) {
 
       <div class="settings-card" style="margin-top: 16px;">
         <div class="settings-card-header"><i class="fas fa-bell"></i> Notifications</div>
-        <!-- DND lives here — it's the master mute for notifications -->
         <div class="settings-row">
           <div class="settings-label-group">
             <span class="settings-label-title">Do Not Disturb</span>
@@ -327,7 +327,6 @@ export function renderDesktopSettings(s) {
         </div>
       </div>
 
-      <!-- System Tray — moved here from System pane -->
       <div class="settings-card" style="margin-top: 16px;">
         <div class="settings-card-header"><i class="fas fa-window-minimize"></i> System Tray</div>
         <div class="settings-row">
@@ -351,7 +350,6 @@ export function renderDesktopSettings(s) {
         </div>
       </div>
 
-      <!-- Window Switcher — moved here from System pane -->
       <div class="settings-card" style="margin-top: 16px;">
         <div class="settings-card-header"><i class="fas fa-exchange-alt"></i> Window Switcher (Alt+Q)</div>
         <div class="settings-row">
@@ -387,7 +385,6 @@ export function renderDesktopSettings(s) {
         </div>
       </div>
 
-      <!-- Desktop Visibility — moved here from old Tools pane -->
       <div class="settings-card" style="margin-top: 16px;">
         <div class="settings-card-header"><i class="fas fa-eye-slash"></i> Desktop Visibility</div>
         <div class="settings-row">
@@ -420,7 +417,6 @@ export function renderAppearanceSettings(s) {
       <div class="settings-card">
         <div class="settings-card-header"><i class="fas fa-palette"></i> Style &amp; Transparency</div>
 
-        <!-- macOS Window Controls — moved here; it's a visual/chrome preference -->
         <div class="settings-row">
           <div class="settings-label-group">
             <span class="settings-label-title">macOS Window Controls</span>
@@ -474,6 +470,7 @@ export function renderAppearanceSettings(s) {
             <button class="settings-btn ${s.theme === "material-you" ? "active" : ""}" data-theme-val="material-you"><i class="fas fa-palette"></i> Material You</button>
             <button class="settings-btn ${s.theme === "sepia" ? "active" : ""}" data-theme-val="sepia"><i class="fas fa-book"></i> Sepia</button>
             <button class="settings-btn ${s.theme === "warm-night" ? "active" : ""}" data-theme-val="warm-night"><i class="fas fa-moon"></i> Warm Night</button>
+            <button class="settings-btn ${s.theme === "star-wars-dark" ? "active" : ""}" data-theme-val="star-wars-dark"><i class="fas fa-skull"></i> Star Wars Dark</button>
           </div>
         </div>
         <div class="settings-row">
@@ -525,9 +522,33 @@ export function renderAppearanceSettings(s) {
             <span id="settingsFontSizeValue" class="settings-range-value">${s.fontSize}%</span>
           </div>
         </div>
+        <div class="settings-row settings-row--stacked">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Font Family</span>
+            <span class="settings-label-desc">Choose the UI font</span>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px;">
+            <button class="settings-btn ${s.fontFamily === "opensans" ? "active" : ""}" data-font-family="opensans">Open Sans</button>
+            <button class="settings-btn ${s.fontFamily === "inter" ? "active" : ""}" data-font-family="inter">Inter</button>
+            <button class="settings-btn ${s.fontFamily === "rubik" ? "active" : ""}" data-font-family="rubik">Rubik</button>
+            <button class="settings-btn ${s.fontFamily === "sora" ? "active" : ""}" data-font-family="sora">Sora</button>
+            <button class="settings-btn ${s.fontFamily === "jetbrainsmono" ? "active" : ""}" data-font-family="jetbrainsmono">JetBrains Mono</button>
+            <button class="settings-btn ${s.fontFamily === "monocraft" ? "active" : ""}" data-font-family="monocraft">Monocraft</button>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">UI Density</span>
+            <span class="settings-label-desc">Adjust spacing throughout the interface</span>
+          </div>
+          <div class="settings-button-group">
+            <button class="settings-btn ${s.uiDensity === "compact" ? "active" : ""}" data-ui-density="compact"><i class="fas fa-compress"></i> Compact</button>
+            <button class="settings-btn ${s.uiDensity === "comfortable" ? "active" : ""}" data-ui-density="comfortable"><i class="fas fa-check"></i> Comfortable</button>
+            <button class="settings-btn ${s.uiDensity === "spacious" ? "active" : ""}" data-ui-density="spacious"><i class="fas fa-expand"></i> Spacious</button>
+          </div>
+        </div>
       </div>
 
-      <!-- Window Animations — moved here from System pane -->
       <div class="settings-card" style="margin-top: 16px;">
         <div class="settings-card-header"><i class="fas fa-wand-magic-sparkles"></i> Window Animations</div>
         <div class="settings-row">
@@ -536,14 +557,18 @@ export function renderAppearanceSettings(s) {
             <span class="settings-label-desc">Effect when a window opens or is restored</span>
           </div>
           <select id="settingsOpenAnimation" class="settings-select">
-            <option value="instant"        ${(localStorage.getItem("yukiOS_window_open_animation") || "scaleCenter") === "instant" ? "selected" : ""}>Instant (No Animation)</option>
-            <option value="fade"           ${(localStorage.getItem("yukiOS_window_open_animation") || "scaleCenter") === "fade" ? "selected" : ""}>Fade In</option>
-            <option value="scaleCenter"    ${(localStorage.getItem("yukiOS_window_open_animation") || "scaleCenter") === "scaleCenter" ? "selected" : ""}>Scale Center</option>
-            <option value="scaleFromSource"${(localStorage.getItem("yukiOS_window_open_animation") || "scaleCenter") === "scaleFromSource" ? "selected" : ""}>Scale From Taskbar</option>
-            <option value="slideUp"        ${(localStorage.getItem("yukiOS_window_open_animation") || "scaleCenter") === "slideUp" ? "selected" : ""}>Slide Up</option>
-            <option value="slideLeft"      ${(localStorage.getItem("yukiOS_window_open_animation") || "scaleCenter") === "slideLeft" ? "selected" : ""}>Slide In From Left</option>
-            <option value="slideRight"     ${(localStorage.getItem("yukiOS_window_open_animation") || "scaleCenter") === "slideRight" ? "selected" : ""}>Slide In From Right</option>
-            <option value="glassBlurin"    ${(localStorage.getItem("yukiOS_window_open_animation") || "scaleCenter") === "glassBlurin" ? "selected" : ""}>Glass Blur Transition</option>
+            <option value="instant"        ${(localStorage.getItem(StorageKeys.windowOpenAnimation) || "scaleCenter") === "instant" ? "selected" : ""}>Instant (No Animation)</option>
+            <option value="fade"           ${(localStorage.getItem(StorageKeys.windowOpenAnimation) || "scaleCenter") === "fade" ? "selected" : ""}>Fade In</option>
+            <option value="scaleCenter"    ${(localStorage.getItem(StorageKeys.windowOpenAnimation) || "scaleCenter") === "scaleCenter" ? "selected" : ""}>Scale Center</option>
+            <option value="scaleFromSource"${(localStorage.getItem(StorageKeys.windowOpenAnimation) || "scaleCenter") === "scaleFromSource" ? "selected" : ""}>Scale From Taskbar</option>
+            <option value="slideUp"        ${(localStorage.getItem(StorageKeys.windowOpenAnimation) || "scaleCenter") === "slideUp" ? "selected" : ""}>Slide Up</option>
+            <option value="slideLeft"      ${(localStorage.getItem(StorageKeys.windowOpenAnimation) || "scaleCenter") === "slideLeft" ? "selected" : ""}>Slide In From Left</option>
+            <option value="slideRight"     ${(localStorage.getItem(StorageKeys.windowOpenAnimation) || "scaleCenter") === "slideRight" ? "selected" : ""}>Slide In From Right</option>
+            <option value="glassBlurin"    ${(localStorage.getItem(StorageKeys.windowOpenAnimation) || "scaleCenter") === "glassBlurin" ? "selected" : ""}>Glass Blur Transition</option>
+            <option value="elasticBounce"  ${(localStorage.getItem(StorageKeys.windowOpenAnimation) || "scaleCenter") === "elasticBounce" ? "selected" : ""}>Elastic Bounce</option>
+            <option value="blurReveal"     ${(localStorage.getItem(StorageKeys.windowOpenAnimation) || "scaleCenter") === "blurReveal" ? "selected" : ""}>Blur Reveal</option>
+            <option value="perspective3D"  ${(localStorage.getItem(StorageKeys.windowOpenAnimation) || "scaleCenter") === "perspective3D" ? "selected" : ""}>Perspective 3D</option>
+            <option value="cornerUnfold"   ${(localStorage.getItem(StorageKeys.windowOpenAnimation) || "scaleCenter") === "cornerUnfold" ? "selected" : ""}>Corner Unfold</option>
           </select>
         </div>
         <div class="settings-row">
@@ -552,12 +577,14 @@ export function renderAppearanceSettings(s) {
             <span class="settings-label-desc">Effect when a window is closed</span>
           </div>
           <select id="settingsCloseAnimation" class="settings-select">
-            <option value="instant"        ${(localStorage.getItem("yukiOS_window_close_animation") || "scaleDownCenter") === "instant" ? "selected" : ""}>Instant (No Animation)</option>
-            <option value="scaleDownCenter"${(localStorage.getItem("yukiOS_window_close_animation") || "scaleDownCenter") === "scaleDownCenter" ? "selected" : ""}>Scale Down Center</option>
-            <option value="scaleToOrigin"  ${(localStorage.getItem("yukiOS_window_close_animation") || "scaleDownCenter") === "scaleToOrigin" ? "selected" : ""}>Scale to Taskbar Origin</option>
-            <option value="fadeOut"        ${(localStorage.getItem("yukiOS_window_close_animation") || "scaleDownCenter") === "fadeOut" ? "selected" : ""}>Fade Out Only</option>
-            <option value="slideDown"      ${(localStorage.getItem("yukiOS_window_close_animation") || "scaleDownCenter") === "slideDown" ? "selected" : ""}>Slide Down Exit</option>
-            <option value="burn"           ${(localStorage.getItem("yukiOS_window_close_animation") || "scaleDownCenter") === "burn" ? "selected" : ""}>Window Burn Close</option>
+            <option value="instant"        ${(localStorage.getItem(StorageKeys.windowCloseAnimation) || "scaleDownCenter") === "instant" ? "selected" : ""}>Instant (No Animation)</option>
+            <option value="scaleDownCenter"${(localStorage.getItem(StorageKeys.windowCloseAnimation) || "scaleDownCenter") === "scaleDownCenter" ? "selected" : ""}>Scale Down Center</option>
+            <option value="scaleToOrigin"  ${(localStorage.getItem(StorageKeys.windowCloseAnimation) || "scaleDownCenter") === "scaleToOrigin" ? "selected" : ""}>Scale to Taskbar Origin</option>
+            <option value="fadeOut"        ${(localStorage.getItem(StorageKeys.windowCloseAnimation) || "scaleDownCenter") === "fadeOut" ? "selected" : ""}>Fade Out Only</option>
+            <option value="slideDown"      ${(localStorage.getItem(StorageKeys.windowCloseAnimation) || "scaleDownCenter") === "slideDown" ? "selected" : ""}>Slide Down Exit</option>
+            <option value="burn"           ${(localStorage.getItem(StorageKeys.windowCloseAnimation) || "scaleDownCenter") === "burn" ? "selected" : ""}>Window Burn Close</option>
+            <option value="shrinkToPoint"  ${(localStorage.getItem(StorageKeys.windowCloseAnimation) || "scaleDownCenter") === "shrinkToPoint" ? "selected" : ""}>Shrink to Point</option>
+            <option value="dissolveBlur"   ${(localStorage.getItem(StorageKeys.windowCloseAnimation) || "scaleDownCenter") === "dissolveBlur" ? "selected" : ""}>Dissolve with Blur</option>
           </select>
         </div>
         <div class="settings-row">
@@ -566,11 +593,13 @@ export function renderAppearanceSettings(s) {
             <span class="settings-label-desc">Effect when a window is minimized</span>
           </div>
           <select id="settingsMinimizeAnimation" class="settings-select">
-            <option value="instant"       ${(localStorage.getItem("yukiOS_window_minimize_animation") || "taskbarShrink") === "instant" ? "selected" : ""}>Instant (No Animation)</option>
-            <option value="taskbarShrink" ${(localStorage.getItem("yukiOS_window_minimize_animation") || "taskbarShrink") === "taskbarShrink" ? "selected" : ""}>Taskbar Shrink</option>
-            <option value="dockZoomShrink"${(localStorage.getItem("yukiOS_window_minimize_animation") || "taskbarShrink") === "dockZoomShrink" ? "selected" : ""}>Dock Zoom Shrink</option>
-            <option value="magicLamp"     ${(localStorage.getItem("yukiOS_window_minimize_animation") || "taskbarShrink") === "magicLamp" ? "selected" : ""}>Magic Lamp Warp</option>
-            <option value="fadeToTaskbar" ${(localStorage.getItem("yukiOS_window_minimize_animation") || "taskbarShrink") === "fadeToTaskbar" ? "selected" : ""}>Fade to Taskbar</option>
+            <option value="instant"       ${(localStorage.getItem(StorageKeys.windowMinimizeAnimation) || "taskbarShrink") === "instant" ? "selected" : ""}>Instant (No Animation)</option>
+            <option value="taskbarShrink" ${(localStorage.getItem(StorageKeys.windowMinimizeAnimation) || "taskbarShrink") === "taskbarShrink" ? "selected" : ""}>Taskbar Shrink</option>
+            <option value="dockZoomShrink"${(localStorage.getItem(StorageKeys.windowMinimizeAnimation) || "taskbarShrink") === "dockZoomShrink" ? "selected" : ""}>Dock Zoom Shrink</option>
+            <option value="magicLamp"     ${(localStorage.getItem(StorageKeys.windowMinimizeAnimation) || "taskbarShrink") === "magicLamp" ? "selected" : ""}>Magic Lamp Warp</option>
+            <option value="fadeToTaskbar" ${(localStorage.getItem(StorageKeys.windowMinimizeAnimation) || "taskbarShrink") === "fadeToTaskbar" ? "selected" : ""}>Fade to Taskbar</option>
+            <option value="elasticStretch"${(localStorage.getItem(StorageKeys.windowMinimizeAnimation) || "taskbarShrink") === "elasticStretch" ? "selected" : ""}>Elastic Stretch</option>
+            <option value="spiralDown"    ${(localStorage.getItem(StorageKeys.windowMinimizeAnimation) || "taskbarShrink") === "spiralDown" ? "selected" : ""}>Spiral Down</option>
           </select>
         </div>
         <div class="settings-row">
@@ -579,10 +608,10 @@ export function renderAppearanceSettings(s) {
             <span class="settings-label-desc">Control how fast window animations play</span>
           </div>
           <select id="settingsAnimationSpeed" class="settings-select">
-            <option value="slow"      ${(localStorage.getItem("yukiOS_window_animation_speed") || "normal") === "slow" ? "selected" : ""}>Slow (0.5x)</option>
-            <option value="normal"    ${(localStorage.getItem("yukiOS_window_animation_speed") || "normal") === "normal" ? "selected" : ""}>Normal (1x)</option>
-            <option value="fast"      ${(localStorage.getItem("yukiOS_window_animation_speed") || "normal") === "fast" ? "selected" : ""}>Fast (1.5x)</option>
-            <option value="very_fast" ${(localStorage.getItem("yukiOS_window_animation_speed") || "normal") === "very_fast" ? "selected" : ""}>Very Fast (2x)</option>
+            <option value="slow"      ${(localStorage.getItem(StorageKeys.windowAnimationSpeed) || "normal") === "slow" ? "selected" : ""}>Slow (0.5x)</option>
+            <option value="normal"    ${(localStorage.getItem(StorageKeys.windowAnimationSpeed) || "normal") === "normal" ? "selected" : ""}>Normal (1x)</option>
+            <option value="fast"      ${(localStorage.getItem(StorageKeys.windowAnimationSpeed) || "normal") === "fast" ? "selected" : ""}>Fast (1.5x)</option>
+            <option value="very_fast" ${(localStorage.getItem(StorageKeys.windowAnimationSpeed) || "normal") === "very_fast" ? "selected" : ""}>Very Fast (2x)</option>
           </select>
         </div>
         <div class="settings-row">
@@ -591,7 +620,7 @@ export function renderAppearanceSettings(s) {
             <span class="settings-label-desc">Show ripple effect under cursor on click (disabled by default)</span>
           </div>
           <label class="settings-toggle">
-            <input type="checkbox" id="settingsClickBubble" ${localStorage.getItem("yukiOS_click_bubble_feedback") === "true" ? "checked" : ""}/>
+            <input type="checkbox" id="settingsClickBubble" ${localStorage.getItem(StorageKeys.clickBubbleFeedback) === "true" ? "checked" : ""}/>
             <span class="settings-track"><span class="settings-thumb"></span></span>
           </label>
         </div>
@@ -678,7 +707,6 @@ export function renderDataSettings() {
         </div>
       </div>
 
-      <!-- Download Page — moved here from old Tools pane -->
       <div class="settings-card" style="margin-top: 16px;">
         <div class="settings-card-header"><i class="fas fa-download"></i> Save Yuki OS</div>
         <div class="settings-row">
@@ -815,7 +843,7 @@ export function renderAboutSettings() {
             </div>
           </div>
           <p style="margin:0;color:var(--text-primary);font-size:0.9em;line-height:1.5;opacity:0.75;">
-            A fully featured desktop OS experience running directly in your web browser. Includes emulators, tools, PWA support, virtual filesystem, and 3700+ classic games.
+            A fully featured desktop OS experience running directly in your web browser. Includes emulators, tools, PWA support, virtual filesystem, and 3700+ games.
           </p>
           <div style="display:flex;align-items:center;gap:8px;">
             <span style="color:var(--text-muted);font-size:0.78em;font-weight:500;">Build</span>

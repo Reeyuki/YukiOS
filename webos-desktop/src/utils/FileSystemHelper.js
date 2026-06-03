@@ -54,7 +54,7 @@ export class FileSystemHelper {
 
   async getFolderContents(pathArray) {
     try {
-      return await this.fs.getFolder(pathArray);
+      return await os.fs.readdir(pathArray);
     } catch {
       return {};
     }

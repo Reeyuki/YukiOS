@@ -1,9 +1,10 @@
 import { SystemUtilities } from "./system.js";
 import { StorageKeys } from "./StorageKeys.js";
-import { bus, BusEvents } from "./core/EventBus.js";
+import { BusEvents } from "./core/EventBus.js";
 import { openFileWith } from "./fileDisplay.js";
 import { resolveIconUrl } from "./shared/assetResolver.js";
 import { AppSource } from "./AppSource.js";
+import { os } from "./os/index.js";
 
 export class CommandPalette {
   constructor(services) {
@@ -440,9 +441,7 @@ export class CommandPalette {
         tag: "settings",
         icon: "fas fa-user-circle",
         execute: () => {
-          if (this.services.windowManager.appLauncher) {
-            this.services.windowManager.appLauncher.launch("profileCustomizer");
-          }
+          os.app.launch("profileCustomizer");
         }
       },
       {
@@ -451,9 +450,7 @@ export class CommandPalette {
         tag: "settings",
         icon: "fas fa-cog",
         execute: () => {
-          if (this.services.windowManager.appLauncher) {
-            this.services.windowManager.appLauncher.launch("settingsApp");
-          }
+          os.app.launch("settingsApp");
         }
       }
     ];
@@ -478,9 +475,9 @@ export class CommandPalette {
       }
     }
 
-    const appLauncher = this.services.windowManager.appLauncher;
-    if (appLauncher && appLauncher.appMap) {
-      for (const [key, app] of Object.entries(appLauncher.appMap)) {
+    const allApps = os.app.getAllApps();
+    if (allApps) {
+      for (const [key, app] of Object.entries(allApps)) {
         if (!app) continue;
         const appTitle = app.title || key;
         if (!search || appTitle.toLowerCase().includes(search) || key.toLowerCase().includes(search)) {
@@ -489,7 +486,7 @@ export class CommandPalette {
             subtitle: app.type === "system" ? "Built-in System App" : `Game Category: ${app.type}`,
             tag: app.type === "system" ? "app" : "game",
             icon: app.icon || "fas fa-window-maximize",
-            execute: () => appLauncher.launch(key)
+            execute: () => os.app.launch(key)
           });
         }
       }
@@ -631,16 +628,14 @@ export class CommandPalette {
         icon: "fas fa-image",
         execute: () => {
           SystemUtilities.setWallpaper(w.url);
-          if (this.services.notificationCenter) {
-            this.services.notificationCenter.notify(
-              "Wallpaper Changed",
-              `Background updated to ${w.name}`,
-              "success",
-              5000,
-              "fas fa-image",
-              AppSource.COMMAND_PALETTE
-            );
-          }
+          os.notify.send(
+            "Wallpaper Changed",
+            `Background updated to ${w.name}`,
+            "success",
+            5000,
+            "fas fa-image",
+            AppSource.COMMAND_PALETTE
+          );
         }
       });
     }
@@ -701,48 +696,39 @@ export class CommandPalette {
     const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     const effective = val === "auto" ? (prefersDark ? "dark" : "light") : val;
     document.documentElement.setAttribute("data-theme", effective);
-    bus.emit(BusEvents.SETTINGS_CHANGED);
-    if (this.services.notificationCenter) {
-      this.services.notificationCenter.notify(
-        "Theme Changed",
-        `System appearance set to ${val}`,
-        "success",
-        5000,
-        "fas fa-palette",
-        AppSource.COMMAND_PALETTE
-      );
-    }
+    os.events.emit(BusEvents.SETTINGS_CHANGED);
+    os.notify.send(
+      "Theme Changed",
+      `System appearance set to ${val}`,
+      "success",
+      5000,
+      "fas fa-palette",
+      AppSource.COMMAND_PALETTE
+    );
   }
 
   _toggleSound(val) {
     localStorage.setItem(StorageKeys.soundEnabled, val ? "true" : "false");
-    bus.emit(BusEvents.SETTINGS_CHANGED);
-    if (this.services.notificationCenter) {
-      this.services.notificationCenter.notify(
-        "Sound Settings",
-        `System audio feedback is now ${val ? "enabled" : "disabled"}`,
-        "info",
-        5000,
-        "fas fa-volume-up"
-      );
-    }
+    os.events.emit(BusEvents.SETTINGS_CHANGED);
+    os.notify.send(
+      "Sound Settings",
+      `System audio feedback is now ${val ? "enabled" : "disabled"}`,
+      "info",
+      5000,
+      "fas fa-volume-up"
+    );
   }
 
   _toggleDND(val) {
     localStorage.setItem(StorageKeys.dndKey, val ? "true" : "false");
-    if (this.services.notificationCenter && typeof this.services.notificationCenter.setDND === "function") {
-      this.services.notificationCenter.setDND(val);
-    }
-    if (this.services.notificationCenter) {
-      this.services.notificationCenter.notify(
-        "Do Not Disturb",
-        `Silence state is now ${val ? "activated" : "deactivated"}`,
-        "info",
-        5000,
-        "fas fa-bell-slash",
-        AppSource.COMMAND_PALETTE
-      );
-    }
+    os.notify.send(
+      "Do Not Disturb",
+      `Silence state is now ${val ? "activated" : "deactivated"}`,
+      "info",
+      5000,
+      "fas fa-bell-slash",
+      AppSource.COMMAND_PALETTE
+    );
   }
 
   _updateActiveSelection() {

@@ -1,11 +1,10 @@
 import { BaseApp } from "../core/BaseApp.js";
-import { bus, BusEvents } from "../core/EventBus.js";
-import { WindowHelper } from "../utils/WindowHelper.js";
+import { BusEvents } from "../core/EventBus.js";
 import { StorageKeys } from "../StorageKeys.js";
-import { AppSource } from "../AppSource.js";
 import { setCdnMirror, initializeMirrors } from "../shared/assetResolver.js";
-import { appMap } from "../gamesList.js";
+import { appMap } from "../games/gamesList.js";
 import { turboManager } from "../shared/turboManager.js";
+import { os } from "../os/index.js";
 
 import { buildSettingsHTML } from "./settingRenderer.js";
 import {
@@ -20,7 +19,9 @@ import {
   applyDesktopStretchScrollDisabled,
   applyStartMenuSize,
   applyStartMenuCats,
-  applyTrayEnabled
+  applyTrayEnabled,
+  applyFontFamily,
+  applyUiDensity
 } from "./settingsApply.js";
 import {
   bindNavigation,
@@ -38,7 +39,6 @@ export { StorageKeys };
 export class SettingsApp extends BaseApp {
   constructor(services) {
     super(services);
-    this.windowHelper = new WindowHelper(this.wm);
     this.fs = null;
 
     setTimeout(() => {
@@ -108,7 +108,9 @@ export class SettingsApp extends BaseApp {
         windowSwitcherMode: localStorage.getItem(StorageKeys.windowSwitcherMode) || "mru",
         windowSwitcherUI: localStorage.getItem(StorageKeys.windowSwitcherUI) || "overlay",
         windowSwitcherIncludeMinimized: localStorage.getItem(StorageKeys.windowSwitcherIncludeMinimized) !== "false",
-        mikuCursor: localStorage.getItem(StorageKeys.mikuCursor) !== "false"
+        mikuCursor: localStorage.getItem(StorageKeys.mikuCursor) !== "false",
+        fontFamily: localStorage.getItem(StorageKeys.fontFamily) || "opensans",
+        uiDensity: localStorage.getItem(StorageKeys.uiDensity) || "comfortable"
       };
 
       applyCursor(this._settings.cursorDataUrl);
@@ -123,6 +125,7 @@ export class SettingsApp extends BaseApp {
       applyGuiScale(this._settings.guiScale);
       applyFontSize(this._settings.fontSize);
       applyTrayEnabled(this._settings.trayEnabled);
+      applyUiDensity(this._settings.uiDensity);
       window._settings = this._settings;
 
       if (cursorFromLegacyStorage && !cursorOriginalFromStorage) {
@@ -138,17 +141,18 @@ export class SettingsApp extends BaseApp {
     const winId = "yukiOS-settings";
     const existing = document.getElementById(winId);
     if (existing) {
-      this.wm.bringToFront(existing);
+      os.window.focus(existing);
       if (options && typeof options.section === "string") {
         this.navigateToSection(existing, options.section, options.target);
       }
       return;
     }
 
-    const win = this.wm.createWindow(winId, "Settings", "805px", "600px");
-    win.innerHTML = buildSettingsHTML(this._settings, this.wm);
+    const win = os.window.create(winId, "Settings", "805px", "600px", {
+      icon: "fas fa-cog"
+    });
+    win.innerHTML = buildSettingsHTML(this._settings, this._services.wm);
 
-    this.windowHelper.mountWindow(win, winId, "Settings", "fas fa-cog");
     if (this.desktopUI !== undefined) this.desktopUI.closeAllMenus();
 
     this._bindControls(win);
@@ -238,6 +242,8 @@ export class SettingsApp extends BaseApp {
       const selectedTurboMode = win.querySelector(".settings-btn[data-turbo-val].active")?.dataset.turboVal || "high";
       const startMenuWidth = Number(g("#settingsStartMenuWidth")?.value) || 650;
       const startMenuHeight = Number(g("#settingsStartMenuHeight")?.value) || 500;
+      const selectedFontFamily =
+        win.querySelector(".settings-btn[data-font-family].active")?.dataset.fontFamily || "poppins";
 
       const startMenuCats = {};
       win.querySelectorAll(".settings-start-cat-toggle").forEach((chk) => {
@@ -250,7 +256,7 @@ export class SettingsApp extends BaseApp {
       ls.setItem(StorageKeys.macOsControls, String(macOsControls));
       ls.setItem(StorageKeys.clippy, String(clippy));
       ls.setItem(StorageKeys.disableDesktopStretchScroll, String(disableDesktopStretchScroll));
-      ls.setItem("yukiOS_show_workspace", String(showWorkspace));
+      ls.setItem(StorageKeys.showWorkspace, String(showWorkspace));
       ls.setItem(StorageKeys.achievementsDisabled, String(achievementsDisabled));
       ls.setItem(StorageKeys.analyticsDisabled, String(analyticsDisabled));
       ls.setItem(StorageKeys.adsDisabled, String(adsDisabled));
@@ -297,8 +303,6 @@ export class SettingsApp extends BaseApp {
         transparentUI
       });
 
-      this.wm.saveSession();
-
       setCdnMirror(cdnMirror);
       initializeMirrors(appMap);
       applyDesktopStretchScrollDisabled(disableDesktopStretchScroll);
@@ -306,14 +310,15 @@ export class SettingsApp extends BaseApp {
       applyStartMenuCats(startMenuCats);
       turboManager.setMode(selectedTurboMode);
       applyTransparentUI(transparentUI);
-      bus.emit(BusEvents.SETTINGS_CHANGED, this._settings);
+      applyFontFamily(selectedFontFamily);
+      os.events.emit(BusEvents.SETTINGS_CHANGED, this._settings);
 
       this._showSavedMessage(win);
     };
   }
 
   _bindControls(win) {
-    const showStatus = (msg) => this.notify("Settings", msg, "info", 3000, "fas fa-check-circle", AppSource.SETTINGS);
+    const showStatus = (msg) => os.notify.send("Settings", msg, "info", 3000, "fas fa-check-circle");
     const showSaved = () => this._showSavedMessage(win);
     const save = this._buildSaveCallback(win);
 
@@ -328,7 +333,7 @@ export class SettingsApp extends BaseApp {
       save,
       this._settings,
       this.fs,
-      this.wm,
+      this._services.wm,
       showStatus,
       showSaved,
       () => this._getCustomColors(),
@@ -372,7 +377,7 @@ export class SettingsApp extends BaseApp {
 
   _getCustomColors() {
     try {
-      const stored = localStorage.getItem("yukios_custom_colors");
+      const stored = localStorage.getItem(StorageKeys.customColors);
       return stored ? JSON.parse(stored) : null;
     } catch {
       return null;
@@ -381,7 +386,7 @@ export class SettingsApp extends BaseApp {
 
   _setCustomColors(colors) {
     try {
-      localStorage.setItem("yukios_custom_colors", JSON.stringify(colors));
+      localStorage.setItem(StorageKeys.customColors, JSON.stringify(colors));
       applyTheme(this._settings.theme, () => this._getCustomColors());
     } catch {}
   }

@@ -1,17 +1,10 @@
 import { AppSource } from "../AppSource.js";
+import { os } from "../os/index.js";
 
 export function notify(wm, title, message, type = "info", duration = 5000, icon = null, appSource = null) {
-  if (wm.notificationCenter) {
-    wm.notificationCenter.addNotification(title, message, type, duration, icon, appSource);
-  } else {
-    console.warn("[WM] notify called before NotificationCenter was set:", title);
-  }
+  os.notify.send(title, message, type, duration, icon, appSource);
 }
 
 export function sendNotify(wm, text, appSource = null) {
-  if (wm.notificationCenter) {
-    wm.notificationCenter.addNotification(text, "", "info", 5000, null, appSource);
-  } else {
-    console.warn("[WM] sendNotify called before NotificationCenter was set:", text);
-  }
+  os.notify.send(text, "", "info", 5000, null, appSource);
 }

@@ -1,3 +1,4 @@
+import { os } from "../os/index.js";
 import { customPrompt } from "../shared/dialogs.js";
 import { StorageKeys } from "../StorageKeys.js";
 
@@ -13,7 +14,7 @@ export class WorkspaceManager {
     this._render();
 
     import("../core/EventBus.js").then(({ bus, BusEvents }) => {
-      bus.on(BusEvents.SETTINGS_CHANGED, (settings) => {
+      os.events.on(BusEvents.SETTINGS_CHANGED, (settings) => {
         this.updateVisibility(settings.showWorkspace);
       });
       const showWorkspace = localStorage.getItem(StorageKeys.showWorkspace) !== "false";
@@ -122,7 +123,7 @@ export class WorkspaceManager {
       const win = document.getElementById(winId);
       if (win) {
         this.wm._silenceWindow(win);
-        this.wm.removeFromTaskbar(winId);
+        os.window.removeFromTaskbar(winId);
         win.remove();
       }
     });

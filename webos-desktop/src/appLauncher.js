@@ -1,8 +1,7 @@
-import { desktop } from "./desktop.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
-import { HIGHLIGHTED_GAMES, getGameName, setGameLauncher } from "./games.js";
-import { appMap } from "./gamesList.js";
-import { initializeAppGrid, populateStartMenu, tryGetIcon } from "./startMenu";
+import { HIGHLIGHTED_GAMES, getGameName, setGameLauncher, openSteamWindow } from "./games/games.js";
+import { appMap } from "./games/gamesList.js";
+import { initializeAppGrid, populateStartMenu, tryGetIcon } from "./desktopui/startMenu.js";
 import { IFRAME_ATTRS } from "./shared/iframeAttrs.js";
 import { getLibraryUrl } from "./shared/cdnConfig.js";
 import {
@@ -14,10 +13,12 @@ import {
   getCurrentCdnRepoBase,
   resolveGhUrl
 } from "./shared/assetResolver.js";
-import { initClippy, speak as clippySpeak } from "./clippy.js";
+import { yukiITDevToolsBridge, YUKI_DEV_TOOLS_URL } from "./yukiITDevToolsBridge.js";
+import { ClippyAnimation, initClippy, speak as clippySpeak } from "./ai/clippy.js";
 import { initAnalytics, getAnalyticsBase, sendLaunchAnalytics, recordUsage } from "./analytics.js";
 import { StorageKeys } from "./settings/settings.js";
-import { getNewsContentSignature, updateNewsBadge } from "./news.js";
+import { getNewsContentSignature, updateNewsBadge } from "./apps/news.js";
+import { os } from "./os/index.js";
 import { PROXIES, clampProxyIndex, buildProxyUrl, fetchHtmlThroughProxy } from "./proxies.js";
 import { AppRuntime } from "./runtime/AppRuntime.js";
 const STATICALLY_BASE = resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main");
@@ -42,7 +43,6 @@ export class AppLauncher {
     shittifyApp,
     monaco,
     model3dApp,
-    categoriesApp,
     jsDosApp,
     v86app,
     youtubeApp,
@@ -60,7 +60,9 @@ export class AppLauncher {
     yukiOsGuideApp,
     clipboardManagerApp,
     aiAssistantApp,
-    brightnessApp
+    brightnessApp,
+    emojiSelectorApp,
+    systemAppsApp
   ) {
     this.wm = windowManager;
     this.windowHelper = new WindowHelper(this.wm);
@@ -81,7 +83,6 @@ export class AppLauncher {
     this.shittifyApp = shittifyApp;
     this.monacoApp = monaco;
     this.model3dApp = model3dApp;
-    this.categoriesApp = categoriesApp;
     this.jsDosApp = jsDosApp;
     this.v86app = v86app;
     this.youtubeApp = youtubeApp;
@@ -100,6 +101,8 @@ export class AppLauncher {
     this.clipboardManagerApp = clipboardManagerApp;
     this.aiAssistantApp = aiAssistantApp;
     this.brightnessApp = brightnessApp;
+    this.emojiSelectorApp = emojiSelectorApp;
+    this.systemAppsApp = systemAppsApp;
     this.TRANSPARENCY_ALLOWED_APP_IDS = new Set(["paint", "photopea", "vscode", "liventcord"]);
 
     this.clippyPromise = initClippy();
@@ -124,174 +127,219 @@ export class AppLauncher {
         type: "system",
         title: "Yuki Browser",
         action: () => this.browserApp.open(),
-        clippy: { message: "I can help you find your bookmarks.", animation: "animate" }
+        clippy: { message: "Your bookmarks and tabs are ready when you are.", animation: ClippyAnimation.Wave }
+      },
+      yukiDevTools: {
+        type: "system",
+        title: "Yuki Dev Tools",
+        url: null,
+        action: (extra) => this.openYukiDevToolsApp(extra),
+        clippy: {
+          message: "Open IT Tools with Yuki styling and a live iframe bridge.",
+          animation: ClippyAnimation.GetWizardy
+        }
       },
       explorer: {
         type: "system",
         title: "Explorer",
-        action: () => this.explorerApp.open()
+        action: () => this.explorerApp.open(),
+        clippy: {
+          message: "Move files around and keep your folders under control.",
+          animation: ClippyAnimation.Searching
+        }
       },
       yukiConvert: {
         type: "system",
         title: "Yuki Convert",
-        action: () => this.yukiConvertApp.open()
+        action: () => this.yukiConvertApp.open(),
+        clippy: {
+          message: "Drop in a file and I'll turn it into the format you need.",
+          animation: ClippyAnimation.GetWizardy
+        }
       },
       dataEditor: {
         type: "system",
         title: "Storage Editor",
-        action: (extra) => this.dataEditorApp.open(extra)
+        action: (extra) => this.dataEditorApp.open(extra),
+        clippy: { message: "Edit stored values carefully and keep the system tidy.", animation: ClippyAnimation.Show }
       },
-
       terminal: {
         type: "system",
         title: "Terminal",
         action: (extra) => this.terminalApp.open(extra),
-        clippy: { message: "Be careful with commands!", animation: "Acknowledge" }
+        clippy: { message: "Run commands here and keep the basics in reach.", animation: ClippyAnimation.Show }
       },
       notepad: {
         type: "system",
         title: "Notepad",
         action: (extra) => this.notepadApp.open(extra),
-        clippy: { message: "It looks like you're writing something. Need help with that letter?", animation: "Pleased" }
+        clippy: { message: "Start a quick note or draft without overthinking it.", animation: ClippyAnimation.Writing }
       },
       markdown: {
         type: "system",
         title: "Markdown",
         action: (extra) => this.markdownApp.open(extra),
-        clippy: { message: "Writing in Markdown? I can help you format your documents!", animation: "Pleased" }
+        clippy: { message: "Write in Markdown and keep the structure clean.", animation: ClippyAnimation.Writing }
       },
       emulatorApp: {
         type: "system",
         title: "Yuki Emulator",
         action: () => this.emulatorApp.open(),
-        clippy: { message: "Ready to play some classic games!", animation: "Pleased" }
+        clippy: { message: "Launch old software here and keep the nostalgia alive.", animation: ClippyAnimation.Show }
       },
       ruffleApp: {
         type: "system",
         title: "Ruffle",
         action: () => this.ruffleApp.open(),
-        clippy: { message: "Ready to play some classic games!", animation: "Pleased" }
+        clippy: { message: "Load Flash content here without the usual hassle.", animation: ClippyAnimation.Show }
       },
       monaco: {
         type: "system",
         title: "Yuki Code",
         action: (extra) => this.monacoApp.open(extra),
-        clippy: { message: "Would you like help starting with a 'Hello World?", animation: "Pleased" }
+        clippy: { message: "Open a new tab and get your code moving.", animation: ClippyAnimation.GetWizardy }
       },
       cameraApp: {
         type: "system",
         title: "Camera App",
         action: (extra) => this.cameraApp.open(extra),
-        clippy: { message: "Smile! I'll help you look your best.", animation: "Congratulate" }
+        clippy: { message: "Take a shot and capture the moment cleanly.", animation: ClippyAnimation.Show }
       },
       settingsApp: {
         type: "system",
         title: "Settings",
         action: (extra) => this.settingsApp.open(extra),
-        clippy: { message: "I can guide you through settings.", animation: "Acknowledge" }
+        clippy: { message: "Tune the system here and make it work your way.", animation: ClippyAnimation.Show }
       },
       calculatorApp: {
         type: "system",
         title: "Calculator",
         action: (extra) => this.calculatorApp.open(extra),
-        clippy: { message: "I can do math too! ...Mostly.", animation: "Pleased" }
+        clippy: { message: "Punch in numbers and I'll handle the quick arithmetic.", animation: ClippyAnimation.Show }
       },
       aboutApp: {
         type: "system",
         title: "About",
         action: (extra) => this.aboutApp.open(extra),
-        clippy: { message: "Your system is running smoothly.", animation: "Acknowledge" }
+        clippy: {
+          message: "Check the build details and see what this system is running.",
+          animation: ClippyAnimation.Show
+        }
       },
       shortcutsApp: {
         type: "system",
         title: "Shortcuts",
         action: (extra) => this.shortcutsApp.open(extra),
-        clippy: { message: "Press Ctrl+K to open Command Palette!", animation: "animate" }
+        clippy: { message: "Open shortcuts and keep the keyboard within reach.", animation: ClippyAnimation.Show }
       },
       newsApp: {
         type: "system",
         title: "What's New",
-        action: (extra) => this.newsApp.open(extra)
+        action: (extra) => this.newsApp.open(extra),
+        clippy: { message: "Catch up on the latest changes and see what shipped.", animation: ClippyAnimation.Show }
       },
       model3dApp: {
         type: "system",
         title: "Yuki Blender",
         action: (extra) => this.model3dApp.open(extra),
-        clippy: { message: "That caught my eye!", animation: "MoveLeft" }
-      },
-      flash: {
-        type: "system",
-        title: "Flash Games",
-        action: () => this.categoriesApp.openFlash(this, this.explorerApp.wm),
-        clippy: { message: "Ah the classics!", animation: "Pleased" }
+        clippy: {
+          message: "Inspect models here and spin them from every angle.",
+          animation: ClippyAnimation.LookDownLeft
+        }
       },
       steamApp: {
         type: "system",
         title: "Steam",
-        action: (extra) => this.categoriesApp.opensteamApp(this, this.explorerApp.wm, null, extra?.steamGameId),
-        clippy: { message: "I can suggest tips for your games.", animation: "animate" }
+        action: (extra) => openSteamWindow(this, this.explorerApp.wm, null, extra?.steamGameId),
+        clippy: {
+          message: "Browse game picks here and find something worth launching.",
+          animation: ClippyAnimation.Wave
+        }
       },
       systemApps: {
         type: "system",
         title: "System Apps",
-        action: () => this.categoriesApp.openSystemsApp(this, this.explorerApp.wm)
+        action: (extra) => this.systemAppsApp.open(extra),
+        clippy: { message: "Browse the built-in tools and jump to the one you need.", animation: ClippyAnimation.Show }
       },
-
       taskManagerApp: {
         type: "system",
         title: "Task Manager",
         action: (extra) => this.taskManager.open(extra),
-        clippy: { message: "Something's hogging resources. Want me to guess what?", animation: "Acknowledge" }
+        clippy: {
+          message: "Spot heavy apps fast and shut down the real troublemakers.",
+          animation: ClippyAnimation.CheckingSomething
+        }
       },
       weatherApp: {
         type: "system",
         title: "Weather",
         action: (extra) => this.weatherApp.open(extra),
-        clippy: { message: "Rain is expected today. Don't forget your umbrella!", animation: "Pleased" }
+        clippy: { message: "Check the forecast before you head out.", animation: ClippyAnimation.Show }
       },
       appCreatorApp: {
         type: "system",
         title: "App Creator",
-        action: (extra) => this.appCreatorApp.open(extra)
+        action: (extra) => this.appCreatorApp.open(extra),
+        clippy: {
+          message: "Build a custom shortcut and point it straight at your target url.",
+          animation: ClippyAnimation.GetWizardy
+        }
       },
       officeApp: {
         type: "system",
         title: "Office",
         action: (extra) => this.officeApp.open(extra),
-        clippy: { message: "Need a hand creating a document or spreadsheet?", animation: "animate" }
+        clippy: {
+          message: "Open office files here and keep the document flow moving.",
+          animation: ClippyAnimation.Show
+        }
       },
       shittify: {
         type: "system",
         title: "Evil Spotify",
-        action: (extra) => this.shittifyApp.open(extra)
+        action: (extra) => this.shittifyApp.open(extra),
+        clippy: {
+          message: "Queue a track and remix the mood without leaving the desktop.",
+          animation: ClippyAnimation.Wave
+        }
       },
       jsDosApp: {
         type: "system",
         title: "JsDos",
-        action: (extra) => this.jsDosApp.open(extra)
+        action: (extra) => this.jsDosApp.open(extra),
+        clippy: { message: "Boot old DOS software and keep classic tools alive.", animation: ClippyAnimation.Show }
       },
       v86app: {
         type: "system",
         title: "Virtual 86",
-        action: (extra) => this.v86app.open(extra)
+        action: (extra) => this.v86app.open(extra),
+        clippy: {
+          message: "Start a full machine and let the virtual hardware do the work.",
+          animation: ClippyAnimation.Show
+        }
       },
       achievementsApp: {
         type: "system",
         title: "Achievements",
-        action: (extra) => this.achievementsApp.open(extra)
+        action: (extra) => this.achievementsApp.open(extra),
+        clippy: { message: "Track progress here and see what you've unlocked.", animation: ClippyAnimation.GetArtsy }
       },
       profileCustomizer: {
         type: "system",
         title: "Customize Profile",
         icon: "fas fa-user-circle",
         action: (extra) => this.profileCustomizerApp.open(extra),
-        clippy: { message: "Let's make your profile look great!", animation: "Congratulate" }
+        clippy: {
+          message: "Update your profile and make the desktop feel like yours.",
+          animation: ClippyAnimation.GetArtsy
+        }
       },
       youtube: {
         type: "system",
         title: "YouTube Utilities",
         action: (extra) => this.youtubeApp.open(extra),
-        clippy: { message: "Paste a YouTube link and I'll embed it for you.", animation: "Pleased" }
+        clippy: { message: "Paste a video link and I'll slot it into a player.", animation: ClippyAnimation.Show }
       },
       libreSprite: {
         type: "system",
@@ -303,7 +351,8 @@ export class AppLauncher {
             type: "game",
             source: "https://yukios.netlify.app/static/apps/libresprite/index.html",
             originalName: "libreSprite"
-          })
+          }),
+        clippy: { message: "Open LibreSprite and sketch directly in the browser.", animation: ClippyAnimation.GetArtsy }
       },
       kiwiIRC: {
         type: "system",
@@ -314,7 +363,8 @@ export class AppLauncher {
             type: "game",
             source: "/static/apps/kiwiirc/index.html",
             originalName: "Kivi IRC"
-          })
+          }),
+        clippy: { message: "Jump into chat and keep your conversations in one place.", animation: ClippyAnimation.Show }
       },
       azahar: {
         type: "system",
@@ -325,20 +375,30 @@ export class AppLauncher {
             type: "game",
             source: "/static/apps/azahar/index.html",
             originalName: "Azahar"
-          })
+          }),
+        clippy: {
+          message: "Launch 3DS software here and keep handheld games on the desktop.",
+          animation: ClippyAnimation.Show
+        }
       },
       setupApp: {
         type: "system",
         title: "Setup Wizard",
         action: () => this.setupApp.open(),
-        clippy: { message: "Let me walk you through setting up Yuki OS!", animation: "Pleased" }
+        clippy: {
+          message: "Walk through setup and get the basics out of the way.",
+          animation: ClippyAnimation.Greeting
+        }
       },
       installedApps: {
         type: "system",
         title: "Installed Apps",
         action: () => this.installedAppsApp.open(),
         icon: "fas fa-th-list",
-        clippy: { message: "Manage your installed applications here!", animation: "GetAttention" },
+        clippy: {
+          message: "Review installed apps and keep the registry tidy.",
+          animation: ClippyAnimation.CheckingSomething
+        },
         excludeFromInstalledApps: true
       },
       yukiOsGuide: {
@@ -346,20 +406,31 @@ export class AppLauncher {
         title: "Yuki OS Guide",
         action: () => this.yukiOsGuideApp.open(),
         icon: "fas fa-book-open",
-        clippy: { message: "Discover what Yuki OS can do!", animation: "Pleased" }
+        clippy: { message: "Open the guide and learn the parts that matter fastest.", animation: ClippyAnimation.Show }
       },
       clipboardManager: {
         type: "system",
         title: "Clipboard Manager",
         action: (extra) => this.clipboardManagerApp.open(extra),
-        icon: "fas fa-paste"
+        icon: "fas fa-paste",
+        clippy: {
+          message: "Browse clipboard history and grab the last thing you copied.",
+          animation: ClippyAnimation.Searching
+        }
       },
       aiAssistant: {
         type: "system",
         title: "Yuki AI Assistant",
         action: (extra) => this.aiAssistantApp.open(extra),
         icon: "fas fa-robot",
-        clippy: { message: "I'm here to help you with anything!", animation: "Pleased" }
+        clippy: { message: "Ask a question and let me help with the next step.", animation: ClippyAnimation.GetWizardy }
+      },
+      emojiSelector: {
+        type: "system",
+        title: "Emoji Selector",
+        action: (extra) => this.emojiSelectorApp.open(extra),
+        icon: "fas fa-face-smile",
+        clippy: { message: "Pick the right emoji and keep the reaction simple.", animation: ClippyAnimation.GetArtsy }
       }
     };
 
@@ -369,7 +440,7 @@ export class AppLauncher {
         .map(([k, v]) => [k, v.clippy])
     );
 
-    this.clippyMap["vscode"] = { message: "Ready to write some code!", animation: "Congratulate" };
+    this.clippyMap["vscode"] = { message: "Ready to write some code!", animation: ClippyAnimation.GetWizardy };
     this.appMap = { ...appMap };
     for (const [key, value] of Object.entries(localAppMap)) {
       if (this.appMap[key]) {
@@ -429,8 +500,6 @@ export class AppLauncher {
     this.appRuntime.registerLegacy("shortcutsApp", this.shortcutsApp);
     this.appRuntime.registerLegacy("newsApp", this.newsApp);
     this.appRuntime.registerLegacy("model3dApp", this.model3dApp);
-    this.appRuntime.registerLegacy("flash", this.categoriesApp);
-    this.appRuntime.registerLegacy("steamApp", this.categoriesApp);
     this.appRuntime.registerLegacy("taskManager", this.taskManager);
     this.appRuntime.registerLegacy("weather", this.weatherApp);
     this.appRuntime.registerLegacy("appCreator", this.appCreatorApp);
@@ -512,7 +581,7 @@ export class AppLauncher {
       if (!data || data.__yukios !== "navigate" || typeof data.url !== "string") return;
 
       let sourceIframe = null;
-      for (const iframe of desktop.querySelectorAll("iframe")) {
+      for (const iframe of document.getElementById("desktop").querySelectorAll("iframe")) {
         if (iframe.contentWindow === event.source) {
           sourceIframe = iframe;
           break;
@@ -577,7 +646,8 @@ export class AppLauncher {
     const urlParams = new URLSearchParams(window.location.search);
 
     const appExtra = { ...(extra || {}), appId: app, appType: info.type };
-    this.wm._pendingLaunchOptions = appExtra;
+    // Store pending launch options for window creation
+    // Note: _pendingLaunchOptions is internal WM state, keeping as-is for now
 
     if (info.type === "system") {
       if (info.url) {
@@ -696,6 +766,26 @@ export class AppLauncher {
     window.open(appUrl, "_blank", "noopener,noreferrer");
   }
 
+  async openYukiDevToolsApp(extra = {}) {
+    const appId = "yukiDevTools";
+    if (this._bringToFrontIfExists(appId)) return;
+
+    const title = this.appMap[appId]?.title || "Yuki Dev Tools";
+    let iframeUrl = YUKI_DEV_TOOLS_URL;
+
+    try {
+      iframeUrl = await yukiITDevToolsBridge(YUKI_DEV_TOOLS_URL);
+    } catch (err) {
+      console.error("Failed to build bridged Yuki Dev Tools iframe", err);
+    }
+
+    const contentHtml = `<iframe src="${iframeUrl}" ${IFRAME_ATTRS}></iframe>`;
+    this.createWindow(appId, title, contentHtml, YUKI_DEV_TOOLS_URL, appId, {
+      type: "game",
+      ...extra
+    });
+  }
+
   openHtmlApp(appName, htmlContent, appMeta) {
     if (this._bringToFrontIfExists(appName)) return;
     this.createWindow(
@@ -762,9 +852,15 @@ player.load("${swfPath}");
 
       const isCdnGh = isCdnHostname(window.location.hostname) && window.location.pathname.includes("/gh/");
 
-      // Skip resolution for localhost:4000 URLs to prevent double processing
-      const isLocalhostUrl = typeof source === "string" && source.includes("localhost:4000");
-
+      const isLocalhostUrl = (() => {
+        if (typeof source !== "string") return false;
+        try {
+          const url = new URL(source, window.location.origin);
+          return url.hostname === "localhost" || url.hostname === "127.0.0.1";
+        } catch {
+          return false;
+        }
+      })();
       let resolvedSource = source;
       if (!shouldBypassResolution && !isCdnGh && !isLocalhostUrl) {
         resolvedSource = await resolveUrl(source, isCdnGhUrl(window.location.href));
@@ -786,12 +882,9 @@ player.load("${swfPath}");
               resolvedSource = testUrl;
               break;
             }
-          } catch (e) {
-            // continue to next mirror
-          }
+          } catch (e) {}
         }
       } else if (isCdnGh && typeof resolvedSource === "string" && resolvedSource.startsWith("/")) {
-        // Skip CDN repo base resolution for localhost:4000 URLs
         if (!resolvedSource.includes("localhost:4000")) {
           const repoBase = getCurrentCdnRepoBase();
           if (repoBase) {
@@ -820,7 +913,7 @@ player.load("${swfPath}");
 
       if (type === "game") {
         const displayTitle = this.appMap[appId]?.title || originalName;
-        const win = this.wm.createWindow(
+        const win = os.window.create(
           extra.forceId || `${id}-win`,
           displayTitle,
           extra.width || "80vw",
@@ -843,7 +936,7 @@ player.load("${swfPath}");
         win.innerHTML = `
           <div class="window-header">
             <span>${displayTitle}</span>
-            ${this.wm.getWindowControls(resolvedSource)}
+            ${os.window.getWindowControls()}
           </div>
           <div class="window-content" style="width:100%; height:100%; overflow:hidden; display:flex; align-items:center; justify-content:center; background:#1a1a1a;">
             <div class="modern-loader">
@@ -917,7 +1010,7 @@ player.load("${swfPath}");
 
   _bringToFrontIfExists(id) {
     const el = document.getElementById(`${id}-win`);
-    if (el) this.wm.bringToFront(el);
+    if (el) os.window.bringToFront(el);
     return !!el;
   }
 
@@ -951,7 +1044,16 @@ player.load("${swfPath}");
     }
 
     const isGame = this.isTransparencyBlocked(appId, appMeta);
-    const win = this.wm.createWindow(`${id}-win`, title, "80vw", "80vh", isGame);
+    const mapEntry = this.appMap[appId];
+    const icon =
+      mapEntry?.iconValue ||
+      mapEntry?.icon ||
+      (appMeta.type === "swf" ? "static/icons/flash.webp" : tryGetIcon(appId || id));
+
+    const win = os.window.create(`${id}-win`, title, "80vw", "80vh", {
+      isGame,
+      icon
+    });
     if (appId) this._appSessions.set(`${id}-win`, { appId, startTime: Date.now() });
 
     Object.assign(win.dataset, {
@@ -964,15 +1066,18 @@ player.load("${swfPath}");
       core: appMeta.core || ""
     });
 
+    const iconHtml =
+      icon.startsWith("fas ") || icon.startsWith("fab ") || icon.startsWith("far ")
+        ? `<i class="${icon}" style="margin-right:8px;font-size:16px;"></i>`
+        : `<img src="${icon}" style="width:20px;height:20px;margin-right:8px;vertical-align:middle;object-fit:contain;">`;
+
     win.innerHTML = `
       <div class="window-header">
-        <span>${title}</span>
-        ${this.wm.getWindowControls(externalUrl)}
+        <span>${iconHtml}${title}</span>
+        ${os.window.getWindowControls()}
       </div>
       <div class="window-content" style="width:100%; height:100%; overflow:hidden;">${contentHtml}</div>
     `;
-
-    this.windowHelper.mountWindow(win, win.id, title, null, { addToTaskbar: false });
 
     win.querySelector(".external-btn")?.addEventListener("click", () => {
       if (!appId) return;
@@ -980,13 +1085,6 @@ player.load("${swfPath}");
       url.searchParams.set("game", appId);
       window.open(url.toString(), "_blank", "noopener,noreferrer");
     });
-
-    const mapEntry = this.appMap[appId];
-    const icon =
-      mapEntry?.iconValue ||
-      mapEntry?.icon ||
-      (appMeta.type === "swf" ? "static/icons/flash.webp" : tryGetIcon(appId || id));
-    this.wm.addToTaskbar(win.id, title, icon);
 
     recordUsage(`${id}-win`);
   }

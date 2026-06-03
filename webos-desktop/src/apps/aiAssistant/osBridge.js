@@ -1,10 +1,11 @@
 import { audioMixer } from "../../audioMixer.js";
+import { os } from "../../os/index.js";
 
 export class OSBridge {
   constructor(services) {
     this.services = services;
-    this.wm = services.wm || services.windowManager;
-    this.fs = services.fs || services.fileSystemManager;
+    this.wm = services.wm;
+    this.fs = services.fs;
     this.bus = services.bus;
     this.appLauncher = services.appLauncher;
     this.permissions = new Map();
@@ -73,13 +74,19 @@ export class OSBridge {
   }
 
   async _openApp(appId, params) {
-    if (!this.appLauncher) {
-      throw new Error("AppLauncher not available");
+    if (!this.appLauncher && !os?.app) {
+      throw new Error("App launcher not available");
     }
 
     try {
       const resolvedAppId = this._resolveAppId(appId);
-      await this.appLauncher.launch(resolvedAppId, false, params);
+
+      if (os?.app?.launch) {
+        await os.app.launch(resolvedAppId, false, params);
+      } else {
+        await this.appLauncher.launch(resolvedAppId, params);
+      }
+
       return { success: true, message: `Opened ${resolvedAppId}` };
     } catch (error) {
       throw new Error(`Failed to open ${appId}: ${error.message}`);
@@ -129,19 +136,15 @@ export class OSBridge {
   }
 
   async _closeApp(target, params) {
-    if (!this.wm) {
-      throw new Error("WindowManager not available");
-    }
-
-    const winId = params.winId || target;
-    const win = document.getElementById(winId);
-
-    if (!win) {
-      throw new Error(`Window ${winId} not found`);
-    }
+    const winId = params?.winId || target;
 
     try {
-      this.wm.closeWindow(win);
+      if (!os?.window?.close) {
+        throw new Error("Window API not available");
+      }
+
+      os.window.close(winId);
+
       return { success: true, message: `Closed ${winId}` };
     } catch (error) {
       throw new Error(`Failed to close ${winId}: ${error.message}`);
@@ -149,63 +152,53 @@ export class OSBridge {
   }
 
   async _focusWindow(winId, params) {
-    if (!this.wm) {
-      throw new Error("WindowManager not available");
-    }
-
-    const win = document.getElementById(winId);
-    if (!win) {
-      throw new Error(`Window ${winId} not found`);
-    }
+    const id = params?.winId || winId;
 
     try {
-      this.wm.bringToFront(win);
-      return { success: true, message: `Focused ${winId}` };
+      if (!os?.window?.focus) {
+        throw new Error("Window API not available");
+      }
+
+      os.window.focus(id);
+
+      return { success: true, message: `Focused ${id}` };
     } catch (error) {
-      throw new Error(`Failed to focus ${winId}: ${error.message}`);
+      throw new Error(`Failed to focus ${id}: ${error.message}`);
     }
   }
 
   async _moveWindow(winId, params) {
-    if (!this.wm) {
-      throw new Error("WindowManager not available");
-    }
-
-    const win = document.getElementById(winId);
-    if (!win) {
-      throw new Error(`Window ${winId} not found`);
-    }
+    const id = params?.winId || winId;
+    const { x, y } = params || {};
 
     try {
-      const { x, y } = params;
-      win.style.left = x;
-      win.style.top = y;
-      return { success: true, message: `Moved ${winId} to ${x}, ${y}` };
+      if (!os?.window?.move) {
+        throw new Error("Window API not available");
+      }
+
+      os.window.move(id, x, y);
+
+      return { success: true, message: `Moved ${id} to ${x}, ${y}` };
     } catch (error) {
-      throw new Error(`Failed to move ${winId}: ${error.message}`);
+      throw new Error(`Failed to move ${id}: ${error.message}`);
     }
   }
-
   async _resizeWindow(winId, params) {
-    if (!this.wm) {
-      throw new Error("WindowManager not available");
-    }
-
-    const win = document.getElementById(winId);
-    if (!win) {
-      throw new Error(`Window ${winId} not found`);
-    }
+    const id = params?.winId || winId;
+    const { width, height } = params || {};
 
     try {
-      const { width, height } = params;
-      win.style.width = width;
-      win.style.height = height;
-      return { success: true, message: `Resized ${winId} to ${width}x${height}` };
+      if (!os?.window?.resize) {
+        throw new Error("Window API not available");
+      }
+
+      os.window.resize(id, width, height);
+
+      return { success: true, message: `Resized ${id} to ${width}x${height}` };
     } catch (error) {
-      throw new Error(`Failed to resize ${winId}: ${error.message}`);
+      throw new Error(`Failed to resize ${id}: ${error.message}`);
     }
   }
-
   async _switchWorkspace(target, params = {}) {
     const workspaceManager = this.wm?.workspaceManager;
     if (!workspaceManager) {
@@ -280,16 +273,17 @@ export class OSBridge {
   }
 
   async _fsRead(path, params) {
-    if (!this.fs) {
-      throw new Error("FileSystemManager not available");
-    }
-
     try {
-      if (this.fs.fsReady) {
+      if (this.fs?.fsReady) {
         await this.fs.fsReady;
       }
 
-      const content = await this.fs.readFile(path);
+      if (!os?.fs?.read) {
+        throw new Error("FS API not available");
+      }
+
+      const content = await os.fs.read(path);
+
       return { success: true, content, message: `Read ${path}` };
     } catch (error) {
       throw new Error(`Failed to read ${path}: ${error.message}`);
@@ -297,17 +291,19 @@ export class OSBridge {
   }
 
   async _fsWrite(path, params) {
-    if (!this.fs) {
-      throw new Error("FileSystemManager not available");
-    }
-
     try {
-      if (this.fs.fsReady) {
+      if (this.fs?.fsReady) {
         await this.fs.fsReady;
       }
 
-      const { content } = params;
-      await this.fs.safeWriteFile(path, content);
+      if (!os?.fs?.write) {
+        throw new Error("FS API not available");
+      }
+
+      const { content } = params || {};
+
+      await os.fs.write(path, content);
+
       return { success: true, message: `Wrote to ${path}` };
     } catch (error) {
       throw new Error(`Failed to write to ${path}: ${error.message}`);
@@ -315,22 +311,22 @@ export class OSBridge {
   }
 
   async _emitEvent(eventName, params) {
-    if (!this.bus) {
-      throw new Error("EventBus not available");
-    }
-
     try {
-      this.bus.emit(eventName, params);
+      if (!os?.events?.emit) {
+        throw new Error("Event system not available");
+      }
+
+      os.events.emit(eventName, params);
+
       return { success: true, message: `Emitted event ${eventName}` };
     } catch (error) {
       throw new Error(`Failed to emit event ${eventName}: ${error.message}`);
     }
   }
-
   async _setTheme(themeName, params) {
     try {
       localStorage.setItem("theme", themeName);
-      this.bus.emit("SETTINGS_CHANGED", { theme: themeName });
+      os.events.emit("SETTINGS_CHANGED", { theme: themeName });
       return { success: true, message: `Set theme to ${themeName}` };
     } catch (error) {
       throw new Error(`Failed to set theme: ${error.message}`);
@@ -342,7 +338,7 @@ export class OSBridge {
       const currentValue = localStorage.getItem(settingKey);
       const newValue = currentValue === "true" ? "false" : "true";
       localStorage.setItem(settingKey, newValue);
-      this.bus.emit("SETTINGS_CHANGED", { [settingKey]: newValue });
+      os.events.emit("SETTINGS_CHANGED", { [settingKey]: newValue });
       return { success: true, message: `Toggled ${settingKey} to ${newValue}` };
     } catch (error) {
       throw new Error(`Failed to toggle ${settingKey}: ${error.message}`);

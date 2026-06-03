@@ -1,11 +1,11 @@
-import { detectUserLocation, getCached, setCache } from "./weather.js";
+import { detectUserLocation, getCached, setCache } from "./apps/weather.js";
 import { getWeatherIcon } from "./shared/weatherCodes.js";
 import { StorageKeys } from "./settings/settings.js";
 import { videos } from "./wallpaperList.js";
-import { createCalendarPopup, setCurrentCalendarMonth } from "./calendar.js";
+import { createCalendarPopup, setCurrentCalendarMonth } from "./apps/calendar.js";
 import { resolveWallpaperUrl } from "./shared/assetResolver.js";
-import { bus, BusEvents } from "./core/EventBus.js";
-import { trayManager } from "./tray.js";
+import { BusEvents } from "./core/EventBus.js";
+import { os } from "./os/index.js";
 
 function isBlob(obj) {
   if (!obj) return false;
@@ -176,13 +176,13 @@ class WallpaperManager {
       if (toggle) toggle.checked = false;
 
       this._applyBlob(wallpaperURL, type);
-      bus.emit(BusEvents.WALLPAPER_CHANGED, { url: "__blob__" });
+      os.events.emit(BusEvents.WALLPAPER_CHANGED, { url: "__blob__" });
       return;
     }
 
     wallpaperURL = this._normalizeWallpaperUrl(wallpaperURL);
 
-    bus.emit(BusEvents.WALLPAPER_CHANGED, { url: wallpaperURL });
+    os.events.emit(BusEvents.WALLPAPER_CHANGED, { url: wallpaperURL });
 
     localStorage.setItem(StorageKeys.manualWallpaper, "true");
     localStorage.setItem(StorageKeys.cycleWallpaper, "false");
@@ -217,7 +217,7 @@ class WallpaperManager {
     if (wallpaperURL === "none" || !wallpaperURL) {
       localStorage.removeItem(StorageKeys.loginWallpaperKey);
       await WallpaperStore._clearWallpaperBlob(WallpaperStore.WP_LOGIN_BLOB_KEY).catch(() => {});
-      bus.emit(BusEvents.LOGIN_WALLPAPER_CHANGED, { url: null });
+      os.events.emit(BusEvents.LOGIN_WALLPAPER_CHANGED, { url: null });
       return;
     }
 
@@ -225,13 +225,13 @@ class WallpaperManager {
       const type = wallpaperURL.type.startsWith("video/") ? "video" : "img";
       await WallpaperStore._storeWallpaperBlob(wallpaperURL, WallpaperStore.WP_LOGIN_BLOB_KEY);
       localStorage.setItem(StorageKeys.loginWallpaperKey, type === "video" ? "__blob_video__" : "__blob_image__");
-      bus.emit(BusEvents.LOGIN_WALLPAPER_CHANGED, { url: "__blob__" });
+      os.events.emit(BusEvents.LOGIN_WALLPAPER_CHANGED, { url: "__blob__" });
       return;
     }
 
     wallpaperURL = this._normalizeWallpaperUrl(wallpaperURL);
     localStorage.setItem(StorageKeys.loginWallpaperKey, wallpaperURL);
-    bus.emit(BusEvents.LOGIN_WALLPAPER_CHANGED, { url: wallpaperURL });
+    os.events.emit(BusEvents.LOGIN_WALLPAPER_CHANGED, { url: wallpaperURL });
 
     if (WallpaperStore._isBase64Video(wallpaperURL)) {
       const blob = this._dataURItoBlob(wallpaperURL);
@@ -466,7 +466,7 @@ export class SystemUtilities {
     SystemUtilities._appLauncher = appLauncher;
     if (!SystemUtilities._weatherEventBound) {
       SystemUtilities._weatherEventBound = true;
-      bus.on(BusEvents.SETTINGS_CHANGED, (settings) => {
+      os.events.on(BusEvents.SETTINGS_CHANGED, (settings) => {
         if (settings && typeof settings.weather !== "undefined") {
           if (settings.weather) {
             SystemUtilities.stopTaskbarWeather();
@@ -480,7 +480,7 @@ export class SystemUtilities {
 
     if (localStorage.getItem(StorageKeys.weather) === "false") return;
 
-    trayManager.register("weatherApp", "🌡️", "Loading weather...", {
+    os.tray.register("weatherApp", "🌡️", "Loading weather...", {
       resident: true,
       onClick: () => {
         appLauncher?.launch("weatherApp");
@@ -511,10 +511,10 @@ export class SystemUtilities {
         const icon = getWeatherIcon(weatherData.current.weather_code);
         const weatherLabel = `${loc.city}, ${loc.country}`;
 
-        trayManager.updateIcon("weatherApp", icon);
-        trayManager.updateLabel("weatherApp", `${temp}°C`);
+        os.tray.updateIcon("weatherApp", icon);
+        os.tray.updateLabel("weatherApp", `${temp}°C`);
       } catch {
-        trayManager.unregister("weatherApp");
+        os.tray.unregister("weatherApp");
       }
     };
 
@@ -527,7 +527,7 @@ export class SystemUtilities {
       clearInterval(_weatherIntervalId);
       _weatherIntervalId = null;
     }
-    trayManager.unregister("weatherApp");
+    os.tray.unregister("weatherApp");
   }
   static async setWallpaper(url) {
     await WallpaperManager.setWallpaper(url);
