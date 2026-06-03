@@ -1,5 +1,6 @@
 import { audioMixer } from "../audioMixer.js";
 import { turboManager } from "../shared/turboManager.js";
+import { getThemeColors } from "../shared/themeEngine.js";
 const desktop = document.getElementById("desktop");
 
 export function applyTheme(theme, getCustomColors) {
@@ -19,11 +20,18 @@ export function applyTheme(theme, getCustomColors) {
     customCSS = `:root { --window-bg-color: #f2f2f2; --text-color: #111; }`;
   }
 
-  const customColors = getCustomColors();
-  if (customColors) {
-    Object.entries(customColors).forEach(([varName, value]) => {
+  const themeColors = getThemeColors(effective);
+  if (themeColors) {
+    Object.entries(themeColors).forEach(([varName, value]) => {
       customCSS += `:root { --${varName}: ${value}; }\n`;
     });
+  } else {
+    const customColors = getCustomColors();
+    if (customColors) {
+      Object.entries(customColors).forEach(([varName, value]) => {
+        customCSS += `:root { --${varName}: ${value}; }\n`;
+      });
+    }
   }
 
   styleEl.textContent = customCSS;

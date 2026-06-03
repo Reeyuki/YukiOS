@@ -4,6 +4,7 @@ import { resolveGhUrl } from "../shared/assetResolver.js";
 import { YUKIOS_VERSION } from "../apps/about.js";
 import { StorageKeys } from "../StorageKeys.js";
 import { os } from "../os/index.js";
+import { getBasicThemes, getSpecialThemes, getCustomThemes } from "../shared/themeEngine.js";
 export function buildSettingsHTML(settings, wm) {
   return `
   <div class="window-header">
@@ -411,6 +412,34 @@ export function renderDesktopSettings(s) {
   `;
 }
 export function renderAppearanceSettings(s) {
+  const basicThemes = getBasicThemes();
+  const specialThemes = getSpecialThemes();
+  const customThemes = getCustomThemes();
+
+  const basicThemeButtons = basicThemes
+    .map(
+      (theme) => `
+      <button class="settings-btn ${s.theme === theme.value ? "active" : ""}" data-theme-val="${theme.value}"><i class="${theme.icon}"></i> ${theme.label}</button>
+    `
+    )
+    .join("");
+
+  const specialThemeButtons = specialThemes
+    .map(
+      (theme) => `
+      <button class="settings-btn ${s.theme === theme.value ? "active" : ""}" data-theme-val="${theme.value}"><i class="${theme.icon}"></i> ${theme.label}</button>
+    `
+    )
+    .join("");
+
+  const customThemeButtons = customThemes
+    .map(
+      (theme) => `
+      <button class="settings-btn ${s.theme === theme.value ? "active" : ""}" data-theme-val="${theme.value}"><i class="${theme.icon}"></i> ${theme.label}</button>
+    `
+    )
+    .join("");
+
   return `
     <div id="pane-appearance" class="settings-category-pane">
       <div class="settings-category-header">Appearance</div>
@@ -435,9 +464,7 @@ export function renderAppearanceSettings(s) {
             <span class="settings-label-desc">Set the OS color scheme</span>
           </div>
           <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px;">
-            <button class="settings-btn ${s.theme === "dark" ? "active" : ""}" data-theme-val="dark"><i class="fas fa-moon"></i> Dark</button>
-            <button class="settings-btn ${s.theme === "light" ? "active" : ""}" data-theme-val="light"><i class="fas fa-sun"></i> Light</button>
-            <button class="settings-btn ${s.theme === "auto" ? "active" : ""}" data-theme-val="auto"><i class="fas fa-circle-half-stroke"></i> Auto</button>
+            ${basicThemeButtons}
           </div>
         </div>
         <div class="settings-row settings-row--stacked">
@@ -446,32 +473,17 @@ export function renderAppearanceSettings(s) {
             <span class="settings-label-desc">Additional color schemes</span>
           </div>
           <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px;">
-            <button class="settings-btn ${s.theme === "cyber" ? "active" : ""}" data-theme-val="cyber"><i class="fas fa-bolt"></i> Cyber</button>
-            <button class="settings-btn ${s.theme === "arctic" ? "active" : ""}" data-theme-val="arctic"><i class="fas fa-snowflake"></i> Arctic</button>
-            <button class="settings-btn ${s.theme === "crt" ? "active" : ""}" data-theme-val="crt"><i class="fas fa-terminal"></i> CRT</button>
-            <button class="settings-btn ${s.theme === "sakura" ? "active" : ""}" data-theme-val="sakura"><i class="fas fa-fan"></i> Sakura</button>
-            <button class="settings-btn ${s.theme === "cherry" ? "active" : ""}" data-theme-val="cherry"><i class="fas fa-heart"></i> Cherry</button>
-            <button class="settings-btn ${s.theme === "oled" ? "active" : ""}" data-theme-val="oled"><i class="fas fa-tv"></i> OLED</button>
-            <button class="settings-btn ${s.theme === "synthwave" ? "active" : ""}" data-theme-val="synthwave"><i class="fas fa-music"></i> Synthwave</button>
-            <button class="settings-btn ${s.theme === "nordic" ? "active" : ""}" data-theme-val="nordic"><i class="fas fa-mountain"></i> Nordic</button>
-            <button class="settings-btn ${s.theme === "forest" ? "active" : ""}" data-theme-val="forest"><i class="fas fa-tree"></i> Forest</button>
-            <button class="settings-btn ${s.theme === "high-contrast" ? "active" : ""}" data-theme-val="high-contrast"><i class="fas fa-adjust"></i> High Contrast</button>
-            <button class="settings-btn ${s.theme === "vaporwave" ? "active" : ""}" data-theme-val="vaporwave"><i class="fas fa-sun"></i> Vaporwave</button>
-            <button class="settings-btn ${s.theme === "gameboy" ? "active" : ""}" data-theme-val="gameboy"><i class="fas fa-gamepad"></i> Gameboy</button>
-            <button class="settings-btn ${s.theme === "frutiger-aero" ? "active" : ""}" data-theme-val="frutiger-aero"><i class="fas fa-apple-whole"></i> Frutiger Aero</button>
-            <button class="settings-btn ${s.theme === "dracula" ? "active" : ""}" data-theme-val="dracula"><i class="fas fa-skull"></i> Dracula</button>
-            <button class="settings-btn ${s.theme === "solarized-dark" ? "active" : ""}" data-theme-val="solarized-dark"><i class="fas fa-sun"></i> Solarized Dark</button>
-            <button class="settings-btn ${s.theme === "solarized-light" ? "active" : ""}" data-theme-val="solarized-light"><i class="fas fa-cloud-sun"></i> Solarized Light</button>
-            <button class="settings-btn ${s.theme === "github-light" ? "active" : ""}" data-theme-val="github-light"><i class="fab fa-github"></i> GitHub Light</button>
-            <button class="settings-btn ${s.theme === "github-dark" ? "active" : ""}" data-theme-val="github-dark"><i class="fab fa-github"></i> GitHub Dark</button>
-            <button class="settings-btn ${s.theme === "minimal-gray" ? "active" : ""}" data-theme-val="minimal-gray"><i class="fas fa-circle"></i> Minimal Gray</button>
-            <button class="settings-btn ${s.theme === "paper" ? "active" : ""}" data-theme-val="paper"><i class="fas fa-file-alt"></i> Paper</button>
-            <button class="settings-btn ${s.theme === "macos-fluent" ? "active" : ""}" data-theme-val="macos-fluent"><i class="fab fa-apple"></i> MacOS Fluent</button>
-            <button class="settings-btn ${s.theme === "windows-fluent" ? "active" : ""}" data-theme-val="windows-fluent"><i class="fab fa-windows"></i> Windows Fluent</button>
-            <button class="settings-btn ${s.theme === "material-you" ? "active" : ""}" data-theme-val="material-you"><i class="fas fa-palette"></i> Material You</button>
-            <button class="settings-btn ${s.theme === "sepia" ? "active" : ""}" data-theme-val="sepia"><i class="fas fa-book"></i> Sepia</button>
-            <button class="settings-btn ${s.theme === "warm-night" ? "active" : ""}" data-theme-val="warm-night"><i class="fas fa-moon"></i> Warm Night</button>
-            <button class="settings-btn ${s.theme === "star-wars-dark" ? "active" : ""}" data-theme-val="star-wars-dark"><i class="fas fa-skull"></i> Star Wars Dark</button>
+            ${specialThemeButtons}
+          </div>
+        </div>
+        <div class="settings-row settings-row--stacked">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Custom Themes</span>
+            <span class="settings-label-desc">Your saved themes</span>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px;">
+            ${customThemeButtons}
+            ${customThemes.length === 0 ? '<span style="grid-column: 1/-1; color: var(--text-secondary); font-size: 12px; text-align: center; padding: 8px;">No custom themes saved yet. Use "Save Theme" to create one.</span>' : ""}
           </div>
         </div>
         <div class="settings-row">
@@ -481,6 +493,15 @@ export function renderAppearanceSettings(s) {
           </div>
           <button class="settings-btn" id="settingsCustomColorsBtn">
             <i class="fas fa-palette"></i> Customize
+          </button>
+        </div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Save Custom Theme</span>
+            <span class="settings-label-desc">Save current colors as a named theme</span>
+          </div>
+          <button class="settings-btn" id="settingsSaveThemeBtn">
+            <i class="fas fa-save"></i> Save Theme
           </button>
         </div>
         <div class="settings-row">

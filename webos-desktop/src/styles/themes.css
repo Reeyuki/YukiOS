@@ -701,6 +701,33 @@ html[data-theme="warm-night"] {
   --window-bg: oklch(19% 0.05 35 / 0.92);
 }
 
+html[data-theme="hatsune-miku"] {
+  --brand: oklch(65% 0.18 185);
+  --brand-hover: oklch(60% 0.18 185);
+  --brand-dark: oklch(50% 0.18 185);
+  --brand-glow: oklch(65% 0.12 185 / 0.35);
+  --brand-dim: oklch(65% 0.18 185 / 0.2);
+  --bg-primary: oklch(8% 0.02 185);
+  --bg-secondary: oklch(12% 0.03 185);
+  --text-primary: oklch(90% 0.01 185);
+  --text-secondary: oklch(65% 0.02 185);
+  --glass: oklch(65% 0.12 185 / 0.1);
+  --glass-hover: oklch(65% 0.12 185 / 0.15);
+  --glass-border: oklch(65% 0.15 185 / 0.3);
+  --tx1: oklch(90% 0.01 185);
+  --tx2: oklch(65% 0.02 185);
+  --surface-1: oklch(12% 0.03 185 / 0.9);
+  --surface-2: oklch(15% 0.04 185 / 0.85);
+  --surface-3: oklch(18% 0.05 185 / 0.8);
+  --surface-hover: oklch(20% 0.06 185 / 0.75);
+  --text-muted: oklch(50% 0.02 185);
+  --text-on-brand: oklch(100% 0 0 / 0.98);
+  --shadow-color: oklch(0% 0 0 / 0.65);
+  --overlay-bg: oklch(0% 0 0 / 0.5);
+  --menu-bg: oklch(12% 0.03 185 / 0.95);
+  --window-bg: oklch(12% 0.03 185 / 0.92);
+}
+
 html[data-theme="star-wars-dark"] {
   --brand: oklch(60% 0.25 25);
   --brand-hover: oklch(55% 0.28 25);

@@ -413,6 +413,25 @@ export class SettingsApp extends BaseApp {
           <input type="color" id="custom-glass" value="${customColors.glass || "#ffffff"}" style="width:100%;height:36px;border:1px solid var(--glass-border);border-radius:6px;cursor:pointer;background:var(--glass);">
         </div>
       </div>
+      <div style="margin-bottom: 16px;">
+        <label style="font-size:12px;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:6px;">Preview</label>
+        <div id="color-preview" style="border-radius:8px;overflow:hidden;border:1px solid var(--glass-border);background:var(--bg-primary);padding:16px;">
+          <div style="background:var(--bg-secondary);border-radius:6px;padding:12px;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+            <div style="width:12px;height:12px;border-radius:50%;background:#ff5f57;"></div>
+            <div style="width:12px;height:12px;border-radius:50%;background:#febc2e;"></div>
+            <div style="width:12px;height:12px;border-radius:50%;background:#28c840;"></div>
+            <span style="font-size:13px;color:var(--text-primary);font-weight:600;">Preview Window</span>
+          </div>
+          <div style="background:var(--glass);border-radius:6px;padding:12px;margin-bottom:8px;">
+            <h3 style="margin:0 0 8px 0;font-size:14px;color:var(--text-primary);">Sample Heading</h3>
+            <p style="margin:0;font-size:12px;color:var(--text-secondary);line-height:1.5;">This is sample text to preview how your custom colors will look in the interface.</p>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button style="flex:1;padding:8px;border-radius:6px;border:none;background:var(--brand);color:#fff;font-size:12px;cursor:pointer;">Primary Button</button>
+            <button style="flex:1;padding:8px;border-radius:6px;border:1px solid var(--glass-border);background:var(--glass);color:var(--text-primary);font-size:12px;cursor:pointer;">Secondary</button>
+          </div>
+        </div>
+      </div>
       <div class="conflict-actions">
         <button class="conflict-btn conflict-btn-skip" id="custom-colors-reset"><i class="fas fa-undo conflict-btn-icon"></i> Reset to Theme</button>
         <button class="conflict-btn conflict-btn-keep" id="custom-colors-apply"><i class="fas fa-check conflict-btn-icon"></i> Apply</button>
@@ -421,6 +440,37 @@ export class SettingsApp extends BaseApp {
 
     overlay.appendChild(dialog);
     document.body.appendChild(overlay);
+
+    const previewEl = dialog.querySelector("#color-preview");
+    const updatePreview = () => {
+      const brand = dialog.querySelector("#custom-brand").value;
+      const bgPrimary = dialog.querySelector("#custom-bg-primary").value;
+      const bgSecondary = dialog.querySelector("#custom-bg-secondary").value;
+      const textPrimary = dialog.querySelector("#custom-text-primary").value;
+      const textSecondary = dialog.querySelector("#custom-text-secondary").value;
+      const glass = dialog.querySelector("#custom-glass").value;
+
+      previewEl.style.setProperty("--brand", brand);
+      previewEl.style.setProperty("--bg-primary", bgPrimary);
+      previewEl.style.setProperty("--bg-secondary", bgSecondary);
+      previewEl.style.setProperty("--text-primary", textPrimary);
+      previewEl.style.setProperty("--text-secondary", textSecondary);
+      previewEl.style.setProperty("--glass", glass);
+      previewEl.style.setProperty("--glass-border", glass + "40");
+    };
+
+    updatePreview();
+
+    [
+      "custom-brand",
+      "custom-bg-primary",
+      "custom-bg-secondary",
+      "custom-text-primary",
+      "custom-text-secondary",
+      "custom-glass"
+    ].forEach((id) => {
+      dialog.querySelector(`#${id}`).addEventListener("input", updatePreview);
+    });
 
     dialog.querySelector("#custom-colors-reset").addEventListener("click", () => {
       os.storage.remove(StorageKeys.customColors);

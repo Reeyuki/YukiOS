@@ -18,6 +18,10 @@
 - Never use browser native alerts, prompts, or confirms (alert(), prompt(), confirm()). Always use the shared
   dialog utilities from `src/shared/dialogs.js` instead. Import and use `showAlert`, `showPrompt`, `showConfirm`,
   `customAlert`, `customPrompt`, or `customConfirm` as appropriate.
+- Never use `document.querySelector`, `document.querySelectorAll`, or direct DOM manipulation methods. Always use the
+  utility functions from `src/shared/domUtils.js` instead. Import and use `$` (querySelector), `$$` (querySelectorAll),
+  `bindEvent`, `toggleClass`, `setText`, `setHTML`, `createElement`, etc. For general utility functions, use `src/utils/utils.js`
+  (e.g., `formatSize`, `isImageFile`, `isTextFile`, `pluralize`).
 
 ---
 

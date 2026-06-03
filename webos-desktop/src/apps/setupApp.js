@@ -8,6 +8,7 @@ import { PREDEFINED_AVATARS } from "./profileCustomizer.js";
 import { os } from "../os/index.js";
 import { applyFontFamily } from "../settings/settingsApply.js";
 import { $, $$, bindEvent, setText, setHTML, toggleClass } from "../shared/domUtils.js";
+import { getAllThemes } from "../shared/themeEngine.js";
 
 export const FEATURE_DATA = {
   step2: [
@@ -463,37 +464,7 @@ export class SetupApp extends BaseApp {
   }
 
   _buildStep4() {
-    const themes = [
-      { value: "dark", icon: "fas fa-moon", label: "Dark" },
-      { value: "light", icon: "fas fa-sun", label: "Light" },
-      { value: "auto", icon: "fas fa-circle-half-stroke", label: "Auto" },
-      { value: "cyber", icon: "fas fa-bolt", label: "Cyber" },
-      { value: "arctic", icon: "fas fa-snowflake", label: "Arctic" },
-      { value: "crt", icon: "fas fa-terminal", label: "CRT" },
-      { value: "sakura", icon: "fas fa-fan", label: "Sakura" },
-      { value: "cherry", icon: "fas fa-heart", label: "Cherry" },
-      { value: "oled", icon: "fas fa-tv", label: "OLED" },
-      { value: "synthwave", icon: "fas fa-music", label: "Synthwave" },
-      { value: "nordic", icon: "fas fa-mountain", label: "Nordic" },
-      { value: "forest", icon: "fas fa-tree", label: "Forest" },
-      { value: "high-contrast", icon: "fas fa-adjust", label: "High Contrast" },
-      { value: "vaporwave", icon: "fas fa-sun", label: "Vaporwave" },
-      { value: "gameboy", icon: "fas fa-gamepad", label: "Gameboy" },
-      { value: "frutiger-aero", icon: "fas fa-apple-whole", label: "Frutiger Aero" },
-      { value: "dracula", icon: "fas fa-skull", label: "Dracula" },
-      { value: "solarized-dark", icon: "fas fa-sun", label: "Solarized Dark" },
-      { value: "solarized-light", icon: "fas fa-cloud-sun", label: "Solarized Light" },
-      { value: "github-light", icon: "fab fa-github", label: "GitHub Light" },
-      { value: "github-dark", icon: "fab fa-github", label: "GitHub Dark" },
-      { value: "minimal-gray", icon: "fas fa-circle", label: "Minimal Gray" },
-      { value: "paper", icon: "fas fa-file-alt", label: "Paper" },
-      { value: "macos-fluent", icon: "fab fa-apple", label: "MacOS Fluent" },
-      { value: "windows-fluent", icon: "fab fa-windows", label: "Windows Fluent" },
-      { value: "material-you", icon: "fas fa-palette", label: "Material You" },
-      { value: "sepia", icon: "fas fa-book", label: "Sepia" },
-      { value: "warm-night", icon: "fas fa-moon", label: "Warm Night" },
-      { value: "star-wars-dark", icon: "fas fa-skull", label: "Star Wars Dark" }
-    ];
+    const themes = getAllThemes();
 
     const themeButtons = themes
       .map(

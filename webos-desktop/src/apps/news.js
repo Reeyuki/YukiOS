@@ -5,6 +5,16 @@ import { os } from "../os/index.js";
 
 const NEWS_UPDATES = [
   {
+    date: "June 3, 2026",
+    sections: [
+      {
+        icon: "fa-palette",
+        title: "Theming System",
+        items: [["fa-save", "Custom Theme Saving", "Save and name your own themes with live color preview."]]
+      }
+    ]
+  },
+  {
     date: "June 2, 2026",
     sections: [
       {

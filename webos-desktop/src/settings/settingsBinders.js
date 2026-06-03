@@ -2,7 +2,7 @@ import { StorageKeys } from "../StorageKeys.js";
 import { os } from "../os/index.js";
 import { toggleHideGames, toggleHideSystemApps } from "../desktopui/desktopui.js";
 import { audioMixer, SystemAudio } from "../audioMixer.js";
-import { customAlert, customConfirm } from "../shared/dialogs.js";
+import { customAlert, customConfirm, customPrompt } from "../shared/dialogs.js";
 import { renderWallpapersPage } from "../wallpapers.js";
 import { applyTrayEnabled } from "./settingsApply.js";
 import {
@@ -18,6 +18,7 @@ import {
 } from "./settingsApply.js";
 import { exportData, importData, deleteAllData } from "./settingsData.js";
 import { $, $$, bindEvent, toggleClass, setText, createElement, setHTML } from "../shared/domUtils.js";
+import { addCustomTheme } from "../shared/themeEngine.js";
 
 export function bindNavigation(win) {
   const layout = $(".yuki-settings-layout", win);
@@ -275,6 +276,55 @@ export function bindAppearanceCategory(
   const customColorsBtn = $("#settingsCustomColorsBtn", win);
   if (customColorsBtn) {
     bindEvent(customColorsBtn, "click", () => showCustomColorsDialog(win));
+  }
+
+  const saveThemeBtn = $("#settingsSaveThemeBtn", win);
+  if (saveThemeBtn) {
+    bindEvent(saveThemeBtn, "click", async () => {
+      const customColors = getCustomColors();
+      if (!customColors) {
+        customAlert("No custom colors set. Please customize colors first.");
+        return;
+      }
+      const themeName = await customPrompt("Enter theme name:", "My Theme");
+      if (!themeName) return;
+      const themeValue = themeName.toLowerCase().replace(/[^a-z0-9-]/g, "-");
+      try {
+        addCustomTheme({
+          value: themeValue,
+          label: themeName,
+          icon: "fas fa-palette",
+          colors: customColors
+        });
+        customAlert(`Theme "${themeName}" saved successfully!`);
+        showSaved();
+        const customThemesSection = Array.from($$(".settings-row--stacked", win)).find(
+          (row) => row.querySelector(".settings-label-title")?.textContent === "Custom Themes"
+        );
+        if (customThemesSection) {
+          const customThemesGrid = customThemesSection.querySelector("div[style*='grid']");
+          if (customThemesGrid) {
+            const emptyMessage = customThemesGrid.querySelector("span");
+            if (emptyMessage) emptyMessage.remove();
+            const newThemeBtn = document.createElement("button");
+            newThemeBtn.className = "settings-btn";
+            newThemeBtn.dataset.themeVal = themeValue;
+            newThemeBtn.innerHTML = `<i class="fas fa-palette"></i> ${themeName}`;
+            bindEvent(newThemeBtn, "click", () => {
+              $$(".settings-btn", win).forEach((btn) => btn.classList.remove("active"));
+              newThemeBtn.classList.add("active");
+              settings.theme = themeValue;
+              os.storage.set(StorageKeys.theme, themeValue);
+              applyTheme(themeValue, () => getCustomColors());
+              showStatus("Theme applied");
+            });
+            customThemesGrid.appendChild(newThemeBtn);
+          }
+        }
+      } catch (e) {
+        customAlert(e.message || "Failed to save theme");
+      }
+    });
   }
 
   const transparencySlider = $("#settingsWindowTransparency", win);

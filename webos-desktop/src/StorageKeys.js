@@ -120,5 +120,6 @@ export const StorageKeys = {
   aiAssistantEnabled: "yukiOS_ai_assistant_enabled",
   clippyStorage: "yukiOS_clippy",
   audioMixerV1: "yukios_audio_mixer_v1",
-  customColors: "yukios_custom_colors"
+  customColors: "yukios_custom_colors",
+  customThemes: "yukios_custom_themes"
 };
