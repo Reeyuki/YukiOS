@@ -2,7 +2,6 @@ import { appMap } from "./gamesList.js";
 import { descriptionMap } from "./gameDescriptions.js";
 import { GameRenderer } from "./GameRenderer.js";
 import { GameUI } from "./GameUI.js";
-import { SteamSettings } from "./steam.js";
 import { resolveGhUrl, resolveIconUrl } from "../shared/assetResolver.js";
 import { CDN_CONFIG } from "../shared/cdnConfig.js";
 import { StorageKeys } from "../settings/settings.js";

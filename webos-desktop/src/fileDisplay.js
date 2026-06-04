@@ -458,9 +458,9 @@ export function openMediaViewer(name, src, kind, windowManager) {
 
   let media;
   if (isVideo) {
-    media = `<video src="${src}" controls autoplay loop style="max-width:100%;max-height:100%"></video>`;
+    media = `<video src="${src}" crossorigin="anonymous" controls autoplay loop style="max-width:100%;max-height:100%"></video>`;
   } else if (isAudio) {
-    media = `<audio src="${src}" controls autoplay style="width:90%"></audio>`;
+    media = `<audio src="${src}" crossorigin="anonymous" controls autoplay style="width:90%"></audio>`;
   } else {
     media = `<img src="${src}" style="max-width:100%;max-height:100%">`;
   }

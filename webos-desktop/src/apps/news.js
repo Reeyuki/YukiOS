@@ -5,6 +5,33 @@ import { os } from "../os/index.js";
 
 const NEWS_UPDATES = [
   {
+    date: "June 4, 2026",
+    sections: [
+      {
+        icon: "fa-volume-high",
+        title: "Audio Mixer",
+        items: [
+          [
+            "fa-sliders",
+            "Audio Visualizer",
+            "Visualize live audio volume directly inside Audio Mixer sliders with dynamic amplitude tracking."
+          ]
+        ]
+      },
+      {
+        icon: "fa-music",
+        title: "Evil Spotify",
+        items: [
+          [
+            "fa-clock-rotate-left",
+            "Restore Playback",
+            "Automatically resume your last played song and position when opening Evil Spotify."
+          ]
+        ]
+      }
+    ]
+  },
+  {
     date: "June 3, 2026",
     sections: [
       {

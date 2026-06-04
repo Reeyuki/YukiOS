@@ -92,6 +92,10 @@ class AudioMixer {
           const doc = iframe.contentDocument || iframe.contentWindow.document;
           doc.querySelectorAll("audio, video").forEach((el) => {
             el.volume = Math.max(0, Math.min(1, effectiveVolume));
+            this._connectMediaElement(winId, el);
+            if (el.__yukioGainNode) {
+              el.__yukioGainNode.gain.setTargetAtTime(effectiveVolume, this._getOrCreateAudioCtx().currentTime, 0.01);
+            }
           });
 
           const rufflePlayer = iframe.contentWindow?.document?.querySelector("ruffle-player");
@@ -108,6 +112,10 @@ class AudioMixer {
 
     win.querySelectorAll("audio, video").forEach((el) => {
       el.volume = Math.max(0, Math.min(1, effectiveVolume));
+      this._connectMediaElement(winId, el);
+      if (el.__yukioGainNode) {
+        el.__yukioGainNode.gain.setTargetAtTime(effectiveVolume, this._getOrCreateAudioCtx().currentTime, 0.01);
+      }
     });
 
     const rufflePlayer = win.querySelector("ruffle-player");
@@ -134,6 +142,74 @@ class AudioMixer {
       const gainNode = this.gainNodes.get(key);
       if (gainNode) gainNode.gain.setTargetAtTime(effectiveVolume, this.audioCtx.currentTime, 0.01);
     }
+  }
+
+  _getOrCreateAnalyser(winId) {
+    if (!this.analysers) this.analysers = new Map();
+    if (!this.analysers.has(winId)) {
+      const ctx = this._getOrCreateAudioCtx();
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 256;
+      this.analysers.set(winId, analyser);
+      this._startIntensityLoop();
+    }
+    return this.analysers.get(winId);
+  }
+
+  _connectMediaElement(winId, el) {
+    if (el.__yukio_analyzed) return;
+    el.__yukio_analyzed = true;
+    try {
+      const ctx = this._getOrCreateAudioCtx();
+      const source = ctx.createMediaElementSource(el);
+      const gain = ctx.createGain();
+      el.__yukioGainNode = gain;
+
+      const analyser = this._getOrCreateAnalyser(winId);
+      source.connect(analyser);
+      source.connect(gain);
+      gain.connect(ctx.destination);
+    } catch (e) {}
+  }
+
+  _startIntensityLoop() {
+    if (this._intensityLoopRunning) return;
+    this._intensityLoopRunning = true;
+
+    const dataArray = new Uint8Array(256);
+    if (!this._intensityValues) this._intensityValues = new Map();
+
+    const loop = () => {
+      if (this.isOpen && this.panel && this.analysers) {
+        this.analysers.forEach((analyser, winId) => {
+          analyser.getByteTimeDomainData(dataArray);
+          let maxAmplitude = 0;
+          for (let i = 0; i < dataArray.length; i++) {
+            let val = Math.abs(dataArray[i] - 128);
+            if (val > maxAmplitude) maxAmplitude = val;
+          }
+
+          const ch = this.channels.get(winId);
+          const chVol = ch ? ch.volume : 1.0;
+          let targetIntensity = (maxAmplitude / 127) * 100 * chVol;
+
+          let currentIntensity = this._intensityValues.get(winId) || 0;
+          if (targetIntensity > currentIntensity) {
+            currentIntensity = currentIntensity + (targetIntensity - currentIntensity) * 0.4;
+          } else {
+            currentIntensity = currentIntensity + (targetIntensity - currentIntensity) * 0.05;
+          }
+          this._intensityValues.set(winId, currentIntensity);
+
+          const intensityEl = document.getElementById(`intensity-${winId}`);
+          if (intensityEl) {
+            intensityEl.style.width = `${currentIntensity}%`;
+          }
+        });
+      }
+      requestAnimationFrame(loop);
+    };
+    requestAnimationFrame(loop);
   }
 
   _applyMasterToAll() {
@@ -186,6 +262,7 @@ class AudioMixer {
     const ch = this.channels.get(winId);
     if (!ch) return;
     ch.nowPlaying = nowPlaying;
+    this._applyVolumeToWindow(winId);
     if (this.isOpen && this.panel) this._renderSliders();
   }
 
@@ -386,7 +463,10 @@ class AudioMixer {
           <span class="am-app-name" title="${ch.title}">${ch.title}</span>
         </div>
         <div class="am-slider-row">
-          <input type="range" class="am-slider" min="0" max="100" step="1" value="${pct}" data-win="${winId}" />
+          <div style="position:relative; flex:1; height:4px; display:flex; align-items:center; background:var(--glass); border-radius:4px;">
+            <div id="intensity-${winId}" style="position:absolute; left:0; top:0; height:100%; width:0%; background:rgba(0,0,0,0.6); border-radius:4px; pointer-events:none; z-index:1;"></div>
+            <input type="range" class="am-slider" style="position:absolute; left:0; top:0; width:100%; height:100%; margin:0; z-index:2; background:transparent;" min="0" max="100" step="1" value="${pct}" data-win="${winId}" />
+          </div>
           <span class="am-vol-label">${pct}%</span>
         </div>
         ${nowPlayingHtml}
@@ -430,13 +510,19 @@ class AudioMixer {
         const instance = new OriginalAudioContext(...args);
         const realDestination = instance.destination;
 
+        const rawNode = instance.createGain();
         const gainNode = instance.createGain();
         const ch = self.channels.get(winId);
         gainNode.gain.value = self._muted ? 0 : self.masterVolume * (ch?.volume ?? 1.0);
+
+        rawNode.connect(gainNode);
         gainNode.connect(realDestination);
 
+        const analyser = self._getOrCreateAnalyser(winId);
+        rawNode.connect(analyser);
+
         Object.defineProperty(instance, "destination", {
-          get: () => gainNode,
+          get: () => rawNode,
           configurable: true
         });
 

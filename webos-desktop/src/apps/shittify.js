@@ -39,6 +39,10 @@ const SHITTIFY_BRIDGE_SCRIPT = `
   var OrigAudio = window.Audio;
   window.Audio = function(src) {
     var a = src !== undefined ? new OrigAudio(src) : new OrigAudio();
+    a.crossOrigin = "anonymous";
+    a.style.display = "none";
+    if (document.body) document.body.appendChild(a);
+    else document.addEventListener("DOMContentLoaded", function() { document.body.appendChild(a); });
     attachToAudio(a);
     return a;
   };
@@ -61,6 +65,35 @@ const SHITTIFY_BRIDGE_SCRIPT = `
     try {
       var d = e.data;
       if (!d || d.__shittify_cmd !== true) return;
+      if (d.cmd === 'restore') {
+        var tries = 0;
+        var iv = setInterval(function() {
+          tries++;
+          if (typeof metaJson !== 'undefined' && metaJson.songs && metaJson.songs.length > 0 && typeof playAnySong !== 'undefined') {
+            clearInterval(iv);
+            var song = metaJson.songs.find(function(s) { 
+               var stitle = s.title || s.name || '';
+               var sartist = s.artist || '';
+               var targetTrack = (d.data && d.data.track) ? d.data.track : '';
+               var targetArtist = (d.data && d.data.artist) ? d.data.artist : '';
+               return stitle.trim() === targetTrack.trim() && sartist.trim() === targetArtist.trim(); 
+            });
+            if (song) {
+               if (typeof allSongsRN !== 'undefined') allSongsRN = metaJson.songs;
+               playAnySong(song).then(function() {
+                   setTimeout(function() {
+                       if (d.data.state !== 'playing' && _currentAudio) {
+                           _currentAudio.pause();
+                       }
+                   }, 150);
+               });
+            }
+          } else if (tries > 50) {
+            clearInterval(iv);
+          }
+        }, 200);
+        return;
+      }
       if (d.cmd === 'volume') {
         var v = Math.max(0, Math.min(1, Number(d.value) || 0));
         if (_currentAudio) _currentAudio.volume = v;
@@ -74,7 +107,7 @@ const SHITTIFY_BRIDGE_SCRIPT = `
     } catch(e) {}
   });
 })();
-<\/script>`;
+</script>`;
 
 export class ShittifyApp extends BaseApp {
   constructor(services) {
@@ -155,6 +188,14 @@ export class ShittifyApp extends BaseApp {
         content.style.justifyContent = "";
         content.innerHTML = `<iframe id="shittify-iframe" src="${blobUrl}" style="width:100%;height:100%;border:none;" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-pointer-lock"></iframe>`;
         this._iframe = content.querySelector("iframe");
+        this._iframe.addEventListener("load", () => {
+          try {
+            const lastState = os.storage.get("shittify_last_state");
+            if (lastState && lastState.track) {
+              this.sendCommand("restore", lastState);
+            }
+          } catch (e) {}
+        });
       }
     } catch (err) {
       this.notify("Evil Spotify", `Failed to load: ${err.message}`, "error", 5000);
@@ -172,6 +213,9 @@ export class ShittifyApp extends BaseApp {
     this._msgListener = (e) => {
       const d = e.data;
       if (!d || d.__shittify !== true || d.type !== "track") return;
+      if (d.track && d.artist) {
+        os.storage.set("shittify_last_state", { track: d.track, artist: d.artist, state: d.playbackState });
+      }
       audioMixer.updateChannelMeta(winId, {
         track: d.track || "",
         artist: d.artist || "",
@@ -183,9 +227,9 @@ export class ShittifyApp extends BaseApp {
     window.addEventListener("message", this._msgListener);
   }
 
-  sendCommand(cmd) {
+  sendCommand(cmd, data = {}) {
     if (this._iframe && this._iframe.contentWindow) {
-      this._iframe.contentWindow.postMessage({ __shittify_cmd: true, cmd }, "*");
+      this._iframe.contentWindow.postMessage({ __shittify_cmd: true, cmd, data }, "*");
     }
   }
 
