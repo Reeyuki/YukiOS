@@ -13,8 +13,8 @@ It supports running Flash content, DOS programs, console emulation, WebAssembly 
 It's built entirely in vanilla JS (with some libraries, of course!).
 ![Steam interface](.github/steam.png) 
 ![Setup](.github/setupsettings.png)
-![Music1](.github/music1.png)
-![Music2](.github/music2.png)
+![Music1](.github/audio1.png)
+![Music2](.github/audio2.png)
 ![Achievements](.github/browserachieve.png)
 ![Music player](.github/music.png)
 ![Applications](.github/apps.png)
