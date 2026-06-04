@@ -1216,15 +1216,28 @@ html[data-theme] .window {
   color: var(--text-primary);
 }
 
+html[data-theme] .window.transparent {
+  background: transparent;
+}
+
 html[data-theme] .window-header {
   background: var(--surface-1);
   border-bottom: 1px solid var(--glass-border);
   color: var(--text-primary);
 }
 
+html[data-theme] .window.transparent .window-header {
+  background: rgba(20, 20, 30, 0.85);
+  backdrop-filter: blur(32px);
+}
+
 html[data-theme] .window-content {
   background: var(--surface-2);
   color: var(--text-primary);
+}
+
+html[data-theme] .window.transparent .window-content {
+  background: transparent;
 }
 
 html[data-theme] .context-menu-glass {

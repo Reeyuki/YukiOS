@@ -1077,7 +1077,7 @@ export function populateStartMenu(appLauncher) {
     item.classList.add("start-item");
     item.dataset.app = appName;
 
-    const iconValue = tryGetIcon(appName);
+    const iconValue = appData.icon || tryGetIcon(appName);
 
     let icon = null;
 

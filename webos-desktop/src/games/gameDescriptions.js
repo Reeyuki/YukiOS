@@ -41,6 +41,8 @@ export const APP_DESCRIPTIONS = {
   aiAssistant:
     "Intelligent AI assistant powered by WebLLM for client-side inference. Execute OS actions, manage files, and get contextual help with automation support.",
   emojiSelector: "Browse and copy every emoji with category organization and instant search.",
+  rhythms:
+    "Audio visualizer with Lines and Circle modes, customizable tile count, and smooth bouncy physics for system-wide audio.",
   kiwiIRC: "IRC client for connecting to IRC servers and chat rooms.",
   azahar: "Nintendo 3DS emulator for playing 3DS games in the browser.",
   paint: "Basic image editor with drawing tools, colors, and save functionality.",

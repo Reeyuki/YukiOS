@@ -8,6 +8,17 @@ const NEWS_UPDATES = [
     date: "June 4, 2026",
     sections: [
       {
+        icon: "fa-wand-magic-sparkles",
+        title: "New App",
+        items: [
+          [
+            "fa-wave-square",
+            "Rhythms",
+            "Audio visualizer with 4 display modes, customizable bar count and color options."
+          ]
+        ]
+      },
+      {
         icon: "fa-volume-high",
         title: "Audio Mixer",
         items: [

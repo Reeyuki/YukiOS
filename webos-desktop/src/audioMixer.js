@@ -149,7 +149,8 @@ class AudioMixer {
     if (!this.analysers.has(winId)) {
       const ctx = this._getOrCreateAudioCtx();
       const analyser = ctx.createAnalyser();
-      analyser.fftSize = 256;
+      analyser.fftSize = 2048;
+      analyser.smoothingTimeConstant = 0.0;
       this.analysers.set(winId, analyser);
       this._startIntensityLoop();
     }
@@ -210,6 +211,25 @@ class AudioMixer {
       requestAnimationFrame(loop);
     };
     requestAnimationFrame(loop);
+  }
+
+  getGlobalFrequencyData(dataArray) {
+    if (!this.analysers) return false;
+    let hasData = false;
+    dataArray.fill(0);
+
+    this.analysers.forEach((analyser) => {
+      const binCount = analyser.frequencyBinCount;
+      const tempArray = new Uint8Array(Math.min(binCount, dataArray.length));
+      analyser.getByteFrequencyData(tempArray);
+      for (let i = 0; i < tempArray.length; i++) {
+        if (tempArray[i] > dataArray[i]) {
+          dataArray[i] = tempArray[i];
+          if (tempArray[i] > 0) hasData = true;
+        }
+      }
+    });
+    return hasData;
   }
 
   _applyMasterToAll() {

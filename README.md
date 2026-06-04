@@ -10,8 +10,7 @@ Yuki OS turns a browser tab into a working desktop-style space with draggable wi
 
 It supports running Flash content, DOS programs, console emulation, WebAssembly apps, and standard web applications side by side.
 
-Its built entirely in vanilla JS (With some libraries of course!)
-
+It's built entirely in vanilla JS (with some libraries, of course!).
 ![Steam interface](.github/steam.png) ![Setup](.github/setupsettings.png) ![Achievements](.github/browserachieve.png)
 ![Music player](.github/music.png) ![Applications](.github/apps.png)
 
@@ -51,11 +50,9 @@ Its built entirely in vanilla JS (With some libraries of course!)
 
 * Persistent browser storage using IndexedDB
 * File explorer with thumbnails and previews
-* Drag-and-drop file operations from host os
+* Drag-and-drop file operations from host OS
 * Create, move, rename, delete, and organize files
-* Archive support:
-
-* Archive support: `.zip`, `.gz`, `.tar`, `.tar.gz`, `.tgz`, `.tar.xz`, `.7z`, `.bz2`, `.tar.bz2`, `.xz`, `.rar`; Create: `.zip`, `.7z`, `.tar`, `.tar.gz`, `.tar.bz2`, `.gz`, `.bz2`; Password-protected ZIP support (Archive creation and extraction)
+* Archive support: `.zip`, `.gz`, `.tar`, `.tar.gz`, `.tgz`, `.tar.xz`, `.7z`, `.bz2`, `.tar.bz2`, `.xz`, `.rar`; Create: `.zip`, `.7z`, `.tar`, `.tar.gz`, `.tar.bz2`, `.gz`, `.bz2`; Password-protected ZIP support (creation and extraction)
 
 * Bulk file actions, download file support
 * File-based actions like setting wallpapers and conversions
@@ -160,6 +157,7 @@ Its built entirely in vanilla JS (With some libraries of course!)
 * Evil Spotify
 * Yuki Blender
 * YouTube Utilities
+* Rhythms (Cavalier-like audio visualizer)
 
 ## 🌐 Browser & Internet
 

@@ -68,7 +68,8 @@ export class AppLauncher {
       aiAssistantApp,
       brightnessApp,
       emojiSelectorApp,
-      systemAppsApp
+      systemAppsApp,
+      rhythmsApp
     } = apps;
 
     this.explorerApp = explorerApp;
@@ -107,6 +108,7 @@ export class AppLauncher {
     this.brightnessApp = brightnessApp;
     this.emojiSelectorApp = emojiSelectorApp;
     this.systemAppsApp = systemAppsApp;
+    this.rhythmsApp = rhythmsApp;
     this.TRANSPARENCY_ALLOWED_APP_IDS = new Set(["paint", "photopea", "vscode", "liventcord"]);
 
     this.clippyPromise = initClippy();
@@ -225,6 +227,7 @@ export class AppLauncher {
     this.appRuntime.registerLegacy("installedApps", this.installedAppsApp);
     this.appRuntime.registerLegacy("yukiOsGuide", this.yukiOsGuideApp);
     this.appRuntime.registerLegacy("aiAssistant", this.aiAssistantApp);
+    this.appRuntime.registerLegacy("rhythms", this.rhythmsApp);
   }
 
   async _tryLaunchDeclarative(appId, opts) {

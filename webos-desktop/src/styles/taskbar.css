@@ -275,17 +275,6 @@
   position: relative;
 }
 
-.taskbar-item.pinned::after {
-  content: "";
-  position: absolute;
-  bottom: 2px;
-  right: 2px;
-  width: 6px;
-  height: 6px;
-  background: var(--brand);
-  border-radius: 50%;
-}
-
 .taskbar-preview {
   position: fixed;
   z-index: 100000;

@@ -326,12 +326,10 @@ export class CommandPalette {
             await walk(fullPath);
           } else {
             const kind = meta[name]?.kind ?? fs.inferKind(name);
-            const icon = meta[name]?.icon || "static/icons/file.webp";
             this.cachedFiles.push({
               name,
               path: fullPath,
-              kind,
-              icon
+              kind
             });
           }
         }
@@ -486,14 +484,15 @@ export class CommandPalette {
           title: file.name,
           subtitle: `File Location: ${file.path}`,
           tag: file.kind,
-          icon: file.icon,
+          icon: os.fs.getFileIcon(file.path),
           isFile: true,
           execute: () => {
             const launcher = this.services.windowManager.appLauncher;
+            const fsManager = this.services.fileSystemManager;
             openFileWith({
               name: file.name,
-              path: file.path,
-              fs: this.services.fileSystemManager,
+              path: fsManager.dirname(file.path),
+              fs: fsManager,
               notepadApp: this.services.notepadApp,
               browserApp: this.services.browserApp,
               windowManager: this.services.windowManager,

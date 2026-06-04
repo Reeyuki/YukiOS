@@ -31,5 +31,6 @@ export const AppSource = {
   AI_ASSISTANT: "Yuki AI",
   BRIGHTNESS: "Brightness",
   EMOJI_SELECTOR: "Emoji Selector",
-  SYSTEM: "System"
+  SYSTEM: "System",
+  RHYTHMS: "Rhythms"
 };

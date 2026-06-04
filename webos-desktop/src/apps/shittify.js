@@ -186,6 +186,7 @@ export class ShittifyApp extends BaseApp {
         content.style.display = "";
         content.style.alignItems = "";
         content.style.justifyContent = "";
+        content.style.overflow = "";
         content.innerHTML = `<iframe id="shittify-iframe" src="${blobUrl}" style="width:100%;height:100%;border:none;" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-pointer-lock"></iframe>`;
         this._iframe = content.querySelector("iframe");
         this._iframe.addEventListener("load", () => {

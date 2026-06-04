@@ -329,6 +329,14 @@ export const SYSTEM_APPS = {
     launchType: "instance",
     clippy: { message: "Pick the right emoji and keep the reaction simple.", animation: ClippyAnimation.GetArtsy }
   },
+  rhythms: {
+    type: "system",
+    title: "Rhythms",
+    icon: "fas fa-wave-square",
+    launchType: "instance",
+    launchMethod: "declarative",
+    clippy: { message: "Visualize audio beats and watch the rhythm come alive.", animation: ClippyAnimation.GetArtsy }
+  },
   paint: {
     type: "system",
     title: "Paint",

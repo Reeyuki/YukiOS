@@ -49,6 +49,7 @@ import { DisplayPerformanceApp } from "./apps/displayPerformanceApp.js";
 import { NetworkTrayApp } from "./tray/networkTray.js";
 import { EmojiSelectorApp } from "./apps/emojiSelector.js";
 import { SystemAppsApp } from "./apps/systemApps.js";
+import { RhythmsApp } from "./apps/rhythms.js";
 import "./osBridgeTelemetry.js";
 import { resolveIconUrl, initializeMirrors, CDN_MIRRORS, getCdnMirror, setCdnMirror } from "./shared/assetResolver.js";
 import { appMap } from "./games/gamesList.js";
@@ -106,6 +107,7 @@ const EnhancedNewsApp = HybridAdapter.enhanceBaseApp(NewsApp);
 const EnhancedEmojiSelectorApp = HybridAdapter.enhanceBaseApp(EmojiSelectorApp);
 const EnhancedDataEditorApp = HybridAdapter.enhanceBaseApp(DataEditorApp);
 const EnhancedYukiOsGuideApp = HybridAdapter.enhanceBaseApp(YukiOsGuideApp);
+const EnhancedRhythmsApp = HybridAdapter.enhanceBaseApp(RhythmsApp);
 
 const achievementsApp = new EnhancedAchievementsApp(services);
 services.achievementsApp = achievementsApp;
@@ -230,6 +232,9 @@ services.emojiSelectorApp = emojiSelectorApp;
 const systemAppsApp = new SystemAppsApp(services);
 services.systemAppsApp = systemAppsApp;
 
+const rhythmsApp = new EnhancedRhythmsApp(services);
+services.rhythmsApp = rhythmsApp;
+
 const appLauncher = new AppLauncher(windowManager, fileSystemManager, {
   explorerApp,
   terminalApp,
@@ -266,7 +271,8 @@ const appLauncher = new AppLauncher(windowManager, fileSystemManager, {
   aiAssistantApp,
   brightnessApp: displayPerformanceApp,
   emojiSelectorApp,
-  systemAppsApp
+  systemAppsApp,
+  rhythmsApp
 });
 services.appLauncher = appLauncher;
 windowManager.setAppLauncher(appLauncher);

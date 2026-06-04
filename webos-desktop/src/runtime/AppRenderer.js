@@ -16,7 +16,7 @@ export class AppRenderer {
   }
 
   renderWindow(windowConfig, services) {
-    const { id, title, size, icon, position, style, className, ui, events, actions } = windowConfig;
+    const { id, title, size, icon, position, style, className, ui, events, actions, transparent } = windowConfig;
 
     const width = size?.[0] || "800px";
     const height = size?.[1] || "600px";
@@ -25,7 +25,8 @@ export class AppRenderer {
       icon,
       style: { ...style },
       ...(position && { left: position[0], top: position[1] }),
-      ...(className && { className })
+      ...(className && { className }),
+      ...(transparent && { className: `${className || ""} transparent`.trim() })
     };
 
     const content = this.renderUI(ui, id);
