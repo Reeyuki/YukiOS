@@ -8,6 +8,17 @@ const NEWS_UPDATES = [
     date: "June 4, 2026",
     sections: [
       {
+        icon: "fa-window-restore",
+        title: "Workspace System",
+        items: [
+          [
+            "fa-layer-group",
+            "Virtual Workspaces",
+            "Added virtual desktops with fast switching, smooth animations, and an overview for managing and moving windows between workspaces."
+          ]
+        ]
+      },
+      {
         icon: "fa-wand-magic-sparkles",
         title: "New App",
         items: [

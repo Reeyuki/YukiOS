@@ -37,31 +37,36 @@ const capabilities = [
 ];
 
 const privacyText = `
-  Yuki OS collects minimal usage data required for stability and analytics.
+  Yuki OS collects limited anonymous analytics to help improve stability and usage insights.
 
-  What is collected:
-  • Anonymous daily identifier derived from IP (rotates every UTC day using HMAC)
-  • Event analytics such as app launches, session duration, and feature usage
-  • Timestamps of interactions
+  Collected data:
+  • App launches and feature usage
+  • Session activity and timestamps
+  • Anonymous analytics identifiers
 
-  What is NOT stored:
-  • Raw IP addresses are not permanently stored in the database
-  • No passwords, files, or personal content are collected
+  Not collected:
+  • Files, documents, or personal content
+  • Passwords or account credentials
 
-  How data is used:
-  • To measure performance and usage trends
-  • To detect broken games or errors reported by users
-  • To improve app stability and features
+  Data use:
+  • Improving performance and reliability
+  • Understanding feature usage
+  • Diagnosing issues and errors
 
-  Data retention:
-  • Analytics can be automatically purged by admin settings
-  • Old records can be deleted by retention rules
+  Yuki OS does not sell user data or share it with advertisers.
+`;
 
-  Third parties:
-  • Optional Discord webhook logging may be enabled for admin monitoring
-  • No selling or sharing of user data with advertisers
-  `;
+const copyrightText = `
+  Copyright & Takedown Requests
 
+  Yuki OS respects the intellectual property rights of developers, publishers, artists, and content owners.
+
+  If you believe that any content, game, asset, or material accessible through Yuki OS infringes your copyright or other intellectual property rights, please contact:
+
+  <a href="mailto:yukios-os@proton.me">yukios-os@proton.me</a>
+
+  Include enough information to identify the content and your connection to it. Requests will be reviewed and processed.
+`;
 export class AboutApp extends BaseApp {
   constructor(services) {
     super(services);
@@ -144,6 +149,15 @@ export class AboutApp extends BaseApp {
                 <div class="abx-legal">${privacyText}</div>
               </div>
             </div>
+
+            <div class="abx-panel">
+              <div class="abx-panel-h">DMCA & Copyright</div>
+              <div class="abx-panel-b">
+                <div class="abx-legal">${copyrightText}</div>
+              </div>
+            </div>
+
+            
 
           </div>
 

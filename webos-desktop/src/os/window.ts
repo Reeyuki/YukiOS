@@ -6,6 +6,7 @@
 import type { WindowOptions, WindowHandle } from "./types.js";
 import { makeDraggable } from "../windowManager/makeDraggable.js";
 import { animateWindowOpen } from "../windowManager/AnimationSystem.js";
+import { sanitizeTitle } from "../utils/utils.js";
 
 export class WindowAPI {
   private wm: any;
@@ -30,6 +31,7 @@ export class WindowAPI {
     height: string | number = "80vh",
     options: WindowOptions = {}
   ): HTMLElement {
+    title = sanitizeTitle(title);
     this._logLegacyWarning("create");
     const win = this.wm.createWindow(id, title, width, height, options.isGame || false, options);
 

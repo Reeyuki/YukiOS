@@ -154,3 +154,8 @@ export function isWindowFocused(winId, lastMousePos) {
     lastMousePos.y <= rect.bottom;
   return mouseOver || winEl.contains(document.activeElement);
 }
+
+export function sanitizeTitle(title) {
+  if (title === "[object Object]") return "Window";
+  return title;
+}

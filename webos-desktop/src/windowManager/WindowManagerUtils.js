@@ -1,5 +1,5 @@
 import { resolveIconUrl } from "../shared/assetResolver.js";
-import { isImageFile } from "../utils/utils.js";
+import { isImageFile, sanitizeTitle } from "../utils/utils.js";
 import { updateTransparency as extUpdateTransparency } from "./transparencyManager.js";
 import { getSetting } from "../shared/settings.js";
 
@@ -108,7 +108,7 @@ export class WindowManagerUtils {
   }
 
   updatePageFavicon(iconValue, title) {
-    document.title = title || this.manager.initialTitle;
+    document.title = sanitizeTitle(title) || this.manager.initialTitle;
     const link = this._getFaviconLink();
     iconValue = resolveIconUrl(iconValue);
     const { isImage, isDataUrl } = this._resolveIconType(iconValue);

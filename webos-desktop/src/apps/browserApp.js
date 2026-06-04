@@ -1,9 +1,9 @@
 import { PROXIES, clampProxyIndex, buildProxyUrl } from "../proxies.js";
 import { BaseApp } from "../core/BaseApp.js";
-import { resolveIconUrl } from "../shared/assetResolver.js";
 import { customConfirm } from "../shared/dialogs.js";
 import { StorageKeys } from "../settings/settings.js";
 import { os } from "../os/index.js";
+import { sanitizeTitle } from "../utils/utils.js";
 
 export class BrowserApp extends BaseApp {
   static refreshIcons(node) {
@@ -1919,7 +1919,7 @@ body {
   onTabLoaded(tab, url) {
     try {
       const title = tab.iframe.contentDocument?.title;
-      if (title) tab.title = title;
+      if (title) tab.title = sanitizeTitle(title);
       else tab.title = new URL(url).hostname;
     } catch (e) {
       try {

@@ -299,6 +299,19 @@
   padding-bottom: 60px;
   scrollbar-width: thin;
   scrollbar-color: #3d4450 #171a21;
+  min-height: 0;
+}
+
+.steam-library-page {
+  width: 100%;
+  min-height: 100%;
+}
+
+.steam-yukios-content {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 .steam-bottom-bar {

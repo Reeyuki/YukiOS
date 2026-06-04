@@ -1,4 +1,5 @@
 import { WindowHelper } from "./utils/WindowHelper.js";
+import { sanitizeTitle } from "./utils/utils.js";
 import { HIGHLIGHTED_GAMES, getGameName, openSteamWindow } from "./games/games.js";
 import { appMap } from "./games/gamesList.js";
 import { SYSTEM_APPS } from "./AppRegistryConfig.js";
@@ -754,7 +755,7 @@ player.load("${swfPath}");
   createWindow(id, title, contentHtml, externalUrl = null, appId = null, appMeta = {}) {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has("game") && appId) {
-      document.title = title;
+      document.title = sanitizeTitle(title);
       document.head.insertAdjacentHTML(
         "beforeend",
         `<style>

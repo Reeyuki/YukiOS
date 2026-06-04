@@ -2,6 +2,7 @@ import { os } from "../os/index.js";
 import { BusEvents } from "../core/EventBus.js";
 import { animateWindowClose, animateWindowMinimize, applyFocusGlow, applyZDepthLift } from "./AnimationSystem.js";
 import { getSetting } from "../shared/settings.js";
+import { sanitizeTitle } from "../utils/utils.js";
 
 export class WindowStateManager {
   constructor(manager) {
@@ -23,7 +24,7 @@ export class WindowStateManager {
       entry.taskbarItem.classList.add("active");
       entry.taskbarItem.classList.remove("minimized");
       this.manager.updatePageFavicon(entry.iconValue, entry.title);
-      document.title = entry.title || "YukiOS";
+      document.title = sanitizeTitle(entry.title) || "YukiOS";
       if (entry.record) entry.record.zIndex = this.manager.zIndexCounter;
       os.events.emit(BusEvents.WINDOW_FOCUSED, { winId: win.id });
     }
