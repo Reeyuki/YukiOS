@@ -11,8 +11,13 @@ Yuki OS turns a browser tab into a working desktop-style space with draggable wi
 It supports running Flash content, DOS programs, console emulation, WebAssembly apps, and standard web applications side by side.
 
 It's built entirely in vanilla JS (with some libraries, of course!).
-![Steam interface](.github/steam.png) ![Setup](.github/setupsettings.png) ![Achievements](.github/browserachieve.png)
-![Music player](.github/music.png) ![Applications](.github/apps.png)
+![Steam interface](.github/steam.png) 
+![Setup](.github/setupsettings.png)
+![Music1](.github/music1.png)
+![Music2](.github/music2.png)
+![Achievements](.github/browserachieve.png)
+![Music player](.github/music.png)
+![Applications](.github/apps.png)
 
 ---
 
