@@ -1,6 +1,6 @@
 # Yuki OS - Browser Desktop Environment
 
-![Users](https://img.shields.io/badge/Users-35k+-brightgreen)
+![Users](https://img.shields.io/badge/Users-40k+-brightgreen)
 ---
 [https://discord.gg/uFuGfseB9Z](https://discord.gg/uFuGfseB9Z)
 

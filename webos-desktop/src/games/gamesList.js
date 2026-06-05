@@ -7,7 +7,7 @@ export const appMap = {
   },
   slimeRancher: {
     type: "game",
-    url: "https://raw.githack.com/Reeyuki/SlimeRanch/refs/heads/main/index.html",
+    url: "/static/games/html/slime.html",
     icon: "/static/icons/slime.webp",
     title: "Slime Rancher Full"
   },
