@@ -986,8 +986,7 @@ export class FileSystemManager {
     try {
       const text = await this.pRead("readFile", fullPath, "utf8");
       if (!text) {
-        const entries = await this.pRead("readdir", dir).catch(() => []);
-        console.warn(`getFileContent: "${name}" is empty in "${dir}". Available:`, entries);
+        console.warn(`getFileContent: "${name}" is empty in "${dir}".`);
         return "";
       }
       if (

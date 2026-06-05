@@ -305,38 +305,53 @@ export class DesktopContextMenuManager {
     showDynamicContextMenu(e, async (menu, item, hr) => {
       menu.appendChild(item("Open", () => this.desktopUI._openDesktopFile(fileName), "fa-file-alt"));
 
-      try {
-        const { FileKind } = await import("../fs.js");
-        const kind = await this.desktopUI.fs.getFileKind(["Desktop"], fileName);
-        if (kind === FileKind.TEXT) {
-          menu.appendChild(
-            item("Edit with Notepad", () => this.desktopUI._editDesktopFileWithNotepad(fileName), "fa-edit")
-          );
-        }
-      } catch {}
+      const convertableExtensions = [
+        "png",
+        "jpg",
+        "jpeg",
+        "webp",
+        "bmp",
+        "svg",
+        "gif",
+        "txt",
+        "md",
+        "html",
+        "json",
+        "log",
+        "csv",
+        "xml",
+        "yaml",
+        "yml",
+        "tsv"
+      ];
+
+      const isTextFile = (name) => {
+        const ext = name.split(".").pop().toLowerCase();
+        return ext === "desktop" || convertableExtensions.includes(ext);
+      };
+
+      let showNotepadOption = isTextFile(fileName);
+
+      if (!showNotepadOption) {
+        try {
+          const { FileKind } = await import("../fs.js");
+          const kind = await this.desktopUI.fs.getFileKind(["Desktop"], fileName);
+          if (kind === FileKind.TEXT) {
+            showNotepadOption = true;
+          }
+        } catch {}
+      }
+
+      if (showNotepadOption) {
+        menu.appendChild(
+          item("Edit with Notepad", () => this.desktopUI._editDesktopFileWithNotepad(fileName), "fa-edit")
+        );
+      }
 
       const effectiveFiles = selectedArray.map((el) => el.dataset.fileName);
       const convertableFiles = effectiveFiles.filter((name) => {
         const ext = name.split(".").pop().toLowerCase();
-        return [
-          "png",
-          "jpg",
-          "jpeg",
-          "webp",
-          "bmp",
-          "svg",
-          "gif",
-          "txt",
-          "md",
-          "html",
-          "json",
-          "log",
-          "csv",
-          "xml",
-          "yaml",
-          "yml",
-          "tsv"
-        ].includes(ext);
+        return convertableExtensions.includes(ext);
       });
 
       if (convertableFiles.length > 0) {

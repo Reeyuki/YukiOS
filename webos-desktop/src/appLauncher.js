@@ -161,8 +161,8 @@ export class AppLauncher {
           if (schema.onMount) {
             if (typeof schema.onMount === "string" && typeof appInstance[schema.onMount] === "function") {
               if (!schema.actions[schema.onMount]) {
-                schema.actions[schema.onMount] = (payload, event, element, state) => {
-                  return appInstance[schema.onMount](payload, event, element, state);
+                schema.actions[schema.onMount] = (payload, event, element, state, actionExecutor) => {
+                  return appInstance[schema.onMount](payload, event, element, state, actionExecutor);
                 };
               }
             } else if (typeof schema.onMount === "function") {

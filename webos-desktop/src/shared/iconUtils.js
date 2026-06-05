@@ -11,7 +11,7 @@ export function resolveDesktopIcon(content, fileName = null) {
         if (parsed.type === "youtube-embed") {
           icon = resolveIconUrl("static/icons/youtube.webp");
         } else {
-          icon = parsed.path || appMap[parsed.app]?.icon;
+          icon = parsed.icon || parsed.path || appMap[parsed.app]?.icon;
         }
       }
     } catch (e) {}

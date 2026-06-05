@@ -167,6 +167,8 @@ import { os } from "./os/index.js";
 | `renameItem(old, new)`    | Rename item                       |
 | `updateFile(path, content)` | Update file                      |
 
+**Note:** Use `readBinaryFile`, `deleteBinaryFile`, and `renameBinaryFile` for binary files (images, videos, archives, executables, etc.) instead of their regular counterparts.
+
 ### Notification API - `os.notify`
 
 | Method                    | Purpose                           |

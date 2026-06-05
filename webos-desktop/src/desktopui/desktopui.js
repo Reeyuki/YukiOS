@@ -270,7 +270,8 @@ export class DesktopUI {
       this.selectionManager,
       this.notepadApp,
       this.explorerApp,
-      this.appLauncher
+      this.appLauncher,
+      this.appLauncher.jsDosApp
     );
 
     this.dragDropManager = new DragDropManager(
@@ -743,6 +744,18 @@ export class DesktopUI {
 
   deleteSelectedIcons(selectedArray) {
     return this.clipboardManager.deleteSelectedIcons(selectedArray, this.selectionManager);
+  }
+
+  cutSelectedIcons(selectedArray) {
+    this.clipboardManager.setClipboard(this.clipboardManager._buildDesktopClipboard("cut", selectedArray));
+    selectedArray.forEach((icon) => {
+      this.selectionManager.remove(icon);
+      icon.remove();
+    });
+  }
+
+  copySelectedIcons(selectedArray) {
+    this.clipboardManager.setClipboard(this.clipboardManager._buildDesktopClipboard("copy", selectedArray));
   }
 
   _buildDesktopClipboard(action, icons) {

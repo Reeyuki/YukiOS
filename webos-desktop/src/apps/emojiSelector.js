@@ -81,6 +81,32 @@ export class EmojiSelectorApp extends BaseApp {
     }, 1500);
   }
 
+  async initEmojiSelector(payload, event, element, state, actionExecutor) {
+    const app = actionExecutor.appInstance;
+    const win = element;
+    await app.loadEmojiMart();
+
+    if (typeof window.EmojiMart !== "undefined") {
+      const picker = new window.EmojiMart.Picker({
+        onEmojiSelect: async (emoji) => {
+          const copied = await app.copyEmoji(emoji);
+          const label = copied ? "Copied" : "Saved";
+          app.showPreview(win, `${label}: ${emoji.native}`);
+        },
+        theme: "dark",
+        set: "native",
+        skinTonePosition: "search",
+        previewPosition: "none",
+        className: "emoji-mart-picker"
+      });
+
+      const container = win.querySelector("#emoji-mart-container");
+      if (container) {
+        container.appendChild(picker);
+      }
+    }
+  }
+
   getDeclarativeSchema(opts) {
     return {
       id: "emoji-selector",
@@ -126,30 +152,7 @@ export class EmojiSelectorApp extends BaseApp {
       actions: {
         _appInstance: this
       },
-      onMount: async (win, state, actionExecutor) => {
-        const app = actionExecutor.appInstance;
-        await app.loadEmojiMart();
-
-        if (typeof window.EmojiMart !== "undefined") {
-          const picker = new window.EmojiMart.Picker({
-            onEmojiSelect: async (emoji) => {
-              const copied = await app.copyEmoji(emoji);
-              const label = copied ? "Copied" : "Saved";
-              app.showPreview(win, `${label}: ${emoji.native}`);
-            },
-            theme: "dark",
-            set: "native",
-            skinTonePosition: "search",
-            previewPosition: "none",
-            className: "emoji-mart-picker"
-          });
-
-          const container = win.querySelector("#emoji-mart-container");
-          if (container) {
-            container.appendChild(picker);
-          }
-        }
-      }
+      onMount: "initEmojiSelector"
     };
   }
 

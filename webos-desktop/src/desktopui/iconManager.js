@@ -9,7 +9,17 @@ import { Achievements } from "../achievements.js";
 import interact from "interactjs";
 
 export class IconManager {
-  constructor(desktop, fs, positionHelper, positionStore, selectionManager, notepadApp, explorerApp, appLauncher) {
+  constructor(
+    desktop,
+    fs,
+    positionHelper,
+    positionStore,
+    selectionManager,
+    notepadApp,
+    explorerApp,
+    appLauncher,
+    jsDosApp
+  ) {
     this.desktop = desktop;
     this.fs = fs;
     this.positionHelper = positionHelper;
@@ -18,6 +28,7 @@ export class IconManager {
     this.notepadApp = notepadApp;
     this.explorerApp = explorerApp;
     this.appLauncher = appLauncher;
+    this.jsDosApp = jsDosApp;
   }
 
   makeIconInteractable(icon, ignoreDrag = false) {
@@ -191,7 +202,11 @@ export class IconManager {
       path: ["Desktop"],
       fs: this.fs,
       notepadApp: this.notepadApp,
+      browserApp: this.appLauncher.browserApp,
       windowManager: this.appLauncher.wm,
+      officeApp: this.appLauncher.officeApp,
+      markdownApp: this.appLauncher.markdownApp,
+      jsDosApp: this.jsDosApp,
       appLauncher: this.appLauncher
     });
   }

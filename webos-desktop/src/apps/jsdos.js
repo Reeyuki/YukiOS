@@ -379,8 +379,12 @@ export class JsDosApp extends BaseApp {
           ? path.split("/").filter(Boolean)
           : Object.values(path ?? {}).filter((v) => typeof v === "string");
 
-      const blob = await os.fs.read([...normalizedPath, name]);
+      console.log("jsdos launchExe:", { name, path, normalizedPath });
+      const blob = await os.fs.readBinaryFile(normalizedPath, name);
+      console.log("jsdos blob:", { blob, size: blob?.size, type: blob?.type });
+
       if (!blob || blob.size === 0) {
+        console.error("jsdos: Failed to read file - blob is empty or null", { blob, name, normalizedPath });
         showError("Failed to read file.");
         return;
       }
@@ -389,10 +393,13 @@ export class JsDosApp extends BaseApp {
 
       setLog(isBundle ? "Preparing bundle…" : "Building js-dos bundle…");
       const arrayBuffer = await blob.arrayBuffer();
+      console.log("jsdos arrayBuffer:", { size: arrayBuffer.byteLength, isBundle });
+
       const bundleBlob = isBundle
         ? new Blob([arrayBuffer], { type: "application/zip" })
         : await this._buildBundle(name, arrayBuffer);
 
+      console.log("jsdos bundleBlob:", { size: bundleBlob.size, type: bundleBlob.type });
       bundleUrl = URL.createObjectURL(bundleBlob);
 
       setLog("Launching…");

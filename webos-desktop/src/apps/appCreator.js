@@ -102,35 +102,6 @@ async function tryLoadFavicon(appUrl) {
   return probeImageUrl(fallbackUrl);
 }
 
-function makeDesktopIconElement(appId, name, iconUrl) {
-  const icon = document.createElement("div");
-  icon.className = "icon selectable";
-  icon.dataset.app = appId;
-  icon.style.position = "absolute";
-  icon.style.cursor = "default";
-
-  let media;
-  if (isImageIcon(iconUrl)) {
-    media = document.createElement("img");
-    media.src = iconUrl;
-    media.onerror = () => {
-      const fallback = document.createElement("i");
-      fallback.className = AC.FALLBACK_ICON;
-      media.replaceWith(fallback);
-    };
-  } else {
-    media = document.createElement("i");
-    media.className = iconUrl || AC.FALLBACK_ICON;
-    media.style.cssText = "font-size:48px;pointer-events:none;";
-  }
-
-  const label = document.createElement("div");
-  label.textContent = name;
-
-  icon.append(media, label);
-  return icon;
-}
-
 export class AppCreatorApp extends BaseApp {
   constructor(services) {
     super(services);
@@ -470,19 +441,6 @@ export class AppCreatorApp extends BaseApp {
   async _loadAllCustomApps() {
     const apps = [];
     try {
-      const folder = await os.fs.readdir(AC.FS_FOLDER);
-      for (const [fileName] of Object.entries(folder)) {
-        if (!fileName.endsWith(".json")) continue;
-        try {
-          const raw = await this.fs.readTextFile(AC.FS_FOLDER, fileName);
-          if (!raw) continue;
-          const meta = JSON.parse(raw);
-          if (meta.appId?.startsWith(AC.APP_ID_PREFIX)) apps.push({ ...meta, _fileName: fileName });
-        } catch {}
-      }
-    } catch {}
-
-    try {
       const desktopFolder = await os.fs.readdir(["Desktop"]);
       for (const [fileName] of Object.entries(desktopFolder)) {
         if (!fileName.endsWith(".desktop")) continue;
@@ -490,22 +448,18 @@ export class AppCreatorApp extends BaseApp {
           const raw = await this.fs.readTextFile(["Desktop"], fileName);
           if (!raw) continue;
           const data = JSON.parse(raw);
-          if (data.app?.startsWith(AC.APP_ID_PREFIX)) {
-            const appId = data.app;
-            if (!apps.find((a) => a.appId === appId)) {
-              apps.push({
-                appId,
-                name: data.name,
-                url: data.path,
-                icon: data.path,
-                faviconUrl: data.path,
-                type: "game",
-                proxyEnabled: false,
-                proxyIndex: 0,
-                _fileName: fileName,
-                _fromDesktop: true
-              });
-            }
+          if (data.isCustomApp && data.app?.startsWith(AC.APP_ID_PREFIX)) {
+            apps.push({
+              appId: data.app,
+              name: data.name,
+              url: data.url,
+              icon: data.icon,
+              faviconUrl: data.faviconUrl,
+              type: data.type || "game",
+              proxyEnabled: data.proxyEnabled || false,
+              proxyIndex: data.proxyIndex || 0,
+              _fileName: fileName
+            });
           }
         } catch {}
       }
@@ -516,14 +470,14 @@ export class AppCreatorApp extends BaseApp {
 
   async _loadAppMeta(appId) {
     try {
-      const folder = await os.fs.readdir(AC.FS_FOLDER);
-      for (const [fileName] of Object.entries(folder)) {
-        if (!fileName.endsWith(".json")) continue;
+      const desktopFolder = await os.fs.readdir(["Desktop"]);
+      for (const [fileName] of Object.entries(desktopFolder)) {
+        if (!fileName.endsWith(".desktop")) continue;
         try {
-          const raw = await this.fs.readTextFile(AC.FS_FOLDER, fileName);
+          const raw = await this.fs.readTextFile(["Desktop"], fileName);
           if (!raw) continue;
-          const meta = JSON.parse(raw);
-          if (meta.appId === appId) return { ...meta, _fileName: fileName };
+          const data = JSON.parse(raw);
+          if (data.isCustomApp && data.app === appId) return { ...data, _fileName: fileName };
         } catch {}
       }
     } catch {}
@@ -571,29 +525,26 @@ export class AppCreatorApp extends BaseApp {
     }
 
     const faviconUrl = meta.faviconUrl || deriveFaviconUrl(url);
-    const updated = buildAppMeta(
-      appId,
+    const newFileName = `${name}.desktop`;
+    const fileNameChanged = meta._fileName !== newFileName;
+
+    const updated = {
+      app: appId,
       name,
       url,
-      iconUrl,
+      icon: iconUrl,
       faviconUrl,
-      !!proxyEnabled,
-      clampProxyIndex(proxyIndex, PROXIES)
-    );
+      type: "game",
+      proxyEnabled,
+      proxyIndex,
+      isCustomApp: true
+    };
 
     try {
-      if (meta._fromDesktop) {
-        await os.fs.mkdir(AC.FS_FOLDER);
-        const fileName = `${appId}.json`;
-        const dir = this.fs.resolveUserPath(AC.FS_FOLDER);
-        const filePath = this.fs.join(dir, fileName);
-        await os.fs.write(filePath, JSON.stringify(updated, null, 2));
+      if (fileNameChanged) {
         await os.fs.delete(["Desktop"], meta._fileName);
-      } else {
-        const dir = this.fs.resolveUserPath(AC.FS_FOLDER);
-        const filePath = this.fs.join(dir, meta._fileName);
-        await os.fs.write(filePath, JSON.stringify(updated, null, 2));
       }
+      await os.fs.write(["Desktop", newFileName], JSON.stringify(updated, null, 2));
     } catch (e) {
       console.warn("AppCreator: fs update failed", e);
       os.notify.send("", `Failed to save "${name}" to filesystem.`);
@@ -610,7 +561,21 @@ export class AppCreatorApp extends BaseApp {
       );
     }
 
-    this._updateDesktopIcon(appId, name, iconUrl);
+    if (fileNameChanged) {
+      const oldIcon = document.querySelector(`.desktop-file-icon[data-file-name="${CSS.escape(meta._fileName)}"]`);
+      if (oldIcon) oldIcon.remove();
+      await this.desktopUI.iconManager.createDesktopFileIcon(newFileName);
+      const icon = document.querySelector(`.desktop-file-icon[data-file-name="${CSS.escape(newFileName)}"]`);
+      if (icon) {
+        icon.addEventListener("contextmenu", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          this._showCustomAppContextMenu(e, icon, appId, this.desktopUI);
+        });
+      }
+    } else {
+      this._updateDesktopIcon(appId, name, iconUrl);
+    }
 
     $("#ac-cancel-edit-btn", win).click();
     this._showStatus(statusEl, "success", `"${name}" updated successfully.`);
@@ -625,11 +590,7 @@ export class AppCreatorApp extends BaseApp {
     if (!(await customConfirm(`Delete "${meta.name}"? The desktop icon will also be removed.`))) return;
 
     try {
-      if (meta._fromDesktop) {
-        await os.fs.delete(["Desktop"], meta._fileName);
-      } else {
-        await os.fs.delete(AC.FS_FOLDER, meta._fileName);
-      }
+      await os.fs.delete(["Desktop"], meta._fileName);
     } catch (e) {
       console.warn("AppCreator: fs delete failed", e);
       os.notify.send("", `Failed to delete "${meta.name}" from filesystem.`, { appSource: AppSource.APP_CREATOR });
@@ -637,7 +598,7 @@ export class AppCreatorApp extends BaseApp {
 
     delete this.appLauncher?.appMap?.[appId];
 
-    const desktopIcon = document.querySelector(`.icon.selectable[data-app="${appId}"]`);
+    const desktopIcon = document.querySelector(`.desktop-file-icon[data-file-name="${CSS.escape(meta._fileName)}"]`);
     if (desktopIcon) desktopIcon.remove();
 
     os.notify.send("", `"${meta.name}" has been uninstalled.`);
@@ -645,8 +606,11 @@ export class AppCreatorApp extends BaseApp {
     if (win) this._refreshInstalledList(win);
   }
 
-  _updateDesktopIcon(appId, name, iconUrl) {
-    const desktopIcon = document.querySelector(`.icon.selectable[data-app="${appId}"]`);
+  async _updateDesktopIcon(appId, name, iconUrl) {
+    const meta = await this._loadAppMeta(appId);
+    if (!meta) return;
+
+    const desktopIcon = document.querySelector(`.desktop-file-icon[data-file-name="${CSS.escape(meta._fileName)}"]`);
     if (!desktopIcon) return;
 
     const label = desktopIcon.querySelector("div");
@@ -729,7 +693,7 @@ export class AppCreatorApp extends BaseApp {
   async _installApp(name, url, iconUrl, proxyEnabled, proxyIndex, statusEl, win) {
     const secureUrl = ensureHttpsProtocol(url);
     const appId = `${AC.APP_ID_PREFIX}${name.toLowerCase().replace(/\s+/g, "-")}-${Date.now()}`;
-    const fileName = `${appId}.json`;
+    const fileName = `${name}.desktop`;
     const faviconUrl = deriveFaviconUrl(secureUrl);
     const appMeta = buildAppMeta(
       appId,
@@ -741,11 +705,20 @@ export class AppCreatorApp extends BaseApp {
       clampProxyIndex(proxyIndex, PROXIES)
     );
 
+    const desktopFileContent = JSON.stringify({
+      app: appId,
+      name,
+      url: secureUrl,
+      icon: iconUrl,
+      faviconUrl,
+      type: "game",
+      proxyEnabled,
+      proxyIndex,
+      isCustomApp: true
+    });
+
     try {
-      await os.fs.mkdir(AC.FS_FOLDER);
-      const dir = this.fs.resolveUserPath(AC.FS_FOLDER);
-      const filePath = this.fs.join(dir, fileName);
-      await os.fs.write(filePath, JSON.stringify(appMeta, null, 2));
+      await os.fs.write(["Desktop", fileName], desktopFileContent);
     } catch (e) {
       console.warn("AppCreator: could not persist app to filesystem", e);
       os.notify.send("", `Failed to save "${name}" to filesystem.`);
@@ -765,27 +738,21 @@ export class AppCreatorApp extends BaseApp {
     this._refreshInstalledList(win);
   }
 
-  _addToDesktop(appId, name, iconUrl, faviconUrl) {
+  async _addToDesktop(appId, name, iconUrl, faviconUrl) {
     if (this.desktopUI) {
-      this._addViaDesktopUI(this.desktopUI, appId, name, iconUrl, faviconUrl);
+      const fileName = `${name}.desktop`;
+      await this.desktopUI.iconManager.createDesktopFileIcon(fileName);
+      const icon = document.querySelector(`.desktop-file-icon[data-file-name="${CSS.escape(fileName)}"]`);
+      if (icon) {
+        icon.addEventListener("contextmenu", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          this._showCustomAppContextMenu(e, icon, appId, this.desktopUI);
+        });
+      }
     } else {
       console.warn("AppCreator: desktopUI not set, call setDesktopUI() after construction.");
     }
-  }
-
-  _addViaDesktopUI(desktopUI, appId, name, iconUrl, faviconUrl) {
-    const icon = makeDesktopIconElement(appId, name, iconUrl);
-    const desktopEl = document.getElementById("desktop");
-    if (desktopEl) desktopEl.append(icon);
-
-    desktopUI.makeIconInteractable(icon);
-    desktopUI.positionHelper.snap(icon);
-
-    icon.addEventListener("contextmenu", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      this._showCustomAppContextMenu(e, icon, appId, desktopUI);
-    });
   }
 
   _showCustomAppContextMenu(e, icon, appId, desktopUI) {

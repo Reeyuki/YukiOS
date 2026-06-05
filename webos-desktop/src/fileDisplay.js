@@ -574,8 +574,12 @@ export async function openFileWith({
     return;
   }
 
-  if (isExeFile(name)) {
-    if (!jsDosApp) return;
+  if (
+    isExeFile(name) ||
+    name.toLowerCase().endsWith(".jsdos") ||
+    name.toLowerCase().endsWith(".com") ||
+    name.toLowerCase().endsWith(".bat")
+  ) {
     jsDosApp.launchExe(name, path);
     return;
   }

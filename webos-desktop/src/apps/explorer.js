@@ -857,8 +857,6 @@ export class ExplorerApp extends BaseApp {
       }
     }
 
-    if (view.style.height === "") setStyle(view, { height: "600px" });
-
     const folder = await os.fs.readdir(inst.currentPath);
     inst._cachedFolder = folder;
     if (inst.mode === "browse") inst._cachedFolderStats = await this._buildFolderStats(inst);
@@ -1237,6 +1235,10 @@ export class ExplorerApp extends BaseApp {
       if (isFile && itemName.toLowerCase().endsWith(".md")) {
         menu.appendChild(item("Preview", () => this._openMarkdownPreview(itemName, inst), "fa-eye"));
         menu.appendChild(item("Edit with Notepad", () => this._openMarkdownInNotepad(itemName, inst), "fa-edit"));
+        menu.appendChild(hr());
+      } else if (isFile && itemName.toLowerCase().endsWith(".desktop")) {
+        menu.appendChild(item("Open", () => this.openItemForInstance(inst, itemName, true), "fa-file-alt"));
+        menu.appendChild(item("Edit with Notepad", () => this._openTextInNotepad(itemName, inst), "fa-edit"));
         menu.appendChild(hr());
       } else if (isFile && fileKindFromName(itemName) === FileKind.TEXT) {
         menu.appendChild(item("Open", () => this.openItemForInstance(inst, itemName, true), "fa-file-alt"));

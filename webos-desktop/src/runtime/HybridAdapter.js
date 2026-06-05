@@ -44,8 +44,8 @@ export class HybridAdapter {
               schema.actions = {};
             }
             if (!schema.actions[schema.onMount]) {
-              schema.actions[schema.onMount] = (payload, event, element, state) => {
-                return baseAppInstance[schema.onMount](payload, event, element, state);
+              schema.actions[schema.onMount] = (payload, event, element, state, actionExecutor) => {
+                return baseAppInstance[schema.onMount](payload, event, element, state, actionExecutor);
               };
             }
           }
