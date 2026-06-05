@@ -2331,7 +2331,7 @@ export class OfficeApp extends BaseApp {
       }
     } catch (e) {
       console.error("Save error:", e);
-      audioMixer.playCriticalWarning();
+      audioMixer().playCriticalWarning();
       os.notify.send("Error saving file.");
     }
   }
@@ -2360,7 +2360,7 @@ export class OfficeApp extends BaseApp {
           speak("Great, your file has been saved!", ClippyAnimation.Greeting);
           window.achievements.trigger(Achievements.OfficeWorker);
         } catch {
-          audioMixer.playCriticalWarning();
+          audioMixer().playCriticalWarning();
           os.notify.send("Error saving file.");
         }
       });
@@ -2378,7 +2378,7 @@ export class OfficeApp extends BaseApp {
       os.notify.send(`Downloaded: ${fileName}`);
       speak("Great, your file has been downloaded!", ClippyAnimation.Greeting);
     } catch {
-      audioMixer.playCriticalWarning();
+      audioMixer().playCriticalWarning();
       os.notify.send("Error downloading file.");
     }
   }

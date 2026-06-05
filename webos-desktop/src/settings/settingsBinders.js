@@ -269,7 +269,7 @@ export function bindAppearanceCategory(
       settings.theme = theme;
       os.storage.set(StorageKeys.theme, theme);
       applyTheme(theme, getCustomColors);
-      audioMixer.playSystemSound(SystemAudio.DESKTOP_CHANGE);
+      audioMixer().playSystemSound(SystemAudio.DESKTOP_CHANGE);
       showStatus("Theme applied");
     });
   });
@@ -750,7 +750,7 @@ export function bindAudioCategory(win, settings, showSaved) {
       settings.soundEnabled = enabled;
       os.storage.set(StorageKeys.soundEnabled, String(enabled));
       if (volumeSlider) volumeSlider.disabled = !enabled;
-      audioMixer.setMaster(enabled ? settings.masterVolume : 0);
+      audioMixer().setMaster(enabled ? settings.masterVolume : 0);
       showSaved();
     });
   }
@@ -763,7 +763,7 @@ export function bindAudioCategory(win, settings, showSaved) {
       const val = parseInt(volumeSlider.value) / 100;
       settings.masterVolume = val;
       os.storage.set(StorageKeys.masterVolume, String(val));
-      if (settings.soundEnabled) audioMixer.setMaster(val);
+      if (settings.soundEnabled) audioMixer().setMaster(val);
       showSaved();
     });
   }
@@ -772,7 +772,7 @@ export function bindAudioCategory(win, settings, showSaved) {
     bindEvent(systemAudioToggle, "change", () => {
       const enabled = systemAudioToggle.checked;
       settings.systemAudioEnabled = enabled;
-      audioMixer.systemAudioEnabled = enabled;
+      audioMixer().systemAudioEnabled = enabled;
       os.storage.set(StorageKeys.systemAudioEnabled, String(enabled));
       if (systemVolumeSlider) systemVolumeSlider.disabled = !enabled;
       showSaved();
@@ -786,7 +786,7 @@ export function bindAudioCategory(win, settings, showSaved) {
     bindEvent(systemVolumeSlider, "change", () => {
       const val = parseInt(systemVolumeSlider.value) / 100;
       settings.systemVolume = val;
-      audioMixer.systemVolume = val;
+      audioMixer().systemVolume = val;
       os.storage.set(StorageKeys.systemVolume, String(val));
       showSaved();
     });

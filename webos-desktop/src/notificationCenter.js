@@ -194,7 +194,7 @@ export class NotificationCenter {
     if (this.doNotDisturb) return;
 
     if (notif.type === "warning") {
-      audioMixer.playSystemSound(SystemAudio.WARNING);
+      audioMixer().playSystemSound(SystemAudio.WARNING);
     }
 
     let container = document.getElementById("ntf-toast-container");

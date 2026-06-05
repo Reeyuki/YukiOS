@@ -101,7 +101,7 @@ export class MarkdownApp extends BaseApp {
 
   async open(title = "README.md", content = "", filePath = null) {
     const safeTitle = title && typeof title === "string" ? title : "README.md";
-    if (this._isSingletonOpen(`markdown-${safeTitle.replace(/[^a-zA-Z0-9]/g, "")}`)) return;
+    if (await this._isSingletonOpen(`markdown-${safeTitle.replace(/[^a-zA-Z0-9]/g, "")}`)) return;
     return super.open({ title: safeTitle, content, filePath });
   }
 

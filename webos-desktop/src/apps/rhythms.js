@@ -214,7 +214,7 @@ export class RhythmsApp extends BaseApp {
     const nyquist = FREQ_BIN_COUNT;
     const minHz = 20;
     const maxHz = 20000;
-    const sampleRate = audioMixer.audioCtx ? audioMixer.audioCtx.sampleRate : 44100;
+    const sampleRate = audioMixer().audioCtx ? audioMixer().audioCtx.sampleRate : 44100;
     const hzPerBin = sampleRate / 2 / nyquist;
 
     const map = [];
@@ -240,7 +240,7 @@ export class RhythmsApp extends BaseApp {
 
     this.ctx.clearRect(0, 0, width, height);
 
-    const hasData = audioMixer.getGlobalFrequencyData(this._freqDataArray);
+    const hasData = audioMixer().getGlobalFrequencyData(this._freqDataArray);
 
     if (!hasData) {
       this.drawIdle(width, height);

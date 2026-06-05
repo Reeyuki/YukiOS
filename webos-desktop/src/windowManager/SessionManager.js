@@ -38,7 +38,8 @@ export class SessionManager {
       v86: "v86app",
       browser: "browserApp",
       terminal: "terminal",
-      camera: "cameraApp"
+      camera: "cameraApp",
+      "yuki-convert": "yukiConvertApp"
     };
     const lowerId = winId.toLowerCase();
     for (const [key, appId] of Object.entries(mappings)) {
@@ -92,6 +93,7 @@ export class SessionManager {
 
       const appId = win.dataset.appId || this._guessAppIdFromWinId(win.id);
       if (appId && !win.dataset.appId) win.dataset.appId = appId;
+      if (appId) record.appId = appId;
       if (appId && this.manager.appLauncher) {
         try {
           os.storage.set(`${StorageKeys.geometryPrefix}${appId}`, {

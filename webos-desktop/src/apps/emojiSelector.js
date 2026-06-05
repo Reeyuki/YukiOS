@@ -123,16 +123,19 @@ export class EmojiSelectorApp extends BaseApp {
         initial: {},
         persistence: PersistenceTypes.MEMORY
       },
-      actions: {},
+      actions: {
+        _appInstance: this
+      },
       onMount: async (win, state, actionExecutor) => {
-        await this.loadEmojiMart();
+        const app = actionExecutor.appInstance;
+        await app.loadEmojiMart();
 
         if (typeof window.EmojiMart !== "undefined") {
           const picker = new window.EmojiMart.Picker({
             onEmojiSelect: async (emoji) => {
-              const copied = await this.copyEmoji(emoji);
+              const copied = await app.copyEmoji(emoji);
               const label = copied ? "Copied" : "Saved";
-              this.showPreview(win, `${label}: ${emoji.native}`);
+              app.showPreview(win, `${label}: ${emoji.native}`);
             },
             theme: "dark",
             set: "native",

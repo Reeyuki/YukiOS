@@ -299,7 +299,7 @@ export class SetupApp extends BaseApp {
 
   async open(options = {}) {
     const winId = "setup-wizard";
-    if (this._isSingletonOpen(winId)) return;
+    if (await this._isSingletonOpen(winId)) return;
 
     this.currentStep = 0;
     this.isTransitioning = false;

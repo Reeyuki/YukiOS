@@ -8,52 +8,63 @@ export class AppRuntime {
     this.wm = services.wm || services.windowManager;
   }
 
-  registerDeclarative(appDefinition) {
-    this.registry.register(appDefinition);
-  }
-
-  registerLegacy(appId, appInstance) {
-    this.registry.registerLegacy(appId, appInstance);
+  register(appId, app) {
+    this.registry.register(appId, app);
   }
 
   launch(appId, opts = {}) {
-    if (this.registry.isDeclarative(appId)) {
-      return this._launchDeclarative(appId, opts);
-    } else if (this.registry.isLegacy(appId)) {
-      return this._launchLegacy(appId, opts);
-    } else {
+    const app = this.registry.get(appId);
+    if (!app) {
       throw new Error(`App not found: ${appId}`);
     }
-  }
 
-  _launchDeclarative(appId, opts) {
-    const appDefinition = this.registry.get(appId);
-    const declarativeApp = new DeclarativeApp(appDefinition, this.services);
-    return declarativeApp.open(opts);
-  }
+    if (typeof app.getDeclarativeSchema === "function") {
+      const schema = app.getDeclarativeSchema(opts);
+      if (schema && schema.id) {
+        if (!schema.actions) {
+          schema.actions = {};
+        }
+        if (schema.onMount) {
+          if (typeof schema.onMount === "string" && typeof app[schema.onMount] === "function") {
+            if (!schema.actions[schema.onMount]) {
+              schema.actions[schema.onMount] = (payload, event, element, state) => {
+                return app[schema.onMount](payload, event, element, state);
+              };
+            }
+          } else if (typeof schema.onMount === "function") {
+            schema.actions._onMount = schema.onMount;
+            schema.onMount = "_onMount";
+          }
+        }
+        if (!schema.onClose && typeof app.onClose === "function") {
+          schema.onClose = (winId, state) => {
+            return app.onClose(winId, state);
+          };
+        }
+        schema.actions._appInstance = app;
+        this.register(schema.id, schema);
+        const declarativeApp = new DeclarativeApp(schema, this.services);
+        return declarativeApp.open(opts);
+      }
+    }
 
-  _launchLegacy(appId, opts) {
-    const appInstance = this.registry.getLegacy(appId);
-    return appInstance.open(opts);
+    if (app.id && typeof app.id === "string") {
+      const declarativeApp = new DeclarativeApp(app, this.services);
+      return declarativeApp.open(opts);
+    }
+
+    return app.open(opts);
   }
 
   has(appId) {
     return this.registry.has(appId);
   }
 
-  isDeclarative(appId) {
-    return this.registry.isDeclarative(appId);
-  }
-
-  isLegacy(appId) {
-    return this.registry.isLegacy(appId);
-  }
-
-  getLegacy(appId) {
-    return this.registry.getLegacy(appId);
-  }
-
-  getDeclarative(appId) {
+  get(appId) {
     return this.registry.get(appId);
+  }
+
+  getAll() {
+    return this.registry.getAll();
   }
 }

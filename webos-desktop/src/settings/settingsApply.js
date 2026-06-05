@@ -54,7 +54,7 @@ export function applyTransparentUI(enabled) {
 
 export function applySound(enabled, volume) {
   const vol = Number.isFinite(volume) ? Math.max(0, Math.min(1, volume)) : 1;
-  audioMixer.setMaster(enabled ? vol : 0);
+  audioMixer().setMaster(enabled ? vol : 0);
 }
 
 export function applyGuiScale(scale) {

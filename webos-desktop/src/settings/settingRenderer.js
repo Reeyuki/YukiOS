@@ -372,7 +372,6 @@ export function renderDesktopSettings(s) {
           <select id="settingsWindowSwitcherUI" class="settings-select">
             <option value="overlay"  ${s.windowSwitcherUI === "overlay" ? "selected" : ""}>App Switcher Overlay (shows previews)</option>
             <option value="direct"   ${s.windowSwitcherUI === "direct" ? "selected" : ""}>Fast Switching (no visual UI)</option>
-            <option value="taskbar"  ${s.windowSwitcherUI === "taskbar" ? "selected" : ""}>Switch using Taskbar highlight</option>
           </select>
         </div>
         <div class="settings-row">
@@ -803,8 +802,8 @@ export function renderNetworkSettings(s) {
   `;
 }
 export function renderAudioSettings(s) {
-  const vol = Math.round((s.soundEnabled ? s.masterVolume : audioMixer.masterVolume) * 100);
-  const sysVol = Math.round((s.systemAudioEnabled ? s.systemVolume : audioMixer.systemVolume) * 100);
+  const vol = Math.round((s.soundEnabled ? s.masterVolume : audioMixer().masterVolume) * 100);
+  const sysVol = Math.round((s.systemAudioEnabled ? s.systemVolume : audioMixer().systemVolume) * 100);
   return `
     <div id="pane-audio" class="settings-category-pane">
       <div class="settings-category-header">Audio</div>

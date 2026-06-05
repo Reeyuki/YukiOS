@@ -15,7 +15,7 @@ export class OSBridge {
     const { action: actionType, target, params } = action;
 
     if (!this._checkPermission(actionType, target)) {
-      audioMixer.playCriticalWarning();
+      audioMixer().playCriticalWarning();
       throw new Error(`Permission denied for ${actionType} on ${target}`);
     }
 

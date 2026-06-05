@@ -442,6 +442,7 @@ export class GameRenderer {
     `;
     target.appendChild(style);
   }
+
   _fillGridLazy(grid, games) {
     const CHUNK = 30;
     let index = 0;

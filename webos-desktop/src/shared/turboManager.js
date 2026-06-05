@@ -3,7 +3,14 @@ import { os } from "../os/index.js";
 
 class TurboManager {
   constructor() {
-    this._currentMode = os.storage.get(StorageKeys.turboMode) || "balanced";
+    let mode = null;
+    try {
+      const raw = localStorage.getItem(StorageKeys.turboMode);
+      if (raw !== null) mode = JSON.parse(raw);
+    } catch {
+      mode = localStorage.getItem(StorageKeys.turboMode);
+    }
+    this._currentMode = mode || "balanced";
     this._styleEl = null;
     this._init();
   }

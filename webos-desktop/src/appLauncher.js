@@ -1,6 +1,6 @@
 import { WindowHelper } from "./utils/WindowHelper.js";
 import { sanitizeTitle } from "./utils/utils.js";
-import { HIGHLIGHTED_GAMES, getGameName, openSteamWindow } from "./games/games.js";
+import { HIGHLIGHTED_GAMES, getGameName } from "./games/games.js";
 import { appMap } from "./games/gamesList.js";
 import { SYSTEM_APPS } from "./AppRegistryConfig.js";
 import { createAppActions } from "./AppActions.js";
@@ -28,88 +28,19 @@ import { AppRuntime } from "./runtime/AppRuntime.js";
 const STATICALLY_BASE = resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main");
 
 export class AppLauncher {
-  constructor(windowManager, fileSystemManager, apps = {}) {
+  constructor(windowManager, fileSystemManager, services = {}) {
     this.wm = windowManager;
     this.windowHelper = new WindowHelper(this.wm);
     this.fs = fileSystemManager;
 
-    const {
-      explorerApp,
-      terminalApp,
-      notepadApp,
-      browserApp,
-      cameraApp,
-      calculatorApp,
-      aboutApp,
-      newsApp,
-      settingsApp,
-      taskManagerApp,
-      weatherApp,
-      appCreatorApp,
-      officeApp,
-      shittifyApp,
-      monaco,
-      model3dApp,
-      jsDosApp,
-      v86app,
-      youtubeApp,
-      achievementsApp,
-      adsManager,
-      profileCustomizerApp,
-      markdownApp,
-      emulatorApp,
-      ruffleApp,
-      shortcutsApp,
-      yukiConvertApp,
-      setupApp,
-      dataEditorApp,
-      installedAppsApp,
-      yukiOsGuideApp,
-      clipboardManagerApp,
-      aiAssistantApp,
-      brightnessApp,
-      emojiSelectorApp,
-      systemAppsApp,
-      rhythmsApp
-    } = apps;
+    this._services = services;
+    Object.assign(this, services);
 
-    this.explorerApp = explorerApp;
-    this.terminalApp = terminalApp;
-    this.notepadApp = notepadApp;
-    this.browserApp = browserApp;
-    this.cameraApp = cameraApp;
-    this.calculatorApp = calculatorApp;
-    this.aboutApp = aboutApp;
-    this.newsApp = newsApp;
-    this.settingsApp = settingsApp;
-    this.taskManager = taskManagerApp;
-    this.weatherApp = weatherApp;
-    this.appCreatorApp = appCreatorApp;
-    this.officeApp = officeApp;
-    this.shittifyApp = shittifyApp;
-    this.monacoApp = monaco;
-    this.model3dApp = model3dApp;
-    this.jsDosApp = jsDosApp;
-    this.v86app = v86app;
-    this.youtubeApp = youtubeApp;
-    this.achievementsApp = achievementsApp;
-    this.adsManager = adsManager;
-    this.profileCustomizerApp = profileCustomizerApp;
-    this.markdownApp = markdownApp;
-    this.emulatorApp = emulatorApp;
-    this.ruffleApp = ruffleApp;
-    this.shortcutsApp = shortcutsApp;
-    this.yukiConvertApp = yukiConvertApp;
-    this.setupApp = setupApp;
-    this.dataEditorApp = dataEditorApp;
-    this.installedAppsApp = installedAppsApp;
-    this.yukiOsGuideApp = yukiOsGuideApp;
-    this.clipboardManagerApp = clipboardManagerApp;
-    this.aiAssistantApp = aiAssistantApp;
-    this.brightnessApp = brightnessApp;
-    this.emojiSelectorApp = emojiSelectorApp;
-    this.systemAppsApp = systemAppsApp;
-    this.rhythmsApp = rhythmsApp;
+    // Map slightly different property names
+    this.taskManager = services.taskManagerApp;
+    this.adsManager = services.adsApp;
+    this.brightnessApp = services.displayPerformanceApp;
+
     this.TRANSPARENCY_ALLOWED_APP_IDS = new Set(["paint", "photopea", "vscode", "liventcord"]);
 
     this.clippyPromise = initClippy();
@@ -141,7 +72,7 @@ export class AppLauncher {
       WindowHelper: WindowHelper
     });
 
-    this._registerLegacyApps();
+    this._registerAppsFromMap();
 
     this.BIC = "badIceCream";
 
@@ -197,42 +128,18 @@ export class AppLauncher {
     this._ensureIframeNavigateHandler();
   }
 
-  _registerLegacyApps() {
-    this.appRuntime.registerLegacy("browserApp", this.browserApp);
-    this.appRuntime.registerLegacy("explorer", this.explorerApp);
-    this.appRuntime.registerLegacy("terminal", this.terminalApp);
-    this.appRuntime.registerLegacy("notepad", this.notepadApp);
-    this.appRuntime.registerLegacy("markdown", this.markdownApp);
-    this.appRuntime.registerLegacy("emulatorApp", this.emulatorApp);
-    this.appRuntime.registerLegacy("ruffleApp", this.ruffleApp);
-    this.appRuntime.registerLegacy("monaco", this.monacoApp);
-    this.appRuntime.registerLegacy("cameraApp", this.cameraApp);
-    this.appRuntime.registerLegacy("settingsApp", this.settingsApp);
-    this.appRuntime.registerLegacy("calculatorApp", this.calculatorApp);
-    this.appRuntime.registerLegacy("aboutApp", this.aboutApp);
-    this.appRuntime.registerLegacy("shortcutsApp", this.shortcutsApp);
-    this.appRuntime.registerLegacy("newsApp", this.newsApp);
-    this.appRuntime.registerLegacy("model3dApp", this.model3dApp);
-    this.appRuntime.registerLegacy("taskManager", this.taskManager);
-    this.appRuntime.registerLegacy("weather", this.weatherApp);
-    this.appRuntime.registerLegacy("appCreator", this.appCreatorApp);
-    this.appRuntime.registerLegacy("office", this.officeApp);
-    this.appRuntime.registerLegacy("shittify", this.shittifyApp);
-    this.appRuntime.registerLegacy("jsDosApp", this.jsDosApp);
-    this.appRuntime.registerLegacy("v86", this.v86app);
-    this.appRuntime.registerLegacy("youtube", this.youtubeApp);
-    this.appRuntime.registerLegacy("achievements", this.achievementsApp);
-    this.appRuntime.registerLegacy("profileCustomizer", this.profileCustomizerApp);
-    this.appRuntime.registerLegacy("yukiConvert", this.yukiConvertApp);
-    this.appRuntime.registerLegacy("setupApp", this.setupApp);
-    this.appRuntime.registerLegacy("installedApps", this.installedAppsApp);
-    this.appRuntime.registerLegacy("yukiOsGuide", this.yukiOsGuideApp);
-    this.appRuntime.registerLegacy("aiAssistant", this.aiAssistantApp);
-    this.appRuntime.registerLegacy("rhythms", this.rhythmsApp);
+  _registerAppsFromMap() {
+    for (const [appId, metadata] of Object.entries(SYSTEM_APPS)) {
+      const serviceKey = metadata.serviceKey || appId;
+      const instance = this._services[serviceKey] || this[appId] || this[appId + "App"];
+      if (instance) {
+        this.appRuntime.register(appId, instance);
+      }
+    }
   }
 
   async _tryLaunchDeclarative(appId, opts) {
-    const appInstance = this.appRuntime.getLegacy(appId);
+    const appInstance = this.appRuntime.get(appId);
     if (!appInstance) return null;
 
     const services = appInstance._services;
@@ -269,7 +176,7 @@ export class AppLauncher {
             };
           }
           schema.actions._appInstance = appInstance;
-          this.appRuntime.registerDeclarative(schema);
+          this.appRuntime.register(schema.id, schema);
           return this.appRuntime.launch(schema.id, opts);
         }
       } catch (e) {
@@ -362,23 +269,35 @@ export class AppLauncher {
     const appExtra = { ...(extra || {}), appId: app, appType: info.type };
 
     if (info.type === "system") {
-      if (info.url) {
-        if (app === "libreSprite") {
-          this.openRemoteApp(info.url);
-        } else {
-          this.openIframeApp({
-            appId: app,
-            type: "game",
-            source: info.url,
-            originalName: app,
-            analyticsBase,
-            ...appExtra
-          });
-        }
+      if (app === "libreSprite") {
+        this.openRemoteApp(info.source);
+      } else if (info.launchType === "iframe" && info.source) {
+        this.openIframeApp({
+          appId: app,
+          type: "game",
+          source: info.source,
+          originalName: app,
+          analyticsBase,
+          ...appExtra
+        });
+      } else if (info.url) {
+        this.openIframeApp({
+          appId: app,
+          type: "game",
+          source: info.url,
+          originalName: app,
+          analyticsBase,
+          ...appExtra
+        });
       } else if (info.action) {
         const result = await this._tryLaunchDeclarative(app, appExtra);
         if (!result) {
           info.action.call(this, appExtra);
+        }
+      } else if (info.launchType === "instance") {
+        const result = await this._tryLaunchDeclarative(app, appExtra);
+        if (!result) {
+          this.appRuntime.launch(app, appExtra);
         }
       }
       return;

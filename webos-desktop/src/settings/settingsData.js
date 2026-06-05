@@ -102,7 +102,7 @@ export async function importData(fs, showStatus = () => {}) {
       setTimeout(() => location.reload(), 400);
     } catch (e) {
       console.error("Import failed:", e);
-      audioMixer.playCriticalWarning();
+      audioMixer().playCriticalWarning();
       customAlert("Import failed. The file may be invalid or corrupted. Check console for details.");
       showStatus("Import failed");
     }

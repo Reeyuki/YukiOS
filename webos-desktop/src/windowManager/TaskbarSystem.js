@@ -128,7 +128,7 @@ export class TaskbarSystem {
     this.manager.openWindows.set(winId, { taskbarItem, title, iconValue, color, record });
     this.manager.workspaceManager?.registerWindow(winId);
 
-    audioMixer.registerWindow(winId, title, audioMixer.getIconHtmlForTaskbar(null, iconValue));
+    audioMixer().registerWindow(winId, title, audioMixer().getIconHtmlForTaskbar(null, iconValue));
 
     if (win) {
       const headerSpan = win.querySelector(".window-header > span");
@@ -329,7 +329,7 @@ export class TaskbarSystem {
     }
     this.manager.openWindows.delete(winId);
     this.manager.workspaceManager?.unregisterWindow(winId);
-    audioMixer.unregisterWindow(winId);
+    audioMixer().unregisterWindow(winId);
     os.events.emit(BusEvents.WINDOW_CLOSED, { winId });
     this._renderPinnedItems();
 

@@ -190,9 +190,9 @@ export class WeatherApp extends BaseApp {
     this.wxBody = document.getElementById("wx-body");
   }
 
-  open() {
+  async open() {
     const winId = "weather-win";
-    if (this._isSingletonOpen(winId)) return;
+    if (await this._isSingletonOpen(winId)) return;
 
     const content = `
       <div class="window-content">

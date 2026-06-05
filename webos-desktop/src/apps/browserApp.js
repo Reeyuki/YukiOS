@@ -59,9 +59,9 @@ export class BrowserApp extends BaseApp {
     this._loadPrefs();
   }
 
-  open(title = "Yuki Browser", url = null, isIncognito = false) {
+  async open(title = "Yuki Browser", url = null, isIncognito = false) {
     this.isIncognito = isIncognito;
-    if (this._isSingletonOpen(this.winId)) return;
+    if (await this._isSingletonOpen(this.winId)) return;
 
     this._destroyed = false;
 

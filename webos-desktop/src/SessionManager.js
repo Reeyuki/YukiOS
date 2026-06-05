@@ -388,10 +388,10 @@ export class SessionManager {
 
     if (this.services.windowManager) {
       this.services.windowManager.setFileSystemManager(this.services.fileSystemManager);
-      this.services.windowManager.restoreSession();
+      setTimeout(() => this.services.windowManager.restoreSession(), 500);
     }
 
-    audioMixer.playSystemSound(SystemAudio.START);
+    audioMixer().playSystemSound(SystemAudio.START);
 
     if (!os.storage.get(StorageKeys.setupCompleted) && this.services.setupApp) {
       setTimeout(() => this.services.setupApp.open(), 1000);
@@ -402,7 +402,7 @@ export class SessionManager {
     if (this.isLocked) return;
     this.isLocked = true;
 
-    audioMixer.playSystemSound(SystemAudio.SHUTDOWN);
+    audioMixer().playSystemSound(SystemAudio.SHUTDOWN);
 
     if (this.services.windowManager && typeof this.services.windowManager.closeAll === "function") {
       this.services.windowManager.closeAll();

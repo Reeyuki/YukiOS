@@ -1,6 +1,7 @@
 import { appMap } from "./gamesList.js";
 import { descriptionMap } from "./gameDescriptions.js";
 import { GameRenderer } from "./GameRenderer.js";
+import { GameLauncher } from "./GameLauncher.js";
 import { GameUI } from "./GameUI.js";
 import { resolveGhUrl, resolveIconUrl } from "../shared/assetResolver.js";
 import { CDN_CONFIG } from "../shared/cdnConfig.js";
@@ -16,7 +17,12 @@ export function getCdnBaseGames() {
   return CDN_CONFIG.repos.games.base;
 }
 
+export let _launcher = null;
 export let _desktopUI = null;
+
+export function setGameLauncher(launcher) {
+  _launcher = launcher;
+}
 
 export function setDesktopUI(ui) {
   _desktopUI = ui;
@@ -459,6 +465,7 @@ export class GameWindowRenderer {
     );
 
     this.gameRenderer = new GameRenderer(this);
+    this.gameLauncher = new GameLauncher(this);
     this.gameUI = new GameUI(this);
   }
 
@@ -477,6 +484,10 @@ export class GameWindowRenderer {
   setCurrentGame(appId) {
     this.currentGame = appId;
     this.currentArchiveGame = null;
+  }
+
+  showGameOverlay(title, url) {
+    return this.gameLauncher.showGameOverlay(title, url);
   }
 
   renderGameOverview(container, appId, onLaunch) {

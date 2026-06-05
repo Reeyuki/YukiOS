@@ -116,7 +116,7 @@ export class EmulatorApp extends BaseApp {
           ui: `
       <div class="emu-shell ruf-container">
         <div class="emu-header ruf-header">
-          <i class="fa-solid fa-gamepad emu-header-icon ruf-icon-main"></i>
+          <img src="static/icons/emulator.webp" class="emu-header-icon ruf-icon-main">
           <div class="emu-header-text">
             <div class="emu-title ruf-title">Emulator JS</div>
             <div class="emu-subtitle ruf-subtitle">Play classic games in your browser</div>
@@ -196,9 +196,17 @@ export class EmulatorApp extends BaseApp {
         },
         loadUserRoms: async (payload, event, element, state) => {
           await this.loadUserRoms();
+        },
+        refreshIcons: (payload, event, element, state) => {
+          if (window.FontAwesome && window.FontAwesome.dom && window.FontAwesome.dom.i2svg) {
+            const container = document.querySelector(".emu-shell");
+            if (container) {
+              window.FontAwesome.dom.i2svg({ node: container });
+            }
+          }
         }
       },
-      onMount: "loadUserRoms"
+      onMount: ["loadUserRoms", "refreshIcons"]
     };
   }
 
@@ -304,8 +312,8 @@ export class EmulatorApp extends BaseApp {
     }
   }
 
-  open() {
-    if (this._isSingletonOpen("emulator-win")) return;
+  async open() {
+    if (await this._isSingletonOpen("emulator-win")) return;
     return super.open();
   }
 
@@ -347,7 +355,7 @@ export class EmulatorApp extends BaseApp {
     try {
       const blob = await os.fs.read([...normalizedPath, fileName]);
       if (!blob || blob.size === 0) {
-        audioMixer.playCriticalWarning();
+        audioMixer().playCriticalWarning();
         os.notify.send("", "Failed to read ROM file.");
         return;
       }
@@ -367,7 +375,7 @@ export class EmulatorApp extends BaseApp {
 
       this._launchEmulator(displayName, fileName, arrayBuffer);
     } catch (e) {
-      audioMixer.playCriticalWarning();
+      audioMixer().playCriticalWarning();
       os.notify.send("", `Error loading ROM: ${e.message}`);
     }
   }

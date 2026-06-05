@@ -666,4 +666,10 @@ class AudioMixer {
   }
 }
 
-export const audioMixer = new AudioMixer();
+let audioMixerInstance = null;
+export const audioMixer = () => {
+  if (!audioMixerInstance) {
+    audioMixerInstance = new AudioMixer();
+  }
+  return audioMixerInstance;
+};

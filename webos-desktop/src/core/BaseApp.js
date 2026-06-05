@@ -1,5 +1,18 @@
-import { trayManager } from "../tray/tray.js";
 import { AppSource } from "../AppSource.js";
+
+let _osPromise = null;
+let _os = null;
+
+async function getOs() {
+  if (_os) return _os;
+  if (!_osPromise) {
+    _osPromise = import("../os/index.js").then((m) => {
+      _os = m.os;
+      return _os;
+    });
+  }
+  return _osPromise;
+}
 
 export class BaseApp {
   constructor(services = {}) {
@@ -8,8 +21,9 @@ export class BaseApp {
       services.windowManager = new Proxy(services.windowManager, {
         get: (target, prop) => {
           if (prop === "sendNotify") {
-            return (text, appSource = null) => {
+            return async (text, appSource = null) => {
               const source = appSource || this._getAppSource();
+              const os = await getOs();
               os.notify.send("", text, { appSource: source });
             };
           }
@@ -41,10 +55,11 @@ export class BaseApp {
 
   restoreSnapshot(winId, data) {}
 
-  _isSingletonOpen(winId) {
+  async _isSingletonOpen(winId) {
     const existing = document.getElementById(winId);
     if (existing) {
       try {
+        const os = await getOs();
         os.window.focus(existing);
       } catch (e) {
         // OS bridge not initialized yet, just focus the window directly
@@ -55,8 +70,9 @@ export class BaseApp {
     return false;
   }
 
-  notify(title, message = "", type = "info", duration = 5000, icon = null, appSource = null) {
+  async notify(title, message = "", type = "info", duration = 5000, icon = null, appSource = null) {
     const source = appSource || this._getAppSource();
+    const os = await getOs();
     os.notify.send(title, message, { type, duration, icon, appSource: source });
   }
 
@@ -124,19 +140,23 @@ export class BaseApp {
     }
   }
 
-  registerTray(winId, icon, label, options = {}) {
-    trayManager.register(winId, icon, label, options);
+  async registerTray(winId, icon, label, options = {}) {
+    const os = await getOs();
+    os.tray.register(winId, icon, label, options);
   }
 
-  unregisterTray(winId) {
-    trayManager.unregister(winId);
+  async unregisterTray(winId) {
+    const os = await getOs();
+    os.tray.unregister(winId);
   }
 
-  sendToTray(winId) {
-    trayManager.sendToTray(winId);
+  async sendToTray(winId) {
+    const os = await getOs();
+    os.tray.sendToTray(winId);
   }
 
-  restoreFromTray(winId) {
-    trayManager.restoreFromTray(winId);
+  async restoreFromTray(winId) {
+    const os = await getOs();
+    os.tray.restoreFromTray(winId);
   }
 }

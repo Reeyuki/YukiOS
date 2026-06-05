@@ -6,13 +6,14 @@ import { makeResizable } from "./windowManager/makeResizable.js";
 import { setupWindowControls } from "./windowManager/windowControls.js";
 import { notify, sendNotify } from "./windowManager/notificationBridge.js";
 import { bus, BusEvents } from "./core/EventBus.js";
-import { animateWindowOpen, initClickBubble } from "./windowManager/AnimationSystem.js";
+import { initClickBubble } from "./windowManager/AnimationSystem.js";
 
 import { InputHandler } from "./windowManager/InputHandler.js";
 import { LayoutManager } from "./windowManager/LayoutManager.js";
 import { SnapSystem } from "./windowManager/SnapSystem.js";
 import { TaskbarSystem } from "./windowManager/TaskbarSystem.js";
 import { SessionManager } from "./windowManager/SessionManager.js";
+import { AppRestorationService } from "./windowManager/AppRestorationService.js";
 import { WindowStateManager } from "./windowManager/WindowStateManager.js";
 import { ContextMenuManager } from "./windowManager/ContextMenuManager.js";
 import { WindowManagerUtils } from "./windowManager/WindowManagerUtils.js";
@@ -51,6 +52,7 @@ export class WindowManager {
     this.snapSystem = new SnapSystem(this);
     this.taskbarSystem = new TaskbarSystem(this);
     this.sessionManager = new SessionManager(this);
+    this.appRestorationService = new AppRestorationService(this);
     this.windowStateManager = new WindowStateManager(this);
     this.contextMenuManager = new ContextMenuManager(this);
     this.utils = new WindowManagerUtils(this);
@@ -69,7 +71,7 @@ export class WindowManager {
     });
 
     setTimeout(() => {
-      audioMixer.init();
+      audioMixer().init();
     }, 0);
   }
 
@@ -87,10 +89,15 @@ export class WindowManager {
 
   setAppLauncher(appLauncher) {
     this.appLauncher = appLauncher;
+    if (this.appRestorationService) {
+      this.appRestorationService.buildRegistryFromConfig();
+    }
   }
 
   triggerSessionSave() {
-    this.sessionManager.triggerSessionSave();
+    if (this.appRestorationService && this.appRestorationService.isRestoring) return;
+    if (this._sessionSaveTimer) clearTimeout(this._sessionSaveTimer);
+    this._sessionSaveTimer = setTimeout(() => this.appRestorationService.saveSession(), 500);
   }
 
   _guessAppIdFromWinId(winId) {
@@ -98,11 +105,11 @@ export class WindowManager {
   }
 
   saveSession() {
-    return this.sessionManager.saveSession();
+    return this.appRestorationService.saveSession();
   }
 
   restoreSession() {
-    return this.sessionManager.restoreSession();
+    return this.appRestorationService.restoreSession();
   }
 
   _isHeavyApp(appId, appType) {

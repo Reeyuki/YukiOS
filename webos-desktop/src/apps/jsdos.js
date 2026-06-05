@@ -11,8 +11,8 @@ export class JsDosApp extends BaseApp {
     this._explorerApp = services.explorerApp;
   }
 
-  open() {
-    if (this._isSingletonOpen("jsdos-win")) return;
+  async open() {
+    if (await this._isSingletonOpen("jsdos-win")) return;
 
     const win = os.window.create("jsdos-win", "JsDos", "600px", "560px", {
       icon: "static/icons/jsdos.webp"

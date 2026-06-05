@@ -19,7 +19,7 @@ export class DataEditorApp extends BaseApp {
 
   getDeclarativeSchema(opts) {
     return {
-      id: "data-editor",
+      id: "dataEditor-declarative",
       name: "Storage Editor",
       icon: "fas fa-database",
       windows: [

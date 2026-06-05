@@ -7,9 +7,9 @@ export class SystemAppsApp extends BaseApp {
     super(services);
   }
 
-  open(opts = {}) {
+  async open(opts = {}) {
     const winId = "system-apps-win";
-    if (this._isSingletonOpen(winId)) return;
+    if (await this._isSingletonOpen(winId)) return;
 
     const win = os.window.create(winId, "System Apps", "800px", "600px", {
       icon: "fas fa-screwdriver-wrench"

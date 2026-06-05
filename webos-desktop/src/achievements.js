@@ -572,7 +572,7 @@ export class AchievementsApp extends BaseApp {
         const sounds = [this.s1, this.s2, this.s3];
         const pick = sounds[Math.floor(Math.random() * sounds.length)];
         pick.currentTime = 0;
-        pick.volume = audioMixer.masterVolume * audioMixer.systemVolume;
+        pick.volume = audioMixer().masterVolume * audioMixer().systemVolume;
         pick.play();
       } catch (e) {}
     }

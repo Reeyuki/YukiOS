@@ -121,8 +121,8 @@ export class ShittifyApp extends BaseApp {
     return "Evil Spotify";
   }
 
-  async open() {
-    const winId = this._winId;
+  async open(extra = {}) {
+    const winId = extra.forceId || this._winId;
 
     if (document.getElementById(winId)) {
       const win = document.getElementById(winId);
@@ -154,12 +154,12 @@ export class ShittifyApp extends BaseApp {
     win.appendChild(contentDiv);
 
     os.tray.register(winId, SHITTIFY_ICON, "Evil Spotify", { showInTray: true, priority: 1 });
-    audioMixer.registerWindow(
+    audioMixer().registerWindow(
       winId,
       "Evil Spotify",
       `<img src="${SHITTIFY_ICON}" style="width:14px;height:14px;border-radius:2px;object-fit:contain;vertical-align:middle;" />`
     );
-    audioMixer.setChannelCommandHandler(winId, (cmd) => this.sendCommand(cmd));
+    audioMixer().setChannelCommandHandler(winId, (cmd) => this.sendCommand(cmd));
     this._setupMessageBridge(winId);
 
     try {
@@ -217,7 +217,7 @@ export class ShittifyApp extends BaseApp {
       if (d.track && d.artist) {
         os.storage.set("shittify_last_state", { track: d.track, artist: d.artist, state: d.playbackState });
       }
-      audioMixer.updateChannelMeta(winId, {
+      audioMixer().updateChannelMeta(winId, {
         track: d.track || "",
         artist: d.artist || "",
         album: d.album || "",
@@ -240,7 +240,7 @@ export class ShittifyApp extends BaseApp {
       this._msgListener = null;
     }
     this._iframe = null;
-    audioMixer.unregisterWindow(winId);
+    audioMixer().unregisterWindow(winId);
     os.tray.unregister(winId);
     this.notify("Evil Spotify", "Music player closed", "info", 3000);
   }

@@ -108,9 +108,17 @@ export class RuffleApp extends BaseApp {
         },
         loadUserFiles: async (payload, event, element, state) => {
           await this.loadUserFiles();
+        },
+        refreshIcons: (payload, event, element, state) => {
+          if (window.FontAwesome && window.FontAwesome.dom && window.FontAwesome.dom.i2svg) {
+            const container = document.querySelector(".ruf-container");
+            if (container) {
+              window.FontAwesome.dom.i2svg({ node: container });
+            }
+          }
         }
       },
-      onMount: "loadUserFiles"
+      onMount: ["loadUserFiles", "refreshIcons"]
     };
   }
 
@@ -204,8 +212,8 @@ export class RuffleApp extends BaseApp {
     }
   }
 
-  open() {
-    if (this._isSingletonOpen("ruffle-win")) return;
+  async open() {
+    if (await this._isSingletonOpen("ruffle-win")) return;
 
     this._loadRuffleScript();
     return super.open();

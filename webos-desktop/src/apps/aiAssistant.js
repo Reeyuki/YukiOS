@@ -29,10 +29,10 @@ export class AIAssistantApp extends BaseApp {
 
   async open(opts = {}) {
     const winId = this.winId;
-    if (this._isSingletonOpen(winId)) return;
+    if (await this._isSingletonOpen(winId)) return;
 
     if (this.enabled) {
-      this.registerTray(this.winId, "fas fa-robot", "Yuki AI", {
+      await this.registerTray(this.winId, "fas fa-robot", "Yuki AI", {
         resident: true,
         showInTray: true
       });

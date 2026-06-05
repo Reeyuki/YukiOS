@@ -1,6 +1,6 @@
 import { sendLaunchAnalytics, getAnalyticsBase, fetchGamePlayCounts, getCachedPlayCounts } from "../analytics.js";
 import { CDN_CONFIG } from "../shared/cdnConfig.js";
-import { lazyImg, observeLazyImages, SteamDataManager } from "./games.js";
+import { lazyImg, observeLazyImages, SteamDataManager, _launcher } from "./games.js";
 import { SteamSettings } from "./steam.js";
 import { os } from "../os/index.js";
 
@@ -36,6 +36,26 @@ export class GameLauncher {
   }
 
   closeGame() {}
+
+  async showGameOverlay(title, url) {
+    const gameId = url
+      .split("?")[0]
+      .replace(/\/index\.html$/, "")
+      .replace(/\.html$/, "")
+      .split("/")
+      .filter(Boolean)
+      .pop()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "");
+    const analyticsBase = getAnalyticsBase(gameId);
+    sendLaunchAnalytics(gameId);
+
+    if (_launcher) {
+      _launcher.openIframeApp({ appId: gameId, type: "game", source: url, originalName: title, analyticsBase });
+    } else {
+      console.error("No launcher available to open game.");
+    }
+  }
 
   async fetchFirstJson(urls) {
     let lastErr = null;

@@ -465,11 +465,11 @@ export class FileSystemManager {
   async importSnapshot(snapshot, { wipe = true } = {}) {
     await this.fsReady;
     if (!snapshot || snapshot.version !== 1 || !Array.isArray(snapshot.entries) || typeof snapshot.root !== "string") {
-      audioMixer.playCriticalWarning();
+      audioMixer().playCriticalWarning();
       throw new Error("Invalid snapshot format.");
     }
     if (snapshot.root !== this.CONFIG.ROOT) {
-      audioMixer.playCriticalWarning();
+      audioMixer().playCriticalWarning();
       throw new Error(`Snapshot root mismatch. Expected ${this.CONFIG.ROOT}, got ${snapshot.root}.`);
     }
 

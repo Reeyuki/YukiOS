@@ -38,9 +38,9 @@ export class InstalledAppsApp extends BaseApp {
     this._instances.delete(winId);
   }
 
-  open(options = {}) {
+  async open(options = {}) {
     const winId = "installed-apps";
-    if (this._isSingletonOpen(winId)) return;
+    if (await this._isSingletonOpen(winId)) return;
 
     const inst = this._createInstance(winId);
     const win = os.window.create(winId, "Installed Apps", "900px", "650px", {
