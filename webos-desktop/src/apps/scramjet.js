@@ -1,7 +1,5 @@
 import { BaseApp } from "../core/BaseApp.js";
 import { os } from "../os/index.js";
-import { getRepoUrl } from "../shared/cdnConfig.js";
-import { fetchHtmlAsBlobUrl } from "../shared/assetResolver.js";
 import { PersistenceTypes } from "../runtime/AppSchema.js";
 
 export class ScramjetApp extends BaseApp {
@@ -44,15 +42,7 @@ export class ScramjetApp extends BaseApp {
   async initScramjet(payload, vt, element, state) {
     this.iframe = element.querySelector("#scramjet-iframe");
 
-    const scramUrl = getRepoUrl("main", "/static/apps/scram/index.html");
-
-    try {
-      const blobUrl = await fetchHtmlAsBlobUrl(scramUrl);
-      this.iframe.src = blobUrl;
-    } catch (err) {
-      console.error("Failed to fetch scramjet HTML:", err);
-      this.iframe.src = scramUrl;
-    }
+    this.iframe.src = window.location.origin + "/scram/index.html";
 
     setTimeout(() => {
       const header = element.querySelector(".window-header");

@@ -118,7 +118,7 @@ export class AppLauncher {
         this.newsApp.open();
         os.storage.set(StorageKeys.newsReadSignatureKey, currentNewsSig);
         os.storage.set(StorageKeys.newsSeenKey, "true");
-      }, 300);
+      }, 1000);
     }
 
     setTimeout(() => {

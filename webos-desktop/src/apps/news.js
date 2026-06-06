@@ -5,6 +5,16 @@ import { os } from "../os/index.js";
 
 const NEWS_UPDATES = [
   {
+    date: "June 6, 2026",
+    sections: [
+      {
+        icon: "fa-wand-magic-sparkles",
+        title: "New App",
+        items: [["fa-globe", "Scramjet Browser", "Browse the web with built-in proxy support and tab management."]]
+      }
+    ]
+  },
+  {
     date: "June 4, 2026",
     sections: [
       {

@@ -5,16 +5,12 @@ self.basePath = self.basePath || basePath;
 self.$scramjet = {
   files: {
     wasm: "https://cdn.jsdelivr.net/gh/Destroyed12121/Staticsj@main/JS/scramjet.wasm.wasm",
-    sync: "https://cdn.jsdelivr.net/gh/Destroyed12121/Staticsj@main/JS/scramjet.sync.js",
-  },
+    sync: "https://cdn.jsdelivr.net/gh/Destroyed12121/Staticsj@main/JS/scramjet.sync.js"
+  }
 };
 
-importScripts(
-  "https://cdn.jsdelivr.net/gh/Destroyed12121/Staticsj@main/JS/scramjet.all.js",
-);
-importScripts(
-  "https://cdn.jsdelivr.net/npm/@mercuryworkshop/bare-mux/dist/index.js",
-);
+importScripts("https://cdn.jsdelivr.net/gh/Destroyed12121/Staticsj@main/JS/scramjet.all.js");
+importScripts("https://cdn.jsdelivr.net/npm/@mercuryworkshop/bare-mux/dist/index.js");
 
 const { ScramjetServiceWorker } = $scramjetLoadWorker();
 const scramjet = new ScramjetServiceWorker({ prefix: basePath + "scramjet/" });
@@ -28,15 +24,13 @@ self.addEventListener("fetch", (event) => {
       await scramjet.loadConfig();
       if (scramjet.route(event)) return scramjet.fetch(event);
       return fetch(event.request);
-    })(),
+    })()
   );
 });
 
 let wispConfig = {};
 let resolveConfigReady;
-const configReadyPromise = new Promise(
-  (resolve) => (resolveConfigReady = resolve),
-);
+const configReadyPromise = new Promise((resolve) => (resolveConfigReady = resolve));
 
 self.addEventListener("message", ({ data }) => {
   if (data.type === "config" && data.wispurl) {
@@ -60,14 +54,11 @@ scramjet.addEventListener("request", async (e) => {
   e.response = (async () => {
     if (!scramjet.client) {
       await configReadyPromise;
-      if (!wispConfig.wispurl)
-        return new Response("WISP URL missing", { status: 500 });
-      const connection = new BareMux.BareMuxConnection(
-        basePath + "bareworker.js",
-      );
+      if (!wispConfig.wispurl) return new Response("WISP URL missing", { status: 500 });
+      const connection = new BareMux.BareMuxConnection(basePath + "bareworker.js");
       await connection.setTransport(
         "https://cdn.jsdelivr.net/npm/@mercuryworkshop/epoxy-transport@2.1.28/dist/index.mjs",
-        [{ wisp: wispConfig.wispurl }],
+        [{ wisp: wispConfig.wispurl }]
       );
       scramjet.client = connection;
     }
@@ -85,7 +76,7 @@ scramjet.addEventListener("request", async (e) => {
           mode: e.mode === "cors" ? e.mode : "same-origin",
           cache: e.cache,
           redirect: "manual",
-          duplex: "half",
+          duplex: "half"
         });
       } catch (err) {
         lastErr = err;
@@ -101,7 +92,7 @@ scramjet.addEventListener("request", async (e) => {
     }
 
     return new Response("Scramjet Fetch Error: " + lastErr.message, {
-      status: 502,
+      status: 502
     });
   })();
 });

@@ -5,10 +5,7 @@
     <title>New Tab</title>
 
     <script src="/s/text.js"></script>
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <style>
       @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
@@ -255,12 +252,7 @@
 
     <form class="search-box" id="searchForm">
       <i class="fa-solid fa-magnifying-glass"></i>
-      <input
-        type="text"
-        id="searchInput"
-        placeholder="Search the web..."
-        autocomplete="off"
-      />
+      <input type="text" id="searchInput" placeholder="Search the web..." autocomplete="off" />
       <select id="engine">
         <option value="https://search.brave.com/search?q=">Brave</option>
         <option value="https://duckduckgo.com/?q=">DuckDuckGo</option>
@@ -271,41 +263,31 @@
     <div class="shortcuts" id="shortcuts">
       <a class="shortcut" data-url="https://youtube.com">
         <div class="shortcut-icon">
-          <img
-            src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/youtube.svg"
-          />
+          <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/youtube.svg" />
         </div>
         <span class="shortcut-label">YouTube</span>
       </a>
       <a class="shortcut" data-url="https://github.com">
         <div class="shortcut-icon">
-          <img
-            src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/github.svg"
-          />
+          <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/github.svg" />
         </div>
         <span class="shortcut-label">GitHub</span>
       </a>
       <a class="shortcut" data-url="https://discord.com">
         <div class="shortcut-icon">
-          <img
-            src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/discord.svg"
-          />
+          <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/discord.svg" />
         </div>
         <span class="shortcut-label">Discord</span>
       </a>
       <a class="shortcut" data-url="https://twitter.com">
         <div class="shortcut-icon">
-          <img
-            src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/x.svg"
-          />
+          <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/x.svg" />
         </div>
         <span class="shortcut-label">Twitter</span>
       </a>
       <a class="shortcut" data-url="https://reddit.com">
         <div class="shortcut-icon">
-          <img
-            src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/reddit.svg"
-          />
+          <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/reddit.svg" />
         </div>
         <span class="shortcut-label">Reddit</span>
       </a>
@@ -317,17 +299,13 @@
       </a>
       <a class="shortcut" data-url="https://netflix.com">
         <div class="shortcut-icon">
-          <img
-            src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/netflix.svg"
-          />
+          <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/netflix.svg" />
         </div>
         <span class="shortcut-label">Netflix</span>
       </a>
       <a class="shortcut" data-url="https://twitch.tv">
         <div class="shortcut-icon">
-          <img
-            src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/twitch.svg"
-          />
+          <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/twitch.svg" />
         </div>
         <span class="shortcut-label">Twitch</span>
       </a>
@@ -352,12 +330,12 @@
         $("#clock").textContent = now.toLocaleTimeString("en-US", {
           hour: "2-digit",
           minute: "2-digit",
-          hour12: false,
+          hour12: false
         });
         $("#date").textContent = now.toLocaleDateString("en-US", {
           weekday: "long",
           month: "long",
-          day: "numeric",
+          day: "numeric"
         });
       }
       updateClock();
@@ -385,9 +363,7 @@
           if (!url) return;
           if (!url.startsWith("http")) url = "https://" + url;
 
-          const shortcuts = JSON.parse(
-            localStorage.getItem("shortcuts") || "[]",
-          );
+          const shortcuts = JSON.parse(localStorage.getItem("shortcuts") || "[]");
           shortcuts.push({ name, url });
           localStorage.setItem("shortcuts", JSON.stringify(shortcuts));
           renderCustom();
@@ -395,9 +371,7 @@
       };
 
       function renderCustom() {
-        document
-          .querySelectorAll(".custom-shortcut")
-          .forEach((e) => e.remove());
+        document.querySelectorAll(".custom-shortcut").forEach((e) => e.remove());
         const shortcuts = JSON.parse(localStorage.getItem("shortcuts") || "[]");
         const addBtn = $("#addShortcut");
 
@@ -415,8 +389,7 @@
 
       // Quote
       if (window.QUOTES?.length) {
-        $("#quote").textContent =
-          window.QUOTES[Math.floor(Math.random() * window.QUOTES.length)];
+        $("#quote").textContent = window.QUOTES[Math.floor(Math.random() * window.QUOTES.length)];
       }
 
       renderCustom();
