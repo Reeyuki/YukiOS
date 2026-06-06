@@ -55,7 +55,7 @@ export class ScramjetApp extends BaseApp {
     }
 
     setTimeout(() => {
-      const header = this.win.querySelector(".window-header");
+      const header = element.querySelector(".window-header");
       if (header) {
         const titleSpan = header.querySelector("span");
         if (titleSpan) {
