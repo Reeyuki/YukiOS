@@ -26,6 +26,7 @@ import { NetworkTrayApp } from "./tray/networkTray.js";
 import { EmojiSelectorApp } from "./apps/emojiSelector.js";
 import { SystemAppsApp } from "./apps/systemApps.js";
 import { RhythmsApp } from "./apps/rhythms.js";
+import { ScramjetApp } from "./apps/scramjet.js";
 
 const APP_DEFINITIONS = [
   { serviceKey: "terminalApp", AppClass: TerminalApp, enhanced: true },
@@ -59,6 +60,7 @@ const APP_DEFINITIONS = [
   { serviceKey: "aiAssistantApp", AppClass: AIAssistantApp, enhanced: false },
   { serviceKey: "displayPerformanceApp", AppClass: DisplayPerformanceApp, enhanced: false },
   { serviceKey: "networkTrayApp", AppClass: NetworkTrayApp, enhanced: false },
+  { serviceKey: "scramjetApp", AppClass: ScramjetApp, enhanced: true },
   { serviceKey: "emojiSelectorApp", AppClass: EmojiSelectorApp, enhanced: true },
   { serviceKey: "systemAppsApp", AppClass: SystemAppsApp, enhanced: false },
   { serviceKey: "rhythmsApp", AppClass: RhythmsApp, enhanced: true }

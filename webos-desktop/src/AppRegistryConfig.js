@@ -452,6 +452,15 @@ export const SYSTEM_APPS = {
     icon: "fas fa-paint-brush",
     launchType: "iframe",
     windowIdPatterns: ["minipaint"]
+  },
+  scramjet: {
+    serviceKey: "scramjetApp",
+    type: "system",
+    title: "Scramjet Proxy",
+    icon: "fas fa-globe",
+    launchType: "instance",
+    windowIdPatterns: ["scramjet"],
+    clippy: { message: "Browse web with scramjet proxy", animation: ClippyAnimation.GetArtsy }
   }
 };
 

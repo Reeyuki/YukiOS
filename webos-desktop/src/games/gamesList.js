@@ -19,7 +19,7 @@ export const appMap = {
   },
   tabs: {
     type: "game",
-    url: "https://reeyuki.github.io/Tabs",
+    url: "/static/games/html/tabs.html",
     icon: "/static/icons/tabs.webp",
     title: "TABS: Totaly Accurate Battle Simulator"
   },
