@@ -825,6 +825,9 @@ export class BrowserApp extends BaseApp {
           this.renderTabs();
         }
       }
+      if (e.data.type === "browser-launch-app") {
+        os.app.launch(e.data.appId);
+      }
     };
     window.addEventListener("message", this._msgListener);
   }
@@ -1258,6 +1261,10 @@ body {
       <img class="quick-link-icon" src="https://www.reddit.com/favicon.ico" onerror="this.style.display='none'" />
       <div class="quick-link-label">Reddit</div>
     </button>
+    <button class="quick-link" data-app-launch="scramjet" style="background: rgba(138, 180, 248, 0.3); border-color: #8ab4f8;">
+      <div class="quick-link-icon" style="font-size: 24px;">🌐</div>
+      <div class="quick-link-label">Scramjet</div>
+    </button>
   </div>
 </div>
 <script>
@@ -1271,6 +1278,11 @@ body {
   document.querySelectorAll('[data-nav]').forEach(function(btn) {
     btn.addEventListener('click', function() {
       window.parent.postMessage({ type: 'browser-navigate', url: btn.getAttribute('data-nav') }, '*');
+    });
+  });
+  document.querySelectorAll('[data-app-launch]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      window.parent.postMessage({ type: 'browser-launch-app', appId: btn.getAttribute('data-app-launch') }, '*');
     });
   });
 </script>

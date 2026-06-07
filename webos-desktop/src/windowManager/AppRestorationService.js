@@ -110,6 +110,8 @@ export class AppRestorationService {
       const entry = this.wm.openWindows.get(win.id);
       if (!entry || !entry.record) continue;
 
+      if (win.id === "ads-yukios" || win.id === "ads_main_window") continue;
+
       const record = entry.record;
 
       const geom = this.wm._getWindowNormalGeometry(win);

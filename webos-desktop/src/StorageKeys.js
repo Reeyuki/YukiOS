@@ -7,6 +7,7 @@ export const StorageKeys = {
   wallpaperKey: "yukiOS_selectedWallpaper",
   loginWallpaperKey: "yukiOS_loginWallpaper",
   wallpaperIndexKey: "yukiOS_wallpaperIndex",
+  wallpaperType: "yukiOS_wallpaperType",
   cycleWallpaper: "yukiOS_cycleWallpaper",
   manualWallpaper: "yukiOS_manualWallpaper",
   cursorKey: "yukiOS_customCursor",

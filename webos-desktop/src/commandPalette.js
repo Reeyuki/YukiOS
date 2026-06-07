@@ -5,6 +5,7 @@ import { openFileWith } from "./fileDisplay.js";
 import { resolveIconUrl } from "./shared/assetResolver.js";
 import { AppSource } from "./AppSource.js";
 import { os } from "./os/index.js";
+import { WALLPAPER_NAME_URL_PAIRS } from "./wallpaperConfig.js";
 
 export class CommandPalette {
   constructor(services) {
@@ -558,28 +559,7 @@ export class CommandPalette {
   }
 
   _renderWallpaperSubpalette(search) {
-    const wallOpts = [
-      { name: "Mint Theme", url: "/static/wallpapers/mint.webp" },
-      { name: "Nier Automata", url: "/static/wallpapers/nier.webp" },
-      { name: "Red Windows 10", url: "/static/wallpapers/redwin10.jpg" },
-      { name: "Yuki Gradient 1", url: "/static/wallpapers/wallpaper1.webp" },
-      { name: "Yuki Gradient 2", url: "/static/wallpapers/wallpaper2.webp" },
-      { name: "Yuki Gradient 3", url: "/static/wallpapers/wallpaper3.webp" },
-      { name: "Yuki Gradient 4", url: "/static/wallpapers/wallpaper4.webp" },
-      { name: "Yuki Gradient 5", url: "/static/wallpapers/wallpaper5.webp" },
-      { name: "Yuki Gradient 6", url: "/static/wallpapers/wallpaper6.webp" },
-      { name: "Yuki Gradient 7", url: "/static/wallpapers/wallpaper7.webp" },
-      { name: "Yuki Gradient 8", url: "/static/wallpapers/wallpaper8.webp" },
-      { name: "Yuki Gradient 9", url: "/static/wallpapers/wallpaper9.webp" },
-      { name: "Yuki Gradient 10", url: "/static/wallpapers/wallpaper10.webp" },
-      { name: "Yuki Gradient 11", url: "/static/wallpapers/wallpaper11.webp" },
-      { name: "Yuki Gradient 12", url: "/static/wallpapers/wallpaper12.png" },
-      { name: "Yuki Gradient 13", url: "/static/wallpapers/wallpaper13.png" },
-      { name: "Windows 7", url: "/static/wallpapers/win7.webp" },
-      { name: "Windows 10", url: "/static/wallpapers/win10.webp" },
-      { name: "Windows 11", url: "/static/wallpapers/win11.webp" },
-      { name: "Windows XP", url: "/static/wallpapers/xp.webp" }
-    ];
+    const wallOpts = WALLPAPER_NAME_URL_PAIRS;
 
     let matches = wallOpts;
     if (search) {

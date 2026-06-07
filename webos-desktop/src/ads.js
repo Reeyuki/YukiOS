@@ -15,7 +15,6 @@ export function shouldEnableAds() {
   return true;
 }
 let interactionCount = 0;
-let lastInteractionTime = Date.now();
 
 const POPUNDER_SCRIPT = "https://pl29443507.profitablecpmratenetwork.com/e1/d5/61/e1d56103a8984a6c28d083490860b574.js";
 
@@ -204,7 +203,7 @@ export class AdsManager {
     if (sessionTime < this.minActiveTime) return false;
 
     const recentAds = document.querySelectorAll(".ad-window-active");
-    if (recentAds.length >= 2) return false;
+    if (recentAds.length >= 1) return false;
 
     const containerId = "banner-slot-single";
 

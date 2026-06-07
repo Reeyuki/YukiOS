@@ -1,12 +1,14 @@
 import { detectUserLocation, getCached, setCache } from "./apps/weather.js";
 import { getWeatherIcon } from "./shared/weatherCodes.js";
 import { StorageKeys } from "./settings/settings.js";
-import { videos } from "./wallpaperList.js";
+import { DEFAULT_WALLPAPER_FILES, WALLPAPER_STATIC_DIR, STATIC_FALLBACK_WALLPAPERS } from "./wallpaperConfig.js";
 import { createCalendarPopup, setCurrentCalendarMonth } from "./apps/calendar.js";
 import { resolveWallpaperUrl } from "./shared/assetResolver.js";
 import { BusEvents } from "./core/EventBus.js";
 import { os } from "./os/index.js";
 import { getVantaPresetById } from "./vantaPresets.js";
+import { videos } from "./wallpaperList.js";
+import { vantaPresets } from "./vantaPresets.js";
 
 function isBlob(obj) {
   if (!obj) return false;
@@ -29,6 +31,8 @@ class WallpaperStore {
   static WP_LOGIN_BLOB_KEY = "login_current";
   static _wpBlobDB = null;
   static _currentVantaInstance = null;
+  static _vantaScriptsLoaded = false;
+  static _vantaLoadPromise = null;
 
   static _revokeWallpaperBlob(isLogin = false) {
     if (isLogin) {
@@ -53,6 +57,40 @@ class WallpaperStore {
       }
       this._currentVantaInstance = null;
     }
+  }
+
+  static async _loadVantaScripts() {
+    if (this._vantaScriptsLoaded) return;
+    if (this._vantaLoadPromise) return this._vantaLoadPromise;
+
+    this._vantaLoadPromise = (async () => {
+      const scripts = [
+        "https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js",
+        "https://cdnjs.cloudflare.com/ajax/libs/vanta/0.5.24/vanta.waves.min.js",
+        "https://cdnjs.cloudflare.com/ajax/libs/vanta/0.5.24/vanta.birds.min.js",
+        "https://cdnjs.cloudflare.com/ajax/libs/vanta/0.5.24/vanta.net.min.js",
+        "https://cdnjs.cloudflare.com/ajax/libs/vanta/0.5.24/vanta.dots.min.js",
+        "https://cdnjs.cloudflare.com/ajax/libs/vanta/0.5.24/vanta.globe.min.js",
+        "https://cdnjs.cloudflare.com/ajax/libs/vanta/0.5.24/vanta.halo.min.js",
+        "https://cdnjs.cloudflare.com/ajax/libs/vanta/0.5.24/vanta.fog.min.js",
+        "https://cdnjs.cloudflare.com/ajax/libs/vanta/0.5.24/vanta.cells.min.js"
+      ];
+
+      for (const src of scripts) {
+        await new Promise((resolve, reject) => {
+          const script = document.createElement("script");
+          script.src = src;
+          script.onload = resolve;
+          script.onerror = reject;
+          document.head.appendChild(script);
+        });
+      }
+
+      this._vantaScriptsLoaded = true;
+      this._vantaLoadPromise = null;
+    })();
+
+    return this._vantaLoadPromise;
   }
 
   static _isBase64Video(str) {
@@ -119,29 +157,6 @@ class WallpaperStore {
   }
 }
 
-const STATIC_FALLBACK_WALLPAPERS = [
-  "/static/wallpapers/mint.webp",
-  "/static/wallpapers/nier.webp",
-  "/static/wallpapers/redwin10.jpg",
-  "/static/wallpapers/wallpaper1.webp",
-  "/static/wallpapers/wallpaper2.webp",
-  "/static/wallpapers/wallpaper3.webp",
-  "/static/wallpapers/wallpaper4.webp",
-  "/static/wallpapers/wallpaper5.webp",
-  "/static/wallpapers/wallpaper6.webp",
-  "/static/wallpapers/wallpaper7.webp",
-  "/static/wallpapers/wallpaper8.webp",
-  "/static/wallpapers/wallpaper9.webp",
-  "/static/wallpapers/wallpaper10.webp",
-  "/static/wallpapers/wallpaper11.webp",
-  "/static/wallpapers/wallpaper12.png",
-  "/static/wallpapers/wallpaper13.png",
-  "/static/wallpapers/win7.webp",
-  "/static/wallpapers/win10.webp",
-  "/static/wallpapers/win11.webp",
-  "/static/wallpapers/xp.webp"
-];
-
 class WallpaperManager {
   static _normalizeWallpaperUrl(url) {
     return resolveWallpaperUrl(url);
@@ -162,12 +177,14 @@ class WallpaperManager {
     return typeof value === "string" && value.startsWith("vanta:custom:");
   }
 
-  static _applyVantaEffect(presetId) {
+  static async _applyVantaEffect(presetId) {
     const preset = getVantaPresetById(parseInt(presetId));
     if (!preset) {
       console.error("Vanta preset not found:", presetId);
       return false;
     }
+
+    await WallpaperStore._loadVantaScripts();
 
     WallpaperStore._destroyVantaInstance();
     document.getElementById("wallpaper-img")?.remove();
@@ -217,13 +234,15 @@ class WallpaperManager {
     }
   }
 
-  static _applyCustomVantaEffect(customConfig) {
+  static async _applyCustomVantaEffect(customConfig) {
     try {
       const preset = JSON.parse(atob(customConfig));
       if (!preset || !preset.effect || !preset.options) {
         console.error("Invalid custom Vanta configuration");
         return false;
       }
+
+      await WallpaperStore._loadVantaScripts();
 
       WallpaperStore._destroyVantaInstance();
       document.getElementById("wallpaper-img")?.remove();
@@ -271,23 +290,75 @@ class WallpaperManager {
     }
   }
 
+  static _getWallpaperType(url) {
+    if (!url || typeof url !== "string") return "image";
+    if (url.startsWith("vanta:")) return "vanta";
+    if (url.endsWith(".mp4")) return "video";
+    return "image";
+  }
+
   static setSequentialWallpaper() {
     const isManual = os.storage.get(StorageKeys.manualWallpaper) === "true";
     if (isManual) return;
 
     const shouldCycle = os.storage.get(StorageKeys.cycleWallpaper) !== "false";
+    if (!shouldCycle) return;
+
     const existing = os.storage.get(StorageKeys.wallpaperKey);
-    if (!shouldCycle && existing) return;
 
-    if (typeof videos === "undefined" || !videos.length) return;
+    const wallpaperType = os.storage.get(StorageKeys.wallpaperType) || "image";
+    let newWallpaperType = wallpaperType;
 
-    let index = os.storage.get(StorageKeys.wallpaperIndexKey) || 0;
-    if (shouldCycle) {
-      index = (index + 1) % videos.length;
-      os.storage.set(StorageKeys.wallpaperIndexKey, String(index));
+    if (existing) {
+      const type = this._getWallpaperType(existing);
+      if (type !== wallpaperType) {
+        newWallpaperType = type;
+        os.storage.set(StorageKeys.wallpaperType, newWallpaperType);
+      }
     }
 
-    const wallpaper = videos[index];
+    const randomChoice = Math.random();
+    let wallpaper;
+
+    if (randomChoice < 0.33) {
+      newWallpaperType = "image";
+      os.storage.set(StorageKeys.wallpaperType, "image");
+
+      if (typeof DEFAULT_WALLPAPER_FILES === "undefined" || !DEFAULT_WALLPAPER_FILES.length) return;
+
+      let index = os.storage.get(StorageKeys.wallpaperIndexKey) || 0;
+      const expectedWallpaper = WALLPAPER_STATIC_DIR + DEFAULT_WALLPAPER_FILES[index];
+
+      if (existing !== expectedWallpaper) {
+        wallpaper = WALLPAPER_STATIC_DIR + DEFAULT_WALLPAPER_FILES[index];
+        os.storage.set(StorageKeys.wallpaperKey, wallpaper);
+        WallpaperStore._clearWallpaperBlob().catch(() => {});
+        this.applyWallpaper(wallpaper);
+        return;
+      }
+
+      index = (index + 1) % DEFAULT_WALLPAPER_FILES.length;
+      os.storage.set(StorageKeys.wallpaperIndexKey, String(index));
+      wallpaper = WALLPAPER_STATIC_DIR + DEFAULT_WALLPAPER_FILES[index];
+    } else if (randomChoice < 0.66) {
+      newWallpaperType = "video";
+      os.storage.set(StorageKeys.wallpaperType, "video");
+
+      if (!videos || !videos.length) return;
+
+      const videoIndex = Math.floor(Math.random() * videos.length);
+      wallpaper = videos[videoIndex];
+    } else {
+      newWallpaperType = "vanta";
+      os.storage.set(StorageKeys.wallpaperType, "vanta");
+
+      if (!vantaPresets || !vantaPresets.length) return;
+
+      const vantaIndex = Math.floor(Math.random() * vantaPresets.length);
+      const preset = vantaPresets[vantaIndex];
+      wallpaper = `vanta:${preset.id}`;
+    }
+
     os.storage.set(StorageKeys.wallpaperKey, wallpaper);
     WallpaperStore._clearWallpaperBlob().catch(() => {});
     this.applyWallpaper(wallpaper);
@@ -298,7 +369,7 @@ class WallpaperManager {
 
     if (this._isVantaCustom(wallpaperURL)) {
       const customConfig = wallpaperURL.replace("vanta:custom:", "");
-      const success = this._applyCustomVantaEffect(customConfig);
+      const success = await this._applyCustomVantaEffect(customConfig);
       if (success) {
         os.storage.set(StorageKeys.wallpaperKey, wallpaperURL);
         os.storage.set(StorageKeys.manualWallpaper, "true");
@@ -312,7 +383,7 @@ class WallpaperManager {
 
     if (this._isVantaPreset(wallpaperURL)) {
       const presetId = wallpaperURL.replace("vanta:", "");
-      const success = this._applyVantaEffect(presetId);
+      const success = await this._applyVantaEffect(presetId);
       if (success) {
         os.storage.set(StorageKeys.wallpaperKey, wallpaperURL);
         os.storage.set(StorageKeys.manualWallpaper, "true");
@@ -554,7 +625,7 @@ class WallpaperManager {
 
     if (this._isVantaCustom(saved)) {
       const customConfig = saved.replace("vanta:custom:", "");
-      const success = this._applyCustomVantaEffect(customConfig);
+      const success = await this._applyCustomVantaEffect(customConfig);
       if (success) {
         return;
       }
@@ -564,7 +635,7 @@ class WallpaperManager {
 
     if (this._isVantaPreset(saved)) {
       const presetId = saved.replace("vanta:", "");
-      const success = this._applyVantaEffect(presetId);
+      const success = await this._applyVantaEffect(presetId);
       if (success) {
         os.storage.set(StorageKeys.vantaWallpaper, presetId);
         return;

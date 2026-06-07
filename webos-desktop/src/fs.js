@@ -6,36 +6,16 @@ import { os } from "./os/index.js";
 
 export const FileKind = { TEXT: "text", IMAGE: "image", VIDEO: "video", AUDIO: "audio", ROM: "rom", OTHER: "other" };
 
+import { DEFAULT_WALLPAPER_FILES, WALLPAPER_STATIC_DIR } from "./wallpaperConfig.js";
+
 const DEFAULT_STATICALLY_GH_BASE = CDN_BASES.MAIN;
-const DEFAULT_WALLPAPER_STATIC_DIR = "/static/wallpapers/";
-const DEFAULT_WALLPAPER_FILES = [
-  "mint.webp",
-  "nier.webp",
-  "redwin10.jpg",
-  "wallpaper1.webp",
-  "wallpaper2.webp",
-  "wallpaper3.webp",
-  "wallpaper4.webp",
-  "wallpaper5.webp",
-  "wallpaper6.webp",
-  "wallpaper7.webp",
-  "wallpaper8.webp",
-  "wallpaper9.webp",
-  "wallpaper10.webp",
-  "wallpaper11.webp",
-  "wallpaper12.png",
-  "wallpaper13.png",
-  "win7.webp",
-  "win10.webp",
-  "win11.webp",
-  "xp.webp"
-];
+export { DEFAULT_WALLPAPER_FILES, WALLPAPER_STATIC_DIR as DEFAULT_WALLPAPER_STATIC_DIR };
 
 function defaultWallpaperUrl(nameOrPath) {
   if (typeof nameOrPath !== "string") return nameOrPath;
   if (nameOrPath.startsWith("http://") || nameOrPath.startsWith("https://")) return nameOrPath;
-  if (nameOrPath.startsWith(DEFAULT_WALLPAPER_STATIC_DIR)) return `${DEFAULT_STATICALLY_GH_BASE}${nameOrPath}`;
-  return `${DEFAULT_STATICALLY_GH_BASE}${DEFAULT_WALLPAPER_STATIC_DIR}${nameOrPath}`;
+  if (nameOrPath.startsWith(WALLPAPER_STATIC_DIR)) return `${DEFAULT_STATICALLY_GH_BASE}${nameOrPath}`;
+  return `${DEFAULT_STATICALLY_GH_BASE}${WALLPAPER_STATIC_DIR}${nameOrPath}`;
 }
 
 const WALLPAPER_STATICALLY_GH_BASE = CDN_BASES.MAIN;
@@ -162,12 +142,6 @@ export const defaultStorage = {
             kind: FileKind.IMAGE,
             icon: defaultWallpaperUrl("mint.webp")
           },
-          "nier.webp": {
-            type: "file",
-            content: defaultWallpaperUrl("nier.webp"),
-            kind: FileKind.IMAGE,
-            icon: defaultWallpaperUrl("nier.webp")
-          },
           "redwin10.jpg": {
             type: "file",
             content: defaultWallpaperUrl("redwin10.jpg"),
@@ -197,18 +171,6 @@ export const defaultStorage = {
             content: defaultWallpaperUrl("xp.webp"),
             kind: FileKind.IMAGE,
             icon: defaultWallpaperUrl("xp.webp")
-          },
-          "nier.mp4": {
-            type: "file",
-            content: "https://motionbgs.com/media/4348/2b-in-nier-automata.1920x1080.mp4",
-            kind: FileKind.VIDEO,
-            icon: defaultWallpaperUrl("nier.webp")
-          },
-          "stormworld.mp4": {
-            type: "file",
-            content: "https://motionbgs.com/media/8008/above-the-stormworld.3840x2160.mp4",
-            kind: FileKind.VIDEO,
-            icon: defaultWallpaperUrl("nier.webp")
           }
         }
       },
@@ -583,7 +545,7 @@ export class FileSystemManager {
         continue;
       }
 
-      const oldRelative = `${DEFAULT_WALLPAPER_STATIC_DIR}${name}`;
+      const oldRelative = `${WALLPAPER_STATIC_DIR}${name}`;
       if (current === oldRelative) {
         await this.p("writeFile", fullPath, defaultWallpaperUrl(name));
       }

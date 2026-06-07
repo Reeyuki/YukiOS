@@ -139,10 +139,12 @@
   }
 }
 
-.hero-logo img {
+.hero-logo img,
+.hero-logo svg {
   width: 60px;
   height: 60px;
   margin-bottom: 15px;
+  color: var(--brand);
   animation: float 3s ease-in-out infinite;
 }
 

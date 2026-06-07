@@ -14,6 +14,31 @@ const SHITTIFY_BRIDGE_SCRIPT = `
     try { parent.postMessage({ __shittify: true, ...data }, '*'); } catch(e) {}
   }
 
+  function patchTextNodes() {
+    var walker = document.createTreeWalker(
+      document.body,
+      NodeFilter.SHOW_TEXT,
+      {
+        acceptNode: function(node) {
+          if (node.parentElement && (
+            node.parentElement.tagName === 'SCRIPT' ||
+            node.parentElement.tagName === 'STYLE' ||
+            node.parentElement.tagName === 'NOSCRIPT'
+          )) {
+            return NodeFilter.FILTER_REJECT;
+          }
+          return NodeFilter.FILTER_ACCEPT;
+        }
+      }
+    );
+    var node;
+    while (node = walker.nextNode()) {
+      if (node.nodeValue && /shittify/i.test(node.nodeValue)) {
+        node.nodeValue = node.nodeValue.replace(/shittify/gi, 'Evil Spotify');
+      }
+    }
+  }
+
   function readPlayerDOM(state) {
     var nameEl = document.querySelector('.player-song-name');
     var artistEl = document.querySelector('.player-artist-name');
@@ -61,6 +86,14 @@ const SHITTIFY_BRIDGE_SCRIPT = `
   });
   obs.observe(document.body || document.documentElement, { childList: true, subtree: true });
 
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+      setTimeout(patchTextNodes, 100);
+    });
+  } else {
+    setTimeout(patchTextNodes, 100);
+  }
+
   window.addEventListener('message', function(e) {
     try {
       var d = e.data;
@@ -106,6 +139,20 @@ const SHITTIFY_BRIDGE_SCRIPT = `
       else if (d.cmd === 'previoustrack') { var bb = document.querySelector('.player-back'); if (bb) bb.click(); }
     } catch(e) {}
   });
+
+  setTimeout(() => {
+    const elements = Array.from(document.querySelectorAll('p'));
+    const element = elements.find(p => p.textContent.trim() === 'made by plankton');
+
+    if (element) {
+      element.style.cursor = 'pointer';
+      element.addEventListener('click', () => {
+        window.open('https://github.com/SomeRandomFella/shittifylol', '_blank');
+      });
+    }
+  }, 1000);
+
+  
 })();
 </script>`;
 

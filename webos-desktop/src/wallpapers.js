@@ -3,6 +3,7 @@ import { SystemUtilities } from "./system.js";
 import { videos } from "./wallpaperList.js";
 import { resolveWallpaperUrl, CDN_BASES } from "./shared/assetResolver.js";
 import { vantaPresets } from "./vantaPresets.js";
+import { os } from "./os/index.js";
 
 function isBlob(obj) {
   if (!obj) return false;

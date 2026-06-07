@@ -382,7 +382,7 @@ export class SetupApp extends BaseApp {
       <div class="setup-step active" data-step="1">
         <div class="step-hero" style="margin-top: 50px;">
           <div class="hero-logo">
-            <img src="${resolveIconUrl("static/icons/logo.png")}" alt="Yuki OS">
+            <i class="fas fa-snowflake"></i>
           </div>
           <h1 class="hero-title">Welcome to Yuki OS, ${nickname}</h1>
           <p class="hero-subtitle">Your browser-based desktop environment</p>
