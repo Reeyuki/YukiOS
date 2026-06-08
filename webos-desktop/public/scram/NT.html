@@ -315,6 +315,25 @@
       </div>
     </div>
 
+    <div class="bookmarks-section" id="bookmarks-section" style="margin-top: 32px">
+      <h3
+        style="
+          color: var(--text-muted);
+          font-size: 12px;
+          text-transform: uppercase;
+          letter-spacing: 0.07em;
+          margin-bottom: 16px;
+        "
+      >
+        Bookmarks
+      </h3>
+      <div
+        class="shortcuts"
+        id="bookmarks-container"
+        style="grid-template-columns: repeat(auto-fill, minmax(100px, 1fr))"
+      ></div>
+    </div>
+
     <div class="quote" id="quote"></div>
 
     <script>
@@ -387,12 +406,49 @@
         });
       }
 
+      // Render bookmarks
+      function renderBookmarks() {
+        const container = document.getElementById("bookmarks-container");
+        if (!container) return;
+
+        const bookmarks = JSON.parse(localStorage.getItem("scramjet_bookmarks") || "[]");
+        container.innerHTML = "";
+
+        if (bookmarks.length === 0) {
+          document.getElementById("bookmarks-section").style.display = "none";
+          return;
+        }
+
+        document.getElementById("bookmarks-section").style.display = "block";
+
+        bookmarks.forEach((b) => {
+          const div = document.createElement("div");
+          div.className = "shortcut bookmark-shortcut";
+          div.dataset.url = b.url;
+          div.innerHTML = `
+          <div class="shortcut-icon"><i class="fa-solid fa-star" style="color:var(--accent);"></i></div>
+          <span class="shortcut-label">${b.name}</span>
+        `;
+          container.appendChild(div);
+        });
+      }
+
       // Quote
       if (window.QUOTES?.length) {
         $("#quote").textContent = window.QUOTES[Math.floor(Math.random() * window.QUOTES.length)];
       }
 
       renderCustom();
+      renderBookmarks();
+
+      // Handle bookmark clicks
+      document.getElementById("bookmarks-container").onclick = (e) => {
+        const shortcut = e.target.closest(".shortcut[data-url]");
+        if (shortcut) {
+          e.preventDefault();
+          nav(shortcut.dataset.url);
+        }
+      };
     </script>
   </body>
 </html>

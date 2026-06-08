@@ -5,6 +5,17 @@ import { os } from "../os/index.js";
 
 const NEWS_UPDATES = [
   {
+    date: "June 8, 2026",
+    sections: [
+      {
+        icon: "fa-wand-magic-sparkles",
+        title: "Fix gta vc",
+        items: [["fa-star", "GTA VC", "Fixed Gta VC."]]
+      }
+    ]
+  },
+  ,
+  {
     date: "June 6, 2026",
     sections: [
       {

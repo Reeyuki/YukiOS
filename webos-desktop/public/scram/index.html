@@ -297,6 +297,27 @@
         color: var(--text-muted);
       }
 
+      #star-btn {
+        position: absolute;
+        right: 38px;
+        width: 28px;
+        height: 28px;
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        border-radius: var(--radius-full);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all var(--transition-fast);
+      }
+
+      #star-btn:hover {
+        color: var(--text);
+        background: var(--surface-hover);
+      }
+
       #home-btn-nav {
         position: absolute;
         right: 5px;
@@ -744,6 +765,157 @@
       .flex {
         display: flex;
       }
+
+      /* Panel styles */
+      .panel-empty {
+        padding: 40px 20px;
+        text-align: center;
+        color: var(--text-muted);
+        font-size: 13px;
+      }
+
+      .panel-section-label {
+        padding: 12px 0 8px;
+        color: var(--text-muted);
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 8px;
+      }
+
+      .panel-section-items {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .panel-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border-radius: var(--radius-md);
+        cursor: pointer;
+        transition: background var(--transition-fast);
+      }
+
+      .panel-item:hover {
+        background: var(--surface-hover);
+      }
+
+      .panel-item-favicon {
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .panel-item-favicon img {
+        width: 16px;
+        height: 16px;
+        border-radius: 3px;
+      }
+
+      .panel-item-icon {
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+      }
+
+      .panel-item-content {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .panel-item-title {
+        color: var(--text);
+        font-size: 13px;
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .panel-item-sub {
+        color: var(--text-muted);
+        font-size: 11px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-top: 2px;
+      }
+
+      .panel-item-action {
+        width: 24px;
+        height: 24px;
+        flex-shrink: 0;
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        font-size: 13px;
+        cursor: pointer;
+        border-radius: var(--radius-sm);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all var(--transition-fast);
+      }
+
+      .panel-item-action:hover {
+        color: var(--text);
+        background: var(--surface-active);
+      }
+
+      /* ── WINDOW CONTROLS ── */
+      .window-controls {
+        display: flex;
+        gap: 6px;
+        padding: 4px;
+      }
+
+      .window-controls button {
+        width: 46px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        border-radius: 6px;
+        background-color: var(--surface);
+        color: var(--text-muted);
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .window-controls button svg {
+        width: 10px;
+        height: 10px;
+        fill: var(--text-muted);
+        transition: fill 0.2s ease;
+      }
+
+      .window-controls .minimize-btn:hover,
+      .window-controls .maximize-btn:hover {
+        background: var(--surface-hover);
+        transform: scale(1.1);
+      }
+
+      .window-controls .close-btn:hover {
+        background: var(--error);
+        transform: scale(1.1);
+      }
+
+      .window-controls .close-btn:hover svg {
+        fill: var(--text);
+      }
     </style>
     <script defer>
       const DEFAULT_WISP = "wss://anura.pro/";
@@ -769,6 +941,77 @@
       let tabs = [];
       let activeTabId = null;
       let nextTabId = 1;
+
+      let bookmarks = [];
+      let history = [];
+      let downloads = [];
+      let closedTabs = [];
+      let zoomLevel = 1.0;
+      let darkModeEnabled = false;
+      let darkModeExclusions = {};
+      let isIncognito = false;
+
+      const STORAGE_KEYS = {
+        BOOKMARKS: "scramjet_bookmarks",
+        HISTORY: "scramjet_history",
+        DOWNLOADS: "scramjet_downloads",
+        ZOOM: "scramjet_zoom",
+        DARKMODE: "scramjet_darkmode",
+        DARK_EXCLUSIONS: "scramjet_darkexclusions"
+      };
+
+      function loadPrefs() {
+        isIncognito = new URLSearchParams(window.location.search).get("incognito") === "true";
+
+        if (!isIncognito) {
+          try {
+            bookmarks = JSON.parse(localStorage.getItem(STORAGE_KEYS.BOOKMARKS) || "[]");
+            history = JSON.parse(localStorage.getItem(STORAGE_KEYS.HISTORY) || "[]");
+            downloads = JSON.parse(localStorage.getItem(STORAGE_KEYS.DOWNLOADS) || "[]");
+            zoomLevel = parseFloat(localStorage.getItem(STORAGE_KEYS.ZOOM)) || 1.0;
+            darkModeEnabled = localStorage.getItem(STORAGE_KEYS.DARKMODE) === "true";
+            darkModeExclusions = JSON.parse(localStorage.getItem(STORAGE_KEYS.DARK_EXCLUSIONS) || "{}");
+          } catch (e) {
+            console.error("Failed to load prefs:", e);
+          }
+        }
+      }
+
+      function saveBookmarks() {
+        if (isIncognito) return;
+        try {
+          localStorage.setItem(STORAGE_KEYS.BOOKMARKS, JSON.stringify(bookmarks));
+        } catch (e) {}
+      }
+
+      function saveHistory() {
+        if (isIncognito) return;
+        try {
+          localStorage.setItem(STORAGE_KEYS.HISTORY, JSON.stringify(history.slice(-500)));
+        } catch (e) {}
+      }
+
+      function saveDownloads() {
+        if (isIncognito) return;
+        try {
+          localStorage.setItem(STORAGE_KEYS.DOWNLOADS, JSON.stringify(downloads));
+        } catch (e) {}
+      }
+
+      function savePrefs() {
+        if (isIncognito) return;
+        try {
+          localStorage.setItem(STORAGE_KEYS.ZOOM, String(zoomLevel));
+          localStorage.setItem(STORAGE_KEYS.DARKMODE, String(darkModeEnabled));
+          localStorage.setItem(STORAGE_KEYS.DARK_EXCLUSIONS, JSON.stringify(darkModeExclusions));
+        } catch (e) {}
+      }
+
+      function addToHistory(url, title) {
+        if (isIncognito) return;
+        history.push({ url, title: title || url, time: Date.now() });
+        saveHistory();
+      }
 
       document.addEventListener("DOMContentLoaded", async function () {
         let basePath = location.pathname.replace(/[^/]*$/, "");
@@ -815,10 +1058,15 @@
       });
 
       async function initializeBrowser() {
+        loadPrefs();
+
         const root = document.getElementById("app");
         root.innerHTML = `
         <div class="browser-container">
-          <div class="flex tabs" id="tabs-container"></div>
+          <div class="flex tabs" id="tabs-container" style="display:flex;align-items:center;">
+            <div id="tab-strip" style="display:flex;flex:1;overflow:auto;align-items:center;min-width:0;"></div>
+            <div id="controls-slot" style="display:flex;align-items:center;flex-shrink:0;"></div>
+          </div>
           <div class="flex nav">
             <div class="nav-btn-group">
               <button id="back-btn" title="Back"><i class="fa-solid fa-chevron-left"></i></button>
@@ -828,9 +1076,18 @@
             <div class="address-wrapper">
               <i class="fa-solid fa-lock address-icon"></i>
               <input class="bar" id="address-bar" autocomplete="off" spellcheck="false" placeholder="Search or enter a URL" />
+              <button id="star-btn" title="Bookmark this page"><i class="fa-solid fa-star"></i></button>
               <button id="home-btn-nav" title="Home"><i class="fa-solid fa-house"></i></button>
             </div>
             <div class="nav-action-group">
+              <button id="zoom-out-btn" title="Zoom Out"><i class="fa-solid fa-minus"></i></button>
+              <span id="zoom-label" style="margin-top: 10px; font-size:11px;color:var(--text-muted);min-width:35px;text-align:center;">100%</span>
+              <button id="zoom-in-btn" title="Zoom In"><i class="fa-solid fa-plus"></i></button>
+              <button id="darkmode-btn" title="Dark Mode"><i class="fa-solid fa-moon"></i></button>
+              <button id="save-page-btn" title="Save Page"><i class="fa-solid fa-bookmark"></i></button>
+              <button id="bookmarks-btn" title="Bookmarks"><i class="fa-solid fa-star"></i></button>
+              <button id="history-btn" title="History"><i class="fa-solid fa-clock-rotate-left"></i></button>
+              <button id="downloads-btn" title="Downloads"><i class="fa-solid fa-download"></i></button>
               <button id="devtools-btn" title="DevTools"><i class="fa-solid fa-code"></i></button>
               <button id="wisp-settings-btn" title="Proxy Settings"><i class="fa-solid fa-gear"></i></button>
             </div>
@@ -857,9 +1114,28 @@
         document.getElementById("back-btn").onclick = () => getActiveTab()?.frame.back();
         document.getElementById("fwd-btn").onclick = () => getActiveTab()?.frame.forward();
         document.getElementById("reload-btn").onclick = () => getActiveTab()?.frame.reload();
-        document.getElementById("home-btn-nav").onclick = () => (window.location.href = "../index.html");
+        document.getElementById("home-btn-nav").onclick = () => getActiveTab()?.frame.reload();
+        document.getElementById("star-btn").onclick = toggleBookmark;
         document.getElementById("devtools-btn").onclick = toggleDevTools;
         document.getElementById("wisp-settings-btn").onclick = openSettings;
+
+        document.getElementById("zoom-in-btn").onclick = () => {
+          zoomLevel = Math.min(3.0, parseFloat((zoomLevel + 0.1).toFixed(1)));
+          applyZoom();
+          savePrefs();
+        };
+        document.getElementById("zoom-out-btn").onclick = () => {
+          zoomLevel = Math.max(0.3, parseFloat((zoomLevel - 0.1).toFixed(1)));
+          applyZoom();
+          savePrefs();
+        };
+        document.getElementById("darkmode-btn").onclick = toggleDarkMode;
+        document.getElementById("save-page-btn").onclick = savePage;
+        document.getElementById("bookmarks-btn").onclick = openBookmarksPanel;
+        document.getElementById("history-btn").onclick = openHistoryPanel;
+        document.getElementById("downloads-btn").onclick = openDownloadsPanel;
+
+        updateZoomLabel();
 
         const skipBtn = document.getElementById("skip-btn");
         if (skipBtn) {
@@ -880,6 +1156,13 @@
 
         window.addEventListener("message", (e) => {
           if (e.data?.type === "navigate") handleSubmit(e.data.url);
+          if (e.data?.type === "browser-audio-playing") {
+            const tab = getActiveTab();
+            if (tab) {
+              tab.isPlayingAudio = e.data.playing;
+              updateTabsUI();
+            }
+          }
         });
 
         createTab(true);
@@ -895,7 +1178,8 @@
           frame: frame,
           loading: false,
           favicon: null,
-          skipTimeout: null
+          skipTimeout: null,
+          isPlayingAudio: false
         };
 
         frame.frame.src = "NT.html";
@@ -910,6 +1194,7 @@
             const urlObj = new URL(e.url);
             tab.title = urlObj.hostname;
             tab.favicon = `https://www.google.com/s2/favicons?domain=${urlObj.hostname}&sz=32`;
+            addToHistory(e.url, tab.title);
           } catch {
             tab.title = "Browsing";
             tab.favicon = null;
@@ -932,6 +1217,12 @@
           tab.loading = false;
           if (tab.skipTimeout) clearTimeout(tab.skipTimeout);
           if (tab.id === activeTabId) showIframeLoading(false);
+
+          injectAudioDetector(frame.frame);
+
+          if (darkModeEnabled) applyDarkModeToTab(tab);
+
+          applyZoomToTab(tab);
 
           try {
             const title = frame.frame.contentWindow.document.title;
@@ -997,7 +1288,7 @@
       }
 
       function updateTabsUI() {
-        const container = document.getElementById("tabs-container");
+        const container = document.getElementById("tab-strip");
         container.innerHTML = "";
 
         tabs.forEach((tab) => {
@@ -1011,9 +1302,14 @@
             iconHtml = `<img src="${tab.favicon}" class="tab-favicon" onerror="this.style.display='none'">`;
           }
 
+          const audioIcon = tab.isPlayingAudio
+            ? `<span class="tab-audio-icon" style="font-size:10px;margin-left:4px;">🔊</span>`
+            : "";
+
           el.innerHTML = `
             ${iconHtml}
             <span class="tab-title">${tab.title}</span>
+            ${audioIcon}
             <span class="tab-close">&times;</span>
           `;
 
@@ -1022,6 +1318,10 @@
             e.stopPropagation();
             closeTab(tab.id);
           };
+          el.addEventListener("contextmenu", (e) => {
+            e.preventDefault();
+            openTabContextMenu(tab, e);
+          });
           container.appendChild(el);
         });
 
@@ -1233,6 +1533,434 @@
           history.replaceState(null, null, location.pathname);
         }
       }
+
+      function updateZoomLabel() {
+        const label = document.getElementById("zoom-label");
+        if (label) label.textContent = Math.round(zoomLevel * 100) + "%";
+      }
+
+      function applyZoom() {
+        updateZoomLabel();
+        const tab = getActiveTab();
+        if (tab) applyZoomToTab(tab);
+      }
+
+      function applyZoomToTab(tab) {
+        if (!tab || !tab.frame.frame) return;
+        const transform = `scale(${zoomLevel})`;
+        tab.frame.frame.style.transform = transform;
+        tab.frame.frame.style.transformOrigin = "top left";
+        const inverseScale = 1 / zoomLevel;
+        tab.frame.frame.style.width = `${100 * inverseScale}%`;
+        tab.frame.frame.style.height = `${100 * inverseScale}%`;
+      }
+
+      function injectAudioDetector(iframe) {
+        try {
+          const doc = iframe.contentDocument;
+          if (!doc) return;
+          const script = doc.createElement("script");
+          script.textContent = `(function(){
+            function check() {
+              var playing = Array.from(document.querySelectorAll('audio,video')).some(function(m){
+                return !m.paused && !m.muted && m.volume > 0;
+              });
+              window.parent.postMessage({type:'browser-audio-playing',playing:playing},'*');
+            }
+            setInterval(check, 1500);
+          })();`;
+          (doc.head || doc.documentElement).appendChild(script);
+        } catch (e) {}
+      }
+
+      function applyDarkModeToTab(tab) {
+        if (!tab || !tab.frame.frame || !tab.frame.frame.contentDocument) return;
+        const styleId = "scramjet-darkmode-style";
+        let styleEl = tab.frame.frame.contentDocument.getElementById(styleId);
+
+        if (!darkModeEnabled) {
+          if (styleEl) styleEl.remove();
+          return;
+        }
+
+        let currentHost = "";
+        try {
+          currentHost = new URL(tab.frame.frame.contentWindow.location.href).hostname;
+        } catch (e) {}
+
+        if (darkModeExclusions[currentHost]) {
+          if (styleEl) styleEl.remove();
+          return;
+        }
+
+        if (!styleEl) {
+          styleEl = tab.frame.frame.contentDocument.createElement("style");
+          styleEl.id = styleId;
+          tab.frame.frame.contentDocument.head.appendChild(styleEl);
+        }
+
+        styleEl.textContent = `
+          html {
+            filter: invert(90%) hue-rotate(180deg);
+          }
+          html img, html video, html canvas, html svg {
+            filter: invert(100%) hue-rotate(180deg);
+          }
+        `;
+      }
+
+      function toggleDarkMode() {
+        darkModeEnabled = !darkModeEnabled;
+        savePrefs();
+        const tab = getActiveTab();
+        if (tab) applyDarkModeToTab(tab);
+      }
+
+      function savePage() {
+        const tab = getActiveTab();
+        if (!tab || !tab.url || tab.url === "NT.html" || tab.url === "") return;
+
+        const existingIndex = bookmarks.findIndex((b) => b.url === tab.url);
+        if (existingIndex === -1) {
+          bookmarks.push({ name: tab.title || tab.url, url: tab.url });
+          saveBookmarks();
+          updateStarButton();
+        }
+
+        downloads.push({
+          filename: tab.title || "Saved Page",
+          url: tab.url,
+          status: "done",
+          time: Date.now()
+        });
+        saveDownloads();
+      }
+
+      function openBookmarksPanel() {
+        closePanel();
+        const panel = createPanel("Bookmarks", (filter) => renderBookmarksBody(filter), true);
+      }
+
+      function renderBookmarksBody(filter) {
+        let items = bookmarks;
+        if (filter) {
+          const q = filter.toLowerCase();
+          items = items.filter((b) => b.name.toLowerCase().includes(q) || b.url.toLowerCase().includes(q));
+        }
+        if (items.length === 0)
+          return `<div class="panel-empty">No bookmarks${filter ? " matching search" : ""}.</div>`;
+        return items
+          .map(
+            (b, i) => `
+          <div class="panel-item" data-url="${b.url}">
+            <span class="panel-item-icon">★</span>
+            <div class="panel-item-content">
+              <div class="panel-item-title">${b.name}</div>
+              <div class="panel-item-sub">${b.url}</div>
+            </div>
+            <button class="panel-item-action" data-remove="${i}">✕</button>
+          </div>
+        `
+          )
+          .join("");
+      }
+
+      function openHistoryPanel() {
+        closePanel();
+        const panel = createPanel("History", (filter) => renderHistoryBody(filter), true);
+      }
+
+      function renderHistoryBody(filter) {
+        let items = [...history].reverse();
+        if (filter) {
+          const q = filter.toLowerCase();
+          items = items.filter((h) => h.url.toLowerCase().includes(q) || (h.title || "").toLowerCase().includes(q));
+        }
+        if (items.length === 0) return `<div class="panel-empty">No history${filter ? " matching search" : ""}.</div>`;
+        const groups = {};
+        items.forEach((h) => {
+          const d = new Date(h.time);
+          const today = new Date();
+          const isToday = d.toDateString() === today.toDateString();
+          const yesterday = new Date(today);
+          yesterday.setDate(yesterday.getDate() - 1);
+          const isYesterday = d.toDateString() === yesterday.toDateString();
+
+          let key;
+          if (isToday) key = "Today";
+          else if (isYesterday) key = "Yesterday";
+          else key = d.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" });
+
+          if (!groups[key]) groups[key] = [];
+          groups[key].push(h);
+        });
+        return Object.entries(groups)
+          .map(
+            ([date, entries]) => `
+          <div class="panel-section-label">${date}</div>
+          <div class="panel-section-items">
+            ${entries
+              .map((h) => {
+                const d = new Date(h.time);
+                const timeStr = d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+                return `
+            <div class="panel-item" data-url="${h.url}">
+              <div class="panel-item-favicon">
+                <img src="https://www.google.com/s2/favicons?domain=${new URL(h.url).hostname}&sz=32" onerror="this.style.display='none'" />
+              </div>
+              <div class="panel-item-content">
+                <div class="panel-item-title">${h.title || h.url}</div>
+                <div class="panel-item-sub">${new URL(h.url).hostname} • ${timeStr}</div>
+              </div>
+              <button class="panel-item-action" data-url="${h.url}" title="Open">↗</button>
+            </div>
+          `;
+              })
+              .join("")}
+          </div>
+        `
+          )
+          .join("");
+      }
+
+      function openDownloadsPanel() {
+        closePanel();
+        const panel = createPanel("Downloads", () => renderDownloadsBody());
+      }
+
+      function renderDownloadsBody() {
+        if (downloads.length === 0) return `<div class="panel-empty">No downloads yet</div>`;
+        return [...downloads]
+          .reverse()
+          .map(
+            (d) => `
+          <div class="panel-item">
+            <span class="panel-item-icon">${d.status === "done" ? "📄" : d.status === "failed" ? "⚠️" : "⬇"}</span>
+            <div class="panel-item-content">
+              <div class="panel-item-title">${d.filename || "Unknown"}</div>
+              <div class="panel-item-sub">${d.url || ""}</div>
+            </div>
+            <span class="panel-item-action" title="Open URL" data-url="${d.url}">↗</span>
+          </div>
+        `
+          )
+          .join("");
+      }
+
+      function createPanel(title, bodyRenderer, hasSearch = false) {
+        const root = document.getElementById("app");
+        const panel = document.createElement("div");
+        panel.className = "browser-panel";
+        panel.style.cssText =
+          "position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:9999;display:flex;align-items:center;justify-content:center;";
+        panel.innerHTML = `
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);width:500px;max-width:90vw;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;">
+            <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:14px;font-weight:600;color:var(--text);">${title}</span>
+              <button class="panel-close" style="background:transparent;border:none;color:var(--text-muted);font-size:15px;cursor:pointer;padding:5px;border-radius:var(--radius-sm);">✕</button>
+            </div>
+            ${hasSearch ? `<input class="panel-search" placeholder="Search ${title.toLowerCase()}..." style="margin:16px 20px;padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-md);color:var(--text);font-size:12px;outline:none;width:calc(100% - 40px);box-sizing:border-box;" />` : ""}
+            <div class="panel-body" style="flex:1;overflow-y:auto;padding:0 20px 20px;"></div>
+          </div>
+        `;
+
+        const body = panel.querySelector(".panel-body");
+        const renderBody = (filter) => {
+          body.innerHTML = bodyRenderer(filter);
+          body.querySelectorAll("[data-url]").forEach((el) => {
+            el.addEventListener("click", (e) => {
+              if (e.target.dataset.remove !== undefined) return;
+              const url = e.target.dataset.url || el.dataset.url;
+              if (url) {
+                handleSubmit(url);
+                closePanel();
+              }
+            });
+          });
+          body.querySelectorAll("[data-remove]").forEach((btn) => {
+            btn.addEventListener("click", (e) => {
+              e.stopPropagation();
+              const idx = parseInt(btn.dataset.remove);
+              if (title === "Bookmarks") {
+                bookmarks.splice(idx, 1);
+                saveBookmarks();
+                const searchInput = panel.querySelector(".panel-search");
+                renderBody(searchInput ? searchInput.value : "");
+              }
+            });
+          });
+        };
+
+        renderBody("");
+
+        if (hasSearch) {
+          const searchInput = panel.querySelector(".panel-search");
+          searchInput.addEventListener("input", () => renderBody(searchInput.value));
+        }
+
+        panel.querySelector(".panel-close").addEventListener("click", closePanel);
+        panel.addEventListener("click", (e) => {
+          if (e.target === panel) closePanel();
+        });
+
+        root.appendChild(panel);
+        return panel;
+      }
+
+      function closePanel() {
+        const panel = document.querySelector(".browser-panel");
+        if (panel) panel.remove();
+      }
+
+      function setupKeyboardShortcuts() {
+        const listener = (e) => {
+          const activeElement = document.activeElement;
+          const inInput =
+            activeElement &&
+            (activeElement.tagName === "INPUT" ||
+              activeElement.tagName === "TEXTAREA" ||
+              activeElement.isContentEditable);
+          if (inInput) return;
+
+          if (e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey && /^[1-9]$/.test(e.key)) {
+            e.preventDefault();
+            const index = parseInt(e.key, 10) - 1;
+            const tab = tabs[index];
+            if (tab) switchTab(tab.id);
+            return;
+          }
+
+          if (e.ctrlKey && e.key === "l") {
+            e.preventDefault();
+            document.getElementById("address-bar").focus();
+            document.getElementById("address-bar").select();
+            return;
+          }
+
+          if (e.ctrlKey && e.key === "t") {
+            e.preventDefault();
+            createTab(true);
+            return;
+          }
+
+          if (e.ctrlKey && e.key === "w") {
+            e.preventDefault();
+            const tab = getActiveTab();
+            if (tab) closeTab(tab.id);
+            return;
+          }
+
+          if (e.ctrlKey && e.shiftKey && e.key === "T") {
+            e.preventDefault();
+            reopenLastClosedTab();
+            return;
+          }
+        };
+
+        document.addEventListener("keydown", listener);
+      }
+
+      function reopenLastClosedTab() {
+        if (closedTabs.length === 0) return;
+        const closed = closedTabs.pop();
+        createTab(true);
+        const tab = getActiveTab();
+        if (tab) handleSubmit(closed.url);
+      }
+
+      function openTabContextMenu(tab, e) {
+        e.preventDefault();
+        closePanel();
+        const menu = document.createElement("div");
+        menu.className = "ctx-menu";
+        menu.style.cssText =
+          "position:fixed;top:" +
+          e.clientY +
+          "px;left:" +
+          e.clientX +
+          "px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:4px 0;min-width:180px;z-index:10000;box-shadow:var(--shadow-lg);";
+        menu.innerHTML = `
+          <div class="ctx-menu-item" data-action="new-tab" style="padding:8px 16px;cursor:pointer;color:var(--text);font-size:12px;display:flex;align-items:center;gap:8px;"><i class="fa-solid fa-plus" style="width:16px;opacity:0.6;"></i> New Tab</div>
+          <div class="ctx-menu-item" data-action="reload" style="padding:8px 16px;cursor:pointer;color:var(--text);font-size:12px;display:flex;align-items:center;gap:8px;"><i class="fa-solid fa-sync-alt" style="width:16px;opacity:0.6;"></i> Reload</div>
+          <div class="ctx-menu-item" data-action="duplicate" style="padding:8px 16px;cursor:pointer;color:var(--text);font-size:12px;display:flex;align-items:center;gap:8px;"><i class="fa-solid fa-copy" style="width:16px;opacity:0.6;"></i> Duplicate Tab</div>
+          <div class="ctx-menu-sep" style="height:1px;background:var(--border);margin:4px 0;"></div>
+          <div class="ctx-menu-item" data-action="close-tab" style="padding:8px 16px;cursor:pointer;color:var(--text);font-size:12px;display:flex;align-items:center;gap:8px;"><i class="fa-solid fa-times-circle" style="width:16px;opacity:0.6;"></i> Close Tab</div>
+          <div class="ctx-menu-sep" style="height:1px;background:var(--border);margin:4px 0;"></div>
+          <div class="ctx-menu-item" data-action="reopen-closed" style="padding:8px 16px;cursor:pointer;color:var(--text);font-size:12px;display:flex;align-items:center;gap:8px;"><i class="fa-solid fa-undo" style="width:16px;opacity:0.6;"></i> Reopen Closed Tab${closedTabs.length ? ` (${closedTabs.length})` : ""}</div>
+        `;
+
+        menu.querySelectorAll(".ctx-menu-item").forEach((item) => {
+          item.addEventListener("click", (ev) => {
+            ev.stopPropagation();
+            const action = item.dataset.action;
+            if (action === "new-tab") createTab(true);
+            else if (action === "reload") tab.frame.reload();
+            else if (action === "duplicate") {
+              createTab(true);
+              const newTab = getActiveTab();
+              if (newTab && tab.url) handleSubmit(tab.url);
+            } else if (action === "close-tab") closeTab(tab.id);
+            else if (action === "reopen-closed") reopenLastClosedTab();
+            closePanel();
+          });
+          item.addEventListener("mouseenter", () => (item.style.background = "var(--surface-hover)"));
+          item.addEventListener("mouseleave", () => (item.style.background = ""));
+        });
+
+        document.body.appendChild(menu);
+
+        const close = (ev) => {
+          if (!menu.contains(ev.target)) {
+            menu.remove();
+            document.removeEventListener("click", close);
+          }
+        };
+        setTimeout(() => document.addEventListener("click", close), 0);
+      }
+
+      const originalCloseTab = closeTab;
+      closeTab = function (tabId) {
+        const idx = tabs.findIndex((t) => t.id === tabId);
+        if (idx === -1) return;
+        const tab = tabs[idx];
+        closedTabs.push({ url: tab.url, title: tab.title });
+        if (closedTabs.length > 20) closedTabs.shift();
+        originalCloseTab(tabId);
+      };
+
+      setupKeyboardShortcuts();
+
+      function toggleBookmark() {
+        const tab = getActiveTab();
+        if (!tab || !tab.url || tab.url === "NT.html" || tab.url === "") return;
+
+        const existingIndex = bookmarks.findIndex((b) => b.url === tab.url);
+        if (existingIndex !== -1) {
+          bookmarks.splice(existingIndex, 1);
+        } else {
+          bookmarks.push({ name: tab.title || tab.url, url: tab.url });
+        }
+        saveBookmarks();
+        updateStarButton();
+      }
+
+      function updateStarButton() {
+        const starBtn = document.getElementById("star-btn");
+        if (!starBtn) return;
+        const tab = getActiveTab();
+        if (!tab || !tab.url) {
+          starBtn.style.color = "var(--text-muted)";
+          return;
+        }
+        const isBookmarked = bookmarks.some((b) => b.url === tab.url);
+        starBtn.style.color = isBookmarked ? "var(--accent)" : "var(--text-muted)";
+      }
+
+      const originalSwitchTab = switchTab;
+      switchTab = function (tabId) {
+        originalSwitchTab(tabId);
+        updateStarButton();
+      };
     </script>
     <link rel="canonical" href="https://tickles.store/reactive" />
   </head>
