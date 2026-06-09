@@ -120,6 +120,7 @@ loadApps(services);
 
 const appLauncher = new AppLauncher(windowManager, fileSystemManager, services);
 services.appLauncher = appLauncher;
+appLauncher.setEmulatorApp(services.emulatorApp);
 setGameLauncher(appLauncher);
 windowManager.setAppLauncher(appLauncher);
 appCreatorApp.setAppLauncher(appLauncher);

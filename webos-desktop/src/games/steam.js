@@ -424,6 +424,12 @@ export function initStorePage(container, onLaunch, navigateTo, CDN_BASE_REF, img
       tags: ["Strategy", "Simulation", "War"]
     },
     {
+      app: "catGoesFishing",
+      icon: resolveIconUrl("static/icons/cat.webp"),
+      title: "Cat Goes Fishing",
+      tags: ["Fishing", "Simulation", "Relaxing", "Casual"]
+    },
+    {
       app: "slimeRancher",
       icon: resolveIconUrl("static/icons/slime.webp"),
       title: "Slime Rancher",
@@ -441,7 +447,6 @@ export function initStorePage(container, onLaunch, navigateTo, CDN_BASE_REF, img
       title: "Lobotomy Corporation,",
       tags: ["Strategy", "Simulation"]
     },
-
     {
       app: "plagueIncEvolved",
       icon: resolveIconUrl("static/icons/plague.webp"),
@@ -495,6 +500,12 @@ export function initStorePage(container, onLaunch, navigateTo, CDN_BASE_REF, img
       icon: resolveIconUrl("static/icons/star.webp"),
       title: "In Stars And Time",
       tags: ["RPG", "Story"]
+    },
+    {
+      app: "slenderina",
+      icon: resolveIconUrl("static/icons/slenderina.webp"),
+      title: "Slenderina The Cellar",
+      tags: ["Horror", "Action"]
     },
     {
       app: "wheresBaldi",

@@ -36,7 +36,6 @@ export class AppLauncher {
     this._services = services;
     Object.assign(this, services);
 
-    // Map slightly different property names
     this.taskManager = services.taskManagerApp;
     this.adsManager = services.adsApp;
     this.brightnessApp = services.displayPerformanceApp;
@@ -126,6 +125,9 @@ export class AppLauncher {
     }, 500);
 
     this._ensureIframeNavigateHandler();
+  }
+  setEmulatorApp(emulatorApp) {
+    this.emulatorApp = emulatorApp;
   }
 
   _registerAppsFromMap() {

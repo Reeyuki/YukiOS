@@ -412,11 +412,10 @@ export async function fetchHtmlAsBlobUrl(url) {
       rootBase = getCdnRepoBase(baseHrefFromDoc) || new URL("/", baseHrefFromDoc).href;
     } catch {}
   }
-
   const isIgnored =
-    ["angrybirds", "subway", "azahar"].some((p) => url.toLowerCase().includes(p.toLowerCase())) ||
-    html.includes("cdn.jsdelivr") ||
-    html.includes("cdn.jsdelivr.net");
+    ["angrybirds", "subway", "azahar", "catgoesfishing", "cat goes fishing", "catfish", "cat_fish"].some((p) =>
+      url.toLowerCase().includes(p.toLowerCase())
+    ) || url.toLowerCase().includes("catgoesfishing.html");
 
   let rewritten = html;
   if (!isIgnored) {
@@ -542,13 +541,7 @@ export async function fetchHtmlAsBlobUrl(url) {
   const hasBase = /<base\b[^>]*>/i.test(rewritten);
 
   if (isIgnored) {
-    if (!hasBase) {
-      if (/<head\b[^>]*>/i.test(rewritten)) {
-        withBase = rewritten.replace(/<head\b[^>]*>/i, (m) => `${m}\n<base href="${baseHref}">`);
-      } else {
-        withBase = `<base href="${baseHref}">\n${rewritten}`;
-      }
-    }
+    withBase = rewritten;
   } else if (hasBase) {
     withBase = rewritten.replace(/<base\b[^>]*>/i, (m) => `${m}\n${injectedScripts}`);
   } else if (/<head\b[^>]*>/i.test(rewritten)) {

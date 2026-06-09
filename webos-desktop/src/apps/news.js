@@ -5,6 +5,16 @@ import { os } from "../os/index.js";
 
 const NEWS_UPDATES = [
   {
+    date: "June 9, 2026",
+    sections: [
+      {
+        icon: "fa-wand-magic-sparkles",
+        title: "Add Cat Goes Fishing",
+        items: [["fa-star", "Add Cat Goes Fishing", "Added Cat Goes Fishing"]]
+      }
+    ]
+  },
+  {
     date: "June 8, 2026",
     sections: [
       {
@@ -14,7 +24,6 @@ const NEWS_UPDATES = [
       }
     ]
   },
-  ,
   {
     date: "June 6, 2026",
     sections: [

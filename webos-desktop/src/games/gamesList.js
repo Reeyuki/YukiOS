@@ -17,6 +17,12 @@ export const appMap = {
     icon: "/static/icons/lobotomy.webp",
     title: "Lobotomy Corporation"
   },
+  catGoesFishing: {
+    type: "game",
+    url: "https://cdn.jsdelivr.net/gh/reeyuki/CatFish@main/index.html",
+    icon: "/static/icons/cat.webp",
+    title: "Cat Goes Fishing"
+  },
   tabs: {
     type: "game",
     url: "/static/games/html/tabs.html",
@@ -71,9 +77,15 @@ export const appMap = {
     icon: "/static/icons/yt.webp",
     title: "Youtubers Life Omg"
   },
+  slenderina: {
+    type: "game",
+    url: "/static/games/html/slenderina.html",
+    icon: "/static/icons/slenderina.webp",
+    title: "Slenderina The Cellar"
+  },
   inStarsAndTime: {
     type: "game",
-    url: "https://yukios-in-stars-and-time.vercel.app",
+    url: "/static/games/html/star.html",
     icon: "/static/icons/star.webp",
     title: "In Stars And Time"
   },
