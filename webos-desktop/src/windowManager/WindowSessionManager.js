@@ -16,7 +16,7 @@ export class WindowSessionManager {
     if (!winId) return null;
     const mappings = {
       taskmanager: "taskManagerApp",
-      "profile-customizer": "profileCustomizer",
+      "account-manager": "accountManager",
       office: "officeApp",
       emulator: "emulatorApp",
       calculator: "calculatorApp",

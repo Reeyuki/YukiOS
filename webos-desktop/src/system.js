@@ -228,7 +228,6 @@ class WallpaperManager {
         el: container,
         ...preset.options
       });
-      console.log("Vanta effect applied successfully:", preset.name);
       return true;
     } catch (error) {
       console.error("Failed to initialize Vanta effect:", error);
@@ -288,7 +287,6 @@ class WallpaperManager {
         el: container,
         ...preset.options
       });
-      console.log("Custom Vanta effect applied successfully:", preset.name);
       return true;
     } catch (error) {
       console.error("Failed to apply custom Vanta effect:", error);

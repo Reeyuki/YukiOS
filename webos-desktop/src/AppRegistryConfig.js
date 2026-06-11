@@ -295,15 +295,15 @@ export const SYSTEM_APPS = {
     windowIdPatterns: ["achievements"],
     clippy: { message: "Track progress here and see what you've unlocked.", animation: ClippyAnimation.GetArtsy }
   },
-  profileCustomizer: {
-    serviceKey: "profileCustomizerApp",
+  accountManager: {
+    serviceKey: "accountManagerApp",
     type: "system",
-    title: "Customize Profile",
-    icon: "fas fa-circle-user",
+    title: "Accounts",
+    icon: "fas fa-users",
     launchType: "instance",
-    windowIdPatterns: ["profile-customizer"],
+    windowIdPatterns: ["account-manager"],
     clippy: {
-      message: "Update your profile and make the desktop feel like yours.",
+      message: "Manage your user accounts and switch between profiles.",
       animation: ClippyAnimation.GetArtsy
     }
   },

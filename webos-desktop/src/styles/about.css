@@ -26,7 +26,7 @@
   background: var(--glass);
   backdrop-filter: blur(32px);
   box-shadow:
-    0 24px 64px var(--shadow-color),
+    0 10px 64px var(--shadow-color),
     inset 0 1px 0 var(--glass-border);
 }
 
@@ -121,7 +121,7 @@
   backdrop-filter: blur(32px);
   overflow: hidden;
   box-shadow:
-    0 24px 64px var(--shadow-color),
+    0 10px 64px var(--shadow-color),
     inset 0 1px 0 var(--glass-border);
 }
 
@@ -185,7 +185,7 @@
   background: var(--glass);
   backdrop-filter: blur(32px);
   box-shadow:
-    0 24px 64px var(--shadow-color),
+    0 10px 64px var(--shadow-color),
     inset 0 1px 0 var(--glass-border);
 }
 

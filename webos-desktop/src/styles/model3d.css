@@ -52,7 +52,7 @@
   border: 1px solid var(--glass-border);
   border-radius: 0 0 6px 6px;
   min-width: 220px;
-  box-shadow: 0 24px 64px var(--shadow-color);
+  box-shadow: 0 10px 64px var(--shadow-color);
   z-index: 1000;
   padding: 3px 0;
 }
@@ -1404,7 +1404,7 @@
   border: 1px solid var(--glass-border);
   border-radius: 6px;
   min-width: 160px;
-  box-shadow: 0 24px 64px var(--shadow-color);
+  box-shadow: 0 10px 64px var(--shadow-color);
   z-index: 100000;
   padding: 3px 0;
 }
@@ -1473,7 +1473,7 @@
   max-width: 92vw;
   max-height: 82vh;
   overflow: hidden;
-  box-shadow: 0 24px 64px var(--shadow-color);
+  box-shadow: 0 10px 64px var(--shadow-color);
   display: flex;
   flex-direction: column;
   transform: translateY(20px) scale(0.97);

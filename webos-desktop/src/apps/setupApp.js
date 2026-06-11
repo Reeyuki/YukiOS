@@ -1,10 +1,10 @@
 import { BaseApp } from "../core/BaseApp.js";
 import { StorageKeys } from "../StorageKeys.js";
-import { resolveIconUrl, resolveWallpaperUrl } from "../shared/assetResolver.js";
+import { resolveWallpaperUrl } from "../shared/assetResolver.js";
 import { SystemUtilities } from "../system.js";
 import { Achievements } from "../achievements.js";
 import { AppSource } from "../AppSource.js";
-import { PREDEFINED_AVATARS } from "./profileCustomizer.js";
+import { PREDEFINED_AVATARS } from "./accountManager.js";
 import { os } from "../os/index.js";
 import { applyFontFamily } from "../settings/settingsApply.js";
 import { $, $$, bindEvent, setText, setHTML, toggleClass } from "../shared/domUtils.js";
@@ -1120,7 +1120,7 @@ export class SetupApp extends BaseApp {
       this._services.sessionManager.currentSession.avatar = finalizedAvatar;
     }
 
-    this._services.profileCustomizerApp?.updateProfileState(finalizedName, finalizedAvatar);
+    this._services.accountManagerApp?.updateProfileState(finalizedName, finalizedAvatar);
 
     os.storage.set(StorageKeys.theme, this.userChoices.theme);
     os.storage.set(StorageKeys.taskbarPosition, this.userChoices.taskbarPosition);

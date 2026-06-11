@@ -4,7 +4,7 @@ import { refreshIcons } from "../shared/contextMenu.js";
 import { PROXIES, clampProxyIndex, buildProxyUrl, fetchHtmlThroughProxy } from "../proxies.js";
 import { customConfirm } from "../shared/dialogs.js";
 import { AppSource } from "../AppSource.js";
-import { PREDEFINED_AVATARS } from "./profileCustomizer.js";
+import { PREDEFINED_AVATARS } from "./accountManager.js";
 import { os } from "../os/index.js";
 import { $, $$, bindEvent, setText, setHTML, toggleClass } from "../shared/domUtils.js";
 

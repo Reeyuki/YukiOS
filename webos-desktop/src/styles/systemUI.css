@@ -414,7 +414,7 @@
   border: 1px solid var(--glass-border);
   border-radius: var(--r);
   box-shadow:
-    0 24px 64px var(--shadow-color),
+    0 10px 64px var(--shadow-color),
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
   display: flex;
   flex-direction: column;

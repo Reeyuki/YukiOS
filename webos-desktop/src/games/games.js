@@ -8,6 +8,7 @@ import { CDN_CONFIG } from "../shared/cdnConfig.js";
 import { StorageKeys } from "../settings/settings.js";
 import { getAppRegistry } from "../appRegistry.js";
 import { os } from "../os/index.js";
+import { getCurrentUser } from "../desktopui/startMenu.js";
 
 export function getCdnBase() {
   return CDN_CONFIG.repos.main.base;
@@ -29,8 +30,9 @@ export function setDesktopUI(ui) {
 }
 
 export function refreshSteamUI() {
-  const username = os.storage.get(StorageKeys.username) || "Reeyuki";
-  const profilePic = os.storage.get(StorageKeys.profilePicture) || resolveIconUrl("static/icons/guest.webp");
+  const user = getCurrentUser();
+  const username = user.name;
+  const profilePic = user.avatar;
 
   const steamUserProfiles = document.querySelectorAll(".steam-user-profile span");
   steamUserProfiles.forEach((span) => {

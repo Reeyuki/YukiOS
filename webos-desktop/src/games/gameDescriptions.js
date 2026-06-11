@@ -22,7 +22,7 @@ export const APP_DESCRIPTIONS = {
   v86app: "x86-64 full system emulator for running operating systems and legacy software.",
   youtubeApp: "YouTube integration for watching videos within Yuki OS.",
   achievementsApp: "Track playtime milestones and system usage achievements.",
-  profileCustomizerApp: "Customize username, profile picture, desktop colors, and personal settings.",
+  accountManagerApp: "Manage multiple user accounts with create, edit, delete, and switch functionality.",
   emulatorApp: "Multi-platform game emulator supporting various console systems.",
   ruffleApp: "Flash game player using modern Ruffle engine for SWF content.",
   shortcutsApp: "View and manage keyboard shortcuts for system-wide commands.",
@@ -35,7 +35,7 @@ export const APP_DESCRIPTIONS = {
   systemApps: "Access and manage core system applications and utilities.",
   shittify: "A spotify alternative",
   shittifyApp: "A spotify alternative",
-  profileCustomizer: "Customize username, profile picture, desktop colors, and personal settings.",
+  accountManager: "Manage multiple user accounts with create, edit, delete, and switch functionality.",
   yukiOsGuide: "Comprehensive documentation and feature discovery hub for Yuki OS.",
   clipboardManager: "System-wide clipboard history with tray icon support for managing copied text and data.",
   aiAssistant:

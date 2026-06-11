@@ -123,8 +123,8 @@ export class BaseApp {
         return AppSource.NEWS;
       case "WeatherApp":
         return AppSource.WEATHER;
-      case "ProfileCustomizerApp":
-        return AppSource.PROFILE_CUSTOMIZER;
+      case "AccountManagerApp":
+        return AppSource.ACCOUNT_MANAGER;
       case "ShortcutsApp":
         return AppSource.SHORTCUTS;
       case "AppCreatorApp":

@@ -1211,7 +1211,7 @@ html[data-theme] .window {
   background: var(--window-bg);
   border: 1px solid var(--glass-border);
   box-shadow:
-    0 24px 64px var(--shadow-color),
+    0 10px 64px var(--shadow-color),
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
   color: var(--text-primary);
 }
@@ -1245,7 +1245,7 @@ html[data-theme] .context-menu-glass {
   -webkit-backdrop-filter: blur(32px);
   border: 1px solid var(--glass-border);
   box-shadow:
-    0 24px 64px var(--shadow-color),
+    0 10px 64px var(--shadow-color),
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
   color: var(--text-primary);
 }
@@ -1434,7 +1434,7 @@ html[data-theme] .overlay-dialog {
   backdrop-filter: blur(32px);
   -webkit-backdrop-filter: blur(32px);
   border: 1px solid var(--glass-border);
-  box-shadow: 0 24px 64px var(--shadow-color);
+  box-shadow: 0 10px 64px var(--shadow-color);
   color: var(--text-primary);
 }
 
@@ -1553,7 +1553,7 @@ html[data-theme] .login-card {
   backdrop-filter: blur(32px);
   -webkit-backdrop-filter: blur(32px);
   border: 1px solid var(--glass-border);
-  box-shadow: 0 24px 64px var(--shadow-color);
+  box-shadow: 0 10px 64px var(--shadow-color);
   color: var(--text-primary);
 }
 
@@ -1672,7 +1672,7 @@ html[data-theme] .start-menu {
   backdrop-filter: blur(32px);
   -webkit-backdrop-filter: blur(32px);
   border: 1px solid var(--glass-border);
-  box-shadow: 0 24px 64px var(--shadow-color);
+  box-shadow: 0 10px 64px var(--shadow-color);
   color: var(--text-primary);
 }
 

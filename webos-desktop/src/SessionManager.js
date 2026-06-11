@@ -1,5 +1,5 @@
 import { BusEvents } from "./core/EventBus.js";
-import { PREDEFINED_AVATARS } from "./apps/profileCustomizer.js";
+import { PREDEFINED_AVATARS } from "./apps/accountManager.js";
 import { StorageKeys } from "./StorageKeys.js";
 import { SystemUtilities } from "./system.js";
 import { audioMixer, SystemAudio } from "./audioMixer.js";

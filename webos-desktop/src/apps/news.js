@@ -11,6 +11,13 @@ const NEWS_UPDATES = [
         icon: "fa-wand-magic-sparkles",
         title: "New Features",
         items: [["fa-user", "Enchance login ui", "Redesigned login / lockscreen ui"]]
+      },
+      {
+        icon: "fa-wand-magic-sparkles",
+        title: "New App",
+        items: [
+          ["fa-users", "Accounts", "Manage multiple user accounts with create, edit, delete, and switch functionality."]
+        ]
       }
     ]
   },

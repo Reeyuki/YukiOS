@@ -939,7 +939,7 @@ export class YukiOsGuideApp extends BaseApp {
       },
       {
         feature: "System Management",
-        apps: ["aboutApp", "achievementsApp", "profileCustomizer", "installedApps", "yukiOsGuide"],
+        apps: ["aboutApp", "achievementsApp", "accountManager", "installedApps", "yukiOsGuide"],
         icon: "fas fa-cog"
       }
     ];
@@ -1064,7 +1064,7 @@ export class YukiOsGuideApp extends BaseApp {
 
       aboutApp: "system",
       achievementsApp: "system",
-      profileCustomizer: "system",
+      accountManager: "system",
       installedApps: "system",
       yukiOsGuide: "system"
     };

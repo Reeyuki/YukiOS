@@ -240,7 +240,7 @@ export function setupStartMenu(appLauncher, sessionManager, explorerApp, notepad
         return;
       }
       if (cat.dataset.cat === "customize") {
-        os.app.launch("profileCustomizer");
+        os.app.launch("accountManager");
         return;
       }
       document.querySelectorAll(".start-cat").forEach((c) => c.classList.remove("active"));
@@ -492,6 +492,42 @@ function setupDesktopStartMenuToggles(selectionManager) {
   };
 }
 
+export function getCurrentUser() {
+  const userHistory = os.storage.get(StorageKeys.userHistory) || [];
+  const currentUserId = os.storage.get(StorageKeys.userId);
+
+  if (userHistory.length > 0 && currentUserId) {
+    const currentUser = userHistory.find((u) => u.userId === currentUserId);
+    if (currentUser) {
+      return {
+        name: currentUser.name,
+        avatar: currentUser.avatar
+      };
+    }
+  }
+
+  const fallbackName = os.storage.get(StorageKeys.username) || "Guest";
+  const fallbackAvatar = os.storage.get(StorageKeys.profilePicture) || "static/icons/guest.webp";
+
+  return {
+    name: fallbackName,
+    avatar: fallbackAvatar
+  };
+}
+
+export function updateStartUserDisplay() {
+  const startUser = document.querySelector(".start-user");
+  if (!startUser) return;
+
+  const user = getCurrentUser();
+
+  const nameSpan = startUser.querySelector("span");
+  const avatarImg = startUser.querySelector("img");
+
+  if (nameSpan) nameSpan.textContent = user.name;
+  if (avatarImg) avatarImg.src = user.avatar;
+}
+
 export function setupStartUserHover() {
   const startUser = document.querySelector(".start-user");
   if (!startUser) return;
@@ -499,11 +535,11 @@ export function setupStartUserHover() {
   let tooltip = null;
 
   startUser.addEventListener("mouseenter", () => {
-    const currentName = os.storage.get(StorageKeys.username) || "Reeyuki";
+    const user = getCurrentUser();
 
     tooltip = document.createElement("div");
     tooltip.className = "user-tooltip";
-    tooltip.textContent = currentName;
+    tooltip.textContent = user.name;
     document.body.appendChild(tooltip);
 
     const rect = startUser.getBoundingClientRect();
@@ -516,6 +552,16 @@ export function setupStartUserHover() {
       tooltip.remove();
       tooltip = null;
     }
+  });
+
+  updateStartUserDisplay();
+
+  os.events.on("profile:updated", () => {
+    updateStartUserDisplay();
+  });
+
+  os.events.on("session:initialized", () => {
+    updateStartUserDisplay();
   });
 }
 

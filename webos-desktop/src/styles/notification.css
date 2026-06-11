@@ -584,7 +584,7 @@ html[data-theme="solarized-light"] #ntf-panel {
   background: var(--bg-secondary) !important;
   border-color: var(--glass-border) !important;
   box-shadow:
-    0 24px 64px var(--shadow-color) !important,
+    0 10px 64px var(--shadow-color) !important,
     0 0 0 1px var(--glass-border) inset !important;
 }
 

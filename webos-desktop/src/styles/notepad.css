@@ -3,7 +3,7 @@
   backdrop-filter: blur(32px) saturate(1.5);
   border: 1px solid var(--glass-border);
   box-shadow:
-    0 24px 64px var(--shadow-color),
+    0 10px 64px var(--shadow-color),
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
   border-radius: var(--r);
   overflow: hidden;

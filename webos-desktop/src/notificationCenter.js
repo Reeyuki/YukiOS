@@ -41,7 +41,7 @@ const APP_SOURCE_TO_APP_MAP_KEY = {
   News: "newsApp",
   Weather: "weatherApp",
   Categories: "systemApps",
-  "Profile Customizer": "profileCustomizer",
+  Accounts: "accountManager",
   Shortcuts: "shortcutsApp",
   "App Creator": "appCreatorApp",
   "Yuki OS Guide": "yukiOsGuide",

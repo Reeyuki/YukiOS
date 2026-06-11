@@ -9,6 +9,7 @@ import { resolveIconUrl } from "../shared/assetResolver.js";
 import { fetchLiveStats, sendLaunchAnalytics, getAnalyticsBase } from "../analytics.js";
 import { appMap } from "./gamesList.js";
 import { os } from "../os/index.js";
+import { getCurrentUser } from "../desktopui/startMenu.js";
 
 export class GameUI {
   constructor(renderer) {
@@ -422,8 +423,9 @@ export class GameUI {
     const hidden = SteamDataManager.getHidden();
     const visibleGames = allGames.filter((g) => !hidden.includes(g.app));
     const hiddenGames = allGames.filter((g) => hidden.includes(g.app));
-    const username = os.storage.get(StorageKeys.username) || "Reeyuki";
-    const profilePic = os.storage.get(StorageKeys.profilePicture) || resolveIconUrl("static/icons/guest.webp");
+    const user = getCurrentUser();
+    const username = user.name;
+    const profilePic = user.avatar;
 
     container.classList.add("steam-app-root");
     container.style.padding = "0";
@@ -723,8 +725,9 @@ export class GameUI {
     }
 
     const windowHelper = new WindowHelper(wm);
-    const username = os.storage.get(StorageKeys.username) || "Reeyuki";
-    const profilePic = os.storage.get(StorageKeys.profilePicture) || resolveIconUrl("static/icons/guest.webp");
+    const user = getCurrentUser();
+    const username = user.name;
+    const profilePic = user.avatar;
 
     const content = `
       <div class="window-content" style="display:flex; flex-direction:column; height:100%; color:#dcdedf;">

@@ -1338,7 +1338,7 @@ html[data-theme="solarized-light"] .guide-hero {
   background: var(--bg-secondary);
   border-color: var(--glass-border);
   box-shadow:
-    0 24px 64px var(--shadow-color),
+    0 10px 64px var(--shadow-color),
     0 4px 16px var(--shadow-color);
 }
 

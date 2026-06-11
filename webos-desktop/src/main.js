@@ -16,7 +16,7 @@ import { NotificationCenter } from "./notificationCenter.js";
 import { JsDosApp } from "./apps/jsdos.js";
 import { V86App } from "./apps/v86.js";
 import { customAlert } from "./shared/dialogs.js";
-import { ProfileCustomizerApp } from "./apps/profileCustomizer.js";
+import { AccountManagerApp } from "./apps/accountManager.js";
 import { setDesktopUI as setGamesDesktopUI, handleSteamUrlParam } from "./games/games.js";
 import { AdsManager } from "./ads.js";
 import { registerPWA } from "./pwa/pwa.js";
@@ -105,9 +105,9 @@ const settingsApp = new EnhancedSettingsApp(services);
 services.settingsApp = settingsApp;
 settingsApp.setFileSystemManager(fileSystemManager);
 
-const profileCustomizerApp = new ProfileCustomizerApp(services);
-services.profileCustomizerApp = profileCustomizerApp;
-profileCustomizerApp.setSettingsApp(settingsApp);
+const accountManagerApp = new AccountManagerApp(services);
+services.accountManagerApp = accountManagerApp;
+accountManagerApp.setSettingsApp(settingsApp);
 
 const adsApp = new AdsManager(windowManager);
 services.adsApp = adsApp;
@@ -179,7 +179,7 @@ async function start() {
   explorerApp.setDesktopUI(desktopUI);
   settingsApp.setDesktopUI(desktopUI);
   settingsApp.setAppLauncher(appLauncher);
-  profileCustomizerApp.setSettingsApp(settingsApp);
+  accountManagerApp.setSettingsApp(settingsApp);
   appCreatorApp.setDesktopUI(desktopUI);
   appCreatorApp.setAppLauncher(appLauncher);
   appCreatorApp.restoreInstalledApps();
