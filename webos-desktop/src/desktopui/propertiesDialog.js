@@ -21,7 +21,7 @@ export function showPropertiesDialog(icon, appLauncher, iconDataHelper, windowHe
   };
   const contentHtml = Object.entries(props)
     .filter(([, v]) => v !== undefined && v !== "")
-    .map(([k, v]) => `<div style="margin:2px 0;">${k}: ${v}</div>`)
+    .map(([k, v]) => `<div class="props-row">${k}: ${v}</div>`)
     .join("");
   const title = `Properties: ${name}`;
   const propsWin = os.window.create(`${icon.id || Date.now()}-props`, title, "300px", "auto");

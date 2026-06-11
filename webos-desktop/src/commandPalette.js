@@ -288,6 +288,9 @@ export class CommandPalette {
   }
 
   async open() {
+    if (document.getElementById("session-overlay")) {
+      return;
+    }
     this.isOpen = true;
     this.currentSubpalette = null;
     this.activeIndex = 0;

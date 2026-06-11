@@ -297,6 +297,7 @@ export class ProfileCustomizerApp extends BaseApp {
     saveBtn.addEventListener("click", () => {
       const newUsername = usernameInput.value.trim() || "Reeyuki";
       const newProfilePic = customImageDataUrl || selectedAvatar;
+      const userId = os.storage.get(StorageKeys.userId);
 
       os.storage.set(StorageKeys.username, newUsername);
       os.storage.set(StorageKeys.profilePicture, newProfilePic);
@@ -312,6 +313,14 @@ export class ProfileCustomizerApp extends BaseApp {
       if (startUserImg) startUserImg.src = newProfilePic;
 
       refreshSteamUI();
+
+      if (userId) {
+        os.events.emit(BusEvents.PROFILE_UPDATED, {
+          userId: userId,
+          name: newUsername,
+          avatar: newProfilePic
+        });
+      }
 
       statusMsg.textContent = "Profile updated successfully!";
       statusMsg.style.opacity = "1";

@@ -1,10 +1,19 @@
 import { BusEvents } from "./core/EventBus.js";
 import { PREDEFINED_AVATARS } from "./apps/profileCustomizer.js";
-import { resolveIconUrl } from "./shared/assetResolver.js";
 import { StorageKeys } from "./StorageKeys.js";
 import { SystemUtilities } from "./system.js";
 import { audioMixer, SystemAudio } from "./audioMixer.js";
 import { os } from "./os/index.js";
+import { showAlert, showConfirm } from "./shared/dialogs.js";
+import { YUKIOS_VERSION } from "./apps/about.js";
+
+function generateUUID() {
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === "x" ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
 
 export class SessionManager {
   constructor(services) {
@@ -12,15 +21,78 @@ export class SessionManager {
     this.currentSession = null;
     this.container = null;
     this.isLocked = false;
-    this.lockContainer = null;
     this.timeInterval = null;
     this.userHistory = this._loadUserHistory();
+    this.sessionState = "login";
+    this.selectedUser = null;
+    this.selectedSession = os.storage.get(StorageKeys.selectedSession) || "Yuki Desktop";
+    this._ensureUserId();
+    this._setupProfileUpdateListener();
+    this.startTime = Date.now();
+    this.uptimeInterval = null;
+    this.contextMenuHandler = null;
+  }
+
+  _ensureUserId() {
+    let userId = os.storage.get(StorageKeys.userId);
+    if (!userId) {
+      userId = generateUUID();
+      os.storage.set(StorageKeys.userId, userId);
+    }
+    return userId;
+  }
+
+  _setupProfileUpdateListener() {
+    os.events.on(BusEvents.PROFILE_UPDATED, (data) => {
+      this._handleProfileUpdate(data);
+    });
+  }
+
+  _handleProfileUpdate(data) {
+    const { userId, name, avatar } = data;
+
+    const existingIndex = this.userHistory.findIndex((u) => u.userId === userId);
+    if (existingIndex >= 0) {
+      this.userHistory[existingIndex].name = name;
+      this.userHistory[existingIndex].avatar = avatar;
+      this._saveUserHistory();
+    }
+
+    if (this.container) {
+      const carousel = this.container.querySelector("#user-carousel-row");
+      if (carousel) {
+        carousel.innerHTML = this._renderUserCarousel();
+        this._bindCarouselTileEvents();
+      }
+    }
   }
 
   _loadUserHistory() {
     try {
       const history = os.storage.get(StorageKeys.userHistory);
-      return history || [];
+      if (!history) return [];
+
+      const currentUserId = this._ensureUserId();
+      let needsMigration = false;
+
+      const migratedHistory = history.map((user) => {
+        if (!user.userId) {
+          needsMigration = true;
+          return {
+            ...user,
+            userId: currentUserId,
+            key: currentUserId
+          };
+        }
+        return user;
+      });
+
+      if (needsMigration) {
+        this.userHistory = migratedHistory;
+        this._saveUserHistory();
+      }
+
+      return migratedHistory;
     } catch (e) {
       return [];
     }
@@ -33,10 +105,12 @@ export class SessionManager {
   }
 
   _addToUserHistory(session) {
-    const existingIndex = this.userHistory.findIndex((u) => u.key === session.key);
+    const userId = this._ensureUserId();
+    const existingIndex = this.userHistory.findIndex((u) => u.userId === userId);
     const userEntry = {
+      userId: userId,
       name: session.name,
-      key: session.key,
+      key: userId,
       avatar: session.avatar,
       lastLogin: Date.now()
     };
@@ -52,126 +126,125 @@ export class SessionManager {
   }
 
   async showLogin() {
-    if (!os.storage.get(StorageKeys.setupCompleted)) {
-      const lastUsername = os.storage.get(StorageKeys.username) || "";
-      const lastAvatar = os.storage.get(StorageKeys.profilePicture) || PREDEFINED_AVATARS[0];
-      const displayName = lastUsername || "Guest";
-      const sessionKey = lastUsername.toLowerCase().replace(/[^a-z0-9]/g, "") || "guest";
-      this.currentSession = {
-        name: displayName,
-        key: sessionKey,
-        avatar: lastAvatar
-      };
-      await this._initializeSession();
-      return this.currentSession;
-    }
-
     const lastLaunch = os.storage.get(StorageKeys.lastLaunchTime);
     const now = Date.now();
-    const isWithin15Mins = lastLaunch && now - Number(lastLaunch) < 15 * 60 * 1000;
     os.storage.set(StorageKeys.lastLaunchTime, now.toString());
 
-    if (os.storage.get(StorageKeys.disableBootScreen) === "true" || isWithin15Mins) {
-      const lastUsername = os.storage.get(StorageKeys.username) || "";
-      const lastAvatar = os.storage.get(StorageKeys.profilePicture) || PREDEFINED_AVATARS[0];
-      const displayName = lastUsername || "Guest";
-      const sessionKey = lastUsername.toLowerCase().replace(/[^a-z0-9]/g, "") || "guest";
-      this.currentSession = {
-        name: displayName,
-        key: sessionKey,
-        avatar: lastAvatar
-      };
-      await this._initializeSession();
-      return this.currentSession;
-    }
-    return new Promise((resolve) => {
-      this._createUI(resolve);
+    return new Promise(async (resolve) => {
+      await this._createSessionUI("login", resolve);
     });
   }
 
-  _createUI(onComplete) {
-    if (document.getElementById("login-screen-container")) return;
+  async _createSessionUI(state, onComplete) {
+    if (document.getElementById("session-overlay")) return;
 
+    this.sessionState = state;
     this.container = document.createElement("div");
-    this.container.id = "login-screen-container";
-    this.container.className = "login-screen-overlay";
+    this.container.id = "session-overlay";
+    this.container.className = "session-overlay";
+
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    const dateStr = now.toLocaleDateString([], { weekday: "long", month: "short", day: "numeric" });
 
     const lastUsername = os.storage.get(StorageKeys.username) || "";
     const lastAvatar = os.storage.get(StorageKeys.profilePicture) || PREDEFINED_AVATARS[0];
     const displayName = lastUsername || "Guest";
+    const userId = this._ensureUserId();
 
-    const userHistoryHtml =
-      this.userHistory.length > 0
-        ? `
-      <div class="user-history-section">
-        <label>Recent Users</label>
-        <div class="user-history-grid">
-          ${this.userHistory.map((user) => this._renderUserTile(user)).join("")}
-        </div>
-      </div>
-    `
-        : "";
+    const primaryUser = { name: displayName, key: userId, avatar: lastAvatar, userId: userId };
+
+    const allUsers = this.userHistory.length > 0 ? this.userHistory : [primaryUser];
+    const selectedKey = this.userHistory.length > 0 ? this.userHistory[0].key : primaryUser.key;
+    this.selectedUser = allUsers.find((u) => u.key === selectedKey) || allUsers[0];
 
     this.container.innerHTML = `
-      <div class="login-container">
-        <div class="login-left-panel glass">
-          ${userHistoryHtml}
+      <div class="session-wallpaper"></div>
+      <div class="session-background"></div>
+      <div class="session-content">
+        <div class="session-info-btn" id="session-info-btn">
+          <i class="fas fa-info"></i>
         </div>
-        
-        <div class="login-card glass">
-          <div class="login-header">
-            <div class="login-logo">
-              <img class="abx-badge" src="${resolveIconUrl("static/icons/logo.png")}" style="height: 64px;">
+        <div class="session-info-modal" id="session-info-modal" style="display: none;">
+          <div class="info-modal-content">
+            <div class="info-modal-header">
+              <h3>System Info</h3>
             </div>
-            <h1>Yuki OS</h1>
-            <p>Sign in to start your session</p>
-          </div>
-
-          <div class="login-body">
-            <div class="profile-preview-section">
-              <div class="profile-preview-card">
-                <img id="preview-avatar" src="${lastAvatar}" alt="Preview">
-                <div class="preview-info">
-                  <div class="preview-label">Your Profile</div>
-                  <div id="preview-name" class="preview-name">${displayName}</div>
-                </div>
+            <div class="info-modal-body">
+              <div class="info-row">
+                <span class="info-label">Version</span>
+                <span class="info-value">YukiOS ${YUKIOS_VERSION}</span>
               </div>
-            </div>
-
-            <div class="input-group">
-              <label for="nickname-input">Nickname</label>
-              <div class="input-wrapper">
-                <i class="fas fa-user-tag"></i>
-                <input type="text" id="nickname-input" placeholder="Enter nickname (optional)" value="${lastUsername}" autocomplete="off">
+              <div class="info-row">
+                <span class="info-label">Build</span>
+                <span class="info-value">${__GIT_COMMIT__}</span>
               </div>
-            </div>
-
-            <div class="avatar-section">
-              <label>Select Avatar</label>
-              <div class="avatar-grid-wrapper">
-                <div class="login-avatar-grid" id="login-avatar-grid">
-                  ${PREDEFINED_AVATARS.map(
-                    (url) => `
-                    <div class="login-avatar-tile ${url === lastAvatar ? "active" : ""}" data-url="${url}">
-                      <img src="${url}" alt="Avatar">
-                      <div class="tile-check"><i class="fas fa-check"></i></div>
-                    </div>
-                  `
-                  ).join("")}
-                </div>
-              </div>
-              
-              <div class="avatar-actions">
-                <button class="btn-secondary" id="login-upload-btn">
-                  <i class="fas fa-upload"></i> Upload Custom
-                </button>
+              <div class="info-row">
+                <span class="info-label">Uptime</span>
+                <span class="info-value" id="uptime-display">0s</span>
               </div>
             </div>
           </div>
+        </div>
+        <div class="session-time">${timeStr}</div>
+        <div class="session-date">${dateStr}</div>
 
-          <div class="login-footer">
-            <button class="btn-primary" id="login-continue-btn">
-              Continue <i class="fas fa-arrow-right"></i>
+        <div class="user-carousel-row" id="user-carousel-row">
+          ${this._renderUserCarousel()}
+        </div>
+
+        <div class="login-center-panel">
+          <button class="action-button" id="action-button">
+            ${this._getActionButtonText()}
+          </button>
+
+          <div class="system-actions-row">
+            <button class="system-icon" id="power-btn" title="Shutdown">
+              <i class="fas fa-power-off"></i>
+            </button>
+            <button class="system-icon" id="restart-btn" title="Restart">
+              <i class="fas fa-rotate"></i>
+            </button>
+            <button class="system-icon" id="sleep-btn" title="Sleep">
+              <i class="fas fa-moon"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="session-selector" id="session-selector">
+          <button class="session-selector-btn" id="session-selector-btn">
+            <i class="fas fa-desktop"></i>
+            <span id="session-selector-label">${this.selectedSession}</span>
+            <i class="fas fa-chevron-down"></i>
+          </button>
+
+          <div class="session-dropdown" id="session-dropdown">
+            <div class="session-option" data-value="desktop">Yuki Desktop</div>
+            <div class="session-option" data-value="tiling">Yuki Tiling WM</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="avatar-edit-modal" id="avatar-edit-modal" style="display: none;">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>Edit Avatar</h3>
+            <button class="modal-close" id="avatar-modal-close">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="avatar-grid" id="avatar-grid">
+              ${PREDEFINED_AVATARS.map(
+                (url) => `
+                <div class="avatar-tile ${url === this.selectedUser.avatar ? "active" : ""}" data-url="${url}">
+                  <img src="${url}" alt="Avatar">
+                </div>
+              `
+              ).join("")}
+            </div>
+            <button class="upload-avatar-btn" id="upload-avatar-btn">
+              <i class="fas fa-upload"></i> Upload Custom
             </button>
           </div>
         </div>
@@ -179,8 +252,44 @@ export class SessionManager {
     `;
 
     document.body.appendChild(this.container);
-    this._bindEvents(onComplete);
-    this._applyLoginWallpaper(this.container);
+    await this._applySessionWallpaper(this.container);
+    this._bindSessionEvents(onComplete);
+    this._startClock();
+    this._startUptimeCounter();
+    this._disableContextMenu();
+  }
+
+  _renderUserCarousel() {
+    const users = this.userHistory.length > 0 ? this.userHistory : [this.selectedUser];
+    return users
+      .map((user) => {
+        const isSelected = user.key === this.selectedUser?.key;
+        return `
+        <div class="user-carousel-tile ${isSelected ? "selected" : ""}"
+             data-key="${user.key}" data-name="${user.name}" data-avatar="${user.avatar}" data-user-id="${user.userId || user.key}">
+          <div class="carousel-avatar-wrap">
+            <img src="${user.avatar}" alt="${user.name}">
+          </div>
+          <span>${user.name}</span>
+        </div>
+      `;
+      })
+      .join("");
+  }
+
+  _getActionButtonText() {
+    if (this.sessionState === "locked") return "Unlock";
+    if (this.sessionState === "login") {
+      return this.selectedUser ? "Sign in" : "Select User";
+    }
+    return "Start Session";
+  }
+
+  _updateActionButtonText() {
+    const actionBtn = this.container?.querySelector("#action-button");
+    if (actionBtn) {
+      actionBtn.innerHTML = this._getActionButtonText();
+    }
   }
 
   _renderUserTile(user) {
@@ -212,21 +321,21 @@ export class SessionManager {
     return date.toLocaleDateString();
   }
 
-  async _applyLoginWallpaper(container) {
+  async _applySessionWallpaper(container) {
     const wp = await SystemUtilities.getLoginWallpaper();
-    let bgEl = container.querySelector(".login-wallpaper-bg");
+    let bgEl = container.querySelector(".session-wallpaper");
+    const blurOverlay = container.querySelector(".session-background");
     if (!wp) {
       if (bgEl) bgEl.remove();
+      if (blurOverlay) blurOverlay.style.display = "";
       return;
     }
-    if (!bgEl) {
+    const currentTag = bgEl?.tagName.toLowerCase();
+    const needsReplacement = !bgEl || currentTag === "div" || wp.isVideo !== (currentTag === "video");
+    if (needsReplacement) {
+      if (bgEl) bgEl.remove();
       bgEl = wp.isVideo ? document.createElement("video") : document.createElement("img");
-      bgEl.className = "login-wallpaper-bg";
-      container.insertBefore(bgEl, container.firstChild);
-    } else if (wp.isVideo !== (bgEl.tagName.toLowerCase() === "video")) {
-      bgEl.remove();
-      bgEl = wp.isVideo ? document.createElement("video") : document.createElement("img");
-      bgEl.className = "login-wallpaper-bg";
+      bgEl.className = "session-wallpaper";
       container.insertBefore(bgEl, container.firstChild);
     }
     bgEl.src = wp.url;
@@ -236,76 +345,144 @@ export class SessionManager {
       bgEl.muted = true;
       bgEl.playsInline = true;
     }
+    if (blurOverlay) blurOverlay.style.display = "none";
   }
 
-  _bindEvents(onComplete) {
-    const grid = this.container.querySelector("#login-avatar-grid");
-    const nicknameInput = this.container.querySelector("#nickname-input");
-    const uploadBtn = this.container.querySelector("#login-upload-btn");
-    const continueBtn = this.container.querySelector("#login-continue-btn");
-    const userHistoryGrid = this.container.querySelector(".user-history-grid");
-    const previewAvatar = this.container.querySelector("#preview-avatar");
-    const previewName = this.container.querySelector("#preview-name");
+  _startClock() {
+    this.timeInterval = setInterval(() => {
+      if (!this.container) {
+        clearInterval(this.timeInterval);
+        return;
+      }
+      const timeEl = this.container.querySelector(".session-time");
+      if (timeEl) {
+        const d = new Date();
+        timeEl.textContent = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      }
+    }, 1000 * 60);
+  }
 
-    let selectedAvatar = os.storage.get(StorageKeys.profilePicture) || PREDEFINED_AVATARS[0];
+  _startUptimeCounter() {
+    this.uptimeInterval = setInterval(() => {
+      if (!this.container) {
+        clearInterval(this.uptimeInterval);
+        return;
+      }
+      const uptimeEl = this.container.querySelector("#uptime-display");
+      if (uptimeEl) {
+        const uptime = Date.now() - this.startTime;
+        uptimeEl.textContent = this._formatUptime(uptime);
+      }
+    }, 1000);
+  }
 
-    const updatePreview = () => {
-      const name = nicknameInput.value.trim() || "Guest";
-      if (previewName) previewName.textContent = name;
-      if (previewAvatar) previewAvatar.src = selectedAvatar;
+  _formatUptime(ms) {
+    const seconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (days > 0) return `${days}d ${hours % 24}h`;
+    if (hours > 0) return `${hours}h ${minutes % 60}m`;
+    if (minutes > 0) return `${minutes}m ${seconds % 60}s`;
+    return `${seconds}s`;
+  }
+
+  _disableContextMenu() {
+    this.contextMenuHandler = (e) => e.preventDefault();
+    document.addEventListener("contextmenu", this.contextMenuHandler);
+  }
+
+  _enableContextMenu() {
+    if (this.contextMenuHandler) {
+      document.removeEventListener("contextmenu", this.contextMenuHandler);
+      this.contextMenuHandler = null;
+    }
+  }
+
+  _bindSessionEvents(onComplete) {
+    const actionBtn = this.container.querySelector("#action-button");
+    const powerBtn = this.container.querySelector("#power-btn");
+    const restartBtn = this.container.querySelector("#restart-btn");
+    const sleepBtn = this.container.querySelector("#sleep-btn");
+    const sessionSelectorBtn = this.container.querySelector("#session-selector-btn");
+    const avatarModal = this.container.querySelector("#avatar-edit-modal");
+    const avatarModalClose = this.container.querySelector("#avatar-modal-close");
+    const avatarGrid = this.container.querySelector("#avatar-grid");
+    const uploadAvatarBtn = this.container.querySelector("#upload-avatar-btn");
+    const infoBtn = this.container.querySelector("#session-info-btn");
+    const infoModal = this.container.querySelector("#session-info-modal");
+
+    let selectedAvatar = this.selectedUser.avatar;
+
+    const handleAction = async () => {
+      if (actionBtn.disabled) return;
+
+      if (this.sessionState === "locked") {
+        this.unlockSession();
+        if (onComplete) onComplete(this.currentSession);
+        return;
+      }
+
+      if (!this.selectedUser) return;
+
+      if (this.selectedSession === "Yuki Tiling VM" || this.selectedSession === "tiling") {
+        await showAlert("Not Implemented", "Yuki Tiling VM is not implemented yet");
+        return;
+      }
+
+      this.currentSession = {
+        name: this.selectedUser.name,
+        key: this.selectedUser.key,
+        avatar: this.selectedUser.avatar
+      };
+
+      actionBtn.disabled = true;
+      actionBtn.innerHTML = `Signing in... <i class="fas fa-spinner fa-spin"></i>`;
+
+      await this._initializeSession();
+
+      this.container.classList.add("exit");
+
+      setTimeout(() => {
+        this.container.remove();
+        this._enableContextMenu();
+        if (onComplete) onComplete(this.currentSession);
+      }, 500);
     };
 
-    nicknameInput.addEventListener("input", updatePreview);
+    actionBtn.addEventListener("click", handleAction);
 
-    if (userHistoryGrid) {
-      userHistoryGrid.addEventListener("click", (e) => {
-        const tile = e.target.closest(".user-history-tile");
-        if (!tile) return;
+    this.container.addEventListener("click", (e) => {
+      if (e.target.closest("#avatar-edit-btn")) {
+        avatarModal.style.display = "flex";
+      }
+    });
 
-        const name = tile.dataset.name;
-        const avatar = tile.dataset.avatar;
+    avatarModalClose.addEventListener("click", () => {
+      avatarModal.style.display = "none";
+    });
 
-        nicknameInput.value = name;
+    avatarModal.addEventListener("click", (e) => {
+      if (e.target === avatarModal) {
+        avatarModal.style.display = "none";
+      }
+    });
 
-        grid.querySelectorAll(".login-avatar-tile").forEach((t) => t.classList.remove("active"));
-
-        const avatarTile = grid.querySelector(`[data-url="${avatar}"]`);
-        if (avatarTile) {
-          avatarTile.classList.add("active");
-          selectedAvatar = avatar;
-        } else {
-          const newTile = document.createElement("div");
-          newTile.className = "login-avatar-tile active";
-          newTile.dataset.url = avatar;
-          newTile.innerHTML = `
-            <img src="${avatar}" alt="Avatar">
-            <div class="tile-check"><i class="fas fa-check"></i></div>
-          `;
-          grid.querySelectorAll(".login-avatar-tile").forEach((t) => t.classList.remove("active"));
-          grid.prepend(newTile);
-          grid.scrollTop = 0;
-          selectedAvatar = avatar;
-        }
-
-        userHistoryGrid.querySelectorAll(".user-history-tile").forEach((t) => t.classList.remove("selected"));
-        tile.classList.add("selected");
-
-        updatePreview();
-      });
-    }
-
-    grid.addEventListener("click", (e) => {
-      const tile = e.target.closest(".login-avatar-tile");
+    avatarGrid.addEventListener("click", (e) => {
+      const tile = e.target.closest(".avatar-tile");
       if (!tile) return;
 
-      grid.querySelectorAll(".login-avatar-tile").forEach((t) => t.classList.remove("active"));
+      avatarGrid.querySelectorAll(".avatar-tile").forEach((t) => t.classList.remove("active"));
       tile.classList.add("active");
       selectedAvatar = tile.dataset.url;
 
-      updatePreview();
+      this.selectedUser.avatar = selectedAvatar;
+      this._selectCarouselUser(this.selectedUser.key, this.selectedUser.name, selectedAvatar);
+      avatarModal.style.display = "none";
     });
 
-    uploadBtn.addEventListener("click", () => {
+    uploadAvatarBtn.addEventListener("click", () => {
       const input = document.createElement("input");
       input.type = "file";
       input.accept = "image/*";
@@ -318,60 +495,176 @@ export class SessionManager {
           const dataUrl = event.target.result;
           selectedAvatar = dataUrl;
 
-          const newTile = document.createElement("div");
-          newTile.className = "login-avatar-tile active";
-          newTile.dataset.url = dataUrl;
-          newTile.innerHTML = `
-            <img src="${dataUrl}" alt="Avatar">
-            <div class="tile-check"><i class="fas fa-check"></i></div>
-          `;
-
-          grid.querySelectorAll(".login-avatar-tile").forEach((t) => t.classList.remove("active"));
-          grid.prepend(newTile);
-          grid.scrollTop = 0;
-
-          updatePreview();
+          this.selectedUser.avatar = selectedAvatar;
+          this._selectCarouselUser(this.selectedUser.key, this.selectedUser.name, selectedAvatar);
+          avatarModal.style.display = "none";
         };
         reader.readAsDataURL(file);
       };
       input.click();
     });
 
-    const handleContinue = async () => {
-      if (continueBtn.disabled) return;
-      const nickname = nicknameInput.value.trim();
-      const displayName = nickname || "Guest";
-      const sessionKey = nickname.toLowerCase().replace(/[^a-z0-9]/g, "") || "guest";
-
-      this.currentSession = {
-        name: displayName,
-        key: sessionKey,
-        avatar: selectedAvatar
-      };
-
-      continueBtn.disabled = true;
-      continueBtn.innerHTML = `Signing in... <i class="fas fa-spinner fa-spin"></i>`;
-      nicknameInput.disabled = true;
-      grid.style.pointerEvents = "none";
-      uploadBtn.disabled = true;
-
-      await this._initializeSession();
-
-      this.container.classList.add("exit");
-
-      setTimeout(() => {
-        this.container.remove();
-        onComplete(this.currentSession);
-      }, 500);
-    };
-
-    continueBtn.addEventListener("click", handleContinue);
-    nicknameInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        continueBtn.click();
+    powerBtn.addEventListener("click", async () => {
+      if (await showConfirm("Shutdown", "Are you sure you want to shut down?")) {
+        window.close();
       }
     });
+
+    restartBtn.addEventListener("click", async () => {
+      if (await showConfirm("Restart", "Are you sure you want to restart?")) {
+        location.reload();
+      }
+    });
+
+    sleepBtn.addEventListener("click", () => {
+      this._enterSleepMode();
+    });
+
+    infoBtn.addEventListener("click", () => {
+      const isVisible = infoModal.style.display !== "none";
+      infoModal.style.display = isVisible ? "none" : "block";
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!infoBtn.contains(e.target) && !infoModal.contains(e.target)) {
+        infoModal.style.display = "none";
+      }
+    });
+
+    sessionSelectorBtn.value = this.selectedSession === "tiling" ? "Yuki Tiling WM" : "Yuki Desktop";
+    sessionSelectorBtn.addEventListener("change", (e) => {
+      const value = e.target.value;
+
+      this.selectedSession = value === "tiling" ? "Yuki Tiling VM" : "Yuki Desktop";
+      os.storage.set(StorageKeys.selectedSession, this.selectedSession);
+    });
+    const sessionRoot = this.container.querySelector("#session-selector");
+    const sessionBtn = this.container.querySelector("#session-selector-btn");
+    const dropdown = this.container.querySelector("#session-dropdown");
+    const label = this.container.querySelector("#session-selector-label");
+
+    const toggle = () => {
+      sessionRoot.classList.toggle("open");
+    };
+
+    sessionBtn.addEventListener("click", toggle);
+
+    dropdown.addEventListener("click", (e) => {
+      const option = e.target.closest(".session-option");
+      if (!option) return;
+
+      const value = option.dataset.value;
+
+      const sessionMap = {
+        desktop: "Yuki Desktop",
+        tiling: "Yuki Tiling VM"
+      };
+
+      const labelText = sessionMap[value];
+
+      this.selectedSession = labelText;
+      os.storage.set(StorageKeys.selectedSession, this.selectedSession);
+      label.textContent = labelText;
+
+      sessionRoot.classList.remove("open");
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!sessionRoot.contains(e.target)) {
+        sessionRoot.classList.remove("open");
+      }
+    });
+    this._bindCarouselEvents();
+
+    this.container.addEventListener("keydown", (e) => this._handleKeyboardNav(e, handleAction));
+  }
+
+  _bindCarouselEvents() {
+    this._bindCarouselTileEvents();
+
+    const carousel = this.container.querySelector("#user-carousel-row");
+    const selectedTile = carousel?.querySelector(".user-carousel-tile.selected");
+    if (selectedTile) {
+      setTimeout(() => selectedTile.scrollIntoView({ behavior: "instant", inline: "center", block: "nearest" }), 50);
+    }
+  }
+
+  _bindCarouselTileEvents() {
+    const carousel = this.container.querySelector("#user-carousel-row");
+    if (!carousel) return;
+
+    carousel.querySelectorAll(".user-carousel-tile").forEach((tile) => {
+      tile.addEventListener("click", (e) => {
+        const avatarClicked = e.target.closest(".carousel-avatar-wrap");
+        const isSelected = tile.classList.contains("selected");
+
+        if (avatarClicked && isSelected) {
+          const avatarModal = this.container.querySelector("#avatar-edit-modal");
+          avatarModal.style.display = "flex";
+          return;
+        }
+
+        this._selectCarouselUser(tile.dataset.key, tile.dataset.name, tile.dataset.avatar);
+      });
+    });
+  }
+  _selectCarouselUser(key, name, avatar) {
+    this.selectedUser = { key, name, avatar };
+
+    const userId = this._ensureUserId();
+    os.storage.set(StorageKeys.profilePicture, avatar);
+
+    const existingIndex = this.userHistory.findIndex((u) => u.userId === userId);
+    if (existingIndex >= 0) {
+      this.userHistory[existingIndex].avatar = avatar;
+      this.userHistory[existingIndex].name = name;
+    } else {
+      this.userHistory.unshift({ userId, key, name, avatar, lastLogin: Date.now() });
+    }
+    this._saveUserHistory();
+
+    const carousel = this.container.querySelector("#user-carousel-row");
+    if (carousel) {
+      carousel.innerHTML = this._renderUserCarousel();
+      this._bindCarouselTileEvents();
+
+      const selectedTile = carousel.querySelector(".user-carousel-tile.selected");
+      if (selectedTile) {
+        selectedTile.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+      }
+
+      const newEditBtn = carousel.querySelector("#avatar-edit-btn");
+      if (newEditBtn) {
+        const avatarModal = this.container.querySelector("#avatar-edit-modal");
+        newEditBtn.addEventListener("click", () => {
+          avatarModal.style.display = "flex";
+        });
+      }
+    }
+
+    this._updateActionButtonText();
+  }
+
+  _handleKeyboardNav(e, handleAction) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleAction();
+    } else if (e.key === "Escape") {
+      const avatarModal = this.container.querySelector("#avatar-edit-modal");
+      if (avatarModal && avatarModal.style.display !== "none") {
+        avatarModal.style.display = "none";
+      }
+    } else if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+      const users = this.userHistory.length > 0 ? this.userHistory : [this.selectedUser];
+      if (users.length < 2) return;
+
+      const currentIndex = users.findIndex((u) => u.key === this.selectedUser?.key);
+      const direction = e.key === "ArrowRight" ? 1 : -1;
+      const nextIndex = (currentIndex + direction + users.length) % users.length;
+      const next = users[nextIndex];
+
+      this._selectCarouselUser(next.key, next.name, next.avatar);
+    }
   }
 
   async _initializeSession() {
@@ -414,21 +707,21 @@ export class SessionManager {
       startMenu.classList.remove("closing");
     }
 
-    return new Promise((resolve) => {
-      this._createUI((session) => {
+    return new Promise(async (resolve) => {
+      await this._createSessionUI("login", (session) => {
         this.isLocked = false;
         resolve(session);
       });
     });
   }
 
-  lockSession() {
+  async lockSession() {
     if (!this.currentSession || this.isLocked) return;
     this.isLocked = true;
 
     this.lastActiveWindow = document.querySelector(".window.active") || null;
 
-    this._createLockUI();
+    await this._createSessionUI("locked", null);
 
     os.events.emit(BusEvents.SYSTEM_LOCKED, {});
   }
@@ -437,17 +730,23 @@ export class SessionManager {
     if (!this.isLocked) return;
     this.isLocked = false;
 
-    if (this.lockContainer) {
-      this.lockContainer.classList.add("exit");
+    if (this.container) {
+      this.container.classList.add("exit");
       setTimeout(() => {
-        this.lockContainer.remove();
-        this.lockContainer = null;
+        this.container.remove();
+        this.container = null;
+        this._enableContextMenu();
       }, 500);
     }
 
     if (this.timeInterval) {
       clearInterval(this.timeInterval);
       this.timeInterval = null;
+    }
+
+    if (this.uptimeInterval) {
+      clearInterval(this.uptimeInterval);
+      this.uptimeInterval = null;
     }
 
     if (this.lastActiveWindow && this.services.windowManager) {
@@ -458,51 +757,62 @@ export class SessionManager {
     os.events.emit(BusEvents.SYSTEM_UNLOCKED, {});
   }
 
-  _createLockUI() {
-    if (document.getElementById("lock-screen-container")) return;
+  _enterSleepMode() {
+    if (!this.container || this.container.classList.contains("sleep")) return;
 
-    this.lockContainer = document.createElement("div");
-    this.lockContainer.id = "lock-screen-container";
-    this.lockContainer.className = "lock-screen-overlay";
+    this.container.classList.add("sleep");
 
-    const { name, avatar } = this.currentSession;
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-    const dateStr = now.toLocaleDateString([], { weekday: "long", month: "short", day: "numeric" });
+    const sleepOverlay = document.createElement("div");
+    sleepOverlay.className = "sleep-overlay";
+    sleepOverlay.id = "sleep-overlay";
+    this.container.appendChild(sleepOverlay);
 
-    this.lockContainer.innerHTML = `
-      <div class="lock-background"></div>
-      <div class="lock-content">
-        <div class="lock-time">${timeStr}</div>
-        <div class="lock-date">${dateStr}</div>
-        <div class="lock-user">
-          <img src="${avatar}" alt="Avatar">
-          <h2>${name}</h2>
-        </div>
-        <button class="btn-primary" id="lock-unlock-btn">
-          Unlock <i class="fas fa-unlock"></i>
-        </button>
-      </div>
-    `;
+    const wakeLayer = document.createElement("div");
+    wakeLayer.className = "sleep-wake-layer";
+    wakeLayer.id = "sleep-wake-layer";
+    this.container.appendChild(wakeLayer);
 
-    document.body.appendChild(this.lockContainer);
-    this._applyLoginWallpaper(this.lockContainer);
+    const wallpaper = this.container.querySelector(".session-wallpaper");
+    if (wallpaper && wallpaper.tagName === "VIDEO") {
+      wallpaper.pause();
+    }
 
-    const unlockBtn = this.lockContainer.querySelector("#lock-unlock-btn");
-    unlockBtn.addEventListener("click", () => this.unlockSession());
+    if (this.timeInterval) {
+      clearInterval(this.timeInterval);
+    }
 
-    this.timeInterval = setInterval(() => {
-      if (!this.isLocked || !this.lockContainer) {
-        clearInterval(this.timeInterval);
-        return;
-      }
-      const timeEl = this.lockContainer.querySelector(".lock-time");
-      if (timeEl) {
-        const d = new Date();
-        timeEl.textContent = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-      }
-    }, 1000 * 60);
+    const wakeHandler = () => {
+      this._exitSleepMode();
+      wakeLayer.removeEventListener("mousemove", wakeHandler);
+      wakeLayer.removeEventListener("mousedown", wakeHandler);
+      wakeLayer.removeEventListener("keydown", wakeHandler);
+    };
 
-    unlockBtn.focus();
+    wakeLayer.addEventListener("mousemove", wakeHandler);
+    wakeLayer.addEventListener("mousedown", wakeHandler);
+    wakeLayer.addEventListener("keydown", wakeHandler);
+  }
+
+  _exitSleepMode() {
+    if (!this.container) return;
+
+    this.container.classList.remove("sleep");
+
+    const sleepOverlay = this.container.querySelector("#sleep-overlay");
+    if (sleepOverlay) {
+      sleepOverlay.remove();
+    }
+
+    const wakeLayer = this.container.querySelector("#sleep-wake-layer");
+    if (wakeLayer) {
+      wakeLayer.remove();
+    }
+
+    const wallpaper = this.container.querySelector(".session-wallpaper");
+    if (wallpaper && wallpaper.tagName === "VIDEO") {
+      wallpaper.play();
+    }
+
+    this._startClock();
   }
 }

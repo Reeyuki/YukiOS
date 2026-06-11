@@ -221,6 +221,9 @@ class WallpaperManager {
     }
 
     try {
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
       WallpaperStore._currentVantaInstance = VantaEffect({
         el: container,
         ...preset.options
@@ -278,6 +281,9 @@ class WallpaperManager {
         return false;
       }
 
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
       WallpaperStore._currentVantaInstance = VantaEffect({
         el: container,
         ...preset.options
@@ -297,7 +303,7 @@ class WallpaperManager {
     return "image";
   }
 
-  static setSequentialWallpaper() {
+  static async setSequentialWallpaper() {
     const isManual = os.storage.get(StorageKeys.manualWallpaper) === "true";
     if (isManual) return;
 
@@ -317,51 +323,108 @@ class WallpaperManager {
       }
     }
 
+    const hasImages = typeof DEFAULT_WALLPAPER_FILES !== "undefined" && DEFAULT_WALLPAPER_FILES.length;
+    const hasVideos = videos && videos.length;
+    const hasVanta = vantaPresets && vantaPresets.length;
+
+    if (!hasImages && !hasVideos && !hasVanta) {
+      const fallback = this._pickStaticFallbackWallpaper();
+      os.storage.set(StorageKeys.wallpaperKey, fallback);
+      this.applyWallpaper(fallback);
+      return;
+    }
+
     const randomChoice = Math.random();
     let wallpaper;
 
     if (randomChoice < 0.33) {
-      newWallpaperType = "image";
-      os.storage.set(StorageKeys.wallpaperType, "image");
+      if (hasImages) {
+        newWallpaperType = "image";
+        os.storage.set(StorageKeys.wallpaperType, "image");
 
-      if (typeof DEFAULT_WALLPAPER_FILES === "undefined" || !DEFAULT_WALLPAPER_FILES.length) return;
+        let index = os.storage.get(StorageKeys.wallpaperIndexKey) || 0;
+        const expectedWallpaper = WALLPAPER_STATIC_DIR + DEFAULT_WALLPAPER_FILES[index];
 
-      let index = os.storage.get(StorageKeys.wallpaperIndexKey) || 0;
-      const expectedWallpaper = WALLPAPER_STATIC_DIR + DEFAULT_WALLPAPER_FILES[index];
+        if (existing !== expectedWallpaper) {
+          wallpaper = WALLPAPER_STATIC_DIR + DEFAULT_WALLPAPER_FILES[index];
+          os.storage.set(StorageKeys.wallpaperKey, wallpaper);
+          WallpaperStore._clearWallpaperBlob().catch(() => {});
+          this.applyWallpaper(wallpaper);
+          return;
+        }
 
-      if (existing !== expectedWallpaper) {
+        index = (index + 1) % DEFAULT_WALLPAPER_FILES.length;
+        os.storage.set(StorageKeys.wallpaperIndexKey, String(index));
         wallpaper = WALLPAPER_STATIC_DIR + DEFAULT_WALLPAPER_FILES[index];
-        os.storage.set(StorageKeys.wallpaperKey, wallpaper);
-        WallpaperStore._clearWallpaperBlob().catch(() => {});
-        this.applyWallpaper(wallpaper);
-        return;
+      } else if (hasVideos) {
+        newWallpaperType = "video";
+        os.storage.set(StorageKeys.wallpaperType, "video");
+        const videoIndex = Math.floor(Math.random() * videos.length);
+        wallpaper = videos[videoIndex];
+      } else if (hasVanta) {
+        newWallpaperType = "vanta";
+        os.storage.set(StorageKeys.wallpaperType, "vanta");
+        const vantaIndex = Math.floor(Math.random() * vantaPresets.length);
+        const preset = vantaPresets[vantaIndex];
+        wallpaper = `vanta:${preset.id}`;
       }
-
-      index = (index + 1) % DEFAULT_WALLPAPER_FILES.length;
-      os.storage.set(StorageKeys.wallpaperIndexKey, String(index));
-      wallpaper = WALLPAPER_STATIC_DIR + DEFAULT_WALLPAPER_FILES[index];
     } else if (randomChoice < 0.66) {
-      newWallpaperType = "video";
-      os.storage.set(StorageKeys.wallpaperType, "video");
-
-      if (!videos || !videos.length) return;
-
-      const videoIndex = Math.floor(Math.random() * videos.length);
-      wallpaper = videos[videoIndex];
+      if (hasVideos) {
+        newWallpaperType = "video";
+        os.storage.set(StorageKeys.wallpaperType, "video");
+        const videoIndex = Math.floor(Math.random() * videos.length);
+        wallpaper = videos[videoIndex];
+      } else if (hasVanta) {
+        newWallpaperType = "vanta";
+        os.storage.set(StorageKeys.wallpaperType, "vanta");
+        const vantaIndex = Math.floor(Math.random() * vantaPresets.length);
+        const preset = vantaPresets[vantaIndex];
+        wallpaper = `vanta:${preset.id}`;
+      } else if (hasImages) {
+        newWallpaperType = "image";
+        os.storage.set(StorageKeys.wallpaperType, "image");
+        let index = os.storage.get(StorageKeys.wallpaperIndexKey) || 0;
+        wallpaper = WALLPAPER_STATIC_DIR + DEFAULT_WALLPAPER_FILES[index];
+      }
     } else {
-      newWallpaperType = "vanta";
-      os.storage.set(StorageKeys.wallpaperType, "vanta");
+      if (hasVanta) {
+        newWallpaperType = "vanta";
+        os.storage.set(StorageKeys.wallpaperType, "vanta");
+        const vantaIndex = Math.floor(Math.random() * vantaPresets.length);
+        const preset = vantaPresets[vantaIndex];
+        wallpaper = `vanta:${preset.id}`;
+      } else if (hasImages) {
+        newWallpaperType = "image";
+        os.storage.set(StorageKeys.wallpaperType, "image");
+        let index = os.storage.get(StorageKeys.wallpaperIndexKey) || 0;
+        wallpaper = WALLPAPER_STATIC_DIR + DEFAULT_WALLPAPER_FILES[index];
+      } else if (hasVideos) {
+        newWallpaperType = "video";
+        os.storage.set(StorageKeys.wallpaperType, "video");
+        const videoIndex = Math.floor(Math.random() * videos.length);
+        wallpaper = videos[videoIndex];
+      }
+    }
 
-      if (!vantaPresets || !vantaPresets.length) return;
-
-      const vantaIndex = Math.floor(Math.random() * vantaPresets.length);
-      const preset = vantaPresets[vantaIndex];
-      wallpaper = `vanta:${preset.id}`;
+    if (!wallpaper) {
+      const fallback = this._pickStaticFallbackWallpaper();
+      os.storage.set(StorageKeys.wallpaperKey, fallback);
+      this.applyWallpaper(fallback);
+      return;
     }
 
     os.storage.set(StorageKeys.wallpaperKey, wallpaper);
     WallpaperStore._clearWallpaperBlob().catch(() => {});
-    this.applyWallpaper(wallpaper);
+
+    if (this._isVantaPreset(wallpaper)) {
+      const presetId = wallpaper.replace("vanta:", "");
+      await this._applyVantaEffect(presetId);
+    } else if (this._isVantaCustom(wallpaper)) {
+      const customConfig = wallpaper.replace("vanta:custom:", "");
+      await this._applyCustomVantaEffect(customConfig);
+    } else {
+      this.applyWallpaper(wallpaper);
+    }
   }
 
   static async setWallpaper(wallpaperURL) {
@@ -629,7 +692,7 @@ class WallpaperManager {
       if (success) {
         return;
       }
-      this.setSequentialWallpaper();
+      await this.setSequentialWallpaper();
       return;
     }
 
@@ -640,7 +703,7 @@ class WallpaperManager {
         os.storage.set(StorageKeys.vantaWallpaper, presetId);
         return;
       }
-      this.setSequentialWallpaper();
+      await this.setSequentialWallpaper();
       return;
     }
 
@@ -654,7 +717,7 @@ class WallpaperManager {
       } catch (e) {
         console.warn("Failed to load wallpaper blob", e);
       }
-      this.setSequentialWallpaper();
+      await this.setSequentialWallpaper();
       return;
     }
 
@@ -663,7 +726,7 @@ class WallpaperManager {
       if (normalized !== saved) os.storage.set(StorageKeys.wallpaperKey, normalized);
       this.applyWallpaper(normalized);
     } else {
-      this.setSequentialWallpaper();
+      await this.setSequentialWallpaper();
     }
   }
 }

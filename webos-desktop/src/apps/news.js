@@ -5,6 +5,16 @@ import { os } from "../os/index.js";
 
 const NEWS_UPDATES = [
   {
+    date: "June 11, 2026",
+    sections: [
+      {
+        icon: "fa-wand-magic-sparkles",
+        title: "New Features",
+        items: [["fa-user", "Enchance login ui", "Redesigned login / lockscreen ui"]]
+      }
+    ]
+  },
+  {
     date: "June 9, 2026",
     sections: [
       {

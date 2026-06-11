@@ -7,12 +7,11 @@ import { setupWindowControls } from "./windowManager/windowControls.js";
 import { notify, sendNotify } from "./windowManager/notificationBridge.js";
 import { bus, BusEvents } from "./core/EventBus.js";
 import { initClickBubble } from "./windowManager/AnimationSystem.js";
-
 import { InputHandler } from "./windowManager/InputHandler.js";
 import { LayoutManager } from "./windowManager/LayoutManager.js";
 import { SnapSystem } from "./windowManager/SnapSystem.js";
 import { TaskbarSystem } from "./windowManager/TaskbarSystem.js";
-import { SessionManager } from "./windowManager/SessionManager.js";
+import { WindowSessionManager } from "./windowManager/WindowSessionManager.js";
 import { AppRestorationService } from "./windowManager/AppRestorationService.js";
 import { WindowStateManager } from "./windowManager/WindowStateManager.js";
 import { ContextMenuManager } from "./windowManager/ContextMenuManager.js";
@@ -51,7 +50,7 @@ export class WindowManager {
     this.layoutManager = new LayoutManager(this);
     this.snapSystem = new SnapSystem(this);
     this.taskbarSystem = new TaskbarSystem(this);
-    this.sessionManager = new SessionManager(this);
+    this.sessionManager = new WindowSessionManager(this);
     this.appRestorationService = new AppRestorationService(this);
     this.windowStateManager = new WindowStateManager(this);
     this.contextMenuManager = new ContextMenuManager(this);

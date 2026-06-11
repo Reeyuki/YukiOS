@@ -12,9 +12,9 @@ export function showAlert(title, message, buttonText = "OK") {
     overlay.innerHTML = `
       <div class="_fd-dialog">
         <div class="_fd-dialog-title">${title}</div>
-        <div class="_fd-dialog-label" style="font-size:13px;color:#ccc;line-height:1.5;">${message}</div>
+        <div class="_fd-dialog-label">${message}</div>
         <div class="_fd-dialog-actions">
-          <button class="_fd-btn _fd-btn-confirm" style="background:#313244;">${buttonText}</button>
+          <button class="_fd-btn _fd-btn-confirm">${buttonText}</button>
         </div>
       </div>
     `;
@@ -44,9 +44,9 @@ export function showPrompt(title, message, defaultValue = "", confirmText = "OK"
     overlay.innerHTML = `
       <div class="_fd-dialog">
         <div class="_fd-dialog-title">${title}</div>
-        <div class="_fd-dialog-label" style="font-size:13px;color:#ccc;line-height:1.5;">${message}</div>
+        <div class="_fd-dialog-label">${message}</div>
         <input class="_fd-dialog-input" type="text" value="${defaultValue}" spellcheck="false">
-        <div class="_fd-dialog-error" style="display:none;font-size:1.5em;color:#e06c75;margin-top:6px;"></div>
+        <div class="_fd-dialog-error"></div>
         <div class="_fd-dialog-actions">
           <button class="_fd-btn _fd-btn-cancel">Cancel</button>
           <button class="_fd-btn _fd-btn-confirm">${confirmText}</button>
@@ -72,7 +72,7 @@ export function showPrompt(title, message, defaultValue = "", confirmText = "OK"
       audioMixer().playSystemSound(SystemAudio.ERROR);
       errorEl.textContent = msg;
       errorEl.style.display = "block";
-      input.style.borderColor = "#e06c75";
+      input.style.borderColor = "var(--error)";
       confirmBtn.disabled = false;
     };
 
@@ -112,10 +112,10 @@ export function showConfirm(title, message, confirmText = "OK", cancelText = "Ca
     overlay.innerHTML = `
       <div class="_fd-dialog">
         <div class="_fd-dialog-title">${title}</div>
-        <div class="_fd-dialog-label" style="font-size:13px;color:#ccc;line-height:1.5;">${message}</div>
+        <div class="_fd-dialog-label">${message}</div>
         <div class="_fd-dialog-actions">
           <button class="_fd-btn _fd-btn-cancel">${cancelText}</button>
-          <button class="_fd-btn _fd-btn-confirm" style="background:#b52a2a;">${confirmText}</button>
+          <button class="_fd-btn _fd-btn-confirm _fd-btn-danger">${confirmText}</button>
         </div>
       </div>
     `;
@@ -172,15 +172,15 @@ export function showCdnPrompt(mirrors, currentMirror) {
     overlay.innerHTML = `
       <div class="_fd-dialog">
         <div class="_fd-dialog-title">Network Error</div>
-        <div class="_fd-dialog-label" style="font-size:13px;color:#ccc;line-height:1.5;">
+        <div class="_fd-dialog-label">
           Failed to load assets from the current CDN mirror. Your network might be blocking it. Please choose an alternative mirror:
         </div>
-        <select class="_fd-dialog-input" id="cdn-picker" style="margin-top: 10px; background: rgba(0,0,0,0.3); color: white; border: 1px solid #555; padding: 5px; border-radius: 4px;">
+        <select class="_fd-dialog-input _fd-dialog-select" id="cdn-picker">
           ${optionsHtml}
         </select>
-        <div class="_fd-dialog-actions" style="margin-top: 15px;">
-          <button class="_fd-btn _fd-btn-cancel" style="background:#45475a;">Ignore</button>
-          <button class="_fd-btn _fd-btn-confirm" style="background:#313244;">Apply & Reload</button>
+        <div class="_fd-dialog-actions">
+          <button class="_fd-btn _fd-btn-cancel">Ignore</button>
+          <button class="_fd-btn _fd-btn-confirm">Apply & Reload</button>
         </div>
       </div>
     `;

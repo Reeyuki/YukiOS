@@ -88,8 +88,8 @@ export function showConflictDialog(fileName) {
     document.body.appendChild(overlay);
 
     dialog.querySelectorAll("button[data-action]").forEach((btn) => {
-      btn.addEventListener("mouseenter", () => (btn.style.background = "#45475a"));
-      btn.addEventListener("mouseleave", () => (btn.style.background = "#313244"));
+      btn.addEventListener("mouseenter", () => (btn.style.background = "var(--surface-hover)"));
+      btn.addEventListener("mouseleave", () => (btn.style.background = "var(--surface-2)"));
       btn.addEventListener("click", () => {
         const action = btn.dataset.action;
         const applyToAll = dialog.querySelector("#_conflict-apply-all").checked;

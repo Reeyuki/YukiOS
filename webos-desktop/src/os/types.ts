@@ -128,6 +128,7 @@ export interface EventBusEvents {
   "clipboard:update": { content: any };
   "clipboard:read": {};
   "clipboard:clear": {};
+  "profile:updated": any;
 }
 
 export interface OSServices {

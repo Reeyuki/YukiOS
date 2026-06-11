@@ -1,8 +1,7 @@
-.login-screen-overlay {
+.session-overlay {
   position: fixed;
   inset: 0;
   z-index: 999999;
-  background: radial-gradient(circle at center, var(--bg-secondary) 0%, var(--bg-primary) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -11,6 +10,517 @@
   opacity: 1;
   transform: scale(1);
   padding: 20px;
+}
+
+.session-wallpaper {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -2;
+}
+
+.session-background {
+  position: absolute;
+  inset: 0;
+  backdrop-filter: blur(20px) brightness(0.5);
+  z-index: -1;
+}
+
+.session-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  z-index: 1;
+  width: 100%;
+  pointer-events: none;
+  position: relative;
+}
+
+.session-content > * {
+  pointer-events: auto;
+}
+
+.session-info-btn {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  opacity: 0.5;
+  transition:
+    opacity 0.2s,
+    background 0.2s,
+    color 0.2s,
+    border-color 0.2s,
+    transform 0.2s;
+  pointer-events: auto;
+  backdrop-filter: blur(32px);
+}
+
+.session-info-btn:hover {
+  opacity: 1;
+  background: var(--glass-hover);
+  color: var(--brand);
+  border-color: var(--brand);
+  transform: scale(1.1);
+}
+.session-info-modal {
+  position: absolute;
+  top: 65px;
+  left: 20px;
+  z-index: 10;
+  pointer-events: auto;
+}
+
+.info-modal-content {
+  background: var(--bg-primary);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(32px);
+  min-width: 200px;
+  overflow: hidden;
+}
+
+.info-modal-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.info-modal-header h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.info-modal-body {
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.info-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.info-value {
+  font-size: 12px;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.session-time {
+  font-size: 80px;
+  font-weight: 200;
+  letter-spacing: -2px;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.session-date {
+  font-size: 24px;
+  font-weight: 400;
+  margin-top: -16px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  margin-bottom: 32px;
+}
+
+.user-avatar-container {
+  position: relative;
+}
+
+.avatar-edit-btn {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--brand);
+  border: 2px solid var(--glass-border);
+  color: var(--text-on-brand);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  transition: all 0.2s;
+  z-index: 3;
+}
+
+.avatar-edit-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px var(--brand-glow);
+}
+
+.login-center-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+.user-carousel-row {
+  display: flex;
+  overflow-x: auto;
+  gap: 32px;
+  padding: 20px calc(50vw - 48px);
+  scroll-behavior: smooth;
+  white-space: nowrap;
+  width: 100vw;
+  box-sizing: border-box;
+  align-items: center;
+
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.user-carousel-row::-webkit-scrollbar {
+  display: none;
+}
+
+.user-carousel-tile {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition:
+    transform 0.25s ease,
+    opacity 0.25s ease;
+  opacity: 0.5;
+  padding: 0;
+}
+
+.user-carousel-tile:hover {
+  opacity: 0.8;
+}
+
+.user-carousel-tile.selected {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.carousel-avatar-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.user-carousel-tile img {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid transparent;
+  transition:
+    border-color 0.2s,
+    width 0.25s ease,
+    height 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.user-carousel-tile.selected img {
+  width: 96px;
+  height: 96px;
+  border-color: var(--brand);
+  box-shadow: 0 0 24px var(--brand-glow);
+}
+
+.user-carousel-tile span {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.user-carousel-tile.selected span {
+  font-size: 16px;
+  font-weight: 600;
+  opacity: 1;
+}
+
+.system-actions-row {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.session-selector {
+  position: fixed;
+  bottom: 32px;
+  left: 32px;
+  z-index: 2;
+}
+
+.session-selector-btn {
+  background: transparent;
+  border: 1px solid var(--glass-border);
+  color: var(--text-secondary);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+  user-select: none;
+}
+
+.session-selector-btn:hover {
+  background: var(--glass-hover);
+  color: var(--text-primary);
+}
+
+.session-selector-btn i:last-child {
+  font-size: 10px;
+  opacity: 0.7;
+  transition: transform 0.2s;
+}
+
+.session-selector.open .session-selector-btn i:last-child {
+  transform: rotate(180deg);
+}
+
+.session-dropdown {
+  position: absolute;
+  bottom: 42px;
+  left: 0;
+  min-width: 180px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  overflow: hidden;
+  backdrop-filter: blur(32px);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.65);
+
+  opacity: 0;
+  transform: translateY(10px);
+  pointer-events: none;
+  transition: all 0.15s ease;
+}
+
+.session-selector.open .session-dropdown {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.session-option {
+  padding: 10px 12px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+
+.session-option:hover {
+  background: var(--glass-hover);
+  color: var(--text-primary);
+}
+
+.action-button {
+  padding: 12px 32px;
+  border-radius: 24px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(32px);
+  color: var(--text-primary);
+  font-size: 18px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 200px;
+  justify-content: center;
+}
+
+.action-button:hover {
+  background: var(--glass-hover);
+  transform: translateY(-2px);
+  border-color: var(--brand);
+}
+
+.action-button:focus {
+  outline: 2px solid white;
+  outline-offset: 4px;
+}
+
+.system-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  transition: all 0.2s;
+}
+
+.system-icon:hover {
+  background: var(--glass-hover);
+  color: var(--brand);
+  transform: translateY(-2px);
+  border-color: var(--brand);
+}
+
+.system-icon:focus {
+  outline: 2px solid white;
+  outline-offset: 4px;
+}
+
+.avatar-edit-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+}
+
+.modal-content {
+  background: var(--bg-primary);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(32px);
+  max-width: 500px;
+  width: 90%;
+  max-height: 85vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.modal-header h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.modal-close {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 8px;
+  transition: all 0.2s;
+}
+
+.modal-close:hover {
+  color: var(--brand);
+}
+
+.modal-body {
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.avatar-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(64px, 64px));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.avatar-tile {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.2s;
+}
+
+.avatar-tile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-tile:hover {
+  transform: scale(1.05);
+  border-color: var(--glass-border);
+}
+
+.avatar-tile.active {
+  border-color: var(--brand);
+  box-shadow: 0 0 15px var(--brand-glow);
+}
+
+.upload-avatar-btn {
+  width: 100%;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  color: var(--text-secondary);
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.upload-avatar-btn:hover {
+  background: var(--glass-hover);
+  color: var(--text-primary);
+  border-color: var(--brand);
+}
+
+.session-overlay.exit {
+  animation: fadeOut 0.5s forwards ease-in;
+  pointer-events: none;
 }
 
 .login-container {
@@ -526,4 +1036,40 @@
 #lock-unlock-btn:focus {
   outline: 2px solid white;
   outline-offset: 4px;
+}
+
+.session-overlay.sleep {
+  pointer-events: none;
+}
+
+.session-overlay.sleep .session-wallpaper {
+  animation-play-state: paused;
+}
+
+.session-overlay.sleep .session-content,
+.session-overlay.sleep .session-background,
+.session-overlay.sleep .avatar-edit-modal {
+  animation-play-state: paused;
+}
+
+.sleep-overlay {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  z-index: 999999;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.session-overlay.sleep .sleep-overlay {
+  opacity: 1;
+  pointer-events: none;
+}
+
+.sleep-wake-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 1000000;
+  pointer-events: auto;
 }

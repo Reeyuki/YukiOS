@@ -160,7 +160,6 @@ services.commandPalette = commandPalette;
 
 async function start() {
   await clipboardManager.init();
-  await sessionManager.showLogin();
 
   document.documentElement.style.setProperty("--start-logo-url", `url("${logoImg}")`);
 
@@ -189,6 +188,8 @@ async function start() {
   SystemUtilities.startTaskbarWeather(appLauncher);
   await SystemUtilities.loadWallpaper();
   windowManager.restorePinnedItems();
+
+  await sessionManager.showLogin();
 
   if (location.hostname.endsWith("neocities.org")) {
     customAlert(
