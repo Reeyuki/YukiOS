@@ -1,4 +1,5 @@
 import { appMap } from "../games/gamesList.js";
+import { APP_DESCRIPTIONS, descriptionMap } from "../games/gameDescriptions.js";
 import { camelize } from "../utils/utils.js";
 import { StorageKeys } from "../settings/settings.js";
 import { ClippyAnimation, speak } from "../ai/clippy.js";
@@ -8,9 +9,32 @@ import { showDynamicContextMenu, refreshIcons } from "../shared/contextMenu.js";
 import { CDN_CONFIG } from "../shared/cdnConfig.js";
 import { getAppRegistry } from "../appRegistry.js";
 import { os } from "../os/index.js";
+import { SYSTEM_APPS } from "../AppRegistryConfig.js";
 
 function getStartMenuEl() {
   return document.getElementById("start-menu") || document.querySelector(".start-menu");
+}
+
+let descriptionTooltip = null;
+
+function showDescriptionTooltip(text, x, y) {
+  if (descriptionTooltip) {
+    document.body.removeChild(descriptionTooltip);
+  }
+
+  descriptionTooltip = document.createElement("div");
+  descriptionTooltip.className = "description-tooltip";
+  descriptionTooltip.textContent = text;
+  descriptionTooltip.style.left = `${x + 10}px`;
+  descriptionTooltip.style.top = `${y + 10}px`;
+  document.body.appendChild(descriptionTooltip);
+}
+
+function hideDescriptionTooltip() {
+  if (descriptionTooltip) {
+    document.body.removeChild(descriptionTooltip);
+    descriptionTooltip = null;
+  }
 }
 
 export function isStartMenuOpen() {
@@ -22,6 +46,8 @@ export function closeStartMenu() {
   const el = getStartMenuEl();
   if (!el) return;
   if (el.style.display !== "flex") return;
+
+  clearSelection();
 
   el.classList.add("closing");
   el.addEventListener(
@@ -48,7 +74,22 @@ export function applyStartMenuSettings(el) {
       cats = catsData;
     } catch (e) {}
   }
-  const catNames = ["menu", "games", "system", "favorites", "customize", "settingsApp"];
+  const catNames = [
+    "favorites",
+    "all",
+    "development",
+    "games",
+    "graphics",
+    "help",
+    "internet",
+    "media",
+    "office",
+    "system",
+    "customize",
+    "settingsApp"
+  ];
+  const el2 = el.querySelector('.start-cat[data-cat="places"]');
+  if (el2) el2.style.display = "none";
   catNames.forEach((catName) => {
     const isEnabled = cats[catName] !== false;
     const catEl = el.querySelector(`.start-cat[data-cat="${catName}"]`);
@@ -66,6 +107,9 @@ export function openStartMenu({ focusSearch = false, openDefaultPage = true } = 
 
   el.classList.remove("closing");
   el.style.display = "flex";
+  focusMode = "categories";
+  clearSelection();
+  renderedCategories.clear();
   updateFavoritesUI();
 
   if (sharedAppLauncher) {
@@ -80,9 +124,22 @@ export function openStartMenu({ focusSearch = false, openDefaultPage = true } = 
         cats = catsData;
       } catch (e) {}
     }
-    let defaultCat = "menu";
-    if (cats["menu"] === false) {
-      const catNames = ["menu", "games", "system", "favorites", "customize", "settingsApp"];
+    let defaultCat = "all";
+    if (cats["all"] === false) {
+      const catNames = [
+        "all",
+        "favorites",
+        "development",
+        "games",
+        "graphics",
+        "help",
+        "internet",
+        "media",
+        "office",
+        "system",
+        "customize",
+        "settingsApp"
+      ];
       const firstEnabled = catNames.find((c) => cats[c] !== false);
       if (firstEnabled) defaultCat = firstEnabled;
     }
@@ -100,10 +157,13 @@ export function toggleStartMenu(opts) {
 }
 
 function getFavorites() {
-  return os.storage.get(StorageKeys.favoritesKey) || [];
+  if (favoritesCache !== null) return favoritesCache;
+  favoritesCache = os.storage.get(StorageKeys.favoritesKey) || [];
+  return favoritesCache;
 }
 
 function saveFavorites(favorites) {
+  favoritesCache = favorites;
   os.storage.set(StorageKeys.favoritesKey, favorites);
 }
 
@@ -126,6 +186,31 @@ function unfavoriteApp(appName) {
   updateStarState(appName, false);
 }
 
+function buildIconEl(iconVal) {
+  const isImage =
+    isImageFile(iconVal) ||
+    iconVal.startsWith("http") ||
+    iconVal.startsWith("data:") ||
+    iconVal.startsWith("blob:") ||
+    iconVal.startsWith("/");
+  if (isImage) {
+    const iconEl = document.createElement("img");
+    let iconSrc = iconVal;
+    if (iconVal.startsWith("static/") || iconVal.startsWith("/static/")) {
+      const cleanPath = iconVal.startsWith("/") ? iconVal.substring(1) : iconVal;
+      iconSrc = `${CDN_CONFIG.repos.main.base}/${cleanPath}`;
+    } else {
+      iconSrc = resolveIconUrl(iconVal);
+    }
+    iconEl.src = iconSrc;
+    iconEl.alt = "";
+    return iconEl;
+  }
+  const iconEl = document.createElement("i");
+  iconEl.className = iconVal.startsWith("fa") ? iconVal : `fa ${iconVal}`;
+  return iconEl;
+}
+
 function createStarButton(appName) {
   const btn = document.createElement("span");
   btn.textContent = "★";
@@ -146,17 +231,170 @@ function createStarButton(appName) {
 }
 
 function updateStarState(appName, isFavorite) {
-  document.querySelectorAll(`.start-item[data-app="${appName}"] span`).forEach((star) => {
+  document.querySelectorAll(`.start-menu-item[data-app="${appName}"] span`).forEach((star) => {
     if (star.textContent === "★") {
       star.style.color = isFavorite ? "gold" : "#ccc";
     }
   });
-  const item = document.querySelector(`.start-item[data-app="${appName}"]`);
+  const item = document.querySelector(`.start-menu-item[data-app="${appName}"]`);
   if (item) {
     item.style.background = isFavorite ? "rgba(255, 215, 0, 0.1)" : "transparent";
   }
 }
 let sharedAppLauncher;
+let selectedItem = null;
+let selectedCategory = null;
+let keyboardHandlerInstalled = false;
+let focusMode = "apps";
+let favoritesCache = null;
+const renderedCategories = new Set();
+let searchDebounceTimer = null;
+
+function clearItemSelection() {
+  if (selectedItem) {
+    selectedItem.classList.remove("selected");
+    selectedItem = null;
+  }
+}
+
+function clearCategorySelection() {
+  if (selectedCategory) {
+    selectedCategory.classList.remove("keyboard-selected");
+    selectedCategory = null;
+  }
+}
+
+function clearSelection() {
+  clearItemSelection();
+  clearCategorySelection();
+}
+
+function selectFirstItemInPage(page) {
+  clearItemSelection();
+  const firstItem = page.querySelector(".start-menu-item:not(.letter-category-header)");
+  if (firstItem) {
+    selectedItem = firstItem;
+    selectedItem.classList.add("selected");
+  }
+}
+
+function focusSearch() {
+  clearSelection();
+  focusMode = "search";
+  document.getElementById("start-menu-search")?.focus();
+}
+
+function navigateSelection(direction) {
+  const activePage = document.querySelector(".start-page.active");
+  if (!activePage) return;
+
+  const items = Array.from(activePage.querySelectorAll(".start-menu-item:not(.letter-category-header)"));
+  if (items.length === 0) return;
+
+  const currentIndex = items.indexOf(selectedItem);
+
+  if (direction === "up" && currentIndex <= 0) {
+    focusSearch();
+    return;
+  }
+
+  let newIndex;
+  if (direction === "down") {
+    newIndex = currentIndex === -1 ? 0 : Math.min(currentIndex + 1, items.length - 1);
+  } else {
+    newIndex = currentIndex === -1 ? items.length - 1 : Math.max(currentIndex - 1, 0);
+  }
+
+  clearItemSelection();
+  selectedItem = items[newIndex];
+  selectedItem.classList.add("selected");
+  selectedItem.scrollIntoView({ block: "nearest" });
+}
+
+function activateCategoryPage(cat) {
+  document.querySelectorAll(".start-cat").forEach((c) => c.classList.remove("active"));
+  document.querySelectorAll(".start-page").forEach((p) => p.classList.remove("active"));
+  cat.classList.add("active");
+  const page = document.querySelector(`.start-page[data-page="${cat.dataset.cat}"]`);
+  if (!page) return;
+  page.classList.add("active");
+  if (cat.dataset.cat === "favorites") {
+    updateFavoritesUI();
+  } else if (
+    ["all", "development", "games", "graphics", "help", "internet", "media", "office", "system"].includes(
+      cat.dataset.cat
+    )
+  ) {
+    if (!renderedCategories.has(cat.dataset.cat)) {
+      populateCategoryPage(cat.dataset.cat, sharedAppLauncher);
+      renderedCategories.add(cat.dataset.cat);
+    }
+  }
+  selectFirstItemInPage(page);
+}
+
+function navigateCategories(direction) {
+  const categories = Array.from(document.querySelectorAll(".start-cat:not(.docked)")).filter(
+    (cat) => cat.style.display !== "none" && cat.offsetParent !== null
+  );
+  if (categories.length === 0) return;
+
+  const currentIndex = categories.indexOf(selectedCategory);
+
+  if (direction === "up" && currentIndex <= 0) {
+    focusSearch();
+    return;
+  }
+
+  let newIndex;
+  if (direction === "down") {
+    newIndex = currentIndex === -1 ? 0 : Math.min(currentIndex + 1, categories.length - 1);
+  } else {
+    newIndex = currentIndex === -1 ? categories.length - 1 : Math.max(currentIndex - 1, 0);
+  }
+
+  clearCategorySelection();
+  clearItemSelection();
+  selectedCategory = categories[newIndex];
+  selectedCategory.classList.add("keyboard-selected");
+  selectedCategory.scrollIntoView({ block: "nearest" });
+
+  const catName = selectedCategory.dataset.cat;
+  if (catName !== "settingsApp" && catName !== "customize") {
+    activateCategoryPage(selectedCategory);
+  }
+}
+
+function switchFocusMode(mode) {
+  if (focusMode === mode) return;
+  focusMode = mode;
+
+  if (mode === "categories") {
+    clearItemSelection();
+    const activeCat = document.querySelector(".start-cat.active");
+    if (activeCat) {
+      clearCategorySelection();
+      selectedCategory = activeCat;
+      selectedCategory.classList.add("keyboard-selected");
+    } else {
+      clearCategorySelection();
+      navigateCategories("down");
+    }
+  } else {
+    clearCategorySelection();
+    const activePage = document.querySelector(".start-page.active");
+    if (activePage) {
+      selectFirstItemInPage(activePage);
+    }
+  }
+}
+
+function launchSelectedItem() {
+  if (selectedItem) {
+    selectedItem.click();
+  }
+}
+
 export function updateFavoritesUI() {
   if (!sharedAppLauncher) {
     console.error("No app launcher");
@@ -168,14 +406,11 @@ export function updateFavoritesUI() {
   const favorites = getFavorites();
 
   if (favorites.length === 0) {
-    const noFav = document.createElement("div");
-    noFav.textContent = "No favorite apps";
-    favoritesPage.appendChild(noFav);
     return;
   }
 
   favorites.forEach((appName) => {
-    const appItem = document.querySelector(`.start-item[data-app="${appName}"]`);
+    const appItem = document.querySelector(`.start-menu-item[data-app="${appName}"]`);
     if (!appItem) return;
 
     const clone = appItem.cloneNode(true);
@@ -193,25 +428,7 @@ export function updateFavoritesUI() {
   });
 }
 
-function setupStars() {
-  document.querySelectorAll(".start-page:not([data-page='favorites']) .start-item").forEach((item) => {
-    const appName = item.dataset.app;
-    item.style.position = "relative";
-    const star = createStarButton(appName);
-    star.style.opacity = "0";
-    star.style.transition = "opacity 0.2s";
-    item.appendChild(star);
-
-    item.addEventListener("mouseenter", () => (star.style.opacity = "1"));
-    item.addEventListener("mouseleave", () => (star.style.opacity = "0"));
-
-    if (getFavorites().includes(appName)) {
-      item.style.background = "rgba(255, 215, 0, 0.1)";
-    }
-  });
-}
-
-export function setupStartMenu(appLauncher, sessionManager, explorerApp, notepadApp, selectionManager) {
+export function setupStartMenu(appLauncher, sessionManager, selectionManager) {
   sharedAppLauncher = appLauncher;
   const menuEl = document.getElementById("start-menu") || document.querySelector(".start-menu");
   if (menuEl) {
@@ -241,20 +458,12 @@ export function setupStartMenu(appLauncher, sessionManager, explorerApp, notepad
       }
       if (cat.dataset.cat === "customize") {
         os.app.launch("accountManager");
+        speak("Let's make your profile look great!", ClippyAnimation.GetArtsy);
         return;
       }
-      document.querySelectorAll(".start-cat").forEach((c) => c.classList.remove("active"));
-      document.querySelectorAll(".start-page").forEach((p) => p.classList.remove("active"));
-      cat.classList.add("active");
-
-      const page = document.querySelector(`.start-page[data-page="${cat.dataset.cat}"]`);
-      if (page) page.classList.add("active");
-
+      activateCategoryPage(cat);
       if (cat.dataset.cat === "favorites") {
         speak("These are your favorites! Great taste.", ClippyAnimation.Show);
-      }
-      if (cat.dataset.cat === "customize") {
-        speak("Let's make your profile look great!", ClippyAnimation.GetArtsy);
       }
     };
   });
@@ -262,173 +471,166 @@ export function setupStartMenu(appLauncher, sessionManager, explorerApp, notepad
   const searchInput = document.getElementById("start-menu-search");
 
   searchInput.addEventListener("focus", () => {
+    focusMode = "search";
+    clearSelection();
     speak("Looking for an app? I know where everything is.", ClippyAnimation.Searching);
   });
 
-  searchInput.addEventListener("input", (e) => {
-    const q = e.target.value.toLowerCase().trim();
-    const searchResultsPage = document.querySelector('.start-page[data-page="search-results"]');
+  if (!keyboardHandlerInstalled) {
+    document.addEventListener("keydown", (e) => {
+      if (!isStartMenuOpen()) return;
 
-    if (!searchResultsPage) {
-      const resultsPage = document.createElement("div");
-      resultsPage.className = "start-page";
-      resultsPage.dataset.page = "search-results";
-      resultsPage.innerHTML = '<div class="search-results-container"></div>';
-      document.querySelector(".start-content").appendChild(resultsPage);
-    }
-
-    if (q === "") {
-      document.querySelectorAll(".start-page").forEach((page) => {
-        if (page.dataset.page === "search-results") {
-          page.classList.remove("active");
-          page.style.display = "none";
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        if (focusMode === "search") {
+          document.getElementById("start-menu-search")?.blur();
+          focusMode = "categories";
+          navigateCategories("down");
+        } else if (focusMode === "categories") {
+          navigateCategories("down");
         } else {
-          page.style.display = "";
-          document.querySelectorAll(".start-item, .start-menu-item").forEach((item) => {
-            item.style.display = "";
+          navigateSelection("down");
+        }
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        if (focusMode === "search") {
+          document.getElementById("start-menu-search")?.blur();
+          focusMode = "apps";
+          navigateSelection("up");
+        } else if (focusMode === "categories") {
+          navigateCategories("up");
+        } else {
+          navigateSelection("up");
+        }
+      } else if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        if (focusMode === "search") {
+          document.getElementById("start-menu-search")?.blur();
+        }
+        switchFocusMode("categories");
+      } else if (e.key === "ArrowRight") {
+        e.preventDefault();
+        if (focusMode === "search") {
+          document.getElementById("start-menu-search")?.blur();
+        }
+        switchFocusMode("apps");
+      } else if (e.key === "Enter") {
+        e.preventDefault();
+        if (focusMode === "categories" && selectedCategory) {
+          selectedCategory.dispatchEvent(new Event("click"));
+        } else {
+          launchSelectedItem();
+        }
+      }
+    });
+    keyboardHandlerInstalled = true;
+  }
+
+  searchInput.addEventListener("input", (e) => {
+    clearTimeout(searchDebounceTimer);
+    searchDebounceTimer = setTimeout(() => {
+      const q = e.target.value.toLowerCase().trim();
+      const searchResultsPage = document.querySelector('.start-page[data-page="search-results"]');
+
+      if (!searchResultsPage) {
+        const resultsPage = document.createElement("div");
+        resultsPage.className = "start-page";
+        resultsPage.dataset.page = "search-results";
+        resultsPage.innerHTML = '<div class="search-results-container"></div>';
+        document.querySelector(".start-content").appendChild(resultsPage);
+      }
+
+      if (q === "") {
+        document.querySelectorAll(".start-page").forEach((page) => {
+          if (page.dataset.page === "search-results") {
+            page.classList.remove("active");
+            page.style.display = "none";
+          } else {
+            page.style.display = "";
+            document.querySelectorAll(".start-menu-item").forEach((item) => {
+              item.style.display = "";
+            });
+          }
+        });
+
+        const activeCat = document.querySelector(".start-cat.active");
+        if (activeCat) {
+          const page = document.querySelector(`.start-page[data-page="${activeCat.dataset.cat}"]`);
+          if (page) page.classList.add("active");
+        }
+        return;
+      }
+
+      document.querySelectorAll(".start-page").forEach((page) => {
+        page.classList.remove("active");
+        page.style.display = "none";
+      });
+
+      const resultsPage = document.querySelector('.start-page[data-page="search-results"]');
+      resultsPage.style.display = "flex";
+      resultsPage.classList.add("active");
+      const resultsContainer = resultsPage.querySelector(".search-results-container");
+      resultsContainer.innerHTML = "";
+
+      const appRegistry = getAppRegistry();
+      const allApps = { ...appMap, ...os.app.getAllApps() };
+      const results = { menu: [], games: [], system: [] };
+      const seenAppIds = new Set();
+
+      Object.entries(allApps).forEach(([appId, appData]) => {
+        if (seenAppIds.has(appId)) return;
+        if (appRegistry.isAppUninstalled(appId) || appRegistry.isAppDisabled(appId)) return;
+        const title = (appData.title || appId).toLowerCase();
+        const description = (APP_DESCRIPTIONS[appId] || descriptionMap[appId] || "").toLowerCase();
+        if (!title.includes(q) && !description.includes(q)) return;
+        seenAppIds.add(appId);
+        const item = createAppItem(appId, appData);
+        item.onclick = () => {
+          os.app.launch(appId);
+          closeStartMenu();
+        };
+        const category = appData.type === "system" ? "system" : "menu";
+        results[category].push({ element: item, title: appData.title || appId });
+      });
+
+      const categoryOrder = ["menu", "games", "system"];
+      const categoryLabels = { menu: "Menu", games: "Games", system: "System" };
+
+      const fragment = document.createDocumentFragment();
+      let hasResults = false;
+      categoryOrder.forEach((cat) => {
+        if (results[cat].length > 0) {
+          hasResults = true;
+          const categoryHeader = document.createElement("div");
+          categoryHeader.className = "search-category-header";
+          categoryHeader.textContent = categoryLabels[cat];
+          fragment.appendChild(categoryHeader);
+
+          const categoryResults = document.createElement("div");
+          categoryResults.className = "search-category-results";
+          results[cat].forEach((result) => {
+            result.element.style.display = "";
+            categoryResults.appendChild(result.element);
           });
+          fragment.appendChild(categoryResults);
         }
       });
 
-      const activeCat = document.querySelector(".start-cat.active");
-      if (activeCat) {
-        const page = document.querySelector(`.start-page[data-page="${activeCat.dataset.cat}"]`);
-        if (page) page.classList.add("active");
+      if (!hasResults) {
+        const noResults = document.createElement("div");
+        noResults.className = "search-no-results";
+        noResults.textContent = "No results found";
+        fragment.appendChild(noResults);
       }
-      return;
-    }
-
-    document.querySelectorAll(".start-page").forEach((page) => {
-      page.classList.remove("active");
-      page.style.display = "none";
-    });
-
-    const resultsPage = document.querySelector('.start-page[data-page="search-results"]');
-    resultsPage.style.display = "flex";
-    resultsPage.classList.add("active");
-    const resultsContainer = resultsPage.querySelector(".search-results-container");
-    resultsContainer.innerHTML = "";
-
-    const appRegistry = getAppRegistry();
-    const results = {
-      menu: [],
-      games: [],
-      system: []
-    };
-    const seenAppIds = new Set();
-
-    document.querySelectorAll(".start-menu-item").forEach((item) => {
-      const appId = item.dataset.app;
-      if (appId && seenAppIds.has(appId)) return;
-      const matchesSearch = item.textContent.toLowerCase().includes(q);
-      if (matchesSearch) {
-        if (appId) seenAppIds.add(appId);
-        results.menu.push({
-          element: item.cloneNode(true),
-          title: item.textContent.trim()
-        });
-      }
-    });
-
-    document.querySelectorAll(".start-item").forEach((item) => {
-      const appId = item.dataset.app;
-      if (appId && seenAppIds.has(appId)) return;
-      const isUninstalled = appRegistry.isAppUninstalled(appId);
-      const isDisabled = appRegistry.isAppDisabled(appId);
-      const isAvailable = !isUninstalled && !isDisabled;
-      const matchesSearch = item.textContent.toLowerCase().includes(q);
-
-      if (matchesSearch && isAvailable) {
-        if (appId) seenAppIds.add(appId);
-        const category = item.parentElement?.dataset?.page === "system" ? "system" : "games";
-        results[category].push({
-          element: item.cloneNode(true),
-          title: item.textContent.trim()
-        });
-      }
-    });
-
-    const categoryOrder = ["menu", "games", "system"];
-    const categoryLabels = {
-      menu: "Menu",
-      games: "Games",
-      system: "System"
-    };
-
-    let hasResults = false;
-    categoryOrder.forEach((cat) => {
-      if (results[cat].length > 0) {
-        hasResults = true;
-        const categoryHeader = document.createElement("div");
-        categoryHeader.className = "search-category-header";
-        categoryHeader.textContent = categoryLabels[cat];
-        resultsContainer.appendChild(categoryHeader);
-
-        const categoryResults = document.createElement("div");
-        categoryResults.className = "search-category-results";
-
-        results[cat].forEach((result) => {
-          const clonedItem = result.element;
-          clonedItem.style.display = "";
-          clonedItem.onclick = () => {
-            const appId = clonedItem.dataset.app;
-            if (appId) {
-              os.app.launch(appId);
-            } else {
-              clonedItem.dispatchEvent(new Event("click"));
-            }
-            closeStartMenu();
-          };
-          categoryResults.appendChild(clonedItem);
-        });
-
-        resultsContainer.appendChild(categoryResults);
-      }
-    });
-
-    if (!hasResults) {
-      const noResults = document.createElement("div");
-      noResults.className = "search-no-results";
-      noResults.textContent = "No results found";
-      resultsContainer.appendChild(noResults);
-    }
+      resultsContainer.appendChild(fragment);
+    }, 120);
   });
 
-  setupStars();
   setupStartUserHover();
-
-  if (explorerApp && notepadApp) {
-    setupDesktopStartMenuActions(explorerApp, notepadApp);
-  }
 
   if (selectionManager) {
     setupDesktopStartMenuToggles(selectionManager);
   }
-}
-
-function setupDesktopStartMenuActions(explorerApp, notepadApp) {
-  const menuActions = {
-    home: () => {
-      explorerApp.open([]);
-    },
-    documents: () => {
-      explorerApp.open(["Documents"]);
-    },
-    pictures: () => {
-      explorerApp.open(["Pictures"]);
-    },
-    notes: () => notepadApp.open()
-  };
-  const menuEl = getStartMenuEl();
-  if (!menuEl) return;
-  menuEl.querySelectorAll(".start-item").forEach((item) => {
-    item.onclick = (e) => {
-      e.stopPropagation();
-      const app = item.dataset.path;
-      if (menuActions[app]) menuActions[app]();
-      closeStartMenu();
-    };
-  });
 }
 
 let toggleHideGamesFn = () => {};
@@ -649,7 +851,7 @@ function getGridItems() {
     { app: "steamApp", title: "Steam", icon: "fab fa-steam" },
     { app: "paint", title: "Paint", icon: "fas fa-paint-brush" },
     { app: "newsApp", title: "What's New", icon: "fas fa-newspaper" },
-    { app: "shittify", title: "Music", icon: "fas fa-music" },
+    { app: "shittify", title: "Evil Spotify", icon: "fas fa-music" },
     { app: "appCreatorApp", title: "AppCreator", icon: "fas fa-cubes" },
     { app: "systemApps", title: "System Apps", icon: "fas fa-screwdriver-wrench" },
     { app: "taskManagerApp", title: "Task Manager", icon: "fas fa-list-check" },
@@ -952,6 +1154,7 @@ export function initializeAppGrid(appLauncher) {
 
   const items = getGridItems();
   const appRegistry = getAppRegistry();
+  const fragment = document.createDocumentFragment();
   items.forEach((itemData, index) => {
     if (appRegistry.isAppUninstalled(itemData.app) || appRegistry.isAppDisabled(itemData.app)) return;
     const item = document.createElement("div");
@@ -960,42 +1163,23 @@ export function initializeAppGrid(appLauncher) {
     item.dataset.index = index;
 
     const iconVal = itemData.icon || "fas fa-star";
-    let iconEl;
-    const isImage =
-      isImageFile(iconVal) ||
-      iconVal.startsWith("http") ||
-      iconVal.startsWith("data:") ||
-      iconVal.startsWith("blob:") ||
-      iconVal.startsWith("/");
-    if (isImage) {
-      iconEl = document.createElement("img");
-      let iconSrc = iconVal;
-      if (iconVal.startsWith("static/") || iconVal.startsWith("/static/")) {
-        const cleanPath = iconVal.startsWith("/") ? iconVal.substring(1) : iconVal;
-        iconSrc = `${CDN_CONFIG.repos.main.base}/${cleanPath}`;
-      } else {
-        iconSrc = resolveIconUrl(iconVal);
-      }
-      iconEl.src = iconSrc;
-      iconEl.className = "start-item-icon";
-      if (iconVal.startsWith("data:")) {
-        iconEl.style.width = "80px";
-        iconEl.style.height = "80px";
-      } else {
-        iconEl.style.width = "16px";
-        iconEl.style.height = "16px";
-      }
-      iconEl.style.objectFit = "contain";
-      iconEl.alt = "";
-    } else {
-      iconEl = document.createElement("i");
-      iconEl.className = iconVal.startsWith("fa") ? iconVal : `fa ${iconVal}`;
-    }
-    item.appendChild(iconEl);
+    item.appendChild(buildIconEl(iconVal));
 
-    const spanEl = document.createElement("span");
-    spanEl.textContent = itemData.title;
-    item.appendChild(spanEl);
+    const contentEl = document.createElement("div");
+    contentEl.className = "app-content";
+    item.appendChild(contentEl);
+
+    const titleEl = document.createElement("span");
+    titleEl.className = "app-title";
+    titleEl.textContent = itemData.title;
+    contentEl.appendChild(titleEl);
+
+    const descEl = document.createElement("span");
+    descEl.className = "app-description";
+    const description = APP_DESCRIPTIONS[itemData.app] || descriptionMap[itemData.app] || "";
+    descEl.textContent = description;
+    descEl.dataset.fullDescription = description;
+    contentEl.appendChild(descEl);
 
     if (itemData.app === "newsApp") {
       const badge = document.createElement("span");
@@ -1059,8 +1243,10 @@ export function initializeAppGrid(appLauncher) {
       showStartMenuContext(e, itemData, index, appLauncher);
     });
 
-    grid.appendChild(item);
+    fragment.appendChild(item);
   });
+
+  grid.appendChild(fragment);
 
   if (items.length === 0) {
     const placeholder = document.createElement("div");
@@ -1103,6 +1289,117 @@ export function initializeAppGrid(appLauncher) {
   refreshIcons(grid);
 }
 
+const LETTER_SEPARATOR = "—".repeat(20);
+
+function populateCategoryPage(category, appLauncher) {
+  const page = document.querySelector(`.start-page[data-page="${category}"]`);
+  if (!page) return;
+
+  const grid = page.querySelector(".app-grid");
+  if (!grid) return;
+  grid.innerHTML = "";
+
+  const appRegistry = getAppRegistry();
+  const allApps = { ...appMap, ...os.app.getAllApps() };
+
+  const apps = [];
+  Object.entries(allApps).forEach(([appId, appData]) => {
+    if (appRegistry.isAppUninstalled(appId) || appRegistry.isAppDisabled(appId)) return;
+
+    const appCategory = appData.category || SYSTEM_APPS[appId]?.category || "system";
+    if (category === "all" || appCategory === category) {
+      apps.push({ appId, appData });
+    }
+  });
+
+  const fragment = document.createDocumentFragment();
+
+  if (category === "all") {
+    apps.sort((a, b) => (a.appData.title || a.appId).localeCompare(b.appData.title || b.appId));
+
+    const groupedApps = {};
+    apps.forEach(({ appId, appData }) => {
+      const title = appData.title || appId;
+      const firstLetter = title.charAt(0).toUpperCase();
+      if (!groupedApps[firstLetter]) {
+        groupedApps[firstLetter] = [];
+      }
+      groupedApps[firstLetter].push({ appId, appData });
+    });
+
+    Object.keys(groupedApps)
+      .sort()
+      .forEach((letter) => {
+        const letterHeader = document.createElement("div");
+        letterHeader.className = "letter-category-header";
+        letterHeader.innerHTML = `<span class="letter-title">${letter}</span><span class="letter-separator">${LETTER_SEPARATOR}</span>`;
+        fragment.appendChild(letterHeader);
+
+        groupedApps[letter].forEach(({ appId, appData }) => {
+          fragment.appendChild(createAppItem(appId, appData));
+        });
+      });
+  } else {
+    apps.forEach(({ appId, appData }) => {
+      fragment.appendChild(createAppItem(appId, appData));
+    });
+  }
+
+  grid.appendChild(fragment);
+}
+
+function createAppItem(appId, appData) {
+  const item = document.createElement("div");
+  item.className = "start-menu-item";
+  item.dataset.app = appId;
+  item.style.position = "relative";
+
+  item.appendChild(buildIconEl(appData.icon || "fas fa-star"));
+
+  const contentEl = document.createElement("div");
+  contentEl.className = "app-content";
+  item.appendChild(contentEl);
+
+  const titleEl = document.createElement("span");
+  titleEl.className = "app-title";
+  titleEl.textContent = appData.title || appId;
+  contentEl.appendChild(titleEl);
+
+  const descEl = document.createElement("span");
+  descEl.className = "app-description";
+  const description = APP_DESCRIPTIONS[appId] || descriptionMap[appId] || "";
+  descEl.textContent = description;
+  descEl.dataset.fullDescription = description;
+  contentEl.appendChild(descEl);
+
+  descEl.addEventListener("mouseenter", (e) => {
+    if (description.length > 50) {
+      const rect = descEl.getBoundingClientRect();
+      showDescriptionTooltip(description, rect.left, rect.bottom);
+    }
+  });
+  descEl.addEventListener("mouseleave", hideDescriptionTooltip);
+
+  const star = createStarButton(appId);
+  star.style.opacity = "0";
+  star.style.transition = "opacity 0.2s";
+  item.appendChild(star);
+
+  item.addEventListener("mouseenter", () => (star.style.opacity = "1"));
+  item.addEventListener("mouseleave", () => (star.style.opacity = "0"));
+
+  if (getFavorites().includes(appId)) {
+    item.style.background = "rgba(255, 215, 0, 0.1)";
+  }
+
+  item.addEventListener("click", () => {
+    os.app.launch(appId);
+    closeStartMenu();
+  });
+
+  return item;
+}
+
 export function populateStartMenu(appLauncher) {
   const pageMap = {
     system: document.querySelector('.start-page[data-page="system"]'),
@@ -1119,38 +1416,7 @@ export function populateStartMenu(appLauncher) {
   Object.entries(appLauncher.appMap).forEach(([appName, appData]) => {
     if (appRegistry.isAppUninstalled(appName) || appRegistry.isAppDisabled(appName)) return;
 
-    const item = document.createElement("div");
-    item.classList.add("start-item");
-    item.dataset.app = appName;
-
-    const iconValue = appData.icon || tryGetIcon(appName);
-
-    let icon = null;
-
-    const isImagePath = isImageFile(iconValue);
-    if (isImagePath) {
-      icon = document.createElement("img");
-      icon.classList.add("start-item-icon");
-      icon.src = resolveIconUrl(iconValue);
-      icon.loading = "lazy";
-      icon.alt = "";
-    } else if (typeof iconValue === "string" && iconValue.trim().length > 0) {
-      icon = document.createElement("i");
-      icon.classList.add("start-item-icon");
-      icon.loading = "lazy";
-      icon.className += iconValue.startsWith("fa") ? ` ${iconValue}` : ` fa ${iconValue}`;
-    }
-
-    if (icon) {
-      item.appendChild(icon);
-    }
-
-    const labelEl = document.createElement("span");
-    labelEl.textContent = appData.title;
-
-    item.appendChild(labelEl);
-
-    item.addEventListener("click", () => os.app.launch(appName));
+    const item = createAppItem(appName, appData);
 
     if (appData.type === "system") {
       pageMap.system?.appendChild(item);

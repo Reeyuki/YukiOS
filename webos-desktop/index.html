@@ -224,13 +224,27 @@
           <span></span>
         </div>
 
-        <div class="start-cat active" data-cat="menu"><i class="fas fa-bars"></i> Menu</div>
+        <div class="start-cat" data-cat="favorites"><i class="fas fa-star"></i> Favorites</div>
+
+        <div class="start-cat active" data-cat="all"><i class="fas fa-th"></i> All Applications</div>
+
+        <div class="start-cat" data-cat="development"><i class="fas fa-code"></i> Development</div>
 
         <div class="start-cat" data-cat="games"><i class="fas fa-gamepad"></i> Games</div>
 
+        <div class="start-cat" data-cat="graphics"><i class="fas fa-paint-brush"></i> Graphics</div>
+
+        <div class="start-cat" data-cat="help"><i class="fas fa-question-circle"></i> Help</div>
+
+        <div class="start-cat" data-cat="internet"><i class="fas fa-globe"></i> Internet</div>
+
+        <div class="start-cat" data-cat="media"><i class="fas fa-music"></i> Media</div>
+
+        <div class="start-cat" data-cat="office"><i class="fas fa-file-word"></i> Office</div>
+
         <div class="start-cat" data-cat="system"><i class="fas fa-screwdriver-wrench"></i> System</div>
 
-        <div class="start-cat" data-cat="favorites"><i class="fas fa-star"></i> Favorites</div>
+        <div class="start-cat" data-cat="places"><i class="fas fa-folder"></i> Places</div>
 
         <div class="start-cat" data-cat="customize"><i class="fas fa-circle-user"></i> Customize Profile</div>
 
@@ -247,17 +261,51 @@
       </div>
 
       <div class="start-content">
-        <input id="start-menu-search" placeholder="Search…" autocomplete="off" />
+        <div class="search-input-wrapper">
+          <i class="fas fa-search search-icon"></i>
+          <input id="start-menu-search" placeholder="Search..." autocomplete="off" />
+        </div>
 
-        <div class="start-page active" data-page="favorites"></div>
-
-        <div class="start-page" data-page="apps"></div>
-
-        <div class="start-page" data-page="games"></div>
-
-        <div class="start-page" data-page="system"></div>
-        <div class="start-page" data-page="menu">
+        <div class="start-page active" data-page="all">
           <div class="app-grid"></div>
+        </div>
+
+        <div class="start-page" data-page="favorites"></div>
+
+        <div class="start-page" data-page="development">
+          <div class="app-grid"></div>
+        </div>
+
+        <div class="start-page" data-page="games">
+          <div class="app-grid"></div>
+        </div>
+
+        <div class="start-page" data-page="graphics">
+          <div class="app-grid"></div>
+        </div>
+
+        <div class="start-page" data-page="help">
+          <div class="app-grid"></div>
+        </div>
+
+        <div class="start-page" data-page="internet">
+          <div class="app-grid"></div>
+        </div>
+
+        <div class="start-page" data-page="media">
+          <div class="app-grid"></div>
+        </div>
+
+        <div class="start-page" data-page="office">
+          <div class="app-grid"></div>
+        </div>
+
+        <div class="start-page" data-page="system">
+          <div class="app-grid"></div>
+        </div>
+
+        <div class="start-page" data-page="places">
+          <div class="places-section"></div>
         </div>
       </div>
     </div>

@@ -50,7 +50,7 @@ Write modular, clean, and DRY code. Follow these principles:
 - **Avoid Magic Numbers/Strings**: Extract constants to the top of the file or a constants file. Use CSS variables for
   styling values.
 - **Consistent Patterns**: Follow existing patterns in the codebase. If similar apps use a certain structure, follow that structure for new apps.
-
+- **Enforce KISS and YAGNI:** Write the absolute minimum code required to make current tests pass; do not build abstract factories, extra interfaces, or future-proof scaffolding for features that are not explicitly requested in the prompt.
 
 ---
 

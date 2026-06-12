@@ -26,7 +26,7 @@ export const APP_DESCRIPTIONS = {
   emulatorApp: "Multi-platform game emulator supporting various console systems.",
   ruffleApp: "Flash game player using modern Ruffle engine for SWF content.",
   shortcutsApp: "View and manage keyboard shortcuts for system-wide commands.",
-  yukiConvert: "Unit converter for various measurements and calculations.",
+  yukiConvert: "Local File Converter with image, audio,video and documents.",
   setupApp: "Initial setup guide for new users to configure Yuki OS preferences.",
   dataEditorApp: "View and edit IndexedDB storage data for debugging and advanced users.",
   dataEditor: "View and edit IndexedDB storage data for debugging and advanced users.",
@@ -50,8 +50,20 @@ export const APP_DESCRIPTIONS = {
   youtube: "YouTube tools and utilities for video management and playback.",
   system: "Core system components and utilities for Yuki OS operation.",
   steam: "Game library and launcher with 3700+ titles organized by genre and collection.",
-  game: "Playable game content from the Yuki OS library of 3700+ titles across multiple platforms."
+  game: "Playable game content from the Yuki OS library of 3700+ titles across multiple platforms.",
+  newsApp: "Displays system updates, release notes, and changelog entries for Yuki OS features and improvements.",
+  steamApp:
+    "Game storefront and launcher interface for browsing, managing, and launching games through Steam integration.",
+  clipboardManagerApp:
+    "System clipboard history manager that stores copied text and data for quick reuse and retrieval.",
+  vscode:
+    "Web-based Visual Studio Code instance for full-featured software development with extensions and debugging tools.",
+  miniPaint:
+    "Lightweight browser-based image editor with basic drawing tools, filters, and quick editing capabilities.",
+  scramjet:
+    "Web proxy tool for browsing external sites through a proxied session with basic anonymity and access control."
 };
+
 export const descriptionMap = {
   tabs: "Totally Accurate Battle Simulator (TABS) is a physics based ragdoll tactics game developed by Landfall Games. Players pit armies of historical, mythological, and absurd units - from mammoths and squires to laser wielding raptors - against each other in a series of wobbly, unpredictable battles where the engine's chaotic physics are just as important as strategy.",
   plagueIncEvolved:

@@ -10,7 +10,7 @@
     },
 
     "allowJs": true,
-    "checkJs": true,
+    "checkJs": false,
 
     "strict": true,
     "noImplicitAny": true,

@@ -5,6 +5,22 @@ import { os } from "../os/index.js";
 
 const NEWS_UPDATES = [
   {
+    date: "June 12, 2026",
+    sections: [
+      {
+        icon: "fa-wand-magic-sparkles",
+        title: "Start Menu Rework",
+        items: [
+          [
+            "fa-wand-magic-sparkles",
+            "Unified Redesign",
+            "Start menu rebuilt with keyboard navigation (arrow keys + Enter), alphabetical app grouping with section headers, improved search UI."
+          ]
+        ]
+      }
+    ]
+  },
+  {
     date: "June 11, 2026",
     sections: [
       {
