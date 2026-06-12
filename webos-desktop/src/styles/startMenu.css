@@ -124,68 +124,127 @@
 .start-footer-actions {
   margin-top: auto;
   display: flex;
-  gap: 12px;
-  padding: 16px;
-  border-top: 1px solid color-mix(in srgb, var(--brand) 20%, transparent);
-  background: linear-gradient(0deg, color-mix(in srgb, var(--brand) 12%, transparent), transparent);
+  gap: 4px;
+  padding: 10px 8px;
+  border-top: 1px solid color-mix(in srgb, var(--brand) 15%, transparent);
   justify-content: center;
+  align-items: center;
 }
 
 .start-signout-btn,
-.start-lock-btn {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+.start-lock-btn,
+.start-sleep-btn,
+.start-restart-btn,
+.start-shutdown-btn {
+  background: transparent;
+  border: 1px solid transparent;
   color: var(--tx2);
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--r-sm);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  font-size: 15px;
+  transition: all 0.15s ease;
+  font-size: 14px;
   flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  position: relative;
 }
 
 .start-signout-btn:hover,
-.start-lock-btn:hover {
-  background: var(--brand);
-  border-color: var(--brand);
-  color: #fff;
-  transform: translateY(-3px);
-  box-shadow: 0 6px 15px color-mix(in srgb, var(--brand) 50%, transparent);
+.start-lock-btn:hover,
+.start-sleep-btn:hover,
+.start-restart-btn:hover {
+  background: color-mix(in srgb, var(--brand) 20%, transparent);
+  border-color: color-mix(in srgb, var(--brand) 35%, transparent);
+  color: var(--brand);
+}
+
+.start-shutdown-btn:hover {
+  background: color-mix(in srgb, #e05555 20%, transparent);
+  border-color: color-mix(in srgb, #e05555 40%, transparent);
+  color: #e05555;
 }
 
 .start-signout-btn:active,
-.start-lock-btn:active {
-  transform: translateY(0) scale(0.95);
+.start-lock-btn:active,
+.start-sleep-btn:active,
+.start-restart-btn:active,
+.start-shutdown-btn:active {
+  transform: scale(0.93);
+}
+
+.start-power-divider {
+  width: 1px;
+  height: 20px;
+  background: color-mix(in srgb, var(--brand) 20%, transparent);
+  margin: 0 4px;
+  flex-shrink: 0;
+}
+
+.start-signout-btn[title]:hover::after,
+.start-lock-btn[title]:hover::after,
+.start-sleep-btn[title]:hover::after,
+.start-restart-btn[title]:hover::after,
+.start-shutdown-btn[title]:hover::after {
+  content: attr(title);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(20, 20, 25, 0.95);
+  color: #fff;
+  font-size: 11px;
+  white-space: nowrap;
+  padding: 4px 8px;
+  border-radius: 4px;
+  pointer-events: none;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  z-index: 20001;
+}
+
+.recent-section-header {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--tx2);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  padding: 6px 10px 4px;
+  opacity: 0.6;
 }
 
 .start-cat {
-  padding: 12px 14px;
+  padding: 9px 14px 9px 12px;
   cursor: pointer;
   font-size: 13px;
   display: flex;
   align-items: center;
   gap: 10px;
   transition: all 0.15s ease;
-  margin: 2px 6px;
+  margin: 1px 4px;
   border-radius: var(--r-sm);
+  border-left: 2px solid transparent;
 }
 
 .start-cat i {
   width: 20px;
-  font-size: 16px;
+  font-size: 15px;
   text-align: center;
   color: color-mix(in srgb, var(--brand) 70%, var(--tx2));
 }
 
-.start-cat:hover,
-.start-cat.active {
-  background: color-mix(in srgb, var(--brand) 25%, transparent);
+.start-cat:hover {
+  background: color-mix(in srgb, var(--brand) 15%, transparent);
   color: #fff;
+  border-left-color: color-mix(in srgb, var(--brand) 50%, transparent);
+}
+
+.start-cat.active {
+  background: color-mix(in srgb, var(--brand) 20%, transparent);
+  color: #fff;
+  border-left-color: var(--brand);
 }
 
 .start-cat.active i {
@@ -193,10 +252,11 @@
 }
 
 .start-cat.keyboard-selected {
-  background: color-mix(in srgb, var(--brand) 35%, transparent);
+  background: color-mix(in srgb, var(--brand) 28%, transparent);
   color: #fff;
-  outline: 2px solid var(--brand);
-  outline-offset: -2px;
+  border-left-color: var(--brand);
+  outline: 1px solid color-mix(in srgb, var(--brand) 40%, transparent);
+  outline-offset: -1px;
 }
 
 .start-cat.keyboard-selected i {
@@ -316,49 +376,47 @@
 }
 
 .start-menu-item {
-  outline: 1.5px solid transparent;
-  outline-offset: -1px;
-  border-radius: var(--r-sm);
+  outline: none;
+  border-left: 2px solid transparent;
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
+  gap: 10px;
+  padding: 7px 10px 7px 8px;
   transition:
-    outline-color 0.18s ease,
-    background 0.18s ease,
-    transform 0.12s ease;
+    border-color 0.15s ease,
+    background 0.15s ease;
   box-sizing: border-box;
   position: relative;
   width: 100%;
 }
 
 .start-menu-item:hover {
-  outline-color: color-mix(in srgb, var(--brand) 45%, transparent);
-  background: color-mix(in srgb, var(--brand) 8%, transparent);
-  transform: translateX(2px);
+  border-left-color: color-mix(in srgb, var(--brand) 60%, transparent);
+  background: color-mix(in srgb, var(--brand) 10%, transparent);
 }
 
 .start-menu-item:active {
-  transform: translateX(1px) scale(0.99);
+  background: color-mix(in srgb, var(--brand) 18%, transparent);
 }
 
 .start-menu-item.selected {
-  background: color-mix(in srgb, var(--brand) 40%, transparent);
-  outline-color: color-mix(in srgb, var(--brand) 45%, transparent);
+  background: color-mix(in srgb, var(--brand) 22%, transparent);
+  border-left-color: var(--brand);
 }
 
 .start-menu-item svg,
 .start-menu-item i,
 .start-menu-item img {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   color: var(--text-primary);
-  font-size: 20px;
+  font-size: 17px;
 }
 
 .start-menu-item img {
@@ -369,46 +427,39 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
   min-width: 0;
 }
 
 .start-menu-item .app-title {
-  font-size: 14px;
+  font-size: 13px;
   color: var(--tx1);
-  font-weight: 600;
-  word-break: break-word;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   line-height: 1.3;
 }
 
 .start-menu-item .app-description {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--tx2);
-  line-height: 1.3;
-  max-height: 2.6em;
+  opacity: 0.7;
+  line-height: 1.2;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  line-clamp: 2;
   cursor: help;
-  position: relative;
-}
-
-.start-menu-item .app-description:hover {
-  color: var(--tx1);
 }
 
 .start-menu-search {
-  padding-inline: 1.4rem;
-  margin-block-end: 1.25rem;
+  padding-inline: 1rem;
+  margin-block-end: 0.75rem;
   position: relative;
 }
 
 .search-input-wrapper {
   position: relative;
-  margin-bottom: 10px;
   display: flex;
   align-items: center;
 }
@@ -417,7 +468,7 @@
   position: absolute;
   left: 12px;
   color: var(--tx2);
-  font-size: 14px;
+  font-size: 13px;
   pointer-events: none;
   z-index: 1;
 }
@@ -425,19 +476,28 @@
 #start-menu-search {
   display: block;
   width: 100%;
-  padding: 8px 8px 8px 36px;
+  padding: 9px 14px 9px 34px;
   margin-bottom: 0;
-  border-radius: var(--r-sm);
-  border: 1.5px solid transparent;
-  background: color-mix(in oklch, #4982ee 26%, transparent);
+  border-radius: 10px;
+  border: 1.5px solid color-mix(in srgb, var(--brand) 25%, transparent);
+  background: color-mix(in oklch, var(--brand) 12%, transparent);
   color: var(--tx1);
   outline: none;
   box-sizing: border-box;
-  transition: border-color 0.15s ease;
+  font-size: 13px;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+#start-menu-search::placeholder {
+  color: var(--tx2);
+  opacity: 0.7;
 }
 
 #start-menu-search:focus {
-  border-color: color-mix(in oklch, var(--brand) 50%, transparent);
+  border-color: var(--brand);
+  background: color-mix(in oklch, var(--brand) 18%, transparent);
 }
 
 .start-menu-search-input {

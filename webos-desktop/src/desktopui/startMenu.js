@@ -124,9 +124,10 @@ export function openStartMenu({ focusSearch = false, openDefaultPage = true } = 
         cats = catsData;
       } catch (e) {}
     }
-    let defaultCat = "all";
-    if (cats["all"] === false) {
+    let defaultCat = "recent";
+    if (cats["recent"] === false) {
       const catNames = [
+        "recent",
         "all",
         "favorites",
         "development",
@@ -250,6 +251,45 @@ let favoritesCache = null;
 const renderedCategories = new Set();
 let searchDebounceTimer = null;
 
+const RECENTLY_USED_MAX = 8;
+
+function getRecentlyUsed() {
+  return os.storage.get(StorageKeys.recentlyUsedApps) || [];
+}
+
+function trackRecentlyUsed(appId) {
+  let recent = getRecentlyUsed();
+  recent = recent.filter((id) => id !== appId);
+  recent.unshift(appId);
+  if (recent.length > RECENTLY_USED_MAX) recent = recent.slice(0, RECENTLY_USED_MAX);
+  os.storage.set(StorageKeys.recentlyUsedApps, recent);
+}
+
+function updateRecentlyUsedUI() {
+  const page = document.querySelector('.start-page[data-page="recent"]');
+  if (!page) return;
+  page.innerHTML = "";
+
+  const appRegistry = getAppRegistry();
+  const allApps = { ...appMap, ...os.app.getAllApps() };
+  const recent = getRecentlyUsed();
+
+  if (recent.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "search-no-results";
+    empty.textContent = "No recently used apps yet";
+    page.appendChild(empty);
+    return;
+  }
+
+  recent.forEach((appId) => {
+    const appData = allApps[appId];
+    if (!appData) return;
+    if (appRegistry.isAppUninstalled(appId) || appRegistry.isAppDisabled(appId)) return;
+    page.appendChild(createAppItem(appId, appData));
+  });
+}
+
 function clearItemSelection() {
   if (selectedItem) {
     selectedItem.classList.remove("selected");
@@ -320,6 +360,8 @@ function activateCategoryPage(cat) {
   page.classList.add("active");
   if (cat.dataset.cat === "favorites") {
     updateFavoritesUI();
+  } else if (cat.dataset.cat === "recent") {
+    updateRecentlyUsedUI();
   } else if (
     ["all", "development", "games", "graphics", "help", "internet", "media", "office", "system"].includes(
       cat.dataset.cat
@@ -409,22 +451,16 @@ export function updateFavoritesUI() {
     return;
   }
 
+  const appRegistry = getAppRegistry();
+  const allApps = { ...appMap, ...os.app.getAllApps() };
+
   favorites.forEach((appName) => {
-    const appItem = document.querySelector(`.start-menu-item[data-app="${appName}"]`);
-    if (!appItem) return;
-
-    const clone = appItem.cloneNode(true);
-    clone.style.position = "relative";
-    clone.style.background = "rgba(255, 215, 0, 0.1)";
-
-    clone.onclick = () => os.app.launch(appName);
-
-    const oldStar = clone.querySelector(".star");
-    if (oldStar) oldStar.remove();
-
-    clone.appendChild(createStarButton(appName));
-
-    favoritesPage.appendChild(clone);
+    const appData = allApps[appName];
+    if (!appData) return;
+    if (appRegistry.isAppUninstalled(appName) || appRegistry.isAppDisabled(appName)) return;
+    const item = createAppItem(appName, appData);
+    item.style.background = "rgba(255, 215, 0, 0.1)";
+    favoritesPage.appendChild(item);
   });
 }
 
@@ -446,6 +482,21 @@ export function setupStartMenu(appLauncher, sessionManager, selectionManager) {
     sessionManager?.lockToLoginScreen();
   });
 
+  document.getElementById("start-sleep-btn")?.addEventListener("click", () => {
+    closeStartMenu();
+    sessionManager?.sleep?.();
+  });
+
+  document.getElementById("start-restart-btn")?.addEventListener("click", () => {
+    closeStartMenu();
+    sessionManager?.restart?.();
+  });
+
+  document.getElementById("start-shutdown-btn")?.addEventListener("click", () => {
+    closeStartMenu();
+    sessionManager?.shutdown?.();
+  });
+
   document.querySelectorAll(".start-cat").forEach((cat) => {
     if (cat.classList.contains("docked") || !cat.dataset.cat) {
       return;
@@ -464,6 +515,10 @@ export function setupStartMenu(appLauncher, sessionManager, selectionManager) {
       activateCategoryPage(cat);
       if (cat.dataset.cat === "favorites") {
         speak("These are your favorites! Great taste.", ClippyAnimation.Show);
+      }
+      if (focusMode === "apps") {
+        const page = document.querySelector(`.start-page[data-page="${cat.dataset.cat}"]`);
+        if (page) selectFirstItemInPage(page);
       }
     };
   });
@@ -1393,6 +1448,7 @@ function createAppItem(appId, appData) {
   }
 
   item.addEventListener("click", () => {
+    trackRecentlyUsed(appId);
     os.app.launch(appId);
     closeStartMenu();
   });
