@@ -13,7 +13,7 @@ import { WindowHelper } from "../utils/WindowHelper.js";
 import { DesktopContextMenuManager } from "../windowManager/ContextMenuManager.js";
 import { IconManager } from "./iconManager.js";
 import { DragDropManager } from "./dragDropManager.js";
-import { ClipboardManager } from "./clipboardManager.js";
+import { ClipboardManager } from "./fileClipboardManager.js";
 import { showPropertiesDialog } from "./propertiesDialog.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 

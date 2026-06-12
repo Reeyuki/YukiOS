@@ -1,4 +1,4 @@
-import { getSetting } from "../shared/settings.js";
+import { getSetting } from "../shared/settingsUtils.js";
 
 const styleEl = document.getElementById("window-style");
 const styleParent = styleEl?.parentNode;

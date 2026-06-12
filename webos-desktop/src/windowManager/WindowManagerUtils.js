@@ -1,7 +1,7 @@
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { isImageFile, sanitizeTitle } from "../utils/utils.js";
 import { updateTransparency as extUpdateTransparency } from "./transparencyManager.js";
-import { getSetting } from "../shared/settings.js";
+import { getSetting } from "../shared/settingsUtils.js";
 
 export class WindowManagerUtils {
   constructor(manager) {

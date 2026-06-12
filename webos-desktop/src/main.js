@@ -23,7 +23,7 @@ import { registerPWA } from "./pwa/pwa.js";
 import { SessionManager } from "./SessionManager.js";
 import { CommandPalette } from "./commandPalette.js";
 import { HybridAdapter } from "./runtime/HybridAdapter.js";
-import { ClipboardManager } from "./clipboardManager.js";
+import { ClipboardManager } from "./systemClipboardManager.js";
 import "./osBridgeTelemetry.js";
 import { resolveIconUrl, initializeMirrors, CDN_MIRRORS, getCdnMirror, setCdnMirror } from "./shared/assetResolver.js";
 import { appMap } from "./games/gamesList.js";
