@@ -162,7 +162,7 @@ export class SessionManager {
     this.container.innerHTML = `
       <div class="session-wallpaper"></div>
       <div class="session-background"></div>
-      <div class="session-content">
+      <div class="session-content extra-hidden">
         <div class="session-info-btn" id="session-info-btn">
           <i class="fas fa-info"></i>
         </div>
@@ -258,6 +258,7 @@ export class SessionManager {
     this._startClock();
     this._startUptimeCounter();
     this._disableContextMenu();
+    this._setupDragVisibility();
   }
 
   _renderUserCarousel() {
@@ -659,6 +660,8 @@ export class SessionManager {
       const avatarModal = this.container.querySelector("#avatar-edit-modal");
       if (avatarModal && avatarModal.style.display !== "none") {
         avatarModal.style.display = "none";
+      } else {
+        this._hideExtraElements();
       }
     } else if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
       const users = this.userHistory.length > 0 ? this.userHistory : [this.selectedUser];
@@ -824,5 +827,54 @@ export class SessionManager {
     }
 
     this._startClock();
+  }
+
+  _setupDragVisibility() {
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+    const dragThreshold = 10;
+
+    const handleMouseDown = (e) => {
+      isDragging = false;
+      startX = e.clientX;
+      startY = e.clientY;
+    };
+
+    const handleMouseMove = (e) => {
+      if (!isDragging) {
+        const deltaX = Math.abs(e.clientX - startX);
+        const deltaY = Math.abs(e.clientY - startY);
+        if (deltaX > dragThreshold || deltaY > dragThreshold) {
+          isDragging = true;
+          this._showExtraElements();
+        }
+      }
+    };
+
+    const handleMouseUp = () => {
+      isDragging = false;
+    };
+
+    this.container.addEventListener("mousedown", handleMouseDown);
+    this.container.addEventListener("mousemove", handleMouseMove);
+    this.container.addEventListener("mouseup", handleMouseUp);
+    this.container.addEventListener("mouseleave", handleMouseUp);
+  }
+
+  _showExtraElements() {
+    const content = this.container.querySelector(".session-content");
+    if (content && content.classList.contains("extra-hidden")) {
+      content.classList.remove("extra-hidden");
+      content.classList.add("extra-visible");
+    }
+  }
+
+  _hideExtraElements() {
+    const content = this.container.querySelector(".session-content");
+    if (content && content.classList.contains("extra-visible")) {
+      content.classList.remove("extra-visible");
+      content.classList.add("extra-hidden");
+    }
   }
 }

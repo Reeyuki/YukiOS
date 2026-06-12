@@ -1075,3 +1075,25 @@
   z-index: 1000000;
   pointer-events: auto;
 }
+
+.session-content.extra-hidden .session-info-btn,
+.session-content.extra-hidden .session-info-modal,
+.session-content.extra-hidden .user-carousel-row,
+.session-content.extra-hidden .login-center-panel,
+.session-content.extra-hidden .session-selector,
+.session-content.extra-hidden .avatar-edit-modal {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.session-content.extra-visible .session-info-btn,
+.session-content.extra-visible .session-info-modal,
+.session-content.extra-visible .user-carousel-row,
+.session-content.extra-visible .login-center-panel,
+.session-content.extra-visible .session-selector,
+.session-content.extra-visible .avatar-edit-modal {
+  opacity: 1;
+  pointer-events: auto;
+  transition: opacity 0.3s ease;
+}
