@@ -264,7 +264,7 @@ export class IconManager {
     const wallpapersPath = ["Pictures", "Wallpapers"];
     await os.fs.mkdir(wallpapersPath);
     const safeIcon = kind === FileKind.IMAGE ? "@content" : icon || resolveIconUrl("static/icons/file.webp");
-    await os.fs.write(wallpapersPath, name, content, kind, safeIcon);
+    await os.fs.write([...wallpapersPath, name], content, { kind, icon: safeIcon });
   }
 
   addFiles() {

@@ -10,6 +10,7 @@ import { CDN_CONFIG } from "../shared/cdnConfig.js";
 import { getAppRegistry } from "../appRegistry.js";
 import { os } from "../os/index.js";
 import { SYSTEM_APPS } from "../AppRegistryConfig.js";
+import { resolveAvatarUrl } from "../shared/avatarResolver.js";
 
 function getStartMenuEl() {
   return document.getElementById("start-menu") || document.querySelector(".start-menu");
@@ -775,7 +776,7 @@ export function getCurrentUser() {
   };
 }
 
-export function updateStartUserDisplay() {
+export async function updateStartUserDisplay() {
   const startUser = document.querySelector(".start-user");
   if (!startUser) return;
 
@@ -785,7 +786,7 @@ export function updateStartUserDisplay() {
   const avatarImg = startUser.querySelector("img");
 
   if (nameSpan) nameSpan.textContent = user.name;
-  if (avatarImg) avatarImg.src = user.avatar;
+  if (avatarImg) avatarImg.src = await resolveAvatarUrl(user.avatar, "static/icons/guest.webp");
 }
 
 export function setupStartUserHover() {

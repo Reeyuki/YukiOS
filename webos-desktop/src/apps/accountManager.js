@@ -6,6 +6,7 @@ import { resolveIconUrl } from "../shared/assetResolver.js";
 import { PersistenceTypes } from "../runtime/AppSchema.js";
 import { os } from "../os/index.js";
 import { StorageKeys } from "../StorageKeys.js";
+import { resolveAvatarUrl } from "../shared/avatarResolver.js";
 
 export const PREDEFINED_AVATARS = [
   resolveIconUrl("static/icons/guest.webp"),
@@ -255,9 +256,9 @@ export class AccountManagerApp extends BaseApp {
         const isCurrentUser = user.userId === currentUser.userId;
         const lastLogin = user.lastLogin ? this._formatTimeAgo(new Date(user.lastLogin)) : "Never";
         return `
-        <div class="user-card ${isCurrentUser ? "current-user" : ""}" data-user-id="${user.userId}" style="display: flex; align-items: center; gap: 12px; padding: 12px; background: ${isCurrentUser ? "var(--brand-dim)" : "var(--surface-1)"}; border: 1px solid ${isCurrentUser ? "var(--brand)" : "var(--glass-border)"}; border-radius: 8px; transition: all 0.15s;">
+        <div class="user-card ${isCurrentUser ? "current-user" : ""}" data-user-id="${user.userId}" data-avatar="${user.avatar}" style="display: flex; align-items: center; gap: 12px; padding: 12px; background: ${isCurrentUser ? "var(--brand-dim)" : "var(--surface-1)"}; border: 1px solid ${isCurrentUser ? "var(--brand)" : "var(--glass-border)"}; border-radius: 8px; transition: all 0.15s;">
           <div class="user-avatar" style="width: 48px; height: 48px; border-radius: 50%; overflow: hidden; border: 2px solid ${isCurrentUser ? "var(--brand)" : "var(--glass-border)"}; flex-shrink: 0;">
-            <img src="${user.avatar}" style="width: 100%; height: 100%; object-fit: cover;" />
+            <img class="user-avatar-img" data-avatar-ref="${user.avatar}" src="${user.avatar}" style="width: 100%; height: 100%; object-fit: cover;" />
           </div>
           <div class="user-info" style="flex: 1; min-width: 0;">
             <div class="user-name" style="font-size: 14px; font-weight: 600; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${user.name}</div>
@@ -324,7 +325,27 @@ export class AccountManagerApp extends BaseApp {
     if (userList) {
       userList.innerHTML = this._renderUserList(userHistory, currentUser);
       this._bindUserListEvents();
+      this._resolveAvatarImages();
     }
+  }
+
+  async _resolveAvatarImages() {
+    const avatarImages = document.querySelectorAll(".user-avatar-img");
+    await Promise.all(
+      Array.from(avatarImages).map(async (img) => {
+        const avatarRef = img.dataset.avatarRef;
+        if (avatarRef && avatarRef.startsWith("fs://")) {
+          const resolvedUrl = await resolveAvatarUrl(avatarRef);
+          img.src = resolvedUrl;
+        }
+      })
+    );
+  }
+
+  open() {
+    this.getDeclarativeSchema().then((schema) => {
+      this._renderDeclarativeUI(schema);
+    });
   }
 
   _bindGlobalEvents(element) {
@@ -402,6 +423,10 @@ export class AccountManagerApp extends BaseApp {
     this.customImageDataUrl = null;
 
     modal.style.display = "flex";
+
+    resolveAvatarUrl(user.avatar).then((resolvedUrl) => {
+      if (previewImg) previewImg.src = resolvedUrl;
+    });
   }
 
   closeModal(payload, event, element, state) {
@@ -415,7 +440,7 @@ export class AccountManagerApp extends BaseApp {
       <div class="avatar-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 16px;">
         ${PREDEFINED_AVATARS.map(
           (avatar) => `
-          <div class="avatar-option" data-src="${avatar}" style="border-radius: 50%; overflow: hidden; cursor: pointer; border: 2px solid var(--glass-border); transition: all 0.15s; position: relative; aspect-ratio: 1;">
+          <div class="avatar-option" data-src="${avatar}" style="width: 64px; height: 64px; border-radius: 50%; overflow: hidden; cursor: pointer; border: 2px solid var(--glass-border); transition: all 0.15s; position: relative;">
             <img src="${avatar}" style="width: 100%; height: 100%; object-fit: cover;" />
           </div>
         `
@@ -485,7 +510,7 @@ export class AccountManagerApp extends BaseApp {
     this.avatarWindow = null;
   }
 
-  uploadAvatarFromWindow(event) {
+  async uploadAvatarFromWindow(event) {
     const input = document.createElement("input");
     input.type = "file";
     input.accept = "image/png,image/jpeg,image/gif,image/webp,.png,.jpg,.jpeg,.gif,.webp";
@@ -503,23 +528,26 @@ export class AccountManagerApp extends BaseApp {
           return;
         }
 
-        const dataUrl = await new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(String(reader.result || ""));
-          reader.onerror = () => reject(new Error("Failed to read file"));
-          reader.readAsDataURL(file);
-        });
+        const currentUserId = os.storage.get(StorageKeys.userId) || generateUUID();
+        const fileName = `avatar-${currentUserId}.${file.name.split(".").pop()}`;
 
-        this.customImageDataUrl = dataUrl;
-        this.selectedAvatar = dataUrl;
+        await os.fs.writeBinaryFile(["Pictures"], fileName, file, "image", "static/icons/image.webp");
+        const fileRef = `fs://Pictures/${fileName}`;
+
+        this.customImageDataUrl = fileRef;
+        this.selectedAvatar = fileRef;
 
         const previewImg = document.querySelector("#modal-preview-img");
-        if (previewImg) previewImg.src = dataUrl;
+        if (previewImg) {
+          const blob = await os.fs.readBinaryFile(["Pictures"], fileName);
+          if (blob) previewImg.src = URL.createObjectURL(blob);
+        }
 
         os.window.close(this.avatarWindow);
         this.avatarWindow = null;
       } catch (e) {
         console.error("Upload failed:", e);
+        customAlert("Upload Failed", "Could not save avatar image. Please try a smaller image.");
       }
     });
 

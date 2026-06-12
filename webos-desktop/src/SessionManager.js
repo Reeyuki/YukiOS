@@ -6,6 +6,7 @@ import { audioMixer, SystemAudio } from "./audioMixer.js";
 import { os } from "./os/index.js";
 import { showAlert, showConfirm } from "./shared/dialogs.js";
 import { YUKIOS_VERSION } from "./apps/about.js";
+import { resolveAvatarUrl } from "./shared/avatarResolver.js";
 
 function generateUUID() {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
@@ -49,7 +50,7 @@ export class SessionManager {
     });
   }
 
-  _handleProfileUpdate(data) {
+  async _handleProfileUpdate(data) {
     const { userId, name, avatar } = data;
 
     const existingIndex = this.userHistory.findIndex((u) => u.userId === userId);
@@ -62,7 +63,7 @@ export class SessionManager {
     if (this.container) {
       const carousel = this.container.querySelector("#user-carousel-row");
       if (carousel) {
-        carousel.innerHTML = this._renderUserCarousel();
+        carousel.innerHTML = await this._renderUserCarousel();
         this._bindCarouselTileEvents();
       }
     }
@@ -149,11 +150,12 @@ export class SessionManager {
     const dateStr = now.toLocaleDateString([], { weekday: "long", month: "short", day: "numeric" });
 
     const lastUsername = os.storage.get(StorageKeys.username) || "";
-    const lastAvatar = os.storage.get(StorageKeys.profilePicture) || PREDEFINED_AVATARS[0];
+    const lastAvatarRef = os.storage.get(StorageKeys.profilePicture) || PREDEFINED_AVATARS[0];
+    const lastAvatar = await resolveAvatarUrl(lastAvatarRef, PREDEFINED_AVATARS[0]);
     const displayName = lastUsername || "Guest";
     const userId = this._ensureUserId();
 
-    const primaryUser = { name: displayName, key: userId, avatar: lastAvatar, userId: userId };
+    const primaryUser = { name: displayName, key: userId, avatar: lastAvatarRef, userId: userId };
 
     const allUsers = this.userHistory.length > 0 ? this.userHistory : [primaryUser];
     const selectedKey = this.userHistory.length > 0 ? this.userHistory[0].key : primaryUser.key;
@@ -191,7 +193,7 @@ export class SessionManager {
         <div class="session-date">${dateStr}</div>
 
         <div class="user-carousel-row" id="user-carousel-row">
-          ${this._renderUserCarousel()}
+          ${await this._renderUserCarousel()}
         </div>
 
         <div class="login-center-panel">
@@ -244,9 +246,6 @@ export class SessionManager {
               `
               ).join("")}
             </div>
-            <button class="upload-avatar-btn" id="upload-avatar-btn">
-              <i class="fas fa-upload"></i> Upload Custom
-            </button>
           </div>
         </div>
       </div>
@@ -254,29 +253,31 @@ export class SessionManager {
 
     document.body.appendChild(this.container);
     await this._applySessionWallpaper(this.container);
-    this._bindSessionEvents(onComplete);
+    await this._bindSessionEvents(onComplete);
     this._startClock();
     this._startUptimeCounter();
     this._disableContextMenu();
     this._setupDragVisibility();
   }
 
-  _renderUserCarousel() {
+  async _renderUserCarousel() {
     const users = this.userHistory.length > 0 ? this.userHistory : [this.selectedUser];
-    return users
-      .map((user) => {
+    const renderedUsers = await Promise.all(
+      users.map(async (user) => {
         const isSelected = user.key === this.selectedUser?.key;
+        const avatarUrl = await resolveAvatarUrl(user.avatar, PREDEFINED_AVATARS[0]);
         return `
         <div class="user-carousel-tile ${isSelected ? "selected" : ""}"
              data-key="${user.key}" data-name="${user.name}" data-avatar="${user.avatar}" data-user-id="${user.userId || user.key}">
           <div class="carousel-avatar-wrap">
-            <img src="${user.avatar}" alt="${user.name}">
+            <img src="${avatarUrl}" alt="${user.name}">
           </div>
           <span>${user.name}</span>
         </div>
       `;
       })
-      .join("");
+    );
+    return renderedUsers.join("");
   }
 
   _getActionButtonText() {
@@ -402,7 +403,7 @@ export class SessionManager {
     }
   }
 
-  _bindSessionEvents(onComplete) {
+  async _bindSessionEvents(onComplete) {
     const actionBtn = this.container.querySelector("#action-button");
     const powerBtn = this.container.querySelector("#power-btn");
     const restartBtn = this.container.querySelector("#restart-btn");
@@ -411,7 +412,6 @@ export class SessionManager {
     const avatarModal = this.container.querySelector("#avatar-edit-modal");
     const avatarModalClose = this.container.querySelector("#avatar-modal-close");
     const avatarGrid = this.container.querySelector("#avatar-grid");
-    const uploadAvatarBtn = this.container.querySelector("#upload-avatar-btn");
     const infoBtn = this.container.querySelector("#session-info-btn");
     const infoModal = this.container.querySelector("#session-info-modal");
 
@@ -475,7 +475,7 @@ export class SessionManager {
       }
     });
 
-    avatarGrid.addEventListener("click", (e) => {
+    avatarGrid.addEventListener("click", async (e) => {
       const tile = e.target.closest(".avatar-tile");
       if (!tile) return;
 
@@ -484,30 +484,8 @@ export class SessionManager {
       selectedAvatar = tile.dataset.url;
 
       this.selectedUser.avatar = selectedAvatar;
-      this._selectCarouselUser(this.selectedUser.key, this.selectedUser.name, selectedAvatar);
+      await this._selectCarouselUser(this.selectedUser.key, this.selectedUser.name, selectedAvatar);
       avatarModal.style.display = "none";
-    });
-
-    uploadAvatarBtn.addEventListener("click", () => {
-      const input = document.createElement("input");
-      input.type = "file";
-      input.accept = "image/*";
-      input.onchange = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          const dataUrl = event.target.result;
-          selectedAvatar = dataUrl;
-
-          this.selectedUser.avatar = selectedAvatar;
-          this._selectCarouselUser(this.selectedUser.key, this.selectedUser.name, selectedAvatar);
-          avatarModal.style.display = "none";
-        };
-        reader.readAsDataURL(file);
-      };
-      input.click();
     });
 
     powerBtn.addEventListener("click", async () => {
@@ -580,14 +558,14 @@ export class SessionManager {
         sessionRoot.classList.remove("open");
       }
     });
-    this._bindCarouselEvents();
+    await this._bindCarouselEvents();
 
     this.keyboardHandler = (e) => this._handleKeyboardNav(e, handleAction);
     document.addEventListener("keydown", this.keyboardHandler);
   }
 
-  _bindCarouselEvents() {
-    this._bindCarouselTileEvents();
+  async _bindCarouselEvents() {
+    await this._bindCarouselTileEvents();
 
     const carousel = this.container.querySelector("#user-carousel-row");
     const selectedTile = carousel?.querySelector(".user-carousel-tile.selected");
@@ -596,7 +574,7 @@ export class SessionManager {
     }
   }
 
-  _bindCarouselTileEvents() {
+  async _bindCarouselTileEvents() {
     const carousel = this.container.querySelector("#user-carousel-row");
     if (!carousel) return;
 
@@ -615,7 +593,7 @@ export class SessionManager {
       });
     });
   }
-  _selectCarouselUser(key, name, avatar) {
+  async _selectCarouselUser(key, name, avatar) {
     this.selectedUser = { key, name, avatar };
 
     const userId = this._ensureUserId();
@@ -632,7 +610,7 @@ export class SessionManager {
 
     const carousel = this.container.querySelector("#user-carousel-row");
     if (carousel) {
-      carousel.innerHTML = this._renderUserCarousel();
+      carousel.innerHTML = await this._renderUserCarousel();
       this._bindCarouselTileEvents();
 
       const selectedTile = carousel.querySelector(".user-carousel-tile.selected");
@@ -652,7 +630,7 @@ export class SessionManager {
     this._updateActionButtonText();
   }
 
-  _handleKeyboardNav(e, handleAction) {
+  async _handleKeyboardNav(e, handleAction) {
     if (e.key === "Enter") {
       e.preventDefault();
       handleAction();
@@ -672,7 +650,7 @@ export class SessionManager {
       const nextIndex = (currentIndex + direction + users.length) % users.length;
       const next = users[nextIndex];
 
-      this._selectCarouselUser(next.key, next.name, next.avatar);
+      await this._selectCarouselUser(next.key, next.name, next.avatar);
     }
   }
 

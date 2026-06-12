@@ -470,6 +470,7 @@
   grid-template-columns: repeat(auto-fill, minmax(64px, 64px));
   gap: 12px;
   margin-bottom: 16px;
+  overflow-y: auto;
 }
 
 .avatar-tile {
@@ -496,28 +497,6 @@
 .avatar-tile.active {
   border-color: var(--brand);
   box-shadow: 0 0 15px var(--brand-glow);
-}
-
-.upload-avatar-btn {
-  width: 100%;
-  background: var(--glass);
-  border: 1px solid var(--glass-border);
-  color: var(--text-secondary);
-  padding: 12px;
-  border-radius: 8px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.upload-avatar-btn:hover {
-  background: var(--glass-hover);
-  color: var(--text-primary);
-  border-color: var(--brand);
 }
 
 .session-overlay.exit {
