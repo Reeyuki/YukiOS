@@ -2,9 +2,10 @@ import { AppSchemaTypes } from "./AppSchema.js";
 import { UIComponents } from "./UIComponents.js";
 
 export class AppRenderer {
-  constructor(windowHelper, stateManager) {
+  constructor(windowHelper, stateManager, actionExecutor = null) {
     this.windowHelper = windowHelper;
     this.stateManager = stateManager;
+    this.actionExecutor = actionExecutor;
     this.componentRegistry = new Map();
     this._registerBuiltInComponents();
   }
@@ -125,8 +126,7 @@ export class AppRenderer {
     }
 
     if (events) {
-      element._schemaEvents = events;
-      element.setAttribute("_schemaEvents", "");
+      this._bindElementEvents(element, events);
     }
 
     return element;
@@ -165,5 +165,23 @@ export class AppRenderer {
 
   unregisterComponent(name) {
     this.componentRegistry.delete(name);
+  }
+
+  _bindElementEvents(element, events) {
+    if (!this.actionExecutor) return;
+
+    Object.entries(events).forEach(([eventType, handler]) => {
+      const wrappedHandler = (event) => {
+        if (typeof handler === "function") {
+          handler(event, this.stateManager.state, element);
+        } else if (typeof handler === "object") {
+          const { type, payload, stopPropagation, preventDefault } = handler;
+          if (stopPropagation) event.stopPropagation();
+          if (preventDefault) event.preventDefault();
+          this.actionExecutor.execute(type, payload, event, element);
+        }
+      };
+      element.addEventListener(eventType, wrappedHandler);
+    });
   }
 }

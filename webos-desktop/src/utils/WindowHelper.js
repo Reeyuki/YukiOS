@@ -1,5 +1,7 @@
 import { animateWindowOpen } from "../windowManager/AnimationSystem.js";
 import { os } from "../os/index.js";
+import { resolveIconUrl } from "../shared/assetResolver.js";
+import { isImageFile } from "../utils/utils.js";
 
 export class WindowHelper {
   constructor(servicesOrWM) {
@@ -24,7 +26,7 @@ export class WindowHelper {
     const win = this.createStandardWindow(winId, title, width, height, options);
 
     const headerDiv = document.createElement("div");
-    headerDiv.innerHTML = this.createWindowHeader(title, options.externalUrl);
+    headerDiv.innerHTML = this.createWindowHeader(title, options.icon, options.externalUrl);
     win.appendChild(headerDiv);
 
     if (typeof content === "string") {
@@ -60,10 +62,28 @@ export class WindowHelper {
     return win;
   }
 
-  createWindowHeader(title, externalUrl = null) {
+  getWindowIconHtml(iconValue) {
+    if (!iconValue) return "";
+    iconValue = resolveIconUrl(iconValue);
+    const size = 25;
+    const isDataUrl = typeof iconValue === "string" && iconValue.startsWith("data:");
+    const isHttpUrl = typeof iconValue === "string" && /^https?:\/\//.test(iconValue);
+    const isImage = isImageFile(iconValue) || isHttpUrl;
+
+    if (isImage || isDataUrl) {
+      return `<img src="${iconValue}" style="width:${size}px;height:${size}px;margin-right:6px;vertical-align:middle;object-fit:contain;" />`;
+    } else if (typeof iconValue === "string" && iconValue.length > 0) {
+      const cls = iconValue.startsWith("fa") ? iconValue : `fa ${iconValue}`;
+      return `<i class="${cls}" style="color:white;margin-right:6px;font-size:${size}px;vertical-align:middle;"></i>`;
+    }
+    return "";
+  }
+
+  createWindowHeader(title, icon = null, externalUrl = null) {
+    const iconHtml = this.getWindowIconHtml(icon);
     return `
       <div class="window-header">
-        <span>${title}</span>
+        <span>${iconHtml}${title}</span>
         ${os.window.getWindowControls(externalUrl)}
       </div>
     `;

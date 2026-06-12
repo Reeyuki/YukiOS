@@ -187,7 +187,6 @@ It's built entirely in vanilla JS (with some libraries, of course!).
 * Apps can communicate through shared events
 * External web apps can be launched as windows
 * Apps can persist state through storage APIs
-* Modular loading of tools and utilities
 
 ---
 

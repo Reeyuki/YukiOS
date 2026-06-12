@@ -272,15 +272,10 @@ class ClipboardManagerApp extends BaseApp {
       btn.addEventListener("click", async (e) => {
         e.stopPropagation();
         const index = parseInt(btn.dataset.index);
-        this._dialogOpen = true;
-        const confirmed = await showConfirm("Remove Item", "Remove this item from history?", "Remove", "Cancel");
-        this._dialogOpen = false;
-        if (confirmed) {
-          this.clipboardManager.removeFromHistory(index);
-          this._renderHistory(currentPopup, this.clipboardManager.getHistory(), this.clipboardManager.get());
-          if (!this._shouldSuppressNotification()) {
-            os.notify.send("Removed", "Item removed from history", "info", 2000, "fa-trash");
-          }
+        this.clipboardManager.removeFromHistory(index);
+        this._renderHistory(currentPopup, this.clipboardManager.getHistory(), this.clipboardManager.get());
+        if (!this._shouldSuppressNotification()) {
+          os.notify.send("Removed", "Item removed from history", "info", 2000, "fa-trash");
         }
       });
     });

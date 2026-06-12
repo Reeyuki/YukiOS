@@ -1,7 +1,7 @@
 import { BaseApp } from "../core/BaseApp.js";
 import { resolveGhUrl } from "../shared/assetResolver.js";
 import { PersistenceTypes } from "../runtime/AppSchema.js";
-export const YUKIOS_VERSION = "v1.4";
+export const YUKIOS_VERSION = "v1.4.1";
 
 const capabilities = [
   {

@@ -1628,10 +1628,12 @@ html[data-theme="light"] .task-item-name {
 .clipboard-item-content {
   font-size: 13px;
   color: var(--text-primary);
-  word-break: break-all;
-  max-height: 48px;
+  word-break: break-word;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
   line-height: 1.4;
 }
 

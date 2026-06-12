@@ -138,7 +138,9 @@ export class TaskbarSystem {
           const temp = document.createElement("div");
           temp.innerHTML = iconHtml;
           const iconEl = temp.firstElementChild;
-          if (iconEl) headerSpan.insertBefore(iconEl, headerSpan.firstChild);
+          if (iconEl && !headerSpan.querySelector("svg, i")) {
+            headerSpan.insertBefore(iconEl, headerSpan.firstChild);
+          }
         }
       }
     }

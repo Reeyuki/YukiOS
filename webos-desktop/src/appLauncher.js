@@ -4,7 +4,7 @@ import { HIGHLIGHTED_GAMES, getGameName } from "./games/games.js";
 import { appMap } from "./games/gamesList.js";
 import { SYSTEM_APPS } from "./AppRegistryConfig.js";
 import { createAppActions } from "./AppActions.js";
-import { initializeAppGrid, populateStartMenu, tryGetIcon } from "./desktopui/startMenu.js";
+import { initializeAppGrid, tryGetIcon } from "./desktopui/startMenu.js";
 import { IFRAME_ATTRS } from "./shared/iframeAttrs.js";
 import { getLibraryUrl } from "./shared/cdnConfig.js";
 import {
@@ -95,7 +95,6 @@ export class AppLauncher {
     this._launchedAppIds = this._loadLaunchedApps();
     this._appSessions = new Map();
     this._initSteamTracking();
-    populateStartMenu(this);
     initializeAppGrid(this);
 
     //if (!localStorage.getItem(StorageKeys.aboutLaunchKey)) {

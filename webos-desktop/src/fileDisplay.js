@@ -377,7 +377,7 @@ export function buildFileIconHTML(name, { thumbnailSrc = null, size = 64, radius
   if (isHtmlFile(name)) {
     return `<div style="${s}display:flex;align-items:center;justify-content:center;font-size:${Math.round(
       size * 0.5
-    )}px;color:#519aba;background:#1e1e1e;border:1px solid #333;"><i class="fab fa-snowflake"></i></div>`;
+    )}px;color:#519aba;background:#1e1e1e;border:1px solid #333;"><i class="fas fa-snowflake"></i></div>`;
   }
   if (isMarkdownFile(name)) {
     return `<div style="${s}display:flex;align-items:center;justify-content:center;font-size:${Math.round(

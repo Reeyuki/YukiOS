@@ -17,6 +17,17 @@ const NEWS_UPDATES = [
             "Start menu rebuilt with keyboard navigation (arrow keys + Enter), alphabetical app grouping with section headers, improved search UI."
           ]
         ]
+      },
+      {
+        icon: "fa-wand-magic-sparkles",
+        title: "Bug Fixes",
+        items: [
+          [
+            "fa-wand-magic-sparkles",
+            "Bug fixes",
+            "Bug fixes for: task manager, app restoration, setup app, start menu, clipboard, weather, customize app, calculator / Add keybind for enter to login."
+          ]
+        ]
       }
     ]
   },
@@ -26,7 +37,7 @@ const NEWS_UPDATES = [
       {
         icon: "fa-wand-magic-sparkles",
         title: "New Features",
-        items: [["fa-user", "Enchance login ui", "Redesigned login / lockscreen ui"]]
+        items: [["fa-user", "Enchance login ui", "Redesigned login / lockscreen ui."]]
       },
       {
         icon: "fa-wand-magic-sparkles",

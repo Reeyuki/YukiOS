@@ -31,6 +31,7 @@ export class SessionManager {
     this.startTime = Date.now();
     this.uptimeInterval = null;
     this.contextMenuHandler = null;
+    this.keyboardHandler = null;
   }
 
   _ensureUserId() {
@@ -447,6 +448,10 @@ export class SessionManager {
       setTimeout(() => {
         this.container.remove();
         this._enableContextMenu();
+        if (this.keyboardHandler) {
+          document.removeEventListener("keydown", this.keyboardHandler);
+          this.keyboardHandler = null;
+        }
         if (onComplete) onComplete(this.currentSession);
       }, 500);
     };
@@ -576,7 +581,8 @@ export class SessionManager {
     });
     this._bindCarouselEvents();
 
-    this.container.addEventListener("keydown", (e) => this._handleKeyboardNav(e, handleAction));
+    this.keyboardHandler = (e) => this._handleKeyboardNav(e, handleAction);
+    document.addEventListener("keydown", this.keyboardHandler);
   }
 
   _bindCarouselEvents() {
@@ -736,6 +742,10 @@ export class SessionManager {
         this.container.remove();
         this.container = null;
         this._enableContextMenu();
+        if (this.keyboardHandler) {
+          document.removeEventListener("keydown", this.keyboardHandler);
+          this.keyboardHandler = null;
+        }
       }, 500);
     }
 

@@ -35,14 +35,14 @@ export class HybridAdapter {
 
         const schema = baseAppInstance.getDeclarativeSchema(opts);
         if (schema && typeof schema === "object") {
+          if (!schema.actions) {
+            schema.actions = {};
+          }
           if (
             schema.onMount &&
             typeof schema.onMount === "string" &&
             typeof baseAppInstance[schema.onMount] === "function"
           ) {
-            if (!schema.actions) {
-              schema.actions = {};
-            }
             if (!schema.actions[schema.onMount]) {
               schema.actions[schema.onMount] = (payload, event, element, state, actionExecutor) => {
                 return baseAppInstance[schema.onMount](payload, event, element, state, actionExecutor);

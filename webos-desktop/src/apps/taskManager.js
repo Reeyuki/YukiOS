@@ -3,6 +3,7 @@ import { WindowHelper } from "../utils/WindowHelper.js";
 import { PersistenceTypes } from "../runtime/AppSchema.js";
 import { os } from "../os/index.js";
 import { $, $$, bindEvent, setText, setHTML, toggleClass } from "../shared/domUtils.js";
+import { BusEvents } from "../core/EventBusConstants.js";
 
 export class TaskManagerApp extends BaseApp {
   constructor(services) {
@@ -13,6 +14,8 @@ export class TaskManagerApp extends BaseApp {
     this.sortAsc = true;
     this.filter = "";
     this.selectedIds = new Set();
+    this.appsFilter = "";
+    this.appsSelectedIds = new Set();
     this.cpuHistory = Array(30).fill(0);
     this.memHistory = Array(30).fill(0);
     this.usageCache = new Map();
@@ -54,6 +57,72 @@ export class TaskManagerApp extends BaseApp {
     return v;
   }
 
+  _killProcess(id) {
+    const titleFromWindow = (winEl) => {
+      const el = winEl.querySelector(".window-header span");
+      return el ? el.textContent.trim() : id;
+    };
+
+    const winEl = document.getElementById(id);
+    if (winEl) {
+      const title = titleFromWindow(winEl);
+
+      try {
+        os.app.close(id);
+      } catch (_) {}
+
+      try {
+        this.wm.closeWindow(winEl);
+      } catch (_) {}
+
+      if (document.getElementById(id)) {
+        winEl.remove();
+      }
+
+      const taskbarItem = document.getElementById(`taskbar-${id}`);
+      if (taskbarItem) taskbarItem.remove();
+
+      try {
+        os.tray.unregister(id);
+      } catch (_) {}
+
+      try {
+        os.notify.send("", `"${title}" ended`);
+      } catch (_) {}
+      return;
+    }
+
+    const trayItems = os.tray.getTrayItems();
+    const trayArray =
+      trayItems instanceof Map
+        ? Array.from(trayItems.entries())
+            .filter(([, item]) => item.inTray)
+            .map(([winId, item]) => ({ winId, ...item }))
+        : Array.isArray(trayItems)
+          ? trayItems
+          : [];
+
+    const trayItem = trayArray.find((item) => item.winId === id);
+    if (trayItem) {
+      try {
+        os.app.close(id);
+      } catch (_) {}
+      try {
+        os.tray.unregister(id);
+      } catch (_) {}
+
+      const taskbarItem = document.getElementById(`taskbar-${id}`);
+      if (taskbarItem) taskbarItem.remove();
+
+      const hiddenWin = document.getElementById(id);
+      if (hiddenWin) hiddenWin.remove();
+
+      try {
+        os.notify.send("", `"${trayItem.label || id}" ended`);
+      } catch (_) {}
+    }
+  }
+
   getDeclarativeSchema(opts) {
     return {
       id: "taskmanager-app",
@@ -63,109 +132,140 @@ export class TaskManagerApp extends BaseApp {
         {
           id: "taskmanager-app",
           title: "Task Manager",
-          size: ["700px", "520px"],
+          size: ["760px", "540px"],
           icon: "fa fa-tasks",
           ui: `<div id="tm-root">
-        <div class="tm-tabs">
-          <button id="tm-tab-proc" class="tm-tab tm-tab-active">Processes</button>
-          <button id="tm-tab-perf" class="tm-tab">Turbo</button>
+        <div class="tm-sidebar">
+          <div class="tm-sidebar-title">Task Manager</div>
+          <button id="tm-tab-proc" data-tab="proc" class="tm-nav-item tm-nav-active">
+            <i class="fa fa-microchip tm-nav-icon"></i>Processes
+          </button>
+          <button id="tm-tab-apps" data-tab="apps" class="tm-nav-item">
+            <i class="fa fa-th-large tm-nav-icon"></i>Apps
+          </button>
+          <button id="tm-tab-perf" data-tab="perf" class="tm-nav-item">
+            <i class="fa fa-area-chart tm-nav-icon"></i>Performance
+          </button>
         </div>
 
-        <div id="tm-panel-proc" class="tm-panel-proc">
-          <div class="tm-toolbar">
-            <span class="tm-search-icon">⌕</span>
-            <input id="tm-filter" class="tm-filter-input" placeholder="Filter processes…"/>
-            <span id="tm-count" class="tm-count"></span>
-          </div>
-          <div class="tm-table-wrap">
-            <table id="tm-table" class="tm-table">
-              <colgroup>
-                <col style="width:40%">
-                <col style="width:20%">
-                <col style="width:20%">
-                <col style="width:20%">
-              </colgroup>
-              <thead>
-                <tr class="tm-thead-row">
-                  <th class="tm-th" data-key="title">Name</th>
-                  <th class="tm-th tm-th-right" data-key="cpu">CPU</th>
-                  <th class="tm-th tm-th-right" data-key="mem">Memory</th>
-                  <th class="tm-th tm-th-right" data-key="status">Status</th>
-                </tr>
-              </thead>
-              <tbody id="tm-tbody"></tbody>
-            </table>
-          </div>
-          <div class="tm-footer">
-            <span id="tm-selected-label" class="tm-selected-label">No process selected</span>
-            <div class="tm-footer-actions">
-              <button id="tm-btn-select-all" class="tm-action-btn">☰ Select All</button>
-              <button id="tm-btn-refresh" class="tm-action-btn">↺ Refresh</button>
-              <button id="tm-btn-kill" class="tm-action-btn tm-kill-btn" disabled>✕ End Task</button>
+        <div class="tm-content">
+          <div id="tm-panel-proc" class="tm-panel-proc">
+            <div class="tm-panel-header">
+              <span class="tm-panel-title">Processes</span>
+              <div class="tm-search-wrap">
+                <span class="tm-search-icon"><i class="fa fa-search"></i></span>
+                <input id="tm-filter" class="tm-filter-input" placeholder="Search processes…"/>
+                <span id="tm-count" class="tm-count"></span>
+              </div>
+            </div>
+            <div class="tm-table-wrap">
+              <table id="tm-table" class="tm-table">
+                <colgroup>
+                  <col style="width:42%">
+                  <col style="width:18%">
+                  <col style="width:18%">
+                  <col style="width:22%">
+                </colgroup>
+                <thead>
+                  <tr class="tm-thead-row">
+                    <th class="tm-th" data-key="title">Name</th>
+                    <th class="tm-th tm-th-right" data-key="cpu">CPU</th>
+                    <th class="tm-th tm-th-right" data-key="mem">Memory</th>
+                    <th class="tm-th tm-th-right" data-key="status">Status</th>
+                  </tr>
+                </thead>
+                <tbody id="tm-tbody"></tbody>
+              </table>
+            </div>
+            <div class="tm-footer">
+              <span id="tm-selected-label" class="tm-selected-label">No process selected</span>
+              <div class="tm-footer-actions">
+                <button id="tm-btn-select-all" class="tm-action-btn">Select All</button>
+                <button id="tm-btn-refresh" class="tm-action-btn"><i class="fa fa-refresh"></i> Refresh</button>
+                <button id="tm-btn-kill" class="tm-action-btn tm-kill-btn" disabled>End Task</button>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div id="tm-panel-perf" class="tm-panel-perf">
-          <div class="tm-perf-grid">
-            <div class="tm-perf-card">
-              <div class="tm-perf-card-header">
-                <span class="tm-perf-label">CPU Usage</span>
-                <span id="tm-cpu-val" class="tm-perf-val tm-perf-val-cpu">0%</span>
+          <div id="tm-panel-apps" class="tm-panel-proc" style="display:none">
+            <div class="tm-panel-header">
+              <span class="tm-panel-title">Apps</span>
+              <div class="tm-search-wrap">
+                <span class="tm-search-icon"><i class="fa fa-search"></i></span>
+                <input id="tm-filter-apps" class="tm-filter-input" placeholder="Search apps…"/>
+                <span id="tm-count-apps" class="tm-count"></span>
               </div>
-              <canvas id="tm-cpu-graph" width="280" height="80" class="tm-graph"></canvas>
             </div>
-            <div class="tm-perf-card">
-              <div class="tm-perf-card-header">
-                <span class="tm-perf-label">Memory</span>
-                <span id="tm-mem-val" class="tm-perf-val tm-perf-val-mem">0%</span>
+            <div class="tm-table-wrap">
+              <table id="tm-table-apps" class="tm-table">
+                <colgroup>
+                  <col style="width:42%">
+                  <col style="width:18%">
+                  <col style="width:18%">
+                  <col style="width:22%">
+                </colgroup>
+                <thead>
+                  <tr class="tm-thead-row">
+                    <th class="tm-th" data-key="title">Name</th>
+                    <th class="tm-th tm-th-right" data-key="cpu">CPU</th>
+                    <th class="tm-th tm-th-right" data-key="mem">Memory</th>
+                    <th class="tm-th tm-th-right" data-key="status">Status</th>
+                  </tr>
+                </thead>
+                <tbody id="tm-tbody-apps"></tbody>
+              </table>
+            </div>
+            <div class="tm-footer">
+              <span id="tm-selected-label-apps" class="tm-selected-label">No app selected</span>
+              <div class="tm-footer-actions">
+                <button id="tm-btn-select-all-apps" class="tm-action-btn">Select All</button>
+                <button id="tm-btn-refresh-apps" class="tm-action-btn"><i class="fa fa-refresh"></i> Refresh</button>
+                <button id="tm-btn-kill-apps" class="tm-action-btn tm-kill-btn" disabled>End Task</button>
               </div>
-              <canvas id="tm-mem-graph" width="280" height="80" class="tm-graph"></canvas>
             </div>
           </div>
-          <div class="tm-perf-card">
-            <div class="tm-perf-section-title">System Info</div>
-            <div id="tm-sysinfo" class="tm-sysinfo-grid"></div>
+
+          <div id="tm-panel-perf" class="tm-panel-perf">
+            <div class="tm-panel-header">
+              <span class="tm-panel-title">Performance</span>
+            </div>
+            <div class="tm-perf-body">
+              <div class="tm-perf-grid">
+                <div class="tm-perf-card">
+                  <div class="tm-perf-card-header">
+                    <span class="tm-perf-label">CPU Usage</span>
+                    <span id="tm-cpu-val" class="tm-perf-val tm-perf-val-cpu">0%</span>
+                  </div>
+                  <canvas id="tm-cpu-graph" width="280" height="80" class="tm-graph"></canvas>
+                </div>
+                <div class="tm-perf-card">
+                  <div class="tm-perf-card-header">
+                    <span class="tm-perf-label">Memory</span>
+                    <span id="tm-mem-val" class="tm-perf-val tm-perf-val-mem">0%</span>
+                  </div>
+                  <canvas id="tm-mem-graph" width="280" height="80" class="tm-graph"></canvas>
+                </div>
+              </div>
+              <div class="tm-perf-card">
+                <div class="tm-perf-section-title">System Info</div>
+                <div id="tm-sysinfo" class="tm-sysinfo-grid"></div>
+              </div>
+            </div>
           </div>
         </div>
       </div>`,
           events: {
-            "#tm-tab-proc": {
-              click: {
-                type: "custom:switchTab",
-                stopPropagation: true
-              }
-            },
-            "#tm-tab-perf": {
-              click: {
-                type: "custom:switchTab",
-                stopPropagation: true
-              }
-            },
-            "#tm-filter": {
-              input: {
-                type: "custom:filterProcesses",
-                stopPropagation: false
-              }
-            },
-            "#tm-btn-refresh": {
-              click: {
-                type: "custom:refresh",
-                stopPropagation: true
-              }
-            },
-            "#tm-btn-select-all": {
-              click: {
-                type: "custom:selectAll",
-                stopPropagation: true
-              }
-            },
-            "#tm-btn-kill": {
-              click: {
-                type: "custom:killProcess",
-                stopPropagation: true
-              }
-            }
+            "#tm-tab-proc": { click: { type: "custom:switchTab", stopPropagation: true } },
+            "#tm-tab-apps": { click: { type: "custom:switchTab", stopPropagation: true } },
+            "#tm-tab-perf": { click: { type: "custom:switchTab", stopPropagation: true } },
+            "#tm-filter": { input: { type: "custom:filterProcesses", stopPropagation: false } },
+            "#tm-filter-apps": { input: { type: "custom:filterApps", stopPropagation: false } },
+            "#tm-btn-refresh": { click: { type: "custom:refresh", stopPropagation: true } },
+            "#tm-btn-refresh-apps": { click: { type: "custom:refreshApps", stopPropagation: true } },
+            "#tm-btn-select-all": { click: { type: "custom:selectAll", stopPropagation: true } },
+            "#tm-btn-select-all-apps": { click: { type: "custom:selectAllApps", stopPropagation: true } },
+            "#tm-btn-kill": { click: { type: "custom:killProcess", stopPropagation: true } },
+            "#tm-btn-kill-apps": { click: { type: "custom:killProcessApps", stopPropagation: true } }
           }
         }
       ],
@@ -175,6 +275,8 @@ export class TaskManagerApp extends BaseApp {
           sortAsc: true,
           filter: "",
           selectedIds: [],
+          appsFilter: "",
+          appsSelectedIds: [],
           cpuHistory: Array(30).fill(0),
           memHistory: Array(30).fill(0)
         },
@@ -183,73 +285,111 @@ export class TaskManagerApp extends BaseApp {
       actions: {
         switchTab: (payload, event, element, state) => {
           const tabProc = document.getElementById("tm-tab-proc");
+          const tabApps = document.getElementById("tm-tab-apps");
           const tabPerf = document.getElementById("tm-tab-perf");
           const panelProc = document.getElementById("tm-panel-proc");
+          const panelApps = document.getElementById("tm-panel-apps");
           const panelPerf = document.getElementById("tm-panel-perf");
           const tabId = element.dataset.tab;
 
+          [tabProc, tabApps, tabPerf].forEach((t) => t.classList.remove("tm-nav-active"));
+          [panelProc, panelApps, panelPerf].forEach((p) => (p.style.display = "none"));
+
           if (tabId === "proc") {
-            tabProc.classList.add("tm-tab-active");
-            tabPerf.classList.remove("tm-tab-active");
+            tabProc.classList.add("tm-nav-active");
             panelProc.style.display = "flex";
-            panelPerf.style.display = "none";
+            this._renderProcesses(document.getElementById("taskmanager-app"), "proc");
+          } else if (tabId === "apps") {
+            tabApps.classList.add("tm-nav-active");
+            panelApps.style.display = "flex";
+            this._renderProcesses(document.getElementById("taskmanager-app"), "apps");
           } else if (tabId === "perf") {
-            tabPerf.classList.add("tm-tab-active");
-            tabProc.classList.remove("tm-tab-active");
+            tabPerf.classList.add("tm-nav-active");
             panelPerf.style.display = "flex";
-            panelProc.style.display = "none";
+            this._renderSysInfo(document.getElementById("taskmanager-app"));
           }
         },
         filterProcesses: (payload, event, element, state) => {
-          state.filter = event.target.value.toLowerCase();
-          this._renderProcesses(document.getElementById("taskmanager-app"));
+          this.filter = event.target.value.toLowerCase();
+          state.filter = this.filter;
+          this._renderProcesses(document.getElementById("taskmanager-app"), "proc");
         },
-        refresh: (payload, event, element, state) => {
-          this._renderProcesses(document.getElementById("taskmanager-app"));
+        filterApps: (payload, event, element, state) => {
+          this.appsFilter = event.target.value.toLowerCase();
+          state.appsFilter = this.appsFilter;
+          this._renderProcesses(document.getElementById("taskmanager-app"), "apps");
+        },
+        refresh: () => {
+          this._renderProcesses(document.getElementById("taskmanager-app"), "proc");
           this._renderPerf(document.getElementById("taskmanager-app"));
+        },
+        refreshApps: () => {
+          this._renderProcesses(document.getElementById("taskmanager-app"), "apps");
         },
         selectAll: (payload, event, element, state) => {
           const win = document.getElementById("taskmanager-app");
-          const tbody = $("#tm-proc-tbody", win);
-          const visibleProcs = this._getProcesses().filter(
-            (p) => !state.filter || p.title.toLowerCase().includes(state.filter)
-          );
-          const allSelected = visibleProcs.length > 0 && visibleProcs.every((p) => state.selectedIds.includes(p.winId));
-
+          const tbody = $("#tm-tbody", win);
+          const allProcs = this._getProcesses();
+          const visibleProcs = allProcs.filter((p) => !this.filter || p.title.toLowerCase().includes(this.filter));
+          const allSelected = visibleProcs.length > 0 && visibleProcs.every((p) => this.selectedIds.has(p.winId));
           if (allSelected) {
-            state.selectedIds = [];
+            this.selectedIds.clear();
           } else {
-            state.selectedIds = visibleProcs.map((p) => p.winId);
+            visibleProcs.forEach((p) => this.selectedIds.add(p.winId));
           }
-
           tbody.querySelectorAll(".tm-row").forEach((r) => {
-            r.classList.toggle("tm-row-selected", state.selectedIds.includes(r.dataset.id));
+            r.classList.toggle("tm-row-selected", this.selectedIds.has(r.dataset.id));
           });
-
-          this._updateSelectionUI(win);
+          this._updateSelectionUI(win, "proc");
+        },
+        selectAllApps: (payload, event, element, state) => {
+          const win = document.getElementById("taskmanager-app");
+          const tbody = $("#tm-tbody-apps", win);
+          const allProcs = this._getProcesses().filter((p) => !p.isTray);
+          const visibleProcs = allProcs.filter(
+            (p) => !this.appsFilter || p.title.toLowerCase().includes(this.appsFilter)
+          );
+          const allSelected = visibleProcs.length > 0 && visibleProcs.every((p) => this.appsSelectedIds.has(p.winId));
+          if (allSelected) {
+            this.appsSelectedIds.clear();
+          } else {
+            visibleProcs.forEach((p) => this.appsSelectedIds.add(p.winId));
+          }
+          tbody.querySelectorAll(".tm-row").forEach((r) => {
+            r.classList.toggle("tm-row-selected", this.appsSelectedIds.has(r.dataset.id));
+          });
+          this._updateSelectionUI(win, "apps");
         },
         killProcess: (payload, event, element, state) => {
           const win = document.getElementById("taskmanager-app");
-          const idsToKill = state.selectedIds.length > 0 ? Array.from(state.selectedIds) : [element.dataset.id];
-
-          idsToKill.forEach((id) => {
-            const w = document.getElementById(id);
-            if (w) {
-              const closeBtn = w.querySelector(".close-btn");
-              if (closeBtn) closeBtn.click();
-            }
-          });
-
-          state.selectedIds = [];
-          this._updateSelectionUI(win);
-          setTimeout(() => this._renderProcesses(win), 200);
+          const idsToKill = Array.from(this.selectedIds);
+          idsToKill.forEach((id) => this._killProcess(id));
+          this.selectedIds.clear();
+          this._updateSelectionUI(win, "proc");
+          setTimeout(() => this._renderProcesses(win, "proc"), 200);
+        },
+        killProcessApps: (payload, event, element, state) => {
+          const win = document.getElementById("taskmanager-app");
+          const idsToKill = Array.from(this.appsSelectedIds);
+          idsToKill.forEach((id) => this._killProcess(id));
+          this.appsSelectedIds.clear();
+          this._updateSelectionUI(win, "apps");
+          setTimeout(() => this._renderProcesses(win, "apps"), 200);
         }
       },
       onMount: "initTaskManager"
     };
   }
 
-  initTaskManager(payload, event, element, state) {}
+  initTaskManager(payload, event, element, state) {
+    const win = document.getElementById("taskmanager-app");
+    this._renderProcesses(win, "proc");
+    this._startRefresh(win);
+    setTimeout(() => {
+      const tabApps = document.getElementById("tm-tab-apps");
+      if (tabApps) tabApps.click();
+    }, 100);
+  }
 
   open() {
     const winId = "taskmanager-app";
@@ -260,71 +400,128 @@ export class TaskManagerApp extends BaseApp {
 
     const content = `
       <div id="tm-root">
-        <div class="tm-tabs">
-          <button id="tm-tab-proc" class="tm-tab tm-tab-active">Processes</button>
-          <button id="tm-tab-perf" class="tm-tab">Turbo</button>
+        <div class="tm-sidebar">
+          <div class="tm-sidebar-title">Task Manager</div>
+          <button id="tm-tab-proc" data-tab="proc" class="tm-nav-item tm-nav-active">
+            <i class="fa fa-microchip tm-nav-icon"></i>Processes
+          </button>
+          <button id="tm-tab-apps" data-tab="apps" class="tm-nav-item">
+            <i class="fa fa-th-large tm-nav-icon"></i>Apps
+          </button>
+          <button id="tm-tab-perf" data-tab="perf" class="tm-nav-item">
+            <i class="fa fa-area-chart tm-nav-icon"></i>Performance
+          </button>
         </div>
 
-        <div id="tm-panel-proc" class="tm-panel-proc">
-          <div class="tm-toolbar">
-            <span class="tm-search-icon">⌕</span>
-            <input id="tm-filter" class="tm-filter-input" placeholder="Filter processes…"/>
-            <span id="tm-count" class="tm-count"></span>
-          </div>
-          <div class="tm-table-wrap">
-            <table id="tm-table" class="tm-table">
-              <colgroup>
-                <col style="width:40%">
-                <col style="width:20%">
-                <col style="width:20%">
-                <col style="width:20%">
-              </colgroup>
-              <thead>
-                <tr class="tm-thead-row">
-                  <th class="tm-th" data-key="title">Name</th>
-                  <th class="tm-th tm-th-right" data-key="cpu">CPU</th>
-                  <th class="tm-th tm-th-right" data-key="mem">Memory</th>
-                  <th class="tm-th tm-th-right" data-key="status">Status</th>
-                </tr>
-              </thead>
-              <tbody id="tm-tbody"></tbody>
-            </table>
-          </div>
-          <div class="tm-footer">
-            <span id="tm-selected-label" class="tm-selected-label">No process selected</span>
-            <div class="tm-footer-actions">
-              <button id="tm-btn-select-all" class="tm-action-btn">☰ Select All</button>
-              <button id="tm-btn-refresh" class="tm-action-btn">↺ Refresh</button>
-              <button id="tm-btn-kill" class="tm-action-btn tm-kill-btn" disabled>✕ End Task</button>
-            </div>
-          </div>
-        </div>
-        <div id="tm-panel-perf" class="tm-panel-perf">
-          <div class="tm-perf-grid">
-            <div class="tm-perf-card">
-              <div class="tm-perf-card-header">
-                <span class="tm-perf-label">CPU Usage</span>
-                <span id="tm-cpu-val" class="tm-perf-val tm-perf-val-cpu">0%</span>
+        <div class="tm-content">
+          <div id="tm-panel-proc" class="tm-panel-proc">
+            <div class="tm-panel-header">
+              <span class="tm-panel-title">Processes</span>
+              <div class="tm-search-wrap">
+                <span class="tm-search-icon"><i class="fa fa-search"></i></span>
+                <input id="tm-filter" class="tm-filter-input" placeholder="Search processes…"/>
+                <span id="tm-count" class="tm-count"></span>
               </div>
-              <canvas id="tm-cpu-graph" width="280" height="80" class="tm-graph"></canvas>
             </div>
-            <div class="tm-perf-card">
-              <div class="tm-perf-card-header">
-                <span class="tm-perf-label">Memory</span>
-                <span id="tm-mem-val" class="tm-perf-val tm-perf-val-mem">0%</span>
+            <div class="tm-table-wrap">
+              <table id="tm-table" class="tm-table">
+                <colgroup>
+                  <col style="width:42%">
+                  <col style="width:18%">
+                  <col style="width:18%">
+                  <col style="width:22%">
+                </colgroup>
+                <thead>
+                  <tr class="tm-thead-row">
+                    <th class="tm-th" data-key="title">Name</th>
+                    <th class="tm-th tm-th-right" data-key="cpu">CPU</th>
+                    <th class="tm-th tm-th-right" data-key="mem">Memory</th>
+                    <th class="tm-th tm-th-right" data-key="status">Status</th>
+                  </tr>
+                </thead>
+                <tbody id="tm-tbody"></tbody>
+              </table>
+            </div>
+            <div class="tm-footer">
+              <span id="tm-selected-label" class="tm-selected-label">No process selected</span>
+              <div class="tm-footer-actions">
+                <button id="tm-btn-select-all" class="tm-action-btn">Select All</button>
+                <button id="tm-btn-refresh" class="tm-action-btn"><i class="fa fa-refresh"></i> Refresh</button>
+                <button id="tm-btn-kill" class="tm-action-btn tm-kill-btn" disabled>End Task</button>
               </div>
-              <canvas id="tm-mem-graph" width="280" height="80" class="tm-graph"></canvas>
             </div>
           </div>
-          <div class="tm-perf-card">
-            <div class="tm-perf-section-title">System Info</div>
-            <div id="tm-sysinfo" class="tm-sysinfo-grid"></div>
+
+          <div id="tm-panel-apps" class="tm-panel-proc" style="display:none">
+            <div class="tm-panel-header">
+              <span class="tm-panel-title">Apps</span>
+              <div class="tm-search-wrap">
+                <span class="tm-search-icon"><i class="fa fa-search"></i></span>
+                <input id="tm-filter-apps" class="tm-filter-input" placeholder="Search apps…"/>
+                <span id="tm-count-apps" class="tm-count"></span>
+              </div>
+            </div>
+            <div class="tm-table-wrap">
+              <table id="tm-table-apps" class="tm-table">
+                <colgroup>
+                  <col style="width:42%">
+                  <col style="width:18%">
+                  <col style="width:18%">
+                  <col style="width:22%">
+                </colgroup>
+                <thead>
+                  <tr class="tm-thead-row">
+                    <th class="tm-th" data-key="title">Name</th>
+                    <th class="tm-th tm-th-right" data-key="cpu">CPU</th>
+                    <th class="tm-th tm-th-right" data-key="mem">Memory</th>
+                    <th class="tm-th tm-th-right" data-key="status">Status</th>
+                  </tr>
+                </thead>
+                <tbody id="tm-tbody-apps"></tbody>
+              </table>
+            </div>
+            <div class="tm-footer">
+              <span id="tm-selected-label-apps" class="tm-selected-label">No app selected</span>
+              <div class="tm-footer-actions">
+                <button id="tm-btn-select-all-apps" class="tm-action-btn">Select All</button>
+                <button id="tm-btn-refresh-apps" class="tm-action-btn"><i class="fa fa-refresh"></i> Refresh</button>
+                <button id="tm-btn-kill-apps" class="tm-action-btn tm-kill-btn" disabled>End Task</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="tm-panel-perf" class="tm-panel-perf">
+            <div class="tm-panel-header">
+              <span class="tm-panel-title">Performance</span>
+            </div>
+            <div class="tm-perf-body">
+              <div class="tm-perf-grid">
+                <div class="tm-perf-card">
+                  <div class="tm-perf-card-header">
+                    <span class="tm-perf-label">CPU Usage</span>
+                    <span id="tm-cpu-val" class="tm-perf-val tm-perf-val-cpu">0%</span>
+                  </div>
+                  <canvas id="tm-cpu-graph" width="280" height="80" class="tm-graph"></canvas>
+                </div>
+                <div class="tm-perf-card">
+                  <div class="tm-perf-card-header">
+                    <span class="tm-perf-label">Memory</span>
+                    <span id="tm-mem-val" class="tm-perf-val tm-perf-val-mem">0%</span>
+                  </div>
+                  <canvas id="tm-mem-graph" width="280" height="80" class="tm-graph"></canvas>
+                </div>
+              </div>
+              <div class="tm-perf-card">
+                <div class="tm-perf-section-title">System Info</div>
+                <div id="tm-sysinfo" class="tm-sysinfo-grid"></div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     `;
 
-    const win = this.windowHelper.createAndMountWindow(winId, "Task Manager", content, "700px", "520px", {
+    const win = this.windowHelper.createAndMountWindow(winId, "Task Manager", content, "760px", "540px", {
       icon: "fa fa-tasks",
       style: { left: "200px", top: "100px" }
     });
@@ -332,119 +529,88 @@ export class TaskManagerApp extends BaseApp {
     this._bindEvents(win);
     this._startRefresh(win);
 
+    setTimeout(() => {
+      const tabApps = document.getElementById("tm-tab-apps");
+      if (tabApps) tabApps.click();
+    }, 100);
+
     $(".close-btn", win).addEventListener("click", () => {
       clearInterval(this.refreshInterval);
       this.refreshInterval = null;
+      if (this._windowChangeHandlers) {
+        os.events.off(BusEvents.WINDOW_CREATED, this._windowChangeHandlers);
+        os.events.off(BusEvents.WINDOW_CLOSED, this._windowChangeHandlers);
+        this._windowChangeHandlers = null;
+      }
     });
-  }
-
-  _measureWindow(winId, win) {
-    const now = performance.now();
-    if (!this.windowBirthTimes.has(winId)) this.windowBirthTimes.set(winId, now);
-
-    const isMinimized = win.style.display === "none";
-    const hasIframe = !!$("iframe", win);
-    const hasVideo = !!$("video", win);
-    const hasCanvas = !!$("canvas", win);
-    const domNodes = $$("*", win).length;
-    const uptimeMins = (now - this.windowBirthTimes.get(winId)) / 60000;
-    const prev = this.usageCache.get(winId) || { cpu: 0, mem: 0, domNodes };
-    const domDelta = Math.abs(domNodes - prev.domNodes);
-
-    let baseMem = 8 + domNodes * 0.04;
-    if (hasIframe) baseMem += 35;
-    if (hasVideo) baseMem += 18;
-    if (hasCanvas) baseMem += 12;
-    baseMem += Math.min(uptimeMins * 0.4, 20);
-    baseMem += (Math.random() - 0.5) * 2;
-    baseMem = Math.max(4, baseMem);
-
-    if (performance.memory) {
-      const totalHeapMB = performance.memory.usedJSHeapSize / 1048576;
-      const allWins = document.querySelectorAll(".window");
-      const totalNodes = Array.from(allWins).reduce((s, w) => s + w.querySelectorAll("*").length, 1);
-      const share = domNodes / totalNodes;
-      baseMem = Math.max(baseMem, totalHeapMB * share * 0.6);
-    }
-
-    const frameStress = Math.min(100, this.frameDropScore * 1.8);
-    const longTaskStress = Math.min(60, this._drainLongTaskBudget() / 10);
-    const activityStress = Math.min(40, domDelta * 2);
-
-    let cpuShare = isMinimized ? 0.05 : domNodes / Math.max(1, document.querySelectorAll(".window *").length);
-    if (hasIframe && !isMinimized) cpuShare *= 2.2;
-    if (hasVideo && !isMinimized) cpuShare *= 1.8;
-    if (hasCanvas && !isMinimized) cpuShare *= 1.5;
-
-    const systemCpuSignal = frameStress * 0.5 + longTaskStress * 0.5;
-    let cpu = systemCpuSignal * cpuShare * 3 + activityStress * cpuShare;
-    cpu = prev.cpu * 0.55 + cpu * 0.45;
-    cpu += (Math.random() - 0.5) * 1.2;
-    cpu = Math.max(0.1, Math.min(99, isMinimized ? Math.min(cpu, 1.5) : cpu));
-
-    const result = { cpu, mem: Math.round(baseMem * 10) / 10, domNodes };
-    this.usageCache.set(winId, result);
-    return result;
   }
 
   _bindEvents(win) {
     const tabProc = $("#tm-tab-proc", win);
+    const tabApps = $("#tm-tab-apps", win);
     const tabPerf = $("#tm-tab-perf", win);
     const panelProc = $("#tm-panel-proc", win);
+    const panelApps = $("#tm-panel-apps", win);
     const panelPerf = $("#tm-panel-perf", win);
 
-    tabProc.onclick = () => {
-      tabProc.classList.add("tm-tab-active");
-      tabPerf.classList.remove("tm-tab-active");
-      panelProc.style.display = "flex";
-      panelPerf.style.display = "none";
+    const switchTo = (tab, panel, type) => {
+      [tabProc, tabApps, tabPerf].forEach((t) => t.classList.remove("tm-nav-active"));
+      [panelProc, panelApps, panelPerf].forEach((p) => (p.style.display = "none"));
+      tab.classList.add("tm-nav-active");
+      panel.style.display = "flex";
+      if (type === "perf") this._renderSysInfo(win);
+      else this._renderProcesses(win, type);
     };
 
-    tabPerf.onclick = () => {
-      tabPerf.classList.add("tm-tab-active");
-      tabProc.classList.remove("tm-tab-active");
-      panelPerf.style.display = "flex";
-      panelProc.style.display = "none";
-      this._renderSysInfo(win);
-    };
+    tabProc.onclick = () => switchTo(tabProc, panelProc, "proc");
+    tabApps.onclick = () => switchTo(tabApps, panelApps, "apps");
+    tabPerf.onclick = () => switchTo(tabPerf, panelPerf, "perf");
 
     $("#tm-filter", win).oninput = (e) => {
       this.filter = e.target.value.toLowerCase();
-      this._renderProcesses(win);
+      this._renderProcesses(win, "proc");
     };
 
-    $("#tm-btn-refresh", win).onclick = () => this._renderProcesses(win);
+    $("#tm-filter-apps", win).oninput = (e) => {
+      this.appsFilter = e.target.value.toLowerCase();
+      this._renderProcesses(win, "apps");
+    };
+
+    $("#tm-btn-refresh", win).onclick = () => this._renderProcesses(win, "proc");
+    $("#tm-btn-refresh-apps", win).onclick = () => this._renderProcesses(win, "apps");
 
     $("#tm-btn-select-all", win).onclick = () => {
       const procs = this._getProcesses().filter((p) => !this.filter || p.title.toLowerCase().includes(this.filter));
       const allSelected = procs.every((p) => this.selectedIds.has(p.winId));
-      if (allSelected) {
-        this.selectedIds.clear();
-      } else {
-        procs.forEach((p) => this.selectedIds.add(p.winId));
-      }
-      this._renderProcesses(win);
+      if (allSelected) this.selectedIds.clear();
+      else procs.forEach((p) => this.selectedIds.add(p.winId));
+      this._renderProcesses(win, "proc");
+    };
+
+    $("#tm-btn-select-all-apps", win).onclick = () => {
+      const procs = this._getProcesses()
+        .filter((p) => !p.isTray)
+        .filter((p) => !this.appsFilter || p.title.toLowerCase().includes(this.appsFilter));
+      const allSelected = procs.every((p) => this.appsSelectedIds.has(p.winId));
+      if (allSelected) this.appsSelectedIds.clear();
+      else procs.forEach((p) => this.appsSelectedIds.add(p.winId));
+      this._renderProcesses(win, "apps");
     };
 
     $("#tm-btn-kill", win).onclick = () => {
       if (this.selectedIds.size === 0) return;
-      const ids = Array.from(this.selectedIds);
-      const procs = this._getProcesses();
-      ids.forEach((id) => {
-        const w = document.getElementById(id);
-        const proc = procs.find((p) => p.winId === id);
-        const title = proc?.title || id;
-        if (w) {
-          const iframe = w.querySelector("iframe");
-          if (iframe) iframe.src = "about:blank";
-          w.style.animation = "popUp 0.5s ease forwards";
-          setTimeout(() => w.remove(), 500);
-        }
-        os.window.removeFromTaskbar(id);
-        os.notify.send("", `"${title}" ended`);
-      });
+      Array.from(this.selectedIds).forEach((id) => this._killProcess(id));
       this.selectedIds.clear();
-      this._renderProcesses(win);
+      this._updateSelectionUI(win, "proc");
+      setTimeout(() => this._renderProcesses(win, "proc"), 200);
+    };
+
+    $("#tm-btn-kill-apps", win).onclick = () => {
+      if (this.appsSelectedIds.size === 0) return;
+      Array.from(this.appsSelectedIds).forEach((id) => this._killProcess(id));
+      this.appsSelectedIds.clear();
+      this._updateSelectionUI(win, "apps");
+      setTimeout(() => this._renderProcesses(win, "apps"), 200);
     };
 
     $$(".tm-th", win).forEach((th) => {
@@ -478,28 +644,56 @@ export class TaskManagerApp extends BaseApp {
       const title = titleEl ? titleEl.textContent.trim() : winId;
       const visible = win.style.display !== "none";
 
-      procs.push({ winId, title, icon, cpu, mem, status: visible ? "Running" : "Suspended" });
+      procs.push({ winId, title, icon, cpu, mem, status: visible ? "Running" : "Suspended", isTray: false });
     });
+
+    const trayItems = os.tray.getTrayItems();
+    const trayArray =
+      trayItems instanceof Map
+        ? Array.from(trayItems.entries())
+            .filter(([, item]) => item.inTray)
+            .map(([winId, item]) => ({ winId, ...item }))
+        : trayItems;
+    trayArray.forEach((item) => {
+      if (procs.find((p) => p.winId === item.winId)) return;
+      procs.push({
+        winId: item.winId,
+        title: item.label || item.winId,
+        icon: item.icon,
+        cpu: 0,
+        mem: 0,
+        status: "Tray",
+        isTray: true
+      });
+    });
+
     return procs;
   }
 
-  _renderProcesses(win) {
+  _renderProcesses(win, tabType = "proc") {
     let procs = this._getProcesses();
+    const isAppsTab = tabType === "apps";
 
-    if (this.filter) {
-      procs = procs.filter((p) => p.title.toLowerCase().includes(this.filter));
-    }
+    if (isAppsTab) procs = procs.filter((p) => !p.isTray);
+
+    const filterValue = isAppsTab ? this.appsFilter : this.filter;
+    if (filterValue) procs = procs.filter((p) => p.title.toLowerCase().includes(filterValue));
 
     procs.sort((a, b) => {
       let va = a[this.sortKey],
         vb = b[this.sortKey];
-      if (typeof va === "string") ((va = va.toLowerCase()), (vb = vb.toLowerCase()));
+      if (typeof va === "string") {
+        va = va.toLowerCase();
+        vb = vb.toLowerCase();
+      }
       return this.sortAsc ? (va > vb ? 1 : -1) : va < vb ? 1 : -1;
     });
 
-    const tbody = $("#tm-tbody", win);
-    const countEl = $("#tm-count", win);
-    setText(countEl, `${procs.length} process${procs.length !== 1 ? "es" : ""}`);
+    const tbodyId = isAppsTab ? "#tm-tbody-apps" : "#tm-tbody";
+    const countId = isAppsTab ? "#tm-count-apps" : "#tm-count";
+    const tbody = $(tbodyId, win);
+    const countEl = $(countId, win);
+    setText(countEl, `${procs.length} ${isAppsTab ? "app" : "process"}${procs.length !== 1 ? "es" : ""}`);
 
     $$(".tm-th", win).forEach((th) => {
       const arrow = th.dataset.key === this.sortKey ? (this.sortAsc ? " ↑" : " ↓") : "";
@@ -507,8 +701,8 @@ export class TaskManagerApp extends BaseApp {
     });
 
     if (procs.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="4" class="tm-empty-row">No processes running</td></tr>`;
-      this._updateSelectionUI(win);
+      tbody.innerHTML = `<tr><td colspan="4" class="tm-empty-row">No ${isAppsTab ? "apps" : "processes"} running</td></tr>`;
+      this._updateSelectionUI(win, tabType);
       return;
     }
 
@@ -517,11 +711,18 @@ export class TaskManagerApp extends BaseApp {
 
     tbody.innerHTML = procs
       .map((p) => {
-        const selected = this.selectedIds.has(p.winId) ? "tm-row-selected" : "";
+        const selectedSet = isAppsTab ? this.appsSelectedIds : this.selectedIds;
+        const selected = selectedSet.has(p.winId) ? "tm-row-selected" : "";
         const cpuPct = (p.cpu / maxCpu) * 100;
         const memPct = (p.mem / maxMem) * 100;
         const cpuColor = p.cpu > 50 ? "#ef5350" : p.cpu > 20 ? "#ffa726" : "#4fc3f7";
-        const statusColor = p.status === "Running" ? "#81c995" : "#888";
+
+        const statusClass =
+          p.status === "Running"
+            ? "tm-status-running"
+            : p.status === "Suspended"
+              ? "tm-status-suspended"
+              : "tm-status-tray";
 
         const iconHtml = p.icon
           ? p.icon.startsWith("http") || p.icon.startsWith("/")
@@ -538,84 +739,97 @@ export class TaskManagerApp extends BaseApp {
             <div class="tm-bar" style="width:${cpuPct}%; background:${cpuColor};"></div>
             <span class="tm-bar-content">${p.cpu.toFixed(1)}%</span>
           </td>
-          <td class="tm-td tm-td-right tm-bar-cell tm-td-mem">
+          <td class="tm-td tm-td-right tm-bar-cell">
             <div class="tm-bar" style="width:${memPct}%; background:#81c995;"></div>
             <span class="tm-bar-content">${p.mem} MB</span>
           </td>
-          <td class="tm-td tm-td-right" style="color:${statusColor};">${p.status}</td>
+          <td class="tm-td tm-td-right">
+            <span class="tm-status-pill ${statusClass}">${p.status}</span>
+          </td>
         </tr>`;
       })
       .join("");
 
     tbody.querySelectorAll(".tm-row").forEach((row) => {
+      const selectedSet = isAppsTab ? this.appsSelectedIds : this.selectedIds;
       row.onclick = (e) => {
         const id = row.dataset.id;
         if (e.ctrlKey || e.metaKey) {
-          if (this.selectedIds.has(id)) {
-            this.selectedIds.delete(id);
-          } else {
-            this.selectedIds.add(id);
-          }
-        } else if (e.shiftKey && this.selectedIds.size > 0) {
+          if (selectedSet.has(id)) selectedSet.delete(id);
+          else selectedSet.add(id);
+        } else if (e.shiftKey && selectedSet.size > 0) {
           const rows = Array.from(tbody.querySelectorAll(".tm-row"));
           const ids = rows.map((r) => r.dataset.id);
-          const lastSelected = Array.from(this.selectedIds).pop();
+          const lastSelected = Array.from(selectedSet).pop();
           const fromIdx = ids.indexOf(lastSelected);
           const toIdx = ids.indexOf(id);
           const [start, end] = fromIdx < toIdx ? [fromIdx, toIdx] : [toIdx, fromIdx];
-          ids.slice(start, end + 1).forEach((sid) => this.selectedIds.add(sid));
+          ids.slice(start, end + 1).forEach((sid) => selectedSet.add(sid));
         } else {
-          if (this.selectedIds.size === 1 && this.selectedIds.has(id)) {
-            this.selectedIds.clear();
-          } else {
-            this.selectedIds.clear();
-            this.selectedIds.add(id);
+          if (selectedSet.size === 1 && selectedSet.has(id)) selectedSet.clear();
+          else {
+            selectedSet.clear();
+            selectedSet.add(id);
           }
         }
-        this._updateSelectionUI(win);
+        this._updateSelectionUI(win, tabType);
         tbody.querySelectorAll(".tm-row").forEach((r) => {
-          r.classList.toggle("tm-row-selected", this.selectedIds.has(r.dataset.id));
+          r.classList.toggle("tm-row-selected", selectedSet.has(r.dataset.id));
         });
       };
 
       row.ondblclick = () => {
-        const w = document.getElementById(row.dataset.id);
-        if (w) {
-          w.style.display = "block";
-          os.window.focus(w);
+        const id = row.dataset.id;
+        const proc = this._getProcesses().find((p) => p.winId === id);
+        if (proc?.isTray) {
+          os.tray.restoreFromTray(id);
+        } else {
+          const w = document.getElementById(id);
+          if (w) {
+            w.style.display = "block";
+            os.window.focus(w);
+          }
         }
       };
     });
 
-    this._updateSelectionUI(win);
+    this._updateSelectionUI(win, tabType);
   }
 
-  _updateSelectionUI(win) {
-    const label = $("#tm-selected-label", win);
-    const killBtn = $("#tm-btn-kill", win);
-    const selectAllBtn = $("#tm-btn-select-all", win);
-    const count = this.selectedIds.size;
+  _updateSelectionUI(win, tabType = "proc") {
+    const isAppsTab = tabType === "apps";
+    const labelId = isAppsTab ? "#tm-selected-label-apps" : "#tm-selected-label";
+    const killBtnId = isAppsTab ? "#tm-btn-kill-apps" : "#tm-btn-kill";
+    const selectAllBtnId = isAppsTab ? "#tm-btn-select-all-apps" : "#tm-btn-select-all";
+    const selectedSet = isAppsTab ? this.appsSelectedIds : this.selectedIds;
+    const filterValue = isAppsTab ? this.appsFilter : this.filter;
+
+    const label = $(labelId, win);
+    const killBtn = $(killBtnId, win);
+    const selectAllBtn = $(selectAllBtnId, win);
+    const count = selectedSet.size;
 
     if (count === 0) {
-      label.textContent = "No process selected";
+      label.textContent = isAppsTab ? "No app selected" : "No process selected";
       label.classList.remove("tm-selected-label-active");
     } else if (count === 1) {
-      const id = Array.from(this.selectedIds)[0];
+      const id = Array.from(selectedSet)[0];
       const proc = this._getProcesses().find((p) => p.winId === id);
       label.textContent = proc ? `Selected: ${proc.title}` : "1 selected";
       label.classList.add("tm-selected-label-active");
     } else {
-      label.textContent = `${count} processes selected`;
+      label.textContent = `${count} ${isAppsTab ? "apps" : "processes"} selected`;
       label.classList.add("tm-selected-label-active");
     }
 
     killBtn.disabled = count === 0;
 
-    const visibleProcs = this._getProcesses().filter(
-      (p) => !this.filter || p.title.toLowerCase().includes(this.filter)
-    );
-    const allSelected = visibleProcs.length > 0 && visibleProcs.every((p) => this.selectedIds.has(p.winId));
-    selectAllBtn.textContent = allSelected ? "☐ Deselect All" : "☰ Select All";
+    const allProcs = this._getProcesses();
+    const visibleProcs = isAppsTab
+      ? allProcs.filter((p) => !p.isTray).filter((p) => !filterValue || p.title.toLowerCase().includes(filterValue))
+      : allProcs.filter((p) => !filterValue || p.title.toLowerCase().includes(filterValue));
+    const allSelected = visibleProcs.length > 0 && visibleProcs.every((p) => selectedSet.has(p.winId));
+    selectAllBtn.textContent = allSelected ? "Deselect All" : "Select All";
   }
 
   _drawGraph(canvas, history, color) {
@@ -645,9 +859,7 @@ export class TaskManagerApp extends BaseApp {
 
     ctx.beginPath();
     ctx.moveTo(0, h);
-    history.forEach((v, i) => {
-      ctx.lineTo(i * step, h - (v / 100) * h);
-    });
+    history.forEach((v, i) => ctx.lineTo(i * step, h - (v / 100) * h));
     ctx.lineTo(w, h);
     ctx.closePath();
     ctx.fillStyle = grad;
@@ -737,12 +949,74 @@ export class TaskManagerApp extends BaseApp {
     this.refreshInterval = setInterval(() => {
       const procPanel = $("#tm-panel-proc", win);
       const perfPanel = $("#tm-panel-perf", win);
-      if (procPanel && procPanel.style.display !== "none") {
-        this._renderProcesses(win);
-      }
-      if (perfPanel && perfPanel.style.display !== "none") {
-        this._renderPerf(win);
-      }
+      if (procPanel && procPanel.style.display !== "none") this._renderProcesses(win);
+      if (perfPanel && perfPanel.style.display !== "none") this._renderPerf(win);
     }, 1500);
+
+    const handleWindowChange = () => {
+      console.log("[TaskManager] Event handler called!");
+      setTimeout(() => {
+        const taskManagerWin = document.getElementById("taskmanager-app");
+        if (!taskManagerWin) return;
+        const procPanel = $("#tm-panel-proc", taskManagerWin);
+        const appsPanel = $("#tm-panel-apps", taskManagerWin);
+        this._renderProcesses(taskManagerWin, "proc");
+        this._renderProcesses(taskManagerWin, "apps");
+      }, 50);
+    };
+
+    os.events.on(BusEvents.WINDOW_CREATED, handleWindowChange);
+    os.events.on(BusEvents.WINDOW_CLOSED, handleWindowChange);
+
+    this._windowChangeHandlers = handleWindowChange;
+  }
+
+  _measureWindow(winId, win) {
+    const now = performance.now();
+    if (!this.windowBirthTimes.has(winId)) this.windowBirthTimes.set(winId, now);
+
+    const isMinimized = win.style.display === "none";
+    const hasIframe = !!$("iframe", win);
+    const hasVideo = !!$("video", win);
+    const hasCanvas = !!$("canvas", win);
+    const domNodes = $$("*", win).length;
+    const uptimeMins = (now - this.windowBirthTimes.get(winId)) / 60000;
+    const prev = this.usageCache.get(winId) || { cpu: 0, mem: 0, domNodes };
+    const domDelta = Math.abs(domNodes - prev.domNodes);
+
+    let baseMem = 8 + domNodes * 0.04;
+    if (hasIframe) baseMem += 35;
+    if (hasVideo) baseMem += 18;
+    if (hasCanvas) baseMem += 12;
+    baseMem += Math.min(uptimeMins * 0.4, 20);
+    baseMem += (Math.random() - 0.5) * 2;
+    baseMem = Math.max(4, baseMem);
+
+    if (performance.memory) {
+      const totalHeapMB = performance.memory.usedJSHeapSize / 1048576;
+      const allWins = document.querySelectorAll(".window");
+      const totalNodes = Array.from(allWins).reduce((s, w) => s + w.querySelectorAll("*").length, 1);
+      const share = domNodes / totalNodes;
+      baseMem = Math.max(baseMem, totalHeapMB * share * 0.6);
+    }
+
+    const frameStress = Math.min(100, this.frameDropScore * 1.8);
+    const longTaskStress = Math.min(60, this._drainLongTaskBudget() / 10);
+    const activityStress = Math.min(40, domDelta * 2);
+
+    let cpuShare = isMinimized ? 0.05 : domNodes / Math.max(1, document.querySelectorAll(".window *").length);
+    if (hasIframe && !isMinimized) cpuShare *= 2.2;
+    if (hasVideo && !isMinimized) cpuShare *= 1.8;
+    if (hasCanvas && !isMinimized) cpuShare *= 1.5;
+
+    const systemCpuSignal = frameStress * 0.5 + longTaskStress * 0.5;
+    let cpu = systemCpuSignal * cpuShare * 3 + activityStress * cpuShare;
+    cpu = prev.cpu * 0.55 + cpu * 0.45;
+    cpu += (Math.random() - 0.5) * 1.2;
+    cpu = Math.max(0.1, Math.min(99, isMinimized ? Math.min(cpu, 1.5) : cpu));
+
+    const result = { cpu, mem: Math.round(baseMem * 10) / 10, domNodes };
+    this.usageCache.set(winId, result);
+    return result;
   }
 }

@@ -1120,8 +1120,6 @@ export class SetupApp extends BaseApp {
       this._services.sessionManager.currentSession.avatar = finalizedAvatar;
     }
 
-    this._services.accountManagerApp?.updateProfileState(finalizedName, finalizedAvatar);
-
     os.storage.set(StorageKeys.theme, this.userChoices.theme);
     os.storage.set(StorageKeys.taskbarPosition, this.userChoices.taskbarPosition);
     os.storage.set(StorageKeys.weather, this.userChoices.weather.toString());

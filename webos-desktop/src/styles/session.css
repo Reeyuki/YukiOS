@@ -247,6 +247,8 @@
 
 .user-carousel-tile.selected img {
   width: 96px;
+  user-select: none;
+  -webkit-user-drag: none;
   height: 96px;
   border-color: var(--brand);
   box-shadow: 0 0 24px var(--brand-glow);

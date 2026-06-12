@@ -67,13 +67,15 @@ export class AccountManagerApp extends BaseApp {
       userId: currentUserId || generateUUID()
     };
 
+    const uniqueWindowId = `account-manager-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
     return {
-      id: "account-manager",
+      id: uniqueWindowId,
       name: "Accounts",
       icon: "fas fa-users",
       windows: [
         {
-          id: "account-manager",
+          id: uniqueWindowId,
           title: "Accounts",
           size: ["500px", "600px"],
           icon: "fas fa-users",

@@ -113,7 +113,10 @@ export function openStartMenu({ focusSearch = false, openDefaultPage = true } = 
   updateFavoritesUI();
 
   if (sharedAppLauncher) {
-    populateStartMenu(sharedAppLauncher);
+    ["system", "games"].forEach((cat) => {
+      populateCategoryPage(cat, sharedAppLauncher);
+      renderedCategories.add(cat);
+    });
   }
 
   if (openDefaultPage) {
@@ -1361,8 +1364,19 @@ function populateCategoryPage(category, appLauncher) {
   Object.entries(allApps).forEach(([appId, appData]) => {
     if (appRegistry.isAppUninstalled(appId) || appRegistry.isAppDisabled(appId)) return;
 
-    const appCategory = appData.category || SYSTEM_APPS[appId]?.category || "system";
-    if (category === "all" || appCategory === category) {
+    let shouldInclude = false;
+    if (category === "all") {
+      shouldInclude = true;
+    } else if (category === "games") {
+      shouldInclude = appData.type === "game";
+    } else if (category === "system") {
+      shouldInclude = appData.type === "system";
+    } else {
+      const appCategory = appData.category || SYSTEM_APPS[appId]?.category || "system";
+      shouldInclude = appCategory === category;
+    }
+
+    if (shouldInclude) {
       apps.push({ appId, appData });
     }
   });
@@ -1465,7 +1479,10 @@ export function populateStartMenu(appLauncher) {
   };
 
   ["system", "apps", "games"].forEach((cat) => {
-    if (pageMap[cat]) pageMap[cat].innerHTML = "";
+    if (pageMap[cat]) {
+      const grid = pageMap[cat].querySelector(".app-grid");
+      if (grid) grid.innerHTML = "";
+    }
   });
 
   const appRegistry = getAppRegistry();
@@ -1475,9 +1492,11 @@ export function populateStartMenu(appLauncher) {
     const item = createAppItem(appName, appData);
 
     if (appData.type === "system") {
-      pageMap.system?.appendChild(item);
+      const grid = pageMap.system?.querySelector(".app-grid");
+      grid?.appendChild(item);
     } else {
-      pageMap.games?.appendChild(item);
+      const grid = pageMap.games?.querySelector(".app-grid");
+      grid?.appendChild(item);
     }
   });
 }

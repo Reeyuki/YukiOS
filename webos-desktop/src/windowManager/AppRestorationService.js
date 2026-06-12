@@ -309,6 +309,11 @@ export class AppRestorationService {
         return;
       }
 
+      const existingWin = document.getElementById(state.id);
+      if (existingWin) {
+        this.wm.closeWindow(existingWin);
+      }
+
       const launchOptions = {
         forceId: state.id,
         position: state.snapZone ? undefined : { x: state.x, y: state.y },

@@ -24,7 +24,7 @@ export class DeclarativeApp {
 
     this.windowHelper = new (services.WindowHelper || this._getWindowHelper())(this.wm);
 
-    this.appRenderer = new AppRenderer(this.windowHelper, this.stateManager);
+    this.appRenderer = new AppRenderer(this.windowHelper, this.stateManager, this.actionExecutor);
     this.eventBinder = new EventBinder(this.stateManager, this.actionExecutor);
 
     this.openWindows = new Set();
@@ -58,8 +58,16 @@ export class DeclarativeApp {
       return null;
     }
 
-    this._bindEvents(win, windowConfig);
     this.openWindows.add(windowConfig.id);
+
+    if (windowConfig.events) {
+      Object.entries(windowConfig.events).forEach(([selector, eventConfig]) => {
+        const element = selector === "window" ? win : win.querySelector(selector);
+        if (element) {
+          this.eventBinder.bind(element, eventConfig);
+        }
+      });
+    }
 
     if (this.definition.onMount) {
       if (typeof this.definition.onMount === "string") {
@@ -87,26 +95,6 @@ export class DeclarativeApp {
       ...(opts.windowId && { id: opts.windowId }),
       ...(opts.title && { title: opts.title })
     };
-  }
-
-  _bindEvents(win, windowConfig) {
-    const elementsWithEvents = win.querySelectorAll("[_schemaEvents]");
-
-    elementsWithEvents.forEach((element) => {
-      const events = element._schemaEvents;
-      if (events) {
-        this.eventBinder.bind(element, events);
-      }
-    });
-
-    if (windowConfig.events) {
-      Object.entries(windowConfig.events).forEach(([selector, eventConfig]) => {
-        const element = selector === "window" ? win : win.querySelector(selector);
-        if (element) {
-          this.eventBinder.bind(element, eventConfig);
-        }
-      });
-    }
   }
 
   onClose(winId) {

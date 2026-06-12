@@ -188,6 +188,9 @@ export class WeatherApp extends BaseApp {
 
   initWeather(payload, event, element, state) {
     this.wxBody = document.getElementById("wx-body");
+    const searchInput = document.getElementById("wx-search-input");
+    this.renderPlaceholder(this.wxBody, "Weather");
+    this.initializeWeather(this.wxBody, searchInput);
   }
 
   async open() {
@@ -236,7 +239,8 @@ export class WeatherApp extends BaseApp {
       this.doRefreshWithUnit(body);
     });
 
-    this.doAutoLocate(body, searchInput);
+    this.renderPlaceholder(body, "Weather");
+    this.initializeWeather(body, searchInput);
   }
 
   async fetchWeatherByCoords(latitude, longitude, cityName, country) {
@@ -345,6 +349,20 @@ export class WeatherApp extends BaseApp {
     container.innerHTML = `<div class="wx-error">⚠️ ${message}</div>`;
   }
 
+  renderPlaceholder(container, message = "Welcome to Weather") {
+    container.innerHTML = `
+    <div class="wx-placeholder">
+      <div class="wx-placeholder-icon">🌤️</div>
+      <div class="wx-placeholder-title">${message}</div>
+      <div class="wx-placeholder-desc">Get real-time weather for any location</div>
+      <div class="wx-placeholder-tips">
+        <div class="wx-tip">📍 Click the location button to auto-detect your location</div>
+        <div class="wx-tip">🔍 Or search for any city manually</div>
+      </div>
+    </div>
+  `;
+  }
+
   renderLoading(container, message = "Fetching weather...") {
     container.innerHTML = `<div class="wx-loading"><div class="wx-spinner"></div><span>${message}</span></div>`;
   }
@@ -389,5 +407,34 @@ export class WeatherApp extends BaseApp {
         this.renderError(container, e.message || "Failed to reload weather.");
       }
     }
+  }
+
+  async initializeWeather(container, searchInput) {
+    const locCacheKey = "wx_user_location";
+    const cachedLoc = getCached(locCacheKey, LOCATION_CACHE_TTL);
+
+    if (cachedLoc) {
+      this.currentCoords = { latitude: cachedLoc.latitude, longitude: cachedLoc.longitude };
+      this.currentCity = cachedLoc.city;
+      searchInput.value = cachedLoc.city;
+
+      const appCacheKey = `yukiOS_weather_${cachedLoc.latitude.toFixed(2)}_${cachedLoc.longitude.toFixed(2)}_${this.unit}`;
+      const trayCacheKey = `yukiOS_weather_taskbar_${cachedLoc.latitude.toFixed(2)}_${cachedLoc.longitude.toFixed(2)}`;
+
+      const cachedAppData = getCached(appCacheKey);
+      const cachedTrayData = getCached(trayCacheKey);
+
+      if (cachedAppData) {
+        this.renderWeather(container, { ...cachedAppData, cityName: cachedLoc.city, country: cachedLoc.country });
+        return;
+      }
+
+      if (cachedTrayData) {
+        this.renderWeather(container, { ...cachedTrayData, cityName: cachedLoc.city, country: cachedLoc.country });
+        return;
+      }
+    }
+
+    this.doAutoLocate(container, searchInput);
   }
 }
