@@ -51,6 +51,15 @@ export class DeclarativeApp {
 
   open(opts = {}) {
     const windowConfig = this._resolveWindowConfig(opts);
+
+    if (this.definition.singleton) {
+      const existing = document.getElementById(windowConfig.id);
+      if (existing) {
+        existing.style.zIndex = "10000";
+        return existing;
+      }
+    }
+
     const win = this.appRenderer.renderWindow(windowConfig, this.services);
 
     if (!win) {

@@ -95,7 +95,8 @@ export class ExplorerApp extends BaseApp {
       notepadRef: notepadRef || null,
       selectedFile: null,
       selectedItems: new Set(),
-      mode: mode || "browse"
+      mode: mode || "browse",
+      _isRendering: false
     };
     this._instances.set(winId, inst);
     return inst;
@@ -841,11 +842,20 @@ export class ExplorerApp extends BaseApp {
   }
 
   async renderInstance(inst) {
+    if (inst._isRendering) return;
+    inst._isRendering = true;
+
     const win = $(`#${inst.winId}`);
-    if (!win) return;
+    if (!win) {
+      inst._isRendering = false;
+      return;
+    }
     const view = $(`#${inst.winId}-view`, win);
     const pathDisplay = $(`#${inst.winId}-path`, win);
-    if (!view) return;
+    if (!view) {
+      inst._isRendering = false;
+      return;
+    }
 
     view.innerHTML = "";
     removeClass(view, "games-page");
@@ -880,6 +890,8 @@ export class ExplorerApp extends BaseApp {
 
     if (inst.mode === "browse") await this._updateStatusBar(inst, folder);
     if (inst.mode === "select") this._bindSelectBarButton(inst);
+
+    inst._isRendering = false;
   }
 
   async _buildItemIconHTML(name, isFile, itemData, inst) {

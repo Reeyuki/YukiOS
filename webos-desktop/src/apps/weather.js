@@ -60,6 +60,7 @@ export class WeatherApp extends BaseApp {
       id: "weather-win",
       name: "Weather",
       icon: "fas fa-cloud",
+      singleton: true,
       windows: [
         {
           id: "weather-win",
@@ -72,7 +73,7 @@ export class WeatherApp extends BaseApp {
           <button class="wx-loc-btn" id="wx-loc-btn" title="Use my location"><svg width="10" height="12" viewBox="0 0 10 14" fill="currentColor"><path d="M5 0C2.24 0 0 2.24 0 5c0 3.75 5 9 5 9s5-5.25 5-9c0-2.76-2.24-5-5-5zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg></button>
           <input class="wx-search" id="wx-search-input" type="text" placeholder="Search city..." />
           <button class="wx-btn" id="wx-search-btn">GO</button>
-          <button class="wx-unit-toggle" id="wx-unit-btn">°F</button>
+          <button class="wx-unit-toggle" id="wx-unit-btn">°C</button>
         </div>
         <div class="wx-body" id="wx-body"></div>
       </div>`,
@@ -108,7 +109,8 @@ export class WeatherApp extends BaseApp {
         initial: {
           unit: "metric",
           currentCity: null,
-          currentCoords: null
+          currentCoords: null,
+          currentWeatherData: null
         },
         persistence: PersistenceTypes.MEMORY
       },
@@ -123,6 +125,7 @@ export class WeatherApp extends BaseApp {
               state.currentCoords = { latitude: loc.latitude, longitude: loc.longitude };
               state.currentCity = loc.city;
               const data = await this.fetchWeatherByCoords(loc.latitude, loc.longitude, loc.city, loc.country);
+              state.currentWeatherData = data;
               this.renderWeather(body, data);
               if (searchInput) searchInput.value = loc.city;
             } catch (e) {
@@ -138,6 +141,9 @@ export class WeatherApp extends BaseApp {
             this.renderLoading(body);
             try {
               const data = await this.fetchWeatherByCity(city);
+              state.currentWeatherData = data;
+              state.currentCoords = { ...this.currentCoords };
+              state.currentCity = this.currentCity;
               this.renderWeather(body, data);
             } catch (e) {
               this.renderError(body, e.message || "Failed to load weather.");
@@ -153,6 +159,9 @@ export class WeatherApp extends BaseApp {
               this.renderLoading(body);
               try {
                 const data = await this.fetchWeatherByCity(city);
+                state.currentWeatherData = data;
+                state.currentCoords = { ...this.currentCoords };
+                state.currentCity = this.currentCity;
                 this.renderWeather(body, data);
               } catch (e) {
                 this.renderError(body, e.message || "Failed to load weather.");
@@ -160,25 +169,26 @@ export class WeatherApp extends BaseApp {
             }
           }
         },
-        toggleUnit: (payload, event, element, state) => {
+        toggleUnit: async (payload, event, element, state) => {
           state.unit = state.unit === "metric" ? "imperial" : "metric";
+          this.unit = state.unit;
           const unitBtn = document.getElementById("wx-unit-btn");
-          if (unitBtn) unitBtn.textContent = state.unit === "metric" ? "°F" : "°C";
+          if (unitBtn) unitBtn.textContent = state.unit === "metric" ? "°C" : "°F";
           const body = document.getElementById("wx-body");
           if (body && state.currentCoords) {
             this.renderLoading(body);
-            this.fetchWeatherByCoords(
-              state.currentCoords.latitude,
-              state.currentCoords.longitude,
-              state.currentCity,
-              ""
-            )
-              .then((data) => {
-                this.renderWeather(body, data);
-              })
-              .catch((e) => {
-                this.renderError(body, e.message || "Failed to reload weather.");
-              });
+            try {
+              const data = await this.fetchWeatherByCoords(
+                state.currentCoords.latitude,
+                state.currentCoords.longitude,
+                state.currentCity,
+                state.currentWeatherData?.country ?? ""
+              );
+              state.currentWeatherData = data;
+              this.renderWeather(body, data);
+            } catch (e) {
+              this.renderError(body, e.message || "Failed to reload weather.");
+            }
           }
         }
       },
@@ -203,7 +213,7 @@ export class WeatherApp extends BaseApp {
           <button class="wx-loc-btn" id="wx-loc-btn" title="Use my location"><svg width="10" height="12" viewBox="0 0 10 14" fill="currentColor"><path d="M5 0C2.24 0 0 2.24 0 5c0 3.75 5 9 5 9s5-5.25 5-9c0-2.76-2.24-5-5-5zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg></button>
           <input class="wx-search" id="wx-search-input" type="text" placeholder="Search city..." />
           <button class="wx-btn" id="wx-search-btn">GO</button>
-          <button class="wx-unit-toggle" id="wx-unit-btn">${this.unit === "metric" ? "°F" : "°C"}</button>
+          <button class="wx-unit-toggle" id="wx-unit-btn">${this.unit === "metric" ? "°C" : "°F"}</button>
         </div>
         <div class="wx-body" id="wx-body"></div>
       </div>
@@ -235,7 +245,7 @@ export class WeatherApp extends BaseApp {
 
     unitBtn.addEventListener("click", () => {
       this.unit = this.unit === "metric" ? "imperial" : "metric";
-      unitBtn.textContent = this.unit === "metric" ? "°F" : "°C";
+      unitBtn.textContent = this.unit === "metric" ? "°C" : "°F";
       this.doRefreshWithUnit(body);
     });
 
@@ -281,7 +291,7 @@ export class WeatherApp extends BaseApp {
   getDayName(dateStr, index) {
     if (index === 0) return "Today";
     if (index === 1) return "Tomorrow";
-    return new Date(dateStr).toLocaleDateString("en-US", { weekday: "short" });
+    return new Date(dateStr + "T00:00:00").toLocaleDateString("en-US", { weekday: "short" });
   }
   renderWeather(container, data) {
     const cur = data.current;
@@ -419,18 +429,10 @@ export class WeatherApp extends BaseApp {
       searchInput.value = cachedLoc.city;
 
       const appCacheKey = `yukiOS_weather_${cachedLoc.latitude.toFixed(2)}_${cachedLoc.longitude.toFixed(2)}_${this.unit}`;
-      const trayCacheKey = `yukiOS_weather_taskbar_${cachedLoc.latitude.toFixed(2)}_${cachedLoc.longitude.toFixed(2)}`;
-
       const cachedAppData = getCached(appCacheKey);
-      const cachedTrayData = getCached(trayCacheKey);
 
       if (cachedAppData) {
         this.renderWeather(container, { ...cachedAppData, cityName: cachedLoc.city, country: cachedLoc.country });
-        return;
-      }
-
-      if (cachedTrayData) {
-        this.renderWeather(container, { ...cachedTrayData, cityName: cachedLoc.city, country: cachedLoc.country });
         return;
       }
     }

@@ -27,6 +27,7 @@ export const APP_DESCRIPTIONS = {
   ruffleApp: "Flash game player using modern Ruffle engine for SWF content.",
   shortcutsApp: "View and manage keyboard shortcuts for system-wide commands.",
   yukiConvert: "Local File Converter with image, audio,video and documents.",
+  yukiConvertApp: "Local File Converter with image, audio,video and documents.",
   setupApp: "Initial setup guide for new users to configure Yuki OS preferences.",
   dataEditorApp: "View and edit IndexedDB storage data for debugging and advanced users.",
   dataEditor: "View and edit IndexedDB storage data for debugging and advanced users.",
