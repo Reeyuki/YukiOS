@@ -138,37 +138,19 @@ export class IconManager {
   async createDesktopFileIcon(fileName, itemData = null) {
     if (document.querySelector(`.desktop-file-icon[data-file-name="${CSS.escape(fileName)}"]`)) return;
 
-    let thumbnailSrc = null;
-    if (fileName.endsWith(".desktop")) {
-      const raw = await this.fs.getFileContent(["Desktop"], fileName);
-      thumbnailSrc = resolveDesktopIcon(raw, fileName);
-    } else {
-      thumbnailSrc = itemData?.icon;
-    }
+    const displayName = fileName.endsWith(".desktop") ? fileName.slice(0, -8) : fileName;
+    const placeholderIcon = resolveIconUrl("static/icons/file.webp");
 
-    if (isImageFile(fileName)) {
-      try {
-        const content = await this.fs.getFileContent(["Desktop"], fileName);
-        thumbnailSrc = content instanceof Blob ? await readFileAsDataURL(content) : content;
-      } catch (e) {
-        console.error("Failed to load image thumbnail:", e);
-      }
-    }
-
-    const iconHTML = buildFileIconHTML(fileName, { thumbnailSrc, size: 64, radius: 12, storedIcon: thumbnailSrc });
+    const iconHTML = buildFileIconHTML(fileName, {
+      thumbnailSrc: placeholderIcon,
+      size: 64,
+      radius: 12,
+      storedIcon: placeholderIcon
+    });
     const icon = document.createElement("div");
     icon.className = "icon selectable desktop-file-icon";
     icon.dataset.fileName = fileName;
-    const displayName = fileName.endsWith(".desktop") ? fileName.slice(0, -8) : fileName;
     icon.innerHTML = `${iconHTML}<div>${displayName}</div>`;
-    if (fileName.endsWith(".desktop")) {
-      const raw = await this.fs.getFileContent(["Desktop"], fileName);
-      try {
-        const parsed = JSON.parse(raw);
-        if (parsed && parsed.app) icon.dataset.app = parsed.app;
-        if (parsed && parsed.steamGameId) icon.dataset.steamGameId = parsed.steamGameId;
-      } catch (e) {}
-    }
 
     this.desktop.appendChild(icon);
     this.makeIconInteractable(icon);
@@ -177,6 +159,38 @@ export class IconManager {
     const key = this.positionStore.getKey(icon);
     if (saved[key]) this.positionHelper.placeAtCell(icon, saved[key].col, saved[key].row, icon);
     else this.positionHelper.snap(icon);
+
+    if (fileName.endsWith(".desktop")) {
+      this.fs.getFileContent(["Desktop"], fileName).then((raw) => {
+        try {
+          const parsed = JSON.parse(raw);
+          if (parsed && parsed.app) icon.dataset.app = parsed.app;
+          if (parsed && parsed.steamGameId) icon.dataset.steamGameId = parsed.steamGameId;
+          const iconPath = resolveDesktopIcon(raw, fileName);
+          if (iconPath && iconPath !== placeholderIcon) {
+            const imgElement = icon.querySelector("img");
+            if (imgElement) imgElement.src = iconPath;
+          }
+        } catch (e) {}
+      });
+    } else {
+      const loadThumbnail = async () => {
+        let thumbnailSrc = itemData?.icon;
+        if (isImageFile(fileName)) {
+          try {
+            const content = await this.fs.getFileContent(["Desktop"], fileName);
+            thumbnailSrc = content instanceof Blob ? await readFileAsDataURL(content) : content;
+          } catch (e) {
+            console.error("Failed to load image thumbnail:", e);
+          }
+        }
+        if (thumbnailSrc && thumbnailSrc !== placeholderIcon) {
+          const imgElement = icon.querySelector("img");
+          if (imgElement) imgElement.src = thumbnailSrc;
+        }
+      };
+      loadThumbnail();
+    }
 
     return icon;
   }
@@ -328,7 +342,7 @@ export class IconManager {
     const desktopFolder = await os.fs.readdir(["Desktop"]);
     for (const [name, itemData] of Object.entries(desktopFolder)) {
       if (!itemData.type) {
-        await this.createFolderIcon(name);
+        this.createFolderIcon(name);
       } else if (itemData.type === "file") {
         if (name.endsWith(".desktop")) {
           const label = name.replace(".desktop", "");
@@ -338,7 +352,7 @@ export class IconManager {
 
           if (isHardcoded) continue;
         }
-        await this.createDesktopFileIcon(name, itemData);
+        this.createDesktopFileIcon(name, itemData);
       }
     }
   }
