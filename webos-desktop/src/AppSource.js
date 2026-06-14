@@ -4,6 +4,7 @@ export const AppSource = {
   EXPLORER: "Explorer",
   YUKI_CONVERT: "Yuki Convert",
   YOUTUBE: "YouTube",
+  YOUTUBE_UTILS: "YouTube Utils",
   SETUP: "Setup",
   INSTALLED_APPS: "Installed Apps",
   ARCHIVE_EXTRACTOR: "Archive Extractor",

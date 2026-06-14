@@ -85,7 +85,7 @@ export class BaseApp {
         return AppSource.EXPLORER;
       case "YukiConvertApp":
         return AppSource.YUKI_CONVERT;
-      case "YouTubeApp":
+      case "youtubeUtilsApp":
         return AppSource.YOUTUBE;
       case "SetupApp":
         return AppSource.SETUP;

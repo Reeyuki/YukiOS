@@ -7,6 +7,8 @@ import { AppSource } from "../AppSource.js";
 import { PREDEFINED_AVATARS } from "./accountManager.js";
 import { os } from "../os/index.js";
 import { $, $$, bindEvent, setText, setHTML, toggleClass } from "../shared/domUtils.js";
+import { createScramjetWebApp } from "../core/ScramjetWebAppFactory.js";
+import { StorageKeys } from "../StorageKeys.js";
 
 const AC = {
   WIN_ID: "app-creator-win",
@@ -28,13 +30,22 @@ function isImageIcon(iconValue) {
   return isImageFile(iconValue) || iconValue.startsWith("data:");
 }
 
-function buildAppMapEntry(name, url, icon, faviconUrl, proxyEnabled = false, proxyIndex = 0) {
+function buildAppMapEntry(name, url, icon, faviconUrl, proxyEnabled = false, proxyIndex = 0, scramjetEnabled = false) {
   const iconValue = faviconUrl || icon;
-  return { type: "game", title: name, url, icon, iconValue, faviconUrl, proxyEnabled, proxyIndex };
+  return { type: "game", title: name, url, icon, iconValue, faviconUrl, proxyEnabled, proxyIndex, scramjetEnabled };
 }
 
-function buildAppMeta(appId, name, url, icon, faviconUrl, proxyEnabled = false, proxyIndex = 0) {
-  return { appId, name, url, icon, faviconUrl, type: "game", proxyEnabled, proxyIndex };
+function buildAppMeta(
+  appId,
+  name,
+  url,
+  icon,
+  faviconUrl,
+  proxyEnabled = false,
+  proxyIndex = 0,
+  scramjetEnabled = false
+) {
+  return { appId, name, url, icon, faviconUrl, type: "game", proxyEnabled, proxyIndex, scramjetEnabled };
 }
 
 function deriveFaviconUrl(appUrl) {
@@ -108,6 +119,27 @@ export class AppCreatorApp extends BaseApp {
     this.appLauncher = services.appLauncher;
     this.desktopUI = services.desktopUI || null;
     this._declarativeApp = null;
+    this._customScramjetApps = new Map();
+  }
+
+  _registerCustomScramjetApp(appId, name, url, icon) {
+    if (this._customScramjetApps.has(appId)) {
+      return this._customScramjetApps.get(appId);
+    }
+
+    const AppClass = createScramjetWebApp({
+      appId,
+      appName: name,
+      targetUrl: url,
+      appIcon: icon,
+      windowSize: ["1280px", "800px"]
+    });
+
+    const appInstance = new AppClass(this._services);
+    this.appLauncher.appRuntime.register(appId, appInstance);
+    this._customScramjetApps.set(appId, appInstance);
+
+    return appInstance;
   }
 
   initAppCreator(payload, event, element, state) {
@@ -158,6 +190,14 @@ export class AppCreatorApp extends BaseApp {
                 </select>
               </div>
               <p class="ac-hint">If the app is blocked by CORS, try enabling a proxy.</p>
+            </div>
+
+            <div>
+              <label class="ac-checkbox">
+                <input type="checkbox" id="ac-scramjet-enabled" />
+                <span>Use Scramjet mode (Broken right now, will fix it soon. You can open scramjet app normally meanwhile.)</span>
+              </label>
+              <p class="ac-hint">Scramjet mode uses a proxy browser for better compatibility with web apps.</p>
             </div>
 
             <div class="ac-icon-section">
@@ -220,9 +260,14 @@ export class AppCreatorApp extends BaseApp {
         app.icon,
         app.faviconUrl,
         !!app.proxyEnabled,
-        clampProxyIndex(app.proxyIndex, PROXIES)
+        clampProxyIndex(app.proxyIndex, PROXIES),
+        !!app.scramjetEnabled
       );
       this._addToDesktop(app.appId, app.name, app.icon, app.faviconUrl);
+
+      if (app.scramjetEnabled) {
+        this._registerCustomScramjetApp(app.appId, app.name, app.url, app.icon);
+      }
     }
   }
 
@@ -236,6 +281,7 @@ export class AppCreatorApp extends BaseApp {
     const appUrlInput = $("#ac-url", win);
     const proxyEnabledInput = $("#ac-proxy-enabled", win);
     const proxySelect = $("#ac-proxy-select", win);
+    const scramjetEnabledInput = $("#ac-scramjet-enabled", win);
 
     if (!installBtn) {
       console.error("AppCreator: installBtn not found in DOM");
@@ -277,6 +323,7 @@ export class AppCreatorApp extends BaseApp {
       if (proxyEnabledInput) proxyEnabledInput.checked = false;
       if (proxySelect) proxySelect.value = "0";
       if (proxySelect) proxySelect.disabled = true;
+      if (scramjetEnabledInput) scramjetEnabledInput.checked = false;
       setHTML(iconPreview, `<i class="fas fa-window-maximize"></i>`);
       const editBanner = $("#ac-edit-banner", win);
       if (editBanner) editBanner.classList.remove("active");
@@ -336,7 +383,8 @@ export class AppCreatorApp extends BaseApp {
       }
       const useProxy = !!proxyEnabledInput?.checked;
       const proxyIndex = clampProxyIndex(parseInt(proxySelect?.value), PROXIES);
-      await this._openPreviewWindow(name, url, useProxy, proxyIndex);
+      const useScramjet = !!scramjetEnabledInput?.checked;
+      await this._openPreviewWindow(name, url, useProxy, proxyIndex, useScramjet);
     });
 
     installBtn.addEventListener("click", () => {
@@ -345,6 +393,7 @@ export class AppCreatorApp extends BaseApp {
       const iconUrl = resolvedIcon(resolvedIconDataUrl || faviconLoadedUrl);
       const proxyEnabled = !!proxyEnabledInput?.checked;
       const proxyIndex = clampProxyIndex(parseInt(proxySelect?.value), PROXIES);
+      const scramjetEnabled = !!scramjetEnabledInput?.checked;
 
       if (!name) {
         this._showStatus(status, "error", "App name is required.");
@@ -363,8 +412,8 @@ export class AppCreatorApp extends BaseApp {
       }
 
       const task = editingAppId
-        ? this._saveEdit(editingAppId, name, secureUrl, iconUrl, proxyEnabled, proxyIndex, status, win)
-        : this._installApp(name, secureUrl, iconUrl, proxyEnabled, proxyIndex, status, win);
+        ? this._saveEdit(editingAppId, name, secureUrl, iconUrl, proxyEnabled, proxyIndex, scramjetEnabled, status, win)
+        : this._installApp(name, secureUrl, iconUrl, proxyEnabled, proxyIndex, scramjetEnabled, status, win);
       task.catch(console.error);
     });
   }
@@ -458,6 +507,7 @@ export class AppCreatorApp extends BaseApp {
               type: data.type || "game",
               proxyEnabled: data.proxyEnabled || false,
               proxyIndex: data.proxyIndex || 0,
+              scramjetEnabled: data.scramjetEnabled || false,
               _fileName: fileName
             });
           }
@@ -492,11 +542,13 @@ export class AppCreatorApp extends BaseApp {
     $("#ac-url", win).value = meta.url || "";
     const proxyEnabledInput = $("#ac-proxy-enabled", win);
     const proxySelect = $("#ac-proxy-select", win);
+    const scramjetEnabledInput = $("#ac-scramjet-enabled", win);
     if (proxyEnabledInput) proxyEnabledInput.checked = !!meta.proxyEnabled;
     if (proxySelect) {
       proxySelect.value = String(clampProxyIndex(meta.proxyIndex, PROXIES));
       proxySelect.disabled = !proxyEnabledInput?.checked;
     }
+    if (scramjetEnabledInput) scramjetEnabledInput.checked = !!meta.scramjetEnabled;
 
     const iconIsData = meta.icon?.startsWith("data:");
     win._setResolvedIcon(iconIsData ? meta.icon : null);
@@ -516,7 +568,7 @@ export class AppCreatorApp extends BaseApp {
     $(".window-content", win).scrollTop = 0;
   }
 
-  async _saveEdit(appId, name, url, iconUrl, proxyEnabled, proxyIndex, statusEl, win) {
+  async _saveEdit(appId, name, url, iconUrl, proxyEnabled, proxyIndex, scramjetEnabled, statusEl, win) {
     const meta = await this._loadAppMeta(appId);
     if (!meta) {
       this._showStatus(statusEl, "error", "Could not find app to edit.");
@@ -537,6 +589,7 @@ export class AppCreatorApp extends BaseApp {
       type: "game",
       proxyEnabled,
       proxyIndex,
+      scramjetEnabled,
       isCustomApp: true
     };
 
@@ -557,8 +610,18 @@ export class AppCreatorApp extends BaseApp {
         iconUrl,
         faviconUrl,
         !!proxyEnabled,
-        clampProxyIndex(proxyIndex, PROXIES)
+        clampProxyIndex(proxyIndex, PROXIES),
+        !!scramjetEnabled
       );
+    }
+
+    if (scramjetEnabled) {
+      this._registerCustomScramjetApp(appId, name, url, iconUrl);
+    } else {
+      if (this._customScramjetApps.has(appId)) {
+        this.appLauncher.appRuntime.unregister(appId);
+        this._customScramjetApps.delete(appId);
+      }
     }
 
     if (fileNameChanged) {
@@ -659,13 +722,26 @@ export class AppCreatorApp extends BaseApp {
     }, 4000);
   }
 
-  async _openPreviewWindow(name, url, proxyEnabled = false, proxyIndex = 0) {
+  async _openPreviewWindow(name, url, proxyEnabled = false, proxyIndex = 0, scramjetEnabled = false) {
     const secureUrl = ensureHttpsProtocol(url);
     let finalUrl = secureUrl;
 
-    console.log("[AppCreator Preview] URL:", secureUrl, "Proxy enabled:", proxyEnabled, "Proxy index:", proxyIndex);
+    console.log(
+      "[AppCreator Preview] URL:",
+      secureUrl,
+      "Proxy enabled:",
+      proxyEnabled,
+      "Proxy index:",
+      proxyIndex,
+      "Scramjet enabled:",
+      scramjetEnabled
+    );
 
-    if (proxyEnabled && typeof secureUrl === "string" && /^https?:\/\//.test(secureUrl)) {
+    if (scramjetEnabled) {
+      const wispUrl = os.storage.get(StorageKeys.wispServer) || "wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/";
+      finalUrl = `/scramapps/scramjet-template.html?wisp=${encodeURIComponent(wispUrl)}&target=${encodeURIComponent(secureUrl)}`;
+      console.log("[AppCreator Preview] Using scramjet template:", finalUrl);
+    } else if (proxyEnabled && typeof secureUrl === "string" && /^https?:\/\//.test(secureUrl)) {
       try {
         console.log("[AppCreator Preview] Fetching through proxy...");
         finalUrl = await fetchHtmlThroughProxy(secureUrl, proxyIndex, PROXIES);
@@ -690,7 +766,7 @@ export class AppCreatorApp extends BaseApp {
     os.window.addToTaskbar(winId, `${name} - Preview`, AC.TASKBAR_ICON);
   }
 
-  async _installApp(name, url, iconUrl, proxyEnabled, proxyIndex, statusEl, win) {
+  async _installApp(name, url, iconUrl, proxyEnabled, proxyIndex, scramjetEnabled, statusEl, win) {
     const secureUrl = ensureHttpsProtocol(url);
     const appId = `${AC.APP_ID_PREFIX}${name.toLowerCase().replace(/\s+/g, "-")}-${Date.now()}`;
     const fileName = `${name}.desktop`;
@@ -702,7 +778,8 @@ export class AppCreatorApp extends BaseApp {
       iconUrl,
       faviconUrl,
       !!proxyEnabled,
-      clampProxyIndex(proxyIndex, PROXIES)
+      clampProxyIndex(proxyIndex, PROXIES),
+      !!scramjetEnabled
     );
 
     const desktopFileContent = JSON.stringify({
@@ -714,6 +791,7 @@ export class AppCreatorApp extends BaseApp {
       type: "game",
       proxyEnabled,
       proxyIndex,
+      scramjetEnabled,
       isCustomApp: true
     });
 
@@ -730,9 +808,15 @@ export class AppCreatorApp extends BaseApp {
       iconUrl,
       faviconUrl,
       !!proxyEnabled,
-      clampProxyIndex(proxyIndex, PROXIES)
+      clampProxyIndex(proxyIndex, PROXIES),
+      !!scramjetEnabled
     );
     this._addToDesktop(appId, name, iconUrl, faviconUrl);
+
+    if (scramjetEnabled) {
+      this._registerCustomScramjetApp(appId, name, secureUrl, iconUrl);
+    }
+
     this._showStatus(statusEl, "success", `"${name}" installed!`);
     os.notify.send("", `"${name}" installed and added to desktop.`);
     this._refreshInstalledList(win);

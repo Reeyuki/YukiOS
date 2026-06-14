@@ -79,8 +79,7 @@ export class TaskManagerApp extends BaseApp {
         winEl.remove();
       }
 
-      const taskbarItem = document.getElementById(`taskbar-${id}`);
-      if (taskbarItem) taskbarItem.remove();
+      os.window.removeFromTaskbar(id);
 
       try {
         os.tray.unregister(id);
@@ -111,8 +110,7 @@ export class TaskManagerApp extends BaseApp {
         os.tray.unregister(id);
       } catch (_) {}
 
-      const taskbarItem = document.getElementById(`taskbar-${id}`);
-      if (taskbarItem) taskbarItem.remove();
+      os.window.removeFromTaskbar(id);
 
       const hiddenWin = document.getElementById(id);
       if (hiddenWin) hiddenWin.remove();
@@ -628,23 +626,22 @@ export class TaskManagerApp extends BaseApp {
 
   _getProcesses() {
     const procs = [];
-    document.querySelectorAll(".taskbar-item").forEach((item) => {
-      const winId = item.id.replace("taskbar-", "");
-      const win = document.getElementById(winId);
+    const runningApps = os.app.getRunningApps();
+    runningApps.forEach((app) => {
+      const win = document.getElementById(app.winId);
       if (!win) return;
 
-      const { cpu, mem } = this._measureWindow(winId, win);
+      const { cpu, mem } = this._measureWindow(app.winId, win);
 
-      const iconEl = item.querySelector("img, i");
-      let icon = null;
-      if (iconEl?.tagName === "IMG") icon = iconEl.src;
-      else if (iconEl?.className) icon = iconEl.className;
-
-      const titleEl = $(".window-header span", win);
-      const title = titleEl ? titleEl.textContent.trim() : winId;
-      const visible = win.style.display !== "none";
-
-      procs.push({ winId, title, icon, cpu, mem, status: visible ? "Running" : "Suspended", isTray: false });
+      procs.push({
+        winId: app.winId,
+        title: app.title,
+        icon: app.icon,
+        cpu,
+        mem,
+        status: app.status || "Running",
+        isTray: false
+      });
     });
 
     const trayItems = os.tray.getTrayItems();
@@ -914,7 +911,7 @@ export class TaskManagerApp extends BaseApp {
     const frameMs = this.frameDropScore > 0 ? `${this.frameDropScore.toFixed(1)} ms lag` : "Smooth";
 
     const info = [
-      ["Processes", document.querySelectorAll(".taskbar-item").length],
+      ["Processes", os.app.getRunningApps().length],
       ["JS Heap Used", heapUsed],
       ["JS Heap Limit", heapTotal],
       ["Frame Health", frameMs],

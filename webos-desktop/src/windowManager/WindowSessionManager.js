@@ -1,5 +1,6 @@
 import { StorageKeys } from "../settings/settings.js";
 import { os } from "../os/index.js";
+import { SYSTEM_APPS } from "../AppRegistryConfig.js";
 
 export class WindowSessionManager {
   constructor(manager) {
@@ -14,36 +15,11 @@ export class WindowSessionManager {
 
   _guessAppIdFromWinId(winId) {
     if (!winId) return null;
-    const mappings = {
-      taskmanager: "taskManagerApp",
-      "account-manager": "accountManager",
-      office: "officeApp",
-      emulator: "emulatorApp",
-      calculator: "calculatorApp",
-      ruffle: "ruffleApp",
-      markdown: "markdown",
-      youtube: "youtube",
-      news: "newsApp",
-      weather: "weatherApp",
-      notepad: "notepad",
-      model3d: "model3dApp",
-      settings: "settingsApp",
-      "system-apps": "systemApps",
-      about: "aboutApp",
-      achievements: "achievementsApp",
-      explorer: "explorer",
-      monaco: "monaco",
-      "app-creator": "appCreatorApp",
-      jsdos: "jsDosApp",
-      v86: "v86app",
-      browser: "browserApp",
-      terminal: "terminal",
-      camera: "cameraApp",
-      "yuki-convert": "yukiConvertApp"
-    };
-    const lowerId = winId.toLowerCase();
-    for (const [key, appId] of Object.entries(mappings)) {
-      if (lowerId.includes(key)) return appId;
+    const launcher = this.manager.appLauncher;
+    if (!launcher) return null;
+    const needle = winId.toLowerCase().replace(/[-_\s]/g, "");
+    for (const key of Object.keys(launcher)) {
+      if (needle.includes(key.toLowerCase())) return key;
     }
     return null;
   }
@@ -104,12 +80,15 @@ export class WindowSessionManager {
           });
         } catch (e) {}
 
-        const appInstance = this.manager.appLauncher[appId] || this.manager.appLauncher[`${appId}App`];
-        if (appInstance && typeof appInstance.getSnapshot === "function") {
-          try {
-            record.appStateSnapshot = await appInstance.getSnapshot(win.id);
-          } catch (e) {
-            console.warn(`Failed to get snapshot for app ${appId}:`, e);
+        const metadata = SYSTEM_APPS[appId];
+        if (!metadata || metadata.persistContentState !== false) {
+          const appInstance = this.manager.appLauncher[appId] || this.manager.appLauncher[`${appId}App`];
+          if (appInstance && typeof appInstance.getSnapshot === "function") {
+            try {
+              record.appStateSnapshot = await appInstance.getSnapshot(win.id);
+            } catch (e) {
+              console.warn(`Failed to get snapshot for app ${appId}:`, e);
+            }
           }
         }
       }
@@ -272,14 +251,17 @@ export class WindowSessionManager {
           this.manager.workspaceManager.moveWindowTo(state.id, state.workspaceId);
         }
 
-        if (state.appStateSnapshot) {
+        const metadata = SYSTEM_APPS[appId];
+        const shouldPersistContent = !metadata || metadata.persistContentState !== false;
+
+        if (shouldPersistContent && state.appStateSnapshot) {
           const appInstance = this.manager.appLauncher[state.appId] || this.manager.appLauncher[`${state.appId}App`];
           if (appInstance && typeof appInstance.restoreSnapshot === "function") {
             await appInstance.restoreSnapshot(win.id, state.appStateSnapshot);
           }
         }
 
-        if (state.scrollPosition) {
+        if (shouldPersistContent && state.scrollPosition) {
           const content = win.querySelector(".window-content");
           if (content) {
             content.scrollLeft = state.scrollPosition.x;

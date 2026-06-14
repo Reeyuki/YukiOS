@@ -5,6 +5,7 @@ import { YUKIOS_VERSION } from "../apps/about.js";
 import { StorageKeys } from "../StorageKeys.js";
 import { os } from "../os/index.js";
 import { getBasicThemes, getSpecialThemes, getCustomThemes } from "../shared/themeEngine.js";
+
 export function buildSettingsHTML(settings, wm) {
   return `
   <div class="window-header">
@@ -783,6 +784,13 @@ export function renderDataSettings() {
   `;
 }
 export function renderNetworkSettings(s) {
+  const wispServers = [
+    { name: "Reeyuki Wisp", url: "wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/" },
+    { name: "Anura Wisp", url: "ws://anura.pro" }
+  ];
+  const currentWisp = s.wispServer || wispServers[0].url;
+  const isCustomWisp = !wispServers.some((w) => w.url === currentWisp);
+
   return `
     <div id="pane-network" class="settings-category-pane">
       <div class="settings-category-header">Network</div>
@@ -796,6 +804,27 @@ export function renderNetworkSettings(s) {
           <select id="settingsCdnMirror" class="settings-select">
             ${CDN_MIRRORS.map((m) => `<option value="${m.id}" ${s.cdnMirror === m.id ? "selected" : ""}>${m.name}</option>`).join("")}
           </select>
+        </div>
+      </div>
+
+      <div class="settings-card" style="margin-top: 16px;">
+        <div class="settings-card-header"><i class="fas fa-shield-alt"></i> WISP Server</div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">WISP Server</span>
+            <span class="settings-label-desc">Choose a WISP proxy server for Scramjet</span>
+          </div>
+          <select id="settingsWispServer" class="settings-select">
+            ${wispServers.map((w) => `<option value="${w.url}" ${currentWisp === w.url ? "selected" : ""}>${w.name}</option>`).join("")}
+            <option value="custom" ${isCustomWisp ? "selected" : ""}>Custom...</option>
+          </select>
+        </div>
+        <div class="settings-row ${isCustomWisp ? "" : "hidden"}" id="settingsCustomWispRow">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Custom WISP URL</span>
+            <span class="settings-label-desc">Enter your own WISP server URL</span>
+          </div>
+          <input type="text" id="settingsCustomWispUrl" class="settings-input" value="${isCustomWisp ? currentWisp : ""}" placeholder="wss://your-wisp-server.com/" style="width: 300px; padding: 8px; border: 1px solid var(--glass-border); border-radius: 6px; background: var(--bg-secondary); color: var(--text-primary); font-size: 13px;" />
         </div>
       </div>
     </div>

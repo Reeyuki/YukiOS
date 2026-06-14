@@ -111,11 +111,12 @@ Desktop UI renders windows, taskbar, start menu
 
 **App lifecycle:**
 
-1. **Instantiation** - `new MyApp(services)`
-2. **Registration** - App attached to `services` object in `main.js`
-3. **Launch** - `AppLauncher.launch(appId)` dispatches
-4. **Open** - `app.open()` creates window via `WindowManager`
-5. **Close** - `onClose(winId)` cleanup hook called
+1. **Definition** - App class created in `src/apps/`
+2. **Registration** - App added to `APP_DEFINITIONS` in `AppLoader.js` and metadata to `SYSTEM_APPS` in `AppRegistryConfig.js`
+3. **Instantiation** - `loadApps(services)` in `main.js` instantiates all registered apps and attaches to `services` object
+4. **Launch** - `AppLauncher.launch(appId)` dispatches
+5. **Open** - `app.open()` creates window via `WindowManager`
+6. **Close** - `onClose(winId)` cleanup hook called
 
 ---
 
@@ -363,7 +364,7 @@ Follow these steps to add a new app using the declarative framework:
 
 ### 1. Create App File
 
-Create `src/myApp.js`:
+Create `src/apps/myApp.js`:
 
 ```javascript
 import { BaseApp } from "./core/BaseApp.js";
@@ -441,68 +442,38 @@ export class MyApp extends BaseApp {
 }
 ```
 
-### 2. Register in AppSource.js
+### 2. Add to AppLoader.js
 
-Add constant to `src/AppSource.js`:
+Add entry to `APP_DEFINITIONS` in `src/AppLoader.js`:
 
 ```javascript
-export const AppSource = {
+const APP_DEFINITIONS = [
   // ... existing entries
-  MY_APP: "My App"
+  { serviceKey: "myApp", AppClass: MyApp, enhanced: true }
+];
+```
+
+### 3. Add to AppRegistryConfig.js
+
+Add metadata to `SYSTEM_APPS` in `src/AppRegistryConfig.js`:
+
+```javascript
+export const SYSTEM_APPS = {
+  // ... existing entries
+  myApp: {
+    serviceKey: "myApp",
+    type: "system",
+    title: "My App",
+    icon: "fas fa-star",
+    launchType: "instance",
+    windowIdPatterns: ["my-app"],
+    category: "office",
+    clippy: { message: "Your app description here.", animation: ClippyAnimation.Show }
+  }
 };
 ```
 
-### 3. Import in main.js
-
-Add import at top of `src/main.js`:
-
-```javascript
-import { MyApp } from "./myApp.js";
-```
-
-### 4. Instantiate in main.js
-
-Add instantiation after other apps:
-
-```javascript
-const myApp = new MyApp(services);
-services.myApp = myApp;
-```
-
-### 5. Add to AppLauncher Constructor
-
-Add parameter to AppLauncher constructor call in `src/main.js`:
-
-```javascript
-const appLauncher = new AppLauncher(
-  // ... existing parameters
-  myApp
-);
-```
-
-### 6. Update AppLauncher Constructor
-
-Add parameter to constructor in `src/appLauncher.js`:
-
-```javascript
-constructor(
-  // ... existing parameters
-  myApp
-) {
-  // ... existing assignments
-  this.myApp = myApp;
-}
-and then register it to "localAppMap" variable of applauncher like this
-  yukiOsGuide: {
-    type: "system",
-    title: "Yuki OS Guide",
-    action: () => this.yukiOsGuideApp.open(),
-    icon: "fas fa-book-open",
-    clippy: { message: "Discover what Yuki OS can do!", animation: "Pleased" }
-  },
-```
-
-### 7. Add CSS Styling
+### 4. Add CSS Styling
 
 Create `src/styles/myApp.css` with Yuki OS styling:
 
@@ -517,7 +488,7 @@ Create `src/styles/myApp.css` with Yuki OS styling:
 }
 ```
 
-### 8. Import CSS in index.html
+### 5. Import CSS in index.html
 
 Add link tag to `index.html`:
 
@@ -525,9 +496,9 @@ Add link tag to `index.html`:
 <link href="src/styles/myApp.css" rel="stylesheet" />
 ```
 
-### 9. Add Description to gameDescriptions.js
+### 6. Add Description to gameDescriptions.js
 
-Add entry to `src/gameDescriptions.js`:
+Add entry to `src/games/gameDescriptions.js`:
 
 ```javascript
 export const APP_DESCRIPTIONS = {
@@ -536,33 +507,7 @@ export const APP_DESCRIPTIONS = {
 };
 ```
 
-
-### 10. Register in `main.js`**
-
-```javascript
-const myApp = new MyApp(services);
-services.myApp = myApp;
-// Pass to AppLauncher constructor, then update appLauncher.js
-```
-
-### 11. Add to `gamesList.js`**
-
-```javascript
-appMap.myAppId = {
-  type: "system",
-  title: "My App",
-  icon: "fa-star",
-  action: () => appLauncher.myApp.open()
-};
-```
-
-### 1. Register news update in `src/news.js`**
-
-```javascript
-NEWS_UPDATES["2025-01-15"] = [{ icon: "fa-star", title: "My App", description: "New app added." }];
-```
-
-### 10. Register in news.js
+### 7. Register in news.js
 
 Add entry to `NEWS_UPDATES` in `src/news.js`:
 
@@ -588,7 +533,7 @@ const NEWS_UPDATES = [
 ];
 ```
 
-### 11. Verify Build
+### 8. Verify Build
 
 Run build to verify:
 

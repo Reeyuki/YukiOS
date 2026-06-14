@@ -20,7 +20,7 @@ export const APP_DESCRIPTIONS = {
   model3dApp: "View OBJ, GLTF, and GLB 3D models using Three.js with rotation and zoom controls.",
   jsDosApp: "DOS emulator for running classic DOS games and applications.",
   v86app: "x86-64 full system emulator for running operating systems and legacy software.",
-  youtubeApp: "YouTube integration for watching videos within Yuki OS.",
+  youtubeUtilsApp: "YouTube integration for watching videos within Yuki OS.",
   achievementsApp: "Track playtime milestones and system usage achievements.",
   accountManagerApp: "Manage multiple user accounts with create, edit, delete, and switch functionality.",
   emulatorApp: "Multi-platform game emulator supporting various console systems.",
@@ -62,7 +62,15 @@ export const APP_DESCRIPTIONS = {
   miniPaint:
     "Lightweight browser-based image editor with basic drawing tools, filters, and quick editing capabilities.",
   scramjet:
-    "Web proxy tool for browsing external sites through a proxied session with basic anonymity and access control."
+    "Web proxy tool for browsing external sites through a proxied session with basic anonymity and access control.",
+  discordApp: "Discord web client with scramjet proxy for chatting with friends and communities.",
+  youtubeApp: "YouTube web client with scramjet proxy for watching videos and content.",
+  spotifyApp: "Spotify web client with scramjet proxy for streaming music and podcasts.",
+  slackApp: "Slack web client with scramjet proxy for team collaboration and communication.",
+  gmailApp: "Gmail web client with scramjet proxy for email management and communication.",
+  outlookApp: "Outlook web client with scramjet proxy for email and calendar management.",
+  chatgptApp: "ChatGPT web client with scramjet proxy for AI-powered conversations and assistance.",
+  deepseekApp: "DeepSeek web client with scramjet proxy for AI-powered conversations and assistance."
 };
 
 export const descriptionMap = {

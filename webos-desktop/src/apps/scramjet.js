@@ -61,7 +61,6 @@ export class ScramjetApp extends BaseApp {
         try {
           const iframeDoc = this.iframe.contentDocument || this.iframe.contentWindow.document;
           const controlsSlot = iframeDoc.getElementById("controls-slot");
-          console.log("Controls slot:", controlsSlot);
           if (controlsSlot) {
             const winId = element.id;
             console.log("Window ID:", winId);

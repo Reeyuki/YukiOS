@@ -732,8 +732,36 @@ export function bindDataCategory(win, save, settings, fs, showStatus, showSaved)
   });
 }
 
-export function bindNetworkCategory(win, save) {
+export function bindNetworkCategory(win, save, settings, showSaved) {
   bindEvent($("#settingsCdnMirror", win), "change", save);
+
+  const wispServerSelect = $("#settingsWispServer", win);
+  const customWispRow = $("#settingsCustomWispRow", win);
+  const customWispUrl = $("#settingsCustomWispUrl", win);
+
+  if (wispServerSelect && customWispRow && customWispUrl) {
+    bindEvent(wispServerSelect, "change", () => {
+      const value = wispServerSelect.value;
+      if (value === "custom") {
+        customWispRow.classList.remove("hidden");
+        customWispUrl.focus();
+      } else {
+        customWispRow.classList.add("hidden");
+        settings.wispServer = value;
+        os.storage.set(StorageKeys.wispServer, value);
+        showSaved();
+      }
+    });
+
+    bindEvent(customWispUrl, "change", () => {
+      const url = customWispUrl.value.trim();
+      if (url) {
+        settings.wispServer = url;
+        os.storage.set(StorageKeys.wispServer, url);
+        showSaved();
+      }
+    });
+  }
 }
 
 export function bindAudioCategory(win, settings, showSaved) {

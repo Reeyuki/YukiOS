@@ -98,7 +98,8 @@ export class SettingsApp extends BaseApp {
         windowSwitcherIncludeMinimized: os.storage.get(StorageKeys.windowSwitcherIncludeMinimized) !== "false",
         mikuCursor: os.storage.get(StorageKeys.mikuCursor) !== "false",
         fontFamily: os.storage.get(StorageKeys.fontFamily) || "opensans",
-        uiDensity: os.storage.get(StorageKeys.uiDensity) || "comfortable"
+        uiDensity: os.storage.get(StorageKeys.uiDensity) || "comfortable",
+        wispServer: os.storage.get(StorageKeys.wispServer) || "wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/"
       };
 
       applyCursor(this._settings.cursorDataUrl);
@@ -330,7 +331,7 @@ export class SettingsApp extends BaseApp {
     );
 
     bindDataCategory(win, save, this._settings, this.fs, showStatus, showSaved);
-    bindNetworkCategory(win, save);
+    bindNetworkCategory(win, save, this._settings, showSaved);
     bindAudioCategory(win, this._settings, showSaved);
   }
 

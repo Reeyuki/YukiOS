@@ -337,8 +337,8 @@ export const SYSTEM_APPS = {
       animation: ClippyAnimation.GetArtsy
     }
   },
-  youtube: {
-    serviceKey: "youtubeApp",
+  youtubeUtils: {
+    serviceKey: "youtubeUtilsApp",
     type: "system",
     title: "YouTube Utilities",
     icon: `${CDN_BASE}/static/icons/youtube.webp`,
@@ -506,7 +506,96 @@ export const SYSTEM_APPS = {
     launchType: "instance",
     windowIdPatterns: ["scramjet"],
     category: "internet",
+    persistContentState: false,
     clippy: { message: "Browse web with scramjet proxy", animation: ClippyAnimation.GetArtsy }
+  },
+  discordApp: {
+    serviceKey: "discordApp",
+    type: "system",
+    title: "Discord",
+    icon: "fab fa-discord",
+    launchType: "instance",
+    windowIdPatterns: ["discord"],
+    category: "internet",
+    persistContentState: false,
+    clippy: { message: "Chat with friends on Discord", animation: ClippyAnimation.Wave }
+  },
+  youtubeApp: {
+    serviceKey: "youtubeApp",
+    type: "system",
+    title: "Youtube",
+    icon: `${CDN_BASE}/static/icons/youtube.webp`,
+    launchType: "instance",
+    windowIdPatterns: ["youtube"],
+    category: "internet",
+    persistContentState: false,
+    clippy: { message: "Watch videos on Youtube", animation: ClippyAnimation.Show }
+  },
+  spotifyApp: {
+    serviceKey: "spotifyApp",
+    type: "system",
+    title: "Spotify",
+    icon: "fab fa-spotify",
+    launchType: "instance",
+    windowIdPatterns: ["spotify"],
+    category: "media",
+    persistContentState: false,
+    clippy: { message: "Listen to music on Spotify", animation: ClippyAnimation.GetArtsy }
+  },
+  slackApp: {
+    serviceKey: "slackApp",
+    type: "system",
+    title: "Slack",
+    icon: "fab fa-slack",
+    launchType: "instance",
+    windowIdPatterns: ["slack"],
+    category: "internet",
+    persistContentState: false,
+    clippy: { message: "Collaborate on Slack", animation: ClippyAnimation.Wave }
+  },
+  gmailApp: {
+    serviceKey: "gmailApp",
+    type: "system",
+    title: "Gmail",
+    icon: "fas fa-envelope",
+    launchType: "instance",
+    windowIdPatterns: ["gmail"],
+    category: "internet",
+    persistContentState: false,
+    clippy: { message: "Check your Gmail", animation: ClippyAnimation.GetTechy }
+  },
+  outlookApp: {
+    serviceKey: "outlookApp",
+    type: "system",
+    title: "Outlook",
+    icon: "fas fa-envelope-open",
+    launchType: "instance",
+    windowIdPatterns: ["outlook"],
+    category: "internet",
+    persistContentState: false,
+    clippy: { message: "Check your Outlook", animation: ClippyAnimation.GetTechy }
+  },
+  chatgptApp: {
+    serviceKey: "chatgptApp",
+    type: "system",
+    title: "ChatGPT",
+    icon: "fas fa-robot",
+    launchType: "instance",
+    windowIdPatterns: ["chatgpt"],
+    category: "internet",
+    persistContentState: false,
+    clippy: { message: "Chat with AI on ChatGPT", animation: ClippyAnimation.GetTechy }
+  },
+  deepseekApp: {
+    serviceKey: "deepseekApp",
+    type: "system",
+    title: "DeepSeek",
+    icon: "fas fa-brain",
+    launchType: "instance",
+    windowIdPatterns: ["deepseek"],
+    category: "internet",
+    persistContentState: false,
+    clippy: { message: "Chat with AI on DeepSeek", animation: ClippyAnimation.GetTechy }
   }
 };
 

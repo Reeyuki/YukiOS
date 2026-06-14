@@ -31,6 +31,8 @@
   },
   "dependencies": {
     "7z-wasm": "^1.2.0",
+    "@mercuryworkshop/scramjet": "2.0.67-alpha.1",
+    "@mercuryworkshop/scramjet-controller": "0.0.13",
     "archive-wasm": "^1.7.0",
     "browserfs": "^1.4.3",
     "canvas-confetti": "^1.9.4",
@@ -40,5 +42,6 @@
     "interactjs": "^1.10.27",
     "marked": "^17.0.6",
     "workbox-window": "^7.4.1"
-  }
+  },
+  "packageManager": "pnpm@11.6.0+sha512.9a36518224080c6fe5165afdcfe79bfa118c29be703f3f462b1e32efe1e98e47e8750b148e08286250aad4113cc7993ca413c4e2cd447752708c2ee5751bc95f"
 }

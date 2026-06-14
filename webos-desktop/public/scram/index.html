@@ -920,12 +920,19 @@
     <script defer>
       const DEFAULT_WISP = "wss://anura.pro/";
       const WISP_SERVERS = [
-        { name: "Rhw's Wisp", url: "wss://wisp.rhw.one/wisp/" },
-        { name: "Anura's Wisp", url: "wss://anura.pro/" }
+        { name: "Anura's Wisp", url: "wss://anura.pro/" },
+        { name: "Reeyuki Wisp", url: "wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/" },
+        { name: "Reeyuki Wisp 2", url: "wss://reeyukiwisp.onrender.com/" }
       ];
 
+      const urlParams = new URLSearchParams(window.location.search);
+      const wispParam = urlParams.get("wisp");
+      const wispUrl = wispParam || DEFAULT_WISP;
+
       if (!localStorage.getItem("proxServer")) {
-        localStorage.setItem("proxServer", DEFAULT_WISP);
+        localStorage.setItem("proxServer", wispUrl);
+      } else if (wispParam) {
+        localStorage.setItem("proxServer", wispUrl);
       }
 
       if (typeof BareMux === "undefined") {

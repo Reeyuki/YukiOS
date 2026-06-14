@@ -125,5 +125,6 @@ export const StorageKeys = {
   audioMixerV1: "yukios_audio_mixer_v1",
   customColors: "yukios_custom_colors",
   customThemes: "yukios_custom_themes",
-  vantaWallpaper: "yukiOS_vanta_wallpaper"
+  vantaWallpaper: "yukiOS_vanta_wallpaper",
+  wispServer: "yukiOS_wisp_server"
 };

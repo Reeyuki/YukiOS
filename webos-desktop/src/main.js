@@ -11,7 +11,7 @@ import { DesktopUI } from "./desktopui/desktopui.js";
 import { SettingsApp } from "./settings/settings.js";
 import { AppCreatorApp } from "./apps/appCreator.js";
 import { OfficeAppProxy } from "./office/officeLoader.js";
-import { YouTubeApp } from "./apps/youtube.js";
+import { YouTubeUtilsApp } from "./apps/youtubeUtils.js";
 import { NotificationCenter } from "./notificationCenter.js";
 import { JsDosApp } from "./apps/jsdos.js";
 import { V86App } from "./apps/v86.js";
@@ -74,8 +74,8 @@ const EnhancedSettingsApp = HybridAdapter.enhanceBaseApp(SettingsApp);
 const notepadApp = new EnhancedNotepadApp(services);
 services.notepadApp = notepadApp;
 
-const youtubeApp = new YouTubeApp(services);
-services.youtubeApp = youtubeApp;
+const youtubeUtilsApp = new YouTubeUtilsApp(services);
+services.youtubeUtilsApp = youtubeUtilsApp;
 
 const explorerApp = new ExplorerApp(services);
 services.explorerApp = explorerApp;
@@ -91,7 +91,7 @@ notepadApp.setExplorer(explorerApp);
 const browserApp = new EnhancedBrowserApp(services);
 services.browserApp = browserApp;
 
-youtubeApp.setBrowserApp(browserApp);
+youtubeUtilsApp.setBrowserApp(browserApp);
 
 const jsDosApp = new JsDosApp(services);
 services.jsDosApp = jsDosApp;

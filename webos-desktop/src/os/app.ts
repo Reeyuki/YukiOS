@@ -62,19 +62,59 @@ export class AppAPI {
     winId: string;
     appId?: string;
     title: string;
+    icon?: string | null;
+    status?: string;
+    isTray?: boolean;
   }> {
     this._logLegacyWarning("getRunningApps");
     if (!this.appLauncher) {
       return [];
     }
     const windows = this.appLauncher.wm.openWindows;
-    const result: Array<{ winId: string; appId?: string; title: string }> = [];
+    const result: Array<{
+      winId: string;
+      appId?: string;
+      title: string;
+      icon?: string | null;
+      status?: string;
+      isTray?: boolean;
+    }> = [];
 
-    windows.forEach((win: HTMLElement, winId: string) => {
+    windows.forEach((entry: any, winId: string) => {
+      const win = document.getElementById(winId);
+      if (!win) return;
       const appId = win.dataset.appId;
-      const title = win.querySelector(".window-title-text")?.textContent || winId;
-      result.push({ winId, appId, title });
+      const title = entry.title || winId;
+      const icon = entry.iconValue || null;
+      const visible = win.style.display !== "none";
+      const status = visible ? "Running" : "Suspended";
+
+      result.push({
+        winId,
+        appId,
+        title,
+        icon,
+        status,
+        isTray: false
+      });
     });
+
+    if (this.appLauncher.trayManager) {
+      const trayItems = this.appLauncher.trayManager.trayItems;
+      if (trayItems instanceof Map) {
+        trayItems.forEach((item: any, winId: string) => {
+          if (item.inTray && !result.find((r) => r.winId === winId)) {
+            result.push({
+              winId,
+              title: item.label || winId,
+              icon: item.icon || null,
+              status: "Tray",
+              isTray: true
+            });
+          }
+        });
+      }
+    }
 
     return result;
   }

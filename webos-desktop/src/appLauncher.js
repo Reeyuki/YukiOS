@@ -315,8 +315,23 @@ export class AppLauncher {
         this.openIframeApp({ appId: app, type: "segaMD", source: info.url, originalName: app, ...appExtra }),
       game: async () => {
         let source = info.url;
-        console.log("[AppLauncher Game] Launching app:", app, "Proxy enabled:", info?.proxyEnabled, "Source:", source);
-        if (info?.proxyEnabled && typeof source === "string" && /^https?:\/\//.test(source)) {
+        console.log(
+          "[AppLauncher Game] Launching app:",
+          app,
+          "Scramjet enabled:",
+          info?.scramjetEnabled,
+          "Proxy enabled:",
+          info?.proxyEnabled,
+          "Source:",
+          source
+        );
+
+        if (info?.scramjetEnabled) {
+          const wispUrl =
+            os.storage.get(StorageKeys.wispServer) || "wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/";
+          source = `/scramapps/scramjet-template.html?wisp=${encodeURIComponent(wispUrl)}&target=${encodeURIComponent(info.url)}`;
+          console.log("[AppLauncher Game] Using scramjet template:", source);
+        } else if (info?.proxyEnabled && typeof source === "string" && /^https?:\/\//.test(source)) {
           const proxyIndex = clampProxyIndex(info.proxyIndex, PROXIES);
           console.log("[AppLauncher Game] Fetching through proxy, index:", proxyIndex);
           try {

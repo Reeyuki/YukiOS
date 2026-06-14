@@ -33,7 +33,8 @@ export class AppRestorationService {
         this.registerApp(appId, {
           windowIdPatterns: metadata.windowIdPatterns,
           appTypeHint: "system",
-          isHeavy: metadata.isHeavy || false
+          isHeavy: metadata.isHeavy || false,
+          persistContentState: metadata.persistContentState !== false
         });
       }
     }
@@ -146,7 +147,8 @@ export class AppRestorationService {
           console.warn(`Failed to save geometry for ${appId}:`, e);
         }
 
-        if (this.wm.appLauncher) {
+        const appMetadata = this.appRegistry.get(appId);
+        if (this.wm.appLauncher && (!appMetadata || appMetadata.persistContentState !== false)) {
           const appInstance = this.getAppInstance(appId);
           if (appInstance && typeof appInstance.getSnapshot === "function") {
             try {
@@ -323,27 +325,7 @@ export class AppRestorationService {
       };
 
       try {
-        if (typeof appInstance.getDeclarativeSchema === "function") {
-          const schema = appInstance.getDeclarativeSchema(launchOptions);
-          if (schema) {
-            if (!schema.actions) {
-              schema.actions = {};
-            }
-            schema.actions._appInstance = appInstance;
-            this.wm.appLauncher.appRuntime.register(schema.id, schema);
-            await this.wm.appLauncher.appRuntime.launch(schema.id, launchOptions);
-          } else if (typeof appInstance.open === "function") {
-            await appInstance.open(launchOptions);
-          } else {
-            this._logRestore(`Failed: App '${appId}' has null declarative schema and no open() method`);
-            return;
-          }
-        } else if (typeof appInstance.open === "function") {
-          await appInstance.open(launchOptions);
-        } else {
-          this._logRestore(`Failed: App '${appId}' does not have open() method or declarative schema`);
-          return;
-        }
+        await this.wm.appLauncher.launch(appId, false, launchOptions);
         this.launchedApps.add(appId);
       } catch (e) {
         this._logRestore(`Failed to open app '${appId}': ${e.message}`);
@@ -383,7 +365,10 @@ export class AppRestorationService {
         }
       }
 
-      if (state.appStateSnapshot) {
+      const appMetadata = this.appRegistry.get(appId);
+      const shouldPersistContent = !appMetadata || appMetadata.persistContentState !== false;
+
+      if (shouldPersistContent && state.appStateSnapshot) {
         try {
           const appInstance = this.getAppInstance(appId);
           if (appInstance && typeof appInstance.restoreSnapshot === "function") {
@@ -392,7 +377,7 @@ export class AppRestorationService {
         } catch (e) {}
       }
 
-      if (state.scrollPosition) {
+      if (shouldPersistContent && state.scrollPosition) {
         const content = win.querySelector(".window-content");
         if (content) {
           content.scrollLeft = state.scrollPosition.x;

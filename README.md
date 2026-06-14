@@ -169,8 +169,15 @@ It's built entirely in vanilla JS (with some libraries, of course!).
 
 * Yuki Browser
 * kiwiIRC
-* Steam integration
-* App Creator
+* Steam-like game launcher
+* Custom App Creator
+* Discord
+* Spotify
+* Slack
+* Gmail
+* Outlook
+* ChatGPT
+* DeepSeek
 
 ## 🎮 Games & Emulation Tools
 
@@ -226,6 +233,7 @@ Single-file build output is supported for easy deployment.
 * Font Awesome
 * Emoji Mart
 * Vanta.js
+* Scramjet/BareMux/epoxy-transport
 
 ---
 

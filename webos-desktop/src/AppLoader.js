@@ -27,6 +27,14 @@ import { EmojiSelectorApp } from "./apps/emojiSelector.js";
 import { SystemAppsApp } from "./apps/systemApps.js";
 import { RhythmsApp } from "./apps/rhythms.js";
 import { ScramjetApp } from "./apps/scramjet.js";
+import { DiscordApp } from "./apps/discordApp.js";
+import { YoutubeApp } from "./apps/youtube.js";
+import { SpotifyApp } from "./apps/spotifyApp.js";
+import { SlackApp } from "./apps/slackApp.js";
+import { GmailApp } from "./apps/gmailApp.js";
+import { OutlookApp } from "./apps/outlookApp.js";
+import { ChatgptApp } from "./apps/chatgptApp.js";
+import { DeepseekApp } from "./apps/deepseekApp.js";
 
 const APP_DEFINITIONS = [
   { serviceKey: "terminalApp", AppClass: TerminalApp, enhanced: true },
@@ -61,6 +69,14 @@ const APP_DEFINITIONS = [
   { serviceKey: "displayPerformanceApp", AppClass: DisplayPerformanceApp, enhanced: false },
   { serviceKey: "networkTrayApp", AppClass: NetworkTrayApp, enhanced: false },
   { serviceKey: "scramjetApp", AppClass: ScramjetApp, enhanced: true },
+  { serviceKey: "discordApp", AppClass: DiscordApp, enhanced: true },
+  { serviceKey: "youtubeApp", AppClass: YoutubeApp, enhanced: true },
+  { serviceKey: "spotifyApp", AppClass: SpotifyApp, enhanced: true },
+  { serviceKey: "slackApp", AppClass: SlackApp, enhanced: true },
+  { serviceKey: "gmailApp", AppClass: GmailApp, enhanced: true },
+  { serviceKey: "outlookApp", AppClass: OutlookApp, enhanced: true },
+  { serviceKey: "chatgptApp", AppClass: ChatgptApp, enhanced: true },
+  { serviceKey: "deepseekApp", AppClass: DeepseekApp, enhanced: true },
   { serviceKey: "emojiSelectorApp", AppClass: EmojiSelectorApp, enhanced: true },
   { serviceKey: "systemAppsApp", AppClass: SystemAppsApp, enhanced: false },
   { serviceKey: "rhythmsApp", AppClass: RhythmsApp, enhanced: true }
