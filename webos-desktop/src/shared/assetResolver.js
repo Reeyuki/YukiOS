@@ -413,7 +413,7 @@ export async function fetchHtmlAsBlobUrl(url) {
     } catch {}
   }
   const isIgnored =
-    ["angrybirds", "subway", "azahar", "catgoesfishing", "cat goes fishing", "catfish", "cat_fish"].some((p) =>
+    ["angrybirds", "subway", "azahar", "catgoesfishing", "cat goes fishing", "tabs", "catfish", "cat_fish"].some((p) =>
       url.toLowerCase().includes(p.toLowerCase())
     ) || url.toLowerCase().includes("catgoesfishing.html");
 

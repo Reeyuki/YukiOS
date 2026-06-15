@@ -258,6 +258,7 @@ export class DesktopUI {
     this.startButton = document.getElementById("start-button");
     this.startMenu = document.getElementById("start-menu");
     this.selectionBox = document.getElementById("selection-box");
+    this.lastFocusedContext = "desktop";
 
     this.positionHelper = new PositionHelper(this.desktop, GRID_CONFIG);
     this.selectionManager = new SelectionManager();
@@ -271,7 +272,8 @@ export class DesktopUI {
       this.notepadApp,
       this.explorerApp,
       this.appLauncher,
-      this.appLauncher.jsDosApp
+      this.appLauncher.jsDosApp,
+      null
     );
 
     this.dragDropManager = new DragDropManager(
@@ -284,6 +286,8 @@ export class DesktopUI {
       IconDataHelper,
       this.explorerApp
     );
+
+    this.iconManager.dragDropManager = this.dragDropManager;
 
     this.clipboardManager = new ClipboardManager(
       this.fs,
@@ -424,7 +428,38 @@ export class DesktopUI {
 
       if (e.code === "Delete") {
         const selectedArray = this.selectionManager.toArray();
-        if (selectedArray.length > 0) {
+        let hasExplorerSelection = false;
+        let explorerInst = null;
+
+        if (this.explorerApp) {
+          for (const [winId, inst] of this.explorerApp._instances) {
+            if (inst.selectedItems.size > 0) {
+              hasExplorerSelection = true;
+              explorerInst = inst;
+              break;
+            }
+          }
+        }
+
+        if (hasExplorerSelection && this.lastFocusedContext === "explorer" && explorerInst) {
+          e.preventDefault();
+          (async () => {
+            const effectiveItems = [...explorerInst.selectedItems];
+            const msg =
+              effectiveItems.length > 1
+                ? `Delete ${effectiveItems.length} items and all their contents?`
+                : `Delete "${effectiveItems[0]}"?`;
+            const { customConfirm } = await import("../shared/dialogs.js");
+            const confirmed = await customConfirm(msg);
+            if (confirmed) {
+              for (const name of effectiveItems) {
+                await os.fs.delete(explorerInst.currentPath, name);
+              }
+              await this.explorerApp.renderInstance(explorerInst);
+              os.notify.send(`${effectiveItems.length} item${effectiveItems.length !== 1 ? "s" : ""} deleted`);
+            }
+          })();
+        } else if (selectedArray.length > 0) {
           e.preventDefault();
           this.clipboardManager.deleteSelectedIcons(selectedArray, this.selectionManager);
         }

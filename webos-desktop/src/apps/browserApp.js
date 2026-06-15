@@ -290,60 +290,25 @@ export class BrowserApp extends BaseApp {
   }
 
   openHtml(content, name = "file", path = "file://") {
-    const id = `file-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-
-    const win = os.window.create(id, name, "900px", "620px", {
-      icon: "fas fa-file"
-    });
-
     const html = typeof content === "string" ? content : "";
-
     const blob = new Blob([html], { type: "text/html" });
     const url = URL.createObjectURL(blob);
 
-    win.innerHTML = `
-    <div class="window-header">
-      <span>Browser</span>
-      ${os.window.getWindowControls()}
-    </div>
+    this.openHtmlAsTab(url, name, path);
+  }
 
-    <div class="browser-root" id="browser-root-${id}">
-      <div class="browser-tabbar" id="tabbar-${id}">
-        <div class="browser-tab active" data-tab-id="1">
-          <span class="tab-favicon-placeholder">📄</span>
-          <span class="tab-title">${name}</span>
-        </div>
-      </div>
-
-      <div class="browser-navbar" id="navbar-${id}">
-        <button class="nav-btn" disabled>←</button>
-        <button class="nav-btn" disabled>→</button>
-        <button class="nav-btn">↻</button>
-        <button class="nav-btn">⌂</button>
-
-        <div class="address-bar-wrap">
-          <input class="address-bar" value="${path}" readonly />
-        </div>
-
-        <button class="browser-menu-btn">⋮</button>
-      </div>
-
-      <div class="browser-content" id="content-${id}" style="height:100%; display:flex;">
-        <iframe class="browser-iframe active" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" src="${url}"></iframe>
-      </div>
-    </div>
-  `;
-
-    const iframe = win.querySelector("iframe");
-    if (iframe) {
-      iframe.addEventListener("load", () => {
-        try {
-          URL.revokeObjectURL(url);
-        } catch (e) {}
-      });
+  openHtmlAsTab(url, name = "file", path = "file://") {
+    if (!this.win) {
+      this.open("Yuki Browser", url);
+    } else {
+      this.createTab(url, true);
+      const tab = this.getActiveTab();
+      if (tab) {
+        tab.title = name;
+        this.renderTabs();
+      }
     }
-
-    return win;
+    os.window.focus(this.win);
   }
   setupNavEvents() {
     const backBtn = document.getElementById(`btn-back-${this.winId}`);

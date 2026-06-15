@@ -13,6 +13,8 @@ It supports running Flash content, DOS programs, console emulation, WebAssembly 
 It's built entirely in vanilla JS (with some libraries, of course!).
 ![Steam interface](.github/steam.png) 
 ![Start menu](.github/startmenuv86.png) 
+![Discord](.github/dc.png)
+![Web Apps](.github/webapps.png)
 ![Setup](.github/setupsettings.png)
 ![Music1](.github/audio1.png)
 ![Music2](.github/audio2.png)
@@ -92,11 +94,11 @@ It's built entirely in vanilla JS (with some libraries, of course!).
 
 * Cross-app event communication
 * Notification system with app icons and actions
-* Background audio control per application
+* Per-app audio mixer with live volume display in sliders
 * Achievement tracking and usage milestones
 * Setup flow for first-time configuration
-* Theme system with light/dark and transparency modes
-* Wallpaper customization
+* Theme system with 40 presets and custom theme support, light/dark and transparency modes
+* Wallpaper customization with animated wallpaper and Vanta.js support
 * Calendar and date utilities
 * PWA install and offline caching support
 * Single-file deployment build option
@@ -159,6 +161,7 @@ It's built entirely in vanilla JS (with some libraries, of course!).
 * Photopea
 * LibreSprite
 * Camera
+* Media Viewer
 * Office Viewer
 * Evil Spotify
 * Yuki Blender

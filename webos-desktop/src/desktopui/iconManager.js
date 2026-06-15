@@ -18,7 +18,8 @@ export class IconManager {
     notepadApp,
     explorerApp,
     appLauncher,
-    jsDosApp
+    jsDosApp,
+    dragDropManager
   ) {
     this.desktop = desktop;
     this.fs = fs;
@@ -29,6 +30,7 @@ export class IconManager {
     this.explorerApp = explorerApp;
     this.appLauncher = appLauncher;
     this.jsDosApp = jsDosApp;
+    this.dragDropManager = dragDropManager;
   }
 
   makeIconInteractable(icon, ignoreDrag = false) {
@@ -66,9 +68,37 @@ export class IconManager {
     } else {
       this.selectionManager.toggle(icon);
     }
+    if (
+      this.dragDropManager &&
+      this.dragDropManager.desktop &&
+      this.dragDropManager.desktop.lastFocusedContext !== undefined
+    ) {
+      this.dragDropManager.desktop.lastFocusedContext = "desktop";
+    }
   }
 
   setupInteractDrag(icon) {
+    if (!this.dragDropManager) {
+      interact(icon)
+        .resizable(false)
+        .draggable({
+          inertia: false,
+          modifiers: [
+            interact.modifiers.restrict({
+              restriction: this.desktop,
+              elementRect: { top: 0, left: 0, bottom: 1, right: 1 }
+            })
+          ],
+          autoScroll: false,
+          cursorChecker: () => null,
+          listeners: {
+            start: () => this.onDragStart(),
+            move: (event) => this.onDragMove(event),
+            end: () => this.onDragEnd()
+          }
+        });
+      return;
+    }
     interact(icon)
       .resizable(false)
       .draggable({
@@ -82,9 +112,9 @@ export class IconManager {
         autoScroll: false,
         cursorChecker: () => null,
         listeners: {
-          start: () => this.onDragStart(),
-          move: (event) => this.onDragMove(event),
-          end: () => this.onDragEnd()
+          start: () => this.dragDropManager.onDragStart(),
+          move: (event) => this.dragDropManager.onDragMove(event),
+          end: () => this.dragDropManager.onDragEnd()
         }
       });
   }

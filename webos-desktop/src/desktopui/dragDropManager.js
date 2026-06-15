@@ -241,9 +241,9 @@ export class DragDropManager {
       }
 
       try {
-        const content = await os.fs.read([...sourcePath, name]);
         const kind = await os.fs.getFileKind([...sourcePath, name]);
         const fileIcon = await os.fs.getFileIcon([...sourcePath, name]);
+        const { FileKind } = await import("../fs.js");
 
         const destDir = this.fs.resolveUserPath(["Desktop"]);
         const destPath = this.fs.join(destDir, name);
@@ -262,11 +262,24 @@ export class DragDropManager {
           finalName = await this.fs.getUniqueFileName(["Desktop"], name);
         }
 
-        if (action === "replace") {
-          await os.fs.write(["Desktop", name], content);
-          await this.fs.writeMeta(destDir, name, { kind, icon: fileIcon });
+        let content;
+        if (kind === FileKind.IMAGE || kind === FileKind.VIDEO || kind === FileKind.AUDIO) {
+          const blob = await os.fs.readBinaryFile([...sourcePath], name);
+          content = blob;
+          if (action === "replace") {
+            await os.fs.writeBinaryFile(["Desktop"], name, blob, kind, fileIcon);
+          } else {
+            await os.fs.writeBinaryFile(["Desktop"], finalName, blob, kind, fileIcon);
+          }
         } else {
-          await os.fs.write(["Desktop", finalName], content);
+          content = await os.fs.read([...sourcePath, name]);
+          if (action === "replace") {
+            await os.fs.write(["Desktop", name], content);
+            await this.fs.writeMeta(destDir, name, { kind, icon: fileIcon });
+          } else {
+            await os.fs.write(["Desktop", finalName], content);
+            await this.fs.writeMeta(destDir, finalName, { kind, icon: fileIcon });
+          }
         }
 
         await os.fs.delete(sourcePath, name);

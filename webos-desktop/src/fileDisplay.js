@@ -371,7 +371,7 @@ export function buildFileIconHTML(name, { thumbnailSrc = null, size = 64, radius
   if (iconSource && typeof iconSource === "string" && (iconSource.startsWith("fa") || iconSource.includes(" fa-"))) {
     return `<div style="${s}display:flex;align-items:center;justify-content:center;font-size:${Math.round(
       size * 0.44
-    )}px;color:#8090ff;background:rgba(128,144,255,0.15);border:1px solid rgba(128,144,255,0.2);"><i class="${iconSource}"></i></div>`;
+    )}px;color:var(--brand);background:var(--brand-dim);border:1px solid var(--glass-border);"><i class="${iconSource}"></i></div>`;
   }
 
   if (isHtmlFile(name)) {

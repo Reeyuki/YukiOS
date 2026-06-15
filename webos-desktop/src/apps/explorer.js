@@ -915,7 +915,7 @@ export class ExplorerApp extends BaseApp {
       }
     }
 
-    return buildFileIconHTML(name, { thumbnailSrc, storedIcon: itemData.icon });
+    return buildFileIconHTML(name, { thumbnailSrc, storedIcon: itemData.faIcon || itemData.icon });
   }
 
   _bindItemInteractions(item, name, isFile, inst, win) {
@@ -1639,6 +1639,7 @@ export class ExplorerApp extends BaseApp {
     }
 
     inst.selectedFile = name;
+    if (this.desktopUI) this.desktopUI.lastFocusedContext = "explorer";
     if (inst.mode === "browse") this._updateStatusBar(inst, inst._cachedFolder);
   }
 
