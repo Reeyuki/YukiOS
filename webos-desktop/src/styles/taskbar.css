@@ -651,32 +651,32 @@ html[data-theme="light"] .task-item-name {
     0 0 0 1px rgba(255, 255, 255, 0.05),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
   z-index: 9999;
-  animation: clipboardPopupIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation: trayPopupIn 100ms ease-out both;
 }
 
 #clipboard-tray-popup.closing {
-  animation: clipboardPopupOut 0.2s cubic-bezier(0.4, 0, 1, 1) forwards;
+  animation: trayPopupOut 160ms cubic-bezier(0.4, 0, 1, 1) both;
 }
 
-@keyframes clipboardPopupIn {
+@keyframes trayPopupIn {
   from {
     opacity: 0;
-    transform: translateY(16px) scale(0.92);
+    transform: translateY(30px);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
 }
 
-@keyframes clipboardPopupOut {
+@keyframes trayPopupOut {
   from {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
   to {
     opacity: 0;
-    transform: translateY(8px) scale(0.95);
+    transform: translateY(30px);
   }
 }
 
@@ -694,34 +694,12 @@ html[data-theme="light"] .task-item-name {
     0 0 0 1px rgba(255, 255, 255, 0.05),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
   z-index: 9999;
-  animation: brightnessPopupIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation: trayPopupIn 100ms ease-out both;
   overflow: hidden;
 }
 
 #brightness-tray-popup.closing {
-  animation: brightnessPopupOut 0.2s cubic-bezier(0.4, 0, 1, 1) forwards;
-}
-
-@keyframes brightnessPopupIn {
-  from {
-    opacity: 0;
-    transform: translateY(16px) scale(0.92);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-@keyframes brightnessPopupOut {
-  from {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(8px) scale(0.95);
-  }
+  animation: trayPopupOut 160ms cubic-bezier(0.4, 0, 1, 1) both;
 }
 
 .brightness-popup-header {
@@ -1022,23 +1000,12 @@ html[data-theme="light"] .task-item-name {
     0 0 0 1px rgba(255, 255, 255, 0.05),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
   z-index: 9999;
-  animation: powerPopupIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation: trayPopupIn 100ms ease-out both;
   overflow: hidden;
 }
 
 #power-tray-popup.closing {
-  animation: powerPopupOut 0.2s cubic-bezier(0.4, 0, 1, 1) forwards;
-}
-
-@keyframes powerPopupIn {
-  from {
-    opacity: 0;
-    transform: translateY(16px) scale(0.92);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+  animation: trayPopupOut 160ms cubic-bezier(0.4, 0, 1, 1) both;
 }
 
 #display-performance-tray-popup {
@@ -1055,36 +1022,14 @@ html[data-theme="light"] .task-item-name {
     0 0 0 1px rgba(255, 255, 255, 0.05),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
   z-index: 9999;
-  animation: displayPerformancePopupIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation: trayPopupIn 100ms ease-out both;
   overflow: hidden;
   max-height: 85vh;
   overflow-y: auto;
 }
 
 #display-performance-tray-popup.closing {
-  animation: displayPerformancePopupOut 0.2s cubic-bezier(0.4, 0, 1, 1) forwards;
-}
-
-@keyframes displayPerformancePopupIn {
-  from {
-    opacity: 0;
-    transform: translateY(16px) scale(0.92);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-@keyframes displayPerformancePopupOut {
-  from {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(8px) scale(0.95);
-  }
+  animation: trayPopupOut 160ms cubic-bezier(0.4, 0, 1, 1) both;
 }
 
 .display-performance-popup-content {
@@ -2016,34 +1961,12 @@ html[data-theme="light"] .task-item-name {
     0 0 0 1px rgba(255, 255, 255, 0.05),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
   z-index: 9999;
-  animation: networkPopupIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation: trayPopupIn 100ms ease-out both;
   overflow: hidden;
 }
 
 #network-tray-popup.closing {
-  animation: networkPopupOut 0.2s cubic-bezier(0.4, 0, 1, 1) forwards;
-}
-
-@keyframes networkPopupIn {
-  from {
-    opacity: 0;
-    transform: translateY(16px) scale(0.92);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-@keyframes networkPopupOut {
-  from {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(8px) scale(0.95);
-  }
+  animation: trayPopupOut 160ms cubic-bezier(0.4, 0, 1, 1) both;
 }
 
 .network-popup-content {
