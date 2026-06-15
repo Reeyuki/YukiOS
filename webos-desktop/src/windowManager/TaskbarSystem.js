@@ -16,7 +16,7 @@ export class TaskbarSystem {
   updateTaskbarAlignment() {
     const taskbarWindows = document.getElementById("taskbar-windows");
     if (taskbarWindows) {
-      const taskbarAlignment = os.storage.get(StorageKeys.taskbarAlignment) || "center";
+      const taskbarAlignment = os.storage.get(StorageKeys.taskbarAlignment) || "left";
       const taskbar = document.getElementById("taskbar");
 
       if (taskbar) {
@@ -226,7 +226,7 @@ export class TaskbarSystem {
 
     const taskbarWindows = document.getElementById("taskbar-windows");
     if (taskbarWindows) {
-      const taskbarAlignment = os.storage.get(StorageKeys.taskbarAlignment) || "center";
+      const taskbarAlignment = os.storage.get(StorageKeys.taskbarAlignment) || "left";
       const taskbar = document.getElementById("taskbar");
 
       if (taskbar) {
@@ -416,8 +416,47 @@ export class TaskbarSystem {
 
   _getPinnedItems() {
     try {
-      const pinnedData = os.storage.get(StorageKeys.pinnedTaskbarItems);
-      return pinnedData || [];
+      const pinnedData = os.storage.get(StorageKeys.pinnedTaskbarItems) || [];
+      const migrationKey = StorageKeys.defaultsCreatedPrefix + "pinnedTaskbarItems";
+
+      if (!os.storage.get(migrationKey)) {
+        const defaultApps = [
+          {
+            winId: "explorer-pinned",
+            appId: "explorer",
+            title: "Explorer",
+            iconValue: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/icons/file.webp",
+            color: null
+          },
+          {
+            winId: "browser-pinned",
+            appId: "browserApp",
+            title: "Yuki Browser",
+            iconValue: "fas fa-snowflake",
+            color: null
+          },
+          {
+            winId: "discord-pinned",
+            appId: "discordApp",
+            title: "Discord",
+            iconValue: "fab fa-discord",
+            color: null
+          }
+        ];
+
+        const existingAppIds = pinnedData.map((item) => item.appId);
+        const missingDefaults = defaultApps.filter((app) => !existingAppIds.includes(app.appId));
+
+        if (missingDefaults.length > 0) {
+          const updatedPinnedItems = [...missingDefaults, ...pinnedData];
+          os.storage.set(StorageKeys.pinnedTaskbarItems, updatedPinnedItems);
+        }
+
+        os.storage.set(migrationKey, "true");
+        return os.storage.get(StorageKeys.pinnedTaskbarItems) || [];
+      }
+
+      return pinnedData;
     } catch {
       return [];
     }

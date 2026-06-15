@@ -64,7 +64,7 @@ export class SettingsApp extends BaseApp {
         achievementsDisabled: os.storage.get(StorageKeys.achievementsDisabled) === "true",
         analyticsDisabled: os.storage.get(StorageKeys.analyticsDisabled) === "true",
         adsDisabled: os.storage.get(StorageKeys.adsDisabled) === "true",
-        taskbarAlignment: os.storage.get(StorageKeys.taskbarAlignment) || "center",
+        taskbarAlignment: os.storage.get(StorageKeys.taskbarAlignment) || "left",
         cdnMirror: os.storage.get(StorageKeys.cdnMirror) || "jsdelivr",
         theme: os.storage.get(StorageKeys.theme) || "dark",
         windowTransparency: Number.isFinite(rawTransparency) ? Math.max(0.2, Math.min(1, rawTransparency)) : 1,
