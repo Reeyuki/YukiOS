@@ -265,6 +265,11 @@
   background: var(--glass);
 }
 
+.taskbar-item.dragging {
+  opacity: 0.5;
+  transform: scale(0.95);
+}
+
 .taskbar-pinned-container {
   display: flex;
   gap: 4px;

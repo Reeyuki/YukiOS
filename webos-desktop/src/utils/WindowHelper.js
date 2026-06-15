@@ -99,6 +99,15 @@ export class WindowHelper {
 
   mountWindow(win, winId, title, icon = null, options = {}) {
     const desktop = document.getElementById("desktop") || document.body;
+
+    // If window with this ID already exists in DOM, remove it and its taskbar entry to prevent duplicates
+    const existing = document.getElementById(winId);
+    if (existing && existing !== win) {
+      const taskbarItem = document.getElementById(`taskbar-${winId}`);
+      if (taskbarItem) taskbarItem.remove();
+      existing.remove();
+    }
+
     desktop.appendChild(win);
 
     if (options.addToTaskbar !== false) {

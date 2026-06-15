@@ -102,11 +102,7 @@ class TrayManager {
     const win = document.getElementById(winId);
     const taskbarItem = document.getElementById(`taskbar-${winId}`);
     if (win) {
-      if (winId === "games-app-win" || win.classList.contains("window-root")) {
-        win.style.display = "flex";
-      } else {
-        win.style.display = "block";
-      }
+      win.style.display = "flex";
       os.window.bringToFront(win);
       if (this._wm) {
         const entry = this._wm.openWindows.get(winId);

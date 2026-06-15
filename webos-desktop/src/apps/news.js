@@ -5,6 +5,40 @@ import { os } from "../os/index.js";
 
 const NEWS_UPDATES = [
   {
+    date: "June 15, 2026",
+    sections: [
+      {
+        icon: "fa-wand-magic-sparkles",
+        title: "Taskbar Improvements",
+        items: [
+          [
+            "fa-mouse-pointer",
+            "Click to Minimize/Restore",
+            "Click taskbar items to minimize active windows, click again to restore."
+          ],
+          ["fa-arrows-alt", "Drag to Reorder", "Drag taskbar items to rearrange them however you want."],
+          [
+            "fa-window-restore",
+            "New Window Option",
+            "Right-click taskbar items for 'New Window' option to launch app instances."
+          ]
+        ]
+      },
+      {
+        icon: "fa-wand-magic-sparkles",
+        title: "Bug Fixes",
+        items: [
+          ["fa-wand-magic-sparkles", "Window Display Fix", "Fixed height scaling issues when minimizing windows."],
+          [
+            "fa-wand-magic-sparkles",
+            "Preview Fixes",
+            "Fixed taskbar preview appearing during context menu and drag operations."
+          ]
+        ]
+      }
+    ]
+  },
+  {
     date: "June 12, 2026",
     sections: [
       {

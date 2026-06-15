@@ -224,7 +224,7 @@ export class InputHandler {
 
     if (selectedWindow) {
       if (selectedWindow.style.display === "none") {
-        selectedWindow.style.display = "block";
+        selectedWindow.style.display = "";
         const taskbarItem = document.getElementById(`taskbar-${selectedWindow.id}`);
         if (taskbarItem) taskbarItem.classList.remove("minimized");
       }

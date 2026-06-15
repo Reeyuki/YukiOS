@@ -30,6 +30,7 @@ export const StorageKeys = {
   taskbarPosition: "yukiOS_taskbar_position",
   taskbarAlignment: "yukiOS_taskbar_alignment",
   pinnedTaskbarItems: "yukiOS_pinned_taskbar_items",
+  taskbarOrder: "yukiOS_taskbar_order",
   cdnMirror: "yukiOS_cdnMirror",
   theme: "yukiOS_theme",
   windowTransparency: "yukiOS_window_transparency",

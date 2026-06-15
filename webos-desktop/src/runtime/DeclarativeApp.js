@@ -56,6 +56,12 @@ export class DeclarativeApp {
       const existing = document.getElementById(windowConfig.id);
       if (existing) {
         existing.style.zIndex = "10000";
+        existing.style.display = "flex";
+        const taskbarItem = document.getElementById(`taskbar-${windowConfig.id}`);
+        if (taskbarItem) {
+          taskbarItem.style.display = "";
+          taskbarItem.classList.remove("minimized");
+        }
         return existing;
       }
     }

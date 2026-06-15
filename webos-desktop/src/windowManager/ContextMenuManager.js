@@ -102,11 +102,12 @@ export class ContextMenuManager {
     const winId = win.id;
     const isMinimized = win.style.display === "none";
     const isFullscreen = win.dataset.fullscreen === "true";
+    const appId = win.dataset.appId || this.manager._guessAppIdFromWinId(winId);
 
     addMenuItem(
       isMinimized ? "Restore" : "Minimize",
       () => {
-        if (isMinimized) win.style.display = "block";
+        if (isMinimized) win.style.display = "";
         else this.manager.minimizeWindow(win);
         this.manager.bringToFront(win);
       },
@@ -125,6 +126,11 @@ export class ContextMenuManager {
     addMenuItem("Bring to Front", () => this.manager.bringToFront(win), "fa-layer-group");
 
     addSeparator();
+
+    if (appId) {
+      addMenuItem("New Window", () => os.app.launch(appId), "fa-plus-square");
+      addSeparator();
+    }
 
     addMenuItem("Snap Left", () => this.manager._applySnap(win, "left"), "fa-columns");
     addMenuItem("Snap Right", () => this.manager._applySnap(win, "right"), "fa-columns");

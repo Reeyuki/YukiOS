@@ -1,6 +1,6 @@
 # Yuki OS - Browser Desktop Environment
 
-![Users](https://img.shields.io/badge/Users-40k+-brightgreen)
+![Users](https://img.shields.io/badge/Users-50k+-brightgreen)
 ---
 [https://discord.gg/uFuGfseB9Z](https://discord.gg/uFuGfseB9Z)
 
@@ -110,8 +110,7 @@ It's built entirely in vanilla JS (with some libraries, of course!).
 * Session persistence for windows and workspaces
 * User profiles with settings and personalization
 * Backup and restore of system state
-* Local storage preferences
-* IndexedDB-backed virtual filesystem
+* BrowserFS backed virtual filesystem
 
 ---
 
@@ -133,7 +132,7 @@ It's built entirely in vanilla JS (with some libraries, of course!).
 * Notepad
 * Markdown Editor
 * Yuki Code
-* VS Code integration
+* VS Code
 * Settings
 * Task Manager
 * Installed Apps

@@ -65,7 +65,6 @@ export function createScramjetWebApp(config) {
 
     cleanupScramjet() {
       if (this.winId) {
-        os.window.removeFromTaskbar(this.winId);
         os.tray.unregister(this.winId);
       }
       super.cleanupScramjet();
