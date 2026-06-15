@@ -14,6 +14,14 @@ let appAPI: AppAPI | null = null;
 let eventAPI: EventAPI | null = null;
 const storageAPI = new StorageAPI();
 
+let boundWindowAPI: OSBridge["window"] | null = null;
+let boundFileSystemAPI: OSBridge["fs"] | null = null;
+let boundNotificationAPI: OSBridge["notify"] | null = null;
+let boundTrayAPI: OSBridge["tray"] | null = null;
+let boundAppAPI: OSBridge["app"] | null = null;
+let boundEventAPI: OSBridge["events"] | null = null;
+let boundStorageAPI: OSBridge["storage"] | null = null;
+
 interface OSBridge {
   window: {
     create: WindowAPI["create"];
@@ -182,6 +190,84 @@ export function initializeOSBridge(services: {
   appAPI = new AppAPI(services.appLauncher);
   eventAPI = new EventAPI(services.eventBus);
 
+  boundWindowAPI = {
+    create: windowAPI.create.bind(windowAPI),
+    close: windowAPI.close.bind(windowAPI),
+    focus: windowAPI.focus.bind(windowAPI),
+    minimize: windowAPI.minimize.bind(windowAPI),
+    maximize: windowAPI.maximize.bind(windowAPI),
+    bringToFront: windowAPI.bringToFront.bind(windowAPI),
+    addToTaskbar: windowAPI.addToTaskbar.bind(windowAPI),
+    removeFromTaskbar: windowAPI.removeFromTaskbar.bind(windowAPI),
+    getWindowControls: windowAPI.getWindowControls.bind(windowAPI)
+  };
+
+  boundFileSystemAPI = {
+    read: fileSystemAPI.read.bind(fileSystemAPI),
+    write: fileSystemAPI.write.bind(fileSystemAPI),
+    readdir: fileSystemAPI.readdir.bind(fileSystemAPI),
+    mkdir: fileSystemAPI.mkdir.bind(fileSystemAPI),
+    delete: fileSystemAPI.delete.bind(fileSystemAPI),
+    exists: fileSystemAPI.exists.bind(fileSystemAPI),
+    copy: fileSystemAPI.copy.bind(fileSystemAPI),
+    rename: fileSystemAPI.rename.bind(fileSystemAPI),
+    isFile: fileSystemAPI.isFile.bind(fileSystemAPI),
+    getFileKind: fileSystemAPI.getFileKind.bind(fileSystemAPI),
+    getFileIcon: fileSystemAPI.getFileIcon.bind(fileSystemAPI),
+    writeBinaryFile: fileSystemAPI.writeBinaryFile.bind(fileSystemAPI),
+    readBinaryFile: fileSystemAPI.readBinaryFile.bind(fileSystemAPI),
+    deleteBinaryFile: fileSystemAPI.deleteBinaryFile.bind(fileSystemAPI),
+    renameBinaryFile: fileSystemAPI.renameBinaryFile.bind(fileSystemAPI),
+    createFile: fileSystemAPI.createFile.bind(fileSystemAPI),
+    createFolder: fileSystemAPI.createFolder.bind(fileSystemAPI),
+    deleteItem: fileSystemAPI.deleteItem.bind(fileSystemAPI),
+    renameItem: fileSystemAPI.renameItem.bind(fileSystemAPI),
+    updateFile: fileSystemAPI.updateFile.bind(fileSystemAPI)
+  };
+
+  boundNotificationAPI = {
+    send: notificationAPI.send.bind(notificationAPI),
+    clear: notificationAPI.clear.bind(notificationAPI),
+    clearAll: notificationAPI.clearAll.bind(notificationAPI)
+  };
+
+  boundTrayAPI = {
+    register: trayAPI.register.bind(trayAPI),
+    unregister: trayAPI.unregister.bind(trayAPI),
+    updateIcon: trayAPI.updateIcon.bind(trayAPI),
+    updateLabel: trayAPI.updateLabel.bind(trayAPI),
+    updateContextMenuItems: trayAPI.updateContextMenuItems.bind(trayAPI),
+    sendToTray: trayAPI.sendToTray.bind(trayAPI),
+    restoreFromTray: trayAPI.restoreFromTray.bind(trayAPI),
+    getTrayItems: trayAPI.getTrayItems.bind(trayAPI),
+    updateItemVisibility: trayAPI.updateItemVisibility.bind(trayAPI),
+    isRegistered: trayAPI.isRegistered.bind(trayAPI)
+  };
+
+  boundAppAPI = {
+    launch: appAPI.launch.bind(appAPI),
+    launchGame: appAPI.launchGame.bind(appAPI),
+    close: appAPI.close.bind(appAPI),
+    getRunningApps: appAPI.getRunningApps.bind(appAPI),
+    getAllApps: appAPI.getAllApps.bind(appAPI),
+    getAppInfo: appAPI.getAppInfo.bind(appAPI)
+  };
+
+  boundEventAPI = {
+    on: eventAPI.on.bind(eventAPI),
+    off: eventAPI.off.bind(eventAPI),
+    emit: eventAPI.emit.bind(eventAPI),
+    once: eventAPI.once.bind(eventAPI)
+  };
+
+  boundStorageAPI = {
+    get: storageAPI.get.bind(storageAPI),
+    set: storageAPI.set.bind(storageAPI),
+    remove: storageAPI.remove.bind(storageAPI),
+    clear: storageAPI.clear.bind(storageAPI),
+    has: storageAPI.has.bind(storageAPI)
+  };
+
   console.log("[OS Bridge] Initialized");
 
   (window as any).os = os;
@@ -255,196 +341,49 @@ export function getStorageAPI(): StorageAPI {
  * This is the primary export that apps should use
  */
 export const os: OSBridge = {
-  window: {
-    get create() {
-      return getWindowAPI().create.bind(getWindowAPI());
-    },
-    get close() {
-      return getWindowAPI().close.bind(getWindowAPI());
-    },
-    get focus() {
-      return getWindowAPI().focus.bind(getWindowAPI());
-    },
-    get minimize() {
-      return getWindowAPI().minimize.bind(getWindowAPI());
-    },
-    get maximize() {
-      return getWindowAPI().maximize.bind(getWindowAPI());
-    },
-    get bringToFront() {
-      return getWindowAPI().bringToFront.bind(getWindowAPI());
-    },
-    get addToTaskbar() {
-      return getWindowAPI().addToTaskbar.bind(getWindowAPI());
-    },
-    get removeFromTaskbar() {
-      return getWindowAPI().removeFromTaskbar.bind(getWindowAPI());
-    },
-    get getWindowControls() {
-      return getWindowAPI().getWindowControls.bind(getWindowAPI());
-    }
+  get window() {
+    if (!boundWindowAPI) throw new Error("[OS Bridge] Window API not initialized. Call initializeOSBridge() first.");
+    return boundWindowAPI;
   },
 
-  fs: {
-    get read() {
-      return getFileSystemAPI().read.bind(getFileSystemAPI());
-    },
-    get write() {
-      return getFileSystemAPI().write.bind(getFileSystemAPI());
-    },
-    get readdir() {
-      return getFileSystemAPI().readdir.bind(getFileSystemAPI());
-    },
-    get mkdir() {
-      return getFileSystemAPI().mkdir.bind(getFileSystemAPI());
-    },
-    get delete() {
-      return getFileSystemAPI().delete.bind(getFileSystemAPI());
-    },
-    get exists() {
-      return getFileSystemAPI().exists.bind(getFileSystemAPI());
-    },
-    get copy() {
-      return getFileSystemAPI().copy.bind(getFileSystemAPI());
-    },
-    get rename() {
-      return getFileSystemAPI().rename.bind(getFileSystemAPI());
-    },
-    get isFile() {
-      return getFileSystemAPI().isFile.bind(getFileSystemAPI());
-    },
-    get getFileKind() {
-      return getFileSystemAPI().getFileKind.bind(getFileSystemAPI());
-    },
-    get getFileIcon() {
-      return getFileSystemAPI().getFileIcon.bind(getFileSystemAPI());
-    },
-    get writeBinaryFile() {
-      return getFileSystemAPI().writeBinaryFile.bind(getFileSystemAPI());
-    },
-    get readBinaryFile() {
-      return getFileSystemAPI().readBinaryFile.bind(getFileSystemAPI());
-    },
-    get deleteBinaryFile() {
-      return getFileSystemAPI().deleteBinaryFile.bind(getFileSystemAPI());
-    },
-    get renameBinaryFile() {
-      return getFileSystemAPI().renameBinaryFile.bind(getFileSystemAPI());
-    },
-    get createFile() {
-      return getFileSystemAPI().createFile.bind(getFileSystemAPI());
-    },
-    get createFolder() {
-      return getFileSystemAPI().createFolder.bind(getFileSystemAPI());
-    },
-    get deleteItem() {
-      return getFileSystemAPI().deleteItem.bind(getFileSystemAPI());
-    },
-    get renameItem() {
-      return getFileSystemAPI().renameItem.bind(getFileSystemAPI());
-    },
-    get updateFile() {
-      return getFileSystemAPI().updateFile.bind(getFileSystemAPI());
-    }
+  get fs() {
+    if (!boundFileSystemAPI)
+      throw new Error("[OS Bridge] FileSystem API not initialized. Call initializeOSBridge() first.");
+    return boundFileSystemAPI;
   },
 
-  notify: {
-    get send() {
-      return getNotificationAPI().send.bind(getNotificationAPI());
-    },
-    get clear() {
-      return getNotificationAPI().clear.bind(getNotificationAPI());
-    },
-    get clearAll() {
-      return getNotificationAPI().clearAll.bind(getNotificationAPI());
-    }
+  get notify() {
+    if (!boundNotificationAPI)
+      throw new Error("[OS Bridge] Notification API not initialized. Call initializeOSBridge() first.");
+    return boundNotificationAPI;
   },
 
-  tray: {
-    get register() {
-      return getTrayAPI().register.bind(getTrayAPI());
-    },
-    get unregister() {
-      return getTrayAPI().unregister.bind(getTrayAPI());
-    },
-    get updateIcon() {
-      return getTrayAPI().updateIcon.bind(getTrayAPI());
-    },
-    get updateLabel() {
-      return getTrayAPI().updateLabel.bind(getTrayAPI());
-    },
-    get updateContextMenuItems() {
-      return getTrayAPI().updateContextMenuItems.bind(getTrayAPI());
-    },
-    get sendToTray() {
-      return getTrayAPI().sendToTray.bind(getTrayAPI());
-    },
-    get restoreFromTray() {
-      return getTrayAPI().restoreFromTray.bind(getTrayAPI());
-    },
-    get getTrayItems() {
-      return getTrayAPI().getTrayItems.bind(getTrayAPI());
-    },
-    get updateItemVisibility() {
-      return getTrayAPI().updateItemVisibility.bind(getTrayAPI());
-    },
-    get isRegistered() {
-      return getTrayAPI().isRegistered.bind(getTrayAPI());
-    }
+  get tray() {
+    if (!boundTrayAPI) throw new Error("[OS Bridge] Tray API not initialized. Call initializeOSBridge() first.");
+    return boundTrayAPI;
   },
 
-  app: {
-    get launch() {
-      return getAppAPI().launch.bind(getAppAPI());
-    },
-    get launchGame() {
-      return getAppAPI().launchGame.bind(getAppAPI());
-    },
-    get close() {
-      return getAppAPI().close.bind(getAppAPI());
-    },
-    get getRunningApps() {
-      return getAppAPI().getRunningApps.bind(getAppAPI());
-    },
-    get getAllApps() {
-      return getAppAPI().getAllApps.bind(getAppAPI());
-    },
-    get getAppInfo() {
-      return getAppAPI().getAppInfo.bind(getAppAPI());
-    }
+  get app() {
+    if (!boundAppAPI) throw new Error("[OS Bridge] App API not initialized. Call initializeOSBridge() first.");
+    return boundAppAPI;
   },
 
-  events: {
-    get on() {
-      return getEventAPI().on.bind(getEventAPI());
-    },
-    get off() {
-      return getEventAPI().off.bind(getEventAPI());
-    },
-    get emit() {
-      return getEventAPI().emit.bind(getEventAPI());
-    },
-    get once() {
-      return getEventAPI().once.bind(getEventAPI());
-    }
+  get events() {
+    if (!boundEventAPI) throw new Error("[OS Bridge] Event API not initialized. Call initializeOSBridge() first.");
+    return boundEventAPI;
   },
 
-  storage: {
-    get get() {
-      return getStorageAPI().get.bind(getStorageAPI());
-    },
-    get set() {
-      return getStorageAPI().set.bind(getStorageAPI());
-    },
-    get remove() {
-      return getStorageAPI().remove.bind(getStorageAPI());
-    },
-    get clear() {
-      return getStorageAPI().clear.bind(getStorageAPI());
-    },
-    get has() {
-      return getStorageAPI().has.bind(getStorageAPI());
+  get storage() {
+    if (!boundStorageAPI) {
+      boundStorageAPI = {
+        get: storageAPI.get.bind(storageAPI),
+        set: storageAPI.set.bind(storageAPI),
+        remove: storageAPI.remove.bind(storageAPI),
+        clear: storageAPI.clear.bind(storageAPI),
+        has: storageAPI.has.bind(storageAPI)
+      };
     }
+    return boundStorageAPI;
   },
 
   telemetry: {

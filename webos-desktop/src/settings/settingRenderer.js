@@ -786,7 +786,8 @@ export function renderDataSettings() {
 export function renderNetworkSettings(s) {
   const wispServers = [
     { name: "Reeyuki Wisp", url: "wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/" },
-    { name: "Anura Wisp", url: "ws://anura.pro" }
+    { name: "Reeyuki Wisp 2", url: "wss://reeyukiwisp.onrender.com/" },
+    { name: "Anura Wisp", url: "wss://anura.pro" }
   ];
   const currentWisp = s.wispServer || wispServers[0].url;
   const isCustomWisp = !wispServers.some((w) => w.url === currentWisp);

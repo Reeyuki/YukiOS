@@ -534,12 +534,6 @@ export const appMap = {
     icon: "/static/icons/fancypants2.webp",
     title: "Fancy Pants 2"
   },
-  fancyPants3: {
-    type: "swf",
-    swf: "/static/games/swfGames/fancypantsadventure3.swf",
-    icon: "/static/icons/fancypants3.webp",
-    title: "Fancy Pants 3"
-  },
   earnToDie: {
     type: "swf",
     swf: "/static/games/swfGames/earntodie.swf",
