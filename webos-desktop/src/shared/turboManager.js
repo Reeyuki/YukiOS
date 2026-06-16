@@ -56,7 +56,7 @@ class TurboManager {
         html[data-turbo="turbo"] .window,
         html[data-turbo="turbo"] .taskbar-preview,
         html[data-turbo="turbo"] .context-menu {
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+          box-shadow: var(--shadow-sm) !important;
         }
         html[data-turbo="turbo"] *:not(.start-menu):not(.start-menu *) {
           text-shadow: none !important;
@@ -80,7 +80,7 @@ class TurboManager {
         html[data-turbo="turbo"] #audio-mixer-panel {
           backdrop-filter: none !important;
           -webkit-backdrop-filter: none !important;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+          box-shadow: var(--shadow-sm) !important;
         }
       `;
     } else if (effective === "balanced") {
@@ -107,10 +107,10 @@ class TurboManager {
         html[data-turbo="balanced"] .window,
         html[data-turbo="balanced"] .taskbar-preview,
         html[data-turbo="balanced"] .context-menu {
-          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5) !important;
+          box-shadow: var(--shadow-md) !important;
         }
         html[data-turbo="balanced"] .wa-z-lift {
-          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45) !important;
+          box-shadow: var(--shadow-md) !important;
         }
         html[data-turbo="balanced"] .window:hover {
           transform: none !important;

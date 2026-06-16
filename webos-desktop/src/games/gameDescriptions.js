@@ -70,7 +70,9 @@ export const APP_DESCRIPTIONS = {
   gmailApp: "Gmail web client with scramjet proxy for email management and communication.",
   outlookApp: "Outlook web client with scramjet proxy for email and calendar management.",
   chatgptApp: "ChatGPT web client with scramjet proxy for AI-powered conversations and assistance.",
-  deepseekApp: "DeepSeek web client with scramjet proxy for AI-powered conversations and assistance."
+  deepseekApp: "DeepSeek web client with scramjet proxy for AI-powered conversations and assistance.",
+  torrentClient:
+    "BitTorrent client using WebTorrent for downloading and managing torrent files with magnet link support."
 };
 
 export const descriptionMap = {

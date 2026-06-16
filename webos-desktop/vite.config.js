@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 import { viteSingleFile } from "vite-plugin-singlefile";
 import { execSync } from "child_process";
+import { nodePolyfills } from "vite-plugin-node-polyfills";
 
 const commitHash = (() => {
   try {
@@ -14,7 +15,7 @@ const isDevBuild = process.env.VITE_DEV_BUILD === "true";
 
 export default defineConfig({
   base: "./",
-  plugins: [viteSingleFile()],
+  plugins: [viteSingleFile(), nodePolyfills()],
   define: {
     __GIT_COMMIT__: JSON.stringify(commitHash)
   },

@@ -653,7 +653,7 @@ export class MonacoApp extends BaseApp {
       background: rgba(30, 30, 30, 0.95);
       border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 8px;
-      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.65);
+      box-shadow: var(--shadow-depth);
       z-index: 10000;
       display: flex;
       flex-direction: column;

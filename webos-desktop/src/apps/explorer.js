@@ -369,6 +369,100 @@ export class ExplorerApp extends BaseApp {
     this.navigateInstance(inst, []);
   }
 
+  async openDirectoryDialog(onSelect = null) {
+    const winId = `explorer-dir-${Date.now()}`;
+    const inst = this._createInstance(winId, null, null, "directory");
+    inst.directoryCallback = onSelect;
+
+    const win = os.window.create(winId, "Select Directory", "700px", "500px", {
+      icon: "static/icons/file.webp"
+    });
+    addClass(win, "explorer-window");
+
+    win.innerHTML = `
+      <div class="explorer-nav">
+        <div class="back-btn" id="${winId}-back">← Back</div>
+        <input
+          type="text"
+          class="explorer-win-path"
+          id="${winId}-path"
+          spellcheck="false"
+        >
+      </div>
+      <div class="explorer-container">
+        <div class="explorer-sidebar">
+          <div class="start-item" data-path=""><img src="${resolveIconUrl("static/icons/file.webp")}" class="sidebar-icon">Home</div>
+          <div class="start-item" data-path="Documents"><img src="${resolveIconUrl("static/icons/notepad.webp")}" class="sidebar-icon">Documents</div>
+          <div class="start-item" data-path="Desktop"><i class="fas fa-desktop sidebar-icon-fa"></i>Desktop</div>
+          <div class="start-item" data-path="Pictures"><i class="fas fa-image sidebar-icon-fa"></i>Pictures</div>
+          <div class="start-item" data-path="Downloads"><i class="fas fa-download sidebar-icon-fa"></i>Downloads</div>
+        </div>
+        <div class="explorer-main" id="${winId}-view"></div>
+      </div>
+      <div id="${winId}-dir-bar" style="
+        display:flex;align-items:center;gap:8px;
+        padding:8px 12px;
+        background:rgba(79, 158, 255, 0.08);
+        border-top:1px solid rgba(79, 158, 255, 0.15);
+        flex-shrink:0;
+      ">
+        <label style="color:#aaa;font-size:12px;white-space:nowrap;">Selected:</label>
+        <span id="${winId}-selected-path" style="
+          flex:1;color:#fff;font-size:13px;
+          font-family:inherit;overflow:hidden;
+          text-overflow:ellipsis;white-space:nowrap;
+        ">/</span>
+        <button id="${winId}-select-btn" style="
+          padding:6px 18px;border-radius:5px;border:none;
+          background:#2a6db5;color:#fff;font-size:13px;
+          cursor:pointer;font-family:inherit;white-space:nowrap;
+        ">Select</button>
+        <button id="${winId}-cancel-btn" style="
+          padding:6px 14px;border-radius:5px;border:none;
+          background:rgba(255,255,255,0.08);color:#ccc;font-size:13px;
+          cursor:pointer;font-family:inherit;
+        ">Cancel</button>
+      </div>
+    `;
+
+    this._initExplorerView(win, winId);
+
+    this._watchWindowRemoval(winId);
+
+    const selectedPathEl = $(`#${winId}-selected-path`, win);
+    const selectBtn = $(`#${winId}-select-btn`, win);
+    const cancelBtn = $(`#${winId}-cancel-btn`, win);
+
+    const updateSelectedPath = () => {
+      selectedPathEl.textContent = "/" + inst.currentPath.join("/");
+    };
+
+    selectBtn.onclick = () => {
+      const cb = inst.directoryCallback;
+      inst.directoryCallback = null;
+      this._closeWindow(winId);
+      if (cb) cb(inst.currentPath);
+    };
+
+    cancelBtn.onclick = () => this._closeWindow(winId);
+
+    this._bindBackButton(win, inst);
+    this._bindSidebar(win, inst);
+    this._setupPathInput(win, inst);
+
+    const originalNavigate = this.navigateInstance.bind(this);
+    this.navigateInstance = (i, path) => {
+      const result = originalNavigate(i, path);
+      if (i === inst) {
+        setTimeout(updateSelectedPath, 0);
+      }
+      return result;
+    };
+
+    this.navigateInstance(inst, []);
+    updateSelectedPath();
+  }
+
   setupExplorerControls(win, winId) {
     const inst = this._getInstance(winId);
 

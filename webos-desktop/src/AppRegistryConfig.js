@@ -596,6 +596,16 @@ export const SYSTEM_APPS = {
     category: "internet",
     persistContentState: false,
     clippy: { message: "Chat with AI on DeepSeek", animation: ClippyAnimation.GetTechy }
+  },
+  torrentClient: {
+    serviceKey: "torrentClientApp",
+    type: "system",
+    title: "Torrent Client",
+    icon: "fas fa-download",
+    launchType: "instance",
+    windowIdPatterns: ["torrent-client"],
+    category: "internet",
+    clippy: { message: "Download and manage torrents with WebTorrent", animation: ClippyAnimation.Show }
   }
 };
 

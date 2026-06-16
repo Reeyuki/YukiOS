@@ -33,5 +33,6 @@ export const AppSource = {
   BRIGHTNESS: "Brightness",
   EMOJI_SELECTOR: "Emoji Selector",
   SYSTEM: "System",
-  RHYTHMS: "Rhythms"
+  RHYTHMS: "Rhythms",
+  TORRENT_CLIENT: "Torrent Client"
 };

@@ -1104,8 +1104,6 @@
   line-height: 1.6;
 }
 
-/* ── Custom checkboxes & inputs (appearance: none enforced) ─ */
-
 input[type="checkbox"] {
   -webkit-appearance: none;
   appearance: none;
@@ -1126,7 +1124,7 @@ input[type="checkbox"] {
 input[type="checkbox"]:checked {
   background: var(--brand);
   border-color: var(--brand);
-  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.4);
+  box-shadow: 0 2px 10px var(--brand-glow);
 }
 
 input[type="checkbox"]:checked::after {

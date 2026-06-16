@@ -299,9 +299,77 @@ and custom naming. Integrates with AppLauncher for app management.
 
 | App              | File                  | Key Methods                                                                  |
 | ---------------- | --------------------- | ---------------------------------------------------------------------------- |
-| ExplorerApp      | `explorer.js`         | `open(path)`, `navigateTo(path)`, `deleteFile(path)`, `renameFile(old, new)` |
+| ExplorerApp      | `explorer.js`         | `open(path)`, `navigateTo(path)`, `deleteFile(path)`, `renameFile(old, new)`, `openSaveDialog(defaultFileName, onSave)`, `openDirectoryDialog(onSelect)` |
 | fileDisplay      | `fileDisplay.js`      | Renders images, video, PDF, code, text, markdown                             |
 | archiveExtractor | `archiveExtractor.js` | ZIP/7z extraction, list archive contents                                     |
+
+---
+
+## File/Directory Selection Dialogs
+
+The Explorer app provides built-in dialog methods for file and directory selection. These should be used instead of native browser dialogs or manual path input.
+
+### Explorer Dialog Methods
+
+**Access Explorer app from services:**
+```javascript
+const explorerApp = this.services.explorerApp;
+```
+
+#### `openSaveDialog(defaultFileName, onSave)`
+
+Opens a file save dialog with Explorer UI. User can navigate directories and enter a filename.
+
+**Parameters:**
+- `defaultFileName` (string): Suggested filename for the save dialog
+- `onSave` (function): Callback that receives `(path, filename)` when user clicks Save
+
+**Usage:**
+```javascript
+explorerApp.openSaveDialog("myfile.txt", (path, filename) => {
+  const fullPath = path.join("/");
+  const filePath = `${fullPath}/${filename}`;
+  await os.fs.write(fullPath, filename, content);
+});
+```
+
+#### `openDirectoryDialog(onSelect)`
+
+Opens a directory selection dialog with Explorer UI. User can navigate and select a directory.
+
+**Parameters:**
+- `onSelect` (function): Callback that receives `path` (array) when user clicks Select
+
+**Usage:**
+```javascript
+explorerApp.openDirectoryDialog((path) => {
+  const pathStr = path.join("/");
+  await os.fs.mkdir(pathStr);
+});
+```
+
+#### `open(path, callback)`
+
+Opens Explorer in file selection mode when a callback is provided.
+
+**Parameters:**
+- `path` (array|string): Initial path to navigate to
+- `callback` (function): Callback that receives selected file path when user selects a file
+
+**Usage:**
+```javascript
+explorerApp.open(["Documents"], (selectedPath) => {
+  console.log("Selected file:", selectedPath);
+});
+```
+
+### Best Practices
+
+- **Always use Explorer dialogs** for file/directory selection instead of `showPrompt` for manual path input
+- **Use `openDirectoryDialog`** when you need the user to select a directory (e.g., save location)
+- **Use `openSaveDialog`** when saving a file with a user-specified name
+- **Use `open` with callback** when you need the user to select an existing file
+- **Handle null/undefined returns** - callbacks may not be called if user cancels the dialog
 
 ### Productivity
 

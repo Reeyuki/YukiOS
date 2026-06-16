@@ -8,6 +8,17 @@ const NEWS_UPDATES = [
     date: "June 15, 2026",
     sections: [
       {
+        icon: "fa-download",
+        title: "New App",
+        items: [
+          [
+            "fa-download",
+            "Torrent Client",
+            "Download and manage torrents with WebTorrent support for magnet links and torrent files."
+          ]
+        ]
+      },
+      {
         icon: "fa-wand-magic-sparkles",
         title: "Taskbar Improvements",
         items: [

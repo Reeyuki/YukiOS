@@ -35,6 +35,7 @@ import { GmailApp } from "./apps/gmailApp.js";
 import { OutlookApp } from "./apps/outlookApp.js";
 import { ChatgptApp } from "./apps/chatgptApp.js";
 import { DeepseekApp } from "./apps/deepseekApp.js";
+import { TorrentClientApp } from "./apps/torrentClient.js";
 
 const APP_DEFINITIONS = [
   { serviceKey: "terminalApp", AppClass: TerminalApp, enhanced: true },
@@ -79,7 +80,8 @@ const APP_DEFINITIONS = [
   { serviceKey: "deepseekApp", AppClass: DeepseekApp, enhanced: true },
   { serviceKey: "emojiSelectorApp", AppClass: EmojiSelectorApp, enhanced: true },
   { serviceKey: "systemAppsApp", AppClass: SystemAppsApp, enhanced: false },
-  { serviceKey: "rhythmsApp", AppClass: RhythmsApp, enhanced: true }
+  { serviceKey: "rhythmsApp", AppClass: RhythmsApp, enhanced: true },
+  { serviceKey: "torrentClientApp", AppClass: TorrentClientApp, enhanced: true }
 ];
 
 export function loadApps(services) {

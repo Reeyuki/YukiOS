@@ -170,7 +170,6 @@ It's built entirely in vanilla JS (with some libraries, of course!).
 ## 🌐 Browser & Internet
 
 * Yuki Browser
-* kiwiIRC
 * Steam-like game launcher
 * Custom App Creator
 * Discord
@@ -180,6 +179,8 @@ It's built entirely in vanilla JS (with some libraries, of course!).
 * Outlook
 * ChatGPT
 * DeepSeek
+* WebTorrent
+* kiwiIRC
 
 ## 🎮 Games & Emulation Tools
 
@@ -236,6 +237,7 @@ Single-file build output is supported for easy deployment.
 * Emoji Mart
 * Vanta.js
 * Scramjet/BareMux/epoxy-transport
+* WebTorrent
 
 ---
 
