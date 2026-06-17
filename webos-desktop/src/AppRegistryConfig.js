@@ -751,17 +751,6 @@ export const SYSTEM_APPS = {
     persistContentState: false,
     clippy: { message: "Design in Canva", animation: ClippyAnimation.GetArtsy }
   },
-  asanaApp: {
-    serviceKey: "asanaApp",
-    type: "system",
-    title: "Asana",
-    icon: "fab fa-asana",
-    launchType: "instance",
-    windowIdPatterns: ["asana"],
-    category: "office",
-    persistContentState: false,
-    clippy: { message: "Manage tasks in Asana", animation: ClippyAnimation.Show }
-  },
   githubApp: {
     serviceKey: "githubApp",
     type: "system",

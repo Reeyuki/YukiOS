@@ -5,6 +5,21 @@ import { os } from "../os/index.js";
 
 const NEWS_UPDATES = [
   {
+    date: "June 17, 2026",
+    sections: [
+      {
+        icon: "fa-star",
+        title: "Terraria",
+        items: [["fa-star", "Fixed Terraria", "Fixed Terraria"]]
+      },
+      {
+        icon: "fa-wand-magic-sparkles",
+        title: "New Apps",
+        items: [["fa-cube", "30 More Apps", "Added 30 more web apps."]]
+      }
+    ]
+  },
+  {
     date: "June 15, 2026",
     sections: [
       {

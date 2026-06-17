@@ -85,7 +85,6 @@ export const APP_DESCRIPTIONS = {
   googleDocsApp: "Google Docs web client with scramjet proxy for document creation and collaboration.",
   trelloApp: "Trello web client with scramjet proxy for project management and team collaboration.",
   canvaApp: "Canva web client with scramjet proxy for graphic design and visual content creation.",
-  asanaApp: "Asana web client with scramjet proxy for task management and team productivity.",
   githubApp: "GitHub web client with scramjet proxy for code hosting and version control.",
   gitlabApp: "GitLab web client with scramjet proxy for DevOps and code collaboration.",
   codepenApp: "CodePen web client with scramjet proxy for front-end development and code sharing.",
