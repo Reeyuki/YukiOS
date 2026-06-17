@@ -52,7 +52,7 @@ export class SessionManager {
   async _handleProfileUpdate(data) {
     const { userId, name, avatar } = data;
 
-    const existingIndex = this.userHistory.findIndex((u) => u.userId === userId);
+    const existingIndex = this.userHistory.findIndex((u) => u.key === userId || u.userId === userId);
     if (existingIndex >= 0) {
       this.userHistory[existingIndex].name = name;
       this.userHistory[existingIndex].avatar = avatar;
@@ -73,16 +73,16 @@ export class SessionManager {
       const history = os.storage.get(StorageKeys.userHistory);
       if (!history) return [];
 
-      const currentUserId = this._ensureUserId();
       let needsMigration = false;
 
       const migratedHistory = history.map((user) => {
         if (!user.userId) {
           needsMigration = true;
+          const id = user.key || generateUUID();
           return {
             ...user,
-            userId: currentUserId,
-            key: currentUserId
+            userId: id,
+            key: id
           };
         }
         return user;
@@ -106,12 +106,12 @@ export class SessionManager {
   }
 
   _addToUserHistory(session) {
-    const userId = this._ensureUserId();
-    const existingIndex = this.userHistory.findIndex((u) => u.userId === userId);
+    const userKey = session.key || this._ensureUserId();
+    const existingIndex = this.userHistory.findIndex((u) => u.key === userKey || u.userId === userKey);
     const userEntry = {
-      userId: userId,
+      userId: userKey,
       name: session.name,
-      key: userId,
+      key: userKey,
       avatar: session.avatar,
       lastLogin: Date.now()
     };
@@ -153,6 +153,8 @@ export class SessionManager {
     const lastAvatar = await resolveAvatarUrl(lastAvatarRef, PREDEFINED_AVATARS[0]);
     const displayName = lastUsername || "Guest";
     const userId = this._ensureUserId();
+
+    this.userHistory = this._loadUserHistory();
 
     const primaryUser = { name: displayName, key: userId, avatar: lastAvatarRef, userId: userId };
 
@@ -595,15 +597,17 @@ export class SessionManager {
   async _selectCarouselUser(key, name, avatar) {
     this.selectedUser = { key, name, avatar };
 
-    const userId = this._ensureUserId();
+    os.storage.set(StorageKeys.userId, key);
+    os.storage.set(StorageKeys.username, name);
     os.storage.set(StorageKeys.profilePicture, avatar);
 
-    const existingIndex = this.userHistory.findIndex((u) => u.userId === userId);
+    const existingIndex = this.userHistory.findIndex((u) => u.key === key || u.userId === key);
     if (existingIndex >= 0) {
       this.userHistory[existingIndex].avatar = avatar;
       this.userHistory[existingIndex].name = name;
+      this.userHistory[existingIndex].userId = key;
     } else {
-      this.userHistory.unshift({ userId, key, name, avatar, lastLogin: Date.now() });
+      this.userHistory.unshift({ userId: key, key, name, avatar, lastLogin: Date.now() });
     }
     this._saveUserHistory();
 
@@ -656,6 +660,7 @@ export class SessionManager {
   async _initializeSession() {
     const { name, key, avatar } = this.currentSession;
 
+    os.storage.set(StorageKeys.userId, key);
     os.storage.set(StorageKeys.username, name);
     os.storage.set(StorageKeys.lastLaunchTime, Date.now().toString());
     this._addToUserHistory(this.currentSession);

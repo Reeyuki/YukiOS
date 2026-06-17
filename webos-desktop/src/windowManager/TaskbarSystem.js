@@ -282,10 +282,13 @@ export class TaskbarSystem {
     preview.className = "taskbar-preview";
     preview.dataset.winId = winId;
     preview.innerHTML = `
-      <div class="taskbar-preview__title"></div>
+      <div class="taskbar-preview__title">
+        <span class="taskbar-preview__title-text"></span>
+        <button class="taskbar-preview__close" title="Close">✕</button>
+      </div>
       <div class="taskbar-preview__thumb"></div>
     `;
-    preview.querySelector(".taskbar-preview__title").textContent = title;
+    preview.querySelector(".taskbar-preview__title-text").textContent = title;
 
     const thumb = preview.querySelector(".taskbar-preview__thumb");
     const clone = win.cloneNode(true);
@@ -360,7 +363,9 @@ export class TaskbarSystem {
     });
 
     preview.addEventListener("mousedown", (e) => e.preventDefault());
-    preview.addEventListener("click", () => {
+    preview.addEventListener("click", (e) => {
+      if (e.target.closest(".taskbar-preview__close")) return;
+
       const w = document.getElementById(winId);
       if (!w) return;
 
@@ -371,6 +376,12 @@ export class TaskbarSystem {
       }
 
       this.manager.bringToFront(w);
+      this._hideTaskbarPreview();
+    });
+
+    preview.querySelector(".taskbar-preview__close").addEventListener("click", (e) => {
+      e.stopPropagation();
+      os.app.close(winId);
       this._hideTaskbarPreview();
     });
   }

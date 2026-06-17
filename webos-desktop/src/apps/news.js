@@ -27,6 +27,17 @@ const EXISTING_NEWS_UPDATES = [
             "Desktop icons now show actual image previews instead of generic file icons."
           ]
         ]
+      },
+      {
+        icon: "fa-times",
+        title: "Taskbar",
+        items: [
+          [
+            "fa-times",
+            "Close Button on Preview",
+            "Hover a taskbar item and click the close button on its preview to close the app."
+          ]
+        ]
       }
     ]
   },
