@@ -97,7 +97,7 @@ export class TaskbarSystem {
         taskbarItem.classList.remove("minimized");
         if (entry?.record) entry.record.minimized = false;
         if (!winTask.id || !winTask.id.startsWith("browser-app-")) {
-          requestAnimationFrame(() => animateWindowOpen(winTask));
+          requestAnimationFrame(() => animateWindowOpen(winTask, true));
         }
         this.manager.bringToFront(winTask);
       } else {

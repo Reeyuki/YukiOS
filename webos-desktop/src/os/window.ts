@@ -55,7 +55,7 @@ export class WindowAPI {
 
           // Trigger animation after content is set
           requestAnimationFrame(() => {
-            animateWindowOpen(win);
+            animateWindowOpen(win, false);
           });
 
           obs.disconnect();
@@ -71,7 +71,7 @@ export class WindowAPI {
 
           // Trigger animation after content is set
           requestAnimationFrame(() => {
-            animateWindowOpen(win);
+            animateWindowOpen(win, false);
           });
         }
         observer.disconnect();
@@ -79,14 +79,14 @@ export class WindowAPI {
         // If content was never set, trigger animation anyway (but not for skipHeader)
         if (!contentSet && !options.skipHeader) {
           requestAnimationFrame(() => {
-            animateWindowOpen(win);
+            animateWindowOpen(win, false);
           });
         }
       }, 50);
     } else if (autoMount && !options.skipHeader) {
       // Trigger animation for windows without auto-generated headers
       requestAnimationFrame(() => {
-        animateWindowOpen(win);
+        animateWindowOpen(win, false);
       });
     }
 

@@ -42,7 +42,7 @@ function getSetting(key, fallback) {
 }
 
 function getOpenAnim() {
-  return getSetting(StorageKeys.windowOpenAnimation, OPEN_ANIMATIONS.scaleCenter);
+  return getSetting(StorageKeys.windowOpenAnimation, OPEN_ANIMATIONS.scaleFromSource);
 }
 
 function getCloseAnim() {
@@ -83,7 +83,7 @@ export function getTaskbarIconRect(winId) {
   return taskbarItem.getBoundingClientRect();
 }
 
-export function animateWindowOpen(win) {
+export function animateWindowOpen(win, isRestoring = false) {
   if (isTurboMode()) return;
 
   // Exclude browser app from animations
@@ -96,7 +96,11 @@ export function animateWindowOpen(win) {
 
   win.getAnimations().forEach((anim) => anim.cancel());
 
-  const keyframes = getOpenKeyframes(anim, win);
+  // Check if we're in a session restoration
+  const wm = window.__windowManager;
+  const isSessionRestoring = wm && wm.appRestorationService && wm.appRestorationService.isRestoring;
+
+  const keyframes = getOpenKeyframes(anim, win, isRestoring || isSessionRestoring);
 
   const animation = win.animate(keyframes, {
     duration: duration,
@@ -111,7 +115,7 @@ export function animateWindowOpen(win) {
   };
 }
 
-function getOpenKeyframes(animType, win) {
+function getOpenKeyframes(animType, win, isRestoring = false) {
   switch (animType) {
     case OPEN_ANIMATIONS.fade:
       return [{ opacity: 0 }, { opacity: 1 }];
@@ -121,6 +125,12 @@ function getOpenKeyframes(animType, win) {
         { opacity: 1, transform: "scale(1)" }
       ];
     case OPEN_ANIMATIONS.scaleFromSource:
+      if (!isRestoring) {
+        return [
+          { opacity: 0, transform: "scale(0.9)" },
+          { opacity: 1, transform: "scale(1)" }
+        ];
+      }
       const taskbarItem = document.getElementById(`taskbar-${win.id}`);
       if (taskbarItem) {
         const tbRect = taskbarItem.getBoundingClientRect();

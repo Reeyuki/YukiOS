@@ -38,7 +38,7 @@ export const FEATURE_DATA = {
     },
     {
       icon: "fas fa-box-archive",
-      title: "40+ Built-in Apps",
+      title: "50+ Built-in Apps",
       desc: "Notepad, Terminal, Browser, Office viewer, Calculator, and more",
       animation: "glow-card"
     },
@@ -1167,7 +1167,7 @@ Your setup is complete. Here's what you configured:
 - Notifications: ${this.userChoices.notifications ? "Enabled" : "Disabled"}
 
 Quick Tips:
-• Click the Start Menu to explore 40+ apps and 3700+ games
+• Click the Start Menu to explore 50+ apps and 3700+ games
 • Right-click the desktop for context menu options
 • Use the Settings app to customize further anytime
 • Your files persist in the virtual filesystem

@@ -120,7 +120,7 @@ export class WindowHelper {
 
     // Exclude browser app from animations
     if (!win.id || !win.id.startsWith("browser-app-")) {
-      requestAnimationFrame(() => animateWindowOpen(win));
+      requestAnimationFrame(() => animateWindowOpen(win, false));
     }
 
     return win;
