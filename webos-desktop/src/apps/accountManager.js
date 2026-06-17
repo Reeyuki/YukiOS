@@ -1,7 +1,6 @@
 import { BaseApp } from "../core/BaseApp.js";
 import { BusEvents } from "../core/EventBus.js";
 import { refreshSteamUI } from "../games/games.js";
-import { customAlert, showConfirm } from "../shared/dialogs.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { PersistenceTypes } from "../runtime/AppSchema.js";
 import { os } from "../os/index.js";
@@ -524,7 +523,7 @@ export class AccountManagerApp extends BaseApp {
 
       try {
         if (file.size > 2 * 1024 * 1024) {
-          customAlert("Image too large. Please use a file under 2MB.");
+          os.dialog.alert("Alert", "Image too large. Please use a file under 2MB.");
           return;
         }
 
@@ -547,7 +546,7 @@ export class AccountManagerApp extends BaseApp {
         this.avatarWindow = null;
       } catch (e) {
         console.error("Upload failed:", e);
-        customAlert("Upload Failed", "Could not save avatar image. Please try a smaller image.");
+        os.dialog.alert("Upload Failed", "Could not save avatar image. Please try a smaller image.");
       }
     });
 
@@ -617,11 +616,11 @@ export class AccountManagerApp extends BaseApp {
   async deleteUser(userId) {
     const currentUserId = os.storage.get(StorageKeys.userId);
     if (userId === currentUserId) {
-      customAlert("Cannot delete current user", "Please switch to another account first.");
+      os.dialog.alert("Cannot delete current user", "Please switch to another account first.");
       return;
     }
 
-    const confirmed = await showConfirm(
+    const confirmed = await os.dialog.confirm(
       "Delete User",
       "Are you sure you want to delete this user? This action cannot be undone."
     );
@@ -643,7 +642,7 @@ export class AccountManagerApp extends BaseApp {
     const user = userHistory.find((u) => u.userId === userId);
     if (!user) return;
 
-    const confirmed = await showConfirm("Switch User", `Switch to ${user.name}?`);
+    const confirmed = await os.dialog.confirm("Switch User", `Switch to ${user.name}?`);
     if (!confirmed) return;
 
     os.storage.set(StorageKeys.userId, userId);

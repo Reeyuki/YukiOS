@@ -9,7 +9,6 @@ import { ClippyAnimation, speak } from "../ai/clippy.js";
 import { decodeDataURLContent } from "../fileDisplay.js";
 import { showConflictDialog } from "../shared/conflictDialog.js";
 import { FileKind } from "../fs.js";
-import { customConfirm } from "../shared/dialogs.js";
 import { Shell } from "../shared/shell.js";
 
 export class MonacoApp extends BaseApp {
@@ -1056,7 +1055,7 @@ export class MonacoApp extends BaseApp {
     if (!editorData) return;
 
     if (editorData.isDirty) {
-      if (!(await customConfirm(`"${editorData.title}" has unsaved changes. Close anyway?`))) {
+      if (!(await os.dialog.confirm("Confirm", `"${editorData.title}" has unsaved changes. Close anyway?`))) {
         return;
       }
     }
@@ -1212,7 +1211,12 @@ export class MonacoApp extends BaseApp {
       closeBtn.onclick = async (e) => {
         const dirtyTabs = Array.from(this.tabs.values()).filter((t) => t.isDirty);
         if (dirtyTabs.length > 0) {
-          if (!(await customConfirm(`${dirtyTabs.length} tab(s) have unsaved changes. Close window anyway?`))) {
+          if (
+            !(await os.dialog.confirm(
+              "Confirm",
+              `${dirtyTabs.length} tab(s) have unsaved changes. Close window anyway?`
+            ))
+          ) {
             return;
           }
         }

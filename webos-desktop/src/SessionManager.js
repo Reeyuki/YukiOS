@@ -4,7 +4,6 @@ import { StorageKeys } from "./StorageKeys.js";
 import { SystemUtilities } from "./system.js";
 import { audioMixer, SystemAudio } from "./audioMixer.js";
 import { os } from "./os/index.js";
-import { showAlert, showConfirm } from "./shared/dialogs.js";
 import { YUKIOS_VERSION } from "./apps/about.js";
 import { resolveAvatarUrl } from "./shared/avatarResolver.js";
 
@@ -429,7 +428,7 @@ export class SessionManager {
       if (!this.selectedUser) return;
 
       if (this.selectedSession === "Yuki Tiling VM" || this.selectedSession === "tiling") {
-        await showAlert("Not Implemented", "Yuki Tiling VM is not implemented yet");
+        await os.dialog.alert("Not Implemented", "Yuki Tiling VM is not implemented yet");
         return;
       }
 
@@ -489,13 +488,13 @@ export class SessionManager {
     });
 
     powerBtn.addEventListener("click", async () => {
-      if (await showConfirm("Shutdown", "Are you sure you want to shut down?")) {
+      if (await os.dialog.confirm("Shutdown", "Are you sure you want to shut down?")) {
         window.close();
       }
     });
 
     restartBtn.addEventListener("click", async () => {
-      if (await showConfirm("Restart", "Are you sure you want to restart?")) {
+      if (await os.dialog.confirm("Restart", "Are you sure you want to restart?")) {
         location.reload();
       }
     });

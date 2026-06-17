@@ -1,5 +1,4 @@
 import { BaseApp } from "../core/BaseApp.js";
-import { showConfirm, showPrompt } from "../shared/dialogs.js";
 import { StorageKeys } from "../StorageKeys.js";
 import { os } from "../os/index.js";
 
@@ -244,7 +243,7 @@ class ClipboardManagerApp extends BaseApp {
         const item = history[index];
         if (item) {
           this._dialogOpen = true;
-          const newData = await showPrompt(
+          const newData = await os.dialog.prompt(
             "Edit Clipboard Contents",
             "Edit clipboard contents:",
             String(item.data),

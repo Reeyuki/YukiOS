@@ -16,7 +16,6 @@ import { Achievements } from "../achievements.js";
 import { BaseApp } from "../core/BaseApp.js";
 import { BusEvents } from "../core/EventBus.js";
 import { getLibraryUrl } from "../shared/cdnConfig.js";
-import { customPrompt, customConfirm, customAlert } from "../shared/dialogs.js";
 import { WindowHelper } from "../utils/WindowHelper.js";
 import { audioMixer } from "../audioMixer.js";
 import { os } from "../os/index.js";
@@ -1772,8 +1771,8 @@ export class OfficeApp extends BaseApp {
   async insertTable(state) {
     if (state.editorType !== "contenteditable") return;
 
-    const rows = await customPrompt("Number of rows:", "3");
-    const cols = await customPrompt("Number of columns:", "3");
+    const rows = await os.dialog.prompt("Prompt", "Number of rows:", "3");
+    const cols = await os.dialog.prompt("Prompt", "Number of columns:", "3");
 
     if (!rows || !cols) return;
 
@@ -1793,7 +1792,7 @@ export class OfficeApp extends BaseApp {
   async insertLink(state) {
     if (state.editorType !== "contenteditable") return;
 
-    const url = await customPrompt("Enter URL:", "https://");
+    const url = await os.dialog.prompt("Prompt", "Enter URL:", "https://");
     if (url) {
       document.execCommand("createLink", false, url);
     }
@@ -1859,7 +1858,7 @@ export class OfficeApp extends BaseApp {
   }
 
   showAbout() {
-    customAlert("Office app For YukiOS", "Office");
+    os.dialog.alert("Office", "Office app For YukiOS");
   }
 
   spellCheck(state) {
@@ -1888,7 +1887,7 @@ export class OfficeApp extends BaseApp {
   }
 
   async createNewFile(win, state) {
-    if (await customConfirm("Create a new file? Unsaved changes will be lost.")) {
+    if (await os.dialog.confirm("Confirm", "Create a new file? Unsaved changes will be lost.")) {
       const editorArea = $(".office-editor-area", win);
       state.title = "Untitled";
       state.filePath = null;
@@ -1902,7 +1901,7 @@ export class OfficeApp extends BaseApp {
   }
 
   async showFindDialog(win, state) {
-    const searchTerm = await customPrompt("Find:");
+    const searchTerm = await os.dialog.prompt("Prompt", "Find:");
     if (!searchTerm) return;
 
     if (state.editorType === "contenteditable" && state.editor) {
@@ -1913,9 +1912,9 @@ export class OfficeApp extends BaseApp {
   }
 
   async showReplaceDialog(win, state) {
-    const findText = await customPrompt("Find:");
+    const findText = await os.dialog.prompt("Prompt", "Find:");
     if (!findText) return;
-    const replaceText = await customPrompt("Replace with:");
+    const replaceText = await os.dialog.prompt("Prompt", "Replace with:");
     if (replaceText === null) return;
 
     if (state.editorType === "contenteditable" && state.editor) {
@@ -2083,7 +2082,7 @@ export class OfficeApp extends BaseApp {
   async addSpreadsheetSheet(state) {
     if (state.editorType !== "spreadsheet" || !state.workbook) return;
 
-    const name = await customPrompt("Sheet name:", `Sheet${state.workbook.SheetNames.length + 1}`);
+    const name = await os.dialog.prompt("Prompt", "Sheet name:", `Sheet${state.workbook.SheetNames.length + 1}`);
     if (!name) return;
 
     const XLSX = await modules.xlsx();

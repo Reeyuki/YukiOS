@@ -437,6 +437,21 @@ import { os } from "../os/index.js";
 **Standard events:** `SETTINGS_CHANGED`, `WINDOW_CREATED`, `WINDOW_FOCUSED`, `WINDOW_CLOSED`, `FILE_CHANGED`,
 `SESSION_INITIALIZED`, `AI_ACTION_EXECUTED`
 
+### Dialog API - `os.dialog`
+
+| Method                              | Return                             |
+| ----------------------------------- | ---------------------------------- |
+| `alert(title, message)`             | `Promise<void>`                    |
+| `confirm(title, message)`           | `Promise<boolean>`                 |
+| `prompt(title, message, defaultValue?)` | `Promise<string \| null>`     |
+| `fileOpen(options?)`                | `Promise<string \| null>`          |
+| `fileSave(options?)`                | `Promise<string \| null>`          |
+| `openDirectory(options?)`           | `Promise<string \| null>`          |
+
+`FileDialogOptions`: `{ defaultFileName?: string; initialPath?: string }`
+
+**Never use browser native alerts, prompts, or confirms. Always use `os.dialog.*`.**
+
 ### Storage API - `os.storage`
 
 | Method            | Purpose                        |
@@ -596,18 +611,22 @@ Themes can override any CSS variable defined in `src/styles/style.css`. Common v
 
 Always prefer these shared utilities over reimplementing logic.
 
-### Dialogs - `src/shared/dialogs.js`
+### Dialogs - `os.dialog`
 
-| Function                                                | Return                    |
-| ------------------------------------------------------- | ------------------------- |
-| `showAlert(title, message, buttonText)`                 | `Promise<void>`           |
-| `showPrompt(title, message, defaultValue, confirmText)` | `Promise<string \| null>` |
-| `showConfirm(title, message, confirmText, cancelText)`  | `Promise<boolean>`        |
-| `customAlert(message, title)`                           | `Promise<void>`           |
-| `customPrompt(message, defaultValue, title)`            | `Promise<string \| null>` |
-| `customConfirm(message, title)`                         | `Promise<boolean>`        |
+Always use the OS-level dialog API instead of shared dialog utilities or browser native dialogs:
 
-**Never use browser native alerts, prompts, or confirms.**
+| Method                                                | Return                    |
+| ----------------------------------------------------- | ------------------------- |
+| `os.dialog.alert(title, message)`                     | `Promise<void>`           |
+| `os.dialog.confirm(title, message)`                   | `Promise<boolean>`        |
+| `os.dialog.prompt(title, message, defaultValue?)`     | `Promise<string \| null>` |
+| `os.dialog.fileOpen(options?)`                        | `Promise<string \| null>` |
+| `os.dialog.fileSave(options?)`                        | `Promise<string \| null>` |
+| `os.dialog.openDirectory(options?)`                   | `Promise<string \| null>` |
+
+`FileDialogOptions`: `{ defaultFileName?: string; initialPath?: string }`
+
+**Never use browser native alerts, prompts, or confirms. Always use `os.dialog.*`.**
 
 ### DOM Utilities - `src/shared/domUtils.js`
 
@@ -734,7 +753,7 @@ Single-file build output is supported for easy deployment.
 - Whenever you define a new app to appLauncher or gamesList, define description for it on `gameDescriptions.js`
 - Always use StorageKeys from `src/StorageKeys.js` for localStorage access
 - Always use `os.storage` API instead of bare `localStorage`
-- Never use browser native alerts, prompts, or confirms. Always use shared dialog utilities from `src/shared/dialogs.js`
+- Never use browser native alerts, prompts, or confirms. Always use `os.dialog` API (`os.dialog.alert()`, `os.dialog.confirm()`, `os.dialog.prompt()`, `os.dialog.fileOpen()`, `os.dialog.fileSave()`, `os.dialog.openDirectory()`)
 - Never use `document.querySelector`, `document.querySelectorAll`, or direct DOM manipulation methods. Always use
   utility functions from `src/shared/domUtils.js`
 - Use `os.notify.send()` for discrete, user-facing application events that represent a state change or completion

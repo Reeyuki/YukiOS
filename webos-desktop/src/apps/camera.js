@@ -1,6 +1,5 @@
 import "../styles/camera.css";
 import { BaseApp } from "../core/BaseApp.js";
-import { customPrompt, customConfirm } from "../shared/dialogs.js";
 import { PersistenceTypes } from "../runtime/AppSchema.js";
 import { os } from "../os/index.js";
 import { openMediaViewer } from "../fileDisplay.js";
@@ -516,7 +515,10 @@ export class CameraApp extends BaseApp {
 
           deleteSelectedBtn.onclick = async () => {
             if (state.selectedItems.length === 0) return;
-            const confirmed = await customConfirm(`Delete ${state.selectedItems.length} selected items?`);
+            const confirmed = await os.dialog.confirm(
+              "Confirm",
+              `Delete ${state.selectedItems.length} selected items?`
+            );
             if (!confirmed) return;
             for (const id of state.selectedItems) {
               await this.deleteRecording(id, state);
@@ -562,7 +564,7 @@ export class CameraApp extends BaseApp {
         },
         deleteSelectedClick: async (payload, event, element, state) => {
           if (state.selectedItems.length === 0) return;
-          const confirmed = await customConfirm(`Delete ${state.selectedItems.length} selected items?`);
+          const confirmed = await os.dialog.confirm("Confirm", `Delete ${state.selectedItems.length} selected items?`);
           if (!confirmed) return;
           for (const id of state.selectedItems) {
             await this.deleteRecording(id, state);
@@ -966,7 +968,7 @@ export class CameraApp extends BaseApp {
   async renameRecording(id, state) {
     const rec = state.recordings.find((r) => r.id === id);
     if (!rec) return;
-    const name = await customPrompt("Rename recording:", rec.name);
+    const name = await os.dialog.prompt("Prompt", "Rename recording:", rec.name);
     if (!name) return;
 
     const ext = rec.id.includes(".png") ? ".png" : ".webm";
@@ -987,7 +989,7 @@ export class CameraApp extends BaseApp {
     const index = state.recordings.findIndex((r) => r.id === id);
     if (index === -1) return;
 
-    const confirmed = await customConfirm(`Are you sure you want to delete "${id}"?`, "Delete Recording");
+    const confirmed = await os.dialog.confirm("Delete Recording", `Are you sure you want to delete "${id}"?`);
     if (!confirmed) return;
 
     URL.revokeObjectURL(state.recordings[index].url);

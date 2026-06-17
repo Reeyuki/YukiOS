@@ -15,7 +15,7 @@ import { YouTubeUtilsApp } from "./apps/youtubeUtils.js";
 import { NotificationCenter } from "./notificationCenter.js";
 import { JsDosApp } from "./apps/jsdos.js";
 import { V86App } from "./apps/v86.js";
-import { customAlert } from "./shared/dialogs.js";
+
 import { AccountManagerApp } from "./apps/accountManager.js";
 import { setDesktopUI as setGamesDesktopUI, handleSteamUrlParam } from "./games/games.js";
 import { AdsManager } from "./ads.js";
@@ -29,7 +29,7 @@ import { appMap } from "./games/gamesList.js";
 import "./desktopui/taskbarPositionManager.js";
 import logoImg from "./assets/logo.png";
 import { showCdnPrompt } from "./shared/dialogs.js";
-import { initializeOSBridge } from "./os/index.js";
+import { initializeOSBridge, setDialogExplorerApp } from "./os/index.js";
 import { loadApps } from "./AppLoader.js";
 
 initializeMirrors(appMap);
@@ -74,6 +74,7 @@ services.youtubeUtilsApp = youtubeUtilsApp;
 
 const explorerApp = new ExplorerApp(services);
 services.explorerApp = explorerApp;
+setDialogExplorerApp(explorerApp);
 
 const officeApp = new OfficeAppProxy(services);
 services.officeApp = officeApp;
@@ -187,9 +188,9 @@ async function start() {
   await sessionManager.showLogin();
 
   if (location.hostname.endsWith("neocities.org")) {
-    customAlert(
-      "Neocities does not support loading assets from other domains! OS will be severely limited to load apps and data.",
-      "Neocities Warning"
+    os.dialog.alert(
+      "Neocities Warning",
+      "Neocities does not support loading assets from other domains! OS will be severely limited to load apps and data."
     );
   }
   const url = new URL(location.href);

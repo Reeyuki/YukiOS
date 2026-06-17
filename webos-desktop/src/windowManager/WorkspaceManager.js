@@ -1,5 +1,4 @@
 import { os } from "../os/index.js";
-import { customPrompt } from "../shared/dialogs.js";
 import { StorageKeys } from "../StorageKeys.js";
 import { sanitizeTitle } from "../utils/utils.js";
 
@@ -77,7 +76,7 @@ export class WorkspaceManager {
       });
 
       btn.addEventListener("dblclick", async () => {
-        const newName = await customPrompt("Rename workspace:", ws.name);
+        const newName = await os.dialog.prompt("Prompt", "Rename workspace:", ws.name);
         if (newName && newName.trim()) {
           ws.name = newName.trim();
           this._render();

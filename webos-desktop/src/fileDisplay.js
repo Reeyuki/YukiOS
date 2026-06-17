@@ -1,5 +1,5 @@
 import { FileKind } from "./fs.js";
-import { customAlert, showConfirm } from "./shared/dialogs.js";
+import { os } from "./os/index.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
 import { ROM_EXTS } from "./shared/coreMap.js";
 import { resolveIconUrl } from "./shared/assetResolver.js";
@@ -518,7 +518,7 @@ function getContentSize(content) {
 
 async function confirmLargeFile(name, size) {
   const sizeStr = formatFileSize(size);
-  return showConfirm(
+  return os.dialog.confirm(
     "Large File Warning",
     `The file "${name}" is quite large (${sizeStr}).\n\nOpening it in Notepad may cause performance issues.\n\nDo you want to continue?`,
     "Continue",
@@ -569,7 +569,7 @@ export async function openFileWith({
         fileData: arrayBuffer
       });
     } else {
-      customAlert("Yuki Blender is not available.");
+      os.dialog.alert("Alert", "Yuki Blender is not available.");
     }
     return;
   }
@@ -619,7 +619,7 @@ export async function openFileWith({
     if (emulatorApp) {
       emulatorApp.launchROM(name, path);
     } else {
-      customAlert("ROM emulation is not available.");
+      os.dialog.alert("Alert", "ROM emulation is not available.");
     }
     return;
   }

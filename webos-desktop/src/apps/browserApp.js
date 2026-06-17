@@ -1,7 +1,6 @@
 import "../styles/browser.css";
 import { PROXIES, clampProxyIndex, buildProxyUrl } from "../proxies.js";
 import { BaseApp } from "../core/BaseApp.js";
-import { customConfirm } from "../shared/dialogs.js";
 import { StorageKeys } from "../settings/settings.js";
 import { os } from "../os/index.js";
 import { sanitizeTitle } from "../utils/utils.js";
@@ -2102,7 +2101,7 @@ body {
   }
 
   async clearBrowsingData() {
-    if (!(await customConfirm("Delete all history, downloads records, and bookmarks?"))) return;
+    if (!(await os.dialog.confirm("Confirm", "Delete all history, downloads records, and bookmarks?"))) return;
     this.history = [];
     this.downloads = [];
     this.bookmarks = this.defaultBookmarks;

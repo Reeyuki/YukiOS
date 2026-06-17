@@ -193,9 +193,10 @@ export class SettingsApp extends BaseApp {
   deleteAllData = async () => deleteAllData();
 
   resetModuleData = async () => {
-    const confirmed = await (
-      await import("../shared/dialogs.js")
-    ).customConfirm("This will reset OS settings defined by the module and reload. Continue?");
+    const confirmed = await os.dialog.confirm(
+      "Confirm",
+      "This will reset OS settings defined by the module and reload. Continue?"
+    );
     if (!confirmed) return;
     Object.values(StorageKeys).forEach((key) => os.storage.remove(key));
     location.reload();

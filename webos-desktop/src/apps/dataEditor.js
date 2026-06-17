@@ -1,7 +1,6 @@
 import "../styles/dataeditor.css";
 import { BaseApp } from "../core/BaseApp.js";
 import { os } from "../os/index.js";
-import { showConfirm, showPrompt } from "../shared/dialogs.js";
 import { PersistenceTypes } from "../runtime/AppSchema.js";
 import { $, $$, bindEvent, setText, setHTML, toggleClass } from "../shared/domUtils.js";
 
@@ -1202,7 +1201,7 @@ export class DataEditorApp extends BaseApp {
 
     const oldKey = keyInput.value.trim();
     if (!oldKey) return;
-    const newKey = await showPrompt("Rename Key", "Enter new key name:", oldKey, "Rename");
+    const newKey = await os.dialog.prompt("Rename Key", "Enter new key name:", oldKey, "Rename");
     if (!newKey || newKey === oldKey) return;
 
     const val = valInput.value;
@@ -1282,7 +1281,7 @@ export class DataEditorApp extends BaseApp {
   async handleBulkDelete(element) {
     const win = element.closest(".window-content");
     if (this.selectedKeys.size === 0) return;
-    const confirmed = await showConfirm(
+    const confirmed = await os.dialog.confirm(
       "Delete Items",
       `Delete ${this.selectedKeys.size} selected items?`,
       "Delete",

@@ -7,7 +7,6 @@ import { BusEvents } from "../core/EventBus.js";
 import { WindowHelper } from "../utils/WindowHelper.js";
 import { resolveGhUrl } from "../shared/assetResolver.js";
 import { getLibraryUrl } from "../shared/cdnConfig.js";
-import { showPrompt } from "../shared/dialogs.js";
 import { os } from "../os/index.js";
 import { $, $$, bindEvent, toggleClass, addClass, removeClass, setText, setHTML } from "../shared/domUtils.js";
 
@@ -1472,7 +1471,7 @@ export class Model3DApp extends BaseApp {
   async _renameObject(id) {
     const so = this.sceneObjects.get(id);
     if (!so) return;
-    const newName = await showPrompt("Rename Object", "Rename object:", so.name, "Rename");
+    const newName = await os.dialog.prompt("Rename Object", "Rename object:", so.name, "Rename");
     if (newName && newName.trim()) {
       so.name = newName.trim();
       so.object3D.name = so.name;

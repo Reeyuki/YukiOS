@@ -280,8 +280,7 @@ export class DesktopContextMenuManager {
       },
       deleteFolder: () => this.desktopUI.deleteSelectedIcons(selectedArray),
       renameFolder: async () => {
-        const { customPrompt } = await import("../shared/dialogs.js");
-        const newName = await customPrompt("Enter new folder name:", folderIcon.dataset.folderName);
+        const newName = await os.dialog.prompt("Prompt", "Enter new folder name:", folderIcon.dataset.folderName);
         if (newName && newName !== folderIcon.dataset.folderName) {
           await this.desktopUI.fs.renameItem(["Desktop"], folderIcon.dataset.folderName, newName);
           const saved = this.PositionStore.load();
@@ -418,8 +417,7 @@ export class DesktopContextMenuManager {
         item(
           "Rename",
           async () => {
-            const { customPrompt } = await import("../shared/dialogs.js");
-            const newName = await customPrompt("Enter new name:", fileName);
+            const newName = await os.dialog.prompt("Prompt", "Enter new name:", fileName);
             if (newName && newName !== fileName) {
               await this.desktopUI.fs.renameItem(["Desktop"], fileName, newName);
               fileIcon.dataset.fileName = newName;
@@ -486,9 +484,8 @@ export class DesktopContextMenuManager {
       },
       delete: () => this.desktopUI.deleteSelectedIcons(selectedArray),
       rename: async () => {
-        const { customPrompt } = await import("../shared/dialogs.js");
         const currentName = this.IconDataHelper.getIconName(last);
-        const newName = await customPrompt("Enter new name:", currentName);
+        const newName = await os.dialog.prompt("Prompt", "Enter new name:", currentName);
         if (newName && newName !== currentName) {
           if (last.dataset.fileName) {
             await this.desktopUI.fs.renameItem(["Desktop"], last.dataset.fileName, `${newName}.desktop`);
@@ -507,8 +504,7 @@ export class DesktopContextMenuManager {
       newNotepad: () => this.desktopUI.notepadApp.open(),
       addFiles: () => this.desktopUI.addFiles(),
       newFolder: async () => {
-        const { customPrompt } = await import("../shared/dialogs.js");
-        const folderName = await customPrompt("Enter folder name:", "New Folder");
+        const folderName = await os.dialog.prompt("Prompt", "Enter folder name:", "New Folder");
         if (folderName) {
           await os.fs.mkdir(["Desktop", folderName]);
           await this.desktopUI.createFolderIcon(folderName);

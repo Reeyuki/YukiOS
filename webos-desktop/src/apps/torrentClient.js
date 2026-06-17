@@ -3,7 +3,6 @@ import { BaseApp } from "../core/BaseApp.js";
 import { WindowHelper } from "../utils/WindowHelper.js";
 import { PersistenceTypes } from "../runtime/AppSchema.js";
 import { os } from "../os/index.js";
-import { showPrompt, showAlert, showConfirm } from "../shared/dialogs.js";
 import { $, $$, bindEvent } from "../shared/domUtils.js";
 import parseTorrent from "parse-torrent";
 
@@ -115,7 +114,7 @@ export class TorrentClientApp extends BaseApp {
 
     bindEvent(q("#torrent-add-btn"), "click", async (e) => {
       e.stopPropagation();
-      const magnetUri = await showPrompt("Add Torrent", "Paste a magnet link or info hash:");
+      const magnetUri = await os.dialog.prompt("Add Torrent", "Paste a magnet link or info hash:");
       if (magnetUri) this.addTorrent(magnetUri.trim());
     });
 
@@ -311,7 +310,7 @@ export class TorrentClientApp extends BaseApp {
 
   pauseSelectedTorrents() {
     if (this.selectedTorrents.size === 0) {
-      showAlert("No Selection", "Select torrents to pause.");
+      os.dialog.alert("No Selection", "Select torrents to pause.");
       return;
     }
     this.selectedTorrents.forEach((infoHash) => {
@@ -333,7 +332,7 @@ export class TorrentClientApp extends BaseApp {
 
   resumeSelectedTorrents() {
     if (this.selectedTorrents.size === 0) {
-      showAlert("No Selection", "Select torrents to resume.");
+      os.dialog.alert("No Selection", "Select torrents to resume.");
       return;
     }
     this.selectedTorrents.forEach((infoHash) => {
@@ -355,10 +354,10 @@ export class TorrentClientApp extends BaseApp {
 
   deleteSelectedTorrents() {
     if (this.selectedTorrents.size === 0) {
-      showAlert("No Selection", "Select torrents to remove.");
+      os.dialog.alert("No Selection", "Select torrents to remove.");
       return;
     }
-    const confirmed = showConfirm("Remove Torrents", `Remove ${this.selectedTorrents.size} torrent(s)?`);
+    const confirmed = os.dialog.confirm("Remove Torrents", `Remove ${this.selectedTorrents.size} torrent(s)?`);
     confirmed.then((ok) => {
       if (ok) {
         this.selectedTorrents.forEach((infoHash) => {
@@ -433,7 +432,7 @@ export class TorrentClientApp extends BaseApp {
       this.notify("Torrent Client", "This torrent is already added", "info", 3000, "fas fa-info-circle");
       return;
     }
-    showConfirm("Save to YukiOS?", "Save files to YukiOS when the download finishes?").then((saveToYukiOS) => {
+    os.dialog.confirm("Save to YukiOS?", "Save files to YukiOS when the download finishes?").then((saveToYukiOS) => {
       this._startDownloadWithOptions({ magnetUri }, saveToYukiOS, null);
     });
   }
@@ -1056,12 +1055,12 @@ export class TorrentClientApp extends BaseApp {
 
   async saveToComputer(torrent) {
     if (!torrent.done) {
-      showAlert("Not Ready", "Wait for the download to finish before saving.");
+      os.dialog.alert("Not Ready", "Wait for the download to finish before saving.");
       return;
     }
     const files = torrent.files;
     if (!files || files.length === 0) {
-      showAlert("No Files", "No files found in this torrent.");
+      os.dialog.alert("No Files", "No files found in this torrent.");
       return;
     }
     for (const file of files) {
@@ -1100,12 +1099,12 @@ export class TorrentClientApp extends BaseApp {
 
   async saveToYukiOS(torrent) {
     if (!torrent.done) {
-      showAlert("Not Ready", "Wait for the download to finish before saving.");
+      os.dialog.alert("Not Ready", "Wait for the download to finish before saving.");
       return;
     }
     const explorerApp = this.services.explorerApp;
     if (!explorerApp) {
-      showAlert("Error", "Explorer app not available.");
+      os.dialog.alert("Error", "Explorer app not available.");
       return;
     }
     const savePath = await new Promise((resolve) => {
@@ -1115,7 +1114,7 @@ export class TorrentClientApp extends BaseApp {
 
     const files = torrent.files;
     if (!files || files.length === 0) {
-      showAlert("No Files", "No files found in this torrent.");
+      os.dialog.alert("No Files", "No files found in this torrent.");
       return;
     }
 
@@ -1136,7 +1135,7 @@ export class TorrentClientApp extends BaseApp {
       );
     } catch (err) {
       console.error("Error saving to YukiOS:", err);
-      showAlert("Save Failed", `Failed to save files: ${err.message}`);
+      os.dialog.alert("Save Failed", `Failed to save files: ${err.message}`);
     }
   }
 

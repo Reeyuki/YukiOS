@@ -3,7 +3,6 @@ import { AICore } from "./aiAssistant/aiCore.js";
 import { ActionParser } from "./aiAssistant/actionParser.js";
 import { OSBridge } from "./aiAssistant/osBridge.js";
 import { AIMemory } from "./aiAssistant/memory.js";
-import { showConfirm } from "../shared/dialogs.js";
 import { os } from "../os/index.js";
 import { StorageKeys } from "../StorageKeys.js";
 import { $, $$, bindEvent, setText, setHTML, toggleClass } from "../shared/domUtils.js";
@@ -836,10 +835,15 @@ Always explain what you're doing before executing actions. Ask for confirmation 
       return true;
     }
     if (action.action === "fs_write") {
-      return showConfirm("Confirm File Write", `Allow AI to write to "${action.target}"?`, "Allow Write", "Cancel");
+      return os.dialog.confirm(
+        "Confirm File Write",
+        `Allow AI to write to "${action.target}"?`,
+        "Allow Write",
+        "Cancel"
+      );
     }
     if (action.action === "close_app") {
-      return showConfirm("Confirm App Close", `Allow AI to close "${action.target}"?`, "Close App", "Cancel");
+      return os.dialog.confirm("Confirm App Close", `Allow AI to close "${action.target}"?`, "Close App", "Cancel");
     }
     return true;
   }

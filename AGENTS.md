@@ -16,9 +16,10 @@
   Import StorageKeys and use the defined constants. If a new key is needed, add it to StorageKeys.js first.
 - Always use `os.storage` API instead of bare `localStorage`; the storage module handles serialization/deserialization
   automatically.
-- Never use browser native alerts, prompts, or confirms (alert(), prompt(), confirm()). Always use the shared dialog
-  utilities from `src/shared/dialogs.js` instead. Import and use `showAlert`, `showPrompt`, `showConfirm`,
-  `customAlert`, `customPrompt`, or `customConfirm` as appropriate.
+- Never use browser native alerts, prompts, or confirms (alert(), prompt(), confirm()). Always use the OS-level dialog API
+  (`os.dialog`) instead. Use `os.dialog.alert(title, message)`, `os.dialog.confirm(title, message)`, or
+  `os.dialog.prompt(title, message, defaultValue?)`. For file selection, use `os.dialog.fileOpen()` or
+  `os.dialog.fileSave()`.
 - Never use `document.querySelector`, `document.querySelectorAll`, or direct DOM manipulation methods. Always use the
   utility functions from `src/shared/domUtils.js` instead. Import and use `$` (querySelector), `$$` (querySelectorAll),
   `bindEvent`, `toggleClass`, `setText`, `setHTML`, `createElement`, etc. For general utility functions, use
@@ -255,22 +256,41 @@ import { os } from "./os/index.js";
 | `clear()`         | Clear all storage              |
 | `has(key)`        | Check if key exists in storage |
 
+### Dialog API - `os.dialog`
+
+| Method                                                  | Return                    |
+| ------------------------------------------------------- | ------------------------- |
+| `alert(title, message)`                                 | `Promise<void>`           |
+| `confirm(title, message)`                               | `Promise<boolean>`        |
+| `prompt(title, message, defaultValue?)`                 | `Promise<string \| null>` |
+| `fileOpen(options?)`                                    | `Promise<string \| null>` |
+| `fileSave(options?)`                                    | `Promise<string \| null>` |
+| `openDirectory(options?)`                               | `Promise<string \| null>` |
+
+`FileDialogOptions`: `{ defaultFileName?: string; initialPath?: string }`
+
+**Never use browser native alerts, prompts, or confirms. Always use `os.dialog.*`.**
+
 ---
 
 ## Shared Utilities - `src/shared/`
 
 Always prefer these over reimplementing logic.
 
-### `dialogs.js`
+### Dialog API - `os.dialog`
 
-| Function                                                | Return                    |
+| Method                                                  | Return                    |
 | ------------------------------------------------------- | ------------------------- |
-| `showAlert(title, message, buttonText)`                 | `Promise<void>`           |
-| `showPrompt(title, message, defaultValue, confirmText)` | `Promise<string \| null>` |
-| `showConfirm(title, message, confirmText, cancelText)`  | `Promise<boolean>`        |
-| `customAlert(message, title)`                           | `Promise<void>`           |
-| `customPrompt(message, defaultValue, title)`            | `Promise<string \| null>` |
-| `customConfirm(message, title)`                         | `Promise<boolean>`        |
+| `alert(title, message)`                                 | `Promise<void>`           |
+| `confirm(title, message)`                               | `Promise<boolean>`        |
+| `prompt(title, message, defaultValue?)`                 | `Promise<string \| null>` |
+| `fileOpen(options?)`                                    | `Promise<string \| null>` |
+| `fileSave(options?)`                                    | `Promise<string \| null>` |
+| `openDirectory(options?)`                               | `Promise<string \| null>` |
+
+`FileDialogOptions`: `{ defaultFileName?: string; initialPath?: string }`
+
+**Never use browser native alerts, prompts, or confirms. Always use `os.dialog.*`.**
 
 ### `conflictDialog.js`
 

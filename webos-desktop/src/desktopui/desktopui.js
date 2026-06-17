@@ -449,8 +449,7 @@ export class DesktopUI {
               effectiveItems.length > 1
                 ? `Delete ${effectiveItems.length} items and all their contents?`
                 : `Delete "${effectiveItems[0]}"?`;
-            const { customConfirm } = await import("../shared/dialogs.js");
-            const confirmed = await customConfirm(msg);
+            const confirmed = await os.dialog.confirm("Confirm", msg);
             if (confirmed) {
               for (const name of effectiveItems) {
                 await os.fs.delete(explorerInst.currentPath, name);

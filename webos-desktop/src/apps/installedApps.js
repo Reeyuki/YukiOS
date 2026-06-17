@@ -1,6 +1,5 @@
 import "../styles/installedApps.css";
 import { BaseApp } from "../core/BaseApp.js";
-import { customPrompt, customConfirm } from "../shared/dialogs.js";
 import { os } from "../os/index.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { getAppRegistry } from "../appRegistry.js";
@@ -446,9 +445,9 @@ export class InstalledAppsApp extends BaseApp {
 
   async _handleBulkUninstall(inst) {
     const selectedIds = Array.from(inst.selectedApps);
-    const confirmed = await customConfirm(
-      `Are you sure you want to uninstall ${selectedIds.length} selected app${selectedIds.length !== 1 ? "s" : ""}? This will remove them from the app registry.`,
-      "Bulk Uninstall"
+    const confirmed = await os.dialog.confirm(
+      "Bulk Uninstall",
+      `Are you sure you want to uninstall ${selectedIds.length} selected app${selectedIds.length !== 1 ? "s" : ""}? This will remove them from the app registry.`
     );
 
     if (confirmed) {
@@ -477,7 +476,7 @@ export class InstalledAppsApp extends BaseApp {
   }
 
   async _handleRename(app, inst) {
-    const newName = await customPrompt(`Enter a new name for "${app.displayName}":`, app.displayName, "Rename App");
+    const newName = await os.dialog.prompt("Rename App", `Enter a new name for "${app.displayName}":`, app.displayName);
 
     if (newName !== null && newName.trim() !== "") {
       this.appRegistry.setAppName(app.id, newName.trim());
@@ -502,9 +501,9 @@ export class InstalledAppsApp extends BaseApp {
   }
 
   async _handleUninstall(app, inst) {
-    const confirmed = await customConfirm(
-      `Are you sure you want to uninstall "${app.displayName}"? This will remove it from the app registry. You can restore it later.`,
-      "Uninstall App"
+    const confirmed = await os.dialog.confirm(
+      "Uninstall App",
+      `Are you sure you want to uninstall "${app.displayName}"? This will remove it from the app registry. You can restore it later.`
     );
 
     if (confirmed) {

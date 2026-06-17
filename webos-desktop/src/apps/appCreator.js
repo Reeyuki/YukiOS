@@ -3,7 +3,6 @@ import { BaseApp } from "../core/BaseApp.js";
 import { isImageFile } from "../fileDisplay.js";
 import { refreshIcons } from "../shared/contextMenu.js";
 import { PROXIES, clampProxyIndex, buildProxyUrl, fetchHtmlThroughProxy } from "../proxies.js";
-import { customConfirm } from "../shared/dialogs.js";
 import { AppSource } from "../AppSource.js";
 import { PREDEFINED_AVATARS } from "./accountManager.js";
 import { os } from "../os/index.js";
@@ -651,7 +650,7 @@ export class AppCreatorApp extends BaseApp {
     const meta = await this._loadAppMeta(appId);
     if (!meta) return;
 
-    if (!(await customConfirm(`Delete "${meta.name}"? The desktop icon will also be removed.`))) return;
+    if (!(await os.dialog.confirm("Confirm", `Delete "${meta.name}"? The desktop icon will also be removed.`))) return;
 
     try {
       await os.fs.delete(["Desktop"], meta._fileName);

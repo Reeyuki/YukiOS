@@ -1,5 +1,4 @@
 import { BaseApp } from "../core/BaseApp.js";
-import { customPrompt, customConfirm } from "../shared/dialogs.js";
 import { StorageKeys } from "../settings/settings.js";
 import { PersistenceTypes } from "../runtime/AppSchema.js";
 import { os } from "../os/index.js";
@@ -890,7 +889,7 @@ export class YouTubeUtilsApp extends BaseApp {
   }
 
   async _importAll() {
-    const text = await customPrompt("Paste YouTube Utilities JSON export:");
+    const text = await os.dialog.prompt("Prompt", "Paste YouTube Utilities JSON export:");
     if (!text) return;
     const data = safeJsonParse(text, null);
     if (!data || typeof data !== "object") {
@@ -931,7 +930,8 @@ export class YouTubeUtilsApp extends BaseApp {
       return;
     }
 
-    const name = await customPrompt(
+    const name = await os.dialog.prompt(
+      "Prompt",
       "Enter name for desktop entry:",
       parsed.kind === "playlist" ? "YouTube Playlist" : "YouTube Video"
     );

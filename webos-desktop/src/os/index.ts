@@ -5,6 +5,7 @@ import { TrayAPI } from "./tray.js";
 import { AppAPI } from "./app.js";
 import { EventAPI } from "./events.js";
 import { StorageAPI } from "./storage.js";
+import { DialogAPI } from "./dialog.js";
 
 let windowAPI: WindowAPI | null = null;
 let fileSystemAPI: FileSystemAPI | null = null;
@@ -13,6 +14,7 @@ let trayAPI: TrayAPI | null = null;
 let appAPI: AppAPI | null = null;
 let eventAPI: EventAPI | null = null;
 const storageAPI = new StorageAPI();
+const dialogAPI = new DialogAPI();
 
 let boundWindowAPI: OSBridge["window"] | null = null;
 let boundFileSystemAPI: OSBridge["fs"] | null = null;
@@ -21,6 +23,7 @@ let boundTrayAPI: OSBridge["tray"] | null = null;
 let boundAppAPI: OSBridge["app"] | null = null;
 let boundEventAPI: OSBridge["events"] | null = null;
 let boundStorageAPI: OSBridge["storage"] | null = null;
+let boundDialogAPI: OSBridge["dialog"] | null = null;
 
 interface OSBridge {
   window: {
@@ -94,6 +97,14 @@ interface OSBridge {
     remove: StorageAPI["remove"];
     clear: StorageAPI["clear"];
     has: StorageAPI["has"];
+  };
+  dialog: {
+    alert: DialogAPI["alert"];
+    confirm: DialogAPI["confirm"];
+    prompt: DialogAPI["prompt"];
+    fileOpen: DialogAPI["fileOpen"];
+    fileSave: DialogAPI["fileSave"];
+    openDirectory: DialogAPI["openDirectory"];
   };
   telemetry: {
     getLegacyCalls: typeof getLegacyAPICalls;
@@ -266,6 +277,15 @@ export function initializeOSBridge(services: {
     has: storageAPI.has.bind(storageAPI)
   };
 
+  boundDialogAPI = {
+    alert: dialogAPI.alert.bind(dialogAPI),
+    confirm: dialogAPI.confirm.bind(dialogAPI),
+    prompt: dialogAPI.prompt.bind(dialogAPI),
+    fileOpen: dialogAPI.fileOpen.bind(dialogAPI),
+    fileSave: dialogAPI.fileSave.bind(dialogAPI),
+    openDirectory: dialogAPI.openDirectory.bind(dialogAPI)
+  };
+
   console.log("[OS Bridge] Initialized");
 
   (window as any).os = os;
@@ -335,6 +355,21 @@ export function getStorageAPI(): StorageAPI {
 }
 
 /**
+ * Get the dialog API
+ * Dialog API is always available as it doesn't require services
+ */
+export function getDialogAPI(): DialogAPI {
+  return dialogAPI;
+}
+
+/**
+ * Set the explorer app on the dialog API for file dialogs
+ */
+export function setDialogExplorerApp(app: any): void {
+  dialogAPI.setExplorerApp(app);
+}
+
+/**
  * Unified OS API surface for applications
  * This is the primary export that apps should use
  */
@@ -384,6 +419,20 @@ export const os: OSBridge = {
     return boundStorageAPI;
   },
 
+  get dialog() {
+    if (!boundDialogAPI) {
+      boundDialogAPI = {
+        alert: dialogAPI.alert.bind(dialogAPI),
+        confirm: dialogAPI.confirm.bind(dialogAPI),
+        prompt: dialogAPI.prompt.bind(dialogAPI),
+        fileOpen: dialogAPI.fileOpen.bind(dialogAPI),
+        fileSave: dialogAPI.fileSave.bind(dialogAPI),
+        openDirectory: dialogAPI.openDirectory.bind(dialogAPI)
+      };
+    }
+    return boundDialogAPI;
+  },
+
   telemetry: {
     getLegacyCalls: getLegacyAPICalls,
     getStats: getLegacyAPICallStats,
@@ -398,5 +447,6 @@ export { TrayAPI } from "./tray.js";
 export { AppAPI } from "./app.js";
 export { EventAPI } from "./events.js";
 export { StorageAPI } from "./storage.js";
+export { DialogAPI } from "./dialog.js";
 
 export type * from "./types.js";

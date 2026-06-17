@@ -2,7 +2,6 @@ import { StorageKeys } from "../StorageKeys.js";
 import { os } from "../os/index.js";
 import { toggleHideGames, toggleHideSystemApps } from "../desktopui/desktopui.js";
 import { audioMixer, SystemAudio } from "../audioMixer.js";
-import { customAlert, customConfirm, customPrompt } from "../shared/dialogs.js";
 import { renderWallpapersPage } from "../wallpapers.js";
 import { applyTrayEnabled } from "./settingsApply.js";
 import { FileKind } from "../fs.js";
@@ -284,10 +283,10 @@ export function bindAppearanceCategory(
     bindEvent(saveThemeBtn, "click", async () => {
       const customColors = getCustomColors();
       if (!customColors) {
-        customAlert("No custom colors set. Please customize colors first.");
+        os.dialog.alert("Alert", "No custom colors set. Please customize colors first.");
         return;
       }
-      const themeName = await customPrompt("Enter theme name:", "My Theme");
+      const themeName = await os.dialog.prompt("Prompt", "Enter theme name:", "My Theme");
       if (!themeName) return;
       const themeValue = themeName.toLowerCase().replace(/[^a-z0-9-]/g, "-");
       try {
@@ -297,7 +296,7 @@ export function bindAppearanceCategory(
           icon: "fas fa-palette",
           colors: customColors
         });
-        customAlert(`Theme "${themeName}" saved successfully!`);
+        os.dialog.alert("Alert", `Theme "${themeName}" saved successfully!`);
         showSaved();
         const customThemesSection = Array.from($$(".settings-row--stacked", win)).find(
           (row) => row.querySelector(".settings-label-title")?.textContent === "Custom Themes"
@@ -323,7 +322,7 @@ export function bindAppearanceCategory(
           }
         }
       } catch (e) {
-        customAlert(e.message || "Failed to save theme");
+        os.dialog.alert("Alert", e.message || "Failed to save theme");
       }
     });
   }
@@ -560,7 +559,7 @@ function bindCursorControls(win, settings, showSaved, normalizeCursorDataUrl) {
 
         try {
           if (file.size > 2 * 1024 * 1024) {
-            customAlert("Cursor image too large. Please use a file under 2MB.");
+            os.dialog.alert("Alert", "Cursor image too large. Please use a file under 2MB.");
             return;
           }
           const dataUrl = await new Promise((resolve, reject) => {
@@ -575,7 +574,7 @@ function bindCursorControls(win, settings, showSaved, normalizeCursorDataUrl) {
           setCursor(normalized, dataUrl);
         } catch (e) {
           console.error("Cursor upload failed:", e);
-          customAlert("Failed to set cursor. Check console for details.");
+          os.dialog.alert("Alert", "Failed to set cursor. Check console for details.");
         }
       });
 
@@ -708,7 +707,7 @@ export function bindDataCategory(win, save, settings, fs, showStatus, showSaved)
   });
 
   bindEvent($("#btnResetToggles", win), "click", async () => {
-    const confirmed = await customConfirm("Reset toggles?");
+    const confirmed = await os.dialog.confirm("Confirm", "Reset toggles?");
     if (!confirmed) return;
 
     $("#settingsWeather", win).checked = true;

@@ -1,4 +1,4 @@
-import { customAlert, customConfirm } from "../shared/dialogs.js";
+import { os } from "../os/index.js";
 import { audioMixer } from "../audioMixer.js";
 
 export function dumpStorage(storage) {
@@ -36,7 +36,7 @@ export function downloadBlob(blob, filename) {
 
 export async function exportData(fs, showStatus = () => {}) {
   if (!fs) {
-    customAlert("Filesystem manager not available; cannot export filesystem data.");
+    os.dialog.alert("Alert", "Filesystem manager not available; cannot export filesystem data.");
     return;
   }
   try {
@@ -55,18 +55,19 @@ export async function exportData(fs, showStatus = () => {}) {
     showStatus("Exported");
   } catch (e) {
     console.error("Export failed:", e);
-    customAlert("Export failed. Check console for details.");
+    os.dialog.alert("Alert", "Export failed. Check console for details.");
     showStatus("Export failed");
   }
 }
 
 export async function importData(fs, showStatus = () => {}) {
   if (!fs) {
-    customAlert("Filesystem manager not available; cannot import filesystem data.");
+    os.dialog.alert("Alert", "Filesystem manager not available; cannot import filesystem data.");
     return;
   }
 
-  const confirmed = await customConfirm(
+  const confirmed = await os.dialog.confirm(
+    "Confirm",
     "This will overwrite your current settings and filesystem contents.\nThis action cannot be undone."
   );
   if (!confirmed) return;
@@ -103,7 +104,7 @@ export async function importData(fs, showStatus = () => {}) {
     } catch (e) {
       console.error("Import failed:", e);
       audioMixer().playCriticalWarning();
-      customAlert("Import failed. The file may be invalid or corrupted. Check console for details.");
+      os.dialog.alert("Alert", "Import failed. The file may be invalid or corrupted. Check console for details.");
       showStatus("Import failed");
     }
   });
@@ -112,7 +113,8 @@ export async function importData(fs, showStatus = () => {}) {
 }
 
 export async function deleteAllData() {
-  const confirmed = await customConfirm(
+  const confirmed = await os.dialog.confirm(
+    "Confirm",
     "⚠️ WARNING: Delete All Data\n\n" +
       "This will permanently delete:\n" +
       "• All game progresses, saved files, settings, and preferences\n\n" +
@@ -162,7 +164,7 @@ export async function deleteAllData() {
     location.reload();
   } catch (error) {
     console.error("Error deleting all data:", error);
-    customAlert("An error occurred while deleting data. Some data may remain. The page will now reload.");
+    os.dialog.alert("Alert", "An error occurred while deleting data. Some data may remain. The page will now reload.");
     location.reload();
   }
 }
