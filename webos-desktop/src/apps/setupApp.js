@@ -269,7 +269,7 @@ export class SetupApp extends BaseApp {
 
     await this._loadWallpapers();
 
-    const win = os.window.create(winId, "Welcome to Yuki OS", "70vw", "75vh", {
+    const win = os.window.create(winId, "Welcome to Yuki OS", "75vw", "75vh", {
       icon: "fas fa-rocket",
       position: "center"
     });

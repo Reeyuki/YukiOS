@@ -228,7 +228,7 @@ export class DesktopContextMenuManager {
         { id: "ctx-new-notepad", label: "New Notepad", action: "newNotepad", icon: "fa-file-medical" },
         { id: "ctx-new-folder", label: "New Folder", action: "newFolder", icon: "fa-folder-plus" },
         { id: "ctx-open-explorer", label: "Open File Explorer", action: "openExplorer", icon: "fa-folder-open" },
-        { id: "ctx-set-wallpaper", label: "Set Wallpaper", action: "setWallpaper", icon: "fa-image" },
+        { id: "ctx-set-wallpaper", label: "Customize", action: "setWallpaper", icon: "fa-paint-brush" },
         "hr",
         {
           id: "ctx-paste",

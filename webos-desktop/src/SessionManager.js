@@ -32,6 +32,9 @@ export class SessionManager {
     this.uptimeInterval = null;
     this.contextMenuHandler = null;
     this.keyboardHandler = null;
+    this.IDLE_TIMEOUT = 15 * 60 * 1000;
+    this._idleTimer = null;
+    this._boundResetIdle = this._handleActivity.bind(this);
   }
 
   _ensureUserId() {
@@ -681,6 +684,8 @@ export class SessionManager {
     if (!os.storage.get(StorageKeys.setupCompleted) && this.services.setupApp) {
       setTimeout(() => this.services.setupApp.open(), 1000);
     }
+
+    this._startIdleDetection();
   }
 
   lockToLoginScreen() {
@@ -710,6 +715,7 @@ export class SessionManager {
   async lockSession() {
     if (!this.currentSession || this.isLocked) return;
     this.isLocked = true;
+    this._stopIdleDetection();
 
     this.lastActiveWindow = document.querySelector(".window.active") || null;
 
@@ -749,6 +755,8 @@ export class SessionManager {
       this.services.windowManager.bringToFront(this.lastActiveWindow);
     }
     this.lastActiveWindow = null;
+
+    this._startIdleDetection();
 
     os.events.emit(BusEvents.SYSTEM_UNLOCKED, {});
   }
@@ -843,6 +851,42 @@ export class SessionManager {
     this.container.addEventListener("mousemove", handleMouseMove);
     this.container.addEventListener("mouseup", handleMouseUp);
     this.container.addEventListener("mouseleave", handleMouseUp);
+  }
+
+  _startIdleDetection() {
+    if (this._idleTimer) return;
+    this._resetIdleTimer();
+    document.addEventListener("mousemove", this._boundResetIdle, { passive: true });
+    document.addEventListener("mousedown", this._boundResetIdle, { passive: true });
+    document.addEventListener("keydown", this._boundResetIdle, { passive: true });
+    document.addEventListener("touchstart", this._boundResetIdle, { passive: true });
+    document.addEventListener("scroll", this._boundResetIdle, { passive: true });
+  }
+
+  _stopIdleDetection() {
+    if (this._idleTimer) {
+      clearTimeout(this._idleTimer);
+      this._idleTimer = null;
+    }
+    document.removeEventListener("mousemove", this._boundResetIdle);
+    document.removeEventListener("mousedown", this._boundResetIdle);
+    document.removeEventListener("keydown", this._boundResetIdle);
+    document.removeEventListener("touchstart", this._boundResetIdle);
+    document.removeEventListener("scroll", this._boundResetIdle);
+  }
+
+  _handleActivity() {
+    if (!this.currentSession) return;
+    this._resetIdleTimer();
+  }
+
+  _resetIdleTimer() {
+    if (this._idleTimer) {
+      clearTimeout(this._idleTimer);
+    }
+    this._idleTimer = setTimeout(() => {
+      this.lockSession();
+    }, this.IDLE_TIMEOUT);
   }
 
   _showExtraElements() {
