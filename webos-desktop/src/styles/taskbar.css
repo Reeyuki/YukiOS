@@ -1529,7 +1529,7 @@ html[data-theme="light"] .task-item-name {
   cursor: pointer;
   transition: all 0.2s ease;
   position: relative;
-  overflow: hidden;
+  min-height: 80px;
 }
 
 .clipboard-item:hover {
@@ -1538,26 +1538,12 @@ html[data-theme="light"] .task-item-name {
   transform: translateY(-1px);
 }
 
-.clipboard-item-badge {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background: var(--brand);
-  color: var(--text-on-brand);
-  font-size: 10px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 4px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
 .clipboard-item-meta {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-bottom: 8px;
-  padding-right: 100px;
+  padding-left: 50px;
 }
 
 .clipboard-item-meta i {
@@ -1581,7 +1567,7 @@ html[data-theme="light"] .task-item-name {
 .clipboard-item-content {
   font-size: 13px;
   color: var(--text-primary);
-  word-break: break-word;
+  overflow-wrap: break-word;
   display: -webkit-box;
   -webkit-line-clamp: 3;
   line-clamp: 3;
@@ -1640,22 +1626,6 @@ html[data-theme="light"] .task-item-name {
 .clipboard-action-btn.remove-btn:hover {
   background: var(--error-bg);
   border-color: var(--error);
-}
-
-.clipboard-popup-footer {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 16px;
-  border-top: 1px solid var(--glass-border);
-  background: var(--surface-1);
-  font-size: 12px;
-  color: var(--text-muted);
-}
-
-.clipboard-popup-footer i {
-  font-size: 11px;
-  opacity: 0.7;
 }
 
 .clipboard-settings-section {

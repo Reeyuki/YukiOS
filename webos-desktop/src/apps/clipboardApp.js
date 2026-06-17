@@ -12,7 +12,7 @@ class ClipboardManagerApp extends BaseApp {
     this.popupId = "clipboard-tray-popup";
     this.enabled = os.storage.get(StorageKeys.clipboardManagerEnabled) !== "false";
     this.saveHistoryAcrossSessions = os.storage.get(StorageKeys.clipboardSaveHistory) !== "false";
-    this.historySize = os.storage.get(StorageKeys.clipboardHistorySize) || 20;
+    this.historySize = os.storage.get(StorageKeys.clipboardHistorySize) || 50;
     this._popupVisible = false;
     this._dialogOpen = false;
     this._initTray();
@@ -100,10 +100,6 @@ class ClipboardManagerApp extends BaseApp {
       <div id="clipboard-history" class="clipboard-history-list">
         ${history.length === 0 ? '<div class="clipboard-empty">No clipboard history</div>' : ""}
       </div>
-      <div class="clipboard-popup-footer">
-        <i class="fas fa-info-circle"></i>
-        <span>Clipboard captures all copy operations automatically</span>
-      </div>
     `;
 
     document.body.appendChild(popup);
@@ -162,14 +158,12 @@ class ClipboardManagerApp extends BaseApp {
 
     container.innerHTML = history
       .map((item, index) => {
-        const isLatest = index === 0;
         const preview = this._getPreview(item);
         const timestamp = new Date(item.timestamp).toLocaleTimeString();
         const isStarred = this.clipboardManager.isStarred(item.id);
 
         return `
         <div class="clipboard-item" data-index="${index}">
-          ${isLatest ? '<div class="clipboard-item-badge">Latest</div>' : ""}
           <div class="clipboard-item-meta">
             <i class="fas ${this._getTypeIcon(item.type)}"></i>
             <span class="clipboard-item-time">${timestamp}</span>
