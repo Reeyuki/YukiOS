@@ -146,9 +146,3 @@ export interface StorageAPI {
   clear(): void;
   has(key: string): boolean;
 }
-
-declare global {
-  interface Window {
-    __osBridgeLegacyWarnings?: boolean;
-  }
-}

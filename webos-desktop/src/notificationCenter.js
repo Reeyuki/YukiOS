@@ -30,9 +30,6 @@ const APP_SOURCE_TO_APP_MAP_KEY = APP_MANIFESTS.reduce(
   }
 );
 
-/**
- * @deprecated Use os.notify API instead. Direct access to NotificationCenter is deprecated.
- */
 export class NotificationCenter {
   constructor() {
     this.notifications = [];

@@ -19,7 +19,6 @@ export class FileSystemAPI {
    * @returns File content as string or Uint8Array
    */
   async read(path: string | string[], options: ReadFileOptions = {}): Promise<string | Uint8Array> {
-    this._logLegacyWarning("read");
     await this.fs.fsReady;
 
     const pathStr = Array.isArray(path) ? path.join("/") : path;
@@ -38,7 +37,6 @@ export class FileSystemAPI {
    * @param options - Write options
    */
   async write(path: string | string[], content: string | Uint8Array, options: WriteFileOptions = {}): Promise<void> {
-    this._logLegacyWarning("write");
     await this.fs.fsReady;
 
     const pathStr = Array.isArray(path) ? path.join("/") : path;
@@ -69,7 +67,6 @@ export class FileSystemAPI {
    * @returns Directory contents as object
    */
   async readdir(path: string | string[]): Promise<FileSystemEntry> {
-    this._logLegacyWarning("readdir");
     await this.fs.fsReady;
     const pathStr = Array.isArray(path) ? path.join("/") : path;
     return await this.fs.getFolder(pathStr);
@@ -80,7 +77,6 @@ export class FileSystemAPI {
    * @param path - Directory path (relative to user home) - can be string or array
    */
   async mkdir(path: string | string[]): Promise<void> {
-    this._logLegacyWarning("mkdir");
     await this.fs.fsReady;
     const pathStr = Array.isArray(path) ? path.join("/") : path;
     await this.fs.ensureFolder(pathStr);
@@ -92,7 +88,6 @@ export class FileSystemAPI {
    * @param name - Name of item (for directory deletion)
    */
   async delete(path: string | string[], name?: string): Promise<void> {
-    this._logLegacyWarning("delete");
     await this.fs.fsReady;
 
     const pathStr = Array.isArray(path) ? path.join("/") : path;
@@ -112,7 +107,6 @@ export class FileSystemAPI {
    * @returns True if exists
    */
   async exists(path: string | string[]): Promise<boolean> {
-    this._logLegacyWarning("exists");
     await this.fs.fsReady;
     const pathStr = Array.isArray(path) ? path.join("/") : path;
     const fullPath = this.fs.resolveUserPath(pathStr);
@@ -125,7 +119,6 @@ export class FileSystemAPI {
    * @param destination - Destination path - can be string or array
    */
   async copy(source: string | string[], destination: string | string[]): Promise<void> {
-    this._logLegacyWarning("copy");
     await this.fs.fsReady;
 
     const sourceStr = Array.isArray(source) ? source.join("/") : source;
@@ -145,7 +138,6 @@ export class FileSystemAPI {
    * @param newPath - New path - can be string or array
    */
   async rename(oldPath: string | string[], newPath: string | string[]): Promise<void> {
-    this._logLegacyWarning("rename");
     await this.fs.fsReady;
 
     const oldStr = Array.isArray(oldPath) ? oldPath.join("/") : oldPath;
@@ -171,7 +163,6 @@ export class FileSystemAPI {
    * @returns File metadata
    */
   async getMetadata(path: string, name: string): Promise<{ kind?: FileKind; icon?: string }> {
-    this._logLegacyWarning("getMetadata");
     await this.fs.fsReady;
     const dir = this.fs.resolveUserPath(path);
     const meta = await this.fs.readMeta(dir);
@@ -193,7 +184,6 @@ export class FileSystemAPI {
    * @returns True if path is a file
    */
   async isFile(path: string | string[]): Promise<boolean> {
-    this._logLegacyWarning("isFile");
     await this.fs.fsReady;
     const pathStr = Array.isArray(path) ? path.join("/") : path;
     const fullPath = this.fs.resolveUserPath(pathStr);
@@ -210,7 +200,6 @@ export class FileSystemAPI {
    * @returns File kind
    */
   async getFileKind(path: string | string[]): Promise<FileKind | undefined> {
-    this._logLegacyWarning("getFileKind");
     await this.fs.fsReady;
     const pathStr = Array.isArray(path) ? path.join("/") : path;
     const fullPath = this.fs.resolveUserPath(pathStr);
@@ -226,7 +215,6 @@ export class FileSystemAPI {
    * @returns File icon path
    */
   async getFileIcon(path: string | string[]): Promise<string | undefined> {
-    this._logLegacyWarning("getFileIcon");
     await this.fs.fsReady;
     const pathStr = Array.isArray(path) ? path.join("/") : path;
     const fullPath = this.fs.resolveUserPath(pathStr);
@@ -251,7 +239,6 @@ export class FileSystemAPI {
     kind?: FileKind,
     icon?: string
   ): Promise<string> {
-    this._logLegacyWarning("writeBinaryFile");
     await this.fs.fsReady;
     const pathStr = Array.isArray(path) ? path.join("/") : path;
     return await this.fs.writeBinaryFile(pathStr, name, blob, kind, icon);
@@ -264,7 +251,6 @@ export class FileSystemAPI {
    * @returns Blob content
    */
   async readBinaryFile(path: string | string[], name: string): Promise<Blob | null> {
-    this._logLegacyWarning("readBinaryFile");
     await this.fs.fsReady;
     const pathStr = Array.isArray(path) ? path.join("/") : path;
     return await this.fs.readBinaryFile(pathStr, name);
@@ -276,7 +262,6 @@ export class FileSystemAPI {
    * @param name - File name
    */
   async deleteBinaryFile(path: string | string[], name: string): Promise<void> {
-    this._logLegacyWarning("deleteBinaryFile");
     await this.fs.fsReady;
     const pathStr = Array.isArray(path) ? path.join("/") : path;
     await this.fs.deleteBinaryFile(pathStr, name);
@@ -289,7 +274,6 @@ export class FileSystemAPI {
    * @param newName - New file name
    */
   async renameBinaryFile(path: string | string[], oldName: string, newName: string): Promise<void> {
-    this._logLegacyWarning("renameBinaryFile");
     await this.fs.fsReady;
     const pathStr = Array.isArray(path) ? path.join("/") : path;
     await this.fs.renameBinaryFile(pathStr, oldName, newName);
@@ -312,7 +296,6 @@ export class FileSystemAPI {
     icon?: string,
     faIcon?: string
   ): Promise<string> {
-    this._logLegacyWarning("createFile");
     await this.fs.fsReady;
     const pathStr = Array.isArray(path) ? path.join("/") : path;
     return await this.fs.createFile(pathStr, name, content, kind, icon, faIcon);
@@ -324,7 +307,6 @@ export class FileSystemAPI {
    * @param name - Folder name
    */
   async createFolder(path: string | string[], name: string): Promise<string> {
-    this._logLegacyWarning("createFolder");
     await this.fs.fsReady;
     const pathStr = Array.isArray(path) ? path.join("/") : path;
     return await this.fs.createFolder(pathStr, name);
@@ -336,7 +318,6 @@ export class FileSystemAPI {
    * @param name - Item name
    */
   async deleteItem(path: string | string[], name: string): Promise<void> {
-    this._logLegacyWarning("deleteItem");
     await this.fs.fsReady;
     const pathStr = Array.isArray(path) ? path.join("/") : path;
     await this.fs.deleteItem(pathStr, name);
@@ -349,7 +330,6 @@ export class FileSystemAPI {
    * @param newName - New name
    */
   async renameItem(path: string | string[], oldName: string, newName: string): Promise<void> {
-    this._logLegacyWarning("renameItem");
     await this.fs.fsReady;
     const pathStr = Array.isArray(path) ? path.join("/") : path;
     await this.fs.renameItem(pathStr, oldName, newName);
@@ -368,41 +348,12 @@ export class FileSystemAPI {
     content: string,
     meta?: { kind?: FileKind; icon?: string }
   ): Promise<void> {
-    this._logLegacyWarning("updateFile");
     await this.fs.fsReady;
     const pathStr = Array.isArray(path) ? path.join("/") : path;
     await this.fs.updateFile(pathStr, name, content);
     if (meta?.kind || meta?.icon) {
       const dir = this.fs.resolveUserPath(pathStr);
       await this.fs.writeMeta(dir, name, { kind: meta.kind, icon: meta.icon });
-    }
-  }
-
-  /**
-   * Log legacy API usage for migration tracking
-   */
-  private _logLegacyWarning(method: string): void {
-    if (typeof window !== "undefined" && (window as any).__osBridgeLegacyWarnings !== false) {
-      console.warn(`[OS Bridge] Legacy filesystem API call: os.fs.${method}()`);
-
-      const stack = new Error().stack;
-      let source = "unknown";
-      if (stack) {
-        const lines = stack.split("\n");
-        for (const line of lines) {
-          if (line.includes(".js") && !line.includes("os/fs.ts")) {
-            const match = line.match(/\/([^\/]+\.js)/);
-            if (match) {
-              source = match[1];
-              break;
-            }
-          }
-        }
-      }
-
-      if (typeof (window as any).trackLegacyCall === "function") {
-        (window as any).trackLegacyCall("fs", method, source);
-      }
     }
   }
 }

@@ -183,9 +183,6 @@ export const defaultStorage = {
   }
 };
 
-/**
- * @deprecated Use os.fs API instead. Direct access to FileSystemManager is deprecated.
- */
 export class FileSystemManager {
   constructor() {
     this.CONFIG = {

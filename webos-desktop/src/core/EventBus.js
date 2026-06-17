@@ -1,6 +1,3 @@
-/**
- * @deprecated Use os.events API instead. Direct access to EventBus is deprecated.
- */
 class EventBus {
   constructor() {
     this._listeners = new Map();

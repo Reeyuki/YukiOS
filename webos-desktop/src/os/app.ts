@@ -4,6 +4,7 @@
  */
 
 import type { AppInfo, LaunchOptions } from "./types.js";
+import { $ } from "../shared/domUtils.js";
 
 export class AppAPI {
   private appLauncher: any;
@@ -18,7 +19,6 @@ export class AppAPI {
    * @param options - Launch options
    */
   async launch(appId: string, options: LaunchOptions = {}): Promise<void> {
-    this._logLegacyWarning("launch");
     if (!this.appLauncher) {
       return;
     }
@@ -32,7 +32,6 @@ export class AppAPI {
    * @param options - Launch options
    */
   async launchGame(appId: string, isSwf: boolean = false, options: LaunchOptions = {}): Promise<void> {
-    this._logLegacyWarning("launchGame");
     if (!this.appLauncher) {
       return;
     }
@@ -44,11 +43,10 @@ export class AppAPI {
    * @param winId - Window ID to close
    */
   close(winId: string): void {
-    this._logLegacyWarning("close");
     if (!this.appLauncher) {
       return;
     }
-    const win = document.getElementById(winId);
+    const win = $(`#${winId}`);
     if (win) {
       this.appLauncher.wm.closeWindow(win);
     }
@@ -66,7 +64,6 @@ export class AppAPI {
     status?: string;
     isTray?: boolean;
   }> {
-    this._logLegacyWarning("getRunningApps");
     if (!this.appLauncher) {
       return [];
     }
@@ -81,7 +78,7 @@ export class AppAPI {
     }> = [];
 
     windows.forEach((entry: any, winId: string) => {
-      const win = document.getElementById(winId);
+      const win = $(`#${winId}`);
       if (!win) return;
       const appId = win.dataset.appId;
       const title = entry.title || winId;
@@ -125,7 +122,6 @@ export class AppAPI {
    * @returns App info or null if not found
    */
   getAppInfo(appId: string): AppInfo | null {
-    this._logLegacyWarning("getAppInfo");
     if (!this.appLauncher) {
       return null;
     }
@@ -137,7 +133,6 @@ export class AppAPI {
    * @returns Object mapping app IDs to app info
    */
   getAllApps(): Record<string, AppInfo> {
-    this._logLegacyWarning("getAllApps");
     if (!this.appLauncher) {
       return {};
     }
@@ -150,7 +145,6 @@ export class AppAPI {
    * @returns True if app exists
    */
   hasApp(appId: string): boolean {
-    this._logLegacyWarning("hasApp");
     if (!this.appLauncher) {
       return false;
     }
@@ -163,7 +157,6 @@ export class AppAPI {
    * @returns Array of matching app IDs
    */
   searchApps(query: string): string[] {
-    this._logLegacyWarning("searchApps");
     if (!this.appLauncher) {
       return [];
     }
@@ -178,33 +171,5 @@ export class AppAPI {
     }
 
     return results;
-  }
-
-  /**
-   * Log legacy API usage for migration tracking
-   */
-  private _logLegacyWarning(method: string): void {
-    if (typeof window !== "undefined" && (window as any).__osBridgeLegacyWarnings !== false) {
-      console.warn(`[OS Bridge] Legacy app API call: os.app.${method}()`);
-
-      const stack = new Error().stack;
-      let source = "unknown";
-      if (stack) {
-        const lines = stack.split("\n");
-        for (const line of lines) {
-          if (line.includes(".js") && !line.includes("os/app.ts")) {
-            const match = line.match(/\/([^\/]+\.js)/);
-            if (match) {
-              source = match[1];
-              break;
-            }
-          }
-        }
-      }
-
-      if (typeof (window as any).trackLegacyCall === "function") {
-        (window as any).trackLegacyCall("app", method, source);
-      }
-    }
   }
 }

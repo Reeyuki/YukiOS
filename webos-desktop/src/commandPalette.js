@@ -434,6 +434,13 @@ export class CommandPalette {
         tag: "dnd",
         icon: "fas fa-bell",
         execute: () => this._toggleDND(false)
+      },
+      {
+        title: "Close All Windows",
+        subtitle: "Close all open application windows",
+        tag: "action",
+        icon: "fas fa-window-close",
+        execute: () => this._closeAllWindows()
       }
     ];
 
@@ -679,6 +686,16 @@ export class CommandPalette {
       type: "info",
       duration: 5000,
       icon: "fas fa-bell-slash",
+      appSource: AppSource.COMMAND_PALETTE
+    });
+  }
+
+  _closeAllWindows() {
+    os.window.closeAll();
+    os.notify.send("Close Windows", "All windows closed", {
+      type: "success",
+      duration: 3000,
+      icon: "fas fa-window-close",
       appSource: AppSource.COMMAND_PALETTE
     });
   }

@@ -83,6 +83,52 @@ export function getTaskbarIconRect(winId) {
   return taskbarItem.getBoundingClientRect();
 }
 
+function getTaskbarPosition() {
+  const taskbar = document.getElementById("taskbar");
+  if (!taskbar) return "bottom";
+
+  if (taskbar.classList.contains("position-top")) return "top";
+  if (taskbar.classList.contains("position-bottom")) return "bottom";
+  if (taskbar.classList.contains("position-left")) return "left";
+  if (taskbar.classList.contains("position-right")) return "right";
+
+  return "bottom";
+}
+
+function getSmartShrinkTarget(taskbarItem, winRect, taskbarPosition) {
+  const tbRect = taskbarItem.getBoundingClientRect();
+
+  const winCenterX = winRect.left + winRect.width / 2;
+  const winCenterY = winRect.top + winRect.height / 2;
+
+  let targetX, targetY;
+
+  switch (taskbarPosition) {
+    case "left":
+      targetX = tbRect.right;
+      targetY = tbRect.top + tbRect.height / 2;
+      break;
+    case "right":
+      targetX = tbRect.left;
+      targetY = tbRect.top + tbRect.height / 2;
+      break;
+    case "top":
+      targetX = tbRect.left + tbRect.width / 2;
+      targetY = tbRect.bottom;
+      break;
+    case "bottom":
+    default:
+      targetX = tbRect.left + tbRect.width / 2;
+      targetY = tbRect.top;
+      break;
+  }
+
+  const dx = targetX - winCenterX;
+  const dy = targetY - winCenterY;
+
+  return { dx, dy };
+}
+
 export function animateWindowOpen(win, isRestoring = false) {
   if (isTurboMode()) return;
 
@@ -133,10 +179,9 @@ function getOpenKeyframes(animType, win, isRestoring = false) {
       }
       const taskbarItem = document.getElementById(`taskbar-${win.id}`);
       if (taskbarItem) {
-        const tbRect = taskbarItem.getBoundingClientRect();
         const winRect = win.getBoundingClientRect();
-        const dx = tbRect.left + tbRect.width / 2 - (winRect.left + winRect.width / 2);
-        const dy = tbRect.top + tbRect.height / 2 - (winRect.top + winRect.height / 2);
+        const taskbarPosition = getTaskbarPosition();
+        const { dx, dy } = getSmartShrinkTarget(taskbarItem, winRect, taskbarPosition);
         return [
           { opacity: 0, transform: `translate(${dx}px, ${dy}px) scale(0.5)` },
           { opacity: 1, transform: "translate(0, 0) scale(1)" }
@@ -229,10 +274,9 @@ function getCloseKeyframes(animType, win) {
     case CLOSE_ANIMATIONS.scaleToOrigin:
       const taskbarItem = document.getElementById(`taskbar-${win.id}`);
       if (taskbarItem) {
-        const tbRect = taskbarItem.getBoundingClientRect();
         const winRect = win.getBoundingClientRect();
-        const dx = tbRect.left + tbRect.width / 2 - (winRect.left + winRect.width / 2);
-        const dy = tbRect.top + tbRect.height / 2 - (winRect.top + winRect.height / 2);
+        const taskbarPosition = getTaskbarPosition();
+        const { dx, dy } = getSmartShrinkTarget(taskbarItem, winRect, taskbarPosition);
         return [
           { opacity: 1, transform: "translate(0, 0) scale(1)" },
           { opacity: 0, transform: `translate(${dx}px, ${dy}px) scale(0.5)` }
@@ -301,10 +345,9 @@ function getMinimizeKeyframes(animType, win) {
     case MINIMIZE_ANIMATIONS.taskbarShrink:
       const taskbarItem = document.getElementById(`taskbar-${win.id}`);
       if (taskbarItem) {
-        const tbRect = taskbarItem.getBoundingClientRect();
         const winRect = win.getBoundingClientRect();
-        const dx = tbRect.left + tbRect.width / 2 - (winRect.left + winRect.width / 2);
-        const dy = tbRect.top + tbRect.height / 2 - (winRect.top + winRect.height / 2);
+        const taskbarPosition = getTaskbarPosition();
+        const { dx, dy } = getSmartShrinkTarget(taskbarItem, winRect, taskbarPosition);
         return [
           { opacity: 1, transform: "translate(0, 0) scale(1)" },
           { opacity: 0, transform: `translate(${dx}px, ${dy}px) scale(0.1)` }
@@ -335,10 +378,9 @@ function getMinimizeKeyframes(animType, win) {
     case MINIMIZE_ANIMATIONS.elasticStretch:
       const elasticTaskbarItem = document.getElementById(`taskbar-${win.id}`);
       if (elasticTaskbarItem) {
-        const tbRect = elasticTaskbarItem.getBoundingClientRect();
         const winRect = win.getBoundingClientRect();
-        const dx = tbRect.left + tbRect.width / 2 - (winRect.left + winRect.width / 2);
-        const dy = tbRect.top + tbRect.height / 2 - (winRect.top + winRect.height / 2);
+        const taskbarPosition = getTaskbarPosition();
+        const { dx, dy } = getSmartShrinkTarget(elasticTaskbarItem, winRect, taskbarPosition);
         return [
           { opacity: 1, transform: "translate(0, 0) scale(1)" },
           { opacity: 1, transform: `translate(${dx * 0.4}px, ${dy * 0.4}px) scale(1.4)`, offset: 0.4 },
@@ -350,10 +392,9 @@ function getMinimizeKeyframes(animType, win) {
     case MINIMIZE_ANIMATIONS.spiralDown:
       const spiralTaskbarItem = document.getElementById(`taskbar-${win.id}`);
       if (spiralTaskbarItem) {
-        const tbRect = spiralTaskbarItem.getBoundingClientRect();
         const winRect = win.getBoundingClientRect();
-        const dx = tbRect.left + tbRect.width / 2 - (winRect.left + winRect.width / 2);
-        const dy = tbRect.top + tbRect.height / 2 - (winRect.top + winRect.height / 2);
+        const taskbarPosition = getTaskbarPosition();
+        const { dx, dy } = getSmartShrinkTarget(spiralTaskbarItem, winRect, taskbarPosition);
         return [
           { opacity: 1, transform: "translate(0, 0) rotate(0deg) scale(1)" },
           {

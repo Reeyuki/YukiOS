@@ -2,7 +2,7 @@ import "../styles/shortcuts.css";
 import { BaseApp } from "../core/BaseApp.js";
 import { PersistenceTypes } from "../runtime/AppSchema.js";
 
-const SHORTCUTS_DATA = [
+export const SHORTCUTS_DATA = [
   {
     keys: ["Ctrl", "K"],
     desc: "Open Unified Command Palette",
@@ -290,6 +290,288 @@ const SHORTCUTS_DATA = [
     desc: "Cycle through open windows (configurable in Settings)",
     cat: "global",
     icon: "fas fa-exchange-alt"
+  },
+  {
+    keys: ["Escape"],
+    desc: "Close command palette",
+    cat: "global",
+    icon: "fas fa-times"
+  },
+  {
+    keys: ["ArrowUp"],
+    desc: "Navigate up in command palette",
+    cat: "global",
+    icon: "fas fa-arrow-up"
+  },
+  {
+    keys: ["ArrowDown"],
+    desc: "Navigate down in command palette",
+    cat: "global",
+    icon: "fas fa-arrow-down"
+  },
+  {
+    keys: ["Enter"],
+    desc: "Execute selected item in command palette",
+    cat: "global",
+    icon: "fas fa-check"
+  },
+  {
+    keys: ["ArrowUp"],
+    desc: "Navigate up in start menu",
+    cat: "global",
+    icon: "fas fa-arrow-up"
+  },
+  {
+    keys: ["ArrowDown"],
+    desc: "Navigate down in start menu",
+    cat: "global",
+    icon: "fas fa-arrow-down"
+  },
+  {
+    keys: ["ArrowLeft"],
+    desc: "Switch to categories in start menu",
+    cat: "global",
+    icon: "fas fa-arrow-left"
+  },
+  {
+    keys: ["ArrowRight"],
+    desc: "Switch to apps in start menu",
+    cat: "global",
+    icon: "fas fa-arrow-right"
+  },
+  {
+    keys: ["Enter"],
+    desc: "Launch selected item in start menu",
+    cat: "global",
+    icon: "fas fa-check"
+  },
+  {
+    keys: ["Enter"],
+    desc: "Execute command in Terminal",
+    cat: "terminal",
+    icon: "fas fa-terminal"
+  },
+  {
+    keys: ["ArrowUp"],
+    desc: "Previous command in Terminal history",
+    cat: "terminal",
+    icon: "fas fa-arrow-up"
+  },
+  {
+    keys: ["ArrowDown"],
+    desc: "Next command in Terminal history",
+    cat: "terminal",
+    icon: "fas fa-arrow-down"
+  },
+  {
+    keys: ["Tab"],
+    desc: "Tab completion in Terminal",
+    cat: "terminal",
+    icon: "fas fa-keyboard"
+  },
+  {
+    keys: ["Ctrl", "L"],
+    desc: "Clear Terminal screen",
+    cat: "terminal",
+    icon: "fas fa-eraser"
+  },
+  {
+    keys: ["Ctrl", "C"],
+    desc: "Interrupt command in Terminal",
+    cat: "terminal",
+    icon: "fas fa-stop"
+  },
+  {
+    keys: ["Ctrl", "D"],
+    desc: "Close Terminal window",
+    cat: "terminal",
+    icon: "fas fa-times"
+  },
+  {
+    keys: ["Ctrl", "N"],
+    desc: "New document in Office",
+    cat: "office",
+    icon: "fas fa-file"
+  },
+  {
+    keys: ["Ctrl", "P"],
+    desc: "Print in Office",
+    cat: "office",
+    icon: "fas fa-print"
+  },
+  {
+    keys: ["Ctrl", "Z"],
+    desc: "Undo in Office",
+    cat: "office",
+    icon: "fas fa-undo"
+  },
+  {
+    keys: ["Ctrl", "Y"],
+    desc: "Redo in Office",
+    cat: "office",
+    icon: "fas fa-redo"
+  },
+  {
+    keys: ["Ctrl", "X"],
+    desc: "Cut in Office",
+    cat: "office",
+    icon: "fas fa-cut"
+  },
+  {
+    keys: ["Ctrl", "C"],
+    desc: "Copy in Office",
+    cat: "office",
+    icon: "fas fa-copy"
+  },
+  {
+    keys: ["Ctrl", "A"],
+    desc: "Select all in Office",
+    cat: "office",
+    icon: "fas fa-object-group"
+  },
+  {
+    keys: ["Ctrl", "B"],
+    desc: "Bold text in Office",
+    cat: "office",
+    icon: "fas fa-bold"
+  },
+  {
+    keys: ["Ctrl", "I"],
+    desc: "Italic text in Office",
+    cat: "office",
+    icon: "fas fa-italic"
+  },
+  {
+    keys: ["Ctrl", "U"],
+    desc: "Underline text in Office",
+    cat: "office",
+    icon: "fas fa-underline"
+  },
+  {
+    keys: ["Ctrl", "K"],
+    desc: "Insert link in Office",
+    cat: "office",
+    icon: "fas fa-link"
+  },
+  {
+    keys: ["Ctrl", "="],
+    desc: "Zoom in in Office",
+    cat: "office",
+    icon: "fas fa-search-plus"
+  },
+  {
+    keys: ["Ctrl", "-"],
+    desc: "Zoom out in Office",
+    cat: "office",
+    icon: "fas fa-search-minus"
+  },
+  {
+    keys: ["Ctrl", "0"],
+    desc: "Reset zoom in Office",
+    cat: "office",
+    icon: "fas fa-compress-arrows-alt"
+  },
+  {
+    keys: ["Ctrl", "Z"],
+    desc: "Undo in 3D Model Editor",
+    cat: "model3d",
+    icon: "fas fa-undo"
+  },
+  {
+    keys: ["Ctrl", "Y"],
+    desc: "Redo in 3D Model Editor",
+    cat: "model3d",
+    icon: "fas fa-redo"
+  },
+  {
+    keys: ["Ctrl", "Shift", "Z"],
+    desc: "Redo in 3D Model Editor (alternative)",
+    cat: "model3d",
+    icon: "fas fa-redo"
+  },
+  {
+    keys: ["Ctrl", "D"],
+    desc: "Duplicate in 3D Model Editor",
+    cat: "model3d",
+    icon: "fas fa-copy"
+  },
+  {
+    keys: ["Ctrl", "A"],
+    desc: "Select all in 3D Model Editor",
+    cat: "model3d",
+    icon: "fas fa-object-group"
+  },
+  {
+    keys: ["Delete"],
+    desc: "Delete selected in 3D Model Editor",
+    cat: "model3d",
+    icon: "fas fa-trash"
+  },
+  {
+    keys: ["Backspace"],
+    desc: "Delete selected in 3D Model Editor",
+    cat: "model3d",
+    icon: "fas fa-trash"
+  },
+  {
+    keys: ["Q"],
+    desc: "Select tool in 3D Model Editor",
+    cat: "model3d",
+    icon: "fas fa-mouse-pointer"
+  },
+  {
+    keys: ["G"],
+    desc: "Move tool in 3D Model Editor",
+    cat: "model3d",
+    icon: "fas fa-arrows-alt"
+  },
+  {
+    keys: ["R"],
+    desc: "Rotate tool in 3D Model Editor",
+    cat: "model3d",
+    icon: "fas fa-sync"
+  },
+  {
+    keys: ["S"],
+    desc: "Scale tool in 3D Model Editor",
+    cat: "model3d",
+    icon: "fas fa-expand-arrows-alt"
+  },
+  {
+    keys: ["H"],
+    desc: "Toggle visibility in 3D Model Editor",
+    cat: "model3d",
+    icon: "fas fa-eye"
+  },
+  {
+    keys: ["F"],
+    desc: "Zoom to fit in 3D Model Editor",
+    cat: "model3d",
+    icon: "fas fa-expand"
+  },
+  {
+    keys: ["Alt", "Right Click"],
+    desc: "Resize window instead of drag",
+    cat: "global",
+    icon: "fas fa-expand-arrows-alt"
+  },
+  {
+    keys: ["Ctrl", "F"],
+    desc: "Search in games",
+    cat: "games",
+    icon: "fas fa-search"
+  },
+  {
+    keys: ["Escape"],
+    desc: "Close dialog",
+    cat: "global",
+    icon: "fas fa-times"
+  },
+  {
+    keys: ["Enter"],
+    desc: "Confirm dialog",
+    cat: "global",
+    icon: "fas fa-check"
   }
 ];
 
@@ -327,6 +609,10 @@ export class ShortcutsApp extends BaseApp {
             <div class="sc-nav-item" data-cat="browser"><i class="fas fa-compass"></i>Yuki Browser</div>
             <div class="sc-nav-item" data-cat="calc"><i class="fas fa-calculator"></i>Calculator</div>
             <div class="sc-nav-item" data-cat="calendar"><i class="fas fa-calendar-alt"></i>Calendar</div>
+            <div class="sc-nav-item" data-cat="terminal"><i class="fas fa-terminal"></i>Terminal</div>
+            <div class="sc-nav-item" data-cat="office"><i class="fas fa-file-word"></i>Office</div>
+            <div class="sc-nav-item" data-cat="model3d"><i class="fas fa-cube"></i>3D Model Editor</div>
+            <div class="sc-nav-item" data-cat="games"><i class="fas fa-gamepad"></i>Games</div>
           </div>
         </div>
         <div class="sc-main">
@@ -398,7 +684,11 @@ export class ShortcutsApp extends BaseApp {
         notepad: "Notepad",
         browser: "Yuki Browser",
         calc: "Calculator",
-        calendar: "Calendar"
+        calendar: "Calendar",
+        terminal: "Terminal",
+        office: "Office",
+        model3d: "3D Model Editor",
+        games: "Games"
       };
       return labels[cat] || "Shortcuts";
     };

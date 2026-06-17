@@ -1,5 +1,6 @@
 import { ScramjetBaseApp } from "./ScramjetBaseApp.js";
 import { os } from "../os/index.js";
+import { $ } from "../shared/domUtils.js";
 
 export function createScramjetWebApp(config) {
   const { appId, appName, targetUrl, appIcon, windowSize = ["1280px", "800px"], trayOptions = null } = config;
@@ -56,7 +57,7 @@ export function createScramjetWebApp(config) {
             if (this._trayOptions.onQuit) {
               this._trayOptions.onQuit();
             } else {
-              os.window.close(document.getElementById(this.winId));
+              os.window.close(this.winId);
             }
           }
         });

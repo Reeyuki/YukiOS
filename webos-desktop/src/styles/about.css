@@ -3,7 +3,6 @@
     radial-gradient(circle at 20% 0%, var(--brand-dim), transparent 55%),
     linear-gradient(var(--bg-primary), var(--bg-primary));
   color: var(--text-primary);
-  height: calc(100% - 40px);
   overflow-y: auto;
   box-sizing: border-box;
   font-family: var(--font-ui);

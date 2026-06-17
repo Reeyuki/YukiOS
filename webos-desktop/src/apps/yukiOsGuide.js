@@ -473,10 +473,6 @@ export class YukiOsGuideApp extends BaseApp {
                 <i class="fas fa-star"></i>
                 <span>Features</span>
               </button>
-              <button class="guide-nav-item ${this.currentTab === "system" ? "active" : ""}" data-tab="system">
-                <i class="fas fa-project-diagram"></i>
-                <span>System Map</span>
-              </button>
             </nav>
           </div>
           <div class="yuki-guide-main">
@@ -495,8 +491,6 @@ export class YukiOsGuideApp extends BaseApp {
         return this._buildApps(apps);
       case "features":
         return this._buildFeatures();
-      case "system":
-        return this._buildSystemMap(apps);
       default:
         return this._buildOverview(apps);
     }
@@ -820,86 +814,6 @@ export class YukiOsGuideApp extends BaseApp {
               <div class="shortcut-item">
                 <kbd>${s.keys}</kbd>
                 <span>${s.desc}</span>
-              </div>
-            `
-              )
-              .join("")}
-          </div>
-        </div>
-      </div>
-    `;
-  }
-
-  _buildSystemMap(apps) {
-    const searchLower = this.searchQuery.toLowerCase();
-
-    return `
-      <div class="guide-section">
-        <div class="guide-header">
-          <h1>System Map</h1>
-          <p>Where features meet apps</p>
-        </div>
-
-        <div class="guide-subsection">
-          <h2><i class="fas fa-sitemap"></i> Architecture Overview</h2>
-          <div class="system-overview">
-            <div class="system-layer">
-              <h3>Desktop Environment</h3>
-              <p>Window management, taskbar, start menu, desktop icons</p>
-              <div class="layer-features">
-                <span class="feature-tag">Window Snapping</span>
-                <span class="feature-tag">Workspaces</span>
-                <span class="feature-tag">Transparency</span>
-              </div>
-            </div>
-            <div class="system-layer">
-              <h3>Filesystem</h3>
-              <p>BrowserFS + IndexedDB for persistent storage</p>
-              <div class="layer-features">
-                <span class="feature-tag">Virtual Files</span>
-                <span class="feature-tag">Drag & Drop</span>
-                <span class="feature-tag">Archive Support</span>
-              </div>
-            </div>
-            <div class="system-layer">
-              <h3>App Runtime</h3>
-              <p>Multi-runtime engine for games and applications</p>
-              <div class="layer-features">
-                <span class="feature-tag">JS-DOS</span>
-                <span class="feature-tag">V86</span>
-                <span class="feature-tag">Ruffle</span>
-                <span class="feature-tag">Azahar 3DS</span>
-              </div>
-            </div>
-            <div class="system-layer">
-              <h3>Services</h3>
-              <p>Notification center, event bus, audio mixer</p>
-              <div class="layer-features">
-                <span class="feature-tag">Notifications</span>
-                <span class="feature-tag">Per-App Audio</span>
-                <span class="feature-tag">Event System</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="guide-subsection">
-          <h2><i class="fas fa-link"></i> Feature-App Connections</h2>
-          <div class="connection-grid">
-            ${this._buildConnectionCards(apps, searchLower)}
-          </div>
-        </div>
-
-        <div class="guide-subsection">
-          <h2><i class="fas fa-folder-tree"></i> Filesystem Structure</h2>
-          <div class="filesystem-structure">
-            ${FEATURE_DATA.step6.filesystem.structure
-              .filter((f) => f.path.toLowerCase().includes(searchLower) || f.desc.toLowerCase().includes(searchLower))
-              .map(
-                (f) => `
-              <div class="filesystem-item">
-                <code>${f.path}</code>
-                <span>${f.desc}</span>
               </div>
             `
               )

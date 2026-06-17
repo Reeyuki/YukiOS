@@ -28,7 +28,6 @@ export class TrayAPI {
    * @param options - Tray options
    */
   register(winId: string, icon: string, label: string, options: TrayOptions = {}): void {
-    this._logLegacyWarning("register");
     this.getTrayManager().register(winId, icon, label, options);
   }
 
@@ -37,7 +36,6 @@ export class TrayAPI {
    * @param winId - Window ID
    */
   unregister(winId: string): void {
-    this._logLegacyWarning("unregister");
     this.getTrayManager().unregister(winId);
   }
 
@@ -47,7 +45,6 @@ export class TrayAPI {
    * @param newIcon - New icon URL or FontAwesome class
    */
   updateIcon(winId: string, newIcon: string): void {
-    this._logLegacyWarning("updateIcon");
     this.getTrayManager().updateIcon(winId, newIcon);
   }
 
@@ -57,7 +54,6 @@ export class TrayAPI {
    * @param newLabel - New label
    */
   updateLabel(winId: string, newLabel: string): void {
-    this._logLegacyWarning("updateLabel");
     this.getTrayManager().updateLabel(winId, newLabel);
   }
 
@@ -73,7 +69,6 @@ export class TrayAPI {
       action: () => void;
     }>
   ): void {
-    this._logLegacyWarning("updateContextMenuItems");
     this.getTrayManager().updateContextMenuItems(winId, newContextMenuItems);
   }
 
@@ -82,7 +77,6 @@ export class TrayAPI {
    * @param winId - Window ID
    */
   sendToTray(winId: string): void {
-    this._logLegacyWarning("sendToTray");
     this.getTrayManager().sendToTray(winId);
   }
 
@@ -91,7 +85,6 @@ export class TrayAPI {
    * @param winId - Window ID
    */
   restoreFromTray(winId: string): void {
-    this._logLegacyWarning("restoreFromTray");
     this.getTrayManager().restoreFromTray(winId);
   }
 
@@ -100,7 +93,6 @@ export class TrayAPI {
    * @returns Array of tray items
    */
   getAllItems(): TrayItem[] {
-    this._logLegacyWarning("getAllItems");
     const items = this.getTrayManager()._items;
     const result: TrayItem[] = [];
     items.forEach((value: any, key: string) => {
@@ -149,33 +141,5 @@ export class TrayAPI {
    */
   isRegistered(winId: string): boolean {
     return this.getTrayManager().isRegistered(winId);
-  }
-
-  /**
-   * Log legacy API usage for migration tracking
-   */
-  private _logLegacyWarning(method: string): void {
-    if (typeof window !== "undefined" && (window as any).__osBridgeLegacyWarnings !== false) {
-      console.warn(`[OS Bridge] Legacy tray API call: os.tray.${method}()`);
-
-      const stack = new Error().stack;
-      let source = "unknown";
-      if (stack) {
-        const lines = stack.split("\n");
-        for (const line of lines) {
-          if (line.includes(".js") && !line.includes("os/tray.ts")) {
-            const match = line.match(/\/([^\/]+\.js)/);
-            if (match) {
-              source = match[1];
-              break;
-            }
-          }
-        }
-      }
-
-      if (typeof (window as any).trackLegacyCall === "function") {
-        (window as any).trackLegacyCall("tray", method, source);
-      }
-    }
   }
 }

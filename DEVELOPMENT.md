@@ -10,6 +10,7 @@ This guide covers how to create new applications, add functionalities, and contr
 - [App Architecture](#app-architecture)
 - [OS Bridge API](#os-bridge-api)
 - [Styling Guidelines](#styling-guidelines)
+- [Creating Themes](#creating-themes)
 - [Testing](#testing)
 - [Build & Deployment](#build--deployment)
 
@@ -517,6 +518,77 @@ Never use native browser checkboxes, plain inputs, or dropdowns. Always use:
 - Prefer CSS classes
 - Existing inline styles may be migrated to CSS classes when touched
 - New declarative UI definitions should use class names instead of style objects
+
+---
+
+## Creating Themes
+
+Yuki OS has a comprehensive theming system with 25+ built-in themes and support for custom themes. Themes are managed via `src/shared/themeEngine.js`.
+
+### Theme Structure
+
+Each theme is defined as an object with the following properties:
+
+```javascript
+{
+  value: "my-theme",           // Unique identifier (required)
+  label: "My Theme",          // Display name (required)
+  icon: "fas fa-palette",     // Font Awesome icon (optional, defaults to palette)
+  category: "special",        // "basic", "special", or "custom"
+  colors: {                   // CSS variable overrides (optional)
+    "--brand": "#8b5cf6",
+    "--bg-primary": "#1a1a2e",
+    // ... more CSS variables
+  }
+}
+```
+
+### Adding Built-in Themes
+
+To add a new built-in theme, modify the `BUILTIN_THEMES` array in `src/shared/themeEngine.js`:
+
+```javascript
+const BUILTIN_THEMES = [
+  // ... existing themes
+  {
+    value: "my-new-theme",
+    icon: "fas fa-star",
+    label: "My New Theme",
+    category: "special",
+    colors: {
+      "--brand": "#8b5cf6",
+      "--bg-primary": "#1a1a2e",
+      "--bg-secondary": "#16213e",
+      "--text-primary": "#ffffff",
+      "--text-secondary": "#a0a0a0",
+      "--glass": "rgba(26, 26, 46, 0.8)",
+      "--glass-border": "rgba(255, 255, 255, 0.1)"
+    }
+  }
+];
+```
+
+### Theme Color Variables
+
+Themes can override any CSS variable defined in `src/styles/style.css`. Common variables:
+
+**Core Colors:**
+- `--brand` - Accent/primary color
+- `--text-primary` - Main text color
+- `--text-secondary` - Secondary text color
+- `--bg-primary` - Primary background
+- `--bg-secondary` - Secondary background
+- `--glass` - Glassmorphism background
+- `--glass-border` - Glass border color
+- `--error` - Error state color
+
+**Additional Variables:**
+- `--window-bg` - Window background
+- `--taskbar-bg` - Taskbar background
+- `--startmenu-bg` - Start menu background
+- `--input-bg` - Input field background
+- `--input-border` - Input field border
+
 
 ---
 

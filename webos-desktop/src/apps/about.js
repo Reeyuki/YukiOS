@@ -82,7 +82,7 @@ export class AboutApp extends BaseApp {
         {
           id: "about-yukios",
           title: "About Yuki OS",
-          size: ["720px", "680px"],
+          size: ["720px", "85vh"],
           icon: "fa fa-circle-info",
           ui: `
      

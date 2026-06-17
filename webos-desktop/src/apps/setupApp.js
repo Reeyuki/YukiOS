@@ -10,6 +10,7 @@ import { os } from "../os/index.js";
 import { applyFontFamily } from "../settings/settingsApply.js";
 import { $, $$, bindEvent, setText, setHTML, toggleClass } from "../shared/domUtils.js";
 import { getAllThemes } from "../shared/themeEngine.js";
+import { SHORTCUTS_DATA } from "./shortcuts.js";
 
 export const FEATURE_DATA = {
   step2: [
@@ -190,60 +191,17 @@ export const FEATURE_DATA = {
     }
   ],
   step6: {
-    keyboardShortcuts: [
-      { keys: "Ctrl+K", desc: "Open Unified Command Palette" },
-      { keys: "Ctrl+P", desc: "Open Unified Command Palette" },
-      { keys: "F1", desc: "Open Unified Command Palette" },
-      { keys: "Ctrl+D", desc: "Show / Hide Desktop (Minimize or restore all windows)" },
-      { keys: "Ctrl+←", desc: "Snap active window to the left half of the screen" },
-      { keys: "Ctrl+→", desc: "Snap active window to the right half of the screen" },
-      { keys: "Ctrl+↑", desc: "Maximize active window" },
-      { keys: "Control", desc: "Toggle Start Menu (when desktop is focused)" },
-      { keys: "Tab", desc: "Toggle Start Menu (when desktop is focused)" },
-      { keys: "Space", desc: "Toggle Start Menu (when desktop is focused)" },
-      { keys: "Ctrl+C", desc: "Copy selected files or folders" },
-      { keys: "Ctrl+X", desc: "Cut selected files or folders" },
-      { keys: "Ctrl+V", desc: "Paste copied or cut files/folders into desktop or explorer" },
-      { keys: "Delete", desc: "Delete selected icons/files on the desktop" },
-      { keys: "F2", desc: "Start inline renaming of selected file/folder" },
-      { keys: "Ctrl+O", desc: "Open file inside Notepad" },
-      { keys: "Ctrl+S", desc: "Save active file in Notepad" },
-      { keys: "Ctrl+Shift+S", desc: "Save active file as new file in Notepad" },
-      { keys: "Ctrl+F", desc: "Open Find Text search dialog in Notepad" },
-      { keys: "F3", desc: "Find next occurrence of matched text" },
-      { keys: "Shift+F3", desc: "Find previous occurrence of matched text" },
-      { keys: "Ctrl+H", desc: "Open Replace dialog in Notepad" },
-      { keys: "Ctrl+G", desc: "Go to line dialog in Notepad" },
-      { keys: "Ctrl++", desc: "Zoom in text editor" },
-      { keys: "Ctrl+-", desc: "Zoom out text editor" },
-      { keys: "Ctrl+0", desc: "Reset zoom factor to default in Notepad" },
-      { keys: "Escape", desc: "Close active Notepad dialogs / popups" },
-      { keys: "Alt+1-9", desc: "Switch directly to browser Tab 1-9" },
-      { keys: "Ctrl+L", desc: "Focus browser address/URL bar & select" },
-      { keys: "Ctrl+T", desc: "Create new browser tab" },
-      { keys: "Ctrl+W", desc: "Close active browser tab" },
-      { keys: "Ctrl+Shift+T", desc: "Reopen last closed browser tab" },
-      { keys: "Ctrl+V", desc: "Paste & evaluate math expression from clipboard (Calculator)" },
-      { keys: "0-9", desc: "Press calculator digit keys" },
-      { keys: ".", desc: "Decimal points button" },
-      { keys: "+, -, *, /", desc: "Press arithmetic operator buttons (+, −, ×, ÷)" },
-      { keys: "%", desc: "Percent calculations button" },
-      { keys: "Enter, =", desc: "Equals / Evaluate calculations" },
-      { keys: "Backspace", desc: "Backspace / delete last digit in Calculator" },
-      { keys: "Escape, Delete", desc: "Clear calculator (AC button)" },
-      { keys: "Escape", desc: "Close calendar popup" },
-      { keys: "←, →", desc: "Navigate previous or next month in Calendar" },
-      { keys: "↑, ↓", desc: "Navigate previous or next year in Calendar" }
-    ],
+    keyboardShortcuts: SHORTCUTS_DATA.map((s) => ({ keys: s.keys.join("+"), desc: s.desc })),
     filesystem: {
       title: "Virtual Filesystem",
-      description:
-        "Yuki OS uses BrowserFS with IndexedDB for persistent storage. Your files are stored locally in your browser and survive page reloads.",
+      description: "In Yuki OS, your files are stored locally in your browser and survive page reloads.",
       structure: [
         { path: "/home/reeyuki/Desktop", desc: "Desktop icons and shortcuts" },
-        { path: "/home/reeyuki/Documents", desc: "Your documents and text files" },
-        { path: "/home/reeyuki/Pictures", desc: "Images and wallpapers" },
-        { path: "/home/reeyuki/Apps", desc: "Custom app shortcuts" }
+        { path: "/home/reeyuki/Documents", desc: "Your documents and text files (includes welcome INFO.txt)" },
+        { path: "/home/reeyuki/Music", desc: "Audio files and music (includes lofi mix)" },
+        { path: "/home/reeyuki/Pictures", desc: "Images and photos (includes gandalf.gif)" },
+        { path: "/home/reeyuki/Pictures/Wallpapers", desc: "Default wallpaper collection (20+ wallpapers)" },
+        { path: "/home/reeyuki/Videos", desc: "Video files and recordings" }
       ]
     },
     turboModes: [
@@ -288,7 +246,7 @@ export class SetupApp extends BaseApp {
       fontFamily: "opensans",
       macOsControls: false,
       mikuCursor: false,
-      clippy: true,
+      clippy: false,
       clipboardManager: true
     };
     this.openWindows = new Set();
@@ -387,6 +345,9 @@ export class SetupApp extends BaseApp {
           </div>
           <h1 class="hero-title">Welcome to Yuki OS, ${nickname}</h1>
           <p class="hero-subtitle">Your browser-based desktop environment</p>
+          <button class="setup-info-btn" id="setup-info-btn">
+            <i class="fas fa-circle-info"></i>
+          </button>
         </div>
       </div>
     `;
@@ -912,6 +873,7 @@ export class SetupApp extends BaseApp {
     const nextBtn = $("#setup-next", win);
     const backBtn = $("#setup-back", win);
     const skipBtn = $("#setup-skip", win);
+    const infoBtn = $("#setup-info-btn", win);
 
     nextBtn.addEventListener("click", () => {
       if (this.isTransitioning) return;
@@ -923,6 +885,12 @@ export class SetupApp extends BaseApp {
       this._prevStep(win);
     });
     skipBtn.addEventListener("click", () => this._skipSetup(win));
+
+    if (infoBtn) {
+      infoBtn.addEventListener("click", () => {
+        os.app.launch("aboutApp");
+      });
+    }
 
     const themeBtns = $$(".theme-btn", win);
     themeBtns.forEach((btn) => {

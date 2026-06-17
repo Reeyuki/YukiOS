@@ -1,4 +1,3 @@
-import { HybridAdapter } from "./runtime/HybridAdapter.js";
 import { APP_MANIFESTS } from "./registry/AppManifest.js";
 import { getWebAppClass } from "./apps/webApps.js";
 import { TerminalApp } from "./apps/terminal.js";
@@ -80,8 +79,7 @@ const APP_DEFINITIONS = APP_MANIFESTS.map((manifest) => {
 
   const definition = {
     serviceKey: manifest.serviceKey,
-    AppClass,
-    enhanced: manifest.enhanced
+    AppClass
   };
 
   if (manifest.onLoad) {
@@ -92,10 +90,9 @@ const APP_DEFINITIONS = APP_MANIFESTS.map((manifest) => {
 }).filter(Boolean);
 
 export function loadApps(services) {
-  for (const { serviceKey, AppClass, enhanced, onLoad } of APP_DEFINITIONS) {
+  for (const { serviceKey, AppClass, onLoad } of APP_DEFINITIONS) {
     if (services[serviceKey]) continue;
-    const Cls = enhanced ? HybridAdapter.enhanceBaseApp(AppClass) : AppClass;
-    const instance = new Cls(services);
+    const instance = new AppClass(services);
     services[serviceKey] = instance;
     if (onLoad) onLoad(instance, services);
   }

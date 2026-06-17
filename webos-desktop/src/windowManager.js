@@ -17,9 +17,6 @@ import { WindowStateManager } from "./windowManager/WindowStateManager.js";
 import { ContextMenuManager } from "./windowManager/ContextMenuManager.js";
 import { WindowManagerUtils } from "./windowManager/WindowManagerUtils.js";
 
-/**
- * @deprecated Use os.window API instead. Direct access to WindowManager is deprecated.
- */
 export class WindowManager {
   constructor(notificationCenter = null) {
     this.openWindows = new Map();

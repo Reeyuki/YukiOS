@@ -7,6 +7,7 @@ import type { WindowOptions, WindowHandle } from "./types.js";
 import { makeDraggable } from "../windowManager/makeDraggable.js";
 import { animateWindowOpen } from "../windowManager/AnimationSystem.js";
 import { sanitizeTitle } from "../utils/utils.js";
+import { $ } from "../shared/domUtils.js";
 
 export class WindowAPI {
   private wm: any;
@@ -32,7 +33,6 @@ export class WindowAPI {
     options: WindowOptions = {}
   ): HTMLElement {
     title = sanitizeTitle(title);
-    this._logLegacyWarning("create");
     const win = this.wm.createWindow(id, title, width, height, options.isGame || false, options);
 
     const autoMount = options.autoMount !== false;
@@ -91,7 +91,7 @@ export class WindowAPI {
     }
 
     if (autoMount) {
-      const desktop = document.getElementById("desktop");
+      const desktop = $("#desktop");
       if (desktop) {
         desktop.appendChild(win);
       }
@@ -138,9 +138,8 @@ export class WindowAPI {
    * @param win - Window element or window ID
    */
   close(win: HTMLElement | string): void {
-    this._logLegacyWarning("close");
     if (typeof win === "string") {
-      const element = document.getElementById(win);
+      const element = $(`#${win}`);
       if (element) {
         this.wm.closeWindow(element);
       }
@@ -150,13 +149,19 @@ export class WindowAPI {
   }
 
   /**
+   * Close all open windows
+   */
+  closeAll(): void {
+    this.wm.closeAll();
+  }
+
+  /**
    * Focus/bring a window to front
    * @param win - Window element or window ID
    */
   focus(win: HTMLElement | string): void {
-    this._logLegacyWarning("focus");
     if (typeof win === "string") {
-      const element = document.getElementById(win);
+      const element = $(`#${win}`);
       if (element) {
         this.wm.bringToFront(element);
       }
@@ -170,9 +175,8 @@ export class WindowAPI {
    * @param win - Window element or window ID
    */
   minimize(win: HTMLElement | string): void {
-    this._logLegacyWarning("minimize");
     if (typeof win === "string") {
-      const element = document.getElementById(win);
+      const element = $(`#${win}`);
       if (element) {
         this.wm.minimizeWindow(element);
       }
@@ -186,9 +190,8 @@ export class WindowAPI {
    * @param win - Window element or window ID
    */
   maximize(win: HTMLElement | string): void {
-    this._logLegacyWarning("maximize");
     if (typeof win === "string") {
-      const element = document.getElementById(win);
+      const element = $(`#${win}`);
       if (element) {
         this.wm.toggleFullscreen(element);
       }
@@ -213,7 +216,6 @@ export class WindowAPI {
    * @param color - Optional color
    */
   addToTaskbar(winId: string, title: string, icon: string, color?: string): void {
-    this._logLegacyWarning("addToTaskbar");
     this.wm.addToTaskbar(winId, title, icon, color);
   }
 
@@ -222,7 +224,6 @@ export class WindowAPI {
    * @param winId - Window ID
    */
   removeFromTaskbar(winId: string): void {
-    this._logLegacyWarning("removeFromTaskbar");
     this.wm.removeFromTaskbar(winId);
   }
 
@@ -232,7 +233,6 @@ export class WindowAPI {
    * @returns HTML string for window controls
    */
   getWindowControls(externalUrl?: string): string {
-    this._logLegacyWarning("getWindowControls");
     return this.wm.getWindowControls(externalUrl);
   }
 
@@ -253,16 +253,6 @@ export class WindowAPI {
     icon?: string,
     appSource?: string
   ): void {
-    this._logLegacyWarning("notify");
     this.wm.notify(title, message, type, duration, icon, appSource);
-  }
-
-  /**
-   * Log legacy API usage for migration tracking
-   */
-  private _logLegacyWarning(method: string): void {
-    if (typeof window !== "undefined" && window.__osBridgeLegacyWarnings !== false) {
-      console.warn(`[OS Bridge] Legacy window API call: os.window.${method}()`);
-    }
   }
 }

@@ -61,6 +61,35 @@ export class ScramjetBaseApp extends BaseApp {
     };
   }
 
+  open(opts = {}) {
+    const schema = this.getDeclarativeSchema(opts);
+    if (!schema || !schema.windows || schema.windows.length === 0) {
+      throw new Error(`${this.constructor.name}.getDeclarativeSchema() must return a valid schema with windows.`);
+    }
+
+    const windowConfig = schema.windows[0];
+    const winId = windowConfig.id;
+
+    if (this._isSingletonOpen(winId)) {
+      return;
+    }
+
+    const win = this.wm.createWindow(winId, windowConfig.title, windowConfig.size[0], windowConfig.size[1], {
+      icon: windowConfig.icon,
+      appId: schema.id
+    });
+
+    win.innerHTML = windowConfig.ui;
+    this.wm.mountWindow(win, winId, windowConfig.title, windowConfig.icon);
+
+    if (schema.onMount && typeof this[schema.onMount] === "function") {
+      this[schema.onMount](null, null, win, schema.state?.initial || {});
+    }
+
+    this._isDeclarative = true;
+    return win;
+  }
+
   getAppId() {
     return "scramjet-base";
   }
@@ -78,6 +107,18 @@ export class ScramjetBaseApp extends BaseApp {
   }
 
   async initScramjet(payload, vt, element, state) {
+    if (
+      location.href.includes("jsdelivr") ||
+      location.href.includes("esm.sh") ||
+      location.href.includes("statically") ||
+      location.href.includes("staticdelivr")
+    ) {
+      alert(
+        "This app you are launching and other web apps does not work inside this url because of svg/iframe limitations on this domain (" +
+          location.hostname +
+          ")."
+      );
+    }
     this.iframe = element.querySelector(`#${this.getAppId()}-iframe`);
     const wispUrl = this.getWISPURL();
     const targetUrl = this.getTargetURL();

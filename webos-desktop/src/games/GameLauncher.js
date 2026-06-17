@@ -4,9 +4,6 @@ import { lazyImg, observeLazyImages, SteamDataManager, _launcher } from "./games
 import { SteamSettings } from "./steam.js";
 import { os } from "../os/index.js";
 
-/**
- * @deprecated Use os.app API instead. Direct access to GameLauncher is deprecated.
- */
 export class GameLauncher {
   constructor(renderer) {
     this.renderer = renderer;

@@ -386,7 +386,7 @@ export const appMap = {
   },
   gtaVc: {
     type: "game",
-    url: "/static/games/html/revc.html",
+    url: "https://truffled.lol/games/vicecity/index.html",
     icon: "/static/icons/gtavc.webp",
     title: "GTA Vice City"
   },

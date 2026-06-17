@@ -26,6 +26,7 @@ interface OSBridge {
   window: {
     create: WindowAPI["create"];
     close: WindowAPI["close"];
+    closeAll: WindowAPI["closeAll"];
     focus: WindowAPI["focus"];
     minimize: WindowAPI["minimize"];
     maximize: WindowAPI["maximize"];
@@ -179,10 +180,6 @@ export function initializeOSBridge(services: {
   appLauncher: any;
   eventBus: any;
 }) {
-  if (typeof window !== "undefined") {
-    (window as any).__osBridgeLegacyWarnings = false;
-  }
-
   windowAPI = new WindowAPI(services.windowManager);
   fileSystemAPI = new FileSystemAPI(services.fileSystemManager);
   notificationAPI = new NotificationAPI(services.notificationCenter);
@@ -193,6 +190,7 @@ export function initializeOSBridge(services: {
   boundWindowAPI = {
     create: windowAPI.create.bind(windowAPI),
     close: windowAPI.close.bind(windowAPI),
+    closeAll: windowAPI.closeAll.bind(windowAPI),
     focus: windowAPI.focus.bind(windowAPI),
     minimize: windowAPI.minimize.bind(windowAPI),
     maximize: windowAPI.maximize.bind(windowAPI),

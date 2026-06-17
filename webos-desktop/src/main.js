@@ -22,7 +22,6 @@ import { AdsManager } from "./ads.js";
 import { registerPWA } from "./pwa/pwa.js";
 import { SessionManager } from "./SessionManager.js";
 import { CommandPalette } from "./commandPalette.js";
-import { HybridAdapter } from "./runtime/HybridAdapter.js";
 import { ClipboardManager } from "./systemClipboardManager.js";
 import "./osBridgeTelemetry.js";
 import { resolveIconUrl, initializeMirrors, CDN_MIRRORS, getCdnMirror, setCdnMirror } from "./shared/assetResolver.js";
@@ -67,11 +66,7 @@ const services = {
   }
 };
 
-const EnhancedBrowserApp = HybridAdapter.enhanceBaseApp(BrowserApp);
-const EnhancedNotepadApp = HybridAdapter.enhanceBaseApp(NotepadApp);
-const EnhancedSettingsApp = HybridAdapter.enhanceBaseApp(SettingsApp);
-
-const notepadApp = new EnhancedNotepadApp(services);
+const notepadApp = new NotepadApp(services);
 services.notepadApp = notepadApp;
 
 const youtubeUtilsApp = new YouTubeUtilsApp(services);
@@ -88,7 +83,7 @@ explorerApp.setOfficeApp(officeApp);
 
 notepadApp.setExplorer(explorerApp);
 
-const browserApp = new EnhancedBrowserApp(services);
+const browserApp = new BrowserApp(services);
 services.browserApp = browserApp;
 
 youtubeUtilsApp.setBrowserApp(browserApp);
@@ -101,7 +96,7 @@ const v86app = new V86App(services);
 services.v86app = v86app;
 explorerApp.setv86App(v86app);
 
-const settingsApp = new EnhancedSettingsApp(services);
+const settingsApp = new SettingsApp(services);
 services.settingsApp = settingsApp;
 settingsApp.setFileSystemManager(fileSystemManager);
 

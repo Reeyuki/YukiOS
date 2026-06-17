@@ -204,56 +204,6 @@ export class WeatherApp extends BaseApp {
     this.initializeWeather(this.wxBody, searchInput);
   }
 
-  async open() {
-    const winId = "weather-win";
-    if (await this._isSingletonOpen(winId)) return;
-
-    const content = `
-      <div class="window-content">
-        <div class="wx-toolbar">
-          <button class="wx-loc-btn" id="wx-loc-btn" title="Use my location"><svg width="10" height="12" viewBox="0 0 10 14" fill="currentColor"><path d="M5 0C2.24 0 0 2.24 0 5c0 3.75 5 9 5 9s5-5.25 5-9c0-2.76-2.24-5-5-5zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg></button>
-          <input class="wx-search" id="wx-search-input" type="text" placeholder="Search city..." />
-          <button class="wx-btn" id="wx-search-btn">GO</button>
-          <button class="wx-unit-toggle" id="wx-unit-btn">${this.unit === "metric" ? "°C" : "°F"}</button>
-        </div>
-        <div class="wx-body" id="wx-body"></div>
-      </div>
-    `;
-
-    const win = this.windowHelper.createAndMountWindow(winId, "Weather", content, "420px", "560px", {
-      icon: "fas fa-cloud",
-      style: { left: "200px", top: "100px" }
-    });
-
-    const body = win.querySelector("#wx-body");
-    const searchInput = win.querySelector("#wx-search-input");
-    const searchBtn = win.querySelector("#wx-search-btn");
-    const unitBtn = win.querySelector("#wx-unit-btn");
-    const locBtn = win.querySelector("#wx-loc-btn");
-
-    locBtn.addEventListener("click", () => this.doAutoLocate(body, searchInput));
-    searchBtn.addEventListener("click", () => {
-      const city = searchInput.value.trim();
-      if (city) this.doSearch(body, city);
-    });
-
-    searchInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        const city = searchInput.value.trim();
-        if (city) this.doSearch(body, city);
-      }
-    });
-
-    unitBtn.addEventListener("click", () => {
-      this.unit = this.unit === "metric" ? "imperial" : "metric";
-      unitBtn.textContent = this.unit === "metric" ? "°C" : "°F";
-      this.doRefreshWithUnit(body);
-    });
-
-    this.renderPlaceholder(body, "Weather");
-    this.initializeWeather(body, searchInput);
-  }
-
   async fetchWeatherByCoords(latitude, longitude, cityName, country) {
     const tempUnit = this.unit === "imperial" ? "fahrenheit" : "celsius";
     const windUnit = this.unit === "imperial" ? "mph" : "kmh";

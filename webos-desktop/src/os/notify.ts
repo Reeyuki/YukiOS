@@ -20,7 +20,6 @@ export class NotificationAPI {
    * @returns Notification ID
    */
   send(title: string, message: string, options: NotificationOptions = {}): number {
-    this._logLegacyWarning("send");
     return this.nc.addNotification(
       title,
       message,
@@ -36,7 +35,6 @@ export class NotificationAPI {
    * @param id - Notification ID
    */
   clear(id: number): void {
-    this._logLegacyWarning("clear");
     this.nc.removeNotification(id);
   }
 
@@ -44,7 +42,6 @@ export class NotificationAPI {
    * Clear all notifications
    */
   clearAll(): void {
-    this._logLegacyWarning("clearAll");
     this.nc.clearAllNotifications();
   }
 
@@ -61,7 +58,6 @@ export class NotificationAPI {
     icon?: string;
     appSource?: string;
   }> {
-    this._logLegacyWarning("getAll");
     return this.nc.getNotifications();
   }
 
@@ -70,7 +66,6 @@ export class NotificationAPI {
    * @returns Number of notifications
    */
   getCount(): number {
-    this._logLegacyWarning("getCount");
     return this.nc.getNotificationCount();
   }
 
@@ -79,7 +74,6 @@ export class NotificationAPI {
    * @param enabled - Whether DND is enabled
    */
   setDoNotDisturb(enabled: boolean): void {
-    this._logLegacyWarning("setDoNotDisturb");
     this.nc.setDoNotDisturb(enabled);
   }
 
@@ -88,35 +82,6 @@ export class NotificationAPI {
    * @returns Whether DND is enabled
    */
   getDoNotDisturb(): boolean {
-    this._logLegacyWarning("getDoNotDisturb");
     return this.nc.doNotDisturb;
-  }
-
-  /**
-   * Log legacy API usage for migration tracking
-   */
-  private _logLegacyWarning(method: string): void {
-    if (typeof window !== "undefined" && (window as any).__osBridgeLegacyWarnings !== false) {
-      console.warn(`[OS Bridge] Legacy notification API call: os.notify.${method}()`);
-
-      const stack = new Error().stack;
-      let source = "unknown";
-      if (stack) {
-        const lines = stack.split("\n");
-        for (const line of lines) {
-          if (line.includes(".js") && !line.includes("os/notify.ts")) {
-            const match = line.match(/\/([^\/]+\.js)/);
-            if (match) {
-              source = match[1];
-              break;
-            }
-          }
-        }
-      }
-
-      if (typeof (window as any).trackLegacyCall === "function") {
-        (window as any).trackLegacyCall("notify", method, source);
-      }
-    }
   }
 }

@@ -18,6 +18,11 @@ const EXISTING_NEWS_UPDATES = [
       },
       {
         icon: "fa-wand-magic-sparkles",
+        title: "Fix gta vc",
+        items: [["fa-star", "GTA VC", "Fixed Gta VC."]]
+      },
+      {
+        icon: "fa-wand-magic-sparkles",
         title: "New Apps",
         items: [["fa-cube", "50 More Apps", "Added 50 more web apps."]]
       }
@@ -119,16 +124,6 @@ const EXISTING_NEWS_UPDATES = [
         icon: "fa-wand-magic-sparkles",
         title: "Add Cat Goes Fishing",
         items: [["fa-star", "Add Cat Goes Fishing", "Added Cat Goes Fishing"]]
-      }
-    ]
-  },
-  {
-    date: "June 8, 2026",
-    sections: [
-      {
-        icon: "fa-wand-magic-sparkles",
-        title: "Fix gta vc",
-        items: [["fa-star", "GTA VC", "Fixed Gta VC."]]
       }
     ]
   },
@@ -896,6 +891,39 @@ export class NewsApp extends BaseApp {
       },
       onMount: "initNews"
     };
+  }
+
+  open(opts = {}) {
+    const schema = this.getDeclarativeSchema(opts);
+    if (!schema || !schema.windows || schema.windows.length === 0) {
+      throw new Error(`${this.constructor.name}.getDeclarativeSchema() must return a valid schema with windows.`);
+    }
+
+    const windowConfig = schema.windows[0];
+    const winId = windowConfig.id;
+
+    if (this._isSingletonOpen(winId)) {
+      return;
+    }
+
+    const win = this.wm.createWindow(winId, windowConfig.title, windowConfig.size[0], windowConfig.size[1], {
+      icon: windowConfig.icon,
+      appId: schema.id
+    });
+
+    if (windowConfig.style) {
+      Object.assign(win.style, windowConfig.style);
+    }
+
+    win.innerHTML = windowConfig.ui;
+    this.wm.mountWindow(win, winId, windowConfig.title, windowConfig.icon);
+
+    if (schema.onMount && typeof this[schema.onMount] === "function") {
+      this[schema.onMount](null, null, win, schema.state?.initial || {});
+    }
+
+    this._isDeclarative = true;
+    return win;
   }
 
   initNews(payload, vt, element, state) {
