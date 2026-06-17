@@ -894,7 +894,7 @@ function getGridItems() {
   }
   return [
     { app: "browserApp", title: "Yuki Browser", icon: "fas fa-globe" },
-    { app: "explorer", title: "Files", icon: "fas fa-folder" },
+    { app: "explorerApp", title: "Files", icon: "fas fa-folder" },
     { app: "settingsApp", title: "Settings", icon: "fas fa-cog" },
     { app: "aiAssistant", title: "Yuki AI Assistant", icon: "fas fa-robot" },
     { app: "notepadApp", title: "Notepad", icon: "fas fa-edit" },
