@@ -477,7 +477,10 @@ export class FileSystemManager {
         if (!exists) {
           await this.p("mkdir", this.paths.dirname(fullPath), { recursive: true }).catch(() => {});
           await this.p("writeFile", fullPath, value.content ?? "");
-          await this.metadata.writeMeta(this.paths.dirname(fullPath), key, { ...value, size: (value.content ?? "").length });
+          await this.metadata.writeMeta(this.paths.dirname(fullPath), key, {
+            ...value,
+            size: (value.content ?? "").length
+          });
         }
       } else {
         const exists = await this.exists(fullPath);

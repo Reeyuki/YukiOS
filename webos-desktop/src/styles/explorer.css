@@ -423,7 +423,7 @@
   background: var(--brand-dim);
   pointer-events: none;
   display: none;
-  z-index: 10;
+  z-index: 100;
 }
 
 .explorer-confirmation-overlay {

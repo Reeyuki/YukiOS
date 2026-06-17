@@ -14,7 +14,19 @@ const EXISTING_NEWS_UPDATES = [
       {
         icon: "fa-database",
         title: "File Explorer",
-        items: [["fa-database", "Storage Indicator", "Shows total used space in Explorer sidebar."]]
+        items: [
+          ["fa-database", "Storage Indicator", "Shows total used space in Explorer sidebar."],
+          [
+            "fa-object-group",
+            "Selection Box",
+            "Drag-select multiple files in Explorer with a visible selection rectangle."
+          ],
+          [
+            "fa-image",
+            "Desktop Thumbnails",
+            "Desktop icons now show actual image previews instead of generic file icons."
+          ]
+        ]
       }
     ]
   },

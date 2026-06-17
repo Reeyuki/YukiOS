@@ -82,10 +82,10 @@ export class ClipboardManager {
             }
 
             if (resolvedAction === "replace") {
-              await os.fs.write(["Desktop", name], content);
-              await this.fs.writeMeta(destDir, name, { kind, icon: fileIcon });
+              await os.fs.delete(["Desktop"], name).catch(() => {});
+              await os.fs.createFile(["Desktop"], name, content, kind, fileIcon);
             } else {
-              await os.fs.write(["Desktop", finalName], content);
+              await os.fs.createFile(["Desktop"], finalName, content, kind, fileIcon);
             }
 
             if (action === "cut") await os.fs.delete(srcPath, name);
@@ -178,7 +178,7 @@ export class ClipboardManager {
                 const childContent = await this.fs.getFileContent(["Desktop", srcName], childName);
                 const childKind = await this.fs.getFileKind(["Desktop", srcName], childName);
                 const childIcon = await this.fs.getFileIcon(["Desktop", srcName], childName);
-                await os.fs.write(["Desktop", uniqueName, childName], childContent);
+                await os.fs.createFile(["Desktop", uniqueName], childName, childContent, childKind, childIcon);
               }
 
               await this.iconManager.createFolderIcon(uniqueName);

@@ -582,11 +582,10 @@ export class DesktopUI {
             }
           }
 
-          if (kind === "video") {
-            await os.fs.write(["Desktop"], finalName, content, kind, icon);
-          } else {
-            await os.fs.write(["Desktop", finalName], content, kind, icon);
+          if (destExists) {
+            await os.fs.delete(["Desktop"], finalName).catch(() => {});
           }
+          await os.fs.createFile(["Desktop"], finalName, content, kind, icon);
 
           const itemData = { type: "file", kind, icon, content };
           await this.createDesktopFileIcon(finalName, itemData);

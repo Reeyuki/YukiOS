@@ -111,10 +111,10 @@ export class ExplorerApp extends BaseApp {
   }
 
   _getClipboard() {
-    return this.desktopUI?.state?.clipboard ?? null;
+    return this.desktopUI?.getClipboard() ?? null;
   }
   _setClipboard(data) {
-    if (this.desktopUI) this.desktopUI.state.clipboard = data;
+    if (this.desktopUI) this.desktopUI.setClipboard(data);
   }
 
   _watchWindowRemoval(winId) {
@@ -528,9 +528,15 @@ export class ExplorerApp extends BaseApp {
       const active = document.activeElement;
       if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA" || active.isContentEditable)) return;
       if (!isWindowFocused(winId, lastMousePos)) return;
-      if (!e.ctrlKey || (e.code !== "KeyC" && e.code !== "KeyX")) return;
-      if (!inst.selectedItems.size) return;
+      if (!e.ctrlKey || (e.code !== "KeyC" && e.code !== "KeyX" && e.code !== "KeyV")) return;
       e.preventDefault();
+
+      if (e.code === "KeyV") {
+        this._pasteToPath(inst.currentPath, inst);
+        return;
+      }
+
+      if (!inst.selectedItems.size) return;
 
       const action = e.code === "KeyX" ? "cut" : "copy";
       const view = $(`#${winId}-view`, win);
@@ -619,27 +625,35 @@ export class ExplorerApp extends BaseApp {
     });
   }
 
-  _setupSelectionBox(win, winId) {
-    const view = $(`#${winId}-view`, win);
+  _ensureSelBox(view) {
+    if (view.querySelector(".explorer-selbox")) return;
     const selBox = createElement("div", { className: "explorer-selbox" });
     setStyle(view, { position: "relative" });
     view.appendChild(selBox);
+  }
+
+  _setupSelectionBox(win, winId) {
+    const view = $(`#${winId}-view`, win);
+    this._ensureSelBox(view);
 
     const selState = { active: false, startX: 0, startY: 0 };
 
     view.addEventListener("mousedown", (e) => {
-      if (e.button !== 0 || (e.target !== view && e.target !== selBox)) return;
+      if (e.button !== 0) return;
+      if (e.target.closest(".file-item")) return;
       const rect = view.getBoundingClientRect();
       selState.active = true;
       selState.startX = e.clientX - rect.left + view.scrollLeft;
       selState.startY = e.clientY - rect.top + view.scrollTop;
-      setStyle(selBox, {
-        display: "block",
-        left: selState.startX + "px",
-        top: selState.startY + "px",
-        width: "0px",
-        height: "0px"
-      });
+      const sb = view.querySelector(".explorer-selbox");
+      if (sb)
+        setStyle(sb, {
+          display: "block",
+          left: selState.startX + "px",
+          top: selState.startY + "px",
+          width: "0px",
+          height: "0px"
+        });
     });
 
     view.addEventListener("mousemove", (e) => {
@@ -654,7 +668,8 @@ export class ExplorerApp extends BaseApp {
       const w = Math.abs(curX - selState.startX);
       const h = Math.abs(curY - selState.startY);
 
-      setStyle(selBox, { left: x + "px", top: y + "px", width: w + "px", height: h + "px" });
+      const sb = view.querySelector(".explorer-selbox");
+      if (sb) setStyle(sb, { left: x + "px", top: y + "px", width: w + "px", height: h + "px" });
 
       const boxRect = { left: x, top: y, right: x + w, bottom: y + h };
 
@@ -694,7 +709,8 @@ export class ExplorerApp extends BaseApp {
 
     const endSel = () => {
       selState.active = false;
-      setStyle(selBox, { display: "none" });
+      const sb = view.querySelector(".explorer-selbox");
+      if (sb) setStyle(sb, { display: "none" });
     };
     view.addEventListener("mouseup", endSel);
     document.addEventListener("mouseup", endSel);
@@ -966,6 +982,7 @@ export class ExplorerApp extends BaseApp {
 
     view.innerHTML = "";
     removeClass(view, "games-page");
+    this._ensureSelBox(view);
     if (pathDisplay) {
       if (pathDisplay.tagName === "INPUT") {
         pathDisplay.value = "/" + inst.currentPath.join("/");
@@ -1188,18 +1205,12 @@ export class ExplorerApp extends BaseApp {
 
       let finalName = resolvedAction === "keep" ? await this.fs.getUniqueFileName(destPath, name) : name;
 
-      if (isBinary) {
-        const blob = await os.fs.read([...srcPath, name]);
-        if (resolvedAction === "replace") await this.fs.deleteBinaryFile(destPath, name).catch(() => {});
-        await os.fs.write(destPath, finalName, blob, kind, fileIcon);
+      const content = await this.fs.getFileContent(srcPath, name);
+      if (resolvedAction === "replace") {
+        await os.fs.delete(destPath, name).catch(() => {});
+        await os.fs.createFile(destPath, name, content, kind, fileIcon);
       } else {
-        const content = await this.fs.getFileContent(srcPath, name);
-        if (resolvedAction === "replace") {
-          await this.fs.updateFile(destPath, name, content);
-          await this.fs.writeMeta(this.fs.resolveUserPath(destPath), name, { kind, icon: fileIcon });
-        } else {
-          await this.fs.createFile(destPath, finalName, content, kind, fileIcon);
-        }
+        await os.fs.createFile(destPath, finalName, content, kind, fileIcon);
       }
 
       return finalName;
@@ -1445,6 +1456,12 @@ export class ExplorerApp extends BaseApp {
 
       menu.appendChild(item("Copy", () => buildClipItem("copy"), "fa-copy"));
       menu.appendChild(item("Cut", () => buildClipItem("cut"), "fa-cut"));
+
+      const cb = this._getClipboard();
+      if (cb) {
+        menu.appendChild(item("Paste", () => this._pasteToPath(inst.currentPath, inst), "fa-paste"));
+      }
+
       menu.appendChild(hr());
 
       menu.appendChild(item("Download", () => this._downloadItems(itemName, isFile, inst), "fa-download"));
