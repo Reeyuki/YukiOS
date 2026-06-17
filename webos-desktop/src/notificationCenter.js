@@ -4,6 +4,7 @@ import { appMap } from "./games/gamesList.js";
 import { audioMixer, SystemAudio } from "./audioMixer.js";
 import { os } from "./os/index.js";
 import { getSetting } from "./shared/settingsUtils.js";
+import { APP_MANIFESTS } from "./registry/AppManifest.js";
 
 function escapeHtml(str) {
   if (typeof str !== "string") return "";
@@ -15,43 +16,19 @@ function escapeHtml(str) {
     .replace(/'/g, "&#39;");
 }
 
-const APP_SOURCE_TO_APP_MAP_KEY = {
-  CommandPalette: "commandPalette",
-  "Clipboard Manager": "clipboardManager",
-  Explorer: "explorer",
-  "Yuki Convert": "yukiConvert",
-  YouTube: "youtube",
-  Setup: "setupApp",
-  "Installed Apps": "installedApps",
-  "Archive Extractor": "archiveExtractor",
-  Settings: "settingsApp",
-  Notepad: "notepad",
-  Terminal: "terminal",
-  Browser: "browserApp",
-  Calculator: "calculatorApp",
-  Calendar: "calendar",
-  Camera: "cameraApp",
-  Markdown: "markdown",
-  Office: "officeApp",
-  "Data Editor": "dataEditor",
-  "3D Model Viewer": "model3dApp",
-  "Task Manager": "taskManagerApp",
-  Achievements: "achievementsApp",
-  About: "aboutApp",
-  News: "newsApp",
-  Weather: "weatherApp",
-  Categories: "systemApps",
-  Accounts: "accountManager",
-  Shortcuts: "shortcutsApp",
-  "App Creator": "appCreatorApp",
-  "Yuki OS Guide": "yukiOsGuide",
-  System: "system",
-  V86App: "v86app",
-  JsDosApp: "jsDosApp",
-  RuffleApp: "ruffleApp",
-  MonacoApp: "monaco",
-  "Evil Spotify": "shittify"
-};
+const APP_SOURCE_TO_APP_MAP_KEY = APP_MANIFESTS.reduce(
+  (acc, manifest) => {
+    acc[manifest.title] = manifest.serviceKey;
+    return acc;
+  },
+  {
+    V86App: "v86app",
+    JsDosApp: "jsDosApp",
+    RuffleApp: "ruffleApp",
+    MonacoApp: "monaco",
+    Accounts: "accountManager"
+  }
+);
 
 /**
  * @deprecated Use os.notify API instead. Direct access to NotificationCenter is deprecated.

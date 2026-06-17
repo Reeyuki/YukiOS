@@ -1,3 +1,4 @@
+import "../styles/calendar.css";
 import { StorageKeys } from "../settings/settings.js";
 import { os } from "../os/index.js";
 

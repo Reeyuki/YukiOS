@@ -1,3 +1,4 @@
+import "../styles/setup.css";
 import { BaseApp } from "../core/BaseApp.js";
 import { StorageKeys } from "../StorageKeys.js";
 import { resolveWallpaperUrl } from "../shared/assetResolver.js";
@@ -38,7 +39,7 @@ export const FEATURE_DATA = {
     },
     {
       icon: "fas fa-box-archive",
-      title: "75+ Built-in Apps",
+      title: "80 Built-in Apps",
       desc: "Notepad, Terminal, Browser, Office viewer, Calculator, and more",
       animation: "glow-card"
     },
@@ -310,7 +311,7 @@ export class SetupApp extends BaseApp {
 
     await this._loadWallpapers();
 
-    const win = os.window.create(winId, "Welcome to Yuki OS", "900px", "600px", {
+    const win = os.window.create(winId, "Welcome to Yuki OS", "70vw", "75vh", {
       icon: "fas fa-rocket",
       position: "center"
     });
@@ -1167,7 +1168,7 @@ Your setup is complete. Here's what you configured:
 - Notifications: ${this.userChoices.notifications ? "Enabled" : "Disabled"}
 
 Quick Tips:
-• Click the Start Menu to explore 75+ apps and 3700+ games
+• Click the Start Menu to explore 80 apps and 3700+ games
 • Right-click the desktop for context menu options
 • Use the Settings app to customize further anytime
 • Your files persist in the virtual filesystem

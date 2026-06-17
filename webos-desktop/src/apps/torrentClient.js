@@ -1,3 +1,4 @@
+import "../styles/torrent.css";
 import { BaseApp } from "../core/BaseApp.js";
 import { WindowHelper } from "../utils/WindowHelper.js";
 import { PersistenceTypes } from "../runtime/AppSchema.js";

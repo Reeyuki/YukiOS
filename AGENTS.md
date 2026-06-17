@@ -11,7 +11,7 @@
 - When making significant changes, new features, or new apps: you must register them in src/news.js with an icon, title,
   and a punchy, active-voice description under 15 words. Bad: 'First-time setup now includes a dedicated profile
   step...' Good: 'Choose your nickname and avatar during setup, with a quick final preview!'
-- Whenever you define a new app to appJauncher or gamesJist, define description for it on gameDescriptions.js
+- When adding a new app, add a `description` field to its manifest entry in `src/registry/AppManifest.js`
 - Always use StorageKeys from `src/StorageKeys.js` for localStorage access. Never hardcode localStorage key strings.
   Import StorageKeys and use the defined constants. If a new key is needed, add it to StorageKeys.js first.
 - Always use `os.storage` API instead of bare `localStorage`; the storage module handles serialization/deserialization
@@ -118,8 +118,8 @@ Desktop UI renders windows, taskbar, start menu
 **App lifecycle:**
 
 1. **Definition** - App class created in `src/apps/`
-2. **Registration** - App added to `APP_DEFINITIONS` in `AppLoader.js` and metadata to `SYSTEM_APPS` in
-   `AppRegistryConfig.js`
+2. **Registration** - App added to `APP_DEFINITIONS` in `AppLoader.js` and metadata to `APP_MANIFESTS` in
+   `src/registry/AppManifest.js`
 3. **Instantiation** - `loadApps(services)` in `main.js` instantiates all registered apps and attaches to `services`
    object
 4. **Launch** - `AppLauncher.launch(appId)` dispatches
@@ -339,8 +339,8 @@ and custom naming. Integrates with AppLauncher for app management.
 
 ## File/Directory Selection Dialogs
 
-The Explorer app provides built-in dialog methods for file and directory selection. These should be used instead of
-native browser dialogs or manual path input.
+The Explorer app provides built-in dialog methods for file and directory selection. These should be used alongside
+native browser dialogs.
 
 ### Explorer Dialog Methods
 
@@ -466,15 +466,46 @@ explorerApp.open(["Documents"], (selectedPath) => {
 
 ---
 
+## Adding a Web App (URL-based)
+
+For simple web apps that just load a URL in scramjet, you can use the web app system instead of creating a full app
+class. Web Apps use scramjet proxy underneath.
+
+### Step 1: Add Entry to AppManifest.js
+
+Add a manifest entry to `webos-desktop/src/registry/AppManifest.js` with `targetUrl` and `windowSize` fields:
+
+```javascript
+export const APP_MANIFESTS = [
+  // ... existing entries
+  {
+    serviceKey: "myWebApp",
+    enhanced: true,
+    type: "system",
+    title: "My Web App",
+    icon: "fas fa-globe",
+    launchType: "instance",
+    windowIdPatterns: ["my-web-app"],
+    category: "internet",
+    persistContentState: false,
+    clippy: { message: "Your app description here.", animation: ClippyAnimation.Show },
+    description: "Brief description under 15 words for the app guide.",
+    targetUrl: "https://example.com",
+    windowSize: ["90vw", "85vh"]
+  }
+];
+```
+
 ## Adding a New Declarative App
 
-Follow these steps to add a new app using the declarative framework:
+Follow these steps to add a new app using the declarative framework with the centralized manifest system:
 
 ### 1. Create App File
 
-Create `src/apps/myApp.js`:
+Create `src/apps/myApp.js` with CSS import:
 
 ```javascript
+import "../styles/myApp.css";
 import { BaseApp } from "./core/BaseApp.js";
 import { PersistenceTypes } from "./runtime/AppSchema.js";
 
@@ -552,38 +583,7 @@ export class MyApp extends BaseApp {
 }
 ```
 
-### 2. Add to AppLoader.js
-
-Add entry to `APP_DEFINITIONS` in `src/AppLoader.js`:
-
-```javascript
-const APP_DEFINITIONS = [
-  // ... existing entries
-  { serviceKey: "myApp", AppClass: MyApp, enhanced: true }
-];
-```
-
-### 3. Add to AppRegistryConfig.js
-
-Add metadata to `SYSTEM_APPS` in `src/AppRegistryConfig.js`:
-
-```javascript
-export const SYSTEM_APPS = {
-  // ... existing entries
-  myApp: {
-    serviceKey: "myApp",
-    type: "system",
-    title: "My App",
-    icon: "fas fa-star",
-    launchType: "instance",
-    windowIdPatterns: ["my-app"],
-    category: "office",
-    clippy: { message: "Your app description here.", animation: ClippyAnimation.Show }
-  }
-};
-```
-
-### 4. Add CSS Styling
+### 2. Add CSS Styling
 
 Create `src/styles/myApp.css` with Yuki OS styling:
 
@@ -598,46 +598,47 @@ Create `src/styles/myApp.css` with Yuki OS styling:
 }
 ```
 
-### 5. Import CSS in index.html
+**Important:** Import the CSS at the top of your app file (as shown in step 1). Do not add `<link>` tags to
+`index.html`.
 
-Add link tag to `index.html`:
+### 3. Add Entry to AppManifest.js
 
-```html
-<link href="src/styles/myApp.css" rel="stylesheet" />
-```
-
-### 6. Add Description to gameDescriptions.js
-
-Add entry to `src/games/gameDescriptions.js`:
+Add manifest entry to `src/registry/AppManifest.js`:
 
 ```javascript
-export const APP_DESCRIPTIONS = {
+import { ClippyAnimation } from "../ai/clippy.js";
+
+export const APP_MANIFESTS = [
   // ... existing entries
-  myApp: "Brief description under 15 words."
-};
-```
-
-### 7. Register in news.js
-
-Add entry to `NEWS_UPDATES` in `src/news.js`:
-
-```javascript
-const NEWS_UPDATES = [
   {
-    date: "CURRENT_DATE",
-    sections: [
-      {
-        icon: "fa-wand-magic-sparkles",
-        title: "New App",
-        items: [["fa-star", "My App", "Punchy, active-voice description under 15 words."]]
-      }
-    ]
+    serviceKey: "myApp",
+    enhanced: true,
+    type: "system",
+    title: "My App",
+    icon: "fas fa-star",
+    launchType: "instance",
+    windowIdPatterns: ["my-app"],
+    category: "office",
+    clippy: { message: "Your app description here.", animation: ClippyAnimation.Show },
+    description: "Brief description under 15 words for the app guide."
   }
-  // ... existing entries
 ];
 ```
 
-### 8. Verify Build
+### 4. Add to AppLoader.js
+
+Add import and entry to `APP_CLASS_MAP` in `src/AppLoader.js`:
+
+```javascript
+import { MyApp } from "./apps/myApp.js";
+
+const APP_CLASS_MAP = {
+  // ... existing entries
+  myApp: MyApp
+};
+```
+
+### 5. Verify Build
 
 Run build to verify:
 

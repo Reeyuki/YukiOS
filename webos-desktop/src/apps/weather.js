@@ -1,3 +1,4 @@
+import "../styles/weather.css";
 import { getWeatherInfo } from "../shared/weatherCodes.js";
 import { BaseApp } from "../core/BaseApp.js";
 import { WindowHelper } from "../utils/WindowHelper.js";

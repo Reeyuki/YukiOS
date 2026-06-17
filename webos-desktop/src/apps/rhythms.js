@@ -1,3 +1,4 @@
+import "../styles/rhythms.css";
 import { BaseApp } from "../core/BaseApp.js";
 import { PersistenceTypes } from "../runtime/AppSchema.js";
 import { audioMixer } from "../audioMixer.js";

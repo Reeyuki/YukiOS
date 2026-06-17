@@ -1,3 +1,4 @@
+import "../styles/emulator.css";
 import { Achievements } from "../achievements.js";
 import { BusEvents } from "../core/EventBus.js";
 import { BaseApp } from "../core/BaseApp.js";

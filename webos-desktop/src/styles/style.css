@@ -1260,7 +1260,7 @@ html[data-theme] .context-menu-item:hover {
 }
 
 html[data-theme] #taskbar {
-  background: var(--surface-1);
+  background: var(--bg-secondary);
   backdrop-filter: blur(32px);
   -webkit-backdrop-filter: blur(32px);
   border: 1px solid var(--glass-border);

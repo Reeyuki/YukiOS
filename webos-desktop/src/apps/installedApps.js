@@ -1,3 +1,4 @@
+import "../styles/installedApps.css";
 import { BaseApp } from "../core/BaseApp.js";
 import { customPrompt, customConfirm } from "../shared/dialogs.js";
 import { os } from "../os/index.js";

@@ -1,3 +1,4 @@
+import "../styles/explorer.css";
 import { BaseApp } from "../core/BaseApp.js";
 import { FileKind } from "../fs.js";
 import { SystemUtilities } from "../system.js";

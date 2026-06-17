@@ -652,6 +652,9 @@ html[data-theme="light"] .task-item-name {
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
   z-index: 9999;
   animation: trayPopupIn 100ms ease-out both;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 #clipboard-tray-popup.closing {

@@ -1,3 +1,4 @@
+import "../styles/model3d.css";
 import { BaseApp } from "../core/BaseApp.js";
 import { ClippyAnimation, speak } from "../ai/clippy.js";
 import { unzipSync } from "fflate";

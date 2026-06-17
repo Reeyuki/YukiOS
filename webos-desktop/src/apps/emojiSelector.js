@@ -1,3 +1,4 @@
+import "../styles/emojiSelector.css";
 import { BaseApp } from "../core/BaseApp.js";
 import { PersistenceTypes } from "../runtime/AppSchema.js";
 import { getLibraryUrl } from "../shared/cdnConfig.js";

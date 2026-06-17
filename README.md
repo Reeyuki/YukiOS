@@ -68,7 +68,7 @@ It's built entirely in vanilla JS (with some libraries, of course!). ![Steam int
 
 # 📦 Applications
 
-- 40+ built-in applications
+- 80 built-in applications
 - Web apps, utilities, tools, editors, and system apps
 - App registry with metadata and launch handling
 - Website and external app shortcuts via App Creator
@@ -142,7 +142,7 @@ It's built entirely in vanilla JS (with some libraries, of course!). ![Steam int
 - What's New
 - Achievements
 - Profile Customizer
-- Yuki AI
+- Yuki AI Assistant
 - Storage Editor
 - Yuki Convert
 - Clipboard Manager
@@ -152,13 +152,17 @@ It's built entirely in vanilla JS (with some libraries, of course!). ![Steam int
 - Weather
 - News
 - Yuki OS Guide
+- Yuki Dev Tools
+- Display Performance
+- Network Tray
 
 ## 🎨 Media & Creative Tools
 
 - Paint
+- Mini Paint
 - Photopea
 - LibreSprite
-- Camera
+- Camera App
 - Media Viewer
 - Office Viewer
 - Evil Spotify
@@ -178,16 +182,37 @@ It's built entirely in vanilla JS (with some libraries, of course!). ![Steam int
 - Outlook
 - ChatGPT
 - DeepSeek
-- WebTorrent
+- Zoom
+- Twitter/X
+- Instagram
+- LinkedIn
+- Pinterest
+- GitHub
+- GitLab
+- CodePen
+- Replit
+- Twitch
+- SoundCloud
+- Deezer
+- Notion
+- Figma
+- Canva
+- Google Docs
+- ProtonMail
+- Yahoo Mail
 - kiwiIRC
+- GeForce Now
+- Scramjet Proxy
+- Torrent Client
+- WebTorrent
 
 ## 🎮 Games & Emulation Tools
 
-- EmulatorJS
-- Ruffle
-- JS-DOS
-- V86
-- Azahar
+- Yuki Emulator(EmulatorJS)
+- Ruffle (Flash)
+- JsDos (DOS)
+- Virtual 86 (x86)
+- Azahar (3DS Emulator)
 
 ---
 
@@ -220,7 +245,7 @@ We welcome contributions! Whether you want to add a new app, fix a bug, or impro
 For detailed information on:
 
 - Creating new applications
-- Using the OS Bridge API
+- Using the OS API
 - Styling guidelines
 - Code quality standards
 - Build and deployment processes

@@ -1,3 +1,4 @@
+import "../styles/browser.css";
 import { PROXIES, clampProxyIndex, buildProxyUrl } from "../proxies.js";
 import { BaseApp } from "../core/BaseApp.js";
 import { customConfirm } from "../shared/dialogs.js";

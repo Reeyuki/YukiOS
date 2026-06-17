@@ -1,3 +1,4 @@
+import "../styles/appCreator.css";
 import { BaseApp } from "../core/BaseApp.js";
 import { isImageFile } from "../fileDisplay.js";
 import { refreshIcons } from "../shared/contextMenu.js";

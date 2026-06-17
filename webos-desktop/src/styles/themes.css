@@ -1,3 +1,30 @@
+html[data-theme="dark"] {
+  --brand: oklch(55% 0.11 264);
+  --brand-hover: oklch(48% 0.11 264);
+  --brand-dark: oklch(38% 0.11 264);
+  --brand-glow: oklch(55% 0.08 264 / 0.18);
+  --brand-dim: oklch(55% 0.11 264 / 0.12);
+  --bg-primary: oklch(12% 0.02 265);
+  --bg-secondary: oklch(18% 0.01 265);
+  --text-primary: oklch(95% 0.01 265);
+  --text-secondary: oklch(72% 0.01 265);
+  --glass: oklch(100% 0 0 / 0.04);
+  --glass-hover: oklch(100% 0 0 / 0.07);
+  --glass-border: oklch(100% 0 0 / 0.08);
+  --tx1: oklch(95% 0.01 265);
+  --tx2: oklch(72% 0.01 265);
+  --surface-1: oklch(18% 0.01 265);
+  --surface-2: oklch(24% 0.01 265);
+  --surface-3: oklch(30% 0.01 265);
+  --surface-hover: oklch(26% 0.01 265);
+  --text-muted: oklch(60% 0.01 265);
+  --text-on-brand: oklch(100% 0 0);
+  --shadow-color: oklch(0% 0 0 / 0.65);
+  --overlay-bg: oklch(0% 0 0 / 0.55);
+  --menu-bg: oklch(24% 0.01 265);
+  --window-bg: oklch(18% 0.01 265);
+}
+
 html[data-theme="light"] {
   --window-bg-color: #f2f2f2;
   --text-color: #333;

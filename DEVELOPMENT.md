@@ -55,7 +55,8 @@ This guide covers how to create new applications, add functionalities, and contr
 
 ## Creating a New App
 
-Yuki OS uses a declarative app framework. Follow these steps to create a new application:
+Yuki OS uses a declarative app framework with a centralized manifest system. Follow these steps to create a new
+application:
 
 ### Step 1: Create the App File
 
@@ -63,8 +64,9 @@ Create a new file in `webos-desktop/src/apps/` directory:
 
 ```javascript
 // src/apps/myApp.js
-import { BaseApp } from "./core/BaseApp.js";
-import { PersistenceTypes } from "./runtime/AppSchema.js";
+import "../styles/myApp.css";
+import { BaseApp } from "../core/BaseApp.js";
+import { PersistenceTypes } from "../runtime/AppSchema.js";
 
 export class MyApp extends BaseApp {
   constructor(services) {
@@ -142,38 +144,7 @@ export class MyApp extends BaseApp {
 }
 ```
 
-### Step 2: Register in AppLoader.js
-
-Add your app to `APP_DEFINITIONS` in `webos-desktop/src/AppLoader.js`:
-
-```javascript
-const APP_DEFINITIONS = [
-  // ... existing entries
-  { serviceKey: "myApp", AppClass: MyApp, enhanced: true }
-];
-```
-
-### Step 3: Add Metadata to AppRegistryConfig.js
-
-Add metadata to `SYSTEM_APPS` in `webos-desktop/src/AppRegistryConfig.js`:
-
-```javascript
-export const SYSTEM_APPS = {
-  // ... existing entries
-  myApp: {
-    serviceKey: "myApp",
-    type: "system",
-    title: "My App",
-    icon: "fas fa-star",
-    launchType: "instance",
-    windowIdPatterns: ["my-app"],
-    category: "office",
-    clippy: { message: "Your app description here.", animation: ClippyAnimation.Show }
-  }
-};
-```
-
-### Step 4: Add CSS Styling
+### Step 2: Add CSS Styling
 
 Create `webos-desktop/src/styles/myApp.css`:
 
@@ -188,44 +159,67 @@ Create `webos-desktop/src/styles/myApp.css`:
 }
 ```
 
-Import the CSS in `webos-desktop/index.html`:
+**Important:** Import the CSS at the top of your app file (as shown in Step 1). Do not add `<link>` tags to
+`index.html`.
 
-```html
-<link href="src/styles/myApp.css" rel="stylesheet" />
-```
+### Step 3: Add Entry to AppManifest.js
 
-### Step 5: Add Description to gameDescriptions.js
-
-Add entry to `webos-desktop/src/games/gameDescriptions.js`:
+Add a manifest entry to `webos-desktop/src/registry/AppManifest.js`:
 
 ```javascript
-export const APP_DESCRIPTIONS = {
+import { ClippyAnimation } from "../ai/clippy.js";
+
+export const APP_MANIFESTS = [
   // ... existing entries
-  myApp: "Brief description under 15 words."
-};
-```
-
-### Step 6: Register in news.js
-
-Add entry to `NEWS_UPDATES` in `webos-desktop/src/news.js`:
-
-```javascript
-const NEWS_UPDATES = [
   {
-    date: "CURRENT_DATE",
-    sections: [
-      {
-        icon: "fa-wand-magic-sparkles",
-        title: "New App",
-        items: [["fa-star", "My App", "Punchy, active-voice description under 15 words."]]
-      }
-    ]
+    serviceKey: "myApp",
+    enhanced: true,
+    type: "system",
+    title: "My App",
+    icon: "fas fa-star",
+    launchType: "instance",
+    windowIdPatterns: ["my-app"],
+    category: "office",
+    clippy: { message: "Your app description here.", animation: ClippyAnimation.Show },
+    description: "Brief description under 15 words for the app guide."
   }
-  // ... existing entries
 ];
 ```
 
-### Step 7: Verify Build
+**Manifest fields:**
+
+- `serviceKey` - Unique identifier for the app
+- `enhanced` - Whether to apply HybridAdapter enhancement
+- `type` - App type (usually "system")
+- `title` - Display name
+- `icon` - Font Awesome icon class or CDN URL
+- `launchType` - "instance", "steam", "iframe", or "method"
+- `windowIdPatterns` - Array of window ID patterns
+- `category` - App category (development, graphics, games, help, internet, media, office, system)
+- `clippy` - Clippy message and animation
+- `description` - App description for the guide
+- `news` (optional) - News entry for the What's New app
+- `onLoad` (optional) - Callback when app loads
+- `isHeavy` (optional) - Mark as resource-intensive
+- `persistContentState` (optional) - Persist window content
+- `excludeFromInstalledApps` (optional) - Exclude from Installed Apps
+- `launchMethod` (optional) - Custom launch method name
+- `source` (optional) - URL for iframe launch type
+
+### Step 4: Register in AppLoader.js
+
+Add import and entry to `APP_DEFINITIONS` in `webos-desktop/src/AppLoader.js`:
+
+```javascript
+import { MyApp } from "./apps/myApp.js";
+
+const APP_DEFINITIONS = [
+  // ... existing entries
+  { serviceKey: "myApp", AppClass: MyApp, enhanced: true }
+];
+```
+
+### Step 5: Verify Build
 
 Run the build to ensure everything works:
 
@@ -233,112 +227,41 @@ Run the build to ensure everything works:
 cd webos-desktop && pnpm build:dev
 ```
 
+The build will automatically validate the registry via the prebuild script.
+
 ---
 
 ## Adding a Web App (URL-based)
 
-For simple web apps that just load a URL in an iframe, you can use the web app system instead of creating a full app
-class.
+For simple web apps that just load a URL in scramjet, you can use the web app system instead of creating a full app
+class. Web Apps use scramjet proxy underneath.
 
-### Step 1: Add to WEB_APP_DEFINITIONS
+### Step 1: Add Entry to AppManifest.js
 
-Add an entry to `WEB_APP_DEFINITIONS` in `webos-desktop/src/apps/webApps.js`:
+Add a manifest entry to `webos-desktop/src/registry/AppManifest.js` with `targetUrl` and `windowSize` fields:
 
 ```javascript
-const WEB_APP_DEFINITIONS = [
+export const APP_MANIFESTS = [
   // ... existing entries
   {
-    appId: "myWebApp",
-    appName: "My Web App",
-    targetUrl: "https://example.com",
-    appIcon: "fas fa-globe",
-    windowSize: ["90vw", "85vh"]
-  }
-];
-```
-
-**Properties:**
-
-- `appId` - Unique identifier for the app
-- `appName` - Display name (used to generate class name)
-- `targetUrl` - URL to load in the iframe
-- `appIcon` - Font Awesome icon class
-- `windowSize` - Array of [width, height] (e.g., ["90vw", "85vh"])
-
-### Step 2: Export the App Class
-
-Add an export at the bottom of `webApps.js`:
-
-```javascript
-export const MyWebApp = webApps.MyWebApp;
-```
-
-The class name is generated automatically by removing special characters from `appName` and appending "App".
-
-### Step 3: Register in AppLoader.js
-
-Add to `APP_DEFINITIONS` in `webos-desktop/src/AppLoader.js`:
-
-```javascript
-import { MyWebApp } from "./apps/webApps.js";
-
-const APP_DEFINITIONS = [
-  // ... existing entries
-  { serviceKey: "myWebApp", AppClass: MyWebApp, enhanced: true }
-];
-```
-
-### Step 4: Add Metadata to AppRegistryConfig.js
-
-Add to `SYSTEM_APPS` in `webos-desktop/src/AppRegistryConfig.js`:
-
-```javascript
-export const SYSTEM_APPS = {
-  // ... existing entries
-  myWebApp: {
     serviceKey: "myWebApp",
+    enhanced: true,
     type: "system",
     title: "My Web App",
     icon: "fas fa-globe",
     launchType: "instance",
     windowIdPatterns: ["my-web-app"],
-    category: "internet"
+    category: "internet",
+    persistContentState: false,
+    clippy: { message: "Your app description here.", animation: ClippyAnimation.Show },
+    description: "Brief description under 15 words for the app guide.",
+    targetUrl: "https://example.com",
+    windowSize: ["90vw", "85vh"]
   }
-};
-```
-
-### Step 5: Add Description to gameDescriptions.js
-
-Add to `APP_DESCRIPTIONS` in `webos-desktop/src/games/gameDescriptions.js`:
-
-```javascript
-export const APP_DESCRIPTIONS = {
-  // ... existing entries
-  myWebApp: "Brief description under 15 words."
-};
-```
-
-### Step 6: Register in news.js
-
-Add to `NEWS_UPDATES` in `webos-desktop/src/news.js`:
-
-```javascript
-const NEWS_UPDATES = [
-  {
-    date: "CURRENT_DATE",
-    sections: [
-      {
-        icon: "fa-wand-magic-sparkles",
-        title: "New App",
-        items: [["fa-globe", "My Web App", "Punchy, active-voice description under 15 words."]]
-      }
-    ]
-  }
-  // ... existing entries
 ];
 ```
 
-### Step 7: Verify Build
+### Step 2: Verify Build
 
 ```bash
 cd webos-desktop && pnpm build:dev

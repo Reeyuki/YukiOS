@@ -1,102 +1,14 @@
-export const APP_DESCRIPTIONS = {
-  browserApp: "Web browser with bookmarks, history, and tab management for internet access within Yuki OS.",
-  yukiDevTools: "IT Tools wrapped in a Yuki-themed iframe with live CSS bridging.",
-  explorer:
-    "Browse and manage the virtual filesystem at /home/reeyuki/ with support for file operations, archives, and drag-drop.",
-  terminal: "Command-line interface supporting ls, cd, mkdir, rm, cp, mv, cat, pwd, and more for system operations.",
-  notepad: "Simple text editor for quick notes and plain text documents with save/load functionality.",
-  markdown: "Split-pane editor with live preview for writing and viewing Markdown documents.",
-  monaco:
-    "Full-featured code editor powered by VS Code engine with syntax highlighting, auto-completion, and multi-file support.",
-  settingsApp:
-    "Configure themes, wallpapers, window animations, taskbar behavior, sound, language, and system preferences.",
-  calculatorApp: "Scientific calculator with memory functions, trigonometry, and basic arithmetic operations.",
-  cameraApp: "Access webcam for photo capture with basic image controls and save to filesystem.",
-  officeApp: "View .docx, .xlsx, and .pptx documents using Office 365 integration.",
-  aboutApp: "System information including version, capabilities, credits, and privacy policy.",
-  taskManagerApp: "View and manage running applications, processes, and system resources with ability to close apps.",
-  weatherApp: "Current weather conditions and forecast with location-based data.",
-  appCreatorApp: "Create custom shortcuts to external URLs with auto-detection of favicons and per-app CORS proxy.",
-  model3dApp: "View OBJ, GLTF, and GLB 3D models using Three.js with rotation and zoom controls.",
-  jsDosApp: "DOS emulator for running classic DOS games and applications.",
-  v86app: "x86-64 full system emulator for running operating systems and legacy software.",
-  youtubeUtilsApp: "YouTube integration for watching videos within Yuki OS.",
-  achievementsApp: "Track playtime milestones and system usage achievements.",
-  accountManagerApp: "Manage multiple user accounts with create, edit, delete, and switch functionality.",
-  emulatorApp: "Multi-platform game emulator supporting various console systems.",
-  ruffleApp: "Flash game player using modern Ruffle engine for SWF content.",
-  shortcutsApp: "View and manage keyboard shortcuts for system-wide commands.",
-  yukiConvert: "Local File Converter with image, audio,video and documents.",
-  yukiConvertApp: "Local File Converter with image, audio,video and documents.",
-  setupApp: "Initial setup guide for new users to configure Yuki OS preferences.",
-  dataEditorApp: "View and edit IndexedDB storage data for debugging and advanced users.",
-  dataEditor: "View and edit IndexedDB storage data for debugging and advanced users.",
-  installedAppsApp: "Manage installed applications with rename, disable, and uninstall options.",
-  installedApps: "Manage installed applications with rename, disable, and uninstall options.",
-  systemApps: "Access and manage core system applications and utilities.",
-  shittify: "A spotify alternative",
-  shittifyApp: "A spotify alternative",
-  accountManager: "Manage multiple user accounts with create, edit, delete, and switch functionality.",
-  yukiOsGuide: "Comprehensive documentation and feature discovery hub for Yuki OS.",
-  clipboardManager: "System-wide clipboard history with tray icon support for managing copied text and data.",
-  aiAssistant:
-    "Intelligent AI assistant powered by WebLLM for client-side inference. Execute OS actions, manage files, and get contextual help with automation support.",
-  emojiSelector: "Browse and copy every emoji with category organization and instant search.",
-  rhythms:
-    "Audio visualizer with Lines and Circle modes, customizable tile count, and smooth bouncy physics for system-wide audio.",
-  kiwiIRC: "IRC client for connecting to IRC servers and chat rooms.",
-  azahar: "Nintendo 3DS emulator for playing 3DS games in the browser.",
-  paint: "Basic image editor with drawing tools, colors, and save functionality.",
-  photopea: "Advanced photo editor with layers, filters, and PSD support.",
-  youtube: "YouTube tools and utilities for video management and playback.",
-  system: "Core system components and utilities for Yuki OS operation.",
-  steam: "Game library and launcher with 3700+ titles organized by genre and collection.",
-  game: "Playable game content from the Yuki OS library of 3700+ titles across multiple platforms.",
-  newsApp: "Displays system updates, release notes, and changelog entries for Yuki OS features and improvements.",
-  steamApp:
-    "Game storefront and launcher interface for browsing, managing, and launching games through Steam integration.",
-  clipboardManagerApp:
-    "System clipboard history manager that stores copied text and data for quick reuse and retrieval.",
-  vscode:
-    "Web-based Visual Studio Code instance for full-featured software development with extensions and debugging tools.",
-  miniPaint:
-    "Lightweight browser-based image editor with basic drawing tools, filters, and quick editing capabilities.",
-  scramjet:
-    "Web proxy tool for browsing external sites through a proxied session with basic anonymity and access control.",
-  discordApp: "Discord web client with scramjet proxy for chatting with friends and communities.",
-  youtubeApp: "YouTube web client with scramjet proxy for watching videos and content.",
-  spotifyApp: "Spotify web client with scramjet proxy for streaming music and podcasts.",
-  slackApp: "Slack web client with scramjet proxy for team collaboration and communication.",
-  gmailApp: "Gmail web client with scramjet proxy for email management and communication.",
-  outlookApp: "Outlook web client with scramjet proxy for email and calendar management.",
-  chatgptApp: "ChatGPT web client with scramjet proxy for AI-powered conversations and assistance.",
-  deepseekApp: "DeepSeek web client with scramjet proxy for AI-powered conversations and assistance.",
-  telegramApp: "Telegram web client with scramjet proxy for secure messaging and communication.",
-  whatsappApp: "WhatsApp web client with scramjet proxy for instant messaging and voice/video calls.",
-  teamsApp: "Microsoft Teams web client with scramjet proxy for team collaboration and video conferencing.",
-  zoomApp: "Zoom web client with scramjet proxy for video conferencing and online meetings.",
-  notionApp: "Notion web client with scramjet proxy for notes, docs, and project management.",
-  figmaApp: "Figma web client with scramjet proxy for collaborative design and prototyping.",
-  twitterApp: "Twitter/X web client with scramjet proxy for social media and real-time updates.",
-  redditApp: "Reddit web client with scramjet proxy for community discussions and content discovery.",
-  instagramApp: "Instagram web client with scramjet proxy for photo sharing and social networking.",
-  linkedinApp: "LinkedIn web client with scramjet proxy for professional networking and career development.",
-  pinterestApp: "Pinterest web client with scramjet proxy for visual discovery and inspiration.",
-  googleDocsApp: "Google Docs web client with scramjet proxy for document creation and collaboration.",
-  trelloApp: "Trello web client with scramjet proxy for project management and team collaboration.",
-  canvaApp: "Canva web client with scramjet proxy for graphic design and visual content creation.",
-  githubApp: "GitHub web client with scramjet proxy for code hosting and version control.",
-  gitlabApp: "GitLab web client with scramjet proxy for DevOps and code collaboration.",
-  codepenApp: "CodePen web client with scramjet proxy for front-end development and code sharing.",
-  replitApp: "Replit web client with scramjet proxy for online coding and collaborative development.",
-  twitchApp: "Twitch web client with scramjet proxy for live streaming and gaming content.",
-  soundcloudApp: "SoundCloud web client with scramjet proxy for audio streaming and music discovery.",
-  deezerApp: "Deezer web client with scramjet proxy for music streaming and audio content.",
-  protonmailApp: "ProtonMail web client with scramjet proxy for secure encrypted email.",
-  yahooMailApp: "Yahoo Mail web client with scramjet proxy for email management and communication.",
-  torrentClient:
-    "BitTorrent client using WebTorrent for downloading and managing torrent files with magnet link support."
-};
+import { APP_MANIFESTS } from "../registry/AppManifest.js";
+
+const APP_DESCRIPTIONS = APP_MANIFESTS.reduce((acc, manifest) => {
+  const key = manifest.serviceKey || manifest.title.toLowerCase().replace(/\s+/g, "");
+  if (manifest.description) {
+    acc[key] = manifest.description;
+  }
+  return acc;
+}, {});
+
+export { APP_DESCRIPTIONS };
 
 export const descriptionMap = {
   tabs: "Totally Accurate Battle Simulator (TABS) is a physics based ragdoll tactics game developed by Landfall Games. Players pit armies of historical, mythological, and absurd units - from mammoths and squires to laser wielding raptors - against each other in a series of wobbly, unpredictable battles where the engine's chaotic physics are just as important as strategy.",

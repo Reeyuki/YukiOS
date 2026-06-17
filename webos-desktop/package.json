@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "node scripts/validateRegistry.js",
     "build": "vite build",
     "build:dev": "VITE_DEV_BUILD=true vite build",
     "bd": "VITE_DEV_BUILD=true vite build",

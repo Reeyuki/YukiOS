@@ -1,7 +1,8 @@
+import "../styles/about.css";
 import { BaseApp } from "../core/BaseApp.js";
 import { resolveGhUrl } from "../shared/assetResolver.js";
 import { PersistenceTypes } from "../runtime/AppSchema.js";
-export const YUKIOS_VERSION = "v1.4.1";
+export const YUKIOS_VERSION = "v1.4.2";
 
 const capabilities = [
   {
@@ -21,7 +22,7 @@ const capabilities = [
   },
   {
     tag: "APPS",
-    title: "75+ Built-in Apps",
+    title: "80 Built-in Apps",
     desc: "Terminal, browser, editors (Notepad, Markdown, Monaco), paint, calculator, office viewer, and more."
   },
   {
@@ -100,7 +101,7 @@ export class AboutApp extends BaseApp {
             <div class="abx-meta">
               <div class="abx-pill">Version ${YUKIOS_VERSION}</div>
               <div class="abx-pill">
-                35k+ Total Users
+                50k+ Total Users
               </div>
               <a
                 class="abx-meta-link"

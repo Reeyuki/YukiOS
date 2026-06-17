@@ -1,3 +1,4 @@
+import "../styles/monaco.css";
 import { BaseApp } from "../core/BaseApp.js";
 import { os } from "../os/index.js";
 import { WindowHelper } from "../utils/WindowHelper.js";

@@ -351,8 +351,6 @@ export class CommandPalette {
       return;
     }
 
-    let items = [];
-
     const actions = [
       {
         title: "Lock Session",
@@ -439,6 +437,8 @@ export class CommandPalette {
       }
     ];
 
+    let items = !search ? [...actions] : actions.filter((a) => a.title.toLowerCase().includes(search));
+
     if (search.startsWith(">") || this._isTerminalCommand(search)) {
       const cleanCmd = search.startsWith(">") ? search.slice(1).trim() : search;
       if (cleanCmd) {
@@ -464,6 +464,7 @@ export class CommandPalette {
       for (const [key, app] of Object.entries(allApps)) {
         if (!app) continue;
         const appTitle = app.title || key;
+
         if (!search || appTitle.toLowerCase().includes(search) || key.toLowerCase().includes(search)) {
           items.push({
             title: appTitle,
@@ -473,12 +474,6 @@ export class CommandPalette {
             execute: () => os.app.launch(key)
           });
         }
-      }
-    }
-
-    for (const action of actions) {
-      if (!search || action.title.toLowerCase().includes(search) || action.subtitle.toLowerCase().includes(search)) {
-        items.push(action);
       }
     }
 
@@ -515,6 +510,7 @@ export class CommandPalette {
     }
 
     this.results = items;
+    this.activeIndex = Math.min(this.activeIndex, Math.max(0, this.results.length - 1));
 
     if (this.results.length === 0) {
       this.resultsContainer.innerHTML = `

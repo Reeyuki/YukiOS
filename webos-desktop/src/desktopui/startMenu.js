@@ -512,7 +512,7 @@ export function setupStartMenu(appLauncher, sessionManager, selectionManager) {
         return;
       }
       if (cat.dataset.cat === "customize") {
-        os.app.launch("accountManager");
+        os.app.launch("accountManagerApp");
         speak("Let's make your profile look great!", ClippyAnimation.GetArtsy);
         return;
       }
@@ -897,7 +897,7 @@ function getGridItems() {
     { app: "explorer", title: "Files", icon: "fas fa-folder" },
     { app: "settingsApp", title: "Settings", icon: "fas fa-cog" },
     { app: "aiAssistant", title: "Yuki AI Assistant", icon: "fas fa-robot" },
-    { app: "notepad", title: "Notepad", icon: "fas fa-edit" },
+    { app: "notepadApp", title: "Notepad", icon: "fas fa-edit" },
     { app: "calculatorApp", title: "Calculator", icon: "fas fa-calculator" },
     { app: "shortcutsApp", title: "Shortcuts", icon: "fas fa-keyboard" },
     { app: "yukiConvert", title: "Yuki Convert", icon: "fas fa-exchange-alt" },
@@ -912,7 +912,7 @@ function getGridItems() {
     { app: "newsApp", title: "What's New", icon: "fas fa-newspaper" },
     { app: "shittify", title: "Evil Spotify", icon: "fas fa-music" },
     { app: "appCreatorApp", title: "AppCreator", icon: "fas fa-cubes" },
-    { app: "systemApps", title: "System Apps", icon: "fas fa-screwdriver-wrench" },
+    { app: "systemAppsApp", title: "System Apps", icon: "fas fa-screwdriver-wrench" },
     { app: "taskManagerApp", title: "Task Manager", icon: "fas fa-list-check" },
     { app: "terminal", title: "Terminal", icon: "fas fa-terminal" },
     { app: "aboutApp", title: "About YukiOS", icon: "fas fa-info-circle" },

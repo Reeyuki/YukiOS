@@ -1,9 +1,13 @@
+import "../styles/news.css";
 import { BaseApp } from "../core/BaseApp.js";
 import { StorageKeys } from "../settings/settings.js";
 import { PersistenceTypes } from "../runtime/AppSchema.js";
 import { os } from "../os/index.js";
+import { APP_MANIFESTS } from "../registry/AppManifest.js";
 
-const NEWS_UPDATES = [
+const appNewsEntries = APP_MANIFESTS.filter((manifest) => manifest.news).map((manifest) => manifest.news);
+
+const EXISTING_NEWS_UPDATES = [
   {
     date: "June 17, 2026",
     sections: [
@@ -15,7 +19,7 @@ const NEWS_UPDATES = [
       {
         icon: "fa-wand-magic-sparkles",
         title: "New Apps",
-        items: [["fa-cube", "30 More Apps", "Added 30 more web apps."]]
+        items: [["fa-cube", "50 More Apps", "Added 50 more web apps."]]
       }
     ]
   },
@@ -759,6 +763,8 @@ const NEWS_UPDATES = [
     ]
   }
 ];
+
+const NEWS_UPDATES = [...appNewsEntries, ...EXISTING_NEWS_UPDATES];
 
 const hashStringDjb2 = (text) => {
   let hash = 5381;

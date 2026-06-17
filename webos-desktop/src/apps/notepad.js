@@ -1,3 +1,4 @@
+import "../styles/notepad.css";
 import { ClippyAnimation, speak } from "../ai/clippy.js";
 import { Achievements } from "../achievements.js";
 import { BaseApp } from "../core/BaseApp.js";

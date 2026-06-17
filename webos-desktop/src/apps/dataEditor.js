@@ -1,3 +1,4 @@
+import "../styles/dataeditor.css";
 import { BaseApp } from "../core/BaseApp.js";
 import { os } from "../os/index.js";
 import { showConfirm, showPrompt } from "../shared/dialogs.js";
