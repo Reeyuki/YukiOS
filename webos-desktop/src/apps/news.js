@@ -9,6 +9,16 @@ const appNewsEntries = APP_MANIFESTS.filter((manifest) => manifest.news).map((ma
 
 const EXISTING_NEWS_UPDATES = [
   {
+    date: "June 18, 2026",
+    sections: [
+      {
+        icon: "fa-database",
+        title: "File Explorer",
+        items: [["fa-database", "Storage Indicator", "Shows total used space in Explorer sidebar."]]
+      }
+    ]
+  },
+  {
     date: "June 17, 2026",
     sections: [
       {

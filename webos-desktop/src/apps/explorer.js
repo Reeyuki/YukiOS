@@ -142,6 +142,10 @@ export class ExplorerApp extends BaseApp {
         <div class="start-item" data-path="Pictures"><i class="fas fa-image sidebar-icon-fa"></i>Pictures</div>
         <div class="start-item" data-path="Music"><i class="fas fa-music sidebar-icon-fa"></i>Music</div>
         <div class="start-item" data-path="Videos"><i class="fas fa-video sidebar-icon-fa"></i>Videos</div>
+        <div class="explorer-storage">
+          <i class="fas fa-database"></i>
+          <span class="explorer-storage-size">Calculating...</span>
+        </div>
       </div>`;
   }
   _bindSidebar(win, inst) {
@@ -293,6 +297,10 @@ export class ExplorerApp extends BaseApp {
           <div class="start-item" data-path="Documents"><img src="${resolveIconUrl("static/icons/notepad.webp")}" class="sidebar-icon">Documents</div>
           <div class="start-item" data-path="Desktop"><i class="fas fa-desktop sidebar-icon-fa"></i>Desktop</div>
           <div class="start-item" data-path="Pictures"><i class="fas fa-image sidebar-icon-fa"></i>Pictures</div>
+          <div class="explorer-storage">
+            <i class="fas fa-database"></i>
+            <span class="explorer-storage-size">Calculating...</span>
+          </div>
         </div>
         <div class="explorer-main" id="${winId}-view"></div>
       </div>
@@ -397,6 +405,10 @@ export class ExplorerApp extends BaseApp {
           <div class="start-item" data-path="Desktop"><i class="fas fa-desktop sidebar-icon-fa"></i>Desktop</div>
           <div class="start-item" data-path="Pictures"><i class="fas fa-image sidebar-icon-fa"></i>Pictures</div>
           <div class="start-item" data-path="Downloads"><i class="fas fa-download sidebar-icon-fa"></i>Downloads</div>
+          <div class="explorer-storage">
+            <i class="fas fa-database"></i>
+            <span class="explorer-storage-size">Calculating...</span>
+          </div>
         </div>
         <div class="explorer-main" id="${winId}-view"></div>
       </div>
@@ -985,6 +997,7 @@ export class ExplorerApp extends BaseApp {
 
     if (inst.mode === "browse") await this._updateStatusBar(inst, folder);
     if (inst.mode === "select") this._bindSelectBarButton(inst);
+    await this._updateStorageIndicator(win);
 
     inst._isRendering = false;
   }
@@ -1840,9 +1853,7 @@ export class ExplorerApp extends BaseApp {
     const stats = {};
     try {
       const meta = await this.fs.readMeta(dir);
-      const entries = await new Promise((res, rej) => {
-        this.fs.fs.readdir(dir, (e, list) => (e ? rej(e) : res(list)));
-      });
+      const entries = await this.fs.pRead("readdir", dir);
       for (const name of entries) {
         if (name === this.fs.CONFIG.META_FILE) continue;
         if (name === "system" && inst.currentPath.length === 0) continue;
@@ -1863,9 +1874,7 @@ export class ExplorerApp extends BaseApp {
   async _calcDirSize(dirPath) {
     let total = 0;
     try {
-      const entries = await new Promise((res, rej) => {
-        this.fs.fs.readdir(dirPath, (e, list) => (e ? rej(e) : res(list)));
-      });
+      const entries = await this.fs.pRead("readdir", dirPath);
       const meta = await this.fs.readMeta(dirPath);
       for (const name of entries) {
         if (name === this.fs.CONFIG.META_FILE) continue;
@@ -1877,6 +1886,21 @@ export class ExplorerApp extends BaseApp {
       }
     } catch {}
     return total;
+  }
+
+  async _calcTotalStorage() {
+    return this._calcDirSize(this.fs.resolveUserPath([]));
+  }
+
+  async _updateStorageIndicator(win) {
+    const el = win?.querySelector(".explorer-storage-size");
+    if (!el) return;
+    try {
+      const total = await this._calcTotalStorage();
+      el.textContent = formatSize(total);
+    } catch {
+      el.textContent = "—";
+    }
   }
 
   async _updateStatusBar(inst, folder) {

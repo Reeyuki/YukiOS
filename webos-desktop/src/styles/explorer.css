@@ -88,6 +88,28 @@
   border-right: 1px solid rgba(255, 255, 255, 0.07);
   padding: 10px 0;
   position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.explorer-storage {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 11px;
+  color: var(--text-secondary);
+  opacity: 0.7;
+  cursor: default;
+}
+
+.explorer-storage i {
+  width: 16px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--brand);
 }
 
 .explorer-sidebar::after {

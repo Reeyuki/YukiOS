@@ -477,7 +477,7 @@ export class FileSystemManager {
         if (!exists) {
           await this.p("mkdir", this.paths.dirname(fullPath), { recursive: true }).catch(() => {});
           await this.p("writeFile", fullPath, value.content ?? "");
-          await this.metadata.writeMeta(this.paths.dirname(fullPath), key, value);
+          await this.metadata.writeMeta(this.paths.dirname(fullPath), key, { ...value, size: (value.content ?? "").length });
         }
       } else {
         const exists = await this.exists(fullPath);
@@ -576,7 +576,7 @@ export class FileSystemManager {
         const kind = meta[name]?.kind ?? this.inferKind(name);
         const icon = resolveIconUrl(meta[name]?.icon) ?? "static/icons/file.webp";
         const faIcon = meta[name]?.faIcon ?? null;
-        result[name] = { type: "file", kind, icon, faIcon, content: "" };
+        result[name] = { type: "file", kind, icon, faIcon, content: "", size: meta[name]?.size ?? 0 };
       }
     }
 
@@ -625,7 +625,7 @@ export class FileSystemManager {
       await this.blobs._putBlob(filePath, typedBlob);
     } else {
       await this.p("writeFile", filePath, content);
-      await this.metadata.writeMeta(dir, uniqueName, { kind: fileKind, icon: fileIcon, faIcon });
+      await this.metadata.writeMeta(dir, uniqueName, { kind: fileKind, icon: fileIcon, faIcon, size: content.length });
     }
     await this.notifyDesktopChange(path);
     return uniqueName;
@@ -711,9 +711,11 @@ export class FileSystemManager {
       const typedBlob = content.type ? content : new Blob([content], { type: this.detector._mimeFromName(name) });
       await this.p("writeFile", filePath, "");
       await this.blobs._putBlob(filePath, typedBlob);
+      await this.metadata.writeMeta(dir, name, { size: typedBlob.size });
       await this.notifyDesktopChange(path);
     } else {
       await this.p("writeFile", filePath, content);
+      await this.metadata.writeMeta(dir, name, { size: content.length });
       await this.notifyDesktopChange(path);
     }
   }
