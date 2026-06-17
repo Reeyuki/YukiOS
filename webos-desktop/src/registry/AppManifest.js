@@ -381,7 +381,56 @@ export const APP_MANIFESTS = [
     clippy: { message: "Chat with friends on Discord", animation: ClippyAnimation.Wave },
     description: "Discord web client for chatting with friends and communities.",
     targetUrl: "https://discord.com",
-    windowSize: ["90vw", "85vh"]
+    windowSize: ["90vw", "85vh"],
+    trayOptions: {
+      contextMenuItems: [
+        {
+          label: "Mute",
+          action: () => {
+            console.log("Discord: Mute");
+          },
+          icon: "fa-microphone-slash"
+        },
+        {
+          label: "Deafen",
+          action: () => {
+            console.log("Discord: Deafen");
+          },
+          icon: "fa-volume-off"
+        },
+        {
+          type: "divider"
+        },
+        {
+          label: "Status: Online",
+          action: () => {
+            console.log("Discord: Set status to Online");
+          },
+          icon: "fa-circle"
+        },
+        {
+          label: "Status: Idle",
+          action: () => {
+            console.log("Discord: Set status to Idle");
+          },
+          icon: "fa-moon"
+        },
+        {
+          label: "Status: DND",
+          action: () => {
+            console.log("Discord: Set status to DND");
+          },
+          icon: "fa-ban"
+        },
+        {
+          label: "Status: Invisible",
+          action: () => {
+            console.log("Discord: Set status to Invisible");
+          },
+          icon: "fa-eye-slash"
+        }
+      ]
+    }
   },
   {
     serviceKey: "youtubeApp",
@@ -800,6 +849,81 @@ export const APP_MANIFESTS = [
     clippy: { message: "Download and manage torrents with WebTorrent", animation: ClippyAnimation.Show },
     description:
       "BitTorrent client using WebTorrent for downloading and managing torrent files with magnet link support."
+  },
+  {
+    serviceKey: "pixlrApp",
+    enhanced: true,
+    type: "system",
+    title: "Pixlr",
+    icon: "fas fa-image",
+    launchType: "instance",
+    windowIdPatterns: ["pixlr"],
+    category: "graphics",
+    persistContentState: false,
+    clippy: { message: "Edit photos in Pixlr", animation: ClippyAnimation.GetArtsy },
+    description: "Pixlr web client for photo editing and design.",
+    targetUrl: "https://pixlr.com",
+    windowSize: ["90vw", "85vh"]
+  },
+  {
+    serviceKey: "grokApp",
+    enhanced: true,
+    type: "system",
+    title: "Grok",
+    icon: "fas fa-brain",
+    launchType: "instance",
+    windowIdPatterns: ["grok"],
+    category: "internet",
+    persistContentState: false,
+    clippy: { message: "Chat with AI on Grok", animation: ClippyAnimation.GetTechy },
+    description: "Grok web client for AI-powered conversations and assistance.",
+    targetUrl: "https://grok.x.ai",
+    windowSize: ["90vw", "85vh"]
+  },
+  {
+    serviceKey: "aniwatchApp",
+    enhanced: true,
+    type: "system",
+    title: "Aniwatch",
+    icon: "fas fa-play-circle",
+    launchType: "instance",
+    windowIdPatterns: ["aniwatch"],
+    category: "media",
+    persistContentState: false,
+    clippy: { message: "Watch anime on Aniwatch", animation: ClippyAnimation.Show },
+    description: "Aniwatch web client for streaming anime content.",
+    targetUrl: "https://aniwatch.co.at",
+    windowSize: ["90vw", "85vh"]
+  },
+  {
+    serviceKey: "tiktokApp",
+    enhanced: true,
+    type: "system",
+    title: "TikTok",
+    icon: "fab fa-tiktok",
+    launchType: "instance",
+    windowIdPatterns: ["tiktok"],
+    category: "media",
+    persistContentState: false,
+    clippy: { message: "Browse TikTok", animation: ClippyAnimation.Show },
+    description: "TikTok web client for short-form video content.",
+    targetUrl: "https://tiktok.com",
+    windowSize: ["90vw", "85vh"]
+  },
+  {
+    serviceKey: "senshiApp",
+    enhanced: true,
+    type: "system",
+    title: "Senshi",
+    icon: "fas fa-video",
+    launchType: "iframe",
+    windowIdPatterns: ["senshi"],
+    category: "media",
+    persistContentState: false,
+    source: "https://senshi.live",
+    clippy: { message: "Stream on Senshi", animation: ClippyAnimation.Show },
+    description: "Senshi web client for streaming anime.",
+    windowSize: ["90vw", "85vh"]
   },
   {
     serviceKey: "browserApp",

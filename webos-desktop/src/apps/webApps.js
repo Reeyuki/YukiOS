@@ -11,7 +11,8 @@ APP_MANIFESTS.forEach((manifest) => {
       appName: manifest.title,
       targetUrl: manifest.targetUrl,
       appIcon: manifest.icon,
-      windowSize: manifest.windowSize || ["90vw", "85vh"]
+      windowSize: manifest.windowSize || ["90vw", "85vh"],
+      trayOptions: manifest.trayOptions || null
     });
   }
 });

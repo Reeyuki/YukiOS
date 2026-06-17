@@ -24,7 +24,14 @@ const EXISTING_NEWS_UPDATES = [
       {
         icon: "fa-wand-magic-sparkles",
         title: "New Apps",
-        items: [["fa-cube", "50 More Apps", "Added 50 more web apps."]]
+        items: [
+          ["fa-cube", "50 More Apps", "Added 50 more web apps."],
+          ["fa-image", "Pixlr", "Photo editing and design tool."],
+          ["fa-brain", "Grok", "AI-powered conversations and assistance."],
+          ["fa-play-circle", "Aniwatch", "Stream anime content."],
+          ["fa-tiktok", "TikTok", "Short-form video content."],
+          ["fa-video", "Senshi", "Streaming animes."]
+        ]
       }
     ]
   },

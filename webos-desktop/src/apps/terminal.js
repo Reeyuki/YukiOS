@@ -88,9 +88,6 @@ export class TerminalApp extends BaseApp {
   }
 
   open() {
-    const existingWin = document.getElementById("terminal-win");
-    if (existingWin) return os.window.focus(existingWin);
-
     const content = `
     <div class="window-content" style="background:#000;color:white;font-family:monospace;padding:10px;overflow-y:auto;height:calc(100% - 40px);">
       <div id="terminal-output" style="white-space:pre;"></div>

@@ -28,7 +28,6 @@ import { EmojiSelectorApp } from "./apps/emojiSelector.js";
 import { SystemAppsApp } from "./apps/systemApps.js";
 import { RhythmsApp } from "./apps/rhythms.js";
 import { ScramjetApp } from "./apps/scramjet.js";
-import { DiscordApp } from "./apps/discordApp.js";
 import { YoutubeApp } from "./apps/youtube.js";
 import { TorrentClientApp } from "./apps/torrentClient.js";
 
@@ -61,7 +60,6 @@ const APP_CLASS_MAP = {
   systemAppsApp: SystemAppsApp,
   rhythmsApp: RhythmsApp,
   scramjetApp: ScramjetApp,
-  discordApp: DiscordApp,
   youtubeApp: YoutubeApp,
   torrentClientApp: TorrentClientApp
 };
