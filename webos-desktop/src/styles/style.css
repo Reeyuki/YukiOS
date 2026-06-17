@@ -1298,28 +1298,6 @@ html[data-theme] .button-primary:hover {
   color: var(--text-on-brand);
 }
 
-html[data-theme] input,
-html[data-theme] textarea,
-html[data-theme] select {
-  background: var(--surface-1);
-  color: var(--text-primary);
-  border: 1px solid var(--glass-border);
-}
-
-html[data-theme] input:focus,
-html[data-theme] textarea:focus,
-html[data-theme] select:focus {
-  background: var(--surface-2);
-  color: var(--text-primary);
-  border-color: var(--brand);
-  outline: none;
-}
-
-html[data-theme] input::placeholder,
-html[data-theme] textarea::placeholder {
-  color: var(--text-muted);
-}
-
 html[data-theme] .explorer-sidebar {
   background: var(--surface-1);
   border-right: 1px solid var(--glass-border);

@@ -656,6 +656,7 @@ export class SessionManager {
   async _initializeSession() {
     const { name, key, avatar } = this.currentSession;
 
+    os.storage.set(StorageKeys.username, name);
     os.storage.set(StorageKeys.lastLaunchTime, Date.now().toString());
     this._addToUserHistory(this.currentSession);
 

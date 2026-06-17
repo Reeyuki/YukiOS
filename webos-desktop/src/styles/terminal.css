@@ -1,0 +1,114 @@
+.terminal-content {
+  background: #0d0d0d;
+  color: #c0c0c0;
+  font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
+  font-size: 14px;
+  padding: 12px;
+  overflow-y: auto;
+  height: calc(100% - 40px);
+  cursor: text;
+  user-select: text;
+}
+
+.terminal-content ::selection {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+.terminal-output {
+  white-space: pre;
+  min-height: 20px;
+}
+
+.terminal-output .cmd-line {
+  display: block;
+}
+
+.terminal-output .cmd-line .prompt-user {
+  color: #00ff00;
+}
+
+.terminal-output .cmd-line .prompt-at {
+  color: #c0c0c0;
+}
+
+.terminal-output .cmd-line .prompt-host {
+  color: #00ff00;
+}
+
+.terminal-output .cmd-line .prompt-sep {
+  color: #c0c0c0;
+}
+
+.terminal-output .cmd-line .prompt-path {
+  color: #0080ff;
+}
+
+.terminal-output .cmd-line .prompt-dollar {
+  color: #00ff00;
+}
+
+.terminal-output .cmd-line .cmd-text {
+  color: #e0e0e0;
+}
+
+.terminal-input-line {
+  display: flex;
+  align-items: center;
+}
+
+.terminal-input-line .prompt-user {
+  color: #00ff00;
+}
+
+.terminal-input-line .prompt-at {
+  color: #c0c0c0;
+}
+
+.terminal-input-line .prompt-host {
+  color: #00ff00;
+}
+
+.terminal-input-line .prompt-sep {
+  color: #c0c0c0;
+}
+
+.terminal-input-line .prompt-path {
+  color: #0080ff;
+}
+
+.terminal-input-line .prompt-dollar {
+  color: #00ff00;
+  margin-right: 8px;
+}
+
+.terminal-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #e0e0e0;
+  font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
+  font-size: 14px;
+  outline: none;
+  caret-color: #ffffff;
+}
+
+.terminal-output .output-default {
+  color: #c0c0c0;
+}
+
+.terminal-output .output-dir {
+  color: #0080ff;
+}
+
+.terminal-output .output-error {
+  color: #ff4444;
+}
+
+.terminal-output .output-welcome {
+  color: #00ff00;
+}
+
+.terminal-output .output-neofetch {
+  color: #00ffff;
+}

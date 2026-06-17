@@ -1,7 +1,9 @@
+import "../styles/terminal.css";
 import { Achievements } from "../achievements.js";
 import { BaseApp } from "../core/BaseApp.js";
 import { BusEvents } from "../core/EventBus.js";
 import { PersistenceTypes } from "../runtime/AppSchema.js";
+import { StorageKeys } from "../StorageKeys.js";
 import { os } from "../os/index.js";
 
 export class TerminalApp extends BaseApp {
@@ -11,7 +13,8 @@ export class TerminalApp extends BaseApp {
     this.currentPath = ["ys", "users", this.sessionKey];
     this.history = [];
     this.historyIndex = -1;
-    this.username = this.sessionKey;
+    this.displayName = os.storage.get(StorageKeys.username) || this.sessionKey;
+    this.username = this.displayName;
     this.hostname = "yuki-os";
     this._setupSessionListener();
     this.printQueue = Promise.resolve();
@@ -35,11 +38,11 @@ export class TerminalApp extends BaseApp {
           title: "Terminal",
           size: ["700px", "500px"],
           icon: "static/icons/terminal.webp",
-          ui: `<div class="window-content" style="background:#000;color:white;font-family:monospace;padding:10px;overflow-y:auto;height:calc(100% - 40px);">
-        <div id="terminal-output" style="white-space:pre;"></div>
-        <div id="terminal-input-line" style="display:flex;">
+          ui: `<div class="window-content terminal-content">
+        <div class="terminal-output" id="terminal-output"></div>
+        <div class="terminal-input-line" id="terminal-input-line">
           <span id="terminal-prompt"></span>
-          <input id="terminal-input" style="flex:1;background:transparent;border:none;color:white;font-family:monospace;outline:none;margin-left:5px;">
+          <input class="terminal-input" id="terminal-input" spellcheck="false" autocomplete="off">
         </div>
       </div>`,
           events: {
@@ -64,7 +67,8 @@ export class TerminalApp extends BaseApp {
           history: [],
           historyIndex: -1,
           username: "guest",
-          hostname: "yuki-os"
+          hostname: "yuki-os",
+          displayName: "guest"
         },
         persistence: PersistenceTypes.NONE
       },
@@ -89,11 +93,11 @@ export class TerminalApp extends BaseApp {
 
   open() {
     const content = `
-    <div class="window-content" style="background:#000;color:white;font-family:monospace;padding:10px;overflow-y:auto;height:calc(100% - 40px);">
-      <div id="terminal-output" style="white-space:pre;"></div>
-      <div id="terminal-input-line" style="display:flex;">
+    <div class="window-content terminal-content">
+      <div class="terminal-output" id="terminal-output"></div>
+      <div class="terminal-input-line" id="terminal-input-line">
         <span id="terminal-prompt"></span>
-        <input id="terminal-input" style="flex:1;background:transparent;border:none;color:white;font-family:monospace;outline:none;margin-left:5px;">
+        <input class="terminal-input" id="terminal-input" spellcheck="false" autocomplete="off">
       </div>
     </div>
   `;
@@ -119,7 +123,7 @@ export class TerminalApp extends BaseApp {
     this.terminalInput.style.userSelect = "text";
 
     this.updatePrompt();
-    this.print("Welcome to Reeyuki's terminal");
+    this.print(`Welcome to Yuki OS terminal, ${this.displayName}!`, "#00ff00");
     this.print("Type 'help' for available commands\n");
     this.setupEventHandlers();
     this.terminalInput.focus();
@@ -128,7 +132,8 @@ export class TerminalApp extends BaseApp {
   _setupSessionListener() {
     os.events.on("session:initialized", (session) => {
       this.sessionKey = session.key;
-      this.username = session.key;
+      this.displayName = session.name || os.storage.get(StorageKeys.username) || session.key;
+      this.username = this.displayName;
       this.currentPath = ["ys", "users", session.key];
       this.updatePrompt();
     });
@@ -154,9 +159,10 @@ export class TerminalApp extends BaseApp {
 
     if (isCommand) {
       const prompt = document.createElement("span");
-      prompt.textContent = promptText || this.terminalPrompt.textContent;
-      prompt.style.color = "white";
+      prompt.innerHTML = promptText || this._promptHtml();
+      line.className = "cmd-line";
       line.appendChild(prompt);
+      span.className = "cmd-text";
       line.appendChild(span);
     } else {
       if (color) span.style.color = color;
@@ -212,7 +218,7 @@ export class TerminalApp extends BaseApp {
         const selection = window.getSelection();
         if (selection && selection.toString().length > 0) return;
         e.preventDefault();
-        this.enqueuePrint("^C", "white", true, this.terminalPrompt.textContent);
+        this.enqueuePrint("^C", null, true, this._promptHtml());
         this.terminalInput.value = "";
       } else if (e.ctrlKey && e.key === "d") {
         const selection = window.getSelection();
@@ -326,7 +332,7 @@ export class TerminalApp extends BaseApp {
   }
   async executeCommand(commandStr) {
     os.events.emit(BusEvents.TERMINAL_CMD_EXECUTED, { command: commandStr });
-    await this.enqueuePrint(commandStr, null, true, this.terminalPrompt.textContent);
+    await this.enqueuePrint(commandStr, null, true, this._promptHtml());
     os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { key: Achievements.DeveloperMode });
     const pipeline = this.parseCommand(commandStr);
     await this.executePipeline(pipeline);
@@ -384,10 +390,15 @@ export class TerminalApp extends BaseApp {
     }
   }
 
+  _promptHtml() {
+    const raw = this.currentPath.length ? "/" + this.currentPath.join("/") : "/";
+    const path = raw.replace(this.sessionKey, this.displayName);
+    return `<span class="prompt-user">${this.displayName}</span><span class="prompt-at">@</span><span class="prompt-host">${this.hostname}</span><span class="prompt-sep">:</span><span class="prompt-path">${path}</span><span class="prompt-dollar">$</span>`;
+  }
+
   updatePrompt() {
     if (!this.terminalPrompt) return;
-    const path = this.currentPath.length ? "/" + this.currentPath.join("/") : "/";
-    this.terminalPrompt.textContent = `${this.username}@${this.hostname}:${path}$ `;
+    this.terminalPrompt.innerHTML = this._promptHtml();
   }
 
   registerCommand(name, handler) {
@@ -405,7 +416,7 @@ export class TerminalApp extends BaseApp {
     this.registerCommand("rm", (args, flags) => this.cmdRm(args, flags));
     this.registerCommand("cat", (args) => this.cmdCat(args));
     this.registerCommand("echo", (args) => this.print(args.join(" ")));
-    this.registerCommand("whoami", () => this.print(this.username));
+    this.registerCommand("whoami", () => this.print(this.displayName));
     this.registerCommand("hostname", () => this.print(this.hostname));
     this.registerCommand("date", () => this.print(new Date().toString()));
     this.registerCommand("history", () => this.history.forEach((cmd, i) => this.print(`  ${i + 1}  ${cmd}`)));
@@ -419,6 +430,7 @@ export class TerminalApp extends BaseApp {
     this.registerCommand("ps", () => this.cmdPs());
     this.registerCommand("grep", (args) => this.cmdGrep(args));
     this.registerCommand("wc", (args) => this.cmdWc(args));
+    this.registerCommand("du", (args, flags) => this.cmdDu(args, flags));
   }
 
   cmdClear() {
@@ -473,7 +485,7 @@ export class TerminalApp extends BaseApp {
 
   async cmdCd(args) {
     if (!args.length || args[0] === "~") {
-      this.currentPath = ["home", this.username];
+      this.currentPath = ["home", this.displayName];
       return;
     }
     try {
@@ -502,13 +514,16 @@ export class TerminalApp extends BaseApp {
     if (!args.length) return this.print("touch: missing file operand");
     for (const file of args) {
       try {
-        const isFile = await this.fs.isFile(this.currentPath, file);
-        if (!isFile) {
-          await this.print(`touch: ${file}: Is a directory`);
-          continue;
+        const exists = await this.fs.exists(this.currentPath, file);
+        if (exists) {
+          const isFile = await this.fs.isFile(this.currentPath, file);
+          if (!isFile) {
+            await this.print(`touch: ${file}: Is a directory`);
+            continue;
+          }
         }
         await os.fs.write(this.pathToString(this.currentPath) + "/" + file, "");
-        await this.print(`Created file: ${file}`);
+        if (!exists) await this.print(`Created file: ${file}`);
       } catch (e) {
         await this.print(`touch: ${file}: ${e.message}`);
       }
@@ -592,6 +607,67 @@ export class TerminalApp extends BaseApp {
     const chars = input.length;
 
     this.print(`  ${lines.length}  ${words.length}  ${chars}`);
+  }
+
+  async cmdDu(args = [], flags = []) {
+    const summary = flags.some((f) => f.includes("s"));
+    const humanReadable = flags.some((f) => f.includes("h"));
+
+    const fmt = (size) => {
+      if (!humanReadable) return String(size);
+      const units = ["B", "K", "M", "G"];
+      let i = 0;
+      let s = size;
+      while (s >= 1024 && i < units.length - 1) {
+        s /= 1024;
+        i++;
+      }
+      return i === 0 ? `${s}B` : s % 1 > 0.1 ? `${s.toFixed(1)}${units[i]}` : `${Math.round(s)}${units[i]}`;
+    };
+
+    const calcSize = async (path) => {
+      let total = 0;
+      try {
+        const items = await os.fs.readdir(this.pathToString(path));
+        for (const [name, meta] of Object.entries(items)) {
+          if (meta.type === "file") {
+            total += meta.size || 0;
+          } else {
+            total += await calcSize([...path, name]);
+          }
+        }
+      } catch {}
+      return total;
+    };
+
+    const readItems = async (path) => {
+      try {
+        return Object.entries(await os.fs.readdir(this.pathToString(path)));
+      } catch {
+        return [];
+      }
+    };
+
+    const targets = args.length ? args.map((a) => this.fs.resolvePath(a, this.currentPath)) : [this.currentPath];
+
+    for (const target of targets) {
+      const displayPath = this.pathToString(target).replace(this.sessionKey, this.displayName);
+      if (summary) {
+        const size = await calcSize(target);
+        await this.print(`${fmt(size).padStart(8)} ${displayPath}`);
+      } else {
+        const items = await readItems(target);
+        for (const [name, meta] of items) {
+          const itemPath = [...target, name];
+          const itemSize = meta.type === "file" ? meta.size || 0 : await calcSize(itemPath);
+          await this.print(`${fmt(itemSize).padStart(8)} ${name}`);
+        }
+        if (targets.length <= 1) {
+          const total = await calcSize(target);
+          await this.print(`${fmt(total).padStart(8)} total`);
+        }
+      }
+    }
   }
 
   async cmdTree(path = null, prefix = "") {
@@ -694,7 +770,7 @@ export class TerminalApp extends BaseApp {
     const lines = [
       "",
       "",
-      "                     " + this.username + "@" + this.hostname,
+      "                     " + this.displayName + "@" + this.hostname,
       `        /\\           OS     ${osText}`,
       `       /  \\          KERNEL   ${engine}wu`,
       `      /\\   \\        CPU Cores: ${coresText}`,
@@ -739,7 +815,8 @@ export class TerminalApp extends BaseApp {
       ["hostname", "Display hostname"],
       ["date", "Display current date and time"],
       ["history", "Show command history"],
-      ["tree", "Display directory tree"]
+      ["tree", "Display directory tree"],
+      ["du", "Estimate file/directory sizes"]
     ];
     await this.print("Available commands:");
     for (const [cmd, desc] of cmds) {

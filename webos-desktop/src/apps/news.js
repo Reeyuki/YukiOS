@@ -12,6 +12,11 @@ const EXISTING_NEWS_UPDATES = [
     date: "June 17, 2026",
     sections: [
       {
+        icon: "fa-terminal",
+        title: "Terminal",
+        items: [["fa-terminal", "Improved terminal color and commands", "Improved terminal color and commands"]]
+      },
+      {
         icon: "fa-star",
         title: "Terraria",
         items: [["fa-star", "Fixed Terraria", "Fixed Terraria"]]
