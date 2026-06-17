@@ -41,7 +41,7 @@ const SYSTEM_CAPABILITIES = [
   },
   {
     tag: "APPS",
-    title: "50+ Built-in Apps",
+    title: "75+ Built-in Apps",
     desc: "Terminal, browser, editors, paint, calculator, office viewer, and more."
   },
   {

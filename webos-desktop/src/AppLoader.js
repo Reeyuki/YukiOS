@@ -29,12 +29,38 @@ import { RhythmsApp } from "./apps/rhythms.js";
 import { ScramjetApp } from "./apps/scramjet.js";
 import { DiscordApp } from "./apps/discordApp.js";
 import { YoutubeApp } from "./apps/youtube.js";
-import { SpotifyApp } from "./apps/spotifyApp.js";
-import { SlackApp } from "./apps/slackApp.js";
-import { GmailApp } from "./apps/gmailApp.js";
-import { OutlookApp } from "./apps/outlookApp.js";
-import { ChatgptApp } from "./apps/chatgptApp.js";
-import { DeepseekApp } from "./apps/deepseekApp.js";
+import {
+  ChatgptApp,
+  SpotifyApp,
+  SlackApp,
+  GmailApp,
+  OutlookApp,
+  DeepseekApp,
+  TelegramApp,
+  WhatsappApp,
+  TeamsApp,
+  ZoomApp,
+  NotionApp,
+  FigmaApp,
+  TwitterApp,
+  RedditApp,
+  InstagramApp,
+  LinkedinApp,
+  PinterestApp,
+  GoogleDocsApp,
+  TrelloApp,
+  CanvaApp,
+  AsanaApp,
+  GithubApp,
+  GitlabApp,
+  CodepenApp,
+  ReplitApp,
+  TwitchApp,
+  SoundcloudApp,
+  DeezerApp,
+  ProtonmailApp,
+  YahooMailApp
+} from "./apps/webApps.js";
 import { TorrentClientApp } from "./apps/torrentClient.js";
 
 const APP_DEFINITIONS = [
@@ -72,12 +98,36 @@ const APP_DEFINITIONS = [
   { serviceKey: "scramjetApp", AppClass: ScramjetApp, enhanced: true },
   { serviceKey: "discordApp", AppClass: DiscordApp, enhanced: true },
   { serviceKey: "youtubeApp", AppClass: YoutubeApp, enhanced: true },
+  { serviceKey: "chatgptApp", AppClass: ChatgptApp, enhanced: true },
   { serviceKey: "spotifyApp", AppClass: SpotifyApp, enhanced: true },
   { serviceKey: "slackApp", AppClass: SlackApp, enhanced: true },
   { serviceKey: "gmailApp", AppClass: GmailApp, enhanced: true },
   { serviceKey: "outlookApp", AppClass: OutlookApp, enhanced: true },
-  { serviceKey: "chatgptApp", AppClass: ChatgptApp, enhanced: true },
   { serviceKey: "deepseekApp", AppClass: DeepseekApp, enhanced: true },
+  { serviceKey: "telegramApp", AppClass: TelegramApp, enhanced: true },
+  { serviceKey: "whatsappApp", AppClass: WhatsappApp, enhanced: true },
+  { serviceKey: "teamsApp", AppClass: TeamsApp, enhanced: true },
+  { serviceKey: "zoomApp", AppClass: ZoomApp, enhanced: true },
+  { serviceKey: "notionApp", AppClass: NotionApp, enhanced: true },
+  { serviceKey: "figmaApp", AppClass: FigmaApp, enhanced: true },
+  { serviceKey: "twitterApp", AppClass: TwitterApp, enhanced: true },
+  { serviceKey: "redditApp", AppClass: RedditApp, enhanced: true },
+  { serviceKey: "instagramApp", AppClass: InstagramApp, enhanced: true },
+  { serviceKey: "linkedinApp", AppClass: LinkedinApp, enhanced: true },
+  { serviceKey: "pinterestApp", AppClass: PinterestApp, enhanced: true },
+  { serviceKey: "googleDocsApp", AppClass: GoogleDocsApp, enhanced: true },
+  { serviceKey: "trelloApp", AppClass: TrelloApp, enhanced: true },
+  { serviceKey: "canvaApp", AppClass: CanvaApp, enhanced: true },
+  { serviceKey: "asanaApp", AppClass: AsanaApp, enhanced: true },
+  { serviceKey: "githubApp", AppClass: GithubApp, enhanced: true },
+  { serviceKey: "gitlabApp", AppClass: GitlabApp, enhanced: true },
+  { serviceKey: "codepenApp", AppClass: CodepenApp, enhanced: true },
+  { serviceKey: "replitApp", AppClass: ReplitApp, enhanced: true },
+  { serviceKey: "twitchApp", AppClass: TwitchApp, enhanced: true },
+  { serviceKey: "soundcloudApp", AppClass: SoundcloudApp, enhanced: true },
+  { serviceKey: "deezerApp", AppClass: DeezerApp, enhanced: true },
+  { serviceKey: "protonmailApp", AppClass: ProtonmailApp, enhanced: true },
+  { serviceKey: "yahooMailApp", AppClass: YahooMailApp, enhanced: true },
   { serviceKey: "emojiSelectorApp", AppClass: EmojiSelectorApp, enhanced: true },
   { serviceKey: "systemAppsApp", AppClass: SystemAppsApp, enhanced: false },
   { serviceKey: "rhythmsApp", AppClass: RhythmsApp, enhanced: true },

@@ -21,7 +21,7 @@ const capabilities = [
   },
   {
     tag: "APPS",
-    title: "50+ Built-in Apps",
+    title: "75+ Built-in Apps",
     desc: "Terminal, browser, editors (Notepad, Markdown, Monaco), paint, calculator, office viewer, and more."
   },
   {
