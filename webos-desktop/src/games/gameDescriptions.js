@@ -351,8 +351,6 @@ export const descriptionMap = {
     "Angry Birds Halloween, also known as Angry Birds Seasons: Trick or Treat, is a 2010 spooky DLC for Rovio's franchise, featuring jack-o'-lanterns and Halloween-themed pig fortresses.",
   angryBirdsEpic:
     "Angry Birds Epic is a 2014 turn-based RPG by Rovio and Chimera Entertainment. Players assemble parties of birds with classes and equipment to battle across a fantasy version of Piggy Island.",
-  angryBirds2:
-    "Angry Birds 2 is a 2015 sequel by Rovio Entertainment. The classic slingshot puzzle gameplay returns with enhanced graphics, new bird abilities, multi-stage levels, and competitive multiplayer modes.",
   badPiggies:
     "Bad Piggies is a 2012 physics-based construction game by Rovio. Players build wacky vehicles for the green pigs to navigate obstacle courses and steal eggs from the Angry Birds.",
   holeio:

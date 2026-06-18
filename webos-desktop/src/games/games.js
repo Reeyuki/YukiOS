@@ -122,7 +122,6 @@ const GAMES_APP_EXCLUDED = new Set(["TMNP", "vscode", "paint", "photopea", "live
 
 export const HIGHLIGHTED_GAMES = new Set([
   "tabs",
-  "angryBirds2",
   "lobotomyCorporation",
   "slimeRancher",
   "plagueIncEvolved",
