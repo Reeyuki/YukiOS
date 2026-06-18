@@ -1,5 +1,4 @@
 import "../styles/model3d.css";
-import { BaseApp } from "../core/BaseApp.js";
 import { ClippyAnimation, speak } from "../ai/clippy.js";
 import { unzipSync } from "fflate";
 import { Achievements } from "../achievements.js";
@@ -7,9 +6,9 @@ import { BusEvents } from "../core/EventBus.js";
 import { WindowHelper } from "../utils/WindowHelper.js";
 import { resolveGhUrl } from "../shared/assetResolver.js";
 import { getLibraryUrl } from "../shared/cdnConfig.js";
-import { os } from "../os/index.js";
 import { $, $$, bindEvent, toggleClass, addClass, removeClass, setText, setHTML } from "../shared/domUtils.js";
 
+import { BaseApp, os } from "../framework.js";
 const SAMPLE_MODELS = [
   {
     name: "Stanford Bunny",

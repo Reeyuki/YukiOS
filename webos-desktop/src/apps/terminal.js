@@ -1,11 +1,8 @@
 import "../styles/terminal.css";
 import { Achievements } from "../achievements.js";
-import { BaseApp } from "../core/BaseApp.js";
 import { BusEvents } from "../core/EventBus.js";
-import { PersistenceTypes } from "../runtime/AppSchema.js";
-import { StorageKeys } from "../StorageKeys.js";
-import { os } from "../os/index.js";
 
+import { BaseApp, PersistenceTypes, StorageKeys, os } from "../framework.js";
 export class TerminalApp extends BaseApp {
   constructor(services) {
     super(services);

@@ -1,12 +1,11 @@
-import { StorageKeys } from "../settings/settings.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { BusEvents } from "../core/EventBus.js";
 import { WindowRecord } from "../core/WindowRecord.js";
 import { audioMixer } from "../audioMixer.js";
 import { showStartStyleMenu } from "../shared/contextMenu.js";
 import { animateWindowOpen } from "./AnimationSystem.js";
-import { os } from "../os/index.js";
 
+import { StorageKeys, os } from "../framework.js";
 export class TaskbarSystem {
   constructor(manager) {
     this.manager = manager;

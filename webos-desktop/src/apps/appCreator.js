@@ -1,15 +1,13 @@
 import "../styles/appCreator.css";
-import { BaseApp } from "../core/BaseApp.js";
 import { isImageFile } from "../fileDisplay.js";
 import { refreshIcons } from "../shared/contextMenu.js";
 import { PROXIES, clampProxyIndex, buildProxyUrl, fetchHtmlThroughProxy } from "../proxies.js";
 import { AppSource } from "../AppSource.js";
 import { PREDEFINED_AVATARS } from "./accountManager.js";
-import { os } from "../os/index.js";
 import { $, $$, bindEvent, setText, setHTML, toggleClass } from "../shared/domUtils.js";
 import { createScramjetWebApp } from "../core/ScramjetWebAppFactory.js";
-import { StorageKeys } from "../StorageKeys.js";
 
+import { BaseApp, StorageKeys, os } from "../framework.js";
 const AC = {
   WIN_ID: "app-creator-win",
   FS_FOLDER: ["Apps"],

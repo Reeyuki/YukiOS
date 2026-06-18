@@ -1,8 +1,6 @@
-import { BaseApp } from "../core/BaseApp.js";
 import { openFileConverter } from "../utils/fileConverter.js";
-import { PersistenceTypes } from "../runtime/AppSchema.js";
-import { os } from "../os/index.js";
 
+import { BaseApp, PersistenceTypes, os } from "../framework.js";
 export class YukiConvertApp extends BaseApp {
   constructor(services) {
     super(services);

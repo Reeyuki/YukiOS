@@ -2,9 +2,8 @@ import { CDN_CONFIG } from "../shared/cdnConfig.js";
 import { descriptionMap } from "./gameDescriptions.js";
 import { shouldEnableAds } from "../ads.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
-import { StorageKeys } from "../settings/settings.js";
-import { os } from "../os/index.js";
 
+import { StorageKeys, os } from "../framework.js";
 export function getCdnBase() {
   return CDN_CONFIG.repos.main.base;
 }

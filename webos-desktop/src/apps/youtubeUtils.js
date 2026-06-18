@@ -1,8 +1,4 @@
-import { BaseApp } from "../core/BaseApp.js";
-import { StorageKeys } from "../settings/settings.js";
-import { PersistenceTypes } from "../runtime/AppSchema.js";
-import { os } from "../os/index.js";
-
+import { BaseApp, PersistenceTypes, StorageKeys, os } from "../framework.js";
 function clampInt(n, min, max) {
   n = Number.parseInt(String(n), 10);
   if (!Number.isFinite(n)) return min;

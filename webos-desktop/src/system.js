@@ -1,15 +1,14 @@
 import { detectUserLocation, getCached, setCache } from "./apps/weather.js";
 import { getWeatherIcon } from "./shared/weatherCodes.js";
-import { StorageKeys } from "./settings/settings.js";
 import { DEFAULT_WALLPAPER_FILES, WALLPAPER_STATIC_DIR, STATIC_FALLBACK_WALLPAPERS } from "./wallpaperConfig.js";
 import { createCalendarPopup, setCurrentCalendarMonth } from "./apps/calendar.js";
 import { resolveWallpaperUrl } from "./shared/assetResolver.js";
 import { BusEvents } from "./core/EventBus.js";
-import { os } from "./os/index.js";
 import { getVantaPresetById } from "./vantaPresets.js";
 import { videos } from "./wallpaperList.js";
 import { vantaPresets } from "./vantaPresets.js";
 
+import { StorageKeys, os } from "./framework.js";
 function isBlob(obj) {
   if (!obj) return false;
   return (

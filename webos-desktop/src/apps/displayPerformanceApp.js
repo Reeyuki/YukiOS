@@ -1,8 +1,6 @@
-import { BaseApp } from "../core/BaseApp.js";
-import { StorageKeys } from "../StorageKeys.js";
 import { turboManager } from "../shared/turboManager.js";
-import { os } from "../os/index.js";
 
+import { BaseApp, StorageKeys, os } from "../framework.js";
 const BRIGHTNESS_PRESETS = {
   default: { brightness: 100, contrast: 1, gamma: 1, temperature: 50 },
   reading: { brightness: 90, contrast: 1.1, gamma: 1.1, temperature: 35 },

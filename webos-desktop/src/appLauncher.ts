@@ -7,6 +7,7 @@ import { createAppActions } from "./AppActions.js";
 import { initializeAppGrid, tryGetIcon } from "./desktopui/startMenu.js";
 import { IFRAME_ATTRS } from "./shared/iframeAttrs.js";
 import { getLibraryUrl } from "./shared/cdnConfig.js";
+import { StorageKeys, os } from "./framework.js";
 import {
   fetchHtmlAsBlobUrl,
   resolveUrl,
@@ -19,16 +20,30 @@ import {
 import { yukiITDevToolsBridge, YUKI_DEV_TOOLS_URL } from "./yukiITDevToolsBridge.js";
 import { ClippyAnimation, initClippy, speak as clippySpeak } from "./ai/clippy.js";
 import { initAnalytics, getAnalyticsBase, sendLaunchAnalytics, recordUsage } from "./analytics.js";
-import { StorageKeys } from "./settings/settings.js";
 import { getNewsContentSignature, updateNewsBadge } from "./apps/news.js";
 import { SteamSettings } from "./games/steam.js";
-import { os } from "./os/index.js";
 import { PROXIES, clampProxyIndex, buildProxyUrl, fetchHtmlThroughProxy } from "./proxies.js";
-import { AppRuntime } from "./runtime/AppRuntime.js";
+import { DeclarativeApp } from "./runtime/DeclarativeApp.js";
 const STATICALLY_BASE = resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main");
 
 export class AppLauncher {
-  constructor(windowManager, fileSystemManager, services = {}) {
+  wm: any;
+  windowHelper: WindowHelper;
+  fs: any;
+  _services: Record<string, any>;
+  taskManager: any;
+  adsManager: any;
+  brightnessApp: any;
+  TRANSPARENCY_ALLOWED_APP_IDS: Set<string>;
+  clippyPromise: Promise<any>;
+  _appRegistry: Map<string, any>;
+  BIC: string;
+  appMap: Record<string, any>;
+  _launchedAppIds: Set<string>;
+  _appSessions: Map<string, { appId: string; startTime: number }>;
+  clippyMap: Record<string, any>;
+
+  constructor(windowManager: any, fileSystemManager: any, services: Record<string, any> = {}) {
     this.wm = windowManager;
     this.windowHelper = new WindowHelper(this.wm);
     this.fs = fileSystemManager;
@@ -47,8 +62,8 @@ export class AppLauncher {
     initAnalytics();
 
     const settings = SteamSettings.load();
-    if (settings.runOnStartup && !window._steamStartupHandled) {
-      window._steamStartupHandled = true;
+    if (settings.runOnStartup && !(window as any)._steamStartupHandled) {
+      (window as any)._steamStartupHandled = true;
       setTimeout(() => {
         this.launch("steamApp");
         if (settings.startMinimized) {
@@ -63,13 +78,7 @@ export class AppLauncher {
       }, 1000);
     }
 
-    this.appRuntime = new AppRuntime({
-      wm: this.wm,
-      fs: this.fs,
-      bus: null,
-      notifications: null,
-      WindowHelper: WindowHelper
-    });
+    this._appRegistry = new Map();
 
     this._registerAppsFromMap();
 
@@ -86,8 +95,8 @@ export class AppLauncher {
 
     this.clippyMap = Object.fromEntries(
       Object.entries(SYSTEM_APPS)
-        .filter(([, v]) => v.clippy)
-        .map(([k, v]) => [k, v.clippy])
+        .filter(([, v]: [string, any]) => v.clippy)
+        .map(([k, v]: [string, any]) => [k, v.clippy])
     );
 
     this.clippyMap["vscode"] = { message: "Ready to write some code!", animation: ClippyAnimation.GetWizardy };
@@ -96,13 +105,6 @@ export class AppLauncher {
     this._appSessions = new Map();
     this._initSteamTracking();
     initializeAppGrid(this);
-
-    //if (!localStorage.getItem(StorageKeys.aboutLaunchKey)) {
-    //  setTimeout(() => {
-    //    this.aboutApp.open();
-    //    localStorage.setItem(StorageKeys.aboutLaunchKey, "true");
-    //  }, 300);
-    //}
 
     const currentNewsSig = getNewsContentSignature();
     const savedNewsSig = os.storage.get(StorageKeys.newsReadSignatureKey);
@@ -125,22 +127,23 @@ export class AppLauncher {
 
     this._ensureIframeNavigateHandler();
   }
-  setEmulatorApp(emulatorApp) {
+
+  setEmulatorApp(emulatorApp: any): void {
     this.emulatorApp = emulatorApp;
   }
 
-  _registerAppsFromMap() {
+  _registerAppsFromMap(): void {
     for (const [appId, metadata] of Object.entries(SYSTEM_APPS)) {
-      const serviceKey = metadata.serviceKey || appId;
-      const instance = this._services[serviceKey] || this[appId] || this[appId + "App"];
+      const serviceKey = (metadata as any).serviceKey || appId;
+      const instance = this._services[serviceKey] || (this as any)[appId] || (this as any)[appId + "App"];
       if (instance) {
-        this.appRuntime.register(appId, instance);
+        this._appRegistry.set(appId, instance);
       }
     }
   }
 
-  async _tryLaunchDeclarative(appId, opts) {
-    const appInstance = this.appRuntime.get(appId);
+  async _tryLaunchDeclarative(appId: string, opts?: any): Promise<any> {
+    const appInstance = this._appRegistry.get(appId);
     if (!appInstance) return null;
 
     const services = appInstance._services;
@@ -162,7 +165,13 @@ export class AppLauncher {
           if (schema.onMount) {
             if (typeof schema.onMount === "string" && typeof appInstance[schema.onMount] === "function") {
               if (!schema.actions[schema.onMount]) {
-                schema.actions[schema.onMount] = (payload, event, element, state, actionExecutor) => {
+                schema.actions[schema.onMount] = (
+                  payload: any,
+                  event: any,
+                  element: any,
+                  state: any,
+                  actionExecutor: any
+                ) => {
                   return appInstance[schema.onMount](payload, event, element, state, actionExecutor);
                 };
               }
@@ -172,13 +181,20 @@ export class AppLauncher {
             }
           }
           if (!schema.onClose && typeof appInstance.onClose === "function") {
-            schema.onClose = (winId, state) => {
+            schema.onClose = (winId: string, state: any) => {
               return appInstance.onClose(winId, state);
             };
           }
           schema.actions._appInstance = appInstance;
-          this.appRuntime.register(schema.id, schema);
-          return this.appRuntime.launch(schema.id, opts);
+          this._appRegistry.set(schema.id, schema);
+          const declarativeApp = new DeclarativeApp(schema, {
+            wm: this.wm,
+            fs: this.fs,
+            bus: null,
+            notifications: null,
+            WindowHelper: WindowHelper
+          });
+          return declarativeApp.open(opts);
         }
       } catch (e) {
         console.warn(`Failed to use declarative schema for ${appId}, falling back to imperative`, e);
@@ -188,22 +204,20 @@ export class AppLauncher {
     return null;
   }
 
-  async speak(message, animation) {
+  async speak(message: string, animation?: any): Promise<void> {
     await clippySpeak(message, animation);
   }
 
-  _ensureIframeNavigateHandler() {
-    if (this._iframeNavigateHandlerInstalled) return;
-    this._iframeNavigateHandlerInstalled = true;
+  _ensureIframeNavigateHandler(): void {
+    if ((this as any)._iframeNavigateHandlerInstalled) return;
+    (this as any)._iframeNavigateHandlerInstalled = true;
 
-    const looksLikeHtml = (url) => typeof url === "string" && /\.html?([?#].*)?$/i.test(url);
-
-    window.addEventListener("message", async (event) => {
+    window.addEventListener("message", async (event: MessageEvent) => {
       const data = event?.data;
       if (!data || data.__yukios !== "navigate" || typeof data.url !== "string") return;
 
-      let sourceIframe = null;
-      for (const iframe of document.getElementById("desktop").querySelectorAll("iframe")) {
+      let sourceIframe: HTMLIFrameElement | null = null;
+      for (const iframe of document.getElementById("desktop")!.querySelectorAll("iframe")) {
         if (iframe.contentWindow === event.source) {
           sourceIframe = iframe;
           break;
@@ -231,9 +245,12 @@ export class AppLauncher {
     });
   }
 
-  async launch(app, swf = false, extra = null) {
+  async launch(app: string, swf: boolean = false, extra: any = null): Promise<void> {
     const info = this.appMap[app];
-    if (!info) return console.error(`App ${app} not found.`);
+    if (!info) {
+      console.error(`App ${app} not found.`);
+      return;
+    }
 
     const { trigger: triggerCursorEffect } = await import("./cursorEffect.js");
     triggerCursorEffect(info.icon);
@@ -268,8 +285,6 @@ export class AppLauncher {
       clippySpeak(clippyEntry.message, clippyEntry.animation);
     }
 
-    const urlParams = new URLSearchParams(window.location.search);
-
     const appExtra = { ...(extra || {}), appId: app, appType: info.type };
 
     if (info.type === "system") {
@@ -301,13 +316,18 @@ export class AppLauncher {
       } else if (info.launchType === "instance") {
         const result = await this._tryLaunchDeclarative(app, appExtra);
         if (!result) {
-          this.appRuntime.launch(app, appExtra);
+          const appInstance = this._appRegistry.get(app);
+          if (appInstance && typeof appInstance.open === "function") {
+            appInstance.open(appExtra);
+          } else {
+            console.warn(`No open() method found for app: ${app}`);
+          }
         }
       }
       return;
     }
 
-    const handlers = {
+    const handlers: Record<string, () => Promise<void> | void> = {
       swf: () => this.openIframeApp({ appId: app, type: "swf", source: info.swf, originalName: app, ...appExtra }),
       gba: () => this.openIframeApp({ appId: app, type: "gba", source: info.url, originalName: app, ...appExtra }),
       psp: () => this.openIframeApp({ appId: app, type: "psp", source: info.url, originalName: app, ...appExtra }),
@@ -359,7 +379,7 @@ export class AppLauncher {
     }
   }
 
-  _loadLaunchedApps() {
+  _loadLaunchedApps(): Set<string> {
     try {
       const saved = os.storage.get(StorageKeys.launchedApps);
       if (saved) return new Set(saved);
@@ -367,15 +387,15 @@ export class AppLauncher {
     return new Set();
   }
 
-  _saveLaunchedApps() {
+  _saveLaunchedApps(): void {
     try {
       os.storage.set(StorageKeys.launchedApps, [...this._launchedAppIds]);
     } catch (e) {}
   }
 
-  _initSteamTracking() {
+  _initSteamTracking(): void {
     const oldRemove = this.wm.removeFromTaskbar.bind(this.wm);
-    this.wm.removeFromTaskbar = (winId) => {
+    this.wm.removeFromTaskbar = (winId: string) => {
       const session = this._appSessions.get(winId);
       if (session) {
         const durationMin = Math.round((Date.now() - session.startTime) / 60000);
@@ -386,7 +406,7 @@ export class AppLauncher {
     };
   }
 
-  _updateSteamStats(appId, minutes) {
+  _updateSteamStats(appId: string, minutes: number): void {
     try {
       const now = Date.now();
       const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
@@ -402,12 +422,12 @@ export class AppLauncher {
       const sessions = os.storage.get(StorageKeys.steamSessions) || {};
       if (!sessions[appId]) sessions[appId] = [];
       sessions[appId].push({ ts: now, min: minutes });
-      sessions[appId] = sessions[appId].filter((s) => now - s.ts < ONE_WEEK_MS);
+      sessions[appId] = sessions[appId].filter((s: any) => now - s.ts < ONE_WEEK_MS);
       os.storage.set(StorageKeys.steamSessions, sessions);
     } catch (e) {}
   }
 
-  openRemoteApp(appUrl) {
+  openRemoteApp(appUrl: string): void {
     const isStaticallyGh = isCdnGhUrl(window.location.href);
     if (isStaticallyGh && typeof appUrl === "string" && appUrl.startsWith("/")) {
       appUrl = `${STATICALLY_BASE}${appUrl}`;
@@ -416,7 +436,7 @@ export class AppLauncher {
     window.open(appUrl, "_blank", "noopener,noreferrer");
   }
 
-  async openYukiDevToolsApp(extra = {}) {
+  async openYukiDevToolsApp(extra: Record<string, any> = {}): Promise<void> {
     const appId = "yukiDevTools";
     if (this._bringToFrontIfExists(appId)) return;
 
@@ -436,7 +456,7 @@ export class AppLauncher {
     });
   }
 
-  openHtmlApp(appName, htmlContent, appMeta) {
+  openHtmlApp(appName: string, htmlContent: string, appMeta: any): void {
     if (this._bringToFrontIfExists(appName)) return;
     this.createWindow(
       appName,
@@ -448,12 +468,12 @@ export class AppLauncher {
     );
   }
 
-  async openIframeApp({ appId, type, source, originalName, analyticsBase = null, ...extra }) {
-    this._fetchHtmlAsBlobUrl = fetchHtmlAsBlobUrl;
+  async openIframeApp({ appId, type, source, originalName, analyticsBase = null, ...extra }: any): Promise<void> {
+    (this as any)._fetchHtmlAsBlobUrl = fetchHtmlAsBlobUrl;
 
-    let id;
-    let contentHtml;
-    let externalUrl = null;
+    let id: string;
+    let contentHtml: string | undefined;
+    let externalUrl: string | null = null;
 
     if (type === "swf") {
       id = source.replace(/[^a-zA-Z0-9]/g, "");
@@ -573,7 +593,7 @@ player.load("${swfPath}");
         }
       })();
 
-      let iframeUrl;
+      let iframeUrl: string;
 
       if (type !== "game") {
         contentHtml = `<iframe src="${resolvedSource}" ${IFRAME_ATTRS}></iframe>`;
@@ -634,7 +654,7 @@ player.load("${swfPath}");
         ) {
           try {
             iframeUrl = await fetchHtmlAsBlobUrl(resolvedSource);
-          } catch (err) {
+          } catch (err: any) {
             const message = err?.message ? String(err.message) : "Unknown error";
             const errHtml = `<!doctype html><meta charset="utf-8"><title>Failed to load</title>
 <style>body{font-family:system-ui,Segoe UI,Roboto,Arial;margin:16px}code{background:#f2f2f2;padding:2px 4px;border-radius:4px}</style>
@@ -663,7 +683,7 @@ player.load("${swfPath}");
     this.createIframeWindow(
       id,
       displayTitle,
-      contentHtml,
+      contentHtml!,
       appId,
       {
         type,
@@ -676,21 +696,36 @@ player.load("${swfPath}");
     );
   }
 
-  _bringToFrontIfExists(id) {
+  _bringToFrontIfExists(id: string): boolean {
     const el = document.getElementById(`${id}-win`);
     if (el) os.window.bringToFront(el);
     return !!el;
   }
 
-  createIframeWindow(id, title, contentHtml, appId, appMeta, analyticsBase = null, externalUrl = null) {
+  createIframeWindow(
+    id: string,
+    title: string,
+    contentHtml: string,
+    appId: string,
+    appMeta: any,
+    analyticsBase: any = null,
+    externalUrl: string | null = null
+  ): void {
     this.createWindow(id, title, contentHtml, externalUrl, appId, appMeta);
   }
 
-  isTransparencyBlocked(appId, appMeta) {
+  isTransparencyBlocked(appId: string, appMeta: any): boolean {
     return !(appMeta.type === "system" || this.TRANSPARENCY_ALLOWED_APP_IDS.has(appId));
   }
 
-  createWindow(id, title, contentHtml, externalUrl = null, appId = null, appMeta = {}) {
+  createWindow(
+    id: string,
+    title: string,
+    contentHtml: string,
+    externalUrl: string | null = null,
+    appId: string | null = null,
+    appMeta: Record<string, any> = {}
+  ): void {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has("game") && appId) {
       document.title = sanitizeTitle(title);
@@ -712,7 +747,7 @@ player.load("${swfPath}");
     }
 
     const isGame = this.isTransparencyBlocked(appId, appMeta);
-    const mapEntry = this.appMap[appId];
+    const mapEntry = this.appMap[appId!];
     const icon =
       mapEntry?.iconValue ||
       mapEntry?.icon ||

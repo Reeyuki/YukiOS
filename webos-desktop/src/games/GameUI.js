@@ -2,14 +2,13 @@ import { refreshIcons } from "../shared/contextMenu.js";
 import { SteamDataManager, _desktopUI } from "./games.js";
 import { observeLazyImages } from "./games.js";
 import { WindowHelper } from "../utils/WindowHelper.js";
-import { StorageKeys } from "../settings/settings.js";
 import { buildSteamShell, initDropdowns, initStorePage, getCdnBase, initSettingsPage } from "./steam.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { fetchLiveStats, sendLaunchAnalytics, getAnalyticsBase } from "../analytics.js";
 import { appMap } from "./gamesList.js";
-import { os } from "../os/index.js";
 import { getCurrentUser } from "../desktopui/startMenu.js";
 
+import { StorageKeys, os } from "../framework.js";
 export class GameUI {
   constructor(renderer) {
     this.renderer = renderer;

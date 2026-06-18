@@ -1,13 +1,11 @@
-import { BaseApp } from "../core/BaseApp.js";
 import { AICore } from "./aiAssistant/aiCore.js";
 import { ActionParser } from "./aiAssistant/actionParser.js";
 import { OSBridge } from "./aiAssistant/osBridge.js";
 import { AIMemory } from "./aiAssistant/memory.js";
-import { os } from "../os/index.js";
-import { StorageKeys } from "../StorageKeys.js";
 import { $, $$, bindEvent, setText, setHTML, toggleClass } from "../shared/domUtils.js";
 import "./aiAssistant/aiAssistant.css";
 
+import { BaseApp, StorageKeys, os } from "../framework.js";
 export class AIAssistantApp extends BaseApp {
   constructor(services) {
     super(services);

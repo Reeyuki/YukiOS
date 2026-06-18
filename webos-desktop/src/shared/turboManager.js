@@ -1,6 +1,4 @@
-import { StorageKeys } from "../StorageKeys.js";
-import { os } from "../os/index.js";
-
+import { StorageKeys, os } from "../framework.js";
 class TurboManager {
   constructor() {
     let mode = null;

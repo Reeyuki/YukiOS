@@ -14,38 +14,12 @@ export const ServiceActions = {
       method: "safeWriteFile",
       description: "Write content to file"
     },
-    readdir: {
-      type: ActionTypes.SERVICE,
-      service: "fs",
-      method: "readdir",
-      description: "List directory contents"
-    },
-    mkdir: {
-      type: ActionTypes.SERVICE,
-      service: "fs",
-      method: "mkdir",
-      description: "Create directory"
-    },
-    unlink: {
-      type: ActionTypes.SERVICE,
-      service: "fs",
-      method: "unlink",
-      description: "Delete file"
-    },
-    stat: {
-      type: ActionTypes.SERVICE,
-      service: "fs",
-      method: "stat",
-      description: "Get file metadata"
-    },
-    copy: {
-      type: ActionTypes.SERVICE,
-      service: "fs",
-      method: "copy",
-      description: "Copy file or directory"
-    }
+    readdir: { type: ActionTypes.SERVICE, service: "fs", method: "readdir", description: "List directory contents" },
+    mkdir: { type: ActionTypes.SERVICE, service: "fs", method: "mkdir", description: "Create directory" },
+    unlink: { type: ActionTypes.SERVICE, service: "fs", method: "unlink", description: "Delete file" },
+    stat: { type: ActionTypes.SERVICE, service: "fs", method: "stat", description: "Get file metadata" },
+    copy: { type: ActionTypes.SERVICE, service: "fs", method: "copy", description: "Copy file or directory" }
   },
-
   wm: {
     createWindow: {
       type: ActionTypes.SERVICE,
@@ -53,12 +27,7 @@ export const ServiceActions = {
       method: "createWindow",
       description: "Create a new window"
     },
-    closeWindow: {
-      type: ActionTypes.SERVICE,
-      service: "wm",
-      method: "closeWindow",
-      description: "Close a window"
-    },
+    closeWindow: { type: ActionTypes.SERVICE, service: "wm", method: "closeWindow", description: "Close a window" },
     minimizeWindow: {
       type: ActionTypes.SERVICE,
       service: "wm",
@@ -77,21 +46,10 @@ export const ServiceActions = {
       method: "bringToFront",
       description: "Bring window to front"
     },
-    notify: {
-      type: ActionTypes.SERVICE,
-      service: "wm",
-      method: "notify",
-      description: "Show desktop notification"
-    }
+    notify: { type: ActionTypes.SERVICE, service: "wm", method: "notify", description: "Show desktop notification" }
   },
-
   notifications: {
-    notify: {
-      type: ActionTypes.SERVICE,
-      service: "notifications",
-      method: "notify",
-      description: "Show notification"
-    },
+    notify: { type: ActionTypes.SERVICE, service: "notifications", method: "notify", description: "Show notification" },
     setDND: {
       type: ActionTypes.SERVICE,
       service: "notifications",
@@ -105,51 +63,21 @@ export const ServiceActions = {
       description: "Get notification history"
     }
   },
-
   bus: {
-    emit: {
-      type: ActionTypes.SERVICE,
-      service: "bus",
-      method: "emit",
-      description: "Emit event to event bus"
-    },
-    on: {
-      type: ActionTypes.SERVICE,
-      service: "bus",
-      method: "on",
-      description: "Subscribe to event"
-    },
-    off: {
-      type: ActionTypes.SERVICE,
-      service: "bus",
-      method: "off",
-      description: "Unsubscribe from event"
-    }
+    emit: { type: ActionTypes.SERVICE, service: "bus", method: "emit", description: "Emit event to event bus" },
+    on: { type: ActionTypes.SERVICE, service: "bus", method: "on", description: "Subscribe to event" },
+    off: { type: ActionTypes.SERVICE, service: "bus", method: "off", description: "Unsubscribe from event" }
   }
 };
 
 export function createServiceAction(serviceName, methodName, args = []) {
-  return {
-    type: ActionTypes.SERVICE,
-    service: serviceName,
-    method: methodName,
-    args
-  };
+  return { type: ActionTypes.SERVICE, service: serviceName, method: methodName, args };
 }
 
 export function createStateAction(path, value, options = {}) {
-  return {
-    type: ActionTypes.STATE,
-    path,
-    value,
-    ...options
-  };
+  return { type: ActionTypes.STATE, path, value, ...options };
 }
 
 export function createNavigateAction(url, target = "_self") {
-  return {
-    type: ActionTypes.NAVIGATE,
-    url,
-    target
-  };
+  return { type: ActionTypes.NAVIGATE, url, target };
 }

@@ -1,11 +1,9 @@
 import { Achievements } from "../achievements.js";
-import { BaseApp } from "../core/BaseApp.js";
 import { WindowHelper } from "../utils/WindowHelper.js";
 import { CDN_BASES } from "../shared/assetResolver.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
-import { PersistenceTypes } from "../runtime/AppSchema.js";
-import { os } from "../os/index.js";
 
+import { BaseApp, PersistenceTypes, os } from "../framework.js";
 const IMAGES_DIR = ["VMs"];
 
 export class V86App extends BaseApp {

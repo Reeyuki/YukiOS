@@ -122,7 +122,7 @@ export const StorageKeys = {
   defaultsCreatedPrefix: "yukiOS_defaults_created_",
   wallpaperMigratedPrefix: "yukiOS_wallpaper_migrated_",
   aiAssistantEnabled: "yukiOS_ai_assistant_enabled",
-  clippyStorage: "yukiOS_clippy",
+  clippyStorage: "yukiOS_clippy_storage",
   audioMixerV1: "yukios_audio_mixer_v1",
   customColors: "yukios_custom_colors",
   customThemes: "yukios_custom_themes",

@@ -13,11 +13,13 @@
   step...' Good: 'Choose your nickname and avatar during setup, with a quick final preview!'
 - When adding a new app, add a `description` field to its manifest entry in `src/registry/AppManifest.js`
 - Always use StorageKeys from `src/StorageKeys.js` for localStorage access. Never hardcode localStorage key strings.
+- Always use `src/framework.js` barrel for app-level imports. When writing a new app, import
+  `{ BaseApp, PersistenceTypes, os, StorageKeys, APP_MANIFESTS }` from `"../framework.js"` instead of separate modules.
   Import StorageKeys and use the defined constants. If a new key is needed, add it to StorageKeys.js first.
 - Always use `os.storage` API instead of bare `localStorage`; the storage module handles serialization/deserialization
   automatically.
-- Never use browser native alerts, prompts, or confirms (alert(), prompt(), confirm()). Always use the OS-level dialog API
-  (`os.dialog`) instead. Use `os.dialog.alert(title, message)`, `os.dialog.confirm(title, message)`, or
+- Never use browser native alerts, prompts, or confirms (alert(), prompt(), confirm()). Always use the OS-level dialog
+  API (`os.dialog`) instead. Use `os.dialog.alert(title, message)`, `os.dialog.confirm(title, message)`, or
   `os.dialog.prompt(title, message, defaultValue?)`. For file selection, use `os.dialog.fileOpen()` or
   `os.dialog.fileSave()`.
 - Never use `document.querySelector`, `document.querySelectorAll`, or direct DOM manipulation methods. Always use the
@@ -258,14 +260,14 @@ import { os } from "./os/index.js";
 
 ### Dialog API - `os.dialog`
 
-| Method                                                  | Return                    |
-| ------------------------------------------------------- | ------------------------- |
-| `alert(title, message)`                                 | `Promise<void>`           |
-| `confirm(title, message)`                               | `Promise<boolean>`        |
-| `prompt(title, message, defaultValue?)`                 | `Promise<string \| null>` |
-| `fileOpen(options?)`                                    | `Promise<string \| null>` |
-| `fileSave(options?)`                                    | `Promise<string \| null>` |
-| `openDirectory(options?)`                               | `Promise<string \| null>` |
+| Method                                  | Return                    |
+| --------------------------------------- | ------------------------- |
+| `alert(title, message)`                 | `Promise<void>`           |
+| `confirm(title, message)`               | `Promise<boolean>`        |
+| `prompt(title, message, defaultValue?)` | `Promise<string \| null>` |
+| `fileOpen(options?)`                    | `Promise<string \| null>` |
+| `fileSave(options?)`                    | `Promise<string \| null>` |
+| `openDirectory(options?)`               | `Promise<string \| null>` |
 
 `FileDialogOptions`: `{ defaultFileName?: string; initialPath?: string }`
 
@@ -279,14 +281,14 @@ Always prefer these over reimplementing logic.
 
 ### Dialog API - `os.dialog`
 
-| Method                                                  | Return                    |
-| ------------------------------------------------------- | ------------------------- |
-| `alert(title, message)`                                 | `Promise<void>`           |
-| `confirm(title, message)`                               | `Promise<boolean>`        |
-| `prompt(title, message, defaultValue?)`                 | `Promise<string \| null>` |
-| `fileOpen(options?)`                                    | `Promise<string \| null>` |
-| `fileSave(options?)`                                    | `Promise<string \| null>` |
-| `openDirectory(options?)`                               | `Promise<string \| null>` |
+| Method                                  | Return                    |
+| --------------------------------------- | ------------------------- |
+| `alert(title, message)`                 | `Promise<void>`           |
+| `confirm(title, message)`               | `Promise<boolean>`        |
+| `prompt(title, message, defaultValue?)` | `Promise<string \| null>` |
+| `fileOpen(options?)`                    | `Promise<string \| null>` |
+| `fileSave(options?)`                    | `Promise<string \| null>` |
+| `openDirectory(options?)`               | `Promise<string \| null>` |
 
 `FileDialogOptions`: `{ defaultFileName?: string; initialPath?: string }`
 
@@ -526,8 +528,8 @@ Create `src/apps/myApp.js` with CSS import:
 
 ```javascript
 import "../styles/myApp.css";
-import { BaseApp } from "./core/BaseApp.js";
-import { PersistenceTypes } from "./runtime/AppSchema.js";
+import { BaseApp } from "../core/BaseApp.js";
+import { PersistenceTypes } from "../AppSchema.js";
 
 export class MyApp extends BaseApp {
   constructor(services) {
@@ -705,11 +707,6 @@ getDeclarativeSchema(opts) {
 }
 ```
 
-**Runtime components:** | File | Role | |------|------| | `runtime/StateManager.js` | Manages local app state, optional
-persistence | | `runtime/AppRenderer.js` | Parses window configs, mounts into DOM via WindowHelper | |
-`runtime/EventBinder.js` | Maps element events to actions | | `runtime/ActionExecutor.js` | Dispatches actions, modifies
-state, runs system ops |
-
-**HybridAdapter** (`runtime/HybridAdapter.js`) - `enhanceBaseApp(BaseAppClass)` wraps `open()` to check for a
-declarative schema first; falls back transparently to imperative `open()` if none found. Also translates legacy
-multi-parameter signatures (e.g. `open(title, content, filePath)`) into structured `opts` objects.
+**Runtime components** (in `src/runtime/`): `StateManager.js`, `AppRenderer.js`, `EventBinder.js`, `ActionExecutor.js`,
+`DeclarativeApp.js`, `UIComponents.js`, `ServiceActions.js`, `AppSchema.js` (re-exports `PersistenceTypes` from
+`src/AppSchema.js`).

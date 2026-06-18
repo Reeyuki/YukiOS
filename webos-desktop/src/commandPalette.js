@@ -1,12 +1,11 @@
 import { SystemUtilities } from "./system.js";
-import { StorageKeys } from "./StorageKeys.js";
 import { BusEvents } from "./core/EventBus.js";
 import { openFileWith } from "./fileDisplay.js";
 import { resolveIconUrl } from "./shared/assetResolver.js";
 import { AppSource } from "./AppSource.js";
-import { os } from "./os/index.js";
 import { WALLPAPER_NAME_URL_PAIRS } from "./wallpaperConfig.js";
 
+import { StorageKeys, os } from "./framework.js";
 export class CommandPalette {
   constructor(services) {
     this.services = services;

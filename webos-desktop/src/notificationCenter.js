@@ -1,11 +1,9 @@
 import { isImageFile } from "./utils/utils.js";
-import { StorageKeys } from "./settings/settings.js";
 import { appMap } from "./games/gamesList.js";
 import { audioMixer, SystemAudio } from "./audioMixer.js";
-import { os } from "./os/index.js";
 import { getSetting } from "./shared/settingsUtils.js";
-import { APP_MANIFESTS } from "./registry/AppManifest.js";
 
+import { APP_MANIFESTS, StorageKeys, os } from "./framework.js";
 function escapeHtml(str) {
   if (typeof str !== "string") return "";
   return str

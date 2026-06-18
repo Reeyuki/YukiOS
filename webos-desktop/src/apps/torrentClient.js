@@ -1,11 +1,9 @@
 import "../styles/torrent.css";
-import { BaseApp } from "../core/BaseApp.js";
 import { WindowHelper } from "../utils/WindowHelper.js";
-import { PersistenceTypes } from "../runtime/AppSchema.js";
-import { os } from "../os/index.js";
 import { $, $$, bindEvent } from "../shared/domUtils.js";
 import parseTorrent from "parse-torrent";
 
+import { BaseApp, PersistenceTypes, os } from "../framework.js";
 export class TorrentClientApp extends BaseApp {
   constructor(services) {
     super(services);

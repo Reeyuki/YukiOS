@@ -1,8 +1,7 @@
 import { decodeDataURLContent } from "../fileDisplay.js";
 import { WindowHelper } from "../utils/WindowHelper.js";
-import { BaseApp } from "../core/BaseApp.js";
-import { PersistenceTypes } from "../runtime/AppSchema.js";
 
+import { BaseApp, PersistenceTypes } from "../framework.js";
 export class MarkdownApp extends BaseApp {
   constructor(services) {
     super(services);

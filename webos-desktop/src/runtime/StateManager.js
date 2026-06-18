@@ -1,6 +1,4 @@
-import { PersistenceTypes } from "./AppSchema.js";
-import { os } from "../os/index.js";
-
+import { PersistenceTypes, os } from "../framework.js";
 export class StateManager {
   constructor(appId, initialState = {}, persistence = PersistenceTypes.MEMORY) {
     this.appId = appId;

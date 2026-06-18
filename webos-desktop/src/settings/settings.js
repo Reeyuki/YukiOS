@@ -1,10 +1,8 @@
-import { BaseApp } from "../core/BaseApp.js";
+import { BaseApp, StorageKeys, os } from "../framework.js";
 import { BusEvents } from "../core/EventBus.js";
-import { StorageKeys } from "../StorageKeys.js";
 import { setCdnMirror, initializeMirrors } from "../shared/assetResolver.js";
 import { appMap } from "../games/gamesList.js";
 import { turboManager } from "../shared/turboManager.js";
-import { os } from "../os/index.js";
 
 import { buildSettingsHTML } from "./settingRenderer.js";
 import {

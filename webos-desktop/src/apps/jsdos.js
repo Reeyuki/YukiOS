@@ -1,8 +1,7 @@
 import { Achievements } from "../achievements.js";
 import { zipSync } from "fflate";
-import { BaseApp } from "../core/BaseApp.js";
-import { os } from "../os/index.js";
 
+import { BaseApp, os } from "../framework.js";
 const GAMES_DIR = ["Games"];
 
 export class JsDosApp extends BaseApp {

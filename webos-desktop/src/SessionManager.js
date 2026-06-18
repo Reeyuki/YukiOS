@@ -1,12 +1,11 @@
 import { BusEvents } from "./core/EventBus.js";
 import { PREDEFINED_AVATARS } from "./apps/accountManager.js";
-import { StorageKeys } from "./StorageKeys.js";
 import { SystemUtilities } from "./system.js";
 import { audioMixer, SystemAudio } from "./audioMixer.js";
-import { os } from "./os/index.js";
 import { YUKIOS_VERSION } from "./apps/about.js";
 import { resolveAvatarUrl } from "./shared/avatarResolver.js";
 
+import { StorageKeys, os } from "./framework.js";
 function generateUUID() {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;

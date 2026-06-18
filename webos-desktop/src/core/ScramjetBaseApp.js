@@ -1,8 +1,6 @@
 import { BaseApp } from "./BaseApp.js";
-import { PersistenceTypes } from "../runtime/AppSchema.js";
-import { StorageKeys } from "../StorageKeys.js";
-import { os } from "../os/index.js";
 
+import { PersistenceTypes, StorageKeys, os } from "../framework.js";
 export class ScramjetBaseApp extends BaseApp {
   constructor(services) {
     super(services);
@@ -113,7 +111,9 @@ export class ScramjetBaseApp extends BaseApp {
       location.href.includes("statically") ||
       location.href.includes("staticdelivr")
     ) {
-      alert(
+      const os = await import("../os/index.js").then((m) => m.os);
+      os.dialog.alert(
+        "Launch Error",
         "This app you are launching and other web apps does not work inside this url because of svg/iframe limitations on this domain (" +
           location.hostname +
           ")."

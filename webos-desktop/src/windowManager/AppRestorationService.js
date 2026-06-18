@@ -1,7 +1,6 @@
-import { StorageKeys } from "../settings/settings.js";
-import { os } from "../os/index.js";
 import { SYSTEM_APPS } from "../AppRegistryConfig.js";
 
+import { StorageKeys, os } from "../framework.js";
 export class AppRestorationService {
   constructor(windowManager) {
     this.wm = windowManager;

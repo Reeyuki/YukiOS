@@ -1,9 +1,7 @@
 import "../styles/dataeditor.css";
-import { BaseApp } from "../core/BaseApp.js";
-import { os } from "../os/index.js";
-import { PersistenceTypes } from "../runtime/AppSchema.js";
 import { $, $$, bindEvent, setText, setHTML, toggleClass } from "../shared/domUtils.js";
 
+import { BaseApp, PersistenceTypes, os } from "../framework.js";
 export class DataEditorApp extends BaseApp {
   constructor(services) {
     super(services);

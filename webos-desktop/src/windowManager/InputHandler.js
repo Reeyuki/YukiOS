@@ -1,8 +1,7 @@
 import { toggleStartMenu } from "../desktopui/startMenu.js";
-import { StorageKeys } from "../settings/settings.js";
-import { os } from "../os/index.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 
+import { StorageKeys, os } from "../framework.js";
 export class InputHandler {
   constructor(manager) {
     this.manager = manager;

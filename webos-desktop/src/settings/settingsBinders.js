@@ -1,5 +1,4 @@
-import { StorageKeys } from "../StorageKeys.js";
-import { os } from "../os/index.js";
+import { StorageKeys, os } from "../framework.js";
 import { toggleHideGames, toggleHideSystemApps } from "../desktopui/desktopui.js";
 import { audioMixer, SystemAudio } from "../audioMixer.js";
 import { renderWallpapersPage } from "../wallpapers.js";

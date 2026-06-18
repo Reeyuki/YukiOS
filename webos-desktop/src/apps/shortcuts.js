@@ -1,7 +1,6 @@
 import "../styles/shortcuts.css";
-import { BaseApp } from "../core/BaseApp.js";
-import { PersistenceTypes } from "../runtime/AppSchema.js";
 
+import { BaseApp, PersistenceTypes } from "../framework.js";
 export const SHORTCUTS_DATA = [
   {
     keys: ["Ctrl", "K"],

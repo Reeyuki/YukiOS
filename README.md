@@ -1,8 +1,16 @@
 # Yuki OS - Browser Desktop Environment
 
-## ![Users](https://img.shields.io/badge/Users-50k+-brightgreen)
+<div align="center">
 
-[https://discord.gg/uFuGfseB9Z](https://discord.gg/uFuGfseB9Z)
+[![Stars](https://img.shields.io/github/stars/Reeyuki/yukios?style=for-the-badge&color=purple)](https://github.com/Reeyuki/yukios)
+[![Users](https://img.shields.io/badge/Users-50k+-brightgreen?style=for-the-badge)](https://github.com/Reeyuki/yukios)
+[![License](https://img.shields.io/github/license/Reeyuki/yukios?style=for-the-badge&color=blue)](LICENSE)
+[![Discord](https://img.shields.io/badge/Discord-Join-5865F2?style=for-the-badge&logo=discord)](https://discord.gg/uFuGfseB9Z)
+
+**Try it now:** [yukios.pages.dev](https://yukios.pages.dev) · [yukios.vercel.app](https://yukios.vercel.app) ·
+[yukios.netlify.app](https://yukios.netlify.app)
+
+</div>
 
 > A browser-based desktop environment running in a single web page, combining windowed multitasking, persistent storage,
 > emulators, tools, and a large collection of applications and games.
@@ -14,10 +22,11 @@ session state.
 It supports running Flash content, DOS programs, console emulation, WebAssembly apps, and standard web applications side
 by side.
 
-It's built entirely in vanilla JS (with some libraries, of course!). ![Steam interface](.github/steam.png)
-![Start menu](.github/startmenuv86.png) ![Discord](.github/dc.png) ![Web Apps](.github/webapps.png)
-![Setup](.github/setupsettings.png) ![Music1](.github/audio1.png) ![Music2](.github/audio2.png)
-![Achievements](.github/browserachieve.png) ![Music player](.github/music.png) ![Applications](.github/apps.png)
+It's built entirely in vanilla JS (TypeScript in core modules) with some libraries, of course!.
+![Steam interface](.github/steam.png) ![Start menu](.github/startmenuv86.png) ![Discord](.github/dc.png)
+![Web Apps](.github/webapps.png) ![Setup](.github/setupsettings.png) ![Music1](.github/audio1.png)
+![Music2](.github/audio2.png) ![Achievements](.github/browserachieve.png) ![Music player](.github/music.png)
+![Applications](.github/apps.png)
 
 ---
 
@@ -228,10 +237,10 @@ It's built entirely in vanilla JS (with some libraries, of course!). ![Steam int
 # 🛠 Build & Deployment
 
 ```bash
-npm run dev
-npm run build:dev
-npm run build
-npm run preview
+pnpm run dev
+pnpm run build:dev
+pnpm run build
+pnpm run preview
 ```
 
 Single-file build output is supported for easy deployment.

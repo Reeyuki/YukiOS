@@ -1,7 +1,5 @@
 import { CDN_BASES, resolveIconUrl } from "./shared/assetResolver.js";
 import { audioMixer } from "./audioMixer.js";
-import { StorageKeys } from "./StorageKeys.js";
-import { os } from "./os/index.js";
 import { StorageAdapter } from "./fs/StorageAdapter.js";
 import { MetadataManager } from "./fs/MetadataManager.js";
 import { PathResolver } from "./fs/PathResolver.js";
@@ -9,6 +7,7 @@ import { FileKindDetector, FileKind } from "./fs/FileKindDetector.js";
 import { BlobStorage } from "./fs/BlobStorage.js";
 import { TrashManager } from "./fs/TrashManager.js";
 
+import { StorageKeys, os } from "./framework.js";
 export { FileKind };
 
 import { DEFAULT_WALLPAPER_FILES, WALLPAPER_STATIC_DIR } from "./wallpaperConfig.js";

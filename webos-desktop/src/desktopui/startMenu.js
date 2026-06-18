@@ -1,17 +1,16 @@
 import { appMap } from "../games/gamesList.js";
 import { APP_DESCRIPTIONS, descriptionMap } from "../games/gameDescriptions.js";
 import { camelize } from "../utils/utils.js";
-import { StorageKeys } from "../settings/settings.js";
 import { ClippyAnimation, speak } from "../ai/clippy.js";
 import { isImageFile } from "../utils/utils.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { showDynamicContextMenu, refreshIcons } from "../shared/contextMenu.js";
 import { CDN_CONFIG } from "../shared/cdnConfig.js";
 import { getAppRegistry } from "../appRegistry.js";
-import { os } from "../os/index.js";
 import { SYSTEM_APPS } from "../AppRegistryConfig.js";
 import { resolveAvatarUrl } from "../shared/avatarResolver.js";
 
+import { StorageKeys, os } from "../framework.js";
 function getStartMenuEl() {
   return document.getElementById("start-menu") || document.querySelector(".start-menu");
 }
@@ -896,7 +895,7 @@ function getGridItems() {
     { app: "browserApp", title: "Yuki Browser", icon: "fas fa-globe" },
     { app: "explorerApp", title: "Files", icon: "fas fa-folder" },
     { app: "settingsApp", title: "Settings", icon: "fas fa-cog" },
-    { app: "aiAssistant", title: "Yuki AI Assistant", icon: "fas fa-robot" },
+    { app: "aiAssistantApp", title: "Yuki AI Assistant", icon: "fas fa-robot" },
     { app: "notepadApp", title: "Notepad", icon: "fas fa-edit" },
     { app: "calculatorApp", title: "Calculator", icon: "fas fa-calculator" },
     { app: "shortcutsApp", title: "Shortcuts", icon: "fas fa-keyboard" },

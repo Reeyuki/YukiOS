@@ -6,9 +6,8 @@ import {
 } from "./startMenu.js";
 import { desktop } from "./desktop.js";
 import interact from "interactjs";
-import { StorageKeys } from "../StorageKeys.js";
+import { StorageKeys, os } from "../framework.js";
 import { hideMenu } from "../shared/contextMenu.js";
-import { os } from "../os/index.js";
 import { WindowHelper } from "../utils/WindowHelper.js";
 import { DesktopContextMenuManager } from "../windowManager/ContextMenuManager.js";
 import { IconManager } from "./iconManager.js";

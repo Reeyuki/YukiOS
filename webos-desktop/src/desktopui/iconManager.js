@@ -1,13 +1,12 @@
 import { isImageFile, buildFileIconHTML, openFileWith, readFileAsDataURL, generateThumbnail } from "../fileDisplay.js";
 import { FileKind } from "../fs.js";
-import { StorageKeys } from "../StorageKeys.js";
-import { os } from "../os/index.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { resolveDesktopIcon } from "../shared/iconUtils.js";
 import { BusEvents } from "../core/EventBus.js";
 import { Achievements } from "../achievements.js";
 import interact from "interactjs";
 
+import { StorageKeys, os } from "../framework.js";
 export class IconManager {
   constructor(
     desktop,

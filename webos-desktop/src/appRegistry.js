@@ -1,6 +1,4 @@
-import { StorageKeys } from "./StorageKeys.js";
-import { os } from "./os/index.js";
-
+import { StorageKeys, os } from "./framework.js";
 const APP_REGISTRY_DISABLED_KEY = StorageKeys.appRegistryDisabled;
 const APP_REGISTRY_RENAMED_KEY = StorageKeys.appRegistryRenamed;
 const APP_REGISTRY_UNINSTALLED_KEY = StorageKeys.appRegistryUninstalled;

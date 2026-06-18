@@ -5,11 +5,10 @@ import { GameLauncher } from "./GameLauncher.js";
 import { GameUI } from "./GameUI.js";
 import { resolveGhUrl, resolveIconUrl } from "../shared/assetResolver.js";
 import { CDN_CONFIG } from "../shared/cdnConfig.js";
-import { StorageKeys } from "../settings/settings.js";
 import { getAppRegistry } from "../appRegistry.js";
-import { os } from "../os/index.js";
 import { getCurrentUser } from "../desktopui/startMenu.js";
 
+import { StorageKeys, os } from "../framework.js";
 export function getCdnBase() {
   return CDN_CONFIG.repos.main.base;
 }

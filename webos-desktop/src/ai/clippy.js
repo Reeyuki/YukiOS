@@ -1,7 +1,6 @@
-import { os } from "../os/index.js";
 import { getLibraryUrl } from "../shared/cdnConfig.js";
-import { StorageKeys } from "../StorageKeys.js";
 
+import { StorageKeys, os } from "../framework.js";
 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
 export const ClippyAnimation = Object.freeze({

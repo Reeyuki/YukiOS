@@ -14,7 +14,10 @@
     "build-win": "vite build",
     "preview": "vite preview",
     "format": "pnpm exec prettier . --write --cache",
-    "lint": "eslint . --ext .js,.jsx --fix"
+    "lint": "eslint . --ext .js,.jsx --fix",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
@@ -25,11 +28,13 @@
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^7.3.0",
+    "jsdom": "^29.1.1",
     "prettier": "^3.8.3",
     "typescript": "^6.0.3",
     "vite": "^7.3.3",
     "vite-plugin-node-polyfills": "^0.28.0",
-    "vite-plugin-singlefile": "^2.3.3"
+    "vite-plugin-singlefile": "^2.3.3",
+    "vitest": "^4.1.9"
   },
   "dependencies": {
     "7z-wasm": "^1.2.0",

@@ -1,7 +1,6 @@
-import { os } from "../os/index.js";
 import { showDynamicContextMenu } from "../shared/contextMenu.js";
-import { StorageKeys } from "../StorageKeys.js";
 
+import { StorageKeys, os } from "../framework.js";
 class TrayManager {
   constructor() {
     this._items = new Map();

@@ -1,10 +1,8 @@
 import "../styles/browser.css";
 import { PROXIES, clampProxyIndex, buildProxyUrl } from "../proxies.js";
-import { BaseApp } from "../core/BaseApp.js";
-import { StorageKeys } from "../settings/settings.js";
-import { os } from "../os/index.js";
 import { sanitizeTitle } from "../utils/utils.js";
 
+import { BaseApp, StorageKeys, os } from "../framework.js";
 export class BrowserApp extends BaseApp {
   static refreshIcons(node) {
     if (window.FontAwesome && window.FontAwesome.dom && window.FontAwesome.dom.i2svg) {
@@ -1222,10 +1220,6 @@ body {
       <img class="quick-link-icon" src="https://www.github.com/favicon.ico" onerror="this.style.display='none'" />
       <div class="quick-link-label">GitHub</div>
     </button>
-    <button class="quick-link" data-nav="https://www.reddit.com">
-      <img class="quick-link-icon" src="https://www.reddit.com/favicon.ico" onerror="this.style.display='none'" />
-      <div class="quick-link-label">Reddit</div>
-    </button>
     <button class="quick-link" data-app-launch="scramjet" style="background: rgba(138, 180, 248, 0.3); border-color: #8ab4f8;">
       <div class="quick-link-icon" style="font-size: 24px;">🌐</div>
       <div class="quick-link-label">Scramjet</div>
@@ -1403,10 +1397,6 @@ body {
     <button class="quick-link" data-nav="https://www.github.com">
       <img class="quick-link-icon" src="https://www.github.com/favicon.ico" onerror="this.style.display='none'" />
       <div class="quick-link-label">GitHub</div>
-    </button>
-    <button class="quick-link" data-nav="https://www.reddit.com">
-      <img class="quick-link-icon" src="https://www.reddit.com/favicon.ico" onerror="this.style.display='none'" />
-      <div class="quick-link-label">Reddit</div>
     </button>
   </div>
 </div>

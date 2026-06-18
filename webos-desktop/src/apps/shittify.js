@@ -1,8 +1,7 @@
-import { BaseApp } from "../core/BaseApp.js";
-import { os } from "../os/index.js";
 import { resolveGhUrl, resolveIconUrl } from "../shared/assetResolver.js";
 import { audioMixer } from "../audioMixer.js";
 
+import { BaseApp, os } from "../framework.js";
 const SHITTIFY_ICON = resolveIconUrl("/static/icons/shittify.webp");
 
 const SHITTIFY_CDN_URL = "https://cdn.jsdelivr.net/gh/Reeyuki/shittifylol@master/shittify21.html";

@@ -1,7 +1,6 @@
-import { BaseApp } from "../core/BaseApp.js";
 import { SystemAppRenderer } from "../games/games.js";
-import { os } from "../os/index.js";
 
+import { BaseApp, os } from "../framework.js";
 export class SystemAppsApp extends BaseApp {
   constructor(services) {
     super(services);

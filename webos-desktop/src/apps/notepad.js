@@ -1,10 +1,9 @@
 import "../styles/notepad.css";
 import { ClippyAnimation, speak } from "../ai/clippy.js";
 import { Achievements } from "../achievements.js";
-import { BaseApp } from "../core/BaseApp.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
-import { os } from "../os/index.js";
 
+import { BaseApp, os } from "../framework.js";
 export class NotepadApp extends BaseApp {
   constructor(services) {
     super(services);

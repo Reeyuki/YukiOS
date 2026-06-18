@@ -1,6 +1,4 @@
 import "../styles/monaco.css";
-import { BaseApp } from "../core/BaseApp.js";
-import { os } from "../os/index.js";
 import { WindowHelper } from "../utils/WindowHelper.js";
 import { AppSource } from "../AppSource.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
@@ -11,6 +9,7 @@ import { showConflictDialog } from "../shared/conflictDialog.js";
 import { FileKind } from "../fs.js";
 import { Shell } from "../shared/shell.js";
 
+import { BaseApp, os } from "../framework.js";
 export class MonacoApp extends BaseApp {
   constructor(services) {
     super(services);

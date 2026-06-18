@@ -1,7 +1,6 @@
 import { resolveGhUrl } from "./shared/assetResolver.js";
-import { os } from "./os/index.js";
-import { StorageKeys } from "./StorageKeys.js";
 
+import { StorageKeys, os } from "./framework.js";
 export const SystemAudio = Object.freeze({
   START: "static/audio/start.wav",
   SHUTDOWN: "static/audio/shutdown.wav",

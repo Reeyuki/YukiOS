@@ -1,12 +1,11 @@
-import { BaseApp } from "../core/BaseApp.js";
 import { getAppRegistry } from "../appRegistry.js";
 import { FEATURE_DATA } from "./setupApp.js";
 import { YUKIOS_VERSION } from "./about.js";
 import { appMap as gamesListAppMap } from "../games/gamesList.js";
 import { APP_DESCRIPTIONS, descriptionMap as gameDescriptions } from "../games/gameDescriptions.js";
-import { PersistenceTypes } from "../runtime/AppSchema.js";
 import "../styles/yukiOsGuide.css";
 
+import { BaseApp, PersistenceTypes } from "../framework.js";
 const SYSTEM_INFO = {
   version: YUKIOS_VERSION,
   architecture: "Browser-based Desktop Environment",

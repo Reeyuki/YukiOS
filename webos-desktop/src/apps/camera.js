@@ -1,10 +1,8 @@
 import "../styles/camera.css";
-import { BaseApp } from "../core/BaseApp.js";
-import { PersistenceTypes } from "../runtime/AppSchema.js";
-import { os } from "../os/index.js";
 import { openMediaViewer } from "../fileDisplay.js";
 import { FileKind } from "../fs.js";
 
+import { BaseApp, PersistenceTypes, os } from "../framework.js";
 export class CameraApp extends BaseApp {
   constructor(services) {
     super(services);

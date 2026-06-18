@@ -1,7 +1,6 @@
 import "../styles/calculator.css";
-import { BaseApp } from "../core/BaseApp.js";
-import { PersistenceTypes } from "../runtime/AppSchema.js";
 
+import { BaseApp, PersistenceTypes } from "../framework.js";
 export class CalculatorApp extends BaseApp {
   constructor(services) {
     super(services);

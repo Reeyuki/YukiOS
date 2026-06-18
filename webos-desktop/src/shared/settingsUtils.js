@@ -1,6 +1,4 @@
-import { StorageKeys } from "../StorageKeys.js";
-import { os } from "../os/index.js";
-
+import { StorageKeys, os } from "../framework.js";
 export function getSetting(key, defaultValue) {
   const storageKey = StorageKeys[key];
   if (!storageKey) return defaultValue;

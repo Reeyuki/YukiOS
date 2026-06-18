@@ -1,6 +1,4 @@
-import { StorageKeys } from "../StorageKeys.js";
-import { os } from "../os/index.js";
-
+import { StorageKeys, os } from "../framework.js";
 const BUILTIN_THEMES = [
   { value: "dark", icon: "fas fa-moon", label: "Dark", category: "basic" },
   { value: "light", icon: "fas fa-sun", label: "Light", category: "basic" },

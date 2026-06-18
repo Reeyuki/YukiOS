@@ -130,7 +130,7 @@ export class OSBridge {
       v86: "v86app",
       emulator: "emulatorApp",
       ruffle: "ruffleApp",
-      ai: "aiAssistant"
+      ai: "aiAssistantApp"
     };
     return aliases[normalized] || appId;
   }

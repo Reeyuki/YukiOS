@@ -1,12 +1,9 @@
-import { BaseApp } from "../core/BaseApp.js";
 import { BusEvents } from "../core/EventBus.js";
 import { refreshSteamUI } from "../games/games.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
-import { PersistenceTypes } from "../runtime/AppSchema.js";
-import { os } from "../os/index.js";
-import { StorageKeys } from "../StorageKeys.js";
 import { resolveAvatarUrl } from "../shared/avatarResolver.js";
 
+import { BaseApp, PersistenceTypes, StorageKeys, os } from "../framework.js";
 export const PREDEFINED_AVATARS = [
   resolveIconUrl("static/icons/guest.webp"),
   resolveIconUrl("static/icons/helltaker.jpg"),

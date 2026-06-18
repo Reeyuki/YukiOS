@@ -1,7 +1,6 @@
-import { StorageKeys } from "./StorageKeys.js";
-import { os } from "./os/index.js";
 import { BusEvents } from "./core/EventBusConstants.js";
 
+import { StorageKeys, os } from "./framework.js";
 let container = null;
 let active = false;
 let mouseX = 0;

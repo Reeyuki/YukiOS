@@ -1,7 +1,4 @@
-import { BaseApp } from "../core/BaseApp.js";
-import { StorageKeys } from "../StorageKeys.js";
-import { os } from "../os/index.js";
-
+import { BaseApp, StorageKeys, os } from "../framework.js";
 class ClipboardManagerApp extends BaseApp {
   constructor(services) {
     super(services);

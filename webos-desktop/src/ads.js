@@ -1,7 +1,6 @@
 import { WindowHelper } from "./utils/WindowHelper.js";
-import { StorageKeys } from "./StorageKeys.js";
-import { os } from "./os/index.js";
 
+import { StorageKeys, os } from "./framework.js";
 const AD_STORAGE_KEY = StorageKeys.adStorageState;
 export function shouldEnableAds() {
   const hostname = window.location.hostname;

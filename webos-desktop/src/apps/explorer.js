@@ -1,9 +1,8 @@
 import "../styles/explorer.css";
-import { BaseApp } from "../core/BaseApp.js";
+import { BaseApp, os } from "../framework.js";
 import { FileKind } from "../fs.js";
 import { SystemUtilities } from "../system.js";
 import { resolveGhUrl } from "../shared/assetResolver.js";
-import { os } from "../os/index.js";
 import {
   $,
   $$,

@@ -1,12 +1,9 @@
-import { StorageKeys } from "./settings/settings.js";
 import confetti from "canvas-confetti";
-import { BaseApp } from "./core/BaseApp.js";
 import { BusEvents } from "./core/EventBus.js";
 import { resolveGhUrl } from "./shared/assetResolver.js";
-import { PersistenceTypes } from "./runtime/AppSchema.js";
-import { os } from "./os/index.js";
 import { audioMixer } from "./audioMixer.js";
 
+import { BaseApp, PersistenceTypes, StorageKeys, os } from "./framework.js";
 export const Achievements = {
   WelcomeAboard: "first_boot",
   MultiTasker: "window_manager",

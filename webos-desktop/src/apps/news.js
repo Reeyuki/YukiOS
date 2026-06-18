@@ -1,10 +1,6 @@
 import "../styles/news.css";
-import { BaseApp } from "../core/BaseApp.js";
-import { StorageKeys } from "../settings/settings.js";
-import { PersistenceTypes } from "../runtime/AppSchema.js";
-import { os } from "../os/index.js";
-import { APP_MANIFESTS } from "../registry/AppManifest.js";
 
+import { APP_MANIFESTS, BaseApp, PersistenceTypes, StorageKeys, os } from "../framework.js";
 const appNewsEntries = APP_MANIFESTS.filter((manifest) => manifest.news).map((manifest) => manifest.news);
 
 const EXISTING_NEWS_UPDATES = [
@@ -12,9 +8,9 @@ const EXISTING_NEWS_UPDATES = [
     date: "June 18, 2026",
     sections: [
       {
-        icon: "fa-ball",
+        icon: "fa-star",
         title: "Jump Effect",
-        items: [["fa-ball", "Cursor Jump Effect", "Added icon jump effect for app launches"]]
+        items: [["fa-star", "Cursor Jump Effect", "Added icon jump effect for app launches"]]
       },
       {
         icon: "fa-star",

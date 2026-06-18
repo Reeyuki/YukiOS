@@ -1,8 +1,6 @@
-import { BaseApp } from ".././core/BaseApp.js";
 import { CDN_MIRRORS, setCdnMirror, getCdnMirror } from ".././shared/assetResolver.js";
-import { StorageKeys } from ".././StorageKeys.js";
-import { os } from ".././os/index.js";
 
+import { BaseApp, StorageKeys, os } from "../framework.js";
 class NetworkTrayApp extends BaseApp {
   constructor(services) {
     super(services);

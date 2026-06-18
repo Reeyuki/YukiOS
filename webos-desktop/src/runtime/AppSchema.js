@@ -26,9 +26,4 @@ export const EventTypes = {
   CONTEXTMENU: "contextmenu"
 };
 
-export const PersistenceTypes = {
-  NONE: "none",
-  LOCAL_STORAGE: "localStorage",
-  SESSION_STORAGE: "sessionStorage",
-  MEMORY: "memory"
-};
+export { PersistenceTypes } from "../AppSchema.js";

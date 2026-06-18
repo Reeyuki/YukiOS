@@ -1,9 +1,9 @@
 import { AppSource } from "../AppSource.js";
 
-let _osPromise = null;
-let _os = null;
+let _osPromise: Promise<any> | null = null;
+let _os: any = null;
 
-async function getOs() {
+async function getOs(): Promise<any> {
   if (_os) return _os;
   if (!_osPromise) {
     _osPromise = import("../os/index.js").then((m) => {
@@ -15,13 +15,20 @@ async function getOs() {
 }
 
 export class BaseApp {
-  constructor(services = {}) {
+  protected _services: Record<string, any>;
+  protected wm: any;
+  protected fs: any;
+  protected bus: any;
+  protected notifications: any;
+  protected _isDeclarative: boolean;
+
+  constructor(services: Record<string, any> = {}) {
     this._services = services;
     if (services.windowManager && !services.windowManager.__isProxied) {
       services.windowManager = new Proxy(services.windowManager, {
-        get: (target, prop) => {
+        get: (target: any, prop: string) => {
           if (prop === "sendNotify") {
-            return async (text, appSource = null) => {
+            return async (text: string, appSource: string | null = null) => {
               const source = appSource || this._getAppSource();
               const os = await getOs();
               os.notify.send("", text, { appSource: source });
@@ -39,30 +46,29 @@ export class BaseApp {
     this._isDeclarative = false;
   }
 
-  open(opts) {
+  open(opts?: any): any {
     throw new Error(`${this.constructor.name}.open() is not implemented.`);
   }
 
-  getDeclarativeSchema(opts) {
+  getDeclarativeSchema(opts?: any): any {
     return null;
   }
 
-  onClose(winId) {}
+  onClose(winId: string): void {}
 
-  getSnapshot(winId) {
+  getSnapshot(winId: string): any {
     return null;
   }
 
-  restoreSnapshot(winId, data) {}
+  restoreSnapshot(winId: string, data: any): void {}
 
-  async _isSingletonOpen(winId) {
+  async _isSingletonOpen(winId: string): Promise<boolean> {
     const existing = document.getElementById(winId);
     if (existing) {
       try {
         const os = await getOs();
         os.window.focus(existing);
       } catch (e) {
-        // OS bridge not initialized yet, just focus the window directly
         existing.style.zIndex = "10000";
       }
       return true;
@@ -70,13 +76,20 @@ export class BaseApp {
     return false;
   }
 
-  async notify(title, message = "", type = "info", duration = 5000, icon = null, appSource = null) {
+  async notify(
+    title: string,
+    message: string = "",
+    type: string = "info",
+    duration: number = 5000,
+    icon: string | null = null,
+    appSource: string | null = null
+  ): Promise<void> {
     const source = appSource || this._getAppSource();
     const os = await getOs();
     os.notify.send(title, message, { type, duration, icon, appSource: source });
   }
 
-  _getAppSource() {
+  _getAppSource(): string {
     const className = this.constructor.name;
     switch (className) {
       case "ClipboardManagerApp":
@@ -140,22 +153,22 @@ export class BaseApp {
     }
   }
 
-  async registerTray(winId, icon, label, options = {}) {
+  async registerTray(winId: string, icon: string, label: string, options: Record<string, any> = {}): Promise<void> {
     const os = await getOs();
     os.tray.register(winId, icon, label, options);
   }
 
-  async unregisterTray(winId) {
+  async unregisterTray(winId: string): Promise<void> {
     const os = await getOs();
     os.tray.unregister(winId);
   }
 
-  async sendToTray(winId) {
+  async sendToTray(winId: string): Promise<void> {
     const os = await getOs();
     os.tray.sendToTray(winId);
   }
 
-  async restoreFromTray(winId) {
+  async restoreFromTray(winId: string): Promise<void> {
     const os = await getOs();
     os.tray.restoreFromTray(winId);
   }

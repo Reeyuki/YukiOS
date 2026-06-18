@@ -1,8 +1,7 @@
 import "../styles/rhythms.css";
-import { BaseApp } from "../core/BaseApp.js";
-import { PersistenceTypes } from "../runtime/AppSchema.js";
 import { audioMixer } from "../audioMixer.js";
 
+import { BaseApp, PersistenceTypes } from "../framework.js";
 const FFT_SIZE = 2048;
 const FREQ_BIN_COUNT = FFT_SIZE / 2;
 

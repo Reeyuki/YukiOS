@@ -1,8 +1,6 @@
-import { BaseApp } from "./core/BaseApp.js";
-import { StorageKeys } from "./StorageKeys.js";
 import { turboManager } from "./shared/turboManager.js";
-import { os } from "./os/index.js";
 
+import { BaseApp, StorageKeys, os } from "../framework.js";
 class PowerApp extends BaseApp {
   constructor(services) {
     super(services);

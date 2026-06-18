@@ -1,10 +1,8 @@
 import "../styles/weather.css";
 import { getWeatherInfo } from "../shared/weatherCodes.js";
-import { BaseApp } from "../core/BaseApp.js";
 import { WindowHelper } from "../utils/WindowHelper.js";
-import { PersistenceTypes } from "../runtime/AppSchema.js";
-import { os } from "../os/index.js";
 
+import { BaseApp, PersistenceTypes, os } from "../framework.js";
 const WEATHER_CACHE_TTL = 10 * 60 * 1000;
 const LOCATION_CACHE_TTL = 24 * 60 * 60 * 1000;
 function getCached(key, ttl = WEATHER_CACHE_TTL) {

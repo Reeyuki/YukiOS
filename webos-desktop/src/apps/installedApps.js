@@ -1,9 +1,8 @@
 import "../styles/installedApps.css";
-import { BaseApp } from "../core/BaseApp.js";
-import { os } from "../os/index.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { getAppRegistry } from "../appRegistry.js";
 
+import { BaseApp, os } from "../framework.js";
 export class InstalledAppsApp extends BaseApp {
   constructor(services) {
     super(services);

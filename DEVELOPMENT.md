@@ -66,8 +66,7 @@ Create a new file in `webos-desktop/src/apps/` directory:
 ```javascript
 // src/apps/myApp.js
 import "../styles/myApp.css";
-import { BaseApp } from "../core/BaseApp.js";
-import { PersistenceTypes } from "../runtime/AppSchema.js";
+import { BaseApp, PersistenceTypes } from "../framework.js";
 
 export class MyApp extends BaseApp {
   constructor(services) {
@@ -190,7 +189,7 @@ export const APP_MANIFESTS = [
 **Manifest fields:**
 
 - `serviceKey` - Unique identifier for the app
-- `enhanced` - Whether to apply HybridAdapter enhancement
+- `enhanced` - Whether app uses DeclarativeApp framework
 - `type` - App type (usually "system")
 - `title` - Display name
 - `icon` - Font Awesome icon class or CDN URL
@@ -209,15 +208,15 @@ export const APP_MANIFESTS = [
 
 ### Step 4: Register in AppLoader.js
 
-Add import and entry to `APP_DEFINITIONS` in `webos-desktop/src/AppLoader.js`:
+Add import and entry to `APP_CLASS_MAP` in `webos-desktop/src/AppLoader.js`:
 
 ```javascript
 import { MyApp } from "./apps/myApp.js";
 
-const APP_DEFINITIONS = [
+const APP_CLASS_MAP = {
   // ... existing entries
-  { serviceKey: "myApp", AppClass: MyApp, enhanced: true }
-];
+  myApp: MyApp
+};
 ```
 
 ### Step 5: Verify Build
@@ -326,10 +325,10 @@ getDeclarativeSchema(opts) {
 The OS Bridge provides a unified API surface for applications to interact with system services. Apps should use the
 `os.*` bridge.
 
-**Import:**
+**Import (preferred):**
 
 ```javascript
-import { os } from "../os/index.js";
+import { os } from "../framework.js";
 ```
 
 ### Window API - `os.window`
@@ -439,14 +438,14 @@ import { os } from "../os/index.js";
 
 ### Dialog API - `os.dialog`
 
-| Method                              | Return                             |
-| ----------------------------------- | ---------------------------------- |
-| `alert(title, message)`             | `Promise<void>`                    |
-| `confirm(title, message)`           | `Promise<boolean>`                 |
-| `prompt(title, message, defaultValue?)` | `Promise<string \| null>`     |
-| `fileOpen(options?)`                | `Promise<string \| null>`          |
-| `fileSave(options?)`                | `Promise<string \| null>`          |
-| `openDirectory(options?)`           | `Promise<string \| null>`          |
+| Method                                  | Return                    |
+| --------------------------------------- | ------------------------- |
+| `alert(title, message)`                 | `Promise<void>`           |
+| `confirm(title, message)`               | `Promise<boolean>`        |
+| `prompt(title, message, defaultValue?)` | `Promise<string \| null>` |
+| `fileOpen(options?)`                    | `Promise<string \| null>` |
+| `fileSave(options?)`                    | `Promise<string \| null>` |
+| `openDirectory(options?)`               | `Promise<string \| null>` |
 
 `FileDialogOptions`: `{ defaultFileName?: string; initialPath?: string }`
 
@@ -538,7 +537,8 @@ Never use native browser checkboxes, plain inputs, or dropdowns. Always use:
 
 ## Creating Themes
 
-Yuki OS has a comprehensive theming system with 25+ built-in themes and support for custom themes. Themes are managed via `src/shared/themeEngine.js`.
+Yuki OS has a comprehensive theming system with 25+ built-in themes and support for custom themes. Themes are managed
+via `src/shared/themeEngine.js`.
 
 ### Theme Structure
 
@@ -588,6 +588,7 @@ const BUILTIN_THEMES = [
 Themes can override any CSS variable defined in `src/styles/style.css`. Common variables:
 
 **Core Colors:**
+
 - `--brand` - Accent/primary color
 - `--text-primary` - Main text color
 - `--text-secondary` - Secondary text color
@@ -598,12 +599,12 @@ Themes can override any CSS variable defined in `src/styles/style.css`. Common v
 - `--error` - Error state color
 
 **Additional Variables:**
+
 - `--window-bg` - Window background
 - `--taskbar-bg` - Taskbar background
 - `--startmenu-bg` - Start menu background
 - `--input-bg` - Input field background
 - `--input-border` - Input field border
-
 
 ---
 
@@ -615,14 +616,14 @@ Always prefer these shared utilities over reimplementing logic.
 
 Always use the OS-level dialog API instead of shared dialog utilities or browser native dialogs:
 
-| Method                                                | Return                    |
-| ----------------------------------------------------- | ------------------------- |
-| `os.dialog.alert(title, message)`                     | `Promise<void>`           |
-| `os.dialog.confirm(title, message)`                   | `Promise<boolean>`        |
-| `os.dialog.prompt(title, message, defaultValue?)`     | `Promise<string \| null>` |
-| `os.dialog.fileOpen(options?)`                        | `Promise<string \| null>` |
-| `os.dialog.fileSave(options?)`                        | `Promise<string \| null>` |
-| `os.dialog.openDirectory(options?)`                   | `Promise<string \| null>` |
+| Method                                            | Return                    |
+| ------------------------------------------------- | ------------------------- |
+| `os.dialog.alert(title, message)`                 | `Promise<void>`           |
+| `os.dialog.confirm(title, message)`               | `Promise<boolean>`        |
+| `os.dialog.prompt(title, message, defaultValue?)` | `Promise<string \| null>` |
+| `os.dialog.fileOpen(options?)`                    | `Promise<string \| null>` |
+| `os.dialog.fileSave(options?)`                    | `Promise<string \| null>` |
+| `os.dialog.openDirectory(options?)`               | `Promise<string \| null>` |
 
 `FileDialogOptions`: `{ defaultFileName?: string; initialPath?: string }`
 
@@ -670,7 +671,9 @@ const value = await os.storage.get(StorageKeys.MY_KEY);
 await os.storage.set(StorageKeys.MY_KEY, value);
 ```
 
-Always use StorageKeys from `src/StorageKeys.js` for localStorage access. Never hardcode localStorage key strings.
+Always use `src/framework.js` barrel for app-level imports. Import common dependencies
+(`{ BaseApp, PersistenceTypes, os, StorageKeys, APP_MANIFESTS }`) from there instead of separate modules. Always use
+StorageKeys from `src/StorageKeys.js` for localStorage access. Never hardcode localStorage key strings.
 
 ### File/Directory Selection Dialogs
 
@@ -748,12 +751,14 @@ Single-file build output is supported for easy deployment.
 
 ## Important Rules
 
-- Run pnpm format before committing.
+- Never run `pnpm format`.
 - Always use CSS variables defined at :root from `src/styles/style.css`. Never hardcode colors
 - Whenever you define a new app to appLauncher or gamesList, define description for it on `gameDescriptions.js`
 - Always use StorageKeys from `src/StorageKeys.js` for localStorage access
 - Always use `os.storage` API instead of bare `localStorage`
-- Never use browser native alerts, prompts, or confirms. Always use `os.dialog` API (`os.dialog.alert()`, `os.dialog.confirm()`, `os.dialog.prompt()`, `os.dialog.fileOpen()`, `os.dialog.fileSave()`, `os.dialog.openDirectory()`)
+- Never use browser native alerts, prompts, or confirms. Always use `os.dialog` API (`os.dialog.alert()`,
+  `os.dialog.confirm()`, `os.dialog.prompt()`, `os.dialog.fileOpen()`, `os.dialog.fileSave()`,
+  `os.dialog.openDirectory()`)
 - Never use `document.querySelector`, `document.querySelectorAll`, or direct DOM manipulation methods. Always use
   utility functions from `src/shared/domUtils.js`
 - Use `os.notify.send()` for discrete, user-facing application events that represent a state change or completion

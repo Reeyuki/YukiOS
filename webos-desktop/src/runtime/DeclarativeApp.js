@@ -23,7 +23,6 @@ export class DeclarativeApp {
     this.actionExecutor = new ActionExecutor(services, this.stateManager);
 
     this.windowHelper = new (services.WindowHelper || this._getWindowHelper())(this.wm);
-
     this.appRenderer = new AppRenderer(this.windowHelper, this.stateManager, this.actionExecutor);
     this.eventBinder = new EventBinder(this.stateManager, this.actionExecutor);
 

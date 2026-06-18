@@ -1,7 +1,6 @@
-import { os } from "../os/index.js";
-import { StorageKeys } from "../StorageKeys.js";
 import { sanitizeTitle } from "../utils/utils.js";
 
+import { StorageKeys, os } from "../framework.js";
 export class WorkspaceManager {
   constructor(windowManager) {
     this.wm = windowManager;

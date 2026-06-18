@@ -936,7 +936,7 @@ export const appMap = {
     title: "Angry Birds Online"
   },
   angryBirdsChrome: {
-    type: "game",
+    type: "remote",
     url: "/static/games/html/angryBirdsChrome.html",
     icon: "/static/icons/angryBirdsChrome.webp",
     title: "Angry Birds Chrome"

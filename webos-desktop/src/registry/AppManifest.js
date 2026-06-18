@@ -538,36 +538,6 @@ export const APP_MANIFESTS = [
     windowSize: ["90vw", "85vh"]
   },
   {
-    serviceKey: "telegramApp",
-    enhanced: true,
-    type: "system",
-    title: "Telegram",
-    icon: "fab fa-telegram",
-    launchType: "instance",
-    windowIdPatterns: ["telegram"],
-    category: "internet",
-    persistContentState: false,
-    clippy: { message: "Chat on Telegram", animation: ClippyAnimation.Wave },
-    description: "Telegram web client for secure messaging and communication.",
-    targetUrl: "https://web.telegram.org",
-    windowSize: ["90vw", "85vh"]
-  },
-  {
-    serviceKey: "whatsappApp",
-    enhanced: true,
-    type: "system",
-    title: "WhatsApp",
-    icon: "fab fa-whatsapp",
-    launchType: "instance",
-    windowIdPatterns: ["whatsapp"],
-    category: "internet",
-    persistContentState: false,
-    clippy: { message: "Chat on WhatsApp", animation: ClippyAnimation.Wave },
-    description: "WhatsApp web client for instant messaging and voice/video calls.",
-    targetUrl: "https://web.whatsapp.com",
-    windowSize: ["90vw", "85vh"]
-  },
-  {
     serviceKey: "zoomApp",
     enhanced: true,
     type: "system",

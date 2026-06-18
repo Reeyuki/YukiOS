@@ -2,10 +2,9 @@ import { CDN_MIRRORS } from "../shared/assetResolver.js";
 import { audioMixer } from "../audioMixer.js";
 import { resolveGhUrl } from "../shared/assetResolver.js";
 import { YUKIOS_VERSION } from "../apps/about.js";
-import { StorageKeys } from "../StorageKeys.js";
-import { os } from "../os/index.js";
 import { getBasicThemes, getSpecialThemes, getCustomThemes } from "../shared/themeEngine.js";
 
+import { StorageKeys, os } from "../framework.js";
 export function buildSettingsHTML(settings, wm) {
   return `
   <div class="window-header">

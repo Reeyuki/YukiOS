@@ -1,14 +1,12 @@
 import "../styles/emulator.css";
 import { Achievements } from "../achievements.js";
 import { BusEvents } from "../core/EventBus.js";
-import { BaseApp } from "../core/BaseApp.js";
 import { WindowHelper } from "../utils/WindowHelper.js";
 import { CDN_BASES } from "../shared/assetResolver.js";
 import { CDN_CONFIG } from "../shared/cdnConfig.js";
-import { PersistenceTypes } from "../runtime/AppSchema.js";
 import { audioMixer } from "../audioMixer.js";
-import { os } from "../os/index.js";
 
+import { BaseApp, PersistenceTypes, os } from "../framework.js";
 const ROMS_DIR = ["ROMs"];
 const DESKTOP_DIR = ["Desktop"];
 
