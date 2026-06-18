@@ -201,7 +201,7 @@ export class DesktopContextMenuManager {
         { id: "ctx-copy", label: "Copy", action: "copy", icon: "fa-copy" },
         { id: "ctx-cut", label: "Cut", action: "cut", icon: "fa-cut" },
         "hr",
-        { id: "ctx-delete", label: "Delete", action: "delete", icon: "fa-trash-alt" },
+        { id: "ctx-delete", label: "Move to Trash", action: "delete", icon: "fa-trash-alt" },
         { id: "ctx-rename", label: "Rename", action: "rename", icon: "fa-edit" },
         { id: "ctx-properties", label: "Properties", action: "properties", icon: "fa-info-circle" }
       ],
@@ -211,7 +211,7 @@ export class DesktopContextMenuManager {
         { id: "ctx-copy-folder", label: "Copy", action: "copyFolder", icon: "fa-copy" },
         { id: "ctx-cut-folder", label: "Cut", action: "cutFolder", icon: "fa-cut" },
         "hr",
-        { id: "ctx-delete-folder", label: "Delete", action: "deleteFolder", icon: "fa-trash-alt" },
+        { id: "ctx-delete-folder", label: "Move to Trash", action: "deleteFolder", icon: "fa-trash-alt" },
         { id: "ctx-rename-folder", label: "Rename", action: "renameFolder", icon: "fa-edit" }
       ],
       fileIconContextMenu: [
@@ -220,7 +220,7 @@ export class DesktopContextMenuManager {
         { id: "ctx-copy-file", label: "Copy", action: "copyFile", icon: "fa-copy" },
         { id: "ctx-cut-file", label: "Cut", action: "cutFile", icon: "fa-cut" },
         "hr",
-        { id: "ctx-delete-file", label: "Delete", action: "deleteFile", icon: "fa-trash-alt" },
+        { id: "ctx-delete-file", label: "Move to Trash", action: "deleteFile", icon: "fa-trash-alt" },
         { id: "ctx-rename-file", label: "Rename", action: "renameFile", icon: "fa-edit" }
       ],
       desktopContextMenu: [
@@ -278,7 +278,7 @@ export class DesktopContextMenuManager {
         selectedArray.forEach((i) => (i.style.opacity = "0.5"));
         os.notify.send(`${selectedArray.length} item${selectedArray.length !== 1 ? "s" : ""} cut`);
       },
-      deleteFolder: () => this.desktopUI.deleteSelectedIcons(selectedArray),
+      deleteFolder: () => this.desktopUI.moveSelectedIconsToTrash(selectedArray),
       renameFolder: async () => {
         const newName = await os.dialog.prompt("Prompt", "Enter new folder name:", folderIcon.dataset.folderName);
         if (newName && newName !== folderIcon.dataset.folderName) {
@@ -412,7 +412,9 @@ export class DesktopContextMenuManager {
       );
       menu.appendChild(hr());
 
-      menu.appendChild(item("Delete", () => this.desktopUI.deleteSelectedIcons(selectedArray), "fa-trash-alt"));
+      menu.appendChild(
+        item("Move to Trash", () => this.desktopUI.moveSelectedIconsToTrash(selectedArray), "fa-trash-alt")
+      );
       menu.appendChild(
         item(
           "Rename",
@@ -482,7 +484,7 @@ export class DesktopContextMenuManager {
         selectedArray.forEach((i) => (i.style.opacity = "0.5"));
         os.notify.send(`${selectedArray.length} item${selectedArray.length !== 1 ? "s" : ""} cut`);
       },
-      delete: () => this.desktopUI.deleteSelectedIcons(selectedArray),
+      delete: () => this.desktopUI.moveSelectedIconsToTrash(selectedArray),
       rename: async () => {
         const currentName = this.IconDataHelper.getIconName(last);
         const newName = await os.dialog.prompt("Prompt", "Enter new name:", currentName);

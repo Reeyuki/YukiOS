@@ -351,29 +351,12 @@ export class CommandPalette {
       return;
     }
 
+    if (this.currentSubpalette === "filesearch") {
+      this._renderFileSearchSubpalette(search);
+      return;
+    }
+
     const actions = [
-      {
-        title: "Lock Session",
-        subtitle: "Suspends the session and prompts unlock",
-        tag: "action",
-        icon: "fas fa-lock",
-        execute: () => {
-          if (this.services.sessionManager) {
-            this.services.sessionManager.lockSession();
-          }
-        }
-      },
-      {
-        title: "Shutdown Session",
-        subtitle: "Closes the current session and goes to login screen",
-        tag: "action",
-        icon: "fas fa-power-off",
-        execute: () => {
-          if (this.services.sessionManager) {
-            this.services.sessionManager.lockToLoginScreen();
-          }
-        }
-      },
       {
         title: "Change Wallpaper",
         subtitle: "Select a custom or default background image",
@@ -441,6 +424,74 @@ export class CommandPalette {
         tag: "action",
         icon: "fas fa-window-close",
         execute: () => this._closeAllWindows()
+      },
+      {
+        title: "Minimize All Windows",
+        subtitle: "Minimize every open window to the taskbar",
+        tag: "action",
+        icon: "fas fa-minus",
+        execute: () => this._minimizeAllWindows()
+      },
+      {
+        title: "Toggle Fullscreen",
+        subtitle: "Toggle the active window in and out of fullscreen",
+        tag: "action",
+        icon: "fas fa-expand",
+        execute: () => this._toggleFullscreen()
+      },
+      {
+        title: "Show Workspace Overview",
+        subtitle: "Display the workspace overview switcher",
+        tag: "workspace",
+        icon: "fas fa-th-large",
+        execute: () => this._toggleWorkspaceOverview()
+      },
+      {
+        title: "Switch to Workspace 1",
+        subtitle: "Jump to the first workspace",
+        tag: "workspace",
+        icon: "fas fa-1",
+        execute: () => this._switchWorkspace(0)
+      },
+      {
+        title: "Switch to Workspace 2",
+        subtitle: "Jump to the second workspace",
+        tag: "workspace",
+        icon: "fas fa-2",
+        execute: () => this._switchWorkspace(1)
+      },
+      {
+        title: "Switch to Workspace 3",
+        subtitle: "Jump to the third workspace",
+        tag: "workspace",
+        icon: "fas fa-3",
+        execute: () => this._switchWorkspace(2)
+      },
+      {
+        title: "Switch to Workspace 4",
+        subtitle: "Jump to the fourth workspace",
+        tag: "workspace",
+        icon: "fas fa-4",
+        execute: () => this._switchWorkspace(3)
+      },
+      {
+        title: "Switch to Workspace 5",
+        subtitle: "Jump to the fifth workspace",
+        tag: "workspace",
+        icon: "fas fa-5",
+        execute: () => this._switchWorkspace(4)
+      },
+      {
+        title: "Search Files",
+        subtitle: "Find files across the entire filesystem",
+        tag: "action",
+        icon: "fas fa-magnifying-glass",
+        execute: () => {
+          this.currentSubpalette = "filesearch";
+          this.inputElement.value = "";
+          this.activeIndex = 0;
+          this._renderResults();
+        }
       }
     ];
 
@@ -464,6 +515,16 @@ export class CommandPalette {
           }
         });
       }
+    }
+
+    const calcResult = this._tryCalculate(search);
+    if (calcResult) {
+      items.push(calcResult);
+    }
+
+    const convResult = this._tryConvert(search);
+    if (convResult) {
+      items.push(convResult);
     }
 
     const allApps = os.app.getAllApps();
@@ -632,6 +693,109 @@ export class CommandPalette {
     this._scrollToActive();
   }
 
+  _renderFileSearchSubpalette(search) {
+    const items = [
+      {
+        title: ".. Back to Main Menu",
+        subtitle: "Return to the main command palette search list",
+        tag: "nav",
+        icon: "fas fa-arrow-left",
+        execute: () => {
+          this.currentSubpalette = null;
+          this.inputElement.value = "";
+          this.activeIndex = 0;
+          this._renderResults();
+        }
+      }
+    ];
+
+    if (!search) {
+      const count = this.cachedFiles.length;
+      items.push({
+        title: `${count} file${count !== 1 ? "s" : ""} indexed`,
+        subtitle: "Type a filename to search across the filesystem",
+        tag: "info",
+        icon: "fas fa-info-circle",
+        execute: () => {}
+      });
+    } else {
+      for (const file of this.cachedFiles) {
+        if (file.name.toLowerCase().includes(search)) {
+          items.push({
+            title: file.name,
+            subtitle: file.path,
+            tag: file.kind,
+            icon: os.fs.getFileIcon(file.path),
+            execute: () => {
+              const launcher = this.services.windowManager.appLauncher;
+              const fsManager = this.services.fileSystemManager;
+              openFileWith({
+                name: file.name,
+                path: fsManager.dirname(file.path),
+                fs: fsManager,
+                notepadApp: this.services.notepadApp,
+                browserApp: this.services.browserApp,
+                windowManager: this.services.windowManager,
+                officeApp: this.services.officeApp,
+                markdownApp: this.services.markdownApp,
+                jsDosApp: this.services.jsDosApp,
+                appLauncher: launcher
+              });
+            }
+          });
+        }
+      }
+    }
+
+    if (items.length === 1) {
+      items.push({
+        title: "No matching files found",
+        subtitle: "Try a different search term",
+        tag: "info",
+        icon: "fas fa-circle-exclamation",
+        execute: () => {}
+      });
+    }
+
+    this.results = items;
+    this.activeIndex = Math.min(this.activeIndex, Math.max(0, this.results.length - 1));
+
+    this.results.forEach((item, index) => {
+      const el = document.createElement("div");
+      el.className = `cmd-palette-item ${index === this.activeIndex ? "active" : ""}`;
+      el.dataset.index = index;
+
+      let iconHtml = "";
+      if (typeof item.icon === "string") {
+        if (item.icon.startsWith("fa")) {
+          iconHtml = `<i class="${item.icon}"></i>`;
+        } else {
+          iconHtml = `<img src="${resolveIconUrl(item.icon)}" alt="">`;
+        }
+      } else {
+        iconHtml = `<i class="fas fa-file"></i>`;
+      }
+
+      el.innerHTML = `
+        <div class="cmd-palette-item-icon">${iconHtml}</div>
+        <div class="cmd-palette-item-meta">
+          <div class="cmd-palette-item-title">${this._escapeHTML(item.title)}</div>
+          <div class="cmd-palette-item-sub">${this._escapeHTML(item.subtitle)}</div>
+        </div>
+        <div class="cmd-palette-item-tag">${item.tag}</div>
+      `;
+
+      el.addEventListener("click", () => {
+        this.activeIndex = index;
+        this._executeActive();
+      });
+
+      this.resultsContainer.appendChild(el);
+    });
+
+    this._scrollToActive();
+  }
+
   _isTerminalCommand(str) {
     const list = [
       "ls",
@@ -654,6 +818,232 @@ export class CommandPalette {
     ];
     const firstWord = str.split(" ")[0];
     return list.includes(firstWord);
+  }
+
+  _tryCalculate(search) {
+    if (!search) return null;
+    const expr = search.replace(/\s/g, "");
+    if (!/^[\d+\-*/.^()%!,a-z]+$/.test(expr)) return null;
+    if (!/[\d]/.test(expr)) return null;
+    if (
+      /[a-z]{2,}/.test(expr) &&
+      !/^(sqrt|sin|cos|tan|log|ln|abs|round|floor|ceil)\(/.test(expr) &&
+      expr !== "pi" &&
+      expr !== "e"
+    )
+      return null;
+    try {
+      const result = this._safeEval(expr);
+      if (result === null || result === undefined || !isFinite(result)) return null;
+      return {
+        title: `= ${Number.isInteger(result) ? result : parseFloat(result.toFixed(6))}`,
+        subtitle: `Result of ${search}`,
+        tag: "calc",
+        icon: "fas fa-calculator",
+        execute: () => {
+          navigator.clipboard.writeText(result.toString());
+          os.notify.send("Calculator", "Result copied to clipboard", {
+            type: "success",
+            duration: 2000,
+            icon: "fas fa-calculator",
+            appSource: AppSource.COMMAND_PALETTE
+          });
+        }
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  _safeEval(expr) {
+    const ops = {
+      "+": (a, b) => a + b,
+      "-": (a, b) => a - b,
+      "*": (a, b) => a * b,
+      "/": (a, b) => a / b,
+      "^": (a, b) => Math.pow(a, b),
+      "%": (a, b) => a % b
+    };
+    const funcs = {
+      sqrt: Math.sqrt,
+      sin: (x) => Math.sin((x * Math.PI) / 180),
+      cos: (x) => Math.cos((x * Math.PI) / 180),
+      tan: (x) => Math.tan((x * Math.PI) / 180),
+      log: Math.log10,
+      ln: Math.log,
+      abs: Math.abs,
+      round: Math.round,
+      floor: Math.floor,
+      ceil: Math.ceil
+    };
+    const consts = { pi: Math.PI, e: Math.E };
+    let pos = 0;
+    const parse = (minPrec = 0) => {
+      let left = parsePrimary();
+      while (pos < expr.length) {
+        const op = expr[pos];
+        const prec = { "+": 1, "-": 1, "*": 2, "/": 2, "^": 3, "%": 2 }[op] || 0;
+        if (prec === 0 || prec <= minPrec) break;
+        pos++;
+        const right = parse(prec);
+        if (op === "/" && right === 0) throw new Error("div by zero");
+        left = ops[op](left, right);
+      }
+      return left;
+    };
+    const parsePrimary = () => {
+      if (pos >= expr.length) throw new Error("unexpected end");
+      if (expr[pos] === "(") {
+        pos++;
+        const val = parse(0);
+        if (expr[pos] !== ")") throw new Error("missing )");
+        pos++;
+        return val;
+      }
+      if (expr[pos] === "-") {
+        pos++;
+        return -parsePrimary();
+      }
+      const nameMatch = expr.slice(pos).match(/^[a-z]+/);
+      if (nameMatch) {
+        const name = nameMatch[0];
+        pos += name.length;
+        if (consts[name] !== undefined) return consts[name];
+        if (funcs[name]) {
+          if (expr[pos] === "(") {
+            pos++;
+            const arg = parse(0);
+            if (expr[pos] !== ")") throw new Error("missing )");
+            pos++;
+            return funcs[name](arg);
+          }
+          throw new Error("( expected after " + name);
+        }
+        throw new Error("unknown: " + name);
+      }
+      const numMatch = expr.slice(pos).match(/^(\d+\.?\d*|\.\d+)/);
+      if (numMatch) {
+        pos += numMatch[0].length;
+        return parseFloat(numMatch[0]);
+      }
+      if (expr[pos] === ",") {
+        pos++;
+        return parse(0);
+      }
+      throw new Error("unexpected: " + expr[pos]);
+    };
+    const result = parse(0);
+    if (pos < expr.length) throw new Error("unexpected trailing: " + expr.slice(pos));
+    return result;
+  }
+
+  _tryConvert(search) {
+    if (!search) return null;
+    const convPattern =
+      /^(\d+\.?\d*)\s*(celsius|c|fahrenheit|f|cm|inch|inches|m|meter|meters|ft|feet|km|kilometer|kilometers|mile|miles|kg|kilogram|kilograms|lb|lbs|pound|pounds|gb|gigabyte|gigabytes|mb|megabyte|megabytes)\s+(?:to|in|->|→)\s+(celsius|c|fahrenheit|f|cm|inch|inches|m|meter|meters|ft|feet|km|kilometer|kilometers|mile|miles|kg|kilogram|kilograms|lb|lbs|pound|pounds|gb|gigabyte|gigabytes|mb|megabyte|megabytes)$/i;
+    const match = search.match(convPattern);
+    if (!match) return null;
+    const val = parseFloat(match[1]);
+    const from = match[2].toLowerCase();
+    const to = match[3].toLowerCase();
+    const conversions = {
+      "c->f": (v) => (v * 9) / 5 + 32,
+      "celsius->f": (v) => (v * 9) / 5 + 32,
+      "c->fahrenheit": (v) => (v * 9) / 5 + 32,
+      "celsius->fahrenheit": (v) => (v * 9) / 5 + 32,
+      "f->c": (v) => ((v - 32) * 5) / 9,
+      "fahrenheit->c": (v) => ((v - 32) * 5) / 9,
+      "f->celsius": (v) => ((v - 32) * 5) / 9,
+      "fahrenheit->celsius": (v) => ((v - 32) * 5) / 9,
+      "cm->inch": (v) => v / 2.54,
+      "cm->inches": (v) => v / 2.54,
+      "inch->cm": (v) => v * 2.54,
+      "inches->cm": (v) => v * 2.54,
+      "m->ft": (v) => v * 3.28084,
+      "meter->ft": (v) => v * 3.28084,
+      "meters->ft": (v) => v * 3.28084,
+      "m->feet": (v) => v * 3.28084,
+      "meter->feet": (v) => v * 3.28084,
+      "meters->feet": (v) => v * 3.28084,
+      "ft->m": (v) => v / 3.28084,
+      "feet->m": (v) => v / 3.28084,
+      "ft->meter": (v) => v / 3.28084,
+      "feet->meter": (v) => v / 3.28084,
+      "ft->meters": (v) => v / 3.28084,
+      "feet->meters": (v) => v / 3.28084,
+      "km->mile": (v) => v / 1.60934,
+      "km->miles": (v) => v / 1.60934,
+      "kilometer->mile": (v) => v / 1.60934,
+      "kilometer->miles": (v) => v / 1.60934,
+      "kilometers->mile": (v) => v / 1.60934,
+      "kilometers->miles": (v) => v / 1.60934,
+      "mile->km": (v) => v * 1.60934,
+      "miles->km": (v) => v * 1.60934,
+      "mile->kilometer": (v) => v * 1.60934,
+      "miles->kilometer": (v) => v * 1.60934,
+      "mile->kilometers": (v) => v * 1.60934,
+      "miles->kilometers": (v) => v * 1.60934,
+      "kg->lb": (v) => v * 2.20462,
+      "kg->lbs": (v) => v * 2.20462,
+      "kg->pound": (v) => v * 2.20462,
+      "kg->pounds": (v) => v * 2.20462,
+      "kilogram->lb": (v) => v * 2.20462,
+      "kilogram->lbs": (v) => v * 2.20462,
+      "kilogram->pound": (v) => v * 2.20462,
+      "kilogram->pounds": (v) => v * 2.20462,
+      "kilograms->lb": (v) => v * 2.20462,
+      "kilograms->lbs": (v) => v * 2.20462,
+      "kilograms->pound": (v) => v * 2.20462,
+      "kilograms->pounds": (v) => v * 2.20462,
+      "lb->kg": (v) => v / 2.20462,
+      "lbs->kg": (v) => v / 2.20462,
+      "lb->kilogram": (v) => v / 2.20462,
+      "lbs->kilogram": (v) => v / 2.20462,
+      "lb->kilograms": (v) => v / 2.20462,
+      "lbs->kilograms": (v) => v / 2.20462,
+      "pound->kg": (v) => v / 2.20462,
+      "pound->kilograms": (v) => v / 2.20462,
+      "pounds->kg": (v) => v / 2.20462,
+      "pounds->kilograms": (v) => v / 2.20462,
+      "gb->mb": (v) => v * 1024,
+      "gigabyte->mb": (v) => v * 1024,
+      "gigabytes->mb": (v) => v * 1024,
+      "gb->megabyte": (v) => v * 1024,
+      "gigabyte->megabyte": (v) => v * 1024,
+      "gigabytes->megabyte": (v) => v * 1024,
+      "gb->megabytes": (v) => v * 1024,
+      "gigabyte->megabytes": (v) => v * 1024,
+      "gigabytes->megabytes": (v) => v * 1024,
+      "mb->gb": (v) => v / 1024,
+      "megabyte->gb": (v) => v / 1024,
+      "megabytes->gb": (v) => v / 1024,
+      "mb->gigabyte": (v) => v / 1024,
+      "megabyte->gigabyte": (v) => v / 1024,
+      "megabytes->gigabyte": (v) => v / 1024,
+      "mb->gigabytes": (v) => v / 1024,
+      "megabyte->gigabytes": (v) => v / 1024,
+      "megabytes->gigabytes": (v) => v / 1024
+    };
+    const key = `${from}->${to}`;
+    const fn = conversions[key];
+    if (!fn) return null;
+    const result = fn(val);
+    const label = `${val} ${match[2]} = ${Number.isInteger(result) ? result : parseFloat(result.toFixed(4))} ${match[3]}`;
+    return {
+      title: label,
+      subtitle: "Unit conversion result — click to copy",
+      tag: "conv",
+      icon: "fas fa-arrows-left-right",
+      execute: () => {
+        navigator.clipboard.writeText(result.toString());
+        os.notify.send("Conversion", "Result copied to clipboard", {
+          type: "success",
+          duration: 2000,
+          icon: "fas fa-arrows-left-right",
+          appSource: AppSource.COMMAND_PALETTE
+        });
+      }
+    };
   }
 
   _setSystemTheme(val) {
@@ -700,6 +1090,33 @@ export class CommandPalette {
     });
   }
 
+  _minimizeAllWindows() {
+    if (this.services.windowManager) {
+      const wm = this.services.windowManager;
+      const winIds = Array.from(wm.openWindows.keys());
+      for (const winId of winIds) {
+        const win = document.getElementById(winId);
+        if (win) wm.minimizeWindow(win);
+      }
+    }
+  }
+
+  _toggleFullscreen() {
+    if (this.services.windowManager && this.services.windowManager.activeWindow) {
+      this.services.windowManager.toggleFullscreen(this.services.windowManager.activeWindow);
+    }
+  }
+
+  _toggleWorkspaceOverview() {
+    const ws = this.services.windowManager?.workspaceManager;
+    if (ws) ws.toggleOverview();
+  }
+
+  _switchWorkspace(index) {
+    const ws = this.services.windowManager?.workspaceManager;
+    if (ws && ws.workspaces[index]) ws.switchTo(ws.workspaces[index].id);
+  }
+
   _updateActiveSelection() {
     const items = this.resultsContainer.querySelectorAll(".cmd-palette-item");
     items.forEach((item) => {
@@ -729,7 +1146,7 @@ export class CommandPalette {
     const activeItem = this.results[this.activeIndex];
     if (activeItem) {
       activeItem.execute();
-      if (activeItem.tag !== "nav" && this.currentSubpalette !== "wallpaper") {
+      if (activeItem.tag !== "nav" && this.currentSubpalette !== "wallpaper" && !activeItem.keepOpen) {
         this.close();
       }
     }

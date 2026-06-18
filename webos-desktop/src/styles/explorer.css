@@ -953,6 +953,126 @@ html[data-theme="solarized-light"] .explorer-sidebar-item.active {
   background: var(--glass-hover);
 }
 
+.explorer-trash-view {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0;
+  align-content: flex-start;
+}
+
+.explorer-trash-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  background: var(--glass);
+  border-bottom: 1px solid var(--glass-border);
+  flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
+  gap: 16px;
+}
+
+.explorer-trash-banner-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.explorer-trash-banner-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.explorer-trash-action-btn {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  color: var(--text-secondary);
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 11.5px;
+  cursor: pointer;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition:
+    background 0.15s,
+    color 0.15s;
+  white-space: nowrap;
+}
+
+.explorer-trash-action-btn:hover:not(:disabled) {
+  background: var(--glass-hover);
+  color: var(--text-primary);
+}
+
+.explorer-trash-action-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.explorer-trash-action-btn.trash-empty-all:hover:not(:disabled) {
+  color: var(--error);
+  border-color: var(--error);
+}
+
+.explorer-trash-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.explorer-sidebar .explorer-trash-item .sidebar-icon-fa {
+  color: var(--text-secondary) !important;
+}
+
+.explorer-sidebar .explorer-trash-item:hover .sidebar-icon-fa {
+  color: var(--error) !important;
+}
+
+html[data-theme="light"] .explorer-trash-view,
+html[data-theme="cherry"] .explorer-trash-view,
+html[data-theme="github-light"] .explorer-trash-view,
+html[data-theme="minimal-gray"] .explorer-trash-view,
+html[data-theme="paper"] .explorer-trash-view,
+html[data-theme="macos-fluent"] .explorer-trash-view,
+html[data-theme="windows-fluent"] .explorer-trash-view,
+html[data-theme="material-you"] .explorer-trash-view,
+html[data-theme="sepia"] .explorer-trash-view,
+html[data-theme="sakura"] .explorer-trash-view,
+html[data-theme="arctic"] .explorer-trash-view,
+html[data-theme="nordic"] .explorer-trash-view,
+html[data-theme="gameboy"] .explorer-trash-view,
+html[data-theme="frutiger-aero"] .explorer-trash-view,
+html[data-theme="solarized-light"] .explorer-trash-view {
+  background: var(--bg-primary) !important;
+}
+
+html[data-theme="light"] .explorer-trash-banner,
+html[data-theme="cherry"] .explorer-trash-banner,
+html[data-theme="github-light"] .explorer-trash-banner,
+html[data-theme="minimal-gray"] .explorer-trash-banner,
+html[data-theme="paper"] .explorer-trash-banner,
+html[data-theme="macos-fluent"] .explorer-trash-banner,
+html[data-theme="windows-fluent"] .explorer-trash-banner,
+html[data-theme="material-you"] .explorer-trash-banner,
+html[data-theme="sepia"] .explorer-trash-banner,
+html[data-theme="sakura"] .explorer-trash-banner,
+html[data-theme="arctic"] .explorer-trash-banner,
+html[data-theme="nordic"] .explorer-trash-banner,
+html[data-theme="gameboy"] .explorer-trash-banner,
+html[data-theme="frutiger-aero"] .explorer-trash-banner,
+html[data-theme="solarized-light"] .explorer-trash-banner {
+  background: var(--bg-secondary) !important;
+}
+
 html[data-theme="light"] .explorer-win-path,
 html[data-theme="cherry"] .explorer-win-path,
 html[data-theme="github-light"] .explorer-win-path,

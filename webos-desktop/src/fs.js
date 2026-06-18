@@ -7,6 +7,7 @@ import { MetadataManager } from "./fs/MetadataManager.js";
 import { PathResolver } from "./fs/PathResolver.js";
 import { FileKindDetector, FileKind } from "./fs/FileKindDetector.js";
 import { BlobStorage } from "./fs/BlobStorage.js";
+import { TrashManager } from "./fs/TrashManager.js";
 
 export { FileKind };
 
@@ -199,6 +200,7 @@ export class FileSystemManager {
     this.paths = new PathResolver(this.CONFIG);
     this.detector = new FileKindDetector();
     this.blobs = new BlobStorage();
+    this.trash = new TrashManager(this);
 
     this.fsReady = this.storage.fsReady;
     this._resolveFs = this.storage._resolveFs;
@@ -264,6 +266,7 @@ export class FileSystemManager {
         await this.storage.initFS(sessionKey);
         await this.blobs.initBlobDB();
         await this.ensureDefaults();
+        await this.trash.init();
       } catch (e) {
         console.error("BrowserFS initialization failed:", e);
         try {
@@ -565,6 +568,7 @@ export class FileSystemManager {
 
     for (const name of entries) {
       if (name === this.CONFIG.META_FILE) continue;
+      if (name === ".trash" && dir === this.CONFIG.ROOT) continue;
       const full = this.paths.join(dir, name);
       let stat;
       try {

@@ -59,6 +59,13 @@ interface OSBridge {
     deleteItem: FileSystemAPI["deleteItem"];
     renameItem: FileSystemAPI["renameItem"];
     updateFile: FileSystemAPI["updateFile"];
+    trashFile: FileSystemAPI["trashFile"];
+    getTrashItems: FileSystemAPI["getTrashItems"];
+    restoreTrashItem: FileSystemAPI["restoreTrashItem"];
+    restoreAllTrashItems: FileSystemAPI["restoreAllTrashItems"];
+    deleteTrashItem: FileSystemAPI["deleteTrashItem"];
+    emptyTrash: FileSystemAPI["emptyTrash"];
+    getTrashCount: FileSystemAPI["getTrashCount"];
   };
   notify: {
     send: NotificationAPI["send"];
@@ -231,7 +238,14 @@ export function initializeOSBridge(services: {
     createFolder: fileSystemAPI.createFolder.bind(fileSystemAPI),
     deleteItem: fileSystemAPI.deleteItem.bind(fileSystemAPI),
     renameItem: fileSystemAPI.renameItem.bind(fileSystemAPI),
-    updateFile: fileSystemAPI.updateFile.bind(fileSystemAPI)
+    updateFile: fileSystemAPI.updateFile.bind(fileSystemAPI),
+    trashFile: fileSystemAPI.trashFile.bind(fileSystemAPI),
+    getTrashItems: fileSystemAPI.getTrashItems.bind(fileSystemAPI),
+    restoreTrashItem: fileSystemAPI.restoreTrashItem.bind(fileSystemAPI),
+    restoreAllTrashItems: fileSystemAPI.restoreAllTrashItems.bind(fileSystemAPI),
+    deleteTrashItem: fileSystemAPI.deleteTrashItem.bind(fileSystemAPI),
+    emptyTrash: fileSystemAPI.emptyTrash.bind(fileSystemAPI),
+    getTrashCount: fileSystemAPI.getTrashCount.bind(fileSystemAPI)
   };
 
   boundNotificationAPI = {

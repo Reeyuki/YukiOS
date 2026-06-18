@@ -356,4 +356,45 @@ export class FileSystemAPI {
       await this.fs.writeMeta(dir, name, { kind: meta.kind, icon: meta.icon });
     }
   }
+
+  async trashFile(path: string | string[], name?: string): Promise<any> {
+    await this.fs.fsReady;
+    const pathStr = Array.isArray(path) ? path.join("/") : path;
+    if (name) {
+      return await this.fs.trash.moveToTrash(pathStr, name);
+    }
+    const dir = this.fs.dirname(pathStr);
+    const basename = this.fs.basename(pathStr);
+    return await this.fs.trash.moveToTrash(dir, basename);
+  }
+
+  async getTrashItems(): Promise<any[]> {
+    await this.fs.fsReady;
+    return await this.fs.trash.getItems();
+  }
+
+  async restoreTrashItem(id: string): Promise<any> {
+    await this.fs.fsReady;
+    return await this.fs.trash.restoreItem(id);
+  }
+
+  async restoreAllTrashItems(): Promise<any[]> {
+    await this.fs.fsReady;
+    return await this.fs.trash.restoreAll();
+  }
+
+  async deleteTrashItem(id: string): Promise<void> {
+    await this.fs.fsReady;
+    await this.fs.trash.deletePermanently(id);
+  }
+
+  async emptyTrash(): Promise<void> {
+    await this.fs.fsReady;
+    await this.fs.trash.emptyTrash();
+  }
+
+  async getTrashCount(): Promise<number> {
+    await this.fs.fsReady;
+    return await this.fs.trash.getItemCount();
+  }
 }

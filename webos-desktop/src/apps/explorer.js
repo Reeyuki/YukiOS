@@ -99,7 +99,8 @@ export class ExplorerApp extends BaseApp {
       selectedFile: null,
       selectedItems: new Set(),
       mode: mode || "browse",
-      _isRendering: false
+      _isRendering: false,
+      _isTrashView: false
     };
     this._instances.set(winId, inst);
     return inst;
@@ -144,6 +145,7 @@ export class ExplorerApp extends BaseApp {
         <div class="start-item" data-path="Pictures"><i class="fas fa-image sidebar-icon-fa"></i>Pictures</div>
         <div class="start-item" data-path="Music"><i class="fas fa-music sidebar-icon-fa"></i>Music</div>
         <div class="start-item" data-path="Videos"><i class="fas fa-video sidebar-icon-fa"></i>Videos</div>
+        <div class="start-item explorer-trash-item" data-path="__trash__"><i class="fas fa-trash sidebar-icon-fa"></i>Trash</div>
         <div class="explorer-storage">
           <i class="fas fa-database"></i>
           <span class="explorer-storage-size">Calculating...</span>
@@ -152,7 +154,12 @@ export class ExplorerApp extends BaseApp {
   }
   _bindSidebar(win, inst) {
     $$(".explorer-sidebar .start-item", win).forEach((item) => {
-      item.onclick = () => this.navigateInstance(inst, item.dataset.path.split("/").filter(Boolean));
+      const rawPath = item.dataset.path;
+      if (rawPath === "__trash__") {
+        item.onclick = () => this._showTrashView(inst);
+      } else {
+        item.onclick = () => this.navigateInstance(inst, rawPath.split("/").filter(Boolean));
+      }
     });
   }
 
@@ -942,6 +949,7 @@ export class ExplorerApp extends BaseApp {
         path = path.split("/").filter(Boolean);
       }
     }
+    inst._isTrashView = false;
     inst.currentPath = Array.isArray(path) ? [...path] : [];
     inst.history = inst.history.slice(0, inst.historyIndex + 1);
     inst.history.push([...inst.currentPath]);
@@ -984,6 +992,7 @@ export class ExplorerApp extends BaseApp {
 
     view.innerHTML = "";
     removeClass(view, "games-page");
+    removeClass(view, "explorer-trash-view");
     this._ensureSelBox(view);
     if (pathDisplay) {
       if (pathDisplay.tagName === "INPUT") {
@@ -997,7 +1006,11 @@ export class ExplorerApp extends BaseApp {
     inst._cachedFolder = folder;
     if (inst.mode === "browse") inst._cachedFolderStats = await this._buildFolderStats(inst);
 
-    const entries = Object.entries(folder).filter(([name]) => !(name === "system" && inst.currentPath.length === 0));
+    const entries = Object.entries(folder).filter(([name]) => {
+      if (name === "system" && inst.currentPath.length === 0) return false;
+      if (name === ".trash" && inst.currentPath.length === 0) return false;
+      return true;
+    });
     const items = await Promise.all(
       entries.map(async ([name, itemData]) => {
         const isFile = itemData?.type === "file";
@@ -1486,18 +1499,32 @@ export class ExplorerApp extends BaseApp {
 
       menu.appendChild(
         item(
-          "Delete",
+          "Move to Trash",
+          () => {
+            const effectiveItems =
+              inst.selectedItems.size > 1 && inst.selectedItems.has(itemName) ? [...inst.selectedItems] : [itemName];
+            for (const name of effectiveItems) {
+              os.fs.trashFile(inst.currentPath, name);
+            }
+            this.renderInstance(inst);
+            os.notify.send(`${effectiveItems.length} ${effectiveItems.length > 1 ? "items" : "item"} moved to trash`);
+          },
+          "fa-trash-alt"
+        )
+      );
+
+      menu.appendChild(
+        item(
+          "Delete Permanently",
           () => {
             const effectiveItems =
               inst.selectedItems.size > 1 && inst.selectedItems.has(itemName) ? [...inst.selectedItems] : [itemName];
             const msg =
               effectiveItems.length > 1
-                ? `Delete ${effectiveItems.length} items and all their contents?`
-                : isFile
-                  ? `Delete "${itemName}"?`
-                  : `Delete folder "${itemName}" and all its contents?`;
+                ? `Permanently delete ${effectiveItems.length} items? This cannot be undone.`
+                : `Permanently delete "${itemName}"? This cannot be undone.`;
             this._showConfirmDialog({
-              title: "Confirm Delete",
+              title: "Delete Permanently",
               message: msg,
               confirmText: "Delete",
               onConfirm: async () => {
@@ -1505,15 +1532,13 @@ export class ExplorerApp extends BaseApp {
                   await os.fs.delete(inst.currentPath, name);
                 }
                 await this.renderInstance(inst);
-                if (effectiveItems.length > 1) {
-                  os.notify.send(`${effectiveItems.length} items deleted`);
-                } else {
-                  os.notify.send(`"${itemName}" deleted`);
-                }
+                os.notify.send(
+                  `${effectiveItems.length} ${effectiveItems.length > 1 ? "items" : "item"} permanently deleted`
+                );
               }
             });
           },
-          "fa-trash-alt"
+          "fa-times-circle"
         )
       );
 
@@ -1734,6 +1759,54 @@ export class ExplorerApp extends BaseApp {
     e.stopPropagation();
     const hasClipboard = !!this._getClipboard();
 
+    if (inst._isTrashView) {
+      showDynamicContextMenu(e, (menu, item, hr) => {
+        menu.appendChild(
+          item(
+            "Restore All",
+            () => {
+              const view = $(`#${inst.winId}-view`, $(`#${inst.winId}`));
+              os.fs.restoreAllTrashItems().then(() => {
+                if (view) this._renderTrashView(inst, view, $(`#${inst.winId}`));
+                os.notify.send("All items restored from trash");
+              });
+            },
+            "fa-undo"
+          )
+        );
+        menu.appendChild(
+          item(
+            "Empty Trash",
+            () => {
+              os.dialog
+                .confirm("Empty Trash", "Permanently delete all items in trash? This cannot be undone.")
+                .then((confirmed) => {
+                  if (!confirmed) return;
+                  const view = $(`#${inst.winId}-view`, $(`#${inst.winId}`));
+                  os.fs.emptyTrash().then(() => {
+                    if (view) this._renderTrashView(inst, view, $(`#${inst.winId}`));
+                    os.notify.send("Trash emptied");
+                  });
+                });
+            },
+            "fa-trash-alt"
+          )
+        );
+        menu.appendChild(hr());
+        menu.appendChild(
+          item(
+            "Refresh",
+            () => {
+              const view = $(`#${inst.winId}-view`, $(`#${inst.winId}`));
+              if (view) this._renderTrashView(inst, view, $(`#${inst.winId}`));
+            },
+            "fa-sync-alt"
+          )
+        );
+      });
+      return;
+    }
+
     showDynamicContextMenu(e, (menu, item, hr) => {
       menu.appendChild(item("Add file(s)", () => this._triggerFileUpload(inst), "fa-file-upload"));
       menu.appendChild(item("New File", () => this._spawnInlineItem(inst, true), "fa-file-medical"));
@@ -1932,6 +2005,193 @@ export class ExplorerApp extends BaseApp {
     } catch {
       el.textContent = "—";
     }
+  }
+
+  async _showTrashView(inst) {
+    inst._isTrashView = true;
+    inst.currentPath = [];
+    inst.selectedFile = null;
+    inst.selectedItems = new Set();
+    const win = $(`#${inst.winId}`);
+    if (!win) return;
+    const view = $(`#${inst.winId}-view`, win);
+    const pathDisplay = $(`#${inst.winId}-path`, win);
+    if (!view) return;
+    if (pathDisplay) pathDisplay.value = "/Trash";
+    await this._renderTrashView(inst, view, win);
+  }
+
+  async _renderTrashView(inst, view, win) {
+    view.innerHTML = "";
+    removeClass(view, "games-page");
+    addClass(view, "explorer-trash-view");
+    this._ensureSelBox(view);
+
+    const items = await os.fs.getTrashItems();
+    inst._cachedFolder = {};
+    inst._cachedTrashItems = items;
+
+    const banner = createElement("div", { className: "explorer-trash-banner" });
+    const count = items.length;
+    setHTML(
+      banner,
+      `
+      <div class="explorer-trash-banner-left">
+        <i class="fas fa-trash" style="font-size:20px;color:var(--brand);opacity:0.7"></i>
+        <span style="font-weight:600">Trash</span>
+        <span style="opacity:0.6;font-size:11px">${count} ${count === 1 ? "item" : "items"}</span>
+      </div>
+      <div class="explorer-trash-banner-actions">
+        <button class="explorer-trash-action-btn trash-restore-all" ${count === 0 ? "disabled" : ""}>
+          <i class="fas fa-undo"></i> Restore All
+        </button>
+        <button class="explorer-trash-action-btn trash-empty-all" ${count === 0 ? "disabled" : ""}>
+          <i class="fas fa-trash-alt"></i> Empty Trash
+        </button>
+      </div>
+    `
+    );
+    view.appendChild(banner);
+
+    const restoreAllBtn = banner.querySelector(".trash-restore-all");
+    const emptyAllBtn = banner.querySelector(".trash-empty-all");
+
+    if (restoreAllBtn) {
+      restoreAllBtn.onclick = async () => {
+        const confirmed = await os.dialog.confirm(
+          "Restore All",
+          "Restore all items in trash to their original locations?"
+        );
+        if (!confirmed) return;
+        restoreAllBtn.disabled = true;
+        await os.fs.restoreAllTrashItems();
+        await this._renderTrashView(inst, view, win);
+        os.notify.send("All items restored from trash");
+      };
+    }
+
+    if (emptyAllBtn) {
+      emptyAllBtn.onclick = async () => {
+        const confirmed = await os.dialog.confirm(
+          "Empty Trash",
+          "Permanently delete all items in trash? This cannot be undone."
+        );
+        if (!confirmed) return;
+        emptyAllBtn.disabled = true;
+        await os.fs.emptyTrash();
+        await this._renderTrashView(inst, view, win);
+        os.notify.send("Trash emptied");
+      };
+    }
+
+    if (count === 0) {
+      const empty = createElement("div", { className: "explorer-trash-empty" });
+      setHTML(
+        empty,
+        `
+        <i class="fas fa-trash" style="font-size:48px;opacity:0.15;margin-bottom:12px"></i>
+        <div style="opacity:0.4;font-size:13px">Trash is empty</div>
+      `
+      );
+      view.appendChild(empty);
+      return;
+    }
+
+    for (const entry of items) {
+      const item = createElement("div", { className: "file-item" });
+      item.dataset.trashId = entry.id;
+      item.dataset.trashType = entry.type;
+      item.dataset.isFile = entry.type === "file" ? "true" : "false";
+
+      const iconName = entry.originalName;
+      const iconHtml = buildFileIconHTML(iconName, {});
+      setHTML(item, `${iconHtml}<span>${entry.originalName}</span>`);
+      this._bindTrashItemInteractions(item, entry, inst, win);
+      view.appendChild(item);
+    }
+
+    inst._isTrashView = true;
+    await this._updateStorageIndicator(win);
+    const itemsEl = win.querySelector(`#${inst.winId}-status-items`);
+    const selectedEl = win.querySelector(`#${inst.winId}-status-selected`);
+    if (itemsEl) itemsEl.textContent = `${count} ${count === 1 ? "item" : "items"}`;
+    if (selectedEl) selectedEl.textContent = "";
+  }
+
+  _bindTrashItemInteractions(item, entry, inst, win) {
+    item.oncontextmenu = (e) => this._showTrashContextMenu(e, entry, inst);
+
+    item.onclick = (e) => {
+      if (e.detail === 1) {
+        const wasSelected = item.classList.contains("explorer-selected");
+        if (!e.ctrlKey) {
+          $$(".file-item.explorer-selected", win).forEach((el) => removeClass(el, "explorer-selected"));
+          inst.selectedItems = new Set();
+        }
+        if (wasSelected && e.ctrlKey) {
+          removeClass(item, "explorer-selected");
+          inst.selectedItems.delete(entry.originalName);
+        } else {
+          addClass(item, "explorer-selected");
+          inst.selectedItems.add(entry.originalName);
+          inst.selectedFile = entry.originalName;
+        }
+      }
+    };
+  }
+
+  _showTrashContextMenu(e, entry, inst) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    showDynamicContextMenu(e, (menu, item, hr) => {
+      menu.appendChild(
+        item(
+          "Restore",
+          async () => {
+            await os.fs.restoreTrashItem(entry.id);
+            const win = $(`#${inst.winId}`);
+            const view = win && $(`#${inst.winId}-view`, win);
+            if (view) await this._renderTrashView(inst, view, win);
+            os.notify.send(`"${entry.originalName}" restored`);
+          },
+          "fa-undo"
+        )
+      );
+
+      menu.appendChild(hr());
+
+      menu.appendChild(
+        item(
+          "Delete Permanently",
+          async () => {
+            const confirmed = await os.dialog.confirm(
+              "Delete Permanently",
+              `Permanently delete "${entry.originalName}"? This cannot be undone.`
+            );
+            if (!confirmed) return;
+            await os.fs.deleteTrashItem(entry.id);
+            const win = $(`#${inst.winId}`);
+            const view = win && $(`#${inst.winId}-view`, win);
+            if (view) await this._renderTrashView(inst, view, win);
+            os.notify.send(`"${entry.originalName}" permanently deleted`);
+          },
+          "fa-trash-alt"
+        )
+      );
+
+      menu.appendChild(
+        item(
+          "Properties",
+          () => {
+            const size = entry.size ? formatSize(entry.size) : "Unknown";
+            const date = new Date(entry.deletedAt).toLocaleString();
+            os.notify.send(`Name: ${entry.originalName}\nType: ${entry.type}\nSize: ${size}\nDeleted: ${date}`);
+          },
+          "fa-info-circle"
+        )
+      );
+    });
   }
 
   async _updateStatusBar(inst, folder) {

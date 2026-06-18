@@ -43,6 +43,17 @@ const EXISTING_NEWS_UPDATES = [
             "Hover a taskbar item and click the close button on its preview to close the app."
           ]
         ]
+      },
+      {
+        icon: "fa-trash",
+        title: "Trash",
+        items: [
+          [
+            "fa-trash",
+            "Trash Bin",
+            "Deleted files now go to Trash instead of being permanently removed. Restore or permanently delete from the new Trash view in Explorer sidebar."
+          ]
+        ]
       }
     ]
   },

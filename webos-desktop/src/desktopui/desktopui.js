@@ -445,22 +445,15 @@ export class DesktopUI {
           e.preventDefault();
           (async () => {
             const effectiveItems = [...explorerInst.selectedItems];
-            const msg =
-              effectiveItems.length > 1
-                ? `Delete ${effectiveItems.length} items and all their contents?`
-                : `Delete "${effectiveItems[0]}"?`;
-            const confirmed = await os.dialog.confirm("Confirm", msg);
-            if (confirmed) {
-              for (const name of effectiveItems) {
-                await os.fs.delete(explorerInst.currentPath, name);
-              }
-              await this.explorerApp.renderInstance(explorerInst);
-              os.notify.send(`${effectiveItems.length} item${effectiveItems.length !== 1 ? "s" : ""} deleted`);
+            for (const name of effectiveItems) {
+              await os.fs.trashFile(explorerInst.currentPath, name);
             }
+            await this.explorerApp.renderInstance(explorerInst);
+            os.notify.send(`${effectiveItems.length} item${effectiveItems.length !== 1 ? "s" : ""} moved to trash`);
           })();
         } else if (selectedArray.length > 0) {
           e.preventDefault();
-          this.clipboardManager.deleteSelectedIcons(selectedArray, this.selectionManager);
+          this.clipboardManager.moveSelectedIconsToTrash(selectedArray, this.selectionManager);
         }
       }
     });
@@ -777,6 +770,10 @@ export class DesktopUI {
 
   deleteSelectedIcons(selectedArray) {
     return this.clipboardManager.deleteSelectedIcons(selectedArray, this.selectionManager);
+  }
+
+  moveSelectedIconsToTrash(selectedArray) {
+    return this.clipboardManager.moveSelectedIconsToTrash(selectedArray, this.selectionManager);
   }
 
   cutSelectedIcons(selectedArray) {

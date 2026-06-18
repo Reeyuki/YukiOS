@@ -225,9 +225,9 @@ export class ClipboardManager {
 
       try {
         if (fileName) {
-          await os.fs.delete(["Desktop"], fileName);
+          await os.fs.trashFile(["Desktop"], fileName);
         } else if (folderName) {
-          await os.fs.delete(["Desktop"], folderName);
+          await os.fs.trashFile(["Desktop"], folderName);
         } else if (icon.dataset.app) {
           this.deletedIconsStore.add(key);
         }
@@ -240,6 +240,39 @@ export class ClipboardManager {
     }
 
     this.positionStore.save(saved);
-    os.notify.send(`${count} item${count !== 1 ? "s" : ""} deleted`);
+    os.notify.send(`${count} item${count !== 1 ? "s" : ""} moved to trash`);
+  }
+
+  async moveSelectedIconsToTrash(selectedArray, selectionManager) {
+    if (!selectedArray || selectedArray.length === 0) return;
+
+    const saved = this.positionStore.load();
+    const count = selectedArray.length;
+
+    for (const icon of selectedArray) {
+      const key = this.positionStore.getKey(icon);
+      delete saved[key];
+
+      const fileName = icon.dataset.fileName;
+      const folderName = icon.dataset.folderName;
+
+      try {
+        if (fileName) {
+          await os.fs.trashFile(["Desktop"], fileName);
+        } else if (folderName) {
+          await os.fs.trashFile(["Desktop"], folderName);
+        } else if (icon.dataset.app) {
+          this.deletedIconsStore.add(key);
+        }
+      } catch (err) {
+        console.error("Failed to move desktop item to trash:", err);
+      }
+
+      selectionManager.remove(icon);
+      icon.remove();
+    }
+
+    this.positionStore.save(saved);
+    os.notify.send(`${count} item${count !== 1 ? "s" : ""} moved to trash`);
   }
 }
