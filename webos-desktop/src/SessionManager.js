@@ -168,7 +168,7 @@ export class SessionManager {
     this.container.innerHTML = `
       <div class="session-wallpaper"></div>
       <div class="session-background"></div>
-      <div class="session-content extra-hidden">
+      <div class="session-content${state === "locked" ? "" : " extra-hidden"}">
         <div class="session-info-btn" id="session-info-btn">
           <i class="fas fa-info"></i>
         </div>

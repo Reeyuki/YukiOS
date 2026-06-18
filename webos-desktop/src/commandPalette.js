@@ -440,6 +440,35 @@ export class CommandPalette {
         execute: () => this._toggleFullscreen()
       },
       {
+        title: "Lock Session",
+        subtitle: "Lock the current session and show the lock screen",
+        tag: "session",
+        icon: "fas fa-lock",
+        execute: () => this.services.sessionManager?.lockSession()
+      },
+      {
+        title: "Logout",
+        subtitle: "Sign out and return to the login screen",
+        tag: "session",
+        icon: "fas fa-right-from-bracket",
+        execute: async () => {
+          if (await os.dialog.confirm("Logout", "Are you sure you want to log out?")) {
+            await this.services.sessionManager?.lockToLoginScreen();
+          }
+        }
+      },
+      {
+        title: "Shutdown",
+        subtitle: "Shut down the system completely",
+        tag: "session",
+        icon: "fas fa-power-off",
+        execute: async () => {
+          if (await os.dialog.confirm("Shutdown", "Are you sure you want to shut down?")) {
+            await this.services.sessionManager?.lockToLoginScreen();
+          }
+        }
+      },
+      {
         title: "Show Workspace Overview",
         subtitle: "Display the workspace overview switcher",
         tag: "workspace",
