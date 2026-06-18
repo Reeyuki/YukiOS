@@ -191,7 +191,7 @@ export const FEATURE_DATA = {
     }
   ],
   step6: {
-    keyboardShortcuts: SHORTCUTS_DATA.map((s) => ({ keys: s.keys.join("+"), desc: s.desc })),
+    keyboardShortcuts: SHORTCUTS_DATA.map((s) => ({ keys: s.keys.join("+"), desc: s.desc, cat: s.cat })),
     filesystem: {
       title: "Virtual Filesystem",
       description: "In Yuki OS, your files are stored locally in your browser and survive page reloads.",
@@ -695,17 +695,6 @@ export class SetupApp extends BaseApp {
   }
 
   _buildStep6() {
-    const shortcutsHtml = FEATURE_DATA.step6.keyboardShortcuts
-      .map(
-        (s) => `
-        <div class="shortcut-item">
-          <kbd>${s.keys}</kbd>
-          <span>${s.desc}</span>
-        </div>
-      `
-      )
-      .join("");
-
     const filesystemHtml = FEATURE_DATA.step6.filesystem.structure
       .map(
         (f) => `
@@ -724,8 +713,11 @@ export class SetupApp extends BaseApp {
         </h2>
 
         <div class="personalize-section">
-          <label class="section-label">Keyboard Shortcuts Reference</label>
-          <div class="shortcuts-reference">${shortcutsHtml}</div>
+          <label class="section-label">Keyboard Shortcuts</label>
+          <p class="system-info-copy">Browse all keyboard shortcuts and hotkeys in the Shortcuts app.</p>
+          <button class="setup-btn setup-btn-primary" id="setup-launch-shortcuts">
+            <i class="fas fa-keyboard"></i> Open Keyboard Shortcuts
+          </button>
         </div>
 
         <div class="personalize-section">
@@ -971,6 +963,13 @@ export class SetupApp extends BaseApp {
     if (launchGuideBtn) {
       launchGuideBtn.addEventListener("click", () => {
         this._services.yukiOsGuideApp.open();
+      });
+    }
+
+    const launchShortcutsBtn = $("#setup-launch-shortcuts", win);
+    if (launchShortcutsBtn) {
+      launchShortcutsBtn.addEventListener("click", () => {
+        os.app.launch("shortcutsApp");
       });
     }
 

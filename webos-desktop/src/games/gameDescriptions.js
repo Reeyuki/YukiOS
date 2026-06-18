@@ -11,6 +11,8 @@ const APP_DESCRIPTIONS = APP_MANIFESTS.reduce((acc, manifest) => {
 export { APP_DESCRIPTIONS };
 
 export const descriptionMap = {
+  catGoesFishing:
+    "Start out on an island with a basic rod. Progress into a radar-wielding master fisher-cat scouring the sea for the biggest and baddest fish. Each fish has unique behaviors that you will learn to exploit as you tailor your arsenal of fishing rods to suit your style of play. Mrrrow!",
   tabs: "Totally Accurate Battle Simulator (TABS) is a physics based ragdoll tactics game developed by Landfall Games. Players pit armies of historical, mythological, and absurd units - from mammoths and squires to laser wielding raptors - against each other in a series of wobbly, unpredictable battles where the engine's chaotic physics are just as important as strategy.",
   plagueIncEvolved:
     "Plague Inc: Evolved is a real-time strategy simulation by Ndemic Creations, released in 2016. Players design and evolve a deadly pathogen - bacteria, virus, fungus, or more exotic threats - with the goal of infecting and exterminating the entire human population before a cure is developed.",

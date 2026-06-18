@@ -1290,6 +1290,45 @@ html[data-theme="solarized-light"] ::-webkit-scrollbar-thumb:hover {
   padding-right: 5px;
 }
 
+.setup-shortcuts-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: 320px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.shortcut-category {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.shortcut-category-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.shortcut-category-header i {
+  color: var(--brand);
+  font-size: 13px;
+}
+
+.shortcut-category-items {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+
 .shortcut-item {
   display: flex;
   align-items: center;
@@ -1322,7 +1361,6 @@ html[data-theme="solarized-light"] ::-webkit-scrollbar-thumb:hover {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  max-height: 180px;
   overflow-y: auto;
   padding-right: 5px;
 }
@@ -1876,4 +1914,42 @@ html[data-theme="solarized-light"] .app-pin-item.pinned {
   background: var(--brand-glow);
   border-color: var(--brand);
   color: #fff;
+}
+
+html[data-theme="light"] .shortcut-category,
+html[data-theme="cherry"] .shortcut-category,
+html[data-theme="github-light"] .shortcut-category,
+html[data-theme="minimal-gray"] .shortcut-category,
+html[data-theme="paper"] .shortcut-category,
+html[data-theme="macos-fluent"] .shortcut-category,
+html[data-theme="windows-fluent"] .shortcut-category,
+html[data-theme="material-you"] .shortcut-category,
+html[data-theme="sepia"] .shortcut-category,
+html[data-theme="sakura"] .shortcut-category,
+html[data-theme="arctic"] .shortcut-category,
+html[data-theme="nordic"] .shortcut-category,
+html[data-theme="gameboy"] .shortcut-category,
+html[data-theme="frutiger-aero"] .shortcut-category,
+html[data-theme="solarized-light"] .shortcut-category {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+html[data-theme="light"] .shortcut-category-header,
+html[data-theme="cherry"] .shortcut-category-header,
+html[data-theme="github-light"] .shortcut-category-header,
+html[data-theme="minimal-gray"] .shortcut-category-header,
+html[data-theme="paper"] .shortcut-category-header,
+html[data-theme="macos-fluent"] .shortcut-category-header,
+html[data-theme="windows-fluent"] .shortcut-category-header,
+html[data-theme="material-you"] .shortcut-category-header,
+html[data-theme="sepia"] .shortcut-category-header,
+html[data-theme="sakura"] .shortcut-category-header,
+html[data-theme="arctic"] .shortcut-category-header,
+html[data-theme="nordic"] .shortcut-category-header,
+html[data-theme="gameboy"] .shortcut-category-header,
+html[data-theme="frutiger-aero"] .shortcut-category-header,
+html[data-theme="solarized-light"] .shortcut-category-header {
+  color: rgba(0, 0, 0, 0.8);
+  border-bottom-color: rgba(0, 0, 0, 0.1);
 }

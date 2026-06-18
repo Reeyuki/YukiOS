@@ -180,11 +180,6 @@ const SYSTEM_CAPABILITIES = [
     desc: "Steam play counts, LuminSDK catalog (1000+ games), and home button support."
   },
   {
-    tag: "DESC",
-    title: "Game Descriptions",
-    desc: "Rich metadata and descriptions for games with genre, year, and developer info."
-  },
-  {
     tag: "DL",
     title: "File Download",
     desc: "Download files directly from explorer with right-click context menu."
@@ -336,76 +331,6 @@ const SYSTEM_CAPABILITIES = [
   }
 ];
 
-const CORE_SERVICES = [
-  {
-    name: "WindowManager",
-    desc: "Manages window lifecycle, drag/resize, snapping, z-ordering, and workspace management.",
-    features: [
-      "Window snapping",
-      "Alt+Right-Click resize",
-      "Workspace system",
-      "Transparency",
-      "Animations",
-      "Taskbar previews"
-    ]
-  },
-  {
-    name: "FileSystemManager",
-    desc: "Virtual filesystem using BrowserFS with IndexedDB persistence.",
-    features: ["Virtual VFS", "IndexedDB storage", "File operations", "Archive support"]
-  },
-  {
-    name: "NotificationCenter",
-    desc: "Toast notification system with Do Not Disturb mode.",
-    features: ["Toast notifications", "DND mode", "Notification history"]
-  },
-  {
-    name: "EventBus",
-    desc: "Pub-sub event system for inter-app communication.",
-    features: ["Event pub-sub", "Settings changes", "Window events"]
-  },
-  {
-    name: "AudioMixer",
-    desc: "Per-app volume control using Web Audio API.",
-    features: ["Per-app volume", "Master volume", "Mute toggle"]
-  },
-  {
-    name: "SessionManager",
-    desc: "User session management with login/lock screens.",
-    features: ["Login screen", "Lock screen", "Profile management", "Auto-login"]
-  },
-  {
-    name: "CommandPalette",
-    desc: "Global launcher for apps, files, and commands.",
-    features: ["App search", "File search", "Command execution", "Keyboard navigation"]
-  },
-  {
-    name: "TrayManager",
-    desc: "System tray for background applications.",
-    features: ["Tray icons", "Resident apps", "Overflow menu"]
-  },
-  {
-    name: "WorkspaceManager",
-    desc: "Virtual desktop management.",
-    features: ["Multiple workspaces", "Window assignment", "Workspace switching"]
-  },
-  {
-    name: "AppRegistry",
-    desc: "App metadata management with rename/disable/uninstall.",
-    features: ["App metadata", "Rename apps", "Disable apps", "Uninstall apps"]
-  },
-  {
-    name: "TaskbarPositionManager",
-    desc: "Manages taskbar positioning and alignment.",
-    features: ["Bottom position", "Top position", "Left position", "Right position"]
-  },
-  {
-    name: "AdsManager",
-    desc: "Manages ad display and analytics buffering.",
-    features: ["Ad display", "Analytics buffering", "User control"]
-  }
-];
-
 export class YukiOsGuideApp extends BaseApp {
   constructor(services) {
     super(services);
@@ -534,11 +459,7 @@ export class YukiOsGuideApp extends BaseApp {
             <div class="stat-value">${totalFeatures}</div>
             <div class="stat-label">Features</div>
           </div>
-          <div class="stat-card">
-            <i class="fas fa-layer-group"></i>
-            <div class="stat-value">${CORE_SERVICES.length}</div>
-            <div class="stat-label">Services</div>
-          </div>
+
           <div class="stat-card">
             <i class="fas fa-magic"></i>
             <div class="stat-value">35</div>
@@ -593,23 +514,6 @@ export class YukiOsGuideApp extends BaseApp {
                 <div class="capability-tag">${cap.tag}</div>
                 <h3>${cap.title}</h3>
                 <p>${cap.desc}</p>
-              </div>
-            `
-            ).join("")}
-          </div>
-        </div>
-
-        <div class="guide-subsection">
-          <h2><i class="fas fa-cogs"></i> Core Services</h2>
-          <div class="services-grid">
-            ${CORE_SERVICES.map(
-              (service) => `
-              <div class="service-card">
-                <h3>${service.name}</h3>
-                <p>${service.desc}</p>
-                <div class="service-features">
-                  ${service.features.map((f) => `<span class="service-feature">${f}</span>`).join("")}
-                </div>
               </div>
             `
             ).join("")}
@@ -804,22 +708,78 @@ export class YukiOsGuideApp extends BaseApp {
           ${step3bFiltered.length === 0 ? `<p class="no-results">No matching features</p>` : ""}
         </div>
 
-        <div class="guide-subsection">
-          <h2><i class="fas fa-keyboard"></i> Keyboard Shortcuts</h2>
-          <div class="shortcuts-grid">
-            ${FEATURE_DATA.step6.keyboardShortcuts
-              .filter((s) => s.keys.toLowerCase().includes(searchLower) || s.desc.toLowerCase().includes(searchLower))
-              .map(
-                (s) => `
-              <div class="shortcut-item">
-                <kbd>${s.keys}</kbd>
-                <span>${s.desc}</span>
+        ${this._buildCategorizedShortcuts(searchLower)}
+      </div>
+    `;
+  }
+
+  _buildCategorizedShortcuts(searchLower) {
+    const CATEGORY_META = {
+      global: { icon: "fas fa-globe", label: "Global & System" },
+      desktop: { icon: "fas fa-desktop", label: "Desktop & Files" },
+      notepad: { icon: "fas fa-file-alt", label: "Notepad" },
+      browser: { icon: "fas fa-compass", label: "Yuki Browser" },
+      calc: { icon: "fas fa-calculator", label: "Calculator" },
+      calendar: { icon: "fas fa-calendar-alt", label: "Calendar" },
+      terminal: { icon: "fas fa-terminal", label: "Terminal" },
+      office: { icon: "fas fa-file-word", label: "Office" },
+      model3d: { icon: "fas fa-cube", label: "3D Model Editor" },
+      games: { icon: "fas fa-gamepad", label: "Games" }
+    };
+    const CATEGORY_ORDER = [
+      "global",
+      "desktop",
+      "notepad",
+      "browser",
+      "calc",
+      "calendar",
+      "terminal",
+      "office",
+      "model3d",
+      "games"
+    ];
+
+    const groups = {};
+    FEATURE_DATA.step6.keyboardShortcuts.forEach((s) => {
+      const cat = s.cat || "global";
+      if (!groups[cat]) groups[cat] = [];
+      groups[cat].push(s);
+    });
+
+    return `
+      <div class="guide-subsection">
+        <h2><i class="fas fa-keyboard"></i> Keyboard Shortcuts</h2>
+        ${CATEGORY_ORDER.map((cat) => {
+          const items = (groups[cat] || []).filter(
+            (s) => s.keys.toLowerCase().includes(searchLower) || s.desc.toLowerCase().includes(searchLower)
+          );
+          if (items.length === 0) return "";
+          const meta = CATEGORY_META[cat] || { icon: "fas fa-keyboard", label: cat };
+          return `
+              <div class="shortcut-category">
+                <h3 class="shortcut-category-title"><i class="${meta.icon}"></i> ${meta.label}</h3>
+                <div class="shortcuts-grid">
+                  ${items
+                    .map(
+                      (s) => `
+                    <div class="shortcut-item">
+                      <kbd>${s.keys}</kbd>
+                      <span>${s.desc}</span>
+                    </div>
+                  `
+                    )
+                    .join("")}
+                </div>
               </div>
-            `
-              )
-              .join("")}
-          </div>
-        </div>
+            `;
+        }).join("")}
+        ${
+          FEATURE_DATA.step6.keyboardShortcuts.filter(
+            (s) => s.keys.toLowerCase().includes(searchLower) || s.desc.toLowerCase().includes(searchLower)
+          ).length === 0
+            ? `<p class="no-results">No matching shortcuts</p>`
+            : ""
+        }
       </div>
     `;
   }
@@ -1025,22 +985,7 @@ export class YukiOsGuideApp extends BaseApp {
       });
     });
 
-    const bindAppCards = () => {
-      const appCards = win.querySelectorAll(".app-card");
-      appCards.forEach((card) => {
-        card.addEventListener("click", () => {
-          card.classList.toggle("expanded");
-          if (card.classList.contains("expanded")) {
-            setTimeout(() => {
-              card.classList.remove("expanded");
-            }, 3000);
-          }
-        });
-      });
-    };
-
-    bindAppCards();
-    this._appCardBinder = bindAppCards;
+    this._appCardBinder = () => {};
   }
 
   _refreshContent(win) {

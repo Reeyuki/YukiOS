@@ -255,8 +255,8 @@
   color: #fff;
   flex-shrink: 0;
   box-shadow:
-    0 8px 32px rgba(124, 58, 237, 0.5),
-    0 2px 8px rgba(0, 0, 0, 0.4),
+    0 24px 64px rgba(0, 0, 0, 0.65),
+    0 4px 16px rgba(0, 0, 0, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
   position: relative;
   z-index: 1;
@@ -489,7 +489,6 @@
   margin-bottom: 14px;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.35);
 }
 
 .capability-card h3 {
@@ -508,74 +507,7 @@
   margin: 0;
 }
 
-.services-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 16px;
-}
-
-.service-card {
-  background: var(--glass);
-  backdrop-filter: blur(32px);
-  -webkit-backdrop-filter: blur(32px);
-  border: 1px solid var(--glass-border);
-  border-radius: 13px;
-  padding: 22px;
-  transition:
-    border-color 0.15s ease,
-    box-shadow 0.15s ease;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-}
-
-.service-card:hover {
-  border-color: var(--brand);
-  box-shadow:
-    0 12px 36px rgba(0, 0, 0, 0.35),
-    0 2px 8px rgba(124, 58, 237, 0.1);
-}
-
-.service-card h3 {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0 0 8px 0;
-  letter-spacing: -0.01em;
-}
-
-.service-card p {
-  font-size: 12px;
-  color: var(--text-secondary);
-  opacity: 0.78;
-  line-height: 1.6;
-  margin: 0 0 14px 0;
-}
-
-.service-features {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.service-feature {
-  padding: 4px 10px;
-  background: var(--glass);
-  border: 1px solid var(--glass-border);
-  border-radius: 12px;
-  font-size: 10px;
-  color: var(--text-secondary);
-  opacity: 0.72;
-  letter-spacing: 0.02em;
-  transition:
-    border-color 0.15s ease,
-    opacity 0.15s ease;
-}
-
-.service-feature:hover {
-  border-color: var(--brand);
-  opacity: 1;
-}
-
-.quick-start-list {
+.capability-card p {
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -665,7 +597,7 @@
   color: #fff;
   margin-bottom: 14px;
   box-shadow:
-    0 4px 16px rgba(124, 58, 237, 0.4),
+    0 8px 24px rgba(0, 0, 0, 0.35),
     inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 
@@ -687,8 +619,8 @@
 
 .apps-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
 }
 
 .app-card {
@@ -697,41 +629,36 @@
   -webkit-backdrop-filter: blur(32px);
   border: 1px solid var(--glass-border);
   border-radius: 13px;
-  padding: 18px;
+  padding: 24px;
   transition:
     border-color 0.15s ease,
     transform 0.15s ease,
-    box-shadow 0.15s ease,
-    max-height 0.3s ease;
+    box-shadow 0.15s ease;
   cursor: pointer;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-  max-height: 160px;
-  overflow: hidden;
   position: relative;
 }
 
-.app-card:hover,
-.app-card.expanded {
+.app-card:hover {
   border-color: var(--brand);
   transform: translateY(-2px);
   box-shadow:
     0 12px 36px rgba(0, 0, 0, 0.4),
     0 2px 8px rgba(124, 58, 237, 0.15);
-  max-height: 400px;
 }
 
 .app-icon {
-  width: 48px;
-  height: 48px;
+  width: 60px;
+  height: 60px;
   background: var(--glass);
   border: 1px solid var(--glass-border);
-  border-radius: 11px;
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
+  font-size: 26px;
   color: var(--brand);
-  margin-bottom: 14px;
+  margin-bottom: 16px;
   overflow: hidden;
   transition: border-color 0.15s ease;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
@@ -748,19 +675,19 @@
 }
 
 .app-info h3 {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--text-primary);
-  margin: 0 0 6px 0;
+  margin: 0 0 8px 0;
   letter-spacing: -0.01em;
 }
 
 .app-info p {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-secondary);
-  opacity: 0.75;
+  opacity: 0.78;
   line-height: 1.5;
-  margin: 0 0 12px 0;
+  margin: 0 0 14px 0;
 }
 
 .app-meta {
@@ -849,88 +776,37 @@
   line-height: 1.4;
 }
 
-.system-overview {
+.shortcut-category {
+  margin-bottom: 20px;
+}
+
+.shortcut-category:last-child {
+  margin-bottom: 0;
+}
+
+.shortcut-category-title {
   display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.system-layer {
-  background: var(--glass);
-  backdrop-filter: blur(32px);
-  -webkit-backdrop-filter: blur(32px);
-  border: 1px solid var(--glass-border);
-  border-radius: 13px;
-  padding: 22px;
-  transition:
-    border-color 0.15s ease,
-    box-shadow 0.15s ease;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
-  position: relative;
-  overflow: hidden;
-}
-
-.system-layer::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  background: var(--brand);
-  opacity: 0;
-  transition: opacity 0.15s ease;
-  border-radius: 13px 0 0 13px;
-}
-
-.system-layer:hover {
-  border-color: var(--brand);
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.3);
-}
-
-.system-layer:hover::before {
-  opacity: 0.7;
-}
-
-.system-layer h3 {
-  font-size: 14px;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--text-primary);
-  margin: 0 0 8px 0;
+  margin: 0 0 10px 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--glass-border);
   letter-spacing: -0.01em;
 }
 
-.system-layer p {
-  font-size: 12px;
-  color: var(--text-secondary);
-  opacity: 0.78;
-  line-height: 1.6;
-  margin: 0 0 14px 0;
+.shortcut-category-title i {
+  color: var(--brand);
+  opacity: 0.8;
+  font-size: 13px;
 }
 
-.layer-features {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.feature-tag {
-  padding: 4px 10px;
-  background: var(--glass);
-  border: 1px solid var(--glass-border);
-  border-radius: 12px;
-  font-size: 10px;
-  color: var(--text-secondary);
-  opacity: 0.7;
-  letter-spacing: 0.02em;
-  transition:
-    border-color 0.15s ease,
-    opacity 0.15s ease;
-}
-
-.feature-tag:hover {
-  border-color: var(--brand);
-  opacity: 1;
+.shortcut-category .shortcuts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 8px;
 }
 
 .connection-grid {
@@ -1342,10 +1218,8 @@ html[data-theme="solarized-light"] .guide-hero {
 
 html[data-theme="light"] .stat-card,
 html[data-theme="light"] .capability-card,
-html[data-theme="light"] .service-card,
 html[data-theme="light"] .feature-card,
 html[data-theme="light"] .app-card,
-html[data-theme="light"] .system-layer,
 html[data-theme="light"] .connection-card,
 html[data-theme="light"] .arch-item,
 html[data-theme="light"] .quick-start-item,
@@ -1353,10 +1227,8 @@ html[data-theme="light"] .shortcut-item,
 html[data-theme="light"] .filesystem-item,
 html[data-theme="cherry"] .stat-card,
 html[data-theme="cherry"] .capability-card,
-html[data-theme="cherry"] .service-card,
 html[data-theme="cherry"] .feature-card,
 html[data-theme="cherry"] .app-card,
-html[data-theme="cherry"] .system-layer,
 html[data-theme="cherry"] .connection-card,
 html[data-theme="cherry"] .arch-item,
 html[data-theme="cherry"] .quick-start-item,
@@ -1364,10 +1236,8 @@ html[data-theme="cherry"] .shortcut-item,
 html[data-theme="cherry"] .filesystem-item,
 html[data-theme="github-light"] .stat-card,
 html[data-theme="github-light"] .capability-card,
-html[data-theme="github-light"] .service-card,
 html[data-theme="github-light"] .feature-card,
 html[data-theme="github-light"] .app-card,
-html[data-theme="github-light"] .system-layer,
 html[data-theme="github-light"] .connection-card,
 html[data-theme="github-light"] .arch-item,
 html[data-theme="github-light"] .quick-start-item,
@@ -1375,10 +1245,8 @@ html[data-theme="github-light"] .shortcut-item,
 html[data-theme="github-light"] .filesystem-item,
 html[data-theme="minimal-gray"] .stat-card,
 html[data-theme="minimal-gray"] .capability-card,
-html[data-theme="minimal-gray"] .service-card,
 html[data-theme="minimal-gray"] .feature-card,
 html[data-theme="minimal-gray"] .app-card,
-html[data-theme="minimal-gray"] .system-layer,
 html[data-theme="minimal-gray"] .connection-card,
 html[data-theme="minimal-gray"] .arch-item,
 html[data-theme="minimal-gray"] .quick-start-item,
@@ -1386,10 +1254,8 @@ html[data-theme="minimal-gray"] .shortcut-item,
 html[data-theme="minimal-gray"] .filesystem-item,
 html[data-theme="paper"] .stat-card,
 html[data-theme="paper"] .capability-card,
-html[data-theme="paper"] .service-card,
 html[data-theme="paper"] .feature-card,
 html[data-theme="paper"] .app-card,
-html[data-theme="paper"] .system-layer,
 html[data-theme="paper"] .connection-card,
 html[data-theme="paper"] .arch-item,
 html[data-theme="paper"] .quick-start-item,
@@ -1397,10 +1263,8 @@ html[data-theme="paper"] .shortcut-item,
 html[data-theme="paper"] .filesystem-item,
 html[data-theme="macos-fluent"] .stat-card,
 html[data-theme="macos-fluent"] .capability-card,
-html[data-theme="macos-fluent"] .service-card,
 html[data-theme="macos-fluent"] .feature-card,
 html[data-theme="macos-fluent"] .app-card,
-html[data-theme="macos-fluent"] .system-layer,
 html[data-theme="macos-fluent"] .connection-card,
 html[data-theme="macos-fluent"] .arch-item,
 html[data-theme="macos-fluent"] .quick-start-item,
@@ -1408,10 +1272,8 @@ html[data-theme="macos-fluent"] .shortcut-item,
 html[data-theme="macos-fluent"] .filesystem-item,
 html[data-theme="windows-fluent"] .stat-card,
 html[data-theme="windows-fluent"] .capability-card,
-html[data-theme="windows-fluent"] .service-card,
 html[data-theme="windows-fluent"] .feature-card,
 html[data-theme="windows-fluent"] .app-card,
-html[data-theme="windows-fluent"] .system-layer,
 html[data-theme="windows-fluent"] .connection-card,
 html[data-theme="windows-fluent"] .arch-item,
 html[data-theme="windows-fluent"] .quick-start-item,
@@ -1419,10 +1281,8 @@ html[data-theme="windows-fluent"] .shortcut-item,
 html[data-theme="windows-fluent"] .filesystem-item,
 html[data-theme="material-you"] .stat-card,
 html[data-theme="material-you"] .capability-card,
-html[data-theme="material-you"] .service-card,
 html[data-theme="material-you"] .feature-card,
 html[data-theme="material-you"] .app-card,
-html[data-theme="material-you"] .system-layer,
 html[data-theme="material-you"] .connection-card,
 html[data-theme="material-you"] .arch-item,
 html[data-theme="material-you"] .quick-start-item,
@@ -1430,10 +1290,8 @@ html[data-theme="material-you"] .shortcut-item,
 html[data-theme="material-you"] .filesystem-item,
 html[data-theme="sepia"] .stat-card,
 html[data-theme="sepia"] .capability-card,
-html[data-theme="sepia"] .service-card,
 html[data-theme="sepia"] .feature-card,
 html[data-theme="sepia"] .app-card,
-html[data-theme="sepia"] .system-layer,
 html[data-theme="sepia"] .connection-card,
 html[data-theme="sepia"] .arch-item,
 html[data-theme="sepia"] .quick-start-item,
@@ -1441,10 +1299,8 @@ html[data-theme="sepia"] .shortcut-item,
 html[data-theme="sepia"] .filesystem-item,
 html[data-theme="sakura"] .stat-card,
 html[data-theme="sakura"] .capability-card,
-html[data-theme="sakura"] .service-card,
 html[data-theme="sakura"] .feature-card,
 html[data-theme="sakura"] .app-card,
-html[data-theme="sakura"] .system-layer,
 html[data-theme="sakura"] .connection-card,
 html[data-theme="sakura"] .arch-item,
 html[data-theme="sakura"] .quick-start-item,
@@ -1452,10 +1308,8 @@ html[data-theme="sakura"] .shortcut-item,
 html[data-theme="sakura"] .filesystem-item,
 html[data-theme="arctic"] .stat-card,
 html[data-theme="arctic"] .capability-card,
-html[data-theme="arctic"] .service-card,
 html[data-theme="arctic"] .feature-card,
 html[data-theme="arctic"] .app-card,
-html[data-theme="arctic"] .system-layer,
 html[data-theme="arctic"] .connection-card,
 html[data-theme="arctic"] .arch-item,
 html[data-theme="arctic"] .quick-start-item,
@@ -1463,10 +1317,8 @@ html[data-theme="arctic"] .shortcut-item,
 html[data-theme="arctic"] .filesystem-item,
 html[data-theme="nordic"] .stat-card,
 html[data-theme="nordic"] .capability-card,
-html[data-theme="nordic"] .service-card,
 html[data-theme="nordic"] .feature-card,
 html[data-theme="nordic"] .app-card,
-html[data-theme="nordic"] .system-layer,
 html[data-theme="nordic"] .connection-card,
 html[data-theme="nordic"] .arch-item,
 html[data-theme="nordic"] .quick-start-item,
@@ -1474,10 +1326,8 @@ html[data-theme="nordic"] .shortcut-item,
 html[data-theme="nordic"] .filesystem-item,
 html[data-theme="gameboy"] .stat-card,
 html[data-theme="gameboy"] .capability-card,
-html[data-theme="gameboy"] .service-card,
 html[data-theme="gameboy"] .feature-card,
 html[data-theme="gameboy"] .app-card,
-html[data-theme="gameboy"] .system-layer,
 html[data-theme="gameboy"] .connection-card,
 html[data-theme="gameboy"] .arch-item,
 html[data-theme="gameboy"] .quick-start-item,
@@ -1485,10 +1335,8 @@ html[data-theme="gameboy"] .shortcut-item,
 html[data-theme="gameboy"] .filesystem-item,
 html[data-theme="frutiger-aero"] .stat-card,
 html[data-theme="frutiger-aero"] .capability-card,
-html[data-theme="frutiger-aero"] .service-card,
 html[data-theme="frutiger-aero"] .feature-card,
 html[data-theme="frutiger-aero"] .app-card,
-html[data-theme="frutiger-aero"] .system-layer,
 html[data-theme="frutiger-aero"] .connection-card,
 html[data-theme="frutiger-aero"] .arch-item,
 html[data-theme="frutiger-aero"] .quick-start-item,
@@ -1496,10 +1344,8 @@ html[data-theme="frutiger-aero"] .shortcut-item,
 html[data-theme="frutiger-aero"] .filesystem-item,
 html[data-theme="solarized-light"] .stat-card,
 html[data-theme="solarized-light"] .capability-card,
-html[data-theme="solarized-light"] .service-card,
 html[data-theme="solarized-light"] .feature-card,
 html[data-theme="solarized-light"] .app-card,
-html[data-theme="solarized-light"] .system-layer,
 html[data-theme="solarized-light"] .connection-card,
 html[data-theme="solarized-light"] .arch-item,
 html[data-theme="solarized-light"] .quick-start-item,
@@ -1512,108 +1358,78 @@ html[data-theme="solarized-light"] .filesystem-item {
 
 html[data-theme="light"] .stat-card:hover,
 html[data-theme="light"] .capability-card:hover,
-html[data-theme="light"] .service-card:hover,
 html[data-theme="light"] .feature-card:hover,
 html[data-theme="light"] .app-card:hover,
-html[data-theme="light"] .system-layer:hover,
 html[data-theme="light"] .connection-card:hover,
 html[data-theme="cherry"] .stat-card:hover,
 html[data-theme="cherry"] .capability-card:hover,
-html[data-theme="cherry"] .service-card:hover,
 html[data-theme="cherry"] .feature-card:hover,
 html[data-theme="cherry"] .app-card:hover,
-html[data-theme="cherry"] .system-layer:hover,
 html[data-theme="cherry"] .connection-card:hover,
 html[data-theme="github-light"] .stat-card:hover,
 html[data-theme="github-light"] .capability-card:hover,
-html[data-theme="github-light"] .service-card:hover,
 html[data-theme="github-light"] .feature-card:hover,
 html[data-theme="github-light"] .app-card:hover,
-html[data-theme="github-light"] .system-layer:hover,
 html[data-theme="github-light"] .connection-card:hover,
 html[data-theme="minimal-gray"] .stat-card:hover,
 html[data-theme="minimal-gray"] .capability-card:hover,
-html[data-theme="minimal-gray"] .service-card:hover,
 html[data-theme="minimal-gray"] .feature-card:hover,
 html[data-theme="minimal-gray"] .app-card:hover,
-html[data-theme="minimal-gray"] .system-layer:hover,
 html[data-theme="minimal-gray"] .connection-card:hover,
 html[data-theme="paper"] .stat-card:hover,
 html[data-theme="paper"] .capability-card:hover,
-html[data-theme="paper"] .service-card:hover,
 html[data-theme="paper"] .feature-card:hover,
 html[data-theme="paper"] .app-card:hover,
-html[data-theme="paper"] .system-layer:hover,
 html[data-theme="paper"] .connection-card:hover,
 html[data-theme="macos-fluent"] .stat-card:hover,
 html[data-theme="macos-fluent"] .capability-card:hover,
-html[data-theme="macos-fluent"] .service-card:hover,
 html[data-theme="macos-fluent"] .feature-card:hover,
 html[data-theme="macos-fluent"] .app-card:hover,
-html[data-theme="macos-fluent"] .system-layer:hover,
 html[data-theme="macos-fluent"] .connection-card:hover,
 html[data-theme="windows-fluent"] .stat-card:hover,
 html[data-theme="windows-fluent"] .capability-card:hover,
-html[data-theme="windows-fluent"] .service-card:hover,
 html[data-theme="windows-fluent"] .feature-card:hover,
 html[data-theme="windows-fluent"] .app-card:hover,
-html[data-theme="windows-fluent"] .system-layer:hover,
 html[data-theme="windows-fluent"] .connection-card:hover,
 html[data-theme="material-you"] .stat-card:hover,
 html[data-theme="material-you"] .capability-card:hover,
-html[data-theme="material-you"] .service-card:hover,
 html[data-theme="material-you"] .feature-card:hover,
 html[data-theme="material-you"] .app-card:hover,
-html[data-theme="material-you"] .system-layer:hover,
 html[data-theme="material-you"] .connection-card:hover,
 html[data-theme="sepia"] .stat-card:hover,
 html[data-theme="sepia"] .capability-card:hover,
-html[data-theme="sepia"] .service-card:hover,
 html[data-theme="sepia"] .feature-card:hover,
 html[data-theme="sepia"] .app-card:hover,
-html[data-theme="sepia"] .system-layer:hover,
 html[data-theme="sepia"] .connection-card:hover,
 html[data-theme="sakura"] .stat-card:hover,
 html[data-theme="sakura"] .capability-card:hover,
-html[data-theme="sakura"] .service-card:hover,
 html[data-theme="sakura"] .feature-card:hover,
 html[data-theme="sakura"] .app-card:hover,
-html[data-theme="sakura"] .system-layer:hover,
 html[data-theme="sakura"] .connection-card:hover,
 html[data-theme="arctic"] .stat-card:hover,
 html[data-theme="arctic"] .capability-card:hover,
-html[data-theme="arctic"] .service-card:hover,
 html[data-theme="arctic"] .feature-card:hover,
 html[data-theme="arctic"] .app-card:hover,
-html[data-theme="arctic"] .system-layer:hover,
 html[data-theme="arctic"] .connection-card:hover,
 html[data-theme="nordic"] .stat-card:hover,
 html[data-theme="nordic"] .capability-card:hover,
-html[data-theme="nordic"] .service-card:hover,
 html[data-theme="nordic"] .feature-card:hover,
 html[data-theme="nordic"] .app-card:hover,
-html[data-theme="nordic"] .system-layer:hover,
 html[data-theme="nordic"] .connection-card:hover,
 html[data-theme="gameboy"] .stat-card:hover,
 html[data-theme="gameboy"] .capability-card:hover,
-html[data-theme="gameboy"] .service-card:hover,
 html[data-theme="gameboy"] .feature-card:hover,
 html[data-theme="gameboy"] .app-card:hover,
-html[data-theme="gameboy"] .system-layer:hover,
 html[data-theme="gameboy"] .connection-card:hover,
 html[data-theme="frutiger-aero"] .stat-card:hover,
 html[data-theme="frutiger-aero"] .capability-card:hover,
-html[data-theme="frutiger-aero"] .service-card:hover,
 html[data-theme="frutiger-aero"] .feature-card:hover,
 html[data-theme="frutiger-aero"] .app-card:hover,
-html[data-theme="frutiger-aero"] .system-layer:hover,
 html[data-theme="frutiger-aero"] .connection-card:hover,
 html[data-theme="solarized-light"] .stat-card:hover,
 html[data-theme="solarized-light"] .capability-card:hover,
-html[data-theme="solarized-light"] .service-card:hover,
 html[data-theme="solarized-light"] .feature-card:hover,
 html[data-theme="solarized-light"] .app-card:hover,
-html[data-theme="solarized-light"] .system-layer:hover,
 html[data-theme="solarized-light"] .connection-card:hover {
   box-shadow: 0 8px 24px var(--shadow-color);
 }
@@ -1657,137 +1473,107 @@ html[data-theme="solarized-light"] .guide-header h1 {
 
 html[data-theme="light"] .guide-header p,
 html[data-theme="light"] .capability-card p,
-html[data-theme="light"] .service-card p,
 html[data-theme="light"] .feature-card p,
 html[data-theme="light"] .app-info p,
 html[data-theme="light"] .quick-start-item p,
-html[data-theme="light"] .system-layer p,
 html[data-theme="light"] .shortcut-item span,
 html[data-theme="light"] .filesystem-item span,
 html[data-theme="cherry"] .guide-header p,
 html[data-theme="cherry"] .capability-card p,
-html[data-theme="cherry"] .service-card p,
 html[data-theme="cherry"] .feature-card p,
 html[data-theme="cherry"] .app-info p,
 html[data-theme="cherry"] .quick-start-item p,
-html[data-theme="cherry"] .system-layer p,
 html[data-theme="cherry"] .shortcut-item span,
 html[data-theme="cherry"] .filesystem-item span,
 html[data-theme="github-light"] .guide-header p,
 html[data-theme="github-light"] .capability-card p,
-html[data-theme="github-light"] .service-card p,
 html[data-theme="github-light"] .feature-card p,
 html[data-theme="github-light"] .app-info p,
 html[data-theme="github-light"] .quick-start-item p,
-html[data-theme="github-light"] .system-layer p,
 html[data-theme="github-light"] .shortcut-item span,
 html[data-theme="github-light"] .filesystem-item span,
 html[data-theme="minimal-gray"] .guide-header p,
 html[data-theme="minimal-gray"] .capability-card p,
-html[data-theme="minimal-gray"] .service-card p,
 html[data-theme="minimal-gray"] .feature-card p,
 html[data-theme="minimal-gray"] .app-info p,
 html[data-theme="minimal-gray"] .quick-start-item p,
-html[data-theme="minimal-gray"] .system-layer p,
 html[data-theme="minimal-gray"] .shortcut-item span,
 html[data-theme="minimal-gray"] .filesystem-item span,
 html[data-theme="paper"] .guide-header p,
 html[data-theme="paper"] .capability-card p,
-html[data-theme="paper"] .service-card p,
 html[data-theme="paper"] .feature-card p,
 html[data-theme="paper"] .app-info p,
 html[data-theme="paper"] .quick-start-item p,
-html[data-theme="paper"] .system-layer p,
 html[data-theme="paper"] .shortcut-item span,
 html[data-theme="paper"] .filesystem-item span,
 html[data-theme="macos-fluent"] .guide-header p,
 html[data-theme="macos-fluent"] .capability-card p,
-html[data-theme="macos-fluent"] .service-card p,
 html[data-theme="macos-fluent"] .feature-card p,
 html[data-theme="macos-fluent"] .app-info p,
 html[data-theme="macos-fluent"] .quick-start-item p,
-html[data-theme="macos-fluent"] .system-layer p,
 html[data-theme="macos-fluent"] .shortcut-item span,
 html[data-theme="macos-fluent"] .filesystem-item span,
 html[data-theme="windows-fluent"] .guide-header p,
 html[data-theme="windows-fluent"] .capability-card p,
-html[data-theme="windows-fluent"] .service-card p,
 html[data-theme="windows-fluent"] .feature-card p,
 html[data-theme="windows-fluent"] .app-info p,
 html[data-theme="windows-fluent"] .quick-start-item p,
-html[data-theme="windows-fluent"] .system-layer p,
 html[data-theme="windows-fluent"] .shortcut-item span,
 html[data-theme="windows-fluent"] .filesystem-item span,
 html[data-theme="material-you"] .guide-header p,
 html[data-theme="material-you"] .capability-card p,
-html[data-theme="material-you"] .service-card p,
 html[data-theme="material-you"] .feature-card p,
 html[data-theme="material-you"] .app-info p,
 html[data-theme="material-you"] .quick-start-item p,
-html[data-theme="material-you"] .system-layer p,
 html[data-theme="material-you"] .shortcut-item span,
 html[data-theme="material-you"] .filesystem-item span,
 html[data-theme="sepia"] .guide-header p,
 html[data-theme="sepia"] .capability-card p,
-html[data-theme="sepia"] .service-card p,
 html[data-theme="sepia"] .feature-card p,
 html[data-theme="sepia"] .app-info p,
 html[data-theme="sepia"] .quick-start-item p,
-html[data-theme="sepia"] .system-layer p,
 html[data-theme="sepia"] .shortcut-item span,
 html[data-theme="sepia"] .filesystem-item span,
 html[data-theme="sakura"] .guide-header p,
 html[data-theme="sakura"] .capability-card p,
-html[data-theme="sakura"] .service-card p,
 html[data-theme="sakura"] .feature-card p,
 html[data-theme="sakura"] .app-info p,
 html[data-theme="sakura"] .quick-start-item p,
-html[data-theme="sakura"] .system-layer p,
 html[data-theme="sakura"] .shortcut-item span,
 html[data-theme="sakura"] .filesystem-item span,
 html[data-theme="arctic"] .guide-header p,
 html[data-theme="arctic"] .capability-card p,
-html[data-theme="arctic"] .service-card p,
 html[data-theme="arctic"] .feature-card p,
 html[data-theme="arctic"] .app-info p,
 html[data-theme="arctic"] .quick-start-item p,
-html[data-theme="arctic"] .system-layer p,
 html[data-theme="arctic"] .shortcut-item span,
 html[data-theme="arctic"] .filesystem-item span,
 html[data-theme="nordic"] .guide-header p,
 html[data-theme="nordic"] .capability-card p,
-html[data-theme="nordic"] .service-card p,
 html[data-theme="nordic"] .feature-card p,
 html[data-theme="nordic"] .app-info p,
 html[data-theme="nordic"] .quick-start-item p,
-html[data-theme="nordic"] .system-layer p,
 html[data-theme="nordic"] .shortcut-item span,
 html[data-theme="nordic"] .filesystem-item span,
 html[data-theme="gameboy"] .guide-header p,
 html[data-theme="gameboy"] .capability-card p,
-html[data-theme="gameboy"] .service-card p,
 html[data-theme="gameboy"] .feature-card p,
 html[data-theme="gameboy"] .app-info p,
 html[data-theme="gameboy"] .quick-start-item p,
-html[data-theme="gameboy"] .system-layer p,
 html[data-theme="gameboy"] .shortcut-item span,
 html[data-theme="gameboy"] .filesystem-item span,
 html[data-theme="frutiger-aero"] .guide-header p,
 html[data-theme="frutiger-aero"] .capability-card p,
-html[data-theme="frutiger-aero"] .service-card p,
 html[data-theme="frutiger-aero"] .feature-card p,
 html[data-theme="frutiger-aero"] .app-info p,
 html[data-theme="frutiger-aero"] .quick-start-item p,
-html[data-theme="frutiger-aero"] .system-layer p,
 html[data-theme="frutiger-aero"] .shortcut-item span,
 html[data-theme="frutiger-aero"] .filesystem-item span,
 html[data-theme="solarized-light"] .guide-header p,
 html[data-theme="solarized-light"] .capability-card p,
-html[data-theme="solarized-light"] .service-card p,
 html[data-theme="solarized-light"] .feature-card p,
 html[data-theme="solarized-light"] .app-info p,
 html[data-theme="solarized-light"] .quick-start-item p,
-html[data-theme="solarized-light"] .system-layer p,
 html[data-theme="solarized-light"] .shortcut-item span,
 html[data-theme="solarized-light"] .filesystem-item span {
   color: var(--text-secondary);
@@ -1795,77 +1581,62 @@ html[data-theme="solarized-light"] .filesystem-item span {
 }
 
 html[data-theme="light"] .hero-tag,
-html[data-theme="light"] .service-feature,
 html[data-theme="light"] .feature-tag,
 html[data-theme="light"] .mini-app-tag,
 html[data-theme="light"] .nav-count,
 html[data-theme="cherry"] .hero-tag,
-html[data-theme="cherry"] .service-feature,
 html[data-theme="cherry"] .feature-tag,
 html[data-theme="cherry"] .mini-app-tag,
 html[data-theme="cherry"] .nav-count,
 html[data-theme="github-light"] .hero-tag,
-html[data-theme="github-light"] .service-feature,
 html[data-theme="github-light"] .feature-tag,
 html[data-theme="github-light"] .mini-app-tag,
 html[data-theme="github-light"] .nav-count,
 html[data-theme="minimal-gray"] .hero-tag,
-html[data-theme="minimal-gray"] .service-feature,
 html[data-theme="minimal-gray"] .feature-tag,
 html[data-theme="minimal-gray"] .mini-app-tag,
 html[data-theme="minimal-gray"] .nav-count,
 html[data-theme="paper"] .hero-tag,
-html[data-theme="paper"] .service-feature,
 html[data-theme="paper"] .feature-tag,
 html[data-theme="paper"] .mini-app-tag,
 html[data-theme="paper"] .nav-count,
 html[data-theme="macos-fluent"] .hero-tag,
-html[data-theme="macos-fluent"] .service-feature,
 html[data-theme="macos-fluent"] .feature-tag,
 html[data-theme="macos-fluent"] .mini-app-tag,
 html[data-theme="macos-fluent"] .nav-count,
 html[data-theme="windows-fluent"] .hero-tag,
-html[data-theme="windows-fluent"] .service-feature,
 html[data-theme="windows-fluent"] .feature-tag,
 html[data-theme="windows-fluent"] .mini-app-tag,
 html[data-theme="windows-fluent"] .nav-count,
 html[data-theme="material-you"] .hero-tag,
-html[data-theme="material-you"] .service-feature,
 html[data-theme="material-you"] .feature-tag,
 html[data-theme="material-you"] .mini-app-tag,
 html[data-theme="material-you"] .nav-count,
 html[data-theme="sepia"] .hero-tag,
-html[data-theme="sepia"] .service-feature,
 html[data-theme="sepia"] .feature-tag,
 html[data-theme="sepia"] .mini-app-tag,
 html[data-theme="sepia"] .nav-count,
 html[data-theme="sakura"] .hero-tag,
-html[data-theme="sakura"] .service-feature,
 html[data-theme="sakura"] .feature-tag,
 html[data-theme="sakura"] .mini-app-tag,
 html[data-theme="sakura"] .nav-count,
 html[data-theme="arctic"] .hero-tag,
-html[data-theme="arctic"] .service-feature,
 html[data-theme="arctic"] .feature-tag,
 html[data-theme="arctic"] .mini-app-tag,
 html[data-theme="arctic"] .nav-count,
 html[data-theme="nordic"] .hero-tag,
-html[data-theme="nordic"] .service-feature,
 html[data-theme="nordic"] .feature-tag,
 html[data-theme="nordic"] .mini-app-tag,
 html[data-theme="nordic"] .nav-count,
 html[data-theme="gameboy"] .hero-tag,
-html[data-theme="gameboy"] .service-feature,
 html[data-theme="gameboy"] .feature-tag,
 html[data-theme="gameboy"] .mini-app-tag,
 html[data-theme="gameboy"] .nav-count,
 html[data-theme="frutiger-aero"] .hero-tag,
-html[data-theme="frutiger-aero"] .service-feature,
 html[data-theme="frutiger-aero"] .feature-tag,
 html[data-theme="frutiger-aero"] .mini-app-tag,
 html[data-theme="frutiger-aero"] .nav-count,
 html[data-theme="solarized-light"] .hero-tag,
-html[data-theme="solarized-light"] .service-feature,
 html[data-theme="solarized-light"] .feature-tag,
 html[data-theme="solarized-light"] .mini-app-tag,
 html[data-theme="solarized-light"] .nav-count {
