@@ -12,6 +12,11 @@ const EXISTING_NEWS_UPDATES = [
     date: "June 18, 2026",
     sections: [
       {
+        icon: "fa-ball",
+        title: "Jump Effect",
+        items: [["fa-ball", "Cursor Jump Effect", "Added icon jump effect for app launches"]]
+      },
+      {
         icon: "fa-star",
         title: "Fixed Games",
         items: [["fa-star", "Fixed Games", "Fixed Terraria, GtaVC, Kindergarten"]]
@@ -52,6 +57,17 @@ const EXISTING_NEWS_UPDATES = [
             "fa-trash",
             "Trash Bin",
             "Deleted files now go to Trash instead of being permanently removed. Restore or permanently delete from the new Trash view in Explorer sidebar."
+          ]
+        ]
+      },
+      {
+        icon: "fa-cube",
+        title: "Cursor Effect",
+        items: [
+          [
+            "fa-cube",
+            "Cursor Launch Effect",
+            "Bouncing icon follows your cursor when launching apps. Toggle it in Settings."
           ]
         ]
       }

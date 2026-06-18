@@ -81,6 +81,16 @@ export function renderSystemSettings(s) {
         </div>
         <div class="settings-row">
           <div class="settings-label-group">
+            <span class="settings-label-title">Cursor Launch Effect</span>
+            <span class="settings-label-desc">Show a bouncing icon on cursor when launching apps</span>
+          </div>
+          <label class="settings-toggle">
+            <input type="checkbox" id="settingsCursorEffect" ${s.cursorEffectEnabled ? "checked" : ""}/>
+            <span class="settings-track"><span class="settings-thumb"></span></span>
+          </label>
+        </div>
+        <div class="settings-row">
+          <div class="settings-label-group">
             <span class="settings-label-title">Turbo Mode</span>
             <span class="settings-label-desc">Reduce heavy visual effects and animations</span>
           </div>

@@ -99,7 +99,8 @@ export class SettingsApp extends BaseApp {
         mikuCursor: os.storage.get(StorageKeys.mikuCursor) !== "false",
         fontFamily: os.storage.get(StorageKeys.fontFamily) || "opensans",
         uiDensity: os.storage.get(StorageKeys.uiDensity) || "comfortable",
-        wispServer: os.storage.get(StorageKeys.wispServer) || "wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/"
+        wispServer: os.storage.get(StorageKeys.wispServer) || "wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/",
+        cursorEffectEnabled: os.storage.get(StorageKeys.cursorEffectEnabled) !== "false"
       };
 
       applyCursor(this._settings.cursorDataUrl);
@@ -234,6 +235,8 @@ export class SettingsApp extends BaseApp {
       const selectedFontFamily =
         win.querySelector(".settings-btn[data-font-family].active")?.dataset.fontFamily || "poppins";
 
+      const cursorEffectEnabled = !!gc("#settingsCursorEffect");
+
       const startMenuCats = {};
       win.querySelectorAll(".settings-start-cat-toggle").forEach((chk) => {
         startMenuCats[chk.dataset.cat] = chk.checked;
@@ -263,6 +266,7 @@ export class SettingsApp extends BaseApp {
       os.storage.set(StorageKeys.startMenuWidth, String(startMenuWidth));
       os.storage.set(StorageKeys.startMenuHeight, String(startMenuHeight));
       os.storage.set(StorageKeys.startMenuCats, startMenuCats);
+      os.storage.set(StorageKeys.cursorEffectEnabled, String(cursorEffectEnabled));
 
       Object.assign(this._settings, {
         weather,
@@ -288,7 +292,8 @@ export class SettingsApp extends BaseApp {
         notificationsOverFullscreen,
         notificationsDuration,
         notificationsPosition,
-        transparentUI
+        transparentUI,
+        cursorEffectEnabled
       });
 
       setCdnMirror(cdnMirror);

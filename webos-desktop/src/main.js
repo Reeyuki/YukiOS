@@ -31,6 +31,7 @@ import logoImg from "./assets/logo.png";
 import { showCdnPrompt } from "./shared/dialogs.js";
 import { initializeOSBridge, setDialogExplorerApp } from "./os/index.js";
 import { loadApps } from "./AppLoader.js";
+import { init as initCursorEffect } from "./cursorEffect.js";
 
 initializeMirrors(appMap);
 registerPWA();
@@ -116,6 +117,7 @@ loadApps(services);
 
 const appLauncher = new AppLauncher(windowManager, fileSystemManager, services);
 services.appLauncher = appLauncher;
+initCursorEffect();
 appLauncher.setEmulatorApp(services.emulatorApp);
 setGameLauncher(appLauncher);
 windowManager.setAppLauncher(appLauncher);

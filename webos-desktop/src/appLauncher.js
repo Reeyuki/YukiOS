@@ -235,6 +235,9 @@ export class AppLauncher {
     const info = this.appMap[app];
     if (!info) return console.error(`App ${app} not found.`);
 
+    const { trigger: triggerCursorEffect } = await import("./cursorEffect.js");
+    triggerCursorEffect(info.icon);
+
     if (typeof info.url === "string" && isCdnGhUrl(info.url)) {
       info.url = resolveGhUrl(info.url);
     }
@@ -270,8 +273,8 @@ export class AppLauncher {
     const appExtra = { ...(extra || {}), appId: app, appType: info.type };
 
     if (info.type === "system") {
-      if (app === "libreSprite") {
-        this.openRemoteApp(info.source);
+      if (info.launchType === "remote") {
+        this.openRemoteApp(info.source || info.url);
       } else if (info.launchType === "iframe" && info.source) {
         this.openIframeApp({
           appId: app,

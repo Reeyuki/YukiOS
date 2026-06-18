@@ -1141,8 +1141,12 @@ export class ExplorerApp extends BaseApp {
         const raw = await this.fs.getFileContent(inst.currentPath, name);
         const content = JSON.parse(raw);
         if (content && content.app) {
+          const { trigger: triggerCursorEffect } = await import("../cursorEffect.js");
+          triggerCursorEffect(content.icon || "fa-solid fa-cube");
           os.app.launch(content.app);
         } else if (content && content.type === "youtube-embed") {
+          const { trigger: triggerCursorEffect } = await import("../cursorEffect.js");
+          triggerCursorEffect("fa-brands fa-youtube");
           this._openYouTubeEmbedDesktop(content);
         }
       } catch (e) {
@@ -1151,6 +1155,8 @@ export class ExplorerApp extends BaseApp {
       return;
     }
 
+    const { trigger: triggerCursorEffect } = await import("../cursorEffect.js");
+    triggerCursorEffect();
     await openFileWith({
       name,
       path: [...inst.currentPath],

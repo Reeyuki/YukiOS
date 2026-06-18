@@ -93,7 +93,8 @@ export function bindSystemCategory(win, save, settings, notificationCenter, show
     "#settingsAnalytics",
     "#settingsAds",
     "#settingsDisableBootScreen",
-    "#settingsWindowSessionPersistence"
+    "#settingsWindowSessionPersistence",
+    "#settingsCursorEffect"
   ];
   systemSettings.forEach((id) => bindEvent($(id, win), "change", save));
 

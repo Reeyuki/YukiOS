@@ -1080,7 +1080,7 @@ export const APP_MANIFESTS = [
     title: "LibreSprite",
     source: "https://yukios.netlify.app/static/apps/libresprite/index.html",
     icon: `${CDN_BASE}/static/icons/libresprite.webp`,
-    launchType: "iframe",
+    launchType: "remote",
     windowIdPatterns: ["libresprite"],
     category: "graphics",
     clippy: { message: "Open LibreSprite and sketch directly in the browser.", animation: ClippyAnimation.GetArtsy },
