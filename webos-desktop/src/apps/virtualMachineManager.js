@@ -342,7 +342,7 @@ export class VirtualMachineManagerApp extends BaseApp {
       return;
     }
 
-    const usesScramjet = vm.osId === "emuos";
+    const usesScramjet = vm.osId === "emuos" || vm.osId === "win7";
     const iframeSrc = usesScramjet ? this._scramjetUrl(vm.url) : vm.url;
     const attrs = usesScramjet
       ? 'style="width:100%;height:100%;border:none;" allow="autoplay; fullscreen; clipboard-write; encrypted-media; picture-in-picture" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation-by-user-activation"'

@@ -153,7 +153,7 @@ export const appMap = {
     type: "game",
     icon: "/static/icons/purplePlace.webp",
     title: "Purple Place",
-    url: "https://html5.gdata1.com/purble-place/?v=20260125224127"
+    url: "https://khang-nd.github.io/Comfy-Cakes"
   },
   tetris: {
     type: "game",
