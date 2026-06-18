@@ -84,6 +84,18 @@ export class WorkspaceManager {
         }
       });
 
+      btn.addEventListener("wheel", (e) => {
+        e.preventDefault();
+        const idx = this.workspaces.findIndex((w) => w.id === this.activeId);
+        if (e.deltaY > 0) {
+          const next = this.workspaces[Math.min(idx + 1, this.workspaces.length - 1)];
+          if (next) this.switchTo(next.id);
+        } else {
+          const prev = this.workspaces[Math.max(idx - 1, 0)];
+          if (prev) this.switchTo(prev.id);
+        }
+      });
+
       if (this.workspaces.length > 1) {
         const del = document.createElement("span");
         del.className = "workspace-close";

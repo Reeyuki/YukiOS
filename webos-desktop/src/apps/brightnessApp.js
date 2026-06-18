@@ -30,6 +30,10 @@ class BrightnessApp extends BaseApp {
       onClick: () => {
         this.togglePopup();
       },
+      onWheel: (e) => {
+        const delta = e.deltaY > 0 ? -5 : 5;
+        this._adjustBrightness(delta);
+      },
       contextMenuItems: [
         { label: "Default", icon: "fa-circle", action: () => this._applyPreset("default") },
         { label: "Reading", icon: "fa-book", action: () => this._applyPreset("reading") },

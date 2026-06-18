@@ -356,6 +356,11 @@ class AudioMixer {
       priority: 100,
       onClick: () => {
         this.toggle();
+      },
+      onWheel: (e) => {
+        const delta = e.deltaY > 0 ? -0.05 : 0.05;
+        const newVol = Math.max(0, Math.min(1, this.masterVolume + delta));
+        this.setMaster(newVol);
       }
     });
   }

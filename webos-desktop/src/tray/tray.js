@@ -9,7 +9,7 @@ class TrayManager {
     this._popupEl = null;
     this._popupVisible = false;
     this._wm = null;
-    this.MAX_VISIBLE = 4;
+    this.MAX_VISIBLE = 7;
   }
 
   init(wm) {
@@ -44,6 +44,7 @@ class TrayManager {
       resident: options.resident || false,
       showInTray: options.showInTray || false,
       onClick: options.onClick || null,
+      onWheel: options.onWheel || null,
       onQuit: options.onQuit || null,
       contextMenuItems: options.contextMenuItems || null,
       priority: options.priority || 0
@@ -178,6 +179,14 @@ class TrayManager {
       e.preventDefault();
       e.stopPropagation();
       this._showContextMenu(e, winId, label);
+    });
+    btn.addEventListener("wheel", (e) => {
+      const item = this._items.get(winId);
+      if (item && item.onWheel) {
+        e.preventDefault();
+        e.stopPropagation();
+        item.onWheel(e);
+      }
     });
     return btn;
   }

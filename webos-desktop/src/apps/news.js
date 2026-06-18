@@ -12,6 +12,11 @@ const EXISTING_NEWS_UPDATES = [
     date: "June 18, 2026",
     sections: [
       {
+        icon: "fa-star",
+        title: "Fixed Games",
+        items: [["fa-star", "Fixed Games", "Fixed Terraria, GtaVC, Kindergarten"]]
+      },
+      {
         icon: "fa-database",
         title: "File Explorer",
         items: [
@@ -48,16 +53,6 @@ const EXISTING_NEWS_UPDATES = [
         icon: "fa-terminal",
         title: "Terminal",
         items: [["fa-terminal", "Improved terminal color and commands", "Improved terminal color and commands"]]
-      },
-      {
-        icon: "fa-star",
-        title: "Terraria",
-        items: [["fa-star", "Fixed Terraria", "Fixed Terraria"]]
-      },
-      {
-        icon: "fa-wand-magic-sparkles",
-        title: "Fix gta vc",
-        items: [["fa-star", "GTA VC", "Fixed Gta VC."]]
       },
       {
         icon: "fa-wand-magic-sparkles",
