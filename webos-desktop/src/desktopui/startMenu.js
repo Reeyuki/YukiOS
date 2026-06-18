@@ -77,14 +77,14 @@ export function applyStartMenuSettings(el) {
   const catNames = [
     "favorites",
     "all",
-    "development",
-    "games",
-    "graphics",
-    "help",
     "internet",
     "media",
     "office",
+    "graphics",
+    "games",
+    "development",
     "system",
+    "help",
     "customize",
     "settingsApp"
   ];
@@ -133,14 +133,14 @@ export function openStartMenu({ focusSearch = false, openDefaultPage = true } = 
         "recent",
         "all",
         "favorites",
-        "development",
-        "games",
-        "graphics",
-        "help",
         "internet",
         "media",
         "office",
+        "graphics",
+        "games",
+        "development",
         "system",
+        "help",
         "customize",
         "settingsApp"
       ];
@@ -366,7 +366,7 @@ function activateCategoryPage(cat) {
   } else if (cat.dataset.cat === "recent") {
     updateRecentlyUsedUI();
   } else if (
-    ["all", "development", "games", "graphics", "help", "internet", "media", "office", "system"].includes(
+    ["all", "internet", "media", "office", "graphics", "games", "development", "system", "help"].includes(
       cat.dataset.cat
     )
   ) {
@@ -1370,7 +1370,8 @@ function populateCategoryPage(category, appLauncher) {
     } else if (category === "games") {
       shouldInclude = appData.type === "game";
     } else if (category === "system") {
-      shouldInclude = appData.type === "system";
+      const appCategory = appData.category || SYSTEM_APPS[appId]?.category || "system";
+      shouldInclude = appData.type === "system" && appCategory === "system";
     } else {
       const appCategory = appData.category || SYSTEM_APPS[appId]?.category || "system";
       shouldInclude = appCategory === category;
