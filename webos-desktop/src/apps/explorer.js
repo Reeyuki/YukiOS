@@ -29,7 +29,8 @@ import {
   openFileWith,
   isExeFile,
   isSwfFile,
-  isZipFile
+  isZipFile,
+  generateThumbnail
 } from "../fileDisplay.js";
 import { showConflictDialog } from "../shared/conflictDialog.js";
 import { showDynamicContextMenu } from "../shared/contextMenu.js";
@@ -64,6 +65,7 @@ export class ExplorerApp extends BaseApp {
     this.desktopUI = null;
     this.open = this.open.bind(this);
     this._instances = new Map();
+    this._thumbnailCache = new Map();
     this._archiveExtractor = new ArchiveExtractor(this.fs, (msg) => os.notify.send(msg), AppSource.EXPLORER);
   }
   setBrowser(browserApp) {
@@ -995,15 +997,19 @@ export class ExplorerApp extends BaseApp {
     inst._cachedFolder = folder;
     if (inst.mode === "browse") inst._cachedFolderStats = await this._buildFolderStats(inst);
 
-    for (const [name, itemData] of Object.entries(folder)) {
-      if (name === "system" && inst.currentPath.length === 0) continue;
-      const isFile = itemData?.type === "file";
-      const iconEl = await this._buildItemIconHTML(name, isFile, itemData, inst);
+    const entries = Object.entries(folder).filter(([name]) => !(name === "system" && inst.currentPath.length === 0));
+    const items = await Promise.all(
+      entries.map(async ([name, itemData]) => {
+        const isFile = itemData?.type === "file";
+        const iconEl = await this._buildItemIconHTML(name, isFile, itemData, inst);
+        return { name, isFile, iconEl };
+      })
+    );
 
+    for (const { name, isFile, iconEl } of items) {
       const item = createElement("div", { className: "file-item" });
       item.dataset.isFile = isFile ? "true" : "false";
       setHTML(item, `${iconEl}<span>${name}</span>`);
-
       this._bindItemInteractions(item, name, isFile, inst, win);
       view.appendChild(item);
     }
@@ -1032,11 +1038,19 @@ export class ExplorerApp extends BaseApp {
 
     let thumbnailSrc = null;
     if (isImageFile(name)) {
-      try {
-        const content = await this.fs.getFileContent(inst.currentPath, name);
-        thumbnailSrc = content instanceof Blob ? await readFileAsDataURL(content) : content;
-      } catch (e) {
-        console.error("Failed to load image thumbnail:", e);
+      const cacheKey = inst.currentPath.join("/") + "/" + name;
+      const cached = this._thumbnailCache.get(cacheKey);
+      if (cached) {
+        thumbnailSrc = cached;
+      } else {
+        try {
+          const content = await this.fs.getFileContent(inst.currentPath, name);
+          const src = content instanceof Blob ? await readFileAsDataURL(content) : content;
+          thumbnailSrc = await generateThumbnail(src);
+          if (thumbnailSrc) this._thumbnailCache.set(cacheKey, thumbnailSrc);
+        } catch (e) {
+          console.error("Failed to load image thumbnail:", e);
+        }
       }
     }
 

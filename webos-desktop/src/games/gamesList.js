@@ -366,6 +366,12 @@ export const appMap = {
     icon: "/static/icons/ultrakill.webp",
     title: "Ultrakill"
   },
+  miside: {
+    type: "game",
+    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@8ef4c030fa3b63ab71d7ab989031000220b334f7/814.html",
+    icon: "/static/icons/miside.webp",
+    title: "Miside"
+  },
   baldi: {
     type: "game",
     url: "/static/games/baldi/baldi.html",

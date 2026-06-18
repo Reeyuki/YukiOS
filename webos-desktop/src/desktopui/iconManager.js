@@ -1,4 +1,4 @@
-import { isImageFile, buildFileIconHTML, openFileWith, readFileAsDataURL } from "../fileDisplay.js";
+import { isImageFile, buildFileIconHTML, openFileWith, readFileAsDataURL, generateThumbnail } from "../fileDisplay.js";
 import { FileKind } from "../fs.js";
 import { StorageKeys } from "../StorageKeys.js";
 import { os } from "../os/index.js";
@@ -208,8 +208,16 @@ export class IconManager {
         let thumbnailSrc = itemData?.icon;
         if (isImageFile(fileName)) {
           try {
-            const content = await this.fs.getFileContent(["Desktop"], fileName);
-            thumbnailSrc = content instanceof Blob ? await readFileAsDataURL(content) : content;
+            const cacheKey = "Desktop/" + fileName;
+            thumbnailSrc = this._thumbnailCache?.get(cacheKey);
+            if (!thumbnailSrc) {
+              const content = await this.fs.getFileContent(["Desktop"], fileName);
+              const src = content instanceof Blob ? await readFileAsDataURL(content) : content;
+              thumbnailSrc = await generateThumbnail(src);
+              if (thumbnailSrc) {
+                (this._thumbnailCache ??= new Map()).set(cacheKey, thumbnailSrc);
+              }
+            }
           } catch (e) {
             console.error("Failed to load image thumbnail:", e);
           }

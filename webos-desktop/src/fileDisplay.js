@@ -744,3 +744,38 @@ export function decodeDataURLContent(content) {
   }
   return content;
 }
+
+export function generateThumbnail(src, maxDimension = 128) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const { width, height } = img;
+      if (width <= maxDimension && height <= maxDimension) {
+        resolve(src);
+        return;
+      }
+      try {
+        const scale = Math.min(maxDimension / width, maxDimension / height);
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.round(width * scale);
+        canvas.height = Math.round(height * scale);
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL("image/jpeg", 0.85));
+      } catch {
+        resolve(src);
+      }
+    };
+    img.onerror = () => resolve(src);
+    if (src instanceof Blob) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        img.src = e.target.result;
+      };
+      reader.onerror = () => resolve(src);
+      reader.readAsDataURL(src);
+    } else {
+      img.src = src;
+    }
+  });
+}
