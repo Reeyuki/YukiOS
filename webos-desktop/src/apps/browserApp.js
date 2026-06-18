@@ -25,9 +25,7 @@ export class BrowserApp extends BaseApp {
       { name: "Wikipedia", url: "https://www.wikipedia.org" },
       { name: "JS Fiddle", url: "https://jsfiddle.net" },
       { name: "SoundBoard", url: "https://www.myinstants.com/en/categories/sound%20effects/us/" },
-      { name: "DustinnWin10", url: "https://dustinbrett.com" },
-      { name: "Classroomspot", url: "https://classroomspot.github.io" },
-      { name: "Win 11", url: "https://selenite.cc/resources/sppa/11/index.html" }
+      { name: "Classroomspot", url: "https://classroomspot.github.io" }
     ];
     this.proxyExclusionList = ["dustinbrett.com"];
     this.currentProxyIndex = 0;

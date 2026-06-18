@@ -1062,6 +1062,16 @@
         }
 
         initializeBrowser();
+        if (new URLSearchParams(window.location.search).get("embed") === "1") {
+          const observer = new MutationObserver(() => {
+            const els = document.querySelectorAll(".flex.tabs, .flex.nav, .loading-bar-container");
+            if (els.length) {
+              els.forEach((el) => el.remove());
+              observer.disconnect();
+            }
+          });
+          observer.observe(document.body, { childList: true, subtree: true });
+        }
       });
 
       async function initializeBrowser() {
@@ -1163,6 +1173,9 @@
 
         window.addEventListener("message", (e) => {
           if (e.data?.type === "navigate") handleSubmit(e.data.url);
+          if (e.data?.type === "hide-chrome") {
+            document.querySelectorAll(".flex.tabs, .flex.nav, .loading-bar-container").forEach((el) => el.remove());
+          }
           if (e.data?.type === "browser-audio-playing") {
             const tab = getActiveTab();
             if (tab) {

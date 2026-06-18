@@ -1122,5 +1122,18 @@ export const APP_MANIFESTS = [
     category: "graphics",
     description:
       "Lightweight browser-based image editor with basic drawing tools, filters, and quick editing capabilities."
+  },
+  {
+    serviceKey: "virtualMachineManagerApp",
+    enhanced: true,
+    type: "system",
+    title: "Virtual Machine Manager",
+    icon: "fas fa-server",
+    launchType: "instance",
+    windowIdPatterns: ["vm-app"],
+    category: "development",
+    clippy: { message: "Spin up a virtual machine right in your browser!", animation: ClippyAnimation.Show },
+    description:
+      "Boot simulated OS environments including Windows 93, 96, XP, 10, 11, Mac OS, and more in your browser."
   }
 ];

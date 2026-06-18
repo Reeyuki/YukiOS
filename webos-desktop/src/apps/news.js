@@ -8,6 +8,17 @@ const EXISTING_NEWS_UPDATES = [
     date: "June 18, 2026",
     sections: [
       {
+        icon: "fa-server",
+        title: "Virtual Machine Manager",
+        items: [
+          [
+            "fa-server",
+            "Virtual Machine Manager",
+            "Boot simulated OS environments like Windows 93, 96, XP, 10, 11, and Mac OS right in your browser."
+          ]
+        ]
+      },
+      {
         icon: "fa-star",
         title: "Jump Effect",
         items: [["fa-star", "Cursor Jump Effect", "Added icon jump effect for app launches"]]
