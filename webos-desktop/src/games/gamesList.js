@@ -494,13 +494,13 @@ export const appMap = {
   },
   kindergarten: {
     type: "game",
-    url: "https://cdn.jsdelivr.net/gh/reeyuki/yukios-games@main/gnmath/kindergarten.html",
+    url: "/static/games/kindergarten1/index.html",
     icon: "/static/icons/kind1.webp",
     title: "Kindergarten"
   },
   kindergarten2: {
     type: "game",
-    url: "https://cdn.jsdelivr.net/gh/reeyuki/yukios-games@main/gnmath/kindergarten2.html",
+    url: "/static/games/kindergarten2/index.html",
     icon: "/static/icons/kind2.webp",
     title: "Kindergarten 2"
   },

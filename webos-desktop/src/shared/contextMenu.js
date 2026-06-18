@@ -71,8 +71,10 @@ export function showContextMenu(e, items, handlers) {
   if (!menu) return;
   menu.classList.add("context-menu-glass");
 
-  menu.innerHTML = items
-    .filter((item) => typeof item === "string" || !item.condition || item.condition())
+  const filtered = items.filter((item) => typeof item === "string" || !item.condition || item.condition());
+  const deduped = filtered.filter((item, i) => !(item === "hr" && filtered[i - 1] === "hr"));
+
+  menu.innerHTML = deduped
     .map((item) => {
       if (item === "hr") return "<hr>";
       const icon = (item.icon || "fa-chevron-right").trim();
