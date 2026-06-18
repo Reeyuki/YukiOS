@@ -431,6 +431,7 @@ export class TerminalApp extends BaseApp {
     this.registerCommand("grep", (args) => this.cmdGrep(args));
     this.registerCommand("wc", (args) => this.cmdWc(args));
     this.registerCommand("du", (args, flags) => this.cmdDu(args, flags));
+    this.registerCommand("exit", () => this.cmdExit());
   }
 
   cmdClear() {
@@ -816,7 +817,8 @@ export class TerminalApp extends BaseApp {
       ["date", "Display current date and time"],
       ["history", "Show command history"],
       ["tree", "Display directory tree"],
-      ["du", "Estimate file/directory sizes"]
+      ["du", "Estimate file/directory sizes"],
+      ["exit", "Close the terminal"]
     ];
     await this.print("Available commands:");
     for (const [cmd, desc] of cmds) {
@@ -825,5 +827,11 @@ export class TerminalApp extends BaseApp {
     await this.print("");
     await this.print("Glob patterns: * (match any), ? (match one)");
     await this.print("Pipes: command1 | command2");
+  }
+
+  cmdExit() {
+    const win = document.getElementById("terminal-win");
+    os.window.removeFromTaskbar(win.id);
+    if (win) win.remove();
   }
 }

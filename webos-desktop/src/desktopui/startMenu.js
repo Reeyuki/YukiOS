@@ -900,7 +900,7 @@ function getGridItems() {
     { app: "notepadApp", title: "Notepad", icon: "fas fa-edit" },
     { app: "calculatorApp", title: "Calculator", icon: "fas fa-calculator" },
     { app: "shortcutsApp", title: "Shortcuts", icon: "fas fa-keyboard" },
-    { app: "yukiConvert", title: "Yuki Convert", icon: "fas fa-exchange-alt" },
+    { app: "yukiConvertApp", title: "Yuki Convert", icon: "fas fa-exchange-alt" },
     { app: "cameraApp", title: "Camera", icon: "fas fa-camera" },
     { app: "officeApp", title: "Office", icon: "fas fa-file-word" },
     { app: "installedApps", title: "Installed Apps", icon: "fas fa-th-list" },
