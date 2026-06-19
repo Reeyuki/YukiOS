@@ -8,7 +8,6 @@
   gap: 10px;
   pointer-events: none;
   max-height: calc(100vh - 120px);
-  overflow: hidden;
 }
 
 .ntf-toast-container--bottom-right {
@@ -1265,6 +1264,14 @@ html[data-theme="solarized-light"] .ntf-toast__close:hover {
 }
 
 .ntf-toast.ntf-toast--no-animation {
+  animation: none !important;
+  transition: none !important;
+}
+
+.ntf-toast--dragging {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
   animation: none !important;
   transition: none !important;
 }
