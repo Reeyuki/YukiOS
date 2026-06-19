@@ -129,5 +129,10 @@ export const StorageKeys = {
   vantaWallpaper: "yukiOS_vanta_wallpaper",
   wispServer: "yukiOS_wisp_server",
   cursorEffectEnabled: "yukiOS_cursor_effect_enabled",
-  colorPickerHistory: "yukiOS_color_picker_history"
+  colorPickerHistory: "yukiOS_color_picker_history",
+  mapsSource: "yukiOS_maps_source",
+  mapsOsmLayer: "yukiOS_maps_osm_layer",
+  mapsOsmZoom: "yukiOS_maps_osm_zoom",
+  mapsOsmLat: "yukiOS_maps_osm_lat",
+  mapsOsmLng: "yukiOS_maps_osm_lng"
 };

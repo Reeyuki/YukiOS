@@ -1157,5 +1157,20 @@ export const APP_MANIFESTS = [
     category: "graphics",
     clippy: { message: "Pick any color from your screen with Alt+H.", animation: ClippyAnimation.Show },
     description: "Sample colors from anywhere on screen with a magnified preview and one-click copy."
+  },
+  {
+    serviceKey: "mapsApp",
+    enhanced: true,
+    type: "system",
+    title: "Maps",
+    icon: "fas fa-map",
+    launchType: "instance",
+    windowIdPatterns: ["maps"],
+    category: "internet",
+    clippy: {
+      message: "Explore the world with OpenStreetMap, or switch to Google Maps.",
+      animation: ClippyAnimation.Show
+    },
+    description: "Interactive maps with OpenStreetMap and Google Maps support, plus configurable tile layers and zoom."
   }
 ];

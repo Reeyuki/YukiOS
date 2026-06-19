@@ -5,6 +5,22 @@ const appNewsEntries = APP_MANIFESTS.filter((manifest) => manifest.news).map((ma
 
 const EXISTING_NEWS_UPDATES = [
   {
+    date: "June 20, 2026",
+    sections: [
+      {
+        icon: "fa-map",
+        title: "New App",
+        items: [
+          [
+            "fa-map",
+            "Maps",
+            "Explore the world with OpenStreetMap, or switch to Google Maps with configurable tile layers and settings."
+          ]
+        ]
+      }
+    ]
+  },
+  {
     date: "June 19, 2026",
     sections: [
       {

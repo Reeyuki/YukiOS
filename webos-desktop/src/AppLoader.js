@@ -33,6 +33,7 @@ import { TorrentClientApp } from "./apps/torrentClient.js";
 import { VirtualMachineManagerApp } from "./apps/virtualMachineManager.js";
 import { ColorPickerApp } from "./apps/colorPicker.js";
 import { ScreenshotApp } from "./apps/screenshot.js";
+import { MapsApp } from "./apps/maps.js";
 
 const APP_CLASS_MAP = {
   terminalApp: TerminalApp,
@@ -67,7 +68,8 @@ const APP_CLASS_MAP = {
   torrentClientApp: TorrentClientApp,
   virtualMachineManagerApp: VirtualMachineManagerApp,
   colorPickerApp: ColorPickerApp,
-  screenshotApp: ScreenshotApp
+  screenshotApp: ScreenshotApp,
+  mapsApp: MapsApp
 };
 
 const APP_DEFINITIONS = APP_MANIFESTS.map((manifest) => {

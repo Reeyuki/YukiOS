@@ -2,6 +2,7 @@ import "../styles/weather.css";
 import { getWeatherInfo } from "../shared/weatherCodes.js";
 import { WindowHelper } from "../utils/WindowHelper.js";
 
+import { $, setHTML, setText } from "../shared/domUtils.js";
 import { BaseApp, PersistenceTypes, os } from "../framework.js";
 const WEATHER_CACHE_TTL = 10 * 60 * 1000;
 const LOCATION_CACHE_TTL = 24 * 60 * 60 * 1000;
@@ -115,8 +116,8 @@ export class WeatherApp extends BaseApp {
       },
       actions: {
         autoLocate: async (payload, event, element, state) => {
-          const body = document.getElementById("wx-body");
-          const searchInput = document.getElementById("wx-search-input");
+          const body = $("#wx-body");
+          const searchInput = $("#wx-search-input");
           if (body) {
             this.renderLoading(body);
             try {
@@ -133,8 +134,8 @@ export class WeatherApp extends BaseApp {
           }
         },
         searchCity: async (payload, event, element, state) => {
-          const body = document.getElementById("wx-body");
-          const searchInput = document.getElementById("wx-search-input");
+          const body = $("#wx-body");
+          const searchInput = $("#wx-search-input");
           const city = searchInput ? searchInput.value.trim() : "";
           if (city && body) {
             this.renderLoading(body);
@@ -151,8 +152,8 @@ export class WeatherApp extends BaseApp {
         },
         searchOnEnter: async (payload, event, element, state) => {
           if (event.key === "Enter") {
-            const body = document.getElementById("wx-body");
-            const searchInput = document.getElementById("wx-search-input");
+            const body = $("#wx-body");
+            const searchInput = $("#wx-search-input");
             const city = searchInput ? searchInput.value.trim() : "";
             if (city && body) {
               this.renderLoading(body);
@@ -171,9 +172,9 @@ export class WeatherApp extends BaseApp {
         toggleUnit: async (payload, event, element, state) => {
           state.unit = state.unit === "metric" ? "imperial" : "metric";
           this.unit = state.unit;
-          const unitBtn = document.getElementById("wx-unit-btn");
-          if (unitBtn) unitBtn.textContent = state.unit === "metric" ? "°C" : "°F";
-          const body = document.getElementById("wx-body");
+          const unitBtn = $("#wx-unit-btn");
+          setText(unitBtn, state.unit === "metric" ? "°C" : "°F");
+          const body = $("#wx-body");
           if (body && state.currentCoords) {
             this.renderLoading(body);
             try {
@@ -196,8 +197,8 @@ export class WeatherApp extends BaseApp {
   }
 
   initWeather(payload, event, element, state) {
-    this.wxBody = document.getElementById("wx-body");
-    const searchInput = document.getElementById("wx-search-input");
+    this.wxBody = $("#wx-body");
+    const searchInput = $("#wx-search-input");
     this.renderPlaceholder(this.wxBody, "Weather");
     this.initializeWeather(this.wxBody, searchInput);
   }
@@ -268,7 +269,9 @@ export class WeatherApp extends BaseApp {
       })
       .join("");
 
-    container.innerHTML = `
+    setHTML(
+      container,
+      `
     <div class="wx-main">
       <div class="wx-hero">
         <div class="wx-location">${data.cityName}, ${data.country}</div>
@@ -302,14 +305,17 @@ export class WeatherApp extends BaseApp {
         ${forecastHTML}
       </div>
     </div>
-  `;
+  `
+    );
   }
   renderError(container, message) {
-    container.innerHTML = `<div class="wx-error">⚠️ ${message}</div>`;
+    setHTML(container, `<div class="wx-error">⚠️ ${message}</div>`);
   }
 
   renderPlaceholder(container, message = "Check the Weather") {
-    container.innerHTML = `
+    setHTML(
+      container,
+      `
     <div class="wx-placeholder">
       <div class="wx-placeholder-icon">🌤️</div>
       <div class="wx-placeholder-title">${message}</div>
@@ -319,11 +325,12 @@ export class WeatherApp extends BaseApp {
         <div class="wx-tip">🔍 Or search for any city manually</div>
       </div>
     </div>
-  `;
+  `
+    );
   }
 
   renderLoading(container, message = "Fetching weather...") {
-    container.innerHTML = `<div class="wx-loading"><div class="wx-spinner"></div><span>${message}</span></div>`;
+    setHTML(container, `<div class="wx-loading"><div class="wx-spinner"></div><span>${message}</span></div>`);
   }
 
   async doAutoLocate(container, searchInput) {
