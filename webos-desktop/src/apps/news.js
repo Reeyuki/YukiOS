@@ -5,6 +5,22 @@ const appNewsEntries = APP_MANIFESTS.filter((manifest) => manifest.news).map((ma
 
 const EXISTING_NEWS_UPDATES = [
   {
+    date: "June 19, 2026",
+    sections: [
+      {
+        icon: "fa-eye-dropper",
+        title: "New App",
+        items: [
+          [
+            "fa-eye-dropper",
+            "Color Picker",
+            "Sample colors from anywhere on screen with Alt+H and a magnified pixel preview."
+          ]
+        ]
+      }
+    ]
+  },
+  {
     date: "June 18, 2026",
     sections: [
       {

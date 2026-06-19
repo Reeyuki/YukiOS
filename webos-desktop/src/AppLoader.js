@@ -31,6 +31,7 @@ import { ScramjetApp } from "./apps/scramjet.js";
 import { YoutubeApp } from "./apps/youtube.js";
 import { TorrentClientApp } from "./apps/torrentClient.js";
 import { VirtualMachineManagerApp } from "./apps/virtualMachineManager.js";
+import { ColorPickerApp } from "./apps/colorPicker.js";
 
 const APP_CLASS_MAP = {
   terminalApp: TerminalApp,
@@ -63,7 +64,8 @@ const APP_CLASS_MAP = {
   scramjetApp: ScramjetApp,
   youtubeApp: YoutubeApp,
   torrentClientApp: TorrentClientApp,
-  virtualMachineManagerApp: VirtualMachineManagerApp
+  virtualMachineManagerApp: VirtualMachineManagerApp,
+  colorPickerApp: ColorPickerApp
 };
 
 const APP_DEFINITIONS = APP_MANIFESTS.map((manifest) => {

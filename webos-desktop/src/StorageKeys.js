@@ -128,5 +128,6 @@ export const StorageKeys = {
   customThemes: "yukios_custom_themes",
   vantaWallpaper: "yukiOS_vanta_wallpaper",
   wispServer: "yukiOS_wisp_server",
-  cursorEffectEnabled: "yukiOS_cursor_effect_enabled"
+  cursorEffectEnabled: "yukiOS_cursor_effect_enabled",
+  colorPickerHistory: "yukiOS_color_picker_history"
 };

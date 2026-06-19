@@ -1135,5 +1135,17 @@ export const APP_MANIFESTS = [
     clippy: { message: "Spin up a virtual machine right in your browser!", animation: ClippyAnimation.Show },
     description:
       "Boot simulated OS environments including Windows 93, 96, XP, 10, 11, Mac OS, and more in your browser."
+  },
+  {
+    serviceKey: "colorPickerApp",
+    enhanced: true,
+    type: "system",
+    title: "Color Picker",
+    icon: "fas fa-eye-dropper",
+    launchType: "instance",
+    windowIdPatterns: ["color-picker"],
+    category: "graphics",
+    clippy: { message: "Pick any color from your screen with Alt+H.", animation: ClippyAnimation.Show },
+    description: "Sample colors from anywhere on screen with a magnified preview and one-click copy."
   }
 ];
