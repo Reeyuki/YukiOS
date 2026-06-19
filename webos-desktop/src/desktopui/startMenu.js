@@ -280,7 +280,7 @@ function updateRecentlyUsedUI() {
   if (recent.length === 0) {
     const empty = document.createElement("div");
     empty.className = "search-no-results";
-    empty.textContent = "No recently used apps yet";
+    empty.textContent = "No recently used apps";
     page.appendChild(empty);
     return;
   }

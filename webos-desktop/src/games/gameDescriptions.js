@@ -402,47 +402,33 @@ export const descriptionMap = {
     "400 Years is a 2013 puzzle adventure by Scriptwelder. Players control a stone golem with the goal of preventing a cataclysm 400 years in the future, with the ability to wait centuries between actions.",
   smashyCity:
     "Smashy City is a 2015 destruction game by The Binary Mill. Players control giant monsters and stomp through blocky cities, smashing buildings and battling military forces.",
-  taskManagerApp:
-    "A YukiOS system tool that lets you monitor running apps, system performance, and forcefully close any window misbehaving on your virtual desktop.",
-  weatherApp:
-    "A YukiOS system app that displays real-time weather conditions and forecasts using public weather APIs, presented in a clean dashboard.",
-  calculatorApp:
-    "A YukiOS calculator app for everyday arithmetic and quick computations, modeled after classic operating system calculators.",
-  settingsApp:
-    "The central YukiOS settings panel for customizing appearance, behavior, and system preferences across the entire desktop environment.",
-  aboutApp: "Information about YukiOS, including version details, credits, and the project's background.",
-  newsApp: "A YukiOS app that displays the latest changelog, new features, and updates added to the system.",
-  explorer:
-    "The YukiOS file manager, providing access to your virtual file system with familiar navigation, organization, and file actions.",
-  notepad: "A simple plaintext editor for taking quick notes, drafting ideas, or writing text files in YukiOS.",
-  browserApp:
-    "Yuki Browser is the built-in YukiOS web browser, allowing you to navigate the internet from inside your virtual desktop.",
+  taskManagerApp: "Monitor running apps, track system performance, and force-close unruly windows from one dashboard.",
+  weatherApp: "Real-time weather and forecasts served up in a clean, no-nonsense dashboard.",
+  calculatorApp: "Quick arithmetic and everyday calculations, modeled after classic OS calculators.",
+  settingsApp: "Tweak themes, behavior, and system preferences from one central panel.",
+  aboutApp: "Version numbers, developer credits, and the story behind YukiOS.",
+  newsApp: "Catch up on what's new with changelogs, features, and recent updates at a glance.",
+  explorer: "Browse, organize, and manage your virtual files with familiar folder navigation.",
+  notepad: "Jot down notes, draft ideas, or edit plain text without any fuss.",
+  browserApp: "Surf the web from inside your virtual desktop with the built-in Yuki Browser.",
   yukiDevTools: "Yuki Dev Tools loads IT Tools in a themed iframe and keeps it synced with Yuki OS CSS variables.",
-  terminal:
-    "A YukiOS command-line interface for advanced users, providing access to system commands, scripts, and developer tools.",
-  music: "A YukiOS music player for streaming and listening to audio tracks while you use the rest of the system.",
-  cameraApp:
-    "A YukiOS camera and recording app, allowing you to capture screenshots and webcam footage from the virtual desktop.",
-  steamApp:
-    "A Steam-inspired client built into YukiOS, organizing your library of installed games into a clean storefront-like interface.",
-  flash:
-    "A curated YukiOS hub for classic Flash games, preserved through Ruffle and Flashpoint Archive technology after Flash Player's discontinuation.",
+  terminal: "Fire up the command line for scripts, system commands, and developer tools.",
+  music: "Stream and play audio while you work, browse, or relax on the desktop.",
+  cameraApp: "Snap screenshots or record webcam footage right from your desktop.",
+  steamApp: "Your game library, wrapped in a Steam-style storefront interface built right into YukiOS.",
+  flash: "Classic Flash games live on through Ruffle and Flashpoint Archive, all in one hub.",
   vscode:
     "Visual Studio Code is a free, lightweight code editor by Microsoft, released in 2015. It supports virtually every programming language with extensions, debugging, and integrated Git.",
-  yukiCode:
-    "Yuki Code is a remake of the open-source code editor monaco editor that powers Visual Studio Code, and is integrated into Yuki OS",
-  model3dApp:
-    "A YukiOS 3D model viewer for inspecting and rotating 3D files like .obj and .glb directly in the browser, with lighting and camera controls.",
+  yukiCode: "A Monaco-powered code editor built into Yuki OS, based on the same engine that runs Visual Studio Code.",
+  model3dApp: "Inspect and rotate 3D models including .obj, .glb, and more with full lighting and camera controls.",
   jsDosApp:
     "JsDos is a JavaScript port of the DOSBox emulator, allowing classic DOS programs and games to run natively inside a web browser.",
   v86app:
     "v86 is an x86 emulator written in JavaScript by Fabian Hemmer, capable of booting full operating systems like Linux, Windows, and ReactOS directly inside the browser.",
   libreSprite:
     "LibreSprite is an open-source pixel art and animation editor, forked from the original free version of Aseprite. It's tailored for creating sprites, tilesets, and small animations.",
-  officeApp:
-    "An office suite app integrated into YukiOS, providing word processing, spreadsheet, and presentation tools without leaving the virtual desktop.",
-  appCreatorApp:
-    "A YukiOS development tool that lets you build your own apps for the system by selecting url, for adding them to the desktop environment.",
+  officeApp: "Word processing, spreadsheets, and presentations without ever leaving your desktop.",
+  appCreatorApp: "Build your own apps by pointing to a URL and adding them straight to the desktop.",
   kiwiIRC:
     "KiwiIRC is a free, web-based IRC client first released in 2011. It allows users to join classic Internet Relay Chat networks like Libera.Chat and OFTC directly from the browser.",
   slitherIO:

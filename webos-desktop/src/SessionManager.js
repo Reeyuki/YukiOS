@@ -432,7 +432,7 @@ export class SessionManager {
       if (!this.selectedUser) return;
 
       if (this.selectedSession === "Yuki Tiling VM" || this.selectedSession === "tiling") {
-        await os.dialog.alert("Not Implemented", "Yuki Tiling VM is not implemented yet");
+        await os.dialog.alert("Not Implemented", "Tiling VM isn't ready yet");
         return;
       }
 
@@ -492,13 +492,13 @@ export class SessionManager {
     });
 
     powerBtn.addEventListener("click", async () => {
-      if (await os.dialog.confirm("Shutdown", "Are you sure you want to shut down?")) {
+      if (await os.dialog.confirm("Shutdown", "Shut down Yuki OS?")) {
         window.close();
       }
     });
 
     restartBtn.addEventListener("click", async () => {
-      if (await os.dialog.confirm("Restart", "Are you sure you want to restart?")) {
+      if (await os.dialog.confirm("Restart", "Restart Yuki OS?")) {
         location.reload();
       }
     });

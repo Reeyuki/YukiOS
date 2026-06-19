@@ -628,7 +628,7 @@ export class SystemAppRenderer {
       <div class="games-app-grid">
         ${apps.map((a) => this.createCard(a)).join("")}
       </div>
-      <div class="games-no-results" style="display:none;">No apps found</div>`;
+      <div class="games-no-results" style="display:none;">No apps to show</div>`;
 
     const noResults = container.querySelector(".games-no-results");
     const allCards = Array.from(container.querySelectorAll(".games-app-card"));

@@ -122,7 +122,10 @@
   border: 1px solid var(--brand-dim);
   border-radius: 16px;
   backdrop-filter: blur(12px);
-  transition: all 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
   pointer-events: auto;
   white-space: nowrap;
 }
@@ -167,7 +170,10 @@
   border: 1px solid transparent;
   border-radius: 20px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .cam-mode-btn:hover {
@@ -224,7 +230,10 @@
   background: var(--glass);
   color: var(--text-primary);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .cam-action-btn:hover:not(:disabled) {
@@ -247,7 +256,10 @@
   background: transparent;
   padding: 4px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
   position: relative;
 }
 
@@ -265,7 +277,10 @@
   height: 100%;
   border-radius: 50%;
   display: block;
-  transition: all 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .shutter-inner.photo {
@@ -328,7 +343,6 @@
   }
 }
 
-/* Camera History Window */
 #history-win {
   min-width: 500px;
   min-height: 400px;
@@ -340,7 +354,6 @@
   font-weight: normal;
 }
 
-/* History Controls */
 .history-controls {
   display: flex;
   justify-content: space-between;
@@ -380,7 +393,10 @@
   background: var(--glass);
   color: var(--tx1);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .history-btn:hover {
@@ -405,13 +421,15 @@
   height: calc(100% - 120px);
 }
 
-/* History Items */
 .history-item {
   background: var(--glass);
   border: 1px solid var(--glass-border);
   border-radius: var(--r);
   overflow: hidden;
-  transition: all 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
   position: relative;
 }
 
@@ -532,7 +550,10 @@
   align-items: center;
   justify-content: center;
   font-size: 11px;
-  transition: all 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
   backdrop-filter: blur(8px);
 }
 
@@ -609,7 +630,10 @@
   cursor: pointer;
   padding: 6px;
   border-radius: 4px;
-  transition: all 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;

@@ -118,7 +118,7 @@ export class JsDosApp extends BaseApp {
     try {
       const blob = new Blob([await file.arrayBuffer()], { type: file.type || "application/octet-stream" });
       await os.fs.writeBinaryFile(GAMES_DIR, file.name, blob, "other", "/static/icons/jsdos.webp");
-      os.notify.send("JsDos", `Saved ${file.name} at Games/ directory.`);
+      os.notify.send("JsDos", `Saved ${file.name} to Games.`);
       zone.innerHTML = `<i class="fa-solid fa-circle-check jsdos-success-icon"></i><div class="jsdos-success-text">Saved!</div>`;
       await this._loadUserGames(win);
       setTimeout(() => {
@@ -200,7 +200,7 @@ export class JsDosApp extends BaseApp {
     <div class="window-content jsdos-game-window emu-window">
       <div id="${winId}-inner" class="jsdos-loading emu-window-screen emu-load-wrap">
         <i class="fa-solid fa-compact-disc jsdos-loading-spinner emu-state-icon"></i>
-        <div class="jsdos-game-loading-text emu-state-text emu-state-text--accent">Loading <strong>${displayName}</strong>…</div>
+        <div class="jsdos-game-loading-text emu-state-text emu-state-text--accent">Starting <strong>${displayName}</strong>…</div>
         <div id="${winId}-log" class="jsdos-game-log emu-log"></div>
       </div>
     </div>`;
@@ -247,7 +247,7 @@ export class JsDosApp extends BaseApp {
       const bundleBlob = new Blob([arrayBuffer], { type: "application/zip" });
       bundleUrl = URL.createObjectURL(bundleBlob);
 
-      os.notify.send("JsDos", `Saved ${fileName} jsdos game at Games/ directory.`);
+      os.notify.send("JsDos", `Saved ${fileName} to Games.`);
       setLog("Launching…");
 
       const iframeHTML = this._buildIframeHTML(bundleUrl);
@@ -337,7 +337,7 @@ export class JsDosApp extends BaseApp {
     <div class="window-content jsdos-game-window">
       <div id="${winId}-inner" style="width:100%;height:100%;" class="jsdos-loading">
         <i class="fa-solid fa-compact-disc jsdos-loading-spinner"></i>
-        <div class="jsdos-game-loading-text">Loading <strong>${name}</strong>…</div>
+        <div class="jsdos-game-loading-text">Starting <strong>${name}</strong>…</div>
         <div id="${winId}-log" class="jsdos-game-log"></div>
       </div>
     </div>`;

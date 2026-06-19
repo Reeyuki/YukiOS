@@ -711,7 +711,6 @@ html[data-theme="solarized-light"] .settings-select {
   border: 1px solid var(--glass-border) !important;
 }
 
-/* Settings Layout Styles from settings.js */
 .window-content {
   background: var(--window-bg-color, #1e1e1e);
   color: var(--text-color, #fff);
@@ -748,7 +747,9 @@ html[data-theme="solarized-light"] .settings-select {
   color: inherit;
   outline: none;
   font-size: 0.9em;
-  transition: all 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .yuki-settings-search input:focus {
@@ -777,7 +778,9 @@ html[data-theme="solarized-light"] .settings-select {
   font-size: 0.9em;
   border-radius: 6px;
   color: rgba(255, 255, 255, 0.7);
-  transition: all 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
 }
 
 .yuki-settings-nav li i {
@@ -829,18 +832,6 @@ html[data-theme="solarized-light"] .settings-select {
   display: none !important;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 .settings-saved-badge-float {
   position: absolute;
   top: 24px;
@@ -853,7 +844,9 @@ html[data-theme="solarized-light"] .settings-select {
   font-weight: 500;
   opacity: 0;
   transform: translateY(-5px);
-  transition: all 0.25s ease;
+  transition:
+    background-color 0.25s ease,
+    border-color 0.25s ease;
   z-index: 100;
   pointer-events: none;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
@@ -872,7 +865,9 @@ html[data-theme="solarized-light"] .settings-select {
   font-family: inherit;
   font-size: 0.9em;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .settings-select:focus {
@@ -1005,7 +1000,9 @@ html[data-theme="solarized-light"] .settings-select {
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 4px;
   cursor: pointer;
-  transition: all 0.15s;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
   white-space: nowrap;
 }
 
@@ -1108,7 +1105,9 @@ html[data-theme="solarized-light"] .settings-select {
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 6px;
   cursor: pointer;
-  transition: all 0.15s;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
   white-space: nowrap;
 }
 
@@ -1369,7 +1368,9 @@ html[data-theme="solarized-light"] .settings-select {
   cursor: pointer;
   padding: 4px 8px;
   border-radius: 4px;
-  transition: all 0.15s;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
 }
 
 .wp-customize-close:hover {
@@ -1403,7 +1404,9 @@ html[data-theme="solarized-light"] .settings-select {
   padding: 8px 12px;
   color: var(--text-primary);
   font-size: 13px;
-  transition: all 0.15s;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
 }
 
 .wp-control-input[type="color"] {
@@ -1443,7 +1446,9 @@ html[data-theme="solarized-light"] .settings-select {
   font-weight: 500;
   border-radius: 6px;
   cursor: pointer;
-  transition: all 0.15s;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
   border: 1px solid rgba(255, 255, 255, 0.12);
 }
 

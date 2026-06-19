@@ -180,7 +180,7 @@ export const FEATURE_DATA = {
     {
       icon: "fas fa-file-export",
       title: "File Actions Menu",
-      desc: "Convert/transform files, create archives, download selected items, and quick wallpaper actions"
+      desc: "Convert files, zip them up, download in bulk, or set as wallpaper from right-click"
     },
     {
       icon: "fas fa-window-maximize",
@@ -202,7 +202,7 @@ export const FEATURE_DATA = {
     keyboardShortcuts: SHORTCUTS_DATA.map((s) => ({ keys: s.keys.join("+"), desc: s.desc, cat: s.cat })),
     filesystem: {
       title: "Virtual Filesystem",
-      description: "In Yuki OS, your files are stored locally in your browser and survive page reloads.",
+      description: "Your files live in your browser. Close the tab and they're still here when you come back.",
       structure: [
         { path: "/home/reeyuki/Desktop", desc: "Desktop icons and shortcuts" },
         { path: "/home/reeyuki/Documents", desc: "Your documents and text files (includes welcome INFO.txt)" },
@@ -278,7 +278,7 @@ export class SetupApp extends BaseApp {
 
     await this._loadWallpapers();
 
-    const win = os.window.create(winId, "Welcome to Yuki OS", "75vw", "75vh", {
+    const win = os.window.create(winId, "Set Up Yuki OS", "75vw", "75vh", {
       icon: "fas fa-rocket",
       position: "center"
     });
@@ -295,7 +295,7 @@ export class SetupApp extends BaseApp {
   _buildUI() {
     return `
       <div class="window-header">
-        <span>Welcome to Yuki OS</span>
+        <span>Set Up Yuki OS</span>
         ${os.window.getWindowControls()}
       </div>
       <div class="window-content setup-wizard">
@@ -352,8 +352,8 @@ export class SetupApp extends BaseApp {
           <div class="hero-logo">
             <i class="fas fa-snowflake"></i>
           </div>
-          <h1 class="hero-title">Welcome to Yuki OS, ${nickname}</h1>
-          <p class="hero-subtitle">Your browser-based desktop environment</p>
+          <h1 class="hero-title">Hey there, ${nickname}</h1>
+          <p class="hero-subtitle">Your desktop, right in the browser</p>
           <button class="setup-info-btn" id="setup-info-btn">
             <i class="fas fa-circle-info"></i>
           </button>
@@ -381,7 +381,7 @@ export class SetupApp extends BaseApp {
     <div class="setup-step" data-step="2">
       <h2 class="step-title feature-title">
         <i class="fas fa-star"></i>
-        What Makes Yuki OS Different
+        Here's What You Get
       </h2>
       <div class="feature-grid">${cardsHtml}</div>
     </div>
@@ -790,7 +790,7 @@ export class SetupApp extends BaseApp {
             <i class="fas fa-rocket"></i>
           </div>
           <h2 class="complete-title">You're All Set!</h2>
-          <p class="complete-subtitle">Yuki OS is ready to explore</p>
+          <p class="complete-subtitle">Jump in and make it yours</p>
         </div>
 
         <div class="summary-grid">
@@ -1133,23 +1133,22 @@ export class SetupApp extends BaseApp {
         detail: { soundEnabled: this.userChoices.sound }
       })
     );
-    const welcomeContent = `Welcome to Yuki OS, ${this._services.sessionManager?.currentSession?.name || "User"}!
+    const welcomeContent = `All set, ${this._services.sessionManager?.currentSession?.name || "Guest"}!
 
-Your setup is complete. Here's what you configured:
+Here's what you picked:
 - Theme: ${this.userChoices.theme}
 - Taskbar: ${this.userChoices.taskbarPosition}
 - Turbo Mode: ${this.userChoices.turboMode}
 - Transparency: ${this.userChoices.transparency}
-- Weather: ${this.userChoices.weather ? "Enabled" : "Disabled"}
-- Notifications: ${this.userChoices.notifications ? "Enabled" : "Disabled"}
+- Weather: ${this.userChoices.weather ? "On" : "Off"}
+- Notifications: ${this.userChoices.notifications ? "On" : "Off"}
 
-Quick Tips:
-• Click the Start Menu to explore 80 apps and 3700+ games
-• Right-click the desktop for context menu options
-• Use the Settings app to customize further anytime
-• Your files persist in the virtual filesystem
+Quick tips to get going:
+• Click the Start Menu to find 80 apps and 3700+ games
+• Right-click the desktop when you need quick options
+• Tweak anything later in the Settings app
 
-Enjoy exploring Yuki OS!`;
+Have fun!`;
 
     try {
       await os.fs.mkdir(["Documents"]);
@@ -1159,8 +1158,8 @@ Enjoy exploring Yuki OS!`;
     }
 
     os.notify.send(
-      "Welcome to Yuki OS!",
-      "Setup complete. Click Start Menu to begin exploring!",
+      "You're all set!",
+      "Setup is done. Hit the Start Menu to jump in.",
       "success",
       8000,
       "fas fa-rocket",

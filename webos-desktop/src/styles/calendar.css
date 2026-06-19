@@ -67,7 +67,9 @@
   padding: 2px 8px;
   border-radius: 4px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
 }
 
 .calendar-today-btn:hover {
@@ -87,7 +89,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
   padding: 0;
   line-height: 1;
 }
@@ -136,7 +140,9 @@
   border-radius: 8px;
   font-size: 0.85em;
   color: var(--text-primary);
-  transition: all 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
   cursor: pointer;
   position: relative;
   min-width: 32px;
@@ -326,7 +332,9 @@
   border: none;
   font-size: 0.85em;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
 }
 
 .calendar-modal-btn.save {

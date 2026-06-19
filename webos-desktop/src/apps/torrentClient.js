@@ -713,7 +713,7 @@ export class TorrentClientApp extends BaseApp {
       list.innerHTML = `
         <div class="torrent-empty">
           <div class="torrent-empty-icon"><i class="fas fa-download"></i></div>
-          <div class="torrent-empty-title">No torrents here</div>
+          <div class="torrent-empty-title">No torrents yet</div>
           <div class="torrent-empty-desc">Add a magnet link or torrent file to get started</div>
         </div>
       `;

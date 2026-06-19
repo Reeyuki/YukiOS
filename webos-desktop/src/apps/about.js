@@ -12,7 +12,7 @@ const capabilities = [
   {
     tag: "VFS",
     title: "Virtual Filesystem",
-    desc: "BrowserFS + IndexedDB provides persistent storage at /home/reeyuki/ that survives browser restarts."
+    desc: "Your files live in the browser. Close the tab and they're still there when you come back."
   },
   {
     tag: "PLAY",
@@ -59,9 +59,9 @@ const privacyText = `
 const copyrightText = `
   Copyright & Takedown Requests
 
-  Yuki OS respects the intellectual property rights of developers, publishers, artists, and content owners.
+  Yuki OS doesn't host any copyrighted content. Games and apps are loaded from their original sources or CDNs.
 
-  If you believe that any content, game, asset, or material accessible through Yuki OS infringes your copyright or other intellectual property rights, please contact:
+  If you believe something here violates your rights, contact us at:
 
   <a href="mailto:yukios-os@proton.me">yukios-os@proton.me</a>
 
@@ -93,7 +93,7 @@ export class AboutApp extends BaseApp {
               <img class="abx-badge" src="${resolveGhUrl("static/icons/logo.png")}">
               <h1 class="abx-title">Yuki OS</h1>
               <p class="abx-sub">
-                Browser desktop environment with apps, games, and sandboxed runtime systems.
+                A browser-based desktop with apps, games, emulators, and a virtual filesystem.
               </p>
             </div>
 

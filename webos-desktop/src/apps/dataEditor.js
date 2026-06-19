@@ -897,7 +897,7 @@ export class DataEditorApp extends BaseApp {
       keyList.appendChild(el);
     });
     if (!keyList.children.length) {
-      keyList.innerHTML = `<div style="padding:10px;color:rgba(255,255,255,0.25);font-size:0.8em;text-align:center;">No keys found</div>`;
+      keyList.innerHTML = `<div style="padding:10px;color:rgba(255,255,255,0.25);font-size:0.8em;text-align:center;">No keys stored yet</div>`;
     }
   }
 
@@ -932,7 +932,7 @@ export class DataEditorApp extends BaseApp {
       keyList.appendChild(el);
     });
     if (!keyList.children.length) {
-      keyList.innerHTML = `<div style="padding:10px;color:rgba(255,255,255,0.25);font-size:0.8em;text-align:center;">No keys found</div>`;
+      keyList.innerHTML = `<div style="padding:10px;color:rgba(255,255,255,0.25);font-size:0.8em;text-align:center;">No keys stored yet</div>`;
     }
   }
 
@@ -970,7 +970,7 @@ export class DataEditorApp extends BaseApp {
       keyList.appendChild(el);
     });
     if (!keyList.children.length) {
-      keyList.innerHTML = `<div style="padding:10px;color:rgba(255,255,255,0.25);font-size:0.8em;text-align:center;">No cookies found</div>`;
+      keyList.innerHTML = `<div style="padding:10px;color:rgba(255,255,255,0.25);font-size:0.8em;text-align:center;">No cookies here</div>`;
     }
   }
 
@@ -1079,7 +1079,7 @@ export class DataEditorApp extends BaseApp {
     if (!keyList.querySelector(".de-key-item")) {
       const noKeys = document.createElement("div");
       noKeys.className = "de-no-keys";
-      noKeys.textContent = "No entries found";
+      noKeys.textContent = "Nothing to show";
       keyList.appendChild(noKeys);
     }
   }

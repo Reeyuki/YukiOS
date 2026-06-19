@@ -423,7 +423,7 @@ export class AppCreatorApp extends BaseApp {
     const apps = await this._loadAllCustomApps();
 
     if (!apps.length) {
-      setHTML(list, `<div class="ac-empty">No custom apps installed yet.</div>`);
+      setHTML(list, `<div class="ac-empty">No custom apps yet</div>`);
       return;
     }
 

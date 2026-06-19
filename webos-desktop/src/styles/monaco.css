@@ -45,7 +45,9 @@
   padding: 6px 20px;
   color: #cccccc;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
   background-color: #363636;
 }
 
@@ -217,7 +219,9 @@
   color: #858585;
   cursor: pointer;
   border-radius: 3px;
-  transition: all 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
   padding: 0;
   opacity: 0;
 }
@@ -245,7 +249,9 @@
   background: transparent;
   color: #cccccc;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
   flex-shrink: 0;
 }
 

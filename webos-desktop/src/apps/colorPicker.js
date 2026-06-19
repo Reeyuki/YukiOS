@@ -60,8 +60,8 @@ export class ColorPickerApp extends BaseApp {
           <div class="cp-swatch" id="cp-swatch"></div>
           <div class="cp-color-info">
             <div class="cp-hex-label">Hex</div>
-            <div class="cp-hex-value" id="cp-hex">—</div>
-            <div class="cp-rgb-value" id="cp-rgb">—</div>
+            <div class="cp-hex-value" id="cp-hex">-</div>
+            <div class="cp-rgb-value" id="cp-rgb">-</div>
           </div>
         </div>
 

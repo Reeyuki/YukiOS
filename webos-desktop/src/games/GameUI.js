@@ -812,7 +812,7 @@ export class GameUI {
         </div>`
           )
           .join("")
-      : `<div style="color:#898989;font-size:12px;">No trending data.</div>`;
+      : `<div style="color:#898989;font-size:12px;">No trending data right now</div>`;
 
     panel.innerHTML = `
       <div style="display:flex;gap:8px;margin-bottom:16px;">

@@ -165,7 +165,9 @@
   align-items: center;
   justify-content: center;
   font-size: 10px;
-  transition: all 0.2s;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
   z-index: 3;
 }
 
@@ -293,7 +295,9 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  transition: all 0.2s;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
   user-select: none;
 }
 
@@ -327,7 +331,9 @@
   opacity: 0;
   transform: translateY(10px);
   pointer-events: none;
-  transition: all 0.15s ease;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
 }
 
 .session-selector.open .session-dropdown {
@@ -361,7 +367,9 @@
   font-size: 18px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -392,7 +400,9 @@
   align-items: center;
   justify-content: center;
   font-size: 16px;
-  transition: all 0.2s;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
 }
 
 .system-icon:hover {
@@ -453,7 +463,9 @@
   cursor: pointer;
   font-size: 16px;
   padding: 8px;
-  transition: all 0.2s;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
 }
 
 .modal-close:hover {
@@ -480,7 +492,9 @@
   overflow: hidden;
   cursor: pointer;
   border: 2px solid transparent;
-  transition: all 0.2s;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
 }
 
 .avatar-tile img {
@@ -685,7 +699,9 @@
   align-items: center;
   gap: 12px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
 }
 
 .user-history-tile:hover {
@@ -763,7 +779,9 @@
   padding: 10px;
   color: var(--text-primary);
   font-size: 14px;
-  transition: all 0.2s;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
   outline: none;
   box-sizing: border-box;
   margin-left: 10px;
@@ -830,7 +848,9 @@
   cursor: pointer;
   position: relative;
   border: 2px solid transparent;
-  transition: all 0.2s;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
   box-sizing: border-box;
   flex-shrink: 0;
 }
@@ -880,7 +900,9 @@
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -902,7 +924,9 @@
   font-size: 15px;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1001,7 +1025,9 @@
   font-size: 18px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
   display: flex;
   align-items: center;
   gap: 12px;

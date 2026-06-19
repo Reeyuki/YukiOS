@@ -296,7 +296,7 @@ export class EmulatorApp extends BaseApp {
         os.events.emit(BusEvents.FILE_CHANGED, { path: file.name });
       }
 
-      os.notify.send("", `Saved ${files.length} file(s) to ROMs/ directory.`);
+      os.notify.send("", `Saved ${files.length} file(s) to ROMs.`);
       zone.innerHTML = `<i class="fa-solid fa-circle-check emu-state-icon ruf-state-icon"></i><div class="emu-state-text ruf-state-text">Saved ${files.length} file(s)!</div>`;
 
       setTimeout(() => {
@@ -355,7 +355,7 @@ export class EmulatorApp extends BaseApp {
       const blob = await os.fs.read([...normalizedPath, fileName]);
       if (!blob || blob.size === 0) {
         audioMixer().playCriticalWarning();
-        os.notify.send("", "Failed to read ROM file.");
+        os.notify.send("", "Couldn't read that ROM file.");
         return;
       }
 
@@ -375,12 +375,12 @@ export class EmulatorApp extends BaseApp {
       this._launchEmulator(displayName, fileName, arrayBuffer);
     } catch (e) {
       audioMixer().playCriticalWarning();
-      os.notify.send("", `Error loading ROM: ${e.message}`);
+      os.notify.send("", `ROM wouldn't load: ${e.message}`);
     }
   }
 
   async _handleZipFile(arrayBuffer, fileName) {
-    os.notify.send("", "ZIP file support requires additional library. Please extract and upload individual ROMs.");
+    os.notify.send("", "Can't read zips directly. Extract the ROM first, then upload it.");
   }
 
   async _launchEmulator(displayName, fileName, romData, forcedCore = null) {
@@ -395,7 +395,7 @@ export class EmulatorApp extends BaseApp {
     <div class="window-content emu-window ruf-window">
       <div id="${winId}-inner" class="emu-state ruf-loading emu-load-wrap">
         <i class="fa-solid fa-gamepad fa-spin emu-state-icon ruf-state-icon"></i>
-        <div class="emu-state-text ruf-state-text emu-state-text--accent">Loading <strong>${displayName}</strong>…</div>
+        <div class="emu-state-text ruf-state-text emu-state-text--accent">Starting <strong>${displayName}</strong>…</div>
         <div id="${winId}-log" class="emu-state-text--muted ruf-log"></div>
       </div>
       <div id="${winId}-screen" class="emu-window-screen"></div>
@@ -484,7 +484,7 @@ export class EmulatorApp extends BaseApp {
         }
       }
 
-      setLog(`Loading ${emulatorSystem} core…`);
+      setLog(`Starting ${emulatorSystem} core…`);
 
       const romBlob = new Blob([romData]);
       const romUrl = URL.createObjectURL(romBlob);
@@ -530,7 +530,7 @@ window.EJS_color = "var(--brand)";
       const arrayBuffer = await res.arrayBuffer();
       this._launchEmulator(displayName, fileName, arrayBuffer, core);
     } catch (e) {
-      os.notify.send("ROM Load Failed", `Failed to load ROM: ${e.message}`, "error", 5000);
+      os.notify.send("ROM Load Failed", `ROM didn't load: ${e.message}`, "error", 5000);
     }
   }
 

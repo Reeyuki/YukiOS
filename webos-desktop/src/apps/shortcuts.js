@@ -635,7 +635,7 @@ export class ShortcutsApp extends BaseApp {
         <div class="sc-main">
           <div class="sc-list-header">
             <div class="sc-list-title">All Shortcuts</div>
-            <div class="sc-list-count">0 items</div>
+            <div class="sc-list-count">No shortcuts</div>
           </div>
           <div class="sc-content-area">
             <div class="sc-grid" id="sc-list-container"></div>

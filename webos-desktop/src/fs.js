@@ -41,7 +41,7 @@ export const defaultStorage = {
       Documents: {
         "INFO.txt": {
           type: "file",
-          content: "Welcome to Yuki OS.\n\nYou can write and save text files using the Text Editor app.",
+          content: "Welcome aboard!\n\nYou can write and save text files using the Notepad app.",
           kind: FileKind.TEXT,
           icon: "static/icons/notepad.webp"
         }

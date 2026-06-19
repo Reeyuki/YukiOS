@@ -373,7 +373,7 @@ function renderAgenda(agendaEl) {
   if (upcomingEvents.length === 0) {
     const noEvents = document.createElement("div");
     noEvents.className = "calendar-no-events";
-    noEvents.textContent = "No upcoming events";
+    noEvents.textContent = "No events coming up";
     agendaEl.appendChild(noEvents);
     return;
   }

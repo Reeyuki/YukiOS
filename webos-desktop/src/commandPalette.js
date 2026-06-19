@@ -451,7 +451,7 @@ export class CommandPalette {
         tag: "session",
         icon: "fas fa-right-from-bracket",
         execute: async () => {
-          if (await os.dialog.confirm("Logout", "Are you sure you want to log out?")) {
+          if (await os.dialog.confirm("Logout", "Sign out and return to the login screen?")) {
             await this.services.sessionManager?.lockToLoginScreen();
           }
         }
@@ -462,7 +462,7 @@ export class CommandPalette {
         tag: "session",
         icon: "fas fa-power-off",
         execute: async () => {
-          if (await os.dialog.confirm("Shutdown", "Are you sure you want to shut down?")) {
+          if (await os.dialog.confirm("Shutdown", "Close everything and shut down?")) {
             await this.services.sessionManager?.lockToLoginScreen();
           }
         }
@@ -1097,7 +1097,7 @@ export class CommandPalette {
     const label = `${val} ${match[2]} = ${Number.isInteger(result) ? result : parseFloat(result.toFixed(4))} ${match[3]}`;
     return {
       title: label,
-      subtitle: "Unit conversion result — click to copy",
+      subtitle: "Unit conversion result. Click to copy",
       tag: "conv",
       icon: "fas fa-arrows-left-right",
       execute: () => {

@@ -709,7 +709,7 @@ export class YouTubeUtilsApp extends BaseApp {
     if (items.length === 0) {
       const empty = document.createElement("div");
       empty.className = "meta";
-      empty.textContent = this._activeTab === "fav" ? "No pinned items yet." : "No recent items yet.";
+      empty.textContent = this._activeTab === "fav" ? "Nothing pinned yet" : "Nothing recent yet";
       root.appendChild(empty);
       return;
     }

@@ -987,7 +987,7 @@ export class CameraApp extends BaseApp {
     const index = state.recordings.findIndex((r) => r.id === id);
     if (index === -1) return;
 
-    const confirmed = await os.dialog.confirm("Delete Recording", `Are you sure you want to delete "${id}"?`);
+    const confirmed = await os.dialog.confirm("Delete Recording", `Delete "${id}" for good?`);
     if (!confirmed) return;
 
     URL.revokeObjectURL(state.recordings[index].url);

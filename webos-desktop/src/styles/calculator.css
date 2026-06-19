@@ -74,7 +74,13 @@
 }
 
 .calc-btn {
-  all: unset;
+  background: none;
+  border: none;
+  color: inherit;
+  font: inherit;
+  margin: 0;
+  padding: 0;
+  outline: none;
   cursor: pointer;
   display: flex;
   align-items: center;

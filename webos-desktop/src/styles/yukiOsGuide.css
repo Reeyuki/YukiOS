@@ -44,7 +44,6 @@
     border-color 0.15s ease,
     box-shadow 0.15s ease,
     background 0.15s ease;
-  -webkit-appearance: none;
   appearance: none;
 }
 
@@ -981,7 +980,6 @@
 }
 
 input[type="checkbox"] {
-  -webkit-appearance: none;
   appearance: none;
   width: 16px;
   height: 16px;
@@ -1022,7 +1020,6 @@ input[type="checkbox"]:focus {
 }
 
 input[type="radio"] {
-  -webkit-appearance: none;
   appearance: none;
   width: 16px;
   height: 16px;
@@ -1057,7 +1054,6 @@ input[type="radio"]:focus {
 }
 
 select {
-  -webkit-appearance: none;
   appearance: none;
   background: var(--glass);
   border: 1px solid var(--glass-border);

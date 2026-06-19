@@ -37,7 +37,9 @@
   align-items: center;
   justify-content: center;
   position: relative;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: default;
 }
 
@@ -70,7 +72,9 @@
   font-size: 16px;
   opacity: 0;
   transform: scale(0);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .progress-step.completed .progress-check {
@@ -83,7 +87,9 @@
   height: 2px;
   background: rgba(255, 255, 255, 0.2);
   margin: 0 8px;
-  transition: all 0.4s;
+  transition:
+    opacity 0.4s,
+    transform 0.4s;
 }
 
 .progress-step.completed .progress-line {
@@ -104,7 +110,9 @@
   bottom: 0;
   opacity: 0;
   transform: translateX(50px);
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: none;
   overflow-y: auto;
   padding-right: 10px;
@@ -148,17 +156,6 @@
   animation: float 3s ease-in-out infinite;
 }
 
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
 .hero-title {
   font-size: 24px;
   font-weight: 700;
@@ -186,7 +183,9 @@
   color: rgba(255, 255, 255, 0.8);
   font-size: 16px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -212,7 +211,9 @@
   border-radius: 10px;
   padding: 12px 10px;
   text-align: center;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: default;
 }
 
@@ -326,7 +327,9 @@
   color: rgba(255, 255, 255, 0.8);
   font-size: 14px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -368,7 +371,9 @@
   color: rgba(255, 255, 255, 0.8);
   font-size: 13px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -406,7 +411,9 @@
   overflow: hidden;
   cursor: pointer;
   border: 2px solid transparent;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   background: var(--glass);
 }
@@ -486,7 +493,9 @@
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 6px;
-  transition: all 0.2s;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
   animation: fadeInUp 0.4s ease-out;
 }
 
@@ -621,19 +630,6 @@
   animation: pulse 2s ease-in-out infinite;
 }
 
-@keyframes pulse {
-  0%,
-  100% {
-    transform: scale(1);
-    box-shadow: 0 0 0 0 var(--brand-glow);
-  }
-
-  50% {
-    transform: scale(1.05);
-    box-shadow: 0 0 0 20px var(--brand-glow);
-  }
-}
-
 .complete-title {
   font-size: 20px;
   font-weight: 700;
@@ -738,7 +734,9 @@
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border: none;
   display: flex;
   align-items: center;
@@ -1356,7 +1354,6 @@ html[data-theme="solarized-light"] ::-webkit-scrollbar-thumb:hover {
   color: rgba(255, 255, 255, 0.7);
 }
 
-/* Filesystem structure */
 .filesystem-structure {
   display: flex;
   flex-direction: column;
@@ -1391,7 +1388,6 @@ html[data-theme="solarized-light"] ::-webkit-scrollbar-thumb:hover {
   color: rgba(255, 255, 255, 0.6);
 }
 
-/* Turbo mode selector */
 .turbo-selector {
   display: flex;
   gap: 8px;
@@ -1406,7 +1402,9 @@ html[data-theme="solarized-light"] ::-webkit-scrollbar-thumb:hover {
   color: rgba(255, 255, 255, 0.8);
   font-size: 12px;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1438,7 +1436,6 @@ html[data-theme="solarized-light"] ::-webkit-scrollbar-thumb:hover {
   color: rgba(255, 255, 255, 0.8);
 }
 
-/* Transparency selector */
 .transparency-selector {
   display: flex;
   gap: 8px;
@@ -1453,7 +1450,9 @@ html[data-theme="solarized-light"] ::-webkit-scrollbar-thumb:hover {
   color: rgba(255, 255, 255, 0.8);
   font-size: 12px;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1502,7 +1501,9 @@ html[data-theme="solarized-light"] ::-webkit-scrollbar-thumb:hover {
   color: rgba(255, 255, 255, 0.8);
   font-size: 12px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1545,7 +1546,6 @@ html[data-theme="solarized-light"] ::-webkit-scrollbar-thumb:hover {
   color: #fff;
 }
 
-/* Light theme overrides for new elements */
 html[data-theme="light"] .shortcut-item,
 html[data-theme="cherry"] .shortcut-item,
 html[data-theme="github-light"] .shortcut-item,
@@ -1804,7 +1804,6 @@ html[data-theme="solarized-light"] .transparency-btn.active .transparency-desc {
   color: rgba(255, 255, 255, 0.8);
 }
 
-/* Complete actions section */
 .complete-actions {
   margin-top: 12px;
   display: flex;
@@ -1823,7 +1822,9 @@ html[data-theme="solarized-light"] .transparency-btn.active .transparency-desc {
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 4px 16px var(--brand-glow);
 }
 

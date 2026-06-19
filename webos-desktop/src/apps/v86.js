@@ -247,7 +247,7 @@ export class V86App extends BaseApp {
     try {
       const blob = new Blob([await file.arrayBuffer()], { type: file.type || "application/octet-stream" });
       await os.fs.writeBinaryFile(IMAGES_DIR, file.name, blob, "other", resolveIconUrl("static/icons/v86.webp"));
-      os.notify.send("V86", `Saved ${file.name} at VMs/ directory.`);
+      os.notify.send("V86", `Saved ${file.name} to VMs.`);
       zone.innerHTML = `<i class="fa-solid fa-circle-check v86-success-icon emu-state-icon"></i><div class="v86-success-text emu-state-text">Saved!</div>`;
       await this._loadUserImages(document.querySelector("#v86-win"));
       setTimeout(() => {
@@ -336,7 +336,7 @@ export class V86App extends BaseApp {
 
     const config = systemConfigs[systemId];
     if (!config) {
-      os.notify.send("V86", `System ${systemId} not available.`);
+      os.notify.send("V86", `System ${systemId} isn't available.`);
       return;
     }
 
@@ -353,7 +353,7 @@ export class V86App extends BaseApp {
     try {
       const blob = await os.fs.read([...normalizedPath, fileName]);
       if (!blob || blob.size === 0) {
-        os.notify.send("V86", "Failed to read image file.");
+        os.notify.send("V86", "Couldn't read that image file.");
         return;
       }
 
@@ -380,7 +380,7 @@ export class V86App extends BaseApp {
 
       this._launchV86(displayName, config);
     } catch (e) {
-      os.notify.send("V86", `Error loading image: ${e.message}`);
+      os.notify.send("V86", `Image wouldn't load: ${e.message}`);
     }
   }
 
@@ -445,7 +445,7 @@ export class V86App extends BaseApp {
         return;
       }
 
-      setLog("Initializing emulator…");
+      setLog("Booting up…");
 
       const screenContainer = document.createElement("div");
       screenContainer.style.cssText = "width:100%;height:100%;";

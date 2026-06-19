@@ -1,4 +1,3 @@
-/* Games App */
 @keyframes gac-fadein {
   from {
     opacity: 0;
@@ -164,7 +163,6 @@
   color: #fff;
 }
 
-/* System Apps Window */
 .system-apps-window {
   overflow-y: auto;
   overflow-x: hidden;
@@ -193,7 +191,9 @@
   border: 1.5px solid rgba(255, 255, 255, 0.08);
   border-radius: 16px;
   padding-bottom: 8px;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .system-apps-window .games-app-card:hover {
@@ -271,7 +271,6 @@
   padding: 32px 0;
 }
 
-/* Game Loader Styles */
 .modern-loader {
   display: flex;
   flex-direction: column;

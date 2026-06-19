@@ -101,7 +101,10 @@
   padding: 8px 12px;
   font-size: 14px;
   outline: none;
-  transition: all 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
   width: 100%;
   min-width: 0;
   box-sizing: border-box;
@@ -245,7 +248,10 @@
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -276,7 +282,10 @@
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .btn-cancel:hover {
@@ -343,10 +352,8 @@
   text-decoration: underline;
 }
 
-/* Custom Checkboxes */
 .checkbox-label input[type="checkbox"] {
   appearance: none;
-  -webkit-appearance: none;
   width: 16px;
   height: 16px;
   background: rgba(255, 255, 255, 0.06);
@@ -356,7 +363,10 @@
   align-items: center;
   justify-content: center;
   position: relative;
-  transition: all 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
   flex-shrink: 0;
 }
 
@@ -380,7 +390,6 @@
   box-shadow: 0 0 0 2px var(--brand);
 }
 
-/* Custom Range Slider */
 .slider-container input[type="range"] {
   accent-color: var(--brand);
   height: 24px;
@@ -392,23 +401,20 @@
   outline: none;
 }
 
-/* Custom Number Spin Buttons */
 .control-input[type="number"]::-webkit-inner-spin-button,
 .control-input[type="number"]::-webkit-outer-spin-button {
-  -webkit-appearance: none;
+  appearance: none;
   margin: 0;
 }
 
 .control-input[type="number"] {
-  -moz-appearance: textfield;
+  appearance: textfield;
 }
 
-/* Color Scheme for Color Picker & Native Elements */
 .converter-container {
   color-scheme: dark;
 }
 
-/* Custom Select Dropdown */
 .custom-select-wrapper {
   position: relative;
   width: 100%;

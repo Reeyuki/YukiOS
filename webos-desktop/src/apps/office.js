@@ -728,7 +728,7 @@ class OdtViewer extends EditorStrategy {
       const contentXml = await zip.file("content.xml")?.async("string");
       const stylesXml = (await zip.file("styles.xml")?.async("string")) || "";
       if (!contentXml) {
-        wrapper.innerHTML = `<div class="office-info-msg">No content found in ODT file.</div>`;
+        wrapper.innerHTML = `<div class="office-info-msg">Nothing found in this ODT file</div>`;
         container.appendChild(wrapper);
         state.editor = wrapper;
         return;
@@ -920,7 +920,7 @@ class OdpViewer extends EditorStrategy {
       const zip = await JSZip.loadAsync(arrayBuffer);
       const contentXml = await zip.file("content.xml")?.async("string");
       if (!contentXml) {
-        container.innerHTML = `<div class="office-info-msg">No content found in ODP file.</div>`;
+        container.innerHTML = `<div class="office-info-msg">Nothing found in this ODP file</div>`;
         return;
       }
       const stylesXml = (await zip.file("styles.xml")?.async("string")) || "";
@@ -1464,10 +1464,10 @@ export class OfficeApp extends BaseApp {
 
     if (savedFiles.length > 0) {
       const fileList = savedFiles.map((f) => f.name).join(", ");
-      os.notify.send(`Saved to Documents: ${fileList}`);
+      os.notify.send(`Saved to Documents as ${fileList}`);
       speak(
         savedFiles.length === 1
-          ? "I've saved that to your Documents folder!"
+          ? "All saved to your Documents folder!"
           : `I've saved ${savedFiles.length} files to your Documents folder!`,
         ClippyAnimation.Greeting
       );
@@ -1664,7 +1664,7 @@ export class OfficeApp extends BaseApp {
   }
   async sortSpreadsheet(state, ascending = true) {
     if (state.editorType !== "spreadsheet" || !state.hot) {
-      os.notify.send("Sort is only available for spreadsheets");
+      os.notify.send("Sorting only works in spreadsheets");
       return;
     }
 
@@ -1675,11 +1675,11 @@ export class OfficeApp extends BaseApp {
           column: 0,
           sortOrder: ascending ? "asc" : "desc"
         });
-        os.notify.send(`Sorted ${ascending ? "A → Z" : "Z → A"}`);
+        os.notify.send(`Sorted ${ascending ? "A→Z" : "Z→A"}`);
       }
     } catch (e) {
       console.error("Sort error:", e);
-      os.notify.send("Sort feature requires Handsontable");
+      os.notify.send("Need Handsontable for sorting");
     }
   }
   setupKeyboardShortcuts(win, state, actions) {
@@ -1771,8 +1771,8 @@ export class OfficeApp extends BaseApp {
   async insertTable(state) {
     if (state.editorType !== "contenteditable") return;
 
-    const rows = await os.dialog.prompt("Prompt", "Number of rows:", "3");
-    const cols = await os.dialog.prompt("Prompt", "Number of columns:", "3");
+    const rows = await os.dialog.prompt("Prompt", "How many rows?", "3");
+    const cols = await os.dialog.prompt("Prompt", "How many columns?", "3");
 
     if (!rows || !cols) return;
 
@@ -1792,7 +1792,7 @@ export class OfficeApp extends BaseApp {
   async insertLink(state) {
     if (state.editorType !== "contenteditable") return;
 
-    const url = await os.dialog.prompt("Prompt", "Enter URL:", "https://");
+    const url = await os.dialog.prompt("Prompt", "Enter a URL:", "https://");
     if (url) {
       document.execCommand("createLink", false, url);
     }
@@ -1816,12 +1816,7 @@ export class OfficeApp extends BaseApp {
     const charsNoSpace = text.replace(/\s/g, "").length;
     const lines = text.split("\n").length;
 
-    os.notify.send(`
-    Words: ${words}
-    Characters: ${chars}
-    Characters (no spaces): ${charsNoSpace}
-    Lines: ${lines}
-  `);
+    os.notify.send(`${words} words · ${chars} chars · ${lines} lines`);
   }
 
   showShortcuts() {
@@ -1858,13 +1853,13 @@ export class OfficeApp extends BaseApp {
   }
 
   showAbout() {
-    os.dialog.alert("Office", "Office app For YukiOS");
+    os.dialog.alert("Office", "Yuki OS Office Suite for editing documents, spreadsheets, and presentations.");
   }
 
   spellCheck(state) {
     if (state.editorType === "contenteditable" && state.editor) {
       state.editor.spellcheck = !state.editor.spellcheck;
-      os.notify.send(`Spell check: ${state.editor.spellcheck ? "ON" : "OFF"}`);
+      os.notify.send(`Spell check ${state.editor.spellcheck ? "on" : "off"}`);
     }
   }
 
@@ -1883,11 +1878,11 @@ export class OfficeApp extends BaseApp {
       text = state.editor.innerText;
     }
     FileIO.triggerDownload(`${state.title}.txt`, text);
-    os.notify.send("Exported as TXT");
+    os.notify.send("Exported as .txt");
   }
 
   async createNewFile(win, state) {
-    if (await os.dialog.confirm("Confirm", "Create a new file? Unsaved changes will be lost.")) {
+    if (await os.dialog.confirm("Confirm", "Start a new file? Any unsaved changes will be lost.")) {
       const editorArea = $(".office-editor-area", win);
       state.title = "Untitled";
       state.filePath = null;
@@ -1901,7 +1896,7 @@ export class OfficeApp extends BaseApp {
   }
 
   async showFindDialog(win, state) {
-    const searchTerm = await os.dialog.prompt("Prompt", "Find:");
+    const searchTerm = await os.dialog.prompt("Prompt", "Find what?");
     if (!searchTerm) return;
 
     if (state.editorType === "contenteditable" && state.editor) {
@@ -1912,9 +1907,9 @@ export class OfficeApp extends BaseApp {
   }
 
   async showReplaceDialog(win, state) {
-    const findText = await os.dialog.prompt("Prompt", "Find:");
+    const findText = await os.dialog.prompt("Prompt", "Find what?");
     if (!findText) return;
-    const replaceText = await os.dialog.prompt("Prompt", "Replace with:");
+    const replaceText = await os.dialog.prompt("Prompt", "Replace with");
     if (replaceText === null) return;
 
     if (state.editorType === "contenteditable" && state.editor) {
@@ -1929,7 +1924,7 @@ export class OfficeApp extends BaseApp {
       const text = selection.toString();
 
       if (!text) {
-        os.notify.send("Nothing selected to copy");
+        os.notify.send("Select something first to copy");
         return;
       }
 
@@ -1958,7 +1953,7 @@ export class OfficeApp extends BaseApp {
       const text = selection.toString();
 
       if (!text) {
-        os.notify.send("Nothing selected to cut");
+        os.notify.send("Select something first to cut");
         return;
       }
 
@@ -1990,7 +1985,7 @@ export class OfficeApp extends BaseApp {
         const text = await navigator.clipboard.readText();
         document.execCommand("insertText", false, text);
       } catch (err) {
-        os.notify.send("Clipboard access denied. Use Ctrl+V instead.");
+        os.notify.send("Can't access clipboard. Try Ctrl+V.");
       }
     } else if (state.editorType === "spreadsheet") {
       const focused = document.activeElement;
@@ -1999,7 +1994,7 @@ export class OfficeApp extends BaseApp {
           const text = await navigator.clipboard.readText();
           focused.textContent = text;
         } catch (err) {
-          os.notify.send("Clipboard access denied. Use Ctrl+V instead.");
+          os.notify.send("Can't access clipboard. Try Ctrl+V.");
         }
       }
     }
@@ -2060,7 +2055,7 @@ export class OfficeApp extends BaseApp {
   async addSpreadsheetRow(state) {
     if (state.editorType !== "spreadsheet") return;
     if (!state.hot) {
-      os.notify.send("Row add works in grid view");
+      os.notify.send("Switch to grid view to add rows");
       return;
     }
     const rowCount = state.hot.countRows();
@@ -2071,18 +2066,18 @@ export class OfficeApp extends BaseApp {
   async addSpreadsheetColumn(state) {
     if (state.editorType !== "spreadsheet") return;
     if (!state.hot) {
-      os.notify.send("Column add works in grid view");
+      os.notify.send("Switch to grid view to add columns");
       return;
     }
     const colCount = state.hot.countCols();
     state.hot.alter("insert_col", colCount, 1);
-    os.notify.send("Column added");
+    os.notify.send("New column added");
   }
 
   async addSpreadsheetSheet(state) {
     if (state.editorType !== "spreadsheet" || !state.workbook) return;
 
-    const name = await os.dialog.prompt("Prompt", "Sheet name:", `Sheet${state.workbook.SheetNames.length + 1}`);
+    const name = await os.dialog.prompt("Prompt", "Name your sheet:", `Sheet${state.workbook.SheetNames.length + 1}`);
     if (!name) return;
 
     const XLSX = await modules.xlsx();
@@ -2114,7 +2109,7 @@ export class OfficeApp extends BaseApp {
 </html>`;
 
     FileIO.triggerDownload(`${state.title}.html`, fullHTML);
-    os.notify.send("Exported as HTML");
+    os.notify.send("Exported as .html");
   }
 
   findInSpreadsheet(state, searchTerm) {
@@ -2323,7 +2318,7 @@ export class OfficeApp extends BaseApp {
           await os.fs.write(state.filePath, content);
         }
 
-        os.notify.send(`File saved: ${state.title}`);
+        os.notify.send(`Saved: ${state.title}`);
         speak("Great, your file has been saved!", ClippyAnimation.Greeting);
         window.achievements.trigger(Achievements.OfficeWorker);
       } else {
@@ -2332,7 +2327,7 @@ export class OfficeApp extends BaseApp {
     } catch (e) {
       console.error("Save error:", e);
       audioMixer().playCriticalWarning();
-      os.notify.send("Error saving file.");
+      os.notify.send("Couldn't save that file");
     }
   }
 
@@ -2356,12 +2351,12 @@ export class OfficeApp extends BaseApp {
           const ps = path.length ? `/${path.join("/")}/${fileName}` : `/${fileName}`;
           state.title = fileName;
           state.filePath = [...path, fileName];
-          os.notify.send(`File saved: ${ps}`);
+          os.notify.send(`Saved: ${ps}`);
           speak("Great, your file has been saved!", ClippyAnimation.Greeting);
           window.achievements.trigger(Achievements.OfficeWorker);
         } catch {
           audioMixer().playCriticalWarning();
-          os.notify.send("Error saving file.");
+          os.notify.send("Couldn't save that file");
         }
       });
     } else {
@@ -2375,11 +2370,11 @@ export class OfficeApp extends BaseApp {
       if (content === null) return;
       const fileName = state.title.includes(".") ? state.title : `${state.title}${state.ext || ".txt"}`;
       FileIO.triggerDownload(fileName, content);
-      os.notify.send(`Downloaded: ${fileName}`);
+      os.notify.send(`Downloaded ${fileName}`);
       speak("Great, your file has been downloaded!", ClippyAnimation.Greeting);
     } catch {
       audioMixer().playCriticalWarning();
-      os.notify.send("Error downloading file.");
+      os.notify.send("Couldn't download that file");
     }
   }
 

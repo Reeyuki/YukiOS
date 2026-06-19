@@ -283,10 +283,10 @@ export function bindAppearanceCategory(
     bindEvent(saveThemeBtn, "click", async () => {
       const customColors = getCustomColors();
       if (!customColors) {
-        os.dialog.alert("Alert", "No custom colors set. Please customize colors first.");
+        os.dialog.alert("Alert", "No custom colors yet. Create one first.");
         return;
       }
-      const themeName = await os.dialog.prompt("Prompt", "Enter theme name:", "My Theme");
+      const themeName = await os.dialog.prompt("Prompt", "Name your theme:", "My Theme");
       if (!themeName) return;
       const themeValue = themeName.toLowerCase().replace(/[^a-z0-9-]/g, "-");
       try {
@@ -296,7 +296,7 @@ export function bindAppearanceCategory(
           icon: "fas fa-palette",
           colors: customColors
         });
-        os.dialog.alert("Alert", `Theme "${themeName}" saved successfully!`);
+        os.dialog.alert("Alert", `Saved "${themeName}"`);
         showSaved();
         const customThemesSection = Array.from($$(".settings-row--stacked", win)).find(
           (row) => row.querySelector(".settings-label-title")?.textContent === "Custom Themes"
@@ -322,7 +322,7 @@ export function bindAppearanceCategory(
           }
         }
       } catch (e) {
-        os.dialog.alert("Alert", e.message || "Failed to save theme");
+        os.dialog.alert("Alert", e.message || "Couldn't save the theme");
       }
     });
   }
@@ -472,14 +472,14 @@ export function bindAppearanceCategory(
 
         await fs.createFile(["Pictures", "Wallpapers"], file.name, file, fileKind, icon);
 
-        os.notify.send("Wallpaper Uploaded", `Wallpaper "${file.name}" uploaded successfully`, { type: "info" });
+        os.notify.send("Wallpaper Uploaded", `"${file.name}" set as wallpaper`, { type: "info" });
 
         if (wallpapersContainer) {
           await renderWallpapersPage(fs, wm, wallpapersContainer);
         }
       } catch (err) {
         console.error("Failed to upload wallpaper:", err);
-        os.notify.send("Upload Failed", "Failed to upload wallpaper", { type: "error" });
+        os.notify.send("Upload Failed", "Couldn't upload that wallpaper", { type: "error" });
       }
 
       wallpaperFileInput.value = "";
@@ -559,7 +559,7 @@ function bindCursorControls(win, settings, showSaved, normalizeCursorDataUrl) {
 
         try {
           if (file.size > 2 * 1024 * 1024) {
-            os.dialog.alert("Alert", "Cursor image too large. Please use a file under 2MB.");
+            os.dialog.alert("Alert", "That cursor image is too big. Keep it under 2MB.");
             return;
           }
           const dataUrl = await new Promise((resolve, reject) => {
@@ -574,7 +574,7 @@ function bindCursorControls(win, settings, showSaved, normalizeCursorDataUrl) {
           setCursor(normalized, dataUrl);
         } catch (e) {
           console.error("Cursor upload failed:", e);
-          os.dialog.alert("Alert", "Failed to set cursor. Check console for details.");
+          os.dialog.alert("Alert", "Couldn't set that cursor.");
         }
       });
 
@@ -707,7 +707,7 @@ export function bindDataCategory(win, save, settings, fs, showStatus, showSaved)
   });
 
   bindEvent($("#btnResetToggles", win), "click", async () => {
-    const confirmed = await os.dialog.confirm("Confirm", "Reset toggles?");
+    const confirmed = await os.dialog.confirm("Confirm", "Reset all toggles?");
     if (!confirmed) return;
 
     $("#settingsWeather", win).checked = true;
@@ -828,7 +828,7 @@ export function renderTrayAppsList(win, settings) {
   if (trayItems.length === 0) {
     setHTML(
       trayAppsList,
-      `<div style="padding: 12px; color: rgba(255,255,255,0.5); font-size: 13px; text-align: center;">No tray apps registered</div>`
+      `<div style="padding: 12px; color: rgba(255,255,255,0.5); font-size: 13px; text-align: center;">No tray apps yet</div>`
     );
     return;
   }

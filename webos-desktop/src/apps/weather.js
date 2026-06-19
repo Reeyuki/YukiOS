@@ -308,7 +308,7 @@ export class WeatherApp extends BaseApp {
     container.innerHTML = `<div class="wx-error">⚠️ ${message}</div>`;
   }
 
-  renderPlaceholder(container, message = "Welcome to Weather") {
+  renderPlaceholder(container, message = "Check the Weather") {
     container.innerHTML = `
     <div class="wx-placeholder">
       <div class="wx-placeholder-icon">🌤️</div>

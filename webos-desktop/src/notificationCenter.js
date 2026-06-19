@@ -326,10 +326,10 @@ export class NotificationCenter {
           toast.remove();
         }, 450);
       } else {
+        toast.classList.remove("ntf-toast--dragging");
         toast.style.transition = "none";
         toast.style.transform = `translateX(${dx}px)`;
         toast.style.opacity = "1";
-        toast.classList.remove("ntf-toast--dragging");
       }
     };
 

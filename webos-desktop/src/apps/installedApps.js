@@ -189,7 +189,7 @@ export class InstalledAppsApp extends BaseApp {
     if (filtered.length === 0) {
       listEl.innerHTML = `
         <div class="installed-apps-empty">
-          No apps found
+          No apps to show
         </div>
       `;
       statusEl.textContent = `0 apps`;
@@ -446,7 +446,7 @@ export class InstalledAppsApp extends BaseApp {
     const selectedIds = Array.from(inst.selectedApps);
     const confirmed = await os.dialog.confirm(
       "Bulk Uninstall",
-      `Are you sure you want to uninstall ${selectedIds.length} selected app${selectedIds.length !== 1 ? "s" : ""}? This will remove them from the app registry.`
+      `Uninstall ${selectedIds.length} selected app${selectedIds.length !== 1 ? "s" : ""}? You can restore them later.`
     );
 
     if (confirmed) {
@@ -502,7 +502,7 @@ export class InstalledAppsApp extends BaseApp {
   async _handleUninstall(app, inst) {
     const confirmed = await os.dialog.confirm(
       "Uninstall App",
-      `Are you sure you want to uninstall "${app.displayName}"? This will remove it from the app registry. You can restore it later.`
+      `Uninstall "${app.displayName}"? You can restore it later.`
     );
 
     if (confirmed) {

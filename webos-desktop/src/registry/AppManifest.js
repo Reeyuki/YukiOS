@@ -279,7 +279,7 @@ export const APP_MANIFESTS = [
       message: "Browse clipboard history and grab the last thing you copied.",
       animation: ClippyAnimation.Searching
     },
-    description: "System clipboard history manager that stores copied text and data for quick reuse and retrieval."
+    description: "Keep a history of everything you copy. Browse, search, and reuse old clipboard entries anytime."
   },
   {
     serviceKey: "aiAssistantApp",
@@ -292,7 +292,7 @@ export const APP_MANIFESTS = [
     category: "help",
     clippy: { message: "Ask a question and let me help with the next step.", animation: ClippyAnimation.GetWizardy },
     description:
-      "Intelligent AI assistant powered by WebLLM for client-side inference. Execute OS actions, manage files, and get contextual help with automation support."
+      "Local AI assistant that runs in your browser. Launch apps, manage files, and get help with OS tasks, no data leaves your machine."
   },
   {
     serviceKey: "displayPerformanceApp",
@@ -365,8 +365,7 @@ export const APP_MANIFESTS = [
     category: "internet",
     persistContentState: false,
     clippy: { message: "Browse web", animation: ClippyAnimation.GetArtsy },
-    description:
-      "Web proxy tool for browsing external sites through a proxied session with basic anonymity and access control."
+    description: "Browse the web through a proxy and access external sites with basic anonymity from your desktop."
   },
   {
     serviceKey: "discordApp",
@@ -379,7 +378,7 @@ export const APP_MANIFESTS = [
     category: "internet",
     persistContentState: false,
     clippy: { message: "Chat with friends on Discord", animation: ClippyAnimation.Wave },
-    description: "Discord web client for chatting with friends and communities.",
+    description: "Chat with friends, hop into voice, and keep up with your communities on Discord.",
     targetUrl: "https://discord.com",
     windowSize: ["90vw", "85vh"],
     trayOptions: {
@@ -443,7 +442,7 @@ export const APP_MANIFESTS = [
     category: "internet",
     persistContentState: false,
     clippy: { message: "Watch videos on Youtube", animation: ClippyAnimation.Show },
-    description: "YouTube web client for watching videos and content.",
+    description: "Watch videos, browse channels, and catch what's trending on YouTube.",
     targetUrl: "https://youtube.com",
     windowSize: ["90vw", "85vh"]
   },
@@ -458,7 +457,7 @@ export const APP_MANIFESTS = [
     category: "internet",
     persistContentState: false,
     clippy: { message: "Chat with AI on ChatGPT", animation: ClippyAnimation.GetTechy },
-    description: "ChatGPT web client for AI-powered conversations and assistance.",
+    description: "Chat with AI, brainstorm ideas, and get quick answers through ChatGPT.",
     targetUrl: "https://chatgpt.com",
     windowSize: ["90vw", "85vh"]
   },
@@ -473,7 +472,7 @@ export const APP_MANIFESTS = [
     category: "media",
     persistContentState: false,
     clippy: { message: "Listen to music on Spotify", animation: ClippyAnimation.GetArtsy },
-    description: "Spotify web client for streaming music and podcasts.",
+    description: "Stream music, discover podcasts, and follow your favorite playlists on Spotify.",
     targetUrl: "https://open.spotify.com",
     windowSize: ["90vw", "85vh"]
   },
@@ -488,7 +487,7 @@ export const APP_MANIFESTS = [
     category: "internet",
     persistContentState: false,
     clippy: { message: "Collaborate on Slack", animation: ClippyAnimation.Wave },
-    description: "Slack web client for team collaboration and communication.",
+    description: "Message your team, share files, and stay in the loop on Slack.",
     targetUrl: "https://slack.com",
     windowSize: ["90vw", "85vh"]
   },
@@ -503,7 +502,7 @@ export const APP_MANIFESTS = [
     category: "internet",
     persistContentState: false,
     clippy: { message: "Check your Gmail", animation: ClippyAnimation.GetTechy },
-    description: "Gmail web client for email management and communication.",
+    description: "Read, send, and organize your email through Gmail.",
     targetUrl: "https://mail.google.com",
     windowSize: ["90vw", "85vh"]
   },
@@ -518,7 +517,7 @@ export const APP_MANIFESTS = [
     category: "internet",
     persistContentState: false,
     clippy: { message: "Check your Outlook", animation: ClippyAnimation.GetTechy },
-    description: "Outlook web client for email and calendar management.",
+    description: "Check email, manage your calendar, and stay organized with Outlook.",
     targetUrl: "https://outlook.live.com",
     windowSize: ["90vw", "85vh"]
   },
@@ -533,7 +532,7 @@ export const APP_MANIFESTS = [
     category: "internet",
     persistContentState: false,
     clippy: { message: "Chat with AI on DeepSeek", animation: ClippyAnimation.GetTechy },
-    description: "DeepSeek web client for AI-powered conversations and assistance.",
+    description: "Chat with AI, ask deep questions, and get thoughtful answers on DeepSeek.",
     targetUrl: "https://chat.deepseek.com/",
     windowSize: ["90vw", "85vh"]
   },
@@ -548,7 +547,7 @@ export const APP_MANIFESTS = [
     category: "internet",
     persistContentState: false,
     clippy: { message: "Join meetings on Zoom", animation: ClippyAnimation.Show },
-    description: "Zoom web client for video conferencing and online meetings.",
+    description: "Join video calls, host meetings, and collaborate face-to-face on Zoom.",
     targetUrl: "https://zoom.us",
     windowSize: ["90vw", "85vh"]
   },
@@ -563,7 +562,7 @@ export const APP_MANIFESTS = [
     category: "office",
     persistContentState: false,
     clippy: { message: "Organize with Notion", animation: ClippyAnimation.Show },
-    description: "Notion web client for notes, docs, and project management.",
+    description: "Take notes, manage projects, and organize everything in Notion.",
     targetUrl: "https://notion.so",
     windowSize: ["90vw", "85vh"]
   },
@@ -578,7 +577,7 @@ export const APP_MANIFESTS = [
     category: "graphics",
     persistContentState: false,
     clippy: { message: "Design in Figma", animation: ClippyAnimation.GetArtsy },
-    description: "Figma web client for collaborative design and prototyping.",
+    description: "Design interfaces, prototype interactions, and collaborate in real time on Figma.",
     targetUrl: "https://figma.com",
     windowSize: ["90vw", "85vh"]
   },
@@ -593,7 +592,7 @@ export const APP_MANIFESTS = [
     category: "internet",
     persistContentState: false,
     clippy: { message: "Browse Twitter", animation: ClippyAnimation.Show },
-    description: "Twitter/X web client for social media and real-time updates.",
+    description: "Scroll your timeline, post updates, and follow the conversation on X.",
     targetUrl: "https://twitter.com",
     windowSize: ["90vw", "85vh"]
   },
@@ -608,7 +607,7 @@ export const APP_MANIFESTS = [
     category: "internet",
     persistContentState: false,
     clippy: { message: "Browse Instagram", animation: ClippyAnimation.GetArtsy },
-    description: "Instagram web client for photo sharing and social networking.",
+    description: "Browse photos, share stories, and connect with friends on Instagram.",
     targetUrl: "https://instagram.com",
     windowSize: ["90vw", "85vh"]
   },
@@ -623,7 +622,7 @@ export const APP_MANIFESTS = [
     category: "internet",
     persistContentState: false,
     clippy: { message: "Discover on Pinterest", animation: ClippyAnimation.GetArtsy },
-    description: "Pinterest web client for visual discovery and inspiration.",
+    description: "Find ideas, save inspiration, and discover new things to make on Pinterest.",
     targetUrl: "https://pinterest.com",
     windowSize: ["90vw", "85vh"]
   },
@@ -638,7 +637,7 @@ export const APP_MANIFESTS = [
     category: "office",
     persistContentState: false,
     clippy: { message: "Edit documents in Google Docs", animation: ClippyAnimation.Writing },
-    description: "Google Docs web client for document creation and collaboration.",
+    description: "Write documents, share drafts, and collaborate in real time with Google Docs.",
     targetUrl: "https://docs.google.com",
     windowSize: ["90vw", "85vh"]
   },
@@ -653,7 +652,7 @@ export const APP_MANIFESTS = [
     category: "graphics",
     persistContentState: false,
     clippy: { message: "Design in Canva", animation: ClippyAnimation.GetArtsy },
-    description: "Canva web client for graphic design and visual content creation.",
+    description: "Design graphics, make presentations, and create visuals quickly in Canva.",
     targetUrl: "https://canva.com",
     windowSize: ["90vw", "85vh"]
   },
@@ -668,7 +667,7 @@ export const APP_MANIFESTS = [
     category: "development",
     persistContentState: false,
     clippy: { message: "Code on GitHub", animation: ClippyAnimation.GetTechy },
-    description: "GitHub web client for code hosting and version control.",
+    description: "Host code, review pull requests, and collaborate on projects through GitHub.",
     targetUrl: "https://github.com",
     windowSize: ["90vw", "85vh"]
   },
@@ -683,7 +682,7 @@ export const APP_MANIFESTS = [
     category: "development",
     persistContentState: false,
     clippy: { message: "Code on GitLab", animation: ClippyAnimation.GetTechy },
-    description: "GitLab web client for DevOps and code collaboration.",
+    description: "Manage repos, run CI/CD pipelines, and collaborate on code with GitLab.",
     targetUrl: "https://gitlab.com",
     windowSize: ["90vw", "85vh"]
   },
@@ -698,7 +697,7 @@ export const APP_MANIFESTS = [
     category: "development",
     persistContentState: false,
     clippy: { message: "Code on CodePen", animation: ClippyAnimation.GetTechy },
-    description: "CodePen web client for front-end development and code sharing.",
+    description: "Write front-end code, test snippets, and share what you build on CodePen.",
     targetUrl: "https://codepen.io",
     windowSize: ["90vw", "85vh"]
   },
@@ -713,7 +712,7 @@ export const APP_MANIFESTS = [
     category: "development",
     persistContentState: false,
     clippy: { message: "Code on Replit", animation: ClippyAnimation.GetTechy },
-    description: "Replit web client for online coding and collaborative development.",
+    description: "Code online, build projects, and collaborate with others in real time on Replit.",
     targetUrl: "https://replit.com",
     windowSize: ["90vw", "85vh"]
   },
@@ -728,7 +727,7 @@ export const APP_MANIFESTS = [
     category: "media",
     persistContentState: false,
     clippy: { message: "Watch streams on Twitch", animation: ClippyAnimation.Show },
-    description: "Twitch web client for live streaming and gaming content.",
+    description: "Watch live streams, follow creators, and chat with the community on Twitch.",
     targetUrl: "https://twitch.tv",
     windowSize: ["90vw", "85vh"]
   },
@@ -743,7 +742,7 @@ export const APP_MANIFESTS = [
     category: "media",
     persistContentState: false,
     clippy: { message: "Listen on SoundCloud", animation: ClippyAnimation.GetArtsy },
-    description: "SoundCloud web client for audio streaming and music discovery.",
+    description: "Discover music, upload tracks, and follow artists you love on SoundCloud.",
     targetUrl: "https://soundcloud.com",
     windowSize: ["90vw", "85vh"]
   },
@@ -758,7 +757,7 @@ export const APP_MANIFESTS = [
     category: "media",
     persistContentState: false,
     clippy: { message: "Listen on Deezer", animation: ClippyAnimation.GetArtsy },
-    description: "Deezer web client for music streaming and audio content.",
+    description: "Stream music, explore curated playlists, and find your next favorite artist on Deezer.",
     targetUrl: "https://deezer.com",
     windowSize: ["90vw", "85vh"]
   },
@@ -773,7 +772,7 @@ export const APP_MANIFESTS = [
     category: "internet",
     persistContentState: false,
     clippy: { message: "Secure email with ProtonMail", animation: ClippyAnimation.GetTechy },
-    description: "ProtonMail web client for secure encrypted email.",
+    description: "Send encrypted email and keep your communications private with Proton Mail.",
     targetUrl: "https://proton.me",
     windowSize: ["90vw", "85vh"]
   },
@@ -788,7 +787,7 @@ export const APP_MANIFESTS = [
     category: "internet",
     persistContentState: false,
     clippy: { message: "Check Yahoo Mail", animation: ClippyAnimation.GetTechy },
-    description: "Yahoo Mail web client for email management and communication.",
+    description: "Read, send, and organize your inbox with Yahoo Mail.",
     targetUrl: "https://mail.yahoo.com",
     windowSize: ["90vw", "85vh"]
   },
@@ -803,7 +802,7 @@ export const APP_MANIFESTS = [
     category: "games",
     persistContentState: false,
     clippy: { message: "Stream games with GeForce Now", animation: ClippyAnimation.GetArtsy },
-    description: "Cloud gaming service for streaming PC games directly to your browser.",
+    description: "Stream PC games from the cloud and play them right in your browser with GeForce Now.",
     targetUrl: "https://play.geforcenow.com/mall/",
     windowSize: ["90vw", "85vh"]
   },
@@ -831,7 +830,7 @@ export const APP_MANIFESTS = [
     category: "graphics",
     persistContentState: false,
     clippy: { message: "Edit photos in Pixlr", animation: ClippyAnimation.GetArtsy },
-    description: "Pixlr web client for photo editing and design.",
+    description: "Edit photos, apply effects, and design visuals right in your browser with Pixlr.",
     targetUrl: "https://pixlr.com",
     windowSize: ["90vw", "85vh"]
   },
@@ -846,7 +845,7 @@ export const APP_MANIFESTS = [
     category: "internet",
     persistContentState: false,
     clippy: { message: "Chat with AI on Grok", animation: ClippyAnimation.GetTechy },
-    description: "Grok web client for AI-powered conversations and assistance.",
+    description: "Chat with AI, ask questions, and get real-time answers on Grok.",
     targetUrl: "https://grok.x.ai",
     windowSize: ["90vw", "85vh"]
   },
@@ -861,7 +860,7 @@ export const APP_MANIFESTS = [
     category: "media",
     persistContentState: false,
     clippy: { message: "Watch anime on Aniwatch", animation: ClippyAnimation.Show },
-    description: "Aniwatch web client for streaming anime content.",
+    description: "Stream the latest anime episodes and watch seasonal shows on Aniwatch.",
     targetUrl: "https://aniwatch.co.at",
     windowSize: ["90vw", "85vh"]
   },
@@ -876,7 +875,7 @@ export const APP_MANIFESTS = [
     category: "media",
     persistContentState: false,
     clippy: { message: "Browse TikTok", animation: ClippyAnimation.Show },
-    description: "TikTok web client for short-form video content.",
+    description: "Scroll short videos, follow creators, and find your next obsession on TikTok.",
     targetUrl: "https://tiktok.com",
     windowSize: ["90vw", "85vh"]
   },
@@ -892,7 +891,7 @@ export const APP_MANIFESTS = [
     persistContentState: false,
     source: "https://senshi.live",
     clippy: { message: "Stream on Senshi", animation: ClippyAnimation.Show },
-    description: "Senshi web client for streaming anime.",
+    description: "Stream anime shows and movies with a clean, simple interface on Senshi.",
     windowSize: ["90vw", "85vh"]
   },
   {

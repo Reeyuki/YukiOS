@@ -1783,16 +1783,14 @@ export class ExplorerApp extends BaseApp {
           item(
             "Empty Trash",
             () => {
-              os.dialog
-                .confirm("Empty Trash", "Permanently delete all items in trash? This cannot be undone.")
-                .then((confirmed) => {
-                  if (!confirmed) return;
-                  const view = $(`#${inst.winId}-view`, $(`#${inst.winId}`));
-                  os.fs.emptyTrash().then(() => {
-                    if (view) this._renderTrashView(inst, view, $(`#${inst.winId}`));
-                    os.notify.send("Trash emptied");
-                  });
+              os.dialog.confirm("Empty Trash", "Empty the trash for good? You can't undo this.").then((confirmed) => {
+                if (!confirmed) return;
+                const view = $(`#${inst.winId}-view`, $(`#${inst.winId}`));
+                os.fs.emptyTrash().then(() => {
+                  if (view) this._renderTrashView(inst, view, $(`#${inst.winId}`));
+                  os.notify.send("Trash emptied");
                 });
+              });
             },
             "fa-trash-alt"
           )
@@ -2077,10 +2075,7 @@ export class ExplorerApp extends BaseApp {
 
     if (emptyAllBtn) {
       emptyAllBtn.onclick = async () => {
-        const confirmed = await os.dialog.confirm(
-          "Empty Trash",
-          "Permanently delete all items in trash? This cannot be undone."
-        );
+        const confirmed = await os.dialog.confirm("Empty Trash", "Empty the trash for good? You can't undo this.");
         if (!confirmed) return;
         emptyAllBtn.disabled = true;
         await os.fs.emptyTrash();

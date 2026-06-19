@@ -10,7 +10,7 @@ const SYSTEM_INFO = {
   version: YUKIOS_VERSION,
   architecture: "Browser-based Desktop Environment",
   runtime: "Built with pure javascript",
-  persistence: "Your files stay saved even after closing",
+  persistence: "Files stick around after you close the tab",
   offline: "Works without internet, install to desktop",
   windowManager: "Custom drag/resize/snap/z-order system",
   audio: "Web Audio API with per-app volume control",
@@ -31,7 +31,7 @@ const SYSTEM_CAPABILITIES = [
   {
     tag: "VFS",
     title: "Virtual Filesystem",
-    desc: "BrowserFS + IndexedDB provides persistent storage that survives browser restarts."
+    desc: "Files stay put in the browser. Come back anytime and pick up where you left off."
   },
   {
     tag: "PLAY",
@@ -286,7 +286,7 @@ const SYSTEM_CAPABILITIES = [
   {
     tag: "SHORTCUTS",
     title: "Keyboard Shortcuts App",
-    desc: "Central utility to explore all global hotkeys and app-specific shortcuts."
+    desc: "Browse every global hotkey and app shortcut in one place."
   },
   {
     tag: "SETUP",
@@ -432,8 +432,8 @@ export class YukiOsGuideApp extends BaseApp {
             <i class="fas fa-book-open"></i>
           </div>
           <div class="guide-hero-content">
-            <h1>Welcome to Yuki OS ${SYSTEM_INFO.version}</h1>
-            <p>Your browser-based desktop environment with ${apps.length}+ apps and 3700+ games</p>
+            <h1>Yuki OS ${SYSTEM_INFO.version}</h1>
+            <p>${apps.length}+ apps, 3700+ games - your desktop, in your browser</p>
             <div class="guide-hero-meta">
               <span class="hero-tag"><i class="fas fa-code"></i> ${SYSTEM_INFO.runtime}</span>
               <span class="hero-tag"><i class="fas fa-database"></i> ${SYSTEM_INFO.persistence}</span>
@@ -626,7 +626,7 @@ export class YukiOsGuideApp extends BaseApp {
           apps.filter(
             (a) => a.displayName.toLowerCase().includes(searchLower) || a.id.toLowerCase().includes(searchLower)
           ).length === 0
-            ? `<div class="guide-empty"><i class="fas fa-search"></i><p>No apps match your search</p></div>`
+            ? `<div class="guide-empty"><i class="fas fa-search"></i><p>No apps match that</p></div>`
             : ""
         }
       </div>

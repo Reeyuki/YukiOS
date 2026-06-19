@@ -60,7 +60,6 @@
   font-size: 0.88rem;
 }
 
-/* TOP META BAR (Version + Discord + GitHub) */
 #about-yukios .abx-meta {
   display: flex;
   flex-direction: row;
@@ -206,7 +205,6 @@
   border-color: var(--brand);
 }
 
-/* LIGHT / THEME OVERRIDES */
 html[data-theme="light"] #about-yukios .abx-top,
 html[data-theme="light"] #about-yukios .abx-panel,
 html[data-theme="light"] #about-yukios .abx-foot,

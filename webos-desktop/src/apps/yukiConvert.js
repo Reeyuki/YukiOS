@@ -24,7 +24,7 @@ export class YukiConvertApp extends BaseApp {
           <div style="background: var(--brand); width: 64px; height: 64px; border-radius: 16px; display: flex; align-items: center; justify-content: center; margin-bottom: 24px; box-shadow: 0 8px 24px var(--brand-glow);">
             <i class="fas fa-exchange-alt" style="font-size: 32px; color: white;"></i>
           </div>
-          <h2 style="margin: 0 0 12px 0; font-weight: 600; font-size: 22px;">Welcome to Yuki Convert</h2>
+          <h2 style="margin: 0 0 12px 0; font-weight: 600; font-size: 22px;">Yuki Convert</h2>
           <p style="color: rgba(255, 255, 255, 0.6); font-size: 14px; margin-bottom: 36px; max-width: 85%; line-height: 1.5;">
             Easily batch convert images, audio, video, structured data, and documents directly in your browser without any server uploads.
           </p>

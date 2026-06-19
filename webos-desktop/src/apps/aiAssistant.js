@@ -51,8 +51,8 @@ export class AIAssistantApp extends BaseApp {
       engineLoading: false,
       isGenerating: false,
       statusTone: "offline",
-      statusText: "Engine offline",
-      statusDetail: "Initialize a local model to start chatting.",
+      statusText: "Offline",
+      statusDetail: "Fire up a model to get started.",
       progress: 0,
       progressText: "",
       currentModelId: null,
@@ -81,16 +81,15 @@ export class AIAssistantApp extends BaseApp {
             </div>
             <h2>Yuki AI Assistant</h2>
             <p class="ai-setup-description">
-              Powered by WebLLM - runs entirely in your browser..
-              No data is sent to external servers.
+              Runs locally in your browser. your data never leaves your machine.
             </p>
 
             <div class="ai-system-requirements">
-              <h3><i class="fas fa-exclamation-triangle"></i> System Requirements</h3>
+              <h3><i class="fas fa-exclamation-triangle"></i> Before You Start</h3>
               <ul>
-                <li>Modern browser with WebGPU support (Chrome 113+, Edge 113+)</li>
-                <li>At least 4GB RAM recommended for low model</li>
-                <li>Discrete GPU preferred for better performance</li>
+                <li>You'll need a browser with WebGPU (Chrome 113+ or Edge 113+)</li>
+                <li>About 4GB free RAM for the lighter model, more for the big one</li>
+                <li>A dedicated GPU helps things run smoother</li>
               </ul>
             </div>
 
@@ -168,10 +167,10 @@ export class AIAssistantApp extends BaseApp {
                 <span></span>
                 <span></span>
               </span>
-              <span id="ai-live-text">${state.engineLoading ? "Loading local model..." : state.isGenerating ? "Generating response..." : "Idle"}</span>
+              <span id="ai-live-text">${state.engineLoading ? "Loading model..." : state.isGenerating ? "Working..." : "Idle"}</span>
             </div>
             <div class="ai-input-area">
-              <input type="text" id="ai-input" class="ai-input" placeholder="Ask me anything or request an action..." />
+              <input type="text" id="ai-input" class="ai-input" placeholder="Ask me anything..." />
               <button id="ai-send" class="ai-send-btn">
                 <i class="fas fa-paper-plane"></i>
               </button>
@@ -238,7 +237,7 @@ export class AIAssistantApp extends BaseApp {
           this._setRuntimeState(state, {
             statusTone: "loading",
             statusText: "Loading engine",
-            statusDetail: report.text || "Downloading model assets.",
+            statusDetail: report.text || "Downloading model files.",
             progress: percent,
             progressText: report.text || "Loading..."
           });
@@ -542,7 +541,7 @@ export class AIAssistantApp extends BaseApp {
   }
 
   _buildSystemPrompt(context) {
-    return `You are Yuki AI Assistant, an intelligent assistant integrated into Yuki OS. You can help users with tasks and execute system actions.
+    return `You are Yuki AI Assistant, built into Yuki OS. Help users with tasks and run system actions when asked.
 
 Current OS Context:
 - Active Window: ${context.activeWindow || "None"}
@@ -550,7 +549,7 @@ Current OS Context:
 - Workspace: ${context.workspace || "Default"}
 - Windows: ${context.windows?.map((w) => `${w.title}(${w.id})`).join(", ") || "None"}
 
-When the user requests actions, respond with your natural language response, then include a JSON block with structured actions:
+When the user requests actions, respond naturally first, then include a JSON block with structured actions:
 \`\`\`json
 [
   {"action": "action_type", "target": "target_value", "params": {}}
@@ -568,7 +567,7 @@ Supported actions:
 - set_theme: Change theme (target: theme_name)
 - toggle_setting: Toggle a setting (target: setting_key)
 
-Always explain what you're doing before executing actions. Ask for confirmation if actions could be destructive.`;
+Say what you're about to do before running an action. If it could be destructive, ask first.`;
   }
 
   _resolveActions(response) {
@@ -680,7 +679,7 @@ Always explain what you're doing before executing actions. Ask for confirmation 
     const msgDiv = document.createElement("div");
     msgDiv.className = `ai-message ai-message-${role}`;
     msgDiv.innerHTML = `
-      <div class="ai-message-role">${role === "user" ? "You" : "AI"}</div>
+      <div class="ai-message-role">${role === "user" ? "You" : "Assistant"}</div>
       <div class="ai-message-content">${this._formatMessage(content)}</div>
     `;
     historyContainer.appendChild(msgDiv);
@@ -908,12 +907,12 @@ Always explain what you're doing before executing actions. Ask for confirmation 
     if (input) {
       input.disabled = !state.engineInitialized || state.engineLoading || state.isGenerating;
       input.placeholder = state.engineLoading
-        ? "Local model is loading..."
+        ? "Loading the model..."
         : state.isGenerating
-          ? "Local model is generating a response..."
+          ? "Thinking..."
           : state.engineInitialized
-            ? "Ask me anything or request an action..."
-            : "Initialize the AI engine to start chatting...";
+            ? "Ask me anything..."
+            : "Start the AI engine to begin chatting";
     }
 
     if (sendBtn) {

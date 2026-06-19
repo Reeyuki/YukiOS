@@ -140,7 +140,6 @@
   background: var(--glass);
   cursor: pointer;
   appearance: none;
-  -webkit-appearance: none;
   display: flex;
   align-items: center;
   justify-content: center;

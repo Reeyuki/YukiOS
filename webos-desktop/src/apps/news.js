@@ -445,7 +445,7 @@ const EXISTING_NEWS_UPDATES = [
           [
             "fa-robot",
             "Yuki AI Assistant",
-            "Intelligent Local AI assistant powered by WebLLM. Execute OS actions, workspace controls, app launches, manage files, and get contextual help with automation support."
+            "Local AI assistant that runs in your browser - launch apps, manage files, and chat without sending data anywhere."
           ],
           [
             "fa-user-gear",
@@ -455,7 +455,7 @@ const EXISTING_NEWS_UPDATES = [
           [
             "fa-book-open",
             "Yuki OS Guide",
-            "Discover what Yuki OS can do with the new system-wide guide. Browse apps, explore features, and understand the system architecture."
+            "A built-in guide that walks you through apps, features, and how everything fits together."
           ],
           [
             "fa-th-list",
@@ -465,7 +465,7 @@ const EXISTING_NEWS_UPDATES = [
           [
             "fa-clipboard",
             "Clipboard Manager",
-            "System-wide clipboard with history support. Access via tray icon, view history, copy items, and clear clipboard."
+            "Keeps everything you copy - access your full clipboard history from the tray icon."
           ]
         ]
       },
@@ -774,7 +774,7 @@ const EXISTING_NEWS_UPDATES = [
           [
             "fa-layer-group",
             "Virtual Workspaces",
-            "Boost your productivity by organizing apps into multiple virtual desktops, allowing you to switch between different tasks seamlessly."
+            "Split your work across multiple desktops and switch between them without the clutter."
           ],
           [
             "fa-microsoft",
@@ -784,7 +784,7 @@ const EXISTING_NEWS_UPDATES = [
           [
             "fa-sliders",
             "Audio Mixer",
-            "Take full control of your soundscape with per-app volume controls with audio mixer."
+            "Turn down that one noisy app - per-app volume controls live in the audio mixer."
           ]
         ]
       }
@@ -797,11 +797,11 @@ const EXISTING_NEWS_UPDATES = [
         icon: "fa-rocket",
         title: "New Apps",
         items: [
-          ["fa-code", "Yuki Code", "A powerful code editor is now available as a built-in app."],
+          ["fa-code", "Yuki Code", "A full code editor powered by VS Code, built right into your desktop."],
           ["fa-file-lines", "Markdown Viewer", "Open and read Markdown files directly in the system."],
           ["fa-cube", "3D Model Viewer", "View 3D models without any external software."],
           ["fa-file-word", "Full Office Suite", "Create and edit office documents right in your workspace."],
-          ["fa-calendar-days", "Calendar", "Stay organized with a built-in calendar app."],
+          ["fa-calendar-days", "Calendar", "Track your dates and events with the built-in calendar."],
           [
             "fa-note-sticky",
             "Notepad Enhancements",
@@ -950,7 +950,7 @@ export class NewsApp extends BaseApp {
               </div>
               <div class="news-hero-title">
                 <h1>What's New</h1>
-                <p>Fresh features, improvements, and fixes in your desktop.</p>
+                <p>The latest updates and changes shipped to your desktop.</p>
               </div>
             </div>
             <div class="news-hero-meta">

@@ -195,7 +195,7 @@ export class RuffleApp extends BaseApp {
         os.events.emit(BusEvents.FILE_CHANGED, { path: file.name });
       }
 
-      os.notify.send(`Saved ${files.length} file(s) to Flash/ directory.`);
+      os.notify.send(`Saved ${files.length} file(s) to Flash.`);
       zone.innerHTML = `<i class="fa-solid fa-circle-check emu-state-icon ruf-state-icon"></i><div class="emu-state-text ruf-state-text">Saved ${files.length} file(s)!</div>`;
 
       setTimeout(() => {
@@ -227,7 +227,7 @@ export class RuffleApp extends BaseApp {
     try {
       const blob = await os.fs.read([...normalizedPath, fileName]);
       if (!blob || blob.size === 0) {
-        os.notify.send("Failed to read SWF file.");
+        os.notify.send("Couldn't read that SWF file.");
         return;
       }
 
@@ -239,7 +239,7 @@ export class RuffleApp extends BaseApp {
 
       this._launchRuffle(displayName, fileName, arrayBuffer);
     } catch (e) {
-      os.notify.send(`Error loading SWF: ${e.message}`);
+      os.notify.send(`SWF wouldn't load: ${e.message}`);
     }
   }
 
@@ -255,7 +255,7 @@ export class RuffleApp extends BaseApp {
     <div class="window-content emu-window ruf-window">
       <div id="${winId}-inner" class="emu-state ruf-loading emu-load-wrap">
         <i class="fa-solid fa-film fa-spin emu-state-icon ruf-state-icon"></i>
-        <div class="emu-state-text ruf-state-text emu-state-text--accent">Loading <strong>${displayName}</strong>...</div>
+        <div class="emu-state-text ruf-state-text emu-state-text--accent">Starting <strong>${displayName}</strong>...</div>
         <div id="${winId}-log" class="emu-state-text--muted ruf-log"></div>
       </div>
       <iframe
@@ -287,7 +287,7 @@ export class RuffleApp extends BaseApp {
     };
 
     try {
-      setLog("Loading Ruffle...");
+      setLog("Starting Ruffle...");
       await this._loadRuffleScript();
 
       setLog("Starting Flash player...");
@@ -370,7 +370,7 @@ export class RuffleApp extends BaseApp {
 
   async launchFromFile(file) {
     if (!file.name.toLowerCase().endsWith(".swf")) {
-      os.notify.send("Ruffle only supports .swf files.", "", { icon: "static/icons/ruffle.webp" });
+      os.notify.send("Ruffle only works with .swf files.", "", { icon: "static/icons/ruffle.webp" });
       return;
     }
     const arrayBuffer = await file.arrayBuffer();

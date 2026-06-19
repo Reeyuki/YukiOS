@@ -569,7 +569,7 @@ export async function openFileWith({
         fileData: arrayBuffer
       });
     } else {
-      os.dialog.alert("Alert", "Yuki Blender is not available.");
+      os.dialog.alert("Can't Open", "Yuki Blender isn't available right now.");
     }
     return;
   }
@@ -619,7 +619,7 @@ export async function openFileWith({
     if (emulatorApp) {
       emulatorApp.launchROM(name, path);
     } else {
-      os.dialog.alert("Alert", "ROM emulation is not available.");
+      os.dialog.alert("Can't Open", "ROM emulation isn't available right now.");
     }
     return;
   }

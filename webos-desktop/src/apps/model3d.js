@@ -15,28 +15,28 @@ const SAMPLE_MODELS = [
     fileName: "bunny.obj",
     url: resolveGhUrl("https://cdn.jsdelivr.net/gh/glmark2/glmark2@master/data/models/bunny.obj"),
     icon: "fa-paw",
-    description: "Classic Stanford Bunny mesh"
+    description: "The classic Stanford bunny"
   },
   {
     name: "Cat",
     fileName: "cat.3ds",
     url: resolveGhUrl("https://cdn.jsdelivr.net/gh/glmark2/glmark2@master/data/models/cat.3ds"),
     icon: "fa-cat",
-    description: "Cat model in 3DS format"
+    description: "A cat, loaded from 3DS"
   },
   {
     name: "Cube",
     fileName: "cube.3ds",
     url: resolveGhUrl("https://cdn.jsdelivr.net/gh/glmark2/glmark2@master/data/models/cube.3ds"),
     icon: "fa-cube",
-    description: "Simple cube primitive"
+    description: "Just a plain cube"
   },
   {
     name: "Horse",
     fileName: "horse.3ds",
     url: resolveGhUrl("https://cdn.jsdelivr.net/gh/glmark2/glmark2@master/data/models/horse.3ds"),
     icon: "fa-horse",
-    description: "Horse model in 3DS format"
+    description: "A horse, loaded from 3DS"
   }
 ];
 
@@ -340,7 +340,7 @@ export class Model3DApp extends BaseApp {
           <button class="yb-panel-btn" data-action="addCube" title="Add object"><i class="fa fa-plus"></i></button>
         </div>
         <div class="yb-outliner" id="yb-outliner">
-          <div class="yb-outliner-empty">No objects in scene</div>
+          <div class="yb-outliner-empty">Scene is empty</div>
         </div>
         <div class="yb-collections" id="yb-collections">
           <div class="yb-collection-row active" data-coll="default">
@@ -391,7 +391,7 @@ export class Model3DApp extends BaseApp {
               <div class="yb-welcome-logo">
                 <i class="fa fa-cube"></i>
               </div>
-              <h2>Yuki Blender</h2>
+              <h2>Start Here</h2>
               <p>Browser-native 3D editor · Modeling · Animation · Scene editing</p>
               <div class="yb-welcome-formats">
                 <span>.glb</span><span>.gltf</span><span>.obj</span><span>.fbx</span>
@@ -643,7 +643,7 @@ export class Model3DApp extends BaseApp {
           <div class="yb-ins-section">
             <div class="yb-ins-header">Animations</div>
             <div class="yb-anim-list" id="yb-anim-list">
-              <span class="yb-empty-label">No animations</span>
+              <span class="yb-empty-label">No animations to show</span>
             </div>
           </div>
           <div class="yb-ins-section" id="ins-bones-anim" style="display:none">
@@ -1390,7 +1390,7 @@ export class Model3DApp extends BaseApp {
     const outliner = $("#yb-outliner", this.win);
     if (!outliner) return;
     if (this.sceneObjects.size === 0) {
-      setHTML(outliner, '<div class="yb-outliner-empty">No objects in scene</div>');
+      setHTML(outliner, '<div class="yb-outliner-empty">Scene is empty</div>');
       return;
     }
     setHTML(outliner, "");
@@ -1470,7 +1470,7 @@ export class Model3DApp extends BaseApp {
   async _renameObject(id) {
     const so = this.sceneObjects.get(id);
     if (!so) return;
-    const newName = await os.dialog.prompt("Rename Object", "Rename object:", so.name, "Rename");
+    const newName = await os.dialog.prompt("Rename Object", "Give it a name:", so.name, "Rename");
     if (newName && newName.trim()) {
       so.name = newName.trim();
       so.object3D.name = so.name;
@@ -1763,7 +1763,7 @@ export class Model3DApp extends BaseApp {
 
   async loadModel(fileData, fileName = "") {
     await loadThree();
-    this._showLoading(true, `Loading ${fileName}…`);
+    this._showLoading(true, `Opening ${fileName}…`);
     this._hideWelcome();
 
     if (this.currentModel) {
@@ -1900,7 +1900,7 @@ export class Model3DApp extends BaseApp {
       }
     } catch (err) {
       console.error("Yuki Blender load error:", err);
-      os.notify.send(`Failed to load ${fileName}: ${err.message}`, "Error");
+      os.notify.send(`Couldn't load ${fileName}: ${err.message}`, "Error");
     }
 
     this._showLoading(false);
@@ -1920,10 +1920,10 @@ export class Model3DApp extends BaseApp {
           return true;
         }
       }
-      os.notify.send("No supported models found in zip", "Error");
+      os.notify.send("No loadable models in that zip", "Error");
       return false;
     } catch (err) {
-      os.notify.send("Failed to read zip file", "Error");
+      os.notify.send("Couldn't read that zip file", "Error");
       return false;
     }
   }
@@ -2449,7 +2449,7 @@ export class Model3DApp extends BaseApp {
 
   async _exportGLTF() {
     if (!this.currentModel) {
-      os.notify.send("No model to export", "Error");
+      os.notify.send("Nothing to export", "Error");
       return;
     }
     try {
@@ -2461,19 +2461,19 @@ export class Model3DApp extends BaseApp {
         (result) => {
           const blob = new Blob([JSON.stringify(result)], { type: "application/json" });
           this._downloadBlob(blob, (this.currentFileName.replace(/\.[^.]+$/, "") || "scene") + ".gltf");
-          os.notify.send("Exported GLTF", "Export");
+          os.notify.send("Exported as GLTF", "Export");
         },
-        (err) => os.notify.send("Export failed: " + err, "Error"),
+        (err) => os.notify.send("Export didn't work: " + err, "Error"),
         { binary: false }
       );
     } catch (e) {
-      os.notify.send("GLTF exporter not available", "Error");
+      os.notify.send("GLTF export isn't available", "Error");
     }
   }
 
   _exportOBJ() {
     if (!this.currentModel) {
-      os.notify.send("No model to export", "Error");
+      os.notify.send("Nothing to export", "Error");
       return;
     }
     let lines = ["# Exported by Yuki Blender"];
@@ -2499,7 +2499,7 @@ export class Model3DApp extends BaseApp {
     });
     const blob = new Blob([lines.join("\n")], { type: "text/plain" });
     this._downloadBlob(blob, (this.currentFileName.replace(/\.[^.]+$/, "") || "scene") + ".obj");
-    os.notify.send("Exported OBJ", "Export");
+    os.notify.send("Exported as OBJ", "Export");
   }
 
   _exportSceneJSON() {
@@ -2517,7 +2517,7 @@ export class Model3DApp extends BaseApp {
     });
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
     this._downloadBlob(blob, "scene.json");
-    os.notify.send("Scene JSON exported", "Export");
+    os.notify.send("Scene exported as JSON", "Export");
   }
 
   _downloadBlob(blob, name) {
@@ -2532,19 +2532,19 @@ export class Model3DApp extends BaseApp {
   _recalcNormals() {
     const sel = this._getFirstSelected();
     if (!sel) {
-      os.notify.send("Select an object first", "Error");
+      os.notify.send("Pick an object first", "Error");
       return;
     }
     sel.object3D.traverse((c) => {
       if (c.isMesh) c.geometry.computeVertexNormals();
     });
-    os.notify.send("Normals recalculated", "Mesh");
+    os.notify.send("Recalculated normals", "Mesh");
   }
 
   _applyTransformsToMesh() {
     const sel = this._getFirstSelected();
     if (!sel) {
-      os.notify.send("Select an object first", "Error");
+      os.notify.send("Pick an object first", "Error");
       return;
     }
     sel.object3D.traverse((c) => {
@@ -2553,13 +2553,13 @@ export class Model3DApp extends BaseApp {
       c.matrixWorld.decompose(c.position, c.quaternion, c.scale);
       c.updateMatrix();
     });
-    os.notify.send("Transforms applied", "Mesh");
+    os.notify.send("Applied transforms", "Mesh");
   }
 
   _assignTexture(type) {
     const sel = this._getFirstSelected();
     if (!sel) {
-      os.notify.send("Select an object first", "Error");
+      os.notify.send("Pick an object first", "Error");
       return;
     }
     const input = document.createElement("input");
@@ -2625,10 +2625,10 @@ export class Model3DApp extends BaseApp {
       const blob = new Blob([bytes], { type: "image/png" });
       const name = `${(this.currentFileName || "scene").replace(/\.[^.]+$/, "")}-screenshot-${Date.now()}.png`;
       await os.fs.write(["Pictures"], name, blob, "image", dataUrl);
-      os.notify.send(`Screenshot saved: Pictures/${name}`, "Screenshot");
+      os.notify.send(`Saved screenshot to Pictures/${name}`, "Screenshot");
     } catch (err) {
       console.error(err);
-      os.notify.send("Screenshot failed", "Error");
+      os.notify.send("Couldn't take screenshot", "Error");
     }
   }
 

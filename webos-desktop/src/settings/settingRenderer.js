@@ -357,7 +357,7 @@ export function renderDesktopSettings(s) {
             <span class="settings-label-desc">Toggle visibility of individual tray applications</span>
           </div>
           <div id="trayAppsList" style="margin-top: 10px; width: 100%;">
-            <div style="padding: 12px; color: var(--text-muted); font-size: 13px; text-align: center;">No tray apps registered</div>
+            <div style="padding: 12px; color: var(--text-muted); font-size: 13px; text-align: center;">No tray apps yet</div>
           </div>
         </div>
       </div>
@@ -492,7 +492,7 @@ export function renderAppearanceSettings(s) {
           </div>
           <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px;">
             ${customThemeButtons}
-            ${customThemes.length === 0 ? '<span style="grid-column: 1/-1; color: var(--text-secondary); font-size: 12px; text-align: center; padding: 8px;">No custom themes saved yet. Use "Save Theme" to create one.</span>' : ""}
+            ${customThemes.length === 0 ? '<span style="grid-column: 1/-1; color: var(--text-secondary); font-size: 12px; text-align: center; padding: 8px;">No custom themes yet. Click "Save Theme" to make one</span>' : ""}
           </div>
         </div>
         <div class="settings-row">
@@ -909,11 +909,11 @@ export function renderAboutSettings() {
             <img src="${resolveGhUrl("static/icons/logo.png")}" style="width: 48px; height: 48px; object-fit: contain;" onerror="this.src='favicon.ico'"/>
             <div>
               <h2 style="margin:0;font-size:1.3em;font-weight:600;display:flex;align-items:center;gap:8px;color:var(--text-primary);">Yuki OS <span style="font-size:0.65em;background:var(--brand-dim);color:var(--brand);padding:2px 8px;border-radius:4px;font-weight:500;">${YUKIOS_VERSION}</span></h2>
-              <p style="margin:4px 0 0 0;color:var(--text-secondary);font-size:0.8em;">Browser desktop environment</p>
+              <p style="margin:4px 0 0 0;color:var(--text-secondary);font-size:0.8em;">Desktop, in your browser</p>
             </div>
           </div>
           <p style="margin:0;color:var(--text-primary);font-size:0.9em;line-height:1.5;opacity:0.75;">
-            A fully featured desktop OS experience running directly in your web browser. Includes emulators, tools, PWA support, virtual filesystem, and 3700+ games.
+            A full desktop OS in your browser with emulators, tools, PWA support, virtual filesystem, and 3700+ games included.
           </p>
           <div style="display:flex;align-items:center;gap:8px;">
             <span style="color:var(--text-muted);font-size:0.78em;font-weight:500;">Build</span>

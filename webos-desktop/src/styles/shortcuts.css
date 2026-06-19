@@ -1,8 +1,5 @@
 #shortcuts-app .sc-app-wrapper {
   display: flex;
-  height: calc(100% - 40px);
-  font-family: var(--font-ui);
-  color: var(--text-primary);
   background: var(--bg-primary);
   overflow: hidden;
 }
@@ -153,7 +150,9 @@
   border-radius: var(--r);
   background: var(--surface-1);
   border: 1px solid var(--glass-border);
-  transition: all 0.2s;
+  transition:
+    background-color 0.2s,
+    border-color 0.2s;
 }
 
 #shortcuts-app .sc-card:hover {

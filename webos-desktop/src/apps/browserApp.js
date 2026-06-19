@@ -1202,7 +1202,7 @@ body {
 <div class="main">
   <div class="logo">❄️</div>
   <h1>Yuki Browser</h1>
-  <p class="tagline">Your web-based desktop experience</p>
+  <p class="tagline">Your desktop, in your browser</p>
   <div class="time" id="clock">--:--</div>
   <div class="date" id="datestr"></div>
   <div class="quick-links">
@@ -1377,7 +1377,7 @@ body {
 <div class="main">
   <div class="logo">🕵️</div>
   <h1>Incognito Mode</h1>
-  <p class="tagline">Private browsing in your web-based desktop</p>
+  <p class="tagline">Private browsing with no traces left behind</p>
   <div class="privacy-notice">
     🔒 Your browsing history, cookies, and site data won't be saved after you close this window.
   </div>
@@ -2089,7 +2089,7 @@ body {
   }
 
   async clearBrowsingData() {
-    if (!(await os.dialog.confirm("Confirm", "Delete all history, downloads records, and bookmarks?"))) return;
+    if (!(await os.dialog.confirm("Confirm", "Clear history, downloads, and bookmarks?"))) return;
     this.history = [];
     this.downloads = [];
     this.bookmarks = this.defaultBookmarks;

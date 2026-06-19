@@ -550,7 +550,6 @@
 
 .am-slider {
   flex: 1;
-  -webkit-appearance: none;
   appearance: none;
   height: 4px;
   border-radius: 4px;
@@ -561,7 +560,6 @@
 }
 
 .am-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
   appearance: none;
   width: 14px;
   height: 14px;
@@ -669,7 +667,6 @@
 
 .docked-btn {
   appearance: none;
-  -webkit-appearance: none;
 }
 
 .docked-btn:hover,
@@ -721,7 +718,9 @@
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  transition: all 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
   cursor: pointer;
   min-width: 120px;
   max-width: 160px;

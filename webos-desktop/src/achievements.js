@@ -192,7 +192,7 @@ export class AchievementsApp extends BaseApp {
     return [
       {
         id: Achievements.WelcomeAboard,
-        title: "Welcome Aboard",
+        title: "First Steps",
         desc: "Launch Yuki OS for the first time",
         icon: "fa-rocket",
         rarity: "common"

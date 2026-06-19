@@ -23,7 +23,9 @@
   font-size: 0.95em;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.15s;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
 }
 
 .de-tab i {
@@ -142,7 +144,9 @@
   padding: 7px;
   font-size: 0.9em;
   cursor: pointer;
-  transition: all 0.15s;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
 }
 
 .de-list-actions button:hover {
@@ -244,7 +248,9 @@
   padding: 6px 12px;
   font-size: 0.9em;
   cursor: pointer;
-  transition: all 0.15s;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
 }
 
 .de-json-toolbar button:hover {
@@ -297,7 +303,9 @@
   padding: 8px 14px;
   font-size: 0.9em;
   cursor: pointer;
-  transition: all 0.15s;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
 }
 
 .de-editor-actions button:hover {
@@ -385,14 +393,15 @@
 .de-key-item input[type="checkbox"],
 .de-select-bar input[type="checkbox"] {
   appearance: none;
-  -webkit-appearance: none;
   width: 14px;
   height: 14px;
   border: 1px solid var(--glass-border);
   border-radius: 3px;
   background: var(--glass);
   cursor: pointer;
-  transition: all 0.15s;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
   position: relative;
 }
 

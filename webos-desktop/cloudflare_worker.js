@@ -1035,12 +1035,12 @@ canvas{width:100%!important;height:100%!important}
         <div id="liveStrip" style="display:none">
           <div class="live-strip">
             <div class="live-strip-stat">
-              <div class="lsv" id="liveUsers">—</div>
+              <div class="lsv" id="liveUsers">-</div>
               <div class="lsl"><i class="fa-solid fa-users" style="margin-right:4px"></i>Active Users</div>
             </div>
             <div class="live-divider"></div>
             <div class="live-strip-stat">
-              <div class="lsv" id="liveSessions">—</div>
+              <div class="lsv" id="liveSessions">-</div>
               <div class="lsl"><i class="fa-solid fa-layer-group" style="margin-right:4px"></i>Active Sessions</div>
             </div>
             <div>
@@ -1053,32 +1053,32 @@ canvas{width:100%!important;height:100%!important}
         <div class="kpi-row" id="kpiRow">
           <div class="kpi">
             <div class="kpi-icon"><i class="fa-solid fa-arrow-trend-up"></i></div>
-            <div class="kpi-val" id="kTotal">—</div>
+            <div class="kpi-val" id="kTotal">-</div>
             <div class="kpi-label">Total Requests</div>
           </div>
           <div class="kpi">
             <div class="kpi-icon"><i class="fa-solid fa-users"></i></div>
-            <div class="kpi-val" id="kUsers">—</div>
+            <div class="kpi-val" id="kUsers">-</div>
             <div class="kpi-label">Unique Users</div>
           </div>
           <div class="kpi">
             <div class="kpi-icon"><i class="fa-solid fa-layer-group"></i></div>
-            <div class="kpi-val" id="kSessions">—</div>
+            <div class="kpi-val" id="kSessions">-</div>
             <div class="kpi-label">Total Sessions</div>
           </div>
           <div class="kpi">
             <div class="kpi-icon"><i class="fa-solid fa-clock"></i></div>
-            <div class="kpi-val" id="kAvgDur">—</div>
+            <div class="kpi-val" id="kAvgDur">-</div>
             <div class="kpi-label">Avg Session</div>
           </div>
           <div class="kpi">
             <div class="kpi-icon"><i class="fa-solid fa-bolt"></i></div>
-            <div class="kpi-val" id="kPower">—</div>
+            <div class="kpi-val" id="kPower">-</div>
             <div class="kpi-label">Power Users</div>
           </div>
           <div class="kpi">
             <div class="kpi-icon"><i class="fa-solid fa-person-running"></i></div>
-            <div class="kpi-val" id="kBounce">—</div>
+            <div class="kpi-val" id="kBounce">-</div>
             <div class="kpi-label">Bounce Sessions</div>
           </div>
         </div>

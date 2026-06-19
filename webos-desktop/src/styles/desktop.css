@@ -224,7 +224,6 @@
   }
 }
 
-/* ===================== CLOSE ANIMATIONS ===================== */
 @keyframes wa-fade-out {
   from {
     opacity: 1;
@@ -295,7 +294,6 @@
   }
 }
 
-/* ===================== MINIMIZE ANIMATIONS ===================== */
 @keyframes wa-dock-zoom-out {
   from {
     transform: translate(0, 0) scale(1);
@@ -326,7 +324,6 @@
   }
 }
 
-/* ===================== FOCUS EFFECTS ===================== */
 .wa-focus-glow {
   animation: wa-focus-pulse 0.5s ease-out forwards;
 }
@@ -365,7 +362,6 @@
   transition: filter 0.2s ease;
 }
 
-/* ===================== DRAG EFFECTS ===================== */
 .wa-wobble-drag {
   filter: blur(0.4px) brightness(1.04);
   transform-origin: top center;
@@ -397,7 +393,6 @@
   }
 }
 
-/* ===================== UI PANEL ANIMATIONS ===================== */
 @keyframes wa-start-expand {
   from {
     transform: scale(0.94) translateY(8px);
@@ -451,7 +446,6 @@
   }
 }
 
-/* ===================== WORKSPACE TRANSITIONS ===================== */
 .wa-ws-slide-left {
   animation: wa-ws-left 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
@@ -488,7 +482,6 @@
   }
 }
 
-/* ===================== RIPPLE CLICK EFFECT ===================== */
 .wa-ripple {
   position: fixed;
   width: 6px;
@@ -518,7 +511,6 @@
   }
 }
 
-/* ===================== SCREEN FREEZE OVERLAY ===================== */
 .wa-freeze-overlay {
   position: fixed;
   inset: 0;
@@ -533,7 +525,6 @@
   opacity: 0;
 }
 
-/* ===================== LEGACY (RETAINED FOR COMPAT) ===================== */
 @keyframes popDown {
   0% {
     transform: scale(0.85);
@@ -646,7 +637,9 @@ body.is-resizing * {
   background-color: var(--glass);
   color: var(--text-secondary);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    color 0.2s ease;
 }
 
 .window-controls button svg {

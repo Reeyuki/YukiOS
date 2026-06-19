@@ -146,7 +146,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
   font-size: 14px;
   flex-shrink: 0;
   position: relative;
@@ -222,7 +224,9 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  transition: all 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
   margin: 1px 4px;
   border-radius: var(--r-sm);
   border-left: 2px solid transparent;

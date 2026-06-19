@@ -244,7 +244,7 @@ export class AccountManagerApp extends BaseApp {
 
   _renderUserList(userHistory, currentUser) {
     if (!userHistory || userHistory.length === 0) {
-      return `<div style="text-align: center; padding: 32px; color: var(--text-secondary); font-size: 13px;">No users yet. Create your first account!</div>`;
+      return `<div style="text-align: center; padding: 32px; color: var(--text-secondary); font-size: 13px;">No users yet. Add one!</div>`;
     }
 
     return userHistory
@@ -520,7 +520,7 @@ export class AccountManagerApp extends BaseApp {
 
       try {
         if (file.size > 2 * 1024 * 1024) {
-          os.dialog.alert("Alert", "Image too large. Please use a file under 2MB.");
+          os.dialog.alert("Alert", "That image is too big. Keep it under 2MB.");
           return;
         }
 
@@ -543,7 +543,7 @@ export class AccountManagerApp extends BaseApp {
         this.avatarWindow = null;
       } catch (e) {
         console.error("Upload failed:", e);
-        os.dialog.alert("Upload Failed", "Could not save avatar image. Please try a smaller image.");
+        os.dialog.alert("Upload Failed", "Couldn't save that avatar. Try a smaller image.");
       }
     });
 
@@ -613,14 +613,11 @@ export class AccountManagerApp extends BaseApp {
   async deleteUser(userId) {
     const currentUserId = os.storage.get(StorageKeys.userId);
     if (userId === currentUserId) {
-      os.dialog.alert("Cannot delete current user", "Please switch to another account first.");
+      os.dialog.alert("Cannot delete current user", "Switch to another account first.");
       return;
     }
 
-    const confirmed = await os.dialog.confirm(
-      "Delete User",
-      "Are you sure you want to delete this user? This action cannot be undone."
-    );
+    const confirmed = await os.dialog.confirm("Delete User", "Delete this user for good? You can't undo this.");
     if (!confirmed) return;
 
     const userHistory = os.storage.get(StorageKeys.userHistory) || [];

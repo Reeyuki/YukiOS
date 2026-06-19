@@ -36,7 +36,7 @@ export function downloadBlob(blob, filename) {
 
 export async function exportData(fs, showStatus = () => {}) {
   if (!fs) {
-    os.dialog.alert("Alert", "Filesystem manager not available; cannot export filesystem data.");
+    os.dialog.alert("Alert", "Can't export. Filesystem manager isn't available.");
     return;
   }
   try {
@@ -55,20 +55,20 @@ export async function exportData(fs, showStatus = () => {}) {
     showStatus("Exported");
   } catch (e) {
     console.error("Export failed:", e);
-    os.dialog.alert("Alert", "Export failed. Check console for details.");
+    os.dialog.alert("Alert", "Export failed. Check the console for details.");
     showStatus("Export failed");
   }
 }
 
 export async function importData(fs, showStatus = () => {}) {
   if (!fs) {
-    os.dialog.alert("Alert", "Filesystem manager not available; cannot import filesystem data.");
+    os.dialog.alert("Alert", "Can't import. Filesystem manager isn't available.");
     return;
   }
 
   const confirmed = await os.dialog.confirm(
     "Confirm",
-    "This will overwrite your current settings and filesystem contents.\nThis action cannot be undone."
+    "This will replace settings, files, and everything else. There's no going back."
   );
   if (!confirmed) return;
 
@@ -104,7 +104,7 @@ export async function importData(fs, showStatus = () => {}) {
     } catch (e) {
       console.error("Import failed:", e);
       audioMixer().playCriticalWarning();
-      os.dialog.alert("Alert", "Import failed. The file may be invalid or corrupted. Check console for details.");
+      os.dialog.alert("Alert", "Import failed. The file might be damaged or invalid.");
       showStatus("Import failed");
     }
   });
@@ -118,8 +118,8 @@ export async function deleteAllData() {
     "⚠️ WARNING: Delete All Data\n\n" +
       "This will permanently delete:\n" +
       "• All game progresses, saved files, settings, and preferences\n\n" +
-      "This action cannot be undone.\n\n" +
-      "Are you sure you want to continue?"
+      "No take-backs.\n\n" +
+      "Still want to go through with this?"
   );
   if (!confirmed) return;
 
@@ -164,7 +164,7 @@ export async function deleteAllData() {
     location.reload();
   } catch (error) {
     console.error("Error deleting all data:", error);
-    os.dialog.alert("Alert", "An error occurred while deleting data. Some data may remain. The page will now reload.");
+    os.dialog.alert("Alert", "Something went wrong while deleting. Some data might still be there. Reloading now.");
     location.reload();
   }
 }

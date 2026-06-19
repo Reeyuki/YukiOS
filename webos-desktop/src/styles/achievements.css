@@ -233,7 +233,9 @@
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
   box-sizing: border-box;
 }
 
@@ -293,7 +295,9 @@
   border: 1px solid var(--glass-border);
   border-radius: var(--r);
   padding: 16px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
   align-items: center;
   box-sizing: border-box;
@@ -377,7 +381,9 @@
   background: linear-gradient(135deg, var(--surface-2), var(--surface-1));
   border: 2px solid var(--glass-border);
   border-radius: 10px;
-  transition: all 0.3s;
+  transition:
+    background-color 0.3s,
+    color 0.3s;
 }
 
 .achievement-card--unlocked .achievement-card__icon-bg {
@@ -390,7 +396,9 @@
   position: relative;
   font-size: 26px;
   color: var(--text-secondary);
-  transition: all 0.3s;
+  transition:
+    background-color 0.3s,
+    color 0.3s;
   z-index: 1;
 }
 

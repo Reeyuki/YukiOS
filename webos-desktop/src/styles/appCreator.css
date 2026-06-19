@@ -82,14 +82,15 @@
 
 .ac-checkbox input {
   appearance: none;
-  -webkit-appearance: none;
   width: 16px;
   height: 16px;
   background: var(--surface-1);
   border: 1px solid var(--glass-border);
   border-radius: 3px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
 }
 
 .ac-checkbox input:checked {
@@ -188,7 +189,6 @@
 
 .ac-icon-file-input::-webkit-file-upload-button {
   appearance: none;
-  -webkit-appearance: none;
   padding: 4px var(--spacing-xs);
   font-size: 11px;
   font-family: var(--font-ui);
@@ -198,7 +198,9 @@
   border: 1px solid var(--glass-border);
   border-radius: var(--r-sm);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
   margin-right: 6px;
 }
 
@@ -217,7 +219,9 @@
   border: 1px solid var(--glass-border);
   border-radius: var(--r-sm);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
   margin-right: 6px;
 }
 
@@ -235,7 +239,9 @@
   border-radius: var(--r-sm);
   padding: 4px var(--spacing-sm);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
   width: fit-content;
 }
 
@@ -289,7 +295,9 @@
   border: 1px solid var(--glass-border);
   border-radius: var(--r-sm);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
 }
 
 .ac-btn:hover {
@@ -350,7 +358,9 @@
   background: var(--surface-1);
   border: 1px solid var(--glass-border);
   border-radius: var(--r-sm);
-  transition: all 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
 }
 
 .ac-app-row:hover {
@@ -417,7 +427,9 @@
   border: 1px solid var(--glass-border);
   border-radius: var(--r-sm);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
 }
 
 .ac-row-btn:hover {
@@ -446,7 +458,9 @@
   overflow: hidden;
   cursor: pointer;
   border: 2px solid transparent;
-  transition: all 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
 }
 
 .ac-avatar-option-window:hover {

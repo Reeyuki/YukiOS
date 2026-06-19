@@ -173,7 +173,7 @@ export function showCdnPrompt(mirrors, currentMirror) {
       <div class="_fd-dialog">
         <div class="_fd-dialog-title">Network Error</div>
         <div class="_fd-dialog-label">
-          Failed to load assets from the current CDN mirror. Your network might be blocking it. Please choose an alternative mirror:
+          Couldn't reach the CDN mirror. Your network might be blocking it. Pick another one:
         </div>
         <select class="_fd-dialog-input _fd-dialog-select" id="cdn-picker">
           ${optionsHtml}

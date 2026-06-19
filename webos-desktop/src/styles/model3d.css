@@ -784,7 +784,6 @@
   cursor: pointer;
   outline: none;
   appearance: none;
-  -webkit-appearance: none;
 }
 
 .yb-tl-loop {
@@ -800,7 +799,6 @@
   accent-color: var(--brand);
   cursor: pointer;
   appearance: none;
-  -webkit-appearance: none;
   width: 14px;
   height: 14px;
   border: 1px solid var(--glass-border);
@@ -836,7 +834,6 @@
 .yb-tl-scrubber {
   width: 100%;
   height: 4px;
-  -webkit-appearance: none;
   appearance: none;
   background: var(--surface-2);
   border-radius: 6px;
@@ -845,7 +842,7 @@
 }
 
 .yb-tl-scrubber::-webkit-slider-thumb {
-  -webkit-appearance: none;
+  appearance: none;
   width: 12px;
   height: 12px;
   background: var(--brand);
@@ -1060,13 +1057,12 @@
   font-family: var(--font-mono);
   outline: none;
   width: 0;
-  -moz-appearance: textfield;
   appearance: textfield;
 }
 
 .yb-xyz-inp::-webkit-inner-spin-button,
 .yb-xyz-inp::-webkit-outer-spin-button {
-  -webkit-appearance: none;
+  appearance: none;
   margin: 0;
 }
 
@@ -1077,7 +1073,6 @@
 .yb-slider {
   flex: 1;
   height: 3px;
-  -webkit-appearance: none;
   appearance: none;
   background: var(--surface-2);
   border-radius: 6px;
@@ -1087,7 +1082,7 @@
 }
 
 .yb-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
+  appearance: none;
   width: 10px;
   height: 10px;
   background: var(--brand);
@@ -1099,7 +1094,6 @@
   accent-color: var(--brand);
   cursor: pointer;
   appearance: none;
-  -webkit-appearance: none;
   width: 14px;
   height: 14px;
   border: 1px solid var(--glass-border);

@@ -120,7 +120,7 @@ export class TerminalApp extends BaseApp {
     this.terminalInput.style.userSelect = "text";
 
     this.updatePrompt();
-    this.print(`Welcome to Yuki OS terminal, ${this.displayName}!`, "#00ff00");
+    this.print(`Yuki OS Terminal for ${this.displayName}`, "#00ff00");
     this.print("Type 'help' for available commands\n");
     this.setupEventHandlers();
     this.terminalInput.focus();
