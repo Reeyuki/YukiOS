@@ -163,6 +163,16 @@ export const FEATURE_DATA = {
       desc: "Dynamic transparency, hides when gaming"
     },
     {
+      icon: "fas fa-camera",
+      title: "Screen Capture",
+      desc: "Full page and area screenshots with auto-save to Pictures, plus screen recording"
+    },
+    {
+      icon: "fas fa-eye-dropper",
+      title: "Color Picker",
+      desc: "Pick colors from anywhere on screen with Alt+H and a magnified preview"
+    },
+    {
       icon: "fas fa-mouse-pointer",
       title: "Context Menus",
       desc: "Right-click menus for desktop, explorer, taskbar, tray, start menu, and Steam library"
@@ -198,6 +208,7 @@ export const FEATURE_DATA = {
         { path: "/home/reeyuki/Documents", desc: "Your documents and text files (includes welcome INFO.txt)" },
         { path: "/home/reeyuki/Music", desc: "Audio files and music (includes lofi mix)" },
         { path: "/home/reeyuki/Pictures", desc: "Images and photos (includes gandalf.gif)" },
+        { path: "/home/reeyuki/Pictures/Screenshots", desc: "Screenshots captured via Screenshot app" },
         { path: "/home/reeyuki/Pictures/Wallpapers", desc: "Default wallpaper collection (20+ wallpapers)" },
         { path: "/home/reeyuki/Videos", desc: "Video files and recordings" }
       ]

@@ -178,6 +178,8 @@ It's built entirely in vanilla JS (TypeScript in core modules) with some librari
 - Yuki Blender
 - YouTube Utilities
 - Rhythms (Cavalier-like audio visualizer)
+- Screenshot (page capture, area selection, screen recording)
+- Color Picker (screen color sampling with magnified preview)
 
 ## 🌐 Browser & Internet
 

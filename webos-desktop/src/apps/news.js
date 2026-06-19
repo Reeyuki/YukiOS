@@ -8,9 +8,14 @@ const EXISTING_NEWS_UPDATES = [
     date: "June 19, 2026",
     sections: [
       {
-        icon: "fa-eye-dropper",
+        icon: "fa-camera",
         title: "New App",
         items: [
+          [
+            "fa-camera",
+            "Screenshot",
+            "Capture fullscreen, select areas, or record video with three instant shortcuts."
+          ],
           [
             "fa-eye-dropper",
             "Color Picker",

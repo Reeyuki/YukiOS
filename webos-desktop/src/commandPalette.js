@@ -520,6 +520,44 @@ export class CommandPalette {
           this.activeIndex = 0;
           this._renderResults();
         }
+      },
+      {
+        title: "Take Screenshot",
+        subtitle: "Capture full screen and save to Pictures",
+        tag: "screenshot",
+        icon: "fas fa-camera",
+        execute: () => {
+          const app = this.services.screenshotApp;
+          if (app) {
+            app.open();
+            app.captureFull(true);
+          }
+        }
+      },
+      {
+        title: "Start Screen Recording",
+        subtitle: "Begin recording your screen",
+        tag: "screenshot",
+        icon: "fas fa-video",
+        execute: () => {
+          const app = this.services.screenshotApp;
+          if (app && !app._recording) {
+            app.open();
+            app.toggleRecording();
+          }
+        }
+      },
+      {
+        title: "Stop Screen Recording",
+        subtitle: "Stop the active screen recording",
+        tag: "screenshot",
+        icon: "fas fa-stop",
+        execute: () => {
+          const app = this.services.screenshotApp;
+          if (app && app._recording) {
+            app.toggleRecording();
+          }
+        }
       }
     ];
 

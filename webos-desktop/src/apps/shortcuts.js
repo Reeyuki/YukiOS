@@ -571,6 +571,24 @@ export const SHORTCUTS_DATA = [
     desc: "Confirm dialog",
     cat: "global",
     icon: "fas fa-check"
+  },
+  {
+    keys: ["Ctrl", "Shift", "S"],
+    desc: "Capture full screen and auto-save to Pictures",
+    cat: "global",
+    icon: "fas fa-camera"
+  },
+  {
+    keys: ["Ctrl", "Alt", "S"],
+    desc: "Capture area screenshot and auto-save to Pictures",
+    cat: "global",
+    icon: "fas fa-crop-alt"
+  },
+  {
+    keys: ["Ctrl", "Shift", "R"],
+    desc: "Start / stop screen recording",
+    cat: "global",
+    icon: "fas fa-video"
   }
 ];
 

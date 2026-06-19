@@ -1,0 +1,208 @@
+.sc-root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.sc-toolbar {
+  display: flex;
+  gap: 8px;
+  padding: 12px;
+  border-bottom: 1px solid var(--glass-border);
+  flex-wrap: wrap;
+}
+
+.sc-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  background: var(--glass);
+  color: var(--text-primary);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-family: inherit;
+}
+
+.sc-btn:hover {
+  background: var(--glass-strong);
+}
+
+.sc-btn:active {
+  transform: scale(0.97);
+}
+
+.sc-btn.active {
+  background: var(--brand-glow);
+  border-color: var(--brand);
+  color: var(--brand);
+}
+
+.sc-preview {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.sc-preview img,
+.sc-preview video {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 8px;
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-md);
+  object-fit: contain;
+}
+
+.sc-preview-placeholder {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.sc-preview-placeholder i {
+  font-size: 48px;
+  opacity: 0.3;
+}
+
+.sc-actions {
+  display: flex;
+  gap: 8px;
+  padding: 12px;
+  border-top: 1px solid var(--glass-border);
+  flex-wrap: wrap;
+}
+
+.sc-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  background: var(--brand);
+  color: var(--tx-on-brand);
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+
+.sc-action-btn:hover {
+  background: var(--brand-hover);
+}
+
+.sc-action-btn:active {
+  transform: scale(0.97);
+}
+
+.sc-action-btn.secondary {
+  background: var(--glass);
+  color: var(--text-primary);
+  border: 1px solid var(--glass-border);
+}
+
+.sc-action-btn.secondary:hover {
+  background: var(--glass-strong);
+}
+
+.sc-recording-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--error);
+  font-weight: 600;
+}
+
+.sc-rec-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--error);
+  animation: sc-pulse 1s infinite;
+}
+
+@keyframes sc-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.sc-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  cursor: crosshair;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sc-overlay-img {
+  max-width: 100vw;
+  max-height: 100vh;
+  object-fit: contain;
+}
+
+.sc-select-rect {
+  position: absolute;
+  border: 2px dashed var(--brand);
+  background: var(--brand-glow);
+  pointer-events: none;
+  z-index: 10;
+}
+
+.sc-overlay-info {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--glass);
+  backdrop-filter: blur(32px);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  padding: 10px 20px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  z-index: 100000;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.sc-overlay-info kbd {
+  background: var(--glass-strong);
+  border: 1px solid var(--glass-border);
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+}
+
+.sc-overlay-info .sc-confirm-btn {
+  padding: 4px 12px;
+  border: none;
+  border-radius: 6px;
+  background: var(--brand);
+  color: var(--tx-on-brand);
+  cursor: pointer;
+  font-size: 12px;
+  font-family: inherit;
+}

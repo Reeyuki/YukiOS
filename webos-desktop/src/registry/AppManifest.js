@@ -1137,6 +1137,17 @@ export const APP_MANIFESTS = [
       "Boot simulated OS environments including Windows 93, 96, XP, 10, 11, Mac OS, and more in your browser."
   },
   {
+    serviceKey: "screenshotApp",
+    enhanced: true,
+    type: "system",
+    title: "Screenshot",
+    icon: "fas fa-camera",
+    launchType: "instance",
+    windowIdPatterns: ["screenshot"],
+    category: "graphics",
+    description: "Capture fullscreen, area screenshots, and screen recordings with keyboard shortcuts."
+  },
+  {
     serviceKey: "colorPickerApp",
     enhanced: true,
     type: "system",
