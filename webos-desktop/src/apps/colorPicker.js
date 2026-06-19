@@ -7,6 +7,17 @@ export class ColorPickerApp extends BaseApp {
     this.openWindows = new Set();
     this.colors = [];
     this._win = null;
+    this._registerGlobalShortcut();
+  }
+
+  _registerGlobalShortcut() {
+    document.addEventListener("keydown", (e) => {
+      if (e.altKey && e.key === "h") {
+        e.preventDefault();
+        if (!this.openWindows.has("color-picker")) this.open();
+        this.pick();
+      }
+    });
   }
 
   open() {
@@ -23,7 +34,6 @@ export class ColorPickerApp extends BaseApp {
     this.openWindows.add(winId);
 
     this.setupEvents(win);
-    this.registerGlobalShortcut(win);
     this.loadHistory();
 
     win.addEventListener("remove", () => {
@@ -70,17 +80,6 @@ export class ColorPickerApp extends BaseApp {
 
   setupEvents(win) {
     win.querySelector("#cp-activate").addEventListener("click", () => this.pick());
-  }
-
-  registerGlobalShortcut(win) {
-    const handler = (e) => {
-      if (e.altKey && e.key === "h") {
-        e.preventDefault();
-        this.pick();
-      }
-    };
-    document.addEventListener("keydown", handler);
-    win.addEventListener("remove", () => document.removeEventListener("keydown", handler));
   }
 
   loadHistory() {
