@@ -126,7 +126,9 @@ async function readAsText(fs, path, name) {
       try {
         const res = await fetch(content);
         return await res.text();
-      } catch (e) {}
+      } catch (e) {
+        console.error("[FileConverter]", e);
+      }
     }
     return content;
   }
@@ -137,7 +139,9 @@ async function readAsBlob(fs, path, name) {
   try {
     const blob = await fs.readBinaryFile(path, name);
     if (blob) return blob;
-  } catch (err) {}
+  } catch (err) {
+    console.error("[FileConverter]", err);
+  }
 
   const content = await fs.getFileContent(path, name);
   if (content instanceof Blob) return content;
@@ -146,7 +150,9 @@ async function readAsBlob(fs, path, name) {
       try {
         const res = await fetch(content);
         return await res.blob();
-      } catch (e) {}
+      } catch (e) {
+        console.error("[FileConverter]", e);
+      }
     }
     return new Blob([content]);
   }
@@ -1472,7 +1478,9 @@ export function openFileConverter(fileName, currentPath, services, onComplete = 
               source.connect(destination);
               audioTrack = destination.stream.getAudioTracks()[0];
               stream.addTrack(audioTrack);
-            } catch (e) {}
+            } catch (e) {
+              console.error("[FileConverter]", e);
+            }
           }
 
           const mimeType = getVideoMimeType(targetFormat, codec);

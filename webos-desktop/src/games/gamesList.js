@@ -1,4 +1,10 @@
 export const appMap = {
+  angryBirds2: {
+    type: "game",
+    url: "/static/games/html/angry2.html",
+    icon: "/static/icons/angryBirds2.webp",
+    title: "Angry Birds 2"
+  },
   slimeRancher: {
     type: "game",
     url: "/static/games/html/slime.html",

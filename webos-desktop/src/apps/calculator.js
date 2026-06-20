@@ -399,7 +399,8 @@ export class CalculatorApp extends BaseApp {
           const resultEl = element.closest(".calc-body").querySelector('[ref="calc-result"]');
           if (resultEl) {
             resultEl.textContent = state.current;
-            resultEl.style.fontSize = state.current.length > 10 ? "1.6rem" : "2.4rem";
+            const _calcSz = state.current.length > 10 ? "calc-result-size-sm" : "calc-result-size-lg";
+            resultEl.className = resultEl.className.replace(/calc-result-size-\w+/g, "").trim() + " " + _calcSz;
           }
         },
         renderHistory: (payload, event, element, state) => {
@@ -431,7 +432,8 @@ export class CalculatorApp extends BaseApp {
           const resultEl = element.closest(".calc-body").querySelector('[ref="calc-result"]');
           if (resultEl) {
             resultEl.textContent = state.current;
-            resultEl.style.fontSize = state.current.length > 10 ? "1.6rem" : "2.4rem";
+            const _calcSz = state.current.length > 10 ? "calc-result-size-sm" : "calc-result-size-lg";
+            resultEl.className = resultEl.className.replace(/calc-result-size-\w+/g, "").trim() + " " + _calcSz;
           }
         },
         dot: (payload, event, element, state) => {
@@ -444,7 +446,8 @@ export class CalculatorApp extends BaseApp {
           const resultEl = element.closest(".calc-body").querySelector('[ref="calc-result"]');
           if (resultEl) {
             resultEl.textContent = state.current;
-            resultEl.style.fontSize = state.current.length > 10 ? "1.6rem" : "2.4rem";
+            const _calcSz = state.current.length > 10 ? "calc-result-size-sm" : "calc-result-size-lg";
+            resultEl.className = resultEl.className.replace(/calc-result-size-\w+/g, "").trim() + " " + _calcSz;
           }
         },
         clear: (payload, event, element, state) => {
@@ -460,7 +463,8 @@ export class CalculatorApp extends BaseApp {
           const resultEl = element.closest(".calc-body").querySelector('[ref="calc-result"]');
           if (resultEl) {
             resultEl.textContent = state.current;
-            resultEl.style.fontSize = state.current.length > 10 ? "1.6rem" : "2.4rem";
+            const _calcSz = state.current.length > 10 ? "calc-result-size-sm" : "calc-result-size-lg";
+            resultEl.className = resultEl.className.replace(/calc-result-size-\w+/g, "").trim() + " " + _calcSz;
           }
         },
         sign: (payload, event, element, state) => {
@@ -472,7 +476,8 @@ export class CalculatorApp extends BaseApp {
           const resultEl = element.closest(".calc-body").querySelector('[ref="calc-result"]');
           if (resultEl) {
             resultEl.textContent = state.current;
-            resultEl.style.fontSize = state.current.length > 10 ? "1.6rem" : "2.4rem";
+            const _calcSz = state.current.length > 10 ? "calc-result-size-sm" : "calc-result-size-lg";
+            resultEl.className = resultEl.className.replace(/calc-result-size-\w+/g, "").trim() + " " + _calcSz;
           }
         },
         percent: (payload, event, element, state) => {
@@ -497,7 +502,8 @@ export class CalculatorApp extends BaseApp {
           const resultEl = element.closest(".calc-body").querySelector('[ref="calc-result"]');
           if (resultEl) {
             resultEl.textContent = state.current;
-            resultEl.style.fontSize = state.current.length > 10 ? "1.6rem" : "2.4rem";
+            const _calcSz = state.current.length > 10 ? "calc-result-size-sm" : "calc-result-size-lg";
+            resultEl.className = resultEl.className.replace(/calc-result-size-\w+/g, "").trim() + " " + _calcSz;
           }
         },
         backspace: (payload, event, element, state) => {
@@ -512,7 +518,8 @@ export class CalculatorApp extends BaseApp {
           const resultEl = element.closest(".calc-body").querySelector('[ref="calc-result"]');
           if (resultEl) {
             resultEl.textContent = state.current;
-            resultEl.style.fontSize = state.current.length > 10 ? "1.6rem" : "2.4rem";
+            const _calcSz = state.current.length > 10 ? "calc-result-size-sm" : "calc-result-size-lg";
+            resultEl.className = resultEl.className.replace(/calc-result-size-\w+/g, "").trim() + " " + _calcSz;
           }
         },
         op: (payload, event, element, state) => {
@@ -552,7 +559,8 @@ export class CalculatorApp extends BaseApp {
           const resultEl = element.closest(".calc-body").querySelector('[ref="calc-result"]');
           if (resultEl) {
             resultEl.textContent = state.current;
-            resultEl.style.fontSize = state.current.length > 10 ? "1.6rem" : "2.4rem";
+            const _calcSz = state.current.length > 10 ? "calc-result-size-sm" : "calc-result-size-lg";
+            resultEl.className = resultEl.className.replace(/calc-result-size-\w+/g, "").trim() + " " + _calcSz;
           }
         },
         equals: (payload, event, element, state) => {
@@ -602,7 +610,8 @@ export class CalculatorApp extends BaseApp {
           const resultEl = element.closest(".calc-body").querySelector('[ref="calc-result"]');
           if (resultEl) {
             resultEl.textContent = state.current;
-            resultEl.style.fontSize = state.current.length > 10 ? "1.6rem" : "2.4rem";
+            const _calcSz = state.current.length > 10 ? "calc-result-size-sm" : "calc-result-size-lg";
+            resultEl.className = resultEl.className.replace(/calc-result-size-\w+/g, "").trim() + " " + _calcSz;
           }
         },
         handleKeydown: (payload, event, element, state) => {
@@ -643,7 +652,8 @@ export class CalculatorApp extends BaseApp {
                   const resultEl = calcBody.querySelector('[ref="calc-result"]');
                   if (resultEl) {
                     resultEl.textContent = state.current;
-                    resultEl.style.fontSize = state.current.length > 10 ? "1.6rem" : "2.4rem";
+                    const _calcSz = state.current.length > 10 ? "calc-result-size-sm" : "calc-result-size-lg";
+                    resultEl.className = resultEl.className.replace(/calc-result-size-\w+/g, "").trim() + " " + _calcSz;
                   }
                 } catch {}
               })
@@ -664,7 +674,8 @@ export class CalculatorApp extends BaseApp {
               const resultEl = calcBody.querySelector('[ref="calc-result"]');
               if (resultEl) {
                 resultEl.textContent = state.current;
-                resultEl.style.fontSize = state.current.length > 10 ? "1.6rem" : "2.4rem";
+                const _calcSz = state.current.length > 10 ? "calc-result-size-sm" : "calc-result-size-lg";
+                resultEl.className = resultEl.className.replace(/calc-result-size-\w+/g, "").trim() + " " + _calcSz;
               }
             },
             dot: () => {
@@ -677,7 +688,8 @@ export class CalculatorApp extends BaseApp {
               const resultEl = calcBody.querySelector('[ref="calc-result"]');
               if (resultEl) {
                 resultEl.textContent = state.current;
-                resultEl.style.fontSize = state.current.length > 10 ? "1.6rem" : "2.4rem";
+                const _calcSz = state.current.length > 10 ? "calc-result-size-sm" : "calc-result-size-lg";
+                resultEl.className = resultEl.className.replace(/calc-result-size-\w+/g, "").trim() + " " + _calcSz;
               }
             },
             op: (p) => {
@@ -717,7 +729,8 @@ export class CalculatorApp extends BaseApp {
               const resultEl = calcBody.querySelector('[ref="calc-result"]');
               if (resultEl) {
                 resultEl.textContent = state.current;
-                resultEl.style.fontSize = state.current.length > 10 ? "1.6rem" : "2.4rem";
+                const _calcSz = state.current.length > 10 ? "calc-result-size-sm" : "calc-result-size-lg";
+                resultEl.className = resultEl.className.replace(/calc-result-size-\w+/g, "").trim() + " " + _calcSz;
               }
             },
             percent: () => {
@@ -742,7 +755,8 @@ export class CalculatorApp extends BaseApp {
               const resultEl = calcBody.querySelector('[ref="calc-result"]');
               if (resultEl) {
                 resultEl.textContent = state.current;
-                resultEl.style.fontSize = state.current.length > 10 ? "1.6rem" : "2.4rem";
+                const _calcSz = state.current.length > 10 ? "calc-result-size-sm" : "calc-result-size-lg";
+                resultEl.className = resultEl.className.replace(/calc-result-size-\w+/g, "").trim() + " " + _calcSz;
               }
             },
             equals: () => {
@@ -792,7 +806,8 @@ export class CalculatorApp extends BaseApp {
               const resultEl = calcBody.querySelector('[ref="calc-result"]');
               if (resultEl) {
                 resultEl.textContent = state.current;
-                resultEl.style.fontSize = state.current.length > 10 ? "1.6rem" : "2.4rem";
+                const _calcSz = state.current.length > 10 ? "calc-result-size-sm" : "calc-result-size-lg";
+                resultEl.className = resultEl.className.replace(/calc-result-size-\w+/g, "").trim() + " " + _calcSz;
               }
             },
             backspace: () => {
@@ -807,7 +822,8 @@ export class CalculatorApp extends BaseApp {
               const resultEl = calcBody.querySelector('[ref="calc-result"]');
               if (resultEl) {
                 resultEl.textContent = state.current;
-                resultEl.style.fontSize = state.current.length > 10 ? "1.6rem" : "2.4rem";
+                const _calcSz = state.current.length > 10 ? "calc-result-size-sm" : "calc-result-size-lg";
+                resultEl.className = resultEl.className.replace(/calc-result-size-\w+/g, "").trim() + " " + _calcSz;
               }
             },
             clear: () => {
@@ -823,7 +839,8 @@ export class CalculatorApp extends BaseApp {
               const resultEl = calcBody.querySelector('[ref="calc-result"]');
               if (resultEl) {
                 resultEl.textContent = state.current;
-                resultEl.style.fontSize = state.current.length > 10 ? "1.6rem" : "2.4rem";
+                const _calcSz = state.current.length > 10 ? "calc-result-size-sm" : "calc-result-size-lg";
+                resultEl.className = resultEl.className.replace(/calc-result-size-\w+/g, "").trim() + " " + _calcSz;
               }
             }
           };
@@ -854,7 +871,8 @@ export class CalculatorApp extends BaseApp {
           const resultEl = element.closest(".calc-body").querySelector('[ref="calc-result"]');
           if (resultEl) {
             resultEl.textContent = state.current;
-            resultEl.style.fontSize = state.current.length > 10 ? "1.6rem" : "2.4rem";
+            const _calcSz = state.current.length > 10 ? "calc-result-size-sm" : "calc-result-size-lg";
+            resultEl.className = resultEl.className.replace(/calc-result-size-\w+/g, "").trim() + " " + _calcSz;
           }
         }
       },

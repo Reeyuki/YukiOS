@@ -103,7 +103,9 @@ class AudioMixer {
           }
 
           iframe.contentWindow?.postMessage({ __shittify_cmd: true, cmd: "volume", value: effectiveVolume }, "*");
-        } catch (e) {}
+        } catch (e) {
+          console.error("[AudioMixer]", e);
+        }
       } else {
         this._applyGainNode(winId, iframe, effectiveVolume);
       }
@@ -136,7 +138,9 @@ class AudioMixer {
         const source = ctx.createMediaElementSource(iframe);
         source.connect(gainNode);
         this.gainNodes.set(key, gainNode);
-      } catch (e) {}
+      } catch (e) {
+        console.error("[AudioMixer]", e);
+      }
     } else {
       const gainNode = this.gainNodes.get(key);
       if (gainNode) gainNode.gain.setTargetAtTime(effectiveVolume, this.audioCtx.currentTime, 0.01);
@@ -169,7 +173,9 @@ class AudioMixer {
       source.connect(analyser);
       source.connect(gain);
       gain.connect(ctx.destination);
-    } catch (e) {}
+    } catch (e) {
+      console.error("[AudioMixer]", e);
+    }
   }
 
   _startIntensityLoop() {
@@ -300,7 +306,9 @@ class AudioMixer {
       const g = this.gainNodes.get(k);
       try {
         g.disconnect();
-      } catch (e) {}
+      } catch (e) {
+        console.error("[AudioMixer]", e);
+      }
       this.gainNodes.delete(k);
     });
     if (this._iframeObservers?.has(winId)) {
@@ -330,7 +338,7 @@ class AudioMixer {
     this._initTray();
     this._createPanel();
 
-    document.addEventListener("click", (e) => {
+    this._clickOutsideHandler = (e) => {
       if (this._justOpened) return;
       if (this.isOpen && this.panel && !this.panel.contains(e.target)) {
         const btn = document.querySelector('[data-win-id="audio-mixer"]');
@@ -338,14 +346,28 @@ class AudioMixer {
           this.close();
         }
       }
-    });
-    document.addEventListener("AUDIO_SETTINGS_CHANGED", (e) => {
+    };
+    document.addEventListener("click", this._clickOutsideHandler);
+
+    this._settingsChangedHandler = (e) => {
       if (!e.detail) return;
       this._muted = e.detail.soundEnabled === false;
       this._applyMasterToAll();
       this._updateMasterLabel();
       this._updateSystemLabel();
-    });
+    };
+    document.addEventListener("AUDIO_SETTINGS_CHANGED", this._settingsChangedHandler);
+  }
+
+  destroy() {
+    if (this._clickOutsideHandler) {
+      document.removeEventListener("click", this._clickOutsideHandler);
+      this._clickOutsideHandler = null;
+    }
+    if (this._settingsChangedHandler) {
+      document.removeEventListener("AUDIO_SETTINGS_CHANGED", this._settingsChangedHandler);
+      this._settingsChangedHandler = null;
+    }
   }
 
   _initTray() {
@@ -561,7 +583,9 @@ class AudioMixer {
       cw.webkitAudioContext = PatchedAudioContext;
 
       this._patchedIframes.add(key);
-    } catch (e) {}
+    } catch (e) {
+      console.error("[AudioMixer]", e);
+    }
   }
   toggle() {
     if (this.isOpen) {
@@ -644,7 +668,9 @@ class AudioMixer {
       const audio = new Audio(resolveGhUrl(`https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/${soundPath}`));
       audio.volume = this.masterVolume * this.systemVolume;
       audio.play().catch(() => {});
-    } catch (e) {}
+    } catch (e) {
+      console.error("[AudioMixer]", e);
+    }
   }
 
   playCriticalWarning() {
@@ -654,7 +680,9 @@ class AudioMixer {
       const audio = new Audio(resolveGhUrl(`https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/${SystemAudio.WARNING}`));
       audio.volume = this.masterVolume * this.systemVolume;
       audio.play().catch(() => {});
-    } catch (e) {}
+    } catch (e) {
+      console.error("[AudioMixer]", e);
+    }
   }
 
   safeLocalStorageSetItem(key, value) {

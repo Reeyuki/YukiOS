@@ -346,7 +346,14 @@ export class AdsManager {
 
     setTimeout(() => this.maybeFirePopunder(), 5000);
 
-    setInterval(() => this.maybeSpawnAd(), 35000);
+    this._adInterval = setInterval(() => this.maybeSpawnAd(), 35000);
+  }
+
+  destroy() {
+    if (this._adInterval) {
+      clearInterval(this._adInterval);
+      this._adInterval = null;
+    }
   }
 
   createAdWindow() {

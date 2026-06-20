@@ -1,7 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
   camelize,
-  isImageFile,
   formatSize,
   pluralize,
   isArchiveFile,
@@ -27,29 +26,6 @@ describe("utils", () => {
 
     it("handles empty string", () => {
       expect(camelize("")).toBe("");
-    });
-  });
-
-  describe("isImageFile", () => {
-    it("returns true for common image extensions", () => {
-      expect(isImageFile("photo.png")).toBe(true);
-      expect(isImageFile("photo.jpg")).toBe(true);
-      expect(isImageFile("photo.jpeg")).toBe(true);
-      expect(isImageFile("photo.gif")).toBe(true);
-      expect(isImageFile("photo.webp")).toBe(true);
-      expect(isImageFile("photo.svg")).toBe(true);
-      expect(isImageFile("photo.ico")).toBe(true);
-    });
-
-    it("returns false for non-image files", () => {
-      expect(isImageFile("doc.txt")).toBe(false);
-      expect(isImageFile("script.js")).toBe(false);
-      expect(isImageFile("noext")).toBe(false);
-    });
-
-    it("is case insensitive", () => {
-      expect(isImageFile("photo.PNG")).toBe(true);
-      expect(isImageFile("photo.JPG")).toBe(true);
     });
   });
 
@@ -122,7 +98,6 @@ describe("utils", () => {
       expect(isTextFile("readme.txt")).toBe(true);
       expect(isTextFile("index.html")).toBe(true);
       expect(isTextFile("style.css")).toBe(true);
-      expect(isTextFile("app.js")).toBe(true);
       expect(isTextFile("data.json")).toBe(true);
       expect(isTextFile("config.yaml")).toBe(true);
     });

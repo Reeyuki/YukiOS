@@ -23,7 +23,7 @@ export class AppRestorationService {
   appExists(appId) {
     if (!this.wm.appLauncher) return false;
     const serviceKey = SYSTEM_APPS[appId]?.serviceKey || appId;
-    return !!this.wm.appLauncher._services?.[serviceKey];
+    return !!(this.wm.appLauncher._services?.[serviceKey] || this.wm.appLauncher.appMap?.[appId]);
   }
 
   buildRegistryFromConfig() {
@@ -59,6 +59,9 @@ export class AppRestorationService {
   findAppId(windowState) {
     if (windowState.appId) {
       if (this.appRegistry.has(windowState.appId)) {
+        return windowState.appId;
+      }
+      if (this.wm.appLauncher?.appMap?.[windowState.appId]) {
         return windowState.appId;
       }
     }

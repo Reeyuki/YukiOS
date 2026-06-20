@@ -24,11 +24,11 @@
   align-items: center;
   justify-content: flex-start;
   text-align: center;
-  color: #fff;
+  color: var(--text-primary, #ffffff);
   cursor: pointer;
   padding: 0.3rem 0;
   font-size: 0.75rem;
-  text-shadow: 1px 1px 2px #000;
+  text-shadow: 0 1px 3px var(--shadow-color, rgba(0, 0, 0, 0.9));
   border: 1px solid transparent;
   border-radius: 10px;
   transition:
@@ -50,8 +50,8 @@
 .icon div {
   font-size: 1.05em;
   line-height: 1;
-  color: #f5f5f5;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+  color: var(--text-primary, #f5f5f5);
+  text-shadow: 0 1px 3px var(--shadow-color, rgba(0, 0, 0, 0.9));
   word-break: break-word;
 }
 

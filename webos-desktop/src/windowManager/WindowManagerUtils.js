@@ -1,5 +1,6 @@
 import { resolveIconUrl } from "../shared/assetResolver.js";
-import { isImageFile, sanitizeTitle } from "../utils/utils.js";
+import { sanitizeTitle } from "../utils/utils.js";
+import { isImageFile } from "../fileDisplay.js";
 import { updateTransparency as extUpdateTransparency } from "./transparencyManager.js";
 import { getSetting } from "../shared/settingsUtils.js";
 

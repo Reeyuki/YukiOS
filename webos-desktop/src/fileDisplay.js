@@ -526,22 +526,8 @@ async function confirmLargeFile(name, size) {
   );
 }
 
-export async function openFileWith({
-  name,
-  path,
-  fs,
-  notepadApp,
-  browserApp,
-  windowManager,
-  officeApp,
-  markdownApp,
-  jsDosApp,
-  appLauncher
-}) {
-  if (isZipFile(name)) return;
-  console.log("Open file with: ", name, path);
-
-  if (isModel3DFile(name)) {
+async function _openModelFile(name, path, fs, appLauncher) {
+  try {
     const model3dApp = appLauncher?.model3dApp;
     if (model3dApp) {
       let arrayBuffer = null;
@@ -571,20 +557,21 @@ export async function openFileWith({
     } else {
       os.dialog.alert("Can't Open", "Yuki Blender isn't available right now.");
     }
-    return;
+  } catch (err) {
+    console.error("[FileDisplay] _openModelFile error:", err);
   }
+}
 
-  if (
-    isExeFile(name) ||
-    name.toLowerCase().endsWith(".jsdos") ||
-    name.toLowerCase().endsWith(".com") ||
-    name.toLowerCase().endsWith(".bat")
-  ) {
+async function _openExecutable(name, path, jsDosApp) {
+  try {
     jsDosApp.launchExe(name, path);
-    return;
+  } catch (err) {
+    console.error("[FileDisplay] _openExecutable error:", err);
   }
+}
 
-  if (isSwfFile(name)) {
+async function _openSwfFile(name, path, fs, appLauncher) {
+  try {
     const ruffleApp = appLauncher?.ruffleApp;
     if (!ruffleApp) return;
     let arrayBuffer = null;
@@ -611,20 +598,26 @@ export async function openFileWith({
       .replace(/[-_]/g, " ")
       .replace(/\b\w/g, (c) => c.toUpperCase());
     ruffleApp._launchRuffle(displayName, name, arrayBuffer);
-    return;
+  } catch (err) {
+    console.error("[FileDisplay] _openSwfFile error:", err);
   }
+}
 
-  if (isRomFile(name)) {
+async function _openRomFile(name, path, appLauncher) {
+  try {
     const emulatorApp = appLauncher?.emulatorApp;
     if (emulatorApp) {
       emulatorApp.launchROM(name, path);
     } else {
       os.dialog.alert("Can't Open", "ROM emulation isn't available right now.");
     }
-    return;
+  } catch (err) {
+    console.error("[FileDisplay] _openRomFile error:", err);
   }
+}
 
-  if (isVideoFile(name) || isAudioFile(name) || isImageFile(name)) {
+async function _openMediaFile(name, path, fs, windowManager) {
+  try {
     const ext = getExt(name);
 
     const IMAGE_MIME_MAP = {
@@ -684,10 +677,13 @@ export async function openFileWith({
       }
       openMediaViewer(name, src, kind, windowManager);
     }
-    return;
+  } catch (err) {
+    console.error("[FileDisplay] _openMediaFile error:", err);
   }
+}
 
-  if (isOfficeFile(name)) {
+async function _openOfficeFile(name, path, fs, officeApp, notepadApp) {
+  try {
     if (!officeApp) {
       const content = await fs.getFileContent(path, name);
       notepadApp.open(name, content, path);
@@ -701,33 +697,87 @@ export async function openFileWith({
       }
       return;
     }
+  } catch (err) {
+    console.error("[FileDisplay] _openOfficeFile error:", err);
   }
+}
 
-  const content = await fs.getFileContent(path, name);
-
-  if (isMarkdownFile(name)) {
+async function _openMarkdown(name, path, content, markdownApp, notepadApp) {
+  try {
     if (markdownApp) {
       markdownApp.open(name, content, path);
     } else {
       notepadApp.open(name, content, path);
     }
-    return;
+  } catch (err) {
+    console.error("[FileDisplay] _openMarkdown error:", err);
   }
+}
 
-  if (isHtmlFile(name)) {
+async function _openHtmlFile(name, path, content, browserApp, notepadApp) {
+  try {
     if (browserApp) {
       browserApp.openHtml(content, name, path);
     } else {
       notepadApp.open(name, content, path);
     }
-    return;
+  } catch (err) {
+    console.error("[FileDisplay] _openHtmlFile error:", err);
   }
-  const size = getContentSize(content);
-  if (size > LARGE_FILE_THRESHOLD) {
-    const confirmed = await confirmLargeFile(name, size);
-    if (!confirmed) return;
+}
+
+async function _openTextFile(name, path, content, notepadApp) {
+  try {
+    const size = getContentSize(content);
+    if (size > LARGE_FILE_THRESHOLD) {
+      const confirmed = await confirmLargeFile(name, size);
+      if (!confirmed) return;
+    }
+    notepadApp.open(name, content, path);
+  } catch (err) {
+    console.error("[FileDisplay] _openTextFile error:", err);
   }
-  notepadApp.open(name, content, path);
+}
+
+export async function openFileWith({
+  name,
+  path,
+  fs,
+  notepadApp,
+  browserApp,
+  windowManager,
+  officeApp,
+  markdownApp,
+  jsDosApp,
+  appLauncher
+}) {
+  try {
+    if (isZipFile(name)) return;
+    console.log("Open file with: ", name, path);
+
+    if (isModel3DFile(name)) return _openModelFile(name, path, fs, appLauncher);
+    if (
+      isExeFile(name) ||
+      name.toLowerCase().endsWith(".jsdos") ||
+      name.toLowerCase().endsWith(".com") ||
+      name.toLowerCase().endsWith(".bat")
+    )
+      return _openExecutable(name, path, jsDosApp);
+    if (isSwfFile(name)) return _openSwfFile(name, path, fs, appLauncher);
+    if (isRomFile(name)) return _openRomFile(name, path, appLauncher);
+    if (isVideoFile(name) || isAudioFile(name) || isImageFile(name))
+      return _openMediaFile(name, path, fs, windowManager);
+    if (isOfficeFile(name)) return _openOfficeFile(name, path, fs, officeApp, notepadApp);
+
+    const content = await fs.getFileContent(path, name);
+
+    if (isMarkdownFile(name)) return _openMarkdown(name, path, content, markdownApp, notepadApp);
+    if (isHtmlFile(name)) return _openHtmlFile(name, path, content, browserApp, notepadApp);
+    return _openTextFile(name, path, content, notepadApp);
+  } catch (err) {
+    console.error("[FileDisplay] openFileWith error:", err);
+    os.notify.send("File Display", `Failed to open ${name}`, { type: "error" });
+  }
 }
 
 export function decodeDataURLContent(content) {

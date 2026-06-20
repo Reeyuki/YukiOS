@@ -13,12 +13,11 @@ import {
 import { ClippyAnimation, speak } from "../ai/clippy.js";
 import { FileKind } from "../fs.js";
 import { Achievements } from "../achievements.js";
-import { BaseApp } from "../core/BaseApp.js";
+import { BaseApp, os } from "../framework.js";
 import { BusEvents } from "../core/EventBus.js";
 import { getLibraryUrl } from "../shared/cdnConfig.js";
 import { WindowHelper } from "../utils/WindowHelper.js";
 import { audioMixer } from "../audioMixer.js";
-import { os } from "../os/index.js";
 
 class OfficeModuleLoader {
   constructor() {
@@ -565,7 +564,6 @@ class SpreadsheetEditor extends EditorStrategy {
     if (buffer && buffer.byteLength > 0) {
       try {
         const uint8 = new Uint8Array(buffer);
-        console.log("Reading XLSX, buffer size:", uint8.byteLength);
         workbook = XLSX.read(uint8, { type: "array" });
       } catch (e) {
         console.error("XLSX read error:", e);
@@ -642,7 +640,6 @@ class SpreadsheetEditor extends EditorStrategy {
       state.editorType = "spreadsheet";
       return true;
     } catch (e) {
-      console.log("Handsontable not available, using fallback:", e.message);
       return false;
     }
   }
@@ -1580,7 +1577,6 @@ export class OfficeApp extends BaseApp {
           const blob = await os.fs.read([...state.filePath, state.title]);
           if (blob) {
             arrayBuffer = await blob.arrayBuffer();
-            console.log("Loaded binary office file from blob storage:", state.title, arrayBuffer.byteLength);
           }
         } catch (e) {
           console.error("Error loading from binary storage:", e);
@@ -2009,11 +2005,17 @@ export class OfficeApp extends BaseApp {
       content = state.odtHtml;
     }
 
+    const safeTitle = state.title
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
     printWindow.document.write(`
     <!DOCTYPE html>
     <html>
       <head>
-        <title>${state.title}</title>
+        <title>${safeTitle}</title>
         <link rel="stylesheet" href="styles/office.css">
       </head>
       <body class="office-print-content">${content}</body>

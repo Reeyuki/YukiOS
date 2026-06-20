@@ -10,7 +10,7 @@ const SHITTIFY_BRIDGE_SCRIPT = `
 <script>
 (function() {
   function post(data) {
-    try { parent.postMessage({ __shittify: true, ...data }, '*'); } catch(e) {}
+    try { parent.postMessage({ __shittify: true, ...data }, '*'); } catch(e) { console.error("[Shittify]", e); }
   }
 
   function patchTextNodes() {
@@ -132,11 +132,11 @@ const SHITTIFY_BRIDGE_SCRIPT = `
         return;
       }
       if (!_currentAudio) return;
-      if (d.cmd === 'play') { try { _currentAudio.play(); } catch(ex) {} }
-      else if (d.cmd === 'pause') { try { _currentAudio.pause(); } catch(ex) {} }
+      if (d.cmd === 'play') { try { _currentAudio.play(); } catch(ex) { console.error("[Shittify]", ex); } }
+      else if (d.cmd === 'pause') { try { _currentAudio.pause(); } catch(ex) { console.error("[Shittify]", ex); } }
       else if (d.cmd === 'nexttrack') { var nb = document.querySelector('.player-next'); if (nb) nb.click(); }
       else if (d.cmd === 'previoustrack') { var bb = document.querySelector('.player-back'); if (bb) bb.click(); }
-    } catch(e) {}
+    } catch(e) { console.error("[Shittify]", e); }
   });
 
   setTimeout(() => {
@@ -241,7 +241,9 @@ export class ShittifyApp extends BaseApp {
             if (lastState && lastState.track) {
               this.sendCommand("restore", lastState);
             }
-          } catch (e) {}
+          } catch (e) {
+            console.error("[Shittify]", e);
+          }
         });
       }
     } catch (err) {
@@ -289,9 +291,5 @@ export class ShittifyApp extends BaseApp {
     audioMixer().unregisterWindow(winId);
     os.tray.unregister(winId);
     this.notify("Evil Spotify", "Music player closed", "info", 3000);
-  }
-
-  loadContent() {
-    this.open();
   }
 }

@@ -65,6 +65,18 @@ export class BaseApp {
   async _isSingletonOpen(winId: string): Promise<boolean> {
     const existing = document.getElementById(winId);
     if (existing) {
+      if (existing.style.display === "none") {
+        existing.style.display = "flex";
+        const taskbarItem = document.getElementById(`taskbar-${winId}`);
+        if (taskbarItem) {
+          taskbarItem.style.display = "";
+          taskbarItem.classList.remove("minimized");
+        }
+        try {
+          const os = await getOs();
+          os.tray.restoreFromTray(winId);
+        } catch (e) {}
+      }
       try {
         const os = await getOs();
         os.window.focus(existing);

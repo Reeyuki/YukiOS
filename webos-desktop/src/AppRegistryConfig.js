@@ -15,7 +15,10 @@ const SYSTEM_APPS = APP_MANIFESTS.reduce((acc, manifest) => {
     clippy: manifest.clippy,
     persistContentState: manifest.persistContentState,
     excludeFromInstalledApps: manifest.excludeFromInstalledApps,
-    source: manifest.source
+    source: manifest.source,
+    targetUrl: manifest.targetUrl,
+    trayOptions: manifest.trayOptions,
+    windowSize: manifest.windowSize
   };
   return acc;
 }, {});

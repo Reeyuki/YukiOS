@@ -1,36 +1,170 @@
-import { SystemAppRenderer } from "../games/games.js";
-
+import "../styles/systemApps.css";
 import { BaseApp, os } from "../framework.js";
+import { DeclarativeApp } from "../runtime/DeclarativeApp.js";
+import { PersistenceTypes } from "../AppSchema.js";
+import { getAppRegistry } from "../appRegistry.js";
+
 export class SystemAppsApp extends BaseApp {
   constructor(services) {
     super(services);
   }
 
-  async open(opts = {}) {
-    const winId = "system-apps-win";
-    if (await this._isSingletonOpen(winId)) return;
-
-    const win = os.window.create(winId, "System Apps", "800px", "600px", {
-      icon: "fas fa-screwdriver-wrench"
+  open(opts = {}) {
+    const schema = this.getDeclarativeSchema(opts);
+    if (!schema.actions) schema.actions = {};
+    schema.actions.renderApps = (p, e, el, s, ae) => this.renderApps(p, e, el, s, ae);
+    schema.actions._appInstance = this;
+    const declarativeApp = new DeclarativeApp(schema, {
+      wm: this.wm,
+      fs: this.fs,
+      bus: this.bus,
+      notifications: this.notifications
     });
-    win.classList.add("window-root");
+    return declarativeApp.open(opts);
+  }
 
+  getDeclarativeSchema() {
+    return {
+      id: "system-apps-win",
+      name: "System Apps",
+      icon: "fas fa-screwdriver-wrench",
+      windows: [
+        {
+          id: "system-apps-win",
+          title: "System Apps",
+          size: ["800px", "600px"],
+          icon: "fas fa-screwdriver-wrench",
+          ui: `
+             <div class="window-content system-apps-window">
+               <div style="padding:16px;display:flex;flex-direction:column;gap:12px;height:100%;box-sizing:border-box;">
+                 <input
+                   type="text"
+                   class="games-search-input"
+                   id="system-apps-search"
+                   placeholder="Search apps..."
+                   autocomplete="off"
+                 />
+                 <div class="system-apps-section" id="system-apps-section-native">
+                   <div class="system-apps-section-header">System Apps</div>
+                   <div class="games-app-grid" id="system-apps-grid-native"></div>
+                 </div>
+                 <div class="system-apps-section" id="system-apps-section-web">
+                   <div class="system-apps-section-header">Web Apps</div>
+                   <div class="games-app-grid" id="system-apps-grid-web"></div>
+                 </div>
+                 <div class="games-no-results" id="system-apps-empty" style="display:none;">No system apps found</div>
+               </div>
+             </div>
+           `
+        }
+      ],
+      state: {
+        initial: { apps: [], query: "" },
+        persistence: PersistenceTypes.MEMORY
+      },
+      onMount: "renderApps"
+    };
+  }
+
+  renderApps(payload, event, element, state, actionExecutor) {
     const appLauncher = this._services.appLauncher;
-    const appMap = appLauncher?.appMap;
-    const systemRenderer = new SystemAppRenderer(appMap);
+    if (!appLauncher) return;
+    const appMap = appLauncher.appMap;
+    if (!appMap) return;
 
-    win.innerHTML = `
-      <div class="window-header">
-        <span><svg class="svg-inline--fa fa-desktop" style="color: white;margin-right: 6px;font-size: 25px;vertical-align: middle;" data-prefix="fas" data-icon="desktop" role="img" viewBox="0 0 512 512" aria-hidden="true" data-fa-i2svg=""><path fill="currentColor" d="M64 32C28.7 32 0 60.7 0 96L0 352c0 35.3 28.7 64 64 64l144 0-16 48-72 0c-13.3 0-24 10.7-24 24s10.7 24 24 24l272 0c13.3 0 24-10.7 24-24s-10.7-24-24-24l-72 0-16-48 144 0c35.3 0 64-28.7 64-64l0-256c0-35.3-28.7-64-64-64L64 32zM96 96l320 0c17.7 0 32 14.3 32 32l0 160c0 17.7-14.3 32-32 32L96 320c-17.7 0-32-14.3-32-32l0-160c0-17.7 14.3-32 32-32z"></path></svg>System Apps</span>
-        ${os.window.getWindowControls()}
-      </div>
-      <div class="window-content system-apps-window" style="width:100%;height:100%;overflow:auto;padding:24px;box-sizing:border-box;">
-        <div id="system-app-container"></div>
-      </div>`;
+    const appRegistry = getAppRegistry();
+    appRegistry.refresh();
 
-    const container = win.querySelector("#system-app-container");
-    systemRenderer.render(container, (appId) => {
-      if (appLauncher) os.app.launch(appId);
+    const allApps = Object.entries(appMap)
+      .filter(([id, data]) => {
+        if (data.type !== "system" || !data.icon || !data.title) return false;
+        if (appRegistry.isAppUninstalled(id) || appRegistry.isAppDisabled(id)) return false;
+        return true;
+      })
+      .map(([id, data]) => ({ id, ...data }));
+
+    const nativeApps = allApps.filter((a) => !a.targetUrl || a.id === "discordApp");
+    const webApps = allApps.filter((a) => a.targetUrl && a.id !== "discordApp");
+
+    this._nativeApps = nativeApps;
+    this._webApps = webApps;
+    this._renderGrid(state.query);
+
+    const searchInput = document.querySelector("#system-apps-win #system-apps-search");
+    if (searchInput && !searchInput._saBound) {
+      searchInput._saBound = true;
+      searchInput.addEventListener("input", (e) => {
+        state.query = e.target.value;
+        this._renderGrid(state.query);
+      });
+    }
+  }
+
+  _renderGrid(query) {
+    const sectionNative = document.querySelector("#system-apps-section-native");
+    const sectionWeb = document.querySelector("#system-apps-section-web");
+    const containerNative = document.querySelector("#system-apps-win #system-apps-grid-native");
+    const containerWeb = document.querySelector("#system-apps-win #system-apps-grid-web");
+    const emptyEl = document.querySelector("#system-apps-win #system-apps-empty");
+    if (!containerNative || !containerWeb) return;
+
+    const q = (query || "").toLowerCase();
+    const allApps = [...(this._nativeApps || []), ...(this._webApps || [])];
+    const nativeFiltered = q
+      ? allApps.filter((a) => a.title.toLowerCase().includes(q) && (!a.targetUrl || a.id === "discordApp"))
+      : this._nativeApps;
+    const webFiltered = q
+      ? allApps.filter((a) => a.title.toLowerCase().includes(q) && a.targetUrl && a.id !== "discordApp")
+      : this._webApps;
+
+    const total = (nativeFiltered || []).length + (webFiltered || []).length;
+    if (total === 0) {
+      containerNative.innerHTML = "";
+      containerWeb.innerHTML = "";
+      if (sectionNative) sectionNative.style.display = "none";
+      if (sectionWeb) sectionWeb.style.display = "none";
+      if (emptyEl) emptyEl.style.display = "block";
+      return;
+    }
+
+    if (emptyEl) emptyEl.style.display = "none";
+
+    this._renderSection(containerNative, nativeFiltered, sectionNative);
+    this._renderSection(containerWeb, webFiltered, sectionWeb);
+  }
+
+  _renderSection(container, items, sectionEl) {
+    if (items.length === 0) {
+      container.innerHTML = "";
+      if (sectionEl) sectionEl.style.display = "none";
+      return;
+    }
+
+    if (sectionEl) sectionEl.style.display = "";
+
+    container.innerHTML = items
+      .map((app) => {
+        const icon = app.icon || "";
+        const isFA = typeof icon === "string" && /^fa[bsr]?\s/.test(icon);
+        const iconHtml = isFA
+          ? `<i style="color:var(--brand);" class="icon ${icon}"></i>`
+          : `<img src="${icon}" alt="${app.title}" loading="lazy" />`;
+        return `
+          <div class="games-app-card" data-app="${app.id}">
+            <div class="games-app-card-img-wrap">${iconHtml}</div>
+            <div class="games-app-card-title">${app.title}</div>
+          </div>
+        `;
+      })
+      .join("");
+
+    container.querySelectorAll(".games-app-card").forEach((card) => {
+      card.addEventListener("dblclick", () => {
+        const appId = card.dataset.app;
+        if (appId) os.app.launch(appId);
+      });
     });
   }
+
+  onClose(winId) {}
 }

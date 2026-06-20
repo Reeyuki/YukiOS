@@ -102,9 +102,9 @@ export class OSBridge {
       setting: "settingsApp",
       terminal: "terminal",
       term: "terminal",
-      explorer: "explorer",
-      fileexplorer: "explorer",
-      files: "explorer",
+      explorer: "explorerApp",
+      fileexplorer: "explorerApp",
+      files: "explorerApp",
       notepad: "notepad",
       markdown: "markdown",
       code: "monaco",
@@ -376,6 +376,7 @@ export class OSBridge {
 
   _getSettings() {
     const settings = {};
+    // Direct localStorage enumeration needed; os.storage doesn't expose key enumeration
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
       if (key.startsWith("yuki_") || key.startsWith("theme")) {

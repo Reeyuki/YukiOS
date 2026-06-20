@@ -261,17 +261,25 @@ export class BrowserApp extends BaseApp {
 
     try {
       if (this._kbListener) document.removeEventListener("keydown", this._kbListener);
-    } catch (e) {}
+    } catch (e) {
+      console.warn("[Browser] fetch failed:", e);
+    }
     try {
       if (this._msgListener) window.removeEventListener("message", this._msgListener);
-    } catch (e) {}
+    } catch (e) {
+      console.warn("[Browser] fetch failed:", e);
+    }
 
     try {
       this._closeDropdown?.();
-    } catch (e) {}
+    } catch (e) {
+      console.warn("[Browser] fetch failed:", e);
+    }
     try {
       this._closePanel?.();
-    } catch (e) {}
+    } catch (e) {
+      console.warn("[Browser] fetch failed:", e);
+    }
 
     this._kbListener = null;
     this._msgListener = null;
@@ -452,7 +460,9 @@ export class BrowserApp extends BaseApp {
         let label = url;
         try {
           label = new URL(url).hostname || url;
-        } catch (ex) {}
+        } catch (ex) {
+          console.error("[Browser]", ex);
+        }
         return `<div class="ctx-history-item" data-idx="${idx}" title="${url}"><i class="fas fa-history" style="width:16px;margin-right:8px;opacity:0.6;"></i>${label}</div>`;
       })
       .join("");
@@ -493,7 +503,9 @@ export class BrowserApp extends BaseApp {
     let currentHost = "";
     try {
       currentHost = new URL(tab?.url || "").hostname;
-    } catch (ex) {}
+    } catch (ex) {
+      console.error("[Browser]", ex);
+    }
     const isExcluded = currentHost && this.darkModeExclusions[currentHost] === true;
 
     popup.innerHTML = `
@@ -558,7 +570,9 @@ export class BrowserApp extends BaseApp {
     let host = "";
     try {
       host = new URL(tab.url || "").hostname;
-    } catch (ex) {}
+    } catch (ex) {
+      console.error("[Browser]", ex);
+    }
     const excluded = host && this.darkModeExclusions[host] === true;
     const shouldDark = this.darkModeEnabled && !excluded;
 
@@ -579,7 +593,9 @@ export class BrowserApp extends BaseApp {
       } else {
         if (existingStyle) existingStyle.remove();
       }
-    } catch (ex) {}
+    } catch (ex) {
+      console.error("[Browser]", ex);
+    }
   }
 
   enterIframeFullscreen() {
@@ -841,9 +857,30 @@ export class BrowserApp extends BaseApp {
       item.className = "bookmark-item";
       try {
         const origin = new URL(bm.url.startsWith("http") ? bm.url : "https://" + bm.url).origin;
-        item.innerHTML = `<img class="bookmark-favicon" src="${origin}/favicon.ico" onerror="this.style.display='none'"/><span>${bm.name}</span><span class="bm-remove" data-idx="${idx}">×</span>`;
+        const favicon = document.createElement("img");
+        favicon.className = "bookmark-favicon";
+        favicon.src = `${origin}/favicon.ico`;
+        favicon.addEventListener("error", () => {
+          favicon.style.display = "none";
+        });
+        item.appendChild(favicon);
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = bm.name;
+        item.appendChild(nameSpan);
+        const removeSpan = document.createElement("span");
+        removeSpan.className = "bm-remove";
+        removeSpan.dataset.idx = idx;
+        removeSpan.textContent = "×";
+        item.appendChild(removeSpan);
       } catch (e) {
-        item.innerHTML = `<span>${bm.name}</span><span class="bm-remove" data-idx="${idx}">×</span>`;
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = bm.name;
+        item.appendChild(nameSpan);
+        const removeSpan = document.createElement("span");
+        removeSpan.className = "bm-remove";
+        removeSpan.dataset.idx = idx;
+        removeSpan.textContent = "×";
+        item.appendChild(removeSpan);
       }
       item.addEventListener("click", (e) => {
         if (e.target.classList.contains("bm-remove")) {
@@ -1242,6 +1279,9 @@ body {
       window.parent.postMessage({ type: 'browser-launch-app', appId: btn.getAttribute('data-app-launch') }, '*');
     });
   });
+  document.querySelectorAll('.quick-link-icon').forEach(function(img) {
+    img.addEventListener('error', function() { this.style.display = 'none'; });
+  });
 </script>
 </body>
 </html>`;
@@ -1385,35 +1425,38 @@ body {
   <div class="date" id="datestr"></div>
   <div class="quick-links">
     <button class="quick-link" data-nav="https://www.google.com/webhp?igu=1">
-      <img class="quick-link-icon" src="https://www.google.com/favicon.ico" onerror="this.style.display='none'" />
+      <img class="quick-link-icon" src="https://www.google.com/favicon.ico" />
       <div class="quick-link-label">Google</div>
     </button>
     <button class="quick-link" data-nav="https://www.wikipedia.org">
-      <img class="quick-link-icon" src="https://www.wikipedia.org/favicon.ico" onerror="this.style.display='none'" />
+      <img class="quick-link-icon" src="https://www.wikipedia.org/favicon.ico" />
       <div class="quick-link-label">Wikipedia</div>
     </button>
     <button class="quick-link" data-nav="https://www.github.com">
-      <img class="quick-link-icon" src="https://www.github.com/favicon.ico" onerror="this.style.display='none'" />
+      <img class="quick-link-icon" src="https://www.github.com/favicon.ico" />
       <div class="quick-link-label">GitHub</div>
     </button>
+    </div>
   </div>
-</div>
-<script>
-  function tick() {
-    var now = new Date();
-    document.getElementById('clock').textContent = now.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-    document.getElementById('datestr').textContent = now.toLocaleDateString([], {weekday:'long',year:'numeric',month:'long',day:'numeric'});
-  }
-  tick();
-  setInterval(tick, 1000);
-  document.querySelectorAll('[data-nav]').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      window.parent.postMessage({ type: 'browser-navigate', url: btn.getAttribute('data-nav') }, '*');
+  <script>
+    function tick() {
+      var now = new Date();
+      document.getElementById('clock').textContent = now.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+      document.getElementById('datestr').textContent = now.toLocaleDateString([], {weekday:'long',year:'numeric',month:'long',day:'numeric'});
+    }
+    tick();
+    setInterval(tick, 1000);
+    document.querySelectorAll('[data-nav]').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        window.parent.postMessage({ type: 'browser-navigate', url: btn.getAttribute('data-nav') }, '*');
+      });
     });
-  });
-</script>
-</body>
-</html>`;
+    document.querySelectorAll('.quick-link-icon').forEach(function(img) {
+      img.addEventListener('error', function() { this.style.display = 'none'; });
+    });
+  </script>
+  </body>
+  </html>`;
   }
 
   interceptGoogleLinks(tab) {
@@ -1449,7 +1492,9 @@ body {
         },
         true
       );
-    } catch (e) {}
+    } catch (e) {
+      console.error("[Browser]", e);
+    }
   }
 
   _injectAudioDetector(tab) {
@@ -1465,7 +1510,9 @@ body {
         setInterval(check, 1500);
       })();`;
       (doc.head || doc.documentElement).appendChild(script);
-    } catch (e) {}
+    } catch (e) {
+      console.error("[Browser]", e);
+    }
   }
 
   async loadWithFallback(tab, url, startIndex = 0) {
@@ -1601,7 +1648,7 @@ body {
       e.preventDefault();
       e.stopPropagation();
       window.parent.postMessage({ type: 'browser-download', url: resolved, filename: anchor.getAttribute('download') || '' }, '*');
-    } catch(err) {}
+    } catch(err) { console.error("[Browser]", err); }
   }, true);
 })();
 <\/script>`;

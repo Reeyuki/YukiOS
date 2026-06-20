@@ -1,14 +1,7 @@
 import { turboManager } from "../shared/turboManager.js";
+import { BRIGHTNESS_PRESETS } from "../shared/brightnessPresets.js";
 
 import { BaseApp, StorageKeys, os } from "../framework.js";
-const BRIGHTNESS_PRESETS = {
-  default: { brightness: 100, contrast: 1, gamma: 1, temperature: 50 },
-  reading: { brightness: 90, contrast: 1.1, gamma: 1.1, temperature: 35 },
-  cinema: { brightness: 85, contrast: 1.2, gamma: 0.9, temperature: 50 },
-  nightCoding: { brightness: 80, contrast: 1.15, gamma: 1.05, temperature: 20 },
-  softWarm: { brightness: 95, contrast: 1, gamma: 1, temperature: 15 },
-  highClarity: { brightness: 110, contrast: 1.3, gamma: 1.2, temperature: 50 }
-};
 
 class DisplayPerformanceApp extends BaseApp {
   constructor(services) {
@@ -92,7 +85,7 @@ class DisplayPerformanceApp extends BaseApp {
   }
 
   _setupKeybinds() {
-    document.addEventListener("keydown", (e) => {
+    this._keydownHandler = (e) => {
       if (e.ctrlKey && e.altKey) {
         if (e.key === "ArrowUp") {
           e.preventDefault();
@@ -108,12 +101,20 @@ class DisplayPerformanceApp extends BaseApp {
           this._adjustTemperature(5);
         }
       }
-    });
+    };
+    document.addEventListener("keydown", this._keydownHandler);
+  }
+
+  _cleanupKeybinds() {
+    if (this._keydownHandler) {
+      document.removeEventListener("keydown", this._keydownHandler);
+      this._keydownHandler = null;
+    }
   }
 
   _setupNightModeSchedule() {
     this._checkNightMode();
-    setInterval(() => this._checkNightMode(), 60000);
+    this._nightModeInterval = setInterval(() => this._checkNightMode(), 60000);
   }
 
   _checkNightMode() {
@@ -550,6 +551,11 @@ class DisplayPerformanceApp extends BaseApp {
 
   onClose(winId) {
     this.closePopup();
+    this._cleanupKeybinds();
+    if (this._nightModeInterval) {
+      clearInterval(this._nightModeInterval);
+      this._nightModeInterval = null;
+    }
   }
 }
 

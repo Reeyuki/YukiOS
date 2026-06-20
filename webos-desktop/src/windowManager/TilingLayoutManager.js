@@ -133,18 +133,6 @@ export class TilingLayoutManager {
 
     const winId = win.id;
     const state = this._getWorkspaceState(this.activeWorkspace);
-
-    console.log(
-      "[TilingLayoutManager] addWindow - winId:",
-      winId,
-      "layoutType:",
-      this.layoutType,
-      "enabled:",
-      this.enabled,
-      "state.windowList before:",
-      state.windowList
-    );
-
     if (state.floatingWindows.has(winId)) {
       state.floatingWindows.delete(winId);
     }
@@ -158,14 +146,7 @@ export class TilingLayoutManager {
     if (this.layoutType === LayoutType.DWINDLE) {
       if (!state.windowList.includes(winId)) {
         state.windowList.push(winId);
-        console.log(
-          "[TilingLayoutManager] addWindow - added to windowList, now has:",
-          state.windowList.length,
-          "windowList:",
-          state.windowList
-        );
       } else {
-        console.log("[TilingLayoutManager] addWindow - window already in windowList");
       }
     } else {
       if (!state.root) {
@@ -176,7 +157,6 @@ export class TilingLayoutManager {
     }
 
     setTimeout(() => {
-      console.log("[TilingLayoutManager] addWindow - calling _applyLayout");
       this._applyLayout();
     }, 0);
   }
@@ -280,18 +260,9 @@ export class TilingLayoutManager {
   }
 
   _applyLayout() {
-    console.log(
-      "[TilingLayoutManager] _applyLayout - enabled:",
-      this.enabled,
-      "layoutType:",
-      this.layoutType,
-      "activeWorkspace:",
-      this.activeWorkspace
-    );
     if (!this.enabled) return;
 
     const state = this._getWorkspaceState(this.activeWorkspace);
-    console.log("[TilingLayoutManager] _applyLayout - state:", state);
 
     if (this.layoutType === LayoutType.MONOCLE) {
       this._applyMonocleLayout(state);
@@ -316,31 +287,16 @@ export class TilingLayoutManager {
 
   _applyDwindleLayout(state) {
     const windows = this._getAllWindows(state);
-    console.log(
-      "[TilingLayoutManager] _applyDwindleLayout - windows:",
-      windows.length,
-      "windowList:",
-      state.windowList
-    );
 
     if (windows.length === 0) return;
 
     const bounds = this._getScreenBounds();
-    console.log("[TilingLayoutManager] _applyDwindleLayout - bounds:", bounds);
 
     const rects = this._calculateDwindleRects(windows.length, bounds);
-    console.log("[TilingLayoutManager] _applyDwindleLayout - rects:", rects);
 
     windows.forEach((winId, index) => {
       const win = document.getElementById(winId);
-      console.log(
-        "[TilingLayoutManager] _applyDwindleLayout - applying to window:",
-        winId,
-        "found:",
-        !!win,
-        "current styles:",
-        win ? { left: win.style.left, top: win.style.top, width: win.style.width, height: win.style.height } : null
-      );
+
       if (win && rects[index]) {
         const { left, top, width, height } = rects[index];
         win.style.setProperty("left", `${left}px`, "important");
@@ -353,12 +309,6 @@ export class TilingLayoutManager {
         win.style.removeProperty("transform");
         win.style.removeProperty("margin");
         win.style.removeProperty("padding");
-        console.log("[TilingLayoutManager] _applyDwindleLayout - applied rect:", rects[index], "new styles:", {
-          left: win.style.left,
-          top: win.style.top,
-          width: win.style.width,
-          height: win.style.height
-        });
       }
     });
   }

@@ -68,11 +68,15 @@ export class TaskManagerApp extends BaseApp {
 
       try {
         os.app.close(id);
-      } catch (_) {}
+      } catch (_) {
+        console.error("[TaskManager]", _);
+      }
 
       try {
         this.wm.closeWindow(winEl);
-      } catch (_) {}
+      } catch (_) {
+        console.error("[TaskManager]", _);
+      }
 
       if (document.getElementById(id)) {
         winEl.remove();
@@ -82,11 +86,15 @@ export class TaskManagerApp extends BaseApp {
 
       try {
         os.tray.unregister(id);
-      } catch (_) {}
+      } catch (_) {
+        console.error("[TaskManager]", _);
+      }
 
       try {
         os.notify.send("", `"${title}" ended`);
-      } catch (_) {}
+      } catch (_) {
+        console.error("[TaskManager]", _);
+      }
       return;
     }
 
@@ -104,10 +112,14 @@ export class TaskManagerApp extends BaseApp {
     if (trayItem) {
       try {
         os.app.close(id);
-      } catch (_) {}
+      } catch (_) {
+        console.error("[TaskManager]", _);
+      }
       try {
         os.tray.unregister(id);
-      } catch (_) {}
+      } catch (_) {
+        console.error("[TaskManager]", _);
+      }
 
       os.window.removeFromTaskbar(id);
 
@@ -116,7 +128,9 @@ export class TaskManagerApp extends BaseApp {
 
       try {
         os.notify.send("", `"${trayItem.label || id}" ended`);
-      } catch (_) {}
+      } catch (_) {
+        console.error("[TaskManager]", _);
+      }
     }
   }
 
@@ -806,7 +820,6 @@ export class TaskManagerApp extends BaseApp {
     }, 1500);
 
     const handleWindowChange = () => {
-      console.log("[TaskManager] Event handler called!");
       setTimeout(() => {
         const taskManagerWin = document.getElementById("taskmanager-app");
         if (!taskManagerWin) return;

@@ -866,7 +866,7 @@ export class DataEditorApp extends BaseApp {
     return container;
   }
 
-  loadLocalStorage(win) {
+  _loadFlatStorage(win, getEntries, typeLabel, emptyMsg) {
     const keyList = $("#de-key-list", win);
     const searchInput = $("#de-search", win);
     const selectAllCheckbox = $("#de-select-all", win);
@@ -881,97 +881,76 @@ export class DataEditorApp extends BaseApp {
     this.activeKeyEl = null;
     this.updateSelectedCount(win);
     const q = searchInput.value.toLowerCase();
-    const keys = [];
-    for (let i = 0; i < localStorage.length; i++) keys.push(localStorage.key(i));
-    keys.sort().forEach((key) => {
-      const value = localStorage.getItem(key);
-      if (q && !key.toLowerCase().includes(q) && !value.toLowerCase().includes(q)) return;
+
+    const entries = getEntries();
+    entries.sort((a, b) => a.key.localeCompare(b.key));
+
+    for (const { key, value } of entries) {
+      if (q && !key.toLowerCase().includes(q) && !value.toLowerCase().includes(q)) continue;
       const el = this.buildKeyItem(
         win,
         key,
         (container) => {
-          this.selectKey(win, container, key, value, "localStorage");
+          this.selectKey(win, container, key, value, typeLabel);
         },
         value
       );
       keyList.appendChild(el);
-    });
-    if (!keyList.children.length) {
-      keyList.innerHTML = `<div style="padding:10px;color:rgba(255,255,255,0.25);font-size:0.8em;text-align:center;">No keys stored yet</div>`;
     }
+
+    if (!keyList.children.length) {
+      keyList.innerHTML = `<div style="padding:10px;color:rgba(255,255,255,0.25);font-size:0.8em;text-align:center;">${emptyMsg}</div>`;
+    }
+  }
+
+  loadLocalStorage(win) {
+    this._loadFlatStorage(
+      win,
+      () => {
+        const entries = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          entries.push({ key: k, value: localStorage.getItem(k) });
+        }
+        return entries;
+      },
+      "localStorage",
+      "No keys stored yet"
+    );
   }
 
   loadSessionStorage(win) {
-    const keyList = $("#de-key-list", win);
-    const searchInput = $("#de-search", win);
-    const selectAllCheckbox = $("#de-select-all", win);
-    const emptyState = $("#de-empty-state", win);
-    const editorArea = $("#de-editor-area", win);
-
-    setHTML(keyList, "");
-    this.selectedKeys.clear();
-    selectAllCheckbox.checked = false;
-    if (emptyState) emptyState.style.display = "flex";
-    if (editorArea) editorArea.style.display = "none";
-    this.activeKeyEl = null;
-    this.updateSelectedCount(win);
-    const q = searchInput.value.toLowerCase();
-    const keys = [];
-    for (let i = 0; i < sessionStorage.length; i++) keys.push(sessionStorage.key(i));
-    keys.sort().forEach((key) => {
-      const value = sessionStorage.getItem(key);
-      if (q && !key.toLowerCase().includes(q) && !value.toLowerCase().includes(q)) return;
-      const el = this.buildKeyItem(
-        win,
-        key,
-        (container) => {
-          this.selectKey(win, container, key, value, "sessionStorage");
-        },
-        value
-      );
-      keyList.appendChild(el);
-    });
-    if (!keyList.children.length) {
-      keyList.innerHTML = `<div style="padding:10px;color:rgba(255,255,255,0.25);font-size:0.8em;text-align:center;">No keys stored yet</div>`;
-    }
+    this._loadFlatStorage(
+      win,
+      () => {
+        const entries = [];
+        for (let i = 0; i < sessionStorage.length; i++) {
+          const k = sessionStorage.key(i);
+          entries.push({ key: k, value: sessionStorage.getItem(k) });
+        }
+        return entries;
+      },
+      "sessionStorage",
+      "No keys stored yet"
+    );
   }
 
   loadCookies(win) {
-    const keyList = $("#de-key-list", win);
-    const searchInput = $("#de-search", win);
-    const selectAllCheckbox = $("#de-select-all", win);
-    const emptyState = $("#de-empty-state", win);
-    const editorArea = $("#de-editor-area", win);
-
-    setHTML(keyList, "");
-    this.selectedKeys.clear();
-    selectAllCheckbox.checked = false;
-    if (emptyState) emptyState.style.display = "flex";
-    if (editorArea) editorArea.style.display = "none";
-    this.activeKeyEl = null;
-    this.updateSelectedCount(win);
-    const q = searchInput.value.toLowerCase();
-    const cookies = document.cookie
-      .split(";")
-      .map((c) => c.trim())
-      .filter((c) => c);
-    cookies.sort().forEach((cookie) => {
-      const [key, ...valueParts] = cookie.split("=");
-      const value = valueParts.join("=");
-      if (q && !key.toLowerCase().includes(q) && !value.toLowerCase().includes(q)) return;
-      const el = this.buildKeyItem(
-        win,
-        key,
-        (container) => {
-          this.selectKey(win, container, key, value, "Cookie");
-        },
-        value
-      );
-      keyList.appendChild(el);
-    });
-    if (!keyList.children.length) {
-      keyList.innerHTML = `<div style="padding:10px;color:rgba(255,255,255,0.25);font-size:0.8em;text-align:center;">No cookies here</div>`;
-    }
+    this._loadFlatStorage(
+      win,
+      () => {
+        return document.cookie
+          .split(";")
+          .map((c) => c.trim())
+          .filter(Boolean)
+          .map((c) => {
+            const [key, ...parts] = c.split("=");
+            return { key, value: parts.join("=") };
+          });
+      },
+      "Cookie",
+      "No cookies here"
+    );
   }
 
   async loadIdb(win) {
@@ -1084,30 +1063,72 @@ export class DataEditorApp extends BaseApp {
     }
   }
 
+  _getStorageLabel() {
+    if (this.currentTab === "ls") return "localStorage";
+    if (this.currentTab === "ss") return "sessionStorage";
+    if (this.currentTab === "cookie") return "Cookie";
+    return "IDB";
+  }
+
+  _reloadCurrentTab(win) {
+    if (this.currentTab === "ls") this.loadLocalStorage(win);
+    else if (this.currentTab === "ss") this.loadSessionStorage(win);
+    else if (this.currentTab === "cookie") this.loadCookies(win);
+    else this.loadIdb(win);
+  }
+
+  _setStorageValue(key, val) {
+    if (this.currentTab === "ls") localStorage.setItem(key, val);
+    else if (this.currentTab === "ss") sessionStorage.setItem(key, val);
+    else if (this.currentTab === "cookie") document.cookie = `${key}=${val}; path=/`;
+  }
+
+  _removeStorageValue(key) {
+    if (this.currentTab === "ls") localStorage.removeItem(key);
+    else if (this.currentTab === "ss") sessionStorage.removeItem(key);
+    else if (this.currentTab === "cookie") {
+      document.cookie = `${key}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/`;
+    }
+  }
+
+  _renameStorageValue(oldKey, newKey, val) {
+    if (this.currentTab === "ls" || this.currentTab === "ss") {
+      this._setStorageValue(newKey, val);
+      this._removeStorageValue(oldKey);
+    } else if (this.currentTab === "cookie") {
+      document.cookie = `${newKey}=${val}; path=/`;
+      document.cookie = `${oldKey}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/`;
+    }
+  }
+
+  _getStorageValue(key) {
+    if (this.currentTab === "ls") return localStorage.getItem(key);
+    if (this.currentTab === "ss") return sessionStorage.getItem(key);
+    if (this.currentTab === "cookie") {
+      return (
+        document.cookie
+          .split(";")
+          .find((c) => c.trim().startsWith(key + "="))
+          ?.split("=")
+          .slice(1)
+          .join("=") || ""
+      );
+    }
+    return null;
+  }
+
   async handleSave(element) {
     const win = element.closest(".window-content");
     const keyInput = $("#de-key-input", win);
     const valInput = $("#de-val-input", win);
-
     const key = keyInput.value.trim();
     if (!key) {
       this.showEditorStatus(win, "Key cannot be empty", "#ff4d4f");
       return;
     }
     const val = valInput.value;
-    if (this.currentTab === "ls") {
-      localStorage.setItem(key, val);
-      this.showEditorStatus(win, "Saved to localStorage", "#52c41a");
-      this.loadLocalStorage(win);
-    } else if (this.currentTab === "ss") {
-      sessionStorage.setItem(key, val);
-      this.showEditorStatus(win, "Saved to sessionStorage", "#52c41a");
-      this.loadSessionStorage(win);
-    } else if (this.currentTab === "cookie") {
-      document.cookie = `${key}=${val}; path=/`;
-      this.showEditorStatus(win, "Saved cookie", "#52c41a");
-      this.loadCookies(win);
-    } else if (this.currentIdbCtx) {
+    if (this.currentTab === "idb") {
+      if (!this.currentIdbCtx) return;
       try {
         const { db, dbName, storeName, key: origKey } = this.currentIdbCtx;
         const req = indexedDB.open(dbName);
@@ -1133,6 +1154,10 @@ export class DataEditorApp extends BaseApp {
       } catch (e) {
         this.showEditorStatus(win, "Save failed: " + e.message, "#ff4d4f");
       }
+    } else {
+      this._setStorageValue(key, val);
+      this.showEditorStatus(win, `Saved to ${this._getStorageLabel()}`, "#52c41a");
+      this._reloadCurrentTab(win);
     }
   }
 
@@ -1141,31 +1166,11 @@ export class DataEditorApp extends BaseApp {
     const keyInput = $("#de-key-input", win);
     const emptyState = $("#de-empty-state", win);
     const editorArea = $("#de-editor-area", win);
-
     const key = keyInput.value.trim();
     if (!key) return;
-    if (this.currentTab === "ls") {
-      localStorage.removeItem(key);
-      this.showEditorStatus(win, "Deleted", "#faad14");
-      if (editorArea) editorArea.style.display = "none";
-      if (emptyState) emptyState.style.display = "flex";
-      this.activeKeyEl = null;
-      this.loadLocalStorage(win);
-    } else if (this.currentTab === "ss") {
-      sessionStorage.removeItem(key);
-      this.showEditorStatus(win, "Deleted", "#faad14");
-      if (editorArea) editorArea.style.display = "none";
-      if (emptyState) emptyState.style.display = "flex";
-      this.activeKeyEl = null;
-      this.loadSessionStorage(win);
-    } else if (this.currentTab === "cookie") {
-      document.cookie = `${key}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/`;
-      this.showEditorStatus(win, "Deleted cookie", "#faad14");
-      if (editorArea) editorArea.style.display = "none";
-      if (emptyState) emptyState.style.display = "flex";
-      this.activeKeyEl = null;
-      this.loadCookies(win);
-    } else if (this.currentIdbCtx) {
+
+    if (this.currentTab === "idb") {
+      if (!this.currentIdbCtx) return;
       try {
         const { dbName, storeName, key: origKey } = this.currentIdbCtx;
         const req = indexedDB.open(dbName);
@@ -1181,45 +1186,37 @@ export class DataEditorApp extends BaseApp {
           r.onerror = () => rej(r.error);
         });
         freshDb.close();
-        if (editorArea) editorArea.style.display = "none";
-        if (emptyState) emptyState.style.display = "flex";
-        this.activeKeyEl = null;
         this.showEditorStatus(win, "Deleted from IDB", "#faad14");
-        this.loadIdb(win);
       } catch (e) {
         this.showEditorStatus(win, "Delete failed: " + e.message, "#ff4d4f");
+        return;
       }
+    } else {
+      this._removeStorageValue(key);
+      this.showEditorStatus(win, "Deleted", "#faad14");
     }
+    if (editorArea) editorArea.style.display = "none";
+    if (emptyState) emptyState.style.display = "flex";
+    this.activeKeyEl = null;
+    this._reloadCurrentTab(win);
   }
 
   async handleRename(element) {
     const win = element.closest(".window-content");
     const keyInput = $("#de-key-input", win);
     const valInput = $("#de-val-input", win);
-
     const oldKey = keyInput.value.trim();
     if (!oldKey) return;
     const newKey = await os.dialog.prompt("Rename Key", "Enter new key name:", oldKey, "Rename");
     if (!newKey || newKey === oldKey) return;
 
     const val = valInput.value;
-    if (this.currentTab === "ls") {
-      localStorage.setItem(newKey, val);
-      localStorage.removeItem(oldKey);
-      this.showEditorStatus(win, "Renamed", "#52c41a");
-      this.loadLocalStorage(win);
-    } else if (this.currentTab === "ss") {
-      sessionStorage.setItem(newKey, val);
-      sessionStorage.removeItem(oldKey);
-      this.showEditorStatus(win, "Renamed", "#52c41a");
-      this.loadSessionStorage(win);
-    } else if (this.currentTab === "cookie") {
-      document.cookie = `${newKey}=${val}; path=/`;
-      document.cookie = `${oldKey}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/`;
-      this.showEditorStatus(win, "Renamed cookie", "#52c41a");
-      this.loadCookies(win);
-    } else {
+    if (this.currentTab === "idb") {
       this.showEditorStatus(win, "Rename not supported for IndexedDB", "#ff4d4f");
+    } else {
+      this._renameStorageValue(oldKey, newKey, val);
+      this.showEditorStatus(win, "Renamed", "#52c41a");
+      this._reloadCurrentTab(win);
     }
   }
 
@@ -1287,21 +1284,9 @@ export class DataEditorApp extends BaseApp {
     );
     if (!confirmed) return;
 
-    if (this.currentTab === "ls") {
-      this.selectedKeys.forEach((item) => localStorage.removeItem(item.key));
-      this.showEditorStatus(win, `Deleted ${this.selectedKeys.size} items`, "#52c41a");
-      this.loadLocalStorage(win);
-    } else if (this.currentTab === "ss") {
-      this.selectedKeys.forEach((item) => sessionStorage.removeItem(item.key));
-      this.showEditorStatus(win, `Deleted ${this.selectedKeys.size} items`, "#52c41a");
-      this.loadSessionStorage(win);
-    } else if (this.currentTab === "cookie") {
-      this.selectedKeys.forEach((item) => {
-        document.cookie = `${item.key}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/`;
-      });
-      this.showEditorStatus(win, `Deleted ${this.selectedKeys.size} cookies`, "#52c41a");
-      this.loadCookies(win);
-    }
+    this.selectedKeys.forEach((item) => this._removeStorageValue(item.key));
+    this.showEditorStatus(win, `Deleted ${this.selectedKeys.size} items`, "#52c41a");
+    this._reloadCurrentTab(win);
     os.notify.send("Storage Editor", `Deleted ${this.selectedKeys.size} items`, {
       type: "info",
       duration: 3000,
@@ -1316,19 +1301,7 @@ export class DataEditorApp extends BaseApp {
     if (this.selectedKeys.size === 0) return;
     const exportData = {};
     this.selectedKeys.forEach((item) => {
-      if (this.currentTab === "ls") {
-        exportData[item.key] = localStorage.getItem(item.key);
-      } else if (this.currentTab === "ss") {
-        exportData[item.key] = sessionStorage.getItem(item.key);
-      } else if (this.currentTab === "cookie") {
-        exportData[item.key] =
-          document.cookie
-            .split(";")
-            .find((c) => c.trim().startsWith(item.key + "="))
-            ?.split("=")
-            .slice(1)
-            .join("=") || "";
-      }
+      exportData[item.key] = this._getStorageValue(item.key);
     });
     const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);

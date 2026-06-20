@@ -429,6 +429,12 @@ export function initStorePage(container, onLaunch, navigateTo, CDN_BASE_REF, img
       tags: ["Fishing", "Simulation", "Relaxing", "Casual"]
     },
     {
+      app: "angryBirds2",
+      icon: resolveIconUrl("static/icons/angryBirds2.webp"),
+      title: "Angry Birds 2",
+      tags: ["Slingshot", "Physics", "Puzzle"]
+    },
+    {
       app: "slimeRancher",
       icon: resolveIconUrl("static/icons/slime.webp"),
       title: "Slime Rancher",

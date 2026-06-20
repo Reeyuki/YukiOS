@@ -37,6 +37,7 @@ export class AppLauncher {
   TRANSPARENCY_ALLOWED_APP_IDS: Set<string>;
   clippyPromise: Promise<any>;
   _appRegistry: Map<string, any>;
+  _declarativeSchemas: Map<string, any>;
   BIC: string;
   appMap: Record<string, any>;
   _launchedAppIds: Set<string>;
@@ -79,6 +80,7 @@ export class AppLauncher {
     }
 
     this._appRegistry = new Map();
+    this._declarativeSchemas = new Map();
 
     this._registerAppsFromMap();
 
@@ -186,7 +188,7 @@ export class AppLauncher {
             };
           }
           schema.actions._appInstance = appInstance;
-          this._appRegistry.set(schema.id, schema);
+          this._declarativeSchemas.set(schema.id, schema);
           const declarativeApp = new DeclarativeApp(schema, {
             wm: this.wm,
             fs: this.fs,
@@ -311,14 +313,14 @@ export class AppLauncher {
       } else if (info.action) {
         const result = await this._tryLaunchDeclarative(app, appExtra);
         if (!result) {
-          info.action.call(this, appExtra);
+          await info.action.call(this, appExtra);
         }
       } else if (info.launchType === "instance") {
         const result = await this._tryLaunchDeclarative(app, appExtra);
         if (!result) {
           const appInstance = this._appRegistry.get(app);
           if (appInstance && typeof appInstance.open === "function") {
-            appInstance.open(appExtra);
+            await appInstance.open(appExtra);
           } else {
             console.warn(`No open() method found for app: ${app}`);
           }

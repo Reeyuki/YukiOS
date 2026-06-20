@@ -1,4 +1,4 @@
-import { isImageFile } from "./utils/utils.js";
+import { isImageFile } from "./fileDisplay.js";
 import { appMap } from "./games/gamesList.js";
 import { audioMixer, SystemAudio } from "./audioMixer.js";
 import { getSetting } from "./shared/settingsUtils.js";

@@ -77,7 +77,7 @@ function detectArchiveFormat(bytes, fileName) {
 }
 
 function generateTempId() {
-  return `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  return `temp_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
 }
 
 import { AppSource } from "./AppSource.js";
@@ -407,7 +407,6 @@ export class ArchiveExtractor {
       computedChecksum += 32 * 8;
 
       if (computedChecksum !== checksum) {
-        console.warn(`Tar checksum mismatch for ${nameRaw}: expected ${checksum}, got ${computedChecksum}`);
       }
 
       offset += 512;
@@ -427,10 +426,8 @@ export class ArchiveExtractor {
         await os.fs.mkdir([...destPath, ...parts, fileName]);
       } else if (typeflag === "2") {
         const linkTarget = tarStr(header, 157, 100);
-        console.log(`Symlink: ${nameRaw} -> ${linkTarget} (symlinks not supported in virtual FS)`);
       } else if (typeflag === "1") {
         const linkTarget = tarStr(header, 157, 100);
-        console.log(`Hard link: ${nameRaw} -> ${linkTarget} (hard links not supported in virtual FS)`);
       } else if (typeflag === "L" || typeflag === "K") {
         const longName = strFromU8(bytes.slice(offset, offset + size), true);
         offset += Math.ceil(size / 512) * 512;
@@ -511,8 +508,7 @@ export class ArchiveExtractor {
     if (audioExts.includes(ext)) return FileKind.AUDIO;
     if (videoExts.includes(ext)) return FileKind.VIDEO;
     return FileKind.OTHER;
-  }
-
+  } // check all "ext" and "exts" and "filekind" and "filetype" logic across project and create a plan to make all of these be shared and not duplicated or spread logic across modules. propose the best solution.
   _inferFileIcon(fileName) {
     const ext = fileName.split(".").pop().toLowerCase();
     const iconMap = {
@@ -655,7 +651,9 @@ export class ArchiveExtractor {
 
     try {
       sevenZip.FS.mkdir(tempDir);
-    } catch (e) {}
+    } catch (e) {
+      console.error("[ArchiveExtractor]", e);
+    }
 
     const writeToFS = (dirPath, filename, bytes) => {
       const parts = dirPath.split("/").filter(Boolean);
@@ -664,7 +662,9 @@ export class ArchiveExtractor {
         current += "/" + p;
         try {
           sevenZip.FS.mkdir(current);
-        } catch (e) {}
+        } catch (e) {
+          console.error("[ArchiveExtractor]", e);
+        }
       }
       const fullPath = `${current}/${filename}`;
       const stream = sevenZip.FS.open(fullPath, "w+");
@@ -687,7 +687,9 @@ export class ArchiveExtractor {
     const archiveFile = `/output_${tempId}.7z`;
     try {
       sevenZip.FS.unlink(archiveFile);
-    } catch (e) {}
+    } catch (e) {
+      console.error("[ArchiveExtractor]", e);
+    }
 
     sevenZip.callMain([
       "a",
@@ -701,7 +703,9 @@ export class ArchiveExtractor {
 
     try {
       sevenZip.FS.unlink(archiveFile);
-    } catch (e) {}
+    } catch (e) {
+      console.error("[ArchiveExtractor]", e);
+    }
 
     const cleanupDir = (currentPath) => {
       try {
@@ -717,7 +721,9 @@ export class ArchiveExtractor {
           }
         }
         sevenZip.FS.rmdir(currentPath);
-      } catch (e) {}
+      } catch (e) {
+        console.error("[ArchiveExtractor]", e);
+      }
     };
     cleanupDir(tempDir);
 

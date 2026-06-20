@@ -64,7 +64,7 @@ export class AccountManagerApp extends BaseApp {
       userId: currentUserId || generateUUID()
     };
 
-    const uniqueWindowId = `account-manager-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const uniqueWindowId = `account-manager-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
 
     return {
       id: uniqueWindowId,

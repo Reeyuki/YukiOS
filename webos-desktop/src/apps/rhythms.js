@@ -394,53 +394,6 @@ export class RhythmsApp extends BaseApp {
     }
   }
 
-  drawMirrorReflection(width, height) {
-    const { barWidth, gap } = this._barLayout(width);
-    const radius = Math.min(this.roundness, barWidth / 2);
-    const reflectionHeight = height * 0.3;
-
-    for (let i = 0; i < this.tileCount; i++) {
-      const value = this.smoothedData[i];
-      const barHeight = Math.max(1, (value / 255) * reflectionHeight);
-      const x = i * (barWidth + gap);
-      const bw = Math.max(1, Math.floor(barWidth));
-      const y = height - barHeight;
-
-      const hue = this.hue + (i / this.tileCount) * 30;
-
-      this.ctx.save();
-      this.ctx.globalAlpha = 0.3;
-
-      if (this.filled) {
-        const gradient = this.ctx.createLinearGradient(0, height - reflectionHeight, 0, height);
-        gradient.addColorStop(0, `hsla(${hue}, 70%, 50%, 0)`);
-        gradient.addColorStop(1, `hsla(${hue}, 80%, 70%, 0.3)`);
-        this.ctx.fillStyle = gradient;
-
-        if (radius > 0) {
-          this.ctx.beginPath();
-          this.ctx.roundRect(Math.round(x), height - reflectionHeight, bw, reflectionHeight, radius);
-          this.ctx.fill();
-        } else {
-          this.ctx.fillRect(Math.round(x), height - reflectionHeight, bw, reflectionHeight);
-        }
-      } else {
-        this.ctx.strokeStyle = `hsla(${hue}, 80%, 65%, 0.3)`;
-        this.ctx.lineWidth = 1;
-
-        if (radius > 0) {
-          this.ctx.beginPath();
-          this.ctx.roundRect(Math.round(x), height - reflectionHeight, bw, reflectionHeight, radius);
-          this.ctx.stroke();
-        } else {
-          this.ctx.strokeRect(Math.round(x), height - reflectionHeight, bw, reflectionHeight);
-        }
-      }
-
-      this.ctx.restore();
-    }
-  }
-
   drawWave(width, height) {
     const stepX = width / (this.tileCount - 1);
     const lineCap = this.roundness > 0 ? "round" : "butt";

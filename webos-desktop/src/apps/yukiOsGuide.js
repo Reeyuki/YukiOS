@@ -600,7 +600,7 @@ export class YukiOsGuideApp extends BaseApp {
                         app.icon
                           ? app.icon.startsWith("fa") || app.icon.startsWith("fas") || app.icon.startsWith("fab")
                             ? `<i class="${app.icon}"></i>`
-                            : `<img src="${app.icon}" alt="${app.displayName}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><i class="fas fa-cube" style="display:none;"></i>`
+                            : `<img src="${app.icon}" alt="${app.displayName}"><i class="fas fa-cube" style="display:none;"></i>`
                           : `<i class="fas fa-cube"></i>`
                       }
                     </div>
@@ -787,17 +787,34 @@ export class YukiOsGuideApp extends BaseApp {
     const connections = [
       {
         feature: "Productivity Tools",
-        apps: ["notepad", "markdown", "monaco", "office", "yukiConvert", "calculator", "dataEditor", "vscode"],
+        apps: [
+          "notepadApp",
+          "markdownApp",
+          "monacoApp",
+          "officeApp",
+          "yukiConvertApp",
+          "calculatorApp",
+          "dataEditorApp",
+          "vscode"
+        ],
         icon: "fas fa-pen-fancy"
       },
       {
         feature: "System Utilities",
-        apps: ["terminal", "explorer", "settings", "taskManagerApp", "shortcuts", "archiveExtractor", "categories"],
+        apps: [
+          "terminal",
+          "explorerApp",
+          "settingsApp",
+          "taskManagerApp",
+          "shortcutsApp",
+          "archiveExtractorApp",
+          "categoriesApp"
+        ],
         icon: "fas fa-tools"
       },
       {
         feature: "Media & Creative",
-        apps: ["cameraApp", "model3dApp", "paint", "photopea", "youtube", "shittify", "weather", "libreSprite"],
+        apps: ["cameraApp", "model3dApp", "paint", "photopea", "youtube", "shittifyApp", "weatherApp", "libreSprite"],
         icon: "fas fa-palette"
       },
       {
@@ -807,12 +824,12 @@ export class YukiOsGuideApp extends BaseApp {
       },
       {
         feature: "Communication",
-        apps: ["browserApp", "kiwiIRC", "news"],
+        apps: ["browserApp", "kiwiIRC", "newsApp"],
         icon: "fas fa-comments"
       },
       {
         feature: "System Management",
-        apps: ["aboutApp", "achievementsApp", "accountManager", "installedApps", "yukiOsGuide"],
+        apps: ["aboutApp", "achievementsApp", "accountManagerApp", "installedAppsApp", "yukiOsGuideApp"],
         icon: "fas fa-cog"
       }
     ];
@@ -897,35 +914,35 @@ export class YukiOsGuideApp extends BaseApp {
 
   _getAppCategory(appId) {
     const categoryMap = {
-      notepad: "productivity",
-      markdown: "productivity",
-      monaco: "productivity",
+      notepadApp: "productivity",
+      markdownApp: "productivity",
+      monacoApp: "productivity",
       vscode: "productivity",
-      office: "productivity",
-      yukiConvert: "productivity",
-      calculator: "productivity",
-      dataEditor: "productivity",
+      officeApp: "productivity",
+      yukiConvertApp: "productivity",
+      calculatorApp: "productivity",
+      dataEditorApp: "productivity",
 
       terminal: "system",
-      explorer: "system",
-      settings: "system",
+      explorerApp: "system",
+      settingsApp: "system",
       taskManagerApp: "system",
-      shortcuts: "system",
-      archiveExtractor: "system",
-      categories: "system",
-      clipboardManager: "system",
+      shortcutsApp: "system",
+      archiveExtractorApp: "system",
+      categoriesApp: "system",
+      clipboardManagerApp: "system",
 
       cameraApp: "media",
       model3dApp: "media",
       paint: "media",
       photopea: "media",
       youtube: "media",
-      shittify: "media",
-      weather: "media",
-      libreSprite: "media",
+      shittifyApp: "media",
+      weatherApp: "media",
+      libreSpriteApp: "media",
       browserApp: "media",
       kiwiIRC: "media",
-      news: "media",
+      newsApp: "media",
 
       emulatorApp: "games",
       ruffleApp: "games",
@@ -937,9 +954,9 @@ export class YukiOsGuideApp extends BaseApp {
 
       aboutApp: "system",
       achievementsApp: "system",
-      accountManager: "system",
-      installedApps: "system",
-      yukiOsGuide: "system"
+      accountManagerApp: "system",
+      installedAppsApp: "system",
+      yukiOsGuideApp: "system"
     };
 
     return categoryMap[appId] || "other";
@@ -995,6 +1012,14 @@ export class YukiOsGuideApp extends BaseApp {
 
     if (mainContent) {
       mainContent.innerHTML = this._buildContent(filteredApps);
+
+      mainContent.querySelectorAll(".app-icon img").forEach((img) => {
+        img.addEventListener("error", () => {
+          img.style.display = "none";
+          const fallback = img.nextElementSibling;
+          if (fallback) fallback.style.display = "flex";
+        });
+      });
 
       const navCount = win.querySelector(".guide-nav-item[data-tab='apps'] .guide-nav-badge");
       if (navCount) {

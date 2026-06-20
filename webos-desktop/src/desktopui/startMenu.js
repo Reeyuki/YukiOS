@@ -2,7 +2,7 @@ import { appMap } from "../games/gamesList.js";
 import { APP_DESCRIPTIONS, descriptionMap } from "../games/gameDescriptions.js";
 import { camelize } from "../utils/utils.js";
 import { ClippyAnimation, speak } from "../ai/clippy.js";
-import { isImageFile } from "../utils/utils.js";
+import { isImageFile } from "../fileDisplay.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { showDynamicContextMenu, refreshIcons } from "../shared/contextMenu.js";
 import { CDN_CONFIG } from "../shared/cdnConfig.js";
@@ -72,7 +72,9 @@ export function applyStartMenuSettings(el) {
   if (catsData) {
     try {
       cats = catsData;
-    } catch (e) {}
+    } catch (e) {
+      console.error("[StartMenu]", e);
+    }
   }
   const catNames = [
     "favorites",
@@ -125,7 +127,9 @@ export function openStartMenu({ focusSearch = false, openDefaultPage = true } = 
     if (catsData) {
       try {
         cats = catsData;
-      } catch (e) {}
+      } catch (e) {
+        console.error("[StartMenu]", e);
+      }
     }
     let defaultCat = "recent";
     if (cats["recent"] === false) {
@@ -643,10 +647,6 @@ export function setupStartMenu(appLauncher, sessionManager, selectionManager) {
         if (!title.includes(q) && !description.includes(q)) return;
         seenAppIds.add(appId);
         const item = createAppItem(appId, appData);
-        item.onclick = () => {
-          os.app.launch(appId);
-          closeStartMenu();
-        };
         const category = appData.type === "system" ? "system" : "menu";
         results[category].push({ element: item, title: appData.title || appId });
       });
@@ -828,7 +828,7 @@ export function setupStartUserHover() {
 export function tryGetIcon(id) {
   id = camelize(id);
 
-  if (id === "explorer") {
+  if (id === "explorerApp") {
     return resolveIconUrl("static/icons/file.webp");
   }
   if (id === "appCreatorApp") {
@@ -902,14 +902,14 @@ function getGridItems() {
     { app: "yukiConvertApp", title: "Yuki Convert", icon: "fas fa-exchange-alt" },
     { app: "cameraApp", title: "Camera", icon: "fas fa-camera" },
     { app: "officeApp", title: "Office", icon: "fas fa-file-word" },
-    { app: "installedApps", title: "Installed Apps", icon: "fas fa-th-list" },
-    { app: "clipboardManager", title: "Clipboard Manager", icon: "fas fa-paste" },
+    { app: "installedAppsApp", title: "Installed Apps", icon: "fas fa-th-list" },
+    { app: "clipboardManagerApp", title: "Clipboard Manager", icon: "fas fa-paste" },
     { app: "weatherApp", title: "Weather", icon: "fas fa-cloud" },
-    { app: "yukiOsGuide", title: "Yuki OS Guide", icon: "fas fa-book-open" },
+    { app: "yukiOsGuideApp", title: "Yuki OS Guide", icon: "fas fa-book-open" },
     { app: "steamApp", title: "Steam", icon: "fab fa-steam" },
     { app: "paint", title: "Paint", icon: "fas fa-paint-brush" },
     { app: "newsApp", title: "What's New", icon: "fas fa-newspaper" },
-    { app: "shittify", title: "Evil Spotify", icon: "fas fa-music" },
+    { app: "shittifyApp", title: "Evil Spotify", icon: "fas fa-music" },
     { app: "appCreatorApp", title: "AppCreator", icon: "fas fa-cubes" },
     { app: "systemAppsApp", title: "System Apps", icon: "fas fa-screwdriver-wrench" },
     { app: "taskManagerApp", title: "Task Manager", icon: "fas fa-list-check" },
@@ -1293,7 +1293,11 @@ export function initializeAppGrid(appLauncher) {
       }
     });
 
-    item.addEventListener("click", () => os.app.launch(itemData.app));
+    item.addEventListener("click", () => {
+      trackRecentlyUsed(itemData.app);
+      os.app.launch(itemData.app);
+      closeStartMenu();
+    });
 
     item.addEventListener("contextmenu", (e) => {
       e.preventDefault();

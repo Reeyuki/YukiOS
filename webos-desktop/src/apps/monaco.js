@@ -1490,7 +1490,7 @@ export class MonacoApp extends BaseApp {
         const selection = editor.getSelection();
         if (!selection.isEmpty()) {
           const text = editor.getModel().getValueInRange(selection);
-          const titleCase = text.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
+          const titleCase = text.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.slice(1).toLowerCase());
           editor.executeEdits("titlecase", [
             {
               range: selection,

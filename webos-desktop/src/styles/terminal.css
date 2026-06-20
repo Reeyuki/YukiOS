@@ -1,6 +1,6 @@
 .terminal-content {
-  background: #0d0d0d;
-  color: #c0c0c0;
+  background: var(--bg-primary, rgba(13, 13, 19, 0.95));
+  color: var(--text-primary, #c0c0c0);
   font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
   font-size: 14px;
   padding: 12px;
@@ -11,8 +11,8 @@
 }
 
 .terminal-content ::selection {
-  background: rgba(255, 255, 255, 0.15);
-  color: #ffffff;
+  background: var(--glass-hover, rgba(255, 255, 255, 0.15));
+  color: var(--text-primary, #ffffff);
 }
 
 .terminal-output {
@@ -29,7 +29,7 @@
 }
 
 .terminal-output .cmd-line .prompt-at {
-  color: #c0c0c0;
+  color: var(--text-primary, #c0c0c0);
 }
 
 .terminal-output .cmd-line .prompt-host {
@@ -37,11 +37,11 @@
 }
 
 .terminal-output .cmd-line .prompt-sep {
-  color: #c0c0c0;
+  color: var(--text-primary, #c0c0c0);
 }
 
 .terminal-output .cmd-line .prompt-path {
-  color: #0080ff;
+  color: var(--brand, #0080ff);
 }
 
 .terminal-output .cmd-line .prompt-dollar {
@@ -49,7 +49,7 @@
 }
 
 .terminal-output .cmd-line .cmd-text {
-  color: #e0e0e0;
+  color: var(--text-primary, #e0e0e0);
 }
 
 .terminal-input-line {
@@ -62,7 +62,7 @@
 }
 
 .terminal-input-line .prompt-at {
-  color: #c0c0c0;
+  color: var(--text-primary, #c0c0c0);
 }
 
 .terminal-input-line .prompt-host {
@@ -70,11 +70,11 @@
 }
 
 .terminal-input-line .prompt-sep {
-  color: #c0c0c0;
+  color: var(--text-primary, #c0c0c0);
 }
 
 .terminal-input-line .prompt-path {
-  color: #0080ff;
+  color: var(--brand, #0080ff);
 }
 
 .terminal-input-line .prompt-dollar {
@@ -86,23 +86,23 @@
   flex: 1;
   background: transparent;
   border: none;
-  color: #e0e0e0;
+  color: var(--text-primary, #e0e0e0);
   font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
   font-size: 14px;
   outline: none;
-  caret-color: #ffffff;
+  caret-color: var(--text-primary, #ffffff);
 }
 
 .terminal-output .output-default {
-  color: #c0c0c0;
+  color: var(--text-primary, #c0c0c0);
 }
 
 .terminal-output .output-dir {
-  color: #0080ff;
+  color: var(--brand, #0080ff);
 }
 
 .terminal-output .output-error {
-  color: #ff4444;
+  color: var(--error, #ff4444);
 }
 
 .terminal-output .output-welcome {
@@ -111,4 +111,46 @@
 
 .terminal-output .output-neofetch {
   color: #00ffff;
+}
+
+.terminal-output .stdout {
+  color: var(--text-primary, #e0e0e0);
+}
+
+.terminal-output .stderr {
+  color: var(--error, #ff4444);
+}
+
+.terminal-cursor {
+  background: var(--text-primary, #ffffff);
+}
+
+.terminal-prompt {
+  color: var(--brand, #0080ff);
+}
+
+.terminal a {
+  color: var(--brand, #0080ff);
+}
+
+.terminal a:visited {
+  color: color-mix(in srgb, var(--brand, #0080ff) 70%, white);
+}
+
+.terminal-output .color-green {
+  color: #00ff00;
+}
+.terminal-output .color-cyan {
+  color: #00ffff;
+}
+.terminal-output .color-red {
+  color: var(--error, #ff4444);
+}
+
+.terminal-output::-webkit-scrollbar-thumb {
+  background: var(--glass, rgba(255, 255, 255, 0.15));
+}
+
+.terminal-output::-webkit-scrollbar-track {
+  background: transparent;
 }

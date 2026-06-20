@@ -22,7 +22,7 @@ const OS_LIST = [
 
 const CORES = navigator.hardwareConcurrency || 4;
 const RAM_GB = navigator.deviceMemory || 4;
-const STORAGE_KEY = "vm_manager_vms";
+const STORAGE_KEY = StorageKeys.VM_MANAGER_VMS;
 
 export class VirtualMachineManagerApp extends BaseApp {
   constructor(services) {
@@ -278,12 +278,12 @@ export class VirtualMachineManagerApp extends BaseApp {
     let previewHtml;
     if (usesScramjet) {
       previewHtml = `
-        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:10px;background:var(--s1,rgba(0,0,0,0.3));color:var(--text-secondary);font-size:0.85rem;">
-          <div style="width:64px;height:64px;border-radius:14px;background:linear-gradient(135deg,${osInfo.color}66,${osInfo.color}33);display:flex;align-items:center;justify-content:center;font-size:2rem;">
+        <div class="vm-preview-unavailable">
+          <div class="vm-preview-icon-box" style="background:linear-gradient(135deg,${osInfo.color}66,${osInfo.color}33);">
             <i class="${osInfo.icon}"></i>
           </div>
           <span>Live preview unavailable for this OS</span>
-          <span style="font-size:0.75rem;">Click "Open in Window" to launch via proxy</span>
+          <span class="vm-preview-hint-small">Click "Open in Window" to launch via proxy</span>
         </div>
       `;
     } else {
@@ -302,7 +302,7 @@ export class VirtualMachineManagerApp extends BaseApp {
         </div>
         ${previewHtml}
       </div>
-      <div class="vm-config" style="gap:0;">
+      <div class="vm-config vm-config-no-gap">
         <div class="vm-detail-row">
           <span class="vm-detail-label">CPU Cores</span>
           <span class="vm-detail-value">${vm.cpu}</span>
@@ -316,11 +316,11 @@ export class VirtualMachineManagerApp extends BaseApp {
           <span class="vm-detail-value">${vm.osName}</span>
         </div>
       </div>
-      <div style="display:flex;gap:10px;">
-        <button class="vm-create-final-btn" id="vm-boot-from-view" style="flex:1;">
+      <div class="vm-detail-actions">
+        <button class="vm-create-final-btn vm-btn-flex" id="vm-boot-from-view">
           <i class="fas fa-external-link-alt"></i> Open in Window
         </button>
-        <button id="vm-delete-from-view" style="padding:12px 20px;border-radius:10px;border:1px solid var(--error, #e74c3c);background:none;color:var(--error, #e74c3c);font-size:0.9rem;font-weight:600;cursor:pointer;">
+        <button id="vm-delete-from-view" class="vm-delete-btn-danger">
           <i class="fas fa-trash"></i> Delete
         </button>
       </div>
@@ -356,10 +356,10 @@ export class VirtualMachineManagerApp extends BaseApp {
     win.dataset.externalUrl = vm.url;
     win.innerHTML = `
       <div class="window-header">
-        <span><i class="fas fa-server" style="margin-right:8px;"></i>${vm.name}</span>
+        <span><i class="fas fa-server vm-header-icon"></i>${vm.name}</span>
         ${os.window.getWindowControls()}
       </div>
-      <div class="window-content" style="width:100%;height:100%;overflow:hidden;">
+      <div class="window-content vm-window-content">
         <iframe id="${vm.id}-iframe" ${attrs}></iframe>
       </div>
     `;
@@ -369,7 +369,9 @@ export class VirtualMachineManagerApp extends BaseApp {
       iframe.addEventListener("load", () => {
         try {
           iframe.contentWindow?.postMessage({ type: "hide-chrome" }, "*");
-        } catch (e) {}
+        } catch (e) {
+          console.error("[VMManager]", e);
+        }
       });
     }
     iframe.src = iframeSrc;

@@ -1,12 +1,5 @@
 import { BaseApp, StorageKeys, os } from "../framework.js";
-const PRESETS = {
-  default: { brightness: 100, contrast: 1, gamma: 1, temperature: 50 },
-  reading: { brightness: 90, contrast: 1.1, gamma: 1.1, temperature: 35 },
-  cinema: { brightness: 85, contrast: 1.2, gamma: 0.9, temperature: 50 },
-  nightCoding: { brightness: 80, contrast: 1.15, gamma: 1.05, temperature: 20 },
-  softWarm: { brightness: 95, contrast: 1, gamma: 1, temperature: 15 },
-  highClarity: { brightness: 110, contrast: 1.3, gamma: 1.2, temperature: 50 }
-};
+import { BRIGHTNESS_PRESETS } from "../shared/brightnessPresets.js";
 
 class BrightnessApp extends BaseApp {
   constructor(services) {
@@ -88,7 +81,7 @@ class BrightnessApp extends BaseApp {
   }
 
   _setupKeybinds() {
-    document.addEventListener("keydown", (e) => {
+    this._keydownHandler = (e) => {
       if (e.ctrlKey && e.altKey) {
         if (e.key === "ArrowUp") {
           e.preventDefault();
@@ -104,7 +97,15 @@ class BrightnessApp extends BaseApp {
           this._adjustTemperature(5);
         }
       }
-    });
+    };
+    document.addEventListener("keydown", this._keydownHandler);
+  }
+
+  _cleanupKeybinds() {
+    if (this._keydownHandler) {
+      document.removeEventListener("keydown", this._keydownHandler);
+      this._keydownHandler = null;
+    }
   }
 
   _shouldSuppressNotification() {
@@ -134,7 +135,7 @@ class BrightnessApp extends BaseApp {
 
   _setupNightModeSchedule() {
     this._checkNightMode();
-    setInterval(() => this._checkNightMode(), 60000);
+    this._nightModeInterval = setInterval(() => this._checkNightMode(), 60000);
   }
 
   _checkNightMode() {
@@ -162,7 +163,7 @@ class BrightnessApp extends BaseApp {
   }
 
   _applyPreset(presetName) {
-    const preset = PRESETS[presetName];
+    const preset = BRIGHTNESS_PRESETS[presetName];
     if (!preset) return;
 
     this.brightness = preset.brightness;
@@ -465,6 +466,11 @@ class BrightnessApp extends BaseApp {
 
   onClose() {
     this.closePopup();
+    this._cleanupKeybinds();
+    if (this._nightModeInterval) {
+      clearInterval(this._nightModeInterval);
+      this._nightModeInterval = null;
+    }
   }
 }
 

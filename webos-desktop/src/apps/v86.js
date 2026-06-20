@@ -390,9 +390,7 @@ export class V86App extends BaseApp {
       icon: "static/icons/v86.webp"
     });
 
-    if (true) {
-      os.events.emit("achievement:trigger", { achievementId: Achievements.RetroPlayer });
-    }
+    os.events.emit("achievement:trigger", { achievementId: Achievements.RetroPlayer });
 
     win.innerHTML = `
     <div class="window-content v86-window emu-window">

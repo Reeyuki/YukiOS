@@ -724,31 +724,15 @@ export class AppCreatorApp extends BaseApp {
     const secureUrl = ensureHttpsProtocol(url);
     let finalUrl = secureUrl;
 
-    console.log(
-      "[AppCreator Preview] URL:",
-      secureUrl,
-      "Proxy enabled:",
-      proxyEnabled,
-      "Proxy index:",
-      proxyIndex,
-      "Scramjet enabled:",
-      scramjetEnabled
-    );
-
     if (scramjetEnabled) {
       const wispUrl = os.storage.get(StorageKeys.wispServer) || "wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/";
       finalUrl = `/scramapps/scramjet-template.html?wisp=${encodeURIComponent(wispUrl)}&target=${encodeURIComponent(secureUrl)}`;
-      console.log("[AppCreator Preview] Using scramjet template:", finalUrl);
     } else if (proxyEnabled && typeof secureUrl === "string" && /^https?:\/\//.test(secureUrl)) {
       try {
-        console.log("[AppCreator Preview] Fetching through proxy...");
         finalUrl = await fetchHtmlThroughProxy(secureUrl, proxyIndex, PROXIES);
-        console.log("[AppCreator Preview] Got blob URL:", finalUrl);
       } catch (e) {
         console.error("[AppCreator Preview] Failed to fetch through proxy:", e);
-        console.log("[AppCreator Preview] Falling back to direct proxy URL");
         finalUrl = buildProxyUrl(secureUrl, proxyIndex, PROXIES);
-        console.log("[AppCreator Preview] Fallback URL:", finalUrl);
       }
     }
 

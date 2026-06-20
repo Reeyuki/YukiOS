@@ -207,25 +207,35 @@ export class TorrentClientApp extends BaseApp {
     );
   }
 
-  pauseAllTorrents() {
-    this.activeTorrents.forEach((torrent) => {
-      if (!torrent.done && !torrent.paused) {
-        torrent.pause();
-        torrent.paused = true;
+  _getSelectedTorrents() {
+    const result = [];
+    this.selectedTorrents.forEach((infoHash) => {
+      const t = this.activeTorrents.get(infoHash);
+      if (t) result.push(t);
+    });
+    return result;
+  }
+
+  _toggleAllTorrents(pause, selected) {
+    const torrents = selected ? this._getSelectedTorrents() : this.activeTorrents;
+    torrents.forEach((t) => {
+      if (!t.done && (pause ? !t.paused : t.paused)) {
+        pause ? t.pause() : t.resume();
+        t.paused = pause;
       }
     });
     this.renderTorrentList();
-    os.tray.updateLabel("torrent-client-win", "Torrent Client - all paused");
+    const action = pause ? "paused" : "resumed";
+    const scope = selected ? "Selected" : "All";
+    os.notify.send("Torrent Client", `${scope} torrents ${action}`);
+  }
+
+  pauseAllTorrents() {
+    this._toggleAllTorrents(true, false);
   }
 
   resumeAllTorrents() {
-    this.activeTorrents.forEach((torrent) => {
-      if (!torrent.done && torrent.paused) {
-        torrent.resume();
-        torrent.paused = false;
-      }
-    });
-    this.renderTorrentList();
+    this._toggleAllTorrents(false, false);
   }
 
   destroyClient() {
@@ -307,47 +317,11 @@ export class TorrentClientApp extends BaseApp {
   }
 
   pauseSelectedTorrents() {
-    if (this.selectedTorrents.size === 0) {
-      os.dialog.alert("No Selection", "Select torrents to pause.");
-      return;
-    }
-    this.selectedTorrents.forEach((infoHash) => {
-      const torrent = this.activeTorrents.get(infoHash);
-      if (torrent && !torrent.done) {
-        torrent.pause();
-        torrent.paused = true;
-      }
-    });
-    this.notify(
-      "Torrent Client",
-      `Paused ${this.selectedTorrents.size} torrent(s)`,
-      "info",
-      3000,
-      "fas fa-pause-circle"
-    );
-    this.renderTorrentList();
+    this._toggleAllTorrents(true, true);
   }
 
   resumeSelectedTorrents() {
-    if (this.selectedTorrents.size === 0) {
-      os.dialog.alert("No Selection", "Select torrents to resume.");
-      return;
-    }
-    this.selectedTorrents.forEach((infoHash) => {
-      const torrent = this.activeTorrents.get(infoHash);
-      if (torrent && !torrent.done) {
-        torrent.resume();
-        torrent.paused = false;
-      }
-    });
-    this.notify(
-      "Torrent Client",
-      `Resumed ${this.selectedTorrents.size} torrent(s)`,
-      "info",
-      3000,
-      "fas fa-play-circle"
-    );
-    this.renderTorrentList();
+    this._toggleAllTorrents(false, true);
   }
 
   deleteSelectedTorrents() {
@@ -849,10 +823,22 @@ export class TorrentClientApp extends BaseApp {
   showTorrentDetails(infoHash) {
     const torrent = this.activeTorrents.get(infoHash);
     if (!torrent) return;
-
     const panel = $("#torrent-details-panel");
     if (!panel) return;
 
+    let contentDiv = panel.querySelector(".torrent-details-content");
+    const isSameTorrent = contentDiv && contentDiv.dataset.infohash === infoHash;
+
+    if (!isSameTorrent) {
+      panel.innerHTML = this._renderTorrentDetails(torrent);
+      this._bindTorrentActions(panel);
+    } else {
+      this._updateTorrentDetails(torrent);
+    }
+  }
+
+  _renderTorrentDetails(torrent) {
+    const infoHash = torrent.infoHash;
     const progress = Math.round(torrent.progress * 100);
     const downloadSpeed = this.formatSpeed(torrent.downloadSpeed);
     const uploadSpeed = this.formatSpeed(torrent.uploadSpeed);
@@ -864,17 +850,13 @@ export class TorrentClientApp extends BaseApp {
     const statusLabel = torrent.done ? "Completed" : torrent.paused ? "Paused" : "Downloading";
     const ratio = this.getSeedRatio(infoHash).toFixed(3);
 
-    let contentDiv = panel.querySelector(".torrent-details-content");
-    const isSameTorrent = contentDiv && contentDiv.dataset.infohash === infoHash;
-
-    if (!isSameTorrent) {
-      let filesHtml = "";
-      if (torrent.files && torrent.files.length > 0) {
-        const fileRows = torrent.files
-          .map((file) => {
-            const fileProgress = Math.round(file.progress * 100);
-            const fileSize = this.formatSize(file.length);
-            return `
+    let filesHtml = "";
+    if (torrent.files && torrent.files.length > 0) {
+      const fileRows = torrent.files
+        .map((file) => {
+          const fileProgress = Math.round(file.progress * 100);
+          const fileSize = this.formatSize(file.length);
+          return `
             <div class="torrent-file-item">
               <span class="torrent-file-name" title="${file.name}">${file.name}</span>
               <span class="torrent-file-size">${fileSize}</span>
@@ -886,28 +868,28 @@ export class TorrentClientApp extends BaseApp {
               </div>
             </div>
           `;
-          })
-          .join("");
+        })
+        .join("");
 
-        filesHtml = `
-          <div class="torrent-files-section">
-            <div class="torrent-files-label">Files (${torrent.files.length})</div>
-            <div class="torrent-files-list">${fileRows}</div>
-          </div>
-        `;
-      }
+      filesHtml = `
+        <div class="torrent-files-section">
+          <div class="torrent-files-label">Files (${torrent.files.length})</div>
+          <div class="torrent-files-list">${fileRows}</div>
+        </div>
+      `;
+    }
 
-      const actionsPause = !torrent.done
-        ? `
+    const actionsPause = !torrent.done
+      ? `
         <button class="torrent-detail-action-btn" data-action="${torrent.paused ? "resume" : "pause"}" data-infohash="${infoHash}">
           <i class="fas fa-${torrent.paused ? "play" : "pause"}"></i>
           ${torrent.paused ? "Resume" : "Pause"}
         </button>
       `
-        : "";
+      : "";
 
-      const actionsSave = torrent.done
-        ? `
+    const actionsSave = torrent.done
+      ? `
         <button class="torrent-detail-action-btn" data-action="computer" data-infohash="${infoHash}">
           <i class="fas fa-download"></i> Save to Computer
         </button>
@@ -915,86 +897,101 @@ export class TorrentClientApp extends BaseApp {
           <i class="fas fa-hdd"></i> Save to YukiOS
         </button>
       `
-        : "";
+      : "";
 
-      panel.innerHTML = `
-        <div class="torrent-details-content" data-infohash="${infoHash}">
-          <div class="torrent-details-top">
-            <div class="torrent-details-name">${torrent.name}</div>
-            <span class="torrent-details-status torrent-details-status--${status}">${statusLabel}</span>
-          </div>
-          <div class="torrent-details-stats">
-            <div class="torrent-stat"><span class="torrent-stat-label">Size</span><span class="torrent-stat-value">${size}</span></div>
-            <div class="torrent-stat"><span class="torrent-stat-label">Downloaded</span><span class="torrent-stat-value torrent-stat-dl">${downloaded}</span></div>
-            <div class="torrent-stat"><span class="torrent-stat-label">Uploaded</span><span class="torrent-stat-value torrent-stat-ul">${uploaded}</span></div>
-            <div class="torrent-stat"><span class="torrent-stat-label">Progress</span><span class="torrent-stat-value torrent-stat-progress">${progress}%</span></div>
-            <div class="torrent-stat"><span class="torrent-stat-label">Down speed</span><span class="torrent-stat-value torrent-stat-dlspeed">${downloadSpeed}</span></div>
-            <div class="torrent-stat"><span class="torrent-stat-label">Up speed</span><span class="torrent-stat-value torrent-stat-ulspeed">${uploadSpeed}</span></div>
-            <div class="torrent-stat"><span class="torrent-stat-label">Peers</span><span class="torrent-stat-value torrent-stat-peers">${peers}</span></div>
-            <div class="torrent-stat"><span class="torrent-stat-label">Ratio</span><span class="torrent-stat-value torrent-stat-ratio${parseFloat(ratio) >= 1 ? " torrent-ratio--good" : ""}">${ratio}</span></div>
-          </div>
-          <div class="torrent-detail-hash">${infoHash}</div>
-          ${filesHtml}
-          <div class="torrent-details-actions">
-            ${actionsPause}
-            ${actionsSave}
-            <button class="torrent-detail-action-btn torrent-detail-action-btn--danger" data-action="delete" data-infohash="${infoHash}">
-              <i class="fas fa-trash"></i> Remove
-            </button>
-          </div>
+    return `
+      <div class="torrent-details-content" data-infohash="${infoHash}">
+        <div class="torrent-details-top">
+          <div class="torrent-details-name">${torrent.name}</div>
+          <span class="torrent-details-status torrent-details-status--${status}">${statusLabel}</span>
         </div>
-      `;
+        <div class="torrent-details-stats">
+          <div class="torrent-stat"><span class="torrent-stat-label">Size</span><span class="torrent-stat-value">${size}</span></div>
+          <div class="torrent-stat"><span class="torrent-stat-label">Downloaded</span><span class="torrent-stat-value torrent-stat-dl">${downloaded}</span></div>
+          <div class="torrent-stat"><span class="torrent-stat-label">Uploaded</span><span class="torrent-stat-value torrent-stat-ul">${uploaded}</span></div>
+          <div class="torrent-stat"><span class="torrent-stat-label">Progress</span><span class="torrent-stat-value torrent-stat-progress">${progress}%</span></div>
+          <div class="torrent-stat"><span class="torrent-stat-label">Down speed</span><span class="torrent-stat-value torrent-stat-dlspeed">${downloadSpeed}</span></div>
+          <div class="torrent-stat"><span class="torrent-stat-label">Up speed</span><span class="torrent-stat-value torrent-stat-ulspeed">${uploadSpeed}</span></div>
+          <div class="torrent-stat"><span class="torrent-stat-label">Peers</span><span class="torrent-stat-value torrent-stat-peers">${peers}</span></div>
+          <div class="torrent-stat"><span class="torrent-stat-label">Ratio</span><span class="torrent-stat-value torrent-stat-ratio${parseFloat(ratio) >= 1 ? " torrent-ratio--good" : ""}">${ratio}</span></div>
+        </div>
+        <div class="torrent-detail-hash">${infoHash}</div>
+        ${filesHtml}
+        <div class="torrent-details-actions">
+          ${actionsPause}
+          ${actionsSave}
+          <button class="torrent-detail-action-btn torrent-detail-action-btn--danger" data-action="delete" data-infohash="${infoHash}">
+            <i class="fas fa-trash"></i> Remove
+          </button>
+        </div>
+      </div>
+    `;
+  }
 
-      $$(".torrent-detail-action-btn", panel).forEach((btn) => {
-        bindEvent(btn, "click", () => {
-          const action = btn.dataset.action;
-          const hash = btn.dataset.infohash;
-          const t = this.activeTorrents.get(hash);
-          if (!t && action !== "delete") return;
+  _bindTorrentActions(container) {
+    $$(".torrent-detail-action-btn", container).forEach((btn) => {
+      bindEvent(btn, "click", () => {
+        const action = btn.dataset.action;
+        const hash = btn.dataset.infohash;
+        const t = this.activeTorrents.get(hash);
+        if (!t && action !== "delete") return;
 
-          if (action === "computer") {
-            this.saveToComputer(t);
-          } else if (action === "yukios") {
-            this.saveToYukiOS(t);
-          } else if (action === "pause") {
-            t.pause();
-            t.paused = true;
-            this.renderTorrentList();
-            this.showTorrentDetails(hash);
-          } else if (action === "resume") {
-            t.resume();
-            t.paused = false;
-            this.renderTorrentList();
-            this.showTorrentDetails(hash);
-          } else if (action === "delete") {
-            this.removeTorrent(hash);
-            this.selectedDetailsHash = null;
-            panel.innerHTML = '<div class="torrent-details-empty">Select a torrent to see details</div>';
-          }
-        });
+        if (action === "computer") {
+          this.saveToComputer(t);
+        } else if (action === "yukios") {
+          this.saveToYukiOS(t);
+        } else if (action === "pause") {
+          t.pause();
+          t.paused = true;
+          this.renderTorrentList();
+          this.showTorrentDetails(hash);
+        } else if (action === "resume") {
+          t.resume();
+          t.paused = false;
+          this.renderTorrentList();
+          this.showTorrentDetails(hash);
+        } else if (action === "delete") {
+          this.removeTorrent(hash);
+          this.selectedDetailsHash = null;
+          container.innerHTML = '<div class="torrent-details-empty">Select a torrent to see details</div>';
+        }
       });
-    } else {
-      const patchText = (sel, val) => {
-        const el = panel.querySelector(sel);
-        if (el && el.textContent !== val) el.textContent = val;
-      };
-      patchText(".torrent-stat-dl", downloaded);
-      patchText(".torrent-stat-ul", uploaded);
-      patchText(".torrent-stat-progress", `${progress}%`);
-      patchText(".torrent-stat-dlspeed", downloadSpeed);
-      patchText(".torrent-stat-ulspeed", uploadSpeed);
-      patchText(".torrent-stat-peers", String(peers));
-      patchText(".torrent-stat-ratio", ratio);
+    });
+  }
 
-      if (torrent.files) {
-        torrent.files.forEach((file, i) => {
-          const fileProgress = Math.round(file.progress * 100);
-          const fills = panel.querySelectorAll(".torrent-file-progress-fill");
-          if (fills[i]) fills[i].style.width = `${fileProgress}%`;
-          const texts = panel.querySelectorAll(".torrent-file-progress .torrent-progress-text");
-          if (texts[i] && texts[i].textContent !== `${fileProgress}%`) texts[i].textContent = `${fileProgress}%`;
-        });
-      }
+  _updateTorrentDetails(torrent) {
+    const infoHash = torrent.infoHash;
+    const panel = $("#torrent-details-panel");
+    if (!panel) return;
+
+    const downloaded = this.formatSize(torrent.downloaded);
+    const uploaded = this.formatSize(torrent.uploaded);
+    const progress = Math.round(torrent.progress * 100);
+    const downloadSpeed = this.formatSpeed(torrent.downloadSpeed);
+    const uploadSpeed = this.formatSpeed(torrent.uploadSpeed);
+    const peers = torrent.numPeers;
+    const ratio = this.getSeedRatio(infoHash).toFixed(3);
+
+    const patchText = (sel, val) => {
+      const el = panel.querySelector(sel);
+      if (el && el.textContent !== val) el.textContent = val;
+    };
+    patchText(".torrent-stat-dl", downloaded);
+    patchText(".torrent-stat-ul", uploaded);
+    patchText(".torrent-stat-progress", `${progress}%`);
+    patchText(".torrent-stat-dlspeed", downloadSpeed);
+    patchText(".torrent-stat-ulspeed", uploadSpeed);
+    patchText(".torrent-stat-peers", String(peers));
+    patchText(".torrent-stat-ratio", ratio);
+
+    if (torrent.files) {
+      torrent.files.forEach((file, i) => {
+        const fileProgress = Math.round(file.progress * 100);
+        const fills = panel.querySelectorAll(".torrent-file-progress-fill");
+        if (fills[i]) fills[i].style.width = `${fileProgress}%`;
+        const texts = panel.querySelectorAll(".torrent-file-progress .torrent-progress-text");
+        if (texts[i] && texts[i].textContent !== `${fileProgress}%`) texts[i].textContent = `${fileProgress}%`;
+      });
     }
   }
 
@@ -1051,6 +1048,14 @@ export class TorrentClientApp extends BaseApp {
     return parseFloat((bytesPerSecond / Math.pow(k, i)).toFixed(1)) + " " + units[i];
   }
 
+  _sanitizeFileName(name) {
+    return name
+      .replace(/\.\.\//g, "")
+      .replace(/\.\.\\\\/g, "")
+      .replace(/[<>:"/\\|?*]/g, "_")
+      .trim();
+  }
+
   async saveToComputer(torrent) {
     if (!torrent.done) {
       os.dialog.alert("Not Ready", "Wait for the download to finish before saving.");
@@ -1085,7 +1090,7 @@ export class TorrentClientApp extends BaseApp {
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = file.name;
+        a.download = this._sanitizeFileName(file.name);
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -1120,7 +1125,7 @@ export class TorrentClientApp extends BaseApp {
       await os.fs.mkdir(savePath);
       let savedCount = 0;
       for (const file of files) {
-        const filePath = `${savePath}/${file.name}`;
+        const filePath = `${savePath}/${this._sanitizeFileName(file.name)}`;
         await this.saveFileToYukiOS(file, filePath);
         savedCount++;
       }

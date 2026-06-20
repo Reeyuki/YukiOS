@@ -1,7 +1,7 @@
 import { animateWindowOpen } from "../windowManager/AnimationSystem.js";
 import { os } from "../os/index.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
-import { isImageFile } from "../utils/utils.js";
+import { isImageFile } from "../fileDisplay.js";
 
 export class WindowHelper {
   constructor(servicesOrWM) {

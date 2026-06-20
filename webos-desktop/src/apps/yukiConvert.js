@@ -18,33 +18,33 @@ export class YukiConvertApp extends BaseApp {
           title: "Yuki Convert",
           size: ["540px", "420px"],
           icon: "fas fa-exchange-alt",
-          ui: `<div class="window-content" style="background: rgba(18, 18, 24, 0.85); backdrop-filter: blur(12px); color: #fff; padding: 30px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; height: 100%; box-sizing: border-box;">
+          ui: `<div class="window-content yuki-convert-landing">
 
-        <div id="yuki-convert-main-view" style="display: flex; flex-direction: column; align-items: center; width: 100%;">
-          <div style="background: var(--brand); width: 64px; height: 64px; border-radius: 16px; display: flex; align-items: center; justify-content: center; margin-bottom: 24px; box-shadow: 0 8px 24px var(--brand-glow);">
-            <i class="fas fa-exchange-alt" style="font-size: 32px; color: white;"></i>
+        <div id="yuki-convert-main-view" class="yuki-convert-landing-view">
+          <div class="yuki-convert-icon-box">
+            <i class="fas fa-exchange-alt"></i>
           </div>
-          <h2 style="margin: 0 0 12px 0; font-weight: 600; font-size: 22px;">Yuki Convert</h2>
-          <p style="color: rgba(255, 255, 255, 0.6); font-size: 14px; margin-bottom: 36px; max-width: 85%; line-height: 1.5;">
+          <h2 class="yuki-convert-landing-title">Yuki Convert</h2>
+          <p class="yuki-convert-landing-desc">
             Easily batch convert images, audio, video, structured data, and documents directly in your browser without any server uploads.
           </p>
           
-          <div style="display: flex; gap: 16px; width: 100%; justify-content: center;">
-            <button id="yuki-convert-btn-local" style="background: var(--brand); border: none; border-radius: 8px; color: white; padding: 12px 24px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; gap: 8px; flex: 1; max-width: 200px; justify-content: center;">
+          <div class="yuki-convert-btn-row">
+            <button id="yuki-convert-btn-local" class="yuki-convert-btn-primary">
               <i class="fas fa-laptop"></i> From Device
             </button>
-            <button id="yuki-convert-btn-yuki" style="background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; color: white; padding: 12px 24px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; gap: 8px; flex: 1; max-width: 200px; justify-content: center;">
+            <button id="yuki-convert-btn-yuki" class="yuki-convert-btn-secondary">
               <i class="fas fa-folder-open"></i> Browse Yuki OS
             </button>
           </div>
         </div>
 
-        <div id="yuki-convert-loading-view" style="display: none; flex-direction: column; align-items: center; width: 100%;">
-          <i class="fas fa-spinner fa-spin" style="font-size: 32px; color: var(--brand); margin-bottom: 16px;"></i>
-          <div style="font-size: 14px; color: rgba(255, 255, 255, 0.8);">Importing files to virtual filesystem...</div>
+        <div id="yuki-convert-loading-view" class="yuki-convert-loading-view">
+          <i class="fas fa-spinner fa-spin"></i>
+          <div class="yuki-convert-loading-text">Importing files to virtual filesystem...</div>
         </div>
 
-        <input type="file" id="yuki-convert-file-input" style="display: none;" multiple>
+        <input type="file" id="yuki-convert-file-input" class="yuki-convert-file-input" multiple>
       </div>`,
           events: {
             "#yuki-convert-btn-local": {
@@ -86,7 +86,7 @@ export class YukiConvertApp extends BaseApp {
             const closeBtn = win.querySelector(".close-btn");
             if (closeBtn) closeBtn.click();
           }
-          os.app.launch("explorer");
+          os.app.launch("explorerApp");
           os.notify.send(
             "Yuki Convert",
             "Select one or more files, right-click, and choose 'Convert / Transform...'",

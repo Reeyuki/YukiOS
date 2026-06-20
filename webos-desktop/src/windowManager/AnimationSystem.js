@@ -1,3 +1,4 @@
+import { getRawSetting } from "../shared/settingsUtils.js";
 import { StorageKeys, os } from "../framework.js";
 export const OPEN_ANIMATIONS = {
   fade: "fade",
@@ -35,24 +36,20 @@ export const MINIMIZE_ANIMATIONS = {
   spiralDown: "spiralDown"
 };
 
-function getSetting(key, fallback) {
-  return os.storage.get(key) ?? fallback;
-}
-
 function getOpenAnim() {
-  return getSetting(StorageKeys.windowOpenAnimation, OPEN_ANIMATIONS.scaleFromSource);
+  return getRawSetting(StorageKeys.windowOpenAnimation, OPEN_ANIMATIONS.scaleFromSource);
 }
 
 function getCloseAnim() {
-  return getSetting(StorageKeys.windowCloseAnimation, CLOSE_ANIMATIONS.scaleDownCenter);
+  return getRawSetting(StorageKeys.windowCloseAnimation, CLOSE_ANIMATIONS.scaleDownCenter);
 }
 
 function getMinimizeAnim() {
-  return getSetting(StorageKeys.windowMinimizeAnimation, MINIMIZE_ANIMATIONS.taskbarShrink);
+  return getRawSetting(StorageKeys.windowMinimizeAnimation, MINIMIZE_ANIMATIONS.taskbarShrink);
 }
 
 function getAnimationSpeed() {
-  const speed = getSetting(StorageKeys.windowAnimationSpeed, "normal");
+  const speed = getRawSetting(StorageKeys.windowAnimationSpeed, "normal");
   switch (speed) {
     case "slow":
       return 2.0;
@@ -67,11 +64,11 @@ function getAnimationSpeed() {
 }
 
 function isClickBubbleEnabled() {
-  return getSetting(StorageKeys.clickBubbleFeedback, "false") === "true";
+  return getRawSetting(StorageKeys.clickBubbleFeedback, "false") === "true";
 }
 
 function isTurboMode() {
-  const mode = getSetting(StorageKeys.turboMode, "high");
+  const mode = getRawSetting(StorageKeys.turboMode, "high");
   return mode === "turbo";
 }
 
@@ -602,7 +599,7 @@ export function getAnimationSettings() {
     openAnimation: getOpenAnim(),
     closeAnimation: getCloseAnim(),
     minimizeAnimation: getMinimizeAnim(),
-    animationSpeed: getSetting(StorageKeys.windowAnimationSpeed, "normal"),
+    animationSpeed: getRawSetting(StorageKeys.windowAnimationSpeed, "normal"),
     clickBubble: isClickBubbleEnabled()
   };
 }

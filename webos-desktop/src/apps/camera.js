@@ -836,51 +836,48 @@ export class CameraApp extends BaseApp {
     const type = this.getRecordingType(rec);
     const isPhoto = type === "photo";
     const item = document.createElement("div");
-    item.style.cssText =
-      "display: flex; flex-direction: column; gap: 6px; padding: 8px; background: rgba(255,255,255,0.05); border-radius: 6px; cursor: pointer; transition: background 0.2s;";
+    item.className = "cam-history-item";
     item.onmouseover = () => (item.style.background = "rgba(255,255,255,0.1)");
     item.onmouseout = () => (item.style.background = "rgba(255,255,255,0.05)");
     item.onclick = () => this.openMediaViewer(rec);
 
     const thumbnail = document.createElement("div");
-    thumbnail.style.cssText =
-      "width: 100%; aspect-ratio: 16/9; background: #111; border-radius: 4px; overflow: hidden; display: flex; align-items: center; justify-content: center;";
+    thumbnail.className = "cam-history-thumb";
 
     if (isPhoto) {
       const img = document.createElement("img");
       img.src = rec.url;
-      img.style.cssText = "width: 100%; height: 100%; object-fit: cover;";
+      img.className = "cam-media-fill";
       thumbnail.appendChild(img);
     } else {
       const video = document.createElement("video");
       video.src = rec.url;
       video.muted = true;
-      video.style.cssText = "width: 100%; height: 100%; object-fit: cover;";
+      video.className = "cam-media-fill";
       thumbnail.appendChild(video);
     }
 
     const info = document.createElement("div");
-    info.style.cssText = "display: flex; flex-direction: column; gap: 2px;";
+    info.className = "cam-history-info";
 
     const name = document.createElement("div");
-    name.style.cssText =
-      "font-size: 12px; font-weight: 500; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;";
+    name.className = "cam-history-name";
     name.textContent = rec.id;
 
     const timestamp = document.createElement("div");
-    timestamp.style.cssText = "font-size: 10px; color: var(--text-secondary);";
+    timestamp.className = "cam-history-timestamp";
     timestamp.textContent = this.formatTimestamp(rec.id);
 
     info.appendChild(name);
     info.appendChild(timestamp);
 
     const actions = document.createElement("div");
-    actions.style.cssText = "display: flex; gap: 6px; margin-top: 2px;";
+    actions.className = "cam-history-actions";
 
     if (state.bulkSelectMode) {
       const checkbox = document.createElement("input");
       checkbox.type = "checkbox";
-      checkbox.style.cssText = "cursor: pointer; width: 14px; height: 14px;";
+      checkbox.className = "history-checkbox";
       checkbox.checked = state.selectedItems.includes(rec.id);
       checkbox.onchange = (e) => {
         e.stopPropagation();
@@ -893,8 +890,7 @@ export class CameraApp extends BaseApp {
 
     const renameBtn = document.createElement("button");
     renameBtn.innerHTML = '<i class="fas fa-edit"></i>';
-    renameBtn.style.cssText =
-      "background: rgba(255,255,255,0.1); border: none; color: var(--text-primary); padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px;";
+    renameBtn.className = "cam-action-btn";
     renameBtn.onclick = (e) => {
       e.stopPropagation();
       this.renameRecording(rec.id, state);
@@ -903,8 +899,7 @@ export class CameraApp extends BaseApp {
 
     const deleteBtn = document.createElement("button");
     deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
-    deleteBtn.style.cssText =
-      "background: rgba(255,100,100,0.2); border: none; color: #ff6b6b; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px;";
+    deleteBtn.className = "cam-action-btn-danger";
     deleteBtn.onclick = (e) => {
       e.stopPropagation();
       this.deleteRecording(rec.id, state);

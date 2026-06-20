@@ -4,6 +4,7 @@ import { ActionExecutor } from "./ActionExecutor.js";
 import { StateManager } from "./StateManager.js";
 import { PersistenceTypes } from "./AppSchema.js";
 import { WindowHelper } from "../utils/WindowHelper.js";
+import { os } from "../os/index.js";
 
 export class DeclarativeApp {
   constructor(appDefinition, services) {
@@ -51,16 +52,23 @@ export class DeclarativeApp {
   open(opts = {}) {
     const windowConfig = this._resolveWindowConfig(opts);
 
-    if (this.definition.singleton) {
-      const existing = document.getElementById(windowConfig.id);
-      if (existing) {
-        existing.style.zIndex = "10000";
+    const existing = document.getElementById(windowConfig.id);
+    if (existing) {
+      if (existing.style.display === "none") {
         existing.style.display = "flex";
+        existing.style.zIndex = "10000";
         const taskbarItem = document.getElementById(`taskbar-${windowConfig.id}`);
         if (taskbarItem) {
           taskbarItem.style.display = "";
           taskbarItem.classList.remove("minimized");
         }
+        try {
+          os.tray.restoreFromTray(windowConfig.id);
+        } catch (e) {}
+        return existing;
+      }
+      if (this.definition.singleton) {
+        existing.style.zIndex = "10000";
         return existing;
       }
     }

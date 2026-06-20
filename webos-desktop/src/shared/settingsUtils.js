@@ -10,3 +10,6 @@ export function getSetting(key, defaultValue) {
   if (!isNaN(num)) return num;
   return val;
 }
+export function getRawSetting(key, fallback) {
+  return os.storage.get(key) ?? fallback;
+}

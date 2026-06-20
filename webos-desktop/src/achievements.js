@@ -374,14 +374,18 @@ export class AchievementsApp extends BaseApp {
       if (saved) this.unlocked = new Set(saved);
       const savedCounters = os.storage.get(StorageKeys.achievementCounters);
       if (savedCounters) this._counters = savedCounters;
-    } catch (e) {}
+    } catch (e) {
+      console.error("[Achievements]", e);
+    }
   }
 
   _saveToStorage() {
     try {
       os.storage.set(StorageKeys.achievements, [...this.unlocked]);
       os.storage.set(StorageKeys.achievementCounters, this._counters);
-    } catch (e) {}
+    } catch (e) {
+      console.error("[Achievements]", e);
+    }
   }
 
   _renderHero() {
@@ -571,7 +575,9 @@ export class AchievementsApp extends BaseApp {
         pick.currentTime = 0;
         pick.volume = audioMixer().masterVolume * audioMixer().systemVolume;
         pick.play();
-      } catch (e) {}
+      } catch (e) {
+        console.error("[Achievements]", e);
+      }
     }
 
     const popup = document.createElement("div");

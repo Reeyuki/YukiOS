@@ -166,6 +166,13 @@
   grid-column: span 4;
 }
 
+.calc-result-size-sm {
+  font-size: 1.6rem;
+}
+.calc-result-size-lg {
+  font-size: 2.4rem;
+}
+
 @media (max-width: 320px) {
   .calc-result {
     font-size: 1.8rem;

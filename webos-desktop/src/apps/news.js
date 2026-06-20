@@ -17,6 +17,17 @@ const EXISTING_NEWS_UPDATES = [
             "Explore the world with OpenStreetMap, or switch to Google Maps with configurable tile layers and settings."
           ]
         ]
+      },
+      {
+        icon: "fa-screwdriver-wrench",
+        title: "Updated",
+        items: [
+          [
+            "fa-screwdriver-wrench",
+            "System Apps",
+            "Browses built-in tools with a cleaner glassmorphism grid and instant search."
+          ]
+        ]
       }
     ]
   },

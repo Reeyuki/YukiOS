@@ -234,6 +234,15 @@ export const FEATURE_DATA = {
   }
 };
 
+const FONT_LABELS = {
+  opensans: "Open Sans",
+  inter: "Inter",
+  rubik: "Rubik",
+  sora: "Sora",
+  jetbrainsmono: "JetBrains Mono",
+  monocraft: "Monocraft"
+};
+
 export class SetupApp extends BaseApp {
   constructor(services) {
     super(services);
@@ -254,7 +263,7 @@ export class SetupApp extends BaseApp {
       profilePicture: os.storage.get(StorageKeys.profilePicture) || PREDEFINED_AVATARS[0],
       fontFamily: "opensans",
       macOsControls: false,
-      mikuCursor: false,
+      mikuCursor: true,
       clippy: false,
       clipboardManager: true
     };
@@ -362,76 +371,37 @@ export class SetupApp extends BaseApp {
     `;
   }
 
-  _buildStep2() {
-    const cardsHtml = FEATURE_DATA.step2
-      .map(
-        (feature) => `
-        <div class="feature-card ${feature.animation || ""}">
-          <div class="feature-icon ${feature.animation?.replace("-card", "-icon") || ""}">
-            <i class="${feature.icon}"></i>
-          </div>
-          <h3>${feature.title}</h3>
-          <p>${feature.desc}</p>
-        </div>
-      `
-      )
-      .join("");
-
+  _buildFeatureGrid(data, title, icon, extraClass) {
     return `
-    <div class="setup-step" data-step="2">
-      <h2 class="step-title feature-title">
-        <i class="fas fa-star"></i>
-        Here's What You Get
-      </h2>
-      <div class="feature-grid">${cardsHtml}</div>
-    </div>
-  `;
+      <div class="step-content">
+        <div class="step-title"><i class="${icon}"></i> ${title}</div>
+        <div class="feature-grid${extraClass ? ` ${extraClass}` : ""}">
+          ${data
+            .map(
+              (f) => `
+            <div class="feature-card">
+              <div class="feature-icon"><i class="${f.icon}"></i></div>
+              <h3>${f.title}</h3>
+              <p>${f.desc}</p>
+            </div>
+          `
+            )
+            .join("")}
+        </div>
+      </div>
+    `;
+  }
+
+  _buildStep2() {
+    return `<div class="setup-step" data-step="2">${this._buildFeatureGrid(FEATURE_DATA.step2, "Here's What You Get", "fas fa-star")}</div>`;
   }
 
   _buildStep3() {
-    const cardsHtml = FEATURE_DATA.step3
-      .map(
-        (feature) => `
-        <div class="feature-card">
-          <div class="feature-icon"><i class="${feature.icon}"></i></div>
-          <h3>${feature.title}</h3>
-          <p>${feature.desc}</p>
-        </div>
-      `
-      )
-      .join("");
-
-    return `
-      <div class="setup-step" data-step="3">
-        <h2 class="step-title" style="justify-content: center; margin-bottom: 20px;">
-          <i class="fas fa-puzzle-piece"></i> System Features
-        </h2>
-        <div class="feature-grid">${cardsHtml}</div>
-      </div>
-    `;
+    return `<div class="setup-step" data-step="3">${this._buildFeatureGrid(FEATURE_DATA.step3, "System Features", "fas fa-puzzle-piece")}</div>`;
   }
 
   _buildStep3b() {
-    const cardsHtml = FEATURE_DATA.step3b
-      .map(
-        (feature) => `
-        <div class="feature-card">
-          <div class="feature-icon"><i class="${feature.icon}"></i></div>
-          <h3>${feature.title}</h3>
-          <p>${feature.desc}</p>
-        </div>
-      `
-      )
-      .join("");
-
-    return `
-      <div class="setup-step" data-step="4">
-        <h2 class="step-title" style="justify-content: center; margin-bottom: 20px;">
-          <i class="fas fa-plus-circle"></i> More Features
-        </h2>
-        <div class="feature-grid">${cardsHtml}</div>
-      </div>
-    `;
+    return `<div class="setup-step" data-step="4">${this._buildFeatureGrid(FEATURE_DATA.step3b, "More Features", "fas fa-plus-circle")}</div>`;
   }
 
   _buildStep4() {
@@ -543,27 +513,62 @@ export class SetupApp extends BaseApp {
     `;
   }
 
+  _buildToggle(setting, icon, label, checked) {
+    return `
+      <div class="setting-item">
+        <div class="setting-info">
+          <i class="${icon} setting-icon"></i>
+          <div>
+            <h4>${label}</h4>
+          </div>
+        </div>
+        <label class="setting-toggle">
+          <input type="checkbox" ${checked ? "checked" : ""} data-setting="${setting}">
+          <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        </label>
+      </div>
+    `;
+  }
+
+  _buildTurboSelector() {
+    return `
+      <div class="settings-half">
+        <label class="section-label">Turbo</label>
+        <div class="turbo-selector">
+          ${FEATURE_DATA.step6.turboModes
+            .map(
+              (m) => `
+            <button class="turbo-btn ${this.userChoices.turboMode === m.value ? "active" : ""}" data-mode="${m.value}">
+              <div class="turbo-title">${m.title}</div>
+            </button>
+          `
+            )
+            .join("")}
+        </div>
+      </div>
+    `;
+  }
+
+  _buildTransparencySelector() {
+    return `
+      <div class="settings-half">
+        <label class="section-label">Transparency</label>
+        <div class="transparency-selector">
+          ${FEATURE_DATA.step6.transparencyLevels
+            .map(
+              (t) => `
+            <button class="transparency-btn ${this.userChoices.transparency === t.value ? "active" : ""}" data-transparency="${t.value}">
+              <div class="transparency-title">${t.title}</div>
+            </button>
+          `
+            )
+            .join("")}
+        </div>
+      </div>
+    `;
+  }
+
   _buildStep5() {
-    const turboHtml = FEATURE_DATA.step6.turboModes
-      .map(
-        (m) => `
-        <button class="turbo-btn ${this.userChoices.turboMode === m.value ? "active" : ""}" data-mode="${m.value}">
-          <div class="turbo-title">${m.title}</div>
-        </button>
-      `
-      )
-      .join("");
-
-    const transparencyHtml = FEATURE_DATA.step6.transparencyLevels
-      .map(
-        (t) => `
-        <button class="transparency-btn ${this.userChoices.transparency === t.value ? "active" : ""}" data-transparency="${t.value}">
-          <div class="transparency-title">${t.title}</div>
-        </button>
-      `
-      )
-      .join("");
-
     return `
       <div class="setup-step" data-step="6">
         <h2 class="step-title">
@@ -571,133 +576,20 @@ export class SetupApp extends BaseApp {
         </h2>
 
         <div class="settings-grid">
-          <div class="setting-item">
-            <div class="setting-info">
-              <i class="fas fa-cloud-sun setting-icon"></i>
-              <div>
-                <h4>Weather</h4>
-              </div>
-            </div>
-            <label class="setting-toggle">
-              <input type="checkbox" ${this.userChoices.weather ? "checked" : ""} data-setting="weather">
-              <span class="toggle-track"><span class="toggle-thumb"></span></span>
-            </label>
-          </div>
-
-          <div class="setting-item">
-            <div class="setting-info">
-              <i class="fas fa-bell setting-icon"></i>
-              <div>
-                <h4>Notifications</h4>
-              </div>
-            </div>
-            <label class="setting-toggle">
-              <input type="checkbox" ${this.userChoices.notifications ? "checked" : ""} data-setting="notifications">
-              <span class="toggle-track"><span class="toggle-thumb"></span></span>
-            </label>
-          </div>
-
-          <div class="setting-item">
-            <div class="setting-info">
-              <i class="fas fa-volume-high setting-icon"></i>
-              <div>
-                <h4>Sound</h4>
-              </div>
-            </div>
-            <label class="setting-toggle">
-              <input type="checkbox" ${this.userChoices.sound ? "checked" : ""} data-setting="sound">
-              <span class="toggle-track"><span class="toggle-thumb"></span></span>
-            </label>
-          </div>
-
-          <div class="setting-item">
-            <div class="setting-info">
-              <i class="fas fa-trophy setting-icon"></i>
-              <div>
-                <h4>Achievements</h4>
-              </div>
-            </div>
-            <label class="setting-toggle">
-              <input type="checkbox" ${this.userChoices.achievements ? "checked" : ""} data-setting="achievements">
-              <span class="toggle-track"><span class="toggle-thumb"></span></span>
-            </label>
-          </div>
-
-          <div class="setting-item">
-            <div class="setting-info">
-              <i class="fas fa-chart-line setting-icon"></i>
-              <div>
-                <h4>Analytics</h4>
-              </div>
-            </div>
-            <label class="setting-toggle">
-              <input type="checkbox" ${this.userChoices.analytics ? "checked" : ""} data-setting="analytics">
-              <span class="toggle-track"><span class="toggle-thumb"></span></span>
-            </label>
-          </div>
-
-          <div class="setting-item">
-            <div class="setting-info">
-              <i class="fab fa-apple setting-icon"></i>
-              <div>
-                <h4>Mac Window Headers</h4>
-              </div>
-            </div>
-            <label class="setting-toggle">
-              <input type="checkbox" ${this.userChoices.macOsControls ? "checked" : ""} data-setting="macOsControls">
-              <span class="toggle-track"><span class="toggle-thumb"></span></span>
-            </label>
-          </div>
-
-          <div class="setting-item">
-            <div class="setting-info">
-              <i class="fas fa-mouse-pointer setting-icon"></i>
-              <div>
-                <h4>Miku Cursor</h4>
-              </div>
-            </div>
-            <label class="setting-toggle">
-              <input type="checkbox" ${this.userChoices.mikuCursor ? "checked" : ""} data-setting="mikuCursor">
-              <span class="toggle-track"><span class="toggle-thumb"></span></span>
-            </label>
-          </div>
-
-          <div class="setting-item">
-            <div class="setting-info">
-              <i class="fas fa-robot setting-icon"></i>
-              <div>
-                <h4>Clippy</h4>
-              </div>
-            </div>
-            <label class="setting-toggle">
-              <input type="checkbox" ${this.userChoices.clippy ? "checked" : ""} data-setting="clippy">
-              <span class="toggle-track"><span class="toggle-thumb"></span></span>
-            </label>
-          </div>
-
-          <div class="setting-item">
-            <div class="setting-info">
-              <i class="fas fa-paste setting-icon"></i>
-              <div>
-                <h4>Clipboard Manager</h4>
-              </div>
-            </div>
-            <label class="setting-toggle">
-              <input type="checkbox" ${this.userChoices.clipboardManager ? "checked" : ""} data-setting="clipboardManager">
-              <span class="toggle-track"><span class="toggle-thumb"></span></span>
-            </label>
-          </div>
+          ${this._buildToggle("weather", "fas fa-cloud-sun", "Weather", this.userChoices.weather)}
+          ${this._buildToggle("notifications", "fas fa-bell", "Notifications", this.userChoices.notifications)}
+          ${this._buildToggle("sound", "fas fa-volume-high", "Sound", this.userChoices.sound)}
+          ${this._buildToggle("achievements", "fas fa-trophy", "Achievements", this.userChoices.achievements)}
+          ${this._buildToggle("analytics", "fas fa-chart-line", "Analytics", this.userChoices.analytics)}
+          ${this._buildToggle("macOsControls", "fab fa-apple", "Mac Window Headers", this.userChoices.macOsControls)}
+          ${this._buildToggle("mikuCursor", "fas fa-mouse-pointer", "Miku Cursor", this.userChoices.mikuCursor)}
+          ${this._buildToggle("clippy", "fas fa-robot", "Clippy", this.userChoices.clippy)}
+          ${this._buildToggle("clipboardManager", "fas fa-paste", "Clipboard Manager", this.userChoices.clipboardManager)}
         </div>
 
         <div class="settings-row">
-          <div class="settings-half">
-            <label class="section-label">Turbo</label>
-            <div class="turbo-selector">${turboHtml}</div>
-          </div>
-          <div class="settings-half">
-            <label class="section-label">Transparency</label>
-            <div class="transparency-selector">${transparencyHtml}</div>
-          </div>
+          ${this._buildTurboSelector()}
+          ${this._buildTransparencySelector()}
         </div>
       </div>
     `;
@@ -840,7 +732,7 @@ export class SetupApp extends BaseApp {
           </div>
           <div class="summary-item">
             <i class="fas fa-font"></i>
-            <span>Font: ${this.userChoices.fontFamily === "opensans" ? "Open Sans" : this.userChoices.fontFamily === "inter" ? "Inter" : this.userChoices.fontFamily === "rubik" ? "Rubik" : this.userChoices.fontFamily === "sora" ? "Sora" : this.userChoices.fontFamily === "jetbrainsmono" ? "JetBrains Mono" : this.userChoices.fontFamily === "monocraft" ? "Monocraft" : this.userChoices.fontFamily}</span>
+            <span>Font: ${FONT_LABELS[this.userChoices.fontFamily] || this.userChoices.fontFamily}</span>
           </div>
           <div class="summary-item">
             <i class="fab fa-apple"></i>
@@ -971,7 +863,7 @@ export class SetupApp extends BaseApp {
     const launchGuideBtn = $("#setup-launch-guide", win);
     if (launchGuideBtn) {
       launchGuideBtn.addEventListener("click", () => {
-        this._services.yukiOsGuideApp.open();
+        os.app.launch("yukiOsGuideApp");
       });
     }
 
@@ -1298,13 +1190,43 @@ Have fun!`;
       input.onchange = (e) => {
         const file = e.target.files[0];
         if (!file) return;
+
+        const maxBytes = 2000 * 1024;
+        if (file.size > maxBytes) {
+          os.dialog.alert(
+            "Image Too Large",
+            `The selected image is ${(file.size / 1024).toFixed(1)} KB. Please choose an image under 2 MB.`
+          );
+          return;
+        }
+
         const reader = new FileReader();
         reader.onload = (event) => {
           const dataUrl = event.target.result;
           if (!dataUrl) return;
-          this.userChoices.profilePicture = dataUrl;
-          previewImg.src = dataUrl;
-          this._refreshProfileSummary(win);
+
+          const img = new Image();
+          img.onload = () => {
+            const maxDim = 200;
+            let { width, height } = img;
+            if (width > maxDim || height > maxDim) {
+              const ratio = Math.min(maxDim / width, maxDim / height);
+              width = Math.round(width * ratio);
+              height = Math.round(height * ratio);
+            }
+
+            const canvas = document.createElement("canvas");
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, width, height);
+            const compressed = canvas.toDataURL("image/jpeg", 0.7);
+
+            this.userChoices.profilePicture = compressed;
+            previewImg.src = compressed;
+            this._refreshProfileSummary(win);
+          };
+          img.src = dataUrl;
         };
         reader.readAsDataURL(file);
       };

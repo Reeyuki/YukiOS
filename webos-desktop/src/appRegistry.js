@@ -3,7 +3,14 @@ const APP_REGISTRY_DISABLED_KEY = StorageKeys.appRegistryDisabled;
 const APP_REGISTRY_RENAMED_KEY = StorageKeys.appRegistryRenamed;
 const APP_REGISTRY_UNINSTALLED_KEY = StorageKeys.appRegistryUninstalled;
 
-const PROTECTED_APPS = new Set(["browserApp", "explorer", "terminal", "notepad", "settingsApp", "taskManagerApp"]);
+const PROTECTED_APPS = new Set([
+  "browserApp",
+  "explorerApp",
+  "terminal",
+  "notepadApp",
+  "settingsApp",
+  "taskManagerApp"
+]);
 
 export class AppRegistry {
   constructor() {
@@ -30,7 +37,9 @@ export class AppRegistry {
   _saveDisabledApps() {
     try {
       os.storage.set(APP_REGISTRY_DISABLED_KEY, [...this._disabledApps]);
-    } catch (e) {}
+    } catch (e) {
+      console.error("[AppRegistry]", e);
+    }
   }
 
   _loadRenamedApps() {
@@ -45,7 +54,9 @@ export class AppRegistry {
   _saveRenamedApps() {
     try {
       os.storage.set(APP_REGISTRY_RENAMED_KEY, this._renamedApps);
-    } catch (e) {}
+    } catch (e) {
+      console.error("[AppRegistry]", e);
+    }
   }
 
   _loadUninstalledApps() {
@@ -60,7 +71,9 @@ export class AppRegistry {
   _saveUninstalledApps() {
     try {
       os.storage.set(APP_REGISTRY_UNINSTALLED_KEY, [...this._uninstalledApps]);
-    } catch (e) {}
+    } catch (e) {
+      console.error("[AppRegistry]", e);
+    }
   }
 
   isAppDisabled(appId) {

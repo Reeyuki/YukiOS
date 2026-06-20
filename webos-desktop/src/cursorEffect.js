@@ -9,7 +9,7 @@ let hideTimeout = null;
 let triggerTime = 0;
 const X_OFFSET = 35;
 const Y_OFFSET = 55;
-const FALLBACK_DELAY = 4000;
+const FALLBACK_DELAY = 3000;
 const MIN_VISIBLE = 600;
 const DEFAULT_ICON = "fa-solid fa-cube";
 
