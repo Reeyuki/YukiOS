@@ -1,7 +1,7 @@
 import "../styles/about.css";
 import { resolveGhUrl } from "../shared/assetResolver.js";
 import { BaseApp, PersistenceTypes } from "../framework.js";
-export const YUKIOS_VERSION = "v1.4.3";
+export const YUKIOS_VERSION = "v1.4.4";
 
 const capabilities = [
   {

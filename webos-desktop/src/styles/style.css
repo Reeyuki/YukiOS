@@ -1694,3 +1694,18 @@ html[data-theme] .sidebar-icon-fa {
 html[data-theme] .explorer-sidebar .start-item:hover .sidebar-icon-fa {
   color: var(--brand-hover);
 }
+
+.wallpaper-enter {
+  animation: wallpaper-enter 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes wallpaper-enter {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.06);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}

@@ -232,8 +232,8 @@ export class WindowAPI {
    * @param externalUrl - Optional external URL for controls
    * @returns HTML string for window controls
    */
-  getWindowControls(externalUrl?: string): string {
-    return this.wm.getWindowControls(externalUrl);
+  getWindowControls(externalUrl?: string, showDownload?: boolean): string {
+    return this.wm.getWindowControls(externalUrl, showDownload);
   }
 
   /**

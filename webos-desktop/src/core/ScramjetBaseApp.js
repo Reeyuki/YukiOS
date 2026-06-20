@@ -39,6 +39,7 @@ export class ScramjetBaseApp extends BaseApp {
           title: this.getAppName(),
           size: this.getWindowSize(),
           icon: this.getAppIcon(),
+          externalUrl: this.getAppId() !== "discordApp" ? this.getTargetURL() : undefined,
           ui: `
             <div class="scramjet-base-container" style="width:100%;height:100%;overflow:hidden;">
               <iframe

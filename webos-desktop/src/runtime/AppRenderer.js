@@ -17,13 +17,15 @@ export class AppRenderer {
   }
 
   renderWindow(windowConfig, services) {
-    const { id, title, size, icon, position, style, className, ui, events, actions, transparent } = windowConfig;
+    const { id, title, size, icon, position, style, className, ui, events, actions, transparent, externalUrl } =
+      windowConfig;
 
     const width = size?.[0] || "800px";
     const height = size?.[1] || "600px";
 
     const windowOptions = {
       icon,
+      externalUrl,
       style: { ...style },
       ...(position && { left: position[0], top: position[1] }),
       ...(className && { className }),

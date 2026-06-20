@@ -25,6 +25,9 @@ export class WindowHelper {
   createWindowWithContent(winId, title, content, width = "800px", height = "600px", options = {}) {
     const win = this.createStandardWindow(winId, title, width, height, options);
 
+    if (options.externalUrl) {
+      win.dataset.externalUrl = options.externalUrl;
+    }
     const headerDiv = document.createElement("div");
     headerDiv.innerHTML = this.createWindowHeader(title, options.icon, options.externalUrl);
     win.appendChild(headerDiv);

@@ -39,4 +39,12 @@ export function setupWindowControls(win, wm) {
   if (downloadBtn) {
     downloadBtn.onclick = () => wm._downloadWindowContent(win);
   }
+
+  const externalBtn = win.querySelector(".external-btn");
+  if (externalBtn) {
+    externalBtn.onclick = () => {
+      const url = win.dataset.externalUrl || "";
+      if (url) window.open(url, "_blank", "noopener,noreferrer");
+    };
+  }
 }

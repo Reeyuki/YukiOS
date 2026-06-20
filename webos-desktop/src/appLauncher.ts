@@ -508,6 +508,7 @@ player.load("${swfPath}");
 
       const swfBlob = URL.createObjectURL(new Blob([swfHtml], { type: "text/html" }));
       contentHtml = `<iframe src="${swfBlob}" ${IFRAME_ATTRS}></iframe>`;
+      externalUrl = swfBlob;
     } else {
       id = type === "game" ? appId : `${type}-${source.replace(/\W/g, "")}-${Date.now()}`;
       if (this._bringToFrontIfExists(id)) return;
@@ -626,7 +627,7 @@ player.load("${swfPath}");
         win.innerHTML = `
           <div class="window-header">
             <span>${displayTitle}</span>
-            ${os.window.getWindowControls()}
+            ${os.window.getWindowControls(resolvedSource, true)}
           </div>
           <div class="window-content" style="width:100%; height:100%; overflow:hidden; display:flex; align-items:center; justify-content:center; background:#1a1a1a;">
             <div class="modern-loader">
@@ -779,16 +780,14 @@ player.load("${swfPath}");
     win.innerHTML = `
       <div class="window-header">
         <span>${iconHtml}${title}</span>
-        ${os.window.getWindowControls()}
+        ${os.window.getWindowControls(externalUrl, true)}
       </div>
       <div class="window-content" style="width:100%; height:100%; overflow:hidden;">${contentHtml}</div>
     `;
 
     win.querySelector(".external-btn")?.addEventListener("click", () => {
-      if (!appId) return;
-      const url = new URL(window.location.href);
-      url.searchParams.set("game", appId);
-      window.open(url.toString(), "_blank", "noopener,noreferrer");
+      const url = win.dataset.externalUrl || win.querySelector("iframe")?.src || externalUrl;
+      if (url) window.open(url, "_blank", "noopener,noreferrer");
     });
 
     recordUsage(`${id}-win`);

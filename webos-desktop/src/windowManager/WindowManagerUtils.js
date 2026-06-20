@@ -218,14 +218,16 @@ export class WindowManagerUtils {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
-  getWindowControls(externalUrl) {
+  getWindowControls(externalUrl, showDownload = false) {
     const externalBtn = externalUrl ? `<button class="external-btn" title="Open in External">↗</button>` : "";
 
-    const downloadBtn = `<button class="download-btn" title="Download">
+    const downloadBtn = showDownload
+      ? `<button class="download-btn" title="Download">
       <svg viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg">
         <path d="M5 7L1.5 3.5h2V0h3v3.5h2L5 7zM0 9h10v1H0z"/>
       </svg>
-    </button>`;
+    </button>`
+      : "";
 
     if (getSetting("macOsControls", false)) {
       return `<div class="window-controls mac-controls">

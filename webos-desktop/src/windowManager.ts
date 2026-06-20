@@ -436,8 +436,8 @@ export class WindowManager {
     this.utils._downloadWindowContent(win);
   }
 
-  getWindowControls(externalUrl?: string): string {
-    return this.utils.getWindowControls(externalUrl);
+  getWindowControls(externalUrl?: string, showDownload?: boolean): string {
+    return this.utils.getWindowControls(externalUrl, showDownload);
   }
 
   sendNotify(text: string, appSource: string | null = null): void {

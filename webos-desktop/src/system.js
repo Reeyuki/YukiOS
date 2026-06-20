@@ -643,6 +643,7 @@ class WallpaperManager {
     });
 
     el.addEventListener("contextmenu", (e) => e.preventDefault());
+    el.classList.add("wallpaper-enter");
     document.body.appendChild(el);
 
     if (isVideo) {
