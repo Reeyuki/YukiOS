@@ -1,31 +1,35 @@
 @keyframes startMenuIn {
   from {
     opacity: 0;
-    transform: translateY(30px);
+    transform: translateY(50px) scale(0.92);
+    backdrop-filter: blur(0px);
   }
 
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
+    backdrop-filter: blur(50px);
   }
 }
 
 @keyframes startMenuOut {
   from {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
+    backdrop-filter: blur(50px);
   }
 
   to {
     opacity: 0;
-    transform: translateY(30px);
+    transform: translateY(20px) scale(0.95);
+    backdrop-filter: blur(0px);
   }
 }
 
 .start-menu {
   position: absolute;
   z-index: 10001;
-  animation: startMenuIn 100ms ease-out both;
+  animation: startMenuIn 250ms cubic-bezier(0.22, 1, 0.36, 1) both;
   bottom: 50px;
   left: 0;
   width: 650px;
@@ -42,8 +46,36 @@
   overflow: hidden;
 }
 
+.start-menu.search-mode .start-sidebar {
+  width: 0;
+  opacity: 0;
+  overflow: hidden;
+  border-right-color: transparent;
+  padding: 0;
+}
+
+.start-menu.search-mode .start-page[data-page="search-results"] {
+  flex: 1;
+  min-height: 0;
+  max-height: none;
+  height: 100%;
+  margin-top: 0;
+  animation: searchFadeIn 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes searchFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .start-menu.closing {
-  animation: startMenuOut 160ms cubic-bezier(0.4, 0, 1, 1) both;
+  animation: startMenuOut 200ms cubic-bezier(0.55, 0, 0.7, 0.3) both;
 }
 
 .start-sidebar {
@@ -54,6 +86,12 @@
   background: linear-gradient(180deg, color-mix(in srgb, var(--brand) 8%, transparent) 0%, transparent 60%);
   position: relative;
   overflow-y: auto;
+  flex-shrink: 0;
+  transition:
+    width 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.2s ease,
+    border-right-color 0.25s ease,
+    padding 0.2s ease;
 }
 
 .start-sidebar::-webkit-scrollbar {

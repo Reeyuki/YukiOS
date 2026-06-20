@@ -161,7 +161,6 @@ It's built entirely in vanilla JS (TypeScript in core modules) with some librari
 - Weather
 - News
 - Yuki OS Guide
-- Yuki Dev Tools
 - Display Performance
 - Network Tray
 

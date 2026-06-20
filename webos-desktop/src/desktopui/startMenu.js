@@ -588,6 +588,16 @@ export function setupStartMenu(appLauncher, sessionManager, selectionManager) {
     keyboardHandlerInstalled = true;
   }
 
+  function fuzzyMatch(query, target) {
+    const q = query.toLowerCase();
+    const t = target.toLowerCase();
+    let qi = 0;
+    for (let ti = 0; ti < t.length && qi < q.length; ti++) {
+      if (q[qi] === t[ti]) qi++;
+    }
+    return qi === q.length;
+  }
+
   searchInput.addEventListener("input", (e) => {
     clearTimeout(searchDebounceTimer);
     searchDebounceTimer = setTimeout(() => {
@@ -603,6 +613,7 @@ export function setupStartMenu(appLauncher, sessionManager, selectionManager) {
       }
 
       if (q === "") {
+        document.querySelector(".start-menu")?.classList.remove("search-mode");
         document.querySelectorAll(".start-page").forEach((page) => {
           if (page.dataset.page === "search-results") {
             page.classList.remove("active");
@@ -623,6 +634,7 @@ export function setupStartMenu(appLauncher, sessionManager, selectionManager) {
         return;
       }
 
+      document.querySelector(".start-menu")?.classList.add("search-mode");
       document.querySelectorAll(".start-page").forEach((page) => {
         page.classList.remove("active");
         page.style.display = "none";
@@ -644,7 +656,7 @@ export function setupStartMenu(appLauncher, sessionManager, selectionManager) {
         if (appRegistry.isAppUninstalled(appId) || appRegistry.isAppDisabled(appId)) return;
         const title = (appData.title || appId).toLowerCase();
         const description = (APP_DESCRIPTIONS[appId] || descriptionMap[appId] || "").toLowerCase();
-        if (!title.includes(q) && !description.includes(q)) return;
+        if (!fuzzyMatch(q, title) && !fuzzyMatch(q, description)) return;
         seenAppIds.add(appId);
         const item = createAppItem(appId, appData);
         const category = appData.type === "system" ? "system" : "menu";
