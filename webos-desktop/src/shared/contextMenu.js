@@ -6,7 +6,18 @@ function getMenu() {
 
 export function hideMenu() {
   const menu = getMenu();
-  if (menu) menu.style.display = "none";
+  if (!menu) return;
+  if (menu.classList.contains("closing")) return;
+  menu.classList.add("closing");
+  menu.addEventListener(
+    "animationend",
+    () => {
+      if (!menu.classList.contains("closing")) return;
+      menu.classList.remove("closing");
+      menu.style.display = "none";
+    },
+    { once: true }
+  );
 }
 
 function positionMenu(menu, pageX, pageY) {
@@ -69,6 +80,8 @@ export function refreshIcons(node = document) {
 export function showContextMenu(e, items, handlers) {
   const menu = getMenu();
   if (!menu) return;
+  menu.classList.remove("closing");
+  menu.style.display = "";
   menu.classList.add("context-menu-glass");
 
   const filtered = items.filter((item) => typeof item === "string" || !item.condition || item.condition());
@@ -106,6 +119,8 @@ export function showDynamicContextMenu(e, buildFn) {
   const menu = getMenu();
   if (!menu) return;
 
+  menu.classList.remove("closing");
+  menu.style.display = "";
   menu.innerHTML = "";
   menu.classList.add("context-menu-glass");
 
@@ -164,7 +179,8 @@ export function showStartStyleMenu(e, buildFn) {
 
     menuItem.onclick = () => {
       action();
-      menu.remove();
+      menu.classList.add("closing");
+      menu.addEventListener("animationend", () => menu.remove(), { once: true });
     };
     menu.appendChild(menuItem);
   };
@@ -220,8 +236,9 @@ export function showStartStyleMenu(e, buildFn) {
   menu.style.setProperty("--ctx-bottom", `${viewportHeight - top - rect.height}px`);
 
   document.addEventListener("click", function removeMenu() {
-    menu.remove();
     document.removeEventListener("click", removeMenu);
+    menu.classList.add("closing");
+    menu.addEventListener("animationend", () => menu.remove(), { once: true });
   });
 
   refreshIcons(menu);

@@ -604,6 +604,7 @@ class AudioMixer {
     if (!this.panel) {
       return;
     }
+    this.panel.classList.remove("closing");
     this.panel.style.display = "flex";
     const btn = document.querySelector('[data-win-id="audio-mixer"]');
     if (btn) btn.classList.add("active");
@@ -613,9 +614,17 @@ class AudioMixer {
 
   close() {
     this.isOpen = false;
-    this.panel.style.display = "none";
+    this.panel.classList.add("closing");
     const btn = document.querySelector('[data-win-id="audio-mixer"]');
     if (btn) btn.classList.remove("active");
+    this.panel.addEventListener(
+      "animationend",
+      () => {
+        this.panel.classList.remove("closing");
+        this.panel.style.display = "none";
+      },
+      { once: true }
+    );
   }
 
   _positionPanel() {

@@ -90,6 +90,8 @@ export class TaskbarPositionManager {
   }
 
   showContextMenu(x, y) {
+    this.contextMenu.classList.remove("closing");
+    this.contextMenu.style.display = "";
     this.contextMenu.style.display = "block";
 
     const menuRect = this.contextMenu.getBoundingClientRect();
@@ -118,7 +120,17 @@ export class TaskbarPositionManager {
   }
 
   hideContextMenu() {
-    this.contextMenu.style.display = "none";
+    if (this.contextMenu.classList.contains("closing")) return;
+    this.contextMenu.classList.add("closing");
+    this.contextMenu.addEventListener(
+      "animationend",
+      () => {
+        if (!this.contextMenu.classList.contains("closing")) return;
+        this.contextMenu.classList.remove("closing");
+        this.contextMenu.style.display = "none";
+      },
+      { once: true }
+    );
     this.contextMenu.querySelectorAll(".context-menu-item").forEach((item) => {
       const position = item.getAttribute("data-position");
       if (position === this.currentPosition) {

@@ -10,7 +10,34 @@
   font-size: 14px;
   color: var(--text-primary);
   overflow: hidden;
-  animation: cmFadeIn 120ms ease-out;
+  animation: cmFadeIn 120ms ease-out both;
+}
+
+.context-menu-glass.closing {
+  animation: cmFadeOut 120ms ease-in both;
+  pointer-events: none;
+}
+
+@keyframes cmFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cmFadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(4px);
+  }
 }
 #context-menu,
 #taskbar-context-menu,
@@ -421,19 +448,11 @@
   overflow: hidden;
   font-size: 13px;
   color: var(--text-primary);
-  animation: amFadeIn 0.15s ease;
+  animation: trayPopupIn 100ms ease-out both;
 }
 
-@keyframes amFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+#audio-mixer-panel.closing {
+  animation: trayPopupOut 160ms cubic-bezier(0.4, 0, 1, 1) both;
 }
 
 .am-header {
