@@ -5,6 +5,22 @@ const appNewsEntries = APP_MANIFESTS.filter((manifest) => manifest.news).map((ma
 
 const EXISTING_NEWS_UPDATES = [
   {
+    date: "June 21, 2026",
+    sections: [
+      {
+        icon: "star",
+        title: "Better animations",
+        items: [
+          [
+            "fa-star",
+            "Better Animations",
+            "Added animations to start menu, on wallpaper switch, audio mixer, context menu"
+          ]
+        ]
+      }
+    ]
+  },
+  {
     date: "June 20, 2026",
     sections: [
       {
