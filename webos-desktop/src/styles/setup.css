@@ -789,492 +789,112 @@
   border-color: rgba(124, 58, 237, 0.4);
 }
 
-html[data-theme="light"] .setup-wizard,
-html[data-theme="cherry"] .setup-wizard,
-html[data-theme="github-light"] .setup-wizard,
-html[data-theme="minimal-gray"] .setup-wizard,
-html[data-theme="paper"] .setup-wizard,
-html[data-theme="macos-fluent"] .setup-wizard,
-html[data-theme="windows-fluent"] .setup-wizard,
-html[data-theme="material-you"] .setup-wizard,
-html[data-theme="sepia"] .setup-wizard,
-html[data-theme="sakura"] .setup-wizard,
-html[data-theme="arctic"] .setup-wizard,
-html[data-theme="nordic"] .setup-wizard,
-html[data-theme="gameboy"] .setup-wizard,
-html[data-theme="frutiger-aero"] .setup-wizard,
-html[data-theme="solarized-light"] .setup-wizard {
+html[data-theme-mode="light"] .setup-wizard {
   color: #1a1a2e;
 }
 
-html[data-theme="light"] .hero-subtitle,
-html[data-theme="cherry"] .hero-subtitle,
-html[data-theme="github-light"] .hero-subtitle,
-html[data-theme="minimal-gray"] .hero-subtitle,
-html[data-theme="paper"] .hero-subtitle,
-html[data-theme="macos-fluent"] .hero-subtitle,
-html[data-theme="windows-fluent"] .hero-subtitle,
-html[data-theme="material-you"] .hero-subtitle,
-html[data-theme="sepia"] .hero-subtitle,
-html[data-theme="sakura"] .hero-subtitle,
-html[data-theme="arctic"] .hero-subtitle,
-html[data-theme="nordic"] .hero-subtitle,
-html[data-theme="gameboy"] .hero-subtitle,
-html[data-theme="frutiger-aero"] .hero-subtitle,
-html[data-theme="solarized-light"] .hero-subtitle {
+html[data-theme-mode="light"] .hero-subtitle {
   color: rgba(0, 0, 0, 0.6);
 }
 
-html[data-theme="light"] .section-label,
-html[data-theme="cherry"] .section-label,
-html[data-theme="github-light"] .section-label,
-html[data-theme="minimal-gray"] .section-label,
-html[data-theme="paper"] .section-label,
-html[data-theme="macos-fluent"] .section-label,
-html[data-theme="windows-fluent"] .section-label,
-html[data-theme="material-you"] .section-label,
-html[data-theme="sepia"] .section-label,
-html[data-theme="sakura"] .section-label,
-html[data-theme="arctic"] .section-label,
-html[data-theme="nordic"] .section-label,
-html[data-theme="gameboy"] .section-label,
-html[data-theme="frutiger-aero"] .section-label,
-html[data-theme="solarized-light"] .section-label {
+html[data-theme-mode="light"] .section-label {
   color: rgba(0, 0, 0, 0.75);
 }
 
-html[data-theme="light"] .progress-circle,
-html[data-theme="cherry"] .progress-circle,
-html[data-theme="github-light"] .progress-circle,
-html[data-theme="minimal-gray"] .progress-circle,
-html[data-theme="paper"] .progress-circle,
-html[data-theme="macos-fluent"] .progress-circle,
-html[data-theme="windows-fluent"] .progress-circle,
-html[data-theme="material-you"] .progress-circle,
-html[data-theme="sepia"] .progress-circle,
-html[data-theme="sakura"] .progress-circle,
-html[data-theme="arctic"] .progress-circle,
-html[data-theme="nordic"] .progress-circle,
-html[data-theme="gameboy"] .progress-circle,
-html[data-theme="frutiger-aero"] .progress-circle,
-html[data-theme="solarized-light"] .progress-circle {
+html[data-theme-mode="light"] .progress-circle {
   background: rgba(0, 0, 0, 0.07);
   border-color: rgba(0, 0, 0, 0.2);
 }
 
-html[data-theme="light"] .progress-line,
-html[data-theme="cherry"] .progress-line,
-html[data-theme="github-light"] .progress-line,
-html[data-theme="minimal-gray"] .progress-line,
-html[data-theme="paper"] .progress-line,
-html[data-theme="macos-fluent"] .progress-line,
-html[data-theme="windows-fluent"] .progress-line,
-html[data-theme="material-you"] .progress-line,
-html[data-theme="sepia"] .progress-line,
-html[data-theme="sakura"] .progress-line,
-html[data-theme="arctic"] .progress-line,
-html[data-theme="nordic"] .progress-line,
-html[data-theme="gameboy"] .progress-line,
-html[data-theme="frutiger-aero"] .progress-line,
-html[data-theme="solarized-light"] .progress-line {
+html[data-theme-mode="light"] .progress-line {
   background: rgba(0, 0, 0, 0.15);
 }
 
-html[data-theme="light"] .feature-card,
-html[data-theme="cherry"] .feature-card,
-html[data-theme="github-light"] .feature-card,
-html[data-theme="minimal-gray"] .feature-card,
-html[data-theme="paper"] .feature-card,
-html[data-theme="macos-fluent"] .feature-card,
-html[data-theme="windows-fluent"] .feature-card,
-html[data-theme="material-you"] .feature-card,
-html[data-theme="sepia"] .feature-card,
-html[data-theme="sakura"] .feature-card,
-html[data-theme="arctic"] .feature-card,
-html[data-theme="nordic"] .feature-card,
-html[data-theme="gameboy"] .feature-card,
-html[data-theme="frutiger-aero"] .feature-card,
-html[data-theme="solarized-light"] .feature-card {
+html[data-theme-mode="light"] .feature-card {
   background: rgba(0, 0, 0, 0.04);
   border-color: rgba(0, 0, 0, 0.1);
 }
 
-html[data-theme="light"] .feature-card:hover,
-html[data-theme="cherry"] .feature-card:hover,
-html[data-theme="github-light"] .feature-card:hover,
-html[data-theme="minimal-gray"] .feature-card:hover,
-html[data-theme="paper"] .feature-card:hover,
-html[data-theme="macos-fluent"] .feature-card:hover,
-html[data-theme="windows-fluent"] .feature-card:hover,
-html[data-theme="material-you"] .feature-card:hover,
-html[data-theme="sepia"] .feature-card:hover,
-html[data-theme="sakura"] .feature-card:hover,
-html[data-theme="arctic"] .feature-card:hover,
-html[data-theme="nordic"] .feature-card:hover,
-html[data-theme="gameboy"] .feature-card:hover,
-html[data-theme="frutiger-aero"] .feature-card:hover,
-html[data-theme="solarized-light"] .feature-card:hover {
+html[data-theme-mode="light"] .feature-card:hover {
   background: rgba(0, 0, 0, 0.08);
 }
 
-html[data-theme="light"] .feature-card p,
-html[data-theme="cherry"] .feature-card p,
-html[data-theme="github-light"] .feature-card p,
-html[data-theme="minimal-gray"] .feature-card p,
-html[data-theme="paper"] .feature-card p,
-html[data-theme="macos-fluent"] .feature-card p,
-html[data-theme="windows-fluent"] .feature-card p,
-html[data-theme="material-you"] .feature-card p,
-html[data-theme="sepia"] .feature-card p,
-html[data-theme="sakura"] .feature-card p,
-html[data-theme="arctic"] .feature-card p,
-html[data-theme="nordic"] .feature-card p,
-html[data-theme="gameboy"] .feature-card p,
-html[data-theme="frutiger-aero"] .feature-card p,
-html[data-theme="solarized-light"] .feature-card p {
+html[data-theme-mode="light"] .feature-card {
   color: rgba(0, 0, 0, 0.55);
 }
 
-html[data-theme="light"] .theme-btn,
-html[data-theme="light"] .taskbar-btn,
-html[data-theme="cherry"] .theme-btn,
-html[data-theme="cherry"] .taskbar-btn,
-html[data-theme="github-light"] .theme-btn,
-html[data-theme="github-light"] .taskbar-btn,
-html[data-theme="minimal-gray"] .theme-btn,
-html[data-theme="minimal-gray"] .taskbar-btn,
-html[data-theme="paper"] .theme-btn,
-html[data-theme="paper"] .taskbar-btn,
-html[data-theme="macos-fluent"] .theme-btn,
-html[data-theme="macos-fluent"] .taskbar-btn,
-html[data-theme="windows-fluent"] .theme-btn,
-html[data-theme="windows-fluent"] .taskbar-btn,
-html[data-theme="material-you"] .theme-btn,
-html[data-theme="material-you"] .taskbar-btn,
-html[data-theme="sepia"] .theme-btn,
-html[data-theme="sepia"] .taskbar-btn,
-html[data-theme="sakura"] .theme-btn,
-html[data-theme="sakura"] .taskbar-btn,
-html[data-theme="arctic"] .theme-btn,
-html[data-theme="arctic"] .taskbar-btn,
-html[data-theme="nordic"] .theme-btn,
-html[data-theme="nordic"] .taskbar-btn,
-html[data-theme="gameboy"] .theme-btn,
-html[data-theme="gameboy"] .taskbar-btn,
-html[data-theme="frutiger-aero"] .theme-btn,
-html[data-theme="frutiger-aero"] .taskbar-btn,
-html[data-theme="solarized-light"] .theme-btn,
-html[data-theme="solarized-light"] .taskbar-btn {
+html[data-theme-mode="light"] .theme-btn {
   background: rgba(0, 0, 0, 0.05);
   border-color: rgba(0, 0, 0, 0.12);
   color: rgba(0, 0, 0, 0.8);
 }
 
-html[data-theme="light"] .theme-btn:hover,
-html[data-theme="light"] .taskbar-btn:hover,
-html[data-theme="cherry"] .theme-btn:hover,
-html[data-theme="cherry"] .taskbar-btn:hover,
-html[data-theme="github-light"] .theme-btn:hover,
-html[data-theme="github-light"] .taskbar-btn:hover,
-html[data-theme="minimal-gray"] .theme-btn:hover,
-html[data-theme="minimal-gray"] .taskbar-btn:hover,
-html[data-theme="paper"] .theme-btn:hover,
-html[data-theme="paper"] .taskbar-btn:hover,
-html[data-theme="macos-fluent"] .theme-btn:hover,
-html[data-theme="macos-fluent"] .taskbar-btn:hover,
-html[data-theme="windows-fluent"] .theme-btn:hover,
-html[data-theme="windows-fluent"] .taskbar-btn:hover,
-html[data-theme="material-you"] .theme-btn:hover,
-html[data-theme="material-you"] .taskbar-btn:hover,
-html[data-theme="sepia"] .theme-btn:hover,
-html[data-theme="sepia"] .taskbar-btn:hover,
-html[data-theme="sakura"] .theme-btn:hover,
-html[data-theme="sakura"] .taskbar-btn:hover,
-html[data-theme="arctic"] .theme-btn:hover,
-html[data-theme="arctic"] .taskbar-btn:hover,
-html[data-theme="nordic"] .theme-btn:hover,
-html[data-theme="nordic"] .taskbar-btn:hover,
-html[data-theme="gameboy"] .theme-btn:hover,
-html[data-theme="gameboy"] .taskbar-btn:hover,
-html[data-theme="frutiger-aero"] .theme-btn:hover,
-html[data-theme="frutiger-aero"] .taskbar-btn:hover,
-html[data-theme="solarized-light"] .theme-btn:hover,
-html[data-theme="solarized-light"] .taskbar-btn:hover {
+html[data-theme-mode="light"] .theme-btn:hover {
   background: rgba(0, 0, 0, 0.1);
 }
 
-html[data-theme="light"] .setting-item,
-html[data-theme="cherry"] .setting-item,
-html[data-theme="github-light"] .setting-item,
-html[data-theme="minimal-gray"] .setting-item,
-html[data-theme="paper"] .setting-item,
-html[data-theme="macos-fluent"] .setting-item,
-html[data-theme="windows-fluent"] .setting-item,
-html[data-theme="material-you"] .setting-item,
-html[data-theme="sepia"] .setting-item,
-html[data-theme="sakura"] .setting-item,
-html[data-theme="arctic"] .setting-item,
-html[data-theme="nordic"] .setting-item,
-html[data-theme="gameboy"] .setting-item,
-html[data-theme="frutiger-aero"] .setting-item,
-html[data-theme="solarized-light"] .setting-item {
+html[data-theme-mode="light"] .setting-item {
   background: rgba(0, 0, 0, 0.04);
   border-color: rgba(0, 0, 0, 0.1);
 }
 
-html[data-theme="light"] .setting-item:hover,
-html[data-theme="cherry"] .setting-item:hover,
-html[data-theme="github-light"] .setting-item:hover,
-html[data-theme="minimal-gray"] .setting-item:hover,
-html[data-theme="paper"] .setting-item:hover,
-html[data-theme="macos-fluent"] .setting-item:hover,
-html[data-theme="windows-fluent"] .setting-item:hover,
-html[data-theme="material-you"] .setting-item:hover,
-html[data-theme="sepia"] .setting-item:hover,
-html[data-theme="sakura"] .setting-item:hover,
-html[data-theme="arctic"] .setting-item:hover,
-html[data-theme="nordic"] .setting-item:hover,
-html[data-theme="gameboy"] .setting-item:hover,
-html[data-theme="frutiger-aero"] .setting-item:hover,
-html[data-theme="solarized-light"] .setting-item:hover {
+html[data-theme-mode="light"] .setting-item:hover {
   background: rgba(0, 0, 0, 0.08);
 }
 
-html[data-theme="light"] .setting-info p,
-html[data-theme="cherry"] .setting-info p,
-html[data-theme="github-light"] .setting-info p,
-html[data-theme="minimal-gray"] .setting-info p,
-html[data-theme="paper"] .setting-info p,
-html[data-theme="macos-fluent"] .setting-info p,
-html[data-theme="windows-fluent"] .setting-info p,
-html[data-theme="material-you"] .setting-info p,
-html[data-theme="sepia"] .setting-info p,
-html[data-theme="sakura"] .setting-info p,
-html[data-theme="arctic"] .setting-info p,
-html[data-theme="nordic"] .setting-info p,
-html[data-theme="gameboy"] .setting-info p,
-html[data-theme="frutiger-aero"] .setting-info p,
-html[data-theme="solarized-light"] .setting-info p {
+html[data-theme-mode="light"] .setting-info {
   color: rgba(0, 0, 0, 0.55);
 }
 
-html[data-theme="light"] .toggle-track,
-html[data-theme="cherry"] .toggle-track,
-html[data-theme="github-light"] .toggle-track,
-html[data-theme="minimal-gray"] .toggle-track,
-html[data-theme="paper"] .toggle-track,
-html[data-theme="macos-fluent"] .toggle-track,
-html[data-theme="windows-fluent"] .toggle-track,
-html[data-theme="material-you"] .toggle-track,
-html[data-theme="sepia"] .toggle-track,
-html[data-theme="sakura"] .toggle-track,
-html[data-theme="arctic"] .toggle-track,
-html[data-theme="nordic"] .toggle-track,
-html[data-theme="gameboy"] .toggle-track,
-html[data-theme="frutiger-aero"] .toggle-track,
-html[data-theme="solarized-light"] .toggle-track {
+html[data-theme-mode="light"] .toggle-track {
   background: rgba(0, 0, 0, 0.2);
 }
 
-html[data-theme="light"] .toggle-thumb,
-html[data-theme="cherry"] .toggle-thumb,
-html[data-theme="github-light"] .toggle-thumb,
-html[data-theme="minimal-gray"] .toggle-thumb,
-html[data-theme="paper"] .toggle-thumb,
-html[data-theme="macos-fluent"] .toggle-thumb,
-html[data-theme="windows-fluent"] .toggle-thumb,
-html[data-theme="material-you"] .toggle-thumb,
-html[data-theme="sepia"] .toggle-thumb,
-html[data-theme="sakura"] .toggle-thumb,
-html[data-theme="arctic"] .toggle-thumb,
-html[data-theme="nordic"] .toggle-thumb,
-html[data-theme="gameboy"] .toggle-thumb,
-html[data-theme="frutiger-aero"] .toggle-thumb,
-html[data-theme="solarized-light"] .toggle-thumb {
+html[data-theme-mode="light"] .toggle-thumb {
   background: #fff;
 }
 
-html[data-theme="light"] .complete-subtitle,
-html[data-theme="cherry"] .complete-subtitle,
-html[data-theme="github-light"] .complete-subtitle,
-html[data-theme="minimal-gray"] .complete-subtitle,
-html[data-theme="paper"] .complete-subtitle,
-html[data-theme="macos-fluent"] .complete-subtitle,
-html[data-theme="windows-fluent"] .complete-subtitle,
-html[data-theme="material-you"] .complete-subtitle,
-html[data-theme="sepia"] .complete-subtitle,
-html[data-theme="sakura"] .complete-subtitle,
-html[data-theme="arctic"] .complete-subtitle,
-html[data-theme="nordic"] .complete-subtitle,
-html[data-theme="gameboy"] .complete-subtitle,
-html[data-theme="frutiger-aero"] .complete-subtitle,
-html[data-theme="solarized-light"] .complete-subtitle {
+html[data-theme-mode="light"] .complete-subtitle {
   color: rgba(0, 0, 0, 0.6);
 }
 
-html[data-theme="light"] .summary-item,
-html[data-theme="cherry"] .summary-item,
-html[data-theme="github-light"] .summary-item,
-html[data-theme="minimal-gray"] .summary-item,
-html[data-theme="paper"] .summary-item,
-html[data-theme="macos-fluent"] .summary-item,
-html[data-theme="windows-fluent"] .summary-item,
-html[data-theme="material-you"] .summary-item,
-html[data-theme="sepia"] .summary-item,
-html[data-theme="sakura"] .summary-item,
-html[data-theme="arctic"] .summary-item,
-html[data-theme="nordic"] .summary-item,
-html[data-theme="gameboy"] .summary-item,
-html[data-theme="frutiger-aero"] .summary-item,
-html[data-theme="solarized-light"] .summary-item {
+html[data-theme-mode="light"] .summary-item {
   background: rgba(0, 0, 0, 0.05);
   color: rgba(0, 0, 0, 0.8);
 }
 
-html[data-theme="light"] .complete-tips li,
-html[data-theme="cherry"] .complete-tips li,
-html[data-theme="github-light"] .complete-tips li,
-html[data-theme="minimal-gray"] .complete-tips li,
-html[data-theme="paper"] .complete-tips li,
-html[data-theme="macos-fluent"] .complete-tips li,
-html[data-theme="windows-fluent"] .complete-tips li,
-html[data-theme="material-you"] .complete-tips li,
-html[data-theme="sepia"] .complete-tips li,
-html[data-theme="sakura"] .complete-tips li,
-html[data-theme="arctic"] .complete-tips li,
-html[data-theme="nordic"] .complete-tips li,
-html[data-theme="gameboy"] .complete-tips li,
-html[data-theme="frutiger-aero"] .complete-tips li,
-html[data-theme="solarized-light"] .complete-tips li {
+html[data-theme-mode="light"] .complete-tips {
   color: rgba(0, 0, 0, 0.7);
 }
 
-html[data-theme="light"] .complete-tips h5,
-html[data-theme="cherry"] .complete-tips h5,
-html[data-theme="github-light"] .complete-tips h5,
-html[data-theme="minimal-gray"] .complete-tips h5,
-html[data-theme="paper"] .complete-tips h5,
-html[data-theme="macos-fluent"] .complete-tips h5,
-html[data-theme="windows-fluent"] .complete-tips h5,
-html[data-theme="material-you"] .complete-tips h5,
-html[data-theme="sepia"] .complete-tips h5,
-html[data-theme="sakura"] .complete-tips h5,
-html[data-theme="arctic"] .complete-tips h5,
-html[data-theme="nordic"] .complete-tips h5,
-html[data-theme="gameboy"] .complete-tips h5,
-html[data-theme="frutiger-aero"] .complete-tips h5,
-html[data-theme="solarized-light"] .complete-tips h5 {
+html[data-theme-mode="light"] .complete-tips {
   color: rgba(0, 0, 0, 0.5);
 }
 
-html[data-theme="light"] .setup-footer,
-html[data-theme="cherry"] .setup-footer,
-html[data-theme="github-light"] .setup-footer,
-html[data-theme="minimal-gray"] .setup-footer,
-html[data-theme="paper"] .setup-footer,
-html[data-theme="macos-fluent"] .setup-footer,
-html[data-theme="windows-fluent"] .setup-footer,
-html[data-theme="material-you"] .setup-footer,
-html[data-theme="sepia"] .setup-footer,
-html[data-theme="sakura"] .setup-footer,
-html[data-theme="arctic"] .setup-footer,
-html[data-theme="nordic"] .setup-footer,
-html[data-theme="gameboy"] .setup-footer,
-html[data-theme="frutiger-aero"] .setup-footer,
-html[data-theme="solarized-light"] .setup-footer {
+html[data-theme-mode="light"] .setup-footer {
   border-top-color: rgba(0, 0, 0, 0.1);
 }
 
-html[data-theme="light"] .setup-btn-secondary,
-html[data-theme="cherry"] .setup-btn-secondary,
-html[data-theme="github-light"] .setup-btn-secondary,
-html[data-theme="minimal-gray"] .setup-btn-secondary,
-html[data-theme="paper"] .setup-btn-secondary,
-html[data-theme="macos-fluent"] .setup-btn-secondary,
-html[data-theme="windows-fluent"] .setup-btn-secondary,
-html[data-theme="material-you"] .setup-btn-secondary,
-html[data-theme="sepia"] .setup-btn-secondary,
-html[data-theme="sakura"] .setup-btn-secondary,
-html[data-theme="arctic"] .setup-btn-secondary,
-html[data-theme="nordic"] .setup-btn-secondary,
-html[data-theme="gameboy"] .setup-btn-secondary,
-html[data-theme="frutiger-aero"] .setup-btn-secondary,
-html[data-theme="solarized-light"] .setup-btn-secondary {
+html[data-theme-mode="light"] .setup-btn-secondary {
   background: rgba(0, 0, 0, 0.07);
   color: rgba(0, 0, 0, 0.75);
   border-color: rgba(0, 0, 0, 0.15);
 }
 
-html[data-theme="light"] .setup-btn-secondary:hover,
-html[data-theme="cherry"] .setup-btn-secondary:hover,
-html[data-theme="github-light"] .setup-btn-secondary:hover,
-html[data-theme="minimal-gray"] .setup-btn-secondary:hover,
-html[data-theme="paper"] .setup-btn-secondary:hover,
-html[data-theme="macos-fluent"] .setup-btn-secondary:hover,
-html[data-theme="windows-fluent"] .setup-btn-secondary:hover,
-html[data-theme="material-you"] .setup-btn-secondary:hover,
-html[data-theme="sepia"] .setup-btn-secondary:hover,
-html[data-theme="sakura"] .setup-btn-secondary:hover,
-html[data-theme="arctic"] .setup-btn-secondary:hover,
-html[data-theme="nordic"] .setup-btn-secondary:hover,
-html[data-theme="gameboy"] .setup-btn-secondary:hover,
-html[data-theme="frutiger-aero"] .setup-btn-secondary:hover,
-html[data-theme="solarized-light"] .setup-btn-secondary:hover {
+html[data-theme-mode="light"] .setup-btn-secondary:hover {
   background: rgba(0, 0, 0, 0.12);
 }
 
-html[data-theme="light"] ::-webkit-scrollbar-track,
-html[data-theme="cherry"] ::-webkit-scrollbar-track,
-html[data-theme="github-light"] ::-webkit-scrollbar-track,
-html[data-theme="minimal-gray"] ::-webkit-scrollbar-track,
-html[data-theme="paper"] ::-webkit-scrollbar-track,
-html[data-theme="macos-fluent"] ::-webkit-scrollbar-track,
-html[data-theme="windows-fluent"] ::-webkit-scrollbar-track,
-html[data-theme="material-you"] ::-webkit-scrollbar-track,
-html[data-theme="sepia"] ::-webkit-scrollbar-track,
-html[data-theme="sakura"] ::-webkit-scrollbar-track,
-html[data-theme="arctic"] ::-webkit-scrollbar-track,
-html[data-theme="nordic"] ::-webkit-scrollbar-track,
-html[data-theme="gameboy"] ::-webkit-scrollbar-track,
-html[data-theme="frutiger-aero"] ::-webkit-scrollbar-track,
-html[data-theme="solarized-light"] ::-webkit-scrollbar-track {
+html[data-theme-mode="light"] ::-webkit-scrollbar-track {
   background: rgba(0, 0, 0, 0.03);
 }
 
-html[data-theme="light"] ::-webkit-scrollbar-thumb,
-html[data-theme="cherry"] ::-webkit-scrollbar-thumb,
-html[data-theme="github-light"] ::-webkit-scrollbar-thumb,
-html[data-theme="minimal-gray"] ::-webkit-scrollbar-thumb,
-html[data-theme="paper"] ::-webkit-scrollbar-thumb,
-html[data-theme="macos-fluent"] ::-webkit-scrollbar-thumb,
-html[data-theme="windows-fluent"] ::-webkit-scrollbar-thumb,
-html[data-theme="material-you"] ::-webkit-scrollbar-thumb,
-html[data-theme="sepia"] ::-webkit-scrollbar-thumb,
-html[data-theme="sakura"] ::-webkit-scrollbar-thumb,
-html[data-theme="arctic"] ::-webkit-scrollbar-thumb,
-html[data-theme="nordic"] ::-webkit-scrollbar-thumb,
-html[data-theme="gameboy"] ::-webkit-scrollbar-thumb,
-html[data-theme="frutiger-aero"] ::-webkit-scrollbar-thumb,
-html[data-theme="solarized-light"] ::-webkit-scrollbar-thumb {
+html[data-theme-mode="light"] ::-webkit-scrollbar-thumb {
   background: rgba(124, 58, 237, 0.5);
   border: 1px solid rgba(124, 58, 237, 0.3);
 }
 
-html[data-theme="light"] ::-webkit-scrollbar-thumb:hover,
-html[data-theme="cherry"] ::-webkit-scrollbar-thumb:hover,
-html[data-theme="github-light"] ::-webkit-scrollbar-thumb:hover,
-html[data-theme="minimal-gray"] ::-webkit-scrollbar-thumb:hover,
-html[data-theme="paper"] ::-webkit-scrollbar-thumb:hover,
-html[data-theme="macos-fluent"] ::-webkit-scrollbar-thumb:hover,
-html[data-theme="windows-fluent"] ::-webkit-scrollbar-thumb:hover,
-html[data-theme="material-you"] ::-webkit-scrollbar-thumb:hover,
-html[data-theme="sepia"] ::-webkit-scrollbar-thumb:hover,
-html[data-theme="sakura"] ::-webkit-scrollbar-thumb:hover,
-html[data-theme="arctic"] ::-webkit-scrollbar-thumb:hover,
-html[data-theme="nordic"] ::-webkit-scrollbar-thumb:hover,
-html[data-theme="gameboy"] ::-webkit-scrollbar-thumb:hover,
-html[data-theme="frutiger-aero"] ::-webkit-scrollbar-thumb:hover,
-html[data-theme="solarized-light"] ::-webkit-scrollbar-thumb:hover {
+html[data-theme-mode="light"] ::-webkit-scrollbar-thumb:hover {
   background: rgba(124, 58, 237, 0.7);
   border-color: rgba(124, 58, 237, 0.5);
 }
@@ -1546,216 +1166,45 @@ html[data-theme="solarized-light"] ::-webkit-scrollbar-thumb:hover {
   color: #fff;
 }
 
-html[data-theme="light"] .shortcut-item,
-html[data-theme="cherry"] .shortcut-item,
-html[data-theme="github-light"] .shortcut-item,
-html[data-theme="minimal-gray"] .shortcut-item,
-html[data-theme="paper"] .shortcut-item,
-html[data-theme="macos-fluent"] .shortcut-item,
-html[data-theme="windows-fluent"] .shortcut-item,
-html[data-theme="material-you"] .shortcut-item,
-html[data-theme="sepia"] .shortcut-item,
-html[data-theme="sakura"] .shortcut-item,
-html[data-theme="arctic"] .shortcut-item,
-html[data-theme="nordic"] .shortcut-item,
-html[data-theme="gameboy"] .shortcut-item,
-html[data-theme="frutiger-aero"] .shortcut-item,
-html[data-theme="solarized-light"] .shortcut-item {
+html[data-theme-mode="light"] .shortcut-item {
   background: rgba(0, 0, 0, 0.04);
   border-color: rgba(0, 0, 0, 0.1);
 }
 
-html[data-theme="light"] .shortcut-item kbd,
-html[data-theme="cherry"] .shortcut-item kbd,
-html[data-theme="github-light"] .shortcut-item kbd,
-html[data-theme="minimal-gray"] .shortcut-item kbd,
-html[data-theme="paper"] .shortcut-item kbd,
-html[data-theme="macos-fluent"] .shortcut-item kbd,
-html[data-theme="windows-fluent"] .shortcut-item kbd,
-html[data-theme="material-you"] .shortcut-item kbd,
-html[data-theme="sepia"] .shortcut-item kbd,
-html[data-theme="sakura"] .shortcut-item kbd,
-html[data-theme="arctic"] .shortcut-item kbd,
-html[data-theme="nordic"] .shortcut-item kbd,
-html[data-theme="gameboy"] .shortcut-item kbd,
-html[data-theme="frutiger-aero"] .shortcut-item kbd,
-html[data-theme="solarized-light"] .shortcut-item kbd {
+html[data-theme-mode="light"] .shortcut-item {
   background: rgba(0, 0, 0, 0.08);
   border-color: rgba(0, 0, 0, 0.15);
 }
 
-html[data-theme="light"] .shortcut-item span,
-html[data-theme="cherry"] .shortcut-item span,
-html[data-theme="github-light"] .shortcut-item span,
-html[data-theme="minimal-gray"] .shortcut-item span,
-html[data-theme="paper"] .shortcut-item span,
-html[data-theme="macos-fluent"] .shortcut-item span,
-html[data-theme="windows-fluent"] .shortcut-item span,
-html[data-theme="material-you"] .shortcut-item span,
-html[data-theme="sepia"] .shortcut-item span,
-html[data-theme="sakura"] .shortcut-item span,
-html[data-theme="arctic"] .shortcut-item span,
-html[data-theme="nordic"] .shortcut-item span,
-html[data-theme="gameboy"] .shortcut-item span,
-html[data-theme="frutiger-aero"] .shortcut-item span,
-html[data-theme="solarized-light"] .shortcut-item span {
+html[data-theme-mode="light"] .shortcut-item {
   color: rgba(0, 0, 0, 0.6);
 }
 
-html[data-theme="light"] .filesystem-item,
-html[data-theme="cherry"] .filesystem-item,
-html[data-theme="github-light"] .filesystem-item,
-html[data-theme="minimal-gray"] .filesystem-item,
-html[data-theme="paper"] .filesystem-item,
-html[data-theme="macos-fluent"] .filesystem-item,
-html[data-theme="windows-fluent"] .filesystem-item,
-html[data-theme="material-you"] .filesystem-item,
-html[data-theme="sepia"] .filesystem-item,
-html[data-theme="sakura"] .filesystem-item,
-html[data-theme="arctic"] .filesystem-item,
-html[data-theme="nordic"] .filesystem-item,
-html[data-theme="gameboy"] .filesystem-item,
-html[data-theme="frutiger-aero"] .filesystem-item,
-html[data-theme="solarized-light"] .filesystem-item {
+html[data-theme-mode="light"] .filesystem-item {
   background: rgba(0, 0, 0, 0.04);
   border-color: rgba(0, 0, 0, 0.1);
 }
 
-html[data-theme="light"] .filesystem-item code,
-html[data-theme="cherry"] .filesystem-item code,
-html[data-theme="github-light"] .filesystem-item code,
-html[data-theme="minimal-gray"] .filesystem-item code,
-html[data-theme="paper"] .filesystem-item code,
-html[data-theme="macos-fluent"] .filesystem-item code,
-html[data-theme="windows-fluent"] .filesystem-item code,
-html[data-theme="material-you"] .filesystem-item code,
-html[data-theme="sepia"] .filesystem-item code,
-html[data-theme="sakura"] .filesystem-item code,
-html[data-theme="arctic"] .filesystem-item code,
-html[data-theme="nordic"] .filesystem-item code,
-html[data-theme="gameboy"] .filesystem-item code,
-html[data-theme="frutiger-aero"] .filesystem-item code,
-html[data-theme="solarized-light"] .filesystem-item code {
+html[data-theme-mode="light"] .filesystem-item {
   background: rgba(0, 0, 0, 0.08);
   border-color: rgba(0, 0, 0, 0.15);
 }
 
-html[data-theme="light"] .filesystem-item span,
-html[data-theme="cherry"] .filesystem-item span,
-html[data-theme="github-light"] .filesystem-item span,
-html[data-theme="minimal-gray"] .filesystem-item span,
-html[data-theme="paper"] .filesystem-item span,
-html[data-theme="macos-fluent"] .filesystem-item span,
-html[data-theme="windows-fluent"] .filesystem-item span,
-html[data-theme="material-you"] .filesystem-item span,
-html[data-theme="sepia"] .filesystem-item span,
-html[data-theme="sakura"] .filesystem-item span,
-html[data-theme="arctic"] .filesystem-item span,
-html[data-theme="nordic"] .filesystem-item span,
-html[data-theme="gameboy"] .filesystem-item span,
-html[data-theme="frutiger-aero"] .filesystem-item span,
-html[data-theme="solarized-light"] .filesystem-item span {
+html[data-theme-mode="light"] .filesystem-item {
   color: rgba(0, 0, 0, 0.55);
 }
 
-html[data-theme="light"] .turbo-btn,
-html[data-theme="light"] .transparency-btn,
-html[data-theme="cherry"] .turbo-btn,
-html[data-theme="cherry"] .transparency-btn,
-html[data-theme="github-light"] .turbo-btn,
-html[data-theme="github-light"] .transparency-btn,
-html[data-theme="minimal-gray"] .turbo-btn,
-html[data-theme="minimal-gray"] .transparency-btn,
-html[data-theme="paper"] .turbo-btn,
-html[data-theme="paper"] .transparency-btn,
-html[data-theme="macos-fluent"] .turbo-btn,
-html[data-theme="macos-fluent"] .transparency-btn,
-html[data-theme="windows-fluent"] .turbo-btn,
-html[data-theme="windows-fluent"] .transparency-btn,
-html[data-theme="material-you"] .turbo-btn,
-html[data-theme="material-you"] .transparency-btn,
-html[data-theme="sepia"] .turbo-btn,
-html[data-theme="sepia"] .transparency-btn,
-html[data-theme="sakura"] .turbo-btn,
-html[data-theme="sakura"] .transparency-btn,
-html[data-theme="arctic"] .turbo-btn,
-html[data-theme="arctic"] .transparency-btn,
-html[data-theme="nordic"] .turbo-btn,
-html[data-theme="nordic"] .transparency-btn,
-html[data-theme="gameboy"] .turbo-btn,
-html[data-theme="gameboy"] .transparency-btn,
-html[data-theme="frutiger-aero"] .turbo-btn,
-html[data-theme="frutiger-aero"] .transparency-btn,
-html[data-theme="solarized-light"] .turbo-btn,
-html[data-theme="solarized-light"] .transparency-btn {
+html[data-theme-mode="light"] .turbo-btn {
   background: rgba(0, 0, 0, 0.05);
   border-color: rgba(0, 0, 0, 0.12);
   color: rgba(0, 0, 0, 0.8);
 }
 
-html[data-theme="light"] .turbo-btn:hover,
-html[data-theme="light"] .transparency-btn:hover,
-html[data-theme="cherry"] .turbo-btn:hover,
-html[data-theme="cherry"] .transparency-btn:hover,
-html[data-theme="github-light"] .turbo-btn:hover,
-html[data-theme="github-light"] .transparency-btn:hover,
-html[data-theme="minimal-gray"] .turbo-btn:hover,
-html[data-theme="minimal-gray"] .transparency-btn:hover,
-html[data-theme="paper"] .turbo-btn:hover,
-html[data-theme="paper"] .transparency-btn:hover,
-html[data-theme="macos-fluent"] .turbo-btn:hover,
-html[data-theme="macos-fluent"] .transparency-btn:hover,
-html[data-theme="windows-fluent"] .turbo-btn:hover,
-html[data-theme="windows-fluent"] .transparency-btn:hover,
-html[data-theme="material-you"] .turbo-btn:hover,
-html[data-theme="material-you"] .transparency-btn:hover,
-html[data-theme="sepia"] .turbo-btn:hover,
-html[data-theme="sepia"] .transparency-btn:hover,
-html[data-theme="sakura"] .turbo-btn:hover,
-html[data-theme="sakura"] .transparency-btn:hover,
-html[data-theme="arctic"] .turbo-btn:hover,
-html[data-theme="arctic"] .transparency-btn:hover,
-html[data-theme="nordic"] .turbo-btn:hover,
-html[data-theme="nordic"] .transparency-btn:hover,
-html[data-theme="gameboy"] .turbo-btn:hover,
-html[data-theme="gameboy"] .transparency-btn:hover,
-html[data-theme="frutiger-aero"] .turbo-btn:hover,
-html[data-theme="frutiger-aero"] .transparency-btn:hover,
-html[data-theme="solarized-light"] .turbo-btn:hover,
-html[data-theme="solarized-light"] .transparency-btn:hover {
+html[data-theme-mode="light"] .turbo-btn:hover {
   background: rgba(0, 0, 0, 0.1);
 }
 
-html[data-theme="light"] .turbo-desc,
-html[data-theme="light"] .transparency-desc,
-html[data-theme="cherry"] .turbo-desc,
-html[data-theme="cherry"] .transparency-desc,
-html[data-theme="github-light"] .turbo-desc,
-html[data-theme="github-light"] .transparency-desc,
-html[data-theme="minimal-gray"] .turbo-desc,
-html[data-theme="minimal-gray"] .transparency-desc,
-html[data-theme="paper"] .turbo-desc,
-html[data-theme="paper"] .transparency-desc,
-html[data-theme="macos-fluent"] .turbo-desc,
-html[data-theme="macos-fluent"] .transparency-desc,
-html[data-theme="windows-fluent"] .turbo-desc,
-html[data-theme="windows-fluent"] .transparency-desc,
-html[data-theme="material-you"] .turbo-desc,
-html[data-theme="material-you"] .transparency-desc,
-html[data-theme="sepia"] .turbo-desc,
-html[data-theme="sepia"] .transparency-desc,
-html[data-theme="sakura"] .turbo-desc,
-html[data-theme="sakura"] .transparency-desc,
-html[data-theme="arctic"] .turbo-desc,
-html[data-theme="arctic"] .transparency-desc,
-html[data-theme="nordic"] .turbo-desc,
-html[data-theme="nordic"] .transparency-desc,
-html[data-theme="gameboy"] .turbo-desc,
-html[data-theme="gameboy"] .transparency-desc,
-html[data-theme="frutiger-aero"] .turbo-desc,
-html[data-theme="frutiger-aero"] .transparency-desc,
-html[data-theme="solarized-light"] .turbo-desc,
-html[data-theme="solarized-light"] .transparency-desc {
+html[data-theme-mode="light"] .turbo-desc {
   color: rgba(0, 0, 0, 0.55);
 }
 
@@ -1771,36 +1220,7 @@ html[data-theme="solarized-light"] .transparency-desc {
   width: 8px;
 }
 
-html[data-theme="light"] .turbo-btn.active .turbo-desc,
-html[data-theme="light"] .transparency-btn.active .transparency-desc,
-html[data-theme="cherry"] .turbo-btn.active .turbo-desc,
-html[data-theme="cherry"] .transparency-btn.active .transparency-desc,
-html[data-theme="github-light"] .turbo-btn.active .turbo-desc,
-html[data-theme="github-light"] .transparency-btn.active .transparency-desc,
-html[data-theme="minimal-gray"] .turbo-btn.active .turbo-desc,
-html[data-theme="minimal-gray"] .transparency-btn.active .transparency-desc,
-html[data-theme="paper"] .turbo-btn.active .turbo-desc,
-html[data-theme="paper"] .transparency-btn.active .transparency-desc,
-html[data-theme="macos-fluent"] .turbo-btn.active .turbo-desc,
-html[data-theme="macos-fluent"] .transparency-btn.active .transparency-desc,
-html[data-theme="windows-fluent"] .turbo-btn.active .turbo-desc,
-html[data-theme="windows-fluent"] .transparency-btn.active .transparency-desc,
-html[data-theme="material-you"] .turbo-btn.active .turbo-desc,
-html[data-theme="material-you"] .transparency-btn.active .transparency-desc,
-html[data-theme="sepia"] .turbo-btn.active .turbo-desc,
-html[data-theme="sepia"] .transparency-btn.active .transparency-desc,
-html[data-theme="sakura"] .turbo-btn.active .turbo-desc,
-html[data-theme="sakura"] .transparency-btn.active .transparency-desc,
-html[data-theme="arctic"] .turbo-btn.active .turbo-desc,
-html[data-theme="arctic"] .transparency-btn.active .transparency-desc,
-html[data-theme="nordic"] .turbo-btn.active .turbo-desc,
-html[data-theme="nordic"] .transparency-btn.active .transparency-desc,
-html[data-theme="gameboy"] .turbo-btn.active .turbo-desc,
-html[data-theme="gameboy"] .transparency-btn.active .transparency-desc,
-html[data-theme="frutiger-aero"] .turbo-btn.active .turbo-desc,
-html[data-theme="frutiger-aero"] .transparency-btn.active .transparency-desc,
-html[data-theme="solarized-light"] .turbo-btn.active .turbo-desc,
-html[data-theme="solarized-light"] .transparency-btn.active .transparency-desc {
+html[data-theme-mode="light"] .turbo-btn.active {
   color: rgba(255, 255, 255, 0.8);
 }
 
@@ -1841,116 +1261,32 @@ html[data-theme="solarized-light"] .transparency-btn.active .transparency-desc {
   font-size: 16px;
 }
 
-html[data-theme="light"] .setup-guide-btn,
-html[data-theme="cherry"] .setup-guide-btn,
-html[data-theme="github-light"] .setup-guide-btn,
-html[data-theme="minimal-gray"] .setup-guide-btn,
-html[data-theme="paper"] .setup-guide-btn,
-html[data-theme="macos-fluent"] .setup-guide-btn,
-html[data-theme="windows-fluent"] .setup-guide-btn,
-html[data-theme="material-you"] .setup-guide-btn,
-html[data-theme="sepia"] .setup-guide-btn,
-html[data-theme="sakura"] .setup-guide-btn,
-html[data-theme="arctic"] .setup-guide-btn,
-html[data-theme="nordic"] .setup-guide-btn,
-html[data-theme="gameboy"] .setup-guide-btn,
-html[data-theme="frutiger-aero"] .setup-guide-btn,
-html[data-theme="solarized-light"] .setup-guide-btn {
+html[data-theme-mode="light"] .setup-guide-btn {
   color: #fff;
 }
 
-html[data-theme="light"] .app-pin-item,
-html[data-theme="cherry"] .app-pin-item,
-html[data-theme="github-light"] .app-pin-item,
-html[data-theme="minimal-gray"] .app-pin-item,
-html[data-theme="paper"] .app-pin-item,
-html[data-theme="macos-fluent"] .app-pin-item,
-html[data-theme="windows-fluent"] .app-pin-item,
-html[data-theme="material-you"] .app-pin-item,
-html[data-theme="sepia"] .app-pin-item,
-html[data-theme="sakura"] .app-pin-item,
-html[data-theme="arctic"] .app-pin-item,
-html[data-theme="nordic"] .app-pin-item,
-html[data-theme="gameboy"] .app-pin-item,
-html[data-theme="frutiger-aero"] .app-pin-item,
-html[data-theme="solarized-light"] .app-pin-item {
+html[data-theme-mode="light"] .app-pin-item {
   background: rgba(0, 0, 0, 0.04);
   border-color: rgba(0, 0, 0, 0.1);
   color: rgba(0, 0, 0, 0.8);
 }
 
-html[data-theme="light"] .app-pin-item:hover,
-html[data-theme="cherry"] .app-pin-item:hover,
-html[data-theme="github-light"] .app-pin-item:hover,
-html[data-theme="minimal-gray"] .app-pin-item:hover,
-html[data-theme="paper"] .app-pin-item:hover,
-html[data-theme="macos-fluent"] .app-pin-item:hover,
-html[data-theme="windows-fluent"] .app-pin-item:hover,
-html[data-theme="material-you"] .app-pin-item:hover,
-html[data-theme="sepia"] .app-pin-item:hover,
-html[data-theme="sakura"] .app-pin-item:hover,
-html[data-theme="arctic"] .app-pin-item:hover,
-html[data-theme="nordic"] .app-pin-item:hover,
-html[data-theme="gameboy"] .app-pin-item:hover,
-html[data-theme="frutiger-aero"] .app-pin-item:hover,
-html[data-theme="solarized-light"] .app-pin-item:hover {
+html[data-theme-mode="light"] .app-pin-item:hover {
   background: rgba(0, 0, 0, 0.08);
 }
 
-html[data-theme="light"] .app-pin-item.pinned,
-html[data-theme="cherry"] .app-pin-item.pinned,
-html[data-theme="github-light"] .app-pin-item.pinned,
-html[data-theme="minimal-gray"] .app-pin-item.pinned,
-html[data-theme="paper"] .app-pin-item.pinned,
-html[data-theme="macos-fluent"] .app-pin-item.pinned,
-html[data-theme="windows-fluent"] .app-pin-item.pinned,
-html[data-theme="material-you"] .app-pin-item.pinned,
-html[data-theme="sepia"] .app-pin-item.pinned,
-html[data-theme="sakura"] .app-pin-item.pinned,
-html[data-theme="arctic"] .app-pin-item.pinned,
-html[data-theme="nordic"] .app-pin-item.pinned,
-html[data-theme="gameboy"] .app-pin-item.pinned,
-html[data-theme="frutiger-aero"] .app-pin-item.pinned,
-html[data-theme="solarized-light"] .app-pin-item.pinned {
+html[data-theme-mode="light"] .app-pin-item.pinned {
   background: var(--brand-glow);
   border-color: var(--brand);
   color: #fff;
 }
 
-html[data-theme="light"] .shortcut-category,
-html[data-theme="cherry"] .shortcut-category,
-html[data-theme="github-light"] .shortcut-category,
-html[data-theme="minimal-gray"] .shortcut-category,
-html[data-theme="paper"] .shortcut-category,
-html[data-theme="macos-fluent"] .shortcut-category,
-html[data-theme="windows-fluent"] .shortcut-category,
-html[data-theme="material-you"] .shortcut-category,
-html[data-theme="sepia"] .shortcut-category,
-html[data-theme="sakura"] .shortcut-category,
-html[data-theme="arctic"] .shortcut-category,
-html[data-theme="nordic"] .shortcut-category,
-html[data-theme="gameboy"] .shortcut-category,
-html[data-theme="frutiger-aero"] .shortcut-category,
-html[data-theme="solarized-light"] .shortcut-category {
+html[data-theme-mode="light"] .shortcut-category {
   background: rgba(0, 0, 0, 0.04);
   border-color: rgba(0, 0, 0, 0.1);
 }
 
-html[data-theme="light"] .shortcut-category-header,
-html[data-theme="cherry"] .shortcut-category-header,
-html[data-theme="github-light"] .shortcut-category-header,
-html[data-theme="minimal-gray"] .shortcut-category-header,
-html[data-theme="paper"] .shortcut-category-header,
-html[data-theme="macos-fluent"] .shortcut-category-header,
-html[data-theme="windows-fluent"] .shortcut-category-header,
-html[data-theme="material-you"] .shortcut-category-header,
-html[data-theme="sepia"] .shortcut-category-header,
-html[data-theme="sakura"] .shortcut-category-header,
-html[data-theme="arctic"] .shortcut-category-header,
-html[data-theme="nordic"] .shortcut-category-header,
-html[data-theme="gameboy"] .shortcut-category-header,
-html[data-theme="frutiger-aero"] .shortcut-category-header,
-html[data-theme="solarized-light"] .shortcut-category-header {
+html[data-theme-mode="light"] .shortcut-category-header {
   color: rgba(0, 0, 0, 0.8);
   border-bottom-color: rgba(0, 0, 0, 0.1);
 }

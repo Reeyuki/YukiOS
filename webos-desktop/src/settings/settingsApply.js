@@ -3,10 +3,31 @@ import { turboManager } from "../shared/turboManager.js";
 import { getThemeColors } from "../shared/themeEngine.js";
 const desktop = document.getElementById("desktop");
 
+const LIGHT_THEMES = new Set([
+  "light",
+  "arctic",
+  "nordic",
+  "sakura",
+  "cherry",
+  "github-light",
+  "minimal-gray",
+  "paper",
+  "macos-fluent",
+  "windows-fluent",
+  "material-you",
+  "sepia",
+  "frutiger-aero",
+  "gameboy",
+  "solarized-light",
+  "mint",
+  "cream"
+]);
+
 export function applyTheme(theme, getCustomColors) {
   const prefersDark = window.matchMedia?.("(prefers-color-scheme: dark)").matches ?? true;
   const effective = theme === "auto" ? (prefersDark ? "dark" : "light") : theme;
   document.documentElement.setAttribute("data-theme", effective);
+  document.documentElement.setAttribute("data-theme-mode", LIGHT_THEMES.has(effective) ? "light" : "dark");
 
   let styleEl = document.getElementById("yukios-theme-override");
   if (!styleEl) {

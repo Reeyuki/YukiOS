@@ -711,223 +711,55 @@
   pointer-events: none;
 }
 
-html[data-theme="light"] .explorer-main,
-html[data-theme="cherry"] .explorer-main,
-html[data-theme="github-light"] .explorer-main,
-html[data-theme="minimal-gray"] .explorer-main,
-html[data-theme="paper"] .explorer-main,
-html[data-theme="macos-fluent"] .explorer-main,
-html[data-theme="windows-fluent"] .explorer-main,
-html[data-theme="material-you"] .explorer-main,
-html[data-theme="sepia"] .explorer-main,
-html[data-theme="sakura"] .explorer-main,
-html[data-theme="arctic"] .explorer-main,
-html[data-theme="nordic"] .explorer-main,
-html[data-theme="gameboy"] .explorer-main,
-html[data-theme="frutiger-aero"] .explorer-main,
-html[data-theme="solarized-light"] .explorer-main {
+html[data-theme-mode="light"] .explorer-main {
   background: var(--bg-primary) !important;
   color: var(--text-primary) !important;
 }
 
-html[data-theme="light"] .explorer-sidebar,
-html[data-theme="cherry"] .explorer-sidebar,
-html[data-theme="github-light"] .explorer-sidebar,
-html[data-theme="minimal-gray"] .explorer-sidebar,
-html[data-theme="paper"] .explorer-sidebar,
-html[data-theme="macos-fluent"] .explorer-sidebar,
-html[data-theme="windows-fluent"] .explorer-sidebar,
-html[data-theme="material-you"] .explorer-sidebar,
-html[data-theme="sepia"] .explorer-sidebar,
-html[data-theme="sakura"] .explorer-sidebar,
-html[data-theme="arctic"] .explorer-sidebar,
-html[data-theme="nordic"] .explorer-sidebar,
-html[data-theme="gameboy"] .explorer-sidebar,
-html[data-theme="frutiger-aero"] .explorer-sidebar,
-html[data-theme="solarized-light"] .explorer-sidebar {
+html[data-theme-mode="light"] .explorer-sidebar {
   background: var(--bg-secondary) !important;
   border-right: 1px solid var(--glass-border) !important;
 }
 
-html[data-theme="light"] .explorer-sidebar .start-item,
-html[data-theme="cherry"] .explorer-sidebar .start-item,
-html[data-theme="github-light"] .explorer-sidebar .start-item,
-html[data-theme="minimal-gray"] .explorer-sidebar .start-item,
-html[data-theme="paper"] .explorer-sidebar .start-item,
-html[data-theme="macos-fluent"] .explorer-sidebar .start-item,
-html[data-theme="windows-fluent"] .explorer-sidebar .start-item,
-html[data-theme="material-you"] .explorer-sidebar .start-item,
-html[data-theme="sepia"] .explorer-sidebar .start-item,
-html[data-theme="sakura"] .explorer-sidebar .start-item,
-html[data-theme="arctic"] .explorer-sidebar .start-item,
-html[data-theme="nordic"] .explorer-sidebar .start-item,
-html[data-theme="gameboy"] .explorer-sidebar .start-item,
-html[data-theme="frutiger-aero"] .explorer-sidebar .start-item,
-html[data-theme="solarized-light"] .explorer-sidebar .start-item {
+html[data-theme-mode="light"] .explorer-sidebar .start-item {
   color: var(--text-secondary) !important;
 }
 
-html[data-theme="light"] .explorer-sidebar .start-item:hover,
-html[data-theme="cherry"] .explorer-sidebar .start-item:hover,
-html[data-theme="github-light"] .explorer-sidebar .start-item:hover,
-html[data-theme="minimal-gray"] .explorer-sidebar .start-item:hover,
-html[data-theme="paper"] .explorer-sidebar .start-item:hover,
-html[data-theme="macos-fluent"] .explorer-sidebar .start-item:hover,
-html[data-theme="windows-fluent"] .explorer-sidebar .start-item:hover,
-html[data-theme="material-you"] .explorer-sidebar .start-item:hover,
-html[data-theme="sepia"] .explorer-sidebar .start-item:hover,
-html[data-theme="sakura"] .explorer-sidebar .start-item:hover,
-html[data-theme="arctic"] .explorer-sidebar .start-item:hover,
-html[data-theme="nordic"] .explorer-sidebar .start-item:hover,
-html[data-theme="gameboy"] .explorer-sidebar .start-item:hover,
-html[data-theme="frutiger-aero"] .explorer-sidebar .start-item:hover,
-html[data-theme="solarized-light"] .explorer-sidebar .start-item:hover {
+html[data-theme-mode="light"] .explorer-sidebar .start-item:hover {
   background: var(--brand-dim) !important;
   color: var(--text-primary) !important;
 }
 
-html[data-theme="light"] .explorer-toolbar,
-html[data-theme="cherry"] .explorer-toolbar,
-html[data-theme="github-light"] .explorer-toolbar,
-html[data-theme="minimal-gray"] .explorer-toolbar,
-html[data-theme="paper"] .explorer-toolbar,
-html[data-theme="macos-fluent"] .explorer-toolbar,
-html[data-theme="windows-fluent"] .explorer-toolbar,
-html[data-theme="material-you"] .explorer-toolbar,
-html[data-theme="sepia"] .explorer-toolbar,
-html[data-theme="sakura"] .explorer-toolbar,
-html[data-theme="arctic"] .explorer-toolbar,
-html[data-theme="nordic"] .explorer-toolbar,
-html[data-theme="gameboy"] .explorer-toolbar,
-html[data-theme="frutiger-aero"] .explorer-toolbar,
-html[data-theme="solarized-light"] .explorer-toolbar {
+html[data-theme-mode="light"] .explorer-toolbar {
   background: var(--bg-secondary) !important;
   border-bottom: 1px solid var(--glass-border) !important;
 }
 
-html[data-theme="light"] .explorer-statusbar,
-html[data-theme="cherry"] .explorer-statusbar,
-html[data-theme="github-light"] .explorer-statusbar,
-html[data-theme="minimal-gray"] .explorer-statusbar,
-html[data-theme="paper"] .explorer-statusbar,
-html[data-theme="macos-fluent"] .explorer-statusbar,
-html[data-theme="windows-fluent"] .explorer-statusbar,
-html[data-theme="material-you"] .explorer-statusbar,
-html[data-theme="sepia"] .explorer-statusbar,
-html[data-theme="sakura"] .explorer-statusbar,
-html[data-theme="arctic"] .explorer-statusbar,
-html[data-theme="nordic"] .explorer-statusbar,
-html[data-theme="gameboy"] .explorer-statusbar,
-html[data-theme="frutiger-aero"] .explorer-statusbar,
-html[data-theme="solarized-light"] .explorer-statusbar {
+html[data-theme-mode="light"] .explorer-statusbar {
   background: var(--bg-secondary) !important;
   color: var(--text-secondary) !important;
   border-top: 1px solid var(--glass-border) !important;
 }
 
-html[data-theme="light"] .file-item span,
-html[data-theme="light"] .explorer-item-name,
-html[data-theme="cherry"] .file-item span,
-html[data-theme="cherry"] .explorer-item-name,
-html[data-theme="github-light"] .file-item span,
-html[data-theme="github-light"] .explorer-item-name,
-html[data-theme="minimal-gray"] .file-item span,
-html[data-theme="minimal-gray"] .explorer-item-name,
-html[data-theme="paper"] .file-item span,
-html[data-theme="paper"] .explorer-item-name,
-html[data-theme="macos-fluent"] .file-item span,
-html[data-theme="macos-fluent"] .explorer-item-name,
-html[data-theme="windows-fluent"] .file-item span,
-html[data-theme="windows-fluent"] .explorer-item-name,
-html[data-theme="material-you"] .file-item span,
-html[data-theme="material-you"] .explorer-item-name,
-html[data-theme="sepia"] .file-item span,
-html[data-theme="sepia"] .explorer-item-name,
-html[data-theme="sakura"] .file-item span,
-html[data-theme="sakura"] .explorer-item-name,
-html[data-theme="arctic"] .file-item span,
-html[data-theme="arctic"] .explorer-item-name,
-html[data-theme="nordic"] .file-item span,
-html[data-theme="nordic"] .explorer-item-name,
-html[data-theme="gameboy"] .file-item span,
-html[data-theme="gameboy"] .explorer-item-name,
-html[data-theme="frutiger-aero"] .file-item span,
-html[data-theme="frutiger-aero"] .explorer-item-name,
-html[data-theme="solarized-light"] .file-item span,
-html[data-theme="solarized-light"] .explorer-item-name {
+html[data-theme-mode="light"] .file-item span,
+html[data-theme-mode="light"] .explorer-item-name {
   color: var(--text-primary) !important;
   text-shadow: none !important;
 }
 
-html[data-theme="light"] .explorer-breadcrumb-part,
-html[data-theme="cherry"] .explorer-breadcrumb-part,
-html[data-theme="github-light"] .explorer-breadcrumb-part,
-html[data-theme="minimal-gray"] .explorer-breadcrumb-part,
-html[data-theme="paper"] .explorer-breadcrumb-part,
-html[data-theme="macos-fluent"] .explorer-breadcrumb-part,
-html[data-theme="windows-fluent"] .explorer-breadcrumb-part,
-html[data-theme="material-you"] .explorer-breadcrumb-part,
-html[data-theme="sepia"] .explorer-breadcrumb-part,
-html[data-theme="sakura"] .explorer-breadcrumb-part,
-html[data-theme="arctic"] .explorer-breadcrumb-part,
-html[data-theme="nordic"] .explorer-breadcrumb-part,
-html[data-theme="gameboy"] .explorer-breadcrumb-part,
-html[data-theme="frutiger-aero"] .explorer-breadcrumb-part,
-html[data-theme="solarized-light"] .explorer-breadcrumb-part {
+html[data-theme-mode="light"] .explorer-breadcrumb-part {
   color: var(--text-primary) !important;
 }
 
-html[data-theme="light"] .explorer-sidebar-item,
-html[data-theme="cherry"] .explorer-sidebar-item,
-html[data-theme="github-light"] .explorer-sidebar-item,
-html[data-theme="minimal-gray"] .explorer-sidebar-item,
-html[data-theme="paper"] .explorer-sidebar-item,
-html[data-theme="macos-fluent"] .explorer-sidebar-item,
-html[data-theme="windows-fluent"] .explorer-sidebar-item,
-html[data-theme="material-you"] .explorer-sidebar-item,
-html[data-theme="sepia"] .explorer-sidebar-item,
-html[data-theme="sakura"] .explorer-sidebar-item,
-html[data-theme="arctic"] .explorer-sidebar-item,
-html[data-theme="nordic"] .explorer-sidebar-item,
-html[data-theme="gameboy"] .explorer-sidebar-item,
-html[data-theme="frutiger-aero"] .explorer-sidebar-item,
-html[data-theme="solarized-light"] .explorer-sidebar-item {
+html[data-theme-mode="light"] .explorer-sidebar-item {
   color: var(--text-secondary) !important;
 }
 
-html[data-theme="light"] .explorer-sidebar-item:hover,
-html[data-theme="cherry"] .explorer-sidebar-item:hover,
-html[data-theme="github-light"] .explorer-sidebar-item:hover,
-html[data-theme="minimal-gray"] .explorer-sidebar-item:hover,
-html[data-theme="paper"] .explorer-sidebar-item:hover,
-html[data-theme="macos-fluent"] .explorer-sidebar-item:hover,
-html[data-theme="windows-fluent"] .explorer-sidebar-item:hover,
-html[data-theme="material-you"] .explorer-sidebar-item:hover,
-html[data-theme="sepia"] .explorer-sidebar-item:hover,
-html[data-theme="sakura"] .explorer-sidebar-item:hover,
-html[data-theme="arctic"] .explorer-sidebar-item:hover,
-html[data-theme="nordic"] .explorer-sidebar-item:hover,
-html[data-theme="gameboy"] .explorer-sidebar-item:hover,
-html[data-theme="frutiger-aero"] .explorer-sidebar-item:hover,
-html[data-theme="solarized-light"] .explorer-sidebar-item:hover {
+html[data-theme-mode="light"] .explorer-sidebar-item:hover {
   background: var(--surface-hover) !important;
 }
 
-html[data-theme="light"] .explorer-sidebar-item.active,
-html[data-theme="cherry"] .explorer-sidebar-item.active,
-html[data-theme="github-light"] .explorer-sidebar-item.active,
-html[data-theme="minimal-gray"] .explorer-sidebar-item.active,
-html[data-theme="paper"] .explorer-sidebar-item.active,
-html[data-theme="macos-fluent"] .explorer-sidebar-item.active,
-html[data-theme="windows-fluent"] .explorer-sidebar-item.active,
-html[data-theme="material-you"] .explorer-sidebar-item.active,
-html[data-theme="sepia"] .explorer-sidebar-item.active,
-html[data-theme="sakura"] .explorer-sidebar-item.active,
-html[data-theme="arctic"] .explorer-sidebar-item.active,
-html[data-theme="nordic"] .explorer-sidebar-item.active,
-html[data-theme="gameboy"] .explorer-sidebar-item.active,
-html[data-theme="frutiger-aero"] .explorer-sidebar-item.active,
-html[data-theme="solarized-light"] .explorer-sidebar-item.active {
+html[data-theme-mode="light"] .explorer-sidebar-item.active {
   background: var(--brand-dim) !important;
   color: var(--brand) !important;
 }
@@ -1037,77 +869,21 @@ html[data-theme="solarized-light"] .explorer-sidebar-item.active {
   color: var(--error) !important;
 }
 
-html[data-theme="light"] .explorer-trash-view,
-html[data-theme="cherry"] .explorer-trash-view,
-html[data-theme="github-light"] .explorer-trash-view,
-html[data-theme="minimal-gray"] .explorer-trash-view,
-html[data-theme="paper"] .explorer-trash-view,
-html[data-theme="macos-fluent"] .explorer-trash-view,
-html[data-theme="windows-fluent"] .explorer-trash-view,
-html[data-theme="material-you"] .explorer-trash-view,
-html[data-theme="sepia"] .explorer-trash-view,
-html[data-theme="sakura"] .explorer-trash-view,
-html[data-theme="arctic"] .explorer-trash-view,
-html[data-theme="nordic"] .explorer-trash-view,
-html[data-theme="gameboy"] .explorer-trash-view,
-html[data-theme="frutiger-aero"] .explorer-trash-view,
-html[data-theme="solarized-light"] .explorer-trash-view {
+html[data-theme-mode="light"] .explorer-trash-view {
   background: var(--bg-primary) !important;
 }
 
-html[data-theme="light"] .explorer-trash-banner,
-html[data-theme="cherry"] .explorer-trash-banner,
-html[data-theme="github-light"] .explorer-trash-banner,
-html[data-theme="minimal-gray"] .explorer-trash-banner,
-html[data-theme="paper"] .explorer-trash-banner,
-html[data-theme="macos-fluent"] .explorer-trash-banner,
-html[data-theme="windows-fluent"] .explorer-trash-banner,
-html[data-theme="material-you"] .explorer-trash-banner,
-html[data-theme="sepia"] .explorer-trash-banner,
-html[data-theme="sakura"] .explorer-trash-banner,
-html[data-theme="arctic"] .explorer-trash-banner,
-html[data-theme="nordic"] .explorer-trash-banner,
-html[data-theme="gameboy"] .explorer-trash-banner,
-html[data-theme="frutiger-aero"] .explorer-trash-banner,
-html[data-theme="solarized-light"] .explorer-trash-banner {
+html[data-theme-mode="light"] .explorer-trash-banner {
   background: var(--bg-secondary) !important;
 }
 
-html[data-theme="light"] .explorer-win-path,
-html[data-theme="cherry"] .explorer-win-path,
-html[data-theme="github-light"] .explorer-win-path,
-html[data-theme="minimal-gray"] .explorer-win-path,
-html[data-theme="paper"] .explorer-win-path,
-html[data-theme="macos-fluent"] .explorer-win-path,
-html[data-theme="windows-fluent"] .explorer-win-path,
-html[data-theme="material-you"] .explorer-win-path,
-html[data-theme="sepia"] .explorer-win-path,
-html[data-theme="sakura"] .explorer-win-path,
-html[data-theme="arctic"] .explorer-win-path,
-html[data-theme="nordic"] .explorer-win-path,
-html[data-theme="gameboy"] .explorer-win-path,
-html[data-theme="frutiger-aero"] .explorer-win-path,
-html[data-theme="solarized-light"] .explorer-win-path {
+html[data-theme-mode="light"] .explorer-win-path {
   background: var(--bg-secondary);
   border: 1px solid var(--glass-border);
   color: var(--text-primary);
 }
 
-html[data-theme="light"] .explorer-win-path:focus,
-html[data-theme="cherry"] .explorer-win-path:focus,
-html[data-theme="github-light"] .explorer-win-path:focus,
-html[data-theme="minimal-gray"] .explorer-win-path:focus,
-html[data-theme="paper"] .explorer-win-path:focus,
-html[data-theme="macos-fluent"] .explorer-win-path:focus,
-html[data-theme="windows-fluent"] .explorer-win-path:focus,
-html[data-theme="material-you"] .explorer-win-path:focus,
-html[data-theme="sepia"] .explorer-win-path:focus,
-html[data-theme="sakura"] .explorer-win-path:focus,
-html[data-theme="arctic"] .explorer-win-path:focus,
-html[data-theme="nordic"] .explorer-win-path:focus,
-html[data-theme="gameboy"] .explorer-win-path:focus,
-html[data-theme="frutiger-aero"] .explorer-win-path:focus,
-html[data-theme="solarized-light"] .explorer-win-path:focus {
+html[data-theme-mode="light"] .explorer-win-path:focus {
   border-color: var(--brand);
-  background: var(--glass-hover);
+  outline: 2px solid var(--brand-dim);
 }

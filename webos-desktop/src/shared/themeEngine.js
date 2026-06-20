@@ -29,7 +29,13 @@ const BUILTIN_THEMES = [
   { value: "sepia", icon: "fas fa-book", label: "Sepia", category: "special" },
   { value: "warm-night", icon: "fas fa-moon", label: "Warm Night", category: "special" },
   { value: "hatsune-miku", icon: "fas fa-music", label: "Hatsune Miku", category: "special" },
-  { value: "star-wars-dark", icon: "fas fa-skull", label: "Star Wars Dark", category: "special" }
+  { value: "star-wars-dark", icon: "fas fa-skull", label: "Star Wars Dark", category: "special" },
+  { value: "amber", icon: "fas fa-fire", label: "Amber", category: "special" },
+  { value: "lavender", icon: "fas fa-heart", label: "Lavender", category: "special" },
+  { value: "coral", icon: "fas fa-water", label: "Coral", category: "special" },
+  { value: "slate", icon: "fas fa-circle", label: "Slate", category: "special" },
+  { value: "mint", icon: "fas fa-leaf", label: "Mint", category: "special" },
+  { value: "cream", icon: "fas fa-feather", label: "Cream", category: "special" }
 ];
 
 let customThemes = [];
