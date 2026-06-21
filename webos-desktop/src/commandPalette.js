@@ -4,6 +4,7 @@ import { openFileWith } from "./fileDisplay.js";
 import { resolveIconUrl } from "./shared/assetResolver.js";
 import { AppSource } from "./AppSource.js";
 import { WALLPAPER_NAME_URL_PAIRS } from "./wallpaperConfig.js";
+import { KeybindManager } from "./keybindManager.js";
 
 import { StorageKeys, os } from "./framework.js";
 export class CommandPalette {
@@ -236,13 +237,11 @@ export class CommandPalette {
 
   _setupListeners() {
     document.addEventListener("keydown", (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
-        e.preventDefault();
-        this.toggle();
-      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "p") {
-        e.preventDefault();
-        this.toggle();
-      } else if (e.key === "F1") {
+      if (
+        KeybindManager.matches(e, "global.commandPalette.k") ||
+        KeybindManager.matches(e, "global.commandPalette.p") ||
+        KeybindManager.matches(e, "global.commandPalette.f1")
+      ) {
         e.preventDefault();
         this.toggle();
       }
@@ -260,18 +259,18 @@ export class CommandPalette {
     });
 
     this.inputElement.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") {
+      if (KeybindManager.matches(e, "global.closePalette")) {
         e.preventDefault();
         this.close();
-      } else if (e.key === "ArrowDown") {
+      } else if (KeybindManager.matches(e, "global.paletteDown")) {
         e.preventDefault();
         this.activeIndex = (this.activeIndex + 1) % this.results.length;
         this._updateActiveSelection();
-      } else if (e.key === "ArrowUp") {
+      } else if (KeybindManager.matches(e, "global.paletteUp")) {
         e.preventDefault();
         this.activeIndex = (this.activeIndex - 1 + this.results.length) % this.results.length;
         this._updateActiveSelection();
-      } else if (e.key === "Enter") {
+      } else if (KeybindManager.matches(e, "global.paletteEnter")) {
         e.preventDefault();
         this._executeActive();
       }

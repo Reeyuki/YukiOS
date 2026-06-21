@@ -1,6 +1,7 @@
 import "../styles/browser.css";
 import { PROXIES, clampProxyIndex, buildProxyUrl } from "../proxies.js";
 import { sanitizeTitle } from "../utils/utils.js";
+import { KeybindManager } from "../keybindManager.js";
 
 import { BaseApp, StorageKeys, os } from "../framework.js";
 export class BrowserApp extends BaseApp {
@@ -749,29 +750,76 @@ export class BrowserApp extends BaseApp {
       const inWin = this.win && this.win.contains(document.activeElement);
       if (!inWin && document.activeElement !== document.body) return;
 
-      if (e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey && /^[1-9]$/.test(e.key)) {
+      if (KeybindManager.matches(e, "browser.tab1")) {
         e.preventDefault();
-        const index = parseInt(e.key, 10) - 1;
-        const tab = this.tabs[index];
+        const tab = this.tabs[0];
+        if (tab) this.switchTab(tab.id);
+        return;
+      }
+      if (KeybindManager.matches(e, "browser.tab2")) {
+        e.preventDefault();
+        const tab = this.tabs[1];
+        if (tab) this.switchTab(tab.id);
+        return;
+      }
+      if (KeybindManager.matches(e, "browser.tab3")) {
+        e.preventDefault();
+        const tab = this.tabs[2];
+        if (tab) this.switchTab(tab.id);
+        return;
+      }
+      if (KeybindManager.matches(e, "browser.tab4")) {
+        e.preventDefault();
+        const tab = this.tabs[3];
+        if (tab) this.switchTab(tab.id);
+        return;
+      }
+      if (KeybindManager.matches(e, "browser.tab5")) {
+        e.preventDefault();
+        const tab = this.tabs[4];
+        if (tab) this.switchTab(tab.id);
+        return;
+      }
+      if (KeybindManager.matches(e, "browser.tab6")) {
+        e.preventDefault();
+        const tab = this.tabs[5];
+        if (tab) this.switchTab(tab.id);
+        return;
+      }
+      if (KeybindManager.matches(e, "browser.tab7")) {
+        e.preventDefault();
+        const tab = this.tabs[6];
+        if (tab) this.switchTab(tab.id);
+        return;
+      }
+      if (KeybindManager.matches(e, "browser.tab8")) {
+        e.preventDefault();
+        const tab = this.tabs[7];
+        if (tab) this.switchTab(tab.id);
+        return;
+      }
+      if (KeybindManager.matches(e, "browser.tab9")) {
+        e.preventDefault();
+        const tab = this.tabs[8];
         if (tab) this.switchTab(tab.id);
         return;
       }
 
-      if (e.ctrlKey && e.key === "l") {
+      if (KeybindManager.matches(e, "browser.focusUrl")) {
         e.preventDefault();
         this.addressBar.focus();
         this.addressBar.select();
       }
-      if (e.ctrlKey && e.key === "t") {
+      if (KeybindManager.matches(e, "browser.newTab")) {
         e.preventDefault();
         this.createTab(this.homepageUrl, true);
       }
-      if (e.ctrlKey && e.key === "w") {
+      if (KeybindManager.matches(e, "browser.closeTab")) {
         e.preventDefault();
         const tab = this.getActiveTab();
         if (tab) this.closeTab(tab.id);
       }
-      if (e.ctrlKey && e.shiftKey && e.key === "T") {
+      if (KeybindManager.matches(e, "browser.reopenTab")) {
         e.preventDefault();
         this.reopenLastClosedTab();
       }

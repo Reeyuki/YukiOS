@@ -1,4 +1,5 @@
 import { StorageKeys, os } from "../framework.js";
+import { KeybindManager } from "../keybindManager.js";
 export class TaskbarPositionManager {
   constructor() {
     this.positions = ["bottom", "top", "left", "right"];
@@ -83,7 +84,7 @@ export class TaskbarPositionManager {
     });
 
     document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") {
+      if (KeybindManager.matches(e, "taskbar.dismissMenu")) {
         this.hideContextMenu();
       }
     });

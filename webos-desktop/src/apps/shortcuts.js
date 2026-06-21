@@ -1,601 +1,20 @@
 import "../styles/shortcuts.css";
-
 import { BaseApp, PersistenceTypes } from "../framework.js";
-export const SHORTCUTS_DATA = [
-  {
-    keys: ["Ctrl", "K"],
-    desc: "Open Unified Command Palette",
-    cat: "global",
-    icon: "fas fa-search"
-  },
-  {
-    keys: ["Ctrl", "P"],
-    desc: "Open Unified Command Palette",
-    cat: "global",
-    icon: "fas fa-search"
-  },
-  {
-    keys: ["F1"],
-    desc: "Open Unified Command Palette",
-    cat: "global",
-    icon: "fas fa-search"
-  },
-  {
-    keys: ["Ctrl", "D"],
-    desc: "Show / Hide Desktop (Minimize or restore all windows)",
-    cat: "global",
-    icon: "fas fa-desktop"
-  },
-  {
-    keys: ["Ctrl", "←"],
-    desc: "Snap active window to the left half of the screen",
-    cat: "global",
-    icon: "fas fa-window-maximize"
-  },
-  {
-    keys: ["Ctrl", "→"],
-    desc: "Snap active window to the right half of the screen",
-    cat: "global",
-    icon: "fas fa-window-maximize"
-  },
-  {
-    keys: ["Ctrl", "↑"],
-    desc: "Maximize active window",
-    cat: "global",
-    icon: "fas fa-window-maximize"
-  },
-  {
-    keys: ["Control"],
-    desc: "Toggle Start Menu (when desktop is focused)",
-    cat: "global",
-    icon: "fas fa-bars"
-  },
-  {
-    keys: ["Tab"],
-    desc: "Toggle Start Menu (when desktop is focused)",
-    cat: "global",
-    icon: "fas fa-bars"
-  },
-  {
-    keys: ["Space"],
-    desc: "Toggle Start Menu (when desktop is focused)",
-    cat: "global",
-    icon: "fas fa-bars"
-  },
-  {
-    keys: ["Ctrl", "C"],
-    desc: "Copy selected files or folders",
-    cat: "desktop",
-    icon: "fas fa-copy"
-  },
-  {
-    keys: ["Ctrl", "X"],
-    desc: "Cut selected files or folders",
-    cat: "desktop",
-    icon: "fas fa-cut"
-  },
-  {
-    keys: ["Ctrl", "V"],
-    desc: "Paste copied or cut files/folders into desktop or explorer",
-    cat: "desktop",
-    icon: "fas fa-paste"
-  },
-  {
-    keys: ["Delete"],
-    desc: "Delete selected icons/files on the desktop",
-    cat: "desktop",
-    icon: "fas fa-trash-alt"
-  },
-  {
-    keys: ["F2"],
-    desc: "Start inline renaming of selected file/folder",
-    cat: "desktop",
-    icon: "fas fa-edit"
-  },
-  {
-    keys: ["Ctrl", "O"],
-    desc: "Open file inside Notepad",
-    cat: "notepad",
-    icon: "fas fa-folder-open"
-  },
-  {
-    keys: ["Ctrl", "S"],
-    desc: "Save active file in Notepad",
-    cat: "notepad",
-    icon: "fas fa-save"
-  },
-  {
-    keys: ["Ctrl", "Shift", "S"],
-    desc: "Save active file as new file in Notepad",
-    cat: "notepad",
-    icon: "fas fa-file-medical"
-  },
-  {
-    keys: ["Ctrl", "F"],
-    desc: "Open Find Text search dialog in Notepad",
-    cat: "notepad",
-    icon: "fas fa-search"
-  },
-  {
-    keys: ["F3"],
-    desc: "Find next occurrence of matched text",
-    cat: "notepad",
-    icon: "fas fa-arrow-down"
-  },
-  {
-    keys: ["Shift", "F3"],
-    desc: "Find previous occurrence of matched text",
-    cat: "notepad",
-    icon: "fas fa-arrow-up"
-  },
-  {
-    keys: ["Ctrl", "H"],
-    desc: "Open Replace dialog in Notepad",
-    cat: "notepad",
-    icon: "fas fa-exchange-alt"
-  },
-  {
-    keys: ["Ctrl", "G"],
-    desc: "Go to line dialog in Notepad",
-    cat: "notepad",
-    icon: "fas fa-hashtag"
-  },
-  {
-    keys: ["Ctrl", "+"],
-    desc: "Zoom in text editor",
-    cat: "notepad",
-    icon: "fas fa-search-plus"
-  },
-  {
-    keys: ["Ctrl", "-"],
-    desc: "Zoom out text editor",
-    cat: "notepad",
-    icon: "fas fa-search-minus"
-  },
-  {
-    keys: ["Ctrl", "0"],
-    desc: "Reset zoom factor to default in Notepad",
-    cat: "notepad",
-    icon: "fas fa-compress-arrows-alt"
-  },
-  {
-    keys: ["Escape"],
-    desc: "Close active Notepad dialogs / popups",
-    cat: "notepad",
-    icon: "fas fa-times"
-  },
-  {
-    keys: ["Alt", "1-9"],
-    desc: "Switch directly to browser Tab 1-9",
-    cat: "browser",
-    icon: "fas fa-window-restore"
-  },
-  {
-    keys: ["Ctrl", "L"],
-    desc: "Focus browser address/URL bar & select",
-    cat: "browser",
-    icon: "fas fa-search"
-  },
-  {
-    keys: ["Ctrl", "T"],
-    desc: "Create new browser tab",
-    cat: "browser",
-    icon: "fas fa-plus"
-  },
-  {
-    keys: ["Ctrl", "W"],
-    desc: "Close active browser tab",
-    cat: "browser",
-    icon: "fas fa-minus"
-  },
-  {
-    keys: ["Ctrl", "Shift", "T"],
-    desc: "Reopen last closed browser tab",
-    cat: "browser",
-    icon: "fas fa-history"
-  },
-  {
-    keys: ["Ctrl", "V"],
-    desc: "Paste & evaluate math expression from clipboard",
-    cat: "calc",
-    icon: "fas fa-paste"
-  },
-  {
-    keys: ["0 - 9"],
-    desc: "Press calculator digit keys",
-    cat: "calc",
-    icon: "fas fa-keyboard"
-  },
-  {
-    keys: ["."],
-    desc: "Decimal points button",
-    cat: "calc",
-    icon: "fas fa-keyboard"
-  },
-  {
-    keys: ["+", "-", "*", "/"],
-    desc: "Press arithmetic operator buttons (+, −, ×, ÷)",
-    cat: "calc",
-    icon: "fas fa-plus-minus"
-  },
-  {
-    keys: ["%"],
-    desc: "Percent calculations button",
-    cat: "calc",
-    icon: "fas fa-percent"
-  },
-  {
-    keys: ["Enter", "="],
-    desc: "Equals / Evaluate calculations",
-    cat: "calc",
-    icon: "fas fa-equals"
-  },
-  {
-    keys: ["Backspace"],
-    desc: "Backspace / delete last digit in Calculator",
-    cat: "calc",
-    icon: "fas fa-backspace"
-  },
-  {
-    keys: ["Escape", "Delete"],
-    desc: "Clear calculator (AC button)",
-    cat: "calc",
-    icon: "fas fa-eraser"
-  },
-  {
-    keys: ["Escape"],
-    desc: "Close calendar popup",
-    cat: "calendar",
-    icon: "fas fa-times"
-  },
-  {
-    keys: ["←", "→"],
-    desc: "Navigate previous or next month in Calendar",
-    cat: "calendar",
-    icon: "fas fa-arrow-left"
-  },
-  {
-    keys: ["↑", "↓"],
-    desc: "Navigate previous or next year in Calendar",
-    cat: "calendar",
-    icon: "fas fa-arrow-up"
-  },
-  {
-    keys: ["Ctrl", "Alt", "↑"],
-    desc: "Increase display brightness",
-    cat: "global",
-    icon: "fas fa-sun"
-  },
-  {
-    keys: ["Ctrl", "Alt", "↓"],
-    desc: "Decrease display brightness",
-    cat: "global",
-    icon: "fas fa-sun"
-  },
-  {
-    keys: ["Ctrl", "Alt", "←"],
-    desc: "Decrease color temperature (warmer)",
-    cat: "global",
-    icon: "fas fa-temperature-half"
-  },
-  {
-    keys: ["Ctrl", "Alt", "→"],
-    desc: "Increase color temperature (cooler)",
-    cat: "global",
-    icon: "fas fa-temperature-half"
-  },
-  {
-    keys: ["Alt", "Q"],
-    desc: "Cycle through open windows (configurable in Settings)",
-    cat: "global",
-    icon: "fas fa-exchange-alt"
-  },
-  {
-    keys: ["Escape"],
-    desc: "Close command palette",
-    cat: "global",
-    icon: "fas fa-times"
-  },
-  {
-    keys: ["ArrowUp"],
-    desc: "Navigate up in command palette",
-    cat: "global",
-    icon: "fas fa-arrow-up"
-  },
-  {
-    keys: ["ArrowDown"],
-    desc: "Navigate down in command palette",
-    cat: "global",
-    icon: "fas fa-arrow-down"
-  },
-  {
-    keys: ["Enter"],
-    desc: "Execute selected item in command palette",
-    cat: "global",
-    icon: "fas fa-check"
-  },
-  {
-    keys: ["ArrowUp"],
-    desc: "Navigate up in start menu",
-    cat: "global",
-    icon: "fas fa-arrow-up"
-  },
-  {
-    keys: ["ArrowDown"],
-    desc: "Navigate down in start menu",
-    cat: "global",
-    icon: "fas fa-arrow-down"
-  },
-  {
-    keys: ["ArrowLeft"],
-    desc: "Switch to categories in start menu",
-    cat: "global",
-    icon: "fas fa-arrow-left"
-  },
-  {
-    keys: ["ArrowRight"],
-    desc: "Switch to apps in start menu",
-    cat: "global",
-    icon: "fas fa-arrow-right"
-  },
-  {
-    keys: ["Enter"],
-    desc: "Launch selected item in start menu",
-    cat: "global",
-    icon: "fas fa-check"
-  },
-  {
-    keys: ["Enter"],
-    desc: "Execute command in Terminal",
-    cat: "terminal",
-    icon: "fas fa-terminal"
-  },
-  {
-    keys: ["ArrowUp"],
-    desc: "Previous command in Terminal history",
-    cat: "terminal",
-    icon: "fas fa-arrow-up"
-  },
-  {
-    keys: ["ArrowDown"],
-    desc: "Next command in Terminal history",
-    cat: "terminal",
-    icon: "fas fa-arrow-down"
-  },
-  {
-    keys: ["Tab"],
-    desc: "Tab completion in Terminal",
-    cat: "terminal",
-    icon: "fas fa-keyboard"
-  },
-  {
-    keys: ["Ctrl", "L"],
-    desc: "Clear Terminal screen",
-    cat: "terminal",
-    icon: "fas fa-eraser"
-  },
-  {
-    keys: ["Ctrl", "C"],
-    desc: "Interrupt command in Terminal",
-    cat: "terminal",
-    icon: "fas fa-stop"
-  },
-  {
-    keys: ["Ctrl", "D"],
-    desc: "Close Terminal window",
-    cat: "terminal",
-    icon: "fas fa-times"
-  },
-  {
-    keys: ["Ctrl", "N"],
-    desc: "New document in Office",
-    cat: "office",
-    icon: "fas fa-file"
-  },
-  {
-    keys: ["Ctrl", "P"],
-    desc: "Print in Office",
-    cat: "office",
-    icon: "fas fa-print"
-  },
-  {
-    keys: ["Ctrl", "Z"],
-    desc: "Undo in Office",
-    cat: "office",
-    icon: "fas fa-undo"
-  },
-  {
-    keys: ["Ctrl", "Y"],
-    desc: "Redo in Office",
-    cat: "office",
-    icon: "fas fa-redo"
-  },
-  {
-    keys: ["Ctrl", "X"],
-    desc: "Cut in Office",
-    cat: "office",
-    icon: "fas fa-cut"
-  },
-  {
-    keys: ["Ctrl", "C"],
-    desc: "Copy in Office",
-    cat: "office",
-    icon: "fas fa-copy"
-  },
-  {
-    keys: ["Ctrl", "A"],
-    desc: "Select all in Office",
-    cat: "office",
-    icon: "fas fa-object-group"
-  },
-  {
-    keys: ["Ctrl", "B"],
-    desc: "Bold text in Office",
-    cat: "office",
-    icon: "fas fa-bold"
-  },
-  {
-    keys: ["Ctrl", "I"],
-    desc: "Italic text in Office",
-    cat: "office",
-    icon: "fas fa-italic"
-  },
-  {
-    keys: ["Ctrl", "U"],
-    desc: "Underline text in Office",
-    cat: "office",
-    icon: "fas fa-underline"
-  },
-  {
-    keys: ["Ctrl", "K"],
-    desc: "Insert link in Office",
-    cat: "office",
-    icon: "fas fa-link"
-  },
-  {
-    keys: ["Ctrl", "="],
-    desc: "Zoom in in Office",
-    cat: "office",
-    icon: "fas fa-search-plus"
-  },
-  {
-    keys: ["Ctrl", "-"],
-    desc: "Zoom out in Office",
-    cat: "office",
-    icon: "fas fa-search-minus"
-  },
-  {
-    keys: ["Ctrl", "0"],
-    desc: "Reset zoom in Office",
-    cat: "office",
-    icon: "fas fa-compress-arrows-alt"
-  },
-  {
-    keys: ["Ctrl", "Z"],
-    desc: "Undo in 3D Model Editor",
-    cat: "model3d",
-    icon: "fas fa-undo"
-  },
-  {
-    keys: ["Ctrl", "Y"],
-    desc: "Redo in 3D Model Editor",
-    cat: "model3d",
-    icon: "fas fa-redo"
-  },
-  {
-    keys: ["Ctrl", "Shift", "Z"],
-    desc: "Redo in 3D Model Editor (alternative)",
-    cat: "model3d",
-    icon: "fas fa-redo"
-  },
-  {
-    keys: ["Ctrl", "D"],
-    desc: "Duplicate in 3D Model Editor",
-    cat: "model3d",
-    icon: "fas fa-copy"
-  },
-  {
-    keys: ["Ctrl", "A"],
-    desc: "Select all in 3D Model Editor",
-    cat: "model3d",
-    icon: "fas fa-object-group"
-  },
-  {
-    keys: ["Delete"],
-    desc: "Delete selected in 3D Model Editor",
-    cat: "model3d",
-    icon: "fas fa-trash"
-  },
-  {
-    keys: ["Backspace"],
-    desc: "Delete selected in 3D Model Editor",
-    cat: "model3d",
-    icon: "fas fa-trash"
-  },
-  {
-    keys: ["Q"],
-    desc: "Select tool in 3D Model Editor",
-    cat: "model3d",
-    icon: "fas fa-mouse-pointer"
-  },
-  {
-    keys: ["G"],
-    desc: "Move tool in 3D Model Editor",
-    cat: "model3d",
-    icon: "fas fa-arrows-alt"
-  },
-  {
-    keys: ["R"],
-    desc: "Rotate tool in 3D Model Editor",
-    cat: "model3d",
-    icon: "fas fa-sync"
-  },
-  {
-    keys: ["S"],
-    desc: "Scale tool in 3D Model Editor",
-    cat: "model3d",
-    icon: "fas fa-expand-arrows-alt"
-  },
-  {
-    keys: ["H"],
-    desc: "Toggle visibility in 3D Model Editor",
-    cat: "model3d",
-    icon: "fas fa-eye"
-  },
-  {
-    keys: ["F"],
-    desc: "Zoom to fit in 3D Model Editor",
-    cat: "model3d",
-    icon: "fas fa-expand"
-  },
-  {
-    keys: ["Alt", "Right Click"],
-    desc: "Resize window instead of drag",
-    cat: "global",
-    icon: "fas fa-expand-arrows-alt"
-  },
-  {
-    keys: ["Ctrl", "F"],
-    desc: "Search in games",
-    cat: "games",
-    icon: "fas fa-search"
-  },
-  {
-    keys: ["Escape"],
-    desc: "Close dialog",
-    cat: "global",
-    icon: "fas fa-times"
-  },
-  {
-    keys: ["Enter"],
-    desc: "Confirm dialog",
-    cat: "global",
-    icon: "fas fa-check"
-  },
-  {
-    keys: ["Ctrl", "Shift", "S"],
-    desc: "Capture full screen and auto-save to Pictures",
-    cat: "global",
-    icon: "fas fa-camera"
-  },
-  {
-    keys: ["Ctrl", "Alt", "S"],
-    desc: "Capture area screenshot and auto-save to Pictures",
-    cat: "global",
-    icon: "fas fa-crop-alt"
-  },
-  {
-    keys: ["Ctrl", "Shift", "R"],
-    desc: "Start / stop screen recording",
-    cat: "global",
-    icon: "fas fa-video"
-  }
-];
+import { KeybindManager } from "../keybindManager.js";
+
+const MODIFIER_KEY_MAP = {
+  Control: "Ctrl",
+  Shift: "Shift",
+  Alt: "Alt",
+  Meta: "Cmd"
+};
 
 export class ShortcutsApp extends BaseApp {
   constructor(services) {
     super(services);
-    this.shortcuts = SHORTCUTS_DATA;
+    this.listeningId = null;
+    this.listeningOverlay = null;
+    this.editingCustomId = null;
   }
 
   getDeclarativeSchema(opts) {
@@ -607,7 +26,7 @@ export class ShortcutsApp extends BaseApp {
         {
           id: "shortcuts-app",
           title: "Keyboard Shortcuts",
-          size: ["750px", "520px"],
+          size: ["820px", "620px"],
           icon: "fa fa-keyboard",
           ui: `
       <div class="sc-app-wrapper">
@@ -630,15 +49,90 @@ export class ShortcutsApp extends BaseApp {
             <div class="sc-nav-item" data-cat="office"><i class="fas fa-file-word"></i>Office</div>
             <div class="sc-nav-item" data-cat="model3d"><i class="fas fa-cube"></i>3D Model Editor</div>
             <div class="sc-nav-item" data-cat="games"><i class="fas fa-gamepad"></i>Games</div>
+            <div class="sc-nav-item" data-cat="custom"><i class="fas fa-star"></i>Custom</div>
           </div>
         </div>
         <div class="sc-main">
           <div class="sc-list-header">
             <div class="sc-list-title">All Shortcuts</div>
-            <div class="sc-list-count">No shortcuts</div>
+            <div class="sc-list-actions">
+              <span class="sc-list-count">No shortcuts</span>
+              <button class="sc-create-btn" id="sc-create-custom" title="Create a custom shortcut">
+                <i class="fas fa-plus"></i> Custom
+              </button>
+              <button class="sc-reset-all-btn" id="sc-reset-all" title="Reset all shortcuts to defaults">
+                <i class="fas fa-undo-alt"></i> Reset All
+              </button>
+            </div>
           </div>
           <div class="sc-content-area">
             <div class="sc-grid" id="sc-list-container"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sc-listening-overlay" id="sc-listening-overlay" style="display:none">
+        <div class="sc-listening-modal">
+          <div class="sc-listening-icon"><i class="fas fa-keyboard"></i></div>
+          <div class="sc-listening-title">Press new shortcut key...</div>
+          <div class="sc-listening-desc" id="sc-listening-desc">Currently: <span id="sc-listening-current"></span></div>
+          <div class="sc-listening-preview" id="sc-listening-preview"></div>
+          <div class="sc-listening-actions">
+            <button class="sc-listening-cancel" id="sc-listening-cancel">Cancel</button>
+            <button class="sc-listening-clear" id="sc-listening-clear">Clear & Reset</button>
+          </div>
+        </div>
+      </div>
+      <div class="sc-custom-overlay" id="sc-custom-overlay" style="display:none">
+        <div class="sc-custom-modal">
+          <div class="sc-custom-header">
+            <div class="sc-custom-title" id="sc-custom-title">Create Custom Shortcut</div>
+            <button class="sc-custom-close" id="sc-custom-close"><i class="fas fa-times"></i></button>
+          </div>
+          <div class="sc-custom-body">
+            <div class="sc-custom-field">
+              <label class="sc-custom-label">Shortcut Keys</label>
+              <div class="sc-custom-keys" id="sc-custom-keys">
+                <span class="sc-custom-keys-placeholder" id="sc-custom-keys-placeholder">Click to record...</span>
+              </div>
+            </div>
+            <div class="sc-custom-field">
+              <label class="sc-custom-label">Description</label>
+              <input type="text" class="sc-custom-input" id="sc-custom-desc" placeholder="Describe what this shortcut does..." spellcheck="false">
+            </div>
+            <div class="sc-custom-field">
+              <label class="sc-custom-label">Action Type</label>
+              <div class="sc-custom-action-types" id="sc-custom-action-types">
+                <label class="sc-custom-action-type active" data-type="launchApp">
+                  <input type="radio" name="actionType" value="launchApp" checked hidden>
+                  <i class="fas fa-rocket"></i>
+                  <span>Launch App</span>
+                </label>
+                <label class="sc-custom-action-type" data-type="openUrl">
+                  <input type="radio" name="actionType" value="openUrl" hidden>
+                  <i class="fas fa-link"></i>
+                  <span>Open URL</span>
+                </label>
+                <label class="sc-custom-action-type" data-type="runCode">
+                  <input type="radio" name="actionType" value="runCode" hidden>
+                  <i class="fas fa-code"></i>
+                  <span>Run Code</span>
+                </label>
+                <label class="sc-custom-action-type" data-type="notify">
+                  <input type="radio" name="actionType" value="notify" hidden>
+                  <i class="fas fa-bell"></i>
+                  <span>Notify</span>
+                </label>
+              </div>
+            </div>
+            <div class="sc-custom-config" id="sc-custom-config">
+              <div class="sc-custom-config-fields" id="sc-custom-config-fields"></div>
+            </div>
+          </div>
+          <div class="sc-custom-footer">
+            <button class="sc-custom-btn sc-custom-btn-secondary" id="sc-custom-cancel">Cancel</button>
+            <button class="sc-custom-btn sc-custom-btn-primary" id="sc-custom-save">
+              <i class="fas fa-check"></i> Save
+            </button>
           </div>
         </div>
       </div>`,
@@ -684,14 +178,72 @@ export class ShortcutsApp extends BaseApp {
     this.setupAppLogic(element);
   }
 
+  formatKeys(keys) {
+    return keys
+      .map((k) => {
+        const lower = k.toLowerCase();
+        if (lower === "ctrl" || lower === "control") return "Ctrl";
+        if (lower === "shift") return "Shift";
+        if (lower === "alt" || lower === "option") return "Alt";
+        if (lower === "meta" || lower === "cmd" || lower === "command" || lower === "super") return "Cmd";
+        if (k === "ArrowLeft") return "←";
+        if (k === "ArrowRight") return "→";
+        if (k === "ArrowUp") return "↑";
+        if (k === "ArrowDown") return "↓";
+        return k;
+      })
+      .join(" + ");
+  }
+
+  getActionTypeLabel(type) {
+    const labels = {
+      launchApp: "Launch App",
+      openUrl: "Open URL",
+      runCode: "Run Code",
+      notify: "Notify"
+    };
+    return labels[type] || type;
+  }
+
+  getActionTypeIcon(type) {
+    const icons = {
+      launchApp: "fas fa-rocket",
+      openUrl: "fas fa-link",
+      runCode: "fas fa-code",
+      notify: "fas fa-bell"
+    };
+    return icons[type] || "fas fa-star";
+  }
+
   setupAppLogic(win) {
     const listContainer = win.querySelector("#sc-list-container");
     const searchInput = win.querySelector(".sc-search-input");
     const navItems = win.querySelectorAll(".sc-nav-item");
     const listTitle = win.querySelector(".sc-list-title");
     const listCount = win.querySelector(".sc-list-count");
+    const resetAllBtn = win.querySelector("#sc-reset-all");
+    const createBtn = win.querySelector("#sc-create-custom");
+    const listeningOverlay = win.querySelector("#sc-listening-overlay");
+    const listeningDesc = win.querySelector("#sc-listening-desc");
+    const listeningCurrent = win.querySelector("#sc-listening-current");
+    const listeningPreview = win.querySelector("#sc-listening-preview");
+    const listeningCancel = win.querySelector("#sc-listening-cancel");
+    const listeningClear = win.querySelector("#sc-listening-clear");
+
+    const customOverlay = win.querySelector("#sc-custom-overlay");
+    const customTitle = win.querySelector("#sc-custom-title");
+    const customClose = win.querySelector("#sc-custom-close");
+    const customDesc = win.querySelector("#sc-custom-desc");
+    const customKeysEl = win.querySelector("#sc-custom-keys");
+    const customKeysPlaceholder = win.querySelector("#sc-custom-keys-placeholder");
+    const customActionTypes = win.querySelector("#sc-custom-action-types");
+    const customConfigFields = win.querySelector("#sc-custom-config-fields");
+    const customSave = win.querySelector("#sc-custom-save");
+    const customCancel = win.querySelector("#sc-custom-cancel");
 
     let currentCategory = "all";
+    let customRecordedKeys = [];
+    let customEditingId = null;
 
     const getCategoryLabel = (cat) => {
       const labels = {
@@ -705,60 +257,486 @@ export class ShortcutsApp extends BaseApp {
         terminal: "Terminal",
         office: "Office",
         model3d: "3D Model Editor",
-        games: "Games"
+        games: "Games",
+        custom: "Custom"
       };
       return labels[cat] || "Shortcuts";
     };
+
+    const getItemId = (shortcut) => `sc-item-${shortcut.id.replace(/\./g, "-")}`;
+
+    const startListening = (shortcut, keyDisplayEl) => {
+      this.listeningId = shortcut.id;
+      listeningOverlay.style.display = "flex";
+      listeningCurrent.textContent = this.formatKeys(shortcut.currentKeys);
+      listeningPreview.innerHTML = "";
+      listeningPreview.className = "sc-listening-preview";
+
+      const handleKey = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (e.key === "Escape") {
+          stopListening();
+          return;
+        }
+        if (e.key === "Enter") return;
+        if (e.key === "Tab") {
+          e.preventDefault();
+          return;
+        }
+        if (e.key === "Shift" || e.key === "Control" || e.key === "Alt" || e.key === "Meta") {
+          listeningPreview.innerHTML = "";
+          const msg = document.createElement("div");
+          msg.className = "sc-listening-msg";
+          msg.textContent = "Press a non-modifier key...";
+          listeningPreview.appendChild(msg);
+          return;
+        }
+
+        const recorded = [];
+        if (e.ctrlKey) recorded.push("Ctrl");
+        if (e.shiftKey) recorded.push("Shift");
+        if (e.altKey) recorded.push("Alt");
+        if (e.metaKey) recorded.push("Meta");
+        recorded.push(e.key === " " ? "Space" : e.key);
+
+        if (KeybindManager.isCustomizationValid(recorded)) {
+          KeybindManager.setKeys(this.listeningId, recorded);
+          listeningPreview.innerHTML = "";
+          const ok = document.createElement("div");
+          ok.className = "sc-listening-ok";
+          ok.innerHTML = `<i class="fas fa-check"></i> Set to ${this.formatKeys(recorded)}`;
+          listeningPreview.appendChild(ok);
+          stopListening();
+          render();
+        } else {
+          listeningPreview.innerHTML = "";
+          const err = document.createElement("div");
+          err.className = "sc-listening-err";
+          err.textContent = "Invalid shortcut (must include exactly one non-modifier key)";
+          listeningPreview.appendChild(err);
+        }
+      };
+
+      const stopListening = () => {
+        listeningOverlay.style.display = "none";
+        this.listeningId = null;
+        document.removeEventListener("keydown", handleKey, true);
+      };
+
+      document.addEventListener("keydown", handleKey, true);
+
+      listeningCancel.onclick = () => stopListening();
+      listeningClear.onclick = () => {
+        KeybindManager.reset(this.listeningId);
+        listeningPreview.innerHTML = "";
+        const ok = document.createElement("div");
+        ok.className = "sc-listening-ok";
+        ok.innerHTML = `<i class="fas fa-undo"></i> Reset to default`;
+        listeningPreview.appendChild(ok);
+        stopListening();
+        render();
+      };
+    };
+
+    const renderConfigFields = (type, currentConfig) => {
+      customConfigFields.innerHTML = "";
+
+      if (type === "launchApp") {
+        const appId = currentConfig?.appId || "";
+        const label = document.createElement("label");
+        label.className = "sc-custom-label";
+        label.textContent = "App ID";
+        const input = document.createElement("input");
+        input.type = "text";
+        input.className = "sc-custom-input sc-custom-config-input";
+        input.placeholder = "e.g. terminal, calculator, notepad";
+        input.value = appId;
+        input.dataset.configKey = "appId";
+        customConfigFields.appendChild(label);
+        customConfigFields.appendChild(input);
+
+        const hint = document.createElement("div");
+        hint.className = "sc-custom-hint";
+        hint.textContent = "TIP: Use os.app.getAllApps() to see all available app IDs";
+        customConfigFields.appendChild(hint);
+
+        const appList = document.createElement("div");
+        appList.className = "sc-custom-app-list";
+        appList.id = "sc-custom-app-list";
+        customConfigFields.appendChild(appList);
+
+        const renderAppSuggestions = (query) => {
+          appList.innerHTML = "";
+          try {
+            const allApps = os.app.getAllApps();
+            const entries = Object.entries(allApps)
+              .filter(([id, info]) => {
+                const q = query.toLowerCase();
+                return !q || id.toLowerCase().includes(q) || (info.title || "").toLowerCase().includes(q);
+              })
+              .slice(0, 20);
+
+            if (entries.length === 0) {
+              appList.innerHTML = '<div class="sc-custom-app-empty">No matching apps</div>';
+              return;
+            }
+
+            entries.forEach(([id, info]) => {
+              const item = document.createElement("div");
+              item.className = "sc-custom-app-item";
+              const icon = info.icon || "fas fa-puzzle-piece";
+              item.innerHTML = `<i class="${icon}"></i><span class="sc-custom-app-title">${info.title || id}</span><span class="sc-custom-app-id">${id}</span>`;
+              item.addEventListener("click", () => {
+                input.value = id;
+                appList.innerHTML = "";
+              });
+              appList.appendChild(item);
+            });
+          } catch (e) {
+            appList.innerHTML = '<div class="sc-custom-app-empty">Could not load app list</div>';
+          }
+        };
+
+        input.addEventListener("input", () => renderAppSuggestions(input.value));
+        input.addEventListener("focus", () => renderAppSuggestions(input.value));
+      } else if (type === "openUrl") {
+        const url = currentConfig?.url || "";
+        const label = document.createElement("label");
+        label.className = "sc-custom-label";
+        label.textContent = "URL";
+        const input = document.createElement("input");
+        input.type = "text";
+        input.className = "sc-custom-input sc-custom-config-input";
+        input.placeholder = "https://example.com";
+        input.value = url;
+        input.dataset.configKey = "url";
+        customConfigFields.appendChild(label);
+        customConfigFields.appendChild(input);
+      } else if (type === "runCode") {
+        const code = currentConfig?.code || "";
+        const label = document.createElement("label");
+        label.className = "sc-custom-label";
+        label.textContent = "JavaScript Code";
+        const warning = document.createElement("div");
+        warning.className = "sc-custom-warning";
+        warning.innerHTML =
+          '<i class="fas fa-exclamation-triangle"></i> The <code>os</code> object is available. Be careful with eval-style execution.';
+        customConfigFields.appendChild(warning);
+        const textarea = document.createElement("textarea");
+        textarea.className = "sc-custom-textarea sc-custom-config-input";
+        textarea.placeholder = `os.notify.send("Hello", "World");`;
+        textarea.value = code;
+        textarea.dataset.configKey = "code";
+        textarea.rows = 6;
+        customConfigFields.appendChild(label);
+        customConfigFields.appendChild(textarea);
+      } else if (type === "notify") {
+        const title = currentConfig?.title || "";
+        const message = currentConfig?.message || "";
+        const label1 = document.createElement("label");
+        label1.className = "sc-custom-label";
+        label1.textContent = "Notification Title";
+        const input1 = document.createElement("input");
+        input1.type = "text";
+        input1.className = "sc-custom-input sc-custom-config-input";
+        input1.placeholder = "Shortcut Triggered!";
+        input1.value = title;
+        input1.dataset.configKey = "title";
+        customConfigFields.appendChild(label1);
+        customConfigFields.appendChild(input1);
+        const label2 = document.createElement("label");
+        label2.className = "sc-custom-label";
+        label2.textContent = "Message";
+        const input2 = document.createElement("input");
+        input2.type = "text";
+        input2.className = "sc-custom-input sc-custom-config-input";
+        input2.placeholder = "Your custom shortcut was executed.";
+        input2.value = message;
+        input2.dataset.configKey = "message";
+        customConfigFields.appendChild(label2);
+        customConfigFields.appendChild(input2);
+      }
+    };
+
+    const openCustomModal = (editData) => {
+      customEditingId = editData ? editData.id : null;
+      customTitle.textContent = editData ? "Edit Custom Shortcut" : "Create Custom Shortcut";
+      customDesc.value = editData ? editData.desc : "";
+      customRecordedKeys = editData ? [...editData.currentKeys] : [];
+      customKeysPlaceholder.textContent =
+        customRecordedKeys.length > 0 ? this.formatKeys(customRecordedKeys) : "Click to record...";
+
+      const actionType = editData?.action?.type || "launchApp";
+      const actionConfig = editData?.action?.config || {};
+
+      customActionTypes.querySelectorAll(".sc-custom-action-type").forEach((el) => {
+        el.classList.toggle("active", el.dataset.type === actionType);
+        el.querySelector("input").checked = el.dataset.type === actionType;
+      });
+
+      renderConfigFields(actionType, actionConfig);
+      customOverlay.style.display = "flex";
+    };
+
+    const closeCustomModal = () => {
+      customOverlay.style.display = "none";
+      customEditingId = null;
+      customRecordedKeys = [];
+    };
+
+    const saveCustomAction = () => {
+      const desc = customDesc.value.trim();
+      if (!desc) {
+        customDesc.focus();
+        customDesc.style.borderColor = "var(--error)";
+        setTimeout(() => {
+          customDesc.style.borderColor = "";
+        }, 2000);
+        return;
+      }
+      if (customRecordedKeys.length === 0) {
+        customKeysEl.style.borderColor = "var(--error)";
+        setTimeout(() => {
+          customKeysEl.style.borderColor = "";
+        }, 2000);
+        return;
+      }
+
+      const activeType = customActionTypes.querySelector(".sc-custom-action-type.active");
+      const actionType = activeType ? activeType.dataset.type : "launchApp";
+
+      const config = {};
+      customConfigFields.querySelectorAll(".sc-custom-config-input").forEach((el) => {
+        config[el.dataset.configKey] = el.value;
+      });
+
+      if (actionType === "launchApp" && !config.appId) return;
+      if (actionType === "openUrl" && !config.url) return;
+      if (actionType === "runCode" && !config.code) return;
+      if (actionType === "notify" && !config.title) return;
+
+      const definition = {
+        id: customEditingId || undefined,
+        defaultKeys: customRecordedKeys,
+        desc: desc,
+        icon: this.getActionTypeIcon(actionType),
+        action: {
+          type: actionType,
+          config: config
+        }
+      };
+
+      if (customEditingId) {
+        definition.id = customEditingId;
+        KeybindManager.saveCustomAction(definition);
+      } else {
+        const newId = KeybindManager.saveCustomAction(definition);
+        KeybindManager.setKeys(newId, customRecordedKeys);
+      }
+
+      closeCustomModal();
+      render();
+    };
+
+    customKeysEl.addEventListener("click", () => {
+      const overlay = customOverlay;
+      const origDisplay = listeningOverlay.style.display;
+      listeningOverlay.style.display = "flex";
+      listeningCurrent.textContent = customRecordedKeys.length > 0 ? this.formatKeys(customRecordedKeys) : "None";
+      listeningPreview.innerHTML = "";
+      listeningPreview.className = "sc-listening-preview";
+
+      const handleKey = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (e.key === "Escape") {
+          stopListening();
+          return;
+        }
+        if (e.key === "Enter") return;
+        if (e.key === "Tab") {
+          e.preventDefault();
+          return;
+        }
+        if (e.key === "Shift" || e.key === "Control" || e.key === "Alt" || e.key === "Meta") {
+          listeningPreview.innerHTML = "";
+          const msg = document.createElement("div");
+          msg.className = "sc-listening-msg";
+          msg.textContent = "Press a non-modifier key...";
+          listeningPreview.appendChild(msg);
+          return;
+        }
+
+        const recorded = [];
+        if (e.ctrlKey) recorded.push("Ctrl");
+        if (e.shiftKey) recorded.push("Shift");
+        if (e.altKey) recorded.push("Alt");
+        if (e.metaKey) recorded.push("Meta");
+        recorded.push(e.key === " " ? "Space" : e.key);
+
+        if (KeybindManager.isCustomizationValid(recorded)) {
+          customRecordedKeys = recorded;
+          customKeysPlaceholder.textContent = this.formatKeys(recorded);
+          listeningPreview.innerHTML = "";
+          const ok = document.createElement("div");
+          ok.className = "sc-listening-ok";
+          ok.innerHTML = `<i class="fas fa-check"></i> Set to ${this.formatKeys(recorded)}`;
+          listeningPreview.appendChild(ok);
+          stopListening();
+        } else {
+          listeningPreview.innerHTML = "";
+          const err = document.createElement("div");
+          err.className = "sc-listening-err";
+          err.textContent = "Invalid shortcut (must include exactly one non-modifier key)";
+          listeningPreview.appendChild(err);
+        }
+      };
+
+      const stopListening = () => {
+        listeningOverlay.style.display = "none";
+        document.removeEventListener("keydown", handleKey, true);
+      };
+
+      document.addEventListener("keydown", handleKey, true);
+      listeningCancel.onclick = () => stopListening();
+      listeningClear.onclick = () => {
+        customRecordedKeys = [];
+        customKeysPlaceholder.textContent = "Click to record...";
+        stopListening();
+      };
+    });
+
+    customActionTypes.addEventListener("change", (e) => {
+      if (e.target.name === "actionType") {
+        customActionTypes.querySelectorAll(".sc-custom-action-type").forEach((el) => {
+          el.classList.toggle("active", el.querySelector("input").checked);
+        });
+        renderConfigFields(e.target.value, {});
+      }
+    });
+
+    customActionTypes.addEventListener("click", (e) => {
+      const typeEl = e.target.closest(".sc-custom-action-type");
+      if (typeEl) {
+        typeEl.querySelector("input").checked = true;
+        typeEl.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+    });
+
+    customSave.addEventListener("click", saveCustomAction);
+    customCancel.addEventListener("click", closeCustomModal);
+    customClose.addEventListener("click", closeCustomModal);
+    customOverlay.addEventListener("click", (e) => {
+      if (e.target === customOverlay) closeCustomModal();
+    });
 
     const render = () => {
       const search = searchInput.value.trim().toLowerCase();
       listContainer.innerHTML = "";
 
-      let filtered = this.shortcuts;
+      let shortcuts = KeybindManager.getAll();
 
       if (currentCategory !== "all") {
-        filtered = filtered.filter((s) => s.cat === currentCategory);
+        shortcuts = shortcuts.filter((s) => s.cat === currentCategory);
       }
 
       if (search) {
-        filtered = filtered.filter((s) => {
+        shortcuts = shortcuts.filter((s) => {
           const matchDesc = s.desc.toLowerCase().includes(search);
-          const matchKeys = s.keys.some((k) => k.toLowerCase().includes(search));
+          const matchKeys = s.currentKeys.some((k) => k.toLowerCase().includes(search));
           const matchCat = getCategoryLabel(s.cat).toLowerCase().includes(search);
           return matchDesc || matchKeys || matchCat;
         });
       }
 
       listTitle.textContent = getCategoryLabel(currentCategory);
-      listCount.textContent = `${filtered.length} item${filtered.length !== 1 ? "s" : ""}`;
+      const customized = shortcuts.filter((s) => KeybindManager.isCustomized(s.id)).length;
+      const customCount = shortcuts.filter((s) => s.cat === "custom").length;
+      listCount.textContent = `${shortcuts.length} item${shortcuts.length !== 1 ? "s" : ""}${customized > 0 ? ` (${customized} customized)` : ""}${customCount > 0 ? ` · ${customCount} custom` : ""}`;
 
-      if (filtered.length === 0) {
+      if (shortcuts.length === 0) {
         listContainer.innerHTML = `
           <div class="sc-empty-state">
             <i class="fas fa-keyboard"></i>
             <div>No matching keyboard shortcuts found.</div>
+            ${currentCategory === "custom" ? '<div class="sc-empty-hint">Click "Custom" button above to create your first custom shortcut.</div>' : ""}
           </div>
         `;
         return;
       }
 
-      filtered.forEach((item) => {
+      shortcuts.forEach((item) => {
         const card = document.createElement("div");
         card.className = "sc-card";
+        card.id = getItemId(item);
+        if (KeybindManager.isCustomized(item.id)) {
+          card.classList.add("sc-card-customized");
+        }
+        if (item.cat === "custom") {
+          card.classList.add("sc-card-custom");
+        }
 
-        const keysHtml = item.keys.map((k) => `<kbd>${k}</kbd>`).join('<span class="sc-card-plus">+</span>');
+        const isCustom = item.cat === "custom";
+        const keysHtml = item.currentKeys
+          .map((k) => `<kbd>${this.formatKeys([k])}</kbd>`)
+          .join('<span class="sc-card-plus">+</span>');
+
+        let actionBadge = "";
+        if (isCustom && item.action) {
+          actionBadge = `<span class="sc-card-action-badge"><i class="${this.getActionTypeIcon(item.action.type)}"></i> ${this.getActionTypeLabel(item.action.type)}</span>`;
+        }
 
         card.innerHTML = `
           <div class="sc-card-left">
             <div class="sc-card-icon-wrap">
               <i class="${item.icon}"></i>
             </div>
-            <div class="sc-card-desc">${item.desc}</div>
+            <div class="sc-card-info">
+              <div class="sc-card-desc">${item.desc}</div>
+              <div class="sc-card-id">${isCustom ? "Custom" : item.id}${actionBadge}</div>
+            </div>
           </div>
-          <div class="sc-card-keys">
-            ${keysHtml}
+          <div class="sc-card-right">
+            <div class="sc-card-keys" data-shortcut-id="${item.id}">
+              ${keysHtml}
+              <span class="sc-card-rec-hint">Click to rebind</span>
+            </div>
+            <button class="sc-card-reset" data-shortcut-id="${item.id}" title="${isCustom ? "Delete" : "Reset to default"}">
+              <i class="fas ${isCustom ? "fa-trash" : "fa-undo"}"></i>
+            </button>
           </div>
         `;
+
+        const keysArea = card.querySelector(".sc-card-keys");
+        keysArea.addEventListener("click", () => {
+          startListening(item, keysArea);
+        });
+
+        const resetBtn = card.querySelector(".sc-card-reset");
+        resetBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          if (isCustom) {
+            if (confirm("Delete this custom shortcut?")) {
+              KeybindManager.deleteCustomAction(item.id);
+              render();
+            }
+          } else {
+            if (KeybindManager.isCustomized(item.id)) {
+              KeybindManager.reset(item.id);
+              render();
+            }
+          }
+        });
+
+        if (isCustom) {
+          card.addEventListener("dblclick", () => {
+            const action = KeybindManager.getCustomAction(item.id);
+            if (action) openCustomModal(action);
+          });
+        }
 
         listContainer.appendChild(card);
       });
@@ -775,6 +753,23 @@ export class ShortcutsApp extends BaseApp {
       });
     });
 
+    createBtn.addEventListener("click", () => {
+      openCustomModal(null);
+    });
+
+    resetAllBtn.addEventListener("click", () => {
+      if (KeybindManager.getCustomizedCount() > 0) {
+        KeybindManager.resetAll();
+        render();
+      }
+    });
+
     render();
+  }
+
+  onClose(winId) {
+    if (this.listeningId) {
+      this.listeningId = null;
+    }
   }
 }

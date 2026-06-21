@@ -11,6 +11,7 @@ import { SYSTEM_APPS } from "../AppRegistryConfig.js";
 import { resolveAvatarUrl } from "../shared/avatarResolver.js";
 
 import { StorageKeys, os } from "../framework.js";
+import { KeybindManager } from "../keybindManager.js";
 function getStartMenuEl() {
   return document.getElementById("start-menu") || document.querySelector(".start-menu");
 }
@@ -542,7 +543,7 @@ export function setupStartMenu(appLauncher, sessionManager, selectionManager) {
     document.addEventListener("keydown", (e) => {
       if (!isStartMenuOpen()) return;
 
-      if (e.key === "ArrowDown") {
+      if (KeybindManager.matches(e, "startMenu.arrowDown")) {
         e.preventDefault();
         if (focusMode === "search") {
           document.getElementById("start-menu-search")?.blur();
@@ -553,7 +554,7 @@ export function setupStartMenu(appLauncher, sessionManager, selectionManager) {
         } else {
           navigateSelection("down");
         }
-      } else if (e.key === "ArrowUp") {
+      } else if (KeybindManager.matches(e, "startMenu.arrowUp")) {
         e.preventDefault();
         if (focusMode === "search") {
           document.getElementById("start-menu-search")?.blur();
@@ -564,19 +565,19 @@ export function setupStartMenu(appLauncher, sessionManager, selectionManager) {
         } else {
           navigateSelection("up");
         }
-      } else if (e.key === "ArrowLeft") {
+      } else if (KeybindManager.matches(e, "startMenu.arrowLeft")) {
         e.preventDefault();
         if (focusMode === "search") {
           document.getElementById("start-menu-search")?.blur();
         }
         switchFocusMode("categories");
-      } else if (e.key === "ArrowRight") {
+      } else if (KeybindManager.matches(e, "startMenu.arrowRight")) {
         e.preventDefault();
         if (focusMode === "search") {
           document.getElementById("start-menu-search")?.blur();
         }
         switchFocusMode("apps");
-      } else if (e.key === "Enter") {
+      } else if (KeybindManager.matches(e, "startMenu.enter")) {
         e.preventDefault();
         if (focusMode === "categories" && selectedCategory) {
           selectedCategory.dispatchEvent(new Event("click"));
@@ -1183,8 +1184,8 @@ function showStartItemEditor(appLauncher, currentItem) {
     });
 
     overlay.onkeydown = (ev) => {
-      if (ev.key === "Escape") close();
-      if (ev.key === "Enter") confirmBtn.click();
+      if (KeybindManager.matches(ev, "session.cancel")) close();
+      if (KeybindManager.matches(ev, "startMenu.enter")) confirmBtn.click();
     };
   });
 }

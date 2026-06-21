@@ -2,6 +2,7 @@ import "../styles/notepad.css";
 import { ClippyAnimation, speak } from "../ai/clippy.js";
 import { Achievements } from "../achievements.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
+import { KeybindManager } from "../keybindManager.js";
 
 import { BaseApp, os } from "../framework.js";
 export class NotepadApp extends BaseApp {
@@ -245,31 +246,40 @@ export class NotepadApp extends BaseApp {
 
   setupKeyboardShortcuts(win, winId) {
     win.addEventListener("keydown", (e) => {
-      if (e.ctrlKey && !e.altKey) {
-        const keyMap = {
-          o: "open",
-          f: "find",
-          h: "replace",
-          g: "goTo",
-          "=": "zoomIn",
-          "+": "zoomIn",
-          "-": "zoomOut",
-          0: "zoomReset"
-        };
-        if (e.key.toLowerCase() === "s") {
-          e.preventDefault();
-          this.handleAction(win, winId, e.shiftKey ? "saveAs" : "save");
-          return;
-        }
-        const action = keyMap[e.key.toLowerCase()];
-        if (action) {
-          e.preventDefault();
-          this.handleAction(win, winId, action);
-        }
-      } else if (e.key === "F3") {
+      if (KeybindManager.matches(e, "notepad.save")) {
         e.preventDefault();
-        this.handleAction(win, winId, e.shiftKey ? "findPrev" : "findNext");
-      } else if (e.key === "Escape") {
+        this.handleAction(win, winId, "save");
+      } else if (KeybindManager.matches(e, "notepad.saveAs")) {
+        e.preventDefault();
+        this.handleAction(win, winId, "saveAs");
+      } else if (KeybindManager.matches(e, "notepad.open")) {
+        e.preventDefault();
+        this.handleAction(win, winId, "open");
+      } else if (KeybindManager.matches(e, "notepad.find")) {
+        e.preventDefault();
+        this.handleAction(win, winId, "find");
+      } else if (KeybindManager.matches(e, "notepad.replace")) {
+        e.preventDefault();
+        this.handleAction(win, winId, "replace");
+      } else if (KeybindManager.matches(e, "notepad.goto")) {
+        e.preventDefault();
+        this.handleAction(win, winId, "goTo");
+      } else if (KeybindManager.matches(e, "notepad.zoomIn")) {
+        e.preventDefault();
+        this.handleAction(win, winId, "zoomIn");
+      } else if (KeybindManager.matches(e, "notepad.zoomOut")) {
+        e.preventDefault();
+        this.handleAction(win, winId, "zoomOut");
+      } else if (KeybindManager.matches(e, "notepad.zoomReset")) {
+        e.preventDefault();
+        this.handleAction(win, winId, "zoomReset");
+      } else if (KeybindManager.matches(e, "notepad.findNext")) {
+        e.preventDefault();
+        this.handleAction(win, winId, "findNext");
+      } else if (KeybindManager.matches(e, "notepad.findPrev")) {
+        e.preventDefault();
+        this.handleAction(win, winId, "findPrev");
+      } else if (KeybindManager.matches(e, "notepad.closeDialog")) {
         this.closeDialogs(win);
       }
     });

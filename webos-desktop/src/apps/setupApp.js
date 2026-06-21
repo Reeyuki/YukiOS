@@ -7,7 +7,7 @@ import { PREDEFINED_AVATARS } from "./accountManager.js";
 import { applyFontFamily } from "../settings/settingsApply.js";
 import { $, $$, bindEvent, setText, setHTML, toggleClass } from "../shared/domUtils.js";
 import { getAllThemes } from "../shared/themeEngine.js";
-import { SHORTCUTS_DATA } from "./shortcuts.js";
+import { KeybindManager, KEYBIND_DEFINITIONS } from "../keybindManager.js";
 
 import { BaseApp, StorageKeys, os } from "../framework.js";
 export const FEATURE_DATA = {
@@ -199,7 +199,7 @@ export const FEATURE_DATA = {
     }
   ],
   step6: {
-    keyboardShortcuts: SHORTCUTS_DATA.map((s) => ({ keys: s.keys.join("+"), desc: s.desc, cat: s.cat })),
+    keyboardShortcuts: KEYBIND_DEFINITIONS.map((s) => ({ keys: s.defaultKeys.join("+"), desc: s.desc, cat: s.cat })),
     filesystem: {
       title: "Virtual Filesystem",
       description: "Your files live in your browser. Close the tab and they're still here when you come back.",

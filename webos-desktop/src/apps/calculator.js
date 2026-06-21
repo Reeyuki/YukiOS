@@ -1,4 +1,5 @@
 import "../styles/calculator.css";
+import { KeybindManager } from "../keybindManager.js";
 
 import { BaseApp, PersistenceTypes } from "../framework.js";
 export class CalculatorApp extends BaseApp {
@@ -620,7 +621,7 @@ export class CalculatorApp extends BaseApp {
 
           if (!calcBody) return;
 
-          if ((event.ctrlKey || event.metaKey) && k.toLowerCase() === "v") {
+          if (KeybindManager.matches(event, "calc.paste")) {
             navigator.clipboard
               .readText()
               .then((text) => {

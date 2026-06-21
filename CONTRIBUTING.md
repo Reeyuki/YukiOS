@@ -59,4 +59,4 @@ See [DEVELOPMENT.md](DEVELOPMENT.md) for detailed instructions on creating new a
 
 ## Questions?
 
-Open a [Discussion](https://github.com/Reeyuki/yukios/discussions) or join the [Discord](https://discord.gg/uFuGfseB9Z).
+Open a [Discussion](https://github.com/Reeyuki/yukios/discussions) or join the [Discord](https://discord.gg/wufbWFwr4G).

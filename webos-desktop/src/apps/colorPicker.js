@@ -1,5 +1,6 @@
 import "../styles/colorPicker.css";
 import { BaseApp, os, StorageKeys } from "../framework.js";
+import { KeybindManager } from "../keybindManager.js";
 
 export class ColorPickerApp extends BaseApp {
   constructor(services) {
@@ -12,7 +13,7 @@ export class ColorPickerApp extends BaseApp {
 
   _registerGlobalShortcut() {
     document.addEventListener("keydown", (e) => {
-      if (e.altKey && e.key === "h") {
+      if (KeybindManager.matches(e, "global.colorPicker")) {
         e.preventDefault();
         if (!this.openWindows.has("color-picker")) this.open();
         this.pick();

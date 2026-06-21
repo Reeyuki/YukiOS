@@ -741,6 +741,6 @@ Single-file build output is supported for easy deployment.
 
 ## Need Help?
 
-- Join the [Discord](https://discord.gg/uFuGfseB9Z) community
+- Join the [Discord](https://discord.gg/wufbWFwr4G) community
 - Check the [AGENTS.md](AGENTS.md) for detailed technical reference
 - Review existing apps in `webos-desktop/src/apps/` for examples

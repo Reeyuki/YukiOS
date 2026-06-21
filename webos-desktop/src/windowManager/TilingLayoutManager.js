@@ -1,4 +1,5 @@
 import { StorageKeys, os } from "../framework.js";
+import { KeybindManager } from "../keybindManager.js";
 const LayoutType = {
   DWINDLE: "dwindle",
   BSP: "bsp",
@@ -748,67 +749,57 @@ export class TilingLayoutManager {
     document.addEventListener("keydown", (e) => {
       if (!this.enabled) return;
 
-      if (e.altKey && !e.ctrlKey && !e.shiftKey && !e.metaKey) {
-        if (e.key === "ArrowLeft") {
-          e.preventDefault();
-          this.moveFocus("left");
-        } else if (e.key === "ArrowRight") {
-          e.preventDefault();
-          this.moveFocus("right");
-        } else if (e.key === "ArrowUp") {
-          e.preventDefault();
-          this.moveFocus("up");
-        } else if (e.key === "ArrowDown") {
-          e.preventDefault();
-          this.moveFocus("down");
-        } else if (e.key === "Enter") {
-          e.preventDefault();
-          const focused = this.getFocusedWindow();
-          if (focused) {
-            this.toggleFullscreen(focused.id);
-          }
-        } else if (e.key === "f" || e.key === "F") {
-          e.preventDefault();
-          const focused = this.getFocusedWindow();
-          if (focused) {
-            this.toggleFloating(focused.id);
-          }
-        } else if (e.key === "t" || e.key === "T") {
-          e.preventDefault();
-          this._spawnTerminal();
+      if (KeybindManager.matches(e, "tiling.focusLeft")) {
+        e.preventDefault();
+        this.moveFocus("left");
+      } else if (KeybindManager.matches(e, "tiling.focusRight")) {
+        e.preventDefault();
+        this.moveFocus("right");
+      } else if (KeybindManager.matches(e, "tiling.focusUp")) {
+        e.preventDefault();
+        this.moveFocus("up");
+      } else if (KeybindManager.matches(e, "tiling.focusDown")) {
+        e.preventDefault();
+        this.moveFocus("down");
+      } else if (KeybindManager.matches(e, "tiling.fullscreen")) {
+        e.preventDefault();
+        const focused = this.getFocusedWindow();
+        if (focused) {
+          this.toggleFullscreen(focused.id);
         }
-      }
-
-      if (e.altKey && e.ctrlKey && !e.shiftKey && !e.metaKey) {
-        if (e.key === "ArrowLeft") {
-          e.preventDefault();
-          this.resizeSplit("left", -0.05);
-        } else if (e.key === "ArrowRight") {
-          e.preventDefault();
-          this.resizeSplit("right", 0.05);
-        } else if (e.key === "ArrowUp") {
-          e.preventDefault();
-          this.resizeSplit("up", -0.05);
-        } else if (e.key === "ArrowDown") {
-          e.preventDefault();
-          this.resizeSplit("down", 0.05);
+      } else if (KeybindManager.matches(e, "tiling.floating")) {
+        e.preventDefault();
+        const focused = this.getFocusedWindow();
+        if (focused) {
+          this.toggleFloating(focused.id);
         }
-      }
-
-      if (e.altKey && e.shiftKey && !e.ctrlKey && !e.metaKey) {
-        if (e.key === "ArrowLeft") {
-          e.preventDefault();
-          this.swapWindows("left");
-        } else if (e.key === "ArrowRight") {
-          e.preventDefault();
-          this.swapWindows("right");
-        } else if (e.key === "ArrowUp") {
-          e.preventDefault();
-          this.swapWindows("up");
-        } else if (e.key === "ArrowDown") {
-          e.preventDefault();
-          this.swapWindows("down");
-        }
+      } else if (KeybindManager.matches(e, "tiling.terminal")) {
+        e.preventDefault();
+        this._spawnTerminal();
+      } else if (KeybindManager.matches(e, "tiling.resizeLeft")) {
+        e.preventDefault();
+        this.resizeSplit("left", -0.05);
+      } else if (KeybindManager.matches(e, "tiling.resizeRight")) {
+        e.preventDefault();
+        this.resizeSplit("right", 0.05);
+      } else if (KeybindManager.matches(e, "tiling.resizeUp")) {
+        e.preventDefault();
+        this.resizeSplit("up", -0.05);
+      } else if (KeybindManager.matches(e, "tiling.resizeDown")) {
+        e.preventDefault();
+        this.resizeSplit("down", 0.05);
+      } else if (KeybindManager.matches(e, "tiling.swapLeft")) {
+        e.preventDefault();
+        this.swapWindows("left");
+      } else if (KeybindManager.matches(e, "tiling.swapRight")) {
+        e.preventDefault();
+        this.swapWindows("right");
+      } else if (KeybindManager.matches(e, "tiling.swapUp")) {
+        e.preventDefault();
+        this.swapWindows("up");
+      } else if (KeybindManager.matches(e, "tiling.swapDown")) {
+        e.preventDefault();
+        this.swapWindows("down");
       }
     });
   }

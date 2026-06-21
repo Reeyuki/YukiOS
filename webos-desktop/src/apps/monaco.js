@@ -10,6 +10,7 @@ import { FileKind } from "../fs.js";
 import { Shell } from "../shared/shell.js";
 
 import { BaseApp, os } from "../framework.js";
+import { KeybindManager } from "../keybindManager.js";
 export class MonacoApp extends BaseApp {
   constructor(services) {
     super(services);
@@ -481,7 +482,7 @@ export class MonacoApp extends BaseApp {
     this.setupTerminalPanel(win);
 
     win.addEventListener("keydown", (e) => {
-      if (e.ctrlKey && e.key === "`") {
+      if (KeybindManager.matches(e, "monaco.toggleTerminal")) {
         e.preventDefault();
         this.toggleTerminalPanel();
       }

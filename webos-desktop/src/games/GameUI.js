@@ -3,6 +3,7 @@ import { SteamDataManager, _desktopUI } from "./games.js";
 import { observeLazyImages } from "./games.js";
 import { WindowHelper } from "../utils/WindowHelper.js";
 import { buildSteamShell, initDropdowns, initStorePage, getCdnBase, initSettingsPage } from "./steam.js";
+import { KeybindManager } from "../keybindManager.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { fetchLiveStats, sendLaunchAnalytics, getAnalyticsBase } from "../analytics.js";
 import { appMap } from "./gamesList.js";
@@ -661,8 +662,7 @@ export class GameUI {
       document.addEventListener(
         "keydown",
         (e) => {
-          const isFind = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "f";
-          if (!isFind) return;
+          if (!KeybindManager.matches(e, "games.search")) return;
 
           const root = container;
           if (!root || !document.body.contains(root)) return;

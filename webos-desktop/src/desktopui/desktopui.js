@@ -15,6 +15,7 @@ import { DragDropManager } from "./dragDropManager.js";
 import { ClipboardManager } from "./fileClipboardManager.js";
 import { showPropertiesDialog } from "./propertiesDialog.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
+import { KeybindManager } from "../keybindManager.js";
 
 let sharedAppLauncher;
 export let toggleHideGames = getToggleHideGames();
@@ -340,7 +341,7 @@ export class DesktopUI {
     document.addEventListener("keydown", (e) => {
       const active = document.activeElement;
       if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA" || active.isContentEditable)) return;
-      if (e.ctrlKey && e.code === "KeyV") {
+      if (KeybindManager.matches(e, "desktop.paste")) {
         e.preventDefault();
         const clipboard = this.clipboardManager.getClipboard();
         if (!clipboard) return;
@@ -425,7 +426,7 @@ export class DesktopUI {
         }
       }
 
-      if (e.code === "Delete") {
+      if (KeybindManager.matches(e, "desktop.deleteSelected")) {
         const selectedArray = this.selectionManager.toArray();
         let hasExplorerSelection = false;
         let explorerInst = null;

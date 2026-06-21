@@ -1,6 +1,7 @@
 import { sanitizeTitle } from "../utils/utils.js";
 
 import { StorageKeys, os } from "../framework.js";
+import { KeybindManager } from "../keybindManager.js";
 export class WorkspaceManager {
   constructor(windowManager) {
     this.wm = windowManager;
@@ -328,7 +329,7 @@ export class WorkspaceManager {
       document.removeEventListener("keydown", this._escHandler);
     }
     this._escHandler = (e) => {
-      if (e.key === "Escape") this.closeOverview();
+      if (KeybindManager.matches(e, "workspace.closeOverview")) this.closeOverview();
     };
     document.addEventListener("keydown", this._escHandler);
   }

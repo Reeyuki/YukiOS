@@ -6,6 +6,7 @@ import { YUKIOS_VERSION } from "./apps/about.js";
 import { resolveAvatarUrl } from "./shared/avatarResolver.js";
 
 import { StorageKeys, os } from "./framework.js";
+import { KeybindManager } from "./keybindManager.js";
 function generateUUID() {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
@@ -636,22 +637,25 @@ export class SessionManager {
   }
 
   async _handleKeyboardNav(e, handleAction) {
-    if (e.key === "Enter") {
+    if (KeybindManager.matches(e, "session.confirm")) {
       e.preventDefault();
       handleAction();
-    } else if (e.key === "Escape") {
+    } else if (KeybindManager.matches(e, "session.cancel")) {
       const avatarModal = this.container.querySelector("#avatar-edit-modal");
       if (avatarModal && avatarModal.style.display !== "none") {
         avatarModal.style.display = "none";
       } else {
         this._hideExtraElements();
       }
-    } else if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+    } else if (
+      KeybindManager.matches(e, "session.navigateLeft") ||
+      KeybindManager.matches(e, "session.navigateRight")
+    ) {
       const users = this.userHistory.length > 0 ? this.userHistory : [this.selectedUser];
       if (users.length < 2) return;
 
       const currentIndex = users.findIndex((u) => u.key === this.selectedUser?.key);
-      const direction = e.key === "ArrowRight" ? 1 : -1;
+      const direction = KeybindManager.matches(e, "session.navigateRight") ? 1 : -1;
       const nextIndex = (currentIndex + direction + users.length) % users.length;
       const next = users[nextIndex];
 

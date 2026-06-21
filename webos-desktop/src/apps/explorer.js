@@ -3,6 +3,7 @@ import { BaseApp, os } from "../framework.js";
 import { FileKind } from "../fs.js";
 import { SystemUtilities } from "../system.js";
 import { resolveGhUrl } from "../shared/assetResolver.js";
+import { KeybindManager } from "../keybindManager.js";
 import {
   $,
   $$,
@@ -536,17 +537,26 @@ export class ExplorerApp extends BaseApp {
       const active = document.activeElement;
       if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA" || active.isContentEditable)) return;
       if (!isWindowFocused(winId, lastMousePos)) return;
-      if (!e.ctrlKey || (e.code !== "KeyC" && e.code !== "KeyX" && e.code !== "KeyV")) return;
-      e.preventDefault();
 
-      if (e.code === "KeyV") {
+      if (KeybindManager.matches(e, "desktop.paste")) {
+        e.preventDefault();
         this._pasteToPath(inst.currentPath, inst);
+        return;
+      }
+
+      if (!e.ctrlKey) return;
+
+      if (KeybindManager.matches(e, "desktop.copy")) {
+        e.preventDefault();
+      } else if (KeybindManager.matches(e, "desktop.cut")) {
+        e.preventDefault();
+      } else {
         return;
       }
 
       if (!inst.selectedItems.size) return;
 
-      const action = e.code === "KeyX" ? "cut" : "copy";
+      const action = KeybindManager.matches(e, "desktop.cut") ? "cut" : "copy";
       const view = $(`#${winId}-view`, win);
       const icons = [...inst.selectedItems]
         .map((name) => {
@@ -569,7 +579,7 @@ export class ExplorerApp extends BaseApp {
       }
       const active = document.activeElement;
       if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA" || active.isContentEditable)) return;
-      if (!isWindowFocused(winId, lastMousePos) || e.key !== "F2") return;
+      if (!isWindowFocused(winId, lastMousePos) || !KeybindManager.matches(e, "desktop.rename")) return;
       e.preventDefault();
 
       const selectedName = inst.selectedFile || (inst.selectedItems.size === 1 ? [...inst.selectedItems][0] : null);

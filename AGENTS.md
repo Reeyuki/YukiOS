@@ -31,6 +31,9 @@
 - If a change introduces a new system, abstraction, manager, API surface, or reusable capability, create a new file and
   integrate it via imports. Only modify existing files if the change is a direct refinement of existing logic without
   introducing a new responsibility boundary.
+- Always use `KeybindManager` from `src/keybindManager.js` for keyboard shortcuts instead of raw `keydown` listeners
+  with hardcoded key checks. Use `KeybindManager.matches(event, id)` to check key combinations and register new keybinds
+  in `KEYBIND_DEFINITIONS` inside that file. Never define key combos inline in event handlers.
 
 ---
 
@@ -710,3 +713,78 @@ getDeclarativeSchema(opts) {
 **Runtime components** (in `src/runtime/`): `StateManager.js`, `AppRenderer.js`, `EventBinder.js`, `ActionExecutor.js`,
 `DeclarativeApp.js`, `UIComponents.js`, `ServiceActions.js`, `AppSchema.js` (re-exports `PersistenceTypes` from
 `src/AppSchema.js`).
+
+---
+
+## Keybind System
+
+### KeybindManager (`src/keybindManager.js`)
+
+Central registry of all keyboard shortcuts with customization and persistence. Always use instead of raw keydown
+listeners.
+
+| Method | Description |
+|---|---|
+| `getAll()` | All keybinds with current (possibly customized) keys (includes custom actions) |
+| `getById(id)` | Single keybind definition by ID (checks custom actions too) |
+| `getCurrentKeys(id)` | Current key combo for a given ID |
+| `setKeys(id, keys)` | Customize a keybind (`keys` is array like `["Ctrl", "K"]`) |
+| `reset(id)` / `resetAll()` | Reset single or all keybinds to defaults |
+| `matches(event, id)` | Check if a `KeyboardEvent` matches a keybind's current combo |
+| `isCustomized(id)` | Whether a keybind has been modified |
+| `saveCustomAction(definition)` | Create/update a custom action; auto-assigns ID if missing; returns ID |
+| `deleteCustomAction(id)` | Remove a custom action |
+| `getAllCustomActions()` | Get array of all custom action definitions |
+| `getCustomAction(id)` | Get a single custom action by ID |
+| `executeCustomAction(id)` | Execute a custom action by its ID |
+
+**Key Pattern:** `scope.action` — e.g. `global.showDesktop`, `notepad.save`, `browser.newTab`.
+
+**Usage in handlers:**
+```javascript
+import { KeybindManager } from "../keybindManager.js";
+
+// Instead of: if (e.ctrlKey && e.key === "s") { save(); }
+if (KeybindManager.matches(e, "notepad.save")) {
+  e.preventDefault();
+  save();
+}
+```
+
+**Adding new keybinds:** Add an entry to `KEYBIND_DEFINITIONS` in `keybindManager.js` with an `id`, `defaultKeys`
+(array), `desc`, `cat`, and `icon`. Then use `KeybindManager.matches(event, id)` in your handler.
+
+### Shortcuts App (`src/apps/shortcuts.js`)
+
+Opened from Start Menu. Users can search, filter by category, click a key combo to rebind it, reset individual
+shortcuts, or reset all. Customizations persist via `os.storage`.
+
+### Custom Actions
+
+Users can create custom keyboard shortcuts with custom actions. Custom actions support four types:
+
+- **Launch App** - Launches any registered app by its ID (e.g. `terminal`, `calculator`)
+- **Open URL** - Opens a URL in a new browser tab
+- **Run Code** - Executes JavaScript code with the `os` object available (`new Function("os", code)(os)`)
+- **Notify** - Sends a system notification with a title and message
+
+Custom actions are defined in the Shortcuts app via the "Custom" button. Each custom action:
+1. Gets a unique ID (prefixed `custom_`)
+2. Stores its keybind + action definition in `os.storage`
+3. Appears under the "Custom" category in the Shortcuts app sidebar
+4. Is executed by a global `keydown` listener installed automatically on creation
+
+**Definition schema:**
+```javascript
+{
+  id: "custom_1719000000_abcd",       // auto-generated if omitted
+  defaultKeys: ["Ctrl", "Shift", "A"], // the key combination
+  desc: "My custom shortcut",          // user-facing description
+  icon: "fas fa-rocket",               // auto-set based on action type
+  cat: "custom",                       // always "custom"
+  action: {
+    type: "launchApp",                 // "launchApp" | "openUrl" | "runCode" | "notify"
+    config: { appId: "terminal" }      // varies by type
+  }
+}
+```

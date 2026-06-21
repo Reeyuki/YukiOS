@@ -1,4 +1,5 @@
 import "../styles/office.css";
+import { KeybindManager } from "../keybindManager.js";
 import {
   $,
   $$,
@@ -1680,38 +1681,64 @@ export class OfficeApp extends BaseApp {
   }
   setupKeyboardShortcuts(win, state, actions) {
     win.addEventListener("keydown", (e) => {
-      if (!e.ctrlKey && !e.metaKey) return;
-
-      const shortcuts = {
-        n: "new",
-        o: "open",
-        s: e.shiftKey ? "saveAs" : "save",
-        p: "print",
-        z: "undo",
-        y: "redo",
-        x: "cut",
-        c: "copy",
-        a: "selectAll",
-        f: "find",
-        h: "replace",
-        b: "formatBold",
-        i: "formatItalic",
-        u: "formatUnderline",
-        k: "insertLink",
-        "=": "zoomIn",
-        "-": "zoomOut",
-        0: "zoomReset"
-      };
-
-      const action = shortcuts[e.key.toLowerCase()];
-      if (action && actions[action]) {
+      if (KeybindManager.matches(e, "office.new")) {
         e.preventDefault();
-        actions[action]();
-      }
-    });
-
-    win.addEventListener("keydown", (e) => {
-      if (e.key === "F11") {
+        actions.new();
+      } else if (KeybindManager.matches(e, "office.open")) {
+        e.preventDefault();
+        actions.open();
+      } else if (KeybindManager.matches(e, "office.save")) {
+        e.preventDefault();
+        actions.save();
+      } else if (KeybindManager.matches(e, "office.saveAs")) {
+        e.preventDefault();
+        actions.saveAs();
+      } else if (KeybindManager.matches(e, "office.print")) {
+        e.preventDefault();
+        actions.print();
+      } else if (KeybindManager.matches(e, "office.undo")) {
+        e.preventDefault();
+        actions.undo();
+      } else if (KeybindManager.matches(e, "office.redo")) {
+        e.preventDefault();
+        actions.redo();
+      } else if (KeybindManager.matches(e, "office.cut")) {
+        e.preventDefault();
+        actions.cut();
+      } else if (KeybindManager.matches(e, "office.copy")) {
+        e.preventDefault();
+        actions.copy();
+      } else if (KeybindManager.matches(e, "office.selectAll")) {
+        e.preventDefault();
+        actions.selectAll();
+      } else if (KeybindManager.matches(e, "office.find")) {
+        e.preventDefault();
+        actions.find();
+      } else if (KeybindManager.matches(e, "office.replace")) {
+        e.preventDefault();
+        actions.replace();
+      } else if (KeybindManager.matches(e, "office.bold")) {
+        e.preventDefault();
+        actions.formatBold();
+      } else if (KeybindManager.matches(e, "office.italic")) {
+        e.preventDefault();
+        actions.formatItalic();
+      } else if (KeybindManager.matches(e, "office.underline")) {
+        e.preventDefault();
+        actions.formatUnderline();
+      } else if (KeybindManager.matches(e, "office.insertLink")) {
+        e.preventDefault();
+        actions.insertLink();
+      } else if (KeybindManager.matches(e, "office.zoomIn")) {
+        e.preventDefault();
+        actions.zoomIn();
+      } else if (KeybindManager.matches(e, "office.zoomOut")) {
+        e.preventDefault();
+        actions.zoomOut();
+      } else if (KeybindManager.matches(e, "office.zoomReset")) {
+        e.preventDefault();
+        actions.zoomReset();
+      } else if (KeybindManager.matches(e, "office.fullscreen")) {
         e.preventDefault();
         actions.fullscreen();
       }

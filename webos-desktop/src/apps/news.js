@@ -8,6 +8,22 @@ const EXISTING_NEWS_UPDATES = [
     date: "June 21, 2026",
     sections: [
       {
+        icon: "fa-keyboard",
+        title: "Updated",
+        items: [
+          [
+            "fa-keyboard",
+            "Keyboard Shortcuts",
+            "Rebind every system shortcut in the Shortcuts app with per-key reset and a global reset all button."
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    date: "June 21, 2026",
+    sections: [
+      {
         icon: "star",
         title: "Better animations",
         items: [
@@ -128,17 +144,6 @@ const EXISTING_NEWS_UPDATES = [
             "fa-trash",
             "Trash Bin",
             "Deleted files now go to Trash instead of being permanently removed. Restore or permanently delete from the new Trash view in Explorer sidebar."
-          ]
-        ]
-      },
-      {
-        icon: "fa-cube",
-        title: "Cursor Effect",
-        items: [
-          [
-            "fa-cube",
-            "Cursor Launch Effect",
-            "Bouncing icon follows your cursor when launching apps. Toggle it in Settings."
           ]
         ]
       }
@@ -890,7 +895,12 @@ const EXISTING_NEWS_UPDATES = [
             "Desktop Auto-Refresh",
             "The desktop now automatically reflects file changes without a manual refresh."
           ],
-          ["fa-film", "Video Turbo", "Smoother video playback across the system."]
+          ["fa-film", "Video Turbo", "Smoother video playback across the system."],
+          [
+            "fa-star",
+            "Custom Shortcuts",
+            "Create your own keyboard shortcuts with custom actions like launching apps or running code."
+          ]
         ]
       }
     ]

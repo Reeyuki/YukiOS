@@ -1,5 +1,6 @@
 import { toggleStartMenu } from "../desktopui/startMenu.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
+import { KeybindManager } from "../keybindManager.js";
 
 import { StorageKeys, os } from "../framework.js";
 export class InputHandler {
@@ -16,21 +17,7 @@ export class InputHandler {
     this._initWindowSwitcher();
 
     document.addEventListener("keydown", (e) => {
-      if (
-        e.key.toLowerCase() === "d" &&
-        e.metaKey === false &&
-        e.ctrlKey === false &&
-        e.altKey === false &&
-        e.shiftKey === false &&
-        e.getModifierState("Meta") === false &&
-        e.getModifierState("Control") === false &&
-        e.getModifierState("Alt") === false &&
-        e.getModifierState("Shift") === false &&
-        e.getModifierState("OS")
-      ) {
-        return;
-      }
-      if (e.key.toLowerCase() === "d" && (e.metaKey || e.ctrlKey)) {
+      if (KeybindManager.matches(e, "global.showDesktop")) {
         e.preventDefault();
 
         const allWindows = Array.from(this.manager.openWindows.keys())
@@ -56,21 +43,20 @@ export class InputHandler {
     });
 
     document.addEventListener("keydown", (e) => {
-      if (!e.metaKey && !e.ctrlKey) return;
       const focused = Array.from(this.manager.openWindows.keys())
         .map((id) => document.getElementById(id))
         .filter(Boolean)
         .sort((a, b) => parseInt(b.style.zIndex) - parseInt(a.style.zIndex))[0];
       if (!focused) return;
-      if (e.key === "ArrowLeft") {
+      if (KeybindManager.matches(e, "global.snapLeft")) {
         e.preventDefault();
         this.manager._applySnap(focused, "left");
       }
-      if (e.key === "ArrowRight") {
+      if (KeybindManager.matches(e, "global.snapRight")) {
         e.preventDefault();
         this.manager._applySnap(focused, "right");
       }
-      if (e.key === "ArrowUp") {
+      if (KeybindManager.matches(e, "global.maximize")) {
         e.preventDefault();
         this.manager._applySnap(focused, "maximize");
       }
@@ -101,8 +87,10 @@ export class InputHandler {
   }
 
   _shouldOpenStartMenuFromKeyEvent(e) {
-    const key = e.key;
-    const isTrigger = key === "Control" || key === "Tab" || key === " " || key === "Spacebar";
+    const isTrigger =
+      KeybindManager.matches(e, "global.startMenu.ctrl") ||
+      KeybindManager.matches(e, "global.startMenu.tab") ||
+      KeybindManager.matches(e, "global.startMenu.space");
     if (!isTrigger) return false;
 
     const otherMods = e.altKey || e.metaKey || e.shiftKey;
@@ -132,7 +120,7 @@ export class InputHandler {
 
   _initWindowSwitcher() {
     document.addEventListener("keydown", (e) => {
-      if (e.altKey && e.key.toLowerCase() === "q") {
+      if (KeybindManager.matches(e, "global.windowSwitcher")) {
         e.preventDefault();
         if (!this.windowSwitcherActive) {
           this._startWindowSwitcher();

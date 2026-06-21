@@ -1,4 +1,5 @@
 import "../styles/calendar.css";
+import { KeybindManager } from "../keybindManager.js";
 
 import { StorageKeys, os } from "../framework.js";
 let _calendarPopup = null;
@@ -159,12 +160,12 @@ function updateCalendarTime() {
 function handleCalendarKeydown(e) {
   if (!_calendarPopup) return;
 
-  if (e.key === "Escape") {
+  if (KeybindManager.matches(e, "calendar.close")) {
     closeCalendarPopup();
-  } else if (e.key === "ArrowLeft") {
+  } else if (KeybindManager.matches(e, "calendar.prevMonth")) {
     _currentCalendarMonth.setMonth(_currentCalendarMonth.getMonth() - 1);
     renderCalendar();
-  } else if (e.key === "ArrowRight") {
+  } else if (KeybindManager.matches(e, "calendar.nextMonth")) {
     _currentCalendarMonth.setMonth(_currentCalendarMonth.getMonth() + 1);
     renderCalendar();
   } else if (e.key === "ArrowUp") {

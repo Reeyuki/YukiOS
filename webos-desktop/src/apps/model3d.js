@@ -6,6 +6,7 @@ import { BusEvents } from "../core/EventBus.js";
 import { WindowHelper } from "../utils/WindowHelper.js";
 import { resolveGhUrl } from "../shared/assetResolver.js";
 import { getLibraryUrl } from "../shared/cdnConfig.js";
+import { KeybindManager } from "../keybindManager.js";
 import { $, $$, bindEvent, toggleClass, addClass, removeClass, setText, setHTML } from "../shared/domUtils.js";
 
 import { BaseApp, os } from "../framework.js";
@@ -1025,31 +1026,26 @@ export class Model3DApp extends BaseApp {
       }
       if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
 
-      if (e.ctrlKey && e.key === "z") {
+      if (KeybindManager.matches(e, "model3d.undo")) {
         e.preventDefault();
         this.undoStack.undo();
-      }
-      if ((e.ctrlKey && e.key === "y") || (e.ctrlKey && e.shiftKey && e.key === "z")) {
+      } else if (KeybindManager.matches(e, "model3d.redo") || KeybindManager.matches(e, "model3d.redoAlt")) {
         e.preventDefault();
         this.undoStack.redo();
-      }
-      if (e.ctrlKey && e.key === "d") {
+      } else if (KeybindManager.matches(e, "model3d.duplicate")) {
         e.preventDefault();
         this._handleAction("duplicate");
-      }
-      if (e.ctrlKey && e.key === "a") {
+      } else if (KeybindManager.matches(e, "model3d.selectAll")) {
         e.preventDefault();
         this._handleAction("selectAll");
-      }
-      if (e.key === "Delete" || e.key === "Backspace") {
+      } else if (KeybindManager.matches(e, "model3d.delete") || KeybindManager.matches(e, "model3d.backspace")) {
         this._handleAction("deleteSelected");
-      }
-      if (e.key === "q" || e.key === "Q") this._setActiveTool("select");
-      if (e.key === "g" || e.key === "G") this._setActiveTool("move");
-      if (e.key === "r" || e.key === "R") this._setActiveTool("rotate");
-      if (e.key === "s" && !e.ctrlKey) this._setActiveTool("scale");
-      if (e.key === "h" || e.key === "H") this._handleAction("toggleVisibility");
-      if (e.key === "f" || e.key === "F") this._handleAction("zoomFit");
+      } else if (e.key === "q" || e.key === "Q") this._setActiveTool("select");
+      else if (e.key === "g" || e.key === "G") this._setActiveTool("move");
+      else if (e.key === "r" || e.key === "R") this._setActiveTool("rotate");
+      else if (e.key === "s" && !e.ctrlKey && !e.altKey && !e.metaKey) this._setActiveTool("scale");
+      else if (e.key === "h" || e.key === "H") this._handleAction("toggleVisibility");
+      else if (e.key === "f" || e.key === "F") this._handleAction("zoomFit");
     };
     document.addEventListener("keydown", handler);
   }

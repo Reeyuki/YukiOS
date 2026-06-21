@@ -5,7 +5,7 @@
 [![Stars](https://img.shields.io/github/stars/Reeyuki/yukios?style=for-the-badge&color=purple)](https://github.com/Reeyuki/yukios)
 [![Users](https://img.shields.io/badge/Users-50k+-brightgreen?style=for-the-badge)](https://github.com/Reeyuki/yukios)
 [![License](https://img.shields.io/github/license/Reeyuki/yukios?style=for-the-badge&color=blue)](LICENSE)
-[![Discord](https://img.shields.io/badge/Discord-Join-5865F2?style=for-the-badge&logo=discord)](https://discord.gg/uFuGfseB9Z)
+[![Discord](https://img.shields.io/badge/Discord-Join-5865F2?style=for-the-badge&logo=discord)](https://discord.gg/wufbWFwr4G)
 
 **Try it now:** [yukios.pages.dev](https://yukios.pages.dev) · [yukios.vercel.app](https://yukios.vercel.app) ·
 [yukios.netlify.app](https://yukios.netlify.app)

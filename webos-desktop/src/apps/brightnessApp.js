@@ -1,5 +1,6 @@
 import { BaseApp, StorageKeys, os } from "../framework.js";
 import { BRIGHTNESS_PRESETS } from "../shared/brightnessPresets.js";
+import { KeybindManager } from "../keybindManager.js";
 
 class BrightnessApp extends BaseApp {
   constructor(services) {
@@ -82,20 +83,18 @@ class BrightnessApp extends BaseApp {
 
   _setupKeybinds() {
     this._keydownHandler = (e) => {
-      if (e.ctrlKey && e.altKey) {
-        if (e.key === "ArrowUp") {
-          e.preventDefault();
-          this._adjustBrightness(5);
-        } else if (e.key === "ArrowDown") {
-          e.preventDefault();
-          this._adjustBrightness(-5);
-        } else if (e.key === "ArrowLeft") {
-          e.preventDefault();
-          this._adjustTemperature(-5);
-        } else if (e.key === "ArrowRight") {
-          e.preventDefault();
-          this._adjustTemperature(5);
-        }
+      if (KeybindManager.matches(e, "global.brightness.up")) {
+        e.preventDefault();
+        this._adjustBrightness(5);
+      } else if (KeybindManager.matches(e, "global.brightness.down")) {
+        e.preventDefault();
+        this._adjustBrightness(-5);
+      } else if (KeybindManager.matches(e, "global.temperature.left")) {
+        e.preventDefault();
+        this._adjustTemperature(-5);
+      } else if (KeybindManager.matches(e, "global.temperature.right")) {
+        e.preventDefault();
+        this._adjustTemperature(5);
       }
     };
     document.addEventListener("keydown", this._keydownHandler);

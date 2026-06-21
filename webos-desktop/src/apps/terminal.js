@@ -1,6 +1,7 @@
 import "../styles/terminal.css";
 import { Achievements } from "../achievements.js";
 import { BusEvents } from "../core/EventBus.js";
+import { KeybindManager } from "../keybindManager.js";
 
 import { BaseApp, PersistenceTypes, StorageKeys, os } from "../framework.js";
 export class TerminalApp extends BaseApp {
@@ -190,7 +191,7 @@ export class TerminalApp extends BaseApp {
 
   setupEventHandlers() {
     this.terminalInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
+      if (KeybindManager.matches(e, "terminal.execute")) {
         e.preventDefault();
         const command = this.terminalInput.value.trim();
         if (!command) return;
@@ -198,26 +199,26 @@ export class TerminalApp extends BaseApp {
         this.historyIndex = this.history.length;
         this.terminalInput.value = "";
         this.executeCommand(command);
-      } else if (e.key === "ArrowUp" && this.historyIndex > 0) {
+      } else if (KeybindManager.matches(e, "terminal.historyUp") && this.historyIndex > 0) {
         e.preventDefault();
         this.terminalInput.value = this.history[--this.historyIndex];
-      } else if (e.key === "ArrowDown") {
+      } else if (KeybindManager.matches(e, "terminal.historyDown")) {
         e.preventDefault();
         this.historyIndex = Math.min(this.historyIndex + 1, this.history.length);
         this.terminalInput.value = this.historyIndex < this.history.length ? this.history[this.historyIndex] : "";
-      } else if (e.key === "Tab") {
+      } else if (KeybindManager.matches(e, "terminal.tabComplete")) {
         e.preventDefault();
         this.handleTabCompletion();
-      } else if (e.ctrlKey && e.key === "l") {
+      } else if (KeybindManager.matches(e, "terminal.clear")) {
         e.preventDefault();
         this.cmdClear();
-      } else if (e.ctrlKey && e.key === "c") {
+      } else if (KeybindManager.matches(e, "terminal.interrupt")) {
         const selection = window.getSelection();
         if (selection && selection.toString().length > 0) return;
         e.preventDefault();
         this.enqueuePrint("^C", null, true, this._promptHtml());
         this.terminalInput.value = "";
-      } else if (e.ctrlKey && e.key === "d") {
+      } else if (KeybindManager.matches(e, "terminal.close")) {
         const selection = window.getSelection();
         if (selection && selection.toString().length > 0) return;
         if (this.terminalInput.value.length > 0) return;

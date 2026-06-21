@@ -1,5 +1,6 @@
 import "../styles/screenshot.css";
 import { BaseApp, os } from "../framework.js";
+import { KeybindManager } from "../keybindManager.js";
 
 export class ScreenshotApp extends BaseApp {
   constructor(services) {
@@ -18,17 +19,17 @@ export class ScreenshotApp extends BaseApp {
   _registerGlobalShortcuts() {
     const handler = (e) => {
       if (e.target.closest("input, textarea, [contenteditable]")) return;
-      if (e.ctrlKey && e.shiftKey && e.key === "s") {
+      if (KeybindManager.matches(e, "global.screenshot.full")) {
         e.preventDefault();
         if (!document.getElementById("screenshot")) this.open();
         this.captureFull(true);
       }
-      if (e.ctrlKey && e.altKey && e.key === "s") {
+      if (KeybindManager.matches(e, "global.screenshot.area")) {
         e.preventDefault();
         if (!document.getElementById("screenshot")) this.open();
         this.captureArea(true);
       }
-      if (e.ctrlKey && e.shiftKey && e.key === "r") {
+      if (KeybindManager.matches(e, "global.screenshot.record")) {
         e.preventDefault();
         if (!document.getElementById("screenshot")) this.open();
         this.toggleRecording();

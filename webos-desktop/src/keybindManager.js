@@ -1,0 +1,1262 @@
+import { os } from "./framework.js";
+
+const STORAGE_KEY = "yukiOS_keybind_customizations";
+const CUSTOM_ACTIONS_STORAGE_KEY = "yukiOS_keybind_custom_actions";
+
+const MODIFIER_ALIASES = {
+  ctrl: ["ctrl", "control"],
+  shift: ["shift"],
+  alt: ["alt", "option"],
+  meta: ["meta", "cmd", "command", "windows", "super"]
+};
+
+export const KEYBIND_DEFINITIONS = [
+  {
+    id: "global.commandPalette.k",
+    defaultKeys: ["Ctrl", "K"],
+    desc: "Open Unified Command Palette",
+    cat: "global",
+    icon: "fas fa-search"
+  },
+  {
+    id: "global.commandPalette.p",
+    defaultKeys: ["Ctrl", "P"],
+    desc: "Open Unified Command Palette",
+    cat: "global",
+    icon: "fas fa-search"
+  },
+  {
+    id: "global.commandPalette.f1",
+    defaultKeys: ["F1"],
+    desc: "Open Unified Command Palette",
+    cat: "global",
+    icon: "fas fa-search"
+  },
+  {
+    id: "global.showDesktop",
+    defaultKeys: ["Ctrl", "D"],
+    desc: "Show / Hide Desktop (Minimize or restore all windows)",
+    cat: "global",
+    icon: "fas fa-desktop"
+  },
+  {
+    id: "global.snapLeft",
+    defaultKeys: ["Ctrl", "ArrowLeft"],
+    desc: "Snap active window to the left half of the screen",
+    cat: "global",
+    icon: "fas fa-window-maximize"
+  },
+  {
+    id: "global.snapRight",
+    defaultKeys: ["Ctrl", "ArrowRight"],
+    desc: "Snap active window to the right half of the screen",
+    cat: "global",
+    icon: "fas fa-window-maximize"
+  },
+  {
+    id: "global.maximize",
+    defaultKeys: ["Ctrl", "ArrowUp"],
+    desc: "Maximize active window",
+    cat: "global",
+    icon: "fas fa-window-maximize"
+  },
+  {
+    id: "global.startMenu.ctrl",
+    defaultKeys: ["Control"],
+    desc: "Toggle Start Menu (when desktop is focused)",
+    cat: "global",
+    icon: "fas fa-bars",
+    hidden: true
+  },
+  {
+    id: "global.startMenu.tab",
+    defaultKeys: ["Tab"],
+    desc: "Toggle Start Menu (when desktop is focused)",
+    cat: "global",
+    icon: "fas fa-bars",
+    hidden: true
+  },
+  {
+    id: "global.startMenu.space",
+    defaultKeys: ["Space"],
+    desc: "Toggle Start Menu (when desktop is focused)",
+    cat: "global",
+    icon: "fas fa-bars",
+    hidden: true
+  },
+  {
+    id: "global.windowSwitcher",
+    defaultKeys: ["Alt", "Q"],
+    desc: "Cycle through open windows",
+    cat: "global",
+    icon: "fas fa-exchange-alt"
+  },
+  {
+    id: "global.screenshot.full",
+    defaultKeys: ["Ctrl", "Shift", "S"],
+    desc: "Capture full screen and auto-save to Pictures",
+    cat: "global",
+    icon: "fas fa-camera"
+  },
+  {
+    id: "global.screenshot.area",
+    defaultKeys: ["Ctrl", "Alt", "S"],
+    desc: "Capture area screenshot and auto-save to Pictures",
+    cat: "global",
+    icon: "fas fa-crop-alt"
+  },
+  {
+    id: "global.screenshot.record",
+    defaultKeys: ["Ctrl", "Shift", "R"],
+    desc: "Start / stop screen recording",
+    cat: "global",
+    icon: "fas fa-video"
+  },
+  {
+    id: "global.colorPicker",
+    defaultKeys: ["Alt", "H"],
+    desc: "Open color picker and start picking",
+    cat: "global",
+    icon: "fas fa-eye-dropper"
+  },
+  {
+    id: "global.brightness.up",
+    defaultKeys: ["Ctrl", "Alt", "ArrowUp"],
+    desc: "Increase display brightness",
+    cat: "global",
+    icon: "fas fa-sun"
+  },
+  {
+    id: "global.brightness.down",
+    defaultKeys: ["Ctrl", "Alt", "ArrowDown"],
+    desc: "Decrease display brightness",
+    cat: "global",
+    icon: "fas fa-sun"
+  },
+  {
+    id: "global.temperature.left",
+    defaultKeys: ["Ctrl", "Alt", "ArrowLeft"],
+    desc: "Decrease color temperature (warmer)",
+    cat: "global",
+    icon: "fas fa-temperature-half"
+  },
+  {
+    id: "global.temperature.right",
+    defaultKeys: ["Ctrl", "Alt", "ArrowRight"],
+    desc: "Increase color temperature (cooler)",
+    cat: "global",
+    icon: "fas fa-temperature-half"
+  },
+  {
+    id: "global.closePalette",
+    defaultKeys: ["Escape"],
+    desc: "Close command palette",
+    cat: "global",
+    icon: "fas fa-times",
+    hidden: true
+  },
+  {
+    id: "global.paletteUp",
+    defaultKeys: ["ArrowUp"],
+    desc: "Navigate up in command palette",
+    cat: "global",
+    icon: "fas fa-arrow-up",
+    hidden: true
+  },
+  {
+    id: "global.paletteDown",
+    defaultKeys: ["ArrowDown"],
+    desc: "Navigate down in command palette",
+    cat: "global",
+    icon: "fas fa-arrow-down",
+    hidden: true
+  },
+  {
+    id: "global.paletteEnter",
+    defaultKeys: ["Enter"],
+    desc: "Execute selected item in command palette",
+    cat: "global",
+    icon: "fas fa-check",
+    hidden: true
+  },
+  {
+    id: "global.closeDialog",
+    defaultKeys: ["Escape"],
+    desc: "Close dialog",
+    cat: "global",
+    icon: "fas fa-times",
+    hidden: true
+  },
+  {
+    id: "global.confirmDialog",
+    defaultKeys: ["Enter"],
+    desc: "Confirm dialog",
+    cat: "global",
+    icon: "fas fa-check",
+    hidden: true
+  },
+  {
+    id: "global.resizeWindow",
+    defaultKeys: ["Alt", "Right Click"],
+    desc: "Resize window instead of drag",
+    cat: "global",
+    icon: "fas fa-expand-arrows-alt",
+    hidden: true
+  },
+  {
+    id: "desktop.copy",
+    defaultKeys: ["Ctrl", "C"],
+    desc: "Copy selected files or folders",
+    cat: "desktop",
+    icon: "fas fa-copy"
+  },
+  {
+    id: "desktop.cut",
+    defaultKeys: ["Ctrl", "X"],
+    desc: "Cut selected files or folders",
+    cat: "desktop",
+    icon: "fas fa-cut"
+  },
+  {
+    id: "desktop.paste",
+    defaultKeys: ["Ctrl", "V"],
+    desc: "Paste copied or cut files/folders into desktop or explorer",
+    cat: "desktop",
+    icon: "fas fa-paste"
+  },
+  {
+    id: "desktop.delete",
+    defaultKeys: ["Delete"],
+    desc: "Delete selected icons/files on the desktop",
+    cat: "desktop",
+    icon: "fas fa-trash-alt",
+    hidden: true
+  },
+  {
+    id: "desktop.rename",
+    defaultKeys: ["F2"],
+    desc: "Start inline renaming of selected file/folder",
+    cat: "desktop",
+    icon: "fas fa-edit"
+  },
+  {
+    id: "notepad.open",
+    defaultKeys: ["Ctrl", "O"],
+    desc: "Open file inside Notepad",
+    cat: "notepad",
+    icon: "fas fa-folder-open"
+  },
+  {
+    id: "notepad.save",
+    defaultKeys: ["Ctrl", "S"],
+    desc: "Save active file in Notepad",
+    cat: "notepad",
+    icon: "fas fa-save"
+  },
+  {
+    id: "notepad.saveAs",
+    defaultKeys: ["Ctrl", "Shift", "S"],
+    desc: "Save active file as new file in Notepad",
+    cat: "notepad",
+    icon: "fas fa-file-medical"
+  },
+  {
+    id: "notepad.find",
+    defaultKeys: ["Ctrl", "F"],
+    desc: "Open Find Text search dialog in Notepad",
+    cat: "notepad",
+    icon: "fas fa-search"
+  },
+  {
+    id: "notepad.findNext",
+    defaultKeys: ["F3"],
+    desc: "Find next occurrence of matched text",
+    cat: "notepad",
+    icon: "fas fa-arrow-down",
+    hidden: true
+  },
+  {
+    id: "notepad.findPrev",
+    defaultKeys: ["Shift", "F3"],
+    desc: "Find previous occurrence of matched text",
+    cat: "notepad",
+    icon: "fas fa-arrow-up",
+    hidden: true
+  },
+  {
+    id: "notepad.replace",
+    defaultKeys: ["Ctrl", "H"],
+    desc: "Open Replace dialog in Notepad",
+    cat: "notepad",
+    icon: "fas fa-exchange-alt"
+  },
+  {
+    id: "notepad.goto",
+    defaultKeys: ["Ctrl", "G"],
+    desc: "Go to line dialog in Notepad",
+    cat: "notepad",
+    icon: "fas fa-hashtag"
+  },
+  {
+    id: "notepad.zoomIn",
+    defaultKeys: ["Ctrl", "="],
+    desc: "Zoom in text editor",
+    cat: "notepad",
+    icon: "fas fa-search-plus"
+  },
+  {
+    id: "notepad.zoomOut",
+    defaultKeys: ["Ctrl", "-"],
+    desc: "Zoom out text editor",
+    cat: "notepad",
+    icon: "fas fa-search-minus"
+  },
+  {
+    id: "notepad.zoomReset",
+    defaultKeys: ["Ctrl", "0"],
+    desc: "Reset zoom factor to default in Notepad",
+    cat: "notepad",
+    icon: "fas fa-compress-arrows-alt"
+  },
+  {
+    id: "notepad.closeDialog",
+    defaultKeys: ["Escape"],
+    desc: "Close active Notepad dialogs / popups",
+    cat: "notepad",
+    icon: "fas fa-times",
+    hidden: true
+  },
+  {
+    id: "browser.tab1",
+    defaultKeys: ["Alt", "1"],
+    desc: "Switch directly to browser Tab 1",
+    cat: "browser",
+    icon: "fas fa-window-restore"
+  },
+  {
+    id: "browser.tab2",
+    defaultKeys: ["Alt", "2"],
+    desc: "Switch directly to browser Tab 2",
+    cat: "browser",
+    icon: "fas fa-window-restore"
+  },
+  {
+    id: "browser.tab3",
+    defaultKeys: ["Alt", "3"],
+    desc: "Switch directly to browser Tab 3",
+    cat: "browser",
+    icon: "fas fa-window-restore"
+  },
+  {
+    id: "browser.tab4",
+    defaultKeys: ["Alt", "4"],
+    desc: "Switch directly to browser Tab 4",
+    cat: "browser",
+    icon: "fas fa-window-restore"
+  },
+  {
+    id: "browser.tab5",
+    defaultKeys: ["Alt", "5"],
+    desc: "Switch directly to browser Tab 5",
+    cat: "browser",
+    icon: "fas fa-window-restore"
+  },
+  {
+    id: "browser.tab6",
+    defaultKeys: ["Alt", "6"],
+    desc: "Switch directly to browser Tab 6",
+    cat: "browser",
+    icon: "fas fa-window-restore"
+  },
+  {
+    id: "browser.tab7",
+    defaultKeys: ["Alt", "7"],
+    desc: "Switch directly to browser Tab 7",
+    cat: "browser",
+    icon: "fas fa-window-restore"
+  },
+  {
+    id: "browser.tab8",
+    defaultKeys: ["Alt", "8"],
+    desc: "Switch directly to browser Tab 8",
+    cat: "browser",
+    icon: "fas fa-window-restore"
+  },
+  {
+    id: "browser.tab9",
+    defaultKeys: ["Alt", "9"],
+    desc: "Switch directly to browser Tab 9",
+    cat: "browser",
+    icon: "fas fa-window-restore"
+  },
+  {
+    id: "browser.focusUrl",
+    defaultKeys: ["Ctrl", "L"],
+    desc: "Focus browser address/URL bar & select",
+    cat: "browser",
+    icon: "fas fa-search"
+  },
+  {
+    id: "browser.newTab",
+    defaultKeys: ["Ctrl", "T"],
+    desc: "Create new browser tab",
+    cat: "browser",
+    icon: "fas fa-plus"
+  },
+  {
+    id: "browser.closeTab",
+    defaultKeys: ["Ctrl", "W"],
+    desc: "Close active browser tab",
+    cat: "browser",
+    icon: "fas fa-minus"
+  },
+  {
+    id: "browser.reopenTab",
+    defaultKeys: ["Ctrl", "Shift", "T"],
+    desc: "Reopen last closed browser tab",
+    cat: "browser",
+    icon: "fas fa-history"
+  },
+  {
+    id: "calc.paste",
+    defaultKeys: ["Ctrl", "V"],
+    desc: "Paste & evaluate math expression from clipboard",
+    cat: "calc",
+    icon: "fas fa-paste"
+  },
+  {
+    id: "calc.evaluate",
+    defaultKeys: ["Enter"],
+    desc: "Equals / Evaluate calculations",
+    cat: "calc",
+    icon: "fas fa-equals",
+    hidden: true
+  },
+  {
+    id: "calc.backspace",
+    defaultKeys: ["Backspace"],
+    desc: "Backspace / delete last digit in Calculator",
+    cat: "calc",
+    icon: "fas fa-backspace",
+    hidden: true
+  },
+  {
+    id: "calc.clear",
+    defaultKeys: ["Escape"],
+    desc: "Clear calculator (AC button)",
+    cat: "calc",
+    icon: "fas fa-eraser",
+    hidden: true
+  },
+  {
+    id: "calendar.close",
+    defaultKeys: ["Escape"],
+    desc: "Close calendar popup",
+    cat: "calendar",
+    icon: "fas fa-times",
+    hidden: true
+  },
+  {
+    id: "calendar.prevMonth",
+    defaultKeys: ["ArrowLeft"],
+    desc: "Navigate previous month in Calendar",
+    cat: "calendar",
+    icon: "fas fa-arrow-left",
+    hidden: true
+  },
+  {
+    id: "calendar.nextMonth",
+    defaultKeys: ["ArrowRight"],
+    desc: "Navigate next month in Calendar",
+    cat: "calendar",
+    icon: "fas fa-arrow-right",
+    hidden: true
+  },
+  {
+    id: "terminal.execute",
+    defaultKeys: ["Enter"],
+    desc: "Execute command in Terminal",
+    cat: "terminal",
+    icon: "fas fa-terminal",
+    hidden: true
+  },
+  {
+    id: "terminal.historyUp",
+    defaultKeys: ["ArrowUp"],
+    desc: "Previous command in Terminal history",
+    cat: "terminal",
+    icon: "fas fa-arrow-up",
+    hidden: true
+  },
+  {
+    id: "terminal.historyDown",
+    defaultKeys: ["ArrowDown"],
+    desc: "Next command in Terminal history",
+    cat: "terminal",
+    icon: "fas fa-arrow-down",
+    hidden: true
+  },
+  {
+    id: "terminal.tabComplete",
+    defaultKeys: ["Tab"],
+    desc: "Tab completion in Terminal",
+    cat: "terminal",
+    icon: "fas fa-keyboard",
+    hidden: true
+  },
+  {
+    id: "terminal.clear",
+    defaultKeys: ["Ctrl", "L"],
+    desc: "Clear Terminal screen",
+    cat: "terminal",
+    icon: "fas fa-eraser",
+    hidden: true
+  },
+  {
+    id: "terminal.interrupt",
+    defaultKeys: ["Ctrl", "C"],
+    desc: "Interrupt command in Terminal",
+    cat: "terminal",
+    icon: "fas fa-stop",
+    hidden: true
+  },
+  {
+    id: "terminal.close",
+    defaultKeys: ["Ctrl", "D"],
+    desc: "Close Terminal window",
+    cat: "terminal",
+    icon: "fas fa-times",
+    hidden: true
+  },
+  { id: "office.new", defaultKeys: ["Ctrl", "N"], desc: "New document in Office", cat: "office", icon: "fas fa-file" },
+  { id: "office.print", defaultKeys: ["Ctrl", "P"], desc: "Print in Office", cat: "office", icon: "fas fa-print" },
+  { id: "office.undo", defaultKeys: ["Ctrl", "Z"], desc: "Undo in Office", cat: "office", icon: "fas fa-undo" },
+  { id: "office.redo", defaultKeys: ["Ctrl", "Y"], desc: "Redo in Office", cat: "office", icon: "fas fa-redo" },
+  { id: "office.cut", defaultKeys: ["Ctrl", "X"], desc: "Cut in Office", cat: "office", icon: "fas fa-cut" },
+  { id: "office.copy", defaultKeys: ["Ctrl", "C"], desc: "Copy in Office", cat: "office", icon: "fas fa-copy" },
+  {
+    id: "office.selectAll",
+    defaultKeys: ["Ctrl", "A"],
+    desc: "Select all in Office",
+    cat: "office",
+    icon: "fas fa-object-group"
+  },
+  { id: "office.bold", defaultKeys: ["Ctrl", "B"], desc: "Bold text in Office", cat: "office", icon: "fas fa-bold" },
+  {
+    id: "office.italic",
+    defaultKeys: ["Ctrl", "I"],
+    desc: "Italic text in Office",
+    cat: "office",
+    icon: "fas fa-italic"
+  },
+  {
+    id: "office.underline",
+    defaultKeys: ["Ctrl", "U"],
+    desc: "Underline text in Office",
+    cat: "office",
+    icon: "fas fa-underline"
+  },
+  {
+    id: "office.insertLink",
+    defaultKeys: ["Ctrl", "K"],
+    desc: "Insert link in Office",
+    cat: "office",
+    icon: "fas fa-link"
+  },
+  {
+    id: "office.zoomIn",
+    defaultKeys: ["Ctrl", "="],
+    desc: "Zoom in in Office",
+    cat: "office",
+    icon: "fas fa-search-plus"
+  },
+  {
+    id: "office.zoomOut",
+    defaultKeys: ["Ctrl", "-"],
+    desc: "Zoom out in Office",
+    cat: "office",
+    icon: "fas fa-search-minus"
+  },
+  {
+    id: "office.zoomReset",
+    defaultKeys: ["Ctrl", "0"],
+    desc: "Reset zoom in Office",
+    cat: "office",
+    icon: "fas fa-compress-arrows-alt"
+  },
+  { id: "office.find", defaultKeys: ["Ctrl", "F"], desc: "Find in Office", cat: "office", icon: "fas fa-search" },
+  {
+    id: "office.replace",
+    defaultKeys: ["Ctrl", "H"],
+    desc: "Replace in Office",
+    cat: "office",
+    icon: "fas fa-exchange-alt"
+  },
+  {
+    id: "office.open",
+    defaultKeys: ["Ctrl", "O"],
+    desc: "Open document in Office",
+    cat: "office",
+    icon: "fas fa-folder-open"
+  },
+  {
+    id: "office.fullscreen",
+    defaultKeys: ["F11"],
+    desc: "Toggle fullscreen in Office",
+    cat: "office",
+    icon: "fas fa-expand"
+  },
+  {
+    id: "model3d.undo",
+    defaultKeys: ["Ctrl", "Z"],
+    desc: "Undo in 3D Model Editor",
+    cat: "model3d",
+    icon: "fas fa-undo"
+  },
+  {
+    id: "model3d.redo",
+    defaultKeys: ["Ctrl", "Y"],
+    desc: "Redo in 3D Model Editor",
+    cat: "model3d",
+    icon: "fas fa-redo"
+  },
+  {
+    id: "model3d.redoAlt",
+    defaultKeys: ["Ctrl", "Shift", "Z"],
+    desc: "Redo in 3D Model Editor (alternative)",
+    cat: "model3d",
+    icon: "fas fa-redo"
+  },
+  {
+    id: "model3d.duplicate",
+    defaultKeys: ["Ctrl", "D"],
+    desc: "Duplicate in 3D Model Editor",
+    cat: "model3d",
+    icon: "fas fa-copy"
+  },
+  {
+    id: "model3d.selectAll",
+    defaultKeys: ["Ctrl", "A"],
+    desc: "Select all in 3D Model Editor",
+    cat: "model3d",
+    icon: "fas fa-object-group"
+  },
+  {
+    id: "model3d.delete",
+    defaultKeys: ["Delete"],
+    desc: "Delete selected in 3D Model Editor",
+    cat: "model3d",
+    icon: "fas fa-trash",
+    hidden: true
+  },
+  {
+    id: "model3d.selectTool",
+    defaultKeys: ["Q"],
+    desc: "Select tool in 3D Model Editor",
+    cat: "model3d",
+    icon: "fas fa-mouse-pointer",
+    hidden: true
+  },
+  {
+    id: "model3d.moveTool",
+    defaultKeys: ["G"],
+    desc: "Move tool in 3D Model Editor",
+    cat: "model3d",
+    icon: "fas fa-arrows-alt",
+    hidden: true
+  },
+  {
+    id: "model3d.rotateTool",
+    defaultKeys: ["R"],
+    desc: "Rotate tool in 3D Model Editor",
+    cat: "model3d",
+    icon: "fas fa-sync",
+    hidden: true
+  },
+  {
+    id: "model3d.scaleTool",
+    defaultKeys: ["S"],
+    desc: "Scale tool in 3D Model Editor",
+    cat: "model3d",
+    icon: "fas fa-expand-arrows-alt",
+    hidden: true
+  },
+  {
+    id: "model3d.toggleVis",
+    defaultKeys: ["H"],
+    desc: "Toggle visibility in 3D Model Editor",
+    cat: "model3d",
+    icon: "fas fa-eye",
+    hidden: true
+  },
+  {
+    id: "model3d.zoomFit",
+    defaultKeys: ["F"],
+    desc: "Zoom to fit in 3D Model Editor",
+    cat: "model3d",
+    icon: "fas fa-expand",
+    hidden: true
+  },
+  {
+    id: "games.search",
+    defaultKeys: ["Ctrl", "F"],
+    desc: "Search in games",
+    cat: "games",
+    icon: "fas fa-search",
+    hidden: true
+  },
+  {
+    id: "startMenu.arrowUp",
+    defaultKeys: ["ArrowUp"],
+    desc: "Navigate up in start menu",
+    cat: "global",
+    icon: "fas fa-arrow-up",
+    hidden: true
+  },
+  {
+    id: "startMenu.arrowDown",
+    defaultKeys: ["ArrowDown"],
+    desc: "Navigate down in start menu",
+    cat: "global",
+    icon: "fas fa-arrow-down",
+    hidden: true
+  },
+  {
+    id: "startMenu.arrowLeft",
+    defaultKeys: ["ArrowLeft"],
+    desc: "Switch to categories in start menu",
+    cat: "global",
+    icon: "fas fa-arrow-left",
+    hidden: true
+  },
+  {
+    id: "startMenu.arrowRight",
+    defaultKeys: ["ArrowRight"],
+    desc: "Switch to apps in start menu",
+    cat: "global",
+    icon: "fas fa-arrow-right",
+    hidden: true
+  },
+  {
+    id: "startMenu.enter",
+    defaultKeys: ["Enter"],
+    desc: "Launch selected item in start menu",
+    cat: "global",
+    icon: "fas fa-check",
+    hidden: true
+  },
+  {
+    id: "explorer.enter",
+    defaultKeys: ["Enter"],
+    desc: "Navigate to typed path / confirm save dialog",
+    cat: "desktop",
+    icon: "fas fa-check",
+    hidden: true
+  },
+  {
+    id: "explorer.escape",
+    defaultKeys: ["Escape"],
+    desc: "Cancel / close dialog in Explorer",
+    cat: "desktop",
+    icon: "fas fa-times",
+    hidden: true
+  },
+  {
+    id: "explorer.copy",
+    defaultKeys: ["Ctrl", "C"],
+    desc: "Copy selected files in Explorer",
+    cat: "desktop",
+    icon: "fas fa-copy"
+  },
+  {
+    id: "explorer.cut",
+    defaultKeys: ["Ctrl", "X"],
+    desc: "Cut selected files in Explorer",
+    cat: "desktop",
+    icon: "fas fa-cut"
+  },
+  {
+    id: "desktop.deleteSelected",
+    defaultKeys: ["Delete"],
+    desc: "Delete selected desktop item",
+    cat: "desktop",
+    icon: "fas fa-trash",
+    hidden: true
+  },
+  {
+    id: "global.temperature.warmer",
+    defaultKeys: ["Ctrl", "Alt", "ArrowRight"],
+    desc: "Increase color temperature",
+    cat: "global",
+    icon: "fas fa-thermometer-full"
+  },
+  {
+    id: "global.temperature.cooler",
+    defaultKeys: ["Ctrl", "Alt", "ArrowLeft"],
+    desc: "Decrease color temperature",
+    cat: "global",
+    icon: "fas fa-thermometer-half"
+  },
+  {
+    id: "monaco.toggleTerminal",
+    defaultKeys: ["Ctrl", "`"],
+    desc: "Toggle terminal panel in code editor",
+    cat: "monaco",
+    icon: "fas fa-terminal"
+  },
+  {
+    id: "model3d.backspace",
+    defaultKeys: ["Backspace"],
+    desc: "Delete selected in 3D Model Editor",
+    cat: "model3d",
+    icon: "fas fa-trash",
+    hidden: true
+  },
+  {
+    id: "session.confirm",
+    defaultKeys: ["Enter"],
+    desc: "Confirm action in session / login screen",
+    cat: "global",
+    icon: "fas fa-check",
+    hidden: true
+  },
+  {
+    id: "session.cancel",
+    defaultKeys: ["Escape"],
+    desc: "Cancel / close modal in session screen",
+    cat: "global",
+    icon: "fas fa-times",
+    hidden: true
+  },
+  {
+    id: "session.navigateLeft",
+    defaultKeys: ["ArrowLeft"],
+    desc: "Navigate to previous user in session carousel",
+    cat: "global",
+    icon: "fas fa-arrow-left",
+    hidden: true
+  },
+  {
+    id: "session.navigateRight",
+    defaultKeys: ["ArrowRight"],
+    desc: "Navigate to next user in session carousel",
+    cat: "global",
+    icon: "fas fa-arrow-right",
+    hidden: true
+  },
+  {
+    id: "taskbar.dismissMenu",
+    defaultKeys: ["Escape"],
+    desc: "Dismiss taskbar context menu",
+    cat: "global",
+    icon: "fas fa-times",
+    hidden: true
+  },
+  {
+    id: "workspace.closeOverview",
+    defaultKeys: ["Escape"],
+    desc: "Close workspace overview",
+    cat: "global",
+    icon: "fas fa-times",
+    hidden: true
+  },
+  {
+    id: "tiling.focusLeft",
+    defaultKeys: ["Alt", "ArrowLeft"],
+    desc: "Move tiling focus left",
+    cat: "global",
+    icon: "fas fa-arrow-left"
+  },
+  {
+    id: "tiling.focusRight",
+    defaultKeys: ["Alt", "ArrowRight"],
+    desc: "Move tiling focus right",
+    cat: "global",
+    icon: "fas fa-arrow-right"
+  },
+  {
+    id: "tiling.focusUp",
+    defaultKeys: ["Alt", "ArrowUp"],
+    desc: "Move tiling focus up",
+    cat: "global",
+    icon: "fas fa-arrow-up"
+  },
+  {
+    id: "tiling.focusDown",
+    defaultKeys: ["Alt", "ArrowDown"],
+    desc: "Move tiling focus down",
+    cat: "global",
+    icon: "fas fa-arrow-down"
+  },
+  {
+    id: "tiling.fullscreen",
+    defaultKeys: ["Alt", "Enter"],
+    desc: "Toggle fullscreen on focused tiled window",
+    cat: "global",
+    icon: "fas fa-expand"
+  },
+  {
+    id: "tiling.floating",
+    defaultKeys: ["Alt", "F"],
+    desc: "Toggle floating on focused tiled window",
+    cat: "global",
+    icon: "fas fa-window-restore"
+  },
+  {
+    id: "tiling.terminal",
+    defaultKeys: ["Alt", "T"],
+    desc: "Spawn a new terminal window",
+    cat: "global",
+    icon: "fas fa-terminal"
+  },
+  {
+    id: "tiling.resizeLeft",
+    defaultKeys: ["Ctrl", "Alt", "ArrowLeft"],
+    desc: "Resize tiling split left",
+    cat: "global",
+    icon: "fas fa-arrows-alt-h"
+  },
+  {
+    id: "tiling.resizeRight",
+    defaultKeys: ["Ctrl", "Alt", "ArrowRight"],
+    desc: "Resize tiling split right",
+    cat: "global",
+    icon: "fas fa-arrows-alt-h"
+  },
+  {
+    id: "tiling.resizeUp",
+    defaultKeys: ["Ctrl", "Alt", "ArrowUp"],
+    desc: "Resize tiling split up",
+    cat: "global",
+    icon: "fas fa-arrows-alt-v"
+  },
+  {
+    id: "tiling.resizeDown",
+    defaultKeys: ["Ctrl", "Alt", "ArrowDown"],
+    desc: "Resize tiling split down",
+    cat: "global",
+    icon: "fas fa-arrows-alt-v"
+  },
+  {
+    id: "tiling.swapLeft",
+    defaultKeys: ["Alt", "Shift", "ArrowLeft"],
+    desc: "Swap tiled window with neighbor left",
+    cat: "global",
+    icon: "fas fa-exchange-alt"
+  },
+  {
+    id: "tiling.swapRight",
+    defaultKeys: ["Alt", "Shift", "ArrowRight"],
+    desc: "Swap tiled window with neighbor right",
+    cat: "global",
+    icon: "fas fa-exchange-alt"
+  },
+  {
+    id: "tiling.swapUp",
+    defaultKeys: ["Alt", "Shift", "ArrowUp"],
+    desc: "Swap tiled window with neighbor up",
+    cat: "global",
+    icon: "fas fa-exchange-alt"
+  },
+  {
+    id: "tiling.swapDown",
+    defaultKeys: ["Alt", "Shift", "ArrowDown"],
+    desc: "Swap tiled window with neighbor down",
+    cat: "global",
+    icon: "fas fa-exchange-alt"
+  }
+];
+
+export class KeybindManager {
+  static _customizations = null;
+
+  static _ensureLoaded() {
+    if (this._customizations === null) {
+      try {
+        const saved = os.storage.get(STORAGE_KEY);
+        this._customizations = saved ? JSON.parse(saved) : {};
+      } catch {
+        this._customizations = {};
+      }
+    }
+  }
+
+  static _save() {
+    os.storage.set(STORAGE_KEY, JSON.stringify(this._customizations));
+  }
+
+  static getAll() {
+    this._ensureLoaded();
+    this._ensureCustomActionsLoaded();
+    const builtin = KEYBIND_DEFINITIONS.filter((def) => !def.hidden).map((def) => ({
+      ...def,
+      currentKeys: this._customizations[def.id] || def.defaultKeys
+    }));
+    const custom = Object.values(this._customActions).map((def) => ({
+      ...def,
+      cat: "custom",
+      currentKeys: this._customizations[def.id] || def.defaultKeys
+    }));
+    return [...builtin, ...custom];
+  }
+
+  static getById(id) {
+    this._ensureLoaded();
+    this._ensureCustomActionsLoaded();
+    const def = KEYBIND_DEFINITIONS.find((d) => d.id === id);
+    if (def) {
+      return {
+        ...def,
+        currentKeys: this._customizations[id] || def.defaultKeys
+      };
+    }
+    const custom = this._customActions[id];
+    if (custom) {
+      return {
+        ...custom,
+        cat: "custom",
+        currentKeys: this._customizations[id] || custom.defaultKeys
+      };
+    }
+    return null;
+  }
+
+  static getCurrentKeys(id) {
+    this._ensureLoaded();
+    this._ensureCustomActionsLoaded();
+    const def = KEYBIND_DEFINITIONS.find((d) => d.id === id);
+    if (def) return this._customizations[id] || def.defaultKeys;
+    const custom = this._customActions[id];
+    if (custom) return this._customizations[id] || custom.defaultKeys;
+    return null;
+  }
+
+  static setKeys(id, keys) {
+    this._ensureLoaded();
+    this._ensureCustomActionsLoaded();
+    const def = KEYBIND_DEFINITIONS.find((d) => d.id === id);
+    const custom = this._customActions[id];
+    if (!def && !custom) return false;
+    this._customizations[id] = keys;
+    this._save();
+    return true;
+  }
+
+  static reset(id) {
+    this._ensureLoaded();
+    delete this._customizations[id];
+    this._save();
+  }
+
+  static resetAll() {
+    this._ensureLoaded();
+    this._customizations = {};
+    this._save();
+  }
+
+  static deleteCustomAction(id) {
+    this._ensureCustomActionsLoaded();
+    if (!this._customActions[id]) return false;
+    delete this._customActions[id];
+    delete this._customizations[id];
+    this._saveCustomActions();
+    this._save();
+    if (Object.keys(this._customActions).length === 0) {
+      this._destroyCustomHandler();
+    }
+    return true;
+  }
+
+  static isCustomized(id) {
+    this._ensureLoaded();
+    return id in this._customizations;
+  }
+
+  static getCustomizedCount() {
+    this._ensureLoaded();
+    return Object.keys(this._customizations).length;
+  }
+
+  static _customActions = null;
+  static _customHandlerInstalled = false;
+  static _customHandlerFn = null;
+
+  static _ensureCustomActionsLoaded() {
+    if (this._customActions === null) {
+      try {
+        const saved = os.storage.get(CUSTOM_ACTIONS_STORAGE_KEY);
+        this._customActions = saved ? JSON.parse(saved) : {};
+      } catch {
+        this._customActions = {};
+      }
+    }
+  }
+
+  static _saveCustomActions() {
+    os.storage.set(CUSTOM_ACTIONS_STORAGE_KEY, JSON.stringify(this._customActions));
+  }
+
+  static getAllCustomActions() {
+    this._ensureCustomActionsLoaded();
+    return Object.values(this._customActions);
+  }
+
+  static getCustomAction(id) {
+    this._ensureCustomActionsLoaded();
+    return this._customActions[id] || null;
+  }
+
+  static saveCustomAction(definition) {
+    this._ensureCustomActionsLoaded();
+    if (!definition.id) {
+      definition.id = "custom_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6);
+    }
+    definition.cat = "custom";
+    if (!definition.icon) definition.icon = "fas fa-star";
+    if (!definition.defaultKeys) definition.defaultKeys = [];
+    this._customActions[definition.id] = definition;
+    this._saveCustomActions();
+    this._installCustomHandler();
+    return definition.id;
+  }
+
+  static executeCustomAction(id) {
+    this._ensureCustomActionsLoaded();
+    const action = this._customActions[id];
+    if (!action || !action.action) return;
+
+    const { type, config } = action.action;
+    if (!type || !config) return;
+
+    try {
+      switch (type) {
+        case "launchApp":
+          if (config.appId) {
+            os.app.launch(config.appId).catch(() => {});
+          }
+          break;
+        case "openUrl":
+          if (config.url) {
+            window.open(config.url, "_blank");
+          }
+          break;
+        case "runCode":
+          if (config.code) {
+            const fn = new Function("os", config.code);
+            fn(os);
+          }
+          break;
+        case "notify":
+          if (config.title) {
+            os.notify.send(config.title, config.message || "", { icon: action.icon || "fas fa-star" });
+          }
+          break;
+      }
+    } catch (e) {
+      console.error("[KeybindManager] Custom action error:", e);
+    }
+  }
+
+  static _installCustomHandler() {
+    if (this._customHandlerInstalled) return;
+    this._customHandlerInstalled = true;
+    this._customHandlerFn = (e) => {
+      if (!this._customActions) this._ensureCustomActionsLoaded();
+      for (const id of Object.keys(this._customActions)) {
+        if (this.matches(e, id)) {
+          e.preventDefault();
+          this.executeCustomAction(id);
+          return;
+        }
+      }
+    };
+    document.addEventListener("keydown", this._customHandlerFn);
+  }
+
+  static _destroyCustomHandler() {
+    if (this._customHandlerFn) {
+      document.removeEventListener("keydown", this._customHandlerFn);
+    }
+    this._customHandlerInstalled = false;
+    this._customHandlerFn = null;
+  }
+
+  static matches(event, id) {
+    const keys = this.getCurrentKeys(id);
+    if (!keys) return false;
+    return this._eventMatchesKeys(event, keys);
+  }
+
+  static _eventMatchesKeys(event, keys) {
+    const modifiers = { ctrl: false, shift: false, alt: false, meta: false };
+    let targetKey = null;
+
+    for (const k of keys) {
+      const lower = k.toLowerCase();
+      if (MODIFIER_ALIASES.ctrl.includes(lower)) {
+        modifiers.ctrl = true;
+      } else if (MODIFIER_ALIASES.shift.includes(lower)) {
+        modifiers.shift = true;
+      } else if (MODIFIER_ALIASES.alt.includes(lower)) {
+        modifiers.alt = true;
+      } else if (MODIFIER_ALIASES.meta.includes(lower)) {
+        modifiers.meta = true;
+      } else {
+        targetKey = k;
+      }
+    }
+
+    if (targetKey === "Right Click") return false;
+
+    if (event.ctrlKey !== modifiers.ctrl) return false;
+    if (event.shiftKey !== modifiers.shift) return false;
+    if (event.altKey !== modifiers.alt) return false;
+    if (event.metaKey !== modifiers.meta) return false;
+
+    if (!targetKey) return false;
+
+    const eventKey = event.key;
+    const eventLower = eventKey.toLowerCase();
+    const targetLower = targetKey.toLowerCase();
+
+    if (eventLower === targetLower) return true;
+
+    if (targetLower === "space" && (eventKey === " " || eventLower === "spacebar")) return true;
+    if (targetLower === "spacebar" && (eventKey === " " || eventLower === "space")) return true;
+    if (targetLower === "arrowleft" && (eventKey === "ArrowLeft" || eventKey === "←")) return true;
+    if (targetLower === "arrowright" && (eventKey === "ArrowRight" || eventKey === "→")) return true;
+    if (targetLower === "arrowup" && (eventKey === "ArrowUp" || eventKey === "↑")) return true;
+    if (targetLower === "arrowdown" && (eventKey === "ArrowDown" || eventKey === "↓")) return true;
+
+    return false;
+  }
+
+  static keysMatch(keysA, keysB) {
+    if (keysA.length !== keysB.length) return false;
+    const normalize = (k) => {
+      const lower = k.toLowerCase().trim();
+      if (MODIFIER_ALIASES.ctrl.includes(lower)) return "ctrl";
+      if (MODIFIER_ALIASES.shift.includes(lower)) return "shift";
+      if (MODIFIER_ALIASES.alt.includes(lower)) return "alt";
+      if (MODIFIER_ALIASES.meta.includes(lower)) return "meta";
+      return lower;
+    };
+    const aNorm = keysA.map(normalize).sort();
+    const bNorm = keysB.map(normalize).sort();
+    return aNorm.every((v, i) => v === bNorm[i]);
+  }
+
+  static isCustomizationValid(keys) {
+    if (!keys || !Array.isArray(keys) || keys.length === 0) return false;
+    const nonModifiers = keys.filter((k) => {
+      const lower = k.toLowerCase();
+      return (
+        !MODIFIER_ALIASES.ctrl.includes(lower) &&
+        !MODIFIER_ALIASES.shift.includes(lower) &&
+        !MODIFIER_ALIASES.alt.includes(lower) &&
+        !MODIFIER_ALIASES.meta.includes(lower)
+      );
+    });
+    return nonModifiers.length === 1;
+  }
+}
