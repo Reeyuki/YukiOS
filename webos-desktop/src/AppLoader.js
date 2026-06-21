@@ -34,6 +34,7 @@ import { VirtualMachineManagerApp } from "./apps/virtualMachineManager.js";
 import { ColorPickerApp } from "./apps/colorPicker.js";
 import { ScreenshotApp } from "./apps/screenshot.js";
 import { MapsApp } from "./apps/maps.js";
+import { ErudaApp } from "./apps/eruda.js";
 
 const APP_CLASS_MAP = {
   terminalApp: TerminalApp,
@@ -69,7 +70,8 @@ const APP_CLASS_MAP = {
   virtualMachineManagerApp: VirtualMachineManagerApp,
   colorPickerApp: ColorPickerApp,
   screenshotApp: ScreenshotApp,
-  mapsApp: MapsApp
+  mapsApp: MapsApp,
+  erudaApp: ErudaApp
 };
 
 const APP_DEFINITIONS = APP_MANIFESTS.map((manifest) => {

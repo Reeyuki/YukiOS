@@ -43,6 +43,7 @@
     "archive-wasm": "^1.7.0",
     "browserfs": "^1.4.3",
     "canvas-confetti": "^1.9.4",
+    "eruda": "^2.11.0",
     "fflate": "^0.8.3",
     "globals": "^17.6.0",
     "idb-keyval": "^6.2.4",

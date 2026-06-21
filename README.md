@@ -8,7 +8,7 @@
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?style=for-the-badge&logo=discord)](https://discord.gg/wufbWFwr4G)
 
 **Try it now:** [yukios.pages.dev](https://yukios.pages.dev) · [yukios.vercel.app](https://yukios.vercel.app) ·
-[yukios.netlify.app](https://yukios.netlify.app)
+[yukios.netlify.app](https://yukios.netlify.app) · [yukiwebos.github.io](https://yukiwebos.github.io)
 
 </div>
 
@@ -60,7 +60,6 @@ It's built entirely in vanilla JS/TypeScript (with some libraries, of course!) !
 - Start menu for launching and managing apps with keyboard navigation
 - Start menu alphabetical grouping with section headers
 - Start menu keybinds (Space, Tab, Ctrl)
-- App search and quick switching
 - Desktop icon system with persistent shortcuts and image thumbnails
 - Notification center with grouped messages
 - Do Not Disturb mode
@@ -106,23 +105,9 @@ It's built entirely in vanilla JS/TypeScript (with some libraries, of course!) !
 - HTML file rendering support
 - Dynamic favicon updates based on current app
 
----
-
 # 📦 Applications
 
-- 80 built-in applications
-- Web apps, utilities, tools, editors, and system apps
-- Website and external app shortcuts via App Creator
-- Direct launch via URL parameters (`?app=` and `?game=`)
-
----
-
-# 🎮 Emulation & Runtime Support
-
-- DOS applications via JS-DOS with file upload support
-- x86 environments via V86
-- Nintendo 3DS emulation via Azahar
-- Multi-system game emulation (GBA, SNES, NDS, PSP, Sega, etc.)
+80+ built-in applications and direct launch via URL parameters (`?app=` and `?game=`)
 
 ---
 
@@ -130,7 +115,7 @@ It's built entirely in vanilla JS/TypeScript (with some libraries, of course!) !
 
 - Cross-app event communication
 - Notification system with app icons and actions
-- Per-app audio mixer with live volume display in sliders
+- Per-app audio mixer with live visualizer and volume controls
 - Achievement tracking and usage milestones
 - Setup flow for first-time configuration
 - Theme system with 40 presets and custom theme support, light/dark and transparency modes
@@ -142,7 +127,6 @@ It's built entirely in vanilla JS/TypeScript (with some libraries, of course!) !
 - Custom cursor support (with miku by default)
 - Import/export system for backup and migration
 - Transparent UI toggle
-- Audio mixer with live visualizer
 
 ---
 
@@ -179,6 +163,7 @@ It's built entirely in vanilla JS/TypeScript (with some libraries, of course!) !
 - Categories
 - Emoji Selector
 - YukiDevTools (IT - TOOLS)
+- Dev Tools (Eruda)
 - Weather
 - News
 - Yuki OS Guide
@@ -207,40 +192,32 @@ It's built entirely in vanilla JS/TypeScript (with some libraries, of course!) !
 
 ## 🌐 Browser & Internet
 
+- WebTorrent Client
 - Yuki Browser
 - Steam-like game launcher
-- Custom App Creator
+
+## Web Apps
+
 - Discord
 - Spotify
-- Slack
 - TikTok
-- Gmail
-- Outlook
 - ChatGPT
 - Grok
+- Email providers (Gmail, Outlook, ProtonMail)
 - DeepSeek
-- Zoom
 - Twitter/X
 - Instagram
 - Pinterest
-- GitHub
-- GitLab
-- CodePen
-- Replit
+- GitHub GitLab CodePen Replit
 - Twitch
 - SoundCloud
-- Deezer
 - Notion
 - Figma
 - Canva
 - Google Docs
-- ProtonMail
-- Yahoo Mail
 - kiwiIRC
 - GeForce Now
 - Scramjet Browser
-- Torrent Client
-- WebTorrent And more
 
 ## 🎮 Games & Emulation Tools
 
@@ -254,7 +231,8 @@ It's built entirely in vanilla JS/TypeScript (with some libraries, of course!) !
 
 # 🔌 Extensibility
 
-Extensible app platform with background apps, shared events, persistent state, and windowed web app integration.
+Extensible app platform with background apps, shared events, persistent state, and windowed web app integration. Custom
+App Creator
 
 ---
 
@@ -289,24 +267,25 @@ See the [Development Guide](DEVELOPMENT.md).
 
 # 🛠 Tech Stack
 
-- BrowserFS
-- interactjs
-- Ruffle
-- EmulatorJS
-- Monaco Editor
-- Three.js
-- PDF.js
-- JSZip
-- fflate
-- archive-wasm
-- 7z-wasm
-- Handsontable
-- Mammoth.js
-- Font Awesome
-- Emoji Mart
-- Vanta.js
-- Scramjet/BareMux/epoxy-transport
-- WebTorrent
+- [BrowserFS](https://github.com/jvilk/BrowserFS)
+- [interact.js](https://github.com/taye/interact.js)
+- [Ruffle](https://github.com/ruffle-rs/ruffle)
+- [EmulatorJS](https://github.com/EmulatorJS/EmulatorJS)
+- [Monaco Editor](https://github.com/microsoft/monaco-editor)
+- [three.js](https://github.com/mrdoob/three.js)
+- [PDF.js](https://github.com/mozilla/pdf.js)
+- [JSZip](https://github.com/Stuk/jszip)
+- [fflate](https://github.com/101arrowz/fflate)
+- [archive-wasm (Spacedrive)](https://github.com/spacedriveapp/archive-wasm)
+- [7z-wasm (use-strict)](https://github.com/use-strict/7z-wasm)
+- [Handsontable](https://github.com/handsontable/handsontable)
+- [Mammoth.js](https://github.com/mwilliamson/mammoth.js)
+- [Font Awesome](https://github.com/FortAwesome/Font-Awesome)
+- [emoji-mart](https://github.com/missive/emoji-mart)
+- [Vanta.js](https://github.com/tengbao/vanta)
+- [WebTorrent](https://github.com/webtorrent/webtorrent)
+- [Eruda](https://github.com/liriliri/eruda)
+- Scramjet / BareMux / Epoxy Transport
 
 # Tooling stack
 
@@ -315,16 +294,3 @@ See the [Development Guide](DEVELOPMENT.md).
 - Eslint
 - Prettier
 - viteSingleFile
-
----
-
-# 🎮 Content Support
-
-- Web apps and tools
-- WebAssembly applications
-- HTML5 and WebGL games
-- Flash applications
-- DOS software
-- Emulator ROMs
-- Media and document formats
-- Archive files and compressed formats

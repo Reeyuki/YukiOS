@@ -922,6 +922,20 @@ export const APP_MANIFESTS = [
     description: "IT Tools wrapped in a Yuki-themed iframe with live CSS bridging."
   },
   {
+    serviceKey: "erudaApp",
+    type: "system",
+    title: "Dev Tools (Eruda)",
+    icon: "fas fa-code",
+    launchType: "instance",
+    windowIdPatterns: ["eruda"],
+    category: "development",
+    clippy: {
+      message: "Debug console, network, and elements inspection tool.",
+      animation: ClippyAnimation.GetTechy
+    },
+    description: "Mobile web debugging tool for console, network, and element inspection."
+  },
+  {
     serviceKey: "explorerApp",
     type: "system",
     title: "Explorer",

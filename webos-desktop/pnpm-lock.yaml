@@ -25,6 +25,9 @@ importers:
       canvas-confetti:
         specifier: ^1.9.4
         version: 1.9.4
+      eruda:
+        specifier: ^2.11.0
+        version: 2.11.3
       fflate:
         specifier: ^0.8.3
         version: 0.8.3
@@ -1373,6 +1376,10 @@ packages:
   err-code@3.0.1:
     resolution:
       { integrity: sha512-GiaH0KJUewYok+eeY05IIgjtAe4Yltygk9Wqp1V5yVWLdhf0hYZchRjNIT9bb0mSwRcIusT3cx7PJUf3zEIfUA== }
+
+  eruda@2.11.3:
+    resolution:
+      { integrity: sha512-e1EqrGJvN5PSXoFCSAmRqqDfziEL5bNSdPcJbRg5QVOHtcFMcG4n/6uTOfs2FTjAhg4X4GbxhHB+l7ITu/1zmQ== }
 
   es-abstract@1.24.2:
     resolution:
@@ -4447,6 +4454,8 @@ snapshots:
   entities@8.0.0: {}
 
   err-code@3.0.1: {}
+
+  eruda@2.11.3: {}
 
   es-abstract@1.24.2:
     dependencies:

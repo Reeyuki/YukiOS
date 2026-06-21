@@ -17,7 +17,6 @@ Planned features and improvements for Yuki OS.
 - [ ] Add Boxedwine
 - [ ] Add web amp
 - [ ] Add about:blank method
-- [ ] Add Eruda
 - [ ] Clock app
 - [ ] From site to users computer file transfer support
 - [ ] Wobble drag animations

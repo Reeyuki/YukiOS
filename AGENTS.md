@@ -723,24 +723,25 @@ getDeclarativeSchema(opts) {
 Central registry of all keyboard shortcuts with customization and persistence. Always use instead of raw keydown
 listeners.
 
-| Method | Description |
-|---|---|
-| `getAll()` | All keybinds with current (possibly customized) keys (includes custom actions) |
-| `getById(id)` | Single keybind definition by ID (checks custom actions too) |
-| `getCurrentKeys(id)` | Current key combo for a given ID |
-| `setKeys(id, keys)` | Customize a keybind (`keys` is array like `["Ctrl", "K"]`) |
-| `reset(id)` / `resetAll()` | Reset single or all keybinds to defaults |
-| `matches(event, id)` | Check if a `KeyboardEvent` matches a keybind's current combo |
-| `isCustomized(id)` | Whether a keybind has been modified |
-| `saveCustomAction(definition)` | Create/update a custom action; auto-assigns ID if missing; returns ID |
-| `deleteCustomAction(id)` | Remove a custom action |
-| `getAllCustomActions()` | Get array of all custom action definitions |
-| `getCustomAction(id)` | Get a single custom action by ID |
-| `executeCustomAction(id)` | Execute a custom action by its ID |
+| Method                         | Description                                                                    |
+| ------------------------------ | ------------------------------------------------------------------------------ |
+| `getAll()`                     | All keybinds with current (possibly customized) keys (includes custom actions) |
+| `getById(id)`                  | Single keybind definition by ID (checks custom actions too)                    |
+| `getCurrentKeys(id)`           | Current key combo for a given ID                                               |
+| `setKeys(id, keys)`            | Customize a keybind (`keys` is array like `["Ctrl", "K"]`)                     |
+| `reset(id)` / `resetAll()`     | Reset single or all keybinds to defaults                                       |
+| `matches(event, id)`           | Check if a `KeyboardEvent` matches a keybind's current combo                   |
+| `isCustomized(id)`             | Whether a keybind has been modified                                            |
+| `saveCustomAction(definition)` | Create/update a custom action; auto-assigns ID if missing; returns ID          |
+| `deleteCustomAction(id)`       | Remove a custom action                                                         |
+| `getAllCustomActions()`        | Get array of all custom action definitions                                     |
+| `getCustomAction(id)`          | Get a single custom action by ID                                               |
+| `executeCustomAction(id)`      | Execute a custom action by its ID                                              |
 
 **Key Pattern:** `scope.action` — e.g. `global.showDesktop`, `notepad.save`, `browser.newTab`.
 
 **Usage in handlers:**
+
 ```javascript
 import { KeybindManager } from "../keybindManager.js";
 
@@ -769,12 +770,14 @@ Users can create custom keyboard shortcuts with custom actions. Custom actions s
 - **Notify** - Sends a system notification with a title and message
 
 Custom actions are defined in the Shortcuts app via the "Custom" button. Each custom action:
+
 1. Gets a unique ID (prefixed `custom_`)
 2. Stores its keybind + action definition in `os.storage`
 3. Appears under the "Custom" category in the Shortcuts app sidebar
 4. Is executed by a global `keydown` listener installed automatically on creation
 
 **Definition schema:**
+
 ```javascript
 {
   id: "custom_1719000000_abcd",       // auto-generated if omitted

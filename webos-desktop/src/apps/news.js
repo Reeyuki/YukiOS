@@ -5,6 +5,18 @@ const appNewsEntries = APP_MANIFESTS.filter((manifest) => manifest.news).map((ma
 
 const EXISTING_NEWS_UPDATES = [
   {
+    date: "June 22, 2026",
+    sections: [
+      {
+        icon: "fa-code",
+        title: "New App",
+        items: [
+          ["fa-code", "Dev Tools (Eruda)", "Launch Eruda debugging tool for console, network, and element inspection."]
+        ]
+      }
+    ]
+  },
+  {
     date: "June 21, 2026",
     sections: [
       {
