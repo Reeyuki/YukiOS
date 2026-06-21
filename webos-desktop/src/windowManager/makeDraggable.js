@@ -1,6 +1,14 @@
 import { StorageKeys, os } from "../framework.js";
 const desktop = document.getElementById("desktop");
 
+function getClientXY(e) {
+  if (e.touches) {
+    const t = e.touches[0] || e.changedTouches[0];
+    return { clientX: t.clientX, clientY: t.clientY };
+  }
+  return { clientX: e.clientX, clientY: e.clientY };
+}
+
 export function makeDraggable(win, wm) {
   const headers = win.querySelectorAll(".window-header, .browser-tabbar");
 
@@ -33,16 +41,16 @@ export function makeDraggable(win, wm) {
     const wasSnapped = !!win.dataset.snapZone;
     if (wasSnapped) wm._unsnap(win);
 
-    const startX = e.clientX;
-    const startY = e.clientY;
+    const { clientX: startX, clientY: startY } = getClientXY(e);
     const rect = win.getBoundingClientRect();
     const startWidth = rect.width;
     const startHeight = rect.height;
     const MIN_SIZE = 300;
 
     const onMouseMove = (e) => {
-      const newWidth = Math.max(MIN_SIZE, startWidth + (e.clientX - startX));
-      const newHeight = Math.max(MIN_SIZE, startHeight + (e.clientY - startY));
+      const { clientX, clientY } = getClientXY(e);
+      const newWidth = Math.max(MIN_SIZE, startWidth + (clientX - startX));
+      const newHeight = Math.max(MIN_SIZE, startHeight + (clientY - startY));
       win.style.width = `${newWidth}px`;
       win.style.height = `${newHeight}px`;
 
@@ -55,6 +63,9 @@ export function makeDraggable(win, wm) {
     const onMouseUp = () => {
       document.removeEventListener("mousemove", onMouseMove);
       document.removeEventListener("mouseup", onMouseUp);
+      document.removeEventListener("touchmove", onMouseMove);
+      document.removeEventListener("touchend", onMouseUp);
+      document.removeEventListener("touchcancel", onMouseUp);
       wm.isDraggingWindow = false;
       document.body.classList.remove("is-resizing");
       if (wm.triggerSessionSave) wm.triggerSessionSave();
@@ -62,6 +73,9 @@ export function makeDraggable(win, wm) {
 
     document.addEventListener("mousemove", onMouseMove);
     document.addEventListener("mouseup", onMouseUp);
+    document.addEventListener("touchmove", onMouseMove, { passive: false });
+    document.addEventListener("touchend", onMouseUp);
+    document.addEventListener("touchcancel", onMouseUp);
   };
 
   const startDrag = (e) => {
@@ -70,7 +84,7 @@ export function makeDraggable(win, wm) {
     if (isAltResize) {
       if (e.button !== 2) return;
     } else {
-      if (e.button !== 0) return;
+      if (e.button !== 0 && !e.touches) return;
     }
 
     if (isInteractive(e.target)) return;
@@ -86,16 +100,16 @@ export function makeDraggable(win, wm) {
       const wasSnapped = !!win.dataset.snapZone;
       if (wasSnapped) wm._unsnap(win);
 
-      const startX = e.clientX;
-      const startY = e.clientY;
+      const { clientX: startX, clientY: startY } = getClientXY(e);
       const rect = win.getBoundingClientRect();
       const startWidth = rect.width;
       const startHeight = rect.height;
       const MIN_SIZE = 300;
 
       const onMouseMove = (e) => {
-        const newWidth = Math.max(MIN_SIZE, startWidth + (e.clientX - startX));
-        const newHeight = Math.max(MIN_SIZE, startHeight + (e.clientY - startY));
+        const { clientX, clientY } = getClientXY(e);
+        const newWidth = Math.max(MIN_SIZE, startWidth + (clientX - startX));
+        const newHeight = Math.max(MIN_SIZE, startHeight + (clientY - startY));
         win.style.width = `${newWidth}px`;
         win.style.height = `${newHeight}px`;
 
@@ -108,6 +122,9 @@ export function makeDraggable(win, wm) {
       const onMouseUp = () => {
         document.removeEventListener("mousemove", onMouseMove);
         document.removeEventListener("mouseup", onMouseUp);
+        document.removeEventListener("touchmove", onMouseMove);
+        document.removeEventListener("touchend", onMouseUp);
+        document.removeEventListener("touchcancel", onMouseUp);
         wm.isDraggingWindow = false;
         document.body.classList.remove("is-resizing");
         if (wm.triggerSessionSave) wm.triggerSessionSave();
@@ -115,6 +132,9 @@ export function makeDraggable(win, wm) {
 
       document.addEventListener("mousemove", onMouseMove);
       document.addEventListener("mouseup", onMouseUp);
+      document.addEventListener("touchmove", onMouseMove, { passive: false });
+      document.addEventListener("touchend", onMouseUp);
+      document.addEventListener("touchcancel", onMouseUp);
       return;
     }
 
@@ -142,14 +162,16 @@ export function makeDraggable(win, wm) {
     }
 
     const winRect = win.getBoundingClientRect();
-    const ox = e.clientX - winRect.left;
-    const oy = e.clientY - winRect.top;
+    const { clientX: startClientX, clientY: startClientY } = getClientXY(e);
+    const ox = startClientX - winRect.left;
+    const oy = startClientY - winRect.top;
 
     if (wasSnapped) wm._unsnap(win);
 
     const onMouseMove = (e) => {
-      const newLeft = e.clientX - ox;
-      const newTop = e.clientY - oy;
+      const { clientX, clientY } = getClientXY(e);
+      const newLeft = clientX - ox;
+      const newTop = clientY - oy;
       win.style.left = `${newLeft}px`;
       win.style.top = `${newTop}px`;
 
@@ -158,7 +180,7 @@ export function makeDraggable(win, wm) {
         entry.record.setGeometry(newLeft, newTop);
       }
 
-      const zone = wm._getSnapZone(e.clientX, e.clientY);
+      const zone = wm._getSnapZone(clientX, clientY);
       wm._activeSnapZone = zone;
 
       if (zone) wm._showSnapGhost(zone);
@@ -168,6 +190,9 @@ export function makeDraggable(win, wm) {
     const onMouseUp = () => {
       document.removeEventListener("mousemove", onMouseMove);
       document.removeEventListener("mouseup", onMouseUp);
+      document.removeEventListener("touchmove", onMouseMove);
+      document.removeEventListener("touchend", onMouseUp);
+      document.removeEventListener("touchcancel", onMouseUp);
 
       wm.isDraggingWindow = false;
       document.body.classList.remove("is-dragging");
@@ -182,10 +207,14 @@ export function makeDraggable(win, wm) {
 
     document.addEventListener("mousemove", onMouseMove);
     document.addEventListener("mouseup", onMouseUp);
+    document.addEventListener("touchmove", onMouseMove, { passive: false });
+    document.addEventListener("touchend", onMouseUp);
+    document.addEventListener("touchcancel", onMouseUp);
   };
 
   headers.forEach((h) => {
     h.addEventListener("mousedown", startDrag);
+    h.addEventListener("touchstart", startDrag, { passive: false });
     h.addEventListener("contextmenu", (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -194,6 +223,7 @@ export function makeDraggable(win, wm) {
   });
 
   win.addEventListener("mousedown", startResize);
+  win.addEventListener("touchstart", startResize, { passive: false });
   win.addEventListener("contextmenu", (e) => {
     if (e.altKey || e.metaKey) {
       e.preventDefault();

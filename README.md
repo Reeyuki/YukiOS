@@ -35,14 +35,13 @@ It's built entirely in vanilla JS/TypeScript (with some libraries, of course!) !
 - Draggable, resizable, minimizable, maximizable windows
 - Window snapping (half screen, quarter screen, fullscreen)
 - Multiple workspaces with independent layouts
-- Window switching and focus cycling
+- Window switching and focus cycling (with alt+Q)
 - Live taskbar peeking support on hover
 - Window context menus (snap, move, pin, workspace transfer)
 - Window header menus for quick actions
 - Window icons in title bar
 - Taskbar positioned on any edge of the screen
-- Taskbar click to minimize/restore
-- Taskbar drag to reorder
+- Taskbar drag to reorder and click to minimize/restore
 - System tray with background-running apps
 - Tray controls and quick actions
 - Desktop shortcuts with drag-and-drop support
@@ -50,6 +49,8 @@ It's built entirely in vanilla JS/TypeScript (with some libraries, of course!) !
 - Alt+Right-Click window resize
 - Window animation system with 35+ effects
 - Cursor launch effect like in kde plasma
+- Automatically saves and restores open apps, window positions and sizes, workspace assignments, scroll positions,
+  window states (minimized, fullscreen, snapped), focus order
 
 ---
 
@@ -96,7 +97,6 @@ It's built entirely in vanilla JS/TypeScript (with some libraries, of course!) !
 - File properties dialog with rename support
 - Create, move, rename, delete, and organize files
 - Drag-select multiple files with selection box
-- F2 rename support in Explorer
 - Trash bin with restore functionality
 - Archive support: `.zip`, `.gz`, `.tar`, `.tar.gz`, `.tgz`, `.tar.xz`, `.7z`, `.bz2`, `.tar.bz2`, `.xz`, `.rar`
   (create: `.zip`, `.7z`, `.tar`, `.tar.gz`, `.tar.bz2`, `.gz`, `.bz2` with password-protected ZIP support)
@@ -112,22 +112,17 @@ It's built entirely in vanilla JS/TypeScript (with some libraries, of course!) !
 
 - 80 built-in applications
 - Web apps, utilities, tools, editors, and system apps
-- App registry with metadata and launch handling
 - Website and external app shortcuts via App Creator
-- Sandboxed iframe-based apps
 - Direct launch via URL parameters (`?app=` and `?game=`)
 
 ---
 
 # 🎮 Emulation & Runtime Support
 
-- Flash content support via Ruffle
-- DOS applications via JS-DOS with GUI file upload support
-- Full x86 environments via V86
+- DOS applications via JS-DOS with file upload support
+- x86 environments via V86
 - Nintendo 3DS emulation via Azahar
 - Multi-system game emulation (GBA, SNES, NDS, PSP, Sega, etc.)
-- WebAssembly runtime support
-- WebGL and HTML5 game support
 
 ---
 
@@ -140,17 +135,14 @@ It's built entirely in vanilla JS/TypeScript (with some libraries, of course!) !
 - Setup flow for first-time configuration
 - Theme system with 40 presets and custom theme support, light/dark and transparency modes
 - Wallpaper customization with animated wallpaper and Vanta.js support
-- Calendar and date utilities
 - PWA install and offline caching support
 - User accounts with multi-profile support
 - Lock screen and session management
 - Power management modes (Turbo, Balanced, Quality)
 - Custom cursor support (with miku by default)
 - Import/export system for backup and migration
-- GUI scaling options
 - Transparent UI toggle
 - Audio mixer with live visualizer
-- Custom theme saving
 
 ---
 
@@ -159,18 +151,6 @@ It's built entirely in vanilla JS/TypeScript (with some libraries, of course!) !
 - Session persistence for windows and workspaces
 - User profiles with settings and personalization
 - Backup and restore of system state
-- BrowserFS backed virtual filesystem
-
----
-
-# 🧠 Core Runtime
-
-- Window lifecycle handling (create, move, resize, close)
-- File system handling for persistent storage
-- Notification handling and state
-- Event-based communication between apps
-- Central app launcher and registry
-- Desktop rendering and taskbar management
 
 # 📦 Built-in Applications
 
@@ -274,10 +254,7 @@ It's built entirely in vanilla JS/TypeScript (with some libraries, of course!) !
 
 # 🔌 Extensibility
 
-- Apps can register tray icons and background behavior
-- Apps can communicate through shared events
-- External web apps can be launched as windows
-- Apps can persist state through storage APIs
+Extensible app platform with background apps, shared events, persistent state, and windowed web app integration.
 
 ---
 

@@ -16,6 +16,14 @@ import { ContextMenuManager } from "./windowManager/ContextMenuManager.js";
 import { WindowManagerUtils } from "./windowManager/WindowManagerUtils.js";
 
 import { StorageKeys, os } from "./framework.js";
+
+function isMobile() {
+  return (
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobi|Touch/i.test(navigator.userAgent) ||
+    window.innerWidth <= 768
+  );
+}
+
 export class WindowManager {
   openWindows: Map<string, any>;
   zIndexCounter: number;
@@ -211,6 +219,12 @@ export class WindowManager {
       initialOptions = isGame;
       isGame = false;
     }
+    const onMobile = isMobile();
+    const mobileFullscreen = onMobile && !id.startsWith("yukiOS-settings");
+    if (mobileFullscreen) {
+      width = "100vw";
+      height = "calc(100vh - var(--taskbar-h))";
+    }
     const pendingOpts: any = this._pendingLaunchOptions || {};
     const options = { ...pendingOpts, ...initialOptions };
     this._pendingLaunchOptions = null;
@@ -273,14 +287,25 @@ export class WindowManager {
       } catch (e) {}
     }
 
-    Object.assign(win.style, {
-      width: `${finalW}px`,
-      height: `${finalH}px`,
-      left: `${position.left}px`,
-      top: `${position.top}px`,
-      position: disableDesktopStretchScroll ? "fixed" : "absolute",
-      zIndex: this.zIndexCounter++
-    });
+    if (mobileFullscreen) {
+      Object.assign(win.style, {
+        width: "100vw",
+        height: "calc(100vh - var(--taskbar-h))",
+        left: "0",
+        top: "0",
+        position: "fixed",
+        zIndex: this.zIndexCounter++
+      });
+    } else {
+      Object.assign(win.style, {
+        width: `${finalW}px`,
+        height: `${finalH}px`,
+        left: `${position.left}px`,
+        top: `${position.top}px`,
+        position: disableDesktopStretchScroll ? "fixed" : "absolute",
+        zIndex: this.zIndexCounter++
+      });
+    }
 
     if (isGame) this.gameWindowCount++;
     this.updateTransparency();
@@ -290,6 +315,7 @@ export class WindowManager {
       }, 0);
     }
     win.addEventListener("mousedown", () => this.bringToFront(win));
+    win.addEventListener("touchstart", () => this.bringToFront(win), { passive: true });
     this.triggerSessionSave();
 
     return win;

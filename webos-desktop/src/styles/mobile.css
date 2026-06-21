@@ -1,0 +1,774 @@
+html.is-mobile {
+  --taskbar-h: 3.6em;
+  --icon-w: 72px;
+  --icon-h: 92px;
+  --icon-img-s: 56px;
+  --icon-gap: 14px;
+  --r: 8px;
+  --r-sm: 6px;
+}
+
+@media (max-width: 768px) {
+  html:not(.is-mobile) {
+    --taskbar-h: 3.6em;
+    --icon-w: 72px;
+    --icon-h: 92px;
+    --icon-img-s: 56px;
+    --icon-gap: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  html:not(.is-mobile) {
+    --taskbar-h: 3.8em;
+    --icon-w: 64px;
+    --icon-h: 84px;
+    --icon-img-s: 48px;
+    --icon-gap: 12px;
+  }
+}
+
+html.is-mobile .desktop,
+@media (max-width: 768px) {
+  .desktop {
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    justify-content: flex-start;
+    padding: 12px 8px;
+    gap: var(--icon-gap);
+    overflow-y: auto;
+  }
+
+  .icon {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    width: var(--icon-w);
+    height: var(--icon-h);
+    margin: 0;
+    flex-shrink: 0;
+  }
+
+  .icon img,
+  .icon svg {
+    width: var(--icon-img-s);
+    height: var(--icon-img-s);
+  }
+
+  .icon div {
+    font-size: 0.7rem;
+  }
+}
+
+html.is-mobile .window:not([data-snap-zone]),
+@media (max-width: 768px) {
+  .window:not([data-snap-zone]) {
+    width: 100vw !important;
+    height: calc(100vh - var(--taskbar-h)) !important;
+    top: 0 !important;
+    left: 0 !important;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
+    box-shadow: none;
+    min-width: 0;
+    min-height: 0;
+  }
+
+  .window-header {
+    padding: 4px 8px;
+    font-size: 13px;
+    cursor: default !important;
+  }
+
+  .window-controls button {
+    width: 40px;
+    height: 32px;
+  }
+
+  .window-content {
+    font-size: 13px;
+  }
+
+  .window-props-overlay {
+    width: 100vw !important;
+    height: calc(100vh - var(--taskbar-h)) !important;
+    top: 0 !important;
+    left: 0 !important;
+    border-radius: 0;
+  }
+
+  .window[data-snap-zone] {
+    border-radius: 0;
+  }
+}
+
+html.is-mobile #taskbar,
+@media (max-width: 768px) {
+  #taskbar {
+    height: var(--taskbar-h);
+    padding: 0 4px;
+    z-index: 100;
+  }
+
+  #start-button {
+    width: 42px;
+    height: 36px;
+    background-size: 28px;
+    border-radius: 10px;
+    flex-shrink: 0;
+  }
+
+  #taskbar-windows {
+    gap: 4px;
+    padding: 0 4px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .taskbar-item {
+    padding: 6px;
+    gap: 4px;
+    min-width: 36px;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .taskbar-item img,
+  .taskbar-item svg {
+    width: 28px;
+    height: 28px;
+  }
+
+  .taskbar-item span {
+    display: none;
+  }
+
+  #system-tray {
+    gap: 0.3em;
+  }
+
+  .tray-icon-btn,
+  .tray-overflow-btn {
+    width: 32px;
+    height: 32px;
+  }
+
+  .tray-icon-btn i,
+  .tray-overflow-btn i {
+    font-size: 14px;
+  }
+
+  #clock {
+    font-size: 0.8em;
+  }
+
+  #date {
+    display: none;
+  }
+
+  .taskbar-weather {
+    display: none !important;
+  }
+
+  #workspace-bar {
+    display: none !important;
+  }
+
+  .ntf-tray-btn {
+    width: 32px;
+    height: 32px;
+  }
+
+  .ntf-tray-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+html.is-mobile .start-menu,
+@media (max-width: 768px) {
+  .start-menu {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: calc(100vh - var(--taskbar-h));
+    max-height: none;
+    bottom: var(--taskbar-h);
+    border-radius: 0;
+    border: none;
+    box-shadow: 0 0 0 rgba(0, 0, 0, 0.5);
+    flex-direction: column;
+    animation: startMenuInMobile 250ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .start-menu.closing {
+    animation: startMenuOutMobile 200ms cubic-bezier(0.55, 0, 0.7, 0.3) both;
+  }
+
+  .start-sidebar {
+    width: 100%;
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    border-right: none;
+    border-bottom: 1px solid color-mix(in srgb, var(--brand) 25%, transparent);
+    padding: 4px 8px;
+    gap: 2px;
+    flex-shrink: 0;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .start-sidebar::-webkit-scrollbar {
+    height: 2px;
+  }
+
+  .start-user {
+    display: none;
+  }
+
+  .start-cat {
+    padding: 6px 10px;
+    font-size: 12px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    border-left: none;
+    border-bottom: 2px solid transparent;
+    margin: 0;
+    border-radius: 6px;
+  }
+
+  .start-cat.active {
+    border-left: none;
+    border-bottom-color: var(--brand);
+  }
+
+  .start-cat i {
+    font-size: 13px;
+    width: 16px;
+  }
+
+  .start-content {
+    flex: 1;
+    padding: 8px;
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  .start-page {
+    max-height: none;
+    margin-top: 4px;
+    gap: 4px;
+  }
+
+  .start-menu-item {
+    padding: 6px 8px;
+    font-size: 12px;
+    margin: 1px 2px;
+    width: auto;
+  }
+
+  .start-menu-item svg,
+  .start-menu-item i,
+  .start-menu-item img {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+  }
+
+  .start-menu-item .app-title {
+    font-size: 12px;
+  }
+
+  .start-menu-item .app-description {
+    display: none;
+  }
+
+  .start-footer-actions {
+    display: none;
+  }
+
+  .start-menu-search {
+    padding-inline: 0.5rem;
+    margin-block-end: 0.5rem;
+  }
+
+  #start-menu-search {
+    padding: 7px 10px 7px 30px;
+    font-size: 12px;
+  }
+
+  .search-icon {
+    left: 10px;
+    font-size: 11px;
+  }
+
+  .start-item {
+    width: 100%;
+    margin: 1px 0;
+    padding: 7px 10px;
+  }
+
+  .app-grid {
+    padding: 4px;
+    gap: 2px;
+  }
+}
+
+@keyframes startMenuInMobile {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes startMenuOutMobile {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}
+
+html.is-mobile #context-menu,
+html.is-mobile #taskbar-context-menu,
+html.is-mobile #taskbar-pos-menu,
+@media (max-width: 768px) {
+  #context-menu,
+  #taskbar-context-menu,
+  #taskbar-pos-menu {
+    position: fixed !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: var(--taskbar-h) !important;
+    top: auto !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    border-radius: 14px 14px 0 0;
+    min-width: 0;
+    max-height: 50vh;
+    overflow-y: auto;
+    z-index: 100000;
+    animation: bottomSheetIn 250ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  #context-menu.closing,
+  #taskbar-context-menu.closing,
+  #taskbar-pos-menu.closing {
+    animation: bottomSheetOut 200ms cubic-bezier(0.55, 0, 0.7, 0.3) both;
+  }
+
+  #context-menu div,
+  #taskbar-context-menu .menu-item,
+  #taskbar-pos-menu .context-menu-item {
+    padding: 14px 16px;
+    font-size: 15px;
+    gap: 14px;
+  }
+
+  #context-menu hr,
+  #taskbar-context-menu hr,
+  #taskbar-pos-menu hr {
+    margin: 4px 12px;
+  }
+
+  .cm-mobile-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 99999;
+    animation: fadeIn 150ms ease-out;
+  }
+}
+
+@keyframes bottomSheetIn {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bottomSheetOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+html.is-mobile .ntf-toast-container,
+@media (max-width: 768px) {
+  .ntf-toast-container {
+    left: 8px;
+    right: 8px;
+    bottom: calc(var(--taskbar-h) + 8px);
+    max-height: calc(100vh - var(--taskbar-h) - 16px);
+  }
+
+  .ntf-toast {
+    width: 100%;
+    max-width: 100%;
+    padding: 12px 14px;
+    border-radius: 10px;
+  }
+
+  .ntf-toast__heading {
+    font-size: 13px;
+  }
+
+  .ntf-toast__text {
+    font-size: 12px;
+  }
+
+  #ntf-panel {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: var(--taskbar-h);
+    top: 0;
+    width: 100%;
+    max-height: none;
+    border-radius: 0;
+    border: none;
+  }
+
+  .ntf-panel__head {
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+}
+
+html.is-mobile .overlay-dialog,
+html.is-mobile .explorer-confirmation-overlay > div,
+html.is-mobile .start-editor-dialog,
+@media (max-width: 768px) {
+  .overlay-dialog {
+    width: calc(100vw - 32px) !important;
+    max-width: calc(100vw - 32px) !important;
+    min-width: 0 !important;
+    margin: 0 16px;
+    max-height: 80vh;
+    border-radius: 14px;
+    padding: 20px;
+  }
+
+  .ws-overlay {
+    max-width: calc(100vw - 32px);
+    max-height: 80vh;
+    padding: 12px;
+  }
+
+  .ws-item {
+    min-width: 80px;
+    max-width: 120px;
+  }
+
+  .explorer-confirmation-overlay > div {
+    width: calc(100vw - 32px) !important;
+    max-width: calc(100vw - 32px) !important;
+    min-width: 0 !important;
+    margin: 0 16px;
+    border-radius: 14px;
+  }
+
+  .conflict-dialog {
+    width: calc(100vw - 32px) !important;
+    max-width: calc(100vw - 32px) !important;
+    min-width: 0 !important;
+  }
+}
+
+html.is-mobile .session-overlay,
+@media (max-width: 768px) {
+  .session-time {
+    font-size: 48px;
+  }
+
+  .session-date {
+    font-size: 18px;
+    margin-top: -8px;
+    margin-bottom: 20px;
+  }
+
+  .session-content {
+    gap: 16px;
+    padding: 16px;
+  }
+
+  .login-center-panel {
+    gap: 12px;
+    width: 100%;
+  }
+
+  .login-card {
+    width: calc(100vw - 32px);
+    max-width: 400px;
+    padding: 20px;
+  }
+
+  .user-carousel-row {
+    gap: 20px;
+    padding: 16px calc(50vw - 32px);
+  }
+
+  .session-info-btn {
+    top: 12px;
+    left: 12px;
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
+  }
+
+  .session-info-modal {
+    top: 52px;
+    left: 12px;
+  }
+
+  .profile-avatar-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-auto-rows: 40px;
+  }
+
+  .profile-avatar-option {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+@media (max-width: 480px) {
+  .session-time {
+    font-size: 36px;
+  }
+
+  .session-date {
+    font-size: 16px;
+  }
+
+  .profile-avatar-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  #audio-mixer-panel {
+    position: fixed !important;
+    left: 8px !important;
+    right: 8px !important;
+    bottom: calc(var(--taskbar-h) + 8px) !important;
+    top: auto !important;
+    width: auto !important;
+    max-height: 50vh;
+    border-radius: 14px;
+  }
+}
+
+@media (max-width: 768px) {
+  #brightness-tray-popup,
+  #display-performance-tray-popup,
+  #network-tray-popup,
+  #clipboard-tray-popup {
+    position: fixed !important;
+    left: 8px !important;
+    right: 8px !important;
+    bottom: calc(var(--taskbar-h) + 8px) !important;
+    top: auto !important;
+    width: auto !important;
+    max-height: 60vh;
+    border-radius: 14px;
+  }
+
+  #power-tray-popup {
+    position: fixed !important;
+    left: 8px !important;
+    right: 8px !important;
+    bottom: calc(var(--taskbar-h) + 8px) !important;
+    top: auto !important;
+    width: auto !important;
+    border-radius: 14px;
+  }
+}
+
+@media (max-width: 768px) {
+  *::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  .yuki-settings-sidebar {
+    width: 100% !important;
+    max-height: 140px;
+    overflow-y: auto;
+    border-right: none !important;
+    border-bottom: 1px solid var(--glass-border);
+    flex-shrink: 0;
+  }
+
+  .yuki-settings-body {
+    flex-direction: column !important;
+  }
+
+  .monaco-container {
+    flex-direction: column !important;
+  }
+
+  .monaco-sidebar {
+    width: 100% !important;
+    max-height: 120px;
+    border-right: none !important;
+    border-bottom: 1px solid var(--glass-border);
+  }
+
+  .steam-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px;
+  }
+
+  .games-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  /* Calculator */
+  .calculator {
+    width: 100% !important;
+    height: 100% !important;
+    border-radius: 0;
+  }
+
+  .calc-btn {
+    font-size: 16px;
+    min-height: 44px;
+  }
+
+  /* Terminal */
+  .terminal {
+    font-size: 12px;
+  }
+
+  /* Notification panel tray popup source list */
+  .ntf-sources-list {
+    flex-direction: column;
+  }
+
+  /* Settings sections */
+  .settings-main-panel {
+    padding: 12px;
+  }
+
+  .settings-card {
+    padding: 14px;
+  }
+
+  .settings-section-cards {
+    gap: 10px;
+  }
+
+  /* Browser */
+  .browser-tabbar {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .browser-tab {
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+}
+
+/* ── Touch improvements ── */
+html.is-mobile,
+@media (max-width: 768px) {
+  /* Remove hover-only effects; use active state for feedback */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .taskbar-item:hover {
+    transform: none;
+  }
+
+  .taskbar-item:active {
+    background: var(--surface-hover);
+    transform: scale(0.96);
+  }
+
+  .icon:hover {
+    background: transparent;
+    border-color: transparent;
+  }
+
+  .icon:active {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .icon:hover img {
+    transform: none;
+  }
+
+  .icon:active img {
+    transform: scale(0.95);
+  }
+
+  /* Prevent text selection on touch drag */
+  body {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Increase touch target for back/forward in browsers */
+  .browser-nav-btn {
+    min-width: 40px;
+    min-height: 40px;
+  }
+
+  .desktop,
+  .window-content,
+  .start-page,
+  .app-grid {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .start-menu-item:hover {
+    background: var(--glass);
+  }
+
+  .start-cat:hover {
+    background: transparent;
+    border-left-color: transparent;
+  }
+
+  #start-button:hover {
+    filter: none;
+  }
+
+  .workspace-btn:hover {
+    background: rgba(255, 255, 255, 0.07);
+    color: rgba(255, 255, 255, 0.6);
+  }
+}

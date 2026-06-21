@@ -27,6 +27,7 @@ import "./osBridgeTelemetry.js";
 import { resolveIconUrl, initializeMirrors, CDN_MIRRORS, getCdnMirror, setCdnMirror } from "./shared/assetResolver.js";
 import { appMap } from "./games/gamesList.js";
 import "./desktopui/taskbarPositionManager.js";
+import { isMobile, isTouchDevice } from "./shared/platformUtils.js";
 import logoImg from "./assets/logo.png";
 import { showCdnPrompt } from "./shared/dialogs.js";
 import { initializeOSBridge, setDialogExplorerApp } from "./os/index.js";
@@ -35,6 +36,13 @@ import { init as initCursorEffect } from "./cursorEffect.js";
 
 initializeMirrors(appMap);
 registerPWA();
+
+const root = document.documentElement;
+if (isMobile() || isTouchDevice()) {
+  root.classList.add("is-mobile");
+  document.body.style.cursor = "default";
+}
+
 const notificationCenter = new NotificationCenter();
 const fileSystemManager = new FileSystemManager();
 const windowManager = new WindowManager(notificationCenter);

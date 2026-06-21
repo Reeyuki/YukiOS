@@ -135,5 +135,6 @@ export const StorageKeys = {
   mapsOsmZoom: "yukiOS_maps_osm_zoom",
   mapsOsmLat: "yukiOS_maps_osm_lat",
   mapsOsmLng: "yukiOS_maps_osm_lng",
-  VM_MANAGER_VMS: "yukiOS_vm_manager_vms"
+  VM_MANAGER_VMS: "yukiOS_vm_manager_vms",
+  mobileMode: "yukiOS_mobile_mode"
 };
