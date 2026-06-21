@@ -1,1 +1,4 @@
 desktop/
+.env
+venv/
+*.pyc
