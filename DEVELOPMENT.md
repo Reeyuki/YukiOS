@@ -30,7 +30,7 @@ This guide covers how to create new applications, add functionalities, and contr
 1. **Clone the repository**
 
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/Reeyuki/YukiOS
    cd yukios
    ```
 
@@ -700,32 +700,6 @@ explorerApp.open(["Documents"], (selectedPath) => {
   console.log("Selected file:", selectedPath);
 });
 ```
-
----
-
-## Code Quality Guidelines
-
-Write modular, clean, and DRY code:
-
-- **Modularity**: Separate concerns into focused modules. Each file should have a single, clear responsibility.
-- **Single Responsibility**: Functions and classes should do one thing well.
-- **DRY**: Never duplicate logic. Use shared utilities from `src/shared/`.
-- **Prefer Existing Utilities**: Check `src/shared/` for existing helpers before writing new ones.
-- **Clean Function Names**: Use descriptive, action-oriented function names.
-- **Avoid Deep Nesting**: More than 3 levels of nesting indicates a need for refactoring.
-- **Keep Functions Small**: Functions should fit on a screen (typically < 50 lines).
-- **Use Meaningful Variables**: Variable names should reveal intent.
-- **Avoid Magic Numbers/Strings**: Extract constants to the top of the file.
-
-### File Size Guidelines
-
-Target maximums:
-
-- Utility modules: <300 lines
-- Runtime modules: <500 lines
-- Apps: <1000 lines
-
-When a file exceeds these sizes, prefer extracting focused modules.
 
 ---
 

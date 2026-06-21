@@ -22,7 +22,7 @@ session state.
 It supports running Flash content, DOS programs, console emulation, WebAssembly apps, and standard web applications side
 by side.
 
-It's built entirely in vanilla JS (TypeScript in core modules) with some libraries, of course!.
+It's built entirely in vanilla JS/TypeScript (with some libraries, of course!) ![Login page](.github/login.png)
 ![Steam interface](.github/steam.png) ![Start menu](.github/startmenuv86.png) ![Discord](.github/dc.png)
 ![Web Apps](.github/webapps.png) ![Setup](.github/setupsettings.png) ![Music1](.github/audio1.png)
 ![Music2](.github/audio2.png) ![Achievements](.github/browserachieve.png) ![Music player](.github/music.png)
@@ -35,28 +35,55 @@ It's built entirely in vanilla JS (TypeScript in core modules) with some librari
 - Draggable, resizable, minimizable, maximizable windows
 - Window snapping (half screen, quarter screen, fullscreen)
 - Multiple workspaces with independent layouts
-- Window switching and focus cycling (Alt+Q)
-- Live taskbar previews
+- Window switching and focus cycling
+- Live taskbar peeking support on hover
 - Window context menus (snap, move, pin, workspace transfer)
+- Window header menus for quick actions
+- Window icons in title bar
 - Taskbar positioned on any edge of the screen
+- Taskbar click to minimize/restore
+- Taskbar drag to reorder
 - System tray with background-running apps
 - Tray controls and quick actions
-- Global command palette (Ctrl+K / F1)
 - Desktop shortcuts with drag-and-drop support
+- Desktop stretch scroll prevention toggle
+- Alt+Right-Click window resize
+- Window animation system with 35+ effects
+- Cursor launch effect like in kde plasma
 
 ---
 
 # 🧭 Navigation & UI
 
 - Taskbar with pinned and running apps
-- Start menu for launching and managing apps
+- Start menu for launching and managing apps with keyboard navigation
+- Start menu alphabetical grouping with section headers
+- Start menu keybinds (Space, Tab, Ctrl)
 - App search and quick switching
-- Desktop icon system with persistent shortcuts
+- Desktop icon system with persistent shortcuts and image thumbnails
 - Notification center with grouped messages
 - Do Not Disturb mode
 - Notification positioning controls
 - Context menus across desktop and apps
 - Animated UI with adaptive transparency effects
+- Keyboard shortcuts app for global hotkeys
+
+**Key Global Shortcuts:**
+
+- Ctrl+K / Ctrl+P / F1 - Open command palette
+- Ctrl+D - Show/hide desktop
+- Alt+Q - Cycle through windows
+- Ctrl+Shift+S - Full screenshot
+- Ctrl+Alt+S - Area screenshot
+- Ctrl+Shift+R - Screen recording
+
+**Command Palette Features:**
+
+- Search apps, files, and system commands
+- Quick actions: wallpaper, themes, DND, mute, workspace switching
+- Terminal commands (prefix with `>`)
+- Built-in calculator and unit converter
+- Screenshot and screen recording controls
 
 ---
 
@@ -65,13 +92,19 @@ It's built entirely in vanilla JS (TypeScript in core modules) with some librari
 - Persistent browser storage using IndexedDB
 - File explorer with thumbnails and previews
 - Drag-and-drop file operations from host OS
+- Context menu to open images in Paint
+- File properties dialog with rename support
 - Create, move, rename, delete, and organize files
-- Archive support: `.zip`, `.gz`, `.tar`, `.tar.gz`, `.tgz`, `.tar.xz`, `.7z`, `.bz2`, `.tar.bz2`, `.xz`, `.rar`;
-  Create: `.zip`, `.7z`, `.tar`, `.tar.gz`, `.tar.bz2`, `.gz`, `.bz2`; Password-protected ZIP support (creation and
-  extraction)
+- Drag-select multiple files with selection box
+- F2 rename support in Explorer
+- Trash bin with restore functionality
+- Archive support: `.zip`, `.gz`, `.tar`, `.tar.gz`, `.tgz`, `.tar.xz`, `.7z`, `.bz2`, `.tar.bz2`, `.xz`, `.rar`
+  (create: `.zip`, `.7z`, `.tar`, `.tar.gz`, `.tar.bz2`, `.gz`, `.bz2` with password-protected ZIP support)
 
 - Bulk file actions, download file support
 - File-based actions like setting wallpapers and conversions
+- HTML file rendering support
+- Dynamic favicon updates based on current app
 
 ---
 
@@ -89,7 +122,7 @@ It's built entirely in vanilla JS (TypeScript in core modules) with some librari
 # 🎮 Emulation & Runtime Support
 
 - Flash content support via Ruffle
-- DOS applications via JS-DOS
+- DOS applications via JS-DOS with GUI file upload support
 - Full x86 environments via V86
 - Nintendo 3DS emulation via Azahar
 - Multi-system game emulation (GBA, SNES, NDS, PSP, Sega, etc.)
@@ -109,7 +142,15 @@ It's built entirely in vanilla JS (TypeScript in core modules) with some librari
 - Wallpaper customization with animated wallpaper and Vanta.js support
 - Calendar and date utilities
 - PWA install and offline caching support
-- Single-file deployment build option
+- User accounts with multi-profile support
+- Lock screen and session management
+- Power management modes (Turbo, Balanced, Quality)
+- Custom cursor support (with miku by default)
+- Import/export system for backup and migration
+- GUI scaling options
+- Transparent UI toggle
+- Audio mixer with live visualizer
+- Custom theme saving
 
 ---
 
@@ -136,7 +177,7 @@ It's built entirely in vanilla JS (TypeScript in core modules) with some librari
 ## 🧠 Productivity & Development
 
 - Explorer
-- Terminal
+- Terminal (Unix-like commands with tab completion, history, pipelines, and glob patterns)
 - Notepad
 - Markdown Editor
 - Yuki Code
@@ -163,6 +204,9 @@ It's built entirely in vanilla JS (TypeScript in core modules) with some librari
 - Yuki OS Guide
 - Display Performance
 - Network Tray
+- Maps
+- Virtual Machine Manager
+- Accounts
 
 ## 🎨 Media & Creative Tools
 
@@ -170,6 +214,7 @@ It's built entirely in vanilla JS (TypeScript in core modules) with some librari
 - Mini Paint
 - Photopea
 - LibreSprite
+- Pixlr
 - Camera App
 - Media Viewer
 - Office Viewer
@@ -188,14 +233,15 @@ It's built entirely in vanilla JS (TypeScript in core modules) with some librari
 - Discord
 - Spotify
 - Slack
+- TikTok
 - Gmail
 - Outlook
 - ChatGPT
+- Grok
 - DeepSeek
 - Zoom
 - Twitter/X
 - Instagram
-- LinkedIn
 - Pinterest
 - GitHub
 - GitLab
@@ -212,9 +258,9 @@ It's built entirely in vanilla JS (TypeScript in core modules) with some librari
 - Yahoo Mail
 - kiwiIRC
 - GeForce Now
-- Scramjet Proxy
+- Scramjet Browser
 - Torrent Client
-- WebTorrent
+- WebTorrent And more
 
 ## 🎮 Games & Emulation Tools
 
@@ -244,7 +290,7 @@ pnpm run build
 pnpm run preview
 ```
 
-Single-file build output is supported for easy deployment.
+Single-file bundling for easy deployment.
 
 ---
 
@@ -266,10 +312,7 @@ See the [Development Guide](DEVELOPMENT.md).
 
 # 🛠 Tech Stack
 
-- Vite
-- viteSingleFile
 - BrowserFS
-- IndexedDB
 - interactjs
 - Ruffle
 - EmulatorJS
@@ -287,6 +330,14 @@ See the [Development Guide](DEVELOPMENT.md).
 - Vanta.js
 - Scramjet/BareMux/epoxy-transport
 - WebTorrent
+
+# Tooling stack
+
+- Vite
+- Typescript
+- Eslint
+- Prettier
+- viteSingleFile
 
 ---
 

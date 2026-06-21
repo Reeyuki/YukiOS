@@ -1,5 +1,7 @@
 # Contributing to Yuki OS
 
+Check out our [Roadmap](ROADMAP.md)
+
 ## How to Contribute
 
 1. **Fork** the repository
