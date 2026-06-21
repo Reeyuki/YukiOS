@@ -1529,73 +1529,89 @@ html[data-theme="aura"] .button-primary:hover {
 }
 
 html[data-theme="nier"] {
-  --brand: #111008;
-  --brand-hover: #232018;
-  --brand-dark: #0b0a09;
-  --brand-glow: rgba(17, 16, 8, 0.35);
-  --brand-dim: rgba(17, 16, 8, 0.18);
+  --brand: #0e0d0a;
+  --brand-hover: #1c1b16;
+  --brand-dark: #080807;
+  --brand-glow: rgba(14, 13, 10, 0.35);
+  --brand-dim: rgba(14, 13, 10, 0.14);
+
   --bg-primary: #d6cfb5;
   --bg-secondary: #c9c2a8;
-  --text-primary: #463f2e;
-  --text-secondary: #5c5543;
-  --glass: rgba(70, 63, 46, 0.06);
-  --glass-hover: rgba(70, 63, 46, 0.12);
-  --glass-border: rgba(70, 63, 46, 0.15);
-  --tx1: #463f2e;
-  --tx2: #5c5543;
   --surface-1: #d6cfb5;
   --surface-2: #c9c2a8;
   --surface-3: #beb79d;
-  --surface-hover: #c0b89e;
-  --text-muted: #8a8370;
-  --text-on-brand: #fff;
-  --shadow-color: rgba(0, 0, 0, 0.35);
-  --overlay-bg: rgba(0, 0, 0, 0.4);
+  --surface-hover: #c2bb9f;
   --menu-bg: #d6cfb5;
   --window-bg: #d6cfb5;
+
+  --text-primary: #3a3425;
+  --text-secondary: #574e3c;
+  --text-muted: #7a7362;
+  --text-on-brand: #c8b89a;
+  --tx1: #3a3425;
+  --tx2: #574e3c;
+
+  --glass: rgba(58, 52, 37, 0.06);
+  --glass-hover: rgba(58, 52, 37, 0.11);
+  --glass-border: rgba(58, 52, 37, 0.14);
+
+  --shadow-color: rgba(0, 0, 0, 0.4);
+  --overlay-bg: rgba(0, 0, 0, 0.45);
+}
+
+html[data-theme="nier"] .window-header,
+html[data-theme="nier"] .taskbar,
+html[data-theme="nier"] .context-menu,
+html[data-theme="nier"] .ntf-toast,
+html[data-theme="nier"] .button-primary,
+html[data-theme="nier"] .start-menu,
+html[data-theme="nier"] .dropdown,
+html[data-theme="nier"] .settings-dropdown,
+html[data-theme="nier"] .overlay-dialog {
+  font-family: "Share Tech Mono", "Courier New", monospace;
 }
 
 html[data-theme="nier"] .window {
   box-shadow:
-    0 24px 64px oklch(0% 0 0 / 0.65),
-    0 0 0 0.5px rgba(200, 184, 154, 0.12) inset;
+    0 20px 60px rgba(0, 0, 0, 0.6),
+    inset 0 0 0 0.5px rgba(200, 184, 154, 0.1);
 }
 
 html[data-theme="nier"] .window-header {
-  background: #111008;
+  background: #0e0d0a;
   border-bottom: 0.5px solid rgba(200, 184, 154, 0.1);
   color: #c8b89a;
-  font-family: "Share Tech Mono", "Courier New", monospace;
   text-transform: uppercase;
   letter-spacing: 2px;
 }
 
 html[data-theme="nier"] .taskbar {
-  background: rgba(11, 10, 9, 0.95);
+  background: rgba(10, 9, 7, 0.96);
   border-top: 0.5px solid rgba(200, 184, 154, 0.1);
   color: #c8b89a;
 }
 
+html[data-theme="nier"] .tray-icon-btn:hover {
+  background: rgba(200, 184, 154, 0.08);
+}
+
 html[data-theme="nier"] .button-primary {
-  background: var(--brand);
+  background: #0e0d0a;
   border: none;
   color: #c8b89a;
   text-transform: uppercase;
   letter-spacing: 1px;
-  font-family: "Share Tech Mono", "Courier New", monospace;
-  transition: opacity 0.2s;
 }
 
 html[data-theme="nier"] .button-primary:hover {
-  opacity: 0.8;
+  background: #1c1b16;
 }
 
 html[data-theme="nier"] .context-menu {
-  background: #111008;
+  background: #0e0d0a;
   border: 0.5px solid rgba(200, 184, 154, 0.12);
   color: #c8b89a;
-  box-shadow: 0 10px 30px oklch(0% 0 0 / 0.6);
-  font-family: "Share Tech Mono", "Courier New", monospace;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.65);
   text-transform: uppercase;
   letter-spacing: 1px;
 }
@@ -1605,71 +1621,61 @@ html[data-theme="nier"] .context-menu-item {
 }
 
 html[data-theme="nier"] .context-menu-item:hover {
-  background: rgba(200, 184, 154, 0.1);
+  background: rgba(200, 184, 154, 0.08);
 }
 
 html[data-theme="nier"] .start-menu {
   background: #d6cfb5;
-  border: 0.5px solid rgba(70, 63, 46, 0.12);
-  color: #463f2e;
-  box-shadow: 0 10px 40px oklch(0% 0 0 / 0.5);
-  font-family: "Share Tech Mono", "Courier New", monospace;
-}
-
-html[data-theme="nier"] .start-menu .start-menu-item {
-  color: #463f2e;
+  border: 0.5px solid rgba(58, 52, 37, 0.12);
+  color: #3a3425;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
   text-transform: uppercase;
   letter-spacing: 1px;
 }
 
-html[data-theme="nier"] .start-menu .start-menu-item,
+html[data-theme="nier"] .start-menu-item,
 html[data-theme="nier"] .start-menu-item .app-title,
 html[data-theme="nier"] .start-menu-item .app-description,
 html[data-theme="nier"] .start-user,
-html[data-theme="nier"] .start-user span,
-html[data-theme="nier"] .start-sidebar,
+html[data-theme="nier"] .start-user span {
+  color: #3a3425;
+}
+
+html[data-theme="nier"] .start-menu-item:hover {
+  background: rgba(58, 52, 37, 0.1);
+}
+
+html[data-theme="nier"] .start-sidebar {
+  background: rgba(58, 52, 37, 0.04);
+  color: #3a3425;
+}
+
 html[data-theme="nier"] .start-sidebar span,
-html[data-theme="nier"] .start-sidebar a,
-html[data-theme="nier"] .start-menu-item svg,
-html[data-theme="nier"] .start-menu-item i {
-  color: #463f2e;
+html[data-theme="nier"] .start-sidebar a {
+  color: #3a3425;
 }
 
-html[data-theme="nier"] .start-menu .start-menu-item:hover {
-  background: rgba(70, 63, 46, 0.12);
+html[data-theme="nier"] .start-menu-search-input {
+  background: rgba(58, 52, 37, 0.07);
+  border: 0.5px solid rgba(58, 52, 37, 0.15);
+  color: #3a3425;
 }
 
-html[data-theme="nier"] .start-menu .start-menu-search-input {
-  background: rgba(70, 63, 46, 0.08);
-  border: 0.5px solid rgba(70, 63, 46, 0.15);
-  color: #463f2e;
-  font-family: "Share Tech Mono", "Courier New", monospace;
+html[data-theme="nier"] .dropdown,
+html[data-theme="nier"] .settings-dropdown {
+  background: #0e0d0a;
+  border: 0.5px solid rgba(200, 184, 154, 0.12);
+  color: #c8b89a;
 }
 
-html[data-theme="nier"] .start-menu .start-sidebar {
-  background: rgba(70, 63, 46, 0.04);
-}
-
-html[data-theme="nier"] *::-webkit-scrollbar-thumb {
-  background: rgba(200, 184, 154, 0.25);
-}
-
-html[data-theme="nier"] *::-webkit-scrollbar-thumb:hover {
-  background: rgba(200, 184, 154, 0.4);
-}
-
-html[data-theme="nier"] .overlay-dialog {
-  background: #d6cfb5;
-  color: #463f2e;
-  font-family: "Share Tech Mono", "Courier New", monospace;
-  box-shadow: 0 10px 40px oklch(0% 0 0 / 0.5);
+html[data-theme="nier"] .dropdown-item:hover {
+  background: rgba(200, 184, 154, 0.08);
 }
 
 html[data-theme="nier"] .ntf-toast {
-  background: #111008;
+  background: #0e0d0a;
   border: 0.5px solid rgba(200, 184, 154, 0.12);
   color: #c8b89a;
-  font-family: "Share Tech Mono", "Courier New", monospace;
 }
 
 html[data-theme="nier"] .ntf-toast__heading {
@@ -1679,110 +1685,71 @@ html[data-theme="nier"] .ntf-toast__heading {
 }
 
 html[data-theme="nier"] .ntf-toast__text {
-  color: rgba(200, 184, 154, 0.7);
+  color: rgba(200, 184, 154, 0.65);
 }
 
-html[data-theme="nier"] .tray-icon-btn:hover {
-  background: rgba(200, 184, 154, 0.1);
-}
-
-html[data-theme="nier"] .dropdown,
-html[data-theme="nier"] .settings-dropdown {
-  background: #111008;
-  border: 0.5px solid rgba(200, 184, 154, 0.12);
-  color: #c8b89a;
-  font-family: "Share Tech Mono", "Courier New", monospace;
-}
-
-html[data-theme="nier"] .dropdown-item:hover {
-  background: rgba(200, 184, 154, 0.1);
+html[data-theme="nier"] .overlay-dialog {
+  background: #d6cfb5;
+  color: #3a3425;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
 }
 
 html[data-theme="nier"] .yuki-settings-search {
-  border-bottom: 1px solid rgba(70, 63, 46, 0.1);
+  border-bottom: 0.5px solid rgba(58, 52, 37, 0.1);
 }
 
 html[data-theme="nier"] .yuki-settings-search input {
-  background: rgba(70, 63, 46, 0.08);
-  border: 1px solid rgba(70, 63, 46, 0.15);
-  color: #463f2e;
+  background: rgba(58, 52, 37, 0.07);
+  border: 0.5px solid rgba(58, 52, 37, 0.14);
+  color: #3a3425;
+  font-family: "Share Tech Mono", "Courier New", monospace;
 }
 
 html[data-theme="nier"] .yuki-settings-search input:focus {
-  border-color: var(--brand);
-  background: rgba(70, 63, 46, 0.12);
+  border-color: #0e0d0a;
+  background: rgba(58, 52, 37, 0.11);
 }
 
 html[data-theme="nier"] .yuki-settings-search input::placeholder {
-  color: #8a8370;
+  color: #7a7362;
 }
 
 html[data-theme="nier"] .yuki-settings-nav li {
-  color: #463f2e;
+  color: #3a3425;
 }
 
 html[data-theme="nier"] .yuki-settings-nav li:hover {
-  background: rgba(70, 63, 46, 0.06);
-  color: #463f2e;
+  background: rgba(58, 52, 37, 0.06);
 }
 
 html[data-theme="nier"] .yuki-settings-nav li.active {
-  background: var(--brand-dim);
-  color: var(--text-primary);
+  background: rgba(14, 13, 10, 0.1);
+  color: #3a3425;
   font-weight: 600;
 }
 
-html[data-theme="nier"] * {
-  color: #463f2e !important;
+html[data-theme="nier"] ::-webkit-scrollbar-thumb {
+  background: rgba(58, 52, 37, 0.25);
 }
 
-html[data-theme="nier"] svg,
-html[data-theme="nier"] svg *,
-html[data-theme="nier"] i,
-html[data-theme="nier"] path,
-html[data-theme="nier"] circle,
-html[data-theme="nier"] rect,
-html[data-theme="nier"] polygon {
-  fill: #8a8370 !important;
-  stroke: #8a8370 !important;
-  color: #8a8370 !important;
-}
-
-html[data-theme="nier"] .window-header,
-html[data-theme="nier"] .window-header *,
-html[data-theme="nier"] .taskbar,
-html[data-theme="nier"] .taskbar *,
-html[data-theme="nier"] .context-menu,
-html[data-theme="nier"] .context-menu *,
-html[data-theme="nier"] .ntf-toast,
-html[data-theme="nier"] .ntf-toast *,
-html[data-theme="nier"] .dropdown,
-html[data-theme="nier"] .dropdown *,
-html[data-theme="nier"] .settings-dropdown,
-html[data-theme="nier"] .settings-dropdown * {
-  color: #c8b89a !important;
-}
-
-html[data-theme="nier"] .button-primary {
-  background: var(--brand) !important;
-  color: #c8b89a !important;
+html[data-theme="nier"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(58, 52, 37, 0.4);
 }
 
 html[data-theme="nier"] input,
 html[data-theme="nier"] textarea,
 html[data-theme="nier"] select {
-  color: #463f2e !important;
+  color: #3a3425;
 }
 
 html[data-theme="nier"] input::placeholder,
 html[data-theme="nier"] textarea::placeholder {
-  color: #8a8370 !important;
+  color: #7a7362;
 }
 
-html[data-theme="nier"] .games-app-card-img-wrap,
-html[data-theme="nier"] .system-apps-window .games-app-card-img-wrap {
-  background: transparent !important;
-  border-color: transparent !important;
+html[data-theme="nier"] .games-app-card-img-wrap {
+  background: transparent;
+  border-color: transparent;
 }
 
 html[data-theme="eva-unit-01"] {
