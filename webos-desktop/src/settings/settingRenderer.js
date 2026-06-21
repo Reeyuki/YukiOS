@@ -3,8 +3,9 @@ import { audioMixer } from "../audioMixer.js";
 import { resolveGhUrl } from "../shared/assetResolver.js";
 import { YUKIOS_VERSION } from "../apps/about.js";
 import { getBasicThemes, getSpecialThemes, getCustomThemes } from "../shared/themeEngine.js";
-
 import { StorageKeys, os } from "../framework.js";
+import { renderSelectMenu } from "../shared/selectMenu.js";
+import { renderRangeSlider } from "../shared/rangeSlider.js";
 export function buildSettingsHTML(settings, wm) {
   return `
   <div class="window-header">
@@ -217,7 +218,7 @@ export function renderSystemSettings(s) {
             <span class="settings-label-desc">Time in seconds before a notification expires</span>
           </div>
           <div class="settings-range-group" style="display: flex; align-items: center; gap: 12px;">
-            <input type="range" id="settingsNotificationsDuration" min="1" max="30" step="1" value="${s.notificationsDuration}" style="width: 120px;"/>
+            ${renderRangeSlider("settingsNotificationsDuration", 1, 30, 1, s.notificationsDuration)}
             <span class="settings-range-value" id="settingsNotificationsDurationVal" style="min-width: 24px; text-align: right; font-size: 0.9em; font-weight: 500;">${s.notificationsDuration}s</span>
           </div>
         </div>
@@ -226,12 +227,16 @@ export function renderSystemSettings(s) {
             <span class="settings-label-title">Notification Position</span>
             <span class="settings-label-desc">Choose which corner notifications appear in</span>
           </div>
-          <select id="settingsNotificationsPosition" class="settings-select">
-            <option value="bottom-right" ${s.notificationsPosition === "bottom-right" ? "selected" : ""}>Bottom Right (Default)</option>
-            <option value="bottom-left"  ${s.notificationsPosition === "bottom-left" ? "selected" : ""}>Bottom Left</option>
-            <option value="top-right"    ${s.notificationsPosition === "top-right" ? "selected" : ""}>Top Right</option>
-            <option value="top-left"     ${s.notificationsPosition === "top-left" ? "selected" : ""}>Top Left</option>
-          </select>
+          ${renderSelectMenu(
+            "settingsNotificationsPosition",
+            [
+              { value: "bottom-right", label: "Bottom Right (Default)" },
+              { value: "bottom-left", label: "Bottom Left" },
+              { value: "top-right", label: "Top Right" },
+              { value: "top-left", label: "Top Left" }
+            ],
+            s.notificationsPosition
+          )}
         </div>
       </div>
     </div>
@@ -297,7 +302,7 @@ export function renderDesktopSettings(s) {
             <span class="settings-label-desc">Adjust the size of desktop icons</span>
           </div>
           <div class="settings-range-group">
-            <input id="settingsDesktopIconSize" type="range" min="32" max="128" step="8" value="${s.desktopIconSize}"/>
+            ${renderRangeSlider("settingsDesktopIconSize", 32, 128, 8, s.desktopIconSize)}
             <span id="settingsDesktopIconSizeValue" class="settings-range-value">${s.desktopIconSize}px</span>
           </div>
         </div>
@@ -307,7 +312,7 @@ export function renderDesktopSettings(s) {
             <span class="settings-label-desc">Scale the size of the taskbar</span>
           </div>
           <div class="settings-range-group">
-            <input id="settingsTaskbarScale" type="range" min="50" max="200" step="10" value="${s.taskbarScale}"/>
+            ${renderRangeSlider("settingsTaskbarScale", 50, 200, 10, s.taskbarScale)}
             <span id="settingsTaskbarScaleValue" class="settings-range-value">${s.taskbarScale}%</span>
           </div>
         </div>
@@ -321,7 +326,7 @@ export function renderDesktopSettings(s) {
             <span class="settings-label-desc">Adjust the width of the start menu</span>
           </div>
           <div class="settings-range-group">
-            <input id="settingsStartMenuWidth" type="range" min="400" max="1000" step="10" value="${s.startMenuWidth}"/>
+            ${renderRangeSlider("settingsStartMenuWidth", 400, 1000, 10, s.startMenuWidth)}
             <span id="settingsStartMenuWidthValue" class="settings-range-value">${s.startMenuWidth}px</span>
           </div>
         </div>
@@ -331,7 +336,7 @@ export function renderDesktopSettings(s) {
             <span class="settings-label-desc">Adjust the height of the start menu</span>
           </div>
           <div class="settings-range-group">
-            <input id="settingsStartMenuHeight" type="range" min="300" max="900" step="10" value="${s.startMenuHeight}"/>
+            ${renderRangeSlider("settingsStartMenuHeight", 300, 900, 10, s.startMenuHeight)}
             <span id="settingsStartMenuHeightValue" class="settings-range-value">${s.startMenuHeight}px</span>
           </div>
         </div>
@@ -393,20 +398,28 @@ export function renderDesktopSettings(s) {
             <span class="settings-label-title">Switching Logic</span>
             <span class="settings-label-desc">Order mode for cycling through windows</span>
           </div>
-          <select id="settingsWindowSwitcherMode" class="settings-select">
-            <option value="mru"   ${s.windowSwitcherMode === "mru" ? "selected" : ""}>Most Recently Used (MRU)</option>
-            <option value="stack" ${s.windowSwitcherMode === "stack" ? "selected" : ""}>Cycle / Stack Order</option>
-          </select>
+          ${renderSelectMenu(
+            "settingsWindowSwitcherMode",
+            [
+              { value: "mru", label: "Most Recently Used (MRU)" },
+              { value: "stack", label: "Cycle / Stack Order" }
+            ],
+            s.windowSwitcherMode
+          )}
         </div>
         <div class="settings-row">
           <div class="settings-label-group">
             <span class="settings-label-title">UI Display Mode</span>
             <span class="settings-label-desc">Visual representation while cycling</span>
           </div>
-          <select id="settingsWindowSwitcherUI" class="settings-select">
-            <option value="overlay"  ${s.windowSwitcherUI === "overlay" ? "selected" : ""}>App Switcher Overlay (shows previews)</option>
-            <option value="direct"   ${s.windowSwitcherUI === "direct" ? "selected" : ""}>Fast Switching (no visual UI)</option>
-          </select>
+          ${renderSelectMenu(
+            "settingsWindowSwitcherUI",
+            [
+              { value: "overlay", label: "App Switcher Overlay (shows previews)" },
+              { value: "direct", label: "Fast Switching (no visual UI)" }
+            ],
+            s.windowSwitcherUI
+          )}
         </div>
         <div class="settings-row">
           <div class="settings-label-group">
@@ -543,7 +556,7 @@ export function renderAppearanceSettings(s) {
             <span class="settings-label-desc">Adjust window opacity</span>
           </div>
           <div class="settings-range-group">
-            <input id="settingsWindowTransparency" type="range" min="20" max="100" step="1" value="${Math.round(s.windowTransparency * 100)}"/>
+            ${renderRangeSlider("settingsWindowTransparency", 20, 100, 1, Math.round(s.windowTransparency * 100))}
             <span id="settingsWindowTransparencyValue" class="settings-range-value">${Math.round(s.windowTransparency * 100)}%</span>
           </div>
         </div>
@@ -563,7 +576,7 @@ export function renderAppearanceSettings(s) {
             <span class="settings-label-desc">Scale the entire interface</span>
           </div>
           <div class="settings-range-group">
-            <input id="settingsGuiScale" type="range" min="50" max="150" step="5" value="${s.guiScale}"/>
+            ${renderRangeSlider("settingsGuiScale", 50, 150, 5, s.guiScale)}
             <span id="settingsGuiScaleValue" class="settings-range-value">${s.guiScale}%</span>
           </div>
         </div>
@@ -573,7 +586,7 @@ export function renderAppearanceSettings(s) {
             <span class="settings-label-desc">Adjust the base font size</span>
           </div>
           <div class="settings-range-group">
-            <input id="settingsFontSize" type="range" min="75" max="150" step="5" value="${s.fontSize}"/>
+            ${renderRangeSlider("settingsFontSize", 75, 150, 5, s.fontSize)}
             <span id="settingsFontSizeValue" class="settings-range-value">${s.fontSize}%</span>
           </div>
         </div>
@@ -611,68 +624,84 @@ export function renderAppearanceSettings(s) {
             <span class="settings-label-title">Open Animation</span>
             <span class="settings-label-desc">Effect when a window opens or is restored</span>
           </div>
-          <select id="settingsOpenAnimation" class="settings-select">
-            <option value="instant"        ${(os.storage.get(StorageKeys.windowOpenAnimation) || "scaleCenter") === "instant" ? "selected" : ""}>Instant (No Animation)</option>
-            <option value="fade"           ${(os.storage.get(StorageKeys.windowOpenAnimation) || "scaleCenter") === "fade" ? "selected" : ""}>Fade In</option>
-            <option value="scaleCenter"    ${(os.storage.get(StorageKeys.windowOpenAnimation) || "scaleCenter") === "scaleCenter" ? "selected" : ""}>Scale Center</option>
-            <option value="scaleFromSource"${(os.storage.get(StorageKeys.windowOpenAnimation) || "scaleCenter") === "scaleFromSource" ? "selected" : ""}>Scale From Taskbar</option>
-            <option value="slideUp"        ${(os.storage.get(StorageKeys.windowOpenAnimation) || "scaleCenter") === "slideUp" ? "selected" : ""}>Slide Up</option>
-            <option value="slideLeft"      ${(os.storage.get(StorageKeys.windowOpenAnimation) || "scaleCenter") === "slideLeft" ? "selected" : ""}>Slide In From Left</option>
-            <option value="slideRight"     ${(os.storage.get(StorageKeys.windowOpenAnimation) || "scaleCenter") === "slideRight" ? "selected" : ""}>Slide In From Right</option>
-            <option value="glassBlurin"    ${(os.storage.get(StorageKeys.windowOpenAnimation) || "scaleCenter") === "glassBlurin" ? "selected" : ""}>Glass Blur Transition</option>
-            <option value="elasticBounce"  ${(os.storage.get(StorageKeys.windowOpenAnimation) || "scaleCenter") === "elasticBounce" ? "selected" : ""}>Elastic Bounce</option>
-            <option value="blurReveal"     ${(os.storage.get(StorageKeys.windowOpenAnimation) || "scaleCenter") === "blurReveal" ? "selected" : ""}>Blur Reveal</option>
-            <option value="perspective3D"  ${(os.storage.get(StorageKeys.windowOpenAnimation) || "scaleCenter") === "perspective3D" ? "selected" : ""}>Perspective 3D</option>
-            <option value="cornerUnfold"   ${(os.storage.get(StorageKeys.windowOpenAnimation) || "scaleCenter") === "cornerUnfold" ? "selected" : ""}>Corner Unfold</option>
-          </select>
+          ${renderSelectMenu(
+            "settingsOpenAnimation",
+            [
+              { value: "instant", label: "Instant (No Animation)" },
+              { value: "fade", label: "Fade In" },
+              { value: "scaleCenter", label: "Scale Center" },
+              { value: "scaleFromSource", label: "Scale From Taskbar" },
+              { value: "slideUp", label: "Slide Up" },
+              { value: "slideLeft", label: "Slide In From Left" },
+              { value: "slideRight", label: "Slide In From Right" },
+              { value: "glassBlurin", label: "Glass Blur Transition" },
+              { value: "elasticBounce", label: "Elastic Bounce" },
+              { value: "blurReveal", label: "Blur Reveal" },
+              { value: "perspective3D", label: "Perspective 3D" },
+              { value: "cornerUnfold", label: "Corner Unfold" }
+            ],
+            os.storage.get(StorageKeys.windowOpenAnimation) || "scaleCenter"
+          )}
         </div>
         <div class="settings-row">
           <div class="settings-label-group">
             <span class="settings-label-title">Close Animation</span>
             <span class="settings-label-desc">Effect when a window is closed</span>
           </div>
-          <select id="settingsCloseAnimation" class="settings-select">
-            <option value="instant"        ${(os.storage.get(StorageKeys.windowCloseAnimation) || "scaleDownCenter") === "instant" ? "selected" : ""}>Instant (No Animation)</option>
-            <option value="scaleDownCenter"${(os.storage.get(StorageKeys.windowCloseAnimation) || "scaleDownCenter") === "scaleDownCenter" ? "selected" : ""}>Scale Down Center</option>
-            <option value="scaleToOrigin"  ${(os.storage.get(StorageKeys.windowCloseAnimation) || "scaleDownCenter") === "scaleToOrigin" ? "selected" : ""}>Scale to Taskbar Origin</option>
-            <option value="fadeOut"        ${(os.storage.get(StorageKeys.windowCloseAnimation) || "scaleDownCenter") === "fadeOut" ? "selected" : ""}>Fade Out Only</option>
-            <option value="slideDown"      ${(os.storage.get(StorageKeys.windowCloseAnimation) || "scaleDownCenter") === "slideDown" ? "selected" : ""}>Slide Down Exit</option>
-            <option value="burn"           ${(os.storage.get(StorageKeys.windowCloseAnimation) || "scaleDownCenter") === "burn" ? "selected" : ""}>Window Burn Close</option>
-            <option value="shrinkToPoint"  ${(os.storage.get(StorageKeys.windowCloseAnimation) || "scaleDownCenter") === "shrinkToPoint" ? "selected" : ""}>Shrink to Point</option>
-            <option value="dissolveBlur"   ${(os.storage.get(StorageKeys.windowCloseAnimation) || "scaleDownCenter") === "dissolveBlur" ? "selected" : ""}>Dissolve with Blur</option>
-          </select>
+          ${renderSelectMenu(
+            "settingsCloseAnimation",
+            [
+              { value: "instant", label: "Instant (No Animation)" },
+              { value: "scaleDownCenter", label: "Scale Down Center" },
+              { value: "scaleToOrigin", label: "Scale to Taskbar Origin" },
+              { value: "fadeOut", label: "Fade Out Only" },
+              { value: "slideDown", label: "Slide Down Exit" },
+              { value: "burn", label: "Window Burn Close" },
+              { value: "shrinkToPoint", label: "Shrink to Point" },
+              { value: "dissolveBlur", label: "Dissolve with Blur" }
+            ],
+            os.storage.get(StorageKeys.windowCloseAnimation) || "scaleDownCenter"
+          )}
         </div>
         <div class="settings-row">
           <div class="settings-label-group">
             <span class="settings-label-title">Minimize Animation</span>
             <span class="settings-label-desc">Effect when a window is minimized</span>
           </div>
-          <select id="settingsMinimizeAnimation" class="settings-select">
-            <option value="instant"       ${(os.storage.get(StorageKeys.windowMinimizeAnimation) || "taskbarShrink") === "instant" ? "selected" : ""}>Instant (No Animation)</option>
-            <option value="taskbarShrink" ${(os.storage.get(StorageKeys.windowMinimizeAnimation) || "taskbarShrink") === "taskbarShrink" ? "selected" : ""}>Taskbar Shrink</option>
-            <option value="dockZoomShrink"${(os.storage.get(StorageKeys.windowMinimizeAnimation) || "taskbarShrink") === "dockZoomShrink" ? "selected" : ""}>Dock Zoom Shrink</option>
-            <option value="magicLamp"     ${(os.storage.get(StorageKeys.windowMinimizeAnimation) || "taskbarShrink") === "magicLamp" ? "selected" : ""}>Magic Lamp Warp</option>
-            <option value="fadeToTaskbar" ${(os.storage.get(StorageKeys.windowMinimizeAnimation) || "taskbarShrink") === "fadeToTaskbar" ? "selected" : ""}>Fade to Taskbar</option>
-            <option value="elasticStretch"${(os.storage.get(StorageKeys.windowMinimizeAnimation) || "taskbarShrink") === "elasticStretch" ? "selected" : ""}>Elastic Stretch</option>
-            <option value="spiralDown"    ${(os.storage.get(StorageKeys.windowMinimizeAnimation) || "taskbarShrink") === "spiralDown" ? "selected" : ""}>Spiral Down</option>
-          </select>
+          ${renderSelectMenu(
+            "settingsMinimizeAnimation",
+            [
+              { value: "instant", label: "Instant (No Animation)" },
+              { value: "taskbarShrink", label: "Taskbar Shrink" },
+              { value: "dockZoomShrink", label: "Dock Zoom Shrink" },
+              { value: "magicLamp", label: "Magic Lamp Warp" },
+              { value: "fadeToTaskbar", label: "Fade to Taskbar" },
+              { value: "elasticStretch", label: "Elastic Stretch" },
+              { value: "spiralDown", label: "Spiral Down" }
+            ],
+            os.storage.get(StorageKeys.windowMinimizeAnimation) || "taskbarShrink"
+          )}
         </div>
         <div class="settings-row">
           <div class="settings-label-group">
             <span class="settings-label-title">Animation Speed</span>
             <span class="settings-label-desc">Control how fast window animations play</span>
           </div>
-          <select id="settingsAnimationSpeed" class="settings-select">
-            <option value="slow"      ${(os.storage.get(StorageKeys.windowAnimationSpeed) || "normal") === "slow" ? "selected" : ""}>Slow (0.5x)</option>
-            <option value="normal"    ${(os.storage.get(StorageKeys.windowAnimationSpeed) || "normal") === "normal" ? "selected" : ""}>Normal (1x)</option>
-            <option value="fast"      ${(os.storage.get(StorageKeys.windowAnimationSpeed) || "normal") === "fast" ? "selected" : ""}>Fast (1.5x)</option>
-            <option value="very_fast" ${(os.storage.get(StorageKeys.windowAnimationSpeed) || "normal") === "very_fast" ? "selected" : ""}>Very Fast (2x)</option>
-          </select>
+          ${renderSelectMenu(
+            "settingsAnimationSpeed",
+            [
+              { value: "slow", label: "Slow (0.5x)" },
+              { value: "normal", label: "Normal (1x)" },
+              { value: "fast", label: "Fast (1.5x)" },
+              { value: "very_fast", label: "Very Fast (2x)" }
+            ],
+            os.storage.get(StorageKeys.windowAnimationSpeed) || "normal"
+          )}
         </div>
         <div class="settings-row">
           <div class="settings-label-group">
             <span class="settings-label-title">Click Bubble Feedback</span>
-            <span class="settings-label-desc">Show ripple effect under cursor on click (disabled by default)</span>
+            <span class="settings-label-desc">Show ripple effect under cursor on click.</span>
           </div>
           <label class="settings-toggle">
             <input type="checkbox" id="settingsClickBubble" ${os.storage.get(StorageKeys.clickBubbleFeedback) === "true" ? "checked" : ""}/>
@@ -704,7 +733,7 @@ export function renderAppearanceSettings(s) {
             <span class="settings-label-desc">Scale the uploaded cursor image</span>
           </div>
           <div class="settings-range-group">
-            <input id="settingsCursorSize" type="range" min="16" max="128" step="1" value="${s.cursorSize}" ${s.cursorDataUrl ? "" : "disabled"}/>
+            ${renderRangeSlider("settingsCursorSize", 16, 128, 1, s.cursorSize, !s.cursorDataUrl)}
             <span id="settingsCursorSizeValue" class="settings-range-value">${s.cursorSize}px</span>
           </div>
         </div>
@@ -835,9 +864,11 @@ export function renderNetworkSettings(s) {
             <span class="settings-label-title">CDN Mirror</span>
             <span class="settings-label-desc">Choose a mirror for fetching game assets</span>
           </div>
-          <select id="settingsCdnMirror" class="settings-select">
-            ${CDN_MIRRORS.map((m) => `<option value="${m.id}" ${s.cdnMirror === m.id ? "selected" : ""}>${m.name}</option>`).join("")}
-          </select>
+          ${renderSelectMenu(
+            "settingsCdnMirror",
+            CDN_MIRRORS.map((m) => ({ value: m.id, label: m.name })),
+            s.cdnMirror
+          )}
         </div>
       </div>
 
@@ -848,10 +879,11 @@ export function renderNetworkSettings(s) {
             <span class="settings-label-title">WISP Server</span>
             <span class="settings-label-desc">Choose a WISP proxy server for Scramjet</span>
           </div>
-          <select id="settingsWispServer" class="settings-select">
-            ${wispServers.map((w) => `<option value="${w.url}" ${currentWisp === w.url ? "selected" : ""}>${w.name}</option>`).join("")}
-            <option value="custom" ${isCustomWisp ? "selected" : ""}>Custom...</option>
-          </select>
+          ${renderSelectMenu(
+            "settingsWispServer",
+            [...wispServers.map((w) => ({ value: w.url, label: w.name })), { value: "custom", label: "Custom..." }],
+            currentWisp
+          )}
         </div>
         <div class="settings-row ${isCustomWisp ? "" : "hidden"}" id="settingsCustomWispRow">
           <div class="settings-label-group">
@@ -889,7 +921,7 @@ export function renderAudioSettings(s) {
             <span class="settings-label-desc">Global volume level for all apps</span>
           </div>
           <div class="settings-range-group">
-            <input id="settingsMasterVolume" type="range" min="0" max="100" step="1" value="${vol}" ${!s.soundEnabled ? "disabled" : ""}/>
+            ${renderRangeSlider("settingsMasterVolume", 0, 100, 1, vol, !s.soundEnabled)}
             <span id="settingsMasterVolumeValue" class="settings-range-value">${vol}%</span>
           </div>
         </div>
@@ -913,7 +945,7 @@ export function renderAudioSettings(s) {
             <span class="settings-label-desc">Volume for system sounds only</span>
           </div>
           <div class="settings-range-group">
-            <input id="settingsSystemVolume" type="range" min="0" max="100" step="1" value="${sysVol}" ${!s.systemAudioEnabled ? "disabled" : ""}/>
+            ${renderRangeSlider("settingsSystemVolume", 0, 100, 1, sysVol, !s.systemAudioEnabled)}
             <span id="settingsSystemVolumeValue" class="settings-range-value">${sysVol}%</span>
           </div>
         </div>

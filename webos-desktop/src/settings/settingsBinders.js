@@ -19,6 +19,8 @@ import {
 } from "./settingsApply.js";
 import { exportData, importData, deleteAllData } from "./settingsData.js";
 import { $, $$, bindEvent, toggleClass, setText, createElement, setHTML } from "../shared/domUtils.js";
+import { bindSelectMenu, getSelectMenuValue, setSelectMenuValue } from "../shared/selectMenu.js";
+import { bindRangeSlider, getRangeSliderValue, setRangeSliderValue } from "../shared/rangeSlider.js";
 import { addCustomTheme } from "../shared/themeEngine.js";
 
 export function bindNavigation(win) {
@@ -35,7 +37,17 @@ export function bindNavigation(win) {
       navItems.forEach((n) => n.classList.remove("active"));
       panes.forEach((p) => p.classList.remove("active"));
       item.classList.add("active");
-      $(`#${item.dataset.target}`, win)?.classList.add("active");
+      const target = $(`#${item.dataset.target}`, win);
+      if (target) {
+        target.classList.add("active");
+        target.animate(
+          [
+            { opacity: 0, transform: "scale(1.04)" },
+            { opacity: 1, transform: "scale(1)" }
+          ],
+          { duration: 250, easing: "ease" }
+        );
+      }
     });
   });
 
@@ -125,13 +137,13 @@ export function bindSystemCategory(win, save, settings, notificationCenter, show
   ];
   notificationSettings.forEach((id) => bindEvent($(id, win), "change", save));
 
-  const durationInput = $("#settingsNotificationsDuration", win);
+  const durationSlider = $("#settingsNotificationsDuration", win);
   const durationVal = $("#settingsNotificationsDurationVal", win);
-  if (durationInput) {
-    bindEvent(durationInput, "input", () => {
-      if (durationVal) setText(durationVal, `${durationInput.value}s`);
+  if (durationSlider) {
+    bindEvent(durationSlider, "input", () => {
+      if (durationVal) setText(durationVal, `${getRangeSliderValue("settingsNotificationsDuration", win)}s`);
     });
-    bindEvent(durationInput, "change", save);
+    bindEvent(durationSlider, "change", save);
   }
 
   const clipboardManagerToggle = $("#settingsClipboardManager", win);
@@ -174,7 +186,7 @@ export function bindDesktopCategory(win, save, settings, showSaved) {
   const widthValue = $("#settingsStartMenuWidthValue", win);
   if (widthSlider) {
     bindEvent(widthSlider, "input", () => {
-      if (widthValue) setText(widthValue, `${widthSlider.value}px`);
+      if (widthValue) setText(widthValue, `${getRangeSliderValue("settingsStartMenuWidth", win)}px`);
     });
     bindEvent(widthSlider, "change", save);
   }
@@ -183,7 +195,7 @@ export function bindDesktopCategory(win, save, settings, showSaved) {
   const heightValue = $("#settingsStartMenuHeightValue", win);
   if (heightSlider) {
     bindEvent(heightSlider, "input", () => {
-      if (heightValue) setText(heightValue, `${heightSlider.value}px`);
+      if (heightValue) setText(heightValue, `${getRangeSliderValue("settingsStartMenuHeight", win)}px`);
     });
     bindEvent(heightSlider, "change", save);
   }
@@ -192,10 +204,10 @@ export function bindDesktopCategory(win, save, settings, showSaved) {
   const iconSizeValue = $("#settingsDesktopIconSizeValue", win);
   if (iconSizeSlider) {
     bindEvent(iconSizeSlider, "input", () => {
-      if (iconSizeValue) setText(iconSizeValue, `${iconSizeSlider.value}px`);
+      if (iconSizeValue) setText(iconSizeValue, `${getRangeSliderValue("settingsDesktopIconSize", win)}px`);
     });
     bindEvent(iconSizeSlider, "change", () => {
-      const val = parseInt(iconSizeSlider.value);
+      const val = parseInt(getRangeSliderValue("settingsDesktopIconSize", win));
       settings.desktopIconSize = val;
       os.storage.set(StorageKeys.desktopIconSize, String(val));
       applyDesktopIconSize(val);
@@ -208,10 +220,10 @@ export function bindDesktopCategory(win, save, settings, showSaved) {
   const taskbarScaleValue = $("#settingsTaskbarScaleValue", win);
   if (taskbarScaleSlider) {
     bindEvent(taskbarScaleSlider, "input", () => {
-      if (taskbarScaleValue) setText(taskbarScaleValue, `${taskbarScaleSlider.value}%`);
+      if (taskbarScaleValue) setText(taskbarScaleValue, `${getRangeSliderValue("settingsTaskbarScale", win)}%`);
     });
     bindEvent(taskbarScaleSlider, "change", () => {
-      const val = parseInt(taskbarScaleSlider.value);
+      const val = parseInt(getRangeSliderValue("settingsTaskbarScale", win));
       settings.taskbarScale = val;
       os.storage.set(StorageKeys.taskbarScale, String(val));
       applyTaskbarScale(val);
@@ -238,8 +250,8 @@ export function bindDesktopCategory(win, save, settings, showSaved) {
   const windowSwitcherModeSelect = $("#settingsWindowSwitcherMode", win);
   if (windowSwitcherModeSelect) {
     bindEvent(windowSwitcherModeSelect, "change", () => {
-      settings.windowSwitcherMode = windowSwitcherModeSelect.value;
-      os.storage.set(StorageKeys.windowSwitcherMode, windowSwitcherModeSelect.value);
+      settings.windowSwitcherMode = getSelectMenuValue("settingsWindowSwitcherMode", win);
+      os.storage.set(StorageKeys.windowSwitcherMode, getSelectMenuValue("settingsWindowSwitcherMode", win));
       showSaved();
     });
   }
@@ -247,8 +259,8 @@ export function bindDesktopCategory(win, save, settings, showSaved) {
   const windowSwitcherUISelect = $("#settingsWindowSwitcherUI", win);
   if (windowSwitcherUISelect) {
     bindEvent(windowSwitcherUISelect, "change", () => {
-      settings.windowSwitcherUI = windowSwitcherUISelect.value;
-      os.storage.set(StorageKeys.windowSwitcherUI, windowSwitcherUISelect.value);
+      settings.windowSwitcherUI = getSelectMenuValue("settingsWindowSwitcherUI", win);
+      os.storage.set(StorageKeys.windowSwitcherUI, getSelectMenuValue("settingsWindowSwitcherUI", win));
       showSaved();
     });
   }
@@ -364,10 +376,10 @@ export function bindAppearanceCategory(
   const transparencyValue = $("#settingsWindowTransparencyValue", win);
   if (transparencySlider) {
     bindEvent(transparencySlider, "input", () => {
-      if (transparencyValue) setText(transparencyValue, `${transparencySlider.value}%`);
+      if (transparencyValue) setText(transparencyValue, `${getRangeSliderValue("settingsWindowTransparency", win)}%`);
     });
     bindEvent(transparencySlider, "change", () => {
-      const val = parseInt(transparencySlider.value) / 100;
+      const val = getRangeSliderValue("settingsWindowTransparency", win) / 100;
       settings.windowTransparency = val;
       os.storage.set(StorageKeys.windowTransparency, String(val));
       applyWindowTransparency(val);
@@ -390,10 +402,10 @@ export function bindAppearanceCategory(
   const guiScaleValue = $("#settingsGuiScaleValue", win);
   if (guiScaleSlider) {
     bindEvent(guiScaleSlider, "input", () => {
-      if (guiScaleValue) setText(guiScaleValue, `${guiScaleSlider.value}%`);
+      if (guiScaleValue) setText(guiScaleValue, `${getRangeSliderValue("settingsGuiScale", win)}%`);
     });
     bindEvent(guiScaleSlider, "change", () => {
-      const val = parseInt(guiScaleSlider.value);
+      const val = getRangeSliderValue("settingsGuiScale", win);
       settings.guiScale = val;
       os.storage.set(StorageKeys.guiScale, String(val));
       applyGuiScale(val);
@@ -405,10 +417,10 @@ export function bindAppearanceCategory(
   const fontSizeValue = $("#settingsFontSizeValue", win);
   if (fontSizeSlider) {
     bindEvent(fontSizeSlider, "input", () => {
-      if (fontSizeValue) setText(fontSizeValue, `${fontSizeSlider.value}%`);
+      if (fontSizeValue) setText(fontSizeValue, `${getRangeSliderValue("settingsFontSize", win)}%`);
     });
     bindEvent(fontSizeSlider, "change", () => {
-      const val = parseInt(fontSizeSlider.value);
+      const val = getRangeSliderValue("settingsFontSize", win);
       settings.fontSize = val;
       os.storage.set(StorageKeys.fontSize, String(val));
       applyFontSize(val);
@@ -432,7 +444,7 @@ export function bindAppearanceCategory(
   const openAnimSelect = $("#settingsOpenAnimation", win);
   if (openAnimSelect) {
     bindEvent(openAnimSelect, "change", () => {
-      os.storage.set(StorageKeys.windowOpenAnimation, openAnimSelect.value);
+      os.storage.set(StorageKeys.windowOpenAnimation, getSelectMenuValue("settingsOpenAnimation", win));
       showSaved();
     });
   }
@@ -440,7 +452,7 @@ export function bindAppearanceCategory(
   const closeAnimSelect = $("#settingsCloseAnimation", win);
   if (closeAnimSelect) {
     bindEvent(closeAnimSelect, "change", () => {
-      os.storage.set(StorageKeys.windowCloseAnimation, closeAnimSelect.value);
+      os.storage.set(StorageKeys.windowCloseAnimation, getSelectMenuValue("settingsCloseAnimation", win));
       showSaved();
     });
   }
@@ -448,7 +460,7 @@ export function bindAppearanceCategory(
   const minimizeAnimSelect = $("#settingsMinimizeAnimation", win);
   if (minimizeAnimSelect) {
     bindEvent(minimizeAnimSelect, "change", () => {
-      os.storage.set(StorageKeys.windowMinimizeAnimation, minimizeAnimSelect.value);
+      os.storage.set(StorageKeys.windowMinimizeAnimation, getSelectMenuValue("settingsMinimizeAnimation", win));
       showSaved();
     });
   }
@@ -456,7 +468,7 @@ export function bindAppearanceCategory(
   const animationSpeedSelect = $("#settingsAnimationSpeed", win);
   if (animationSpeedSelect) {
     bindEvent(animationSpeedSelect, "change", () => {
-      os.storage.set(StorageKeys.windowAnimationSpeed, animationSpeedSelect.value);
+      os.storage.set(StorageKeys.windowAnimationSpeed, getSelectMenuValue("settingsAnimationSpeed", win));
       showSaved();
     });
   }
@@ -526,8 +538,14 @@ function bindCursorControls(win, settings, showSaved, normalizeCursorDataUrl) {
   const cursorUploadBtn = $("#settingsCursorUploadBtn", win);
   const cursorClearBtn = $("#settingsCursorClearBtn", win);
   const cursorStatus = $("#settingsCursorStatus", win);
-  const cursorSizeInput = $("#settingsCursorSize", win);
+  const cursorSizeSlider = $("#settingsCursorSize", win);
   const cursorSizeValue = $("#settingsCursorSizeValue", win);
+
+  const setCursorDisabled = (disabled) => {
+    if (cursorSizeSlider) {
+      toggleClass(cursorSizeSlider, "range-slider--disabled", disabled);
+    }
+  };
 
   const setCursor = (dataUrl, originalDataUrl = null) => {
     const cursorDataUrl = typeof dataUrl === "string" ? dataUrl : "";
@@ -551,7 +569,7 @@ function bindCursorControls(win, settings, showSaved, normalizeCursorDataUrl) {
 
     if (cursorClearBtn) cursorClearBtn.disabled = !cursorDataUrl;
     if (cursorStatus) setText(cursorStatus, cursorDataUrl ? "Custom cursor enabled" : "Default cursor");
-    if (cursorSizeInput) cursorSizeInput.disabled = !cursorDataUrl;
+    setCursorDisabled(!cursorDataUrl);
     showSaved();
   };
 
@@ -620,18 +638,18 @@ function bindCursorControls(win, settings, showSaved, normalizeCursorDataUrl) {
       try {
         os.storage.remove(StorageKeys.cursorSizeKey);
       } catch {}
-      if (cursorSizeInput) cursorSizeInput.value = "32";
+      setRangeSliderValue("settingsCursorSize", 32, win);
       if (cursorSizeValue) setText(cursorSizeValue, "32px");
       settings.cursorSize = 32;
       setCursor("", "");
     });
   }
 
-  if (cursorSizeInput) {
-    bindEvent(cursorSizeInput, "input", () => {
-      if (cursorSizeValue) setText(cursorSizeValue, `${cursorSizeInput.value}px`);
+  if (cursorSizeSlider) {
+    bindEvent(cursorSizeSlider, "input", () => {
+      if (cursorSizeValue) setText(cursorSizeValue, `${getRangeSliderValue("settingsCursorSize", win)}px`);
     });
-    bindEvent(cursorSizeInput, "change", () => setCursorSize(cursorSizeInput.value));
+    bindEvent(cursorSizeSlider, "change", () => setCursorSize(getRangeSliderValue("settingsCursorSize", win)));
   }
 
   const mikuCursorToggle = $("#settingsMikuCursor", win);
@@ -768,7 +786,7 @@ export function bindNetworkCategory(win, save, settings, showSaved) {
 
   if (wispServerSelect && customWispRow && customWispUrl) {
     bindEvent(wispServerSelect, "change", () => {
-      const value = wispServerSelect.value;
+      const value = getSelectMenuValue("settingsWispServer", win);
       if (value === "custom") {
         customWispRow.classList.remove("hidden");
         customWispUrl.focus();
@@ -804,7 +822,7 @@ export function bindAudioCategory(win, settings, showSaved) {
       const enabled = soundToggle.checked;
       settings.soundEnabled = enabled;
       os.storage.set(StorageKeys.soundEnabled, String(enabled));
-      if (volumeSlider) volumeSlider.disabled = !enabled;
+      if (volumeSlider) toggleClass(volumeSlider, "range-slider--disabled", !enabled);
       audioMixer().setMaster(enabled ? settings.masterVolume : 0);
       showSaved();
     });
@@ -812,10 +830,10 @@ export function bindAudioCategory(win, settings, showSaved) {
 
   if (volumeSlider) {
     bindEvent(volumeSlider, "input", () => {
-      if (volumeValue) setText(volumeValue, `${volumeSlider.value}%`);
+      if (volumeValue) setText(volumeValue, `${getRangeSliderValue("settingsMasterVolume", win)}%`);
     });
     bindEvent(volumeSlider, "change", () => {
-      const val = parseInt(volumeSlider.value) / 100;
+      const val = getRangeSliderValue("settingsMasterVolume", win) / 100;
       settings.masterVolume = val;
       os.storage.set(StorageKeys.masterVolume, String(val));
       if (settings.soundEnabled) audioMixer().setMaster(val);
@@ -829,17 +847,17 @@ export function bindAudioCategory(win, settings, showSaved) {
       settings.systemAudioEnabled = enabled;
       audioMixer().systemAudioEnabled = enabled;
       os.storage.set(StorageKeys.systemAudioEnabled, String(enabled));
-      if (systemVolumeSlider) systemVolumeSlider.disabled = !enabled;
+      if (systemVolumeSlider) toggleClass(systemVolumeSlider, "range-slider--disabled", !enabled);
       showSaved();
     });
   }
 
   if (systemVolumeSlider) {
     bindEvent(systemVolumeSlider, "input", () => {
-      if (systemVolumeValue) setText(systemVolumeValue, `${systemVolumeSlider.value}%`);
+      if (systemVolumeValue) setText(systemVolumeValue, `${getRangeSliderValue("settingsSystemVolume", win)}%`);
     });
     bindEvent(systemVolumeSlider, "change", () => {
-      const val = parseInt(systemVolumeSlider.value) / 100;
+      const val = getRangeSliderValue("settingsSystemVolume", win) / 100;
       settings.systemVolume = val;
       audioMixer().systemVolume = val;
       os.storage.set(StorageKeys.systemVolume, String(val));

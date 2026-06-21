@@ -96,7 +96,7 @@ export class InputHandler {
     const otherMods = e.altKey || e.metaKey || e.shiftKey;
     if (otherMods) return false;
 
-    if (key !== "Control" && e.ctrlKey) return false;
+    if (e.key !== "Control" && e.ctrlKey) return false;
 
     const active = document.activeElement;
     if (active) {

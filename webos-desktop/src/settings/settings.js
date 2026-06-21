@@ -33,6 +33,8 @@ import {
   bindAudioCategory
 } from "./settingsBinders.js";
 import { exportData, importData, deleteAllData } from "./settingsData.js";
+import { bindSelectMenu, getSelectMenuValue } from "../shared/selectMenu.js";
+import { bindRangeSlider, getRangeSliderValue } from "../shared/rangeSlider.js";
 
 export { StorageKeys };
 
@@ -218,21 +220,21 @@ export class SettingsApp extends BaseApp {
       const adsDisabled = !gc("#settingsAds");
       const disableDesktopStretchScroll = !!gc("#settingsDisableDesktopStretchScroll");
       const showWorkspace = gc("#settingsShowWorkspace") ?? true;
-      const cdnMirror = g("#settingsCdnMirror")?.value ?? "jsdelivr";
+      const cdnMirror = getSelectMenuValue("settingsCdnMirror", win) ?? "jsdelivr";
       const selectedAlignment =
         win.querySelector(".settings-btn[data-alignment].active")?.dataset.alignment || "center";
       const notificationsEnabled = !!gc("#settingsNotificationsEnabled");
       const notificationsRemoveTimeout = !!gc("#settingsNotificationsRemoveTimeout");
       const notificationsPopAnimation = !!gc("#settingsNotificationsPopAnimation");
       const notificationsOverFullscreen = !!gc("#settingsNotificationsOverFullscreen");
-      const notificationsDuration = Number(g("#settingsNotificationsDuration")?.value) || 5;
-      const notificationsPosition = g("#settingsNotificationsPosition")?.value || "bottom-right";
+      const notificationsDuration = Number(getRangeSliderValue("settingsNotificationsDuration", win)) || 5;
+      const notificationsPosition = getSelectMenuValue("settingsNotificationsPosition", win) || "bottom-right";
       const transparentUI = !!gc("#settingsTransparentUI");
       const disableBootScreen = !!gc("#settingsDisableBootScreen");
       const windowSessionPersistence = !!gc("#settingsWindowSessionPersistence");
       const selectedTurboMode = win.querySelector(".settings-btn[data-turbo-val].active")?.dataset.turboVal || "high";
-      const startMenuWidth = Number(g("#settingsStartMenuWidth")?.value) || 650;
-      const startMenuHeight = Number(g("#settingsStartMenuHeight")?.value) || 500;
+      const startMenuWidth = Number(getRangeSliderValue("settingsStartMenuWidth", win)) || 650;
+      const startMenuHeight = Number(getRangeSliderValue("settingsStartMenuHeight", win)) || 500;
       const selectedFontFamily =
         win.querySelector(".settings-btn[data-font-family].active")?.dataset.fontFamily || "poppins";
 
@@ -268,8 +270,8 @@ export class SettingsApp extends BaseApp {
       os.storage.set(StorageKeys.startMenuHeight, String(startMenuHeight));
       os.storage.set(StorageKeys.startMenuCats, startMenuCats);
       os.storage.set(StorageKeys.cursorEffectEnabled, String(cursorEffectEnabled));
-      os.storage.set(StorageKeys.desktopIconSize, String(settings.desktopIconSize));
-      os.storage.set(StorageKeys.taskbarScale, String(settings.taskbarScale));
+      os.storage.set(StorageKeys.desktopIconSize, String(this._settings.desktopIconSize));
+      os.storage.set(StorageKeys.taskbarScale, String(this._settings.taskbarScale));
 
       Object.assign(this._settings, {
         weather,
@@ -320,6 +322,8 @@ export class SettingsApp extends BaseApp {
     const save = this._buildSaveCallback(win);
 
     bindNavigation(win);
+    bindSelectMenu(win);
+    bindRangeSlider(win);
 
     bindSystemCategory(win, save, this._settings, this._notificationCenter, showSaved);
 
