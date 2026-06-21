@@ -2211,3 +2211,47 @@ html[data-theme="light"] .signal-bar.active {
 html[data-theme="light"] .network-badge {
   background: rgba(124, 58, 237, 0.9);
 }
+
+#taskbar:not(.position-left):not(.position-right) #taskbar-windows {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+#taskbar:not(.position-left):not(.position-right) #taskbar-windows::-webkit-scrollbar {
+  display: none;
+}
+
+.taskbar-scroll-indicator {
+  position: absolute;
+  bottom: 2px;
+  height: 3px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 5;
+  overflow: hidden;
+}
+
+.taskbar-scroll-indicator.visible {
+  opacity: 1;
+}
+
+.taskbar-scroll-indicator-thumb {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--glass-border);
+  min-width: 24px;
+  transition: width 0.12s ease;
+}
+
+#taskbar.position-top .taskbar-scroll-indicator {
+  bottom: auto;
+  top: 2px;
+}
+
+html[data-theme="light"] .taskbar-scroll-indicator-thumb {
+  background: rgba(0, 0, 0, 0.2);
+}

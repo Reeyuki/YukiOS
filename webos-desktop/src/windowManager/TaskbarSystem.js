@@ -10,6 +10,79 @@ export class TaskbarSystem {
   constructor(manager) {
     this.manager = manager;
     this._contextMenuOpen = false;
+    setTimeout(() => this._initScrollHandling(), 0);
+  }
+
+  _initScrollHandling() {
+    if (this._scrollInitDone) return;
+    const taskbar = document.getElementById("taskbar");
+    const taskbarWindows = document.getElementById("taskbar-windows");
+    if (!taskbar || !taskbarWindows) return;
+    this._scrollInitDone = true;
+
+    const indicator = document.createElement("div");
+    indicator.className = "taskbar-scroll-indicator";
+    const thumb = document.createElement("div");
+    thumb.className = "taskbar-scroll-indicator-thumb";
+    indicator.appendChild(thumb);
+    taskbar.appendChild(indicator);
+
+    const reposition = () => {
+      const tw = taskbarWindows.getBoundingClientRect();
+      const tb = taskbar.getBoundingClientRect();
+      indicator.style.left = `${tw.left - tb.left}px`;
+      indicator.style.right = `${tb.right - tw.right}px`;
+    };
+
+    const update = () => {
+      const horiz = !taskbar.classList.contains("position-left") && !taskbar.classList.contains("position-right");
+      if (!horiz) {
+        indicator.classList.remove("visible");
+        return;
+      }
+      if (taskbarWindows.scrollWidth <= taskbarWindows.clientWidth) {
+        indicator.classList.remove("visible");
+        return;
+      }
+      indicator.classList.add("visible");
+      const sl = taskbarWindows.scrollLeft;
+      const maxSl = taskbarWindows.scrollWidth - taskbarWindows.clientWidth;
+      const iw = indicator.clientWidth;
+      const tw2 = Math.max(24, (taskbarWindows.clientWidth / taskbarWindows.scrollWidth) * iw);
+      thumb.style.width = `${tw2}px`;
+      thumb.style.transform = `translateX(${(sl / maxSl) * (iw - tw2)}px)`;
+    };
+
+    taskbarWindows.addEventListener(
+      "wheel",
+      (e) => {
+        const horiz = !taskbar.classList.contains("position-left") && !taskbar.classList.contains("position-right");
+        if (!horiz) return;
+        if (taskbarWindows.scrollWidth <= taskbarWindows.clientWidth) return;
+        e.preventDefault();
+        taskbarWindows.scrollLeft += e.deltaY + e.deltaX;
+      },
+      { passive: false }
+    );
+
+    taskbarWindows.addEventListener("scroll", update);
+
+    const ro = new ResizeObserver(() => {
+      reposition();
+      update();
+    });
+    ro.observe(taskbarWindows);
+    ro.observe(taskbar);
+    const mo = new MutationObserver(() => {
+      reposition();
+      update();
+    });
+    mo.observe(taskbarWindows, { childList: true, subtree: true, attributes: true });
+
+    requestAnimationFrame(() => {
+      reposition();
+      update();
+    });
   }
 
   updateTaskbarAlignment() {
