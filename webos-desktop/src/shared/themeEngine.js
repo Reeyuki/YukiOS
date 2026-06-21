@@ -1,4 +1,5 @@
 import { StorageKeys, os } from "../framework.js";
+
 const BUILTIN_THEMES = [
   { value: "dark", icon: "fas fa-moon", label: "Dark", category: "basic" },
   { value: "light", icon: "fas fa-sun", label: "Light", category: "basic" },
@@ -7,9 +8,7 @@ const BUILTIN_THEMES = [
   { value: "arctic", icon: "fas fa-snowflake", label: "Arctic", category: "special" },
   { value: "crt", icon: "fas fa-terminal", label: "CRT", category: "special" },
   { value: "sakura", icon: "fas fa-fan", label: "Sakura", category: "special" },
-  { value: "cherry", icon: "fas fa-heart", label: "Cherry", category: "special" },
   { value: "oled", icon: "fas fa-tv", label: "OLED", category: "special" },
-  { value: "synthwave", icon: "fas fa-music", label: "Synthwave", category: "special" },
   { value: "nordic", icon: "fas fa-mountain", label: "Nordic", category: "special" },
   { value: "forest", icon: "fas fa-tree", label: "Forest", category: "special" },
   { value: "high-contrast", icon: "fas fa-adjust", label: "High Contrast", category: "special" },
@@ -27,19 +26,27 @@ const BUILTIN_THEMES = [
   { value: "windows-fluent", icon: "fab fa-windows", label: "Windows Fluent", category: "special" },
   { value: "material-you", icon: "fas fa-palette", label: "Material You", category: "special" },
   { value: "sepia", icon: "fas fa-book", label: "Sepia", category: "special" },
-  { value: "warm-night", icon: "fas fa-moon", label: "Warm Night", category: "special" },
   { value: "hatsune-miku", icon: "fas fa-music", label: "Hatsune Miku", category: "special" },
   { value: "star-wars-dark", icon: "fas fa-skull", label: "Star Wars Dark", category: "special" },
   { value: "amber", icon: "fas fa-fire", label: "Amber", category: "special" },
-  { value: "lavender", icon: "fas fa-heart", label: "Lavender", category: "special" },
   { value: "coral", icon: "fas fa-water", label: "Coral", category: "special" },
   { value: "slate", icon: "fas fa-circle", label: "Slate", category: "special" },
   { value: "mint", icon: "fas fa-leaf", label: "Mint", category: "special" },
-  { value: "cream", icon: "fas fa-feather", label: "Cream", category: "special" }
+  { value: "cream", icon: "fas fa-feather", label: "Cream", category: "special" },
+  { value: "glass", icon: "fas fa-water", label: "Glass", category: "special" },
+  { value: "neumorphism", icon: "fas fa-circle-half-stroke", label: "Neumorphism", category: "special" },
+  { value: "claymorphism", icon: "fas fa-cube", label: "Claymorphism", category: "special" },
+  { value: "brutalism", icon: "fas fa-bolt", label: "Brutalism", category: "special" },
+  { value: "y2k", icon: "fas fa-floppy-disk", label: "Y2K", category: "special" },
+  { value: "tokyo-night", icon: "fas fa-city", label: "Tokyo Night", category: "special" },
+  { value: "catppuccin", icon: "fas fa-cat", label: "Catppuccin", category: "special" },
+  { value: "aurora", icon: "fas fa-wand-magic-sparkles", label: "Aurora", category: "special" },
+  { value: "aura", icon: "fas fa-gem", label: "Aura", category: "special" },
+  { value: "nier", icon: "fas fa-robot", label: "NieR", category: "special" },
+  { value: "eva-unit-01", icon: "fas fa-brain", label: "EVA Unit-01", category: "special" },
+  { value: "eva-unit-02", icon: "fas fa-fire", label: "EVA Unit-02", category: "special" }
 ];
-
 let customThemes = [];
-
 function loadCustomThemes() {
   try {
     const stored = os.storage.get(StorageKeys.customThemes);

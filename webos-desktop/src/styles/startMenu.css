@@ -1,13 +1,13 @@
 @keyframes startMenuIn {
   from {
     opacity: 0;
-    transform: translateY(50px) scale(0.92);
+    transform: translateY(50px);
     backdrop-filter: blur(0px);
   }
 
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
     backdrop-filter: blur(50px);
   }
 }
@@ -15,13 +15,13 @@
 @keyframes startMenuOut {
   from {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
     backdrop-filter: blur(50px);
   }
 
   to {
     opacity: 0;
-    transform: translateY(20px) scale(0.95);
+    transform: translateY(20px);
     backdrop-filter: blur(0px);
   }
 }

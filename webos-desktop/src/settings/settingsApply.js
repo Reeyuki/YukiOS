@@ -20,7 +20,9 @@ const LIGHT_THEMES = new Set([
   "gameboy",
   "solarized-light",
   "mint",
-  "cream"
+  "cream",
+  "neumorphism",
+  "y2k"
 ]);
 
 export function applyTheme(theme, getCustomColors) {

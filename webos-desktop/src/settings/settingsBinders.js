@@ -314,7 +314,8 @@ export function bindAppearanceCategory(
       os.storage.set(StorageKeys.theme, theme);
       applyTheme(theme, getCustomColors);
       audioMixer().playSystemSound(SystemAudio.DESKTOP_CHANGE);
-      showStatus("Theme applied");
+      const label = theme.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+      showStatus(`Theme: ${label}`);
     });
   });
 
@@ -361,7 +362,7 @@ export function bindAppearanceCategory(
               settings.theme = themeValue;
               os.storage.set(StorageKeys.theme, themeValue);
               applyTheme(themeValue, () => getCustomColors());
-              showStatus("Theme applied");
+              showStatus(`Theme: ${themeName}`);
             });
             customThemesGrid.appendChild(newThemeBtn);
           }
