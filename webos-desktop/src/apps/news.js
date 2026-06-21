@@ -17,6 +17,14 @@ const EXISTING_NEWS_UPDATES = [
             "Rebind every system shortcut in the Shortcuts app with per-key reset and a global reset all button."
           ]
         ]
+      },
+      {
+        icon: "fa-icons",
+        title: "Customization",
+        items: [
+          ["fa-icons", "Desktop Icon Size", "Resize desktop icons from 32px to 128px with a new slider in Settings."],
+          ["fa-expand", "Taskbar Scaling", "Scale the entire taskbar from 50% to 200% in Desktop settings."]
+        ]
       }
     ]
   },

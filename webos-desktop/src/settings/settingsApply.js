@@ -252,3 +252,17 @@ export function applyUiDensity(density) {
   const densityValue = densityMap[density] || 1;
   document.documentElement.style.setProperty("--spacing-scale", String(densityValue));
 }
+
+export function applyDesktopIconSize(size) {
+  const iconSize = Math.max(32, Math.min(128, Number(size) || 64));
+  document.documentElement.style.setProperty("--icon-w", `${iconSize}px`);
+  document.documentElement.style.setProperty("--icon-img-s", `${iconSize}px`);
+  document.documentElement.style.setProperty("--icon-h", `${iconSize + 20}px`);
+}
+
+export function applyTaskbarScale(scale) {
+  const s = Math.max(50, Math.min(200, Number(scale) || 100)) / 100;
+  document.documentElement.style.setProperty("--taskbar-scale", String(s));
+  document.documentElement.style.setProperty("--taskbar-h", `${3.2 * s}em`);
+  document.documentElement.style.setProperty("--taskbar-v-w", `${3.2 * s}em`);
+}

@@ -290,6 +290,30 @@ export function renderDesktopSettings(s) {
       </div>
 
       <div class="settings-card" style="margin-top: 16px;">
+        <div class="settings-card-header"><i class="fas fa-icons"></i> Icons &amp; Taskbar</div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Desktop Icon Size</span>
+            <span class="settings-label-desc">Adjust the size of desktop icons</span>
+          </div>
+          <div class="settings-range-group">
+            <input id="settingsDesktopIconSize" type="range" min="32" max="128" step="8" value="${s.desktopIconSize}"/>
+            <span id="settingsDesktopIconSizeValue" class="settings-range-value">${s.desktopIconSize}px</span>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Taskbar Scale</span>
+            <span class="settings-label-desc">Scale the size of the taskbar</span>
+          </div>
+          <div class="settings-range-group">
+            <input id="settingsTaskbarScale" type="range" min="50" max="200" step="10" value="${s.taskbarScale}"/>
+            <span id="settingsTaskbarScaleValue" class="settings-range-value">${s.taskbarScale}%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-card" style="margin-top: 16px;">
         <div class="settings-card-header"><i class="fas fa-bars"></i> Start Menu</div>
         <div class="settings-row">
           <div class="settings-label-group">

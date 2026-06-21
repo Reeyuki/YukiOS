@@ -1,5 +1,5 @@
 import { StorageKeys, os } from "../framework.js";
-import { toggleHideGames, toggleHideSystemApps } from "../desktopui/desktopui.js";
+import { toggleHideGames, toggleHideSystemApps, updateGridConfig } from "../desktopui/desktopui.js";
 import { audioMixer, SystemAudio } from "../audioMixer.js";
 import { renderWallpapersPage } from "../wallpapers.js";
 import { applyTrayEnabled } from "./settingsApply.js";
@@ -13,7 +13,9 @@ import {
   applyCursor,
   applyMikuCursor,
   applyFontFamily,
-  applyUiDensity
+  applyUiDensity,
+  applyDesktopIconSize,
+  applyTaskbarScale
 } from "./settingsApply.js";
 import { exportData, importData, deleteAllData } from "./settingsData.js";
 import { $, $$, bindEvent, toggleClass, setText, createElement, setHTML } from "../shared/domUtils.js";
@@ -184,6 +186,37 @@ export function bindDesktopCategory(win, save, settings, showSaved) {
       if (heightValue) setText(heightValue, `${heightSlider.value}px`);
     });
     bindEvent(heightSlider, "change", save);
+  }
+
+  const iconSizeSlider = $("#settingsDesktopIconSize", win);
+  const iconSizeValue = $("#settingsDesktopIconSizeValue", win);
+  if (iconSizeSlider) {
+    bindEvent(iconSizeSlider, "input", () => {
+      if (iconSizeValue) setText(iconSizeValue, `${iconSizeSlider.value}px`);
+    });
+    bindEvent(iconSizeSlider, "change", () => {
+      const val = parseInt(iconSizeSlider.value);
+      settings.desktopIconSize = val;
+      os.storage.set(StorageKeys.desktopIconSize, String(val));
+      applyDesktopIconSize(val);
+      updateGridConfig(val);
+      showSaved();
+    });
+  }
+
+  const taskbarScaleSlider = $("#settingsTaskbarScale", win);
+  const taskbarScaleValue = $("#settingsTaskbarScaleValue", win);
+  if (taskbarScaleSlider) {
+    bindEvent(taskbarScaleSlider, "input", () => {
+      if (taskbarScaleValue) setText(taskbarScaleValue, `${taskbarScaleSlider.value}%`);
+    });
+    bindEvent(taskbarScaleSlider, "change", () => {
+      const val = parseInt(taskbarScaleSlider.value);
+      settings.taskbarScale = val;
+      os.storage.set(StorageKeys.taskbarScale, String(val));
+      applyTaskbarScale(val);
+      showSaved();
+    });
   }
 
   $$(".settings-start-cat-toggle", win).forEach((chk) => {

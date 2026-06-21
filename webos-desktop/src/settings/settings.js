@@ -19,7 +19,9 @@ import {
   applyStartMenuCats,
   applyTrayEnabled,
   applyFontFamily,
-  applyUiDensity
+  applyUiDensity,
+  applyDesktopIconSize,
+  applyTaskbarScale
 } from "./settingsApply.js";
 import {
   bindNavigation,
@@ -98,7 +100,9 @@ export class SettingsApp extends BaseApp {
         fontFamily: os.storage.get(StorageKeys.fontFamily) || "opensans",
         uiDensity: os.storage.get(StorageKeys.uiDensity) || "comfortable",
         wispServer: os.storage.get(StorageKeys.wispServer) || "wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/",
-        cursorEffectEnabled: os.storage.get(StorageKeys.cursorEffectEnabled) !== "false"
+        cursorEffectEnabled: os.storage.get(StorageKeys.cursorEffectEnabled) !== "false",
+        desktopIconSize: Number(os.storage.get(StorageKeys.desktopIconSize)) || 64,
+        taskbarScale: Number(os.storage.get(StorageKeys.taskbarScale)) || 100
       };
 
       applyCursor(this._settings.cursorDataUrl);
@@ -114,6 +118,8 @@ export class SettingsApp extends BaseApp {
       applyFontSize(this._settings.fontSize);
       applyTrayEnabled(this._settings.trayEnabled);
       applyUiDensity(this._settings.uiDensity);
+      applyDesktopIconSize(this._settings.desktopIconSize);
+      applyTaskbarScale(this._settings.taskbarScale);
 
       if (cursorFromLegacyStorage && !cursorOriginalFromStorage) {
         try {
@@ -262,6 +268,8 @@ export class SettingsApp extends BaseApp {
       os.storage.set(StorageKeys.startMenuHeight, String(startMenuHeight));
       os.storage.set(StorageKeys.startMenuCats, startMenuCats);
       os.storage.set(StorageKeys.cursorEffectEnabled, String(cursorEffectEnabled));
+      os.storage.set(StorageKeys.desktopIconSize, String(settings.desktopIconSize));
+      os.storage.set(StorageKeys.taskbarScale, String(settings.taskbarScale));
 
       Object.assign(this._settings, {
         weather,

@@ -661,7 +661,7 @@ export class ShortcutsApp extends BaseApp {
         listContainer.innerHTML = `
           <div class="sc-empty-state">
             <i class="fas fa-keyboard"></i>
-            <div>No matching keyboard shortcuts found.</div>
+            <div>No keyboard shortcuts found.</div>
             ${currentCategory === "custom" ? '<div class="sc-empty-hint">Click "Custom" button above to create your first custom shortcut.</div>' : ""}
           </div>
         `;

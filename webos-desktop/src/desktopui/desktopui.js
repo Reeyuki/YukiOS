@@ -20,7 +20,36 @@ import { KeybindManager } from "../keybindManager.js";
 let sharedAppLauncher;
 export let toggleHideGames = getToggleHideGames();
 export let toggleHideSystemApps = getToggleHideSystemApps();
-const GRID_CONFIG = { width: 76, height: 96, gap: 7 };
+let GRID_CONFIG = { width: 76, height: 96, gap: 7 };
+
+export function updateGridConfig(iconSize) {
+  const size = Math.max(32, Math.min(128, Number(iconSize) || 64));
+  GRID_CONFIG.width = size + 12;
+  GRID_CONFIG.height = size + 32;
+  GRID_CONFIG.gap = 7;
+  relayoutDesktopIcons();
+}
+
+function relayoutDesktopIcons() {
+  if (!sharedAppLauncher) return;
+  const saved = PositionStore.load();
+  const allUnsaved = Array.from(desktop.querySelectorAll(":scope > .icon")).filter(
+    (icon) => !saved[PositionStore.getKey(icon)] && icon.style.display !== "none"
+  );
+  const positionHelper = new PositionHelper(desktop, GRID_CONFIG);
+  const systemIcons = [];
+  const regularIcons = [];
+  for (const icon of allUnsaved) {
+    const app = icon.dataset.app;
+    if (isRightAlignedSystemApp(sharedAppLauncher.appMap, app)) {
+      systemIcons.push(icon);
+    } else {
+      regularIcons.push(icon);
+    }
+  }
+  if (regularIcons.length) positionHelper.layout(regularIcons);
+  if (systemIcons.length) positionHelper.layoutRight(systemIcons);
+}
 
 function isRightAlignedSystemApp(appMap, app) {
   if (app === "flash" || app === "steamApp") return false;
@@ -803,29 +832,7 @@ export function layoutIcons(icons, isExplorerIcon) {
 }
 
 function layoutIconsCall() {
-  if (!sharedAppLauncher) return;
-
-  const saved = PositionStore.load();
-  const allUnsaved = Array.from(desktop.querySelectorAll(":scope > .icon")).filter(
-    (icon) => !saved[PositionStore.getKey(icon)] && icon.style.display !== "none"
-  );
-
-  const positionHelper = new PositionHelper(desktop, GRID_CONFIG);
-
-  const systemIcons = [];
-  const regularIcons = [];
-
-  for (const icon of allUnsaved) {
-    const app = icon.dataset.app;
-    if (isRightAlignedSystemApp(sharedAppLauncher.appMap, app)) {
-      systemIcons.push(icon);
-    } else {
-      regularIcons.push(icon);
-    }
-  }
-
-  if (regularIcons.length) positionHelper.layout(regularIcons);
-  if (systemIcons.length) positionHelper.layoutRight(systemIcons);
+  relayoutDesktopIcons();
 }
 
 window.addEventListener("load", () => layoutIconsCall());

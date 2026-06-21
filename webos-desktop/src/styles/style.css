@@ -9,6 +9,7 @@
   --font-size-scale: 1;
   --gui-scale: 1;
   --spacing-scale: 1;
+  --taskbar-scale: 1;
 
   --spacing-xs: calc(4px * var(--spacing-scale));
   --spacing-sm: calc(8px * var(--spacing-scale));

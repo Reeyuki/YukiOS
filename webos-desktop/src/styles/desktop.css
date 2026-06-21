@@ -38,8 +38,10 @@
 
 .icon img,
 .icon svg {
-  width: var(--icon-img-s);
-  height: var(--icon-img-s);
+  width: var(--icon-img-s) !important;
+  height: var(--icon-img-s) !important;
+  max-width: var(--icon-img-s) !important;
+  max-height: var(--icon-img-s) !important;
   flex-shrink: 0;
   border-radius: 15px;
   margin-bottom: 0.3rem;
