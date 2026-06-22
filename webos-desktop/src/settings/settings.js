@@ -103,6 +103,12 @@ export class SettingsApp extends BaseApp {
         uiDensity: os.storage.get(StorageKeys.uiDensity) || "comfortable",
         wispServer: os.storage.get(StorageKeys.wispServer) || "wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/",
         cursorEffectEnabled: os.storage.get(StorageKeys.cursorEffectEnabled) !== "false",
+        wobblyWindows: os.storage.get(StorageKeys.wobblyWindows) === "true",
+        wobbleSpringK: Number(os.storage.get(StorageKeys.wobbleSpringK)) || 170,
+        wobbleDamping: Number(os.storage.get(StorageKeys.wobbleDamping)) || 15,
+        wobbleMass: Number(os.storage.get(StorageKeys.wobbleMass)) || 1.0,
+        wobbleDragLag: Number(os.storage.get(StorageKeys.wobbleDragLag)) || 0.55,
+        wobbleCoupleK: Number(os.storage.get(StorageKeys.wobbleCoupleK)) || 90,
         desktopIconSize: Number(os.storage.get(StorageKeys.desktopIconSize)) || 64,
         taskbarScale: Number(os.storage.get(StorageKeys.taskbarScale)) || 100
       };
@@ -239,6 +245,12 @@ export class SettingsApp extends BaseApp {
         win.querySelector(".settings-btn[data-font-family].active")?.dataset.fontFamily || "poppins";
 
       const cursorEffectEnabled = !!gc("#settingsCursorEffect");
+      const wobblyWindows = !!gc("#settingsWobblyWindows");
+      const wobbleSpringK = Number(getRangeSliderValue("settingsWobbleSpringK", win)) || 170;
+      const wobbleDamping = Number(getRangeSliderValue("settingsWobbleDamping", win)) || 15;
+      const wobbleMass = Number(getRangeSliderValue("settingsWobbleMass", win)) || 1.0;
+      const wobbleDragLag = Number(getRangeSliderValue("settingsWobbleDragLag", win)) || 0.55;
+      const wobbleCoupleK = Number(getRangeSliderValue("settingsWobbleCoupleK", win)) || 90;
 
       const startMenuCats = {};
       win.querySelectorAll(".settings-start-cat-toggle").forEach((chk) => {
@@ -270,6 +282,12 @@ export class SettingsApp extends BaseApp {
       os.storage.set(StorageKeys.startMenuHeight, String(startMenuHeight));
       os.storage.set(StorageKeys.startMenuCats, startMenuCats);
       os.storage.set(StorageKeys.cursorEffectEnabled, String(cursorEffectEnabled));
+      os.storage.set(StorageKeys.wobblyWindows, String(wobblyWindows));
+      os.storage.set(StorageKeys.wobbleSpringK, String(wobbleSpringK));
+      os.storage.set(StorageKeys.wobbleDamping, String(wobbleDamping));
+      os.storage.set(StorageKeys.wobbleMass, String(wobbleMass));
+      os.storage.set(StorageKeys.wobbleDragLag, String(wobbleDragLag));
+      os.storage.set(StorageKeys.wobbleCoupleK, String(wobbleCoupleK));
       os.storage.set(StorageKeys.desktopIconSize, String(this._settings.desktopIconSize));
       os.storage.set(StorageKeys.taskbarScale, String(this._settings.taskbarScale));
 
@@ -298,7 +316,13 @@ export class SettingsApp extends BaseApp {
         notificationsDuration,
         notificationsPosition,
         transparentUI,
-        cursorEffectEnabled
+        cursorEffectEnabled,
+        wobblyWindows,
+        wobbleSpringK,
+        wobbleDamping,
+        wobbleMass,
+        wobbleDragLag,
+        wobbleCoupleK
       });
 
       setCdnMirror(cdnMirror);

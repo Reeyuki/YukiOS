@@ -708,6 +708,68 @@ export function renderAppearanceSettings(s) {
             <span class="settings-track"><span class="settings-thumb"></span></span>
           </label>
         </div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Wobbly Windows</span>
+            <span class="settings-label-desc">Enable wobble effect when dragging windows.</span>
+          </div>
+          <label class="settings-toggle">
+            <input type="checkbox" id="settingsWobblyWindows" ${os.storage.get(StorageKeys.wobblyWindows) === "true" ? "checked" : ""}/>
+            <span class="settings-track"><span class="settings-thumb"></span></span>
+          </label>
+        </div>
+        <div class="settings-wobble-subsection" style="display: ${os.storage.get(StorageKeys.wobblyWindows) === "true" ? "block" : "none"}; padding-left: 16px; margin-top: 12px; border-left: 2px solid var(--glass-border);">
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Spring Stiffness</span>
+              <span class="settings-label-desc">Controls how stiff the spring is (higher = stiffer).</span>
+            </div>
+            <div class="settings-range-group">
+              ${renderRangeSlider("settingsWobbleSpringK", 50, 300, 1, s.wobbleSpringK, !s.wobblyWindows)}
+              <span id="settingsWobbleSpringKValue" class="settings-range-value">${s.wobbleSpringK}</span>
+            </div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Damping</span>
+              <span class="settings-label-desc">Controls how quickly the wobble settles (higher = less wobble).</span>
+            </div>
+            <div class="settings-range-group">
+              ${renderRangeSlider("settingsWobbleDamping", 1, 50, 1, s.wobbleDamping, !s.wobblyWindows)}
+              <span id="settingsWobbleDampingValue" class="settings-range-value">${s.wobbleDamping}</span>
+            </div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Mass</span>
+              <span class="settings-label-desc">Controls the weight of the window (higher = heavier).</span>
+            </div>
+            <div class="settings-range-group">
+              ${renderRangeSlider("settingsWobbleMass", 0.1, 5, 0.1, s.wobbleMass, !s.wobblyWindows)}
+              <span id="settingsWobbleMassValue" class="settings-range-value">${s.wobbleMass}</span>
+            </div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Drag Lag</span>
+              <span class="settings-label-desc">Controls how much the window lags behind cursor when dragging.</span>
+            </div>
+            <div class="settings-range-group">
+              ${renderRangeSlider("settingsWobbleDragLag", 0.1, 1, 0.05, s.wobbleDragLag, !s.wobblyWindows)}
+              <span id="settingsWobbleDragLagValue" class="settings-range-value">${s.wobbleDragLag}</span>
+            </div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Coupling Stiffness</span>
+              <span class="settings-label-desc">Controls how adjacent points affect each other (higher = more connected).</span>
+            </div>
+            <div class="settings-range-group">
+              ${renderRangeSlider("settingsWobbleCoupleK", 10, 200, 1, s.wobbleCoupleK, !s.wobblyWindows)}
+              <span id="settingsWobbleCoupleKValue" class="settings-range-value">${s.wobbleCoupleK}</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="settings-card" style="margin-top: 16px;">

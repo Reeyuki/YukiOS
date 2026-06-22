@@ -1,4 +1,5 @@
 import { StorageKeys, os } from "../framework.js";
+import { wobbleStart, wobbleMove, wobbleEnd, wobbleCancel } from "./AnimationSystem.js";
 const desktop = document.getElementById("desktop");
 
 function getClientXY(e) {
@@ -168,6 +169,10 @@ export function makeDraggable(win, wm) {
 
     if (wasSnapped) wm._unsnap(win);
 
+    wobbleStart(win);
+    let lastClientX = startClientX;
+    let lastClientY = startClientY;
+
     const onMouseMove = (e) => {
       const { clientX, clientY } = getClientXY(e);
       const newLeft = clientX - ox;
@@ -179,6 +184,10 @@ export function makeDraggable(win, wm) {
       if (entry?.record) {
         entry.record.setGeometry(newLeft, newTop);
       }
+
+      wobbleMove(win, clientX - lastClientX, clientY - lastClientY);
+      lastClientX = clientX;
+      lastClientY = clientY;
 
       const zone = wm._getSnapZone(clientX, clientY);
       wm._activeSnapZone = zone;
@@ -196,6 +205,8 @@ export function makeDraggable(win, wm) {
 
       wm.isDraggingWindow = false;
       document.body.classList.remove("is-dragging");
+
+      wobbleEnd(win);
 
       if (wm._activeSnapZone) {
         wm._applySnap(win, wm._activeSnapZone);

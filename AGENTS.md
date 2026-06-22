@@ -1,5 +1,7 @@
 # Yuki OS - Agent Reference
 
+You are working under webos-desktop directory. when src is mentioned it means webos-desktop/
+
 ## Hard Rules
 
 - Never run `npm/pnpm format` or `npm/pnpm bf`

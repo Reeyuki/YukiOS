@@ -483,6 +483,83 @@ export function bindAppearanceCategory(
     });
   }
 
+  const wobblyWindowsToggle = $("#settingsWobblyWindows", win);
+  if (wobblyWindowsToggle) {
+    bindEvent(wobblyWindowsToggle, "change", () => {
+      os.storage.set(StorageKeys.wobblyWindows, String(wobblyWindowsToggle.checked));
+      const subsection = win.querySelector(".settings-wobble-subsection");
+      if (subsection) {
+        subsection.style.display = wobblyWindowsToggle.checked ? "block" : "none";
+      }
+      showSaved();
+    });
+  }
+
+  const wobbleSpringKSlider = $("#settingsWobbleSpringK", win);
+  if (wobbleSpringKSlider) {
+    bindEvent(wobbleSpringKSlider, "input", () => {
+      const value = getRangeSliderValue("settingsWobbleSpringK", win);
+      const valueDisplay = $("#settingsWobbleSpringKValue", win);
+      if (valueDisplay) valueDisplay.textContent = value;
+    });
+    bindEvent(wobbleSpringKSlider, "change", () => {
+      os.storage.set(StorageKeys.wobbleSpringK, getRangeSliderValue("settingsWobbleSpringK", win));
+      showSaved();
+    });
+  }
+
+  const wobbleDampingSlider = $("#settingsWobbleDamping", win);
+  if (wobbleDampingSlider) {
+    bindEvent(wobbleDampingSlider, "input", () => {
+      const value = getRangeSliderValue("settingsWobbleDamping", win);
+      const valueDisplay = $("#settingsWobbleDampingValue", win);
+      if (valueDisplay) valueDisplay.textContent = value;
+    });
+    bindEvent(wobbleDampingSlider, "change", () => {
+      os.storage.set(StorageKeys.wobbleDamping, getRangeSliderValue("settingsWobbleDamping", win));
+      showSaved();
+    });
+  }
+
+  const wobbleMassSlider = $("#settingsWobbleMass", win);
+  if (wobbleMassSlider) {
+    bindEvent(wobbleMassSlider, "input", () => {
+      const value = getRangeSliderValue("settingsWobbleMass", win);
+      const valueDisplay = $("#settingsWobbleMassValue", win);
+      if (valueDisplay) valueDisplay.textContent = value;
+    });
+    bindEvent(wobbleMassSlider, "change", () => {
+      os.storage.set(StorageKeys.wobbleMass, getRangeSliderValue("settingsWobbleMass", win));
+      showSaved();
+    });
+  }
+
+  const wobbleDragLagSlider = $("#settingsWobbleDragLag", win);
+  if (wobbleDragLagSlider) {
+    bindEvent(wobbleDragLagSlider, "input", () => {
+      const value = getRangeSliderValue("settingsWobbleDragLag", win);
+      const valueDisplay = $("#settingsWobbleDragLagValue", win);
+      if (valueDisplay) valueDisplay.textContent = value;
+    });
+    bindEvent(wobbleDragLagSlider, "change", () => {
+      os.storage.set(StorageKeys.wobbleDragLag, getRangeSliderValue("settingsWobbleDragLag", win));
+      showSaved();
+    });
+  }
+
+  const wobbleCoupleKSlider = $("#settingsWobbleCoupleK", win);
+  if (wobbleCoupleKSlider) {
+    bindEvent(wobbleCoupleKSlider, "input", () => {
+      const value = getRangeSliderValue("settingsWobbleCoupleK", win);
+      const valueDisplay = $("#settingsWobbleCoupleKValue", win);
+      if (valueDisplay) valueDisplay.textContent = value;
+    });
+    bindEvent(wobbleCoupleKSlider, "change", () => {
+      os.storage.set(StorageKeys.wobbleCoupleK, getRangeSliderValue("settingsWobbleCoupleK", win));
+      showSaved();
+    });
+  }
+
   $$(".settings-btn[data-font-family]", win).forEach((btn) => {
     bindEvent(btn, "click", () => {
       const fontFamily = btn.dataset.fontFamily;

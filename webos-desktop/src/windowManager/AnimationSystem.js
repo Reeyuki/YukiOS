@@ -127,7 +127,6 @@ function getSmartShrinkTarget(taskbarItem, winRect, taskbarPosition) {
 export function animateWindowOpen(win, isRestoring = false) {
   if (isTurboMode()) return;
 
-  // Exclude browser app from animations
   if (win.id && win.id.startsWith("browser-app-")) return;
 
   const anim = getOpenAnim();
@@ -136,8 +135,6 @@ export function animateWindowOpen(win, isRestoring = false) {
   const duration = 300 * getAnimationSpeed();
 
   win.getAnimations().forEach((anim) => anim.cancel());
-
-  // Check if we're in a session restoration
   const wm = window.__windowManager;
   const isSessionRestoring = wm && wm.appRestorationService && wm.appRestorationService.isRestoring;
 
@@ -264,7 +261,7 @@ function getCloseKeyframes(animType, win) {
     case CLOSE_ANIMATIONS.scaleDownCenter:
       return [
         { opacity: 1, transform: "scale(1)" },
-        { opacity: 0, transform: "scale(0.9)" }
+        { opacity: 0, transform: "scale(0.85)" }
       ];
     case CLOSE_ANIMATIONS.scaleToOrigin:
       const taskbarItem = document.getElementById(`taskbar-${win.id}`);
@@ -274,12 +271,12 @@ function getCloseKeyframes(animType, win) {
         const { dx, dy } = getSmartShrinkTarget(taskbarItem, winRect, taskbarPosition);
         return [
           { opacity: 1, transform: "translate(0, 0) scale(1)" },
-          { opacity: 0, transform: `translate(${dx}px, ${dy}px) scale(0.5)` }
+          { opacity: 0, transform: `translate(${dx}px, ${dy}px) scale(0.1)` }
         ];
       }
       return [
         { opacity: 1, transform: "scale(1)" },
-        { opacity: 0, transform: "scale(0.9)" }
+        { opacity: 0, transform: "scale(0.1)" }
       ];
     case CLOSE_ANIMATIONS.fadeOut:
       return [{ opacity: 1 }, { opacity: 0 }];
@@ -290,20 +287,19 @@ function getCloseKeyframes(animType, win) {
       ];
     case CLOSE_ANIMATIONS.burn:
       return [
-        { opacity: 1, filter: "brightness(1)" },
-        { opacity: 0, filter: "brightness(2) blur(5px)" }
+        { opacity: 1, filter: "brightness(1) blur(0px)", transform: "scaleY(1)" },
+        { opacity: 0.8, filter: "brightness(3) blur(2px)", transform: "scaleY(0.95)", offset: 0.3 },
+        { opacity: 0, filter: "brightness(0) blur(8px)", transform: "scaleY(0)" }
       ];
     case CLOSE_ANIMATIONS.shrinkToPoint:
       return [
-        { opacity: 1, transform: "scale(1)" },
-        { opacity: 0.5, transform: "scale(0.3)", offset: 0.5 },
-        { opacity: 0, transform: "scale(0)" }
+        { opacity: 1, transform: "scale(1)", transformOrigin: "center center" },
+        { opacity: 0, transform: "scale(0)", transformOrigin: "center center" }
       ];
     case CLOSE_ANIMATIONS.dissolveBlur:
       return [
-        { opacity: 1, filter: "blur(0)" },
-        { opacity: 0.5, filter: "blur(15px)", offset: 0.5 },
-        { opacity: 0, filter: "blur(30px)" }
+        { opacity: 1, filter: "blur(0px)" },
+        { opacity: 0, filter: "blur(20px)" }
       ];
     default:
       return [{ opacity: 1 }, { opacity: 0 }];
@@ -318,7 +314,7 @@ export function animateWindowMinimize(win, onDone) {
   const anim = getMinimizeAnim();
   win.style.pointerEvents = "none";
 
-  const duration = 300 * getAnimationSpeed();
+  const duration = 260 * getAnimationSpeed();
 
   win.getAnimations().forEach((anim) => anim.cancel());
 
@@ -336,12 +332,14 @@ export function animateWindowMinimize(win, onDone) {
 }
 
 function getMinimizeKeyframes(animType, win) {
+  const taskbarPosition = getTaskbarPosition();
+  const isBottom = taskbarPosition === "bottom" || taskbarPosition === "top";
+
   switch (animType) {
     case MINIMIZE_ANIMATIONS.taskbarShrink:
       const taskbarItem = document.getElementById(`taskbar-${win.id}`);
       if (taskbarItem) {
         const winRect = win.getBoundingClientRect();
-        const taskbarPosition = getTaskbarPosition();
         const { dx, dy } = getSmartShrinkTarget(taskbarItem, winRect, taskbarPosition);
         return [
           { opacity: 1, transform: "translate(0, 0) scale(1)" },
@@ -350,11 +348,9 @@ function getMinimizeKeyframes(animType, win) {
       }
       return [{ opacity: 1 }, { opacity: 0 }];
     case MINIMIZE_ANIMATIONS.dockZoomShrink:
-      const taskbar = document.getElementById("taskbar");
-      const isBottom = !taskbar || taskbar.classList.contains("position-bottom");
       return [
         { opacity: 1, transform: "scale(1)" },
-        { opacity: 0, transform: isBottom ? "scaleY(0)" : "scaleX(0)" }
+        { opacity: 0, transform: "scale(0)" }
       ];
     case MINIMIZE_ANIMATIONS.magicLamp:
       const tbItem = document.getElementById(`taskbar-${win.id}`);
@@ -374,7 +370,6 @@ function getMinimizeKeyframes(animType, win) {
       const elasticTaskbarItem = document.getElementById(`taskbar-${win.id}`);
       if (elasticTaskbarItem) {
         const winRect = win.getBoundingClientRect();
-        const taskbarPosition = getTaskbarPosition();
         const { dx, dy } = getSmartShrinkTarget(elasticTaskbarItem, winRect, taskbarPosition);
         return [
           { opacity: 1, transform: "translate(0, 0) scale(1)" },
@@ -388,7 +383,6 @@ function getMinimizeKeyframes(animType, win) {
       const spiralTaskbarItem = document.getElementById(`taskbar-${win.id}`);
       if (spiralTaskbarItem) {
         const winRect = win.getBoundingClientRect();
-        const taskbarPosition = getTaskbarPosition();
         const { dx, dy } = getSmartShrinkTarget(spiralTaskbarItem, winRect, taskbarPosition);
         return [
           { opacity: 1, transform: "translate(0, 0) rotate(0deg) scale(1)" },
@@ -617,4 +611,208 @@ export function applyAnimationSettings(settings) {
       destroyClickBubble();
     }
   }
+}
+
+function getWobbleSpringK() {
+  return getRawSetting(StorageKeys.wobbleSpringK, 170);
+}
+
+function getWobbleDamping() {
+  return getRawSetting(StorageKeys.wobbleDamping, 15);
+}
+
+function getWobbleMass() {
+  return getRawSetting(StorageKeys.wobbleMass, 1.0);
+}
+
+function getWobbleDragLag() {
+  return getRawSetting(StorageKeys.wobbleDragLag, 0.55);
+}
+
+function getWobbleCoupleK() {
+  return getRawSetting(StorageKeys.wobbleCoupleK, 90);
+}
+
+/** @type {WeakMap<HTMLElement, WobbleState>} */
+const _wobbleMap = new WeakMap();
+
+/**
+ * @typedef {Object} SpringPoint
+ * @property {number} x
+ * @property {number} y
+ * @property {number} vx
+ * @property {number} vy
+ * @property {number} anchorX
+ * @property {number} anchorY
+ */
+
+/**
+ * @typedef {Object} WobbleState
+ * @property {SpringPoint[]} points
+ * @property {number} rafId
+ * @property {boolean} dragging
+ * @property {number} lastTime
+ * @property {number} winW
+ * @property {number} winH
+ */
+
+function _anchors(w, h) {
+  return [
+    { ax: 0, ay: 0 },
+    { ax: w / 3, ay: 0 },
+    { ax: (2 * w) / 3, ay: 0 },
+    { ax: w, ay: 0 },
+    { ax: w, ay: h / 3 },
+    { ax: w, ay: (2 * h) / 3 },
+    { ax: w, ay: h },
+    { ax: (2 * w) / 3, ay: h },
+    { ax: w / 3, ay: h },
+    { ax: 0, ay: h },
+    { ax: 0, ay: (2 * h) / 3 },
+    { ax: 0, ay: h / 3 }
+  ];
+}
+
+function _smoothClosedPath(pts) {
+  const n = pts.length;
+  const at = (i) => pts[((i % n) + n) % n];
+  const px = (v) => v.toFixed(2);
+
+  let d = `M ${px(at(0).x)} ${px(at(0).y)} `;
+  for (let i = 0; i < n; i++) {
+    const p0 = at(i - 1);
+    const p1 = at(i);
+    const p2 = at(i + 1);
+    const p3 = at(i + 2);
+
+    const c1x = p1.x + (p2.x - p0.x) / 6;
+    const c1y = p1.y + (p2.y - p0.y) / 6;
+    const c2x = p2.x - (p3.x - p1.x) / 6;
+    const c2y = p2.y - (p3.y - p1.y) / 6;
+
+    d += `C ${px(c1x)} ${px(c1y)}, ${px(c2x)} ${px(c2y)}, ${px(p2.x)} ${px(p2.y)} `;
+  }
+  return `${d}Z`;
+}
+
+function _buildClipPath(pts) {
+  return `path('${_smoothClosedPath(pts)}')`;
+}
+export function wobbleStart(win) {
+  if (isTurboMode()) return;
+  if (getRawSetting(StorageKeys.wobblyWindows, "false") !== "true") return;
+
+  wobbleCancel(win);
+
+  const rect = win.getBoundingClientRect();
+  const w = rect.width;
+  const h = rect.height;
+
+  const anc = _anchors(w, h);
+  const points = anc.map(({ ax, ay }) => ({
+    x: ax,
+    y: ay,
+    vx: 0,
+    vy: 0,
+    anchorX: ax,
+    anchorY: ay
+  }));
+
+  /** @type {WobbleState} */
+  const state = {
+    points,
+    rafId: null,
+    dragging: true,
+    lastTime: null,
+    winW: w,
+    winH: h
+  };
+
+  _wobbleMap.set(win, state);
+  _wobbleRaf(win);
+}
+
+export function wobbleMove(win, vx, vy) {
+  const state = _wobbleMap.get(win);
+  if (!state) return;
+
+  const rect = win.getBoundingClientRect();
+  state.winW = rect.width;
+  state.winH = rect.height;
+
+  const anc = _anchors(state.winW, state.winH);
+  const lag = getWobbleDragLag();
+
+  state.points.forEach((pt, i) => {
+    pt.anchorX = anc[i].ax;
+    pt.anchorY = anc[i].ay;
+
+    const grabFalloff = 1 - 0.55 * (pt.anchorY / state.winH);
+    pt.x += vx * lag * grabFalloff;
+    pt.y += vy * lag * grabFalloff;
+    pt.vx += vx * lag * 0.5 * grabFalloff;
+    pt.vy += vy * lag * 0.5 * grabFalloff;
+  });
+}
+export function wobbleEnd(win) {
+  const state = _wobbleMap.get(win);
+  if (!state) return;
+  state.dragging = false;
+}
+
+export function wobbleCancel(win) {
+  const state = _wobbleMap.get(win);
+  if (state?.rafId) cancelAnimationFrame(state.rafId);
+  _wobbleMap.delete(win);
+  win.style.clipPath = "";
+}
+
+function _wobbleRaf(win) {
+  const state = _wobbleMap.get(win);
+  if (!state) return;
+
+  const tick = (now) => {
+    const s = _wobbleMap.get(win);
+    if (!s) return;
+
+    const dt = s.lastTime ? Math.min((now - s.lastTime) / 1000, 0.05) : 0.016;
+    s.lastTime = now;
+
+    const n = s.points.length;
+    let settled = true;
+
+    s.points.forEach((pt, i) => {
+      const prev = s.points[(i - 1 + n) % n];
+      const next = s.points[(i + 1) % n];
+
+      const dx = pt.anchorX - pt.x;
+      const dy = pt.anchorY - pt.y;
+
+      const coupleX = getWobbleCoupleK() * (prev.x - prev.anchorX + (next.x - next.anchorX) - 2 * (pt.x - pt.anchorX));
+      const coupleY = getWobbleCoupleK() * (prev.y - prev.anchorY + (next.y - next.anchorY) - 2 * (pt.y - pt.anchorY));
+
+      const ax = (getWobbleSpringK() * dx - getWobbleDamping() * pt.vx + coupleX) / getWobbleMass();
+      const ay = (getWobbleSpringK() * dy - getWobbleDamping() * pt.vy + coupleY) / getWobbleMass();
+
+      pt.vx += ax * dt;
+      pt.vy += ay * dt;
+      pt.x += pt.vx * dt;
+      pt.y += pt.vy * dt;
+
+      if (Math.abs(dx) > 0.4 || Math.abs(dy) > 0.4 || Math.abs(pt.vx) > 0.4 || Math.abs(pt.vy) > 0.4) {
+        settled = false;
+      }
+    });
+
+    if (settled && !s.dragging) {
+      win.style.clipPath = "";
+      _wobbleMap.delete(win);
+      return;
+    }
+
+    win.style.clipPath = _buildClipPath(s.points);
+    s.rafId = requestAnimationFrame(tick);
+  };
+
+  state.rafId = requestAnimationFrame(tick);
 }
