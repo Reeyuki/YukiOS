@@ -35,6 +35,7 @@ import { ColorPickerApp } from "./apps/colorPicker.js";
 import { ScreenshotApp } from "./apps/screenshot.js";
 import { MapsApp } from "./apps/maps.js";
 import { ErudaApp } from "./apps/eruda.js";
+import { ClockApp } from "./apps/clock.js";
 
 const APP_CLASS_MAP = {
   terminalApp: TerminalApp,
@@ -71,7 +72,8 @@ const APP_CLASS_MAP = {
   colorPickerApp: ColorPickerApp,
   screenshotApp: ScreenshotApp,
   mapsApp: MapsApp,
-  erudaApp: ErudaApp
+  erudaApp: ErudaApp,
+  clockApp: ClockApp
 };
 
 const APP_DEFINITIONS = APP_MANIFESTS.map((manifest) => {

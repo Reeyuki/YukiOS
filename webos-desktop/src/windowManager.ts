@@ -4,7 +4,7 @@ import { makeResizable } from "./windowManager/makeResizable.js";
 import { setupWindowControls } from "./windowManager/windowControls.js";
 import { notify, sendNotify } from "./windowManager/notificationBridge.js";
 import { bus, BusEvents } from "./core/EventBus.js";
-import { initClickBubble } from "./windowManager/AnimationSystem.js";
+import { initClickBubble, animateWindowOpen } from "./windowManager/AnimationSystem.js";
 import { InputHandler } from "./windowManager/InputHandler.js";
 import { LayoutManager } from "./windowManager/LayoutManager.js";
 import { SnapSystem } from "./windowManager/SnapSystem.js";
@@ -356,6 +356,7 @@ export class WindowManager {
     this.setupWindowControls(win);
     this.addToTaskbar(winId, title, iconValue, color);
     this.bringToFront(win);
+    animateWindowOpen(win);
   }
 
   getWindowIconHtml(iconValue: string, color: string | null = null): string {

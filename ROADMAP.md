@@ -15,11 +15,9 @@ Planned features and improvements for Yuki OS.
 - [ ] Improve terminal functionality
 - [ ] Add Boxedwine
 - [ ] Add about:blank method
-- [ ] Clock app
 - [ ] From site to users computer file transfer support
 - [ ] Add 3D os mode
 - [ ] Steam overview ui on steam launched games on shift + tab
-- [ ] Add battery api usage on power tray menu
 
 ---
 

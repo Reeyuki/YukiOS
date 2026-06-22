@@ -8,7 +8,61 @@ class PowerApp extends BaseApp {
     this.popupId = "power-tray-popup";
     this._popupVisible = false;
     this.powerMode = turboManager.getMode();
+    this.batteryInfo = { level: 1, charging: true };
+    this._initBattery();
     this._initTray();
+  }
+
+  async _initBattery() {
+    if ("getBattery" in navigator) {
+      try {
+        const battery = await navigator.getBattery();
+        this.batteryInfo = {
+          level: battery.level,
+          charging: battery.charging
+        };
+        battery.addEventListener("levelchange", () => {
+          this.batteryInfo.level = battery.level;
+          this._updateTrayIcon();
+        });
+        battery.addEventListener("chargingchange", () => {
+          this.batteryInfo.charging = battery.charging;
+          this._updateTrayIcon();
+        });
+      } catch (e) {
+        console.warn("Battery API error:", e);
+      }
+    }
+  }
+
+  _getBatteryIcon() {
+    const level = Math.round(this.batteryInfo.level * 100);
+    if (level > 90) return "fas fa-battery-full";
+    if (level > 65) return "fas fa-battery-three-quarters";
+    if (level > 35) return "fas fa-battery-half";
+    if (level > 10) return "fas fa-battery-quarter";
+    return "fas fa-battery-empty";
+  }
+
+  _getBatteryStatusText() {
+    const level = Math.round(this.batteryInfo.level * 100);
+    const charging = this.batteryInfo.charging;
+    if (charging) {
+      if (level === 100) return "Fully Charged";
+      return "Charging";
+    }
+    if (level <= 20) return "Low Battery";
+    return "On Battery";
+  }
+
+  _updateTrayIcon() {
+    const trayEl = document.querySelector(`[data-tray-id="${this.winId}"]`);
+    if (trayEl) {
+      const iconEl = trayEl.querySelector("i");
+      if (iconEl) {
+        iconEl.className = this._getBatteryIcon();
+      }
+    }
   }
 
   _shouldSuppressNotification() {
@@ -17,7 +71,7 @@ class PowerApp extends BaseApp {
   }
 
   _initTray() {
-    this.registerTray(this.winId, "fas fa-battery-full", "Power", {
+    this.registerTray(this.winId, this._getBatteryIcon(), "Power", {
       resident: true,
       showInTray: true,
       onClick: () => {
@@ -51,15 +105,18 @@ class PowerApp extends BaseApp {
     const popup = document.createElement("div");
     popup.id = this.popupId;
     popup.className = "power-tray-popup";
+    const batteryPercent = Math.round(this.batteryInfo.level * 100);
+    const batteryStatus = this._getBatteryStatusText();
+    const batteryIcon = this._getBatteryIcon();
     popup.innerHTML = `
       <div class="power-popup-content">
         <div class="power-battery-section">
           <div class="power-battery-icon">
-            <i class="fas fa-battery-full"></i>
+            <i class="${batteryIcon}"></i>
           </div>
           <div class="power-battery-info">
-            <div class="power-battery-percent">100%</div>
-            <div class="power-battery-status">Fully Charged</div>
+            <div class="power-battery-percent">${batteryPercent}%</div>
+            <div class="power-battery-status">${batteryStatus}</div>
           </div>
         </div>
         <div class="power-mode-section">

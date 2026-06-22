@@ -1095,6 +1095,18 @@ export const APP_MANIFESTS = [
     description: "Nintendo 3DS emulator for playing 3DS games in the browser."
   },
   {
+    serviceKey: "clockApp",
+    enhanced: true,
+    type: "system",
+    title: "Clock",
+    icon: "fas fa-clock",
+    launchType: "instance",
+    windowIdPatterns: ["clock-app"],
+    category: "office",
+    clippy: { message: "Set alarms, run a timer, and keep the day on schedule.", animation: ClippyAnimation.Show },
+    description: "Digital and analog clocks with alarms, stopwatch, timer, and customizable settings."
+  },
+  {
     type: "system",
     title: "Paint",
     source: "https://jspaint.app",

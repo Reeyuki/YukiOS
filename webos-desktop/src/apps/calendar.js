@@ -1,32 +1,53 @@
 import "../styles/calendar.css";
 import { KeybindManager } from "../keybindManager.js";
+import { os, StorageKeys } from "../framework.js";
+import {
+  getDateKey,
+  parseDateKey,
+  getWeekNumber,
+  getEventsForDate,
+  loadEvents,
+  saveEvents,
+  generateEventId,
+  EVENT_COLORS
+} from "../shared/calendarUtils.js";
+import { renderSelectMenu, getSelectMenuValue, setSelectMenuValue, bindSelectMenu } from "../shared/selectMenu.js";
 
-import { StorageKeys, os } from "../framework.js";
 let _calendarPopup = null;
 let _currentCalendarMonth = new Date();
-let _calendarEvents;
-setTimeout(() => {
-  _calendarEvents = os.storage.get(StorageKeys.calendarEvents) || {};
-}, 0);
+let _calendarEvents = [];
 let _calendarTimeInterval = null;
+let _trayPanel = null;
+let _trayCloseHandler = null;
 
-function saveCalendarEvents() {
-  os.storage.set(StorageKeys.calendarEvents, _calendarEvents);
-}
-
-function getEventKey(year, month, day) {
-  return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-}
-
-function getWeekNumber(date) {
-  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-  const dayNum = d.getUTCDay() || 7;
-  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-  return Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
+function getNextAlarm() {
+  try {
+    const alarms = os.storage.get(StorageKeys.clockAlarms);
+    if (!alarms || alarms.length === 0) return null;
+    const now = new Date();
+    const nowMin = now.getHours() * 60 + now.getMinutes();
+    let next = null;
+    let nextDiff = Infinity;
+    for (const alarm of alarms) {
+      if (!alarm.enabled) continue;
+      const [h, m] = alarm.time.split(":").map(Number);
+      const alarmMin = h * 60 + m;
+      let diff = alarmMin - nowMin;
+      if (diff <= 0) diff += 1440;
+      if (diff < nextDiff) {
+        nextDiff = diff;
+        next = alarm;
+      }
+    }
+    return next;
+  } catch {
+    return null;
+  }
 }
 
 export function createCalendarPopup() {
+  _calendarEvents = loadEvents();
+
   if (_calendarPopup) {
     closeCalendarPopup();
     return;
@@ -39,12 +60,15 @@ export function createCalendarPopup() {
   const timeDisplay = document.createElement("div");
   timeDisplay.className = "calendar-time-display";
 
+  const dateDisplay = document.createElement("div");
+  dateDisplay.className = "calendar-date-display";
+
   const header = document.createElement("div");
   header.className = "calendar-header";
 
   const prevBtn = document.createElement("button");
   prevBtn.className = "calendar-nav-btn";
-  prevBtn.textContent = "‹";
+  prevBtn.textContent = "\u2039";
   prevBtn.title = "Previous month";
   prevBtn.onclick = () => {
     _currentCalendarMonth.setMonth(_currentCalendarMonth.getMonth() - 1);
@@ -70,7 +94,7 @@ export function createCalendarPopup() {
 
   const nextBtn = document.createElement("button");
   nextBtn.className = "calendar-nav-btn";
-  nextBtn.textContent = "›";
+  nextBtn.textContent = "\u203A";
   nextBtn.title = "Next month";
   nextBtn.onclick = () => {
     _currentCalendarMonth.setMonth(_currentCalendarMonth.getMonth() + 1);
@@ -87,10 +111,19 @@ export function createCalendarPopup() {
   const agenda = document.createElement("div");
   agenda.className = "calendar-agenda";
 
+  const alarmSection = document.createElement("div");
+  alarmSection.className = "calendar-alarm-section";
+
+  const appButtons = document.createElement("div");
+  appButtons.className = "calendar-app-buttons";
+
   popup.appendChild(timeDisplay);
+  popup.appendChild(dateDisplay);
   popup.appendChild(header);
   popup.appendChild(grid);
   popup.appendChild(agenda);
+  popup.appendChild(alarmSection);
+  popup.appendChild(appButtons);
   document.body.appendChild(popup);
 
   _calendarPopup = popup;
@@ -147,12 +180,21 @@ function positionCalendarPopup() {
 function updateCalendarTime() {
   if (!_calendarPopup) return;
   const timeDisplay = _calendarPopup.querySelector(".calendar-time-display");
+  const dateDisplay = _calendarPopup.querySelector(".calendar-date-display");
   if (timeDisplay) {
     const now = new Date();
     timeDisplay.textContent = now.toLocaleTimeString([], {
       hour: "2-digit",
       minute: "2-digit",
       second: "2-digit"
+    });
+  }
+  if (dateDisplay) {
+    const now = new Date();
+    dateDisplay.textContent = now.toLocaleDateString([], {
+      weekday: "long",
+      month: "long",
+      day: "numeric"
     });
   }
 }
@@ -178,7 +220,7 @@ function handleCalendarKeydown(e) {
 }
 
 function closeCalendarOnClickOutside(e) {
-  if (e.target.closest(".calendar-modal-overlay")) return;
+  if (e.target.closest(".calendar-modal-overlay, .calendar-modal, .select-menu, .select-menu__dropdown")) return;
   if (
     _calendarPopup &&
     !_calendarPopup.contains(e.target) &&
@@ -189,70 +231,257 @@ function closeCalendarOnClickOutside(e) {
     closeCalendarPopup();
   }
 }
-function showEventModal(dateKey, existingEvent = "") {
-  const overlay = document.createElement("div");
-  overlay.className = "calendar-modal-overlay";
+
+function closeTrayPanel() {
+  if (_trayPanel) {
+    _trayPanel.remove();
+    _trayPanel = null;
+  }
+  if (_trayCloseHandler) {
+    document.removeEventListener("keydown", _trayCloseHandler);
+    _trayCloseHandler = null;
+  }
+  document.removeEventListener("click", _onTrayOutsideClick);
+}
+
+function positionTrayPanel(panel, offsetX = 0) {
+  if (!_calendarPopup) return;
+  const calRect = _calendarPopup.getBoundingClientRect();
+  const panelRect = panel.getBoundingClientRect();
+  const padding = 8;
+
+  let left = calRect.right + padding + offsetX;
+  let top = calRect.top;
+
+  if (left + panelRect.width > window.innerWidth - padding) {
+    left = Math.max(padding, calRect.left - panelRect.width - padding);
+  }
+  if (top + panelRect.height > window.innerHeight - padding) {
+    top = window.innerHeight - panelRect.height - padding;
+  }
+  if (top < padding) top = padding;
+
+  panel.style.left = `${left}px`;
+  panel.style.top = `${top}px`;
+}
+
+const PLAN_ICONS = ["fa-bolt", "fa-gamepad", "fa-star", "fa-music", "fa-code", "fa-camera", "fa-book", "fa-heart"];
+
+function showDayEventsModal(dateKey) {
+  closeTrayPanel();
+
+  const eventsForDay = getEventsForDate(_calendarEvents, dateKey);
+  const { year, month, day } = parseDateKey(dateKey);
+  const displayDate = new Date(year, month, day).toLocaleDateString([], {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric"
+  });
+
+  let eventsListHtml = "";
+  if (eventsForDay.length > 0) {
+    eventsListHtml = eventsForDay
+      .map(
+        (ev, idx) => `
+      <div class="calendar-modal-event-item" data-event-id="${ev.id}">
+        <i class="fas ${ev.icon || PLAN_ICONS[idx % PLAN_ICONS.length]} cal-modal-event-icon"></i>
+        <span class="cal-modal-event-title">${ev.title}</span>
+        ${ev.time ? `<span class="cal-modal-event-time">${ev.time.slice(0, 5)}</span>` : ""}
+        <div class="cal-modal-event-actions">
+          <button class="cal-modal-event-btn" data-action="editEvent" data-id="${ev.id}" title="Edit"><i class="fas fa-pen"></i></button>
+          <button class="cal-modal-event-btn" data-action="deleteEvent" data-id="${ev.id}" title="Delete"><i class="fas fa-trash"></i></button>
+        </div>
+      </div>
+    `
+      )
+      .join("");
+  } else {
+    eventsListHtml = '<div class="calendar-modal-noevents">No missions today.</div>';
+  }
+
+  const modal = document.createElement("div");
+  modal.className = "calendar-modal calendar-modal-events";
+  modal.innerHTML = `
+    <div class="calendar-modal-title"><i class="fas fa-bolt" style="color:var(--brand);margin-right:6px"></i> Plans — ${displayDate}</div>
+    <div class="calendar-modal-events-list">${eventsListHtml}</div>
+    <div class="calendar-modal-actions">
+      <button class="calendar-modal-btn save" id="cal-popup-add-event"><i class="fas fa-plus"></i> New Plan</button>
+      <button class="calendar-modal-btn cancel" id="cal-popup-close">Close</button>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+  _trayPanel = modal;
+  positionTrayPanel(modal);
+
+  modal.querySelector("#cal-popup-add-event").onclick = () => {
+    closeTrayPanel();
+    showEventFormModal(dateKey, null);
+  };
+
+  modal.querySelector("#cal-popup-close").onclick = closeTrayPanel;
+
+  modal.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-action]");
+    if (!btn) return;
+    const action = btn.dataset.action;
+    const id = btn.dataset.id;
+    if (action === "editEvent") {
+      const ev = _calendarEvents.find((e) => e.id === id);
+      if (ev) {
+        closeTrayPanel();
+        showEventFormModal(dateKey, ev);
+      }
+    } else if (action === "deleteEvent") {
+      _calendarEvents = _calendarEvents.filter((e) => e.id !== id);
+      saveEvents(_calendarEvents);
+      closeTrayPanel();
+      showDayEventsModal(dateKey);
+      renderCalendar();
+    }
+  });
+
+  _trayCloseHandler = (e) => {
+    if (e.key === "Escape") closeTrayPanel();
+  };
+  document.addEventListener("keydown", _trayCloseHandler);
+  setTimeout(() => {
+    document.addEventListener("click", _onTrayOutsideClick);
+  }, 0);
+}
+
+function _onTrayOutsideClick(e) {
+  if (!_trayPanel) return;
+  if (e.target.closest(".calendar-modal, .calendar-popup, .select-menu, .select-menu__dropdown")) return;
+  closeTrayPanel();
+}
+
+function showEventFormModal(dateKey, event) {
+  closeTrayPanel();
+
+  const existing = !!event;
+  const title = existing ? "Edit Plan" : "New Plan";
+
+  const recurringOpts = [
+    { value: "", label: "No repeat" },
+    { value: "daily", label: "Daily" },
+    { value: "weekly", label: "Weekly" },
+    { value: "monthly", label: "Monthly" },
+    { value: "yearly", label: "Yearly" }
+  ];
+
+  const reminderOpts = [
+    { value: "0", label: "None" },
+    { value: "5", label: "5 minutes before" },
+    { value: "10", label: "10 minutes before" },
+    { value: "15", label: "15 minutes before" },
+    { value: "30", label: "30 minutes before" },
+    { value: "60", label: "1 hour before" }
+  ];
 
   const modal = document.createElement("div");
   modal.className = "calendar-modal";
+  modal.innerHTML = `
+    <div class="calendar-modal-title">${title}</div>
+    <div class="calendar-modal-body">
+      <div class="calendar-modal-field">
+        <label>Title</label>
+        <input type="text" class="calendar-modal-input" id="cev-title" placeholder="Plan title" value="${existing ? event.title : ""}">
+      </div>
+      <div class="calendar-modal-field">
+        <label>Date</label>
+        <input type="date" class="calendar-modal-input" id="cev-date" value="${existing ? event.date : dateKey}">
+      </div>
+      <div class="calendar-modal-field">
+        <label>Time (optional)</label>
+        <input type="time" class="calendar-modal-input" id="cev-time" value="${existing && event.time ? event.time : ""}">
+      </div>
+      <div class="calendar-modal-field">
+        <label>Repeat</label>
+        ${renderSelectMenu("cev-recurring", recurringOpts, existing ? event.recurring : "")}
+      </div>
+      <div class="calendar-modal-field">
+        <label>Reminder</label>
+        ${renderSelectMenu("cev-reminder", reminderOpts, existing ? String(event.reminder) : "0")}
+      </div>
+      <div class="calendar-modal-field">
+        <label>Notes</label>
+        <textarea class="calendar-modal-input calendar-modal-textarea" id="cev-notes" placeholder="Optional notes...">${existing && event.notes ? event.notes : ""}</textarea>
+      </div>
+    </div>
+    <div class="calendar-modal-actions">
+      <button class="calendar-modal-btn cancel" id="cev-cancel">Cancel</button>
+      ${existing ? `<button class="calendar-modal-btn delete" id="cev-delete">Delete</button>` : ""}
+      <button class="calendar-modal-btn save" id="cev-save">Save</button>
+    </div>
+  `;
 
-  const title = document.createElement("div");
-  title.className = "calendar-modal-title";
-  title.textContent = `Event for ${dateKey}`;
+  document.body.appendChild(modal);
+  _trayPanel = modal;
+  positionTrayPanel(modal, 20);
+  bindSelectMenu(modal);
 
-  const input = document.createElement("textarea");
-  input.className = "calendar-modal-input";
-  input.placeholder = "Enter event details...";
-  input.value = existingEvent;
+  modal.querySelector("#cev-cancel").onclick = () => {
+    closeTrayPanel();
+    showDayEventsModal(dateKey);
+  };
 
-  const buttons = document.createElement("div");
-  buttons.className = "calendar-modal-buttons";
+  if (existing) {
+    modal.querySelector("#cev-delete").onclick = () => {
+      _calendarEvents = _calendarEvents.filter((e) => e.id !== event.id);
+      saveEvents(_calendarEvents);
+      closeTrayPanel();
+      showDayEventsModal(dateKey);
+      renderCalendar();
+    };
+  }
 
-  const saveBtn = document.createElement("button");
-  saveBtn.className = "calendar-modal-btn save";
-  saveBtn.textContent = "Save";
-  saveBtn.onclick = () => {
-    const value = input.value.trim();
-    if (value) {
-      _calendarEvents[dateKey] = value;
+  modal.querySelector("#cev-save").onclick = () => {
+    const titleVal = modal.querySelector("#cev-title").value.trim();
+    const dateVal = modal.querySelector("#cev-date").value;
+    const timeVal = modal.querySelector("#cev-time").value;
+    const colorVal = EVENT_COLORS[0];
+    const recurringVal = getSelectMenuValue("cev-recurring", modal) || "";
+    const reminderVal = parseInt(getSelectMenuValue("cev-reminder", modal) || "0");
+    const notesVal = modal.querySelector("#cev-notes").value.trim();
+    if (!titleVal || !dateVal) return;
+
+    if (existing) {
+      const ev = _calendarEvents.find((e) => e.id === event.id);
+      if (ev) {
+        ev.title = titleVal;
+        ev.date = dateVal;
+        ev.time = timeVal;
+        ev.color = colorVal;
+        ev.recurring = recurringVal;
+        ev.reminder = reminderVal;
+        ev.notes = notesVal;
+      }
     } else {
-      delete _calendarEvents[dateKey];
+      _calendarEvents.push({
+        id: generateEventId(),
+        title: titleVal,
+        date: dateVal,
+        time: timeVal,
+        color: colorVal,
+        recurring: recurringVal,
+        reminder: reminderVal,
+        notes: notesVal
+      });
     }
-    saveCalendarEvents();
-    overlay.remove();
+    saveEvents(_calendarEvents);
+    closeTrayPanel();
     renderCalendar();
   };
 
-  const deleteBtn = document.createElement("button");
-  deleteBtn.className = "calendar-modal-btn delete";
-  deleteBtn.textContent = "Delete";
-  deleteBtn.onclick = () => {
-    delete _calendarEvents[dateKey];
-    saveCalendarEvents();
-    overlay.remove();
-    renderCalendar();
+  _trayCloseHandler = (e) => {
+    if (e.key === "Escape") closeTrayPanel();
   };
-
-  const cancelBtn = document.createElement("button");
-  cancelBtn.className = "calendar-modal-btn cancel";
-  cancelBtn.textContent = "Cancel";
-  cancelBtn.onclick = () => overlay.remove();
-
-  buttons.appendChild(saveBtn);
-  if (existingEvent) buttons.appendChild(deleteBtn);
-  buttons.appendChild(cancelBtn);
-
-  modal.appendChild(title);
-  modal.appendChild(input);
-  modal.appendChild(buttons);
-  overlay.appendChild(modal);
-  document.body.appendChild(overlay);
-
-  input.focus();
-
-  overlay.addEventListener("click", (e) => {
-    if (e.target === overlay) overlay.remove();
-  });
+  document.addEventListener("keydown", _trayCloseHandler);
+  setTimeout(() => {
+    document.addEventListener("click", _onTrayOutsideClick);
+  }, 0);
 }
 
 function renderCalendar() {
@@ -261,6 +490,8 @@ function renderCalendar() {
   const monthYear = _calendarPopup.querySelector(".calendar-month-year");
   const grid = _calendarPopup.querySelector(".calendar-grid");
   const agenda = _calendarPopup.querySelector(".calendar-agenda");
+  const alarmSection = _calendarPopup.querySelector(".calendar-alarm-section");
+  const appButtons = _calendarPopup.querySelector(".calendar-app-buttons");
 
   const year = _currentCalendarMonth.getFullYear();
   const month = _currentCalendarMonth.getMonth();
@@ -311,14 +542,28 @@ function renderCalendar() {
 
       if (cellIndex >= firstDay && dayCounter <= daysInMonth) {
         const day = dayCounter;
+        const dateKey = getDateKey(year, month, day);
+        const dayEvents = getEventsForDate(_calendarEvents, dateKey);
+
         dayCell.textContent = day;
 
-        const dateKey = getEventKey(year, month, day);
-        const hasEvent = _calendarEvents[dateKey];
-
-        if (hasEvent) {
+        if (dayEvents.length > 0) {
           dayCell.classList.add("has-event");
-          dayCell.title = hasEvent;
+          const dotsContainer = document.createElement("div");
+          dotsContainer.className = "calendar-day-dots";
+          dayEvents.slice(0, 4).forEach((ev) => {
+            const dot = document.createElement("span");
+            dot.className = "calendar-day-dot";
+            dot.style.background = ev.color || EVENT_COLORS[0];
+            dotsContainer.appendChild(dot);
+          });
+          if (dayEvents.length > 4) {
+            const more = document.createElement("span");
+            more.className = "calendar-day-more-dots";
+            more.textContent = `+${dayEvents.length - 4}`;
+            dotsContainer.appendChild(more);
+          }
+          dayCell.appendChild(dotsContainer);
         }
 
         if (isCurrentMonth && day === currentDay) {
@@ -330,7 +575,7 @@ function renderCalendar() {
         }
 
         dayCell.onclick = () => {
-          showEventModal(dateKey, _calendarEvents[dateKey] || "");
+          showDayEventsModal(dateKey);
         };
 
         dayCounter++;
@@ -343,6 +588,8 @@ function renderCalendar() {
   }
 
   renderAgenda(agenda);
+  renderAlarmSection(alarmSection);
+  renderAppButtons(appButtons);
 
   const weekNums = grid.querySelectorAll(".calendar-week-number");
   weekNums.forEach((wn, i) => {
@@ -360,45 +607,111 @@ function renderAgenda(agendaEl) {
 
   const title = document.createElement("div");
   title.className = "calendar-agenda-title";
-  title.textContent = "📅 Upcoming Events";
+  title.innerHTML = '<i class="fas fa-bolt" style="color:var(--brand);margin-right:4px"></i> Agenda';
   agendaEl.appendChild(title);
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const upcomingEvents = Object.entries(_calendarEvents)
-    .filter(([key]) => new Date(key) >= today)
-    .sort(([a], [b]) => new Date(a) - new Date(b))
+  const todayKey = getDateKey(today.getFullYear(), today.getMonth(), today.getDate());
+  const todayEvents = getEventsForDate(_calendarEvents, todayKey);
+
+  const upcomingEvents = _calendarEvents
+    .filter((ev) => new Date(ev.date) >= today || ev.recurring)
+    .sort((a, b) => {
+      const da = new Date(a.date);
+      const db = new Date(b.date);
+      if (da - db !== 0) return da - db;
+      return (a.time || "00:00").localeCompare(b.time || "00:00");
+    })
     .slice(0, 5);
+
+  if (todayEvents.length > 0) {
+    const todaySummary = document.createElement("div");
+    todaySummary.className = "calendar-today-summary";
+    todaySummary.textContent = `${todayEvents.length} plan${todayEvents.length > 1 ? "s" : ""} today`;
+    agendaEl.insertBefore(todaySummary, agendaEl.firstChild.nextSibling);
+  }
 
   if (upcomingEvents.length === 0) {
     const noEvents = document.createElement("div");
     noEvents.className = "calendar-no-events";
-    noEvents.textContent = "No events coming up";
+    noEvents.textContent = "Nothing coming up.";
     agendaEl.appendChild(noEvents);
     return;
   }
 
-  upcomingEvents.forEach(([dateKey, event]) => {
+  upcomingEvents.forEach((ev) => {
     const eventEl = document.createElement("div");
     eventEl.className = "calendar-agenda-item";
 
+    const iconEl = document.createElement("i");
+    iconEl.className = `fas ${ev.icon || "fa-bolt"} calendar-agenda-icon`;
+    iconEl.style.color = ev.color || EVENT_COLORS[0];
+    eventEl.appendChild(iconEl);
+
     const dateEl = document.createElement("span");
     dateEl.className = "calendar-agenda-date";
-    const eventDate = new Date(dateKey);
+    const eventDate = new Date(ev.date);
     const isToday = eventDate.toDateString() === new Date().toDateString();
     dateEl.textContent = isToday ? "Today" : eventDate.toLocaleDateString([], { month: "short", day: "numeric" });
+    eventEl.appendChild(dateEl);
 
     const textEl = document.createElement("span");
     textEl.className = "calendar-agenda-text";
-    textEl.textContent = event.length > 30 ? event.substring(0, 30) + "…" : event;
-
-    eventEl.appendChild(dateEl);
+    let displayText = ev.title;
+    if (ev.time) displayText = `${ev.time.slice(0, 5)} ${displayText}`;
+    textEl.textContent = displayText.length > 35 ? displayText.substring(0, 35) + "..." : displayText;
     eventEl.appendChild(textEl);
-    eventEl.onclick = () => showEventModal(dateKey, event);
+
+    if (ev.notes) {
+      const notesEl = document.createElement("span");
+      notesEl.className = "calendar-agenda-notes";
+      notesEl.textContent = ev.notes.length > 20 ? ev.notes.substring(0, 20) + "..." : ev.notes;
+      eventEl.appendChild(notesEl);
+    }
+
+    eventEl.onclick = () =>
+      showEventFormModal(getDateKey(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate()), ev);
     agendaEl.appendChild(eventEl);
   });
 }
+
+function renderAlarmSection(alarmSection) {
+  alarmSection.innerHTML = "";
+
+  const nextAlarm = getNextAlarm();
+  if (nextAlarm) {
+    const alarmEl = document.createElement("div");
+    alarmEl.className = "calendar-alarm-item";
+    alarmEl.innerHTML = `
+      <i class="fas fa-bell calendar-alarm-icon"></i>
+      <span class="calendar-alarm-label">Next Alarm</span>
+      <span class="calendar-alarm-time">${nextAlarm.time}</span>
+    `;
+    if (nextAlarm.label) {
+      const labelEl = document.createElement("span");
+      labelEl.className = "calendar-alarm-name";
+      labelEl.textContent = nextAlarm.label;
+      alarmEl.appendChild(labelEl);
+    }
+    alarmSection.appendChild(alarmEl);
+  }
+}
+
+function renderAppButtons(container) {
+  container.innerHTML = `
+    <button class="calendar-open-btn" id="calendar-open-clock">
+      <i class="fas fa-clock"></i> Open Clock
+    </button>
+  `;
+
+  container.querySelector("#calendar-open-clock").onclick = () => {
+    closeCalendarPopup();
+    os.app.launch("clockApp");
+  };
+}
+
 export function setCurrentCalendarMonth() {
   _currentCalendarMonth = new Date();
 }

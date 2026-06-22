@@ -12,6 +12,7 @@ class DisplayPerformanceApp extends BaseApp {
     this._popupVisible = false;
 
     this.powerMode = turboManager.getMode();
+    this.batteryInfo = { level: 1, charging: true };
 
     this.brightness = os.storage.get(StorageKeys.brightness) || 100;
     this.contrast = os.storage.get(StorageKeys.contrast) || 1;
@@ -21,10 +22,82 @@ class DisplayPerformanceApp extends BaseApp {
     this.nightModeStart = os.storage.get(StorageKeys.nightModeStart) || "20:00";
     this.nightModeEnd = os.storage.get(StorageKeys.nightModeEnd) || "07:00";
 
+    this._initBattery();
     this._initTray();
     this._applyDisplaySettings();
     this._setupKeybinds();
     this._setupNightModeSchedule();
+  }
+
+  async _initBattery() {
+    if ("getBattery" in navigator) {
+      try {
+        const battery = await navigator.getBattery();
+        this.batteryInfo = {
+          level: battery.level,
+          charging: battery.charging
+        };
+        battery.addEventListener("levelchange", () => {
+          this.batteryInfo.level = battery.level;
+          this._updateTrayIcon();
+          this._updateBatteryDisplay();
+        });
+        battery.addEventListener("chargingchange", () => {
+          this.batteryInfo.charging = battery.charging;
+          this._updateTrayIcon();
+          this._updateBatteryDisplay();
+        });
+      } catch (e) {
+        console.warn("Battery API error:", e);
+      }
+    }
+  }
+
+  _getBatteryIcon() {
+    const level = Math.round(this.batteryInfo.level * 100);
+    if (level > 90) return "fas fa-battery-full";
+    if (level > 65) return "fas fa-battery-three-quarters";
+    if (level > 35) return "fas fa-battery-half";
+    if (level > 10) return "fas fa-battery-quarter";
+    return "fas fa-battery-empty";
+  }
+
+  _getBatteryIconHtml() {
+    const batteryIcon = `<i class="${this._getBatteryIcon()}"></i>`;
+    if (this.batteryInfo.charging) {
+      return `<span class="battery-charging-wrapper">${batteryIcon}<i class="fas fa-bolt charging-overlay"></i></span>`;
+    }
+    return batteryIcon;
+  }
+
+  _getBatteryStatusText() {
+    const level = Math.round(this.batteryInfo.level * 100);
+    const charging = this.batteryInfo.charging;
+    if (charging) {
+      if (level === 100) return "Fully Charged";
+      return "Charging";
+    }
+    if (level <= 20) return "Low Battery";
+    return "On Battery";
+  }
+
+  _updateTrayIcon() {
+    const trayEl = document.querySelector(`[data-tray-id="${this.winId}"]`);
+    if (trayEl) {
+      const iconContainer = trayEl.querySelector(".tray-icon-btn") || trayEl;
+      iconContainer.innerHTML = this._getBatteryIconHtml();
+    }
+  }
+
+  _updateBatteryDisplay() {
+    const popup = document.getElementById(this.popupId);
+    if (!popup) return;
+    const batteryPercent = popup.querySelector(".battery-percent");
+    const batteryStatus = popup.querySelector(".battery-status");
+    const batteryIconContainer = popup.querySelector(".battery-icon");
+    if (batteryPercent) batteryPercent.textContent = `${Math.round(this.batteryInfo.level * 100)}%`;
+    if (batteryStatus) batteryStatus.textContent = this._getBatteryStatusText();
+    if (batteryIconContainer) batteryIconContainer.innerHTML = this._getBatteryIconHtml();
   }
 
   _shouldSuppressNotification() {
@@ -33,7 +106,7 @@ class DisplayPerformanceApp extends BaseApp {
   }
 
   _initTray() {
-    this.registerTray(this.winId, "fas fa-battery", "Display & Performance", {
+    this.registerTray(this.winId, this._getBatteryIcon(), "Display & Performance", {
       resident: true,
       showInTray: true,
       onClick: () => {
@@ -50,6 +123,7 @@ class DisplayPerformanceApp extends BaseApp {
         { label: "Night Coding", icon: "fa-moon", action: () => this._applyPreset("nightCoding") }
       ]
     });
+    setTimeout(() => this._updateTrayIcon(), 0);
   }
 
   _saveSettings() {
@@ -265,8 +339,21 @@ class DisplayPerformanceApp extends BaseApp {
     const popup = document.createElement("div");
     popup.id = this.popupId;
     popup.className = "display-performance-tray-popup";
+    const batteryPercent = Math.round(this.batteryInfo.level * 100);
+    const batteryStatus = this._getBatteryStatusText();
+    const batteryIconHtml = this._getBatteryIconHtml();
     popup.innerHTML = `
       <div class="display-performance-popup-content">
+        <div class="display-performance-section battery-section">
+          <div class="battery-icon">
+            ${batteryIconHtml}
+          </div>
+          <div class="battery-info">
+            <div class="battery-percent">${batteryPercent}%</div>
+            <div class="battery-status">${batteryStatus}</div>
+          </div>
+        </div>
+        <div class="display-performance-divider"></div>
         <div class="display-performance-section">
           <div class="display-performance-section-title">
             <i class="fas fa-bolt"></i>

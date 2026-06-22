@@ -34,5 +34,7 @@ export const AppSource = {
   EMOJI_SELECTOR: "Emoji Selector",
   SYSTEM: "System",
   RHYTHMS: "Rhythms",
-  TORRENT_CLIENT: "Torrent Client"
+  TORRENT_CLIENT: "Torrent Client",
+  CLOCK: "Clock",
+  CALENDAR_APP: "Calendar"
 };

@@ -12,16 +12,14 @@ export function createAppActions(appLauncher) {
         actions[appId] = (extra) => {
           if (appId === "taskManagerApp") {
             const appInstance = appLauncher.taskManager;
-            if (appInstance) {
-              return appInstance.open(extra);
-            }
+            if (appInstance) return appInstance.open(extra);
             console.error(`No app instance found for ${appId}`);
             return;
           }
+
           const appInstance = appLauncher[appId] || appLauncher[appId + "App"];
-          if (appInstance) {
-            return appInstance.open(extra);
-          }
+          if (appInstance) return appInstance.open(extra);
+
           console.error(`No app instance found for ${appId}`);
         };
         break;
@@ -53,6 +51,17 @@ export function createAppActions(appLauncher) {
       case "steam":
         actions[appId] = (extra) => {
           return openSteamWindow(appLauncher, appLauncher.explorerApp.wm, null, extra?.steamGameId);
+        };
+        break;
+
+      case "remote":
+        actions[appId] = (extra) => {
+          const url = source || metadata.url;
+          if (!url) {
+            console.error(`No remote URL defined for app ${appId}`);
+            return;
+          }
+          return appLauncher.openRemoteApp(url);
         };
         break;
 

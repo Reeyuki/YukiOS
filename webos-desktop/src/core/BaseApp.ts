@@ -158,6 +158,8 @@ export class BaseApp {
         return AppSource.YUKI_OS_GUIDE;
       case "AIAssistantApp":
         return AppSource.AI_ASSISTANT;
+      case "ClockApp":
+        return AppSource.CLOCK;
       case "BrightnessApp":
         return AppSource.BRIGHTNESS;
       default:

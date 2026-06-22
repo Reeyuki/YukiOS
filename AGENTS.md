@@ -18,6 +18,7 @@ You are working under webos-desktop directory. when src is mentioned it means we
 - Always use `src/framework.js` barrel for app-level imports. When writing a new app, import
   `{ BaseApp, PersistenceTypes, os, StorageKeys, APP_MANIFESTS }` from `"../framework.js"` instead of separate modules.
   Import StorageKeys and use the defined constants. If a new key is needed, add it to StorageKeys.js first.
+- Never use this.wm.\*, always use os.window module for window operations
 - Always use `os.storage` API instead of bare `localStorage`; the storage module handles serialization/deserialization
   automatically.
 - Never use browser native alerts, prompts, or confirms (alert(), prompt(), confirm()). Always use the OS-level dialog
@@ -86,7 +87,7 @@ Yuki OS uses a dark glassmorphism theme with a comprehensive theming system. All
 - **Transitions**: 0.1–0.2s for hover states.
 - **Light Theme**: Override via `html[data-theme="light"]` with solid colors (`#fff`, `#f0f0f0`, `#111`, `#666`).
 - **Scrollbars**: 8px width, `rgba(255,255,255,0.12)` thumb.
-- **Checkboxes/Inputs**: Never use native browser checkboxes, plain inputs, or dropdowns. Always use `appearance: none`,
+- **Checkboxes/Inputs**: Never use native browser checkboxes, plain inputs, or dropdowns. Always use `appearance: none`, @src/shared/selectMenu.js, and @src/shared/rangeSlider.js component.
   `-webkit-appearance: none`, custom border/background, and `::after` pseudo-element for checkmarks via CSS variables.
 - **Theming System**: Comprehensive theme engine with 25+ built-in themes, transparent UI toggle, advanced brightness
   controls, and GUI scale options. Themes are managed via `settings.js` and applied through CSS variables.

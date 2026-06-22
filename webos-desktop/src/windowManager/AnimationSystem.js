@@ -134,6 +134,10 @@ export function animateWindowOpen(win, isRestoring = false) {
 
   const duration = 300 * getAnimationSpeed();
 
+  const cs = getComputedStyle(win);
+  win.style.opacity = cs.opacity;
+  win.style.transform = cs.transform;
+  win.style.filter = cs.filter;
   win.getAnimations().forEach((anim) => anim.cancel());
   const wm = window.__windowManager;
   const isSessionRestoring = wm && wm.appRestorationService && wm.appRestorationService.isRestoring;

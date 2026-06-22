@@ -8,6 +8,19 @@ const EXISTING_NEWS_UPDATES = [
     date: "June 22, 2026",
     sections: [
       {
+        icon: "fa-clock",
+        title: "New Apps",
+        items: [
+          ["fa-clock", "Clock", "Digital and analog clocks with alarms, stopwatch, timer, and customizable settings."],
+          ["fa-calendar-days", "Calendar", "Manage events and reminders right from the Clock app's Events tab."]
+        ]
+      }
+    ]
+  },
+  {
+    date: "June 22, 2026",
+    sections: [
+      {
         icon: "fa-code",
         title: "New App",
         items: [
@@ -869,7 +882,7 @@ const EXISTING_NEWS_UPDATES = [
           ["fa-file-lines", "Markdown Viewer", "Open and read Markdown files directly in the system."],
           ["fa-cube", "3D Model Viewer", "View 3D models without any external software."],
           ["fa-file-word", "Full Office Suite", "Create and edit office documents right in your workspace."],
-          ["fa-calendar-days", "Calendar", "Track your dates and events with the built-in calendar."],
+          ["fa-calendar-days", "Events in Clock", "Track dates and events from the Clock app's Events tab."],
           [
             "fa-note-sticky",
             "Notepad Enhancements",

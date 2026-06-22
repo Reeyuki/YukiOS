@@ -127,6 +127,7 @@ It's built entirely in vanilla JS/TypeScript (with some libraries, of course!) !
 - Custom cursor support (with miku by default)
 - Import/export system for backup and migration
 - Transparent UI toggle
+- Clock system is using OffscreenCanvas rendering and lightweight NTP offset sync with js worker
 
 ---
 

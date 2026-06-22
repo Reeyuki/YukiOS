@@ -1282,7 +1282,6 @@ html[data-theme-mode="light"] .settings-select {
   cursor: pointer;
   user-select: none;
   outline: none;
-  z-index: 50;
 }
 
 .select-menu__trigger {
