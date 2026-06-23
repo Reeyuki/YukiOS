@@ -903,8 +903,11 @@ export const APP_MANIFESTS = [
     windowIdPatterns: ["browser"],
     isHeavy: true,
     category: "internet",
-    clippy: { message: "Your bookmarks and tabs are ready when you are.", animation: ClippyAnimation.Wave },
-    description: "Web browser with bookmarks, history, and tab management for internet access within Yuki OS."
+    clippy: {
+      message: "Select Tor from the proxy dropdown to browse anonymously — I'll handle the setup.",
+      animation: ClippyAnimation.Wave
+    },
+    description: "Web browser with bookmarks, history, tab management, and Tor anonymous browsing within Yuki OS."
   },
   {
     serviceKey: "yukiDevToolsApp",
@@ -1198,5 +1201,36 @@ export const APP_MANIFESTS = [
       animation: ClippyAnimation.Show
     },
     description: "Interactive maps with OpenStreetMap and Google Maps support, plus configurable tile layers and zoom."
+  },
+  {
+    serviceKey: "torBrowserApp",
+    enhanced: true,
+    type: "system",
+    title: "Tor Connection Manager",
+    icon: "fas fa-shield-halved",
+    launchType: "instance",
+    windowIdPatterns: ["tor-browser"],
+    category: "internet",
+    clippy: {
+      message: "Connect to Tor via WebTor WASM with Snowflake WebRTC transport for anonymous browsing.",
+      animation: ClippyAnimation.Show
+    },
+    description: "Connect to Tor via WebTor WASM with Snowflake WebRTC for anonymous browsing."
+  },
+  {
+    serviceKey: "vncApp",
+    enhanced: true,
+    type: "system",
+    title: "VNC Client",
+    icon: "fas fa-display",
+    launchType: "instance",
+    windowIdPatterns: ["vnc-client"],
+    category: "internet",
+    clippy: {
+      message: "Connect to remote desktops via VNC with saved profiles and clipboard sync.",
+      animation: ClippyAnimation.Show
+    },
+    description:
+      "Remote desktop client supporting VNC protocol with saved connection profiles, fullscreen mode, and clipboard integration."
   }
 ];

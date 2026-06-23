@@ -211,40 +211,6 @@ export const vantaPresets = [
   },
   {
     id: 12,
-    name: "Fog - Blue",
-    effect: "FOG",
-    options: {
-      color: 0x1e1e1e,
-      highlightColor: 0x4a00e0,
-      midColor: 0x2a2a2a,
-      lowColor: 0x0a0a0a,
-      blurFactor: 0.05,
-      speed: 1
-    },
-    previewStyle: {
-      background: "linear-gradient(180deg, #0a0a0a 0%, #1e1e1e 30%, #4a00e0 50%, #2a2a2a 70%, #0a0a0a 100%)",
-      animation: "fogPreview 8s ease-in-out infinite"
-    }
-  },
-  {
-    id: 13,
-    name: "Fog - Purple",
-    effect: "FOG",
-    options: {
-      color: 0x4a00e0,
-      highlightColor: 0x1e1e1e,
-      midColor: 0x2a2a2a,
-      lowColor: 0x0a0a0a,
-      blurFactor: 0.05,
-      speed: 1
-    },
-    previewStyle: {
-      background: "linear-gradient(180deg, #0a0a0a 0%, #4a00e0 30%, #1e1e1e 50%, #2a2a2a 70%, #0a0a0a 100%)",
-      animation: "fogPreview 8s ease-in-out infinite"
-    }
-  },
-  {
-    id: 16,
     name: "Cells - Blue",
     effect: "CELLS",
     options: {
@@ -262,7 +228,7 @@ export const vantaPresets = [
     }
   },
   {
-    id: 17,
+    id: 13,
     name: "Cells - Purple",
     effect: "CELLS",
     options: {

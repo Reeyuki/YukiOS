@@ -5,6 +5,33 @@ const appNewsEntries = APP_MANIFESTS.filter((manifest) => manifest.news).map((ma
 
 const EXISTING_NEWS_UPDATES = [
   {
+    date: "June 23, 2026",
+    sections: [
+      {
+        icon: "fa-shield-halved",
+        title: "New Apps",
+        items: [
+          [
+            "fa-display",
+            "VNC Client",
+            "Connect to remote desktops via VNC with saved profiles, fullscreen mode, clipboard sync, and WebSocket support."
+          ]
+        ]
+      },
+      {
+        icon: "fa-snowflake",
+        title: "Anonymous Browsing",
+        items: [
+          [
+            "fa-shield-halved",
+            "Tor via Snowflake",
+            "Browse anonymously through a WASM Tor client (Arti) with Snowflake bridge .Per-tab isolated circuits, auto-reconnect, and a dedicated Tor Connection Manager app."
+          ]
+        ]
+      }
+    ]
+  },
+  {
     date: "June 22, 2026",
     sections: [
       {

@@ -147,5 +147,7 @@ export const StorageKeys = {
   taskbarScale: "yukiOS_taskbar_scale",
   clockAlarms: "yukiOS_clock_alarms",
   clockSettings: "yukiOS_clock_settings",
-  calendarAppEvents: "yukiOS_calendar_app_events"
+  calendarAppEvents: "yukiOS_calendar_app_events",
+  torBrowserState: "yukiOS_tor_browser_state",
+  vncProfiles: "yukiOS_vnc_profiles"
 };

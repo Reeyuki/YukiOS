@@ -2,7 +2,8 @@ export const PROXIES = [
   { label: "Codetabs", prefix: "https://api.codetabs.com/v1/proxy?quest=" },
   { label: "WhateverOrigin", prefix: "https://whateverorigin.org/get?url=" },
   { label: "proxy.2677929.xyz", prefix: "https://proxy.2677929.xyz/" },
-  { label: "cors-anywhere.herokuapp", prefix: "cors-anywhere.herokuapp.com/" }
+  { label: "cors-anywhere.herokuapp", prefix: "cors-anywhere.herokuapp.com/" },
+  { label: "Tor Anonymous", type: "tor" }
 ];
 
 export function clampProxyIndex(index, proxies = PROXIES) {
@@ -18,6 +19,7 @@ export function buildProxyUrl(url, proxyIndex = 0, proxies = PROXIES) {
   const i = clampProxyIndex(proxyIndex, proxies);
   if (i === -1) return url;
   const proxy = proxies[i];
+  if (proxy.type === "tor") return null;
   return proxy.prefix + encodeURIComponent(url);
 }
 
@@ -37,6 +39,7 @@ export class ProxyRegistry {
 
 export async function fetchHtmlThroughProxy(url, proxyIndex = 0, proxies = PROXIES) {
   const proxyUrl = buildProxyUrl(url, proxyIndex, proxies);
+  if (!proxyUrl) throw new Error("Tor proxy not supported in fetchHtmlThroughProxy");
   const res = await fetch(proxyUrl);
   if (!res.ok) throw new Error(`HTTP ${res.status} fetching ${proxyUrl}`);
 

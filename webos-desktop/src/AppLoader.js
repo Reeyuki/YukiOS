@@ -36,6 +36,8 @@ import { ScreenshotApp } from "./apps/screenshot.js";
 import { MapsApp } from "./apps/maps.js";
 import { ErudaApp } from "./apps/eruda.js";
 import { ClockApp } from "./apps/clock.js";
+import { TorBrowserApp } from "./apps/torBrowser.js";
+import { VNCApp } from "./apps/vncApp.js";
 
 const APP_CLASS_MAP = {
   terminalApp: TerminalApp,
@@ -73,7 +75,9 @@ const APP_CLASS_MAP = {
   screenshotApp: ScreenshotApp,
   mapsApp: MapsApp,
   erudaApp: ErudaApp,
-  clockApp: ClockApp
+  clockApp: ClockApp,
+  torBrowserApp: TorBrowserApp,
+  vncApp: VNCApp
 };
 
 const APP_DEFINITIONS = APP_MANIFESTS.map((manifest) => {

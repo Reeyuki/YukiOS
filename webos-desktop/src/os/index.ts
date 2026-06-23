@@ -6,6 +6,7 @@ import { AppAPI } from "./app.js";
 import { EventAPI } from "./events.js";
 import { StorageAPI } from "./storage.js";
 import { DialogAPI } from "./dialog.js";
+import { TorManager } from "../tor/TorManager.js";
 
 let windowAPI: WindowAPI | null = null;
 let fileSystemAPI: FileSystemAPI | null = null;
@@ -24,6 +25,8 @@ let boundAppAPI: OSBridge["app"] | null = null;
 let boundEventAPI: OSBridge["events"] | null = null;
 let boundStorageAPI: OSBridge["storage"] | null = null;
 let boundDialogAPI: OSBridge["dialog"] | null = null;
+let boundTorAPI: OSBridge["tor"] | null = null;
+let torManager: any = null;
 
 interface OSBridge {
   window: {
@@ -112,6 +115,24 @@ interface OSBridge {
     fileOpen: DialogAPI["fileOpen"];
     fileSave: DialogAPI["fileSave"];
     openDirectory: DialogAPI["openDirectory"];
+  };
+  tor: {
+    start: (options?: any) => Promise<void>;
+    stop: () => Promise<void>;
+    fetch: (url: string) => Promise<any>;
+    post: (url: string, body: Uint8Array) => Promise<any>;
+    request: (method: string, url: string, headers?: any, body?: any, timeout?: number) => Promise<any>;
+    createClient: () => Promise<{
+      fetch: (url: string) => Promise<any>;
+      post: (url: string, body: Uint8Array) => Promise<any>;
+      request: (method: string, url: string, headers?: any, body?: any, timeout?: number) => Promise<any>;
+      getFetchCount: () => number;
+      close: () => Promise<void>;
+      waitForCircuit: () => Promise<void>;
+    }>;
+    getStatus: () => { running: boolean; phase: string; ready: boolean };
+    isReady: boolean;
+    running: boolean;
   };
   telemetry: {
     getLegacyCalls: typeof getLegacyAPICalls;
@@ -383,6 +404,75 @@ export function setDialogExplorerApp(app: any): void {
   dialogAPI.setExplorerApp(app);
 }
 
+export function getTorStatus() {
+  if (!torManager) return { running: false, phase: "unavailable", ready: false };
+  return torManager.getStatus();
+}
+
+let _torUnsub = null;
+
+export function setTorManager(manager: any): void {
+  if (torManager === manager && boundTorAPI) return;
+  torManager = manager;
+
+  if (_torUnsub) {
+    _torUnsub();
+    _torUnsub = null;
+  }
+  _torUnsub = manager.onEvent((type, data) => {
+    try {
+      if (type === "status") {
+        boundEventAPI?.emit("TOR_STATUS_CHANGED", data);
+        if (data.ready) {
+          boundTrayAPI?.register("tor-service", "fas fa-shield-halved", "Tor Active", {
+            resident: true,
+            showInTray: true,
+            priority: 90,
+            onClick: () => boundAppAPI?.launch("torBrowserApp"),
+            contextMenuItems: [
+              {
+                label: "Open Tor Manager",
+                icon: "fas fa-external-link-alt",
+                action: () => boundAppAPI?.launch("torBrowserApp")
+              },
+              { label: "Stop Tor", icon: "fas fa-stop", action: () => manager.stop() }
+            ]
+          });
+        } else if (!data.running) {
+          try {
+            boundTrayAPI?.unregister("tor-service");
+          } catch (e) {}
+        }
+      }
+      if (type === "log") {
+        boundEventAPI?.emit("TOR_LOG", data);
+      }
+    } catch (e) {}
+  });
+
+  boundTorAPI = {
+    fetch: (url: string) => manager.fetch(url),
+    post: (url: string, body: Uint8Array) => manager.post(url, body),
+    request: (method: string, url: string, headers?: any, body?: any, timeout?: number) =>
+      manager.request(method, url, headers, body, timeout),
+    createClient: () => manager.createClient(),
+    getStatus: () => manager.getStatus(),
+    start: (options?: any) => manager.start(options),
+    stop: () => manager.stop(),
+    getLogs: () => manager.getLogs(),
+    setSnowflakeUrl: (url: string) => (manager.snowflakeUrl = url),
+    getSnowflakeUrl: () => manager.snowflakeUrl,
+    getFetchCount: () => manager.getFetchCount(),
+    reconnect: () => manager.reconnect(),
+    get isReady() {
+      return manager.getStatus().ready;
+    },
+    get running() {
+      return manager.getStatus().running;
+    }
+  };
+}
+
 /**
  * Unified OS API surface for applications
  * This is the primary export that apps should use
@@ -445,6 +535,13 @@ export const os: OSBridge = {
       };
     }
     return boundDialogAPI;
+  },
+
+  get tor() {
+    if (!boundTorAPI) {
+      setTorManager(TorManager.getInstance());
+    }
+    return boundTorAPI;
   },
 
   telemetry: {

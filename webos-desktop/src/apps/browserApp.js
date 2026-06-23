@@ -63,7 +63,7 @@ export class BrowserApp extends BaseApp {
     this._destroyed = false;
 
     const startUrl = url || this.homepageUrl;
-    const displayTitle = String(isIncognito ? "🕵️ Incognito - " + title : title);
+    const displayTitle = String(isIncognito ? "Incognito - " + title : title);
 
     const content = `
       <div class="browser-root${isIncognito ? " incognito-mode" : ""}" id="browser-root-${this.winId}">
@@ -72,27 +72,27 @@ export class BrowserApp extends BaseApp {
           <div id="controls-slot-${this.winId}" style="display:flex;align-items:center;flex-shrink:0;"></div>
         </div>
         <div class="browser-navbar" id="navbar-${this.winId}">
-          <button class="nav-btn" id="btn-back-${this.winId}" title="Back (Right-click for history)">&#8592;</button>
-          <button class="nav-btn" id="btn-fwd-${this.winId}" title="Forward (Right-click for history)">&#8594;</button>
-          <button class="nav-btn" id="btn-reload-${this.winId}" title="Reload">&#8635;</button>
-          <button class="nav-btn" id="btn-home-${this.winId}" title="Home">⌂</button>
+          <button class="nav-btn" id="btn-back-${this.winId}" title="Back (Right-click for history)"><i class="fas fa-arrow-left"></i></button>
+          <button class="nav-btn" id="btn-fwd-${this.winId}" title="Forward (Right-click for history)"><i class="fas fa-arrow-right"></i></button>
+          <button class="nav-btn" id="btn-reload-${this.winId}" title="Reload"><i class="fas fa-sync-alt"></i></button>
+          <button class="nav-btn" id="btn-home-${this.winId}" title="Home"><i class="fas fa-home"></i></button>
           <div class="address-bar-wrap">
             <input class="address-bar" id="address-${this.winId}" type="text" placeholder="Search or enter URL..." spellcheck="false" autocomplete="off"/>
-            <button class="bookmark-star" id="btn-star-${this.winId}" title="Bookmark this page">☆</button>
+            <button class="bookmark-star" id="btn-star-${this.winId}" title="Bookmark this page"><i class="far fa-star"></i></button>
           </div>
           <select class="proxy-select" id="proxy-${this.winId}">
             <option value="-1"${this.currentProxyIndex === -1 ? " selected" : ""}>No proxy</option>
             ${this.proxies.map((p, i) => `<option value="${i}"${i === this.currentProxyIndex ? " selected" : ""}>${p.label}</option>`).join("")}
           </select>
           <div class="zoom-controls">
-            <button class="zoom-btn" id="btn-zoom-out-${this.winId}" title="Zoom out">−</button>
+            <button class="zoom-btn" id="btn-zoom-out-${this.winId}" title="Zoom out"><i class="fas fa-minus"></i></button>
             <span class="zoom-label" id="zoom-label-${this.winId}">${Math.round(this.zoomLevel * 100)}%</span>
-            <button class="zoom-btn" id="btn-zoom-in-${this.winId}" title="Zoom in">+</button>
+            <button class="zoom-btn" id="btn-zoom-in-${this.winId}" title="Zoom in"><i class="fas fa-plus"></i></button>
           </div>
-          <button class="nav-btn" id="btn-darkmode-${this.winId}" title="Dark Mode" style="font-size:14px">🌙</button>
-          <button class="nav-btn" id="btn-screenshot-${this.winId}" title="Screenshot">📷</button>
-          <button class="nav-btn" id="btn-fullscreen-${this.winId}" title="Fullscreen iframe">⛶</button>
-          <button class="browser-menu-btn" id="btn-menu-${this.winId}" title="Menu">⋮</button>
+          <button class="nav-btn" id="btn-darkmode-${this.winId}" title="Dark Mode" style="font-size:14px"><i class="fas fa-moon"></i></button>
+          <button class="nav-btn" id="btn-screenshot-${this.winId}" title="Screenshot"><i class="fas fa-camera"></i></button>
+          <button class="nav-btn" id="btn-fullscreen-${this.winId}" title="Fullscreen iframe"><i class="fas fa-expand"></i></button>
+          <button class="browser-menu-btn" id="btn-menu-${this.winId}" title="Menu"><i class="fas fa-ellipsis-v"></i></button>
         </div>
         <div class="bookmark-bar${this.showBookmarkBar ? "" : " hidden"}" id="bookmarkbar-${this.winId}"></div>
         <div class="browser-content" id="content-${this.winId}">
@@ -315,6 +315,44 @@ export class BrowserApp extends BaseApp {
     }
     os.window.focus(this.win);
   }
+
+  async _startTorWithStatus() {
+    const tm = os.tor;
+    const status = tm.getStatus();
+    if (status.ready) return true;
+    if (status.running) {
+      await tm.waitForCircuit();
+      return true;
+    }
+    this.showLoading(true);
+    const lt = this.loadingOverlay?.querySelector(".loading-text");
+    if (lt) lt.textContent = "Starting Tor...";
+    const unsubLog = os.events.on("TOR_LOG", (msg) => {
+      const t = this.loadingOverlay?.querySelector(".loading-text");
+      if (t) t.textContent = msg;
+    });
+    try {
+      await tm.start({ appId: "browserApp" });
+      unsubLog();
+      return true;
+    } catch (e) {
+      unsubLog();
+      this.showLoading(false);
+      os.notify.send("Tor Error", "Failed to start Tor: " + e.message, { type: "error", duration: 5000 });
+      this.currentProxyIndex = -1;
+      this.proxySelect.value = "-1";
+      this._savePrefs();
+      return false;
+    }
+  }
+
+  _onTorProxySelected() {
+    const status = os.tor.getStatus();
+    if (!status || (!status.ready && !status.running)) {
+      os.notify.send("Tor Proxy", "Tor will start when you load a page.", { type: "info", duration: 3000 });
+    }
+  }
+
   setupNavEvents() {
     const backBtn = document.getElementById(`btn-back-${this.winId}`);
     backBtn.addEventListener("click", () => {
@@ -387,9 +425,13 @@ export class BrowserApp extends BaseApp {
       this.currentProxyIndex = parseInt(this.proxySelect.value);
       this._savePrefs();
 
-      const proxyName =
-        this.currentProxyIndex === -1 ? "No proxy" : this.proxies[this.currentProxyIndex]?.label || "Unknown";
+      const proxy = this.currentProxyIndex === -1 ? null : this.proxies[this.currentProxyIndex];
+      const proxyName = !proxy ? "No proxy" : proxy.label;
       os.notify.send("Proxy Changed", `Switched to ${proxyName}`, { type: "info", duration: 3000 });
+
+      if (proxy && proxy.type === "tor") {
+        this._onTorProxySelected();
+      }
 
       const tab = this.getActiveTab();
       if (tab && tab.url && !this.isYukiHome(tab.url)) {
@@ -520,7 +562,7 @@ export class BrowserApp extends BaseApp {
           ? `
       <div class="dm-row" id="dm-site-row">
         <span style="font-size:12px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${isExcluded ? "Re-enable for" : "Disable for"} ${currentHost}</span>
-        <span style="font-size:18px;cursor:pointer">${isExcluded ? "✓" : "✕"}</span>
+        <span style="font-size:18px;cursor:pointer">${isExcluded ? '<i class="fas fa-check"></i>' : '<i class="fas fa-times"></i>'}</span>
       </div>`
           : ""
       }
@@ -662,13 +704,13 @@ export class BrowserApp extends BaseApp {
 
     [...this.history].reverse().forEach((h) => {
       if (h.url.toLowerCase().includes(q) || (h.title || "").toLowerCase().includes(q)) {
-        addResult("🕐", h.title || h.url, h.url);
+        addResult('<i class="fas fa-clock"></i>', h.title || h.url, h.url);
       }
     });
 
     this.bookmarks.forEach((b) => {
       if (b.url.toLowerCase().includes(q) || b.name.toLowerCase().includes(q)) {
-        addResult("★", b.name, b.url);
+        addResult('<i class="fas fa-star"></i>', b.name, b.url);
       }
     });
 
@@ -853,6 +895,24 @@ export class BrowserApp extends BaseApp {
       if (e.data.type === "browser-launch-app") {
         os.app.launch(e.data.appId);
       }
+      if (e.data.type === "browser-tor-reconnect") {
+        const tab = this.tabs.find((t) => t.iframe && t.iframe.contentWindow === e.source);
+        os.tor
+          .reconnect()
+          .then(() => {
+            os.notify.send("Tor", "Tor reconnected.", { type: "success", duration: 3000 });
+            if (tab) {
+              if (tab.torClient) tab.torClient.close();
+              tab.torClient = null;
+              if (tab.url && tab.url !== "about:blank") {
+                this.loadUrl(tab, tab.url);
+              }
+            }
+          })
+          .catch(() => {
+            os.notify.send("Tor", "Reconnect failed. Try again.", { type: "error", duration: 5000 });
+          });
+      }
     };
     window.addEventListener("message", this._msgListener);
   }
@@ -879,7 +939,7 @@ export class BrowserApp extends BaseApp {
     const btn = document.getElementById(`btn-star-${this.winId}`);
     if (!btn) return;
     const isBookmarked = this.bookmarks.some((b) => b.url === url);
-    btn.textContent = isBookmarked ? "★" : "☆";
+    btn.innerHTML = isBookmarked ? '<i class="fas fa-star"></i>' : '<i class="far fa-star"></i>';
     btn.classList.toggle("bookmarked", isBookmarked);
   }
 
@@ -918,7 +978,7 @@ export class BrowserApp extends BaseApp {
         const removeSpan = document.createElement("span");
         removeSpan.className = "bm-remove";
         removeSpan.dataset.idx = idx;
-        removeSpan.textContent = "×";
+        removeSpan.innerHTML = '<i class="fas fa-times"></i>';
         item.appendChild(removeSpan);
       } catch (e) {
         const nameSpan = document.createElement("span");
@@ -927,7 +987,7 @@ export class BrowserApp extends BaseApp {
         const removeSpan = document.createElement("span");
         removeSpan.className = "bm-remove";
         removeSpan.dataset.idx = idx;
-        removeSpan.textContent = "×";
+        removeSpan.innerHTML = '<i class="fas fa-times"></i>';
         item.appendChild(removeSpan);
       }
       item.addEventListener("click", (e) => {
@@ -981,6 +1041,8 @@ export class BrowserApp extends BaseApp {
     if (idx === -1) return;
     const tab = this.tabs[idx];
 
+    if (tab.torClient) tab.torClient.close();
+
     this.closedTabs.push({ url: tab.url, title: tab.title });
     if (this.closedTabs.length > 20) this.closedTabs.shift();
 
@@ -1008,6 +1070,7 @@ export class BrowserApp extends BaseApp {
     toClose.forEach((id) => {
       const tab = this.tabs.find((t) => t.id === id);
       if (tab) {
+        if (tab.torClient) tab.torClient.close();
         this.closedTabs.push({ url: tab.url, title: tab.title });
         tab.iframe.remove();
       }
@@ -1023,6 +1086,7 @@ export class BrowserApp extends BaseApp {
     if (idx === -1) return;
     const toClose = this.tabs.slice(idx + 1);
     toClose.forEach((tab) => {
+      if (tab.torClient) tab.torClient.close();
       this.closedTabs.push({ url: tab.url, title: tab.title });
       tab.iframe.remove();
     });
@@ -1039,6 +1103,7 @@ export class BrowserApp extends BaseApp {
     if (idx === -1) return;
     const toClose = this.tabs.slice(0, idx);
     toClose.forEach((tab) => {
+      if (tab.torClient) tab.torClient.close();
       this.closedTabs.push({ url: tab.url, title: tab.title });
       tab.iframe.remove();
     });
@@ -1123,12 +1188,118 @@ export class BrowserApp extends BaseApp {
   loadUrl(tab, url) {
     if (this.isYukiHome(url)) {
       this.loadYukiHome(tab);
+      return;
+    }
+    const proxy = this.currentProxyIndex >= 0 && this.proxies[this.currentProxyIndex];
+    if (proxy && proxy.type === "tor") {
+      this.loadWithTor(tab, url);
     } else if (this.isDirectLoadUrl(url)) {
       this.loadDirect(tab, url);
-    } else if (this.currentProxyIndex === -1) {
+    } else if (!proxy) {
       this.loadDirect(tab, url);
     } else {
       this.loadWithFallback(tab, url, this.currentProxyIndex);
+    }
+  }
+
+  async loadWithTor(tab, url) {
+    this.showLoading(true);
+
+    try {
+      if (!tab.torClient) {
+        const torReady = await this._startTorWithStatus();
+        if (!torReady) {
+          tab.title = "Tor unavailable";
+          this.renderTabs();
+          this.writeErrorPage(tab, url, "Tor could not start. Check your connection.");
+          return;
+        }
+        tab.torClient = await os.tor.createClient();
+      }
+
+      const resp = await Promise.race([
+        tab.torClient.fetch(url),
+        new Promise((_, reject) => setTimeout(() => reject(new Error("Tor fetch timed out")), 30000))
+      ]);
+      if (!resp || resp.status >= 400) throw new Error(`HTTP ${resp?.status || "error"}`);
+
+      const ct =
+        typeof resp.headers === "object" && resp.headers
+          ? resp.headers["content-type"] || resp.headers.get?.("content-type") || ""
+          : "";
+
+      const isBinary =
+        ct.includes("application/octet-stream") ||
+        ct.includes("application/zip") ||
+        ct.includes("application/pdf") ||
+        (ct && !ct.includes("text") && !ct.includes("json") && !ct.includes("html") && !ct.includes("xml"));
+
+      if (isBinary) {
+        const blob = new Blob([resp.body], { type: ct });
+        this.triggerDownload(blob, url, ct, "");
+        this.showLoading(false);
+        return;
+      }
+
+      let html;
+      if (ct.includes("application/json")) {
+        const json = await resp.json();
+        html = json.contents || json.body || json.data || "";
+        if (!html) throw new Error("Empty JSON body");
+      } else {
+        html = await resp.text();
+      }
+
+      if (!html || html.trim().length === 0) throw new Error("Empty response");
+
+      const baseUrl = (() => {
+        try {
+          const u = new URL(url);
+          return u.origin + u.pathname.replace(/\/[^/]*$/, "/");
+        } catch {
+          return url;
+        }
+      })();
+
+      const interceptScript =
+        this.buildLinkInterceptScript(url) + this.buildDownloadInterceptScript(url) + this.buildAudioDetectScript();
+
+      let finalHtml = html;
+      const baseTag = `<base href="${baseUrl}">`;
+      const injection = baseTag + interceptScript;
+
+      if (/<head[^>]*>/i.test(finalHtml)) {
+        finalHtml = finalHtml.replace(/(<head[^>]*>)/i, `$1${injection}`);
+      } else {
+        finalHtml = `<head>${injection}</head>` + finalHtml;
+      }
+
+      tab.isGoogle = false;
+      let loadingCleared = false;
+      const clearLoading = () => {
+        if (loadingCleared) return;
+        loadingCleared = true;
+        this.showLoading(false);
+      };
+      tab.iframe.removeAttribute("src");
+      tab.iframe.onload = () => {
+        clearLoading();
+        this.onTabLoaded(tab, url);
+        this._applyDarkModeToTab(tab);
+      };
+      tab.iframe.srcdoc = finalHtml;
+      setTimeout(clearLoading, 15000);
+    } catch (err) {
+      this.showLoading(false);
+      tab.title = "Tor blocked";
+      this.renderTabs();
+      const fc = tab.torClient?.getFetchCount() || 0;
+      this.writeErrorPage(
+        tab,
+        url,
+        fc > 5 ? `Tor connection may be stale (${fc} fetches served).` : "Tor failed to load this page.",
+        true
+      );
     }
   }
 
@@ -1285,7 +1456,7 @@ body {
 <div class="bg-orb bg-orb-2"></div>
 <div class="bg-orb bg-orb-3"></div>
 <div class="main">
-  <div class="logo">❄️</div>
+  <div class="logo"><i class="fas fa-snowflake"></i></div>
   <h1>Yuki Browser</h1>
   <p class="tagline">Your desktop, in your browser</p>
   <div class="time" id="clock">--:--</div>
@@ -1303,8 +1474,8 @@ body {
       <img class="quick-link-icon" src="https://www.github.com/favicon.ico" onerror="this.style.display='none'" />
       <div class="quick-link-label">GitHub</div>
     </button>
-    <button class="quick-link" data-app-launch="scramjet" style="background: rgba(138, 180, 248, 0.3); border-color: #8ab4f8;">
-      <div class="quick-link-icon" style="font-size: 24px;">🌐</div>
+    <button class="quick-link" data-app-launch="scramjetApp" style="background: rgba(138, 180, 248, 0.3); border-color: #8ab4f8;">
+      <div class="quick-link-icon" style="font-size: 24px;"><i class="fas fa-globe"></i></div>
       <div class="quick-link-label">Scramjet</div>
     </button>
   </div>
@@ -1463,11 +1634,11 @@ body {
 <div class="bg-orb bg-orb-2"></div>
 <div class="bg-orb bg-orb-3"></div>
 <div class="main">
-  <div class="logo">🕵️</div>
+  <div class="logo"><i class="fas fa-user-secret"></i></div>
   <h1>Incognito Mode</h1>
   <p class="tagline">Private browsing with no traces left behind</p>
   <div class="privacy-notice">
-    🔒 Your browsing history, cookies, and site data won't be saved after you close this window.
+    <i class="fas fa-lock"></i> Your browsing history, cookies, and site data won't be saved after you close this window.
   </div>
   <div class="time" id="clock">--:--</div>
   <div class="date" id="datestr"></div>
@@ -1532,11 +1703,7 @@ body {
           this.showLoading(true);
           tab.title = "Loading…";
           this.renderTabs();
-          if (this.isDirectLoadUrl(resolved)) {
-            this.loadDirect(tab, resolved);
-          } else {
-            this.loadWithFallback(tab, resolved, this.currentProxyIndex);
-          }
+          this.loadUrl(tab, resolved);
         },
         true
       );
@@ -1929,6 +2096,18 @@ body {
       if (this.isDirectLoadUrl(url)) {
         throw new Error("Direct load URL");
       }
+      const proxy = this.proxies[this.currentProxyIndex];
+      if (proxy && proxy.type === "tor") {
+        if (!(await this._startTorWithStatus())) throw new Error("Tor not available");
+        const activeTab = this.getActiveTab();
+        const torClient = activeTab?.torClient || (await os.tor.createClient());
+        const resp = await torClient.fetch(url);
+        const blob = new Blob([resp.body], { type: resp.headers["content-type"] || "" });
+        downloadEntry.status = "done";
+        this._saveDownloads();
+        this.triggerDownload(blob, url, resp.headers["content-type"] || "", filename);
+        return;
+      }
       const proxyUrl = this.buildProxyUrl(url, this.currentProxyIndex);
       const res = await fetch(proxyUrl);
       if (!res.ok) throw new Error("Fetch failed");
@@ -1971,9 +2150,12 @@ body {
     setTimeout(() => URL.revokeObjectURL(objectUrl), 5000);
   }
 
-  writeErrorPage(tab, url) {
+  writeErrorPage(tab, url, message, reconnectFn) {
     tab.iframe.removeAttribute("src");
-    tab.iframe.srcdoc = `<html><body style="background:#202124;color:#e8eaed;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;flex-direction:column;gap:12px"><div style="font-size:48px">⚠️</div><div style="font-size:16px">All proxies failed to load this page.</div><div style="font-size:12px;color:#9aa0a6">${url}</div></body></html>`;
+    const reconnectBtn = reconnectFn
+      ? `<button onclick="parent.postMessage({type:'browser-tor-reconnect'},'*')" style="margin-top:8px;padding:8px 20px;background:#8b5cf6;border:none;border-radius:6px;color:#fff;cursor:pointer;font-size:13px">Reconnect Tor</button>`
+      : "";
+    tab.iframe.srcdoc = `<html><body style="background:#202124;color:#e8eaed;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;flex-direction:column;gap:12px"><div style="font-size:48px"><i class="fas fa-exclamation-triangle"></i></div><div style="font-size:16px">${message || "All proxies failed to load this page."}</div><div style="font-size:12px;color:#9aa0a6">${url}</div>${reconnectBtn}</body></html>`;
   }
 
   onTabLoaded(tab, url) {
@@ -2220,12 +2402,12 @@ body {
       .map(
         (d) => `
       <div class="panel-item">
-        <span class="panel-item-icon">${d.status === "done" ? "📄" : d.status === "failed" ? "⚠️" : "⬇"}</span>
+        <span class="panel-item-icon">${d.status === "done" ? '<i class="fas fa-file"></i>' : d.status === "failed" ? '<i class="fas fa-exclamation-triangle"></i>' : '<i class="fas fa-download"></i>'}</span>
         <div class="panel-item-content">
           <div class="panel-item-title">${d.filename || "Unknown"}</div>
           <div class="panel-item-sub">${d.url || ""}</div>
         </div>
-        <span class="panel-item-action" title="Open URL" data-url="${d.url}">↗</span>
+        <span class="panel-item-action" title="Open URL" data-url="${d.url}"><i class="fas fa-external-link-alt"></i></span>
       </div>
     `
       )
@@ -2277,12 +2459,12 @@ body {
         .map(
           (h) => `
         <div class="panel-item" data-url="${h.url}">
-          <span class="panel-item-icon">🕐</span>
+          <span class="panel-item-icon"><i class="fas fa-clock"></i></span>
           <div class="panel-item-content">
             <div class="panel-item-title">${h.title || h.url}</div>
             <div class="panel-item-sub">${h.url}</div>
           </div>
-          <button class="panel-item-action" title="Open" data-url="${h.url}">↗</button>
+          <button class="panel-item-action" title="Open" data-url="${h.url}"><i class="fas fa-external-link-alt"></i></button>
         </div>
       `
         )
@@ -2304,17 +2486,17 @@ body {
       items = items.filter((b) => b.name.toLowerCase().includes(q) || b.url.toLowerCase().includes(q));
     }
     if (items.length === 0)
-      return `<div class="panel-empty">No bookmarks${filter ? " matching search" : ""}.<br>Click ☆ in the address bar to save one.</div>`;
+      return `<div class="panel-empty">No bookmarks${filter ? " matching search" : ""}.<br>Click <i class="far fa-star"></i> in the address bar to save one.</div>`;
     return items
       .map(
         (b, i) => `
       <div class="panel-item" data-url="${b.url}">
-        <span class="panel-item-icon">★</span>
+        <span class="panel-item-icon"><i class="fas fa-star"></i></span>
         <div class="panel-item-content">
           <div class="panel-item-title">${b.name}</div>
           <div class="panel-item-sub">${b.url}</div>
         </div>
-        <button class="panel-item-action" title="Remove" data-remove="${i}">✕</button>
+        <button class="panel-item-action" title="Remove" data-remove="${i}"><i class="fas fa-times"></i></button>
       </div>
     `
       )
@@ -2330,7 +2512,7 @@ body {
     panel.innerHTML = `
       <div class="browser-panel-header">
         <span class="browser-panel-title">${title}</span>
-        <button class="browser-panel-close">✕</button>
+        <button class="browser-panel-close"><i class="fas fa-times"></i></button>
       </div>
       ${hasSearch ? `<input class="panel-search" placeholder="Search ${title.toLowerCase()}..." />` : ""}
       <div class="browser-panel-body"></div>
@@ -2476,7 +2658,8 @@ body {
         };
         favicon.appendChild(img);
       } else {
-        favicon.textContent = tab.url === "yuki://home" ? "❄️" : "🌐";
+        favicon.innerHTML =
+          tab.url === "yuki://home" ? '<i class="fas fa-snowflake"></i>' : '<i class="fas fa-globe"></i>';
       }
 
       const titleEl = document.createElement("span");
@@ -2486,7 +2669,7 @@ body {
       if (tab.isPlayingAudio) {
         const audioIcon = document.createElement("span");
         audioIcon.className = "tab-audio-icon";
-        audioIcon.textContent = "🔊";
+        audioIcon.textContent = '<i class="fas fa-volume-up"></i>';
         audioIcon.title = "Playing audio";
         el.appendChild(favicon);
         el.appendChild(titleEl);
@@ -2498,7 +2681,7 @@ body {
 
       const closeBtn = document.createElement("span");
       closeBtn.className = "tab-close";
-      closeBtn.textContent = "×";
+      closeBtn.innerHTML = '<i class="fas fa-times"></i>';
       closeBtn.title = "Close tab";
       closeBtn.addEventListener("click", (e) => {
         e.stopPropagation();

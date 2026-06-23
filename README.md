@@ -195,7 +195,14 @@ It's built entirely in vanilla JS/TypeScript (with some libraries, of course!) !
 
 - WebTorrent Client
 - Yuki Browser
+- Tor Connection Manager (WebAssembly Tor with Snowflake bridge)
+- VNC Client (remote desktop via VNC with saved profiles and clipboard sync)
 - Steam-like game launcher
+
+## 🔒 Tor Anonymous Browsing
+
+Browse anonymously through the Tor network directly from your browser, using a WASM-based Tor client with Snowflake
+transport.
 
 ## Web Apps
 
@@ -299,6 +306,7 @@ See the [Development Guide](DEVELOPMENT.md).
 - [WebTorrent](https://github.com/webtorrent/webtorrent)
 - [Eruda](https://github.com/liriliri/eruda)
 - Scramjet / BareMux / Epoxy Transport
+- [webtor-rs](https://github.com/igor53627/webtor-rs) WASM Tor client (Arti + Snowflake)
 
 # Tooling stack
 

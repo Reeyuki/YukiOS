@@ -12,9 +12,9 @@
   display: flex;
   align-items: flex-end;
   background: var(--bg-secondary);
-  padding: 6px 6px 0 6px;
-  gap: 2px;
-  min-height: 36px;
+  padding: 8px 8px 0 8px;
+  gap: 3px;
+  min-height: 42px;
   overflow-x: auto;
   flex-shrink: 0;
   scrollbar-width: thin;
@@ -41,16 +41,16 @@
 .browser-tab {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 5px 10px 5px 8px;
+  gap: 8px;
+  padding: 7px 12px 7px 10px;
   background: var(--surface-1);
   border-radius: 8px 8px 0 0;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-secondary);
   cursor: pointer;
   min-width: 0;
-  width: 180px;
-  max-width: 180px;
+  width: 200px;
+  max-width: 200px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -59,7 +59,7 @@
   transition: background 0.2s;
   user-select: none;
   position: relative;
-  flex: 0 0 180px;
+  flex: 0 0 200px;
 }
 
 .browser-tab:hover {
@@ -71,16 +71,16 @@
   background: var(--bg-primary);
   color: var(--text-primary);
   border-color: var(--glass-border);
-  border-bottom: 2px solid var(--brand);
+  border-bottom: 3px solid var(--brand);
 }
 
 .browser-tab.pinned {
-  min-width: 36px;
-  width: 36px;
-  max-width: 36px;
-  padding: 5px 8px;
+  min-width: 40px;
+  width: 40px;
+  max-width: 40px;
+  padding: 7px 8px;
   justify-content: center;
-  flex: 0 0 36px;
+  flex: 0 0 40px;
 }
 
 .browser-tab.pinned .tab-title {
@@ -96,20 +96,20 @@
 }
 
 .tab-favicon {
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   flex-shrink: 0;
   object-fit: contain;
 }
 
 .tab-favicon-placeholder {
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
+  font-size: 12px;
   color: var(--text-secondary);
 }
 
@@ -119,11 +119,11 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .tab-audio-icon {
-  font-size: 10px;
+  font-size: 12px;
   flex-shrink: 0;
   animation: pulse-audio 1.5s ease-in-out infinite;
 }
@@ -140,13 +140,13 @@
 }
 
 .tab-close {
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
+  font-size: 12px;
   color: var(--text-secondary);
   flex-shrink: 0;
   cursor: pointer;
@@ -161,17 +161,17 @@
 }
 
 .tab-new-btn {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
+  font-size: 20px;
   color: var(--text-secondary);
   cursor: pointer;
-  margin-left: 4px;
-  margin-bottom: 4px;
+  margin-left: 6px;
+  margin-bottom: 6px;
   flex-shrink: 0;
   transition:
     background 0.2s,
@@ -186,21 +186,21 @@
 .browser-navbar {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
+  gap: 8px;
+  padding: 8px 12px;
   background: var(--bg-primary);
   border-bottom: 1px solid var(--glass-border);
   flex-shrink: 0;
 }
 
 .nav-btn {
-  width: 30px;
-  height: 30px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
+  font-size: 18px;
   color: var(--text-secondary);
   cursor: pointer;
   transition:
@@ -236,10 +236,10 @@
   width: 100%;
   background: var(--surface-1);
   border: 1px solid var(--glass-border);
-  border-radius: 20px;
-  padding: 5px 36px 5px 14px;
+  border-radius: 22px;
+  padding: 8px 40px 8px 16px;
   color: var(--text-primary);
-  font-size: 13px;
+  font-size: 14px;
   outline: none;
   transition:
     border-color 0.2s,
@@ -254,10 +254,10 @@
 
 .bookmark-star {
   position: absolute;
-  right: 10px;
+  right: 12px;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 14px;
+  font-size: 16px;
   cursor: pointer;
   color: var(--text-secondary);
   transition: color 0.2s;
@@ -281,8 +281,8 @@
   border: 1px solid var(--glass-border);
   border-radius: 8px;
   color: var(--text-secondary);
-  font-size: 11px;
-  padding: 4px 6px;
+  font-size: 13px;
+  padding: 6px 8px;
   outline: none;
   cursor: pointer;
   flex-shrink: 0;
@@ -300,13 +300,13 @@
 }
 
 .zoom-btn {
-  width: 24px;
-  height: 24px;
-  border-radius: 4px;
+  width: 28px;
+  height: 28px;
+  border-radius: 5px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: 15px;
   color: var(--text-secondary);
   cursor: pointer;
   border: none;
@@ -322,23 +322,23 @@
 }
 
 .zoom-label {
-  font-size: 11px;
+  font-size: 13px;
   color: var(--text-secondary);
-  min-width: 34px;
+  min-width: 38px;
   text-align: center;
 }
 
 .bookmark-bar {
   display: flex;
   align-items: center;
-  gap: 2px;
-  padding: 3px 10px;
+  gap: 3px;
+  padding: 5px 12px;
   background: var(--bg-primary);
   border-bottom: 1px solid var(--glass-border);
   overflow-x: auto;
   flex-shrink: 0;
   scrollbar-width: none;
-  min-height: 28px;
+  min-height: 32px;
 }
 
 .bookmark-bar::-webkit-scrollbar {
@@ -352,10 +352,10 @@
 .bookmark-item {
   display: flex;
   align-items: center;
-  gap: 5px;
-  padding: 3px 10px;
-  border-radius: 12px;
-  font-size: 12px;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 14px;
+  font-size: 13px;
   color: var(--text-secondary);
   cursor: pointer;
   white-space: nowrap;
@@ -393,8 +393,8 @@
 }
 
 .bookmark-favicon {
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
   object-fit: contain;
 }
 
@@ -446,9 +446,9 @@
 }
 
 .loading-spinner {
-  width: 32px;
-  height: 32px;
-  border: 3px solid var(--glass-border);
+  width: 36px;
+  height: 36px;
+  border: 4px solid var(--glass-border);
   border-top-color: var(--brand);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
@@ -456,17 +456,17 @@
 
 .loading-text {
   color: var(--text-secondary);
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .browser-menu-btn {
-  width: 30px;
-  height: 30px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
+  font-size: 20px;
   color: var(--text-secondary);
   cursor: pointer;
   border: none;
@@ -519,9 +519,9 @@
 .browser-dropdown-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 9px 16px;
-  font-size: 13px;
+  gap: 12px;
+  padding: 10px 18px;
+  font-size: 14px;
   color: var(--text-primary);
   cursor: pointer;
   transition: background 0.2s;
@@ -532,8 +532,8 @@
 }
 
 .browser-dropdown-item .di-icon {
-  font-size: 15px;
-  width: 20px;
+  font-size: 17px;
+  width: 22px;
   text-align: center;
 }
 
@@ -556,7 +556,7 @@
   top: 0;
   right: 0;
   bottom: 0;
-  width: 360px;
+  width: 400px;
   background: var(--bg-primary);
   border-left: 1px solid var(--glass-border);
   z-index: 1000;
@@ -585,20 +585,20 @@
 }
 
 .browser-panel-title {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
   flex: 1;
   color: var(--text-primary);
 }
 
 .browser-panel-close {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
+  font-size: 18px;
   cursor: pointer;
   color: var(--text-secondary);
   border: none;
@@ -631,15 +631,15 @@
 }
 
 .panel-search {
-  margin: 8px 16px;
+  margin: 10px 18px;
   background: var(--surface-1);
   border: 1px solid var(--glass-border);
   border-radius: 8px;
-  padding: 7px 12px;
+  padding: 9px 14px;
   color: var(--text-primary);
-  font-size: 13px;
+  font-size: 14px;
   outline: none;
-  width: calc(100% - 32px);
+  width: calc(100% - 36px);
   box-sizing: border-box;
 }
 
@@ -650,8 +650,8 @@
 .panel-item {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
-  padding: 10px 16px;
+  gap: 12px;
+  padding: 12px 18px;
   cursor: pointer;
   transition: background 0.2s;
   border-bottom: 1px solid var(--glass-border);
@@ -673,7 +673,7 @@
 }
 
 .panel-item-title {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
@@ -681,23 +681,23 @@
 }
 
 .panel-item-sub {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-secondary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-top: 2px;
+  margin-top: 3px;
 }
 
 .panel-item-action {
   flex-shrink: 0;
-  width: 24px;
-  height: 24px;
-  border-radius: 4px;
+  width: 28px;
+  height: 28px;
+  border-radius: 5px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-secondary);
   cursor: pointer;
   border: none;
@@ -712,9 +712,9 @@
 
 .panel-empty {
   text-align: center;
-  padding: 32px 16px;
+  padding: 40px 20px;
   color: var(--text-secondary);
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .panel-section-label {
@@ -727,21 +727,21 @@
 }
 
 .panel-footer {
-  padding: 12px 16px;
+  padding: 14px 18px;
   border-top: 1px solid var(--glass-border);
   flex-shrink: 0;
   display: flex;
-  gap: 8px;
+  gap: 10px;
 }
 
 .panel-action-btn {
   flex: 1;
-  padding: 8px;
+  padding: 10px;
   border-radius: 8px;
   border: 1px solid var(--glass-border);
   background: transparent;
   color: var(--text-primary);
-  font-size: 12px;
+  font-size: 13px;
   cursor: pointer;
   transition: background 0.2s;
 }
@@ -774,9 +774,9 @@
 .ctx-menu-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 14px;
-  font-size: 12px;
+  gap: 12px;
+  padding: 10px 16px;
+  font-size: 13px;
   color: var(--text-primary);
   cursor: pointer;
   transition: background 0.2s;
@@ -787,9 +787,9 @@
 }
 
 .ctx-menu-item .ci-icon {
-  width: 16px;
+  width: 18px;
   text-align: center;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .ctx-menu-sep {
@@ -809,9 +809,9 @@
 .ctx-history-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 5px 14px 5px 24px;
-  font-size: 11px;
+  gap: 10px;
+  padding: 7px 16px 7px 28px;
+  font-size: 13px;
   color: var(--text-secondary);
   cursor: pointer;
   transition: background 0.2s;
@@ -835,16 +835,16 @@
   border: 1px solid var(--glass-border);
   border-radius: 0 0 10px 10px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-  max-height: 280px;
+  max-height: 320px;
   overflow-y: auto;
 }
 
 .omnibox-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 14px;
-  font-size: 12px;
+  gap: 12px;
+  padding: 10px 16px;
+  font-size: 13px;
   color: var(--text-primary);
   cursor: pointer;
   transition: background 0.2s;
@@ -856,7 +856,7 @@
 }
 
 .omnibox-item-icon {
-  font-size: 12px;
+  font-size: 14px;
   flex-shrink: 0;
   color: var(--text-secondary);
 }
@@ -869,12 +869,12 @@
 }
 
 .omnibox-item-url {
-  font-size: 10px;
+  font-size: 12px;
   color: var(--text-secondary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 200px;
+  max-width: 240px;
 }
 
 .dark-mode-popup {
@@ -884,8 +884,8 @@
   border-radius: 10px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
   z-index: 99999;
-  width: 260px;
-  padding: 12px 0;
+  width: 280px;
+  padding: 14px 0;
   animation: dropIn 0.12s ease;
 }
 
@@ -904,8 +904,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 9px 16px;
-  font-size: 13px;
+  padding: 11px 18px;
+  font-size: 14px;
   color: var(--text-primary);
   cursor: pointer;
   transition: background 0.2s;
@@ -959,17 +959,17 @@
 .homepage-dialog-box {
   background: var(--surface-1);
   border: 1px solid var(--glass-border);
-  border-radius: 12px;
-  padding: 24px;
-  width: 360px;
+  border-radius: 14px;
+  padding: 28px;
+  width: 400px;
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
 }
 
 .homepage-dialog-title {
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 600;
   color: var(--text-primary);
-  margin-bottom: 14px;
+  margin-bottom: 16px;
 }
 
 .homepage-dialog input {
@@ -977,12 +977,12 @@
   background: var(--surface-1);
   border: 1px solid var(--glass-border);
   border-radius: 8px;
-  padding: 8px 12px;
+  padding: 10px 14px;
   color: var(--text-primary);
-  font-size: 13px;
+  font-size: 14px;
   outline: none;
   box-sizing: border-box;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
 }
 
 .homepage-dialog input:focus {
@@ -991,14 +991,14 @@
 
 .homepage-dialog-btns {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   justify-content: flex-end;
 }
 
 .homepage-dialog-btns button {
-  padding: 7px 18px;
+  padding: 9px 22px;
   border-radius: 8px;
-  font-size: 13px;
+  font-size: 14px;
   cursor: pointer;
   border: 1px solid var(--glass-border);
   background: transparent;
