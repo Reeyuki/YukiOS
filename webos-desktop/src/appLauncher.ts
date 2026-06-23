@@ -19,6 +19,8 @@ import {
 } from "./shared/assetResolver.js";
 import { yukiITDevToolsBridge, YUKI_DEV_TOOLS_URL } from "./yukiITDevToolsBridge.js";
 import { ClippyAnimation, initClippy, speak as clippySpeak } from "./ai/clippy.js";
+import { GameOverlayController } from "./gameOverlay.js";
+import "./styles/gameOverlay.css";
 import { initAnalytics, getAnalyticsBase, sendLaunchAnalytics, recordUsage } from "./analytics.js";
 import { getNewsContentSignature, updateNewsBadge } from "./apps/news.js";
 import { SteamSettings } from "./games/steam.js";
@@ -128,6 +130,8 @@ export class AppLauncher {
     }, 500);
 
     this._ensureIframeNavigateHandler();
+
+    this._overlayController = new GameOverlayController(this, this._services);
   }
 
   setEmulatorApp(emulatorApp: any): void {
@@ -604,12 +608,13 @@ player.load("${swfPath}");
 
       if (type === "game") {
         const displayTitle = this.appMap[appId]?.title || originalName;
+        const isGame = this.isTransparencyBlocked(appId, { type });
         const win = os.window.create(
           extra.forceId || `${id}-win`,
           displayTitle,
           extra.width || "80vw",
           extra.height || "80vh",
-          this.isTransparencyBlocked(appId, { type }),
+          isGame,
           extra
         );
         if (appId) this._appSessions.set(`${id}-win`, { appId, startTime: Date.now() });
@@ -619,15 +624,22 @@ player.load("${swfPath}");
           externalUrl: resolvedSource || "",
           appId: appId || "",
           swf: type === "swf" ? source : "",
-          isGame: this.isTransparencyBlocked(appId, { type }),
+          isGame,
           rom: type !== "game" && type !== "swf" ? source : "",
           core: type !== "game" && type !== "swf" ? type : ""
         });
 
+        const overlayBtnHtml = isGame
+          ? `<button class="overlay-open-btn" title="Steam Overlay (Shift+Tab)"><i class="fab fa-steam"></i></button>`
+          : "";
+
         win.innerHTML = `
           <div class="window-header">
             <span>${displayTitle}</span>
-            ${os.window.getWindowControls(resolvedSource, true)}
+            <div class="window-header-actions">
+              ${overlayBtnHtml}
+              ${os.window.getWindowControls(resolvedSource, true)}
+            </div>
           </div>
           <div class="window-content" style="width:100%; height:100%; overflow:hidden; display:flex; align-items:center; justify-content:center; background:#1a1a1a;">
             <div class="modern-loader">
@@ -642,6 +654,10 @@ player.load("${swfPath}");
         `;
 
         this.windowHelper.mountWindow(win, `${id}-win`, displayTitle, this.appMap[appId]?.icon || "fas fa-gamepad");
+
+        win.querySelector(".overlay-open-btn")?.addEventListener("click", () => {
+          this._overlayController?.openForWindow(win);
+        });
 
         win.querySelector(".external-btn")?.addEventListener("click", () => {
           window.open(resolvedSource, "_blank");
@@ -777,13 +793,24 @@ player.load("${swfPath}");
         ? `<i class="${icon}" style="margin-right:8px;font-size:16px;"></i>`
         : `<img src="${icon}" style="width:20px;height:20px;margin-right:8px;vertical-align:middle;object-fit:contain;">`;
 
+    const overlayBtnHtml = isGame
+      ? `<button class="overlay-open-btn" title="Steam Overlay (Shift+Tab)"><i class="fab fa-steam"></i></button>`
+      : "";
+
     win.innerHTML = `
       <div class="window-header">
         <span>${iconHtml}${title}</span>
-        ${os.window.getWindowControls(externalUrl, true)}
+        <div class="window-header-actions">
+          ${overlayBtnHtml}
+          ${os.window.getWindowControls(externalUrl, true)}
+        </div>
       </div>
       <div class="window-content" style="width:100%; height:100%; overflow:hidden;">${contentHtml}</div>
     `;
+
+    win.querySelector(".overlay-open-btn")?.addEventListener("click", () => {
+      this._overlayController?.openForWindow(win);
+    });
 
     win.querySelector(".external-btn")?.addEventListener("click", () => {
       const url = win.dataset.externalUrl || win.querySelector("iframe")?.src || externalUrl;

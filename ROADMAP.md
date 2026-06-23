@@ -17,7 +17,7 @@ Planned features and improvements for Yuki OS.
 - [ ] Add about:blank method
 - [ ] From site to users computer file transfer support
 - [ ] Add 3D os mode
-- [ ] Steam overview ui on steam launched games on shift + tab
+- [ ] Add tiling wm mode
 
 ---
 

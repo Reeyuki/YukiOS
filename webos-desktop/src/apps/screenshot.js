@@ -136,9 +136,11 @@ export class ScreenshotApp extends BaseApp {
           y: window.scrollY
         });
         if (win) win.style.display = "";
-        return new Promise((resolve) => {
-          canvas.toBlob((blob) => resolve(blob), "image/png");
+        const blob = await new Promise((resolve) => {
+          canvas.toBlob(resolve, "image/png");
         });
+        if (!blob) throw new Error("Canvas toBlob returned null");
+        return blob;
       } catch (e) {
         if (e.name === "SecurityError") {
           console.warn("[Screenshot] canvas tainted with", extra, "retrying with safer options:", e);
@@ -149,7 +151,11 @@ export class ScreenshotApp extends BaseApp {
     }
     if (win) win.style.display = "";
     console.warn("[Screenshot] all html2canvas options tainted, trying getDisplayMedia fallback");
-    return await this._fallbackCapture();
+    try {
+      return await this._fallbackCapture();
+    } catch (fbErr) {
+      throw new Error("All capture methods failed: " + fbErr.message);
+    }
   }
 
   async _fallbackCapture() {
@@ -233,6 +239,44 @@ export class ScreenshotApp extends BaseApp {
     } catch {
       this._showStatus("Recording cancelled");
     }
+  }
+
+  async startOverlayRecording() {
+    const stream = await navigator.mediaDevices.getDisplayMedia({
+      preferCurrentTab: false,
+      video: { displaySurface: "monitor" },
+      audio: false
+    });
+    this._stream = stream;
+    this._recordedChunks = [];
+    this._mediaRecorder = new MediaRecorder(stream, { mimeType: "video/webm" });
+    return new Promise((resolve) => {
+      this._mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) this._recordedChunks.push(e.data);
+      };
+      this._mediaRecorder.onstop = async () => {
+        const blob = new Blob(this._recordedChunks, { type: "video/webm" });
+        this._recordedChunks = [];
+        this._currentBlob = blob;
+        this._currentType = "recording";
+        await this._saveCurrent();
+        resolve();
+      };
+      this._mediaRecorder.start();
+      this._recording = true;
+    });
+  }
+
+  stopOverlayRecording() {
+    if (this._mediaRecorder && this._mediaRecorder.state !== "inactive") {
+      this._mediaRecorder.stop();
+    }
+    if (this._stream) {
+      this._stream.getTracks().forEach((t) => t.stop());
+    }
+    this._recording = false;
+    this._stream = null;
+    this._mediaRecorder = null;
   }
 
   _stopRecording() {

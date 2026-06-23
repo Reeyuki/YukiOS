@@ -162,7 +162,7 @@ export class AboutApp extends BaseApp {
           </div>
 
           <div class="abx-foot">
-            <span>Built by Reeyuki</span>
+            <span>Made by Reeyuki</span>
           </div>
 
         </div>

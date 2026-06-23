@@ -8,6 +8,17 @@ const EXISTING_NEWS_UPDATES = [
     date: "June 22, 2026",
     sections: [
       {
+        icon: "fa-layer-group",
+        title: "New Feature",
+        items: [
+          [
+            "fa-layer-group",
+            "Steam Overlay",
+            "Press Shift+Tab in any game to open the Steam overlay with playtime, achievements, friends, notes, and a built-in browser."
+          ]
+        ]
+      },
+      {
         icon: "fa-clock",
         title: "New Apps",
         items: [

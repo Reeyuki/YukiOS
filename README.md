@@ -23,10 +23,10 @@ It supports running Flash content, DOS programs, console emulation, WebAssembly 
 by side.
 
 It's built entirely in vanilla JS/TypeScript (with some libraries, of course!) ![Login page](.github/login.png)
-![Steam interface](.github/steam.png) ![Start menu](.github/startmenuv86.png) ![Discord](.github/dc.png)
-![Web Apps](.github/webapps.png) ![Setup](.github/setupsettings.png) ![Music1](.github/audio1.png)
-![Music2](.github/audio2.png) ![Achievements](.github/browserachieve.png) ![Music player](.github/music.png)
-![Applications](.github/apps.png)
+![Steam interface](.github/steam.png) ![Start menu](.github/startmenuv86.png) ![Steam overlay](.github/overlay.png)
+![Discord](.github/dc.png) ![Web Apps](.github/webapps.png) ![Setup](.github/setupsettings.png)
+![Music1](.github/audio1.png) ![Music2](.github/audio2.png) ![Achievements](.github/browserachieve.png)
+![Music player](.github/music.png) ![Applications](.github/apps.png)
 
 ---
 
@@ -227,6 +227,18 @@ It's built entirely in vanilla JS/TypeScript (with some libraries, of course!) !
 - JsDos (DOS)
 - Virtual 86 (x86)
 - Azahar (3DS Emulator)
+
+## 🎮 Steam-like In-Game Overlay
+
+Shift+Tab overlay with draggable, resizable panels for any running game:
+
+- Playtime overview (total, 2-week, and current session)
+- Achievement browser with All/Unlocked/Locked filters
+- Friends panel and persistent per-game sticky notes
+- In-overlay web browser and Scramjet proxy panel
+- Screenshot capture, gallery view, and video recording
+- Performance monitor for fps/frame
+- Overlay settings (toggle, perf monitor, rebindable shortcut key)
 
 ---
 

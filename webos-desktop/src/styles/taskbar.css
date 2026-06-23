@@ -201,7 +201,7 @@
   height: 40px;
   flex-shrink: 0;
   background: var(--start-logo-url, url("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/icons/logo.png"))
-    no-repeat center / 35px;
+    no-repeat center / 48px;
   cursor: pointer;
   border-radius: 20px;
   transition: filter 0.2s;

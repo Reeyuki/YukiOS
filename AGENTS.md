@@ -87,8 +87,9 @@ Yuki OS uses a dark glassmorphism theme with a comprehensive theming system. All
 - **Transitions**: 0.1–0.2s for hover states.
 - **Light Theme**: Override via `html[data-theme="light"]` with solid colors (`#fff`, `#f0f0f0`, `#111`, `#666`).
 - **Scrollbars**: 8px width, `rgba(255,255,255,0.12)` thumb.
-- **Checkboxes/Inputs**: Never use native browser checkboxes, plain inputs, or dropdowns. Always use `appearance: none`, @src/shared/selectMenu.js, and @src/shared/rangeSlider.js component.
-  `-webkit-appearance: none`, custom border/background, and `::after` pseudo-element for checkmarks via CSS variables.
+- **Checkboxes/Inputs**: Never use native browser checkboxes, plain inputs, or dropdowns. Always use `appearance: none`,
+  @src/shared/selectMenu.js, and @src/shared/rangeSlider.js component. `-webkit-appearance: none`, custom
+  border/background, and `::after` pseudo-element for checkmarks via CSS variables.
 - **Theming System**: Comprehensive theme engine with 25+ built-in themes, transparent UI toggle, advanced brightness
   controls, and GUI scale options. Themes are managed via `settings.js` and applied through CSS variables.
 - Never introduce new inline styles.

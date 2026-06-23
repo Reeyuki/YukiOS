@@ -557,10 +557,60 @@ export class CommandPalette {
             app.toggleRecording();
           }
         }
+      },
+      {
+        title: "Area Screenshot",
+        subtitle: "Capture a selected region of the screen",
+        tag: "screenshot",
+        icon: "fas fa-crop-alt",
+        execute: () => {
+          const app = this.services.screenshotApp;
+          if (app) {
+            app.open();
+            app.captureArea(true);
+          }
+        }
+      },
+      {
+        title: "Empty Trash",
+        subtitle: "Permanently delete all trashed files",
+        tag: "action",
+        icon: "fas fa-trash",
+        execute: async () => {
+          if (
+            await os.dialog.confirm("Empty Trash", "Are you sure you want to permanently delete all trashed files?")
+          ) {
+            await os.fs.emptyTrash();
+            os.notify.send("Trash Emptied", "All trashed files have been permanently deleted.", {
+              type: "success",
+              duration: 4000,
+              icon: "fas fa-trash",
+              appSource: AppSource.COMMAND_PALETTE
+            });
+          }
+        }
+      },
+      {
+        title: "Toggle Transparent UI",
+        subtitle: "Switch between glass and solid window backgrounds",
+        tag: "action",
+        icon: "fas fa-glass-whiskey",
+        execute: () => {
+          const next = os.storage.get(StorageKeys.transparentUI) !== "true";
+          os.storage.set(StorageKeys.transparentUI, String(next));
+          document.documentElement.classList.toggle("transparent-ui", next);
+          os.notify.send("Transparent UI", next ? "Enabled" : "Disabled", {
+            type: "success",
+            duration: 3000,
+            icon: "fas fa-glass-whiskey",
+            appSource: AppSource.COMMAND_PALETTE
+          });
+        }
       }
     ];
 
-    let items = !search ? [...actions] : actions.filter((a) => a.title.toLowerCase().includes(search));
+    const allActions = [...actions, ...this._getSettingsEntries()];
+    let items = !search ? [...allActions] : allActions.filter((a) => a.title.toLowerCase().includes(search));
 
     if (search.startsWith(">") || this._isTerminalCommand(search)) {
       const cleanCmd = search.startsWith(">") ? search.slice(1).trim() : search;
@@ -859,6 +909,183 @@ export class CommandPalette {
     });
 
     this._scrollToActive();
+  }
+
+  _getSettingsEntries() {
+    const go = (section, target) => {
+      const app = this.services.settingsApp;
+      if (app) app.open({ section, target });
+    };
+    return [
+      {
+        title: "Settings: System",
+        subtitle: "General behavior, boot, privacy, notifications",
+        tag: "settings",
+        icon: "fas fa-desktop",
+        execute: () => go("pane-system")
+      },
+      {
+        title: "Settings: Desktop",
+        subtitle: "Taskbar, start menu, icons, tray, window switcher",
+        tag: "settings",
+        icon: "fas fa-home",
+        execute: () => go("pane-desktop")
+      },
+      {
+        title: "Settings: Appearance",
+        subtitle: "Themes, wallpaper, animations, fonts, cursor",
+        tag: "settings",
+        icon: "fas fa-paint-brush",
+        execute: () => go("pane-appearance")
+      },
+      {
+        title: "Settings: Data & Storage",
+        subtitle: "Import, export, reset, wipe",
+        tag: "settings",
+        icon: "fas fa-database",
+        execute: () => go("pane-data")
+      },
+      {
+        title: "Settings: Network",
+        subtitle: "CDN mirror, WISP server",
+        tag: "settings",
+        icon: "fas fa-network-wired",
+        execute: () => go("pane-network")
+      },
+      {
+        title: "Settings: Audio",
+        subtitle: "Master volume, system sounds",
+        tag: "settings",
+        icon: "fas fa-volume-high",
+        execute: () => go("pane-audio")
+      },
+      {
+        title: "Settings: About",
+        subtitle: "Version info, build details",
+        tag: "settings",
+        icon: "fas fa-circle-info",
+        execute: () => go("pane-about")
+      },
+      {
+        title: "Settings: Turbo Mode",
+        subtitle: "Switch between Quality, Balanced, and Turbo",
+        tag: "settings",
+        icon: "fas fa-tachometer-alt",
+        execute: () => go("pane-system", "sc-general")
+      },
+      {
+        title: "Settings: Skip Boot Screen",
+        subtitle: "Bypass login screen on startup",
+        tag: "settings",
+        icon: "fas fa-forward",
+        execute: () => go("pane-system", "settingsDisableBootScreen")
+      },
+      {
+        title: "Settings: Notifications",
+        subtitle: "DND, position, duration, animation",
+        tag: "settings",
+        icon: "fas fa-bell",
+        execute: () => go("pane-system", "settingsDND")
+      },
+      {
+        title: "Settings: Taskbar Position",
+        subtitle: "Dock taskbar to bottom, top, left, or right",
+        tag: "settings",
+        icon: "fas fa-arrows-alt",
+        execute: () => go("pane-desktop", "sc-layout")
+      },
+      {
+        title: "Settings: Desktop Icon Size",
+        subtitle: "Adjust desktop icon dimensions",
+        tag: "settings",
+        icon: "fas fa-expand",
+        execute: () => go("pane-desktop", "settingsDesktopIconSize")
+      },
+      {
+        title: "Settings: Start Menu Size",
+        subtitle: "Adjust start menu width and height",
+        tag: "settings",
+        icon: "fas fa-bars",
+        execute: () => go("pane-desktop", "settingsStartMenuWidth")
+      },
+      {
+        title: "Settings: Show Workspaces",
+        subtitle: "Toggle workspace area in taskbar",
+        tag: "settings",
+        icon: "fas fa-th-large",
+        execute: () => go("pane-desktop", "settingsShowWorkspace")
+      },
+      {
+        title: "Settings: GUI Scale",
+        subtitle: "Scale the entire interface",
+        tag: "settings",
+        icon: "fas fa-expand-arrows-alt",
+        execute: () => go("pane-appearance", "settingsGuiScale")
+      },
+      {
+        title: "Settings: Font Size",
+        subtitle: "Adjust base font size",
+        tag: "settings",
+        icon: "fas fa-font",
+        execute: () => go("pane-appearance", "settingsFontSize")
+      },
+      {
+        title: "Settings: Font Family",
+        subtitle: "Choose Open Sans, Inter, Rubik, or more",
+        tag: "settings",
+        icon: "fas fa-text-height",
+        execute: () => go("pane-appearance", "sc-style")
+      },
+      {
+        title: "Settings: Window Animations",
+        subtitle: "Open, close, minimize effects and speed",
+        tag: "settings",
+        icon: "fas fa-film",
+        execute: () => go("pane-appearance", "settingsOpenAnimation")
+      },
+      {
+        title: "Settings: Custom Cursor",
+        subtitle: "Upload or clear a custom cursor",
+        tag: "settings",
+        icon: "fas fa-mouse-pointer",
+        execute: () => go("pane-appearance", "settingsCursorUploadBtn")
+      },
+      {
+        title: "Settings: Wallpaper",
+        subtitle: "Cycle on start, upload custom wallpaper",
+        tag: "settings",
+        icon: "fas fa-image",
+        execute: () => go("pane-appearance", "settings-wallpaper-card")
+      },
+      {
+        title: "Settings: CDN Mirror",
+        subtitle: "Choose a mirror for fetching game assets",
+        tag: "settings",
+        icon: "fas fa-server",
+        execute: () => go("pane-network", "settingsCdnMirror")
+      },
+      {
+        title: "Settings: WISP Server",
+        subtitle: "Configure Scramjet proxy server",
+        tag: "settings",
+        icon: "fas fa-shield-alt",
+        execute: () => go("pane-network", "settingsWispServer")
+      },
+      {
+        title: "Settings: Master Volume",
+        subtitle: "Adjust global volume level",
+        tag: "settings",
+        icon: "fas fa-volume-up",
+        execute: () => go("pane-audio", "settingsMasterVolume")
+      },
+      {
+        title: "Settings: Export Data",
+        subtitle: "Backup system settings and files",
+        tag: "settings",
+        icon: "fas fa-file-export",
+        execute: () => go("pane-data", "btnExportData")
+      }
+    ];
   }
 
   _isTerminalCommand(str) {

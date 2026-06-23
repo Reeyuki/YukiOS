@@ -180,6 +180,13 @@ export const KEYBIND_DEFINITIONS = [
     hidden: true
   },
   {
+    id: "steam.overlay",
+    defaultKeys: ["Shift", "Tab"],
+    desc: "Open Steam overlay while in-game",
+    cat: "games",
+    icon: "fab fa-steam"
+  },
+  {
     id: "global.closeDialog",
     defaultKeys: ["Escape"],
     desc: "Close dialog",

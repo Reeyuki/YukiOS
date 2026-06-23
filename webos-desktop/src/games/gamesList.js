@@ -284,7 +284,7 @@ export const appMap = {
   },
   game2048: {
     type: "game",
-    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/375.html",
+    url: "https://emupedia.net/emupedia-game-2048",
     icon: "/static/icons/2048.webp",
     title: "2048"
   },

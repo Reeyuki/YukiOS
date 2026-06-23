@@ -47,7 +47,7 @@ export function renderSystemSettings(s) {
     <div id="pane-system" class="settings-category-pane active">
       <div class="settings-category-header">System</div>
 
-      <div class="settings-card">
+      <div class="settings-card" id="sc-general">
         <div class="settings-card-header"><i class="fas fa-sliders-h"></i> General Behavior</div>
         <div class="settings-row">
           <div class="settings-label-group">
@@ -247,7 +247,7 @@ export function renderDesktopSettings(s) {
     <div id="pane-desktop" class="settings-category-pane">
       <div class="settings-category-header">Desktop</div>
 
-      <div class="settings-card">
+      <div class="settings-card" id="sc-layout">
         <div class="settings-card-header"><i class="fas fa-arrows-alt"></i> Layout &amp; Alignment</div>
         <div class="settings-row">
           <div class="settings-label-group">
@@ -490,7 +490,7 @@ export function renderAppearanceSettings(s) {
     <div id="pane-appearance" class="settings-category-pane">
       <div class="settings-category-header">Appearance</div>
 
-      <div class="settings-card">
+      <div class="settings-card" id="sc-style">
         <div class="settings-card-header"><i class="fas fa-palette"></i> Style &amp; Transparency</div>
 
         <div class="settings-row">
