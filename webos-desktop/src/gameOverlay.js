@@ -1,4 +1,3 @@
-import interact from "interactjs";
 import { KeybindManager } from "./keybindManager.js";
 import { StorageKeys, os } from "./framework.js";
 import { SteamDataManager, steamAppRenderer } from "./games/games.js";
@@ -509,30 +508,39 @@ export class GameOverlayController {
 
   _makePanelDraggable(panel) {
     const header = panel.querySelector(".overlay-panel-header");
-    const self = this;
-    interact(header).draggable({
-      ignoreFrom: ".overlay-panel-close",
-      inertia: false,
-      autoScroll: false,
-      listeners: {
-        start() {
-          self._bringPanelToFront(panel);
-          header.style.cursor = "grabbing";
-        },
-        move(event) {
-          panel.style.left = `${panel.offsetLeft + event.dx}px`;
-          panel.style.top = `${panel.offsetTop + event.dy}px`;
-        },
-        end() {
-          header.style.cursor = "grab";
-          self._panelPositions[panel.dataset.panel] = {
-            x: parseInt(panel.style.left),
-            y: parseInt(panel.style.top),
-            w: panel.offsetWidth,
-            h: panel.offsetHeight
-          };
-          self._savePanelPositions();
-        }
+    let isDragging = false;
+    let startX, startY, origX, origY;
+
+    header.addEventListener("mousedown", (e) => {
+      if (e.target.closest(".overlay-panel-close")) return;
+      isDragging = true;
+      this._bringPanelToFront(panel);
+      header.style.cursor = "grabbing";
+      origX = panel.offsetLeft;
+      origY = panel.offsetTop;
+      startX = e.clientX;
+      startY = e.clientY;
+    });
+
+    document.addEventListener("mousemove", (e) => {
+      if (!isDragging) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      panel.style.left = origX + dx + "px";
+      panel.style.top = origY + dy + "px";
+    });
+
+    document.addEventListener("mouseup", () => {
+      if (isDragging) {
+        isDragging = false;
+        header.style.cursor = "grab";
+        this._panelPositions[panel.dataset.panel] = {
+          x: parseInt(panel.style.left),
+          y: parseInt(panel.style.top),
+          w: panel.offsetWidth,
+          h: panel.offsetHeight
+        };
+        this._savePanelPositions();
       }
     });
   }
@@ -540,28 +548,61 @@ export class GameOverlayController {
   _makePanelResizable(panel) {
     const handles = panel.querySelectorAll(".overlay-panel-resize-handle");
     if (!handles.length) return;
-    const self = this;
-    interact(panel).resizable({
-      edges: { top: true, left: true, bottom: true, right: true },
-      modifiers: [interact.modifiers.restrictSize({ min: { width: 280, height: 160 } })],
-      listeners: {
-        move(event) {
-          const { target, rect } = event;
-          target.style.width = `${rect.width}px`;
-          target.style.height = `${rect.height}px`;
-          target.style.top = `${rect.top}px`;
-          target.style.left = `${rect.left}px`;
-        },
-        up(event) {
-          const target = event.target;
-          self._panelPositions[target.dataset.panel] = {
-            x: parseInt(target.style.left),
-            y: parseInt(target.style.top),
-            w: target.offsetWidth,
-            h: target.offsetHeight
-          };
-          self._savePanelPositions();
-        }
+    let isResizing = false;
+    let resizeDir = null;
+    let startX, startY, startW, startH, startL, startT;
+
+    handles.forEach((handle) => {
+      handle.addEventListener("mousedown", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        isResizing = true;
+        resizeDir = handle.dataset.resize;
+        startX = e.clientX;
+        startY = e.clientY;
+        startW = panel.offsetWidth;
+        startH = panel.offsetHeight;
+        startL = panel.offsetLeft;
+        startT = panel.offsetTop;
+      });
+    });
+
+    document.addEventListener("mousemove", (e) => {
+      if (!isResizing || !resizeDir) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      const minW = 280;
+      const minH = 160;
+
+      if (resizeDir.includes("e")) {
+        panel.style.width = Math.max(minW, startW + dx) + "px";
+      }
+      if (resizeDir.includes("w")) {
+        const newW = Math.max(minW, startW - dx);
+        panel.style.width = newW + "px";
+        panel.style.left = startL + startW - newW + "px";
+      }
+      if (resizeDir.includes("s")) {
+        panel.style.height = Math.max(minH, startH + dy) + "px";
+      }
+      if (resizeDir.includes("n")) {
+        const newH = Math.max(minH, startH - dy);
+        panel.style.height = newH + "px";
+        panel.style.top = startT + startH - newH + "px";
+      }
+    });
+
+    document.addEventListener("mouseup", () => {
+      if (isResizing) {
+        isResizing = false;
+        resizeDir = null;
+        this._panelPositions[panel.dataset.panel] = {
+          x: parseInt(panel.style.left),
+          y: parseInt(panel.style.top),
+          w: panel.offsetWidth,
+          h: panel.offsetHeight
+        };
+        this._savePanelPositions();
       }
     });
   }
