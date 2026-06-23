@@ -5,6 +5,22 @@ const appNewsEntries = APP_MANIFESTS.filter((manifest) => manifest.news).map((ma
 
 const EXISTING_NEWS_UPDATES = [
   {
+    date: "June 24, 2026",
+    sections: [
+      {
+        icon: "fa-wand-magic-sparkles",
+        title: "Features & Improvements",
+        items: [
+          [
+            "fa-arrows-up-down-left-right",
+            "Alt+Left-Click Window Drag",
+            "Hold Alt and left-click anywhere on a window to drag it."
+          ]
+        ]
+      }
+    ]
+  },
+  {
     date: "June 23, 2026",
     sections: [
       {

@@ -1,3 +1,4 @@
+import interact from "interactjs";
 import { isImageFile } from "./fileDisplay.js";
 import { appMap } from "./games/gamesList.js";
 import { audioMixer, SystemAudio } from "./audioMixer.js";
@@ -238,22 +239,14 @@ export class NotificationCenter {
 
     let removed = false;
     let dismissTimer = null;
-    let isDragging = false;
-    let startX = 0;
-    let dragOffset = 0;
     let dragHistory = [];
 
     const threshold = toast.offsetWidth * 0.3;
 
-    const cleanupDragListeners = () => {
-      document.removeEventListener("pointermove", onPointerMove);
-      document.removeEventListener("pointerup", onPointerUp);
-    };
-
     const removeToast = () => {
       if (removed) return;
       removed = true;
-      cleanupDragListeners();
+      interact(toast).unset();
       toast.classList.add("ntf-toast-out");
       setTimeout(() => toast.remove(), 300);
     };
@@ -270,72 +263,62 @@ export class NotificationCenter {
       dismissTimer = setTimeout(removeToast, durationSec * 1000);
     }
 
-    const onPointerDown = (e) => {
-      if (e.target.closest(".ntf-toast__close")) return;
-      isDragging = true;
-      startX = e.clientX;
-      const currentTransform = toast.style.transform?.match(/translateX\(([-\d.]+)px\)/);
-      const currentDx = currentTransform ? parseFloat(currentTransform[1]) : 0;
-      dragOffset = currentDx;
-      dragHistory = [];
-      toast.classList.add("ntf-toast--dragging");
-      if (dismissTimer) {
-        clearTimeout(dismissTimer);
-        dismissTimer = null;
-      }
-    };
+    const self = this;
+    interact(toast).draggable({
+      ignoreFrom: ".ntf-toast__close",
+      axis: "x",
+      inertia: false,
+      listeners: {
+        start() {
+          dragHistory = [];
+          toast.classList.add("ntf-toast--dragging");
+          if (dismissTimer) {
+            clearTimeout(dismissTimer);
+            dismissTimer = null;
+          }
+        },
+        move(event) {
+          const dx = event.clientX - event.interaction.startPointer.clientX;
+          toast.style.transform = `translateX(${dx}px)`;
+          toast.style.opacity = Math.abs(dx) > threshold ? "0.5" : "1";
+          dragHistory.push({ x: event.clientX, t: performance.now() });
+          if (dragHistory.length > 5) dragHistory.shift();
+        },
+        end(event) {
+          const dx = event.clientX - event.interaction.startPointer.clientX;
 
-    const onPointerMove = (e) => {
-      if (!isDragging) return;
-      e.preventDefault();
-      const dx = dragOffset + (e.clientX - startX);
-      toast.style.transform = `translateX(${dx}px)`;
-      toast.style.opacity = Math.abs(dx) > threshold ? "0.5" : "1";
-      dragHistory.push({ x: e.clientX, t: performance.now() });
-      if (dragHistory.length > 5) dragHistory.shift();
-    };
+          let velocity = 0;
+          if (dragHistory.length >= 2) {
+            const first = dragHistory[0];
+            const last = dragHistory[dragHistory.length - 1];
+            const dt = last.t - first.t;
+            if (dt > 0) {
+              velocity = (last.x - first.x) / dt;
+            }
+          }
+          dragHistory = [];
 
-    const onPointerUp = () => {
-      if (!isDragging) return;
-      isDragging = false;
-
-      const match = toast.style.transform?.match(/translateX\(([-\d.]+)px\)/);
-      const dx = match ? parseFloat(match[1]) : 0;
-
-      let velocity = 0;
-      if (dragHistory.length >= 2) {
-        const first = dragHistory[0];
-        const last = dragHistory[dragHistory.length - 1];
-        const dt = last.t - first.t;
-        if (dt > 0) {
-          velocity = (last.x - first.x) / dt;
+          if (Math.abs(dx) > threshold || Math.abs(velocity) > 0.3) {
+            self.removeNotification(notif.id);
+            const flyDir = Math.abs(dx) > threshold ? Math.sign(dx) : Math.sign(velocity);
+            const extra = Math.max(Math.abs(velocity) * 500, 0);
+            toast.style.transition = "transform 0.4s cubic-bezier(0.15, 0.7, 0.3, 1), opacity 0.4s ease";
+            toast.style.transform = `translateX(${flyDir * (Math.abs(dx) + extra + window.innerWidth)}px)`;
+            toast.style.opacity = "0";
+            setTimeout(() => {
+              removed = true;
+              interact(toast).unset();
+              toast.remove();
+            }, 450);
+          } else {
+            toast.classList.remove("ntf-toast--dragging");
+            toast.style.transition = "none";
+            toast.style.transform = "translateX(0px)";
+            toast.style.opacity = "1";
+          }
         }
       }
-      dragHistory = [];
-
-      if (Math.abs(dx) > threshold || Math.abs(velocity) > 0.3) {
-        this.removeNotification(notif.id);
-        const flyDir = Math.abs(dx) > threshold ? Math.sign(dx) : Math.sign(velocity);
-        const extra = Math.max(Math.abs(velocity) * 500, 0);
-        toast.style.transition = "transform 0.4s cubic-bezier(0.15, 0.7, 0.3, 1), opacity 0.4s ease";
-        toast.style.transform = `translateX(${flyDir * (Math.abs(dx) + extra + window.innerWidth)}px)`;
-        toast.style.opacity = "0";
-        setTimeout(() => {
-          removed = true;
-          cleanupDragListeners();
-          toast.remove();
-        }, 450);
-      } else {
-        toast.classList.remove("ntf-toast--dragging");
-        toast.style.transition = "none";
-        toast.style.transform = `translateX(${dx}px)`;
-        toast.style.opacity = "1";
-      }
-    };
-
-    toast.addEventListener("pointerdown", onPointerDown);
-    document.addEventListener("pointermove", onPointerMove);
-    document.addEventListener("pointerup", onPointerUp);
+    });
   }
 
   removeNotification(id) {
