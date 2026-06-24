@@ -2,7 +2,7 @@ import { appMap } from "../games/gamesList.js";
 import { APP_DESCRIPTIONS, descriptionMap } from "../games/gameDescriptions.js";
 import { camelize } from "../utils/utils.js";
 import { ClippyAnimation, speak } from "../ai/clippy.js";
-import { isImageFile } from "../fileDisplay.js";
+import { isImageFile, resolveFileIcon, openFileWith } from "../fileDisplay.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { showDynamicContextMenu, refreshIcons } from "../shared/contextMenu.js";
 import { CDN_CONFIG } from "../shared/cdnConfig.js";
@@ -79,6 +79,7 @@ export function applyStartMenuSettings(el) {
   }
   const catNames = [
     "favorites",
+    "recent",
     "all",
     "internet",
     "media",
@@ -265,7 +266,7 @@ function getRecentlyUsed() {
   return os.storage.get(StorageKeys.recentlyUsedApps) || [];
 }
 
-function trackRecentlyUsed(appId) {
+export function trackRecentlyUsed(appId) {
   let recent = getRecentlyUsed();
   recent = recent.filter((id) => id !== appId);
   recent.unshift(appId);
@@ -273,29 +274,140 @@ function trackRecentlyUsed(appId) {
   os.storage.set(StorageKeys.recentlyUsedApps, recent);
 }
 
+function createRecentAppItem(appId, appData) {
+  const item = document.createElement("div");
+  item.className = "recent-item";
+  item.dataset.app = appId;
+  item.appendChild(buildIconEl(appData.icon || "fas fa-star"));
+  const content = document.createElement("div");
+  content.className = "app-content";
+  const title = document.createElement("span");
+  title.className = "app-title";
+  title.textContent = appData.title || appId;
+  content.appendChild(title);
+  const desc = document.createElement("span");
+  desc.className = "app-description";
+  desc.textContent = APP_DESCRIPTIONS[appId] || descriptionMap[appId] || "";
+  content.appendChild(desc);
+  item.appendChild(content);
+  item.addEventListener("click", () => {
+    trackRecentlyUsed(appId);
+    os.app.launch(appId);
+    closeStartMenu();
+  });
+  return item;
+}
+
+function createRecentFileItem(name, path, kind) {
+  const item = document.createElement("div");
+  item.className = "recent-item";
+  item.dataset.fileName = name;
+  item.dataset.filePath = path;
+
+  const rawIcon = resolveFileIcon(name);
+  let iconSrc = rawIcon;
+  if (rawIcon === "@content" || rawIcon === "rom") {
+    iconSrc = "static/icons/file.webp";
+  }
+  const iconEl = buildIconEl(iconSrc);
+
+  const content = document.createElement("div");
+  content.className = "app-content";
+  const title = document.createElement("span");
+  title.className = "app-title";
+  title.textContent = name;
+  const desc = document.createElement("span");
+  desc.className = "app-description";
+  desc.textContent = path;
+
+  content.appendChild(title);
+  content.appendChild(desc);
+  item.appendChild(iconEl);
+  item.appendChild(content);
+
+  item.addEventListener("click", () => {
+    if (!sharedAppLauncher) return;
+    closeStartMenu();
+    const dir = path.split("/").filter(Boolean);
+    openFileWith({
+      name,
+      path: dir,
+      fs: sharedAppLauncher.fs,
+      notepadApp: sharedAppLauncher.notepadApp,
+      browserApp: sharedAppLauncher.browserApp,
+      windowManager: sharedAppLauncher.wm,
+      officeApp: sharedAppLauncher.officeApp,
+      markdownApp: sharedAppLauncher.markdownApp,
+      jsDosApp: sharedAppLauncher.jsDosApp,
+      appLauncher: sharedAppLauncher
+    });
+  });
+
+  return item;
+}
+
 function updateRecentlyUsedUI() {
   const page = document.querySelector('.start-page[data-page="recent"]');
   if (!page) return;
+  const wasActive = page.classList.contains("active");
+  page.className = "start-page recent-page";
+  if (wasActive) page.classList.add("active");
   page.innerHTML = "";
+
+  const header = document.createElement("div");
+  header.className = "recent-page-header";
+  header.innerHTML = "<span>Recent</span>";
+
+  const clearBtn = document.createElement("button");
+  clearBtn.className = "recent-clear-btn";
+  clearBtn.textContent = "Clear";
+  clearBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    os.storage.set(StorageKeys.recentFiles, []);
+    os.storage.set(StorageKeys.recentlyUsedApps, []);
+    updateRecentlyUsedUI();
+  });
+  header.appendChild(clearBtn);
+  page.appendChild(header);
+
+  const recentFiles = os.storage.get(StorageKeys.recentFiles) || [];
+
+  if (recentFiles.length > 0) {
+    const filesHeader = document.createElement("div");
+    filesHeader.className = "recent-section-header";
+    filesHeader.textContent = "Recent Files";
+    page.appendChild(filesHeader);
+    recentFiles.forEach((f) => {
+      page.appendChild(createRecentFileItem(f.name, f.path, f.kind));
+    });
+  }
 
   const appRegistry = getAppRegistry();
   const allApps = { ...appMap, ...os.app.getAllApps() };
-  const recent = getRecentlyUsed();
+  const recentApps = getRecentlyUsed();
+  const validApps = recentApps.filter((appId) => {
+    const appData = allApps[appId];
+    if (!appData) return false;
+    if (appRegistry.isAppUninstalled(appId) || appRegistry.isAppDisabled(appId)) return false;
+    return true;
+  });
 
-  if (recent.length === 0) {
-    const empty = document.createElement("div");
-    empty.className = "search-no-results";
-    empty.textContent = "No recently used apps";
-    page.appendChild(empty);
-    return;
+  if (validApps.length > 0) {
+    const appsHeader = document.createElement("div");
+    appsHeader.className = "recent-section-header";
+    appsHeader.textContent = "Recent Apps";
+    page.appendChild(appsHeader);
+    validApps.forEach((appId) => {
+      page.appendChild(createRecentAppItem(appId, allApps[appId]));
+    });
   }
 
-  recent.forEach((appId) => {
-    const appData = allApps[appId];
-    if (!appData) return;
-    if (appRegistry.isAppUninstalled(appId) || appRegistry.isAppDisabled(appId)) return;
-    page.appendChild(createAppItem(appId, appData));
-  });
+  if (recentFiles.length === 0 && validApps.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "recent-empty";
+    empty.textContent = "No recently used items";
+    page.appendChild(empty);
+  }
 }
 
 function clearItemSelection() {
@@ -712,12 +824,34 @@ export function setupStartMenu(appLauncher, sessionManager, selectionManager) {
         results[category].push({ element: item, title: appData.title || appId });
       });
 
-      const categoryOrder = ["menu", "games", "system"];
-      const categoryLabels = { menu: "Menu", games: "Games", system: "System" };
+      const recentFiles = os.storage.get(StorageKeys.recentFiles) || [];
+      const fileResults = recentFiles.filter((f) => {
+        return fuzzyMatch(q, f.name) || fuzzyMatch(q, f.path);
+      });
+
+      const categoryOrder = ["menu", "games", "files", "system"];
+      const categoryLabels = { menu: "Menu", games: "Games", files: "Files", system: "System" };
 
       const fragment = document.createDocumentFragment();
       let hasResults = false;
       categoryOrder.forEach((cat) => {
+        if (cat === "files") {
+          if (fileResults.length > 0) {
+            hasResults = true;
+            const categoryHeader = document.createElement("div");
+            categoryHeader.className = "search-category-header";
+            categoryHeader.textContent = categoryLabels.files;
+            fragment.appendChild(categoryHeader);
+
+            const categoryResults = document.createElement("div");
+            categoryResults.className = "search-category-results";
+            fileResults.forEach((f) => {
+              categoryResults.appendChild(createRecentFileItem(f.name, f.path, f.kind));
+            });
+            fragment.appendChild(categoryResults);
+          }
+          return;
+        }
         if (results[cat].length > 0) {
           hasResults = true;
           const categoryHeader = document.createElement("div");

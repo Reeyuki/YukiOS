@@ -636,7 +636,7 @@ body.is-resizing * {
   justify-content: center;
   border: none;
   border-radius: var(--r-sm);
-  background-color: var(--glass);
+  background-color: transparent;
   color: var(--text-secondary);
   cursor: pointer;
   transition:

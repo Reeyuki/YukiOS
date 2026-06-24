@@ -4,7 +4,7 @@ import { HIGHLIGHTED_GAMES, getGameName } from "./games/games.js";
 import { appMap } from "./games/gamesList.js";
 import { SYSTEM_APPS } from "./AppRegistryConfig.js";
 import { createAppActions } from "./AppActions.js";
-import { initializeAppGrid, tryGetIcon } from "./desktopui/startMenu.js";
+import { initializeAppGrid, tryGetIcon, trackRecentlyUsed } from "./desktopui/startMenu.js";
 import { IFRAME_ATTRS } from "./shared/iframeAttrs.js";
 import { getLibraryUrl } from "./shared/cdnConfig.js";
 import { StorageKeys, os } from "./framework.js";
@@ -276,6 +276,7 @@ export class AppLauncher {
       this._saveLaunchedApps();
       this.achievementsApp.incrementAppLaunched();
     }
+    trackRecentlyUsed(app);
     if (info.type !== "system") {
       this.achievementsApp.incrementGameLaunched();
     }

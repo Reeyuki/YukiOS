@@ -149,5 +149,6 @@ export const StorageKeys = {
   clockSettings: "yukiOS_clock_settings",
   calendarAppEvents: "yukiOS_calendar_app_events",
   torBrowserState: "yukiOS_tor_browser_state",
-  vncProfiles: "yukiOS_vnc_profiles"
+  vncProfiles: "yukiOS_vnc_profiles",
+  recentFiles: "yukiOS_recent_files"
 };

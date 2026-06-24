@@ -17,6 +17,7 @@ Planned features and improvements for YukiOS.
 - [ ] From site to users computer file transfer support
 - [ ] Add 3D os mode
 - [ ] Add tiling wm mode
+- [ ] Add more achievements
 - [ ] File association system / default apps for files app
 
 ---

@@ -1,9 +1,27 @@
 import { FileKind } from "./fs.js";
 import { os } from "./os/index.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
+import { StorageKeys } from "./StorageKeys.js";
 import { ROM_EXTS } from "./shared/coreMap.js";
 import { resolveIconUrl } from "./shared/assetResolver.js";
 import { formatSize } from "./utils/utils.js";
+
+const RECENT_FILES_MAX = 20;
+
+export function trackRecentFile(name, path) {
+  try {
+    const recent = os.storage.get(StorageKeys.recentFiles) || [];
+    const key = Array.isArray(path) ? path.join("/") : path;
+    const existing = recent.findIndex((f) => f.name === name && f.path === key);
+    if (existing !== -1) recent.splice(existing, 1);
+    recent.unshift({ name, path: key, kind: fileKindFromName(name), timestamp: Date.now() });
+    if (recent.length > RECENT_FILES_MAX) recent.length = RECENT_FILES_MAX;
+    os.storage.set(StorageKeys.recentFiles, recent);
+  } catch (e) {
+    console.error("[FileDisplay] trackRecentFile error:", e);
+  }
+}
+
 export const IMAGE_EXTS = [
   "png",
   "jpg",
@@ -754,6 +772,7 @@ export async function openFileWith({
 }) {
   try {
     if (isZipFile(name)) return;
+    trackRecentFile(name, path);
     console.log("Open file with: ", name, path);
 
     if (isModel3DFile(name)) return _openModelFile(name, path, fs, appLauncher);

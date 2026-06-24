@@ -27,6 +27,7 @@ Its built entirely in vanilla javascript/typescript without any frameworks.
 ![Steam overlay](.github/overlay.png) ![Discord](.github/dc.png) ![Web Apps](.github/webapps.png)
 ![Setup](.github/setupsettings.png) ![Music1](.github/audio1.png) ![Music2](.github/audio2.png)
 ![Achievements](.github/browserachieve.png) ![Music player](.github/music.png) ![Applications](.github/apps.png)
+[Workspaces](.github/Workspaces.png)
 
 # ✨ Desktop Experience
 
@@ -54,9 +55,8 @@ Its built entirely in vanilla javascript/typescript without any frameworks.
 
 # 🧭 Navigation & UI
 
-- Start menu for launching and managing apps with keyboard navigation
-- Start menu alphabetical grouping with section headers
-- Start menu keybinds (Space, Tab, Ctrl)
+- Start menu with keyboard navigation, alphabetical grouping, shortcuts for launch(Space, Tab, Ctrl), and a Recent page
+  showing last-opened apps and files with clear button
 - Notification center with grouped messages
 - Do Not Disturb mode
 - Notification positioning controls
@@ -223,6 +223,8 @@ Its built entirely in vanilla javascript/typescript without any frameworks.
 - JsDos (DOS)
 - Virtual 86 (x86)
 - Azahar (3DS Emulator)
+- Flashpoint Database
+- Steam app
 
 ### Steam-like In-Game Overlay
 

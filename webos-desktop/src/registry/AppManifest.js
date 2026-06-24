@@ -880,6 +880,24 @@ export const APP_MANIFESTS = [
     windowSize: ["90vw", "85vh"]
   },
   {
+    serviceKey: "flashpointDatabaseApp",
+    enhanced: true,
+    type: "system",
+    title: "Flashpoint Database",
+    icon: "fas fa-database",
+    launchType: "instance",
+    windowIdPatterns: ["flashpoint-database", "flashpoint"],
+    category: "games",
+    persistContentState: false,
+    clippy: {
+      message: "Browse Flashpoint's archive and keep old web games within reach.",
+      animation: ClippyAnimation.Show
+    },
+    description: "Browse Flashpoint's game archive from a dedicated desktop window.",
+    targetUrl: "https://flashpointproject.github.io/flashpoint-database/",
+    windowSize: ["90vw", "85vh"]
+  },
+  {
     serviceKey: "senshiApp",
     enhanced: true,
     type: "system",
