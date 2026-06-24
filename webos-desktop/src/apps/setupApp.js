@@ -224,7 +224,7 @@ export const FEATURE_DATA = {
       { id: "browser", title: "Browser", icon: "fas fa-globe" },
       { id: "explorer", title: "File Explorer", icon: "fas fa-folder" },
       { id: "settings", title: "Settings", icon: "fas fa-cog" },
-      { id: "yukiOsGuide", title: "Yuki OS Guide", icon: "fas fa-book-open" }
+      { id: "yukiOsGuide", title: "YukiOS Guide", icon: "fas fa-book-open" }
     ],
     transparencyLevels: [
       { value: "high", title: "High Transparency", desc: "More glass effect" },
@@ -287,7 +287,7 @@ export class SetupApp extends BaseApp {
 
     await this._loadWallpapers();
 
-    const win = os.window.create(winId, "Set Up Yuki OS", "75vw", "75vh", {
+    const win = os.window.create(winId, "Set Up YukiOS", "75vw", "75vh", {
       icon: "fas fa-rocket",
       position: "center"
     });
@@ -304,7 +304,7 @@ export class SetupApp extends BaseApp {
   _buildUI() {
     return `
       <div class="window-header">
-        <span>Set Up Yuki OS</span>
+        <span>Set Up YukiOS</span>
         ${os.window.getWindowControls()}
       </div>
       <div class="window-content setup-wizard">
@@ -755,7 +755,7 @@ export class SetupApp extends BaseApp {
         <div class="complete-actions">
           <button id="setup-launch-guide" class="setup-guide-btn">
             <i class="fas fa-book-open"></i>
-            <span>Open Yuki OS Guide</span>
+            <span>Open YukiOS Guide</span>
           </button>
         </div>
       </div>

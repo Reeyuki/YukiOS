@@ -37,7 +37,7 @@ const capabilities = [
 ];
 
 const privacyText = `
-  Yuki OS collects limited anonymous analytics to help improve stability and usage insights.
+  YukiOS collects limited anonymous analytics to help improve stability and usage insights.
 
   Collected data:
   • App launches and feature usage
@@ -53,13 +53,13 @@ const privacyText = `
   • Understanding feature usage
   • Diagnosing issues and errors
 
-  Yuki OS does not sell user data or share it with advertisers.
+  YukiOS does not sell user data or share it with advertisers.
 `;
 
 const copyrightText = `
   Copyright & Takedown Requests
 
-  Yuki OS doesn't host any copyrighted content. Games and apps are loaded from their original sources or CDNs.
+  YukiOS doesn't host any copyrighted content. Games and apps are loaded from their original sources or CDNs.
 
   If you believe something here violates your rights, contact us at:
 
@@ -75,12 +75,12 @@ export class AboutApp extends BaseApp {
   getDeclarativeSchema(opts) {
     return {
       id: "about-yukios",
-      name: "About Yuki OS",
+      name: "About YukiOS",
       icon: "fa fa-circle-info",
       windows: [
         {
           id: "about-yukios",
-          title: "About Yuki OS",
+          title: "About YukiOS",
           size: ["720px", "85vh"],
           icon: "fa fa-circle-info",
           ui: `
@@ -91,7 +91,7 @@ export class AboutApp extends BaseApp {
           <div class="abx-top">
             <div class="abx-mark">
               <img class="abx-badge" src="${resolveGhUrl("static/icons/logo.png")}">
-              <h1 class="abx-title">Yuki OS</h1>
+              <h1 class="abx-title">YukiOS</h1>
               <p class="abx-sub">
                 A browser-based desktop with apps, games, emulators, and a virtual filesystem.
               </p>

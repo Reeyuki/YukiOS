@@ -9,11 +9,11 @@ import interact from "interactjs";
 import { StorageKeys, os } from "../framework.js";
 import { hideMenu } from "../shared/contextMenu.js";
 import { WindowHelper } from "../utils/WindowHelper.js";
-import { DesktopContextMenuManager } from "../windowManager/ContextMenuManager.js";
+import { DesktopContextMenuManager } from "./ContextMenuManager.js";
 import { IconManager } from "./iconManager.js";
 import { DragDropManager } from "./dragDropManager.js";
 import { ClipboardManager } from "./fileClipboardManager.js";
-import { showPropertiesDialog } from "./propertiesDialog.js";
+import { showFileProperties } from "../fileDisplay.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { KeybindManager } from "../keybindManager.js";
 
@@ -327,7 +327,7 @@ export class DesktopUI {
       this.explorerApp
     );
 
-    this.contextMenuManager = new DesktopContextMenuManager(this, PositionStore, IconDataHelper);
+    this.contextMenuManager = new DesktopContextMenuManager(this, PositionStore, IconDataHelper, this.windowHelper);
 
     this.setupEventListeners();
     this.initializeDesktopFiles();
@@ -802,8 +802,26 @@ export class DesktopUI {
     this.iconManager.addFiles();
   }
 
-  showPropertiesDialog(icon) {
-    showPropertiesDialog(icon, this.appLauncher, IconDataHelper, this.windowHelper);
+  async showPropertiesDialog(icon) {
+    if (icon.dataset.fileName) {
+      showFileProperties(["Desktop", icon.dataset.fileName], icon.dataset.fileName, false);
+    } else if (icon.dataset.folderName) {
+      showFileProperties(["Desktop", icon.dataset.folderName], icon.dataset.folderName, true);
+    } else if (icon.dataset.app) {
+      const name = IconDataHelper.getIconName(icon);
+      const fileName = `${name}.desktop`;
+      const filePath = ["Desktop", fileName];
+      const img = icon.querySelector("img");
+      const fa = icon.querySelector("i");
+      let iconPath = null;
+      if (img) iconPath = img.getAttribute("src");
+      else if (fa) iconPath = Array.from(fa.classList).join(" ");
+      const content = JSON.stringify({ app: icon.dataset.app, name, path: iconPath });
+      await os.fs.write(filePath, content);
+      const dir = this.fs.resolveUserPath(["Desktop"]);
+      await this.fs.writeMeta(dir, fileName, { size: content.length });
+      showFileProperties(filePath, fileName, false);
+    }
   }
 
   deleteSelectedIcons(selectedArray) {

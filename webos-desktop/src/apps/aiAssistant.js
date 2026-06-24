@@ -541,7 +541,7 @@ export class AIAssistantApp extends BaseApp {
   }
 
   _buildSystemPrompt(context) {
-    return `You are Yuki AI Assistant, built into Yuki OS. Help users with tasks and run system actions when asked.
+    return `You are Yuki AI Assistant, built into YukiOS. Help users with tasks and run system actions when asked.
 
 Current OS Context:
 - Active Window: ${context.activeWindow || "None"}
@@ -791,7 +791,7 @@ Say what you're about to do before running an action. If it could be destructive
       {
         title: "Discover",
         items: [
-          ["open_news", "Open What's New", "See latest Yuki OS updates.", "fas fa-newspaper"],
+          ["open_news", "Open What's New", "See latest YukiOS updates.", "fas fa-newspaper"],
           ["open_weather", "Open Weather", "Check current forecast.", "fas fa-cloud-sun"]
         ]
       }

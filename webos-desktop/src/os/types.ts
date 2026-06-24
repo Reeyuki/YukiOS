@@ -1,5 +1,5 @@
 /**
- * TypeScript type definitions for Yuki OS Bridge Layer
+ * TypeScript type definitions for YukiOS Bridge Layer
  */
 
 export interface WindowOptions {

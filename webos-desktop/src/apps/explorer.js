@@ -30,7 +30,8 @@ import {
   isExeFile,
   isSwfFile,
   isZipFile,
-  generateThumbnail
+  generateThumbnail,
+  showFileProperties
 } from "../fileDisplay.js";
 import { showConflictDialog } from "../shared/conflictDialog.js";
 import { showDynamicContextMenu } from "../shared/contextMenu.js";
@@ -59,7 +60,7 @@ export class ExplorerApp extends BaseApp {
     this.fs = services.fileSystemManager;
     this.wm = services.windowManager;
     this.notepadApp = services.notepadApp;
-    this.markdownApp = services.markdownApp;
+    this.markdownApp = null;
     this.officeApp = null;
     this.browserApp = null;
     this.desktopUI = null;
@@ -70,6 +71,9 @@ export class ExplorerApp extends BaseApp {
   }
   setBrowser(browserApp) {
     this.browserApp = browserApp;
+  }
+  setMarkdownApp(markdownApp) {
+    this.markdownApp = markdownApp;
   }
 
   setDesktopUI(desktopUI) {
@@ -1616,8 +1620,10 @@ export class ExplorerApp extends BaseApp {
       menu.appendChild(
         item(
           "Properties",
-          () => {
-            os.notify.send(`Name: ${itemName}\nType: ${isFile ? "File" : "Folder"}`);
+          async () => {
+            await showFileProperties([...inst.currentPath, itemName], itemName, !isFile, () =>
+              this.renderInstance(inst)
+            );
           },
           "fa-info-circle"
         )
@@ -2193,10 +2199,8 @@ export class ExplorerApp extends BaseApp {
       menu.appendChild(
         item(
           "Properties",
-          () => {
-            const size = entry.size ? formatSize(entry.size) : "Unknown";
-            const date = new Date(entry.deletedAt).toLocaleString();
-            os.notify.send(`Name: ${entry.originalName}\nType: ${entry.type}\nSize: ${size}\nDeleted: ${date}`);
+          async () => {
+            await this._showTrashItemProperties(entry, inst);
           },
           "fa-info-circle"
         )
@@ -2565,5 +2569,61 @@ export class ExplorerApp extends BaseApp {
       if (ev.key === "Escape") close();
       if (ev.key === "Enter") confirmBtn.click();
     };
+  }
+
+  async _showTrashItemProperties(entry, inst) {
+    try {
+      const iconSrc = entry.icon || "static/icons/file.webp";
+      const size = entry.size ? formatSize(entry.size) : "Unknown";
+      const type = entry.type || "Unknown";
+      const location = entry.originalPath || "Unknown";
+      const date = new Date(entry.deletedAt).toLocaleString();
+
+      const title = `Properties: ${entry.originalName}`;
+      const propsWin = os.window.create(`${Date.now()}-props`, title, "400px", "auto");
+
+      propsWin.innerHTML = `
+        <div class="window-header"><span>${title}</span>
+          ${os.window.getWindowControls()}
+        </div>
+        <div class="window-content" style="padding:20px;">
+          <div style="display:flex;align-items:center;gap:20px;margin-bottom:20px;">
+            <img src="${iconSrc}" style="width:64px;height:64px;object-fit:cover;border-radius:8px;">
+            <div style="flex:1;">
+              <div style="font-size:18px;font-weight:600;margin-bottom:4px;">${entry.originalName}</div>
+              <div style="opacity:0.7;font-size:13px;">${type}</div>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:120px 1fr;gap:8px;margin-bottom:20px;font-size:13px;">
+            <div style="opacity:0.7;">Type:</div><div>${type}</div>
+            <div style="opacity:0.7;">Original Location:</div><div>${location}</div>
+            <div style="opacity:0.7;">Size:</div><div>${size}</div>
+            <div style="opacity:0.7;">Deleted:</div><div>${date}</div>
+          </div>
+        </div>
+      `;
+    } catch (err) {
+      console.error("Properties error:", err);
+      os.dialog.alert("Error", "Failed to show properties");
+    }
+  }
+
+  async _getItemSize(path) {
+    try {
+      const content = await os.fs.read(path, { encoding: "binary" });
+      const bytes = content instanceof Uint8Array ? content.length : new Blob([content]).size;
+      return formatSize(bytes);
+    } catch {
+      return "Unknown";
+    }
+  }
+
+  async _getModifiedDate(path) {
+    try {
+      return new Date().toLocaleString();
+    } catch {
+      return "Unknown";
+    }
   }
 }

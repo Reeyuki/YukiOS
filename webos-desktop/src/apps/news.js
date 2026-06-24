@@ -65,8 +65,7 @@ const EXISTING_NEWS_UPDATES = [
         icon: "fa-clock",
         title: "New Apps",
         items: [
-          ["fa-clock", "Clock", "Digital and analog clocks with alarms, stopwatch, timer, and customizable settings."],
-          ["fa-calendar-days", "Calendar", "Manage events and reminders right from the Clock app's Events tab."]
+          ["fa-clock", "Clock", "Digital and analog clocks with alarms, stopwatch, timer, and customizable settings."]
         ]
       }
     ]
@@ -589,7 +588,7 @@ const EXISTING_NEWS_UPDATES = [
           ],
           [
             "fa-book-open",
-            "Yuki OS Guide",
+            "YukiOS Guide",
             "A built-in guide that walks you through apps, features, and how everything fits together."
           ],
           [
@@ -1072,7 +1071,7 @@ export class NewsApp extends BaseApp {
       <div class="news-update">
         <div class="news-update-head">
           <div class="news-date">${update.date}</div>
-          <div class="news-label">Yuki OS Update</div>
+          <div class="news-label">YukiOS Update</div>
         </div>
         ${renderSections(update.sections)}
       </div>

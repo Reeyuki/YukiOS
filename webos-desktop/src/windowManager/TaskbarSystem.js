@@ -506,7 +506,7 @@ export class TaskbarSystem {
         const defaultApps = [
           {
             winId: "explorer-pinned",
-            appId: "explorer",
+            appId: "explorerApp",
             title: "Explorer",
             iconValue: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/icons/file.webp",
             color: null

@@ -122,6 +122,7 @@ const appCreatorApp = new AppCreatorApp(services);
 services.appCreatorApp = appCreatorApp;
 
 loadApps(services);
+explorerApp.setMarkdownApp(services.markdownApp);
 
 const appLauncher = new AppLauncher(windowManager, fileSystemManager, services);
 services.appLauncher = appLauncher;

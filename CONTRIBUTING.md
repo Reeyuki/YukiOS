@@ -1,4 +1,4 @@
-# Contributing to Yuki OS
+# Contributing to YukiOS
 
 Check out our [Roadmap](ROADMAP.md)
 

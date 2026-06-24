@@ -28,7 +28,7 @@ export const AppSource = {
   PROFILE_CUSTOMIZER: "Profile Customizer",
   SHORTCUTS: "Shortcuts",
   APP_CREATOR: "App Creator",
-  YUKI_OS_GUIDE: "Yuki OS Guide",
+  YUKI_OS_GUIDE: "YukiOS Guide",
   AI_ASSISTANT: "Yuki AI",
   BRIGHTNESS: "Brightness",
   EMOJI_SELECTOR: "Emoji Selector",

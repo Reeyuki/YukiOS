@@ -1,6 +1,8 @@
 import { defineConfig } from "vite";
 import { viteSingleFile } from "vite-plugin-singlefile";
 import { execSync } from "child_process";
+import { readFileSync } from "fs";
+import { resolve } from "path";
 import { nodePolyfills } from "vite-plugin-node-polyfills";
 
 const commitHash = (() => {
@@ -11,13 +13,16 @@ const commitHash = (() => {
   }
 })();
 
+const readmeContent = readFileSync(resolve(process.cwd(), "../README.md"), "utf-8");
+
 const isDevBuild = process.env.VITE_DEV_BUILD === "true";
 
 export default defineConfig({
   base: "./",
   plugins: [viteSingleFile(), nodePolyfills()],
   define: {
-    __GIT_COMMIT__: JSON.stringify(commitHash)
+    __GIT_COMMIT__: JSON.stringify(commitHash),
+    __README_CONTENT__: JSON.stringify(readmeContent)
   },
   build: {
     target: "esnext",

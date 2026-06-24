@@ -864,7 +864,7 @@ export function renderDataSettings() {
       </div>
 
       <div class="settings-card" style="margin-top: 16px;">
-        <div class="settings-card-header"><i class="fas fa-download"></i> Save Yuki OS</div>
+        <div class="settings-card-header"><i class="fas fa-download"></i> Save YukiOS</div>
         <div class="settings-row">
           <div class="settings-label-group">
             <span class="settings-label-title">Download Page</span>
@@ -1026,7 +1026,7 @@ export function renderAboutSettings() {
           <div style="display: flex; align-items: center; gap: 16px;">
             <img src="${resolveGhUrl("static/icons/logo.png")}" style="width: 48px; height: 48px; object-fit: contain;" onerror="this.src='favicon.ico'"/>
             <div>
-              <h2 style="margin:0;font-size:1.3em;font-weight:600;display:flex;align-items:center;gap:8px;color:var(--text-primary);">Yuki OS <span style="font-size:0.65em;background:var(--brand-dim);color:var(--brand);padding:2px 8px;border-radius:4px;font-weight:500;">${YUKIOS_VERSION}</span></h2>
+              <h2 style="margin:0;font-size:1.3em;font-weight:600;display:flex;align-items:center;gap:8px;color:var(--text-primary);">YukiOS <span style="font-size:0.65em;background:var(--brand-dim);color:var(--brand);padding:2px 8px;border-radius:4px;font-weight:500;">${YUKIOS_VERSION}</span></h2>
               <p style="margin:4px 0 0 0;color:var(--text-secondary);font-size:0.8em;">Desktop, in your browser</p>
             </div>
           </div>

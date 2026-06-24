@@ -1876,7 +1876,7 @@ export class OfficeApp extends BaseApp {
   }
 
   showAbout() {
-    os.dialog.alert("Office", "Yuki OS Office Suite for editing documents, spreadsheets, and presentations.");
+    os.dialog.alert("Office", "YukiOS Office Suite for editing documents, spreadsheets, and presentations.");
   }
 
   spellCheck(state) {

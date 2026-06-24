@@ -1,6 +1,6 @@
-# Development Guide - Yuki OS
+# Development Guide - YukiOS
 
-This guide covers how to create new applications, add functionalities, and contribute to Yuki OS.
+This guide covers how to create new applications, add functionalities, and contribute to YukiOS.
 
 ## Table of Contents
 
@@ -56,7 +56,7 @@ This guide covers how to create new applications, add functionalities, and contr
 
 ## Creating a New App
 
-Yuki OS uses a declarative app framework with a centralized manifest system. Follow these steps to create a new
+YukiOS uses a declarative app framework with a centralized manifest system. Follow these steps to create a new
 application:
 
 ### Step 1: Create the App File
@@ -457,7 +457,7 @@ import { os } from "../framework.js";
 
 ## Styling Guidelines
 
-Yuki OS uses a dark glassmorphism theme with a comprehensive theming system.
+YukiOS uses a dark glassmorphism theme with a comprehensive theming system.
 
 ### CSS Variables
 
@@ -529,8 +529,8 @@ Never use native browser checkboxes, plain inputs, or dropdowns. Always use:
 
 ## Creating Themes
 
-Yuki OS has a comprehensive theming system with 25+ built-in themes and support for custom themes. Themes are managed
-via `src/shared/themeEngine.js`.
+YukiOS has a comprehensive theming system with 25+ built-in themes and support for custom themes. Themes are managed via
+`src/shared/themeEngine.js`.
 
 ### Theme Structure
 

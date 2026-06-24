@@ -44,6 +44,12 @@ export const defaultStorage = {
           content: "Welcome aboard!\n\nYou can write and save text files using the Notepad app.",
           kind: FileKind.TEXT,
           icon: "static/icons/notepad.webp"
+        },
+        "YukiOS.md": {
+          type: "file",
+          content: typeof __README_CONTENT__ !== "undefined" ? __README_CONTENT__ : "# YukiOS\n",
+          kind: FileKind.TEXT,
+          icon: "static/icons/notepad.webp"
         }
       },
       Music: {
@@ -483,6 +489,7 @@ export class FileSystemManager {
             ...value,
             size: (value.content ?? "").length
           });
+        } else {
         }
       } else {
         const exists = await this.exists(fullPath);
@@ -746,8 +753,8 @@ export class FileSystemManager {
 
     try {
       const text = await this.pRead("readFile", fullPath, "utf8");
+
       if (!text) {
-        console.warn(`getFileContent: "${name}" is empty in "${dir}".`);
         return "";
       }
       if (
@@ -759,10 +766,12 @@ export class FileSystemManager {
       ) {
         return null;
       }
-      return resolveIconUrl(text);
-    } catch {
+      if (text.startsWith("data:") || text.startsWith("http") || text.startsWith("/")) {
+        return resolveIconUrl(text);
+      }
+      return text;
+    } catch (e) {
       const entries = await this.pRead("readdir", dir).catch(() => []);
-      console.warn(`getFileContent: "${name}" not found in "${dir}". Available:`, entries);
       return "";
     }
   }

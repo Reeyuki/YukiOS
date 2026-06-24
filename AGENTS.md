@@ -1,4 +1,4 @@
-# Yuki OS - Agent Reference
+# YukiOS - Agent Reference
 
 You are working under webos-desktop directory. when src is mentioned it means webos-desktop/
 
@@ -73,7 +73,7 @@ Write modular, clean, and DRY code. Follow these principles:
 
 ## Styling System
 
-Yuki OS uses a dark glassmorphism theme with a comprehensive theming system. All rules below are non-negotiable.
+YukiOS uses a dark glassmorphism theme with a comprehensive theming system. All rules below are non-negotiable.
 
 - **CSS Variables**: Use `--brand` (accent), `--text-primary`, `--text-secondary`, `--bg-primary`, `--bg-secondary`,
   `--glass`, `--glass-border`, `--error`. Never introduce new hues or hardcoded values.
@@ -615,7 +615,7 @@ export class MyApp extends BaseApp {
 
 ### 2. Add CSS Styling
 
-Create `src/styles/myApp.css` with Yuki OS styling:
+Create `src/styles/myApp.css` with YukiOS styling:
 
 ```css
 .my-app-container {

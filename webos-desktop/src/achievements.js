@@ -97,7 +97,7 @@ export class AchievementsApp extends BaseApp {
                 <i class="fas fa-trophy achievements-hero__icon"></i>
               </div>
               <h1 class="achievements-hero__title">Achievements</h1>
-              <p class="achievements-hero__subtitle">Track your progress in Yuki OS</p>
+              <p class="achievements-hero__subtitle">Track your progress in YukiOS</p>
             </div>
             <div class="achievements-hero__stats">
               <div class="achievements-hero__stat">
@@ -193,7 +193,7 @@ export class AchievementsApp extends BaseApp {
       {
         id: Achievements.WelcomeAboard,
         title: "First Steps",
-        desc: "Launch Yuki OS for the first time",
+        desc: "Launch YukiOS for the first time",
         icon: "fa-rocket",
         rarity: "common"
       },
@@ -361,7 +361,7 @@ export class AchievementsApp extends BaseApp {
       {
         id: Achievements.SetupComplete,
         title: "System Ready",
-        desc: "Finish Yuki OS setup wizard",
+        desc: "Finish YukiOS setup wizard",
         icon: "fa-flag-checkered",
         rarity: "uncommon"
       }
@@ -400,7 +400,7 @@ export class AchievementsApp extends BaseApp {
           <i class="fas fa-trophy achievements-hero__icon"></i>
         </div>
         <h1 class="achievements-hero__title">Achievements</h1>
-        <p class="achievements-hero__subtitle">Track your progress in Yuki OS</p>
+        <p class="achievements-hero__subtitle">Track your progress in YukiOS</p>
         ${
           disabled
             ? `

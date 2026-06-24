@@ -13,9 +13,55 @@
   animation: cmFadeIn 120ms ease-out both;
 }
 
+.context-menu-item.has-submenu {
+  position: relative;
+}
+
+.context-menu-item.has-submenu > div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  border-radius: var(--r-sm);
+  transition:
+    background 0.12s ease,
+    transform 0.05s ease;
+}
+
+.context-menu-item.has-submenu > div:hover {
+  background: var(--glass-hover);
+  color: var(--text-primary);
+}
+
+.context-menu-item.has-submenu > div:active {
+  transform: scale(0.97);
+  background: var(--glass);
+}
+
+.submenu-arrow {
+  margin-left: auto;
+  font-size: 10px;
+  opacity: 0.5;
+}
+
+.context-menu-item.has-submenu .context-menu {
+  position: fixed;
+  z-index: 30001;
+  min-width: 160px;
+  padding: 6px;
+}
+
 .context-menu-glass.closing {
   animation: cmFadeOut 120ms ease-in both;
   pointer-events: none;
+}
+
+.context-menu-glass > .cm-focused,
+.context-menu > .cm-focused {
+  background: var(--glass-hover) !important;
+  color: var(--text-primary);
+  border-radius: var(--r-sm);
 }
 
 @keyframes cmFadeIn {

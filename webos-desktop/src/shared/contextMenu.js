@@ -113,7 +113,138 @@ export function showContextMenu(e, items, handlers) {
   });
 
   positionMenu(menu, e.pageX, e.pageY);
+  _setupKeyboardNav(menu);
+  menu.focus({ preventScroll: true });
   bindDismissal();
+}
+
+function _getNavItems(menuEl) {
+  return Array.from(menuEl.children).filter((el) => el.tagName !== "HR" && el.style.display !== "none");
+}
+
+function _focusItem(menuEl, idx) {
+  const items = _getNavItems(menuEl);
+  if (!items.length) return;
+  idx = Math.max(0, Math.min(idx, items.length - 1));
+  items.forEach((el, i) => el.classList.toggle("cm-focused", i === idx));
+  menuEl.dataset.cmIdx = String(idx);
+  items[idx].scrollIntoView({ block: "nearest" });
+}
+
+function _clearFocus(menuEl) {
+  const items = _getNavItems(menuEl);
+  items.forEach((el) => el.classList.remove("cm-focused"));
+  delete menuEl.dataset.cmIdx;
+}
+
+function _setupKeyboardNav(menuEl) {
+  if (menuEl.dataset.cmNav) return;
+  menuEl.dataset.cmNav = "1";
+  menuEl.setAttribute("tabindex", "-1");
+
+  menuEl.addEventListener("mouseover", _clearFocus.bind(null, menuEl), {
+    passive: true
+  });
+
+  menuEl.addEventListener("keydown", (e) => {
+    const items = _getNavItems(menuEl);
+    if (!items.length) return;
+
+    let idx = parseInt(menuEl.dataset.cmIdx || "0");
+    idx = Math.max(0, Math.min(idx, items.length - 1));
+
+    switch (e.key) {
+      case "ArrowDown":
+        e.preventDefault();
+        e.stopPropagation();
+        if (idx < items.length - 1) idx++;
+        _focusItem(menuEl, idx);
+        break;
+      case "ArrowUp":
+        e.preventDefault();
+        e.stopPropagation();
+        if (idx > 0) idx--;
+        _focusItem(menuEl, idx);
+        break;
+      case "ArrowRight": {
+        const target = items[idx];
+        if (target && target.classList.contains("has-submenu")) {
+          e.preventDefault();
+          e.stopPropagation();
+          const trigger = target.querySelector(":scope > div");
+          if (trigger) {
+            trigger.click();
+            const sub = target.querySelector(":scope > .context-menu");
+            if (sub) {
+              setTimeout(() => {
+                sub.focus({ preventScroll: true });
+                _focusItem(sub, 0);
+              }, 50);
+            }
+          }
+        }
+        break;
+      }
+      case "ArrowLeft":
+      case "Escape": {
+        const parentWrapper = menuEl.closest(".has-submenu");
+        if (parentWrapper) {
+          e.preventDefault();
+          e.stopPropagation();
+          menuEl.style.display = "none";
+          _clearFocus(menuEl);
+          const parentMenu = parentWrapper.parentElement;
+          if (parentMenu) {
+            const parentItems = _getNavItems(parentMenu);
+            const parentIdx = parentItems.indexOf(parentWrapper);
+            parentMenu.focus({ preventScroll: true });
+            _focusItem(parentMenu, Math.max(0, parentIdx));
+          }
+        } else if (e.key === "Escape") {
+          e.preventDefault();
+          e.stopPropagation();
+          menuEl.querySelectorAll(".context-menu").forEach((s) => (s.style.display = "none"));
+          hideMenu();
+        }
+        break;
+      }
+      case "Enter":
+      case " ":
+        e.preventDefault();
+        e.stopPropagation();
+        const item = items[idx];
+        if (item.classList.contains("has-submenu")) {
+          const trigger = item.querySelector(":scope > div");
+          if (trigger) trigger.click();
+        } else {
+          item.click();
+        }
+        break;
+    }
+  });
+}
+
+function _createItemElement(text, onclick, icon) {
+  const el = document.createElement("div");
+  const iconVal = (icon || "fa-chevron-right").trim();
+  const iconCls = iconVal.includes(" ") ? iconVal : `fas ${iconVal}`;
+  const iconEl = document.createElement("i");
+  iconEl.className = iconCls;
+  iconEl.style.width = "16px";
+  iconEl.style.textAlign = "center";
+  iconEl.style.opacity = "0.7";
+  el.appendChild(iconEl);
+  const label = document.createElement("span");
+  label.textContent = text;
+  el.appendChild(label);
+  el.onclick = (event) => {
+    if (event) event.stopPropagation();
+    if (onclick) {
+      hideMenu();
+      onclick();
+    }
+  };
+  return el;
 }
 
 export function showDynamicContextMenu(e, buildFn) {
@@ -125,33 +256,85 @@ export function showDynamicContextMenu(e, buildFn) {
   menu.innerHTML = "";
   menu.classList.add("context-menu-glass");
 
-  const item = (text, onclick, icon = null) => {
-    const el = document.createElement("div");
-    const iconVal = (icon || "fa-chevron-right").trim();
-    const iconCls = iconVal.includes(" ") ? iconVal : `fas ${iconVal}`;
-    const iconEl = document.createElement("i");
-    iconEl.className = iconCls;
-    iconEl.style.width = "16px";
-    iconEl.style.textAlign = "center";
-    iconEl.style.opacity = "0.7";
-    el.appendChild(iconEl);
-    const label = document.createElement("span");
-    label.textContent = text;
-    el.appendChild(label);
-    el.onclick = (event) => {
-      if (event) event.stopPropagation();
-      hideMenu();
-      onclick();
-    };
-    return el;
-  };
+  const item = (text, onclick, icon = null) => _createItemElement(text, onclick, icon);
 
   const hr = () => document.createElement("hr");
 
-  buildFn(menu, item, hr);
+  const submenu = (label, buildSubFn, icon = null) => {
+    const wrapper = document.createElement("div");
+    wrapper.className = "context-menu-item has-submenu";
+
+    const trigger = _createItemElement(label, null, icon);
+    const arrow = document.createElement("span");
+    arrow.className = "submenu-arrow";
+    arrow.textContent = "\u25b6";
+    trigger.appendChild(arrow);
+    wrapper.appendChild(trigger);
+
+    const subMenuEl = document.createElement("div");
+    subMenuEl.className = "context-menu context-menu-glass";
+    subMenuEl.style.display = "none";
+    subMenuEl.style.position = "fixed";
+    wrapper.appendChild(subMenuEl);
+
+    const subItem = (text, onclick, subIcon = null) => _createItemElement(text, onclick, subIcon);
+    const subHr = () => document.createElement("hr");
+    buildSubFn(subMenuEl, subItem, subHr, submenu);
+    _setupKeyboardNav(subMenuEl);
+
+    let hideTimeout = null;
+    let showTimeout = null;
+
+    wrapper.addEventListener("mouseenter", () => {
+      clearTimeout(hideTimeout);
+      clearTimeout(showTimeout);
+      showTimeout = setTimeout(() => {
+        const wrapperRect = wrapper.getBoundingClientRect();
+        subMenuEl.style.display = "block";
+        subMenuEl.style.top = "0";
+        subMenuEl.style.left = wrapperRect.width + "px";
+
+        const subRect = subMenuEl.getBoundingClientRect();
+        if (subRect.right > window.innerWidth) {
+          subMenuEl.style.left = "auto";
+          subMenuEl.style.right = wrapperRect.width + "px";
+        }
+        if (subRect.bottom > window.innerHeight) {
+          subMenuEl.style.top = Math.max(0, -(subRect.bottom - window.innerHeight) - 4) + "px";
+        }
+        refreshIcons(subMenuEl);
+      }, 150);
+    });
+
+    wrapper.addEventListener("mouseleave", () => {
+      clearTimeout(showTimeout);
+      hideTimeout = setTimeout(() => {
+        subMenuEl.style.display = "none";
+      }, 300);
+    });
+
+    trigger.addEventListener("click", (event) => {
+      event.stopPropagation();
+      clearTimeout(hideTimeout);
+      const isVisible = subMenuEl.style.display === "block";
+      subMenuEl.style.display = isVisible ? "none" : "block";
+      if (!isVisible) {
+        const wrapperRect = wrapper.getBoundingClientRect();
+        subMenuEl.style.top = "0";
+        subMenuEl.style.left = wrapperRect.width + "px";
+        refreshIcons(subMenuEl);
+      }
+    });
+
+    return wrapper;
+  };
+
+  buildFn(menu, item, hr, submenu);
 
   positionMenu(menu, e.pageX, e.pageY);
   refreshIcons(menu);
+  _setupKeyboardNav(menu);
+  menu.focus({ preventScroll: true });
   bindDismissal();
 }
 export function showStartStyleMenu(e, buildFn) {

@@ -493,13 +493,13 @@ export class SessionManager {
     });
 
     powerBtn.addEventListener("click", async () => {
-      if (await os.dialog.confirm("Shutdown", "Shut down Yuki OS?")) {
+      if (await os.dialog.confirm("Shutdown", "Shut down YukiOS?")) {
         window.close();
       }
     });
 
     restartBtn.addEventListener("click", async () => {
-      if (await os.dialog.confirm("Restart", "Restart Yuki OS?")) {
+      if (await os.dialog.confirm("Restart", "Restart YukiOS?")) {
         location.reload();
       }
     });

@@ -53,6 +53,7 @@ interface OSBridge {
     isFile: FileSystemAPI["isFile"];
     getFileKind: FileSystemAPI["getFileKind"];
     getFileIcon: FileSystemAPI["getFileIcon"];
+    getMetadata: FileSystemAPI["getMetadata"];
     writeBinaryFile: FileSystemAPI["writeBinaryFile"];
     readBinaryFile: FileSystemAPI["readBinaryFile"];
     deleteBinaryFile: FileSystemAPI["deleteBinaryFile"];
@@ -251,6 +252,7 @@ export function initializeOSBridge(services: {
     isFile: fileSystemAPI.isFile.bind(fileSystemAPI),
     getFileKind: fileSystemAPI.getFileKind.bind(fileSystemAPI),
     getFileIcon: fileSystemAPI.getFileIcon.bind(fileSystemAPI),
+    getMetadata: fileSystemAPI.getMetadata.bind(fileSystemAPI),
     writeBinaryFile: fileSystemAPI.writeBinaryFile.bind(fileSystemAPI),
     readBinaryFile: fileSystemAPI.readBinaryFile.bind(fileSystemAPI),
     deleteBinaryFile: fileSystemAPI.deleteBinaryFile.bind(fileSystemAPI),

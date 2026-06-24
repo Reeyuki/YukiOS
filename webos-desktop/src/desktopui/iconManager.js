@@ -1,4 +1,11 @@
-import { isImageFile, buildFileIconHTML, openFileWith, readFileAsDataURL, generateThumbnail } from "../fileDisplay.js";
+import {
+  isImageFile,
+  buildFileIconHTML,
+  openFileWith,
+  readFileAsDataURL,
+  generateThumbnail,
+  resolveFileIcon
+} from "../fileDisplay.js";
 import { FileKind } from "../fs.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { resolveDesktopIcon } from "../shared/iconUtils.js";
@@ -168,7 +175,7 @@ export class IconManager {
     if (document.querySelector(`.desktop-file-icon[data-file-name="${CSS.escape(fileName)}"]`)) return;
 
     const displayName = fileName.endsWith(".desktop") ? fileName.slice(0, -8) : fileName;
-    const placeholderIcon = resolveIconUrl("static/icons/file.webp");
+    const placeholderIcon = resolveFileIcon(fileName);
 
     const iconHTML = buildFileIconHTML(fileName, {
       thumbnailSrc: placeholderIcon,
@@ -179,6 +186,7 @@ export class IconManager {
     const icon = document.createElement("div");
     icon.className = "icon selectable desktop-file-icon";
     icon.dataset.fileName = fileName;
+    icon.dataset.filePath = "Desktop";
     icon.innerHTML = `${iconHTML}<div>${displayName}</div>`;
 
     this.desktop.appendChild(icon);
@@ -197,8 +205,20 @@ export class IconManager {
           if (parsed && parsed.steamGameId) icon.dataset.steamGameId = parsed.steamGameId;
           const iconPath = resolveDesktopIcon(raw, fileName);
           if (iconPath && iconPath !== placeholderIcon) {
-            const imgElement = icon.querySelector("img");
-            if (imgElement) imgElement.src = iconPath;
+            const isFa = iconPath.startsWith("fa") || iconPath.includes(" fa-");
+            if (isFa) {
+              icon.firstElementChild?.replaceWith(
+                (() => {
+                  const el = document.createElement("div");
+                  el.style.cssText = `width:64px;height:64px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:28px;color:var(--brand);`;
+                  el.innerHTML = `<i class="${iconPath}"></i>`;
+                  return el;
+                })()
+              );
+            } else {
+              const imgElement = icon.querySelector("img");
+              if (imgElement) imgElement.src = iconPath;
+            }
           }
         } catch (e) {}
       });

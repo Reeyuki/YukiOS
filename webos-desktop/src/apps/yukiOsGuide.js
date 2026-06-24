@@ -341,12 +341,12 @@ export class YukiOsGuideApp extends BaseApp {
   getDeclarativeSchema(opts) {
     return {
       id: "yuki-os-guide",
-      name: "Yuki OS Guide",
+      name: "YukiOS Guide",
       icon: "fas fa-book-open",
       windows: [
         {
           id: "yuki-os-guide",
-          title: "Yuki OS Guide",
+          title: "YukiOS Guide",
           size: ["900px", "650px"],
           icon: "fas fa-book-open",
           style: { left: "350px", top: "200px" },
@@ -432,7 +432,7 @@ export class YukiOsGuideApp extends BaseApp {
             <i class="fas fa-book-open"></i>
           </div>
           <div class="guide-hero-content">
-            <h1>Yuki OS ${SYSTEM_INFO.version}</h1>
+            <h1>YukiOS ${SYSTEM_INFO.version}</h1>
             <p>${apps.length}+ apps, 3700+ games - your desktop, in your browser</p>
             <div class="guide-hero-meta">
               <span class="hero-tag"><i class="fas fa-code"></i> ${SYSTEM_INFO.runtime}</span>
@@ -650,7 +650,7 @@ export class YukiOsGuideApp extends BaseApp {
       <div class="guide-section">
         <div class="guide-header">
           <h1>Feature Explorer</h1>
-          <p>Discover what Yuki OS can do</p>
+          <p>Discover what YukiOS can do</p>
         </div>
 
         <div class="guide-subsection">

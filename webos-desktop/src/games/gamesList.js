@@ -5,6 +5,12 @@ export const appMap = {
     icon: "/static/icons/angryBirds2.webp",
     title: "Angry Birds 2"
   },
+  deltaruneCh5: {
+    type: "game",
+    url: "https://cdn.jsdelivr.net/gh/mynamescrax/gamesforaetheris/drch5/runner.html",
+    icon: "/static/icons/deltarune.png",
+    title: "Deltarune CH5"
+  },
   slimeRancher: {
     type: "game",
     url: "/static/games/html/slime.html",

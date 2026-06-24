@@ -1479,7 +1479,7 @@ export class GameOverlayController {
     this._terminalApp.terminalInputLine = content.querySelector("#terminal-input-line");
 
     this._terminalApp.updatePrompt();
-    this._terminalApp.print("Yuki OS Terminal \u2014 Overlay", "#00ff00");
+    this._terminalApp.print("YukiOS Terminal \u2014 Overlay", "#00ff00");
     this._terminalApp.print("Type 'help' for available commands\n");
 
     this._terminalApp.terminalInput.addEventListener("keydown", (e) => {

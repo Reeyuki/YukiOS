@@ -1,10 +1,9 @@
 import { StorageKeys, os } from "../framework.js";
-import { KeybindManager } from "../keybindManager.js";
+import { showStartStyleMenu } from "../shared/contextMenu.js";
 export class TaskbarPositionManager {
   constructor() {
     this.positions = ["bottom", "top", "left", "right"];
     this.currentPosition = os.storage.get(StorageKeys.taskbarPosition) || "bottom";
-    this.contextMenu = null;
     this.initialized = false;
 
     if (document.readyState === "loading") {
@@ -16,52 +15,19 @@ export class TaskbarPositionManager {
 
   init() {
     if (this.applyPosition(this.currentPosition)) {
-      this.setupContextMenu();
       this.setupEventListeners();
     } else {
       setTimeout(() => {
         if (this.applyPosition(this.currentPosition)) {
-          this.setupContextMenu();
           this.setupEventListeners();
         } else {
           setTimeout(() => {
             this.applyPosition(this.currentPosition);
-            this.setupContextMenu();
             this.setupEventListeners();
           }, 100);
         }
       }, 50);
     }
-  }
-
-  setupContextMenu() {
-    this.contextMenu = document.createElement("div");
-    this.contextMenu.id = "taskbar-pos-menu";
-    this.contextMenu.className = "taskbar-context-menu context-menu-glass";
-    this.contextMenu.innerHTML = `
-      <div class="context-menu-item" data-position="bottom">
-        <i class="fas fa-arrow-down"></i> Move to Bottom
-      </div>
-      <div class="context-menu-item" data-position="top">
-        <i class="fas fa-arrow-up"></i> Move to Top
-      </div>
-      <div class="context-menu-item" data-position="left">
-        <i class="fas fa-arrow-left"></i> Move to Left
-      </div>
-      <div class="context-menu-item" data-position="right">
-        <i class="fas fa-arrow-right"></i> Move to Right
-      </div>
-    `;
-
-    document.body.appendChild(this.contextMenu);
-
-    this.contextMenu.querySelectorAll(".context-menu-item").forEach((item) => {
-      item.addEventListener("click", (e) => {
-        const position = item.getAttribute("data-position");
-        this.setPosition(position);
-        this.hideContextMenu();
-      });
-    });
   }
 
   setupEventListeners() {
@@ -73,83 +39,20 @@ export class TaskbarPositionManager {
         return;
       }
       e.preventDefault();
-      this.showContextMenu(e.clientX, e.clientY);
-    });
-
-    document.addEventListener("click", (e) => {
-      const target = e.target;
-      if (target instanceof Node && target !== this.contextMenu && !this.contextMenu.contains(target)) {
-        this.hideContextMenu();
-      }
-    });
-
-    document.addEventListener("keydown", (e) => {
-      if (KeybindManager.matches(e, "taskbar.dismissMenu")) {
-        this.hideContextMenu();
-      }
-    });
-  }
-
-  showContextMenu(x, y) {
-    this.contextMenu.classList.remove("closing");
-    this.contextMenu.style.display = "";
-    this.contextMenu.style.display = "block";
-
-    const menuRect = this.contextMenu.getBoundingClientRect();
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-
-    let left = x;
-    let top = y;
-
-    if (left + menuRect.width > viewportWidth) {
-      left = Math.max(10, viewportWidth - menuRect.width - 10);
-    } else if (left < 0) {
-      left = 10;
-    }
-
-    if (top + menuRect.height > viewportHeight) {
-      top = Math.max(10, viewportHeight - menuRect.height - 10);
-    } else if (top < 0) {
-      top = 10;
-    }
-
-    this.contextMenu.style.left = `${left}px`;
-    this.contextMenu.style.top = `${top}px`;
-
-    this.updateMenuActiveState();
-  }
-
-  hideContextMenu() {
-    if (this.contextMenu.classList.contains("closing")) return;
-    this.contextMenu.classList.add("closing");
-    this.contextMenu.addEventListener(
-      "animationend",
-      () => {
-        if (!this.contextMenu.classList.contains("closing")) return;
-        this.contextMenu.classList.remove("closing");
-        this.contextMenu.style.display = "none";
-      },
-      { once: true }
-    );
-    this.contextMenu.querySelectorAll(".context-menu-item").forEach((item) => {
-      const position = item.getAttribute("data-position");
-      if (position === this.currentPosition) {
-        item.classList.add("active");
-      } else {
-        item.classList.remove("active");
-      }
-    });
-  }
-
-  updateMenuActiveState() {
-    this.contextMenu.querySelectorAll(".context-menu-item").forEach((item) => {
-      const position = item.getAttribute("data-position");
-      if (position === this.currentPosition) {
-        item.classList.add("active");
-      } else {
-        item.classList.remove("active");
-      }
+      showStartStyleMenu(e, (addMenuItem, addSeparator) => {
+        this.positions.forEach((position) => {
+          const icons = { bottom: "fa-arrow-down", top: "fa-arrow-up", left: "fa-arrow-left", right: "fa-arrow-right" };
+          const label = position.charAt(0).toUpperCase() + position.slice(1);
+          const isActive = position === this.currentPosition;
+          addMenuItem(
+            `${isActive ? "✓ " : "  "}Move to ${label}`,
+            () => {
+              this.setPosition(position);
+            },
+            icons[position]
+          );
+        });
+      });
     });
   }
 

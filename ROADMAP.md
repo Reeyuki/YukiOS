@@ -1,6 +1,6 @@
-# Yuki OS Roadmap
+# YukiOS Roadmap
 
-Planned features and improvements for Yuki OS.
+Planned features and improvements for YukiOS.
 
 ## Current Status
 
@@ -9,7 +9,6 @@ Planned features and improvements for Yuki OS.
 - [ ] Desktop icon auto-sort rules (by name, type, recent use)
 - [ ] Draggable desktop widgets (clock, weather, calendar)
 - [ ] Make transparency setting affect all tray menu panels and GUIs
-- [ ] File properties dialog with rename input
 - [ ] Support for opening images in context menu with Paint
 - [ ] Add vim/nano text editors
 - [ ] Improve terminal functionality

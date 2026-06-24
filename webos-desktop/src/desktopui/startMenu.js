@@ -966,7 +966,7 @@ function getGridItems() {
     { app: "installedAppsApp", title: "Installed Apps", icon: "fas fa-th-list" },
     { app: "clipboardManagerApp", title: "Clipboard Manager", icon: "fas fa-paste" },
     { app: "weatherApp", title: "Weather", icon: "fas fa-cloud" },
-    { app: "yukiOsGuideApp", title: "Yuki OS Guide", icon: "fas fa-book-open" },
+    { app: "yukiOsGuideApp", title: "YukiOS Guide", icon: "fas fa-book-open" },
     { app: "steamApp", title: "Steam", icon: "fab fa-steam" },
     { app: "paint", title: "Paint", icon: "fas fa-paint-brush" },
     { app: "newsApp", title: "What's New", icon: "fas fa-newspaper" },

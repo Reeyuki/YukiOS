@@ -119,11 +119,11 @@ def build_news_embeds(updates):
             lines.append("")
         content = "\n".join(lines).strip()
         embed = discord.Embed(
-            title=f"📰 Yuki OS Update — {update['date']}",
+            title=f"📰 YukiOS Update — {update['date']}",
             description=content[:4000],
             color=0x8b5cf6
         )
-        embed.set_footer(text="Yuki OS Changelog")
+        embed.set_footer(text="YukiOS Changelog")
         embeds.append(embed)
     return embeds
 
@@ -140,7 +140,7 @@ def build_game_embeds(games):
         embed.add_field(name="Type", value=game.get("type", "unknown"), inline=True)
         if desc:
             embed.add_field(name="Description", value=desc[:1000], inline=False)
-        embed.set_footer(text="Yuki OS Game Library")
+        embed.set_footer(text="YukiOS Game Library")
         embeds.append(embed)
     return embeds
 
@@ -157,7 +157,7 @@ def build_app_embeds(apps):
         embed.add_field(name="Launch Type", value=app.get("launchType", "instance"), inline=True)
         if app.get("description"):
             embed.add_field(name="Description", value=app["description"][:1000], inline=False)
-        embed.set_footer(text="Yuki OS App Registry")
+        embed.set_footer(text="YukiOS App Registry")
         embeds.append(embed)
     return embeds
 

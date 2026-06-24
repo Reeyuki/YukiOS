@@ -3,6 +3,7 @@ import { os } from "./os/index.js";
 import { WindowHelper } from "./utils/WindowHelper.js";
 import { ROM_EXTS } from "./shared/coreMap.js";
 import { resolveIconUrl } from "./shared/assetResolver.js";
+import { formatSize } from "./utils/utils.js";
 export const IMAGE_EXTS = [
   "png",
   "jpg",
@@ -107,7 +108,7 @@ export const MODEL3D_EXTS = ["obj", "gltf", "glb", "fbx", "dae", "3ds", "usdz", 
 export const EBOOK_EXTS = ["epub", "mobi", "azw", "azw3", "fb2"];
 export const FONT_EXTS = ["ttf", "otf", "woff", "woff2"];
 export const DISK_EXTS = ["vhd", "vhdx", "vmdk", "img", "qcow2"];
-export const SHORTCUT_EXTS = ["torrent", "url", "webloc", "lnk"];
+export const SHORTCUT_EXTS = ["torrent", "url", "webloc", "lnk", "desktop"];
 
 export const HTML_EXTS = ["html", "htm", "xhtml"];
 export const MARKDOWN_EXTS = ["md", "markdown"];
@@ -438,13 +439,13 @@ export function buildFileIconHTML(name, { thumbnailSrc = null, size = 64, radius
       size * 0.44
     )}px;color:#f39c12;background:#1e1e1e;border:1px solid #333;"><i class="fas fa-hdd"></i></div>`;
   }
+  if (storedIcon && storedIcon !== "@content" && storedIcon !== "rom") {
+    return `<img src="${resolveIconUrl(storedIcon)}" style="${s}object-fit:cover;">`;
+  }
   if (isShortcutFile(name)) {
     return `<div style="${s}display:flex;align-items:center;justify-content:center;font-size:${Math.round(
       size * 0.44
     )}px;color:#9b59b6;background:#1e1e1e;border:1px solid #333;"><i class="fas fa-link"></i></div>`;
-  }
-  if (storedIcon && storedIcon !== "@content" && storedIcon !== "rom") {
-    return `<img src="${resolveIconUrl(storedIcon)}" style="${s}object-fit:cover;">`;
   }
   return `<img src="${resolveIconUrl("static/icons/notepad.webp")}" style="${s}object-fit:cover;">`;
 }
@@ -777,6 +778,153 @@ export async function openFileWith({
   } catch (err) {
     console.error("[FileDisplay] openFileWith error:", err);
     os.notify.send("File Display", `Failed to open ${name}`, { type: "error" });
+  }
+}
+
+function _resolveDesktopIconFromDOM(name) {
+  const label = name.replace(/\.desktop$/i, "");
+  const desktop = document.getElementById("desktop");
+  if (!desktop) return null;
+  const iconEl = desktop.querySelector(
+    `.icon.selectable[data-file-name="${CSS.escape(name)}"], .icon.selectable[data-folder-name="${CSS.escape(name)}"]`
+  );
+  if (iconEl) {
+    const img = iconEl.querySelector("img");
+    if (img) return img.getAttribute("src") || null;
+    const faIcon = iconEl.querySelector("i");
+    if (faIcon) return faIcon.className;
+    return null;
+  }
+  const labelIcon = Array.from(desktop.querySelectorAll(".icon.selectable")).find(
+    (el) => el.querySelector("div, span")?.textContent?.trim() === label
+  );
+  if (labelIcon) {
+    const img = labelIcon.querySelector("img");
+    if (img) return img.getAttribute("src") || null;
+    const faIcon = labelIcon.querySelector("i");
+    if (faIcon) return faIcon.className;
+  }
+  return null;
+}
+
+function _stripext(name) {
+  return SHORTCUT_EXTS.some((ext) => name.toLowerCase().endsWith(`.${ext}`))
+    ? name.slice(0, name.lastIndexOf("."))
+    : name;
+}
+
+export async function showFileProperties(path, name, isFolder, onRename = null) {
+  const { os } = await import("./os/index.js");
+  try {
+    const displayLabel = isFolder ? name : _stripext(name);
+    const iconSrc = isFolder ? "static/icons/file.webp" : _resolveDesktopIconFromDOM(name) || resolveFileIcon(name);
+    const size = isFolder ? "--" : await _getItemSize(path);
+    let type = isFolder ? "Folder" : fileKindFromName(name);
+    const { FileKind } = await import("./fs.js");
+    if (typeof type !== "string") {
+      type =
+        type === FileKind.TEXT
+          ? "Text"
+          : type === FileKind.IMAGE
+            ? "Image"
+            : type === FileKind.VIDEO
+              ? "Video"
+              : type === FileKind.AUDIO
+                ? "Audio"
+                : type === FileKind.ROM
+                  ? "ROM"
+                  : type === FileKind.HTML
+                    ? "HTML"
+                    : "File";
+    }
+    if (type === "other" && isShortcutFile(name)) type = "Shortcut";
+    const location = Array.isArray(path) ? path.join("/") : path;
+    const modified = await _getModifiedDate(path);
+
+    const title = `Properties: ${displayLabel}`;
+    const propsWin = os.window.create(`${Date.now()}-props`, title, "400px", "auto");
+
+    propsWin.innerHTML = `
+      <div class="window-header"><span>${title}</span>
+        ${os.window.getWindowControls()}
+      </div>
+      <div class="window-content" style="padding:20px;">
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;">
+          <img src="${iconSrc}" style="width:48px;height:48px;object-fit:cover;border-radius:6px;">
+          <div style="flex:1;">
+            <input id="props-rename-input" type="text" value="${displayLabel}" style="font-size:18px;font-weight:600;padding:4px;border-radius:6px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.1);color:inherit;width:100%;">
+            <div style="opacity:0.7;font-size:13px;margin-top:4px;">${type}</div>
+          </div>
+        </div>
+
+        <div style="border-bottom:1px solid rgba(255,255,255,0.1);margin-bottom:16px;"></div>
+
+        <div style="margin-bottom:16px;">
+          <div style="font-size:13px;font-weight:600;margin-bottom:8px;opacity:0.9;">Details</div>
+          <div style="display:grid;grid-template-columns:120px 1fr;gap:8px;font-size:13px;">
+            <div style="opacity:0.7;">Type:</div><div>${type}</div>
+            <div style="opacity:0.7;">Location:</div><div>${location}</div>
+            <div style="opacity:0.7;">Size:</div><div>${size}</div>
+            <div style="opacity:0.7;">Modified:</div><div>${modified}</div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const renameInput = propsWin.querySelector("#props-rename-input");
+
+    renameInput.onkeydown = async (e) => {
+      if (e.key === "Enter") {
+        const newName = renameInput.value.trim();
+        const shortcutExt = SHORTCUT_EXTS.find((e) => name.toLowerCase().endsWith(`.${e}`));
+        const targetName = shortcutExt ? `${newName}.${shortcutExt}` : newName;
+        if (!newName || targetName === name) return;
+
+        try {
+          await os.fs.rename(path.slice(0, -1), name, targetName);
+          os.notify.send(`Renamed to "${newName}"`);
+          os.window.close(propsWin);
+          if (onRename) onRename();
+        } catch (err) {
+          os.dialog.alert("Error", err.message || "Failed to rename");
+        }
+      }
+    };
+  } catch (err) {
+    console.error("Properties error:", err);
+    os.dialog.alert("Error", "Failed to show properties");
+  }
+}
+
+async function _getItemSize(path) {
+  const { os } = await import("./os/index.js");
+  try {
+    const pathStr = Array.isArray(path) ? path.join("/") : path;
+    const dirPath = pathStr.substring(0, pathStr.lastIndexOf("/")) || "";
+    const fileName = pathStr.substring(pathStr.lastIndexOf("/") + 1);
+
+    const meta = await os.fs.getMetadata(dirPath, fileName);
+    if (meta.size !== undefined && meta.size !== null) {
+      return formatSize(meta.size);
+    }
+
+    const text = await os.fs.read(path);
+    if (typeof text === "string" && text) {
+      return formatSize(new Blob([text]).size);
+    }
+    const content = await os.fs.read(path, { encoding: "binary" });
+    const bytes = content instanceof Uint8Array ? content.length : new Blob([content]).size;
+    return formatSize(bytes);
+  } catch {
+    return "Unknown";
+  }
+}
+
+async function _getModifiedDate(path) {
+  try {
+    return new Date().toLocaleString();
+  } catch {
+    return "Unknown";
   }
 }
 

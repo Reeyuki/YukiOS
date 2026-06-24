@@ -219,7 +219,6 @@ export class ArchiveExtractor {
       this.notify(`Extracted to "${baseName}/"`, "success", 5000, null, this.appSource);
       if (onComplete) await onComplete();
     } catch (err) {
-      console.error("Extraction error:", err);
       this.notify(
         `Failed to extract "${itemName}": ${err.message || err}`,
         "error",
@@ -471,21 +470,44 @@ export class ArchiveExtractor {
   async _collectFileRecursive(pathParts, itemName, isFile, prefix, filesMap) {
     const subPath = [...pathParts, itemName];
     if (isFile) {
-      let bytes;
+      let bytes = new Uint8Array(0);
+
       try {
-        const blob = await this.fs.readBinaryFile(pathParts, itemName);
-        if (blob) {
-          bytes = new Uint8Array(await blob.arrayBuffer());
+        const content = await os.fs.read(subPath, { encoding: "binary" });
+        if (content instanceof Uint8Array) {
+          bytes = content;
+        } else if (typeof content === "string") {
+          bytes = new TextEncoder().encode(content);
+        } else {
         }
       } catch (e) {
-        const blob = await os.fs.read([...pathParts, itemName]);
-        if (blob) {
-          bytes = new Uint8Array(await blob.arrayBuffer());
-        } else {
-          const text = await this.fs.getFileContent(pathParts, itemName);
-          bytes = new TextEncoder().encode(typeof text === "string" ? text : "");
+        try {
+          const blob = await this.fs.readBinaryFile(pathParts, itemName);
+          if (blob) {
+            bytes = new Uint8Array(await blob.arrayBuffer());
+          }
+        } catch (e2) {
+          try {
+            const content = await this.fs.getFileContent(pathParts, itemName);
+            if (content instanceof Blob) {
+              bytes = new Uint8Array(await content.arrayBuffer());
+            } else if (typeof content === "string") {
+              if (content.startsWith("http") || content.startsWith("/") || content.startsWith("data:")) {
+                try {
+                  const res = await fetch(content);
+                  const blob = await res.blob();
+                  bytes = new Uint8Array(await blob.arrayBuffer());
+                } catch (fetchErr) {
+                  bytes = new TextEncoder().encode(content);
+                }
+              } else {
+                bytes = new TextEncoder().encode(content);
+              }
+            }
+          } catch (e3) {}
         }
       }
+
       filesMap[prefix + itemName] = bytes;
     } else {
       const folderEntries = await os.fs.readdir(subPath).catch(() => ({}));
@@ -651,9 +673,7 @@ export class ArchiveExtractor {
 
     try {
       sevenZip.FS.mkdir(tempDir);
-    } catch (e) {
-      console.error("[ArchiveExtractor]", e);
-    }
+    } catch (e) {}
 
     const writeToFS = (dirPath, filename, bytes) => {
       const parts = dirPath.split("/").filter(Boolean);
@@ -662,9 +682,7 @@ export class ArchiveExtractor {
         current += "/" + p;
         try {
           sevenZip.FS.mkdir(current);
-        } catch (e) {
-          console.error("[ArchiveExtractor]", e);
-        }
+        } catch (e) {}
       }
       const fullPath = `${current}/${filename}`;
       const stream = sevenZip.FS.open(fullPath, "w+");
@@ -687,9 +705,7 @@ export class ArchiveExtractor {
     const archiveFile = `/output_${tempId}.7z`;
     try {
       sevenZip.FS.unlink(archiveFile);
-    } catch (e) {
-      console.error("[ArchiveExtractor]", e);
-    }
+    } catch (e) {}
 
     sevenZip.callMain([
       "a",
@@ -703,9 +719,7 @@ export class ArchiveExtractor {
 
     try {
       sevenZip.FS.unlink(archiveFile);
-    } catch (e) {
-      console.error("[ArchiveExtractor]", e);
-    }
+    } catch (e) {}
 
     const cleanupDir = (currentPath) => {
       try {
@@ -721,9 +735,7 @@ export class ArchiveExtractor {
           }
         }
         sevenZip.FS.rmdir(currentPath);
-      } catch (e) {
-        console.error("[ArchiveExtractor]", e);
-      }
+      } catch (e) {}
     };
     cleanupDir(tempDir);
 

@@ -1,11 +1,10 @@
 import { decodeDataURLContent } from "../fileDisplay.js";
-import { WindowHelper } from "../utils/WindowHelper.js";
+import { DeclarativeApp } from "../runtime/DeclarativeApp.js";
 
-import { BaseApp, PersistenceTypes } from "../framework.js";
+import { BaseApp, os, PersistenceTypes } from "../framework.js";
 export class MarkdownApp extends BaseApp {
   constructor(services) {
     super(services);
-    this.windowHelper = new WindowHelper(this.wm);
     this.marked = null;
     this.cssLoaded = false;
   }
@@ -100,8 +99,19 @@ export class MarkdownApp extends BaseApp {
 
   async open(title = "README.md", content = "", filePath = null) {
     const safeTitle = title && typeof title === "string" ? title : "README.md";
-    if (await this._isSingletonOpen(`markdown-${safeTitle.replace(/[^a-zA-Z0-9]/g, "")}`)) return;
-    return super.open({ title: safeTitle, content, filePath });
+    const winId = `markdown-${safeTitle.replace(/[^a-zA-Z0-9]/g, "")}`;
+    if (await this._isSingletonOpen(winId)) return;
+
+    const schema = this.getDeclarativeSchema({ title: safeTitle, content, filePath });
+    if (!schema.actions) schema.actions = {};
+    schema.actions._appInstance = this;
+    const declarativeApp = new DeclarativeApp(schema, {
+      wm: this.wm,
+      fs: this.fs,
+      bus: this.bus,
+      notifications: this.notifications
+    });
+    return declarativeApp.open({ title: safeTitle });
   }
 
   loadContent(fileName, content, filePath) {

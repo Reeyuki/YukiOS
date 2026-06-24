@@ -1,8 +1,7 @@
-# Yuki OS - Browser Desktop Environment
+# YukiOS - Browser Desktop Environment
 
 <div align="center">
 
-[![Stars](https://img.shields.io/github/stars/Reeyuki/yukios?style=for-the-badge&color=purple)](https://github.com/Reeyuki/yukios)
 [![Users](https://img.shields.io/badge/Users-50k+-brightgreen?style=for-the-badge)](https://github.com/Reeyuki/yukios)
 [![License](https://img.shields.io/github/license/Reeyuki/yukios?style=for-the-badge&color=blue)](LICENSE)
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?style=for-the-badge&logo=discord)](https://discord.gg/wufbWFwr4G)
@@ -15,20 +14,19 @@
 > A browser-based desktop environment running in a single web page, combining windowed multitasking, persistent storage,
 > emulators, tools, and a large collection of applications and games.
 
-Yuki OS turns a browser tab into a working desktop-style space with draggable windows, multitasking, file handling,
+YukiOS turns a browser tab into a working desktop-style space with draggable windows, multitasking, file handling,
 emulators, productivity tools, and interactive apps. Everything runs locally in the browser with persistent storage and
 session state.
 
 It supports running Flash content, DOS programs, console emulation, WebAssembly apps, and standard web applications side
 by side.
 
-It's built entirely in vanilla JS/TypeScript (with some libraries, of course!) ![Login page](.github/login.png)
-![Steam interface](.github/steam.png) ![Start menu](.github/startmenuv86.png) ![Steam overlay](.github/overlay.png)
-![Discord](.github/dc.png) ![Web Apps](.github/webapps.png) ![Setup](.github/setupsettings.png)
-![Music1](.github/audio1.png) ![Music2](.github/audio2.png) ![Achievements](.github/browserachieve.png)
-![Music player](.github/music.png) ![Applications](.github/apps.png)
+Its built entirely in vanilla javascript/typescript without any frameworks.
 
----
+![Login page](.github/login.png) ![Steam interface](.github/steam.png) ![Start menu](.github/startmenuv86.png)
+![Steam overlay](.github/overlay.png) ![Discord](.github/dc.png) ![Web Apps](.github/webapps.png)
+![Setup](.github/setupsettings.png) ![Music1](.github/audio1.png) ![Music2](.github/audio2.png)
+![Achievements](.github/browserachieve.png) ![Music player](.github/music.png) ![Applications](.github/apps.png)
 
 # ✨ Desktop Experience
 
@@ -36,37 +34,42 @@ It's built entirely in vanilla JS/TypeScript (with some libraries, of course!) !
 - Window snapping (half screen, quarter screen, fullscreen)
 - Multiple workspaces with independent layouts
 - Window switching and focus cycling (with alt+Q)
-- Live taskbar peeking support on hover
 - Window context menus (snap, move, pin, workspace transfer)
-- Window header menus for quick actions
+- Window header context menus
 - Window icons in title bar
 - Taskbar positioned on any edge of the screen
 - Taskbar drag to reorder and click to minimize/restore
+- Live taskbar window preview on hover with close button
 - System tray with background-running apps
-- Tray controls and quick actions
-- Desktop shortcuts with drag-and-drop support
+- Tray icon scroll actions for audio, brightness, and workspace switching
+- Tray context menus with per-item quick actions
+- Desktop icon system with persistent shortcuts and image thumbnails
+- Desktop drag-and-drop from host OS and icon rearrangement
 - Desktop stretch scroll prevention toggle
-- Alt+Right-Click window resize
+- Alt+Left-Click window drag / Alt+Right-Click window resize
 - Window animation system with 35+ effects
-- Cursor launch effect like in kde plasma
+- Cursor launch effect on app start like in kde plasma
 - Automatically saves and restores open apps, window positions and sizes, workspace assignments, scroll positions,
   window states (minimized, fullscreen, snapped), focus order
 
----
-
 # 🧭 Navigation & UI
 
-- Taskbar with pinned and running apps
 - Start menu for launching and managing apps with keyboard navigation
 - Start menu alphabetical grouping with section headers
 - Start menu keybinds (Space, Tab, Ctrl)
-- Desktop icon system with persistent shortcuts and image thumbnails
 - Notification center with grouped messages
 - Do Not Disturb mode
 - Notification positioning controls
-- Context menus across desktop with Background submenu, F2 rename support, recording, file upload
-- Animated UI with adaptive transparency effects
-- Keyboard shortcuts app for global hotkeys
+- Desktop and file context menus: New Folder / Text Document, Add file(s) from OS, Download, Add to archive, Extract
+  here, Set as wallpaper, Open Terminal Here, Screen Capture, Copy/Cut/Paste, Rename, Properties, Convert/Transform,
+  Refresh, Background submenu (Vanta.js presets / video wallpapers) with keyboard navigation (arrow keys, Enter, Escape,
+  submenu traversal)
+- Command palette (Ctrl+K/P/F1) for app, file, and command search with built-in calculator, terminal run support with >
+  prefix, and unit converter
+- Clippy contextual assistant with per-app tips
+- Animated UI with adaptive transparency effects: start menu, wallpaper switch, audio mixer, context menu, and
+  notification sliding animations
+- Keyboard shortcuts app for customizing global hotkeys
 
 **Key Global Shortcuts:**
 
@@ -85,58 +88,44 @@ It's built entirely in vanilla JS/TypeScript (with some libraries, of course!) !
 - Built-in calculator and unit converter
 - Screenshot and screen recording controls
 
----
-
 # 📁 Files & Storage
 
 - Persistent browser storage using IndexedDB
 - File explorer with thumbnails and previews with file/folder upload support
 - Drag-and-drop file operations from host OS
 - File properties dialog with rename support
-- Create, move, rename, delete, and organize files
 - Drag-select multiple files with selection box
 - Trash bin with restore functionality
+- Storage indicator showing total used space in Explorer sidebar
 - Archive support: `.zip`, `.gz`, `.tar`, `.tar.gz`, `.tgz`, `.tar.xz`, `.7z`, `.bz2`, `.tar.bz2`, `.xz`, `.rar`
   (create: `.zip`, `.7z`, `.tar`, `.tar.gz`, `.tar.bz2`, `.gz`, `.bz2` with password-protected ZIP support)
-
-- Bulk file actions, download file support
-- File-based actions like setting wallpapers and conversions
 - HTML file rendering support
 - Dynamic favicon updates based on current app
 
-# 📦 Applications
-
-80+ built-in applications and direct launch via URL parameters (`?app=` and `?game=`)
-
----
-
 # ⚙️ System Features
 
-- Cross-app event communication
 - Notification system with app icons and actions
-- Per-app audio mixer with live visualizer and volume controls
+- Audio mixer with per-app volume sliders, live waveform intensity visualizer, master/system volume, mute toggle, and
+  tray icon with scroll-to-adjust - uses `AudioContext` gain nodes and patched iframe `AudioContext` for cross-origin
+  audio control
+- System sounds with interaction noises for common actions
 - Achievement tracking and usage milestones
-- Setup flow for first-time configuration
-- Theme system with 40 presets and custom theme support, light/dark and transparency modes
+- Theme system with 40 presets and custom theme support, light/dark and transparency modes, with font options
+  (Monocraft, Inter, Rubik, Sora, JetBrains Mono)
 - Wallpaper customization with animated wallpaper and Vanta.js support
 - PWA install and offline caching support
 - User accounts with multi-profile support
-- Lock screen and session management and idle mode
-- Power management modes (Turbo, Balanced, Quality)
+- Lock screen, session management, and idle timeout
+- Power management modes (Turbo, Balanced, Quality) with dedicated tray app and brightness controls (contrast, gamma,
+  night mode)
 - Custom cursor support (with miku by default)
 - Import/export system for backup and migration
 - Transparent UI toggle
-- Clock system is using OffscreenCanvas rendering and lightweight NTP offset sync with js worker
-
----
-
-# 💾 Persistence
-
-- Session persistence for windows and workspaces
-- User profiles with settings and personalization
-- Backup and restore of system state
+- Clock system using OffscreenCanvas rendering and lightweight NTP offset sync with js worker
 
 # 📦 Built-in Applications
+
+80+ built-in applications and direct launch via URL parameters (`?app=` and `?game=`)
 
 ## 🧠 Productivity & Development
 
@@ -150,6 +139,7 @@ It's built entirely in vanilla JS/TypeScript (with some libraries, of course!) !
 - Task Manager
 - Installed Apps
 - Calculator
+- Clock (alarms, stopwatch, timer)
 - About
 - Shortcuts
 - Setup Wizard
@@ -166,7 +156,7 @@ It's built entirely in vanilla JS/TypeScript (with some libraries, of course!) !
 - Dev Tools (Eruda)
 - Weather
 - News
-- Yuki OS Guide
+- YukiOS Guide
 - Display Performance
 - Network Tray
 - Maps
@@ -192,16 +182,11 @@ It's built entirely in vanilla JS/TypeScript (with some libraries, of course!) !
 
 ## 🌐 Browser & Internet
 
-- WebTorrent Client
 - Yuki Browser
-- Tor Connection Manager (WebAssembly Tor with Snowflake bridge)
+- WebTorrent Client
+- Tor Connection Manager - anonymous browsing through the Tor network via WASM-based Tor client with Snowflake transport
 - VNC Client (remote desktop via VNC with saved profiles and clipboard sync)
 - Steam-like game launcher
-
-## 🔒 Tor Anonymous Browsing
-
-Browse anonymously through the Tor network directly from your browser, using a WASM-based Tor client with Snowflake
-transport.
 
 ## Web Apps
 
@@ -226,34 +211,29 @@ transport.
 - GeForce Now
 - Scramjet Browser
 
-## 🎮 Games & Emulation Tools
+## 🎮 Games & Emulation
 
-- Yuki Emulator(EmulatorJS)
+- Yuki Emulator (EmulatorJS)
 - Ruffle (Flash)
 - JsDos (DOS)
 - Virtual 86 (x86)
 - Azahar (3DS Emulator)
 
-## 🎮 Steam-like In-Game Overlay
+### Steam-like In-Game Overlay
 
 Shift+Tab overlay with draggable, resizable panels for any running game:
 
 - Playtime overview (total, 2-week, and current session)
 - Achievement browser with All/Unlocked/Locked filters
-- Friends panel and persistent per-game sticky notes
+- Friends panel with live active user stats and persistent per-game sticky notes
 - In-overlay web browser and Scramjet proxy panel
 - Screenshot capture, gallery view, and video recording
 - Performance monitor for fps/frame
 - Overlay settings (toggle, perf monitor, rebindable shortcut key)
 
----
-
 # 🔌 Extensibility
 
-Extensible app platform with background apps, shared events, persistent state, and windowed web app integration. Custom
-App Creator
-
----
+Custom App Creator for adding web shortcuts with auto-detected favicons and per-app CORS proxy.
 
 # 🛠 Build & Deployment
 
@@ -264,27 +244,13 @@ pnpm run build
 pnpm run preview
 ```
 
-Single-file bundling for easy deployment.
-
----
-
 # 🤝 Contributing
-
-We welcome contributions! Whether you want to add a new app, fix a bug, or improve documentation, we'd love your help.
-
-For detailed information on:
-
-- Creating new applications
-- Using the OS API
-- Styling guidelines
-- Code quality standards
-- Build and deployment processes
 
 See the [Development Guide](DEVELOPMENT.md).
 
----
-
 # 🛠 Tech Stack
+
+## Libraries
 
 - [BrowserFS](https://github.com/jvilk/BrowserFS)
 - [interact.js](https://github.com/taye/interact.js)
@@ -307,10 +273,10 @@ See the [Development Guide](DEVELOPMENT.md).
 - Scramjet / BareMux / Epoxy Transport
 - [webtor-rs](https://github.com/igor53627/webtor-rs) WASM Tor client (Arti + Snowflake)
 
-# Tooling stack
+## Build tooling
 
 - Vite
-- Typescript
-- Eslint
+- TypeScript
+- ESLint
 - Prettier
-- viteSingleFile
+- [vite-plugin-singlefile](https://github.com/richardtallent/vite-plugin-singlefile)

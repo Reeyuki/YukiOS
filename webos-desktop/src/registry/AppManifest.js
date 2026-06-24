@@ -53,7 +53,7 @@ export const APP_MANIFESTS = [
     windowIdPatterns: ["news"],
     category: "help",
     clippy: { message: "Catch up on the latest changes and see what shipped.", animation: ClippyAnimation.Show },
-    description: "Displays system updates, release notes, and changelog entries for Yuki OS features and improvements."
+    description: "Displays system updates, release notes, and changelog entries for YukiOS features and improvements."
   },
   {
     serviceKey: "calculatorApp",
@@ -224,7 +224,7 @@ export const APP_MANIFESTS = [
     windowIdPatterns: ["setup", "setup-wizard"],
     category: "help",
     clippy: { message: "Walk through setup and get the basics out of the way.", animation: ClippyAnimation.Greeting },
-    description: "Initial setup guide for new users to configure Yuki OS preferences."
+    description: "Initial setup guide for new users to configure YukiOS preferences."
   },
   {
     serviceKey: "dataEditorApp",
@@ -258,13 +258,13 @@ export const APP_MANIFESTS = [
     serviceKey: "yukiOsGuideApp",
     enhanced: true,
     type: "system",
-    title: "Yuki OS Guide",
+    title: "YukiOS Guide",
     icon: "fas fa-book-open",
     launchType: "instance",
     windowIdPatterns: ["yuki-os-guide", "yukios-guide"],
     category: "help",
     clippy: { message: "Open the guide and learn the parts that matter fastest.", animation: ClippyAnimation.Show },
-    description: "Comprehensive documentation and feature discovery hub for Yuki OS."
+    description: "Comprehensive documentation and feature discovery hub for YukiOS."
   },
   {
     serviceKey: "clipboardManagerApp",
@@ -907,7 +907,7 @@ export const APP_MANIFESTS = [
       message: "Select Tor from the proxy dropdown to browse anonymously — I'll handle the setup.",
       animation: ClippyAnimation.Wave
     },
-    description: "Web browser with bookmarks, history, tab management, and Tor anonymous browsing within Yuki OS."
+    description: "Web browser with bookmarks, history, tab management, and Tor anonymous browsing within YukiOS."
   },
   {
     serviceKey: "yukiDevToolsApp",
@@ -1059,7 +1059,7 @@ export const APP_MANIFESTS = [
     isHeavy: true,
     category: "internet",
     clippy: { message: "Paste a video link and I'll slot it into a player.", animation: ClippyAnimation.Show },
-    description: "YouTube integration for watching videos within Yuki OS."
+    description: "YouTube integration for watching videos within YukiOS."
   },
   {
     type: "system",

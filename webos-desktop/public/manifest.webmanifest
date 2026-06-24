@@ -1,6 +1,6 @@
 {
-  "name": "Yuki OS",
-  "short_name": "Yuki OS",
+  "name": "YukiOS",
+  "short_name": "YukiOS",
   "description": "Browser-based operating system.",
   "start_url": "./?source=pwa",
   "scope": "./",
