@@ -121,9 +121,7 @@ export class AchievementsApp extends BaseApp {
             </div>
             <div class="achievements-progress__bar-wrapper">
               <div class="achievements-progress__bar">
-                <div class="achievements-progress__fill" style="width: 0%">
-                  <div class="achievements-progress__shine"></div>
-                </div>
+                <div class="achievements-progress__fill" style="width: 0%"></div>
               </div>
               <span class="achievements-progress__percentage">0%</span>
             </div>
@@ -443,7 +441,6 @@ export class AchievementsApp extends BaseApp {
         const unlocked = this.unlocked.has(a.id);
         return `
         <div class="achievement-card ${unlocked ? "achievement-card--unlocked" : ""} ${disabled ? "achievement-card--disabled" : ""}" data-rarity="${a.rarity}">
-          <div class="achievement-card__glow"></div>
           <div class="achievement-card__icon-wrapper">
             <div class="achievement-card__icon-bg"></div>
             <i class="fas ${a.icon} achievement-card__icon"></i>
@@ -478,9 +475,7 @@ export class AchievementsApp extends BaseApp {
       </div>
       <div class="achievements-progress__bar-wrapper">
         <div class="achievements-progress__bar">
-          <div class="achievements-progress__fill" style="width: ${pct}%">
-            <div class="achievements-progress__shine"></div>
-          </div>
+          <div class="achievements-progress__fill" style="width: ${pct}%"></div>
         </div>
         <span class="achievements-progress__percentage">${pct}%</span>
       </div>
@@ -585,7 +580,6 @@ export class AchievementsApp extends BaseApp {
     popup.setAttribute("data-rarity", achievement.rarity);
 
     popup.innerHTML = `
-    <div class="achievement-popup__glow"></div>
     <div class="achievement-popup__icon-wrapper">
       <div class="achievement-popup__icon-bg"></div>
       <i class="fas ${achievement.icon} achievement-popup__icon"></i>
@@ -600,9 +594,6 @@ export class AchievementsApp extends BaseApp {
       <div class="achievement-popup__rarity achievement-popup__rarity--${achievement.rarity}">
         ${achievement.rarity.toUpperCase()}
       </div>
-    </div>
-    <div class="achievement-popup__particles">
-      ${Array.from({ length: 12 }, (_, i) => `<div class="achievement-popup__particle" style="--delay: ${i * 0.1}s; --angle: ${i * 30}deg"></div>`).join("")}
     </div>
   `;
 
