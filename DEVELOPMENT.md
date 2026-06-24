@@ -84,36 +84,11 @@ export class MyApp extends BaseApp {
           title: "My App",
           size: ["500px", "400px"],
           icon: "fas fa-star",
-          ui: {
-            type: "element",
-            tag: "div",
-            props: {
-              className: "my-app-container"
-            },
-            children: [
-              {
-                type: "element",
-                tag: "button",
-                props: {
-                  textContent: "Click Me"
-                },
-                events: {
-                  click: {
-                    type: "custom:myAction",
-                    stopPropagation: true
-                  }
-                }
-              }
-            ]
-          },
-          events: {
-            window: {
-              keydown: {
-                type: "custom:handleKeydown",
-                stopPropagation: false
-              }
-            }
-          }
+          ui: `
+          <div class="my-app-container">
+            <button id="my-button">Click Me</button>
+          </div>
+        `
         }
       ],
       state: {
@@ -122,27 +97,33 @@ export class MyApp extends BaseApp {
         },
         persistence: PersistenceTypes.MEMORY
       },
-      actions: {
-        myAction: (payload, event, element, state) => {
-          state.count += 1;
-        },
-        handleKeydown: (payload, event, element, state) => {
-          if (event.key === "Enter") {
-            // Handle enter key
-          }
-        }
-      },
-      onMount: (win, state, actionExecutor) => {
-        // Optional initialization logic
-      }
+      onMount: "initMyApp",
+      onClose: "cleanupMyApp"
     };
   }
 
-  onClose(winId) {
+  initMyApp(payload, vt, element, state) {
+    const button = element.querySelector("#my-button");
+    button.addEventListener("click", () => {
+      state.count += 1;
+    });
+  }
+
+  cleanupMyApp(payload, vt, element, state) {
     // Cleanup logic when window closes
+    return true;
   }
 }
 ```
+
+**Important notes:**
+
+- `onMount` callback receives `(payload, vt, element, state)` - use `element` to query DOM
+- `onClose` callback receives `(payload, vt, element, state)` - return `true` to allow close
+- Handle events with `addEventListener` in `onMount`, not through declarative `events` object
+- Callbacks are referenced by string name in the schema
+- **Window headers must be manually included in the `ui` HTML** - declarative apps do not auto-generate window headers.
+  Include a `<div class="window-header">` with title and icon at the top of your UI HTML.
 
 ### Step 2: Add CSS Styling
 
@@ -295,28 +276,39 @@ getDeclarativeSchema(opts) {
     windows: [{
       id: "my-app",            // Window ID
       title: "My App",         // Window title
-      size: ["400px", "300px"], // Width, height
+      size: ["400px", "300px"], // Width, height as array
       icon: "fas fa-star",     // Window icon
-      ui: "<div>App UI</div>", // HTML or declarative UI
-      events: {                // Event handlers
-        "#my-button": {
-          click: { type: "custom:myAction", stopPropagation: true }
-        }
-      }
+      ui: "<div>App UI</div>"  // HTML string (not declarative object)
     }],
     state: {
-      initial: { value: 0 },   // Initial state
-      persistence: "memory"     // Persistence type
+      initial: { value: 0 },   // Initial state object
+      persistence: "memory"   // Persistence type constant
     },
-    actions: {
-      myAction: (payload, event, element, state) => {
-        state.value += 1;
-      }
-    },
-    onMount: "initMyApp"       // Mount callback
+    onMount: "initMyApp",      // String reference to mount callback
+    onClose: "cleanupMyApp"    // String reference to close callback
   };
 }
+
+// Callback implementations
+initMyApp(payload, vt, element, state) {
+  // element is the window content div
+  // Use element.querySelector() to access DOM
+  // Use addEventListener() for event handling
+}
+
+cleanupMyApp(payload, vt, element, state) {
+  // Cleanup logic
+  return true; // Allow close
+}
 ```
+
+**Critical differences from incorrect patterns:**
+
+- `ui` is an HTML string, NOT a declarative object
+- No `events` object in window config - use `addEventListener` in `onMount`
+- No `actions` object - implement methods directly on the class
+- Callbacks are string references, not function references
+- `onMount` receives `(payload, vt, element, state)` - use `element` for DOM queries
 
 ---
 

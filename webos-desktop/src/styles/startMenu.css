@@ -40,7 +40,7 @@
   background: var(--glass);
   backdrop-filter: blur(50px);
   border: 1px solid #4982ee42;
-  border-radius: 5px 5px 0 0;
+  border-radius: var(--r-lg) var(--r-lg) 0 0;
   box-shadow: 5px -5px 15px #00000080;
   color: var(--text-primary, #ddd);
   overflow: hidden;

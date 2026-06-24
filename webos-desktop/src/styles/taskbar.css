@@ -4,7 +4,7 @@
   left: 0;
   right: 0;
   height: var(--taskbar-h);
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(var(--blur-xs));
   display: flex;
   align-items: center;
   padding: 0 8px;
@@ -71,7 +71,7 @@
 #taskbar.position-right #start-button {
   width: calc(var(--taskbar-h) - 16px);
   height: calc(var(--taskbar-h) - 16px);
-  margin: 8px auto;
+  margin: var(--spacing-sm) auto;
   background-size: 28px;
   background-position: center;
   display: flex;
@@ -87,7 +87,7 @@
   overflow-x: hidden;
   scrollbar-width: thin;
   scrollbar-color: var(--glass-border) transparent;
-  margin: 4px;
+  margin: var(--spacing-xs);
 }
 
 #taskbar.position-left #taskbar-windows::-webkit-scrollbar,
@@ -98,14 +98,14 @@
 #taskbar.position-left #taskbar-windows::-webkit-scrollbar-thumb,
 #taskbar.position-right #taskbar-windows::-webkit-scrollbar-thumb {
   background: var(--glass-border);
-  border-radius: 2px;
+  border-radius: var(--r-xxs);
 }
 
 #taskbar.position-left #system-tray,
 #taskbar.position-right #system-tray {
   flex-direction: column;
-  gap: 4px;
-  padding: 8px 4px;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-xs);
   align-items: center;
   justify-content: flex-end;
   min-height: 120px;
@@ -133,7 +133,7 @@
 #taskbar.position-left .taskbar-item,
 #taskbar.position-right .taskbar-item {
   flex-direction: column;
-  padding: 6px;
+  padding: var(--spacing-xs);
   min-height: 40px;
   justify-content: center;
   align-items: center;
@@ -173,8 +173,8 @@
   border-right: none;
   border-bottom: 1px solid var(--glass-border);
   margin-right: 0;
-  margin-bottom: 4px;
-  padding: 6px 0;
+  margin-bottom: var(--spacing-xs);
+  padding: var(--spacing-xs) 0;
   width: 100%;
   justify-content: center;
 }
@@ -183,7 +183,7 @@
 #taskbar.position-right .workspace-sep {
   width: 16px;
   height: 1px;
-  margin: 2px 0;
+  margin: var(--spacing-xxs) 0;
 }
 
 #system-tray {
@@ -203,8 +203,8 @@
   background: var(--start-logo-url, url("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/icons/logo.png"))
     no-repeat center / 48px;
   cursor: pointer;
-  border-radius: 20px;
-  transition: filter 0.2s;
+  border-radius: var(--r-2xl);
+  transition: filter var(--transition-base);
 }
 
 #start-button:hover {
@@ -214,8 +214,8 @@
 #taskbar-windows {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 0 6px;
+  gap: var(--spacing-sm);
+  padding: 0 var(--spacing-xs);
   flex: 1;
   overflow-x: auto;
   scrollbar-width: thin;
@@ -228,14 +228,14 @@
 
 #taskbar-windows::-webkit-scrollbar-thumb {
   background: var(--glass-border);
-  border-radius: 3px;
+  border-radius: var(--r-xxs);
 }
 
 .taskbar-item {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm);
   background: var(--glass);
   border-radius: var(--r-sm);
   cursor: pointer;
@@ -246,12 +246,12 @@
 }
 
 .taskbar-item:hover {
-  background: #2d627e68;
+  background: color-mix(in srgb, var(--brand) 25%, transparent);
   transform: translateY(-1px);
 }
 
 .taskbar-item.active {
-  background: #2d617e;
+  background: color-mix(in srgb, var(--brand) 30%, transparent);
 }
 
 .taskbar-item img,
@@ -273,7 +273,7 @@
 
 .taskbar-pinned-container {
   display: flex;
-  gap: 4px;
+  gap: var(--spacing-xs);
   align-items: center;
 }
 
@@ -285,22 +285,22 @@
   position: fixed;
   z-index: 100000;
   width: 240px;
-  border-radius: 14px;
+  border-radius: var(--r-lg);
   background: var(--surface-2);
   border: 1px solid var(--glass-border);
   box-shadow:
     0 14px 40px var(--shadow-color),
     0 0 0 1px var(--glass-border) inset;
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(var(--blur-md));
+  -webkit-backdrop-filter: blur(var(--blur-md));
   overflow: hidden;
   transform: translateZ(0);
   animation: taskbarPreviewIn 0.14s ease-out;
 }
 
 .taskbar-preview__title {
-  padding: 10px 12px;
-  font-size: 13px;
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--text-base);
   color: var(--text-primary);
   border-bottom: 1px solid var(--glass-border);
   white-space: nowrap;
@@ -308,7 +308,7 @@
   text-overflow: ellipsis;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--spacing-sm);
 }
 
 .taskbar-preview__title-text {
@@ -322,11 +322,11 @@
   flex-shrink: 0;
   width: 20px;
   height: 20px;
-  border-radius: 6px;
+  border-radius: var(--r-sm);
   border: none;
   background: transparent;
   color: var(--text-secondary);
-  font-size: 11px;
+  font-size: var(--text-xs);
   line-height: 20px;
   text-align: center;
   cursor: pointer;
@@ -360,7 +360,7 @@
   pointer-events: none !important;
   user-select: none !important;
   filter: saturate(1.05) contrast(1.05);
-  border-radius: 10px;
+  border-radius: var(--r);
   overflow: hidden;
   box-shadow:
     0 14px 32px var(--shadow-color),
@@ -382,10 +382,10 @@
 .taskbar-weather {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--spacing-xs);
   font-size: 1.1em;
   cursor: default;
-  padding: 0 6px;
+  padding: 0 var(--spacing-xs);
   opacity: 0.85;
   white-space: nowrap;
 }
@@ -552,9 +552,9 @@ html[data-theme="light"] .task-item-name {
 #app-tray {
   display: none;
   align-items: center;
-  border-radius: 8px;
-  padding: 2px 6px;
-  margin-right: 8px;
+  border-radius: var(--r-md);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  margin-right: var(--spacing-sm);
   height: 28px;
 }
 
@@ -570,7 +570,7 @@ html[data-theme="light"] .task-item-name {
   width: 28px;
   height: 28px;
   padding: 0;
-  border-radius: 4px;
+  border-radius: var(--r-xs);
   transition:
     background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
     color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -592,7 +592,7 @@ html[data-theme="light"] .task-item-name {
 
 .tray-icon-btn i,
 .tray-overflow-btn i {
-  font-size: 14px;
+  font-size: var(--text-base);
   line-height: 1;
   display: flex;
   align-items: center;
@@ -602,12 +602,12 @@ html[data-theme="light"] .task-item-name {
 .tray-overflow-btn {
   width: auto;
   padding: 0 4px;
-  gap: 2px;
-  font-size: 11px;
+  gap: var(--spacing-xxs);
+  font-size: var(--text-xs);
 }
 
 .tray-overflow-count {
-  font-size: 10px;
+  font-size: var(--text-xxs);
   font-weight: 600;
   opacity: 0.9;
 }
@@ -616,11 +616,11 @@ html[data-theme="light"] .task-item-name {
   position: fixed;
   display: none;
   background: var(--surface-2);
-  backdrop-filter: blur(12px) saturate(180%);
-  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  backdrop-filter: blur(var(--blur-sm)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--blur-sm)) saturate(180%);
   border: 1px solid var(--glass-border);
-  border-radius: 8px;
-  padding: 4px;
+  border-radius: var(--r-md);
+  padding: var(--spacing-xxs);
   box-shadow:
     0 10px 30px var(--shadow-color),
     0 0 0 1px var(--glass-border);
@@ -647,12 +647,12 @@ html[data-theme="light"] .task-item-name {
   align-items: center;
   justify-content: center;
   gap: 0;
-  padding: 4px;
+  padding: var(--spacing-xxs);
   color: var(--text-primary);
-  font-size: 13px;
+  font-size: var(--text-base);
   font-family: inherit;
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: var(--r-xs);
   transition:
     background-color 0.15s ease,
     color 0.15s ease;
@@ -671,7 +671,7 @@ html[data-theme="light"] .task-item-name {
 #tray-overflow-popup .tray-popup-item span {
   width: 20px;
   height: 20px;
-  font-size: 16px;
+  font-size: var(--text-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -683,10 +683,10 @@ html[data-theme="light"] .task-item-name {
   width: 420px;
   max-height: 500px;
   background: var(--menu-bg);
-  backdrop-filter: blur(32px) saturate(180%);
-  -webkit-backdrop-filter: blur(32px) saturate(180%);
+  backdrop-filter: blur(var(--blur-xl)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--blur-xl)) saturate(180%);
   border: 1px solid var(--glass-border);
-  border-radius: 14px;
+  border-radius: var(--r-lg);
   box-shadow:
     0 10px 64px var(--shadow-color),
     0 0 0 1px rgba(255, 255, 255, 0.05),
@@ -729,10 +729,10 @@ html[data-theme="light"] .task-item-name {
   display: none;
   width: 320px;
   background: var(--menu-bg);
-  backdrop-filter: blur(32px) saturate(180%);
-  -webkit-backdrop-filter: blur(32px) saturate(180%);
+  backdrop-filter: blur(var(--blur-xl)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--blur-xl)) saturate(180%);
   border: 1px solid var(--glass-border);
-  border-radius: 14px;
+  border-radius: var(--r-lg);
   box-shadow:
     0 10px 64px var(--shadow-color),
     0 0 0 1px rgba(255, 255, 255, 0.05),
@@ -750,13 +750,13 @@ html[data-theme="light"] .task-item-name {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 14px 16px;
+  padding: var(--spacing-lg) var(--spacing-md);
   border-bottom: 1px solid var(--glass-border);
   background: var(--surface-1);
 }
 
 .brightness-popup-title {
-  font-size: 14px;
+  font-size: var(--text-base);
   font-weight: 600;
   color: var(--text-primary);
   letter-spacing: 0.3px;
@@ -768,7 +768,7 @@ html[data-theme="light"] .task-item-name {
   color: var(--text-secondary);
   width: 32px;
   height: 32px;
-  border-radius: 8px;
+  border-radius: var(--r-md);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -776,7 +776,7 @@ html[data-theme="light"] .task-item-name {
   transition:
     background-color 0.15s ease,
     color 0.15s ease;
-  font-size: 13px;
+  font-size: var(--text-base);
 }
 
 .brightness-close-btn:hover {
@@ -786,10 +786,10 @@ html[data-theme="light"] .task-item-name {
 }
 
 .brightness-popup-content {
-  padding: 12px;
+  padding: var(--spacing-md);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--spacing-md);
 }
 
 .brightness-quick-controls {
@@ -805,7 +805,7 @@ html[data-theme="light"] .task-item-name {
 }
 
 .brightness-quick-item i {
-  font-size: 14px;
+  font-size: var(--text-base);
   color: var(--brand);
   width: 20px;
 }
@@ -814,7 +814,7 @@ html[data-theme="light"] .task-item-name {
   flex: 1;
   height: 4px;
   background: var(--surface-2);
-  border-radius: 2px;
+  border-radius: var(--r-xxs);
   outline: none;
   cursor: pointer;
   appearance: none;
@@ -823,13 +823,13 @@ html[data-theme="light"] .task-item-name {
 .brightness-quick-slider::-webkit-slider-runnable-track {
   height: 4px;
   background: var(--surface-2);
-  border-radius: 2px;
+  border-radius: var(--r-xxs);
 }
 
 .brightness-quick-slider::-moz-range-track {
   height: 4px;
   background: var(--surface-2);
-  border-radius: 2px;
+  border-radius: var(--r-xxs);
 }
 
 .brightness-quick-slider::-webkit-slider-thumb {
@@ -854,7 +854,7 @@ html[data-theme="light"] .task-item-name {
 }
 
 .brightness-quick-item span {
-  font-size: 12px;
+  font-size: var(--text-sm);
   color: var(--text-primary);
   font-weight: 600;
   min-width: 35px;
@@ -863,19 +863,19 @@ html[data-theme="light"] .task-item-name {
 
 .brightness-presets-row {
   display: flex;
-  gap: 6px;
+  gap: var(--spacing-xs);
   flex-wrap: wrap;
 }
 
 .brightness-preset-btn {
   flex: 1;
   min-width: 0;
-  padding: 8px;
+  padding: var(--spacing-sm);
   background: var(--surface-2);
   border: 1px solid var(--glass-border);
-  border-radius: 6px;
+  border-radius: var(--r-sm);
   color: var(--text-primary);
-  font-size: 14px;
+  font-size: var(--text-base);
   font-weight: 500;
   cursor: pointer;
   transition:
@@ -889,7 +889,7 @@ html[data-theme="light"] .task-item-name {
 }
 
 .brightness-preset-btn i {
-  font-size: 14px;
+  font-size: var(--text-base);
 }
 
 .brightness-preset-btn:hover {
@@ -901,16 +901,16 @@ html[data-theme="light"] .task-item-name {
 .brightness-advanced-toggle {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm);
   background: var(--surface-2);
   border: 1px solid var(--glass-border);
-  border-radius: 8px;
+  border-radius: var(--r-md);
   cursor: pointer;
   transition:
     background-color 0.15s ease,
     color 0.15s ease;
-  font-size: 12px;
+  font-size: var(--text-sm);
   color: var(--text-secondary);
   font-weight: 500;
 }
@@ -922,7 +922,7 @@ html[data-theme="light"] .task-item-name {
 }
 
 .brightness-advanced-toggle i {
-  font-size: 12px;
+  font-size: var(--text-sm);
 }
 
 .brightness-advanced-section {
@@ -936,17 +936,17 @@ html[data-theme="light"] .task-item-name {
 .brightness-advanced-row {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--spacing-sm);
 }
 
 .brightness-advanced-item {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--spacing-sm);
 }
 
 .brightness-advanced-item span {
-  font-size: 11px;
+  font-size: var(--text-xs);
   color: var(--text-secondary);
   min-width: 50px;
 }
@@ -955,7 +955,7 @@ html[data-theme="light"] .task-item-name {
   flex: 1;
   height: 4px;
   background: var(--surface-2);
-  border-radius: 2px;
+  border-radius: var(--r-xxs);
   outline: none;
   cursor: pointer;
   appearance: none;
@@ -982,7 +982,7 @@ html[data-theme="light"] .task-item-name {
 }
 
 .brightness-advanced-item span:last-child {
-  font-size: 11px;
+  font-size: var(--text-xs);
   color: var(--text-primary);
   font-weight: 600;
   min-width: 30px;
@@ -992,12 +992,12 @@ html[data-theme="light"] .task-item-name {
 .brightness-night-mode-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--spacing-sm);
   flex-wrap: wrap;
 }
 
 .brightness-night-mode-row span {
-  font-size: 11px;
+  font-size: var(--text-xs);
   color: var(--text-secondary);
 }
 
@@ -1005,9 +1005,9 @@ html[data-theme="light"] .task-item-name {
   padding: 4px 6px;
   background: var(--surface-2);
   border: 1px solid var(--glass-border);
-  border-radius: 4px;
+  border-radius: var(--r-xs);
   color: var(--text-primary);
-  font-size: 11px;
+  font-size: var(--text-xs);
   font-weight: 500;
   outline: none;
   transition:
@@ -1022,18 +1022,18 @@ html[data-theme="light"] .task-item-name {
 
 .brightness-reset-btn-small {
   width: 100%;
-  padding: 8px;
+  padding: var(--spacing-sm);
   background: var(--surface-2);
   border: 1px solid var(--glass-border);
-  border-radius: 6px;
+  border-radius: var(--r-sm);
   color: var(--text-secondary);
-  font-size: 11px;
+  font-size: var(--text-xs);
   font-weight: 500;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: var(--spacing-xs);
   transition:
     background-color 0.15s ease,
     color 0.15s ease;
@@ -1046,7 +1046,7 @@ html[data-theme="light"] .task-item-name {
 }
 
 .brightness-reset-btn-small i {
-  font-size: 11px;
+  font-size: var(--text-xs);
 }
 
 #power-tray-popup {
@@ -1054,10 +1054,10 @@ html[data-theme="light"] .task-item-name {
   display: none;
   width: 280px;
   background: var(--menu-bg);
-  backdrop-filter: blur(32px) saturate(180%);
-  -webkit-backdrop-filter: blur(32px) saturate(180%);
+  backdrop-filter: blur(var(--blur-xl)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--blur-xl)) saturate(180%);
   border: 1px solid var(--glass-border);
-  border-radius: 14px;
+  border-radius: var(--r-lg);
   box-shadow:
     0 10px 64px var(--shadow-color),
     0 0 0 1px rgba(255, 255, 255, 0.05),
@@ -1076,10 +1076,10 @@ html[data-theme="light"] .task-item-name {
   display: none;
   width: min(360px, calc(100vw - 24px));
   background: var(--menu-bg);
-  backdrop-filter: blur(32px) saturate(180%);
-  -webkit-backdrop-filter: blur(32px) saturate(180%);
+  backdrop-filter: blur(var(--blur-xl)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--blur-xl)) saturate(180%);
   border: 1px solid var(--glass-border);
-  border-radius: 14px;
+  border-radius: var(--r-lg);
   box-shadow:
     0 10px 64px var(--shadow-color),
     0 0 0 1px rgba(255, 255, 255, 0.05),
@@ -1099,22 +1099,22 @@ html[data-theme="light"] .task-item-name {
   padding: 14px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--spacing-md);
 }
 
 .display-performance-section {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--spacing-md);
 }
 
 .display-performance-section.battery-section {
   flex-direction: row;
   align-items: center;
-  gap: 14px;
-  padding: 12px;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-md);
   background: var(--surface-2);
-  border-radius: 10px;
+  border-radius: var(--r);
   border: 1px solid var(--glass-border);
 }
 
@@ -1125,12 +1125,12 @@ html[data-theme="light"] .task-item-name {
   align-items: center;
   justify-content: center;
   background: var(--surface-3);
-  border-radius: 10px;
+  border-radius: var(--r);
   flex-shrink: 0;
 }
 
 .battery-icon i {
-  font-size: 20px;
+  font-size: var(--text-xl);
   color: var(--brand);
 }
 
@@ -1143,7 +1143,7 @@ html[data-theme="light"] .task-item-name {
 
 .charging-overlay {
   position: absolute;
-  font-size: 11px;
+  font-size: var(--text-xs);
   color: var(--charging);
   top: 50%;
   left: 50%;
@@ -1155,18 +1155,18 @@ html[data-theme="light"] .task-item-name {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--spacing-xxs);
 }
 
 .battery-percent {
-  font-size: 24px;
+  font-size: var(--text-2xl);
   font-weight: 700;
   color: var(--text-primary);
   line-height: 1;
 }
 
 .battery-status {
-  font-size: 12px;
+  font-size: var(--text-sm);
   font-weight: 500;
   color: var(--text-secondary);
 }
@@ -1174,8 +1174,8 @@ html[data-theme="light"] .task-item-name {
 .display-performance-section-title {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 13px;
+  gap: var(--spacing-sm);
+  font-size: var(--text-base);
   font-weight: 600;
   color: var(--text-primary);
   opacity: 0.9;
@@ -1195,10 +1195,10 @@ html[data-theme="light"] .task-item-name {
 .display-performance-advanced-toggle {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--spacing-sm);
   min-height: 36px;
   padding: 8px 12px;
-  border-radius: 8px;
+  border-radius: var(--r-md);
   background: var(--surface-2);
   border: 1px solid var(--glass-border);
   cursor: pointer;
@@ -1206,7 +1206,7 @@ html[data-theme="light"] .task-item-name {
   transition:
     background-color 0.15s ease,
     color 0.15s ease;
-  font-size: 13px;
+  font-size: var(--text-base);
   font-weight: 500;
   color: var(--text-primary);
 }
@@ -1220,13 +1220,13 @@ html[data-theme="light"] .task-item-name {
 .display-performance-advanced-section {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--spacing-md);
 }
 
 #display-performance-tray-popup .power-mode-options {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
+  gap: var(--spacing-sm);
 }
 
 #display-performance-tray-popup .power-mode-btn {
@@ -1234,9 +1234,9 @@ html[data-theme="light"] .task-item-name {
   padding: 10px 8px;
   flex-direction: column;
   justify-content: center;
-  gap: 6px;
-  border-radius: 10px;
-  font-size: 12px;
+  gap: var(--spacing-xs);
+  border-radius: var(--r);
+  font-size: var(--text-sm);
   text-align: center;
 }
 
@@ -1245,7 +1245,7 @@ html[data-theme="light"] .task-item-name {
 }
 
 #display-performance-tray-popup .power-mode-btn i {
-  font-size: 15px;
+  font-size: var(--text-md);
 }
 
 #display-performance-tray-popup .brightness-quick-controls {
@@ -1276,7 +1276,7 @@ html[data-theme="light"] .task-item-name {
 #display-performance-tray-popup .brightness-quick-item span,
 #display-performance-tray-popup .brightness-advanced-item span:last-child {
   min-width: 0;
-  font-size: 12px;
+  font-size: var(--text-sm);
   font-weight: 600;
   color: var(--text-primary);
   text-align: right;
@@ -1284,7 +1284,7 @@ html[data-theme="light"] .task-item-name {
 
 #display-performance-tray-popup .brightness-advanced-item span:first-child {
   min-width: 0;
-  font-size: 12px;
+  font-size: var(--text-sm);
   font-weight: 500;
   color: var(--text-secondary);
 }
@@ -1297,7 +1297,7 @@ html[data-theme="light"] .task-item-name {
   appearance: none;
   height: 6px;
   background: var(--surface-3);
-  border-radius: 3px;
+  border-radius: var(--r-xxs);
   outline: none;
 }
 
@@ -1329,20 +1329,20 @@ html[data-theme="light"] .task-item-name {
 #display-performance-tray-popup .brightness-advanced-slider::-webkit-slider-runnable-track {
   height: 6px;
   background: var(--surface-3);
-  border-radius: 3px;
+  border-radius: var(--r-xxs);
 }
 
 #display-performance-tray-popup .brightness-quick-slider::-moz-range-track,
 #display-performance-tray-popup .brightness-advanced-slider::-moz-range-track {
   height: 6px;
   background: var(--surface-3);
-  border-radius: 3px;
+  border-radius: var(--r-xxs);
 }
 
 #display-performance-tray-popup .brightness-presets-row {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 6px;
+  gap: var(--spacing-xs);
 }
 
 #display-performance-tray-popup .brightness-preset-btn {
@@ -1350,7 +1350,7 @@ html[data-theme="light"] .task-item-name {
   min-width: 0;
   aspect-ratio: 1;
   padding: 0;
-  border-radius: 8px;
+  border-radius: var(--r-md);
 }
 
 #display-performance-tray-popup .brightness-preset-btn:hover {
@@ -1361,11 +1361,11 @@ html[data-theme="light"] .task-item-name {
   display: grid;
   grid-template-columns: minmax(74px, 1fr) 44px repeat(2, minmax(82px, 1fr));
   align-items: center;
-  gap: 8px;
+  gap: var(--spacing-sm);
 }
 
 #display-performance-tray-popup .brightness-night-mode-row > span {
-  font-size: 12px;
+  font-size: var(--text-sm);
   font-weight: 500;
   color: var(--text-secondary);
 }
@@ -1380,8 +1380,8 @@ html[data-theme="light"] .task-item-name {
 
 #display-performance-tray-popup .brightness-reset-btn-small {
   min-height: 34px;
-  border-radius: 8px;
-  font-size: 12px;
+  border-radius: var(--r-md);
+  font-size: var(--text-sm);
 }
 
 @media (max-width: 420px) {
@@ -1419,52 +1419,52 @@ html[data-theme="light"] .task-item-name {
 }
 
 .power-popup-content {
-  padding: 12px;
+  padding: var(--spacing-md);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--spacing-md);
 }
 
 .power-battery-section {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
   background: var(--surface-2);
-  border-radius: 10px;
+  border-radius: var(--r);
   border: 1px solid var(--glass-border);
 }
 
 .power-battery-icon {
-  font-size: 24px;
+  font-size: var(--text-2xl);
   color: #4ade80;
 }
 
 .power-battery-info {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--spacing-xxs);
 }
 
 .power-battery-percent {
-  font-size: 18px;
+  font-size: var(--text-lg);
   font-weight: 700;
   color: var(--text-primary);
 }
 
 .power-battery-status {
-  font-size: 12px;
+  font-size: var(--text-sm);
   color: var(--text-secondary);
 }
 
 .power-mode-section {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--spacing-sm);
 }
 
 .power-mode-title {
-  font-size: 12px;
+  font-size: var(--text-sm);
   font-weight: 600;
   color: var(--text-secondary);
   text-transform: uppercase;
@@ -1474,19 +1474,19 @@ html[data-theme="light"] .task-item-name {
 .power-mode-options {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--spacing-xs);
 }
 
 .power-mode-btn {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 12px;
+  padding: var(--spacing-sm) var(--spacing-md);
   background: var(--surface-2);
   border: 1px solid var(--glass-border);
-  border-radius: 8px;
+  border-radius: var(--r-md);
   color: var(--text-primary);
-  font-size: 13px;
+  font-size: var(--text-base);
   font-weight: 500;
   cursor: pointer;
   transition:
@@ -1508,7 +1508,7 @@ html[data-theme="light"] .task-item-name {
 }
 
 .power-mode-btn i {
-  font-size: 14px;
+  font-size: var(--text-base);
 }
 
 .brightness-control-group {
@@ -1521,12 +1521,12 @@ html[data-theme="light"] .task-item-name {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 13px;
+  font-size: var(--text-base);
   color: var(--text-secondary);
 }
 
 .brightness-control-label i {
-  font-size: 14px;
+  font-size: var(--text-base);
   color: var(--brand);
 }
 
@@ -1537,7 +1537,7 @@ html[data-theme="light"] .task-item-name {
 }
 
 .brightness-value {
-  font-size: 13px;
+  font-size: var(--text-base);
   color: var(--brand);
   font-weight: 600;
   min-width: 40px;
@@ -1549,7 +1549,7 @@ html[data-theme="light"] .task-item-name {
   width: 100%;
   height: 6px;
   background: var(--surface-2);
-  border-radius: 3px;
+  border-radius: var(--r-xxs);
   outline: none;
   cursor: pointer;
 }
@@ -1557,13 +1557,13 @@ html[data-theme="light"] .task-item-name {
 .brightness-slider::-webkit-slider-runnable-track {
   height: 6px;
   background: var(--surface-2);
-  border-radius: 3px;
+  border-radius: var(--r-xxs);
 }
 
 .brightness-slider::-moz-range-track {
   height: 6px;
   background: var(--surface-2);
-  border-radius: 3px;
+  border-radius: var(--r-xxs);
 }
 
 .brightness-slider::-webkit-slider-thumb {
@@ -1617,15 +1617,15 @@ html[data-theme="light"] .task-item-name {
   padding: 10px 16px;
   background: var(--surface-2);
   border: 1px solid var(--glass-border);
-  border-radius: 8px;
+  border-radius: var(--r-md);
   color: var(--text-secondary);
-  font-size: 13px;
+  font-size: var(--text-base);
   font-weight: 500;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: var(--spacing-sm);
   transition:
     background-color 0.15s ease,
     color 0.15s ease;
@@ -1641,13 +1641,13 @@ html[data-theme="light"] .task-item-name {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 14px 16px;
+  padding: var(--spacing-lg) var(--spacing-md);
   border-bottom: 1px solid var(--glass-border);
   background: var(--surface-1);
 }
 
 .clipboard-popup-title {
-  font-size: 14px;
+  font-size: var(--text-base);
   font-weight: 600;
   color: var(--text-primary);
   letter-spacing: 0.3px;
@@ -1659,7 +1659,7 @@ html[data-theme="light"] .task-item-name {
   color: var(--error);
   width: 32px;
   height: 32px;
-  border-radius: 8px;
+  border-radius: var(--r-md);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -1667,7 +1667,7 @@ html[data-theme="light"] .task-item-name {
   transition:
     background-color 0.15s ease,
     color 0.15s ease;
-  font-size: 13px;
+  font-size: var(--text-base);
 }
 
 .clipboard-clear-btn:hover {
@@ -1679,10 +1679,10 @@ html[data-theme="light"] .task-item-name {
 .clipboard-history-list {
   flex: 1;
   overflow-y: auto;
-  padding: 12px;
+  padding: var(--spacing-md);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--spacing-sm);
   max-height: 380px;
 }
 
@@ -1696,7 +1696,7 @@ html[data-theme="light"] .task-item-name {
 
 .clipboard-history-list::-webkit-scrollbar-thumb {
   background: var(--glass-border);
-  border-radius: 3px;
+  border-radius: var(--r-xxs);
 }
 
 .clipboard-history-list::-webkit-scrollbar-thumb:hover {
@@ -1707,14 +1707,14 @@ html[data-theme="light"] .task-item-name {
   text-align: center;
   color: var(--text-muted);
   padding: 48px 24px;
-  font-size: 13px;
+  font-size: var(--text-base);
 }
 
 .clipboard-item {
   background: var(--glass);
   border: 1px solid var(--glass-border);
-  border-radius: 10px;
-  padding: 12px;
+  border-radius: var(--r);
+  padding: var(--spacing-md);
   cursor: pointer;
   transition:
     background-color 0.2s ease,
@@ -1732,23 +1732,23 @@ html[data-theme="light"] .task-item-name {
 .clipboard-item-meta {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--spacing-sm);
   margin-bottom: 8px;
   padding-left: 50px;
 }
 
 .clipboard-item-meta i {
   color: var(--brand);
-  font-size: 12px;
+  font-size: var(--text-sm);
 }
 
 .clipboard-item-time {
-  font-size: 12px;
+  font-size: var(--text-sm);
   color: var(--text-secondary);
 }
 
 .clipboard-item-type {
-  font-size: 11px;
+  font-size: var(--text-xs);
   color: var(--text-muted);
   margin-left: auto;
   text-transform: uppercase;
@@ -1756,7 +1756,7 @@ html[data-theme="light"] .task-item-name {
 }
 
 .clipboard-item-content {
-  font-size: 13px;
+  font-size: var(--text-base);
   color: var(--text-primary);
   overflow-wrap: break-word;
   display: -webkit-box;
@@ -1772,9 +1772,9 @@ html[data-theme="light"] .task-item-name {
   top: 8px;
   right: 8px;
   display: flex;
-  gap: 4px;
+  gap: var(--spacing-xs);
   opacity: 0;
-  transition: opacity 0.2s ease;
+  transition: opacity var(--transition-base) ease;
 }
 
 .clipboard-item:hover .clipboard-item-actions {
@@ -1787,7 +1787,7 @@ html[data-theme="light"] .task-item-name {
   color: var(--text-primary);
   width: 28px;
   height: 28px;
-  border-radius: 6px;
+  border-radius: var(--r-sm);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -1795,7 +1795,7 @@ html[data-theme="light"] .task-item-name {
   transition:
     background-color 0.15s ease,
     color 0.15s ease;
-  font-size: 11px;
+  font-size: var(--text-xs);
 }
 
 .clipboard-action-btn:hover {
@@ -1822,32 +1822,32 @@ html[data-theme="light"] .task-item-name {
 }
 
 .clipboard-settings-section {
-  padding: 12px 16px;
+  padding: var(--spacing-md) var(--spacing-lg);
   border-bottom: 1px solid var(--glass-border);
   background: var(--surface-1);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--spacing-md);
 }
 
 .clipboard-setting-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
+  gap: var(--spacing-md);
 }
 
 .clipboard-setting-label {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 13px;
+  gap: var(--spacing-sm);
+  font-size: var(--text-base);
   color: var(--text-primary);
   font-weight: 500;
 }
 
 .clipboard-setting-label i {
-  font-size: 14px;
+  font-size: var(--text-base);
   color: var(--brand);
 }
 
@@ -1906,7 +1906,7 @@ html[data-theme="light"] .task-item-name {
 .clipboard-history-size-input {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--spacing-xs);
 }
 
 .clipboard-history-size-input input {
@@ -1914,9 +1914,9 @@ html[data-theme="light"] .task-item-name {
   padding: 6px 8px;
   background: var(--surface-2);
   border: 1px solid var(--glass-border);
-  border-radius: 6px;
+  border-radius: var(--r-sm);
   color: var(--text-primary);
-  font-size: 13px;
+  font-size: var(--text-base);
   font-weight: 500;
   outline: none;
   transition:
@@ -1956,18 +1956,18 @@ html[data-theme="light"] .task-item-name {
 }
 
 .clipboard-history-size-label {
-  font-size: 12px;
+  font-size: var(--text-sm);
   color: var(--text-secondary);
 }
 
 .brightness-presets-section {
-  padding: 12px 16px;
+  padding: var(--spacing-md) var(--spacing-lg);
   border-bottom: 1px solid var(--glass-border);
   background: var(--surface-1);
 }
 
 .brightness-presets-title {
-  font-size: 12px;
+  font-size: var(--text-sm);
   font-weight: 600;
   color: var(--text-secondary);
   margin-bottom: 10px;
@@ -1978,16 +1978,16 @@ html[data-theme="light"] .task-item-name {
 .brightness-presets-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  gap: var(--spacing-sm);
 }
 
 .brightness-preset-btn {
   padding: 8px 12px;
   background: var(--surface-2);
   border: 1px solid var(--glass-border);
-  border-radius: 8px;
+  border-radius: var(--r-md);
   color: var(--text-primary);
-  font-size: 12px;
+  font-size: var(--text-sm);
   font-weight: 500;
   cursor: pointer;
   transition:
@@ -2004,7 +2004,7 @@ html[data-theme="light"] .task-item-name {
 }
 
 .brightness-night-mode-section {
-  padding: 12px 16px;
+  padding: var(--spacing-md) var(--spacing-lg);
   border-bottom: 1px solid var(--glass-border);
   background: var(--surface-1);
 }
@@ -2017,7 +2017,7 @@ html[data-theme="light"] .task-item-name {
 }
 
 .brightness-night-mode-title {
-  font-size: 13px;
+  font-size: var(--text-base);
   font-weight: 500;
   color: var(--text-primary);
 }
@@ -2076,18 +2076,18 @@ html[data-theme="light"] .task-item-name {
 
 .brightness-night-mode-times {
   display: flex;
-  gap: 12px;
+  gap: var(--spacing-md);
 }
 
 .brightness-time-input {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--spacing-xs);
   flex: 1;
 }
 
 .brightness-time-input span {
-  font-size: 12px;
+  font-size: var(--text-sm);
   color: var(--text-secondary);
   white-space: nowrap;
 }
@@ -2097,9 +2097,9 @@ html[data-theme="light"] .task-item-name {
   padding: 6px 8px;
   background: var(--surface-2);
   border: 1px solid var(--glass-border);
-  border-radius: 6px;
+  border-radius: var(--r-sm);
   color: var(--text-primary);
-  font-size: 13px;
+  font-size: var(--text-base);
   font-weight: 500;
   outline: none;
   transition:
@@ -2119,7 +2119,7 @@ html[data-theme="light"] .task-item-name {
 }
 
 .tray-popup-item i {
-  font-size: 14px;
+  font-size: var(--text-base);
   width: 16px;
   text-align: center;
 }
@@ -2129,10 +2129,10 @@ html[data-theme="light"] .task-item-name {
   display: none;
   width: 340px;
   background: var(--menu-bg);
-  backdrop-filter: blur(32px) saturate(180%);
-  -webkit-backdrop-filter: blur(32px) saturate(180%);
+  backdrop-filter: blur(var(--blur-xl)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--blur-xl)) saturate(180%);
   border: 1px solid var(--glass-border);
-  border-radius: 14px;
+  border-radius: var(--r-lg);
   box-shadow:
     0 10px 64px var(--shadow-color),
     0 0 0 1px rgba(255, 255, 255, 0.05),
@@ -2155,18 +2155,18 @@ html[data-theme="light"] .task-item-name {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 14px 16px;
+  padding: var(--spacing-lg) var(--spacing-md);
   border-bottom: 1px solid var(--glass-border);
   background: var(--surface-1);
 }
 
 .network-header i {
-  font-size: 16px;
+  font-size: var(--text-md);
   color: var(--brand);
 }
 
 .network-header span {
-  font-size: 14px;
+  font-size: var(--text-base);
   font-weight: 600;
   color: var(--text-primary);
 }
@@ -2174,7 +2174,7 @@ html[data-theme="light"] .task-item-name {
 .network-list {
   display: flex;
   flex-direction: column;
-  padding: 8px;
+  padding: var(--spacing-sm);
   max-height: 320px;
   overflow-y: auto;
 }
@@ -2182,9 +2182,9 @@ html[data-theme="light"] .task-item-name {
 .network-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px;
-  border-radius: 8px;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  border-radius: var(--r-md);
   cursor: pointer;
   transition:
     background-color 0.15s ease,
@@ -2209,7 +2209,7 @@ html[data-theme="light"] .task-item-name {
 .network-signal {
   display: flex;
   align-items: flex-end;
-  gap: 2px;
+  gap: var(--spacing-xxs);
   width: 20px;
   height: 20px;
 }
@@ -2251,17 +2251,17 @@ html[data-theme="light"] .task-item-name {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--spacing-xxs);
 }
 
 .network-name {
-  font-size: 13px;
+  font-size: var(--text-base);
   font-weight: 500;
   color: var(--text-primary);
 }
 
 .network-status {
-  font-size: 11px;
+  font-size: var(--text-xs);
   color: var(--text-secondary);
 }
 
@@ -2279,7 +2279,7 @@ html[data-theme="light"] .task-item-name {
   background: var(--brand);
   border-radius: 50%;
   color: var(--text-on-brand);
-  font-size: 10px;
+  font-size: var(--text-xxs);
 }
 
 .connecting-spinner {
@@ -2291,12 +2291,12 @@ html[data-theme="light"] .task-item-name {
 }
 
 .connecting-spinner i {
-  font-size: 14px;
+  font-size: var(--text-base);
   color: var(--brand);
 }
 
 .network-footer {
-  padding: 12px 16px;
+  padding: var(--spacing-md) var(--spacing-lg);
   border-top: 1px solid var(--glass-border);
   background: var(--surface-1);
 }
@@ -2304,14 +2304,14 @@ html[data-theme="light"] .task-item-name {
 .network-settings-btn {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--spacing-sm);
   width: 100%;
-  padding: 10px 12px;
+  padding: var(--spacing-sm) var(--spacing-md);
   background: var(--surface-2);
   border: 1px solid var(--glass-border);
-  border-radius: 8px;
+  border-radius: var(--r-md);
   color: var(--text-primary);
-  font-size: 13px;
+  font-size: var(--text-base);
   font-weight: 500;
   cursor: pointer;
   transition:
@@ -2325,7 +2325,7 @@ html[data-theme="light"] .task-item-name {
 }
 
 .network-settings-btn i {
-  font-size: 14px;
+  font-size: var(--text-base);
 }
 
 html[data-theme="light"] .network-item.connected {
@@ -2360,7 +2360,7 @@ html[data-theme="light"] .network-badge {
   height: 3px;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.2s ease;
+  transition: opacity var(--transition-base) ease;
   z-index: 5;
   overflow: hidden;
 }
@@ -2374,10 +2374,10 @@ html[data-theme="light"] .network-badge {
   bottom: 0;
   left: 0;
   height: 100%;
-  border-radius: 2px;
+  border-radius: var(--r-xxs);
   background: var(--glass-border);
   min-width: 24px;
-  transition: width 0.12s ease;
+  transition: width var(--transition-fast) ease;
 }
 
 #taskbar.position-top .taskbar-scroll-indicator {

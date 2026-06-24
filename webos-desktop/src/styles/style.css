@@ -11,6 +11,7 @@
   --spacing-scale: 1;
   --taskbar-scale: 1;
 
+  --spacing-xxs: calc(2px * var(--spacing-scale));
   --spacing-xs: calc(4px * var(--spacing-scale));
   --spacing-sm: calc(8px * var(--spacing-scale));
   --spacing-md: calc(12px * var(--spacing-scale));
@@ -28,8 +29,15 @@
   --brand-glow: oklch(55% 0.08 264 / 0.18);
   --brand-dim: oklch(55% 0.11 264 / 0.12);
 
-  --r: 10px;
+  --r-xxs: 2px;
+  --r-xs: 4px;
   --r-sm: 6px;
+  --r-md: 8px;
+  --r: 10px;
+  --r-lg: 12px;
+  --r-xl: 16px;
+  --r-2xl: 20px;
+  --r-full: 999px;
 
   --bg-base: oklch(12% 0.02 265);
   --bg-elev-1: oklch(18% 0.01 265);
@@ -79,6 +87,39 @@
   --surface-3: rgba(26, 26, 36, 0.75);
   --glass-hover: rgba(255, 255, 255, 0.12);
   --text-on-brand: #ffffff;
+
+  --text-xxs: 10px;
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-base: 14px;
+  --text-md: 16px;
+  --text-lg: 18px;
+  --text-xl: 20px;
+  --text-2xl: 24px;
+
+  --blur-xs: 10px;
+  --blur-sm: 12px;
+  --blur-md: 14px;
+  --blur-lg: 24px;
+  --blur-xl: 32px;
+  --blur-2xl: 50px;
+
+  --icon-xs: 16px;
+  --icon-sm: 20px;
+  --icon-md: 24px;
+  --icon-lg: 32px;
+  --icon-xl: 40px;
+  --icon-2xl: 48px;
+
+  --transition-fast: 0.1s;
+  --transition-base: 0.2s;
+  --transition-slow: 0.3s;
+
+  --z-dropdown: 1000;
+  --z-modal: 2000;
+  --z-popover: 3000;
+  --z-tooltip: 4000;
+  --z-overlay: 9999;
 }
 
 *,

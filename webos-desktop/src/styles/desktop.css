@@ -30,7 +30,7 @@
   font-size: 0.75rem;
   text-shadow: 0 1px 3px var(--shadow-color, rgba(0, 0, 0, 0.9));
   border: 1px solid transparent;
-  border-radius: 10px;
+  border-radius: var(--r);
   transition:
     background 0.15s,
     border-color 0.15s;
@@ -43,7 +43,7 @@
   max-width: var(--icon-img-s) !important;
   max-height: var(--icon-img-s) !important;
   flex-shrink: 0;
-  border-radius: 15px;
+  border-radius: var(--r-xl);
   margin-bottom: 0.3rem;
   pointer-events: none;
   transition: transform 0.15s;
@@ -635,7 +635,7 @@ body.is-resizing * {
   align-items: center;
   justify-content: center;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--r-sm);
   background-color: var(--glass);
   color: var(--text-secondary);
   cursor: pointer;
@@ -764,7 +764,7 @@ body.is-resizing * {
   background: rgba(255, 255, 255, 0.06);
   color: rgba(255, 255, 255, 0.9);
   padding: 6px 10px;
-  border-radius: 8px;
+  border-radius: var(--r-md);
   cursor: pointer;
   font-size: 12px;
 }
@@ -792,7 +792,7 @@ body.is-resizing * {
 .props-section {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 10px;
+  border-radius: var(--r);
   padding: 10px;
 }
 
