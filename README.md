@@ -64,7 +64,7 @@ It's built entirely in vanilla JS/TypeScript (with some libraries, of course!) !
 - Notification center with grouped messages
 - Do Not Disturb mode
 - Notification positioning controls
-- Context menus across desktop and apps
+- Context menus across desktop with Background submenu, F2 rename support, recording, file upload
 - Animated UI with adaptive transparency effects
 - Keyboard shortcuts app for global hotkeys
 
@@ -80,7 +80,7 @@ It's built entirely in vanilla JS/TypeScript (with some libraries, of course!) !
 **Command Palette Features:**
 
 - Search apps, files, and system commands
-- Quick actions: wallpaper, themes, DND, mute, workspace switching
+- Quick actions: wallpaper, themes, DND, mute, workspace switching, logout & more
 - Terminal commands (prefix with `>`)
 - Built-in calculator and unit converter
 - Screenshot and screen recording controls
@@ -90,9 +90,8 @@ It's built entirely in vanilla JS/TypeScript (with some libraries, of course!) !
 # 📁 Files & Storage
 
 - Persistent browser storage using IndexedDB
-- File explorer with thumbnails and previews
+- File explorer with thumbnails and previews with file/folder upload support
 - Drag-and-drop file operations from host OS
-- Context menu to open images in Paint
 - File properties dialog with rename support
 - Create, move, rename, delete, and organize files
 - Drag-select multiple files with selection box
@@ -122,7 +121,7 @@ It's built entirely in vanilla JS/TypeScript (with some libraries, of course!) !
 - Wallpaper customization with animated wallpaper and Vanta.js support
 - PWA install and offline caching support
 - User accounts with multi-profile support
-- Lock screen and session management
+- Lock screen and session management and idle mode
 - Power management modes (Turbo, Balanced, Quality)
 - Custom cursor support (with miku by default)
 - Import/export system for backup and migration

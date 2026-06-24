@@ -455,6 +455,15 @@ export class DesktopUI {
         }
       }
 
+      if (KeybindManager.matches(e, "desktop.rename")) {
+        e.preventDefault();
+        const selectedArray = this.selectionManager.toArray();
+        if (selectedArray.length === 1) {
+          const icon = selectedArray[0];
+          this.contextMenuManager._startInlineDesktopRename(icon);
+        }
+      }
+
       if (KeybindManager.matches(e, "desktop.deleteSelected")) {
         const selectedArray = this.selectionManager.toArray();
         let hasExplorerSelection = false;

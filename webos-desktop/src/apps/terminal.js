@@ -89,7 +89,12 @@ export class TerminalApp extends BaseApp {
     this.setupEventHandlers();
   }
 
-  open() {
+  open(extra = null) {
+    const initialPath = extra?.initialPath || null;
+    if (initialPath) {
+      this.currentPath = initialPath;
+    }
+
     const content = `
     <div class="window-content terminal-content">
       <div class="terminal-output" id="terminal-output"></div>

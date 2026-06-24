@@ -18,6 +18,7 @@ Planned features and improvements for Yuki OS.
 - [ ] From site to users computer file transfer support
 - [ ] Add 3D os mode
 - [ ] Add tiling wm mode
+- [ ] File association system / default apps for files app
 
 ---
 

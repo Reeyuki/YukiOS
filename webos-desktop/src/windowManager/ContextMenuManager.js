@@ -1,4 +1,4 @@
-import { showStartStyleMenu, showContextMenu, showDynamicContextMenu } from "../shared/contextMenu.js";
+import { showStartStyleMenu, showContextMenu, showDynamicContextMenu, hideMenu } from "../shared/contextMenu.js";
 import { os } from "../os/index.js";
 
 export class ContextMenuManager {
@@ -224,11 +224,14 @@ export class DesktopContextMenuManager {
         { id: "ctx-rename-file", label: "Rename", action: "renameFile", icon: "fa-edit" }
       ],
       desktopContextMenu: [
+        { id: "ctx-new", label: "New", action: "new", icon: "fa-plus" },
+        "hr",
         { id: "ctx-add-files", label: "Add file(s)", action: "addFiles", icon: "fa-file-upload" },
-        { id: "ctx-new-notepad", label: "New Notepad", action: "newNotepad", icon: "fa-file-medical" },
-        { id: "ctx-new-folder", label: "New Folder", action: "newFolder", icon: "fa-folder-plus" },
         { id: "ctx-open-explorer", label: "Open File Explorer", action: "openExplorer", icon: "fa-folder-open" },
+        { id: "ctx-start-recording", label: "Start Recording", action: "startRecording", icon: "fa-circle" },
         { id: "ctx-set-wallpaper", label: "Customize", action: "setWallpaper", icon: "fa-paint-brush" },
+        { id: "ctx-background", label: "Background", action: "background", icon: "fa-image" },
+        { id: "ctx-open-terminal", label: "Open Terminal Here", action: "openTerminal", icon: "fa-terminal" },
         "hr",
         {
           id: "ctx-paste",
@@ -503,22 +506,26 @@ export class DesktopContextMenuManager {
 
   showDesktopContextMenu(e) {
     showContextMenu(e, this.templates.desktopContextMenu, {
-      newNotepad: () => this.desktopUI.notepadApp.open(),
       addFiles: () => this.desktopUI.addFiles(),
-      newFolder: async () => {
-        const folderName = await os.dialog.prompt("Prompt", "Enter folder name:", "New Folder");
-        if (folderName) {
-          await os.fs.mkdir(["Desktop", folderName]);
-          await this.desktopUI.createFolderIcon(folderName);
-          os.notify.send(`Folder "${folderName}" created`);
-        }
+      new: () => {
+        this.showNewContextMenu(e);
       },
       openExplorer: () => this.desktopUI.explorerApp.open(),
+      startRecording: () => {
+        os.app.launch("cameraApp");
+      },
       setWallpaper: () => {
         os.app.launch("settingsApp", {
           section: "pane-appearance",
           target: "settings-wallpaper-card"
         });
+      },
+      background: () => {
+        this.showBackgroundContextMenu(e);
+      },
+      openTerminal: () => {
+        const username = os.storage.get("username") || "guest";
+        os.app.launch("terminalApp", { initialPath: ["home", username, "Desktop"] });
       },
       paste: async () => {
         await this.desktopUI._pasteToDesktop();
@@ -528,5 +535,314 @@ export class DesktopContextMenuManager {
         await this.desktopUI.loadDesktopItems();
       }
     });
+  }
+
+  async showBackgroundContextMenu(e) {
+    const { videos } = await import("../wallpaperList.js");
+    const { vantaPresets } = await import("../vantaPresets.js");
+    const { SystemUtilities } = await import("../system.js");
+
+    const menu = document.getElementById("context-menu");
+    if (!menu) return;
+    menu.classList.remove("closing");
+    menu.style.display = "";
+    menu.innerHTML = "";
+    menu.classList.add("context-menu-glass");
+
+    const item = (text, onclick, icon = null) => {
+      const el = document.createElement("div");
+      const iconVal = (icon || "fa-chevron-right").trim();
+      const iconCls = iconVal.includes(" ") ? iconVal : `fas ${iconVal}`;
+      const iconEl = document.createElement("i");
+      iconEl.className = iconCls;
+      iconEl.style.width = "16px";
+      iconEl.style.textAlign = "center";
+      iconEl.style.opacity = "0.7";
+      el.appendChild(iconEl);
+      const label = document.createElement("span");
+      label.textContent = text;
+      el.appendChild(label);
+      el.onclick = (event) => {
+        if (event) event.stopPropagation();
+        hideMenu();
+        onclick();
+      };
+      return el;
+    };
+
+    const hr = () => document.createElement("hr");
+
+    menu.appendChild(item("Vanta.js Wallpapers", null, "fa-magic"));
+    menu.appendChild(hr());
+
+    vantaPresets.forEach((preset) => {
+      menu.appendChild(
+        item(
+          preset.name,
+          async () => {
+            await SystemUtilities.setWallpaper(`vanta:${preset.id}`);
+            os.notify.send(`Desktop wallpaper set to "${preset.name}"`, { type: "info" });
+          },
+          "fa-palette"
+        )
+      );
+    });
+
+    menu.appendChild(hr());
+    menu.appendChild(item("Video Wallpapers", null, "fa-video"));
+    menu.appendChild(hr());
+
+    videos.forEach((videoUrl) => {
+      const name = videoUrl
+        .split("/")
+        .pop()
+        .replace(/\.\d+x\d+\.mp4$/, "")
+        .replace(/-/g, " ");
+      menu.appendChild(
+        item(
+          name,
+          async () => {
+            await SystemUtilities.setWallpaper(videoUrl);
+            os.notify.send(`Desktop wallpaper set to "${name}"`, { type: "info" });
+          },
+          "fa-film"
+        )
+      );
+    });
+
+    const { positionMenu, refreshIcons, bindDismissal } = await import("../shared/contextMenu.js");
+    positionMenu(menu, e.pageX, e.pageY);
+    refreshIcons(menu);
+    bindDismissal();
+  }
+
+  async showNewContextMenu(e) {
+    const menu = document.getElementById("context-menu");
+    if (!menu) return;
+    menu.classList.remove("closing");
+    menu.style.display = "";
+    menu.innerHTML = "";
+    menu.classList.add("context-menu-glass");
+
+    const item = (text, onclick, icon = null) => {
+      const el = document.createElement("div");
+      const iconVal = (icon || "fa-chevron-right").trim();
+      const iconCls = iconVal.includes(" ") ? iconVal : `fas ${iconVal}`;
+      const iconEl = document.createElement("i");
+      iconEl.className = iconCls;
+      iconEl.style.width = "16px";
+      iconEl.style.textAlign = "center";
+      iconEl.style.opacity = "0.7";
+      el.appendChild(iconEl);
+      const label = document.createElement("span");
+      label.textContent = text;
+      el.appendChild(label);
+      el.onclick = (event) => {
+        if (event) event.stopPropagation();
+        hideMenu();
+        onclick();
+      };
+      return el;
+    };
+
+    const hr = () => document.createElement("hr");
+
+    menu.appendChild(
+      item(
+        "Folder",
+        async () => {
+          await this._spawnInlineDesktopItem(false);
+        },
+        "fa-folder"
+      )
+    );
+    menu.appendChild(
+      item(
+        "Text",
+        async () => {
+          await this._spawnInlineDesktopItem(true);
+        },
+        "fa-file-alt"
+      )
+    );
+
+    const { positionMenu, refreshIcons, bindDismissal } = await import("../shared/contextMenu.js");
+    positionMenu(menu, e.pageX, e.pageY);
+    refreshIcons(menu);
+    bindDismissal();
+  }
+
+  async _spawnInlineDesktopItem(isFile) {
+    const defaultName = isFile ? "New File.txt" : "New Folder";
+    const iconSrc = isFile ? "static/icons/notepad.webp" : "static/icons/file.webp";
+
+    const icon = document.createElement("div");
+    icon.className = "icon selectable is-renaming";
+    icon.innerHTML = `<img src="${iconSrc}"><div></div>`;
+    this.desktopUI.desktop.appendChild(icon);
+
+    const { wrap, input, errorTip } = this._createInlineInput(defaultName);
+    icon.appendChild(wrap);
+
+    const dotIdx = defaultName.lastIndexOf(".");
+    input.focus();
+    if (isFile && dotIdx > 0) input.setSelectionRange(0, dotIdx);
+    else input.select();
+
+    const showError = (msg) => {
+      errorTip.textContent = msg;
+      errorTip.style.display = "block";
+      input.classList.add("error");
+    };
+    const clearError = () => {
+      errorTip.style.display = "none";
+      input.classList.remove("error");
+    };
+
+    let committed = false;
+    const cancel = () => {
+      if (committed) return;
+      committed = true;
+      icon.remove();
+    };
+
+    const commit = async () => {
+      if (committed) return;
+      const name = input.value.trim();
+      if (!name) {
+        cancel();
+        return;
+      }
+      committed = true;
+      try {
+        if (isFile) {
+          await os.fs.write(["Desktop", name], "");
+          await this.desktopUI.createDesktopFileIcon(name);
+          os.notify.send(`File "${name}" created`);
+        } else {
+          await os.fs.mkdir(["Desktop", name]);
+          await this.desktopUI.createFolderIcon(name);
+          os.notify.send(`Folder "${name}" created`);
+        }
+        icon.remove();
+      } catch (err) {
+        committed = false;
+        showError(err.message || "Could not create item.");
+        input.focus();
+      }
+    };
+
+    this._bindInlineInputEvents(input, commit, cancel, clearError);
+  }
+
+  _createInlineInput(value) {
+    const wrap = document.createElement("div");
+    wrap.className = "inline-rename-wrap";
+
+    const input = document.createElement("input");
+    input.className = "inline-rename-input";
+    input.type = "text";
+    input.value = value;
+    input.spellcheck = false;
+
+    const errorTip = document.createElement("div");
+    errorTip.className = "inline-rename-error";
+    errorTip.style.display = "none";
+
+    wrap.appendChild(input);
+    wrap.appendChild(errorTip);
+    return { wrap, input, errorTip };
+  }
+
+  _bindInlineInputEvents(input, commit, cancel, clearError) {
+    input.onkeydown = (ev) => {
+      ev.stopPropagation();
+      if (ev.key === "Enter") {
+        ev.preventDefault();
+        commit();
+      }
+      if (ev.key === "Escape") {
+        ev.preventDefault();
+        cancel();
+      }
+    };
+    input.onblur = () => {
+      setTimeout(() => {
+        if (document.activeElement !== input) {
+          commit();
+        }
+      }, 100);
+    };
+    input.oninput = clearError;
+  }
+
+  _startInlineDesktopRename(icon) {
+    if (icon.classList.contains("is-renaming")) return;
+    icon.classList.add("is-renaming");
+
+    const labelDiv = icon.querySelector("div");
+    const currentName = icon.dataset.folderName || icon.dataset.fileName || (labelDiv ? labelDiv.textContent : "");
+    if (labelDiv) labelDiv.style.display = "none";
+
+    const { wrap, input, errorTip } = this._createInlineInput(currentName);
+    icon.appendChild(wrap);
+
+    const dotIdx = currentName.lastIndexOf(".");
+    input.focus();
+    if (dotIdx > 0) input.setSelectionRange(0, dotIdx);
+    else input.select();
+
+    const showError = (msg) => {
+      errorTip.textContent = msg;
+      errorTip.style.display = "block";
+      input.classList.add("error");
+    };
+    const clearError = () => {
+      errorTip.style.display = "none";
+      input.classList.remove("error");
+    };
+
+    let committed = false;
+
+    const cancel = () => {
+      if (committed) return;
+      committed = true;
+      icon.classList.remove("is-renaming");
+      wrap.remove();
+      if (labelDiv) labelDiv.style.display = "";
+    };
+
+    const commit = async () => {
+      if (committed) return;
+      const newName = input.value.trim();
+      if (!newName || newName === currentName) {
+        cancel();
+        return;
+      }
+      committed = true;
+      try {
+        if (icon.classList.contains("folder-icon")) {
+          await os.fs.rename(["Desktop", currentName], ["Desktop", newName]);
+          icon.dataset.folderName = newName;
+          if (labelDiv) labelDiv.textContent = newName;
+          os.notify.send(`Folder renamed to "${newName}"`);
+        } else if (icon.classList.contains("desktop-file-icon")) {
+          await os.fs.rename(["Desktop", currentName], ["Desktop", newName]);
+          icon.dataset.fileName = newName;
+          const displayName = newName.endsWith(".desktop") ? newName.slice(0, -8) : newName;
+          if (labelDiv) labelDiv.textContent = displayName;
+          os.notify.send(`File renamed to "${newName}"`);
+        }
+        icon.classList.remove("is-renaming");
+        wrap.remove();
+        if (labelDiv) labelDiv.style.display = "";
+      } catch (err) {
+        committed = false;
+        showError(err.message || `"${newName}" already exists`);
+        input.focus();
+      }
+    };
+
+    this._bindInlineInputEvents(input, commit, cancel, clearError);
   }
 }

@@ -20,7 +20,7 @@ export function hideMenu() {
   );
 }
 
-function positionMenu(menu, pageX, pageY) {
+export function positionMenu(menu, pageX, pageY) {
   menu.style.display = "block";
   menu.style.maxHeight = "";
   menu.style.overflowY = "";
@@ -68,9 +68,10 @@ function positionMenu(menu, pageX, pageY) {
   });
 }
 
-function bindDismissal() {
+export function bindDismissal() {
   document.addEventListener("click", () => hideMenu(), { once: true });
 }
+
 export function refreshIcons(node = document) {
   if (window.FontAwesome && window.FontAwesome.dom && window.FontAwesome.dom.i2svg) {
     window.FontAwesome.dom.i2svg({ node });
