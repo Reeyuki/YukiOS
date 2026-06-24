@@ -743,7 +743,7 @@ listeners.
 | `getCustomAction(id)`          | Get a single custom action by ID                                               |
 | `executeCustomAction(id)`      | Execute a custom action by its ID                                              |
 
-**Key Pattern:** `scope.action` — e.g. `global.showDesktop`, `notepad.save`, `browser.newTab`.
+**Key Pattern:** `scope.action` - e.g. `global.showDesktop`, `notepad.save`, `browser.newTab`.
 
 **Usage in handlers:**
 

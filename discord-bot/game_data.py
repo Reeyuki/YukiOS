@@ -43,7 +43,7 @@ def _load():
         if GAMES or DESCRIPTIONS:
             print("[game_data] Using stale cached data")
         else:
-            print("[game_data] No data available — bot may have limited functionality")
+            print("[game_data] No data available - bot may have limited functionality")
         _loaded = True
 
 

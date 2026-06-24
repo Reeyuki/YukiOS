@@ -35,6 +35,7 @@ import {
 } from "../fileDisplay.js";
 import { showConflictDialog } from "../shared/conflictDialog.js";
 import { showDynamicContextMenu } from "../shared/contextMenu.js";
+import { scheduleFileTooltip, hideFileTooltip } from "../shared/fileTooltip.js";
 import { ClippyAnimation, speak } from "../ai/clippy.js";
 import { ArchiveExtractor } from "../archiveExtractor.js";
 import {
@@ -1110,6 +1111,11 @@ export class ExplorerApp extends BaseApp {
       item.oncontextmenu = (e) => this.showFileContextMenu(e, name, isFile, inst);
       this._setupExplorerItemDrag(item, name, isFile, inst);
     }
+
+    item.addEventListener("mouseenter", (e) => {
+      scheduleFileTooltip(e, inst.currentPath, name, !isFile);
+    });
+    item.addEventListener("mouseleave", () => hideFileTooltip());
   }
 
   _selectFile(inst, name, itemEl) {
@@ -1369,10 +1375,9 @@ export class ExplorerApp extends BaseApp {
       inst.selectedItems.size > 1 && inst.selectedItems.has(itemName) ? [...inst.selectedItems] : [itemName];
 
     if (effectiveItems.length === 1 && isFile) {
-      const blob = await os.fs.read([...inst.currentPath, itemName]);
-      const src = blob
-        ? URL.createObjectURL(blob)
-        : URL.createObjectURL(new Blob([await this.fs.getFileContent(inst.currentPath, itemName)]));
+      const content = await os.fs.read([...inst.currentPath, itemName]);
+      const data = content || (await this.fs.getFileContent(inst.currentPath, itemName)) || "";
+      const src = URL.createObjectURL(new Blob([data]));
       const a = document.createElement("a");
       a.href = src;
       a.download = itemName;

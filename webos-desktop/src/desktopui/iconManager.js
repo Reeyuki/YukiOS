@@ -9,6 +9,7 @@ import {
 import { FileKind } from "../fs.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { resolveDesktopIcon } from "../shared/iconUtils.js";
+import { scheduleFileTooltip, scheduleAppTooltip, hideFileTooltip } from "../shared/fileTooltip.js";
 import { BusEvents } from "../core/EventBus.js";
 import { Achievements } from "../achievements.js";
 import interact from "interactjs";
@@ -59,6 +60,19 @@ export class IconManager {
       }
     });
     icon.addEventListener("mousedown", (e) => this.handleIconSelection(icon, e.ctrlKey));
+    icon.addEventListener("mouseenter", (e) => {
+      const isFolder = icon.classList.contains("folder-icon");
+      const dirPath = ["Desktop"];
+      const name = isFolder ? icon.dataset.folderName : icon.dataset.fileName;
+      if (name) {
+        scheduleFileTooltip(e, dirPath, name, isFolder);
+      } else if (icon.dataset.app) {
+        const titleEl = icon.querySelector("div:last-child");
+        const title = titleEl ? titleEl.textContent.trim() : icon.dataset.app;
+        scheduleAppTooltip(e, title);
+      }
+    });
+    icon.addEventListener("mouseleave", () => hideFileTooltip());
   }
 
   async openFolder(folderName) {

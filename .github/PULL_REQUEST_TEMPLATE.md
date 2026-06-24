@@ -27,8 +27,8 @@
 ## Checklist
 
 - [ ] Import changes use `src/framework.js` barrel where applicable
-- [ ] No hardcoded CSS colors — uses CSS variables
-- [ ] No `alert()`, `confirm()`, or `prompt()` — uses `os.dialog`
-- [ ] No `document.querySelector* or document.getElementById or document.createElement` — uses `src/shared/domUtils.js`
+- [ ] No hardcoded CSS colors - uses CSS variables
+- [ ] No `alert()`, `confirm()`, or `prompt()` - uses `os.dialog`
+- [ ] No `document.querySelector* or document.getElementById or document.createElement` - uses `src/shared/domUtils.js`
 - [ ] Run pnpm format
 - [ ] New apps registered in `src/registry/AppManifest.js` and `src/AppLoader.js`

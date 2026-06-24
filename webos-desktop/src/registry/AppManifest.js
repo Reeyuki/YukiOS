@@ -904,7 +904,7 @@ export const APP_MANIFESTS = [
     isHeavy: true,
     category: "internet",
     clippy: {
-      message: "Select Tor from the proxy dropdown to browse anonymously — I'll handle the setup.",
+      message: "Select Tor from the proxy dropdown to browse anonymously. I'll handle the setup.",
       animation: ClippyAnimation.Wave
     },
     description: "Web browser with bookmarks, history, tab management, and Tor anonymous browsing within YukiOS."

@@ -22,18 +22,18 @@ pnpm run dev     # start dev server
 
 ### Before submitting
 
-- Run `pnpm build:dev` in `webos-desktop/` — the build must pass
-- Run `pnpm test` — all tests must pass
+- Run `pnpm build:dev` in `webos-desktop/` - the build must pass
+- Run `pnpm test` - all tests must pass
 
 ### Style
 
 - **No comments** in CSS, JS, or HTML (JSDoc on complex functions only)
-- **No `npm/pnpm format`** — do not run formatters
+- **No `npm/pnpm format`** - do not run formatters
 - Use `src/framework.js` barrel for app imports (`BaseApp`, `PersistenceTypes`, `os`, `StorageKeys`, `APP_MANIFESTS`)
 - Use `os.*` bridge API
 - Use `src/shared/domUtils.js` instead of `document.querySelector*` or `document.getElementById`
 - Use `os.dialog.*` instead of `alert()`, `confirm()`, `prompt()`
-- Use root CSS variables from `src/styles/style.css` — never hardcode colors
+- Use root CSS variables from `src/styles/style.css` - never hardcode colors
 
 ### App Development
 
@@ -41,13 +41,13 @@ See [DEVELOPMENT.md](DEVELOPMENT.md) for detailed instructions on creating new a
 
 ### Architecture
 
-- `src/core/BaseApp.ts` — base class for all apps (TS)
-- `src/appLauncher.ts` — central app dispatch (TS)
-- `src/windowManager.ts` — window lifecycle (TS)
-- `src/runtime/` — declarative app framework (`StateManager`, `AppRenderer`, etc.)
-- `src/os/` — OS bridge API (`window`, `fs`, `notify`, `tray`, etc.)
-- `src/shared/` — shared utilities (`domUtils`, `assetResolver`, `contextMenu`)
-- `src/registry/AppManifest.js` — app metadata and manifest
+- `src/core/BaseApp.ts` - base class for all apps (TS)
+- `src/appLauncher.ts` - central app dispatch (TS)
+- `src/windowManager.ts` - window lifecycle (TS)
+- `src/runtime/` - declarative app framework (`StateManager`, `AppRenderer`, etc.)
+- `src/os/` - OS bridge API (`window`, `fs`, `notify`, `tray`, etc.)
+- `src/shared/` - shared utilities (`domUtils`, `assetResolver`, `contextMenu`)
+- `src/registry/AppManifest.js` - app metadata and manifest
 
 ## Pull Request Process
 

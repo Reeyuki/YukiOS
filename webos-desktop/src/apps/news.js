@@ -5,6 +5,33 @@ const appNewsEntries = APP_MANIFESTS.filter((manifest) => manifest.news).map((ma
 
 const EXISTING_NEWS_UPDATES = [
   {
+    date: "June 26, 2026",
+    sections: [
+      {
+        icon: "fa-mouse-pointer",
+        title: "File Explorer",
+        items: [
+          [
+            "fa-message",
+            "File Information Tooltips",
+            "Hover over any file in Explorer or desktop to see type, size, and date modified in a glass tooltip."
+          ]
+        ]
+      },
+      {
+        icon: "fa-bars",
+        title: "Desktop Context Menu Rework",
+        items: [
+          [
+            "fa-sitemap",
+            "Nested Submenus",
+            "Desktop context menus now support hover-expandable submenus for background and new-item actions with keyboard navigation."
+          ]
+        ]
+      }
+    ]
+  },
+  {
     date: "June 24, 2026",
     sections: [
       {

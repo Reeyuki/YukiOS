@@ -303,7 +303,7 @@ function showDayEventsModal(dateKey) {
   const modal = document.createElement("div");
   modal.className = "calendar-modal calendar-modal-events";
   modal.innerHTML = `
-    <div class="calendar-modal-title"><i class="fas fa-bolt" style="color:var(--brand);margin-right:6px"></i> Plans — ${displayDate}</div>
+    <div class="calendar-modal-title"><i class="fas fa-bolt" style="color:var(--brand);margin-right:6px"></i> Plans: ${displayDate}</div>
     <div class="calendar-modal-events-list">${eventsListHtml}</div>
     <div class="calendar-modal-actions">
       <button class="calendar-modal-btn save" id="cal-popup-add-event"><i class="fas fa-plus"></i> New Plan</button>

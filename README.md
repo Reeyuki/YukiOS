@@ -96,6 +96,7 @@ Its built entirely in vanilla javascript/typescript without any frameworks.
 - File properties dialog with rename support
 - Drag-select multiple files with selection box
 - Trash bin with restore functionality
+- File information tooltip on desktop/explorer
 - Storage indicator showing total used space in Explorer sidebar
 - Archive support: `.zip`, `.gz`, `.tar`, `.tar.gz`, `.tgz`, `.tar.xz`, `.7z`, `.bz2`, `.tar.bz2`, `.xz`, `.rar`
   (create: `.zip`, `.7z`, `.tar`, `.tar.gz`, `.tar.bz2`, `.gz`, `.bz2` with password-protected ZIP support)
@@ -122,6 +123,10 @@ Its built entirely in vanilla javascript/typescript without any frameworks.
 - Import/export system for backup and migration
 - Transparent UI toggle
 - Clock system using OffscreenCanvas rendering and lightweight NTP offset sync with js worker
+- Calendar popup from taskbar clock with monthly grid, keyboard navigation, and today button
+- Events ("Plans") system with title, date/time, repeat (daily/weekly/monthly/yearly), reminders, notes, and color
+  coding
+- Agenda view showing today's plans and upcoming events, plus next alarm info
 
 # 📦 Built-in Applications
 
