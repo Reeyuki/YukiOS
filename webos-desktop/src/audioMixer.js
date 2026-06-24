@@ -186,7 +186,7 @@ class AudioMixer {
     if (!this._intensityValues) this._intensityValues = new Map();
 
     const loop = () => {
-      if (this.isOpen && this.panel && this.analysers) {
+      if (this.analysers) {
         this.analysers.forEach((analyser, winId) => {
           analyser.getByteTimeDomainData(dataArray);
           let maxAmplitude = 0;
@@ -207,12 +207,17 @@ class AudioMixer {
           }
           this._intensityValues.set(winId, currentIntensity);
 
-          const intensityEl = document.getElementById(`intensity-${winId}`);
-          if (intensityEl) {
-            intensityEl.style.width = `${currentIntensity}%`;
+          if (this.isOpen && this.panel) {
+            const intensityEl = document.getElementById(`intensity-${winId}`);
+            if (intensityEl) {
+              intensityEl.style.width = `${currentIntensity}%`;
+            }
           }
         });
       }
+
+      this._updateTrayBars();
+
       requestAnimationFrame(loop);
     };
     requestAnimationFrame(loop);
@@ -324,6 +329,7 @@ class AudioMixer {
     this._applyMasterToAll();
     this._save();
     this._updateMasterLabel();
+    this._updateTrayBars();
   }
 
   setChannel(winId, value) {
@@ -337,6 +343,7 @@ class AudioMixer {
   init() {
     this._initTray();
     this._createPanel();
+    this._startIntensityLoop();
 
     this._clickOutsideHandler = (e) => {
       if (this._justOpened) return;
@@ -355,6 +362,7 @@ class AudioMixer {
       this._applyMasterToAll();
       this._updateMasterLabel();
       this._updateSystemLabel();
+      this._updateTrayBars();
     };
     document.addEventListener("AUDIO_SETTINGS_CHANGED", this._settingsChangedHandler);
   }
@@ -384,6 +392,51 @@ class AudioMixer {
         this.setMaster(newVol);
       }
     });
+    setTimeout(() => this._setupTrayIcon(), 0);
+  }
+
+  _setupTrayIcon() {
+    const btn = document.querySelector('[data-win-id="audio-mixer"]');
+    if (!btn) return;
+    btn.style.width = "auto";
+    btn.style.padding = "0 4px";
+    btn.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" id="tray-audio-bars" width="24" height="20" viewBox="0 0 28 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M10 5 5 9H1v6h4l5 4V5Z"/>
+        <path id="tray-bar-0" d="M15 7 a6 6 0 0 1 0 10" />
+        <path id="tray-bar-1" d="M20 9 a8.4 8.4 0 0 1 0 14" />
+      </svg>`;
+  }
+
+  _updateTrayBars() {
+    const svg = document.getElementById("tray-audio-bars");
+    if (!svg) {
+      this._setupTrayIcon();
+      return;
+    }
+
+    const barX = [15, 20];
+    const svgHeight = 24;
+    const sizes = [
+      { h: 10, r: 6, offset: 7 },
+      { h: 14, r: 8.4, offset: 5 }
+    ];
+
+    const vol = this._muted ? 0 : this.masterVolume;
+    const barCount = vol === 0 ? 0 : vol <= 0.5 ? 1 : 2;
+
+    for (let i = 0; i < 2; i++) {
+      const path = svg.querySelector(`#tray-bar-${i}`);
+      if (!path) continue;
+      if (i < barCount) {
+        const { h, r, offset } = sizes[i];
+        path.setAttribute("d", `M${barX[i]} ${svgHeight - h - offset} a${r} ${r} 0 0 1 0 ${h}`);
+        path.setAttribute("opacity", "0.7");
+      } else {
+        path.setAttribute("d", `M${barX[i]} 22 v0`);
+        path.setAttribute("opacity", "0.1");
+      }
+    }
   }
 
   _createPanel() {
