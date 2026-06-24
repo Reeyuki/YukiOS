@@ -19,6 +19,7 @@ export class TorrentClientApp extends BaseApp {
     this.seedRatios = new Map();
     this.trayRegistered = false;
     this.selectedDetailsHash = null;
+    this.webTorrentLoadPromise = null;
     this.loadHistory();
   }
 
@@ -375,7 +376,15 @@ export class TorrentClientApp extends BaseApp {
   }
 
   async loadWebTorrentFromCDN() {
-    return new Promise((resolve, reject) => {
+    if (this.webTorrentLoadPromise) {
+      return this.webTorrentLoadPromise;
+    }
+
+    if (typeof window.WebTorrent !== "undefined") {
+      return window.WebTorrent;
+    }
+
+    this.webTorrentLoadPromise = new Promise((resolve, reject) => {
       const script = document.createElement("script");
       script.src = "https://cdn.jsdelivr.net/npm/webtorrent@0.108.6/webtorrent.debug.js";
       script.crossOrigin = "anonymous";
@@ -388,15 +397,19 @@ export class TorrentClientApp extends BaseApp {
       };
       script.onerror = (err) => {
         console.error("Script load error:", err);
+        this.webTorrentLoadPromise = null;
         reject(new Error("Failed to load WebTorrent script"));
       };
       document.head.appendChild(script);
     });
+
+    return this.webTorrentLoadPromise;
   }
 
-  addTorrent(magnetUri) {
+  async addTorrent(magnetUri) {
     if (!this.client) {
-      this.initWebTorrent().then(() => this.addTorrent(magnetUri));
+      await this.initWebTorrent();
+      this.addTorrent(magnetUri);
       return;
     }
     const existing = this.client.get(magnetUri);
@@ -524,7 +537,7 @@ export class TorrentClientApp extends BaseApp {
     }
   }
 
-  addTorrentFile(file) {
+  async addTorrentFile(file) {
     const reader = new FileReader();
     reader.onload = async (e) => {
       try {
