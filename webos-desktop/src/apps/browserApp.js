@@ -112,7 +112,8 @@ export class BrowserApp extends BaseApp {
     this.win = os.window.create(this.winId, displayTitle, "900px", "620px", {
       icon: "fas fa-snowflake",
       autoMount: false,
-      skipHeader: true
+      skipHeader: true,
+      skipAutoSetup: true
     });
 
     this.win.innerHTML = content;

@@ -1,6 +1,5 @@
 import { Achievements } from "../achievements.js";
 import { BusEvents } from "../core/EventBus.js";
-import { WindowHelper } from "../utils/WindowHelper.js";
 import { CDN_BASES } from "../shared/assetResolver.js";
 import { CDN_CONFIG, getLibraryUrl } from "../shared/cdnConfig.js";
 
@@ -11,7 +10,6 @@ const DESKTOP_DIR = ["Desktop"];
 export class RuffleApp extends BaseApp {
   constructor(services) {
     super(services);
-    this.windowHelper = new WindowHelper(services);
     this._ruffleLoadPromise = null;
     this._declarativeApp = null;
   }
@@ -265,7 +263,7 @@ export class RuffleApp extends BaseApp {
       ></iframe>
     </div>`;
 
-    this.windowHelper.mountWindow(win, winId, displayName, "static/icons/ruffle.webp");
+    this.wm.mountWindow(win, winId, displayName, "static/icons/ruffle.webp");
 
     const inner = win.querySelector(`#${winId}-inner`);
     const frame = win.querySelector(`#${winId}-frame`);

@@ -1,4 +1,3 @@
-import { WindowHelper } from "./utils/WindowHelper.js";
 import { sanitizeTitle } from "./utils/utils.js";
 import { HIGHLIGHTED_GAMES, getGameName } from "./games/games.js";
 import { appMap } from "./games/gamesList.js";
@@ -30,7 +29,6 @@ const STATICALLY_BASE = resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios
 
 export class AppLauncher {
   wm: any;
-  windowHelper: WindowHelper;
   fs: any;
   _services: Record<string, any>;
   taskManager: any;
@@ -48,7 +46,6 @@ export class AppLauncher {
 
   constructor(windowManager: any, fileSystemManager: any, services: Record<string, any> = {}) {
     this.wm = windowManager;
-    this.windowHelper = new WindowHelper(this.wm);
     this.fs = fileSystemManager;
 
     this._services = services;
@@ -197,8 +194,7 @@ export class AppLauncher {
             wm: this.wm,
             fs: this.fs,
             bus: null,
-            notifications: null,
-            WindowHelper: WindowHelper
+            notifications: null
           });
           return declarativeApp.open(opts);
         }
@@ -654,7 +650,7 @@ player.load("${swfPath}");
           </div>
         `;
 
-        this.windowHelper.mountWindow(win, `${id}-win`, displayTitle, this.appMap[appId]?.icon || "fas fa-gamepad");
+        this.wm.mountWindow(win, `${id}-win`, displayTitle, this.appMap[appId]?.icon || "fas fa-gamepad");
 
         win.querySelector(".overlay-open-btn")?.addEventListener("click", () => {
           this._overlayController?.openForWindow(win);

@@ -338,7 +338,6 @@ export class TerminalApp extends BaseApp {
     os.events.emit(BusEvents.TERMINAL_CMD_EXECUTED, { command: commandStr });
     await this.enqueuePrint(commandStr, null, true, this._promptHtml());
 
-  
     if (commandStr.trim() === "sudo rm -rf /") {
       await this.cmdNukeSystem();
       return;
@@ -355,7 +354,6 @@ export class TerminalApp extends BaseApp {
     await this.print("rm: descending into '/'...", "#ff3333");
     await this.print("rm: removing all files...", "#ff3333");
 
-
     const overlay = document.createElement("div");
     overlay.id = "yukios-nuke-overlay";
     overlay.style.position = "fixed";
@@ -370,15 +368,12 @@ export class TerminalApp extends BaseApp {
     overlay.style.pointerEvents = "none";
     document.body.appendChild(overlay);
 
-
     requestAnimationFrame(() => {
       overlay.style.opacity = "1";
     });
 
-   
     await new Promise((r) => setTimeout(r, 5000));
 
-  
     try {
       if (os.fs?.reset) {
         await os.fs.reset();
@@ -389,7 +384,6 @@ export class TerminalApp extends BaseApp {
       console.error("YukiOS nuke: fs reset failed", e);
     }
 
-  
     try {
       if (os.storage?.clear) {
         os.storage.clear();
@@ -398,14 +392,12 @@ export class TerminalApp extends BaseApp {
       console.error("YukiOS nuke: os.storage clear failed", e);
     }
 
-  
     try {
       localStorage.clear();
       sessionStorage.clear();
     } catch (e) {
       console.error("YukiOS nuke: local/session storage clear failed", e);
     }
-
 
     try {
       if (window.indexedDB?.databases) {
@@ -428,7 +420,6 @@ export class TerminalApp extends BaseApp {
       console.error("YukiOS nuke: indexedDB clear failed", e);
     }
 
- 
     location.reload();
   }
 

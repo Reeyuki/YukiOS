@@ -1,7 +1,6 @@
 import "../styles/emulator.css";
 import { Achievements } from "../achievements.js";
 import { BusEvents } from "../core/EventBus.js";
-import { WindowHelper } from "../utils/WindowHelper.js";
 import { CDN_BASES } from "../shared/assetResolver.js";
 import { CDN_CONFIG } from "../shared/cdnConfig.js";
 import { audioMixer } from "../audioMixer.js";
@@ -90,7 +89,6 @@ const supportedExtensions = {
 export class EmulatorApp extends BaseApp {
   constructor(services) {
     super(services);
-    this.windowHelper = new WindowHelper(services);
     this._explorerApp = services.explorerApp;
     this._declarativeApp = null;
   }
@@ -401,7 +399,7 @@ export class EmulatorApp extends BaseApp {
       <div id="${winId}-screen" class="emu-window-screen"></div>
     </div>`;
 
-    this.windowHelper.mountWindow(win, winId, displayName, "static/icons/emulator.webp");
+    this.wm.mountWindow(win, winId, displayName, "static/icons/emulator.webp");
 
     const inner = win.querySelector(`#${winId}-inner`);
     const screenDiv = win.querySelector(`#${winId}-screen`);

@@ -9,7 +9,6 @@ import interact from "interactjs";
 import { StorageKeys, os } from "../framework.js";
 import { hideMenu } from "../shared/contextMenu.js";
 import { isWindowFocused } from "../utils/utils.js";
-import { WindowHelper } from "../utils/WindowHelper.js";
 import { DesktopContextMenuManager } from "./ContextMenuManager.js";
 import { IconManager } from "./iconManager.js";
 import { DragDropManager } from "./dragDropManager.js";
@@ -323,7 +322,6 @@ class SelectionManager {
 export class DesktopUI {
   constructor(appLauncher, notepadApp, explorerApp, fileSystemManager) {
     this.appLauncher = appLauncher;
-    this.windowHelper = new WindowHelper(this.appLauncher.wm);
     sharedAppLauncher = appLauncher;
     this.notepadApp = notepadApp;
     this.explorerApp = explorerApp;
@@ -372,7 +370,7 @@ export class DesktopUI {
       this.explorerApp
     );
 
-    this.contextMenuManager = new DesktopContextMenuManager(this, PositionStore, IconDataHelper, this.windowHelper);
+    this.contextMenuManager = new DesktopContextMenuManager(this, PositionStore, IconDataHelper, this.appLauncher.wm);
 
     this.setupEventListeners();
     this.initializeDesktopFiles();

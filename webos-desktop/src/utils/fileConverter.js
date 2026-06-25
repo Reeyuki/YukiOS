@@ -1,4 +1,3 @@
-import { WindowHelper } from "./WindowHelper.js";
 import "../styles/converter.css";
 
 const conversionHistory = [];
@@ -498,7 +497,6 @@ export function openFileConverter(fileName, currentPath, services, onComplete = 
   }
 
   const winId = `converter-${Date.now()}`;
-  const windowHelper = new WindowHelper(wm);
 
   const formats = {
     image: [
@@ -882,10 +880,17 @@ export function openFileConverter(fileName, currentPath, services, onComplete = 
     </div>
   `;
 
-  const win = windowHelper.createAndMountWindow(winId, `File Converter - ${fileName}`, content, "850px", "550px", {
-    icon: "fa-exchange-alt",
+  const win = os.window.create(winId, `File Converter - ${fileName}`, "850px", "550px", false, {
     className: "converter-window"
   });
+
+  const contentDiv = document.createElement("div");
+  contentDiv.className = "window-content";
+  contentDiv.style.cssText = "width:100%; height:100%; overflow:hidden;";
+  contentDiv.innerHTML = content;
+  win.appendChild(contentDiv);
+
+  wm.mountWindow(win, winId, `File Converter - ${fileName}`, "fa-exchange-alt");
 
   const dom = {
     sizeInfo: win.querySelector(`#${winId}-info-size`),

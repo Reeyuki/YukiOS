@@ -2,8 +2,8 @@ import { AppSchemaTypes } from "./AppSchema.js";
 import { UIComponents } from "./UIComponents.js";
 
 export class AppRenderer {
-  constructor(windowHelper, stateManager, actionExecutor = null) {
-    this.windowHelper = windowHelper;
+  constructor(wm, stateManager, actionExecutor = null) {
+    this.wm = wm;
     this.stateManager = stateManager;
     this.actionExecutor = actionExecutor;
     this.componentRegistry = new Map();
@@ -34,7 +34,15 @@ export class AppRenderer {
 
     const content = this.renderUI(ui, id);
 
-    const win = this.windowHelper.createAndMountWindow(id, title, content, width, height, windowOptions);
+    const win = os.window.create(id, title, width, height, windowOptions);
+
+    const contentDiv = document.createElement("div");
+    contentDiv.className = "window-content";
+    contentDiv.style.cssText = "width:100%; height:100%; overflow:hidden;";
+    contentDiv.innerHTML = content;
+    win.appendChild(contentDiv);
+
+    this.wm.mountWindow(win, id, title, windowOptions.icon);
 
     return win;
   }

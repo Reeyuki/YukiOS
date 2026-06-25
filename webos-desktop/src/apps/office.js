@@ -17,7 +17,6 @@ import { Achievements } from "../achievements.js";
 import { BaseApp, os } from "../framework.js";
 import { BusEvents } from "../core/EventBus.js";
 import { getLibraryUrl } from "../shared/cdnConfig.js";
-import { WindowHelper } from "../utils/WindowHelper.js";
 import { audioMixer } from "../audioMixer.js";
 
 class OfficeModuleLoader {
@@ -1075,7 +1074,6 @@ class EditorRegistry {
 export class OfficeApp extends BaseApp {
   constructor(services) {
     super(services);
-    this.windowHelper = new WindowHelper(this.wm);
     this.fs = services.fileSystemManager;
     this.wm = services.windowManager;
     this.explorerApp = services.explorerApp;
@@ -1417,18 +1415,18 @@ export class OfficeApp extends BaseApp {
       </div>
     `;
 
-    const win = this.windowHelper.createAndMountWindow(
-      winId,
-      `${title} - Office`,
-      windowContent,
-      options.width || "800px",
-      options.height || "600px",
-      {
-        icon: "static/icons/office.webp",
-        ...options,
-        style: { left: "200px", top: "100px", ...(options.style || {}) }
-      }
-    );
+    const win = os.window.create(winId, `${title} - Office`, options.width || "800px", options.height || "600px", {
+      icon: "static/icons/office.webp",
+      style: { left: "200px", top: "100px", ...(options.style || {}) }
+    });
+
+    const contentDiv = document.createElement("div");
+    contentDiv.className = "window-content";
+    contentDiv.style.cssText = "width:100%; height:100%; overflow:hidden;";
+    contentDiv.innerHTML = windowContent;
+    win.appendChild(contentDiv);
+
+    this.wm.mountWindow(win, winId, `${title} - Office`, "static/icons/office.webp");
     const editorArea = $(".office-editor-area", win);
     const state = {
       winId,

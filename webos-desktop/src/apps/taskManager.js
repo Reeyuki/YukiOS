@@ -1,5 +1,4 @@
 import "../styles/taskManager.css";
-import { WindowHelper } from "../utils/WindowHelper.js";
 import { $, $$, bindEvent, setText, setHTML, toggleClass } from "../shared/domUtils.js";
 import { BusEvents } from "../core/EventBusConstants.js";
 
@@ -7,7 +6,6 @@ import { BaseApp, PersistenceTypes, os } from "../framework.js";
 export class TaskManagerApp extends BaseApp {
   constructor(services) {
     super(services);
-    this.windowHelper = new WindowHelper(this.wm);
     this.refreshInterval = null;
     this.sortKey = "title";
     this.sortAsc = true;

@@ -1,17 +1,36 @@
-import { WindowHelper } from "../utils/WindowHelper.js";
+import { os } from "../framework.js";
 
 export class BaseWindow {
   constructor(windowManager, options = {}) {
     this.wm = windowManager;
-    this.windowHelper = new WindowHelper(windowManager);
     this.options = options;
     this.openWindows = new Set();
   }
 
   createWindow(winId, title, content, width = "800px", height = "600px", windowOptions = {}) {
     const mergedOptions = { ...this.options, ...windowOptions };
-    const win = this.windowHelper.createAndMountWindow(winId, title, content, width, height, mergedOptions);
+    const win = os.window.create(winId, title, width, height, mergedOptions.isGame, mergedOptions);
 
+    const contentDiv = document.createElement("div");
+    contentDiv.className = "window-content";
+    contentDiv.style.cssText = "width:100%; height:100%; overflow:hidden;";
+    if (typeof content === "string") {
+      contentDiv.innerHTML = content;
+    } else if (content instanceof DocumentFragment) {
+      contentDiv.appendChild(content);
+    } else if (content instanceof Element) {
+      if (content.classList && content.classList.contains("window-content")) {
+        win.appendChild(content);
+      } else {
+        contentDiv.appendChild(content);
+        win.appendChild(contentDiv);
+      }
+    } else {
+      contentDiv.innerHTML = content;
+      win.appendChild(contentDiv);
+    }
+
+    this.wm.mountWindow(win, winId, title, mergedOptions.icon, mergedOptions.iconColor);
     this.openWindows.add(winId);
     return win;
   }

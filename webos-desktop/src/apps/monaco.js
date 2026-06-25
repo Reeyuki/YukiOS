@@ -1,5 +1,4 @@
 import "../styles/monaco.css";
-import { WindowHelper } from "../utils/WindowHelper.js";
 import { AppSource } from "../AppSource.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { getLibraryUrl } from "../shared/cdnConfig.js";
@@ -14,7 +13,6 @@ import { KeybindManager } from "../keybindManager.js";
 export class MonacoApp extends BaseApp {
   constructor(services) {
     super(services);
-    this.windowHelper = new WindowHelper(this.wm);
     this.explorerApp = services.explorerApp;
     this.idleTimer = null;
     this.idleDelay = 15000;
@@ -463,7 +461,7 @@ export class MonacoApp extends BaseApp {
       </div>
     `;
 
-    this.windowHelper.mountWindow(win, winId, "Yuki Code", this.icon);
+    this.wm.mountWindow(win, winId, "Yuki Code", this.icon);
 
     this.currentWindow = win;
     this.setupMenuActions(win);

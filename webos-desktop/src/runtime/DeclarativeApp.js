@@ -3,7 +3,6 @@ import { EventBinder } from "./EventBinder.js";
 import { ActionExecutor } from "./ActionExecutor.js";
 import { StateManager } from "./StateManager.js";
 import { PersistenceTypes } from "./AppSchema.js";
-import { WindowHelper } from "../utils/WindowHelper.js";
 import { os } from "../os/index.js";
 
 export class DeclarativeApp {
@@ -23,17 +22,12 @@ export class DeclarativeApp {
 
     this.actionExecutor = new ActionExecutor(services, this.stateManager);
 
-    this.windowHelper = new (services.WindowHelper || this._getWindowHelper())(this.wm);
-    this.appRenderer = new AppRenderer(this.windowHelper, this.stateManager, this.actionExecutor);
+    this.appRenderer = new AppRenderer(this.wm, this.stateManager, this.actionExecutor);
     this.eventBinder = new EventBinder(this.stateManager, this.actionExecutor);
 
     this.openWindows = new Set();
 
     this._registerCustomActions();
-  }
-
-  _getWindowHelper() {
-    return WindowHelper;
   }
 
   _registerCustomActions() {

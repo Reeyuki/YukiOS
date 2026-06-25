@@ -1,5 +1,3 @@
-import { WindowHelper } from "./utils/WindowHelper.js";
-
 import { StorageKeys, os } from "./framework.js";
 const AD_STORAGE_KEY = StorageKeys.adStorageState;
 export function shouldEnableAds() {
@@ -96,7 +94,6 @@ export class AdsManager {
 
   constructor(windowManager) {
     this.wm = windowManager;
-    this.windowHelper = new WindowHelper(windowManager);
 
     if (!shouldEnableAds()) {
       return;
@@ -206,26 +203,27 @@ export class AdsManager {
 
     const containerId = "banner-slot-single";
 
-    const win = this.windowHelper.createAndMountWindow(
-      "ads-yukios",
-      "Sponsored",
-      `
+    const winId = "ads-yukios";
+    const win = os.window.create(winId, "Sponsored", "420px", "300px", false, {
+      style: {
+        position: "absolute",
+        left: `${Math.max(20, window.innerWidth - 420 - 40)}px`,
+        top: `${Math.max(20, window.innerHeight - 300 - 40)}px`,
+        zIndex: "50"
+      }
+    });
+
+    const contentDiv = document.createElement("div");
+    contentDiv.className = "window-content";
+    contentDiv.style.cssText = "width:100%; height:100%; overflow:hidden;";
+    contentDiv.innerHTML = `
       <div class="window-content ad-window-active" style="padding:12px;">
         <div id="${containerId}"></div>
       </div>
-    `,
-      "420px",
-      "300px",
-      {
-        icon: "fa fa-bullhorn",
-        style: {
-          position: "absolute",
-          left: `${Math.max(20, window.innerWidth - 420 - 40)}px`,
-          top: `${Math.max(20, window.innerHeight - 300 - 40)}px`,
-          zIndex: "50"
-        }
-      }
-    );
+    `;
+    win.appendChild(contentDiv);
+
+    this.wm.mountWindow(win, winId, "Sponsored", "fa fa-bullhorn");
 
     if (win) {
       const closeBtn = win.querySelector(".window-close, [data-action='close'], .close-btn");
@@ -358,10 +356,13 @@ export class AdsManager {
 
   createAdWindow() {
     if (!shouldEnableAds()) return;
-    this.windowHelper.createAndMountWindow(
-      "ads_main_window",
-      "Sponsored",
-      `
+    const winId = "ads_main_window";
+    const win = os.window.create(winId, "Sponsored", "400px", "300px", false, {});
+
+    const contentDiv = document.createElement("div");
+    contentDiv.className = "window-content";
+    contentDiv.style.cssText = "width:100%; height:100%; overflow:hidden;";
+    contentDiv.innerHTML = `
       <div class="window-content ad-split-container">
         <div class="ad-section">
           <div id="banner-slot"></div>
@@ -373,19 +374,10 @@ export class AdsManager {
           <div id="${ADS.native.containerId}"></div>
         </div>
       </div>
-      `,
-      "520px",
-      "360px",
-      {
-        icon: "fa fa-bullhorn",
-        style: {
-          position: "absolute",
-          left: `${(window.innerWidth - 520) / 2}px`,
-          top: "40px",
-          zIndex: "50"
-        }
-      }
-    );
+    `;
+    win.appendChild(contentDiv);
+
+    this.wm.mountWindow(win, winId, "Sponsored", "fa fa-bullhorn");
 
     this.mountBanner();
     this.mountNative();

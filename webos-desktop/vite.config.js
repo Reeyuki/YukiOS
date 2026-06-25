@@ -109,12 +109,12 @@ export default defineConfig({
   },
   build: {
     target: "esnext",
-    minify: !isDevBuild,
+    minify: "esbuild",
     sourcemap: false,
     cssCodeSplit: !isSingleFile,
     assetsInlineLimit: isSingleFile ? 100000000 : 4096,
     rollupOptions: {
-      treeshake: !isDevBuild,
+      treeshake: true,
       external: isSingleFile ? [] : [],
       output: {
         inlineDynamicImports: isSingleFile,
@@ -126,7 +126,6 @@ export default defineConfig({
     }
   },
   esbuild: {
-    minify: !isDevBuild,
     legalComments: "inline"
   }
 });

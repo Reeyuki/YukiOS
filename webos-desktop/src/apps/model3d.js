@@ -3,7 +3,6 @@ import { ClippyAnimation, speak } from "../ai/clippy.js";
 import { unzipSync } from "fflate";
 import { Achievements } from "../achievements.js";
 import { BusEvents } from "../core/EventBus.js";
-import { WindowHelper } from "../utils/WindowHelper.js";
 import { resolveGhUrl } from "../shared/assetResolver.js";
 import { getLibraryUrl } from "../shared/cdnConfig.js";
 import { KeybindManager } from "../keybindManager.js";
@@ -155,7 +154,6 @@ class SceneObject {
 export class Model3DApp extends BaseApp {
   constructor(services) {
     super(services);
-    this.windowHelper = new WindowHelper(this.wm);
     this.explorerApp = services.explorerApp;
 
     this.sceneObjects = new Map();

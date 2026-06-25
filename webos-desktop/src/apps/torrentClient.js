@@ -1,5 +1,4 @@
 import "../styles/torrent.css";
-import { WindowHelper } from "../utils/WindowHelper.js";
 import { $, $$, bindEvent } from "../shared/domUtils.js";
 import parseTorrent from "parse-torrent";
 
@@ -7,7 +6,6 @@ import { BaseApp, PersistenceTypes, os } from "../framework.js";
 export class TorrentClientApp extends BaseApp {
   constructor(services) {
     super(services);
-    this.windowHelper = new WindowHelper(this.wm);
     this.client = null;
     this.activeTorrents = new Map();
     this.selectedTorrents = new Set();

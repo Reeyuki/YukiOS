@@ -12,11 +12,11 @@ import {
 } from "./contextActions.js";
 
 export class DesktopContextMenuManager {
-  constructor(desktopUI, PositionStore, IconDataHelper, windowHelper) {
+  constructor(desktopUI, PositionStore, IconDataHelper, wm) {
     this.desktopUI = desktopUI;
     this.PositionStore = PositionStore;
     this.IconDataHelper = IconDataHelper;
-    this.windowHelper = windowHelper;
+    this.wm = wm;
     this.desktop = document.getElementById("desktop");
     this.archiveExtractor = new ArchiveExtractor(
       desktopUI.fs,

@@ -1,6 +1,5 @@
 import "../styles/weather.css";
 import { getWeatherInfo } from "../shared/weatherCodes.js";
-import { WindowHelper } from "../utils/WindowHelper.js";
 
 import { $, setHTML, setText } from "../shared/domUtils.js";
 import { BaseApp, PersistenceTypes, os } from "../framework.js";
@@ -48,7 +47,6 @@ export async function detectUserLocation() {
 export class WeatherApp extends BaseApp {
   constructor(services) {
     super(services);
-    this.windowHelper = new WindowHelper(this.wm);
     this.unit = "metric";
     this.currentCity = null;
     this.currentCoords = null;

@@ -1,24 +1,34 @@
-let threeLoaded = false;
+const CDN_THREE = "https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js";
+const CDN_VANTA = "https://cdn.jsdelivr.net/npm/vanta@0.5.24/dist/vanta";
 
-const EFFECT_LOADERS = {
-  WAVES: () => import("vanta/dist/vanta.waves.min.js"),
-  BIRDS: () => import("vanta/dist/vanta.birds.min.js"),
-  NET: () => import("vanta/dist/vanta.net.min.js"),
-  DOTS: () => import("vanta/dist/vanta.dots.min.js"),
-  GLOBE: () => import("vanta/dist/vanta.globe.min.js"),
-  HALO: () => import("vanta/dist/vanta.halo.min.js"),
-  FOG: () => import("vanta/dist/vanta.fog.min.js"),
-  CELLS: () => import("vanta/dist/vanta.cells.min.js")
+const EFFECT_FILES = {
+  WAVES: "waves",
+  BIRDS: "birds",
+  NET: "net",
+  DOTS: "dots",
+  GLOBE: "globe",
+  HALO: "halo",
+  FOG: "fog",
+  CELLS: "cells"
 };
 
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = src;
+    s.onload = resolve;
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
+
 export async function loadVantaEffect(effectName) {
-  if (!threeLoaded) {
-    const THREE = await import("three");
-    window.THREE = window.THREE || THREE;
-    threeLoaded = true;
+  const effectFile = EFFECT_FILES[effectName];
+  if (!effectFile) throw new Error(`Unknown Vanta effect: ${effectName}`);
+
+  if (!window.THREE) {
+    await loadScript(CDN_THREE);
   }
-  const loader = EFFECT_LOADERS[effectName];
-  if (!loader) throw new Error(`Unknown Vanta effect: ${effectName}`);
-  await loader();
+  await loadScript(`${CDN_VANTA}.${effectFile}.min.js`);
   return window.VANTA?.[effectName];
 }

@@ -1,7 +1,6 @@
 import { refreshIcons } from "../shared/contextMenu.js";
 import { SteamDataManager, _desktopUI } from "./games.js";
 import { observeLazyImages } from "./games.js";
-import { WindowHelper } from "../utils/WindowHelper.js";
 import { buildSteamShell, initDropdowns, initStorePage, getCdnBase, initSettingsPage } from "./steam.js";
 import { KeybindManager } from "../keybindManager.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
@@ -722,7 +721,6 @@ export class GameUI {
       return;
     }
 
-    const windowHelper = new WindowHelper(wm);
     const user = getCurrentUser();
     const username = user.name;
     const profilePic = user.avatar;
@@ -747,11 +745,18 @@ export class GameUI {
       </div>
     `;
 
-    const win = windowHelper.createAndMountWindow(winId, "Friends List", content, "301px", "401px", {
+    const win = os.window.create(winId, "Friends List", "301px", "401px", false, {
       className: "window-root",
-      style: { background: "#1b2838" },
-      icon: "fas fa-user-friends"
+      style: { background: "#1b2838" }
     });
+
+    const contentDiv = document.createElement("div");
+    contentDiv.className = "window-content";
+    contentDiv.style.cssText = "width:100%; height:100%; overflow:hidden;";
+    contentDiv.innerHTML = content;
+    win.appendChild(contentDiv);
+
+    wm.mountWindow(win, winId, "Friends List", "fas fa-user-friends");
 
     const downloadBtn = win.querySelector(".download-btn");
     if (downloadBtn) downloadBtn.remove();

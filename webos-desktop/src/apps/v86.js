@@ -1,5 +1,4 @@
 import { Achievements } from "../achievements.js";
-import { WindowHelper } from "../utils/WindowHelper.js";
 import { CDN_BASES } from "../shared/assetResolver.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 
@@ -9,7 +8,6 @@ const IMAGES_DIR = ["VMs"];
 export class V86App extends BaseApp {
   constructor(services) {
     super(services);
-    this.windowHelper = new WindowHelper(services);
     this._explorerApp = services.explorerApp;
     this._v86LoadPromise = null;
   }
@@ -166,9 +164,17 @@ export class V86App extends BaseApp {
         </div>
       </div>`;
 
-    const win = this.windowHelper.createAndMountWindow(winId, "V86", content, "800px", "600px", {
+    const win = os.window.create(winId, "V86", "800px", "600px", {
       icon: resolveIconUrl("static/icons/v86.webp")
     });
+
+    const contentDiv = document.createElement("div");
+    contentDiv.className = "window-content";
+    contentDiv.style.cssText = "width:100%; height:100%; overflow:hidden;";
+    contentDiv.innerHTML = content;
+    win.appendChild(contentDiv);
+
+    this.wm.mountWindow(win, winId, "V86", resolveIconUrl("static/icons/v86.webp"));
 
     this._setupSystemCardListeners(win);
     this._setupUploadZone(win);
@@ -402,7 +408,7 @@ export class V86App extends BaseApp {
       <div id="${winId}-screen" class="v86-screen emu-window-screen"></div>
     </div>`;
 
-    this.windowHelper.mountWindow(win, winId, displayName, resolveIconUrl("static/icons/v86.webp"));
+    this.wm.mountWindow(win, winId, displayName, resolveIconUrl("static/icons/v86.webp"));
 
     const inner = win.querySelector(`#${winId}-inner`);
     const screenDiv = win.querySelector(`#${winId}-screen`);
