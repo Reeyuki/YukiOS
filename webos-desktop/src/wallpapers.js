@@ -1,6 +1,6 @@
 import { FileKind } from "./fs.js";
 import { SystemUtilities } from "./system.js";
-import { videos } from "./wallpaperList.js";
+import { DEFAULT_WALLPAPER_FILES, WALLPAPER_STATIC_DIR } from "./wallpaperConfig.js";
 import { resolveWallpaperUrl, CDN_BASES } from "./shared/assetResolver.js";
 import { vantaPresets } from "./vantaPresets.js";
 import { os } from "./os/index.js";
@@ -531,10 +531,11 @@ function showCardPreview(name, src, isVideo, previewZone, fs, wm) {
 
 function showRandomPreview(previewZone, grid, fs, wm) {
   let selection = (() => {
-    const src = videos[Math.floor(Math.random() * videos.length)];
+    const fallbacks = DEFAULT_WALLPAPER_FILES.map((f) => resolveWallpaperUrl(WALLPAPER_STATIC_DIR + f));
+    const src = fallbacks[Math.floor(Math.random() * fallbacks.length)];
     return {
       src,
-      isVideo: typeof src === "string" && src.endsWith(".mp4"),
+      isVideo: false,
       fromLibrary: false,
       label: "Random Wallpaper"
     };

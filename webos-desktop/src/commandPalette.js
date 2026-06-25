@@ -310,9 +310,7 @@ export class CommandPalette {
     this.cachedFiles = [];
     const walk = async (dirPath) => {
       try {
-        const list = await new Promise((res, rej) => {
-          fs.fs.readdir(dirPath, (e, list) => (e ? rej(e) : res(list)));
-        });
+        const list = await fs.pRead("readdir", dirPath);
         const meta = await fs.readMeta(dirPath);
         for (const name of list) {
           if (name === fs.CONFIG.META_FILE) continue;

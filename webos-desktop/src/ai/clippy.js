@@ -51,6 +51,17 @@ function removeClippyDom() {
 async function setupClippy() {
   if (window.clippyAgent) return window.clippyAgent;
 
+  if (__SINGLE_FILE__) {
+    const clippyjs = await import("clippyjs");
+    const { initAgent } = clippyjs;
+    const agents = await import("clippyjs/agents");
+    window.clippyAgent = await initAgent(agents.Clippy);
+    window.clippyAgent.show();
+    window.clippyAgent.speak("Hi! I'm Clippy. I'll be here if you need me.");
+    window.clippyAgent.play(ClippyAnimation.Wave);
+    return window.clippyAgent;
+  }
+
   const script = document.createElement("script");
   script.type = "module";
   script.textContent = `

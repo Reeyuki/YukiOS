@@ -1,6 +1,8 @@
 allowBuilds:
   "@mercuryworkshop/scramjet": false
   bufferutil: true
+  canvas: true
+  core-js: true
   esbuild: true
   ip-set: true
   node-datachannel: true

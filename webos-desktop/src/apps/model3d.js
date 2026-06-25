@@ -54,6 +54,31 @@ let TransformControls = null;
 
 async function loadThree() {
   if (THREE) return;
+  if (__SINGLE_FILE__) {
+    const mods = await Promise.all([
+      import("three"),
+      import("three/examples/jsm/loaders/GLTFLoader.js"),
+      import("three/examples/jsm/loaders/OBJLoader.js"),
+      import("three/examples/jsm/loaders/FBXLoader.js"),
+      import("three/examples/jsm/loaders/ColladaLoader.js"),
+      import("three/examples/jsm/loaders/TDSLoader.js"),
+      import("three/examples/jsm/loaders/STLLoader.js"),
+      import("three/examples/jsm/loaders/PLYLoader.js"),
+      import("three/examples/jsm/controls/OrbitControls.js"),
+      import("three/examples/jsm/controls/TransformControls.js")
+    ]);
+    THREE = mods[0];
+    GLTFLoader = mods[1].GLTFLoader;
+    OBJLoader = mods[2].OBJLoader;
+    FBXLoader = mods[3].FBXLoader;
+    ColladaLoader = mods[4].ColladaLoader;
+    TDSLoader = mods[5].TDSLoader;
+    STLLoader = mods[6].STLLoader;
+    PLYLoader = mods[7].PLYLoader;
+    OrbitControls = mods[8].OrbitControls;
+    TransformControls = mods[9].TransformControls;
+    return;
+  }
   const baseUrl = getLibraryUrl("three");
   const mods = await Promise.all([
     import(/* @vite-ignore */ `${baseUrl}`),
@@ -2449,8 +2474,9 @@ export class Model3DApp extends BaseApp {
       return;
     }
     try {
-      const baseUrl = getLibraryUrl("three");
-      const { GLTFExporter } = await import(/* @vite-ignore */ `${baseUrl}/examples/jsm/exporters/GLTFExporter.js`);
+      const { GLTFExporter } = __SINGLE_FILE__
+        ? await import("three/examples/jsm/exporters/GLTFExporter.js")
+        : await import(/* @vite-ignore */ `${getLibraryUrl("three")}/examples/jsm/exporters/GLTFExporter.js`);
       const exporter = new GLTFExporter();
       exporter.parse(
         this.currentModel,

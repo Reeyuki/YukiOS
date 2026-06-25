@@ -384,24 +384,26 @@ export class TorrentClientApp extends BaseApp {
       return window.WebTorrent;
     }
 
-    this.webTorrentLoadPromise = new Promise((resolve, reject) => {
-      const script = document.createElement("script");
-      script.src = "https://cdn.jsdelivr.net/npm/webtorrent@0.108.6/webtorrent.debug.js";
-      script.crossOrigin = "anonymous";
-      script.onload = () => {
-        if (typeof window.WebTorrent !== "undefined") {
-          resolve(window.WebTorrent);
-        } else {
-          reject(new Error("WebTorrent not available on window"));
-        }
-      };
-      script.onerror = (err) => {
-        console.error("Script load error:", err);
-        this.webTorrentLoadPromise = null;
-        reject(new Error("Failed to load WebTorrent script"));
-      };
-      document.head.appendChild(script);
-    });
+    this.webTorrentLoadPromise = (async () => {
+      return new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = "https://cdn.jsdelivr.net/npm/webtorrent@0.108.6/webtorrent.debug.js";
+        script.crossOrigin = "anonymous";
+        script.onload = () => {
+          if (typeof window.WebTorrent !== "undefined") {
+            resolve(window.WebTorrent);
+          } else {
+            reject(new Error("WebTorrent not available on window"));
+          }
+        };
+        script.onerror = (err) => {
+          console.error("Script load error:", err);
+          this.webTorrentLoadPromise = null;
+          reject(new Error("Failed to load WebTorrent script"));
+        };
+        document.head.appendChild(script);
+      });
+    })();
 
     return this.webTorrentLoadPromise;
   }

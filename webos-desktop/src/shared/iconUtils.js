@@ -48,7 +48,7 @@ export function resolveDesktopIcon(content, fileName = null) {
     return icon;
   }
 
-  if (icon.startsWith("http") || icon.startsWith("static/") || icon.startsWith("/")) {
+  if (icon.startsWith("http") || icon.startsWith("/")) {
     return icon;
   }
 

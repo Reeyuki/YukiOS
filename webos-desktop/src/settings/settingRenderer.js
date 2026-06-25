@@ -1,6 +1,5 @@
-import { CDN_MIRRORS } from "../shared/assetResolver.js";
+import { CDN_MIRRORS, resolveIconUrl, resolveGhUrl } from "../shared/assetResolver.js";
 import { audioMixer } from "../audioMixer.js";
-import { resolveGhUrl } from "../shared/assetResolver.js";
 import { YUKIOS_VERSION } from "../apps/about.js";
 import { getBasicThemes, getSpecialThemes, getCustomThemes } from "../shared/themeEngine.js";
 import { StorageKeys, os } from "../framework.js";
@@ -1023,7 +1022,7 @@ export function renderAboutSettings() {
         <div class="settings-card-header"><i class="fas fa-info-circle"></i> OS Information</div>
         <div class="settings-row" style="flex-direction: column; align-items: flex-start; gap: 12px; padding: 20px;">
           <div style="display: flex; align-items: center; gap: 16px;">
-            <img src="${resolveGhUrl("static/icons/logo.png")}" style="width: 48px; height: 48px; object-fit: contain;" onerror="this.src='favicon.ico'"/>
+            <img src="${resolveIconUrl("static/icons/logo.png")}" style="width: 48px; height: 48px; object-fit: contain;" onerror="this.src='favicon.ico'"/>
             <div>
               <h2 style="margin:0;font-size:1.3em;font-weight:600;display:flex;align-items:center;gap:8px;color:var(--text-primary);">YukiOS <span style="font-size:0.65em;background:var(--brand-dim);color:var(--brand);padding:2px 8px;border-radius:4px;font-weight:500;">${YUKIOS_VERSION}</span></h2>
               <p style="margin:4px 0 0 0;color:var(--text-secondary);font-size:0.8em;">Desktop, in your browser</p>

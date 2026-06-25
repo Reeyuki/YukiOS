@@ -1,6 +1,7 @@
 import { audioMixer } from "../audioMixer.js";
 import { turboManager } from "../shared/turboManager.js";
 import { getThemeColors } from "../shared/themeEngine.js";
+import { resolveIconUrl } from "../shared/assetResolver.js";
 const desktop = document.getElementById("desktop");
 
 const LIGHT_THEMES = new Set([
@@ -124,7 +125,7 @@ export function applyMikuCursor(enabled) {
   if (existing) return;
   const el = document.createElement("style");
   el.id = styleId;
-  el.textContent = `html, body, body * { cursor: url("static/icons/cursor.webp"), auto; }`;
+  el.textContent = `html, body, body * { cursor: url("${resolveIconUrl("static/icons/cursor.webp")}"), auto; }`;
   document.head.appendChild(el);
 }
 

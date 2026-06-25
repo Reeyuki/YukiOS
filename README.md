@@ -259,7 +259,6 @@ See the [Development Guide](DEVELOPMENT.md).
 
 ## Libraries
 
-- [BrowserFS](https://github.com/jvilk/BrowserFS)
 - [interact.js](https://github.com/taye/interact.js)
 - [Ruffle](https://github.com/ruffle-rs/ruffle)
 - [EmulatorJS](https://github.com/EmulatorJS/EmulatorJS)

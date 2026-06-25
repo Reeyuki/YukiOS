@@ -132,6 +132,50 @@ class PositionHelper {
     this.setPosition(icon, left, top);
   }
 
+  _layoutCalc(icons, isExplorerIcon) {
+    const gap = isExplorerIcon ? this.gridSize.gap * 6 : this.gridSize.gap;
+    const { width, height } = this.gridSize;
+    const cellW = width + gap,
+      cellH = height + gap;
+    const maxRows = Math.max(1, Math.floor((this.desktop.clientHeight - gap) / cellH));
+    let col = 0,
+      row = 0;
+    icons.forEach((icon) => {
+      icon.style.left = `${gap + col * cellW}px`;
+      icon.style.top = `${gap + row * cellH}px`;
+      row++;
+      if (row >= maxRows) {
+        row = 0;
+        col++;
+      }
+    });
+  }
+  _layoutRightCalc(icons) {
+    const { width, height, gap } = this.gridSize;
+    const cellW = width + gap,
+      cellH = height + gap;
+    const maxRows = Math.max(1, Math.floor((this.desktop.clientHeight - gap) / cellH));
+    const maxCols = Math.max(1, Math.floor((this.desktop.clientWidth - gap) / cellW));
+    let col = maxCols - 1,
+      row = 0;
+    icons.forEach((icon) => {
+      icon.style.left = `${gap + col * cellW}px`;
+      icon.style.top = `${gap + row * cellH}px`;
+      row++;
+      if (row >= maxRows) {
+        row = 0;
+        col--;
+      }
+    });
+  }
+
+  layoutSync(icons, isExplorerIcon) {
+    this._layoutCalc(icons, isExplorerIcon);
+  }
+  layoutRightSync(icons) {
+    this._layoutRightCalc(icons);
+  }
+
   layout(icons, isExplorerIcon = false) {
     const gap = isExplorerIcon ? this.gridSize.gap * 6 : this.gridSize.gap;
     const { width, height } = this.gridSize;

@@ -5,8 +5,8 @@ import { createCalendarPopup, setCurrentCalendarMonth } from "./apps/calendar.js
 import { resolveWallpaperUrl } from "./shared/assetResolver.js";
 import { BusEvents } from "./core/EventBus.js";
 import { getVantaPresetById } from "./vantaPresets.js";
-import { videos } from "./wallpaperList.js";
 import { vantaPresets } from "./vantaPresets.js";
+import { loadVantaEffect } from "./vanta/vantaLoader.js";
 
 import { StorageKeys, os } from "./framework.js";
 function isBlob(obj) {
@@ -30,8 +30,6 @@ class WallpaperStore {
   static WP_LOGIN_BLOB_KEY = "login_current";
   static _wpBlobDB = null;
   static _currentVantaInstance = null;
-  static _vantaScriptsLoaded = false;
-  static _vantaLoadPromise = null;
 
   static _revokeWallpaperBlob(isLogin = false) {
     if (isLogin) {
@@ -56,40 +54,6 @@ class WallpaperStore {
       }
       this._currentVantaInstance = null;
     }
-  }
-
-  static async _loadVantaScripts() {
-    if (this._vantaScriptsLoaded) return;
-    if (this._vantaLoadPromise) return this._vantaLoadPromise;
-
-    this._vantaLoadPromise = (async () => {
-      const scripts = [
-        "https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js",
-        "https://cdnjs.cloudflare.com/ajax/libs/vanta/0.5.24/vanta.waves.min.js",
-        "https://cdnjs.cloudflare.com/ajax/libs/vanta/0.5.24/vanta.birds.min.js",
-        "https://cdnjs.cloudflare.com/ajax/libs/vanta/0.5.24/vanta.net.min.js",
-        "https://cdnjs.cloudflare.com/ajax/libs/vanta/0.5.24/vanta.dots.min.js",
-        "https://cdnjs.cloudflare.com/ajax/libs/vanta/0.5.24/vanta.globe.min.js",
-        "https://cdnjs.cloudflare.com/ajax/libs/vanta/0.5.24/vanta.halo.min.js",
-        "https://cdnjs.cloudflare.com/ajax/libs/vanta/0.5.24/vanta.fog.min.js",
-        "https://cdnjs.cloudflare.com/ajax/libs/vanta/0.5.24/vanta.cells.min.js"
-      ];
-
-      for (const src of scripts) {
-        await new Promise((resolve, reject) => {
-          const script = document.createElement("script");
-          script.src = src;
-          script.onload = resolve;
-          script.onerror = reject;
-          document.head.appendChild(script);
-        });
-      }
-
-      this._vantaScriptsLoaded = true;
-      this._vantaLoadPromise = null;
-    })();
-
-    return this._vantaLoadPromise;
   }
 
   static _isBase64Video(str) {
@@ -183,8 +147,6 @@ class WallpaperManager {
       return false;
     }
 
-    await WallpaperStore._loadVantaScripts();
-
     WallpaperStore._destroyVantaInstance();
     document.getElementById("wallpaper-img")?.remove();
     document.getElementById("wallpaper-video")?.remove();
@@ -204,17 +166,9 @@ class WallpaperManager {
 
     document.body.appendChild(container);
 
-    if (!window.VANTA) {
-      console.error("VANTA global object not available. Scripts may not be loaded yet.");
-      container.remove();
-      return false;
-    }
-
-    const effectName = preset.effect;
-    const VantaEffect = window.VANTA[effectName];
-
+    const VantaEffect = await loadVantaEffect(preset.effect);
     if (!VantaEffect) {
-      console.error("Vanta effect not found:", effectName, "Available effects:", Object.keys(window.VANTA));
+      console.error("Vanta effect not found:", preset.effect);
       container.remove();
       return false;
     }
@@ -243,8 +197,6 @@ class WallpaperManager {
         return false;
       }
 
-      await WallpaperStore._loadVantaScripts();
-
       WallpaperStore._destroyVantaInstance();
       document.getElementById("wallpaper-img")?.remove();
       document.getElementById("wallpaper-video")?.remove();
@@ -264,17 +216,9 @@ class WallpaperManager {
 
       document.body.appendChild(container);
 
-      if (!window.VANTA) {
-        console.error("VANTA global object not available. Scripts may not be loaded yet.");
-        container.remove();
-        return false;
-      }
-
-      const effectName = preset.effect;
-      const VantaEffect = window.VANTA[effectName];
-
+      const VantaEffect = await loadVantaEffect(preset.effect);
       if (!VantaEffect) {
-        console.error("Vanta effect not found:", effectName, "Available effects:", Object.keys(window.VANTA));
+        console.error("Vanta effect not found:", preset.effect);
         container.remove();
         return false;
       }
@@ -321,10 +265,9 @@ class WallpaperManager {
     }
 
     const hasImages = typeof DEFAULT_WALLPAPER_FILES !== "undefined" && DEFAULT_WALLPAPER_FILES.length;
-    const hasVideos = videos && videos.length;
     const hasVanta = vantaPresets && vantaPresets.length;
 
-    if (!hasImages && !hasVideos && !hasVanta) {
+    if (!hasImages && !hasVanta) {
       const fallback = this._pickStaticFallbackWallpaper();
       os.storage.set(StorageKeys.wallpaperKey, fallback);
       this.applyWallpaper(fallback);
@@ -353,11 +296,6 @@ class WallpaperManager {
         index = (index + 1) % DEFAULT_WALLPAPER_FILES.length;
         os.storage.set(StorageKeys.wallpaperIndexKey, String(index));
         wallpaper = WALLPAPER_STATIC_DIR + DEFAULT_WALLPAPER_FILES[index];
-      } else if (hasVideos) {
-        newWallpaperType = "video";
-        os.storage.set(StorageKeys.wallpaperType, "video");
-        const videoIndex = Math.floor(Math.random() * videos.length);
-        wallpaper = videos[videoIndex];
       } else if (hasVanta) {
         newWallpaperType = "vanta";
         os.storage.set(StorageKeys.wallpaperType, "vanta");
@@ -366,12 +304,7 @@ class WallpaperManager {
         wallpaper = `vanta:${preset.id}`;
       }
     } else if (randomChoice < 0.66) {
-      if (hasVideos) {
-        newWallpaperType = "video";
-        os.storage.set(StorageKeys.wallpaperType, "video");
-        const videoIndex = Math.floor(Math.random() * videos.length);
-        wallpaper = videos[videoIndex];
-      } else if (hasVanta) {
+      if (hasVanta) {
         newWallpaperType = "vanta";
         os.storage.set(StorageKeys.wallpaperType, "vanta");
         const vantaIndex = Math.floor(Math.random() * vantaPresets.length);
@@ -395,11 +328,6 @@ class WallpaperManager {
         os.storage.set(StorageKeys.wallpaperType, "image");
         let index = os.storage.get(StorageKeys.wallpaperIndexKey) || 0;
         wallpaper = WALLPAPER_STATIC_DIR + DEFAULT_WALLPAPER_FILES[index];
-      } else if (hasVideos) {
-        newWallpaperType = "video";
-        os.storage.set(StorageKeys.wallpaperType, "video");
-        const videoIndex = Math.floor(Math.random() * videos.length);
-        wallpaper = videos[videoIndex];
       }
     }
 

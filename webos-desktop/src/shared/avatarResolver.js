@@ -18,5 +18,8 @@ export async function resolveAvatarUrl(avatar, fallback = "static/icons/guest.we
     }
     return resolveIconUrl(fallback);
   }
+  if (!/^https?:\/\//.test(avatar) && !avatar.startsWith("blob:") && !avatar.startsWith("data:")) {
+    return resolveIconUrl(avatar);
+  }
   return avatar;
 }

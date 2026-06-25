@@ -2231,13 +2231,18 @@ body {
     if (!tab) return;
     try {
       if (!window.html2canvas) {
-        await new Promise((resolve, reject) => {
-          const s = document.createElement("script");
-          s.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
-          s.onload = resolve;
-          s.onerror = reject;
-          document.head.appendChild(s);
-        });
+        if (__SINGLE_FILE__) {
+          const mod = await import("html2canvas");
+          window.html2canvas = mod.default || mod;
+        } else {
+          await new Promise((resolve, reject) => {
+            const s = document.createElement("script");
+            s.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
+            s.onload = resolve;
+            s.onerror = reject;
+            document.head.appendChild(s);
+          });
+        }
       }
       let target;
       try {

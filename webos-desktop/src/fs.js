@@ -273,7 +273,7 @@ export class FileSystemManager {
         await this.ensureDefaults();
         await this.trash.init();
       } catch (e) {
-        console.error("BrowserFS initialization failed:", e);
+        console.error("FS initialization failed:", e);
         try {
           await this.storage._clearIndexedDB();
           console.log("Cleared IndexedDB, retrying initialization...");

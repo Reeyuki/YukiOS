@@ -153,7 +153,6 @@ export class SessionManager {
 
     const lastUsername = os.storage.get(StorageKeys.username) || "";
     const lastAvatarRef = os.storage.get(StorageKeys.profilePicture) || PREDEFINED_AVATARS[0];
-    const lastAvatar = await resolveAvatarUrl(lastAvatarRef, PREDEFINED_AVATARS[0]);
     const displayName = lastUsername || "Guest";
     const userId = this._ensureUserId();
 
@@ -196,9 +195,7 @@ export class SessionManager {
         <div class="session-time">${timeStr}</div>
         <div class="session-date">${dateStr}</div>
 
-        <div class="user-carousel-row" id="user-carousel-row">
-          ${await this._renderUserCarousel()}
-        </div>
+        <div class="user-carousel-row" id="user-carousel-row"></div>
 
         <div class="login-center-panel">
           <button class="action-button" id="action-button">
@@ -245,7 +242,7 @@ export class SessionManager {
               ${PREDEFINED_AVATARS.map(
                 (url) => `
                 <div class="avatar-tile ${url === this.selectedUser.avatar ? "active" : ""}" data-url="${url}">
-                  <img src="${url}" alt="Avatar">
+                  <img src="${url}" alt="Avatar" loading="lazy">
                 </div>
               `
               ).join("")}
@@ -256,6 +253,12 @@ export class SessionManager {
     `;
 
     document.body.appendChild(this.container);
+
+    const carouselRow = this.container.querySelector("#user-carousel-row");
+    if (carouselRow) {
+      carouselRow.innerHTML = await this._renderUserCarousel();
+    }
+
     await this._applySessionWallpaper(this.container);
     await this._bindSessionEvents(onComplete);
     this._startClock();
@@ -274,7 +277,7 @@ export class SessionManager {
         <div class="user-carousel-tile ${isSelected ? "selected" : ""}"
              data-key="${user.key}" data-name="${user.name}" data-avatar="${user.avatar}" data-user-id="${user.userId || user.key}">
           <div class="carousel-avatar-wrap">
-            <img src="${avatarUrl}" alt="${user.name}">
+            <img src="${avatarUrl}" alt="${user.name}" loading="lazy">
           </div>
           <span>${user.name}</span>
         </div>
@@ -305,7 +308,7 @@ export class SessionManager {
 
     return `
       <div class="user-history-tile" data-key="${user.key}" data-name="${user.name}" data-avatar="${user.avatar}">
-        <img src="${user.avatar}" alt="${user.name}">
+        <img src="${user.avatar}" alt="${user.name}" loading="lazy">
         <div class="user-info">
           <div class="user-name">${user.name}</div>
           <div class="user-last-login">Last seen: ${timeAgo}</div>

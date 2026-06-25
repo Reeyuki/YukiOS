@@ -1,4 +1,4 @@
-import BrowserFS from "browserfs";
+import IndexedDBFS from "./IndexedDBFS.js";
 
 export class StorageAdapter {
   constructor(config) {
@@ -67,14 +67,14 @@ export class StorageAdapter {
 
   async initFS(sessionKey = "guest") {
     const attemptInit = () => {
-      BrowserFS.configure(
+      IndexedDBFS.configure(
         {
           fs: "IndexedDB",
           options: {}
         },
         async (e) => {
           if (e) {
-            console.error("BrowserFS initialization failed:", e);
+            console.error("IndexedDBFS initialization failed:", e);
             try {
               await this._clearIndexedDB();
               console.log("Cleared IndexedDB, retrying initialization...");
@@ -85,7 +85,7 @@ export class StorageAdapter {
             }
             return;
           }
-          this.fs = BrowserFS.BFSRequire("fs");
+          this.fs = IndexedDBFS.BFSRequire("fs");
           if (this._resolveFs) this._resolveFs();
         }
       );
@@ -96,7 +96,7 @@ export class StorageAdapter {
 
   async _clearIndexedDB() {
     return new Promise((resolve, reject) => {
-      const req = indexedDB.deleteDatabase("browserfs");
+      const req = indexedDB.deleteDatabase("IndexedDB");
       req.onsuccess = () => resolve();
       req.onerror = () => reject(req.error);
       req.onblocked = () => {

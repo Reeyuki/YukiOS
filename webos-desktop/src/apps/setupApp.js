@@ -27,7 +27,7 @@ export const FEATURE_DATA = {
     {
       icon: "fas fa-folder-tree",
       title: "Persistent Filesystem",
-      desc: "BrowserFS + IndexedDB storage that survives browser restarts",
+      desc: "IndexedDB storage that survives browser restarts",
       animation: "bounce-card"
     },
     {
@@ -287,7 +287,7 @@ export class SetupApp extends BaseApp {
 
     await this._loadWallpapers();
 
-    const win = os.window.create(winId, "Set Up YukiOS", "75vw", "75vh", {
+    const win = os.window.create(winId, "Set Up YukiOS", "85vw", "75vh", {
       icon: "fas fa-rocket",
       position: "center"
     });
@@ -462,7 +462,7 @@ export class SetupApp extends BaseApp {
               .map(
                 (wp) => `
               <div class="wallpaper-thumb ${this.userChoices.wallpaper === wp ? "active" : ""}" data-wallpaper="${wp}" data-type="builtin">
-                <img src="${resolveWallpaperUrl("static/wallpapers/" + wp)}" alt="${wp}">
+                <img data-src="${resolveWallpaperUrl("static/wallpapers/" + wp)}" alt="${wp}" loading="lazy">
                 <div class="wallpaper-overlay">
                   <i class="fas fa-check"></i>
                 </div>
@@ -474,7 +474,7 @@ export class SetupApp extends BaseApp {
               .map(
                 (wp) => `
               <div class="wallpaper-thumb ${this.userChoices.wallpaper === wp.name ? "active" : ""}" data-wallpaper="${wp.name}" data-type="custom" data-url="${wp.url}">
-                <img src="${wp.url}" alt="${wp.name}">
+                <img data-src="${wp.url}" alt="${wp.name}" loading="lazy">
                 <div class="wallpaper-overlay">
                   <i class="fas fa-check"></i>
                 </div>
@@ -636,7 +636,7 @@ export class SetupApp extends BaseApp {
     const avatarsHtml = PREDEFINED_AVATARS.map(
       (avatar) => `
         <div class="setup-avatar-option ${avatar === profilePic ? "selected" : ""}" data-src="${avatar}" style="border-radius: 50%; overflow: hidden; cursor: pointer; border: 2px solid var(--glass-border); transition: all 0.15s; width: 56px; height: 56px; position: relative;">
-          <img src="${avatar}" style="width: 100%; height: 100%; object-fit: cover;" />
+          <img data-src="${avatar}" style="width: 100%; height: 100%; object-fit: cover;" />
           <div style="position: absolute; inset: 0; display: ${avatar === profilePic ? "flex" : "none"}; align-items: center; justify-content: center; background: color-mix(in srgb, var(--brand) 55%, transparent); color: var(--text-on-brand); font-size: 12px;"><i class="fas fa-check"></i></div>
         </div>
       `
@@ -650,7 +650,7 @@ export class SetupApp extends BaseApp {
         <div class="personalize-section" style="display: flex; flex-direction: column; gap: 12px;">
           <div style="display: flex; align-items: center; gap: 10px; padding: 10px; background: var(--brand-dim); border-radius: 8px; border: 1px solid var(--brand);">
             <div style="width: 46px; height: 46px; border-radius: 50%; overflow: hidden; border: 2px solid var(--brand); flex-shrink: 0;">
-              <img id="setup-profile-preview-img" src="${profilePic}" style="width: 100%; height: 100%; object-fit: cover;" />
+              <img id="setup-profile-preview-img" data-src="${profilePic}" style="width: 100%; height: 100%; object-fit: cover;" />
             </div>
             <div style="min-width: 0;">
               <div id="setup-profile-preview-name" style="font-size: 15px; color: var(--text-primary); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${username}</div>
@@ -687,7 +687,7 @@ export class SetupApp extends BaseApp {
 
         <div class="summary-grid">
           <div class="summary-item" style="grid-column: 1 / -1; display: flex; align-items: center; gap: 10px;">
-            <img id="setup-summary-profile-img" src="${profilePic}" alt="${username}" style="width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--glass-border); object-fit: cover;">
+            <img id="setup-summary-profile-img" data-src="${profilePic}" alt="${username}" style="width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--glass-border); object-fit: cover;">
             <span id="setup-summary-profile-name">Profile: ${username}</span>
           </div>
           <div class="summary-item">
@@ -925,6 +925,7 @@ export class SetupApp extends BaseApp {
     if (prevStepEl) {
       prevStepEl.classList.add("active");
       prevStepEl.style.transform = "translateX(-50px)";
+      this._lazyLoadActiveStepImages(prevStepEl);
 
       requestAnimationFrame(() => {
         prevStepEl.style.transform = "translateX(0)";
@@ -965,7 +966,16 @@ export class SetupApp extends BaseApp {
     const stepEl = document.querySelector(`.setup-step[data-step="${this.currentStep + 1}"]`);
     if (stepEl) {
       stepEl.classList.add("active");
+      this._lazyLoadActiveStepImages(stepEl);
     }
+  }
+
+  _lazyLoadActiveStepImages(stepEl) {
+    stepEl.querySelectorAll("img[data-src]").forEach((img) => {
+      if (!img.src && img.dataset.src) {
+        img.src = img.dataset.src;
+      }
+    });
   }
 
   _applyTheme(theme) {
@@ -1237,7 +1247,10 @@ Have fun!`;
   _refreshProfileSummary(win) {
     const summaryImg = $("#setup-summary-profile-img", win);
     const summaryName = $("#setup-summary-profile-name", win);
-    if (summaryImg) summaryImg.src = this.userChoices.profilePicture || PREDEFINED_AVATARS[0];
+    if (summaryImg) {
+      summaryImg.dataset.src = this.userChoices.profilePicture || PREDEFINED_AVATARS[0];
+      summaryImg.src = summaryImg.dataset.src;
+    }
     if (summaryName) setText(summaryName, `Profile: ${this.userChoices.username || "Guest"}`);
   }
 }

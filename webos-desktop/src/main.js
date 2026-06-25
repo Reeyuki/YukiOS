@@ -37,6 +37,8 @@ import { init as initCursorEffect } from "./cursorEffect.js";
 initializeMirrors(appMap);
 registerPWA();
 
+document.documentElement.removeAttribute("style");
+
 const root = document.documentElement;
 if (isMobile() || isTouchDevice()) {
   root.classList.add("is-mobile");
@@ -166,6 +168,15 @@ const commandPalette = new CommandPalette(services);
 services.commandPalette = commandPalette;
 
 async function start() {
+  const faScript = document.querySelector('script[src*="font-awesome"], script[src*="fontawesome"]');
+  if (!faScript) {
+    const s = document.createElement("script");
+    s.src = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/js/all.min.js";
+    s.defer = true;
+    s.crossOrigin = "anonymous";
+    document.head.appendChild(s);
+  }
+
   await clipboardManager.init();
 
   document.documentElement.style.setProperty("--start-logo-url", `url("${logoImg}")`);

@@ -350,20 +350,27 @@ export class RuffleApp extends BaseApp {
   _loadRuffleScript() {
     if (this._ruffleLoadPromise) return this._ruffleLoadPromise;
 
-    this._ruffleLoadPromise = new Promise((resolve, reject) => {
-      if (window.RufflePlayer) {
-        resolve();
+    this._ruffleLoadPromise = (async () => {
+      if (__SINGLE_FILE__) {
+        await import("@ruffle-rs/ruffle");
         return;
       }
 
-      const script = document.createElement("script");
-      script.src =
-        getLibraryUrl("ruffle") ||
-        `${CDN_CONFIG.repos.npm.base}/@ruffle-rs/ruffle@${CDN_CONFIG.libraries.ruffle.version}/ruffle.min.js`;
-      script.onload = () => resolve();
-      script.onerror = () => reject(new Error("Failed to load Ruffle"));
-      document.head.appendChild(script);
-    });
+      return new Promise((resolve, reject) => {
+        if (window.RufflePlayer) {
+          resolve();
+          return;
+        }
+
+        const script = document.createElement("script");
+        script.src =
+          getLibraryUrl("ruffle") ||
+          `${CDN_CONFIG.repos.npm.base}/@ruffle-rs/ruffle@${CDN_CONFIG.libraries.ruffle.version}/ruffle.min.js`;
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error("Failed to load Ruffle"));
+        document.head.appendChild(script);
+      });
+    })();
 
     return this._ruffleLoadPromise;
   }

@@ -436,6 +436,7 @@ export class DesktopContextMenuManager {
     const icon = document.createElement("div");
     icon.className = "icon selectable is-renaming";
     icon.innerHTML = `<img src="${iconSrc}"><div></div>`;
+    this.desktopUI.positionHelper.snap(icon);
     this.desktopUI.desktop.appendChild(icon);
 
     const { wrap, input, errorTip } = this._createInlineInput(defaultName);

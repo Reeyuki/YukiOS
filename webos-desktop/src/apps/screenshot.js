@@ -103,6 +103,11 @@ export class ScreenshotApp extends BaseApp {
 
   async _loadHtml2canvasPro() {
     if (window.html2canvas) return;
+    if (__SINGLE_FILE__) {
+      const mod = await import("html2canvas-pro");
+      window.html2canvas = mod.default || mod;
+      return;
+    }
     const s = document.createElement("script");
     s.src = "https://cdn.jsdelivr.net/npm/html2canvas-pro@1.5.8/dist/html2canvas-pro.min.js";
     document.head.appendChild(s);

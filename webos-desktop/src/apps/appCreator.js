@@ -1,6 +1,7 @@
 import "../styles/appCreator.css";
 import { isImageFile } from "../fileDisplay.js";
 import { refreshIcons } from "../shared/contextMenu.js";
+import { resolveIconUrl } from "../shared/assetResolver.js";
 import { PROXIES, clampProxyIndex, buildProxyUrl, fetchHtmlThroughProxy } from "../proxies.js";
 import { AppSource } from "../AppSource.js";
 import { PREDEFINED_AVATARS } from "./accountManager.js";
@@ -681,8 +682,9 @@ export class AppCreatorApp extends BaseApp {
     const existingI = desktopIcon.querySelector("i");
 
     if (isImageIcon(iconUrl)) {
+      const resolvedIconUrl = resolveIconUrl(iconUrl);
       if (existingImg) {
-        existingImg.src = iconUrl;
+        existingImg.src = resolvedIconUrl;
         existingImg.onerror = () => {
           const i = document.createElement("i");
           i.className = `${AC.FALLBACK_ICON} desktop-icon__fallback`;
@@ -690,7 +692,7 @@ export class AppCreatorApp extends BaseApp {
         };
       } else if (existingI) {
         const img = document.createElement("img");
-        img.src = iconUrl;
+        img.src = resolvedIconUrl;
         img.onerror = () => {
           const i = document.createElement("i");
           i.className = `${AC.FALLBACK_ICON} desktop-icon__fallback`;

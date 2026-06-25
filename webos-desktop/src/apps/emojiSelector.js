@@ -12,6 +12,10 @@ export class EmojiSelectorApp extends BaseApp {
       return;
     }
 
+    if (__SINGLE_FILE__) {
+      return import("emoji-mart");
+    }
+
     const scriptUrl = getLibraryUrl("emojiMart");
     if (!scriptUrl) {
       console.error("[EmojiSelector] Failed to resolve Emoji Mart CDN URL");

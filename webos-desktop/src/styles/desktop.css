@@ -49,6 +49,10 @@
   transition: transform 0.15s;
 }
 
+.icon i {
+  color: var(--brand);
+}
+
 .icon div {
   font-size: 1.05em;
   line-height: 1;

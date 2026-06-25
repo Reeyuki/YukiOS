@@ -214,6 +214,7 @@ function buildIconEl(iconVal) {
     }
     iconEl.src = iconSrc;
     iconEl.alt = "";
+    iconEl.loading = "lazy";
     return iconEl;
   }
   const iconEl = document.createElement("i");

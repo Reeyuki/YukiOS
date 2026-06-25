@@ -60,7 +60,12 @@ class OfficeModuleLoader {
 
   async mammoth() {
     if (this.cache.has("mammoth")) return this.cache.get("mammoth");
-
+    if (__SINGLE_FILE__) {
+      const mod = await import("mammoth");
+      window.mammoth = mod;
+      this.cache.set("mammoth", mod);
+      return mod;
+    }
     await this.loadScript(getLibraryUrl("mammoth"));
     const mod = window.mammoth;
     this.cache.set("mammoth", mod);
@@ -69,7 +74,12 @@ class OfficeModuleLoader {
 
   async xlsx() {
     if (this.cache.has("xlsx")) return this.cache.get("xlsx");
-
+    if (__SINGLE_FILE__) {
+      const mod = await import("xlsx");
+      window.XLSX = mod;
+      this.cache.set("xlsx", mod);
+      return mod;
+    }
     await this.loadScript(getLibraryUrl("xlsx"));
     const mod = window.XLSX;
     this.cache.set("xlsx", mod);
@@ -78,12 +88,17 @@ class OfficeModuleLoader {
 
   async handsontable() {
     if (this.cache.has("handsontable")) return this.cache.get("handsontable");
-
+    if (__SINGLE_FILE__) {
+      await import("handsontable/dist/handsontable.full.min.css");
+      const mod = await import("handsontable");
+      window.Handsontable = mod.default || mod;
+      this.cache.set("handsontable", mod);
+      return mod;
+    }
     await Promise.all([
       this.loadScript(getLibraryUrl("handsontable", "js")),
       this.loadStylesheet(getLibraryUrl("handsontable", "css"))
     ]);
-
     const mod = window.Handsontable;
     this.cache.set("handsontable", mod);
     return mod;
@@ -91,16 +106,20 @@ class OfficeModuleLoader {
 
   async pdfjs() {
     if (this.cache.has("pdfjs")) return this.cache.get("pdfjs");
-
+    if (__SINGLE_FILE__) {
+      const pdfjs = await import("pdfjs-dist");
+      window.pdfjsLib = pdfjs;
+      pdfjs.GlobalWorkerOptions.workerSrc = "";
+      this.cache.set("pdfjs", pdfjs);
+      return pdfjs;
+    }
     await Promise.all([
       this.loadScript(getLibraryUrl("pdfjs", "js")),
       this.loadScript(getLibraryUrl("pdfjs", "viewer")),
       this.loadStylesheet(getLibraryUrl("pdfjs", "viewerCss"))
     ]);
-
     const pdfjs = window.pdfjsLib;
     pdfjs.GlobalWorkerOptions.workerSrc = getLibraryUrl("pdfjs", "worker");
-
     this.cache.set("pdfjs", pdfjs);
     this.cache.set("pdfjsViewer", window.pdfjsViewer);
     return pdfjs;
@@ -115,7 +134,12 @@ class OfficeModuleLoader {
 
   async jszip() {
     if (this.cache.has("jszip")) return this.cache.get("jszip");
-
+    if (__SINGLE_FILE__) {
+      const mod = await import("jszip");
+      window.JSZip = mod;
+      this.cache.set("jszip", mod);
+      return mod;
+    }
     await this.loadScript(getLibraryUrl("jszip"));
     const mod = window.JSZip;
     this.cache.set("jszip", mod);
@@ -124,14 +148,18 @@ class OfficeModuleLoader {
 
   async docx() {
     if (this.cache.has("docx")) return this.cache.get("docx");
-
+    if (__SINGLE_FILE__) {
+      const mod = await import("docx");
+      window.docx = mod;
+      this.cache.set("docx", mod);
+      return mod;
+    }
     const url = getLibraryUrl("docx");
     if (url.includes("esm.sh")) {
       const mod = await import(url);
       this.cache.set("docx", mod);
       return mod;
     }
-
     await this.loadScript(url);
     const mod = window.docx;
     this.cache.set("docx", mod);

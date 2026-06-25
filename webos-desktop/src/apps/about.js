@@ -1,5 +1,5 @@
 import "../styles/about.css";
-import { resolveGhUrl } from "../shared/assetResolver.js";
+import { resolveIconUrl, resolveGhUrl } from "../shared/assetResolver.js";
 import { BaseApp, PersistenceTypes } from "../framework.js";
 export const YUKIOS_VERSION = "v1.4.5";
 
@@ -90,7 +90,7 @@ export class AboutApp extends BaseApp {
 
           <div class="abx-top">
             <div class="abx-mark">
-              <img class="abx-badge" src="${resolveGhUrl("static/icons/logo.png")}">
+              <img class="abx-badge" src="${resolveIconUrl("static/icons/logo.png")}">
               <h1 class="abx-title">YukiOS</h1>
               <p class="abx-sub">
                 A browser-based desktop with apps, games, emulators, and a virtual filesystem.

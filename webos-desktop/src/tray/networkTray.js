@@ -12,11 +12,6 @@ class NetworkTrayApp extends BaseApp {
     this._initTray();
   }
 
-  _shouldSuppressNotification() {
-    const position = os.storage.get(StorageKeys.notificationsPosition) || "bottom-right";
-    return position === "bottom-right";
-  }
-
   _getSignalStrength(cdnId) {
     const signalMap = {
       jsdelivr: 4,
@@ -228,9 +223,7 @@ class NetworkTrayApp extends BaseApp {
     this.currentCdn = cdnId;
 
     const cdn = CDN_MIRRORS.find((c) => c.id === cdnId);
-    if (!this._shouldSuppressNotification()) {
-      this.notify("Network Connected", `Connected to ${cdn.name}`, "success", 2000, "fa-wifi");
-    }
+    this.notify("Network Connected", `Connected to ${cdn.name}`, "success", 2000, "fa-wifi");
 
     this._updateTrayIcon();
     this._connecting = false;

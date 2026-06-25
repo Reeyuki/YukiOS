@@ -1,4 +1,3 @@
-import eruda from "eruda";
 import { BaseApp, os } from "../framework.js";
 
 export class ErudaApp extends BaseApp {
@@ -7,7 +6,7 @@ export class ErudaApp extends BaseApp {
     this.openWindows = new Set();
   }
 
-  open() {
+  async open() {
     const winId = "eruda";
     if (this.openWindows.has(winId)) return;
 
@@ -18,7 +17,7 @@ export class ErudaApp extends BaseApp {
     win.innerHTML = this.buildUI();
     this.openWindows.add(winId);
 
-    this.initEruda();
+    await this.initEruda();
 
     win.addEventListener("remove", () => {
       this.openWindows.delete(winId);
@@ -33,13 +32,14 @@ export class ErudaApp extends BaseApp {
     `;
   }
 
-  initEruda() {
+  async initEruda() {
     const container = document.getElementById("eruda-container");
     if (container) {
-      eruda.init({
+      const eruda = await import("eruda");
+      eruda.default.init({
         container: container
       });
-      eruda.show();
+      eruda.default.show();
       os.notify.send("Dev Tools", "Eruda debugging tool launched");
     }
   }

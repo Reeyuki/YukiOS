@@ -15,6 +15,20 @@ import { Achievements } from "../achievements.js";
 import interact from "interactjs";
 
 import { StorageKeys, os } from "../framework.js";
+
+const HARDCODED_DESKTOP_ICONS = [
+  { app: "explorerApp", name: "Files", icon: "static/icons/file.webp" },
+  { app: "steamApp", name: "Steam", icon: "static/icons/steam.webp" },
+  { app: "discordApp", name: "Discord", icon: "fab fa-discord", isFa: true },
+  { app: "gtaVc", name: "GTA: Vice City", icon: "static/icons/gtavc.webp" },
+  { app: "undertale", name: "Undertale", icon: "static/icons/undertale.webp" },
+  { app: "deltaruneCh5", name: "Deltarune CH5", icon: "static/icons/deltarune.png" },
+  { app: "scramjetApp", name: "Browser", icon: "fas fa-snowflake", isFa: true },
+  { app: "systemAppsApp", name: "System Apps", icon: "fas fa-tools", isFa: true },
+  { app: "notepadApp", name: "Notepad", icon: "static/icons/notepad.webp" },
+  { app: "shittifyApp", name: "Evil Spotify", icon: "static/icons/shittify.webp" }
+];
+
 export class IconManager {
   constructor(
     desktop,
@@ -176,12 +190,12 @@ export class IconManager {
     folderIcon.className = "icon selectable folder-icon";
     folderIcon.dataset.folderName = folderName;
     folderIcon.innerHTML = `<img src="${resolveIconUrl("static/icons/file.webp")}"><div>${folderName}</div>`;
-    this.desktop.appendChild(folderIcon);
-    this.makeIconInteractable(folderIcon);
     const saved = this.positionStore.load();
     const key = this.positionStore.getKey(folderIcon);
     if (saved[key]) this.positionHelper.placeAtCell(folderIcon, saved[key].col, saved[key].row, folderIcon);
     else this.positionHelper.snap(folderIcon);
+    this.desktop.appendChild(folderIcon);
+    this.makeIconInteractable(folderIcon);
     return folderIcon;
   }
 
@@ -203,13 +217,12 @@ export class IconManager {
     icon.dataset.filePath = "Desktop";
     icon.innerHTML = `${iconHTML}<div>${displayName}</div>`;
 
-    this.desktop.appendChild(icon);
-    this.makeIconInteractable(icon);
-
     const saved = this.positionStore.load();
     const key = this.positionStore.getKey(icon);
     if (saved[key]) this.positionHelper.placeAtCell(icon, saved[key].col, saved[key].row, icon);
     else this.positionHelper.snap(icon);
+    this.desktop.appendChild(icon);
+    this.makeIconInteractable(icon);
 
     if (fileName.endsWith(".desktop")) {
       this.fs.getFileContent(["Desktop"], fileName).then((raw) => {
@@ -369,43 +382,53 @@ export class IconManager {
   async initializeDesktopFiles(sharedAppLauncher, isRightAlignedSystemApp) {
     await os.fs.mkdir(["Desktop"]);
     const saved = this.positionStore.load();
-    const icons = Array.from(document.querySelectorAll(".icon.selectable:not(.folder-icon):not(.desktop-file-icon)"));
 
-    const systemIcons = [];
+    const fragment = document.createDocumentFragment();
     const regularIcons = [];
+    const systemIcons = [];
+    const createdIcons = [];
 
-    for (const icon of icons) {
-      const name = icon.querySelector("div, span")?.textContent?.trim() || "Unknown";
-      const app = icon.dataset.app;
-      const fileName = `${name}.desktop`;
+    for (const def of HARDCODED_DESKTOP_ICONS) {
+      const icon = document.createElement("div");
+      icon.className = "icon selectable";
+      icon.dataset.app = def.app;
 
-      const img = icon.querySelector("img");
-      const fa = icon.querySelector("i");
-      let iconPath = null;
-      if (img) iconPath = img.getAttribute("src");
-      else if (fa) iconPath = Array.from(fa.classList).join(" ");
+      if (def.isFa) {
+        const i = document.createElement("i");
+        i.className = def.icon;
+        icon.appendChild(i);
+      } else {
+        const img = document.createElement("img");
+        img.src = resolveIconUrl(def.icon);
+        icon.appendChild(img);
+      }
 
-      await os.fs.write(["Desktop", fileName], JSON.stringify({ app, name, path: iconPath }));
+      const label = document.createElement("div");
+      label.textContent = def.name;
+      icon.appendChild(label);
+
+      const fileName = `${def.name}.desktop`;
+      await os.fs.write(["Desktop", fileName], JSON.stringify({ app: def.app, name: def.name, path: def.icon }));
       icon.dataset.fileName = fileName;
 
       const key = this.positionStore.getKey(icon);
-
       if (saved[key]) {
         this.positionHelper.placeAtCell(icon, saved[key].col, saved[key].row, icon);
-        continue;
+      } else if (isRightAlignedSystemApp(sharedAppLauncher.appMap, def.app)) {
+        systemIcons.push(icon);
+      } else {
+        regularIcons.push(icon);
       }
 
-      if (icon.style.display !== "none") {
-        if (isRightAlignedSystemApp(sharedAppLauncher.appMap, app)) {
-          systemIcons.push(icon);
-        } else {
-          regularIcons.push(icon);
-        }
-      }
+      fragment.appendChild(icon);
+      createdIcons.push(icon);
     }
 
-    if (regularIcons.length) this.positionHelper.layout(regularIcons);
-    if (systemIcons.length) this.positionHelper.layoutRight(systemIcons);
+    if (regularIcons.length) this.positionHelper.layoutSync(regularIcons);
+    if (systemIcons.length) this.positionHelper.layoutRightSync(systemIcons);
+
+    this.desktop.appendChild(fragment);
+    createdIcons.forEach((icon) => this.makeIconInteractable(icon));
 
     await this.loadDesktopItems();
   }

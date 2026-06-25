@@ -30,7 +30,7 @@
   position: absolute;
   z-index: 10001;
   animation: startMenuIn 250ms cubic-bezier(0.22, 1, 0.36, 1) both;
-  bottom: 50px;
+  bottom: 0px;
   left: 0;
   width: 650px;
   height: 500px;
