@@ -2,6 +2,7 @@ import { audioMixer } from "../audioMixer.js";
 import { turboManager } from "../shared/turboManager.js";
 import { getThemeColors } from "../shared/themeEngine.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
+import { $, $$ } from "../shared/domUtils.js";
 const desktop = document.getElementById("desktop");
 
 const LIGHT_THEMES = new Set([
@@ -134,7 +135,7 @@ export function applyDesktopStretchScrollDisabled(disabled) {
   desktop.style.overflow = "auto";
 
   const desktopRect = desktop.getBoundingClientRect();
-  const windows = document.querySelectorAll(".window");
+  const windows = $$(".window");
   windows.forEach((win) => {
     if (!(win instanceof HTMLElement)) return;
     if (win.dataset.fullscreen === "true") return;
@@ -159,7 +160,7 @@ export function applyDesktopStretchScrollDisabled(disabled) {
 }
 
 export function applyStartMenuSize(width, height) {
-  const el = document.getElementById("start-menu") || document.querySelector(".start-menu");
+  const el = document.getElementById("start-menu") || $(".start-menu");
   if (el) {
     el.style.width = `${width}px`;
     el.style.height = `${height}px`;
@@ -167,7 +168,7 @@ export function applyStartMenuSize(width, height) {
 }
 
 export function applyStartMenuCats(cats) {
-  const el = document.getElementById("start-menu") || document.querySelector(".start-menu");
+  const el = document.getElementById("start-menu") || $(".start-menu");
   if (!el) return;
   const catNames = ["menu", "games", "system", "favorites", "customize", "settingsApp"];
   catNames.forEach((catName) => {

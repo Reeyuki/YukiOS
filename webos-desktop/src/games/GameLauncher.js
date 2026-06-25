@@ -3,6 +3,7 @@ import { CDN_CONFIG } from "../shared/cdnConfig.js";
 import { lazyImg, observeLazyImages, SteamDataManager, _launcher } from "./games.js";
 import { SteamSettings } from "./steam.js";
 import { os } from "../os/index.js";
+import { $$ } from "../shared/domUtils.js";
 
 export class GameLauncher {
   constructor(renderer) {
@@ -18,7 +19,7 @@ export class GameLauncher {
   }
 
   updateAllBadges() {
-    document.querySelectorAll(".steam-play-count-badge").forEach((badge) => {
+    $$(".steam-play-count-badge").forEach((badge) => {
       const card = badge.closest(".steam-game-card");
       if (card) {
         const appId = card.dataset.app.toLowerCase().trim();

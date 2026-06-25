@@ -4,6 +4,7 @@ import { popularityMap } from "./games.js";
 import { SteamSettings } from "./steam.js";
 import { lazyImg, observeLazyImages } from "./games.js";
 import { fetchGamePlayCounts, getCachedPlayCounts } from "../analytics.js";
+import { $, $$ } from "../shared/domUtils.js";
 
 export class GameRenderer {
   constructor(renderer) {
@@ -17,7 +18,7 @@ export class GameRenderer {
       this.playCounts = counts;
       this.updateAllBadges();
       if (this.renderer.sortBy === "popularity" && Object.keys(previousCounts).length === 0) {
-        const container = document.querySelector(".steam-library-page");
+        const container = $(".steam-library-page");
         if (container) {
           const onLaunch = (appId) => this.renderer.launch(appId);
           this.renderGrid(container, onLaunch, this.renderer.focusCollection);
@@ -27,7 +28,7 @@ export class GameRenderer {
   }
 
   updateAllBadges() {
-    document.querySelectorAll(".steam-play-count-badge").forEach((badge) => {
+    $$(".steam-play-count-badge").forEach((badge) => {
       const card = badge.closest(".steam-game-card");
       if (card) {
         const appId = card.dataset.app.toLowerCase().trim();

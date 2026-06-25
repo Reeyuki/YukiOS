@@ -7,6 +7,7 @@ import { resolveGhUrl, resolveIconUrl } from "../shared/assetResolver.js";
 import { CDN_CONFIG } from "../shared/cdnConfig.js";
 import { getAppRegistry } from "../appRegistry.js";
 import { getCurrentUser } from "../desktopui/startMenu.js";
+import { $, $$ } from "../shared/domUtils.js";
 
 import { StorageKeys, os } from "../framework.js";
 export function getCdnBase() {
@@ -33,31 +34,31 @@ export function refreshSteamUI() {
   const username = user.name;
   const profilePic = user.avatar;
 
-  const steamUserProfiles = document.querySelectorAll(".steam-user-profile span");
+  const steamUserProfiles = $$(".steam-user-profile span");
   steamUserProfiles.forEach((span) => {
     if (span && span.textContent !== username) {
       span.textContent = username;
     }
   });
 
-  const userTab = document.querySelector('.steam-tab[data-page="user"]');
+  const userTab = $('.steam-tab[data-page="user"]');
   if (userTab && userTab.textContent !== username) {
     userTab.textContent = username;
   }
 
-  const steamProfileImgs = document.querySelectorAll(".steam-user-profile img");
+  const steamProfileImgs = $$(".steam-user-profile img");
   steamProfileImgs.forEach((img) => {
     if (img instanceof HTMLImageElement && img.src !== profilePic) {
       img.src = profilePic;
     }
   });
 
-  const friendsName = document.querySelector(".friends-name");
+  const friendsName = $(".friends-name");
   if (friendsName && friendsName.textContent !== username) {
     friendsName.textContent = username;
   }
 
-  const friendsProfileImg = document.querySelector(".friends-profile img");
+  const friendsProfileImg = $(".friends-profile img");
   if (friendsProfileImg instanceof HTMLImageElement && friendsProfileImg.src !== profilePic) {
     friendsProfileImg.src = profilePic;
   }

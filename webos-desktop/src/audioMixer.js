@@ -1,4 +1,5 @@
 import { resolveGhUrl } from "./shared/assetResolver.js";
+import { $ } from "./shared/domUtils.js";
 
 import { StorageKeys, os } from "./framework.js";
 export const SystemAudio = Object.freeze({
@@ -348,7 +349,7 @@ class AudioMixer {
     this._clickOutsideHandler = (e) => {
       if (this._justOpened) return;
       if (this.isOpen && this.panel && !this.panel.contains(e.target)) {
-        const btn = document.querySelector('[data-win-id="audio-mixer"]');
+        const btn = $('[data-win-id="audio-mixer"]');
         if (!btn || !btn.contains(e.target)) {
           this.close();
         }

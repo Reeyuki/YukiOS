@@ -3,6 +3,7 @@ import { isImageFile } from "./fileDisplay.js";
 import { appMap } from "./games/gamesList.js";
 import { audioMixer, SystemAudio } from "./audioMixer.js";
 import { getSetting } from "./shared/settingsUtils.js";
+import { $ } from "./shared/domUtils.js";
 
 import { APP_MANIFESTS, StorageKeys, os } from "./framework.js";
 function escapeHtml(str) {
@@ -336,7 +337,7 @@ export class NotificationCenter {
   }
 
   updateNotificationCenter() {
-    const list = document.querySelector(".ntf-panel__feed");
+    const list = $(".ntf-panel__feed");
     if (!list) return;
 
     list.innerHTML = "";
@@ -414,7 +415,7 @@ export class NotificationCenter {
   }
 
   updateBadge() {
-    const badge = document.querySelector(".ntf-count");
+    const badge = $(".ntf-count");
     if (!badge) return;
 
     if (this.doNotDisturb) {
@@ -506,7 +507,7 @@ export class NotificationCenter {
   }
 
   updateDoNotDisturbUI() {
-    const dndBtn = document.querySelector(".ntf-panel__dnd");
+    const dndBtn = $(".ntf-panel__dnd");
     if (dndBtn) dndBtn.classList.toggle("active", this.doNotDisturb);
 
     const trayBtn = document.getElementById("ntf-tray-btn");

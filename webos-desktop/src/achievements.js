@@ -2,6 +2,7 @@ import confetti from "canvas-confetti";
 import { BusEvents } from "./core/EventBus.js";
 import { resolveGhUrl } from "./shared/assetResolver.js";
 import { audioMixer } from "./audioMixer.js";
+import { $$ } from "./shared/domUtils.js";
 
 import { BaseApp, PersistenceTypes, StorageKeys, os } from "./framework.js";
 export const Achievements = {
@@ -662,7 +663,7 @@ export class AchievementsApp extends BaseApp {
   }
 
   incrementWindowOpen() {
-    const count = document.querySelectorAll(".window").length;
+    const count = $$(".window").length;
     if (count >= 5) this.trigger(this._thresholds.openWindows[0].key);
     if (count >= 10) this.trigger(this._thresholds.openWindows[1].key);
   }

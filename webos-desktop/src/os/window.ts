@@ -47,11 +47,13 @@ export class WindowAPI {
       );
 
       let contentSet = false;
+      let headerInjected = false;
       const observer = new MutationObserver((mutations, obs) => {
         const hasHeader = win.querySelector(".window-header");
         if (!hasHeader && win.innerHTML.trim() !== "") {
           win.insertAdjacentHTML("afterbegin", headerHtml);
           contentSet = true;
+          headerInjected = true;
 
           // Trigger animation after content is set
           requestAnimationFrame(() => {
@@ -65,9 +67,10 @@ export class WindowAPI {
 
       setTimeout(() => {
         const hasHeader = win.querySelector(".window-header");
-        if (!hasHeader && win.innerHTML.trim() !== "") {
+        if (!headerInjected && !hasHeader && win.innerHTML.trim() !== "") {
           win.insertAdjacentHTML("afterbegin", headerHtml);
           contentSet = true;
+          headerInjected = true;
 
           // Trigger animation after content is set
           requestAnimationFrame(() => {

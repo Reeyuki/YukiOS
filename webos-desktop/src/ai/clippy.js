@@ -1,4 +1,5 @@
 import { getLibraryUrl } from "../shared/cdnConfig.js";
+import { $$ } from "../shared/domUtils.js";
 
 import { StorageKeys, os } from "../framework.js";
 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -45,7 +46,7 @@ function isExplicitlyEnabled() {
 }
 
 function removeClippyDom() {
-  document.querySelectorAll(".clippy, .clippy-balloon, .clippy-content").forEach((el) => el.remove());
+  $$(".clippy, .clippy-balloon, .clippy-content").forEach((el) => el.remove());
 }
 
 async function setupClippy() {

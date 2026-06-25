@@ -1,4 +1,5 @@
 import { sanitizeTitle } from "../utils/utils.js";
+import { $$ } from "../shared/domUtils.js";
 
 import { StorageKeys, os } from "../framework.js";
 import { KeybindManager } from "../keybindManager.js";
@@ -708,7 +709,7 @@ export class WorkspaceManager {
 
     tile.addEventListener("dragend", () => {
       tile.classList.remove("ov-dragging");
-      document.querySelectorAll(".ov-drop-target").forEach((p) => p.classList.remove("ov-drop-target"));
+      $$(".ov-drop-target").forEach((p) => p.classList.remove("ov-drop-target"));
     });
   }
 
@@ -723,7 +724,7 @@ export class WorkspaceManager {
 
     thumb.addEventListener("dragend", () => {
       thumb.classList.remove("ov-dragging");
-      document.querySelectorAll(".ov-drop-target").forEach((p) => p.classList.remove("ov-drop-target"));
+      $$(".ov-drop-target").forEach((p) => p.classList.remove("ov-drop-target"));
     });
 
     thumb.addEventListener("click", (e) => {

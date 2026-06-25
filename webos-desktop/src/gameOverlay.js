@@ -1,11 +1,11 @@
 import { KeybindManager } from "./keybindManager.js";
 import { StorageKeys, os } from "./framework.js";
 import { SteamDataManager, steamAppRenderer } from "./games/games.js";
-import { BrowserApp } from "./apps/browserApp.js";
 import { ScreenshotApp } from "./apps/screenshot.js";
 import { TerminalApp } from "./apps/terminal.js";
 import { audioMixer } from "./audioMixer.js";
 import { resolveIconUrl } from "./shared/assetResolver.js";
+import { $$ } from "./shared/domUtils.js";
 
 const OVERLAY_SETTINGS_KEY = "yukiOS_overlay_settings";
 const OVERLAY_NOTES_KEY = "yukiOS_overlay_notes";
@@ -17,8 +17,7 @@ const DOCK_ITEM_DEFAULTS = [
   { id: "achievements", title: "Achievements", icon: "fa-trophy" },
   { id: "friends", title: "Friends", icon: "fa-user-friends" },
   { id: "notes", title: "Notes", icon: "fa-sticky-note" },
-  { id: "scramjet", title: "Scramjet", icon: "fa-rocket" },
-  { id: "browser", title: "Browser", icon: "fa-globe" },
+  { id: "scramjet", title: "Web Browser", icon: "fa-rocket" },
   { id: "screenshots", title: "Screenshots", icon: "fa-images" },
   { id: "audio", title: "Audio", icon: "fa-volume-high" },
   { id: "launcher", title: "Quick Launch", icon: "fa-th" },
@@ -46,7 +45,6 @@ export class GameOverlayController {
     this._settings = this._loadSettings();
     this.notes = this._loadNotes();
     this._listeningForKeybind = false;
-    this._browserApp = null;
     this._screenshotApp = null;
     this._openPanels = new Set();
     this._panelZCounter = 100;
@@ -143,7 +141,7 @@ export class GameOverlayController {
   }
 
   _findActiveGameWindow() {
-    const wins = document.querySelectorAll('.window[data-app-id]:not([data-app-id=""])');
+    const wins = $$('.window[data-app-id]:not([data-app-id=""])');
     if (!wins.length) return null;
     let best = null;
     let bestZ = -1;
@@ -439,8 +437,7 @@ export class GameOverlayController {
       achievements: "Achievements",
       friends: "Friends",
       notes: "Notes",
-      scramjet: "Scramjet",
-      browser: "Web Browser",
+      scramjet: "Web Browser",
       screenshots: "Screenshots",
       audio: "Audio",
       launcher: "Quick Launch",
@@ -458,6 +455,7 @@ export class GameOverlayController {
     panel.innerHTML = `
       <div class="overlay-panel-header">
         <span class="overlay-panel-title">${panelTitle}</span>
+        <button class="overlay-panel-maximize" data-panel-maximize="${id}"><i class="fas fa-expand"></i></button>
         <button class="overlay-panel-close" data-panel-close="${id}"><i class="fas fa-times"></i></button>
       </div>
       <div class="overlay-panel-body"></div>
@@ -477,6 +475,10 @@ export class GameOverlayController {
       e.stopPropagation();
       this._togglePanel(id);
     });
+    panel.querySelector(".overlay-panel-maximize").addEventListener("click", (e) => {
+      e.stopPropagation();
+      this._toggleMaximizePanel(panel);
+    });
     panel.addEventListener("mousedown", () => this._bringPanelToFront(panel));
   }
 
@@ -487,7 +489,6 @@ export class GameOverlayController {
       friends: { x: 1162, y: 205, w: 350, h: 240 },
       notes: { x: 28, y: 546, w: 320, h: 160 },
       scramjet: { x: 358, y: -104, w: 799, h: 562 },
-      browser: { x: 357, y: -101, w: 794, h: 553 },
       screenshots: { x: 26, y: 259, w: 320, h: 282 },
       audio: { x: 1164, y: 460, w: 347, h: 241 },
       launcher: { x: 579, y: 260, w: 373, h: 336 },
@@ -508,14 +509,28 @@ export class GameOverlayController {
 
   _makePanelDraggable(panel) {
     const header = panel.querySelector(".overlay-panel-header");
+    const container = panel.parentElement;
     let isDragging = false;
     let startX, startY, origX, origY;
+    let activeSnapZone = null;
 
     header.addEventListener("mousedown", (e) => {
-      if (e.target.closest(".overlay-panel-close")) return;
+      if (e.target.closest(".overlay-panel-close") || e.target.closest(".overlay-panel-maximize")) return;
       isDragging = true;
       this._bringPanelToFront(panel);
       header.style.cursor = "grabbing";
+
+      if (panel.classList.contains("maximized")) {
+        const restore = panel._preMaximizeRect || this._getDefaultPanelPos(panel.dataset.panel);
+        panel.classList.remove("maximized");
+        panel.querySelector(".overlay-panel-maximize i").className = "fas fa-expand";
+        panel.style.width = restore.w + "px";
+        panel.style.height = restore.h + "px";
+        panel.style.left = e.clientX - restore.w / 2 + "px";
+        panel.style.top = "0px";
+        panel._preMaximizeRect = null;
+      }
+
       origX = panel.offsetLeft;
       origY = panel.offsetTop;
       startX = e.clientX;
@@ -528,12 +543,32 @@ export class GameOverlayController {
       const dy = e.clientY - startY;
       panel.style.left = origX + dx + "px";
       panel.style.top = origY + dy + "px";
+
+      const containerRect = container.getBoundingClientRect();
+      activeSnapZone = this._getSnapZone(e.clientX, e.clientY, containerRect);
+      if (activeSnapZone) {
+        this._showSnapPreview(container, this._getSnapRect(activeSnapZone, containerRect));
+      } else {
+        this._hideSnapPreview(container);
+      }
     });
 
-    document.addEventListener("mouseup", () => {
+    document.addEventListener("mouseup", (e) => {
       if (isDragging) {
         isDragging = false;
         header.style.cursor = "grab";
+        this._hideSnapPreview(container);
+
+        if (activeSnapZone) {
+          const containerRect = container.getBoundingClientRect();
+          const snapRect = this._getSnapRect(activeSnapZone, containerRect);
+          panel.style.left = snapRect.x + "px";
+          panel.style.top = snapRect.y + "px";
+          panel.style.width = snapRect.w + "px";
+          panel.style.height = snapRect.h + "px";
+          activeSnapZone = null;
+        }
+
         this._panelPositions[panel.dataset.panel] = {
           x: parseInt(panel.style.left),
           y: parseInt(panel.style.top),
@@ -611,6 +646,107 @@ export class GameOverlayController {
     panel.style.zIndex = ++this._panelZCounter;
   }
 
+  _toggleMaximizePanel(panel) {
+    const id = panel.dataset.panel;
+    const container = this.overlayEl.querySelector("#overlay-panels-container");
+    const icon = panel.querySelector(".overlay-panel-maximize i");
+
+    if (panel.classList.contains("maximized")) {
+      const restore = panel._preMaximizeRect || this._getDefaultPanelPos(id);
+      panel.classList.remove("maximized");
+      panel.style.left = restore.x + "px";
+      panel.style.top = restore.y + "px";
+      panel.style.width = restore.w + "px";
+      panel.style.height = restore.h + "px";
+      panel._preMaximizeRect = null;
+      if (icon) icon.className = "fas fa-expand";
+      this._panelPositions[id] = { x: restore.x, y: restore.y, w: restore.w, h: restore.h };
+      this._savePanelPositions();
+    } else {
+      panel._preMaximizeRect = {
+        x: panel.offsetLeft,
+        y: panel.offsetTop,
+        w: panel.offsetWidth,
+        h: panel.offsetHeight
+      };
+      const rect = container.getBoundingClientRect();
+      panel.classList.add("maximized");
+      panel.style.left = "0px";
+      panel.style.top = "0px";
+      panel.style.width = rect.width + "px";
+      panel.style.height = rect.height + "px";
+      if (icon) icon.className = "fas fa-compress";
+    }
+    this._bringPanelToFront(panel);
+  }
+
+  _getSnapZone(clientX, clientY, containerRect) {
+    const edge = 36;
+    const nearLeft = clientX - containerRect.left <= edge;
+    const nearRight = containerRect.right - clientX <= edge;
+    const nearTop = clientY - containerRect.top <= edge;
+    const nearBottom = containerRect.bottom - clientY <= edge;
+
+    if (nearTop && nearLeft) return "nw";
+    if (nearTop && nearRight) return "ne";
+    if (nearBottom && nearLeft) return "sw";
+    if (nearBottom && nearRight) return "se";
+    if (nearLeft) return "w";
+    if (nearRight) return "e";
+    if (nearTop) return "n";
+    return null;
+  }
+
+  _getSnapRect(zone, containerRect) {
+    const w = containerRect.width;
+    const h = containerRect.height;
+    const halfW = w / 2;
+    const halfH = h / 2;
+
+    switch (zone) {
+      case "nw":
+        return { x: 0, y: 0, w: halfW, h: halfH };
+      case "ne":
+        return { x: halfW, y: 0, w: halfW, h: halfH };
+      case "sw":
+        return { x: 0, y: halfH, w: halfW, h: halfH };
+      case "se":
+        return { x: halfW, y: halfH, w: halfW, h: halfH };
+      case "w":
+        return { x: 0, y: 0, w: halfW, h };
+      case "e":
+        return { x: halfW, y: 0, w: halfW, h };
+      case "n":
+        return { x: 0, y: 0, w, h };
+      default:
+        return null;
+    }
+  }
+
+  _getSnapPreviewEl(container) {
+    let preview = container.querySelector(".overlay-snap-preview");
+    if (!preview) {
+      preview = document.createElement("div");
+      preview.className = "overlay-snap-preview";
+      container.appendChild(preview);
+    }
+    return preview;
+  }
+
+  _showSnapPreview(container, snapRect) {
+    const preview = this._getSnapPreviewEl(container);
+    preview.style.left = snapRect.x + "px";
+    preview.style.top = snapRect.y + "px";
+    preview.style.width = snapRect.w + "px";
+    preview.style.height = snapRect.h + "px";
+    preview.classList.add("active");
+  }
+
+  _hideSnapPreview(container) {
+    const preview = container.querySelector(".overlay-snap-preview");
+    if (preview) preview.classList.remove("active");
+  }
+
   _activateDockBtn(id) {
     const btn = this.overlayEl.querySelector(`.overlay-dock-btn[data-panel="${id}"]`);
     if (btn) btn.classList.add("active");
@@ -637,9 +773,6 @@ export class GameOverlayController {
         break;
       case "scramjet":
         this._initScramjet();
-        break;
-      case "browser":
-        this._initBrowser();
         break;
       case "screenshots":
         this._renderScreenshots();
@@ -1140,33 +1273,6 @@ export class GameOverlayController {
     wrapper.appendChild(iframe);
     pane.innerHTML = "";
     pane.appendChild(wrapper);
-  }
-
-  _initBrowser() {
-    const pane = this.overlayEl.querySelector('[data-panel="browser"] .overlay-panel-body');
-    if (!pane) return;
-
-    const panel = pane.closest(".overlay-panel");
-    if (panel) panel.style.height = "500px";
-
-    if (pane.querySelector(".browser-root")) return;
-
-    if (this._browserApp && !this._browserApp._destroyed) return;
-
-    this._browserApp = new BrowserApp(this.services);
-    this._browserApp.open("Steam Browser", "https://www.google.com", false);
-
-    setTimeout(() => {
-      const win = document.getElementById(this._browserApp.winId);
-      if (win) {
-        const browserRoot = win.querySelector(".browser-root");
-        if (browserRoot) {
-          pane.innerHTML = "";
-          pane.appendChild(browserRoot);
-          win.remove();
-        }
-      }
-    }, 100);
   }
 
   _renderSettings() {

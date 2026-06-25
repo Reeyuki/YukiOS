@@ -1,3 +1,5 @@
+import { $$ } from "./domUtils.js";
+
 export class Shell {
   constructor(fs, sessionKey) {
     this.fs = fs;
@@ -418,7 +420,7 @@ export class Shell {
   }
 
   async cmdPs(output) {
-    const wins = Array.from(document.querySelectorAll(".window"));
+    const wins = $$(".window");
     output("  PID   TTY      TIME CMD");
     for (let i = 0; i < wins.length; i++) {
       const cmd = wins[i].querySelector(".window-header span")?.textContent || "unknown";

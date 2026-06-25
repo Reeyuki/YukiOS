@@ -1,5 +1,6 @@
 import { SYSTEM_APPS } from "../AppRegistryConfig.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
+import { $$ } from "./domUtils.js";
 
 export function resolveDesktopIcon(content, fileName = null) {
   let icon = null;
@@ -19,7 +20,7 @@ export function resolveDesktopIcon(content, fileName = null) {
 
   if (!icon && fileName && typeof document !== "undefined") {
     const label = fileName.replace(".desktop", "");
-    const desktopIcons = Array.from(document.querySelectorAll(".icon.selectable:not(.desktop-file-icon)"));
+    const desktopIcons = $$(".icon.selectable:not(.desktop-file-icon)");
     const match = desktopIcons.find((i) => {
       const div = i.querySelector("div");
       return div && div.textContent.trim() === label;

@@ -16,6 +16,7 @@ import { ContextMenuManager } from "./windowManager/ContextMenuManager.js";
 import { WindowManagerUtils } from "./windowManager/WindowManagerUtils.js";
 
 import { StorageKeys, os } from "./framework.js";
+import { $ } from "./shared/domUtils.js";
 
 function isMobile() {
   return (
@@ -65,7 +66,7 @@ export class WindowManager {
     this.isDraggingWindow = false;
     this.notificationCenter = notificationCenter;
     this.initialTitle = document.title || "YukiOS";
-    const faviconLink = document.querySelector("link[rel~='icon']");
+    const faviconLink = $("link[rel~='icon']");
     this.initialFavicon = faviconLink ? (faviconLink as HTMLLinkElement).href : "";
     this._snapGhost = null;
     this._activeSnapZone = null;

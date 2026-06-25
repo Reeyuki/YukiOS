@@ -1,7 +1,7 @@
 export const appMap = {
   angryBirds2: {
     type: "game",
-    url: "/static/games/html/angry2.html",
+    url: "https://cdn.jsdelivr.net/gh/NaoTomori1/AngryBirds2@main/index.html",
     icon: "/static/icons/angryBirds2.webp",
     title: "Angry Birds 2"
   },

@@ -1,4 +1,5 @@
 import { StorageKeys, os } from "./framework.js";
+import { $$ } from "./shared/domUtils.js";
 const AD_STORAGE_KEY = StorageKeys.adStorageState;
 export function shouldEnableAds() {
   const hostname = window.location.hostname;
@@ -198,7 +199,7 @@ export class AdsManager {
 
     if (sessionTime < this.minActiveTime) return false;
 
-    const recentAds = document.querySelectorAll(".ad-window-active");
+    const recentAds = $$(".ad-window-active");
     if (recentAds.length >= 1) return false;
 
     const containerId = "banner-slot-single";
@@ -259,7 +260,7 @@ export class AdsManager {
     document.body.setAttribute("data-last-ad", now.toString());
 
     setTimeout(() => {
-      const el = document.querySelector(".ad-window-active");
+      const el = $(".ad-window-active");
       if (el) el.classList.remove("ad-window-active");
     }, 45000);
 

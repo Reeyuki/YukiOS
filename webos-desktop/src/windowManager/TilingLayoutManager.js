@@ -1,5 +1,6 @@
 import { StorageKeys, os } from "../framework.js";
 import { KeybindManager } from "../keybindManager.js";
+import { $$ } from "../shared/domUtils.js";
 const LayoutType = {
   DWINDLE: "dwindle",
   BSP: "bsp",
@@ -589,7 +590,7 @@ export class TilingLayoutManager {
   }
 
   getFocusedWindow() {
-    const windows = document.querySelectorAll(".window");
+    const windows = $$(".window");
     let maxZ = 0;
     let focused = null;
 
@@ -882,7 +883,7 @@ export class TilingLayoutManager {
   }
 
   _removeResizeHandles() {
-    const handles = document.querySelectorAll(".tiling-resize-handle");
+    const handles = $$(".tiling-resize-handle");
     handles.forEach((h) => h.remove());
   }
 

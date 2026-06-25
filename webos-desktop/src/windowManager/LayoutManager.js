@@ -1,4 +1,5 @@
 import { StorageKeys, os } from "../framework.js";
+import { $$ } from "../shared/domUtils.js";
 export class LayoutManager {
   constructor(manager) {
     this.manager = manager;
@@ -72,7 +73,7 @@ export class LayoutManager {
 
     this.manager._lastSpawnTime = now;
 
-    const windows = Array.from(document.querySelectorAll(".window")).filter(
+    const windows = $$(".window").filter(
       (win) => win.style.display !== "none" && win.style.visibility !== "hidden" && win.id !== "desktop"
     );
 

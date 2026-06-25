@@ -33,6 +33,7 @@ import { showCdnPrompt } from "./shared/dialogs.js";
 import { initializeOSBridge, setDialogExplorerApp } from "./os/index.js";
 import { loadApps } from "./AppLoader.js";
 import { init as initCursorEffect } from "./cursorEffect.js";
+import { $ } from "./shared/domUtils.js";
 
 initializeMirrors(appMap);
 registerPWA();
@@ -168,7 +169,7 @@ const commandPalette = new CommandPalette(services);
 services.commandPalette = commandPalette;
 
 async function start() {
-  const faScript = document.querySelector('script[src*="font-awesome"], script[src*="fontawesome"]');
+  const faScript = $('script[src*="font-awesome"], script[src*="fontawesome"]');
   if (!faScript) {
     const s = document.createElement("script");
     s.src = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/js/all.min.js";

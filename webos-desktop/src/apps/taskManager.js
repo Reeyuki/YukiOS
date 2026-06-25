@@ -857,8 +857,8 @@ export class TaskManagerApp extends BaseApp {
 
     if (performance.memory) {
       const totalHeapMB = performance.memory.usedJSHeapSize / 1048576;
-      const allWins = document.querySelectorAll(".window");
-      const totalNodes = Array.from(allWins).reduce((s, w) => s + w.querySelectorAll("*").length, 1);
+      const allWins = $$(".window");
+      const totalNodes = allWins.reduce((s, w) => s + w.querySelectorAll("*").length, 1);
       const share = domNodes / totalNodes;
       baseMem = Math.max(baseMem, totalHeapMB * share * 0.6);
     }
@@ -867,7 +867,7 @@ export class TaskManagerApp extends BaseApp {
     const longTaskStress = Math.min(60, this._drainLongTaskBudget() / 10);
     const activityStress = Math.min(40, domDelta * 2);
 
-    let cpuShare = isMinimized ? 0.05 : domNodes / Math.max(1, document.querySelectorAll(".window *").length);
+    let cpuShare = isMinimized ? 0.05 : domNodes / Math.max(1, $$(".window *").length);
     if (hasIframe && !isMinimized) cpuShare *= 2.2;
     if (hasVideo && !isMinimized) cpuShare *= 1.8;
     if (hasCanvas && !isMinimized) cpuShare *= 1.5;

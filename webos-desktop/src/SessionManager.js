@@ -4,6 +4,7 @@ import { SystemUtilities } from "./system.js";
 import { audioMixer, SystemAudio } from "./audioMixer.js";
 import { YUKIOS_VERSION } from "./apps/about.js";
 import { resolveAvatarUrl } from "./shared/avatarResolver.js";
+import { $ } from "./shared/domUtils.js";
 
 import { StorageKeys, os } from "./framework.js";
 import { KeybindManager } from "./keybindManager.js";
@@ -723,7 +724,7 @@ export class SessionManager {
     this.isLocked = true;
     this._stopIdleDetection();
 
-    this.lastActiveWindow = document.querySelector(".window.active") || null;
+    this.lastActiveWindow = $(".window.active") || null;
 
     await this._createSessionUI("locked", null);
 
