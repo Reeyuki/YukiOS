@@ -1,0 +1,13 @@
+.scramjet-header {
+  height: 6px;
+  flex-shrink: 0;
+  padding: 0;
+  border: none;
+  opacity: 0.001;
+  cursor: grab;
+  overflow: hidden;
+}
+
+.scramjet-header:active {
+  cursor: grabbing;
+}

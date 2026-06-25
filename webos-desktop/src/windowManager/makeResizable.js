@@ -5,6 +5,10 @@ export function makeResizable(win, wm, setHeightUnsetElement = null) {
     edges: { top: true, left: true, bottom: true, right: true },
     modifiers: [interact.modifiers.restrictSize({ min: { width: 300, height: 300 } })],
     listeners: {
+      start() {
+        wm.isDraggingWindow = true;
+        document.body.classList.add("is-resizing");
+      },
       move(event) {
         const { target, rect } = event;
         target.style.width = `${rect.width}px`;
@@ -20,7 +24,9 @@ export function makeResizable(win, wm, setHeightUnsetElement = null) {
           setHeightUnsetElement.style.height = "unset";
         }
       },
-      up() {
+      end() {
+        wm.isDraggingWindow = false;
+        document.body.classList.remove("is-resizing");
         if (wm.triggerSessionSave) wm.triggerSessionSave();
       }
     }

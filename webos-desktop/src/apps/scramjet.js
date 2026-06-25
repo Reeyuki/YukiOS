@@ -1,3 +1,4 @@
+import "../styles/scramjet.css";
 import { BaseApp, PersistenceTypes, StorageKeys, os } from "../framework.js";
 import { wobbleStart, wobbleMove, wobbleEnd } from "../windowManager/AnimationSystem.js";
 
@@ -77,7 +78,11 @@ export class ScramjetApp extends BaseApp {
     iframe.src = window.location.origin + "/scram/index.html" + incognitoParam;
 
     const header = element.querySelector(".window-header");
-    if (header) header.remove();
+    if (header) {
+      header.classList.add("scramjet-header");
+      const span = header.querySelector("span");
+      if (span) span.textContent = "";
+    }
 
     this.wm.makeDraggable(element);
     this.wm.makeResizable(element);
@@ -129,161 +134,155 @@ export class ScramjetApp extends BaseApp {
 
     iframe.addEventListener("load", () => {
       sendDataToIframe();
-
-      const checkForControlsSlot = () => {
-        try {
-          const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-          const controlsSlot = iframeDoc.getElementById("controls-slot");
-          if (controlsSlot) {
-            const winId = element.id;
-
-            const controlsHTML = `<div class="window-controls">
-              <button class="minimize-btn" title="Minimize"><svg viewBox="0 0 10 1" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h10v1H0z"></path></svg></button>
-              <button class="external-btn" title="Open in New Tab">↗</button>
-              <button class="maximize-btn" title="Maximize"><svg viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg"><path d="M0 0v10h10V0H0zm1 1h8v8H1V1z"></path></svg></button>
-              <button class="close-btn" title="Close"><svg viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg"><path d="M10.2.7L9.5 0 5.1 4.4.7 0 0 .7l4.4 4.4L0 9.5l.7.7 4.4-4.4 4.4 4.4.7-.7-4.4-4.4z"></path></svg></button>
-            </div>`;
-
-            controlsSlot.innerHTML = controlsHTML;
-
-            const closeBtn = controlsSlot.querySelector(".close-btn");
-            const maxBtn = controlsSlot.querySelector(".maximize-btn");
-            const minBtn = controlsSlot.querySelector(".minimize-btn");
-            const externalBtn = controlsSlot.querySelector(".external-btn");
-
-            if (closeBtn) {
-              closeBtn.addEventListener("click", (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                this.wm.closeWindow(element);
-              });
-            }
-            if (maxBtn) {
-              maxBtn.addEventListener("click", (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (element.dataset.snapZone === "maximize") {
-                  this.wm.toggleFullscreen(element);
-                } else {
-                  this.wm._applySnap(element, "maximize");
-                }
-              });
-            }
-            if (minBtn) {
-              minBtn.addEventListener("click", (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                this.wm.minimizeWindow(element);
-              });
-            }
-            if (externalBtn) {
-              externalBtn.addEventListener("click", (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                window.open(window.location.origin + "/scram/index.html", "_blank");
-              });
-            }
-
-            const tabStrip = iframeDoc.getElementById("tab-strip");
-            const tabsContainer = iframeDoc.getElementById("tabs-container");
-            if (tabStrip && tabsContainer) {
-              tabsContainer.style.cursor = "move";
-
-              tabsContainer.addEventListener("mousedown", (e) => {
-                if (
-                  e.target.closest(".tab") ||
-                  e.target.closest(".new-tab") ||
-                  e.target.closest(".window-controls") ||
-                  e.target.closest("#tab-strip")
-                )
-                  return;
-                if (e.button !== 0) return;
-
-                e.preventDefault();
-                this.wm.bringToFront(element);
-                wobbleStart(element);
-
-                const wasSnapped = !!element.dataset.snapZone;
-                if (wasSnapped) this.wm._unsnap(element);
-
-                const disableStretch = os.storage.get(StorageKeys.disableDesktopStretchScroll) === "true";
-                if (disableStretch) {
-                  if (getComputedStyle(element).position !== "fixed") {
-                    const rect = element.getBoundingClientRect();
-                    element.style.left = `${rect.left}px`;
-                    element.style.top = `${rect.top}px`;
-                    element.style.position = "fixed";
-                  }
-                } else if (getComputedStyle(element).position === "fixed") {
-                  const rect = element.getBoundingClientRect();
-                  const desktop = document.getElementById("desktop");
-                  const desktopRect = desktop.getBoundingClientRect();
-                  const left = rect.left - desktopRect.left + desktop.scrollLeft;
-                  const top = rect.top - desktopRect.top + desktop.scrollTop;
-                  element.style.left = `${left}px`;
-                  element.style.top = `${top}px`;
-                  element.style.position = "absolute";
-                }
-
-                const iframeRect = iframe.getBoundingClientRect();
-                const startX = e.clientX + iframeRect.left;
-                const startY = e.clientY + iframeRect.top;
-                const winRect = element.getBoundingClientRect();
-                const ox = startX - winRect.left;
-                const oy = startY - winRect.top;
-
-                this.wm.isDraggingWindow = true;
-                document.body.classList.add("is-dragging");
-
-                const onMouseMove = (moveEvent) => {
-                  const newLeft = moveEvent.clientX - ox;
-                  const newTop = moveEvent.clientY - oy;
-                  element.style.left = `${newLeft}px`;
-                  element.style.top = `${newTop}px`;
-
-                  const entry = this.wm.openWindows.get(element.id);
-                  if (entry?.record) {
-                    entry.record.setGeometry(newLeft, newTop);
-                  }
-
-                  wobbleMove(element, moveEvent.clientX - startX, moveEvent.clientY - startY);
-
-                  const zone = this.wm._getSnapZone(moveEvent.clientX, moveEvent.clientY);
-                  this.wm._activeSnapZone = zone;
-
-                  if (zone) this.wm._showSnapGhost(zone);
-                  else this.wm._hideSnapGhost();
-                };
-
-                const onMouseUp = () => {
-                  document.removeEventListener("mousemove", onMouseMove);
-                  document.removeEventListener("mouseup", onMouseUp);
-
-                  this.wm.isDraggingWindow = false;
-                  document.body.classList.remove("is-dragging");
-                  wobbleEnd(element);
-
-                  if (this.wm._activeSnapZone) {
-                    this.wm._applySnap(element, this.wm._activeSnapZone);
-                    this.wm._activeSnapZone = null;
-                    this.wm._hideSnapGhost();
-                  }
-                  if (this.wm.triggerSessionSave) this.wm.triggerSessionSave();
-                };
-
-                document.addEventListener("mousemove", onMouseMove);
-                document.addEventListener("mouseup", onMouseUp);
-              });
-            }
-          } else {
-            setTimeout(checkForControlsSlot, 100);
-          }
-        } catch (e) {
-          console.error("Failed to inject window controls:", e);
-        }
-      };
-      setTimeout(checkForControlsSlot, 500);
+      this._trySetupIframe(iframe, element);
     });
+  }
+
+  _trySetupIframe(iframe, element) {
+    const setup = () => {
+      try {
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+        if (!iframeDoc || !iframeDoc.body) return false;
+        const controlsSlot = iframeDoc.getElementById("controls-slot");
+        const tabsContainer = iframeDoc.getElementById("tabs-container");
+        if (!controlsSlot || !tabsContainer) return false;
+        this._injectControls(iframeDoc, controlsSlot, element);
+        this._attachDragHandler(tabsContainer, iframe, element);
+        return true;
+      } catch (e) {
+        console.error("Failed to setup iframe drag:", e);
+        return false;
+      }
+    };
+    if (!setup()) {
+      try {
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+        if (iframeDoc?.body) {
+          const obs = new MutationObserver(() => {
+            if (setup()) obs.disconnect();
+          });
+          obs.observe(iframeDoc.body, { childList: true, subtree: true });
+        }
+      } catch (e) {
+        console.error("Could not observe iframe for drag setup:", e);
+      }
+    }
+  }
+
+  _injectControls(iframeDoc, controlsSlot, element) {
+    const controlsHTML = `<div class="window-controls">
+      <button class="minimize-btn" title="Minimize"><svg viewBox="0 0 10 1" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h10v1H0z"></path></svg></button>
+      <button class="external-btn" title="Open in New Tab">↗</button>
+      <button class="maximize-btn" title="Maximize"><svg viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg"><path d="M0 0v10h10V0H0zm1 1h8v8H1V1z"></path></svg></button>
+      <button class="close-btn" title="Close"><svg viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg"><path d="M10.2.7L9.5 0 5.1 4.4.7 0 0 .7l4.4 4.4L0 9.5l.7.7 4.4-4.4 4.4 4.4.7-.7-4.4-4.4z"></path></svg></button>
+    </div>`;
+    controlsSlot.innerHTML = controlsHTML;
+    const closeBtn = controlsSlot.querySelector(".close-btn");
+    const maxBtn = controlsSlot.querySelector(".maximize-btn");
+    const minBtn = controlsSlot.querySelector(".minimize-btn");
+    const externalBtn = controlsSlot.querySelector(".external-btn");
+    if (closeBtn)
+      closeBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.wm.closeWindow(element);
+      });
+    if (maxBtn)
+      maxBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (element.dataset.snapZone === "maximize") this.wm.toggleFullscreen(element);
+        else this.wm._applySnap(element, "maximize");
+      });
+    if (minBtn)
+      minBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.wm.minimizeWindow(element);
+      });
+    if (externalBtn)
+      externalBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        window.open(window.location.origin + "/scram/index.html", "_blank");
+      });
+  }
+
+  _attachDragHandler(tabsContainer, iframe, element) {
+    tabsContainer.style.cursor = "move";
+    tabsContainer.addEventListener("mousedown", (e) => {
+      if (e.button !== 0) return;
+      if (
+        e.target.closest(".tab") ||
+        e.target.closest(".new-tab") ||
+        e.target.closest(".window-controls") ||
+        e.target.closest("button, input, select, textarea")
+      )
+        return;
+      this._startIframeDrag(e, iframe, element);
+    });
+  }
+
+  _startIframeDrag(e, iframe, element) {
+    e.preventDefault();
+    this.wm.bringToFront(element);
+    wobbleStart(element);
+    const wasSnapped = !!element.dataset.snapZone;
+    if (wasSnapped) this.wm._unsnap(element);
+    const disableStretch = os.storage.get(StorageKeys.disableDesktopStretchScroll) === "true";
+    if (disableStretch) {
+      if (getComputedStyle(element).position !== "fixed") {
+        const rect = element.getBoundingClientRect();
+        element.style.left = `${rect.left}px`;
+        element.style.top = `${rect.top}px`;
+        element.style.position = "fixed";
+      }
+    } else if (getComputedStyle(element).position === "fixed") {
+      const rect = element.getBoundingClientRect();
+      const desktop = document.getElementById("desktop");
+      const desktopRect = desktop.getBoundingClientRect();
+      const left = rect.left - desktopRect.left + desktop.scrollLeft;
+      const top = rect.top - desktopRect.top + desktop.scrollTop;
+      element.style.left = `${left}px`;
+      element.style.top = `${top}px`;
+      element.style.position = "absolute";
+    }
+    const iframeRect = iframe.getBoundingClientRect();
+    const startX = e.clientX + iframeRect.left;
+    const startY = e.clientY + iframeRect.top;
+    const winRect = element.getBoundingClientRect();
+    const ox = startX - winRect.left;
+    const oy = startY - winRect.top;
+    this.wm.isDraggingWindow = true;
+    document.body.classList.add("is-dragging");
+    const onMouseMove = (moveEvent) => {
+      const newLeft = moveEvent.clientX - ox;
+      const newTop = moveEvent.clientY - oy;
+      element.style.left = `${newLeft}px`;
+      element.style.top = `${newTop}px`;
+      const entry = this.wm.openWindows.get(element.id);
+      if (entry?.record) entry.record.setGeometry(newLeft, newTop);
+      wobbleMove(element, moveEvent.clientX - startX, moveEvent.clientY - startY);
+      const zone = this.wm._getSnapZone(moveEvent.clientX, moveEvent.clientY);
+      this.wm._activeSnapZone = zone;
+      if (zone) this.wm._showSnapGhost(zone);
+      else this.wm._hideSnapGhost();
+    };
+    const onMouseUp = () => {
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onMouseUp);
+      this.wm.isDraggingWindow = false;
+      document.body.classList.remove("is-dragging");
+      wobbleEnd(element);
+      if (this.wm._activeSnapZone) {
+        this.wm._applySnap(element, this.wm._activeSnapZone);
+        this.wm._activeSnapZone = null;
+        this.wm._hideSnapGhost();
+      }
+      if (this.wm.triggerSessionSave) this.wm.triggerSessionSave();
+    };
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
   }
 
   _sendDataToIframe() {
