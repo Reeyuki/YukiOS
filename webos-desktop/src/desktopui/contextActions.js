@@ -30,7 +30,7 @@ export function buildRenameAction(icon, desktopUI, options = {}) {
     if (!newName || newName === currentName) return;
 
     if (icon.classList.contains("folder-icon")) {
-      await desktopUI.fs.renameItem(["Desktop"], currentName, newName);
+      await desktopUI.fs.renameItem(["Desktop"], currentName, newName, true);
       const saved = PositionStore ? PositionStore.load() : null;
       const oldKey = PositionStore ? PositionStore.getKey(icon) : null;
       icon.dataset.folderName = newName;
@@ -44,8 +44,11 @@ export function buildRenameAction(icon, desktopUI, options = {}) {
       }
     } else {
       if (icon.dataset.fileName) {
-        const targetName = icon.classList.contains("desktop-file-icon") ? newName : `${newName}.desktop`;
-        await desktopUI.fs.renameItem(["Desktop"], icon.dataset.fileName, targetName);
+        let targetName = newName;
+        if (icon.dataset.fileName.endsWith(".desktop") && !newName.endsWith(".desktop")) {
+          targetName += ".desktop";
+        }
+        await desktopUI.fs.renameItem(["Desktop"], icon.dataset.fileName, targetName, true);
         icon.dataset.fileName = targetName;
       }
     }

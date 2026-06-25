@@ -386,6 +386,7 @@ export class IconManager {
       else if (fa) iconPath = Array.from(fa.classList).join(" ");
 
       await os.fs.write(["Desktop", fileName], JSON.stringify({ app, name, path: iconPath }));
+      icon.dataset.fileName = fileName;
 
       const key = this.positionStore.getKey(icon);
 

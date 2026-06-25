@@ -324,7 +324,7 @@ export class DesktopContextMenuManager {
       copy: buildCopyAction(selectedArray, this.desktopUI),
       cut: buildCutAction(selectedArray, this.desktopUI),
       delete: buildDeleteAction(selectedArray, this.desktopUI),
-      rename: buildRenameAction(last, this.desktopUI, { IconDataHelper: this.IconDataHelper }),
+      rename: () => this._startInlineDesktopRename(last),
       properties: buildPropertiesAction(last, this.desktopUI)
     });
   }
@@ -533,11 +533,25 @@ export class DesktopContextMenuManager {
   }
 
   _startInlineDesktopRename(icon) {
+    console.log("[Rename Debug] _startInlineDesktopRename called", icon, "classes:", icon.className);
     if (icon.classList.contains("is-renaming")) return;
     icon.classList.add("is-renaming");
 
     const labelDiv = icon.querySelector("div");
-    const currentName = icon.dataset.folderName || icon.dataset.fileName || (labelDiv ? labelDiv.textContent : "");
+    let currentName;
+    if (icon.dataset.app) {
+      currentName = labelDiv ? labelDiv.textContent.trim() : icon.dataset.app;
+    } else {
+      currentName = icon.dataset.folderName || icon.dataset.fileName || (labelDiv ? labelDiv.textContent : "");
+    }
+    console.log(
+      "[Rename Debug] currentName:",
+      currentName,
+      "labelDiv:",
+      !!labelDiv,
+      "label text:",
+      labelDiv?.textContent
+    );
     if (labelDiv) labelDiv.style.display = "none";
 
     const { wrap, input, errorTip } = this._createInlineInput(currentName);
@@ -561,6 +575,7 @@ export class DesktopContextMenuManager {
     let committed = false;
 
     const cancel = () => {
+      console.log("[Rename Debug] cancel called");
       if (committed) return;
       committed = true;
       icon.classList.remove("is-renaming");
@@ -569,30 +584,71 @@ export class DesktopContextMenuManager {
     };
 
     const commit = async () => {
+      console.log("[Rename Debug] commit called");
       if (committed) return;
-      const newName = input.value.trim();
+      let newName = input.value.trim();
+      console.log("[Rename Debug] newName:", newName, "currentName:", currentName);
       if (!newName || newName === currentName) {
+        console.log("[Rename Debug] no change, cancelling");
         cancel();
         return;
       }
       committed = true;
+      console.log(
+        "[Rename Debug] is folder-icon:",
+        icon.classList.contains("folder-icon"),
+        "is desktop-file-icon:",
+        icon.classList.contains("desktop-file-icon"),
+        "has data-app:",
+        !!icon.dataset.app
+      );
       try {
         if (icon.classList.contains("folder-icon")) {
-          await os.fs.rename(["Desktop", currentName], ["Desktop", newName]);
+          console.log("[Rename Debug] renaming folder:", currentName, "->", newName);
+          await this.desktopUI.fs.renameItem("Desktop", currentName, newName, true);
+          console.log("[Rename Debug] fs rename succeeded");
           icon.dataset.folderName = newName;
           if (labelDiv) labelDiv.textContent = newName;
           os.notify.send(`Folder renamed to "${newName}"`);
         } else if (icon.classList.contains("desktop-file-icon")) {
-          await os.fs.rename(["Desktop", currentName], ["Desktop", newName]);
+          console.log("[Rename Debug] renaming file:", currentName, "->", newName);
+          if (currentName.endsWith(".desktop") && !newName.endsWith(".desktop")) {
+            newName += ".desktop";
+            console.log("[Rename Debug] appended .desktop, newName now:", newName);
+          }
+          await this.desktopUI.fs.renameItem("Desktop", currentName, newName, true);
+          console.log("[Rename Debug] fs rename succeeded");
           icon.dataset.fileName = newName;
           const displayName = newName.endsWith(".desktop") ? newName.slice(0, -8) : newName;
           if (labelDiv) labelDiv.textContent = displayName;
+          console.log(
+            "[Rename Debug] DOM updated: dataset.fileName =",
+            icon.dataset.fileName,
+            "label text =",
+            labelDiv?.textContent
+          );
           os.notify.send(`File renamed to "${newName}"`);
+        } else if (icon.dataset.app) {
+          console.log("[Rename Debug] renaming app shortcut:", currentName, "->", newName);
+          let newFile = newName;
+          if (icon.dataset.fileName?.endsWith(".desktop") && !newFile.endsWith(".desktop")) {
+            newFile += ".desktop";
+          }
+          if (icon.dataset.fileName) {
+            await this.desktopUI.fs.renameItem("Desktop", icon.dataset.fileName, newFile, true);
+            icon.dataset.fileName = newFile;
+          }
+          if (labelDiv) labelDiv.textContent = newName;
+          os.notify.send(`Renamed to "${newName}"`);
+        } else {
+          console.log("[Rename Debug] UNKNOWN ICON TYPE - no rename performed");
         }
         icon.classList.remove("is-renaming");
         wrap.remove();
         if (labelDiv) labelDiv.style.display = "";
+        console.log("[Rename Debug] rename complete");
       } catch (err) {
+        console.log("[Rename Debug] ERROR:", err.message);
         committed = false;
         showError(err.message || `"${newName}" already exists`);
         input.focus();

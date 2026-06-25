@@ -683,7 +683,7 @@ export class FileSystemManager {
     await this.p("rmdir", dirPath);
   }
 
-  async renameItem(path, oldName, newName) {
+  async renameItem(path, oldName, newName, skipNotify = false) {
     await this.fsReady;
     const dir = this.paths.resolveUserPath(path);
     const oldPath = this.paths.join(dir, oldName);
@@ -708,7 +708,7 @@ export class FileSystemManager {
     }
 
     await this.blobs._renameBlobByFullPath(oldPath, newPath);
-    await this.notifyDesktopChange(path);
+    if (!skipNotify) await this.notifyDesktopChange(path);
   }
 
   async updateFile(path, name, content, meta = {}) {

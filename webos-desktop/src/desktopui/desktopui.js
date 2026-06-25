@@ -8,6 +8,7 @@ import { desktop } from "./desktop.js";
 import interact from "interactjs";
 import { StorageKeys, os } from "../framework.js";
 import { hideMenu } from "../shared/contextMenu.js";
+import { isWindowFocused } from "../utils/utils.js";
 import { WindowHelper } from "../utils/WindowHelper.js";
 import { DesktopContextMenuManager } from "./ContextMenuManager.js";
 import { IconManager } from "./iconManager.js";
@@ -457,10 +458,25 @@ export class DesktopUI {
 
       if (KeybindManager.matches(e, "desktop.rename")) {
         e.preventDefault();
+        const explorerWins = document.querySelectorAll("[id^='explorer-']");
+        let anyExplorerFocused = false;
+        for (const win of explorerWins) {
+          if (isWindowFocused(win.id, lastMousePos)) {
+            anyExplorerFocused = true;
+            break;
+          }
+        }
+        if (anyExplorerFocused) return;
         const selectedArray = this.selectionManager.toArray();
         if (selectedArray.length === 1) {
           const icon = selectedArray[0];
-          this.contextMenuManager._startInlineDesktopRename(icon);
+          if (
+            icon.classList.contains("desktop-file-icon") ||
+            icon.classList.contains("folder-icon") ||
+            icon.dataset.app
+          ) {
+            this.contextMenuManager._startInlineDesktopRename(icon);
+          }
         }
       }
 
