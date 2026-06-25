@@ -5,8 +5,19 @@ const appNewsEntries = APP_MANIFESTS.filter((manifest) => manifest.news).map((ma
 
 const EXISTING_NEWS_UPDATES = [
   {
-    date: "June 26, 2026",
+    date: "June 25, 2026",
     sections: [
+      {
+        icon: "fa-globe",
+        title: "Browser",
+        items: [
+          [
+            "fa-message",
+            "Merged features of browser into scramjet and made scramjet the default browser",
+            "Now it has animations, history, bookmarks,drag to reorder, settings, rich context menu, tooltips, screenshot, dev tools, scroll click keybind to close tabs & more."
+          ]
+        ]
+      },
       {
         icon: "fa-mouse-pointer",
         title: "File Explorer",

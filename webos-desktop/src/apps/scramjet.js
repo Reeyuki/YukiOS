@@ -1,25 +1,56 @@
-import { BaseApp, PersistenceTypes } from "../framework.js";
+import { BaseApp, PersistenceTypes, StorageKeys, os } from "../framework.js";
+import { wobbleStart, wobbleMove, wobbleEnd } from "../windowManager/AnimationSystem.js";
+
+const THEME_VARS = [
+  "--brand",
+  "--text-primary",
+  "--text-secondary",
+  "--text-muted",
+  "--bg-primary",
+  "--bg-secondary",
+  "--surface-1",
+  "--surface-hover",
+  "--glass",
+  "--glass-border",
+  "--error",
+  "--font-ui",
+  "--font-mono",
+  "--brand-glow",
+  "--text-on-brand",
+  "--brand-hover",
+  "--brand-dim",
+  "--overlay-bg",
+  "--surface-2",
+  "--success",
+  "--warning"
+];
+
+let _scramjetInstanceCount = 0;
+
 export class ScramjetApp extends BaseApp {
   constructor(services) {
     super(services);
     this.iframe = null;
+    this._msgHandler = null;
+    this._element = null;
   }
 
   getDeclarativeSchema(opts) {
+    const instanceNum = ++_scramjetInstanceCount;
     return {
       id: "scramjet",
       name: "Scramjet Browser",
       icon: "fas fa-globe",
       windows: [
         {
-          id: "scramjet-window",
-          title: "Scramjet Browser",
-          size: ["1024px", "768px"],
+          id: "scramjet-window-" + instanceNum,
+          title: opts?.isIncognito ? "Scramjet Browser (Private)" : "Scramjet Browser",
+          size: ["1024px", "630px"],
           icon: "fas fa-globe",
           ui: `
             <div class="scramjet-container" style="width:100%;height:100%;overflow:hidden;">
               <iframe
-                id="scramjet-iframe"
+                class="scramjet-iframe"
                 style="width:100%;height:100%;border:none;"
                 sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation-by-user-activation"
               ></iframe>
@@ -28,7 +59,7 @@ export class ScramjetApp extends BaseApp {
         }
       ],
       state: {
-        initial: {},
+        initial: opts?.isIncognito ? { isIncognito: true } : {},
         persistence: PersistenceTypes.NONE
       },
       onMount: "initScramjet",
@@ -37,26 +68,71 @@ export class ScramjetApp extends BaseApp {
   }
 
   async initScramjet(payload, vt, element, state) {
-    this.iframe = element.querySelector("#scramjet-iframe");
+    this._element = element;
+    const iframe = element.querySelector(".scramjet-iframe");
+    this.iframe = iframe;
 
     const isIncognito = state.isIncognito || false;
     const incognitoParam = isIncognito ? "?incognito=true" : "";
-    this.iframe.src = window.location.origin + "/scram/index.html" + incognitoParam;
+    iframe.src = window.location.origin + "/scram/index.html" + incognitoParam;
 
     const header = element.querySelector(".window-header");
-    if (header) {
-      header.style.height = "0";
-      header.style.overflow = "hidden";
-      header.style.padding = "0";
-    }
+    if (header) header.remove();
 
     this.wm.makeDraggable(element);
     this.wm.makeResizable(element);
 
-    this.iframe.addEventListener("load", () => {
+    const sendDataToIframe = () => {
+      if (!iframe || !iframe.contentWindow) return;
+      const computed = getComputedStyle(document.documentElement);
+      const vars = {};
+      THEME_VARS.forEach((name) => {
+        vars[name] = computed.getPropertyValue(name).trim();
+      });
+      const bookmarks = os.storage.get(StorageKeys.browserBookmarks) || [];
+      const history = os.storage.get(StorageKeys.browserHistory) || [];
+      iframe.contentWindow.postMessage({ type: "scram:init", vars, bookmarks, history }, "*");
+    };
+
+    const msgHandler = (e) => {
+      if (e.source !== iframe?.contentWindow) return;
+      const data = e.data;
+      if (!data || !data.type) return;
+
+      if (data.type === "scram:getBookmarks" || data.type === "scram:getHistory") {
+        sendDataToIframe();
+      } else if (data.type === "scram:addBookmark") {
+        let bookmarks = os.storage.get(StorageKeys.browserBookmarks) || [];
+        if (!bookmarks.some((b) => b.url === data.url)) {
+          bookmarks.push({ name: data.name || data.url, url: data.url });
+          os.storage.set(StorageKeys.browserBookmarks, bookmarks);
+        }
+      } else if (data.type === "scram:removeBookmark") {
+        let bookmarks = os.storage.get(StorageKeys.browserBookmarks) || [];
+        bookmarks = bookmarks.filter((b) => b.url !== data.url);
+        os.storage.set(StorageKeys.browserBookmarks, bookmarks);
+      } else if (data.type === "scram:setBookmarks") {
+        os.storage.set(StorageKeys.browserBookmarks, data.bookmarks || []);
+      } else if (data.type === "scram:addHistory") {
+        let history = os.storage.get(StorageKeys.browserHistory) || [];
+        history.push({ url: data.url, title: data.title || data.url, time: Date.now() });
+        if (history.length > 500) history = history.slice(-500);
+        os.storage.set(StorageKeys.browserHistory, history);
+      } else if (data.type === "scram:setHistory") {
+        os.storage.set(StorageKeys.browserHistory, data.history || []);
+      } else if (data.type === "browser-new-window") {
+        os.app.launch("scramjetApp", { isIncognito: !!data.incognito });
+      }
+    };
+    this._msgHandler = msgHandler;
+    window.addEventListener("message", msgHandler);
+
+    iframe.addEventListener("load", () => {
+      sendDataToIframe();
+
       const checkForControlsSlot = () => {
         try {
-          const iframeDoc = this.iframe.contentDocument || this.iframe.contentWindow.document;
+          const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
           const controlsSlot = iframeDoc.getElementById("controls-slot");
           if (controlsSlot) {
             const winId = element.id;
@@ -114,19 +190,47 @@ export class ScramjetApp extends BaseApp {
               tabsContainer.style.cursor = "move";
 
               tabsContainer.addEventListener("mousedown", (e) => {
-                if (e.target.closest(".tab") || e.target.closest(".new-tab") || e.target.closest(".window-controls"))
+                if (
+                  e.target.closest(".tab") ||
+                  e.target.closest(".new-tab") ||
+                  e.target.closest(".window-controls") ||
+                  e.target.closest("#tab-strip")
+                )
                   return;
                 if (e.button !== 0) return;
 
                 e.preventDefault();
                 this.wm.bringToFront(element);
+                wobbleStart(element);
 
                 const wasSnapped = !!element.dataset.snapZone;
                 if (wasSnapped) this.wm._unsnap(element);
 
+                const disableStretch = os.storage.get(StorageKeys.disableDesktopStretchScroll) === "true";
+                if (disableStretch) {
+                  if (getComputedStyle(element).position !== "fixed") {
+                    const rect = element.getBoundingClientRect();
+                    element.style.left = `${rect.left}px`;
+                    element.style.top = `${rect.top}px`;
+                    element.style.position = "fixed";
+                  }
+                } else if (getComputedStyle(element).position === "fixed") {
+                  const rect = element.getBoundingClientRect();
+                  const desktop = document.getElementById("desktop");
+                  const desktopRect = desktop.getBoundingClientRect();
+                  const left = rect.left - desktopRect.left + desktop.scrollLeft;
+                  const top = rect.top - desktopRect.top + desktop.scrollTop;
+                  element.style.left = `${left}px`;
+                  element.style.top = `${top}px`;
+                  element.style.position = "absolute";
+                }
+
+                const iframeRect = iframe.getBoundingClientRect();
+                const startX = e.clientX + iframeRect.left;
+                const startY = e.clientY + iframeRect.top;
                 const winRect = element.getBoundingClientRect();
-                const ox = e.clientX - winRect.left;
-                const oy = e.clientY - winRect.top;
+                const ox = startX - winRect.left;
+                const oy = startY - winRect.top;
 
                 this.wm.isDraggingWindow = true;
                 document.body.classList.add("is-dragging");
@@ -142,6 +246,8 @@ export class ScramjetApp extends BaseApp {
                     entry.record.setGeometry(newLeft, newTop);
                   }
 
+                  wobbleMove(element, moveEvent.clientX - startX, moveEvent.clientY - startY);
+
                   const zone = this.wm._getSnapZone(moveEvent.clientX, moveEvent.clientY);
                   this.wm._activeSnapZone = zone;
 
@@ -155,6 +261,7 @@ export class ScramjetApp extends BaseApp {
 
                   this.wm.isDraggingWindow = false;
                   document.body.classList.remove("is-dragging");
+                  wobbleEnd(element);
 
                   if (this.wm._activeSnapZone) {
                     this.wm._applySnap(element, this.wm._activeSnapZone);
@@ -179,7 +286,35 @@ export class ScramjetApp extends BaseApp {
     });
   }
 
+  _sendDataToIframe() {
+    if (!this.iframe || !this.iframe.contentWindow) return;
+
+    const computed = getComputedStyle(document.documentElement);
+    const vars = {};
+    THEME_VARS.forEach((name) => {
+      vars[name] = computed.getPropertyValue(name).trim();
+    });
+
+    const bookmarks = os.storage.get(StorageKeys.browserBookmarks) || [];
+    const history = os.storage.get(StorageKeys.browserHistory) || [];
+
+    this.iframe.contentWindow.postMessage(
+      {
+        type: "scram:init",
+        vars,
+        bookmarks,
+        history
+      },
+      "*"
+    );
+  }
+
   cleanupScramjet() {
+    if (this._msgHandler) {
+      window.removeEventListener("message", this._msgHandler);
+      this._msgHandler = null;
+    }
     this.iframe = null;
+    this._element = null;
   }
 }

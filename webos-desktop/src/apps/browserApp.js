@@ -56,9 +56,14 @@ export class BrowserApp extends BaseApp {
     this._loadPrefs();
   }
 
-  async open(title = "Yuki Browser", url = null, isIncognito = false) {
+  async open(title = "Cors Browser", url = null, isIncognito = false) {
     this.isIncognito = isIncognito;
     if (await this._isSingletonOpen(this.winId)) return;
+
+    os.notify.send("USE SCRAMJET", "This cors browser can not open many sites. open the browser app instead.", {
+      type: "success",
+      duration: 8000
+    });
 
     this._destroyed = false;
 
@@ -304,7 +309,7 @@ export class BrowserApp extends BaseApp {
 
   openHtmlAsTab(url, name = "file", path = "file://") {
     if (!this.win) {
-      this.open("Yuki Browser", url);
+      this.open("Cors Browser", url);
     } else {
       this.createTab(url, true);
       const tab = this.getActiveTab();
@@ -895,6 +900,9 @@ export class BrowserApp extends BaseApp {
       if (e.data.type === "browser-launch-app") {
         os.app.launch(e.data.appId);
       }
+      if (e.data.type === "browser-new-window") {
+        os.app.launch("scramjetApp", { isIncognito: !!e.data.incognito });
+      }
       if (e.data.type === "browser-tor-reconnect") {
         const tab = this.tabs.find((t) => t.iframe && t.iframe.contentWindow === e.source);
         os.tor
@@ -1457,7 +1465,7 @@ body {
 <div class="bg-orb bg-orb-3"></div>
 <div class="main">
   <div class="logo"><i class="fas fa-snowflake"></i></div>
-  <h1>Yuki Browser</h1>
+  <h1>Cors Browser</h1>
   <p class="tagline">Your desktop, in your browser</p>
   <div class="time" id="clock">--:--</div>
   <div class="date" id="datestr"></div>
@@ -1476,7 +1484,7 @@ body {
     </button>
     <button class="quick-link" data-app-launch="scramjetApp" style="background: rgba(138, 180, 248, 0.3); border-color: #8ab4f8;">
       <div class="quick-link-icon" style="font-size: 24px;"><i class="fas fa-globe"></i></div>
-      <div class="quick-link-label">Scramjet</div>
+      <div class="quick-link-label">Browser</div>
     </button>
   </div>
 </div>
@@ -2629,12 +2637,12 @@ body {
 
   createNewWindow() {
     const newBrowser = new BrowserApp(this._services);
-    newBrowser.open("Yuki Browser", this.homepageUrl, false);
+    newBrowser.open("Cors Browser", this.homepageUrl, false);
   }
 
   createNewPrivateWindow() {
     const newBrowser = new BrowserApp(this._services);
-    newBrowser.open("Yuki Browser", this.homepageUrl, true);
+    newBrowser.open("Cors Browser", this.homepageUrl, true);
   }
 
   renderTabs() {

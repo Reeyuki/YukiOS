@@ -910,8 +910,7 @@ export function renderDataSettings() {
 export function renderNetworkSettings(s) {
   const wispServers = [
     { name: "Reeyuki Wisp", url: "wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/" },
-    { name: "Reeyuki Wisp 2", url: "wss://reeyukiwisp.onrender.com/" },
-    { name: "Anura Wisp", url: "wss://anura.pro" }
+    { name: "Reeyuki Wisp 2", url: "wss://reeyukiwisp.onrender.com/" }
   ];
   const currentWisp = s.wispServer || wispServers[0].url;
   const isCustomWisp = !wispServers.some((w) => w.url === currentWisp);
@@ -1051,6 +1050,10 @@ export function renderAboutSettings() {
             <button class="settings-btn settings-btn-discord"><i class="fab fa-discord"></i> Join</button>
           </a>
         </div>
+      </div>
+
+      <div class="settings-card" style="margin-top: 16px; text-align: center; padding: 20px;">
+        <a href="https://github.com/reeyuki" target="_blank" rel="noopener noreferrer" style="color: var(--text-muted); font-size: 0.82em; text-decoration: none; transition: color 0.15s;" onmouseover="this.style.color='var(--text-primary)'" onmouseout="this.style.color='var(--text-muted)'">made by reeyuki <i class="fab fa-github"></i></a>
       </div>
     </div>
   `;

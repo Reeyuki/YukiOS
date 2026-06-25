@@ -4,7 +4,6 @@
     <meta charset="UTF-8" />
     <title>New Tab</title>
 
-    <script src="/s/text.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <style>
       @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
@@ -188,6 +187,39 @@
         color: var(--text-muted);
       }
 
+      .shortcut-close {
+        position: absolute;
+        top: -6px;
+        right: -6px;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: var(--surface-active, #252525);
+        border: 1px solid var(--border, #1f1f1f);
+        color: var(--text-muted, #71717a);
+        font-size: 10px;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 2;
+        line-height: 1;
+        transition:
+          background 0.1s,
+          color 0.1s;
+      }
+      .shortcut-close:hover {
+        background: #ef4444;
+        color: #fff;
+        border-color: #ef4444;
+      }
+      .shortcut:hover .shortcut-close {
+        display: flex;
+      }
+      .shortcut {
+        position: relative;
+      }
+
       .shortcut-label {
         font-size: 11px;
         color: var(--text-muted);
@@ -239,12 +271,130 @@
           transform: rotate(360deg);
         }
       }
+
+      .incognito-badge {
+        position: fixed;
+        top: 16px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(239, 68, 68, 0.15);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        color: #ef4444;
+        padding: 8px 18px;
+        border-radius: 9999px;
+        font-size: 12px;
+        font-weight: 500;
+        letter-spacing: 0.02em;
+      }
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.12);
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.2);
+      }
+      * {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
+      }
+
+      .nt-modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.15s;
+      }
+      .nt-modal-overlay.open {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .nt-modal {
+        background: #1a1a1a;
+        border: 1px solid #333;
+        border-radius: 12px;
+        padding: 24px;
+        min-width: 320px;
+        max-width: 420px;
+        box-shadow: 0 24px 64px rgba(0, 0, 0, 0.65);
+      }
+      .nt-modal-title {
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 16px;
+        color: #e4e4e7;
+      }
+      .nt-modal-input {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 8px;
+        border: 1px solid #333;
+        background: #0f0f0f;
+        color: #e4e4e7;
+        font-size: 13px;
+        outline: none;
+        margin-bottom: 16px;
+        box-sizing: border-box;
+      }
+      .nt-modal-input:focus {
+        border-color: #666;
+      }
+      .nt-modal-actions {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+      }
+      .nt-modal-btn {
+        padding: 8px 16px;
+        border-radius: 8px;
+        border: none;
+        font-size: 13px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: opacity 0.1s;
+      }
+      .nt-modal-btn:hover {
+        opacity: 0.8;
+      }
+      .nt-modal-btn-primary {
+        background: #e4e4e7;
+        color: #0a0a0a;
+      }
+      .nt-modal-btn-secondary {
+        background: #2a2a2a;
+        color: #a1a1aa;
+      }
+      .nt-modal-message {
+        font-size: 13px;
+        color: #a1a1aa;
+        margin-bottom: 16px;
+        line-height: 1.4;
+      }
     </style>
   </head>
 
   <body>
     <div class="loader" id="loader">
       <div class="spinner"></div>
+    </div>
+
+    <div class="incognito-badge" id="incognito-badge" style="display: none">
+      <i class="fa-solid fa-user-secret"></i>
+      <span>You're browsing privately</span>
     </div>
 
     <div class="clock" id="clock">00:00</div>
@@ -261,49 +411,57 @@
     </form>
 
     <div class="shortcuts" id="shortcuts">
-      <a class="shortcut" data-url="https://youtube.com">
+      <a class="shortcut preset-shortcut" data-url="https://youtube.com">
+        <span class="shortcut-close" data-url="https://youtube.com">&times;</span>
         <div class="shortcut-icon">
           <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/youtube.svg" />
         </div>
         <span class="shortcut-label">YouTube</span>
       </a>
-      <a class="shortcut" data-url="https://github.com">
+      <a class="shortcut preset-shortcut" data-url="https://github.com">
+        <span class="shortcut-close" data-url="https://github.com">&times;</span>
         <div class="shortcut-icon">
           <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/github.svg" />
         </div>
         <span class="shortcut-label">GitHub</span>
       </a>
-      <a class="shortcut" data-url="https://discord.com">
+      <a class="shortcut preset-shortcut" data-url="https://discord.com">
+        <span class="shortcut-close" data-url="https://discord.com">&times;</span>
         <div class="shortcut-icon">
           <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/discord.svg" />
         </div>
         <span class="shortcut-label">Discord</span>
       </a>
-      <a class="shortcut" data-url="https://twitter.com">
+      <a class="shortcut preset-shortcut" data-url="https://twitter.com">
+        <span class="shortcut-close" data-url="https://twitter.com">&times;</span>
         <div class="shortcut-icon">
           <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/x.svg" />
         </div>
         <span class="shortcut-label">Twitter</span>
       </a>
-      <a class="shortcut" data-url="https://reddit.com">
+      <a class="shortcut preset-shortcut" data-url="https://play.geforcenow.com/mall/">
+        <span class="shortcut-close" data-url="https://play.geforcenow.com/mall/">&times;</span>
         <div class="shortcut-icon">
-          <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/reddit.svg" />
+          <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/nvidia.svg" />
         </div>
-        <span class="shortcut-label">Reddit</span>
+        <span class="shortcut-label">Geforce Now</span>
       </a>
-      <a class="shortcut" data-url="https://www.xbox.com/en-us/play">
+      <a class="shortcut preset-shortcut" data-url="https://www.xbox.com/en-us/play">
+        <span class="shortcut-close" data-url="https://www.xbox.com/en-us/play">&times;</span>
         <div class="shortcut-icon">
           <img src="https://cdn-icons-png.flaticon.com/512/250/250562.png" />
         </div>
         <span class="shortcut-label">Xbox</span>
       </a>
-      <a class="shortcut" data-url="https://netflix.com">
+      <a class="shortcut preset-shortcut" data-url="https://netflix.com">
+        <span class="shortcut-close" data-url="https://netflix.com">&times;</span>
         <div class="shortcut-icon">
           <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/netflix.svg" />
         </div>
         <span class="shortcut-label">Netflix</span>
       </a>
-      <a class="shortcut" data-url="https://twitch.tv">
+      <a class="shortcut preset-shortcut" data-url="https://twitch.tv">
+        <span class="shortcut-close" data-url="https://twitch.tv">&times;</span>
         <div class="shortcut-icon">
           <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/twitch.svg" />
         </div>
@@ -336,26 +494,114 @@
 
     <div class="quote" id="quote"></div>
 
+    <div class="nt-modal-overlay" id="ntModal">
+      <div class="nt-modal">
+        <div class="nt-modal-title" id="ntModalTitle"></div>
+        <div class="nt-modal-message" id="ntModalMessage"></div>
+        <input class="nt-modal-input" id="ntModalInput" style="display: none" />
+        <div class="nt-modal-actions">
+          <button class="nt-modal-btn nt-modal-btn-secondary" id="ntModalCancel">Cancel</button>
+          <button class="nt-modal-btn nt-modal-btn-primary" id="ntModalOk">OK</button>
+        </div>
+      </div>
+    </div>
+
     <script>
       const $ = (s) => document.querySelector(s);
+
+      // Incognito detection
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get("incognito") === "true") {
+        document.getElementById("incognito-badge").style.display = "flex";
+        document.title = "New Tab (Private)";
+      }
+
       const nav = (url) => {
         $("#loader").classList.add("show");
         window.parent?.postMessage({ type: "navigate", url }, "*");
       };
 
+      // DOM-based dialogs (sandbox-safe)
+      function ntDialog(type, title, defaultValue) {
+        return new Promise((resolve) => {
+          const overlay = document.getElementById("ntModal");
+          const titleEl = document.getElementById("ntModalTitle");
+          const msgEl = document.getElementById("ntModalMessage");
+          const inputEl = document.getElementById("ntModalInput");
+          const okBtn = document.getElementById("ntModalOk");
+          const cancelBtn = document.getElementById("ntModalCancel");
+
+          titleEl.textContent = title;
+          if (type === "prompt") {
+            msgEl.style.display = "none";
+            inputEl.style.display = "";
+            inputEl.value = defaultValue || "";
+            inputEl.focus();
+            inputEl.onkeydown = (e) => {
+              if (e.key === "Enter") okBtn.click();
+            };
+          } else if (type === "confirm") {
+            msgEl.style.display = "";
+            msgEl.textContent = defaultValue || "";
+            inputEl.style.display = "none";
+          } else {
+            msgEl.style.display = "";
+            msgEl.textContent = defaultValue || "";
+            inputEl.style.display = "none";
+            cancelBtn.style.display = "none";
+          }
+
+          const cleanup = () => {
+            overlay.classList.remove("open");
+            okBtn.onclick = null;
+            cancelBtn.onclick = null;
+            cancelBtn.style.display = "";
+          };
+
+          okBtn.onclick = () => {
+            cleanup();
+            resolve(type === "prompt" ? inputEl.value : true);
+          };
+          cancelBtn.onclick = () => {
+            cleanup();
+            resolve(type === "prompt" ? null : false);
+          };
+
+          overlay.classList.add("open");
+        });
+      }
+      const ntPrompt = (msg, val) => ntDialog("prompt", msg, val);
+      const ntConfirm = (msg) => ntDialog("confirm", msg);
+      const ntAlert = (msg) => ntDialog("alert", msg);
+
       // Clock
       function updateClock() {
         const now = new Date();
-        $("#clock").textContent = now.toLocaleTimeString("en-US", {
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: false
-        });
-        $("#date").textContent = now.toLocaleDateString("en-US", {
-          weekday: "long",
-          month: "long",
-          day: "numeric"
-        });
+        const clockEl = document.getElementById("clock");
+        const dateEl = document.getElementById("date");
+        if (clockEl) {
+          try {
+            clockEl.textContent = now.toLocaleTimeString("en-US", {
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: false
+            });
+          } catch {
+            clockEl.textContent =
+              String(now.getHours()).padStart(2, "0") + ":" + String(now.getMinutes()).padStart(2, "0");
+          }
+        }
+        if (dateEl) {
+          try {
+            dateEl.textContent = now.toLocaleDateString("en-US", {
+              weekday: "long",
+              month: "long",
+              day: "numeric"
+            });
+          } catch {
+            dateEl.textContent = now.toDateString();
+          }
+        }
       }
       updateClock();
       setInterval(updateClock, 1000);
@@ -367,8 +613,52 @@
         if (q) nav($("#engine").value + encodeURIComponent(q));
       };
 
+      // Populate custom search engines from localStorage
+      function populateCustomEngines() {
+        try {
+          const custom = JSON.parse(localStorage.getItem("scramjet_custom_engines") || "[]");
+          const sel = $("#engine");
+          custom.forEach(function (eng) {
+            const opt = document.createElement("option");
+            opt.value = eng.url;
+            opt.textContent = eng.name;
+            sel.appendChild(opt);
+          });
+        } catch (e) {}
+      }
+      populateCustomEngines();
+
+      // Close button for preset shortcuts
+      const REMOVED_PRESETS_KEY = "scramjet_removed_presets";
+      function getRemovedPresets() {
+        try {
+          return JSON.parse(localStorage.getItem(REMOVED_PRESETS_KEY) || "[]");
+        } catch {
+          return [];
+        }
+      }
+      function hidePresetShortcut(url) {
+        const removed = getRemovedPresets();
+        if (!removed.includes(url)) removed.push(url);
+        localStorage.setItem(REMOVED_PRESETS_KEY, JSON.stringify(removed));
+        const el = document.querySelector(`.preset-shortcut[data-url="${url}"]`);
+        if (el) el.style.display = "none";
+      }
+      getRemovedPresets().forEach((url) => {
+        const el = document.querySelector(`.preset-shortcut[data-url="${url}"]`);
+        if (el) el.style.display = "none";
+      });
+      document.querySelectorAll(".shortcut-close").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          hidePresetShortcut(btn.dataset.url);
+        });
+      });
+
       // Shortcuts
-      $("#shortcuts").onclick = (e) => {
+      $("#shortcuts").onclick = async (e) => {
+        if (e.target.closest(".shortcut-close")) return;
         const shortcut = e.target.closest(".shortcut[data-url]");
         const addBtn = e.target.closest("#addShortcut");
 
@@ -376,9 +666,9 @@
           e.preventDefault();
           nav(shortcut.dataset.url);
         } else if (addBtn) {
-          const name = prompt("Shortcut name:");
+          const name = await ntPrompt("Shortcut name:");
           if (!name) return;
-          let url = prompt("URL:");
+          let url = await ntPrompt("URL:");
           if (!url) return;
           if (!url.startsWith("http")) url = "https://" + url;
 

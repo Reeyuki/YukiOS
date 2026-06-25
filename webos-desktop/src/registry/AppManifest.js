@@ -358,14 +358,15 @@ export const APP_MANIFESTS = [
     serviceKey: "scramjetApp",
     enhanced: true,
     type: "system",
-    title: "Scramjet Proxy",
+    title: "Browser",
     icon: "fas fa-globe",
     launchType: "instance",
     windowIdPatterns: ["scramjet"],
     category: "internet",
     persistContentState: false,
-    clippy: { message: "Browse web", animation: ClippyAnimation.GetArtsy },
-    description: "Browse the web through a proxy and access external sites with basic anonymity from your desktop."
+    clippy: { message: "Browse the web freely with powerful tab management.", animation: ClippyAnimation.GetArtsy },
+    description:
+      "Full-featured web browser with tab management, bookmarks, history, and proxy support for unrestricted browsing."
   },
   {
     serviceKey: "discordApp",
@@ -915,7 +916,7 @@ export const APP_MANIFESTS = [
   {
     serviceKey: "browserApp",
     type: "system",
-    title: "Yuki Browser",
+    title: "Cors Browser",
     icon: "fas fa-snowflake",
     launchType: "instance",
     windowIdPatterns: ["browser"],
@@ -925,7 +926,7 @@ export const APP_MANIFESTS = [
       message: "Select Tor from the proxy dropdown to browse anonymously. I'll handle the setup.",
       animation: ClippyAnimation.Wave
     },
-    description: "Web browser with bookmarks, history, tab management, and Tor anonymous browsing within YukiOS."
+    description: "CORS proxy browser with bookmarks, history, tab management, and Tor anonymous browsing within YukiOS."
   },
   {
     serviceKey: "yukiDevToolsApp",

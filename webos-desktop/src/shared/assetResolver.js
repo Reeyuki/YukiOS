@@ -413,9 +413,17 @@ export async function fetchHtmlAsBlobUrl(url) {
     } catch {}
   }
   const isIgnored =
-    ["angrybirds", "subway", "azahar", "catgoesfishing", "cat goes fishing", "tabs", "catfish", "gamesforaetheris", "cat_fish"].some((p) =>
-      url.toLowerCase().includes(p.toLowerCase())
-    ) || url.toLowerCase().includes("catgoesfishing.html");
+    [
+      "angrybirds",
+      "subway",
+      "azahar",
+      "catgoesfishing",
+      "cat goes fishing",
+      "tabs",
+      "catfish",
+      "gamesforaetheris",
+      "cat_fish"
+    ].some((p) => url.toLowerCase().includes(p.toLowerCase())) || url.toLowerCase().includes("catgoesfishing.html");
 
   let rewritten = html;
   if (!isIgnored) {

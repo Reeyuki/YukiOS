@@ -717,7 +717,7 @@ export class YukiOsGuideApp extends BaseApp {
       global: { icon: "fas fa-globe", label: "Global & System" },
       desktop: { icon: "fas fa-desktop", label: "Desktop & Files" },
       notepad: { icon: "fas fa-file-alt", label: "Notepad" },
-      browser: { icon: "fas fa-compass", label: "Yuki Browser" },
+      browser: { icon: "fas fa-compass", label: "Cors Browser" },
       calc: { icon: "fas fa-calculator", label: "Calculator" },
       calendar: { icon: "fas fa-calendar-alt", label: "Calendar" },
       terminal: { icon: "fas fa-terminal", label: "Terminal" },

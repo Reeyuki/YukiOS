@@ -18,6 +18,8 @@ Planned features and improvements for YukiOS.
 - [ ] Add 3D os mode
 - [ ] Add tiling wm mode
 - [ ] Add more achievements
+- [ ] Make single file bundling only optional
+- [ ] Add desktop peek button at bottom right
 - [ ] File association system / default apps for files app
 
 ---
