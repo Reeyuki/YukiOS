@@ -12,7 +12,6 @@ describe("StorageKeys", () => {
       expect(typeof value, `Key ${key} should be a string`).toBe("string");
       expect(value.length, `Key ${key} should not be empty`).toBeGreaterThan(0);
     }
-    
   });
 
   it("all values start with yukiOS or yukios or browser_ or wm_ or steam_", () => {

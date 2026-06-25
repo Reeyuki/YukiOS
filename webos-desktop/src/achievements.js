@@ -38,9 +38,9 @@ export class AchievementsApp extends BaseApp {
     super(services);
     this.achievements = this._createAchievements();
     this.unlocked = new Set();
-    this.s1 = new Audio(resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/audio/steam.mp3"));
-    this.s2 = new Audio(resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/audio/slime1.mp3"));
-    this.s3 = new Audio(resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/audio/slime2.mp3"));
+    this.s1 = new Audio(resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/audio/steam.opus"));
+    this.s2 = new Audio(resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/audio/slime1.opus"));
+    this.s3 = new Audio(resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/audio/slime2.opus"));
 
     this._initBusListeners();
     this._thresholds = {

@@ -55,9 +55,9 @@ export const defaultStorage = {
       Music: {
         "new_look_mii_maker_lofi_mix.mp3": {
           type: "file",
-          content: resolveIconUrl("static/audio/new_look_mii_maker_lofi_mix.mp3"),
+          content: resolveIconUrl("static/audio/new_look_mii_maker_lofi_mix.opus"),
           kind: FileKind.AUDIO,
-          icon: resolveIconUrl("static/audio/new_look_mii_maker_lofi_mix.mp3")
+          icon: resolveIconUrl("static/audio/new_look_mii_maker_lofi_mix.opus")
         }
       },
       Pictures: {

@@ -3,11 +3,11 @@ import { $ } from "./shared/domUtils.js";
 
 import { StorageKeys, os } from "./framework.js";
 export const SystemAudio = Object.freeze({
-  START: "static/audio/start.wav",
-  SHUTDOWN: "static/audio/shutdown.wav",
-  ERROR: "static/audio/error.mp3",
-  WARNING: "static/audio/warning.mpga",
-  DESKTOP_CHANGE: "static/audio/desktopchange.mpga"
+  START: "static/audio/start.opus",
+  SHUTDOWN: "static/audio/shutdown.opus",
+  ERROR: "static/audio/error.opus",
+  WARNING: "static/audio/warning.opus",
+  DESKTOP_CHANGE: "static/audio/desktopchange.opus"
 });
 
 const STORAGE_KEY = StorageKeys.audioMixerV1;
