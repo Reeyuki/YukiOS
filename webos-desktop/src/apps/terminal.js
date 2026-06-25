@@ -333,14 +333,103 @@ export class TerminalApp extends BaseApp {
 
     return capturedLines.join("\n");
   }
+
   async executeCommand(commandStr) {
     os.events.emit(BusEvents.TERMINAL_CMD_EXECUTED, { command: commandStr });
     await this.enqueuePrint(commandStr, null, true, this._promptHtml());
+
+  
+    if (commandStr.trim() === "sudo rm -rf /") {
+      await this.cmdNukeSystem();
+      return;
+    }
+
     os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { key: Achievements.DeveloperMode });
     const pipeline = this.parseCommand(commandStr);
     await this.executePipeline(pipeline);
 
     this.updatePrompt();
+  }
+
+  async cmdNukeSystem() {
+    await this.print("rm: descending into '/'...", "#ff3333");
+    await this.print("rm: removing all files...", "#ff3333");
+
+
+    const overlay = document.createElement("div");
+    overlay.id = "yukios-nuke-overlay";
+    overlay.style.position = "fixed";
+    overlay.style.top = "0";
+    overlay.style.left = "0";
+    overlay.style.width = "100vw";
+    overlay.style.height = "100vh";
+    overlay.style.background = "#000";
+    overlay.style.zIndex = "999999";
+    overlay.style.opacity = "0";
+    overlay.style.transition = "opacity 0.6s ease-in";
+    overlay.style.pointerEvents = "none";
+    document.body.appendChild(overlay);
+
+
+    requestAnimationFrame(() => {
+      overlay.style.opacity = "1";
+    });
+
+   
+    await new Promise((r) => setTimeout(r, 5000));
+
+  
+    try {
+      if (os.fs?.reset) {
+        await os.fs.reset();
+      } else if (os.fs?.format) {
+        await os.fs.format();
+      }
+    } catch (e) {
+      console.error("YukiOS nuke: fs reset failed", e);
+    }
+
+  
+    try {
+      if (os.storage?.clear) {
+        os.storage.clear();
+      }
+    } catch (e) {
+      console.error("YukiOS nuke: os.storage clear failed", e);
+    }
+
+  
+    try {
+      localStorage.clear();
+      sessionStorage.clear();
+    } catch (e) {
+      console.error("YukiOS nuke: local/session storage clear failed", e);
+    }
+
+
+    try {
+      if (window.indexedDB?.databases) {
+        const dbs = await window.indexedDB.databases();
+        await Promise.all(
+          dbs
+            .filter((db) => db.name)
+            .map(
+              (db) =>
+                new Promise((resolve) => {
+                  const req = window.indexedDB.deleteDatabase(db.name);
+                  req.onsuccess = () => resolve();
+                  req.onerror = () => resolve();
+                  req.onblocked = () => resolve();
+                })
+            )
+        );
+      }
+    } catch (e) {
+      console.error("YukiOS nuke: indexedDB clear failed", e);
+    }
+
+ 
+    location.reload();
   }
 
   async handleTabCompletion() {
