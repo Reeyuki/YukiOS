@@ -78,7 +78,7 @@ jobs:
               cd webos-desktop
 
               pnpm install --frozen-lockfile
-              pnpm build
+              pnpm build:single
 
               HTML_FILE="$(find . -type f -name '*.html' ! -path '*/node_modules/*' | head -n 1)"
 
