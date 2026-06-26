@@ -1,0 +1,7 @@
+services:
+  webos:
+    build:
+      context: ..
+      dockerfile: webos-desktop/Dockerfile
+    ports:
+      - "8080:80"
