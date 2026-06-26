@@ -24,11 +24,12 @@ by side.
 
 Its built entirely in vanilla javascript/typescript without any frameworks.
 
-![Login page](.github/login.png) ![Steam interface](.github/steam.png) ![Start menu](.github/startmenuv86.png)
+![Login page](.github/login.png) ![Steam interface](.github/steam.png) ![Start menu](.github/startmenu.png)
 ![Steam overlay](.github/overlay.png) ![Discord](.github/dc.png) ![Web Apps](.github/webapps.png)
 ![Setup](.github/setupsettings.png) ![Music1](.github/audio1.png) ![Music2](.github/audio2.png)
 ![Achievements](.github/browserachieve.png) ![Music player](.github/music.png) ![Applications](.github/apps.png)
 [Workspaces](.github/Workspaces.png)
+
 
 # ✨ Desktop Experience
 
