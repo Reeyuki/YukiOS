@@ -109,12 +109,15 @@ export default defineConfig({
   },
   build: {
     target: "esnext",
-    minify: "esbuild",
+    minify: isDevBuild ? false : "esbuild",
     sourcemap: false,
+    cssMinify: isDevBuild ? false : "esbuild",
     cssCodeSplit: !isSingleFile,
+    modulePreload: !isDevBuild,
+    reportCompressedSize: !isDevBuild,
     assetsInlineLimit: isSingleFile ? 100000000 : 4096,
     rollupOptions: {
-      treeshake: true,
+      treeshake: !isDevBuild,
       external: isSingleFile ? ["three", /^three\/.*/, "7z-wasm", "archive-wasm", "clippyjs", /^clippyjs\/.*/] : [],
       output: {
         inlineDynamicImports: isSingleFile,
