@@ -16,7 +16,7 @@
     "bf": "pnpm format && pnpm build:dev && cp -r dist/* ../desktop/",
     "build-win": "vite build",
     "preview": "vite preview",
-    "format": "pnpm exec prettier . --write --cache",
+    "format": "pnpm exec prettier --write --cache --cache-location=.prettier-cache src",
     "lint": "eslint . --ext .js,.jsx --fix",
     "test": "vitest run",
     "test:watch": "vitest",

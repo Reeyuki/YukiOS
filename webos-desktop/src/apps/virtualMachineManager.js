@@ -14,6 +14,13 @@ const OS_LIST = [
   { id: "win10", name: "Windows 10", url: "https://dustinbrett.com/", color: "#005a9e", icon: "fab fa-windows" },
   { id: "win7", name: "Windows 7", url: "https://win7simu.visnalize.com/", color: "#3a6ea5", icon: "fab fa-windows" },
   { id: "winxp", name: "Windows XP", url: "https://winxp.vercel.app", color: "#3a6ea5", icon: "fab fa-windows" },
+  {
+    id: "winxp",
+    name: "Windows XP (Heavy)",
+    url: "https://cdn.jsdelivr.net/gh/reeyuki/yukios@main/apps/winxp/index.html",
+    color: "#3a6ea5",
+    icon: "fab fa-windows"
+  },
   { id: "win96", name: "Windows 96", url: "https://windows96.net", color: "#c0c0c0", icon: "fas fa-desktop" },
   { id: "win93", name: "Windows 93", url: "https://www.windows93.net", color: "#008080", icon: "fas fa-desktop" },
   { id: "mac", name: "Mac OS", url: "https://www.macos-web.app", color: "#a2aaad", icon: "fab fa-apple" },

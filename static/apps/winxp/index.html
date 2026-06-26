@@ -1,0 +1,343 @@
+<!-- AYO FULL ON CREDITS TO CRUNCH FOR MAKING THE ISO, MAKING THE HTML, GETTING IT FULLY WORKING ON A BROKEN EMULATOR, JS HAVE FUN YALL! -->
+
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<title>crunchyxp</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, user-scalable=no"/>
+		<style>
+			html,body{background-color:black;margin:0;padding:0;-webkit-user-select:none;-moz-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;cursor:default}
+			#canvas{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);image-rendering:pixelated;image-rendering:crisp-edges}
+			.percentage{position:fixed;width:64px;height:64px;left:0;right:0;top:120px;bottom:0;margin:auto;border:0;font-family:Arial;font-weight:bold;font-size:20px;background-color:black;color:white;text-align:center}
+			.pleasewait{position:fixed;width:64px;height:64px;left:0;right:0;top:-50px;bottom:0;margin:auto;border:0}
+			.lds-spinner{color:white;display:inline-block;position:relative;width:64px;height:64px}
+			.lds-spinner div{transform-origin:32px 32px;animation:lds-spinner 1.2s linear infinite}
+			.lds-spinner div:after{content:" ";display:block;position:fixed;top:3px;left:29px;width:5px;height:14px;border-radius:20%;background:white}
+			.lds-spinner div:nth-child(1){transform:rotate(0deg);animation-delay:-1.1s}
+			.lds-spinner div:nth-child(2){transform:rotate(30deg);animation-delay:-1s}
+			.lds-spinner div:nth-child(3){transform:rotate(60deg);animation-delay:-0.9s}
+			.lds-spinner div:nth-child(4){transform:rotate(90deg);animation-delay:-0.8s}
+			.lds-spinner div:nth-child(5){transform:rotate(120deg);animation-delay:-0.7s}
+			.lds-spinner div:nth-child(6){transform:rotate(150deg);animation-delay:-0.6s}
+			.lds-spinner div:nth-child(7){transform:rotate(180deg);animation-delay:-0.5s}
+			.lds-spinner div:nth-child(8){transform:rotate(210deg);animation-delay:-0.4s}
+			.lds-spinner div:nth-child(9){transform:rotate(240deg);animation-delay:-0.3s}
+			.lds-spinner div:nth-child(10){transform:rotate(270deg);animation-delay:-0.2s}
+			.lds-spinner div:nth-child(11){transform:rotate(300deg);animation-delay:-0.1s}
+			.lds-spinner div:nth-child(12){transform:rotate(330deg);animation-delay:0s}
+			@keyframes lds-spinner{0%{opacity:1}100%{opacity:0}}
+		</style>
+	</head>
+	<body>
+		<div class="pleasewait"><div class="lds-spinner"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div></div>
+		<div class="percentage"></div>
+		<canvas id="canvas" width="640" height="480"></canvas>
+		<script>
+		var parts = [
+				"https://cdn.jsdelivr.net/gh/UGBONTOP/ugs-crunch-files@main/xpgzop2/crunchxp.img.part01",
+				"https://cdn.jsdelivr.net/gh/UGBONTOP/ugs-crunch-files@main/xpgzop2/crunchxp.img.part02",
+				"https://cdn.jsdelivr.net/gh/UGBONTOP/ugs-crunch-files@main/xpgzop2/crunchxp.img.part03",
+				"https://cdn.jsdelivr.net/gh/UGBONTOP/ugs-crunch-files@main/xpgzop2/crunchxp.img.part04",
+				"https://cdn.jsdelivr.net/gh/UGBONTOP/ugs-crunch-files@main/xpgzop2/crunchxp.img.part05",
+				"https://cdn.jsdelivr.net/gh/UGBONTOP/ugs-crunch-files@main/xpgzop2/crunchxp.img.part06",
+				"https://cdn.jsdelivr.net/gh/UGBONTOP/ugs-crunch-files@main/xpgzop2/crunchxp.img.part07",
+				"https://cdn.jsdelivr.net/gh/UGBONTOP/ugs-crunch-files@main/xpgzop2/crunchxp.img.part08",
+				"https://cdn.jsdelivr.net/gh/UGBONTOP/ugs-crunch-files@main/xpgzop2/crunchxp.img.part09",
+				"https://cdn.jsdelivr.net/gh/UGBONTOP/ugs-crunch-files@main/xpgzop2/crunchxp.img.part10",
+				"https://cdn.jsdelivr.net/gh/UGBONTOP/ugs-crunch-files@main/xpgzop2/crunchxp.img.part11",
+				"https://cdn.jsdelivr.net/gh/UGBONTOP/ugs-crunch-files@main/xpgzop2/crunchxp.img.part12",
+				"https://cdn.jsdelivr.net/gh/UGBONTOP/ugs-crunch-files@main/xpgzop2/crunchxp.img.part13",
+				"https://cdn.jsdelivr.net/gh/UGBONTOP/ugs-crunch-files@main/xpgzop2/crunchxp.img.part14",
+				"https://cdn.jsdelivr.net/gh/UGBONTOP/ugs-crunch-files@main/xpgzop2/crunchxp.img.part15",
+				"https://cdn.jsdelivr.net/gh/UGBONTOP/ugs-crunch-files@main/xpgzop2/crunchxp.img.part16",
+				"https://cdn.jsdelivr.net/gh/UGBONTOP/ugs-crunch-files@main/xpgzop2/crunchxp.img.part17",
+				"https://cdn.jsdelivr.net/gh/UGBONTOP/ugs-crunch-files@main/xpgzop2/crunchxp.img.part18",
+				"https://cdn.jsdelivr.net/gh/UGBONTOP/ugs-crunch-files@main/xpgzop2/crunchxp.img.part19",
+				"https://cdn.jsdelivr.net/gh/UGBONTOP/ugs-crunch-files@main/xpgzop2/crunchxp.img.part20",
+				"https://cdn.jsdelivr.net/gh/UGBONTOP/ugs-crunch-files@main/xpgzop2/crunchxp.img.part21",
+				"https://cdn.jsdelivr.net/gh/UGBONTOP/ugs-crunch-files@main/xpgzop2/crunchxp.img.part22",
+				"https://cdn.jsdelivr.net/gh/UGBONTOP/ugs-crunch-files@main/xpgzop2/crunchxp.img.part23",
+				"https://cdn.jsdelivr.net/gh/UGBONTOP/ugs-crunch-files@main/xpgzop2/crunchxp.img.part24",
+				"https://cdn.jsdelivr.net/gh/UGBONTOP/ugs-crunch-files@main/xpgzop2/crunchxp.img.part25",
+				"https://cdn.jsdelivr.net/gh/UGBONTOP/ugs-crunch-files@main/xpgzop2/crunchxp.img.part26",
+				"https://cdn.jsdelivr.net/gh/UGBONTOP/ugs-crunch-files@main/xpgzop2/crunchxp.img.part27",
+				"https://cdn.jsdelivr.net/gh/UGBONTOP/ugs-crunch-files@main/xpgzop2/crunchxp.img.part28",
+				"https://cdn.jsdelivr.net/gh/UGBONTOP/ugs-crunch-files@main/xpgzop2/crunchxp.img.part29"
+			];
+
+		var loadedBytes = new Array(parts.length).fill(0);
+		var totalBytes  = new Array(parts.length).fill(0);
+
+		function updateProgress() {
+			var tl = loadedBytes.reduce(function(a,b){return a+b;},0);
+			var tt = totalBytes.reduce(function(a,b){return a+b;},0);
+			if (tt > 0) document.getElementsByClassName("percentage")[0].innerHTML = Math.floor(tl*100/tt) + "%";
+		}
+
+		function startVM(hdaBlob) {
+			var pct = document.getElementsByClassName("percentage")[0];
+			pct.innerHTML = "prep...";
+			console.log("hdaBlob.size:", hdaBlob.size);
+
+			var r = new FileReader();
+			r.onload = function(e) {
+				document.getElementsByClassName("percentage")[0].innerHTML = "unzip...";
+				function doDecompress() {
+					var decompressed = pako.inflate(new Uint8Array(e.target.result));
+					window._hdaAB = decompressed.buffer;
+					console.log("_hdaAB ready:", window._hdaAB.byteLength);
+					loadVMLoader();
+				}
+				if (typeof pako === "undefined") {
+					var __ps = document.createElement("script");
+					__ps.src = "https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js";
+					__ps.onload = doDecompress;
+					document.head.appendChild(__ps);
+				} else {
+					doDecompress();
+				}
+
+
+				function loadVMLoader() {
+				var lxhr = new XMLHttpRequest();
+				lxhr.open("GET", "https://cdn.jsdelivr.net/gh/lrusso/VirtualXP@main/VirtualXPLoader.js", true);
+				lxhr.onload = function() {
+					if (lxhr.status !== 200) { pct.innerHTML = "ERR"; return; }
+					var src = lxhr.responseText;
+
+					var PATCH = [
+						"(function(){",
+						"var __orig=XHRImage.prototype.init;",
+						"XHRImage.prototype.init=function(__path,__cb){",
+						"  var __B=262144,__buf=window._hdaAB;",
+						"  if(!__buf)return __orig.call(this,__path,__cb);",
+						"  if(__path.indexOf('info.dat')!==-1){",
+						"    var __i=new Int32Array(2);__i[0]=__buf.byteLength;__i[1]=__B;",
+						"    __cb(null,new Uint8Array(__i.buffer));return;",
+						"  }",
+						"  var __m=__path.match(/blk([0-9a-f]{8})\\.bin/);",
+						"  if(__m){",
+						"    var __n=parseInt(__m[1],16)*__B,__out=new Uint8Array(__B);",
+						"    if(__n<__buf.byteLength)",
+						"      __out.set(new Uint8Array(__buf,__n,Math.min(__B,__buf.byteLength-__n)));",
+						"    var __gz=pako.gzip(__out);__cb(null,__gz.buffer.slice(__gz.byteOffset,__gz.byteOffset+__gz.byteLength));return;",
+						"  }",
+						"  __orig.call(this,__path,__cb);",
+						"};",
+						"console.log('[XHRImage patched]',window._hdaAB.byteLength);",
+						"})();"
+					].join("\n");
+
+					var __idx = src.indexOf("\n    function loadFiles(");
+					if (__idx === -1) __idx = src.indexOf("\nfunction loadFiles(");
+					if (__idx !== -1) {
+						src = src.slice(0, __idx) + "\n" + PATCH + src.slice(__idx);
+						console.log("XHRImage injected at", __idx);
+					} else {
+						console.warn("loadFiles not found");
+					}
+
+					src = src.replace(
+						'Module["_parse_cfg"](pc, area);',
+						'Module["_parse_cfg"](pc, area); if(Module["HEAPU32"])Module["HEAPU32"][4298]=2831155;'
+					);
+
+					src = src.replace(
+						/function run_again\(\)\s*\{([^}]*setTimeout\(function\(\)\s*\{)/,
+						function(match, pre) {
+							return 'function run_again(){' + pre.replace(
+								'setTimeout(function(){',
+								'setTimeout(function(){try{'
+							);
+						}
+					);
+					src = src.replace(
+						/Halfix\.run\(\)(\s*[,;]?\s*}\s*,)/g,
+						'Halfix.run()}catch(__re){if(!(__re instanceof ReferenceError))throw __re;}$1'
+					);
+
+					var __OrigXHR = window.XMLHttpRequest;
+					window.XMLHttpRequest = function() {
+						var __real = new __OrigXHR(), __self = this, __url = "", __isHda = false;
+						this.open = function(m, u) {
+							__url = u || "";
+							__isHda = __url.indexOf("info.dat") !== -1 || !!__url.match(/blk[0-9a-f]+\.bin/i);
+							if (!__isHda) __real.open.apply(__real, arguments);
+						};
+						this.send = function() {
+							if (!__isHda) { __real.send.apply(__real, arguments); return; }
+							var __B = 262144, __buf = window._hdaAB;
+							if (!window._gzCache) window._gzCache = {};
+							var __sendRaw = function(rawBuf, blkid) {
+								if (window._gzCache[blkid]) {
+									var __gzbuf = window._gzCache[blkid];
+									setTimeout(function() {
+										__self.readyState = 4; __self.status = 200; __self.response = __gzbuf;
+										if (__self.onreadystatechange) __self.onreadystatechange();
+										if (__self.onload) __self.onload({});
+									}, 0);
+									return;
+								}
+								var __gz = pako.gzip(new Uint8Array(rawBuf));
+								var __gzbuf = __gz.buffer.slice(__gz.byteOffset, __gz.byteOffset + __gz.byteLength);
+								window._gzCache[blkid] = __gzbuf;
+								setTimeout(function() {
+									__self.readyState = 4; __self.status = 200; __self.response = __gzbuf;
+									if (__self.onreadystatechange) __self.onreadystatechange();
+									if (__self.onload) __self.onload({});
+								}, 0);
+							};
+							if (__url.indexOf("info.dat") !== -1) {
+								var __i = new Int32Array(2); __i[0] = __buf.byteLength; __i[1] = __B;
+								__self.readyState = 4; __self.status = 200; __self.response = __i.buffer;
+								if (__self.onreadystatechange) __self.onreadystatechange();
+								if (__self.onload) __self.onload({});
+							} else {
+								var __m = __url.match(/blk([0-9a-f]+)\.bin/i);
+								var __blkid = __m ? parseInt(__m[1], 16) : 0;
+								var __n = __blkid * __B;
+								var __out = new Uint8Array(__B);
+								if (__n < __buf.byteLength) __out.set(new Uint8Array(__buf, __n, Math.min(__B, __buf.byteLength - __n)));
+								__sendRaw(__out.buffer, __blkid);
+							}
+						};
+						["responseType","timeout","withCredentials","onload","onerror","onprogress","onreadystatechange","readyState","status","response","responseText"].forEach(function(p) {
+							try {
+								Object.defineProperty(__self, p, {
+									get: function() { return __isHda ? __self["__"+p] : __real[p]; },
+									set: function(v) { __self["__"+p] = v; if (!__isHda) try { __real[p] = v; } catch(e) {} },
+									configurable: true
+								});
+							} catch(e) {}
+						});
+						this.setRequestHeader = function() { if (!__isHda) __real.setRequestHeader.apply(__real, arguments); };
+						this.getResponseHeader = function() { return __isHda ? null : __real.getResponseHeader.apply(__real, arguments); };
+						this.abort = function() { if (!__isHda) __real.abort(); };
+					};
+					window.XMLHttpRequest.prototype = __OrigXHR.prototype;
+
+					src = "var pako=window.pako;" + src;
+					var __s = document.createElement("script");
+					__s.textContent = src;
+					document.head.appendChild(__s);
+					if (typeof Halfix !== "undefined" && Halfix.prototype && Halfix.prototype.run) {
+						var __origHalfixRun = Halfix.prototype.run;
+						Halfix.prototype.run = function() {
+							try {
+								return __origHalfixRun.apply(this, arguments);
+							} catch(e) {
+								if (!(e instanceof ReferenceError)) throw e;
+							}
+						};
+					}
+					console.log("Halfix defined:", typeof Halfix);
+
+					var opts = {
+						reportSpeed: function(s){ document.title = "crunchyxp \u2014 " + s + " MIPS"; },
+						mem: "221", vgamem: "8", fast: true,
+						bios:    "https://cdn.jsdelivr.net/gh/lrusso/VirtualXP@main/VirtualXPBIOS.bin",
+						vgabios: "https://cdn.jsdelivr.net/gh/lrusso/VirtualXP@main/VirtualXPVGA.bin",
+						apic: true, acpi: true, pci: true, pcivga: false, floppy: false,
+						winnt_hack: true,
+						canvas:   document.getElementById("canvas"),
+						emulator: "https://cdn.jsdelivr.net/gh/lrusso/VirtualXP@main/VirtualXP.js",
+						hda:      "crunchyxp"
+					};
+					window.halfix = new Halfix(opts);
+
+					var __resetCount = 0;
+					var __origLog = console.log;
+					console.log = function() {
+						__origLog.apply(console, arguments);
+						if (__resetCount < 4 && arguments[0] && String(arguments[0]).indexOf("System reset") !== -1) {
+							__resetCount++;
+							setTimeout(function() { try { window.halfix.run(); } catch(e) {} }, 1200);
+						}
+					};
+
+					window.halfix.init(function() {
+						window.halfix.run();
+						setInterval(function(){ try{ window.halfix.updateScreen(); }catch(e){} }, 16);
+						setTimeout(function() {
+							document.getElementsByClassName("pleasewait")[0].style.display = "none";
+							document.getElementsByClassName("percentage")[0].style.display  = "none";
+						}, 5000);
+					});
+				};
+				lxhr.send(null);
+				} 
+			};
+			r.readAsArrayBuffer(hdaBlob);
+		}
+
+		window.addEventListener("load", function() {
+			document.getElementById("canvas").addEventListener("click", function() {
+				try{ document.getElementById("canvas").requestPointerLock(); }catch(e){}
+			});
+			document.addEventListener("keydown", function(e) {
+				if (e.keyCode === 122) {
+					e.preventDefault();
+					var el = document.documentElement;
+					if (!document.fullscreenElement) {
+						(el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen).call(el);
+					} else {
+						(document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen).call(document);
+					}
+				}
+			}, true);
+			var blockKeys = function(e) {
+				try {
+					if (e.keyCode === 122) return;
+					if (e.altKey||e.ctrlKey||e.metaKey||e.keyCode==27) {
+						e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+					}
+				} catch(err) {}
+			};
+			document.addEventListener("keydown",  blockKeys);
+			document.addEventListener("keypress", blockKeys);
+			document.addEventListener("keyup",    blockKeys);
+			window.oncontextmenu = function(){ return false; };
+
+			function resizeCanvas() {
+				var canvas = document.getElementById("canvas");
+				var winW = window.innerWidth;
+				var winH = window.innerHeight;
+				var scale = Math.min(winW / 640, winH / 480);
+				canvas.style.width  = Math.floor(640 * scale) + "px";
+				canvas.style.height = Math.floor(480 * scale) + "px";
+			}
+			window.addEventListener("resize", resizeCanvas);
+			resizeCanvas();
+
+			var blobs = new Array(parts.length);
+			var pending = parts.length;
+			parts.forEach(function(url, i) {
+				var xhr = new XMLHttpRequest();
+				xhr.open("GET", url, true);
+				xhr.responseType = "arraybuffer";
+				xhr.onload = function() {
+					if (xhr.status === 200) {
+						blobs[i] = new Blob([xhr.response]);
+						loadedBytes[i] = totalBytes[i];
+						updateProgress();
+						if (--pending === 0) {
+							startVM(new Blob(blobs, {type:"application/octet-stream"}));
+						}
+					} else {
+						document.getElementsByClassName("percentage")[0].innerHTML = "ERR";
+					}
+				};
+				xhr.onprogress = function(e) {
+					if (e.lengthComputable) { loadedBytes[i]=e.loaded; totalBytes[i]=e.total; updateProgress(); }
+				};
+				xhr.onerror = function() {
+					document.getElementsByClassName("percentage")[0].innerHTML = "ERR";
+				};
+				xhr.send(null);
+			});
+		});
+		</script>
+	</body>
+</html>
