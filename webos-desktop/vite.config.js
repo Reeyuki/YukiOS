@@ -115,7 +115,16 @@ export default defineConfig({
     assetsInlineLimit: isSingleFile ? 100000000 : 4096,
     rollupOptions: {
       treeshake: true,
-      external: isSingleFile ? [] : [],
+      external: isSingleFile
+        ? [
+            "three",
+            /^three\/.*/,
+            "7z-wasm",
+            "archive-wasm",
+            "clippyjs",
+            /^clippyjs\/.*/
+          ]
+        : [],
       output: {
         inlineDynamicImports: isSingleFile,
         entryFileNames: "assets/[name].js",

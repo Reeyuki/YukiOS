@@ -1,3 +1,5 @@
+import { getLibraryUrl } from "./cdnConfig.js";
+
 export async function loadBundledLibrary(name) {
   if (!__SINGLE_FILE__) {
     throw new Error("Bundled library loading not available outside single-file mode");
@@ -5,11 +7,13 @@ export async function loadBundledLibrary(name) {
 
   switch (name) {
     case "7z-wasm": {
-      const mod = await import("7z-wasm");
+      const libUrl = getLibraryUrl("7z-wasm");
+      const mod = await import(/* @vite-ignore */ `${libUrl}`);
       return mod;
     }
     case "archive-wasm": {
-      const mod = await import("archive-wasm");
+      const libUrl = getLibraryUrl("archive-wasm");
+      const mod = await import(/* @vite-ignore */ `${libUrl}`);
       return mod;
     }
     case "webtorrent": {
@@ -18,47 +22,58 @@ export async function loadBundledLibrary(name) {
       return mod;
     }
     case "three": {
-      const mod = await import("three");
+      const libUrl = getLibraryUrl("three");
+      const mod = await import(/* @vite-ignore */ `${libUrl}`);
       return mod;
     }
     case "three/GLTFLoader": {
-      const mod = await import("three/examples/jsm/loaders/GLTFLoader.js");
+      const baseUrl = getLibraryUrl("three");
+      const mod = await import(/* @vite-ignore */ `${baseUrl}/examples/jsm/loaders/GLTFLoader.js`);
       return mod;
     }
     case "three/OBJLoader": {
-      const mod = await import("three/examples/jsm/loaders/OBJLoader.js");
+      const baseUrl = getLibraryUrl("three");
+      const mod = await import(/* @vite-ignore */ `${baseUrl}/examples/jsm/loaders/OBJLoader.js`);
       return mod;
     }
     case "three/FBXLoader": {
-      const mod = await import("three/examples/jsm/loaders/FBXLoader.js");
+      const baseUrl = getLibraryUrl("three");
+      const mod = await import(/* @vite-ignore */ `${baseUrl}/examples/jsm/loaders/FBXLoader.js`);
       return mod;
     }
     case "three/ColladaLoader": {
-      const mod = await import("three/examples/jsm/loaders/ColladaLoader.js");
+      const baseUrl = getLibraryUrl("three");
+      const mod = await import(/* @vite-ignore */ `${baseUrl}/examples/jsm/loaders/ColladaLoader.js`);
       return mod;
     }
     case "three/TDSLoader": {
-      const mod = await import("three/examples/jsm/loaders/TDSLoader.js");
+      const baseUrl = getLibraryUrl("three");
+      const mod = await import(/* @vite-ignore */ `${baseUrl}/examples/jsm/loaders/TDSLoader.js`);
       return mod;
     }
     case "three/STLLoader": {
-      const mod = await import("three/examples/jsm/loaders/STLLoader.js");
+      const baseUrl = getLibraryUrl("three");
+      const mod = await import(/* @vite-ignore */ `${baseUrl}/examples/jsm/loaders/STLLoader.js`);
       return mod;
     }
     case "three/PLYLoader": {
-      const mod = await import("three/examples/jsm/loaders/PLYLoader.js");
+      const baseUrl = getLibraryUrl("three");
+      const mod = await import(/* @vite-ignore */ `${baseUrl}/examples/jsm/loaders/PLYLoader.js`);
       return mod;
     }
     case "three/OrbitControls": {
-      const mod = await import("three/examples/jsm/controls/OrbitControls.js");
+      const baseUrl = getLibraryUrl("three");
+      const mod = await import(/* @vite-ignore */ `${baseUrl}/examples/jsm/controls/OrbitControls.js`);
       return mod;
     }
     case "three/TransformControls": {
-      const mod = await import("three/examples/jsm/controls/TransformControls.js");
+      const baseUrl = getLibraryUrl("three");
+      const mod = await import(/* @vite-ignore */ `${baseUrl}/examples/jsm/controls/TransformControls.js`);
       return mod;
     }
     case "three/GLTFExporter": {
-      const mod = await import("three/examples/jsm/exporters/GLTFExporter.js");
+      const baseUrl = getLibraryUrl("three");
+      const mod = await import(/* @vite-ignore */ `${baseUrl}/examples/jsm/exporters/GLTFExporter.js`);
       return mod;
     }
     case "@ruffle-rs/ruffle": {
@@ -80,42 +95,47 @@ export async function loadBundledLibrary(name) {
       return;
     }
     case "clippyjs": {
-      const mod = await import("clippyjs");
+      const libUrl = getLibraryUrl("clippyjs", "module");
+      const mod = await import(/* @vite-ignore */ `${libUrl}`);
       return mod;
     }
     case "mammoth": {
       const mod = await import("mammoth");
       window.mammoth = mod;
-      return;
+      return mod;
     }
     case "xlsx": {
       const mod = await import("xlsx");
       window.XLSX = mod;
-      return;
+      return mod;
     }
     case "handsontable": {
       await import("handsontable/dist/handsontable.full.min.css");
       const mod = await import("handsontable");
       window.Handsontable = mod.default || mod;
-      return;
+      return mod;
     }
     case "pdfjs-dist": {
       const mod = await import("pdfjs-dist");
       window.pdfjsLib = mod;
-      return;
+      return mod;
     }
     case "jszip": {
       const mod = await import("jszip");
       window.JSZip = mod;
-      return;
+      return mod;
     }
     case "docx": {
       const mod = await import("docx");
       window.docx = mod;
-      return;
+      return mod;
     }
     case "fontawesome": {
       await import("@fortawesome/fontawesome-free/js/all.js");
+      return;
+    }
+    case "vanta": {
+      await import("vanta");
       return;
     }
     default:

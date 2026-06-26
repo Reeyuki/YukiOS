@@ -73,6 +73,35 @@ jobs:
                 "${{ secrets.DISCORD_WEBHOOK }}"
             fi
 
+            if git diff --name-only HEAD~1 HEAD | grep -q '^webos-desktop/'; then
+
+              cd webos-desktop
+
+              pnpm install --frozen-lockfile
+              pnpm build:lightweight
+
+              HTML_FILE="$(find . -type f -name '*.html' ! -path '*/node_modules/*' | head -n 1)"
+
+              if [ -n "$HTML_FILE" ] && [ -f "$HTML_FILE" ]; then
+
+                SHA="${GITHUB_SHA::7}"
+                SUBJECT="${{ github.event.head_commit.message }}"
+
+                PAYLOAD=$(jq -n \
+                  --arg sha "$SHA" \
+                  --arg subject "$SUBJECT" \
+                  --arg content "🚀 Built HTML for YukiOS from $SHA ($SUBJECT)" \
+                  '{content: $content}')
+
+                curl -F "payload_json=$PAYLOAD" \
+                     -F "file1=@${HTML_FILE};type=text/html" \
+                     "${{ secrets.DISCORD_BUILD_WEBHOOK }}"
+
+              else
+                echo "No HTML build output found, skipping upload"
+              fi
+            fi
+
             exit 0
           fi
 
