@@ -36,7 +36,7 @@ jobs:
           EVENT="${{ github.event_name }}"
 
           case "$EVENT" in
-            push|pull_request|issues|issue_comment|release|watch) ;;
+            push|pull_request|issues|issue_comment|release|watch|workflow_dispatch) ;;
             *)
               echo "Ignoring unsupported event: $EVENT"
               exit 0
@@ -138,5 +138,28 @@ jobs:
             curl -H "Content-Type: application/json" \
               -d "{\"content\":\"⭐ ${{ github.actor }} starred ${{ github.repository }}\"}" \
               "${{ secrets.DISCORD_WEBHOOK }}"
+            exit 0
+          fi
+
+          if [ "$EVENT" = "workflow_dispatch" ]; then
+            cd webos-desktop
+            pnpm install --frozen-lockfile
+            pnpm build:lightweight
+
+            HTML_FILE="$(find . -type f -name '*.html' ! -path '*/node_modules/*' | head -n 1)"
+
+            if [ -n "$HTML_FILE" ] && [ -f "$HTML_FILE" ]; then
+              SHA="${GITHUB_SHA::7}"
+              PAYLOAD=$(jq -n \
+                --arg sha "$SHA" \
+                --arg content "🚀 Built HTML for YukiOS from $SHA (workflow_dispatch)" \
+                '{content: $content}')
+
+              curl -F "payload_json=$PAYLOAD" \
+                   -F "file1=@${HTML_FILE};type=text/html" \
+                   "${{ secrets.DISCORD_BUILD_WEBHOOK }}"
+            else
+              echo "No HTML build output found, skipping upload"
+            fi
             exit 0
           fi
