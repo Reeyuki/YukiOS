@@ -15,7 +15,7 @@ const OS_LIST = [
   { id: "win7", name: "Windows 7", url: "https://win7simu.visnalize.com/", color: "#3a6ea5", icon: "fab fa-windows" },
   { id: "winxp", name: "Windows XP", url: "https://winxp.vercel.app", color: "#3a6ea5", icon: "fab fa-windows" },
   {
-    id: "winxp",
+    id: "winxpHeavy",
     name: "Windows XP (Heavy)",
     url: "https://cdn.jsdelivr.net/gh/reeyuki/yukios@main/static/apps/winxp/index.html",
     color: "#3a6ea5",
@@ -136,9 +136,9 @@ export class VirtualMachineManagerApp extends BaseApp {
     shell.querySelector("#vm-goto-create")?.addEventListener("click", () => this._renderCreate(shell));
 
     shell.querySelectorAll(".vm-boot-card-btn").forEach((btn) => {
-      btn.addEventListener("click", () => {
+      btn.addEventListener("click", async () => {
         const idx = parseInt(btn.dataset.index);
-        this._bootVM(this._vms[idx]);
+        await this._bootVM(this._vms[idx]);
       });
     });
 
@@ -243,7 +243,7 @@ export class VirtualMachineManagerApp extends BaseApp {
 
       shell.querySelector("#vm-back-os").addEventListener("click", () => renderStep1());
 
-      shell.querySelector("#vm-create-boot").addEventListener("click", () => {
+      shell.querySelector("#vm-create-boot").addEventListener("click", async () => {
         const name = osInfo.name + " VM";
         const vm = {
           id: osInfo.id + "_" + Date.now(),
@@ -258,7 +258,7 @@ export class VirtualMachineManagerApp extends BaseApp {
         };
         this._vms.push(vm);
         this._saveVMs();
-        this._bootVM(vm);
+        await this._bootVM(vm);
         this._renderList(shell);
       });
     };
@@ -281,6 +281,7 @@ export class VirtualMachineManagerApp extends BaseApp {
   _renderView(shell, vm, index) {
     const osInfo = OS_LIST.find((o) => o.id === vm.osId) || OS_LIST[0];
     const usesScramjet = vm.osId === "emuos";
+    const isWinXpHeavy = vm.osId === "winxpHeavy";
 
     let previewHtml;
     if (usesScramjet) {
@@ -293,6 +294,8 @@ export class VirtualMachineManagerApp extends BaseApp {
           <span class="vm-preview-hint-small">Click "Open in Window" to launch via proxy</span>
         </div>
       `;
+    } else if (isWinXpHeavy) {
+      previewHtml = `<iframe ${IFRAME_ATTRS}></iframe>`;
     } else {
       previewHtml = `<iframe src="${vm.url}" ${IFRAME_ATTRS}></iframe>`;
     }
@@ -340,9 +343,28 @@ export class VirtualMachineManagerApp extends BaseApp {
       this._saveVMs();
       this._renderList(shell);
     });
+
+    if (isWinXpHeavy) {
+      this._fetchHtmlAsBlobUrl(vm.url).then((blobUrl) => {
+        const previewIframe = shell.querySelector(".vm-preview-frame iframe");
+        if (previewIframe) previewIframe.src = blobUrl;
+      });
+    }
   }
 
-  _bootVM(vm) {
+  async _fetchHtmlAsBlobUrl(url) {
+    try {
+      const resp = await fetch(url);
+      const html = await resp.text();
+      const blob = new Blob([html], { type: "text/html" });
+      return URL.createObjectURL(blob);
+    } catch (e) {
+      console.error("[VMManager] Failed to fetch HTML for blob:", e);
+      return url;
+    }
+  }
+
+  async _bootVM(vm) {
     const existing = document.getElementById(`${vm.id}-win`);
     if (existing) {
       os.window.focus(existing);
@@ -350,7 +372,9 @@ export class VirtualMachineManagerApp extends BaseApp {
     }
 
     const usesScramjet = vm.osId === "emuos" || vm.osId === "win7";
-    const iframeSrc = usesScramjet ? this._scramjetUrl(vm.url) : vm.url;
+    const isWinXpHeavy = vm.osId === "winxpHeavy";
+    let iframeSrc = usesScramjet ? this._scramjetUrl(vm.url) : vm.url;
+
     const attrs = usesScramjet
       ? 'style="width:100%;height:100%;border:none;" allow="autoplay; fullscreen; clipboard-write; encrypted-media; picture-in-picture" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation-by-user-activation"'
       : IFRAME_ATTRS;
@@ -372,6 +396,9 @@ export class VirtualMachineManagerApp extends BaseApp {
     `;
 
     const iframe = win.querySelector(`#${vm.id}-iframe`);
+    if (isWinXpHeavy) {
+      iframeSrc = await this._fetchHtmlAsBlobUrl(vm.url);
+    }
     if (usesScramjet) {
       iframe.addEventListener("load", () => {
         try {
