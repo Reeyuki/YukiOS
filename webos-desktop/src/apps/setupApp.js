@@ -3,7 +3,7 @@ import { resolveWallpaperUrl } from "../shared/assetResolver.js";
 import { SystemUtilities } from "../system.js";
 import { Achievements } from "../achievements.js";
 import { AppSource } from "../AppSource.js";
-import { PREDEFINED_AVATARS } from "./accountManager.js";
+import { PREDEFINED_AVATARS } from "../utils/avatarData.js";
 import { applyFontFamily } from "../settings/settingsApply.js";
 import { $, $$, bindEvent, setText, setHTML, toggleClass } from "../shared/domUtils.js";
 import { getAllThemes } from "../shared/themeEngine.js";

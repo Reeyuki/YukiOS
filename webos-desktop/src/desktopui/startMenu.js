@@ -9,6 +9,7 @@ import { CDN_CONFIG } from "../shared/cdnConfig.js";
 import { getAppRegistry } from "../appRegistry.js";
 import { SYSTEM_APPS } from "../AppRegistryConfig.js";
 import { resolveAvatarUrl } from "../shared/avatarResolver.js";
+import { SETTINGS_CATEGORIES, launchSettingsPane } from "../settings/settingsNav.js";
 
 import { StorageKeys, os } from "../framework.js";
 import { KeybindManager } from "../keybindManager.js";
@@ -77,7 +78,7 @@ export function applyStartMenuSettings(el) {
       console.error("[StartMenu]", e);
     }
   }
-  const catNames = [
+  const staticCatNames = [
     "favorites",
     "recent",
     "all",
@@ -88,13 +89,11 @@ export function applyStartMenuSettings(el) {
     "games",
     "development",
     "system",
-    "help",
-    "customize",
-    "settingsApp"
+    "help"
   ];
   const el2 = el.querySelector('.start-cat[data-cat="places"]');
   if (el2) el2.style.display = "none";
-  catNames.forEach((catName) => {
+  staticCatNames.forEach((catName) => {
     const isEnabled = cats[catName] !== false;
     const catEl = el.querySelector(`.start-cat[data-cat="${catName}"]`);
     if (catEl) {
@@ -624,21 +623,22 @@ export function setupStartMenu(appLauncher, sessionManager, selectionManager) {
     }
 
     cat.onclick = () => {
-      if (cat.dataset.cat === "settingsApp") {
+      const catName = cat.dataset.cat;
+      if (catName === "settingsApp") {
         os.app.launch("settingsApp");
         return;
       }
-      if (cat.dataset.cat === "customize") {
-        os.app.launch("accountManagerApp");
+      if (catName === "customize") {
+        os.app.launch("settingsApp", { section: "pane-accounts" });
         speak("Let's make your profile look great!", ClippyAnimation.GetArtsy);
         return;
       }
       activateCategoryPage(cat);
-      if (cat.dataset.cat === "favorites") {
+      if (catName === "favorites") {
         speak("These are your favorites! Great taste.", ClippyAnimation.Show);
       }
       if (focusMode === "apps") {
-        const page = document.querySelector(`.start-page[data-page="${cat.dataset.cat}"]`);
+        const page = document.querySelector(`.start-page[data-page="${catName}"]`);
         if (page) selectFirstItemInPage(page);
       }
     };
@@ -823,6 +823,18 @@ export function setupStartMenu(appLauncher, sessionManager, selectionManager) {
         const item = createAppItem(appId, appData);
         const category = appData.type === "system" ? "system" : "menu";
         results[category].push({ element: item, title: appData.title || appId });
+      });
+
+      SETTINGS_CATEGORIES.forEach((cat) => {
+        const title = `Settings: ${cat.title}`;
+        if (fuzzyMatch(q, title.toLowerCase())) {
+          const appId = `settings-${cat.id}`;
+          if (!seenAppIds.has(appId)) {
+            seenAppIds.add(appId);
+            const appData = { title, icon: cat.icon, type: "system", category: "system" };
+            results.system.push({ element: createAppItem(appId, appData), title });
+          }
+        }
       });
 
       const recentFiles = os.storage.get(StorageKeys.recentFiles) || [];
@@ -1582,6 +1594,14 @@ function populateCategoryPage(category, appLauncher) {
     }
   });
 
+  if (category === "all" || category === "system") {
+    SETTINGS_CATEGORIES.forEach((cat) => {
+      const appId = `settings-${cat.id}`;
+      const appData = { title: `Settings: ${cat.title}`, icon: cat.icon, type: "system", category: "system" };
+      apps.push({ appId, appData });
+    });
+  }
+
   const fragment = document.createDocumentFragment();
 
   if (category === "all") {
@@ -1663,8 +1683,13 @@ function createAppItem(appId, appData) {
   }
 
   item.addEventListener("click", () => {
-    trackRecentlyUsed(appId);
-    os.app.launch(appId);
+    if (appId.startsWith("settings-")) {
+      const paneId = appId.replace("settings-", "");
+      launchSettingsPane(paneId);
+    } else {
+      trackRecentlyUsed(appId);
+      os.app.launch(appId);
+    }
     closeStartMenu();
   });
 

@@ -16,7 +16,6 @@ import { NotificationCenter } from "./notificationCenter.js";
 import { JsDosApp } from "./apps/jsdos.js";
 import { V86App } from "./apps/v86.js";
 
-import { AccountManagerApp } from "./apps/accountManager.js";
 import { setDesktopUI as setGamesDesktopUI, handleSteamUrlParam } from "./games/games.js";
 import { AdsManager } from "./ads.js";
 import { registerPWA } from "./pwa/pwa.js";
@@ -113,10 +112,6 @@ const settingsApp = new SettingsApp(services);
 services.settingsApp = settingsApp;
 settingsApp.setFileSystemManager(fileSystemManager);
 
-const accountManagerApp = new AccountManagerApp(services);
-services.accountManagerApp = accountManagerApp;
-accountManagerApp.setSettingsApp(settingsApp);
-
 const adsApp = new AdsManager(windowManager);
 services.adsApp = adsApp;
 explorerApp.setBrowser(browserApp);
@@ -198,7 +193,6 @@ async function start() {
   explorerApp.setDesktopUI(desktopUI);
   settingsApp.setDesktopUI(desktopUI);
   settingsApp.setAppLauncher(appLauncher);
-  accountManagerApp.setSettingsApp(settingsApp);
   appCreatorApp.setDesktopUI(desktopUI);
   appCreatorApp.setAppLauncher(appLauncher);
   appCreatorApp.restoreInstalledApps();

@@ -5,6 +5,22 @@ const appNewsEntries = APP_MANIFESTS.filter((manifest) => manifest.news).map((ma
 
 const EXISTING_NEWS_UPDATES = [
   {
+    date: "June 26, 2026",
+    sections: [
+      {
+        icon: "fa-wand-magic-sparkles",
+        title: "Accounts",
+        items: [
+          [
+            "fa-users",
+            "Accounts in Settings",
+            "Accounts moved into Settings with inline editing, no more modal popups."
+          ]
+        ]
+      }
+    ]
+  },
+  {
     date: "June 25, 2026",
     sections: [
       {

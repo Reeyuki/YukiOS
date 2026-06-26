@@ -22,6 +22,7 @@ import { $, $$, bindEvent, toggleClass, setText, createElement, setHTML } from "
 import { bindSelectMenu, getSelectMenuValue, setSelectMenuValue } from "../shared/selectMenu.js";
 import { bindRangeSlider, getRangeSliderValue, setRangeSliderValue } from "../shared/rangeSlider.js";
 import { addCustomTheme } from "../shared/themeEngine.js";
+import { bindAccountsCategory } from "./accountsPanel.js";
 
 export function bindNavigation(win) {
   const layout = $(".yuki-settings-layout", win);

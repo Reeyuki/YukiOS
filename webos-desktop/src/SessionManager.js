@@ -1,5 +1,5 @@
 import { BusEvents } from "./core/EventBus.js";
-import { PREDEFINED_AVATARS } from "./apps/accountManager.js";
+import { PREDEFINED_AVATARS } from "./utils/avatarData.js";
 import { SystemUtilities } from "./system.js";
 import { audioMixer, SystemAudio } from "./audioMixer.js";
 import { YUKIOS_VERSION } from "./apps/about.js";

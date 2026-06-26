@@ -4,7 +4,7 @@ import { refreshIcons } from "../shared/contextMenu.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { PROXIES, clampProxyIndex, buildProxyUrl, fetchHtmlThroughProxy } from "../proxies.js";
 import { AppSource } from "../AppSource.js";
-import { PREDEFINED_AVATARS } from "./accountManager.js";
+import { PREDEFINED_AVATARS } from "../utils/avatarData.js";
 import { $, $$, bindEvent, setText, setHTML, toggleClass } from "../shared/domUtils.js";
 import { createScramjetWebApp } from "../core/ScramjetWebAppFactory.js";
 

@@ -7,6 +7,7 @@ import { WALLPAPER_NAME_URL_PAIRS } from "./wallpaperConfig.js";
 import { KeybindManager } from "./keybindManager.js";
 
 import { StorageKeys, os } from "./framework.js";
+import { SETTINGS_CATEGORIES, launchSettingsPane } from "./settings/settingsNav.js";
 export class CommandPalette {
   constructor(services) {
     this.services = services;
@@ -911,59 +912,16 @@ export class CommandPalette {
 
   _getSettingsEntries() {
     const go = (section, target) => {
-      const app = this.services.settingsApp;
-      if (app) app.open({ section, target });
+      launchSettingsPane(section, target);
     };
-    return [
-      {
-        title: "Settings: System",
-        subtitle: "General behavior, boot, privacy, notifications",
-        tag: "settings",
-        icon: "fas fa-desktop",
-        execute: () => go("pane-system")
-      },
-      {
-        title: "Settings: Desktop",
-        subtitle: "Taskbar, start menu, icons, tray, window switcher",
-        tag: "settings",
-        icon: "fas fa-home",
-        execute: () => go("pane-desktop")
-      },
-      {
-        title: "Settings: Appearance",
-        subtitle: "Themes, wallpaper, animations, fonts, cursor",
-        tag: "settings",
-        icon: "fas fa-paint-brush",
-        execute: () => go("pane-appearance")
-      },
-      {
-        title: "Settings: Data & Storage",
-        subtitle: "Import, export, reset, wipe",
-        tag: "settings",
-        icon: "fas fa-database",
-        execute: () => go("pane-data")
-      },
-      {
-        title: "Settings: Network",
-        subtitle: "CDN mirror, WISP server",
-        tag: "settings",
-        icon: "fas fa-network-wired",
-        execute: () => go("pane-network")
-      },
-      {
-        title: "Settings: Audio",
-        subtitle: "Master volume, system sounds",
-        tag: "settings",
-        icon: "fas fa-volume-high",
-        execute: () => go("pane-audio")
-      },
-      {
-        title: "Settings: About",
-        subtitle: "Version info, build details",
-        tag: "settings",
-        icon: "fas fa-circle-info",
-        execute: () => go("pane-about")
-      },
+    const entries = SETTINGS_CATEGORIES.map((cat) => ({
+      title: `Settings: ${cat.title}`,
+      subtitle: `Open the ${cat.title} settings panel`,
+      tag: "settings",
+      icon: cat.icon,
+      execute: () => launchSettingsPane(cat.id)
+    }));
+    entries.push(
       {
         title: "Settings: Turbo Mode",
         subtitle: "Switch between Quality, Balanced, and Turbo",
@@ -1083,7 +1041,8 @@ export class CommandPalette {
         icon: "fas fa-file-export",
         execute: () => go("pane-data", "btnExportData")
       }
-    ];
+    );
+    return entries;
   }
 
   _isTerminalCommand(str) {

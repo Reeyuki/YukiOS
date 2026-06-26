@@ -123,7 +123,7 @@ export class OSBridge {
       apps: "installedApps",
       clipboard: "clipboardManager",
       achievements: "achievementsApp",
-      profile: "accountManager",
+      profile: "settingsApp",
       convert: "yukiConvert",
       dos: "jsDosApp",
       jsdos: "jsDosApp",

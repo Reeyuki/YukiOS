@@ -32,6 +32,7 @@ import {
   bindNetworkCategory,
   bindAudioCategory
 } from "./settingsBinders.js";
+import { bindAccountsCategory } from "./accountsPanel.js";
 import { exportData, importData, deleteAllData } from "./settingsData.js";
 import { bindSelectMenu, getSelectMenuValue } from "../shared/selectMenu.js";
 import { bindRangeSlider, getRangeSliderValue } from "../shared/rangeSlider.js";
@@ -370,6 +371,7 @@ export class SettingsApp extends BaseApp {
     bindDataCategory(win, save, this._settings, this.fs, showStatus, showSaved);
     bindNetworkCategory(win, save, this._settings, showSaved);
     bindAudioCategory(win, this._settings, showSaved);
+    bindAccountsCategory(win);
   }
 
   _showSavedMessage(win) {

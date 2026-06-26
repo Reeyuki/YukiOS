@@ -5,6 +5,7 @@ import { getBasicThemes, getSpecialThemes, getCustomThemes } from "../shared/the
 import { StorageKeys, os } from "../framework.js";
 import { renderSelectMenu } from "../shared/selectMenu.js";
 import { renderRangeSlider } from "../shared/rangeSlider.js";
+import { renderAccountsSettings } from "./accountsPanel.js";
 export function buildSettingsHTML(settings, wm) {
   return `
   <div class="window-header">
@@ -24,6 +25,7 @@ export function buildSettingsHTML(settings, wm) {
           <li data-target="pane-data"><i class="fas fa-database"></i> Data</li>
           <li data-target="pane-network"><i class="fas fa-network-wired"></i> Network</li>
           <li data-target="pane-audio"><i class="fas fa-volume-high"></i> Audio</li>
+          <li data-target="pane-accounts"><i class="fas fa-users"></i> Accounts</li>
           <li data-target="pane-about"><i class="fas fa-circle-info"></i> About</li>
         </ul>
       </div>
@@ -35,6 +37,7 @@ export function buildSettingsHTML(settings, wm) {
         ${renderDataSettings()}
         ${renderNetworkSettings(settings)}
         ${renderAudioSettings(settings)}
+        ${renderAccountsSettings()}
         ${renderAboutSettings()}
       </div>
     </div>

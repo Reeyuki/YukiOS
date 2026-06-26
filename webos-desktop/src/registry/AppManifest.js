@@ -1058,17 +1058,6 @@ export const APP_MANIFESTS = [
     description: "x86-64 full system emulator for running operating systems and legacy software."
   },
   {
-    serviceKey: "accountManagerApp",
-    type: "system",
-    title: "Accounts",
-    icon: "fas fa-users",
-    launchType: "instance",
-    windowIdPatterns: ["account-manager"],
-    category: "system",
-    clippy: { message: "Manage your user accounts and switch between profiles.", animation: ClippyAnimation.GetArtsy },
-    description: "Manage multiple user accounts with create, edit, delete, and switch functionality."
-  },
-  {
     serviceKey: "youtubeUtilsApp",
     type: "system",
     title: "YouTube Utilities",

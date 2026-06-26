@@ -25,8 +25,7 @@ const APP_SOURCE_TO_APP_MAP_KEY = APP_MANIFESTS.reduce(
     V86App: "v86app",
     JsDosApp: "jsDosApp",
     RuffleApp: "ruffleApp",
-    MonacoApp: "monaco",
-    Accounts: "accountManager"
+    MonacoApp: "monaco"
   }
 );
 
