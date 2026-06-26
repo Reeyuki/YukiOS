@@ -79,7 +79,7 @@ jobs:
               cd webos-desktop
 
               pnpm install --frozen-lockfile
-              pnpm build:lightweight
+              pnpm build:single
 
               HTML_FILE="$(find . -type f -name '*.html' ! -path '*/node_modules/*' | head -n 1)"
 
@@ -144,7 +144,7 @@ jobs:
           if [ "$EVENT" = "workflow_dispatch" ]; then
             cd webos-desktop
             pnpm install --frozen-lockfile
-            pnpm build:lightweight
+            pnpm build:single
 
             HTML_FILE="$(find . -type f -name '*.html' ! -path '*/node_modules/*' | head -n 1)"
 
