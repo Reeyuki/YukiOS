@@ -5,6 +5,7 @@ on:
   pull_request:
   issues:
   issue_comment:
+  workflow_dispatch:
   release:
   watch:
 
