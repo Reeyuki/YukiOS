@@ -48,6 +48,7 @@ export class ScramjetApp extends BaseApp {
           title: opts?.isIncognito ? "Scramjet Browser (Private)" : "Scramjet Browser",
           size: ["1024px", "630px"],
           icon: "fas fa-globe",
+          skipHeader: true,
           ui: `
             <div class="scramjet-container" style="width:100%;height:100%;overflow:hidden;">
               <iframe

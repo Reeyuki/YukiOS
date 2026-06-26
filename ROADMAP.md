@@ -31,7 +31,6 @@ Planned features and improvements for YukiOS.
 - [ ] Add python to terminal
 - [ ] Add Boxedwine
 - [ ] Add about:blank method
-- [ ] From site to users computer file transfer support
 - [ ] Add 3D os mode
 - [ ] Add tiling wm mode
 - [ ] Add more achievements
