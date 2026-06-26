@@ -17,7 +17,7 @@ const OS_LIST = [
   {
     id: "winxp",
     name: "Windows XP (Heavy)",
-    url: "https://cdn.jsdelivr.net/gh/reeyuki/yukios@main/apps/winxp/index.html",
+    url: "https://cdn.jsdelivr.net/gh/reeyuki/yukios@main/static/apps/winxp/index.html",
     color: "#3a6ea5",
     icon: "fab fa-windows"
   },
