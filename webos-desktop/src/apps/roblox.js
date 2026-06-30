@@ -5,17 +5,29 @@ import { resolveIconUrl } from "../shared/assetResolver.js";
 
 const CDN = "https://cdn.jsdelivr.net/gh/reeyuki/yukios-games@main/html/roblox";
 
+const COVER_MAP = {
+  cljailbreakobbbobob: "static/icons/roblox/jailbreakobby.webp",
+  cllumberobby: "static/icons/roblox/lumbertycoon.webp",
+  "clobby-99-will-lose": "static/icons/roblox/99willllose.webp",
+  clobbybike: "static/icons/roblox/obbybike.webp",
+  clobbycart: "static/icons/roblox/obby-cart.webp",
+  clobbyonlyup: "static/icons/roblox/obbyonlyup.webp",
+  clobbyrainbowtower: "static/icons/roblox/rainbowtower.webp",
+  clobbyswing: "static/icons/roblox/obbyswing.webp",
+  clobbyyardsale: "static/icons/roblox/yardsale.webp",
+  clsabduel: "static/icons/roblox/sabduel.webp",
+  clswingforbrainrots: "static/icons/roblox/swingbrainrots.webp"
+};
+
 const GAMES = [
   { name: "Climb for Brainrots", id: "clclimbforbrainrots" },
   { name: "Jailbreak Obby", id: "cljailbreakobbbobob" },
   { name: "Lumber Obby", id: "cllumberobby" },
   { name: "99 Will Lose", id: "clobby-99-will-lose" },
-  { name: "1 Jumper Per Click", id: "clobby1jumpperclick" },
   { name: "Obby Bike", id: "clobbybike" },
   { name: "Obby Cart", id: "clobbycart" },
   { name: "Obby Only Up", id: "clobbyonlyup" },
   { name: "Rainbow Tower", id: "clobbyrainbowtower" },
-  { name: "Obby Slide", id: "clobbyslide" },
   { name: "Obby Swing", id: "clobbyswing" },
   { name: "Yard Sale", id: "clobbyyardsale" },
   { name: "Sab Duel", id: "clsabduel" },
@@ -111,7 +123,7 @@ export class RobloxApp extends BaseApp {
     return GAMES.map((game, i) => ({
       ...game,
       rating: FAKE_RATINGS[i],
-      cover: `${CDN}/covers/${game.id}.svg`,
+      cover: COVER_MAP[game.id] ? resolveIconUrl(COVER_MAP[game.id]) : `${CDN}/covers/${game.id}.svg`,
       url: `${CDN}/${game.id}.html`
     }));
   }

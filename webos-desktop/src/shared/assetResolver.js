@@ -421,6 +421,7 @@ export async function fetchHtmlAsBlobUrl(url) {
       "cat goes fishing",
       "tabs",
       "catfish",
+      "roblox",
       "gamesforaetheris",
       "cat_fish"
     ].some((p) => url.toLowerCase().includes(p.toLowerCase())) || url.toLowerCase().includes("catgoesfishing.html");
