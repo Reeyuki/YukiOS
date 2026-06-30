@@ -158,6 +158,8 @@ export class BaseApp {
         return AppSource.AI_ASSISTANT;
       case "ClockApp":
         return AppSource.CLOCK;
+      case "RobloxApp":
+        return AppSource.SYSTEM;
       case "BrightnessApp":
         return AppSource.BRIGHTNESS;
       default:

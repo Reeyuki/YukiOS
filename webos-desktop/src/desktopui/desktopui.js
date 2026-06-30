@@ -53,7 +53,7 @@ function relayoutDesktopIcons() {
 
 function isRightAlignedSystemApp(appMap, app) {
   if (app === "flash" || app === "steamApp") return false;
-
+  if (app === "robloxApp") return false;
   if (app === "paint" || app === "photopea") return true;
 
   const appMeta = appMap?.[app];

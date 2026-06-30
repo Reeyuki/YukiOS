@@ -1239,5 +1239,20 @@ export const APP_MANIFESTS = [
     },
     description:
       "Remote desktop client supporting VNC protocol with saved connection profiles, fullscreen mode, and clipboard integration."
+  },
+  {
+    serviceKey: "robloxApp",
+    enhanced: true,
+    type: "system",
+    title: "Roblox",
+    icon: "static/icons/roblox.webp",
+    launchType: "instance",
+    windowIdPatterns: ["roblox"],
+    category: "games",
+    clippy: {
+      message: "Browse and play Roblox games in immersive desktop mode.",
+      animation: ClippyAnimation.Show
+    },
+    description: "Browse and play Roblox games with full immersive desktop support."
   }
 ];

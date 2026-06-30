@@ -23,6 +23,7 @@ const HARDCODED_DESKTOP_ICONS = [
   { app: "gtaVc", name: "GTA: Vice City", icon: "static/icons/gtavc.webp" },
   { app: "undertale", name: "Undertale", icon: "static/icons/undertale.webp" },
   { app: "deltaruneCh5", name: "Deltarune CH5", icon: "static/icons/deltarune.png" },
+  { app: "robloxApp", name: "Roblox", icon: "static/icons/roblox.webp" },
   { app: "scramjetApp", name: "Browser", icon: "fas fa-snowflake", isFa: true },
   { app: "systemAppsApp", name: "System Apps", icon: "fas fa-tools", isFa: true },
   { app: "notepadApp", name: "Notepad", icon: "static/icons/notepad.webp" },

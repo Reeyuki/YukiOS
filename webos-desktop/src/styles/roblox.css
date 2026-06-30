@@ -1,0 +1,248 @@
+.roblox-app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #28292a;
+  overflow: hidden;
+  font-family: var(--font-ui);
+}
+
+.roblox-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 20px;
+  background: #2b2d2e;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  flex-shrink: 0;
+}
+
+.roblox-header-icon {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+}
+
+.roblox-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  max-width: 320px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 6px 12px;
+}
+
+.roblox-search:focus-within {
+  border-color: #1446ff;
+}
+
+.roblox-search i {
+  color: #8a8a8a;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.roblox-search-input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  color: #c6c2bd;
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.roblox-search-input::placeholder {
+  color: #8a8a8a;
+}
+
+.roblox-profile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.roblox-username {
+  font-size: 13px;
+  font-weight: 600;
+  color: #c6c2bd;
+}
+
+.roblox-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.08);
+}
+
+.roblox-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.roblox-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.roblox-section-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #c6c2bd;
+  margin: 0;
+}
+
+.roblox-horizontal-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  cursor: grab;
+  user-select: none;
+}
+
+.roblox-horizontal-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.roblox-horizontal-scroll:active {
+  cursor: grabbing;
+}
+
+.roblox-scroll-track {
+  display: flex;
+  gap: 12px;
+  width: max-content;
+  padding-bottom: 4px;
+}
+
+.roblox-games-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 14px;
+}
+
+.roblox-game-card {
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  background: #2b2d2e;
+}
+
+.roblox-game-card:hover {
+  background: #353738;
+}
+
+.roblox-game-thumb {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: #1f2021;
+}
+
+.roblox-game-cover {
+  width: 282px;
+  height: 158px;
+  object-fit: cover;
+  display: block;
+}
+
+.roblox-game-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.1s;
+}
+
+.roblox-game-card:hover .roblox-game-overlay {
+  opacity: 1;
+}
+
+.roblox-play-btn {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  color: #fff;
+}
+
+.roblox-game-info {
+  padding: 8px 10px 10px;
+  background: #28292a;
+}
+
+.roblox-game-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #c6c2bd;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.roblox-game-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+
+.roblox-rating {
+  font-size: 11px;
+  color: #a09c98;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.roblox-rating i {
+  color: #f7c948;
+  font-size: 10px;
+}
+
+.roblox-like {
+  font-size: 11px;
+  color: #8a8a8a;
+  opacity: 0.6;
+}
+
+.roblox-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 60px 20px;
+  color: #8a8a8a;
+}
+
+.roblox-empty i {
+  font-size: 48px;
+  opacity: 0.5;
+}
+
+.roblox-empty p {
+  font-size: 14px;
+  text-align: center;
+}
