@@ -27,6 +27,7 @@ Planned features and improvements for YukiOS.
 - [ ] Make transparency setting affect all tray menu panels and GUIs
 - [ ] Support for opening images in context menu with Paint
 - [ ] Add vim/nano text editors
+- [ ] Move achievement popup ui to replicate steam achievements and appear from right bottom
 - [ ] Improve terminal functionality and fix bugs
 - [ ] Add python to terminal
 - [ ] Add Boxedwine
