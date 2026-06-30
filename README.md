@@ -24,11 +24,11 @@ by side.
 
 Its built entirely in vanilla javascript/typescript without any frameworks.
 
-![Login page](.github/login.png) ![Steam interface](.github/steam.png) ![Start menu](.github/startmenu.png)
-![Steam overlay](.github/overlay.png) ![Discord](.github/dc.png) ![Web Apps](.github/webapps.png)
-![Setup](.github/setupsettings.png) ![Music1](.github/audio1.png) ![Music2](.github/audio2.png)
-![Achievements](.github/browserachieve.png) ![Music player](.github/music.png) ![Applications](.github/apps.png)
-[Workspaces](.github/Workspaces.png)
+![Login page](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/login.png) ![Steam interface](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/steam.png) ![Start menu](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/startmenu.png)
+![Steam overlay](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/overlay.png) ![Discord](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/dc.png) ![Web Apps](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/webapps.png)
+![Setup](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/setupsettings.png) ![Music1](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/audio1.png) ![Music2](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/audio2.png)
+![Achievements](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/browserachieve.png) ![Music player](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/music.png) ![Applications](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/apps.png)
+[Workspaces](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/workspaces.png)
 
 
 # ✨ Desktop Experience

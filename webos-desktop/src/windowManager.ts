@@ -17,13 +17,7 @@ import { WindowManagerUtils } from "./windowManager/WindowManagerUtils.js";
 
 import { StorageKeys, os } from "./framework.js";
 import { $ } from "./shared/domUtils.js";
-
-function isMobile() {
-  return (
-    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobi|Touch/i.test(navigator.userAgent) ||
-    window.innerWidth <= 768
-  );
-}
+import { isMobile } from "./shared/platformUtils.js";
 
 export class WindowManager {
   openWindows: Map<string, any>;

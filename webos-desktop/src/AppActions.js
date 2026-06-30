@@ -17,7 +17,7 @@ export function createAppActions(appLauncher) {
             return;
           }
 
-          const appInstance = appLauncher[appId] || appLauncher[appId + "App"];
+          const appInstance = appLauncher._appRegistry.get(appId) || appLauncher[appId] || appLauncher[appId + "App"];
           if (appInstance) return appInstance.open(extra);
 
           console.error(`No app instance found for ${appId}`);

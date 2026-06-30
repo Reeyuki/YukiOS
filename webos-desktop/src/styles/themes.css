@@ -1780,30 +1780,42 @@ html[data-theme="eva-unit-01"] {
 }
 
 html[data-theme="eva-unit-02"] {
-  --brand: #c41e3a;
-  --brand-hover: #a01830;
-  --brand-dark: #801226;
-  --brand-glow: rgba(196, 30, 58, 0.35);
-  --brand-dim: rgba(196, 30, 58, 0.18);
-  --bg-primary: #120808;
-  --bg-secondary: #1e0c0a;
-  --text-primary: #f0d8d0;
-  --text-secondary: #c09888;
-  --glass: rgba(196, 30, 58, 0.08);
-  --glass-hover: rgba(196, 30, 58, 0.14);
-  --glass-border: rgba(196, 30, 58, 0.25);
-  --tx1: #f0d8d0;
-  --tx2: #c09888;
-  --surface-1: #120808;
-  --surface-2: #1e0c0a;
-  --surface-3: #28100c;
-  --surface-hover: #32140e;
-  --text-muted: #88605a;
+  --brand: #e82a35;
+  --brand-hover: #cc222c;
+  --brand-dark: #991820;
+  --brand-glow: rgba(232, 42, 53, 0.35);
+  --brand-dim: rgba(232, 42, 53, 0.18);
+  --bg-primary: #180a08;
+  --bg-secondary: #2c1410;
+  --text-primary: #f5ede6;
+  --text-secondary: #ff8c2a;
+  --glass: rgba(232, 42, 53, 0.08);
+  --glass-hover: rgba(232, 42, 53, 0.14);
+  --glass-border: rgba(255, 140, 42, 0.25);
+  --tx1: #f5ede6;
+  --tx2: #ff8c2a;
+  --surface-1: #180a08;
+  --surface-2: #2c1410;
+  --surface-3: #3c1c18;
+  --surface-hover: #4e2420;
+  --text-muted: #a07a68;
   --text-on-brand: #fff;
   --shadow-color: rgba(0, 0, 0, 0.65);
   --overlay-bg: rgba(0, 0, 0, 0.55);
-  --menu-bg: #1e0c0a;
-  --window-bg: #120808;
+  --menu-bg: #2c1410;
+  --window-bg: #180a08;
+}
+
+html[data-theme="eva-unit-02"] ::selection {
+  background: rgba(42, 92, 204, 0.4);
+}
+
+html[data-theme="eva-unit-02"] a {
+  color: #4a8cff;
+}
+
+html[data-theme="eva-unit-02"] a:hover {
+  color: #7aacff;
 }
 
 @keyframes aurora-flow {

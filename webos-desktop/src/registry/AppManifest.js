@@ -380,7 +380,6 @@ export const APP_MANIFESTS = [
     persistContentState: false,
     clippy: { message: "Chat with friends on Discord", animation: ClippyAnimation.Wave },
     description: "Chat with friends, hop into voice, and keep up with your communities on Discord.",
-    targetUrl: "https://discord.com/app",
     windowSize: ["90vw", "85vh"],
     trayOptions: {
       contextMenuItems: [

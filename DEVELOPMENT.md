@@ -257,11 +257,9 @@ cd webos-desktop && pnpm build:dev
 1. **Definition** - App class created in `src/apps/`
 2. **Registration** - App added to `APP_DEFINITIONS` in `AppLoader.js` and metadata to `SYSTEM_APPS` in
    `AppRegistryConfig.js`
-3. **Instantiation** - `loadApps(services)` in `main.js` instantiates all registered apps and attaches to `services`
-   object
-4. **Launch** - `AppLauncher.launch(appId)` dispatches
-5. **Open** - `app.open()` creates window via `WindowManager`
-6. **Close** - `onClose(winId)` cleanup hook called
+3. **Launch** - `AppLauncher.launch(appId)` dispatches
+4. **Open** - `app.open()` creates window via `WindowManager`
+5. **Close** - `onClose(winId)` cleanup hook called
 
 ### Declarative Schema Structure
 
