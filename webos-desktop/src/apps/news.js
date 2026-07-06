@@ -5,6 +5,27 @@ const appNewsEntries = APP_MANIFESTS.filter((manifest) => manifest.news).map((ma
 
 const EXISTING_NEWS_UPDATES = [
   {
+    date: "July 7, 2026",
+    sections: [
+      {
+        icon: "fa-puzzle-piece",
+        title: "Widget System",
+        items: [
+          [
+            "fa-puzzle-piece",
+            "Desktop Widgets",
+            "Add useful widgets to your desktop: Clock, Weather, Notes, Calendar, System Monitor, Music Control, and more, each with drag-to-move and resize."
+          ]
+        ]
+      },
+      {
+        icon: "fa-sort",
+        title: "Desktop Sorting",
+        items: [["fa-sort-amount-down-alt", "Auto-Sort Toggle", "Right-click the desktop for sorting desktop items"]]
+      }
+    ]
+  },
+  {
     date: "June 26, 2026",
     sections: [
       {

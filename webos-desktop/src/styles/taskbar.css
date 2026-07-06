@@ -1111,7 +1111,7 @@ html[data-theme="light"] .task-item-name {
 .display-performance-section.battery-section {
   flex-direction: row;
   align-items: center;
-  gap: var(--spacing-lg);
+  gap: 20px;
   padding: var(--spacing-md);
   background: var(--surface-2);
   border-radius: var(--r);
@@ -1428,7 +1428,7 @@ html[data-theme="light"] .task-item-name {
 .power-battery-section {
   display: flex;
   align-items: center;
-  gap: var(--spacing-md);
+  gap: 16px;
   padding: var(--spacing-md);
   background: var(--surface-2);
   border-radius: var(--r);
@@ -1436,8 +1436,45 @@ html[data-theme="light"] .task-item-name {
 }
 
 .power-battery-icon {
-  font-size: var(--text-2xl);
-  color: #4ade80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.power-battery-icon .battery {
+  width: 100px;
+  height: 38px;
+  border-width: 2px;
+  border-radius: 7px;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.power-battery-icon .battery::after {
+  right: -7px;
+  top: 24%;
+  width: 5px;
+  height: 52%;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.battery-section .battery-icon .battery {
+  width: 100px;
+  height: 38px;
+  border-width: 2px;
+  border-radius: 7px;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.battery-section .battery-icon .battery::after {
+  right: -7px;
+  top: 24%;
+  width: 5px;
+  height: 52%;
+  border-radius: 2px;
+  height: 56%;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .power-battery-info {

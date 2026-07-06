@@ -1,4 +1,4 @@
-import { turboManager } from "./shared/turboManager.js";
+import { turboManager } from "../shared/turboManager.js";
 
 import { BaseApp, StorageKeys, os } from "../framework.js";
 class PowerApp extends BaseApp {
@@ -44,6 +44,13 @@ class PowerApp extends BaseApp {
     return "fas fa-battery-empty";
   }
 
+  _getBatteryFillColor(level) {
+    if (this.batteryInfo.charging) return "#4ade80";
+    if (level > 60) return "#22c55e";
+    if (level > 30) return "#facc15";
+    return "#ef4444";
+  }
+
   _getBatteryStatusText() {
     const level = Math.round(this.batteryInfo.level * 100);
     const charging = this.batteryInfo.charging;
@@ -60,7 +67,13 @@ class PowerApp extends BaseApp {
     if (trayEl) {
       const iconEl = trayEl.querySelector("i");
       if (iconEl) {
-        iconEl.className = this._getBatteryIcon();
+        if (this.batteryInfo.charging) {
+          iconEl.className = "fas fa-bolt";
+          iconEl.style.color = "#4ade80";
+        } else {
+          iconEl.className = this._getBatteryIcon();
+          iconEl.style.color = "";
+        }
       }
     }
   }
@@ -107,12 +120,14 @@ class PowerApp extends BaseApp {
     popup.className = "power-tray-popup";
     const batteryPercent = Math.round(this.batteryInfo.level * 100);
     const batteryStatus = this._getBatteryStatusText();
-    const batteryIcon = this._getBatteryIcon();
+    const batteryFillColor = this._getBatteryFillColor(batteryPercent);
     popup.innerHTML = `
       <div class="power-popup-content">
         <div class="power-battery-section">
           <div class="power-battery-icon">
-            <i class="${batteryIcon}"></i>
+            <div class="battery">
+              <div class="battery-fill" style="width:${batteryPercent}%;background:${batteryFillColor}"></div>
+            </div>
           </div>
           <div class="power-battery-info">
             <div class="power-battery-percent">${batteryPercent}%</div>

@@ -2,8 +2,9 @@ import { $, $$, setStyle } from "../../shared/domUtils.js";
 import { os } from "../../framework.js";
 import { FileKind } from "../../fs.js";
 import { showDynamicContextMenu } from "../../shared/contextMenu.js";
-import { fileKindFromName, showFileProperties } from "../../fileDisplay.js";
+import { fileKindFromName, showFileProperties, isImageFile } from "../../fileDisplay.js";
 import { decodeFileContent, pluralize, isArchiveFile, buildClipboardIcons } from "../../utils/utils.js";
+import { saveToWallpapers } from "./upload.js";
 
 async function resolveConflictAction(name, applyToAllAction) {
   if (applyToAllAction) return { action: applyToAllAction, applyToAll: false };
@@ -263,41 +264,55 @@ export function showFileContextMenu(explorer, e, itemName, isFile, inst) {
       )
     );
 
-    if (isFile) {
-      (async () => {
-        const kind = await explorer.fs.getFileKind(inst.currentPath, itemName);
-        if (kind === FileKind.IMAGE || kind === FileKind.VIDEO) {
-          const content = await explorer.fs.getFileContent(inst.currentPath, itemName);
-          menu.appendChild(
-            item(
-              "Set Wallpaper",
-              () => {
-                import("../../system.js").then(({ SystemUtilities }) => {
-                  SystemUtilities.setWallpaper(content);
-                  os.notify.send(`Wallpaper set to "${itemName}"`);
-                });
-              },
-              "fa-image"
-            )
-          );
-          menu.appendChild(
-            item(
-              "Save as Wallpaper",
-              async () => {
-                const { saveToWallpapers } = await import("./upload.js");
-                await saveToWallpapers(
-                  explorer,
-                  itemName,
-                  content,
-                  await explorer.fs.getFileKind(inst.currentPath, itemName)
-                );
-                os.notify.send(`"${itemName}" saved to Wallpapers`);
-              },
-              "fa-save"
-            )
-          );
+    if (isFile && isImageFile(itemName)) {
+      const getContent = async () => {
+        const content = await explorer.fs.getFileContent(inst.currentPath, itemName);
+        if (content instanceof Blob) {
+          return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(content);
+          });
         }
-      })();
+        return content;
+      };
+
+      menu.appendChild(hr());
+      menu.appendChild(
+        item(
+          "Set Wallpaper",
+          async () => {
+            try {
+              const { SystemUtilities } = await import("../../system.js");
+              const content = await getContent();
+              await SystemUtilities.setWallpaper(content);
+              os.notify.send(`Wallpaper set to "${itemName}"`);
+            } catch (err) {
+              console.error("Set wallpaper error:", err);
+              os.dialog.alert("Error", "Could not set wallpaper");
+            }
+          },
+          "fa-image"
+        )
+      );
+      menu.appendChild(
+        item(
+          "Save as Wallpaper",
+          async () => {
+            try {
+              const content = await getContent();
+              const kind = fileKindFromName(itemName);
+              await saveToWallpapers(explorer, itemName, content, kind, "@content");
+              os.notify.send(`"${itemName}" saved to wallpapers`);
+            } catch (err) {
+              console.error("Save wallpaper error:", err);
+              os.dialog.alert("Error", "Could not save wallpaper");
+            }
+          },
+          "fa-save"
+        )
+      );
     }
 
     if (isFile && isArchiveFile(itemName)) {

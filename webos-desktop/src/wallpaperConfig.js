@@ -19,6 +19,7 @@ const WALLPAPERS = [
   { name: "Windows 7", filename: "win7.webp" },
   { name: "Windows 10", filename: "win10.webp" },
   { name: "Windows 11", filename: "win11.webp" },
+  { name: "Windows 11 Dark", filename: "win11dark.webp" },
   { name: "Windows XP", filename: "xp.webp" }
 ];
 

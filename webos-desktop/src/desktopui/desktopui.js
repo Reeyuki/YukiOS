@@ -16,6 +16,19 @@ import { ClipboardManager } from "./fileClipboardManager.js";
 import { showFileProperties } from "../fileDisplay.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { KeybindManager } from "../keybindManager.js";
+import { WidgetManager } from "./widgetManager.js";
+import { ClockWidget } from "./widgets/clockWidget.js";
+import { NotesWidget } from "./widgets/notesWidget.js";
+import { WeatherWidget } from "./widgets/weatherWidget.js";
+import { CalendarWidget } from "./widgets/calendarWidget.js";
+import { SystemMonitorWidget } from "./widgets/systemMonitorWidget.js";
+import { MusicControlWidget } from "./widgets/musicControlWidget.js";
+import { TodoWidget } from "./widgets/todoWidget.js";
+import { PowerWidget } from "./widgets/powerWidget.js";
+import { ClipboardWidget } from "./widgets/clipboardWidget.js";
+import { PhotoFrameWidget } from "./widgets/photoFrameWidget.js";
+import { TimerWidget } from "./widgets/timerWidget.js";
+import { YouTubeWidget } from "./widgets/youtubeWidget.js";
 
 let sharedAppLauncher;
 export let toggleHideGames = getToggleHideGames();
@@ -438,6 +451,19 @@ export class DesktopUI {
 
     this.contextMenuManager = new DesktopContextMenuManager(this, PositionStore, IconDataHelper, this.appLauncher.wm);
 
+    this.widgetManager = new WidgetManager();
+    this.widgetManager.registerWidgetType("clock", ClockWidget);
+    this.widgetManager.registerWidgetType("notes", NotesWidget);
+    this.widgetManager.registerWidgetType("weather", WeatherWidget);
+    this.widgetManager.registerWidgetType("calendar", CalendarWidget);
+    this.widgetManager.registerWidgetType("systemMonitor", SystemMonitorWidget);
+    this.widgetManager.registerWidgetType("musicControl", MusicControlWidget);
+    this.widgetManager.registerWidgetType("todo", TodoWidget);
+    this.widgetManager.registerWidgetType("power", PowerWidget);
+    this.widgetManager.registerWidgetType("clipboard", ClipboardWidget);
+    this.widgetManager.registerWidgetType("photoFrame", PhotoFrameWidget);
+    this.widgetManager.registerWidgetType("timer", TimerWidget);
+    this.widgetManager.registerWidgetType("youtube", YouTubeWidget);
     this.setupEventListeners();
     this.initializeDesktopFiles();
   }
@@ -889,10 +915,18 @@ export class DesktopUI {
 
   async initializeDesktopFiles() {
     await this.iconManager.initializeDesktopFiles(sharedAppLauncher, isRightAlignedSystemApp);
+    this.widgetManager.init();
   }
 
   async loadDesktopItems() {
     await this.iconManager.loadDesktopItems();
+    const autoSort = os.storage.get(StorageKeys.desktopAutoSort);
+    if (autoSort) {
+      const mode = os.storage.get(StorageKeys.desktopSortMode) || "name";
+      if (mode && mode !== "none") {
+        sortDesktopIcons(mode);
+      }
+    }
   }
 
   async createFolderIcon(folderName) {

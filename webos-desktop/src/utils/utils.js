@@ -76,7 +76,12 @@ export function mimeFromExt(ext) {
     webp: "image/webp",
     svg: "image/svg+xml",
     bmp: "image/bmp",
-    ico: "image/x-icon"
+    ico: "image/x-icon",
+    avif: "image/avif",
+    tiff: "image/tiff",
+    tif: "image/tiff",
+    heic: "image/heic",
+    heif: "image/heif"
   };
   return map[ext] || "image/png";
 }

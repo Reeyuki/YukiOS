@@ -32,8 +32,8 @@ export class DialogAPI {
   async fileOpen(options?: FileDialogOptions): Promise<string | null> {
     if (!this.explorerApp) return null;
     return new Promise((resolve) => {
-      this.explorerApp.open(options?.initialPath ?? ["Home"], (selectedPath: string) => {
-        resolve(selectedPath);
+      this.explorerApp.open(options?.initialPath ?? ["Home"], (path: string[], name: string) => {
+        resolve(`${path.join("/")}/${name}`);
       });
     });
   }

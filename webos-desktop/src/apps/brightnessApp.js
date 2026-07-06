@@ -113,7 +113,7 @@ class BrightnessApp extends BaseApp {
   }
 
   _adjustBrightness(delta) {
-    this.brightness = Math.max(20, Math.min(150, this.brightness + delta));
+    this.brightness = Math.max(10, Math.min(150, this.brightness + delta));
     this._applyDisplaySettings();
     this._saveSettings();
     this._updatePopupSliders();
@@ -229,7 +229,7 @@ class BrightnessApp extends BaseApp {
         <div class="brightness-quick-controls">
           <div class="brightness-quick-item">
             <i class="fas fa-sun"></i>
-            <input type="range" id="brightness-slider" class="brightness-quick-slider" min="20" max="150" value="${this.brightness}" />
+            <input type="range" id="brightness-slider" class="brightness-quick-slider" min="10" max="150" value="${this.brightness}" />
             <span>${Math.round(this.brightness)}%</span>
           </div>
           <div class="brightness-quick-item">

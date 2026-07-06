@@ -1,9 +1,10 @@
 import { showContextMenu, showDynamicContextMenu, hideMenu } from "../shared/contextMenu.js";
 import { sortDesktopIcons } from "./desktopui.js";
-import { os } from "../os/index.js";
+import { os, StorageKeys } from "../framework.js";
 import { ArchiveExtractor } from "../archiveExtractor.js";
 import { AppSource } from "../AppSource.js";
-import { showFileProperties } from "../fileDisplay.js";
+import { showFileProperties, isImageFile } from "../fileDisplay.js";
+import { FileKind } from "../fs.js";
 import {
   buildCopyAction,
   buildCutAction,
@@ -83,6 +84,7 @@ export class DesktopContextMenuManager {
         "hr",
         { id: "ctx-sort", label: "Sort icons", icon: "fa-sort", action: "sort" },
         "hr",
+        { id: "ctx-widgets", label: "Widgets", action: "widgets", icon: "fa-puzzle-piece" },
         { id: "ctx-refresh", label: "Refresh", action: "refresh", icon: "fa-sync-alt" }
       ]
     };
@@ -250,37 +252,50 @@ export class DesktopContextMenuManager {
         )
       );
 
-      const imageExts = [
-        "png",
-        "jpg",
-        "jpeg",
-        "webp",
-        "bmp",
-        "svg",
-        "gif",
-        "avif",
-        "ico",
-        "tiff",
-        "tif",
-        "heic",
-        "heif"
-      ];
-      if (imageExts.includes(fileExt)) {
-        menu.appendChild(hr());
+      if (isImageFile(fileName)) {
+        const mimeMap = {
+          png: "image/png",
+          jpg: "image/jpeg",
+          jpeg: "image/jpeg",
+          gif: "image/gif",
+          webp: "image/webp",
+          bmp: "image/bmp",
+          svg: "image/svg+xml",
+          avif: "image/avif",
+          ico: "image/x-icon",
+          heic: "image/heic",
+          heif: "image/heif",
+          tiff: "image/tiff",
+          tif: "image/tiff",
+          raw: "image/x-raw"
+        };
+        const ext = fileName.split(".").pop().toLowerCase();
+        const mime = mimeMap[ext] || "application/octet-stream";
+
+        const readAsDataUrl = async () => {
+          const binary = await os.fs.read([filePath, fileName], { encoding: "binary" });
+          const blob = new Blob([binary], { type: mime });
+          return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+          });
+        };
+
         menu.appendChild(
           item(
             "Set as Wallpaper",
             async () => {
-              const { SystemUtilities } = await import("../system.js");
-              const content = await os.fs.read([filePath, fileName], { encoding: "binary" });
-              const blob = new Blob([content]);
-              const dataUrl = await new Promise((res) => {
-                const reader = new FileReader();
-                reader.onload = () => res(reader.result);
-                reader.readAsDataURL(blob);
-              });
-              await SystemUtilities.setWallpaper(dataUrl);
-              os.notify.send(`Wallpaper set to "${fileName}"`);
+              try {
+                const { SystemUtilities } = await import("../system.js");
+                const dataUrl = await readAsDataUrl();
+                await SystemUtilities.setWallpaper(dataUrl);
+                os.notify.send(`Wallpaper set to "${fileName}"`);
+              } catch (err) {
+                console.error("Set wallpaper error:", err);
+                os.dialog.alert("Error", "Could not set wallpaper");
+              }
             },
             "fa-image"
           )
@@ -289,15 +304,14 @@ export class DesktopContextMenuManager {
           item(
             "Save as Wallpaper",
             async () => {
-              const content = await os.fs.read([filePath, fileName], { encoding: "binary" });
-              const blob = new Blob([content]);
-              const dataUrl = await new Promise((res) => {
-                const reader = new FileReader();
-                reader.onload = () => res(reader.result);
-                reader.readAsDataURL(blob);
-              });
-              await this.desktopUI.saveToWallpapers(fileName, dataUrl, "image", null);
-              os.notify.send(`Saved "${fileName}" to Wallpapers`);
+              try {
+                const dataUrl = await readAsDataUrl();
+                await this.desktopUI.saveToWallpapers(fileName, dataUrl, FileKind.IMAGE, "@content");
+                os.notify.send(`"${fileName}" saved to wallpapers`);
+              } catch (err) {
+                console.error("Save wallpaper error:", err);
+                os.dialog.alert("Error", "Could not save wallpaper");
+              }
             },
             "fa-save"
           )
@@ -358,6 +372,7 @@ export class DesktopContextMenuManager {
         await this.desktopUI._pasteToDesktop();
       },
       sort: () => this.showSortContextMenu(e, currentSort),
+      widgets: () => this.showWidgetsMenu(e),
       refresh: async () => {
         document.querySelectorAll(".folder-icon, .desktop-file-icon").forEach((i) => i.remove());
         await this.desktopUI.loadDesktopItems();
@@ -370,6 +385,7 @@ export class DesktopContextMenuManager {
   }
 
   showSortContextMenu(e, currentSort) {
+    const currentAutoSort = os.storage.get(StorageKeys.desktopAutoSort) || false;
     showDynamicContextMenu(e, (menu, item, hr) => {
       const sortItems = [
         { id: "name", label: "By Name", icon: "fa-sort-alpha-down" },
@@ -393,6 +409,89 @@ export class DesktopContextMenuManager {
       if (currentSort && currentSort !== "none") {
         menu.appendChild(item("Free Placement", () => sortDesktopIcons("none"), "fa-undo"));
       }
+      menu.appendChild(hr());
+      const autoLabel = currentAutoSort ? "Auto Sort: On" : "Auto Sort: Off";
+      const autoIcon = currentAutoSort ? "fa-toggle-on" : "fa-toggle-off";
+      const autoEl = item(
+        autoLabel,
+        () => {
+          const next = !currentAutoSort;
+          os.storage.set(StorageKeys.desktopAutoSort, next);
+          if (next && currentSort && currentSort !== "none") {
+            sortDesktopIcons(currentSort);
+          }
+          os.notify.send(`Auto sort ${next ? "enabled" : "disabled"}`);
+        },
+        autoIcon
+      );
+      if (currentAutoSort) {
+        autoEl.style.color = "var(--brand)";
+      }
+      menu.appendChild(autoEl);
+    });
+  }
+
+  showWidgetsMenu(e) {
+    const wm = this.desktopUI.widgetManager;
+    const existing = wm.getAllWidgets();
+    const existingTypes = new Set(existing.map((w) => w.type));
+
+    import("../shared/contextMenu.js").then(({ showDynamicContextMenu }) => {
+      showDynamicContextMenu(e, (menu, item, hr) => {
+        const widgetTypes = [
+          { type: "clock", label: "Clock", icon: "fa-clock" },
+          { type: "weather", label: "Weather", icon: "fa-cloud-sun" },
+          { type: "notes", label: "Notes", icon: "fa-sticky-note" },
+          { type: "calendar", label: "Calendar", icon: "fa-calendar-alt" },
+          { type: "systemMonitor", label: "System Monitor", icon: "fa-desktop" },
+          { type: "musicControl", label: "Music Control", icon: "fa-music" },
+          { type: "todo", label: "To-Do", icon: "fa-check-square" },
+          { type: "power", label: "Power", icon: "fa-power-off" },
+          { type: "clipboard", label: "Clipboard", icon: "fa-clipboard" },
+          { type: "photoFrame", label: "Photo Frame", icon: "fa-image" },
+          { type: "timer", label: "Timer", icon: "fa-stopwatch" },
+          { type: "youtube", label: "YouTube", icon: "fa-youtube" }
+        ];
+
+        widgetTypes.forEach((wt) => {
+          const disabled = existingTypes.has(wt.type);
+          const el = item(
+            wt.label,
+            disabled
+              ? null
+              : () => {
+                  wm.addWidget(wt.type, wt.label);
+                  os.notify.send(`${wt.label} widget added`);
+                },
+            wt.icon
+          );
+          if (disabled) {
+            el.style.opacity = "0.4";
+            el.style.cursor = "default";
+            const check = document.createElement("i");
+            check.className = "fas fa-check";
+            check.style.marginLeft = "auto";
+            check.style.fontSize = "10px";
+            check.style.color = "var(--brand)";
+            el.appendChild(check);
+          }
+          menu.appendChild(el);
+        });
+
+        if (existing.length > 0) {
+          menu.appendChild(hr());
+          const removeAll = item(
+            "Remove All Widgets",
+            () => {
+              existing.forEach((w) => wm.removeWidget(w.id));
+              os.notify.send("All widgets removed");
+            },
+            "fa-trash-alt"
+          );
+          removeAll.style.color = "var(--error)";
+          menu.appendChild(removeAll);
+        }
+      });
     });
   }
 

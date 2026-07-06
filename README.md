@@ -29,7 +29,7 @@ Its built entirely in vanilla javascript/typescript without any frameworks.
 ![Setup](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/setupsettings.png) ![Music1](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/audio1.png) ![Music2](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/audio2.png)
 ![Achievements](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/browserachieve.png) ![Music player](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/music.png) ![Applications](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/apps.png)
 [Workspaces](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/workspaces.png)
-
+[Widgets](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/widgets.png)
 
 # ✨ Desktop Experience
 

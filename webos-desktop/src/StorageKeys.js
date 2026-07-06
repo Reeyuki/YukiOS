@@ -152,5 +152,7 @@ export const StorageKeys = {
   vncProfiles: "yukiOS_vnc_profiles",
   recentFiles: "yukiOS_recent_files",
   robloxPlayed: "yukiOS_roblox_played",
-  desktopSortMode: "yukiOS_desktop_sort_mode"
+  desktopSortMode: "yukiOS_desktop_sort_mode",
+  desktopAutoSort: "yukiOS_desktop_auto_sort",
+  widgetsState: "yukiOS_widgets_state"
 };

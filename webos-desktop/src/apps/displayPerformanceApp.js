@@ -14,10 +14,10 @@ class DisplayPerformanceApp extends BaseApp {
     this.powerMode = turboManager.getMode();
     this.batteryInfo = { level: 1, charging: true };
 
-    this.brightness = os.storage.get(StorageKeys.brightness) || 100;
-    this.contrast = os.storage.get(StorageKeys.contrast) || 1;
-    this.gamma = os.storage.get(StorageKeys.gamma) || 1;
-    this.temperature = os.storage.get(StorageKeys.temperature) || 50;
+    this.brightness = parseInt(os.storage.get(StorageKeys.brightness), 10) || 100;
+    this.contrast = parseFloat(os.storage.get(StorageKeys.contrast)) || 1;
+    this.gamma = parseFloat(os.storage.get(StorageKeys.gamma)) || 1;
+    this.temperature = parseInt(os.storage.get(StorageKeys.temperature), 10) || 50;
     this.nightModeEnabled = os.storage.get(StorageKeys.nightModeEnabled) === "true";
     this.nightModeStart = os.storage.get(StorageKeys.nightModeStart) || "20:00";
     this.nightModeEnd = os.storage.get(StorageKeys.nightModeEnd) || "07:00";
@@ -62,12 +62,18 @@ class DisplayPerformanceApp extends BaseApp {
     return "fas fa-battery-empty";
   }
 
+  _getBatteryFillColor(level) {
+    if (this.batteryInfo.charging) return "#4ade80";
+    if (level > 60) return "#22c55e";
+    if (level > 30) return "#facc15";
+    return "#ef4444";
+  }
+
   _getBatteryIconHtml() {
-    const batteryIcon = `<i class="${this._getBatteryIcon()}"></i>`;
     if (this.batteryInfo.charging) {
-      return `<span class="battery-charging-wrapper">${batteryIcon}<i class="fas fa-bolt charging-overlay"></i></span>`;
+      return `<i class="fas fa-bolt" style="color:#4ade80"></i>`;
     }
-    return batteryIcon;
+    return `<i class="${this._getBatteryIcon()}"></i>`;
   }
 
   _getBatteryStatusText() {
@@ -341,12 +347,14 @@ class DisplayPerformanceApp extends BaseApp {
     popup.className = "display-performance-tray-popup";
     const batteryPercent = Math.round(this.batteryInfo.level * 100);
     const batteryStatus = this._getBatteryStatusText();
-    const batteryIconHtml = this._getBatteryIconHtml();
+    const batteryFillColor = this._getBatteryFillColor(batteryPercent);
     popup.innerHTML = `
       <div class="display-performance-popup-content">
         <div class="display-performance-section battery-section">
           <div class="battery-icon">
-            ${batteryIconHtml}
+            <div class="battery">
+              <div class="battery-fill" style="width:${batteryPercent}%;background:${batteryFillColor}"></div>
+            </div>
           </div>
           <div class="battery-info">
             <div class="battery-percent">${batteryPercent}%</div>
