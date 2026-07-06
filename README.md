@@ -97,7 +97,7 @@ Its built entirely in vanilla javascript/typescript without any frameworks.
 - Drag-and-drop file operations from host OS
 - File properties dialog with rename support
 - Drag-select multiple files with selection box
-- Trash bin with restore functionality
+- Trash bin with restore functionality and permanent delete.
 - File information tooltip on desktop/explorer
 - Storage indicator showing total used space in Explorer sidebar
 - Archive support: `.zip`, `.gz`, `.tar`, `.tar.gz`, `.tgz`, `.tar.xz`, `.7z`, `.bz2`, `.tar.bz2`, `.xz`, `.rar`

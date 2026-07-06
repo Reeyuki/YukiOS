@@ -44,14 +44,14 @@ export class SystemAppsApp extends BaseApp {
                    placeholder="Search apps..."
                    autocomplete="off"
                  />
-                 <div class="system-apps-section" id="system-apps-section-native">
-                   <div class="system-apps-section-header">System Apps</div>
-                   <div class="games-app-grid" id="system-apps-grid-native"></div>
-                 </div>
-                 <div class="system-apps-section" id="system-apps-section-web">
-                   <div class="system-apps-section-header">Web Apps</div>
-                   <div class="games-app-grid" id="system-apps-grid-web"></div>
-                 </div>
+                  <div class="system-apps-section" id="system-apps-section-native">
+                    <div class="system-apps-section-header">System Apps</div>
+                    <div class="games-app-grid" id="system-apps-grid-native"></div>
+                  </div>
+                  <div class="system-apps-section" id="system-apps-section-web">
+                    <div class="system-apps-section-header">Web Apps</div>
+                    <div class="games-app-grid" id="system-apps-grid-web"></div>
+                  </div>
                  <div class="games-no-results" id="system-apps-empty" style="display:none;">No system apps found</div>
                </div>
              </div>
@@ -83,8 +83,13 @@ export class SystemAppsApp extends BaseApp {
       })
       .map(([id, data]) => ({ id, ...data }));
 
-    const nativeApps = allApps.filter((a) => !a.targetUrl || a.id === "discordApp");
-    const webApps = allApps.filter((a) => a.targetUrl && a.id !== "discordApp");
+    const sortByIcon = (arr) => {
+      const isFA = (icon) => typeof icon === "string" && /^fa[bsr]?\s/.test(icon);
+      return [...arr.filter((a) => !isFA(a.icon)), ...arr.filter((a) => isFA(a.icon))];
+    };
+
+    const nativeApps = sortByIcon(allApps.filter((a) => !a.targetUrl || a.id === "discordApp"));
+    const webApps = sortByIcon(allApps.filter((a) => a.targetUrl && a.id !== "discordApp"));
 
     this._nativeApps = nativeApps;
     this._webApps = webApps;

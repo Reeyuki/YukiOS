@@ -1245,7 +1245,7 @@ export const APP_MANIFESTS = [
     enhanced: true,
     type: "system",
     title: "Roblox",
-    icon: "static/icons/roblox.webp",
+    icon: `${CDN_BASE}/static/icons/roblox.webp`,
     launchType: "instance",
     windowIdPatterns: ["roblox"],
     category: "games",
