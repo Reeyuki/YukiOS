@@ -39,7 +39,7 @@ Its built entirely in vanilla javascript/typescript without any frameworks.
 - Window switching and focus cycling (with alt+Q)
 - Window context menus (snap, move, pin, workspace transfer)
 - Window header context menus
-- Window icons in title bar
+- Window icons in title bar (double-click to close the window)
 - Taskbar positioned on any edge of the screen
 - Taskbar drag to reorder and click to minimize/restore
 - Live taskbar window preview on hover with close button

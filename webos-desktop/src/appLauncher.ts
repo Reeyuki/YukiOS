@@ -10,6 +10,7 @@ import { StorageKeys, os } from "./framework.js";
 import {
   fetchHtmlAsBlobUrl,
   resolveUrl,
+  resolveIconUrl,
   looksLikeHtml,
   isCdnGhUrl,
   isCdnHostname,
@@ -606,6 +607,15 @@ player.load("${swfPath}");
       if (type === "game") {
         const displayTitle = this.appMap[appId]?.title || originalName;
         const isGame = this.isTransparencyBlocked(appId, { type });
+        const gameIcon = this.appMap[appId]?.icon || "fas fa-gamepad";
+        const resolvedGameIcon = resolveIconUrl(gameIcon);
+        const gameIconHtml =
+          resolvedGameIcon.startsWith("fas ") ||
+          resolvedGameIcon.startsWith("fab ") ||
+          resolvedGameIcon.startsWith("far ")
+            ? `<i class="${resolvedGameIcon}" style="margin-right:6px;font-size:16px;vertical-align:middle;"></i>`
+            : `<img src="${resolvedGameIcon}" style="width:20px;height:20px;margin-right:6px;vertical-align:middle;object-fit:contain;">`;
+
         const win = os.window.create(
           extra.forceId || `${id}-win`,
           displayTitle,
@@ -614,7 +624,7 @@ player.load("${swfPath}");
           {
             ...extra,
             isGame,
-            icon: this.appMap[appId]?.icon || "fas fa-gamepad",
+            icon: gameIcon,
             skipHeader: true
           }
         );
@@ -636,7 +646,7 @@ player.load("${swfPath}");
 
         win.innerHTML = `
           <div class="window-header">
-            <span>${displayTitle}</span>
+            <span>${gameIconHtml}${displayTitle}</span>
             <div class="window-header-actions">
               ${overlayBtnHtml}
               ${os.window.getWindowControls(resolvedSource, true)}
@@ -766,10 +776,14 @@ player.load("${swfPath}");
 
     const isGame = this.isTransparencyBlocked(appId, appMeta);
     const mapEntry = this.appMap[appId!];
-    const icon =
+    let icon: string =
       mapEntry?.iconValue ||
       mapEntry?.icon ||
       (appMeta.type === "swf" ? "static/icons/flash.webp" : tryGetIcon(appId || id));
+
+    if (!icon) {
+      icon = "fas fa-window-maximize";
+    }
 
     const win = os.window.create(`${id}-win`, title, "80vw", "80vh", {
       isGame,
@@ -787,10 +801,11 @@ player.load("${swfPath}");
       core: appMeta.core || ""
     });
 
+    const resolvedIcon = resolveIconUrl(icon);
     const iconHtml =
-      icon.startsWith("fas ") || icon.startsWith("fab ") || icon.startsWith("far ")
-        ? `<i class="${icon}" style="margin-right:8px;font-size:16px;"></i>`
-        : `<img src="${icon}" style="width:20px;height:20px;margin-right:8px;vertical-align:middle;object-fit:contain;">`;
+      resolvedIcon.startsWith("fas ") || resolvedIcon.startsWith("fab ") || resolvedIcon.startsWith("far ")
+        ? `<i class="${resolvedIcon}" style="margin-right:8px;font-size:16px;"></i>`
+        : `<img src="${resolvedIcon}" style="width:20px;height:20px;margin-right:8px;vertical-align:middle;object-fit:contain;">`;
 
     const overlayBtnHtml = isGame
       ? `<button class="overlay-open-btn" title="Steam Overlay (Shift+Tab)"><i class="fab fa-steam"></i></button>`
