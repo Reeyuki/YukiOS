@@ -8,6 +8,17 @@ const EXISTING_NEWS_UPDATES = [
     date: "July 7, 2026",
     sections: [
       {
+        icon: "fa-download",
+        title: "Version Checker",
+        items: [
+          [
+            "fa-cloud-arrow-down",
+            "Automatic Update Detection",
+            "YukiOS now checks for new versions automatically and shows a tray icon when an update is available."
+          ]
+        ]
+      },
+      {
         icon: "fa-puzzle-piece",
         title: "Widget System",
         items: [

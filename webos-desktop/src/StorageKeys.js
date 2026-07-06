@@ -154,5 +154,7 @@ export const StorageKeys = {
   robloxPlayed: "yukiOS_roblox_played",
   desktopSortMode: "yukiOS_desktop_sort_mode",
   desktopAutoSort: "yukiOS_desktop_auto_sort",
-  widgetsState: "yukiOS_widgets_state"
+  widgetsState: "yukiOS_widgets_state",
+  lastVersionCheck: "yukiOS_last_version_check",
+  lastKnownRemoteVersion: "yukiOS_last_known_remote_version"
 };

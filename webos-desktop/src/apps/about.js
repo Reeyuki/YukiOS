@@ -1,7 +1,8 @@
 import "../styles/about.css";
 import { resolveIconUrl, resolveGhUrl } from "../shared/assetResolver.js";
 import { BaseApp, PersistenceTypes } from "../framework.js";
-export const YUKIOS_VERSION = "v1.4.5";
+import versionTxt from "../../version.txt?raw";
+export const YUKIOS_VERSION = versionTxt.trim();
 
 const capabilities = [
   {

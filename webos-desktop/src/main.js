@@ -32,6 +32,7 @@ import { showCdnPrompt } from "./shared/dialogs.js";
 import { initializeOSBridge, setDialogExplorerApp } from "./os/index.js";
 import { loadApps } from "./AppLoader.js";
 import { init as initCursorEffect } from "./cursorEffect.js";
+import { versionChecker } from "./versionChecker.js";
 import { $ } from "./shared/domUtils.js";
 
 initializeMirrors(appMap);
@@ -204,12 +205,8 @@ async function start() {
 
   await sessionManager.showLogin();
 
-  if (location.hostname.endsWith("neocities.org")) {
-    os.dialog.alert(
-      "Neocities Warning",
-      "Neocities does not support loading assets from other domains! OS will be severely limited to load apps and data."
-    );
-  }
+  versionChecker.start();
+
   const url = new URL(location.href);
 
   if (url.hostname === "yukios.vercel.app") {
