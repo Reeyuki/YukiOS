@@ -461,8 +461,6 @@ export class MonacoApp extends BaseApp {
       </div>
     `;
 
-    this.wm.mountWindow(win, winId, "Yuki Code", this.icon);
-
     this.currentWindow = win;
     this.setupMenuActions(win);
     this.setupWindowCleanup(win);

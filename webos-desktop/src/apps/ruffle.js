@@ -263,8 +263,6 @@ export class RuffleApp extends BaseApp {
       ></iframe>
     </div>`;
 
-    this.wm.mountWindow(win, winId, displayName, "static/icons/ruffle.webp");
-
     const inner = win.querySelector(`#${winId}-inner`);
     const frame = win.querySelector(`#${winId}-frame`);
     const log = win.querySelector(`#${winId}-log`);

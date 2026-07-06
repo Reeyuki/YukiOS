@@ -1,4 +1,5 @@
 import { showContextMenu, showDynamicContextMenu, hideMenu } from "../shared/contextMenu.js";
+import { sortDesktopIcons } from "./desktopui.js";
 import { os } from "../os/index.js";
 import { ArchiveExtractor } from "../archiveExtractor.js";
 import { AppSource } from "../AppSource.js";
@@ -79,6 +80,8 @@ export class DesktopContextMenuManager {
           condition: () => !!this.desktopUI.getClipboard(),
           icon: "fa-paste"
         },
+        "hr",
+        { id: "ctx-sort", label: "Sort icons", icon: "fa-sort", action: "sort" },
         "hr",
         { id: "ctx-refresh", label: "Refresh", action: "refresh", icon: "fa-sync-alt" }
       ]
@@ -330,6 +333,7 @@ export class DesktopContextMenuManager {
   }
 
   showDesktopContextMenu(e) {
+    const currentSort = this._currentSortMode();
     showContextMenu(e, this.templates.desktopContextMenu, {
       new: () => this.showNewContextMenu(e),
       addFiles: () => this.desktopUI.addFiles(),
@@ -353,9 +357,41 @@ export class DesktopContextMenuManager {
       paste: async () => {
         await this.desktopUI._pasteToDesktop();
       },
+      sort: () => this.showSortContextMenu(e, currentSort),
       refresh: async () => {
         document.querySelectorAll(".folder-icon, .desktop-file-icon").forEach((i) => i.remove());
         await this.desktopUI.loadDesktopItems();
+      }
+    });
+  }
+
+  _currentSortMode() {
+    return os.storage.get("yukiOS_desktop_sort_mode") || "none";
+  }
+
+  showSortContextMenu(e, currentSort) {
+    showDynamicContextMenu(e, (menu, item, hr) => {
+      const sortItems = [
+        { id: "name", label: "By Name", icon: "fa-sort-alpha-down" },
+        { id: "type", label: "By Type", icon: "fa-sort-amount-down" },
+        { id: "recent", label: "By Recent Use", icon: "fa-clock" }
+      ];
+      sortItems.forEach(({ id, label, icon: faIcon }) => {
+        const el = item(label, () => sortDesktopIcons(id), faIcon);
+        if (currentSort === id) {
+          el.style.setProperty("--brand", "var(--brand)");
+          el.style.fontWeight = "700";
+          const check = document.createElement("i");
+          check.className = "fas fa-check";
+          check.style.marginLeft = "auto";
+          check.style.fontSize = "10px";
+          el.appendChild(check);
+        }
+        menu.appendChild(el);
+      });
+      menu.appendChild(hr());
+      if (currentSort && currentSort !== "none") {
+        menu.appendChild(item("Free Placement", () => sortDesktopIcons("none"), "fa-undo"));
       }
     });
   }

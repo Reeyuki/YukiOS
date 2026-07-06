@@ -85,24 +85,6 @@ class OfficeModuleLoader {
     return mod;
   }
 
-  async handsontable() {
-    if (this.cache.has("handsontable")) return this.cache.get("handsontable");
-    if (__SINGLE_FILE__) {
-      await import("handsontable/dist/handsontable.full.min.css");
-      const mod = await import("handsontable");
-      window.Handsontable = mod.default || mod;
-      this.cache.set("handsontable", mod);
-      return mod;
-    }
-    await Promise.all([
-      this.loadScript(getLibraryUrl("handsontable", "js")),
-      this.loadStylesheet(getLibraryUrl("handsontable", "css"))
-    ]);
-    const mod = window.Handsontable;
-    this.cache.set("handsontable", mod);
-    return mod;
-  }
-
   async pdfjs() {
     if (this.cache.has("pdfjs")) return this.cache.get("pdfjs");
     if (__SINGLE_FILE__) {
@@ -604,11 +586,7 @@ class SpreadsheetEditor extends EditorStrategy {
     state.workbook = workbook;
     state.activeSheet = workbook.SheetNames[0];
 
-    if (await this.tryHandsontable(container, workbook, state, XLSX)) {
-      return;
-    }
-
-    this.renderSheet(container, workbook, state, XLSX);
+    this._renderNativeTable(container, workbook, state, XLSX);
   }
 
   createEmptyWorkbook(XLSX) {
@@ -618,61 +596,56 @@ class SpreadsheetEditor extends EditorStrategy {
     return wb;
   }
 
-  async tryHandsontable(container, workbook, state, XLSX) {
-    try {
-      const Handsontable = await modules.handsontable();
+  _renderNativeTable(container, workbook, state, XLSX) {
+    const ws = workbook.Sheets[state.activeSheet];
+    const data = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
 
-      const ws = workbook.Sheets[state.activeSheet];
-      const data = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
+    while (data.length < 50) data.push([]);
+    data.forEach((row) => {
+      while (row.length < 26) row.push("");
+    });
 
-      while (data.length < 50) data.push([]);
-      data.forEach((row) => {
-        while (row.length < 26) row.push("");
+    const colLetters = Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i));
+
+    let html = '<div class="office-sheet-wrapper">';
+    html += this._renderSheetTabs(workbook, state);
+    html += '<div class="office-table-wrap"><table class="office-spreadsheet" cellspacing="0">';
+
+    html += '<thead><tr><th class="office-th-corner"></th>';
+    colLetters.forEach((l) => {
+      html += `<th class="office-th-col">${l}</th>`;
+    });
+    html += "</tr></thead><tbody>";
+
+    data.forEach((row, r) => {
+      html += `<tr><th class="office-th-row">${r + 1}</th>`;
+      row.forEach((cell, c) => {
+        const val = cell != null ? String(cell) : "";
+        html += `<td class="office-cell" contenteditable="true" data-row="${r}" data-col="${c}">${val}</td>`;
       });
+      html += "</tr>";
+    });
 
-      container.innerHTML = `
-        <div class="office-sheet-wrapper">
-          ${this.renderSheetTabs(workbook, state)}
-          <div class="office-handsontable-container"></div>
-        </div>
-      `;
+    html += "</tbody></table></div></div>";
 
-      const hotContainer = $(".office-handsontable-container", container);
+    container.innerHTML = html;
 
-      state.hot = new Handsontable(hotContainer, {
-        data: data,
-        rowHeaders: true,
-        colHeaders: true,
-        contextMenu: true,
-        manualColumnResize: true,
-        manualRowResize: true,
-        width: "100%",
-        height: container.clientHeight - 40,
-        stretchH: "all",
-        licenseKey: "non-commercial-and-evaluation",
-        afterChange: (changes) => {
-          if (changes) {
-            this.syncHotToWorkbook(state, XLSX);
-          }
-        }
+    const table = container.querySelector(".office-spreadsheet");
+
+    this._bindCellEvents(table, state, XLSX);
+
+    $$(".office-sheet-tab", container).forEach((tab) => {
+      bindEvent(tab, "click", () => {
+        state.activeSheet = tab.dataset.sheet;
+        this._renderNativeTable(container, workbook, state, XLSX);
       });
+    });
 
-      $$(".office-sheet-tab", container).forEach((tab) => {
-        bindEvent(tab, "click", () => {
-          state.activeSheet = tab.dataset.sheet;
-          this.tryHandsontable(container, workbook, state, XLSX);
-        });
-      });
-
-      state.editor = state.hot;
-      state.editorType = "spreadsheet";
-      return true;
-    } catch (e) {
-      return false;
-    }
+    state.editor = table;
+    state.editorType = "spreadsheet";
   }
 
-  renderSheetTabs(workbook, state) {
+  _renderSheetTabs(workbook, state) {
     if (workbook.SheetNames.length <= 1) return "";
     return `<div class="office-sheet-tabs">
       ${workbook.SheetNames.map(
@@ -684,33 +657,57 @@ class SpreadsheetEditor extends EditorStrategy {
     </div>`;
   }
 
-  syncHotToWorkbook(state, XLSX) {
-    if (!state.hot || !state.workbook) return;
-    const data = state.hot.getData();
-    state.workbook.Sheets[state.activeSheet] = XLSX.utils.aoa_to_sheet(data);
+  _bindCellEvents(table, state, XLSX) {
+    let editing = false;
+    table.addEventListener("input", () => {
+      editing = true;
+    });
+    table.addEventListener(
+      "blur",
+      () => {
+        if (editing) {
+          this._syncNativeTable(state, XLSX);
+          editing = false;
+        }
+      },
+      true
+    );
+    table.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        const td = e.target.closest("td");
+        if (td) td.blur();
+      }
+    });
   }
 
-  renderSheet() {}
+  _syncNativeTable(state, XLSX) {
+    if (!state.editor || !state.workbook) return;
+    const table = state.editor;
+    const data = [];
+    table.querySelectorAll("tbody tr").forEach((tr) => {
+      const row = [];
+      tr.querySelectorAll("td").forEach((td) => {
+        row.push(td.textContent);
+      });
+      data.push(row);
+    });
+    state.workbook.Sheets[state.activeSheet] = XLSX.utils.aoa_to_sheet(data);
+  }
 
   static async syncTable(state) {
     const XLSX = await modules.xlsx();
 
-    if (state.hot) {
-      const data = state.hot.getData();
-      state.workbook.Sheets[state.activeSheet] = XLSX.utils.aoa_to_sheet(data);
-      return;
-    }
-
     if (state.editorType !== "spreadsheet" || !state.editor) return;
-    state.editor.querySelectorAll("td[data-row][data-col]").forEach((td) => {
-      const row = parseInt(td.dataset.row);
-      const col = parseInt(td.dataset.col);
-      const ref = XLSX.utils.encode_cell({ r: row, c: col });
-      const ws = state.workbook.Sheets[state.activeSheet];
-      const value = td.textContent;
-      const num = Number(value);
-      ws[ref] = value !== "" && !isNaN(num) ? { t: "n", v: num } : { t: "s", v: value };
+    const data = [];
+    state.editor.querySelectorAll("tbody tr").forEach((tr) => {
+      const row = [];
+      tr.querySelectorAll("td").forEach((td) => {
+        row.push(td.textContent);
+      });
+      data.push(row);
     });
+    state.workbook.Sheets[state.activeSheet] = XLSX.utils.aoa_to_sheet(data);
   }
 }
 
@@ -1426,7 +1423,6 @@ export class OfficeApp extends BaseApp {
     contentDiv.innerHTML = windowContent;
     win.appendChild(contentDiv);
 
-    this.wm.mountWindow(win, winId, `${title} - Office`, "static/icons/office.webp");
     const editorArea = $(".office-editor-area", win);
     const state = {
       winId,
@@ -1686,24 +1682,36 @@ export class OfficeApp extends BaseApp {
     this.setupKeyboardShortcuts(win, state, actions);
   }
   async sortSpreadsheet(state, ascending = true) {
-    if (state.editorType !== "spreadsheet" || !state.hot) {
+    if (state.editorType !== "spreadsheet" || !state.editor) {
       os.notify.send("Sorting only works in spreadsheets");
       return;
     }
 
-    try {
-      const plugin = state.hot.getPlugin("columnSorting");
-      if (plugin) {
-        plugin.sort({
-          column: 0,
-          sortOrder: ascending ? "asc" : "desc"
-        });
-        os.notify.send(`Sorted ${ascending ? "A→Z" : "Z→A"}`);
+    const table = state.editor;
+    const tbody = table.querySelector("tbody");
+    if (!tbody) return;
+
+    const rows = Array.from(tbody.querySelectorAll("tr"));
+    const colCount = rows[0]?.querySelectorAll("td").length || 0;
+    if (colCount === 0) return;
+
+    const sortCol = 0;
+    const sorted = rows.sort((a, b) => {
+      const aVal = a.querySelectorAll("td")[sortCol]?.textContent || "";
+      const bVal = b.querySelectorAll("td")[sortCol]?.textContent || "";
+      const aNum = parseFloat(aVal);
+      const bNum = parseFloat(bVal);
+      if (!isNaN(aNum) && !isNaN(bNum)) {
+        return ascending ? aNum - bNum : bNum - aNum;
       }
-    } catch (e) {
-      console.error("Sort error:", e);
-      os.notify.send("Need Handsontable for sorting");
-    }
+      return ascending ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+    });
+
+    sorted.forEach((tr) => tbody.appendChild(tr));
+
+    const XLSX = await modules.xlsx();
+    this._syncNativeTable(state, XLSX);
+    os.notify.send(`Sorted ${ascending ? "A→Z" : "Z→A"}`);
   }
   setupKeyboardShortcuts(win, state, actions) {
     win.addEventListener("keydown", (e) => {
@@ -2108,24 +2116,41 @@ export class OfficeApp extends BaseApp {
   }
 
   async addSpreadsheetRow(state) {
-    if (state.editorType !== "spreadsheet") return;
-    if (!state.hot) {
-      os.notify.send("Switch to grid view to add rows");
-      return;
+    if (state.editorType !== "spreadsheet" || !state.editor) return;
+    const table = state.editor;
+    const tbody = table.querySelector("tbody");
+    if (!tbody) return;
+    const rows = tbody.querySelectorAll("tr");
+    const colCount = rows[0]?.querySelectorAll("td").length || 26;
+    const rowIndex = rows.length;
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<th class="office-th-row">${rowIndex + 1}</th>`;
+    for (let c = 0; c < colCount; c++) {
+      tr.innerHTML += `<td class="office-cell" contenteditable="true" data-row="${rowIndex}" data-col="${c}"></td>`;
     }
-    const rowCount = state.hot.countRows();
-    state.hot.alter("insert_row", rowCount, 1);
+    tbody.appendChild(tr);
     os.notify.send("Row added");
   }
 
   async addSpreadsheetColumn(state) {
-    if (state.editorType !== "spreadsheet") return;
-    if (!state.hot) {
-      os.notify.send("Switch to grid view to add columns");
-      return;
-    }
-    const colCount = state.hot.countCols();
-    state.hot.alter("insert_col", colCount, 1);
+    if (state.editorType !== "spreadsheet" || !state.editor) return;
+    const table = state.editor;
+    const thead = table.querySelector("thead");
+    const tbody = table.querySelector("tbody");
+    if (!thead || !tbody) return;
+    const colIndex = thead.querySelectorAll("th").length - 1;
+    const th = document.createElement("th");
+    th.className = "office-th-col";
+    th.textContent = String.fromCharCode(65 + colIndex);
+    thead.querySelector("tr").appendChild(th);
+    tbody.querySelectorAll("tr").forEach((tr, r) => {
+      const td = document.createElement("td");
+      td.className = "office-cell";
+      td.contentEditable = "true";
+      td.dataset.row = r;
+      td.dataset.col = colIndex;
+      tr.appendChild(td);
+    });
     os.notify.send("New column added");
   }
 
@@ -2143,7 +2168,7 @@ export class OfficeApp extends BaseApp {
 
     const container = $(`#${state.winId} .office-editor-area`);
     container.innerHTML = "";
-    await new SpreadsheetEditor().tryHandsontable(container, state.workbook, state, XLSX);
+    new SpreadsheetEditor()._renderNativeTable(container, state.workbook, state, XLSX);
   }
 
   async exportToPDF(state) {

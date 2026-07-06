@@ -205,7 +205,8 @@ export class AdsManager {
     const containerId = "banner-slot-single";
 
     const winId = "ads-yukios";
-    const win = os.window.create(winId, "Sponsored", "420px", "300px", false, {
+    const win = os.window.create(winId, "Sponsored", "420px", "300px", {
+      icon: "fa fa-bullhorn",
       style: {
         position: "absolute",
         left: `${Math.max(20, window.innerWidth - 420 - 40)}px`,
@@ -223,8 +224,6 @@ export class AdsManager {
       </div>
     `;
     win.appendChild(contentDiv);
-
-    this.wm.mountWindow(win, winId, "Sponsored", "fa fa-bullhorn");
 
     if (win) {
       const closeBtn = win.querySelector(".window-close, [data-action='close'], .close-btn");
@@ -358,7 +357,9 @@ export class AdsManager {
   createAdWindow() {
     if (!shouldEnableAds()) return;
     const winId = "ads_main_window";
-    const win = os.window.create(winId, "Sponsored", "400px", "300px", false, {});
+    const win = os.window.create(winId, "Sponsored", "400px", "300px", {
+      icon: "fa fa-bullhorn"
+    });
 
     const contentDiv = document.createElement("div");
     contentDiv.className = "window-content";
@@ -377,8 +378,6 @@ export class AdsManager {
       </div>
     `;
     win.appendChild(contentDiv);
-
-    this.wm.mountWindow(win, winId, "Sponsored", "fa fa-bullhorn");
 
     this.mountBanner();
     this.mountNative();

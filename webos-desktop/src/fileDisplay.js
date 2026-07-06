@@ -472,6 +472,7 @@ export function openMediaViewer(name, src, kind, windowManager) {
   const isAudio = kind === FileKind.AUDIO || isAudioFile(name);
 
   const [width, height] = isAudio ? ["400px", "120px"] : ["500px", "400px"];
+  const icon = isAudio ? resolveIconUrl("static/icons/spot.webp") : resolveIconUrl("static/icons/file.webp");
 
   let media;
   if (isVideo) {
@@ -482,27 +483,38 @@ export function openMediaViewer(name, src, kind, windowManager) {
     media = `<img src="${src}" style="max-width:100%;max-height:100%">`;
   }
 
-  const content = `
-    <div style="display:flex;justify-content:center;align-items:center;height:calc(100% - 30px);background:#111;">
-      ${media}
+  const winId = `media-${Date.now()}`;
+  const win = os.window.create(winId, name, width, height, {
+    icon,
+    autoMount: false
+  });
+
+  const headerHtml = `
+    <div class="window-header">
+      <span><img src="${icon}" style="width:20px;height:20px;margin-right:6px;vertical-align:middle;">${name}</span>
+      ${os.window.getWindowControls(icon)}
+    </div>
+  `;
+  win.innerHTML =
+    headerHtml +
+    `
+    <div class="window-content" style="width:100%; height:100%; overflow:hidden;">
+      <div style="display:flex;justify-content:center;align-items:center;height:100%;background:#111;">
+        ${media}
+      </div>
     </div>
   `;
 
-  const winId = `media-${Date.now()}`;
-  const win = os.window.create(winId, name, width, height, false, {});
-
-  const contentDiv = document.createElement("div");
-  contentDiv.className = "window-content";
-  contentDiv.style.cssText = "width:100%; height:100%; overflow:hidden;";
-  contentDiv.innerHTML = content;
-  win.appendChild(contentDiv);
-
-  windowManager.mountWindow(
-    win,
-    winId,
-    name,
-    isAudio ? resolveIconUrl("static/icons/spot.webp") : resolveIconUrl("static/icons/file.webp")
-  );
+  const desktop = document.querySelector("#desktop");
+  if (desktop) desktop.appendChild(win);
+  if (windowManager) {
+    windowManager.makeDraggable(win);
+    windowManager.makeResizable(win);
+    windowManager.setupWindowControls(win);
+  }
+  os.window.addToTaskbar(winId, name, icon);
+  os.window.focus(win);
+  requestAnimationFrame(() => (win.style.opacity = ""));
 }
 
 function base64ToBlob(dataURL) {

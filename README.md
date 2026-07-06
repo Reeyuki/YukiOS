@@ -261,7 +261,6 @@ See the [Development Guide](DEVELOPMENT.md).
 
 ## Libraries
 
-- [interact.js](https://github.com/taye/interact.js)
 - [Ruffle](https://github.com/ruffle-rs/ruffle)
 - [EmulatorJS](https://github.com/EmulatorJS/EmulatorJS)
 - [Monaco Editor](https://github.com/microsoft/monaco-editor)

@@ -1,4 +1,4 @@
-import interact from "interactjs";
+import { makeDraggable as nativeMakeDraggable } from "../shared/dragUtils.js";
 import { StorageKeys, os } from "../framework.js";
 import { wobbleStart, wobbleMove, wobbleEnd, wobbleCancel } from "./AnimationSystem.js";
 const desktop = document.getElementById("desktop");
@@ -165,87 +165,86 @@ export function makeDraggable(win, wm) {
     document.addEventListener("touchcancel", onMouseUp);
   };
 
-  let offsetX, offsetY;
-
-  const dragListeners = {
-    start(event) {
-      if (event.target instanceof SVGElement) {
-        const btn = event.target.closest("button, a, input, select, textarea");
-        if (btn) return;
-      }
-
-      wm.bringToFront(win);
-      wm.isDraggingWindow = true;
-      document.body.classList.add("is-dragging");
-
-      const wasSnapped = !!win.dataset.snapZone;
-      const disableStretch = isDesktopStretchScrollDisabled();
-
-      if (disableStretch) {
-        if (getComputedStyle(win).position !== "fixed") {
-          const rect = win.getBoundingClientRect();
-          win.style.left = `${rect.left}px`;
-          win.style.top = `${rect.top}px`;
-          win.style.position = "fixed";
-        }
-      } else if (getComputedStyle(win).position === "fixed") {
-        const rect = win.getBoundingClientRect();
-        const desktopRect = desktop.getBoundingClientRect();
-        const left = rect.left - desktopRect.left + desktop.scrollLeft;
-        const top = rect.top - desktopRect.top + desktop.scrollTop;
-        win.style.left = `${left}px`;
-        win.style.top = `${top}px`;
-        win.style.position = "absolute";
-      }
-
-      offsetX = event.clientX - win.getBoundingClientRect().left;
-      offsetY = event.clientY - win.getBoundingClientRect().top;
-
-      if (wasSnapped) wm._unsnap(win);
-      wobbleStart(win);
-    },
-
-    move(event) {
-      const newLeft = event.clientX - offsetX;
-      const newTop = event.clientY - offsetY;
-      win.style.left = `${newLeft}px`;
-      win.style.top = `${newTop}px`;
-
-      const entry = wm.openWindows.get(win.id);
-      if (entry?.record) {
-        entry.record.setGeometry(newLeft, newTop);
-      }
-
-      wobbleMove(win, event.dx, event.dy);
-
-      const zone = wm._getSnapZone(event.clientX, event.clientY);
-      wm._activeSnapZone = zone;
-      if (zone) wm._showSnapGhost(zone);
-      else wm._hideSnapGhost();
-    },
-
-    end() {
-      wm.isDraggingWindow = false;
-      document.body.classList.remove("is-dragging");
-      wobbleEnd(win);
-
-      if (wm._activeSnapZone) {
-        wm._applySnap(win, wm._activeSnapZone);
-        wm._activeSnapZone = null;
-        wm._hideSnapGhost();
-      }
-      if (wm.triggerSessionSave) wm.triggerSessionSave();
-    }
-  };
-
   headers.forEach((h) => {
-    interact(h).draggable({
-      ignoreFrom:
-        "button, input, select, textarea, .browser-tab, .tab-close, .tab-new-btn, .steam-menu-item, .steam-user-profile, .steam-notifications",
-      inertia: false,
-      autoScroll: false,
-      listeners: dragListeners
-    });
+    let dragOffsetX, dragOffsetY;
+
+    nativeMakeDraggable(
+      h,
+      {
+        start(e, posX, posY) {
+          if (e.target instanceof SVGElement) {
+            const btn = e.target.closest("button, a, input, select, textarea");
+            if (btn) return;
+          }
+
+          wm.bringToFront(win);
+          wm.isDraggingWindow = true;
+          document.body.classList.add("is-dragging");
+
+          const wasSnapped = !!win.dataset.snapZone;
+          const disableStretch = isDesktopStretchScrollDisabled();
+
+          if (disableStretch) {
+            if (getComputedStyle(win).position !== "fixed") {
+              const rect = win.getBoundingClientRect();
+              win.style.left = `${rect.left}px`;
+              win.style.top = `${rect.top}px`;
+              win.style.position = "fixed";
+            }
+          } else if (getComputedStyle(win).position === "fixed") {
+            const rect = win.getBoundingClientRect();
+            const desktopRect = desktop.getBoundingClientRect();
+            const left = rect.left - desktopRect.left + desktop.scrollLeft;
+            const top = rect.top - desktopRect.top + desktop.scrollTop;
+            win.style.left = `${left}px`;
+            win.style.top = `${top}px`;
+            win.style.position = "absolute";
+          }
+
+          dragOffsetX = posX - win.getBoundingClientRect().left;
+          dragOffsetY = posY - win.getBoundingClientRect().top;
+
+          if (wasSnapped) wm._unsnap(win);
+          wobbleStart(win);
+        },
+
+        move(e, dx, dy, clientX, clientY) {
+          const newLeft = clientX - dragOffsetX;
+          const newTop = clientY - dragOffsetY;
+          win.style.left = `${newLeft}px`;
+          win.style.top = `${newTop}px`;
+
+          const entry = wm.openWindows.get(win.id);
+          if (entry?.record) {
+            entry.record.setGeometry(newLeft, newTop);
+          }
+
+          wobbleMove(win, dx, dy);
+
+          const zone = wm._getSnapZone(clientX, clientY);
+          wm._activeSnapZone = zone;
+          if (zone) wm._showSnapGhost(zone);
+          else wm._hideSnapGhost();
+        },
+
+        end() {
+          wm.isDraggingWindow = false;
+          document.body.classList.remove("is-dragging");
+          wobbleEnd(win);
+
+          if (wm._activeSnapZone) {
+            wm._applySnap(win, wm._activeSnapZone);
+            wm._activeSnapZone = null;
+            wm._hideSnapGhost();
+          }
+          if (wm.triggerSessionSave) wm.triggerSessionSave();
+        }
+      },
+      {
+        ignoreFrom:
+          "button, input, select, textarea, .browser-tab, .tab-close, .tab-new-btn, .steam-menu-item, .steam-user-profile, .steam-notifications"
+      }
+    );
 
     h.addEventListener("contextmenu", (e) => {
       e.preventDefault();

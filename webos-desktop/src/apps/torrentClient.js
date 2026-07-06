@@ -1,6 +1,5 @@
 import "../styles/torrent.css";
 import { $, $$, bindEvent } from "../shared/domUtils.js";
-import parseTorrent from "parse-torrent";
 
 import { BaseApp, PersistenceTypes, os } from "../framework.js";
 export class TorrentClientApp extends BaseApp {
@@ -541,6 +540,7 @@ export class TorrentClientApp extends BaseApp {
     const reader = new FileReader();
     reader.onload = async (e) => {
       try {
+        const parseTorrent = (await import("parse-torrent")).default;
         const parsed = parseTorrent(e.target.result);
         if (!this.client) {
           await this.initWebTorrent();

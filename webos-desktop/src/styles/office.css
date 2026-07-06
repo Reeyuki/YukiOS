@@ -265,7 +265,7 @@
   border-color: var(--glass-border) var(--glass-border) var(--bg-primary) var(--glass-border);
 }
 
-.office-sheet-scroll {
+.office-table-wrap {
   flex: 1;
   overflow: auto;
 }
@@ -277,7 +277,7 @@
   color: var(--text-primary);
 }
 
-.office-spreadsheet__corner {
+.office-spreadsheet .office-th-corner {
   border: 1px solid var(--glass-border);
   background: var(--bg-secondary);
   padding: 2px 8px;
@@ -288,7 +288,7 @@
   min-width: 40px;
 }
 
-.office-spreadsheet__col-header {
+.office-spreadsheet .office-th-col {
   border: 1px solid var(--glass-border);
   background: var(--bg-secondary);
   color: var(--text-secondary);
@@ -302,7 +302,7 @@
   user-select: none;
 }
 
-.office-spreadsheet__row-header {
+.office-spreadsheet .office-th-row {
   border: 1px solid var(--glass-border);
   background: var(--bg-secondary);
   color: var(--text-secondary);
@@ -315,7 +315,7 @@
   user-select: none;
 }
 
-.office-spreadsheet__cell {
+.office-spreadsheet .office-cell {
   border: 1px solid var(--glass-border);
   padding: 2px 6px;
   min-width: 80px;
@@ -328,16 +328,8 @@
   caret-color: var(--brand);
 }
 
-.office-spreadsheet__cell:hover {
+.office-spreadsheet .office-cell:hover {
   background: var(--glass-hover);
-}
-
-.office-spreadsheet__cell--focused {
-  outline: 2px solid var(--brand) !important;
-  outline-offset: -1px;
-  background: var(--glass-hover);
-  z-index: 1;
-  position: relative;
 }
 
 .office-odt-wrapper {
@@ -436,7 +428,7 @@
 }
 
 .office-richtext-editor::-webkit-scrollbar,
-.office-sheet-scroll::-webkit-scrollbar,
+.office-table-wrap::-webkit-scrollbar,
 .office-pdf-viewer::-webkit-scrollbar,
 .office-presentation-viewer::-webkit-scrollbar,
 .office-doc-content::-webkit-scrollbar,
@@ -446,7 +438,7 @@
 }
 
 .office-richtext-editor::-webkit-scrollbar-track,
-.office-sheet-scroll::-webkit-scrollbar-track,
+.office-table-wrap::-webkit-scrollbar-track,
 .office-pdf-viewer::-webkit-scrollbar-track,
 .office-presentation-viewer::-webkit-scrollbar-track,
 .office-doc-content::-webkit-scrollbar-track,
@@ -455,7 +447,7 @@
 }
 
 .office-richtext-editor::-webkit-scrollbar-thumb,
-.office-sheet-scroll::-webkit-scrollbar-thumb,
+.office-table-wrap::-webkit-scrollbar-thumb,
 .office-pdf-viewer::-webkit-scrollbar-thumb,
 .office-presentation-viewer::-webkit-scrollbar-thumb,
 .office-doc-content::-webkit-scrollbar-thumb,
@@ -465,7 +457,7 @@
 }
 
 .office-richtext-editor::-webkit-scrollbar-thumb:hover,
-.office-sheet-scroll::-webkit-scrollbar-thumb:hover,
+.office-table-wrap::-webkit-scrollbar-thumb:hover,
 .office-pdf-viewer::-webkit-scrollbar-thumb:hover,
 .office-presentation-viewer::-webkit-scrollbar-thumb:hover,
 .office-doc-content::-webkit-scrollbar-thumb:hover,
@@ -474,14 +466,9 @@
 }
 
 .office-richtext-editor ::selection,
-.office-spreadsheet__cell ::selection {
+.office-spreadsheet .office-cell ::selection {
   background: var(--brand-dim);
   color: var(--text-primary);
-}
-
-.office-cell-highlight {
-  background-color: var(--brand-dim) !important;
-  outline: 2px solid var(--brand);
 }
 
 .office-fullscreen {
@@ -640,11 +627,6 @@
   height: 100vh !important;
   z-index: 10000 !important;
   border-radius: 0 !important;
-}
-
-.office-cell-highlight {
-  background-color: var(--brand-dim) !important;
-  outline: 2px solid var(--brand);
 }
 
 .office-odt-content {

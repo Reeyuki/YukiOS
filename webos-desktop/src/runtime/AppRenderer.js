@@ -53,10 +53,12 @@ export class AppRenderer {
     const contentDiv = document.createElement("div");
     contentDiv.className = "window-content";
     contentDiv.style.cssText = "width:100%; height:100%; overflow:hidden;";
-    contentDiv.innerHTML = content;
+    if (typeof content === "string") {
+      contentDiv.innerHTML = content;
+    } else if (content instanceof Node) {
+      contentDiv.appendChild(content);
+    }
     win.appendChild(contentDiv);
-
-    this.wm.mountWindow(win, id, title, windowOptions.icon);
 
     return win;
   }

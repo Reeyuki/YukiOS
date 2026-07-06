@@ -174,8 +174,6 @@ export class V86App extends BaseApp {
     contentDiv.innerHTML = content;
     win.appendChild(contentDiv);
 
-    this.wm.mountWindow(win, winId, "V86", resolveIconUrl("static/icons/v86.webp"));
-
     this._setupSystemCardListeners(win);
     this._setupUploadZone(win);
     this._loadUserImages(win);
@@ -407,8 +405,6 @@ export class V86App extends BaseApp {
       </div>
       <div id="${winId}-screen" class="v86-screen emu-window-screen"></div>
     </div>`;
-
-    this.wm.mountWindow(win, winId, displayName, resolveIconUrl("static/icons/v86.webp"));
 
     const inner = win.querySelector(`#${winId}-inner`);
     const screenDiv = win.querySelector(`#${winId}-screen`);

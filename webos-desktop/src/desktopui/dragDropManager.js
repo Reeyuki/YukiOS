@@ -386,6 +386,9 @@ export class DragDropManager {
     }
 
     if (this.state.dragTarget) {
+      this.selectionManager.forEach((icon) =>
+        Object.assign(icon.style, { opacity: "1", zIndex: "1", cursor: "default" })
+      );
       await this.moveIconsToFolder(this.selectionManager.toArray(), this.state.dragTarget.dataset.folderName);
       this.state.dragTarget.style.outline = "";
       this.state.dragTarget = null;

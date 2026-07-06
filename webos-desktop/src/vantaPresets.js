@@ -33,48 +33,6 @@ export const vantaPresets = [
   },
   {
     id: 2,
-    name: "Birds - Dark",
-    effect: "BIRDS",
-    options: {
-      color1: 0x1e1e1e,
-      color2: 0x4a00e0,
-      birdSize: 1,
-      wingSpan: 20,
-      speedLimit: 4,
-      separation: 20,
-      alignment: 20,
-      cohesion: 20,
-      quantity: 3
-    },
-    previewStyle: {
-      background:
-        "radial-gradient(circle at 30% 30%, #4a00e0 0%, transparent 20%), radial-gradient(circle at 70% 60%, #1e1e1e 0%, transparent 15%), radial-gradient(circle at 50% 80%, #4a00e0 0%, transparent 18%), #0a0a0a",
-      animation: "birdsPreview 4s ease-in-out infinite"
-    }
-  },
-  {
-    id: 3,
-    name: "Birds - Light",
-    effect: "BIRDS",
-    options: {
-      color1: 0xffffff,
-      color2: 0x4a00e0,
-      birdSize: 1,
-      wingSpan: 20,
-      speedLimit: 4,
-      separation: 20,
-      alignment: 20,
-      cohesion: 20,
-      quantity: 3
-    },
-    previewStyle: {
-      background:
-        "radial-gradient(circle at 30% 30%, #ffffff 0%, transparent 20%), radial-gradient(circle at 70% 60%, #4a00e0 0%, transparent 15%), radial-gradient(circle at 50% 80%, #ffffff 0%, transparent 18%), #1a1a2e",
-      animation: "birdsPreview 4s ease-in-out infinite"
-    }
-  },
-  {
-    id: 4,
     name: "Net - Blue",
     effect: "NET",
     options: {
@@ -92,7 +50,7 @@ export const vantaPresets = [
     }
   },
   {
-    id: 5,
+    id: 3,
     name: "Net - Purple",
     effect: "NET",
     options: {
@@ -110,26 +68,7 @@ export const vantaPresets = [
     }
   },
   {
-    id: 6,
-    name: "Dots - Blue",
-    effect: "DOTS",
-    options: {
-      color: 0x1e1e1e,
-      color2: 0x4a00e0,
-      size: 2.5,
-      spacing: 40
-    },
-    previewStyle: {
-      background:
-        "radial-gradient(circle, #1e1e1e 2px, transparent 2px), radial-gradient(circle, #4a00e0 2px, transparent 2px)",
-      backgroundSize: "20px 20px, 30px 30px",
-      backgroundPosition: "0 0, 10px 10px",
-      backgroundColor: "#0a0a0a",
-      animation: "dotsPreview 2s ease-in-out infinite"
-    }
-  },
-  {
-    id: 7,
+    id: 4,
     name: "Dots - Purple",
     effect: "DOTS",
     options: {
@@ -148,22 +87,7 @@ export const vantaPresets = [
     }
   },
   {
-    id: 8,
-    name: "Globe - Blue",
-    effect: "GLOBE",
-    options: {
-      color: 0x1e1e1e,
-      color2: 0x4a00e0,
-      size: 1.2,
-      deviation: 200
-    },
-    previewStyle: {
-      background: "radial-gradient(circle at 50% 50%, #4a00e0 0%, #1e1e1e 40%, #0a0a0a 100%)",
-      animation: "globePreview 5s linear infinite"
-    }
-  },
-  {
-    id: 9,
+    id: 5,
     name: "Globe - Purple",
     effect: "GLOBE",
     options: {
@@ -178,7 +102,7 @@ export const vantaPresets = [
     }
   },
   {
-    id: 10,
+    id: 6,
     name: "Halo - Blue",
     effect: "HALO",
     options: {
@@ -194,7 +118,7 @@ export const vantaPresets = [
     }
   },
   {
-    id: 11,
+    id: 7,
     name: "Halo - Purple",
     effect: "HALO",
     options: {
@@ -210,7 +134,7 @@ export const vantaPresets = [
     }
   },
   {
-    id: 12,
+    id: 8,
     name: "Cells - Blue",
     effect: "CELLS",
     options: {
@@ -228,7 +152,7 @@ export const vantaPresets = [
     }
   },
   {
-    id: 13,
+    id: 9,
     name: "Cells - Purple",
     effect: "CELLS",
     options: {

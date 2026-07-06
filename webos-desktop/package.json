@@ -39,8 +39,6 @@
   "dependencies": {
     "7z-wasm": "^1.2.0",
     "@fortawesome/fontawesome-free": "^6.7.2",
-    "@mercuryworkshop/scramjet": "2.0.67-alpha.1",
-    "@mercuryworkshop/scramjet-controller": "0.0.13",
     "@ruffle-rs/ruffle": "0.2.0-nightly.2026.5.15",
     "archive-wasm": "^1.7.1",
     "canvas-confetti": "^1.9.4",

@@ -5,7 +5,7 @@ import {
   setupStartMenu as setupStartMenuFn
 } from "./startMenu.js";
 import { desktop } from "./desktop.js";
-import interact from "interactjs";
+import { makeDraggable } from "../shared/dragUtils.js";
 import { StorageKeys, os } from "../framework.js";
 import { hideMenu } from "../shared/contextMenu.js";
 import { isWindowFocused } from "../utils/utils.js";
@@ -32,14 +32,14 @@ export function updateGridConfig(iconSize) {
 
 function relayoutDesktopIcons() {
   if (!sharedAppLauncher) return;
-  const saved = PositionStore.load();
-  const allUnsaved = Array.from(desktop.querySelectorAll(":scope > .icon")).filter(
-    (icon) => !saved[PositionStore.getKey(icon)] && icon.style.display !== "none"
+  const allIcons = Array.from(desktop.querySelectorAll(":scope > .icon")).filter(
+    (icon) => icon.style.display !== "none"
   );
+  if (!allIcons.length) return;
   const positionHelper = new PositionHelper(desktop, GRID_CONFIG);
   const systemIcons = [];
   const regularIcons = [];
-  for (const icon of allUnsaved) {
+  for (const icon of allIcons) {
     const app = icon.dataset.app;
     if (isRightAlignedSystemApp(sharedAppLauncher.appMap, app)) {
       systemIcons.push(icon);
@@ -47,8 +47,14 @@ function relayoutDesktopIcons() {
       regularIcons.push(icon);
     }
   }
-  if (regularIcons.length) positionHelper.layout(regularIcons);
-  if (systemIcons.length) positionHelper.layoutRight(systemIcons);
+  allIcons.forEach((i) => {
+    i.style.left = "";
+    i.style.top = "";
+  });
+  let occupied = null;
+  if (regularIcons.length) occupied = positionHelper.layoutSync(regularIcons, false, occupied);
+  if (systemIcons.length) positionHelper.layoutRightSync(systemIcons, occupied);
+  PositionStore.save({});
 }
 
 function isRightAlignedSystemApp(appMap, app) {
@@ -78,25 +84,28 @@ class PositionHelper {
     };
   }
 
+  _buildOccupancySet(exclude = null) {
+    const set = new Set();
+    for (const icon of desktop.querySelectorAll(".icon.selectable")) {
+      if (icon === exclude || icon.style.display === "none") continue;
+      const { col, row } = this.pixelsToCell(parseFloat(icon.style.left) || 0, parseFloat(icon.style.top) || 0);
+      set.add(`${col},${row}`);
+    }
+    return set;
+  }
+
   isCellOccupied(col, row, exclude = null) {
-    const { left, top } = this.cellToPixels(col, row);
-    const { width, height } = this.gridSize;
-    return Array.from(document.querySelectorAll(".icon.selectable")).some(
-      (i) =>
-        i !== exclude &&
-        i.style.display !== "none" &&
-        Math.abs((parseFloat(i.style.left) || 0) - left) < width * 0.5 &&
-        Math.abs((parseFloat(i.style.top) || 0) - top) < height * 0.5
-    );
+    return this._buildOccupancySet(exclude).has(`${col},${row}`);
   }
 
   nextFreeCell(col, row, exclude = null) {
     const { width, height, gap } = this.gridSize;
     const maxRows = Math.max(1, Math.floor((this.desktop.clientHeight - gap) / (height + gap)));
     const maxCols = Math.max(1, Math.floor((this.desktop.clientWidth - gap) / (width + gap)));
+    const occupied = this._buildOccupancySet(exclude);
     let c = col,
       r = row;
-    while (this.isCellOccupied(c, r, exclude)) {
+    while (occupied.has(`${c},${r}`)) {
       r++;
       if (r >= maxRows) {
         r = 0;
@@ -131,15 +140,30 @@ class PositionHelper {
     this.setPosition(icon, left, top);
   }
 
-  _layoutCalc(icons, isExplorerIcon) {
+  layoutSync(icons, isExplorerIcon = false, occupiedBefore = null) {
     const gap = isExplorerIcon ? this.gridSize.gap * 6 : this.gridSize.gap;
     const { width, height } = this.gridSize;
     const cellW = width + gap,
       cellH = height + gap;
     const maxRows = Math.max(1, Math.floor((this.desktop.clientHeight - gap) / cellH));
+    const maxCols = Math.max(1, Math.floor((this.desktop.clientWidth - gap) / cellW));
+    const occupied = occupiedBefore || this._buildOccupancySet();
     let col = 0,
       row = 0;
     icons.forEach((icon) => {
+      while (occupied.has(`${col},${row}`)) {
+        row++;
+        if (row >= maxRows) {
+          row = 0;
+          col++;
+        }
+        if (col >= maxCols) {
+          col = 0;
+          row = 0;
+          break;
+        }
+      }
+      occupied.add(`${col},${row}`);
       icon.style.left = `${gap + col * cellW}px`;
       icon.style.top = `${gap + row * cellH}px`;
       row++;
@@ -148,16 +172,32 @@ class PositionHelper {
         col++;
       }
     });
+    return occupied;
   }
-  _layoutRightCalc(icons) {
+
+  layoutRightSync(icons, occupiedBefore = null) {
     const { width, height, gap } = this.gridSize;
     const cellW = width + gap,
       cellH = height + gap;
     const maxRows = Math.max(1, Math.floor((this.desktop.clientHeight - gap) / cellH));
     const maxCols = Math.max(1, Math.floor((this.desktop.clientWidth - gap) / cellW));
+    const occupied = occupiedBefore || this._buildOccupancySet();
     let col = maxCols - 1,
       row = 0;
     icons.forEach((icon) => {
+      while (occupied.has(`${col},${row}`)) {
+        row++;
+        if (row >= maxRows) {
+          row = 0;
+          col--;
+        }
+        if (col < 0) {
+          col = maxCols - 1;
+          row = 0;
+          break;
+        }
+      }
+      occupied.add(`${col},${row}`);
       icon.style.left = `${gap + col * cellW}px`;
       icon.style.top = `${gap + row * cellH}px`;
       row++;
@@ -168,23 +208,31 @@ class PositionHelper {
     });
   }
 
-  layoutSync(icons, isExplorerIcon) {
-    this._layoutCalc(icons, isExplorerIcon);
-  }
-  layoutRightSync(icons) {
-    this._layoutRightCalc(icons);
-  }
-
   layout(icons, isExplorerIcon = false) {
     const gap = isExplorerIcon ? this.gridSize.gap * 6 : this.gridSize.gap;
     const { width, height } = this.gridSize;
     const cellW = width + gap,
       cellH = height + gap;
     const maxRows = Math.max(1, Math.floor((this.desktop.clientHeight - gap) / cellH));
+    const maxCols = Math.max(1, Math.floor((this.desktop.clientWidth - gap) / cellW));
+    const occupied = this._buildOccupancySet();
     let col = 0,
       row = 0;
-    requestAnimationFrame(() =>
+    requestAnimationFrame(() => {
       icons.forEach((icon) => {
+        while (occupied.has(`${col},${row}`)) {
+          row++;
+          if (row >= maxRows) {
+            row = 0;
+            col++;
+          }
+          if (col >= maxCols) {
+            col = 0;
+            row = 0;
+            break;
+          }
+        }
+        occupied.add(`${col},${row}`);
         icon.style.left = `${gap + col * cellW}px`;
         icon.style.top = `${gap + row * cellH}px`;
         row++;
@@ -192,8 +240,8 @@ class PositionHelper {
           row = 0;
           col++;
         }
-      })
-    );
+      });
+    });
   }
 
   layoutRight(icons) {
@@ -202,10 +250,24 @@ class PositionHelper {
       cellH = height + gap;
     const maxRows = Math.max(1, Math.floor((this.desktop.clientHeight - gap) / cellH));
     const maxCols = Math.max(1, Math.floor((this.desktop.clientWidth - gap) / cellW));
+    const occupied = this._buildOccupancySet();
     let col = maxCols - 1,
       row = 0;
-    requestAnimationFrame(() =>
+    requestAnimationFrame(() => {
       icons.forEach((icon) => {
+        while (occupied.has(`${col},${row}`)) {
+          row++;
+          if (row >= maxRows) {
+            row = 0;
+            col--;
+          }
+          if (col < 0) {
+            col = maxCols - 1;
+            row = 0;
+            break;
+          }
+        }
+        occupied.add(`${col},${row}`);
         icon.style.left = `${gap + col * cellW}px`;
         icon.style.top = `${gap + row * cellH}px`;
         row++;
@@ -213,8 +275,8 @@ class PositionHelper {
           row = 0;
           col--;
         }
-      })
-    );
+      });
+    });
   }
 }
 
@@ -300,12 +362,16 @@ class SelectionManager {
   remove(icon) {
     this.selectedIcons.delete(icon);
     icon.classList.remove("selected");
+    icon.style.zIndex = "";
   }
   toggle(icon) {
     this.selectedIcons.has(icon) ? this.remove(icon) : this.add(icon);
   }
   clear() {
-    this.selectedIcons.forEach((i) => i.classList.remove("selected"));
+    this.selectedIcons.forEach((i) => {
+      i.classList.remove("selected");
+      i.style.zIndex = "";
+    });
     this.selectedIcons.clear();
   }
   has(icon) {
@@ -740,84 +806,81 @@ export class DesktopUI {
     } else {
       this.selectionManager.toggle(icon);
     }
+    document.querySelectorAll(".icon.selectable").forEach((i) => {
+      if (!this.selectionManager.has(i)) {
+        i.style.zIndex = "";
+        i.style.opacity = "";
+        i.style.cursor = "";
+      }
+    });
   }
 
   setupInteractDrag(icon) {
-    interact(icon)
-      .resizable(false)
-      .draggable({
-        inertia: false,
-        modifiers: [
-          interact.modifiers.restrict({
-            restriction: this.desktop,
-            elementRect: { top: 0, left: 0, bottom: 1, right: 1 }
-          })
-        ],
-        autoScroll: false,
-        cursorChecker: () => null,
-        listeners: {
-          start: () => this.dragDropManager.onDragStart(),
-          move: (event) => this.dragDropManager.onDragMove(event),
-          end: () => this.dragDropManager.onDragEnd()
-        }
-      });
+    return makeDraggable(icon, {
+      start: () => this.dragDropManager.onDragStart(),
+      move: (_e, dx, dy, clientX, clientY) => {
+        this.dragDropManager.onDragMove({ dx, dy, clientX, clientY });
+      },
+      end: () => this.dragDropManager.onDragEnd()
+    });
   }
 
   setupInteractableSelection() {
     let selectionState = { startX: 0, startY: 0, isActive: false };
-    let mousedownOnDesktop = false;
-    this.desktop.addEventListener("mousedown", (e) => {
-      mousedownOnDesktop = e.target === this.desktop;
-    });
-    interact(this.desktop)
-      .resizable(false)
-      .draggable({
-        cursorChecker: () => null,
-        listeners: {
-          start: (event) => {
-            const nativeTarget = event.srcEvent?.target || event.target;
-            if (nativeTarget?.closest?.(".window")) return;
-            if (!mousedownOnDesktop) return;
-            selectionState = { startX: event.pageX, startY: event.pageY, isActive: true };
-            Object.assign(this.selectionBox.style, {
-              left: `${event.pageX}px`,
-              top: `${event.pageY}px`,
-              width: "0px",
-              height: "0px",
-              display: "block"
-            });
-            this.selectionManager.clear();
-          },
-          move: (event) => {
-            if (!selectionState.isActive) return;
-            Object.assign(this.selectionBox.style, {
-              width: `${Math.abs(event.pageX - selectionState.startX)}px`,
-              height: `${Math.abs(event.pageY - selectionState.startY)}px`,
-              left: `${Math.min(event.pageX, selectionState.startX)}px`,
-              top: `${Math.min(event.pageY, selectionState.startY)}px`
-            });
-            const boxRect = this.selectionBox.getBoundingClientRect();
-            document.querySelectorAll(".icon.selectable").forEach((icon) => {
-              if (icon.style.display === "none") return;
-              const r = icon.getBoundingClientRect();
-              const overlaps = !(
-                r.right < boxRect.left ||
-                r.left > boxRect.right ||
-                r.bottom < boxRect.top ||
-                r.top > boxRect.bottom
-              );
-              if (overlaps) this.selectionManager.add(icon);
-              else this.selectionManager.remove(icon);
-            });
-          },
-          end: () => {
-            if (!selectionState.isActive) return;
-            this.selectionBox.style.display = "none";
-            selectionState.isActive = false;
-            mousedownOnDesktop = false;
-          }
-        }
+
+    const onMouseDown = (e) => {
+      if (e.target !== this.desktop) return;
+      if (e.target?.closest?.(".window")) return;
+      document.querySelectorAll(".icon.selectable").forEach((i) => {
+        i.style.zIndex = "";
+        i.style.opacity = "";
+        i.style.cursor = "";
       });
+      selectionState = { startX: e.pageX, startY: e.pageY, isActive: true };
+      Object.assign(this.selectionBox.style, {
+        left: `${e.pageX}px`,
+        top: `${e.pageY}px`,
+        width: "0px",
+        height: "0px",
+        display: "block"
+      });
+      this.selectionManager.clear();
+      document.addEventListener("mousemove", onMouseMove);
+      document.addEventListener("mouseup", onMouseUp);
+    };
+
+    const onMouseMove = (e) => {
+      if (!selectionState.isActive) return;
+      Object.assign(this.selectionBox.style, {
+        width: `${Math.abs(e.pageX - selectionState.startX)}px`,
+        height: `${Math.abs(e.pageY - selectionState.startY)}px`,
+        left: `${Math.min(e.pageX, selectionState.startX)}px`,
+        top: `${Math.min(e.pageY, selectionState.startY)}px`
+      });
+      const boxRect = this.selectionBox.getBoundingClientRect();
+      document.querySelectorAll(".icon.selectable").forEach((icon) => {
+        if (icon.style.display === "none") return;
+        const r = icon.getBoundingClientRect();
+        const overlaps = !(
+          r.right < boxRect.left ||
+          r.left > boxRect.right ||
+          r.bottom < boxRect.top ||
+          r.top > boxRect.bottom
+        );
+        if (overlaps) this.selectionManager.add(icon);
+        else this.selectionManager.remove(icon);
+      });
+    };
+
+    const onMouseUp = () => {
+      if (!selectionState.isActive) return;
+      this.selectionBox.style.display = "none";
+      selectionState.isActive = false;
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onMouseUp);
+    };
+
+    this.desktop.addEventListener("mousedown", onMouseDown);
   }
 
   setupStartMenu() {
@@ -920,5 +983,120 @@ function layoutIconsCall() {
   relayoutDesktopIcons();
 }
 
+let _resizeTimer;
 window.addEventListener("load", () => layoutIconsCall());
-window.addEventListener("resize", () => layoutIconsCall());
+window.addEventListener("resize", () => {
+  clearTimeout(_resizeTimer);
+  _resizeTimer = setTimeout(() => layoutIconsCall(), 150);
+});
+
+document.addEventListener("mouseup", () => {
+  document.querySelectorAll(".icon.selectable").forEach((icon) => {
+    const zIndex = parseInt(icon.style.zIndex);
+    if (zIndex > 10 || icon.style.opacity === "0.7" || icon.style.cursor === "move") {
+      icon.style.zIndex = "";
+      icon.style.opacity = "";
+      icon.style.cursor = "";
+    }
+  });
+});
+
+document.addEventListener("click", (e) => {
+  if (e.target.closest(".icon")) return;
+  document.querySelectorAll(".icon.selectable").forEach((icon) => {
+    const zIndex = parseInt(icon.style.zIndex);
+    if (zIndex > 10 || icon.style.opacity === "0.7" || icon.style.cursor === "move") {
+      icon.style.zIndex = "";
+      icon.style.opacity = "";
+      icon.style.cursor = "";
+    }
+  });
+});
+
+window.addEventListener("focus", () => {
+  document.querySelectorAll(".icon.selectable").forEach((icon) => {
+    const zIndex = parseInt(icon.style.zIndex);
+    if (zIndex > 10 || icon.style.opacity === "0.7" || icon.style.cursor === "move") {
+      icon.style.zIndex = "";
+      icon.style.opacity = "";
+      icon.style.cursor = "";
+    }
+  });
+});
+
+setInterval(() => {
+  document.querySelectorAll(".icon.selectable").forEach((icon) => {
+    const zIndex = parseInt(icon.style.zIndex);
+    if (zIndex > 10 || icon.style.opacity === "0.7" || icon.style.cursor === "move") {
+      icon.style.zIndex = "";
+      icon.style.opacity = "";
+      icon.style.cursor = "";
+    }
+  });
+}, 5000);
+
+export function sortDesktopIcons(mode) {
+  if (!sharedAppLauncher) return;
+  os.storage.set(StorageKeys.desktopSortMode, mode);
+  const allIcons = Array.from(desktop.querySelectorAll(":scope > .icon")).filter(
+    (icon) => icon.style.display !== "none"
+  );
+  if (!allIcons.length) return;
+
+  const withKey = allIcons.map((icon) => {
+    const label = icon.querySelector("div")?.textContent?.trim() || "";
+    let key;
+    switch (mode) {
+      case "name":
+        key = label.toLowerCase();
+        break;
+      case "type":
+        if (icon.classList.contains("folder-icon")) key = `0:${label}`;
+        else if (icon.dataset.app) key = `1:${label}`;
+        else key = `2:${label}`;
+        break;
+      case "recent": {
+        const appId = icon.dataset.app;
+        key = appId ? -(os.storage.get(`launch_time:${appId}`) || 0) : 0;
+        break;
+      }
+      default:
+        key = 0;
+    }
+    return { icon, key };
+  });
+
+  withKey.sort((a, b) => {
+    if (typeof a.key === "string" && typeof b.key === "string") return a.key.localeCompare(b.key);
+    return (a.key || 0) - (b.key || 0);
+  });
+
+  const positionHelper = new PositionHelper(desktop, GRID_CONFIG);
+  const systemIcons = [];
+  const regularIcons = [];
+  withKey.forEach(({ icon }) => {
+    if (isRightAlignedSystemApp(sharedAppLauncher.appMap, icon.dataset.app)) {
+      systemIcons.push(icon);
+    } else {
+      regularIcons.push(icon);
+    }
+  });
+
+  allIcons.forEach((i) => {
+    i.style.left = "";
+    i.style.top = "";
+    i.style.zIndex = "";
+  });
+  let occupied = null;
+  if (regularIcons.length) occupied = positionHelper.layoutSync(regularIcons, false, occupied);
+  if (systemIcons.length) positionHelper.layoutRightSync(systemIcons, occupied);
+
+  const saved = {};
+  allIcons.forEach((icon) => {
+    const left = parseFloat(icon.style.left) || 0;
+    const top = parseFloat(icon.style.top) || 0;
+    const { col, row } = positionHelper.pixelsToCell(left, top);
+    saved[PositionStore.getKey(icon)] = { col, row };
+  });
+  PositionStore.save(saved);
+}

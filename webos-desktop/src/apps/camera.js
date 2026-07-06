@@ -1,6 +1,8 @@
 import "../styles/camera.css";
 import { openMediaViewer } from "../fileDisplay.js";
 import { FileKind } from "../fs.js";
+import { formatSize } from "../utils/utils.js";
+import { renderSelectMenu, bindSelectMenu, getSelectMenuValue } from "../shared/selectMenu.js";
 
 import { BaseApp, PersistenceTypes, os } from "../framework.js";
 export class CameraApp extends BaseApp {
@@ -432,6 +434,13 @@ export class CameraApp extends BaseApp {
         shutterClick: async (payload, event, element, state) => {
           const cameraApp = document.querySelector(".camera-app");
           if (!cameraApp) return;
+
+          const shutterBtn = cameraApp.querySelector("#shutter-btn");
+          if (shutterBtn) {
+            shutterBtn.classList.add("shutter-snap");
+            setTimeout(() => shutterBtn.classList.remove("shutter-snap"), 200);
+          }
+
           if (state.currentMode === "photo") {
             await this.takePhoto(state);
           } else if (state.currentMode === "video") {
@@ -457,16 +466,26 @@ export class CameraApp extends BaseApp {
             <div class="window-content">
               <div class="history-controls">
                 <div class="history-filter">
-                  <select id="history-type-filter" class="history-filter-select">
-                    <option value="all">All</option>
-                    <option value="photo">Photos</option>
-                    <option value="video">Videos</option>
-                    <option value="screen">Screen</option>
-                  </select>
-                  <select id="history-sort" class="history-sort-select">
-                    <option value="newest">Newest First</option>
-                    <option value="oldest">Oldest First</option>
-                  </select>
+                  ${renderSelectMenu(
+                    "history-type-filter",
+                    [
+                      { value: "all", label: "All" },
+                      { value: "photo", label: "Photos" },
+                      { value: "video", label: "Videos" },
+                      { value: "screen", label: "Screen" }
+                    ],
+                    state.historyFilter || "all",
+                    "history-filter-select"
+                  )}
+                  ${renderSelectMenu(
+                    "history-sort",
+                    [
+                      { value: "newest", label: "Newest First" },
+                      { value: "oldest", label: "Oldest First" }
+                    ],
+                    state.historySort || "newest",
+                    "history-sort-select"
+                  )}
                   <span id="history-count" class="history-count"></span>
                 </div>
                 <div class="history-actions">
@@ -483,6 +502,8 @@ export class CameraApp extends BaseApp {
             </div>
           `;
 
+          bindSelectMenu(historyWin);
+
           state.currentPage = 1;
           state.itemsPerPage = 12;
 
@@ -494,14 +515,14 @@ export class CameraApp extends BaseApp {
           const nextPageBtn = historyWin.querySelector("#next-page");
           const pageInfo = historyWin.querySelector("#page-info");
 
-          typeFilter.onchange = () => {
+          typeFilter.addEventListener("change", () => {
             state.currentPage = 1;
             this.renderHistory(state, historyWin);
-          };
-          sortSelect.onchange = () => {
+          });
+          sortSelect.addEventListener("change", () => {
             state.currentPage = 1;
             this.renderHistory(state, historyWin);
-          };
+          });
 
           bulkSelectBtn.onclick = () => {
             state.bulkSelectMode = !state.bulkSelectMode;
@@ -638,7 +659,13 @@ export class CameraApp extends BaseApp {
     this.downloadLink.textContent = "Download Photo";
     this.downloadLink.style.display = "flex";
 
-    this.addRecording(dataUrl, blob, fileName, fileName.replace(".png", ""), state);
+    await this.addRecording(dataUrl, blob, fileName, fileName.replace(".png", ""), state);
+
+    const flash = document.createElement("div");
+    flash.className = "cam-viewfinder-flash";
+    const viewfinder = this.video.parentElement;
+    viewfinder.appendChild(flash);
+    flash.addEventListener("animationend", () => flash.remove());
   }
 
   startRecording(state, cameraApp) {
@@ -650,14 +677,18 @@ export class CameraApp extends BaseApp {
     this.mediaRecorder.ondataavailable = (e) => {
       if (e.data.size > 0) this.recordedChunks.push(e.data);
     };
-    this.mediaRecorder.onstop = () => {
+    this.mediaRecorder.onstop = async () => {
       const blob = new Blob(this.recordedChunks, { type: "video/webm" });
       const url = URL.createObjectURL(blob);
 
       const fileName = `video-${Date.now()}.webm`;
-      os.fs.writeBinaryFile(["Videos", "Camera"], fileName, blob, "video", "fas fa-camera");
+      try {
+        await os.fs.writeBinaryFile(["Videos", "Camera"], fileName, blob, "video", "fas fa-camera");
+      } catch (e) {
+        console.error("Failed to save video:", e);
+      }
 
-      this.addRecording(url, blob, fileName, fileName.replace(".webm", ""), state);
+      await this.addRecording(url, blob, fileName, fileName.replace(".webm", ""), state);
 
       state.isRecording = false;
       this.stopTimer();
@@ -695,14 +726,18 @@ export class CameraApp extends BaseApp {
         if (e.data.size > 0) this.recordedChunks.push(e.data);
       };
 
-      this.mediaRecorder.onstop = () => {
+      this.mediaRecorder.onstop = async () => {
         const blob = new Blob(this.recordedChunks, { type: "video/webm" });
         const url = URL.createObjectURL(blob);
 
         const fileName = `screen-${Date.now()}.webm`;
-        os.fs.writeBinaryFile(["Videos", "Camera"], fileName, blob, "video", "fas fa-camera");
+        try {
+          await os.fs.writeBinaryFile(["Videos", "Camera"], fileName, blob, "video", "fas fa-camera");
+        } catch (e) {
+          console.error("Failed to save screen recording:", e);
+        }
 
-        this.addRecording(url, blob, fileName, fileName.replace(".webm", ""), state);
+        await this.addRecording(url, blob, fileName, fileName.replace(".webm", ""), state);
 
         state.isRecording = false;
         this.downloadLink.href = url;
@@ -790,15 +825,18 @@ export class CameraApp extends BaseApp {
 
     list.innerHTML = "";
 
+    const filterVal = getSelectMenuValue("history-type-filter", historyWin || document) || "all";
+    const sortVal = getSelectMenuValue("history-sort", historyWin || document) || "newest";
+
     let filtered = state.recordings.filter((rec) => {
       const type = this.getRecordingType(rec);
-      return typeFilter.value === "all" || type === typeFilter.value;
+      return filterVal === "all" || type === filterVal;
     });
 
     filtered.sort((a, b) => {
       const aTime = this.extractTimestamp(a.id);
       const bTime = this.extractTimestamp(b.id);
-      return sortSelect.value === "newest" ? bTime - aTime : aTime - bTime;
+      return sortVal === "newest" ? bTime - aTime : aTime - bTime;
     });
 
     if (count) count.textContent = `(${filtered.length})`;
@@ -837,12 +875,24 @@ export class CameraApp extends BaseApp {
     const isPhoto = type === "photo";
     const item = document.createElement("div");
     item.className = "cam-history-item";
-    item.onmouseover = () => (item.style.background = "rgba(255,255,255,0.1)");
-    item.onmouseout = () => (item.style.background = "rgba(255,255,255,0.05)");
     item.onclick = () => this.openMediaViewer(rec);
 
     const thumbnail = document.createElement("div");
     thumbnail.className = "cam-history-thumb";
+
+    if (state.bulkSelectMode) {
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.className = "history-checkbox";
+      checkbox.checked = state.selectedItems.includes(rec.id);
+      checkbox.onclick = (e) => e.stopPropagation();
+      checkbox.onchange = () => {
+        const idx = state.selectedItems.indexOf(rec.id);
+        if (checkbox.checked && idx === -1) state.selectedItems.push(rec.id);
+        else if (!checkbox.checked && idx > -1) state.selectedItems.splice(idx, 1);
+      };
+      thumbnail.appendChild(checkbox);
+    }
 
     if (isPhoto) {
       const img = document.createElement("img");
@@ -871,35 +921,28 @@ export class CameraApp extends BaseApp {
     info.appendChild(name);
     info.appendChild(timestamp);
 
+    const size = document.createElement("div");
+    size.className = "cam-history-size";
+    size.textContent = rec.blob ? formatSize(rec.blob.size) : "";
+    info.appendChild(size);
+
     const actions = document.createElement("div");
     actions.className = "cam-history-actions";
 
-    if (state.bulkSelectMode) {
-      const checkbox = document.createElement("input");
-      checkbox.type = "checkbox";
-      checkbox.className = "history-checkbox";
-      checkbox.checked = state.selectedItems.includes(rec.id);
-      checkbox.onchange = (e) => {
-        e.stopPropagation();
-        const idx = state.selectedItems.indexOf(rec.id);
-        if (checkbox.checked && idx === -1) state.selectedItems.push(rec.id);
-        else if (!checkbox.checked && idx > -1) state.selectedItems.splice(idx, 1);
-      };
-      actions.appendChild(checkbox);
-    }
-
     const renameBtn = document.createElement("button");
-    renameBtn.innerHTML = '<i class="fas fa-edit"></i>';
-    renameBtn.className = "cam-action-btn";
+    renameBtn.innerHTML = '<i class="fas fa-pencil"></i>';
+    renameBtn.className = "cam-hist-btn";
+    renameBtn.title = "Rename";
     renameBtn.onclick = (e) => {
       e.stopPropagation();
-      this.renameRecording(rec.id, state);
+      this.startInlineRename(rec, state, name);
     };
     actions.appendChild(renameBtn);
 
     const deleteBtn = document.createElement("button");
     deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
-    deleteBtn.className = "cam-action-btn-danger";
+    deleteBtn.className = "cam-hist-btn danger";
+    deleteBtn.title = "Delete";
     deleteBtn.onclick = (e) => {
       e.stopPropagation();
       this.deleteRecording(rec.id, state);
@@ -955,27 +998,56 @@ export class CameraApp extends BaseApp {
     } else {
       kind = FileKind.VIDEO;
     }
-    openMediaViewer(rec.id, rec.url, kind, this._services);
+    openMediaViewer(rec.id, rec.url, kind, this.wm);
   }
 
-  async renameRecording(id, state) {
-    const rec = state.recordings.find((r) => r.id === id);
-    if (!rec) return;
-    const name = await os.dialog.prompt("Prompt", "Rename recording:", rec.name);
-    if (!name) return;
+  startInlineRename(rec, state, nameEl) {
+    const input = document.createElement("input");
+    input.type = "text";
+    input.className = "cam-inline-rename-input";
+    input.value = rec.name;
 
-    const ext = rec.id.includes(".png") ? ".png" : ".webm";
-    const newFileName = `${name}${ext}`;
+    nameEl.replaceWith(input);
+    input.focus();
+    input.select();
 
-    try {
-      await os.fs.renameBinaryFile(["Pictures", "Camera"], rec.id, newFileName);
-    } catch {
-      await os.fs.renameBinaryFile(["Videos", "Camera"], rec.id, newFileName);
-    }
+    let finished = false;
+    const finish = async (save) => {
+      if (finished) return;
+      finished = true;
 
-    rec.id = newFileName;
-    rec.name = name;
-    this.renderHistory(state);
+      if (save) {
+        const newName = input.value.trim();
+        if (newName && newName !== rec.name) {
+          const ext = rec.id.includes(".png") ? ".png" : ".webm";
+          const newFileName = `${newName}${ext}`;
+          try {
+            await os.fs.renameBinaryFile(["Pictures", "Camera"], rec.id, newFileName);
+          } catch {
+            await os.fs.renameBinaryFile(["Videos", "Camera"], rec.id, newFileName);
+          }
+          rec.id = newFileName;
+          rec.name = newName;
+        }
+      }
+
+      const restoredName = document.createElement("div");
+      restoredName.className = "cam-history-name";
+      restoredName.textContent = rec.id;
+      input.replaceWith(restoredName);
+    };
+
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        finish(true);
+      } else if (e.key === "Escape") {
+        e.preventDefault();
+        finish(false);
+      }
+    });
+
+    input.addEventListener("blur", () => finish(true));
   }
 
   async deleteRecording(id, state) {
@@ -1026,11 +1098,11 @@ export class CameraApp extends BaseApp {
     const videoEntries = Object.keys(videosFolder).filter((k) => videosFolder[k].type === "file");
     const allEntries = [...cameraEntries, ...videoEntries];
 
-    state.recordings = [];
+    const existingIds = new Set(state.recordings.map((r) => r.id));
     for (const name of allEntries) {
-      let blob;
+      if (existingIds.has(name)) continue;
 
-      blob = await os.fs.readBinaryFile(["Pictures", "Camera"], name).catch(() => null);
+      let blob = await os.fs.readBinaryFile(["Pictures", "Camera"], name).catch(() => null);
       if (!blob) {
         blob = await os.fs.readBinaryFile(["Videos", "Camera"], name).catch(() => null);
       }

@@ -399,8 +399,6 @@ export class EmulatorApp extends BaseApp {
       <div id="${winId}-screen" class="emu-window-screen"></div>
     </div>`;
 
-    this.wm.mountWindow(win, winId, displayName, "static/icons/emulator.webp");
-
     const inner = win.querySelector(`#${winId}-inner`);
     const screenDiv = win.querySelector(`#${winId}-screen`);
     const log = win.querySelector(`#${winId}-log`);

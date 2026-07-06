@@ -611,8 +611,12 @@ player.load("${swfPath}");
           displayTitle,
           extra.width || "80vw",
           extra.height || "80vh",
-          isGame,
-          extra
+          {
+            ...extra,
+            isGame,
+            icon: this.appMap[appId]?.icon || "fas fa-gamepad",
+            skipHeader: true
+          }
         );
         if (appId) this._appSessions.set(`${id}-win`, { appId, startTime: Date.now() });
 
@@ -649,8 +653,6 @@ player.load("${swfPath}");
             </div>
           </div>
         `;
-
-        this.wm.mountWindow(win, `${id}-win`, displayTitle, this.appMap[appId]?.icon || "fas fa-gamepad");
 
         win.querySelector(".overlay-open-btn")?.addEventListener("click", () => {
           this._overlayController?.openForWindow(win);

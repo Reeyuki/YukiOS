@@ -1,4 +1,4 @@
-import interact from "interactjs";
+import { makeDraggable } from "./shared/dragUtils.js";
 import { isImageFile } from "./fileDisplay.js";
 import { appMap } from "./games/gamesList.js";
 import { audioMixer, SystemAudio } from "./audioMixer.js";
@@ -240,13 +240,15 @@ export class NotificationCenter {
     let removed = false;
     let dismissTimer = null;
     let dragHistory = [];
+    let dragCleanup = null;
+    let startPointerX = 0;
 
     const threshold = toast.offsetWidth * 0.3;
 
     const removeToast = () => {
       if (removed) return;
       removed = true;
-      interact(toast).unset();
+      if (dragCleanup) dragCleanup();
       toast.classList.add("ntf-toast-out");
       setTimeout(() => toast.remove(), 300);
     };
@@ -264,29 +266,25 @@ export class NotificationCenter {
     }
 
     const self = this;
-    interact(toast).draggable({
-      ignoreFrom: ".ntf-toast__close",
-      axis: "x",
-      inertia: false,
-      listeners: {
+    dragCleanup = makeDraggable(
+      toast,
+      {
         start() {
           dragHistory = [];
+          startPointerX = 0;
           toast.classList.add("ntf-toast--dragging");
           if (dismissTimer) {
             clearTimeout(dismissTimer);
             dismissTimer = null;
           }
         },
-        move(event) {
-          const dx = event.clientX - event.interaction.startPointer.clientX;
-          toast.style.transform = `translateX(${dx}px)`;
-          toast.style.opacity = Math.abs(dx) > threshold ? "0.5" : "1";
-          dragHistory.push({ x: event.clientX, t: performance.now() });
+        move(e, dx, dy, clientX, clientY, pageX, pageY, totalDx) {
+          toast.style.transform = `translateX(${totalDx}px)`;
+          toast.style.opacity = Math.abs(totalDx) > threshold ? "0.5" : "1";
+          dragHistory.push({ x: clientX, t: performance.now() });
           if (dragHistory.length > 5) dragHistory.shift();
         },
-        end(event) {
-          const dx = event.clientX - event.interaction.startPointer.clientX;
-
+        end(e, totalDx) {
           let velocity = 0;
           if (dragHistory.length >= 2) {
             const first = dragHistory[0];
@@ -298,16 +296,16 @@ export class NotificationCenter {
           }
           dragHistory = [];
 
-          if (Math.abs(dx) > threshold || Math.abs(velocity) > 0.3) {
+          if (Math.abs(totalDx) > threshold || Math.abs(velocity) > 0.3) {
             self.removeNotification(notif.id);
-            const flyDir = Math.abs(dx) > threshold ? Math.sign(dx) : Math.sign(velocity);
+            const flyDir = Math.abs(totalDx) > threshold ? Math.sign(totalDx) : Math.sign(velocity);
             const extra = Math.max(Math.abs(velocity) * 500, 0);
             toast.style.transition = "transform 0.4s cubic-bezier(0.15, 0.7, 0.3, 1), opacity 0.4s ease";
-            toast.style.transform = `translateX(${flyDir * (Math.abs(dx) + extra + window.innerWidth)}px)`;
+            toast.style.transform = `translateX(${flyDir * (Math.abs(totalDx) + extra + window.innerWidth)}px)`;
             toast.style.opacity = "0";
             setTimeout(() => {
               removed = true;
-              interact(toast).unset();
+              if (dragCleanup) dragCleanup();
               toast.remove();
             }, 450);
           } else {
@@ -317,8 +315,9 @@ export class NotificationCenter {
             toast.style.opacity = "1";
           }
         }
-      }
-    });
+      },
+      { axis: "x", ignoreFrom: ".ntf-toast__close" }
+    );
   }
 
   removeNotification(id) {

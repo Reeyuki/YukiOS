@@ -712,7 +712,7 @@ export class GameUI {
     }
   }
 
-  openFriendsWindow(wm) {
+  async openFriendsWindow(wm) {
     if (!wm) return;
     const winId = "steam-friends-win";
     const existing = document.getElementById(winId);
@@ -745,10 +745,16 @@ export class GameUI {
       </div>
     `;
 
-    const win = os.window.create(winId, "Friends List", "301px", "401px", false, {
+    const win = os.window.create(winId, "Friends List", "301px", "401px", {
       className: "window-root",
-      style: { background: "#1b2838" }
+      style: { background: "#1b2838" },
+      icon: "fas fa-user-friends",
+      skipHeader: true,
+      skipAutoSetup: true
     });
+
+    const headerHtml = wm.utils.generateWindowHeader("Friends List", "fas fa-user-friends");
+    win.insertAdjacentHTML("afterbegin", headerHtml);
 
     const contentDiv = document.createElement("div");
     contentDiv.className = "window-content";
@@ -762,6 +768,11 @@ export class GameUI {
     if (downloadBtn) downloadBtn.remove();
 
     wm.bringToFront(win);
+
+    const { makeDraggable } = await import("../windowManager/makeDraggable.js");
+    makeDraggable(win, wm);
+    wm.makeResizable(win);
+    wm.setupWindowControls(win);
     this._loadFriendsLiveStats(win);
   }
 

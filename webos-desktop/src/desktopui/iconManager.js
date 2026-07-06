@@ -12,7 +12,7 @@ import { resolveDesktopIcon } from "../shared/iconUtils.js";
 import { scheduleFileTooltip, scheduleAppTooltip, hideFileTooltip } from "../shared/fileTooltip.js";
 import { BusEvents } from "../core/EventBus.js";
 import { Achievements } from "../achievements.js";
-import interact from "interactjs";
+import { makeDraggable } from "../shared/dragUtils.js";
 
 import { StorageKeys, os } from "../framework.js";
 
@@ -68,6 +68,7 @@ export class IconManager {
       if (icon.classList.contains("folder-icon")) {
         this.openFolder(icon.dataset.folderName);
       } else if (icon.dataset.app) {
+        os.storage.set(`launch_time:${icon.dataset.app}`, Date.now());
         const extra = icon.dataset.steamGameId ? { steamGameId: icon.dataset.steamGameId } : null;
         os.app.launch(icon.dataset.app, false, extra);
       } else if (icon.dataset.fileName) {
@@ -110,58 +111,49 @@ export class IconManager {
     ) {
       this.dragDropManager.desktop.lastFocusedContext = "desktop";
     }
+    document.querySelectorAll(".icon.selectable").forEach((i) => {
+      if (!this.selectionManager.has(i)) {
+        i.style.zIndex = "";
+        i.style.opacity = "";
+        i.style.cursor = "";
+      }
+    });
   }
 
   setupInteractDrag(icon) {
+    const restrictToDesktop = {
+      top: 0,
+      left: 0,
+      bottom: 0,
+      right: 0
+    };
+
     if (!this.dragDropManager) {
-      interact(icon)
-        .resizable(false)
-        .draggable({
-          inertia: false,
-          modifiers: [
-            interact.modifiers.restrict({
-              restriction: this.desktop,
-              elementRect: { top: 0, left: 0, bottom: 1, right: 1 }
-            })
-          ],
-          autoScroll: false,
-          cursorChecker: () => null,
-          listeners: {
-            start: () => this.onDragStart(),
-            move: (event) => this.onDragMove(event),
-            end: () => this.onDragEnd()
-          }
-        });
-      return;
-    }
-    interact(icon)
-      .resizable(false)
-      .draggable({
-        inertia: false,
-        modifiers: [
-          interact.modifiers.restrict({
-            restriction: this.desktop,
-            elementRect: { top: 0, left: 0, bottom: 1, right: 1 }
-          })
-        ],
-        autoScroll: false,
-        cursorChecker: () => null,
-        listeners: {
-          start: () => this.dragDropManager.onDragStart(),
-          move: (event) => this.dragDropManager.onDragMove(event),
-          end: () => this.dragDropManager.onDragEnd()
-        }
+      return makeDraggable(icon, {
+        start: () => this._dragStart(),
+        move: (_e, dx, dy) => this._dragMove(dx, dy),
+        end: () => this._dragEnd()
       });
+    }
+    return makeDraggable(icon, {
+      start: (e) => {
+        this._dragStartEvent = e;
+        this.dragDropManager.onDragStart();
+      },
+      move: (_e, dx, dy, clientX, clientY) => {
+        this.dragDropManager.onDragMove({ dx, dy, clientX, clientY });
+      },
+      end: () => this.dragDropManager.onDragEnd()
+    });
   }
 
-  onDragStart() {
+  _dragStart() {
     this.selectionManager.forEach((icon) =>
       Object.assign(icon.style, { opacity: "0.7", zIndex: "1200", cursor: "move" })
     );
   }
 
-  onDragMove(event) {
-    const { dx, dy } = event;
+  _dragMove(dx, dy) {
     this.selectionManager.forEach((icon) => {
       this.positionHelper.setPosition(
         icon,
@@ -171,7 +163,7 @@ export class IconManager {
     });
   }
 
-  onDragEnd() {
+  _dragEnd() {
     this.selectionManager.forEach((icon) => {
       this.positionHelper.snap(icon);
       Object.assign(icon.style, { opacity: "1", zIndex: "1", cursor: "default" });
@@ -425,8 +417,9 @@ export class IconManager {
       createdIcons.push(icon);
     }
 
-    if (regularIcons.length) this.positionHelper.layoutSync(regularIcons);
-    if (systemIcons.length) this.positionHelper.layoutRightSync(systemIcons);
+    let occupied = null;
+    if (regularIcons.length) occupied = this.positionHelper.layoutSync(regularIcons, false, occupied);
+    if (systemIcons.length) this.positionHelper.layoutRightSync(systemIcons, occupied);
 
     this.desktop.appendChild(fragment);
     createdIcons.forEach((icon) => this.makeIconInteractable(icon));
