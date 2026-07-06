@@ -4,6 +4,7 @@ import { audioMixer, SystemAudio } from "../audioMixer.js";
 import { renderWallpapersPage } from "../wallpapers.js";
 import { applyTrayEnabled } from "./settingsApply.js";
 import { FileKind } from "../fs.js";
+import { SystemUtilities } from "../system.js";
 import {
   applyTheme,
   applyWindowTransparency,
@@ -596,6 +597,7 @@ export function bindAppearanceCategory(
 
         await fs.createFile(["Pictures", "Wallpapers"], file.name, file, fileKind, icon);
 
+        await SystemUtilities.setWallpaper(file);
         os.notify.send("Wallpaper Uploaded", `"${file.name}" set as wallpaper`, { type: "info" });
 
         if (wallpapersContainer) {

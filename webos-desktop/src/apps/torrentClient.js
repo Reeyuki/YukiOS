@@ -381,25 +381,34 @@ export class TorrentClientApp extends BaseApp {
       return window.WebTorrent;
     }
 
+    const CDN_URLS = [
+      "https://cdn.jsdelivr.net/npm/webtorrent@0.108.6/webtorrent.debug.js",
+      "https://cdnjs.cloudflare.com/ajax/libs/webtorrent/0.108.6/webtorrent.debug.js"
+    ];
+
     this.webTorrentLoadPromise = (async () => {
-      return new Promise((resolve, reject) => {
-        const script = document.createElement("script");
-        script.src = "https://cdn.jsdelivr.net/npm/webtorrent@0.108.6/webtorrent.debug.js";
-        script.crossOrigin = "anonymous";
-        script.onload = () => {
-          if (typeof window.WebTorrent !== "undefined") {
-            resolve(window.WebTorrent);
-          } else {
-            reject(new Error("WebTorrent not available on window"));
-          }
-        };
-        script.onerror = (err) => {
-          console.error("Script load error:", err);
-          this.webTorrentLoadPromise = null;
-          reject(new Error("Failed to load WebTorrent script"));
-        };
-        document.head.appendChild(script);
-      });
+      for (const url of CDN_URLS) {
+        try {
+          await new Promise((resolve, reject) => {
+            const script = document.createElement("script");
+            script.src = url;
+            script.crossOrigin = "anonymous";
+            script.onload = () => {
+              if (typeof window.WebTorrent !== "undefined") {
+                resolve();
+              } else {
+                reject(new Error("WebTorrent not available on window"));
+              }
+            };
+            script.onerror = (err) => reject(new Error(`Failed to load ${url}`));
+            document.head.appendChild(script);
+          });
+          return window.WebTorrent;
+        } catch (err) {
+          console.warn(`WebTorrent CDN failed: ${url}`, err);
+        }
+      }
+      throw new Error("All WebTorrent CDN URLs failed");
     })();
 
     return this.webTorrentLoadPromise;
@@ -541,7 +550,8 @@ export class TorrentClientApp extends BaseApp {
     reader.onload = async (e) => {
       try {
         const parseTorrent = (await import("parse-torrent")).default;
-        const parsed = parseTorrent(e.target.result);
+        const buf = new Uint8Array(e.target.result);
+        const parsed = await parseTorrent(buf);
         if (!this.client) {
           await this.initWebTorrent();
         }
