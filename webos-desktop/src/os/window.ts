@@ -55,7 +55,6 @@ export class WindowAPI {
           contentSet = true;
           headerInjected = true;
 
-          // Trigger animation after content is set
           requestAnimationFrame(() => {
             animateWindowOpen(win, false);
           });
@@ -72,22 +71,19 @@ export class WindowAPI {
           contentSet = true;
           headerInjected = true;
 
-          // Trigger animation after content is set
           requestAnimationFrame(() => {
             animateWindowOpen(win, false);
           });
         }
         observer.disconnect();
 
-        // If content was never set, trigger animation anyway (but not for skipHeader)
         if (!contentSet && !options.skipHeader) {
           requestAnimationFrame(() => {
             animateWindowOpen(win, false);
           });
         }
       }, 50);
-    } else if (autoMount && !options.skipHeader) {
-      // Trigger animation for windows without auto-generated headers
+    } else if (autoMount) {
       requestAnimationFrame(() => {
         animateWindowOpen(win, false);
       });

@@ -438,12 +438,6 @@ export const appMap = {
     icon: "/static/icons/cactus-mccoy.webp",
     title: "Cactus McCoy 2"
   },
-  henry: {
-    type: "game",
-    url: "/static/games/html/henryStickmin.html",
-    icon: "/static/icons/henry-prison.webp",
-    title: "Henry Stickmin Games"
-  },
   badIceCream: {
     type: "swf",
     swf: "/static/games/badIceCream/bic1.swf",
