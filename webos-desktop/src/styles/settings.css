@@ -1689,3 +1689,72 @@ html[data-theme-mode="light"] .accounts-detail-field input[type="text"] {
   border-color: rgba(0, 0, 0, 0.12);
   color: #111;
 }
+
+/* System Diagnostics / Hardware Info */
+.sysinfo-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.sysinfo-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  transition: background 0.15s;
+}
+
+.sysinfo-row:last-child {
+  border-bottom: none;
+}
+
+.sysinfo-row:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.sysinfo-lbl {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.sysinfo-val {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  text-align: right;
+  word-break: break-all;
+  max-width: 60%;
+}
+
+.sysinfo-mono {
+  font-family: "JetBrains Mono", "Cascadia Code", "Fira Code", monospace;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  line-height: 1.5;
+  max-width: 65%;
+  word-break: break-word;
+}
+
+html[data-theme-mode="light"] .sysinfo-lbl {
+  color: var(--text-primary) !important;
+}
+
+html[data-theme-mode="light"] .sysinfo-val {
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme-mode="light"] .sysinfo-mono {
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme-mode="light"] .sysinfo-row:hover {
+  background: var(--surface-hover) !important;
+}
+
+html[data-theme-mode="light"] .sysinfo-row {
+  border-bottom: 1px solid var(--glass-border) !important;
+}

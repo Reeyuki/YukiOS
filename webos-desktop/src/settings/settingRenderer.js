@@ -6,6 +6,206 @@ import { StorageKeys, os } from "../framework.js";
 import { renderSelectMenu } from "../shared/selectMenu.js";
 import { renderRangeSlider } from "../shared/rangeSlider.js";
 import { renderAccountsSettings } from "./accountsPanel.js";
+
+function getBrowserInfo() {
+  const ua = navigator.userAgent;
+  let name = "Unknown";
+  let version = "";
+  let engine = "Unknown";
+  let engineVersion = "";
+
+  if (/Edg\//.test(ua)) {
+    name = "Microsoft Edge";
+    version = (ua.match(/Edg\/([\d.]+)/) || [])[1] || "";
+    engine = "Blink";
+    engineVersion = (ua.match(/Chrome\/([\d.]+)/) || [])[1] || "";
+  } else if (/OPR\//.test(ua) || /Opera/.test(ua)) {
+    name = "Opera";
+    version = (ua.match(/(OPR|Opera)\/([\d.]+)/) || [])[2] || "";
+    engine = "Blink";
+    engineVersion = (ua.match(/Chrome\/([\d.]+)/) || [])[1] || "";
+  } else if (/Firefox\//.test(ua)) {
+    name = "Mozilla Firefox";
+    version = (ua.match(/Firefox\/([\d.]+)/) || [])[1] || "";
+    engine = "Gecko";
+    engineVersion = (ua.match(/rv:([\d.]+)/) || [])[1] || "";
+  } else if (/Chrome\//.test(ua) && !/Edg\//.test(ua) && !/OPR\//.test(ua)) {
+    name = "Google Chrome";
+    version = (ua.match(/Chrome\/([\d.]+)/) || [])[1] || "";
+    engine = "Blink";
+    engineVersion = version;
+  } else if (/Safari\//.test(ua) && !/Chrome\//.test(ua)) {
+    name = "Apple Safari";
+    version = (ua.match(/Version\/([\d.]+)/) || [])[1] || "";
+    engine = "WebKit";
+    engineVersion = (ua.match(/AppleWebKit\/([\d.]+)/) || [])[1] || "";
+  }
+
+  return { name, version, engine, engineVersion, ua };
+}
+
+function getOSInfo() {
+  const ua = navigator.userAgent;
+  let name = "Unknown";
+  let version = "";
+  const platform = navigator.platform || "";
+
+  if (/Windows NT 10/.test(ua)) {
+    name = "Windows";
+    version = "11 / 10";
+  } else if (/Windows NT 6.3/.test(ua)) {
+    name = "Windows";
+    version = "8.1";
+  } else if (/Windows NT 6.2/.test(ua)) {
+    name = "Windows";
+    version = "8";
+  } else if (/Windows NT 6.1/.test(ua)) {
+    name = "Windows";
+    version = "7";
+  } else if (/Windows NT 6.0/.test(ua)) {
+    name = "Windows";
+    version = "Vista";
+  } else if (/Windows NT 5/.test(ua)) {
+    name = "Windows";
+    version = "XP";
+  } else if (/Mac OS X/.test(ua)) {
+    name = "macOS";
+    const raw = (ua.match(/Mac OS X ([\d_]+)/) || [])[1]?.replace(/_/g, ".") || "";
+    const verNum = parseFloat(raw);
+    const codenames = { 10.15: "Catalina", 11: "Big Sur", 12: "Monterey", 13: "Ventura", 14: "Sonoma", 15: "Sequoia" };
+    version = raw;
+    if (codenames[verNum]) version += ` (${codenames[verNum]})`;
+    else if (codenames[Math.floor(verNum)]) version += ` (${codenames[Math.floor(verNum)]})`;
+  } else if (/Linux/.test(ua) && /Android/.test(ua)) {
+    name = "Android";
+    version = (ua.match(/Android ([\d.]+)/) || [])[1] || "";
+  } else if (/Linux/.test(ua)) {
+    name = "Linux";
+  } else if (/CrOS/.test(ua)) {
+    name = "ChromeOS";
+    version = (ua.match(/CrOS\s+\S+\s+([\d.]+)/) || [])[1] || "";
+  } else if (/iPhone|iPad|iPod/.test(ua)) {
+    name = "iOS";
+    version = (ua.match(/OS ([\d_]+)/) || [])[1]?.replace(/_/g, ".") || "";
+  }
+
+  return { name, version, platform };
+}
+
+function getGraphicsInfo() {
+  try {
+    const canvas = document.createElement("canvas");
+    const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+    if (gl) {
+      const ext = gl.getExtension("WEBGL_debug_renderer_info");
+      if (ext) {
+        return {
+          vendor: gl.getParameter(ext.UNMASKED_VENDOR_WEBGL) || "Unknown",
+          renderer: gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) || "Unknown"
+        };
+      }
+      return { vendor: "WEBGL_debug_renderer_info unavailable", renderer: "WEBGL_debug_renderer_info unavailable" };
+    }
+    return { vendor: "WebGL not supported", renderer: "WebGL not supported" };
+  } catch (e) {
+    return { vendor: "Error", renderer: e.message };
+  }
+}
+
+function getConnectionInfo() {
+  const c = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  if (c) {
+    return {
+      type: c.effectiveType || "Unknown",
+      downlink: c.downlink != null ? `${c.downlink} Mbps` : "Unknown",
+      rtt: c.rtt != null ? `${c.rtt} ms` : "Unknown",
+      saveData: c.saveData ? "On" : "Off"
+    };
+  }
+  return null;
+}
+
+function sysinfoRow(label, value, monospace) {
+  const valClass = monospace ? ' class="sysinfo-val sysinfo-mono"' : ' class="sysinfo-val"';
+  return `<div class="sysinfo-row"><span class="sysinfo-lbl">${label}</span><span${valClass}>${value}</span></div>`;
+}
+
+function sysinfoSection(icon, title, rows) {
+  return `
+    <div class="settings-card" style="margin-top: 16px;">
+      <div class="settings-card-header"><i class="${icon}"></i> ${title}</div>
+      <div class="sysinfo-list">
+        ${rows.join("")}
+      </div>
+    </div>`;
+}
+
+function renderSystemInfo() {
+  const browser = getBrowserInfo();
+  const os = getOSInfo();
+  const gfx = getGraphicsInfo();
+  const conn = getConnectionInfo();
+  const screen = window.screen || {};
+  const lang = navigator.language || navigator.userLanguage || "Unknown";
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "Unknown";
+  const mem = navigator.deviceMemory != null ? `${navigator.deviceMemory} GB` : "Unavailable";
+  const cores = navigator.hardwareConcurrency ? `${navigator.hardwareConcurrency} logical` : "Unavailable";
+  const touch = "ontouchstart" in window ? "Yes" : "No";
+  const doNotTrack = navigator.doNotTrack || navigator.msDoNotTrack || window.doNotTrack || "Unspecified";
+  const online = navigator.onLine ? "Online" : "Offline";
+
+  const hardwareRows = [
+    sysinfoRow("CPU (Logical Cores)", cores),
+    sysinfoRow("RAM", mem),
+    sysinfoRow("Screen Resolution", `${screen.width || "?"} × ${screen.height || "?"}`),
+    sysinfoRow("Available Screen", `${screen.availWidth || "?"} × ${screen.availHeight || "?"}`),
+    sysinfoRow("Color Depth", screen.colorDepth ? `${screen.colorDepth}-bit` : "Unknown"),
+    sysinfoRow("Pixel Ratio", window.devicePixelRatio ? `${window.devicePixelRatio.toFixed(2)}x` : "1x"),
+    sysinfoRow("Touch Support", touch),
+    sysinfoRow("Window Size", `${window.innerWidth} × ${window.innerHeight}`)
+  ];
+
+  const browserRows = [
+    sysinfoRow("Browser", `${browser.name} ${browser.version}`),
+    sysinfoRow("Engine", `${browser.engine} ${browser.engineVersion}`),
+    sysinfoRow("Language", `${lang}${navigator.languages ? ` (preferred: ${navigator.languages.join(", ")})` : ""}`),
+    sysinfoRow("Cookies Enabled", navigator.cookieEnabled ? "Yes" : "No"),
+    sysinfoRow("Do Not Track", doNotTrack),
+    sysinfoRow("User Agent", browser.ua, true)
+  ];
+
+  const osRows = [
+    sysinfoRow("Operating System", `${os.name} ${os.version}`.trim()),
+    sysinfoRow("Platform", os.platform),
+    sysinfoRow("Time Zone", tz)
+  ];
+
+  const networkRows = conn
+    ? [
+        sysinfoRow("Connection Type", conn.type.toUpperCase()),
+        sysinfoRow("Downlink Speed", conn.downlink),
+        sysinfoRow("Round-Trip Time", conn.rtt),
+        sysinfoRow("Data Saver", conn.saveData),
+        sysinfoRow("Status", online)
+      ]
+    : [sysinfoRow("Status", online), sysinfoRow("Network Info API", "Not available in this browser")];
+
+  const gfxRows = [sysinfoRow("WebGL Vendor", gfx.vendor, true), sysinfoRow("WebGL Renderer", gfx.renderer, true)];
+
+  const html = `
+    <div style="margin-top: 16px;">
+      <div class="settings-card-header" style="border-bottom: none;"><i class="fas fa-info-circle"></i> System Diagnostics</div>
+    </div>
+    ${sysinfoSection("fas fa-microchip", "Hardware", hardwareRows)}
+    ${sysinfoSection("fas fa-globe", "Browser", browserRows)}
+    ${sysinfoSection("fas fa-desktop", "Operating System", osRows)}
+    ${sysinfoSection("fas fa-wifi", "Network", networkRows)}
+    ${sysinfoSection("fas fa-cube", "Graphics", gfxRows)}
+  `;
+
+  return html;
+}
+
 export function buildSettingsHTML(settings, wm) {
   return `
   <div class="window-header">
@@ -40,8 +240,6 @@ export function buildSettingsHTML(settings, wm) {
         ${renderAccountsSettings()}
         ${renderAboutSettings()}
       </div>
-    </div>
-  </div>
   `;
 }
 export function renderSystemSettings(s) {
@@ -1053,6 +1251,8 @@ export function renderAboutSettings() {
           </a>
         </div>
       </div>
+
+      ${renderSystemInfo()}
 
       <div class="settings-card" style="margin-top: 16px; text-align: center; padding: 20px;">
         <a href="https://github.com/reeyuki" target="_blank" rel="noopener noreferrer" style="color: var(--text-muted); font-size: 0.82em; text-decoration: none; transition: color 0.15s;" onmouseover="this.style.color='var(--text-primary)'" onmouseout="this.style.color='var(--text-muted)'">made by reeyuki <i class="fab fa-github"></i></a>
