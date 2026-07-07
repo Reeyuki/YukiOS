@@ -1,5 +1,5 @@
 import {
-  makeDraggable as extMakeDraggable,
+  windowMakeDraggable,
   _getSnapZone,
   _showSnapGhost,
   _hideSnapGhost,
@@ -24,7 +24,7 @@ export class SnapSystem {
   }
 
   makeDraggable(win) {
-    extMakeDraggable(win, this.manager);
+    windowMakeDraggable(win, this.manager);
   }
 
   _getSnapZone(x, y) {

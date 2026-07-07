@@ -61,7 +61,7 @@ function sendBatch(events) {
   }
 }
 
-export function flushQueue() {
+function flushQueue() {
   if (ANALYTICS_DISABLED) return;
   const queue = loadQueue();
   if (!queue.length) return;

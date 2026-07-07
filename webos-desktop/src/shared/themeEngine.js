@@ -114,22 +114,6 @@ export function addCustomTheme(theme) {
   return newTheme;
 }
 
-export function deleteCustomTheme(value) {
-  const index = customThemes.findIndex((t) => t.value === value);
-  if (index === -1) return false;
-  customThemes.splice(index, 1);
-  saveCustomThemes();
-  return true;
-}
-
-export function updateCustomTheme(value, updates) {
-  const theme = customThemes.find((t) => t.value === value);
-  if (!theme) return false;
-  Object.assign(theme, updates);
-  saveCustomThemes();
-  return true;
-}
-
 export function getCustomThemes() {
   if (customThemes.length === 0) {
     loadCustomThemes();

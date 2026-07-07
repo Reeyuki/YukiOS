@@ -132,7 +132,7 @@ export function initClippy() {
   return clippyPromise;
 }
 
-export function setClippyEnabled(enabled) {
+function setClippyEnabled(enabled) {
   if (enabled) {
     if (window.clippyAgent) return Promise.resolve(window.clippyAgent);
     setupClippy().then((agent) => {

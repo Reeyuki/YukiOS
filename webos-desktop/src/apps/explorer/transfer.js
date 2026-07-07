@@ -1,5 +1,6 @@
 import { os } from "../../framework.js";
-import { FileKind } from "../../fs.js";
+import { FileKind } from "../../shared/fileKindDetector.js";
+
 import { zipSync } from "fflate";
 import { $, $$, setStyle } from "../../shared/domUtils.js";
 import { pluralize } from "../../utils/utils.js";

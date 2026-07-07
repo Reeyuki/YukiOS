@@ -39,7 +39,7 @@ function hideDescriptionTooltip() {
   }
 }
 
-export function isStartMenuOpen() {
+function isStartMenuOpen() {
   const el = getStartMenuEl();
   return !!el && el.style.display === "flex";
 }
@@ -102,7 +102,7 @@ export function applyStartMenuSettings(el) {
   });
 }
 
-export function openStartMenu({ focusSearch = false, openDefaultPage = true } = {}) {
+function openStartMenu({ focusSearch = false, openDefaultPage = true } = {}) {
   const el = getStartMenuEl();
   if (!el) return;
 
@@ -996,7 +996,7 @@ export async function updateStartUserDisplay() {
   if (avatarImg) avatarImg.src = await resolveAvatarUrl(user.avatar, "static/icons/guest.webp");
 }
 
-export function setupStartUserHover() {
+function setupStartUserHover() {
   const startUser = document.querySelector(".start-user");
   if (!startUser) return;
 
@@ -1694,35 +1694,4 @@ function createAppItem(appId, appData) {
   });
 
   return item;
-}
-
-export function populateStartMenu(appLauncher) {
-  const pageMap = {
-    system: document.querySelector('.start-page[data-page="system"]'),
-    apps: document.querySelector('.start-page[data-page="apps"]'),
-    games: document.querySelector('.start-page[data-page="games"]'),
-    favorites: document.querySelector('.start-page[data-page="favorites"]')
-  };
-
-  ["system", "apps", "games"].forEach((cat) => {
-    if (pageMap[cat]) {
-      const grid = pageMap[cat].querySelector(".app-grid");
-      if (grid) grid.innerHTML = "";
-    }
-  });
-
-  const appRegistry = getAppRegistry();
-  Object.entries(appLauncher.appMap).forEach(([appName, appData]) => {
-    if (appRegistry.isAppUninstalled(appName) || appRegistry.isAppDisabled(appName)) return;
-
-    const item = createAppItem(appName, appData);
-
-    if (appData.type === "system") {
-      const grid = pageMap.system?.querySelector(".app-grid");
-      grid?.appendChild(item);
-    } else {
-      const grid = pageMap.games?.querySelector(".app-grid");
-      grid?.appendChild(item);
-    }
-  });
 }

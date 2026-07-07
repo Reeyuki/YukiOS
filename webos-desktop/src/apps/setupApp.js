@@ -200,19 +200,6 @@ export const FEATURE_DATA = {
   ],
   step6: {
     keyboardShortcuts: KEYBIND_DEFINITIONS.map((s) => ({ keys: s.defaultKeys.join("+"), desc: s.desc, cat: s.cat })),
-    filesystem: {
-      title: "Virtual Filesystem",
-      description: "Your files live in your browser. Close the tab and they're still here when you come back.",
-      structure: [
-        { path: "/home/reeyuki/Desktop", desc: "Desktop icons and shortcuts" },
-        { path: "/home/reeyuki/Documents", desc: "Your documents and text files (includes welcome INFO.txt)" },
-        { path: "/home/reeyuki/Music", desc: "Audio files and music (includes lofi mix)" },
-        { path: "/home/reeyuki/Pictures", desc: "Images and photos (includes gandalf.gif)" },
-        { path: "/home/reeyuki/Pictures/Screenshots", desc: "Screenshots captured via Screenshot app" },
-        { path: "/home/reeyuki/Pictures/Wallpapers", desc: "Default wallpaper collection (20+ wallpapers)" },
-        { path: "/home/reeyuki/Videos", desc: "Video files and recordings" }
-      ]
-    },
     turboModes: [
       { value: "balanced", title: "Balanced", desc: "Recommended for most users" },
       { value: "turbo", title: "Turbo", desc: "Maximize speed, reduce effects" },
@@ -596,17 +583,6 @@ export class SetupApp extends BaseApp {
   }
 
   _buildStep6() {
-    const filesystemHtml = FEATURE_DATA.step6.filesystem.structure
-      .map(
-        (f) => `
-        <div class="filesystem-item">
-          <code>${f.path}</code>
-          <span>${f.desc}</span>
-        </div>
-      `
-      )
-      .join("");
-
     return `
       <div class="setup-step" data-step="7">
         <h2 class="step-title">
@@ -619,12 +595,6 @@ export class SetupApp extends BaseApp {
           <button class="setup-btn setup-btn-primary" id="setup-launch-shortcuts">
             <i class="fas fa-keyboard"></i> Open Keyboard Shortcuts
           </button>
-        </div>
-
-        <div class="personalize-section">
-          <label class="section-label">${FEATURE_DATA.step6.filesystem.title}</label>
-          <p class="system-info-copy">${FEATURE_DATA.step6.filesystem.description}</p>
-          <div class="filesystem-structure">${filesystemHtml}</div>
         </div>
       </div>
     `;
@@ -976,6 +946,8 @@ export class SetupApp extends BaseApp {
         img.src = img.dataset.src;
       }
     });
+    stepEl.querySelectorAll(".feature-card").forEach((card, i) => card.style.setProperty("--i", i));
+    stepEl.querySelectorAll(".summary-item").forEach((item, i) => item.style.setProperty("--i", i));
   }
 
   _applyTheme(theme) {
@@ -1068,9 +1040,8 @@ Have fun!`;
       AppSource.SETUP
     );
 
-    win.style.transition = "opacity 0.5s, transform 0.5s";
-    win.style.opacity = "0";
-    win.style.transform = "scale(0.95)";
+    win.style.transition = "transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)";
+    win.style.transform = "scale(0) rotate(-6deg)";
 
     setTimeout(() => {
       os.window.close(win);

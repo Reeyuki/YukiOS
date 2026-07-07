@@ -1,6 +1,6 @@
 import { fileKindFromName, getExt } from "../fileDisplay.js";
 import { formatSize } from "../utils/utils.js";
-import { FileKind } from "../fs.js";
+import { FileKind } from "../shared/fileKindDetector.js";
 import { os } from "../framework.js";
 
 const TYPE_LABELS = {

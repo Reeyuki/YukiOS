@@ -1,5 +1,5 @@
 import { os } from "../../framework.js";
-import { FileKind } from "../../fs.js";
+import { FileKind } from "../../shared/fileKindDetector.js";
 import { $, setStyle } from "../../shared/domUtils.js";
 import { resolveIconUrl } from "../../shared/assetResolver.js";
 import {

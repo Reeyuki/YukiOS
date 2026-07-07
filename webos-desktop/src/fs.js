@@ -3,17 +3,15 @@ import { audioMixer } from "./audioMixer.js";
 import { StorageAdapter } from "./fs/StorageAdapter.js";
 import { MetadataManager } from "./fs/MetadataManager.js";
 import { PathResolver } from "./fs/PathResolver.js";
-import { FileKindDetector, FileKind } from "./fs/FileKindDetector.js";
+import { FileKind, inferKind, mimeFromName, isBinaryName } from "./shared/fileKindDetector.js";
 import { BlobStorage } from "./fs/BlobStorage.js";
 import { TrashManager } from "./fs/TrashManager.js";
-
 import { StorageKeys, os } from "./framework.js";
-export { FileKind };
 
 import { DEFAULT_WALLPAPER_FILES, WALLPAPER_STATIC_DIR } from "./wallpaperConfig.js";
 
 const DEFAULT_STATICALLY_GH_BASE = CDN_BASES.MAIN;
-export { DEFAULT_WALLPAPER_FILES, WALLPAPER_STATIC_DIR as DEFAULT_WALLPAPER_STATIC_DIR };
+export { DEFAULT_WALLPAPER_FILES };
 
 function defaultWallpaperUrl(nameOrPath) {
   if (typeof nameOrPath !== "string") return nameOrPath;
@@ -203,7 +201,7 @@ export class FileSystemManager {
     this.storage = new StorageAdapter(this.CONFIG);
     this.metadata = new MetadataManager(this.storage, this.CONFIG);
     this.paths = new PathResolver(this.CONFIG);
-    this.detector = new FileKindDetector();
+
     this.blobs = new BlobStorage();
     this.trash = new TrashManager(this);
 
@@ -534,7 +532,7 @@ export class FileSystemManager {
   }
 
   inferKind(fileName) {
-    return this.detector.inferKind(fileName);
+    return inferKind(fileName);
   }
 
   resolveUserPath(path = []) {
@@ -632,7 +630,7 @@ export class FileSystemManager {
     const fileIcon = icon || (fileKind === FileKind.TEXT ? "static/icons/notepad.webp" : "static/icons/file.webp");
     await this.p("mkdir", dir, { recursive: true }).catch(() => {});
     if (isBlob(content)) {
-      const typedBlob = content.type ? content : new Blob([content], { type: this.detector._mimeFromName(uniqueName) });
+      const typedBlob = content.type ? content : new Blob([content], { type: mimeFromName(uniqueName) });
       await this.p("writeFile", filePath, "");
       await this.metadata.writeMeta(dir, uniqueName, { kind: fileKind, icon: fileIcon, faIcon, size: typedBlob.size });
       await this.blobs._putBlob(filePath, typedBlob);
@@ -721,7 +719,7 @@ export class FileSystemManager {
       const icon = kind === FileKind.TEXT ? "static/icons/notepad.webp" : "static/icons/file.webp";
       await this.createFile(path, name, content, kind, icon);
     } else if (isBlob(content)) {
-      const typedBlob = content.type ? content : new Blob([content], { type: this.detector._mimeFromName(name) });
+      const typedBlob = content.type ? content : new Blob([content], { type: mimeFromName(name) });
       await this.p("writeFile", filePath, "");
       await this.blobs._putBlob(filePath, typedBlob);
       await this.metadata.writeMeta(dir, name, { size: typedBlob.size });
@@ -734,11 +732,11 @@ export class FileSystemManager {
   }
 
   _mimeFromName(name) {
-    return this.detector._mimeFromName(name);
+    return mimeFromName(name);
   }
 
   _isBinaryName(name) {
-    return this.detector._isBinaryName(name);
+    return isBinaryName(name);
   }
 
   async getFileContent(path, name) {
@@ -748,7 +746,7 @@ export class FileSystemManager {
 
     const blob = await this.blobs._getBlobByFullPath(fullPath);
     if (blob) {
-      return blob.type ? blob : new Blob([blob], { type: this.detector._mimeFromName(name) });
+      return blob.type ? blob : new Blob([blob], { type: mimeFromName(name) });
     }
 
     try {
@@ -831,7 +829,7 @@ export class FileSystemManager {
     const fileSize = isBlob(blob) ? blob.size : 0;
 
     await this.p("mkdir", dir, { recursive: true }).catch(() => {});
-    const typedBlob = isBlob(blob) && !blob.type ? new Blob([blob], { type: this.detector._mimeFromName(name) }) : blob;
+    const typedBlob = isBlob(blob) && !blob.type ? new Blob([blob], { type: mimeFromName(name) }) : blob;
     await this.p("writeFile", fullPath, "");
     await this.metadata.writeMeta(dir, uniqueName, { kind: fileKind, icon: fileIcon, size: fileSize });
     await this.blobs._putBlob(fullPath, typedBlob);
@@ -847,7 +845,7 @@ export class FileSystemManager {
     if (!blob) {
       return null;
     }
-    return blob.type ? blob : new Blob([blob], { type: this.detector._mimeFromName(name) });
+    return blob.type ? blob : new Blob([blob], { type: mimeFromName(name) });
   }
 
   async deleteBinaryFile(folderPath, name) {

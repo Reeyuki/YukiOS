@@ -2,11 +2,11 @@ import "../styles/wallpaperEngine.css";
 import { BaseApp, os, StorageKeys } from "../framework.js";
 import { SystemUtilities } from "../system.js";
 import { WALLPAPER_NAME_URL_PAIRS } from "../wallpaperConfig.js";
-import { videos } from "../wallpaperList.js";
-import { videos2 } from "../wallpaperList2.js";
+import { videos, videos2 } from "../wallpaperList.js";
 import { vantaPresets } from "../vantaPresets.js";
 import { resolveWallpaperUrl } from "../shared/assetResolver.js";
-import { FileKind } from "../fs.js";
+import { FileKind } from "../shared/fileKindDetector.js";
+
 import { $, $$, bindEvent, setText, setHTML, createElement } from "../shared/domUtils.js";
 import { renderRangeSlider, bindRangeSlider, getRangeSliderValue, setRangeSliderValue } from "../shared/rangeSlider.js";
 import { renderSelectMenu, bindSelectMenu, getSelectMenuValue } from "../shared/selectMenu.js";

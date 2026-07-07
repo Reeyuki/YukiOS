@@ -12,12 +12,15 @@ import {
   createElement
 } from "../shared/domUtils.js";
 import { ClippyAnimation, speak } from "../ai/clippy.js";
-import { FileKind } from "../fs.js";
+import { FileKind } from "../shared/fileKindDetector.js";
+import { showAboutDialog } from "../shared/aboutDialog.js";
+
 import { Achievements } from "../achievements.js";
 import { BaseApp, os } from "../framework.js";
 import { BusEvents } from "../core/EventBus.js";
 import { getLibraryUrl } from "../shared/cdnConfig.js";
 import { audioMixer } from "../audioMixer.js";
+import { resolveIconUrl } from "../shared/assetResolver.js";
 
 class OfficeModuleLoader {
   constructor() {
@@ -1112,8 +1115,8 @@ export class OfficeApp extends BaseApp {
     const ext = FileUtils.getExtension(typeof filePath === "string" ? filePath : title);
 
     const windowContent = `
-<div class="office-menu-bar">
-  <div class="office-menu-dropdown">
+<div class="app-menubar">
+  <div class="office-menu-dropdown app-menubar-item">
     <button class="office-menu-dropdown__trigger">File</button>
     <div class="office-menu-dropdown__content">
       <button class="office-menu-item" data-action="new">
@@ -1173,7 +1176,7 @@ export class OfficeApp extends BaseApp {
     </div>
   </div>
 
-  <div class="office-menu-dropdown">
+  <div class="office-menu-dropdown app-menubar-item">
     <button class="office-menu-dropdown__trigger">Edit</button>
     <div class="office-menu-dropdown__content">
       <button class="office-menu-item" data-action="undo">
@@ -1222,7 +1225,7 @@ export class OfficeApp extends BaseApp {
     </div>
   </div>
 
-  <div class="office-menu-dropdown">
+  <div class="office-menu-dropdown app-menubar-item">
     <button class="office-menu-dropdown__trigger">View</button>
     <div class="office-menu-dropdown__content">
       <button class="office-menu-item" data-action="zoomIn">
@@ -1255,7 +1258,7 @@ export class OfficeApp extends BaseApp {
     </div>
   </div>
 
-  <div class="office-menu-dropdown">
+  <div class="office-menu-dropdown app-menubar-item">
     <button class="office-menu-dropdown__trigger">Insert</button>
     <div class="office-menu-dropdown__content">
       <button class="office-menu-item office-menu-item--document" data-action="insertImage">
@@ -1291,7 +1294,7 @@ export class OfficeApp extends BaseApp {
     </div>
   </div>
 
-  <div class="office-menu-dropdown">
+  <div class="office-menu-dropdown app-menubar-item">
     <button class="office-menu-dropdown__trigger">Format</button>
     <div class="office-menu-dropdown__content">
       <button class="office-menu-item" data-action="formatBold">
@@ -1368,7 +1371,7 @@ export class OfficeApp extends BaseApp {
     </div>
   </div>
 
-  <div class="office-menu-dropdown">
+  <div class="office-menu-dropdown app-menubar-item">
     <button class="office-menu-dropdown__trigger">Tools</button>
     <div class="office-menu-dropdown__content">
       <button class="office-menu-item" data-action="spellCheck">
@@ -1391,7 +1394,7 @@ export class OfficeApp extends BaseApp {
     </div>
   </div>
 
-  <div class="office-menu-dropdown">
+  <div class="office-menu-dropdown app-menubar-item">
     <button class="office-menu-dropdown__trigger">Help</button>
     <div class="office-menu-dropdown__content">
       <button class="office-menu-item" data-action="shortcuts">
@@ -1404,6 +1407,7 @@ export class OfficeApp extends BaseApp {
       </button>
     </div>
   </div>
+  <button class="app-menubar-close" data-action="close" title="Close"><i class="fas fa-times"></i></button>
 </div>
       <div class="office-window-content">
         <div class="office-editor-area">
@@ -1909,8 +1913,14 @@ export class OfficeApp extends BaseApp {
     os.notify.send(shortcuts);
   }
 
-  showAbout() {
-    os.dialog.alert("Office", "YukiOS Office Suite for editing documents, spreadsheets, and presentations.");
+  showAbout(win) {
+    showAboutDialog({
+      title: "Office",
+      version: "1.0.0",
+      description: "YukiOS Office Suite for editing documents, spreadsheets, and presentations.",
+      icon: "static/icons/office.webp",
+      iconType: "image"
+    });
   }
 
   spellCheck(state) {
@@ -2204,7 +2214,15 @@ export class OfficeApp extends BaseApp {
     });
   }
   setupMenuBar(win, state) {
-    const menuBar = $(".office-menu-bar", win);
+    const menuBar = $(".app-menubar", win);
+
+    const closeBtn = $(".app-menubar-close", win);
+    if (closeBtn) {
+      bindEvent(closeBtn, "click", (e) => {
+        e.stopPropagation();
+        os.window.close(win);
+      });
+    }
 
     const ext = state.ext;
     const isSpreadsheet = [".xlsx", ".xls", ".csv"].includes(ext);

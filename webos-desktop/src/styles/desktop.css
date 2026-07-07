@@ -8,13 +8,6 @@
   overflow: auto;
 }
 
-.desktop-exp {
-  position: relative;
-  width: 1000px;
-  height: 100%;
-  padding: 5px;
-}
-
 .icon {
   position: absolute;
   width: var(--icon-w);
@@ -77,11 +70,6 @@
 
 .icon.selectable img {
   pointer-events: none;
-}
-
-.icon.explorer-game img {
-  width: 90px;
-  height: 90px;
 }
 
 @media (max-width: 768px) {
@@ -358,25 +346,6 @@
     0 8px 24px rgba(0, 0, 0, 0.45) !important;
 }
 
-.wa-dimmed {
-  filter: brightness(0.6) saturate(0.7);
-  transition: filter 0.2s ease;
-}
-
-.wa-spotlight {
-  filter: none;
-  transition: filter 0.2s ease;
-}
-
-.wa-wobble-drag {
-  filter: blur(0.4px) brightness(1.04);
-  transform-origin: top center;
-}
-
-.wa-wobble-settle {
-  animation: wa-wobble-settle-anim 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) forwards !important;
-}
-
 @keyframes wa-wobble-settle-anim {
   0% {
     transform: skewX(-3deg) scaleX(1.02);
@@ -452,14 +421,6 @@
   }
 }
 
-.wa-ws-slide-left {
-  animation: wa-ws-left 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-
-.wa-ws-slide-right {
-  animation: wa-ws-right 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-
 @keyframes wa-ws-left {
   0% {
     transform: translateX(0);
@@ -515,20 +476,6 @@
     transform: translate(-50%, -50%) scale(40);
     opacity: 0;
   }
-}
-
-.wa-freeze-overlay {
-  position: fixed;
-  inset: 0;
-  backdrop-filter: blur(18px) brightness(0.85);
-  z-index: 99998;
-  pointer-events: none;
-  opacity: 1;
-  transition: opacity 0.25s ease;
-}
-
-.wa-freeze-overlay.wa-freeze-resolve {
-  opacity: 0;
 }
 
 @keyframes popDown {
@@ -857,55 +804,6 @@ body.is-resizing * {
 #snap-ghost.snap-ghost-active {
   opacity: 1;
   transform: scale(1);
-}
-
-.snap-ghost-maximize {
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-}
-
-.snap-ghost-left {
-  top: 0;
-  left: 0;
-  width: 50%;
-  height: 100%;
-}
-
-.snap-ghost-right {
-  top: 0;
-  left: 50%;
-  width: 50%;
-  height: 100%;
-}
-
-.snap-ghost-top-left {
-  top: 0;
-  left: 0;
-  width: 50%;
-  height: 50%;
-}
-
-.snap-ghost-top-right {
-  top: 0;
-  left: 50%;
-  width: 50%;
-  height: 50%;
-}
-
-.snap-ghost-bottom-left {
-  top: 50%;
-  left: 0;
-  width: 50%;
-  height: 50%;
-}
-
-.snap-ghost-bottom-right {
-  top: 50%;
-  left: 50%;
-  width: 50%;
-  height: 50%;
 }
 
 html[data-theme="light"] .window {

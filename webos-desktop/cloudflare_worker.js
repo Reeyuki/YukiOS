@@ -84,10 +84,6 @@ async function deriveDailyId(env, ip) {
   return hex.slice(0, 32);
 }
 
-async function sendEmbed(embed) {
-  return;
-}
-
 async function sendReportEmbed(env, embed) {
   const webhook = env.DISCORD_REPORT_WEBHOOK_URL || env.DISCORD_WEBHOOK_URL;
   if (!webhook) return;

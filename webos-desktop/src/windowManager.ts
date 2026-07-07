@@ -1,6 +1,6 @@
 import { audioMixer } from "./audioMixer.js";
 import { WorkspaceManager } from "./windowManager/WorkspaceManager.js";
-import { makeResizable } from "./windowManager/makeResizable.js";
+import { windowMakeResizable } from "./windowManager/makeResizable.js";
 import { setupWindowControls } from "./windowManager/windowControls.js";
 import { notify, sendNotify } from "./windowManager/notificationBridge.js";
 import { bus, BusEvents } from "./core/EventBus.js";
@@ -451,7 +451,7 @@ export class WindowManager {
   }
 
   makeResizable(win: HTMLElement, setHeightUnsetElement: HTMLElement | null = null): void {
-    makeResizable(win, this, setHeightUnsetElement);
+    windowMakeResizable(win, this, setHeightUnsetElement);
   }
 
   _downloadWindowContent(win: HTMLElement): void {

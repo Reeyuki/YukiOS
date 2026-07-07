@@ -164,5 +164,6 @@ export const StorageKeys = {
   wallpaperEngineShuffleInterval: "yukiOS_wallpaper_engine_shuffle_interval",
   wallpaperEngineSchedules: "yukiOS_wallpaper_engine_schedules",
   wallpaperEngineViewMode: "yukiOS_wallpaper_engine_view_mode",
-  wallpaperEngineSearchHistory: "yukiOS_wallpaper_engine_search_history"
+  wallpaperEngineSearchHistory: "yukiOS_wallpaper_engine_search_history",
+  sponsorDismissed: "yukiOS_sponsor_dismissed"
 };

@@ -177,10 +177,6 @@ export function applyStartMenuCats(cats) {
   });
 }
 
-export function applyTurboMode(mode, services) {
-  turboManager.setMode(mode);
-}
-
 export function applyTrayEnabled(enabled) {
   const trayEl = document.getElementById("app-tray");
   if (trayEl) trayEl.style.display = enabled ? "flex" : "none";

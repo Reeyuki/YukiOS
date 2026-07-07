@@ -1,10 +1,10 @@
-import { EventTypes } from "./AppSchema.js";
-
 export class EventBinder {
   constructor(stateManager, actionExecutor) {
     this.stateManager = stateManager;
     this.actionExecutor = actionExecutor;
     this.boundEvents = new Map();
+    this._elementIds = new WeakMap();
+    this._nextId = 0;
   }
 
   bind(element, eventConfig) {
@@ -15,11 +15,20 @@ export class EventBinder {
     });
   }
 
-  _bindSingleEvent(element, eventType, handler) {
-    const eventKey = this._getEventKey(element, eventType);
+  _getKey(element, eventType) {
+    if (!this._elementIds.has(element)) {
+      this._elementIds.set(element, `__eb_${this._nextId++}`);
+    }
+    return `${this._elementIds.get(element)}_${eventType}`;
+  }
 
-    if (this.boundEvents.has(eventKey)) {
-      this.unbind(element, eventType);
+  _bindSingleEvent(element, eventType, handler) {
+    const key = this._getKey(element, eventType);
+
+    if (this.boundEvents.has(key)) {
+      const existing = this.boundEvents.get(key);
+      existing.element.removeEventListener(existing.eventType, existing.handler);
+      this.boundEvents.delete(key);
     }
 
     const wrappedHandler = (event) => {
@@ -28,16 +37,11 @@ export class EventBinder {
 
     element.addEventListener(eventType, wrappedHandler);
 
-    this.boundEvents.set(eventKey, {
+    this.boundEvents.set(key, {
       element,
       eventType,
       handler: wrappedHandler
     });
-  }
-
-  _getEventKey(element, eventType) {
-    const elementId = element.id || element.className || element.tagName;
-    return `${elementId}_${eventType}`;
   }
 
   _executeHandler(handler, event, element) {
@@ -65,32 +69,32 @@ export class EventBinder {
   }
 
   unbind(element, eventType) {
-    const eventKey = this._getEventKey(element, eventType);
-    const bound = this.boundEvents.get(eventKey);
+    const key = this._getKey(element, eventType);
+    const bound = this.boundEvents.get(key);
 
     if (bound) {
       bound.element.removeEventListener(bound.eventType, bound.handler);
-      this.boundEvents.delete(eventKey);
+      this.boundEvents.delete(key);
     }
   }
 
   unbindAll(element) {
     if (!element) return;
 
-    const elementId = element.id || element.className || element.tagName;
-
     for (const [key, bound] of this.boundEvents.entries()) {
-      if (key.startsWith(elementId)) {
+      if (element.contains(bound.element)) {
         bound.element.removeEventListener(bound.eventType, bound.handler);
         this.boundEvents.delete(key);
       }
     }
   }
 
-  unbindAllGlobal() {
+  clear(windowElement = null) {
     for (const [key, bound] of this.boundEvents.entries()) {
-      bound.element.removeEventListener(bound.eventType, bound.handler);
+      if (!windowElement || windowElement.contains(bound.element)) {
+        bound.element.removeEventListener(bound.eventType, bound.handler);
+        this.boundEvents.delete(key);
+      }
     }
-    this.boundEvents.clear();
   }
 }

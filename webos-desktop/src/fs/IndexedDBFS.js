@@ -26,13 +26,6 @@ function openDB() {
   });
 }
 
-async function loadCache() {
-  const tx = db.transaction(STORE_NAME, "readonly");
-  const all = await promisify(tx.objectStore(STORE_NAME).getAll());
-  cache.clear();
-  for (const doc of all) cache.set(doc.path, doc);
-}
-
 function txPut(doc) {
   const tx = db.transaction(STORE_NAME, "readwrite");
   const result = promisify(tx.objectStore(STORE_NAME).put(doc));

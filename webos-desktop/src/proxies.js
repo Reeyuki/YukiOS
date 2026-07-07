@@ -23,20 +23,6 @@ export function buildProxyUrl(url, proxyIndex = 0, proxies = PROXIES) {
   return proxy.prefix + encodeURIComponent(url);
 }
 
-export class ProxyRegistry {
-  constructor({ proxies = PROXIES } = {}) {
-    this.proxies = Array.isArray(proxies) && proxies.length ? proxies : PROXIES;
-  }
-
-  list() {
-    return this.proxies;
-  }
-
-  build(url, proxyIndex = 0) {
-    return buildProxyUrl(url, proxyIndex, this.proxies);
-  }
-}
-
 export async function fetchHtmlThroughProxy(url, proxyIndex = 0, proxies = PROXIES) {
   const proxyUrl = buildProxyUrl(url, proxyIndex, proxies);
   if (!proxyUrl) throw new Error("Tor proxy not supported in fetchHtmlThroughProxy");

@@ -12,18 +12,6 @@
   box-sizing: border-box;
 }
 
-.emu-shell--game,
-.emu-window,
-.jsdos-game-window,
-.v86-window {
-  width: 100%;
-  height: calc(100% - 30px);
-  color: var(--text-primary);
-  position: relative;
-  overflow: hidden;
-  padding: 0;
-}
-
 .emu-header,
 .jsdos-header,
 .v86-header,
@@ -53,11 +41,6 @@
 .emu-header-text,
 .jsdos-header-text,
 .v86-header-text,
-.v86-header-copy {
-  flex: 1;
-  min-width: 0;
-}
-
 .emu-title,
 .jsdos-header-title,
 .v86-title,
@@ -178,10 +161,6 @@
   gap: 12px;
 }
 
-.emu-grid--compact {
-  --emu-grid-min: 180px;
-}
-
 .emu-card,
 .jsdos-game-card,
 .v86-system-card,
@@ -231,11 +210,6 @@
   font-size: 22px;
   color: var(--brand);
   flex-shrink: 0;
-}
-
-.emu-card-icon--hero,
-.v86-header i.fa-microchip {
-  font-size: 38px;
 }
 
 .emu-card-title,
@@ -374,10 +348,6 @@
 
 .emu-state-text--accent,
 .jsdos-game-loading-text,
-.v86-state-text--accent {
-  color: var(--brand);
-}
-
 .emu-state-text--muted,
 .jsdos-game-log,
 .v86-log,
@@ -434,10 +404,6 @@
   justify-content: center;
   flex-direction: column;
   gap: 12px;
-}
-
-.is-hidden {
-  display: none !important;
 }
 
 .emu-upload-zone .emu-state-icon,

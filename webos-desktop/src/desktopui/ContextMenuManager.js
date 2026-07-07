@@ -4,7 +4,8 @@ import { os, StorageKeys } from "../framework.js";
 import { ArchiveExtractor } from "../archiveExtractor.js";
 import { AppSource } from "../AppSource.js";
 import { showFileProperties, isImageFile } from "../fileDisplay.js";
-import { FileKind } from "../fs.js";
+import { FileKind } from "../shared/fileKindDetector.js";
+
 import {
   buildCopyAction,
   buildCutAction,

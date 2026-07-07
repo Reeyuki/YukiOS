@@ -18,25 +18,4 @@ for (const [core, exts] of Object.entries(CORE_EXTENSIONS)) {
   }
 }
 
-export function detectCore(fileName) {
-  const ext = fileName.split(".").pop().toLowerCase();
-  return EXT_TO_CORE[ext] || "gba";
-}
-
-export function coreLabel(core) {
-  const labels = {
-    gba: "Game Boy Advance",
-    nds: "Nintendo DS",
-    nes: "NES",
-    snes: "Super Nintendo",
-    n64: "Nintendo 64",
-    psx: "PlayStation",
-    psp: "PSP",
-    segaMD: "Sega Mega Drive",
-    segaGG: "Game Gear",
-    segaMS: "Master System"
-  };
-  return labels[core] || core.toUpperCase();
-}
-
 export const ROM_EXTS = Object.values(CORE_EXTENSIONS).flat();

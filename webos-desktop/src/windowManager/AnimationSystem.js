@@ -72,12 +72,6 @@ function isTurboMode() {
   return mode === "turbo";
 }
 
-export function getTaskbarIconRect(winId) {
-  const taskbarItem = document.getElementById(`taskbar-${winId}`);
-  if (!taskbarItem) return null;
-  return taskbarItem.getBoundingClientRect();
-}
-
 function getTaskbarPosition() {
   const taskbar = document.getElementById("taskbar");
   if (!taskbar) return "bottom";
@@ -406,10 +400,6 @@ function getMinimizeKeyframes(animType, win) {
   }
 }
 
-export function initFocusEffects(wm) {
-  if (isTurboMode()) return;
-}
-
 export function applyFocusGlow(win) {
   if (isTurboMode()) return;
   win.classList.add("wa-focus-glow");
@@ -423,47 +413,6 @@ export function applyZDepthLift(win, active) {
   } else {
     win.classList.remove("wa-z-lift");
   }
-}
-
-export function applyBackgroundDim(allWins, focusedWin) {
-  if (isTurboMode()) return;
-  allWins.forEach((w) => {
-    if (w === focusedWin) {
-      w.classList.remove("wa-dimmed");
-      w.classList.add("wa-spotlight");
-    } else {
-      w.classList.add("wa-dimmed");
-      w.classList.remove("wa-spotlight");
-    }
-  });
-}
-
-export function clearFocusEffects(allWins) {
-  allWins.forEach((w) => {
-    w.classList.remove("wa-dimmed", "wa-spotlight", "wa-z-lift", "wa-focus-glow");
-  });
-}
-
-export function applyPhysicsInertia(win, vx, vy) {
-  if (isTurboMode()) return;
-  const decayMs = 400;
-  const startTime = performance.now();
-  let lastX = parseFloat(win.style.left) || 0;
-  let lastY = parseFloat(win.style.top) || 0;
-
-  const tick = (now) => {
-    const t = Math.min(1, (now - startTime) / decayMs);
-    const ease = 1 - t * t;
-    if (ease < 0.01) return;
-    const newX = lastX + vx * ease * 0.016;
-    const newY = lastY + vy * ease * 0.016;
-    win.style.left = `${newX}px`;
-    win.style.top = `${newY}px`;
-    lastX = newX;
-    lastY = newY;
-    requestAnimationFrame(tick);
-  };
-  requestAnimationFrame(tick);
 }
 
 export function initClickBubble() {
@@ -483,119 +432,6 @@ function _handleClickBubble(e) {
   ripple.style.top = `${e.clientY}px`;
   document.body.appendChild(ripple);
   ripple.addEventListener("animationend", () => ripple.remove(), { once: true });
-}
-
-export function animateStartMenuOpen(el) {
-  if (isTurboMode()) return;
-  el.animate(
-    [
-      { opacity: 0, transform: "scale(0.95)" },
-      { opacity: 1, transform: "scale(1)" }
-    ],
-    {
-      duration: 200,
-      easing: "cubic-bezier(0.16, 1, 0.3, 1)",
-      fill: "forwards"
-    }
-  );
-}
-
-export function animateStartMenuClose(el) {
-  if (isTurboMode()) return;
-  el.animate(
-    [
-      { opacity: 1, transform: "scale(1)" },
-      { opacity: 0, transform: "scale(0.95)" }
-    ],
-    {
-      duration: 150,
-      easing: "ease-in",
-      fill: "forwards"
-    }
-  );
-}
-
-export function animateContextMenuPop(el) {
-  if (isTurboMode()) return;
-  el.animate(
-    [
-      { opacity: 0, transform: "scale(0.95)" },
-      { opacity: 1, transform: "scale(1)" }
-    ],
-    {
-      duration: 120,
-      easing: "cubic-bezier(0.16, 1, 0.3, 1)",
-      fill: "forwards"
-    }
-  );
-}
-
-export function animateNotificationIn(el) {
-  if (isTurboMode()) return;
-  el.animate(
-    [
-      { opacity: 0, transform: "translateY(10px)" },
-      { opacity: 1, transform: "translateY(0)" }
-    ],
-    {
-      duration: 250,
-      easing: "cubic-bezier(0.16, 1, 0.3, 1)",
-      fill: "forwards"
-    }
-  );
-}
-
-export function animateWorkspaceSlide(direction, onDone) {
-  if (isTurboMode()) {
-    onDone?.();
-    return;
-  }
-  const desktop = document.getElementById("desktop");
-  if (!desktop) {
-    onDone?.();
-    return;
-  }
-  const translateX = direction === "left" ? "-20px" : "20px";
-  desktop.animate(
-    [{ transform: "translateX(0)" }, { transform: `translateX(${translateX})` }, { transform: "translateX(0)" }],
-    {
-      duration: 350,
-      easing: "ease-in-out"
-    }
-  ).onfinish = () => onDone?.();
-}
-
-export function animateScreenFreezeBlur(onDone) {
-  if (isTurboMode()) {
-    onDone?.();
-    return;
-  }
-  const overlay = document.createElement("div");
-  overlay.className = "wa-freeze-overlay";
-  document.body.appendChild(overlay);
-
-  overlay.animate([{ opacity: 0 }, { opacity: 1 }], {
-    duration: 80,
-    fill: "forwards"
-  }).onfinish = () => {
-    overlay.animate([{ opacity: 1 }, { opacity: 0 }], {
-      duration: 250,
-      fill: "forwards"
-    }).onfinish = () => {
-      overlay.remove();
-      onDone?.();
-    };
-  };
-}
-
-export function getAnimationSettings() {
-  return {
-    openAnimation: getOpenAnim(),
-    closeAnimation: getCloseAnim(),
-    minimizeAnimation: getMinimizeAnim(),
-    animationSpeed: getRawSetting(StorageKeys.windowAnimationSpeed, "normal"),
-    clickBubble: isClickBubbleEnabled()
-  };
 }
 
 export function applyAnimationSettings(settings) {

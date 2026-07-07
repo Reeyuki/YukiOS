@@ -237,33 +237,6 @@
   flex-shrink: 0;
 }
 
-.ai-runtime-badge-offline,
-.ai-runtime-badge-loading,
-.ai-runtime-badge-busy {
-  border-color: var(--brand);
-  background: var(--brand-dim);
-}
-
-.ai-runtime-badge-error {
-  border-color: var(--error-border);
-  background: var(--error-bg);
-  color: var(--error);
-}
-
-.ai-runtime-badge-ready {
-  border-color: var(--brand);
-  background: var(--brand-dim);
-}
-
-.ai-runtime-detail {
-  min-width: 0;
-  color: var(--text-secondary);
-  font-size: 12px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .ai-runtime-progress {
   display: none;
   height: 6px;
@@ -288,21 +261,6 @@
   display: flex;
   gap: 8px;
   align-items: center;
-}
-
-.ai-select {
-  padding: 6px 12px;
-  background: var(--glass);
-  border: 1px solid var(--glass-border);
-  border-radius: 6px;
-  color: var(--text-primary);
-  font-size: 13px;
-  cursor: pointer;
-  outline: none;
-}
-
-.ai-select:hover {
-  border-color: var(--brand);
 }
 
 .ai-toggle {
@@ -359,24 +317,10 @@
   line-height: 1.5;
 }
 
-.ai-message-user {
-  align-self: flex-end;
-  background: var(--brand);
-  color: var(--text-primary);
-}
-
 .ai-message-assistant {
   align-self: flex-start;
   background: var(--glass);
   border: 1px solid var(--glass-border);
-}
-
-.ai-message-system {
-  align-self: center;
-  background: var(--error-bg);
-  border: 1px solid var(--error-border);
-  color: var(--error);
-  font-size: 12px;
 }
 
 .ai-message-pending {

@@ -16,7 +16,7 @@ export class AppRenderer {
     });
   }
 
-  renderWindow(windowConfig, services) {
+  renderWindow(windowConfig, services, eventBinder = null) {
     const {
       id,
       title,
@@ -46,7 +46,7 @@ export class AppRenderer {
       ...(transparent && { className: `${className || ""} transparent`.trim() })
     };
 
-    const content = this.renderUI(ui, id);
+    const content = this.renderUI(ui, id, eventBinder);
 
     const win = os.window.create(id, title, width, height, windowOptions);
 
@@ -63,7 +63,7 @@ export class AppRenderer {
     return win;
   }
 
-  renderUI(uiSchema, windowId) {
+  renderUI(uiSchema, windowId, eventBinder = null) {
     if (!uiSchema) {
       return document.createElement("div");
     }
@@ -75,7 +75,7 @@ export class AppRenderer {
     if (Array.isArray(uiSchema)) {
       const fragment = document.createDocumentFragment();
       uiSchema.forEach((child) => {
-        const rendered = this.renderUI(child, windowId);
+        const rendered = this.renderUI(child, windowId, eventBinder);
         if (rendered instanceof Node) {
           fragment.appendChild(rendered);
         }
@@ -96,7 +96,7 @@ export class AppRenderer {
     if (type === AppSchemaTypes.FRAGMENT) {
       const fragment = document.createDocumentFragment();
       if (children) {
-        const renderedChildren = this.renderUI(children, windowId);
+        const renderedChildren = this.renderUI(children, windowId, eventBinder);
         if (renderedChildren instanceof Node) {
           fragment.appendChild(renderedChildren);
         } else if (Array.isArray(renderedChildren)) {
@@ -129,7 +129,7 @@ export class AppRenderer {
     if (text) {
       element.textContent = text;
     } else if (children) {
-      const renderedChildren = this.renderUI(children, windowId);
+      const renderedChildren = this.renderUI(children, windowId, eventBinder);
       if (renderedChildren instanceof Node) {
         element.appendChild(renderedChildren);
       } else if (Array.isArray(renderedChildren)) {
@@ -151,8 +151,8 @@ export class AppRenderer {
       }
     }
 
-    if (events) {
-      this._bindElementEvents(element, events);
+    if (events && eventBinder) {
+      eventBinder.bind(element, events);
     }
 
     return element;
@@ -191,23 +191,5 @@ export class AppRenderer {
 
   unregisterComponent(name) {
     this.componentRegistry.delete(name);
-  }
-
-  _bindElementEvents(element, events) {
-    if (!this.actionExecutor) return;
-
-    Object.entries(events).forEach(([eventType, handler]) => {
-      const wrappedHandler = (event) => {
-        if (typeof handler === "function") {
-          handler(event, this.stateManager.state, element);
-        } else if (typeof handler === "object") {
-          const { type, payload, stopPropagation, preventDefault } = handler;
-          if (stopPropagation) event.stopPropagation();
-          if (preventDefault) event.preventDefault();
-          this.actionExecutor.execute(type, payload, event, element);
-        }
-      };
-      element.addEventListener(eventType, wrappedHandler);
-    });
   }
 }

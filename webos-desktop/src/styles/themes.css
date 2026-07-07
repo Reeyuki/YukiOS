@@ -16,7 +16,7 @@ html[data-theme="dark"] {
   --surface-1: oklch(18% 0.01 265);
   --surface-2: oklch(24% 0.01 265);
   --surface-3: oklch(30% 0.01 265);
-  --surface-hover: oklch(26% 0.01 265);
+  --surface-hover: oklch(26% 0.05 265);
   --text-muted: oklch(60% 0.01 265);
   --text-on-brand: oklch(100% 0 0);
   --shadow-color: oklch(0% 0 0 / 0.65);
@@ -38,7 +38,7 @@ html[data-theme="light"] {
   --surface-1: #e6e6e6;
   --surface-2: #dcdcdc;
   --surface-3: #d0d0d0;
-  --surface-hover: #c8c8c8;
+  --surface-hover: #c0c4c8;
   --text-muted: #777;
   --text-on-brand: #fff;
   --shadow-color: rgba(0, 0, 0, 0.15);
@@ -95,7 +95,7 @@ html[data-theme="arctic"] {
   --surface-1: oklch(94% 0.01 220 / 0.95);
   --surface-2: oklch(90% 0.01 220 / 0.9);
   --surface-3: oklch(86% 0.01 220 / 0.85);
-  --surface-hover: oklch(82% 0.01 220 / 0.8);
+  --surface-hover: oklch(82% 0.03 220 / 0.8);
   --text-muted: oklch(40% 0.01 220);
   --text-on-brand: oklch(100% 0 0 / 0.98);
   --shadow-color: oklch(0% 0 0 / 0.1);
@@ -176,7 +176,7 @@ html[data-theme="oled"] {
   --surface-1: oklch(3% 0.01 265 / 0.9);
   --surface-2: oklch(5% 0.01 265 / 0.85);
   --surface-3: oklch(7% 0.01 265 / 0.8);
-  --surface-hover: oklch(9% 0.01 265 / 0.75);
+  --surface-hover: oklch(9% 0.05 265 / 0.75);
   --text-muted: oklch(50% 0.01 265);
   --text-on-brand: oklch(100% 0 0 / 0.98);
   --shadow-color: oklch(0% 0 0 / 0.5);
@@ -203,7 +203,7 @@ html[data-theme="nordic"] {
   --surface-1: oklch(90% 0.01 220 / 0.92);
   --surface-2: oklch(85% 0.01 220 / 0.88);
   --surface-3: oklch(80% 0.01 220 / 0.84);
-  --surface-hover: oklch(75% 0.01 220 / 0.8);
+  --surface-hover: oklch(75% 0.03 220 / 0.8);
   --text-muted: oklch(35% 0.01 220);
   --text-on-brand: oklch(100% 0 0 / 0.98);
   --shadow-color: oklch(0% 0 0 / 0.08);
@@ -721,17 +721,8 @@ html[data-theme="star-wars-dark"] .window-content {
   box-shadow: inset 0 0 30px oklch(48% 0.3 25 / 0.06);
 }
 
-html[data-theme="star-wars-dark"] .button-primary {
-  box-shadow:
-    0 0 15px oklch(52% 0.38 25 / 0.45),
-    0 0 30px oklch(48% 0.35 25 / 0.25),
-    0 0 0 1px oklch(52% 0.38 25 / 0.3) inset;
-  animation: sith-pulse 2s ease-in-out infinite;
-}
-
 html[data-theme="star-wars-dark"] button,
-html[data-theme="star-wars-dark"] .btn-primary,
-html[data-theme="star-wars-dark"] .btn-secondary {
+html[data-theme="star-wars-dark"] button {
   box-shadow:
     0 0 10px oklch(48% 0.34 25 / 0.2),
     0 0 0 1px oklch(48% 0.35 25 / 0.2) inset;
@@ -741,8 +732,7 @@ html[data-theme="star-wars-dark"] .btn-secondary {
 }
 
 html[data-theme="star-wars-dark"] button:hover,
-html[data-theme="star-wars-dark"] .btn-primary:hover,
-html[data-theme="star-wars-dark"] .btn-secondary:hover {
+html[data-theme="star-wars-dark"] button:hover {
   box-shadow:
     0 0 20px oklch(52% 0.38 25 / 0.35),
     0 0 0 1px oklch(52% 0.38 25 / 0.35) inset;
@@ -752,25 +742,10 @@ html[data-theme="star-wars-dark"] input,
 html[data-theme="star-wars-dark"] textarea,
 html[data-theme="star-wars-dark"] select,
 html[data-theme="star-wars-dark"] .settings-input,
-html[data-theme="star-wars-dark"] .start-menu-search-input {
-  border-color: oklch(48% 0.35 25 / 0.35);
-  box-shadow: inset 0 0 8px oklch(48% 0.3 25 / 0.1);
-  transition:
-    border-color 0.2s,
-    box-shadow 0.2s;
-}
-
 html[data-theme="star-wars-dark"] input:focus,
 html[data-theme="star-wars-dark"] textarea:focus,
 html[data-theme="star-wars-dark"] select:focus,
 html[data-theme="star-wars-dark"] .settings-input:focus,
-html[data-theme="star-wars-dark"] .start-menu-search-input:focus {
-  border-color: oklch(52% 0.38 25 / 0.6);
-  box-shadow:
-    0 0 15px oklch(52% 0.35 25 / 0.3),
-    inset 0 0 8px oklch(48% 0.3 25 / 0.1);
-}
-
 html[data-theme="star-wars-dark"] *::-webkit-scrollbar-thumb {
   background: oklch(48% 0.34 25 / 0.5);
   box-shadow: 0 0 6px oklch(48% 0.3 25 / 0.3);
@@ -821,15 +796,6 @@ html[data-theme="star-wars-dark"] .overlay-dialog {
 html[data-theme="star-wars-dark"] .settings-toggle input:checked + .settings-track,
 html[data-theme="star-wars-dark"] .setting-toggle input:checked + .toggle-track {
   box-shadow: 0 0 12px oklch(52% 0.35 25 / 0.4);
-}
-
-html[data-theme="star-wars-dark"] .dropdown,
-html[data-theme="star-wars-dark"] .settings-dropdown,
-html[data-theme="star-wars-dark"] .notepad-dropdown,
-html[data-theme="star-wars-dark"] .browser-dropdown {
-  box-shadow:
-    0 8px 24px oklch(48% 0.38 25 / 0.3),
-    0 0 0 1px oklch(48% 0.35 25 / 0.2) inset;
 }
 
 html[data-theme="amber"] {
@@ -994,42 +960,6 @@ html[data-theme="glass"] {
   --window-bg: oklch(8% 0.02 250 / 0.55);
 }
 
-html[data-theme="glass"] .window,
-html[data-theme="glass"] .context-menu,
-html[data-theme="glass"] .taskbar,
-html[data-theme="glass"] .start-menu,
-html[data-theme="glass"] .menu-panel,
-html[data-theme="glass"] .notification-popup {
-  backdrop-filter: blur(48px) saturate(1.4);
-  -webkit-backdrop-filter: blur(48px) saturate(1.4);
-  box-shadow:
-    0 24px 64px oklch(0% 0 0 / 0.55),
-    0 0 0 1px oklch(72% 0.12 235 / 0.15) inset,
-    0 0 40px oklch(72% 0.1 235 / 0.08);
-}
-
-html[data-theme="glass"] .window-header {
-  border-bottom: 1px solid oklch(72% 0.14 235 / 0.2);
-  background: linear-gradient(180deg, oklch(72% 0.12 235 / 0.12) 0%, transparent 100%);
-}
-
-html[data-theme="glass"] .button-primary {
-  background: oklch(72% 0.16 235 / 0.25);
-  border: 1px solid oklch(72% 0.14 235 / 0.35);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  box-shadow:
-    0 0 20px oklch(72% 0.12 235 / 0.2),
-    0 0 0 1px oklch(100% 0 0 / 0.06) inset;
-}
-
-html[data-theme="glass"] .button-primary:hover {
-  background: oklch(72% 0.16 235 / 0.35);
-  box-shadow:
-    0 0 30px oklch(72% 0.12 235 / 0.3),
-    0 0 0 1px oklch(100% 0 0 / 0.1) inset;
-}
-
 html[data-theme="neumorphism"] {
   --brand: oklch(50% 0.12 260);
   --brand-hover: oklch(45% 0.12 260);
@@ -1048,7 +978,7 @@ html[data-theme="neumorphism"] {
   --surface-1: oklch(84% 0.01 265);
   --surface-2: oklch(80% 0.01 265);
   --surface-3: oklch(76% 0.01 265);
-  --surface-hover: oklch(88% 0.01 265);
+  --surface-hover: oklch(88% 0.03 265);
   --text-muted: oklch(45% 0.02 265);
   --text-on-brand: oklch(100% 0 0 / 0.98);
   --shadow-color: oklch(0% 0 0 / 0.2);
@@ -1078,20 +1008,6 @@ html[data-theme="neumorphism"] .taskbar {
   box-shadow:
     0 -4px 12px oklch(0% 0 0 / 0.06),
     0 -2px 0 oklch(100% 0 0 / 0.7) inset;
-}
-
-html[data-theme="neumorphism"] .button-primary {
-  border: none;
-  border-radius: 12px;
-  box-shadow:
-    5px 5px 10px oklch(0% 0 0 / 0.08),
-    -5px -5px 10px oklch(100% 0 0 / 0.7);
-}
-
-html[data-theme="neumorphism"] .button-primary:hover {
-  box-shadow:
-    inset 5px 5px 10px oklch(0% 0 0 / 0.08),
-    inset -5px -5px 10px oklch(100% 0 0 / 0.7);
 }
 
 html[data-theme="claymorphism"] {
@@ -1135,23 +1051,6 @@ html[data-theme="claymorphism"] .taskbar {
     0 -8px 24px oklch(0% 0 0 / 0.3),
     0 0 0 1px oklch(68% 0.2 30 / 0.2) inset,
     0 1px 0 oklch(100% 0 0 / 0.06) inset;
-}
-
-html[data-theme="claymorphism"] .button-primary {
-  border: none;
-  border-radius: 50px;
-  box-shadow:
-    0 8px 20px oklch(68% 0.18 30 / 0.4),
-    0 0 0 1px oklch(68% 0.2 30 / 0.3) inset,
-    0 -2px 0 oklch(100% 0 0 / 0.08) inset;
-}
-
-html[data-theme="claymorphism"] .button-primary:hover {
-  transform: translateY(-2px);
-  box-shadow:
-    0 12px 28px oklch(68% 0.18 30 / 0.5),
-    0 0 0 1px oklch(68% 0.2 30 / 0.3) inset,
-    0 -2px 0 oklch(100% 0 0 / 0.08) inset;
 }
 
 html[data-theme="brutalism"] {
@@ -1202,20 +1101,6 @@ html[data-theme="brutalism"] .context-menu {
   border: 3px solid oklch(55% 0.22 10);
   border-radius: 0;
   box-shadow: 4px 4px 0 oklch(0% 0 0);
-}
-
-html[data-theme="brutalism"] .button-primary {
-  border: 3px solid oklch(100% 0 0);
-  border-radius: 0;
-  box-shadow: 5px 5px 0 oklch(0% 0 0);
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-html[data-theme="brutalism"] .button-primary:hover {
-  box-shadow: 2px 2px 0 oklch(0% 0 0);
-  transform: translate(3px, 3px);
 }
 
 html[data-theme="brutalism"] .start-menu {
@@ -1276,18 +1161,6 @@ html[data-theme="y2k"] .context-menu {
     0 0 0 1px oklch(60% 0.1 240 / 0.2) inset;
 }
 
-html[data-theme="y2k"] .button-primary {
-  background: linear-gradient(180deg, oklch(100% 0 0 / 0.85), oklch(88% 0.02 250 / 0.6), oklch(78% 0.03 250 / 0.5));
-  border: 1px solid oklch(60% 0.1 240 / 0.4);
-  box-shadow: 0 2px 0 oklch(0% 0 0 / 0.1);
-}
-
-html[data-theme="y2k"] .button-primary:hover {
-  background: linear-gradient(180deg, oklch(100% 0 0 / 0.9), oklch(85% 0.02 250 / 0.7), oklch(75% 0.03 250 / 0.6));
-  box-shadow: 0 1px 0 oklch(0% 0 0 / 0.1);
-  transform: translateY(1px);
-}
-
 html[data-theme="tokyo-night"] {
   --brand: oklch(68% 0.15 260);
   --brand-hover: oklch(62% 0.15 260);
@@ -1336,18 +1209,6 @@ html[data-theme="tokyo-night"] .context-menu {
     0 0 0 1px oklch(68% 0.12 260 / 0.15);
 }
 
-html[data-theme="tokyo-night"] .button-primary {
-  box-shadow:
-    0 0 15px oklch(68% 0.12 260 / 0.3),
-    0 0 40px oklch(68% 0.12 260 / 0.1);
-}
-
-html[data-theme="tokyo-night"] .button-primary:hover {
-  box-shadow:
-    0 0 25px oklch(68% 0.12 260 / 0.5),
-    0 0 60px oklch(68% 0.12 260 / 0.2);
-}
-
 html[data-theme="catppuccin"] {
   --brand: oklch(72% 0.12 310);
   --brand-hover: oklch(66% 0.12 310);
@@ -1383,15 +1244,6 @@ html[data-theme="catppuccin"] .window {
 
 html[data-theme="catppuccin"] .window-header {
   border-bottom: 1px solid oklch(72% 0.1 310 / 0.15);
-}
-
-html[data-theme="catppuccin"] .button-primary {
-  box-shadow: 0 4px 12px oklch(72% 0.08 310 / 0.2);
-  border: 1px solid oklch(72% 0.1 310 / 0.2);
-}
-
-html[data-theme="catppuccin"] .button-primary:hover {
-  box-shadow: 0 6px 20px oklch(72% 0.08 310 / 0.35);
 }
 
 html[data-theme="catppuccin"] .taskbar {
@@ -1453,19 +1305,6 @@ html[data-theme="aurora"] .taskbar {
   -webkit-backdrop-filter: blur(44px) saturate(1.4);
 }
 
-html[data-theme="aurora"] .button-primary {
-  border: 1px solid oklch(70% 0.15 160 / 0.3);
-  box-shadow:
-    0 0 20px oklch(70% 0.12 160 / 0.3),
-    0 0 0 1px oklch(100% 0 0 / 0.06) inset;
-}
-
-html[data-theme="aurora"] .button-primary:hover {
-  box-shadow:
-    0 0 30px oklch(70% 0.12 160 / 0.5),
-    0 0 60px oklch(70% 0.12 160 / 0.2);
-}
-
 html[data-theme="aura"] {
   --brand: oklch(72% 0.22 330);
   --brand-hover: oklch(66% 0.22 330);
@@ -1515,19 +1354,6 @@ html[data-theme="aura"] .taskbar {
   box-shadow: 0 -1px 0 oklch(72% 0.18 330 / 0.2) inset;
 }
 
-html[data-theme="aura"] .button-primary {
-  border: 1px solid oklch(72% 0.18 330 / 0.35);
-  box-shadow:
-    0 0 20px oklch(72% 0.18 330 / 0.3),
-    0 0 0 1px oklch(100% 0 0 / 0.06) inset;
-}
-
-html[data-theme="aura"] .button-primary:hover {
-  box-shadow:
-    0 0 35px oklch(72% 0.18 330 / 0.5),
-    0 0 70px oklch(72% 0.15 330 / 0.2);
-}
-
 html[data-theme="nier"] {
   --brand: #0e0d0a;
   --brand-hover: #1c1b16;
@@ -1559,18 +1385,6 @@ html[data-theme="nier"] {
   --overlay-bg: rgba(0, 0, 0, 0.45);
 }
 
-html[data-theme="nier"] .window-header,
-html[data-theme="nier"] .taskbar,
-html[data-theme="nier"] .context-menu,
-html[data-theme="nier"] .ntf-toast,
-html[data-theme="nier"] .button-primary,
-html[data-theme="nier"] .start-menu,
-html[data-theme="nier"] .dropdown,
-html[data-theme="nier"] .settings-dropdown,
-html[data-theme="nier"] .overlay-dialog {
-  font-family: "Share Tech Mono", "Courier New", monospace;
-}
-
 html[data-theme="nier"] .window {
   box-shadow:
     0 20px 60px rgba(0, 0, 0, 0.6),
@@ -1593,18 +1407,6 @@ html[data-theme="nier"] .taskbar {
 
 html[data-theme="nier"] .tray-icon-btn:hover {
   background: rgba(200, 184, 154, 0.08);
-}
-
-html[data-theme="nier"] .button-primary {
-  background: #0e0d0a;
-  border: none;
-  color: #c8b89a;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-html[data-theme="nier"] .button-primary:hover {
-  background: #1c1b16;
 }
 
 html[data-theme="nier"] .context-menu {
@@ -1645,29 +1447,7 @@ html[data-theme="nier"] .start-menu-item:hover {
   background: rgba(58, 52, 37, 0.1);
 }
 
-html[data-theme="nier"] .start-sidebar {
-  background: rgba(58, 52, 37, 0.04);
-  color: #3a3425;
-}
-
-html[data-theme="nier"] .start-sidebar span,
-html[data-theme="nier"] .start-sidebar a {
-  color: #3a3425;
-}
-
-html[data-theme="nier"] .start-menu-search-input {
-  background: rgba(58, 52, 37, 0.07);
-  border: 0.5px solid rgba(58, 52, 37, 0.15);
-  color: #3a3425;
-}
-
 html[data-theme="nier"] .dropdown,
-html[data-theme="nier"] .settings-dropdown {
-  background: #0e0d0a;
-  border: 0.5px solid rgba(200, 184, 154, 0.12);
-  color: #c8b89a;
-}
-
 html[data-theme="nier"] .dropdown-item:hover {
   background: rgba(200, 184, 154, 0.08);
 }

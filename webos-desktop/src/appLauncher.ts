@@ -18,7 +18,8 @@ import {
   resolveGhUrl
 } from "./shared/assetResolver.js";
 import { yukiITDevToolsBridge, YUKI_DEV_TOOLS_URL } from "./yukiITDevToolsBridge.js";
-import { ClippyAnimation, initClippy, speak as clippySpeak } from "./ai/clippy.js";
+import { ClippyAnimation, initClippy, speak } from "./ai/clippy.js";
+const clippySpeak = speak;
 import { GameOverlayController } from "./gameOverlay.js";
 import "./styles/gameOverlay.css";
 import { initAnalytics, getAnalyticsBase, sendLaunchAnalytics, recordUsage } from "./analytics.js";

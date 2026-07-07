@@ -181,11 +181,6 @@ export const isJsdelivrGhUrl = (url) =>
   typeof url === "string" &&
   (url.startsWith("https://cdn.jsdelivr.net/gh/") || url.startsWith("http://cdn.jsdelivr.net/gh/"));
 
-export function isJsdelivrHostname(hostname) {
-  if (typeof hostname !== "string") return false;
-  return hostname === "cdn.jsdelivr.net" || hostname.endsWith(".jsdelivr.net");
-}
-
 export function isCdnHostname(hostname) {
   if (typeof hostname !== "string") return false;
   return Object.values(CDN_PROVIDERS).some(
@@ -240,18 +235,6 @@ export function getCurrentCdnRepoBase() {
   }
 }
 
-export function getCurrentJsdelivrRepoBase() {
-  try {
-    const here = new URL(window.location.href);
-    if (here.hostname !== "cdn.jsdelivr.net") return null;
-    const p = here.pathname.split("/").filter(Boolean);
-    if (p[0] !== "gh" || !p[1] || !p[2]) return null;
-    return `https://cdn.jsdelivr.net/gh/${p[1]}/${p[2]}`;
-  } catch {
-    return null;
-  }
-}
-
 export function getCdnRepoBase(url) {
   try {
     const uo = new URL(url);
@@ -261,19 +244,6 @@ export function getCdnRepoBase(url) {
     const p = uo.pathname.split("/").filter(Boolean);
     if (p[0] === "gh" && p[1] && p[2]) {
       return `${uo.origin}${provider.GH_PATH}${p[1]}/${p[2]}/`;
-    }
-  } catch {}
-  return null;
-}
-
-export function getJsdelivrRepoBase(url) {
-  try {
-    const uo = new URL(url);
-    if (uo.hostname === "cdn.jsdelivr.net") {
-      const p = uo.pathname.split("/").filter(Boolean);
-      if (p[0] === "gh" && p[1] && p[2]) {
-        return `https://cdn.jsdelivr.net/gh/${p[1]}/${p[2]}/`;
-      }
     }
   } catch {}
   return null;

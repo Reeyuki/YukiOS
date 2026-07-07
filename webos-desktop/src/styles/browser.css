@@ -798,14 +798,6 @@
   margin: 4px 0;
 }
 
-.ctx-menu-section {
-  padding: 6px 14px 2px;
-  font-size: 10px;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-}
-
 .ctx-history-item {
   display: flex;
   align-items: center;
@@ -1244,10 +1236,6 @@
 
 .browser-root.incognito-mode .ctx-menu-sep {
   background: rgba(255, 255, 255, 0.08);
-}
-
-.browser-root.incognito-mode .ctx-menu-section {
-  color: rgba(255, 255, 255, 0.6);
 }
 
 .browser-root.incognito-mode .ctx-history-item {

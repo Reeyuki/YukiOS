@@ -11,8 +11,7 @@
   border: 1px solid var(--glass-border);
   box-shadow:
     0 24px 64px var(--shadow-color),
-    0 0 0 1px rgba(255, 255, 255, 0.05) inset,
-    0 0 60px var(--brand-glow);
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
   border-radius: 14px;
   overflow: hidden;
   display: flex;
@@ -811,40 +810,7 @@ html[data-theme-mode="light"] .explorer-sidebar .start-item:hover {
   color: var(--text-primary);
 }
 
-html[data-theme-mode="light"] .explorer-toolbar {
-  background: var(--bg-secondary);
-  border-bottom: 1px solid var(--glass-border);
-}
-
-html[data-theme-mode="light"] .explorer-statusbar {
-  background: var(--bg-secondary);
-  color: var(--text-secondary);
-  border-top: 1px solid var(--glass-border);
-}
-
 html[data-theme-mode="light"] .file-item span,
-html[data-theme-mode="light"] .explorer-item-name {
-  color: var(--text-primary);
-  text-shadow: none;
-}
-
-html[data-theme-mode="light"] .explorer-breadcrumb-part {
-  color: var(--text-primary);
-}
-
-html[data-theme-mode="light"] .explorer-sidebar-item {
-  color: var(--text-secondary);
-}
-
-html[data-theme-mode="light"] .explorer-sidebar-item:hover {
-  background: var(--surface-hover);
-}
-
-html[data-theme-mode="light"] .explorer-sidebar-item.active {
-  background: var(--brand-dim);
-  color: var(--brand);
-}
-
 html[data-theme-mode="light"] .explorer-trash-view {
   background: var(--bg-primary);
 }

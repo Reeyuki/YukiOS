@@ -1,4 +1,4 @@
-import { makeDraggable as nativeMakeDraggable } from "../shared/dragUtils.js";
+import { makeDraggable } from "../shared/dragUtils.js";
 import { StorageKeys, os } from "../framework.js";
 import { wobbleStart, wobbleMove, wobbleEnd, wobbleCancel } from "./AnimationSystem.js";
 const desktop = document.getElementById("desktop");
@@ -11,12 +11,100 @@ function getClientXY(e) {
   return { clientX: e.clientX, clientY: e.clientY };
 }
 
-export function makeDraggable(win, wm) {
-  const headers = win.querySelectorAll(".window-header, .browser-tabbar");
+export function windowMakeDraggable(win, wm) {
+  const initHeader = (h) => {
+    if (h.dataset.dragReady) return;
+    h.dataset.dragReady = "true";
+    let dragOffsetX, dragOffsetY;
+
+    makeDraggable(
+      h,
+      {
+        start(e, posX, posY) {
+          if (e.target instanceof SVGElement) {
+            const btn = e.target.closest("button, a, input, select, textarea");
+            if (btn) return;
+          }
+
+          wm.bringToFront(win);
+          wm.isDraggingWindow = true;
+          document.body.classList.add("is-dragging");
+
+          const wasSnapped = !!win.dataset.snapZone;
+          const disableStretch = isDesktopStretchScrollDisabled();
+
+          if (disableStretch) {
+            if (getComputedStyle(win).position !== "fixed") {
+              const rect = win.getBoundingClientRect();
+              win.style.left = `${rect.left}px`;
+              win.style.top = `${rect.top}px`;
+              win.style.position = "fixed";
+            }
+          } else if (getComputedStyle(win).position === "fixed") {
+            const rect = win.getBoundingClientRect();
+            const desktopRect = desktop.getBoundingClientRect();
+            const left = rect.left - desktopRect.left + desktop.scrollLeft;
+            const top = rect.top - desktopRect.top + desktop.scrollTop;
+            win.style.left = `${left}px`;
+            win.style.top = `${top}px`;
+            win.style.position = "absolute";
+          }
+
+          dragOffsetX = posX - win.getBoundingClientRect().left;
+          dragOffsetY = posY - win.getBoundingClientRect().top;
+
+          if (wasSnapped) wm._unsnap(win);
+          wobbleStart(win);
+        },
+
+        move(e, dx, dy, clientX, clientY) {
+          const newLeft = clientX - dragOffsetX;
+          const newTop = clientY - dragOffsetY;
+          win.style.left = `${newLeft}px`;
+          win.style.top = `${newTop}px`;
+
+          const entry = wm.openWindows.get(win.id);
+          if (entry?.record) {
+            entry.record.setGeometry(newLeft, newTop);
+          }
+
+          wobbleMove(win, dx, dy);
+
+          const zone = wm._getSnapZone(clientX, clientY);
+          wm._activeSnapZone = zone;
+          if (zone) wm._showSnapGhost(zone);
+          else wm._hideSnapGhost();
+        },
+
+        end() {
+          wm.isDraggingWindow = false;
+          document.body.classList.remove("is-dragging");
+          wobbleEnd(win);
+
+          if (wm._activeSnapZone) {
+            wm._applySnap(win, wm._activeSnapZone);
+            wm._activeSnapZone = null;
+            wm._hideSnapGhost();
+          }
+          if (wm.triggerSessionSave) wm.triggerSessionSave();
+        }
+      },
+      {
+        ignoreFrom:
+          "button, input, select, textarea, .browser-tab, .tab-close, .tab-new-btn, .steam-menu-item, .steam-user-profile, .steam-notifications, .app-menubar-item, .app-menubar-close"
+      }
+    );
+
+    h.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      wm._showWindowContextMenu(e, win);
+    });
+  };
 
   const isInteractive = (target) => {
     return !!target.closest(
-      "button, input, select, textarea, .browser-tab, .tab-close, .tab-new-btn, .steam-menu-item, .steam-user-profile, .steam-notifications"
+      "button, input, select, textarea, .browser-tab, .tab-close, .tab-new-btn, .steam-menu-item, .steam-user-profile, .steam-notifications, .app-menubar-item, .app-menubar-close"
     );
   };
 
@@ -165,93 +253,18 @@ export function makeDraggable(win, wm) {
     document.addEventListener("touchcancel", onMouseUp);
   };
 
-  headers.forEach((h) => {
-    let dragOffsetX, dragOffsetY;
+  const existing = win.querySelectorAll(".window-header, .browser-tabbar, .app-menubar");
+  existing.forEach(initHeader);
 
-    nativeMakeDraggable(
-      h,
-      {
-        start(e, posX, posY) {
-          if (e.target instanceof SVGElement) {
-            const btn = e.target.closest("button, a, input, select, textarea");
-            if (btn) return;
-          }
-
-          wm.bringToFront(win);
-          wm.isDraggingWindow = true;
-          document.body.classList.add("is-dragging");
-
-          const wasSnapped = !!win.dataset.snapZone;
-          const disableStretch = isDesktopStretchScrollDisabled();
-
-          if (disableStretch) {
-            if (getComputedStyle(win).position !== "fixed") {
-              const rect = win.getBoundingClientRect();
-              win.style.left = `${rect.left}px`;
-              win.style.top = `${rect.top}px`;
-              win.style.position = "fixed";
-            }
-          } else if (getComputedStyle(win).position === "fixed") {
-            const rect = win.getBoundingClientRect();
-            const desktopRect = desktop.getBoundingClientRect();
-            const left = rect.left - desktopRect.left + desktop.scrollLeft;
-            const top = rect.top - desktopRect.top + desktop.scrollTop;
-            win.style.left = `${left}px`;
-            win.style.top = `${top}px`;
-            win.style.position = "absolute";
-          }
-
-          dragOffsetX = posX - win.getBoundingClientRect().left;
-          dragOffsetY = posY - win.getBoundingClientRect().top;
-
-          if (wasSnapped) wm._unsnap(win);
-          wobbleStart(win);
-        },
-
-        move(e, dx, dy, clientX, clientY) {
-          const newLeft = clientX - dragOffsetX;
-          const newTop = clientY - dragOffsetY;
-          win.style.left = `${newLeft}px`;
-          win.style.top = `${newTop}px`;
-
-          const entry = wm.openWindows.get(win.id);
-          if (entry?.record) {
-            entry.record.setGeometry(newLeft, newTop);
-          }
-
-          wobbleMove(win, dx, dy);
-
-          const zone = wm._getSnapZone(clientX, clientY);
-          wm._activeSnapZone = zone;
-          if (zone) wm._showSnapGhost(zone);
-          else wm._hideSnapGhost();
-        },
-
-        end() {
-          wm.isDraggingWindow = false;
-          document.body.classList.remove("is-dragging");
-          wobbleEnd(win);
-
-          if (wm._activeSnapZone) {
-            wm._applySnap(win, wm._activeSnapZone);
-            wm._activeSnapZone = null;
-            wm._hideSnapGhost();
-          }
-          if (wm.triggerSessionSave) wm.triggerSessionSave();
-        }
-      },
-      {
-        ignoreFrom:
-          "button, input, select, textarea, .browser-tab, .tab-close, .tab-new-btn, .steam-menu-item, .steam-user-profile, .steam-notifications"
+  const observer = new MutationObserver((mutations) => {
+    for (const m of mutations) {
+      if (m.addedNodes.length) {
+        win.querySelectorAll(".app-menubar").forEach(initHeader);
+        break;
       }
-    );
-
-    h.addEventListener("contextmenu", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      wm._showWindowContextMenu(e, win);
-    });
+    }
   });
+  observer.observe(win, { childList: true, subtree: true });
 
   win.addEventListener("mousedown", startResize);
   win.addEventListener("touchstart", startResize, { passive: false });
@@ -263,6 +276,7 @@ export function makeDraggable(win, wm) {
       e.stopPropagation();
     }
   });
+  win.addEventListener("remove", () => observer.disconnect());
 }
 
 export function _getSnapZone(wm, x, y) {

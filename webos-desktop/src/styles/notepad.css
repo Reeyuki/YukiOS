@@ -19,36 +19,6 @@
   flex-shrink: 0;
 }
 
-.notepad-menubar {
-  display: flex;
-  gap: 2px;
-  padding: 4px 8px;
-  background: var(--surface-1);
-  border-bottom: 1px solid var(--glass-border);
-  font-size: 12px;
-  user-select: none;
-  flex-shrink: 0;
-}
-
-.notepad-menu-item {
-  position: relative;
-  padding: 4px 10px;
-  cursor: default;
-  color: var(--text-secondary);
-  border-radius: var(--r-sm);
-  transition: background 0.1s;
-}
-
-.notepad-menu-item:hover {
-  background: var(--glass-hover);
-  color: var(--text-primary);
-}
-
-.notepad-menu-item.active {
-  background: var(--brand-dim);
-  color: var(--text-primary);
-}
-
 .notepad-dropdown {
   display: none;
   position: absolute;
@@ -64,7 +34,7 @@
   backdrop-filter: blur(32px);
 }
 
-.notepad-menu-item.active .notepad-dropdown {
+.app-menubar-item.active .notepad-dropdown {
   display: block;
 }
 
@@ -221,7 +191,7 @@
   border: 1px solid var(--glass-border);
   border-radius: var(--r);
   padding: 18px;
-  box-shadow: 0 12px 48px var(--shadow-color);
+  box-shadow: 0 10px 30px var(--shadow-color);
   z-index: 20000;
   min-width: 350px;
   color: var(--text-primary);

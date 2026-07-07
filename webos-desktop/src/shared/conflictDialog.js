@@ -99,31 +99,3 @@ export function showConflictDialog(fileName) {
     });
   });
 }
-
-export async function resolveConflicts(items, existsCheck, getKey, applyToAllInit = null) {
-  let applyToAllAction = applyToAllInit;
-  const results = [];
-
-  for (const item of items) {
-    const key = getKey(item);
-    const exists = await existsCheck(item, key);
-
-    if (!exists) {
-      results.push({ item, action: "replace" });
-      continue;
-    }
-
-    let action;
-    if (applyToAllAction) {
-      action = applyToAllAction;
-    } else {
-      const result = await showConflictDialog(key);
-      if (result.applyToAll) applyToAllAction = result.action;
-      action = result.action;
-    }
-
-    results.push({ item, action });
-  }
-
-  return results;
-}

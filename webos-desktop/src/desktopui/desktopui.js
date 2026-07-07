@@ -293,7 +293,7 @@ class PositionHelper {
   }
 }
 
-export class DeletedIconsStore {
+class DeletedIconsStore {
   static load() {
     const raw = os.storage.get(StorageKeys.deletedIconsKey);
     try {
@@ -1006,11 +1006,6 @@ export class DesktopUI {
   _pasteToDesktop() {
     return this.clipboardManager._pasteToDesktop();
   }
-}
-
-export function layoutIcons(icons, isExplorerIcon) {
-  if (!icons) return;
-  new PositionHelper(desktop, GRID_CONFIG).layout(icons, isExplorerIcon);
 }
 
 function layoutIconsCall() {

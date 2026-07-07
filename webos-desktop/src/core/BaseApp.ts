@@ -126,8 +126,6 @@ export class BaseApp {
         return AppSource.BROWSER;
       case "CalculatorApp":
         return AppSource.CALCULATOR;
-      case "CalendarApp":
-        return AppSource.CALENDAR;
       case "CameraApp":
         return AppSource.CAMERA;
       case "MarkdownApp":
@@ -162,8 +160,6 @@ export class BaseApp {
         return AppSource.WALLPAPER_ENGINE;
       case "RobloxApp":
         return AppSource.SYSTEM;
-      case "BrightnessApp":
-        return AppSource.BRIGHTNESS;
       default:
         return AppSource.SYSTEM;
     }

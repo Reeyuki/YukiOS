@@ -1,6 +1,7 @@
 import { $, $$, setStyle } from "../../shared/domUtils.js";
 import { os } from "../../framework.js";
-import { FileKind } from "../../fs.js";
+import { FileKind } from "../../shared/fileKindDetector.js";
+
 import { showDynamicContextMenu } from "../../shared/contextMenu.js";
 import { fileKindFromName, showFileProperties, isImageFile } from "../../fileDisplay.js";
 import { decodeFileContent, pluralize, isArchiveFile, buildClipboardIcons } from "../../utils/utils.js";

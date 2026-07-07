@@ -1,7 +1,7 @@
-import { makeResizable as nativeMakeResizable } from "../shared/dragUtils.js";
+import { makeResizable } from "../shared/dragUtils.js";
 
-export function makeResizable(win, wm, setHeightUnsetElement = null) {
-  nativeMakeResizable(
+export function windowMakeResizable(win, wm, setHeightUnsetElement = null) {
+  makeResizable(
     win,
     {
       start() {

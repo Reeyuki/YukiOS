@@ -1,7 +1,7 @@
 import { YUKIOS_VERSION } from "./apps/about.js";
 import { StorageKeys, os } from "./framework.js";
 
-const VERSION_URL = "https://raw.githubusercontent.com/reeyuki/YukiOS/main/version.txt";
+const VERSION_URL = "https://raw.githubusercontent.com/reeyuki/YukiOS/main/webos-desktop/version.txt";
 const CHECK_INTERVAL = 6 * 60 * 60 * 1000;
 const TRAY_ID = "versionChecker";
 

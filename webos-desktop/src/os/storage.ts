@@ -10,14 +10,14 @@ export class StorageAPI {
    * @param key - Storage key
    * @returns Deserialized value or null if key doesn't exist or is malformed
    */
-  get(key: string): any {
+  get<T = unknown>(key: string): T | null {
     try {
       const raw = localStorage.getItem(key);
       if (raw === null) {
         return null;
       }
-      return JSON.parse(raw);
-    } catch (e) {
+      return JSON.parse(raw) as T;
+    } catch {
       return null;
     }
   }
@@ -27,7 +27,7 @@ export class StorageAPI {
    * @param key - Storage key
    * @param value - Value to store (automatically serialized)
    */
-  set(key: string, value: any): void {
+  set(key: string, value: unknown): void {
     try {
       localStorage.setItem(key, JSON.stringify(value));
     } catch (e) {

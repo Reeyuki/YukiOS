@@ -3,17 +3,36 @@
  * Wraps WindowManager to provide clean OS-level window operations
  */
 
-import type { WindowOptions, WindowHandle } from "./types.js";
-import { makeDraggable } from "../windowManager/makeDraggable.js";
+import type { WindowOptions, WindowHandle, WindowManagerService } from "./types.js";
+import { windowMakeDraggable } from "../windowManager/makeDraggable.js";
 import { animateWindowOpen } from "../windowManager/AnimationSystem.js";
 import { sanitizeTitle } from "../utils/utils.js";
 import { $ } from "../shared/domUtils.js";
 
 export class WindowAPI {
-  private wm: any;
+  private wm: WindowManagerService;
 
-  constructor(windowManager: any) {
+  constructor(windowManager: WindowManagerService) {
     this.wm = windowManager;
+  }
+
+  private _waitFor(win: HTMLElement, condition: () => boolean, callback: () => void, timeoutMs: number = 100): void {
+    let handled = false;
+    const obs = new MutationObserver(() => {
+      if (!handled && condition()) {
+        handled = true;
+        callback();
+        obs.disconnect();
+      }
+    });
+    obs.observe(win, { childList: true, subtree: true });
+    setTimeout(() => {
+      obs.disconnect();
+      if (!handled && condition()) {
+        handled = true;
+        callback();
+      }
+    }, timeoutMs);
   }
 
   /**
@@ -46,43 +65,22 @@ export class WindowAPI {
         options.externalUrl
       );
 
-      let contentSet = false;
       let headerInjected = false;
-      const observer = new MutationObserver((mutations, obs) => {
-        const hasHeader = win.querySelector(".window-header");
-        if (!hasHeader && win.innerHTML.trim() !== "") {
+
+      this._waitFor(
+        win,
+        () => !win.querySelector(".window-header") && win.innerHTML.trim() !== "",
+        () => {
           win.insertAdjacentHTML("afterbegin", headerHtml);
-          contentSet = true;
           headerInjected = true;
-
-          requestAnimationFrame(() => {
-            animateWindowOpen(win, false);
-          });
-
-          obs.disconnect();
-        }
-      });
-      observer.observe(win, { childList: true, subtree: true });
+          animateWindowOpen(win, false);
+        },
+        50
+      );
 
       setTimeout(() => {
-        const hasHeader = win.querySelector(".window-header");
-        if (!headerInjected && !hasHeader && win.innerHTML.trim() !== "") {
-          win.insertAdjacentHTML("afterbegin", headerHtml);
-          contentSet = true;
-          headerInjected = true;
-
-          requestAnimationFrame(() => {
-            animateWindowOpen(win, false);
-          });
-        }
-        observer.disconnect();
-
-        if (!contentSet && !options.skipHeader) {
-          requestAnimationFrame(() => {
-            animateWindowOpen(win, false);
-          });
-        }
-      }, 50);
+        if (!headerInjected) animateWindowOpen(win, false);
+      }, 70);
     } else if (autoMount) {
       requestAnimationFrame(() => {
         animateWindowOpen(win, false);
@@ -105,28 +103,16 @@ export class WindowAPI {
     }
 
     if (autoMount && !options.skipAutoSetup) {
-      const observer = new MutationObserver((mutations, obs) => {
-        const hasHeader = win.querySelector(".window-header") || win.querySelector(".browser-tabbar");
-        if (hasHeader) {
-          makeDraggable(win, this.wm);
+      this._waitFor(
+        win,
+        () => !!(win.querySelector(".window-header") || win.querySelector(".browser-tabbar")),
+        () => {
+          windowMakeDraggable(win, this.wm);
           this.wm.makeResizable(win);
           this.wm.setupWindowControls(win);
-          obs.disconnect();
-        }
-      });
-      observer.observe(win, { childList: true, subtree: true });
-
-      setTimeout(() => {
-        if (observer.disconnect) {
-          observer.disconnect();
-          const hasHeader = win.querySelector(".window-header") || win.querySelector(".browser-tabbar");
-          if (hasHeader) {
-            makeDraggable(win, this.wm);
-            this.wm.makeResizable(win);
-            this.wm.setupWindowControls(win);
-          }
-        }
-      }, 100);
+        },
+        100
+      );
     }
 
     return win;

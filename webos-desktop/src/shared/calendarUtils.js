@@ -22,10 +22,6 @@ export function daysInMonth(year, month) {
   return new Date(year, month + 1, 0).getDate();
 }
 
-export function isSameDay(a, b) {
-  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
-}
-
 export function generateEventId() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 }
@@ -88,12 +84,4 @@ export function getEventsForDate(events, dateKey) {
     }
   }
   return results.sort((a, b) => (a.time || "00:00").localeCompare(b.time || "00:00"));
-}
-
-export function formatEventTooltip(event) {
-  let text = event.title;
-  if (event.time) text += `\nTime: ${event.time.slice(0, 5)}`;
-  if (event.notes) text += `\nNotes: ${event.notes.length > 50 ? event.notes.slice(0, 50) + "..." : event.notes}`;
-  if (event.recurring) text += `\nRepeats: ${event.recurring}`;
-  return text;
 }

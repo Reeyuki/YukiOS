@@ -142,9 +142,39 @@ export function renderAccountsSettings() {
   _customImageDataUrl = null;
   _isCreating = false;
 
+  const sponsorDismissed = os.storage.get(StorageKeys.sponsorDismissed) === "true";
+
   return `
     <div id="pane-accounts" class="settings-category-pane">
       <div class="settings-category-header">Accounts</div>
+      ${
+        !sponsorDismissed
+          ? `
+      <div class="accounts-sponsor-banner" id="accounts-sponsor-banner">
+        <div class="sponsor-banner-content">
+          <div class="sponsor-banner-icon">
+            <i class="fab fa-github"></i>
+          </div>
+          <div class="sponsor-banner-text">
+            <div class="sponsor-banner-title">Support YukiOS</div>
+            <div class="sponsor-banner-desc">Your support accelerates development and new features</div>
+          </div>
+          <div class="sponsor-banner-buttons">
+            <a href="https://github.com/sponsors/Reeyuki" target="_blank" class="sponsor-banner-btn" id="sponsor-link-github">
+              <i class="fab fa-github"></i> GitHub
+            </a>
+            <a href="https://patreon.com/Reeyuki" target="_blank" class="sponsor-banner-btn sponsor-banner-btn-patreon" id="sponsor-link-patreon">
+              <i class="fab fa-patreon"></i> Patreon
+            </a>
+          </div>
+          <button class="sponsor-banner-close" id="sponsor-close" title="Don't show again">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+      `
+          : ""
+      }
       <div class="accounts-layout">
         <div class="accounts-sidebar">
           <div class="accounts-sidebar-header">
@@ -526,4 +556,13 @@ export function bindAccountsCategory(win) {
   bindUserListItemEvents();
   bindDetailEvents();
   refreshAvatarImages();
+
+  const sponsorClose = $("#sponsor-close", _win);
+  if (sponsorClose) {
+    bindEvent(sponsorClose, "click", () => {
+      os.storage.set(StorageKeys.sponsorDismissed, "true");
+      const banner = $("#accounts-sponsor-banner", _win);
+      if (banner) banner.remove();
+    });
+  }
 }

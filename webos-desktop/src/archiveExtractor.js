@@ -2,7 +2,7 @@ import { unzip, gunzip, strFromU8, zipSync, gzipSync, compressSync, decompressSy
 import { getLibraryUrl } from "./shared/cdnConfig.js";
 import { archiveBaseName, tarStr } from "./utils/utils.js";
 import { os } from "./os/index.js";
-import { FileKind } from "./fs.js";
+import { FileKind } from "./shared/fileKindDetector.js";
 
 function toOwnedBytes(data) {
   return new Uint8Array(data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength));

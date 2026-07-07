@@ -677,12 +677,6 @@ let _skipUsernameUpdate = false;
 let pageLoadTime;
 pageLoadTime = Date.now();
 
-function getGreeting(username) {
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? "Good morning " : hour < 18 ? "Good afternoon " : "Good evening ";
-  return greeting + (username || "");
-}
-
 let _weatherIntervalId = null;
 
 export class SystemUtilities {

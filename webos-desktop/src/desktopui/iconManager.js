@@ -6,7 +6,8 @@ import {
   generateThumbnail,
   resolveFileIcon
 } from "../fileDisplay.js";
-import { FileKind } from "../fs.js";
+import { FileKind } from "../shared/fileKindDetector.js";
+
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { resolveDesktopIcon } from "../shared/iconUtils.js";
 import { scheduleFileTooltip, scheduleAppTooltip, hideFileTooltip } from "../shared/fileTooltip.js";
@@ -20,9 +21,6 @@ const HARDCODED_DESKTOP_ICONS = [
   { app: "explorerApp", name: "Files", icon: "static/icons/file.webp" },
   { app: "steamApp", name: "Steam", icon: "static/icons/steam.webp" },
   { app: "discordApp", name: "Discord", icon: "fab fa-discord", isFa: true },
-  { app: "gtaVc", name: "GTA: Vice City", icon: "static/icons/gtavc.webp" },
-  { app: "undertale", name: "Undertale", icon: "static/icons/undertale.webp" },
-  { app: "deltaruneCh5", name: "Deltarune CH5", icon: "static/icons/deltarune.png" },
   { app: "robloxApp", name: "Roblox", icon: "static/icons/roblox.webp" },
   { app: "scramjetApp", name: "Browser", icon: "fas fa-snowflake", isFa: true },
   { app: "systemAppsApp", name: "System Apps", icon: "fas fa-tools", isFa: true },

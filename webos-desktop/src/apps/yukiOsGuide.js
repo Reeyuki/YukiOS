@@ -1,8 +1,10 @@
 import { getAppRegistry } from "../appRegistry.js";
 import { FEATURE_DATA } from "./setupApp.js";
 import { YUKIOS_VERSION } from "./about.js";
-import { appMap as gamesListAppMap } from "../games/gamesList.js";
-import { APP_DESCRIPTIONS, descriptionMap as gameDescriptions } from "../games/gameDescriptions.js";
+import { appMap } from "../games/gamesList.js";
+const gamesListAppMap = appMap;
+import { APP_DESCRIPTIONS, descriptionMap } from "../games/gameDescriptions.js";
+const gameDescriptions = descriptionMap;
 import "../styles/yukiOsGuide.css";
 
 import { BaseApp, PersistenceTypes } from "../framework.js";

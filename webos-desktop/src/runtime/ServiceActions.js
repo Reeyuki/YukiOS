@@ -69,15 +69,3 @@ export const ServiceActions = {
     off: { type: ActionTypes.SERVICE, service: "bus", method: "off", description: "Unsubscribe from event" }
   }
 };
-
-export function createServiceAction(serviceName, methodName, args = []) {
-  return { type: ActionTypes.SERVICE, service: serviceName, method: methodName, args };
-}
-
-export function createStateAction(path, value, options = {}) {
-  return { type: ActionTypes.STATE, path, value, ...options };
-}
-
-export function createNavigateAction(url, target = "_self") {
-  return { type: ActionTypes.NAVIGATE, url, target };
-}

@@ -67,7 +67,7 @@ export class DeclarativeApp {
       }
     }
 
-    const win = this.appRenderer.renderWindow(windowConfig, this.services);
+    const win = this.appRenderer.renderWindow(windowConfig, this.services, this.eventBinder);
 
     if (!win) {
       console.error("Failed to create window for", windowConfig.id);
@@ -115,7 +115,9 @@ export class DeclarativeApp {
 
   onClose(winId) {
     this.openWindows.delete(winId);
-    this.eventBinder.unbindAllGlobal();
+
+    const win = document.getElementById(winId);
+    this.eventBinder.clear(win);
 
     if (this.definition.onClose) {
       this.definition.onClose(winId, this.stateManager.state);

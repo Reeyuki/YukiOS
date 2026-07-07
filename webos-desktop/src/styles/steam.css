@@ -378,21 +378,6 @@
   color: #fff;
 }
 
-.steam-friends-list-popup {
-  position: absolute;
-  bottom: 45px;
-  right: 15px;
-  width: 280px;
-  height: 450px;
-  background: #1b2838;
-  border-radius: 8px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
-  display: flex;
-  flex-direction: column;
-  z-index: 100;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
 .friends-header {
   padding: 15px;
   background: rgba(0, 0, 0, 0.2);
@@ -423,57 +408,6 @@
 .friends-status {
   font-size: 12px;
   color: #66c0f4;
-}
-
-.friends-search-bar {
-  padding: 10px 15px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: rgba(0, 0, 0, 0.1);
-}
-
-.friends-title {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: #b8b6b4;
-  white-space: nowrap;
-}
-
-.friends-search-input {
-  flex: 1;
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
-  padding: 4px 8px;
-  color: #fff;
-  font-size: 11px;
-  outline: none;
-  transition: border-color 0.2s;
-}
-
-.friends-search-input:focus {
-  border-color: #1a9fff;
-}
-
-.friends-list-content {
-  flex: 1;
-  overflow: auto;
-  padding: 10px 0;
-}
-
-.friend-item {
-  padding: 8px 15px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
-  transition: background 0.1s;
-}
-
-.friend-item:hover {
-  background: rgba(255, 255, 255, 0.05);
 }
 
 .steam-whats-new-header {
@@ -531,10 +465,6 @@
   font-size: 11px;
   color: #898989;
   margin-bottom: 8px;
-}
-
-.news-excerpt {
-  display: none;
 }
 
 .steam-game-popover {
@@ -736,27 +666,6 @@
 
 .steam-sort-order-btn:hover {
   color: #fff;
-}
-
-.friend-avatar {
-  width: 32px;
-  height: 32px;
-  background: #2a475e;
-}
-
-.friend-info {
-  display: flex;
-  flex-direction: column;
-}
-
-.friend-name {
-  font-size: 13px;
-  color: #c7d5e0;
-}
-
-.friend-status-text {
-  font-size: 11px;
-  color: #898989;
 }
 
 .steam-game-grid {

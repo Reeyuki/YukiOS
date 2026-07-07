@@ -3,6 +3,7 @@ import { ClippyAnimation, speak } from "../ai/clippy.js";
 import { Achievements } from "../achievements.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { KeybindManager } from "../keybindManager.js";
+import { showAboutDialog } from "../shared/aboutDialog.js";
 
 import { BaseApp, os } from "../framework.js";
 export class NotepadApp extends BaseApp {
@@ -32,8 +33,8 @@ export class NotepadApp extends BaseApp {
     });
 
     const htmlContent = `
-      <div class="notepad-menubar">
-        <div class="notepad-menu-item" data-menu="file">
+      <div class="app-menubar">
+        <div class="app-menubar-item" data-menu="file">
           <span>File</span>
           <div class="notepad-dropdown">
             <div class="dropdown-item" data-action="new">New</div>
@@ -45,7 +46,7 @@ export class NotepadApp extends BaseApp {
             <div class="dropdown-item" data-action="exit">Exit</div>
           </div>
         </div>
-        <div class="notepad-menu-item" data-menu="edit">
+        <div class="app-menubar-item" data-menu="edit">
           <span>Edit</span>
           <div class="notepad-dropdown">
             <div class="dropdown-item" data-action="find">Find...<span class="shortcut">Ctrl+F</span></div>
@@ -55,14 +56,14 @@ export class NotepadApp extends BaseApp {
             <div class="dropdown-item" data-action="goTo">Go To...<span class="shortcut">Ctrl+G</span></div>
           </div>
         </div>
-        <div class="notepad-menu-item" data-menu="format">
+        <div class="app-menubar-item" data-menu="format">
           <span>Format</span>
           <div class="notepad-dropdown">
             <div class="dropdown-item" data-action="wordWrap"><span class="checkmark" style="visibility:visible">✓</span>Word Wrap</div>
             <div class="dropdown-item" data-action="font">Font...</div>
           </div>
         </div>
-        <div class="notepad-menu-item" data-menu="view">
+        <div class="app-menubar-item" data-menu="view">
           <span>View</span>
           <div class="notepad-dropdown">
             <div class="dropdown-submenu">
@@ -77,12 +78,13 @@ export class NotepadApp extends BaseApp {
             <div class="dropdown-item" data-action="statusBar"><span class="checkmark" style="visibility:visible">✓</span>Status Bar</div>
           </div>
         </div>
-        <div class="notepad-menu-item" data-menu="help">
+        <div class="app-menubar-item" data-menu="help">
           <span>Help</span>
           <div class="notepad-dropdown">
             <div class="dropdown-item" data-action="about">About Notepad</div>
           </div>
         </div>
+        <button class="app-menubar-close" data-action="close" title="Close"><i class="fas fa-times"></i></button>
       </div>
       <div class="window-content notepad-content">
         <textarea class="notepad-textarea">${this.escapeHtml(content)}</textarea>
@@ -158,7 +160,7 @@ export class NotepadApp extends BaseApp {
   }
 
   setupMenus(win, winId) {
-    const menuItems = win.querySelectorAll(".notepad-menu-item");
+    const menuItems = win.querySelectorAll(".app-menubar-item");
     let activeMenu = null;
 
     const closeAllMenus = () => {
@@ -194,6 +196,14 @@ export class NotepadApp extends BaseApp {
         closeAllMenus();
       });
     });
+
+    const closeBtn = win.querySelector(".app-menubar-close");
+    if (closeBtn) {
+      closeBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        this.closeWindow(win, winId);
+      });
+    }
 
     const closeHandler = (e) => {
       if (!win.contains(e.target)) closeAllMenus();
@@ -861,23 +871,13 @@ export class NotepadApp extends BaseApp {
   }
 
   showAboutDialog(win) {
-    const dialog = this.createDialog(
-      win,
-      `
-      <div style="text-align:center;padding:20px;">
-        <div style="font-size:48px;margin-bottom:10px;"><img style="width:50px" src="${resolveIconUrl("static/icons/notepad.webp")}"></div>
-        <h2 style="margin:0 0 5px 0;font-weight:normal;">Notepad</h2>
-        <p style="color:#888;margin:5px 0;">Version 1.0.0</p>
-        <p style="font-size:12px;color:#666;margin:15px 0;">A simple text editor for YukiOS.</p>
-        <div class="notepad-dialog-buttons" style="justify-content:center;margin-top:20px;">
-          <button class="ok-btn primary">OK</button>
-        </div>
-      </div>
-    `,
-      { top: "50%", left: "50%", transform: "translate(-50%, -50%)", minWidth: "300px" }
-    );
-
-    this.bindDialogButtons(dialog, { ".ok-btn": () => dialog.remove() });
+    showAboutDialog({
+      title: "Notepad",
+      version: "1.0.0",
+      description: "A simple text editor for YukiOS.",
+      icon: "static/icons/notepad.webp",
+      iconType: "image"
+    });
   }
 
   closeDialogs(win) {

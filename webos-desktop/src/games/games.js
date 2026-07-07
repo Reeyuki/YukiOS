@@ -87,7 +87,7 @@ export function observeLazyImages(root) {
   root.querySelectorAll("img[data-src]").forEach((img) => _imgObserver.observe(img));
 }
 
-export function patchAppMap(appMap) {
+function patchAppMap(appMap) {
   for (const key in appMap) {
     const app = appMap[key];
 
@@ -431,7 +431,7 @@ export function handleSteamUrlParam(appLauncher, wm) {
   return true;
 }
 
-export class GameWindowRenderer {
+class GameWindowRenderer {
   constructor() {
     this.history = ["store"];
     this.historyIndex = 0;
@@ -586,91 +586,7 @@ export class steamAppRenderer extends GameWindowRenderer {
   }
 }
 
-export class SystemAppRenderer {
-  constructor(appMap = null) {
-    this.appMap = appMap;
-  }
-  getSystemApps() {
-    const targetMap = this.appMap || appMap;
-    const appRegistry = getAppRegistry();
-    appRegistry.refresh();
-    return Object.entries(targetMap)
-      .filter(([id, data]) => {
-        if (data.type !== "system" || !data.icon || !data.title) return false;
-        if (appRegistry.isAppUninstalled(id) || appRegistry.isAppDisabled(id)) return false;
-        return true;
-      })
-      .map(([id, data]) => ({ app: id, ...data }));
-  }
-
-  createCard(app) {
-    const icon = app.icon || "";
-    const isFontAwesome =
-      typeof icon === "string" && (icon.startsWith("fa ") || icon.startsWith("fas ") || icon.startsWith("fab "));
-    return `<div class="games-app-card" data-app="${app.app}" title="${app.title}">
-      <div class="games-app-card-img-wrap">
-        ${isFontAwesome ? `<i style="color:var(--brand);" class="icon ${icon}"></i>` : `<img src="${icon}" alt="${app.title}" loading="lazy" />`}
-      </div>
-      <div class="games-app-card-title">${app.title}</div>
-    </div>`;
-  }
-
-  render(container, onLaunch, wm = null) {
-    const apps = this.getSystemApps();
-    container.innerHTML = `
-      <div style="margin-bottom:20px;">
-        <input type="text" class="games-search-input" placeholder="Search apps..." style="width:100%;max-width:400px;padding:12px 16px;border:1px solid rgba(255,255,255,0.2);border-radius:8px;background:rgba(255,255,255,0.1);color:#fff;font-size:14px;outline:none;transition:all 0.3s ease;" 
-               onmouseover="this.style.borderColor='rgba(255,255,255,0.4)';this.style.background='rgba(255,255,255,0.15)'"
-               onmouseout="this.style.borderColor='rgba(255,255,255,0.2)';this.style.background='rgba(255,255,255,0.1)'"
-               onfocus="this.style.borderColor='var(--brand)';this.style.background='rgba(255,255,255,0.2)';this.style.boxShadow='0 0 0 2px var(--brand-glow)'"
-               onblur="this.style.borderColor='rgba(255,255,255,0.2)';this.style.background='rgba(255,255,255,0.1)';this.style.boxShadow='none'" />
-        <div class="games-app-count" style="margin-top:8px;color:rgba(255,255,255,0.5);font-size:12px;">${apps.length} apps</div>
-      </div>
-      <div class="games-app-grid">
-        ${apps.map((a) => this.createCard(a)).join("")}
-      </div>
-      <div class="games-no-results" style="display:none;">No apps to show</div>`;
-
-    const noResults = container.querySelector(".games-no-results");
-    const allCards = Array.from(container.querySelectorAll(".games-app-card"));
-
-    const applyAnimations = (cards) => {
-      cards.forEach((card, i) => (card.style.animationDelay = `${Math.min(i * 18, 400)}ms`));
-    };
-
-    const attachCardHandlers = (cards) => {
-      cards.forEach((card) => {
-        card.addEventListener("dblclick", () => onLaunch?.(card.dataset.app));
-        card.addEventListener("click", () => {
-          container.querySelectorAll(".games-app-card").forEach((c) => c.classList.remove("active"));
-          card.classList.add("active");
-        });
-      });
-    };
-
-    applyAnimations(allCards);
-    attachCardHandlers(allCards);
-
-    const searchInput = container.querySelector(".games-search-input");
-    const appCountEl = container.querySelector(".games-app-count");
-    if (searchInput) {
-      searchInput.addEventListener("input", () => {
-        const query = searchInput.value.trim().toLowerCase();
-        let visibleCount = 0;
-        allCards.forEach((card) => {
-          const title = card.querySelector(".games-app-card-title").textContent.toLowerCase();
-          const isMatch = !query || title.includes(query);
-          card.style.display = isMatch ? "" : "none";
-          if (isMatch) visibleCount++;
-        });
-        noResults.style.display = visibleCount === 0 ? "block" : "none";
-        if (appCountEl) appCountEl.textContent = `${visibleCount} apps`;
-      });
-    }
-  }
-}
-
-export function handleGameUrlParam(renderer, container, onLaunch, wm = null) {
+function handleGameUrlParam(renderer, container, onLaunch, wm = null) {
   const urlParams = new URLSearchParams(window.location.search);
   const gameParam = urlParams.get("steam");
   if (!gameParam) return;

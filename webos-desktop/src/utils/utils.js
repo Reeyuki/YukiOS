@@ -86,25 +86,6 @@ export function mimeFromExt(ext) {
   return map[ext] || "image/png";
 }
 
-export function bytesToStoreContent(fileName, bytes) {
-  if (isTextFile(fileName)) {
-    try {
-      return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
-    } catch {}
-  }
-
-  const lower = fileName.toLowerCase();
-  const ext = lower.split(".").pop();
-  const b64 = btoa(String.fromCharCode(...bytes));
-
-  if (isImageFile(fileName)) {
-    const mime = mimeFromExt(ext);
-    return `data:${mime};base64,${b64}`;
-  }
-
-  return `data:application/octet-stream;base64,${b64}`;
-}
-
 export function tarStr(bytes, offset, length) {
   let str = "";
   for (let i = offset; i < offset + length; i++) {

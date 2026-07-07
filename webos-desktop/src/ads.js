@@ -2,15 +2,7 @@ import { StorageKeys, os } from "./framework.js";
 import { $$ } from "./shared/domUtils.js";
 const AD_STORAGE_KEY = StorageKeys.adStorageState;
 export function shouldEnableAds() {
-  const hostname = window.location.hostname;
-  if (hostname.includes("vercel") || hostname === "localhost" || hostname === "127.0.0.1" || hostname === "[::1]") {
-    return false;
-  }
-  const adsDisabled = os.storage.get(StorageKeys.adsDisabled) === "true";
-  if (adsDisabled) {
-    return false;
-  }
-  return true;
+  return false;
 }
 let interactionCount = 0;
 

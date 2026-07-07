@@ -161,14 +161,6 @@
   line-height: 1.3;
 }
 
-.overlay-battery {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 25px;
-  color: rgba(255, 255, 255, 0.5);
-}
-
 .overlay-perf-monitor {
   display: flex;
   align-items: center;
@@ -589,39 +581,6 @@
   letter-spacing: 0.5px;
 }
 
-.overview-weekly-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.7);
-  margin-bottom: 10px;
-}
-
-.overview-recent-sessions {
-  margin-top: 10px;
-}
-
-.overview-session-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 5px 8px;
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.55);
-}
-
-.overview-session-row:hover {
-  background: rgba(255, 255, 255, 0.04);
-}
-
-.overview-session-date {
-  color: rgba(255, 255, 255, 0.4);
-}
-
-.overview-session-duration {
-  color: rgba(255, 255, 255, 0.7);
-  font-weight: 500;
-}
-
 .overlay-achievements-header {
   display: flex;
   align-items: center;
@@ -731,66 +690,6 @@
   padding: 2px 5px;
   font-weight: 600;
   flex-shrink: 0;
-}
-
-.overlay-ach-rarity--common {
-  color: #888;
-  background: rgba(255, 255, 255, 0.04);
-}
-.overlay-ach-rarity--uncommon {
-  color: #5bc0de;
-  background: rgba(91, 192, 222, 0.1);
-}
-.overlay-ach-rarity--rare {
-  color: #f0ad4e;
-  background: rgba(240, 173, 78, 0.1);
-}
-.overlay-ach-rarity--epic {
-  color: #a335ee;
-  background: rgba(163, 53, 238, 0.1);
-}
-.overlay-ach-rarity--legendary {
-  color: #ff8000;
-  background: rgba(255, 128, 0, 0.1);
-}
-
-.overlay-friends-container {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.overlay-friends-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.overlay-friends-header h2 {
-  font-size: 15px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.85);
-  margin: 0;
-}
-
-.overlay-friends-open-btn {
-  padding: 5px 12px;
-  background: #358aff;
-  border: none;
-  color: #fff;
-  cursor: pointer;
-  font-size: 12px;
-  transition: background 0.12s;
-}
-
-.overlay-friends-open-btn:hover {
-  background: #4a9aff;
-}
-
-.overlay-friends-status {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.4);
-  line-height: 1.6;
 }
 
 .overlay-notes-container {
@@ -904,12 +803,6 @@
   max-width: 280px;
 }
 
-.overlay-scramjet-container {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
 .overlay-settings-container {
   display: flex;
   flex-direction: column;
@@ -977,21 +870,6 @@
 
 .overlay-settings-toggle.active::after {
   left: 18px;
-}
-
-.overlay-settings-input {
-  padding: 5px 8px;
-  background: rgba(0, 0, 0, 0.25);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.85);
-  font-size: 13px;
-  font-family: var(--font-mono);
-  width: 180px;
-  outline: none;
-}
-
-.overlay-settings-input:focus {
-  border-color: #358aff;
 }
 
 .overlay-settings-keybind {

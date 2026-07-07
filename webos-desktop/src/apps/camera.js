@@ -1,6 +1,7 @@
 import "../styles/camera.css";
 import { openMediaViewer } from "../fileDisplay.js";
-import { FileKind } from "../fs.js";
+import { FileKind } from "../shared/fileKindDetector.js";
+
 import { formatSize } from "../utils/utils.js";
 import { renderSelectMenu, bindSelectMenu, getSelectMenuValue } from "../shared/selectMenu.js";
 

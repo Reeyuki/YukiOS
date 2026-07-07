@@ -335,26 +335,6 @@
   opacity: 0.6;
 }
 
-.roblox-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 60px 20px;
-  color: #8a8a8a;
-}
-
-.roblox-empty i {
-  font-size: 48px;
-  opacity: 0.5;
-}
-
-.roblox-empty p {
-  font-size: 14px;
-  text-align: center;
-}
-
 .roblox-stats-body {
   flex: 1;
   overflow-y: auto;

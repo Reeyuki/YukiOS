@@ -121,10 +121,3 @@ export function getLibraryUrl(libraryName, type = "path") {
   const npmBase = CDN_CONFIG.repos.npm.base;
   return npmBase.endsWith("/") ? `${npmBase}${path}` : `${npmBase}/${path}`;
 }
-
-export function getRepoUrl(repoName, path) {
-  const repo = CDN_CONFIG.repos[repoName];
-  if (!repo) return null;
-
-  return `${repo.base}${path}`;
-}

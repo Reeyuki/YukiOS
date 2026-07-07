@@ -41,13 +41,6 @@
   margin: 0;
 }
 
-.tor-header-subtitle {
-  font-size: 12px;
-  color: var(--text-secondary);
-  margin: 2px 0 0;
-  opacity: 0.7;
-}
-
 .tor-body {
   flex: 1;
   overflow-y: auto;
@@ -187,80 +180,6 @@
   }
 }
 
-.tor-progress-bar {
-  flex: 1;
-  max-width: 180px;
-  height: 6px;
-  background: var(--bg-primary);
-  border-radius: 3px;
-  overflow: hidden;
-}
-
-.tor-progress-fill {
-  height: 100%;
-  width: 0%;
-  background: linear-gradient(90deg, #7c3aed, #22c55e);
-  border-radius: 3px;
-  transition: width 0.3s ease;
-}
-
-.tor-progress-text {
-  font-size: 11px;
-  color: var(--text-secondary);
-  min-width: 32px;
-  text-align: right;
-}
-
-.tor-settings-card {
-  background: var(--glass);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--r);
-  padding: 14px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.tor-settings-title {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 2px;
-}
-
-.tor-settings-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.tor-settings-label {
-  font-size: 11px;
-  color: var(--text-secondary);
-  min-width: 90px;
-  flex-shrink: 0;
-}
-
-.tor-input {
-  flex: 1;
-  padding: 7px 10px;
-  font-size: 12px;
-  background: var(--bg-primary);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--r-sm);
-  color: var(--text-primary);
-  outline: none;
-  transition: border-color 0.15s ease;
-  font-family: "JetBrains Mono", monospace;
-}
-.tor-input:focus {
-  border-color: var(--brand);
-}
-
-.tor-input-sm {
-  max-width: 100px;
-}
-
 .tor-log-section {
   flex: 1;
   display: flex;
@@ -332,12 +251,6 @@
 
 .tor-log-info .tor-log-msg {
   color: var(--text-secondary);
-}
-.tor-log-success .tor-log-msg {
-  color: #22c55e;
-}
-.tor-log-error .tor-log-msg {
-  color: #ef4444;
 }
 
 .tor-log::-webkit-scrollbar {

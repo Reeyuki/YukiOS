@@ -1,5 +1,6 @@
 import "../styles/torrent.css";
 import { $, $$, bindEvent } from "../shared/domUtils.js";
+import { showAboutDialog } from "../shared/aboutDialog.js";
 
 import { BaseApp, PersistenceTypes, os } from "../framework.js";
 export class TorrentClientApp extends BaseApp {
@@ -34,6 +35,34 @@ export class TorrentClientApp extends BaseApp {
           icon: "fas fa-download",
           ui: `
       <div class="window-content">
+        <div class="app-menubar">
+          <div class="app-menubar-item" data-menu="file">
+            <span>File</span>
+            <div class="torrent-dropdown">
+              <div class="dropdown-item" data-action="addMagnet">Add Magnet Link...</div>
+              <div class="dropdown-item" data-action="addFile">Add Torrent File...</div>
+              <div class="dropdown-separator"></div>
+              <div class="dropdown-item" data-action="pauseAll">Pause All</div>
+              <div class="dropdown-item" data-action="resumeAll">Resume All</div>
+              <div class="dropdown-separator"></div>
+              <div class="dropdown-item" data-action="exit">Exit</div>
+            </div>
+          </div>
+          <div class="app-menubar-item" data-menu="view">
+            <span>View</span>
+            <div class="torrent-dropdown">
+              <div class="dropdown-item" data-action="toggleDetails"><span class="checkmark" style="visibility:visible">✓</span>Details Panel</div>
+              <div class="dropdown-item" data-action="toggleStatusBar"><span class="checkmark" style="visibility:visible">✓</span>Status Bar</div>
+            </div>
+          </div>
+          <div class="app-menubar-item" data-menu="help">
+            <span>Help</span>
+            <div class="torrent-dropdown">
+              <div class="dropdown-item" data-action="about">About Torrent Client</div>
+            </div>
+          </div>
+          <button class="app-menubar-close" data-action="close" title="Close"><i class="fas fa-times"></i></button>
+        </div>
         <div class="torrent-main-layout">
           <div class="torrent-sidebar">
             <div class="torrent-sidebar-item active" data-category="all"><i class="fas fa-layer-group"></i> All</div>
@@ -45,15 +74,15 @@ export class TorrentClientApp extends BaseApp {
           </div>
           <div class="torrent-content">
             <div class="torrent-toolbar">
-              <button class="torrent-tool-btn" id="torrent-add-btn" title="Add magnet link"><i class="fas fa-plus"></i> Add</button>
-              <button class="torrent-tool-btn" id="torrent-file-btn" title="Add from .torrent file"><i class="fas fa-file-import"></i> Open File</button>
+              <button class="torrent-tool-btn torrent-tool-btn--text" id="torrent-add-btn" title="Add magnet link"><i class="fas fa-plus"></i> Add</button>
+              <button class="torrent-tool-btn" id="torrent-file-btn" title="Add from .torrent file"><i class="fas fa-file-import"></i></button>
               <input type="file" id="torrent-file-input" accept=".torrent" style="display: none;" />
               <div class="torrent-toolbar-separator"></div>
               <button class="torrent-tool-btn" id="torrent-pause-btn" title="Pause selected"><i class="fas fa-pause"></i></button>
               <button class="torrent-tool-btn" id="torrent-resume-btn" title="Resume selected"><i class="fas fa-play"></i></button>
               <button class="torrent-tool-btn torrent-tool-btn--danger" id="torrent-delete-btn" title="Remove selected"><i class="fas fa-trash"></i></button>
               <div class="torrent-toolbar-separator"></div>
-              <button class="torrent-tool-btn" id="torrent-tray-btn" title="Keep downloading in tray"><i class="fas fa-thumbtack"></i> Minimize</button>
+              <button class="torrent-tool-btn" id="torrent-tray-btn" title="Keep downloading in tray"><i class="fas fa-thumbtack"></i></button>
             </div>
             <div class="torrent-list-container">
               <div class="torrent-list-header">
@@ -71,6 +100,21 @@ export class TorrentClientApp extends BaseApp {
             <div class="torrent-details-panel" id="torrent-details-panel">
               <div class="torrent-details-empty">Select a torrent to see details</div>
             </div>
+            <div class="torrent-status-bar" id="torrent-status-bar">
+              <div class="torrent-status-item">
+                <i class="fas fa-arrow-down"></i>
+                <span class="torrent-status-value" id="global-down-speed">0 B/s</span>
+              </div>
+              <div class="torrent-status-separator"></div>
+              <div class="torrent-status-item">
+                <i class="fas fa-arrow-up"></i>
+                <span class="torrent-status-value" id="global-up-speed">0 B/s</span>
+              </div>
+              <div class="torrent-status-separator"></div>
+              <div class="torrent-status-item">
+                <span class="torrent-status-value" id="global-torrent-count">0 torrents</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>`,
@@ -87,10 +131,116 @@ export class TorrentClientApp extends BaseApp {
           this.initWebTorrent();
           this.renderTorrentList();
           this.registerTray();
+          this.startStatusBarUpdate();
+          this.setupMenus(win);
         }
       },
       onMount: "initTorrentClient"
     };
+  }
+
+  setupMenus(win) {
+    const menuItems = win.querySelectorAll(".app-menubar-item");
+    let activeMenu = null;
+
+    const closeAllMenus = () => {
+      menuItems.forEach((m) => m.classList.remove("active"));
+      activeMenu = null;
+    };
+
+    menuItems.forEach((menuItem) => {
+      menuItem.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (menuItem.classList.contains("active")) {
+          closeAllMenus();
+        } else {
+          closeAllMenus();
+          menuItem.classList.add("active");
+          activeMenu = menuItem;
+        }
+      });
+
+      menuItem.addEventListener("mouseenter", () => {
+        if (activeMenu && activeMenu !== menuItem) {
+          closeAllMenus();
+          menuItem.classList.add("active");
+          activeMenu = menuItem;
+        }
+      });
+    });
+
+    win.querySelectorAll(".dropdown-item[data-action]").forEach((item) => {
+      item.addEventListener("click", (e) => {
+        e.stopPropagation();
+        this.handleMenuAction(win, item.dataset.action);
+        closeAllMenus();
+      });
+    });
+
+    const closeBtn = win.querySelector(".app-menubar-close");
+    if (closeBtn) {
+      closeBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        os.window.close(win);
+      });
+    }
+
+    const closeHandler = (e) => {
+      if (!win.contains(e.target)) closeAllMenus();
+    };
+    document.addEventListener("click", closeHandler);
+    win.addEventListener("remove", () => document.removeEventListener("click", closeHandler));
+  }
+
+  handleMenuAction(win, action) {
+    switch (action) {
+      case "addMagnet":
+        win.querySelector("#torrent-add-btn").click();
+        break;
+      case "addFile":
+        win.querySelector("#torrent-file-btn").click();
+        break;
+      case "pauseAll":
+        this.pauseAllTorrents();
+        break;
+      case "resumeAll":
+        this.resumeAllTorrents();
+        break;
+      case "toggleDetails":
+        const detailsPanel = win.querySelector("#torrent-details-panel");
+        const checkmark = win.querySelector('[data-action="toggleDetails"] .checkmark');
+        if (detailsPanel) {
+          const isVisible = detailsPanel.style.display !== "none";
+          detailsPanel.style.display = isVisible ? "none" : "block";
+          checkmark.style.visibility = isVisible ? "hidden" : "visible";
+        }
+        break;
+      case "toggleStatusBar":
+        const statusBar = win.querySelector("#torrent-status-bar");
+        const statusCheckmark = win.querySelector('[data-action="toggleStatusBar"] .checkmark');
+        if (statusBar) {
+          const isVisible = statusBar.style.display !== "none";
+          statusBar.style.display = isVisible ? "none" : "flex";
+          statusCheckmark.style.visibility = isVisible ? "hidden" : "visible";
+        }
+        break;
+      case "about":
+        this.showAboutDialog(win);
+        break;
+      case "exit":
+        os.window.close(win);
+        break;
+    }
+  }
+
+  showAboutDialog(win) {
+    showAboutDialog({
+      title: "Torrent Client",
+      version: "1.0.0",
+      description: "A WebTorrent-based torrent client for YukiOS.",
+      icon: "fas fa-download",
+      iconType: "fontawesome"
+    });
   }
 
   _bindStaticEvents(win) {
@@ -623,11 +773,12 @@ export class TorrentClientApp extends BaseApp {
       if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
     };
 
-    overlay.querySelector("#torrent-dlg-close").addEventListener("click", close);
-    overlay.querySelector("#torrent-dlg-cancel").addEventListener("click", close);
     overlay.addEventListener("click", (e) => {
+      e.stopPropagation();
       if (e.target === overlay) close();
     });
+    overlay.querySelector("#torrent-dlg-close").addEventListener("click", close);
+    overlay.querySelector("#torrent-dlg-cancel").addEventListener("click", close);
 
     overlay.querySelector("#torrent-dlg-start").addEventListener("click", () => {
       const saveToYukiOS = overlay.querySelector("#torrent-save-yukios-toggle").checked;
@@ -1045,6 +1196,30 @@ export class TorrentClientApp extends BaseApp {
     }
   }
 
+  startStatusBarUpdate() {
+    const update = () => {
+      const downSpeedEl = $("#global-down-speed");
+      const upSpeedEl = $("#global-up-speed");
+      const countEl = $("#global-torrent-count");
+
+      if (!downSpeedEl || !upSpeedEl || !countEl) return;
+
+      let totalDown = 0;
+      let totalUp = 0;
+      this.activeTorrents.forEach((t) => {
+        totalDown += t.downloadSpeed || 0;
+        totalUp += t.uploadSpeed || 0;
+      });
+
+      downSpeedEl.textContent = this.formatSpeed(totalDown);
+      upSpeedEl.textContent = this.formatSpeed(totalUp);
+      countEl.textContent = `${this.activeTorrents.size} torrent${this.activeTorrents.size !== 1 ? "s" : ""}`;
+    };
+
+    update();
+    this.statusBarInterval = setInterval(update, 1000);
+  }
+
   removeTorrent(infoHash) {
     const torrent = this.activeTorrents.get(infoHash);
     if (torrent) {
@@ -1185,6 +1360,9 @@ export class TorrentClientApp extends BaseApp {
   }
 
   onClose(winId) {
+    if (this.statusBarInterval) {
+      clearInterval(this.statusBarInterval);
+    }
     if (this.client) {
       this.client.destroy();
       this.client = null;

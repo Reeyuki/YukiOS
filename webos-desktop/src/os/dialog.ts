@@ -4,6 +4,7 @@
  */
 
 import { showAlert, showPrompt, showConfirm } from "../shared/dialogs.js";
+import type { ExplorerAppService } from "./types.js";
 
 export interface FileDialogOptions {
   defaultFileName?: string;
@@ -11,9 +12,9 @@ export interface FileDialogOptions {
 }
 
 export class DialogAPI {
-  private explorerApp: any = null;
+  private explorerApp: ExplorerAppService | null = null;
 
-  setExplorerApp(app: any): void {
+  setExplorerApp(app: ExplorerAppService): void {
     this.explorerApp = app;
   }
 

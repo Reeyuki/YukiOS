@@ -16,13 +16,13 @@ import { NotificationCenter } from "./notificationCenter.js";
 import { JsDosApp } from "./apps/jsdos.js";
 import { V86App } from "./apps/v86.js";
 
-import { setDesktopUI as setGamesDesktopUI, handleSteamUrlParam } from "./games/games.js";
+import { setDesktopUI, handleSteamUrlParam } from "./games/games.js";
 import { AdsManager } from "./ads.js";
 import { registerPWA } from "./pwa/pwa.js";
 import { SessionManager } from "./SessionManager.js";
 import { CommandPalette } from "./commandPalette.js";
 import { ClipboardManager } from "./systemClipboardManager.js";
-import "./osBridgeTelemetry.js";
+
 import { resolveIconUrl, initializeMirrors, CDN_MIRRORS, getCdnMirror, setCdnMirror } from "./shared/assetResolver.js";
 import { appMap } from "./games/gamesList.js";
 import "./desktopui/taskbarPositionManager.js";
@@ -31,7 +31,7 @@ import logoImg from "./assets/logo.png";
 import { showCdnPrompt } from "./shared/dialogs.js";
 import { initializeOSBridge, setDialogExplorerApp } from "./os/index.js";
 import { loadApps } from "./AppLoader.js";
-import { init as initCursorEffect } from "./cursorEffect.js";
+import { init } from "./cursorEffect.js";
 import { versionChecker } from "./versionChecker.js";
 import { $ } from "./shared/domUtils.js";
 
@@ -125,7 +125,7 @@ explorerApp.setMarkdownApp(services.markdownApp);
 
 const appLauncher = new AppLauncher(windowManager, fileSystemManager, services);
 services.appLauncher = appLauncher;
-initCursorEffect();
+init();
 appLauncher.setEmulatorApp(services.emulatorApp);
 setGameLauncher(appLauncher);
 windowManager.setAppLauncher(appLauncher);
@@ -140,21 +140,6 @@ initializeOSBridge({
   appLauncher,
   eventBus: bus
 });
-
-import {
-  trackLegacyCall as trackLegacyCallImport,
-  getLegacyAPICalls,
-  getLegacyAPICallStats,
-  clearLegacyAPICalls
-} from "./os/index.js";
-
-window.trackLegacyCall = trackLegacyCallImport;
-
-window.osBridgeTelemetry = {
-  getLegacyCalls: getLegacyAPICalls,
-  getStats: getLegacyAPICallStats,
-  clearCalls: clearLegacyAPICalls
-};
 
 const desktopUI = new DesktopUI(appLauncher, notepadApp, explorerApp, fileSystemManager);
 
@@ -190,7 +175,7 @@ async function start() {
     };
     testImg.src = resolveIconUrl("static/icons/file.webp");
   }, 1500);
-  setGamesDesktopUI(desktopUI);
+  setDesktopUI(desktopUI);
   explorerApp.setDesktopUI(desktopUI);
   settingsApp.setDesktopUI(desktopUI);
   settingsApp.setAppLauncher(appLauncher);

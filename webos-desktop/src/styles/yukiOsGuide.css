@@ -562,58 +562,33 @@
   gap: 16px;
 }
 
+.feature-icon {
+  width: 42px;
+  height: 42px;
+  font-size: 18px;
+  margin-bottom: 14px;
+}
+
 .feature-card {
-  background: var(--glass);
   backdrop-filter: blur(32px);
   -webkit-backdrop-filter: blur(32px);
-  border: 1px solid var(--glass-border);
-  border-radius: 13px;
-  padding: 22px;
-  transition:
-    border-color 0.15s ease,
-    transform 0.15s ease,
-    box-shadow 0.15s ease;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
 }
 
 .feature-card:hover {
-  border-color: var(--brand);
-  transform: translateY(-2px);
   box-shadow:
     0 12px 36px rgba(0, 0, 0, 0.35),
-    0 2px 8px rgba(124, 58, 237, 0.1);
-}
-
-.feature-icon {
-  width: 42px;
-  height: 42px;
-  background: var(--brand);
-  border-radius: 11px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  color: #fff;
-  margin-bottom: 14px;
-  box-shadow:
-    0 8px 24px rgba(0, 0, 0, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    0 2px 8px color-mix(in srgb, var(--brand) 20%, transparent);
 }
 
 .feature-card h3 {
   font-size: 14px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0 0 8px 0;
   letter-spacing: -0.01em;
 }
 
 .feature-card p {
   font-size: 12px;
-  color: var(--text-secondary);
   opacity: 0.78;
-  line-height: 1.6;
-  margin: 0;
 }
 
 .apps-grid {
@@ -735,48 +710,19 @@
   gap: 10px;
 }
 
-.shortcut-item {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 12px 16px;
-  background: var(--glass);
-  border: 1px solid var(--glass-border);
-  border-radius: 9px;
-  transition:
-    border-color 0.15s ease,
-    background 0.15s ease;
-}
-
-.shortcut-item:hover {
-  border-color: var(--brand);
-  background: rgba(124, 58, 237, 0.06);
-}
-
 .shortcut-item kbd {
   padding: 5px 11px;
-  background: var(--bg-secondary);
-  border: 1px solid var(--glass-border);
-  border-radius: 6px;
   border-bottom-width: 2px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--brand);
-  white-space: nowrap;
   letter-spacing: 0.03em;
-  flex-shrink: 0;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
 }
 
 .shortcut-item span {
-  font-size: 12px;
-  color: var(--text-secondary);
   opacity: 0.8;
-  line-height: 1.4;
 }
 
-.shortcut-category {
-  margin-bottom: 20px;
+.shortcut-item:hover {
+  background: color-mix(in srgb, var(--brand) 10%, transparent);
 }
 
 .shortcut-category:last-child {
@@ -806,12 +752,6 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 8px;
-}
-
-.connection-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 16px;
 }
 
 .connection-card {
@@ -884,49 +824,6 @@
   font-size: 11px;
   color: var(--brand);
   opacity: 0.85;
-}
-
-.filesystem-structure {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.filesystem-item {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 12px 16px;
-  background: var(--glass);
-  border: 1px solid var(--glass-border);
-  border-radius: 9px;
-  transition:
-    border-color 0.15s ease,
-    background 0.15s ease;
-}
-
-.filesystem-item:hover {
-  border-color: var(--brand);
-  background: rgba(124, 58, 237, 0.05);
-}
-
-.filesystem-item code {
-  padding: 4px 10px;
-  background: var(--bg-secondary);
-  border: 1px solid var(--glass-border);
-  border-radius: 6px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--brand);
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.filesystem-item span {
-  font-size: 12px;
-  color: var(--text-secondary);
-  opacity: 0.8;
-  line-height: 1.4;
 }
 
 .guide-header {
@@ -1121,8 +1018,7 @@ html[data-theme-mode="light"] .app-card,
 html[data-theme-mode="light"] .connection-card,
 html[data-theme-mode="light"] .arch-item,
 html[data-theme-mode="light"] .quick-start-item,
-html[data-theme-mode="light"] .shortcut-item,
-html[data-theme-mode="light"] .filesystem-item {
+html[data-theme-mode="light"] .shortcut-item {
   background: var(--bg-secondary);
   border-color: var(--glass-border);
   box-shadow: 0 2px 8px var(--shadow-color);
@@ -1150,26 +1046,9 @@ html[data-theme-mode="light"] .capability-card p,
 html[data-theme-mode="light"] .feature-card p,
 html[data-theme-mode="light"] .app-info p,
 html[data-theme-mode="light"] .quick-start-item p,
-html[data-theme-mode="light"] .shortcut-item span,
-html[data-theme-mode="light"] .filesystem-item span {
+html[data-theme-mode="light"] .shortcut-item span {
   color: var(--text-secondary);
   opacity: 1;
-}
-
-html[data-theme-mode="light"] .hero-tag,
-html[data-theme-mode="light"] .feature-tag,
-html[data-theme-mode="light"] .mini-app-tag,
-html[data-theme-mode="light"] .nav-count {
-  background: var(--bg-secondary);
-  border-color: var(--glass-border);
-  color: var(--text-secondary);
-}
-
-html[data-theme-mode="light"] .app-icon,
-html[data-theme-mode="light"] .shortcut-item kbd,
-html[data-theme-mode="light"] .filesystem-item code {
-  background: var(--bg-secondary);
-  border-color: var(--glass-border);
 }
 
 html[data-theme-mode="light"] input[type="checkbox"],

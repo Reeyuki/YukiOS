@@ -93,38 +93,6 @@
   caret-color: var(--text-primary, #ffffff);
 }
 
-.terminal-output .output-default {
-  color: var(--text-primary, #c0c0c0);
-}
-
-.terminal-output .output-dir {
-  color: var(--brand, #0080ff);
-}
-
-.terminal-output .output-error {
-  color: var(--error, #ff4444);
-}
-
-.terminal-output .output-welcome {
-  color: #00ff00;
-}
-
-.terminal-output .output-neofetch {
-  color: #00ffff;
-}
-
-.terminal-output .stdout {
-  color: var(--text-primary, #e0e0e0);
-}
-
-.terminal-output .stderr {
-  color: var(--error, #ff4444);
-}
-
-.terminal-cursor {
-  background: var(--text-primary, #ffffff);
-}
-
 .terminal-prompt {
   color: var(--brand, #0080ff);
 }
@@ -135,16 +103,6 @@
 
 .terminal a:visited {
   color: color-mix(in srgb, var(--brand, #0080ff) 70%, white);
-}
-
-.terminal-output .color-green {
-  color: #00ff00;
-}
-.terminal-output .color-cyan {
-  color: #00ffff;
-}
-.terminal-output .color-red {
-  color: var(--error, #ff4444);
 }
 
 .terminal-output::-webkit-scrollbar-thumb {
