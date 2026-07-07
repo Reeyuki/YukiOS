@@ -992,6 +992,22 @@ export const APP_MANIFESTS = [
       "Configure themes, wallpapers, window animations, taskbar behavior, sound, language, and system preferences."
   },
   {
+    serviceKey: "wallpaperEngineApp",
+    enhanced: false,
+    type: "system",
+    title: "Wallpaper Engine",
+    icon: "fas fa-paint-roller",
+    launchType: "instance",
+    windowIdPatterns: ["wallpaper-engine"],
+    category: "system",
+    clippy: {
+      message: "Browse your wallpapers, set favorites, and customize the desktop look.",
+      animation: ClippyAnimation.Show
+    },
+    description:
+      "Browse, preview, and manage all your wallpapers — static, video, animated, and custom uploads — in one place."
+  },
+  {
     serviceKey: "steamApp",
     type: "system",
     title: "Steam",

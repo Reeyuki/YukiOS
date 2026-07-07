@@ -36,5 +36,6 @@ export const AppSource = {
   RHYTHMS: "Rhythms",
   TORRENT_CLIENT: "Torrent Client",
   CLOCK: "Clock",
-  CALENDAR_APP: "Calendar"
+  CALENDAR_APP: "Calendar",
+  WALLPAPER_ENGINE: "Wallpaper Engine"
 };

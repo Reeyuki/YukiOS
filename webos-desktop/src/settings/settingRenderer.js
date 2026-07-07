@@ -1025,16 +1025,12 @@ export function renderAppearanceSettings(s) {
         </div>
         <div class="settings-row">
           <div class="settings-label-group">
-            <span class="settings-label-title">Upload Wallpaper</span>
-            <span class="settings-label-desc">Add custom wallpaper from your device (images, GIFs, videos)</span>
+            <span class="settings-label-title">Wallpaper Engine</span>
+            <span class="settings-label-desc">Browse, preview, and manage all your wallpapers in the dedicated manager</span>
           </div>
-          <button class="settings-btn" id="settingsUploadWallpaperBtn">
-            <i class="fas fa-upload"></i> Upload
+          <button class="settings-btn" id="settingsOpenWallpaperEngine">
+            <i class="fas fa-paint-roller"></i> Open
           </button>
-          <input type="file" id="settingsWallpaperFileInput" accept="image/*,video/*,.gif" style="display: none;"/>
-        </div>
-        <div style="padding: 16px;">
-          <div id="settings-wallpapers-container"></div>
         </div>
       </div>
     </div>

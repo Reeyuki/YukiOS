@@ -1,10 +1,7 @@
 import { StorageKeys, os } from "../framework.js";
 import { toggleHideGames, toggleHideSystemApps, updateGridConfig } from "../desktopui/desktopui.js";
 import { audioMixer, SystemAudio } from "../audioMixer.js";
-import { renderWallpapersPage } from "../wallpapers.js";
 import { applyTrayEnabled } from "./settingsApply.js";
-import { FileKind } from "../fs.js";
-import { SystemUtilities } from "../system.js";
 import {
   applyTheme,
   applyWindowTransparency,
@@ -573,42 +570,10 @@ export function bindAppearanceCategory(
     });
   });
 
-  const wallpapersContainer = $("#settings-wallpapers-container", win);
-  if (wallpapersContainer && fs && wm) {
-    renderWallpapersPage(fs, wm, wallpapersContainer);
-  }
-
-  const uploadWallpaperBtn = $("#settingsUploadWallpaperBtn", win);
-  const wallpaperFileInput = $("#settingsWallpaperFileInput", win);
-  if (uploadWallpaperBtn && wallpaperFileInput && fs) {
-    bindEvent(uploadWallpaperBtn, "click", () => {
-      wallpaperFileInput.click();
-    });
-
-    bindEvent(wallpaperFileInput, "change", async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      try {
-        await fs.ensureFolder(["Pictures", "Wallpapers"]);
-
-        const fileKind = file.type.startsWith("video") ? FileKind.VIDEO : FileKind.IMAGE;
-        const icon = file.type.startsWith("video") ? "static/icons/file.webp" : "@content";
-
-        await fs.createFile(["Pictures", "Wallpapers"], file.name, file, fileKind, icon);
-
-        await SystemUtilities.setWallpaper(file);
-        os.notify.send("Wallpaper Uploaded", `"${file.name}" set as wallpaper`, { type: "info" });
-
-        if (wallpapersContainer) {
-          await renderWallpapersPage(fs, wm, wallpapersContainer);
-        }
-      } catch (err) {
-        console.error("Failed to upload wallpaper:", err);
-        os.notify.send("Upload Failed", "Couldn't upload that wallpaper", { type: "error" });
-      }
-
-      wallpaperFileInput.value = "";
+  const openBtn = $("#settingsOpenWallpaperEngine", win);
+  if (openBtn) {
+    bindEvent(openBtn, "click", () => {
+      os.app.launch("wallpaperEngineApp");
     });
   }
 

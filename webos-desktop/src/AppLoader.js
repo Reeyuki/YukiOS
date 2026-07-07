@@ -40,6 +40,7 @@ import { TorBrowserApp } from "./apps/torBrowser.js";
 import { VNCApp } from "./apps/vncApp.js";
 import { DiscordApp } from "./apps/discord.js";
 import { RobloxApp } from "./apps/roblox.js";
+import { WallpaperEngineApp } from "./apps/wallpaperEngine.js";
 
 const APP_CLASS_MAP = {
   terminalApp: TerminalApp,
@@ -81,7 +82,8 @@ const APP_CLASS_MAP = {
   torBrowserApp: TorBrowserApp,
   vncApp: VNCApp,
   discordApp: DiscordApp,
-  robloxApp: RobloxApp
+  robloxApp: RobloxApp,
+  wallpaperEngineApp: WallpaperEngineApp
 };
 
 const APP_DEFINITIONS = APP_MANIFESTS.map((manifest) => {

@@ -158,6 +158,8 @@ export class BaseApp {
         return AppSource.AI_ASSISTANT;
       case "ClockApp":
         return AppSource.CLOCK;
+      case "WallpaperEngineApp":
+        return AppSource.WALLPAPER_ENGINE;
       case "RobloxApp":
         return AppSource.SYSTEM;
       case "BrightnessApp":

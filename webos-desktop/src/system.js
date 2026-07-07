@@ -586,16 +586,30 @@ class WallpaperManager {
 
       el.addEventListener("error", fallbackToStatic, { once: true });
 
+      let retryCount = 0;
       const tryPlay = () => {
         try {
           const p = el.play?.();
-          if (p && typeof p.catch === "function") p.catch(fallbackToStatic);
+          if (p && typeof p.catch === "function")
+            p.catch(() => {
+              if (retryCount < 3) {
+                retryCount++;
+                setTimeout(tryPlay, 2000 * retryCount);
+              } else {
+                fallbackToStatic();
+              }
+            });
         } catch {
-          fallbackToStatic();
+          if (retryCount < 3) {
+            retryCount++;
+            setTimeout(tryPlay, 2000 * retryCount);
+          } else {
+            fallbackToStatic();
+          }
         }
       };
 
-      const loadTimeoutMs = 8000;
+      const loadTimeoutMs = 30000;
       const timeoutId = setTimeout(() => {
         if (el.readyState < 2) fallbackToStatic();
       }, loadTimeoutMs);

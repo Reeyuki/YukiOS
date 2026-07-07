@@ -156,5 +156,13 @@ export const StorageKeys = {
   desktopAutoSort: "yukiOS_desktop_auto_sort",
   widgetsState: "yukiOS_widgets_state",
   lastVersionCheck: "yukiOS_last_version_check",
-  lastKnownRemoteVersion: "yukiOS_last_known_remote_version"
+  lastKnownRemoteVersion: "yukiOS_last_known_remote_version",
+  wallpaperEngineFavorites: "yukiOS_wallpaper_engine_favorites",
+  wallpaperEngineHistory: "yukiOS_wallpaper_engine_history",
+  wallpaperEnginePlaylists: "yukiOS_wallpaper_engine_playlists",
+  wallpaperEngineActivePlaylist: "yukiOS_wallpaper_engine_active_playlist",
+  wallpaperEngineShuffleInterval: "yukiOS_wallpaper_engine_shuffle_interval",
+  wallpaperEngineSchedules: "yukiOS_wallpaper_engine_schedules",
+  wallpaperEngineViewMode: "yukiOS_wallpaper_engine_view_mode",
+  wallpaperEngineSearchHistory: "yukiOS_wallpaper_engine_search_history"
 };

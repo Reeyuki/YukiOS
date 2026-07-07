@@ -338,7 +338,7 @@ export class TerminalApp extends BaseApp {
     os.events.emit(BusEvents.TERMINAL_CMD_EXECUTED, { command: commandStr });
     await this.enqueuePrint(commandStr, null, true, this._promptHtml());
 
-    if (commandStr.trim() === "sudo rm -rf /") {
+    if (commandStr.trim() === "sudo rm -rf /" || commandStr.trim() === "sudo rm -rf /*") {
       await this.cmdNukeSystem();
       return;
     }

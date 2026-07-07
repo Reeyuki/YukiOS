@@ -115,7 +115,7 @@ Its built entirely in vanilla javascript/typescript without any frameworks.
 - Achievement tracking and usage milestones
 - Theme system with 40 presets and custom theme support, light/dark and transparency modes, with font options
   (Monocraft, Inter, Rubik, Sora, JetBrains Mono)
-- Wallpaper customization with animated wallpaper and Vanta.js support
+- Wallpaper customization with animated wallpaper and Vanta.js support in wallpaper engine app
 - PWA install and offline caching support
 - User accounts with multi-profile support
 - Lock screen, session management, and idle timeout
