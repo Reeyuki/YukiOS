@@ -44,7 +44,10 @@ const BUILTIN_THEMES = [
   { value: "aura", icon: "fas fa-gem", label: "Aura", category: "special" },
   { value: "nier", icon: "fas fa-robot", label: "NieR", category: "special" },
   { value: "eva-unit-01", icon: "fas fa-brain", label: "EVA Unit-01", category: "special" },
-  { value: "eva-unit-02", icon: "fas fa-fire", label: "EVA Unit-02", category: "special" }
+  { value: "eva-unit-02", icon: "fas fa-fire", label: "EVA Unit-02", category: "special" },
+  { value: "matrix", icon: "fas fa-th", label: "Matrix", category: "special" },
+  { value: "amber-terminal", icon: "fas fa-terminal", label: "Amber Terminal", category: "special" },
+  { value: "aurora-borealis", icon: "fas fa-wand-magic-sparkles", label: "Aurora Borealis", category: "special" }
 ];
 let customThemes = [];
 function loadCustomThemes() {

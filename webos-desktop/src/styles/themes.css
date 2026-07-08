@@ -1586,6 +1586,164 @@ html[data-theme="eva-unit-02"] {
   --window-bg: #180a08;
 }
 
+html[data-theme="matrix"] {
+  --brand: oklch(65% 0.2 145);
+  --brand-hover: oklch(70% 0.22 145);
+  --brand-dark: oklch(50% 0.18 145);
+  --brand-glow: oklch(65% 0.15 145 / 0.5);
+  --brand-dim: oklch(65% 0.2 145 / 0.25);
+  --bg-primary: oklch(3% 0.01 145);
+  --bg-secondary: oklch(5% 0.015 145);
+  --text-primary: oklch(85% 0.25 145);
+  --text-secondary: oklch(60% 0.18 145);
+  --glass: oklch(65% 0.2 145 / 0.08);
+  --glass-hover: oklch(65% 0.2 145 / 0.14);
+  --glass-border: oklch(65% 0.22 145 / 0.3);
+  --tx1: oklch(85% 0.25 145);
+  --tx2: oklch(60% 0.18 145);
+  --surface-1: oklch(5% 0.015 145 / 0.95);
+  --surface-2: oklch(7% 0.02 145 / 0.9);
+  --surface-3: oklch(9% 0.025 145 / 0.85);
+  --surface-hover: oklch(11% 0.03 145 / 0.8);
+  --text-muted: oklch(45% 0.15 145);
+  --text-on-brand: oklch(3% 0.01 145);
+  --shadow-color: oklch(0% 0 0 / 0.85);
+  --overlay-bg: oklch(0% 0 0 / 0.75);
+  --menu-bg: oklch(5% 0.015 145 / 0.98);
+  --window-bg: oklch(5% 0.015 145 / 0.95);
+}
+
+html[data-theme="matrix"] .window {
+  box-shadow:
+    0 24px 64px oklch(0% 0 0 / 0.85),
+    0 0 0 1px oklch(65% 0.22 145 / 0.3) inset;
+}
+
+html[data-theme="matrix"] .window-header {
+  background: oklch(3% 0.01 145);
+  border-bottom: 2px solid oklch(65% 0.2 145);
+  box-shadow: 0 0 20px oklch(65% 0.18 145 / 0.3);
+}
+
+html[data-theme="matrix"] .taskbar {
+  background: oklch(3% 0.01 145);
+  border-top: 2px solid oklch(65% 0.2 145);
+  box-shadow: 0 -2px 20px oklch(65% 0.18 145 / 0.2);
+}
+
+html[data-theme="matrix"] .context-menu {
+  background: oklch(3% 0.01 145);
+  border: 2px solid oklch(65% 0.2 145);
+  box-shadow: 0 8px 24px oklch(0% 0 0 / 0.8);
+}
+
+html[data-theme="amber-terminal"] {
+  --brand: oklch(65% 0.18 55);
+  --brand-hover: oklch(70% 0.2 55);
+  --brand-dark: oklch(50% 0.15 55);
+  --brand-glow: oklch(65% 0.14 55 / 0.45);
+  --brand-dim: oklch(65% 0.18 55 / 0.2);
+  --bg-primary: oklch(5% 0.01 50);
+  --bg-secondary: oklch(8% 0.015 50);
+  --text-primary: oklch(85% 0.15 55);
+  --text-secondary: oklch(60% 0.12 55);
+  --glass: oklch(65% 0.14 55 / 0.08);
+  --glass-hover: oklch(65% 0.14 55 / 0.14);
+  --glass-border: oklch(65% 0.16 55 / 0.25);
+  --tx1: oklch(85% 0.15 55);
+  --tx2: oklch(60% 0.12 55);
+  --surface-1: oklch(8% 0.015 50 / 0.95);
+  --surface-2: oklch(10% 0.02 50 / 0.9);
+  --surface-3: oklch(12% 0.025 50 / 0.85);
+  --surface-hover: oklch(14% 0.03 50 / 0.8);
+  --text-muted: oklch(45% 0.1 55);
+  --text-on-brand: oklch(5% 0.01 50);
+  --shadow-color: oklch(0% 0 0 / 0.8);
+  --overlay-bg: oklch(0% 0 0 / 0.7);
+  --menu-bg: oklch(8% 0.015 50 / 0.98);
+  --window-bg: oklch(8% 0.015 50 / 0.95);
+}
+
+html[data-theme="amber-terminal"] .window {
+  box-shadow:
+    0 24px 64px oklch(0% 0 0 / 0.8),
+    0 0 0 1px oklch(65% 0.18 55 / 0.3) inset;
+}
+
+html[data-theme="amber-terminal"] .window-header {
+  background: oklch(5% 0.01 50);
+  border-bottom: 2px solid oklch(65% 0.18 55);
+  box-shadow: 0 0 20px oklch(65% 0.16 55 / 0.4);
+}
+
+html[data-theme="amber-terminal"] .taskbar {
+  background: oklch(5% 0.01 50);
+  border-top: 2px solid oklch(65% 0.18 55);
+  box-shadow: 0 -2px 20px oklch(65% 0.16 55 / 0.3);
+}
+
+html[data-theme="amber-terminal"] .context-menu {
+  background: oklch(5% 0.01 50);
+  border: 2px solid oklch(65% 0.18 55);
+  box-shadow: 0 8px 24px oklch(0% 0 0 / 0.8);
+}
+
+html[data-theme="aurora-borealis"] {
+  --brand: oklch(70% 0.2 180);
+  --brand-hover: oklch(65% 0.2 180);
+  --brand-dark: oklch(55% 0.2 180);
+  --brand-glow: oklch(70% 0.18 180 / 0.5);
+  --brand-dim: oklch(70% 0.2 180 / 0.3);
+  --bg-primary: oklch(4% 0.03 190);
+  --bg-secondary: oklch(7% 0.04 190);
+  --text-primary: oklch(94% 0.02 180);
+  --text-secondary: oklch(70% 0.03 180);
+  --glass: oklch(70% 0.15 180 / 0.08);
+  --glass-hover: oklch(70% 0.15 180 / 0.14);
+  --glass-border: oklch(70% 0.18 180 / 0.3);
+  --tx1: oklch(94% 0.02 180);
+  --tx2: oklch(70% 0.03 180);
+  --surface-1: oklch(7% 0.04 190 / 0.55);
+  --surface-2: oklch(9% 0.05 190 / 0.5);
+  --surface-3: oklch(11% 0.06 190 / 0.45);
+  --surface-hover: oklch(13% 0.07 190 / 0.4);
+  --text-muted: oklch(55% 0.04 180);
+  --text-on-brand: oklch(100% 0 0 / 0.98);
+  --shadow-color: oklch(70% 0.15 180 / 0.2);
+  --overlay-bg: oklch(0% 0 0 / 0.35);
+  --menu-bg: oklch(5% 0.03 190 / 0.6);
+  --window-bg: oklch(5% 0.03 190 / 0.55);
+}
+
+html[data-theme="aurora-borealis"] .window {
+  backdrop-filter: blur(44px) saturate(1.4);
+  -webkit-backdrop-filter: blur(44px) saturate(1.4);
+  box-shadow:
+    0 24px 64px oklch(0% 0 0 / 0.5),
+    0 0 0 1px oklch(70% 0.18 180 / 0.2) inset,
+    0 0 50px oklch(70% 0.15 180 / 0.12);
+}
+
+html[data-theme="aurora-borealis"] .window-header {
+  background: linear-gradient(
+    90deg,
+    oklch(70% 0.2 180 / 0.2),
+    oklch(65% 0.2 220 / 0.2),
+    oklch(60% 0.2 260 / 0.2),
+    oklch(65% 0.2 220 / 0.2),
+    oklch(70% 0.2 180 / 0.2)
+  );
+  background-size: 400% 100%;
+  animation: aurora-wave 15s ease-in-out infinite;
+  border-bottom: 1px solid oklch(70% 0.18 180 / 0.25);
+}
+
+html[data-theme="aurora-borealis"] .taskbar {
+  backdrop-filter: blur(44px) saturate(1.4);
+  -webkit-backdrop-filter: blur(44px) saturate(1.4);
+  box-shadow: 0 -1px 0 oklch(70% 0.18 180 / 0.2) inset;
+}
+
 html[data-theme="eva-unit-02"] ::selection {
   background: rgba(42, 92, 204, 0.4);
 }
