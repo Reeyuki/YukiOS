@@ -508,14 +508,14 @@ export class TaskbarSystem {
             winId: "explorer-pinned",
             appId: "explorerApp",
             title: "Explorer",
-            iconValue: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/icons/file.webp",
+            iconValue: resolveIconUrl("static/icons/file.webp"),
             color: null
           },
           {
             winId: "browser-pinned",
             appId: "browserApp",
             title: "Yuki Browser",
-            iconValue: "fas fa-snowflake",
+            iconValue: resolveIconUrl("static/icons/firefox.webp"),
             color: null
           },
           {

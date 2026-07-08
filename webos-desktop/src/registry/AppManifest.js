@@ -358,7 +358,7 @@ export const APP_MANIFESTS = [
     serviceKey: "browserApp",
     type: "system",
     title: "Yuki Browser",
-    icon: "fas fa-snowflake",
+    icon: `${CDN_BASE}/static/icons/firefox.webp`,
     launchType: "instance",
     windowIdPatterns: ["browser"],
     isHeavy: true,

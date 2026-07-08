@@ -8,6 +8,7 @@ import { setGameLauncher } from "./games/games.js";
 import { FileSystemManager } from "./fs.js";
 import { setupStartMenu } from "./desktopui/startMenu.js";
 import { DesktopUI } from "./desktopui/desktopui.js";
+import { DesktopPeekManager } from "./desktopPeek.js";
 import { SettingsApp } from "./settings/settings.js";
 import { AppCreatorApp } from "./apps/appCreator.js";
 import { OfficeAppProxy } from "./office/officeLoader.js";
@@ -49,6 +50,7 @@ if (isMobile() || isTouchDevice()) {
 const notificationCenter = new NotificationCenter();
 const fileSystemManager = new FileSystemManager();
 const windowManager = new WindowManager(notificationCenter);
+const desktopPeekManager = new DesktopPeekManager(windowManager);
 import { bus } from "./core/EventBus.js";
 import { trayManager } from "./tray/tray.js";
 initializeOSBridge({
@@ -187,6 +189,7 @@ async function start() {
   SystemUtilities.startTaskbarWeather(appLauncher);
   await SystemUtilities.loadWallpaper();
   windowManager.restorePinnedItems();
+  desktopPeekManager.setupPeekButton();
 
   await sessionManager.showLogin();
 

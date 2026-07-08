@@ -22,6 +22,7 @@ Planned features and improvements for YukiOS.
 - [✅] Wobble drag animations
 - [✅] Desktop icon auto-sort rules (by name, type, recent use)
 - [✅] Draggable desktop widgets (clock, weather, calendar)
+- [✅] Add desktop peek button at bottom right
 - [ ] Add web amp
 - [ ] Fix every drag/file bug on explorer and desktop
 - [ ] Make transparency setting affect all tray menu panels and GUIs
@@ -37,7 +38,6 @@ Planned features and improvements for YukiOS.
 - [ ] Add more achievements
 - [ ] Add audios using js synthesizer
 - [ ] Make single file bundling only optional
-- [ ] Add desktop peek button at bottom right
 - [ ] File association system / default apps for files app
 
 ---

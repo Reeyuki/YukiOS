@@ -344,7 +344,7 @@ class IconDataHelper {
       explorer: resolveIconUrl("static/icons/file.webp"),
       notepad: resolveIconUrl("static/icons/notepad.webp"),
       flash: resolveIconUrl("static/icons/flash.webp"),
-      browser: resolveIconUrl("fas fa-snowflake"),
+      browser: resolveIconUrl("static/icons/firefox.webp"),
       terminal: resolveIconUrl("static/icons/terminal.webp"),
       music: resolveIconUrl("static/icons/spot.webp"),
       cameraApp: resolveIconUrl("static/icons/obs.webp"),

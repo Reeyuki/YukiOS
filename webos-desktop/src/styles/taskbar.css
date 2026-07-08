@@ -412,6 +412,19 @@ html[data-theme="light"] .ntf-tray-btn:hover {
   color: #111 !important;
 }
 
+html[data-theme="light"] .desktop-peek-btn {
+  color: rgba(0, 0, 0, 0.75) !important;
+}
+
+html[data-theme="light"] .desktop-peek-btn:hover {
+  background: rgba(0, 0, 0, 0.08) !important;
+  color: #111 !important;
+}
+
+html[data-theme="light"] .desktop-peek-btn.active {
+  background: rgba(0, 0, 0, 0.15) !important;
+}
+
 html[data-theme="light"] .ntf-count {
   background: var(--brand) !important;
   color: #fff !important;
@@ -509,6 +522,47 @@ html[data-theme="light"] .tray-popup-item:hover {
   padding: var(--spacing-xs) var(--spacing-sm);
   margin-right: var(--spacing-sm);
   height: 28px;
+}
+
+.desktop-peek-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.2s;
+  border-radius: 4px;
+}
+
+.desktop-peek-btn:hover {
+  background: var(--glass-hover);
+}
+
+.desktop-peek-btn.active {
+  background: var(--brand-dim);
+}
+
+.desktop-peek-hidden {
+  opacity: 0.12 !important;
+  pointer-events: none !important;
+  transition: opacity 0.12s ease;
+}
+
+.desktop-peek-btn svg {
+  width: 24px;
+  height: 24px;
+  stroke: var(--text-primary);
+  opacity: 0.85;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.3));
+}
+
+.desktop-peek-btn:hover svg {
+  opacity: 1;
+}
+
+.desktop-peek-btn.active svg {
+  opacity: 1;
 }
 
 .tray-icon-btn,

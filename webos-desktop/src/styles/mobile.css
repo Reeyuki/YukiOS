@@ -182,6 +182,16 @@ html.is-mobile #taskbar,
     width: 18px;
     height: 18px;
   }
+
+  .desktop-peek-btn {
+    width: 32px;
+    height: 32px;
+  }
+
+  .desktop-peek-btn svg {
+    width: 18px;
+    height: 18px;
+  }
 }
 
 html.is-mobile .start-menu,
