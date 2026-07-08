@@ -1756,6 +1756,202 @@ html[data-theme="eva-unit-02"] a:hover {
   color: #7aacff;
 }
 
+html[data-theme="vice-city"] {
+  --brand: oklch(65% 0.22 348);
+  --brand-hover: oklch(58% 0.24 348);
+  --brand-dark: oklch(48% 0.22 348);
+  --brand-glow: oklch(65% 0.22 348 / 0.45);
+  --brand-dim: oklch(65% 0.22 348 / 0.25);
+  --bg-primary: oklch(5% 0.04 280);
+  --bg-secondary: oklch(9% 0.06 285);
+  --text-primary: oklch(94% 0.02 340);
+  --text-secondary: oklch(72% 0.12 195);
+  --glass: oklch(65% 0.18 348 / 0.1);
+  --glass-hover: oklch(65% 0.18 348 / 0.16);
+  --glass-border: oklch(65% 0.22 348 / 0.35);
+  --tx1: oklch(94% 0.02 340);
+  --tx2: oklch(72% 0.12 195);
+  --surface-1: oklch(9% 0.06 285 / 0.6);
+  --surface-2: oklch(11% 0.07 288 / 0.55);
+  --surface-3: oklch(13% 0.08 290 / 0.5);
+  --surface-hover: oklch(15% 0.09 292 / 0.45);
+  --text-muted: oklch(50% 0.08 195);
+  --text-on-brand: oklch(100% 0 0 / 0.98);
+  --shadow-color: oklch(65% 0.2 348 / 0.25);
+  --overlay-bg: oklch(0% 0 0 / 0.55);
+  --menu-bg: oklch(7% 0.05 282 / 0.65);
+  --window-bg: oklch(7% 0.05 282 / 0.6);
+}
+
+html[data-theme="vice-city"] .window {
+  backdrop-filter: blur(36px) saturate(1.2);
+  -webkit-backdrop-filter: blur(36px) saturate(1.2);
+  box-shadow:
+    0 24px 64px oklch(0% 0 0 / 0.6),
+    0 0 0 1px oklch(65% 0.22 348 / 0.3) inset,
+    0 0 30px oklch(65% 0.22 348 / 0.18),
+    0 0 60px oklch(72% 0.18 195 / 0.08);
+}
+
+html[data-theme="vice-city"] .window-header {
+  background: linear-gradient(
+    90deg,
+    oklch(65% 0.22 348 / 0.25),
+    oklch(72% 0.18 195 / 0.12),
+    oklch(60% 0.2 330 / 0.15),
+    oklch(72% 0.18 195 / 0.12),
+    oklch(65% 0.22 348 / 0.25)
+  );
+  background-size: 300% 100%;
+  animation: vice-neon 6s ease-in-out infinite;
+  border-bottom: 1px solid oklch(65% 0.22 348 / 0.35);
+  box-shadow: 0 0 20px oklch(65% 0.22 348 / 0.15);
+}
+
+html[data-theme="vice-city"] .window-content {
+  box-shadow: inset 0 0 40px oklch(65% 0.18 348 / 0.04);
+}
+
+html[data-theme="vice-city"] .taskbar {
+  backdrop-filter: blur(36px) saturate(1.2);
+  -webkit-backdrop-filter: blur(36px) saturate(1.2);
+  box-shadow:
+    0 -1px 0 oklch(65% 0.22 348 / 0.25) inset,
+    0 0 20px oklch(65% 0.22 348 / 0.1);
+}
+
+html[data-theme="vice-city"] .context-menu {
+  backdrop-filter: blur(36px) saturate(1.2);
+  -webkit-backdrop-filter: blur(36px) saturate(1.2);
+  box-shadow:
+    0 8px 28px oklch(0% 0 0 / 0.5),
+    0 0 0 1px oklch(65% 0.22 348 / 0.25) inset,
+    0 0 20px oklch(65% 0.22 348 / 0.1);
+}
+
+html[data-theme="vice-city"] .start-menu {
+  backdrop-filter: blur(36px) saturate(1.2);
+  -webkit-backdrop-filter: blur(36px) saturate(1.2);
+  box-shadow:
+    0 8px 40px oklch(0% 0 0 / 0.5),
+    0 0 0 1px oklch(65% 0.22 348 / 0.25) inset,
+    0 0 30px oklch(65% 0.22 348 / 0.12);
+}
+
+html[data-theme="vice-city"] .icon.selectable:hover {
+  box-shadow:
+    0 0 20px oklch(65% 0.22 348 / 0.3),
+    0 0 0 1px oklch(65% 0.22 348 / 0.2);
+}
+
+html[data-theme="vice-city"] .tray-icon-btn:hover {
+  box-shadow:
+    0 0 12px oklch(65% 0.22 348 / 0.3),
+    0 0 0 1px oklch(65% 0.22 348 / 0.2);
+}
+
+html[data-theme="vice-city"] .ntf-toast {
+  backdrop-filter: blur(36px) saturate(1.2);
+  -webkit-backdrop-filter: blur(36px) saturate(1.2);
+  box-shadow:
+    0 8px 32px oklch(0% 0 0 / 0.5),
+    0 0 0 1px oklch(65% 0.22 348 / 0.25) inset,
+    0 0 20px oklch(65% 0.22 348 / 0.1);
+}
+
+html[data-theme="vice-city"] .ntf-card {
+  box-shadow:
+    0 2px 8px oklch(0% 0 0 / 0.3),
+    0 0 0 1px oklch(65% 0.22 348 / 0.15) inset;
+}
+
+html[data-theme="vice-city"] .overlay-dialog {
+  backdrop-filter: blur(36px) saturate(1.2);
+  -webkit-backdrop-filter: blur(36px) saturate(1.2);
+  box-shadow:
+    0 24px 64px oklch(0% 0 0 / 0.55),
+    0 0 0 1px oklch(65% 0.22 348 / 0.3) inset,
+    0 0 40px oklch(65% 0.22 348 / 0.15);
+}
+
+html[data-theme="vice-city"] button {
+  box-shadow:
+    0 0 10px oklch(65% 0.22 348 / 0.2),
+    0 0 0 1px oklch(65% 0.22 348 / 0.2) inset;
+  transition:
+    box-shadow 0.2s,
+    background 0.2s;
+}
+
+html[data-theme="vice-city"] button:hover {
+  box-shadow:
+    0 0 20px oklch(65% 0.22 348 / 0.35),
+    0 0 0 1px oklch(65% 0.22 348 / 0.35) inset;
+}
+
+html[data-theme="vice-city"] input,
+html[data-theme="vice-city"] textarea,
+html[data-theme="vice-city"] select,
+html[data-theme="vice-city"] .settings-input,
+html[data-theme="vice-city"] input:focus,
+html[data-theme="vice-city"] textarea:focus,
+html[data-theme="vice-city"] select:focus,
+html[data-theme="vice-city"] .settings-input:focus,
+html[data-theme="vice-city"] *::-webkit-scrollbar-thumb {
+  background: oklch(65% 0.22 348 / 0.4);
+  box-shadow: 0 0 6px oklch(65% 0.18 348 / 0.25);
+}
+
+html[data-theme="vice-city"] *::-webkit-scrollbar-thumb:hover {
+  background: oklch(65% 0.22 348 / 0.55);
+  box-shadow: 0 0 10px oklch(65% 0.2 348 / 0.35);
+}
+
+html[data-theme="vice-city"] .settings-toggle input:checked + .settings-track,
+html[data-theme="vice-city"] .setting-toggle input:checked + .toggle-track {
+  box-shadow: 0 0 12px oklch(65% 0.22 348 / 0.4);
+}
+
+html[data-theme="vice-city"] ::selection {
+  background: oklch(65% 0.22 348 / 0.5);
+  color: oklch(100% 0 0);
+}
+
+html[data-theme="vice-city"] ::-webkit-scrollbar-track {
+  background: oklch(5% 0.04 280);
+}
+
+html[data-theme="vice-city"] .icon.selectable > div:last-child {
+  text-shadow:
+    0 0 8px oklch(65% 0.22 348 / 0.35),
+    0 0 20px oklch(65% 0.22 348 / 0.1);
+}
+
+html[data-theme="vice-city"] .am-slider {
+  background: linear-gradient(90deg, oklch(65% 0.22 348 / 0.3), oklch(72% 0.18 195 / 0.3)) !important;
+  box-shadow: 0 0 8px oklch(65% 0.22 348 / 0.15) !important;
+}
+
+html[data-theme="vice-city"] .am-slider::-webkit-slider-thumb {
+  background: oklch(65% 0.22 348) !important;
+  box-shadow: 0 0 12px oklch(65% 0.22 348 / 0.5) !important;
+}
+
+html[data-theme="vice-city"] .am-slider::-moz-range-thumb {
+  background: oklch(65% 0.22 348) !important;
+  box-shadow: 0 0 12px oklch(65% 0.22 348 / 0.5) !important;
+}
+
+@keyframes vice-neon {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
 @keyframes aurora-flow {
   0%,
   100% {

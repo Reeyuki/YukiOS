@@ -47,7 +47,8 @@ const BUILTIN_THEMES = [
   { value: "eva-unit-02", icon: "fas fa-fire", label: "EVA Unit-02", category: "special" },
   { value: "matrix", icon: "fas fa-th", label: "Matrix", category: "special" },
   { value: "amber-terminal", icon: "fas fa-terminal", label: "Amber Terminal", category: "special" },
-  { value: "aurora-borealis", icon: "fas fa-wand-magic-sparkles", label: "Aurora Borealis", category: "special" }
+  { value: "aurora-borealis", icon: "fas fa-wand-magic-sparkles", label: "Aurora Borealis", category: "special" },
+  { value: "vice-city", icon: "fas fa-umbrella-beach", label: "Vice City", category: "special" }
 ];
 let customThemes = [];
 function loadCustomThemes() {
