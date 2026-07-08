@@ -153,15 +153,15 @@ export function renderAccountsSettings() {
       <div class="accounts-sponsor-banner" id="accounts-sponsor-banner">
         <div class="sponsor-banner-content">
           <div class="sponsor-banner-icon">
-            <i class="fab fa-github"></i>
+            <i class="fas fa-mug-hot"></i>
           </div>
           <div class="sponsor-banner-text">
             <div class="sponsor-banner-title">Support YukiOS</div>
             <div class="sponsor-banner-desc">Your support accelerates development and new features</div>
           </div>
           <div class="sponsor-banner-buttons">
-            <a href="https://github.com/sponsors/Reeyuki" target="_blank" class="sponsor-banner-btn" id="sponsor-link-github">
-              <i class="fab fa-github"></i> GitHub
+            <a href="https://ko-fi.com/Reeyuki" target="_blank" class="sponsor-banner-btn" id="sponsor-link-kofi">
+              <i class="fas fa-mug-hot"></i> Ko-fi
             </a>
             <a href="https://patreon.com/Reeyuki" target="_blank" class="sponsor-banner-btn sponsor-banner-btn-patreon" id="sponsor-link-patreon">
               <i class="fab fa-patreon"></i> Patreon
