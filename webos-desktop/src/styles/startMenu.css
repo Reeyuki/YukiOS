@@ -125,6 +125,40 @@
     transform: translateY(-50%) translateX(0);
   }
 }
+.start-sidebar {
+  width: 160px;
+  border-right: 1px solid color-mix(in srgb, var(--brand) 25%, transparent);
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--brand) 8%, transparent) 0%, transparent 60%);
+  position: relative;
+  overflow-y: auto;
+  flex-shrink: 0;
+  transition:
+    width 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.2s ease,
+    border-right-color 0.25s ease,
+    padding 0.2s ease;
+}
+
+.start-sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.start-sidebar::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--brand) 40%, transparent);
+  border-radius: 4px;
+}
+
+.start-footer-actions {
+  margin-top: auto;
+  display: flex;
+  gap: 4px;
+  padding: 10px 8px;
+  border-top: 1px solid color-mix(in srgb, var(--brand) 15%, transparent);
+  justify-content: center;
+  align-items: center;
+}
 
 .start-signout-btn,
 .start-lock-btn,
@@ -172,6 +206,14 @@
   transform: scale(0.93);
 }
 
+.start-power-divider {
+  width: 1px;
+  height: 20px;
+  background: color-mix(in srgb, var(--brand) 20%, transparent);
+  margin: 0 4px;
+  flex-shrink: 0;
+}
+
 .start-signout-btn[title]:hover::after,
 .start-lock-btn[title]:hover::after,
 .start-sleep-btn[title]:hover::after,
@@ -193,7 +235,6 @@
   backdrop-filter: blur(8px);
   z-index: 20001;
 }
-
 .recent-section-header {
   font-size: 11px;
   font-weight: 600;
