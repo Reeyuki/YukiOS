@@ -78,7 +78,7 @@
   font-size: 10px;
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: var(--ls-wide);
 }
 
 .achievements-disabled-banner {
@@ -123,7 +123,7 @@
   font-weight: 600;
   color: var(--text-primary);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: var(--ls-wide);
 }
 
 .achievements-progress__counter {
@@ -422,7 +422,7 @@
   text-transform: uppercase;
   padding: 3px 6px;
   border-radius: 5px;
-  letter-spacing: 0.5px;
+  letter-spacing: var(--ls-wide);
   white-space: nowrap;
 }
 
@@ -519,7 +519,7 @@
   text-transform: uppercase;
   color: var(--brand);
   margin-bottom: 8px;
-  letter-spacing: 0.5px;
+  letter-spacing: var(--ls-wide);
 }
 
 .achievement-popup__badge i {
@@ -547,7 +547,7 @@
   text-transform: uppercase;
   padding: 4px 10px;
   border-radius: 6px;
-  letter-spacing: 0.5px;
+  letter-spacing: var(--ls-wide);
 }
 
 .achievements-scroll {

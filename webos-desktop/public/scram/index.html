@@ -2173,7 +2173,26 @@
           } catch (e) {}
         }
       }
-
+      function updateMenuBadges() {
+        const dlBadge = document.getElementById("menu-dl-badge");
+        if (dlBadge) {
+          if (downloads.length > 0) {
+            dlBadge.textContent = downloads.length;
+            dlBadge.style.display = "";
+          } else {
+            dlBadge.style.display = "none";
+          }
+        }
+        const rtBadge = document.getElementById("menu-rt-badge");
+        if (rtBadge) {
+          if (closedTabs.length > 0) {
+            rtBadge.textContent = closedTabs.length;
+            rtBadge.style.display = "";
+          } else {
+            rtBadge.style.display = "none";
+          }
+        }
+      }
       function saveDownloads() {
         if (isIncognito) return;
         try {
@@ -2462,27 +2481,6 @@
         updateMenuBadges();
         const bmCheck = document.getElementById("menu-bm-check");
         if (bmCheck) bmCheck.className = bookmarkBarVisible ? "fa-solid fa-check di-icon" : "fa-solid fa-minus di-icon";
-
-        function updateMenuBadges() {
-          const dlBadge = document.getElementById("menu-dl-badge");
-          if (dlBadge) {
-            if (downloads.length > 0) {
-              dlBadge.textContent = downloads.length;
-              dlBadge.style.display = "";
-            } else {
-              dlBadge.style.display = "none";
-            }
-          }
-          const rtBadge = document.getElementById("menu-rt-badge");
-          if (rtBadge) {
-            if (closedTabs.length > 0) {
-              rtBadge.textContent = closedTabs.length;
-              rtBadge.style.display = "";
-            } else {
-              rtBadge.style.display = "none";
-            }
-          }
-        }
 
         function toggleBookmarkBar() {
           bookmarkBarVisible = !bookmarkBarVisible;

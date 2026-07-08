@@ -675,7 +675,6 @@ export class CommandPalette {
               path: fsManager.dirname(file.path),
               fs: fsManager,
               notepadApp: this.services.notepadApp,
-              browserApp: this.services.browserApp,
               windowManager: this.services.windowManager,
               officeApp: this.services.officeApp,
               markdownApp: this.services.markdownApp,

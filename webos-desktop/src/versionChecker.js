@@ -54,7 +54,7 @@ class VersionChecker {
             resident: true,
             priority: 100,
             onClick: () => {
-              window.open("https://github.com/reeyuki/YukiOS/releases", "_blank", "noopener");
+              window.open("https://yukios.pages.dev", "_blank", "noopener");
             }
           });
         } else {

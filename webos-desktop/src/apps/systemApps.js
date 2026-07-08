@@ -1,26 +1,11 @@
 import "../styles/systemApps.css";
 import { BaseApp, os } from "../framework.js";
-import { DeclarativeApp } from "../runtime/DeclarativeApp.js";
 import { PersistenceTypes } from "../AppSchema.js";
 import { getAppRegistry } from "../appRegistry.js";
 
 export class SystemAppsApp extends BaseApp {
   constructor(services) {
     super(services);
-  }
-
-  open(opts = {}) {
-    const schema = this.getDeclarativeSchema(opts);
-    if (!schema.actions) schema.actions = {};
-    schema.actions.renderApps = (p, e, el, s, ae) => this.renderApps(p, e, el, s, ae);
-    schema.actions._appInstance = this;
-    const declarativeApp = new DeclarativeApp(schema, {
-      wm: this.wm,
-      fs: this.fs,
-      bus: this.bus,
-      notifications: this.notifications
-    });
-    return declarativeApp.open(opts);
   }
 
   getDeclarativeSchema() {

@@ -153,9 +153,7 @@ export class EmojiSelectorApp extends BaseApp {
         initial: {},
         persistence: PersistenceTypes.MEMORY
       },
-      actions: {
-        _appInstance: this
-      },
+      actions: {},
       onMount: "initEmojiSelector"
     };
   }

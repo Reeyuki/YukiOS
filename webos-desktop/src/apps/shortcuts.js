@@ -251,7 +251,7 @@ export class ShortcutsApp extends BaseApp {
         global: "Global & System",
         desktop: "Desktop & Files",
         notepad: "Notepad",
-        browser: "Cors Browser",
+        browser: "Yuki Browser",
         calc: "Calculator",
         calendar: "Calendar",
         terminal: "Terminal",

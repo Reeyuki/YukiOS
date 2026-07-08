@@ -332,7 +332,7 @@
   opacity: 0.7;
   margin-bottom: 4px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: var(--ls-wide);
 }
 
 .ai-message-content {
@@ -453,7 +453,7 @@
   margin: 0 0 8px 0;
   color: var(--text-secondary);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: var(--ls-wide);
 }
 
 .ai-quick-hint {
@@ -491,7 +491,7 @@
   margin-bottom: 6px;
   color: var(--text-secondary);
   font-size: 10px;
-  letter-spacing: 0.5px;
+  letter-spacing: var(--ls-wide);
   text-transform: uppercase;
 }
 
@@ -565,7 +565,7 @@
   background: var(--glass);
   color: var(--text-secondary);
   font-size: 10px;
-  letter-spacing: 0.3px;
+  letter-spacing: var(--ls-wide);
   text-transform: uppercase;
 }
 

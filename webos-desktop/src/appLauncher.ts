@@ -118,7 +118,7 @@ export class AppLauncher {
       os.storage.set(StorageKeys.newsReadSignatureKey, currentNewsSig);
     } else if (savedNewsSig !== currentNewsSig && setupCompleted) {
       setTimeout(() => {
-        this.newsApp.open();
+        this.launch("newsApp");
         os.storage.set(StorageKeys.newsReadSignatureKey, currentNewsSig);
         os.storage.set(StorageKeys.newsSeenKey, "true");
       }, 1000);
@@ -190,14 +190,18 @@ export class AppLauncher {
               return appInstance.onClose(winId, state);
             };
           }
-          schema.actions._appInstance = appInstance;
           this._declarativeSchemas.set(schema.id, schema);
-          const declarativeApp = new DeclarativeApp(schema, {
-            wm: this.wm,
-            fs: this.fs,
-            bus: null,
-            notifications: null
-          });
+          const declarativeApp = new DeclarativeApp(
+            schema,
+            {
+              wm: this.wm,
+              fs: this.fs,
+              bus: null,
+              notifications: null,
+              dialog: os.dialog
+            },
+            appInstance
+          );
           return declarativeApp.open(opts);
         }
       } catch (e) {

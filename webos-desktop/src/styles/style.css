@@ -97,6 +97,13 @@
   --text-xl: 20px;
   --text-2xl: 24px;
 
+  --lh-tight: 1.2;
+  --lh-normal: 1.5;
+  --lh-relaxed: 1.6;
+
+  --ls-normal: 0;
+  --ls-wide: 0.08em;
+
   --blur-xs: 10px;
   --blur-sm: 12px;
   --blur-md: 14px;
@@ -150,6 +157,44 @@ body {
   background: var(--bg-primary);
   color: var(--text-primary);
   user-select: none;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+h1 {
+  font-size: var(--text-2xl, 24px);
+  line-height: var(--lh-tight);
+  font-weight: 700;
+}
+h2 {
+  font-size: var(--text-xl, 20px);
+  line-height: var(--lh-tight);
+}
+h3 {
+  font-size: var(--text-lg, 18px);
+  line-height: var(--lh-tight);
+}
+h4 {
+  font-size: var(--text-md, 16px);
+  line-height: var(--lh-body);
+}
+h5 {
+  font-size: var(--text-base, 14px);
+  line-height: var(--lh-body);
+}
+h6 {
+  font-size: var(--text-sm, 12px);
+  line-height: var(--lh-body);
+  text-transform: uppercase;
+  letter-spacing: var(--ls-wide);
 }
 
 #selection-box {
@@ -216,24 +261,6 @@ body {
 
 .app-menubar-item.active {
   background: var(--brand-dim);
-  color: var(--text-primary);
-}
-
-.app-menubar-close {
-  margin-left: auto;
-  padding: 4px 8px;
-  cursor: pointer;
-  color: var(--text-secondary);
-  border-radius: var(--r-sm);
-  transition: background 0.1s;
-  font-size: 12px;
-  border: none;
-  background: none;
-  line-height: 1;
-}
-
-.app-menubar-close:hover {
-  background: var(--glass-hover);
   color: var(--text-primary);
 }
 

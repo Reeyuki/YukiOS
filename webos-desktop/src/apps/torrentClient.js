@@ -61,7 +61,6 @@ export class TorrentClientApp extends BaseApp {
               <div class="dropdown-item" data-action="about">About Torrent Client</div>
             </div>
           </div>
-          <button class="app-menubar-close" data-action="close" title="Close"><i class="fas fa-times"></i></button>
         </div>
         <div class="torrent-main-layout">
           <div class="torrent-sidebar">
@@ -176,14 +175,6 @@ export class TorrentClientApp extends BaseApp {
         closeAllMenus();
       });
     });
-
-    const closeBtn = win.querySelector(".app-menubar-close");
-    if (closeBtn) {
-      closeBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        os.window.close(win);
-      });
-    }
 
     const closeHandler = (e) => {
       if (!win.contains(e.target)) closeAllMenus();

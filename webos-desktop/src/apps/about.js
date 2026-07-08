@@ -169,8 +169,8 @@ export class AboutApp extends BaseApp {
                     <div class="abx-sponsor-title">Become a Sponsor</div>
                     <div class="abx-sponsor-desc">Help keep YukiOS free and open source. Your support directly funds development.</div>
                     <div class="abx-sponsor-buttons">
-                      <a href="https://github.com/sponsors/Reeyuki" target="_blank" rel="noopener noreferrer" class="abx-sponsor-btn">
-                        <i class="fab fa-github"></i> GitHub Sponsors
+                      <a href="https://ko-fi.com/Reeyuki" target="_blank" rel="noopener noreferrer" class="abx-sponsor-btn abx-sponsor-btn-kofi">
+                        <i class="fab fa-kofi"></i> Ko-fi
                       </a>
                       <a href="https://patreon.com/Reeyuki" target="_blank" rel="noopener noreferrer" class="abx-sponsor-btn abx-sponsor-btn-patreon">
                         <i class="fab fa-patreon"></i> Patreon

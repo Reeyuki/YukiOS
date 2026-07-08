@@ -630,7 +630,6 @@ export class DataEditorApp extends BaseApp {
         persistence: PersistenceTypes.MEMORY
       },
       actions: {
-        _appInstance: this,
         setTab: (payload, event, element, state, actionExecutor) => {
           const app = actionExecutor.appInstance;
           app.currentTab = payload;

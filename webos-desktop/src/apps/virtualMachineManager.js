@@ -1,7 +1,6 @@
 import "../styles/virtualMachineManager.css";
 import { BaseApp, os, StorageKeys } from "../framework.js";
 import { IFRAME_ATTRS } from "../shared/iframeAttrs.js";
-import { DeclarativeApp } from "../runtime/DeclarativeApp.js";
 
 const OS_LIST = [
   {
@@ -48,24 +47,6 @@ export class VirtualMachineManagerApp extends BaseApp {
 
   _saveVMs() {
     os.storage.set(STORAGE_KEY, this._vms);
-  }
-
-  open(opts) {
-    const schema = this.getDeclarativeSchema(opts);
-    if (!schema.actions) schema.actions = {};
-    if (!schema.actions.initVM) {
-      schema.actions.initVM = (payload, event, element, state, actionExecutor) => {
-        return this.initVM(payload, event, element, state, actionExecutor);
-      };
-    }
-    schema.actions._appInstance = this;
-    const declarativeApp = new DeclarativeApp(schema, {
-      wm: this.wm,
-      fs: this.fs,
-      bus: this.bus,
-      notifications: this.notifications
-    });
-    return declarativeApp.open(opts);
   }
 
   getDeclarativeSchema() {

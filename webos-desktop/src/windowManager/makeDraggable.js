@@ -91,7 +91,7 @@ export function windowMakeDraggable(win, wm) {
       },
       {
         ignoreFrom:
-          "button, input, select, textarea, .browser-tab, .tab-close, .tab-new-btn, .steam-menu-item, .steam-user-profile, .steam-notifications, .app-menubar-item, .app-menubar-close"
+          "button, input, select, textarea, .browser-tab, .tab-close, .tab-new-btn, .steam-menu-item, .steam-user-profile, .steam-notifications, .app-menubar-item"
       }
     );
 
@@ -104,7 +104,7 @@ export function windowMakeDraggable(win, wm) {
 
   const isInteractive = (target) => {
     return !!target.closest(
-      "button, input, select, textarea, .browser-tab, .tab-close, .tab-new-btn, .steam-menu-item, .steam-user-profile, .steam-notifications, .app-menubar-item, .app-menubar-close"
+      "button, input, select, textarea, .browser-tab, .tab-close, .tab-new-btn, .steam-menu-item, .steam-user-profile, .steam-notifications, .app-menubar-item"
     );
   };
 

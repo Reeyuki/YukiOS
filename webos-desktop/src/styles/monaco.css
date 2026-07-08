@@ -78,6 +78,16 @@
   background: #454545;
 }
 
+.monaco-tabs-container {
+  display: flex;
+  align-items: center;
+  background: #252526;
+  border-bottom: 1px solid #1e1e1e;
+  height: 36px;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
 .monaco-tabs {
   display: flex;
   flex: 1;

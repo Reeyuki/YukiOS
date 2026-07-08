@@ -6,7 +6,7 @@ import { PersistenceTypes } from "./AppSchema.js";
 import { os } from "../os/index.js";
 
 export class DeclarativeApp {
-  constructor(appDefinition, services) {
+  constructor(appDefinition, services, appInstance = null) {
     this.definition = appDefinition;
     this.services = services;
     this.wm = services.wm || services.windowManager;
@@ -20,7 +20,7 @@ export class DeclarativeApp {
       appDefinition.state?.persistence || PersistenceTypes.MEMORY
     );
 
-    this.actionExecutor = new ActionExecutor(services, this.stateManager);
+    this.actionExecutor = new ActionExecutor(services, this.stateManager, appInstance);
 
     this.appRenderer = new AppRenderer(this.wm, this.stateManager, this.actionExecutor);
     this.eventBinder = new EventBinder(this.stateManager, this.actionExecutor);
@@ -33,13 +33,10 @@ export class DeclarativeApp {
   _registerCustomActions() {
     if (this.definition.actions) {
       Object.entries(this.definition.actions).forEach(([name, handler]) => {
-        if (typeof handler === "function" && name !== "_appInstance") {
+        if (typeof handler === "function") {
           this.actionExecutor.registerCustomAction(name, handler);
         }
       });
-    }
-    if (this.definition.actions._appInstance) {
-      this.actionExecutor.appInstance = this.definition.actions._appInstance;
     }
   }
 
@@ -89,10 +86,24 @@ export class DeclarativeApp {
       if (typeof this.definition.onMount === "string") {
         const action = this.actionExecutor.customActions.get(this.definition.onMount);
         if (action) {
-          action(null, null, win, this.stateManager.state, this.actionExecutor);
+          const result = action(null, null, win, this.stateManager.state, this.actionExecutor);
+          if (result instanceof Promise) {
+            result.catch((err) => {
+              console.error(`onMount action '${this.definition.onMount}' failed`, err);
+            });
+          }
         }
       } else if (typeof this.definition.onMount === "function") {
-        this.definition.onMount(win, this.stateManager.state, this.actionExecutor);
+        try {
+          const result = this.definition.onMount(win, this.stateManager.state, this.actionExecutor);
+          if (result instanceof Promise) {
+            result.catch((err) => {
+              console.error(`onMount function failed`, err);
+            });
+          }
+        } catch (err) {
+          console.error(`onMount function failed`, err);
+        }
       }
     }
 

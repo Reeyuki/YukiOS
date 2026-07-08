@@ -475,7 +475,6 @@
   transition:
     background 0.2s,
     color 0.2s;
-  letter-spacing: 1px;
 }
 
 .browser-menu-btn:hover {
@@ -722,7 +721,7 @@
   color: var(--text-secondary);
   padding: 10px 16px 4px;
   text-transform: uppercase;
-  letter-spacing: 0.8px;
+  letter-spacing: var(--ls-wide);
   font-weight: 600;
 }
 
@@ -889,7 +888,7 @@
   margin-bottom: 8px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.7px;
+  letter-spacing: var(--ls-wide);
 }
 
 .dm-row {

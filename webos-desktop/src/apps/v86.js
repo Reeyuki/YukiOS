@@ -90,6 +90,16 @@ export class V86App extends BaseApp {
               click: {
                 type: "custom:launchSystem",
                 stopPropagation: true
+              },
+              mouseenter: {
+                type: "custom:cardHover",
+                payload: { hover: true },
+                stopPropagation: false
+              },
+              mouseleave: {
+                type: "custom:cardHover",
+                payload: { hover: false },
+                stopPropagation: false
               }
             }
           }
@@ -128,119 +138,18 @@ export class V86App extends BaseApp {
           const systemId = element.dataset.system;
           const systemName = element.querySelector("div").textContent;
           this.launchSystem(systemId, systemName);
+        },
+        cardHover: (payload, event, element, state) => {
+          element.classList.toggle("emu-card--hover", payload.hover);
         }
-      }
+      },
+      onMount: "_initV86"
     };
   }
 
-  open() {
+  async _initV86(payload, event, element, state) {
     this._loadV86Script();
-
-    const winId = `v86-${Date.now()}`;
-
-    const content = `
-      <div class="window-content v86-shell emu-shell">
-        <div class="v86-header emu-header">
-          <i class="fa-solid fa-microchip v86-header-icon emu-header-icon"></i>
-          <div class="v86-header-text emu-header-text">
-            <div class="v86-title emu-title">V86 Emulator</div>
-            <div class="v86-subtitle emu-subtitle">Run x86 operating systems in your browser</div>
-          </div>
-        </div>
-        <div 
-          id="v86-upload-zone"
-          class="v86-upload-zone emu-upload-zone"
-        >
-          <i class="fa-solid fa-upload v86-upload-icon emu-upload-icon"></i>
-          <div class="v86-upload-text emu-upload-text">Drop a <strong>.iso</strong>, <strong>.img</strong>, or <strong>.bin</strong> file here</div>
-          <div class="v86-upload-subtext emu-upload-subtext">or click to browse</div>
-          <input type="file" id="v86-file-input" class="emu-file-input" accept=".iso,.img,.bin,.state,.gz">
-        </div>
-        <div class="v86-section-title emu-section-title">My Images</div>
-        <div id="v86-user-images" class="emu-grid"></div>
-        <div class="v86-section-title emu-section-title">Featured Systems</div>
-        <div class="v86-system-grid emu-grid" id="v86-system-grid">
-          ${this._generateSystemCards()}
-        </div>
-      </div>`;
-
-    const win = os.window.create(winId, "V86", "800px", "600px", {
-      icon: resolveIconUrl("static/icons/v86.webp")
-    });
-
-    const contentDiv = document.createElement("div");
-    contentDiv.className = "window-content";
-    contentDiv.style.cssText = "width:100%; height:100%; overflow:hidden;";
-    contentDiv.innerHTML = content;
-    win.appendChild(contentDiv);
-
-    this._setupSystemCardListeners(win);
-    this._setupUploadZone(win);
-    this._loadUserImages(win);
-  }
-
-  _generateSystemCards() {
-    const systems = [
-      { id: "freedos", name: "FreeDOS", icon: "fa-solid fa-terminal" },
-      { id: "openbsd", name: "OpenBSD", icon: "fa-solid fa-fish" }
-    ];
-
-    return systems
-      .map(
-        (sys) => `
-      <div class="v86-system-card emu-card" data-system="${sys.id}">
-        <i class="${sys.icon} v86-system-icon emu-card-icon"></i>
-        <div class="v86-system-name emu-card-title">${sys.name}</div>
-      </div>
-    `
-      )
-      .join("");
-  }
-
-  _setupSystemCardListeners(win) {
-    const cards = win.querySelectorAll(".v86-system-card");
-    cards.forEach((card) => {
-      card.addEventListener("click", () => {
-        const systemId = card.dataset.system;
-        const systemName = card.querySelector("div").textContent;
-        this.launchSystem(systemId, systemName);
-      });
-      card.addEventListener("mouseenter", () => {
-        card.classList.add("emu-card--hover");
-      });
-      card.addEventListener("mouseleave", () => {
-        card.classList.remove("emu-card--hover");
-      });
-    });
-  }
-
-  _setupUploadZone(win) {
-    const zone = win.querySelector("#v86-upload-zone");
-    const input = win.querySelector("#v86-file-input");
-
-    zone.addEventListener("click", () => input.click());
-
-    zone.addEventListener("dragover", (e) => {
-      e.preventDefault();
-      zone.classList.add("v86-upload-zone-dragover");
-    });
-
-    zone.addEventListener("dragleave", () => {
-      zone.classList.remove("v86-upload-zone-dragover");
-    });
-
-    zone.addEventListener("drop", (e) => {
-      e.preventDefault();
-      zone.classList.remove("v86-upload-zone-dragover");
-      const file = e.dataTransfer.files[0];
-      if (file) this._handleUploadedFile(file, win);
-    });
-
-    input.addEventListener("change", () => {
-      const file = input.files[0];
-      if (file) this._handleUploadedFile(file, win);
-      input.value = "";
-    });
+    await this._loadUserImages(element);
   }
 
   async _handleUploadedFile(file, zone) {

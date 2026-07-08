@@ -15,7 +15,6 @@ export class AppRestorationService {
       name: launcherPropertyName,
       windowIdPatterns: appMetadata.windowIdPatterns || [],
       appTypeHint: appMetadata.appTypeHint,
-      isHeavy: appMetadata.isHeavy || false,
       ...appMetadata
     });
   }
@@ -32,7 +31,6 @@ export class AppRestorationService {
         this.registerApp(appId, {
           windowIdPatterns: metadata.windowIdPatterns,
           appTypeHint: "system",
-          isHeavy: metadata.isHeavy || false,
           persistContentState: metadata.persistContentState !== false
         });
       }
@@ -241,39 +239,20 @@ export class AppRestorationService {
         return;
       }
 
-      const heavyApps = [];
-      const lightApps = [];
-      const failedApps = [];
-
       for (const state of windowStates) {
         const appId = this.findAppId(state);
 
         if (!appId) {
           this._logRestore(`Skipped: Unknown app for window ${state.id}`);
-          failedApps.push(state);
           continue;
         }
 
         if (!this.appExists(appId)) {
           this._logRestore(`Skipped: App '${appId}' not available in launcher for window ${state.id}`);
-          failedApps.push(state);
           continue;
         }
 
-        const metadata = this.appRegistry.get(appId);
-        if (metadata && metadata.isHeavy) {
-          heavyApps.push({ state, appId });
-        } else {
-          lightApps.push({ state, appId });
-        }
-      }
-
-      for (const item of lightApps) {
-        await this._restoreWindow(item.state, item.appId);
-      }
-
-      if (heavyApps.length > 0) {
-        await this._restoreHeavyAppsThrottled(heavyApps);
+        await this._restoreWindow(state, appId);
       }
 
       const lastFocused = windowStates.find((s) => s.focused);
@@ -286,10 +265,6 @@ export class AppRestorationService {
             console.warn("Failed to focus window:", e);
           }
         }
-      }
-
-      if (failedApps.length > 0) {
-        this._logRestore(`Skipped ${failedApps.length} windows due to unavailable apps`);
       }
     } catch (e) {
       console.error("Failed to restore window session:", e);
@@ -391,13 +366,6 @@ export class AppRestorationService {
     } catch (e) {
       this._logRestore(`Error: Failed to restore ${state.id}: ${e.message}`);
       console.error(`Failed to restore window ${state.id}:`, e);
-    }
-  }
-
-  async _restoreHeavyAppsThrottled(apps) {
-    for (const item of apps) {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      await this._restoreWindow(item.state, item.appId);
     }
   }
 

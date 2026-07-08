@@ -84,7 +84,6 @@ export class NotepadApp extends BaseApp {
             <div class="dropdown-item" data-action="about">About Notepad</div>
           </div>
         </div>
-        <button class="app-menubar-close" data-action="close" title="Close"><i class="fas fa-times"></i></button>
       </div>
       <div class="window-content notepad-content">
         <textarea class="notepad-textarea">${this.escapeHtml(content)}</textarea>
@@ -196,14 +195,6 @@ export class NotepadApp extends BaseApp {
         closeAllMenus();
       });
     });
-
-    const closeBtn = win.querySelector(".app-menubar-close");
-    if (closeBtn) {
-      closeBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        this.closeWindow(win, winId);
-      });
-    }
 
     const closeHandler = (e) => {
       if (!win.contains(e.target)) closeAllMenus();

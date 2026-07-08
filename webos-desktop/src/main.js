@@ -1,7 +1,7 @@
 import { ExplorerApp } from "./apps/explorer.js";
 import { WindowManager } from "./windowManager.js";
 import { AppLauncher } from "./appLauncher.js";
-import { BrowserApp } from "./apps/browserApp.js";
+import { BrowserApp } from "./apps/browser.js";
 import { NotepadApp } from "./apps/notepad.js";
 import { SystemUtilities } from "./system.js";
 import { setGameLauncher } from "./games/games.js";

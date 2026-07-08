@@ -259,7 +259,7 @@ export class JsDosApp extends BaseApp {
 
       iframeEl = document.createElement("iframe");
       iframeEl.src = iframeBlobUrl;
-      iframeEl.className = "emu-iframe";
+      iframeEl.style.cssText = "width:100%;height:100%;border:none;display:block;";
       iframeEl.setAttribute("allowfullscreen", "");
       inner.appendChild(iframeEl);
     } catch (e) {

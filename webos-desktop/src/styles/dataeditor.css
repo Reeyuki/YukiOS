@@ -282,7 +282,7 @@
   color: var(--text-primary);
   font-family: var(--font-mono);
   font-size: 0.9em;
-  line-height: 1.5;
+  line-height: var(--lh-body);
   outline: none;
   white-space: pre;
   overflow-wrap: normal;
@@ -352,7 +352,7 @@
   color: var(--text-secondary);
   padding: 8px 10px 4px;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--ls-wide);
 }
 
 .de-pagination {

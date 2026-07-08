@@ -1407,7 +1407,6 @@ export class OfficeApp extends BaseApp {
       </button>
     </div>
   </div>
-  <button class="app-menubar-close" data-action="close" title="Close"><i class="fas fa-times"></i></button>
 </div>
       <div class="office-window-content">
         <div class="office-editor-area">
@@ -2215,14 +2214,6 @@ export class OfficeApp extends BaseApp {
   }
   setupMenuBar(win, state) {
     const menuBar = $(".app-menubar", win);
-
-    const closeBtn = $(".app-menubar-close", win);
-    if (closeBtn) {
-      bindEvent(closeBtn, "click", (e) => {
-        e.stopPropagation();
-        os.window.close(win);
-      });
-    }
 
     const ext = state.ext;
     const isSpreadsheet = [".xlsx", ".xls", ".csv"].includes(ext);

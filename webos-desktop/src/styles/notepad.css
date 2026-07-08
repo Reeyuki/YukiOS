@@ -131,7 +131,7 @@
   color: var(--text-primary);
   font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
   font-size: 14px;
-  line-height: 1.7;
+  line-height: var(--lh-relaxed);
   caret-color: var(--brand);
   box-sizing: border-box;
   scrollbar-width: thin;

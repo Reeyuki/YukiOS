@@ -8,6 +8,7 @@ import { getLibraryUrl } from "../shared/cdnConfig.js";
 import { KeybindManager } from "../keybindManager.js";
 import { $, $$, bindEvent, toggleClass, addClass, removeClass, setText, setHTML } from "../shared/domUtils.js";
 
+import { showAboutDialog } from "../shared/aboutDialog.js";
 import { BaseApp, os } from "../framework.js";
 const SAMPLE_MODELS = [
   {
@@ -316,6 +317,12 @@ export class Model3DApp extends BaseApp {
           <div class="yb-dropdown-sep"></div>
           <div class="yb-dropdown-item" data-action="recalcNormals"><i class="fa fa-project-diagram"></i> Recalculate Normals</div>
           <div class="yb-dropdown-item" data-action="flattenToWorld"><i class="fa fa-compress-arrows-alt"></i> Apply Transforms</div>
+        </div>
+      </div>
+
+      <div class="yb-menu-item" data-menu="help"><span>Help</span>
+        <div class="yb-dropdown">
+          <div class="yb-dropdown-item" data-action="about"><i class="fa fa-info-circle"></i> About Yuki Blender</div>
         </div>
       </div>
     </div>
@@ -2411,6 +2418,10 @@ export class Model3DApp extends BaseApp {
       case "exportSceneJSON":
         this._exportSceneJSON();
         break;
+
+      case "about":
+        this._showAboutDialog();
+        break;
     }
   }
 
@@ -2779,5 +2790,15 @@ export class Model3DApp extends BaseApp {
     }
     await this.loadModel(ab, sample.fileName);
     os.notify.send(`Loaded: ${sample.name}`, "Load");
+  }
+
+  _showAboutDialog() {
+    showAboutDialog({
+      title: "Yuki Blender",
+      version: "1.0.0",
+      description: "Browser-native 3D editor with modeling, animation, and scene editing powered by three.js.",
+      icon: "static/icons/3dmodel.webp",
+      iconType: "image"
+    });
   }
 }

@@ -1,11 +1,12 @@
 import "../styles/emulator.css";
 import { Achievements } from "../achievements.js";
 import { BusEvents } from "../core/EventBus.js";
-import { CDN_BASES } from "../shared/assetResolver.js";
+import { resolveIconUrl } from "../shared/assetResolver.js";
 import { CDN_CONFIG } from "../shared/cdnConfig.js";
 import { audioMixer } from "../audioMixer.js";
 
 import { BaseApp, PersistenceTypes, os } from "../framework.js";
+const EMULATOR_ICON = "static/icons/emulator.webp";
 const ROMS_DIR = ["ROMs"];
 const DESKTOP_DIR = ["Desktop"];
 
@@ -103,17 +104,17 @@ export class EmulatorApp extends BaseApp {
     return {
       id: "emulator-win",
       name: "Yuki Emulator",
-      icon: "static/icons/emulator.webp",
+      icon: EMULATOR_ICON,
       windows: [
         {
           id: "emulator-win",
           title: "Yuki Emulator",
           size: ["800px", "600px"],
-          icon: "static/icons/emulator.webp",
+          icon: EMULATOR_ICON,
           ui: `
       <div class="emu-shell ruf-container">
         <div class="emu-header ruf-header">
-          <img src="static/icons/emulator.webp" class="emu-header-icon ruf-icon-main">
+          <img src="${resolveIconUrl(EMULATOR_ICON)}" class="emu-header-icon ruf-icon-main">
           <div class="emu-header-text">
             <div class="emu-title ruf-title">Emulator JS</div>
             <div class="emu-subtitle ruf-subtitle">Play classic games in your browser</div>
@@ -283,14 +284,8 @@ export class EmulatorApp extends BaseApp {
     try {
       for (const file of files) {
         const blob = new Blob([await file.arrayBuffer()], { type: file.type || "application/octet-stream" });
-        await os.fs.writeBinaryFile(ROMS_DIR, file.name, blob, "other", CDN_BASES.MAIN + "/static/icons/emulator.webp");
-        await os.fs.writeBinaryFile(
-          DESKTOP_DIR,
-          file.name,
-          blob,
-          "rom",
-          CDN_BASES.MAIN + "/static/icons/emulator.webp"
-        );
+        await os.fs.writeBinaryFile(ROMS_DIR, file.name, blob, "other", resolveIconUrl(EMULATOR_ICON));
+        await os.fs.writeBinaryFile(DESKTOP_DIR, file.name, blob, "rom", resolveIconUrl(EMULATOR_ICON));
         os.events.emit(BusEvents.FILE_CHANGED, { path: file.name });
       }
 
@@ -307,11 +302,6 @@ export class EmulatorApp extends BaseApp {
         zone.innerHTML = originalHTML;
       }, 2500);
     }
-  }
-
-  async open() {
-    if (await this._isSingletonOpen("emulator-win")) return;
-    return super.open();
   }
 
   _detectSystem(ext) {
@@ -384,7 +374,7 @@ export class EmulatorApp extends BaseApp {
   async _launchEmulator(displayName, fileName, romData, forcedCore = null) {
     const winId = `emulator-${Date.now()}`;
     const win = os.window.create(winId, displayName, "800px", "600px", {
-      icon: "static/icons/emulator.webp"
+      icon: EMULATOR_ICON
     });
 
     os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { achievementId: Achievements.RetroPlayer });

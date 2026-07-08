@@ -27,7 +27,7 @@ import { NetworkTrayApp } from "./tray/networkTray.js";
 import { EmojiSelectorApp } from "./apps/emojiSelector.js";
 import { SystemAppsApp } from "./apps/systemApps.js";
 import { RhythmsApp } from "./apps/rhythms.js";
-import { ScramjetApp } from "./apps/scramjet.js";
+import { BrowserApp } from "./apps/browser.js";
 import { YoutubeApp } from "./apps/youtube.js";
 import { TorrentClientApp } from "./apps/torrentClient.js";
 import { VirtualMachineManagerApp } from "./apps/virtualMachineManager.js";
@@ -70,7 +70,7 @@ const APP_CLASS_MAP = {
   emojiSelectorApp: EmojiSelectorApp,
   systemAppsApp: SystemAppsApp,
   rhythmsApp: RhythmsApp,
-  scramjetApp: ScramjetApp,
+  browserApp: BrowserApp,
   youtubeApp: YoutubeApp,
   torrentClientApp: TorrentClientApp,
   virtualMachineManagerApp: VirtualMachineManagerApp,

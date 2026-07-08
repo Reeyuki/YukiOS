@@ -39,8 +39,6 @@ export class AchievementsApp extends BaseApp {
     this.achievements = this._createAchievements();
     this.unlocked = new Set();
     this.s1 = new Audio(resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/audio/steam.opus"));
-    this.s2 = new Audio(resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/audio/slime1.opus"));
-    this.s3 = new Audio(resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/audio/slime2.opus"));
 
     this._initBusListeners();
     this._thresholds = {
@@ -566,7 +564,7 @@ export class AchievementsApp extends BaseApp {
 
     if (!skipSound) {
       try {
-        const sounds = [this.s1, this.s2, this.s3];
+        const sounds = [this.s1];
         const pick = sounds[Math.floor(Math.random() * sounds.length)];
         pick.currentTime = 0;
         pick.volume = audioMixer().masterVolume * audioMixer().systemVolume;

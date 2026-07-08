@@ -5,9 +5,9 @@ import { getLibraryUrl } from "../shared/cdnConfig.js";
 import { ClippyAnimation, speak } from "../ai/clippy.js";
 import { decodeDataURLContent } from "../fileDisplay.js";
 import { showConflictDialog } from "../shared/conflictDialog.js";
-import { FileKind } from "../fs.js";
+import { showAboutDialog } from "../shared/aboutDialog.js";
 import { Shell } from "../shared/shell.js";
-
+import { FileKind } from "../shared/fileKindDetector.js";
 import { BaseApp, os } from "../framework.js";
 import { KeybindManager } from "../keybindManager.js";
 export class MonacoApp extends BaseApp {
@@ -1657,8 +1657,14 @@ export class MonacoApp extends BaseApp {
       },
       showDocs: () => window.open("https://code.visualstudio.com/docs", "_blank"),
       about: () => {
-        os.notify.send("Yuki Code v1.0");
-        speak("This is Yuki Code, the code editor that powers VS Code!", ClippyAnimation.Greeting);
+        showAboutDialog({
+          title: "Yuki Code",
+          version: "1.0.0",
+          description:
+            "A powerful code editor built on Monaco, the engine behind VS Code. Write, edit, and manage code with syntax highlighting, multi-tab editing, and an integrated terminal.",
+          icon: "fas fa-code",
+          iconType: "fontawesome"
+        });
       }
     };
 

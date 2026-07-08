@@ -355,18 +355,19 @@ export const APP_MANIFESTS = [
       "Audio visualizer with Lines and Circle modes, customizable tile count, and smooth bouncy physics for system-wide audio."
   },
   {
-    serviceKey: "scramjetApp",
-    enhanced: true,
+    serviceKey: "browserApp",
     type: "system",
-    title: "Browser",
-    icon: "fas fa-globe",
+    title: "Yuki Browser",
+    icon: "fas fa-snowflake",
     launchType: "instance",
-    windowIdPatterns: ["scramjet"],
+    windowIdPatterns: ["browser"],
+    isHeavy: true,
     category: "internet",
-    persistContentState: false,
-    clippy: { message: "Browse the web freely with powerful tab management.", animation: ClippyAnimation.GetArtsy },
-    description:
-      "Full-featured web browser with tab management, bookmarks, history, and proxy support for unrestricted browsing."
+    clippy: {
+      message: "Select Tor from the proxy dropdown to browse anonymously. I'll handle the setup.",
+      animation: ClippyAnimation.Wave
+    },
+    description: "CORS proxy browser with bookmarks, history, tab management, and Tor anonymous browsing within YukiOS."
   },
   {
     serviceKey: "discordApp",
@@ -911,21 +912,6 @@ export const APP_MANIFESTS = [
     clippy: { message: "Stream on Senshi", animation: ClippyAnimation.Show },
     description: "Stream anime shows and movies with a clean, simple interface on Senshi.",
     windowSize: ["90vw", "85vh"]
-  },
-  {
-    serviceKey: "browserApp",
-    type: "system",
-    title: "Cors Browser",
-    icon: "fas fa-snowflake",
-    launchType: "instance",
-    windowIdPatterns: ["browser"],
-    isHeavy: true,
-    category: "internet",
-    clippy: {
-      message: "Select Tor from the proxy dropdown to browse anonymously. I'll handle the setup.",
-      animation: ClippyAnimation.Wave
-    },
-    description: "CORS proxy browser with bookmarks, history, tab management, and Tor anonymous browsing within YukiOS."
   },
   {
     serviceKey: "yukiDevToolsApp",

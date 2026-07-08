@@ -50,7 +50,6 @@
   font-size: 18px;
   font-weight: 600;
   color: #fff;
-  letter-spacing: 0.3px;
   white-space: nowrap;
 }
 
@@ -578,7 +577,7 @@
   color: #fff;
   color: rgba(255, 255, 255, 0.45);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: var(--ls-wide);
 }
 
 .overlay-achievements-header {
@@ -686,7 +685,7 @@
 .overlay-ach-rarity {
   font-size: 10px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: var(--ls-wide);
   padding: 2px 5px;
   font-weight: 600;
   flex-shrink: 0;
@@ -1006,7 +1005,7 @@
   font-weight: 600;
   color: rgba(255, 255, 255, 0.55);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: var(--ls-wide);
   margin-bottom: 8px;
 }
 

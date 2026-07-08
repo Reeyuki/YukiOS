@@ -208,13 +208,6 @@ export class RuffleApp extends BaseApp {
     }
   }
 
-  async open() {
-    if (await this._isSingletonOpen("ruffle-win")) return;
-
-    this._loadRuffleScript();
-    return super.open();
-  }
-
   async launchSWF(fileName, path) {
     const normalizedPath = Array.isArray(path)
       ? path

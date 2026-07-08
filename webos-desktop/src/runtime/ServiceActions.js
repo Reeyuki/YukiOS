@@ -67,5 +67,33 @@ export const ServiceActions = {
     emit: { type: ActionTypes.SERVICE, service: "bus", method: "emit", description: "Emit event to event bus" },
     on: { type: ActionTypes.SERVICE, service: "bus", method: "on", description: "Subscribe to event" },
     off: { type: ActionTypes.SERVICE, service: "bus", method: "off", description: "Unsubscribe from event" }
+  },
+  dialog: {
+    alert: { type: ActionTypes.SERVICE, service: "dialog", method: "alert", description: "Show alert dialog" },
+    confirm: {
+      type: ActionTypes.SERVICE,
+      service: "dialog",
+      method: "confirm",
+      description: "Show confirmation dialog"
+    },
+    prompt: { type: ActionTypes.SERVICE, service: "dialog", method: "prompt", description: "Show prompt dialog" },
+    fileOpen: {
+      type: ActionTypes.SERVICE,
+      service: "dialog",
+      method: "fileOpen",
+      description: "Open file picker dialog"
+    },
+    fileSave: {
+      type: ActionTypes.SERVICE,
+      service: "dialog",
+      method: "fileSave",
+      description: "Open file save dialog"
+    },
+    openDirectory: {
+      type: ActionTypes.SERVICE,
+      service: "dialog",
+      method: "openDirectory",
+      description: "Open directory picker dialog"
+    }
   }
 };

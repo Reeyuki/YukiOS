@@ -88,7 +88,6 @@
   color: var(--error);
   font-family: var(--font-mono);
   text-shadow: 0 0 8px color-mix(in srgb, var(--error) 40%, transparent);
-  letter-spacing: 0.5px;
 }
 
 .camera-mode-indicator {
@@ -99,7 +98,7 @@
   font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: var(--ls-wide);
   color: var(--text-primary);
   background: var(--glass);
   border: 1px solid var(--glass-border);
@@ -657,9 +656,6 @@
   justify-content: center;
   z-index: 1000;
   backdrop-filter: blur(8px);
-}
-
-
 }
 
 #history-list:empty::before {

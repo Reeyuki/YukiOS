@@ -415,7 +415,7 @@
   font-weight: 700;
   color: #fff;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: var(--ls-wide);
   margin-bottom: 15px;
 }
 
@@ -629,7 +629,7 @@
   font-weight: 700;
   color: #fff;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: var(--ls-wide);
 }
 
 .steam-grid-controls {
@@ -725,7 +725,7 @@
   background: #ffcc00;
   color: #000;
   font-size: 9px;
-  font-weight: 900;
+  font-weight: 700;
   padding: 2px 5px;
   border-radius: 2px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
@@ -872,7 +872,7 @@
   font-weight: 700;
   color: #c6d4df;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: var(--ls-wide);
   margin: 0 0 12px 0;
   padding-bottom: 8px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
@@ -962,7 +962,7 @@
   align-self: flex-start;
   margin-top: 4px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: var(--ls-wide);
   transition: opacity 0.15s;
 }
 
@@ -1088,7 +1088,7 @@
   font-size: 9px;
   color: #4a5a6a;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: var(--ls-wide);
   align-self: flex-start;
 }
 
@@ -1168,7 +1168,7 @@
   color: #fff;
   margin: 0 0 16px 0;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: var(--ls-wide);
 }
 
 .settings-item {

@@ -20,10 +20,10 @@ Planned features and improvements for YukiOS.
 - [✅] Taskbar scaling settings
 - [✅] Taskbar scrolling with horizontal slider
 - [✅] Wobble drag animations
+- [✅] Desktop icon auto-sort rules (by name, type, recent use)
+- [✅] Draggable desktop widgets (clock, weather, calendar)
 - [ ] Add web amp
 - [ ] Fix every drag/file bug on explorer and desktop
-- [ ] Desktop icon auto-sort rules (by name, type, recent use)
-- [ ] Draggable desktop widgets (clock, weather, calendar)
 - [ ] Make transparency setting affect all tray menu panels and GUIs
 - [ ] Support for opening images in context menu with Paint
 - [ ] Add vim/nano text editors

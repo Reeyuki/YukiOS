@@ -22,7 +22,7 @@ const HARDCODED_DESKTOP_ICONS = [
   { app: "steamApp", name: "Steam", icon: "static/icons/steam.webp" },
   { app: "discordApp", name: "Discord", icon: "fab fa-discord", isFa: true },
   { app: "robloxApp", name: "Roblox", icon: "static/icons/roblox.webp" },
-  { app: "scramjetApp", name: "Browser", icon: "fas fa-snowflake", isFa: true },
+  { app: "browserApp", name: "Browser", icon: "fas fa-snowflake", isFa: true },
   { app: "systemAppsApp", name: "System Apps", icon: "fas fa-tools", isFa: true },
   { app: "notepadApp", name: "Notepad", icon: "static/icons/notepad.webp" },
   { app: "shittifyApp", name: "Evil Spotify", icon: "static/icons/shittify.webp" }

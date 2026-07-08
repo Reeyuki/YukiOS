@@ -26,6 +26,7 @@ export class TerminalApp extends BaseApp {
   }
 
   getDeclarativeSchema(opts) {
+    const initialPath = opts?.initialPath || null;
     return {
       id: "terminal-win",
       name: "Terminal",
@@ -61,7 +62,7 @@ export class TerminalApp extends BaseApp {
       ],
       state: {
         initial: {
-          currentPath: ["ys", "users", "guest"],
+          currentPath: initialPath || ["ys", "users", "guest"],
           history: [],
           historyIndex: -1,
           username: "guest",
@@ -81,55 +82,13 @@ export class TerminalApp extends BaseApp {
   }
 
   initTerminal(payload, event, element, state) {
+    this.currentPath = state.currentPath || ["ys", "users", this.sessionKey];
     this.terminalOutput = document.getElementById("terminal-output");
     this.terminalInput = document.getElementById("terminal-input");
     this.terminalPrompt = document.getElementById("terminal-prompt");
     this.terminalInputLine = document.getElementById("terminal-input-line");
     this.updatePrompt();
     this.setupEventHandlers();
-  }
-
-  open(extra = null) {
-    const initialPath = extra?.initialPath || null;
-    if (initialPath) {
-      this.currentPath = initialPath;
-    }
-
-    const content = `
-    <div class="window-content terminal-content">
-      <div class="terminal-output" id="terminal-output"></div>
-      <div class="terminal-input-line" id="terminal-input-line">
-        <span id="terminal-prompt"></span>
-        <input class="terminal-input" id="terminal-input" spellcheck="false" autocomplete="off">
-      </div>
-    </div>
-  `;
-
-    const win = os.window.create("terminal-win", "Terminal", "700px", "500px", {
-      icon: "static/icons/terminal.webp"
-    });
-
-    win.innerHTML = `
-      ${content}
-    `;
-
-    this.terminalOutput = win.querySelector("#terminal-output");
-    this.terminalInput = win.querySelector("#terminal-input");
-    this.terminalPrompt = win.querySelector("#terminal-prompt");
-    this.terminalInputLine = win.querySelector("#terminal-input-line");
-
-    this.terminalOutput.addEventListener("contextmenu", (e) => {
-      e.stopPropagation();
-    });
-
-    this.terminalOutput.style.userSelect = "text";
-    this.terminalInput.style.userSelect = "text";
-
-    this.updatePrompt();
-    this.print(`YukiOS Terminal for ${this.displayName}`, "#00ff00");
-    this.print("Type 'help' for available commands\n");
-    this.setupEventHandlers();
-    this.terminalInput.focus();
   }
 
   _setupSessionListener() {

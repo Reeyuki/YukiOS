@@ -115,7 +115,7 @@
 .wx-location {
   font-size: 13px;
   color: var(--brand);
-  letter-spacing: 2px;
+  letter-spacing: var(--ls-wide);
   text-transform: uppercase;
   margin-bottom: 10px;
 }
@@ -129,7 +129,6 @@
 .wx-temp-big {
   font-size: 52px;
   font-weight: bold;
-  letter-spacing: -2px;
   color: var(--text-primary);
   line-height: 1;
 }
@@ -175,7 +174,7 @@
   font-size: 10px;
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: var(--ls-wide);
 }
 
 .wx-forecast {
@@ -199,7 +198,7 @@
   font-size: 1em;
   color: var(--brand);
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: var(--ls-wide);
 }
 
 .wx-ficon {
@@ -278,7 +277,6 @@
   font-size: 20px;
   font-weight: bold;
   color: var(--text-primary);
-  letter-spacing: 1px;
 }
 
 .wx-placeholder-desc {

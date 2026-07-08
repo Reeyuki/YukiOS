@@ -28,7 +28,7 @@ const THEME_VARS = [
 
 let _scramjetInstanceCount = 0;
 
-export class ScramjetApp extends BaseApp {
+export class BrowserApp extends BaseApp {
   constructor(services) {
     super(services);
     this.iframe = null;
@@ -61,7 +61,10 @@ export class ScramjetApp extends BaseApp {
         }
       ],
       state: {
-        initial: opts?.isIncognito ? { isIncognito: true } : {},
+        initial: {
+          ...(opts?.isIncognito ? { isIncognito: true } : {}),
+          ...(opts?.openUrl ? { openUrl: opts.openUrl } : {})
+        },
         persistence: PersistenceTypes.NONE
       },
       onMount: "initScramjet",
@@ -127,7 +130,7 @@ export class ScramjetApp extends BaseApp {
       } else if (data.type === "scram:setHistory") {
         os.storage.set(StorageKeys.browserHistory, data.history || []);
       } else if (data.type === "browser-new-window") {
-        os.app.launch("scramjetApp", { isIncognito: !!data.incognito });
+        os.app.launch("browserApp", { isIncognito: !!data.incognito });
       }
     };
     this._msgHandler = msgHandler;
@@ -136,6 +139,7 @@ export class ScramjetApp extends BaseApp {
     iframe.addEventListener("load", () => {
       sendDataToIframe();
       this._trySetupIframe(iframe, element);
+      if (state.openUrl) this._navigateToUrl(iframe, state.openUrl);
     });
   }
 
@@ -316,5 +320,39 @@ export class ScramjetApp extends BaseApp {
     }
     this.iframe = null;
     this._element = null;
+  }
+
+  openHtml(content, name, path) {
+    const blob = new Blob([content], { type: "text/html" });
+    const blobUrl = URL.createObjectURL(blob);
+
+    if (this.iframe) {
+      this._navigateToUrl(this.iframe, blobUrl);
+    } else {
+      os.app.launch("browserApp", { openUrl: blobUrl });
+    }
+  }
+
+  _navigateToUrl(iframe, url) {
+    const tryNav = () => {
+      try {
+        const doc = iframe.contentDocument || iframe.contentWindow.document;
+        const container = doc.getElementById("iframe-container");
+        if (!container) return false;
+        const activeFrame = container.querySelector("iframe:not(.hidden)");
+        if (!activeFrame) return false;
+        activeFrame.src = url;
+        return true;
+      } catch (e) {
+        return false;
+      }
+    };
+    if (!tryNav()) {
+      let n = 0;
+      const iv = setInterval(() => {
+        n++;
+        if (tryNav() || n > 30) clearInterval(iv);
+      }, 80);
+    }
   }
 }

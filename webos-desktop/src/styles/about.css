@@ -49,7 +49,7 @@
 
 #about-yukios .abx-title {
   margin: 0;
-  font-weight: 800;
+  font-weight: 700;
   font-size: 1.5rem;
   color: var(--text-primary);
 }
@@ -171,7 +171,7 @@
   font-size: 0.84rem;
   color: var(--text-secondary);
   white-space: pre-wrap;
-  line-height: 1.6;
+  line-height: var(--lh-body);
 }
 
 #about-yukios .abx-sponsor {
@@ -215,7 +215,7 @@
 #about-yukios .abx-sponsor-desc {
   font-size: 0.8rem;
   color: var(--text-secondary);
-  line-height: 1.4;
+  line-height: var(--lh-body);
   margin-bottom: 10px;
 }
 
@@ -250,6 +250,13 @@
 
 #about-yukios .abx-sponsor-btn-patreon:hover {
   background: #e03842;
+}
+#about-yukios .abx-sponsor-btn-ko-fi {
+  background: #df6f3c;
+}
+
+#about-yukios .abx-sponsor-btn-ko-fi:hover {
+  background: #c04913;
 }
 
 #about-yukios .abx-foot {
