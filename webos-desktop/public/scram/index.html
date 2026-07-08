@@ -2030,6 +2030,7 @@
       let tabBehaviorNext = true;
       let autoplayBlock = false;
       let searchRegion = "";
+      let torEnabled = false;
 
       const STORAGE_KEYS = {
         BOOKMARKS: "scramjet_bookmarks",
@@ -2050,7 +2051,8 @@
         TAB_BEHAVIOR: "scramjet_tab_behavior",
         AUTOPLAY_BLOCK: "scramjet_autoplay_block",
         SEARCH_REGION: "scramjet_search_region",
-        CUSTOM_SEARCH_ENGINES: "scramjet_custom_engines"
+        CUSTOM_SEARCH_ENGINES: "scramjet_custom_engines",
+        TOR_ENABLED: "scramjet_tor_enabled"
       };
 
       let isEmbedded = false;
@@ -2119,6 +2121,11 @@
             history = data.history;
           }
         }
+        if (data.type === "scram:torMode") {
+          torEnabled = data.active;
+          const toggle = document.getElementById("set-tor-enabled");
+          if (toggle) toggle.checked = torEnabled;
+        }
       });
 
       function loadPrefs() {
@@ -2144,6 +2151,7 @@
             tabBehaviorNext = localStorage.getItem(STORAGE_KEYS.TAB_BEHAVIOR) !== "false";
             autoplayBlock = localStorage.getItem(STORAGE_KEYS.AUTOPLAY_BLOCK) === "true";
             searchRegion = localStorage.getItem(STORAGE_KEYS.SEARCH_REGION) || "";
+            torEnabled = localStorage.getItem(STORAGE_KEYS.TOR_ENABLED) === "true";
           } catch (e) {
             console.error("Failed to load prefs:", e);
           }
@@ -2218,6 +2226,7 @@
           localStorage.setItem(STORAGE_KEYS.TAB_BEHAVIOR, String(tabBehaviorNext));
           localStorage.setItem(STORAGE_KEYS.AUTOPLAY_BLOCK, String(autoplayBlock));
           localStorage.setItem(STORAGE_KEYS.SEARCH_REGION, searchRegion);
+          localStorage.setItem(STORAGE_KEYS.TOR_ENABLED, String(torEnabled));
         } catch (e) {}
       }
 
@@ -2310,6 +2319,10 @@
 
       async function initializeBrowser() {
         loadPrefs();
+
+        if (torEnabled && isEmbedded) {
+          sendToParent({ type: "scram:setTorMode", active: true });
+        }
 
         if (clearOnExit) {
           history = [];
@@ -2872,6 +2885,11 @@
             input = engineUrl + encodeURIComponent(input);
           }
         }
+        if (torEnabled && isEmbedded) {
+          sendToParent({ type: "scram:navigate", url: input });
+          saveTabState();
+          return;
+        }
         tab.frame.go(input);
         saveTabState();
       }
@@ -3102,6 +3120,13 @@
                   <span class="toggle-slider"></span>
                 </label>
               </div>
+              <div class="settings-field-row">
+                <span class="settings-field-label">Tor Proxy <span style="font-size:10px;color:var(--text-dim);font-weight:400;margin-left:4px;">(requires Tor Manager)</span></span>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="set-tor-enabled" ${torEnabled ? "checked" : ""} />
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
               <div style="margin-top:12px;">
                 <div style="margin-bottom:8px;font-size:13px;color:var(--text-dim);font-weight:500;">Dark Mode Exclusions</div>
                 <div id="dark-exclusion-list"></div>
@@ -3236,6 +3261,17 @@
           document.getElementById("set-clear-on-exit")?.addEventListener("change", function () {
             clearOnExit = this.checked;
             savePrefs();
+          });
+          document.getElementById("set-tor-enabled")?.addEventListener("change", function () {
+            torEnabled = this.checked;
+            savePrefs();
+            sendToParent({ type: "scram:setTorMode", active: torEnabled });
+            if (torEnabled) {
+              const tab = getActiveTab();
+              if (tab && tab.url && !tab.url.includes("NT.html")) {
+                sendToParent({ type: "scram:navigate", url: tab.url });
+              }
+            }
           });
           document.getElementById("add-dark-exclusion")?.addEventListener("click", addCurrentToDarkExclusion);
           document.getElementById("add-custom-engine")?.addEventListener("click", addCustomSearchEngine);

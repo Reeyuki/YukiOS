@@ -1215,7 +1215,7 @@ export const APP_MANIFESTS = [
     serviceKey: "torBrowserApp",
     enhanced: true,
     type: "system",
-    title: "Tor Connection Manager",
+    title: "Tor Manager",
     icon: "fas fa-shield-halved",
     launchType: "instance",
     windowIdPatterns: ["tor-browser"],

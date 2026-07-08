@@ -1,6 +1,7 @@
 import "../styles/scramjet.css";
 import { BaseApp, PersistenceTypes, StorageKeys, os } from "../framework.js";
 import { wobbleStart, wobbleMove, wobbleEnd } from "../windowManager/AnimationSystem.js";
+import { PROXIES } from "../proxies.js";
 
 const THEME_VARS = [
   "--brand",
@@ -34,6 +35,10 @@ export class BrowserApp extends BaseApp {
     this.iframe = null;
     this._msgHandler = null;
     this._element = null;
+    this._torEnabled = false;
+    this._torClient = null;
+    this._torIframe = null;
+    this._torOverlay = null;
   }
 
   getDeclarativeSchema(opts) {
@@ -104,7 +109,7 @@ export class BrowserApp extends BaseApp {
     };
 
     const msgHandler = (e) => {
-      if (e.source !== iframe?.contentWindow) return;
+      if (e.source !== iframe?.contentWindow && e.source !== this._torIframe?.contentWindow) return;
       const data = e.data;
       if (!data || !data.type) return;
 
@@ -131,6 +136,23 @@ export class BrowserApp extends BaseApp {
         os.storage.set(StorageKeys.browserHistory, data.history || []);
       } else if (data.type === "browser-new-window") {
         os.app.launch("browserApp", { isIncognito: !!data.incognito });
+      } else if (data.type === "scram:setTorMode") {
+        this._torEnabled = data.active;
+        if (!data.active) this._exitTorMode();
+      } else if (data.type === "scram:navigate") {
+        if (this._torEnabled && data.url) {
+          this._loadWithTor(data.url);
+        }
+      } else if (data.type === "browser-tor-reconnect") {
+        this._reconnectTor();
+      } else if (data.type === "browser-navigate") {
+        if (this._torEnabled && data.url) {
+          this._loadWithTor(data.url);
+        }
+      } else if (data.type === "browser-tor-download") {
+        if (this._torEnabled && data.url) {
+          this._loadWithTor(data.url);
+        }
       }
     };
     this._msgHandler = msgHandler;
@@ -318,6 +340,7 @@ export class BrowserApp extends BaseApp {
       window.removeEventListener("message", this._msgHandler);
       this._msgHandler = null;
     }
+    this._exitTorMode();
     this.iframe = null;
     this._element = null;
   }
@@ -334,6 +357,10 @@ export class BrowserApp extends BaseApp {
   }
 
   _navigateToUrl(iframe, url) {
+    if (this._isTorUrl(url)) {
+      this._loadWithTor(url);
+      return;
+    }
     const tryNav = () => {
       try {
         const doc = iframe.contentDocument || iframe.contentWindow.document;
@@ -354,5 +381,279 @@ export class BrowserApp extends BaseApp {
         if (tryNav() || n > 30) clearInterval(iv);
       }, 80);
     }
+  }
+
+  _enterTorMode() {
+    if (this._torOverlay) return;
+    const container = this._element?.querySelector(".scramjet-container");
+    if (!container) return;
+
+    const overlay = document.createElement("div");
+    overlay.className = "tor-overlay";
+    overlay.innerHTML = `
+      <div class="tor-bar">
+        <span class="tor-bar-label"><i class="fas fa-shield-halved"></i> Tor Active</span>
+        <button class="tor-exit-btn" id="tor-exit-btn">Exit Tor</button>
+      </div>
+      <div class="tor-loading" id="tor-loading">
+        <div class="loading-spinner"></div>
+        <div class="tor-loading-text" id="tor-loading-text">Starting Tor...</div>
+      </div>
+      <iframe class="tor-iframe" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+    `;
+    const exitBtn = overlay.querySelector("#tor-exit-btn");
+    if (exitBtn) {
+      exitBtn.addEventListener("click", () => {
+        this._exitTorMode();
+        this._torEnabled = false;
+        try {
+          this.iframe?.contentWindow?.postMessage({ type: "scram:torMode", active: false }, "*");
+        } catch {}
+      });
+    }
+    container.appendChild(overlay);
+    this._torOverlay = overlay;
+    this._torIframe = overlay.querySelector(".tor-iframe");
+  }
+
+  _exitTorMode() {
+    if (this._torOverlay) {
+      this._torOverlay.remove();
+      this._torOverlay = null;
+      this._torIframe = null;
+    }
+    if (this._torClient) {
+      this._torClient.close();
+      this._torClient = null;
+    }
+  }
+
+  _showTorLoading(text) {
+    const el = this._torOverlay?.querySelector("#tor-loading");
+    const txt = this._torOverlay?.querySelector("#tor-loading-text");
+    if (el) el.style.display = "flex";
+    if (txt) txt.textContent = text || "Starting Tor...";
+  }
+
+  _hideTorLoading() {
+    const el = this._torOverlay?.querySelector("#tor-loading");
+    if (el) el.style.display = "none";
+  }
+
+  async _startTorWithStatus() {
+    const tm = os.tor;
+    try {
+      const status = tm.getStatus();
+      if (status.ready) return true;
+      if (status.running) {
+        await tm.waitForCircuit();
+        return true;
+      }
+    } catch {}
+    this._showTorLoading("Starting Tor...");
+    const unsubLog = os.events.on("TOR_LOG", (msg) => {
+      this._showTorLoading(msg);
+    });
+    try {
+      await tm.start({ appId: "browserApp" });
+      unsubLog();
+      return true;
+    } catch (e) {
+      unsubLog();
+      this._hideTorLoading();
+      os.notify.send("Tor Error", "Failed to start Tor: " + e.message, { type: "error", duration: 5000 });
+      return false;
+    }
+  }
+
+  async _reconnectTor() {
+    try {
+      await os.tor.reconnect();
+      os.notify.send("Tor", "Tor reconnected.", { type: "success", duration: 3000 });
+      if (this._torClient) {
+        this._torClient.close();
+        this._torClient = null;
+      }
+    } catch {
+      os.notify.send("Tor", "Reconnect failed. Try again.", { type: "error", duration: 5000 });
+    }
+  }
+
+  async _loadWithTor(url) {
+    this._enterTorMode();
+    this._showTorLoading("Preparing Tor connection...");
+
+    try {
+      if (!this._torClient) {
+        const torReady = await this._startTorWithStatus();
+        if (!torReady) {
+          this._writeTorErrorPage(url, "Tor could not start. Check your connection.");
+          return;
+        }
+        this._torClient = await os.tor.createClient();
+      }
+
+      this._showTorLoading("Fetching " + url);
+
+      const resp = await Promise.race([
+        this._torClient.fetch(url),
+        new Promise((_, reject) => setTimeout(() => reject(new Error("Tor fetch timed out")), 30000))
+      ]);
+      if (!resp || resp.status >= 400) throw new Error("HTTP " + (resp?.status || "error"));
+
+      const ct =
+        typeof resp.headers === "object" && resp.headers
+          ? resp.headers["content-type"] || resp.headers.get?.("content-type") || ""
+          : "";
+
+      const isBinary =
+        ct.includes("application/octet-stream") ||
+        ct.includes("application/zip") ||
+        ct.includes("application/pdf") ||
+        (ct && !ct.includes("text") && !ct.includes("json") && !ct.includes("html") && !ct.includes("xml"));
+
+      if (isBinary) {
+        const blob = new Blob([resp.body], { type: ct });
+        this._triggerDownload(blob, url);
+        this._hideTorLoading();
+        return;
+      }
+
+      let html;
+      if (ct.includes("application/json")) {
+        const json = await resp.json();
+        html = json.contents || json.body || json.data || "";
+        if (!html) throw new Error("Empty JSON body");
+      } else {
+        html = await resp.text();
+      }
+
+      if (!html || html.trim().length === 0) throw new Error("Empty response");
+
+      const baseUrl = (() => {
+        try {
+          const u = new URL(url);
+          return u.origin + u.pathname.replace(/\/[^/]*$/, "/");
+        } catch {
+          return url;
+        }
+      })();
+
+      const interceptScript = this._buildInterceptScripts(url);
+
+      let finalHtml = html;
+      const baseTag = `<base href="${baseUrl}">`;
+      const injection = baseTag + interceptScript;
+
+      if (/<head[^>]*>/i.test(finalHtml)) {
+        finalHtml = finalHtml.replace(/(<head[^>]*>)/i, "$1" + injection);
+      } else {
+        finalHtml = "<head>" + injection + "</head>" + finalHtml;
+      }
+
+      this._hideTorLoading();
+      const torIframe = this._torIframe;
+      if (torIframe) {
+        torIframe.removeAttribute("src");
+        torIframe.onload = () => {
+          torIframe.onload = null;
+        };
+        torIframe.srcdoc = finalHtml;
+      }
+    } catch (err) {
+      this._hideTorLoading();
+      const fc = this._torClient?.getFetchCount?.() || 0;
+      this._writeTorErrorPage(
+        url,
+        fc > 5 ? "Tor connection may be stale (" + fc + " fetches served)." : "Tor failed to load this page.",
+        true
+      );
+    }
+  }
+
+  _buildInterceptScripts(pageUrl) {
+    return `<script>
+(function() {
+  var pageUrl = ${JSON.stringify(pageUrl)};
+  function resolve(href) {
+    try { return new URL(href, pageUrl).href; } catch(e) { return null; }
+  }
+  document.addEventListener('click', function(e) {
+    var anchor = e.target.closest('a');
+    if (!anchor) return;
+    var href = anchor.getAttribute('href');
+    if (!href || href.startsWith('#') || href.startsWith('javascript:')) return;
+    var resolved = resolve(href);
+    if (!resolved) return;
+    e.preventDefault();
+    e.stopPropagation();
+    window.parent.postMessage({ type: 'browser-navigate', url: resolved }, '*');
+  }, true);
+  document.addEventListener('submit', function(e) {
+    var form = e.target;
+    var action = form.getAttribute('action') || pageUrl;
+    var resolved = resolve(action) || pageUrl;
+    e.preventDefault();
+    var params = new URLSearchParams(new FormData(form)).toString();
+    var method = (form.method || 'get').toLowerCase();
+    var finalUrl = method === 'post' ? resolved : (resolved + (resolved.includes('?') ? '&' : '?') + params);
+    window.parent.postMessage({ type: 'browser-navigate', url: finalUrl }, '*');
+  }, true);
+  document.addEventListener('click', function(e) {
+    var anchor = e.target.closest('a[download]');
+    if (!anchor) return;
+    var href = anchor.getAttribute('href');
+    if (!href) return;
+    try {
+      var resolved = new URL(href, ${JSON.stringify(pageUrl)}).href;
+      e.preventDefault();
+      e.stopPropagation();
+      window.parent.postMessage({ type: 'browser-tor-download', url: resolved, filename: anchor.getAttribute('download') || '' }, '*');
+    } catch(err) {}
+  }, true);
+})();
+<\/script>`;
+  }
+
+  _writeTorErrorPage(url, message, showReconnect) {
+    const iframe = this._torIframe;
+    if (!iframe) return;
+    const reconnectHtml = showReconnect
+      ? "<button onclick=\"parent.postMessage({type:'browser-tor-reconnect'},'*')\" style=\"margin-top:8px;padding:8px 20px;background:#8b5cf6;border:none;border-radius:6px;color:#fff;cursor:pointer;font-size:13px\">Reconnect Tor</button>"
+      : "";
+    iframe.srcdoc =
+      '<html><body style="background:#202124;color:#e8eaed;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;flex-direction:column;gap:12px"><div style="font-size:48px"><i class="fas fa-exclamation-triangle"></i></div><div style="font-size:16px">' +
+      (message || "All proxies failed to load this page.") +
+      '</div><div style="font-size:12px;color:#9aa0a6">' +
+      url +
+      "</div>" +
+      reconnectHtml +
+      "</body></html>";
+  }
+
+  _triggerDownload(blob, url) {
+    let name = "download";
+    try {
+      name = new URL(url).pathname.split("/").pop() || "download";
+    } catch {}
+    const objectUrl = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = objectUrl;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(objectUrl), 5000);
+  }
+
+  _isTorUrl(url) {
+    return (
+      this._torEnabled &&
+      url &&
+      !url.startsWith("about:") &&
+      !url.startsWith("blob:") &&
+      !url.startsWith("yuki://") &&
+      !url.startsWith("NT.html")
+    );
   }
 }

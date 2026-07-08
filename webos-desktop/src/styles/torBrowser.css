@@ -6,41 +6,6 @@
   overflow: hidden;
 }
 
-.tor-header {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 18px 20px;
-  background: var(--glass);
-  border-bottom: 1px solid var(--glass-border);
-  backdrop-filter: blur(32px);
-}
-
-.tor-header-icon {
-  width: 44px;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.2), rgba(124, 58, 237, 0.05));
-  border: 1px solid rgba(124, 58, 237, 0.25);
-  border-radius: 12px;
-  font-size: 22px;
-  color: #7c3aed;
-  flex-shrink: 0;
-}
-
-.tor-header-text {
-  min-width: 0;
-}
-
-.tor-header-title {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0;
-}
-
 .tor-body {
   flex: 1;
   overflow-y: auto;

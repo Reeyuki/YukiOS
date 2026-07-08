@@ -98,7 +98,7 @@ export class ScramjetBaseApp extends BaseApp {
   }
 
   getAppIcon() {
-    return "fas fa-globe";
+    return resolveIconUrl("static/icons/firefox.webp");
   }
 
   getHTMLPath() {

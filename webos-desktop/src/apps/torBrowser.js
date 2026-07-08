@@ -11,23 +11,16 @@ export class TorBrowserApp extends BaseApp {
   getDeclarativeSchema(opts) {
     return {
       id: "tor-browser",
-      name: "Tor Connection Manager",
+      name: "Tor Manager",
       icon: "fas fa-shield-halved",
       windows: [
         {
           id: "tor-browser",
-          title: "Tor Connection Manager",
+          title: "Tor Manager",
           size: ["520px", "420px"],
           icon: "fas fa-shield-halved",
           ui: `
             <div class="tor-manager">
-              <div class="tor-header">
-                <div class="tor-header-icon"><i class="fas fa-shield-halved"></i></div>
-                <div class="tor-header-text">
-                  <h2 class="tor-header-title">Tor Connection Manager</h2>
-                </div>
-              </div>
-
               <div class="tor-body">
                 <div class="tor-controls">
                   <button class="tor-start-btn" id="tor-start-btn">

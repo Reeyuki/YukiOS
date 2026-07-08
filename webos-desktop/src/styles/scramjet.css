@@ -11,3 +11,92 @@
 .scramjet-header:active {
   cursor: grabbing;
 }
+
+.scramjet-container {
+  position: relative;
+}
+
+.tor-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  background: var(--bg-primary);
+  display: flex;
+  flex-direction: column;
+}
+
+.tor-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--glass-border);
+  flex-shrink: 0;
+}
+
+.tor-bar-label {
+  font-size: 12px;
+  color: var(--brand);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+}
+
+.tor-exit-btn {
+  font-size: 11px;
+  padding: 4px 12px;
+  background: transparent;
+  border: 1px solid var(--glass-border);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.tor-exit-btn:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+  border-color: var(--error);
+}
+
+.tor-iframe {
+  width: 100%;
+  flex: 1;
+  border: none;
+}
+
+.tor-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background: var(--bg-primary);
+  z-index: 11;
+}
+
+.tor-loading-text {
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-align: center;
+  max-width: 300px;
+}
+
+.loading-spinner {
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--glass-border);
+  border-top-color: var(--brand);
+  border-radius: 50%;
+  animation: tor-spin 0.7s linear infinite;
+}
+
+@keyframes tor-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
