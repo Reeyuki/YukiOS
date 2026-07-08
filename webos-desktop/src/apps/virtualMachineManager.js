@@ -261,7 +261,7 @@ export class VirtualMachineManagerApp extends BaseApp {
 
   _renderView(shell, vm, index) {
     const osInfo = OS_LIST.find((o) => o.id === vm.osId) || OS_LIST[0];
-    const usesScramjet = vm.osId === "emuos";
+    const usesScramjet = vm.osId === "emuos" || vm.osId === "mac";
     const isWinXpHeavy = vm.osId === "winxpHeavy";
 
     let previewHtml;
@@ -352,18 +352,31 @@ export class VirtualMachineManagerApp extends BaseApp {
       return;
     }
 
-    const usesScramjet = vm.osId === "emuos" || vm.osId === "win7";
+    const usesScramjet = vm.osId === "emuos" || vm.osId === "win7" || vm.osId === "mac";
     const isWinXpHeavy = vm.osId === "winxpHeavy";
     let iframeSrc = usesScramjet ? this._scramjetUrl(vm.url) : vm.url;
 
     const attrs = usesScramjet
-      ? 'style="width:100%;height:100%;border:none;" allow="autoplay; fullscreen; clipboard-write; encrypted-media; picture-in-picture" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation-by-user-activation"'
+      ? 'style="width:100%;height:100%;border:none;opacity:0;" allow="autoplay; fullscreen; clipboard-write; encrypted-media; picture-in-picture" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation-by-user-activation"'
       : IFRAME_ATTRS;
 
     const win = os.window.create(`${vm.id}-win`, vm.name, "85vw", "85vh", {
       isGame: false,
       icon: "fas fa-server"
     });
+
+    const bootingHtml = usesScramjet
+      ? `
+      <div class="vm-booting-overlay" id="${vm.id}-booting">
+        <div class="vm-booting-content">
+          <div class="vm-booting-icon" style="background:linear-gradient(135deg,${vm.color}66,${vm.color}33);">
+            <i class="${vm.icon}"></i>
+          </div>
+          <div style="font-size:1.1rem;font-weight:700;color:var(--text-primary);text-align:center;">Booting ${vm.name}...</div>
+        </div>
+      </div>
+    `
+      : "";
 
     win.dataset.externalUrl = vm.url;
     win.innerHTML = `
@@ -372,6 +385,7 @@ export class VirtualMachineManagerApp extends BaseApp {
         ${os.window.getWindowControls()}
       </div>
       <div class="window-content vm-window-content">
+        ${bootingHtml}
         <iframe id="${vm.id}-iframe" ${attrs}></iframe>
       </div>
     `;
@@ -384,12 +398,64 @@ export class VirtualMachineManagerApp extends BaseApp {
       iframe.addEventListener("load", () => {
         try {
           iframe.contentWindow?.postMessage({ type: "hide-chrome" }, "*");
+          this._waitForScramjetLoad(iframe, vm.id);
         } catch (e) {
           console.error("[VMManager]", e);
         }
       });
     }
     iframe.src = iframeSrc;
+  }
+
+  _waitForScramjetLoad(iframe, vmId) {
+    const bootingEl = document.getElementById(`${vmId}-booting`);
+    if (!bootingEl) return;
+
+    const reveal = () => {
+      this._stripScramChrome(iframe);
+      bootingEl.classList.add("vm-booting-fade");
+      iframe.style.opacity = "1";
+      setTimeout(() => bootingEl.remove(), 450);
+    };
+
+    const checkLoaded = () => {
+      try {
+        const doc = iframe.contentDocument;
+        if (!doc) return false;
+        const loadingEl = doc.querySelector("#loading");
+        const hidden =
+          !loadingEl || loadingEl.style.display === "none" || getComputedStyle(loadingEl).display === "none";
+        const hasInnerFrame = doc.querySelector(".scramjet-frame iframe, .frame iframe, .iframe-container iframe");
+        return hidden && hasInnerFrame;
+      } catch {
+        return false;
+      }
+    };
+
+    const poll = setInterval(() => {
+      if (checkLoaded()) {
+        clearInterval(poll);
+        clearTimeout(fallback);
+        reveal();
+      }
+    }, 200);
+
+    const fallback = setTimeout(() => {
+      clearInterval(poll);
+      reveal();
+    }, 25000);
+  }
+
+  _stripScramChrome(iframe) {
+    try {
+      const doc = iframe.contentDocument;
+      if (!doc) return;
+      doc
+        .querySelectorAll(".flex.tabs, .flex.nav, .loading-bar-container, .bookmark-bar, .message-container, #tooltip")
+        .forEach((el) => el.remove());
+    } catch (e) {
+      console.error("[VMManager] strip chrome:", e);
+    }
   }
 
   initVM(payload, event, element, state) {

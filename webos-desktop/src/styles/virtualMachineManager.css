@@ -425,11 +425,55 @@
 }
 
 #vm-app .vm-window-content {
-  width: 100%;
-  height: 100%;
   overflow: hidden;
+  position: relative;
 }
 
 #vm-app .vm-header-icon {
   margin-right: 8px;
+}
+
+#vm-app .vm-booting-overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  background: var(--bg-primary);
+  z-index: 10;
+  transition: opacity 0.4s ease;
+}
+
+#vm-app .vm-booting-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+#vm-app .vm-booting-overlay.vm-booting-fade {
+  opacity: 0;
+  pointer-events: none;
+}
+
+#vm-app .vm-booting-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  animation: vm-booting-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes vm-booting-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.06);
+    opacity: 1;
+  }
 }

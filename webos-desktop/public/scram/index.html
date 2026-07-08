@@ -2540,7 +2540,7 @@
         window.addEventListener("message", (e) => {
           if (e.data?.type === "navigate") handleSubmit(e.data.url);
           if (e.data?.type === "hide-chrome") {
-            document.querySelectorAll(".flex.tabs, .flex.nav, .loading-bar-container").forEach((el) => el.remove());
+            document.querySelectorAll(".flex.tabs, .flex.nav, .loading-bar-container, .bookmark-bar, .message-container, #tooltip").forEach((el) => el.remove());
           }
           if (e.data?.type === "browser-audio-playing") {
             const tab = getActiveTab();
