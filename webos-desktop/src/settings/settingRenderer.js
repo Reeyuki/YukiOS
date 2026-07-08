@@ -307,7 +307,7 @@ export function renderSystemSettings(s) {
         <div class="settings-row">
           <div class="settings-label-group">
             <span class="settings-label-title">Skip Boot Screen</span>
-            <span class="settings-label-desc">Bypass the login screen on startup</span>
+            <span class="settings-label-desc">Skip the boot animation on startup</span>
           </div>
           <label class="settings-toggle">
             <input type="checkbox" id="settingsDisableBootScreen" ${s.disableBootScreen ? "checked" : ""}/>

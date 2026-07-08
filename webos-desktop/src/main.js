@@ -35,6 +35,9 @@ import { loadApps } from "./AppLoader.js";
 import { init } from "./cursorEffect.js";
 import { versionChecker } from "./versionChecker.js";
 import { $ } from "./shared/domUtils.js";
+import { showBootScreen } from "./bootScreen.js";
+
+const boot = showBootScreen();
 
 initializeMirrors(appMap);
 registerPWA();
@@ -191,7 +194,9 @@ async function start() {
   windowManager.restorePinnedItems();
   desktopPeekManager.setupPeekButton();
 
-  await sessionManager.showLogin();
+  const sessionPromise = sessionManager.showLogin();
+  await boot.hide();
+  await sessionPromise;
 
   versionChecker.start();
 

@@ -41,6 +41,9 @@ importers:
       globals:
         specifier: ^17.7.0
         version: 17.7.0
+      gsap:
+        specifier: ^3.15.0
+        version: 3.15.0
       handsontable:
         specifier: ^12.4.0
         version: 12.4.0
@@ -1453,6 +1456,9 @@ packages:
   gopd@1.2.0:
     resolution: {integrity: sha512-ZUKRh6/kUFoAiTAtTYPZJ3hw9wNxx+BIBOijnlG9PnrJsCcSjs1wyyD6vJpaYtgnzDrKYRSqf3OO6Rfa93xsRg==}
     engines: {node: '>= 0.4'}
+
+  gsap@3.15.0:
+    resolution: {integrity: sha512-dMW4CWBTUK1AEEDeZc1g4xpPGIrSf9fJF960qbTZmN/QwZIWY5wgliS6JWl9/25fpTGJrMRtSjGtOmPnfjZB+A==}
 
   handsontable@12.4.0:
     resolution: {integrity: sha512-bivyvW41RKT3SNIo+f2SOgvV376NbtTkfWYYRCSTOW/bx6EnjH4S2Pl4vfVpFPRQLOFPGTEWniuXLg8b1VkpBQ==}
@@ -4168,6 +4174,8 @@ snapshots:
   globals@17.7.0: {}
 
   gopd@1.2.0: {}
+
+  gsap@3.15.0: {}
 
   handsontable@12.4.0:
     dependencies:

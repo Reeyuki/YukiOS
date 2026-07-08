@@ -48,6 +48,7 @@
     "eruda": "^2.11.3",
     "fflate": "^0.8.3",
     "globals": "^17.7.0",
+    "gsap": "^3.15.0",
     "handsontable": "^12.4.0",
     "html2canvas": "^1.4.1",
     "html2canvas-pro": "^1.6.7",

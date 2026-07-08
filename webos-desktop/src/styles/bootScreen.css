@@ -1,0 +1,61 @@
+.boot-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-base);
+  font-family: var(--font-ui);
+  overflow: hidden;
+  opacity: 0;
+  will-change: opacity, transform;
+}
+
+.boot-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+}
+
+.boot-logo-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.boot-logo {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  opacity: 0;
+  transform: scale(0.5);
+  filter: drop-shadow(0 0 30px var(--brand-glow));
+}
+
+.boot-brand {
+  display: flex;
+  justify-content: center;
+  gap: 2px;
+}
+
+.boot-letter {
+  display: inline-block;
+  font-size: 44px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  text-shadow: 0 0 24px var(--brand-glow);
+  will-change: transform, opacity;
+}
+
+.boot-version {
+  font-size: 13px;
+  color: var(--text-secondary);
+  letter-spacing: 1px;
+  opacity: 0;
+}
