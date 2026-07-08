@@ -590,13 +590,12 @@ export class AchievementsApp extends BaseApp {
       </div>
       <div class="achievement-popup__title">${achievement.title}</div>
       <div class="achievement-popup__desc">${achievement.desc}</div>
-      <div class="achievement-popup__rarity achievement-popup__rarity--${achievement.rarity}">
-        ${achievement.rarity.toUpperCase()}
-      </div>
     </div>
   `;
 
     document.body.appendChild(popup);
+
+    popup.addEventListener("click", () => os.app.launch("achievementsApp"));
 
     setTimeout(() => popup.classList.add("achievement-popup--show"), 10);
 
