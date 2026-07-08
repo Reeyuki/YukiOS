@@ -3,10 +3,9 @@ let didReloadForUpdate = false;
 function onNewServiceWorker(registration) {
   const waiting = registration.waiting;
   if (!waiting) return;
-
   if (didReloadForUpdate) return;
+  if (!navigator.serviceWorker.controller) return;
   didReloadForUpdate = true;
-
   waiting.postMessage({ type: "SKIP_WAITING" });
 }
 
