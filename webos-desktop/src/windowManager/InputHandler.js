@@ -174,15 +174,15 @@ export class InputHandler {
     if (this.windowSwitcherWindows.length === 0) return;
 
     this.windowSwitcherActive = true;
-    this.windowSwitcherIndex = 0;
+    this.windowSwitcherIndex = this.windowSwitcherWindows.length > 1 ? 1 : 0;
 
     if (settings.ui === "overlay") {
       this.showSwitcherOverlay();
     } else if (settings.ui === "taskbar") {
-      this.highlightTaskbarItem(0);
+      this.highlightTaskbarItem(this.windowSwitcherIndex);
     }
 
-    this.bringToFront(this.windowSwitcherWindows[0]);
+    this.bringToFront(this.windowSwitcherWindows[this.windowSwitcherIndex]);
   }
 
   cycleWindowSwitcher() {

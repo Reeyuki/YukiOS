@@ -12,6 +12,17 @@ export class WindowStateManager {
   bringToFront(win) {
     if (!win) return;
 
+    win.getAnimations().forEach((a) => a.cancel());
+    win.style.opacity = "";
+    win.style.transform = "";
+    win.style.filter = "";
+    win.style.pointerEvents = "";
+    win.style.animation = "";
+
+    if (win.style.display === "none") {
+      win.style.display = "";
+    }
+
     const allWins = Array.from(this.manager.openWindows.keys())
       .map((id) => document.getElementById(id))
       .filter(Boolean);
@@ -32,6 +43,7 @@ export class WindowStateManager {
     applyFocusGlow(win);
     applyZDepthLift(win, true);
     win.style.zIndex = this.manager.zIndexCounter++;
+    win.focus();
     this.manager.triggerSessionSave();
   }
 
