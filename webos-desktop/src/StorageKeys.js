@@ -171,5 +171,16 @@ export const StorageKeys = {
   explorerQuickAccess: "yukiOS_explorer_quick_access",
   explorerSidebarCollapsed: "yukiOS_explorer_sidebar_collapsed",
   explorerDiskViewHidden: "yukiOS_explorer_disk_view_hidden",
-  explorerQuickAccessHidden: "yukiOS_explorer_quick_access_hidden"
+  keybindCustomizations: "yukiOS_keybindcustomizations",
+  keybindCustomActions: "yukiOS_keybind_custom_actions",
+  overlaySettings: "yukiOS_overlaysettings",
+  overlayNotes: "yukiOS_overlay_notes",
+  overlayPanelPositions: "yukiOS_overlay_panel_positions",
+  overlayOpenPanels: "yukiOS_overlay_open_panels",
+  wallpaperEngineColorFilter: "yukiOS_wallpaper_engine_color_filter",
+  wallpaperEngineCustomVantaPresets: "yukiOS_wallpaper_engine_custom_vanta_presets",
+  widgetTodoItems: "yukiOS_widget_todoitems",
+  torrentHistory: "torrentHistory",
+  shittifyLastState: "shittify_laststate",
+  launchTimePrefix: "launchtime:"
 };

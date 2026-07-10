@@ -14,7 +14,7 @@ export class TerminalApp extends BaseApp {
     this.displayName = os.storage.get(StorageKeys.username) || this.sessionKey;
     this.username = this.displayName;
     this.hostname = "yuki-os";
-    this._setupSessionListener();
+    this.setupSessionListener();
     this.printQueue = Promise.resolve();
     this.commands = {};
     this.pageLoadTime = Date.now();
@@ -22,7 +22,7 @@ export class TerminalApp extends BaseApp {
     this.inputBuffer = "";
     this.printDepth = 0;
     this.registerDefaultCommands();
-    this._declarativeApp = null;
+    this.declarativeApp = null;
   }
 
   getDeclarativeSchema(opts) {
@@ -91,7 +91,7 @@ export class TerminalApp extends BaseApp {
     this.setupEventHandlers();
   }
 
-  _setupSessionListener() {
+  setupSessionListener() {
     os.events.on("session:initialized", (session) => {
       this.sessionKey = session.key;
       this.displayName = session.name || os.storage.get(StorageKeys.username) || session.key;
@@ -121,7 +121,7 @@ export class TerminalApp extends BaseApp {
 
     if (isCommand) {
       const prompt = document.createElement("span");
-      prompt.innerHTML = promptText || this._promptHtml();
+      prompt.innerHTML = promptText || this.promptHtml();
       line.className = "cmd-line";
       line.appendChild(prompt);
       span.className = "cmd-text";
@@ -177,7 +177,7 @@ export class TerminalApp extends BaseApp {
         const selection = window.getSelection();
         if (selection && selection.toString().length > 0) return;
         e.preventDefault();
-        this.enqueuePrint("^C", null, true, this._promptHtml());
+        this.enqueuePrint("^C", null, true, this.promptHtml());
         this.terminalInput.value = "";
       } else if (KeybindManager.matches(e, "terminal.close")) {
         const selection = window.getSelection();
@@ -292,7 +292,7 @@ export class TerminalApp extends BaseApp {
 
   async executeCommand(commandStr) {
     os.events.emit(BusEvents.TERMINAL_CMD_EXECUTED, { command: commandStr });
-    await this.enqueuePrint(commandStr, null, true, this._promptHtml());
+    await this.enqueuePrint(commandStr, null, true, this.promptHtml());
 
     if (commandStr.trim() === "sudo rm -rf /" || commandStr.trim() === "sudo rm -rf /*") {
       await this.cmdNukeSystem();
@@ -429,7 +429,7 @@ export class TerminalApp extends BaseApp {
     }
   }
 
-  _promptHtml() {
+  promptHtml() {
     const raw = this.currentPath.length ? "/" + this.currentPath.join("/") : "/";
     const path = raw.replace(this.sessionKey, this.displayName);
     return `<span class="prompt-user">${this.displayName}</span><span class="prompt-at">@</span><span class="prompt-host">${this.hostname}</span><span class="prompt-sep">:</span><span class="prompt-path">${path}</span><span class="prompt-dollar">$</span>`;
@@ -437,7 +437,7 @@ export class TerminalApp extends BaseApp {
 
   updatePrompt() {
     if (!this.terminalPrompt) return;
-    this.terminalPrompt.innerHTML = this._promptHtml();
+    this.terminalPrompt.innerHTML = this.promptHtml();
   }
 
   registerCommand(name, handler) {

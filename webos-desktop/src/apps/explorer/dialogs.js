@@ -20,12 +20,12 @@ export function showConfirmDialog({ title, message, confirmText = "OK", onConfir
   setHTML(
     overlay,
     `
-    <div class="_fd-dialog">
-      <div class="_fd-dialog-title">${title}</div>
-      <div class="_fd-dialog-label" style="font-size:13px;color:#ccc;line-height:1.5;">${message}</div>
-      <div class="_fd-dialog-actions">
-        <button class="_fd-btn _fd-btn-cancel">Cancel</button>
-        <button class="_fd-btn _fd-btn-confirm" style="background:#b52a2a;">${confirmText}</button>
+    <div class="fd-dialog">
+      <div class="fd-dialog-title">${title}</div>
+      <div class="fd-dialog-label" style="font-size:13px;color:#ccc;line-height:1.5;">${message}</div>
+      <div class="fd-dialog-actions">
+        <button class="fd-btn fd-btn-cancel">Cancel</button>
+        <button class="fd-btn fd-btn-confirm" style="background:#b52a2a;">${confirmText}</button>
       </div>
     </div>
   `
@@ -33,8 +33,8 @@ export function showConfirmDialog({ title, message, confirmText = "OK", onConfir
   document.body.appendChild(overlay);
 
   const close = () => overlay.remove();
-  overlay.querySelector("._fd-btn-cancel").onclick = close;
-  overlay.querySelector("._fd-btn-confirm").onclick = () => {
+  overlay.querySelector(".fd-btn-cancel").onclick = close;
+  overlay.querySelector(".fd-btn-confirm").onclick = () => {
     close();
     onConfirm();
   };
@@ -51,24 +51,24 @@ export function showInputDialog({ title, label, defaultValue, confirmText = "Cre
   setHTML(
     overlay,
     `
-    <div class="_fd-dialog">
-      <div class="_fd-dialog-title">${title}</div>
-      <div class="_fd-dialog-label">${label}</div>
-      <input class="_fd-dialog-input" type="text" value="${defaultValue}" spellcheck="false">
-      <div class="_fd-dialog-error" style="display:none;font-size:1.5em;color:#e06c75;margin-top:6px;"></div>
-      <div class="_fd-dialog-actions">
-        <button class="_fd-btn _fd-btn-cancel">Cancel</button>
-        <button class="_fd-btn _fd-btn-confirm">${confirmText}</button>
+    <div class="fd-dialog">
+      <div class="fd-dialog-title">${title}</div>
+      <div class="fd-dialog-label">${label}</div>
+      <input class="fd-dialog-input" type="text" value="${defaultValue}" spellcheck="false">
+      <div class="fd-dialog-error" style="display:none;font-size:1.5em;color:#e06c75;margin-top:6px;"></div>
+      <div class="fd-dialog-actions">
+        <button class="fd-btn fd-btn-cancel">Cancel</button>
+        <button class="fd-btn fd-btn-confirm">${confirmText}</button>
       </div>
     </div>
   `
   );
   document.body.appendChild(overlay);
 
-  const input = overlay.querySelector("._fd-dialog-input");
-  const confirmBtn = overlay.querySelector("._fd-btn-confirm");
-  const cancelBtn = overlay.querySelector("._fd-btn-cancel");
-  const errorEl = overlay.querySelector("._fd-dialog-error");
+  const input = overlay.querySelector(".fd-dialog-input");
+  const confirmBtn = overlay.querySelector(".fd-btn-confirm");
+  const cancelBtn = overlay.querySelector(".fd-btn-cancel");
+  const errorEl = overlay.querySelector(".fd-dialog-error");
 
   input.select();
   input.focus();
@@ -124,29 +124,29 @@ export function showArchiveDialog({ title, defaultValue, onConfirm }) {
     { value: "tar.gz", label: "TAR.GZ (.tar.gz)" }
   ];
   overlay.innerHTML = `
-    <div class="_fd-dialog" style="width: 360px;">
-      <div class="_fd-dialog-title">${title}</div>
-      <div class="_fd-dialog-body">
-        <div class="_fd-field">
-          <div class="_fd-dialog-label">Archive Name</div>
-          <input class="_fd-dialog-input archive-name-input" type="text" value="${defaultValue}" spellcheck="false">
+    <div class="fd-dialog" style="width: 360px;">
+      <div class="fd-dialog-title">${title}</div>
+      <div class="fd-dialog-body">
+        <div class="fd-field">
+          <div class="fd-dialog-label">Archive Name</div>
+          <input class="fd-dialog-input archive-name-input" type="text" value="${defaultValue}" spellcheck="false">
         </div>
-        <div class="_fd-field">
-          <div class="_fd-dialog-label">Archive Format</div>
+        <div class="fd-field">
+          <div class="fd-dialog-label">Archive Format</div>
           ${renderSelectMenu("archive-format-select", formatOptions, "zip", "archive-type-select-menu")}
         </div>
         <div class="archive-level-container">
-          <div class="_fd-level-header">
-            <div class="_fd-dialog-label">Compression Level</div>
+          <div class="fd-level-header">
+            <div class="fd-dialog-label">Compression Level</div>
             <span class="compression-level-value">Normal (6)</span>
           </div>
           <input class="archive-level-input" type="range" min="0" max="9" value="6">
         </div>
       </div>
-      <div class="_fd-dialog-error"></div>
-      <div class="_fd-dialog-actions">
-        <button class="_fd-btn _fd-btn-cancel">Cancel</button>
-        <button class="_fd-btn _fd-btn-confirm">Create</button>
+      <div class="fd-dialog-error"></div>
+      <div class="fd-dialog-actions">
+        <button class="fd-btn fd-btn-cancel">Cancel</button>
+        <button class="fd-btn fd-btn-confirm">Create</button>
       </div>
     </div>
   `;
@@ -157,9 +157,9 @@ export function showArchiveDialog({ title, defaultValue, onConfirm }) {
   const levelContainer = overlay.querySelector(".archive-level-container");
   const levelInput = overlay.querySelector(".archive-level-input");
   const levelValEl = overlay.querySelector(".compression-level-value");
-  const confirmBtn = overlay.querySelector("._fd-btn-confirm");
-  const cancelBtn = overlay.querySelector("._fd-btn-cancel");
-  const errorEl = overlay.querySelector("._fd-dialog-error");
+  const confirmBtn = overlay.querySelector(".fd-btn-confirm");
+  const cancelBtn = overlay.querySelector(".fd-btn-cancel");
+  const errorEl = overlay.querySelector(".fd-dialog-error");
 
   nameInput.select();
   nameInput.focus();

@@ -708,14 +708,9 @@ html[data-theme] .setup-btn-secondary:hover {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(124, 58, 237, 0.4);
-  border-radius: 4px;
-  border: 1px solid rgba(124, 58, 237, 0.2);
-}
-
-::-webkit-scrollbar-thumb:hover {
   background: rgba(124, 58, 237, 0.6);
-  border-color: rgba(124, 58, 237, 0.4);
+  border-radius: 4px;
+  border: 1px solid rgba(124, 58, 237, 0.4);
 }
 
 html[data-theme-mode="light"] .setup-wizard {
@@ -807,18 +802,13 @@ html[data-theme-mode="light"] .setup-btn-secondary:hover {
   border-color: var(--brand);
 }
 
-html[data-theme-mode="light"] ::-webkit-scrollbar-track {
+html[data-theme-mode="light"]::-webkit-scrollbar-track {
   background: rgba(0, 0, 0, 0.03);
 }
 
-html[data-theme-mode="light"] ::-webkit-scrollbar-thumb {
-  background: rgba(124, 58, 237, 0.5);
-  border: 1px solid rgba(124, 58, 237, 0.3);
-}
-
-html[data-theme-mode="light"] ::-webkit-scrollbar-thumb:hover {
+html[data-theme-mode="light"]::-webkit-scrollbar-thumb {
   background: rgba(124, 58, 237, 0.7);
-  border-color: rgba(124, 58, 237, 0.5);
+  border: 1px solid rgba(124, 58, 237, 0.5);
 }
 
 .shortcut-category {

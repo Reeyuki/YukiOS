@@ -15,7 +15,7 @@ export class CameraApp extends BaseApp {
     this.recordings = [];
     this.recordingInterval = null;
     this.historyWin = null;
-    this._declarativeApp = null;
+    this.declarativeApp = null;
   }
 
   getDeclarativeSchema(opts) {

@@ -166,13 +166,13 @@ const fs = {
       }
       const allNew = [];
       for (const [p, d] of cache) {
-        if (!d._persisted) allNew.push(d);
+        if (!d.persisted) allNew.push(d);
       }
       const tx = db.transaction(STORE_NAME, "readwrite");
       const store = tx.objectStore(STORE_NAME);
       for (const d of allNew) {
         store.put(d);
-        d._persisted = true;
+        d.persisted = true;
       }
       tx.oncomplete = () => cb(null);
       tx.onerror = (e) => cb(e.target.error);
@@ -280,7 +280,7 @@ export default {
         const all = await promisify(tx.objectStore(STORE_NAME).getAll());
         cache.clear();
         for (const doc of all) {
-          doc._persisted = true;
+          doc.persisted = true;
           cache.set(doc.path, doc);
         }
         cb(null);

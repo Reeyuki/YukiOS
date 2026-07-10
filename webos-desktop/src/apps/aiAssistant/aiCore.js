@@ -9,7 +9,7 @@ export class AICore {
     this.initCallback = null;
     this.webLLMLoaded = false;
     this.webLLMModule = null;
-    this._initPromise = null;
+    this.initPromise = null;
   }
 
   static MODEL_PROFILES = {
@@ -18,7 +18,7 @@ export class AICore {
     smart: ["Llama-3.1-8B-Instruct-q4f32_1-MLC", "Llama-3-8B-Instruct-q4f32_1-MLC"]
   };
 
-  async _loadWebLLM() {
+  async loadWebLLM() {
     if (this.webLLMLoaded) return true;
     if (typeof window !== "undefined" && window.CreateMLCEngine) {
       this.webLLMLoaded = true;
@@ -40,7 +40,7 @@ export class AICore {
     }
   }
 
-  _getAvailableModelIds() {
+  getAvailableModelIds() {
     const modelList = this.webLLMModule?.prebuiltAppConfig?.model_list;
     if (!Array.isArray(modelList)) {
       return [];
@@ -48,9 +48,9 @@ export class AICore {
     return modelList.map((entry) => entry.model_id).filter(Boolean);
   }
 
-  _resolveModelCandidates(modelType) {
+  resolveModelCandidates(modelType) {
     const preferredModels = AICore.MODEL_PROFILES[modelType] || AICore.MODEL_PROFILES.fast;
-    const availableModelIds = this._getAvailableModelIds();
+    const availableModelIds = this.getAvailableModelIds();
 
     if (availableModelIds.length === 0) {
       return preferredModels;
@@ -76,10 +76,10 @@ export class AICore {
 
   async initialize(modelType = "fast", webGPU = true, progressCallback = null, options = {}) {
     const force = Boolean(options.force);
-    if (this.isLoading) return this._initPromise;
+    if (this.isLoading) return this.initPromise;
     if (this.isInitialized && !force) return true;
 
-    this._initPromise = (async () => {
+    this.initPromise = (async () => {
       if (force) {
         this.dispose();
       }
@@ -89,7 +89,7 @@ export class AICore {
       this.isLoading = true;
       this.initCallback = progressCallback;
 
-      const loaded = await this._loadWebLLM();
+      const loaded = await this.loadWebLLM();
       if (!loaded) {
         this.isLoading = false;
         this.isInitialized = false;
@@ -108,7 +108,7 @@ export class AICore {
       };
 
       try {
-        const modelCandidates = this._resolveModelCandidates(modelType);
+        const modelCandidates = this.resolveModelCandidates(modelType);
         if (modelCandidates.length === 0) {
           throw new Error(`No compatible built-in WebLLM models found for profile "${modelType}"`);
         }
@@ -157,12 +157,12 @@ export class AICore {
       }
     })();
 
-    return this._initPromise;
+    return this.initPromise;
   }
 
   async generate(prompt, systemPrompt, chatHistory = []) {
     if (!this.isInitialized) {
-      return this._fallbackResponse(prompt);
+      return this.fallbackResponse(prompt);
     }
 
     try {
@@ -179,14 +179,14 @@ export class AICore {
       });
 
       const content = reply.choices[0].message.content;
-      return this._parseResponse(content);
+      return this.parseResponse(content);
     } catch (error) {
       console.error("[AI Core] Generation failed:", error);
-      return this._fallbackResponse(prompt);
+      return this.fallbackResponse(prompt);
     }
   }
 
-  _parseResponse(content) {
+  parseResponse(content) {
     const actions = [];
     let reasoning = null;
     let text = content;
@@ -213,7 +213,7 @@ export class AICore {
     return { text, actions, reasoning, rawContent: content };
   }
 
-  _fallbackResponse(prompt) {
+  fallbackResponse(prompt) {
     const lowerPrompt = prompt.toLowerCase();
     const actions = [];
 
@@ -254,6 +254,6 @@ export class AICore {
     this.model = null;
     this.isInitialized = false;
     this.isLoading = false;
-    this._initPromise = null;
+    this.initPromise = null;
   }
 }

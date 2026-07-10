@@ -1,4 +1,5 @@
 import "../styles/vnc.css";
+import { createElement } from "../shared/domUtils.js";
 import { BaseApp, PersistenceTypes, os, StorageKeys } from "../framework.js";
 
 const NOVNC_CDN = "https://cdn.jsdelivr.net/npm/@novnc/novnc@1.5.0/dist/rfb.min.js";
@@ -6,11 +7,11 @@ const NOVNC_CDN = "https://cdn.jsdelivr.net/npm/@novnc/novnc@1.5.0/dist/rfb.min.
 export class VNCApp extends BaseApp {
   constructor(services) {
     super(services);
-    this._rfb = null;
-    this._connected = false;
-    this._connecting = false;
-    this._profiles = [];
-    this._loaded = false;
+    this.rfb = null;
+    this.connected = false;
+    this.connecting = false;
+    this.profiles = [];
+    this.loaded = false;
   }
 
   getDeclarativeSchema(opts) {
@@ -121,25 +122,25 @@ export class VNCApp extends BaseApp {
       },
       actions: {
         newConnection: () => {
-          this._disconnect();
+          this.disconnect();
           const connectScreen = document.getElementById("vnc-connect-screen");
           const viewer = document.getElementById("vnc-viewer-container");
           if (connectScreen) connectScreen.style.display = "flex";
           if (viewer) viewer.style.display = "none";
         },
         disconnect: () => {
-          this._disconnect();
+          this.disconnect();
         },
         toggleFullscreen: () => {
-          this._toggleFullscreen();
+          this.toggleFullscreen();
         },
         sendCtrlAltDel: () => {
-          if (this._rfb && this._connected) {
-            this._rfb.sendCtrlAltDel();
+          if (this.rfb && this.connected) {
+            this.rfb.sendCtrlAltDel();
           }
         },
         connect: () => {
-          this._loadNoVNCAndConnect();
+          this.loadNoVNCAndConnect();
         }
       },
       onMount: "initVNC"
@@ -147,15 +148,15 @@ export class VNCApp extends BaseApp {
   }
 
   initVNC(payload, vt, element, state) {
-    this._profiles = this._loadProfiles();
-    if (this._profiles.length > 0) {
-      this._renderProfiles();
+    this.profiles = this.loadProfiles();
+    if (this.profiles.length > 0) {
+      this.renderProfiles();
     }
 
     const newBtn = document.getElementById("vnc-new-connection");
     if (newBtn)
       newBtn.addEventListener("click", () => {
-        this._disconnect();
+        this.disconnect();
         const connectScreen = document.getElementById("vnc-connect-screen");
         const viewer = document.getElementById("vnc-viewer-container");
         if (connectScreen) connectScreen.style.display = "flex";
@@ -163,57 +164,57 @@ export class VNCApp extends BaseApp {
       });
 
     const disconnectBtn = document.getElementById("vnc-disconnect");
-    if (disconnectBtn) disconnectBtn.addEventListener("click", () => this._disconnect());
+    if (disconnectBtn) disconnectBtn.addEventListener("click", () => this.disconnect());
 
     const fullscreenBtn = document.getElementById("vnc-fullscreen");
-    if (fullscreenBtn) fullscreenBtn.addEventListener("click", () => this._toggleFullscreen());
+    if (fullscreenBtn) fullscreenBtn.addEventListener("click", () => this.toggleFullscreen());
 
     const cadBtn = document.getElementById("vnc-ctrl-alt-del");
     if (cadBtn)
       cadBtn.addEventListener("click", () => {
-        if (this._rfb && this._connected) this._rfb.sendCtrlAltDel();
+        if (this.rfb && this.connected) this.rfb.sendCtrlAltDel();
       });
 
     const connectBtn = document.getElementById("vnc-connect-btn");
-    if (connectBtn) connectBtn.addEventListener("click", () => this._loadNoVNCAndConnect());
+    if (connectBtn) connectBtn.addEventListener("click", () => this.loadNoVNCAndConnect());
 
     const hostInput = document.getElementById("vnc-host");
     const portInput = document.getElementById("vnc-port");
 
     if (hostInput && portInput) {
       const handleEnter = (e) => {
-        if (e.key === "Enter") this._loadNoVNCAndConnect();
+        if (e.key === "Enter") this.loadNoVNCAndConnect();
       };
       hostInput.addEventListener("keydown", handleEnter);
       portInput.addEventListener("keydown", handleEnter);
     }
   }
 
-  async _loadNoVNCAndConnect() {
-    if (!this._loaded) {
+  async loadNoVNCAndConnect() {
+    if (!this.loaded) {
       try {
-        await this._loadNoVNCScript();
+        await this.loadNoVNCScript();
       } catch (e) {
         os.dialog.alert("VNC Client", "Failed to load noVNC library. Check your internet connection.");
         return;
       }
     }
-    this._connect();
+    this.connect();
   }
 
-  _loadNoVNCScript() {
+  loadNoVNCScript() {
     return new Promise((resolve, reject) => {
       if (window.RFB) {
-        this._loaded = true;
+        this.loaded = true;
         resolve();
         return;
       }
 
-      const script = document.createElement("script");
+      const script = createElement("script");
       script.src = NOVNC_CDN;
       script.async = true;
       script.onload = () => {
-        this._loaded = true;
+        this.loaded = true;
         resolve();
       };
       script.onerror = () => reject(new Error("Failed to load noVNC"));
@@ -221,8 +222,8 @@ export class VNCApp extends BaseApp {
     });
   }
 
-  _connect() {
-    if (this._connecting || this._connected) return;
+  connect() {
+    if (this.connecting || this.connected) return;
 
     const host = document.getElementById("vnc-host")?.value.trim();
     const port = parseInt(document.getElementById("vnc-port")?.value) || 5900;
@@ -236,8 +237,8 @@ export class VNCApp extends BaseApp {
       return;
     }
 
-    this._connecting = true;
-    this._updateUIState("connecting");
+    this.connecting = true;
+    this.updateUIState("connecting");
 
     const protocol = useWss ? "wss" : "ws";
     const wsUrl = `${protocol}://${host}:${wsPort}`;
@@ -252,28 +253,28 @@ export class VNCApp extends BaseApp {
     if (loadingEl) loadingEl.style.display = "flex";
 
     try {
-      this._rfb = new window.RFB(canvasWrapper, wsUrl, {
+      this.rfb = new window.RFB(canvasWrapper, wsUrl, {
         credentials: { password: password || undefined },
         shared: true,
         repeaterID: "",
         wsProtocols: ["binary"]
       });
 
-      this._rfb.viewOnly = false;
-      this._rfb.scaleViewport = true;
-      this._rfb.resizeSession = true;
+      this.rfb.viewOnly = false;
+      this.rfb.scaleViewport = true;
+      this.rfb.resizeSession = true;
       if (password) {
-        this._rfb.sendCredentials({ password });
+        this.rfb.sendCredentials({ password });
       }
 
-      this._rfb.addEventListener("connect", () => {
-        this._connected = true;
-        this._connecting = false;
+      this.rfb.addEventListener("connect", () => {
+        this.connected = true;
+        this.connecting = false;
         if (loadingEl) loadingEl.style.display = "none";
-        this._updateUIState("connected");
+        this.updateUIState("connected");
 
         if (saveProfile && host) {
-          this._saveProfile({ host, port, wsPort, useWss });
+          this.saveProfile({ host, port, wsPort, useWss });
         }
 
         os.notify.send("VNC Client", `Connected to ${host}:${port}`, {
@@ -284,62 +285,62 @@ export class VNCApp extends BaseApp {
         });
       });
 
-      this._rfb.addEventListener("disconnect", (detail) => {
-        this._connected = false;
-        this._connecting = false;
-        this._updateUIState("disconnected");
+      this.rfb.addEventListener("disconnect", (detail) => {
+        this.connected = false;
+        this.connecting = false;
+        this.updateUIState("disconnected");
 
         const reason = detail?.detail?.clean ? "" : " (connection lost)";
-        this._showConnectScreen();
+        this.showConnectScreen();
         os.dialog.alert("VNC Client", `Disconnected from ${host}:${port}${reason}`);
       });
 
-      this._rfb.addEventListener("credentialsrequired", () => {
-        this._connecting = false;
+      this.rfb.addEventListener("credentialsrequired", () => {
+        this.connecting = false;
         if (password) {
-          this._rfb.sendCredentials({ password });
+          this.rfb.sendCredentials({ password });
         } else {
-          this._showConnectScreen();
+          this.showConnectScreen();
           os.dialog.alert("VNC Client", "Password required for this VNC server.");
         }
       });
 
-      this._rfb.addEventListener("serververification", (e) => {
+      this.rfb.addEventListener("serververification", (e) => {
         if (e.detail && typeof e.detail === "function") {
           e.detail(true);
         }
       });
 
-      this._rfb.addEventListener("clipboard", (e) => {
+      this.rfb.addEventListener("clipboard", (e) => {
         if (e.detail && e.detail.text) {
           navigator.clipboard.writeText(e.detail.text).catch(() => {});
         }
       });
 
-      this._rfb.scaleViewport = true;
-      this._rfb.resizeSession = true;
+      this.rfb.scaleViewport = true;
+      this.rfb.resizeSession = true;
     } catch (err) {
-      this._connecting = false;
-      this._updateUIState("disconnected");
-      this._showConnectScreen();
+      this.connecting = false;
+      this.updateUIState("disconnected");
+      this.showConnectScreen();
       os.dialog.alert("VNC Client", `Failed to connect: ${err.message}`);
     }
   }
 
-  _disconnect() {
-    if (this._rfb) {
+  disconnect() {
+    if (this.rfb) {
       try {
-        this._rfb.disconnect();
+        this.rfb.disconnect();
       } catch (e) {}
-      this._rfb = null;
+      this.rfb = null;
     }
-    this._connected = false;
-    this._connecting = false;
-    this._updateUIState("disconnected");
-    this._showConnectScreen();
+    this.connected = false;
+    this.connecting = false;
+    this.updateUIState("disconnected");
+    this.showConnectScreen();
   }
 
-  _showConnectScreen() {
+  showConnectScreen() {
     const connectScreen = document.getElementById("vnc-connect-screen");
     const viewer = document.getElementById("vnc-viewer-container");
     const loadingEl = document.getElementById("vnc-loading");
@@ -349,7 +350,7 @@ export class VNCApp extends BaseApp {
     if (loadingEl) loadingEl.style.display = "none";
   }
 
-  _toggleFullscreen() {
+  toggleFullscreen() {
     const wrapper = document.getElementById("vnc-canvas-wrapper");
     if (!wrapper) return;
 
@@ -360,7 +361,7 @@ export class VNCApp extends BaseApp {
     }
   }
 
-  _updateUIState(state) {
+  updateUIState(state) {
     const badge = document.getElementById("vnc-status-badge");
     const disconnectBtn = document.getElementById("vnc-disconnect");
     const fullscreenBtn = document.getElementById("vnc-fullscreen");
@@ -381,44 +382,44 @@ export class VNCApp extends BaseApp {
     if (cadBtn) cadBtn.disabled = state !== "connected";
   }
 
-  _saveProfile(profile) {
-    const existing = this._profiles.findIndex((p) => p.host === profile.host && p.port === profile.port);
+  saveProfile(profile) {
+    const existing = this.profiles.findIndex((p) => p.host === profile.host && p.port === profile.port);
 
     if (existing >= 0) {
-      this._profiles[existing] = { ...profile, name: this._profiles[existing].name };
+      this.profiles[existing] = { ...profile, name: this.profiles[existing].name };
     } else {
-      this._profiles.push({
+      this.profiles.push({
         ...profile,
         name: `${profile.host}:${profile.port}`
       });
     }
 
-    os.storage.set("yukiOS_vnc_profiles", JSON.stringify(this._profiles));
-    this._renderProfiles();
+    os.storage.set(StorageKeys.vncProfiles, JSON.stringify(this.profiles));
+    this.renderProfiles();
   }
 
-  _loadProfiles() {
+  loadProfiles() {
     try {
-      const data = os.storage.get("yukiOS_vnc_profiles");
+      const data = os.storage.get(StorageKeys.vncProfiles);
       return data ? JSON.parse(data) : [];
     } catch (e) {
       return [];
     }
   }
 
-  _renderProfiles() {
+  renderProfiles() {
     const section = document.getElementById("vnc-profiles-section");
     const list = document.getElementById("vnc-profiles-list");
 
     if (!section || !list) return;
 
-    if (this._profiles.length === 0) {
+    if (this.profiles.length === 0) {
       section.style.display = "none";
       return;
     }
 
     section.style.display = "block";
-    list.innerHTML = this._profiles
+    list.innerHTML = this.profiles
       .map(
         (profile, index) => `
       <div class="vnc-profile-item" data-index="${index}">
@@ -443,7 +444,7 @@ export class VNCApp extends BaseApp {
       btn.addEventListener("click", (e) => {
         const item = e.target.closest(".vnc-profile-item");
         const index = parseInt(item.dataset.index);
-        const profile = this._profiles[index];
+        const profile = this.profiles[index];
 
         const hostInput = document.getElementById("vnc-host");
         const portInput = document.getElementById("vnc-port");
@@ -455,7 +456,7 @@ export class VNCApp extends BaseApp {
         if (wsPortInput) wsPortInput.value = profile.wsPort;
         if (wssCheck) wssCheck.checked = profile.useWss;
 
-        this._loadNoVNCAndConnect();
+        this.loadNoVNCAndConnect();
       });
     });
 
@@ -463,14 +464,14 @@ export class VNCApp extends BaseApp {
       btn.addEventListener("click", (e) => {
         const item = e.target.closest(".vnc-profile-item");
         const index = parseInt(item.dataset.index);
-        this._profiles.splice(index, 1);
-        os.storage.set("yukiOS_vnc_profiles", JSON.stringify(this._profiles));
-        this._renderProfiles();
+        this.profiles.splice(index, 1);
+        os.storage.set(StorageKeys.vncProfiles, this.profiles);
+        this.renderProfiles();
       });
     });
   }
 
   onClose(winId) {
-    this._disconnect();
+    this.disconnect();
   }
 }

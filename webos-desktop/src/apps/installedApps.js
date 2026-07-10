@@ -8,14 +8,14 @@ export class InstalledAppsApp extends BaseApp {
     super(services);
     this.appRegistry = getAppRegistry();
     this.appLauncher = null;
-    this._instances = new Map();
+    this.instances = new Map();
   }
 
   setAppLauncher(appLauncher) {
     this.appLauncher = appLauncher;
   }
 
-  _createInstance(winId) {
+  createInstance(winId) {
     const inst = {
       winId,
       currentFilter: "all",
@@ -25,44 +25,44 @@ export class InstalledAppsApp extends BaseApp {
       currentPage: 0,
       selectedApps: new Set()
     };
-    this._instances.set(winId, inst);
+    this.instances.set(winId, inst);
     return inst;
   }
 
-  _getInstance(winId) {
-    return this._instances.get(winId);
+  getInstance(winId) {
+    return this.instances.get(winId);
   }
 
-  _removeInstance(winId) {
-    this._instances.delete(winId);
+  removeInstance(winId) {
+    this.instances.delete(winId);
   }
 
   async open(options = {}) {
     const winId = "installed-apps";
-    if (await this._isSingletonOpen(winId)) return;
+    if (await this.isSingletonOpen(winId)) return;
 
-    const inst = this._createInstance(winId);
+    const inst = this.createInstance(winId);
     const win = os.window.create(winId, "Installed Apps", "900px", "650px", {
       icon: "fas fa-th-list"
     });
 
-    win.innerHTML = this._buildHTML();
+    win.innerHTML = this.buildHTML();
 
     os.window.addToTaskbar(winId, "Installed Apps", "fas fa-th-list");
 
-    this._bindControls(win, inst);
-    this._loadApps(inst);
+    this.bindControls(win, inst);
+    this.loadApps(inst);
 
     const observer = new MutationObserver(() => {
       if (!document.getElementById(winId)) {
-        this._removeInstance(winId);
+        this.removeInstance(winId);
         observer.disconnect();
       }
     });
     observer.observe(document.body, { childList: true, subtree: true });
   }
 
-  _buildHTML() {
+  buildHTML() {
     return `
       <div class="window-header">
         <span><i class="fas fa-th-list" style="color: white;margin-right: 6px;font-size: 25px;vertical-align: middle;"></i>Installed Apps</span>
@@ -97,7 +97,7 @@ export class InstalledAppsApp extends BaseApp {
     `;
   }
 
-  _bindControls(win, inst) {
+  bindControls(win, inst) {
     const searchInput = win.querySelector("#installed-apps-search");
     const filterSelect = win.querySelector("#installed-apps-filter");
     const selectAllBtn = win.querySelector("#select-all-btn");
@@ -108,13 +108,13 @@ export class InstalledAppsApp extends BaseApp {
     searchInput.addEventListener("input", (e) => {
       inst.searchQuery = e.target.value.toLowerCase();
       inst.currentPage = 0;
-      this._renderApps(win, inst);
+      this.renderApps(win, inst);
     });
 
     filterSelect.addEventListener("change", (e) => {
       inst.currentFilter = e.target.value;
       inst.currentPage = 0;
-      this._renderApps(win, inst);
+      this.renderApps(win, inst);
     });
 
     selectAllBtn.addEventListener("click", () => {
@@ -133,26 +133,26 @@ export class InstalledAppsApp extends BaseApp {
         selectAllBtn.textContent = "Deselect All";
       }
 
-      this._updateBulkActions(win, inst);
-      this._renderCurrentPage(document.getElementById(inst.winId), inst);
+      this.updateBulkActions(win, inst);
+      this.renderCurrentPage(document.getElementById(inst.winId), inst);
     });
 
     bulkToggleBtn.addEventListener("click", () => {
-      this._handleBulkToggle(inst);
+      this.handleBulkToggle(inst);
     });
 
     bulkUninstallBtn.addEventListener("click", () => {
-      this._handleBulkUninstall(inst);
+      this.handleBulkUninstall(inst);
     });
 
     bulkClearBtn.addEventListener("click", () => {
       inst.selectedApps.clear();
-      this._updateBulkActions(win, inst);
-      this._renderCurrentPage(document.getElementById(inst.winId), inst);
+      this.updateBulkActions(win, inst);
+      this.renderCurrentPage(document.getElementById(inst.winId), inst);
     });
   }
 
-  _loadApps(inst) {
+  loadApps(inst) {
     if (!this.appLauncher) {
       console.error("AppLauncher not set");
       return;
@@ -160,10 +160,10 @@ export class InstalledAppsApp extends BaseApp {
 
     const allApps = this.appRegistry.getAllApps(this.appLauncher.appMap);
     inst.apps = allApps.filter((app) => !app.uninstalled);
-    this._renderApps(document.getElementById(inst.winId), inst);
+    this.renderApps(document.getElementById(inst.winId), inst);
   }
 
-  _renderApps(win, inst) {
+  renderApps(win, inst) {
     const listEl = win.querySelector("#installed-apps-list");
     const statusEl = win.querySelector("#installed-apps-status");
     const paginationEl = win.querySelector("#installed-apps-pagination");
@@ -198,18 +198,18 @@ export class InstalledAppsApp extends BaseApp {
     }
 
     pageApps.forEach((app) => {
-      const appEl = this._createAppCard(app, inst);
+      const appEl = this.createAppCard(app, inst);
       listEl.appendChild(appEl);
     });
 
     statusEl.textContent = `${filtered.length} app${filtered.length !== 1 ? "s" : ""} (showing ${startIndex + 1}-${endIndex})`;
 
     if (paginationEl) {
-      this._renderPagination(paginationEl, inst, totalPages, filtered.length);
+      this.renderPagination(paginationEl, inst, totalPages, filtered.length);
     }
   }
 
-  _renderPagination(paginationEl, inst, totalPages, totalCount) {
+  renderPagination(paginationEl, inst, totalPages, totalCount) {
     if (totalPages <= 1) {
       paginationEl.style.display = "none";
       return;
@@ -227,16 +227,16 @@ export class InstalledAppsApp extends BaseApp {
         const action = btn.dataset.action;
         if (action === "prev" && inst.currentPage > 0) {
           inst.currentPage--;
-          this._renderCurrentPage(document.getElementById(inst.winId), inst);
+          this.renderCurrentPage(document.getElementById(inst.winId), inst);
         } else if (action === "next" && inst.currentPage < totalPages - 1) {
           inst.currentPage++;
-          this._renderCurrentPage(document.getElementById(inst.winId), inst);
+          this.renderCurrentPage(document.getElementById(inst.winId), inst);
         }
       });
     });
   }
 
-  _renderCurrentPage(win, inst) {
+  renderCurrentPage(win, inst) {
     const listEl = win.querySelector("#installed-apps-list");
     const statusEl = win.querySelector("#installed-apps-status");
     const paginationEl = win.querySelector("#installed-apps-pagination");
@@ -257,20 +257,20 @@ export class InstalledAppsApp extends BaseApp {
 
     listEl.innerHTML = "";
     pageApps.forEach((app) => {
-      const appEl = this._createAppCard(app, inst);
+      const appEl = this.createAppCard(app, inst);
       listEl.appendChild(appEl);
     });
 
     statusEl.textContent = `${filtered.length} app${filtered.length !== 1 ? "s" : ""} (showing ${startIndex + 1}-${endIndex})`;
-    this._renderPagination(paginationEl, inst, totalPages, filtered.length);
+    this.renderPagination(paginationEl, inst, totalPages, filtered.length);
   }
 
-  _createAppCard(app, inst) {
+  createAppCard(app, inst) {
     const card = document.createElement("div");
     card.className = "installed-app-card";
     card.dataset.appId = app.id;
 
-    const iconHtml = this._getAppIcon(app);
+    const iconHtml = this.getAppIcon(app);
     const isSelected = inst.selectedApps.has(app.id);
 
     if (isSelected) {
@@ -289,7 +289,7 @@ export class InstalledAppsApp extends BaseApp {
         <div class="app-meta">
           <span class="app-id">${app.id}</span>
           <span>•</span>
-          <span class="app-type">${this._getTypeLabel(app.type)}</span>
+          <span class="app-type">${this.getTypeLabel(app.type)}</span>
           ${app.protected ? '<span>•</span><span style="color: var(--brand);">Protected</span>' : ""}
         </div>
       </div>
@@ -319,16 +319,16 @@ export class InstalledAppsApp extends BaseApp {
       }
     });
 
-    this._bindAppActions(card, app, inst);
-    this._bindCheckbox(card, app, inst);
+    this.bindAppActions(card, app, inst);
+    this.bindCheckbox(card, app, inst);
 
     return card;
   }
 
-  _getAppIcon(app) {
+  getAppIcon(app) {
     if (app.icon) {
       const iconValue = app.icon.trim();
-      if (this._isFontAwesomeIconClass(iconValue)) {
+      if (this.isFontAwesomeIconClass(iconValue)) {
         return `<i class="${iconValue}"></i>`;
       }
       const iconUrl = resolveIconUrl(iconValue);
@@ -339,12 +339,12 @@ export class InstalledAppsApp extends BaseApp {
     return `<i class="fas fa-cube"></i>`;
   }
 
-  _isFontAwesomeIconClass(iconValue) {
+  isFontAwesomeIconClass(iconValue) {
     if (!iconValue || iconValue.includes("/")) return false;
     return iconValue.split(/\s+/).every((part) => part.startsWith("fa"));
   }
 
-  _getTypeLabel(type) {
+  getTypeLabel(type) {
     const labels = {
       core: "Core System",
       bundled: "Bundled",
@@ -353,30 +353,30 @@ export class InstalledAppsApp extends BaseApp {
     return labels[type] || type;
   }
 
-  _bindAppActions(card, app, inst) {
+  bindAppActions(card, app, inst) {
     const renameBtn = card.querySelector(".rename-btn");
     const toggleBtn = card.querySelector(".toggle-btn");
     const uninstallBtn = card.querySelector(".uninstall-btn");
 
     renameBtn.addEventListener("click", async (e) => {
       e.stopPropagation();
-      await this._handleRename(app, inst);
+      await this.handleRename(app, inst);
     });
 
     toggleBtn.addEventListener("click", async (e) => {
       e.stopPropagation();
       if (app.protected) return;
-      await this._handleToggle(app, inst);
+      await this.handleToggle(app, inst);
     });
 
     uninstallBtn.addEventListener("click", async (e) => {
       e.stopPropagation();
       if (app.protected) return;
-      await this._handleUninstall(app, inst);
+      await this.handleUninstall(app, inst);
     });
   }
 
-  _bindCheckbox(card, app, inst) {
+  bindCheckbox(card, app, inst) {
     const checkbox = card.querySelector(".app-select-checkbox");
     checkbox.addEventListener("change", (e) => {
       if (e.target.checked) {
@@ -386,11 +386,11 @@ export class InstalledAppsApp extends BaseApp {
         inst.selectedApps.delete(app.id);
         card.classList.remove("selected");
       }
-      this._updateBulkActions(document.getElementById(inst.winId), inst);
+      this.updateBulkActions(document.getElementById(inst.winId), inst);
     });
   }
 
-  _updateBulkActions(win, inst) {
+  updateBulkActions(win, inst) {
     const bulkActions = win.querySelector("#installed-apps-bulk-actions");
     const selectedCount = win.querySelector("#selected-count");
     const selectAllBtn = win.querySelector("#select-all-btn");
@@ -418,7 +418,7 @@ export class InstalledAppsApp extends BaseApp {
     }
   }
 
-  async _handleBulkToggle(inst) {
+  async handleBulkToggle(inst) {
     const selectedIds = Array.from(inst.selectedApps);
     let toggledCount = 0;
 
@@ -431,7 +431,7 @@ export class InstalledAppsApp extends BaseApp {
     }
 
     if (toggledCount > 0) {
-      this._loadApps(inst);
+      this.loadApps(inst);
       this.notify(
         "Apps Toggled",
         `${toggledCount} app${toggledCount !== 1 ? "s" : ""} status updated`,
@@ -442,7 +442,7 @@ export class InstalledAppsApp extends BaseApp {
     }
   }
 
-  async _handleBulkUninstall(inst) {
+  async handleBulkUninstall(inst) {
     const selectedIds = Array.from(inst.selectedApps);
     const confirmed = await os.dialog.confirm(
       "Bulk Uninstall",
@@ -462,7 +462,7 @@ export class InstalledAppsApp extends BaseApp {
 
       if (uninstalledCount > 0) {
         inst.selectedApps.clear();
-        this._loadApps(inst);
+        this.loadApps(inst);
         this.notify(
           "Apps Uninstalled",
           `${uninstalledCount} app${uninstalledCount !== 1 ? "s" : ""} uninstalled`,
@@ -474,21 +474,21 @@ export class InstalledAppsApp extends BaseApp {
     }
   }
 
-  async _handleRename(app, inst) {
+  async handleRename(app, inst) {
     const newName = await os.dialog.prompt("Rename App", `Enter a new name for "${app.displayName}":`, app.displayName);
 
     if (newName !== null && newName.trim() !== "") {
       this.appRegistry.setAppName(app.id, newName.trim());
-      this._loadApps(inst);
+      this.loadApps(inst);
       this.notify("App Renamed", `"${app.displayName}" is now "${newName.trim()}"`, "success", 5000, "fas fa-edit");
     }
   }
 
-  async _handleToggle(app, inst) {
+  async handleToggle(app, inst) {
     const action = app.disabled ? "enable" : "disable";
     const success = this.appRegistry.setAppDisabled(app.id, !app.disabled);
     if (success) {
-      this._loadApps(inst);
+      this.loadApps(inst);
       this.notify(
         `App ${action.charAt(0).toUpperCase() + action.slice(1)}d`,
         `"${app.displayName}" has been ${action}d`,
@@ -499,7 +499,7 @@ export class InstalledAppsApp extends BaseApp {
     }
   }
 
-  async _handleUninstall(app, inst) {
+  async handleUninstall(app, inst) {
     const confirmed = await os.dialog.confirm(
       "Uninstall App",
       `Uninstall "${app.displayName}"? You can restore it later.`
@@ -508,13 +508,13 @@ export class InstalledAppsApp extends BaseApp {
     if (confirmed) {
       const success = this.appRegistry.uninstallApp(app.id);
       if (success) {
-        this._loadApps(inst);
+        this.loadApps(inst);
         this.notify("App Uninstalled", `"${app.displayName}" has been uninstalled`, "success", 5000, "fas fa-trash");
       }
     }
   }
 
   onClose(winId) {
-    this._removeInstance(winId);
+    this.removeInstance(winId);
   }
 }

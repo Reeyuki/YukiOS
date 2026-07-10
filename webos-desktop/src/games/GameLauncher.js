@@ -1,8 +1,8 @@
 import { sendLaunchAnalytics, getAnalyticsBase, fetchGamePlayCounts, getCachedPlayCounts } from "../analytics.js";
 import { CDN_CONFIG } from "../shared/cdnConfig.js";
-import { lazyImg, observeLazyImages, SteamDataManager, _launcher } from "./games.js";
+import { lazyImg, observeLazyImages, SteamDataManager, launcher } from "./games.js";
 import { SteamSettings } from "./steam.js";
-import { os } from "../os/index.js";
+import { os } from "../framework.js";
 import { $$ } from "../shared/domUtils.js";
 
 export class GameLauncher {
@@ -48,8 +48,8 @@ export class GameLauncher {
     const analyticsBase = getAnalyticsBase(gameId);
     sendLaunchAnalytics(gameId);
 
-    if (_launcher) {
-      _launcher.openIframeApp({ appId: gameId, type: "game", source: url, originalName: title, analyticsBase });
+    if (launcher) {
+      launcher.openIframeApp({ appId: gameId, type: "game", source: url, originalName: title, analyticsBase });
     } else {
       console.error("No launcher available to open game.");
     }
@@ -78,7 +78,7 @@ export class GameLauncher {
     return n.charAt(0).toUpperCase() + n.slice(1);
   }
 
-  _archiveGameId(url) {
+  archiveGameId(url) {
     return url
       .split("?")[0]
       .replace(/\/index\.html$/, "")
@@ -94,20 +94,20 @@ export class GameLauncher {
     return `${CDN_CONFIG.repos.games.archiveBase}/archive/`;
   }
 
-  _appendArchiveGameToSidebar(container, archiveGame, onLaunch) {
+  appendArchiveGameToSidebar(container, archiveGame, onLaunch) {
     const sidebarList = container.querySelector(".sidebar-game-list");
     if (!sidebarList) return;
 
     const existing = sidebarList.querySelector(`.sidebar-game-item[data-app="${archiveGame.appId}"]`);
     if (existing) return;
 
-    const item = this.renderer._makeSidebarItem(archiveGame, container, onLaunch, true);
+    const item = this.renderer.makeSidebarItem(archiveGame, container, onLaunch, true);
     item.classList.add("sidebar-archive-item");
     sidebarList.appendChild(item);
     observeLazyImages(item);
   }
 
-  async _loadArchiveSection(container, onLaunch, collapsed) {
+  async loadArchiveSection(container, onLaunch, collapsed) {
     this.loadPlayCounts();
 
     const target = container.querySelector(".steam-library-page");
@@ -128,10 +128,10 @@ export class GameLauncher {
     placeholder.id = "archive-section-placeholder";
     placeholder.innerHTML = `
       <div class="steam-section-header" id="${sectionId}" data-title="${sectionTitle}" style="cursor: pointer; display: flex; align-items: center; gap: 10px;">
-        <i class="fas fa-spinner fa-spin" style="font-size: 10px; color: #898989;"></i>
+        <i class="fas fa-spinner fa-spin" style="font-size: 10px; color: var(--text-secondary);"></i>
         <div class="steam-section-title">${sectionTitle}</div>
-        <div style="height: 1px; flex: 1; background: rgba(255,255,255,0.1); margin-left: 10px;"></div>
-        <span style="font-size: 11px; color: #898989; margin-left: 8px;">Loading...</span>
+        <div style="height: 1px; flex: 1; background: var(--glass); margin-left: 10px;"></div>
+        <span style="font-size: 11px; color: var(--text-secondary); margin-left: 8px;">Loading...</span>
       </div>
     `;
     yukiosContent.appendChild(placeholder);
@@ -140,10 +140,10 @@ export class GameLauncher {
       const data = await this.fetchFirstJson([`${base}games.json`]);
       const allGames = Array.isArray(data) ? data : data?.games || [];
 
-      this.renderer._archiveGamesCache = allGames.map((game) => {
+      this.renderer.archiveGamesCache = allGames.map((game) => {
         const name = this.formatArchiveName(game.name, game.url);
         const fullUrl = game.url.startsWith("http") ? game.url : base + game.url;
-        const appId = this._archiveGameId(fullUrl);
+        const appId = this.archiveGameId(fullUrl);
         let thumb = game.thumbnail
           ? game.thumbnail.startsWith("http")
             ? game.thumbnail
@@ -157,24 +157,24 @@ export class GameLauncher {
 
       const renderArchiveChunk = (deadline) => {
         while (
-          archiveIndex < this.renderer._archiveGamesCache.length &&
+          archiveIndex < this.renderer.archiveGamesCache.length &&
           (deadline ? deadline.timeRemaining() > 2 : true)
         ) {
-          const end = Math.min(archiveIndex + CHUNK, this.renderer._archiveGamesCache.length);
+          const end = Math.min(archiveIndex + CHUNK, this.renderer.archiveGamesCache.length);
           for (let i = archiveIndex; i < end; i++) {
-            this._appendArchiveGameToSidebar(container, this.renderer._archiveGamesCache[i], onLaunch);
+            this.appendArchiveGameToSidebar(container, this.renderer.archiveGamesCache[i], onLaunch);
           }
           archiveIndex = end;
           if (!deadline) break;
         }
-        if (archiveIndex < this.renderer._archiveGamesCache.length) {
+        if (archiveIndex < this.renderer.archiveGamesCache.length) {
           requestIdleCallback(renderArchiveChunk, { timeout: 200 });
         }
       };
 
       requestIdleCallback(renderArchiveChunk, { timeout: 100 });
 
-      const cards = this.renderer._archiveGamesCache
+      const cards = this.renderer.archiveGamesCache
         .map(({ appId, title, url: fullUrl, thumb }) => {
           const normalizedApp = appId.toLowerCase().trim();
           const playCount = this.playCounts[normalizedApp] || 0;
@@ -185,9 +185,9 @@ export class GameLauncher {
                 thumb
                   ? lazyImg(
                       thumb,
-                      `alt="${title}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.innerHTML='<div style=\\'width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#1b2838;color:#2a475e;\\'><i class=\\'fas fa-gamepad\\' style=\\'font-size:40px;\\'></i></div>'"`
+                      `alt="${title}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.innerHTML='<div style=\\'width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--bg-secondary);color:var(--text-secondary);\\'><i class=\\'fas fa-gamepad\\' style=\\'font-size:40px;\\'></i></div>'"`
                     )
-                  : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#1b2838;color:#2a475e;"><i class="fas fa-gamepad" style="font-size:40px;"></i></div>`
+                  : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--bg-secondary);color:var(--text-secondary);"><i class="fas fa-gamepad" style="font-size:40px;"></i></div>`
               }
               <div class="steam-play-count-badge">${playCount}</div>
             </div>
@@ -198,10 +198,10 @@ export class GameLauncher {
 
       placeholder.innerHTML = `
         <div class="steam-section-header" id="${sectionId}" data-title="${sectionTitle}" style="cursor: pointer; display: flex; align-items: center; gap: 10px;">
-          <i class="fas ${isExpanded ? "fa-chevron-down" : "fa-chevron-right"}" style="font-size: 10px; color: #898989;"></i>
+          <i class="fas ${isExpanded ? "fa-chevron-down" : "fa-chevron-right"}" style="font-size: 10px; color: var(--text-secondary);"></i>
           <div class="steam-section-title">${sectionTitle}</div>
-          <div style="height: 1px; flex: 1; background: rgba(255,255,255,0.1); margin-left: 10px;"></div>
-          <span style="font-size: 11px; color: #898989; margin-left: 8px;">${allGames.length} games</span>
+          <div style="height: 1px; flex: 1; background: var(--glass); margin-left: 10px;"></div>
+          <span style="font-size: 11px; color: var(--text-secondary); margin-left: 8px;">${allGames.length} games</span>
         </div>
         <div class="steam-game-grid steam-archive-grid" style="display: ${isExpanded ? "grid" : "none"}">
           ${cards}
@@ -218,7 +218,7 @@ export class GameLauncher {
         grid.style.display = nowExpanded ? "grid" : "none";
         if (icon) {
           icon.className = `fas ${nowExpanded ? "fa-chevron-down" : "fa-chevron-right"}`;
-          icon.style.cssText = "font-size: 10px; color: #898989;";
+          icon.style.cssText = "font-size: 10px; color: var(--text-secondary);";
         }
       };
 
@@ -312,11 +312,11 @@ export class GameLauncher {
       });
     } catch (err) {
       console.error("Archive load failed:", err);
-      placeholder.innerHTML = `<div style="color:#898989;font-size:13px;padding:10px 0;">Failed to load archive games.</div>`;
+      placeholder.innerHTML = `<div style="color:var(--text-secondary);font-size:13px;padding:10px 0;">Failed to load archive games.</div>`;
     }
   }
 
-  _loadLuminSDKSection(container, collapsed) {
+  loadLuminSDKSection(container, collapsed) {
     const target = container.querySelector(".steam-library-page");
     if (!target) return;
 
@@ -334,12 +334,12 @@ export class GameLauncher {
     placeholder.id = "luminsdk-section-placeholder";
     placeholder.innerHTML = `
       <div class="steam-section-header" id="${sectionId}" data-title="${sectionTitle}" style="cursor: pointer; display: flex; align-items: center; gap: 10px;">
-        <i class="fas ${isExpanded ? "fa-chevron-down" : "fa-chevron-right"}" style="font-size: 10px; color: #898989;"></i>
+        <i class="fas ${isExpanded ? "fa-chevron-down" : "fa-chevron-right"}" style="font-size: 10px; color: var(--text-secondary);"></i>
         <div class="steam-section-title">${sectionTitle}</div>
-        <div style="height: 1px; flex: 1; background: rgba(255,255,255,0.1); margin-left: 10px;"></div>
+        <div style="height: 1px; flex: 1; background: var(--glass); margin-left: 10px;"></div>
       </div>
       <div class="steam-luminsdk-container" style="display: ${isExpanded ? "block" : "none"}; padding: 20px 0;">
-        <iframe id="luminsdk-iframe" style="width: 100%; height: 600px; border: none; background: #1b2838;"></iframe>
+        <iframe id="luminsdk-iframe" style="width: 100%; height: 600px; border: none; background: var(--bg-secondary);"></iframe>
       </div>
     `;
     yukiosContent.appendChild(placeholder);
@@ -355,7 +355,7 @@ export class GameLauncher {
           <html>
           <head>
             <style>
-              body { margin: 0; padding: 0; background: #1b2838; }
+              body { margin: 0; padding: 0; background: var(--bg-secondary); }
               #games { width: 100%; height: 100%; }
             </style>
           </head>
@@ -383,7 +383,7 @@ export class GameLauncher {
       content.style.display = nowExpanded ? "block" : "none";
       if (icon) {
         icon.className = `fas ${nowExpanded ? "fa-chevron-down" : "fa-chevron-right"}`;
-        icon.style.cssText = "font-size: 10px; color: #898989;";
+        icon.style.cssText = "font-size: 10px; color: var(--text-secondary);";
       }
     };
   }

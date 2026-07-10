@@ -44,8 +44,8 @@ const SETTINGS_KEY = "roblox_settings";
 export class RobloxApp extends BaseApp {
   constructor(services) {
     super(services);
-    this._searchQuery = "";
-    this._currentPage = "home";
+    this.searchQuery = "";
+    this.currentPage = "home";
   }
 
   getDeclarativeSchema(opts) {
@@ -126,41 +126,41 @@ export class RobloxApp extends BaseApp {
   }
 
   initRoblox(payload, vt, element, state) {
-    this._element = element;
-    this._searchInput = element.querySelector(".roblox-search-input");
-    this._continueTrack = element.querySelector("#roblox-continue-track");
-    this._recommendedGrid = element.querySelector("#roblox-recommended-grid");
-    this._continueScroll = element.querySelector("#roblox-continue-scroll");
-    this._continueSection = element.querySelector(".roblox-section");
-    this._statsBody = element.querySelector("#roblox-stats-body");
-    this._settingsBody = element.querySelector("#roblox-settings-body");
-    this._navBtns = element.querySelectorAll(".roblox-nav-btn");
-    this._navSettings = element.querySelector("#roblox-nav-settings");
-    this._pages = {
+    this.element = element;
+    this.searchInput = element.querySelector(".roblox-search-input");
+    this.continueTrack = element.querySelector("#roblox-continue-track");
+    this.recommendedGrid = element.querySelector("#roblox-recommended-grid");
+    this.continueScroll = element.querySelector("#roblox-continue-scroll");
+    this.continueSection = element.querySelector(".roblox-section");
+    this.statsBody = element.querySelector("#roblox-stats-body");
+    this.settingsBody = element.querySelector("#roblox-settings-body");
+    this.navBtns = element.querySelectorAll(".roblox-nav-btn");
+    this.navSettings = element.querySelector("#roblox-nav-settings");
+    this.pages = {
       home: element.querySelector("#roblox-page-home"),
       stats: element.querySelector("#roblox-page-stats"),
       settings: element.querySelector("#roblox-page-settings")
     };
-    this._games = this._buildGames();
-    this._history = this._loadHistory();
-    this._playedIds = this._derivePlayedIds();
-    this._settings = this._loadSettings();
+    this.games = this.buildGames();
+    this.history = this.loadHistory();
+    this.playedIds = this.derivePlayedIds();
+    this.settings = this.loadSettings();
 
-    this._searchInput.addEventListener("input", () => {
-      this._searchQuery = this._searchInput.value.toLowerCase();
-      this._renderHome();
+    this.searchInput.addEventListener("input", () => {
+      this.searchQuery = this.searchInput.value.toLowerCase();
+      this.renderHome();
     });
 
-    this._navBtns.forEach((btn) => {
-      btn.addEventListener("click", () => this._switchPage(btn.dataset.page));
+    this.navBtns.forEach((btn) => {
+      btn.addEventListener("click", () => this.switchPage(btn.dataset.page));
     });
-    this._navSettings.addEventListener("click", () => this._switchPage("settings"));
+    this.navSettings.addEventListener("click", () => this.switchPage("settings"));
 
-    this._renderHome();
-    this._initContinueScroll();
+    this.renderHome();
+    this.initContinueScroll();
   }
 
-  _loadSettings() {
+  loadSettings() {
     try {
       return os.storage.get(SETTINGS_KEY) || { showRatings: true, showContinue: true, cardSize: "normal" };
     } catch {
@@ -168,21 +168,21 @@ export class RobloxApp extends BaseApp {
     }
   }
 
-  _saveSettings() {
-    os.storage.set(SETTINGS_KEY, this._settings);
+  saveSettings() {
+    os.storage.set(SETTINGS_KEY, this.settings);
   }
 
-  _switchPage(page) {
-    this._currentPage = page;
-    this._navBtns.forEach((btn) => btn.classList.toggle("active", btn.dataset.page === page));
-    Object.entries(this._pages).forEach(([key, el]) => {
+  switchPage(page) {
+    this.currentPage = page;
+    this.navBtns.forEach((btn) => btn.classList.toggle("active", btn.dataset.page === page));
+    Object.entries(this.pages).forEach(([key, el]) => {
       el.style.display = key === page ? "" : "none";
     });
-    if (page === "stats") this._renderStats();
-    if (page === "settings") this._renderSettings();
+    if (page === "stats") this.renderStats();
+    if (page === "settings") this.renderSettings();
   }
 
-  _buildGames() {
+  buildGames() {
     return GAMES.map((game, i) => ({
       ...game,
       rating: FAKE_RATINGS[i],
@@ -191,7 +191,7 @@ export class RobloxApp extends BaseApp {
     }));
   }
 
-  _loadHistory() {
+  loadHistory() {
     try {
       let data = os.storage.get(StorageKeys.robloxPlayed);
       if (!data) return [];
@@ -205,16 +205,16 @@ export class RobloxApp extends BaseApp {
     }
   }
 
-  _saveHistory(id) {
+  saveHistory(id) {
     const entry = { id, date: new Date().toISOString().slice(0, 10) };
-    this._history.push(entry);
-    os.storage.set(StorageKeys.robloxPlayed, this._history.slice(-500));
-    this._playedIds = this._derivePlayedIds();
+    this.history.push(entry);
+    os.storage.set(StorageKeys.robloxPlayed, this.history.slice(-500));
+    this.playedIds = this.derivePlayedIds();
   }
 
-  _derivePlayedIds() {
+  derivePlayedIds() {
     const seen = new Set();
-    return this._history
+    return this.history
       .filter((e) => {
         if (seen.has(e.id)) return false;
         seen.add(e.id);
@@ -223,40 +223,40 @@ export class RobloxApp extends BaseApp {
       .map((e) => e.id);
   }
 
-  _renderHome() {
-    const filtered = this._searchQuery
-      ? this._games.filter((g) => g.name.toLowerCase().includes(this._searchQuery))
-      : this._games;
+  renderHome() {
+    const filtered = this.searchQuery
+      ? this.games.filter((g) => g.name.toLowerCase().includes(this.searchQuery))
+      : this.games;
 
-    if (this._settings.showContinue) {
-      this._renderContinue(filtered);
+    if (this.settings.showContinue) {
+      this.renderContinue(filtered);
     } else {
-      this._continueSection.style.display = "none";
+      this.continueSection.style.display = "none";
     }
-    this._renderRecommended(filtered);
+    this.renderRecommended(filtered);
   }
 
-  _renderContinue(allGames) {
-    const continueGames = this._searchQuery
-      ? allGames.filter((g) => this._playedIds.includes(g.id))
-      : this._playedIds.map((id) => this._games.find((g) => g.id === id)).filter(Boolean);
+  renderContinue(allGames) {
+    const continueGames = this.searchQuery
+      ? allGames.filter((g) => this.playedIds.includes(g.id))
+      : this.playedIds.map((id) => this.games.find((g) => g.id === id)).filter(Boolean);
 
     if (continueGames.length === 0) {
-      this._continueSection.style.display = "none";
+      this.continueSection.style.display = "none";
       return;
     }
-    this._continueSection.style.display = "";
+    this.continueSection.style.display = "";
 
-    this._continueTrack.innerHTML = continueGames.map((game) => this._cardHtml(game)).join("");
-    this._bindCards(this._continueTrack);
+    this.continueTrack.innerHTML = continueGames.map((game) => this.cardHtml(game)).join("");
+    this.bindCards(this.continueTrack);
   }
 
-  _renderRecommended(allGames) {
-    this._recommendedGrid.innerHTML = allGames.map((game) => this._cardHtml(game, this._settings.showRatings)).join("");
-    this._bindCards(this._recommendedGrid);
+  renderRecommended(allGames) {
+    this.recommendedGrid.innerHTML = allGames.map((game) => this.cardHtml(game, this.settings.showRatings)).join("");
+    this.bindCards(this.recommendedGrid);
   }
 
-  _cardHtml(game, showRating = false) {
+  cardHtml(game, showRating = false) {
     return `
       <div class="roblox-game-card" data-id="${game.id}" data-url="${game.url}">
         <div class="roblox-game-thumb">
@@ -286,58 +286,58 @@ export class RobloxApp extends BaseApp {
     `;
   }
 
-  _bindCards(container) {
+  bindCards(container) {
     $$(".roblox-game-card", container).forEach((card) => {
       card.addEventListener("click", () => {
-        this._launchGame(card.dataset.id, card.dataset.url);
+        this.launchGame(card.dataset.id, card.dataset.url);
       });
     });
   }
 
-  _initContinueScroll() {
-    if (!this._continueScroll) return;
+  initContinueScroll() {
+    if (!this.continueScroll) return;
 
     let isDown = false;
     let startX = 0;
     let scrollLeft = 0;
 
-    this._continueScroll.addEventListener("mousedown", (e) => {
+    this.continueScroll.addEventListener("mousedown", (e) => {
       if (e.button !== 0) return;
       isDown = true;
-      startX = e.pageX - this._continueScroll.offsetLeft;
-      scrollLeft = this._continueScroll.scrollLeft;
+      startX = e.pageX - this.continueScroll.offsetLeft;
+      scrollLeft = this.continueScroll.scrollLeft;
     });
 
-    this._continueScroll.addEventListener("mouseleave", () => {
+    this.continueScroll.addEventListener("mouseleave", () => {
       isDown = false;
     });
-    this._continueScroll.addEventListener("mouseup", () => {
+    this.continueScroll.addEventListener("mouseup", () => {
       isDown = false;
     });
 
-    this._continueScroll.addEventListener("mousemove", (e) => {
+    this.continueScroll.addEventListener("mousemove", (e) => {
       if (!isDown) return;
       e.preventDefault();
-      const x = e.pageX - this._continueScroll.offsetLeft;
+      const x = e.pageX - this.continueScroll.offsetLeft;
       const walk = (x - startX) * 1.5;
-      this._continueScroll.scrollLeft = scrollLeft - walk;
+      this.continueScroll.scrollLeft = scrollLeft - walk;
     });
 
-    this._continueScroll.addEventListener(
+    this.continueScroll.addEventListener(
       "wheel",
       (e) => {
         e.preventDefault();
-        this._continueScroll.scrollLeft += e.deltaY;
+        this.continueScroll.scrollLeft += e.deltaY;
       },
       { passive: false }
     );
   }
 
-  async _launchGame(id, url) {
-    this._saveHistory(id);
-    const game = this._games.find((g) => g.id === id);
+  async launchGame(id, url) {
+    this.saveHistory(id);
+    const game = this.games.find((g) => g.id === id);
     const name = game ? game.name : id;
-    const appLauncher = this._services.appLauncher;
+    const appLauncher = this.services.appLauncher;
     if (appLauncher && appLauncher.openIframeApp) {
       await appLauncher.openIframeApp({
         appId: `roblox-${id}`,
@@ -348,26 +348,26 @@ export class RobloxApp extends BaseApp {
     }
   }
 
-  _renderStats() {
+  renderStats() {
     const counts = {};
     const dates = {};
-    for (const { id, date } of this._history) {
+    for (const { id, date } of this.history) {
       counts[id] = (counts[id] || 0) + 1;
       if (!dates[id]) dates[id] = [];
       if (!dates[id].includes(date)) dates[id].push(date);
     }
 
     const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-    const totalPlays = this._history.length;
+    const totalPlays = this.history.length;
 
-    this._statsBody.innerHTML =
+    this.statsBody.innerHTML =
       sorted.length === 0
         ? `<div class="roblox-stats-empty">No games played yet. Launch a game to see your stats!</div>`
         : `
         <div class="roblox-stats-summary">${totalPlays} total play${totalPlays === 1 ? "" : "s"} across ${sorted.length} game${sorted.length === 1 ? "" : "s"}</div>
         ${sorted
           .map(([id, count]) => {
-            const game = this._games.find((g) => g.id === id);
+            const game = this.games.find((g) => g.id === id);
             if (!game) return "";
             const gameDates = (dates[id] || []).slice(-5).reverse();
             return `
@@ -386,9 +386,9 @@ export class RobloxApp extends BaseApp {
       `;
   }
 
-  _renderSettings() {
-    const s = this._settings;
-    this._settingsBody.innerHTML = `
+  renderSettings() {
+    const s = this.settings;
+    this.settingsBody.innerHTML = `
       <div class="roblox-settings-group">
         <h3>Display</h3>
         <label class="roblox-settings-row">
@@ -409,32 +409,32 @@ export class RobloxApp extends BaseApp {
       </div>
     `;
 
-    this._settingsBody.querySelectorAll(".roblox-toggle").forEach((cb) => {
+    this.settingsBody.querySelectorAll(".roblox-toggle").forEach((cb) => {
       cb.addEventListener("change", () => {
-        this._settings[cb.dataset.key] = cb.checked;
-        this._saveSettings();
-        this._renderHome();
+        this.settings[cb.dataset.key] = cb.checked;
+        this.saveSettings();
+        this.renderHome();
       });
     });
 
-    this._settingsBody.querySelector("#roblox-reset-history").addEventListener("click", async () => {
+    this.settingsBody.querySelector("#roblox-reset-history").addEventListener("click", async () => {
       const confirmed = await os.dialog.confirm("Reset History", "Are you sure you want to clear all play history?");
       if (confirmed) {
-        this._history = [];
-        this._playedIds = [];
+        this.history = [];
+        this.playedIds = [];
         os.storage.set(StorageKeys.robloxPlayed, []);
-        this._renderHome();
-        this._renderStats();
+        this.renderHome();
+        this.renderStats();
       }
     });
   }
 
   onClose(winId) {
-    this._element = null;
-    this._searchInput = null;
-    this._continueTrack = null;
-    this._recommendedGrid = null;
-    this._continueScroll = null;
-    this._continueSection = null;
+    this.element = null;
+    this.searchInput = null;
+    this.continueTrack = null;
+    this.recommendedGrid = null;
+    this.continueScroll = null;
+    this.continueSection = null;
   }
 }

@@ -1,17 +1,17 @@
-import { os } from "../os/index.js";
+import { os } from "../framework.js";
 
 function closeWindow(win, wm) {
   if (os.tray.isRegistered(win.id)) {
     os.tray.sendToTray(win.id);
     return;
   }
-  wm._silenceWindow(win);
+  wm.silenceWindow(win);
   wm.removeFromTaskbar(win.id);
   if (win.dataset.isGame === "true") {
     wm.gameWindowCount = Math.max(0, wm.gameWindowCount - 1);
   }
   wm.updateTransparency();
-  wm._animateAndRemove(win);
+  wm.animateAndRemove(win);
 }
 
 export function setupWindowControls(win, wm) {
@@ -37,7 +37,7 @@ export function setupWindowControls(win, wm) {
       if (win.dataset.snapZone === "maximize") {
         wm.toggleFullscreen(win);
       } else {
-        wm._applySnap(win, "maximize");
+        wm.applySnap(win, "maximize");
       }
     };
   }
@@ -47,14 +47,14 @@ export function setupWindowControls(win, wm) {
   }
 
   if (downloadBtn) {
-    downloadBtn.onclick = () => wm._downloadWindowContent(win);
+    downloadBtn.onclick = () => wm.downloadWindowContent(win);
   }
 
   const externalBtn = win.querySelector(".external-btn");
   if (externalBtn) {
     externalBtn.onclick = () => {
       const url = win.dataset.externalUrl || "";
-      if (url) window.open(url, "_blank", "noopener,noreferrer");
+      if (url) window.open(url, "blank", "noopener,noreferrer");
     };
   }
 }

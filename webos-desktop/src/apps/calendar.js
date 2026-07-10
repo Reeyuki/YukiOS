@@ -1,4 +1,5 @@
 import "../styles/calendar.css";
+import { createElement } from "../shared/domUtils.js";
 import { KeybindManager } from "../keybindManager.js";
 import { os, StorageKeys } from "../framework.js";
 import {
@@ -13,12 +14,12 @@ import {
 } from "../shared/calendarUtils.js";
 import { renderSelectMenu, getSelectMenuValue, setSelectMenuValue, bindSelectMenu } from "../shared/selectMenu.js";
 
-let _calendarPopup = null;
-let _currentCalendarMonth = new Date();
-let _calendarEvents = [];
-let _calendarTimeInterval = null;
-let _trayPanel = null;
-let _trayCloseHandler = null;
+let calendarPopup = null;
+let currentCalendarMonth = new Date();
+let calendarEvents = [];
+let calendarTimeInterval = null;
+let trayPanel = null;
+let trayCloseHandler = null;
 
 function getNextAlarm() {
   try {
@@ -46,58 +47,58 @@ function getNextAlarm() {
 }
 
 export function createCalendarPopup() {
-  _calendarEvents = loadEvents();
+  calendarEvents = loadEvents();
 
-  if (_calendarPopup) {
+  if (calendarPopup) {
     closeCalendarPopup();
     return;
   }
 
-  const popup = document.createElement("div");
+  const popup = createElement("div");
   popup.id = "calendar-popup";
   popup.className = "calendar-popup";
 
-  const timeDisplay = document.createElement("div");
+  const timeDisplay = createElement("div");
   timeDisplay.className = "calendar-time-display";
 
-  const dateDisplay = document.createElement("div");
+  const dateDisplay = createElement("div");
   dateDisplay.className = "calendar-date-display";
 
-  const header = document.createElement("div");
+  const header = createElement("div");
   header.className = "calendar-header";
 
-  const prevBtn = document.createElement("button");
+  const prevBtn = createElement("button");
   prevBtn.className = "calendar-nav-btn";
   prevBtn.textContent = "\u2039";
   prevBtn.title = "Previous month";
   prevBtn.onclick = () => {
-    _currentCalendarMonth.setMonth(_currentCalendarMonth.getMonth() - 1);
+    currentCalendarMonth.setMonth(currentCalendarMonth.getMonth() - 1);
     renderCalendar();
   };
 
-  const monthYearContainer = document.createElement("div");
+  const monthYearContainer = createElement("div");
   monthYearContainer.className = "calendar-month-year-container";
 
-  const monthYear = document.createElement("div");
+  const monthYear = createElement("div");
   monthYear.className = "calendar-month-year";
 
-  const todayBtn = document.createElement("button");
+  const todayBtn = createElement("button");
   todayBtn.className = "calendar-today-btn";
   todayBtn.textContent = "Today";
   todayBtn.onclick = () => {
-    _currentCalendarMonth = new Date();
+    currentCalendarMonth = new Date();
     renderCalendar();
   };
 
   monthYearContainer.appendChild(monthYear);
   monthYearContainer.appendChild(todayBtn);
 
-  const nextBtn = document.createElement("button");
+  const nextBtn = createElement("button");
   nextBtn.className = "calendar-nav-btn";
   nextBtn.textContent = "\u203A";
   nextBtn.title = "Next month";
   nextBtn.onclick = () => {
-    _currentCalendarMonth.setMonth(_currentCalendarMonth.getMonth() + 1);
+    currentCalendarMonth.setMonth(currentCalendarMonth.getMonth() + 1);
     renderCalendar();
   };
 
@@ -105,16 +106,16 @@ export function createCalendarPopup() {
   header.appendChild(monthYearContainer);
   header.appendChild(nextBtn);
 
-  const grid = document.createElement("div");
+  const grid = createElement("div");
   grid.className = "calendar-grid";
 
-  const agenda = document.createElement("div");
+  const agenda = createElement("div");
   agenda.className = "calendar-agenda";
 
-  const alarmSection = document.createElement("div");
+  const alarmSection = createElement("div");
   alarmSection.className = "calendar-alarm-section";
 
-  const appButtons = document.createElement("div");
+  const appButtons = createElement("div");
   appButtons.className = "calendar-app-buttons";
 
   popup.appendChild(timeDisplay);
@@ -126,12 +127,12 @@ export function createCalendarPopup() {
   popup.appendChild(appButtons);
   document.body.appendChild(popup);
 
-  _calendarPopup = popup;
+  calendarPopup = popup;
 
   positionCalendarPopup();
 
   updateCalendarTime();
-  _calendarTimeInterval = setInterval(updateCalendarTime, 1000);
+  calendarTimeInterval = setInterval(updateCalendarTime, 1000);
 
   renderCalendar();
 
@@ -143,24 +144,24 @@ export function createCalendarPopup() {
 }
 
 function closeCalendarPopup() {
-  if (_calendarPopup) {
-    _calendarPopup.remove();
-    _calendarPopup = null;
+  if (calendarPopup) {
+    calendarPopup.remove();
+    calendarPopup = null;
   }
-  if (_calendarTimeInterval) {
-    clearInterval(_calendarTimeInterval);
-    _calendarTimeInterval = null;
+  if (calendarTimeInterval) {
+    clearInterval(calendarTimeInterval);
+    calendarTimeInterval = null;
   }
   document.removeEventListener("keydown", handleCalendarKeydown);
   document.removeEventListener("click", closeCalendarOnClickOutside);
 }
 
 function positionCalendarPopup() {
-  if (!_calendarPopup) return;
+  if (!calendarPopup) return;
 
   const dateEl = document.getElementById("time-container") || document.getElementById("date");
   const rect = dateEl.getBoundingClientRect();
-  const popupRect = _calendarPopup.getBoundingClientRect();
+  const popupRect = calendarPopup.getBoundingClientRect();
 
   let left = rect.left + rect.width / 2 - popupRect.width / 2;
   let bottom = window.innerHeight - rect.top + 8;
@@ -172,15 +173,15 @@ function positionCalendarPopup() {
     left = 10;
   }
 
-  _calendarPopup.style.bottom = `${bottom}px`;
-  _calendarPopup.style.left = `${left}px`;
-  _calendarPopup.style.top = "auto";
+  calendarPopup.style.bottom = `${bottom}px`;
+  calendarPopup.style.left = `${left}px`;
+  calendarPopup.style.top = "auto";
 }
 
 function updateCalendarTime() {
-  if (!_calendarPopup) return;
-  const timeDisplay = _calendarPopup.querySelector(".calendar-time-display");
-  const dateDisplay = _calendarPopup.querySelector(".calendar-date-display");
+  if (!calendarPopup) return;
+  const timeDisplay = calendarPopup.querySelector(".calendar-time-display");
+  const dateDisplay = calendarPopup.querySelector(".calendar-date-display");
   if (timeDisplay) {
     const now = new Date();
     timeDisplay.textContent = now.toLocaleTimeString([], {
@@ -200,21 +201,21 @@ function updateCalendarTime() {
 }
 
 function handleCalendarKeydown(e) {
-  if (!_calendarPopup) return;
+  if (!calendarPopup) return;
 
   if (KeybindManager.matches(e, "calendar.close")) {
     closeCalendarPopup();
   } else if (KeybindManager.matches(e, "calendar.prevMonth")) {
-    _currentCalendarMonth.setMonth(_currentCalendarMonth.getMonth() - 1);
+    currentCalendarMonth.setMonth(currentCalendarMonth.getMonth() - 1);
     renderCalendar();
   } else if (KeybindManager.matches(e, "calendar.nextMonth")) {
-    _currentCalendarMonth.setMonth(_currentCalendarMonth.getMonth() + 1);
+    currentCalendarMonth.setMonth(currentCalendarMonth.getMonth() + 1);
     renderCalendar();
-  } else if (e.key === "ArrowUp") {
-    _currentCalendarMonth.setFullYear(_currentCalendarMonth.getFullYear() - 1);
+  } else if (KeybindManager.matches(e, "calendar.prevYear")) {
+    currentCalendarMonth.setFullYear(currentCalendarMonth.getFullYear() - 1);
     renderCalendar();
-  } else if (e.key === "ArrowDown") {
-    _currentCalendarMonth.setFullYear(_currentCalendarMonth.getFullYear() + 1);
+  } else if (KeybindManager.matches(e, "calendar.nextYear")) {
+    currentCalendarMonth.setFullYear(currentCalendarMonth.getFullYear() + 1);
     renderCalendar();
   }
 }
@@ -222,8 +223,8 @@ function handleCalendarKeydown(e) {
 function closeCalendarOnClickOutside(e) {
   if (e.target.closest(".calendar-modal-overlay, .calendar-modal, .select-menu, .select-menu__dropdown")) return;
   if (
-    _calendarPopup &&
-    !_calendarPopup.contains(e.target) &&
+    calendarPopup &&
+    !calendarPopup.contains(e.target) &&
     e.target.id !== "date" &&
     e.target.id !== "clock" &&
     !e.target.closest("#time-container")
@@ -233,20 +234,20 @@ function closeCalendarOnClickOutside(e) {
 }
 
 function closeTrayPanel() {
-  if (_trayPanel) {
-    _trayPanel.remove();
-    _trayPanel = null;
+  if (trayPanel) {
+    trayPanel.remove();
+    trayPanel = null;
   }
-  if (_trayCloseHandler) {
-    document.removeEventListener("keydown", _trayCloseHandler);
-    _trayCloseHandler = null;
+  if (trayCloseHandler) {
+    document.removeEventListener("keydown", trayCloseHandler);
+    trayCloseHandler = null;
   }
-  document.removeEventListener("click", _onTrayOutsideClick);
+  document.removeEventListener("click", onTrayOutsideClick);
 }
 
 function positionTrayPanel(panel, offsetX = 0) {
-  if (!_calendarPopup) return;
-  const calRect = _calendarPopup.getBoundingClientRect();
+  if (!calendarPopup) return;
+  const calRect = calendarPopup.getBoundingClientRect();
   const panelRect = panel.getBoundingClientRect();
   const padding = 8;
 
@@ -270,7 +271,7 @@ const PLAN_ICONS = ["fa-bolt", "fa-gamepad", "fa-star", "fa-music", "fa-code", "
 function showDayEventsModal(dateKey) {
   closeTrayPanel();
 
-  const eventsForDay = getEventsForDate(_calendarEvents, dateKey);
+  const eventsForDay = getEventsForDate(calendarEvents, dateKey);
   const { year, month, day } = parseDateKey(dateKey);
   const displayDate = new Date(year, month, day).toLocaleDateString([], {
     weekday: "long",
@@ -300,7 +301,7 @@ function showDayEventsModal(dateKey) {
     eventsListHtml = '<div class="calendar-modal-noevents">No missions today.</div>';
   }
 
-  const modal = document.createElement("div");
+  const modal = createElement("div");
   modal.className = "calendar-modal calendar-modal-events";
   modal.innerHTML = `
     <div class="calendar-modal-title"><i class="fas fa-bolt" style="color:var(--brand);margin-right:6px"></i> Plans: ${displayDate}</div>
@@ -312,7 +313,7 @@ function showDayEventsModal(dateKey) {
   `;
 
   document.body.appendChild(modal);
-  _trayPanel = modal;
+  trayPanel = modal;
   positionTrayPanel(modal);
 
   modal.querySelector("#cal-popup-add-event").onclick = () => {
@@ -328,31 +329,31 @@ function showDayEventsModal(dateKey) {
     const action = btn.dataset.action;
     const id = btn.dataset.id;
     if (action === "editEvent") {
-      const ev = _calendarEvents.find((e) => e.id === id);
+      const ev = calendarEvents.find((e) => e.id === id);
       if (ev) {
         closeTrayPanel();
         showEventFormModal(dateKey, ev);
       }
     } else if (action === "deleteEvent") {
-      _calendarEvents = _calendarEvents.filter((e) => e.id !== id);
-      saveEvents(_calendarEvents);
+      calendarEvents = calendarEvents.filter((e) => e.id !== id);
+      saveEvents(calendarEvents);
       closeTrayPanel();
       showDayEventsModal(dateKey);
       renderCalendar();
     }
   });
 
-  _trayCloseHandler = (e) => {
-    if (e.key === "Escape") closeTrayPanel();
+  trayCloseHandler = (e) => {
+    if (KeybindManager.matches(e, "calendar.close")) closeTrayPanel();
   };
-  document.addEventListener("keydown", _trayCloseHandler);
+  document.addEventListener("keydown", trayCloseHandler);
   setTimeout(() => {
-    document.addEventListener("click", _onTrayOutsideClick);
+    document.addEventListener("click", onTrayOutsideClick);
   }, 0);
 }
 
-function _onTrayOutsideClick(e) {
-  if (!_trayPanel) return;
+function onTrayOutsideClick(e) {
+  if (!trayPanel) return;
   if (e.target.closest(".calendar-modal, .calendar-popup, .select-menu, .select-menu__dropdown")) return;
   closeTrayPanel();
 }
@@ -380,7 +381,7 @@ function showEventFormModal(dateKey, event) {
     { value: "60", label: "1 hour before" }
   ];
 
-  const modal = document.createElement("div");
+  const modal = createElement("div");
   modal.className = "calendar-modal";
   modal.innerHTML = `
     <div class="calendar-modal-title">${title}</div>
@@ -418,7 +419,7 @@ function showEventFormModal(dateKey, event) {
   `;
 
   document.body.appendChild(modal);
-  _trayPanel = modal;
+  trayPanel = modal;
   positionTrayPanel(modal, 20);
   bindSelectMenu(modal);
 
@@ -429,8 +430,8 @@ function showEventFormModal(dateKey, event) {
 
   if (existing) {
     modal.querySelector("#cev-delete").onclick = () => {
-      _calendarEvents = _calendarEvents.filter((e) => e.id !== event.id);
-      saveEvents(_calendarEvents);
+      calendarEvents = calendarEvents.filter((e) => e.id !== event.id);
+      saveEvents(calendarEvents);
       closeTrayPanel();
       showDayEventsModal(dateKey);
       renderCalendar();
@@ -448,7 +449,7 @@ function showEventFormModal(dateKey, event) {
     if (!titleVal || !dateVal) return;
 
     if (existing) {
-      const ev = _calendarEvents.find((e) => e.id === event.id);
+      const ev = calendarEvents.find((e) => e.id === event.id);
       if (ev) {
         ev.title = titleVal;
         ev.date = dateVal;
@@ -459,7 +460,7 @@ function showEventFormModal(dateKey, event) {
         ev.notes = notesVal;
       }
     } else {
-      _calendarEvents.push({
+      calendarEvents.push({
         id: generateEventId(),
         title: titleVal,
         date: dateVal,
@@ -470,31 +471,31 @@ function showEventFormModal(dateKey, event) {
         notes: notesVal
       });
     }
-    saveEvents(_calendarEvents);
+    saveEvents(calendarEvents);
     closeTrayPanel();
     renderCalendar();
   };
 
-  _trayCloseHandler = (e) => {
-    if (e.key === "Escape") closeTrayPanel();
+  trayCloseHandler = (e) => {
+    if (KeybindManager.matches(e, "calendar.close")) closeTrayPanel();
   };
-  document.addEventListener("keydown", _trayCloseHandler);
+  document.addEventListener("keydown", trayCloseHandler);
   setTimeout(() => {
-    document.addEventListener("click", _onTrayOutsideClick);
+    document.addEventListener("click", onTrayOutsideClick);
   }, 0);
 }
 
 function renderCalendar() {
-  if (!_calendarPopup) return;
+  if (!calendarPopup) return;
 
-  const monthYear = _calendarPopup.querySelector(".calendar-month-year");
-  const grid = _calendarPopup.querySelector(".calendar-grid");
-  const agenda = _calendarPopup.querySelector(".calendar-agenda");
-  const alarmSection = _calendarPopup.querySelector(".calendar-alarm-section");
-  const appButtons = _calendarPopup.querySelector(".calendar-app-buttons");
+  const monthYear = calendarPopup.querySelector(".calendar-month-year");
+  const grid = calendarPopup.querySelector(".calendar-grid");
+  const agenda = calendarPopup.querySelector(".calendar-agenda");
+  const alarmSection = calendarPopup.querySelector(".calendar-alarm-section");
+  const appButtons = calendarPopup.querySelector(".calendar-app-buttons");
 
-  const year = _currentCalendarMonth.getFullYear();
-  const month = _currentCalendarMonth.getMonth();
+  const year = currentCalendarMonth.getFullYear();
+  const month = currentCalendarMonth.getMonth();
 
   monthYear.textContent = new Date(year, month).toLocaleDateString([], {
     month: "long",
@@ -503,7 +504,7 @@ function renderCalendar() {
 
   grid.innerHTML = "";
 
-  const weekHeader = document.createElement("div");
+  const weekHeader = createElement("div");
   weekHeader.className = "calendar-week-header";
   weekHeader.textContent = "W";
   weekHeader.title = "Week number";
@@ -511,7 +512,7 @@ function renderCalendar() {
 
   const dayHeaders = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
   dayHeaders.forEach((day) => {
-    const dayHeader = document.createElement("div");
+    const dayHeader = createElement("div");
     dayHeader.className = "calendar-day-header";
     dayHeader.textContent = day;
     grid.appendChild(dayHeader);
@@ -530,35 +531,35 @@ function renderCalendar() {
   let dayCounter = 1;
 
   for (let row = 0; row < rows; row++) {
-    const weekNum = document.createElement("div");
+    const weekNum = createElement("div");
     weekNum.className = "calendar-week-number";
     weekNum.textContent = getWeekNumber(new Date(year, month, Math.max(1, dayCounter)));
     grid.appendChild(weekNum);
 
     for (let col = 0; col < 7; col++) {
       const cellIndex = row * 7 + col;
-      const dayCell = document.createElement("div");
+      const dayCell = createElement("div");
       dayCell.className = "calendar-day";
 
       if (cellIndex >= firstDay && dayCounter <= daysInMonth) {
         const day = dayCounter;
         const dateKey = getDateKey(year, month, day);
-        const dayEvents = getEventsForDate(_calendarEvents, dateKey);
+        const dayEvents = getEventsForDate(calendarEvents, dateKey);
 
         dayCell.textContent = day;
 
         if (dayEvents.length > 0) {
           dayCell.classList.add("has-event");
-          const dotsContainer = document.createElement("div");
+          const dotsContainer = createElement("div");
           dotsContainer.className = "calendar-day-dots";
           dayEvents.slice(0, 4).forEach((ev) => {
-            const dot = document.createElement("span");
+            const dot = createElement("span");
             dot.className = "calendar-day-dot";
             dot.style.background = ev.color || EVENT_COLORS[0];
             dotsContainer.appendChild(dot);
           });
           if (dayEvents.length > 4) {
-            const more = document.createElement("span");
+            const more = createElement("span");
             more.className = "calendar-day-more-dots";
             more.textContent = `+${dayEvents.length - 4}`;
             dotsContainer.appendChild(more);
@@ -605,7 +606,7 @@ function renderCalendar() {
 function renderAgenda(agendaEl) {
   agendaEl.innerHTML = "";
 
-  const title = document.createElement("div");
+  const title = createElement("div");
   title.className = "calendar-agenda-title";
   title.innerHTML = '<i class="fas fa-bolt" style="color:var(--brand);margin-right:4px"></i> Agenda';
   agendaEl.appendChild(title);
@@ -614,9 +615,9 @@ function renderAgenda(agendaEl) {
   today.setHours(0, 0, 0, 0);
 
   const todayKey = getDateKey(today.getFullYear(), today.getMonth(), today.getDate());
-  const todayEvents = getEventsForDate(_calendarEvents, todayKey);
+  const todayEvents = getEventsForDate(calendarEvents, todayKey);
 
-  const upcomingEvents = _calendarEvents
+  const upcomingEvents = calendarEvents
     .filter((ev) => new Date(ev.date) >= today || ev.recurring)
     .sort((a, b) => {
       const da = new Date(a.date);
@@ -627,14 +628,14 @@ function renderAgenda(agendaEl) {
     .slice(0, 5);
 
   if (todayEvents.length > 0) {
-    const todaySummary = document.createElement("div");
+    const todaySummary = createElement("div");
     todaySummary.className = "calendar-today-summary";
     todaySummary.textContent = `${todayEvents.length} plan${todayEvents.length > 1 ? "s" : ""} today`;
     agendaEl.insertBefore(todaySummary, agendaEl.firstChild.nextSibling);
   }
 
   if (upcomingEvents.length === 0) {
-    const noEvents = document.createElement("div");
+    const noEvents = createElement("div");
     noEvents.className = "calendar-no-events";
     noEvents.textContent = "Nothing coming up.";
     agendaEl.appendChild(noEvents);
@@ -642,22 +643,22 @@ function renderAgenda(agendaEl) {
   }
 
   upcomingEvents.forEach((ev) => {
-    const eventEl = document.createElement("div");
+    const eventEl = createElement("div");
     eventEl.className = "calendar-agenda-item";
 
-    const iconEl = document.createElement("i");
+    const iconEl = createElement("i");
     iconEl.className = `fas ${ev.icon || "fa-bolt"} calendar-agenda-icon`;
     iconEl.style.color = ev.color || EVENT_COLORS[0];
     eventEl.appendChild(iconEl);
 
-    const dateEl = document.createElement("span");
+    const dateEl = createElement("span");
     dateEl.className = "calendar-agenda-date";
     const eventDate = new Date(ev.date);
     const isToday = eventDate.toDateString() === new Date().toDateString();
     dateEl.textContent = isToday ? "Today" : eventDate.toLocaleDateString([], { month: "short", day: "numeric" });
     eventEl.appendChild(dateEl);
 
-    const textEl = document.createElement("span");
+    const textEl = createElement("span");
     textEl.className = "calendar-agenda-text";
     let displayText = ev.title;
     if (ev.time) displayText = `${ev.time.slice(0, 5)} ${displayText}`;
@@ -665,7 +666,7 @@ function renderAgenda(agendaEl) {
     eventEl.appendChild(textEl);
 
     if (ev.notes) {
-      const notesEl = document.createElement("span");
+      const notesEl = createElement("span");
       notesEl.className = "calendar-agenda-notes";
       notesEl.textContent = ev.notes.length > 20 ? ev.notes.substring(0, 20) + "..." : ev.notes;
       eventEl.appendChild(notesEl);
@@ -682,7 +683,7 @@ function renderAlarmSection(alarmSection) {
 
   const nextAlarm = getNextAlarm();
   if (nextAlarm) {
-    const alarmEl = document.createElement("div");
+    const alarmEl = createElement("div");
     alarmEl.className = "calendar-alarm-item";
     alarmEl.innerHTML = `
       <i class="fas fa-bell calendar-alarm-icon"></i>
@@ -690,7 +691,7 @@ function renderAlarmSection(alarmSection) {
       <span class="calendar-alarm-time">${nextAlarm.time}</span>
     `;
     if (nextAlarm.label) {
-      const labelEl = document.createElement("span");
+      const labelEl = createElement("span");
       labelEl.className = "calendar-alarm-name";
       labelEl.textContent = nextAlarm.label;
       alarmEl.appendChild(labelEl);
@@ -713,5 +714,5 @@ function renderAppButtons(container) {
 }
 
 export function setCurrentCalendarMonth() {
-  _currentCalendarMonth = new Date();
+  currentCalendarMonth = new Date();
 }

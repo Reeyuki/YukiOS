@@ -1,4 +1,4 @@
-import { os } from "../os/index.js";
+import { os } from "../framework.js";
 import { audioMixer } from "../audioMixer.js";
 
 export function dumpStorage(storage) {

@@ -1,4 +1,5 @@
 import { $, bindEvent } from "../shared/domUtils.js";
+import { KeybindManager } from "../keybindManager.js";
 
 let openSelect = null;
 
@@ -87,7 +88,7 @@ bindEvent(document, "click", (e) => {
 
 bindEvent(document, "keydown", (e) => {
   if (!openSelect) return;
-  if (e.key === "Escape") {
+  if (KeybindManager.matches(e, "selectMenu.close")) {
     closeAll();
     e.preventDefault();
     return;
@@ -95,13 +96,13 @@ bindEvent(document, "keydown", (e) => {
   const options = Array.from(openSelect.querySelectorAll(".select-menu__option"));
   const currentIdx = options.findIndex((o) => o.classList.contains("selected"));
   let nextIdx = currentIdx;
-  if (e.key === "ArrowDown") {
+  if (KeybindManager.matches(e, "selectMenu.navigateDown")) {
     nextIdx = Math.min(currentIdx + 1, options.length - 1);
     e.preventDefault();
-  } else if (e.key === "ArrowUp") {
+  } else if (KeybindManager.matches(e, "selectMenu.navigateUp")) {
     nextIdx = Math.max(currentIdx - 1, 0);
     e.preventDefault();
-  } else if (e.key === "Enter" && currentIdx >= 0) {
+  } else if (KeybindManager.matches(e, "selectMenu.select") && currentIdx >= 0) {
     options[currentIdx].click();
     e.preventDefault();
     return;

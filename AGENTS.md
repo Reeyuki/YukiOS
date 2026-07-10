@@ -38,6 +38,7 @@ You are working under webos-desktop directory. when src is mentioned it means we
   with hardcoded key checks. Use `KeybindManager.matches(event, id)` to check key combinations and register new keybinds
   in `KEYBIND_DEFINITIONS` inside that file. Never define key combos inline in event handlers.
 - If user asks you to create a new app, read DEVELOPMENT.md to learn how to create a new app.
+- Never use grep, instead always use rg (ripgrep)
 
 ---
 

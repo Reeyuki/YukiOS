@@ -1,13 +1,13 @@
 class EventBus {
   constructor() {
-    this._listeners = new Map();
+    this.listeners = new Map();
   }
 
   on(event, fn) {
-    if (!this._listeners.has(event)) {
-      this._listeners.set(event, new Set());
+    if (!this.listeners.has(event)) {
+      this.listeners.set(event, new Set());
     }
-    this._listeners.get(event).add(fn);
+    this.listeners.get(event).add(fn);
     return () => this.off(event, fn);
   }
 
@@ -20,11 +20,11 @@ class EventBus {
   }
 
   off(event, fn) {
-    this._listeners.get(event)?.delete(fn);
+    this.listeners.get(event)?.delete(fn);
   }
 
   emit(event, data) {
-    const handlers = this._listeners.get(event);
+    const handlers = this.listeners.get(event);
     if (!handlers || handlers.size === 0) return;
     handlers.forEach((fn) => {
       try {
@@ -37,14 +37,14 @@ class EventBus {
 
   clear(event) {
     if (event !== undefined) {
-      this._listeners.delete(event);
+      this.listeners.delete(event);
     } else {
-      this._listeners.clear();
+      this.listeners.clear();
     }
   }
 
   listenerCount(event) {
-    return this._listeners.get(event)?.size ?? 0;
+    return this.listeners.get(event)?.size ?? 0;
   }
 }
 

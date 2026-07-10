@@ -204,10 +204,6 @@
   margin-right: 6px;
 }
 
-.ac-icon-file-input::-webkit-file-upload-button:hover {
-  background: var(--glass-hover);
-}
-
 .ac-icon-file-input::file-selector-button {
   appearance: none;
   padding: 4px var(--spacing-xs);

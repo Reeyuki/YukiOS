@@ -13,16 +13,16 @@ import { renderSelectMenu, bindSelectMenu, getSelectMenuValue } from "../shared/
 import { showContextMenu, hideMenu } from "../shared/contextMenu.js";
 
 const WE_KEYS = {
-  favorites: "yukiOS_wallpaper_engine_favorites",
-  history: "yukiOS_wallpaper_engine_history",
-  playlists: "yukiOS_wallpaper_engine_playlists",
-  activePlaylist: "yukiOS_wallpaper_engine_active_playlist",
-  shuffleInterval: "yukiOS_wallpaper_engine_shuffle_interval",
+  favorites: StorageKeys.wallpaperEngineFavorites,
+  history: StorageKeys.wallpaperEngineHistory,
+  playlists: StorageKeys.wallpaperEnginePlaylists,
+  activePlaylist: StorageKeys.wallpaperEngineActivePlaylist,
+  shuffleInterval: StorageKeys.wallpaperEngineShuffleInterval,
 
-  viewMode: "yukiOS_wallpaper_engine_view_mode",
-  searchHistory: "yukiOS_wallpaper_engine_search_history",
-  colorFilter: "yukiOS_wallpaper_engine_color_filter",
-  customVantaPresets: "yukiOS_wallpaper_engine_custom_vanta_presets"
+  viewMode: StorageKeys.wallpaperEngineViewMode,
+  searchHistory: StorageKeys.wallpaperEngineSearchHistory,
+  colorFilter: StorageKeys.wallpaperEngineColorFilter,
+  customVantaPresets: StorageKeys.wallpaperEngineCustomVantaPresets
 };
 
 const DEFAULT_FILTER = { brightness: 100, contrast: 100, saturate: 100, blur: 0 };
@@ -105,74 +105,74 @@ export class WallpaperEngineApp extends BaseApp {
   constructor(services) {
     super(services);
     this.fs = services.fileSystemManager;
-    this._winId = null;
-    this._win = null;
-    this._currentCategory = "all";
-    this._searchQuery = "";
-    this._wallpaperItems = [];
-    this._favorites = loadJSON(WE_KEYS.favorites, []);
-    this._history = loadJSON(WE_KEYS.history, []);
-    this._playlists = loadJSON(WE_KEYS.playlists, {});
-    this._activePlaylist = os.storage.get(WE_KEYS.activePlaylist) || null;
-    this._colorFilter = loadJSON(WE_KEYS.colorFilter, DEFAULT_FILTER);
-    this._customVantaPresets = loadJSON(WE_KEYS.customVantaPresets, []);
-    this._shuffleTimer = null;
-    this._previewItem = null;
-    this._selectedItems = new Set();
-    this._sortMode = "default";
-    this._tooltipTimer = null;
+    this.winId = null;
+    this.win = null;
+    this.currentCategory = "all";
+    this.searchQuery = "";
+    this.wallpaperItems = [];
+    this.favorites = loadJSON(WE_KEYS.favorites, []);
+    this.history = loadJSON(WE_KEYS.history, []);
+    this.playlists = loadJSON(WE_KEYS.playlists, {});
+    this.activePlaylist = os.storage.get(WE_KEYS.activePlaylist) || null;
+    this.colorFilter = loadJSON(WE_KEYS.colorFilter, DEFAULT_FILTER);
+    this.customVantaPresets = loadJSON(WE_KEYS.customVantaPresets, []);
+    this.shuffleTimer = null;
+    this.previewItem = null;
+    this.selectedItems = new Set();
+    this.sortMode = "default";
+    this.tooltipTimer = null;
   }
 
-  _saveFavorites() {
-    saveJSON(WE_KEYS.favorites, this._favorites);
+  saveFavorites() {
+    saveJSON(WE_KEYS.favorites, this.favorites);
   }
-  _saveHistory() {
-    saveJSON(WE_KEYS.history, this._history.slice(0, 50));
+  saveHistory() {
+    saveJSON(WE_KEYS.history, this.history.slice(0, 50));
   }
-  _savePlaylists() {
-    saveJSON(WE_KEYS.playlists, this._playlists);
+  savePlaylists() {
+    saveJSON(WE_KEYS.playlists, this.playlists);
   }
-  _saveFilter() {
-    saveJSON(WE_KEYS.colorFilter, this._colorFilter);
+  saveFilter() {
+    saveJSON(WE_KEYS.colorFilter, this.colorFilter);
   }
 
-  _addToHistory(id) {
-    this._history = this._history.filter((h) => h !== id);
-    this._history.unshift(id);
-    this._saveHistory();
+  addToHistory(id) {
+    this.history = this.history.filter((h) => h !== id);
+    this.history.unshift(id);
+    this.saveHistory();
   }
 
   async open(opts) {
-    if (await this._isSingletonOpen("wallpaper-engine")) return;
+    if (await this.isSingletonOpen("wallpaper-engine")) return;
     if (!this.fs) return;
 
     const win = os.window.create("wallpaper-engine", "Wallpaper Engine", "960px", "640px", {
       icon: "fas fa-paint-roller"
     });
 
-    this._winId = "wallpaper-engine";
-    this._win = win;
+    this.winId = "wallpaper-engine";
+    this.win = win;
 
-    this._applyColorFilter();
-    this._renderUI(win);
-    this._loadAllWallpapers();
-    this._initAutoCycle();
-    this._initTray();
+    this.applyColorFilter();
+    this.renderUI(win);
+    this.loadAllWallpapers();
+    this.initAutoCycle();
+    this.initTray();
   }
 
   onClose(winId) {
-    if (this._shuffleTimer) {
-      clearInterval(this._shuffleTimer);
-      this._shuffleTimer = null;
+    if (this.shuffleTimer) {
+      clearInterval(this.shuffleTimer);
+      this.shuffleTimer = null;
     }
     os.tray.unregister("wallpaper-engine");
     document.querySelectorAll(".we-tooltip").forEach((el) => el.remove());
     document.querySelectorAll(".we-fs-overlay").forEach((el) => el.remove());
-    this._winId = null;
-    this._win = null;
+    this.winId = null;
+    this.win = null;
   }
 
-  _initTray() {
+  initTray() {
     os.tray.register("wallpaper-engine", "fas fa-paint-roller", "Wallpaper Engine", {
       showInTray: true,
       priority: 5,
@@ -180,7 +180,7 @@ export class WallpaperEngineApp extends BaseApp {
         os.app.launch("wallpaperEngineApp");
       },
       contextMenuItems: [
-        { label: "Random Wallpaper", action: () => this._shuffleRandom(), icon: "fa-dice" },
+        { label: "Random Wallpaper", action: () => this.shuffleRandom(), icon: "fa-dice" },
         {
           label: "Open Wallpaper Engine",
           action: () => os.app.launch("wallpaperEngineApp"),
@@ -192,8 +192,8 @@ export class WallpaperEngineApp extends BaseApp {
           action: () => {
             const current = os.storage.get(StorageKeys.cycleWallpaper) !== "false";
             os.storage.set(StorageKeys.cycleWallpaper, current ? "false" : "true");
-            this._initAutoCycle();
-            os.tray.updateContextMenuItems("wallpaper-engine", this._getTrayItems());
+            this.initAutoCycle();
+            os.tray.updateContextMenuItems("wallpaper-engine", this.getTrayItems());
           },
           icon: "fa-sync"
         }
@@ -201,9 +201,9 @@ export class WallpaperEngineApp extends BaseApp {
     });
   }
 
-  _getTrayItems() {
+  getTrayItems() {
     return [
-      { label: "Random Wallpaper", action: () => this._shuffleRandom(), icon: "fa-dice" },
+      { label: "Random Wallpaper", action: () => this.shuffleRandom(), icon: "fa-dice" },
       {
         label: "Open Wallpaper Engine",
         action: () => os.app.launch("wallpaperEngineApp"),
@@ -215,16 +215,16 @@ export class WallpaperEngineApp extends BaseApp {
         action: () => {
           const current = os.storage.get(StorageKeys.cycleWallpaper) !== "false";
           os.storage.set(StorageKeys.cycleWallpaper, current ? "false" : "true");
-          this._initAutoCycle();
-          os.tray.updateContextMenuItems("wallpaper-engine", this._getTrayItems());
+          this.initAutoCycle();
+          os.tray.updateContextMenuItems("wallpaper-engine", this.getTrayItems());
         },
         icon: "fa-sync"
       }
     ];
   }
 
-  _applyColorFilter() {
-    const f = this._colorFilter;
+  applyColorFilter() {
+    const f = this.colorFilter;
     const style = document.createElement("style");
     style.id = "we-color-filter-style";
     style.textContent = `#wallpaper-img, #wallpaper-video, #vanta-container { filter: brightness(${f.brightness}%) contrast(${f.contrast}%) saturate(${f.saturate}%) blur(${f.blur}px) !important; }`;
@@ -232,45 +232,45 @@ export class WallpaperEngineApp extends BaseApp {
     document.head.appendChild(style);
   }
 
-  _saveCustomVantaPresets() {
-    saveJSON(WE_KEYS.customVantaPresets, this._customVantaPresets);
+  saveCustomVantaPresets() {
+    saveJSON(WE_KEYS.customVantaPresets, this.customVantaPresets);
   }
 
-  _getNextCustomPresetId() {
-    const maxId = this._customVantaPresets.reduce((max, p) => Math.max(max, p.id || 0), 0);
+  getNextCustomPresetId() {
+    const maxId = this.customVantaPresets.reduce((max, p) => Math.max(max, p.id || 0), 0);
     return maxId + 1;
   }
 
-  _addCustomVantaPreset(preset) {
-    const id = this._getNextCustomPresetId();
+  addCustomVantaPreset(preset) {
+    const id = this.getNextCustomPresetId();
     const entry = { ...preset, id, isCustom: true };
-    this._customVantaPresets.push(entry);
-    this._saveCustomVantaPresets();
+    this.customVantaPresets.push(entry);
+    this.saveCustomVantaPresets();
     return entry;
   }
 
-  _deleteCustomVantaPreset(presetId) {
-    this._customVantaPresets = this._customVantaPresets.filter((p) => p.id !== presetId);
-    this._saveCustomVantaPresets();
-    this._wallpaperItems = this._wallpaperItems.filter((i) => i.id !== `vanta_custom_${presetId}`);
-    this._renderGrid();
-    this._updateStats();
+  deleteCustomVantaPreset(presetId) {
+    this.customVantaPresets = this.customVantaPresets.filter((p) => p.id !== presetId);
+    this.saveCustomVantaPresets();
+    this.wallpaperItems = this.wallpaperItems.filter((i) => i.id !== `vanta_custom_${presetId}`);
+    this.renderGrid();
+    this.updateStats();
   }
 
-  _updateCustomVantaPreset(presetId, updates) {
-    const idx = this._customVantaPresets.findIndex((p) => p.id === presetId);
+  updateCustomVantaPreset(presetId, updates) {
+    const idx = this.customVantaPresets.findIndex((p) => p.id === presetId);
     if (idx === -1) return;
-    this._customVantaPresets[idx] = { ...this._customVantaPresets[idx], ...updates };
-    this._saveCustomVantaPresets();
+    this.customVantaPresets[idx] = { ...this.customVantaPresets[idx], ...updates };
+    this.saveCustomVantaPresets();
   }
 
-  _updateFilter(key, val) {
-    this._colorFilter[key] = val;
-    this._saveFilter();
-    this._applyColorFilter();
+  updateFilter(key, val) {
+    this.colorFilter[key] = val;
+    this.saveFilter();
+    this.applyColorFilter();
   }
 
-  _renderUI(container) {
+  renderUI(container) {
     setHTML(
       container,
       `
@@ -285,14 +285,14 @@ export class WallpaperEngineApp extends BaseApp {
       </div>
     `
     );
-    this._renderSidebar();
-    this._renderToolbar();
-    this._renderBottomBar();
-    this._setupDragDrop();
+    this.renderSidebar();
+    this.renderToolbar();
+    this.renderBottomBar();
+    this.setupDragDrop();
   }
 
-  _renderSidebar() {
-    const sidebar = $("#we-sidebar", this._win);
+  renderSidebar() {
+    const sidebar = $("#we-sidebar", this.win);
     if (!sidebar) return;
 
     const categories = [
@@ -333,11 +333,11 @@ export class WallpaperEngineApp extends BaseApp {
       const cat = item.dataset.cat;
       $$(".we-sidebar-item", sidebar).forEach((el) => el.classList.remove("active"));
       item.classList.add("active");
-      this._currentCategory = cat;
-      if (cat === "__playlists") this._showPlaylistsView();
-      else if (cat === "__import") this._showImportView();
-      else if (cat === "__filters") this._showFiltersView();
-      else this._renderGrid();
+      this.currentCategory = cat;
+      if (cat === "__playlists") this.showPlaylistsView();
+      else if (cat === "__import") this.showImportView();
+      else if (cat === "__filters") this.showFiltersView();
+      else this.renderGrid();
     });
 
     sidebar.querySelectorAll(".we-sidebar-item").forEach((item) => {
@@ -366,9 +366,9 @@ export class WallpaperEngineApp extends BaseApp {
               item.click();
             },
             random: () => {
-              this._currentCategory = cat;
-              this._renderGrid();
-              this._shuffleRandom();
+              this.currentCategory = cat;
+              this.renderGrid();
+              this.shuffleRandom();
             }
           }
         );
@@ -376,8 +376,8 @@ export class WallpaperEngineApp extends BaseApp {
     });
   }
 
-  _renderToolbar() {
-    const toolbar = $("#we-toolbar", this._win);
+  renderToolbar() {
+    const toolbar = $("#we-toolbar", this.win);
     if (!toolbar) return;
 
     const sortOpts = [
@@ -395,7 +395,7 @@ export class WallpaperEngineApp extends BaseApp {
         <input class="we-search" id="we-search" type="text" placeholder="Search wallpapers..." />
       </div>
       <div class="we-sort-wrap">
-        ${renderSelectMenu("we-sort-select", sortOpts, this._sortMode, "we-sort-select")}
+        ${renderSelectMenu("we-sort-select", sortOpts, this.sortMode, "we-sort-select")}
       </div>
       <button class="we-toolbar-btn" id="we-upload-btn"><i class="fas fa-upload"></i> Upload</button>
       <button class="we-toolbar-btn we-toolbar-btn-random" id="we-random-btn"><i class="fas fa-dice"></i> Random</button>
@@ -404,35 +404,35 @@ export class WallpaperEngineApp extends BaseApp {
     );
 
     bindSelectMenu(toolbar);
-    bindEvent($("#we-sort-select", this._win), "change", () => {
-      this._sortMode = getSelectMenuValue("we-sort-select", this._win);
-      if (!this._currentCategory.startsWith("__")) this._renderGrid();
+    bindEvent($("#we-sort-select", this.win), "change", () => {
+      this.sortMode = getSelectMenuValue("we-sort-select", this.win);
+      if (!this.currentCategory.startsWith("__")) this.renderGrid();
     });
 
-    const search = $("#we-search", this._win);
+    const search = $("#we-search", this.win);
     if (search) {
       bindEvent(search, "input", () => {
-        this._searchQuery = search.value.trim().toLowerCase();
-        if (!this._currentCategory.startsWith("__")) this._renderGrid();
+        this.searchQuery = search.value.trim().toLowerCase();
+        if (!this.currentCategory.startsWith("__")) this.renderGrid();
       });
     }
 
-    bindEvent($("#we-upload-btn", this._win), "click", () => {
-      $("#we-file-input", this._win)?.click();
+    bindEvent($("#we-upload-btn", this.win), "click", () => {
+      $("#we-file-input", this.win)?.click();
     });
 
-    bindEvent($("#we-file-input", this._win), "change", (e) => {
+    bindEvent($("#we-file-input", this.win), "change", (e) => {
       const files = e.target.files;
       if (!files?.length) return;
-      this._handleUpload(files);
+      this.handleUpload(files);
       e.target.value = "";
     });
 
-    bindEvent($("#we-random-btn", this._win), "click", () => this._shuffleRandom());
+    bindEvent($("#we-random-btn", this.win), "click", () => this.shuffleRandom());
   }
 
-  _renderBottomBar() {
-    const bar = $("#we-bottom-bar", this._win);
+  renderBottomBar() {
+    const bar = $("#we-bottom-bar", this.win);
     if (!bar) return;
 
     const isCycling = os.storage.get(StorageKeys.cycleWallpaper) !== "false";
@@ -458,57 +458,57 @@ export class WallpaperEngineApp extends BaseApp {
     `
     );
 
-    bindEvent($("#we-cycle-toggle", this._win), "change", () => {
-      const checked = $("#we-cycle-toggle", this._win).checked;
+    bindEvent($("#we-cycle-toggle", this.win), "change", () => {
+      const checked = $("#we-cycle-toggle", this.win).checked;
       os.storage.set(StorageKeys.cycleWallpaper, checked ? "true" : "false");
-      this._initAutoCycle();
+      this.initAutoCycle();
     });
 
-    bindEvent($("#we-shuffle-interval", this._win), "change", () => {
-      const val = parseInt($("#we-shuffle-interval", this._win).value) || 30;
+    bindEvent($("#we-shuffle-interval", this.win), "change", () => {
+      const val = parseInt($("#we-shuffle-interval", this.win).value) || 30;
       os.storage.set(WE_KEYS.shuffleInterval, String(val));
-      this._initAutoCycle();
+      this.initAutoCycle();
     });
   }
 
-  _initAutoCycle() {
-    if (this._shuffleTimer) {
-      clearInterval(this._shuffleTimer);
-      this._shuffleTimer = null;
+  initAutoCycle() {
+    if (this.shuffleTimer) {
+      clearInterval(this.shuffleTimer);
+      this.shuffleTimer = null;
     }
     const enabled = os.storage.get(StorageKeys.cycleWallpaper) !== "false";
     if (!enabled) return;
     const interval = (parseInt(os.storage.get(WE_KEYS.shuffleInterval)) || 30) * 60 * 1000;
-    this._shuffleTimer = setInterval(() => {
-      if (this._activePlaylist && this._playlists[this._activePlaylist]) {
-        const ids = this._playlists[this._activePlaylist];
+    this.shuffleTimer = setInterval(() => {
+      if (this.activePlaylist && this.playlists[this.activePlaylist]) {
+        const ids = this.playlists[this.activePlaylist];
         const pick = ids[Math.floor(Math.random() * ids.length)];
-        const item = this._wallpaperItems.find((i) => i.id === pick);
-        if (item) this._setDesktop(item, true);
+        const item = this.wallpaperItems.find((i) => i.id === pick);
+        if (item) this.setDesktop(item, true);
       } else {
         SystemUtilities.setSequentialWallpaper?.();
       }
     }, interval);
   }
 
-  async _loadAllWallpapers() {
+  async loadAllWallpapers() {
     const items = [];
-    items.push(...this._getStaticWallpapers());
-    items.push(...this._getVideoWallpapers());
-    items.push(...this._getVantaWallpapers());
-    items.push(...(await this._getUserWallpapers()));
-    this._wallpaperItems = items;
-    this._updateStats();
-    this._renderGrid();
+    items.push(...this.getStaticWallpapers());
+    items.push(...this.getVideoWallpapers());
+    items.push(...this.getVantaWallpapers());
+    items.push(...(await this.getUserWallpapers()));
+    this.wallpaperItems = items;
+    this.updateStats();
+    this.renderGrid();
   }
 
-  _updateStats() {
-    const stats = $("#we-stats", this._win);
+  updateStats() {
+    const stats = $("#we-stats", this.win);
     if (!stats) return;
-    setText(stats, `${this._wallpaperItems.length} wallpapers`);
+    setText(stats, `${this.wallpaperItems.length} wallpapers`);
   }
 
-  _getStaticWallpapers() {
+  getStaticWallpapers() {
     return WALLPAPER_NAME_URL_PAIRS.map((wp) => ({
       id: `static_${wp.filename || wp.name}`,
       name: wp.name,
@@ -520,7 +520,7 @@ export class WallpaperEngineApp extends BaseApp {
     }));
   }
 
-  _getVideoWallpapers() {
+  getVideoWallpapers() {
     return [...videos, ...videos2].map((url) => ({
       id: `video_${url}`,
       name: extractVideoName(url),
@@ -532,7 +532,7 @@ export class WallpaperEngineApp extends BaseApp {
     }));
   }
 
-  _getVantaWallpapers() {
+  getVantaWallpapers() {
     const builtIn = vantaPresets.map((p) => ({
       id: `vanta_${p.id}`,
       name: p.name,
@@ -544,7 +544,7 @@ export class WallpaperEngineApp extends BaseApp {
       isCustom: false,
       meta: { source: "Vanta.js", effect: p.effect }
     }));
-    const custom = this._customVantaPresets.map((p) => ({
+    const custom = this.customVantaPresets.map((p) => ({
       id: `vanta_custom_${p.id}`,
       name: p.name,
       type: "vanta",
@@ -558,7 +558,7 @@ export class WallpaperEngineApp extends BaseApp {
     return [...builtIn, ...custom];
   }
 
-  async _getUserWallpapers() {
+  async getUserWallpapers() {
     const items = [];
     try {
       const folder = await this.fs.getFolder(["Pictures", "Wallpapers"]);
@@ -589,38 +589,38 @@ export class WallpaperEngineApp extends BaseApp {
     return items;
   }
 
-  _getFilteredItems() {
-    let items = this._wallpaperItems;
-    const cat = this._currentCategory;
+  getFilteredItems() {
+    let items = this.wallpaperItems;
+    const cat = this.currentCategory;
     if (cat === "custom-presets") items = items.filter((i) => i.isCustom);
     else if (cat !== "all" && cat !== "favorites" && cat !== "recent") items = items.filter((i) => i.type === cat);
-    else if (cat === "favorites") items = items.filter((i) => this._favorites.includes(i.id));
+    else if (cat === "favorites") items = items.filter((i) => this.favorites.includes(i.id));
     else if (cat === "recent") {
-      const ids = this._history;
+      const ids = this.history;
       items = items.filter((i) => ids.includes(i.id));
       items.sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id));
     }
-    if (this._searchQuery) {
-      const q = this._searchQuery;
+    if (this.searchQuery) {
+      const q = this.searchQuery;
       items = items.filter((i) => i.name.toLowerCase().includes(q));
     }
-    if (this._sortMode === "name-asc") items.sort((a, b) => a.name.localeCompare(b.name));
-    else if (this._sortMode === "name-desc") items.sort((a, b) => b.name.localeCompare(a.name));
-    else if (this._sortMode === "type") items.sort((a, b) => a.type.localeCompare(b.type));
+    if (this.sortMode === "name-asc") items.sort((a, b) => a.name.localeCompare(b.name));
+    else if (this.sortMode === "name-desc") items.sort((a, b) => b.name.localeCompare(a.name));
+    else if (this.sortMode === "type") items.sort((a, b) => a.type.localeCompare(b.type));
     return items;
   }
 
-  _renderGrid() {
-    const content = $("#we-content", this._win);
+  renderGrid() {
+    const content = $("#we-content", this.win);
     if (!content) return;
-    if (this._currentCategory.startsWith("__")) return;
+    if (this.currentCategory.startsWith("__")) return;
 
-    let items = this._getFilteredItems();
+    let items = this.getFilteredItems();
 
-    if (this._currentCategory === "custom-presets") {
+    if (this.currentCategory === "custom-presets") {
       items = [
         {
-          id: "__new_preset",
+          id: "__newpreset",
           name: "Create New Preset",
           type: "new-preset",
           isNewPreset: true,
@@ -633,21 +633,21 @@ export class WallpaperEngineApp extends BaseApp {
     if (items.length === 0) {
       let msg = "No wallpapers found",
         icon = "fa-images";
-      if (this._searchQuery) {
-        msg = `No results for "${this._searchQuery}"`;
+      if (this.searchQuery) {
+        msg = `No results for "${this.searchQuery}"`;
         icon = "fa-search";
-      } else if (this._currentCategory === "uploaded") {
+      } else if (this.currentCategory === "uploaded") {
         msg = "No uploaded wallpapers. Upload one above!";
         icon = "fa-cloud-upload-alt";
-      } else if (this._currentCategory === "favorites") {
+      } else if (this.currentCategory === "favorites") {
         msg = "No favorites yet. Star one to add it!";
         icon = "fa-star";
-      } else if (this._currentCategory === "recent") {
+      } else if (this.currentCategory === "recent") {
         msg = "No recent wallpapers";
         icon = "fa-clock";
       }
       setHTML(content, `<div class="we-category-empty"><i class="fas ${icon}"></i><span>${msg}</span></div>`);
-      this._hidePreview();
+      this.hidePreview();
       return;
     }
 
@@ -661,19 +661,19 @@ export class WallpaperEngineApp extends BaseApp {
         </div>
       `
       );
-      this._hidePreview();
+      this.hidePreview();
       const emptyEl = document.getElementById("we-empty-create-preset");
       if (emptyEl) {
         bindEvent(emptyEl, "click", () => {
-          this._showVantaCustomize({ id: -1, effect: "WAVES", options: { ...VANTA_DEFAULTS.WAVES } });
+          this.showVantaCustomize({ id: -1, effect: "WAVES", options: { ...VANTA_DEFAULTS.WAVES } });
         });
       }
       return;
     }
 
-    if (this._gridObserver) {
-      this._gridObserver.disconnect();
-      this._gridObserver = null;
+    if (this.gridObserver) {
+      this.gridObserver.disconnect();
+      this.gridObserver = null;
     }
 
     let html = '<div class="we-grid">';
@@ -684,16 +684,16 @@ export class WallpaperEngineApp extends BaseApp {
     html += "</div>";
     setHTML(content, html);
 
-    this._gridObserver = new IntersectionObserver(
+    this.gridObserver = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
           if (entry.isIntersecting) {
             const card = entry.target;
             const idx = parseInt(card.dataset.index);
             if (idx >= 0 && idx < items.length) {
-              this._populateCard(card, items[idx]);
+              this.populateCard(card, items[idx]);
             }
-            this._gridObserver.unobserve(card);
+            this.gridObserver.unobserve(card);
           }
         }
       },
@@ -702,14 +702,14 @@ export class WallpaperEngineApp extends BaseApp {
 
     const placeholders = content.querySelectorAll(".we-card-placeholder");
     for (const card of placeholders) {
-      this._gridObserver.observe(card);
+      this.gridObserver.observe(card);
     }
 
-    this._bindGridEvents(content);
-    this._hidePreview();
+    this.bindGridEvents(content);
+    this.hidePreview();
   }
 
-  _populateCard(card, item) {
+  populateCard(card, item) {
     if (!card || !item || !card.classList.contains("we-card-placeholder")) return;
     card.classList.remove("we-card-placeholder");
 
@@ -724,8 +724,8 @@ export class WallpaperEngineApp extends BaseApp {
       return;
     }
 
-    const isFav = this._favorites.includes(item.id);
-    const isSelected = this._selectedItems.has(item.id);
+    const isFav = this.favorites.includes(item.id);
+    const isSelected = this.selectedItems.has(item.id);
     const badge = item.isVideo ? "Video" : item.type === "vanta" ? "Vanta" : item.type === "static" ? "Static" : "";
     const thumb = item.thumbnail || (item.type === "vanta" ? "" : "");
 
@@ -745,13 +745,13 @@ export class WallpaperEngineApp extends BaseApp {
         <button class="we-card-action" data-action="login" data-id="${item.id}" title="Set Login"><i class="fas fa-lock"></i></button>
       </div>`;
 
-    this._attachCardContextMenu(card);
-    this._attachCardTooltip(card);
+    this.attachCardContextMenu(card);
+    this.attachCardTooltip(card);
   }
 
-  _bindGridEvents(content) {
-    if (this._gridEventsBound) return;
-    this._gridEventsBound = true;
+  bindGridEvents(content) {
+    if (this.gridEventsBound) return;
+    this.gridEventsBound = true;
 
     bindEvent(content, "click", (e) => {
       const card = e.target.closest(".we-card");
@@ -759,45 +759,45 @@ export class WallpaperEngineApp extends BaseApp {
       const actionBtn = e.target.closest(".we-card-action");
       if (favBtn) {
         e.stopPropagation();
-        this._toggleFavorite(favBtn.dataset.fav);
+        this.toggleFavorite(favBtn.dataset.fav);
         return;
       }
       if (actionBtn) {
         e.stopPropagation();
-        const item = this._wallpaperItems.find((i) => i.id === actionBtn.dataset.id);
+        const item = this.wallpaperItems.find((i) => i.id === actionBtn.dataset.id);
         if (!item) return;
-        if (actionBtn.dataset.action === "set") this._setDesktop(item);
-        else this._setLogin(item);
+        if (actionBtn.dataset.action === "set") this.setDesktop(item);
+        else this.setLogin(item);
         return;
       }
       if (card) {
-        const item = this._wallpaperItems.find((i) => i.id === card.dataset.id);
+        const item = this.wallpaperItems.find((i) => i.id === card.dataset.id);
         if (!item) return;
         if (item.isNewPreset) {
-          this._showVantaCustomize({ id: -1, effect: "WAVES", options: { ...VANTA_DEFAULTS.WAVES } });
+          this.showVantaCustomize({ id: -1, effect: "WAVES", options: { ...VANTA_DEFAULTS.WAVES } });
           return;
         }
         if (e.ctrlKey || e.metaKey) {
           const id = card.dataset.id;
-          if (this._selectedItems.has(id)) this._selectedItems.delete(id);
-          else this._selectedItems.add(id);
+          if (this.selectedItems.has(id)) this.selectedItems.delete(id);
+          else this.selectedItems.add(id);
           card.classList.toggle("selected");
-          this._renderBatchBar();
+          this.renderBatchBar();
           return;
         }
-        if (item) this._showPreview(item);
+        if (item) this.showPreview(item);
       }
     });
 
     bindEvent(content, "dblclick", (e) => {
       const card = e.target.closest(".we-card");
       if (!card) return;
-      const item = this._wallpaperItems.find((i) => i.id === card.dataset.id);
-      if (item && !item.isNewPreset) this._showFullscreenPreview(item);
+      const item = this.wallpaperItems.find((i) => i.id === card.dataset.id);
+      if (item && !item.isNewPreset) this.showFullscreenPreview(item);
     });
   }
 
-  async _setDesktop(item, silent = false) {
+  async setDesktop(item, silent = false) {
     try {
       if (item.type === "vanta") {
         await SystemUtilities.setWallpaper(item.src);
@@ -808,52 +808,52 @@ export class WallpaperEngineApp extends BaseApp {
       } else {
         await SystemUtilities.setWallpaper(item.src);
       }
-      this._addToHistory(item.id);
-      this._applyColorFilter();
-      if (!silent) this._notify(`Desktop wallpaper set to "${item.name}"`);
+      this.addToHistory(item.id);
+      this.applyColorFilter();
+      if (!silent) this.notify(`Desktop wallpaper set to "${item.name}"`);
     } catch {
-      if (!silent) this._notify("Failed to set wallpaper");
+      if (!silent) this.notify("Failed to set wallpaper");
     }
   }
 
-  async _setLogin(item) {
+  async setLogin(item) {
     try {
       if (item.isUserUpload) {
         const content = await this.fs.getFileContent(["Pictures", "Wallpapers"], item.userFileName);
         if (content) {
           await SystemUtilities.setLoginWallpaper(content);
-          this._notify(`Login wallpaper set to "${item.name}"`);
+          this.notify(`Login wallpaper set to "${item.name}"`);
         }
       } else {
         await SystemUtilities.setLoginWallpaper(item.src);
-        this._notify(`Login wallpaper set to "${item.name}"`);
+        this.notify(`Login wallpaper set to "${item.name}"`);
       }
     } catch {
-      this._notify("Failed to set login wallpaper");
+      this.notify("Failed to set login wallpaper");
     }
   }
 
-  _toggleFavorite(id) {
-    const idx = this._favorites.indexOf(id);
+  toggleFavorite(id) {
+    const idx = this.favorites.indexOf(id);
     if (idx === -1) {
-      this._favorites.push(id);
-      this._notify("Added to favorites");
+      this.favorites.push(id);
+      this.notify("Added to favorites");
     } else {
-      this._favorites.splice(idx, 1);
-      this._notify("Removed from favorites");
+      this.favorites.splice(idx, 1);
+      this.notify("Removed from favorites");
     }
-    this._saveFavorites();
-    this._renderGrid();
-    if (this._previewItem?.id === id) this._updatePreviewFavBtn();
+    this.saveFavorites();
+    this.renderGrid();
+    if (this.previewItem?.id === id) this.updatePreviewFavBtn();
   }
 
-  _showPreview(item) {
-    this._previewItem = item;
-    const panel = $("#we-preview-panel", this._win);
+  showPreview(item) {
+    this.previewItem = item;
+    const panel = $("#we-preview-panel", this.win);
     if (!panel) return;
     panel.classList.add("open");
 
-    const isFav = this._favorites.includes(item.id);
+    const isFav = this.favorites.includes(item.id);
     const thumbSrc = item.thumbnail || "";
 
     setHTML(
@@ -882,21 +882,21 @@ export class WallpaperEngineApp extends BaseApp {
     `
     );
 
-    bindEvent($("#we-preview-close", this._win), "click", () => this._hidePreview());
-    bindEvent($("#we-preview-set", this._win), "click", () => this._setDesktop(item));
-    bindEvent($("#we-preview-login", this._win), "click", () => this._setLogin(item));
-    bindEvent($("#we-preview-fav", this._win), "click", () => this._toggleFavorite(item.id));
-    bindEvent($("#we-preview-add-playlist", this._win), "click", () => this._showAddToPlaylist(item));
+    bindEvent($("#we-preview-close", this.win), "click", () => this.hidePreview());
+    bindEvent($("#we-preview-set", this.win), "click", () => this.setDesktop(item));
+    bindEvent($("#we-preview-login", this.win), "click", () => this.setLogin(item));
+    bindEvent($("#we-preview-fav", this.win), "click", () => this.toggleFavorite(item.id));
+    bindEvent($("#we-preview-add-playlist", this.win), "click", () => this.showAddToPlaylist(item));
 
-    const customizeBtn = $("#we-preview-customize", this._win);
+    const customizeBtn = $("#we-preview-customize", this.win);
     if (customizeBtn && item.vantaPreset) {
-      bindEvent(customizeBtn, "click", () => this._showVantaCustomize(item.vantaPreset));
+      bindEvent(customizeBtn, "click", () => this.showVantaCustomize(item.vantaPreset));
     }
 
     bindEvent(panel, "contextmenu", (e) => {
       e.preventDefault();
       e.stopPropagation();
-      const isFav = this._favorites.includes(item.id);
+      const isFav = this.favorites.includes(item.id);
       const pvItems = [
         { id: "pv-set", label: "Set Desktop", action: "setDesktop", icon: "fa-desktop" },
         { id: "pv-login", label: "Set Login", action: "setLogin", icon: "fa-lock" },
@@ -926,40 +926,40 @@ export class WallpaperEngineApp extends BaseApp {
       }
       pvItems.push("hr", { id: "pv-copy", label: "Copy Name", action: "copyName", icon: "fa-copy" });
       showContextMenu(e, pvItems, {
-        setDesktop: () => this._setDesktop(item),
-        setLogin: () => this._setLogin(item),
-        toggleFav: () => this._toggleFavorite(item.id),
-        addPlaylist: () => this._showAddToPlaylist(item),
-        fullscreen: () => this._showFullscreenPreview(item),
-        copyName: () => navigator.clipboard.writeText(item.name).then(() => this._notify("Name copied")),
+        setDesktop: () => this.setDesktop(item),
+        setLogin: () => this.setLogin(item),
+        toggleFav: () => this.toggleFavorite(item.id),
+        addPlaylist: () => this.showAddToPlaylist(item),
+        fullscreen: () => this.showFullscreenPreview(item),
+        copyName: () => navigator.clipboard.writeText(item.name).then(() => this.notify("Name copied")),
         editPreset: () => {
-          if (item.vantaPreset) this._showVantaCustomize(item.vantaPreset);
+          if (item.vantaPreset) this.showVantaCustomize(item.vantaPreset);
         },
         deletePreset: async () => {
           const confirmed = await os.dialog.confirm("Delete Preset", `Delete "${item.name}"?`);
           if (!confirmed) return;
-          this._deleteCustomVantaPreset(item.vantaPreset?.id);
-          this._hidePreview();
-          this._notify(`Preset "${item.name}" deleted`);
+          this.deleteCustomVantaPreset(item.vantaPreset?.id);
+          this.hidePreview();
+          this.notify(`Preset "${item.name}" deleted`);
         }
       });
     });
   }
 
-  _updatePreviewFavBtn() {
-    const btn = $("#we-preview-fav", this._win);
-    if (!btn || !this._previewItem) return;
-    const isFav = this._favorites.includes(this._previewItem.id);
+  updatePreviewFavBtn() {
+    const btn = $("#we-preview-fav", this.win);
+    if (!btn || !this.previewItem) return;
+    const isFav = this.favorites.includes(this.previewItem.id);
     setHTML(btn, `<i class="fas fa-star"></i> ${isFav ? "Favorited" : "Add to Favorites"}`);
   }
 
-  _hidePreview() {
-    const panel = $("#we-preview-panel", this._win);
+  hidePreview() {
+    const panel = $("#we-preview-panel", this.win);
     if (panel) panel.classList.remove("open");
-    this._previewItem = null;
+    this.previewItem = null;
   }
 
-  _renderVantaControlsHtml(controls) {
+  renderVantaControlsHtml(controls) {
     return controls
       .map((c) => {
         if (c.type === "range") {
@@ -979,7 +979,7 @@ export class WallpaperEngineApp extends BaseApp {
       .join("");
   }
 
-  _showVantaCustomize(preset) {
+  showVantaCustomize(preset) {
     const isNew = preset.id < 0;
     const overlay = createElement("div", { className: "we-vanta-customize-dialog" });
 
@@ -997,13 +997,13 @@ export class WallpaperEngineApp extends BaseApp {
     let currentEffect = preset.effect;
     let currentOptions = { ...preset.options };
 
-    const getControls = () => this._getVantaControls({ effect: currentEffect, options: currentOptions });
+    const getControls = () => this.getVantaControls({ effect: currentEffect, options: currentOptions });
 
     const rebuildControls = () => {
       const container = document.getElementById("v-customize-content");
       if (!container) return;
       const controls = getControls();
-      setHTML(container, this._renderVantaControlsHtml(controls));
+      setHTML(container, this.renderVantaControlsHtml(controls));
       bindRangeSlider(overlay);
       overlay.querySelectorAll(".we-control-color").forEach((input) => {
         bindEvent(input, "input", () => {});
@@ -1054,7 +1054,7 @@ export class WallpaperEngineApp extends BaseApp {
       `
       <div class="we-vanta-customize-inner">
         <div class="we-customize-header">${headerHtml}</div>
-        <div class="we-customize-content" id="v-customize-content">${this._renderVantaControlsHtml(getControls())}</div>
+        <div class="we-customize-content" id="v-customize-content">${this.renderVantaControlsHtml(getControls())}</div>
         <div class="we-customize-footer">
           <button class="we-customize-btn we-customize-cancel">Cancel</button>
           <button class="we-customize-btn" id="we-customize-save-preset"><i class="fas fa-save"></i> Save as Preset</button>
@@ -1105,7 +1105,7 @@ export class WallpaperEngineApp extends BaseApp {
       const customOptions = readOptions();
       const customPreset = { effect: currentEffect, options: { ...currentOptions, ...customOptions } };
       SystemUtilities.setWallpaper(`vanta:custom:${btoa(JSON.stringify(customPreset))}`);
-      this._notify(isNew ? "Custom preset applied" : `Custom "${preset.name}" applied`);
+      this.notify(isNew ? "Custom preset applied" : `Custom "${preset.name}" applied`);
       overlay.remove();
     };
 
@@ -1124,8 +1124,8 @@ export class WallpaperEngineApp extends BaseApp {
           options: { ...currentOptions, ...customOptions },
           previewStyle: { background: "var(--bg-base)" }
         };
-        const saved = this._addCustomVantaPreset(newPreset);
-        this._wallpaperItems.push({
+        const saved = this.addCustomVantaPreset(newPreset);
+        this.wallpaperItems.push({
           id: `vanta_custom_${saved.id}`,
           name: saved.name,
           type: "vanta",
@@ -1136,15 +1136,15 @@ export class WallpaperEngineApp extends BaseApp {
           isCustom: true,
           meta: { source: "Custom", effect: saved.effect }
         });
-        this._renderGrid();
-        this._updateStats();
-        this._notify(`Preset "${name}" saved`);
+        this.renderGrid();
+        this.updateStats();
+        this.notify(`Preset "${name}" saved`);
         overlay.remove();
       });
     }
   }
 
-  _getVantaControls(preset) {
+  getVantaControls(preset) {
     const controls = [];
     const o = preset.options;
     const fmt = (v) => "#" + v.toString(16).padStart(6, "0");
@@ -1192,19 +1192,19 @@ export class WallpaperEngineApp extends BaseApp {
     return controls;
   }
 
-  _shuffleRandom() {
-    const items = this._getFilteredItems();
+  shuffleRandom() {
+    const items = this.getFilteredItems();
     if (!items.length) return;
-    this._showPreview(items[Math.floor(Math.random() * items.length)]);
+    this.showPreview(items[Math.floor(Math.random() * items.length)]);
   }
 
-  _attachCardContextMenu(card) {
+  attachCardContextMenu(card) {
     bindEvent(card, "contextmenu", (e) => {
       e.preventDefault();
       e.stopPropagation();
-      const item = this._wallpaperItems.find((i) => i.id === card.dataset.id);
+      const item = this.wallpaperItems.find((i) => i.id === card.dataset.id);
       if (!item) return;
-      const isFav = this._favorites.includes(item.id);
+      const isFav = this.favorites.includes(item.id);
       const menuItems = [
         { id: "ctx-" + item.id + "-set", label: "Set Desktop", action: "setDesktop", icon: "fa-desktop" },
         { id: "ctx-" + item.id + "-login", label: "Set Login", action: "setLogin", icon: "fa-lock" },
@@ -1243,33 +1243,33 @@ export class WallpaperEngineApp extends BaseApp {
         });
       }
       showContextMenu(e, menuItems, {
-        setDesktop: () => this._setDesktop(item),
-        setLogin: () => this._setLogin(item),
-        toggleFav: () => this._toggleFavorite(item.id),
-        addPlaylist: () => this._showAddToPlaylist(item),
-        fullscreen: () => this._showFullscreenPreview(item),
-        copyName: () => navigator.clipboard.writeText(item.name).then(() => this._notify("Name copied")),
-        deletePaper: () => this._deleteUserWallpaper(item),
+        setDesktop: () => this.setDesktop(item),
+        setLogin: () => this.setLogin(item),
+        toggleFav: () => this.toggleFavorite(item.id),
+        addPlaylist: () => this.showAddToPlaylist(item),
+        fullscreen: () => this.showFullscreenPreview(item),
+        copyName: () => navigator.clipboard.writeText(item.name).then(() => this.notify("Name copied")),
+        deletePaper: () => this.deleteUserWallpaper(item),
         editPreset: () => {
-          if (item.vantaPreset) this._showVantaCustomize(item.vantaPreset);
+          if (item.vantaPreset) this.showVantaCustomize(item.vantaPreset);
         },
         deletePreset: async () => {
           const confirmed = await os.dialog.confirm("Delete Preset", `Delete "${item.name}"?`);
           if (!confirmed) return;
-          this._deleteCustomVantaPreset(item.vantaPreset?.id);
-          this._notify(`Preset "${item.name}" deleted`);
+          this.deleteCustomVantaPreset(item.vantaPreset?.id);
+          this.notify(`Preset "${item.name}" deleted`);
         }
       });
     });
   }
 
-  _attachCardTooltip(card) {
+  attachCardTooltip(card) {
     bindEvent(card, "mouseenter", () => {
-      clearTimeout(this._tooltipTimer);
-      this._tooltipTimer = setTimeout(() => {
+      clearTimeout(this.tooltipTimer);
+      this.tooltipTimer = setTimeout(() => {
         const rect = card.getBoundingClientRect();
         const id = card.dataset.id;
-        const item = this._wallpaperItems.find((i) => i.id === id);
+        const item = this.wallpaperItems.find((i) => i.id === id);
         if (!item) return;
         const el = createElement("div", { className: "we-tooltip" });
         el.dataset.weTooltipFor = id;
@@ -1289,16 +1289,16 @@ export class WallpaperEngineApp extends BaseApp {
     });
 
     bindEvent(card, "mouseleave", () => {
-      clearTimeout(this._tooltipTimer);
+      clearTimeout(this.tooltipTimer);
       document.querySelectorAll(`[data-we-tooltip-for="${card.dataset.id}"]`).forEach((el) => el.remove());
     });
   }
 
   /* ---------- Batch Bar ---------- */
-  _renderBatchBar() {
-    const bar = $("#we-bottom-bar", this._win);
+  renderBatchBar() {
+    const bar = $("#we-bottom-bar", this.win);
     if (!bar) return;
-    const count = this._selectedItems.size;
+    const count = this.selectedItems.size;
     const existing = bar.querySelector(".we-batch-actions");
     if (existing) existing.remove();
     if (count === 0) return;
@@ -1317,59 +1317,59 @@ export class WallpaperEngineApp extends BaseApp {
     );
     bar.appendChild(batch);
 
-    const items = [...this._selectedItems].map((id) => this._wallpaperItems.find((i) => i.id === id)).filter(Boolean);
+    const items = [...this.selectedItems].map((id) => this.wallpaperItems.find((i) => i.id === id)).filter(Boolean);
 
     bindEvent(batch, "click", (e) => {
       const btn = e.target.closest("[data-batch]");
       if (!btn) return;
       const action = btn.dataset.batch;
       if (action === "clear") {
-        this._selectedItems.clear();
-        this._renderGrid();
-        this._renderBatchBar();
+        this.selectedItems.clear();
+        this.renderGrid();
+        this.renderBatchBar();
         return;
       }
       if (action === "set") {
         for (const item of items) {
-          this._setDesktop(item, true);
+          this.setDesktop(item, true);
           break;
         }
-        this._notify("Desktop wallpaper set");
+        this.notify("Desktop wallpaper set");
       } else if (action === "fav") {
         for (const item of items) {
-          if (!this._favorites.includes(item.id)) this._favorites.push(item.id);
+          if (!this.favorites.includes(item.id)) this.favorites.push(item.id);
         }
-        this._saveFavorites();
-        this._notify(`Added ${items.length} to favorites`);
+        this.saveFavorites();
+        this.notify(`Added ${items.length} to favorites`);
       } else if (action === "playlist") {
-        if (items.length) this._showAddToPlaylist(items[0]);
+        if (items.length) this.showAddToPlaylist(items[0]);
         return;
       } else if (action === "delete") {
         const uploads = items.filter((i) => i.isUserUpload);
-        if (uploads.length) for (const item of uploads) this._deleteUserWallpaper(item, true);
-        this._notify(`Deleted ${uploads.length} wallpaper(s)`);
+        if (uploads.length) for (const item of uploads) this.deleteUserWallpaper(item, true);
+        this.notify(`Deleted ${uploads.length} wallpaper(s)`);
       }
-      this._selectedItems.clear();
-      this._renderGrid();
-      this._renderBatchBar();
+      this.selectedItems.clear();
+      this.renderGrid();
+      this.renderBatchBar();
     });
   }
 
   /* ---------- Delete User Wallpaper ---------- */
-  async _deleteUserWallpaper(item, silent = false) {
+  async deleteUserWallpaper(item, silent = false) {
     try {
       await this.fs.deleteItem(["Pictures", "Wallpapers"], item.userFileName);
-      this._wallpaperItems = this._wallpaperItems.filter((i) => i.id !== item.id);
-      this._renderGrid();
-      this._updateStats();
-      if (!silent) this._notify(`Deleted "${item.name}"`);
+      this.wallpaperItems = this.wallpaperItems.filter((i) => i.id !== item.id);
+      this.renderGrid();
+      this.updateStats();
+      if (!silent) this.notify(`Deleted "${item.name}"`);
     } catch {
-      if (!silent) this._notify("Failed to delete wallpaper");
+      if (!silent) this.notify("Failed to delete wallpaper");
     }
   }
 
   /* ---------- Fullscreen Preview ---------- */
-  async _showFullscreenPreview(item) {
+  async showFullscreenPreview(item) {
     const overlay = createElement("div", { className: "we-fs-overlay" });
     const isVideo = item.isVideo;
     const isVanta = item.type === "vanta";
@@ -1426,13 +1426,13 @@ export class WallpaperEngineApp extends BaseApp {
     if (closeBtn) closeBtn.onclick = () => overlay.remove();
 
     bindEvent($("#we-fs-set", overlay), "click", () => {
-      this._setDesktop(item);
+      this.setDesktop(item);
       overlay.remove();
     });
     bindEvent($("#we-fs-fav", overlay), "click", () => {
-      this._toggleFavorite(item.id);
+      this.toggleFavorite(item.id);
       const btn = $("#we-fs-fav", overlay);
-      if (btn) btn.classList.toggle("we-fs-fav--active", this._favorites.includes(item.id));
+      if (btn) btn.classList.toggle("we-fs-fav--active", this.favorites.includes(item.id));
     });
 
     const playBtn = overlay.querySelector(".we-fs-play-btn-big");
@@ -1450,38 +1450,36 @@ export class WallpaperEngineApp extends BaseApp {
     }
 
     if (isVanta) {
-      import("../vantaPresets.js").then((mod) => {
-        const preset = mod.vantaPresets.find((p) => p.id === item.vantaPreset?.id);
-        if (preset && window.VANTA) {
-          const container = $("#we-fs-vanta", overlay);
-          if (container) {
-            const effect =
-              window.VANTA[
-                preset.effect === "CELLS"
-                  ? "CELLS"
-                  : preset.effect === "NET"
-                    ? "NET"
-                    : preset.effect === "WAVES"
-                      ? "WAVES"
-                      : preset.effect === "BIRDS"
-                        ? "BIRDS"
-                        : preset.effect === "DOTS"
-                          ? "DOTS"
-                          : preset.effect === "GLOBE"
-                            ? "GLOBE"
-                            : preset.effect === "HALO"
-                              ? "HALO"
-                              : "FOG"
-              ];
-            if (effect) effect({ el: container, ...preset.options });
-          }
+      const preset = vantaPresets.find((p) => p.id === item.vantaPreset?.id);
+      if (preset && window.VANTA) {
+        const container = $("#we-fs-vanta", overlay);
+        if (container) {
+          const effect =
+            window.VANTA[
+              preset.effect === "CELLS"
+                ? "CELLS"
+                : preset.effect === "NET"
+                  ? "NET"
+                  : preset.effect === "WAVES"
+                    ? "WAVES"
+                    : preset.effect === "BIRDS"
+                      ? "BIRDS"
+                      : preset.effect === "DOTS"
+                        ? "DOTS"
+                        : preset.effect === "GLOBE"
+                          ? "GLOBE"
+                          : preset.effect === "HALO"
+                            ? "HALO"
+                            : "FOG"
+            ];
+          if (effect) effect({ el: container, ...preset.options });
         }
-      });
+      }
     }
   }
 
-  _setupDragDrop() {
-    const content = $("#we-content", this._win);
+  setupDragDrop() {
+    const content = $("#we-content", this.win);
     if (!content) return;
     content.addEventListener("dragover", (e) => {
       e.preventDefault();
@@ -1489,11 +1487,11 @@ export class WallpaperEngineApp extends BaseApp {
     });
     content.addEventListener("drop", (e) => {
       e.preventDefault();
-      if (e.dataTransfer.files?.length) this._handleUpload(e.dataTransfer.files);
+      if (e.dataTransfer.files?.length) this.handleUpload(e.dataTransfer.files);
     });
   }
 
-  async _handleUpload(files) {
+  async handleUpload(files) {
     let count = 0;
     for (const file of files) {
       try {
@@ -1510,15 +1508,15 @@ export class WallpaperEngineApp extends BaseApp {
       } catch {}
     }
     if (count > 0) {
-      this._notify(`Uploaded ${count} wallpaper${count > 1 ? "s" : ""}`);
-      this._wallpaperItems = [...this._wallpaperItems, ...(await this._getUserWallpapers())];
-      this._renderGrid();
-      this._updateStats();
+      this.notify(`Uploaded ${count} wallpaper${count > 1 ? "s" : ""}`);
+      this.wallpaperItems = [...this.wallpaperItems, ...(await this.getUserWallpapers())];
+      this.renderGrid();
+      this.updateStats();
     }
   }
 
-  _showImportView() {
-    const content = $("#we-content", this._win);
+  showImportView() {
+    const content = $("#we-content", this.win);
     if (!content) return;
     setHTML(
       content,
@@ -1538,10 +1536,10 @@ export class WallpaperEngineApp extends BaseApp {
       </div>
     `
     );
-    bindEvent($("#we-import-go", this._win), "click", async () => {
-      const url = $("#we-import-url", this._win)?.value.trim();
+    bindEvent($("#we-import-go", this.win), "click", async () => {
+      const url = $("#we-import-url", this.win)?.value.trim();
       if (!url) return;
-      const status = $("#we-import-status", this._win);
+      const status = $("#we-import-status", this.win);
       if (status) setHTML(status, '<span style="color:var(--text-secondary)">Downloading...</span>');
       try {
         const resp = await fetch(url);
@@ -1563,9 +1561,9 @@ export class WallpaperEngineApp extends BaseApp {
             status,
             '<span class="import-status--success"><i class="fas fa-check"></i> Imported successfully!</span>'
           );
-        this._notify(`Imported "${name}"`);
-        this._wallpaperItems = [...this._wallpaperItems, ...(await this._getUserWallpapers())];
-        this._updateStats();
+        this.notify(`Imported "${name}"`);
+        this.wallpaperItems = [...this.wallpaperItems, ...(await this.getUserWallpapers())];
+        this.updateStats();
       } catch (err) {
         if (status)
           setHTML(
@@ -1576,15 +1574,15 @@ export class WallpaperEngineApp extends BaseApp {
     });
   }
 
-  _showPlaylistsView() {
-    const content = $("#we-content", this._win);
+  showPlaylistsView() {
+    const content = $("#we-content", this.win);
     if (!content) return;
-    const names = Object.keys(this._playlists);
+    const names = Object.keys(this.playlists);
     let listHtml = names.length
       ? names
           .map((n) => {
-            const count = this._playlists[n].length;
-            const active = this._activePlaylist === n;
+            const count = this.playlists[n].length;
+            const active = this.activePlaylist === n;
             return `<div class="we-playlist-item" data-name="${n}">
         <div class="we-playlist-info">
           <div class="we-playlist-name">${n}</div>
@@ -1615,12 +1613,12 @@ export class WallpaperEngineApp extends BaseApp {
     `
     );
 
-    bindEvent($("#we-playlist-create-btn", this._win), "click", () => {
-      const name = $("#we-playlist-name-input", this._win)?.value.trim();
-      if (!name || this._playlists[name]) return;
-      this._playlists[name] = [];
-      this._savePlaylists();
-      this._showPlaylistsView();
+    bindEvent($("#we-playlist-create-btn", this.win), "click", () => {
+      const name = $("#we-playlist-name-input", this.win)?.value.trim();
+      if (!name || this.playlists[name]) return;
+      this.playlists[name] = [];
+      this.savePlaylists();
+      this.showPlaylistsView();
     });
 
     bindEvent(content, "click", (e) => {
@@ -1628,21 +1626,21 @@ export class WallpaperEngineApp extends BaseApp {
       const editBtn = e.target.closest(".we-playlist-edit");
       const deleteBtn = e.target.closest(".we-playlist-delete");
       if (activateBtn) {
-        this._activePlaylist = activateBtn.dataset.name;
-        os.storage.set(WE_KEYS.activePlaylist, this._activePlaylist);
-        this._notify(`Playlist "${this._activePlaylist}" activated`);
-        this._showPlaylistsView();
+        this.activePlaylist = activateBtn.dataset.name;
+        os.storage.set(WE_KEYS.activePlaylist, this.activePlaylist);
+        this.notify(`Playlist "${this.activePlaylist}" activated`);
+        this.showPlaylistsView();
       } else if (deleteBtn) {
         const name = deleteBtn.dataset.name;
-        delete this._playlists[name];
-        if (this._activePlaylist === name) {
-          this._activePlaylist = null;
+        delete this.playlists[name];
+        if (this.activePlaylist === name) {
+          this.activePlaylist = null;
           os.storage.remove(WE_KEYS.activePlaylist);
         }
-        this._savePlaylists();
-        this._showPlaylistsView();
+        this.savePlaylists();
+        this.showPlaylistsView();
       } else if (editBtn) {
-        this._showPlaylistDetail(editBtn.dataset.name);
+        this.showPlaylistDetail(editBtn.dataset.name);
       }
     });
 
@@ -1651,7 +1649,7 @@ export class WallpaperEngineApp extends BaseApp {
         e.preventDefault();
         e.stopPropagation();
         const name = plItem.dataset.name;
-        const isActive = this._activePlaylist === name;
+        const isActive = this.activePlaylist === name;
         showContextMenu(
           e,
           [
@@ -1664,34 +1662,34 @@ export class WallpaperEngineApp extends BaseApp {
             { id: "pl-" + name + "-del", label: "Delete", action: "deletePl", icon: "fa-trash" }
           ],
           {
-            edit: () => this._showPlaylistDetail(name),
+            edit: () => this.showPlaylistDetail(name),
             activate: () => {
-              this._activePlaylist = name;
+              this.activePlaylist = name;
               os.storage.set(WE_KEYS.activePlaylist, name);
-              this._notify(`Playlist "${name}" activated`);
-              this._showPlaylistsView();
+              this.notify(`Playlist "${name}" activated`);
+              this.showPlaylistsView();
             },
             rename: async () => {
               const newName = await os.dialog.prompt("Rename Playlist", "Enter a new name:", name);
-              if (newName && newName !== name && !this._playlists[newName]) {
-                this._playlists[newName] = this._playlists[name];
-                delete this._playlists[name];
-                if (this._activePlaylist === name) {
-                  this._activePlaylist = newName;
+              if (newName && newName !== name && !this.playlists[newName]) {
+                this.playlists[newName] = this.playlists[name];
+                delete this.playlists[name];
+                if (this.activePlaylist === name) {
+                  this.activePlaylist = newName;
                   os.storage.set(WE_KEYS.activePlaylist, newName);
                 }
-                this._savePlaylists();
-                this._showPlaylistsView();
+                this.savePlaylists();
+                this.showPlaylistsView();
               }
             },
             deletePl: () => {
-              delete this._playlists[name];
-              if (this._activePlaylist === name) {
-                this._activePlaylist = null;
+              delete this.playlists[name];
+              if (this.activePlaylist === name) {
+                this.activePlaylist = null;
                 os.storage.remove(WE_KEYS.activePlaylist);
               }
-              this._savePlaylists();
-              this._showPlaylistsView();
+              this.savePlaylists();
+              this.showPlaylistsView();
             }
           }
         );
@@ -1699,11 +1697,11 @@ export class WallpaperEngineApp extends BaseApp {
     });
   }
 
-  _showPlaylistDetail(name) {
-    const detail = $("#we-playlist-detail", this._win);
+  showPlaylistDetail(name) {
+    const detail = $("#we-playlist-detail", this.win);
     if (!detail) return;
-    const ids = this._playlists[name] || [];
-    const items = ids.map((id) => this._wallpaperItems.find((i) => i.id === id)).filter(Boolean);
+    const ids = this.playlists[name] || [];
+    const items = ids.map((id) => this.wallpaperItems.find((i) => i.id === id)).filter(Boolean);
 
     setHTML(
       detail,
@@ -1736,10 +1734,10 @@ export class WallpaperEngineApp extends BaseApp {
       if (!removeBtn) return;
       const pName = removeBtn.dataset.playlist;
       const id = removeBtn.dataset.id;
-      if (this._playlists[pName]) {
-        this._playlists[pName] = this._playlists[pName].filter((i) => i !== id);
-        this._savePlaylists();
-        this._showPlaylistDetail(pName);
+      if (this.playlists[pName]) {
+        this.playlists[pName] = this.playlists[pName].filter((i) => i !== id);
+        this.savePlaylists();
+        this.showPlaylistDetail(pName);
       }
     });
 
@@ -1748,10 +1746,10 @@ export class WallpaperEngineApp extends BaseApp {
         e.preventDefault();
         e.stopPropagation();
         const id = dcard.dataset.id;
-        const item = this._wallpaperItems.find((i) => i.id === id);
+        const item = this.wallpaperItems.find((i) => i.id === id);
         if (!item) return;
         const pName = dcard.querySelector("[data-playlist]")?.dataset.playlist || name;
-        const isFav = this._favorites.includes(id);
+        const isFav = this.favorites.includes(id);
         showContextMenu(
           e,
           [
@@ -1766,13 +1764,13 @@ export class WallpaperEngineApp extends BaseApp {
             { id: "pd-" + id + "-rem", label: "Remove from Playlist", action: "removePl", icon: "fa-minus-circle" }
           ],
           {
-            setDesktop: () => this._setDesktop(item),
-            toggleFav: () => this._toggleFavorite(item.id),
+            setDesktop: () => this.setDesktop(item),
+            toggleFav: () => this.toggleFavorite(item.id),
             removePl: () => {
-              if (this._playlists[pName]) {
-                this._playlists[pName] = this._playlists[pName].filter((i) => i !== id);
-                this._savePlaylists();
-                this._showPlaylistDetail(pName);
+              if (this.playlists[pName]) {
+                this.playlists[pName] = this.playlists[pName].filter((i) => i !== id);
+                this.savePlaylists();
+                this.showPlaylistDetail(pName);
               }
             }
           }
@@ -1781,10 +1779,10 @@ export class WallpaperEngineApp extends BaseApp {
     });
   }
 
-  _showAddToPlaylist(item) {
-    const names = Object.keys(this._playlists);
+  showAddToPlaylist(item) {
+    const names = Object.keys(this.playlists);
     if (!names.length) {
-      this._notify("No playlists. Create one in the sidebar first.");
+      this.notify("No playlists. Create one in the sidebar first.");
       return;
     }
     const options = names.map((n) => ({ label: n, value: n }));
@@ -1813,21 +1811,21 @@ export class WallpaperEngineApp extends BaseApp {
     $("#we-p-cancel", overlay).onclick = () => overlay.remove();
     $("#we-p-add", overlay).onclick = () => {
       const val = getSelectMenuValue("we-playlist-select", overlay);
-      if (val && this._playlists[val]) {
-        if (!this._playlists[val].includes(item.id)) {
-          this._playlists[val].push(item.id);
-          this._savePlaylists();
-          this._notify(`Added to "${val}"`);
-        } else this._notify("Already in this playlist");
+      if (val && this.playlists[val]) {
+        if (!this.playlists[val].includes(item.id)) {
+          this.playlists[val].push(item.id);
+          this.savePlaylists();
+          this.notify(`Added to "${val}"`);
+        } else this.notify("Already in this playlist");
       }
       overlay.remove();
     };
   }
 
-  _showFiltersView() {
-    const content = $("#we-content", this._win);
+  showFiltersView() {
+    const content = $("#we-content", this.win);
     if (!content) return;
-    const f = this._colorFilter;
+    const f = this.colorFilter;
     setHTML(
       content,
       `
@@ -1862,13 +1860,13 @@ export class WallpaperEngineApp extends BaseApp {
     bindRangeSlider(content);
 
     const bindFilter = (id, key, unit) => {
-      const slider = $(`#${id}`, this._win);
+      const slider = $(`#${id}`, this.win);
       if (slider) {
         bindEvent(slider, "input", () => {
-          const val = getRangeSliderValue(id, this._win);
-          const display = $(`#${id}-val`, this._win);
+          const val = getRangeSliderValue(id, this.win);
+          const display = $(`#${id}-val`, this.win);
           if (display) setText(display, val + unit);
-          this._updateFilter(key, val);
+          this.updateFilter(key, val);
         });
       }
     };
@@ -1878,15 +1876,15 @@ export class WallpaperEngineApp extends BaseApp {
     bindFilter("we-filter-saturate", "saturate", "%");
     bindFilter("we-filter-blur", "blur", "px");
 
-    bindEvent($("#we-filter-reset", this._win), "click", () => {
-      this._colorFilter = { ...DEFAULT_FILTER };
-      this._saveFilter();
-      this._showFiltersView();
-      this._applyColorFilter();
+    bindEvent($("#we-filter-reset", this.win), "click", () => {
+      this.colorFilter = { ...DEFAULT_FILTER };
+      this.saveFilter();
+      this.showFiltersView();
+      this.applyColorFilter();
     });
   }
 
-  _notify(msg, type) {
+  notify(msg, type) {
     type = type || "info";
     const icons = { info: "fa-info-circle", success: "fa-check-circle", error: "fa-exclamation-triangle" };
     const els = document.querySelectorAll(".we-notification");

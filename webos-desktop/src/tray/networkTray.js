@@ -6,13 +6,13 @@ class NetworkTrayApp extends BaseApp {
     super(services);
     this.winId = "network-tray-window";
     this.popupId = "network-tray-popup";
-    this._popupVisible = false;
-    this._connecting = false;
+    this.popupVisible = false;
+    this.connecting = false;
     this.currentCdn = getCdnMirror();
-    this._initTray();
+    this.initTray();
   }
 
-  _getSignalStrength(cdnId) {
+  getSignalStrength(cdnId) {
     const signalMap = {
       jsdelivr: 4,
       quantil: 3,
@@ -25,12 +25,12 @@ class NetworkTrayApp extends BaseApp {
     return signalMap[cdnId] || 2;
   }
 
-  _getWifiIcon(signalStrength) {
+  getWifiIcon(signalStrength) {
     const icons = ["fa-wifi", "fa-wifi", "fa-wifi", "fa-wifi", "fa-wifi"];
     return icons[signalStrength] || "fa-wifi";
   }
 
-  _initTray() {
+  initTray() {
     this.registerTray(this.winId, "fas fa-wifi", "Network", {
       resident: true,
       showInTray: true,
@@ -39,16 +39,16 @@ class NetworkTrayApp extends BaseApp {
         this.togglePopup();
       },
       contextMenuItems: [
-        { label: "Network Settings", icon: "fa-cog", action: () => this._openNetworkSettings() },
+        { label: "Network Settings", icon: "fa-cog", action: () => this.openNetworkSettings() },
         { type: "divider" }
       ]
     });
-    this._updateTrayIcon();
+    this.updateTrayIcon();
   }
 
-  _updateTrayIcon() {
-    const signalStrength = this._getSignalStrength(this.currentCdn);
-    const iconClass = this._getWifiIcon(signalStrength);
+  updateTrayIcon() {
+    const signalStrength = this.getSignalStrength(this.currentCdn);
+    const iconClass = this.getWifiIcon(signalStrength);
     this.unregisterTray(this.winId);
     this.registerTray(this.winId, `fas ${iconClass}`, "Network", {
       resident: true,
@@ -58,18 +58,18 @@ class NetworkTrayApp extends BaseApp {
         this.togglePopup();
       },
       contextMenuItems: [
-        { label: "Network Settings", icon: "fa-cog", action: () => this._openNetworkSettings() },
+        { label: "Network Settings", icon: "fa-cog", action: () => this.openNetworkSettings() },
         { type: "divider" }
       ]
     });
   }
 
-  _openNetworkSettings() {
+  openNetworkSettings() {
     os.app.launch("settingsApp", null, { section: "pane-network" });
   }
 
   togglePopup() {
-    if (this._popupVisible) {
+    if (this.popupVisible) {
       this.closePopup();
     } else {
       this.openPopup();
@@ -77,7 +77,7 @@ class NetworkTrayApp extends BaseApp {
   }
 
   openPopup() {
-    if (this._popupVisible) return;
+    if (this.popupVisible) return;
 
     const existingPopup = document.getElementById(this.popupId);
     if (existingPopup) {
@@ -87,7 +87,7 @@ class NetworkTrayApp extends BaseApp {
     const popup = document.createElement("div");
     popup.id = this.popupId;
     popup.className = "network-tray-popup";
-    popup.innerHTML = this._buildPopupContent();
+    popup.innerHTML = this.buildPopupContent();
 
     document.body.appendChild(popup);
 
@@ -98,21 +98,21 @@ class NetworkTrayApp extends BaseApp {
     popup.style.bottom = `${window.innerHeight - trayRect.top + 8}px`;
     popup.style.display = "block";
 
-    this._popupVisible = true;
-    this._bindEvents(popup);
+    this.popupVisible = true;
+    this.bindEvents(popup);
 
-    document.addEventListener("click", this._handleOutsideClick);
+    document.addEventListener("click", this.handleOutsideClick);
   }
 
-  _buildPopupContent() {
+  buildPopupContent() {
     const currentCdn = getCdnMirror();
     const cdnList = CDN_MIRRORS.map((cdn) => {
-      const signalStrength = this._getSignalStrength(cdn.id);
+      const signalStrength = this.getSignalStrength(cdn.id);
       const isConnected = cdn.id === currentCdn;
       return `
         <div class="network-item ${isConnected ? "connected" : ""}" data-cdn="${cdn.id}">
           <div class="network-signal">
-            ${this._buildSignalBars(signalStrength)}
+            ${this.buildSignalBars(signalStrength)}
           </div>
           <div class="network-info">
             <div class="network-name">${cdn.name}</div>
@@ -142,7 +142,7 @@ class NetworkTrayApp extends BaseApp {
     `;
   }
 
-  _buildSignalBars(strength) {
+  buildSignalBars(strength) {
     let bars = "";
     for (let i = 1; i <= 4; i++) {
       const active = i <= strength ? "active" : "";
@@ -163,11 +163,11 @@ class NetworkTrayApp extends BaseApp {
         { once: true }
       );
     }
-    this._popupVisible = false;
-    document.removeEventListener("click", this._handleOutsideClick);
+    this.popupVisible = false;
+    document.removeEventListener("click", this.handleOutsideClick);
   }
 
-  _handleOutsideClick = (e) => {
+  handleOutsideClick = (e) => {
     const popup = document.getElementById(this.popupId);
     const trayEl = document.getElementById("app-tray");
     if (popup && !e.target.closest("#network-tray-popup") && !e.target.closest("#app-tray")) {
@@ -179,29 +179,29 @@ class NetworkTrayApp extends BaseApp {
     this.togglePopup();
   }
 
-  _bindEvents(popup) {
+  bindEvents(popup) {
     const networkItems = popup.querySelectorAll(".network-item");
     const settingsBtn = popup.querySelector("#network-settings-btn");
 
     networkItems.forEach((item) => {
       item.addEventListener("click", () => {
         const cdnId = item.dataset.cdn;
-        if (cdnId !== this.currentCdn && !this._connecting) {
-          this._connectToCdn(cdnId, item);
+        if (cdnId !== this.currentCdn && !this.connecting) {
+          this.connectToCdn(cdnId, item);
         }
       });
     });
 
     if (settingsBtn) {
       settingsBtn.addEventListener("click", () => {
-        this._openNetworkSettings();
+        this.openNetworkSettings();
         this.closePopup();
       });
     }
   }
 
-  async _connectToCdn(cdnId, itemElement) {
-    this._connecting = true;
+  async connectToCdn(cdnId, itemElement) {
+    this.connecting = true;
     const originalContent = itemElement.innerHTML;
 
     itemElement.classList.add("connecting");
@@ -225,8 +225,8 @@ class NetworkTrayApp extends BaseApp {
     const cdn = CDN_MIRRORS.find((c) => c.id === cdnId);
     this.notify("Network Connected", `Connected to ${cdn.name}`, "success", 2000, "fa-wifi");
 
-    this._updateTrayIcon();
-    this._connecting = false;
+    this.updateTrayIcon();
+    this.connecting = false;
   }
 
   onClose(winId) {

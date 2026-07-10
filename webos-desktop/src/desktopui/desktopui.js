@@ -15,6 +15,7 @@ import { DragDropManager } from "./dragDropManager.js";
 import { ClipboardManager } from "./fileClipboardManager.js";
 import { showFileProperties } from "../fileDisplay.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
+import { showConflictDialog } from "../shared/conflictDialog.js";
 import { KeybindManager } from "../keybindManager.js";
 import { WidgetManager } from "./widgetManager.js";
 import { ClockWidget } from "./widgets/clockWidget.js";
@@ -97,7 +98,7 @@ class PositionHelper {
     };
   }
 
-  _buildOccupancySet(exclude = null) {
+  buildOccupancySet(exclude = null) {
     const set = new Set();
     for (const icon of desktop.querySelectorAll(".icon.selectable")) {
       if (icon === exclude || icon.style.display === "none") continue;
@@ -108,14 +109,14 @@ class PositionHelper {
   }
 
   isCellOccupied(col, row, exclude = null) {
-    return this._buildOccupancySet(exclude).has(`${col},${row}`);
+    return this.buildOccupancySet(exclude).has(`${col},${row}`);
   }
 
   nextFreeCell(col, row, exclude = null) {
     const { width, height, gap } = this.gridSize;
     const maxRows = Math.max(1, Math.floor((this.desktop.clientHeight - gap) / (height + gap)));
     const maxCols = Math.max(1, Math.floor((this.desktop.clientWidth - gap) / (width + gap)));
-    const occupied = this._buildOccupancySet(exclude);
+    const occupied = this.buildOccupancySet(exclude);
     let c = col,
       r = row;
     while (occupied.has(`${c},${r}`)) {
@@ -160,7 +161,7 @@ class PositionHelper {
       cellH = height + gap;
     const maxRows = Math.max(1, Math.floor((this.desktop.clientHeight - gap) / cellH));
     const maxCols = Math.max(1, Math.floor((this.desktop.clientWidth - gap) / cellW));
-    const occupied = occupiedBefore || this._buildOccupancySet();
+    const occupied = occupiedBefore || this.buildOccupancySet();
     let col = 0,
       row = 0;
     icons.forEach((icon) => {
@@ -194,7 +195,7 @@ class PositionHelper {
       cellH = height + gap;
     const maxRows = Math.max(1, Math.floor((this.desktop.clientHeight - gap) / cellH));
     const maxCols = Math.max(1, Math.floor((this.desktop.clientWidth - gap) / cellW));
-    const occupied = occupiedBefore || this._buildOccupancySet();
+    const occupied = occupiedBefore || this.buildOccupancySet();
     let col = maxCols - 1,
       row = 0;
     icons.forEach((icon) => {
@@ -228,7 +229,7 @@ class PositionHelper {
       cellH = height + gap;
     const maxRows = Math.max(1, Math.floor((this.desktop.clientHeight - gap) / cellH));
     const maxCols = Math.max(1, Math.floor((this.desktop.clientWidth - gap) / cellW));
-    const occupied = this._buildOccupancySet();
+    const occupied = this.buildOccupancySet();
     let col = 0,
       row = 0;
     requestAnimationFrame(() => {
@@ -263,7 +264,7 @@ class PositionHelper {
       cellH = height + gap;
     const maxRows = Math.max(1, Math.floor((this.desktop.clientHeight - gap) / cellH));
     const maxCols = Math.max(1, Math.floor((this.desktop.clientWidth - gap) / cellW));
-    const occupied = this._buildOccupancySet();
+    const occupied = this.buildOccupancySet();
     let col = maxCols - 1,
       row = 0;
     requestAnimationFrame(() => {
@@ -537,14 +538,14 @@ export class DesktopUI {
         }
 
         if (targetExplorerWin) {
-          const inst = this.explorerApp?._getInstance(targetExplorerWin.id);
+          const inst = this.explorerApp?.getInstance(targetExplorerWin.id);
           if (inst) {
             const source = clipboard.source;
             const iconsData = clipboard.icons;
             const action = clipboard.action;
             (async () => {
               if (source === "explorer") {
-                await this.explorerApp._pasteToCurrentPath(inst);
+                await this.explorerApp.pasteToCurrentPath(inst);
               } else {
                 for (const iconData of iconsData) {
                   const appId = iconData.data.app;
@@ -566,20 +567,29 @@ export class DesktopUI {
             return;
           }
         }
-        if (clipboard.source === "explorer") {
-          const iconsData = clipboard.icons;
-          const action = clipboard.action;
-          const sourceInst = clipboard.sourceInst;
+        if (clipboard.source === "explorer" || clipboard.source === "desktop") {
           (async () => {
-            for (const iconData of iconsData) {
-              await this.dropFromExplorer(iconData.data.name, true, iconData.data.path, lastMousePos.x, lastMousePos.y);
-            }
-            if (action === "cut") {
-              this.clipboardManager.setClipboard(null);
-              if (sourceInst) await this.explorerApp.renderInstance(sourceInst);
-            }
+            await this.pasteToDesktop();
           })();
           e.stopImmediatePropagation();
+          return;
+        }
+      }
+
+      if (KeybindManager.matches(e, "desktop.copy")) {
+        e.preventDefault();
+        const selectedArray = this.selectionManager.toArray();
+        if (selectedArray.length > 0) {
+          this.copySelectedIcons(selectedArray);
+          return;
+        }
+      }
+
+      if (KeybindManager.matches(e, "desktop.cut")) {
+        e.preventDefault();
+        const selectedArray = this.selectionManager.toArray();
+        if (selectedArray.length > 0) {
+          this.cutSelectedIcons(selectedArray);
           return;
         }
       }
@@ -603,7 +613,7 @@ export class DesktopUI {
             icon.classList.contains("folder-icon") ||
             icon.dataset.app
           ) {
-            this.contextMenuManager._startInlineDesktopRename(icon);
+            this.contextMenuManager.startInlineDesktopRename(icon);
           }
         }
       }
@@ -614,7 +624,7 @@ export class DesktopUI {
         let explorerInst = null;
 
         if (this.explorerApp) {
-          for (const [winId, inst] of this.explorerApp._instances) {
+          for (const [winId, inst] of this.explorerApp.instances) {
             if (inst.selectedItems.size > 0) {
               hasExplorerSelection = true;
               explorerInst = inst;
@@ -666,7 +676,7 @@ export class DesktopUI {
 
     const getExplorerInstanceAtPoint = (clientX, clientY) => {
       if (!this.explorerApp) return null;
-      for (const [winId, inst] of this.explorerApp._instances) {
+      for (const [winId, inst] of this.explorerApp.instances) {
         if (inst.mode !== "browse") continue;
         const win = document.getElementById(winId);
         if (!win) continue;
@@ -743,13 +753,12 @@ export class DesktopUI {
       let uploadedCount = 0;
       for (const file of files) {
         try {
-          const { kind, content, icon } = await this.explorerApp._resolveFilePayload(file, file.name, ["Desktop"]);
+          const { kind, content, icon } = await this.explorerApp.resolveFilePayload(file, file.name, ["Desktop"]);
           const dir = this.fs.resolveUserPath(["Desktop"]);
           const destExists = await os.fs.exists(this.fs.join(dir, file.name));
 
           let finalName = file.name;
           if (destExists) {
-            const { showConflictDialog } = await import("../shared/conflictDialog.js");
             const result = await showConflictDialog(file.name);
             if (result.action === "skip") continue;
             if (result.action === "keep") {
@@ -838,7 +847,7 @@ export class DesktopUI {
   setupInteractDrag(icon) {
     return makeDraggable(icon, {
       start: () => this.dragDropManager.onDragStart(),
-      move: (_e, dx, dy, clientX, clientY) => {
+      move: (e, dx, dy, clientX, clientY) => {
         this.dragDropManager.onDragMove({ dx, dy, clientX, clientY });
       },
       end: () => this.dragDropManager.onDragEnd()
@@ -931,16 +940,16 @@ export class DesktopUI {
     return this.iconManager.createDesktopFileIcon(fileName, itemData);
   }
 
-  async _openDesktopFile(fileName) {
-    return this.iconManager._openDesktopFile(fileName);
+  async openDesktopFile(fileName) {
+    return this.iconManager.openDesktopFile(fileName);
   }
 
-  _openYouTubeEmbedDesktop(content) {
-    this.iconManager._openYouTubeEmbedDesktop(content);
+  openYouTubeEmbedDesktop(content) {
+    this.iconManager.openYouTubeEmbedDesktop(content);
   }
 
-  async _editDesktopFileWithNotepad(fileName) {
-    return this.iconManager._editDesktopFileWithNotepad(fileName);
+  async editDesktopFileWithNotepad(fileName) {
+    return this.iconManager.editDesktopFileWithNotepad(fileName);
   }
 
   async saveToWallpapers(name, content, kind, icon) {
@@ -982,7 +991,7 @@ export class DesktopUI {
   }
 
   cutSelectedIcons(selectedArray) {
-    this.clipboardManager.setClipboard(this.clipboardManager._buildDesktopClipboard("cut", selectedArray));
+    this.clipboardManager.setClipboard(this.clipboardManager.buildDesktopClipboard("cut", selectedArray));
     selectedArray.forEach((icon) => {
       this.selectionManager.remove(icon);
       icon.remove();
@@ -990,15 +999,15 @@ export class DesktopUI {
   }
 
   copySelectedIcons(selectedArray) {
-    this.clipboardManager.setClipboard(this.clipboardManager._buildDesktopClipboard("copy", selectedArray));
+    this.clipboardManager.setClipboard(this.clipboardManager.buildDesktopClipboard("copy", selectedArray));
   }
 
-  _buildDesktopClipboard(action, icons) {
-    return this.clipboardManager._buildDesktopClipboard(action, icons);
+  buildDesktopClipboard(action, icons) {
+    return this.clipboardManager.buildDesktopClipboard(action, icons);
   }
 
-  _pasteToDesktop() {
-    return this.clipboardManager._pasteToDesktop();
+  pasteToDesktop() {
+    return this.clipboardManager.pasteToDesktop();
   }
 }
 
@@ -1006,11 +1015,11 @@ function layoutIconsCall() {
   relayoutDesktopIcons();
 }
 
-let _resizeTimer;
+let resizeTimer;
 window.addEventListener("load", () => layoutIconsCall());
 window.addEventListener("resize", () => {
-  clearTimeout(_resizeTimer);
-  _resizeTimer = setTimeout(() => layoutIconsCall(), 150);
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => layoutIconsCall(), 150);
 });
 
 document.addEventListener("mouseup", () => {
@@ -1080,7 +1089,7 @@ export function sortDesktopIcons(mode) {
         break;
       case "recent": {
         const appId = icon.dataset.app;
-        key = appId ? -(os.storage.get(`launch_time:${appId}`) || 0) : 0;
+        key = appId ? -(os.storage.get(`launchtime:${appId}`) || 0) : 0;
         break;
       }
       default:

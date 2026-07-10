@@ -3,47 +3,46 @@ class TurboManager {
   constructor() {
     let mode = null;
     try {
-      const raw = localStorage.getItem(StorageKeys.turboMode);
-      if (raw !== null) mode = JSON.parse(raw);
+      mode = os.storage.get(StorageKeys.turboMode);
     } catch {
-      mode = localStorage.getItem(StorageKeys.turboMode);
+      mode = null;
     }
-    this._currentMode = mode || "balanced";
-    this._styleEl = null;
-    this._init();
+    this.currentMode = mode || "balanced";
+    this.styleEl = null;
+    this.init();
   }
 
-  _init() {
-    document.documentElement.setAttribute("data-turbo", this._currentMode);
-    this._applyTurboMode(this._currentMode);
+  init() {
+    document.documentElement.setAttribute("data-turbo", this.currentMode);
+    this.applyTurboMode(this.currentMode);
   }
 
   getMode() {
-    return this._currentMode;
+    return this.currentMode;
   }
 
   setMode(mode) {
-    this._currentMode = mode;
+    this.currentMode = mode;
     try {
       os.storage.set(StorageKeys.turboMode, mode);
     } catch {
-      localStorage.setItem(StorageKeys.turboMode, mode);
+      // fallback silently
     }
     document.documentElement.setAttribute("data-turbo", mode);
-    this._applyTurboMode(mode);
+    this.applyTurboMode(mode);
   }
 
-  _applyTurboMode(mode) {
+  applyTurboMode(mode) {
     const effective = mode || "high";
 
-    if (!this._styleEl) {
-      this._styleEl = document.createElement("style");
-      this._styleEl.id = "yukios-turbo-override";
-      document.head.appendChild(this._styleEl);
+    if (!this.styleEl) {
+      this.styleEl = document.createElement("style");
+      this.styleEl.id = "yukios-turbo-override";
+      document.head.appendChild(this.styleEl);
     }
 
     if (effective === "turbo") {
-      this._styleEl.textContent = `
+      this.styleEl.textContent = `
         html[data-turbo="turbo"] .window,
         html[data-turbo="turbo"] .window-header,
         html[data-turbo="turbo"] .taskbar-preview,
@@ -82,7 +81,7 @@ class TurboManager {
         }
       `;
     } else if (effective === "balanced") {
-      this._styleEl.textContent = `
+      this.styleEl.textContent = `
         html[data-turbo="balanced"] .window,
         html[data-turbo="balanced"] .taskbar-item,
         html[data-turbo="balanced"] .icon,
@@ -121,7 +120,7 @@ class TurboManager {
         }
       `;
     } else {
-      this._styleEl.textContent = "";
+      this.styleEl.textContent = "";
     }
   }
 }

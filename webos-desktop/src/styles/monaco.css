@@ -106,12 +106,8 @@
 }
 
 .monaco-tabs::-webkit-scrollbar-thumb {
-  background: #424242;
-  border-radius: 3px;
-}
-
-.monaco-tabs::-webkit-scrollbar-thumb:hover {
   background: #4e4e4e;
+  border-radius: 3px;
 }
 
 .monaco-tab {

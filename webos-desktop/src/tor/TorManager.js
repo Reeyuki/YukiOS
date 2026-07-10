@@ -3,47 +3,47 @@ import { resolveUrl } from "../shared/assetResolver.js";
 export const DEFAULT_SNOWFLAKE_URL = "wss://snowflake.torproject.net/";
 
 export class TorManager {
-  static _instance = null;
-  static _wasmInitialized = false;
-  static _mod = null;
+  static instance = null;
+  static wasmInitialized = false;
+  static mod = null;
 
   static getInstance() {
-    if (!TorManager._instance) {
-      TorManager._instance = new TorManager();
+    if (!TorManager.instance) {
+      TorManager.instance = new TorManager();
     }
-    return TorManager._instance;
+    return TorManager.instance;
   }
 
-  _running = false;
-  _client = null;
-  _module = null;
-  _onStatus = null;
-  _bootstrapPhase = "idle";
-  _logs = [];
-  _eventListeners = [];
-  _snowflakeUrl = DEFAULT_SNOWFLAKE_URL;
-  _fetchCount = 0;
-  _reconnectAttempts = 0;
-  _activeClients = [];
-  _nextClientId = 1;
+  isRunning = false;
+  torClient = null;
+  module = null;
+  statusCallback = null;
+  bootstrapPhase = "idle";
+  logs = [];
+  eventListeners = [];
+  torSnowflakeUrl = DEFAULT_SNOWFLAKE_URL;
+  fetchCount = 0;
+  reconnectAttempts = 0;
+  activeClients = [];
+  nextClientId = 1;
 
   constructor() {
-    if (TorManager._instance) return TorManager._instance;
+    if (TorManager.instance) return TorManager.instance;
   }
 
   getLogs() {
-    return this._logs;
+    return this.logs;
   }
 
   onEvent(cb) {
-    this._eventListeners.push(cb);
+    this.eventListeners.push(cb);
     return () => {
-      this._eventListeners = this._eventListeners.filter((l) => l !== cb);
+      this.eventListeners = this.eventListeners.filter((l) => l !== cb);
     };
   }
 
-  _emit(type, data) {
-    this._eventListeners.forEach((cb) => {
+  emit(type, data) {
+    this.eventListeners.forEach((cb) => {
       try {
         cb(type, data);
       } catch (e) {}
@@ -51,48 +51,48 @@ export class TorManager {
   }
 
   onStatus(cb) {
-    this._onStatus = cb;
+    this.statusCallback = cb;
   }
 
-  _log(msg) {
-    this._logs.push(msg);
-    this._emit("log", msg);
-    if (this._onStatus) this._onStatus(msg);
+  log(msg) {
+    this.logs.push(msg);
+    this.emit("log", msg);
+    if (this.statusCallback) this.statusCallback(msg);
   }
 
-  async _ensureWasm() {
-    if (TorManager._mod && TorManager._wasmInitialized) return;
+  async ensureWasm() {
+    if (TorManager.mod && TorManager.wasmInitialized) return;
 
-    if (!TorManager._mod) {
-      this._log("Loading WebTor WASM module...");
-      this._bootstrapPhase = "loading-wasm";
+    if (!TorManager.mod) {
+      this.log("Loading WebTor WASM module...");
+      this.bootstrapPhase = "loading-wasm";
       const wasmUrl = await resolveUrl("/wasm/webtor/webtor_wasm.js");
-      TorManager._mod = await import(/* @vite-ignore */ wasmUrl);
+      TorManager.mod = await import(/* @vite-ignore */ wasmUrl);
     }
-    const mod = TorManager._mod;
-    this._module = mod;
+    const mod = TorManager.mod;
+    this.module = mod;
 
-    if (!TorManager._wasmInitialized) {
-      this._log("Initializing WASM runtime...");
-      this._bootstrapPhase = "init-wasm";
+    if (!TorManager.wasmInitialized) {
+      this.log("Initializing WASM runtime...");
+      this.bootstrapPhase = "init-wasm";
 
       await mod.default();
       await mod.init();
-      TorManager._wasmInitialized = true;
+      TorManager.wasmInitialized = true;
     }
 
     if (mod.setLogCallback) {
       mod.setLogCallback((level, target, msg) => {
         if (level === "INFO" || level === "WARN" || level === "ERROR") {
-          this._log(`[${level}] ${msg}`);
+          this.log(`[${level}] ${msg}`);
         }
       });
     }
   }
 
-  async _createTorClientWithOverride() {
-    await this._ensureWasm();
-    const mod = TorManager._mod;
+  async createTorClientWithOverride() {
+    await this.ensureWasm();
+    const mod = TorManager.mod;
 
     const originalFetch = globalThis.fetch;
     globalThis.fetch = async (input, init) => {
@@ -106,7 +106,7 @@ export class TorManager {
     };
 
     try {
-      const opts = new mod.TorClientOptions(this._snowflakeUrl);
+      const opts = new mod.TorClientOptions(this.torSnowflakeUrl);
       const client = await new mod.TorClient(opts);
       return client;
     } finally {
@@ -115,71 +115,71 @@ export class TorManager {
   }
 
   async start(options = {}) {
-    if (this._running) return;
-    this._running = true;
-    this._bootstrapPhase = "loading";
+    if (this.isRunning) return;
+    this.isRunning = true;
+    this.bootstrapPhase = "loading";
 
     try {
-      await this._ensureWasm();
+      await this.ensureWasm();
 
-      this._log("Creating Tor client with Snowflake WebSocket...");
-      this._bootstrapPhase = "connecting";
+      this.log("Creating Tor client with Snowflake WebSocket...");
+      this.bootstrapPhase = "connecting";
 
-      const client = await this._createTorClientWithOverride();
-      this._client = client;
+      const client = await this.createTorClientWithOverride();
+      this.torClient = client;
 
-      this._log("Building Tor circuit (this may take 30-60s)...");
-      this._bootstrapPhase = "building-circuit";
+      this.log("Building Tor circuit (this may take 30-60s)...");
+      this.bootstrapPhase = "building-circuit";
 
       await client.waitForCircuit();
 
-      this._bootstrapPhase = "ready";
-      this._log("Tor connection established! You can now browse anonymously.");
-      this._emit("status", this.getStatus());
+      this.bootstrapPhase = "ready";
+      this.log("Tor connection established! You can now browse anonymously.");
+      this.emit("status", this.getStatus());
     } catch (e) {
-      this._running = false;
-      this._bootstrapPhase = "error";
-      this._log("Failed: " + (e.message || e));
-      this._emit("status", this.getStatus());
+      this.isRunning = false;
+      this.bootstrapPhase = "error";
+      this.log("Failed: " + (e.message || e));
+      this.emit("status", this.getStatus());
       throw e;
     }
   }
 
   async createClient() {
-    await this._ensureWasm();
+    await this.ensureWasm();
 
-    const client = await this._createTorClientWithOverride();
+    const client = await this.createTorClientWithOverride();
     await client.waitForCircuit();
 
-    const id = this._nextClientId++;
+    const id = this.nextClientId++;
     const wrapper = {
       id,
-      _client: client,
-      _fetchCount: 0,
+      client: client,
+      fetchCount: 0,
 
       fetch: async (url) => {
         const resp = await client.fetch(url);
-        wrapper._fetchCount++;
-        return this._wrapResponse(resp);
+        wrapper.fetchCount++;
+        return this.wrapResponse(resp);
       },
 
       post: async (url, body) => {
         const resp = await client.post(url, body);
-        return this._wrapResponse(resp);
+        return this.wrapResponse(resp);
       },
 
       request: async (method, url, headers, body, timeoutMs) => {
         const resp = await client.request(method, url, headers || {}, body || null, timeoutMs || null);
-        return this._wrapResponse(resp);
+        return this.wrapResponse(resp);
       },
 
-      getFetchCount: () => wrapper._fetchCount,
+      getFetchCount: () => wrapper.fetchCount,
 
       close: async () => {
         try {
           await client.close();
         } catch (e) {}
-        this._activeClients = this._activeClients.filter((c) => c.id !== id);
+        this.activeClients = this.activeClients.filter((c) => c.id !== id);
       },
 
       waitForCircuit: async () => {
@@ -187,36 +187,36 @@ export class TorManager {
       }
     };
 
-    this._activeClients.push(wrapper);
+    this.activeClients.push(wrapper);
     return wrapper;
   }
 
   async fetch(url) {
-    if (!this._client) throw new Error("Tor not connected");
+    if (!this.torClient) throw new Error("Tor not connected");
     try {
-      const resp = await this._client.fetch(url);
-      this._fetchCount++;
-      return this._wrapResponse(resp);
+      const resp = await this.torClient.fetch(url);
+      this.fetchCount++;
+      return this.wrapResponse(resp);
     } catch (e) {
-      this._log("Fetch failed: " + (e.message || e));
-      this._emit("status", this.getStatus());
+      this.log("Fetch failed: " + (e.message || e));
+      this.emit("status", this.getStatus());
       throw e;
     }
   }
 
   async post(url, body) {
-    if (!this._client) throw new Error("Tor not connected");
-    const resp = await this._client.post(url, body);
-    return this._wrapResponse(resp);
+    if (!this.torClient) throw new Error("Tor not connected");
+    const resp = await this.torClient.post(url, body);
+    return this.wrapResponse(resp);
   }
 
   async request(method, url, headers, body, timeoutMs) {
-    if (!this._client) throw new Error("Tor not connected");
-    const resp = await this._client.request(method, url, headers || {}, body || null, timeoutMs || null);
-    return this._wrapResponse(resp);
+    if (!this.torClient) throw new Error("Tor not connected");
+    const resp = await this.torClient.request(method, url, headers || {}, body || null, timeoutMs || null);
+    return this.wrapResponse(resp);
   }
 
-  _wrapResponse(resp) {
+  wrapResponse(resp) {
     const body = resp.body.slice();
     const textCache = new TextDecoder().decode(body);
     return {
@@ -230,101 +230,101 @@ export class TorManager {
   }
 
   async waitForCircuit() {
-    if (!this._client) throw new Error("Tor not connected");
-    await this._client.waitForCircuit();
+    if (!this.torClient) throw new Error("Tor not connected");
+    await this.torClient.waitForCircuit();
   }
 
   getStatus() {
     return {
-      running: this._running,
-      phase: this._bootstrapPhase,
-      ready: this._bootstrapPhase === "ready",
-      snowflakeUrl: this._snowflakeUrl
+      running: this.isRunning,
+      phase: this.bootstrapPhase,
+      ready: this.bootstrapPhase === "ready",
+      snowflakeUrl: this.torSnowflakeUrl
     };
   }
 
   async stop() {
-    if (!this._running) return;
-    this._running = false;
-    this._bootstrapPhase = "stopped";
-    if (this._client) {
+    if (!this.isRunning) return;
+    this.isRunning = false;
+    this.bootstrapPhase = "stopped";
+    if (this.torClient) {
       try {
-        await this._client.close();
+        await this.torClient.close();
       } catch (e) {}
-      this._client = null;
+      this.torClient = null;
     }
-    for (const c of this._activeClients) {
+    for (const c of this.activeClients) {
       try {
         await c.close();
       } catch (e) {}
     }
-    this._activeClients = [];
-    this._log("Tor connection stopped");
-    this._emit("status", this.getStatus());
+    this.activeClients = [];
+    this.log("Tor connection stopped");
+    this.emit("status", this.getStatus());
   }
 
   get snowflakeUrl() {
-    return this._snowflakeUrl;
+    return this.torSnowflakeUrl;
   }
   set snowflakeUrl(url) {
     if (url && typeof url === "string" && (url.startsWith("ws://") || url.startsWith("wss://"))) {
-      this._snowflakeUrl = url;
+      this.torSnowflakeUrl = url;
     }
   }
 
   getFetchCount() {
-    return this._fetchCount;
+    return this.fetchCount;
   }
 
   async reconnect() {
-    this._log("Reconnecting Tor...");
-    this._bootstrapPhase = "reconnecting";
-    this._emit("status", this.getStatus());
+    this.log("Reconnecting Tor...");
+    this.bootstrapPhase = "reconnecting";
+    this.emit("status", this.getStatus());
 
-    if (this._client) {
+    if (this.torClient) {
       try {
-        await this._client.close();
+        await this.torClient.close();
       } catch (e) {}
-      this._client = null;
+      this.torClient = null;
     }
-    this._running = false;
-    this._fetchCount = 0;
-    this._reconnectAttempts++;
+    this.isRunning = false;
+    this.fetchCount = 0;
+    this.reconnectAttempts++;
 
     try {
-      await this._ensureWasm();
+      await this.ensureWasm();
 
-      this._log("Creating fresh Tor client...");
-      this._bootstrapPhase = "connecting";
-      this._emit("status", this.getStatus());
+      this.log("Creating fresh Tor client...");
+      this.bootstrapPhase = "connecting";
+      this.emit("status", this.getStatus());
 
-      const client = await this._createTorClientWithOverride();
-      this._client = client;
-      this._running = true;
+      const client = await this.createTorClientWithOverride();
+      this.torClient = client;
+      this.isRunning = true;
 
-      this._log("Building new Tor circuit...");
-      this._bootstrapPhase = "building-circuit";
-      this._emit("status", this.getStatus());
+      this.log("Building new Tor circuit...");
+      this.bootstrapPhase = "building-circuit";
+      this.emit("status", this.getStatus());
 
       await client.waitForCircuit();
 
-      this._bootstrapPhase = "ready";
-      this._log("Tor reconnected successfully.");
-      this._emit("status", this.getStatus());
+      this.bootstrapPhase = "ready";
+      this.log("Tor reconnected successfully.");
+      this.emit("status", this.getStatus());
     } catch (e) {
-      this._running = false;
-      this._client = null;
-      this._bootstrapPhase = "error";
-      this._log("Reconnect failed: " + (e.message || e));
-      this._emit("status", this.getStatus());
+      this.isRunning = false;
+      this.torClient = null;
+      this.bootstrapPhase = "error";
+      this.log("Reconnect failed: " + (e.message || e));
+      this.emit("status", this.getStatus());
       throw e;
     }
   }
 
   get running() {
-    return this._running;
+    return this.isRunning;
   }
   get client() {
-    return this._client;
+    return this.torClient;
   }
 }

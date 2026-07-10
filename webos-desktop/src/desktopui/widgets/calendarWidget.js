@@ -4,9 +4,9 @@ import { getDateKey, getEventsForDate, loadEvents } from "../../shared/calendarU
 export class CalendarWidget extends WidgetBase {
   constructor(manager, id) {
     super(manager, id, "calendar", "Calendar", 280, 220);
-    this._currentMonth = new Date();
-    this._interval = null;
-    this._events = [];
+    this.currentMonth = new Date();
+    this.interval = null;
+    this.events = [];
   }
 
   onRender(contentEl) {
@@ -21,25 +21,25 @@ export class CalendarWidget extends WidgetBase {
     `;
 
     contentEl.querySelector(`#w-cal-prev-${this.id}`).addEventListener("click", () => {
-      this._currentMonth.setMonth(this._currentMonth.getMonth() - 1);
-      this._render();
+      this.currentMonth.setMonth(this.currentMonth.getMonth() - 1);
+      this.render();
     });
 
     contentEl.querySelector(`#w-cal-next-${this.id}`).addEventListener("click", () => {
-      this._currentMonth.setMonth(this._currentMonth.getMonth() + 1);
-      this._render();
+      this.currentMonth.setMonth(this.currentMonth.getMonth() + 1);
+      this.render();
     });
 
-    this._events = loadEvents();
-    this._render();
-    this._interval = setInterval(() => this._render(), 60000);
+    this.events = loadEvents();
+    this.render();
+    this.interval = setInterval(() => this.render(), 60000);
   }
 
-  _render() {
+  render() {
     const now = new Date();
-    const year = this._currentMonth.getFullYear();
-    const month = this._currentMonth.getMonth();
-    const ce = this._contentEl;
+    const year = this.currentMonth.getFullYear();
+    const month = this.currentMonth.getMonth();
+    const ce = this.contentEl;
 
     const monthNames = [
       "January",
@@ -75,7 +75,7 @@ export class CalendarWidget extends WidgetBase {
 
     for (let day = 1; day <= daysInMonth; day++) {
       const dateKey = getDateKey(year, month, day);
-      const events = getEventsForDate(this._events, dateKey);
+      const events = getEventsForDate(this.events, dateKey);
       const isToday = isCurrentMonth && day === today;
       const hasEvents = events.length > 0;
       html += `<div class="widget-calendar-day ${isToday ? "today" : ""} ${hasEvents ? "has-events" : ""}" data-day="${day}">${day}</div>`;
@@ -86,7 +86,7 @@ export class CalendarWidget extends WidgetBase {
     const eventsEl = ce.querySelector(`#w-cal-events-${this.id}`);
     if (eventsEl) {
       const todayKey = getDateKey(now.getFullYear(), now.getMonth(), now.getDate());
-      const todayEvents = getEventsForDate(this._events, todayKey);
+      const todayEvents = getEventsForDate(this.events, todayKey);
       if (todayEvents.length > 0) {
         eventsEl.innerHTML = todayEvents
           .slice(0, 3)
@@ -102,7 +102,7 @@ export class CalendarWidget extends WidgetBase {
   }
 
   destroy() {
-    if (this._interval) clearInterval(this._interval);
+    if (this.interval) clearInterval(this.interval);
     super.destroy();
   }
 }

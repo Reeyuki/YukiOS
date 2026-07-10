@@ -3,12 +3,12 @@ import { WidgetBase } from "../widgetManager.js";
 export class TimerWidget extends WidgetBase {
   constructor(manager, id) {
     super(manager, id, "timer", "Timer", 220, 160);
-    this._mode = "timer";
-    this._time = 300;
-    this._remaining = 300;
-    this._elapsed = 0;
-    this._running = false;
-    this._interval = null;
+    this.mode = "timer";
+    this.time = 300;
+    this.remaining = 300;
+    this.elapsed = 0;
+    this.running = false;
+    this.interval = null;
   }
 
   onRender(contentEl) {
@@ -28,34 +28,34 @@ export class TimerWidget extends WidgetBase {
     `;
 
     contentEl.querySelector(`#w-timer-start-${this.id}`).addEventListener("click", () => {
-      this._toggleTimer(contentEl);
+      this.toggleTimer(contentEl);
     });
 
     contentEl.querySelector(`#w-timer-reset-${this.id}`).addEventListener("click", () => {
-      this._reset(contentEl);
+      this.reset(contentEl);
     });
 
     contentEl.querySelector(`#w-timer-mode-${this.id}`).addEventListener("click", () => {
-      this._toggleMode(contentEl);
+      this.toggleMode(contentEl);
     });
 
     contentEl.querySelector(`#w-timer-inc-${this.id}`).addEventListener("click", () => {
-      if (!this._running) {
-        this._time = Math.min(this._time + 60, 5940);
-        this._remaining = this._time;
-        this._updateDisplay(contentEl);
+      if (!this.running) {
+        this.time = Math.min(this.time + 60, 5940);
+        this.remaining = this.time;
+        this.updateDisplay(contentEl);
       }
     });
 
     contentEl.querySelector(`#w-timer-dec-${this.id}`).addEventListener("click", () => {
-      if (!this._running && this._time >= 60) {
-        this._time = Math.max(this._time - 60, 60);
-        this._remaining = this._time;
-        this._updateDisplay(contentEl);
+      if (!this.running && this.time >= 60) {
+        this.time = Math.max(this.time - 60, 60);
+        this.remaining = this.time;
+        this.updateDisplay(contentEl);
       }
     });
 
-    this._updateDisplay(contentEl);
+    this.updateDisplay(contentEl);
   }
 
   getConfigFields() {
@@ -64,7 +64,7 @@ export class TimerWidget extends WidgetBase {
         key: "defaultMinutes",
         label: "Default minutes",
         type: "number",
-        value: Math.floor(this._time / 60),
+        value: Math.floor(this.time / 60),
         default: 5
       }
     ];
@@ -72,85 +72,85 @@ export class TimerWidget extends WidgetBase {
 
   applyConfig(data) {
     const mins = parseInt(data.defaultMinutes) || 5;
-    this._time = mins * 60;
-    this._remaining = this._time;
-    if (this._contentEl) this._updateDisplay(this._contentEl);
+    this.time = mins * 60;
+    this.remaining = this.time;
+    if (this.contentEl) this.updateDisplay(this.contentEl);
     this.manager.saveState();
   }
 
-  _toggleTimer(ce) {
-    this._running = !this._running;
+  toggleTimer(ce) {
+    this.running = !this.running;
     const btn = ce.querySelector(`#w-timer-start-${this.id}`);
-    if (btn) btn.textContent = this._running ? "Pause" : "Start";
+    if (btn) btn.textContent = this.running ? "Pause" : "Start";
 
-    if (this._running) {
-      this._interval = setInterval(() => this._tick(ce), 1000);
+    if (this.running) {
+      this.interval = setInterval(() => this.tick(ce), 1000);
     } else {
-      clearInterval(this._interval);
+      clearInterval(this.interval);
     }
   }
 
-  _tick(ce) {
-    if (this._mode === "timer") {
-      this._remaining--;
-      if (this._remaining <= 0) {
-        this._running = false;
-        clearInterval(this._interval);
-        this._remaining = 0;
+  tick(ce) {
+    if (this.mode === "timer") {
+      this.remaining--;
+      if (this.remaining <= 0) {
+        this.running = false;
+        clearInterval(this.interval);
+        this.remaining = 0;
         const btn = ce.querySelector(`#w-timer-start-${this.id}`);
         if (btn) btn.textContent = "Start";
       }
     } else {
-      this._elapsed++;
+      this.elapsed++;
     }
-    this._updateDisplay(ce);
+    this.updateDisplay(ce);
   }
 
-  _reset(ce) {
-    this._running = false;
-    clearInterval(this._interval);
-    this._remaining = this._time;
-    this._elapsed = 0;
+  reset(ce) {
+    this.running = false;
+    clearInterval(this.interval);
+    this.remaining = this.time;
+    this.elapsed = 0;
     const btn = ce.querySelector(`#w-timer-start-${this.id}`);
     if (btn) btn.textContent = "Start";
-    this._updateDisplay(ce);
+    this.updateDisplay(ce);
   }
 
-  _toggleMode(ce) {
-    this._mode = this._mode === "timer" ? "stopwatch" : "timer";
-    this._reset(ce);
+  toggleMode(ce) {
+    this.mode = this.mode === "timer" ? "stopwatch" : "timer";
+    this.reset(ce);
   }
 
-  _updateDisplay(ce) {
-    if (!ce) ce = this._contentEl;
+  updateDisplay(ce) {
+    if (!ce) ce = this.contentEl;
     const displayEl = ce.querySelector(`#w-timer-display-${this.id}`);
     if (!displayEl) return;
 
-    const seconds = this._mode === "timer" ? this._remaining : this._elapsed;
+    const seconds = this.mode === "timer" ? this.remaining : this.elapsed;
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     displayEl.textContent = `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
 
     const minDisplay = ce.querySelector(`#w-timer-min-display-${this.id}`);
-    if (minDisplay && this._mode === "timer") {
-      minDisplay.textContent = Math.floor(this._time / 60);
+    if (minDisplay && this.mode === "timer") {
+      minDisplay.textContent = Math.floor(this.time / 60);
     }
   }
 
   getData() {
-    return { time: this._time, mode: this._mode };
+    return { time: this.time, mode: this.mode };
   }
 
   setData(data) {
     if (data) {
-      this._time = data.time || 300;
-      this._mode = data.mode || "timer";
-      this._remaining = this._time;
+      this.time = data.time || 300;
+      this.mode = data.mode || "timer";
+      this.remaining = this.time;
     }
   }
 
   destroy() {
-    if (this._interval) clearInterval(this._interval);
+    if (this.interval) clearInterval(this.interval);
     super.destroy();
   }
 }

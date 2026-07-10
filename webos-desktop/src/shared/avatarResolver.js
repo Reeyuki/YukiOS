@@ -1,4 +1,4 @@
-import { os } from "../os/index.js";
+import { os } from "../framework.js";
 import { resolveIconUrl } from "./assetResolver.js";
 
 export async function resolveAvatarUrl(avatar, fallback = "static/icons/guest.webp") {

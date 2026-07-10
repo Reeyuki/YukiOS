@@ -28,12 +28,12 @@ export class ActionParser {
 
           if (Array.isArray(parsed)) {
             parsed.forEach((action) => {
-              if (this._validateAction(action)) {
-                actions.push(this._normalizeAction(action));
+              if (this.validateAction(action)) {
+                actions.push(this.normalizeAction(action));
               }
             });
-          } else if (this._validateAction(parsed)) {
-            actions.push(this._normalizeAction(parsed));
+          } else if (this.validateAction(parsed)) {
+            actions.push(this.normalizeAction(parsed));
           }
         } catch (e) {
           console.warn("[ActionParser] Failed to parse action JSON:", e);
@@ -41,17 +41,17 @@ export class ActionParser {
       });
     }
 
-    return this._extractInlineActions(llmOutput, actions);
+    return this.extractInlineActions(llmOutput, actions);
   }
 
-  _validateAction(action) {
+  validateAction(action) {
     if (!action || typeof action !== "object") return false;
     if (!action.action || !this.supportedActions.has(action.action)) return false;
     if (!action.target) return false;
     return true;
   }
 
-  _normalizeAction(action) {
+  normalizeAction(action) {
     const normalized = {
       action: action.action,
       target: action.target,
@@ -68,7 +68,7 @@ export class ActionParser {
     return normalized;
   }
 
-  _extractInlineActions(text, existingActions) {
+  extractInlineActions(text, existingActions) {
     const patterns = [
       { regex: /open\s+(?:the\s+)?(\w+)/gi, action: "open_app" },
       { regex: /close\s+(?:the\s+)?(\w+)/gi, action: "close_app" },
@@ -99,8 +99,8 @@ export class ActionParser {
     const invalid = [];
 
     actions.forEach((action, index) => {
-      if (this._validateAction(action)) {
-        valid.push({ ...this._normalizeAction(action), index });
+      if (this.validateAction(action)) {
+        valid.push({ ...this.normalizeAction(action), index });
       } else {
         invalid.push({ action, index, reason: "Invalid action structure" });
       }

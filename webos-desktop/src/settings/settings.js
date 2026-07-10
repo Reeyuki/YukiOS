@@ -55,7 +55,7 @@ export class SettingsApp extends BaseApp {
       const rawMasterVol = os.storage.get(StorageKeys.masterVolume);
       const rawSystemVol = os.storage.get(StorageKeys.systemVolume);
 
-      this._settings = {
+      this.settings = {
         weather: os.storage.get(StorageKeys.weather) !== "false",
         cycleWallpaper: os.storage.get(StorageKeys.cycleWallpaper) !== "false",
         cursorDataUrl: cursorFromLegacyStorage,
@@ -114,26 +114,26 @@ export class SettingsApp extends BaseApp {
         taskbarScale: Number(os.storage.get(StorageKeys.taskbarScale)) || 100
       };
 
-      applyCursor(this._settings.cursorDataUrl);
-      applyMikuCursor(this._settings.mikuCursor);
-      applyDesktopStretchScrollDisabled(this._settings.disableDesktopStretchScroll);
-      applyTheme(this._settings.theme, () => this._getCustomColors());
-      applyWindowTransparency(this._settings.windowTransparency);
-      applySound(this._settings.soundEnabled, this._settings.masterVolume);
-      applyStartMenuSize(this._settings.startMenuWidth, this._settings.startMenuHeight);
-      applyStartMenuCats(this._settings.startMenuCats);
-      applyTransparentUI(this._settings.transparentUI);
-      applyGuiScale(this._settings.guiScale);
-      applyFontSize(this._settings.fontSize);
-      applyTrayEnabled(this._settings.trayEnabled);
-      applyUiDensity(this._settings.uiDensity);
-      applyDesktopIconSize(this._settings.desktopIconSize);
-      applyTaskbarScale(this._settings.taskbarScale);
+      applyCursor(this.settings.cursorDataUrl);
+      applyMikuCursor(this.settings.mikuCursor);
+      applyDesktopStretchScrollDisabled(this.settings.disableDesktopStretchScroll);
+      applyTheme(this.settings.theme, () => this.getCustomColors());
+      applyWindowTransparency(this.settings.windowTransparency);
+      applySound(this.settings.soundEnabled, this.settings.masterVolume);
+      applyStartMenuSize(this.settings.startMenuWidth, this.settings.startMenuHeight);
+      applyStartMenuCats(this.settings.startMenuCats);
+      applyTransparentUI(this.settings.transparentUI);
+      applyGuiScale(this.settings.guiScale);
+      applyFontSize(this.settings.fontSize);
+      applyTrayEnabled(this.settings.trayEnabled);
+      applyUiDensity(this.settings.uiDensity);
+      applyDesktopIconSize(this.settings.desktopIconSize);
+      applyTaskbarScale(this.settings.taskbarScale);
 
       if (cursorFromLegacyStorage && !cursorOriginalFromStorage) {
         try {
           os.storage.set(StorageKeys.cursorOriginalKey, cursorFromLegacyStorage);
-          this._settings.cursorOriginalDataUrl = cursorFromLegacyStorage;
+          this.settings.cursorOriginalDataUrl = cursorFromLegacyStorage;
         } catch {}
       }
     }, 0);
@@ -153,11 +153,11 @@ export class SettingsApp extends BaseApp {
     const win = os.window.create(winId, "Settings", "805px", "600px", {
       icon: "fas fa-cog"
     });
-    win.innerHTML = buildSettingsHTML(this._settings, this._services.wm);
+    win.innerHTML = buildSettingsHTML(this.settings, this.services.wm);
 
     if (this.desktopUI !== undefined) this.desktopUI.closeAllMenus();
 
-    this._bindControls(win);
+    this.bindControls(win);
 
     if (options && typeof options.section === "string") {
       this.navigateToSection(win, options.section, options.target);
@@ -183,17 +183,17 @@ export class SettingsApp extends BaseApp {
     this.desktopUI = desktopUi;
   }
   setAppLauncher(appLauncher) {
-    this._appLauncher = appLauncher;
+    this.appLauncher = appLauncher;
   }
   setFileSystemManager(fs) {
     this.fs = fs;
   }
   setNotificationCenter(nc) {
-    this._notificationCenter = nc;
+    this.notificationCenter = nc;
   }
 
   get(key) {
-    return this._settings[key];
+    return this.settings[key];
   }
 
   async exportData(showStatus = () => {}) {
@@ -213,7 +213,7 @@ export class SettingsApp extends BaseApp {
     location.reload();
   };
 
-  _buildSaveCallback(win) {
+  buildSaveCallback(win) {
     return () => {
       const g = (id) => win.querySelector(id);
       const gc = (id) => g(id)?.checked;
@@ -289,10 +289,10 @@ export class SettingsApp extends BaseApp {
       os.storage.set(StorageKeys.wobbleMass, String(wobbleMass));
       os.storage.set(StorageKeys.wobbleDragLag, String(wobbleDragLag));
       os.storage.set(StorageKeys.wobbleCoupleK, String(wobbleCoupleK));
-      os.storage.set(StorageKeys.desktopIconSize, String(this._settings.desktopIconSize));
-      os.storage.set(StorageKeys.taskbarScale, String(this._settings.taskbarScale));
+      os.storage.set(StorageKeys.desktopIconSize, String(this.settings.desktopIconSize));
+      os.storage.set(StorageKeys.taskbarScale, String(this.settings.taskbarScale));
 
-      Object.assign(this._settings, {
+      Object.assign(this.settings, {
         weather,
         cycleWallpaper,
         macOsControls,
@@ -334,50 +334,50 @@ export class SettingsApp extends BaseApp {
       turboManager.setMode(selectedTurboMode);
       applyTransparentUI(transparentUI);
       applyFontFamily(selectedFontFamily);
-      os.events.emit(BusEvents.SETTINGS_CHANGED, this._settings);
+      os.events.emit(BusEvents.SETTINGS_CHANGED, this.settings);
 
-      this._showSavedMessage(win);
+      this.showSavedMessage(win);
     };
   }
 
-  _bindControls(win) {
+  bindControls(win) {
     const showStatus = (msg) =>
       os.notify.send("Settings", msg, { type: "info", duration: 3000, icon: "fas fa-check-circle" });
-    const showSaved = () => this._showSavedMessage(win);
-    const save = this._buildSaveCallback(win);
+    const showSaved = () => this.showSavedMessage(win);
+    const save = this.buildSaveCallback(win);
 
     bindNavigation(win);
     bindSelectMenu(win);
     bindRangeSlider(win);
 
-    bindSystemCategory(win, save, this._settings, this._notificationCenter, showSaved);
+    bindSystemCategory(win, save, this.settings, this.notificationCenter, showSaved);
 
-    bindDesktopCategory(win, save, this._settings, showSaved);
+    bindDesktopCategory(win, save, this.settings, showSaved);
 
     bindAppearanceCategory(
       win,
       save,
-      this._settings,
+      this.settings,
       this.fs,
-      this._services.wm,
+      this.services.wm,
       showStatus,
       showSaved,
-      () => this._getCustomColors(),
-      (colors) => this._setCustomColors(colors),
-      (dataUrl, opts) => this._normalizeCursorDataUrl(dataUrl, opts),
-      (w) => this._showCustomColorsDialog(w)
+      () => this.getCustomColors(),
+      (colors) => this.setCustomColors(colors),
+      (dataUrl, opts) => this.normalizeCursorDataUrl(dataUrl, opts),
+      (w) => this.showCustomColorsDialog(w)
     );
 
-    bindDataCategory(win, save, this._settings, this.fs, showStatus, showSaved);
-    bindNetworkCategory(win, save, this._settings, showSaved);
-    bindAudioCategory(win, this._settings, showSaved);
+    bindDataCategory(win, save, this.settings, this.fs, showStatus, showSaved);
+    bindNetworkCategory(win, save, this.settings, showSaved);
+    bindAudioCategory(win, this.settings, showSaved);
     bindAccountsCategory(win);
   }
 
-  _showSavedMessage(win) {
+  showSavedMessage(win) {
     let toast = win.querySelector(".settings-saved-toast");
     if (toast) {
-      clearTimeout(toast._timeout);
+      clearTimeout(toast.timeout);
       toast.remove();
     }
 
@@ -395,26 +395,26 @@ export class SettingsApp extends BaseApp {
       toast.style.transform = "translateY(0)";
     });
 
-    toast._timeout = setTimeout(() => {
+    toast.timeout = setTimeout(() => {
       toast.style.opacity = "0";
       toast.style.transform = "translateY(-10px)";
       setTimeout(() => toast.remove(), 200);
     }, 2000);
   }
 
-  _getCustomColors() {
+  getCustomColors() {
     return os.storage.get(StorageKeys.customColors) || null;
   }
 
-  _setCustomColors(colors) {
+  setCustomColors(colors) {
     try {
       os.storage.set(StorageKeys.customColors, colors);
-      applyTheme(this._settings.theme, () => this._getCustomColors());
+      applyTheme(this.settings.theme, () => this.getCustomColors());
     } catch {}
   }
 
-  _showCustomColorsDialog(win) {
-    const customColors = this._getCustomColors() || {};
+  showCustomColorsDialog(win) {
+    const customColors = this.getCustomColors() || {};
     const overlay = document.createElement("div");
     overlay.className = "explorer-confirmation-overlay";
     overlay.style.zIndex = "999999";
@@ -514,12 +514,12 @@ export class SettingsApp extends BaseApp {
 
     dialog.querySelector("#custom-colors-reset").addEventListener("click", () => {
       os.storage.remove(StorageKeys.customColors);
-      applyTheme(this._settings.theme, () => this._getCustomColors());
+      applyTheme(this.settings.theme, () => this.getCustomColors());
       overlay.remove();
     });
 
     dialog.querySelector("#custom-colors-apply").addEventListener("click", () => {
-      this._setCustomColors({
+      this.setCustomColors({
         brand: dialog.querySelector("#custom-brand").value,
         "bg-primary": dialog.querySelector("#custom-bg-primary").value,
         "bg-secondary": dialog.querySelector("#custom-bg-secondary").value,
@@ -535,7 +535,7 @@ export class SettingsApp extends BaseApp {
     });
   }
 
-  async _normalizeCursorDataUrl(dataUrl, { maxSize = 128 } = {}) {
+  async normalizeCursorDataUrl(dataUrl, { maxSize = 128 } = {}) {
     const MAX = Math.max(16, Math.min(128, Number(maxSize) || 128));
     try {
       const img = await new Promise((resolve, reject) => {

@@ -105,7 +105,7 @@ export class AboutApp extends BaseApp {
               </div>
               <a
                 class="abx-meta-link"
-                target="_blank"
+                target="blank"
                 rel="noopener noreferrer"
                 href="https://discord.gg/wufbWFwr4G"
               >
@@ -114,7 +114,7 @@ export class AboutApp extends BaseApp {
 
               <a
                 class="abx-meta-link"
-                target="_blank"
+                target="blank"
                 rel="noopener noreferrer"
                 href="https://github.com/reeyuki/YukiOS"
               >

@@ -21,7 +21,7 @@ function isNewer(remote, current) {
 
 class VersionChecker {
   constructor() {
-    this._intervalId = null;
+    this.intervalId = null;
   }
 
   async check() {
@@ -75,13 +75,13 @@ class VersionChecker {
 
   start() {
     this.check();
-    this._intervalId = setInterval(() => this.check(), CHECK_INTERVAL);
+    this.intervalId = setInterval(() => this.check(), CHECK_INTERVAL);
   }
 
   stop() {
-    if (this._intervalId) {
-      clearInterval(this._intervalId);
-      this._intervalId = null;
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+      this.intervalId = null;
     }
     if (os.tray.isRegistered(TRAY_ID)) {
       os.tray.unregister(TRAY_ID);

@@ -22,7 +22,7 @@ export class AppRestorationService {
   appExists(appId) {
     if (!this.wm.appLauncher) return false;
     const serviceKey = SYSTEM_APPS[appId]?.serviceKey || appId;
-    return !!(this.wm.appLauncher._services?.[serviceKey] || this.wm.appLauncher.appMap?.[appId]);
+    return !!(this.wm.appLauncher.services?.[serviceKey] || this.wm.appLauncher.appMap?.[appId]);
   }
 
   buildRegistryFromConfig() {
@@ -79,7 +79,7 @@ export class AppRestorationService {
   getAppInstance(appId) {
     if (!this.wm.appLauncher || !appId) return null;
     const serviceKey = SYSTEM_APPS[appId]?.serviceKey || appId;
-    return this.wm.appLauncher._services?.[serviceKey] || null;
+    return this.wm.appLauncher.services?.[serviceKey] || null;
   }
 
   async saveSession() {
@@ -115,7 +115,7 @@ export class AppRestorationService {
 
       const record = entry.record;
 
-      const geom = this.wm._getWindowNormalGeometry(win);
+      const geom = this.wm.getWindowNormalGeometry(win);
       record.x = geom.x;
       record.y = geom.y;
       record.width = geom.width;
@@ -228,7 +228,7 @@ export class AppRestorationService {
               windows: new Set()
             }));
             this.wm.workspaceManager.activeId = parsedData.activeWorkspaceId || 0;
-            this.wm.workspaceManager._render();
+            this.wm.workspaceManager.render();
           } catch (e) {
             console.warn("Failed to restore workspaces:", e);
           }
@@ -243,16 +243,16 @@ export class AppRestorationService {
         const appId = this.findAppId(state);
 
         if (!appId) {
-          this._logRestore(`Skipped: Unknown app for window ${state.id}`);
+          this.logRestore(`Skipped: Unknown app for window ${state.id}`);
           continue;
         }
 
         if (!this.appExists(appId)) {
-          this._logRestore(`Skipped: App '${appId}' not available in launcher for window ${state.id}`);
+          this.logRestore(`Skipped: App '${appId}' not available in launcher for window ${state.id}`);
           continue;
         }
 
-        await this._restoreWindow(state, appId);
+        await this.restoreWindow(state, appId);
       }
 
       const lastFocused = windowStates.find((s) => s.focused);
@@ -268,23 +268,23 @@ export class AppRestorationService {
       }
     } catch (e) {
       console.error("Failed to restore window session:", e);
-      this._logRestore(`Error: ${e.message}`);
+      this.logRestore(`Error: ${e.message}`);
     } finally {
       this.isRestoring = false;
     }
   }
 
-  async _restoreWindow(state, appId) {
+  async restoreWindow(state, appId) {
     try {
       if (this.launchedApps.has(appId)) {
-        this._logRestore(`Skipped: App already launched (${appId})`);
+        this.logRestore(`Skipped: App already launched (${appId})`);
         return;
       }
 
       const serviceKey = SYSTEM_APPS[appId]?.serviceKey || appId;
-      const appInstance = this.wm.appLauncher._services?.[serviceKey];
+      const appInstance = this.wm.appLauncher.services?.[serviceKey];
       if (!appInstance) {
-        this._logRestore(`Skipped: App instance '${appId}' not available`);
+        this.logRestore(`Skipped: App instance '${appId}' not available`);
         return;
       }
 
@@ -305,13 +305,13 @@ export class AppRestorationService {
         await this.wm.appLauncher.launch(appId, false, launchOptions);
         this.launchedApps.add(appId);
       } catch (e) {
-        this._logRestore(`Failed to open app '${appId}': ${e.message}`);
+        this.logRestore(`Failed to open app '${appId}': ${e.message}`);
         return;
       }
 
       const win = document.getElementById(state.id);
       if (!win) {
-        this._logRestore(`Failed: Window ${state.id} not created by ${appId}`);
+        this.logRestore(`Failed: Window ${state.id} not created by ${appId}`);
         return;
       }
 
@@ -325,7 +325,7 @@ export class AppRestorationService {
           this.wm.toggleFullscreen(win);
         }
         if (state.snapZone) {
-          this.wm._applySnap(win, state.snapZone, true);
+          this.wm.applySnap(win, state.snapZone, true);
         }
 
         win.style.zIndex = state.zIndex;
@@ -362,18 +362,18 @@ export class AppRestorationService {
         }
       }
 
-      this._logRestore(`Restored: ${appId} (${state.id})`);
+      this.logRestore(`Restored: ${appId} (${state.id})`);
     } catch (e) {
-      this._logRestore(`Error: Failed to restore ${state.id}: ${e.message}`);
+      this.logRestore(`Error: Failed to restore ${state.id}: ${e.message}`);
       console.error(`Failed to restore window ${state.id}:`, e);
     }
   }
 
-  _toCamelCase(str) {
+  toCamelCase(str) {
     return str.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
   }
 
-  _logRestore(message) {
+  logRestore(message) {
     this.restoreLog.push(message);
     console.log(`[AppRestoration] ${message}`);
   }

@@ -26,7 +26,7 @@ export class AIAssistantApp extends BaseApp {
 
   async open(opts = {}) {
     const winId = this.winId;
-    if (await this._isSingletonOpen(winId)) return;
+    if (await this.isSingletonOpen(winId)) return;
 
     if (this.enabled) {
       await this.registerTray(this.winId, "fas fa-robot", "Yuki AI", {
@@ -59,15 +59,15 @@ export class AIAssistantApp extends BaseApp {
       pendingMessageId: null
     };
 
-    win.innerHTML = this._buildSetupUI(state);
+    win.innerHTML = this.buildSetupUI(state);
 
-    this._setupSetupEventListeners(win, state);
-    this._subscribeToSystemEvents();
+    this.setupSetupEventListeners(win, state);
+    this.subscribeToSystemEvents();
 
     win.dataset.appId = "aiAssistant";
   }
 
-  _buildSetupUI(state) {
+  buildSetupUI(state) {
     return `
       <div class="window-header">
         <span>Yuki AI Assistant</span>
@@ -128,7 +128,7 @@ export class AIAssistantApp extends BaseApp {
     `;
   }
 
-  _buildUI(state) {
+  buildUI(state) {
     return `
       <div class="window-header">
         <span>Yuki AI Assistant</span>
@@ -182,7 +182,7 @@ export class AIAssistantApp extends BaseApp {
               <h3>Quick Actions</h3>
               <p class="ai-quick-hint">Click to insert command text. Use search to filter actions.</p>
               <input id="ai-quick-filter" class="ai-quick-filter" type="text" placeholder="Filter quick actions..." />
-              ${this._buildQuickActionsMarkup()}
+              ${this.buildQuickActionsMarkup()}
             </div>
 
             <div class="ai-action-log">
@@ -200,7 +200,7 @@ export class AIAssistantApp extends BaseApp {
     `;
   }
 
-  _setupSetupEventListeners(win, state) {
+  setupSetupEventListeners(win, state) {
     const initBtn = $("#ai-init-btn", win);
     const modelRadios = $$('input[name="ai-model"]', win);
     const initStatus = $("#ai-init-status", win);
@@ -218,7 +218,7 @@ export class AIAssistantApp extends BaseApp {
       if (state.engineLoading) return;
 
       state.engineLoading = true;
-      this._setRuntimeState(state, {
+      this.setRuntimeState(state, {
         statusTone: "loading",
         statusText: "Loading engine",
         statusDetail: "Preparing local model runtime.",
@@ -234,7 +234,7 @@ export class AIAssistantApp extends BaseApp {
           const percent = Math.round(report.progress * 100);
           progressBar.style.width = `${percent}%`;
           progressText.textContent = `${percent}% - ${report.text || "Loading..."}`;
-          this._setRuntimeState(state, {
+          this.setRuntimeState(state, {
             statusTone: "loading",
             statusText: "Loading engine",
             statusDetail: report.text || "Downloading model files.",
@@ -246,7 +246,7 @@ export class AIAssistantApp extends BaseApp {
           initStatus.textContent = `Error: ${report.error}`;
           initStatus.className = "ai-init-status error";
           state.engineLoading = false;
-          this._setRuntimeState(state, {
+          this.setRuntimeState(state, {
             statusTone: "error",
             statusText: "Load failed",
             statusDetail: report.error,
@@ -264,10 +264,10 @@ export class AIAssistantApp extends BaseApp {
         state.engineInitialized = true;
         state.engineLoading = false;
         state.currentModelId = this.aiCore.model;
-        this._setRuntimeState(state, {
+        this.setRuntimeState(state, {
           statusTone: "ready",
           statusText: "Ready",
-          statusDetail: this._describeLoadedModel(this.aiCore.model),
+          statusDetail: this.describeLoadedModel(this.aiCore.model),
           progress: 100,
           progressText: "Ready"
         });
@@ -275,7 +275,7 @@ export class AIAssistantApp extends BaseApp {
         initStatus.className = "ai-init-status success";
 
         setTimeout(() => {
-          this._transitionToMainUI(win, state);
+          this.transitionToMainUI(win, state);
         }, 500);
       } else {
         state.engineLoading = false;
@@ -283,7 +283,7 @@ export class AIAssistantApp extends BaseApp {
         initBtn.innerHTML = '<i class="fas fa-play"></i> Initialize AI Engine';
         initStatus.textContent = "Failed to initialize. WebGPU may not be available or browser not supported.";
         initStatus.className = "ai-init-status error";
-        this._setRuntimeState(state, {
+        this.setRuntimeState(state, {
           statusTone: "error",
           statusText: "Load failed",
           statusDetail: "WebGPU may not be available or the selected model is incompatible.",
@@ -294,7 +294,7 @@ export class AIAssistantApp extends BaseApp {
     });
   }
 
-  async _transitionToMainUI(win, state) {
+  async transitionToMainUI(win, state) {
     const prefs = await this.memory.loadPreferences();
     state.selectedModel = prefs.selectedModel || "fast";
     state.webGPUEnabled = prefs.webGPUEnabled !== false;
@@ -307,22 +307,22 @@ export class AIAssistantApp extends BaseApp {
     state.currentModelId = this.aiCore.model;
 
     if (state.engineInitialized) {
-      this._setRuntimeState(state, {
+      this.setRuntimeState(state, {
         statusTone: "ready",
         statusText: "Ready",
-        statusDetail: this._describeLoadedModel(state.currentModelId),
+        statusDetail: this.describeLoadedModel(state.currentModelId),
         progress: 0,
         progressText: ""
       });
     }
 
-    win.innerHTML = this._buildUI(state);
-    this._setupEventListeners(win, state);
-    this._renderChatHistory(state, win);
-    this._renderRuntimeUI(win, state);
+    win.innerHTML = this.buildUI(state);
+    this.setupEventListeners(win, state);
+    this.renderChatHistory(state, win);
+    this.renderRuntimeUI(win, state);
   }
 
-  _setupEventListeners(win, state) {
+  setupEventListeners(win, state) {
     const webgpuToggle = $("#ai-webgpu-toggle", win);
     const automationToggle = $("#ai-automation-toggle", win);
     const reasoningToggle = $("#ai-reasoning-toggle", win);
@@ -335,7 +335,7 @@ export class AIAssistantApp extends BaseApp {
       state.webGPUEnabled = !state.webGPUEnabled;
       webgpuToggle.classList.toggle("active", state.webGPUEnabled);
       this.memory.setPreference("webGPUEnabled", state.webGPUEnabled);
-      await this._reloadEngine(
+      await this.reloadEngine(
         win,
         state,
         state.webGPUEnabled
@@ -362,7 +362,7 @@ export class AIAssistantApp extends BaseApp {
       const message = input.value.trim();
       if (!message || state.engineLoading || state.isGenerating) return;
       input.value = "";
-      await this._processMessage(message, state, win);
+      await this.processMessage(message, state, win);
     };
 
     sendBtn.addEventListener("click", sendMessage);
@@ -373,7 +373,7 @@ export class AIAssistantApp extends BaseApp {
     quickBtns.forEach((btn) => {
       btn.addEventListener("click", () => {
         const action = btn.dataset.action;
-        input.value = this._getActionPrompt(action);
+        input.value = this.getActionPrompt(action);
         input.focus();
       });
     });
@@ -389,7 +389,7 @@ export class AIAssistantApp extends BaseApp {
     }
   }
 
-  _subscribeToSystemEvents() {
+  subscribeToSystemEvents() {
     if (this.systemHandlersBound) return;
 
     this.windowFocusedHandler = (winId) => {
@@ -408,54 +408,54 @@ export class AIAssistantApp extends BaseApp {
     this.systemHandlersBound = true;
   }
 
-  async _processMessage(message, state, win) {
-    this._addMessageToChat("user", message, state, win);
+  async processMessage(message, state, win) {
+    this.addMessageToChat("user", message, state, win);
     state.chatHistory.push({ role: "user", content: message });
 
-    const osContext = this._getOSContext();
-    const systemPrompt = this._buildSystemPrompt(osContext);
+    const osContext = this.getOSContext();
+    const systemPrompt = this.buildSystemPrompt(osContext);
 
     try {
       state.isGenerating = true;
-      state.pendingMessageId = this._appendPendingAssistantMessage(win, "Generating response...");
-      this._setRuntimeState(state, {
+      state.pendingMessageId = this.appendPendingAssistantMessage(win, "Generating response...");
+      this.setRuntimeState(state, {
         statusTone: "busy",
         statusText: "Generating",
-        statusDetail: `Running ${this._getModelProfileLabel(state.selectedModel)} model locally.`,
+        statusDetail: `Running ${this.getModelProfileLabel(state.selectedModel)} model locally.`,
         progress: 0,
         progressText: ""
       });
-      this._renderRuntimeUI(win, state);
+      this.renderRuntimeUI(win, state);
       const response = await this.aiCore.generate(message, systemPrompt, state.chatHistory);
-      this._removePendingAssistantMessage(win, state);
-      this._addMessageToChat("assistant", response.text, state, win);
+      this.removePendingAssistantMessage(win, state);
+      this.addMessageToChat("assistant", response.text, state, win);
       state.chatHistory.push({ role: "assistant", content: response.text });
-      this._setRuntimeState(state, {
+      this.setRuntimeState(state, {
         statusTone: "ready",
         statusText: "Ready",
-        statusDetail: this._describeLoadedModel(this.aiCore.model),
+        statusDetail: this.describeLoadedModel(this.aiCore.model),
         progress: 0,
         progressText: ""
       });
 
       if (response.reasoning && state.showReasoning) {
-        this._renderReasoning(response.reasoning, win);
+        this.renderReasoning(response.reasoning, win);
       }
 
-      const resolvedActions = this._resolveActions(response);
+      const resolvedActions = this.resolveActions(response);
       if (resolvedActions.length > 0) {
         if (state.automationMode) {
-          await this._executeActions(resolvedActions, win);
+          await this.executeActions(resolvedActions, win);
         } else {
-          this._showPendingActions(resolvedActions, win);
+          this.showPendingActions(resolvedActions, win);
         }
       }
 
       await this.memory.saveChatHistory(state.chatHistory);
     } catch (error) {
-      this._removePendingAssistantMessage(win, state);
-      this._addMessageToChat("system", `Error: ${error.message}`, state, win);
-      this._setRuntimeState(state, {
+      this.removePendingAssistantMessage(win, state);
+      this.addMessageToChat("system", `Error: ${error.message}`, state, win);
+      this.setRuntimeState(state, {
         statusTone: "error",
         statusText: "Generation failed",
         statusDetail: error.message,
@@ -464,47 +464,47 @@ export class AIAssistantApp extends BaseApp {
       });
     } finally {
       state.isGenerating = false;
-      this._renderRuntimeUI(win, state);
+      this.renderRuntimeUI(win, state);
     }
   }
 
-  async _reloadEngine(win, state, detailText) {
+  async reloadEngine(win, state, detailText) {
     if (state.engineLoading) return;
 
     state.engineLoading = true;
     state.engineInitialized = false;
-    this._setRuntimeState(state, {
+    this.setRuntimeState(state, {
       statusTone: "loading",
       statusText: "Reloading engine",
       statusDetail: detailText,
       progress: 0,
       progressText: ""
     });
-    this._renderRuntimeUI(win, state);
+    this.renderRuntimeUI(win, state);
 
     const success = await this.aiCore.initialize(
       state.selectedModel,
       state.webGPUEnabled,
       (report) => {
         if (typeof report.progress === "number") {
-          this._setRuntimeState(state, {
+          this.setRuntimeState(state, {
             statusTone: "loading",
             statusText: "Reloading engine",
             statusDetail: report.text || detailText,
             progress: Math.round(report.progress * 100),
             progressText: report.text || ""
           });
-          this._renderRuntimeUI(win, state);
+          this.renderRuntimeUI(win, state);
         }
         if (report.error) {
-          this._setRuntimeState(state, {
+          this.setRuntimeState(state, {
             statusTone: "error",
             statusText: "Reload failed",
             statusDetail: report.error,
             progress: 0,
             progressText: ""
           });
-          this._renderRuntimeUI(win, state);
+          this.renderRuntimeUI(win, state);
         }
       },
       { force: true }
@@ -515,19 +515,19 @@ export class AIAssistantApp extends BaseApp {
     if (success) {
       state.engineInitialized = true;
       state.currentModelId = this.aiCore.model;
-      this._setRuntimeState(state, {
+      this.setRuntimeState(state, {
         statusTone: "ready",
         statusText: "Ready",
-        statusDetail: this._describeLoadedModel(this.aiCore.model),
+        statusDetail: this.describeLoadedModel(this.aiCore.model),
         progress: 0,
         progressText: ""
       });
     }
 
-    this._renderRuntimeUI(win, state);
+    this.renderRuntimeUI(win, state);
   }
 
-  _getOSContext() {
+  getOSContext() {
     const systemState = this.osBridge.getSystemState();
     const activeWorkspace = systemState.workspaces?.items?.find((ws) => ws.id === systemState.workspaces?.activeId);
 
@@ -540,7 +540,7 @@ export class AIAssistantApp extends BaseApp {
     };
   }
 
-  _buildSystemPrompt(context) {
+  buildSystemPrompt(context) {
     return `You are Yuki AI Assistant, built into YukiOS. Help users with tasks and run system actions when asked.
 
 Current OS Context:
@@ -570,7 +570,7 @@ Supported actions:
 Say what you're about to do before running an action. If it could be destructive, ask first.`;
   }
 
-  _resolveActions(response) {
+  resolveActions(response) {
     const parsedActions = this.actionParser.parse(response.rawContent || response.text || "");
     const mergedActions = [...(response.actions || [])];
 
@@ -590,33 +590,33 @@ Say what you're about to do before running an action. If it could be destructive
     return valid.map(({ action, target, params }) => ({ action, target, params }));
   }
 
-  async _executeActions(actions, win) {
+  async executeActions(actions, win) {
     for (const action of actions) {
       try {
-        const approved = await this._confirmActionIfNeeded(action);
+        const approved = await this.confirmActionIfNeeded(action);
         if (!approved) {
-          this._logAction(action, { error: "Cancelled by user" }, win);
+          this.logAction(action, { error: "Cancelled by user" }, win);
           continue;
         }
-        if (this._requiresConfirmation(action)) {
+        if (this.requiresConfirmation(action)) {
           this.osBridge.grantPermission(action.action, action.target);
         }
         const result = await this.osBridge.execute(action);
-        if (this._requiresConfirmation(action)) {
+        if (this.requiresConfirmation(action)) {
           this.osBridge.revokePermission(action.action, action.target);
         }
-        this._logAction(action, result, win);
+        this.logAction(action, result, win);
         os.events.emit("AI_ACTION_EXECUTED", { action, result });
       } catch (error) {
-        if (this._requiresConfirmation(action)) {
+        if (this.requiresConfirmation(action)) {
           this.osBridge.revokePermission(action.action, action.target);
         }
-        this._logAction(action, { error: error.message }, win);
+        this.logAction(action, { error: error.message }, win);
       }
     }
   }
 
-  _showPendingActions(actions, win) {
+  showPendingActions(actions, win) {
     const logContainer = $("#ai-action-log", win);
     actions.forEach((action) => {
       const item = document.createElement("div");
@@ -634,23 +634,23 @@ Say what you're about to do before running an action. If it could be destructive
         const action = JSON.parse(btn.dataset.action);
         btn.disabled = true;
         try {
-          const approved = await this._confirmActionIfNeeded(action);
+          const approved = await this.confirmActionIfNeeded(action);
           if (!approved) {
             btn.parentElement.classList.add("error");
             return;
           }
-          if (this._requiresConfirmation(action)) {
+          if (this.requiresConfirmation(action)) {
             this.osBridge.grantPermission(action.action, action.target);
           }
           const result = await this.osBridge.execute(action);
-          if (this._requiresConfirmation(action)) {
+          if (this.requiresConfirmation(action)) {
             this.osBridge.revokePermission(action.action, action.target);
           }
           btn.parentElement.classList.remove("pending");
           btn.parentElement.classList.add("success");
           os.events.emit("AI_ACTION_EXECUTED", { action, result });
         } catch (error) {
-          if (this._requiresConfirmation(action)) {
+          if (this.requiresConfirmation(action)) {
             this.osBridge.revokePermission(action.action, action.target);
           }
           btn.parentElement.classList.add("error");
@@ -659,7 +659,7 @@ Say what you're about to do before running an action. If it could be destructive
     });
   }
 
-  _logAction(action, result, win) {
+  logAction(action, result, win) {
     const logContainer = $("#ai-action-log", win);
     const item = document.createElement("div");
     item.className = `ai-log-item ${result.error ? "error" : "success"}`;
@@ -672,7 +672,7 @@ Say what you're about to do before running an action. If it could be destructive
     this.actionLog.push({ action, result, timestamp: Date.now() });
   }
 
-  _addMessageToChat(role, content, state, win) {
+  addMessageToChat(role, content, state, win) {
     const historyContainer = win?.querySelector("#ai-chat-history") || document.querySelector("#ai-chat-history");
     if (!historyContainer) return;
 
@@ -680,13 +680,13 @@ Say what you're about to do before running an action. If it could be destructive
     msgDiv.className = `ai-message ai-message-${role}`;
     msgDiv.innerHTML = `
       <div class="ai-message-role">${role === "user" ? "You" : "Assistant"}</div>
-      <div class="ai-message-content">${this._formatMessage(content)}</div>
+      <div class="ai-message-content">${this.formatMessage(content)}</div>
     `;
     historyContainer.appendChild(msgDiv);
     historyContainer.scrollTop = historyContainer.scrollHeight;
   }
 
-  _appendPendingAssistantMessage(win, text) {
+  appendPendingAssistantMessage(win, text) {
     const historyContainer = $("#ai-chat-history", win);
     if (!historyContainer) return null;
 
@@ -710,40 +710,40 @@ Say what you're about to do before running an action. If it could be destructive
     return pendingId;
   }
 
-  _removePendingAssistantMessage(win, state) {
+  removePendingAssistantMessage(win, state) {
     if (!state.pendingMessageId) return;
     const pendingMessage = $(`[data-pending-id="${state.pendingMessageId}"]`, win);
     pendingMessage?.remove();
     state.pendingMessageId = null;
   }
 
-  _renderChatHistory(state, win) {
+  renderChatHistory(state, win) {
     const historyContainer = $("#ai-chat-history", win) || $("#ai-chat-history");
     if (!historyContainer) return;
     setHTML(historyContainer, "");
     state.chatHistory.forEach((msg) => {
-      this._addMessageToChat(msg.role, msg.content, state, win);
+      this.addMessageToChat(msg.role, msg.content, state, win);
     });
   }
 
-  _renderReasoning(reasoning, win) {
+  renderReasoning(reasoning, win) {
     const reasoningContent = $("#ai-reasoning-content", win);
     if (reasoningContent) {
       setText(reasoningContent, reasoning);
     }
   }
 
-  _formatMessage(content) {
+  formatMessage(content) {
     return content.replace(/\n/g, "<br>").replace(/```json\n?([\s\S]*?)```/g, '<pre class="ai-json-block">$1</pre>');
   }
 
-  _getActionPrompt(action) {
+  getActionPrompt(action) {
     const prompts = {
-      open_settings: "Open the Settings app",
+      opensettings: "Open the Settings app",
       list_files: "List files in my Documents folder",
       open_terminal: "Open the Terminal app",
       switch_workspace: "Switch to the next workspace",
-      open_explorer: "Open the Explorer app",
+      openexplorer: "Open the Explorer app",
       open_browser: "Open the Yuki Browser app",
       open_news: "Open What's New app",
       open_weather: "Open the Weather app",
@@ -758,14 +758,14 @@ Say what you're about to do before running an action. If it could be destructive
     return prompts[action] || "";
   }
 
-  _buildQuickActionsMarkup() {
+  buildQuickActionsMarkup() {
     const sections = [
       {
         title: "Apps",
         items: [
-          ["open_settings", "Open Settings", "Change theme and system preferences.", "fas fa-cog"],
+          ["opensettings", "Open Settings", "Change theme and system preferences.", "fas fa-cog"],
           ["open_terminal", "Open Terminal", "Launch command line tools.", "fas fa-terminal"],
-          ["open_explorer", "Open Explorer", "Browse and manage files.", "fas fa-folder-open"],
+          ["openexplorer", "Open Explorer", "Browse and manage files.", "fas fa-folder-open"],
           ["open_browser", "Open Browser", "Launch Yuki Browser.", "fas fa-globe"],
           ["open_notepad", "Open Notepad", "Quick notes and text edits.", "fas fa-note-sticky"],
           ["open_task_manager", "Open Task Manager", "View running windows and resources.", "fas fa-list-check"]
@@ -823,12 +823,12 @@ Say what you're about to do before running an action. If it could be destructive
       .join("");
   }
 
-  _requiresConfirmation(action) {
+  requiresConfirmation(action) {
     return action.action === "fs_write" || action.action === "close_app";
   }
 
-  async _confirmActionIfNeeded(action) {
-    if (!this._requiresConfirmation(action)) {
+  async confirmActionIfNeeded(action) {
+    if (!this.requiresConfirmation(action)) {
       return true;
     }
     if (action.action === "fs_write") {
@@ -845,18 +845,18 @@ Say what you're about to do before running an action. If it could be destructive
     return true;
   }
 
-  _setRuntimeState(state, updates) {
+  setRuntimeState(state, updates) {
     Object.assign(state, updates);
   }
 
-  _describeLoadedModel(modelId) {
+  describeLoadedModel(modelId) {
     if (!modelId) {
       return "No local model loaded.";
     }
     return `Loaded: ${modelId.replace(/-MLC$/, "")}`;
   }
 
-  _getModelProfileLabel(modelType) {
+  getModelProfileLabel(modelType) {
     const labels = {
       low: "Low Quality",
       fast: "Low Quality",
@@ -865,7 +865,7 @@ Say what you're about to do before running an action. If it could be destructive
     return labels[modelType] || "Custom";
   }
 
-  _renderRuntimeUI(win, state) {
+  renderRuntimeUI(win, state) {
     const runtimeBadge = $("#ai-runtime-badge", win);
     const runtimeDetail = $("#ai-runtime-detail", win);
     const runtimeProgress = $("#ai-runtime-progress", win);

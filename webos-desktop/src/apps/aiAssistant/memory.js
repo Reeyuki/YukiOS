@@ -1,4 +1,4 @@
-import { os } from "../../os/index.js";
+import { os } from "../../framework.js";
 
 export class AIMemory {
   constructor() {
@@ -7,7 +7,7 @@ export class AIMemory {
     this.preferences = new Map();
     this.chatHistory = [];
     this.STORAGE_KEY = "yuki_ai_memory";
-    this.CHAT_KEY = "yuki_ai_chat_history";
+    this.CHAT_KEY = "yuki_ai_chathistory";
     this.PREFS_KEY = "yuki_ai_preferences";
   }
 
@@ -37,7 +37,7 @@ export class AIMemory {
 
   setPreference(key, value) {
     this.preferences.set(key, value);
-    this._savePreferences();
+    this.savePreferences();
   }
 
   async loadPreferences() {
@@ -53,7 +53,7 @@ export class AIMemory {
     return {};
   }
 
-  _savePreferences() {
+  savePreferences() {
     try {
       const obj = Object.fromEntries(this.preferences);
       os.storage.set(this.PREFS_KEY, Object.fromEntries(this.preferences));
@@ -145,7 +145,7 @@ export class AIMemory {
     }
     if (data.preferences) {
       this.preferences = new Map(Object.entries(data.preferences));
-      this._savePreferences();
+      this.savePreferences();
     }
   }
 }

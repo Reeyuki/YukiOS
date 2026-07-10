@@ -1,4 +1,4 @@
-import { StorageKeys } from "./StorageKeys.js";
+import { StorageKeys, os } from "./framework.js";
 import logoImg from "./assets/logo.png";
 import versionStr from "../version.txt?raw";
 import "./styles/bootScreen.css";
@@ -7,16 +7,15 @@ const BRAND = "YUKiOS";
 const MIN_DURATION = 2500;
 
 export function showBootScreen() {
-  const raw = localStorage.getItem(StorageKeys.disableBootScreen);
-  if (raw === "true" || raw === '"true"') {
+  const raw = os.storage.get(StorageKeys.disableBootScreen);
+  if (raw === true || raw === "true") {
     return { hide: () => Promise.resolve() };
   }
 
-  const launchRaw = localStorage.getItem(StorageKeys.lastLaunchTime);
+  const launchRaw = os.storage.get(StorageKeys.lastLaunchTime);
   if (launchRaw) {
     try {
-      const parsed = launchRaw.startsWith('"') ? JSON.parse(launchRaw) : launchRaw;
-      const lastLaunch = Number(parsed);
+      const lastLaunch = Number(launchRaw);
       if (!isNaN(lastLaunch) && Date.now() - lastLaunch < 5 * 60 * 1000) {
         return { hide: () => Promise.resolve() };
       }

@@ -8,11 +8,11 @@ export class StateManager {
     this.storageKey = `app_state_${appId}`;
 
     if (persistence !== PersistenceTypes.NONE) {
-      this._loadPersistedState();
+      this.loadPersistedState();
     }
   }
 
-  _loadPersistedState() {
+  loadPersistedState() {
     try {
       if (this.persistence === PersistenceTypes.LOCAL_STORAGE) {
         const saved = os.storage.get(this.storageKey);
@@ -20,9 +20,9 @@ export class StateManager {
           this.state = { ...this.state, ...saved };
         }
       } else if (this.persistence === PersistenceTypes.SESSION_STORAGE) {
-        const saved = sessionStorage.getItem(this.storageKey);
+        const saved = os.storage.get(this.storageKey);
         if (saved) {
-          this.state = { ...this.state, ...JSON.parse(saved) };
+          this.state = { ...this.state, ...saved };
         }
       }
     } catch (e) {
@@ -30,7 +30,7 @@ export class StateManager {
     }
   }
 
-  _persistState() {
+  persistState() {
     if (this.persistence === PersistenceTypes.MEMORY) return;
 
     try {
@@ -38,7 +38,7 @@ export class StateManager {
       if (this.persistence === PersistenceTypes.LOCAL_STORAGE) {
         os.storage.set(this.storageKey, serialized);
       } else if (this.persistence === PersistenceTypes.SESSION_STORAGE) {
-        sessionStorage.setItem(this.storageKey, serialized);
+        os.storage.set(this.storageKey, serialized);
       }
     } catch (e) {
       console.warn(`Failed to persist state for ${this.appId}:`, e);
@@ -73,8 +73,8 @@ export class StateManager {
       target[lastKey] = value;
     }
 
-    this._persistState();
-    this._notifyListeners();
+    this.persistState();
+    this.notifyListeners();
   }
 
   update(path, updater) {
@@ -85,14 +85,14 @@ export class StateManager {
 
   merge(partialState) {
     this.state = { ...this.state, ...partialState };
-    this._persistState();
-    this._notifyListeners();
+    this.persistState();
+    this.notifyListeners();
   }
 
   reset() {
     this.state = {};
-    this._persistState();
-    this._notifyListeners();
+    this.persistState();
+    this.notifyListeners();
   }
 
   subscribe(listener) {
@@ -102,7 +102,7 @@ export class StateManager {
     };
   }
 
-  _notifyListeners() {
+  notifyListeners() {
     this.listeners.forEach((listener) => listener(this.state));
   }
 

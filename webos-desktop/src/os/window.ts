@@ -16,7 +16,7 @@ export class WindowAPI {
     this.wm = windowManager;
   }
 
-  private _waitFor(win: HTMLElement, condition: () => boolean, callback: () => void, timeoutMs: number = 100): void {
+  private waitFor(win: HTMLElement, condition: () => boolean, callback: () => void, timeoutMs: number = 100): void {
     let handled = false;
     const obs = new MutationObserver(() => {
       if (!handled && condition()) {
@@ -67,7 +67,7 @@ export class WindowAPI {
 
       let headerInjected = false;
 
-      this._waitFor(
+      this.waitFor(
         win,
         () => !win.querySelector(".window-header") && win.innerHTML.trim() !== "",
         () => {
@@ -103,7 +103,7 @@ export class WindowAPI {
     }
 
     if (autoMount && !options.skipAutoSetup) {
-      this._waitFor(
+      this.waitFor(
         win,
         () => !!(win.querySelector(".window-header") || win.querySelector(".browser-tabbar")),
         () => {

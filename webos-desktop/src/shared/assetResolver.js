@@ -399,9 +399,9 @@ export async function fetchHtmlAsBlobUrl(url) {
   let rewritten = html;
   if (!isIgnored) {
     rewritten = html
-      .replace(/\b(src|poster|data)=([\"'])\/_next\/(?!\/)/gi, `$1=$2${assetDirBase}_next/`)
-      .replace(/<(link|a|form)\b([^>]*?)\b(href|action)=([\"'])\/_next\/(?!\/)/gi, `<$1$2$3=$4${assetDirBase}_next/`)
-      .replace(/\burl\(\s*([\"']?)\/_next\/(?!\/)/gi, `url($1${assetDirBase}_next/`)
+      .replace(/\b(src|poster|data)=([\"'])\/next\/(?!\/)/gi, `$1=$2${assetDirBase}next/`)
+      .replace(/<(link|a|form)\b([^>]*?)\b(href|action)=([\"'])\/next\/(?!\/)/gi, `<$1$2$3=$4${assetDirBase}next/`)
+      .replace(/\burl\(\s*([\"']?)\/next\/(?!\/)/gi, `url($1${assetDirBase}next/`)
       .replace(/\b(src|poster|data)=([\"'])\/static\/games\/(?!\/)/gi, `$1=$2${rootBase}`)
       .replace(/\b(src|poster|data)=([\"'])\/(?!\/)/gi, `$1=$2${rootBase}`)
       .replace(/<(link|a|form)\b([^>]*?)\b(href|action)=([\"'])\/static\/games\/(?!\/)/gi, `<$1$2$3=$4${rootBase}`)
@@ -445,7 +445,7 @@ export async function fetchHtmlAsBlobUrl(url) {
     let p = url;
     if (p.startsWith('/')) {
       p = p.slice(1);
-      if (p.startsWith('_next/')) return ASSET_DIR_BASE + p;
+      if (p.startsWith('next/')) return ASSET_DIR_BASE + p;
       if (p.startsWith('static/games/')) p = p.replace('static/games/', '');
       return ROOT_BASE + p;
     }
@@ -456,16 +456,16 @@ export async function fetchHtmlAsBlobUrl(url) {
     try { parent.postMessage({ __yukios: 'navigate', url }, '*'); } catch {}
   }
 
-  const _createElement = document.createElement.bind(document);
+  const createElement = document.createElement.bind(document);
   document.createElement = function(tag) {
-    const el = _createElement(tag);
+    const el = createElement(tag);
     const tagName = tag.toLowerCase();
     if (tagName === 'script') {
-      let _src = '';
+      let src = '';
       Object.defineProperty(el, 'src', {
-        get() { return _src; },
+        get() { return src; },
         set(val) {
-          _src = resolve(val);
+          src = resolve(val);
         },
         configurable: true
       });
@@ -479,7 +479,7 @@ export async function fetchHtmlAsBlobUrl(url) {
     return el;
   };
 
-  const _setAttribute = Element.prototype.setAttribute;
+  const setAttribute = Element.prototype.setAttribute;
   Element.prototype.setAttribute = function(name, value) {
     const tagName = this.tagName.toLowerCase();
     const attrName = name.toLowerCase();
@@ -488,7 +488,7 @@ export async function fetchHtmlAsBlobUrl(url) {
     } else if ((tagName === 'link' || tagName === 'a') && attrName === 'href') {
       value = resolve(value);
     }
-    return _setAttribute.call(this, name, value);
+    return setAttribute.call(this, name, value);
   };
 
   document.addEventListener('click', function(e) {

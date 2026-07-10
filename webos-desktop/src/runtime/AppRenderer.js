@@ -7,10 +7,10 @@ export class AppRenderer {
     this.stateManager = stateManager;
     this.actionExecutor = actionExecutor;
     this.componentRegistry = new Map();
-    this._registerBuiltInComponents();
+    this.registerBuiltInComponents();
   }
 
-  _registerBuiltInComponents() {
+  registerBuiltInComponents() {
     Object.entries(UIComponents).forEach(([name, component]) => {
       this.registerComponent(name, component);
     });
@@ -123,7 +123,7 @@ export class AppRenderer {
     const element = document.createElement(tagName);
 
     if (props) {
-      this._applyProps(element, props);
+      this.applyProps(element, props);
     }
 
     if (text) {
@@ -158,7 +158,7 @@ export class AppRenderer {
     return element;
   }
 
-  _applyProps(element, props) {
+  applyProps(element, props) {
     Object.entries(props).forEach(([key, value]) => {
       if (key === "className") {
         element.className = value;

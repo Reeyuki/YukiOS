@@ -395,14 +395,10 @@
 }
 
 .app-grid::-webkit-scrollbar-thumb {
-  background: linear-gradient(to bottom, color-mix(in oklch, var(--brand) 18%, transparent), rgba(255, 255, 255, 0.08));
+  background: linear-gradient(to bottom, color-mix(in oklch, var(--brand) 28%, transparent), rgba(255, 255, 255, 0.14));
   border-radius: 999px;
   border: 2px solid transparent;
   background-clip: padding-box;
-}
-
-.app-grid::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(to bottom, color-mix(in oklch, var(--brand) 28%, transparent), rgba(255, 255, 255, 0.14));
 }
 
 .start-menu-item {

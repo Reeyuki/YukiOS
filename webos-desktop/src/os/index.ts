@@ -6,59 +6,59 @@ import { trayManager } from "../tray/tray.js";
 import { TorManager } from "../tor/TorManager.js";
 import type { OSServices, TorManagerService, ExplorerAppService } from "./types.js";
 
-let _services: OSServices | null = null;
-let _windowAPI: WindowAPI | null = null;
-let _fileSystemAPI: FileSystemAPI | null = null;
-const _storageAPI = new StorageAPI();
-const _dialogAPI = new DialogAPI();
-let _torManager: TorManagerService | null = null;
+let osServices: OSServices | null = null;
+let windowAPI: WindowAPI | null = null;
+let fileSystemAPI: FileSystemAPI | null = null;
+const storageAPI = new StorageAPI();
+const dialogAPI = new DialogAPI();
+let torManager: TorManagerService | null = null;
 
-function _requireServices(): NonNullable<OSServices> {
-  if (!_services) throw new Error("[OS Bridge] API not initialized. Call initializeOSBridge() first.");
-  return _services;
+function requireServices(): NonNullable<OSServices> {
+  if (!osServices) throw new Error("[OS Bridge] API not initialized. Call initializeOSBridge() first.");
+  return osServices;
 }
 
-function _requireWindow(): WindowAPI {
-  if (!_windowAPI) throw new Error("[OS Bridge] Window API not initialized.");
-  return _windowAPI;
+function requireWindow(): WindowAPI {
+  if (!windowAPI) throw new Error("[OS Bridge] Window API not initialized.");
+  return windowAPI;
 }
 
-function _requireFS(): FileSystemAPI {
-  if (!_fileSystemAPI) throw new Error("[OS Bridge] FileSystem API not initialized.");
-  return _fileSystemAPI;
+function requireFS(): FileSystemAPI {
+  if (!fileSystemAPI) throw new Error("[OS Bridge] FileSystem API not initialized.");
+  return fileSystemAPI;
 }
 
 export function initializeOSBridge(services: OSServices) {
-  _services = services;
-  _windowAPI = new WindowAPI(services.windowManager);
-  _fileSystemAPI = new FileSystemAPI(services.fileSystemManager);
-  _cachedWindow = _buildWindow();
-  _cachedFS = _buildFS();
-  _cachedNotify = _buildNotify();
-  _cachedApp = _buildApp();
-  _cachedEvents = _buildEvents();
-  _cachedTray = _buildTray();
+  osServices = services;
+  windowAPI = new WindowAPI(services.windowManager);
+  fileSystemAPI = new FileSystemAPI(services.fileSystemManager);
+  cachedWindow = buildWindow();
+  cachedFS = buildFS();
+  cachedNotify = buildNotify();
+  cachedApp = buildApp();
+  cachedEvents = buildEvents();
+  cachedTray = buildTray();
 
   console.log("[OS Bridge] Initialized");
   (window as unknown as Record<string, unknown>).os = os;
 }
 
 export function setDialogExplorerApp(app: ExplorerAppService): void {
-  _dialogAPI.setExplorerApp(app);
+  dialogAPI.setExplorerApp(app);
 }
 
-let _torUnsub: (() => void) | null = null;
+let torUnsub: (() => void) | null = null;
 
-let _cachedWindow: object | null = null;
-let _cachedFS: object | null = null;
-let _cachedNotify: object | null = null;
-let _cachedTray: object | null = null;
-let _cachedApp: object | null = null;
-let _cachedEvents: object | null = null;
-let _cachedTor: object | null = null;
+let cachedWindow: object | null = null;
+let cachedFS: object | null = null;
+let cachedNotify: object | null = null;
+let cachedTray: object | null = null;
+let cachedApp: object | null = null;
+let cachedEvents: object | null = null;
+let cachedTor: object | null = null;
 
-function _buildWindow() {
-  const api = _requireWindow();
+function buildWindow() {
+  const api = requireWindow();
   return {
     create: (id: string, title: string, width?: string | number, height?: string | number, options?: any) =>
       api.create(id, title, width, height, options),
@@ -75,8 +75,8 @@ function _buildWindow() {
   };
 }
 
-function _buildFS() {
-  const api = _requireFS();
+function buildFS() {
+  const api = requireFS();
   return {
     read: (path: any, options?: any) => api.read(path, options),
     write: (path: any, content: any, options?: any) => api.write(path, content, options),
@@ -116,8 +116,8 @@ function _buildFS() {
   };
 }
 
-function _buildNotify() {
-  const nc = _requireServices().notificationCenter;
+function buildNotify() {
+  const nc = requireServices().notificationCenter;
   return {
     send: (title: string, message: string, options?: any) =>
       nc.addNotification(
@@ -133,7 +133,7 @@ function _buildNotify() {
   };
 }
 
-function _buildTray() {
+function buildTray() {
   return {
     register: (winId: string, icon: string, label: string, options?: any) =>
       trayManager.register(winId, icon, label, options),
@@ -145,18 +145,18 @@ function _buildTray() {
     restoreFromTray: (winId: string) => trayManager.restoreFromTray(winId),
     getTrayItems: () => trayManager.getTrayItems(),
     updateItemVisibility: (winId: string, visible: boolean) => {
-      const item = trayManager._items.get(winId);
+      const item = trayManager.items.get(winId);
       if (item) {
         item.visibleInSettings = visible;
-        trayManager._render();
+        trayManager.render();
       }
     },
     isRegistered: (winId: string) => trayManager.isRegistered(winId)
   };
 }
 
-function _buildApp() {
-  const al = _requireServices().appLauncher;
+function buildApp() {
+  const al = requireServices().appLauncher;
   return {
     launch: (appId: string, options?: any) => al.launch(appId, false, options),
     launchGame: (appId: string, isSwf?: boolean, options?: any) => al.launch(appId, isSwf, options),
@@ -164,7 +164,7 @@ function _buildApp() {
       const win = document.getElementById(winId);
       if (win) al.wm.closeWindow(win);
     },
-    getRunningApps: () => _listRunningApps(),
+    getRunningApps: () => listRunningApps(),
     getAllApps: () => al.appMap,
     getAppInfo: (appId: string) => al.appMap[appId] || null,
     hasApp: (appId: string) => appId in al.appMap,
@@ -177,8 +177,8 @@ function _buildApp() {
   };
 }
 
-function _buildEvents() {
-  const bus = _requireServices().eventBus;
+function buildEvents() {
+  const bus = requireServices().eventBus;
   return {
     on: (event: string, handler: any) => bus.on(event, handler),
     off: (event: string, handler: any) => bus.off(event, handler),
@@ -187,8 +187,8 @@ function _buildEvents() {
   };
 }
 
-function _buildTor() {
-  const m = _torManager!;
+function buildTor() {
+  const m = torManager!;
   return {
     fetch: (url: string) => m.fetch(url),
     post: (url: string, body: Uint8Array) => m.post(url, body),
@@ -215,28 +215,28 @@ function _buildTor() {
 }
 
 export function setTorManager(manager: TorManagerService): void {
-  if (_torManager === manager) return;
-  _torManager = manager;
+  if (torManager === manager) return;
+  torManager = manager;
 
-  if (_torUnsub) {
-    _torUnsub();
-    _torUnsub = null;
+  if (torUnsub) {
+    torUnsub();
+    torUnsub = null;
   }
-  _torUnsub = manager.onEvent((type, data) => {
+  torUnsub = manager.onEvent((type, data) => {
     try {
       if (type === "status") {
-        _services?.eventBus?.emit("TOR_STATUS_CHANGED", data);
+        osServices?.eventBus?.emit("TOR_STATUS_CHANGED", data);
         if (data.ready) {
           trayManager.register("tor-service", "fas fa-shield-halved", "Tor Active", {
             resident: true,
             showInTray: true,
             priority: 90,
-            onClick: () => _services?.appLauncher?.launch("torBrowserApp"),
+            onClick: () => osServices?.appLauncher?.launch("torBrowserApp"),
             contextMenuItems: [
               {
                 label: "Open Tor Manager",
                 icon: "fas fa-external-link-alt",
-                action: () => _services?.appLauncher?.launch("torBrowserApp")
+                action: () => osServices?.appLauncher?.launch("torBrowserApp")
               },
               { label: "Stop Tor", icon: "fas fa-stop", action: () => manager.stop() }
             ]
@@ -248,14 +248,14 @@ export function setTorManager(manager: TorManagerService): void {
         }
       }
       if (type === "log") {
-        _services?.eventBus?.emit("TOR_LOG", data);
+        osServices?.eventBus?.emit("TOR_LOG", data);
       }
     } catch (e) {}
   });
 }
 
-function _listRunningApps() {
-  const al = _services?.appLauncher;
+function listRunningApps() {
+  const al = osServices?.appLauncher;
   if (!al) return [];
 
   const result: Array<{
@@ -299,51 +299,51 @@ function _listRunningApps() {
 
 export const os = {
   get window() {
-    if (!_cachedWindow) _cachedWindow = _buildWindow();
-    return _cachedWindow;
+    if (!cachedWindow) cachedWindow = buildWindow();
+    return cachedWindow;
   },
 
   get fs() {
-    if (!_cachedFS) _cachedFS = _buildFS();
-    return _cachedFS;
+    if (!cachedFS) cachedFS = buildFS();
+    return cachedFS;
   },
 
   get notify() {
-    if (!_cachedNotify) _cachedNotify = _buildNotify();
-    return _cachedNotify;
+    if (!cachedNotify) cachedNotify = buildNotify();
+    return cachedNotify;
   },
 
   get tray() {
-    if (!_cachedTray) _cachedTray = _buildTray();
-    return _cachedTray;
+    if (!cachedTray) cachedTray = buildTray();
+    return cachedTray;
   },
 
   get app() {
-    if (!_cachedApp) _cachedApp = _buildApp();
-    return _cachedApp;
+    if (!cachedApp) cachedApp = buildApp();
+    return cachedApp;
   },
 
   get events() {
-    if (!_cachedEvents) _cachedEvents = _buildEvents();
-    return _cachedEvents;
+    if (!cachedEvents) cachedEvents = buildEvents();
+    return cachedEvents;
   },
 
   get storage() {
-    return _storageAPI;
+    return storageAPI;
   },
 
   get dialog() {
-    return _dialogAPI;
+    return dialogAPI;
   },
 
   get tor() {
-    if (!_cachedTor) {
-      if (!_torManager) {
+    if (!cachedTor) {
+      if (!torManager) {
         setTorManager(TorManager.getInstance());
       }
-      _cachedTor = _buildTor();
+      cachedTor = buildTor();
     }
-    return _cachedTor;
+    return cachedTor;
   }
 };
 

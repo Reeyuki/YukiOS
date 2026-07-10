@@ -1,6 +1,6 @@
 import { WidgetBase } from "../widgetManager.js";
 import { os } from "../../framework.js";
-import { StorageKeys } from "../../StorageKeys.js";
+import { StorageKeys } from "../../framework.js";
 import { getAppRegistry } from "../../appRegistry.js";
 
 const ACHIEVEMENT_TOTAL = 25;
@@ -8,7 +8,7 @@ const ACHIEVEMENT_TOTAL = 25;
 export class SystemMonitorWidget extends WidgetBase {
   constructor(manager, id) {
     super(manager, id, "systemmonitor", "System Monitor", 240, 220);
-    this._interval = null;
+    this.interval = null;
   }
 
   onRender(contentEl) {
@@ -38,12 +38,12 @@ export class SystemMonitorWidget extends WidgetBase {
         <span class="widget-sysmon-value" id="w-sys-apps-${this.id}">--</span>
       </div>
     `;
-    this._update();
-    this._interval = setInterval(() => this._update(), 5000);
+    this.update();
+    this.interval = setInterval(() => this.update(), 5000);
   }
 
-  async _update() {
-    const ce = this._contentEl;
+  async update() {
+    const ce = this.contentEl;
 
     const storageEl = ce.querySelector(`#w-sys-storage-${this.id}`);
     const uptimeEl = ce.querySelector(`#w-sys-uptime-${this.id}`);
@@ -117,7 +117,7 @@ export class SystemMonitorWidget extends WidgetBase {
   }
 
   destroy() {
-    if (this._interval) clearInterval(this._interval);
+    if (this.interval) clearInterval(this.interval);
     super.destroy();
   }
 }

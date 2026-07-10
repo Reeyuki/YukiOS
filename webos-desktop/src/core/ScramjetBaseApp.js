@@ -69,23 +69,22 @@ export class ScramjetBaseApp extends BaseApp {
     const windowConfig = schema.windows[0];
     const winId = windowConfig.id;
 
-    if (this._isSingletonOpen(winId)) {
+    if (this.isSingletonOpen(winId)) {
       return;
     }
 
-    const win = this.wm.createWindow(winId, windowConfig.title, windowConfig.size[0], windowConfig.size[1], {
+    const win = os.window.create(winId, windowConfig.title, windowConfig.size[0], windowConfig.size[1], {
       icon: windowConfig.icon,
       appId: schema.id
     });
 
     win.innerHTML = windowConfig.ui;
-    this.wm.mountWindow(win, winId, windowConfig.title, windowConfig.icon);
 
     if (schema.onMount && typeof this[schema.onMount] === "function") {
       this[schema.onMount](null, null, win, schema.state?.initial || {});
     }
 
-    this._isDeclarative = true;
+    this.isDeclarative = true;
     return win;
   }
 
@@ -112,7 +111,6 @@ export class ScramjetBaseApp extends BaseApp {
       location.href.includes("statically") ||
       location.href.includes("staticdelivr")
     ) {
-      const os = await import("../os/index.js").then((m) => m.os);
       os.dialog.alert(
         "Launch Error",
         "This app you are launching and other web apps does not work inside this url because of svg/iframe limitations on this domain (" +
@@ -128,8 +126,7 @@ export class ScramjetBaseApp extends BaseApp {
       this.getHTMLPath() +
       `?wisp=${encodeURIComponent(wispUrl)}&target=${encodeURIComponent(targetUrl)}`;
 
-    this.wm.makeDraggable(element);
-    this.wm.makeResizable(element);
+    /* makeDraggable/makeResizable handled by os.window.create */
   }
 
   cleanupScramjet() {

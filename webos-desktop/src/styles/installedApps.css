@@ -106,12 +106,8 @@
 }
 
 .installed-apps-list::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.12);
-  border-radius: 4px;
-}
-
-.installed-apps-list::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
 }
 
 .installed-app-card {

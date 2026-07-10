@@ -113,17 +113,17 @@ export function showContextMenu(e, items, handlers) {
   });
 
   positionMenu(menu, e.pageX, e.pageY);
-  _setupKeyboardNav(menu);
+  setupKeyboardNav(menu);
   menu.focus({ preventScroll: true });
   bindDismissal();
 }
 
-function _getNavItems(menuEl) {
+function getNavItems(menuEl) {
   return Array.from(menuEl.children).filter((el) => el.tagName !== "HR" && el.style.display !== "none");
 }
 
-function _focusItem(menuEl, idx) {
-  const items = _getNavItems(menuEl);
+function focusItem(menuEl, idx) {
+  const items = getNavItems(menuEl);
   if (!items.length) return;
   idx = Math.max(0, Math.min(idx, items.length - 1));
   items.forEach((el, i) => el.classList.toggle("cm-focused", i === idx));
@@ -131,23 +131,23 @@ function _focusItem(menuEl, idx) {
   items[idx].scrollIntoView({ block: "nearest" });
 }
 
-function _clearFocus(menuEl) {
-  const items = _getNavItems(menuEl);
+function clearFocus(menuEl) {
+  const items = getNavItems(menuEl);
   items.forEach((el) => el.classList.remove("cm-focused"));
   delete menuEl.dataset.cmIdx;
 }
 
-function _setupKeyboardNav(menuEl) {
+function setupKeyboardNav(menuEl) {
   if (menuEl.dataset.cmNav) return;
   menuEl.dataset.cmNav = "1";
   menuEl.setAttribute("tabindex", "-1");
 
-  menuEl.addEventListener("mouseover", _clearFocus.bind(null, menuEl), {
+  menuEl.addEventListener("mouseover", clearFocus.bind(null, menuEl), {
     passive: true
   });
 
   menuEl.addEventListener("keydown", (e) => {
-    const items = _getNavItems(menuEl);
+    const items = getNavItems(menuEl);
     if (!items.length) return;
 
     let idx = parseInt(menuEl.dataset.cmIdx || "0");
@@ -158,13 +158,13 @@ function _setupKeyboardNav(menuEl) {
         e.preventDefault();
         e.stopPropagation();
         if (idx < items.length - 1) idx++;
-        _focusItem(menuEl, idx);
+        focusItem(menuEl, idx);
         break;
       case "ArrowUp":
         e.preventDefault();
         e.stopPropagation();
         if (idx > 0) idx--;
-        _focusItem(menuEl, idx);
+        focusItem(menuEl, idx);
         break;
       case "ArrowRight": {
         const target = items[idx];
@@ -178,7 +178,7 @@ function _setupKeyboardNav(menuEl) {
             if (sub) {
               setTimeout(() => {
                 sub.focus({ preventScroll: true });
-                _focusItem(sub, 0);
+                focusItem(sub, 0);
               }, 50);
             }
           }
@@ -192,13 +192,13 @@ function _setupKeyboardNav(menuEl) {
           e.preventDefault();
           e.stopPropagation();
           menuEl.style.display = "none";
-          _clearFocus(menuEl);
+          clearFocus(menuEl);
           const parentMenu = parentWrapper.parentElement;
           if (parentMenu) {
-            const parentItems = _getNavItems(parentMenu);
+            const parentItems = getNavItems(parentMenu);
             const parentIdx = parentItems.indexOf(parentWrapper);
             parentMenu.focus({ preventScroll: true });
-            _focusItem(parentMenu, Math.max(0, parentIdx));
+            focusItem(parentMenu, Math.max(0, parentIdx));
           }
         } else if (e.key === "Escape") {
           e.preventDefault();
@@ -224,7 +224,7 @@ function _setupKeyboardNav(menuEl) {
   });
 }
 
-function _createItemElement(text, onclick, icon) {
+function createItemElement(text, onclick, icon) {
   const el = document.createElement("div");
   const iconVal = (icon || "fa-chevron-right").trim();
   const iconCls = iconVal.includes(" ") ? iconVal : `fas ${iconVal}`;
@@ -256,7 +256,7 @@ export function showDynamicContextMenu(e, buildFn) {
   menu.innerHTML = "";
   menu.classList.add("context-menu-glass");
 
-  const item = (text, onclick, icon = null) => _createItemElement(text, onclick, icon);
+  const item = (text, onclick, icon = null) => createItemElement(text, onclick, icon);
 
   const hr = () => document.createElement("hr");
 
@@ -264,7 +264,7 @@ export function showDynamicContextMenu(e, buildFn) {
     const wrapper = document.createElement("div");
     wrapper.className = "context-menu-item has-submenu";
 
-    const trigger = _createItemElement(label, null, icon);
+    const trigger = createItemElement(label, null, icon);
     const arrow = document.createElement("span");
     arrow.className = "submenu-arrow";
     arrow.textContent = "\u25b6";
@@ -277,10 +277,10 @@ export function showDynamicContextMenu(e, buildFn) {
     subMenuEl.style.position = "fixed";
     wrapper.appendChild(subMenuEl);
 
-    const subItem = (text, onclick, subIcon = null) => _createItemElement(text, onclick, subIcon);
+    const subItem = (text, onclick, subIcon = null) => createItemElement(text, onclick, subIcon);
     const subHr = () => document.createElement("hr");
     buildSubFn(subMenuEl, subItem, subHr, submenu);
-    _setupKeyboardNav(subMenuEl);
+    setupKeyboardNav(subMenuEl);
 
     let hideTimeout = null;
     let showTimeout = null;
@@ -333,7 +333,7 @@ export function showDynamicContextMenu(e, buildFn) {
 
   positionMenu(menu, e.pageX, e.pageY);
   refreshIcons(menu);
-  _setupKeyboardNav(menu);
+  setupKeyboardNav(menu);
   menu.focus({ preventScroll: true });
   bindDismissal();
 }

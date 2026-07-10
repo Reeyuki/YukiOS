@@ -19,12 +19,12 @@ export class TaskManagerApp extends BaseApp {
     this.windowBirthTimes = new Map();
     this.frameDropScore = 0;
     this.longTaskBudget = 0;
-    this._startFrameMonitor();
-    this._startLongTaskMonitor();
-    this._declarativeApp = null;
+    this.startFrameMonitor();
+    this.startLongTaskMonitor();
+    this.declarativeApp = null;
   }
 
-  _startFrameMonitor() {
+  startFrameMonitor() {
     let last = performance.now();
     const tick = (now) => {
       const delta = now - last;
@@ -36,7 +36,7 @@ export class TaskManagerApp extends BaseApp {
     requestAnimationFrame(tick);
   }
 
-  _startLongTaskMonitor() {
+  startLongTaskMonitor() {
     if (!window.TurboObserver) return;
     try {
       const obs = new TurboObserver((list) => {
@@ -48,13 +48,13 @@ export class TaskManagerApp extends BaseApp {
     } catch {}
   }
 
-  _drainLongTaskBudget() {
+  drainLongTaskBudget() {
     const v = Math.min(this.longTaskBudget, 2000);
     this.longTaskBudget = Math.max(0, this.longTaskBudget - v);
     return v;
   }
 
-  _killProcess(id) {
+  killProcess(id) {
     const titleFromWindow = (winEl) => {
       const el = winEl.querySelector(".window-header span");
       return el ? el.textContent.trim() : id;
@@ -307,38 +307,38 @@ export class TaskManagerApp extends BaseApp {
           if (tabId === "proc") {
             tabProc.classList.add("tm-nav-active");
             panelProc.style.display = "flex";
-            this._renderProcesses(document.getElementById("taskmanager-app"), "proc");
+            this.renderProcesses(document.getElementById("taskmanager-app"), "proc");
           } else if (tabId === "apps") {
             tabApps.classList.add("tm-nav-active");
             panelApps.style.display = "flex";
-            this._renderProcesses(document.getElementById("taskmanager-app"), "apps");
+            this.renderProcesses(document.getElementById("taskmanager-app"), "apps");
           } else if (tabId === "perf") {
             tabPerf.classList.add("tm-nav-active");
             panelPerf.style.display = "flex";
-            this._renderSysInfo(document.getElementById("taskmanager-app"));
+            this.renderSysInfo(document.getElementById("taskmanager-app"));
           }
         },
         filterProcesses: (payload, event, element, state) => {
           this.filter = event.target.value.toLowerCase();
           state.filter = this.filter;
-          this._renderProcesses(document.getElementById("taskmanager-app"), "proc");
+          this.renderProcesses(document.getElementById("taskmanager-app"), "proc");
         },
         filterApps: (payload, event, element, state) => {
           this.appsFilter = event.target.value.toLowerCase();
           state.appsFilter = this.appsFilter;
-          this._renderProcesses(document.getElementById("taskmanager-app"), "apps");
+          this.renderProcesses(document.getElementById("taskmanager-app"), "apps");
         },
         refresh: () => {
-          this._renderProcesses(document.getElementById("taskmanager-app"), "proc");
-          this._renderPerf(document.getElementById("taskmanager-app"));
+          this.renderProcesses(document.getElementById("taskmanager-app"), "proc");
+          this.renderPerf(document.getElementById("taskmanager-app"));
         },
         refreshApps: () => {
-          this._renderProcesses(document.getElementById("taskmanager-app"), "apps");
+          this.renderProcesses(document.getElementById("taskmanager-app"), "apps");
         },
         selectAll: (payload, event, element, state) => {
           const win = document.getElementById("taskmanager-app");
           const tbody = $("#tm-tbody", win);
-          const allProcs = this._getProcesses();
+          const allProcs = this.getProcesses();
           const visibleProcs = allProcs.filter((p) => !this.filter || p.title.toLowerCase().includes(this.filter));
           const allSelected = visibleProcs.length > 0 && visibleProcs.every((p) => this.selectedIds.has(p.winId));
           if (allSelected) {
@@ -349,12 +349,12 @@ export class TaskManagerApp extends BaseApp {
           tbody.querySelectorAll(".tm-row").forEach((r) => {
             r.classList.toggle("tm-row-selected", this.selectedIds.has(r.dataset.id));
           });
-          this._updateSelectionUI(win, "proc");
+          this.updateSelectionUI(win, "proc");
         },
         selectAllApps: (payload, event, element, state) => {
           const win = document.getElementById("taskmanager-app");
           const tbody = $("#tm-tbody-apps", win);
-          const allProcs = this._getProcesses().filter((p) => !p.isTray);
+          const allProcs = this.getProcesses().filter((p) => !p.isTray);
           const visibleProcs = allProcs.filter(
             (p) => !this.appsFilter || p.title.toLowerCase().includes(this.appsFilter)
           );
@@ -367,23 +367,23 @@ export class TaskManagerApp extends BaseApp {
           tbody.querySelectorAll(".tm-row").forEach((r) => {
             r.classList.toggle("tm-row-selected", this.appsSelectedIds.has(r.dataset.id));
           });
-          this._updateSelectionUI(win, "apps");
+          this.updateSelectionUI(win, "apps");
         },
         killProcess: (payload, event, element, state) => {
           const win = document.getElementById("taskmanager-app");
           const idsToKill = Array.from(this.selectedIds);
-          idsToKill.forEach((id) => this._killProcess(id));
+          idsToKill.forEach((id) => this.killProcess(id));
           this.selectedIds.clear();
-          this._updateSelectionUI(win, "proc");
-          setTimeout(() => this._renderProcesses(win, "proc"), 200);
+          this.updateSelectionUI(win, "proc");
+          setTimeout(() => this.renderProcesses(win, "proc"), 200);
         },
         killProcessApps: (payload, event, element, state) => {
           const win = document.getElementById("taskmanager-app");
           const idsToKill = Array.from(this.appsSelectedIds);
-          idsToKill.forEach((id) => this._killProcess(id));
+          idsToKill.forEach((id) => this.killProcess(id));
           this.appsSelectedIds.clear();
-          this._updateSelectionUI(win, "apps");
-          setTimeout(() => this._renderProcesses(win, "apps"), 200);
+          this.updateSelectionUI(win, "apps");
+          setTimeout(() => this.renderProcesses(win, "apps"), 200);
         }
       },
       onMount: "initTaskManager"
@@ -392,8 +392,8 @@ export class TaskManagerApp extends BaseApp {
 
   initTaskManager(payload, event, element, state) {
     const win = document.getElementById("taskmanager-app");
-    this._renderProcesses(win, "proc");
-    this._startRefresh(win);
+    this.renderProcesses(win, "proc");
+    this.startRefresh(win);
     setTimeout(() => {
       const tabApps = document.getElementById("tm-tab-apps");
       if (tabApps) tabApps.click();
@@ -402,15 +402,15 @@ export class TaskManagerApp extends BaseApp {
     $(".close-btn", win).addEventListener("click", () => {
       clearInterval(this.refreshInterval);
       this.refreshInterval = null;
-      if (this._windowChangeHandlers) {
-        os.events.off(BusEvents.WINDOW_CREATED, this._windowChangeHandlers);
-        os.events.off(BusEvents.WINDOW_CLOSED, this._windowChangeHandlers);
-        this._windowChangeHandlers = null;
+      if (this.windowChangeHandlers) {
+        os.events.off(BusEvents.WINDOW_CREATED, this.windowChangeHandlers);
+        os.events.off(BusEvents.WINDOW_CLOSED, this.windowChangeHandlers);
+        this.windowChangeHandlers = null;
       }
     });
   }
 
-  _bindEvents(win) {
+  bindEvents(win) {
     const tabProc = $("#tm-tab-proc", win);
     const tabApps = $("#tm-tab-apps", win);
     const tabPerf = $("#tm-tab-perf", win);
@@ -423,8 +423,8 @@ export class TaskManagerApp extends BaseApp {
       [panelProc, panelApps, panelPerf].forEach((p) => (p.style.display = "none"));
       tab.classList.add("tm-nav-active");
       panel.style.display = "flex";
-      if (type === "perf") this._renderSysInfo(win);
-      else this._renderProcesses(win, type);
+      if (type === "perf") this.renderSysInfo(win);
+      else this.renderProcesses(win, type);
     };
 
     tabProc.onclick = () => switchTo(tabProc, panelProc, "proc");
@@ -433,49 +433,49 @@ export class TaskManagerApp extends BaseApp {
 
     $("#tm-filter", win).oninput = (e) => {
       this.filter = e.target.value.toLowerCase();
-      this._renderProcesses(win, "proc");
+      this.renderProcesses(win, "proc");
     };
 
     $("#tm-filter-apps", win).oninput = (e) => {
       this.appsFilter = e.target.value.toLowerCase();
-      this._renderProcesses(win, "apps");
+      this.renderProcesses(win, "apps");
     };
 
-    $("#tm-btn-refresh", win).onclick = () => this._renderProcesses(win, "proc");
-    $("#tm-btn-refresh-apps", win).onclick = () => this._renderProcesses(win, "apps");
+    $("#tm-btn-refresh", win).onclick = () => this.renderProcesses(win, "proc");
+    $("#tm-btn-refresh-apps", win).onclick = () => this.renderProcesses(win, "apps");
 
     $("#tm-btn-select-all", win).onclick = () => {
-      const procs = this._getProcesses().filter((p) => !this.filter || p.title.toLowerCase().includes(this.filter));
+      const procs = this.getProcesses().filter((p) => !this.filter || p.title.toLowerCase().includes(this.filter));
       const allSelected = procs.every((p) => this.selectedIds.has(p.winId));
       if (allSelected) this.selectedIds.clear();
       else procs.forEach((p) => this.selectedIds.add(p.winId));
-      this._renderProcesses(win, "proc");
+      this.renderProcesses(win, "proc");
     };
 
     $("#tm-btn-select-all-apps", win).onclick = () => {
-      const procs = this._getProcesses()
+      const procs = this.getProcesses()
         .filter((p) => !p.isTray)
         .filter((p) => !this.appsFilter || p.title.toLowerCase().includes(this.appsFilter));
       const allSelected = procs.every((p) => this.appsSelectedIds.has(p.winId));
       if (allSelected) this.appsSelectedIds.clear();
       else procs.forEach((p) => this.appsSelectedIds.add(p.winId));
-      this._renderProcesses(win, "apps");
+      this.renderProcesses(win, "apps");
     };
 
     $("#tm-btn-kill", win).onclick = () => {
       if (this.selectedIds.size === 0) return;
-      Array.from(this.selectedIds).forEach((id) => this._killProcess(id));
+      Array.from(this.selectedIds).forEach((id) => this.killProcess(id));
       this.selectedIds.clear();
-      this._updateSelectionUI(win, "proc");
-      setTimeout(() => this._renderProcesses(win, "proc"), 200);
+      this.updateSelectionUI(win, "proc");
+      setTimeout(() => this.renderProcesses(win, "proc"), 200);
     };
 
     $("#tm-btn-kill-apps", win).onclick = () => {
       if (this.appsSelectedIds.size === 0) return;
-      Array.from(this.appsSelectedIds).forEach((id) => this._killProcess(id));
+      Array.from(this.appsSelectedIds).forEach((id) => this.killProcess(id));
       this.appsSelectedIds.clear();
-      this._updateSelectionUI(win, "apps");
-      setTimeout(() => this._renderProcesses(win, "apps"), 200);
+      this.updateSelectionUI(win, "apps");
+      setTimeout(() => this.renderProcesses(win, "apps"), 200);
     };
 
     $$(".tm-th", win).forEach((th) => {
@@ -486,19 +486,19 @@ export class TaskManagerApp extends BaseApp {
           this.sortKey = key;
           this.sortAsc = true;
         }
-        this._renderProcesses(win);
+        this.renderProcesses(win);
       };
     });
   }
 
-  _getProcesses() {
+  getProcesses() {
     const procs = [];
     const runningApps = os.app.getRunningApps();
     runningApps.forEach((app) => {
       const win = document.getElementById(app.winId);
       if (!win) return;
 
-      const { cpu, mem } = this._measureWindow(app.winId, win);
+      const { cpu, mem } = this.measureWindow(app.winId, win);
 
       procs.push({
         winId: app.winId,
@@ -534,8 +534,8 @@ export class TaskManagerApp extends BaseApp {
     return procs;
   }
 
-  _renderProcesses(win, tabType = "proc") {
-    let procs = this._getProcesses();
+  renderProcesses(win, tabType = "proc") {
+    let procs = this.getProcesses();
     const isAppsTab = tabType === "apps";
 
     if (isAppsTab) procs = procs.filter((p) => !p.isTray);
@@ -566,7 +566,7 @@ export class TaskManagerApp extends BaseApp {
 
     if (procs.length === 0) {
       tbody.innerHTML = `<tr><td colspan="4" class="tm-empty-row">No ${isAppsTab ? "apps" : "processes"} running</td></tr>`;
-      this._updateSelectionUI(win, tabType);
+      this.updateSelectionUI(win, tabType);
       return;
     }
 
@@ -579,7 +579,7 @@ export class TaskManagerApp extends BaseApp {
         const selected = selectedSet.has(p.winId) ? "tm-row-selected" : "";
         const cpuPct = (p.cpu / maxCpu) * 100;
         const memPct = (p.mem / maxMem) * 100;
-        const cpuColor = p.cpu > 50 ? "#ef5350" : p.cpu > 20 ? "#ffa726" : "#4fc3f7";
+        const cpuColor = p.cpu > 50 ? "var(--error)" : p.cpu > 20 ? "var(--brand)" : "var(--brand)";
 
         const statusClass =
           p.status === "Running"
@@ -636,7 +636,7 @@ export class TaskManagerApp extends BaseApp {
             selectedSet.add(id);
           }
         }
-        this._updateSelectionUI(win, tabType);
+        this.updateSelectionUI(win, tabType);
         tbody.querySelectorAll(".tm-row").forEach((r) => {
           r.classList.toggle("tm-row-selected", selectedSet.has(r.dataset.id));
         });
@@ -644,7 +644,7 @@ export class TaskManagerApp extends BaseApp {
 
       row.ondblclick = () => {
         const id = row.dataset.id;
-        const proc = this._getProcesses().find((p) => p.winId === id);
+        const proc = this.getProcesses().find((p) => p.winId === id);
         if (proc?.isTray) {
           os.tray.restoreFromTray(id);
         } else {
@@ -657,10 +657,10 @@ export class TaskManagerApp extends BaseApp {
       };
     });
 
-    this._updateSelectionUI(win, tabType);
+    this.updateSelectionUI(win, tabType);
   }
 
-  _updateSelectionUI(win, tabType = "proc") {
+  updateSelectionUI(win, tabType = "proc") {
     const isAppsTab = tabType === "apps";
     const labelId = isAppsTab ? "#tm-selected-label-apps" : "#tm-selected-label";
     const killBtnId = isAppsTab ? "#tm-btn-kill-apps" : "#tm-btn-kill";
@@ -678,7 +678,7 @@ export class TaskManagerApp extends BaseApp {
       label.classList.remove("tm-selected-label-active");
     } else if (count === 1) {
       const id = Array.from(selectedSet)[0];
-      const proc = this._getProcesses().find((p) => p.winId === id);
+      const proc = this.getProcesses().find((p) => p.winId === id);
       label.textContent = proc ? `Selected: ${proc.title}` : "1 selected";
       label.classList.add("tm-selected-label-active");
     } else {
@@ -688,7 +688,7 @@ export class TaskManagerApp extends BaseApp {
 
     killBtn.disabled = count === 0;
 
-    const allProcs = this._getProcesses();
+    const allProcs = this.getProcesses();
     const visibleProcs = isAppsTab
       ? allProcs.filter((p) => !p.isTray).filter((p) => !filterValue || p.title.toLowerCase().includes(filterValue))
       : allProcs.filter((p) => !filterValue || p.title.toLowerCase().includes(filterValue));
@@ -696,17 +696,17 @@ export class TaskManagerApp extends BaseApp {
     selectAllBtn.textContent = allSelected ? "Deselect All" : "Select All";
   }
 
-  _drawGraph(canvas, history, color) {
+  drawGraph(canvas, history, color) {
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     const w = canvas.width;
     const h = canvas.height;
     ctx.clearRect(0, 0, w, h);
 
-    ctx.fillStyle = "#0a0a0a";
+    ctx.fillStyle = "var(--bg-primary)";
     ctx.fillRect(0, 0, w, h);
 
-    ctx.strokeStyle = "#1e1e1e";
+    ctx.strokeStyle = "var(--bg-primary)";
     ctx.lineWidth = 1;
     for (let i = 0; i <= 4; i++) {
       const y = (h / 4) * i;
@@ -740,8 +740,8 @@ export class TaskManagerApp extends BaseApp {
     ctx.stroke();
   }
 
-  _renderPerf(win) {
-    const runningProcs = this._getProcesses();
+  renderPerf(win) {
+    const runningProcs = this.getProcesses();
     const totalCpu = Math.min(
       99,
       runningProcs.reduce((s, p) => s + p.cpu, 0)
@@ -765,11 +765,11 @@ export class TaskManagerApp extends BaseApp {
     if (cpuVal) setText(cpuVal, `${totalCpu.toFixed(1)}%`);
     if (memVal) setText(memVal, `${totalMem.toFixed(1)}%`);
 
-    this._drawGraph($("#tm-cpu-graph", win), this.cpuHistory, "#4fc3f7");
-    this._drawGraph($("#tm-mem-graph", win), this.memHistory, "#81c995");
+    this.drawGraph($("#tm-cpu-graph", win), this.cpuHistory, "var(--brand)");
+    this.drawGraph($("#tm-mem-graph", win), this.memHistory, "var(--charging)");
   }
 
-  _renderSysInfo(win) {
+  renderSysInfo(win) {
     const hasRealMem = !!performance.memory;
     const hasLongTask = !!window.TurboObserver;
 
@@ -808,13 +808,13 @@ export class TaskManagerApp extends BaseApp {
     }
   }
 
-  _startRefresh(win) {
-    this._renderProcesses(win);
+  startRefresh(win) {
+    this.renderProcesses(win);
     this.refreshInterval = setInterval(() => {
       const procPanel = $("#tm-panel-proc", win);
       const perfPanel = $("#tm-panel-perf", win);
-      if (procPanel && procPanel.style.display !== "none") this._renderProcesses(win);
-      if (perfPanel && perfPanel.style.display !== "none") this._renderPerf(win);
+      if (procPanel && procPanel.style.display !== "none") this.renderProcesses(win);
+      if (perfPanel && perfPanel.style.display !== "none") this.renderPerf(win);
     }, 1500);
 
     const handleWindowChange = () => {
@@ -823,18 +823,18 @@ export class TaskManagerApp extends BaseApp {
         if (!taskManagerWin) return;
         const procPanel = $("#tm-panel-proc", taskManagerWin);
         const appsPanel = $("#tm-panel-apps", taskManagerWin);
-        this._renderProcesses(taskManagerWin, "proc");
-        this._renderProcesses(taskManagerWin, "apps");
+        this.renderProcesses(taskManagerWin, "proc");
+        this.renderProcesses(taskManagerWin, "apps");
       }, 50);
     };
 
     os.events.on(BusEvents.WINDOW_CREATED, handleWindowChange);
     os.events.on(BusEvents.WINDOW_CLOSED, handleWindowChange);
 
-    this._windowChangeHandlers = handleWindowChange;
+    this.windowChangeHandlers = handleWindowChange;
   }
 
-  _measureWindow(winId, win) {
+  measureWindow(winId, win) {
     const now = performance.now();
     if (!this.windowBirthTimes.has(winId)) this.windowBirthTimes.set(winId, now);
 
@@ -864,7 +864,7 @@ export class TaskManagerApp extends BaseApp {
     }
 
     const frameStress = Math.min(100, this.frameDropScore * 1.8);
-    const longTaskStress = Math.min(60, this._drainLongTaskBudget() / 10);
+    const longTaskStress = Math.min(60, this.drainLongTaskBudget() / 10);
     const activityStress = Math.min(40, domDelta * 2);
 
     let cpuShare = isMinimized ? 0.05 : domNodes / Math.max(1, $$(".window *").length);

@@ -1,7 +1,6 @@
 import { resolveGhUrl, resolveIconUrl } from "../shared/assetResolver.js";
 import { audioMixer } from "../audioMixer.js";
-
-import { BaseApp, os } from "../framework.js";
+import { BaseApp, os, StorageKeys } from "../framework.js";
 const SHITTIFY_ICON = resolveIconUrl("/static/icons/shittify.webp");
 
 const SHITTIFY_CDN_URL = "https://cdn.jsdelivr.net/gh/Reeyuki/shittifylol@master/shittify21.html";
@@ -48,13 +47,13 @@ const SHITTIFY_BRIDGE_SCRIPT = `
     post({ type: 'track', track: track, artist: artist, album: '', artwork: artwork, playbackState: state });
   }
 
-  var _trackedAudios = new WeakSet();
-  var _currentAudio = null;
+  var trackedAudios = new WeakSet();
+  var currentAudio = null;
 
   function attachToAudio(audio) {
-    if (_trackedAudios.has(audio)) return;
-    _trackedAudios.add(audio);
-    _currentAudio = audio;
+    if (trackedAudios.has(audio)) return;
+    trackedAudios.add(audio);
+    currentAudio = audio;
     audio.addEventListener('play', function() { setTimeout(function() { readPlayerDOM('playing'); }, 80); });
     audio.addEventListener('pause', function() { readPlayerDOM('paused'); });
     audio.addEventListener('ended', function() { readPlayerDOM('none'); });
@@ -78,7 +77,7 @@ const SHITTIFY_BRIDGE_SCRIPT = `
       for (var j = 0; j < nodes.length; j++) {
         var node = nodes[j];
         if (node && node.classList && node.classList.contains('song-player')) {
-          setTimeout(function() { readPlayerDOM(_currentAudio && !_currentAudio.paused ? 'playing' : 'paused'); }, 150);
+          setTimeout(function() { readPlayerDOM(currentAudio && !currentAudio.paused ? 'playing' : 'paused'); }, 150);
         }
       }
     }
@@ -114,8 +113,8 @@ const SHITTIFY_BRIDGE_SCRIPT = `
                if (typeof allSongsRN !== 'undefined') allSongsRN = metaJson.songs;
                playAnySong(song).then(function() {
                    setTimeout(function() {
-                       if (d.data.state !== 'playing' && _currentAudio) {
-                           _currentAudio.pause();
+                       if (d.data.state !== 'playing' && currentAudio) {
+                           currentAudio.pause();
                        }
                    }, 150);
                });
@@ -128,12 +127,12 @@ const SHITTIFY_BRIDGE_SCRIPT = `
       }
       if (d.cmd === 'volume') {
         var v = Math.max(0, Math.min(1, Number(d.value) || 0));
-        if (_currentAudio) _currentAudio.volume = v;
+        if (currentAudio) currentAudio.volume = v;
         return;
       }
-      if (!_currentAudio) return;
-      if (d.cmd === 'play') { try { _currentAudio.play(); } catch(ex) { console.error("[Shittify]", ex); } }
-      else if (d.cmd === 'pause') { try { _currentAudio.pause(); } catch(ex) { console.error("[Shittify]", ex); } }
+      if (!currentAudio) return;
+      if (d.cmd === 'play') { try { currentAudio.play(); } catch(ex) { console.error("[Shittify]", ex); } }
+      else if (d.cmd === 'pause') { try { currentAudio.pause(); } catch(ex) { console.error("[Shittify]", ex); } }
       else if (d.cmd === 'nexttrack') { var nb = document.querySelector('.player-next'); if (nb) nb.click(); }
       else if (d.cmd === 'previoustrack') { var bb = document.querySelector('.player-back'); if (bb) bb.click(); }
     } catch(e) { console.error("[Shittify]", e); }
@@ -158,17 +157,17 @@ const SHITTIFY_BRIDGE_SCRIPT = `
 export class ShittifyApp extends BaseApp {
   constructor(services) {
     super(services);
-    this._msgListener = null;
-    this._iframe = null;
-    this._winId = "shittify-window";
+    this.msgListener = null;
+    this.iframe = null;
+    this.winId = "shittify-window";
   }
 
-  _getAppSource() {
+  getAppSource() {
     return "Evil Spotify";
   }
 
   async open(extra = {}) {
-    const winId = extra.forceId || this._winId;
+    const winId = extra.forceId || this.winId;
 
     if (document.getElementById(winId)) {
       const win = document.getElementById(winId);
@@ -206,7 +205,7 @@ export class ShittifyApp extends BaseApp {
       `<img src="${SHITTIFY_ICON}" style="width:14px;height:14px;border-radius:2px;object-fit:contain;vertical-align:middle;" />`
     );
     audioMixer().setChannelCommandHandler(winId, (cmd) => this.sendCommand(cmd));
-    this._setupMessageBridge(winId);
+    this.setupMessageBridge(winId);
 
     try {
       const res = await fetch(resolvedUrl);
@@ -234,10 +233,10 @@ export class ShittifyApp extends BaseApp {
         content.style.justifyContent = "";
         content.style.overflow = "";
         content.innerHTML = `<iframe id="shittify-iframe" src="${blobUrl}" style="width:100%;height:100%;border:none;" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-pointer-lock"></iframe>`;
-        this._iframe = content.querySelector("iframe");
-        this._iframe.addEventListener("load", () => {
+        this.iframe = content.querySelector("iframe");
+        this.iframe.addEventListener("load", () => {
           try {
-            const lastState = os.storage.get("shittify_last_state");
+            const lastState = os.storage.get(StorageKeys.shittifyLastState);
             if (lastState && lastState.track) {
               this.sendCommand("restore", lastState);
             }
@@ -255,15 +254,15 @@ export class ShittifyApp extends BaseApp {
     }
   }
 
-  _setupMessageBridge(winId) {
-    if (this._msgListener) {
-      window.removeEventListener("message", this._msgListener);
+  setupMessageBridge(winId) {
+    if (this.msgListener) {
+      window.removeEventListener("message", this.msgListener);
     }
-    this._msgListener = (e) => {
+    this.msgListener = (e) => {
       const d = e.data;
       if (!d || d.__shittify !== true || d.type !== "track") return;
       if (d.track && d.artist) {
-        os.storage.set("shittify_last_state", { track: d.track, artist: d.artist, state: d.playbackState });
+        os.storage.set(StorageKeys.shittifyLastState, { track: d.track, artist: d.artist, state: d.playbackState });
       }
       audioMixer().updateChannelMeta(winId, {
         track: d.track || "",
@@ -273,21 +272,21 @@ export class ShittifyApp extends BaseApp {
         playbackState: d.playbackState || "none"
       });
     };
-    window.addEventListener("message", this._msgListener);
+    window.addEventListener("message", this.msgListener);
   }
 
   sendCommand(cmd, data = {}) {
-    if (this._iframe && this._iframe.contentWindow) {
-      this._iframe.contentWindow.postMessage({ __shittify_cmd: true, cmd, data }, "*");
+    if (this.iframe && this.iframe.contentWindow) {
+      this.iframe.contentWindow.postMessage({ __shittify_cmd: true, cmd, data }, "*");
     }
   }
 
   onClose(winId) {
-    if (this._msgListener) {
-      window.removeEventListener("message", this._msgListener);
-      this._msgListener = null;
+    if (this.msgListener) {
+      window.removeEventListener("message", this.msgListener);
+      this.msgListener = null;
     }
-    this._iframe = null;
+    this.iframe = null;
     audioMixer().unregisterWindow(winId);
     os.tray.unregister(winId);
     this.notify("Evil Spotify", "Music player closed", "info", 3000);

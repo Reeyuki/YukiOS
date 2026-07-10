@@ -6,17 +6,24 @@ import { showDynamicContextMenu } from "../../shared/contextMenu.js";
 import { fileKindFromName, showFileProperties, isImageFile } from "../../fileDisplay.js";
 import { decodeFileContent, isArchiveFile } from "../../utils/utils.js";
 import { saveToWallpapers } from "./upload.js";
+import { showConflictDialog } from "../../shared/conflictDialog.js";
+import { showConfirmDialog as showConfirmDialogDlg } from "./dialogs.js";
+import { speak, ClippyAnimation } from "../../ai/clippy.js";
+import { openFileConverter } from "../../utils/fileConverter.js";
+import { pasteToPath, downloadItems, createArchiveFromItems } from "./transfer.js";
+import { startInlineRename, spawnInlineItem } from "./inlineRename.js";
+import { SystemUtilities } from "../../system.js";
+import { Achievements } from "../../achievements.js";
+import { renderTrashView, showTrashView } from "./trash.js";
+import { triggerFileUpload, handleFileUpload } from "./upload.js";
 
 async function resolveConflictAction(name, applyToAllAction) {
   if (applyToAllAction) return { action: applyToAllAction, applyToAll: false };
-  const { showConflictDialog } = await import("../../shared/conflictDialog.js");
   return showConflictDialog(name);
 }
 
 function showConfirmDialog({ title, message, confirmText, onConfirm }) {
-  import("./dialogs.js").then(({ showConfirmDialog: dlg }) => {
-    dlg({ title, message, confirmText, onConfirm });
-  });
+  showConfirmDialogDlg({ title, message, confirmText, onConfirm });
 }
 
 async function openMarkdownPreview(explorer, fileName, inst) {
@@ -24,7 +31,6 @@ async function openMarkdownPreview(explorer, fileName, inst) {
     const content = decodeFileContent(await explorer.fs.getFileContent(inst.currentPath, fileName));
     if (explorer.markdownApp?.open) {
       explorer.markdownApp.open(fileName, content, inst.currentPath.join("/"));
-      const { speak, ClippyAnimation } = await import("../../ai/clippy.js");
       speak("Opening markdown preview. Looking good!", ClippyAnimation.Show);
     } else {
       os.notify.send("Markdown app not available");
@@ -40,7 +46,6 @@ async function openMarkdownInNotepad(explorer, fileName, inst) {
     const content = decodeFileContent(await explorer.fs.getFileContent(inst.currentPath, fileName));
     if (explorer.notepadApp?.open) {
       explorer.notepadApp.open(fileName, content, inst.currentPath.join("/"));
-      const { speak, ClippyAnimation } = await import("../../ai/clippy.js");
       speak("Opening in Notepad. Time to edit!", ClippyAnimation.Writing);
     } else {
       os.notify.send("Notepad app not available");
@@ -56,7 +61,6 @@ async function openTextInNotepad(explorer, fileName, inst) {
     const content = decodeFileContent(await explorer.fs.getFileContent(inst.currentPath, fileName));
     if (explorer.notepadApp?.open) {
       explorer.notepadApp.open(fileName, content, inst.currentPath.join("/"));
-      const { speak, ClippyAnimation } = await import("../../ai/clippy.js");
       speak("Opening in Notepad. Time to edit!", ClippyAnimation.Writing);
     } else {
       os.notify.send("Notepad app not available");
@@ -118,7 +122,7 @@ export function showFileContextMenu(explorer, e, itemName, isFile, inst) {
                 os.storage.set(StorageKeys.explorerQuickAccess, quickAccess);
               }
               const win = document.getElementById(inst.winId);
-              if (win) explorer._sidebarRebuild(win, inst);
+              if (win) explorer.sidebarRebuild(win, inst);
             },
             "fa-thumbtack"
           )
@@ -157,7 +161,6 @@ export function showFileContextMenu(explorer, e, itemName, isFile, inst) {
         item(
           convertableItems.length > 1 ? `Convert ${convertableItems.length} items...` : "Convert / Transform...",
           async () => {
-            const { openFileConverter } = await import("../../utils/fileConverter.js");
             const services = {
               windowManager: explorer.wm,
               fileSystemManager: explorer.fs,
@@ -180,16 +183,15 @@ export function showFileContextMenu(explorer, e, itemName, isFile, inst) {
       menu.appendChild(hr());
     }
 
-    menu.appendChild(item("Copy", () => explorer._clipboardAction("copy", inst, itemName, isFile), "fa-copy"));
-    menu.appendChild(item("Cut", () => explorer._clipboardAction("cut", inst, itemName, isFile), "fa-cut"));
+    menu.appendChild(item("Copy", () => explorer.clipboardAction("copy", inst, itemName, isFile), "fa-copy"));
+    menu.appendChild(item("Cut", () => explorer.clipboardAction("cut", inst, itemName, isFile), "fa-cut"));
 
-    const cb = explorer._getClipboard();
+    const cb = explorer.getClipboard();
     if (cb) {
       menu.appendChild(
         item(
           "Paste",
           async () => {
-            const { pasteToPath } = await import("./transfer.js");
             await pasteToPath(explorer, inst.currentPath, inst);
           },
           "fa-paste"
@@ -203,7 +205,6 @@ export function showFileContextMenu(explorer, e, itemName, isFile, inst) {
       item(
         "Download",
         async () => {
-          const { downloadItems } = await import("./transfer.js");
           await downloadItems(explorer, itemName, isFile, inst);
         },
         "fa-download"
@@ -213,7 +214,6 @@ export function showFileContextMenu(explorer, e, itemName, isFile, inst) {
       item(
         "Create Archive",
         async () => {
-          const { createArchiveFromItems } = await import("./transfer.js");
           await createArchiveFromItems(explorer, itemName, isFile, inst);
         },
         "fa-file-archive"
@@ -273,9 +273,7 @@ export function showFileContextMenu(explorer, e, itemName, isFile, inst) {
           const itemEl =
             view && $$(".file-item", view).find((el) => el.querySelector("span")?.textContent === itemName);
           if (itemEl) {
-            import("./inlineRename.js").then(({ startInlineRename }) => {
-              startInlineRename(explorer, itemEl, itemName, inst);
-            });
+            startInlineRename(explorer, itemEl, itemName, inst);
           }
         },
         "fa-edit"
@@ -302,7 +300,6 @@ export function showFileContextMenu(explorer, e, itemName, isFile, inst) {
           "Set Wallpaper",
           async () => {
             try {
-              const { SystemUtilities } = await import("../../system.js");
               const content = await getContent();
               await SystemUtilities.setWallpaper(content);
               os.notify.send(`Wallpaper set to "${itemName}"`);
@@ -339,11 +336,9 @@ export function showFileContextMenu(explorer, e, itemName, isFile, inst) {
         item(
           "Extract Here",
           () => {
-            import("../../achievements.js").then(({ Achievements }) => {
-              explorer._archiveExtractor.extract(itemName, inst.currentPath, () => {
-                if (window.achievements) window.achievements.trigger(Achievements.ArchiveHandler);
-                explorer.renderInstance(inst);
-              });
+            explorer.archiveExtractor.extract(itemName, inst.currentPath, () => {
+              if (window.achievements) window.achievements.trigger(Achievements.ArchiveHandler);
+              explorer.renderInstance(inst);
             });
           },
           "fa-box-open"
@@ -368,9 +363,9 @@ export function showFileContextMenu(explorer, e, itemName, isFile, inst) {
 export function showBackgroundContextMenu(explorer, e, inst) {
   e.preventDefault();
   e.stopPropagation();
-  const hasClipboard = !!explorer._getClipboard();
+  const hasClipboard = !!explorer.getClipboard();
 
-  if (inst._isTrashView) {
+  if (inst.isTrashView) {
     showDynamicContextMenu(e, (menu, item, hr) => {
       menu.appendChild(
         item(
@@ -378,10 +373,8 @@ export function showBackgroundContextMenu(explorer, e, inst) {
           () => {
             const view = $(`#${inst.winId}-view`, $(`#${inst.winId}`));
             os.fs.restoreAllTrashItems().then(() => {
-              import("./trash.js").then(({ renderTrashView }) => {
-                if (view) renderTrashView(explorer, inst, view, $(`#${inst.winId}`));
-                os.notify.send("All items restored from trash");
-              });
+              if (view) renderTrashView(explorer, inst, view, $(`#${inst.winId}`));
+              os.notify.send("All items restored from trash");
             });
           },
           "fa-undo"
@@ -395,10 +388,8 @@ export function showBackgroundContextMenu(explorer, e, inst) {
               if (!confirmed) return;
               const view = $(`#${inst.winId}-view`, $(`#${inst.winId}`));
               os.fs.emptyTrash().then(() => {
-                import("./trash.js").then(({ renderTrashView }) => {
-                  if (view) renderTrashView(explorer, inst, view, $(`#${inst.winId}`));
-                  os.notify.send("Trash emptied");
-                });
+                if (view) renderTrashView(explorer, inst, view, $(`#${inst.winId}`));
+                os.notify.send("Trash emptied");
               });
             });
           },
@@ -411,9 +402,7 @@ export function showBackgroundContextMenu(explorer, e, inst) {
           "Refresh",
           () => {
             const view = $(`#${inst.winId}-view`, $(`#${inst.winId}`));
-            import("./trash.js").then(({ renderTrashView }) => {
-              if (view) renderTrashView(explorer, inst, view, $(`#${inst.winId}`));
-            });
+            if (view) renderTrashView(explorer, inst, view, $(`#${inst.winId}`));
           },
           "fa-sync-alt"
         )
@@ -427,9 +416,7 @@ export function showBackgroundContextMenu(explorer, e, inst) {
       item(
         "Add file(s)",
         () => {
-          import("./upload.js").then(({ triggerFileUpload }) => {
-            triggerFileUpload(explorer, inst);
-          });
+          triggerFileUpload(explorer, inst);
         },
         "fa-file-upload"
       )
@@ -446,7 +433,6 @@ export function showBackgroundContextMenu(explorer, e, inst) {
             const files = Array.from(input.files);
             if (!files.length) return;
             const win = document.getElementById(inst.winId);
-            const { handleFileUpload } = await import("./upload.js");
             await handleFileUpload(explorer, files, true, win, inst);
           });
           input.click();
@@ -458,9 +444,7 @@ export function showBackgroundContextMenu(explorer, e, inst) {
       item(
         "New File",
         () => {
-          import("./inlineRename.js").then(({ spawnInlineItem }) => {
-            spawnInlineItem(explorer, inst, true);
-          });
+          spawnInlineItem(explorer, inst, true);
         },
         "fa-file-medical"
       )
@@ -469,9 +453,7 @@ export function showBackgroundContextMenu(explorer, e, inst) {
       item(
         "New Folder",
         () => {
-          import("./inlineRename.js").then(({ spawnInlineItem }) => {
-            spawnInlineItem(explorer, inst, false);
-          });
+          spawnInlineItem(explorer, inst, false);
         },
         "fa-folder-plus"
       )
@@ -482,7 +464,6 @@ export function showBackgroundContextMenu(explorer, e, inst) {
         item(
           "Paste",
           async () => {
-            const { pasteToPath } = await import("./transfer.js");
             await pasteToPath(explorer, inst.currentPath, inst);
           },
           "fa-paste"
@@ -502,7 +483,7 @@ export function showBackgroundContextMenu(explorer, e, inst) {
             os.notify.send(`Mounted "${label.trim()}"`, { type: "success" });
             const win = $(`#${inst.winId}`);
             if (win) {
-              explorer._renderMountsInSidebar(win, inst);
+              explorer.renderMountsInSidebar(win, inst);
             }
             await explorer.renderInstance(inst);
           } catch (err) {
@@ -605,7 +586,7 @@ export function showSidebarItemContextMenu(explorer, e, path, label, inst) {
               os.storage.set(StorageKeys.explorerQuickAccessHidden, hiddenDefaultsList);
             }
             const win = document.getElementById(inst.winId);
-            if (win) explorer._sidebarRebuild(win, inst);
+            if (win) explorer.sidebarRebuild(win, inst);
           },
           "fa-thumbtack"
         )
@@ -623,7 +604,7 @@ export function showSidebarItemContextMenu(explorer, e, path, label, inst) {
               os.storage.set(StorageKeys.explorerQuickAccess, quickAccess);
             }
             const win = document.getElementById(inst.winId);
-            if (win) explorer._sidebarRebuild(win, inst);
+            if (win) explorer.sidebarRebuild(win, inst);
           },
           "fa-thumbtack"
         )
@@ -649,7 +630,7 @@ export function showTrashContextMenu(explorer, e, inst) {
   e.stopPropagation();
 
   showDynamicContextMenu(e, (menu, item, hr) => {
-    const isTrashView = inst._isTrashView;
+    const isTrashView = inst.isTrashView;
     if (isTrashView) {
       menu.appendChild(
         item(
@@ -659,9 +640,7 @@ export function showTrashContextMenu(explorer, e, inst) {
               const win = $(`#${inst.winId}`);
               const view = win && $(`#${inst.winId}-view`, win);
               if (view) {
-                import("./trash.js").then(({ renderTrashView }) => {
-                  renderTrashView(explorer, inst, view, win);
-                });
+                renderTrashView(explorer, inst, view, win);
               }
               os.notify.send("All items restored from trash");
             });
@@ -679,9 +658,7 @@ export function showTrashContextMenu(explorer, e, inst) {
                 const win = $(`#${inst.winId}`);
                 const view = win && $(`#${inst.winId}-view`, win);
                 if (view) {
-                  import("./trash.js").then(({ renderTrashView }) => {
-                    renderTrashView(explorer, inst, view, win);
-                  });
+                  renderTrashView(explorer, inst, view, win);
                 }
                 os.notify.send("Trash emptied");
               });
@@ -695,7 +672,7 @@ export function showTrashContextMenu(explorer, e, inst) {
         item(
           "Open Trash",
           () => {
-            import("./trash.js").then(({ showTrashView }) => showTrashView(explorer, inst));
+            showTrashView(explorer, inst);
           },
           "fa-trash"
         )

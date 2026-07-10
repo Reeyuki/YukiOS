@@ -1,11 +1,4 @@
-import {
-  windowMakeDraggable,
-  _getSnapZone,
-  _showSnapGhost,
-  _hideSnapGhost,
-  _applySnap,
-  _unsnap
-} from "./makeDraggable.js";
+import { windowMakeDraggable, getSnapZone, showSnapGhost, hideSnapGhost, applySnap, unsnap } from "./makeDraggable.js";
 
 export class SnapSystem {
   constructor(manager) {
@@ -13,37 +6,37 @@ export class SnapSystem {
   }
 
   init() {
-    this._initSnapGhost();
+    this.initSnapGhost();
   }
 
-  _initSnapGhost() {
+  initSnapGhost() {
     const ghost = document.createElement("div");
     ghost.id = "snap-ghost";
     document.getElementById("desktop").appendChild(ghost);
-    this.manager._snapGhost = ghost;
+    this.manager.snapGhost = ghost;
   }
 
   makeDraggable(win) {
     windowMakeDraggable(win, this.manager);
   }
 
-  _getSnapZone(x, y) {
-    return _getSnapZone(this.manager, x, y);
+  getSnapZone(x, y) {
+    return getSnapZone(this.manager, x, y);
   }
 
-  _showSnapGhost(zone) {
-    _showSnapGhost(this.manager, zone);
+  showSnapGhost(zone) {
+    showSnapGhost(this.manager, zone);
   }
 
-  _hideSnapGhost() {
-    _hideSnapGhost(this.manager);
+  hideSnapGhost() {
+    hideSnapGhost(this.manager);
   }
 
-  _applySnap(win, zone, skipSavePreSnap = false) {
-    _applySnap(this.manager, win, zone, skipSavePreSnap);
+  applySnap(win, zone, skipSavePreSnap = false) {
+    applySnap(this.manager, win, zone, skipSavePreSnap);
   }
 
-  _unsnap(win) {
-    _unsnap(this.manager, win);
+  unsnap(win) {
+    unsnap(this.manager, win);
   }
 }

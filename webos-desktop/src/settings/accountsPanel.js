@@ -6,12 +6,12 @@ import { StorageKeys, os } from "../framework.js";
 import { $, $$, bindEvent, setText, setHTML } from "../shared/domUtils.js";
 import { showContextMenu } from "../shared/contextMenu.js";
 
-let _win = null;
-let _selectedUserId = null;
-let _selectedAvatar = null;
-let _customImageDataUrl = null;
-let _avatarWindow = null;
-let _isCreating = false;
+let win = null;
+let selectedUserId = null;
+let selectedAvatar = null;
+let customImageDataUrl = null;
+let avatarWindow = null;
+let isCreating = false;
 
 function getCurrentUser() {
   const currentUserId = os.storage.get(StorageKeys.userId);
@@ -31,7 +31,7 @@ function getUserHistory() {
 
 function getSelectedUser() {
   const history = getUserHistory();
-  const user = _selectedUserId ? history.find((u) => u.userId === _selectedUserId) : null;
+  const user = selectedUserId ? history.find((u) => u.userId === selectedUserId) : null;
   return user || getCurrentUser();
 }
 
@@ -49,7 +49,7 @@ function formatTimeAgo(date) {
 }
 
 function showStatus(message) {
-  const status = $("#account-status", _win);
+  const status = $("#account-status", win);
   if (status) {
     setText(status, message);
     status.style.opacity = "1";
@@ -68,7 +68,7 @@ export function renderUserList() {
   return userHistory
     .map((user) => {
       const isCurrentUser = user.userId === currentUser.userId;
-      const isSelected = user.userId === (_selectedUserId || currentUser.userId);
+      const isSelected = user.userId === (selectedUserId || currentUser.userId);
       const lastLogin = user.lastLogin ? formatTimeAgo(new Date(user.lastLogin)) : "Never";
       return `
         <div class="accounts-user-item ${isSelected ? "selected" : ""} ${isCurrentUser ? "current" : ""}"
@@ -91,8 +91,8 @@ export function renderUserList() {
 export function getAccountsDetailHTML() {
   const user = getSelectedUser();
   const currentUser = getCurrentUser();
-  const isCurrentUser = user.userId === currentUser.userId && !_isCreating;
-  const nameValue = _isCreating ? "" : user.name;
+  const isCurrentUser = user.userId === currentUser.userId && !isCreating;
+  const nameValue = isCreating ? "" : user.name;
 
   return `
     <div class="accounts-detail-body">
@@ -114,7 +114,7 @@ export function getAccountsDetailHTML() {
     <div class="accounts-detail-footer">
       <div class="accounts-detail-actions-left">
         ${
-          !_isCreating && !isCurrentUser
+          !isCreating && !isCurrentUser
             ? `
           <button class="settings-btn" id="accounts-switch-btn" style="font-size: 12px; padding: 6px 12px;">
             <i class="fas fa-sign-in-alt"></i> Switch
@@ -137,10 +137,10 @@ export function getAccountsDetailHTML() {
 
 export function renderAccountsSettings() {
   const currentUser = getCurrentUser();
-  _selectedUserId = currentUser.userId;
-  _selectedAvatar = currentUser.avatar;
-  _customImageDataUrl = null;
-  _isCreating = false;
+  selectedUserId = currentUser.userId;
+  selectedAvatar = currentUser.avatar;
+  customImageDataUrl = null;
+  isCreating = false;
 
   const sponsorDismissed = os.storage.get(StorageKeys.sponsorDismissed) === "true";
 
@@ -197,7 +197,7 @@ export function renderAccountsSettings() {
 }
 
 async function refreshAvatarImages() {
-  const imgs = $$(".accounts-avatar-img", _win);
+  const imgs = $$(".accounts-avatar-img", win);
   await Promise.all(
     Array.from(imgs).map(async (img) => {
       const avatarRef = img.dataset.avatarRef;
@@ -210,7 +210,7 @@ async function refreshAvatarImages() {
 }
 
 function refreshUserList() {
-  const list = $("#accounts-user-list", _win);
+  const list = $("#accounts-user-list", win);
   if (list) {
     setHTML(list, renderUserList());
     bindUserListItemEvents();
@@ -219,7 +219,7 @@ function refreshUserList() {
 }
 
 function refreshDetailPanel() {
-  const detail = $("#accounts-detail", _win);
+  const detail = $("#accounts-detail", win);
   if (detail) {
     setHTML(detail, getAccountsDetailHTML());
     bindDetailEvents();
@@ -242,16 +242,16 @@ function buildUserContextMenu(userId) {
 }
 
 function bindUserListItemEvents() {
-  $$(".accounts-user-item", _win).forEach((item) => {
+  $$(".accounts-user-item", win).forEach((item) => {
     bindEvent(item, "click", () => {
       const userId = item.dataset.userId;
-      _selectedUserId = userId;
-      _isCreating = false;
+      selectedUserId = userId;
+      isCreating = false;
       const history = getUserHistory();
       const user = history.find((u) => u.userId === userId);
       if (user) {
-        _selectedAvatar = user.avatar;
-        _customImageDataUrl = null;
+        selectedAvatar = user.avatar;
+        customImageDataUrl = null;
       }
       refreshUserList();
       refreshDetailPanel();
@@ -261,8 +261,8 @@ function bindUserListItemEvents() {
       e.preventDefault();
       e.stopPropagation();
       const userId = item.dataset.userId;
-      _selectedUserId = userId;
-      _isCreating = false;
+      selectedUserId = userId;
+      isCreating = false;
       refreshUserList();
       refreshDetailPanel();
 
@@ -281,19 +281,19 @@ function bindUserListItemEvents() {
 }
 
 function bindDetailEvents() {
-  bindEvent($("#accounts-apply-btn", _win), "click", applyAction);
-  bindEvent($("#accounts-create-btn", _win), "click", startCreateNewUser);
-  bindEvent($("#accounts-choose-avatar-btn", _win), "click", openAvatarPicker);
+  bindEvent($("#accounts-apply-btn", win), "click", applyAction);
+  bindEvent($("#accounts-create-btn", win), "click", startCreateNewUser);
+  bindEvent($("#accounts-choose-avatar-btn", win), "click", openAvatarPicker);
 
-  const switchBtn = $("#accounts-switch-btn", _win);
+  const switchBtn = $("#accounts-switch-btn", win);
   if (switchBtn) bindEvent(switchBtn, "click", switchUser);
 
-  const deleteBtn = $("#accounts-delete-btn", _win);
+  const deleteBtn = $("#accounts-delete-btn", win);
   if (deleteBtn) bindEvent(deleteBtn, "click", deleteUser);
 }
 
 function applyAction() {
-  if (_isCreating) {
+  if (isCreating) {
     createNewUser();
   } else {
     saveUser();
@@ -301,14 +301,14 @@ function applyAction() {
 }
 
 function saveUser() {
-  const usernameInput = $("#accounts-username-input", _win);
+  const usernameInput = $("#accounts-username-input", win);
   if (!usernameInput) return;
 
   const name = usernameInput.value.trim() || "User";
-  const avatar = _customImageDataUrl || _selectedAvatar;
+  const avatar = customImageDataUrl || selectedAvatar;
   const userHistory = getUserHistory();
 
-  const editingUserId = _selectedUserId;
+  const editingUserId = selectedUserId;
   if (!editingUserId) return;
 
   const existingIndex = userHistory.findIndex((u) => u.userId === editingUserId);
@@ -336,18 +336,18 @@ function saveUser() {
 }
 
 function startCreateNewUser() {
-  _isCreating = true;
-  _selectedUserId = null;
-  _selectedAvatar = PREDEFINED_AVATARS[0];
-  _customImageDataUrl = null;
+  isCreating = true;
+  selectedUserId = null;
+  selectedAvatar = PREDEFINED_AVATARS[0];
+  customImageDataUrl = null;
   refreshUserList();
   refreshDetailPanel();
 }
 
 function createNewUser() {
-  const usernameInput = $("#accounts-username-input", _win);
+  const usernameInput = $("#accounts-username-input", win);
   const name = usernameInput ? usernameInput.value.trim() || "New User" : "New User";
-  const avatar = _customImageDataUrl || _selectedAvatar || PREDEFINED_AVATARS[0];
+  const avatar = customImageDataUrl || selectedAvatar || PREDEFINED_AVATARS[0];
   const userHistory = getUserHistory();
 
   const newUserId = generateUUID();
@@ -366,8 +366,8 @@ function createNewUser() {
   os.storage.set(StorageKeys.username, name);
   os.storage.set(StorageKeys.profilePicture, avatar);
 
-  _isCreating = false;
-  _selectedUserId = newUserId;
+  isCreating = false;
+  selectedUserId = newUserId;
 
   os.events.emit(BusEvents.SESSION_INITIALIZED, newUser);
   showStatus("User created successfully!");
@@ -378,24 +378,24 @@ function createNewUser() {
 
 async function deleteUser() {
   const currentUser = getCurrentUser();
-  if (_selectedUserId === currentUser.userId) {
+  if (selectedUserId === currentUser.userId) {
     os.dialog.alert("Cannot Delete", "You cannot delete the currently active user. Switch to another user first.");
     return;
   }
 
   const userHistory = getUserHistory();
-  const user = userHistory.find((u) => u.userId === _selectedUserId);
+  const user = userHistory.find((u) => u.userId === selectedUserId);
   if (!user) return;
 
   const confirmed = await os.dialog.confirm("Delete User", `Delete "${user.name}"? This cannot be undone.`);
   if (!confirmed) return;
 
-  const filtered = userHistory.filter((u) => u.userId !== _selectedUserId);
+  const filtered = userHistory.filter((u) => u.userId !== selectedUserId);
   os.storage.set(StorageKeys.userHistory, filtered);
 
-  _selectedUserId = currentUser.userId;
-  _selectedAvatar = currentUser.avatar;
-  _customImageDataUrl = null;
+  selectedUserId = currentUser.userId;
+  selectedAvatar = currentUser.avatar;
+  customImageDataUrl = null;
 
   showStatus(`Deleted ${user.name}`);
   refreshUserList();
@@ -405,16 +405,16 @@ async function deleteUser() {
 
 async function switchUser() {
   const currentUserId = os.storage.get(StorageKeys.userId);
-  if (_selectedUserId === currentUserId) return;
+  if (selectedUserId === currentUserId) return;
 
   const userHistory = getUserHistory();
-  const user = userHistory.find((u) => u.userId === _selectedUserId);
+  const user = userHistory.find((u) => u.userId === selectedUserId);
   if (!user) return;
 
   const confirmed = await os.dialog.confirm("Switch User", `Switch to ${user.name}?`);
   if (!confirmed) return;
 
-  os.storage.set(StorageKeys.userId, _selectedUserId);
+  os.storage.set(StorageKeys.userId, selectedUserId);
   os.storage.set(StorageKeys.username, user.name);
   os.storage.set(StorageKeys.profilePicture, user.avatar);
 
@@ -446,48 +446,48 @@ function openAvatarPicker() {
     </div>
   `;
 
-  if (_avatarWindow) {
-    os.window.close(_avatarWindow);
-    _avatarWindow = null;
+  if (avatarWindow) {
+    os.window.close(avatarWindow);
+    avatarWindow = null;
   }
 
-  _avatarWindow = os.window.create("accounts-avatar-picker", "Choose Avatar", "320px", "400px", {
+  avatarWindow = os.window.create("accounts-avatar-picker", "Choose Avatar", "320px", "400px", {
     icon: "fas fa-images",
     iconColor: "var(--brand)"
   });
 
-  const windowContent = _avatarWindow.querySelector(".window-content") || _avatarWindow;
+  const windowContent = avatarWindow.querySelector(".window-content") || avatarWindow;
   windowContent.innerHTML = avatarGridHtml;
 
   const user = getSelectedUser();
-  $$(".accounts-avatar-option", _avatarWindow).forEach((opt) => {
-    if (opt.dataset.src === _selectedAvatar) {
+  $$(".accounts-avatar-option", avatarWindow).forEach((opt) => {
+    if (opt.dataset.src === selectedAvatar) {
       opt.style.borderColor = "var(--brand)";
       opt.style.boxShadow = "0 0 0 2px var(--brand)";
     }
     bindEvent(opt, "click", () => selectAvatar(opt));
   });
 
-  bindEvent($("#accounts-avatar-upload-btn", _avatarWindow), "click", uploadAvatar);
-  os.window.bringToFront(_avatarWindow);
+  bindEvent($("#accounts-avatar-upload-btn", avatarWindow), "click", uploadAvatar);
+  os.window.bringToFront(avatarWindow);
 }
 
 function selectAvatar(option) {
-  $$(".accounts-avatar-option", _avatarWindow).forEach((opt) => {
+  $$(".accounts-avatar-option", avatarWindow).forEach((opt) => {
     opt.style.borderColor = "var(--glass-border)";
     opt.style.boxShadow = "none";
   });
   option.style.borderColor = "var(--brand)";
   option.style.boxShadow = "0 0 0 2px var(--brand)";
-  _selectedAvatar = option.dataset.src;
-  _customImageDataUrl = null;
+  selectedAvatar = option.dataset.src;
+  customImageDataUrl = null;
 
-  const detailImg = $("#accounts-detail-avatar-img", _win);
-  if (detailImg) detailImg.src = _selectedAvatar;
+  const detailImg = $("#accounts-detail-avatar-img", win);
+  if (detailImg) detailImg.src = selectedAvatar;
 
-  if (_avatarWindow) {
-    os.window.close(_avatarWindow);
-    _avatarWindow = null;
+  if (avatarWindow) {
+    os.window.close(avatarWindow);
+    avatarWindow = null;
   }
 }
 
@@ -515,18 +515,18 @@ async function uploadAvatar() {
       await os.fs.writeBinaryFile(["Pictures"], fileName, file, "image", "static/icons/image.webp");
       const fileRef = `fs://Pictures/${fileName}`;
 
-      _customImageDataUrl = fileRef;
-      _selectedAvatar = fileRef;
+      customImageDataUrl = fileRef;
+      selectedAvatar = fileRef;
 
-      const detailImg = $("#accounts-detail-avatar-img", _win);
+      const detailImg = $("#accounts-detail-avatar-img", win);
       if (detailImg) {
         const blob = await os.fs.readBinaryFile(["Pictures"], fileName);
         if (blob) detailImg.src = URL.createObjectURL(blob);
       }
 
-      if (_avatarWindow) {
-        os.window.close(_avatarWindow);
-        _avatarWindow = null;
+      if (avatarWindow) {
+        os.window.close(avatarWindow);
+        avatarWindow = null;
       }
     } catch (e) {
       console.error("Upload failed:", e);
@@ -538,16 +538,16 @@ async function uploadAvatar() {
 }
 
 export function bindAccountsCategory(win) {
-  _win = win;
+  win = win;
 
   os.events.on(BusEvents.SESSION_INITIALIZED, () => {
-    if (_win && _win.isConnected) {
+    if (win && win.isConnected) {
       refreshUserList();
       refreshDetailPanel();
     }
   });
   os.events.on(BusEvents.PROFILE_UPDATED, () => {
-    if (_win && _win.isConnected) {
+    if (win && win.isConnected) {
       refreshUserList();
       refreshDetailPanel();
     }
@@ -557,11 +557,11 @@ export function bindAccountsCategory(win) {
   bindDetailEvents();
   refreshAvatarImages();
 
-  const sponsorClose = $("#sponsor-close", _win);
+  const sponsorClose = $("#sponsor-close", win);
   if (sponsorClose) {
     bindEvent(sponsorClose, "click", () => {
       os.storage.set(StorageKeys.sponsorDismissed, "true");
-      const banner = $("#accounts-sponsor-banner", _win);
+      const banner = $("#accounts-sponsor-banner", win);
       if (banner) banner.remove();
     });
   }

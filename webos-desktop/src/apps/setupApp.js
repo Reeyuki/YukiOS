@@ -263,7 +263,7 @@ export class SetupApp extends BaseApp {
 
   async open(options = {}) {
     const winId = "setup-wizard";
-    if (await this._isSingletonOpen(winId)) return;
+    if (await this.isSingletonOpen(winId)) return;
 
     this.currentStep = 0;
     this.isTransitioning = false;
@@ -272,23 +272,23 @@ export class SetupApp extends BaseApp {
       this.stepTransitionTimer = null;
     }
 
-    await this._loadWallpapers();
+    await this.loadWallpapers();
 
     const win = os.window.create(winId, "Set Up YukiOS", "85vw", "75vh", {
       icon: "fas fa-rocket",
       position: "center"
     });
-    win.innerHTML = this._buildUI();
+    win.innerHTML = this.buildUI();
     this.openWindows.add(winId);
-    this._bindEvents(win);
-    this._animateStepIn();
+    this.bindEvents(win);
+    this.animateStepIn();
   }
 
   onClose(winId) {
     this.openWindows.delete(winId);
   }
 
-  _buildUI() {
+  buildUI() {
     return `
       <div class="window-header">
         <span>Set Up YukiOS</span>
@@ -312,15 +312,15 @@ export class SetupApp extends BaseApp {
         </div>
 
         <div class="setup-content">
-          ${this._buildStep1()}
-          ${this._buildStep2()}
-          ${this._buildStep3()}
-          ${this._buildStep3b()}
-          ${this._buildStep4()}
-          ${this._buildStep5()}
-          ${this._buildStep6()}
-          ${this._buildStep7()}
-          ${this._buildStep8()}
+          ${this.buildStep1()}
+          ${this.buildStep2()}
+          ${this.buildStep3()}
+          ${this.buildStep3b()}
+          ${this.buildStep4()}
+          ${this.buildStep5()}
+          ${this.buildStep6()}
+          ${this.buildStep7()}
+          ${this.buildStep8()}
         </div>
 
         <div class="setup-footer">
@@ -340,7 +340,7 @@ export class SetupApp extends BaseApp {
     `;
   }
 
-  _buildStep1() {
+  buildStep1() {
     const nickname = os.storage.get(StorageKeys.username) || "Guest";
     return `
       <div class="setup-step active" data-step="1">
@@ -358,7 +358,7 @@ export class SetupApp extends BaseApp {
     `;
   }
 
-  _buildFeatureGrid(data, title, icon, extraClass) {
+  buildFeatureGrid(data, title, icon, extraClass) {
     return `
       <div class="step-content">
         <div class="step-title"><i class="${icon}"></i> ${title}</div>
@@ -379,19 +379,19 @@ export class SetupApp extends BaseApp {
     `;
   }
 
-  _buildStep2() {
-    return `<div class="setup-step" data-step="2">${this._buildFeatureGrid(FEATURE_DATA.step2, "Here's What You Get", "fas fa-star")}</div>`;
+  buildStep2() {
+    return `<div class="setup-step" data-step="2">${this.buildFeatureGrid(FEATURE_DATA.step2, "Here's What You Get", "fas fa-star")}</div>`;
   }
 
-  _buildStep3() {
-    return `<div class="setup-step" data-step="3">${this._buildFeatureGrid(FEATURE_DATA.step3, "System Features", "fas fa-puzzle-piece")}</div>`;
+  buildStep3() {
+    return `<div class="setup-step" data-step="3">${this.buildFeatureGrid(FEATURE_DATA.step3, "System Features", "fas fa-puzzle-piece")}</div>`;
   }
 
-  _buildStep3b() {
-    return `<div class="setup-step" data-step="4">${this._buildFeatureGrid(FEATURE_DATA.step3b, "More Features", "fas fa-plus-circle")}</div>`;
+  buildStep3b() {
+    return `<div class="setup-step" data-step="4">${this.buildFeatureGrid(FEATURE_DATA.step3b, "More Features", "fas fa-plus-circle")}</div>`;
   }
 
-  _buildStep4() {
+  buildStep4() {
     const themes = getAllThemes();
 
     const themeButtons = themes
@@ -500,7 +500,7 @@ export class SetupApp extends BaseApp {
     `;
   }
 
-  _buildToggle(setting, icon, label, checked) {
+  buildToggle(setting, icon, label, checked) {
     return `
       <div class="setting-item">
         <div class="setting-info">
@@ -517,7 +517,7 @@ export class SetupApp extends BaseApp {
     `;
   }
 
-  _buildTurboSelector() {
+  buildTurboSelector() {
     return `
       <div class="settings-half">
         <label class="section-label">Turbo</label>
@@ -536,7 +536,7 @@ export class SetupApp extends BaseApp {
     `;
   }
 
-  _buildTransparencySelector() {
+  buildTransparencySelector() {
     return `
       <div class="settings-half">
         <label class="section-label">Transparency</label>
@@ -555,7 +555,7 @@ export class SetupApp extends BaseApp {
     `;
   }
 
-  _buildStep5() {
+  buildStep5() {
     return `
       <div class="setup-step" data-step="6">
         <h2 class="step-title">
@@ -563,26 +563,26 @@ export class SetupApp extends BaseApp {
         </h2>
 
         <div class="settings-grid">
-          ${this._buildToggle("weather", "fas fa-cloud-sun", "Weather", this.userChoices.weather)}
-          ${this._buildToggle("notifications", "fas fa-bell", "Notifications", this.userChoices.notifications)}
-          ${this._buildToggle("sound", "fas fa-volume-high", "Sound", this.userChoices.sound)}
-          ${this._buildToggle("achievements", "fas fa-trophy", "Achievements", this.userChoices.achievements)}
-          ${this._buildToggle("analytics", "fas fa-chart-line", "Analytics", this.userChoices.analytics)}
-          ${this._buildToggle("macOsControls", "fab fa-apple", "Mac Window Headers", this.userChoices.macOsControls)}
-          ${this._buildToggle("mikuCursor", "fas fa-mouse-pointer", "Miku Cursor", this.userChoices.mikuCursor)}
-          ${this._buildToggle("clippy", "fas fa-robot", "Clippy", this.userChoices.clippy)}
-          ${this._buildToggle("clipboardManager", "fas fa-paste", "Clipboard Manager", this.userChoices.clipboardManager)}
+          ${this.buildToggle("weather", "fas fa-cloud-sun", "Weather", this.userChoices.weather)}
+          ${this.buildToggle("notifications", "fas fa-bell", "Notifications", this.userChoices.notifications)}
+          ${this.buildToggle("sound", "fas fa-volume-high", "Sound", this.userChoices.sound)}
+          ${this.buildToggle("achievements", "fas fa-trophy", "Achievements", this.userChoices.achievements)}
+          ${this.buildToggle("analytics", "fas fa-chart-line", "Analytics", this.userChoices.analytics)}
+          ${this.buildToggle("macOsControls", "fab fa-apple", "Mac Window Headers", this.userChoices.macOsControls)}
+          ${this.buildToggle("mikuCursor", "fas fa-mouse-pointer", "Miku Cursor", this.userChoices.mikuCursor)}
+          ${this.buildToggle("clippy", "fas fa-robot", "Clippy", this.userChoices.clippy)}
+          ${this.buildToggle("clipboardManager", "fas fa-paste", "Clipboard Manager", this.userChoices.clipboardManager)}
         </div>
 
         <div class="settings-row">
-          ${this._buildTurboSelector()}
-          ${this._buildTransparencySelector()}
+          ${this.buildTurboSelector()}
+          ${this.buildTransparencySelector()}
         </div>
       </div>
     `;
   }
 
-  _buildStep6() {
+  buildStep6() {
     return `
       <div class="setup-step" data-step="7">
         <h2 class="step-title">
@@ -600,7 +600,7 @@ export class SetupApp extends BaseApp {
     `;
   }
 
-  _buildStep7() {
+  buildStep7() {
     const username = this.userChoices.username || "Guest";
     const profilePic = this.userChoices.profilePicture || PREDEFINED_AVATARS[0];
     const avatarsHtml = PREDEFINED_AVATARS.map(
@@ -642,7 +642,7 @@ export class SetupApp extends BaseApp {
     `;
   }
 
-  _buildStep8() {
+  buildStep8() {
     const username = this.userChoices.username || "Guest";
     const profilePic = this.userChoices.profilePicture || PREDEFINED_AVATARS[0];
     return `
@@ -732,7 +732,7 @@ export class SetupApp extends BaseApp {
     `;
   }
 
-  _bindEvents(win) {
+  bindEvents(win) {
     const nextBtn = $("#setup-next", win);
     const backBtn = $("#setup-back", win);
     const skipBtn = $("#setup-skip", win);
@@ -740,14 +740,14 @@ export class SetupApp extends BaseApp {
 
     nextBtn.addEventListener("click", () => {
       if (this.isTransitioning) return;
-      this._nextStep(win);
+      this.nextStep(win);
     });
 
     backBtn.addEventListener("click", () => {
       if (this.isTransitioning) return;
-      this._prevStep(win);
+      this.prevStep(win);
     });
-    skipBtn.addEventListener("click", () => this._skipSetup(win));
+    skipBtn.addEventListener("click", () => this.skipSetup(win));
 
     if (infoBtn) {
       infoBtn.addEventListener("click", () => {
@@ -762,7 +762,7 @@ export class SetupApp extends BaseApp {
         this.userChoices.theme = theme;
         themeBtns.forEach((b) => b.classList.remove("active"));
         btn.classList.add("active");
-        this._applyTheme(theme);
+        this.applyTheme(theme);
       });
     });
 
@@ -807,7 +807,7 @@ export class SetupApp extends BaseApp {
 
     const uploadBtn = $("#upload-wallpaper-btn", win);
     if (uploadBtn) {
-      uploadBtn.addEventListener("click", () => this._handleWallpaperUpload(win));
+      uploadBtn.addEventListener("click", () => this.handleWallpaperUpload(win));
     }
 
     const perfBtns = $$(".turbo-btn", win);
@@ -844,10 +844,10 @@ export class SetupApp extends BaseApp {
       });
     }
 
-    this._bindProfileStepEvents(win);
+    this.bindProfileStepEvents(win);
   }
 
-  _nextStep(win) {
+  nextStep(win) {
     if (this.isTransitioning) return;
 
     if (this.currentStep < this.totalSetupSteps - 1) {
@@ -866,18 +866,18 @@ export class SetupApp extends BaseApp {
 
         this.currentStep++;
 
-        this._updateStepUI(win);
-        this._animateStepIn();
+        this.updateStepUI(win);
+        this.animateStepIn();
 
         this.isTransitioning = false;
         this.stepTransitionTimer = null;
       }, 300);
     } else {
-      this._completeSetup(win);
+      this.completeSetup(win);
     }
   }
 
-  _prevStep(win) {
+  prevStep(win) {
     if (this.isTransitioning) return;
     if (this.currentStep <= 0) return;
 
@@ -888,14 +888,14 @@ export class SetupApp extends BaseApp {
 
     this.currentStep--;
 
-    this._updateStepUI(win);
+    this.updateStepUI(win);
 
     const prevStepEl = $(`.setup-step[data-step="${this.currentStep + 1}"]`, win);
 
     if (prevStepEl) {
       prevStepEl.classList.add("active");
       prevStepEl.style.transform = "translateX(-50px)";
-      this._lazyLoadActiveStepImages(prevStepEl);
+      this.lazyLoadActiveStepImages(prevStepEl);
 
       requestAnimationFrame(() => {
         prevStepEl.style.transform = "translateX(0)";
@@ -907,7 +907,7 @@ export class SetupApp extends BaseApp {
     }, 250);
   }
 
-  _updateStepUI(win) {
+  updateStepUI(win) {
     const steps = $$(".progress-step", win);
     steps.forEach((step, index) => {
       step.classList.remove("active", "completed");
@@ -929,18 +929,18 @@ export class SetupApp extends BaseApp {
       setHTML(nextBtn, 'Continue <i class="fas fa-arrow-right"></i>');
     }
 
-    this._refreshProfileSummary(win);
+    this.refreshProfileSummary(win);
   }
 
-  _animateStepIn() {
+  animateStepIn() {
     const stepEl = document.querySelector(`.setup-step[data-step="${this.currentStep + 1}"]`);
     if (stepEl) {
       stepEl.classList.add("active");
-      this._lazyLoadActiveStepImages(stepEl);
+      this.lazyLoadActiveStepImages(stepEl);
     }
   }
 
-  _lazyLoadActiveStepImages(stepEl) {
+  lazyLoadActiveStepImages(stepEl) {
     stepEl.querySelectorAll("img[data-src]").forEach((img) => {
       if (!img.src && img.dataset.src) {
         img.src = img.dataset.src;
@@ -950,13 +950,13 @@ export class SetupApp extends BaseApp {
     stepEl.querySelectorAll(".summary-item").forEach((item, i) => item.style.setProperty("--i", i));
   }
 
-  _applyTheme(theme) {
+  applyTheme(theme) {
     const prefersDark = window.matchMedia?.("(prefers-color-scheme: dark)").matches ?? true;
     const effective = theme === "auto" ? (prefersDark ? "dark" : "light") : theme;
     document.documentElement.setAttribute("data-theme", effective);
   }
 
-  async _completeSetup(win) {
+  async completeSetup(win) {
     const finalizedName = (this.userChoices.username || "").trim() || "Guest";
     const finalizedAvatar = this.userChoices.profilePicture || PREDEFINED_AVATARS[0];
     this.userChoices.username = finalizedName;
@@ -964,11 +964,11 @@ export class SetupApp extends BaseApp {
     os.storage.set(StorageKeys.username, finalizedName);
     os.storage.set(StorageKeys.profilePicture, finalizedAvatar);
 
-    if (this._services.sessionManager?.currentSession) {
-      this._services.sessionManager.currentSession.name = finalizedName;
-      this._services.sessionManager.currentSession.key =
+    if (this.services.sessionManager?.currentSession) {
+      this.services.sessionManager.currentSession.name = finalizedName;
+      this.services.sessionManager.currentSession.key =
         finalizedName.toLowerCase().replace(/[^a-z0-9]/g, "") || "guest";
-      this._services.sessionManager.currentSession.avatar = finalizedAvatar;
+      this.services.sessionManager.currentSession.avatar = finalizedAvatar;
     }
 
     os.storage.set(StorageKeys.theme, this.userChoices.theme);
@@ -989,7 +989,7 @@ export class SetupApp extends BaseApp {
     os.storage.set(StorageKeys.clippy, this.userChoices.clippy.toString());
     os.storage.set(StorageKeys.clipboardManagerEnabled, this.userChoices.clipboardManager.toString());
 
-    this._services.achievementsApp?.trigger(Achievements.SetupComplete);
+    this.services.achievementsApp?.trigger(Achievements.SetupComplete);
 
     if (this.userChoices.wallpaper) {
       try {
@@ -1007,7 +1007,7 @@ export class SetupApp extends BaseApp {
         detail: { soundEnabled: this.userChoices.sound }
       })
     );
-    const welcomeContent = `All set, ${this._services.sessionManager?.currentSession?.name || "Guest"}!
+    const welcomeContent = `All set, ${this.services.sessionManager?.currentSession?.name || "Guest"}!
 
 Here's what you picked:
 - Theme: ${this.userChoices.theme}
@@ -1049,15 +1049,15 @@ Have fun!`;
     }, 500);
   }
 
-  _skipSetup(win) {
+  skipSetup(win) {
     os.storage.set(StorageKeys.setupCompleted, "true");
 
-    this._services.achievementsApp?.trigger(Achievements.SetupComplete);
+    this.services.achievementsApp?.trigger(Achievements.SetupComplete);
     os.window.close(win);
     this.openWindows.delete("setup-wizard");
   }
 
-  async _loadWallpapers() {
+  async loadWallpapers() {
     try {
       const folder = await os.fs.readdir(["Pictures", "Wallpapers"]);
       if (folder) {
@@ -1079,7 +1079,7 @@ Have fun!`;
     }
   }
 
-  async _handleWallpaperUpload(win) {
+  async handleWallpaperUpload(win) {
     const input = document.createElement("input");
     input.type = "file";
     input.accept = "image/*";
@@ -1129,7 +1129,7 @@ Have fun!`;
     input.click();
   }
 
-  _bindProfileStepEvents(win) {
+  bindProfileStepEvents(win) {
     const nameInput = $("#setup-profile-name", win);
     const uploadBtn = $("#setup-profile-upload", win);
     const previewName = $("#setup-profile-preview-name", win);
@@ -1142,7 +1142,7 @@ Have fun!`;
       const nextName = nameInput.value || "Guest";
       previewName.textContent = nextName;
       this.userChoices.username = nextName;
-      this._refreshProfileSummary(win);
+      this.refreshProfileSummary(win);
     });
 
     const selectAvatar = (src) => {
@@ -1155,7 +1155,7 @@ Have fun!`;
           badge.style.display = option.dataset.src === src ? "flex" : "none";
         }
       });
-      this._refreshProfileSummary(win);
+      this.refreshProfileSummary(win);
     };
 
     avatarOptions.forEach((option) => {
@@ -1205,7 +1205,7 @@ Have fun!`;
 
             this.userChoices.profilePicture = compressed;
             previewImg.src = compressed;
-            this._refreshProfileSummary(win);
+            this.refreshProfileSummary(win);
           };
           img.src = dataUrl;
         };
@@ -1215,7 +1215,7 @@ Have fun!`;
     });
   }
 
-  _refreshProfileSummary(win) {
+  refreshProfileSummary(win) {
     const summaryImg = $("#setup-summary-profile-img", win);
     const summaryName = $("#setup-summary-profile-name", win);
     if (summaryImg) {

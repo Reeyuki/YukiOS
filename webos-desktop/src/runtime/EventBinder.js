@@ -3,27 +3,27 @@ export class EventBinder {
     this.stateManager = stateManager;
     this.actionExecutor = actionExecutor;
     this.boundEvents = new Map();
-    this._elementIds = new WeakMap();
-    this._nextId = 0;
+    this.elementIds = new WeakMap();
+    this.nextId = 0;
   }
 
   bind(element, eventConfig) {
     if (!element || !eventConfig) return;
 
     Object.entries(eventConfig).forEach(([eventType, handler]) => {
-      this._bindSingleEvent(element, eventType, handler);
+      this.bindSingleEvent(element, eventType, handler);
     });
   }
 
-  _getKey(element, eventType) {
-    if (!this._elementIds.has(element)) {
-      this._elementIds.set(element, `__eb_${this._nextId++}`);
+  getKey(element, eventType) {
+    if (!this.elementIds.has(element)) {
+      this.elementIds.set(element, `__eb_${this.nextId++}`);
     }
-    return `${this._elementIds.get(element)}_${eventType}`;
+    return `${this.elementIds.get(element)}_${eventType}`;
   }
 
-  _bindSingleEvent(element, eventType, handler) {
-    const key = this._getKey(element, eventType);
+  bindSingleEvent(element, eventType, handler) {
+    const key = this.getKey(element, eventType);
 
     if (this.boundEvents.has(key)) {
       const existing = this.boundEvents.get(key);
@@ -32,7 +32,7 @@ export class EventBinder {
     }
 
     const wrappedHandler = (event) => {
-      this._executeHandler(handler, event, element);
+      this.executeHandler(handler, event, element);
     };
 
     element.addEventListener(eventType, wrappedHandler);
@@ -44,15 +44,15 @@ export class EventBinder {
     });
   }
 
-  _executeHandler(handler, event, element) {
+  executeHandler(handler, event, element) {
     if (typeof handler === "function") {
       handler(event, this.stateManager.state, element);
     } else if (typeof handler === "object") {
-      this._executeActionHandler(handler, event, element);
+      this.executeActionHandler(handler, event, element);
     }
   }
 
-  _executeActionHandler(handler, event, element) {
+  executeActionHandler(handler, event, element) {
     const { type, payload, stopPropagation, preventDefault } = handler;
 
     if (stopPropagation) {
@@ -69,7 +69,7 @@ export class EventBinder {
   }
 
   unbind(element, eventType) {
-    const key = this._getKey(element, eventType);
+    const key = this.getKey(element, eventType);
     const bound = this.boundEvents.get(key);
 
     if (bound) {

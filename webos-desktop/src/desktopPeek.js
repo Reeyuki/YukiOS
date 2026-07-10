@@ -3,11 +3,11 @@ import { animateWindowOpen } from "./windowManager/AnimationSystem.js";
 export class DesktopPeekManager {
   constructor(windowManager) {
     this.wm = windowManager;
-    this._peekActive = false;
-    this._windowStates = new Map();
-    this._hoverWindows = [];
+    this.peekActive = false;
+    this.windowStates = new Map();
+    this.hoverWindows = [];
     this.button = null;
-    this._hoverTimer = null;
+    this.hoverTimer = null;
   }
 
   setupPeekButton() {
@@ -42,35 +42,35 @@ export class DesktopPeekManager {
   togglePeek() {
     this.cancelHoverPeek();
 
-    if (this._peekActive) {
+    if (this.peekActive) {
       this.restoreAllWindows();
-      this._peekActive = false;
+      this.peekActive = false;
       this.button?.classList.remove("active");
       this.button?.setAttribute("title", "Show Desktop");
     } else {
       this.minimizeAllWindows();
-      this._peekActive = true;
+      this.peekActive = true;
       this.button?.classList.add("active");
       this.button?.setAttribute("title", "Show Windows");
     }
   }
 
   minimizeAllWindows() {
-    this._windowStates.clear();
+    this.windowStates.clear();
     this.wm.openWindows.forEach((entry, id) => {
       const win = document.getElementById(id);
       if (win && entry.record && !entry.record.minimized) {
-        this._windowStates.set(id, { wasMinimized: false });
+        this.windowStates.set(id, { wasMinimized: false });
         this.wm.minimizeWindow(win);
       } else {
-        this._windowStates.set(id, { wasMinimized: true });
+        this.windowStates.set(id, { wasMinimized: true });
       }
     });
   }
 
   restoreAllWindows() {
     this.wm.openWindows.forEach((entry, id) => {
-      const state = this._windowStates.get(id);
+      const state = this.windowStates.get(id);
       if (state && !state.wasMinimized) {
         const win = document.getElementById(id);
         if (!win) return;
@@ -85,18 +85,18 @@ export class DesktopPeekManager {
         requestAnimationFrame(() => animateWindowOpen(win, true));
       }
     });
-    this._windowStates.clear();
+    this.windowStates.clear();
   }
 
   delayedHoverPeek() {
-    if (this._peekActive) return;
+    if (this.peekActive) return;
     this.cancelHoverPeek();
-    this._hoverTimer = setTimeout(() => {
-      if (this._peekActive) return;
+    this.hoverTimer = setTimeout(() => {
+      if (this.peekActive) return;
       this.wm.openWindows.forEach((entry, id) => {
         const win = document.getElementById(id);
         if (win && win.style.display !== "none" && entry.record && !entry.record.minimized) {
-          this._hoverWindows.push(win);
+          this.hoverWindows.push(win);
           win.classList.add("desktop-peek-hidden");
         }
       });
@@ -104,13 +104,13 @@ export class DesktopPeekManager {
   }
 
   cancelHoverPeek() {
-    if (this._hoverTimer) {
-      clearTimeout(this._hoverTimer);
-      this._hoverTimer = null;
+    if (this.hoverTimer) {
+      clearTimeout(this.hoverTimer);
+      this.hoverTimer = null;
     }
-    this._hoverWindows.forEach((win) => {
+    this.hoverWindows.forEach((win) => {
       win.classList.remove("desktop-peek-hidden");
     });
-    this._hoverWindows = [];
+    this.hoverWindows = [];
   }
 }

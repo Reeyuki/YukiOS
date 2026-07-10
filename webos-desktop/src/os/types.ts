@@ -249,8 +249,8 @@ export interface TrayManagerService {
   sendToTray(winId: string): void;
   restoreFromTray(winId: string): void;
   isRegistered(winId: string): boolean;
-  _items: Map<string, TrayItemValue>;
-  _render(): void;
+  items: Map<string, TrayItemValue>;
+  render(): void;
 }
 
 export interface EventBusService {

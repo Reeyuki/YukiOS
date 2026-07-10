@@ -1,5 +1,5 @@
 import { ScramjetBaseApp } from "./ScramjetBaseApp.js";
-import { os } from "../os/index.js";
+import { os } from "../framework.js";
 import { $ } from "../shared/domUtils.js";
 
 export function createScramjetWebApp(config) {
@@ -9,7 +9,7 @@ export function createScramjetWebApp(config) {
     constructor(services) {
       super(services);
       this.winId = null;
-      this._trayOptions = trayOptions;
+      this.trayOptions = trayOptions;
     }
 
     getTargetURL() {
@@ -41,21 +41,21 @@ export function createScramjetWebApp(config) {
     async initScramjet(payload, vt, element, state) {
       await super.initScramjet(payload, vt, element, state);
 
-      if (this._trayOptions) {
+      if (this.trayOptions) {
         os.tray.register(this.winId, this.getAppIcon(), this.getAppName(), {
           showInTray: true,
           priority: 50,
-          ...this._trayOptions,
+          ...this.trayOptions,
           onClick: () => {
-            if (this._trayOptions.onClick) {
-              this._trayOptions.onClick();
+            if (this.trayOptions.onClick) {
+              this.trayOptions.onClick();
             } else {
               os.tray.restoreFromTray(this.winId);
             }
           },
           onQuit: () => {
-            if (this._trayOptions.onQuit) {
-              this._trayOptions.onQuit();
+            if (this.trayOptions.onQuit) {
+              this.trayOptions.onQuit();
             } else {
               os.window.close(this.winId);
             }

@@ -144,7 +144,7 @@ export class YukiConvertApp extends BaseApp {
   }
 
   initYukiConvert(payload, event, element, state) {
-    state.services = this._services;
+    state.services = this.services;
     this.mainView = document.getElementById("yuki-convert-main-view");
     this.loadingView = document.getElementById("yuki-convert-loading-view");
     this.fileInput = document.getElementById("yuki-convert-file-input");

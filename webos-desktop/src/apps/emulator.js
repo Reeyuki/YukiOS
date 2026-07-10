@@ -34,7 +34,7 @@ export const cores = {
   psx: ["pcsx_rearmed", "mednafen_psx_hw"],
   ws: ["mednafen_wswan"],
   gba: ["mgba"],
-  n64: ["mupen64plus_next", "parallel_n64"],
+  n64: ["mupen64plusnext", "parallel_n64"],
   "3do": ["opera"],
   atari7800: ["prosystem"],
   snes: ["snes9x", "bsnes"],
@@ -90,8 +90,8 @@ const supportedExtensions = {
 export class EmulatorApp extends BaseApp {
   constructor(services) {
     super(services);
-    this._explorerApp = services.explorerApp;
-    this._declarativeApp = null;
+    this.explorerApp = services.explorerApp;
+    this.declarativeApp = null;
   }
 
   getDeclarativeSchema(opts) {
@@ -185,11 +185,11 @@ export class EmulatorApp extends BaseApp {
           event.preventDefault();
           element.classList.remove("emu-upload-zone--dragover");
           const files = Array.from(event.dataTransfer.files);
-          if (files.length > 0) await this._handleUploadedFiles(files, element);
+          if (files.length > 0) await this.handleUploadedFiles(files, element);
         },
         fileInputChange: async (payload, event, element, state) => {
           const files = Array.from(element.files);
-          if (files.length > 0) await this._handleUploadedFiles(files, document.getElementById("emulator-upload-zone"));
+          if (files.length > 0) await this.handleUploadedFiles(files, document.getElementById("emulator-upload-zone"));
           element.value = "";
         },
         loadUserRoms: async (payload, event, element, state) => {
@@ -239,7 +239,7 @@ export class EmulatorApp extends BaseApp {
             .replace(/\b\w/g, (c) => c.toUpperCase());
 
           const ext = f.toLowerCase().split(".").pop();
-          const system = this._detectSystem(ext);
+          const system = this.detectSystem(ext);
           const icon = system ? "fa-gamepad" : "fa-file-zipper";
 
           return `
@@ -277,7 +277,7 @@ export class EmulatorApp extends BaseApp {
     } catch {}
   }
 
-  async _handleUploadedFiles(files, zone) {
+  async handleUploadedFiles(files, zone) {
     const originalHTML = zone.innerHTML;
     zone.innerHTML = `<i class="fa-solid fa-spinner fa-spin emu-state-icon ruf-state-icon"></i><div class="emu-state-text ruf-state-text">Saving ${files.length} file(s)…</div>`;
 
@@ -304,7 +304,7 @@ export class EmulatorApp extends BaseApp {
     }
   }
 
-  _detectSystem(ext) {
+  detectSystem(ext) {
     for (const [system, exts] of Object.entries(supportedExtensions)) {
       if (exts.some((e) => e === `.${ext}`)) {
         const systemNames = {
@@ -351,7 +351,7 @@ export class EmulatorApp extends BaseApp {
       const ext = fileName.toLowerCase().split(".").pop();
 
       if (ext === "zip") {
-        await this._handleZipFile(arrayBuffer, fileName);
+        await this.handleZipFile(arrayBuffer, fileName);
         return;
       }
 
@@ -360,18 +360,18 @@ export class EmulatorApp extends BaseApp {
         .replace(/[-_]/g, " ")
         .replace(/\b\w/g, (c) => c.toUpperCase());
 
-      this._launchEmulator(displayName, fileName, arrayBuffer);
+      this.launchEmulator(displayName, fileName, arrayBuffer);
     } catch (e) {
       audioMixer().playCriticalWarning();
       os.notify.send("", `ROM wouldn't load: ${e.message}`);
     }
   }
 
-  async _handleZipFile(arrayBuffer, fileName) {
+  async handleZipFile(arrayBuffer, fileName) {
     os.notify.send("", "Can't read zips directly. Extract the ROM first, then upload it.");
   }
 
-  async _launchEmulator(displayName, fileName, romData, forcedCore = null) {
+  async launchEmulator(displayName, fileName, romData, forcedCore = null) {
     const winId = `emulator-${Date.now()}`;
     const win = os.window.create(winId, displayName, "800px", "600px", {
       icon: EMULATOR_ICON
@@ -452,7 +452,7 @@ export class EmulatorApp extends BaseApp {
           gb: "gambatte",
           gba: "mgba",
           nds: "melonds",
-          n64: "mupen64plus_next",
+          n64: "mupen64plusnext",
           psx: "pcsx_rearmed",
           segaMD: "genesis_plus_gx",
           segaMS: "genesis_plus_gx",
@@ -514,7 +514,7 @@ window.EJS_color = "var(--brand)";
       const res = await fetch(url);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const arrayBuffer = await res.arrayBuffer();
-      this._launchEmulator(displayName, fileName, arrayBuffer, core);
+      this.launchEmulator(displayName, fileName, arrayBuffer, core);
     } catch (e) {
       os.notify.send("ROM Load Failed", `ROM didn't load: ${e.message}`, "error", 5000);
     }
@@ -529,6 +529,6 @@ window.EJS_color = "var(--brand)";
       .replace(/[-_]/g, " ")
       .replace(/\b\w/g, (c) => c.toUpperCase());
 
-    this._launchEmulator(displayName, fileName, arrayBuffer);
+    this.launchEmulator(displayName, fileName, arrayBuffer);
   }
 }

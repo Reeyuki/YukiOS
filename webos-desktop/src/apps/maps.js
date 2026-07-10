@@ -127,15 +127,15 @@ export class MapsApp extends BaseApp {
         closeSettings: (payload, event, element, state) => {
           state.settingsOpen = false;
           this.syncSettingsPanel(state);
-          this._closeAllDropdowns();
+          this.closeAllDropdowns();
         },
         applySettings: (payload, event, element, state) => {
           const sourceText = $("#maps-source-trigger .maps-custom-select-text");
-          const source = sourceText ? this._getValueForLabel(sourceText.textContent, SOURCE_OPTIONS) : "osm";
+          const source = sourceText ? this.getValueForLabel(sourceText.textContent, SOURCE_OPTIONS) : "osm";
           state.source = source;
           if (source === "osm") {
             const layerText = $("#maps-layer-trigger .maps-custom-select-text");
-            state.osmLayer = layerText ? this._getValueForLabel(layerText.textContent, LAYER_OPTIONS) : "mapnik";
+            state.osmLayer = layerText ? this.getValueForLabel(layerText.textContent, LAYER_OPTIONS) : "mapnik";
             state.osmLat = parseFloat(document.getElementById("maps-lat-input").value) || 20;
             state.osmLng = parseFloat(document.getElementById("maps-lng-input").value) || 0;
             state.osmZoom = parseInt(document.getElementById("maps-zoom-input").value, 10) || 5;
@@ -149,24 +149,24 @@ export class MapsApp extends BaseApp {
     };
   }
 
-  _getValueForLabel(label, options) {
+  getValueForLabel(label, options) {
     const found = options.find((o) => o.label === label);
     return found ? found.value : options[0].value;
   }
 
-  _getLabelForValue(value, options) {
+  getLabelForValue(value, options) {
     const found = options.find((o) => o.value === value);
     return found ? found.label : options[0].label;
   }
 
-  _initCustomSelect(triggerId, optionsId, options, initialValue, onSelect) {
+  initCustomSelect(triggerId, optionsId, options, initialValue, onSelect) {
     const trigger = $(`#${triggerId}`);
     const optionsEl = $(`#${optionsId}`);
     if (!trigger || !optionsEl) return;
 
     bindEvent(trigger, "click", (e) => {
       e.stopPropagation();
-      this._closeAllDropdowns();
+      this.closeAllDropdowns();
       trigger.classList.toggle("open");
       optionsEl.classList.toggle("open");
     });
@@ -186,12 +186,12 @@ export class MapsApp extends BaseApp {
       });
     });
 
-    const initLabel = this._getLabelForValue(initialValue, options);
+    const initLabel = this.getLabelForValue(initialValue, options);
     trigger.querySelector(".maps-custom-select-text").textContent = initLabel;
-    this._selectOptionByValue(optionsId, initialValue);
+    this.selectOptionByValue(optionsId, initialValue);
   }
 
-  _selectOptionByValue(optionsId, value) {
+  selectOptionByValue(optionsId, value) {
     const optionsEl = $(`#${optionsId}`);
     if (!optionsEl) return;
     const optionEls = $$(`#${optionsId} .maps-custom-select-option`);
@@ -200,7 +200,7 @@ export class MapsApp extends BaseApp {
     });
   }
 
-  _closeAllDropdowns() {
+  closeAllDropdowns() {
     const triggers = $$(".maps-custom-select-trigger.open");
     const options = $$(".maps-custom-select-options.open");
     triggers.forEach((t) => t.classList.remove("open"));
@@ -208,18 +208,18 @@ export class MapsApp extends BaseApp {
   }
 
   initMaps(payload, event, element, state) {
-    this._initCustomSelect("maps-source-trigger", "maps-source-options", SOURCE_OPTIONS, state.source, (val) => {
-      const label = this._getLabelForValue(val, SOURCE_OPTIONS);
+    this.initCustomSelect("maps-source-trigger", "maps-source-options", SOURCE_OPTIONS, state.source, (val) => {
+      const label = this.getLabelForValue(val, SOURCE_OPTIONS);
       const sourceLabel = document.getElementById("maps-source-label");
       if (sourceLabel) sourceLabel.textContent = label;
       const osmSettings = document.getElementById("maps-osm-settings");
       if (osmSettings) osmSettings.classList.toggle("hidden", val !== "osm");
     });
 
-    this._initCustomSelect("maps-layer-trigger", "maps-layer-options", LAYER_OPTIONS, state.osmLayer);
+    this.initCustomSelect("maps-layer-trigger", "maps-layer-options", LAYER_OPTIONS, state.osmLayer);
 
     bindEvent(document, "click", () => {
-      this._closeAllDropdowns();
+      this.closeAllDropdowns();
     });
 
     this.syncSettingsPanel(state);
@@ -239,16 +239,16 @@ export class MapsApp extends BaseApp {
     if (overlay) overlay.classList.toggle("open", state.settingsOpen);
 
     if (sourceLabel) {
-      sourceLabel.textContent = this._getLabelForValue(state.source, SOURCE_OPTIONS);
+      sourceLabel.textContent = this.getLabelForValue(state.source, SOURCE_OPTIONS);
     }
 
     const sourceText = $("#maps-source-trigger .maps-custom-select-text");
-    if (sourceText) sourceText.textContent = this._getLabelForValue(state.source, SOURCE_OPTIONS);
-    this._selectOptionByValue("maps-source-options", state.source);
+    if (sourceText) sourceText.textContent = this.getLabelForValue(state.source, SOURCE_OPTIONS);
+    this.selectOptionByValue("maps-source-options", state.source);
 
     const layerText = $("#maps-layer-trigger .maps-custom-select-text");
-    if (layerText) layerText.textContent = this._getLabelForValue(state.osmLayer, LAYER_OPTIONS);
-    this._selectOptionByValue("maps-layer-options", state.osmLayer);
+    if (layerText) layerText.textContent = this.getLabelForValue(state.osmLayer, LAYER_OPTIONS);
+    this.selectOptionByValue("maps-layer-options", state.osmLayer);
 
     if (latInput) latInput.value = state.osmLat;
     if (lngInput) lngInput.value = state.osmLng;

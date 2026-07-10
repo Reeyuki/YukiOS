@@ -14,43 +14,43 @@ export class TrashManager {
     this.config = fsManager.CONFIG;
     this.TRASH_DIR_NAME = ".trash";
     this.MANIFEST_NAME = ".trash.json";
-    this._trashDirResolved = null;
+    this.trashDirResolved = null;
   }
 
-  _trashDir() {
-    if (!this._trashDirResolved) {
-      this._trashDirResolved = this.paths.join("/", this.config.ROOT, this.TRASH_DIR_NAME);
+  trashDir() {
+    if (!this.trashDirResolved) {
+      this.trashDirResolved = this.paths.join("/", this.config.ROOT, this.TRASH_DIR_NAME);
     }
-    return this._trashDirResolved;
+    return this.trashDirResolved;
   }
 
-  _manifestPath() {
-    return this.paths.join(this._trashDir(), this.MANIFEST_NAME);
+  manifestPath() {
+    return this.paths.join(this.trashDir(), this.MANIFEST_NAME);
   }
 
   async init() {
-    const trashDir = this._trashDir();
+    const trashDir = this.trashDir();
     const exists = await this.storage.exists(trashDir);
     if (!exists) {
       await this.storage.mkdir(trashDir, { recursive: true });
     }
-    const manifestExists = await this.storage.exists(this._manifestPath());
+    const manifestExists = await this.storage.exists(this.manifestPath());
     if (!manifestExists) {
-      await this.storage.writeFile(this._manifestPath(), "[]");
+      await this.storage.writeFile(this.manifestPath(), "[]");
     }
   }
 
-  async _loadManifest() {
+  async loadManifest() {
     try {
-      const raw = await this.storage.readFile(this._manifestPath(), "utf8");
+      const raw = await this.storage.readFile(this.manifestPath(), "utf8");
       return JSON.parse(raw);
     } catch {
       return [];
     }
   }
 
-  async _saveManifest(items) {
-    await this.storage.writeFile(this._manifestPath(), JSON.stringify(items, null, 2));
+  async saveManifest(items) {
+    await this.storage.writeFile(this.manifestPath(), JSON.stringify(items, null, 2));
   }
 
   async moveToTrash(path, name) {
@@ -63,9 +63,9 @@ export class TrashManager {
     const baseName = name.includes(".") ? name.slice(0, name.lastIndexOf(".")) : name;
     const timestamp = Date.now();
     const trashedName = `${baseName}_${timestamp}${ext}`;
-    const trashPath = this.paths.join(this._trashDir(), trashedName);
+    const trashPath = this.paths.join(this.trashDir(), trashedName);
 
-    const kind = await this._getKind(dir, name);
+    const kind = await this.getKind(dir, name);
 
     if (isDirectory) {
       const blobPaths = [];
@@ -78,7 +78,7 @@ export class TrashManager {
           if (s.isDirectory()) {
             await walk(full);
           } else {
-            const blob = await this.blobs._getBlobByFullPath(full);
+            const blob = await this.blobs.getBlobByFullPath(full);
             if (blob) blobPaths.push(full);
           }
         }
@@ -89,19 +89,19 @@ export class TrashManager {
 
       for (const oldBlobPath of blobPaths) {
         const newBlobPath = oldBlobPath.replace(targetPath, trashPath);
-        await this.blobs._renameBlobByFullPath(oldBlobPath, newBlobPath);
+        await this.blobs.renameBlobByFullPath(oldBlobPath, newBlobPath);
       }
     } else {
       await this.metadata.removeMeta(dir, name);
 
       await this.storage.rename(targetPath, trashPath);
-      await this.blobs._renameBlobByFullPath(targetPath, trashPath);
+      await this.blobs.renameBlobByFullPath(targetPath, trashPath);
     }
 
     let size = 0;
     try {
       if (isDirectory) {
-        size = await this._calcDirSize(trashPath);
+        size = await this.calcDirSize(trashPath);
       } else {
         const s = await this.storage.pStat(trashPath);
         size = s.size || 0;
@@ -119,9 +119,9 @@ export class TrashManager {
       size
     };
 
-    const items = await this._loadManifest();
+    const items = await this.loadManifest();
     items.push(entry);
-    await this._saveManifest(items);
+    await this.saveManifest(items);
 
     await this.fs.notifyDesktopChange(path);
 
@@ -129,12 +129,12 @@ export class TrashManager {
   }
 
   async restoreItem(id) {
-    const items = await this._loadManifest();
+    const items = await this.loadManifest();
     const idx = items.findIndex((e) => e.id === id);
     if (idx === -1) throw new Error(`Trash entry "${id}" not found`);
 
     const entry = items[idx];
-    const trashPath = this.paths.join(this._trashDir(), entry.trashedName);
+    const trashPath = this.paths.join(this.trashDir(), entry.trashedName);
     const targetDir = this.paths.resolveUserPath(entry.originalPath);
     const targetPath = this.paths.join(targetDir, entry.originalName);
 
@@ -170,7 +170,7 @@ export class TrashManager {
           if (s.isDirectory()) {
             await walk(full);
           } else {
-            const blob = await this.blobs._getBlobByFullPath(full);
+            const blob = await this.blobs.getBlobByFullPath(full);
             if (blob) blobPaths.push(full);
           }
         }
@@ -181,7 +181,7 @@ export class TrashManager {
 
       for (const oldBlobPath of blobPaths) {
         const newBlobPath = oldBlobPath.replace(trashPath, finalTargetPath);
-        await this.blobs._renameBlobByFullPath(oldBlobPath, newBlobPath);
+        await this.blobs.renameBlobByFullPath(oldBlobPath, newBlobPath);
       }
     } else {
       const metaDir = this.paths.dirname(finalTargetPath);
@@ -193,11 +193,11 @@ export class TrashManager {
       });
 
       await this.storage.rename(trashPath, finalTargetPath);
-      await this.blobs._renameBlobByFullPath(trashPath, finalTargetPath);
+      await this.blobs.renameBlobByFullPath(trashPath, finalTargetPath);
     }
 
     items.splice(idx, 1);
-    await this._saveManifest(items);
+    await this.saveManifest(items);
 
     await this.fs.notifyDesktopChange(entry.originalPath);
     if (finalName !== entry.originalName) {
@@ -207,7 +207,7 @@ export class TrashManager {
   }
 
   async restoreAll() {
-    const items = await this._loadManifest();
+    const items = await this.loadManifest();
     const results = [];
     for (const entry of [...items]) {
       try {
@@ -221,55 +221,55 @@ export class TrashManager {
   }
 
   async deletePermanently(id) {
-    const items = await this._loadManifest();
+    const items = await this.loadManifest();
     const idx = items.findIndex((e) => e.id === id);
     if (idx === -1) throw new Error(`Trash entry "${id}" not found`);
 
     const entry = items[idx];
-    const trashPath = this.paths.join(this._trashDir(), entry.trashedName);
+    const trashPath = this.paths.join(this.trashDir(), entry.trashedName);
 
     const trashExists = await this.storage.exists(trashPath);
     if (trashExists) {
       const stat = await this.storage.pStat(trashPath);
       if (stat.isDirectory()) {
-        await this._deleteDirectoryRecursive(trashPath);
+        await this.deleteDirectoryRecursive(trashPath);
       } else {
         await this.storage.unlink(trashPath);
-        await this.blobs._deleteBlobByFullPath(trashPath);
+        await this.blobs.deleteBlobByFullPath(trashPath);
       }
     }
 
     items.splice(idx, 1);
-    await this._saveManifest(items);
+    await this.saveManifest(items);
   }
 
   async emptyTrash() {
-    const items = await this._loadManifest();
+    const items = await this.loadManifest();
     for (const entry of items) {
-      const trashPath = this.paths.join(this._trashDir(), entry.trashedName);
+      const trashPath = this.paths.join(this.trashDir(), entry.trashedName);
       const exists = await this.storage.exists(trashPath);
       if (!exists) continue;
       const stat = await this.storage.pStat(trashPath);
       if (stat.isDirectory()) {
-        await this._deleteDirectoryRecursive(trashPath);
+        await this.deleteDirectoryRecursive(trashPath);
       } else {
         await this.storage.unlink(trashPath);
-        await this.blobs._deleteBlobByFullPath(trashPath);
+        await this.blobs.deleteBlobByFullPath(trashPath);
       }
     }
-    await this._saveManifest([]);
+    await this.saveManifest([]);
   }
 
   async getItems() {
-    return this._loadManifest();
+    return this.loadManifest();
   }
 
   async getItemCount() {
-    const items = await this._loadManifest();
+    const items = await this.loadManifest();
     return items.length;
   }
 
-  async _getKind(dir, name) {
+  async getKind(dir, name) {
     try {
       const meta = await this.metadata.readMeta(dir);
       return meta[name]?.kind || null;
@@ -278,7 +278,7 @@ export class TrashManager {
     }
   }
 
-  async _calcDirSize(dirPath) {
+  async calcDirSize(dirPath) {
     let total = 0;
     try {
       const entries = await this.storage.readdir(dirPath);
@@ -287,7 +287,7 @@ export class TrashManager {
         const full = this.paths.join(dirPath, entry);
         const s = await this.storage.pStat(full);
         if (s.isDirectory()) {
-          total += await this._calcDirSize(full);
+          total += await this.calcDirSize(full);
         } else {
           total += s.size || 0;
         }
@@ -296,17 +296,17 @@ export class TrashManager {
     return total;
   }
 
-  async _deleteDirectoryRecursive(dirPath) {
+  async deleteDirectoryRecursive(dirPath) {
     const entries = await this.storage.readdir(dirPath);
     for (const entry of entries) {
       if (entry === this.config.META_FILE || entry === this.MANIFEST_NAME) continue;
       const fullPath = this.paths.join(dirPath, entry);
       const stat = await this.storage.pStat(fullPath);
       if (stat.isDirectory()) {
-        await this._deleteDirectoryRecursive(fullPath);
+        await this.deleteDirectoryRecursive(fullPath);
       } else {
         await this.storage.unlink(fullPath);
-        await this.blobs._deleteBlobByFullPath(fullPath);
+        await this.blobs.deleteBlobByFullPath(fullPath);
       }
     }
     await this.storage.rmdir(dirPath);

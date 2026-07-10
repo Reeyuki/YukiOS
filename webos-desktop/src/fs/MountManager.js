@@ -9,23 +9,23 @@ const HANDLE_STORE = "handles";
 export class MountManager {
   constructor() {
     this.mounts = new Map();
-    this._root = "";
-    this._ready = false;
+    this.root = "";
+    this.isReady = false;
   }
 
   get ready() {
-    return this._ready;
+    return this.isReady;
   }
 
   setRoot(root) {
-    this._root = root;
+    this.root = root;
   }
 
   async init() {
     try {
       const stored = os.storage.get(StorageKeys.storageMounts);
       if (Array.isArray(stored)) {
-        const handleEntries = await this._loadAllHandles();
+        const handleEntries = await this.loadAllHandles();
         const handleMap = new Map();
         for (const entry of handleEntries) {
           if (entry && entry.mountPoint && entry.handle) {
@@ -54,11 +54,11 @@ export class MountManager {
           }
         }
       }
-      this._ready = true;
+      this.isReady = true;
       console.log(`[MountManager] Initialized with ${this.mounts.size} mount(s)`);
     } catch (e) {
       console.warn("[MountManager] Init error:", e);
-      this._ready = true;
+      this.isReady = true;
     }
   }
 
@@ -70,12 +70,12 @@ export class MountManager {
   }
 
   registerMount(handle, label) {
-    const mountPoint = `${MOUNTS_BASE}/${this._sanitizeLabel(label)}`;
+    const mountPoint = `${MOUNTS_BASE}/${this.sanitizeLabel(label)}`;
     if (this.mounts.has(mountPoint)) {
       throw new Error(`A mount named "${label}" already exists`);
     }
     this.mounts.set(mountPoint, { label, handle, mountPoint });
-    this._persist();
+    this.persist();
     return mountPoint;
   }
 
@@ -89,7 +89,7 @@ export class MountManager {
     }
     if (!key) return false;
     this.mounts.delete(key);
-    this._persist();
+    this.persist();
     return true;
   }
 
@@ -98,9 +98,9 @@ export class MountManager {
   }
 
   isMountedPath(absolutePath) {
-    if (!this._root || !this.mounts.size) return false;
+    if (!this.root || !this.mounts.size) return false;
     for (const mountPoint of this.mounts.keys()) {
-      const fullMountPath = this._root + "/" + mountPoint;
+      const fullMountPath = this.root + "/" + mountPoint;
       if (absolutePath === fullMountPath || absolutePath.startsWith(fullMountPath + "/")) {
         return true;
       }
@@ -109,9 +109,9 @@ export class MountManager {
   }
 
   resolveMount(absolutePath) {
-    if (!this._root || !this.mounts.size) return null;
+    if (!this.root || !this.mounts.size) return null;
     for (const [mountPoint, entry] of this.mounts) {
-      const fullMountPath = this._root + "/" + mountPoint;
+      const fullMountPath = this.root + "/" + mountPoint;
       if (absolutePath === fullMountPath) {
         return { mount: entry, relativePath: "" };
       }
@@ -123,7 +123,7 @@ export class MountManager {
   }
 
   async readdir(mount, relPath) {
-    const dirHandle = relPath ? await this._getDirHandle(mount.handle, relPath) : mount.handle;
+    const dirHandle = relPath ? await this.getDirHandle(mount.handle, relPath) : mount.handle;
     const result = {};
     for await (const entry of dirHandle.values()) {
       if (entry.kind === "directory") {
@@ -144,19 +144,19 @@ export class MountManager {
   }
 
   async readFile(mount, relPath) {
-    const fileHandle = await this._getFileHandle(mount.handle, relPath);
+    const fileHandle = await this.getFileHandle(mount.handle, relPath);
     const file = await fileHandle.getFile();
     return await file.text();
   }
 
   async readFileBinary(mount, relPath) {
-    const fileHandle = await this._getFileHandle(mount.handle, relPath);
+    const fileHandle = await this.getFileHandle(mount.handle, relPath);
     const file = await fileHandle.getFile();
     return file.type ? file : new Blob([file], { type: mimeFromName(relPath.split("/").pop() || "") });
   }
 
   async writeFile(mount, relPath, content) {
-    const fileHandle = await this._getFileHandle(mount.handle, relPath, true);
+    const fileHandle = await this.getFileHandle(mount.handle, relPath, true);
     const writable = await fileHandle.createWritable();
     try {
       await writable.write(content);
@@ -166,26 +166,26 @@ export class MountManager {
   }
 
   async deleteFile(mount, relPath) {
-    const dir = this._parentPath(relPath);
-    const name = this._baseName(relPath);
-    const dirHandle = dir ? await this._getDirHandle(mount.handle, dir) : mount.handle;
+    const dir = this.parentPath(relPath);
+    const name = this.baseName(relPath);
+    const dirHandle = dir ? await this.getDirHandle(mount.handle, dir) : mount.handle;
     await dirHandle.removeEntry(name);
   }
 
   async deleteDirectory(mount, relPath) {
-    const dir = this._parentPath(relPath);
-    const name = this._baseName(relPath);
-    const dirHandle = dir ? await this._getDirHandle(mount.handle, dir) : mount.handle;
+    const dir = this.parentPath(relPath);
+    const name = this.baseName(relPath);
+    const dirHandle = dir ? await this.getDirHandle(mount.handle, dir) : mount.handle;
     await dirHandle.removeEntry(name, { recursive: true });
   }
 
   async rename(mount, oldRelPath, newRelPath) {
-    const oldDir = this._parentPath(oldRelPath);
-    const oldName = this._baseName(oldRelPath);
-    const newDir = this._parentPath(newRelPath);
-    const newName = this._baseName(newRelPath);
-    const oldDirHandle = oldDir ? await this._getDirHandle(mount.handle, oldDir) : mount.handle;
-    const newDirHandle = newDir ? await this._getDirHandle(mount.handle, newDir) : mount.handle;
+    const oldDir = this.parentPath(oldRelPath);
+    const oldName = this.baseName(oldRelPath);
+    const newDir = this.parentPath(newRelPath);
+    const newName = this.baseName(newRelPath);
+    const oldDirHandle = oldDir ? await this.getDirHandle(mount.handle, oldDir) : mount.handle;
+    const newDirHandle = newDir ? await this.getDirHandle(mount.handle, newDir) : mount.handle;
     try {
       const handle = await oldDirHandle.getFileHandle(oldName);
       if (oldDir === newDir) {
@@ -206,7 +206,7 @@ export class MountManager {
       if (oldDir === newDir) {
         await handle.move(newDirHandle, newName);
       } else {
-        await this._copyDirectory(handle, newDirHandle, newName);
+        await this.copyDirectory(handle, newDirHandle, newName);
         await oldDirHandle.removeEntry(oldName, { recursive: true });
       }
     }
@@ -222,12 +222,12 @@ export class MountManager {
 
   async exists(mount, relPath) {
     try {
-      const fileHandle = await this._getFileHandle(mount.handle, relPath);
+      const fileHandle = await this.getFileHandle(mount.handle, relPath);
       await fileHandle.getFile();
       return true;
     } catch {
       try {
-        await this._getDirHandle(mount.handle, relPath);
+        await this.getDirHandle(mount.handle, relPath);
         return true;
       } catch {
         return false;
@@ -237,7 +237,7 @@ export class MountManager {
 
   async isFile(mount, relPath) {
     try {
-      const fileHandle = await this._getFileHandle(mount.handle, relPath);
+      const fileHandle = await this.getFileHandle(mount.handle, relPath);
       await fileHandle.getFile();
       return true;
     } catch {
@@ -245,11 +245,11 @@ export class MountManager {
     }
   }
 
-  _sanitizeLabel(label) {
+  sanitizeLabel(label) {
     return label.replace(/[^a-zA-Z0-9_\-. ]/g, "_").trim();
   }
 
-  async _getFileHandle(dirHandle, relPath, create = false) {
+  async getFileHandle(dirHandle, relPath, create = false) {
     const parts = relPath.split("/").filter(Boolean);
     const name = parts.pop();
     let current = dirHandle;
@@ -259,7 +259,7 @@ export class MountManager {
     return await current.getFileHandle(name, { create });
   }
 
-  async _getDirHandle(dirHandle, relPath) {
+  async getDirHandle(dirHandle, relPath) {
     const parts = relPath.split("/").filter(Boolean);
     let current = dirHandle;
     for (const part of parts) {
@@ -268,24 +268,24 @@ export class MountManager {
     return current;
   }
 
-  _parentPath(path) {
+  parentPath(path) {
     const parts = path.split("/").filter(Boolean);
     parts.pop();
     return parts.join("/");
   }
 
-  _baseName(path) {
+  baseName(path) {
     const parts = path.split("/").filter(Boolean);
     return parts[parts.length - 1] || "";
   }
 
-  async _persist() {
+  async persist() {
     const meta = [];
     for (const [, entry] of this.mounts) {
       meta.push({ label: entry.label, mountPoint: entry.mountPoint });
     }
     os.storage.set(StorageKeys.storageMounts, meta);
-    const db = await this._openDB();
+    const db = await this.openDB();
     const tx = db.transaction(HANDLE_STORE, "readwrite");
     const store = tx.objectStore(HANDLE_STORE);
     store.clear();
@@ -298,8 +298,8 @@ export class MountManager {
     });
   }
 
-  async _loadAllHandles() {
-    const db = await this._openDB();
+  async loadAllHandles() {
+    const db = await this.openDB();
     return new Promise((resolve, reject) => {
       const tx = db.transaction(HANDLE_STORE, "readonly");
       const request = tx.objectStore(HANDLE_STORE).getAll();
@@ -308,7 +308,7 @@ export class MountManager {
     });
   }
 
-  _openDB() {
+  openDB() {
     return new Promise((resolve, reject) => {
       const request = indexedDB.open(HANDLE_DB, 1);
       request.onupgradeneeded = (e) => {
@@ -322,11 +322,11 @@ export class MountManager {
     });
   }
 
-  async _copyDirectory(sourceHandle, destParentHandle, newName) {
+  async copyDirectory(sourceHandle, destParentHandle, newName) {
     const destHandle = await destParentHandle.getDirectoryHandle(newName, { create: true });
     for await (const entry of sourceHandle.values()) {
       if (entry.kind === "directory") {
-        await this._copyDirectory(entry, destHandle, entry.name);
+        await this.copyDirectory(entry, destHandle, entry.name);
       } else {
         const file = await entry.getFile();
         const newFileHandle = await destHandle.getFileHandle(entry.name, { create: true });

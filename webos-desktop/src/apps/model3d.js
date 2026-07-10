@@ -136,10 +136,10 @@ class UndoStack {
   }
 }
 
-let _objIdCounter = 0;
+let objIdCounter = 0;
 class SceneObject {
   constructor(threeObj, name, type = "mesh") {
-    this.id = ++_objIdCounter;
+    this.id = ++objIdCounter;
     this.object3D = threeObj;
     this.name = name || threeObj.name || `Object ${this.id}`;
     this.type = type;
@@ -226,7 +226,7 @@ export class Model3DApp extends BaseApp {
     this.win = null;
   }
 
-  _buildHTML(title) {
+  buildHTML(title) {
     return `
     <div class="window-header">
       <span><i class="fa fa-cube" style="color: white;margin-right: 6px;font-size: 25px;vertical-align: middle;"></i>${title}</span>
@@ -733,23 +733,23 @@ export class Model3DApp extends BaseApp {
       icon: "static/icons/3dmodel.webp"
     });
     win.classList.add("yb-window");
-    win.innerHTML = this._buildHTML(title);
+    win.innerHTML = this.buildHTML(title);
 
     this.win = win;
 
-    this._setupMenus();
-    this._setupToolbar();
-    this._setupInspectorTabs();
-    this._setupInspectorControls();
-    this._setupKeyboardShortcuts();
-    this._setupDragDrop();
-    this._setupWelcomeButtons();
+    this.setupMenus();
+    this.setupToolbar();
+    this.setupInspectorTabs();
+    this.setupInspectorControls();
+    this.setupKeyboardShortcuts();
+    this.setupDragDrop();
+    this.setupWelcomeButtons();
 
-    await this._setupRenderer(filePath, fileData, fileName);
-    this._setupAnimationTimeline();
+    await this.setupRenderer(filePath, fileData, fileName);
+    this.setupAnimationTimeline();
   }
 
-  _setupMenus() {
+  setupMenus() {
     const win = this.win;
     const menuItems = $$(".yb-menu-item", win);
     let activeMenu = null;
@@ -789,9 +789,9 @@ export class Model3DApp extends BaseApp {
           const chk = $(".yb-check", item);
           const newState = chk.style.visibility !== "visible";
           chk.style.visibility = newState ? "visible" : "hidden";
-          this._handleToggle(action, newState);
+          this.handleToggle(action, newState);
         } else {
-          this._handleAction(action);
+          this.handleAction(action);
         }
         closeAll();
       });
@@ -802,7 +802,7 @@ export class Model3DApp extends BaseApp {
         e.stopPropagation();
         $$(".rm-item .yb-check", win).forEach((c) => (c.style.visibility = "hidden"));
         $(".yb-check", item).style.visibility = "visible";
-        this._setRenderMode(item.dataset.rm);
+        this.setRenderMode(item.dataset.rm);
         closeAll();
       });
     });
@@ -818,30 +818,30 @@ export class Model3DApp extends BaseApp {
     });
   }
 
-  _setupToolbar() {
+  setupToolbar() {
     const win = this.win;
 
     $$(".yb-tool-btn[data-tool]", win).forEach((btn) => {
       bindEvent(btn, "click", () => {
         const tool = btn.dataset.tool;
         if (tool === "transformSpace") {
-          this._toggleTransformSpace();
+          this.toggleTransformSpace();
           return;
         }
-        this._setActiveTool(tool);
+        this.setActiveTool(tool);
       });
     });
 
     $$(".yb-tool-btn[data-rm]", win).forEach((btn) => {
-      bindEvent(btn, "click", () => this._setRenderMode(btn.dataset.rm));
+      bindEvent(btn, "click", () => this.setRenderMode(btn.dataset.rm));
     });
 
     $$(".yb-tool-btn[data-action]", win).forEach((btn) => {
-      bindEvent(btn, "click", () => this._handleAction(btn.dataset.action));
+      bindEvent(btn, "click", () => this.handleAction(btn.dataset.action));
     });
   }
 
-  _setActiveTool(tool) {
+  setActiveTool(tool) {
     this.activeTool = tool;
     $$(".yb-tool-btn[data-tool]", this.win).forEach((b) => {
       toggleClass(b, "active", b.dataset.tool === tool);
@@ -863,10 +863,10 @@ export class Model3DApp extends BaseApp {
         this.transformControls.enabled = false;
       }
     }
-    this._updateStatusBar();
+    this.updateStatusBar();
   }
 
-  _toggleTransformSpace() {
+  toggleTransformSpace() {
     this.transformSpace = this.transformSpace === "world" ? "local" : "world";
     const lbl = $("#tb-space", this.win);
     if (lbl) setText(lbl, this.transformSpace.toUpperCase());
@@ -875,7 +875,7 @@ export class Model3DApp extends BaseApp {
     }
   }
 
-  _setupInspectorTabs() {
+  setupInspectorTabs() {
     $$(".yb-ins-tab", this.win).forEach((tab) => {
       bindEvent(tab, "click", () => {
         $$(".yb-ins-tab", this.win).forEach((t) => removeClass(t, "active"));
@@ -887,7 +887,7 @@ export class Model3DApp extends BaseApp {
     });
   }
 
-  _setupInspectorControls() {
+  setupInspectorControls() {
     const win = this.win;
 
     $$(".yb-slider[data-light]", win).forEach((slider) => {
@@ -925,14 +925,14 @@ export class Model3DApp extends BaseApp {
       gridSizeSlider.oninput = () => {
         const lbl = $("#grid-size-val", win);
         if (lbl) setText(lbl, gridSizeSlider.value);
-        this._rebuildGrid(parseInt(gridSizeSlider.value), parseInt(gridDivsSlider?.value || 20));
+        this.rebuildGrid(parseInt(gridSizeSlider.value), parseInt(gridDivsSlider?.value || 20));
       };
     }
     if (gridDivsSlider) {
       gridDivsSlider.oninput = () => {
         const lbl = $("#grid-divs-val", win);
         if (lbl) setText(lbl, gridDivsSlider.value);
-        this._rebuildGrid(parseInt(gridSizeSlider?.value || 20), parseInt(gridDivsSlider.value));
+        this.rebuildGrid(parseInt(gridSizeSlider?.value || 20), parseInt(gridDivsSlider.value));
       };
     }
 
@@ -963,13 +963,13 @@ export class Model3DApp extends BaseApp {
 
     ["tx-x", "tx-y", "tx-z", "rx-x", "rx-y", "rx-z", "sx-x", "sx-y", "sx-z"].forEach((id) => {
       const inp = $(`#${id}`, win);
-      if (inp) inp.onchange = () => this._applyTransformFromInspector();
+      if (inp) inp.onchange = () => this.applyTransformFromInspector();
     });
 
     const objVisible = $("#obj-visible", win);
     if (objVisible)
       objVisible.onchange = () => {
-        const sel = this._getFirstSelected();
+        const sel = this.getFirstSelected();
         if (sel) {
           sel.object3D.visible = objVisible.checked;
           sel.visible = objVisible.checked;
@@ -978,7 +978,7 @@ export class Model3DApp extends BaseApp {
     const objCast = $("#obj-cast-shadow", win);
     if (objCast)
       objCast.onchange = () => {
-        const sel = this._getFirstSelected();
+        const sel = this.getFirstSelected();
         if (sel)
           sel.object3D.traverse((c) => {
             if (c.isMesh) c.castShadow = objCast.checked;
@@ -987,27 +987,27 @@ export class Model3DApp extends BaseApp {
     const objRecv = $("#obj-recv-shadow", win);
     if (objRecv)
       objRecv.onchange = () => {
-        const sel = this._getFirstSelected();
+        const sel = this.getFirstSelected();
         if (sel)
           sel.object3D.traverse((c) => {
             if (c.isMesh) c.receiveShadow = objRecv.checked;
           });
       };
 
-    this._setupMaterialControls();
+    this.setupMaterialControls();
 
     $$(".yb-tex-btn[data-tex]", win).forEach((btn) => {
-      btn.onclick = () => this._assignTexture(btn.dataset.tex);
+      btn.onclick = () => this.assignTexture(btn.dataset.tex);
     });
 
     const addBtn = $(".yb-panel-btn[data-action='addCube']", win);
-    if (addBtn) addBtn.onclick = () => this._handleAction("addCube");
+    if (addBtn) addBtn.onclick = () => this.handleAction("addCube");
   }
 
-  _setupMaterialControls() {
+  setupMaterialControls() {
     const win = this.win;
     const syncMat = () => {
-      const sel = this._getFirstSelected();
+      const sel = this.getFirstSelected();
       if (!sel) return;
       let mat = null;
       sel.object3D.traverse((c) => {
@@ -1048,7 +1048,7 @@ export class Model3DApp extends BaseApp {
     );
   }
 
-  _setupKeyboardShortcuts() {
+  setupKeyboardShortcuts() {
     const handler = (e) => {
       if (!this.win?.isConnected) {
         document.removeEventListener("keydown", handler);
@@ -1064,23 +1064,23 @@ export class Model3DApp extends BaseApp {
         this.undoStack.redo();
       } else if (KeybindManager.matches(e, "model3d.duplicate")) {
         e.preventDefault();
-        this._handleAction("duplicate");
+        this.handleAction("duplicate");
       } else if (KeybindManager.matches(e, "model3d.selectAll")) {
         e.preventDefault();
-        this._handleAction("selectAll");
+        this.handleAction("selectAll");
       } else if (KeybindManager.matches(e, "model3d.delete") || KeybindManager.matches(e, "model3d.backspace")) {
-        this._handleAction("deleteSelected");
-      } else if (e.key === "q" || e.key === "Q") this._setActiveTool("select");
-      else if (e.key === "g" || e.key === "G") this._setActiveTool("move");
-      else if (e.key === "r" || e.key === "R") this._setActiveTool("rotate");
-      else if (e.key === "s" && !e.ctrlKey && !e.altKey && !e.metaKey) this._setActiveTool("scale");
-      else if (e.key === "h" || e.key === "H") this._handleAction("toggleVisibility");
-      else if (e.key === "f" || e.key === "F") this._handleAction("zoomFit");
+        this.handleAction("deleteSelected");
+      } else if (KeybindManager.matches(e, "model3d.selectTool")) this.setActiveTool("select");
+      else if (KeybindManager.matches(e, "model3d.moveTool")) this.setActiveTool("move");
+      else if (KeybindManager.matches(e, "model3d.rotateTool")) this.setActiveTool("rotate");
+      else if (KeybindManager.matches(e, "model3d.scaleTool")) this.setActiveTool("scale");
+      else if (KeybindManager.matches(e, "model3d.toggleVis")) this.handleAction("toggleVisibility");
+      else if (KeybindManager.matches(e, "model3d.zoomFit")) this.handleAction("zoomFit");
     };
     document.addEventListener("keydown", handler);
   }
 
-  _setupDragDrop() {
+  setupDragDrop() {
     const viewport = $("#yb-viewport", this.win);
     const overlay = $("#yb-drag-overlay", this.win);
     bindEvent(viewport, "dragover", (e) => {
@@ -1099,18 +1099,18 @@ export class Model3DApp extends BaseApp {
     });
   }
 
-  _setupWelcomeButtons() {
+  setupWelcomeButtons() {
     const win = this.win;
     const btn = (id, fn) => {
       const el = $(id, win);
       if (el) el.onclick = fn;
     };
-    btn("#wb-browser", () => this._handleAction("openBrowser"));
+    btn("#wb-browser", () => this.handleAction("openBrowser"));
     btn("#wb-samples", () => this.openSamplesModal());
-    btn("#wb-new", () => this._newScene());
+    btn("#wb-new", () => this.newScene());
   }
 
-  async _setupRenderer(filePath, fileData, fileName) {
+  async setupRenderer(filePath, fileData, fileName) {
     await loadThree();
 
     const host = $("#yb-canvas-host", this.win);
@@ -1151,12 +1151,12 @@ export class Model3DApp extends BaseApp {
       this.controls.enabled = !e.value;
     });
     this.transformControls.addEventListener("objectChange", () => {
-      this._syncTransformToInspector();
+      this.syncTransformToInspector();
     });
     this.scene.add(this.transformControls);
 
-    this._setupLighting();
-    this._setupHelpers();
+    this.setupLighting();
+    this.setupHelpers();
     this.setBackground("gradient");
 
     const canvas = this.renderer.domElement;
@@ -1177,10 +1177,10 @@ export class Model3DApp extends BaseApp {
       const hits = raycaster.intersectObjects(meshes, false);
       if (hits.length > 0) {
         const id = hits[0].object.userData.__sceneObjectId;
-        if (!e.shiftKey) this._selectOnly(id);
-        else this._toggleSelect(id);
+        if (!e.shiftKey) this.selectOnly(id);
+        else this.toggleSelect(id);
       } else if (!e.shiftKey) {
-        this._deselectAll();
+        this.deselectAll();
       }
     });
 
@@ -1201,7 +1201,7 @@ export class Model3DApp extends BaseApp {
 
     this.lastTime = performance.now();
     this.frameCount = 0;
-    this._animate();
+    this.animate();
 
     if (!fileData && filePath) {
       try {
@@ -1221,7 +1221,7 @@ export class Model3DApp extends BaseApp {
     if (fileData) await this.loadModel(fileData, fileName);
   }
 
-  _setupLighting() {
+  setupLighting() {
     this.mainLight = new THREE.DirectionalLight(0xffffff, 1);
     this.mainLight.position.set(5, 10, 7.5);
     this.mainLight.castShadow = true;
@@ -1246,7 +1246,7 @@ export class Model3DApp extends BaseApp {
     this.scene.add(this.hemiLight);
   }
 
-  _setupHelpers() {
+  setupHelpers() {
     this.gridHelper = new THREE.GridHelper(20, 20, 0x444444, 0x333333);
     this.gridHelper.material.opacity = 0.5;
     this.gridHelper.material.transparent = true;
@@ -1263,7 +1263,7 @@ export class Model3DApp extends BaseApp {
     this.scene.add(this.groundPlane);
   }
 
-  _rebuildGrid(size = 20, divs = 20) {
+  rebuildGrid(size = 20, divs = 20) {
     if (this.gridHelper) this.scene.remove(this.gridHelper);
     this.gridHelper = new THREE.GridHelper(size, divs, 0x444444, 0x333333);
     this.gridHelper.material.opacity = 0.5;
@@ -1272,8 +1272,8 @@ export class Model3DApp extends BaseApp {
     this.scene.add(this.gridHelper);
   }
 
-  _animate() {
-    requestAnimationFrame(() => this._animate());
+  animate() {
+    requestAnimationFrame(() => this.animate());
     if (!this.win?.isConnected) return;
 
     const delta = this.clock.getDelta();
@@ -1282,7 +1282,7 @@ export class Model3DApp extends BaseApp {
     if (this.autoRotate && this.currentModel) this.currentModel.rotation.y += 0.005;
     if (this.mixer && this.isPlaying) {
       this.mixer.update(delta * this.animationSpeed);
-      this._updateTimelineUI();
+      this.updateTimelineUI();
     }
 
     this.renderer.render(this.scene, this.camera);
@@ -1291,13 +1291,13 @@ export class Model3DApp extends BaseApp {
     const now = performance.now();
     if (now - this.lastTime >= 1000) {
       const fps = Math.round((this.frameCount * 1000) / (now - this.lastTime));
-      this._updateStats(fps);
+      this.updateStats(fps);
       this.frameCount = 0;
       this.lastTime = now;
     }
   }
 
-  _updateStats(fps) {
+  updateStats(fps) {
     const win = this.win;
     const info = this.renderer.info;
     const set = (id, v) => {
@@ -1324,7 +1324,7 @@ export class Model3DApp extends BaseApp {
     }
     switch (type) {
       case "gradient":
-        this._gradientBg(0x1a1a2e, 0x0f3460, 0x16213e);
+        this.gradientBg(0x1a1a2e, 0x0f3460, 0x16213e);
         break;
       case "dark":
         this.scene.background = new THREE.Color(0x111111);
@@ -1333,13 +1333,13 @@ export class Model3DApp extends BaseApp {
         this.scene.background = new THREE.Color(0xf0f0f0);
         break;
       case "studio":
-        this._gradientBg(0x333333, 0x1a1a1a, 0x222222);
+        this.gradientBg(0x333333, 0x1a1a1a, 0x222222);
         break;
       case "sunset":
-        this._gradientBg(0x2d1b4e, 0x562b41, 0x1e3a5f);
+        this.gradientBg(0x2d1b4e, 0x562b41, 0x1e3a5f);
         break;
       case "cyber":
-        this._gradientBg(0x0a0a0a, 0x1a0a2e, 0x0f1a2e);
+        this.gradientBg(0x0a0a0a, 0x1a0a2e, 0x0f1a2e);
         this.cyberGrid = new THREE.GridHelper(50, 50, 0xff00ff, 0x00ffff);
         this.cyberGrid.material.opacity = 0.15;
         this.cyberGrid.material.transparent = true;
@@ -1349,7 +1349,7 @@ export class Model3DApp extends BaseApp {
     }
   }
 
-  _gradientBg(top, mid, bot) {
+  gradientBg(top, mid, bot) {
     const canvas = document.createElement("canvas");
     canvas.width = 2;
     canvas.height = 512;
@@ -1363,7 +1363,7 @@ export class Model3DApp extends BaseApp {
     this.scene.background = new THREE.CanvasTexture(canvas);
   }
 
-  _setRenderMode(mode) {
+  setRenderMode(mode) {
     this.renderMode = mode;
     $$(".yb-tool-btn[data-rm]", this.win).forEach((b) => {
       toggleClass(b, "active", b.dataset.rm === mode);
@@ -1376,14 +1376,14 @@ export class Model3DApp extends BaseApp {
         switch (mode) {
           case "lit":
             mat.wireframe = false;
-            mat.color?.set(mat._originalColor || "#cccccc");
+            mat.color?.set(mat.originalColor || "#cccccc");
             break;
           case "wireframe":
             mat.wireframe = true;
             break;
           case "solid":
             mat.wireframe = false;
-            if (!mat._originalColor) mat._originalColor = mat.color?.getHexString?.() || "cccccc";
+            if (!mat.originalColor) mat.originalColor = mat.color?.getHexString?.() || "cccccc";
             mat.color?.set(0x888888);
             break;
           case "texture":
@@ -1393,26 +1393,26 @@ export class Model3DApp extends BaseApp {
         mat.needsUpdate = true;
       });
     });
-    this._updateStatusBar();
+    this.updateStatusBar();
   }
 
-  _registerObject(obj3d, name, type = "mesh") {
+  registerObject(obj3d, name, type = "mesh") {
     const so = new SceneObject(obj3d, name, type);
     this.sceneObjects.set(so.id, so);
-    this._refreshOutliner();
+    this.refreshOutliner();
     return so;
   }
 
-  _removeSceneObject(id) {
+  removeSceneObject(id) {
     const so = this.sceneObjects.get(id);
     if (!so) return;
     this.scene.remove(so.object3D);
     this.sceneObjects.delete(id);
     this.selectedIds.delete(id);
-    this._refreshOutliner();
+    this.refreshOutliner();
   }
 
-  _refreshOutliner() {
+  refreshOutliner() {
     const outliner = $("#yb-outliner", this.win);
     if (!outliner) return;
     if (this.sceneObjects.size === 0) {
@@ -1436,24 +1436,24 @@ export class Model3DApp extends BaseApp {
       );
       row.addEventListener("click", (e) => {
         if (e.target.closest(".yb-ol-vis-btn")) return;
-        if (e.shiftKey) this._toggleSelect(so.id);
-        else this._selectOnly(so.id);
+        if (e.shiftKey) this.toggleSelect(so.id);
+        else this.selectOnly(so.id);
       });
       row.addEventListener("contextmenu", (e) => {
         e.preventDefault();
-        this._showOutlinerContextMenu(e, so.id);
+        this.showOutlinerContextMenu(e, so.id);
       });
       row.querySelector(".yb-ol-vis-btn").onclick = (e) => {
         e.stopPropagation();
         so.visible = !so.visible;
         so.object3D.visible = so.visible;
-        this._refreshOutliner();
+        this.refreshOutliner();
       };
       outliner.appendChild(row);
     });
   }
 
-  _showOutlinerContextMenu(e, id) {
+  showOutlinerContextMenu(e, id) {
     const existing = document.querySelector(".yb-context-menu");
     if (existing) existing.remove();
 
@@ -1476,16 +1476,16 @@ export class Model3DApp extends BaseApp {
     menu.querySelectorAll(".yb-ctx-item").forEach((item) => {
       item.onclick = () => {
         const act = item.dataset.act;
-        if (act === "select") this._selectOnly(id);
+        if (act === "select") this.selectOnly(id);
         else if (act === "duplicate") {
-          this._selectOnly(id);
-          this._handleAction("duplicate");
-        } else if (act === "rename") this._renameObject(id);
+          this.selectOnly(id);
+          this.handleAction("duplicate");
+        } else if (act === "rename") this.renameObject(id);
         else if (act === "visibility") {
           so.visible = !so.visible;
           so.object3D.visible = so.visible;
-          this._refreshOutliner();
-        } else if (act === "delete") this._removeSceneObject(id);
+          this.refreshOutliner();
+        } else if (act === "delete") this.removeSceneObject(id);
         menu.remove();
       };
     });
@@ -1493,18 +1493,18 @@ export class Model3DApp extends BaseApp {
     setTimeout(() => document.addEventListener("click", () => menu.remove(), { once: true }), 50);
   }
 
-  async _renameObject(id) {
+  async renameObject(id) {
     const so = this.sceneObjects.get(id);
     if (!so) return;
     const newName = await os.dialog.prompt("Rename Object", "Give it a name:", so.name, "Rename");
     if (newName && newName.trim()) {
       so.name = newName.trim();
       so.object3D.name = so.name;
-      this._refreshOutliner();
+      this.refreshOutliner();
     }
   }
 
-  _selectOnly(id) {
+  selectOnly(id) {
     this.selectedIds.clear();
     this.sceneObjects.forEach((s) => (s.selected = false));
     const so = this.sceneObjects.get(id);
@@ -1512,10 +1512,10 @@ export class Model3DApp extends BaseApp {
       so.selected = true;
       this.selectedIds.add(id);
     }
-    this._onSelectionChanged();
+    this.onSelectionChanged();
   }
 
-  _toggleSelect(id) {
+  toggleSelect(id) {
     const so = this.sceneObjects.get(id);
     if (!so) return;
     if (so.selected) {
@@ -1525,42 +1525,42 @@ export class Model3DApp extends BaseApp {
       so.selected = true;
       this.selectedIds.add(id);
     }
-    this._onSelectionChanged();
+    this.onSelectionChanged();
   }
 
-  _deselectAll() {
+  deselectAll() {
     this.selectedIds.clear();
     this.sceneObjects.forEach((s) => (s.selected = false));
-    this._onSelectionChanged();
+    this.onSelectionChanged();
   }
 
-  _handleAction_selectAll() {
+  handleAction_selectAll() {
     this.sceneObjects.forEach((s) => {
       s.selected = true;
       this.selectedIds.add(s.id);
     });
-    this._onSelectionChanged();
+    this.onSelectionChanged();
   }
 
-  _getFirstSelected() {
+  getFirstSelected() {
     for (const id of this.selectedIds) {
       return this.sceneObjects.get(id) || null;
     }
     return null;
   }
 
-  _onSelectionChanged() {
-    this._refreshOutliner();
-    this._updateTransformGizmo();
-    this._syncTransformToInspector();
-    this._syncMaterialToInspector();
-    this._updateSelectionInfo();
-    this._updateStatusBar();
+  onSelectionChanged() {
+    this.refreshOutliner();
+    this.updateTransformGizmo();
+    this.syncTransformToInspector();
+    this.syncMaterialToInspector();
+    this.updateSelectionInfo();
+    this.updateStatusBar();
   }
 
-  _updateTransformGizmo() {
+  updateTransformGizmo() {
     if (!this.transformControls) return;
-    const sel = this._getFirstSelected();
+    const sel = this.getFirstSelected();
     if (sel && this.activeTool !== "select") {
       this.transformControls.attach(sel.object3D);
     } else {
@@ -1568,8 +1568,8 @@ export class Model3DApp extends BaseApp {
     }
   }
 
-  _syncTransformToInspector() {
-    const sel = this._getFirstSelected();
+  syncTransformToInspector() {
+    const sel = this.getFirstSelected();
     if (!sel) return;
     const o = sel.object3D;
     const RAD2DEG = THREE.MathUtils.radToDeg;
@@ -1590,8 +1590,8 @@ export class Model3DApp extends BaseApp {
     if (insEmpty) insEmpty.style.display = "none";
   }
 
-  _syncMaterialToInspector() {
-    const sel = this._getFirstSelected();
+  syncMaterialToInspector() {
+    const sel = this.getFirstSelected();
     const empty = $("#ins-mat-empty", this.win);
     if (!sel) {
       if (empty) empty.style.display = "flex";
@@ -1654,8 +1654,8 @@ export class Model3DApp extends BaseApp {
     setTxt("tex-roughness", mat.roughnessMap?.name || "–");
   }
 
-  _applyTransformFromInspector() {
-    const sel = this._getFirstSelected();
+  applyTransformFromInspector() {
+    const sel = this.getFirstSelected();
     if (!sel) return;
     const o = sel.object3D;
     const DEG2RAD = THREE.MathUtils.degToRad;
@@ -1665,7 +1665,7 @@ export class Model3DApp extends BaseApp {
     o.scale.set(get("sx-x"), get("sx-y"), get("sx-z"));
   }
 
-  _updateSelectionInfo() {
+  updateSelectionInfo() {
     const info = $("#yb-sel-info", this.win);
     const lbl = $("#yb-sel-label", this.win);
     if (!info || !lbl) return;
@@ -1673,12 +1673,12 @@ export class Model3DApp extends BaseApp {
       info.style.display = "none";
       return;
     }
-    const sel = this._getFirstSelected();
+    const sel = this.getFirstSelected();
     setText(lbl, sel ? sel.name : `${this.selectedIds.size} objects`);
     info.style.display = "flex";
   }
 
-  _updateStatusBar() {
+  updateStatusBar() {
     const win = this.win;
     const set = (id, v) => {
       const el = $(id, win);
@@ -1689,7 +1689,7 @@ export class Model3DApp extends BaseApp {
     set("#sb-sel", selCount > 0 ? `${selCount} selected` : "Nothing selected");
   }
 
-  _addPrimitive(type) {
+  addPrimitive(type) {
     if (!THREE) return;
     let geo, name;
     switch (type) {
@@ -1721,15 +1721,15 @@ export class Model3DApp extends BaseApp {
     mesh.castShadow = true;
     mesh.receiveShadow = true;
     this.scene.add(mesh);
-    const so = this._registerObject(mesh, name, "mesh");
-    this._hideWelcome();
-    this._selectOnly(so.id);
+    const so = this.registerObject(mesh, name, "mesh");
+    this.hideWelcome();
+    this.selectOnly(so.id);
     const hud = $("#yb-hud", this.win);
     if (hud) hud.style.display = "block";
     os.notify.send(`Added ${name}`, "Scene");
   }
 
-  _addLight(type) {
+  addLight(type) {
     if (!THREE) return;
     let light, name;
     if (type === "point") {
@@ -1744,23 +1744,23 @@ export class Model3DApp extends BaseApp {
     this.scene.add(light);
     const helper = type === "point" ? new THREE.PointLightHelper(light, 0.3) : new THREE.SpotLightHelper(light);
     this.scene.add(helper);
-    this._registerObject(light, name, "light");
+    this.registerObject(light, name, "light");
     os.notify.send(`Added ${name}`, "Scene");
   }
 
-  _showLoading(show, text = "Loading…") {
+  showLoading(show, text = "Loading…") {
     const el = $("#yb-loading", this.win);
     const tx = $("#yb-loading-text", this.win);
     if (el) el.style.display = show ? "flex" : "none";
     if (tx) setText(tx, text);
   }
 
-  _hideWelcome() {
+  hideWelcome() {
     const w = $("#yb-welcome", this.win);
     if (w) w.style.display = "none";
   }
 
-  _newScene() {
+  newScene() {
     this.sceneObjects.forEach((so) => this.scene.remove(so.object3D));
     this.sceneObjects.clear();
     this.selectedIds.clear();
@@ -1774,8 +1774,8 @@ export class Model3DApp extends BaseApp {
       this.scene.remove(this.skeletonHelper);
       this.skeletonHelper = null;
     }
-    this._refreshOutliner();
-    this._refreshAnimations([]);
+    this.refreshOutliner();
+    this.refreshAnimations([]);
     const hud = $("#yb-hud", this.win);
     if (hud) hud.style.display = "none";
     const tl = $("#yb-timeline", this.win);
@@ -1789,8 +1789,8 @@ export class Model3DApp extends BaseApp {
 
   async loadModel(fileData, fileName = "") {
     await loadThree();
-    this._showLoading(true, `Opening ${fileName}…`);
-    this._hideWelcome();
+    this.showLoading(true, `Opening ${fileName}…`);
+    this.hideWelcome();
 
     if (this.currentModel) {
       this.sceneObjects.forEach((so, id) => {
@@ -1814,8 +1814,8 @@ export class Model3DApp extends BaseApp {
     const ext = fileName.toLowerCase().split(".").pop();
 
     if (ext === "zip") {
-      await this._handleZip(fileData);
-      this._showLoading(false);
+      await this.handleZip(fileData);
+      this.showLoading(false);
       return;
     }
 
@@ -1890,9 +1890,9 @@ export class Model3DApp extends BaseApp {
         this.currentModel = object;
 
         const name = fileName.replace(/\.[^.]+$/, "") || "Imported Model";
-        const so = this._registerObject(object, name, "group");
+        const so = this.registerObject(object, name, "group");
 
-        this._setupSkeleton(object);
+        this.setupSkeleton(object);
 
         if (animations.length > 0) {
           this.mixer = new THREE.AnimationMixer(object);
@@ -1907,17 +1907,17 @@ export class Model3DApp extends BaseApp {
               }
             }
           });
-          this._refreshAnimations(animations);
-          this._showTimeline(true);
+          this.refreshAnimations(animations);
+          this.showTimeline(true);
         } else {
-          this._refreshAnimations([]);
-          this._showTimeline(false);
+          this.refreshAnimations([]);
+          this.showTimeline(false);
         }
 
-        this._frameModel();
-        this._updateModelHUD(object);
-        this._updateFileStatus(fileName);
-        this._selectOnly(so.id);
+        this.frameModel();
+        this.updateModelHUD(object);
+        this.updateFileStatus(fileName);
+        this.selectOnly(so.id);
 
         const hud = $("#yb-hud", this.win);
         if (hud) hud.style.display = "block";
@@ -1929,10 +1929,10 @@ export class Model3DApp extends BaseApp {
       os.notify.send(`Couldn't load ${fileName}: ${err.message}`, "Error");
     }
 
-    this._showLoading(false);
+    this.showLoading(false);
   }
 
-  async _handleZip(fileData) {
+  async handleZip(fileData) {
     try {
       const unzipped = unzipSync(new Uint8Array(fileData));
       const supported = ["obj", "gltf", "glb", "fbx", "dae", "3ds", "stl", "ply"];
@@ -1954,7 +1954,7 @@ export class Model3DApp extends BaseApp {
     }
   }
 
-  _frameModel() {
+  frameModel() {
     if (!this.currentModel) return;
     const box = new THREE.Box3().setFromObject(this.currentModel);
     const size = box.getSize(new THREE.Vector3());
@@ -1969,7 +1969,7 @@ export class Model3DApp extends BaseApp {
     this.controls.update();
   }
 
-  _updateModelHUD(object) {
+  updateModelHUD(object) {
     let verts = 0,
       tris = 0,
       meshes = 0;
@@ -2001,12 +2001,12 @@ export class Model3DApp extends BaseApp {
     set("#hud-tex", texs.size);
   }
 
-  _updateFileStatus(fileName) {
+  updateFileStatus(fileName) {
     const el = $("#sb-file", this.win);
     if (el) setHTML(el, `<i class="fa fa-file"></i> ${fileName}`);
   }
 
-  _setupSkeleton(object) {
+  setupSkeleton(object) {
     let skeleton = null,
       skinnedMesh = null;
     object.traverse((c) => {
@@ -2052,11 +2052,11 @@ export class Model3DApp extends BaseApp {
     }
   }
 
-  _setupAnimationTimeline() {
+  setupAnimationTimeline() {
     const win = this.win;
 
     $$(".yb-tl-btn[data-anim]", win).forEach((btn) => {
-      btn.onclick = () => this._handleAnimTransport(btn.dataset.anim);
+      btn.onclick = () => this.handleAnimTransport(btn.dataset.anim);
     });
 
     const scrubber = $("#tl-scrubber", win);
@@ -2091,15 +2091,15 @@ export class Model3DApp extends BaseApp {
     }
 
     const tlClose = $("#yb-tl-close", win);
-    if (tlClose) tlClose.onclick = () => this._showTimeline(false);
+    if (tlClose) tlClose.onclick = () => this.showTimeline(false);
   }
 
-  _showTimeline(show) {
+  showTimeline(show) {
     const tl = $("#yb-timeline", this.win);
     if (tl) tl.style.display = show ? "block" : "none";
   }
 
-  _refreshAnimations(animations) {
+  refreshAnimations(animations) {
     const list = $("#yb-anim-list", this.win);
     const empty = $("#ins-anim-empty", this.win);
     if (!list) return;
@@ -2129,7 +2129,7 @@ export class Model3DApp extends BaseApp {
       row.onclick = () => {
         list.querySelectorAll(".yb-anim-row").forEach((r) => r.classList.remove("active"));
         row.classList.add("active");
-        this._playAnimation(parseInt(row.dataset.index));
+        this.playAnimation(parseInt(row.dataset.index));
       };
     });
 
@@ -2163,7 +2163,7 @@ export class Model3DApp extends BaseApp {
     if (sb) sb.innerHTML = `<i class="fa fa-film"></i> ${animations.length} anim(s)`;
   }
 
-  _playAnimation(index) {
+  playAnimation(index) {
     if (!this.mixer || !this.animations[index]) return;
     if (this.currentAction) this.currentAction.fadeOut(0.2);
 
@@ -2191,29 +2191,29 @@ export class Model3DApp extends BaseApp {
     const sb = this.win.querySelector("#sb-anim");
     if (sb) sb.innerHTML = `<i class="fa fa-play"></i> ${clip.name || `Anim ${index + 1}`}`;
 
-    this._showTimeline(true);
+    this.showTimeline(true);
   }
 
-  _handleAnimTransport(action) {
+  handleAnimTransport(action) {
     switch (action) {
       case "play":
-        this._togglePlayPause();
+        this.togglePlayPause();
         break;
       case "stop":
-        this._stopAnimation();
+        this.stopAnimation();
         break;
       case "step-back":
-        this._stepAnimation(-0.1);
+        this.stepAnimation(-0.1);
         break;
       case "step-forward":
-        this._stepAnimation(0.1);
+        this.stepAnimation(0.1);
         break;
     }
   }
 
-  _togglePlayPause() {
+  togglePlayPause() {
     if (!this.currentAction) {
-      if (this.animations.length > 0) this._playAnimation(0);
+      if (this.animations.length > 0) this.playAnimation(0);
       return;
     }
     const icon = this.win.querySelector("#tl-play-icon");
@@ -2234,7 +2234,7 @@ export class Model3DApp extends BaseApp {
     }
   }
 
-  _stopAnimation() {
+  stopAnimation() {
     if (!this.currentAction) return;
     this.currentAction.stop();
     this.isPlaying = false;
@@ -2249,10 +2249,10 @@ export class Model3DApp extends BaseApp {
     if (cur) cur.textContent = "0.00";
   }
 
-  _stepAnimation(delta) {
+  stepAnimation(delta) {
     if (!this.currentAction) {
       if (this.animations.length > 0) {
-        this._playAnimation(0);
+        this.playAnimation(0);
         this.currentAction.paused = true;
         this.isPlaying = false;
       }
@@ -2267,10 +2267,10 @@ export class Model3DApp extends BaseApp {
     if (!this.currentAction) return;
     this.currentAction.time = time;
     this.mixer.update(0);
-    this._updateTimelineUI();
+    this.updateTimelineUI();
   }
 
-  _updateTimelineUI() {
+  updateTimelineUI() {
     if (!this.currentAction || !this.win) return;
     const clip = this.currentAction.getClip();
     const cur = this.currentAction.time;
@@ -2283,7 +2283,7 @@ export class Model3DApp extends BaseApp {
     if (durEl) durEl.textContent = dur.toFixed(2);
   }
 
-  _handleToggle(action, active) {
+  handleToggle(action, active) {
     switch (action) {
       case "grid":
         this.showGrid = active;
@@ -2310,31 +2310,31 @@ export class Model3DApp extends BaseApp {
     }
   }
 
-  _handleAction(action) {
+  handleAction(action) {
     switch (action) {
       case "open":
-        this._openFromExplorer();
+        this.openFromExplorer();
         break;
       case "openBrowser":
-        this._openFromBrowser();
+        this.openFromBrowser();
         break;
       case "samples":
         this.openSamplesModal();
         break;
       case "screenshot":
-        this._takeScreenshot();
+        this.takeScreenshot();
         break;
       case "fullscreen":
-        this._toggleFullscreen();
+        this.toggleFullscreen();
         break;
       case "resetCamera":
-        this._resetCamera();
+        this.resetCamera();
         break;
       case "zoomFit":
-        this._frameModel();
+        this.frameModel();
         break;
       case "toggleOrtho":
-        this._toggleOrtho();
+        this.toggleOrtho();
         break;
 
       case "undo":
@@ -2345,48 +2345,48 @@ export class Model3DApp extends BaseApp {
         break;
 
       case "selectAll":
-        this._handleAction_selectAll();
+        this.handleAction_selectAll();
         break;
       case "deselectAll":
-        this._deselectAll();
+        this.deselectAll();
         break;
 
       case "duplicate":
-        this._duplicateSelected();
+        this.duplicateSelected();
         break;
       case "deleteSelected":
-        this._deleteSelected();
+        this.deleteSelected();
         break;
       case "toggleVisibility": {
-        const sel = this._getFirstSelected();
+        const sel = this.getFirstSelected();
         if (sel) {
           sel.visible = !sel.visible;
           sel.object3D.visible = sel.visible;
-          this._refreshOutliner();
+          this.refreshOutliner();
         }
         break;
       }
 
       case "addCube":
-        this._addPrimitive("cube");
+        this.addPrimitive("cube");
         break;
       case "addSphere":
-        this._addPrimitive("sphere");
+        this.addPrimitive("sphere");
         break;
       case "addCylinder":
-        this._addPrimitive("cylinder");
+        this.addPrimitive("cylinder");
         break;
       case "addPlane":
-        this._addPrimitive("plane");
+        this.addPrimitive("plane");
         break;
       case "addTorus":
-        this._addPrimitive("torus");
+        this.addPrimitive("torus");
         break;
       case "addPointLight":
-        this._addLight("point");
+        this.addLight("point");
         break;
       case "addSpotLight":
-        this._addLight("spot");
+        this.addLight("spot");
         break;
 
       case "snapToggle": {
@@ -2403,65 +2403,65 @@ export class Model3DApp extends BaseApp {
       }
 
       case "recalcNormals":
-        this._recalcNormals();
+        this.recalcNormals();
         break;
       case "flattenToWorld":
-        this._applyTransformsToMesh();
+        this.applyTransformsToMesh();
         break;
 
       case "exportGLTF":
-        this._exportGLTF();
+        this.exportGLTF();
         break;
       case "exportOBJ":
-        this._exportOBJ();
+        this.exportOBJ();
         break;
       case "exportSceneJSON":
-        this._exportSceneJSON();
+        this.exportSceneJSON();
         break;
 
       case "about":
-        this._showAboutDialog();
+        this.showAboutDialog();
         break;
     }
   }
 
-  _duplicateSelected() {
-    const sel = this._getFirstSelected();
+  duplicateSelected() {
+    const sel = this.getFirstSelected();
     if (!sel) return;
     const clone = sel.object3D.clone(true);
     clone.position.x += 0.5;
     clone.userData = {};
     this.scene.add(clone);
-    const newSo = this._registerObject(clone, sel.name + " Copy", sel.type);
+    const newSo = this.registerObject(clone, sel.name + " Copy", sel.type);
     this.undoStack.push({
       undo: () => {
-        this._removeSceneObject(newSo.id);
+        this.removeSceneObject(newSo.id);
       },
       redo: () => {
         this.scene.add(clone);
         this.sceneObjects.set(newSo.id, newSo);
-        this._refreshOutliner();
+        this.refreshOutliner();
       }
     });
-    this._selectOnly(newSo.id);
+    this.selectOnly(newSo.id);
     os.notify.send(`Duplicated: ${sel.name}`, "Scene");
   }
 
-  _deleteSelected() {
+  deleteSelected() {
     if (this.selectedIds.size === 0) return;
     const ids = [...this.selectedIds];
-    ids.forEach((id) => this._removeSceneObject(id));
+    ids.forEach((id) => this.removeSceneObject(id));
     os.notify.send(`Deleted ${ids.length} object(s)`, "Scene");
   }
 
-  _resetCamera() {
+  resetCamera() {
     this.camera.position.set(3, 2, 5);
     this.camera.lookAt(0, 0, 0);
     this.controls.target.set(0, 0, 0);
     this.controls.update();
   }
 
-  _toggleOrtho() {
+  toggleOrtho() {
     this.isOrtho = !this.isOrtho;
     this.camera = this.isOrtho ? this.orthoCam : this.perspCam;
     if (this.isOrtho) {
@@ -2477,7 +2477,7 @@ export class Model3DApp extends BaseApp {
     os.notify.send(this.isOrtho ? "Orthographic view" : "Perspective view", "View");
   }
 
-  async _exportGLTF() {
+  async exportGLTF() {
     if (!this.currentModel) {
       os.notify.send("Nothing to export", "Error");
       return;
@@ -2491,7 +2491,7 @@ export class Model3DApp extends BaseApp {
         this.currentModel,
         (result) => {
           const blob = new Blob([JSON.stringify(result)], { type: "application/json" });
-          this._downloadBlob(blob, (this.currentFileName.replace(/\.[^.]+$/, "") || "scene") + ".gltf");
+          this.downloadBlob(blob, (this.currentFileName.replace(/\.[^.]+$/, "") || "scene") + ".gltf");
           os.notify.send("Exported as GLTF", "Export");
         },
         (err) => os.notify.send("Export didn't work: " + err, "Error"),
@@ -2502,7 +2502,7 @@ export class Model3DApp extends BaseApp {
     }
   }
 
-  _exportOBJ() {
+  exportOBJ() {
     if (!this.currentModel) {
       os.notify.send("Nothing to export", "Error");
       return;
@@ -2529,11 +2529,11 @@ export class Model3DApp extends BaseApp {
       vertOffset += pos.count;
     });
     const blob = new Blob([lines.join("\n")], { type: "text/plain" });
-    this._downloadBlob(blob, (this.currentFileName.replace(/\.[^.]+$/, "") || "scene") + ".obj");
+    this.downloadBlob(blob, (this.currentFileName.replace(/\.[^.]+$/, "") || "scene") + ".obj");
     os.notify.send("Exported as OBJ", "Export");
   }
 
-  _exportSceneJSON() {
+  exportSceneJSON() {
     const data = { version: "1.0", objects: [] };
     this.sceneObjects.forEach((so) => {
       data.objects.push({
@@ -2547,11 +2547,11 @@ export class Model3DApp extends BaseApp {
       });
     });
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-    this._downloadBlob(blob, "scene.json");
+    this.downloadBlob(blob, "scene.json");
     os.notify.send("Scene exported as JSON", "Export");
   }
 
-  _downloadBlob(blob, name) {
+  downloadBlob(blob, name) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -2560,8 +2560,8 @@ export class Model3DApp extends BaseApp {
     setTimeout(() => URL.revokeObjectURL(url), 5000);
   }
 
-  _recalcNormals() {
-    const sel = this._getFirstSelected();
+  recalcNormals() {
+    const sel = this.getFirstSelected();
     if (!sel) {
       os.notify.send("Pick an object first", "Error");
       return;
@@ -2572,8 +2572,8 @@ export class Model3DApp extends BaseApp {
     os.notify.send("Recalculated normals", "Mesh");
   }
 
-  _applyTransformsToMesh() {
-    const sel = this._getFirstSelected();
+  applyTransformsToMesh() {
+    const sel = this.getFirstSelected();
     if (!sel) {
       os.notify.send("Pick an object first", "Error");
       return;
@@ -2587,8 +2587,8 @@ export class Model3DApp extends BaseApp {
     os.notify.send("Applied transforms", "Mesh");
   }
 
-  _assignTexture(type) {
-    const sel = this._getFirstSelected();
+  assignTexture(type) {
+    const sel = this.getFirstSelected();
     if (!sel) {
       os.notify.send("Pick an object first", "Error");
       return;
@@ -2612,14 +2612,14 @@ export class Model3DApp extends BaseApp {
             mat.needsUpdate = true;
           });
         });
-        this._syncMaterialToInspector();
+        this.syncMaterialToInspector();
         os.notify.send("", `${type} texture assigned`);
       });
     };
     input.click();
   }
 
-  _openFromExplorer() {
+  openFromExplorer() {
     speak("Looking for a model?", ClippyAnimation.Searching);
     this.explorerApp.open(async (path, fileName) => {
       const blob = await os.fs.read([...path, fileName]);
@@ -2629,7 +2629,7 @@ export class Model3DApp extends BaseApp {
     }, this);
   }
 
-  _openFromBrowser() {
+  openFromBrowser() {
     const input = document.createElement("input");
     input.type = "file";
     input.accept = ".obj,.gltf,.glb,.fbx,.dae,.3ds,.stl,.ply,.zip";
@@ -2643,7 +2643,7 @@ export class Model3DApp extends BaseApp {
     input.click();
   }
 
-  async _takeScreenshot() {
+  async takeScreenshot() {
     try {
       await os.fs.mkdir(["Pictures"]);
       const dataUrl = this.renderer.domElement.toDataURL("image/png");
@@ -2663,7 +2663,7 @@ export class Model3DApp extends BaseApp {
     }
   }
 
-  _toggleFullscreen() {
+  toggleFullscreen() {
     if (!document.fullscreenElement) this.container.requestFullscreen();
     else document.exitFullscreen();
   }
@@ -2738,7 +2738,7 @@ export class Model3DApp extends BaseApp {
         btn.style.display = "none";
         progressEl.style.display = "block";
         try {
-          await this._loadSampleModel(index, fill, text, card);
+          await this.loadSampleModel(index, fill, text, card);
           close();
         } catch {
           btn.style.display = "flex";
@@ -2748,7 +2748,7 @@ export class Model3DApp extends BaseApp {
     });
   }
 
-  async _loadSampleModel(index, fillEl, textEl, card) {
+  async loadSampleModel(index, fillEl, textEl, card) {
     const sample = SAMPLE_MODELS[index];
     let ab;
     if (this.sampleCache.has(sample.url)) {
@@ -2792,7 +2792,7 @@ export class Model3DApp extends BaseApp {
     os.notify.send(`Loaded: ${sample.name}`, "Load");
   }
 
-  _showAboutDialog() {
+  showAboutDialog() {
     showAboutDialog({
       title: "Yuki Blender",
       version: "1.0.0",

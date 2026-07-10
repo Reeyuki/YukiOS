@@ -1,6 +1,7 @@
 import { showConflictDialog } from "../shared/conflictDialog.js";
-import { os } from "../os/index.js";
+import { os } from "../framework.js";
 import { BusEvents } from "../core/EventBus.js";
+import { FileKind } from "../shared/fileKindDetector.js";
 
 export class DragDropManager {
   constructor(desktop, fs, positionHelper, positionStore, selectionManager, iconManager, iconDataHelper, explorerApp) {
@@ -69,11 +70,14 @@ export class DragDropManager {
     let moved = 0;
     for (const icon of icons) {
       if (icon.classList.contains("folder-icon")) continue;
-      const name = this.iconDataHelper.getIconName(icon);
-      const fileName = `${name}.desktop`;
-      const fileContent = await os.fs.read(["Desktop", fileName]);
-      await os.fs.write(["Desktop", folderName, fileName], fileContent);
-      await os.fs.delete(["Desktop"], fileName);
+      const name = icon.dataset.fileName || `${this.iconDataHelper.getIconName(icon)}.desktop`;
+      const destDir = this.fs.resolveUserPath(["Desktop", folderName]);
+      const destPath = this.fs.join(destDir, name);
+      const destExists = await os.fs.exists(destPath);
+      const finalName = destExists ? await this.fs.getUniqueFileName(["Desktop", folderName], name) : name;
+      const fileContent = await os.fs.read(["Desktop", name]);
+      await os.fs.write(["Desktop", folderName, finalName], fileContent);
+      await os.fs.delete(["Desktop"], name);
       delete saved[this.positionStore.getKey(icon)];
       icon.remove();
       this.selectionManager.remove(icon);
@@ -86,7 +90,7 @@ export class DragDropManager {
 
   async moveIconsToExplorer(icons, explorerWinId) {
     if (!this.explorerApp) return;
-    const inst = this.explorerApp._getInstance(explorerWinId);
+    const inst = this.explorerApp.getInstance(explorerWinId);
     if (!inst) return;
 
     await os.fs.mkdir(["Desktop"]);
@@ -180,8 +184,7 @@ export class DragDropManager {
           this.selectionManager.remove(icon);
           moved++;
         } else {
-          const name = this.iconDataHelper.getIconName(icon);
-          const fileName = `${name}.desktop`;
+          const fileName = icon.dataset.fileName || `${this.iconDataHelper.getIconName(icon)}.desktop`;
           const content = await this.fs.getFileContent(["Desktop"], fileName);
 
           const destDir = this.fs.resolveUserPath(inst.currentPath);
@@ -242,8 +245,6 @@ export class DragDropManager {
 
       try {
         const kind = await os.fs.getFileKind([...sourcePath, name]);
-        const fileIcon = await os.fs.getFileIcon([...sourcePath, name]);
-        const { FileKind } = await import("../fs.js");
 
         const destDir = this.fs.resolveUserPath(["Desktop"]);
         const destPath = this.fs.join(destDir, name);
@@ -267,24 +268,24 @@ export class DragDropManager {
           const blob = await os.fs.readBinaryFile([...sourcePath], name);
           content = blob;
           if (action === "replace") {
-            await os.fs.writeBinaryFile(["Desktop"], name, blob, kind, fileIcon);
+            await os.fs.writeBinaryFile(["Desktop"], name, blob, kind, null);
           } else {
-            await os.fs.writeBinaryFile(["Desktop"], finalName, blob, kind, fileIcon);
+            await os.fs.writeBinaryFile(["Desktop"], finalName, blob, kind, null);
           }
         } else {
           content = await os.fs.read([...sourcePath, name]);
           if (action === "replace") {
             await os.fs.write(["Desktop", name], content);
-            await this.fs.writeMeta(destDir, name, { kind, icon: fileIcon });
+            await this.fs.writeMeta(destDir, name, { kind });
           } else {
             await os.fs.write(["Desktop", finalName], content);
-            await this.fs.writeMeta(destDir, finalName, { kind, icon: fileIcon });
+            await this.fs.writeMeta(destDir, finalName, { kind });
           }
         }
 
         await os.fs.delete(sourcePath, name);
 
-        const icon = await this.iconManager.createDesktopFileIcon(finalName, { content, kind, icon: fileIcon });
+        const icon = await this.iconManager.createDesktopFileIcon(finalName, { content, kind });
         if (icon) {
           this.positionHelper.setPosition(icon, leftPx - 40, topPx - 40);
           this.positionHelper.snap(icon);
@@ -319,7 +320,6 @@ export class DragDropManager {
 
           const childContent = await this.fs.getFileContent([...sourcePath, name], childName);
           const childKind = await this.fs.getFileKind([...sourcePath, name], childName);
-          const childIcon = await this.fs.getFileIcon([...sourcePath, name], childName);
 
           const destDir = this.fs.resolveUserPath(["Desktop", name]);
           const destFilePath = this.fs.join(destDir, childName);
@@ -340,9 +340,9 @@ export class DragDropManager {
 
           if (action === "replace") {
             await this.fs.updateFile(["Desktop", name], childName, childContent);
-            await this.fs.writeMeta(destDir, childName, { kind: childKind, icon: childIcon });
+            await this.fs.writeMeta(destDir, childName, { kind: childKind });
           } else {
-            await this.fs.createFile(["Desktop", name], childName, childContent, childKind, childIcon);
+            await this.fs.createFile(["Desktop", name], childName, childContent, childKind, null);
           }
         }
 

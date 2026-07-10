@@ -4,8 +4,8 @@ export class ClockWidget extends WidgetBase {
   constructor(manager, id) {
     super(manager, id, "clock", "Clock", 240, 130);
     this._24h = false;
-    this._showSeconds = false;
-    this._interval = null;
+    this.showSeconds = false;
+    this.interval = null;
   }
 
   onRender(contentEl) {
@@ -13,11 +13,11 @@ export class ClockWidget extends WidgetBase {
       <div class="widget-clock-time" id="w-clock-time-${this.id}"></div>
       <div class="widget-clock-date" id="w-clock-date-${this.id}"></div>
     `;
-    this._tick();
-    this._interval = setInterval(() => this._tick(), 1000);
+    this.tick();
+    this.interval = setInterval(() => this.tick(), 1000);
   }
 
-  _tick() {
+  tick() {
     const now = new Date();
     let hours = now.getHours();
     let minutes = now.getMinutes().toString().padStart(2, "0");
@@ -27,7 +27,7 @@ export class ClockWidget extends WidgetBase {
       ampm = hours >= 12 ? " PM" : " AM";
       hours = hours % 12 || 12;
     }
-    const timeStr = `${hours.toString().padStart(2, "0")}:${minutes}${this._showSeconds ? ":" + seconds : ""}${ampm}`;
+    const timeStr = `${hours.toString().padStart(2, "0")}:${minutes}${this.showSeconds ? ":" + seconds : ""}${ampm}`;
     const timeEl = document.getElementById(`w-clock-time-${this.id}`);
     if (timeEl) timeEl.textContent = timeStr;
 
@@ -68,7 +68,7 @@ export class ClockWidget extends WidgetBase {
         key: "showSeconds",
         label: "Show seconds",
         type: "select",
-        value: this._showSeconds,
+        value: this.showSeconds,
         default: false,
         options: [
           { value: "true", label: "Yes" },
@@ -80,24 +80,24 @@ export class ClockWidget extends WidgetBase {
 
   applyConfig(data) {
     this._24h = data._24h === "true";
-    this._showSeconds = data.showSeconds === "true";
-    this._tick();
+    this.showSeconds = data.showSeconds === "true";
+    this.tick();
     this.manager.saveState();
   }
 
   getData() {
-    return { _24h: this._24h, showSeconds: this._showSeconds };
+    return { _24h: this._24h, showSeconds: this.showSeconds };
   }
 
   setData(data) {
     if (data) {
       this._24h = !!data._24h;
-      this._showSeconds = !!data.showSeconds;
+      this.showSeconds = !!data.showSeconds;
     }
   }
 
   destroy() {
-    if (this._interval) clearInterval(this._interval);
+    if (this.interval) clearInterval(this.interval);
     super.destroy();
   }
 }

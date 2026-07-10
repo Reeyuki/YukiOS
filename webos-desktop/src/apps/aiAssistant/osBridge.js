@@ -1,5 +1,5 @@
 import { audioMixer } from "../../audioMixer.js";
-import { os } from "../../os/index.js";
+import { os, StorageKeys } from "../../framework.js";
 
 export class OSBridge {
   constructor(services) {
@@ -14,42 +14,42 @@ export class OSBridge {
   async execute(action) {
     const { action: actionType, target, params } = action;
 
-    if (!this._checkPermission(actionType, target)) {
+    if (!this.checkPermission(actionType, target)) {
       audioMixer().playCriticalWarning();
       throw new Error(`Permission denied for ${actionType} on ${target}`);
     }
 
     switch (actionType) {
       case "open_app":
-        return await this._openApp(target, params);
+        return await this.openApp(target, params);
       case "close_app":
-        return await this._closeApp(target, params);
+        return await this.closeApp(target, params);
       case "focus_window":
-        return await this._focusWindow(target, params);
+        return await this.focusWindow(target, params);
       case "move_window":
-        return await this._moveWindow(target, params);
+        return await this.moveWindow(target, params);
       case "resize_window":
-        return await this._resizeWindow(target, params);
+        return await this.resizeWindow(target, params);
       case "switch_workspace":
-        return await this._switchWorkspace(target, params);
+        return await this.switchWorkspace(target, params);
       case "move_window_to_workspace":
-        return await this._moveWindowToWorkspace(target, params);
+        return await this.moveWindowToWorkspace(target, params);
       case "fs_read":
-        return await this._fsRead(target, params);
+        return await this.fsRead(target, params);
       case "fs_write":
-        return await this._fsWrite(target, params);
+        return await this.fsWrite(target, params);
       case "emit_event":
-        return await this._emitEvent(target, params);
+        return await this.emitEvent(target, params);
       case "set_theme":
-        return await this._setTheme(target, params);
+        return await this.setTheme(target, params);
       case "toggle_setting":
-        return await this._toggleSetting(target, params);
+        return await this.toggleSetting(target, params);
       default:
         throw new Error(`Unknown action type: ${actionType}`);
     }
   }
 
-  _checkPermission(actionType, target) {
+  checkPermission(actionType, target) {
     const key = `${actionType}:${target}`;
     if (this.permissions.has(key)) {
       return this.permissions.get(key);
@@ -73,13 +73,13 @@ export class OSBridge {
     this.permissions.set(key, false);
   }
 
-  async _openApp(appId, params) {
+  async openApp(appId, params) {
     if (!this.appLauncher && !os?.app) {
       throw new Error("App launcher not available");
     }
 
     try {
-      const resolvedAppId = this._resolveAppId(appId);
+      const resolvedAppId = this.resolveAppId(appId);
 
       if (os?.app?.launch) {
         await os.app.launch(resolvedAppId, false, params);
@@ -93,7 +93,7 @@ export class OSBridge {
     }
   }
 
-  _resolveAppId(appId) {
+  resolveAppId(appId) {
     const normalized = String(appId || "")
       .trim()
       .toLowerCase();
@@ -135,7 +135,7 @@ export class OSBridge {
     return aliases[normalized] || appId;
   }
 
-  async _closeApp(target, params) {
+  async closeApp(target, params) {
     const winId = params?.winId || target;
 
     try {
@@ -151,7 +151,7 @@ export class OSBridge {
     }
   }
 
-  async _focusWindow(winId, params) {
+  async focusWindow(winId, params) {
     const id = params?.winId || winId;
 
     try {
@@ -167,7 +167,7 @@ export class OSBridge {
     }
   }
 
-  async _moveWindow(winId, params) {
+  async moveWindow(winId, params) {
     const id = params?.winId || winId;
     const { x, y } = params || {};
 
@@ -183,7 +183,7 @@ export class OSBridge {
       throw new Error(`Failed to move ${id}: ${error.message}`);
     }
   }
-  async _resizeWindow(winId, params) {
+  async resizeWindow(winId, params) {
     const id = params?.winId || winId;
     const { width, height } = params || {};
 
@@ -199,7 +199,7 @@ export class OSBridge {
       throw new Error(`Failed to resize ${id}: ${error.message}`);
     }
   }
-  async _switchWorkspace(target, params = {}) {
+  async switchWorkspace(target, params = {}) {
     const workspaceManager = this.wm?.workspaceManager;
     if (!workspaceManager) {
       throw new Error("Workspace manager not available");
@@ -239,7 +239,7 @@ export class OSBridge {
     };
   }
 
-  async _moveWindowToWorkspace(winId, params = {}) {
+  async moveWindowToWorkspace(winId, params = {}) {
     const workspaceManager = this.wm?.workspaceManager;
     if (!workspaceManager) {
       throw new Error("Workspace manager not available");
@@ -272,7 +272,7 @@ export class OSBridge {
     };
   }
 
-  async _fsRead(path, params) {
+  async fsRead(path, params) {
     try {
       if (this.fs?.fsReady) {
         await this.fs.fsReady;
@@ -290,7 +290,7 @@ export class OSBridge {
     }
   }
 
-  async _fsWrite(path, params) {
+  async fsWrite(path, params) {
     try {
       if (this.fs?.fsReady) {
         await this.fs.fsReady;
@@ -310,7 +310,7 @@ export class OSBridge {
     }
   }
 
-  async _emitEvent(eventName, params) {
+  async emitEvent(eventName, params) {
     try {
       if (!os?.events?.emit) {
         throw new Error("Event system not available");
@@ -323,9 +323,9 @@ export class OSBridge {
       throw new Error(`Failed to emit event ${eventName}: ${error.message}`);
     }
   }
-  async _setTheme(themeName, params) {
+  async setTheme(themeName, params) {
     try {
-      os.storage.set("theme", themeName);
+      os.storage.set(StorageKeys.theme, themeName);
       os.events.emit("SETTINGS_CHANGED", { theme: themeName });
       return { success: true, message: `Set theme to ${themeName}` };
     } catch (error) {
@@ -333,7 +333,7 @@ export class OSBridge {
     }
   }
 
-  async _toggleSetting(settingKey, params) {
+  async toggleSetting(settingKey, params) {
     try {
       const currentValue = os.storage.get(settingKey);
       const newValue = currentValue === "true" ? "false" : "true";
@@ -369,18 +369,18 @@ export class OSBridge {
       windows,
       runningApps,
       workspaces: workspaceState,
-      theme: os.storage.get("theme") || "dark",
-      settings: this._getSettings()
+      theme: os.storage.get(StorageKeys.theme) || "dark",
+      settings: this.getSettings()
     };
   }
 
-  _getSettings() {
+  getSettings() {
     const settings = {};
-    // Direct localStorage enumeration needed; os.storage doesn't expose key enumeration
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key.startsWith("yuki_") || key.startsWith("theme")) {
-        settings[key] = localStorage.getItem(key);
+    const knownKeys = Object.values(StorageKeys);
+    for (const key of knownKeys) {
+      const val = os.storage.get(key);
+      if (val !== null && val !== undefined) {
+        settings[key] = val;
       }
     }
     return settings;

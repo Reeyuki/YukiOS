@@ -17,7 +17,7 @@ export class RhythmsApp extends BaseApp {
     this.attackFactor = 0.6;
     this.decayFactor = 0.06;
     this.sensitivity = 1.0;
-    this._freqDataArray = new Uint8Array(FREQ_BIN_COUNT);
+    this.freqDataArray = new Uint8Array(FREQ_BIN_COUNT);
     this.roundness = 10;
     this.filled = true;
     this.mirrorEnabled = false;
@@ -149,7 +149,7 @@ export class RhythmsApp extends BaseApp {
     tilesSlider.addEventListener("input", (e) => {
       this.tileCount = parseInt(e.target.value);
       tilesValue.textContent = this.tileCount;
-      this._binMap = null;
+      this.binMap = null;
       this.smoothedData = new Array(this.tileCount).fill(0);
     });
 
@@ -210,7 +210,7 @@ export class RhythmsApp extends BaseApp {
     animate();
   }
 
-  _buildBinMap() {
+  buildBinMap() {
     const nyquist = FREQ_BIN_COUNT;
     const minHz = 20;
     const maxHz = 20000;
@@ -240,23 +240,23 @@ export class RhythmsApp extends BaseApp {
 
     this.ctx.clearRect(0, 0, width, height);
 
-    const hasData = audioMixer().getGlobalFrequencyData(this._freqDataArray);
+    const hasData = audioMixer().getGlobalFrequencyData(this.freqDataArray);
 
     if (!hasData) {
       this.drawIdle(width, height);
       return;
     }
 
-    if (!this._binMap || this._binMap.length !== this.tileCount) {
-      this._binMap = this._buildBinMap();
+    if (!this.binMap || this.binMap.length !== this.tileCount) {
+      this.binMap = this.buildBinMap();
     }
 
     for (let i = 0; i < this.tileCount; i++) {
-      const bin = this._binMap[i];
-      const nextBin = this._binMap[i + 1] !== undefined ? this._binMap[i + 1] : bin + 1;
+      const bin = this.binMap[i];
+      const nextBin = this.binMap[i + 1] !== undefined ? this.binMap[i + 1] : bin + 1;
       let max = 0;
       for (let b = bin; b < Math.min(nextBin, FREQ_BIN_COUNT); b++) {
-        if (this._freqDataArray[b] > max) max = this._freqDataArray[b];
+        if (this.freqDataArray[b] > max) max = this.freqDataArray[b];
       }
       const target = Math.min(255, max * (this.sensitivity * 0.5));
       const current = this.smoothedData[i] || 0;
@@ -288,7 +288,7 @@ export class RhythmsApp extends BaseApp {
     this.drawEffect(width, height);
   }
 
-  _barLayout(width) {
+  barLayout(width) {
     const minGap = this.tileCount > 80 ? 1 : this.tileCount > 40 ? 2 : 3;
     const barWidth = Math.max(1, (width - minGap * (this.tileCount - 1)) / this.tileCount);
     const gap = this.tileCount > 1 ? (width - barWidth * this.tileCount) / (this.tileCount - 1) : 0;
@@ -296,7 +296,7 @@ export class RhythmsApp extends BaseApp {
   }
 
   drawLines(width, height) {
-    const { barWidth, gap } = this._barLayout(width);
+    const { barWidth, gap } = this.barLayout(width);
     const radius = Math.min(this.roundness, barWidth / 2);
 
     for (let i = 0; i < this.tileCount; i++) {
@@ -337,7 +337,7 @@ export class RhythmsApp extends BaseApp {
   }
 
   drawMirror(width, height) {
-    const { barWidth, gap } = this._barLayout(width);
+    const { barWidth, gap } = this.barLayout(width);
     const centerY = height / 2;
     const radius = Math.min(this.roundness, barWidth / 2);
 
@@ -564,7 +564,7 @@ export class RhythmsApp extends BaseApp {
       if (value < 50) continue;
 
       const hue = this.hue + (i / this.tileCount) * 30;
-      const { barWidth, gap } = this._barLayout(width);
+      const { barWidth, gap } = this.barLayout(width);
       const x = i * (barWidth + gap) + barWidth / 2;
       const y = height - (value / 255) * height * 0.8;
 
@@ -581,7 +581,7 @@ export class RhythmsApp extends BaseApp {
     this.ctx.save();
     this.ctx.globalAlpha = 0.25;
 
-    const { barWidth, gap } = this._barLayout(width);
+    const { barWidth, gap } = this.barLayout(width);
 
     for (let i = 0; i < this.tileCount; i++) {
       const value = this.smoothedData[i];
@@ -599,7 +599,7 @@ export class RhythmsApp extends BaseApp {
 
   drawIdle(width, height) {
     const n = this.tileCount;
-    const { barWidth, gap } = this._barLayout(width);
+    const { barWidth, gap } = this.barLayout(width);
     const now = Date.now() / 1000;
 
     for (let i = 0; i < n; i++) {

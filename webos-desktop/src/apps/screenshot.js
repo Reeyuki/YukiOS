@@ -1,4 +1,5 @@
 import "../styles/screenshot.css";
+import { createElement } from "../shared/domUtils.js";
 import { BaseApp, os } from "../framework.js";
 import { KeybindManager } from "../keybindManager.js";
 
@@ -6,17 +7,17 @@ export class ScreenshotApp extends BaseApp {
   constructor(services) {
     super(services);
     this.openWindows = new Set();
-    this._win = null;
-    this._recording = false;
-    this._mediaRecorder = null;
-    this._recordedChunks = [];
-    this._cleanupOverlay = null;
-    this._stream = null;
-    this._autoSave = false;
-    this._registerGlobalShortcuts();
+    this.win = null;
+    this.recording = false;
+    this.mediaRecorder = null;
+    this.recordedChunks = [];
+    this.cleanupOverlay = null;
+    this.stream = null;
+    this.autoSave = false;
+    this.registerGlobalShortcuts();
   }
 
-  _registerGlobalShortcuts() {
+  registerGlobalShortcuts() {
     const handler = (e) => {
       if (e.target.closest("input, textarea, [contenteditable]")) return;
       if (KeybindManager.matches(e, "global.screenshot.full")) {
@@ -51,14 +52,14 @@ export class ScreenshotApp extends BaseApp {
 
     win.classList.add("sc-window");
     win.innerHTML = this.buildUI();
-    this._win = win;
+    this.win = win;
     this.openWindows.add(winId);
 
     this.setupEvents(win);
 
     win.addEventListener("remove", () => {
       this.openWindows.delete(winId);
-      this._win = null;
+      this.win = null;
     });
   }
 
@@ -96,19 +97,19 @@ export class ScreenshotApp extends BaseApp {
     win.querySelector('[data-mode="full"]').addEventListener("click", () => this.captureFull());
     win.querySelector('[data-mode="area"]').addEventListener("click", () => this.captureArea(true));
     win.querySelector('[data-mode="record"]').addEventListener("click", () => this.toggleRecording());
-    win.querySelector("#sc-download").addEventListener("click", () => this._downloadCurrent());
-    win.querySelector("#sc-save").addEventListener("click", () => this._saveCurrent());
-    win.querySelector("#sc-copy").addEventListener("click", () => this._copyCurrent());
+    win.querySelector("#sc-download").addEventListener("click", () => this.downloadCurrent());
+    win.querySelector("#sc-save").addEventListener("click", () => this.saveCurrent());
+    win.querySelector("#sc-copy").addEventListener("click", () => this.copyCurrent());
   }
 
-  async _loadHtml2canvasPro() {
+  async loadHtml2canvasPro() {
     if (window.html2canvas) return;
     if (__SINGLE_FILE__) {
       const mod = await import("html2canvas-pro");
       window.html2canvas = mod.default || mod;
       return;
     }
-    const s = document.createElement("script");
+    const s = createElement("script");
     s.src = "https://cdn.jsdelivr.net/npm/html2canvas-pro@1.5.8/dist/html2canvas-pro.min.js";
     document.head.appendChild(s);
     await new Promise((resolve, reject) => {
@@ -117,12 +118,12 @@ export class ScreenshotApp extends BaseApp {
     });
   }
 
-  async _pageCapture() {
+  async pageCapture() {
     try {
-      await this._loadHtml2canvasPro();
+      await this.loadHtml2canvasPro();
     } catch (e) {
       console.warn("[Screenshot] html2canvas-pro CDN failed, trying getDisplayMedia fallback:", e);
-      return await this._fallbackCapture();
+      return await this.fallbackCapture();
     }
     const win = document.getElementById("screenshot");
     if (win) win.style.display = "none";
@@ -157,13 +158,13 @@ export class ScreenshotApp extends BaseApp {
     if (win) win.style.display = "";
     console.warn("[Screenshot] all html2canvas options tainted, trying getDisplayMedia fallback");
     try {
-      return await this._fallbackCapture();
+      return await this.fallbackCapture();
     } catch (fbErr) {
       throw new Error("All capture methods failed: " + fbErr.message);
     }
   }
 
-  async _fallbackCapture() {
+  async fallbackCapture() {
     const stream = await navigator.mediaDevices.getDisplayMedia({
       preferCurrentTab: false,
       video: { displaySurface: "monitor" }
@@ -171,7 +172,7 @@ export class ScreenshotApp extends BaseApp {
     const track = stream.getVideoTracks()[0];
     const capture = new ImageCapture(track);
     const bitmap = await capture.grabFrame();
-    const canvas = document.createElement("canvas");
+    const canvas = createElement("canvas");
     canvas.width = bitmap.width;
     canvas.height = bitmap.height;
     canvas.getContext("2d").drawImage(bitmap, 0, 0);
@@ -183,66 +184,66 @@ export class ScreenshotApp extends BaseApp {
   }
 
   async captureFull(autoSave) {
-    if (this._recording) return;
+    if (this.recording) return;
     try {
-      this._showStatus("Capturing page...");
-      const blob = await this._pageCapture();
-      this._currentBlob = blob;
-      this._currentType = "screenshot";
+      this.showStatus("Capturing page...");
+      const blob = await this.pageCapture();
+      this.currentBlob = blob;
+      this.currentType = "screenshot";
       if (autoSave) {
-        await this._saveCurrent();
+        await this.saveCurrent();
       }
-      this._showResult(blob, "screenshot");
+      this.showResult(blob, "screenshot");
     } catch (e) {
       console.error("[Screenshot] captureFull failed:", e);
-      this._showStatus("Capture failed: " + (e.message || "unknown error"));
+      this.showStatus("Capture failed: " + (e.message || "unknown error"));
     }
   }
 
   async captureArea(autoSave) {
-    if (this._recording) return;
+    if (this.recording) return;
     try {
-      this._showStatus("Capturing page...");
-      const blob = await this._pageCapture();
-      this._currentBlob = blob;
-      this._currentType = "screenshot";
-      this._autoSave = autoSave;
-      this._showCropOverlay(blob);
+      this.showStatus("Capturing page...");
+      const blob = await this.pageCapture();
+      this.currentBlob = blob;
+      this.currentType = "screenshot";
+      this.autoSave = autoSave;
+      this.showCropOverlay(blob);
     } catch (e) {
       console.error("[Screenshot] captureArea failed:", e);
-      this._showStatus("Capture failed: " + (e.message || "unknown error"));
+      this.showStatus("Capture failed: " + (e.message || "unknown error"));
     }
   }
 
   async toggleRecording() {
-    if (this._recording) {
-      this._stopRecording();
+    if (this.recording) {
+      this.stopRecording();
       return;
     }
     try {
-      this._showStatus("Select a screen to record...");
+      this.showStatus("Select a screen to record...");
       const stream = await navigator.mediaDevices.getDisplayMedia({
         preferCurrentTab: false,
         video: { displaySurface: "monitor" },
         audio: false
       });
-      this._stream = stream;
-      this._recordedChunks = [];
-      this._mediaRecorder = new MediaRecorder(stream, { mimeType: "video/webm" });
-      this._mediaRecorder.ondataavailable = (e) => {
-        if (e.data.size > 0) this._recordedChunks.push(e.data);
+      this.stream = stream;
+      this.recordedChunks = [];
+      this.mediaRecorder = new MediaRecorder(stream, { mimeType: "video/webm" });
+      this.mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) this.recordedChunks.push(e.data);
       };
-      this._mediaRecorder.onstop = () => {
-        const blob = new Blob(this._recordedChunks, { type: "video/webm" });
-        this._recordedChunks = [];
-        this._showResult(blob, "recording");
+      this.mediaRecorder.onstop = () => {
+        const blob = new Blob(this.recordedChunks, { type: "video/webm" });
+        this.recordedChunks = [];
+        this.showResult(blob, "recording");
       };
-      this._mediaRecorder.start();
-      this._recording = true;
-      this._updateRecordUI();
+      this.mediaRecorder.start();
+      this.recording = true;
+      this.updateRecordUI();
       os.notify.send("Screenshot", "Recording started. Press Ctrl+Shift+R to stop.");
     } catch {
-      this._showStatus("Recording cancelled");
+      this.showStatus("Recording cancelled");
     }
   }
 
@@ -252,63 +253,63 @@ export class ScreenshotApp extends BaseApp {
       video: { displaySurface: "monitor" },
       audio: false
     });
-    this._stream = stream;
-    this._recordedChunks = [];
-    this._mediaRecorder = new MediaRecorder(stream, { mimeType: "video/webm" });
+    this.stream = stream;
+    this.recordedChunks = [];
+    this.mediaRecorder = new MediaRecorder(stream, { mimeType: "video/webm" });
     return new Promise((resolve) => {
-      this._mediaRecorder.ondataavailable = (e) => {
-        if (e.data.size > 0) this._recordedChunks.push(e.data);
+      this.mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) this.recordedChunks.push(e.data);
       };
-      this._mediaRecorder.onstop = async () => {
-        const blob = new Blob(this._recordedChunks, { type: "video/webm" });
-        this._recordedChunks = [];
-        this._currentBlob = blob;
-        this._currentType = "recording";
-        await this._saveCurrent();
+      this.mediaRecorder.onstop = async () => {
+        const blob = new Blob(this.recordedChunks, { type: "video/webm" });
+        this.recordedChunks = [];
+        this.currentBlob = blob;
+        this.currentType = "recording";
+        await this.saveCurrent();
         resolve();
       };
-      this._mediaRecorder.start();
-      this._recording = true;
+      this.mediaRecorder.start();
+      this.recording = true;
     });
   }
 
   stopOverlayRecording() {
-    if (this._mediaRecorder && this._mediaRecorder.state !== "inactive") {
-      this._mediaRecorder.stop();
+    if (this.mediaRecorder && this.mediaRecorder.state !== "inactive") {
+      this.mediaRecorder.stop();
     }
-    if (this._stream) {
-      this._stream.getTracks().forEach((t) => t.stop());
+    if (this.stream) {
+      this.stream.getTracks().forEach((t) => t.stop());
     }
-    this._recording = false;
-    this._stream = null;
-    this._mediaRecorder = null;
+    this.recording = false;
+    this.stream = null;
+    this.mediaRecorder = null;
   }
 
-  _stopRecording() {
-    if (this._mediaRecorder && this._mediaRecorder.state !== "inactive") {
-      this._mediaRecorder.stop();
+  stopRecording() {
+    if (this.mediaRecorder && this.mediaRecorder.state !== "inactive") {
+      this.mediaRecorder.stop();
     }
-    if (this._stream) {
-      this._stream.getTracks().forEach((t) => t.stop());
+    if (this.stream) {
+      this.stream.getTracks().forEach((t) => t.stop());
     }
-    this._recording = false;
-    this._stream = null;
-    this._mediaRecorder = null;
-    this._updateRecordUI();
+    this.recording = false;
+    this.stream = null;
+    this.mediaRecorder = null;
+    this.updateRecordUI();
   }
 
-  _updateRecordUI() {
-    if (!this._win) return;
-    const label = this._win.querySelector(".sc-record-label");
+  updateRecordUI() {
+    if (!this.win) return;
+    const label = this.win.querySelector(".sc-record-label");
     if (!label) return;
-    if (this._recording) {
+    if (this.recording) {
       label.innerHTML = '<span class="sc-recording-indicator"><span class="sc-rec-dot"></span> Recording</span>';
     } else {
       label.textContent = "Record";
     }
   }
 
-  _showStatus(msg) {
+  showStatus(msg) {
     const preview = document.getElementById("sc-preview");
     const actions = document.getElementById("sc-actions");
     if (preview) {
@@ -317,9 +318,9 @@ export class ScreenshotApp extends BaseApp {
     if (actions) actions.style.display = "none";
   }
 
-  _showResult(blob, type) {
-    this._currentBlob = blob;
-    this._currentType = type;
+  showResult(blob, type) {
+    this.currentBlob = blob;
+    this.currentType = type;
     const preview = document.getElementById("sc-preview");
     const actions = document.getElementById("sc-actions");
     if (!preview || !actions) return;
@@ -331,16 +332,16 @@ export class ScreenshotApp extends BaseApp {
       preview.innerHTML = `<img src="${url}" alt="Screenshot" />`;
     }
 
-    this._currentUrl = url;
+    this.currentUrl = url;
     actions.style.display = "flex";
   }
 
-  _showCropOverlay(blob) {
+  showCropOverlay(blob) {
     const url = URL.createObjectURL(blob);
-    const overlay = document.createElement("div");
+    const overlay = createElement("div");
     overlay.className = "sc-overlay";
 
-    const img = document.createElement("img");
+    const img = createElement("img");
     img.className = "sc-overlay-img";
     img.src = url;
     overlay.appendChild(img);
@@ -348,7 +349,7 @@ export class ScreenshotApp extends BaseApp {
     let dragStart = null;
     let rectEl = null;
 
-    const info = document.createElement("div");
+    const info = createElement("div");
     info.className = "sc-overlay-info";
     info.innerHTML = `
       <span>Drag to select area</span>
@@ -367,7 +368,7 @@ export class ScreenshotApp extends BaseApp {
       const r = overlay.getBoundingClientRect();
       dragStart = { x: e.clientX - r.left, y: e.clientY - r.top };
       if (rectEl) rectEl.remove();
-      rectEl = document.createElement("div");
+      rectEl = createElement("div");
       rectEl.className = "sc-select-rect";
       overlay.appendChild(rectEl);
     };
@@ -406,7 +407,7 @@ export class ScreenshotApp extends BaseApp {
       const rw = parseFloat(rectEl.style.width) * scaleX;
       const rh = parseFloat(rectEl.style.height) * scaleY;
 
-      const canvas = document.createElement("canvas");
+      const canvas = createElement("canvas");
       canvas.width = rw;
       canvas.height = rh;
       const ctx = canvas.getContext("2d");
@@ -415,24 +416,24 @@ export class ScreenshotApp extends BaseApp {
         ctx.drawImage(tempImg, rx, ry, rw, rh, 0, 0, rw, rh);
         canvas.toBlob(async (cropped) => {
           if (cropped) {
-            this._currentBlob = cropped;
-            this._currentType = "screenshot";
-            if (this._autoSave) {
-              await this._saveCurrent();
-              this._autoSave = false;
+            this.currentBlob = cropped;
+            this.currentType = "screenshot";
+            if (this.autoSave) {
+              await this.saveCurrent();
+              this.autoSave = false;
             }
-            this._showResult(cropped, "screenshot");
+            this.showResult(cropped, "screenshot");
             URL.revokeObjectURL(url);
           }
         }, "image/png");
-        this._removeCropOverlay(overlay, info);
+        this.removeCropOverlay(overlay, info);
       };
       tempImg.src = url;
     };
 
     const onKeyDown = (e) => {
       if (e.key === "Escape") {
-        this._removeCropOverlay(overlay, info);
+        this.removeCropOverlay(overlay, info);
         URL.revokeObjectURL(url);
       }
       if (e.key === "Enter") {
@@ -452,26 +453,26 @@ export class ScreenshotApp extends BaseApp {
         doCrop();
       });
 
-    this._cleanupOverlay = () => {
+    this.cleanupOverlay = () => {
       overlay.removeEventListener("mousedown", onMouseDown);
       overlay.removeEventListener("mousemove", onMouseMove);
       overlay.removeEventListener("mouseup", onMouseUp);
       document.removeEventListener("keydown", onKeyDown);
-      this._removeCropOverlay(overlay, info);
+      this.removeCropOverlay(overlay, info);
     };
   }
 
-  _removeCropOverlay(overlay, info) {
+  removeCropOverlay(overlay, info) {
     if (overlay && overlay.parentNode) overlay.remove();
     if (info && info.parentNode) info.remove();
   }
 
-  _downloadCurrent() {
-    if (!this._currentBlob) return;
-    const ext = this._currentType === "recording" ? "webm" : "png";
+  downloadCurrent() {
+    if (!this.currentBlob) return;
+    const ext = this.currentType === "recording" ? "webm" : "png";
     const name = `screenshot-${Date.now()}.${ext}`;
-    const url = URL.createObjectURL(this._currentBlob);
-    const a = document.createElement("a");
+    const url = URL.createObjectURL(this.currentBlob);
+    const a = createElement("a");
     a.href = url;
     a.download = name;
     document.body.appendChild(a);
@@ -481,23 +482,23 @@ export class ScreenshotApp extends BaseApp {
     os.notify.send("Screenshot", `Downloaded ${name}`);
   }
 
-  async _saveCurrent() {
-    if (!this._currentBlob) return;
+  async saveCurrent() {
+    if (!this.currentBlob) return;
     try {
-      const ext = this._currentType === "recording" ? "webm" : "png";
+      const ext = this.currentType === "recording" ? "webm" : "png";
       const name = `Screenshot-${Date.now()}.${ext}`;
       await os.fs.mkdir(["Pictures", "Screenshots"]);
-      await os.fs.writeBinaryFile(["Pictures", "Screenshots"], name, this._currentBlob, "image", "@content");
+      await os.fs.writeBinaryFile(["Pictures", "Screenshots"], name, this.currentBlob, "image", "@content");
       os.notify.send("Screenshot", `Saved to Pictures/Screenshots/${name}`);
     } catch {
       os.notify.send("Screenshot", "Failed to save to Pictures", { type: "error" });
     }
   }
 
-  async _copyCurrent() {
-    if (!this._currentBlob) return;
+  async copyCurrent() {
+    if (!this.currentBlob) return;
     try {
-      await navigator.clipboard.write([new ClipboardItem({ [this._currentBlob.type]: this._currentBlob })]);
+      await navigator.clipboard.write([new ClipboardItem({ [this.currentBlob.type]: this.currentBlob })]);
       os.notify.send("Screenshot", "Copied to clipboard");
     } catch {
       os.notify.send("Screenshot", "Failed to copy", { type: "error" });
@@ -506,16 +507,16 @@ export class ScreenshotApp extends BaseApp {
 
   onClose(winId) {
     this.openWindows.delete(winId);
-    this._win = null;
-    if (this._recording) this._stopRecording();
-    if (this._cleanupOverlay) {
-      this._cleanupOverlay();
-      this._cleanupOverlay = null;
+    this.win = null;
+    if (this.recording) this.stopRecording();
+    if (this.cleanupOverlay) {
+      this.cleanupOverlay();
+      this.cleanupOverlay = null;
     }
-    if (this._currentUrl) {
-      URL.revokeObjectURL(this._currentUrl);
-      this._currentUrl = null;
+    if (this.currentUrl) {
+      URL.revokeObjectURL(this.currentUrl);
+      this.currentUrl = null;
     }
-    this._currentBlob = null;
+    this.currentBlob = null;
   }
 }

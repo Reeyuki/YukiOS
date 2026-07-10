@@ -92,12 +92,8 @@
 }
 
 .guide-nav::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
-}
-
-.guide-nav::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.18);
+  border-radius: 3px;
 }
 
 .guide-nav-item {
@@ -199,12 +195,8 @@
 }
 
 .yuki-guide-main::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.12);
-  border-radius: 4px;
-}
-
-.yuki-guide-main::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
 }
 
 .guide-section {

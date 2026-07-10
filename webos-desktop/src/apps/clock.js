@@ -202,30 +202,30 @@ function createWorker() {
 export class ClockApp extends BaseApp {
   constructor(services) {
     super(services);
-    this._win = null;
-    this._activeTab = "digital";
-    this._settings = this._loadSettings();
-    this._alarms = this._loadAlarms();
-    this._worker = null;
-    this._timeOffset = 0;
-    this._currentTimeStr = "--:--:--";
-    this._currentDateStr = "---";
-    this._analogActive = false;
-    this._timerInterval = null;
-    this._stopwatchInterval = null;
-    this._timerRemaining = 0;
-    this._timerRunning = false;
-    this._stopwatchTime = 0;
-    this._stopwatchRunning = false;
-    this._stopwatchLaps = [];
-    this._stopwatchStartTime = 0;
-    this._timerStartTime = 0;
-    this._timerInitial = 0;
-    this._scheduledAlarms = new Map();
-    this._checkAlarmInterval = null;
+    this.win = null;
+    this.activeTab = "digital";
+    this.settings = this.loadSettings();
+    this.alarms = this.loadAlarms();
+    this.worker = null;
+    this.timeOffset = 0;
+    this.currentTimeStr = "--:--:--";
+    this.currentDateStr = "---";
+    this.analogActive = false;
+    this.timerInterval = null;
+    this.stopwatchInterval = null;
+    this.timerRemaining = 0;
+    this.timerRunning = false;
+    this.stopwatchTime = 0;
+    this.stopwatchRunning = false;
+    this.stopwatchLaps = [];
+    this.stopwatchStartTime = 0;
+    this.timerStartTime = 0;
+    this.timerInitial = 0;
+    this.scheduledAlarms = new Map();
+    this.checkAlarmInterval = null;
   }
 
-  _loadSettings() {
+  loadSettings() {
     const defaults = {
       use24h: true,
       snoozeDuration: 5,
@@ -235,51 +235,51 @@ export class ClockApp extends BaseApp {
     return saved ? { ...defaults, ...saved } : defaults;
   }
 
-  _saveSettings() {
-    os.storage.set(StorageKeys.clockSettings, this._settings);
+  saveSettings() {
+    os.storage.set(StorageKeys.clockSettings, this.settings);
   }
 
-  _loadAlarms() {
+  loadAlarms() {
     const saved = os.storage.get(StorageKeys.clockAlarms);
     return saved || [];
   }
 
-  _saveAlarms() {
-    os.storage.set(StorageKeys.clockAlarms, this._alarms);
-    this._rescheduleAlarms();
+  saveAlarms() {
+    os.storage.set(StorageKeys.clockAlarms, this.alarms);
+    this.rescheduleAlarms();
   }
 
-  _rescheduleAlarms() {
-    for (const timeoutId of this._scheduledAlarms.values()) {
+  rescheduleAlarms() {
+    for (const timeoutId of this.scheduledAlarms.values()) {
       clearTimeout(timeoutId);
     }
-    this._scheduledAlarms.clear();
-    if (!this._win) return;
-    for (const alarm of this._alarms) {
+    this.scheduledAlarms.clear();
+    if (!this.win) return;
+    for (const alarm of this.alarms) {
       if (!alarm.enabled) continue;
-      this._scheduleAlarm(alarm);
+      this.scheduleAlarm(alarm);
     }
   }
 
-  _scheduleAlarm(alarm) {
-    const now = new Date(Date.now() + this._timeOffset);
+  scheduleAlarm(alarm) {
+    const now = new Date(Date.now() + this.timeOffset);
     const [h, m] = alarm.time.split(":").map(Number);
     const target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0, 0);
     if (target <= now) target.setDate(target.getDate() + 1);
     const diff = target - now;
-    const timeoutId = setTimeout(() => this._fireAlarm(alarm), diff);
-    this._scheduledAlarms.set(alarm.id, timeoutId);
+    const timeoutId = setTimeout(() => this.fireAlarm(alarm), diff);
+    this.scheduledAlarms.set(alarm.id, timeoutId);
   }
 
-  _fireAlarm(alarm) {
-    this._scheduledAlarms.delete(alarm.id);
-    this._showAlarmDialog(alarm);
+  fireAlarm(alarm) {
+    this.scheduledAlarms.delete(alarm.id);
+    this.showAlarmDialog(alarm);
     if (alarm.recurring && alarm.recurring.length > 0) {
-      this._scheduleAlarm(alarm);
+      this.scheduleAlarm(alarm);
     }
   }
 
-  _showAlarmDialog(alarm) {
+  showAlarmDialog(alarm) {
     const overlay = document.createElement("div");
     overlay.className = "clock-alarm-overlay";
     overlay.innerHTML = `
@@ -288,7 +288,7 @@ export class ClockApp extends BaseApp {
         <div class="clock-alarm-dialog-time">${alarm.time}</div>
         <div class="clock-alarm-dialog-label">${alarm.label || "Alarm"}</div>
         <div class="clock-alarm-dialog-buttons">
-          <button class="clock-alarm-dialog-btn snooze">Snooze (${this._settings.snoozeDuration}m)</button>
+          <button class="clock-alarm-dialog-btn snooze">Snooze (${this.settings.snoozeDuration}m)</button>
           <button class="clock-alarm-dialog-btn dismiss">Dismiss</button>
         </div>
       </div>
@@ -298,74 +298,74 @@ export class ClockApp extends BaseApp {
     const dismissBtn = overlay.querySelector(".dismiss");
     snoozeBtn.onclick = () => {
       overlay.remove();
-      const snoozeMs = this._settings.snoozeDuration * 60 * 1000;
-      const timeoutId = setTimeout(() => this._fireAlarm(alarm), snoozeMs);
-      this._scheduledAlarms.set(alarm.id + "_snooze", timeoutId);
+      const snoozeMs = this.settings.snoozeDuration * 60 * 1000;
+      const timeoutId = setTimeout(() => this.fireAlarm(alarm), snoozeMs);
+      this.scheduledAlarms.set(alarm.id + "snooze", timeoutId);
     };
     dismissBtn.onclick = () => {
       overlay.remove();
       if (alarm.recurring && alarm.recurring.length > 0) {
-        this._scheduleAlarm(alarm);
+        this.scheduleAlarm(alarm);
       }
     };
     this.notify("Alarm", `${alarm.label || "Alarm"}: ${alarm.time}`, "info", 10000);
   }
 
   async open() {
-    if (await this._isSingletonOpen("clock-app-window")) return;
+    if (await this.isSingletonOpen("clock-app-window")) return;
     const win = os.window.create("clock-app-window", "Clock", "720px", "560px", {
       icon: "fas fa-clock",
       appId: "clock"
     });
-    win.innerHTML = this._render();
-    this._win = win;
-    this._bindEvents();
+    win.innerHTML = this.render();
+    this.win = win;
+    this.bindEvents();
     bindSelectMenu(win);
 
-    this._worker = createWorker();
-    this._worker.onmessage = (e) => this._handleWorkerMessage(e.data);
+    this.worker = createWorker();
+    this.worker.onmessage = (e) => this.handleWorkerMessage(e.data);
 
     const dpr = window.devicePixelRatio || 1;
-    this._worker.postMessage({
+    this.worker.postMessage({
       type: "init",
       timeOffset: 0,
-      use24h: this._settings.use24h,
+      use24h: this.settings.use24h,
       dpr,
       width: 300,
       height: 300
     });
-    this._timeOffset = 0;
+    this.timeOffset = 0;
 
-    this._rescheduleAlarms();
-    this._startAlarmChecker();
+    this.rescheduleAlarms();
+    this.startAlarmChecker();
   }
 
   onClose() {
-    if (this._worker) {
-      this._worker.terminate();
-      this._worker = null;
+    if (this.worker) {
+      this.worker.terminate();
+      this.worker = null;
     }
-    if (this._timerInterval) clearInterval(this._timerInterval);
-    if (this._stopwatchInterval) clearInterval(this._stopwatchInterval);
-    if (this._checkAlarmInterval) clearInterval(this._checkAlarmInterval);
-    for (const id of this._scheduledAlarms.values()) clearTimeout(id);
-    this._scheduledAlarms.clear();
-    this._win = null;
+    if (this.timerInterval) clearInterval(this.timerInterval);
+    if (this.stopwatchInterval) clearInterval(this.stopwatchInterval);
+    if (this.checkAlarmInterval) clearInterval(this.checkAlarmInterval);
+    for (const id of this.scheduledAlarms.values()) clearTimeout(id);
+    this.scheduledAlarms.clear();
+    this.win = null;
   }
 
-  _handleWorkerMessage(data) {
+  handleWorkerMessage(data) {
     if (data.type === "time") {
-      this._currentTimeStr = data.timeStr;
-      this._currentDateStr = data.dateStr;
-      const timeEl = this._win?.querySelector("#clock-digital-time");
-      const dateEl = this._win?.querySelector("#clock-digital-date");
-      if (timeEl && this._activeTab === "digital") {
+      this.currentTimeStr = data.timeStr;
+      this.currentDateStr = data.dateStr;
+      const timeEl = this.win?.querySelector("#clock-digital-time");
+      const dateEl = this.win?.querySelector("#clock-digital-date");
+      if (timeEl && this.activeTab === "digital") {
         timeEl.textContent = data.timeStr;
         if (dateEl) dateEl.textContent = data.dateStr;
       }
     } else if (data.type === "frame") {
-      const canvas = this._win?.querySelector("#clock-analog-canvas");
-      if (canvas && this._activeTab === "analog") {
+      const canvas = this.win?.querySelector("#clock-analog-canvas");
+      if (canvas && this.activeTab === "analog") {
         canvas.width = data.width;
         canvas.height = data.height;
         const ctx = canvas.getContext("2d");
@@ -375,55 +375,55 @@ export class ClockApp extends BaseApp {
     }
   }
 
-  _render() {
+  render() {
     return `
       <div class="clock-app">
         <div class="clock-tabs">
-          <button class="clock-tab ${this._activeTab === "digital" ? "active" : ""}" data-tab="digital"><i class="fas fa-clock"></i> Digital</button>
-          <button class="clock-tab ${this._activeTab === "analog" ? "active" : ""}" data-tab="analog"><i class="fas fa-circle"></i> Analog</button>
-          <button class="clock-tab ${this._activeTab === "alarms" ? "active" : ""}" data-tab="alarms"><i class="fas fa-bell"></i> Alarms</button>
+          <button class="clock-tab ${this.activeTab === "digital" ? "active" : ""}" data-tab="digital"><i class="fas fa-clock"></i> Digital</button>
+          <button class="clock-tab ${this.activeTab === "analog" ? "active" : ""}" data-tab="analog"><i class="fas fa-circle"></i> Analog</button>
+          <button class="clock-tab ${this.activeTab === "alarms" ? "active" : ""}" data-tab="alarms"><i class="fas fa-bell"></i> Alarms</button>
 
-          <button class="clock-tab ${this._activeTab === "stopwatch" ? "active" : ""}" data-tab="stopwatch"><i class="fas fa-stopwatch"></i> Stopwatch</button>
-          <button class="clock-tab ${this._activeTab === "timer" ? "active" : ""}" data-tab="timer"><i class="fas fa-hourglass-half"></i> Timer</button>
-          <button class="clock-tab ${this._activeTab === "settings" ? "active" : ""}" data-tab="settings"><i class="fas fa-cog"></i></button>
+          <button class="clock-tab ${this.activeTab === "stopwatch" ? "active" : ""}" data-tab="stopwatch"><i class="fas fa-stopwatch"></i> Stopwatch</button>
+          <button class="clock-tab ${this.activeTab === "timer" ? "active" : ""}" data-tab="timer"><i class="fas fa-hourglass-half"></i> Timer</button>
+          <button class="clock-tab ${this.activeTab === "settings" ? "active" : ""}" data-tab="settings"><i class="fas fa-cog"></i></button>
         </div>
         <div class="clock-content">
-          ${this._renderTabContent()}
+          ${this.renderTabContent()}
         </div>
       </div>
     `;
   }
 
-  _renderTabContent() {
-    switch (this._activeTab) {
+  renderTabContent() {
+    switch (this.activeTab) {
       case "digital":
-        return this._renderDigital();
+        return this.renderDigital();
       case "analog":
-        return this._renderAnalog();
+        return this.renderAnalog();
       case "alarms":
-        return this._renderAlarms();
+        return this.renderAlarms();
       case "stopwatch":
-        return this._renderStopwatch();
+        return this.renderStopwatch();
       case "timer":
-        return this._renderTimer();
+        return this.renderTimer();
       case "settings":
-        return this._renderSettings();
+        return this.renderSettings();
       default:
         return "";
     }
   }
 
-  _renderDigital() {
+  renderDigital() {
     return `
       <div class="clock-digital">
-        <div class="clock-digital-time" id="clock-digital-time">${this._currentTimeStr}</div>
-        <div class="clock-digital-date" id="clock-digital-date">${this._currentDateStr}</div>
+        <div class="clock-digital-time" id="clock-digital-time">${this.currentTimeStr}</div>
+        <div class="clock-digital-date" id="clock-digital-date">${this.currentDateStr}</div>
         <div class="clock-digital-seconds" id="clock-digital-seconds"></div>
       </div>
     `;
   }
 
-  _renderAnalog() {
+  renderAnalog() {
     return `
       <div class="clock-analog">
         <canvas id="clock-analog-canvas" width="300" height="300" style="max-width:100%;width:min(300px,100%);height:auto;aspect-ratio:1"></canvas>
@@ -431,12 +431,12 @@ export class ClockApp extends BaseApp {
     `;
   }
 
-  _renderAlarms() {
+  renderAlarms() {
     let listHtml = "";
-    if (this._alarms.length === 0) {
+    if (this.alarms.length === 0) {
       listHtml = '<div class="clock-alarms-empty">No alarms set</div>';
     } else {
-      listHtml = this._alarms
+      listHtml = this.alarms
         .map(
           (a, i) => `
         <div class="clock-alarm-item ${a.enabled ? "" : "disabled"}" data-index="${i}">
@@ -466,7 +466,7 @@ export class ClockApp extends BaseApp {
     `;
   }
 
-  _renderStopwatch() {
+  renderStopwatch() {
     return `
       <div class="clock-stopwatch">
         <div class="clock-stopwatch-display" id="clock-stopwatch-display">00:00:00.00</div>
@@ -480,7 +480,7 @@ export class ClockApp extends BaseApp {
     `;
   }
 
-  _renderTimer() {
+  renderTimer() {
     return `
       <div class="clock-timer">
         <div class="clock-timer-display" id="clock-timer-display">00:00</div>
@@ -498,7 +498,7 @@ export class ClockApp extends BaseApp {
     `;
   }
 
-  _renderSettings() {
+  renderSettings() {
     const snoozeOpts = [
       { value: "1", label: "1 minute" },
       { value: "5", label: "5 minutes" },
@@ -516,43 +516,43 @@ export class ClockApp extends BaseApp {
         <div class="clock-settings-group">
           <label class="clock-settings-label">Time Format</label>
           <div class="clock-settings-toggle">
-            <button class="clock-settings-toggle-btn ${!this._settings.use24h ? "active" : ""}" data-setting="use24h" data-value="false">12h</button>
-            <button class="clock-settings-toggle-btn ${this._settings.use24h ? "active" : ""}" data-setting="use24h" data-value="true">24h</button>
+            <button class="clock-settings-toggle-btn ${!this.settings.use24h ? "active" : ""}" data-setting="use24h" data-value="false">12h</button>
+            <button class="clock-settings-toggle-btn ${this.settings.use24h ? "active" : ""}" data-setting="use24h" data-value="true">24h</button>
           </div>
         </div>
         <div class="clock-settings-group">
           <label class="clock-settings-label">Snooze Duration</label>
-          ${renderSelectMenu("clock-snooze-select", snoozeOpts, String(this._settings.snoozeDuration))}
+          ${renderSelectMenu("clock-snooze-select", snoozeOpts, String(this.settings.snoozeDuration))}
         </div>
         <div class="clock-settings-group">
           <label class="clock-settings-label">Alarm Sound</label>
-          ${renderSelectMenu("clock-sound-select", soundOpts, this._settings.alarmSound)}
+          ${renderSelectMenu("clock-sound-select", soundOpts, this.settings.alarmSound)}
         </div>
       </div>
     `;
   }
 
-  _bindEvents() {
-    const win = this._win;
+  bindEvents() {
+    const win = this.win;
     if (!win) return;
 
     win.addEventListener("click", (e) => {
       const tabBtn = e.target.closest(".clock-tab");
       if (tabBtn) {
-        const prevTab = this._activeTab;
-        this._activeTab = tabBtn.dataset.tab;
-        this._refreshContent();
+        const prevTab = this.activeTab;
+        this.activeTab = tabBtn.dataset.tab;
+        this.refreshContent();
 
-        if (this._activeTab === "analog" && prevTab !== "analog") {
-          this._analogActive = true;
-          if (this._worker) {
-            this._worker.postMessage({ type: "analogActive", active: true });
+        if (this.activeTab === "analog" && prevTab !== "analog") {
+          this.analogActive = true;
+          if (this.worker) {
+            this.worker.postMessage({ type: "analogActive", active: true });
           }
         }
-        if (prevTab === "analog" && this._activeTab !== "analog") {
-          this._analogActive = false;
-          if (this._worker) {
-            this._worker.postMessage({ type: "analogActive", active: false });
+        if (prevTab === "analog" && this.activeTab !== "analog") {
+          this.analogActive = false;
+          if (this.worker) {
+            this.worker.postMessage({ type: "analogActive", active: false });
           }
         }
         return;
@@ -564,34 +564,34 @@ export class ClockApp extends BaseApp {
 
       switch (action) {
         case "addAlarm":
-          this._showAlarmModal();
+          this.showAlarmModal();
           break;
         case "editAlarm":
-          this._showAlarmModal(parseInt(actionBtn.dataset.index));
+          this.showAlarmModal(parseInt(actionBtn.dataset.index));
           break;
         case "deleteAlarm":
-          this._deleteAlarm(parseInt(actionBtn.dataset.index));
+          this.deleteAlarm(parseInt(actionBtn.dataset.index));
           break;
         case "toggleAlarm":
-          this._toggleAlarm(parseInt(actionBtn.dataset.index));
+          this.toggleAlarm(parseInt(actionBtn.dataset.index));
           break;
         case "swStart":
-          this._stopwatchStart();
+          this.stopwatchStart();
           break;
         case "swLap":
-          this._stopwatchLap();
+          this.stopwatchLap();
           break;
         case "swReset":
-          this._stopwatchReset();
+          this.stopwatchReset();
           break;
         case "timerStart":
-          this._timerStart();
+          this.timerStart();
           break;
         case "timerPause":
-          this._timerPause();
+          this.timerPause();
           break;
         case "timerReset":
-          this._timerReset();
+          this.timerReset();
           break;
       }
     });
@@ -601,15 +601,15 @@ export class ClockApp extends BaseApp {
       if (settingBtn) {
         const key = settingBtn.dataset.setting;
         const value = settingBtn.dataset.value === "true";
-        this._settings[key] = value;
-        this._saveSettings();
+        this.settings[key] = value;
+        this.saveSettings();
         const parent = settingBtn.closest(".clock-settings-toggle");
         if (parent) {
           parent.querySelectorAll(".clock-settings-toggle-btn").forEach((b) => b.classList.remove("active"));
           settingBtn.classList.add("active");
         }
-        if (key === "use24h" && this._worker) {
-          this._worker.postMessage({ type: "settings", use24h: value });
+        if (key === "use24h" && this.worker) {
+          this.worker.postMessage({ type: "settings", use24h: value });
         }
         return;
       }
@@ -618,17 +618,17 @@ export class ClockApp extends BaseApp {
     win.addEventListener("change", (e) => {
       const toggle = e.target.closest(".clock-alarm-toggle input");
       if (toggle && toggle.dataset.action === "toggleAlarm") {
-        this._toggleAlarm(parseInt(toggle.dataset.index));
+        this.toggleAlarm(parseInt(toggle.dataset.index));
         return;
       }
 
       const selectEl = e.target.closest(".select-menu");
       if (selectEl) {
         const key = selectEl.id === "clock-snooze-select" ? "snoozeDuration" : "alarmSound";
-        const raw = getSelectMenuValue(selectEl.id, this._win);
+        const raw = getSelectMenuValue(selectEl.id, this.win);
         const value = key === "snoozeDuration" ? parseInt(raw) : raw;
-        this._settings[key] = value;
-        this._saveSettings();
+        this.settings[key] = value;
+        this.saveSettings();
         return;
       }
     });
@@ -636,31 +636,31 @@ export class ClockApp extends BaseApp {
     win.addEventListener("input", (e) => {
       const timerInput = e.target.closest(".clock-timer-input");
       if (timerInput) {
-        this._updateTimerDisplay();
+        this.updateTimerDisplay();
       }
     });
   }
 
-  _refreshContent() {
-    if (!this._win) return;
-    const content = this._win.querySelector(".clock-content");
+  refreshContent() {
+    if (!this.win) return;
+    const content = this.win.querySelector(".clock-content");
     if (content) {
-      content.innerHTML = this._renderTabContent();
-      if (this._activeTab === "digital") {
-        const timeEl = this._win.querySelector("#clock-digital-time");
-        const dateEl = this._win.querySelector("#clock-digital-date");
-        if (timeEl) timeEl.textContent = this._currentTimeStr;
-        if (dateEl) dateEl.textContent = this._currentDateStr;
+      content.innerHTML = this.renderTabContent();
+      if (this.activeTab === "digital") {
+        const timeEl = this.win.querySelector("#clock-digital-time");
+        const dateEl = this.win.querySelector("#clock-digital-date");
+        if (timeEl) timeEl.textContent = this.currentTimeStr;
+        if (dateEl) dateEl.textContent = this.currentDateStr;
       }
-      if (this._activeTab === "stopwatch") this._updateStopwatchDisplay();
-      if (this._activeTab === "timer") this._updateTimerDisplay();
+      if (this.activeTab === "stopwatch") this.updateStopwatchDisplay();
+      if (this.activeTab === "timer") this.updateTimerDisplay();
     }
-    const tabs = this._win.querySelectorAll(".clock-tab");
-    tabs.forEach((t) => t.classList.toggle("active", t.dataset.tab === this._activeTab));
+    const tabs = this.win.querySelectorAll(".clock-tab");
+    tabs.forEach((t) => t.classList.toggle("active", t.dataset.tab === this.activeTab));
   }
 
-  _showAlarmModal(index) {
-    const existing = index !== undefined && index !== null ? this._alarms[index] : null;
+  showAlarmModal(index) {
+    const existing = index !== undefined && index !== null ? this.alarms[index] : null;
     const time = existing ? existing.time : "07:00";
     const label = existing ? existing.label || "" : "";
     const recurring = existing ? existing.recurring || [] : [];
@@ -706,199 +706,199 @@ export class ClockApp extends BaseApp {
       const newRecurring = [...overlay.querySelectorAll(".clock-day-btn.active")].map((b) => b.dataset.day);
       if (!newTime) return;
       if (existing) {
-        this._alarms[index] = { ...this._alarms[index], time: newTime, label: newLabel, recurring: newRecurring };
+        this.alarms[index] = { ...this.alarms[index], time: newTime, label: newLabel, recurring: newRecurring };
       } else {
-        this._alarms.push({
+        this.alarms.push({
           id: generateId(),
           time: newTime,
           label: newLabel,
           enabled: true,
           recurring: newRecurring,
-          sound: this._settings.alarmSound
+          sound: this.settings.alarmSound
         });
       }
-      this._saveAlarms();
+      this.saveAlarms();
       overlay.remove();
-      this._refreshContent();
+      this.refreshContent();
     };
     overlay.addEventListener("click", (e) => {
       if (e.target === overlay) overlay.remove();
     });
   }
 
-  _deleteAlarm(index) {
-    this._alarms.splice(index, 1);
-    this._saveAlarms();
-    this._refreshContent();
+  deleteAlarm(index) {
+    this.alarms.splice(index, 1);
+    this.saveAlarms();
+    this.refreshContent();
   }
 
-  _toggleAlarm(index) {
-    if (this._alarms[index]) {
-      this._alarms[index].enabled = !this._alarms[index].enabled;
-      this._saveAlarms();
-      this._refreshContent();
+  toggleAlarm(index) {
+    if (this.alarms[index]) {
+      this.alarms[index].enabled = !this.alarms[index].enabled;
+      this.saveAlarms();
+      this.refreshContent();
     }
   }
 
-  _startAlarmChecker() {
-    if (this._checkAlarmInterval) clearInterval(this._checkAlarmInterval);
-    this._checkAlarmInterval = setInterval(() => this._rescheduleAlarms(), 60000);
+  startAlarmChecker() {
+    if (this.checkAlarmInterval) clearInterval(this.checkAlarmInterval);
+    this.checkAlarmInterval = setInterval(() => this.rescheduleAlarms(), 60000);
   }
 
-  _stopwatchStart() {
-    if (this._stopwatchRunning) {
-      this._stopwatchRunning = false;
-      if (this._stopwatchInterval) clearInterval(this._stopwatchInterval);
-      const swStart = this._win?.querySelector("#clock-sw-start");
+  stopwatchStart() {
+    if (this.stopwatchRunning) {
+      this.stopwatchRunning = false;
+      if (this.stopwatchInterval) clearInterval(this.stopwatchInterval);
+      const swStart = this.win?.querySelector("#clock-sw-start");
       if (swStart) swStart.textContent = "Resume";
       return;
     }
-    this._stopwatchRunning = true;
-    this._stopwatchStartTime = Date.now() - this._stopwatchTime;
-    const swStart = this._win?.querySelector("#clock-sw-start");
-    const swLap = this._win?.querySelector("#clock-sw-lap");
-    const swReset = this._win?.querySelector("#clock-sw-reset");
+    this.stopwatchRunning = true;
+    this.stopwatchStartTime = Date.now() - this.stopwatchTime;
+    const swStart = this.win?.querySelector("#clock-sw-start");
+    const swLap = this.win?.querySelector("#clock-sw-lap");
+    const swReset = this.win?.querySelector("#clock-sw-reset");
     if (swStart) swStart.textContent = "Stop";
     if (swLap) swLap.disabled = false;
     if (swReset) swReset.disabled = false;
-    if (this._stopwatchInterval) clearInterval(this._stopwatchInterval);
-    this._stopwatchInterval = setInterval(() => {
-      this._stopwatchTime = Date.now() - this._stopwatchStartTime;
-      this._updateStopwatchDisplay();
+    if (this.stopwatchInterval) clearInterval(this.stopwatchInterval);
+    this.stopwatchInterval = setInterval(() => {
+      this.stopwatchTime = Date.now() - this.stopwatchStartTime;
+      this.updateStopwatchDisplay();
     }, 20);
   }
 
-  _stopwatchLap() {
-    if (!this._stopwatchRunning) return;
-    const prevLapTotal = this._stopwatchLaps.reduce((sum, l) => sum + l, 0);
-    this._stopwatchLaps.push(this._stopwatchTime - prevLapTotal);
-    this._updateStopwatchLaps();
+  stopwatchLap() {
+    if (!this.stopwatchRunning) return;
+    const prevLapTotal = this.stopwatchLaps.reduce((sum, l) => sum + l, 0);
+    this.stopwatchLaps.push(this.stopwatchTime - prevLapTotal);
+    this.updateStopwatchLaps();
   }
 
-  _stopwatchReset() {
-    this._stopwatchRunning = false;
-    this._stopwatchTime = 0;
-    this._stopwatchLaps = [];
-    if (this._stopwatchInterval) clearInterval(this._stopwatchInterval);
-    this._updateStopwatchDisplay();
-    const swStart = this._win?.querySelector("#clock-sw-start");
-    const swLap = this._win?.querySelector("#clock-sw-lap");
-    const swReset = this._win?.querySelector("#clock-sw-reset");
+  stopwatchReset() {
+    this.stopwatchRunning = false;
+    this.stopwatchTime = 0;
+    this.stopwatchLaps = [];
+    if (this.stopwatchInterval) clearInterval(this.stopwatchInterval);
+    this.updateStopwatchDisplay();
+    const swStart = this.win?.querySelector("#clock-sw-start");
+    const swLap = this.win?.querySelector("#clock-sw-lap");
+    const swReset = this.win?.querySelector("#clock-sw-reset");
     if (swStart) swStart.textContent = "Start";
     if (swLap) swLap.disabled = true;
     if (swReset) swReset.disabled = true;
-    const lapsEl = this._win?.querySelector("#clock-stopwatch-laps");
+    const lapsEl = this.win?.querySelector("#clock-stopwatch-laps");
     if (lapsEl) lapsEl.innerHTML = "";
   }
 
-  _updateStopwatchDisplay() {
-    const el = this._win?.querySelector("#clock-stopwatch-display");
-    if (el) el.textContent = formatTime(this._stopwatchTime, true);
+  updateStopwatchDisplay() {
+    const el = this.win?.querySelector("#clock-stopwatch-display");
+    if (el) el.textContent = formatTime(this.stopwatchTime, true);
   }
 
-  _updateStopwatchLaps() {
-    const lapsEl = this._win?.querySelector("#clock-stopwatch-laps");
+  updateStopwatchLaps() {
+    const lapsEl = this.win?.querySelector("#clock-stopwatch-laps");
     if (!lapsEl) return;
     let html = "";
     let total = 0;
-    this._stopwatchLaps.forEach((lap, i) => {
+    this.stopwatchLaps.forEach((lap, i) => {
       total += lap;
       html += `<div class="clock-sw-lap"><span>Lap ${i + 1}</span><span>${formatTime(total, true)}</span><span>+${formatTime(lap, true)}</span></div>`;
     });
     lapsEl.innerHTML = html;
   }
 
-  _timerStart() {
-    if (this._timerRunning) return;
-    const h = parseInt(this._win?.querySelector("#timer-h")?.value || "0");
-    const m = parseInt(this._win?.querySelector("#timer-m")?.value || "0");
-    const s = parseInt(this._win?.querySelector("#timer-s")?.value || "0");
+  timerStart() {
+    if (this.timerRunning) return;
+    const h = parseInt(this.win?.querySelector("#timer-h")?.value || "0");
+    const m = parseInt(this.win?.querySelector("#timer-m")?.value || "0");
+    const s = parseInt(this.win?.querySelector("#timer-s")?.value || "0");
     const totalMs = (h * 3600 + m * 60 + s) * 1000;
     if (totalMs <= 0) return;
-    this._timerInitial = totalMs;
-    this._timerRemaining = totalMs;
-    this._timerRunning = true;
-    this._timerStartTime = Date.now();
-    this._disableTimerInputs(true);
-    const btn = this._win?.querySelector("#clock-timer-start");
+    this.timerInitial = totalMs;
+    this.timerRemaining = totalMs;
+    this.timerRunning = true;
+    this.timerStartTime = Date.now();
+    this.disableTimerInputs(true);
+    const btn = this.win?.querySelector("#clock-timer-start");
     if (btn) btn.disabled = true;
-    const pauseBtn = this._win?.querySelector("#clock-timer-pause");
+    const pauseBtn = this.win?.querySelector("#clock-timer-pause");
     if (pauseBtn) pauseBtn.disabled = false;
-    const resetBtn = this._win?.querySelector("#clock-timer-reset");
+    const resetBtn = this.win?.querySelector("#clock-timer-reset");
     if (resetBtn) resetBtn.disabled = false;
-    if (this._timerInterval) clearInterval(this._timerInterval);
-    this._timerInterval = setInterval(() => {
-      const elapsed = Date.now() - this._timerStartTime;
-      this._timerRemaining = Math.max(0, this._timerInitial - elapsed);
-      this._updateTimerDisplay();
-      if (this._timerRemaining <= 0) {
-        this._timerComplete();
+    if (this.timerInterval) clearInterval(this.timerInterval);
+    this.timerInterval = setInterval(() => {
+      const elapsed = Date.now() - this.timerStartTime;
+      this.timerRemaining = Math.max(0, this.timerInitial - elapsed);
+      this.updateTimerDisplay();
+      if (this.timerRemaining <= 0) {
+        this.timerComplete();
       }
     }, 100);
   }
 
-  _timerPause() {
-    if (!this._timerRunning) return;
-    this._timerRunning = false;
-    if (this._timerInterval) clearInterval(this._timerInterval);
-    this._timerInitial = this._timerRemaining;
-    const startBtn = this._win?.querySelector("#clock-timer-start");
+  timerPause() {
+    if (!this.timerRunning) return;
+    this.timerRunning = false;
+    if (this.timerInterval) clearInterval(this.timerInterval);
+    this.timerInitial = this.timerRemaining;
+    const startBtn = this.win?.querySelector("#clock-timer-start");
     if (startBtn) {
       startBtn.disabled = false;
       startBtn.textContent = "Resume";
     }
-    const pauseBtn = this._win?.querySelector("#clock-timer-pause");
+    const pauseBtn = this.win?.querySelector("#clock-timer-pause");
     if (pauseBtn) pauseBtn.disabled = true;
   }
 
-  _timerReset() {
-    this._timerRunning = false;
-    if (this._timerInterval) clearInterval(this._timerInterval);
-    this._timerRemaining = 0;
-    this._timerInitial = 0;
-    this._disableTimerInputs(false);
-    const startBtn = this._win?.querySelector("#clock-timer-start");
+  timerReset() {
+    this.timerRunning = false;
+    if (this.timerInterval) clearInterval(this.timerInterval);
+    this.timerRemaining = 0;
+    this.timerInitial = 0;
+    this.disableTimerInputs(false);
+    const startBtn = this.win?.querySelector("#clock-timer-start");
     if (startBtn) {
       startBtn.disabled = false;
       startBtn.textContent = "Start";
     }
-    const pauseBtn = this._win?.querySelector("#clock-timer-pause");
+    const pauseBtn = this.win?.querySelector("#clock-timer-pause");
     if (pauseBtn) pauseBtn.disabled = true;
-    const resetBtn = this._win?.querySelector("#clock-timer-reset");
+    const resetBtn = this.win?.querySelector("#clock-timer-reset");
     if (resetBtn) resetBtn.disabled = true;
-    this._updateTimerDisplay();
+    this.updateTimerDisplay();
   }
 
-  _timerComplete() {
-    this._timerRunning = false;
-    if (this._timerInterval) clearInterval(this._timerInterval);
-    this._disableTimerInputs(false);
-    const startBtn = this._win?.querySelector("#clock-timer-start");
+  timerComplete() {
+    this.timerRunning = false;
+    if (this.timerInterval) clearInterval(this.timerInterval);
+    this.disableTimerInputs(false);
+    const startBtn = this.win?.querySelector("#clock-timer-start");
     if (startBtn) {
       startBtn.disabled = false;
       startBtn.textContent = "Start";
     }
-    const pauseBtn = this._win?.querySelector("#clock-timer-pause");
+    const pauseBtn = this.win?.querySelector("#clock-timer-pause");
     if (pauseBtn) pauseBtn.disabled = true;
-    const resetBtn = this._win?.querySelector("#clock-timer-reset");
+    const resetBtn = this.win?.querySelector("#clock-timer-reset");
     if (resetBtn) resetBtn.disabled = true;
     this.notify("Timer", "Timer finished!", "info", 10000);
   }
 
-  _disableTimerInputs(disabled) {
-    const inputs = this._win?.querySelectorAll(".clock-timer-input");
+  disableTimerInputs(disabled) {
+    const inputs = this.win?.querySelectorAll(".clock-timer-input");
     if (inputs) inputs.forEach((inp) => (inp.disabled = disabled));
   }
 
-  _updateTimerDisplay() {
-    const el = this._win?.querySelector("#clock-timer-display");
+  updateTimerDisplay() {
+    const el = this.win?.querySelector("#clock-timer-display");
     if (!el) return;
-    if (this._timerRemaining > 0) {
-      el.textContent = formatTime(this._timerRemaining);
+    if (this.timerRemaining > 0) {
+      el.textContent = formatTime(this.timerRemaining);
     } else {
-      const h = parseInt(this._win?.querySelector("#timer-h")?.value || "0");
-      const m = parseInt(this._win?.querySelector("#timer-m")?.value || "0");
-      const s = parseInt(this._win?.querySelector("#timer-s")?.value || "0");
+      const h = parseInt(this.win?.querySelector("#timer-h")?.value || "0");
+      const m = parseInt(this.win?.querySelector("#timer-m")?.value || "0");
+      const s = parseInt(this.win?.querySelector("#timer-s")?.value || "0");
       el.textContent = `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
     }
   }

@@ -1,4 +1,4 @@
-import { os } from "./os/index.js";
+import { os } from "./framework.js";
 
 const ANALYTICS_QUEUE_KEY = "yuki_analytics_queue";
 const ENDPOINT_BASE = "https://analytics.liventcord-a60.workers.dev";

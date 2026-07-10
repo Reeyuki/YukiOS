@@ -5,7 +5,7 @@ import { detectUserLocation, getCached, setCache } from "../../apps/weather.js";
 export class WeatherWidget extends WidgetBase {
   constructor(manager, id) {
     super(manager, id, "weather", "Weather", 220, 160);
-    this._cityOverride = "";
+    this.cityOverride = "";
   }
 
   getConfigFields() {
@@ -14,15 +14,15 @@ export class WeatherWidget extends WidgetBase {
         key: "cityOverride",
         label: "City (leave empty for auto-detect)",
         type: "text",
-        value: this._cityOverride,
+        value: this.cityOverride,
         default: ""
       }
     ];
   }
 
   applyConfig(data) {
-    this._cityOverride = data.cityOverride || "";
-    this._fetchWeather();
+    this.cityOverride = data.cityOverride || "";
+    this.fetchWeather();
     this.manager.saveState();
   }
 
@@ -35,10 +35,10 @@ export class WeatherWidget extends WidgetBase {
       <div class="widget-weather-desc" id="w-weather-desc-${this.id}"></div>
       <div class="widget-weather-details" id="w-weather-details-${this.id}"></div>
     `;
-    this._fetchWeather();
+    this.fetchWeather();
   }
 
-  async _fetchWeather() {
+  async fetchWeather() {
     try {
       const loc = await detectUserLocation();
       const cacheKey = `yukiOS_weather_widget_${loc.latitude.toFixed(2)}_${loc.longitude.toFixed(2)}`;

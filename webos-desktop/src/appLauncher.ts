@@ -26,31 +26,32 @@ import { initAnalytics, getAnalyticsBase, sendLaunchAnalytics, recordUsage } fro
 import { getNewsContentSignature, updateNewsBadge } from "./apps/news.js";
 import { SteamSettings } from "./games/steam.js";
 import { PROXIES, clampProxyIndex, buildProxyUrl, fetchHtmlThroughProxy } from "./proxies.js";
+import { trigger as triggerCursorEffect } from "./cursorEffect.js";
 import { DeclarativeApp } from "./runtime/DeclarativeApp.js";
 const STATICALLY_BASE = resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main");
 
 export class AppLauncher {
   wm: any;
   fs: any;
-  _services: Record<string, any>;
+  services: Record<string, any>;
   taskManager: any;
   adsManager: any;
   brightnessApp: any;
   TRANSPARENCY_ALLOWED_APP_IDS: Set<string>;
   clippyPromise: Promise<any>;
-  _appRegistry: Map<string, any>;
-  _declarativeSchemas: Map<string, any>;
+  appRegistry: Map<string, any>;
+  declarativeSchemas: Map<string, any>;
   BIC: string;
   appMap: Record<string, any>;
-  _launchedAppIds: Set<string>;
-  _appSessions: Map<string, { appId: string; startTime: number }>;
+  launchedAppIds: Set<string>;
+  appSessions: Map<string, { appId: string; startTime: number }>;
   clippyMap: Record<string, any>;
 
   constructor(windowManager: any, fileSystemManager: any, services: Record<string, any> = {}) {
     this.wm = windowManager;
     this.fs = fileSystemManager;
 
-    this._services = services;
+    this.services = services;
     Object.assign(this, services);
 
     this.taskManager = services.taskManagerApp;
@@ -64,8 +65,8 @@ export class AppLauncher {
     initAnalytics();
 
     const settings = SteamSettings.load();
-    if (settings.runOnStartup && !(window as any)._steamStartupHandled) {
-      (window as any)._steamStartupHandled = true;
+    if (settings.runOnStartup && !(window as any).steamStartupHandled) {
+      (window as any).steamStartupHandled = true;
       setTimeout(() => {
         this.launch("steamApp");
         if (settings.startMinimized) {
@@ -80,10 +81,10 @@ export class AppLauncher {
       }, 1000);
     }
 
-    this._appRegistry = new Map();
-    this._declarativeSchemas = new Map();
+    this.appRegistry = new Map();
+    this.declarativeSchemas = new Map();
 
-    this._registerAppsFromMap();
+    this.registerAppsFromMap();
 
     this.BIC = "badIceCream";
 
@@ -104,9 +105,9 @@ export class AppLauncher {
 
     this.clippyMap["vscode"] = { message: "Ready to write some code!", animation: ClippyAnimation.GetWizardy };
     this.appMap = { ...appMap, ...systemAppsWithActions };
-    this._launchedAppIds = this._loadLaunchedApps();
-    this._appSessions = new Map();
-    this._initSteamTracking();
+    this.launchedAppIds = this.loadLaunchedApps();
+    this.appSessions = new Map();
+    this.initSteamTracking();
     initializeAppGrid(this);
 
     const currentNewsSig = getNewsContentSignature();
@@ -128,30 +129,30 @@ export class AppLauncher {
       updateNewsBadge();
     }, 500);
 
-    this._ensureIframeNavigateHandler();
+    this.ensureIframeNavigateHandler();
 
-    this._overlayController = new GameOverlayController(this, this._services);
+    this.overlayController = new GameOverlayController(this, this.services);
   }
 
   setEmulatorApp(emulatorApp: any): void {
     this.emulatorApp = emulatorApp;
   }
 
-  _registerAppsFromMap(): void {
+  registerAppsFromMap(): void {
     for (const [appId, metadata] of Object.entries(SYSTEM_APPS)) {
       const serviceKey = (metadata as any).serviceKey || appId;
-      const instance = this._services[serviceKey] || (this as any)[appId] || (this as any)[appId + "App"];
+      const instance = this.services[serviceKey] || (this as any)[appId] || (this as any)[appId + "App"];
       if (instance) {
-        this._appRegistry.set(appId, instance);
+        this.appRegistry.set(appId, instance);
       }
     }
   }
 
-  async _tryLaunchDeclarative(appId: string, opts?: any): Promise<any> {
-    const appInstance = this._appRegistry.get(appId);
+  async tryLaunchDeclarative(appId: string, opts?: any): Promise<any> {
+    const appInstance = this.appRegistry.get(appId);
     if (!appInstance) return null;
 
-    const services = appInstance._services;
+    const services = appInstance.services;
     if (!services || !services.wm) {
       return null;
     }
@@ -181,8 +182,8 @@ export class AppLauncher {
                 };
               }
             } else if (typeof schema.onMount === "function") {
-              schema.actions._onMount = schema.onMount;
-              schema.onMount = "_onMount";
+              schema.actions.onMount = schema.onMount;
+              schema.onMount = "onMount";
             }
           }
           if (!schema.onClose && typeof appInstance.onClose === "function") {
@@ -190,7 +191,7 @@ export class AppLauncher {
               return appInstance.onClose(winId, state);
             };
           }
-          this._declarativeSchemas.set(schema.id, schema);
+          this.declarativeSchemas.set(schema.id, schema);
           const declarativeApp = new DeclarativeApp(
             schema,
             {
@@ -216,9 +217,9 @@ export class AppLauncher {
     await clippySpeak(message, animation);
   }
 
-  _ensureIframeNavigateHandler(): void {
-    if ((this as any)._iframeNavigateHandlerInstalled) return;
-    (this as any)._iframeNavigateHandlerInstalled = true;
+  ensureIframeNavigateHandler(): void {
+    if ((this as any).iframeNavigateHandlerInstalled) return;
+    (this as any).iframeNavigateHandlerInstalled = true;
 
     window.addEventListener("message", async (event: MessageEvent) => {
       const data = event?.data;
@@ -260,7 +261,6 @@ export class AppLauncher {
       return;
     }
 
-    const { trigger: triggerCursorEffect } = await import("./cursorEffect.js");
     triggerCursorEffect(info.icon);
 
     if (typeof info.url === "string" && isCdnGhUrl(info.url)) {
@@ -273,9 +273,9 @@ export class AppLauncher {
       info.html = resolveGhUrl(info.html);
     }
 
-    if (!this._launchedAppIds.has(app)) {
-      this._launchedAppIds.add(app);
-      this._saveLaunchedApps();
+    if (!this.launchedAppIds.has(app)) {
+      this.launchedAppIds.add(app);
+      this.saveLaunchedApps();
       this.achievementsApp.incrementAppLaunched();
     }
     trackRecentlyUsed(app);
@@ -318,14 +318,14 @@ export class AppLauncher {
           ...appExtra
         });
       } else if (info.action) {
-        const result = await this._tryLaunchDeclarative(app, appExtra);
+        const result = await this.tryLaunchDeclarative(app, appExtra);
         if (!result) {
           await info.action.call(this, appExtra);
         }
       } else if (info.launchType === "instance") {
-        const result = await this._tryLaunchDeclarative(app, appExtra);
+        const result = await this.tryLaunchDeclarative(app, appExtra);
         if (!result) {
-          const appInstance = this._appRegistry.get(app);
+          const appInstance = this.appRegistry.get(app);
           if (appInstance && typeof appInstance.open === "function") {
             await appInstance.open(appExtra);
           } else {
@@ -388,7 +388,7 @@ export class AppLauncher {
     }
   }
 
-  _loadLaunchedApps(): Set<string> {
+  loadLaunchedApps(): Set<string> {
     try {
       const saved = os.storage.get(StorageKeys.launchedApps);
       if (saved) return new Set(saved);
@@ -396,26 +396,26 @@ export class AppLauncher {
     return new Set();
   }
 
-  _saveLaunchedApps(): void {
+  saveLaunchedApps(): void {
     try {
-      os.storage.set(StorageKeys.launchedApps, [...this._launchedAppIds]);
+      os.storage.set(StorageKeys.launchedApps, [...this.launchedAppIds]);
     } catch (e) {}
   }
 
-  _initSteamTracking(): void {
+  initSteamTracking(): void {
     const oldRemove = this.wm.removeFromTaskbar.bind(this.wm);
     this.wm.removeFromTaskbar = (winId: string) => {
-      const session = this._appSessions.get(winId);
+      const session = this.appSessions.get(winId);
       if (session) {
         const durationMin = Math.round((Date.now() - session.startTime) / 60000);
-        this._updateSteamStats(session.appId, durationMin);
-        this._appSessions.delete(winId);
+        this.updateSteamStats(session.appId, durationMin);
+        this.appSessions.delete(winId);
       }
       return oldRemove(winId);
     };
   }
 
-  _updateSteamStats(appId: string, minutes: number): void {
+  updateSteamStats(appId: string, minutes: number): void {
     try {
       const now = Date.now();
       const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
@@ -442,12 +442,12 @@ export class AppLauncher {
       appUrl = `${STATICALLY_BASE}${appUrl}`;
     }
     sendLaunchAnalytics(appUrl);
-    window.open(appUrl, "_blank", "noopener,noreferrer");
+    window.open(appUrl, "blank", "noopener,noreferrer");
   }
 
   async openYukiDevToolsApp(extra: Record<string, any> = {}): Promise<void> {
     const appId = "yukiDevTools";
-    if (this._bringToFrontIfExists(appId)) return;
+    if (this.bringToFrontIfExists(appId)) return;
 
     const title = this.appMap[appId]?.title || "Yuki Dev Tools";
     let iframeUrl = YUKI_DEV_TOOLS_URL;
@@ -466,7 +466,7 @@ export class AppLauncher {
   }
 
   openHtmlApp(appName: string, htmlContent: string, appMeta: any): void {
-    if (this._bringToFrontIfExists(appName)) return;
+    if (this.bringToFrontIfExists(appName)) return;
     this.createWindow(
       appName,
       appName.replace(/([A-Z])/g, " $1").replace(/^./, (s) => s.toUpperCase()),
@@ -478,7 +478,7 @@ export class AppLauncher {
   }
 
   async openIframeApp({ appId, type, source, originalName, analyticsBase = null, ...extra }: any): Promise<void> {
-    (this as any)._fetchHtmlAsBlobUrl = fetchHtmlAsBlobUrl;
+    (this as any).fetchHtmlAsBlobUrl = fetchHtmlAsBlobUrl;
 
     let id: string;
     let contentHtml: string | undefined;
@@ -486,7 +486,7 @@ export class AppLauncher {
 
     if (type === "swf") {
       id = source.replace(/[^a-zA-Z0-9]/g, "");
-      if (this._bringToFrontIfExists(id)) return;
+      if (this.bringToFrontIfExists(id)) return;
 
       const gameName = getGameName(originalName) || originalName;
       const swfPath = await resolveUrl(source);
@@ -518,7 +518,7 @@ player.load("${swfPath}");
       externalUrl = swfBlob;
     } else {
       id = type === "game" ? appId : `${type}-${source.replace(/\W/g, "")}-${Date.now()}`;
-      if (this._bringToFrontIfExists(id)) return;
+      if (this.bringToFrontIfExists(id)) return;
 
       const shouldBypassResolution =
         type !== "game" &&
@@ -633,7 +633,7 @@ player.load("${swfPath}");
             skipHeader: true
           }
         );
-        if (appId) this._appSessions.set(`${id}-win`, { appId, startTime: Date.now() });
+        if (appId) this.appSessions.set(`${id}-win`, { appId, startTime: Date.now() });
 
         Object.assign(win.dataset, {
           appType: type,
@@ -670,11 +670,11 @@ player.load("${swfPath}");
         `;
 
         win.querySelector(".overlay-open-btn")?.addEventListener("click", () => {
-          this._overlayController?.openForWindow(win);
+          this.overlayController?.openForWindow(win);
         });
 
         win.querySelector(".external-btn")?.addEventListener("click", () => {
-          window.open(resolvedSource, "_blank");
+          window.open(resolvedSource, "blank");
         });
 
         if (resolvedSource.startsWith("blob:")) {
@@ -729,7 +729,7 @@ player.load("${swfPath}");
     );
   }
 
-  _bringToFrontIfExists(id: string): boolean {
+  bringToFrontIfExists(id: string): boolean {
     const el = document.getElementById(`${id}-win`);
     if (el) os.window.bringToFront(el);
     return !!el;
@@ -794,7 +794,7 @@ player.load("${swfPath}");
       isGame,
       icon
     });
-    if (appId) this._appSessions.set(`${id}-win`, { appId, startTime: Date.now() });
+    if (appId) this.appSessions.set(`${id}-win`, { appId, startTime: Date.now() });
 
     Object.assign(win.dataset, {
       appType: appMeta.type || "",
@@ -828,12 +828,12 @@ player.load("${swfPath}");
     `;
 
     win.querySelector(".overlay-open-btn")?.addEventListener("click", () => {
-      this._overlayController?.openForWindow(win);
+      this.overlayController?.openForWindow(win);
     });
 
     win.querySelector(".external-btn")?.addEventListener("click", () => {
       const url = win.dataset.externalUrl || win.querySelector("iframe")?.src || externalUrl;
-      if (url) window.open(url, "_blank", "noopener,noreferrer");
+      if (url) window.open(url, "blank", "noopener,noreferrer");
     });
 
     recordUsage(`${id}-win`);

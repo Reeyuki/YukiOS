@@ -304,8 +304,8 @@ export function initSettingsPage(container) {
   const settings = SteamSettings.load();
 
   settingsPage.querySelectorAll(".settings-toggle").forEach((toggle) => {
-    if (toggle._inited) return;
-    toggle._inited = true;
+    if (toggle.inited) return;
+    toggle.inited = true;
     const setting = toggle.dataset.setting;
     const value = settings[setting];
 
@@ -331,8 +331,8 @@ export function initSettingsPage(container) {
   });
 
   settingsPage.querySelectorAll(".settings-select").forEach((select) => {
-    if (select._inited) return;
-    select._inited = true;
+    if (select.inited) return;
+    select.inited = true;
     const setting = select.dataset.setting;
     const value = settings[setting];
 
@@ -682,7 +682,7 @@ export function initStorePage(container, onLaunch, navigateTo, CDN_BASE_REF, img
     });
   }
 
-  const _injectAd = (slotId, key, height, width) => {
+  const injectAd = (slotId, key, height, width) => {
     if (!shouldEnableAds()) return;
     const slot = storePage.querySelector(`#${slotId}`);
     if (!slot) return;
@@ -695,9 +695,9 @@ export function initStorePage(container, onLaunch, navigateTo, CDN_BASE_REF, img
     slot.appendChild(invokeScript);
   };
 
-  _injectAd("store-ad-slot-1", "f88fd46583493c3820f283948e5e5391", 300, 160);
+  injectAd("store-ad-slot-1", "f88fd46583493c3820f283948e5e5391", 300, 160);
   setTimeout(() => {
-    _injectAd("store-ad-slot-2", "ee9dc67de90729e2804aa8aba6454ec8", 600, 160);
+    injectAd("store-ad-slot-2", "ee9dc67de90729e2804aa8aba6454ec8", 600, 160);
   }, 1000);
 }
 

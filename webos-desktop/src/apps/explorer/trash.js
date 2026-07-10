@@ -5,7 +5,7 @@ import { buildFileIconHTML } from "../../fileDisplay.js";
 import { formatSize } from "../../utils/utils.js";
 
 export async function showTrashView(explorer, inst) {
-  inst._isTrashView = true;
+  inst.isTrashView = true;
   inst.currentPath = [];
   inst.selectedFile = null;
   inst.selectedItems = new Set();
@@ -22,11 +22,11 @@ export async function renderTrashView(explorer, inst, view, win) {
   view.innerHTML = "";
   removeClass(view, "games-page");
   addClass(view, "explorer-trash-view");
-  explorer._ensureSelBox(view);
+  explorer.ensureSelBox(view);
 
   const items = await os.fs.getTrashItems();
-  inst._cachedFolder = {};
-  inst._cachedTrashItems = items;
+  inst.cachedFolder = {};
+  inst.cachedTrashItems = items;
 
   const banner = createElement("div", { className: "explorer-trash-banner" });
   const count = items.length;
@@ -104,8 +104,8 @@ export async function renderTrashView(explorer, inst, view, win) {
     view.appendChild(item);
   }
 
-  inst._isTrashView = true;
-  await explorer._updateStorageIndicator(win);
+  inst.isTrashView = true;
+  await explorer.updateStorageIndicator(win);
   const itemsEl = win.querySelector(`#${inst.winId}-status-items`);
   const selectedEl = win.querySelector(`#${inst.winId}-status-selected`);
   if (itemsEl) itemsEl.textContent = `${count} ${count === 1 ? "item" : "items"}`;

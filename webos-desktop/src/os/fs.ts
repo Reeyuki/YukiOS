@@ -18,7 +18,7 @@ export class FileSystemAPI {
     this.fs = fileSystemManager;
   }
 
-  private async _resolve(path: string | string[]): Promise<string> {
+  private async resolve(path: string | string[]): Promise<string> {
     await this.fs.fsReady;
     return Array.isArray(path) ? path.join("/") : path;
   }
@@ -30,7 +30,7 @@ export class FileSystemAPI {
    * @returns File content as string or Uint8Array
    */
   async read(path: string | string[], options: ReadFileOptions = {}): Promise<string | Uint8Array> {
-    const pathStr = await this._resolve(path);
+    const pathStr = await this.resolve(path);
     const fullPath = this.fs.resolveUserPath(pathStr);
 
     if (options.encoding === "binary") {
@@ -46,7 +46,7 @@ export class FileSystemAPI {
    * @param options - Write options
    */
   async write(path: string | string[], content: string | Uint8Array, options: WriteFileOptions = {}): Promise<void> {
-    const pathStr = await this._resolve(path);
+    const pathStr = await this.resolve(path);
     const fullPath = this.fs.resolveUserPath(pathStr);
     const dir = this.fs.dirname(fullPath);
 
@@ -74,7 +74,7 @@ export class FileSystemAPI {
    * @returns Directory contents as object
    */
   async readdir(path: string | string[]): Promise<FileSystemEntry> {
-    const pathStr = await this._resolve(path);
+    const pathStr = await this.resolve(path);
     return await this.fs.getFolder(pathStr);
   }
 
@@ -83,7 +83,7 @@ export class FileSystemAPI {
    * @param path - Directory path (relative to user home) - can be string or array
    */
   async mkdir(path: string | string[]): Promise<void> {
-    const pathStr = await this._resolve(path);
+    const pathStr = await this.resolve(path);
     await this.fs.ensureFolder(pathStr);
   }
 
@@ -93,7 +93,7 @@ export class FileSystemAPI {
    * @param name - Name of item (for directory deletion)
    */
   async delete(path: string | string[], name?: string): Promise<void> {
-    const pathStr = await this._resolve(path);
+    const pathStr = await this.resolve(path);
 
     if (name) {
       await this.fs.deleteItem(pathStr, name);
@@ -110,7 +110,7 @@ export class FileSystemAPI {
    * @returns True if exists
    */
   async exists(path: string | string[]): Promise<boolean> {
-    const pathStr = await this._resolve(path);
+    const pathStr = await this.resolve(path);
     const fullPath = this.fs.resolveUserPath(pathStr);
     return await this.fs.exists(fullPath);
   }
@@ -121,8 +121,8 @@ export class FileSystemAPI {
    * @param destination - Destination path - can be string or array
    */
   async copy(source: string | string[], destination: string | string[]): Promise<void> {
-    const sourceStr = await this._resolve(source);
-    const destStr = await this._resolve(destination);
+    const sourceStr = await this.resolve(source);
+    const destStr = await this.resolve(destination);
 
     const sourcePath = this.fs.resolveUserPath(sourceStr);
     const destPath = this.fs.resolveUserPath(destStr);
@@ -138,8 +138,8 @@ export class FileSystemAPI {
    * @param newPath - New path - can be string or array
    */
   async rename(oldPath: string | string[], newPath: string | string[]): Promise<void> {
-    const oldStr = await this._resolve(oldPath);
-    const newStr = await this._resolve(newPath);
+    const oldStr = await this.resolve(oldPath);
+    const newStr = await this.resolve(newPath);
 
     const oldDir = this.fs.dirname(oldStr);
     const oldName = this.fs.basename(oldStr);
@@ -178,7 +178,7 @@ export class FileSystemAPI {
     let dirs = 0;
     try {
       const entries = await this.readdir(path);
-      const pathStr = await this._resolve(path);
+      const pathStr = await this.resolve(path);
       for (const [name, entry] of Object.entries(entries)) {
         if (entry.type === "file") {
           files++;
@@ -210,7 +210,7 @@ export class FileSystemAPI {
    * @returns True if path is a file
    */
   async isFile(path: string | string[]): Promise<boolean> {
-    const pathStr = await this._resolve(path);
+    const pathStr = await this.resolve(path);
     const fullPath = this.fs.resolveUserPath(pathStr);
     const dir = this.fs.dirname(fullPath);
     const basename = this.fs.basename(fullPath);
@@ -225,7 +225,7 @@ export class FileSystemAPI {
    * @returns File kind
    */
   async getFileKind(path: string | string[]): Promise<FileKind | undefined> {
-    const pathStr = await this._resolve(path);
+    const pathStr = await this.resolve(path);
     const fullPath = this.fs.resolveUserPath(pathStr);
     const dir = this.fs.dirname(fullPath);
     const basename = this.fs.basename(fullPath);
@@ -239,7 +239,7 @@ export class FileSystemAPI {
    * @returns File icon path
    */
   async getFileIcon(path: string | string[]): Promise<string | undefined> {
-    const pathStr = await this._resolve(path);
+    const pathStr = await this.resolve(path);
     const fullPath = this.fs.resolveUserPath(pathStr);
     const dir = this.fs.dirname(fullPath);
     const basename = this.fs.basename(fullPath);
@@ -262,7 +262,7 @@ export class FileSystemAPI {
     kind?: FileKind,
     icon?: string
   ): Promise<string> {
-    const pathStr = await this._resolve(path);
+    const pathStr = await this.resolve(path);
     return await this.fs.writeBinaryFile(pathStr, name, blob, kind, icon);
   }
 
@@ -273,7 +273,7 @@ export class FileSystemAPI {
    * @returns Blob content
    */
   async readBinaryFile(path: string | string[], name: string): Promise<Blob | null> {
-    const pathStr = await this._resolve(path);
+    const pathStr = await this.resolve(path);
     return await this.fs.readBinaryFile(pathStr, name);
   }
 
@@ -283,7 +283,7 @@ export class FileSystemAPI {
    * @param name - File name
    */
   async deleteBinaryFile(path: string | string[], name: string): Promise<void> {
-    const pathStr = await this._resolve(path);
+    const pathStr = await this.resolve(path);
     await this.fs.deleteBinaryFile(pathStr, name);
   }
 
@@ -294,7 +294,7 @@ export class FileSystemAPI {
    * @param newName - New file name
    */
   async renameBinaryFile(path: string | string[], oldName: string, newName: string): Promise<void> {
-    const pathStr = await this._resolve(path);
+    const pathStr = await this.resolve(path);
     await this.fs.renameBinaryFile(pathStr, oldName, newName);
   }
 
@@ -315,7 +315,7 @@ export class FileSystemAPI {
     icon?: string,
     faIcon?: string
   ): Promise<string> {
-    const pathStr = await this._resolve(path);
+    const pathStr = await this.resolve(path);
     return await this.fs.createFile(pathStr, name, content, kind, icon, faIcon);
   }
 
@@ -325,7 +325,7 @@ export class FileSystemAPI {
    * @param name - Folder name
    */
   async createFolder(path: string | string[], name: string): Promise<string> {
-    const pathStr = await this._resolve(path);
+    const pathStr = await this.resolve(path);
     return await this.fs.createFolder(pathStr, name);
   }
 
@@ -335,7 +335,7 @@ export class FileSystemAPI {
    * @param name - Item name
    */
   async deleteItem(path: string | string[], name: string): Promise<void> {
-    const pathStr = await this._resolve(path);
+    const pathStr = await this.resolve(path);
     await this.fs.deleteItem(pathStr, name);
   }
 
@@ -346,7 +346,7 @@ export class FileSystemAPI {
    * @param newName - New name
    */
   async renameItem(path: string | string[], oldName: string, newName: string): Promise<void> {
-    const pathStr = await this._resolve(path);
+    const pathStr = await this.resolve(path);
     await this.fs.renameItem(pathStr, oldName, newName);
   }
 
@@ -363,7 +363,7 @@ export class FileSystemAPI {
     content: string,
     meta?: { kind?: FileKind; icon?: string }
   ): Promise<void> {
-    const pathStr = await this._resolve(path);
+    const pathStr = await this.resolve(path);
     await this.fs.updateFile(pathStr, name, content);
     if (meta?.kind || meta?.icon) {
       const dir = this.fs.resolveUserPath(pathStr);
@@ -372,7 +372,7 @@ export class FileSystemAPI {
   }
 
   async trashFile(path: string | string[], name?: string): Promise<any> {
-    const pathStr = await this._resolve(path);
+    const pathStr = await this.resolve(path);
     if (name) {
       return await this.fs.trash.moveToTrash(pathStr, name);
     }

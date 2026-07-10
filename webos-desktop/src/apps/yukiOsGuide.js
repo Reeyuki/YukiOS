@@ -352,7 +352,7 @@ export class YukiOsGuideApp extends BaseApp {
           size: ["900px", "650px"],
           icon: "fas fa-book-open",
           style: { left: "350px", top: "200px" },
-          ui: this._buildUI()
+          ui: this.buildUI()
         }
       ],
       state: {
@@ -367,15 +367,15 @@ export class YukiOsGuideApp extends BaseApp {
   }
 
   initYukiOsGuide(payload, event, element, state) {
-    this._bindEvents(element);
+    this.bindEvents(element);
   }
 
   onClose(winId) {}
 
-  _buildUI() {
-    const appMap = this._services.appLauncher?.appMap || gamesListAppMap || {};
+  buildUI() {
+    const appMap = this.services.appLauncher?.appMap || gamesListAppMap || {};
     const allApps = this.appRegistry.getAllApps(appMap);
-    const filteredApps = this._filterApps(allApps);
+    const filteredApps = this.filterApps(allApps);
 
     return `
       <div class="window-content" style="height: calc(100% - 40px); overflow: hidden;">
@@ -402,27 +402,27 @@ export class YukiOsGuideApp extends BaseApp {
             </nav>
           </div>
           <div class="yuki-guide-main">
-            ${this._buildContent(filteredApps)}
+            ${this.buildContent(filteredApps)}
           </div>
         </div>
       </div>
     `;
   }
 
-  _buildContent(apps) {
+  buildContent(apps) {
     switch (this.currentTab) {
       case "overview":
-        return this._buildOverview(apps);
+        return this.buildOverview(apps);
       case "apps":
-        return this._buildApps(apps);
+        return this.buildApps(apps);
       case "features":
-        return this._buildFeatures();
+        return this.buildFeatures();
       default:
-        return this._buildOverview(apps);
+        return this.buildOverview(apps);
     }
   }
 
-  _buildOverview(apps) {
+  buildOverview(apps) {
     const systemApps = apps.filter((a) => a.type === "core" || a.type === "bundled");
     const gameApps = apps.filter((a) => a.type === "external");
     const totalFeatures = FEATURE_DATA.step2.length + FEATURE_DATA.step3.length + FEATURE_DATA.step3b.length;
@@ -572,8 +572,8 @@ export class YukiOsGuideApp extends BaseApp {
     `;
   }
 
-  _buildApps(apps) {
-    const categories = this._categorizeApps(apps);
+  buildApps(apps) {
+    const categories = this.categorizeApps(apps);
     const searchLower = this.searchQuery.toLowerCase();
 
     return `
@@ -591,7 +591,7 @@ export class YukiOsGuideApp extends BaseApp {
             if (filtered.length === 0) return "";
             return `
             <div class="guide-subsection">
-              <h2>${this._formatCategory(category)}</h2>
+              <h2>${this.formatCategory(category)}</h2>
               <div class="apps-grid">
                 ${filtered
                   .map(
@@ -608,7 +608,7 @@ export class YukiOsGuideApp extends BaseApp {
                     </div>
                     <div class="app-info">
                       <h3>${app.displayName}</h3>
-                      <p>${this._inferAppDescription(app)}</p>
+                      <p>${this.inferAppDescription(app)}</p>
                       <div class="app-meta">
                         <span class="app-type ${app.type}">${app.type}</span>
                         ${app.protected ? '<span class="app-protected"><i class="fas fa-shield-alt"></i></span>' : ""}
@@ -635,7 +635,7 @@ export class YukiOsGuideApp extends BaseApp {
     `;
   }
 
-  _buildFeatures() {
+  buildFeatures() {
     const searchLower = this.searchQuery.toLowerCase();
 
     const filterFeatures = (features) => {
@@ -709,12 +709,12 @@ export class YukiOsGuideApp extends BaseApp {
           ${step3bFiltered.length === 0 ? `<p class="no-results">No matching features</p>` : ""}
         </div>
 
-        ${this._buildCategorizedShortcuts(searchLower)}
+        ${this.buildCategorizedShortcuts(searchLower)}
       </div>
     `;
   }
 
-  _buildCategorizedShortcuts(searchLower) {
+  buildCategorizedShortcuts(searchLower) {
     const CATEGORY_META = {
       global: { icon: "fas fa-globe", label: "Global & System" },
       desktop: { icon: "fas fa-desktop", label: "Desktop & Files" },
@@ -785,7 +785,7 @@ export class YukiOsGuideApp extends BaseApp {
     `;
   }
 
-  _buildConnectionCards(apps, searchLower) {
+  buildConnectionCards(apps, searchLower) {
     const connections = [
       {
         feature: "Productivity Tools",
@@ -869,14 +869,14 @@ export class YukiOsGuideApp extends BaseApp {
       .join("");
   }
 
-  _filterApps(apps) {
+  filterApps(apps) {
     const searchLower = this.searchQuery.toLowerCase();
     return apps.filter(
       (a) => a.displayName.toLowerCase().includes(searchLower) || a.id.toLowerCase().includes(searchLower)
     );
   }
 
-  _filterCapabilities(win) {
+  filterCapabilities(win) {
     const searchLower = this.searchQuery.toLowerCase();
     const capabilitiesGrid = win.querySelector("#capabilities-grid");
     if (!capabilitiesGrid) return;
@@ -892,7 +892,7 @@ export class YukiOsGuideApp extends BaseApp {
     });
   }
 
-  _categorizeApps(apps) {
+  categorizeApps(apps) {
     const categories = {
       productivity: [],
       system: [],
@@ -903,7 +903,7 @@ export class YukiOsGuideApp extends BaseApp {
     };
 
     apps.forEach((app) => {
-      const category = this._getAppCategory(app.id);
+      const category = this.getAppCategory(app.id);
       if (categories[category]) {
         categories[category].push(app);
       } else {
@@ -914,7 +914,7 @@ export class YukiOsGuideApp extends BaseApp {
     return categories;
   }
 
-  _getAppCategory(appId) {
+  getAppCategory(appId) {
     const categoryMap = {
       notepadApp: "productivity",
       markdownApp: "productivity",
@@ -964,7 +964,7 @@ export class YukiOsGuideApp extends BaseApp {
     return categoryMap[appId] || "other";
   }
 
-  _formatCategory(category) {
+  formatCategory(category) {
     const names = {
       productivity: "Productivity",
       system: "System Utilities",
@@ -976,18 +976,18 @@ export class YukiOsGuideApp extends BaseApp {
     return names[category] || category;
   }
 
-  _inferAppDescription(app) {
+  inferAppDescription(app) {
     return gameDescriptions[app.id] || APP_DESCRIPTIONS[app.id] || APP_DESCRIPTIONS.game;
   }
 
-  _bindEvents(win) {
+  bindEvents(win) {
     const searchInput = win.querySelector("#guide-search");
     const navBtns = win.querySelectorAll(".guide-nav-item");
 
     searchInput.addEventListener("input", (e) => {
       this.searchQuery = e.target.value;
-      this._refreshContent(win);
-      this._filterCapabilities(win);
+      this.refreshContent(win);
+      this.filterCapabilities(win);
     });
 
     navBtns.forEach((btn) => {
@@ -998,22 +998,22 @@ export class YukiOsGuideApp extends BaseApp {
         navBtns.forEach((b) => b.classList.remove("active"));
         btn.classList.add("active");
 
-        this._refreshContent(win);
-        this._filterCapabilities(win);
+        this.refreshContent(win);
+        this.filterCapabilities(win);
       });
     });
 
-    this._appCardBinder = () => {};
+    this.appCardBinder = () => {};
   }
 
-  _refreshContent(win) {
-    const appMap = this._services.appLauncher?.appMap || gamesListAppMap || {};
+  refreshContent(win) {
+    const appMap = this.services.appLauncher?.appMap || gamesListAppMap || {};
     const allApps = this.appRegistry.getAllApps(appMap);
-    const filteredApps = this._filterApps(allApps);
+    const filteredApps = this.filterApps(allApps);
     const mainContent = win.querySelector(".yuki-guide-main");
 
     if (mainContent) {
-      mainContent.innerHTML = this._buildContent(filteredApps);
+      mainContent.innerHTML = this.buildContent(filteredApps);
 
       mainContent.querySelectorAll(".app-icon img").forEach((img) => {
         img.addEventListener("error", () => {
@@ -1028,11 +1028,11 @@ export class YukiOsGuideApp extends BaseApp {
         navCount.textContent = filteredApps.length;
       }
 
-      if (this._appCardBinder) {
-        this._appCardBinder();
+      if (this.appCardBinder) {
+        this.appCardBinder();
       }
 
-      this._filterCapabilities(win);
+      this.filterCapabilities(win);
     }
   }
 }

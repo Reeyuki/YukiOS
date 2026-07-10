@@ -8,8 +8,8 @@ const IMAGES_DIR = ["VMs"];
 export class V86App extends BaseApp {
   constructor(services) {
     super(services);
-    this._explorerApp = services.explorerApp;
-    this._v86LoadPromise = null;
+    this.explorerApp = services.explorerApp;
+    this.v86LoadPromise = null;
   }
 
   getDeclarativeSchema(opts) {
@@ -127,11 +127,11 @@ export class V86App extends BaseApp {
           event.preventDefault();
           element.classList.remove("v86-upload-zone-dragover");
           const file = event.dataTransfer.files[0];
-          if (file) await this._handleUploadedFile(file, element);
+          if (file) await this.handleUploadedFile(file, element);
         },
         fileChange: async (payload, event, element, state) => {
           const file = element.files[0];
-          if (file) await this._handleUploadedFile(file, document.getElementById("v86-upload-zone"));
+          if (file) await this.handleUploadedFile(file, document.getElementById("v86-upload-zone"));
           element.value = "";
         },
         launchSystem: (payload, event, element, state) => {
@@ -143,16 +143,16 @@ export class V86App extends BaseApp {
           element.classList.toggle("emu-card--hover", payload.hover);
         }
       },
-      onMount: "_initV86"
+      onMount: "initV86"
     };
   }
 
-  async _initV86(payload, event, element, state) {
-    this._loadV86Script();
-    await this._loadUserImages(element);
+  async initV86(payload, event, element, state) {
+    this.loadV86Script();
+    await this.loadUserImages(element);
   }
 
-  async _handleUploadedFile(file, zone) {
+  async handleUploadedFile(file, zone) {
     const originalHTML = zone.innerHTML;
 
     zone.innerHTML = `<i class="fa-solid fa-spinner fa-spin v86-loading-icon emu-state-icon"></i><div class="v86-loading-text emu-state-text">Saving <strong>${file.name}</strong>…</div>`;
@@ -162,7 +162,7 @@ export class V86App extends BaseApp {
       await os.fs.writeBinaryFile(IMAGES_DIR, file.name, blob, "other", resolveIconUrl("static/icons/v86.webp"));
       os.notify.send("V86", `Saved ${file.name} to VMs.`);
       zone.innerHTML = `<i class="fa-solid fa-circle-check v86-success-icon emu-state-icon"></i><div class="v86-success-text emu-state-text">Saved!</div>`;
-      await this._loadUserImages(document.querySelector("#v86-win"));
+      await this.loadUserImages(document.querySelector("#v86-win"));
       setTimeout(() => {
         zone.innerHTML = originalHTML;
       }, 1500);
@@ -174,7 +174,7 @@ export class V86App extends BaseApp {
     }
   }
 
-  async _loadUserImages(win) {
+  async loadUserImages(win) {
     const container = win.querySelector("#v86-user-images");
     if (!container) return;
 
@@ -228,7 +228,7 @@ export class V86App extends BaseApp {
           e.stopPropagation();
           const fileName = btn.dataset.file;
           await os.fs.deleteBinaryFile(IMAGES_DIR, fileName);
-          await this._loadUserImages(win);
+          await this.loadUserImages(win);
         });
       });
     } catch {}
@@ -242,7 +242,7 @@ export class V86App extends BaseApp {
         memory_size: 32 * 1024 * 1024
       },
       openbsd: {
-        cdrom: { url: `${V86_PATH}/openbsd_state-v2.bin.zst` },
+        cdrom: { url: `${V86_PATH}/openbsdstate-v2.bin.zst` },
         memory_size: 192 * 1024 * 1024
       }
     };
@@ -253,7 +253,7 @@ export class V86App extends BaseApp {
       return;
     }
 
-    this._launchV86(displayName, config);
+    this.launchV86(displayName, config);
   }
 
   async launchImage(fileName, path) {
@@ -283,7 +283,7 @@ export class V86App extends BaseApp {
           config.hda = { buffer: arrayBuffer };
         }
       } else if (ext === "state" || ext === "gz") {
-        config.initial_state = { buffer: arrayBuffer };
+        config.initialstate = { buffer: arrayBuffer };
       }
 
       const displayName = fileName
@@ -291,13 +291,13 @@ export class V86App extends BaseApp {
         .replace(/[-_]/g, " ")
         .replace(/\b\w/g, (c) => c.toUpperCase());
 
-      this._launchV86(displayName, config);
+      this.launchV86(displayName, config);
     } catch (e) {
       os.notify.send("V86", `Image wouldn't load: ${e.message}`);
     }
   }
 
-  async _launchV86(displayName, config) {
+  async launchV86(displayName, config) {
     const winId = `v86-${Date.now()}`;
     const win = os.window.create(winId, displayName, "800px", "600px", {
       icon: "static/icons/v86.webp"
@@ -347,7 +347,7 @@ export class V86App extends BaseApp {
     this.onClose(winId, cleanup);
 
     try {
-      await this._loadV86Script();
+      await this.loadV86Script();
 
       if (typeof V86 === "undefined") {
         showError("V86 failed to initialize");
@@ -364,7 +364,7 @@ export class V86App extends BaseApp {
         wasm_path: CDN_BASES.MAIN + "/static/apps/v86/build/v86.wasm",
         memory_size: 32 * 1024 * 1024,
         vga_memory_size: 2 * 1024 * 1024,
-        screen_container: screenContainer,
+        screencontainer: screenContainer,
         bios: { url: CDN_BASES.MAIN + "/static/apps/v86/bios/seabios.bin" },
         vga_bios: { url: CDN_BASES.MAIN + "/static/apps/v86/bios/vgabios.bin" },
         autostart: true,
@@ -409,16 +409,16 @@ export class V86App extends BaseApp {
     resizeObserver.observe(win);
   }
 
-  _loadV86Script() {
-    if (this._v86LoadPromise) {
-      return this._v86LoadPromise;
+  loadV86Script() {
+    if (this.v86LoadPromise) {
+      return this.v86LoadPromise;
     }
 
     if (typeof V86 !== "undefined") {
       return Promise.resolve();
     }
 
-    this._v86LoadPromise = new Promise((resolve, reject) => {
+    this.v86LoadPromise = new Promise((resolve, reject) => {
       const script = document.createElement("script");
       script.src = "https://copy.sh/v86/build/libv86.js";
       script.onload = () => {
@@ -437,7 +437,7 @@ export class V86App extends BaseApp {
       document.head.appendChild(script);
     });
 
-    return this._v86LoadPromise;
+    return this.v86LoadPromise;
   }
 
   async launchFromFile(file) {
@@ -455,7 +455,7 @@ export class V86App extends BaseApp {
         config.hda = { buffer: arrayBuffer };
       }
     } else if (ext === "state" || ext === "gz") {
-      config.initial_state = { buffer: arrayBuffer };
+      config.initialstate = { buffer: arrayBuffer };
     }
 
     const displayName = fileName
@@ -463,6 +463,6 @@ export class V86App extends BaseApp {
       .replace(/[-_]/g, " ")
       .replace(/\b\w/g, (c) => c.toUpperCase());
 
-    this._launchV86(displayName, config);
+    this.launchV86(displayName, config);
   }
 }

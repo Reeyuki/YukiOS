@@ -3,19 +3,20 @@ import { $$ } from "../shared/domUtils.js";
 
 import { StorageKeys, os } from "../framework.js";
 import { KeybindManager } from "../keybindManager.js";
+import { bus, BusEvents } from "../core/EventBus.js";
 export class WorkspaceManager {
   constructor(windowManager) {
     this.wm = windowManager;
     this.workspaces = [{ id: 0, name: "Main", windows: new Set() }];
     this.activeId = 0;
-    this._prevActiveId = 0;
-    this._barEl = null;
-    this._overviewEl = null;
-    this._overviewOpen = false;
-    this._dragState = null;
-    this._render();
+    this.prevActiveId = 0;
+    this.barEl = null;
+    this.overviewEl = null;
+    this.overviewOpen = false;
+    this.dragState = null;
+    this.render();
 
-    import("../core/EventBus.js").then(({ bus, BusEvents }) => {
+    Promise.resolve().then(() => {
       os.events.on(BusEvents.SETTINGS_CHANGED, (settings) => {
         this.updateVisibility(settings.showWorkspace);
       });
@@ -25,8 +26,8 @@ export class WorkspaceManager {
   }
 
   updateVisibility(showWorkspace) {
-    if (this._barEl) {
-      this._barEl.style.display = showWorkspace ? "flex" : "none";
+    if (this.barEl) {
+      this.barEl.style.display = showWorkspace ? "flex" : "none";
     }
   }
 
@@ -34,37 +35,37 @@ export class WorkspaceManager {
     return this.workspaces.find((w) => w.id === this.activeId);
   }
 
-  _nextId() {
+  nextId() {
     return this.workspaces.reduce((max, w) => Math.max(max, w.id), -1) + 1;
   }
 
-  _render() {
-    if (!this._barEl) {
-      this._barEl = document.createElement("div");
-      this._barEl.id = "workspace-bar";
+  render() {
+    if (!this.barEl) {
+      this.barEl = document.createElement("div");
+      this.barEl.id = "workspace-bar";
       const taskbar = document.getElementById("taskbar");
       if (taskbar) {
-        taskbar.insertBefore(this._barEl, document.getElementById("system-tray"));
+        taskbar.insertBefore(this.barEl, document.getElementById("system-tray"));
       }
       const showWorkspace = os.storage.get(StorageKeys.showWorkspace) !== "false";
       this.updateVisibility(showWorkspace);
     }
 
-    this._barEl.innerHTML = "";
+    this.barEl.innerHTML = "";
 
     const overviewBtn = document.createElement("button");
-    overviewBtn.className = "workspace-btn workspace-overview-btn" + (this._overviewOpen ? " active" : "");
+    overviewBtn.className = "workspace-btn workspace-overview-btn" + (this.overviewOpen ? " active" : "");
     overviewBtn.title = "Workspace Overview";
     overviewBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
       <rect x="0" y="0" width="6" height="6" rx="1"/><rect x="8" y="0" width="6" height="6" rx="1"/>
       <rect x="0" y="8" width="6" height="6" rx="1"/><rect x="8" y="8" width="6" height="6" rx="1"/>
     </svg>`;
     overviewBtn.addEventListener("click", () => this.toggleOverview());
-    this._barEl.appendChild(overviewBtn);
+    this.barEl.appendChild(overviewBtn);
 
     const sep = document.createElement("div");
     sep.className = "workspace-sep";
-    this._barEl.appendChild(sep);
+    this.barEl.appendChild(sep);
 
     this.workspaces.forEach((ws) => {
       const btn = document.createElement("button");
@@ -80,8 +81,8 @@ export class WorkspaceManager {
         const newName = await os.dialog.prompt("Prompt", "Rename workspace:", ws.name);
         if (newName && newName.trim()) {
           ws.name = newName.trim();
-          this._render();
-          if (this._overviewOpen) this._renderOverview();
+          this.render();
+          if (this.overviewOpen) this.renderOverview();
         }
       });
 
@@ -109,7 +110,7 @@ export class WorkspaceManager {
         btn.appendChild(del);
       }
 
-      this._barEl.appendChild(btn);
+      this.barEl.appendChild(btn);
     });
 
     const addBtn = document.createElement("button");
@@ -117,18 +118,18 @@ export class WorkspaceManager {
     addBtn.textContent = "+";
     addBtn.title = "New workspace";
     addBtn.addEventListener("click", () => this.addWorkspace());
-    this._barEl.appendChild(addBtn);
+    this.barEl.appendChild(addBtn);
   }
 
   addWorkspace(name) {
-    const id = this._nextId();
+    const id = this.nextId();
     this.workspaces.push({ id, name: name || `WS ${id + 1}`, windows: new Set() });
-    this._render();
-    if (this._overviewOpen) {
-      this._switchInstant(id);
-      this._renderOverview();
+    this.render();
+    if (this.overviewOpen) {
+      this.switchInstant(id);
+      this.renderOverview();
     } else {
-      this._switchInstant(id);
+      this.switchInstant(id);
     }
   }
 
@@ -140,7 +141,7 @@ export class WorkspaceManager {
     ws.windows.forEach((winId) => {
       const win = document.getElementById(winId);
       if (win) {
-        this.wm._silenceWindow(win);
+        this.wm.silenceWindow(win);
         os.window.removeFromTaskbar(winId);
         win.remove();
       }
@@ -152,9 +153,9 @@ export class WorkspaceManager {
       this.activeId = this.workspaces[this.workspaces.length - 1].id;
     }
 
-    this._render();
-    this._applyVisibility();
-    if (this._overviewOpen) this._renderOverview();
+    this.render();
+    this.applyVisibility();
+    if (this.overviewOpen) this.renderOverview();
   }
 
   registerWindow(winId) {
@@ -165,39 +166,39 @@ export class WorkspaceManager {
     this.workspaces.forEach((ws) => ws.windows.delete(winId));
   }
 
-  _switchInstant(id) {
-    this._prevActiveId = this.activeId;
+  switchInstant(id) {
+    this.prevActiveId = this.activeId;
     this.activeId = id;
-    this._applyVisibility();
-    this._render();
-    if (!this._overviewOpen) {
+    this.applyVisibility();
+    this.render();
+    if (!this.overviewOpen) {
       this.closeOverview();
     }
   }
 
   switchTo(id) {
     if (id === this.activeId) return;
-    this._prevActiveId = this.activeId;
+    this.prevActiveId = this.activeId;
 
     const prevIdx = this.workspaces.findIndex((w) => w.id === this.activeId);
     const nextIdx = this.workspaces.findIndex((w) => w.id === id);
     const direction = nextIdx > prevIdx ? 1 : -1;
 
     this.activeId = id;
-    this._render();
-    if (!this._overviewOpen) {
+    this.render();
+    if (!this.overviewOpen) {
       this.closeOverview();
     }
 
-    this._animateWorkspaceSwitch(direction);
+    this.animateWorkspaceSwitch(direction);
   }
 
-  _animateWorkspaceSwitch(direction) {
+  animateWorkspaceSwitch(direction) {
     const VW = window.innerWidth;
     const DURATION = 300;
     const EASING = "cubic-bezier(0.4, 0, 0.2, 1)";
 
-    const prevId = this._prevActiveId;
+    const prevId = this.prevActiveId;
     const nextId = this.activeId;
 
     const prevWs = this.workspaces.find((w) => w.id === prevId);
@@ -263,7 +264,7 @@ export class WorkspaceManager {
         win.style.pointerEvents = "";
       });
 
-      this._applyVisibility();
+      this.applyVisibility();
     }, DURATION + 20);
 
     this.workspaces.forEach((ws) => {
@@ -275,7 +276,7 @@ export class WorkspaceManager {
     });
   }
 
-  _applyVisibility() {
+  applyVisibility() {
     this.workspaces.forEach((ws) => {
       const isActive = ws.id === this.activeId;
       ws.windows.forEach((winId) => {
@@ -301,12 +302,12 @@ export class WorkspaceManager {
       win.style.transition = "none";
       win.style.transform = "";
     }
-    this._applyVisibility();
-    if (this._overviewOpen) this._renderOverview();
+    this.applyVisibility();
+    if (this.overviewOpen) this.renderOverview();
   }
 
   toggleOverview() {
-    if (this._overviewOpen) {
+    if (this.overviewOpen) {
       this.closeOverview();
     } else {
       this.openOverview();
@@ -314,35 +315,35 @@ export class WorkspaceManager {
   }
 
   openOverview() {
-    this._overviewOpen = true;
-    this._render();
+    this.overviewOpen = true;
+    this.render();
 
-    if (!this._overviewEl) {
-      this._overviewEl = document.createElement("div");
-      this._overviewEl.id = "workspace-overview";
-      document.body.appendChild(this._overviewEl);
+    if (!this.overviewEl) {
+      this.overviewEl = document.createElement("div");
+      this.overviewEl.id = "workspace-overview";
+      document.body.appendChild(this.overviewEl);
     }
 
-    this._overviewEl.style.display = "flex";
-    this._renderOverview();
+    this.overviewEl.style.display = "flex";
+    this.renderOverview();
 
-    if (this._escHandler) {
-      document.removeEventListener("keydown", this._escHandler);
+    if (this.escHandler) {
+      document.removeEventListener("keydown", this.escHandler);
     }
-    this._escHandler = (e) => {
+    this.escHandler = (e) => {
       if (KeybindManager.matches(e, "workspace.closeOverview")) this.closeOverview();
     };
-    document.addEventListener("keydown", this._escHandler);
+    document.addEventListener("keydown", this.escHandler);
   }
 
   closeOverview() {
-    this._overviewOpen = false;
-    if (this._overviewEl) this._overviewEl.style.display = "none";
-    document.removeEventListener("keydown", this._escHandler);
-    this._render();
+    this.overviewOpen = false;
+    if (this.overviewEl) this.overviewEl.style.display = "none";
+    document.removeEventListener("keydown", this.escHandler);
+    this.render();
   }
 
-  _cloneWindowForPreview(win, meta, containerW, containerH, realDesktopW, realDesktopH) {
+  cloneWindowForPreview(win, meta, containerW, containerH, realDesktopW, realDesktopH) {
     const clone = win.cloneNode(true);
     clone.removeAttribute("id");
     clone.classList.add("ov-win-clone");
@@ -393,8 +394,8 @@ export class WorkspaceManager {
     return clone;
   }
 
-  _renderOverview() {
-    const el = this._overviewEl;
+  renderOverview() {
+    const el = this.overviewEl;
     el.innerHTML = "";
 
     const desktop = document.getElementById("desktop");
@@ -436,7 +437,7 @@ export class WorkspaceManager {
         const realWin = document.getElementById(winId);
         if (!realWin || realWin.style.display === "none") return;
         const entry = this.wm.openWindows.get(winId);
-        const clone = this._cloneWindowForPreview(realWin, entry, previewW, previewH, dw, dh);
+        const clone = this.cloneWindowForPreview(realWin, entry, previewW, previewH, dw, dh);
         wsPreview.appendChild(clone);
       });
 
@@ -448,9 +449,9 @@ export class WorkspaceManager {
         } else {
           const prevIdx = this.workspaces.findIndex((w) => w.id === this.activeId);
           const nextIdx = this.workspaces.findIndex((w) => w.id === ws.id);
-          this._slideDirection = nextIdx > prevIdx ? 1 : -1;
+          this.slideDirection = nextIdx > prevIdx ? 1 : -1;
           this.switchTo(ws.id);
-          this._renderOverviewSlide();
+          this.renderOverviewSlide();
         }
       });
 
@@ -650,7 +651,7 @@ export class WorkspaceManager {
         closeBtn.addEventListener("click", (e) => {
           e.stopPropagation();
           this.wm.closeWindow(winId);
-          this._renderOverview();
+          this.renderOverview();
         });
 
         tile.appendChild(closeBtn);
@@ -673,7 +674,7 @@ export class WorkspaceManager {
 
         tileWrapper.appendChild(tile);
 
-        this._makeTileDraggable(tile, winId, activeWs.id);
+        this.makeTileDraggable(tile, winId, activeWs.id);
 
         tile.addEventListener("click", (e) => {
           e.stopPropagation();
@@ -698,7 +699,7 @@ export class WorkspaceManager {
     el.appendChild(mainArea);
   }
 
-  _makeTileDraggable(tile, winId, fromWsId) {
+  makeTileDraggable(tile, winId, fromWsId) {
     tile.draggable = true;
 
     tile.addEventListener("dragstart", (e) => {
@@ -713,7 +714,7 @@ export class WorkspaceManager {
     });
   }
 
-  _makeThumbDraggable(thumb, winId, fromWsId, fromPanel, scale) {
+  makeThumbDraggable(thumb, winId, fromWsId, fromPanel, scale) {
     thumb.draggable = true;
 
     thumb.addEventListener("dragstart", (e) => {
@@ -732,10 +733,10 @@ export class WorkspaceManager {
       this.moveWindowTo(winId, this.activeId);
     });
   }
-  _renderOverviewSlide() {
-    if (!this._overviewEl) return;
+  renderOverviewSlide() {
+    if (!this.overviewEl) return;
 
-    const el = this._overviewEl;
+    const el = this.overviewEl;
     const old = el.querySelector(".ov-main-area");
 
     const desktop = document.getElementById("desktop");
@@ -774,7 +775,7 @@ export class WorkspaceManager {
     incoming.style.top = "0";
     incoming.style.left = "0";
     incoming.style.width = "100%";
-    incoming.style.transform = `translateX(${(this._slideDirection || 1) * 40}px)`;
+    incoming.style.transform = `translateX(${(this.slideDirection || 1) * 40}px)`;
     incoming.style.opacity = "0";
 
     el.appendChild(incoming);
@@ -786,7 +787,7 @@ export class WorkspaceManager {
       incoming.style.transform = "translateX(0px)";
       incoming.style.opacity = "1";
 
-      outgoing.style.transform = `translateX(${(this._slideDirection || 1) * -40}px)`;
+      outgoing.style.transform = `translateX(${(this.slideDirection || 1) * -40}px)`;
       outgoing.style.opacity = "0";
     });
 
@@ -794,6 +795,6 @@ export class WorkspaceManager {
       if (outgoing && outgoing.parentNode) outgoing.remove();
     }, 240);
 
-    this._renderOverview();
+    this.renderOverview();
   }
 }

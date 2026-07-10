@@ -1,4 +1,5 @@
 import "../styles/converter.css";
+import { openFileWith } from "../fileDisplay.js";
 
 const conversionHistory = [];
 
@@ -166,7 +167,7 @@ function mdToHtml(md) {
     .replace(/\*\*(.*)\*\*/gim, "<strong>$1</strong>")
     .replace(/\*(.*)\*/gim, "<em>$1</em>")
     .replace(/`([^`]+)`/gim, "<code>$1</code>")
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/gim, '<a href="$2" target="_blank">$1</a>')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/gim, '<a href="$2" target="blank">$1</a>')
     .replace(/^\s*\n/gm, "<br />")
     .replace(/^ - (.*$)/gim, "<ul><li>$1</li></ul>")
     .replace(/^ \* (.*$)/gim, "<ul><li>$1</li></ul>")
@@ -839,7 +840,7 @@ export function openFileConverter(fileName, currentPath, services, onComplete = 
 
           <div class="control-group">
             <span class="control-label">Filename Strategy</span>
-            <input type="text" id="${winId}-output-name" class="control-input" value="${baseName}_converted">
+            <input type="text" id="${winId}-output-name" class="control-input" value="${baseName}converted">
           </div>
 
           <label class="checkbox-label">
@@ -1564,7 +1565,6 @@ export function openFileConverter(fileName, currentPath, services, onComplete = 
 
         if (dom.autoOpen.checked) {
           setTimeout(async () => {
-            const { openFileWith } = await import("../fileDisplay.js");
             if (openFileWith) {
               openFileWith({
                 name: finalName,

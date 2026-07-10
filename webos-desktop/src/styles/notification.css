@@ -308,12 +308,8 @@
 }
 
 .ntf-panel__feed::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 999px;
-}
-
-.ntf-panel__feed::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
 }
 
 .ntf-panel__blank {
@@ -559,13 +555,35 @@
   height: 18px;
   font-size: 10px;
   font-weight: 700;
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
   padding: 0 4px;
   box-shadow: 0 4px 10px rgba(243, 139, 168, 0.4);
   border: 1.5px solid #1e1e2e;
   animation: pulse-badge 2s infinite;
+}
+
+.ntf-count--hidden {
+  display: none;
+}
+
+.ntf-count--visible {
+  display: flex;
+}
+
+.ntf-panel--closed {
+  display: none !important;
+}
+
+.ntf-toast__glyph-img {
+  width: 16px;
+  height: 16px;
+  object-fit: cover;
+}
+
+.ntf-dnd-line {
+  stroke: var(--text-secondary);
 }
 
 @keyframes pulse-badge {
@@ -582,7 +600,7 @@ html[data-theme] #ntf-panel {
   background: var(--bg-secondary) !important;
   border-color: var(--glass-border) !important;
   box-shadow:
-    0 10px 64px var(--shadow-color) !important,
+    0 10px 64px var(--shadow-color),
     0 0 0 1px var(--glass-border) inset !important;
 }
 
@@ -623,10 +641,6 @@ html[data-theme] .ntf-panel__feed {
 }
 
 html[data-theme] .ntf-panel__feed::-webkit-scrollbar-thumb {
-  background: var(--glass-border) !important;
-}
-
-html[data-theme] .ntf-panel__feed::-webkit-scrollbar-thumb:hover {
   background: var(--text-secondary) !important;
 }
 
@@ -733,7 +747,7 @@ html[data-theme] .ntf-toast {
   background: var(--bg-secondary) !important;
   border-color: var(--glass-border) !important;
   box-shadow:
-    0 16px 32px var(--shadow-color) !important,
+    0 16px 32px var(--shadow-color),
     0 0 0 1px var(--glass-border) inset !important;
 }
 

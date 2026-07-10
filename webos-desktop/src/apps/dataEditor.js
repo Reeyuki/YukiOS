@@ -865,7 +865,7 @@ export class DataEditorApp extends BaseApp {
     return container;
   }
 
-  _loadFlatStorage(win, getEntries, typeLabel, emptyMsg) {
+  loadFlatStorage(win, getEntries, typeLabel, emptyMsg) {
     const keyList = $("#de-key-list", win);
     const searchInput = $("#de-search", win);
     const selectAllCheckbox = $("#de-select-all", win);
@@ -898,12 +898,12 @@ export class DataEditorApp extends BaseApp {
     }
 
     if (!keyList.children.length) {
-      keyList.innerHTML = `<div style="padding:10px;color:rgba(255,255,255,0.25);font-size:0.8em;text-align:center;">${emptyMsg}</div>`;
+      keyList.innerHTML = `<div style="padding:10px;color:var(--text-muted);font-size:0.8em;text-align:center;">${emptyMsg}</div>`;
     }
   }
 
   loadLocalStorage(win) {
-    this._loadFlatStorage(
+    this.loadFlatStorage(
       win,
       () => {
         const entries = [];
@@ -919,7 +919,7 @@ export class DataEditorApp extends BaseApp {
   }
 
   loadSessionStorage(win) {
-    this._loadFlatStorage(
+    this.loadFlatStorage(
       win,
       () => {
         const entries = [];
@@ -935,7 +935,7 @@ export class DataEditorApp extends BaseApp {
   }
 
   loadCookies(win) {
-    this._loadFlatStorage(
+    this.loadFlatStorage(
       win,
       () => {
         return document.cookie
@@ -961,7 +961,7 @@ export class DataEditorApp extends BaseApp {
 
     setHTML(
       keyList,
-      `<div style="padding:10px;color:rgba(255,255,255,0.35);font-size:0.8em;text-align:center;"><i class="fas fa-spinner fa-spin"></i> Loading...</div>`
+      `<div style="padding:10px;color:var(--text-secondary);font-size:0.8em;text-align:center;"><i class="fas fa-spinner fa-spin"></i> Loading...</div>`
     );
     if (emptyState) emptyState.style.display = "flex";
     if (editorArea) editorArea.style.display = "none";
@@ -1062,27 +1062,27 @@ export class DataEditorApp extends BaseApp {
     }
   }
 
-  _getStorageLabel() {
+  getStorageLabel() {
     if (this.currentTab === "ls") return "localStorage";
     if (this.currentTab === "ss") return "sessionStorage";
     if (this.currentTab === "cookie") return "Cookie";
     return "IDB";
   }
 
-  _reloadCurrentTab(win) {
+  reloadCurrentTab(win) {
     if (this.currentTab === "ls") this.loadLocalStorage(win);
     else if (this.currentTab === "ss") this.loadSessionStorage(win);
     else if (this.currentTab === "cookie") this.loadCookies(win);
     else this.loadIdb(win);
   }
 
-  _setStorageValue(key, val) {
+  setStorageValue(key, val) {
     if (this.currentTab === "ls") localStorage.setItem(key, val);
     else if (this.currentTab === "ss") sessionStorage.setItem(key, val);
     else if (this.currentTab === "cookie") document.cookie = `${key}=${val}; path=/`;
   }
 
-  _removeStorageValue(key) {
+  removeStorageValue(key) {
     if (this.currentTab === "ls") localStorage.removeItem(key);
     else if (this.currentTab === "ss") sessionStorage.removeItem(key);
     else if (this.currentTab === "cookie") {
@@ -1090,17 +1090,17 @@ export class DataEditorApp extends BaseApp {
     }
   }
 
-  _renameStorageValue(oldKey, newKey, val) {
+  renameStorageValue(oldKey, newKey, val) {
     if (this.currentTab === "ls" || this.currentTab === "ss") {
-      this._setStorageValue(newKey, val);
-      this._removeStorageValue(oldKey);
+      this.setStorageValue(newKey, val);
+      this.removeStorageValue(oldKey);
     } else if (this.currentTab === "cookie") {
       document.cookie = `${newKey}=${val}; path=/`;
       document.cookie = `${oldKey}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/`;
     }
   }
 
-  _getStorageValue(key) {
+  getStorageValue(key) {
     if (this.currentTab === "ls") return localStorage.getItem(key);
     if (this.currentTab === "ss") return sessionStorage.getItem(key);
     if (this.currentTab === "cookie") {
@@ -1122,7 +1122,7 @@ export class DataEditorApp extends BaseApp {
     const valInput = $("#de-val-input", win);
     const key = keyInput.value.trim();
     if (!key) {
-      this.showEditorStatus(win, "Key cannot be empty", "#ff4d4f");
+      this.showEditorStatus(win, "Key cannot be empty", "var(--error)");
       return;
     }
     const val = valInput.value;
@@ -1149,14 +1149,14 @@ export class DataEditorApp extends BaseApp {
           r.onerror = () => rej(r.error);
         });
         freshDb.close();
-        this.showEditorStatus(win, "Saved to IDB", "#52c41a");
+        this.showEditorStatus(win, "Saved to IDB", "var(--charging)");
       } catch (e) {
-        this.showEditorStatus(win, "Save failed: " + e.message, "#ff4d4f");
+        this.showEditorStatus(win, "Save failed: " + e.message, "var(--error)");
       }
     } else {
-      this._setStorageValue(key, val);
-      this.showEditorStatus(win, `Saved to ${this._getStorageLabel()}`, "#52c41a");
-      this._reloadCurrentTab(win);
+      this.setStorageValue(key, val);
+      this.showEditorStatus(win, `Saved to ${this.getStorageLabel()}`, "var(--charging)");
+      this.reloadCurrentTab(win);
     }
   }
 
@@ -1185,19 +1185,19 @@ export class DataEditorApp extends BaseApp {
           r.onerror = () => rej(r.error);
         });
         freshDb.close();
-        this.showEditorStatus(win, "Deleted from IDB", "#faad14");
+        this.showEditorStatus(win, "Deleted from IDB", "var(--brand)");
       } catch (e) {
-        this.showEditorStatus(win, "Delete failed: " + e.message, "#ff4d4f");
+        this.showEditorStatus(win, "Delete failed: " + e.message, "var(--error)");
         return;
       }
     } else {
-      this._removeStorageValue(key);
-      this.showEditorStatus(win, "Deleted", "#faad14");
+      this.removeStorageValue(key);
+      this.showEditorStatus(win, "Deleted", "var(--brand)");
     }
     if (editorArea) editorArea.style.display = "none";
     if (emptyState) emptyState.style.display = "flex";
     this.activeKeyEl = null;
-    this._reloadCurrentTab(win);
+    this.reloadCurrentTab(win);
   }
 
   async handleRename(element) {
@@ -1211,11 +1211,11 @@ export class DataEditorApp extends BaseApp {
 
     const val = valInput.value;
     if (this.currentTab === "idb") {
-      this.showEditorStatus(win, "Rename not supported for IndexedDB", "#ff4d4f");
+      this.showEditorStatus(win, "Rename not supported for IndexedDB", "var(--error)");
     } else {
-      this._renameStorageValue(oldKey, newKey, val);
-      this.showEditorStatus(win, "Renamed", "#52c41a");
-      this._reloadCurrentTab(win);
+      this.renameStorageValue(oldKey, newKey, val);
+      this.showEditorStatus(win, "Renamed", "var(--charging)");
+      this.reloadCurrentTab(win);
     }
   }
 
@@ -1226,9 +1226,9 @@ export class DataEditorApp extends BaseApp {
     if (!key) return;
     try {
       await navigator.clipboard.writeText(key);
-      this.showEditorStatus(win, "Key copied", "#52c41a");
+      this.showEditorStatus(win, "Key copied", "var(--charging)");
     } catch {
-      this.showEditorStatus(win, "Copy failed", "#ff4d4f");
+      this.showEditorStatus(win, "Copy failed", "var(--error)");
     }
   }
 
@@ -1239,9 +1239,9 @@ export class DataEditorApp extends BaseApp {
     if (!val) return;
     try {
       await navigator.clipboard.writeText(val);
-      this.showEditorStatus(win, "Value copied", "#52c41a");
+      this.showEditorStatus(win, "Value copied", "var(--charging)");
     } catch {
-      this.showEditorStatus(win, "Copy failed", "#ff4d4f");
+      this.showEditorStatus(win, "Copy failed", "var(--error)");
     }
   }
 
@@ -1253,7 +1253,7 @@ export class DataEditorApp extends BaseApp {
       const parsed = JSON.parse(val);
       valInput.value = JSON.stringify(parsed, null, 2);
       this.showJsonError(win, "");
-      this.showEditorStatus(win, "Prettified", "#52c41a");
+      this.showEditorStatus(win, "Prettified", "var(--charging)");
     } catch (e) {
       this.showJsonError(win, "Invalid JSON: " + e.message);
     }
@@ -1266,7 +1266,7 @@ export class DataEditorApp extends BaseApp {
     try {
       JSON.parse(val);
       this.showJsonError(win, "");
-      this.showEditorStatus(win, "Valid JSON", "#52c41a");
+      this.showEditorStatus(win, "Valid JSON", "var(--charging)");
     } catch (e) {
       this.showJsonError(win, "Invalid JSON: " + e.message);
     }
@@ -1283,9 +1283,9 @@ export class DataEditorApp extends BaseApp {
     );
     if (!confirmed) return;
 
-    this.selectedKeys.forEach((item) => this._removeStorageValue(item.key));
-    this.showEditorStatus(win, `Deleted ${this.selectedKeys.size} items`, "#52c41a");
-    this._reloadCurrentTab(win);
+    this.selectedKeys.forEach((item) => this.removeStorageValue(item.key));
+    this.showEditorStatus(win, `Deleted ${this.selectedKeys.size} items`, "var(--charging)");
+    this.reloadCurrentTab(win);
     os.notify.send("Storage Editor", `Deleted ${this.selectedKeys.size} items`, {
       type: "info",
       duration: 3000,
@@ -1300,7 +1300,7 @@ export class DataEditorApp extends BaseApp {
     if (this.selectedKeys.size === 0) return;
     const exportData = {};
     this.selectedKeys.forEach((item) => {
-      exportData[item.key] = this._getStorageValue(item.key);
+      exportData[item.key] = this.getStorageValue(item.key);
     });
     const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
@@ -1309,7 +1309,7 @@ export class DataEditorApp extends BaseApp {
     a.download = `storage-export-${Date.now()}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    this.showEditorStatus(win, `Exported ${this.selectedKeys.size} items`, "#52c41a");
+    this.showEditorStatus(win, `Exported ${this.selectedKeys.size} items`, "var(--charging)");
     os.notify.send("Storage Editor", `Exported ${this.selectedKeys.size} items`, {
       type: "success",
       duration: 3000,

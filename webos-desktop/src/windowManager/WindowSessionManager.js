@@ -7,12 +7,12 @@ export class WindowSessionManager {
   }
 
   triggerSessionSave() {
-    if (this.manager._isRestoring) return;
-    if (this.manager._sessionSaveTimer) clearTimeout(this.manager._sessionSaveTimer);
-    this.manager._sessionSaveTimer = setTimeout(() => this.saveSession(), 500);
+    if (this.manager.isRestoring) return;
+    if (this.manager.sessionSaveTimer) clearTimeout(this.manager.sessionSaveTimer);
+    this.manager.sessionSaveTimer = setTimeout(() => this.saveSession(), 500);
   }
 
-  _guessAppIdFromWinId(winId) {
+  guessAppIdFromWinId(winId) {
     if (!winId) return null;
     const launcher = this.manager.appLauncher;
     if (!launcher) return null;
@@ -50,7 +50,7 @@ export class WindowSessionManager {
       if (!entry || !entry.record) continue;
 
       const record = entry.record;
-      const geom = this.manager._getWindowNormalGeometry(win);
+      const geom = this.manager.getWindowNormalGeometry(win);
       record.x = geom.x;
       record.y = geom.y;
       record.width = geom.width;
@@ -66,7 +66,7 @@ export class WindowSessionManager {
         record.scrollPosition = { x: content.scrollLeft, y: content.scrollTop };
       }
 
-      const appId = win.dataset.appId || this._guessAppIdFromWinId(win.id);
+      const appId = win.dataset.appId || this.guessAppIdFromWinId(win.id);
       if (appId && !win.dataset.appId) win.dataset.appId = appId;
       if (appId) record.appId = appId;
       if (appId && this.manager.appLauncher) {
@@ -126,14 +126,14 @@ export class WindowSessionManager {
     if (!this.manager.fs || !this.manager.fs.sessionKey || !this.manager.appLauncher) return;
     const persistenceEnabled = os.storage.get(StorageKeys.windowSessionPersistence) !== "false";
     if (!persistenceEnabled) return;
-    this.manager._isRestoring = true;
+    this.manager.isRestoring = true;
     const sessionKey = this.manager.fs.sessionKey;
     const sessionPath = `/ys/users/${sessionKey}/system/windowSession.json`;
 
     try {
       const exists = await this.manager.fs.exists(sessionPath);
       if (!exists) {
-        this.manager._isRestoring = false;
+        this.manager.isRestoring = false;
         return;
       }
 
@@ -148,12 +148,12 @@ export class WindowSessionManager {
         if (this.manager.workspaceManager && parsedData.workspaces) {
           this.manager.workspaceManager.workspaces = parsedData.workspaces.map((w) => ({ ...w, windows: new Set() }));
           this.manager.workspaceManager.activeId = parsedData.activeWorkspaceId || 0;
-          this.manager.workspaceManager._render();
+          this.manager.workspaceManager.render();
         }
       }
 
       if (!Array.isArray(windowStates)) {
-        this.manager._isRestoring = false;
+        this.manager.isRestoring = false;
         return;
       }
 
@@ -161,21 +161,21 @@ export class WindowSessionManager {
       const queue = [];
 
       for (const state of windowStates) {
-        const appId = state.appId || this._guessAppIdFromWinId(state.id);
+        const appId = state.appId || this.guessAppIdFromWinId(state.id);
         if (!appId) continue;
 
-        if (this._isHeavyApp(appId, state.appType)) {
+        if (this.isHeavyApp(appId, state.appType)) {
           heavyAppCount++;
           if (heavyAppCount > 4) {
             queue.push({ state, appId });
             continue;
           }
         }
-        await this._restoreSingleWindowState(state, appId);
+        await this.restoreSingleWindowState(state, appId);
       }
 
       if (queue.length > 0) {
-        this._processRestorationQueue(queue);
+        this.processRestorationQueue(queue);
       }
 
       const lastFocused = windowStates.find((s) => s.focused);
@@ -186,11 +186,11 @@ export class WindowSessionManager {
     } catch (e) {
       console.error("Failed to restore window session:", e);
     } finally {
-      this.manager._isRestoring = false;
+      this.manager.isRestoring = false;
     }
   }
 
-  _isHeavyApp(appId, appType) {
+  isHeavyApp(appId, appType) {
     const heavyTypes = ["game", "swf", "gba", "psp", "nds", "megadrive", "genesis", "segaMD"];
     const heavySystemApps = [
       "v86",
@@ -212,14 +212,14 @@ export class WindowSessionManager {
     return false;
   }
 
-  async _processRestorationQueue(queue) {
+  async processRestorationQueue(queue) {
     for (const item of queue) {
       await new Promise((resolve) => setTimeout(resolve, 2000));
-      await this._restoreSingleWindowState(item.state, item.appId);
+      await this.restoreSingleWindowState(item.state, item.appId);
     }
   }
 
-  async _restoreSingleWindowState(state, appId) {
+  async restoreSingleWindowState(state, appId) {
     try {
       const launchOptions = {
         forceId: state.id,
@@ -242,7 +242,7 @@ export class WindowSessionManager {
 
         if (state.minimized) this.manager.minimizeWindow(win);
         if (state.fullscreen) this.manager.toggleFullscreen(win);
-        if (state.snapZone) this.manager._applySnap(win, state.snapZone, true);
+        if (state.snapZone) this.manager.applySnap(win, state.snapZone, true);
         win.style.zIndex = state.zIndex;
         this.manager.zIndexCounter = Math.max(this.manager.zIndexCounter, state.zIndex + 1);
 

@@ -36,12 +36,12 @@ export const Achievements = {
 export class AchievementsApp extends BaseApp {
   constructor(services) {
     super(services);
-    this.achievements = this._createAchievements();
+    this.achievements = this.createAchievements();
     this.unlocked = new Set();
     this.s1 = new Audio(resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/audio/steam.opus"));
 
-    this._initBusListeners();
-    this._thresholds = {
+    this.initBusListeners();
+    this.thresholds = {
       openWindows: [
         { at: 5, key: Achievements.MultiTasker },
         { at: 10, key: Achievements.ChaosMode }
@@ -68,10 +68,10 @@ export class AchievementsApp extends BaseApp {
         { at: 10, key: Achievements.DeveloperModeSuper }
       ]
     };
-    this._counters = {};
-    this._achievementQueue = [];
-    this._isShowingAchievement = false;
-    this._loadFromStorage();
+    this.counters = {};
+    this.achievementQueue = [];
+    this.isShowingAchievement = false;
+    this.loadFromStorage();
   }
 
   getDeclarativeSchema(opts) {
@@ -163,7 +163,7 @@ export class AchievementsApp extends BaseApp {
         setFilter: (payload, event, element, state) => {
           const filter = element.dataset.filter || "all";
           state.currentFilter = filter;
-          this._currentFilter = filter;
+          this.currentFilter = filter;
           this.refresh();
         }
       },
@@ -175,7 +175,7 @@ export class AchievementsApp extends BaseApp {
     this.refresh();
   }
 
-  _initBusListeners() {
+  initBusListeners() {
     os.events.on(BusEvents.WINDOW_CREATED, () => this.incrementWindowOpen());
     os.events.on(BusEvents.APP_LAUNCHED, () => this.incrementAppLaunched());
     os.events.on(BusEvents.TERMINAL_CMD_EXECUTED, () => this.triggerCommandExecution());
@@ -185,7 +185,7 @@ export class AchievementsApp extends BaseApp {
     os.events.on(BusEvents.SESSION_INITIALIZED, () => this.incrementSession());
   }
 
-  _createAchievements() {
+  createAchievements() {
     return [
       {
         id: Achievements.WelcomeAboard,
@@ -365,27 +365,27 @@ export class AchievementsApp extends BaseApp {
     ];
   }
 
-  _loadFromStorage() {
+  loadFromStorage() {
     try {
       const saved = os.storage.get(StorageKeys.achievements);
       if (saved) this.unlocked = new Set(saved);
       const savedCounters = os.storage.get(StorageKeys.achievementCounters);
-      if (savedCounters) this._counters = savedCounters;
+      if (savedCounters) this.counters = savedCounters;
     } catch (e) {
       console.error("[Achievements]", e);
     }
   }
 
-  _saveToStorage() {
+  saveToStorage() {
     try {
       os.storage.set(StorageKeys.achievements, [...this.unlocked]);
-      os.storage.set(StorageKeys.achievementCounters, this._counters);
+      os.storage.set(StorageKeys.achievementCounters, this.counters);
     } catch (e) {
       console.error("[Achievements]", e);
     }
   }
 
-  _renderHero() {
+  renderHero() {
     const stats = this.getStats();
     const disabled = os.storage.get(StorageKeys.achievementsDisabled) === "true";
 
@@ -427,7 +427,7 @@ export class AchievementsApp extends BaseApp {
   `;
   }
 
-  _renderGrid(filter) {
+  renderGrid(filter) {
     const disabled = os.storage.get(StorageKeys.achievementsDisabled) === "true";
 
     return this.achievements
@@ -460,7 +460,7 @@ export class AchievementsApp extends BaseApp {
       })
       .join("");
   }
-  _renderProgress() {
+  renderProgress() {
     const total = this.achievements.length;
     const done = this.unlocked.size;
     const pct = Math.round((done / total) * 100);
@@ -482,7 +482,7 @@ export class AchievementsApp extends BaseApp {
   `;
   }
 
-  _renderToggle(current) {
+  renderToggle(current) {
     const opts = [
       { val: "all", label: "All", icon: "fa-list" },
       { val: "unlocked", label: "Unlocked", icon: "fa-check-circle" },
@@ -495,7 +495,7 @@ export class AchievementsApp extends BaseApp {
             (o) => `
           <button
             class="achievements-toggle__btn ${current === o.val ? "achievements-toggle__btn--active" : ""}"
-            onclick="window.achievements._setFilter('${o.val}')"
+            onclick="window.achievements.setFilter('${o.val}')"
           >
             <i class="fas ${o.icon}"></i>
             <span>${o.label}</span>
@@ -507,8 +507,8 @@ export class AchievementsApp extends BaseApp {
     `;
   }
 
-  _setFilter(filter) {
-    this._currentFilter = filter;
+  setFilter(filter) {
+    this.currentFilter = filter;
     this.refresh();
   }
 
@@ -519,8 +519,8 @@ export class AchievementsApp extends BaseApp {
     if (this.unlocked.has(achievementKey)) return;
 
     this.unlocked.add(achievementKey);
-    this._saveToStorage();
-    this._queueAchievement(achievementKey, skipSound);
+    this.saveToStorage();
+    this.queueAchievement(achievementKey, skipSound);
     this.refresh();
 
     const nonCompletionist = this.achievements.filter((a) => a.id !== Achievements.Completionist);
@@ -533,32 +533,32 @@ export class AchievementsApp extends BaseApp {
     }
   }
 
-  _queueAchievement(achievementKey, skipSound = false) {
-    this._achievementQueue.push({
+  queueAchievement(achievementKey, skipSound = false) {
+    this.achievementQueue.push({
       achievementKey,
       skipSound
     });
 
-    this._processQueue();
+    this.processQueue();
   }
-  _processQueue() {
-    if (this._isShowingAchievement || this._achievementQueue.length === 0) {
+  processQueue() {
+    if (this.isShowingAchievement || this.achievementQueue.length === 0) {
       return;
     }
 
-    this._isShowingAchievement = true;
+    this.isShowingAchievement = true;
 
-    const { achievementKey, skipSound } = this._achievementQueue.shift();
+    const { achievementKey, skipSound } = this.achievementQueue.shift();
 
-    this._showAchievementPopup(achievementKey, skipSound);
+    this.showAchievementPopup(achievementKey, skipSound);
   }
 
-  _showAchievementPopup(achievementKey, skipSound = false) {
+  showAchievementPopup(achievementKey, skipSound = false) {
     const achievement = this.achievements.find((a) => a.id === achievementKey);
 
     if (!achievement) {
-      this._isShowingAchievement = false;
-      this._processQueue();
+      this.isShowingAchievement = false;
+      this.processQueue();
       return;
     }
 
@@ -610,15 +610,15 @@ export class AchievementsApp extends BaseApp {
         popup.remove();
 
         setTimeout(() => {
-          this._isShowingAchievement = false;
-          this._processQueue();
+          this.isShowingAchievement = false;
+          this.processQueue();
         }, delayBetween);
       }, 600);
     }, displayDuration);
   }
 
   showAchievement(achievementKey) {
-    this._queueAchievement(achievementKey);
+    this.queueAchievement(achievementKey);
   }
 
   unlock(achievementKey) {
@@ -634,35 +634,35 @@ export class AchievementsApp extends BaseApp {
     if (!win) return;
     const scroll = win.querySelector(".achievements-scroll");
     if (!scroll) return;
-    const filter = this._currentFilter || "all";
+    const filter = this.currentFilter || "all";
     scroll.innerHTML = `
-      ${this._renderHero()}
-      ${this._renderProgress()}
-      ${this._renderToggle(filter)}
+      ${this.renderHero()}
+      ${this.renderProgress()}
+      ${this.renderToggle(filter)}
       <div class="achievements-grid">
-        ${this._renderGrid(filter)}
+        ${this.renderGrid(filter)}
       </div>
     `;
   }
 
   increment(counterKey) {
-    const steps = this._thresholds[counterKey];
+    const steps = this.thresholds[counterKey];
     if (!steps) {
       this.trigger(counterKey);
       return;
     }
-    this._counters[counterKey] = (this._counters[counterKey] || 0) + 1;
-    const count = this._counters[counterKey];
+    this.counters[counterKey] = (this.counters[counterKey] || 0) + 1;
+    const count = this.counters[counterKey];
     for (const step of steps) {
       if (count === step.at) this.trigger(step.key);
     }
-    this._saveToStorage();
+    this.saveToStorage();
   }
 
   incrementWindowOpen() {
     const count = $$(".window").length;
-    if (count >= 5) this.trigger(this._thresholds.openWindows[0].key);
-    if (count >= 10) this.trigger(this._thresholds.openWindows[1].key);
+    if (count >= 5) this.trigger(this.thresholds.openWindows[0].key);
+    if (count >= 10) this.trigger(this.thresholds.openWindows[1].key);
   }
 
   incrementAppLaunched() {
@@ -702,10 +702,10 @@ export class AchievementsApp extends BaseApp {
 
   resetAll() {
     this.unlocked.clear();
-    this._counters = {};
-    this._achievementQueue = [];
-    this._isShowingAchievement = false;
-    this._saveToStorage();
+    this.counters = {};
+    this.achievementQueue = [];
+    this.isShowingAchievement = false;
+    this.saveToStorage();
     this.refresh();
   }
 

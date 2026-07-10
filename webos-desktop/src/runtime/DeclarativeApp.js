@@ -3,7 +3,7 @@ import { EventBinder } from "./EventBinder.js";
 import { ActionExecutor } from "./ActionExecutor.js";
 import { StateManager } from "./StateManager.js";
 import { PersistenceTypes } from "./AppSchema.js";
-import { os } from "../os/index.js";
+import { os } from "../framework.js";
 
 export class DeclarativeApp {
   constructor(appDefinition, services, appInstance = null) {
@@ -27,10 +27,10 @@ export class DeclarativeApp {
 
     this.openWindows = new Set();
 
-    this._registerCustomActions();
+    this.registerCustomActions();
   }
 
-  _registerCustomActions() {
+  registerCustomActions() {
     if (this.definition.actions) {
       Object.entries(this.definition.actions).forEach(([name, handler]) => {
         if (typeof handler === "function") {
@@ -41,7 +41,7 @@ export class DeclarativeApp {
   }
 
   open(opts = {}) {
-    const windowConfig = this._resolveWindowConfig(opts);
+    const windowConfig = this.resolveWindowConfig(opts);
 
     const existing = document.getElementById(windowConfig.id);
     if (existing) {
@@ -110,7 +110,7 @@ export class DeclarativeApp {
     return win;
   }
 
-  _resolveWindowConfig(opts) {
+  resolveWindowConfig(opts) {
     const defaultWindow = this.definition.windows?.[0];
 
     if (!defaultWindow) {

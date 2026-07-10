@@ -7,11 +7,11 @@ export class ColorPickerApp extends BaseApp {
     super(services);
     this.openWindows = new Set();
     this.colors = [];
-    this._win = null;
-    this._registerGlobalShortcut();
+    this.win = null;
+    this.registerGlobalShortcut();
   }
 
-  _registerGlobalShortcut() {
+  registerGlobalShortcut() {
     document.addEventListener("keydown", (e) => {
       if (KeybindManager.matches(e, "global.colorPicker")) {
         e.preventDefault();
@@ -31,7 +31,7 @@ export class ColorPickerApp extends BaseApp {
 
     win.classList.add("cp-window");
     win.innerHTML = this.buildUI();
-    this._win = win;
+    this.win = win;
     this.openWindows.add(winId);
 
     this.setupEvents(win);
@@ -39,7 +39,7 @@ export class ColorPickerApp extends BaseApp {
 
     win.addEventListener("remove", () => {
       this.openWindows.delete(winId);
-      this._win = null;
+      this.win = null;
     });
   }
 
@@ -176,8 +176,8 @@ export class ColorPickerApp extends BaseApp {
   }
 
   async pickWithFallback() {
-    if (this._picking) return;
-    this._picking = true;
+    if (this.picking) return;
+    this.picking = true;
 
     const btn = document.getElementById("cp-activate");
     if (btn) {
@@ -190,7 +190,7 @@ export class ColorPickerApp extends BaseApp {
       btn.innerHTML = '<i class="fas fa-eye-dropper"></i><span>Click on the screen to pick a color</span>';
     }
 
-    this._picking = false;
+    this.picking = false;
   }
 
   createOverlay() {
@@ -199,12 +199,12 @@ export class ColorPickerApp extends BaseApp {
     overlay.id = "cp-overlay";
 
     document.body.appendChild(overlay);
-    this._overlay = overlay;
+    this.overlay = overlay;
 
-    this._loadHtml2canvasPro()
+    this.loadHtml2canvasPro()
       .then(() => {
         if (!document.body.contains(overlay)) return;
-        this._captureAndMagnify(overlay);
+        this.captureAndMagnify(overlay);
       })
       .catch((err) => {
         console.error("[ColorPicker] fallback failed:", err);
@@ -215,7 +215,7 @@ export class ColorPickerApp extends BaseApp {
       });
   }
 
-  async _loadHtml2canvasPro() {
+  async loadHtml2canvasPro() {
     if (window.html2canvas) return;
     if (__SINGLE_FILE__) {
       const mod = await import("html2canvas-pro");
@@ -231,7 +231,7 @@ export class ColorPickerApp extends BaseApp {
     });
   }
 
-  async _captureAndMagnify(overlay) {
+  async captureAndMagnify(overlay) {
     try {
       const target = document.getElementById("desktop") || document.body;
       const canvas = await window.html2canvas(target, {
@@ -289,14 +289,14 @@ export class ColorPickerApp extends BaseApp {
         info.style.left = `${Math.min(clientX + 20, window.innerWidth - 160)}px`;
         info.style.top = `${Math.max(0, clientY - 40)}px`;
 
-        this._currentHex = hex;
+        this.currentHex = hex;
       };
 
       const onMove = (e) => update(e.clientX, e.clientY);
       const onClick = (e) => {
         e.preventDefault();
         e.stopPropagation();
-        const hex = this._currentHex || "#000000";
+        const hex = this.currentHex || "#000000";
         navigator.clipboard.writeText(hex).catch(() => {});
         this.addColor(hex);
         this.updatePreview(hex);
@@ -307,9 +307,9 @@ export class ColorPickerApp extends BaseApp {
       overlay.addEventListener("mousemove", onMove);
       overlay.addEventListener("click", onClick);
 
-      this._magnifier = magnifier;
-      this._info = info;
-      this._cleanupOverlay = () => {
+      this.magnifier = magnifier;
+      this.info = info;
+      this.cleanupOverlay = () => {
         overlay.removeEventListener("mousemove", onMove);
         overlay.removeEventListener("click", onClick);
       };
@@ -321,21 +321,21 @@ export class ColorPickerApp extends BaseApp {
   }
 
   removeOverlay() {
-    if (this._cleanupOverlay) this._cleanupOverlay();
-    this._cleanupOverlay = null;
-    if (this._overlay) {
-      this._overlay.remove();
-      this._overlay = null;
+    if (this.cleanupOverlay) this.cleanupOverlay();
+    this.cleanupOverlay = null;
+    if (this.overlay) {
+      this.overlay.remove();
+      this.overlay = null;
     }
-    if (this._magnifier) {
-      this._magnifier.remove();
-      this._magnifier = null;
+    if (this.magnifier) {
+      this.magnifier.remove();
+      this.magnifier = null;
     }
-    if (this._info) {
-      this._info.remove();
-      this._info = null;
+    if (this.info) {
+      this.info.remove();
+      this.info = null;
     }
-    this._currentHex = null;
+    this.currentHex = null;
 
     const btn = document.getElementById("cp-activate");
     if (btn) {
@@ -345,7 +345,7 @@ export class ColorPickerApp extends BaseApp {
 
   onClose(winId) {
     this.openWindows.delete(winId);
-    this._win = null;
+    this.win = null;
     this.removeOverlay();
   }
 }

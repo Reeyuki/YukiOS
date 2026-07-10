@@ -9,7 +9,7 @@ class DisplayPerformanceApp extends BaseApp {
     super(services);
     this.winId = "display-performance-window";
     this.popupId = "display-performance-tray-popup";
-    this._popupVisible = false;
+    this.popupVisible = false;
 
     this.powerMode = turboManager.getMode();
     this.batteryInfo = { level: 1, charging: true };
@@ -22,14 +22,14 @@ class DisplayPerformanceApp extends BaseApp {
     this.nightModeStart = os.storage.get(StorageKeys.nightModeStart) || "20:00";
     this.nightModeEnd = os.storage.get(StorageKeys.nightModeEnd) || "07:00";
 
-    this._initBattery();
-    this._initTray();
-    this._applyDisplaySettings();
-    this._setupKeybinds();
-    this._setupNightModeSchedule();
+    this.initBattery();
+    this.initTray();
+    this.applyDisplaySettings();
+    this.setupKeybinds();
+    this.setupNightModeSchedule();
   }
 
-  async _initBattery() {
+  async initBattery() {
     if ("getBattery" in navigator) {
       try {
         const battery = await navigator.getBattery();
@@ -39,13 +39,13 @@ class DisplayPerformanceApp extends BaseApp {
         };
         battery.addEventListener("levelchange", () => {
           this.batteryInfo.level = battery.level;
-          this._updateTrayIcon();
-          this._updateBatteryDisplay();
+          this.updateTrayIcon();
+          this.updateBatteryDisplay();
         });
         battery.addEventListener("chargingchange", () => {
           this.batteryInfo.charging = battery.charging;
-          this._updateTrayIcon();
-          this._updateBatteryDisplay();
+          this.updateTrayIcon();
+          this.updateBatteryDisplay();
         });
       } catch (e) {
         console.warn("Battery API error:", e);
@@ -53,7 +53,7 @@ class DisplayPerformanceApp extends BaseApp {
     }
   }
 
-  _getBatteryIcon() {
+  getBatteryIcon() {
     const level = Math.round(this.batteryInfo.level * 100);
     if (level > 90) return "fas fa-battery-full";
     if (level > 65) return "fas fa-battery-three-quarters";
@@ -62,21 +62,21 @@ class DisplayPerformanceApp extends BaseApp {
     return "fas fa-battery-empty";
   }
 
-  _getBatteryFillColor(level) {
+  getBatteryFillColor(level) {
     if (this.batteryInfo.charging) return "#4ade80";
     if (level > 60) return "#22c55e";
     if (level > 30) return "#facc15";
     return "#ef4444";
   }
 
-  _getBatteryIconHtml() {
+  getBatteryIconHtml() {
     if (this.batteryInfo.charging) {
       return `<i class="fas fa-bolt" style="color:#4ade80"></i>`;
     }
-    return `<i class="${this._getBatteryIcon()}"></i>`;
+    return `<i class="${this.getBatteryIcon()}"></i>`;
   }
 
-  _getBatteryStatusText() {
+  getBatteryStatusText() {
     const level = Math.round(this.batteryInfo.level * 100);
     const charging = this.batteryInfo.charging;
     if (charging) {
@@ -87,52 +87,52 @@ class DisplayPerformanceApp extends BaseApp {
     return "On Battery";
   }
 
-  _updateTrayIcon() {
+  updateTrayIcon() {
     const trayEl = document.querySelector(`[data-tray-id="${this.winId}"]`);
     if (trayEl) {
       const iconContainer = trayEl.querySelector(".tray-icon-btn") || trayEl;
-      iconContainer.innerHTML = this._getBatteryIconHtml();
+      iconContainer.innerHTML = this.getBatteryIconHtml();
     }
   }
 
-  _updateBatteryDisplay() {
+  updateBatteryDisplay() {
     const popup = document.getElementById(this.popupId);
     if (!popup) return;
     const batteryPercent = popup.querySelector(".battery-percent");
     const batteryStatus = popup.querySelector(".battery-status");
     const batteryIconContainer = popup.querySelector(".battery-icon");
     if (batteryPercent) batteryPercent.textContent = `${Math.round(this.batteryInfo.level * 100)}%`;
-    if (batteryStatus) batteryStatus.textContent = this._getBatteryStatusText();
-    if (batteryIconContainer) batteryIconContainer.innerHTML = this._getBatteryIconHtml();
+    if (batteryStatus) batteryStatus.textContent = this.getBatteryStatusText();
+    if (batteryIconContainer) batteryIconContainer.innerHTML = this.getBatteryIconHtml();
   }
 
-  _shouldSuppressNotification() {
+  shouldSuppressNotification() {
     const position = os.storage.get(StorageKeys.notificationsPosition) || "bottom-right";
     return position === "bottom-right";
   }
 
-  _initTray() {
-    this.registerTray(this.winId, this._getBatteryIcon(), "Display & Performance", {
+  initTray() {
+    this.registerTray(this.winId, this.getBatteryIcon(), "Display & Performance", {
       resident: true,
       showInTray: true,
       onClick: () => {
         this.togglePopup();
       },
       contextMenuItems: [
-        { label: "Turbo", icon: "fa-bolt", action: () => this._setPowerMode("turbo") },
-        { label: "Balanced", icon: "fa-balance-scale", action: () => this._setPowerMode("balanced") },
-        { label: "Quality", icon: "fa-gem", action: () => this._setPowerMode("high") },
+        { label: "Turbo", icon: "fa-bolt", action: () => this.setPowerMode("turbo") },
+        { label: "Balanced", icon: "fa-balance-scale", action: () => this.setPowerMode("balanced") },
+        { label: "Quality", icon: "fa-gem", action: () => this.setPowerMode("high") },
         { type: "divider" },
-        { label: "Default Display", icon: "fa-circle", action: () => this._applyPreset("default") },
-        { label: "Reading", icon: "fa-book", action: () => this._applyPreset("reading") },
-        { label: "Cinema", icon: "fa-film", action: () => this._applyPreset("cinema") },
-        { label: "Night Coding", icon: "fa-moon", action: () => this._applyPreset("nightCoding") }
+        { label: "Default Display", icon: "fa-circle", action: () => this.applyPreset("default") },
+        { label: "Reading", icon: "fa-book", action: () => this.applyPreset("reading") },
+        { label: "Cinema", icon: "fa-film", action: () => this.applyPreset("cinema") },
+        { label: "Night Coding", icon: "fa-moon", action: () => this.applyPreset("nightCoding") }
       ]
     });
-    setTimeout(() => this._updateTrayIcon(), 0);
+    setTimeout(() => this.updateTrayIcon(), 0);
   }
 
-  _saveSettings() {
+  saveSettings() {
     os.storage.set(StorageKeys.brightness, this.brightness.toString());
     os.storage.set(StorageKeys.contrast, this.contrast.toString());
     os.storage.set(StorageKeys.gamma, this.gamma.toString());
@@ -142,7 +142,7 @@ class DisplayPerformanceApp extends BaseApp {
     os.storage.set(StorageKeys.nightModeEnd, this.nightModeEnd);
   }
 
-  _applyDisplaySettings() {
+  applyDisplaySettings() {
     const t = this.temperature;
     let brightness = this.brightness / 100;
     let contrast = this.contrast;
@@ -165,38 +165,38 @@ class DisplayPerformanceApp extends BaseApp {
     document.documentElement.style.filter = `brightness(${brightness}) contrast(${contrast}) saturate(${saturate}) sepia(${sepia})`;
   }
 
-  _setupKeybinds() {
-    this._keydownHandler = (e) => {
+  setupKeybinds() {
+    this.keydownHandler = (e) => {
       if (KeybindManager.matches(e, "global.brightness.up")) {
         e.preventDefault();
-        this._adjustBrightness(5);
+        this.adjustBrightness(5);
       } else if (KeybindManager.matches(e, "global.brightness.down")) {
         e.preventDefault();
-        this._adjustBrightness(-5);
+        this.adjustBrightness(-5);
       } else if (KeybindManager.matches(e, "global.temperature.cooler")) {
         e.preventDefault();
-        this._adjustTemperature(-5);
+        this.adjustTemperature(-5);
       } else if (KeybindManager.matches(e, "global.temperature.warmer")) {
         e.preventDefault();
-        this._adjustTemperature(5);
+        this.adjustTemperature(5);
       }
     };
-    document.addEventListener("keydown", this._keydownHandler);
+    document.addEventListener("keydown", this.keydownHandler);
   }
 
-  _cleanupKeybinds() {
-    if (this._keydownHandler) {
-      document.removeEventListener("keydown", this._keydownHandler);
-      this._keydownHandler = null;
+  cleanupKeybinds() {
+    if (this.keydownHandler) {
+      document.removeEventListener("keydown", this.keydownHandler);
+      this.keydownHandler = null;
     }
   }
 
-  _setupNightModeSchedule() {
-    this._checkNightMode();
-    this._nightModeInterval = setInterval(() => this._checkNightMode(), 60000);
+  setupNightModeSchedule() {
+    this.checkNightMode();
+    this.nightModeInterval = setInterval(() => this.checkNightMode(), 60000);
   }
 
-  _checkNightMode() {
+  checkNightMode() {
     if (!this.nightModeEnabled) return;
 
     const now = new Date();
@@ -215,28 +215,28 @@ class DisplayPerformanceApp extends BaseApp {
 
     if (isNight && this.temperature > 25) {
       this.temperature = 20;
-      this._applyDisplaySettings();
-      this._saveSettings();
+      this.applyDisplaySettings();
+      this.saveSettings();
     }
   }
 
-  _adjustBrightness(delta) {
+  adjustBrightness(delta) {
     this.brightness = Math.max(20, Math.min(150, this.brightness + delta));
-    this._applyDisplaySettings();
-    this._saveSettings();
-    this._updatePopupSliders();
-    if (!this._shouldSuppressNotification()) {
+    this.applyDisplaySettings();
+    this.saveSettings();
+    this.updatePopupSliders();
+    if (!this.shouldSuppressNotification()) {
       os.notify.send("Brightness", `${Math.round(this.brightness)}%`, { type: "info", duration: 1000, icon: "fa-sun" });
     }
   }
 
-  _adjustTemperature(delta) {
+  adjustTemperature(delta) {
     this.temperature = Math.max(0, Math.min(100, this.temperature + delta));
-    this._applyDisplaySettings();
-    this._saveSettings();
-    this._updatePopupSliders();
-    if (!this._shouldSuppressNotification()) {
-      os.notify.send("Temperature", this._getTemperatureLabel(this.temperature), {
+    this.applyDisplaySettings();
+    this.saveSettings();
+    this.updatePopupSliders();
+    if (!this.shouldSuppressNotification()) {
+      os.notify.send("Temperature", this.getTemperatureLabel(this.temperature), {
         type: "info",
         duration: 1000,
         icon: "fa-temperature-half"
@@ -244,13 +244,13 @@ class DisplayPerformanceApp extends BaseApp {
     }
   }
 
-  _getTemperatureLabel(value) {
+  getTemperatureLabel(value) {
     if (value < 33) return "Warm";
     if (value > 66) return "Cool";
     return "Neutral";
   }
 
-  _applyPreset(presetName) {
+  applyPreset(presetName) {
     const preset = BRIGHTNESS_PRESETS[presetName];
     if (!preset) return;
 
@@ -259,10 +259,10 @@ class DisplayPerformanceApp extends BaseApp {
     this.gamma = preset.gamma;
     this.temperature = preset.temperature;
 
-    this._applyDisplaySettings();
-    this._saveSettings();
-    this._updatePopupSliders();
-    if (!this._shouldSuppressNotification()) {
+    this.applyDisplaySettings();
+    this.saveSettings();
+    this.updatePopupSliders();
+    if (!this.shouldSuppressNotification()) {
       os.notify.send("Preset Applied", presetName.charAt(0).toUpperCase() + presetName.slice(1), {
         type: "success",
         duration: 1500,
@@ -271,7 +271,7 @@ class DisplayPerformanceApp extends BaseApp {
     }
   }
 
-  _setPowerMode(mode) {
+  setPowerMode(mode) {
     this.powerMode = mode;
     turboManager.setMode(mode);
 
@@ -281,7 +281,7 @@ class DisplayPerformanceApp extends BaseApp {
       high: "Quality"
     };
 
-    if (!this._shouldSuppressNotification()) {
+    if (!this.shouldSuppressNotification()) {
       os.notify.send("Power Mode", `Switched to ${modeNames[mode]} mode`, {
         type: "info",
         duration: 2000,
@@ -289,10 +289,10 @@ class DisplayPerformanceApp extends BaseApp {
       });
     }
 
-    this._updatePowerModeButtons();
+    this.updatePowerModeButtons();
   }
 
-  _updatePowerModeButtons() {
+  updatePowerModeButtons() {
     const popup = document.getElementById(this.popupId);
     if (!popup) return;
 
@@ -305,7 +305,7 @@ class DisplayPerformanceApp extends BaseApp {
     });
   }
 
-  _updatePopupSliders() {
+  updatePopupSliders() {
     const popup = document.getElementById(this.popupId);
     if (!popup) return;
 
@@ -323,11 +323,11 @@ class DisplayPerformanceApp extends BaseApp {
     if (valueDisplays[0]) valueDisplays[0].textContent = `${Math.round(this.brightness)}%`;
     if (valueDisplays[1]) valueDisplays[1].textContent = this.contrast.toFixed(2);
     if (valueDisplays[2]) valueDisplays[2].textContent = this.gamma.toFixed(2);
-    if (valueDisplays[3]) valueDisplays[3].textContent = this._getTemperatureLabel(this.temperature);
+    if (valueDisplays[3]) valueDisplays[3].textContent = this.getTemperatureLabel(this.temperature);
   }
 
   togglePopup() {
-    if (this._popupVisible) {
+    if (this.popupVisible) {
       this.closePopup();
     } else {
       this.openPopup();
@@ -335,7 +335,7 @@ class DisplayPerformanceApp extends BaseApp {
   }
 
   openPopup() {
-    if (this._popupVisible) return;
+    if (this.popupVisible) return;
 
     const existingPopup = document.getElementById(this.popupId);
     if (existingPopup) {
@@ -346,8 +346,8 @@ class DisplayPerformanceApp extends BaseApp {
     popup.id = this.popupId;
     popup.className = "display-performance-tray-popup";
     const batteryPercent = Math.round(this.batteryInfo.level * 100);
-    const batteryStatus = this._getBatteryStatusText();
-    const batteryFillColor = this._getBatteryFillColor(batteryPercent);
+    const batteryStatus = this.getBatteryStatusText();
+    const batteryFillColor = this.getBatteryFillColor(batteryPercent);
     popup.innerHTML = `
       <div class="display-performance-popup-content">
         <div class="display-performance-section battery-section">
@@ -399,7 +399,7 @@ class DisplayPerformanceApp extends BaseApp {
             <div class="brightness-quick-item">
               <i class="fas fa-temperature-half"></i>
               <input type="range" id="temperature-slider" class="brightness-quick-slider brightness-temp-slider" min="0" max="100" value="${this.temperature}" />
-              <span class="brightness-value">${this._getTemperatureLabel(this.temperature)}</span>
+              <span class="brightness-value">${this.getTemperatureLabel(this.temperature)}</span>
             </div>
           </div>
           <div class="brightness-presets-row">
@@ -459,10 +459,10 @@ class DisplayPerformanceApp extends BaseApp {
     popup.style.bottom = `${window.innerHeight - trayRect.top + 8}px`;
     popup.style.display = "block";
 
-    this._popupVisible = true;
-    this._bindEvents(popup);
+    this.popupVisible = true;
+    this.bindEvents(popup);
 
-    document.addEventListener("click", this._handleOutsideClick);
+    document.addEventListener("click", this.handleOutsideClick);
   }
 
   closePopup() {
@@ -477,11 +477,11 @@ class DisplayPerformanceApp extends BaseApp {
         { once: true }
       );
     }
-    this._popupVisible = false;
-    document.removeEventListener("click", this._handleOutsideClick);
+    this.popupVisible = false;
+    document.removeEventListener("click", this.handleOutsideClick);
   }
 
-  _handleOutsideClick = (e) => {
+  handleOutsideClick = (e) => {
     const popup = document.getElementById(this.popupId);
     const trayEl = document.getElementById("app-tray");
     if (popup && !e.target.closest("#display-performance-tray-popup") && !e.target.closest("#app-tray")) {
@@ -493,12 +493,12 @@ class DisplayPerformanceApp extends BaseApp {
     this.togglePopup();
   }
 
-  _bindEvents(popup) {
+  bindEvents(popup) {
     const modeBtns = popup.querySelectorAll(".power-mode-btn");
     modeBtns.forEach((btn) => {
       btn.addEventListener("click", () => {
         const mode = btn.dataset.mode;
-        this._setPowerMode(mode);
+        this.setPowerMode(mode);
       });
     });
 
@@ -519,8 +519,8 @@ class DisplayPerformanceApp extends BaseApp {
         this.brightness = parseFloat(e.target.value);
         const valueDisplay = popup.querySelector(".brightness-quick-item:nth-child(1) .brightness-value");
         if (valueDisplay) valueDisplay.textContent = `${Math.round(this.brightness)}%`;
-        this._applyDisplaySettings();
-        this._saveSettings();
+        this.applyDisplaySettings();
+        this.saveSettings();
       });
     }
 
@@ -529,8 +529,8 @@ class DisplayPerformanceApp extends BaseApp {
         this.contrast = parseFloat(e.target.value);
         const valueDisplay = popup.querySelector(".brightness-advanced-item:nth-child(1) .brightness-value");
         if (valueDisplay) valueDisplay.textContent = this.contrast.toFixed(2);
-        this._applyDisplaySettings();
-        this._saveSettings();
+        this.applyDisplaySettings();
+        this.saveSettings();
       });
     }
 
@@ -539,8 +539,8 @@ class DisplayPerformanceApp extends BaseApp {
         this.gamma = parseFloat(e.target.value);
         const valueDisplay = popup.querySelector(".brightness-advanced-item:nth-child(2) .brightness-value");
         if (valueDisplay) valueDisplay.textContent = this.gamma.toFixed(2);
-        this._applyDisplaySettings();
-        this._saveSettings();
+        this.applyDisplaySettings();
+        this.saveSettings();
       });
     }
 
@@ -548,9 +548,9 @@ class DisplayPerformanceApp extends BaseApp {
       temperatureSlider.addEventListener("input", (e) => {
         this.temperature = parseFloat(e.target.value);
         const valueDisplay = popup.querySelector(".brightness-quick-item:nth-child(2) .brightness-value");
-        if (valueDisplay) valueDisplay.textContent = this._getTemperatureLabel(this.temperature);
-        this._applyDisplaySettings();
-        this._saveSettings();
+        if (valueDisplay) valueDisplay.textContent = this.getTemperatureLabel(this.temperature);
+        this.applyDisplaySettings();
+        this.saveSettings();
       });
     }
 
@@ -565,17 +565,17 @@ class DisplayPerformanceApp extends BaseApp {
     presetBtns.forEach((btn) => {
       btn.addEventListener("click", () => {
         const preset = btn.dataset.preset;
-        this._applyPreset(preset);
+        this.applyPreset(preset);
       });
     });
 
     if (nightModeToggle) {
       nightModeToggle.addEventListener("change", (e) => {
         this.nightModeEnabled = e.target.checked;
-        this._saveSettings();
+        this.saveSettings();
         if (this.nightModeEnabled) {
-          this._checkNightMode();
-          if (!this._shouldSuppressNotification()) {
+          this.checkNightMode();
+          if (!this.shouldSuppressNotification()) {
             os.notify.send("Night Mode", "Scheduled night mode enabled", {
               type: "info",
               duration: 2000,
@@ -583,7 +583,7 @@ class DisplayPerformanceApp extends BaseApp {
             });
           }
         } else {
-          if (!this._shouldSuppressNotification()) {
+          if (!this.shouldSuppressNotification()) {
             os.notify.send("Night Mode", "Scheduled night mode disabled", {
               type: "info",
               duration: 2000,
@@ -597,14 +597,14 @@ class DisplayPerformanceApp extends BaseApp {
     if (nightModeStart) {
       nightModeStart.addEventListener("change", (e) => {
         this.nightModeStart = e.target.value;
-        this._saveSettings();
+        this.saveSettings();
       });
     }
 
     if (nightModeEnd) {
       nightModeEnd.addEventListener("change", (e) => {
         this.nightModeEnd = e.target.value;
-        this._saveSettings();
+        this.saveSettings();
       });
     }
 
@@ -623,16 +623,16 @@ class DisplayPerformanceApp extends BaseApp {
         const brightnessValue = popup.querySelector(".brightness-quick-item:nth-child(1) .brightness-value");
         if (brightnessValue) brightnessValue.textContent = "100%";
         const tempValue = popup.querySelector(".brightness-quick-item:nth-child(2) .brightness-value");
-        if (tempValue) tempValue.textContent = this._getTemperatureLabel(50);
+        if (tempValue) tempValue.textContent = this.getTemperatureLabel(50);
         const contrastValue = popup.querySelector(".brightness-advanced-item:nth-child(1) .brightness-value");
         if (contrastValue) contrastValue.textContent = "1.00";
         const gammaValue = popup.querySelector(".brightness-advanced-item:nth-child(2) .brightness-value");
         if (gammaValue) gammaValue.textContent = "1.00";
 
-        this._applyDisplaySettings();
-        this._saveSettings();
+        this.applyDisplaySettings();
+        this.saveSettings();
 
-        if (!this._shouldSuppressNotification()) {
+        if (!this.shouldSuppressNotification()) {
           os.notify.send("Reset", "Display settings reset to default", {
             type: "info",
             duration: 2000,
@@ -645,10 +645,10 @@ class DisplayPerformanceApp extends BaseApp {
 
   onClose(winId) {
     this.closePopup();
-    this._cleanupKeybinds();
-    if (this._nightModeInterval) {
-      clearInterval(this._nightModeInterval);
-      this._nightModeInterval = null;
+    this.cleanupKeybinds();
+    if (this.nightModeInterval) {
+      clearInterval(this.nightModeInterval);
+      this.nightModeInterval = null;
     }
   }
 }

@@ -1,6 +1,5 @@
 import { ScramjetBaseApp } from "../core/ScramjetBaseApp.js";
-import { PersistenceTypes } from "../AppSchema.js";
-import { os } from "../framework.js";
+import { PersistenceTypes, os } from "../framework.js";
 import { SYSTEM_APPS } from "../AppRegistryConfig.js";
 
 export class DiscordApp extends ScramjetBaseApp {
@@ -73,11 +72,11 @@ export class DiscordApp extends ScramjetBaseApp {
     const winId = windowConfig.id;
     this.winId = winId;
 
-    if (await this._isSingletonOpen(winId)) {
+    if (await this.isSingletonOpen(winId)) {
       return;
     }
 
-    this._createSplash();
+    this.createSplash();
 
     const win = this.wm.createWindow(winId, windowConfig.title, windowConfig.size[0], windowConfig.size[1], {
       icon: windowConfig.icon,
@@ -90,12 +89,12 @@ export class DiscordApp extends ScramjetBaseApp {
     win.getAnimations().forEach((a) => a.cancel());
     win.style.opacity = "0";
 
-    this._isDeclarative = true;
+    this.isDeclarative = true;
     if (schema.onMount && typeof this[schema.onMount] === "function") {
       this[schema.onMount](null, null, win, schema.state?.initial || {});
     }
 
-    const cleanup = () => this._removeSplash();
+    const cleanup = () => this.removeSplash();
     const closeObserver = new MutationObserver(() => {
       if (!document.getElementById(winId)) {
         cleanup();
@@ -105,7 +104,7 @@ export class DiscordApp extends ScramjetBaseApp {
     closeObserver.observe(document.body, { childList: true });
 
     setTimeout(() => {
-      this._removeSplash();
+      this.removeSplash();
       closeObserver.disconnect();
       win.style.transition = "opacity 0.6s ease";
       win.style.opacity = "";
@@ -114,7 +113,7 @@ export class DiscordApp extends ScramjetBaseApp {
     return win;
   }
 
-  _createSplash() {
+  createSplash() {
     const existing = document.getElementById("discord-splash");
     if (existing) existing.remove();
 
@@ -171,7 +170,7 @@ export class DiscordApp extends ScramjetBaseApp {
     }
   }
 
-  _removeSplash() {
+  removeSplash() {
     const splash = document.getElementById("discord-splash");
     if (splash) splash.remove();
     const style = document.getElementById("discord-splash-style");
@@ -207,7 +206,7 @@ export class DiscordApp extends ScramjetBaseApp {
   }
 
   cleanupScramjet() {
-    this._removeSplash();
+    this.removeSplash();
     if (this.winId) {
       os.tray.unregister(this.winId);
       os.window.removeFromTaskbar(this.winId);
@@ -217,6 +216,6 @@ export class DiscordApp extends ScramjetBaseApp {
   }
 
   onClose(winId) {
-    this._removeSplash();
+    this.removeSplash();
   }
 }

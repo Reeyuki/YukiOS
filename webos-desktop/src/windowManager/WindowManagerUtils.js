@@ -10,7 +10,7 @@ export class WindowManagerUtils {
   }
 
   init() {
-    this._initVisibilityTracking();
+    this.initVisibilityTracking();
   }
 
   applyWindowLayout(win) {
@@ -35,7 +35,7 @@ export class WindowManagerUtils {
     controls.style.height = "100%";
   }
 
-  _resolveIconType(iconValue) {
+  resolveIconType(iconValue) {
     const isDataUrl = typeof iconValue === "string" && iconValue.startsWith("data:");
     const isHttpUrl = typeof iconValue === "string" && /^https?:\/\//.test(iconValue);
     return {
@@ -44,7 +44,7 @@ export class WindowManagerUtils {
     };
   }
 
-  _getFaviconLink() {
+  getFaviconLink() {
     let link = document.querySelector("link[rel~='icon']");
     return link;
   }
@@ -53,7 +53,7 @@ export class WindowManagerUtils {
     return this.manager.openWindows.size;
   }
 
-  _getWindowNormalGeometry(win) {
+  getWindowNormalGeometry(win) {
     const entry = this.manager.openWindows.get(win.id);
     const rect = win.getBoundingClientRect();
     let x = rect.left;
@@ -90,7 +90,7 @@ export class WindowManagerUtils {
     if (!iconValue) return "";
     iconValue = resolveIconUrl(iconValue);
     const size = 25;
-    const { isImage, isDataUrl } = this._resolveIconType(iconValue);
+    const { isImage, isDataUrl } = this.resolveIconType(iconValue);
 
     if (isImage || isDataUrl) {
       return `<img src="${iconValue}" style="width:${size}px;height:${size}px;margin-right:6px;vertical-align:middle;object-fit:contain;" />`;
@@ -110,9 +110,9 @@ export class WindowManagerUtils {
 
   updatePageFavicon(iconValue, title) {
     document.title = sanitizeTitle(title) || this.manager.initialTitle;
-    const link = this._getFaviconLink();
+    const link = this.getFaviconLink();
     iconValue = resolveIconUrl(iconValue);
-    const { isImage, isDataUrl } = this._resolveIconType(iconValue);
+    const { isImage, isDataUrl } = this.resolveIconType(iconValue);
     if (isImage || isDataUrl) {
       link.href = iconValue;
     } else {
@@ -122,15 +122,15 @@ export class WindowManagerUtils {
 
   resetToDefaultState() {
     document.title = this.manager.initialTitle;
-    const link = this._getFaviconLink();
+    const link = this.getFaviconLink();
     link.href = this.manager.initialFavicon || "";
   }
 
-  _initVisibilityTracking() {
+  initVisibilityTracking() {
     document.addEventListener("visibilitychange", () => {
       if (document.hidden) {
         document.title = this.manager.initialTitle;
-        this._getFaviconLink().href = this.manager.initialFavicon || "";
+        this.getFaviconLink().href = this.manager.initialFavicon || "";
       } else {
         if (this.manager.openWindows.size === 0) {
           this.resetToDefaultState();
@@ -145,7 +145,7 @@ export class WindowManagerUtils {
     });
   }
 
-  _downloadWindowContent(win) {
+  downloadWindowContent(win) {
     const filename =
       (win.querySelector(".window-header span")?.textContent?.trim() || win.id).replace(/[^\w\s-]/g, "").trim() ||
       "window";
@@ -201,7 +201,7 @@ export class WindowManagerUtils {
       const a = document.createElement("a");
       a.href = src;
       a.download = filename + ".html";
-      a.target = "_blank";
+      a.target = "blank";
       a.rel = "noopener noreferrer";
       a.click();
       return;
@@ -248,7 +248,7 @@ export class WindowManagerUtils {
     </div>`;
   }
 
-  _findAppIdByWinId(winId) {
+  findAppIdByWinId(winId) {
     const gamesList = window.gamesList;
     if (!gamesList || !gamesList.appMap) return null;
 

@@ -4,9 +4,9 @@ export class StorageAdapter {
   constructor(config) {
     this.CONFIG = config;
     this.fs = null;
-    this._resolveFs = null;
+    this.resolveFs = null;
     this.fsReady = new Promise((res) => {
-      this._resolveFs = res;
+      this.resolveFs = res;
     });
   }
 
@@ -76,17 +76,17 @@ export class StorageAdapter {
           if (e) {
             console.error("IndexedDBFS initialization failed:", e);
             try {
-              await this._clearIndexedDB();
+              await this.clearIndexedDB();
               console.log("Cleared IndexedDB, retrying initialization...");
               setTimeout(attemptInit, 100);
             } catch (clearErr) {
               console.error("Failed to clear IndexedDB:", clearErr);
-              if (this._resolveFs) this._resolveFs();
+              if (this.resolveFs) this.resolveFs();
             }
             return;
           }
           this.fs = IndexedDBFS.BFSRequire("fs");
-          if (this._resolveFs) this._resolveFs();
+          if (this.resolveFs) this.resolveFs();
         }
       );
     };
@@ -94,7 +94,7 @@ export class StorageAdapter {
     return this.fsReady;
   }
 
-  async _clearIndexedDB() {
+  async clearIndexedDB() {
     return new Promise((resolve, reject) => {
       const req = indexedDB.deleteDatabase("IndexedDB");
       req.onsuccess = () => resolve();

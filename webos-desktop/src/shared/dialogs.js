@@ -10,11 +10,11 @@ export function showAlert(title, message, buttonText = "OK") {
     const overlay = document.createElement("div");
     overlay.className = "explorer-confirmation-overlay";
     overlay.innerHTML = `
-      <div class="_fd-dialog">
-        <div class="_fd-dialog-title">${title}</div>
-        <div class="_fd-dialog-label">${message}</div>
-        <div class="_fd-dialog-actions">
-          <button class="_fd-btn _fd-btn-confirm">${buttonText}</button>
+      <div class="fd-dialog">
+        <div class="fd-dialog-title">${title}</div>
+        <div class="fd-dialog-label">${message}</div>
+        <div class="fd-dialog-actions">
+          <button class="fd-btn fd-btn-confirm">${buttonText}</button>
         </div>
       </div>
     `;
@@ -25,7 +25,7 @@ export function showAlert(title, message, buttonText = "OK") {
       resolve();
     };
 
-    const confirmBtn = overlay.querySelector("._fd-btn-confirm");
+    const confirmBtn = overlay.querySelector(".fd-btn-confirm");
     confirmBtn.onclick = close;
     overlay.onclick = (ev) => {
       if (ev.target === overlay) close();
@@ -42,23 +42,23 @@ export function showPrompt(title, message, defaultValue = "", confirmText = "OK"
     const overlay = document.createElement("div");
     overlay.className = "explorer-confirmation-overlay";
     overlay.innerHTML = `
-      <div class="_fd-dialog">
-        <div class="_fd-dialog-title">${title}</div>
-        <div class="_fd-dialog-label">${message}</div>
-        <input class="_fd-dialog-input" type="text" value="${defaultValue}" spellcheck="false">
-        <div class="_fd-dialog-error"></div>
-        <div class="_fd-dialog-actions">
-          <button class="_fd-btn _fd-btn-cancel">Cancel</button>
-          <button class="_fd-btn _fd-btn-confirm">${confirmText}</button>
+      <div class="fd-dialog">
+        <div class="fd-dialog-title">${title}</div>
+        <div class="fd-dialog-label">${message}</div>
+        <input class="fd-dialog-input" type="text" value="${defaultValue}" spellcheck="false">
+        <div class="fd-dialog-error"></div>
+        <div class="fd-dialog-actions">
+          <button class="fd-btn fd-btn-cancel">Cancel</button>
+          <button class="fd-btn fd-btn-confirm">${confirmText}</button>
         </div>
       </div>
     `;
     document.body.appendChild(overlay);
 
-    const input = overlay.querySelector("._fd-dialog-input");
-    const confirmBtn = overlay.querySelector("._fd-btn-confirm");
-    const cancelBtn = overlay.querySelector("._fd-btn-cancel");
-    const errorEl = overlay.querySelector("._fd-dialog-error");
+    const input = overlay.querySelector(".fd-dialog-input");
+    const confirmBtn = overlay.querySelector(".fd-btn-confirm");
+    const cancelBtn = overlay.querySelector(".fd-btn-cancel");
+    const errorEl = overlay.querySelector(".fd-dialog-error");
 
     input.select();
     input.focus();
@@ -110,12 +110,12 @@ export function showConfirm(title, message, confirmText = "OK", cancelText = "Ca
     const overlay = document.createElement("div");
     overlay.className = "explorer-confirmation-overlay";
     overlay.innerHTML = `
-      <div class="_fd-dialog">
-        <div class="_fd-dialog-title">${title}</div>
-        <div class="_fd-dialog-label">${message}</div>
-        <div class="_fd-dialog-actions">
-          <button class="_fd-btn _fd-btn-cancel">${cancelText}</button>
-          <button class="_fd-btn _fd-btn-confirm _fd-btn-danger">${confirmText}</button>
+      <div class="fd-dialog">
+        <div class="fd-dialog-title">${title}</div>
+        <div class="fd-dialog-label">${message}</div>
+        <div class="fd-dialog-actions">
+          <button class="fd-btn fd-btn-cancel">${cancelText}</button>
+          <button class="fd-btn fd-btn-confirm fd-btn-danger">${confirmText}</button>
         </div>
       </div>
     `;
@@ -126,8 +126,8 @@ export function showConfirm(title, message, confirmText = "OK", cancelText = "Ca
       resolve(false);
     };
 
-    const confirmBtn = overlay.querySelector("._fd-btn-confirm");
-    const cancelBtn = overlay.querySelector("._fd-btn-cancel");
+    const confirmBtn = overlay.querySelector(".fd-btn-confirm");
+    const cancelBtn = overlay.querySelector(".fd-btn-cancel");
 
     confirmBtn.onclick = () => {
       overlay.remove();
@@ -170,25 +170,25 @@ export function showCdnPrompt(mirrors, currentMirror) {
       .join("");
 
     overlay.innerHTML = `
-      <div class="_fd-dialog">
-        <div class="_fd-dialog-title">Network Error</div>
-        <div class="_fd-dialog-label">
+      <div class="fd-dialog">
+        <div class="fd-dialog-title">Network Error</div>
+        <div class="fd-dialog-label">
           Couldn't reach the CDN mirror. Your network might be blocking it. Pick another one:
         </div>
-        <select class="_fd-dialog-input _fd-dialog-select" id="cdn-picker">
+        <select class="fd-dialog-input fd-dialog-select" id="cdn-picker">
           ${optionsHtml}
         </select>
-        <div class="_fd-dialog-actions">
-          <button class="_fd-btn _fd-btn-cancel">Ignore</button>
-          <button class="_fd-btn _fd-btn-confirm">Apply & Reload</button>
+        <div class="fd-dialog-actions">
+          <button class="fd-btn fd-btn-cancel">Ignore</button>
+          <button class="fd-btn fd-btn-confirm">Apply & Reload</button>
         </div>
       </div>
     `;
     document.body.appendChild(overlay);
 
     const select = overlay.querySelector("#cdn-picker");
-    const confirmBtn = overlay.querySelector("._fd-btn-confirm");
-    const cancelBtn = overlay.querySelector("._fd-btn-cancel");
+    const confirmBtn = overlay.querySelector(".fd-btn-confirm");
+    const cancelBtn = overlay.querySelector(".fd-btn-cancel");
 
     const submit = () => {
       overlay.remove();

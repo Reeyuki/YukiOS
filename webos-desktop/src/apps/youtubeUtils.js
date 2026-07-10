@@ -1,3 +1,4 @@
+import { createElement } from "../shared/domUtils.js";
 import { BaseApp, PersistenceTypes, StorageKeys, os } from "../framework.js";
 function clampInt(n, min, max) {
   n = Number.parseInt(String(n), 10);
@@ -156,11 +157,11 @@ export class YouTubeUtilsApp extends BaseApp {
     super(services);
     this.browserApp = null;
     this.winId = "youtube-utils";
-    this._els = null;
-    this._prefs = this._loadPrefs();
-    this._preset = this._loadPreset();
-    this._recent = this._loadRecent();
-    this._favorites = this._loadFavorites();
+    this.els = null;
+    this.prefs = this.loadPrefs();
+    this.preset = this.loadPreset();
+    this.recent = this.loadRecent();
+    this.favorites = this.loadFavorites();
   }
 
   getDeclarativeSchema(opts) {
@@ -405,63 +406,63 @@ export class YouTubeUtilsApp extends BaseApp {
       },
       actions: {
         load: (payload, event, element, state) => {
-          this._loadFromInput();
+          this.loadFromInput();
         },
         paste: async (payload, event, element, state) => {
-          await this._pasteFromClipboard();
+          await this.pasteFromClipboard();
         },
         clear: (payload, event, element, state) => {
-          this._clearEmbed();
+          this.clearEmbed();
         },
         copyEmbed: async (payload, event, element, state) => {
-          await this._copyEmbedUrl();
+          await this.copyEmbedUrl();
         },
         openYt: (payload, event, element, state) => {
-          this._openOnYouTube();
+          this.openOnYouTube();
         },
         createDesktop: async (payload, event, element, state) => {
-          await this._createDesktopEntry();
+          await this.createDesktopEntry();
         },
         pin: (payload, event, element, state) => {
-          this._togglePin();
+          this.togglePin();
         },
         tabRecent: (payload, event, element, state) => {
-          this._setActiveTab("recent");
+          this.setActiveTab("recent");
         },
         tabFav: (payload, event, element, state) => {
-          this._setActiveTab("fav");
+          this.setActiveTab("fav");
         },
         export: async (payload, event, element, state) => {
-          await this._exportAll();
+          await this.exportAll();
         },
         import: async (payload, event, element, state) => {
-          await this._importAll();
+          await this.importAll();
         },
         clearList: (payload, event, element, state) => {
-          if (this._activeTab === "fav") {
-            this._favorites = [];
-            this._saveFavorites();
+          if (this.activeTab === "fav") {
+            this.favorites = [];
+            this.saveFavorites();
           } else {
-            this._recent = [];
-            this._saveRecent();
+            this.recent = [];
+            this.saveRecent();
           }
-          this._renderLists();
+          this.renderLists();
         },
         copyTime: async (payload, event, element, state) => {
-          await this._copyWatchUrlAtTime();
+          await this.copyWatchUrlAtTime();
         },
         jumpTime: (payload, event, element, state) => {
-          this._jumpToTime();
+          this.jumpToTime();
         },
         savePreset: (payload, event, element, state) => {
-          this._savePresetFromUI();
+          this.savePresetFromUI();
         },
         resetPreset: (payload, event, element, state) => {
-          this._resetPreset();
+          this.resetPreset();
         },
         inputKeydown: (payload, event, element, state) => {
           if (event.key === "Enter") {
-            this._loadFromInput();
+            this.loadFromInput();
           }
         },
         initYoutube: (payload, event, element, state) => {
@@ -473,7 +474,7 @@ export class YouTubeUtilsApp extends BaseApp {
   }
 
   initYoutube(payload, event, element, state) {
-    this._els = {
+    this.els = {
       win: document.getElementById("youtube-utils"),
       input: document.getElementById("yt-input"),
       loadBtn: document.getElementById("yt-load"),
@@ -507,16 +508,16 @@ export class YouTubeUtilsApp extends BaseApp {
       importBtn: document.getElementById("yt-import"),
       clearListBtn: document.getElementById("yt-clear-list")
     };
-    this._activeTab = "recent";
-    this._bindEvents();
-    this._renderLists();
+    this.activeTab = "recent";
+    this.bindEvents();
+    this.renderLists();
   }
 
   setBrowserApp(browserApp) {
     this.browserApp = browserApp || null;
   }
 
-  _loadPrefs() {
+  loadPrefs() {
     const prefs = os.storage.get(StorageKeys.youtubePrefs) || {};
     return {
       nocookie: prefs.nocookie !== false,
@@ -527,11 +528,11 @@ export class YouTubeUtilsApp extends BaseApp {
     };
   }
 
-  _savePrefs() {
-    os.storage.set(StorageKeys.youtubePrefs, this._prefs);
+  savePrefs() {
+    os.storage.set(StorageKeys.youtubePrefs, this.prefs);
   }
 
-  _loadPreset() {
+  loadPreset() {
     const preset = os.storage.get(StorageKeys.youtubePreset) || {};
     return {
       endSeconds: typeof preset.endSeconds === "number" ? preset.endSeconds : 0,
@@ -539,183 +540,183 @@ export class YouTubeUtilsApp extends BaseApp {
     };
   }
 
-  _savePreset() {
-    os.storage.set(StorageKeys.youtubePreset, this._preset);
+  savePreset() {
+    os.storage.set(StorageKeys.youtubePreset, this.preset);
   }
 
-  _loadRecent() {
+  loadRecent() {
     const items = os.storage.get(StorageKeys.youtubeRecent) || [];
     return Array.isArray(items) ? items.slice(-30) : [];
   }
 
-  _saveRecent() {
-    os.storage.set(StorageKeys.youtubeRecent, this._recent.slice(-30));
+  saveRecent() {
+    os.storage.set(StorageKeys.youtubeRecent, this.recent.slice(-30));
   }
 
-  _loadFavorites() {
+  loadFavorites() {
     const items = os.storage.get(StorageKeys.youtubeFavorites) || [];
     return Array.isArray(items) ? items.slice(-100) : [];
   }
 
-  _saveFavorites() {
-    os.storage.set(StorageKeys.youtubeFavorites, this._favorites.slice(-100));
+  saveFavorites() {
+    os.storage.set(StorageKeys.youtubeFavorites, this.favorites.slice(-100));
   }
 
-  _pushRecent(item) {
+  pushRecent(item) {
     const key = `${item.kind}:${item.videoId || ""}:${item.playlistId || ""}:${item.startSeconds || 0}`;
-    this._recent = this._recent.filter((x) => x.key !== key);
-    this._recent.push({ ...item, key, time: Date.now() });
-    this._saveRecent();
-    this._renderLists();
+    this.recent = this.recent.filter((x) => x.key !== key);
+    this.recent.push({ ...item, key, time: Date.now() });
+    this.saveRecent();
+    this.renderLists();
   }
 
-  _setStatus(text, { warn = false } = {}) {
-    if (!this._els?.status) return;
-    this._els.status.textContent = text || "";
-    this._els.status.classList.toggle("warn", !!warn);
+  setStatus(text, { warn = false } = {}) {
+    if (!this.els?.status) return;
+    this.els.status.textContent = text || "";
+    this.els.status.classList.toggle("warn", !!warn);
   }
 
-  async _pasteFromClipboard() {
+  async pasteFromClipboard() {
     try {
       const text = await navigator.clipboard.readText();
       if (text) {
-        this._els.input.value = text;
-        this._loadFromInput();
+        this.els.input.value = text;
+        this.loadFromInput();
       }
     } catch {
-      this._setStatus("Clipboard access blocked by browser.", { warn: true });
+      this.setStatus("Clipboard access blocked by browser.", { warn: true });
     }
   }
 
-  _readPrefsFromUI() {
-    this._prefs = {
-      nocookie: !!this._els.nocookie.checked,
-      autoplay: !!this._els.autoplay.checked,
-      controls: !!this._els.controls.checked,
-      mute: !!this._els.mute.checked,
-      openInBrowserApp: !!this._els.openInBrowser.checked
+  readPrefsFromUI() {
+    this.prefs = {
+      nocookie: !!this.els.nocookie.checked,
+      autoplay: !!this.els.autoplay.checked,
+      controls: !!this.els.controls.checked,
+      mute: !!this.els.mute.checked,
+      openInBrowserApp: !!this.els.openInBrowser.checked
     };
-    this._savePrefs();
+    this.savePrefs();
   }
 
-  async _loadFromInput({ overrideStartSeconds = null } = {}) {
-    this._readPrefsFromUI();
-    const parsed = parseYouTubeInput(this._els.input.value);
+  async loadFromInput({ overrideStartSeconds = null } = {}) {
+    this.readPrefsFromUI();
+    const parsed = parseYouTubeInput(this.els.input.value);
     if (!parsed.kind || (!parsed.videoId && !parsed.playlistId)) {
-      this._setStatus("Invalid YouTube URL or id.", { warn: true });
+      this.setStatus("Invalid YouTube URL or id.", { warn: true });
       return;
     }
 
-    const endSeconds = parseTimeToSeconds(this._els.endInput.value || "") || 0;
-    const loop = !!this._els.loop.checked;
+    const endSeconds = parseTimeToSeconds(this.els.endInput.value || "") || 0;
+    const loop = !!this.els.loop.checked;
 
     const embedUrl = buildEmbedUrl({
       ...parsed,
       startSeconds: overrideStartSeconds !== null ? overrideStartSeconds : parsed.startSeconds,
       endSeconds,
       loop,
-      autoplay: this._prefs.autoplay,
-      controls: this._prefs.controls,
-      mute: this._prefs.mute,
-      nocookie: this._prefs.nocookie
+      autoplay: this.prefs.autoplay,
+      controls: this.prefs.controls,
+      mute: this.prefs.mute,
+      nocookie: this.prefs.nocookie
     });
     if (!embedUrl) {
-      this._setStatus("Could not build embed URL.", { warn: true });
+      this.setStatus("Could not build embed URL.", { warn: true });
       return;
     }
 
-    this._els.iframe.src = embedUrl;
-    this._els.iframe.dataset.kind = parsed.kind;
-    this._els.iframe.dataset.videoId = parsed.videoId || "";
-    this._els.iframe.dataset.playlistId = parsed.playlistId || "";
-    this._els.iframe.dataset.startSeconds = String(
+    this.els.iframe.src = embedUrl;
+    this.els.iframe.dataset.kind = parsed.kind;
+    this.els.iframe.dataset.videoId = parsed.videoId || "";
+    this.els.iframe.dataset.playlistId = parsed.playlistId || "";
+    this.els.iframe.dataset.startSeconds = String(
       (overrideStartSeconds !== null ? overrideStartSeconds : parsed.startSeconds) || 0
     );
-    this._els.iframe.dataset.endSeconds = String(endSeconds || 0);
-    this._els.iframe.dataset.loop = loop ? "1" : "0";
+    this.els.iframe.dataset.endSeconds = String(endSeconds || 0);
+    this.els.iframe.dataset.loop = loop ? "1" : "0";
 
     const label = parsed.kind === "playlist" ? `Playlist: ${parsed.playlistId}` : `Video: ${parsed.videoId}`;
     const startLabel = (overrideStartSeconds !== null ? overrideStartSeconds : parsed.startSeconds) || 0;
-    this._setStatus(`${label}${startLabel ? ` @ ${startLabel}s` : ""}`);
-    this._pushRecent({
+    this.setStatus(`${label}${startLabel ? ` @ ${startLabel}s` : ""}`);
+    this.pushRecent({
       kind: parsed.kind,
       videoId: parsed.videoId || null,
       playlistId: parsed.playlistId || null,
       startSeconds: startLabel
     });
 
-    await this._updateOembedPreview({ kind: parsed.kind, videoId: parsed.videoId, playlistId: parsed.playlistId });
-    this._syncPinButton();
+    await this.updateOembedPreview({ kind: parsed.kind, videoId: parsed.videoId, playlistId: parsed.playlistId });
+    this.syncPinButton();
   }
 
-  _clearEmbed() {
-    if (this._els?.iframe) this._els.iframe.removeAttribute("src");
-    this._setStatus("");
+  clearEmbed() {
+    if (this.els?.iframe) this.els.iframe.removeAttribute("src");
+    this.setStatus("");
   }
 
-  _currentParsedFromIframe() {
-    if (!this._els?.iframe) return null;
-    const kind = this._els.iframe.dataset.kind || null;
-    const videoId = this._els.iframe.dataset.videoId || null;
-    const playlistId = this._els.iframe.dataset.playlistId || null;
-    const startSeconds = clampInt(this._els.iframe.dataset.startSeconds || 0, 0, 24 * 60 * 60);
-    const endSeconds = clampInt(this._els.iframe.dataset.endSeconds || 0, 0, 24 * 60 * 60);
-    const loop = this._els.iframe.dataset.loop === "1";
+  currentParsedFromIframe() {
+    if (!this.els?.iframe) return null;
+    const kind = this.els.iframe.dataset.kind || null;
+    const videoId = this.els.iframe.dataset.videoId || null;
+    const playlistId = this.els.iframe.dataset.playlistId || null;
+    const startSeconds = clampInt(this.els.iframe.dataset.startSeconds || 0, 0, 24 * 60 * 60);
+    const endSeconds = clampInt(this.els.iframe.dataset.endSeconds || 0, 0, 24 * 60 * 60);
+    const loop = this.els.iframe.dataset.loop === "1";
     if (!kind) return null;
     return { kind, videoId: videoId || null, playlistId: playlistId || null, startSeconds, endSeconds, loop };
   }
 
-  async _copyEmbedUrl() {
-    const parsed = this._currentParsedFromIframe();
+  async copyEmbedUrl() {
+    const parsed = this.currentParsedFromIframe();
     if (!parsed) {
-      this._setStatus("Nothing to copy.", { warn: true });
+      this.setStatus("Nothing to copy.", { warn: true });
       return;
     }
     const embedUrl = buildEmbedUrl({
       ...parsed,
-      autoplay: this._prefs.autoplay,
-      controls: this._prefs.controls,
-      mute: this._prefs.mute,
-      nocookie: this._prefs.nocookie
+      autoplay: this.prefs.autoplay,
+      controls: this.prefs.controls,
+      mute: this.prefs.mute,
+      nocookie: this.prefs.nocookie
     });
     if (!embedUrl) return;
     try {
       await navigator.clipboard.writeText(embedUrl);
-      this._setStatus("Embed URL copied.");
+      this.setStatus("Embed URL copied.");
     } catch {
-      this._setStatus("Failed to copy (clipboard blocked).", { warn: true });
+      this.setStatus("Failed to copy (clipboard blocked).", { warn: true });
     }
   }
 
-  _openOnYouTube() {
-    const parsed = this._currentParsedFromIframe();
+  openOnYouTube() {
+    const parsed = this.currentParsedFromIframe();
     if (!parsed) return;
     const watchUrl = buildWatchUrl(parsed);
     if (!watchUrl) return;
-    if (this._prefs.openInBrowserApp && this.browserApp?.open) {
+    if (this.prefs.openInBrowserApp && this.browserApp?.open) {
       this.browserApp.open("Yuki Browser", watchUrl);
     } else {
-      window.open(watchUrl, "_blank", "noopener,noreferrer");
+      window.open(watchUrl, "blank", "noopener,noreferrer");
     }
   }
 
-  _renderLists() {
-    if (!this._els?.list) return;
-    const root = this._els.list;
+  renderLists() {
+    if (!this.els?.list) return;
+    const root = this.els.list;
     root.innerHTML = "";
 
-    const src = this._activeTab === "fav" ? this._favorites : this._recent;
+    const src = this.activeTab === "fav" ? this.favorites : this.recent;
     const items = [...src].slice(-30).reverse();
     if (items.length === 0) {
-      const empty = document.createElement("div");
+      const empty = createElement("div");
       empty.className = "meta";
-      empty.textContent = this._activeTab === "fav" ? "Nothing pinned yet" : "Nothing recent yet";
+      empty.textContent = this.activeTab === "fav" ? "Nothing pinned yet" : "Nothing recent yet";
       root.appendChild(empty);
       return;
     }
 
     items.forEach((item) => {
-      const el = document.createElement("div");
+      const el = createElement("div");
       el.className = "recent-item";
       const title = item.kind === "playlist" ? "Playlist" : "Video";
       const id = item.kind === "playlist" ? item.playlistId : item.videoId;
@@ -735,75 +736,75 @@ export class YouTubeUtilsApp extends BaseApp {
         const act = e?.target?.dataset?.act;
         if (act === "del") {
           e.stopPropagation();
-          if (this._activeTab === "fav") {
-            this._favorites = this._favorites.filter((x) => x.key !== item.key);
-            this._saveFavorites();
+          if (this.activeTab === "fav") {
+            this.favorites = this.favorites.filter((x) => x.key !== item.key);
+            this.saveFavorites();
           } else {
-            this._recent = this._recent.filter((x) => x.key !== item.key);
-            this._saveRecent();
+            this.recent = this.recent.filter((x) => x.key !== item.key);
+            this.saveRecent();
           }
-          this._renderLists();
+          this.renderLists();
           return;
         }
 
         const watchUrl =
           item.kind === "playlist" && item.playlistId ? `https://www.youtube.com/playlist?list=${item.playlistId}` : "";
-        this._els.input.value = watchUrl || `https://www.youtube.com/watch?v=${item.videoId || ""}`;
+        this.els.input.value = watchUrl || `https://www.youtube.com/watch?v=${item.videoId || ""}`;
         if (item.startSeconds) {
           try {
-            const u = new URL(this._els.input.value);
+            const u = new URL(this.els.input.value);
             u.searchParams.set("t", `${item.startSeconds}s`);
             if (item.playlistId) u.searchParams.set("list", item.playlistId);
-            this._els.input.value = u.href;
+            this.els.input.value = u.href;
           } catch {}
         }
-        this._loadFromInput();
+        this.loadFromInput();
       });
 
       root.appendChild(el);
     });
   }
 
-  _setActiveTab(tab) {
-    this._activeTab = tab === "fav" ? "fav" : "recent";
-    this._els.tabRecent.classList.toggle("yt-tab-active", this._activeTab === "recent");
-    this._els.tabFav.classList.toggle("yt-tab-active", this._activeTab === "fav");
-    this._renderLists();
+  setActiveTab(tab) {
+    this.activeTab = tab === "fav" ? "fav" : "recent";
+    this.els.tabRecent.classList.toggle("yt-tab-active", this.activeTab === "recent");
+    this.els.tabFav.classList.toggle("yt-tab-active", this.activeTab === "fav");
+    this.renderLists();
   }
 
-  _isPinned(parsed) {
+  isPinned(parsed) {
     if (!parsed?.kind) return false;
     const key = `${parsed.kind}:${parsed.videoId || ""}:${parsed.playlistId || ""}:${parsed.startSeconds || 0}`;
-    return this._favorites.some((x) => x.key === key);
+    return this.favorites.some((x) => x.key === key);
   }
 
-  _syncPinButton() {
-    const parsed = this._currentParsedFromIframe();
+  syncPinButton() {
+    const parsed = this.currentParsedFromIframe();
     if (!parsed) return;
-    const pinned = this._isPinned(parsed);
-    this._els.pinBtn.textContent = pinned ? "Pinned" : "Pin";
-    this._els.pinBtn.classList.toggle("yt-pin-active", pinned);
+    const pinned = this.isPinned(parsed);
+    this.els.pinBtn.textContent = pinned ? "Pinned" : "Pin";
+    this.els.pinBtn.classList.toggle("yt-pin-active", pinned);
   }
 
-  _togglePin() {
-    const parsed = this._currentParsedFromIframe();
+  togglePin() {
+    const parsed = this.currentParsedFromIframe();
     if (!parsed) return;
     const key = `${parsed.kind}:${parsed.videoId || ""}:${parsed.playlistId || ""}:${parsed.startSeconds || 0}`;
-    const existing = this._favorites.find((x) => x.key === key);
+    const existing = this.favorites.find((x) => x.key === key);
     if (existing) {
-      this._favorites = this._favorites.filter((x) => x.key !== key);
+      this.favorites = this.favorites.filter((x) => x.key !== key);
     } else {
-      this._favorites.push({ ...parsed, key, time: Date.now() });
+      this.favorites.push({ ...parsed, key, time: Date.now() });
     }
-    this._saveFavorites();
-    this._syncPinButton();
-    this._renderLists();
+    this.saveFavorites();
+    this.syncPinButton();
+    this.renderLists();
   }
 
-  async _updateOembedPreview({ kind, videoId, playlistId }) {
+  async updateOembedPreview({ kind, videoId, playlistId }) {
     const watchUrl = buildWatchUrl({ kind, videoId, playlistId, startSeconds: 0 });
     if (!watchUrl) {
-      this._els.preview.style.display = "none";
+      this.els.preview.style.display = "none";
       return;
     }
     try {
@@ -818,111 +819,111 @@ export class YouTubeUtilsApp extends BaseApp {
       const thumb = data?.thumbnail_url || "";
       if (!title && !thumb) throw new Error("empty");
 
-      this._els.previewTitle.textContent = title;
-      this._els.previewSub.textContent = author;
-      if (thumb) this._els.previewImg.src = thumb;
-      this._els.preview.style.display = "";
+      this.els.previewTitle.textContent = title;
+      this.els.previewSub.textContent = author;
+      if (thumb) this.els.previewImg.src = thumb;
+      this.els.preview.style.display = "";
     } catch {
-      this._els.preview.style.display = "none";
+      this.els.preview.style.display = "none";
     }
   }
 
-  async _copyWatchUrlAtTime() {
-    const parsed = this._currentParsedFromIframe();
+  async copyWatchUrlAtTime() {
+    const parsed = this.currentParsedFromIframe();
     if (!parsed) {
-      this._setStatus("Nothing loaded.", { warn: true });
+      this.setStatus("Nothing loaded.", { warn: true });
       return;
     }
-    const t = parseTimeToSeconds(this._els.timeInput.value || "");
+    const t = parseTimeToSeconds(this.els.timeInput.value || "");
     const watchUrl = buildWatchUrl({ ...parsed, startSeconds: t });
     if (!watchUrl) return;
     try {
       await navigator.clipboard.writeText(watchUrl);
-      this._setStatus("Watch link copied.");
+      this.setStatus("Watch link copied.");
     } catch {
-      this._setStatus("Failed to copy (clipboard blocked).", { warn: true });
+      this.setStatus("Failed to copy (clipboard blocked).", { warn: true });
     }
   }
 
-  _jumpToTime() {
-    const parsed = this._currentParsedFromIframe();
+  jumpToTime() {
+    const parsed = this.currentParsedFromIframe();
     if (!parsed) return;
-    const t = parseTimeToSeconds(this._els.timeInput.value || "");
-    this._loadFromInput({ overrideStartSeconds: t });
+    const t = parseTimeToSeconds(this.els.timeInput.value || "");
+    this.loadFromInput({ overrideStartSeconds: t });
   }
 
-  _savePresetFromUI() {
-    this._preset = {
-      endSeconds: parseTimeToSeconds(this._els.endInput.value || "") || 0,
-      loop: !!this._els.loop.checked
+  savePresetFromUI() {
+    this.preset = {
+      endSeconds: parseTimeToSeconds(this.els.endInput.value || "") || 0,
+      loop: !!this.els.loop.checked
     };
-    this._savePreset();
-    this._setStatus("Preset saved.");
+    this.savePreset();
+    this.setStatus("Preset saved.");
   }
 
-  _resetPreset() {
-    this._preset = { endSeconds: 0, loop: false };
-    this._savePreset();
-    this._els.endInput.value = "";
-    this._els.loop.checked = false;
-    this._setStatus("Preset reset.");
+  resetPreset() {
+    this.preset = { endSeconds: 0, loop: false };
+    this.savePreset();
+    this.els.endInput.value = "";
+    this.els.loop.checked = false;
+    this.setStatus("Preset reset.");
   }
 
-  async _exportAll() {
+  async exportAll() {
     const payload = {
       v: 1,
-      prefs: this._prefs,
-      preset: this._preset,
-      recent: this._recent,
-      favorites: this._favorites
+      prefs: this.prefs,
+      preset: this.preset,
+      recent: this.recent,
+      favorites: this.favorites
     };
     try {
       await navigator.clipboard.writeText(JSON.stringify(payload));
-      this._setStatus("Export JSON copied.");
+      this.setStatus("Export JSON copied.");
     } catch {
-      this._setStatus("Failed to copy export.", { warn: true });
+      this.setStatus("Failed to copy export.", { warn: true });
     }
   }
 
-  async _importAll() {
+  async importAll() {
     const text = await os.dialog.prompt("Prompt", "Paste YouTube Utilities JSON export:");
     if (!text) return;
     const data = safeJsonParse(text, null);
     if (!data || typeof data !== "object") {
-      this._setStatus("Invalid JSON.", { warn: true });
+      this.setStatus("Invalid JSON.", { warn: true });
       return;
     }
     if (data.prefs) {
-      this._prefs = { ...this._prefs, ...data.prefs };
-      this._savePrefs();
+      this.prefs = { ...this.prefs, ...data.prefs };
+      this.savePrefs();
     }
     if (data.preset) {
-      this._preset = { ...this._preset, ...data.preset };
-      this._savePreset();
+      this.preset = { ...this.preset, ...data.preset };
+      this.savePreset();
     }
     if (Array.isArray(data.recent)) {
-      this._recent = data.recent.slice(-30);
-      this._saveRecent();
+      this.recent = data.recent.slice(-30);
+      this.saveRecent();
     }
     if (Array.isArray(data.favorites)) {
-      this._favorites = data.favorites.slice(-100);
-      this._saveFavorites();
+      this.favorites = data.favorites.slice(-100);
+      this.saveFavorites();
     }
-    this._els.nocookie.checked = !!this._prefs.nocookie;
-    this._els.autoplay.checked = !!this._prefs.autoplay;
-    this._els.controls.checked = !!this._prefs.controls;
-    this._els.mute.checked = !!this._prefs.mute;
-    this._els.openInBrowser.checked = !!this._prefs.openInBrowserApp;
-    this._els.loop.checked = !!this._preset.loop;
-    this._els.endInput.value = this._preset.endSeconds ? String(this._preset.endSeconds) : "";
-    this._renderLists();
-    this._setStatus("Imported.");
+    this.els.nocookie.checked = !!this.prefs.nocookie;
+    this.els.autoplay.checked = !!this.prefs.autoplay;
+    this.els.controls.checked = !!this.prefs.controls;
+    this.els.mute.checked = !!this.prefs.mute;
+    this.els.openInBrowser.checked = !!this.prefs.openInBrowserApp;
+    this.els.loop.checked = !!this.preset.loop;
+    this.els.endInput.value = this.preset.endSeconds ? String(this.preset.endSeconds) : "";
+    this.renderLists();
+    this.setStatus("Imported.");
   }
 
-  async _createDesktopEntry() {
-    const parsed = this._currentParsedFromIframe();
+  async createDesktopEntry() {
+    const parsed = this.currentParsedFromIframe();
     if (!parsed) {
-      this._setStatus("No video loaded to create desktop entry.", { warn: true });
+      this.setStatus("No video loaded to create desktop entry.", { warn: true });
       return;
     }
 
@@ -942,10 +943,10 @@ export class YouTubeUtilsApp extends BaseApp {
       startSeconds: parsed.startSeconds || 0,
       endSeconds: parsed.endSeconds || 0,
       loop: parsed.loop || false,
-      nocookie: this._prefs.nocookie,
-      autoplay: this._prefs.autoplay,
-      controls: this._prefs.controls,
-      mute: this._prefs.mute
+      nocookie: this.prefs.nocookie,
+      autoplay: this.prefs.autoplay,
+      controls: this.prefs.controls,
+      mute: this.prefs.mute
     };
 
     const fileName = `${name.replace(/[^a-zA-Z0-9_-]/g, "_")}.desktop`;
@@ -959,7 +960,7 @@ export class YouTubeUtilsApp extends BaseApp {
         icon: "static/icons/youtube.webp",
         faIcon: "fab fa-youtube"
       });
-      this._setStatus(`Desktop entry "${fileName}" created.`);
+      this.setStatus(`Desktop entry "${fileName}" created.`);
       this.notify(
         "Desktop Entry Created",
         `${name} has been added to your desktop.`,
@@ -969,49 +970,49 @@ export class YouTubeUtilsApp extends BaseApp {
       );
     } catch (e) {
       console.error("Failed to create desktop entry:", e);
-      this._setStatus("Failed to create desktop entry.", { warn: true });
+      this.setStatus("Failed to create desktop entry.", { warn: true });
     }
   }
 
-  _bindEvents() {
-    this._els.loadBtn.addEventListener("click", () => this._loadFromInput());
-    this._els.pasteBtn.addEventListener("click", () => this._pasteFromClipboard());
-    this._els.clearBtn.addEventListener("click", () => this._clearEmbed());
-    this._els.copyEmbedBtn.addEventListener("click", () => this._copyEmbedUrl());
-    this._els.openYtBtn.addEventListener("click", () => this._openOnYouTube());
-    this._els.pinBtn.addEventListener("click", () => this._togglePin());
+  bindEvents() {
+    this.els.loadBtn.addEventListener("click", () => this.loadFromInput());
+    this.els.pasteBtn.addEventListener("click", () => this.pasteFromClipboard());
+    this.els.clearBtn.addEventListener("click", () => this.clearEmbed());
+    this.els.copyEmbedBtn.addEventListener("click", () => this.copyEmbedUrl());
+    this.els.openYtBtn.addEventListener("click", () => this.openOnYouTube());
+    this.els.pinBtn.addEventListener("click", () => this.togglePin());
 
-    this._els.tabRecent.addEventListener("click", () => this._setActiveTab("recent"));
-    this._els.tabFav.addEventListener("click", () => this._setActiveTab("fav"));
-    this._setActiveTab("recent");
+    this.els.tabRecent.addEventListener("click", () => this.setActiveTab("recent"));
+    this.els.tabFav.addEventListener("click", () => this.setActiveTab("fav"));
+    this.setActiveTab("recent");
 
-    this._els.exportBtn.addEventListener("click", () => this._exportAll());
-    this._els.importBtn.addEventListener("click", () => this._importAll());
-    this._els.clearListBtn.addEventListener("click", () => {
-      if (this._activeTab === "fav") {
-        this._favorites = [];
-        this._saveFavorites();
+    this.els.exportBtn.addEventListener("click", () => this.exportAll());
+    this.els.importBtn.addEventListener("click", () => this.importAll());
+    this.els.clearListBtn.addEventListener("click", () => {
+      if (this.activeTab === "fav") {
+        this.favorites = [];
+        this.saveFavorites();
       } else {
-        this._recent = [];
-        this._saveRecent();
+        this.recent = [];
+        this.saveRecent();
       }
-      this._renderLists();
+      this.renderLists();
     });
 
-    this._els.copyTimeBtn.addEventListener("click", () => this._copyWatchUrlAtTime());
-    this._els.jumpTimeBtn.addEventListener("click", () => this._jumpToTime());
-    this._els.savePreset.addEventListener("click", () => this._savePresetFromUI());
-    this._els.resetPreset.addEventListener("click", () => this._resetPreset());
+    this.els.copyTimeBtn.addEventListener("click", () => this.copyWatchUrlAtTime());
+    this.els.jumpTimeBtn.addEventListener("click", () => this.jumpToTime());
+    this.els.savePreset.addEventListener("click", () => this.savePresetFromUI());
+    this.els.resetPreset.addEventListener("click", () => this.resetPreset());
 
-    const persistToggles = () => this._readPrefsFromUI();
-    this._els.nocookie.addEventListener("change", persistToggles);
-    this._els.autoplay.addEventListener("change", persistToggles);
-    this._els.controls.addEventListener("change", persistToggles);
-    this._els.mute.addEventListener("change", persistToggles);
-    this._els.openInBrowser.addEventListener("change", persistToggles);
+    const persistToggles = () => this.readPrefsFromUI();
+    this.els.nocookie.addEventListener("change", persistToggles);
+    this.els.autoplay.addEventListener("change", persistToggles);
+    this.els.controls.addEventListener("change", persistToggles);
+    this.els.mute.addEventListener("change", persistToggles);
+    this.els.openInBrowser.addEventListener("change", persistToggles);
 
-    this._els.input.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") this._loadFromInput();
+    this.els.input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") this.loadFromInput();
     });
   }
 }

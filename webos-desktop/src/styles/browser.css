@@ -30,12 +30,8 @@
 }
 
 .browser-tabbar::-webkit-scrollbar-thumb {
-  background: var(--glass-border);
-  border-radius: 2px;
-}
-
-.browser-tabbar::-webkit-scrollbar-thumb:hover {
   background: var(--text-secondary);
+  border-radius: 2px;
 }
 
 .browser-tab {
@@ -1336,35 +1332,27 @@
   background: #ff6b6b;
 }
 
-.browser-root ::-webkit-scrollbar {
+.browser-root::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
 
-.browser-root ::-webkit-scrollbar-track {
+.browser-root::-webkit-scrollbar-track {
   background: var(--bg-primary);
   border-radius: 5px;
 }
 
-.browser-root ::-webkit-scrollbar-thumb {
-  background: var(--glass-border);
+.browser-root::-webkit-scrollbar-thumb {
+  background: var(--text-secondary);
   border-radius: 5px;
   border: 2px solid var(--bg-primary);
 }
 
-.browser-root ::-webkit-scrollbar-thumb:hover {
-  background: var(--text-secondary);
-}
-
-.browser-root.incognito-mode ::-webkit-scrollbar-track {
+.browser-root.incognito-mode::-webkit-scrollbar-track {
   background: #1a1a2e;
 }
 
-.browser-root.incognito-mode ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
-  border: 2px solid #1a1a2e;
-}
-
-.browser-root.incognito-mode ::-webkit-scrollbar-thumb:hover {
+.browser-root.incognito-mode::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.3);
+  border: 2px solid #1a1a2e;
 }

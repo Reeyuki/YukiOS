@@ -1,7 +1,7 @@
 import { unzip, gunzip, strFromU8, zipSync, gzipSync, compressSync, decompressSync } from "fflate";
 import { getLibraryUrl } from "./shared/cdnConfig.js";
 import { archiveBaseName, tarStr } from "./utils/utils.js";
-import { os } from "./os/index.js";
+import { os } from "./framework.js";
 import { FileKind } from "./shared/fileKindDetector.js";
 
 function toOwnedBytes(data) {
@@ -37,19 +37,19 @@ async function get7zip() {
   return _7zipModule;
 }
 
-let _archiveWasmModule = null;
+let archiveWasmModule = null;
 async function getArchiveWasm() {
-  if (!_archiveWasmModule) {
+  if (!archiveWasmModule) {
     if (__SINGLE_FILE__) {
       const module = await import("archive-wasm");
-      _archiveWasmModule = module;
+      archiveWasmModule = module;
     } else {
       const libUrl = getLibraryUrl("archive-wasm");
       const module = await import(/* @vite-ignore */ `${libUrl}`);
-      _archiveWasmModule = module;
+      archiveWasmModule = module;
     }
   }
-  return _archiveWasmModule;
+  return archiveWasmModule;
 }
 
 const MAGIC_BYTES = {
@@ -109,26 +109,26 @@ export class ArchiveExtractor {
   async createArchive(items, options = {}) {
     const { format = "zip", compressionLevel = 6, outputPath, archiveName, password = null } = options;
 
-    const filesMap = await this._collectFilesRecursively(items);
+    const filesMap = await this.collectFilesRecursively(items);
 
     let zipped;
     if (format === "zip") {
       if (password) {
-        zipped = await this._createZipWithPassword(filesMap, compressionLevel, password);
+        zipped = await this.createZipWithPassword(filesMap, compressionLevel, password);
       } else {
         zipped = zipSync(filesMap, { level: compressionLevel });
       }
     } else if (format === "tar") {
-      zipped = this._createTar(filesMap);
+      zipped = this.createTar(filesMap);
     } else if (format === "tar.gz" || format === "tgz") {
-      const tarBytes = this._createTar(filesMap);
+      const tarBytes = this.createTar(filesMap);
       zipped = gzipSync(tarBytes, { level: compressionLevel });
     } else if (format === "tar.bz2" || format === "tbz2") {
-      const tarBytes = this._createTar(filesMap);
+      const tarBytes = this.createTar(filesMap);
       zipped = compressSync(tarBytes, { level: compressionLevel });
     } else if (format === "tar.xz" || format === "txz") {
-      const tarBytes = this._createTar(filesMap);
-      zipped = await this._create7z(filesMap, compressionLevel);
+      const tarBytes = this.createTar(filesMap);
+      zipped = await this.create7z(filesMap, compressionLevel);
     } else if (format === "gz") {
       const fileEntries = Object.entries(filesMap);
       if (fileEntries.length !== 1) {
@@ -146,7 +146,7 @@ export class ArchiveExtractor {
       if (!fileEntry) throw new Error("No file to compress");
       zipped = compressSync(fileEntry[1], { level: compressionLevel });
     } else if (format === "7z") {
-      zipped = await this._create7z(filesMap, compressionLevel);
+      zipped = await this.create7z(filesMap, compressionLevel);
     } else {
       throw new Error(`Unsupported format: ${format}`);
     }
@@ -190,47 +190,47 @@ export class ArchiveExtractor {
       await os.fs.mkdir(destPath);
 
       if (detectedFormat === "zip" && !password) {
-        await this._extractZip(toOwnedBytes(bytes), destPath);
+        await this.extractZip(toOwnedBytes(bytes), destPath);
       } else if (detectedFormat === "zip" && password) {
-        await this._extractZipWithPassword(toOwnedBytes(bytes), destPath, password);
+        await this.extractZipWithPassword(toOwnedBytes(bytes), destPath, password);
       } else if (detectedFormat === "7z" || (lower.endsWith(".7z") && !detectedFormat)) {
-        await this._extract7z(toOwnedBytes(bytes), destPath);
+        await this.extract7z(toOwnedBytes(bytes), destPath);
       } else if (detectedFormat === "rar" || (lower.endsWith(".rar") && !detectedFormat)) {
-        await this._extractWithArchiveWasm(bytes, destPath, password);
+        await this.extractWithArchiveWasm(bytes, destPath, password);
       } else if (lower.endsWith(".tar.gz") || lower.endsWith(".tgz")) {
-        const decompressed = await this._gunzipBytes(toOwnedBytes(bytes));
-        await this._extractTar(decompressed, destPath);
+        const decompressed = await this.gunzipBytes(toOwnedBytes(bytes));
+        await this.extractTar(decompressed, destPath);
       } else if (lower.endsWith(".tar.bz2") || lower.endsWith(".tbz2")) {
-        const decompressed = await this._bunzip2Bytes(toOwnedBytes(bytes));
-        await this._extractTar(decompressed, destPath);
+        const decompressed = await this.bunzip2Bytes(toOwnedBytes(bytes));
+        await this.extractTar(decompressed, destPath);
       } else if (lower.endsWith(".tar.xz")) {
-        const decompressed = await this._xzDecompress(toOwnedBytes(bytes));
-        await this._extractTar(decompressed, destPath);
+        const decompressed = await this.xzDecompress(toOwnedBytes(bytes));
+        await this.extractTar(decompressed, destPath);
       } else if (detectedFormat === "xz" || (lower.endsWith(".xz") && !lower.endsWith(".tar.xz"))) {
-        const decompressed = await this._xzDecompress(toOwnedBytes(bytes));
+        const decompressed = await this.xzDecompress(toOwnedBytes(bytes));
         const innerName = itemName.slice(0, -3);
         const blob = new Blob([decompressed]);
-        const kind = this._inferFileKind(innerName);
-        const icon = this._inferFileIcon(innerName);
+        const kind = this.inferFileKind(innerName);
+        const icon = this.inferFileIcon(innerName);
         await os.fs.writeBinaryFile(destPath, innerName, blob, kind, icon);
       } else if (detectedFormat === "bz2" || (lower.endsWith(".bz2") && !lower.endsWith(".tar.bz2"))) {
-        const decompressed = await this._bunzip2Bytes(toOwnedBytes(bytes));
+        const decompressed = await this.bunzip2Bytes(toOwnedBytes(bytes));
         const innerName = itemName.slice(0, -4);
         const blob = new Blob([new Uint8Array(decompressed)]);
-        const kind = this._inferFileKind(innerName);
-        const icon = this._inferFileIcon(innerName);
+        const kind = this.inferFileKind(innerName);
+        const icon = this.inferFileIcon(innerName);
         await os.fs.writeBinaryFile(destPath, innerName, blob, kind, icon);
       } else if (lower.endsWith(".gz") && !lower.endsWith(".tar.gz")) {
-        const decompressed = await this._gunzipBytes(toOwnedBytes(bytes));
+        const decompressed = await this.gunzipBytes(toOwnedBytes(bytes));
         const innerName = itemName.slice(0, -3);
         const blob = new Blob([decompressed]);
-        const kind = this._inferFileKind(innerName);
-        const icon = this._inferFileIcon(innerName);
+        const kind = this.inferFileKind(innerName);
+        const icon = this.inferFileIcon(innerName);
         await os.fs.writeBinaryFile(destPath, innerName, blob, kind, icon);
       } else if (detectedFormat === "tar" || lower.endsWith(".tar")) {
-        await this._extractTar(bytes, destPath);
+        await this.extractTar(bytes, destPath);
       } else {
-        await this._extractWithArchiveWasm(bytes, destPath, password);
+        await this.extractWithArchiveWasm(bytes, destPath, password);
       }
 
       this.notify(`Extracted to "${baseName}/"`, "success", 5000, null, this.appSource);
@@ -246,13 +246,13 @@ export class ArchiveExtractor {
     }
   }
 
-  _gunzipBytes(bytes) {
+  gunzipBytes(bytes) {
     return new Promise((resolve, reject) => {
       gunzip(bytes, (err, data) => (err ? reject(err) : resolve(data)));
     });
   }
 
-  _bunzip2Bytes(bytes) {
+  bunzip2Bytes(bytes) {
     try {
       return decompressSync(bytes);
     } catch (e) {
@@ -260,7 +260,7 @@ export class ArchiveExtractor {
     }
   }
 
-  async _xzDecompress(bytes) {
+  async xzDecompress(bytes) {
     const archiveWasm = await getArchiveWasm();
     try {
       const entries = archiveWasm.extract(bytes);
@@ -302,7 +302,7 @@ export class ArchiveExtractor {
     return result;
   }
 
-  async _extract7z(bytes, destPath) {
+  async extract7z(bytes, destPath) {
     const sevenZip = await get7zip();
     const tempId = generateTempId();
     const archiveName = `input_${tempId}.7z`;
@@ -316,7 +316,7 @@ export class ArchiveExtractor {
     sevenZip.FS.write(stream, bytes, 0, bytes.length);
     sevenZip.FS.close(stream);
     sevenZip.callMain(["x", archiveName, `-o${outDir}`, "-y"]);
-    await this._collectSevenZipOutput(sevenZip, outDir, outDir, destPath);
+    await this.collectSevenZipOutput(sevenZip, outDir, outDir, destPath);
     sevenZip.FS.unlink(archiveName);
 
     const cleanupDir = (currentPath) => {
@@ -338,7 +338,7 @@ export class ArchiveExtractor {
     cleanupDir(outDir);
   }
 
-  async _collectSevenZipOutput(sevenZip, baseDir, currentDir, destPath) {
+  async collectSevenZipOutput(sevenZip, baseDir, currentDir, destPath) {
     const entries = sevenZip.FS.readdir(currentDir).filter((f) => f !== "." && f !== "..");
     for (const entry of entries) {
       const fullPath = `${currentDir}/${entry}`;
@@ -350,7 +350,7 @@ export class ArchiveExtractor {
           .split("/")
           .filter(Boolean);
         await os.fs.mkdir([...destPath, ...relParts]);
-        await this._collectSevenZipOutput(sevenZip, baseDir, fullPath, destPath);
+        await this.collectSevenZipOutput(sevenZip, baseDir, fullPath, destPath);
       } else {
         const relParts = fullPath
           .slice(baseDir.length + 1)
@@ -361,15 +361,15 @@ export class ArchiveExtractor {
         await os.fs.mkdir(subPath);
         const fileBytes = toOwnedBytes(sevenZip.FS.readFile(fullPath));
         const blob = new Blob([fileBytes]);
-        const kind = this._inferFileKind(fileName);
-        const icon = this._inferFileIcon(fileName);
+        const kind = this.inferFileKind(fileName);
+        const icon = this.inferFileIcon(fileName);
         await os.fs.writeBinaryFile(subPath, fileName, blob, kind, icon);
         sevenZip.FS.unlink(fullPath);
       }
     }
   }
 
-  _extractZip(bytes, destPath) {
+  extractZip(bytes, destPath) {
     return new Promise((resolve, reject) => {
       unzip(bytes, async (err, files) => {
         if (err) {
@@ -386,8 +386,8 @@ export class ArchiveExtractor {
             const fileBytes = toOwnedBytes(data);
             const blob = new Blob([fileBytes]);
             const ext = fileName.split(".").pop().toLowerCase();
-            const kind = this._inferFileKind(fileName);
-            const icon = this._inferFileIcon(fileName);
+            const kind = this.inferFileKind(fileName);
+            const icon = this.inferFileIcon(fileName);
             await os.fs.writeBinaryFile(subPath, fileName, blob, kind, icon);
           }
           resolve();
@@ -398,7 +398,7 @@ export class ArchiveExtractor {
     });
   }
 
-  async _extractTar(bytes, destPath) {
+  async extractTar(bytes, destPath) {
     let offset = 0;
     while (offset + 512 <= bytes.length) {
       const header = bytes.slice(offset, offset + 512);
@@ -435,8 +435,8 @@ export class ArchiveExtractor {
         await os.fs.mkdir(subPath);
         const fileBytes = toOwnedBytes(bytes.slice(offset, offset + size));
         const blob = new Blob([fileBytes]);
-        const kind = this._inferFileKind(fileName);
-        const icon = this._inferFileIcon(fileName);
+        const kind = this.inferFileKind(fileName);
+        const icon = this.inferFileIcon(fileName);
         await os.fs.writeBinaryFile(subPath, fileName, blob, kind, icon);
       } else if (typeflag === "5") {
         await os.fs.mkdir([...destPath, ...parts, fileName]);
@@ -458,8 +458,8 @@ export class ArchiveExtractor {
           await os.fs.mkdir(longSubPath);
           const fileBytes = toOwnedBytes(bytes.slice(offset, offset + nextSize));
           const blob = new Blob([fileBytes]);
-          const kind = this._inferFileKind(longFileName);
-          const icon = this._inferFileIcon(longFileName);
+          const kind = this.inferFileKind(longFileName);
+          const icon = this.inferFileIcon(longFileName);
           await os.fs.writeBinaryFile(longSubPath, longFileName, blob, kind, icon);
           offset += Math.ceil(nextSize / 512) * 512;
           continue;
@@ -470,7 +470,7 @@ export class ArchiveExtractor {
     }
   }
 
-  async _collectFilesRecursively(items) {
+  async collectFilesRecursively(items) {
     const filesMap = {};
 
     for (const item of items) {
@@ -478,13 +478,13 @@ export class ArchiveExtractor {
       const name = item.name;
       const isFile = item.isFile ?? true;
 
-      await this._collectFileRecursive(path, name, isFile, "", filesMap);
+      await this.collectFileRecursive(path, name, isFile, "", filesMap);
     }
 
     return filesMap;
   }
 
-  async _collectFileRecursive(pathParts, itemName, isFile, prefix, filesMap) {
+  async collectFileRecursive(pathParts, itemName, isFile, prefix, filesMap) {
     const subPath = [...pathParts, itemName];
     if (isFile) {
       let bytes = new Uint8Array(0);
@@ -530,12 +530,12 @@ export class ArchiveExtractor {
       const folderEntries = await os.fs.readdir(subPath).catch(() => ({}));
       for (const [childName, childData] of Object.entries(folderEntries)) {
         const childIsFile = childData?.type === "file";
-        await this._collectFileRecursive(subPath, childName, childIsFile, prefix + itemName + "/", filesMap);
+        await this.collectFileRecursive(subPath, childName, childIsFile, prefix + itemName + "/", filesMap);
       }
     }
   }
 
-  _inferFileKind(fileName) {
+  inferFileKind(fileName) {
     const ext = fileName.split(".").pop().toLowerCase();
     const imageExts = ["png", "jpg", "jpeg", "gif", "webp", "svg", "ico", "bmp"];
     const textExts = ["txt", "md", "html", "json", "xml", "yaml", "yml", "csv"];
@@ -548,7 +548,7 @@ export class ArchiveExtractor {
     if (videoExts.includes(ext)) return FileKind.VIDEO;
     return FileKind.OTHER;
   } // check all "ext" and "exts" and "filekind" and "filetype" logic across project and create a plan to make all of these be shared and not duplicated or spread logic across modules. propose the best solution.
-  _inferFileIcon(fileName) {
+  inferFileIcon(fileName) {
     const ext = fileName.split(".").pop().toLowerCase();
     const iconMap = {
       png: "fa-file-image",
@@ -581,7 +581,7 @@ export class ArchiveExtractor {
     return iconMap[ext] || "fa-file";
   }
 
-  _createTar(filesMap) {
+  createTar(filesMap) {
     const chunks = [];
     const writeString = (buf, offset, str, len) => {
       const encoder = new TextEncoder();
@@ -683,7 +683,7 @@ export class ArchiveExtractor {
     return result;
   }
 
-  async _create7z(filesMap, compressionLevel) {
+  async create7z(filesMap, compressionLevel) {
     const sevenZip = await get7zip();
     const tempId = generateTempId();
     const tempDir = `/7z_temp_${tempId}`;
@@ -759,7 +759,7 @@ export class ArchiveExtractor {
     return result;
   }
 
-  async _extractWithArchiveWasm(bytes, destPath, password = null) {
+  async extractWithArchiveWasm(bytes, destPath, password = null) {
     const archiveWasm = await getArchiveWasm();
     const options = password ? { password } : undefined;
     const entries = archiveWasm.extract(bytes, options);
@@ -771,8 +771,8 @@ export class ArchiveExtractor {
         const subPath = [...destPath, ...parts];
         await os.fs.mkdir(subPath);
         const blob = new Blob([entry.data]);
-        const kind = this._inferFileKind(fileName);
-        const icon = this._inferFileIcon(fileName);
+        const kind = this.inferFileKind(fileName);
+        const icon = this.inferFileIcon(fileName);
         await os.fs.writeBinaryFile(subPath, fileName, blob, kind, icon);
       } else if (entry.type === "DIRECTORY") {
         const parts = entry.path.split("/").filter(Boolean);
@@ -781,7 +781,7 @@ export class ArchiveExtractor {
     }
   }
 
-  async _extractZipWithPassword(bytes, destPath, password) {
+  async extractZipWithPassword(bytes, destPath, password) {
     const archiveWasm = await getArchiveWasm();
     try {
       const entries = archiveWasm.extract(bytes, { password });
@@ -793,8 +793,8 @@ export class ArchiveExtractor {
           const subPath = [...destPath, ...parts];
           await os.fs.mkdir(subPath);
           const blob = new Blob([entry.data]);
-          const kind = this._inferFileKind(fileName);
-          const icon = this._inferFileIcon(fileName);
+          const kind = this.inferFileKind(fileName);
+          const icon = this.inferFileIcon(fileName);
           await os.fs.writeBinaryFile(subPath, fileName, blob, kind, icon);
         } else if (entry.type === "DIRECTORY") {
           const parts = entry.path.split("/").filter(Boolean);
@@ -809,7 +809,7 @@ export class ArchiveExtractor {
     }
   }
 
-  async _createZipWithPassword(filesMap, compressionLevel, password) {
+  async createZipWithPassword(filesMap, compressionLevel, password) {
     const archiveWasm = await getArchiveWasm();
     try {
       const entries = [];
@@ -834,7 +834,7 @@ export class ArchiveExtractor {
     }
   }
 
-  async _createXz(bytes) {
+  async createXz(bytes) {
     throw new Error("XZ compression not yet implemented via archive-wasm. Use 7zip-wasm fallback.");
   }
 

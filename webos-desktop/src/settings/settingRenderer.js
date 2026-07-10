@@ -97,14 +97,14 @@ function getGraphicsInfo() {
     const canvas = document.createElement("canvas");
     const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
     if (gl) {
-      const ext = gl.getExtension("WEBGL_debug_renderer_info");
+      const ext = gl.getExtension("WEBGL_debug_rendererinfo");
       if (ext) {
         return {
           vendor: gl.getParameter(ext.UNMASKED_VENDOR_WEBGL) || "Unknown",
           renderer: gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) || "Unknown"
         };
       }
-      return { vendor: "WEBGL_debug_renderer_info unavailable", renderer: "WEBGL_debug_renderer_info unavailable" };
+      return { vendor: "WEBGL_debug_rendererinfo unavailable", renderer: "WEBGL_debug_rendererinfo unavailable" };
     }
     return { vendor: "WebGL not supported", renderer: "WebGL not supported" };
   } catch (e) {

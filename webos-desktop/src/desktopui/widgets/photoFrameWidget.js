@@ -4,11 +4,11 @@ import { os } from "../../framework.js";
 export class PhotoFrameWidget extends WidgetBase {
   constructor(manager, id) {
     super(manager, id, "photoframe", "Photo Frame", 200, 180);
-    this._interval = null;
-    this._currentIndex = 0;
-    this._images = null;
-    this._customPhotoPath = null;
-    this._loading = false;
+    this.interval = null;
+    this.currentIndex = 0;
+    this.images = null;
+    this.customPhotoPath = null;
+    this.loading = false;
   }
 
   onRender(contentEl) {
@@ -17,18 +17,18 @@ export class PhotoFrameWidget extends WidgetBase {
         <div class="widget-photo-placeholder">No photos</div>
       </div>
     `;
-    this._showImage(contentEl);
-    this._interval = setInterval(() => this._nextImage(), 10000);
+    this.showImage(contentEl);
+    this.interval = setInterval(() => this.nextImage(), 10000);
   }
 
   getConfigFields() {
-    return [{ key: "upload", label: "Upload a photo", type: "text", value: this._customPhotoPath || "", default: "" }];
+    return [{ key: "upload", label: "Upload a photo", type: "text", value: this.customPhotoPath || "", default: "" }];
   }
 
   applyConfig(data) {
-    if (data.upload && data.upload !== this._customPhotoPath) {
-      this._customPhotoPath = data.upload;
-      if (this._contentEl) this._showImage(this._contentEl);
+    if (data.upload && data.upload !== this.customPhotoPath) {
+      this.customPhotoPath = data.upload;
+      if (this.contentEl) this.showImage(this.contentEl);
       this.manager.saveState();
     }
   }
@@ -38,20 +38,20 @@ export class PhotoFrameWidget extends WidgetBase {
       .fileOpen({ defaultFileName: "", initialPath: ["Pictures"] })
       .then((result) => {
         if (result) {
-          this._customPhotoPath = result;
-          if (this._contentEl) this._showImage(this._contentEl);
+          this.customPhotoPath = result;
+          if (this.contentEl) this.showImage(this.contentEl);
           this.manager.saveState();
         }
       })
       .catch(() => {
-        const explorerApp = this.manager?._widgetClasses ? null : null;
+        const explorerApp = this.manager?.widgetClasses ? null : null;
         const path = ["Pictures"];
         const desktopUI = typeof window !== "undefined" ? window.__desktopUI : null;
         if (desktopUI && desktopUI.explorerApp) {
           desktopUI.explorerApp.open(path, (selectedPath) => {
             if (selectedPath) {
-              this._customPhotoPath = selectedPath;
-              if (this._contentEl) this._showImage(this._contentEl);
+              this.customPhotoPath = selectedPath;
+              if (this.contentEl) this.showImage(this.contentEl);
               this.manager.saveState();
             }
           });
@@ -59,10 +59,10 @@ export class PhotoFrameWidget extends WidgetBase {
       });
   }
 
-  async _loadImages() {
+  async loadImages() {
     try {
       const files = await os.fs.readdir(["Pictures"]);
-      this._images = Object.entries(files)
+      this.images = Object.entries(files)
         .filter(([name, data]) => {
           if (data?.type !== "file") return false;
           const ext = name.split(".").pop().toLowerCase();
@@ -73,11 +73,11 @@ export class PhotoFrameWidget extends WidgetBase {
           path: ["Pictures", name]
         }));
     } catch {
-      this._images = [];
+      this.images = [];
     }
   }
 
-  async _resolveImageBlob(filePath) {
+  async resolveImageBlob(filePath) {
     const raw = await os.fs.read(filePath, { encoding: "binary" });
     if (!raw || raw.length === 0) return null;
     const asText = typeof raw === "string" ? raw : new TextDecoder("utf-8").decode(raw);
@@ -90,31 +90,31 @@ export class PhotoFrameWidget extends WidgetBase {
     return new Blob([raw], { type: "image/jpeg" });
   }
 
-  async _showImage(contentEl) {
+  async showImage(contentEl) {
     const frameEl = contentEl.querySelector(`#w-photo-frame-${this.id}`);
     if (!frameEl) return;
 
-    if (this._customPhotoPath) {
-      this._loadCustomPhoto(this._customPhotoPath, frameEl);
+    if (this.customPhotoPath) {
+      this.loadCustomPhoto(this.customPhotoPath, frameEl);
       return;
     }
 
-    if (this._images === null && !this._loading) {
-      this._loading = true;
-      await this._loadImages();
-      this._loading = false;
+    if (this.images === null && !this.loading) {
+      this.loading = true;
+      await this.loadImages();
+      this.loading = false;
     }
 
-    if (!this._images || this._images.length === 0) {
+    if (!this.images || this.images.length === 0) {
       frameEl.innerHTML = `<div class="widget-photo-placeholder">No photos</div>`;
       return;
     }
 
-    const img = this._images[this._currentIndex];
+    const img = this.images[this.currentIndex];
     frameEl.innerHTML = `<img src="" alt="${img.name}" class="widget-photo-img" id="w-photo-img-${this.id}">`;
 
     try {
-      const blob = await this._resolveImageBlob(img.path.join("/"));
+      const blob = await this.resolveImageBlob(img.path.join("/"));
       if (blob) {
         const imgEl = frameEl.querySelector("img");
         if (imgEl) imgEl.src = URL.createObjectURL(blob);
@@ -124,13 +124,13 @@ export class PhotoFrameWidget extends WidgetBase {
     }
   }
 
-  async _loadCustomPhoto(path, frameEl) {
+  async loadCustomPhoto(path, frameEl) {
     try {
       const parts = path.split("/");
       const name = parts.pop();
       const dir = parts;
       const filePath = dir.length ? dir.join("/") + "/" + name : name;
-      const blob = await this._resolveImageBlob(filePath);
+      const blob = await this.resolveImageBlob(filePath);
       if (blob) {
         frameEl.innerHTML = `<img src="${URL.createObjectURL(blob)}" alt="${name}" class="widget-photo-img">`;
       } else {
@@ -141,24 +141,24 @@ export class PhotoFrameWidget extends WidgetBase {
     }
   }
 
-  _nextImage() {
-    if (this._customPhotoPath || !this._images || this._images.length === 0) return;
-    this._currentIndex = (this._currentIndex + 1) % this._images.length;
-    if (this._contentEl) this._showImage(this._contentEl);
+  nextImage() {
+    if (this.customPhotoPath || !this.images || this.images.length === 0) return;
+    this.currentIndex = (this.currentIndex + 1) % this.images.length;
+    if (this.contentEl) this.showImage(this.contentEl);
   }
 
   getData() {
-    return { customPhotoPath: this._customPhotoPath };
+    return { customPhotoPath: this.customPhotoPath };
   }
 
   setData(data) {
     if (data && data.customPhotoPath) {
-      this._customPhotoPath = data.customPhotoPath;
+      this.customPhotoPath = data.customPhotoPath;
     }
   }
 
   destroy() {
-    if (this._interval) clearInterval(this._interval);
+    if (this.interval) clearInterval(this.interval);
     super.destroy();
   }
 }

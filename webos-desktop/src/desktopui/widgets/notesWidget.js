@@ -3,33 +3,33 @@ import { WidgetBase } from "../widgetManager.js";
 export class NotesWidget extends WidgetBase {
   constructor(manager, id) {
     super(manager, id, "notes", "Notes", 260, 200);
-    this._text = "";
-    this._saveTimer = null;
+    this.text = "";
+    this.saveTimer = null;
   }
 
   onRender(contentEl) {
     const textarea = document.createElement("textarea");
     textarea.className = "widget-notes-input";
     textarea.placeholder = "Type something...";
-    textarea.value = this._text;
+    textarea.value = this.text;
     textarea.addEventListener("input", () => {
-      this._text = textarea.value;
-      clearTimeout(this._saveTimer);
-      this._saveTimer = setTimeout(() => this.manager.saveState(), 500);
+      this.text = textarea.value;
+      clearTimeout(this.saveTimer);
+      this.saveTimer = setTimeout(() => this.manager.saveState(), 500);
     });
     contentEl.appendChild(textarea);
   }
 
   getData() {
-    return { text: this._text };
+    return { text: this.text };
   }
 
   setData(data) {
-    if (data) this._text = data.text || "";
+    if (data) this.text = data.text || "";
   }
 
   destroy() {
-    clearTimeout(this._saveTimer);
+    clearTimeout(this.saveTimer);
     super.destroy();
   }
 }

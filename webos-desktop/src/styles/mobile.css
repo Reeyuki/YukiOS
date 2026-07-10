@@ -28,7 +28,36 @@ html.is-mobile {
   }
 }
 
-html.is-mobile .desktop,
+html.is-mobile .desktop {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  justify-content: flex-start;
+  padding: 12px 8px;
+  gap: var(--icon-gap);
+  overflow-y: auto;
+}
+
+html.is-mobile .icon {
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  width: var(--icon-w);
+  height: var(--icon-h);
+  margin: 0;
+  flex-shrink: 0;
+}
+
+html.is-mobile .icon img,
+html.is-mobile .icon svg {
+  width: var(--icon-img-s);
+  height: var(--icon-img-s);
+}
+
+html.is-mobile .icon div {
+  font-size: 0.7rem;
+}
+
 @media (max-width: 768px) {
   .desktop {
     display: flex;
@@ -61,7 +90,47 @@ html.is-mobile .desktop,
   }
 }
 
-html.is-mobile .window:not([data-snap-zone]),
+html.is-mobile .window:not([data-snap-zone]) {
+  width: 100vw !important;
+  height: calc(100vh - var(--taskbar-h)) !important;
+  top: 0 !important;
+  left: 0 !important;
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+  border-bottom: none;
+  box-shadow: none;
+  min-width: 0;
+  min-height: 0;
+}
+
+html.is-mobile .window-header {
+  padding: 4px 8px;
+  font-size: 13px;
+  cursor: default !important;
+}
+
+html.is-mobile .window-controls button {
+  width: 40px;
+  height: 32px;
+}
+
+html.is-mobile .window-content {
+  font-size: 13px;
+}
+
+html.is-mobile .window-props-overlay {
+  width: 100vw !important;
+  height: calc(100vh - var(--taskbar-h)) !important;
+  top: 0 !important;
+  left: 0 !important;
+  border-radius: 0;
+}
+
+html.is-mobile .window[data-snap-zone] {
+  border-radius: 0;
+}
+
 @media (max-width: 768px) {
   .window:not([data-snap-zone]) {
     width: 100vw !important;
@@ -105,7 +174,92 @@ html.is-mobile .window:not([data-snap-zone]),
   }
 }
 
-html.is-mobile #taskbar,
+html.is-mobile #taskbar {
+  height: var(--taskbar-h);
+  padding: 0 4px;
+  z-index: 100;
+}
+
+html.is-mobile #start-button {
+  width: 42px;
+  height: 36px;
+  background-size: 28px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+html.is-mobile #taskbar-windows {
+  gap: 4px;
+  padding: 0 4px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+html.is-mobile .taskbar-item {
+  padding: 6px;
+  gap: 4px;
+  min-width: 36px;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+html.is-mobile .taskbar-item img,
+html.is-mobile .taskbar-item svg {
+  width: 28px;
+  height: 28px;
+}
+
+html.is-mobile .taskbar-item span {
+  display: none;
+}
+
+html.is-mobile #system-tray {
+  gap: 0.3em;
+}
+
+html.is-mobile .tray-icon-btn,
+html.is-mobile .tray-overflow-btn {
+  width: 32px;
+  height: 32px;
+}
+
+html.is-mobile .tray-icon-btn i,
+html.is-mobile .tray-overflow-btn i {
+  font-size: 14px;
+}
+
+html.is-mobile #clock {
+  font-size: 0.8em;
+}
+
+html.is-mobile #date {
+  display: none;
+}
+
+html.is-mobile #workspace-bar {
+  display: none !important;
+}
+
+html.is-mobile .ntf-tray-btn {
+  width: 32px;
+  height: 32px;
+}
+
+html.is-mobile .ntf-tray-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+html.is-mobile .desktop-peek-btn {
+  width: 32px;
+  height: 32px;
+}
+
+html.is-mobile .desktop-peek-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
 @media (max-width: 768px) {
   #taskbar {
     height: var(--taskbar-h);
@@ -194,7 +348,112 @@ html.is-mobile #taskbar,
   }
 }
 
-html.is-mobile .start-menu,
+html.is-mobile .start-menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: calc(100vh - var(--taskbar-h));
+  max-height: none;
+  bottom: var(--taskbar-h);
+  border-radius: 0;
+  border: none;
+  box-shadow: 0 0 0 rgba(0, 0, 0, 0.5);
+  flex-direction: column;
+  animation: startMenuInMobile 250ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+html.is-mobile .start-menu.closing {
+  animation: startMenuOutMobile 200ms cubic-bezier(0.55, 0, 0.7, 0.3) both;
+}
+
+html.is-mobile .start-user {
+  display: none;
+}
+
+html.is-mobile .start-cat {
+  padding: 6px 10px;
+  font-size: 12px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  border-left: none;
+  border-bottom: 2px solid transparent;
+  margin: 0;
+  border-radius: 6px;
+}
+
+html.is-mobile .start-cat.active {
+  border-left: none;
+  border-bottom-color: var(--brand);
+}
+
+html.is-mobile .start-cat i {
+  font-size: 13px;
+  width: 16px;
+}
+
+html.is-mobile .start-content {
+  flex: 1;
+  padding: 8px;
+  overflow: hidden;
+  min-height: 0;
+}
+
+html.is-mobile .start-page {
+  max-height: none;
+  margin-top: 4px;
+  gap: 4px;
+}
+
+html.is-mobile .start-menu-item {
+  padding: 6px 8px;
+  font-size: 12px;
+  margin: 1px 2px;
+  width: auto;
+}
+
+html.is-mobile .start-menu-item svg,
+html.is-mobile .start-menu-item i,
+html.is-mobile .start-menu-item img {
+  width: 28px;
+  height: 28px;
+  font-size: 14px;
+}
+
+html.is-mobile .start-menu-item .app-title {
+  font-size: 12px;
+}
+
+html.is-mobile .start-menu-item .app-description {
+  display: none;
+}
+
+html.is-mobile .start-menu-search {
+  padding-inline: 0.5rem;
+  margin-block-end: 0.5rem;
+}
+
+html.is-mobile #start-menu-search {
+  padding: 7px 10px 7px 30px;
+  font-size: 12px;
+}
+
+html.is-mobile .search-icon {
+  left: 10px;
+  font-size: 11px;
+}
+
+html.is-mobile .start-item {
+  width: 100%;
+  margin: 1px 0;
+  padding: 7px 10px;
+}
+
+html.is-mobile .app-grid {
+  padding: 4px;
+  gap: 2px;
+}
+
 @media (max-width: 768px) {
   .start-menu {
     position: fixed;
@@ -327,7 +586,42 @@ html.is-mobile .start-menu,
 
 html.is-mobile #context-menu,
 html.is-mobile #taskbar-context-menu,
-html.is-mobile #taskbar-pos-menu,
+html.is-mobile #taskbar-pos-menu {
+  position: fixed !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: var(--taskbar-h) !important;
+  top: auto !important;
+  width: 100% !important;
+  max-width: 100vw !important;
+  border-radius: 14px 14px 0 0;
+  min-width: 0;
+  max-height: 50vh;
+  overflow-y: auto;
+  z-index: 100000;
+  animation: bottomSheetIn 250ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+html.is-mobile #context-menu.closing,
+html.is-mobile #taskbar-context-menu.closing,
+html.is-mobile #taskbar-pos-menu.closing {
+  animation: bottomSheetOut 200ms cubic-bezier(0.55, 0, 0.7, 0.3) both;
+}
+
+html.is-mobile #context-menu div,
+html.is-mobile #taskbar-context-menu .menu-item,
+html.is-mobile #taskbar-pos-menu .context-menu-item {
+  padding: 14px 16px;
+  font-size: 15px;
+  gap: 14px;
+}
+
+html.is-mobile #context-menu hr,
+html.is-mobile #taskbar-context-menu hr,
+html.is-mobile #taskbar-pos-menu hr {
+  margin: 4px 12px;
+}
+
 @media (max-width: 768px) {
   #context-menu,
   #taskbar-context-menu,
@@ -399,7 +693,45 @@ html.is-mobile #taskbar-pos-menu,
   }
 }
 
-html.is-mobile .ntf-toast-container,
+html.is-mobile .ntf-toast-container {
+  left: 8px;
+  right: 8px;
+  bottom: calc(var(--taskbar-h) + 8px);
+  max-height: calc(100vh - var(--taskbar-h) - 16px);
+}
+
+html.is-mobile .ntf-toast {
+  width: 100%;
+  max-width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+}
+
+html.is-mobile .ntf-toast__heading {
+  font-size: 13px;
+}
+
+html.is-mobile .ntf-toast__text {
+  font-size: 12px;
+}
+
+html.is-mobile #ntf-panel {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: var(--taskbar-h);
+  top: 0;
+  width: 100%;
+  max-height: none;
+  border-radius: 0;
+  border: none;
+}
+
+html.is-mobile .ntf-panel__head {
+  padding: 12px 16px;
+  font-size: 14px;
+}
+
 @media (max-width: 768px) {
   .ntf-toast-container {
     left: 8px;
@@ -441,9 +773,35 @@ html.is-mobile .ntf-toast-container,
   }
 }
 
-html.is-mobile .overlay-dialog,
-html.is-mobile .explorer-confirmation-overlay > div,
-html.is-mobile .start-editor-dialog,
+html.is-mobile .overlay-dialog {
+  width: calc(100vw - 32px) !important;
+  max-width: calc(100vw - 32px) !important;
+  min-width: 0 !important;
+  margin: 0 16px;
+  max-height: 80vh;
+  border-radius: 14px;
+  padding: 20px;
+}
+
+html.is-mobile .ws-overlay {
+  max-width: calc(100vw - 32px);
+  max-height: 80vh;
+  padding: 12px;
+}
+
+html.is-mobile .ws-item {
+  min-width: 80px;
+  max-width: 120px;
+}
+
+html.is-mobile .explorer-confirmation-overlay > div {
+  width: calc(100vw - 32px) !important;
+  max-width: calc(100vw - 32px) !important;
+  min-width: 0 !important;
+  margin: 0 16px;
+  border-radius: 14px;
+}
+
 @media (max-width: 768px) {
   .overlay-dialog {
     width: calc(100vw - 32px) !important;
@@ -475,7 +833,48 @@ html.is-mobile .start-editor-dialog,
   }
 }
 
-html.is-mobile .session-overlay,
+html.is-mobile .session-overlay {
+  /* inherits layout from .session-overlay base */
+}
+
+html.is-mobile .session-time {
+  font-size: 48px;
+}
+
+html.is-mobile .session-date {
+  font-size: 18px;
+  margin-top: -8px;
+  margin-bottom: 20px;
+}
+
+html.is-mobile .session-content {
+  gap: 16px;
+  padding: 16px;
+}
+
+html.is-mobile .login-center-panel {
+  gap: 12px;
+  width: 100%;
+}
+
+html.is-mobile .user-carousel-row {
+  gap: 20px;
+  padding: 16px calc(50vw - 32px);
+}
+
+html.is-mobile .session-info-btn {
+  top: 12px;
+  left: 12px;
+  width: 32px;
+  height: 32px;
+  font-size: 12px;
+}
+
+html.is-mobile .session-info-modal {
+  top: 52px;
+  left: 12px;
+}
+
 @media (max-width: 768px) {
   .session-time {
     font-size: 48px;
@@ -613,9 +1012,68 @@ html.is-mobile .session-overlay,
 }
 
 /* ── Touch improvements ── */
-html.is-mobile,
+html.is-mobile * {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html.is-mobile .taskbar-item:hover {
+  transform: none;
+}
+
+html.is-mobile .taskbar-item:active {
+  background: var(--surface-hover);
+  transform: scale(0.96);
+}
+
+html.is-mobile .icon:hover {
+  background: transparent;
+  border-color: transparent;
+}
+
+html.is-mobile .icon:active {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+html.is-mobile .icon:hover img {
+  transform: none;
+}
+
+html.is-mobile .icon:active img {
+  transform: scale(0.95);
+}
+
+html.is-mobile body {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+html.is-mobile .desktop,
+html.is-mobile .window-content,
+html.is-mobile .start-page,
+html.is-mobile .app-grid {
+  -webkit-overflow-scrolling: touch;
+}
+
+html.is-mobile .start-menu-item:hover {
+  background: var(--glass);
+}
+
+html.is-mobile .start-cat:hover {
+  background: transparent;
+  border-left-color: transparent;
+}
+
+html.is-mobile #start-button:hover {
+  filter: none;
+}
+
+html.is-mobile .workspace-btn:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.6);
+}
+
 @media (max-width: 768px) {
-  /* Remove hover-only effects; use active state for feedback */
   * {
     -webkit-tap-highlight-color: transparent;
   }
@@ -647,13 +1105,10 @@ html.is-mobile,
     transform: scale(0.95);
   }
 
-  /* Prevent text selection on touch drag */
   body {
     -webkit-user-select: none;
     user-select: none;
   }
-
-  /* Increase touch target for back/forward in browsers */
 
   .desktop,
   .window-content,

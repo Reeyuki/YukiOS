@@ -51,11 +51,6 @@
     border-color 0.15s ease;
 }
 
-.rhythms-slider::-webkit-slider-thumb:hover {
-  background: var(--brand-hover);
-  transform: scale(1.1);
-}
-
 .rhythms-slider::-moz-range-thumb {
   width: 16px;
   height: 16px;

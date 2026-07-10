@@ -3,7 +3,7 @@ import { WidgetBase } from "../widgetManager.js";
 export class PowerWidget extends WidgetBase {
   constructor(manager, id) {
     super(manager, id, "battery", "Battery", 200, 180);
-    this._interval = null;
+    this.interval = null;
   }
 
   onRender(contentEl) {
@@ -18,11 +18,11 @@ export class PowerWidget extends WidgetBase {
       </div>
     `;
 
-    this._update();
-    this._interval = setInterval(() => this._update(), 5000);
+    this.update();
+    this.interval = setInterval(() => this.update(), 5000);
   }
 
-  async _update() {
+  async update() {
     const fill = document.getElementById(`battery-fill-${this.id}`);
     const percent = document.getElementById(`battery-percent-${this.id}`);
 
@@ -61,7 +61,7 @@ export class PowerWidget extends WidgetBase {
   }
 
   destroy() {
-    if (this._interval) clearInterval(this._interval);
+    if (this.interval) clearInterval(this.interval);
     super.destroy();
   }
 }

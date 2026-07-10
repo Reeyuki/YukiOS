@@ -13,8 +13,8 @@ export class InputHandler {
   }
 
   init() {
-    this._initStartMenuKeybinds();
-    this._initWindowSwitcher();
+    this.initStartMenuKeybinds();
+    this.initWindowSwitcher();
 
     document.addEventListener("keydown", (e) => {
       if (KeybindManager.matches(e, "global.showDesktop")) {
@@ -50,29 +50,29 @@ export class InputHandler {
       if (!focused) return;
       if (KeybindManager.matches(e, "global.snapLeft")) {
         e.preventDefault();
-        this.manager._applySnap(focused, "left");
+        this.manager.applySnap(focused, "left");
       }
       if (KeybindManager.matches(e, "global.snapRight")) {
         e.preventDefault();
-        this.manager._applySnap(focused, "right");
+        this.manager.applySnap(focused, "right");
       }
       if (KeybindManager.matches(e, "global.maximize")) {
         e.preventDefault();
-        this.manager._applySnap(focused, "maximize");
+        this.manager.applySnap(focused, "maximize");
       }
     });
   }
 
-  _initStartMenuKeybinds() {
+  initStartMenuKeybinds() {
     document.addEventListener(
       "pointerdown",
       (e) => {
         const target = e.target;
-        if (target?.closest?.(".window")) this.manager._lastFocusZone = "window";
-        else if (target?.closest?.("#start-menu")) this.manager._lastFocusZone = "start-menu";
-        else this.manager._lastFocusZone = "desktop";
+        if (target?.closest?.(".window")) this.manager.lastFocusZone = "window";
+        else if (target?.closest?.("#start-menu")) this.manager.lastFocusZone = "start-menu";
+        else this.manager.lastFocusZone = "desktop";
 
-        if (this.manager._lastFocusZone === "desktop") {
+        if (this.manager.lastFocusZone === "desktop") {
           this.manager.openWindows.forEach(({ taskbarItem }) => taskbarItem?.classList?.remove("active"));
         }
       },
@@ -80,13 +80,13 @@ export class InputHandler {
     );
 
     document.addEventListener("keydown", (e) => {
-      if (!this._shouldOpenStartMenuFromKeyEvent(e)) return;
+      if (!this.shouldOpenStartMenuFromKeyEvent(e)) return;
       e.preventDefault();
       toggleStartMenu({ focusSearch: true, openDefaultPage: true });
     });
   }
 
-  _shouldOpenStartMenuFromKeyEvent(e) {
+  shouldOpenStartMenuFromKeyEvent(e) {
     const isTrigger =
       KeybindManager.matches(e, "global.startMenu.ctrl") ||
       KeybindManager.matches(e, "global.startMenu.tab") ||
@@ -108,7 +108,7 @@ export class InputHandler {
       if (active.closest?.("#start-menu")) return false;
     }
 
-    if (this.manager._lastFocusZone !== "desktop") return false;
+    if (this.manager.lastFocusZone !== "desktop") return false;
 
     const anyWindowActive = Array.from(this.manager.openWindows.values()).some((v) =>
       v.taskbarItem?.classList?.contains("active")
@@ -118,26 +118,26 @@ export class InputHandler {
     return true;
   }
 
-  _initWindowSwitcher() {
+  initWindowSwitcher() {
     document.addEventListener("keydown", (e) => {
       if (KeybindManager.matches(e, "global.windowSwitcher")) {
         e.preventDefault();
         if (!this.windowSwitcherActive) {
-          this._startWindowSwitcher();
+          this.startWindowSwitcher();
         } else {
-          this._cycleWindowSwitcher();
+          this.cycleWindowSwitcher();
         }
       }
     });
 
     document.addEventListener("keyup", (e) => {
       if (this.windowSwitcherActive && e.key === "Alt") {
-        this._endWindowSwitcher();
+        this.endWindowSwitcher();
       }
     });
   }
 
-  _getSwitcherSettings() {
+  getSwitcherSettings() {
     return {
       mode: os.storage.get(StorageKeys.windowSwitcherMode) || "mru",
       ui: os.storage.get(StorageKeys.windowSwitcherUI) || "overlay",
@@ -145,8 +145,8 @@ export class InputHandler {
     };
   }
 
-  _getWindowsForSwitcher() {
-    const settings = this._getSwitcherSettings();
+  getWindowsForSwitcher() {
+    const settings = this.getSwitcherSettings();
     const allWindows = Array.from(this.manager.openWindows.keys())
       .map((id) => document.getElementById(id))
       .filter(Boolean);
@@ -167,9 +167,9 @@ export class InputHandler {
     return windows;
   }
 
-  _startWindowSwitcher() {
-    const settings = this._getSwitcherSettings();
-    this.windowSwitcherWindows = this._getWindowsForSwitcher();
+  startWindowSwitcher() {
+    const settings = this.getSwitcherSettings();
+    this.windowSwitcherWindows = this.getWindowsForSwitcher();
 
     if (this.windowSwitcherWindows.length === 0) return;
 
@@ -177,36 +177,36 @@ export class InputHandler {
     this.windowSwitcherIndex = 0;
 
     if (settings.ui === "overlay") {
-      this._showSwitcherOverlay();
+      this.showSwitcherOverlay();
     } else if (settings.ui === "taskbar") {
-      this._highlightTaskbarItem(0);
+      this.highlightTaskbarItem(0);
     }
 
-    this._bringToFront(this.windowSwitcherWindows[0]);
+    this.bringToFront(this.windowSwitcherWindows[0]);
   }
 
-  _cycleWindowSwitcher() {
-    const settings = this._getSwitcherSettings();
+  cycleWindowSwitcher() {
+    const settings = this.getSwitcherSettings();
     this.windowSwitcherIndex = (this.windowSwitcherIndex + 1) % this.windowSwitcherWindows.length;
     const nextWindow = this.windowSwitcherWindows[this.windowSwitcherIndex];
 
     if (settings.ui === "overlay") {
-      this._updateSwitcherOverlay();
+      this.updateSwitcherOverlay();
     } else if (settings.ui === "taskbar") {
-      this._highlightTaskbarItem(this.windowSwitcherIndex);
+      this.highlightTaskbarItem(this.windowSwitcherIndex);
     }
 
-    this._bringToFront(nextWindow);
+    this.bringToFront(nextWindow);
   }
 
-  _endWindowSwitcher() {
-    const settings = this._getSwitcherSettings();
+  endWindowSwitcher() {
+    const settings = this.getSwitcherSettings();
     const selectedWindow = this.windowSwitcherWindows[this.windowSwitcherIndex];
 
     if (settings.ui === "overlay") {
-      this._hideSwitcherOverlay();
+      this.hideSwitcherOverlay();
     } else if (settings.ui === "taskbar") {
-      this._clearTaskbarHighlights();
+      this.clearTaskbarHighlights();
     }
 
     if (selectedWindow) {
@@ -215,7 +215,7 @@ export class InputHandler {
         const taskbarItem = document.getElementById(`taskbar-${selectedWindow.id}`);
         if (taskbarItem) taskbarItem.classList.remove("minimized");
       }
-      this._bringToFront(selectedWindow);
+      this.bringToFront(selectedWindow);
     }
 
     this.windowSwitcherActive = false;
@@ -223,10 +223,10 @@ export class InputHandler {
     this.windowSwitcherIndex = 0;
   }
 
-  _bringToFront(win) {
+  bringToFront(win) {
     this.manager.bringToFront(win);
   }
-  _showSwitcherOverlay() {
+  showSwitcherOverlay() {
     if (this.windowSwitcherOverlay) return;
 
     const overlay = document.createElement("div");
@@ -241,10 +241,10 @@ export class InputHandler {
     document.body.appendChild(overlay);
     this.windowSwitcherOverlay = overlay;
 
-    this._updateSwitcherOverlay();
+    this.updateSwitcherOverlay();
   }
 
-  _updateSwitcherOverlay() {
+  updateSwitcherOverlay() {
     const content = this.windowSwitcherOverlay?.querySelector("#window-switcher-content");
     if (!content) return;
 
@@ -265,7 +265,7 @@ export class InputHandler {
       const previewContainer = document.createElement("div");
       previewContainer.className = "ws-preview";
 
-      const icon = this._buildSwitcherIcon(iconValue, title, color, isActive);
+      const icon = this.buildSwitcherIcon(iconValue, title, color, isActive);
       previewContainer.appendChild(icon);
 
       const titleSpan = document.createElement("span");
@@ -278,7 +278,7 @@ export class InputHandler {
     });
   }
 
-  _buildSwitcherIcon(iconValue, title, color, isActive) {
+  buildSwitcherIcon(iconValue, title, color, isActive) {
     iconValue = resolveIconUrl(iconValue);
 
     const isImage =
@@ -313,15 +313,15 @@ export class InputHandler {
 
     return icon;
   }
-  _hideSwitcherOverlay() {
+  hideSwitcherOverlay() {
     if (this.windowSwitcherOverlay) {
       this.windowSwitcherOverlay.remove();
       this.windowSwitcherOverlay = null;
     }
   }
 
-  _highlightTaskbarItem(index) {
-    this._clearTaskbarHighlights();
+  highlightTaskbarItem(index) {
+    this.clearTaskbarHighlights();
     const win = this.windowSwitcherWindows[index];
     if (win) {
       const taskbarItem = document.getElementById(`taskbar-${win.id}`);
@@ -332,7 +332,7 @@ export class InputHandler {
     }
   }
 
-  _clearTaskbarHighlights() {
+  clearTaskbarHighlights() {
     this.windowSwitcherWindows.forEach((win) => {
       const taskbarItem = document.getElementById(`taskbar-${win.id}`);
       if (taskbarItem) {

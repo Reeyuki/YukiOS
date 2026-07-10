@@ -23,22 +23,22 @@ export class SessionManager {
     this.container = null;
     this.isLocked = false;
     this.timeInterval = null;
-    this.userHistory = this._loadUserHistory();
+    this.userHistory = this.loadUserHistory();
     this.sessionState = "login";
     this.selectedUser = null;
     this.selectedSession = os.storage.get(StorageKeys.selectedSession) || "Yuki Desktop";
-    this._ensureUserId();
-    this._setupProfileUpdateListener();
+    this.ensureUserId();
+    this.setupProfileUpdateListener();
     this.startTime = Date.now();
     this.uptimeInterval = null;
     this.contextMenuHandler = null;
     this.keyboardHandler = null;
     this.IDLE_TIMEOUT = 15 * 60 * 1000;
-    this._idleTimer = null;
-    this._boundResetIdle = this._handleActivity.bind(this);
+    this.idleTimer = null;
+    this.boundResetIdle = this.handleActivity.bind(this);
   }
 
-  _ensureUserId() {
+  ensureUserId() {
     let userId = os.storage.get(StorageKeys.userId);
     if (!userId) {
       userId = generateUUID();
@@ -47,32 +47,32 @@ export class SessionManager {
     return userId;
   }
 
-  _setupProfileUpdateListener() {
+  setupProfileUpdateListener() {
     os.events.on(BusEvents.PROFILE_UPDATED, (data) => {
-      this._handleProfileUpdate(data);
+      this.handleProfileUpdate(data);
     });
   }
 
-  async _handleProfileUpdate(data) {
+  async handleProfileUpdate(data) {
     const { userId, name, avatar } = data;
 
     const existingIndex = this.userHistory.findIndex((u) => u.key === userId || u.userId === userId);
     if (existingIndex >= 0) {
       this.userHistory[existingIndex].name = name;
       this.userHistory[existingIndex].avatar = avatar;
-      this._saveUserHistory();
+      this.saveUserHistory();
     }
 
     if (this.container) {
       const carousel = this.container.querySelector("#user-carousel-row");
       if (carousel) {
-        carousel.innerHTML = await this._renderUserCarousel();
-        this._bindCarouselTileEvents();
+        carousel.innerHTML = await this.renderUserCarousel();
+        this.bindCarouselTileEvents();
       }
     }
   }
 
-  _loadUserHistory() {
+  loadUserHistory() {
     try {
       const history = os.storage.get(StorageKeys.userHistory);
       if (!history) return [];
@@ -94,7 +94,7 @@ export class SessionManager {
 
       if (needsMigration) {
         this.userHistory = migratedHistory;
-        this._saveUserHistory();
+        this.saveUserHistory();
       }
 
       return migratedHistory;
@@ -103,14 +103,14 @@ export class SessionManager {
     }
   }
 
-  _saveUserHistory() {
+  saveUserHistory() {
     try {
       os.storage.set(StorageKeys.userHistory, this.userHistory);
     } catch (e) {}
   }
 
-  _addToUserHistory(session) {
-    const userKey = session.key || this._ensureUserId();
+  addToUserHistory(session) {
+    const userKey = session.key || this.ensureUserId();
     const existingIndex = this.userHistory.findIndex((u) => u.key === userKey || u.userId === userKey);
     const userEntry = {
       userId: userKey,
@@ -127,7 +127,7 @@ export class SessionManager {
     }
 
     this.userHistory = this.userHistory.slice(0, 5);
-    this._saveUserHistory();
+    this.saveUserHistory();
   }
 
   async showLogin() {
@@ -136,11 +136,11 @@ export class SessionManager {
     os.storage.set(StorageKeys.lastLaunchTime, now.toString());
 
     return new Promise(async (resolve) => {
-      await this._createSessionUI("login", resolve);
+      await this.createSessionUI("login", resolve);
     });
   }
 
-  async _createSessionUI(state, onComplete) {
+  async createSessionUI(state, onComplete) {
     if (document.getElementById("session-overlay")) return;
 
     this.sessionState = state;
@@ -155,9 +155,9 @@ export class SessionManager {
     const lastUsername = os.storage.get(StorageKeys.username) || "";
     const lastAvatarRef = os.storage.get(StorageKeys.profilePicture) || PREDEFINED_AVATARS[0];
     const displayName = lastUsername || "Guest";
-    const userId = this._ensureUserId();
+    const userId = this.ensureUserId();
 
-    this.userHistory = this._loadUserHistory();
+    this.userHistory = this.loadUserHistory();
 
     const primaryUser = { name: displayName, key: userId, avatar: lastAvatarRef, userId: userId };
 
@@ -200,7 +200,7 @@ export class SessionManager {
 
         <div class="login-center-panel">
           <button class="action-button" id="action-button">
-            ${this._getActionButtonText()}
+            ${this.getActionButtonText()}
           </button>
 
           <div class="system-actions-row">
@@ -257,18 +257,18 @@ export class SessionManager {
 
     const carouselRow = this.container.querySelector("#user-carousel-row");
     if (carouselRow) {
-      carouselRow.innerHTML = await this._renderUserCarousel();
+      carouselRow.innerHTML = await this.renderUserCarousel();
     }
 
-    await this._applySessionWallpaper(this.container);
-    await this._bindSessionEvents(onComplete);
-    this._startClock();
-    this._startUptimeCounter();
-    this._disableContextMenu();
-    this._setupDragVisibility();
+    await this.applySessionWallpaper(this.container);
+    await this.bindSessionEvents(onComplete);
+    this.startClock();
+    this.startUptimeCounter();
+    this.disableContextMenu();
+    this.setupDragVisibility();
   }
 
-  async _renderUserCarousel() {
+  async renderUserCarousel() {
     const users = this.userHistory.length > 0 ? this.userHistory : [this.selectedUser];
     const renderedUsers = await Promise.all(
       users.map(async (user) => {
@@ -288,7 +288,7 @@ export class SessionManager {
     return renderedUsers.join("");
   }
 
-  _getActionButtonText() {
+  getActionButtonText() {
     if (this.sessionState === "locked") return "Unlock";
     if (this.sessionState === "login") {
       return this.selectedUser ? "Sign in" : "Select User";
@@ -296,16 +296,16 @@ export class SessionManager {
     return "Start Session";
   }
 
-  _updateActionButtonText() {
+  updateActionButtonText() {
     const actionBtn = this.container?.querySelector("#action-button");
     if (actionBtn) {
-      actionBtn.innerHTML = this._getActionButtonText();
+      actionBtn.innerHTML = this.getActionButtonText();
     }
   }
 
-  _renderUserTile(user) {
+  renderUserTile(user) {
     const lastLoginDate = new Date(user.lastLogin);
-    const timeAgo = this._formatTimeAgo(lastLoginDate);
+    const timeAgo = this.formatTimeAgo(lastLoginDate);
 
     return `
       <div class="user-history-tile" data-key="${user.key}" data-name="${user.name}" data-avatar="${user.avatar}">
@@ -318,7 +318,7 @@ export class SessionManager {
     `;
   }
 
-  _formatTimeAgo(date) {
+  formatTimeAgo(date) {
     const now = new Date();
     const diffMs = now - date;
     const diffMins = Math.floor(diffMs / 60000);
@@ -332,7 +332,7 @@ export class SessionManager {
     return date.toLocaleDateString();
   }
 
-  async _applySessionWallpaper(container) {
+  async applySessionWallpaper(container) {
     const wp = await SystemUtilities.getLoginWallpaper();
     let bgEl = container.querySelector(".session-wallpaper");
     const blurOverlay = container.querySelector(".session-background");
@@ -359,7 +359,7 @@ export class SessionManager {
     if (blurOverlay) blurOverlay.style.display = "none";
   }
 
-  _startClock() {
+  startClock() {
     this.timeInterval = setInterval(() => {
       if (!this.container) {
         clearInterval(this.timeInterval);
@@ -373,7 +373,7 @@ export class SessionManager {
     }, 1000 * 60);
   }
 
-  _startUptimeCounter() {
+  startUptimeCounter() {
     this.uptimeInterval = setInterval(() => {
       if (!this.container) {
         clearInterval(this.uptimeInterval);
@@ -382,12 +382,12 @@ export class SessionManager {
       const uptimeEl = this.container.querySelector("#uptime-display");
       if (uptimeEl) {
         const uptime = Date.now() - this.startTime;
-        uptimeEl.textContent = this._formatUptime(uptime);
+        uptimeEl.textContent = this.formatUptime(uptime);
       }
     }, 1000);
   }
 
-  _formatUptime(ms) {
+  formatUptime(ms) {
     const seconds = Math.floor(ms / 1000);
     const minutes = Math.floor(seconds / 60);
     const hours = Math.floor(minutes / 60);
@@ -399,19 +399,19 @@ export class SessionManager {
     return `${seconds}s`;
   }
 
-  _disableContextMenu() {
+  disableContextMenu() {
     this.contextMenuHandler = (e) => e.preventDefault();
     document.addEventListener("contextmenu", this.contextMenuHandler);
   }
 
-  _enableContextMenu() {
+  enableContextMenu() {
     if (this.contextMenuHandler) {
       document.removeEventListener("contextmenu", this.contextMenuHandler);
       this.contextMenuHandler = null;
     }
   }
 
-  async _bindSessionEvents(onComplete) {
+  async bindSessionEvents(onComplete) {
     const actionBtn = this.container.querySelector("#action-button");
     const powerBtn = this.container.querySelector("#power-btn");
     const restartBtn = this.container.querySelector("#restart-btn");
@@ -450,13 +450,13 @@ export class SessionManager {
       actionBtn.disabled = true;
       actionBtn.innerHTML = `Signing in... <i class="fas fa-spinner fa-spin"></i>`;
 
-      await this._initializeSession();
+      await this.initializeSession();
 
       this.container.classList.add("exit");
 
       setTimeout(() => {
         this.container.remove();
-        this._enableContextMenu();
+        this.enableContextMenu();
         if (this.keyboardHandler) {
           document.removeEventListener("keydown", this.keyboardHandler);
           this.keyboardHandler = null;
@@ -492,7 +492,7 @@ export class SessionManager {
       selectedAvatar = tile.dataset.url;
 
       this.selectedUser.avatar = selectedAvatar;
-      await this._selectCarouselUser(this.selectedUser.key, this.selectedUser.name, selectedAvatar);
+      await this.selectCarouselUser(this.selectedUser.key, this.selectedUser.name, selectedAvatar);
       avatarModal.style.display = "none";
     });
 
@@ -509,7 +509,7 @@ export class SessionManager {
     });
 
     sleepBtn.addEventListener("click", () => {
-      this._enterSleepMode();
+      this.enterSleepMode();
     });
 
     infoBtn.addEventListener("click", () => {
@@ -566,14 +566,14 @@ export class SessionManager {
         sessionRoot.classList.remove("open");
       }
     });
-    await this._bindCarouselEvents();
+    await this.bindCarouselEvents();
 
-    this.keyboardHandler = (e) => this._handleKeyboardNav(e, handleAction);
+    this.keyboardHandler = (e) => this.handleKeyboardNav(e, handleAction);
     document.addEventListener("keydown", this.keyboardHandler);
   }
 
-  async _bindCarouselEvents() {
-    await this._bindCarouselTileEvents();
+  async bindCarouselEvents() {
+    await this.bindCarouselTileEvents();
 
     const carousel = this.container.querySelector("#user-carousel-row");
     const selectedTile = carousel?.querySelector(".user-carousel-tile.selected");
@@ -582,7 +582,7 @@ export class SessionManager {
     }
   }
 
-  async _bindCarouselTileEvents() {
+  async bindCarouselTileEvents() {
     const carousel = this.container.querySelector("#user-carousel-row");
     if (!carousel) return;
 
@@ -597,11 +597,11 @@ export class SessionManager {
           return;
         }
 
-        this._selectCarouselUser(tile.dataset.key, tile.dataset.name, tile.dataset.avatar);
+        this.selectCarouselUser(tile.dataset.key, tile.dataset.name, tile.dataset.avatar);
       });
     });
   }
-  async _selectCarouselUser(key, name, avatar) {
+  async selectCarouselUser(key, name, avatar) {
     this.selectedUser = { key, name, avatar };
 
     os.storage.set(StorageKeys.userId, key);
@@ -616,12 +616,12 @@ export class SessionManager {
     } else {
       this.userHistory.unshift({ userId: key, key, name, avatar, lastLogin: Date.now() });
     }
-    this._saveUserHistory();
+    this.saveUserHistory();
 
     const carousel = this.container.querySelector("#user-carousel-row");
     if (carousel) {
-      carousel.innerHTML = await this._renderUserCarousel();
-      this._bindCarouselTileEvents();
+      carousel.innerHTML = await this.renderUserCarousel();
+      this.bindCarouselTileEvents();
 
       const selectedTile = carousel.querySelector(".user-carousel-tile.selected");
       if (selectedTile) {
@@ -637,10 +637,10 @@ export class SessionManager {
       }
     }
 
-    this._updateActionButtonText();
+    this.updateActionButtonText();
   }
 
-  async _handleKeyboardNav(e, handleAction) {
+  async handleKeyboardNav(e, handleAction) {
     if (KeybindManager.matches(e, "session.confirm")) {
       e.preventDefault();
       handleAction();
@@ -649,7 +649,7 @@ export class SessionManager {
       if (avatarModal && avatarModal.style.display !== "none") {
         avatarModal.style.display = "none";
       } else {
-        this._hideExtraElements();
+        this.hideExtraElements();
       }
     } else if (
       KeybindManager.matches(e, "session.navigateLeft") ||
@@ -663,17 +663,17 @@ export class SessionManager {
       const nextIndex = (currentIndex + direction + users.length) % users.length;
       const next = users[nextIndex];
 
-      await this._selectCarouselUser(next.key, next.name, next.avatar);
+      await this.selectCarouselUser(next.key, next.name, next.avatar);
     }
   }
 
-  async _initializeSession() {
+  async initializeSession() {
     const { name, key, avatar } = this.currentSession;
 
     os.storage.set(StorageKeys.userId, key);
     os.storage.set(StorageKeys.username, name);
     os.storage.set(StorageKeys.lastLaunchTime, Date.now().toString());
-    this._addToUserHistory(this.currentSession);
+    this.addToUserHistory(this.currentSession);
 
     if (this.services.fileSystemManager) {
       await this.services.fileSystemManager.setSession(key);
@@ -692,7 +692,7 @@ export class SessionManager {
       setTimeout(() => this.services.setupApp.open(), 1000);
     }
 
-    this._startIdleDetection();
+    this.startIdleDetection();
   }
 
   lockToLoginScreen() {
@@ -702,7 +702,7 @@ export class SessionManager {
     audioMixer().playSystemSound(SystemAudio.SHUTDOWN);
 
     if (this.services.windowManager && typeof this.services.windowManager.closeAll === "function") {
-      this.services.windowManager.closeAll();
+      os.window.closeAll();
     }
 
     const startMenu = document.getElementById("start-menu");
@@ -712,7 +712,7 @@ export class SessionManager {
     }
 
     return new Promise(async (resolve) => {
-      await this._createSessionUI("login", (session) => {
+      await this.createSessionUI("login", (session) => {
         this.isLocked = false;
         resolve(session);
       });
@@ -722,11 +722,11 @@ export class SessionManager {
   async lockSession() {
     if (!this.currentSession || this.isLocked) return;
     this.isLocked = true;
-    this._stopIdleDetection();
+    this.stopIdleDetection();
 
     this.lastActiveWindow = $(".window.active") || null;
 
-    await this._createSessionUI("locked", null);
+    await this.createSessionUI("locked", null);
 
     os.events.emit(BusEvents.SYSTEM_LOCKED, {});
   }
@@ -740,7 +740,7 @@ export class SessionManager {
       setTimeout(() => {
         this.container.remove();
         this.container = null;
-        this._enableContextMenu();
+        this.enableContextMenu();
         if (this.keyboardHandler) {
           document.removeEventListener("keydown", this.keyboardHandler);
           this.keyboardHandler = null;
@@ -759,16 +759,16 @@ export class SessionManager {
     }
 
     if (this.lastActiveWindow && this.services.windowManager) {
-      this.services.windowManager.bringToFront(this.lastActiveWindow);
+      os.window.bringToFront(this.lastActiveWindow);
     }
     this.lastActiveWindow = null;
 
-    this._startIdleDetection();
+    this.startIdleDetection();
 
     os.events.emit(BusEvents.SYSTEM_UNLOCKED, {});
   }
 
-  _enterSleepMode() {
+  enterSleepMode() {
     if (!this.container || this.container.classList.contains("sleep")) return;
 
     this.container.classList.add("sleep");
@@ -793,7 +793,7 @@ export class SessionManager {
     }
 
     const wakeHandler = () => {
-      this._exitSleepMode();
+      this.exitSleepMode();
       wakeLayer.removeEventListener("mousemove", wakeHandler);
       wakeLayer.removeEventListener("mousedown", wakeHandler);
       wakeLayer.removeEventListener("keydown", wakeHandler);
@@ -804,7 +804,7 @@ export class SessionManager {
     wakeLayer.addEventListener("keydown", wakeHandler);
   }
 
-  _exitSleepMode() {
+  exitSleepMode() {
     if (!this.container) return;
 
     this.container.classList.remove("sleep");
@@ -824,10 +824,10 @@ export class SessionManager {
       wallpaper.play();
     }
 
-    this._startClock();
+    this.startClock();
   }
 
-  _setupDragVisibility() {
+  setupDragVisibility() {
     let isDragging = false;
     let startX = 0;
     let startY = 0;
@@ -845,7 +845,7 @@ export class SessionManager {
         const deltaY = Math.abs(e.clientY - startY);
         if (deltaX > dragThreshold || deltaY > dragThreshold) {
           isDragging = true;
-          this._showExtraElements();
+          this.showExtraElements();
         }
       }
     };
@@ -860,43 +860,43 @@ export class SessionManager {
     this.container.addEventListener("mouseleave", handleMouseUp);
   }
 
-  _startIdleDetection() {
-    if (this._idleTimer) return;
-    this._resetIdleTimer();
-    document.addEventListener("mousemove", this._boundResetIdle, { passive: true });
-    document.addEventListener("mousedown", this._boundResetIdle, { passive: true });
-    document.addEventListener("keydown", this._boundResetIdle, { passive: true });
-    document.addEventListener("touchstart", this._boundResetIdle, { passive: true });
-    document.addEventListener("scroll", this._boundResetIdle, { passive: true });
+  startIdleDetection() {
+    if (this.idleTimer) return;
+    this.resetIdleTimer();
+    document.addEventListener("mousemove", this.boundResetIdle, { passive: true });
+    document.addEventListener("mousedown", this.boundResetIdle, { passive: true });
+    document.addEventListener("keydown", this.boundResetIdle, { passive: true });
+    document.addEventListener("touchstart", this.boundResetIdle, { passive: true });
+    document.addEventListener("scroll", this.boundResetIdle, { passive: true });
   }
 
-  _stopIdleDetection() {
-    if (this._idleTimer) {
-      clearTimeout(this._idleTimer);
-      this._idleTimer = null;
+  stopIdleDetection() {
+    if (this.idleTimer) {
+      clearTimeout(this.idleTimer);
+      this.idleTimer = null;
     }
-    document.removeEventListener("mousemove", this._boundResetIdle);
-    document.removeEventListener("mousedown", this._boundResetIdle);
-    document.removeEventListener("keydown", this._boundResetIdle);
-    document.removeEventListener("touchstart", this._boundResetIdle);
-    document.removeEventListener("scroll", this._boundResetIdle);
+    document.removeEventListener("mousemove", this.boundResetIdle);
+    document.removeEventListener("mousedown", this.boundResetIdle);
+    document.removeEventListener("keydown", this.boundResetIdle);
+    document.removeEventListener("touchstart", this.boundResetIdle);
+    document.removeEventListener("scroll", this.boundResetIdle);
   }
 
-  _handleActivity() {
+  handleActivity() {
     if (!this.currentSession) return;
-    this._resetIdleTimer();
+    this.resetIdleTimer();
   }
 
-  _resetIdleTimer() {
-    if (this._idleTimer) {
-      clearTimeout(this._idleTimer);
+  resetIdleTimer() {
+    if (this.idleTimer) {
+      clearTimeout(this.idleTimer);
     }
-    this._idleTimer = setTimeout(() => {
+    this.idleTimer = setTimeout(() => {
       this.lockSession();
     }, this.IDLE_TIMEOUT);
   }
 
-  _showExtraElements() {
+  showExtraElements() {
     const content = this.container.querySelector(".session-content");
     if (content && content.classList.contains("extra-hidden")) {
       content.classList.remove("extra-hidden");
@@ -904,7 +904,7 @@ export class SessionManager {
     }
   }
 
-  _hideExtraElements() {
+  hideExtraElements() {
     const content = this.container.querySelector(".session-content");
     if (content && content.classList.contains("extra-visible")) {
       content.classList.remove("extra-visible");

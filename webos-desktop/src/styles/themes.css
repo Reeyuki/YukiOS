@@ -747,11 +747,6 @@ html[data-theme="star-wars-dark"] textarea:focus,
 html[data-theme="star-wars-dark"] select:focus,
 html[data-theme="star-wars-dark"] .settings-input:focus,
 html[data-theme="star-wars-dark"] *::-webkit-scrollbar-thumb {
-  background: oklch(48% 0.34 25 / 0.5);
-  box-shadow: 0 0 6px oklch(48% 0.3 25 / 0.3);
-}
-
-html[data-theme="star-wars-dark"] *::-webkit-scrollbar-thumb:hover {
   background: oklch(52% 0.38 25 / 0.6);
   box-shadow: 0 0 10px oklch(52% 0.35 25 / 0.4);
 }
@@ -1508,11 +1503,7 @@ html[data-theme="nier"] .yuki-settings-nav li.active {
   font-weight: 600;
 }
 
-html[data-theme="nier"] ::-webkit-scrollbar-thumb {
-  background: rgba(58, 52, 37, 0.25);
-}
-
-html[data-theme="nier"] ::-webkit-scrollbar-thumb:hover {
+html[data-theme="nier"]::-webkit-scrollbar-thumb {
   background: rgba(58, 52, 37, 0.4);
 }
 
@@ -1898,11 +1889,6 @@ html[data-theme="vice-city"] textarea:focus,
 html[data-theme="vice-city"] select:focus,
 html[data-theme="vice-city"] .settings-input:focus,
 html[data-theme="vice-city"] *::-webkit-scrollbar-thumb {
-  background: oklch(65% 0.22 348 / 0.4);
-  box-shadow: 0 0 6px oklch(65% 0.18 348 / 0.25);
-}
-
-html[data-theme="vice-city"] *::-webkit-scrollbar-thumb:hover {
   background: oklch(65% 0.22 348 / 0.55);
   box-shadow: 0 0 10px oklch(65% 0.2 348 / 0.35);
 }
@@ -1917,7 +1903,7 @@ html[data-theme="vice-city"] ::selection {
   color: oklch(100% 0 0);
 }
 
-html[data-theme="vice-city"] ::-webkit-scrollbar-track {
+html[data-theme="vice-city"]::-webkit-scrollbar-track {
   background: oklch(5% 0.04 280);
 }
 

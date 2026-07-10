@@ -236,12 +236,8 @@
 }
 
 .achievements-grid::-webkit-scrollbar-thumb {
-  background: var(--glass-border);
-  border-radius: 4px;
-}
-
-.achievements-grid::-webkit-scrollbar-thumb:hover {
   background: var(--glass-hover);
+  border-radius: 4px;
 }
 
 .achievement-card {
@@ -577,12 +573,8 @@
 }
 
 .achievements-scroll::-webkit-scrollbar-thumb {
-  background: var(--glass-border);
-  border-radius: 4px;
-}
-
-.achievements-scroll::-webkit-scrollbar-thumb:hover {
   background: var(--glass-hover);
+  border-radius: 4px;
 }
 
 .achievements-content {

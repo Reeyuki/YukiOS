@@ -1,4 +1,5 @@
 import { $, bindEvent, toggleClass } from "../shared/domUtils.js";
+import { KeybindManager } from "../keybindManager.js";
 
 let activeSlider = null;
 
@@ -103,16 +104,16 @@ export function bindRangeSlider(root = document) {
     const step = Number(slider.dataset.step);
     const current = Number(slider.dataset.value);
     let newVal = current;
-    if (e.key === "ArrowRight" || e.key === "ArrowUp") {
+    if (KeybindManager.matches(e, "rangeSlider.increment") || e.key === "ArrowUp") {
       newVal = Math.min(max, current + step);
       e.preventDefault();
-    } else if (e.key === "ArrowLeft" || e.key === "ArrowDown") {
+    } else if (KeybindManager.matches(e, "rangeSlider.decrement") || e.key === "ArrowDown") {
       newVal = Math.max(min, current - step);
       e.preventDefault();
-    } else if (e.key === "Home") {
+    } else if (KeybindManager.matches(e, "rangeSlider.min")) {
       newVal = min;
       e.preventDefault();
-    } else if (e.key === "End") {
+    } else if (KeybindManager.matches(e, "rangeSlider.max")) {
       newVal = max;
       e.preventDefault();
     }

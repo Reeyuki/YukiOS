@@ -4,7 +4,7 @@ import { StorageKeys, os } from "../../framework.js";
 export class ClipboardWidget extends WidgetBase {
   constructor(manager, id) {
     super(manager, id, "clipboard", "Clipboard", 260, 180);
-    this._interval = null;
+    this.interval = null;
   }
 
   onRender(contentEl) {
@@ -17,11 +17,11 @@ export class ClipboardWidget extends WidgetBase {
       <div class="widget-clipboard-list" id="w-clip-list-${this.id}"></div>
     `;
 
-    this._refresh(contentEl);
-    this._interval = setInterval(() => this._refresh(contentEl), 2000);
+    this.refresh(contentEl);
+    this.interval = setInterval(() => this.refresh(contentEl), 2000);
   }
 
-  _refresh(ce) {
+  refresh(ce) {
     const currentEl = ce.querySelector(`#w-clip-value-${this.id}`);
     const listEl = ce.querySelector(`#w-clip-list-${this.id}`);
     if (!currentEl || !listEl) return;
@@ -36,7 +36,7 @@ export class ClipboardWidget extends WidgetBase {
         .map((item) => {
           const data = typeof item === "string" ? item : item.data || "";
           const preview = data.length > 40 ? data.slice(0, 40) + "..." : data;
-          return `<div class="widget-clipboard-item">${this._escapeHtml(preview)}</div>`;
+          return `<div class="widget-clipboard-item">${this.escapeHtml(preview)}</div>`;
         })
         .join("");
     } else {
@@ -44,14 +44,14 @@ export class ClipboardWidget extends WidgetBase {
     }
   }
 
-  _escapeHtml(text) {
+  escapeHtml(text) {
     const div = document.createElement("div");
     div.textContent = text;
     return div.innerHTML;
   }
 
   destroy() {
-    if (this._interval) clearInterval(this._interval);
+    if (this.interval) clearInterval(this.interval);
     super.destroy();
   }
 }

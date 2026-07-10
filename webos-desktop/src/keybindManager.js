@@ -1,7 +1,4 @@
-import { os } from "./framework.js";
-
-const STORAGE_KEY = "yukiOS_keybind_customizations";
-const CUSTOM_ACTIONS_STORAGE_KEY = "yukiOS_keybind_custom_actions";
+import { os, StorageKeys } from "./framework.js";
 
 const MODIFIER_ALIASES = {
   ctrl: ["ctrl", "control"],
@@ -971,165 +968,297 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Swap tiled window with neighbor down",
     cat: "global",
     icon: "fas fa-exchange-alt"
+  },
+  {
+    id: "explorer.refresh",
+    defaultKeys: ["F5"],
+    desc: "Refresh current directory in Explorer",
+    cat: "desktop",
+    icon: "fas fa-sync-alt"
+  },
+  {
+    id: "explorer.search",
+    defaultKeys: ["Ctrl", "F"],
+    desc: "Focus search input in Explorer",
+    cat: "desktop",
+    icon: "fas fa-search"
+  },
+  {
+    id: "explorer.selectAll",
+    defaultKeys: ["Ctrl", "A"],
+    desc: "Select all items in Explorer",
+    cat: "desktop",
+    icon: "fas fa-object-group"
+  },
+  {
+    id: "explorer.navigateUp",
+    defaultKeys: ["ArrowUp"],
+    desc: "Navigate up in Explorer file list",
+    cat: "desktop",
+    icon: "fas fa-arrow-up",
+    hidden: true
+  },
+  {
+    id: "explorer.navigateDown",
+    defaultKeys: ["ArrowDown"],
+    desc: "Navigate down in Explorer file list",
+    cat: "desktop",
+    icon: "fas fa-arrow-down",
+    hidden: true
+  },
+  {
+    id: "explorer.deleteItem",
+    defaultKeys: ["Delete"],
+    desc: "Delete selected file in Explorer",
+    cat: "desktop",
+    icon: "fas fa-trash",
+    hidden: true
+  },
+  {
+    id: "explorer.rename",
+    defaultKeys: ["F2"],
+    desc: "Rename selected file in Explorer",
+    cat: "desktop",
+    icon: "fas fa-edit"
+  },
+  {
+    id: "calendar.prevYear",
+    defaultKeys: ["ArrowUp"],
+    desc: "Navigate to previous year in Calendar",
+    cat: "calendar",
+    icon: "fas fa-arrow-up",
+    hidden: true
+  },
+  {
+    id: "calendar.nextYear",
+    defaultKeys: ["ArrowDown"],
+    desc: "Navigate to next year in Calendar",
+    cat: "calendar",
+    icon: "fas fa-arrow-down",
+    hidden: true
+  },
+  {
+    id: "selectMenu.close",
+    defaultKeys: ["Escape"],
+    desc: "Close select dropdown",
+    cat: "global",
+    icon: "fas fa-times",
+    hidden: true
+  },
+  {
+    id: "selectMenu.navigateDown",
+    defaultKeys: ["ArrowDown"],
+    desc: "Navigate to next option in select dropdown",
+    cat: "global",
+    icon: "fas fa-arrow-down",
+    hidden: true
+  },
+  {
+    id: "selectMenu.navigateUp",
+    defaultKeys: ["ArrowUp"],
+    desc: "Navigate to previous option in select dropdown",
+    cat: "global",
+    icon: "fas fa-arrow-up",
+    hidden: true
+  },
+  {
+    id: "selectMenu.select",
+    defaultKeys: ["Enter"],
+    desc: "Select highlighted option in dropdown",
+    cat: "global",
+    icon: "fas fa-check",
+    hidden: true
+  },
+  {
+    id: "rangeSlider.increment",
+    defaultKeys: ["ArrowRight"],
+    desc: "Increment range slider value",
+    cat: "global",
+    icon: "fas fa-plus",
+    hidden: true
+  },
+  {
+    id: "rangeSlider.decrement",
+    defaultKeys: ["ArrowLeft"],
+    desc: "Decrement range slider value",
+    cat: "global",
+    icon: "fas fa-minus",
+    hidden: true
+  },
+  {
+    id: "rangeSlider.max",
+    defaultKeys: ["End"],
+    desc: "Set range slider to maximum value",
+    cat: "global",
+    icon: "fas fa-forward",
+    hidden: true
+  },
+  {
+    id: "rangeSlider.min",
+    defaultKeys: ["Home"],
+    desc: "Set range slider to minimum value",
+    cat: "global",
+    icon: "fas fa-backward",
+    hidden: true
   }
 ];
 
 export class KeybindManager {
-  static _customizations = null;
+  static customizations = null;
 
-  static _ensureLoaded() {
-    if (this._customizations === null) {
+  static ensureLoaded() {
+    if (this.customizations === null) {
       try {
-        const saved = os.storage.get(STORAGE_KEY);
-        this._customizations = saved ? JSON.parse(saved) : {};
+        const saved = os.storage.get(StorageKeys.keybindCustomizations);
+        this.customizations = saved ? JSON.parse(saved) : {};
       } catch {
-        this._customizations = {};
+        this.customizations = {};
       }
     }
   }
 
-  static _save() {
-    os.storage.set(STORAGE_KEY, JSON.stringify(this._customizations));
+  static save() {
+    os.storage.set(StorageKeys.keybindCustomizations, JSON.stringify(this.customizations));
   }
 
   static getAll() {
-    this._ensureLoaded();
-    this._ensureCustomActionsLoaded();
+    this.ensureLoaded();
+    this.ensureCustomActionsLoaded();
     const builtin = KEYBIND_DEFINITIONS.filter((def) => !def.hidden).map((def) => ({
       ...def,
-      currentKeys: this._customizations[def.id] || def.defaultKeys
+      currentKeys: this.customizations[def.id] || def.defaultKeys
     }));
-    const custom = Object.values(this._customActions).map((def) => ({
+    const custom = Object.values(this.customActions).map((def) => ({
       ...def,
       cat: "custom",
-      currentKeys: this._customizations[def.id] || def.defaultKeys
+      currentKeys: this.customizations[def.id] || def.defaultKeys
     }));
     return [...builtin, ...custom];
   }
 
   static getById(id) {
-    this._ensureLoaded();
-    this._ensureCustomActionsLoaded();
+    this.ensureLoaded();
+    this.ensureCustomActionsLoaded();
     const def = KEYBIND_DEFINITIONS.find((d) => d.id === id);
     if (def) {
       return {
         ...def,
-        currentKeys: this._customizations[id] || def.defaultKeys
+        currentKeys: this.customizations[id] || def.defaultKeys
       };
     }
-    const custom = this._customActions[id];
+    const custom = this.customActions[id];
     if (custom) {
       return {
         ...custom,
         cat: "custom",
-        currentKeys: this._customizations[id] || custom.defaultKeys
+        currentKeys: this.customizations[id] || custom.defaultKeys
       };
     }
     return null;
   }
 
   static getCurrentKeys(id) {
-    this._ensureLoaded();
-    this._ensureCustomActionsLoaded();
+    this.ensureLoaded();
+    this.ensureCustomActionsLoaded();
     const def = KEYBIND_DEFINITIONS.find((d) => d.id === id);
-    if (def) return this._customizations[id] || def.defaultKeys;
-    const custom = this._customActions[id];
-    if (custom) return this._customizations[id] || custom.defaultKeys;
+    if (def) return this.customizations[id] || def.defaultKeys;
+    const custom = this.customActions[id];
+    if (custom) return this.customizations[id] || custom.defaultKeys;
     return null;
   }
 
   static setKeys(id, keys) {
-    this._ensureLoaded();
-    this._ensureCustomActionsLoaded();
+    this.ensureLoaded();
+    this.ensureCustomActionsLoaded();
     const def = KEYBIND_DEFINITIONS.find((d) => d.id === id);
-    const custom = this._customActions[id];
+    const custom = this.customActions[id];
     if (!def && !custom) return false;
-    this._customizations[id] = keys;
-    this._save();
+    this.customizations[id] = keys;
+    this.save();
     return true;
   }
 
   static reset(id) {
-    this._ensureLoaded();
-    delete this._customizations[id];
-    this._save();
+    this.ensureLoaded();
+    delete this.customizations[id];
+    this.save();
   }
 
   static resetAll() {
-    this._ensureLoaded();
-    this._customizations = {};
-    this._save();
+    this.ensureLoaded();
+    this.customizations = {};
+    this.save();
   }
 
   static deleteCustomAction(id) {
-    this._ensureCustomActionsLoaded();
-    if (!this._customActions[id]) return false;
-    delete this._customActions[id];
-    delete this._customizations[id];
-    this._saveCustomActions();
-    this._save();
-    if (Object.keys(this._customActions).length === 0) {
-      this._destroyCustomHandler();
+    this.ensureCustomActionsLoaded();
+    if (!this.customActions[id]) return false;
+    delete this.customActions[id];
+    delete this.customizations[id];
+    this.saveCustomActions();
+    this.save();
+    if (Object.keys(this.customActions).length === 0) {
+      this.destroyCustomHandler();
     }
     return true;
   }
 
   static isCustomized(id) {
-    this._ensureLoaded();
-    return id in this._customizations;
+    this.ensureLoaded();
+    return id in this.customizations;
   }
 
   static getCustomizedCount() {
-    this._ensureLoaded();
-    return Object.keys(this._customizations).length;
+    this.ensureLoaded();
+    return Object.keys(this.customizations).length;
   }
 
-  static _customActions = null;
-  static _customHandlerInstalled = false;
-  static _customHandlerFn = null;
+  static customActions = null;
+  static customHandlerInstalled = false;
+  static customHandlerFn = null;
 
-  static _ensureCustomActionsLoaded() {
-    if (this._customActions === null) {
+  static ensureCustomActionsLoaded() {
+    if (this.customActions === null) {
       try {
-        const saved = os.storage.get(CUSTOM_ACTIONS_STORAGE_KEY);
-        this._customActions = saved ? JSON.parse(saved) : {};
+        const saved = os.storage.get(StorageKeys.keybindCustomActions);
+        this.customActions = saved || {};
       } catch {
-        this._customActions = {};
+        this.customActions = {};
       }
     }
   }
 
-  static _saveCustomActions() {
-    os.storage.set(CUSTOM_ACTIONS_STORAGE_KEY, JSON.stringify(this._customActions));
+  static saveCustomActions() {
+    os.storage.set(StorageKeys.keybindCustomActions, this.customActions);
   }
 
   static getAllCustomActions() {
-    this._ensureCustomActionsLoaded();
-    return Object.values(this._customActions);
+    this.ensureCustomActionsLoaded();
+    return Object.values(this.customActions);
   }
 
   static getCustomAction(id) {
-    this._ensureCustomActionsLoaded();
-    return this._customActions[id] || null;
+    this.ensureCustomActionsLoaded();
+    return this.customActions[id] || null;
   }
 
   static saveCustomAction(definition) {
-    this._ensureCustomActionsLoaded();
+    this.ensureCustomActionsLoaded();
     if (!definition.id) {
       definition.id = "custom_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6);
     }
     definition.cat = "custom";
     if (!definition.icon) definition.icon = "fas fa-star";
     if (!definition.defaultKeys) definition.defaultKeys = [];
-    this._customActions[definition.id] = definition;
-    this._saveCustomActions();
-    this._installCustomHandler();
+    this.customActions[definition.id] = definition;
+    this.saveCustomActions();
+    this.installCustomHandler();
     return definition.id;
   }
 
   static executeCustomAction(id) {
-    this._ensureCustomActionsLoaded();
-    const action = this._customActions[id];
+    this.ensureCustomActionsLoaded();
+    const action = this.customActions[id];
     if (!action || !action.action) return;
 
     const { type, config } = action.action;
@@ -1144,7 +1273,7 @@ export class KeybindManager {
           break;
         case "openUrl":
           if (config.url) {
-            window.open(config.url, "_blank");
+            window.open(config.url, "blank");
           }
           break;
         case "runCode":
@@ -1164,12 +1293,12 @@ export class KeybindManager {
     }
   }
 
-  static _installCustomHandler() {
-    if (this._customHandlerInstalled) return;
-    this._customHandlerInstalled = true;
-    this._customHandlerFn = (e) => {
-      if (!this._customActions) this._ensureCustomActionsLoaded();
-      for (const id of Object.keys(this._customActions)) {
+  static installCustomHandler() {
+    if (this.customHandlerInstalled) return;
+    this.customHandlerInstalled = true;
+    this.customHandlerFn = (e) => {
+      if (!this.customActions) this.ensureCustomActionsLoaded();
+      for (const id of Object.keys(this.customActions)) {
         if (this.matches(e, id)) {
           e.preventDefault();
           this.executeCustomAction(id);
@@ -1177,24 +1306,24 @@ export class KeybindManager {
         }
       }
     };
-    document.addEventListener("keydown", this._customHandlerFn);
+    document.addEventListener("keydown", this.customHandlerFn);
   }
 
-  static _destroyCustomHandler() {
-    if (this._customHandlerFn) {
-      document.removeEventListener("keydown", this._customHandlerFn);
+  static destroyCustomHandler() {
+    if (this.customHandlerFn) {
+      document.removeEventListener("keydown", this.customHandlerFn);
     }
-    this._customHandlerInstalled = false;
-    this._customHandlerFn = null;
+    this.customHandlerInstalled = false;
+    this.customHandlerFn = null;
   }
 
   static matches(event, id) {
     const keys = this.getCurrentKeys(id);
     if (!keys) return false;
-    return this._eventMatchesKeys(event, keys);
+    return this.eventMatchesKeys(event, keys);
   }
 
-  static _eventMatchesKeys(event, keys) {
+  static eventMatchesKeys(event, keys) {
     const modifiers = { ctrl: false, shift: false, alt: false, meta: false };
     let targetKey = null;
 

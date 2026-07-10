@@ -589,7 +589,7 @@ class SpreadsheetEditor extends EditorStrategy {
     state.workbook = workbook;
     state.activeSheet = workbook.SheetNames[0];
 
-    this._renderNativeTable(container, workbook, state, XLSX);
+    this.renderNativeTable(container, workbook, state, XLSX);
   }
 
   createEmptyWorkbook(XLSX) {
@@ -599,7 +599,7 @@ class SpreadsheetEditor extends EditorStrategy {
     return wb;
   }
 
-  _renderNativeTable(container, workbook, state, XLSX) {
+  renderNativeTable(container, workbook, state, XLSX) {
     const ws = workbook.Sheets[state.activeSheet];
     const data = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
 
@@ -611,7 +611,7 @@ class SpreadsheetEditor extends EditorStrategy {
     const colLetters = Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i));
 
     let html = '<div class="office-sheet-wrapper">';
-    html += this._renderSheetTabs(workbook, state);
+    html += this.renderSheetTabs(workbook, state);
     html += '<div class="office-table-wrap"><table class="office-spreadsheet" cellspacing="0">';
 
     html += '<thead><tr><th class="office-th-corner"></th>';
@@ -635,12 +635,12 @@ class SpreadsheetEditor extends EditorStrategy {
 
     const table = container.querySelector(".office-spreadsheet");
 
-    this._bindCellEvents(table, state, XLSX);
+    this.bindCellEvents(table, state, XLSX);
 
     $$(".office-sheet-tab", container).forEach((tab) => {
       bindEvent(tab, "click", () => {
         state.activeSheet = tab.dataset.sheet;
-        this._renderNativeTable(container, workbook, state, XLSX);
+        this.renderNativeTable(container, workbook, state, XLSX);
       });
     });
 
@@ -648,7 +648,7 @@ class SpreadsheetEditor extends EditorStrategy {
     state.editorType = "spreadsheet";
   }
 
-  _renderSheetTabs(workbook, state) {
+  renderSheetTabs(workbook, state) {
     if (workbook.SheetNames.length <= 1) return "";
     return `<div class="office-sheet-tabs">
       ${workbook.SheetNames.map(
@@ -660,7 +660,7 @@ class SpreadsheetEditor extends EditorStrategy {
     </div>`;
   }
 
-  _bindCellEvents(table, state, XLSX) {
+  bindCellEvents(table, state, XLSX) {
     let editing = false;
     table.addEventListener("input", () => {
       editing = true;
@@ -669,7 +669,7 @@ class SpreadsheetEditor extends EditorStrategy {
       "blur",
       () => {
         if (editing) {
-          this._syncNativeTable(state, XLSX);
+          this.syncNativeTable(state, XLSX);
           editing = false;
         }
       },
@@ -684,7 +684,7 @@ class SpreadsheetEditor extends EditorStrategy {
     });
   }
 
-  _syncNativeTable(state, XLSX) {
+  syncNativeTable(state, XLSX) {
     if (!state.editor || !state.workbook) return;
     const table = state.editor;
     const data = [];
@@ -1713,7 +1713,7 @@ export class OfficeApp extends BaseApp {
     sorted.forEach((tr) => tbody.appendChild(tr));
 
     const XLSX = await modules.xlsx();
-    this._syncNativeTable(state, XLSX);
+    this.syncNativeTable(state, XLSX);
     os.notify.send(`Sorted ${ascending ? "A→Z" : "Z→A"}`);
   }
   setupKeyboardShortcuts(win, state, actions) {
@@ -2177,7 +2177,7 @@ export class OfficeApp extends BaseApp {
 
     const container = $(`#${state.winId} .office-editor-area`);
     container.innerHTML = "";
-    new SpreadsheetEditor()._renderNativeTable(container, state.workbook, state, XLSX);
+    new SpreadsheetEditor().renderNativeTable(container, state.workbook, state, XLSX);
   }
 
   async exportToPDF(state) {
@@ -2296,8 +2296,8 @@ export class OfficeApp extends BaseApp {
       }
     };
 
-    document.removeEventListener("click", win._closeDropdownsHandler);
-    win._closeDropdownsHandler = closeDropdowns;
+    document.removeEventListener("click", win.closeDropdownsHandler);
+    win.closeDropdownsHandler = closeDropdowns;
     document.addEventListener("click", closeDropdowns);
   }
   async openFileViaUpload(win, state) {

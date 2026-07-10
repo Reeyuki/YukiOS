@@ -33,10 +33,10 @@ const STORAGE_KEY = StorageKeys.VM_MANAGER_VMS;
 export class VirtualMachineManagerApp extends BaseApp {
   constructor(services) {
     super(services);
-    this._vms = this._loadVMs();
+    this.vms = this.loadVMs();
   }
 
-  _loadVMs() {
+  loadVMs() {
     try {
       const raw = os.storage.get(STORAGE_KEY);
       return Array.isArray(raw) ? raw : [];
@@ -45,8 +45,8 @@ export class VirtualMachineManagerApp extends BaseApp {
     }
   }
 
-  _saveVMs() {
-    os.storage.set(STORAGE_KEY, this._vms);
+  saveVMs() {
+    os.storage.set(STORAGE_KEY, this.vms);
   }
 
   getDeclarativeSchema() {
@@ -68,8 +68,8 @@ export class VirtualMachineManagerApp extends BaseApp {
     };
   }
 
-  _renderList(shell) {
-    const count = this._vms.length;
+  renderList(shell) {
+    const count = this.vms.length;
     shell.innerHTML = `
       <div class="vm-header">
         <div>
@@ -88,7 +88,7 @@ export class VirtualMachineManagerApp extends BaseApp {
       `
           : `
         <div class="vm-list">
-          ${this._vms
+          ${this.vms
             .map((vm, i) => {
               const osInfo = OS_LIST.find((o) => o.id === vm.osId) || OS_LIST[0];
               return `
@@ -114,33 +114,33 @@ export class VirtualMachineManagerApp extends BaseApp {
       }
     `;
 
-    shell.querySelector("#vm-goto-create")?.addEventListener("click", () => this._renderCreate(shell));
+    shell.querySelector("#vm-goto-create")?.addEventListener("click", () => this.renderCreate(shell));
 
     shell.querySelectorAll(".vm-boot-card-btn").forEach((btn) => {
       btn.addEventListener("click", async () => {
         const idx = parseInt(btn.dataset.index);
-        await this._bootVM(this._vms[idx]);
+        await this.bootVM(this.vms[idx]);
       });
     });
 
     shell.querySelectorAll(".vm-view-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
         const idx = parseInt(btn.dataset.index);
-        this._renderView(shell, this._vms[idx], idx);
+        this.renderView(shell, this.vms[idx], idx);
       });
     });
 
     shell.querySelectorAll(".vm-delete-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
         const idx = parseInt(btn.dataset.index);
-        this._vms.splice(idx, 1);
-        this._saveVMs();
-        this._renderList(shell);
+        this.vms.splice(idx, 1);
+        this.saveVMs();
+        this.renderList(shell);
       });
     });
   }
 
-  _renderCreate(shell) {
+  renderCreate(shell) {
     let selected = null;
 
     const renderStep1 = () => {
@@ -165,7 +165,7 @@ export class VirtualMachineManagerApp extends BaseApp {
         </div>
       `;
 
-      shell.querySelector("#vm-back-list").addEventListener("click", () => this._renderList(shell));
+      shell.querySelector("#vm-back-list").addEventListener("click", () => this.renderList(shell));
 
       shell.querySelectorAll(".vm-os-card").forEach((card) => {
         card.addEventListener("click", () => {
@@ -237,17 +237,17 @@ export class VirtualMachineManagerApp extends BaseApp {
           icon: osInfo.icon,
           color: osInfo.color
         };
-        this._vms.push(vm);
-        this._saveVMs();
-        await this._bootVM(vm);
-        this._renderList(shell);
+        this.vms.push(vm);
+        this.saveVMs();
+        await this.bootVM(vm);
+        this.renderList(shell);
       });
     };
 
     renderStep1();
   }
 
-  _scramjetUrl(url) {
+  scramjetUrl(url) {
     const wispUrl = os.storage.get(StorageKeys.wispServer) || "wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/";
     return (
       window.location.origin +
@@ -259,7 +259,7 @@ export class VirtualMachineManagerApp extends BaseApp {
     );
   }
 
-  _renderView(shell, vm, index) {
+  renderView(shell, vm, index) {
     const osInfo = OS_LIST.find((o) => o.id === vm.osId) || OS_LIST[0];
     const usesScramjet = vm.osId === "emuos" || vm.osId === "mac";
     const isWinXpHeavy = vm.osId === "winxpHeavy";
@@ -317,23 +317,23 @@ export class VirtualMachineManagerApp extends BaseApp {
       </div>
     `;
 
-    shell.querySelector("#vm-back-list").addEventListener("click", () => this._renderList(shell));
-    shell.querySelector("#vm-boot-from-view").addEventListener("click", () => this._bootVM(vm));
+    shell.querySelector("#vm-back-list").addEventListener("click", () => this.renderList(shell));
+    shell.querySelector("#vm-boot-from-view").addEventListener("click", () => this.bootVM(vm));
     shell.querySelector("#vm-delete-from-view").addEventListener("click", () => {
-      this._vms.splice(index, 1);
-      this._saveVMs();
-      this._renderList(shell);
+      this.vms.splice(index, 1);
+      this.saveVMs();
+      this.renderList(shell);
     });
 
     if (isWinXpHeavy) {
-      this._fetchHtmlAsBlobUrl(vm.url).then((blobUrl) => {
+      this.fetchHtmlAsBlobUrl(vm.url).then((blobUrl) => {
         const previewIframe = shell.querySelector(".vm-preview-frame iframe");
         if (previewIframe) previewIframe.src = blobUrl;
       });
     }
   }
 
-  async _fetchHtmlAsBlobUrl(url) {
+  async fetchHtmlAsBlobUrl(url) {
     try {
       const resp = await fetch(url);
       const html = await resp.text();
@@ -345,7 +345,7 @@ export class VirtualMachineManagerApp extends BaseApp {
     }
   }
 
-  async _bootVM(vm) {
+  async bootVM(vm) {
     const existing = document.getElementById(`${vm.id}-win`);
     if (existing) {
       os.window.focus(existing);
@@ -354,7 +354,7 @@ export class VirtualMachineManagerApp extends BaseApp {
 
     const usesScramjet = vm.osId === "emuos" || vm.osId === "win7" || vm.osId === "mac";
     const isWinXpHeavy = vm.osId === "winxpHeavy";
-    let iframeSrc = usesScramjet ? this._scramjetUrl(vm.url) : vm.url;
+    let iframeSrc = usesScramjet ? this.scramjetUrl(vm.url) : vm.url;
 
     const attrs = usesScramjet
       ? 'style="width:100%;height:100%;border:none;opacity:0;" allow="autoplay; fullscreen; clipboard-write; encrypted-media; picture-in-picture" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation-by-user-activation"'
@@ -392,13 +392,13 @@ export class VirtualMachineManagerApp extends BaseApp {
 
     const iframe = win.querySelector(`#${vm.id}-iframe`);
     if (isWinXpHeavy) {
-      iframeSrc = await this._fetchHtmlAsBlobUrl(vm.url);
+      iframeSrc = await this.fetchHtmlAsBlobUrl(vm.url);
     }
     if (usesScramjet) {
       iframe.addEventListener("load", () => {
         try {
           iframe.contentWindow?.postMessage({ type: "hide-chrome" }, "*");
-          this._waitForScramjetLoad(iframe, vm.id);
+          this.waitForScramjetLoad(iframe, vm.id);
         } catch (e) {
           console.error("[VMManager]", e);
         }
@@ -407,12 +407,12 @@ export class VirtualMachineManagerApp extends BaseApp {
     iframe.src = iframeSrc;
   }
 
-  _waitForScramjetLoad(iframe, vmId) {
+  waitForScramjetLoad(iframe, vmId) {
     const bootingEl = document.getElementById(`${vmId}-booting`);
     if (!bootingEl) return;
 
     const reveal = () => {
-      this._stripScramChrome(iframe);
+      this.stripScramChrome(iframe);
       bootingEl.classList.add("vm-booting-fade");
       iframe.style.opacity = "1";
       setTimeout(() => bootingEl.remove(), 450);
@@ -446,7 +446,7 @@ export class VirtualMachineManagerApp extends BaseApp {
     }, 25000);
   }
 
-  _stripScramChrome(iframe) {
+  stripScramChrome(iframe) {
     try {
       const doc = iframe.contentDocument;
       if (!doc) return;
@@ -461,7 +461,7 @@ export class VirtualMachineManagerApp extends BaseApp {
   initVM(payload, event, element, state) {
     const shell = element?.querySelector?.(".vm-shell") || document.querySelector("#vm-app .vm-shell");
     if (!shell) return;
-    this._renderList(shell);
+    this.renderList(shell);
   }
 
   onClose(winId) {}

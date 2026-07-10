@@ -404,7 +404,7 @@ export function applyFocusGlow(win) {
   if (isTurboMode()) return;
   win.classList.add("wa-focus-glow");
   const tid = setTimeout(() => win.classList.remove("wa-focus-glow"), 600);
-  win._focusTid = tid;
+  win.focusTid = tid;
 }
 
 export function applyZDepthLift(win, active) {
@@ -417,14 +417,14 @@ export function applyZDepthLift(win, active) {
 
 export function initClickBubble() {
   if (!isClickBubbleEnabled()) return;
-  document.addEventListener("pointerdown", _handleClickBubble, { passive: true });
+  document.addEventListener("pointerdown", handleClickBubble, { passive: true });
 }
 
 export function destroyClickBubble() {
-  document.removeEventListener("pointerdown", _handleClickBubble);
+  document.removeEventListener("pointerdown", handleClickBubble);
 }
 
-function _handleClickBubble(e) {
+function handleClickBubble(e) {
   if (!isClickBubbleEnabled()) return;
   const ripple = document.createElement("div");
   ripple.className = "wa-ripple";
@@ -470,7 +470,7 @@ function getWobbleCoupleK() {
 }
 
 /** @type {WeakMap<HTMLElement, WobbleState>} */
-const _wobbleMap = new WeakMap();
+const wobbleMap = new WeakMap();
 
 /**
  * @typedef {Object} SpringPoint
@@ -492,7 +492,7 @@ const _wobbleMap = new WeakMap();
  * @property {number} winH
  */
 
-function _anchors(w, h) {
+function anchors(w, h) {
   return [
     { ax: 0, ay: 0 },
     { ax: w / 3, ay: 0 },
@@ -509,7 +509,7 @@ function _anchors(w, h) {
   ];
 }
 
-function _smoothClosedPath(pts) {
+function smoothClosedPath(pts) {
   const n = pts.length;
   const at = (i) => pts[((i % n) + n) % n];
   const px = (v) => v.toFixed(2);
@@ -531,8 +531,8 @@ function _smoothClosedPath(pts) {
   return `${d}Z`;
 }
 
-function _buildClipPath(pts) {
-  return `path('${_smoothClosedPath(pts)}')`;
+function buildClipPath(pts) {
+  return `path('${smoothClosedPath(pts)}')`;
 }
 export function wobbleStart(win) {
   if (isTurboMode()) return;
@@ -544,7 +544,7 @@ export function wobbleStart(win) {
   const w = rect.width;
   const h = rect.height;
 
-  const anc = _anchors(w, h);
+  const anc = anchors(w, h);
   const points = anc.map(({ ax, ay }) => ({
     x: ax,
     y: ay,
@@ -564,19 +564,19 @@ export function wobbleStart(win) {
     winH: h
   };
 
-  _wobbleMap.set(win, state);
-  _wobbleRaf(win);
+  wobbleMap.set(win, state);
+  wobbleRaf(win);
 }
 
 export function wobbleMove(win, vx, vy) {
-  const state = _wobbleMap.get(win);
+  const state = wobbleMap.get(win);
   if (!state) return;
 
   const rect = win.getBoundingClientRect();
   state.winW = rect.width;
   state.winH = rect.height;
 
-  const anc = _anchors(state.winW, state.winH);
+  const anc = anchors(state.winW, state.winH);
   const lag = getWobbleDragLag();
 
   state.points.forEach((pt, i) => {
@@ -591,24 +591,24 @@ export function wobbleMove(win, vx, vy) {
   });
 }
 export function wobbleEnd(win) {
-  const state = _wobbleMap.get(win);
+  const state = wobbleMap.get(win);
   if (!state) return;
   state.dragging = false;
 }
 
 export function wobbleCancel(win) {
-  const state = _wobbleMap.get(win);
+  const state = wobbleMap.get(win);
   if (state?.rafId) cancelAnimationFrame(state.rafId);
-  _wobbleMap.delete(win);
+  wobbleMap.delete(win);
   win.style.clipPath = "";
 }
 
-function _wobbleRaf(win) {
-  const state = _wobbleMap.get(win);
+function wobbleRaf(win) {
+  const state = wobbleMap.get(win);
   if (!state) return;
 
   const tick = (now) => {
-    const s = _wobbleMap.get(win);
+    const s = wobbleMap.get(win);
     if (!s) return;
 
     const dt = s.lastTime ? Math.min((now - s.lastTime) / 1000, 0.05) : 0.016;
@@ -642,11 +642,11 @@ function _wobbleRaf(win) {
 
     if (settled && !s.dragging) {
       win.style.clipPath = "";
-      _wobbleMap.delete(win);
+      wobbleMap.delete(win);
       return;
     }
 
-    win.style.clipPath = _buildClipPath(s.points);
+    win.style.clipPath = buildClipPath(s.points);
     s.rafId = requestAnimationFrame(tick);
   };
 

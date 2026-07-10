@@ -224,12 +224,8 @@ h6 {
 }
 
 *::-webkit-scrollbar-thumb {
-  background: oklch(35% 0.02 265 / 0.45);
-  border-radius: 6px;
-}
-
-*::-webkit-scrollbar-thumb:hover {
   background: oklch(45% 0.02 265 / 0.55);
+  border-radius: 6px;
 }
 
 .app-menubar {
@@ -1307,12 +1303,8 @@ html[data-theme] .dropdown-item:hover {
 }
 
 html[data-theme] *::-webkit-scrollbar-thumb {
-  background: var(--surface-3);
-  border-radius: 6px;
-}
-
-html[data-theme] *::-webkit-scrollbar-thumb:hover {
   background: var(--surface-hover);
+  border-radius: 6px;
 }
 
 html[data-theme] .notification {

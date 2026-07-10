@@ -18,15 +18,15 @@ export function getCdnBaseGames() {
   return CDN_CONFIG.repos.games.base;
 }
 
-export let _launcher = null;
-export let _desktopUI = null;
+export let launcher = null;
+export let desktopUI = null;
 
 export function setGameLauncher(launcher) {
-  _launcher = launcher;
+  launcher = launcher;
 }
 
 export function setDesktopUI(ui) {
-  _desktopUI = ui;
+  desktopUI = ui;
 }
 
 export function refreshSteamUI() {
@@ -64,7 +64,7 @@ export function refreshSteamUI() {
   }
 }
 
-const _imgObserver = new IntersectionObserver(
+const imgObserver = new IntersectionObserver(
   (entries) => {
     entries.forEach((entry) => {
       if (!entry.isIntersecting) return;
@@ -73,7 +73,7 @@ const _imgObserver = new IntersectionObserver(
         img.src = img.dataset.src;
         delete img.dataset.src;
       }
-      _imgObserver.unobserve(img);
+      imgObserver.unobserve(img);
     });
   },
   { rootMargin: "200px" }
@@ -84,7 +84,7 @@ export function lazyImg(src, attrs = "") {
 }
 
 export function observeLazyImages(root) {
-  root.querySelectorAll("img[data-src]").forEach((img) => _imgObserver.observe(img));
+  root.querySelectorAll("img[data-src]").forEach((img) => imgObserver.observe(img));
 }
 
 function patchAppMap(appMap) {
@@ -439,9 +439,9 @@ class GameWindowRenderer {
     this.sortReverse = false;
     this.currentGame = null;
     this.currentArchiveGame = null;
-    this._archiveGamesCache = [];
-    this._hasRendered = false;
-    this._ctrlFBound = false;
+    this.archiveGamesCache = [];
+    this.hasRendered = false;
+    this.ctrlFBound = false;
     this.newsItems = [
       {
         image: `${getCdnBase()}/static/icons/steam.webp`,
@@ -450,7 +450,7 @@ class GameWindowRenderer {
         excerpt: "The Steam app is now available in YukiOS."
       }
     ];
-    this._imgObserver = new IntersectionObserver(
+    this.imgObserver = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (!entry.isIntersecting) return;
@@ -459,7 +459,7 @@ class GameWindowRenderer {
             img.src = img.dataset.src;
             delete img.dataset.src;
           }
-          this._imgObserver.unobserve(img);
+          this.imgObserver.unobserve(img);
         });
       },
       { rootMargin: "200px" }
@@ -511,69 +511,67 @@ class GameWindowRenderer {
     return this.gameUI.openFriendsWindow(wm);
   }
 
-  _setActiveSidebarItem(container, appId) {
-    return this.gameUI._setActiveSidebarItem(container, appId);
+  setActiveSidebarItem(container, appId) {
+    return this.gameUI.setActiveSidebarItem(container, appId);
   }
 
-  _makeSidebarItem(game, container, onLaunch, isArchive = false) {
-    return this.gameUI._makeSidebarItem(game, container, onLaunch, isArchive);
+  makeSidebarItem(game, container, onLaunch, isArchive = false) {
+    return this.gameUI.makeSidebarItem(game, container, onLaunch, isArchive);
   }
 
-  _appendArchiveGameToSidebar(container, archiveGame, onLaunch) {
+  appendArchiveGameToSidebar(container, archiveGame, onLaunch) {
     const sidebarList = container.querySelector(".sidebar-game-list");
     if (!sidebarList) return;
 
     const existing = sidebarList.querySelector(`.sidebar-game-item[data-app="${archiveGame.appId}"]`);
     if (existing) return;
 
-    const item = this._makeSidebarItem(archiveGame, container, onLaunch, true);
+    const item = this.makeSidebarItem(archiveGame, container, onLaunch, true);
     item.classList.add("sidebar-archive-item");
     sidebarList.appendChild(item);
     observeLazyImages(item);
   }
 
-  async _loadArchiveSection(container, onLaunch, collapsed) {
-    const { GameLauncher } = await import("./GameLauncher.js");
+  async loadArchiveSection(container, onLaunch, collapsed) {
     const launcher = new GameLauncher(this);
-    return launcher._loadArchiveSection(container, onLaunch, collapsed);
+    return launcher.loadArchiveSection(container, onLaunch, collapsed);
   }
 
-  async _loadLuminSDKSection(container, collapsed) {
-    const { GameLauncher } = await import("./GameLauncher.js");
+  async loadLuminSDKSection(container, collapsed) {
     const launcher = new GameLauncher(this);
-    return launcher._loadLuminSDKSection(container, collapsed);
+    return launcher.loadLuminSDKSection(container, collapsed);
   }
 
-  _attachGridDelegation(container, onLaunch) {
-    return this.gameUI._attachGridDelegation(container, onLaunch);
+  attachGridDelegation(container, onLaunch) {
+    return this.gameUI.attachGridDelegation(container, onLaunch);
   }
 
   showContextMenu(e, appId, container, onLaunch) {
     return this.gameUI.showContextMenu(e, appId, container, onLaunch);
   }
 
-  _rebuildSidebar(container, onLaunch) {
-    return this.gameUI._rebuildSidebar(container, onLaunch);
+  rebuildSidebar(container, onLaunch) {
+    return this.gameUI.rebuildSidebar(container, onLaunch);
   }
 
-  _renderSidebarChunked(container, games, onLaunch) {
-    return this.gameUI._renderSidebarChunked(container, games, onLaunch);
+  renderSidebarChunked(container, games, onLaunch) {
+    return this.gameUI.renderSidebarChunked(container, games, onLaunch);
   }
 
-  _renderHiddenSidebar(container, hiddenGames, onLaunch) {
-    return this.gameUI._renderHiddenSidebar(container, hiddenGames, onLaunch);
+  renderHiddenSidebar(container, hiddenGames, onLaunch) {
+    return this.gameUI.renderHiddenSidebar(container, hiddenGames, onLaunch);
   }
 
-  _initSidebarDrag(container) {
-    return this.gameUI._initSidebarDrag(container);
+  initSidebarDrag(container) {
+    return this.gameUI.initSidebarDrag(container);
   }
 }
 
 export class steamAppRenderer extends GameWindowRenderer {
   getGames() {
-    if (this._gamesCache) return this._gamesCache;
+    if (this.gamesCache) return this.gamesCache;
     const appRegistry = getAppRegistry();
-    this._gamesCache = Object.entries(appMap)
+    this.gamesCache = Object.entries(appMap)
       .filter(([id, data]) => {
         if (data.type === "system") return false;
         if (GAMES_APP_EXCLUDED.has(id)) return false;
@@ -582,7 +580,7 @@ export class steamAppRenderer extends GameWindowRenderer {
         return true;
       })
       .map(([id, data]) => ({ app: id, ...data }));
-    return this._gamesCache;
+    return this.gamesCache;
   }
 }
 

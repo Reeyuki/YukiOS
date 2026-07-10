@@ -119,38 +119,38 @@ export class GameRenderer {
     if (mainContent) mainContent.scrollTop = 0;
 
     target.innerHTML = `
-    <div class="steam-game-overview" style="background: #1b2838; min-height: 100%; color: #dcdedf; display: flex; flex-direction: column;">
-      <div class="overview-banner" style="height: 300px; position: relative; overflow: hidden; background: #171a21;">
+    <div class="steam-game-overview" style="background: var(--bg-secondary); min-height: 100%; color: var(--text-primary); display: flex; flex-direction: column;">
+      <div class="overview-banner" style="height: 300px; position: relative; overflow: hidden; background: var(--bg-base);">
         <img src="${game.icon}" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.4;" />
 
-        <div class="banner-content" style="position: absolute; bottom: 0; left: 0; right: 0; padding: 40px; background: linear-gradient(transparent, rgba(27, 40, 56, 1)); display: flex; align-items: flex-end; gap: 30px;">
+        <div class="banner-content" style="position: absolute; bottom: 0; left: 0; right: 0; padding: 40px; background: linear-gradient(transparent, var(--bg-secondary)); display: flex; align-items: flex-end; gap: 30px;">
           
-          <img src="${game.icon}" style="width: 200px; height: 280px; object-fit: cover; border-radius: 4px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);" />
+          <img src="${game.icon}" style="width: 200px; height: 280px; object-fit: cover; border-radius: 4px; box-shadow: 0 10px 30px var(--overlay-bg);" />
 
           <div class="banner-info" style="flex: 1;">
             
-            <h1 style="font-size: 48px; margin: 0 0 6px 0; color: #fff; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-family: 'Motiva Sans', Sans-serif;">
+            <h1 style="font-size: 48px; margin: 0 0 6px 0; color: var(--text-primary); text-shadow: 0 2px 10px var(--overlay-bg); font-family: 'Motiva Sans', Sans-serif;">
               ${game.title}
             </h1>
 
-            ${this._getReeyukiBadge(game)}
+            ${this.getReeyukiBadge(game)}
 
             <div class="play-bar" style="display: flex; align-items: center; gap: 20px;">
-              <button class="steam-play-btn" style="background: linear-gradient(to right, #47b230, #5ab941); border: none; color: #fff; padding: 12px 60px; font-size: 20px; font-weight: 700; border-radius: 2px; cursor: pointer; text-transform: uppercase; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+              <button class="steam-play-btn" style="background: var(--charging); border: none; color: var(--text-primary); padding: 12px 60px; font-size: 20px; font-weight: 700; border-radius: 2px; cursor: pointer; text-transform: uppercase; box-shadow: 0 4px 15px var(--overlay-bg);">
                 Play
               </button>
 
-              <div class="overview-stats" style="display: flex; gap: 30px; font-size: 13px; color: #898989;">
+              <div class="overview-stats" style="display: flex; gap: 30px; font-size: 13px; color: var(--text-secondary);">
                 <div>
                   <div style="text-transform: uppercase; margin-bottom: 4px;">Last Played</div>
-                  <div style="color: #fff;">
+                  <div style="color: var(--text-primary);">
                     ${gameStats.lastPlayed ? new Date(gameStats.lastPlayed).toLocaleDateString() : "Never"}
                   </div>
                 </div>
 
                 <div>
                   <div style="text-transform: uppercase; margin-bottom: 4px;">Play Time</div>
-                  <div style="color: #fff;">
+                  <div style="color: var(--text-primary);">
                     ${this.formatTime(gameStats.totalMin)}
                   </div>
                 </div>
@@ -163,31 +163,31 @@ export class GameRenderer {
 
       <div class="overview-content" style="padding: 40px; display: grid; grid-template-columns: 2fr 1fr; gap: 40px;">
         <div class="overview-main">
-          <div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 4px; margin-bottom: 20px;">
-            <h3 style="margin-top: 0; color: #66c0f4; text-transform: uppercase; font-size: 14px;">Game Info</h3>
-            <p style="line-height: 1.6; color: #acb2b8;">
+          <div style="background: var(--surface-1); padding: 20px; border-radius: 4px; margin-bottom: 20px;">
+            <h3 style="margin-top: 0; color: var(--brand); text-transform: uppercase; font-size: 14px;">Game Info</h3>
+            <p style="line-height: 1.6; color: var(--text-muted);">
               ${this.renderer.getGameDescription(game.app)}
             </p>
           </div>
 
           <div class="steam-whats-new-header" style="margin-bottom: 15px;">Recent Activity</div>
-          <div style="color: #898989; font-style: italic; font-size: 13px;">No recent activity to show.</div>
+          <div style="color: var(--text-secondary); font-style: italic; font-size: 13px;">No recent activity to show.</div>
         </div>
 
         <div class="overview-sidebar">
-          <div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 4px;">
-            <h3 style="margin-top: 0; color: #fff; font-size: 14px; text-transform: uppercase;">Friends who play</h3>
-            <div style="color: #898989; font-size: 13px;">None of your friends have played this game.</div>
+          <div style="background: var(--surface-1); padding: 20px; border-radius: 4px;">
+            <h3 style="margin-top: 0; color: var(--text-primary); font-size: 14px; text-transform: uppercase;">Friends who play</h3>
+            <div style="color: var(--text-secondary); font-size: 13px;">None of your friends have played this game.</div>
           </div>
         </div>
       </div>
     </div>
   `;
 
-    this._injectReeyukiStyle(target);
+    this.injectReeyukiStyle(target);
 
     target.querySelector(".steam-play-btn").onclick = () => onLaunch(appId);
-    this.renderer._setActiveSidebarItem(container, appId);
+    this.renderer.setActiveSidebarItem(container, appId);
   }
 
   renderArchiveGameOverview(container, archiveGame, onLaunch) {
@@ -200,27 +200,27 @@ export class GameRenderer {
     const thumb = archiveGame.thumb || "";
 
     target.innerHTML = `
-      <div class="steam-game-overview" style="background: #1b2838; min-height: 100%; color: #dcdedf; display: flex; flex-direction: column;">
-        <div class="overview-banner" style="height: 300px; position: relative; overflow: hidden; background: #171a21;">
+      <div class="steam-game-overview" style="background: var(--bg-secondary); min-height: 100%; color: var(--text-primary); display: flex; flex-direction: column;">
+        <div class="overview-banner" style="height: 300px; position: relative; overflow: hidden; background: var(--bg-base);">
           ${thumb ? `<img src="${thumb}" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.4; " />` : ""}
-          <div class="banner-content" style="position: absolute; bottom: 0; left: 0; right: 0; padding: 40px; background: linear-gradient(transparent, rgba(27, 40, 56, 1)); display: flex; align-items: flex-end; gap: 30px;">
+          <div class="banner-content" style="position: absolute; bottom: 0; left: 0; right: 0; padding: 40px; background: linear-gradient(transparent, var(--bg-secondary)); display: flex; align-items: flex-end; gap: 30px;">
             ${
               thumb
-                ? `<img src="${thumb}" style="width: 200px; height: 280px; object-fit: cover; border-radius: 4px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);" />`
-                : `<div style="width:200px;height:280px;background:#1b2838;border-radius:4px;display:flex;align-items:center;justify-content:center;"><i class="fas fa-gamepad" style="font-size:60px;color:#2a475e;"></i></div>`
+                ? `<img src="${thumb}" style="width: 200px; height: 280px; object-fit: cover; border-radius: 4px; box-shadow: 0 10px 30px var(--overlay-bg);" />`
+                : `<div style="width:200px;height:280px;background:var(--bg-secondary);border-radius:4px;display:flex;align-items:center;justify-content:center;"><i class="fas fa-gamepad" style="font-size:60px;color:var(--text-secondary);"></i></div>`
             }
             <div class="banner-info" style="flex: 1;">
-              <h1 style="font-size: 48px; margin: 0 0 10px 0; color: #fff; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-family: 'Motiva Sans', Sans-serif;">${archiveGame.title}</h1>
+              <h1 style="font-size: 48px; margin: 0 0 10px 0; color: var(--text-primary); text-shadow: 0 2px 10px var(--overlay-bg); font-family: 'Motiva Sans', Sans-serif;">${archiveGame.title}</h1>
               <div class="play-bar" style="display: flex; align-items: center; gap: 20px;">
-                <button class="steam-play-btn" style="background: linear-gradient(to right, #47b230, #5ab941); border: none; color: #fff; padding: 12px 60px; font-size: 20px; font-weight: 700; border-radius: 2px; cursor: pointer; text-transform: uppercase; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">Play</button>
-                <div class="overview-stats" style="display: flex; gap: 30px; font-size: 13px; color: #898989;">
+                <button class="steam-play-btn" style="background: var(--charging); border: none; color: var(--text-primary); padding: 12px 60px; font-size: 20px; font-weight: 700; border-radius: 2px; cursor: pointer; text-transform: uppercase; box-shadow: 0 4px 15px var(--overlay-bg);">Play</button>
+                <div class="overview-stats" style="display: flex; gap: 30px; font-size: 13px; color: var(--text-secondary);">
                   <div>
                     <div style="text-transform: uppercase; margin-bottom: 4px;">Last Played</div>
-                    <div style="color: #fff;">${gameStats.lastPlayed ? new Date(gameStats.lastPlayed).toLocaleDateString() : "Never"}</div>
+                    <div style="color: var(--text-primary);">${gameStats.lastPlayed ? new Date(gameStats.lastPlayed).toLocaleDateString() : "Never"}</div>
                   </div>
                   <div>
                     <div style="text-transform: uppercase; margin-bottom: 4px;">Play Time</div>
-                    <div style="color: #fff;">${this.formatTime(gameStats.totalMin)}</div>
+                    <div style="color: var(--text-primary);">${this.formatTime(gameStats.totalMin)}</div>
                   </div>
                 </div>
               </div>
@@ -229,17 +229,17 @@ export class GameRenderer {
         </div>
         <div class="overview-content" style="padding: 40px; display: grid; grid-template-columns: 2fr 1fr; gap: 40px;">
           <div class="overview-main">
-            <div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 4px; margin-bottom: 20px;">
-              <h3 style="margin-top: 0; color: #66c0f4; text-transform: uppercase; font-size: 14px;">Game Info</h3>
-              <p style="line-height: 1.6; color: #acb2b8;">Experience ${archiveGame.title} on YukiOS. This game is part of the archive collection.</p>
+            <div style="background: var(--surface-1); padding: 20px; border-radius: 4px; margin-bottom: 20px;">
+              <h3 style="margin-top: 0; color: var(--brand); text-transform: uppercase; font-size: 14px;">Game Info</h3>
+              <p style="line-height: 1.6; color: var(--text-muted);">Experience ${archiveGame.title} on YukiOS. This game is part of the archive collection.</p>
             </div>
             <div class="steam-whats-new-header" style="margin-bottom: 15px;">Recent Activity</div>
-            <div style="color: #898989; font-style: italic; font-size: 13px;">No recent activity to show.</div>
+            <div style="color: var(--text-secondary); font-style: italic; font-size: 13px;">No recent activity to show.</div>
           </div>
           <div class="overview-sidebar">
-             <div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 4px;">
-               <h3 style="margin-top: 0; color: #fff; font-size: 14px; text-transform: uppercase;">Friends who play</h3>
-               <div style="color: #898989; font-size: 13px;">None of your friends have played this game.</div>
+             <div style="background: var(--surface-1); padding: 20px; border-radius: 4px;">
+               <h3 style="margin-top: 0; color: var(--text-primary); font-size: 14px; text-transform: uppercase;">Friends who play</h3>
+               <div style="color: var(--text-secondary); font-size: 13px;">None of your friends have played this game.</div>
              </div>
           </div>
         </div>
@@ -248,7 +248,7 @@ export class GameRenderer {
 
     target.querySelector(".steam-play-btn").onclick = () =>
       this.renderer.showGameOverlay(archiveGame.title, archiveGame.url);
-    this.renderer._setActiveSidebarItem(container, archiveGame.appId);
+    this.renderer.setActiveSidebarItem(container, archiveGame.appId);
   }
 
   renderGrid(container, onLaunch, focusCollection = null) {
@@ -306,9 +306,9 @@ export class GameRenderer {
       <div class="steam-yukios-content">
         <div class="steam-whats-new">
           <div class="steam-whats-new-header steam-section-header" data-title="What's New" style="cursor: pointer; display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
-            <i class="fas ${isNewsExpanded ? "fa-chevron-down" : "fa-chevron-right"}" style="font-size: 10px; color: #898989;"></i>
+            <i class="fas ${isNewsExpanded ? "fa-chevron-down" : "fa-chevron-right"}" style="font-size: 10px; color: var(--text-secondary);"></i>
             <div class="steam-section-title">What's New</div>
-            <div style="height: 1px; flex: 1; background: rgba(255,255,255,0.1); margin-left: 10px;"></div>
+            <div style="height: 1px; flex: 1; background: var(--glass); margin-left: 10px;"></div>
           </div>
           <div class="steam-whats-new-list" style="display: ${isNewsExpanded ? "flex" : "none"}">
             ${this.renderer.newsItems
@@ -354,22 +354,22 @@ export class GameRenderer {
       wrapper.dataset.sectionWrapper = title;
       wrapper.innerHTML = `
         <div class="steam-section-header" id="${sectionId}" data-title="${title}" style="cursor: pointer; display: flex; align-items: center; gap: 10px;">
-          <i class="fas ${isExpanded ? "fa-chevron-down" : "fa-chevron-right"}" style="font-size: 10px; color: #898989;"></i>
+          <i class="fas ${isExpanded ? "fa-chevron-down" : "fa-chevron-right"}" style="font-size: 10px; color: var(--text-secondary);"></i>
           <div class="steam-section-title">${title}</div>
-          <div style="height: 1px; flex: 1; background: rgba(255,255,255,0.1); margin-left: 10px;"></div>
+          <div style="height: 1px; flex: 1; background: var(--glass); margin-left: 10px;"></div>
         </div>
         <div class="steam-game-grid" data-section="${title}" style="display: ${isExpanded ? "grid" : "none"}"></div>
       `;
       sectionsHost.appendChild(wrapper);
 
       if (isExpanded) {
-        this._fillGridLazy(wrapper.querySelector(".steam-game-grid"), games);
+        this.fillGridLazy(wrapper.querySelector(".steam-game-grid"), games);
       }
     });
 
     sectionsHost.appendChild(document.createComment("archive-placeholder"));
-    this.renderer._loadArchiveSection(container, onLaunch, collapsed);
-    this.renderer._loadLuminSDKSection(container, collapsed);
+    this.renderer.loadArchiveSection(container, onLaunch, collapsed);
+    this.renderer.loadLuminSDKSection(container, collapsed);
 
     const sidebar = container.querySelector(".steam-library-sidebar");
     const mainContent = container.querySelector(".steam-main-content");
@@ -383,7 +383,7 @@ export class GameRenderer {
       mainContent.style.overflowY = "auto";
     }
 
-    this.renderer._attachGridDelegation(container, onLaunch);
+    this.renderer.attachGridDelegation(container, onLaunch);
 
     const sortSelect = target.querySelector(".steam-sort-select");
     const sortBtn = target.querySelector(".steam-sort-order-btn");
@@ -400,9 +400,9 @@ export class GameRenderer {
       });
     }
 
-    if (this.renderer.currentGame) this.renderer._setActiveSidebarItem(container, this.renderer.currentGame);
+    if (this.renderer.currentGame) this.renderer.setActiveSidebarItem(container, this.renderer.currentGame);
     else if (this.renderer.currentArchiveGame)
-      this.renderer._setActiveSidebarItem(container, this.renderer.currentArchiveGame.appId);
+      this.renderer.setActiveSidebarItem(container, this.renderer.currentArchiveGame.appId);
 
     target.querySelectorAll(".steam-section-header").forEach((header) => {
       header.onclick = () => {
@@ -411,7 +411,7 @@ export class GameRenderer {
       };
     });
   }
-  _getReeyukiBadge(game) {
+  getReeyukiBadge(game) {
     if (!HIGHLIGHTED_GAMES.has(game.app)) return "";
 
     return `
@@ -421,7 +421,7 @@ export class GameRenderer {
   `;
   }
 
-  _injectReeyukiStyle(target) {
+  injectReeyukiStyle(target) {
     const style = document.createElement("style");
     style.textContent = `
       .reeyuki-runtime-header {
@@ -434,9 +434,9 @@ export class GameRenderer {
         font-weight: 700;
         letter-spacing: 0.8px;
         text-transform: uppercase;
-        color: #7cc5ff;
-        background: rgba(103,193,245,0.08);
-        border: 1px solid rgba(103,193,245,0.2);
+        color: var(--brand);
+        background: var(--brand-dim);
+        border: 1px solid var(--brand-glow);
         border-radius: 2px;
         width: fit-content;
       }
@@ -444,7 +444,7 @@ export class GameRenderer {
     target.appendChild(style);
   }
 
-  _fillGridLazy(grid, games) {
+  fillGridLazy(grid, games) {
     const CHUNK = 30;
     let index = 0;
     const renderChunk = (deadline) => {

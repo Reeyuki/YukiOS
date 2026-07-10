@@ -19,11 +19,11 @@ export class CommandPalette {
     this.inputElement = null;
     this.overlayElement = null;
     this.resultsContainer = null;
-    this._setupUI();
-    this._setupListeners();
+    this.setupUI();
+    this.setupListeners();
   }
 
-  _setupUI() {
+  setupUI() {
     this.overlayElement = document.createElement("div");
     this.overlayElement.id = "command-palette";
     this.overlayElement.className = "cmd-palette-overlay";
@@ -54,7 +54,7 @@ export class CommandPalette {
         position: fixed;
         inset: 0;
         z-index: 99999999;
-        background: rgba(10, 10, 14, 0.4);
+        background: var(--overlay-bg);
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
         display: flex;
@@ -62,7 +62,7 @@ export class CommandPalette {
         justify-content: center;
         padding-top: 100px;
         font-family: 'Inter', system-ui, -apple-system, sans-serif;
-        color: #fff;
+        color: var(--text-primary);
         animation: cmdFadeIn 0.2s ease-out;
       }
 
@@ -76,8 +76,8 @@ export class CommandPalette {
         max-width: 600px;
         max-height: 480px;
         border-radius: 16px;
-        background: rgba(20, 20, 28, 0.85);
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: var(--bg-elev-2);
+        border: 1px solid var(--glass-border);
         box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.5);
         overflow: hidden;
         display: flex;
@@ -89,11 +89,11 @@ export class CommandPalette {
         display: flex;
         align-items: center;
         gap: 12px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        border-bottom: 1px solid var(--glass-border);
       }
 
       .cmd-palette-search-icon {
-        color: rgba(255, 255, 255, 0.4);
+        color: var(--text-muted);
         font-size: 16px;
       }
 
@@ -102,7 +102,7 @@ export class CommandPalette {
         background: transparent;
         border: none;
         outline: none;
-        color: #fff;
+        color: var(--text-primary);
         font-size: 16px;
         font-family: inherit;
       }
@@ -111,10 +111,10 @@ export class CommandPalette {
         font-size: 10px;
         font-weight: 600;
         padding: 3px 6px;
-        background: rgba(255, 255, 255, 0.08);
-        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: var(--glass-border);
+        border: 1px solid var(--glass);
         border-radius: 6px;
-        color: rgba(255, 255, 255, 0.5);
+        color: var(--text-muted);
         letter-spacing: 0.5px;
       }
 
@@ -130,7 +130,7 @@ export class CommandPalette {
       }
 
       .cmd-palette-body::-webkit-scrollbar-thumb {
-        background: rgba(255, 255, 255, 0.1);
+        background: var(--glass);
         border-radius: 10px;
       }
 
@@ -149,12 +149,12 @@ export class CommandPalette {
       }
 
       .cmd-palette-item:hover {
-        background: rgba(255, 255, 255, 0.04);
+        background: var(--surface-1);
       }
 
       .cmd-palette-item.active {
-        background: rgba(255, 255, 255, 0.08);
-        border-left: 3px solid #4f9eff;
+        background: var(--glass-border);
+        border-left: 3px solid var(--brand);
         padding-left: 13px;
       }
 
@@ -166,8 +166,8 @@ export class CommandPalette {
         display: flex;
         align-items: center;
         justify-content: center;
-        background: rgba(255, 255, 255, 0.05);
-        color: rgba(255, 255, 255, 0.7);
+        background: var(--surface-1);
+        color: var(--text-secondary);
         font-size: 14px;
       }
 
@@ -188,7 +188,7 @@ export class CommandPalette {
 
       .cmd-palette-item-title {
         font-size: 14px;
-        color: rgba(255, 255, 255, 0.95);
+        color: var(--text-primary);
         font-weight: 500;
         white-space: nowrap;
         overflow: hidden;
@@ -197,7 +197,7 @@ export class CommandPalette {
 
       .cmd-palette-item-sub {
         font-size: 11px;
-        color: rgba(255, 255, 255, 0.4);
+        color: var(--text-muted);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -208,25 +208,25 @@ export class CommandPalette {
         font-weight: 600;
         padding: 2px 8px;
         border-radius: 10px;
-        background: rgba(255, 255, 255, 0.05);
-        color: rgba(255, 255, 255, 0.5);
+        background: var(--surface-1);
+        color: var(--text-muted);
         text-transform: uppercase;
         letter-spacing: 0.5px;
       }
 
       .cmd-palette-footer {
         padding: 10px 16px;
-        border-top: 1px solid rgba(255, 255, 255, 0.06);
+        border-top: 1px solid var(--glass-border);
         font-size: 11px;
-        color: rgba(255, 255, 255, 0.4);
+        color: var(--text-muted);
         text-align: center;
       }
 
       .cmd-palette-footer kbd {
-        background: rgba(255, 255, 255, 0.08);
+        background: var(--glass-border);
         padding: 1px 4px;
         border-radius: 3px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        border: 1px solid var(--glass);
         font-family: inherit;
       }
     `;
@@ -236,7 +236,7 @@ export class CommandPalette {
     this.resultsContainer = this.overlayElement.querySelector("#cmd-palette-results");
   }
 
-  _setupListeners() {
+  setupListeners() {
     document.addEventListener("keydown", (e) => {
       if (
         KeybindManager.matches(e, "global.commandPalette.k") ||
@@ -256,7 +256,7 @@ export class CommandPalette {
 
     this.inputElement.addEventListener("input", () => {
       this.activeIndex = 0;
-      this._renderResults();
+      this.renderResults();
     });
 
     this.inputElement.addEventListener("keydown", (e) => {
@@ -266,14 +266,14 @@ export class CommandPalette {
       } else if (KeybindManager.matches(e, "global.paletteDown")) {
         e.preventDefault();
         this.activeIndex = (this.activeIndex + 1) % this.results.length;
-        this._updateActiveSelection();
+        this.updateActiveSelection();
       } else if (KeybindManager.matches(e, "global.paletteUp")) {
         e.preventDefault();
         this.activeIndex = (this.activeIndex - 1 + this.results.length) % this.results.length;
-        this._updateActiveSelection();
+        this.updateActiveSelection();
       } else if (KeybindManager.matches(e, "global.paletteEnter")) {
         e.preventDefault();
-        this._executeActive();
+        this.executeActive();
       }
     });
   }
@@ -296,8 +296,8 @@ export class CommandPalette {
     this.inputElement.value = "";
     this.overlayElement.style.display = "flex";
     this.inputElement.focus();
-    await this._loadFiles();
-    this._renderResults();
+    await this.loadFiles();
+    this.renderResults();
   }
 
   close() {
@@ -305,7 +305,7 @@ export class CommandPalette {
     this.overlayElement.style.display = "none";
   }
 
-  async _loadFiles() {
+  async loadFiles() {
     const fs = this.services.fileSystemManager;
     if (!fs) return;
     this.cachedFiles = [];
@@ -339,17 +339,17 @@ export class CommandPalette {
     await walk(fs.CONFIG.ROOT);
   }
 
-  _renderResults() {
+  renderResults() {
     const search = this.inputElement.value.trim().toLowerCase();
     this.resultsContainer.innerHTML = "";
 
     if (this.currentSubpalette === "wallpaper") {
-      this._renderWallpaperSubpalette(search);
+      this.renderWallpaperSubpalette(search);
       return;
     }
 
     if (this.currentSubpalette === "filesearch") {
-      this._renderFileSearchSubpalette(search);
+      this.renderFileSearchSubpalette(search);
       return;
     }
 
@@ -363,7 +363,7 @@ export class CommandPalette {
           this.currentSubpalette = "wallpaper";
           this.inputElement.value = "";
           this.activeIndex = 0;
-          this._renderResults();
+          this.renderResults();
         }
       },
       {
@@ -371,70 +371,70 @@ export class CommandPalette {
         subtitle: "Switch to sleek dark UI appearance",
         tag: "theme",
         icon: "fas fa-moon",
-        execute: () => this._setSystemTheme("dark")
+        execute: () => this.setSystemTheme("dark")
       },
       {
         title: "Theme: Light Mode",
         subtitle: "Switch to bright light UI appearance",
         tag: "theme",
         icon: "fas fa-sun",
-        execute: () => this._setSystemTheme("light")
+        execute: () => this.setSystemTheme("light")
       },
       {
         title: "Theme: Auto Mode",
         subtitle: "Follow system preference dark/light settings",
         tag: "theme",
         icon: "fas fa-circle-half-stroke",
-        execute: () => this._setSystemTheme("auto")
+        execute: () => this.setSystemTheme("auto")
       },
       {
         title: "Mute Sounds",
         subtitle: "Disable overall system audio notifications",
         tag: "audio",
         icon: "fas fa-volume-mute",
-        execute: () => this._toggleSound(false)
+        execute: () => this.toggleSound(false)
       },
       {
         title: "Unmute Sounds",
         subtitle: "Enable standard system audio notifications",
         tag: "audio",
         icon: "fas fa-volume-up",
-        execute: () => this._toggleSound(true)
+        execute: () => this.toggleSound(true)
       },
       {
         title: "Do Not Disturb: On",
         subtitle: "Silence all toast banner notifications",
         tag: "dnd",
         icon: "fas fa-bell-slash",
-        execute: () => this._toggleDND(true)
+        execute: () => this.toggleDND(true)
       },
       {
         title: "Do Not Disturb: Off",
         subtitle: "Display all standard desktop notifications",
         tag: "dnd",
         icon: "fas fa-bell",
-        execute: () => this._toggleDND(false)
+        execute: () => this.toggleDND(false)
       },
       {
         title: "Close All Windows",
         subtitle: "Close all open application windows",
         tag: "action",
         icon: "fas fa-window-close",
-        execute: () => this._closeAllWindows()
+        execute: () => this.closeAllWindows()
       },
       {
         title: "Minimize All Windows",
         subtitle: "Minimize every open window to the taskbar",
         tag: "action",
         icon: "fas fa-minus",
-        execute: () => this._minimizeAllWindows()
+        execute: () => this.minimizeAllWindows()
       },
       {
         title: "Toggle Fullscreen",
         subtitle: "Toggle the active window in and out of fullscreen",
         tag: "action",
         icon: "fas fa-expand",
-        execute: () => this._toggleFullscreen()
+        execute: () => this.toggleFullscreen()
       },
       {
         title: "Lock Session",
@@ -470,42 +470,42 @@ export class CommandPalette {
         subtitle: "Display the workspace overview switcher",
         tag: "workspace",
         icon: "fas fa-th-large",
-        execute: () => this._toggleWorkspaceOverview()
+        execute: () => this.toggleWorkspaceOverview()
       },
       {
         title: "Switch to Workspace 1",
         subtitle: "Jump to the first workspace",
         tag: "workspace",
         icon: "fas fa-1",
-        execute: () => this._switchWorkspace(0)
+        execute: () => this.switchWorkspace(0)
       },
       {
         title: "Switch to Workspace 2",
         subtitle: "Jump to the second workspace",
         tag: "workspace",
         icon: "fas fa-2",
-        execute: () => this._switchWorkspace(1)
+        execute: () => this.switchWorkspace(1)
       },
       {
         title: "Switch to Workspace 3",
         subtitle: "Jump to the third workspace",
         tag: "workspace",
         icon: "fas fa-3",
-        execute: () => this._switchWorkspace(2)
+        execute: () => this.switchWorkspace(2)
       },
       {
         title: "Switch to Workspace 4",
         subtitle: "Jump to the fourth workspace",
         tag: "workspace",
         icon: "fas fa-4",
-        execute: () => this._switchWorkspace(3)
+        execute: () => this.switchWorkspace(3)
       },
       {
         title: "Switch to Workspace 5",
         subtitle: "Jump to the fifth workspace",
         tag: "workspace",
         icon: "fas fa-5",
-        execute: () => this._switchWorkspace(4)
+        execute: () => this.switchWorkspace(4)
       },
       {
         title: "Search Files",
@@ -516,7 +516,7 @@ export class CommandPalette {
           this.currentSubpalette = "filesearch";
           this.inputElement.value = "";
           this.activeIndex = 0;
-          this._renderResults();
+          this.renderResults();
         }
       },
       {
@@ -539,7 +539,7 @@ export class CommandPalette {
         icon: "fas fa-video",
         execute: () => {
           const app = this.services.screenshotApp;
-          if (app && !app._recording) {
+          if (app && !app.recording) {
             app.open();
             app.toggleRecording();
           }
@@ -552,7 +552,7 @@ export class CommandPalette {
         icon: "fas fa-stop",
         execute: () => {
           const app = this.services.screenshotApp;
-          if (app && app._recording) {
+          if (app && app.recording) {
             app.toggleRecording();
           }
         }
@@ -608,10 +608,10 @@ export class CommandPalette {
       }
     ];
 
-    const allActions = [...actions, ...this._getSettingsEntries()];
+    const allActions = [...actions, ...this.getSettingsEntries()];
     let items = !search ? [...allActions] : allActions.filter((a) => a.title.toLowerCase().includes(search));
 
-    if (search.startsWith(">") || this._isTerminalCommand(search)) {
+    if (search.startsWith(">") || this.isTerminalCommand(search)) {
       const cleanCmd = search.startsWith(">") ? search.slice(1).trim() : search;
       if (cleanCmd) {
         items.push({
@@ -631,12 +631,12 @@ export class CommandPalette {
       }
     }
 
-    const calcResult = this._tryCalculate(search);
+    const calcResult = this.tryCalculate(search);
     if (calcResult) {
       items.push(calcResult);
     }
 
-    const convResult = this._tryConvert(search);
+    const convResult = this.tryConvert(search);
     if (convResult) {
       items.push(convResult);
     }
@@ -695,7 +695,7 @@ export class CommandPalette {
 
     if (this.results.length === 0) {
       this.resultsContainer.innerHTML = `
-        <div style="padding: 20px; text-align: center; color: rgba(255, 255, 255, 0.4); font-size: 14px;">
+        <div style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 14px;">
           No matching commands, apps, or files found.
         </div>
       `;
@@ -721,24 +721,24 @@ export class CommandPalette {
       el.innerHTML = `
         <div class="cmd-palette-item-icon">${iconHtml}</div>
         <div class="cmd-palette-item-meta">
-          <div class="cmd-palette-item-title">${this._escapeHTML(item.title)}</div>
-          <div class="cmd-palette-item-sub">${this._escapeHTML(item.subtitle)}</div>
+          <div class="cmd-palette-item-title">${this.escapeHTML(item.title)}</div>
+          <div class="cmd-palette-item-sub">${this.escapeHTML(item.subtitle)}</div>
         </div>
         <div class="cmd-palette-item-tag">${item.tag}</div>
       `;
 
       el.addEventListener("click", () => {
         this.activeIndex = index;
-        this._executeActive();
+        this.executeActive();
       });
 
       this.resultsContainer.appendChild(el);
     });
 
-    this._scrollToActive();
+    this.scrollToActive();
   }
 
-  _renderWallpaperSubpalette(search) {
+  renderWallpaperSubpalette(search) {
     const wallOpts = WALLPAPER_NAME_URL_PAIRS;
 
     let matches = wallOpts;
@@ -756,7 +756,7 @@ export class CommandPalette {
           this.currentSubpalette = null;
           this.inputElement.value = "";
           this.activeIndex = 0;
-          this._renderResults();
+          this.renderResults();
         }
       }
     ];
@@ -789,24 +789,24 @@ export class CommandPalette {
       el.innerHTML = `
         <div class="cmd-palette-item-icon"><i class="${item.icon}"></i></div>
         <div class="cmd-palette-item-meta">
-          <div class="cmd-palette-item-title">${this._escapeHTML(item.title)}</div>
-          <div class="cmd-palette-item-sub">${this._escapeHTML(item.subtitle)}</div>
+          <div class="cmd-palette-item-title">${this.escapeHTML(item.title)}</div>
+          <div class="cmd-palette-item-sub">${this.escapeHTML(item.subtitle)}</div>
         </div>
         <div class="cmd-palette-item-tag">${item.tag}</div>
       `;
 
       el.addEventListener("click", () => {
         this.activeIndex = index;
-        this._executeActive();
+        this.executeActive();
       });
 
       this.resultsContainer.appendChild(el);
     });
 
-    this._scrollToActive();
+    this.scrollToActive();
   }
 
-  _renderFileSearchSubpalette(search) {
+  renderFileSearchSubpalette(search) {
     const items = [
       {
         title: ".. Back to Main Menu",
@@ -817,7 +817,7 @@ export class CommandPalette {
           this.currentSubpalette = null;
           this.inputElement.value = "";
           this.activeIndex = 0;
-          this._renderResults();
+          this.renderResults();
         }
       }
     ];
@@ -892,24 +892,24 @@ export class CommandPalette {
       el.innerHTML = `
         <div class="cmd-palette-item-icon">${iconHtml}</div>
         <div class="cmd-palette-item-meta">
-          <div class="cmd-palette-item-title">${this._escapeHTML(item.title)}</div>
-          <div class="cmd-palette-item-sub">${this._escapeHTML(item.subtitle)}</div>
+          <div class="cmd-palette-item-title">${this.escapeHTML(item.title)}</div>
+          <div class="cmd-palette-item-sub">${this.escapeHTML(item.subtitle)}</div>
         </div>
         <div class="cmd-palette-item-tag">${item.tag}</div>
       `;
 
       el.addEventListener("click", () => {
         this.activeIndex = index;
-        this._executeActive();
+        this.executeActive();
       });
 
       this.resultsContainer.appendChild(el);
     });
 
-    this._scrollToActive();
+    this.scrollToActive();
   }
 
-  _getSettingsEntries() {
+  getSettingsEntries() {
     const go = (section, target) => {
       launchSettingsPane(section, target);
     };
@@ -1044,7 +1044,7 @@ export class CommandPalette {
     return entries;
   }
 
-  _isTerminalCommand(str) {
+  isTerminalCommand(str) {
     const list = [
       "ls",
       "cd",
@@ -1068,7 +1068,7 @@ export class CommandPalette {
     return list.includes(firstWord);
   }
 
-  _tryCalculate(search) {
+  tryCalculate(search) {
     if (!search) return null;
     const expr = search.replace(/\s/g, "");
     if (!/^[\d+\-*/.^()%!,a-z]+$/.test(expr)) return null;
@@ -1081,7 +1081,7 @@ export class CommandPalette {
     )
       return null;
     try {
-      const result = this._safeEval(expr);
+      const result = this.safeEval(expr);
       if (result === null || result === undefined || !isFinite(result)) return null;
       return {
         title: `= ${Number.isInteger(result) ? result : parseFloat(result.toFixed(6))}`,
@@ -1103,7 +1103,7 @@ export class CommandPalette {
     }
   }
 
-  _safeEval(expr) {
+  safeEval(expr) {
     const ops = {
       "+": (a, b) => a + b,
       "-": (a, b) => a - b,
@@ -1185,7 +1185,7 @@ export class CommandPalette {
     return result;
   }
 
-  _tryConvert(search) {
+  tryConvert(search) {
     if (!search) return null;
     const convPattern =
       /^(\d+\.?\d*)\s*(celsius|c|fahrenheit|f|cm|inch|inches|m|meter|meters|ft|feet|km|kilometer|kilometers|mile|miles|kg|kilogram|kilograms|lb|lbs|pound|pounds|gb|gigabyte|gigabytes|mb|megabyte|megabytes)\s+(?:to|in|->|→)\s+(celsius|c|fahrenheit|f|cm|inch|inches|m|meter|meters|ft|feet|km|kilometer|kilometers|mile|miles|kg|kilogram|kilograms|lb|lbs|pound|pounds|gb|gigabyte|gigabytes|mb|megabyte|megabytes)$/i;
@@ -1294,7 +1294,7 @@ export class CommandPalette {
     };
   }
 
-  _setSystemTheme(val) {
+  setSystemTheme(val) {
     os.storage.set(StorageKeys.theme, val);
     const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     const effective = val === "auto" ? (prefersDark ? "dark" : "light") : val;
@@ -1308,7 +1308,7 @@ export class CommandPalette {
     });
   }
 
-  _toggleSound(val) {
+  toggleSound(val) {
     os.storage.set(StorageKeys.soundEnabled, val ? "true" : "false");
     os.events.emit(BusEvents.SETTINGS_CHANGED, { key: "soundEnabled", value: val ? "true" : "false" });
     os.notify.send("Sound Settings", `System audio feedback is now ${val ? "enabled" : "disabled"}`, {
@@ -1318,7 +1318,7 @@ export class CommandPalette {
     });
   }
 
-  _toggleDND(val) {
+  toggleDND(val) {
     os.storage.set(StorageKeys.dndKey, val ? "true" : "false");
     os.notify.send("Do Not Disturb", `Silence state is now ${val ? "activated" : "deactivated"}`, {
       type: "info",
@@ -1328,7 +1328,7 @@ export class CommandPalette {
     });
   }
 
-  _closeAllWindows() {
+  closeAllWindows() {
     os.window.closeAll();
     os.notify.send("Close Windows", "All windows closed", {
       type: "success",
@@ -1338,7 +1338,7 @@ export class CommandPalette {
     });
   }
 
-  _minimizeAllWindows() {
+  minimizeAllWindows() {
     if (this.services.windowManager) {
       const wm = this.services.windowManager;
       const winIds = Array.from(wm.openWindows.keys());
@@ -1349,32 +1349,32 @@ export class CommandPalette {
     }
   }
 
-  _toggleFullscreen() {
+  toggleFullscreen() {
     if (this.services.windowManager && this.services.windowManager.activeWindow) {
-      this.services.windowManager.toggleFullscreen(this.services.windowManager.activeWindow);
+      os.window.maximize(this.services.windowManager.activeWindow);
     }
   }
 
-  _toggleWorkspaceOverview() {
+  toggleWorkspaceOverview() {
     const ws = this.services.windowManager?.workspaceManager;
     if (ws) ws.toggleOverview();
   }
 
-  _switchWorkspace(index) {
+  switchWorkspace(index) {
     const ws = this.services.windowManager?.workspaceManager;
     if (ws && ws.workspaces[index]) ws.switchTo(ws.workspaces[index].id);
   }
 
-  _updateActiveSelection() {
+  updateActiveSelection() {
     const items = this.resultsContainer.querySelectorAll(".cmd-palette-item");
     items.forEach((item) => {
       const idx = parseInt(item.dataset.index);
       item.classList.toggle("active", idx === this.activeIndex);
     });
-    this._scrollToActive();
+    this.scrollToActive();
   }
 
-  _scrollToActive() {
+  scrollToActive() {
     const activeEl = this.resultsContainer.querySelector(".cmd-palette-item.active");
     if (!activeEl) return;
     const parent = this.resultsContainer.parentElement;
@@ -1390,7 +1390,7 @@ export class CommandPalette {
     }
   }
 
-  _executeActive() {
+  executeActive() {
     const activeItem = this.results[this.activeIndex];
     if (activeItem) {
       activeItem.execute();
@@ -1400,7 +1400,7 @@ export class CommandPalette {
     }
   }
 
-  _escapeHTML(str) {
+  escapeHTML(str) {
     return str
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")

@@ -71,7 +71,7 @@ export function showConflictDialog(fileName) {
 
     const checkbox = document.createElement("input");
     checkbox.type = "checkbox";
-    checkbox.id = "_conflict-apply-all";
+    checkbox.id = "conflict-apply-all";
 
     const footerText = document.createElement("span");
     footerText.textContent = "Apply this choice to all remaining conflicts";
@@ -92,7 +92,7 @@ export function showConflictDialog(fileName) {
       btn.addEventListener("mouseleave", () => (btn.style.background = "var(--surface-2)"));
       btn.addEventListener("click", () => {
         const action = btn.dataset.action;
-        const applyToAll = dialog.querySelector("#_conflict-apply-all").checked;
+        const applyToAll = dialog.querySelector("#conflict-apply-all").checked;
         overlay.remove();
         resolve({ action, applyToAll });
       });

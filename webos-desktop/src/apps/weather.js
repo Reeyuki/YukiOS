@@ -50,7 +50,7 @@ export class WeatherApp extends BaseApp {
     this.unit = "metric";
     this.currentCity = null;
     this.currentCoords = null;
-    this._declarativeApp = null;
+    this.declarativeApp = null;
   }
 
   getDeclarativeSchema(opts) {

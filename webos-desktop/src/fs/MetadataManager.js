@@ -2,16 +2,16 @@ export class MetadataManager {
   constructor(storageAdapter, config) {
     this.storage = storageAdapter;
     this.CONFIG = config;
-    this._metaLocks = new Map();
+    this.metaLocks = new Map();
   }
 
-  _acquireMeta(dir) {
-    const prev = this._metaLocks.get(dir) ?? Promise.resolve();
+  acquireMeta(dir) {
+    const prev = this.metaLocks.get(dir) ?? Promise.resolve();
     let release;
     const next = new Promise((res) => {
       release = res;
     });
-    this._metaLocks.set(
+    this.metaLocks.set(
       dir,
       prev.then(() => next)
     );
@@ -29,7 +29,7 @@ export class MetadataManager {
   }
 
   async writeMeta(dir, name, data) {
-    const release = await this._acquireMeta(dir);
+    const release = await this.acquireMeta(dir);
     try {
       const metaPath = this.join(dir, this.CONFIG.META_FILE);
       const meta = await this.readMeta(dir);
@@ -43,7 +43,7 @@ export class MetadataManager {
   }
 
   async removeMeta(dir, name) {
-    const release = await this._acquireMeta(dir);
+    const release = await this.acquireMeta(dir);
     try {
       const metaPath = this.join(dir, this.CONFIG.META_FILE);
       const meta = await this.readMeta(dir);

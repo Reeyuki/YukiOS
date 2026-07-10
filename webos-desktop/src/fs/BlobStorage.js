@@ -17,7 +17,7 @@ export class BlobStorage {
     });
   }
 
-  _clearBlobStore() {
+  clearBlobStore() {
     return new Promise((resolve) => {
       if (!this.blobDB) return resolve();
       try {
@@ -31,7 +31,7 @@ export class BlobStorage {
     });
   }
 
-  _putBlob(fullPath, blob) {
+  putBlob(fullPath, blob) {
     return new Promise((resolve, reject) => {
       const tx = this.blobDB.transaction("blobs", "readwrite");
       tx.objectStore("blobs").put({ path: fullPath, blob });
@@ -40,7 +40,7 @@ export class BlobStorage {
     });
   }
 
-  _getBlobByFullPath(fullPath) {
+  getBlobByFullPath(fullPath) {
     return new Promise((resolve, reject) => {
       const tx = this.blobDB.transaction("blobs", "readonly");
       const req = tx.objectStore("blobs").get(fullPath);
@@ -49,7 +49,7 @@ export class BlobStorage {
     });
   }
 
-  _deleteBlobByFullPath(fullPath) {
+  deleteBlobByFullPath(fullPath) {
     return new Promise((resolve, reject) => {
       const tx = this.blobDB.transaction("blobs", "readwrite");
       tx.objectStore("blobs").delete(fullPath);
@@ -58,7 +58,7 @@ export class BlobStorage {
     });
   }
 
-  _renameBlobByFullPath(oldPath, newPath) {
+  renameBlobByFullPath(oldPath, newPath) {
     return new Promise((resolve, reject) => {
       const tx = this.blobDB.transaction("blobs", "readwrite");
       const store = tx.objectStore("blobs");

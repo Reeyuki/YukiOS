@@ -5,12 +5,22 @@ import { ScreenshotApp } from "./apps/screenshot.js";
 import { TerminalApp } from "./apps/terminal.js";
 import { audioMixer } from "./audioMixer.js";
 import { resolveIconUrl } from "./shared/assetResolver.js";
-import { $$ } from "./shared/domUtils.js";
+import {
+  $,
+  $$,
+  createElement,
+  setHTML,
+  setText,
+  addClass,
+  removeClass,
+  toggleClass,
+  setStyle
+} from "./shared/domUtils.js";
 
-const OVERLAY_SETTINGS_KEY = "yukiOS_overlay_settings";
-const OVERLAY_NOTES_KEY = "yukiOS_overlay_notes";
-const OVERLAY_PANEL_POSITIONS_KEY = "yukiOS_overlay_panel_positions";
-const OVERLAY_OPEN_PANELS_KEY = "yukiOS_overlay_open_panels";
+const OVERLAY_SETTINGS_KEY = StorageKeys.overlaySettings;
+const OVERLAY_NOTES_KEY = StorageKeys.overlayNotes;
+const OVERLAY_PANEL_POSITIONS_KEY = StorageKeys.overlayPanelPositions;
+const OVERLAY_OPEN_PANELS_KEY = StorageKeys.overlayOpenPanels;
 
 const DOCK_ITEM_DEFAULTS = [
   { id: "overview", title: "Overview", icon: "fa-home" },
@@ -38,25 +48,25 @@ export class GameOverlayController {
     this.activeTab = "overview";
     this.friendsWindow = null;
     this.perfMonitorEnabled = false;
-    this._perfInterval = null;
-    this._clockInterval = null;
-    this._sessionStart = null;
-    this._achievementFilter = "all";
-    this._settings = this._loadSettings();
-    this.notes = this._loadNotes();
-    this._listeningForKeybind = false;
-    this._screenshotApp = null;
-    this._openPanels = new Set();
-    this._panelZCounter = 100;
-    this._panelPositions = {};
-    this._screenshotViewUrls = new Map();
-    this._recording = false;
-    this._recordingDonePromise = null;
-    this._init();
+    this.perfInterval = null;
+    this.clockInterval = null;
+    this.sessionStart = null;
+    this.achievementFilter = "all";
+    this.settings = this.loadSettings();
+    this.notes = this.loadNotes();
+    this.listeningForKeybind = false;
+    this.screenshotApp = null;
+    this.openPanels = new Set();
+    this.panelZCounter = 100;
+    this.panelPositions = {};
+    this.screenshotViewUrls = new Map();
+    this.recording = false;
+    this.recordingDonePromise = null;
+    this.init();
   }
 
-  _init() {
-    document.addEventListener("keydown", this._onKeyDown.bind(this));
+  init() {
+    document.addEventListener("keydown", this.onKeyDown.bind(this));
     document.addEventListener("keydown", (e) => {
       if (this.visible && e.key === "Escape") {
         e.preventDefault();
@@ -65,7 +75,7 @@ export class GameOverlayController {
     });
   }
 
-  _onKeyDown(e) {
+  onKeyDown(e) {
     if (KeybindManager.matches(e, "steam.overlay") || (e.shiftKey && e.key === "Tab")) {
       e.preventDefault();
       e.stopPropagation();
@@ -77,7 +87,7 @@ export class GameOverlayController {
     }
   }
 
-  _loadSettings() {
+  loadSettings() {
     try {
       const s = os.storage.get(OVERLAY_SETTINGS_KEY) || {
         enabled: true,
@@ -99,11 +109,11 @@ export class GameOverlayController {
     }
   }
 
-  _saveSettings() {
-    os.storage.set(OVERLAY_SETTINGS_KEY, this._settings);
+  saveSettings() {
+    os.storage.set(OVERLAY_SETTINGS_KEY, this.settings);
   }
 
-  _loadNotes() {
+  loadNotes() {
     try {
       return os.storage.get(OVERLAY_NOTES_KEY) || [];
     } catch {
@@ -111,11 +121,11 @@ export class GameOverlayController {
     }
   }
 
-  _saveNotes() {
+  saveNotes() {
     os.storage.set(OVERLAY_NOTES_KEY, this.notes);
   }
 
-  _loadPanelPositions() {
+  loadPanelPositions() {
     try {
       return os.storage.get(OVERLAY_PANEL_POSITIONS_KEY) || {};
     } catch {
@@ -123,11 +133,11 @@ export class GameOverlayController {
     }
   }
 
-  _savePanelPositions() {
-    os.storage.set(OVERLAY_PANEL_POSITIONS_KEY, this._panelPositions);
+  savePanelPositions() {
+    os.storage.set(OVERLAY_PANEL_POSITIONS_KEY, this.panelPositions);
   }
 
-  _loadOpenPanels() {
+  loadOpenPanels() {
     try {
       const arr = os.storage.get(OVERLAY_OPEN_PANELS_KEY);
       return Array.isArray(arr) ? arr : [];
@@ -136,11 +146,11 @@ export class GameOverlayController {
     }
   }
 
-  _saveOpenPanels() {
-    os.storage.set(OVERLAY_OPEN_PANELS_KEY, Array.from(this._openPanels));
+  saveOpenPanels() {
+    os.storage.set(OVERLAY_OPEN_PANELS_KEY, Array.from(this.openPanels));
   }
 
-  _findActiveGameWindow() {
+  findActiveGameWindow() {
     const wins = $$('.window[data-app-id]:not([data-app-id=""])');
     if (!wins.length) return null;
     let best = null;
@@ -155,66 +165,66 @@ export class GameOverlayController {
     return best;
   }
 
-  _isSystemApp(appId) {
+  isSystemApp(appId) {
     const entry = this.appLauncher.appMap?.[appId];
     return entry?.type === "system";
   }
 
   openForWindow(gameWin) {
-    if (!this._settings?.enabled || !gameWin) return;
-    if (this._isSystemApp(gameWin.dataset.appId)) return;
+    if (!this.settings?.enabled || !gameWin) return;
+    if (this.isSystemApp(gameWin.dataset.appId)) return;
     this.currentWinId = gameWin.id;
     this.currentGameId = gameWin.dataset.appId;
-    this.currentGameTitle = this._getGameTitle(this.currentGameId);
-    this._sessionStart = Date.now();
-    this._blockGameInput(gameWin);
+    this.currentGameTitle = this.getGameTitle(this.currentGameId);
+    this.sessionStart = Date.now();
+    this.blockGameInput(gameWin);
 
     if (this.overlayEl) {
       const titleEl = this.overlayEl.querySelector(".overlay-info-title");
-      if (titleEl) titleEl.textContent = this._escapeHtml(this.currentGameTitle);
+      if (titleEl) titleEl.textContent = this.escapeHtml(this.currentGameTitle);
       this.overlayEl.style.display = "";
       requestAnimationFrame(() => this.overlayEl.classList.add("steam-overlay--visible"));
     } else {
-      this._buildOverlay();
+      this.buildOverlay();
     }
 
     this.visible = true;
-    this._startClock();
-    if (this._settings.perfMonitor) this._startPerfMonitor();
+    this.startClock();
+    if (this.settings.perfMonitor) this.startPerfMonitor();
   }
 
   open() {
-    if (!this._settings.enabled) return;
-    const gameWin = this._findActiveGameWindow();
+    if (!this.settings.enabled) return;
+    const gameWin = this.findActiveGameWindow();
     if (!gameWin) return;
-    if (this._isSystemApp(gameWin.dataset.appId)) return;
+    if (this.isSystemApp(gameWin.dataset.appId)) return;
 
     this.currentWinId = gameWin.id;
     this.currentGameId = gameWin.dataset.appId;
-    this.currentGameTitle = this._getGameTitle(this.currentGameId);
-    this._sessionStart = Date.now();
-    this._blockGameInput(gameWin);
+    this.currentGameTitle = this.getGameTitle(this.currentGameId);
+    this.sessionStart = Date.now();
+    this.blockGameInput(gameWin);
 
     if (this.overlayEl) {
       const titleEl = this.overlayEl.querySelector(".overlay-info-title");
-      if (titleEl) titleEl.textContent = this._escapeHtml(this.currentGameTitle);
+      if (titleEl) titleEl.textContent = this.escapeHtml(this.currentGameTitle);
       this.overlayEl.style.display = "";
       requestAnimationFrame(() => this.overlayEl.classList.add("steam-overlay--visible"));
     } else {
-      this._buildOverlay();
+      this.buildOverlay();
     }
 
     this.visible = true;
-    this._startClock();
-    if (this._settings.perfMonitor) this._startPerfMonitor();
+    this.startClock();
+    if (this.settings.perfMonitor) this.startPerfMonitor();
   }
 
   close() {
-    this._stopClock();
-    this._stopPerfMonitor();
-    this._restoreGameInput();
-    this._savePanelPositions();
-    this._saveOpenPanels();
+    this.stopClock();
+    this.stopPerfMonitor();
+    this.restoreGameInput();
+    this.savePanelPositions();
+    this.saveOpenPanels();
 
     if (this.overlayEl) {
       this.overlayEl.classList.remove("steam-overlay--visible");
@@ -227,27 +237,27 @@ export class GameOverlayController {
     this.visible = false;
   }
 
-  _exitGame() {
-    const win = document.getElementById(this.currentWinId);
+  exitGame() {
+    const win = $(`#${this.currentWinId}`);
     this.close();
     if (win) {
       os.window.close(win);
     }
   }
 
-  _getGameTitle(appId) {
+  getGameTitle(appId) {
     const map = this.appLauncher.appMap || {};
     return map[appId]?.title || appId || "Game";
   }
 
-  _blockGameInput(win) {
-    const content = win.querySelector(".window-content");
+  blockGameInput(win) {
+    const content = $(".window-content", win);
     if (content) content.style.pointerEvents = "none";
   }
 
-  _restoreGameInput() {
+  restoreGameInput() {
     if (this.currentWinId) {
-      const win = document.getElementById(this.currentWinId);
+      const win = $(`#${this.currentWinId}`);
       if (win) {
         const content = win.querySelector(".window-content");
         if (content) content.style.pointerEvents = "";
@@ -255,15 +265,15 @@ export class GameOverlayController {
     }
   }
 
-  _buildOverlay() {
+  buildOverlay() {
     if (this.overlayEl) {
       this.overlayEl.remove();
     }
 
-    this._openPanels = new Set();
-    this._panelPositions = this._loadPanelPositions();
+    this.openPanels = new Set();
+    this.panelPositions = this.loadPanelPositions();
 
-    const el = document.createElement("div");
+    const el = createElement("div");
     el.className = "steam-overlay";
     el.innerHTML = `
       <div class="steam-overlay-backdrop"></div>
@@ -278,7 +288,7 @@ export class GameOverlayController {
           <div class="overlay-session-time" id="overlay-session-time">0m this session</div>
           <button class="overlay-exit-game" id="overlay-exit-game">Exit Game</button>
         </div>
-        <span class="overlay-info-title">${this._escapeHtml(this.currentGameTitle)}</span>
+        <span class="overlay-info-title">${this.escapeHtml(this.currentGameTitle)}</span>
         <div class="overlay-info-right">
           <div class="overlay-backtogame">
             <div class="overlay-backtogame-text">
@@ -295,21 +305,21 @@ export class GameOverlayController {
 
     document.body.appendChild(el);
     this.overlayEl = el;
-    this._buildDock(el.querySelector("#steam-overlay-dock"));
+    this.buildDock(el.querySelector("#steam-overlay-dock"));
 
-    this._bindOverlayEvents();
+    this.bindOverlayEvents();
 
-    const prevOpen = this._loadOpenPanels();
+    const prevOpen = this.loadOpenPanels();
     if (prevOpen.includes("overview")) {
-      this._togglePanel("overview");
+      this.togglePanel("overview");
     }
     for (const id of prevOpen) {
       if (id !== "overview") {
-        this._togglePanel(id);
+        this.togglePanel(id);
       }
     }
     if (!prevOpen.length) {
-      this._togglePanel("overview");
+      this.togglePanel("overview");
     }
 
     requestAnimationFrame(() => {
@@ -317,9 +327,9 @@ export class GameOverlayController {
     });
   }
 
-  _buildDock(dockEl) {
+  buildDock(dockEl) {
     dockEl.innerHTML = "";
-    const dockArr = this._settings.dockItems || DOCK_ITEM_DEFAULTS.map((d) => ({ id: d.id, visible: true }));
+    const dockArr = this.settings.dockItems || DOCK_ITEM_DEFAULTS.map((d) => ({ id: d.id, visible: true }));
     const visible = dockArr.filter((d) => d.visible);
     let draggedId = null;
 
@@ -327,13 +337,13 @@ export class GameOverlayController {
       const def = DOCK_ITEM_DEFAULTS.find((d) => d.id === item.id);
       if (!def) return;
 
-      const btn = document.createElement("button");
-      btn.className = "overlay-dock-btn" + (this._openPanels.has(item.id) ? " active" : "");
+      const btn = createElement("button");
+      btn.className = "overlay-dock-btn" + (this.openPanels.has(item.id) ? " active" : "");
       btn.dataset.panel = item.id;
       btn.draggable = true;
       btn.innerHTML = `<i class="fas ${def.icon}"></i>`;
 
-      btn.addEventListener("click", () => this._togglePanel(item.id));
+      btn.addEventListener("click", () => this.togglePanel(item.id));
 
       btn.addEventListener("dragstart", (e) => {
         draggedId = item.id;
@@ -356,7 +366,7 @@ export class GameOverlayController {
         e.preventDefault();
         btn.classList.remove("drag-over");
         if (!draggedId || draggedId === item.id) return;
-        this._reorderDock(draggedId, item.id);
+        this.reorderDock(draggedId, item.id);
         draggedId = null;
       });
 
@@ -369,7 +379,7 @@ export class GameOverlayController {
       dockEl.appendChild(btn);
     });
 
-    const closeBtn = document.createElement("button");
+    const closeBtn = createElement("button");
     closeBtn.className = "overlay-dock-btn overlay-dock-close";
     closeBtn.id = "overlay-dock-close";
     closeBtn.innerHTML = '<i class="fas fa-times"></i>';
@@ -377,27 +387,27 @@ export class GameOverlayController {
     dockEl.appendChild(closeBtn);
   }
 
-  _rebuildDock() {
+  rebuildDock() {
     const dockEl = this.overlayEl?.querySelector("#steam-overlay-dock");
-    if (dockEl) this._buildDock(dockEl);
+    if (dockEl) this.buildDock(dockEl);
   }
 
-  _reorderDock(fromId, toId) {
-    const items = this._settings.dockItems;
+  reorderDock(fromId, toId) {
+    const items = this.settings.dockItems;
     const fromIdx = items.findIndex((d) => d.id === fromId);
     const toIdx = items.findIndex((d) => d.id === toId);
     if (fromIdx === -1 || toIdx === -1) return;
     const [moved] = items.splice(fromIdx, 1);
     items.splice(toIdx, 0, moved);
-    this._saveSettings();
-    this._rebuildDock();
+    this.saveSettings();
+    this.rebuildDock();
   }
 
-  _bindOverlayEvents() {
+  bindOverlayEvents() {
     const el = this.overlayEl;
 
     el.querySelector("#overlay-close-x").addEventListener("click", () => this.close());
-    el.querySelector("#overlay-exit-game").addEventListener("click", () => this._exitGame());
+    el.querySelector("#overlay-exit-game").addEventListener("click", () => this.exitGame());
 
     el.addEventListener("click", (e) => {
       if (e.target === el.querySelector(".steam-overlay-backdrop")) {
@@ -406,32 +416,32 @@ export class GameOverlayController {
     });
   }
 
-  _togglePanel(id) {
+  togglePanel(id) {
     const container = this.overlayEl.querySelector("#overlay-panels-container");
     let panel = container.querySelector(`[data-panel="${id}"]`);
 
     if (panel) {
       if (panel.style.display === "none") {
         panel.style.display = "";
-        this._openPanels.add(id);
-        this._bringPanelToFront(panel);
-        this._activateDockBtn(id);
-        this._lazyRender(id);
+        this.openPanels.add(id);
+        this.bringPanelToFront(panel);
+        this.activateDockBtn(id);
+        this.lazyRender(id);
       } else {
         panel.style.display = "none";
-        this._openPanels.delete(id);
-        this._deactivateDockBtn(id);
+        this.openPanels.delete(id);
+        this.deactivateDockBtn(id);
       }
       return;
     }
 
-    this._createPanel(id, container);
-    this._openPanels.add(id);
-    this._lazyRender(id);
-    this._activateDockBtn(id);
+    this.createPanel(id, container);
+    this.openPanels.add(id);
+    this.lazyRender(id);
+    this.activateDockBtn(id);
   }
 
-  _createPanel(id, container) {
+  createPanel(id, container) {
     const titleMap = {
       overview: "Game Overview",
       achievements: "Achievements",
@@ -445,13 +455,13 @@ export class GameOverlayController {
       settings: "Settings"
     };
     const panelTitle = titleMap[id] || (id.startsWith("screenshot-view--") ? id.replace("screenshot-view--", "") : id);
-    const pos = this._panelPositions[id] || this._getDefaultPanelPos(id);
-    const panel = document.createElement("div");
+    const pos = this.panelPositions[id] || this.getDefaultPanelPos(id);
+    const panel = createElement("div");
     panel.className = "overlay-panel";
     panel.dataset.panel = id;
     const wStr = pos.w !== undefined ? `width:${pos.w}px;` : "";
     const hStr = pos.h !== undefined ? `height:${pos.h}px;` : "";
-    panel.style.cssText = `position:absolute;left:${pos.x}px;top:${pos.y}px;${wStr}${hStr}z-index:${++this._panelZCounter};display:block;`;
+    panel.style.cssText = `position:absolute;left:${pos.x}px;top:${pos.y}px;${wStr}${hStr}z-index:${++this.panelZCounter};display:block;`;
     panel.innerHTML = `
       <div class="overlay-panel-header">
         <span class="overlay-panel-title">${panelTitle}</span>
@@ -469,20 +479,20 @@ export class GameOverlayController {
       <div class="overlay-panel-resize-handle resize-w" data-resize="w"></div>
     `;
     container.appendChild(panel);
-    this._makePanelDraggable(panel);
-    this._makePanelResizable(panel);
+    this.makePanelDraggable(panel);
+    this.makePanelResizable(panel);
     panel.querySelector(".overlay-panel-close").addEventListener("click", (e) => {
       e.stopPropagation();
-      this._togglePanel(id);
+      this.togglePanel(id);
     });
     panel.querySelector(".overlay-panel-maximize").addEventListener("click", (e) => {
       e.stopPropagation();
-      this._toggleMaximizePanel(panel);
+      this.toggleMaximizePanel(panel);
     });
-    panel.addEventListener("mousedown", () => this._bringPanelToFront(panel));
+    panel.addEventListener("mousedown", () => this.bringPanelToFront(panel));
   }
 
-  _getDefaultPanelPos(id) {
+  getDefaultPanelPos(id) {
     const REF = {
       overview: { x: 23, y: 6, w: 320, h: 243 },
       achievements: { x: 1159, y: -69, w: 350, h: 266 },
@@ -507,7 +517,7 @@ export class GameOverlayController {
     return { x: 23, y: 6, w: 320 };
   }
 
-  _makePanelDraggable(panel) {
+  makePanelDraggable(panel) {
     const header = panel.querySelector(".overlay-panel-header");
     const container = panel.parentElement;
     let isDragging = false;
@@ -517,18 +527,18 @@ export class GameOverlayController {
     header.addEventListener("mousedown", (e) => {
       if (e.target.closest(".overlay-panel-close") || e.target.closest(".overlay-panel-maximize")) return;
       isDragging = true;
-      this._bringPanelToFront(panel);
+      this.bringPanelToFront(panel);
       header.style.cursor = "grabbing";
 
       if (panel.classList.contains("maximized")) {
-        const restore = panel._preMaximizeRect || this._getDefaultPanelPos(panel.dataset.panel);
+        const restore = panel.preMaximizeRect || this.getDefaultPanelPos(panel.dataset.panel);
         panel.classList.remove("maximized");
         panel.querySelector(".overlay-panel-maximize i").className = "fas fa-expand";
         panel.style.width = restore.w + "px";
         panel.style.height = restore.h + "px";
         panel.style.left = e.clientX - restore.w / 2 + "px";
         panel.style.top = "0px";
-        panel._preMaximizeRect = null;
+        panel.preMaximizeRect = null;
       }
 
       origX = panel.offsetLeft;
@@ -545,11 +555,11 @@ export class GameOverlayController {
       panel.style.top = origY + dy + "px";
 
       const containerRect = container.getBoundingClientRect();
-      activeSnapZone = this._getSnapZone(e.clientX, e.clientY, containerRect);
+      activeSnapZone = this.getSnapZone(e.clientX, e.clientY, containerRect);
       if (activeSnapZone) {
-        this._showSnapPreview(container, this._getSnapRect(activeSnapZone, containerRect));
+        this.showSnapPreview(container, this.getSnapRect(activeSnapZone, containerRect));
       } else {
-        this._hideSnapPreview(container);
+        this.hideSnapPreview(container);
       }
     });
 
@@ -557,11 +567,11 @@ export class GameOverlayController {
       if (isDragging) {
         isDragging = false;
         header.style.cursor = "grab";
-        this._hideSnapPreview(container);
+        this.hideSnapPreview(container);
 
         if (activeSnapZone) {
           const containerRect = container.getBoundingClientRect();
-          const snapRect = this._getSnapRect(activeSnapZone, containerRect);
+          const snapRect = this.getSnapRect(activeSnapZone, containerRect);
           panel.style.left = snapRect.x + "px";
           panel.style.top = snapRect.y + "px";
           panel.style.width = snapRect.w + "px";
@@ -569,18 +579,18 @@ export class GameOverlayController {
           activeSnapZone = null;
         }
 
-        this._panelPositions[panel.dataset.panel] = {
+        this.panelPositions[panel.dataset.panel] = {
           x: parseInt(panel.style.left),
           y: parseInt(panel.style.top),
           w: panel.offsetWidth,
           h: panel.offsetHeight
         };
-        this._savePanelPositions();
+        this.savePanelPositions();
       }
     });
   }
 
-  _makePanelResizable(panel) {
+  makePanelResizable(panel) {
     const handles = panel.querySelectorAll(".overlay-panel-resize-handle");
     if (!handles.length) return;
     let isResizing = false;
@@ -631,39 +641,39 @@ export class GameOverlayController {
       if (isResizing) {
         isResizing = false;
         resizeDir = null;
-        this._panelPositions[panel.dataset.panel] = {
+        this.panelPositions[panel.dataset.panel] = {
           x: parseInt(panel.style.left),
           y: parseInt(panel.style.top),
           w: panel.offsetWidth,
           h: panel.offsetHeight
         };
-        this._savePanelPositions();
+        this.savePanelPositions();
       }
     });
   }
 
-  _bringPanelToFront(panel) {
-    panel.style.zIndex = ++this._panelZCounter;
+  bringPanelToFront(panel) {
+    panel.style.zIndex = ++this.panelZCounter;
   }
 
-  _toggleMaximizePanel(panel) {
+  toggleMaximizePanel(panel) {
     const id = panel.dataset.panel;
     const container = this.overlayEl.querySelector("#overlay-panels-container");
     const icon = panel.querySelector(".overlay-panel-maximize i");
 
     if (panel.classList.contains("maximized")) {
-      const restore = panel._preMaximizeRect || this._getDefaultPanelPos(id);
+      const restore = panel.preMaximizeRect || this.getDefaultPanelPos(id);
       panel.classList.remove("maximized");
       panel.style.left = restore.x + "px";
       panel.style.top = restore.y + "px";
       panel.style.width = restore.w + "px";
       panel.style.height = restore.h + "px";
-      panel._preMaximizeRect = null;
+      panel.preMaximizeRect = null;
       if (icon) icon.className = "fas fa-expand";
-      this._panelPositions[id] = { x: restore.x, y: restore.y, w: restore.w, h: restore.h };
-      this._savePanelPositions();
+      this.panelPositions[id] = { x: restore.x, y: restore.y, w: restore.w, h: restore.h };
+      this.savePanelPositions();
     } else {
-      panel._preMaximizeRect = {
+      panel.preMaximizeRect = {
         x: panel.offsetLeft,
         y: panel.offsetTop,
         w: panel.offsetWidth,
@@ -677,10 +687,10 @@ export class GameOverlayController {
       panel.style.height = rect.height + "px";
       if (icon) icon.className = "fas fa-compress";
     }
-    this._bringPanelToFront(panel);
+    this.bringPanelToFront(panel);
   }
 
-  _getSnapZone(clientX, clientY, containerRect) {
+  getSnapZone(clientX, clientY, containerRect) {
     const edge = 36;
     const nearLeft = clientX - containerRect.left <= edge;
     const nearRight = containerRect.right - clientX <= edge;
@@ -697,7 +707,7 @@ export class GameOverlayController {
     return null;
   }
 
-  _getSnapRect(zone, containerRect) {
+  getSnapRect(zone, containerRect) {
     const w = containerRect.width;
     const h = containerRect.height;
     const halfW = w / 2;
@@ -723,18 +733,18 @@ export class GameOverlayController {
     }
   }
 
-  _getSnapPreviewEl(container) {
+  getSnapPreviewEl(container) {
     let preview = container.querySelector(".overlay-snap-preview");
     if (!preview) {
-      preview = document.createElement("div");
+      preview = createElement("div");
       preview.className = "overlay-snap-preview";
       container.appendChild(preview);
     }
     return preview;
   }
 
-  _showSnapPreview(container, snapRect) {
-    const preview = this._getSnapPreviewEl(container);
+  showSnapPreview(container, snapRect) {
+    const preview = this.getSnapPreviewEl(container);
     preview.style.left = snapRect.x + "px";
     preview.style.top = snapRect.y + "px";
     preview.style.width = snapRect.w + "px";
@@ -742,60 +752,60 @@ export class GameOverlayController {
     preview.classList.add("active");
   }
 
-  _hideSnapPreview(container) {
+  hideSnapPreview(container) {
     const preview = container.querySelector(".overlay-snap-preview");
     if (preview) preview.classList.remove("active");
   }
 
-  _activateDockBtn(id) {
+  activateDockBtn(id) {
     const btn = this.overlayEl.querySelector(`.overlay-dock-btn[data-panel="${id}"]`);
     if (btn) btn.classList.add("active");
   }
 
-  _deactivateDockBtn(id) {
+  deactivateDockBtn(id) {
     const btn = this.overlayEl.querySelector(`.overlay-dock-btn[data-panel="${id}"]`);
     if (btn) btn.classList.remove("active");
   }
 
-  _lazyRender(id) {
+  lazyRender(id) {
     switch (id) {
       case "overview":
-        this._renderOverview();
+        this.renderOverview();
         break;
       case "achievements":
-        this._renderAchievements();
+        this.renderAchievements();
         break;
       case "friends":
-        this._renderFriends();
+        this.renderFriends();
         break;
       case "notes":
-        this._renderNotes();
+        this.renderNotes();
         break;
       case "scramjet":
-        this._initScramjet();
+        this.initScramjet();
         break;
       case "screenshots":
-        this._renderScreenshots();
+        this.renderScreenshots();
         break;
       case "audio":
-        this._renderAudio();
+        this.renderAudio();
         break;
       case "launcher":
-        this._renderLauncher();
+        this.renderLauncher();
         break;
       case "terminal":
-        this._initTerminal();
+        this.initTerminal();
         break;
       case "settings":
-        this._renderSettings();
+        this.renderSettings();
         break;
     }
     if (id.startsWith("screenshot-view--")) {
-      this._renderScreenshotView(id);
+      this.renderScreenshotView(id);
     }
   }
 
-  _formatTime(min) {
+  formatTime(min) {
     if (!min || min < 0) return "0m";
     if (min < 60) return `${Math.round(min)}m`;
     const h = Math.floor(min / 60);
@@ -803,32 +813,32 @@ export class GameOverlayController {
     return m > 0 ? `${h}h ${m}m` : `${h}h`;
   }
 
-  _formatTimeDecimal(min) {
+  formatTimeDecimal(min) {
     if (!min || min < 0) return "0 hrs";
     const h = (min / 60).toFixed(1);
     return `${h} hrs`;
   }
 
-  _getDayLabel(i) {
+  getDayLabel(i) {
     const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     const d = new Date();
     d.setDate(d.getDate() - (6 - i));
     return days[d.getDay()];
   }
 
-  _getDayValue(i) {
+  getDayValue(i) {
     const d = new Date();
     d.setDate(d.getDate() - (6 - i));
     return d.toISOString().slice(0, 10);
   }
 
-  _renderOverview() {
+  renderOverview() {
     const pane = this.overlayEl.querySelector('[data-panel="overview"] .overlay-panel-body');
     if (!pane) return;
 
     const stats = SteamDataManager.getStats();
     const gameStats = stats[this.currentGameId] || { totalMin: 0, lastPlayed: 0 };
-    const sessionMin = this._sessionStart ? Math.round((Date.now() - this._sessionStart) / 60000) : 0;
+    const sessionMin = this.sessionStart ? Math.round((Date.now() - this.sessionStart) / 60000) : 0;
 
     pane.innerHTML = `
       <div class="overview-header">Game Overview</div>
@@ -840,31 +850,31 @@ export class GameOverlayController {
         <div class="overview-playtime-stats">
           <div class="overview-playtime-row">
             <span>Total Playtime</span>
-            <span class="overview-playtime-value">${this._formatTimeDecimal(gameStats.totalMin)}</span>
+            <span class="overview-playtime-value">${this.formatTimeDecimal(gameStats.totalMin)}</span>
           </div>
           <div class="overview-playtime-row">
             <span>Last 2 Weeks</span>
-            <span class="overview-playtime-value">${this._formatTime(SteamDataManager.getRecentMinutes(this.currentGameId))}</span>
+            <span class="overview-playtime-value">${this.formatTime(SteamDataManager.getRecentMinutes(this.currentGameId))}</span>
           </div>
           <div class="overview-playtime-row">
             <span>Current Session</span>
-            <span class="overview-playtime-value" id="overview-session-playtime">${this._formatTime(sessionMin)}</span>
+            <span class="overview-playtime-value" id="overview-session-playtime">${this.formatTime(sessionMin)}</span>
           </div>
         </div>
       </div>
     `;
   }
 
-  _updateOverviewPlaytime() {
+  updateOverviewPlaytime() {
     if (!this.visible) return;
-    const sessionMin = this._sessionStart ? Math.round((Date.now() - this._sessionStart) / 60000) : 0;
+    const sessionMin = this.sessionStart ? Math.round((Date.now() - this.sessionStart) / 60000) : 0;
     const sessionEl = this.overlayEl?.querySelector("#overview-session-playtime");
     if (sessionEl) {
-      sessionEl.textContent = this._formatTime(sessionMin);
+      sessionEl.textContent = this.formatTime(sessionMin);
     }
   }
 
-  _renderAchievements() {
+  renderAchievements() {
     const pane = this.overlayEl.querySelector('[data-panel="achievements"] .overlay-panel-body');
     if (!pane) return;
 
@@ -881,9 +891,9 @@ export class GameOverlayController {
     const pct = total > 0 ? Math.round((done / total) * 100) : 0;
 
     let filtered = allAch;
-    if (this._achievementFilter === "unlocked") {
+    if (this.achievementFilter === "unlocked") {
       filtered = allAch.filter((a) => unlocked.has(a.id));
-    } else if (this._achievementFilter === "locked") {
+    } else if (this.achievementFilter === "locked") {
       filtered = allAch.filter((a) => !unlocked.has(a.id));
     }
 
@@ -893,9 +903,9 @@ export class GameOverlayController {
           <strong>${done}</strong> / ${total} unlocked (${pct}%)
         </div>
         <div class="overlay-achievements-filters">
-          <button class="overlay-ach-filter-btn ${this._achievementFilter === "all" ? "active" : ""}" data-filter="all">All</button>
-          <button class="overlay-ach-filter-btn ${this._achievementFilter === "unlocked" ? "active" : ""}" data-filter="unlocked">Unlocked</button>
-          <button class="overlay-ach-filter-btn ${this._achievementFilter === "locked" ? "active" : ""}" data-filter="locked">Locked</button>
+          <button class="overlay-ach-filter-btn ${this.achievementFilter === "all" ? "active" : ""}" data-filter="all">All</button>
+          <button class="overlay-ach-filter-btn ${this.achievementFilter === "unlocked" ? "active" : ""}" data-filter="unlocked">Unlocked</button>
+          <button class="overlay-ach-filter-btn ${this.achievementFilter === "locked" ? "active" : ""}" data-filter="locked">Locked</button>
         </div>
       </div>
       <div class="overlay-achievements-grid">
@@ -921,21 +931,21 @@ export class GameOverlayController {
 
     pane.querySelectorAll(".overlay-ach-filter-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
-        this._achievementFilter = btn.dataset.filter;
-        this._renderAchievements();
+        this.achievementFilter = btn.dataset.filter;
+        this.renderAchievements();
       });
     });
   }
 
-  _renderFriends() {
+  renderFriends() {
     const pane = this.overlayEl.querySelector('[data-panel="friends"] .overlay-panel-body');
     if (!pane) return;
 
     if (pane.querySelector(".window-content")) return;
 
-    this._openFriendsPopup();
+    this.openFriendsPopup();
 
-    const win = document.getElementById("steam-friends-win");
+    const win = $("#steam-friends-win");
     if (win) {
       const content = win.querySelector(".window-content");
       if (content) {
@@ -946,11 +956,11 @@ export class GameOverlayController {
     }
   }
 
-  _openFriendsPopup() {
+  openFriendsPopup() {
     const wm = this.wm;
     if (!wm) return;
 
-    const existing = document.getElementById("steam-friends-win");
+    const existing = $("#steam-friends-win");
     if (existing) {
       wm.bringToFront(existing);
       return;
@@ -960,7 +970,7 @@ export class GameOverlayController {
     renderer.gameUI.openFriendsWindow(wm);
   }
 
-  _renderNotes() {
+  renderNotes() {
     const pane = this.overlayEl.querySelector('[data-panel="notes"] .overlay-panel-body');
     if (!pane) return;
 
@@ -970,19 +980,19 @@ export class GameOverlayController {
           <button class="overlay-notes-add-btn" id="overlay-notes-add-btn"><i class="fas fa-plus"></i> New Note</button>
         </div>
         <div class="overlay-notes-list" id="overlay-notes-list">
-          ${this._renderNotesList()}
+          ${this.renderNotesList()}
         </div>
       </div>
     `;
 
     pane.querySelector("#overlay-notes-add-btn").addEventListener("click", () => {
-      this._addNote();
+      this.addNote();
     });
 
-    this._bindNoteEvents();
+    this.bindNoteEvents();
   }
 
-  _renderNotesList() {
+  renderNotesList() {
     if (!this.notes.length) {
       return `<div class="overlay-no-data" style="height:100px;">No notes yet. Click "New Note" to add one.</div>`;
     }
@@ -994,14 +1004,14 @@ export class GameOverlayController {
           <span class="overlay-note-card-time">${new Date(note.ts).toLocaleString()}</span>
           <button class="overlay-note-delete-btn" data-index="${i}"><i class="fas fa-trash"></i></button>
         </div>
-        <div class="overlay-note-text" contenteditable="true" data-index="${i}">${this._escapeHtml(note.text)}</div>
+        <div class="overlay-note-text" contenteditable="true" data-index="${i}">${this.escapeHtml(note.text)}</div>
       </div>
     `
       )
       .join("");
   }
 
-  _bindNoteEvents() {
+  bindNoteEvents() {
     const list = this.overlayEl.querySelector("#overlay-notes-list");
     if (!list) return;
 
@@ -1009,7 +1019,7 @@ export class GameOverlayController {
       btn.addEventListener("click", (e) => {
         e.stopPropagation();
         const idx = parseInt(btn.dataset.index);
-        this._deleteNote(idx);
+        this.deleteNote(idx);
       });
     });
 
@@ -1019,25 +1029,25 @@ export class GameOverlayController {
         const text = el.textContent.trim();
         if (text && this.notes[idx]) {
           this.notes[idx].text = text;
-          this._saveNotes();
+          this.saveNotes();
         }
       });
     });
   }
 
-  _addNote() {
+  addNote() {
     this.notes.unshift({ ts: Date.now(), text: "New note..." });
-    this._saveNotes();
-    this._renderNotes();
+    this.saveNotes();
+    this.renderNotes();
   }
 
-  _deleteNote(idx) {
+  deleteNote(idx) {
     this.notes.splice(idx, 1);
-    this._saveNotes();
-    this._renderNotes();
+    this.saveNotes();
+    this.renderNotes();
   }
 
-  async _renderScreenshots() {
+  async renderScreenshots() {
     const pane = this.overlayEl.querySelector('[data-panel="screenshots"] .overlay-panel-body');
     if (!pane) return;
 
@@ -1115,14 +1125,14 @@ export class GameOverlayController {
           btn.addEventListener("click", (e) => {
             e.stopPropagation();
             const name = btn.dataset.name;
-            this._deleteScreenshot(name);
+            this.deleteScreenshot(name);
           });
         });
 
         pane.querySelectorAll(".overlay-screenshot-card").forEach((card) => {
           card.addEventListener("click", () => {
             const name = card.dataset.name;
-            this._viewScreenshot(name);
+            this.viewScreenshot(name);
           });
         });
       }
@@ -1131,10 +1141,10 @@ export class GameOverlayController {
       const recordBtn = pane.querySelector("#overlay-screenshot-record");
 
       if (fullBtn) {
-        fullBtn.addEventListener("click", () => this._captureScreenshot("full"));
+        fullBtn.addEventListener("click", () => this.captureScreenshot("full"));
       }
       if (recordBtn) {
-        recordBtn.addEventListener("click", () => this._captureScreenshot("record"));
+        recordBtn.addEventListener("click", () => this.captureScreenshot("record"));
       }
     } catch (e) {
       console.warn("[Overlay] Failed to load screenshots:", e);
@@ -1142,40 +1152,40 @@ export class GameOverlayController {
     }
   }
 
-  async _deleteScreenshot(name) {
+  async deleteScreenshot(name) {
     try {
       await os.fs.delete(["Pictures", "Screenshots"], name);
-      this._cleanupScreenshotView(`screenshot-view--${name}`);
+      this.cleanupScreenshotView(`screenshot-view--${name}`);
       os.notify.send("Screenshots", `Deleted ${name}`);
-      this._renderScreenshots();
+      this.renderScreenshots();
     } catch (e) {
       console.warn("[Overlay] Failed to delete screenshot:", e);
       os.notify.send("Screenshots", "Failed to delete", { type: "error" });
     }
   }
 
-  async _viewScreenshot(name) {
+  async viewScreenshot(name) {
     const panelId = `screenshot-view--${name}`;
     if (this.overlayEl?.querySelector(`[data-panel="${panelId}"]`)) {
-      this._togglePanel(panelId);
+      this.togglePanel(panelId);
       return;
     }
     try {
       const data = await os.fs.readBinaryFile(["Pictures", "Screenshots"], name);
       const url = URL.createObjectURL(data);
-      this._screenshotViewUrls.set(panelId, url);
-      this._togglePanel(panelId);
+      this.screenshotViewUrls.set(panelId, url);
+      this.togglePanel(panelId);
     } catch (e) {
       console.warn("[Overlay] Failed to view screenshot:", e);
       os.notify.send("Screenshots", "Failed to open", { type: "error" });
     }
   }
 
-  _renderScreenshotView(panelId) {
+  renderScreenshotView(panelId) {
     const pane = this.overlayEl?.querySelector(`[data-panel="${panelId}"] .overlay-panel-body`);
     if (!pane) return;
     const name = panelId.replace("screenshot-view--", "");
-    const url = this._screenshotViewUrls.get(panelId);
+    const url = this.screenshotViewUrls.get(panelId);
     if (!url) {
       pane.innerHTML = `<div class="overlay-no-data">Failed to load screenshot</div>`;
       return;
@@ -1193,52 +1203,52 @@ export class GameOverlayController {
     `;
   }
 
-  async _captureScreenshot(mode) {
-    if (!this._screenshotApp) {
-      this._screenshotApp = new ScreenshotApp(this.services);
+  async captureScreenshot(mode) {
+    if (!this.screenshotApp) {
+      this.screenshotApp = new ScreenshotApp(this.services);
     }
 
     switch (mode) {
       case "full":
-        await this._screenshotApp.captureFull(true);
-        this._renderScreenshots();
+        await this.screenshotApp.captureFull(true);
+        this.renderScreenshots();
         break;
       case "record":
-        this._toggleOverlayRecording();
+        this.toggleOverlayRecording();
         break;
     }
   }
 
-  async _toggleOverlayRecording() {
-    if (this._recording) {
-      this._screenshotApp.stopOverlayRecording();
-      this._recording = false;
-      this._updateRecordBtn();
-      if (this._recordingDonePromise) {
-        await this._recordingDonePromise;
-        this._recordingDonePromise = null;
+  async toggleOverlayRecording() {
+    if (this.recording) {
+      this.screenshotApp.stopOverlayRecording();
+      this.recording = false;
+      this.updateRecordBtn();
+      if (this.recordingDonePromise) {
+        await this.recordingDonePromise;
+        this.recordingDonePromise = null;
       }
-      this._renderScreenshots();
+      this.renderScreenshots();
     } else {
       try {
-        this._recordingDonePromise = this._screenshotApp.startOverlayRecording();
-        this._recording = true;
-        this._updateRecordBtn();
+        this.recordingDonePromise = this.screenshotApp.startOverlayRecording();
+        this.recording = true;
+        this.updateRecordBtn();
         os.notify.send("Recording", "Recording started.");
       } catch {
-        this._recording = false;
-        this._updateRecordBtn();
+        this.recording = false;
+        this.updateRecordBtn();
       }
     }
   }
 
-  _updateRecordBtn() {
+  updateRecordBtn() {
     const label = this.overlayEl?.querySelector("#overlay-record-label");
     if (!label) return;
-    label.textContent = this._recording ? "Stop" : "Record";
+    label.textContent = this.recording ? "Stop" : "Record";
   }
 
-  _renderRecordings() {
+  renderRecordings() {
     const pane = this.overlayEl.querySelector('[data-panel="recordings"] .overlay-panel-body');
     if (!pane) return;
     pane.innerHTML = `
@@ -1250,7 +1260,7 @@ export class GameOverlayController {
     `;
   }
 
-  _initScramjet() {
+  initScramjet() {
     const pane = this.overlayEl.querySelector('[data-panel="scramjet"] .overlay-panel-body');
     if (!pane) return;
 
@@ -1259,10 +1269,10 @@ export class GameOverlayController {
 
     if (pane.querySelector("iframe")) return;
 
-    const wrapper = document.createElement("div");
+    const wrapper = createElement("div");
     wrapper.style.cssText = "width:100%;height:100%;overflow:hidden;";
 
-    const iframe = document.createElement("iframe");
+    const iframe = createElement("iframe");
     iframe.style.cssText = "width:100%;height:100%;border:none;";
     iframe.setAttribute(
       "sandbox",
@@ -1275,7 +1285,7 @@ export class GameOverlayController {
     pane.appendChild(wrapper);
   }
 
-  _renderSettings() {
+  renderSettings() {
     const pane = this.overlayEl.querySelector('[data-panel="settings"] .overlay-panel-body');
     if (!pane) return;
 
@@ -1290,14 +1300,14 @@ export class GameOverlayController {
               <div class="overlay-settings-label">Enable Steam Overlay While In-Game</div>
               <div class="overlay-settings-desc">Show overlay when pressing the shortcut key</div>
             </div>
-            <div class="overlay-settings-toggle ${this._settings.enabled ? "active" : ""}" data-setting="enabled"></div>
+            <div class="overlay-settings-toggle ${this.settings.enabled ? "active" : ""}" data-setting="enabled"></div>
           </div>
           <div class="overlay-settings-row">
             <div>
               <div class="overlay-settings-label">Restore Browser Tabs When Starting a Game</div>
               <div class="overlay-settings-desc">Reopen previously opened browser tabs in the overlay</div>
             </div>
-            <div class="overlay-settings-toggle ${this._settings.restoreTabs ? "active" : ""}" data-setting="restoreTabs"></div>
+            <div class="overlay-settings-toggle ${this.settings.restoreTabs ? "active" : ""}" data-setting="restoreTabs"></div>
           </div>
           <div class="overlay-settings-row">
             <div>
@@ -1316,14 +1326,14 @@ export class GameOverlayController {
               <div class="overlay-settings-label">Overlay Performance Monitor</div>
               <div class="overlay-settings-desc">Show FPS and frame timing in the overlay top bar</div>
             </div>
-            <div class="overlay-settings-toggle ${this._settings.perfMonitor ? "active" : ""}" data-setting="perfMonitor"></div>
+            <div class="overlay-settings-toggle ${this.settings.perfMonitor ? "active" : ""}" data-setting="perfMonitor"></div>
           </div>
         </div>
         <div class="overlay-settings-section">
           <div class="overlay-settings-section-title">Dock Configuration</div>
           <div class="overlay-settings-desc" style="margin-bottom:8px;">Drag to reorder &middot; Toggle to show/hide</div>
           <div class="overlay-settings-dock-section" id="overlay-dock-config">
-            ${(this._settings.dockItems || [])
+            ${(this.settings.dockItems || [])
               .map((item) => {
                 const def = DOCK_ITEM_DEFAULTS.find((d) => d.id === item.id);
                 return `
@@ -1345,12 +1355,12 @@ export class GameOverlayController {
         const setting = toggle.dataset.setting;
         const isActive = toggle.classList.contains("active");
         toggle.classList.toggle("active");
-        this._settings[setting] = !isActive;
-        this._saveSettings();
+        this.settings[setting] = !isActive;
+        this.saveSettings();
 
         if (setting === "perfMonitor") {
-          if (this._settings.perfMonitor) this._startPerfMonitor();
-          else this._stopPerfMonitor();
+          if (this.settings.perfMonitor) this.startPerfMonitor();
+          else this.stopPerfMonitor();
         }
       });
     });
@@ -1358,12 +1368,12 @@ export class GameOverlayController {
     pane.querySelectorAll(".overlay-settings-toggle[data-dock-toggle]").forEach((toggle) => {
       toggle.addEventListener("click", () => {
         const dockId = toggle.dataset.dockToggle;
-        const item = this._settings.dockItems.find((d) => d.id === dockId);
+        const item = this.settings.dockItems.find((d) => d.id === dockId);
         if (item) {
           item.visible = !item.visible;
           toggle.classList.toggle("active");
-          this._saveSettings();
-          this._rebuildDock();
+          this.saveSettings();
+          this.rebuildDock();
         }
       });
     });
@@ -1393,12 +1403,12 @@ export class GameOverlayController {
           const newOrder = [];
           dockConfig.querySelectorAll(".overlay-settings-dock-row").forEach((r) => {
             const id = r.dataset.dockId;
-            const existing = this._settings.dockItems.find((d) => d.id === id);
+            const existing = this.settings.dockItems.find((d) => d.id === id);
             if (existing) newOrder.push(existing);
           });
-          this._settings.dockItems = newOrder;
-          this._saveSettings();
-          this._rebuildDock();
+          this.settings.dockItems = newOrder;
+          this.saveSettings();
+          this.rebuildDock();
         });
       });
     }
@@ -1406,8 +1416,8 @@ export class GameOverlayController {
     const keybindBtn = pane.querySelector("#overlay-keybind-btn");
     if (keybindBtn) {
       keybindBtn.addEventListener("click", () => {
-        if (this._listeningForKeybind) return;
-        this._listeningForKeybind = true;
+        if (this.listeningForKeybind) return;
+        this.listeningForKeybind = true;
         keybindBtn.classList.add("listening");
         keybindBtn.textContent = "Press new shortcut...";
 
@@ -1425,7 +1435,7 @@ export class GameOverlayController {
           }
           if (parts.length >= 2) {
             document.removeEventListener("keydown", handler);
-            this._listeningForKeybind = false;
+            this.listeningForKeybind = false;
             keybindBtn.classList.remove("listening");
             KeybindManager.setKeys("steam.overlay", parts);
             keybindBtn.textContent = parts.join(" + ");
@@ -1436,7 +1446,7 @@ export class GameOverlayController {
     }
   }
 
-  _renderAudio() {
+  renderAudio() {
     const pane = this.overlayEl.querySelector('[data-panel="audio"] .overlay-panel-body');
     if (!pane) return;
     const mixer = audioMixer();
@@ -1448,7 +1458,7 @@ export class GameOverlayController {
       channelsHtml += `
         <div class="overlay-audio-row" data-winid="${winId}">
           <div class="overlay-audio-row-icon">${ch.iconHtml || '<i class="fas fa-volume-up"></i>'}</div>
-          <div class="overlay-audio-row-label">${this._escapeHtml(ch.title || "Unknown")}</div>
+          <div class="overlay-audio-row-label">${this.escapeHtml(ch.title || "Unknown")}</div>
           <input type="range" min="0" max="100" value="${chPct}" class="overlay-audio-slider" data-channel="${winId}">
           <span class="overlay-audio-pct">${chPct}%</span>
         </div>`;
@@ -1498,7 +1508,7 @@ export class GameOverlayController {
     });
   }
 
-  _renderLauncher() {
+  renderLauncher() {
     const pane = this.overlayEl.querySelector('[data-panel="launcher"] .overlay-panel-body');
     if (!pane) return;
 
@@ -1530,7 +1540,7 @@ export class GameOverlayController {
             ([key, app]) => `
           <div class="overlay-launcher-item" data-app="${key}">
             <div class="overlay-launcher-item-icon">${renderIcon(app)}</div>
-            <div class="overlay-launcher-item-label">${this._escapeHtml(app.title)}</div>
+            <div class="overlay-launcher-item-label">${this.escapeHtml(app.title)}</div>
           </div>
         `
           )
@@ -1559,16 +1569,16 @@ export class GameOverlayController {
     });
   }
 
-  _initTerminal() {
+  initTerminal() {
     const pane = this.overlayEl.querySelector('[data-panel="terminal"] .overlay-panel-body');
     if (!pane) return;
 
     if (pane.querySelector(".terminal-content")) return;
-    if (this._terminalApp && !this._terminalApp._destroyed) return;
+    if (this.terminalApp && !this.terminalApp.destroyed) return;
 
-    this._terminalApp = new TerminalApp(this.services);
+    this.terminalApp = new TerminalApp(this.services);
 
-    const content = document.createElement("div");
+    const content = createElement("div");
     content.className = "window-content terminal-content overlay-terminal-container";
     content.innerHTML = `
       <div class="terminal-output" id="terminal-output"></div>
@@ -1579,58 +1589,58 @@ export class GameOverlayController {
     `;
     pane.appendChild(content);
 
-    this._terminalApp.terminalOutput = content.querySelector("#terminal-output");
-    this._terminalApp.terminalInput = content.querySelector("#terminal-input");
-    this._terminalApp.terminalPrompt = content.querySelector("#terminal-prompt");
-    this._terminalApp.terminalInputLine = content.querySelector("#terminal-input-line");
+    this.terminalApp.terminalOutput = content.querySelector("#terminal-output");
+    this.terminalApp.terminalInput = content.querySelector("#terminal-input");
+    this.terminalApp.terminalPrompt = content.querySelector("#terminal-prompt");
+    this.terminalApp.terminalInputLine = content.querySelector("#terminal-input-line");
 
-    this._terminalApp.updatePrompt();
-    this._terminalApp.print("YukiOS Terminal \u2014 Overlay", "#00ff00");
-    this._terminalApp.print("Type 'help' for available commands\n");
+    this.terminalApp.updatePrompt();
+    this.terminalApp.print("YukiOS Terminal \u2014 Overlay", "var(--charging)");
+    this.terminalApp.print("Type 'help' for available commands\n");
 
-    this._terminalApp.terminalInput.addEventListener("keydown", (e) => {
+    this.terminalApp.terminalInput.addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
         e.preventDefault();
-        const cmd = this._terminalApp.terminalInput.value.trim();
+        const cmd = this.terminalApp.terminalInput.value.trim();
         if (!cmd) return;
-        this._terminalApp.history.push(cmd);
-        this._terminalApp.historyIndex = this._terminalApp.history.length;
-        this._terminalApp.terminalInput.value = "";
-        this._terminalApp.executeCommand(cmd);
+        this.terminalApp.history.push(cmd);
+        this.terminalApp.historyIndex = this.terminalApp.history.length;
+        this.terminalApp.terminalInput.value = "";
+        this.terminalApp.executeCommand(cmd);
       } else if (e.key === "ArrowUp") {
         e.preventDefault();
-        if (this._terminalApp.historyIndex > 0) {
-          this._terminalApp.terminalInput.value = this._terminalApp.history[--this._terminalApp.historyIndex];
+        if (this.terminalApp.historyIndex > 0) {
+          this.terminalApp.terminalInput.value = this.terminalApp.history[--this.terminalApp.historyIndex];
         }
       } else if (e.key === "ArrowDown") {
         e.preventDefault();
-        this._terminalApp.historyIndex = Math.min(this._terminalApp.historyIndex + 1, this._terminalApp.history.length);
-        this._terminalApp.terminalInput.value =
-          this._terminalApp.historyIndex < this._terminalApp.history.length
-            ? this._terminalApp.history[this._terminalApp.historyIndex]
+        this.terminalApp.historyIndex = Math.min(this.terminalApp.historyIndex + 1, this.terminalApp.history.length);
+        this.terminalApp.terminalInput.value =
+          this.terminalApp.historyIndex < this.terminalApp.history.length
+            ? this.terminalApp.history[this.terminalApp.historyIndex]
             : "";
       }
     });
 
-    this._terminalApp.terminalInput.focus();
+    this.terminalApp.terminalInput.focus();
   }
 
-  _startClock() {
-    this._updateClock();
-    this._clockInterval = setInterval(() => {
-      this._updateClock();
-      this._updateOverviewPlaytime();
+  startClock() {
+    this.updateClock();
+    this.clockInterval = setInterval(() => {
+      this.updateClock();
+      this.updateOverviewPlaytime();
     }, 1000);
   }
 
-  _stopClock() {
-    if (this._clockInterval) {
-      clearInterval(this._clockInterval);
-      this._clockInterval = null;
+  stopClock() {
+    if (this.clockInterval) {
+      clearInterval(this.clockInterval);
+      this.clockInterval = null;
     }
   }
 
-  _updateClock() {
+  updateClock() {
     const now = new Date();
     const timeEl = this.overlayEl?.querySelector("#overlay-clock-time");
     const dateEl = this.overlayEl?.querySelector("#overlay-clock-date");
@@ -1647,13 +1657,13 @@ export class GameOverlayController {
         year: "numeric"
       });
     }
-    if (sessionEl && this._sessionStart) {
-      const min = Math.round((Date.now() - this._sessionStart) / 60000);
+    if (sessionEl && this.sessionStart) {
+      const min = Math.round((Date.now() - this.sessionStart) / 60000);
       sessionEl.textContent = `${min}m - this session`;
     }
   }
 
-  _startPerfMonitor() {
+  startPerfMonitor() {
     this.perfMonitorEnabled = true;
     const perfEl = this.overlayEl?.querySelector("#overlay-perf-monitor");
     if (perfEl) perfEl.style.display = "flex";
@@ -1677,41 +1687,41 @@ export class GameOverlayController {
         lastFpsUpdate = time;
       }
       lastTime = time;
-      this._perfRafId = requestAnimationFrame(frame);
+      this.perfRafId = requestAnimationFrame(frame);
     };
 
-    this._perfRafId = requestAnimationFrame(frame);
+    this.perfRafId = requestAnimationFrame(frame);
   }
 
-  _stopPerfMonitor() {
+  stopPerfMonitor() {
     this.perfMonitorEnabled = false;
-    if (this._perfRafId) {
-      cancelAnimationFrame(this._perfRafId);
-      this._perfRafId = null;
+    if (this.perfRafId) {
+      cancelAnimationFrame(this.perfRafId);
+      this.perfRafId = null;
     }
     const perfEl = this.overlayEl?.querySelector("#overlay-perf-monitor");
     if (perfEl) perfEl.style.display = "none";
   }
 
-  _cleanupScreenshotView(id) {
+  cleanupScreenshotView(id) {
     if (!id.startsWith("screenshot-view--")) return;
-    const url = this._screenshotViewUrls.get(id);
+    const url = this.screenshotViewUrls.get(id);
     if (url) {
       URL.revokeObjectURL(url);
-      this._screenshotViewUrls.delete(id);
+      this.screenshotViewUrls.delete(id);
     }
   }
 
-  _cleanupAllScreenshotViews() {
-    for (const [id, url] of this._screenshotViewUrls) {
+  cleanupAllScreenshotViews() {
+    for (const [id, url] of this.screenshotViewUrls) {
       URL.revokeObjectURL(url);
     }
-    this._screenshotViewUrls.clear();
+    this.screenshotViewUrls.clear();
   }
 
-  _escapeHtml(str) {
+  escapeHtml(str) {
     if (!str) return "";
-    const div = document.createElement("div");
+    const div = createElement("div");
     div.textContent = str;
     return div.innerHTML;
   }

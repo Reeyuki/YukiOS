@@ -9,18 +9,18 @@ class ClipboardManagerApp extends BaseApp {
     this.enabled = os.storage.get(StorageKeys.clipboardManagerEnabled) !== "false";
     this.saveHistoryAcrossSessions = os.storage.get(StorageKeys.clipboardSaveHistory) !== "false";
     this.historySize = os.storage.get(StorageKeys.clipboardHistorySize) || 50;
-    this._popupVisible = false;
-    this._dialogOpen = false;
-    this._initTray();
-    this._applySettings();
+    this.popupVisible = false;
+    this.dialogOpen = false;
+    this.initTray();
+    this.applySettings();
   }
 
-  _shouldSuppressNotification() {
+  shouldSuppressNotification() {
     const position = os.storage.get(StorageKeys.notificationsPosition) || "bottom-right";
     return position === "bottom-right";
   }
 
-  _initTray() {
+  initTray() {
     if (this.enabled) {
       this.registerTray(this.winId, "fas fa-paste", "Clipboard", {
         resident: true,
@@ -32,18 +32,18 @@ class ClipboardManagerApp extends BaseApp {
     }
   }
 
-  _applySettings() {
+  applySettings() {
     this.clipboardManager.setPersistenceEnabled(this.saveHistoryAcrossSessions);
     this.clipboardManager.setMaxHistorySize(this.historySize);
   }
 
-  _saveSettings() {
+  saveSettings() {
     os.storage.set(StorageKeys.clipboardSaveHistory, this.saveHistoryAcrossSessions.toString());
     os.storage.set(StorageKeys.clipboardHistorySize, this.historySize.toString());
   }
 
   togglePopup() {
-    if (this._popupVisible) {
+    if (this.popupVisible) {
       this.closePopup();
     } else {
       this.openPopup();
@@ -51,7 +51,7 @@ class ClipboardManagerApp extends BaseApp {
   }
 
   openPopup() {
-    if (this._popupVisible) return;
+    if (this.popupVisible) return;
 
     const existingPopup = document.getElementById(this.popupId);
     if (existingPopup) {
@@ -107,11 +107,11 @@ class ClipboardManagerApp extends BaseApp {
     popup.style.bottom = `${window.innerHeight - trayRect.top + 8}px`;
     popup.style.display = "block";
 
-    this._popupVisible = true;
-    this._renderHistory(popup, history, currentItem);
-    this._bindEvents(popup, this.popupId);
+    this.popupVisible = true;
+    this.renderHistory(popup, history, currentItem);
+    this.bindEvents(popup, this.popupId);
 
-    document.addEventListener("click", this._handleOutsideClick);
+    document.addEventListener("click", this.handleOutsideClick);
   }
 
   closePopup() {
@@ -126,12 +126,12 @@ class ClipboardManagerApp extends BaseApp {
         { once: true }
       );
     }
-    this._popupVisible = false;
-    document.removeEventListener("click", this._handleOutsideClick);
+    this.popupVisible = false;
+    document.removeEventListener("click", this.handleOutsideClick);
   }
 
-  _handleOutsideClick = (e) => {
-    if (this._dialogOpen) return;
+  handleOutsideClick = (e) => {
+    if (this.dialogOpen) return;
     const popup = document.getElementById(this.popupId);
     const trayEl = document.getElementById("app-tray");
     if (popup && !e.target.closest("#clipboard-tray-popup") && !e.target.closest("#app-tray")) {
@@ -143,7 +143,7 @@ class ClipboardManagerApp extends BaseApp {
     this.togglePopup();
   }
 
-  _renderHistory(popup, history, currentItem) {
+  renderHistory(popup, history, currentItem) {
     const container = popup.querySelector("#clipboard-history");
     if (!container) return;
 
@@ -154,14 +154,14 @@ class ClipboardManagerApp extends BaseApp {
 
     container.innerHTML = history
       .map((item, index) => {
-        const preview = this._getPreview(item);
+        const preview = this.getPreview(item);
         const timestamp = new Date(item.timestamp).toLocaleTimeString();
         const isStarred = this.clipboardManager.isStarred(item.id);
 
         return `
         <div class="clipboard-item" data-index="${index}">
           <div class="clipboard-item-meta">
-            <i class="fas ${this._getTypeIcon(item.type)}"></i>
+            <i class="fas ${this.getTypeIcon(item.type)}"></i>
             <span class="clipboard-item-time">${timestamp}</span>
             <span class="clipboard-item-type">${item.type}</span>
           </div>
@@ -192,7 +192,7 @@ class ClipboardManagerApp extends BaseApp {
         const index = parseInt(el.dataset.index);
         const item = history[index];
         if (item) {
-          this._isCopyingFromHistory = true;
+          this.isCopyingFromHistory = true;
 
           const rect = el.getBoundingClientRect();
           const originalBorder = el.style.borderColor;
@@ -227,7 +227,7 @@ class ClipboardManagerApp extends BaseApp {
             el.style.borderColor = originalBorder;
             el.style.boxShadow = originalBoxShadow;
             copiedIndicator.remove();
-            this._isCopyingFromHistory = false;
+            this.isCopyingFromHistory = false;
           }, 1800);
         }
       });
@@ -239,18 +239,18 @@ class ClipboardManagerApp extends BaseApp {
         const index = parseInt(btn.dataset.index);
         const item = history[index];
         if (item) {
-          this._dialogOpen = true;
+          this.dialogOpen = true;
           const newData = await os.dialog.prompt(
             "Edit Clipboard Contents",
             "Edit clipboard contents:",
             String(item.data),
             "Save"
           );
-          this._dialogOpen = false;
+          this.dialogOpen = false;
           if (newData !== null && newData !== item.data) {
             this.clipboardManager.updateItem(index, newData);
-            this._renderHistory(currentPopup, this.clipboardManager.getHistory(), this.clipboardManager.get());
-            if (!this._shouldSuppressNotification()) {
+            this.renderHistory(currentPopup, this.clipboardManager.getHistory(), this.clipboardManager.get());
+            if (!this.shouldSuppressNotification()) {
               os.notify.send("Updated", "Clipboard item updated", "success", 2000, "fa-pen");
             }
           }
@@ -263,8 +263,8 @@ class ClipboardManagerApp extends BaseApp {
         e.stopPropagation();
         const index = parseInt(btn.dataset.index);
         this.clipboardManager.removeFromHistory(index);
-        this._renderHistory(currentPopup, this.clipboardManager.getHistory(), this.clipboardManager.get());
-        if (!this._shouldSuppressNotification()) {
+        this.renderHistory(currentPopup, this.clipboardManager.getHistory(), this.clipboardManager.get());
+        if (!this.shouldSuppressNotification()) {
           os.notify.send("Removed", "Item removed from history", "info", 2000, "fa-trash");
         }
       });
@@ -277,8 +277,8 @@ class ClipboardManagerApp extends BaseApp {
         const item = history[index];
         if (item) {
           const isStarred = this.clipboardManager.toggleStar(item.id);
-          this._renderHistory(currentPopup, this.clipboardManager.getHistory(), this.clipboardManager.get());
-          if (!this._shouldSuppressNotification()) {
+          this.renderHistory(currentPopup, this.clipboardManager.getHistory(), this.clipboardManager.get());
+          if (!this.shouldSuppressNotification()) {
             os.notify.send(
               isStarred ? "Starred" : "Unstarred",
               isStarred ? "Item starred" : "Item unstarred",
@@ -292,7 +292,7 @@ class ClipboardManagerApp extends BaseApp {
     });
   }
 
-  _getPreview(item) {
+  getPreview(item) {
     if (item.type === "text") {
       return item.data.length > 100 ? item.data.substring(0, 100) + "..." : item.data;
     } else if (item.type === "json") {
@@ -308,7 +308,7 @@ class ClipboardManagerApp extends BaseApp {
     return String(item.data);
   }
 
-  _getTypeIcon(type) {
+  getTypeIcon(type) {
     switch (type) {
       case "text":
         return "fa-font";
@@ -321,7 +321,7 @@ class ClipboardManagerApp extends BaseApp {
     }
   }
 
-  _bindEvents(popup, popupId) {
+  bindEvents(popup, popupId) {
     const clearBtn = popup.querySelector("#clear-clipboard");
     const saveHistoryToggle = popup.querySelector("#save-history-toggle");
     const historySizeInput = popup.querySelector("#history-size-input");
@@ -329,8 +329,8 @@ class ClipboardManagerApp extends BaseApp {
     if (clearBtn) {
       clearBtn.addEventListener("click", () => {
         this.clipboardManager.clear();
-        this._renderHistory(popup, this.clipboardManager.getHistory(), this.clipboardManager.get());
-        if (!this._shouldSuppressNotification()) {
+        this.renderHistory(popup, this.clipboardManager.getHistory(), this.clipboardManager.get());
+        if (!this.shouldSuppressNotification()) {
           os.notify.send("Cleared", "Clipboard cleared", { type: "info", duration: 2000, icon: "fa-trash" });
         }
       });
@@ -339,9 +339,9 @@ class ClipboardManagerApp extends BaseApp {
     if (saveHistoryToggle) {
       saveHistoryToggle.addEventListener("change", (e) => {
         this.saveHistoryAcrossSessions = e.target.checked;
-        this._applySettings();
-        this._saveSettings();
-        if (!this._shouldSuppressNotification()) {
+        this.applySettings();
+        this.saveSettings();
+        if (!this.shouldSuppressNotification()) {
           os.notify.send(
             "Settings Updated",
             this.saveHistoryAcrossSessions
@@ -360,9 +360,9 @@ class ClipboardManagerApp extends BaseApp {
         const newSize = parseInt(e.target.value);
         if (newSize >= 5 && newSize <= 100) {
           this.historySize = newSize;
-          this._applySettings();
-          this._saveSettings();
-          if (!this._shouldSuppressNotification()) {
+          this.applySettings();
+          this.saveSettings();
+          if (!this.shouldSuppressNotification()) {
             os.notify.send(
               "Settings Updated",
               `History size set to ${this.historySize} items`,
@@ -373,7 +373,7 @@ class ClipboardManagerApp extends BaseApp {
           }
         } else {
           historySizeInput.value = this.historySize;
-          if (!this._shouldSuppressNotification()) {
+          if (!this.shouldSuppressNotification()) {
             os.notify.send(
               "Invalid Value",
               "History size must be between 5 and 100",
@@ -387,10 +387,10 @@ class ClipboardManagerApp extends BaseApp {
     }
 
     this.clipboardManager.onChange((item) => {
-      if (this._isCopyingFromHistory) return;
+      if (this.isCopyingFromHistory) return;
       const currentPopup = document.getElementById(this.popupId);
       if (currentPopup) {
-        this._renderHistory(currentPopup, this.clipboardManager.getHistory(), this.clipboardManager.get());
+        this.renderHistory(currentPopup, this.clipboardManager.getHistory(), this.clipboardManager.get());
       }
     });
   }

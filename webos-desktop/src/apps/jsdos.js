@@ -7,11 +7,11 @@ const GAMES_DIR = ["Games"];
 export class JsDosApp extends BaseApp {
   constructor(services) {
     super(services);
-    this._explorerApp = services.explorerApp;
+    this.explorerApp = services.explorerApp;
   }
 
   async open() {
-    if (await this._isSingletonOpen("jsdos-win")) return;
+    if (await this.isSingletonOpen("jsdos-win")) return;
 
     const win = os.window.create("jsdos-win", "JsDos", "600px", "560px", {
       icon: "static/icons/jsdos.webp"
@@ -38,16 +38,16 @@ export class JsDosApp extends BaseApp {
         <div id="jsdos-user-games" class="emu-grid"></div>
         <div class="jsdos-section-title emu-section-title">Featured Games</div>
         <div class="jsdos-game-grid emu-grid" id="jsdos-game-grid">
-          ${this._generateGameCards()}
+          ${this.generateGameCards()}
         </div>
       </div>`;
 
-    this._setupGameCardListeners(win);
-    this._setupUploadZone(win);
-    this._loadUserGames(win);
+    this.setupGameCardListeners(win);
+    this.setupUploadZone(win);
+    this.loadUserGames(win);
   }
 
-  _generateGameCards() {
+  generateGameCards() {
     const games = [
       { file: "dn3d.jsdos", name: "Duke Nukem 3D", icon: "fa-solid fa-crosshairs" },
       { file: "doom.jsdos", name: "DOOM", icon: "fa-solid fa-skull" },
@@ -69,7 +69,7 @@ export class JsDosApp extends BaseApp {
       .join("");
   }
 
-  _setupGameCardListeners(win) {
+  setupGameCardListeners(win) {
     const cards = win.querySelectorAll(".jsdos-game-card");
     cards.forEach((card) => {
       card.addEventListener("click", () => {
@@ -80,7 +80,7 @@ export class JsDosApp extends BaseApp {
     });
   }
 
-  _setupUploadZone(win) {
+  setupUploadZone(win) {
     const zone = win.querySelector("#jsdos-upload-zone");
     const input = win.querySelector("#jsdos-file-input");
 
@@ -99,17 +99,17 @@ export class JsDosApp extends BaseApp {
       e.preventDefault();
       zone.classList.remove("jsdos-upload-zone-dragover");
       const file = e.dataTransfer.files[0];
-      if (file) this._handleUploadedFile(file, win);
+      if (file) this.handleUploadedFile(file, win);
     });
 
     input.addEventListener("change", () => {
       const file = input.files[0];
-      if (file) this._handleUploadedFile(file, win);
+      if (file) this.handleUploadedFile(file, win);
       input.value = "";
     });
   }
 
-  async _handleUploadedFile(file, win) {
+  async handleUploadedFile(file, win) {
     const zone = win.querySelector("#jsdos-upload-zone");
     const originalHTML = zone.innerHTML;
 
@@ -120,12 +120,12 @@ export class JsDosApp extends BaseApp {
       await os.fs.writeBinaryFile(GAMES_DIR, file.name, blob, "other", "/static/icons/jsdos.webp");
       os.notify.send("JsDos", `Saved ${file.name} to Games.`);
       zone.innerHTML = `<i class="fa-solid fa-circle-check jsdos-success-icon"></i><div class="jsdos-success-text">Saved!</div>`;
-      await this._loadUserGames(win);
+      await this.loadUserGames(win);
       setTimeout(() => {
         zone.innerHTML = originalHTML;
         win.querySelector("#jsdos-file-input").addEventListener("change", (e) => {
           const f = e.target.files[0];
-          if (f) this._handleUploadedFile(f, win);
+          if (f) this.handleUploadedFile(f, win);
           e.target.value = "";
         });
       }, 1500);
@@ -137,7 +137,7 @@ export class JsDosApp extends BaseApp {
     }
   }
 
-  async _loadUserGames(win) {
+  async loadUserGames(win) {
     const container = win.querySelector("#jsdos-user-games");
     if (!container) return;
 
@@ -183,7 +183,7 @@ export class JsDosApp extends BaseApp {
           e.stopPropagation();
           const fileName = btn.dataset.file;
           await os.fs.deleteBinaryFile(GAMES_DIR, fileName);
-          await this._loadUserGames(win);
+          await this.loadUserGames(win);
         });
       });
     } catch {}
@@ -250,7 +250,7 @@ export class JsDosApp extends BaseApp {
       os.notify.send("JsDos", `Saved ${fileName} to Games.`);
       setLog("Launching…");
 
-      const iframeHTML = this._buildIframeHTML(bundleUrl);
+      const iframeHTML = this.buildIframeHTML(bundleUrl);
       const iframeBlobUrl = URL.createObjectURL(new Blob([iframeHTML], { type: "text/html" }));
       iframePageUrl = iframeBlobUrl;
 
@@ -267,7 +267,7 @@ export class JsDosApp extends BaseApp {
     }
   }
 
-  _buildIframeHTML(bundleUrl) {
+  buildIframeHTML(bundleUrl) {
     return `<!DOCTYPE html>
 <html>
 <head>
@@ -287,19 +287,19 @@ export class JsDosApp extends BaseApp {
     url: ${JSON.stringify(bundleUrl)},
     onEvent: function(event, ci) {
       if (event === "ci-ready") {
-        window._ci = ci;
+        window.ci = ci;
       }
     }
   });
   window.addEventListener("message", function(e) {
-    if (e.data === "mute" && window._ci) { try { window._ci.mute(); } catch {} }
+    if (e.data === "mute" && window.ci) { try { window.ci.mute(); } catch {} }
   });
 <\/script>
 </body>
 </html>`;
   }
 
-  async _buildBundle(name, arrayBuffer) {
+  async buildBundle(name, arrayBuffer) {
     const conf = [
       "[sdl]",
       "output=surface",
@@ -393,13 +393,13 @@ export class JsDosApp extends BaseApp {
 
       const bundleBlob = isBundle
         ? new Blob([arrayBuffer], { type: "application/zip" })
-        : await this._buildBundle(name, arrayBuffer);
+        : await this.buildBundle(name, arrayBuffer);
 
       bundleUrl = URL.createObjectURL(bundleBlob);
 
       setLog("Launching…");
 
-      const iframeHTML = this._buildIframeHTML(bundleUrl);
+      const iframeHTML = this.buildIframeHTML(bundleUrl);
       const iframeBlobUrl = URL.createObjectURL(new Blob([iframeHTML], { type: "text/html" }));
       iframePageUrl = iframeBlobUrl;
 

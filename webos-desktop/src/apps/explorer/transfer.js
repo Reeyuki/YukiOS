@@ -7,7 +7,7 @@ import { pluralize } from "../../utils/utils.js";
 import { showArchiveDialog } from "./dialogs.js";
 
 export async function pasteToPath(explorer, destPath, inst) {
-  const cb = explorer._getClipboard();
+  const cb = explorer.getClipboard();
   if (!cb) return;
 
   const { action } = cb;
@@ -15,7 +15,7 @@ export async function pasteToPath(explorer, destPath, inst) {
 
   const copyFile = async (name, srcPath) => {
     const kind = await explorer.fs.getFileKind(srcPath, name);
-    const fileIcon = await explorer.fs.getFileIcon(srcPath, name);
+    const isBinary = kind === FileKind.IMAGE || kind === FileKind.VIDEO || kind === FileKind.AUDIO;
 
     const destDir = explorer.fs.resolveUserPath(destPath);
     const destFilePath = explorer.fs.join(destDir, name);
@@ -26,8 +26,13 @@ export async function pasteToPath(explorer, destPath, inst) {
       finalName = await explorer.fs.getUniqueFileName(destPath, name);
     }
 
-    const content = await explorer.fs.getFileContent(srcPath, name);
-    await os.fs.createFile(destPath, finalName, content, kind, fileIcon);
+    if (isBinary) {
+      const blob = await os.fs.readBinaryFile(srcPath, name);
+      await os.fs.writeBinaryFile(destPath, finalName, blob, kind, null);
+    } else {
+      const content = await explorer.fs.getFileContent(srcPath, name);
+      await os.fs.createFile(destPath, finalName, content, kind, null);
+    }
 
     return finalName;
   };
@@ -41,15 +46,28 @@ export async function pasteToPath(explorer, destPath, inst) {
       if (childData?.type !== "file") continue;
 
       const childPath = [...srcBasePath, name];
-      const childContent = await explorer.fs.getFileContent(childPath, childName);
       const childKind = await explorer.fs.getFileKind(childPath, childName);
-      const childIcon = await explorer.fs.getFileIcon(childPath, childName);
+      const isChildBinary =
+        childKind === FileKind.IMAGE || childKind === FileKind.VIDEO || childKind === FileKind.AUDIO;
+
+      let childContent;
+      if (isChildBinary) {
+        childContent = await os.fs.readBinaryFile(childPath, childName);
+      } else {
+        childContent = await explorer.fs.getFileContent(childPath, childName);
+      }
+
       const destFolderPath = [...destPath, uniqueName];
       const destDir = explorer.fs.resolveUserPath(destFolderPath);
       const childExists = await os.fs.exists(explorer.fs.join(destDir, childName));
 
       const childFinalName = childExists ? await explorer.fs.getUniqueFileName(destFolderPath, childName) : childName;
-      await explorer.fs.createFile(destFolderPath, childFinalName, childContent, childKind, childIcon);
+
+      if (isChildBinary) {
+        await os.fs.writeBinaryFile(destFolderPath, childFinalName, childContent, childKind, null);
+      } else {
+        await explorer.fs.createFile(destFolderPath, childFinalName, childContent, childKind, null);
+      }
     }
 
     return uniqueName;
@@ -76,7 +94,7 @@ export async function pasteToPath(explorer, destPath, inst) {
     }
 
     if (action === "cut") {
-      explorer._setClipboard(null);
+      explorer.setClipboard(null);
       if (cb.sourceInst) await explorer.renderInstance(cb.sourceInst);
     }
   } else if (cb.source === "desktop") {
@@ -112,7 +130,7 @@ export async function pasteToPath(explorer, destPath, inst) {
       }
     }
 
-    if (action === "cut") explorer._setClipboard(null);
+    if (action === "cut") explorer.setClipboard(null);
   }
 
   if (pastedCount > 0) {
@@ -137,7 +155,7 @@ export async function downloadItems(explorer, itemName, isFile, inst) {
     return;
   }
 
-  const folder = inst._cachedFolder || (await os.fs.readdir(inst.currentPath));
+  const folder = inst.cachedFolder || (await os.fs.readdir(inst.currentPath));
   const zipEntries = {};
 
   for (const name of effectiveItems) {
@@ -177,14 +195,14 @@ export async function createArchiveFromItems(explorer, itemName, isFile, inst) {
     onConfirm: async (archiveName, archiveType, compressionLevel) => {
       os.notify.send("Creating archive...");
 
-      const folder = inst._cachedFolder || (await os.fs.readdir(inst.currentPath));
+      const folder = inst.cachedFolder || (await os.fs.readdir(inst.currentPath));
       const items = effectiveItems.map((item) => ({
         path: inst.currentPath,
         name: item,
         isFile: folder[item]?.type === "file"
       }));
 
-      const result = await explorer._archiveExtractor.createArchive(items, {
+      const result = await explorer.archiveExtractor.createArchive(items, {
         format: archiveType,
         compressionLevel,
         outputPath: inst.currentPath,

@@ -640,11 +640,6 @@
     box-shadow 0.1s;
 }
 
-.am-slider::-webkit-slider-thumb:hover {
-  transform: scale(1.2);
-  box-shadow: 0 2px 8px var(--shadow-color);
-}
-
 .am-slider::-moz-range-thumb {
   width: 14px;
   height: 14px;

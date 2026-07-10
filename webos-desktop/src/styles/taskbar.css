@@ -336,6 +336,12 @@
 }
 
 .taskbar-preview__winclone {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin: 0;
+  max-width: none;
+  max-height: none;
   width: max-content;
   height: max-content;
   pointer-events: none !important;
@@ -346,6 +352,7 @@
   box-shadow:
     0 14px 32px var(--shadow-color),
     0 0 0 1px var(--glass-border);
+  transform-origin: center;
 }
 
 @keyframes taskbarPreviewIn {
@@ -1512,11 +1519,6 @@ html[data-theme="light"] .tray-popup-item:hover {
     color 0.15s ease;
 }
 
-.brightness-slider::-webkit-slider-thumb:hover {
-  transform: scale(1.1);
-  box-shadow: 0 4px 12px var(--brand-glow);
-}
-
 .brightness-slider::-moz-range-thumb {
   width: 18px;
   height: 18px;
@@ -1597,12 +1599,8 @@ html[data-theme="light"] .tray-popup-item:hover {
 }
 
 .clipboard-history-list::-webkit-scrollbar-thumb {
-  background: var(--glass-border);
-  border-radius: var(--r-xxs);
-}
-
-.clipboard-history-list::-webkit-scrollbar-thumb:hover {
   background: var(--glass-hover);
+  border-radius: var(--r-xxs);
 }
 
 .clipboard-empty {
@@ -1663,7 +1661,6 @@ html[data-theme="light"] .tray-popup-item:hover {
   overflow-wrap: break-word;
   display: -webkit-box;
   -webkit-line-clamp: 3;
-  line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
   line-height: 1.4;
@@ -1833,10 +1830,6 @@ html[data-theme="light"] .tray-popup-item:hover {
   margin: 0;
 }
 
-.clipboard-history-size-input input::-moz-number-spin-box {
-  appearance: textfield;
-}
-
 .clipboard-history-size-input input[type="number"] {
   appearance: textfield;
 }
@@ -1845,11 +1838,6 @@ html[data-theme="light"] .tray-popup-item:hover {
 .clipboard-history-size-input input[type="number"]::-webkit-outer-spin-button {
   appearance: none;
   margin: 0;
-}
-
-.clipboard-history-size-input input[type="number"]::-moz-number-spin-up,
-.clipboard-history-size-input input[type="number"]::-moz-number-spin-down {
-  appearance: none;
 }
 
 .clipboard-history-size-input input:focus {

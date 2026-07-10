@@ -1,5 +1,4 @@
-import { os } from "../framework.js";
-import { StorageKeys } from "../StorageKeys.js";
+import { os, StorageKeys } from "../framework.js";
 
 export function getDateKey(year, month, day) {
   return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;

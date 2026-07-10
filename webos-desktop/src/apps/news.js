@@ -1232,7 +1232,7 @@ export class NewsApp extends BaseApp {
   initNews(payload, vt, element, state) {
     os.storage.set(StorageKeys.newsReadSignatureKey, getNewsContentSignature());
     os.storage.set(StorageKeys.newsSeenKey, "true");
-    window._newsApp = this;
+    window.newsApp = this;
     updateNewsBadge();
   }
 }

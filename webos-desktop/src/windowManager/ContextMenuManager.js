@@ -1,12 +1,12 @@
 import { showStartStyleMenu } from "../shared/contextMenu.js";
-import { os } from "../os/index.js";
+import { os } from "../framework.js";
 
 export class ContextMenuManager {
   constructor(manager) {
     this.manager = manager;
   }
 
-  _buildPropertiesWindow(winId) {
+  buildPropertiesWindow(winId) {
     const win = document.getElementById(winId);
     if (!win) return;
 
@@ -98,11 +98,11 @@ export class ContextMenuManager {
     });
   }
 
-  _buildContextMenuItems(addMenuItem, addSeparator, win) {
+  buildContextMenuItems(addMenuItem, addSeparator, win) {
     const winId = win.id;
     const isMinimized = win.style.display === "none";
     const isFullscreen = win.dataset.fullscreen === "true";
-    const appId = win.dataset.appId || this.manager._guessAppIdFromWinId(winId);
+    const appId = win.dataset.appId || this.manager.guessAppIdFromWinId(winId);
 
     addMenuItem(
       isMinimized ? "Restore" : "Minimize",
@@ -132,9 +132,9 @@ export class ContextMenuManager {
       addSeparator();
     }
 
-    addMenuItem("Snap Left", () => this.manager._applySnap(win, "left"), "fa-columns");
-    addMenuItem("Snap Right", () => this.manager._applySnap(win, "right"), "fa-columns");
-    addMenuItem("Snap Maximize", () => this.manager._applySnap(win, "maximize"), "fa-expand-arrows-alt");
+    addMenuItem("Snap Left", () => this.manager.applySnap(win, "left"), "fa-columns");
+    addMenuItem("Snap Right", () => this.manager.applySnap(win, "right"), "fa-columns");
+    addMenuItem("Snap Maximize", () => this.manager.applySnap(win, "maximize"), "fa-expand-arrows-alt");
 
     addSeparator();
 
@@ -153,16 +153,16 @@ export class ContextMenuManager {
       addSeparator();
     }
 
-    addMenuItem("Properties", () => this._buildPropertiesWindow(winId), "fa-info-circle");
+    addMenuItem("Properties", () => this.buildPropertiesWindow(winId), "fa-info-circle");
 
     addSeparator();
 
-    const isPinned = this.manager._isWindowPinned(winId);
+    const isPinned = this.manager.isWindowPinned(winId);
     addMenuItem(
       isPinned ? "Unpin from Taskbar" : "Pin to Taskbar",
       () => {
-        if (isPinned) this.manager._unpinFromTaskbar(winId);
-        else this.manager._pinToTaskbar(winId);
+        if (isPinned) this.manager.unpinFromTaskbar(winId);
+        else this.manager.pinToTaskbar(winId);
       },
       isPinned ? "fa-thumbtack" : "fa-thumbtack"
     );
@@ -174,16 +174,16 @@ export class ContextMenuManager {
       () => {
         const winToClose = document.getElementById(winId);
         if (winToClose) {
-          this.manager._silenceWindow(winToClose);
+          this.manager.silenceWindow(winToClose);
           this.manager.removeFromTaskbar(winId);
-          this.manager._animateAndRemove(winToClose);
+          this.manager.animateAndRemove(winToClose);
         }
       },
       "fa-times-circle"
     );
   }
 
-  _showWindowContextMenu(e, win) {
-    showStartStyleMenu(e, (addMenuItem, addSeparator) => this._buildContextMenuItems(addMenuItem, addSeparator, win));
+  showWindowContextMenu(e, win) {
+    showStartStyleMenu(e, (addMenuItem, addSeparator) => this.buildContextMenuItems(addMenuItem, addSeparator, win));
   }
 }

@@ -27,22 +27,22 @@ const THEME_VARS = [
   "--warning"
 ];
 
-let _scramjetInstanceCount = 0;
+let scramjetInstanceCount = 0;
 
 export class BrowserApp extends BaseApp {
   constructor(services) {
     super(services);
     this.iframe = null;
-    this._msgHandler = null;
-    this._element = null;
-    this._torEnabled = false;
-    this._torClient = null;
-    this._torIframe = null;
-    this._torOverlay = null;
+    this.msgHandler = null;
+    this.element = null;
+    this.torEnabled = false;
+    this.torClient = null;
+    this.torIframe = null;
+    this.torOverlay = null;
   }
 
   getDeclarativeSchema(opts) {
-    const instanceNum = ++_scramjetInstanceCount;
+    const instanceNum = ++scramjetInstanceCount;
     return {
       id: "scramjet",
       name: "Scramjet Browser",
@@ -78,7 +78,7 @@ export class BrowserApp extends BaseApp {
   }
 
   async initScramjet(payload, vt, element, state) {
-    this._element = element;
+    this.element = element;
     const iframe = element.querySelector(".scramjet-iframe");
     this.iframe = iframe;
 
@@ -109,7 +109,7 @@ export class BrowserApp extends BaseApp {
     };
 
     const msgHandler = (e) => {
-      if (e.source !== iframe?.contentWindow && e.source !== this._torIframe?.contentWindow) return;
+      if (e.source !== iframe?.contentWindow && e.source !== this.torIframe?.contentWindow) return;
       const data = e.data;
       if (!data || !data.type) return;
 
@@ -137,35 +137,35 @@ export class BrowserApp extends BaseApp {
       } else if (data.type === "browser-new-window") {
         os.app.launch("browserApp", { isIncognito: !!data.incognito });
       } else if (data.type === "scram:setTorMode") {
-        this._torEnabled = data.active;
-        if (!data.active) this._exitTorMode();
+        this.torEnabled = data.active;
+        if (!data.active) this.exitTorMode();
       } else if (data.type === "scram:navigate") {
-        if (this._torEnabled && data.url) {
-          this._loadWithTor(data.url);
+        if (this.torEnabled && data.url) {
+          this.loadWithTor(data.url);
         }
       } else if (data.type === "browser-tor-reconnect") {
-        this._reconnectTor();
+        this.reconnectTor();
       } else if (data.type === "browser-navigate") {
-        if (this._torEnabled && data.url) {
-          this._loadWithTor(data.url);
+        if (this.torEnabled && data.url) {
+          this.loadWithTor(data.url);
         }
       } else if (data.type === "browser-tor-download") {
-        if (this._torEnabled && data.url) {
-          this._loadWithTor(data.url);
+        if (this.torEnabled && data.url) {
+          this.loadWithTor(data.url);
         }
       }
     };
-    this._msgHandler = msgHandler;
+    this.msgHandler = msgHandler;
     window.addEventListener("message", msgHandler);
 
     iframe.addEventListener("load", () => {
       sendDataToIframe();
-      this._trySetupIframe(iframe, element);
-      if (state.openUrl) this._navigateToUrl(iframe, state.openUrl);
+      this.trySetupIframe(iframe, element);
+      if (state.openUrl) this.navigateToUrl(iframe, state.openUrl);
     });
   }
 
-  _trySetupIframe(iframe, element) {
+  trySetupIframe(iframe, element) {
     const setup = () => {
       try {
         const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
@@ -173,8 +173,8 @@ export class BrowserApp extends BaseApp {
         const controlsSlot = iframeDoc.getElementById("controls-slot");
         const tabsContainer = iframeDoc.getElementById("tabs-container");
         if (!controlsSlot || !tabsContainer) return false;
-        this._injectControls(iframeDoc, controlsSlot, element);
-        this._attachDragHandler(tabsContainer, iframe, element);
+        this.injectControls(iframeDoc, controlsSlot, element);
+        this.attachDragHandler(tabsContainer, iframe, element);
         return true;
       } catch (e) {
         console.error("Failed to setup iframe drag:", e);
@@ -196,7 +196,7 @@ export class BrowserApp extends BaseApp {
     }
   }
 
-  _injectControls(iframeDoc, controlsSlot, element) {
+  injectControls(iframeDoc, controlsSlot, element) {
     const controlsHTML = `<div class="window-controls">
       <button class="minimize-btn" title="Minimize"><svg viewBox="0 0 10 1" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h10v1H0z"></path></svg></button>
       <button class="external-btn" title="Open in New Tab">↗</button>
@@ -212,30 +212,30 @@ export class BrowserApp extends BaseApp {
       closeBtn.addEventListener("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        this.wm.closeWindow(element);
+        os.window.close(element);
       });
     if (maxBtn)
       maxBtn.addEventListener("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        if (element.dataset.snapZone === "maximize") this.wm.toggleFullscreen(element);
-        else this.wm._applySnap(element, "maximize");
+        if (element.dataset.snapZone === "maximize") os.window.maximize(element);
+        else this.wm.applySnap(element, "maximize");
       });
     if (minBtn)
       minBtn.addEventListener("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        this.wm.minimizeWindow(element);
+        os.window.minimize(element);
       });
     if (externalBtn)
       externalBtn.addEventListener("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        window.open(window.location.origin + "/scram/index.html", "_blank");
+        window.open(window.location.origin + "/scram/index.html", "blank");
       });
   }
 
-  _attachDragHandler(tabsContainer, iframe, element) {
+  attachDragHandler(tabsContainer, iframe, element) {
     tabsContainer.style.cursor = "move";
     tabsContainer.addEventListener("mousedown", (e) => {
       if (e.button !== 0) return;
@@ -246,16 +246,16 @@ export class BrowserApp extends BaseApp {
         e.target.closest("button, input, select, textarea")
       )
         return;
-      this._startIframeDrag(e, iframe, element);
+      this.startIframeDrag(e, iframe, element);
     });
   }
 
-  _startIframeDrag(e, iframe, element) {
+  startIframeDrag(e, iframe, element) {
     e.preventDefault();
-    this.wm.bringToFront(element);
+    os.window.bringToFront(element);
     wobbleStart(element);
     const wasSnapped = !!element.dataset.snapZone;
-    if (wasSnapped) this.wm._unsnap(element);
+    if (wasSnapped) this.wm.unsnap(element);
     const disableStretch = os.storage.get(StorageKeys.disableDesktopStretchScroll) === "true";
     if (disableStretch) {
       if (getComputedStyle(element).position !== "fixed") {
@@ -290,10 +290,10 @@ export class BrowserApp extends BaseApp {
       const entry = this.wm.openWindows.get(element.id);
       if (entry?.record) entry.record.setGeometry(newLeft, newTop);
       wobbleMove(element, moveEvent.clientX - startX, moveEvent.clientY - startY);
-      const zone = this.wm._getSnapZone(moveEvent.clientX, moveEvent.clientY);
-      this.wm._activeSnapZone = zone;
-      if (zone) this.wm._showSnapGhost(zone);
-      else this.wm._hideSnapGhost();
+      const zone = this.wm.getSnapZone(moveEvent.clientX, moveEvent.clientY);
+      this.wm.activeSnapZone = zone;
+      if (zone) this.wm.showSnapGhost(zone);
+      else this.wm.hideSnapGhost();
     };
     const onMouseUp = () => {
       document.removeEventListener("mousemove", onMouseMove);
@@ -301,10 +301,10 @@ export class BrowserApp extends BaseApp {
       this.wm.isDraggingWindow = false;
       document.body.classList.remove("is-dragging");
       wobbleEnd(element);
-      if (this.wm._activeSnapZone) {
-        this.wm._applySnap(element, this.wm._activeSnapZone);
-        this.wm._activeSnapZone = null;
-        this.wm._hideSnapGhost();
+      if (this.wm.activeSnapZone) {
+        this.wm.applySnap(element, this.wm.activeSnapZone);
+        this.wm.activeSnapZone = null;
+        this.wm.hideSnapGhost();
       }
       if (this.wm.triggerSessionSave) this.wm.triggerSessionSave();
     };
@@ -312,7 +312,7 @@ export class BrowserApp extends BaseApp {
     document.addEventListener("mouseup", onMouseUp);
   }
 
-  _sendDataToIframe() {
+  sendDataToIframe() {
     if (!this.iframe || !this.iframe.contentWindow) return;
 
     const computed = getComputedStyle(document.documentElement);
@@ -336,13 +336,13 @@ export class BrowserApp extends BaseApp {
   }
 
   cleanupScramjet() {
-    if (this._msgHandler) {
-      window.removeEventListener("message", this._msgHandler);
-      this._msgHandler = null;
+    if (this.msgHandler) {
+      window.removeEventListener("message", this.msgHandler);
+      this.msgHandler = null;
     }
-    this._exitTorMode();
+    this.exitTorMode();
     this.iframe = null;
-    this._element = null;
+    this.element = null;
   }
 
   openHtml(content, name, path) {
@@ -350,15 +350,15 @@ export class BrowserApp extends BaseApp {
     const blobUrl = URL.createObjectURL(blob);
 
     if (this.iframe) {
-      this._navigateToUrl(this.iframe, blobUrl);
+      this.navigateToUrl(this.iframe, blobUrl);
     } else {
       os.app.launch("browserApp", { openUrl: blobUrl });
     }
   }
 
-  _navigateToUrl(iframe, url) {
-    if (this._isTorUrl(url)) {
-      this._loadWithTor(url);
+  navigateToUrl(iframe, url) {
+    if (this.isTorUrl(url)) {
+      this.loadWithTor(url);
       return;
     }
     const tryNav = () => {
@@ -383,9 +383,9 @@ export class BrowserApp extends BaseApp {
     }
   }
 
-  _enterTorMode() {
-    if (this._torOverlay) return;
-    const container = this._element?.querySelector(".scramjet-container");
+  enterTorMode() {
+    if (this.torOverlay) return;
+    const container = this.element?.querySelector(".scramjet-container");
     if (!container) return;
 
     const overlay = document.createElement("div");
@@ -404,43 +404,43 @@ export class BrowserApp extends BaseApp {
     const exitBtn = overlay.querySelector("#tor-exit-btn");
     if (exitBtn) {
       exitBtn.addEventListener("click", () => {
-        this._exitTorMode();
-        this._torEnabled = false;
+        this.exitTorMode();
+        this.torEnabled = false;
         try {
           this.iframe?.contentWindow?.postMessage({ type: "scram:torMode", active: false }, "*");
         } catch {}
       });
     }
     container.appendChild(overlay);
-    this._torOverlay = overlay;
-    this._torIframe = overlay.querySelector(".tor-iframe");
+    this.torOverlay = overlay;
+    this.torIframe = overlay.querySelector(".tor-iframe");
   }
 
-  _exitTorMode() {
-    if (this._torOverlay) {
-      this._torOverlay.remove();
-      this._torOverlay = null;
-      this._torIframe = null;
+  exitTorMode() {
+    if (this.torOverlay) {
+      this.torOverlay.remove();
+      this.torOverlay = null;
+      this.torIframe = null;
     }
-    if (this._torClient) {
-      this._torClient.close();
-      this._torClient = null;
+    if (this.torClient) {
+      this.torClient.close();
+      this.torClient = null;
     }
   }
 
-  _showTorLoading(text) {
-    const el = this._torOverlay?.querySelector("#tor-loading");
-    const txt = this._torOverlay?.querySelector("#tor-loading-text");
+  showTorLoading(text) {
+    const el = this.torOverlay?.querySelector("#tor-loading");
+    const txt = this.torOverlay?.querySelector("#tor-loading-text");
     if (el) el.style.display = "flex";
     if (txt) txt.textContent = text || "Starting Tor...";
   }
 
-  _hideTorLoading() {
-    const el = this._torOverlay?.querySelector("#tor-loading");
+  hideTorLoading() {
+    const el = this.torOverlay?.querySelector("#tor-loading");
     if (el) el.style.display = "none";
   }
 
-  async _startTorWithStatus() {
+  async startTorWithStatus() {
     const tm = os.tor;
     try {
       const status = tm.getStatus();
@@ -450,9 +450,9 @@ export class BrowserApp extends BaseApp {
         return true;
       }
     } catch {}
-    this._showTorLoading("Starting Tor...");
+    this.showTorLoading("Starting Tor...");
     const unsubLog = os.events.on("TOR_LOG", (msg) => {
-      this._showTorLoading(msg);
+      this.showTorLoading(msg);
     });
     try {
       await tm.start({ appId: "browserApp" });
@@ -460,43 +460,43 @@ export class BrowserApp extends BaseApp {
       return true;
     } catch (e) {
       unsubLog();
-      this._hideTorLoading();
+      this.hideTorLoading();
       os.notify.send("Tor Error", "Failed to start Tor: " + e.message, { type: "error", duration: 5000 });
       return false;
     }
   }
 
-  async _reconnectTor() {
+  async reconnectTor() {
     try {
       await os.tor.reconnect();
       os.notify.send("Tor", "Tor reconnected.", { type: "success", duration: 3000 });
-      if (this._torClient) {
-        this._torClient.close();
-        this._torClient = null;
+      if (this.torClient) {
+        this.torClient.close();
+        this.torClient = null;
       }
     } catch {
       os.notify.send("Tor", "Reconnect failed. Try again.", { type: "error", duration: 5000 });
     }
   }
 
-  async _loadWithTor(url) {
-    this._enterTorMode();
-    this._showTorLoading("Preparing Tor connection...");
+  async loadWithTor(url) {
+    this.enterTorMode();
+    this.showTorLoading("Preparing Tor connection...");
 
     try {
-      if (!this._torClient) {
-        const torReady = await this._startTorWithStatus();
+      if (!this.torClient) {
+        const torReady = await this.startTorWithStatus();
         if (!torReady) {
-          this._writeTorErrorPage(url, "Tor could not start. Check your connection.");
+          this.writeTorErrorPage(url, "Tor could not start. Check your connection.");
           return;
         }
-        this._torClient = await os.tor.createClient();
+        this.torClient = await os.tor.createClient();
       }
 
-      this._showTorLoading("Fetching " + url);
+      this.showTorLoading("Fetching " + url);
 
       const resp = await Promise.race([
-        this._torClient.fetch(url),
+        this.torClient.fetch(url),
         new Promise((_, reject) => setTimeout(() => reject(new Error("Tor fetch timed out")), 30000))
       ]);
       if (!resp || resp.status >= 400) throw new Error("HTTP " + (resp?.status || "error"));
@@ -514,8 +514,8 @@ export class BrowserApp extends BaseApp {
 
       if (isBinary) {
         const blob = new Blob([resp.body], { type: ct });
-        this._triggerDownload(blob, url);
-        this._hideTorLoading();
+        this.triggerDownload(blob, url);
+        this.hideTorLoading();
         return;
       }
 
@@ -539,7 +539,7 @@ export class BrowserApp extends BaseApp {
         }
       })();
 
-      const interceptScript = this._buildInterceptScripts(url);
+      const interceptScript = this.buildInterceptScripts(url);
 
       let finalHtml = html;
       const baseTag = `<base href="${baseUrl}">`;
@@ -551,8 +551,8 @@ export class BrowserApp extends BaseApp {
         finalHtml = "<head>" + injection + "</head>" + finalHtml;
       }
 
-      this._hideTorLoading();
-      const torIframe = this._torIframe;
+      this.hideTorLoading();
+      const torIframe = this.torIframe;
       if (torIframe) {
         torIframe.removeAttribute("src");
         torIframe.onload = () => {
@@ -561,9 +561,9 @@ export class BrowserApp extends BaseApp {
         torIframe.srcdoc = finalHtml;
       }
     } catch (err) {
-      this._hideTorLoading();
-      const fc = this._torClient?.getFetchCount?.() || 0;
-      this._writeTorErrorPage(
+      this.hideTorLoading();
+      const fc = this.torClient?.getFetchCount?.() || 0;
+      this.writeTorErrorPage(
         url,
         fc > 5 ? "Tor connection may be stale (" + fc + " fetches served)." : "Tor failed to load this page.",
         true
@@ -571,7 +571,7 @@ export class BrowserApp extends BaseApp {
     }
   }
 
-  _buildInterceptScripts(pageUrl) {
+  buildInterceptScripts(pageUrl) {
     return `<script>
 (function() {
   var pageUrl = ${JSON.stringify(pageUrl)};
@@ -615,23 +615,23 @@ export class BrowserApp extends BaseApp {
 <\/script>`;
   }
 
-  _writeTorErrorPage(url, message, showReconnect) {
-    const iframe = this._torIframe;
+  writeTorErrorPage(url, message, showReconnect) {
+    const iframe = this.torIframe;
     if (!iframe) return;
     const reconnectHtml = showReconnect
-      ? "<button onclick=\"parent.postMessage({type:'browser-tor-reconnect'},'*')\" style=\"margin-top:8px;padding:8px 20px;background:#8b5cf6;border:none;border-radius:6px;color:#fff;cursor:pointer;font-size:13px\">Reconnect Tor</button>"
+      ? "<button onclick=\"parent.postMessage({type:'browser-tor-reconnect'},'*')\" style=\"margin-top:8px;padding:8px 20px;background:var(--brand);border:none;border-radius:6px;color:var(--text-on-brand);cursor:pointer;font-size:13px\">Reconnect Tor</button>"
       : "";
     iframe.srcdoc =
-      '<html><body style="background:#202124;color:#e8eaed;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;flex-direction:column;gap:12px"><div style="font-size:48px"><i class="fas fa-exclamation-triangle"></i></div><div style="font-size:16px">' +
+      '<html><body style="background:var(--bg-primary);color:var(--text-primary);font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;flex-direction:column;gap:12px"><div style="font-size:48px"><i class="fas fa-exclamation-triangle"></i></div><div style="font-size:16px">' +
       (message || "All proxies failed to load this page.") +
-      '</div><div style="font-size:12px;color:#9aa0a6">' +
+      '</div><div style="font-size:12px;color:var(--text-secondary)">' +
       url +
       "</div>" +
       reconnectHtml +
       "</body></html>";
   }
 
-  _triggerDownload(blob, url) {
+  triggerDownload(blob, url) {
     let name = "download";
     try {
       name = new URL(url).pathname.split("/").pop() || "download";
@@ -646,9 +646,9 @@ export class BrowserApp extends BaseApp {
     setTimeout(() => URL.revokeObjectURL(objectUrl), 5000);
   }
 
-  _isTorUrl(url) {
+  isTorUrl(url) {
     return (
-      this._torEnabled &&
+      this.torEnabled &&
       url &&
       !url.startsWith("about:") &&
       !url.startsWith("blob:") &&

@@ -2,7 +2,7 @@ import "../styles/widgets.css";
 import { makeDraggable } from "../shared/dragUtils.js";
 import { os } from "../framework.js";
 
-const STORAGE_WIDGETS = "yukiOS_widgets_state";
+const STORAGE_WIDGETS = "yukiOS_widgetsstate";
 const WIDGET_Z_BASE = 100;
 
 export class WidgetBase {
@@ -20,10 +20,10 @@ export class WidgetBase {
     this.zIndex = WIDGET_Z_BASE;
     this.zCounter = WIDGET_Z_BASE;
     this.element = null;
-    this._dragCleanup = null;
-    this._resizeCleanup = null;
-    this._contentEl = null;
-    this._headerEl = null;
+    this.dragCleanup = null;
+    this.resizeCleanup = null;
+    this.contentEl = null;
+    this.headerEl = null;
   }
 
   buildElement() {
@@ -39,7 +39,7 @@ export class WidgetBase {
 
     const header = document.createElement("div");
     header.className = "widget-header";
-    this._headerEl = header;
+    this.headerEl = header;
 
     const titleSpan = document.createElement("span");
     titleSpan.className = "widget-title";
@@ -74,7 +74,7 @@ export class WidgetBase {
 
     const content = document.createElement("div");
     content.className = "widget-content";
-    this._contentEl = content;
+    this.contentEl = content;
     el.appendChild(content);
 
     const resizeHandle = document.createElement("div");
@@ -84,20 +84,20 @@ export class WidgetBase {
     el.addEventListener("mousedown", () => this.bringToFront());
 
     this.element = el;
-    this._setupDrag(header);
-    this._setupResize(resizeHandle);
+    this.setupDrag(header);
+    this.setupResize(resizeHandle);
     this.onRender(content);
     return el;
   }
 
-  _setupDrag(handle) {
-    this._dragCleanup = makeDraggable(
+  setupDrag(handle) {
+    this.dragCleanup = makeDraggable(
       this.element,
       {
         start: () => {
           this.element.classList.add("widget-dragging");
         },
-        move: (_e, dx, dy) => {
+        move: (e, dx, dy) => {
           const left = parseFloat(this.element.style.left) || 0;
           const top = parseFloat(this.element.style.top) || 0;
           this.element.style.left = `${left + dx}px`;
@@ -114,7 +114,7 @@ export class WidgetBase {
     );
   }
 
-  _setupResize(handle) {
+  setupResize(handle) {
     let startX, startY, startW, startH;
     const onDown = (e) => {
       e.preventDefault();
@@ -142,7 +142,7 @@ export class WidgetBase {
       this.manager.saveState();
     };
     handle.addEventListener("mousedown", onDown);
-    this._resizeCleanup = () => {
+    this.resizeCleanup = () => {
       handle.removeEventListener("mousedown", onDown);
       document.removeEventListener("mousemove", onMove);
       document.removeEventListener("mouseup", onUp);
@@ -150,7 +150,7 @@ export class WidgetBase {
   }
 
   bringToFront() {
-    this.zCounter = this.manager._nextZ();
+    this.zCounter = this.manager.nextZ();
     this.element.style.zIndex = this.zCounter;
   }
 
@@ -245,8 +245,8 @@ export class WidgetBase {
   }
 
   destroy() {
-    if (this._dragCleanup) this._dragCleanup();
-    if (this._resizeCleanup) this._resizeCleanup();
+    if (this.dragCleanup) this.dragCleanup();
+    if (this.resizeCleanup) this.resizeCleanup();
     if (this.element && this.element.parentNode) {
       this.element.parentNode.removeChild(this.element);
     }
@@ -255,14 +255,14 @@ export class WidgetBase {
 
 export class WidgetManager {
   constructor() {
-    this._container = null;
-    this._widgets = new Map();
-    this._zCounter = WIDGET_Z_BASE + 50;
-    this._widgetClasses = new Map();
+    this.container = null;
+    this.widgets = new Map();
+    this.zCounter = WIDGET_Z_BASE + 50;
+    this.widgetClasses = new Map();
   }
 
   registerWidgetType(type, widgetClass) {
-    this._widgetClasses.set(type, widgetClass);
+    this.widgetClasses.set(type, widgetClass);
   }
 
   init() {
@@ -273,17 +273,17 @@ export class WidgetManager {
       const desktop = document.getElementById("desktop");
       if (desktop) desktop.appendChild(container);
     }
-    this._container = container;
-    this._loadAll();
+    this.container = container;
+    this.loadAll();
   }
 
-  _nextZ() {
-    this._zCounter++;
-    return this._zCounter;
+  nextZ() {
+    this.zCounter++;
+    return this.zCounter;
   }
 
   addWidget(type, title) {
-    const Klass = this._widgetClasses.get(type);
+    const Klass = this.widgetClasses.get(type);
     if (!Klass) {
       console.warn(`Unknown widget type: ${type}`);
       return null;
@@ -291,45 +291,45 @@ export class WidgetManager {
     const id = `widget_${type}_${Date.now()}`;
     const instance = new Klass(this, id);
     const el = instance.buildElement();
-    this._container.appendChild(el);
-    this._widgets.set(id, instance);
+    this.container.appendChild(el);
+    this.widgets.set(id, instance);
     this.saveState();
     return instance;
   }
 
   removeWidget(id) {
-    const w = this._widgets.get(id);
+    const w = this.widgets.get(id);
     if (!w) return;
     w.destroy();
-    this._widgets.delete(id);
+    this.widgets.delete(id);
     this.saveState();
   }
 
   getWidget(id) {
-    return this._widgets.get(id);
+    return this.widgets.get(id);
   }
 
   getAllWidgets() {
-    return Array.from(this._widgets.values());
+    return Array.from(this.widgets.values());
   }
 
   saveState() {
     const states = [];
-    this._widgets.forEach((w) => states.push(w.saveState()));
+    this.widgets.forEach((w) => states.push(w.saveState()));
     os.storage.set(STORAGE_WIDGETS, states);
   }
 
-  _loadAll() {
+  loadAll() {
     const saved = os.storage.get(STORAGE_WIDGETS);
     if (!saved || !Array.isArray(saved)) return;
     saved.forEach((state) => {
-      const Klass = this._widgetClasses.get(state.type);
+      const Klass = this.widgetClasses.get(state.type);
       if (!Klass) return;
       const instance = new Klass(this, state.id || `widget_${state.type}_${Date.now()}`);
       instance.loadState(state);
       const el = instance.buildElement();
-      this._container.appendChild(el);
-      this._widgets.set(instance.id, instance);
+      this.container.appendChild(el);
+      this.widgets.set(instance.id, instance);
     });
   }
 }

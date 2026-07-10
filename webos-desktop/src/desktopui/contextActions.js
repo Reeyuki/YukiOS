@@ -1,16 +1,16 @@
-import { os } from "../os/index.js";
+import { os } from "../framework.js";
 import { showFileProperties } from "../fileDisplay.js";
 
 export function buildCopyAction(selectedArray, desktopUI) {
   return () => {
-    desktopUI.setClipboard(desktopUI._buildDesktopClipboard("copy", selectedArray));
+    desktopUI.setClipboard(desktopUI.buildDesktopClipboard("copy", selectedArray));
     os.notify.send(`${selectedArray.length} item${selectedArray.length !== 1 ? "s" : ""} copied`);
   };
 }
 
 export function buildCutAction(selectedArray, desktopUI) {
   return () => {
-    desktopUI.setClipboard(desktopUI._buildDesktopClipboard("cut", selectedArray));
+    desktopUI.setClipboard(desktopUI.buildDesktopClipboard("cut", selectedArray));
     selectedArray.forEach((i) => (i.style.opacity = "0.5"));
     os.notify.send(`${selectedArray.length} item${selectedArray.length !== 1 ? "s" : ""} cut`);
   };

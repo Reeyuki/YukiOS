@@ -14,12 +14,12 @@ const PROTECTED_APPS = new Set([
 
 export class AppRegistry {
   constructor() {
-    this._disabledApps = this._loadDisabledApps();
-    this._renamedApps = this._loadRenamedApps();
-    this._uninstalledApps = this._loadUninstalledApps();
+    this.disabledApps = this.loadDisabledApps();
+    this.renamedApps = this.loadRenamedApps();
+    this.uninstalledApps = this.loadUninstalledApps();
   }
 
-  _loadDisabledApps() {
+  loadDisabledApps() {
     try {
       const saved = os.storage.get(APP_REGISTRY_DISABLED_KEY);
       return saved ? new Set(saved) : new Set();
@@ -29,20 +29,20 @@ export class AppRegistry {
   }
 
   refresh() {
-    this._disabledApps = this._loadDisabledApps();
-    this._renamedApps = this._loadRenamedApps();
-    this._uninstalledApps = this._loadUninstalledApps();
+    this.disabledApps = this.loadDisabledApps();
+    this.renamedApps = this.loadRenamedApps();
+    this.uninstalledApps = this.loadUninstalledApps();
   }
 
-  _saveDisabledApps() {
+  saveDisabledApps() {
     try {
-      os.storage.set(APP_REGISTRY_DISABLED_KEY, [...this._disabledApps]);
+      os.storage.set(APP_REGISTRY_DISABLED_KEY, [...this.disabledApps]);
     } catch (e) {
       console.error("[AppRegistry]", e);
     }
   }
 
-  _loadRenamedApps() {
+  loadRenamedApps() {
     try {
       const saved = os.storage.get(APP_REGISTRY_RENAMED_KEY);
       return saved || {};
@@ -51,15 +51,15 @@ export class AppRegistry {
     }
   }
 
-  _saveRenamedApps() {
+  saveRenamedApps() {
     try {
-      os.storage.set(APP_REGISTRY_RENAMED_KEY, this._renamedApps);
+      os.storage.set(APP_REGISTRY_RENAMED_KEY, this.renamedApps);
     } catch (e) {
       console.error("[AppRegistry]", e);
     }
   }
 
-  _loadUninstalledApps() {
+  loadUninstalledApps() {
     try {
       const saved = os.storage.get(APP_REGISTRY_UNINSTALLED_KEY);
       return saved ? new Set(saved) : new Set();
@@ -68,16 +68,16 @@ export class AppRegistry {
     }
   }
 
-  _saveUninstalledApps() {
+  saveUninstalledApps() {
     try {
-      os.storage.set(APP_REGISTRY_UNINSTALLED_KEY, [...this._uninstalledApps]);
+      os.storage.set(APP_REGISTRY_UNINSTALLED_KEY, [...this.uninstalledApps]);
     } catch (e) {
       console.error("[AppRegistry]", e);
     }
   }
 
   isAppDisabled(appId) {
-    return this._disabledApps.has(appId);
+    return this.disabledApps.has(appId);
   }
 
   setAppDisabled(appId, disabled) {
@@ -86,34 +86,34 @@ export class AppRegistry {
       return false;
     }
     if (disabled) {
-      this._disabledApps.add(appId);
+      this.disabledApps.add(appId);
     } else {
-      this._disabledApps.delete(appId);
+      this.disabledApps.delete(appId);
     }
-    this._saveDisabledApps();
+    this.saveDisabledApps();
     return true;
   }
 
   getAppDisplayName(appId, originalTitle) {
-    return this._renamedApps[appId] || originalTitle;
+    return this.renamedApps[appId] || originalTitle;
   }
 
   setAppName(appId, newName) {
     if (!newName || newName.trim() === "") {
       return false;
     }
-    this._renamedApps[appId] = newName.trim();
-    this._saveRenamedApps();
+    this.renamedApps[appId] = newName.trim();
+    this.saveRenamedApps();
     return true;
   }
 
   resetAppName(appId) {
-    delete this._renamedApps[appId];
-    this._saveRenamedApps();
+    delete this.renamedApps[appId];
+    this.saveRenamedApps();
   }
 
   isAppUninstalled(appId) {
-    return this._uninstalledApps.has(appId);
+    return this.uninstalledApps.has(appId);
   }
 
   uninstallApp(appId) {
@@ -121,18 +121,18 @@ export class AppRegistry {
       console.warn(`Cannot uninstall protected app: ${appId}`);
       return false;
     }
-    this._uninstalledApps.add(appId);
-    this._disabledApps.delete(appId);
-    delete this._renamedApps[appId];
-    this._saveUninstalledApps();
-    this._saveDisabledApps();
-    this._saveRenamedApps();
+    this.uninstalledApps.add(appId);
+    this.disabledApps.delete(appId);
+    delete this.renamedApps[appId];
+    this.saveUninstalledApps();
+    this.saveDisabledApps();
+    this.saveRenamedApps();
     return true;
   }
 
   restoreApp(appId) {
-    this._uninstalledApps.delete(appId);
-    this._saveUninstalledApps();
+    this.uninstalledApps.delete(appId);
+    this.saveUninstalledApps();
   }
 
   getAppType(appId, appData) {
@@ -150,7 +150,7 @@ export class AppRegistry {
   getFilteredApps(appMap) {
     const filtered = {};
     for (const [appId, appData] of Object.entries(appMap)) {
-      if (!this._uninstalledApps.has(appId)) {
+      if (!this.uninstalledApps.has(appId)) {
         filtered[appId] = appData;
       }
     }

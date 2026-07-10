@@ -1,5 +1,5 @@
 import { AppSource } from "../AppSource.js";
-import { os } from "../os/index.js";
+import { os } from "../framework.js";
 
 export function notify(wm, title, message, type = "info", duration = 5000, icon = null, appSource = null) {
   os.notify.send(title, message, type, duration, icon, appSource);

@@ -4,8 +4,8 @@ import { BaseApp, PersistenceTypes, os } from "../framework.js";
 export class TorBrowserApp extends BaseApp {
   constructor(services) {
     super(services);
-    this._state = "stopped";
-    this._unsubs = [];
+    this.state = "stopped";
+    this.unsubs = [];
   }
 
   getDeclarativeSchema(opts) {
@@ -79,38 +79,38 @@ export class TorBrowserApp extends BaseApp {
   }
 
   initTorManager() {
-    this._syncFromSingleton();
-    this._bindEvents();
+    this.syncFromSingleton();
+    this.bindEvents();
 
-    this._unsubs.push(
+    this.unsubs.push(
       os.events.on("TOR_STATUS_CHANGED", (status) => {
-        this._renderStatus(status);
+        this.renderStatus(status);
       })
     );
-    this._unsubs.push(
+    this.unsubs.push(
       os.events.on("TOR_LOG", (msg) => {
-        this._logEntry("info", msg);
+        this.logEntry("info", msg);
       })
     );
   }
 
-  _syncFromSingleton() {
+  syncFromSingleton() {
     const status = os.tor.getStatus();
-    this._renderStatus(status);
-    os.tor.getLogs().forEach((msg) => this._logEntry("info", msg));
+    this.renderStatus(status);
+    os.tor.getLogs().forEach((msg) => this.logEntry("info", msg));
   }
 
-  _bindEvents() {
-    document.getElementById("tor-start-btn")?.addEventListener("click", () => this._startTor());
-    document.getElementById("tor-stop-btn")?.addEventListener("click", () => this._stopTor());
-    document.getElementById("tor-reconnect-btn")?.addEventListener("click", () => this._reconnectTor());
+  bindEvents() {
+    document.getElementById("tor-start-btn")?.addEventListener("click", () => this.startTor());
+    document.getElementById("tor-stop-btn")?.addEventListener("click", () => this.stopTor());
+    document.getElementById("tor-reconnect-btn")?.addEventListener("click", () => this.reconnectTor());
     document.getElementById("tor-log-clear")?.addEventListener("click", () => {
       const log = document.getElementById("tor-log");
       if (log) log.innerHTML = "";
     });
   }
 
-  async _startTor() {
+  async startTor() {
     if (os.tor.running) return;
 
     const startBtn = document.getElementById("tor-start-btn");
@@ -122,34 +122,34 @@ export class TorBrowserApp extends BaseApp {
       if (stopBtn) stopBtn.disabled = false;
     } catch (e) {
       if (startBtn) startBtn.disabled = false;
-      this._logEntry("error", "Connection failed: " + (e.message || e));
+      this.logEntry("error", "Connection failed: " + (e.message || e));
     }
   }
 
-  async _stopTor() {
+  async stopTor() {
     await os.tor.stop();
-    this._syncButtons(false);
+    this.syncButtons(false);
   }
 
-  async _reconnectTor() {
+  async reconnectTor() {
     const reconnectBtn = document.getElementById("tor-reconnect-btn");
     const startBtn = document.getElementById("tor-start-btn");
     const stopBtn = document.getElementById("tor-stop-btn");
     if (reconnectBtn) reconnectBtn.disabled = true;
     if (startBtn) startBtn.disabled = true;
     if (stopBtn) stopBtn.disabled = true;
-    this._logEntry("info", "Reconnecting Tor...");
+    this.logEntry("info", "Reconnecting Tor...");
     try {
       await os.tor.reconnect();
-      this._logEntry("success", "Tor reconnected successfully.");
+      this.logEntry("success", "Tor reconnected successfully.");
       os.notify.send("Tor", "Tor reconnected.", { type: "success", duration: 3000 });
     } catch (e) {
-      this._logEntry("error", "Reconnect failed: " + (e.message || e));
+      this.logEntry("error", "Reconnect failed: " + (e.message || e));
     }
-    this._syncButtons(os.tor.running);
+    this.syncButtons(os.tor.running);
   }
 
-  _renderStatus(status) {
+  renderStatus(status) {
     const el = document.getElementById("tor-status-value");
     if (!el) return;
     const phase = status?.phase || "stopped";
@@ -178,11 +178,11 @@ export class TorBrowserApp extends BaseApp {
       phase === "init-wasm" ||
       phase === "building-circuit" ||
       phase === "reconnecting";
-    this._syncButtons(running);
-    this._updateFetchCount();
+    this.syncButtons(running);
+    this.updateFetchCount();
   }
 
-  _syncButtons(running) {
+  syncButtons(running) {
     const startBtn = document.getElementById("tor-start-btn");
     const stopBtn = document.getElementById("tor-stop-btn");
     const reconnectBtn = document.getElementById("tor-reconnect-btn");
@@ -191,7 +191,7 @@ export class TorBrowserApp extends BaseApp {
     if (reconnectBtn) reconnectBtn.disabled = !running;
   }
 
-  _updateFetchCount() {
+  updateFetchCount() {
     const row = document.getElementById("tor-fetch-row");
     const count = document.getElementById("tor-fetch-count");
     if (!count) return;
@@ -200,25 +200,25 @@ export class TorBrowserApp extends BaseApp {
     if (row) row.style.display = fc > 0 ? "" : "none";
   }
 
-  _logEntry(type, msg) {
+  logEntry(type, msg) {
     const log = document.getElementById("tor-log");
     if (!log) return;
     const time = new Date().toLocaleTimeString();
     const entry = document.createElement("div");
     entry.className = "tor-log-entry tor-log-" + type;
-    entry.innerHTML = `<span class="tor-log-time">${time}</span><span class="tor-log-msg">${this._escape(msg)}</span>`;
+    entry.innerHTML = `<span class="tor-log-time">${time}</span><span class="tor-log-msg">${this.escape(msg)}</span>`;
     log.appendChild(entry);
     log.scrollTop = log.scrollHeight;
   }
 
-  _escape(s) {
+  escape(s) {
     const div = document.createElement("div");
     div.textContent = s;
     return div.innerHTML;
   }
 
   onClose(winId) {
-    this._unsubs.forEach((fn) => fn());
-    this._unsubs = [];
+    this.unsubs.forEach((fn) => fn());
+    this.unsubs = [];
   }
 }

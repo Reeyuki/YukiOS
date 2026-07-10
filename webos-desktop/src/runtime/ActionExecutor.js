@@ -9,13 +9,13 @@ export class ActionExecutor {
   execute(type, payload, event, element) {
     if (type.startsWith("custom:")) {
       const actionName = type.replace("custom:", "");
-      this._executeCustomAction(actionName, payload, event, element);
+      this.executeCustomAction(actionName, payload, event, element);
     } else {
       console.warn(`Unknown action type: ${type}`);
     }
   }
 
-  async _executeCustomAction(actionName, payload, event, element) {
+  async executeCustomAction(actionName, payload, event, element) {
     const handler = this.customActions.get(actionName);
 
     if (!handler) {

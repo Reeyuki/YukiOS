@@ -11,10 +11,21 @@ import { SYSTEM_APPS } from "../AppRegistryConfig.js";
 import { resolveAvatarUrl } from "../shared/avatarResolver.js";
 import { SETTINGS_CATEGORIES, launchSettingsPane } from "../settings/settingsNav.js";
 
+import {
+  $,
+  $$,
+  createElement,
+  setHTML,
+  setText,
+  addClass,
+  removeClass,
+  toggleClass,
+  setStyle
+} from "../shared/domUtils.js";
 import { StorageKeys, os } from "../framework.js";
 import { KeybindManager } from "../keybindManager.js";
 function getStartMenuEl() {
-  return document.getElementById("start-menu") || document.querySelector(".start-menu");
+  return $("#start-menu") || $(".start-menu");
 }
 
 let descriptionTooltip = null;
@@ -24,11 +35,8 @@ function showDescriptionTooltip(text, x, y) {
     document.body.removeChild(descriptionTooltip);
   }
 
-  descriptionTooltip = document.createElement("div");
-  descriptionTooltip.className = "description-tooltip";
-  descriptionTooltip.textContent = text;
-  descriptionTooltip.style.left = `${x + 10}px`;
-  descriptionTooltip.style.top = `${y + 10}px`;
+  descriptionTooltip = createElement("div", { className: "description-tooltip", text });
+  setStyle(descriptionTooltip, { left: `${x + 10}px`, top: `${y + 10}px` });
   document.body.appendChild(descriptionTooltip);
 }
 
@@ -156,7 +164,7 @@ function openStartMenu({ focusSearch = false, openDefaultPage = true } = {}) {
   }
 
   if (focusSearch) {
-    document.getElementById("start-menu-search")?.focus?.();
+    $("#start-menu-search")?.focus?.();
   }
 }
 
@@ -203,7 +211,7 @@ function buildIconEl(iconVal) {
     iconVal.startsWith("blob:") ||
     iconVal.startsWith("/");
   if (isImage) {
-    const iconEl = document.createElement("img");
+    const iconEl = createElement("img");
     let iconSrc = iconVal;
     if (iconVal.startsWith("static/") || iconVal.startsWith("/static/")) {
       const cleanPath = iconVal.startsWith("/") ? iconVal.substring(1) : iconVal;
@@ -216,16 +224,16 @@ function buildIconEl(iconVal) {
     iconEl.loading = "lazy";
     return iconEl;
   }
-  const iconEl = document.createElement("i");
+  const iconEl = createElement("i");
   iconEl.className = iconVal.startsWith("fa") ? iconVal : `fa ${iconVal}`;
   return iconEl;
 }
 
 function createStarButton(appName) {
-  const btn = document.createElement("span");
+  const btn = createElement("span");
   btn.textContent = "★";
   btn.className = "star";
-  btn.style.color = getFavorites().includes(appName) ? "gold" : "#ccc";
+  btn.style.color = getFavorites().includes(appName) ? "var(--brand)" : "#ccc";
 
   btn.addEventListener("click", (e) => {
     e.stopPropagation();
@@ -241,12 +249,12 @@ function createStarButton(appName) {
 }
 
 function updateStarState(appName, isFavorite) {
-  document.querySelectorAll(`.start-menu-item[data-app="${appName}"] span`).forEach((star) => {
+  $$(`.start-menu-item[data-app="${appName}"] span`).forEach((star) => {
     if (star.textContent === "★") {
-      star.style.color = isFavorite ? "gold" : "#ccc";
+      star.style.color = isFavorite ? "var(--brand)" : "#ccc";
     }
   });
-  const item = document.querySelector(`.start-menu-item[data-app="${appName}"]`);
+  const item = $(`.start-menu-item[data-app="${appName}"]`);
   if (item) {
     item.style.background = isFavorite ? "rgba(255, 215, 0, 0.1)" : "transparent";
   }
@@ -275,17 +283,17 @@ export function trackRecentlyUsed(appId) {
 }
 
 function createRecentAppItem(appId, appData) {
-  const item = document.createElement("div");
+  const item = createElement("div");
   item.className = "recent-item";
   item.dataset.app = appId;
   item.appendChild(buildIconEl(appData.icon || "fas fa-star"));
-  const content = document.createElement("div");
+  const content = createElement("div");
   content.className = "app-content";
-  const title = document.createElement("span");
+  const title = createElement("span");
   title.className = "app-title";
   title.textContent = appData.title || appId;
   content.appendChild(title);
-  const desc = document.createElement("span");
+  const desc = createElement("span");
   desc.className = "app-description";
   desc.textContent = APP_DESCRIPTIONS[appId] || descriptionMap[appId] || "";
   content.appendChild(desc);
@@ -299,7 +307,7 @@ function createRecentAppItem(appId, appData) {
 }
 
 function createRecentFileItem(name, path, kind) {
-  const item = document.createElement("div");
+  const item = createElement("div");
   item.className = "recent-item";
   item.dataset.fileName = name;
   item.dataset.filePath = path;
@@ -311,12 +319,12 @@ function createRecentFileItem(name, path, kind) {
   }
   const iconEl = buildIconEl(iconSrc);
 
-  const content = document.createElement("div");
+  const content = createElement("div");
   content.className = "app-content";
-  const title = document.createElement("span");
+  const title = createElement("span");
   title.className = "app-title";
   title.textContent = name;
-  const desc = document.createElement("span");
+  const desc = createElement("span");
   desc.className = "app-description";
   desc.textContent = path;
 
@@ -354,11 +362,11 @@ function updateRecentlyUsedUI() {
   if (wasActive) page.classList.add("active");
   page.innerHTML = "";
 
-  const header = document.createElement("div");
+  const header = createElement("div");
   header.className = "recent-page-header";
   header.innerHTML = "<span>Recent</span>";
 
-  const clearBtn = document.createElement("button");
+  const clearBtn = createElement("button");
   clearBtn.className = "recent-clear-btn";
   clearBtn.textContent = "Clear";
   clearBtn.addEventListener("click", (e) => {
@@ -373,7 +381,7 @@ function updateRecentlyUsedUI() {
   const recentFiles = os.storage.get(StorageKeys.recentFiles) || [];
 
   if (recentFiles.length > 0) {
-    const filesHeader = document.createElement("div");
+    const filesHeader = createElement("div");
     filesHeader.className = "recent-section-header";
     filesHeader.textContent = "Recent Files";
     page.appendChild(filesHeader);
@@ -393,7 +401,7 @@ function updateRecentlyUsedUI() {
   });
 
   if (validApps.length > 0) {
-    const appsHeader = document.createElement("div");
+    const appsHeader = createElement("div");
     appsHeader.className = "recent-section-header";
     appsHeader.textContent = "Recent Apps";
     page.appendChild(appsHeader);
@@ -403,7 +411,7 @@ function updateRecentlyUsedUI() {
   }
 
   if (recentFiles.length === 0 && validApps.length === 0) {
-    const empty = document.createElement("div");
+    const empty = createElement("div");
     empty.className = "recent-empty";
     empty.textContent = "No recently used items";
     page.appendChild(empty);
@@ -431,7 +439,7 @@ function clearSelection() {
 
 function selectFirstItemInPage(page) {
   clearItemSelection();
-  const firstItem = page.querySelector(".start-menu-item:not(.letter-category-header)");
+  const firstItem = $(".start-menu-item:not(.letter-category-header)", page);
   if (firstItem) {
     selectedItem = firstItem;
     selectedItem.classList.add("selected");
@@ -441,11 +449,11 @@ function selectFirstItemInPage(page) {
 function focusSearch() {
   clearSelection();
   focusMode = "search";
-  document.getElementById("start-menu-search")?.focus();
+  $("#start-menu-search")?.focus();
 }
 
 function navigateSelection(direction) {
-  const activePage = document.querySelector(".start-page.active");
+  const activePage = $(".start-page.active");
   if (!activePage) return;
 
   const items = Array.from(activePage.querySelectorAll(".start-menu-item:not(.letter-category-header)"));
@@ -472,10 +480,10 @@ function navigateSelection(direction) {
 }
 
 function activateCategoryPage(cat) {
-  document.querySelectorAll(".start-cat").forEach((c) => c.classList.remove("active"));
-  document.querySelectorAll(".start-page").forEach((p) => p.classList.remove("active"));
+  $$(".start-cat").forEach((c) => c.classList.remove("active"));
+  $$(".start-page").forEach((p) => p.classList.remove("active"));
   cat.classList.add("active");
-  const page = document.querySelector(`.start-page[data-page="${cat.dataset.cat}"]`);
+  const page = $(`.start-page[data-page="${cat.dataset.cat}"]`);
   if (!page) return;
   page.classList.add("active");
   if (cat.dataset.cat === "favorites") {
@@ -496,7 +504,7 @@ function activateCategoryPage(cat) {
 }
 
 function navigateCategories(direction) {
-  const categories = Array.from(document.querySelectorAll(".start-cat:not(.docked)")).filter(
+  const categories = Array.from($(".start-cat:not(.docked)")).filter(
     (cat) => cat.style.display !== "none" && cat.offsetParent !== null
   );
   if (categories.length === 0) return;
@@ -533,7 +541,7 @@ function switchFocusMode(mode) {
 
   if (mode === "categories") {
     clearItemSelection();
-    const activeCat = document.querySelector(".start-cat.active");
+    const activeCat = $(".start-cat.active");
     if (activeCat) {
       clearCategorySelection();
       selectedCategory = activeCat;
@@ -544,7 +552,7 @@ function switchFocusMode(mode) {
     }
   } else {
     clearCategorySelection();
-    const activePage = document.querySelector(".start-page.active");
+    const activePage = $(".start-page.active");
     if (activePage) {
       selectFirstItemInPage(activePage);
     }
@@ -586,38 +594,38 @@ export function updateFavoritesUI() {
 
 export function setupStartMenu(appLauncher, sessionManager, selectionManager) {
   sharedAppLauncher = appLauncher;
-  const menuEl = document.getElementById("start-menu") || document.querySelector(".start-menu");
+  const menuEl = $("#start-menu") || $(".start-menu");
   if (menuEl) {
     applyStartMenuSettings(menuEl);
   }
-  document.querySelector(".start-menu")?.addEventListener("contextmenu", (e) => e.preventDefault());
+  $(".start-menu")?.addEventListener("contextmenu", (e) => e.preventDefault());
 
-  document.getElementById("start-lock-btn")?.addEventListener("click", () => {
+  $("#start-lock-btn")?.addEventListener("click", () => {
     closeStartMenu();
     sessionManager?.lockSession();
   });
 
-  document.getElementById("start-signout-btn")?.addEventListener("click", () => {
+  $("#start-signout-btn")?.addEventListener("click", () => {
     closeStartMenu();
     sessionManager?.lockToLoginScreen();
   });
 
-  document.getElementById("start-sleep-btn")?.addEventListener("click", () => {
+  $("#start-sleep-btn")?.addEventListener("click", () => {
     closeStartMenu();
     sessionManager?.sleep?.();
   });
 
-  document.getElementById("start-restart-btn")?.addEventListener("click", () => {
+  $("#start-restart-btn")?.addEventListener("click", () => {
     closeStartMenu();
     sessionManager?.restart?.();
   });
 
-  document.getElementById("start-shutdown-btn")?.addEventListener("click", () => {
+  $("#start-shutdown-btn")?.addEventListener("click", () => {
     closeStartMenu();
     sessionManager?.shutdown?.();
   });
 
-  document.querySelectorAll(".start-cat").forEach((cat) => {
+  $$(".start-cat").forEach((cat) => {
     if (cat.classList.contains("docked") || !cat.dataset.cat) {
       return;
     }
@@ -638,13 +646,13 @@ export function setupStartMenu(appLauncher, sessionManager, selectionManager) {
         speak("These are your favorites! Great taste.", ClippyAnimation.Show);
       }
       if (focusMode === "apps") {
-        const page = document.querySelector(`.start-page[data-page="${catName}"]`);
+        const page = $(`.start-page[data-page="${catName}"]`);
         if (page) selectFirstItemInPage(page);
       }
     };
   });
 
-  const searchInput = document.getElementById("start-menu-search");
+  const searchInput = $("#start-menu-search");
 
   searchInput.addEventListener("focus", () => {
     focusMode = "search";
@@ -659,7 +667,7 @@ export function setupStartMenu(appLauncher, sessionManager, selectionManager) {
       if (KeybindManager.matches(e, "startMenu.arrowDown")) {
         e.preventDefault();
         if (focusMode === "search") {
-          document.getElementById("start-menu-search")?.blur();
+          $("#start-menu-search")?.blur();
           focusMode = "categories";
           navigateCategories("down");
         } else if (focusMode === "categories") {
@@ -670,7 +678,7 @@ export function setupStartMenu(appLauncher, sessionManager, selectionManager) {
       } else if (KeybindManager.matches(e, "startMenu.arrowUp")) {
         e.preventDefault();
         if (focusMode === "search") {
-          document.getElementById("start-menu-search")?.blur();
+          $("#start-menu-search")?.blur();
           focusMode = "apps";
           navigateSelection("up");
         } else if (focusMode === "categories") {
@@ -681,13 +689,13 @@ export function setupStartMenu(appLauncher, sessionManager, selectionManager) {
       } else if (KeybindManager.matches(e, "startMenu.arrowLeft")) {
         e.preventDefault();
         if (focusMode === "search") {
-          document.getElementById("start-menu-search")?.blur();
+          $("#start-menu-search")?.blur();
         }
         switchFocusMode("categories");
       } else if (KeybindManager.matches(e, "startMenu.arrowRight")) {
         e.preventDefault();
         if (focusMode === "search") {
-          document.getElementById("start-menu-search")?.blur();
+          $("#start-menu-search")?.blur();
         }
         switchFocusMode("apps");
       } else if (KeybindManager.matches(e, "startMenu.enter")) {
@@ -767,37 +775,37 @@ export function setupStartMenu(appLauncher, sessionManager, selectionManager) {
       const searchResultsPage = document.querySelector('.start-page[data-page="search-results"]');
 
       if (!searchResultsPage) {
-        const resultsPage = document.createElement("div");
+        const resultsPage = createElement("div");
         resultsPage.className = "start-page";
         resultsPage.dataset.page = "search-results";
         resultsPage.innerHTML = '<div class="search-results-container"></div>';
-        document.querySelector(".start-content").appendChild(resultsPage);
+        $(".start-content").appendChild(resultsPage);
       }
 
       if (q === "") {
-        document.querySelector(".start-menu")?.classList.remove("search-mode");
-        document.querySelectorAll(".start-page").forEach((page) => {
+        $(".start-menu")?.classList.remove("search-mode");
+        $$(".start-page").forEach((page) => {
           if (page.dataset.page === "search-results") {
             page.classList.remove("active");
             page.style.display = "none";
           } else {
             page.style.display = "";
-            document.querySelectorAll(".start-menu-item").forEach((item) => {
+            $$(".start-menu-item").forEach((item) => {
               item.style.display = "";
             });
           }
         });
 
-        const activeCat = document.querySelector(".start-cat.active");
+        const activeCat = $(".start-cat.active");
         if (activeCat) {
-          const page = document.querySelector(`.start-page[data-page="${activeCat.dataset.cat}"]`);
+          const page = $(`.start-page[data-page="${activeCat.dataset.cat}"]`);
           if (page) page.classList.add("active");
         }
         return;
       }
 
-      document.querySelector(".start-menu")?.classList.add("search-mode");
-      document.querySelectorAll(".start-page").forEach((page) => {
+      $(".start-menu")?.classList.add("search-mode");
+      $$(".start-page").forEach((page) => {
         page.classList.remove("active");
         page.style.display = "none";
       });
@@ -805,7 +813,7 @@ export function setupStartMenu(appLauncher, sessionManager, selectionManager) {
       const resultsPage = document.querySelector('.start-page[data-page="search-results"]');
       resultsPage.style.display = "flex";
       resultsPage.classList.add("active");
-      const resultsContainer = resultsPage.querySelector(".search-results-container");
+      const resultsContainer = $(".search-results-container", resultsPage);
       resultsContainer.innerHTML = "";
 
       const appRegistry = getAppRegistry();
@@ -851,12 +859,12 @@ export function setupStartMenu(appLauncher, sessionManager, selectionManager) {
         if (cat === "files") {
           if (fileResults.length > 0) {
             hasResults = true;
-            const categoryHeader = document.createElement("div");
+            const categoryHeader = createElement("div");
             categoryHeader.className = "search-category-header";
             categoryHeader.textContent = categoryLabels.files;
             fragment.appendChild(categoryHeader);
 
-            const categoryResults = document.createElement("div");
+            const categoryResults = createElement("div");
             categoryResults.className = "search-category-results";
             fileResults.forEach((f) => {
               categoryResults.appendChild(createRecentFileItem(f.name, f.path, f.kind));
@@ -867,12 +875,12 @@ export function setupStartMenu(appLauncher, sessionManager, selectionManager) {
         }
         if (results[cat].length > 0) {
           hasResults = true;
-          const categoryHeader = document.createElement("div");
+          const categoryHeader = createElement("div");
           categoryHeader.className = "search-category-header";
           categoryHeader.textContent = categoryLabels[cat];
           fragment.appendChild(categoryHeader);
 
-          const categoryResults = document.createElement("div");
+          const categoryResults = createElement("div");
           categoryResults.className = "search-category-results";
           results[cat].forEach((result) => {
             result.element.style.display = "";
@@ -883,7 +891,7 @@ export function setupStartMenu(appLauncher, sessionManager, selectionManager) {
       });
 
       if (!hasResults) {
-        const noResults = document.createElement("div");
+        const noResults = createElement("div");
         noResults.className = "search-no-results";
         noResults.textContent = "No results found";
         fragment.appendChild(noResults);
@@ -912,10 +920,10 @@ export function getToggleHideSystemApps() {
 
 function setupDesktopStartMenuToggles(selectionManager) {
   const hideGamesKey = StorageKeys.hideGames;
-  const hideGamesBtn = document.getElementById("hide-games-btn");
+  const hideGamesBtn = $("#hide-games-btn");
 
   const applyHideGames = (hidden) => {
-    document.querySelectorAll("#desktop .icon").forEach((icon) => {
+    $$("#desktop .icon").forEach((icon) => {
       if (sharedAppLauncher.appMap[icon.dataset.app] && sharedAppLauncher.appMap[icon.dataset.app].type !== "system") {
         icon.style.display = hidden ? "none" : "";
         if (hidden && selectionManager) selectionManager.remove(icon);
@@ -936,10 +944,10 @@ function setupDesktopStartMenuToggles(selectionManager) {
   };
 
   const hideSystemKey = StorageKeys.hideSystem;
-  const hideSystemBtn = document.getElementById("hide-system-btn");
+  const hideSystemBtn = $("#hide-system-btn");
 
   const applyHideSystemApps = (hidden) => {
-    document.querySelectorAll("#desktop .icon").forEach((icon) => {
+    $$("#desktop .icon").forEach((icon) => {
       if (sharedAppLauncher.appMap[icon.dataset.app] && sharedAppLauncher.appMap[icon.dataset.app].type === "system") {
         icon.style.display = hidden ? "none" : "";
         if (hidden && selectionManager) selectionManager.remove(icon);
@@ -984,20 +992,20 @@ export function getCurrentUser() {
 }
 
 export async function updateStartUserDisplay() {
-  const startUser = document.querySelector(".start-user");
+  const startUser = $(".start-user");
   if (!startUser) return;
 
   const user = getCurrentUser();
 
-  const nameSpan = startUser.querySelector("span");
-  const avatarImg = startUser.querySelector("img");
+  const nameSpan = $("span", startUser);
+  const avatarImg = $("img", startUser);
 
   if (nameSpan) nameSpan.textContent = user.name;
   if (avatarImg) avatarImg.src = await resolveAvatarUrl(user.avatar, "static/icons/guest.webp");
 }
 
 function setupStartUserHover() {
-  const startUser = document.querySelector(".start-user");
+  const startUser = $(".start-user");
   if (!startUser) return;
 
   let tooltip = null;
@@ -1005,7 +1013,7 @@ function setupStartUserHover() {
   startUser.addEventListener("mouseenter", () => {
     const user = getCurrentUser();
 
-    tooltip = document.createElement("div");
+    tooltip = createElement("div");
     tooltip.className = "user-tooltip";
     tooltip.textContent = user.name;
     document.body.appendChild(tooltip);
@@ -1081,8 +1089,10 @@ export function tryGetIcon(id) {
       return foundEntry[1].icon;
     }
 
-    const div = document.querySelector(`#desktop div[data-app="${id}"]`);
-    const imgSrc = div?.querySelector("img")?.src || div?.querySelector("svg");
+    const div = $(`#desktop div[data-app="${id}"]`);
+    const imgEl = div && $("img", div);
+    const svgEl = div && $("svg", div);
+    const imgSrc = imgEl?.src || svgEl;
     return imgSrc;
   } catch (e) {
     console.error("Error occurred while getting icon:", e);
@@ -1134,7 +1144,7 @@ function showStartItemEditor(appLauncher, currentItem) {
   return new Promise((resolve) => {
     const t0 = performance.now();
 
-    const overlay = document.createElement("div");
+    const overlay = createElement("div");
     overlay.className = "explorer-confirmation-overlay start-editor-overlay";
     overlay.style.zIndex = "20002";
 
@@ -1179,7 +1189,7 @@ function showStartItemEditor(appLauncher, currentItem) {
 
     overlay.innerHTML = `
       <div class="start-editor-dialog">
-        <div class="_fd-dialog-title">${dialogTitle}</div>
+        <div class="fd-dialog-title">${dialogTitle}</div>
 
         <!-- App select -->
         <div class="start-editor-field">
@@ -1211,7 +1221,7 @@ function showStartItemEditor(appLauncher, currentItem) {
         <div class="start-editor-field">
           <label class="start-editor-label">Display Title</label>
           <input id="editor-title-input"
-                 class="_fd-dialog-input start-editor-input"
+                 class="fd-dialog-input start-editor-input"
                  type="text"
                  value="${titleVal}" />
         </div>
@@ -1220,7 +1230,7 @@ function showStartItemEditor(appLauncher, currentItem) {
         <div class="start-editor-field">
           <label class="start-editor-label">FontAwesome Icon Class</label>
           <input id="editor-icon-input"
-                 class="_fd-dialog-input start-editor-input"
+                 class="fd-dialog-input start-editor-input"
                  type="text"
                  value="${iconVal}" />
           <div id="editor-icon-error" class="start-editor-error">
@@ -1237,7 +1247,7 @@ function showStartItemEditor(appLauncher, currentItem) {
           <div class="start-editor-upload-row">
             <input id="editor-icon-file" type="file" accept="image/*" hidden />
 
-            <button id="editor-upload-btn" class="_fd-btn start-editor-btn">
+            <button id="editor-upload-btn" class="fd-btn start-editor-btn">
               Choose Image...
             </button>
 
@@ -1246,39 +1256,39 @@ function showStartItemEditor(appLauncher, currentItem) {
             </div>
 
             <button id="editor-clear-upload-btn"
-                    class="_fd-btn start-editor-clear-btn">
+                    class="fd-btn start-editor-clear-btn">
               Clear
             </button>
           </div>
         </div>
 
         <!-- Actions -->
-        <div class="_fd-dialog-actions">
-          <button class="_fd-btn _fd-btn-cancel">Cancel</button>
-          <button class="_fd-btn _fd-btn-confirm start-editor-save-btn">
+        <div class="fd-dialog-actions">
+          <button class="fd-btn fd-btn-cancel">Cancel</button>
+          <button class="fd-btn fd-btn-confirm start-editor-save-btn">
             Save
           </button>
         </div>
       </div>
     `;
 
-    const selectEl = overlay.querySelector("#editor-app-select");
-    const customSelect = overlay.querySelector("#custom-app-select");
-    const customSelectLabel = overlay.querySelector("#custom-app-select-label");
-    const dropdownList = overlay.querySelector("#custom-app-dropdown-list");
-    const searchInput = overlay.querySelector("#custom-app-search");
-    const optionsContainer = overlay.querySelector("#custom-app-options-container");
-    const titleInput = overlay.querySelector("#editor-title-input");
-    const iconInput = overlay.querySelector("#editor-icon-input");
-    const confirmBtn = overlay.querySelector("._fd-btn-confirm");
-    const cancelBtn = overlay.querySelector("._fd-btn-cancel");
-    const uploadBtn = overlay.querySelector("#editor-upload-btn");
-    const fileInput = overlay.querySelector("#editor-icon-file");
-    const imagePreview = overlay.querySelector("#editor-image-preview");
-    const clearBtn = overlay.querySelector("#editor-clear-upload-btn");
+    const selectEl = $("#editor-app-select", overlay);
+    const customSelect = $("#custom-app-select", overlay);
+    const customSelectLabel = $("#custom-app-select-label", overlay);
+    const dropdownList = $("#custom-app-dropdown-list", overlay);
+    const searchInput = $("#custom-app-search", overlay);
+    const optionsContainer = $("#custom-app-options-container", overlay);
+    const titleInput = $("#editor-title-input", overlay);
+    const iconInput = $("#editor-icon-input", overlay);
+    const confirmBtn = $(".fd-btn-confirm", overlay);
+    const cancelBtn = $(".fd-btn-cancel", overlay);
+    const uploadBtn = $("#editor-upload-btn", overlay);
+    const fileInput = $("#editor-icon-file", overlay);
+    const imagePreview = $("#editor-image-preview", overlay);
+    const clearBtn = $("#editor-clear-upload-btn", overlay);
 
     const optionItems = apps.map((app) => {
-      const opt = document.createElement("div");
+      const opt = createElement("div");
       opt.className = "start-editor-option";
 
       opt.innerHTML = `
@@ -1414,7 +1424,7 @@ function showStartGridContext(e, appLauncher) {
 }
 
 export function initializeAppGrid(appLauncher) {
-  const grid = document.querySelector(".app-grid");
+  const grid = $(".app-grid");
   if (!grid) return;
   grid.innerHTML = "";
 
@@ -1423,7 +1433,7 @@ export function initializeAppGrid(appLauncher) {
   const fragment = document.createDocumentFragment();
   items.forEach((itemData, index) => {
     if (appRegistry.isAppUninstalled(itemData.app) || appRegistry.isAppDisabled(itemData.app)) return;
-    const item = document.createElement("div");
+    const item = createElement("div");
     item.className = "start-menu-item";
     item.dataset.app = itemData.app;
     item.dataset.index = index;
@@ -1431,16 +1441,16 @@ export function initializeAppGrid(appLauncher) {
     const iconVal = itemData.icon || "fas fa-star";
     item.appendChild(buildIconEl(iconVal));
 
-    const contentEl = document.createElement("div");
+    const contentEl = createElement("div");
     contentEl.className = "app-content";
     item.appendChild(contentEl);
 
-    const titleEl = document.createElement("span");
+    const titleEl = createElement("span");
     titleEl.className = "app-title";
     titleEl.textContent = itemData.title;
     contentEl.appendChild(titleEl);
 
-    const descEl = document.createElement("span");
+    const descEl = createElement("span");
     descEl.className = "app-description";
     const description = APP_DESCRIPTIONS[itemData.app] || descriptionMap[itemData.app] || "";
     descEl.textContent = description;
@@ -1448,7 +1458,7 @@ export function initializeAppGrid(appLauncher) {
     contentEl.appendChild(descEl);
 
     if (itemData.app === "newsApp") {
-      const badge = document.createElement("span");
+      const badge = createElement("span");
       badge.className = "news-badge";
       badge.style.display = "none";
       item.appendChild(badge);
@@ -1519,17 +1529,17 @@ export function initializeAppGrid(appLauncher) {
   grid.appendChild(fragment);
 
   if (items.length === 0) {
-    const placeholder = document.createElement("div");
+    const placeholder = createElement("div");
     placeholder.className = "start-menu-item";
     placeholder.style.opacity = "0";
     placeholder.style.transition = "opacity 0.2s";
     placeholder.style.cursor = "pointer";
 
-    const iconEl = document.createElement("i");
+    const iconEl = createElement("i");
     iconEl.className = "fas fa-plus";
     placeholder.appendChild(iconEl);
 
-    const spanEl = document.createElement("span");
+    const spanEl = createElement("span");
     spanEl.textContent = "Add Item";
     placeholder.appendChild(spanEl);
 
@@ -1562,10 +1572,10 @@ export function initializeAppGrid(appLauncher) {
 const LETTER_SEPARATOR = "—".repeat(20);
 
 function populateCategoryPage(category, appLauncher) {
-  const page = document.querySelector(`.start-page[data-page="${category}"]`);
+  const page = $(`.start-page[data-page="${category}"]`);
   if (!page) return;
 
-  const grid = page.querySelector(".app-grid");
+  const grid = $(".app-grid", page);
   if (!grid) return;
   grid.innerHTML = "";
 
@@ -1620,7 +1630,7 @@ function populateCategoryPage(category, appLauncher) {
     Object.keys(groupedApps)
       .sort()
       .forEach((letter) => {
-        const letterHeader = document.createElement("div");
+        const letterHeader = createElement("div");
         letterHeader.className = "letter-category-header";
         letterHeader.innerHTML = `<span class="letter-title">${letter}</span><span class="letter-separator">${LETTER_SEPARATOR}</span>`;
         fragment.appendChild(letterHeader);
@@ -1639,23 +1649,23 @@ function populateCategoryPage(category, appLauncher) {
 }
 
 function createAppItem(appId, appData) {
-  const item = document.createElement("div");
+  const item = createElement("div");
   item.className = "start-menu-item";
   item.dataset.app = appId;
   item.style.position = "relative";
 
   item.appendChild(buildIconEl(appData.icon || "fas fa-star"));
 
-  const contentEl = document.createElement("div");
+  const contentEl = createElement("div");
   contentEl.className = "app-content";
   item.appendChild(contentEl);
 
-  const titleEl = document.createElement("span");
+  const titleEl = createElement("span");
   titleEl.className = "app-title";
   titleEl.textContent = appData.title || appId;
   contentEl.appendChild(titleEl);
 
-  const descEl = document.createElement("span");
+  const descEl = createElement("span");
   descEl.className = "app-description";
   const description = APP_DESCRIPTIONS[appId] || descriptionMap[appId] || "";
   descEl.textContent = description;

@@ -156,12 +156,8 @@
 }
 
 #shortcuts-app .sc-content-area::-webkit-scrollbar-thumb {
-  background: var(--glass-border);
-  border-radius: 3px;
-}
-
-#shortcuts-app .sc-content-area::-webkit-scrollbar-thumb:hover {
   background: var(--glass-hover);
+  border-radius: 3px;
 }
 
 #shortcuts-app .sc-grid {

@@ -1,6 +1,5 @@
 import "../styles/systemApps.css";
-import { BaseApp, os } from "../framework.js";
-import { PersistenceTypes } from "../AppSchema.js";
+import { BaseApp, os, PersistenceTypes } from "../framework.js";
 import { getAppRegistry } from "../appRegistry.js";
 
 export class SystemAppsApp extends BaseApp {
@@ -11,6 +10,7 @@ export class SystemAppsApp extends BaseApp {
   getDeclarativeSchema() {
     return {
       id: "system-apps-win",
+      singleton: true,
       name: "System Apps",
       icon: "fas fa-screwdriver-wrench",
       windows: [
@@ -52,7 +52,7 @@ export class SystemAppsApp extends BaseApp {
   }
 
   renderApps(payload, event, element, state, actionExecutor) {
-    const appLauncher = this._services.appLauncher;
+    const appLauncher = this.services.appLauncher;
     if (!appLauncher) return;
     const appMap = appLauncher.appMap;
     if (!appMap) return;
@@ -76,21 +76,21 @@ export class SystemAppsApp extends BaseApp {
     const nativeApps = sortByIcon(allApps.filter((a) => !a.targetUrl || a.id === "discordApp"));
     const webApps = sortByIcon(allApps.filter((a) => a.targetUrl && a.id !== "discordApp"));
 
-    this._nativeApps = nativeApps;
-    this._webApps = webApps;
-    this._renderGrid(state.query);
+    this.nativeApps = nativeApps;
+    this.webApps = webApps;
+    this.renderGrid(state.query);
 
     const searchInput = document.querySelector("#system-apps-win #system-apps-search");
-    if (searchInput && !searchInput._saBound) {
-      searchInput._saBound = true;
+    if (searchInput && !searchInput.saBound) {
+      searchInput.saBound = true;
       searchInput.addEventListener("input", (e) => {
         state.query = e.target.value;
-        this._renderGrid(state.query);
+        this.renderGrid(state.query);
       });
     }
   }
 
-  _renderGrid(query) {
+  renderGrid(query) {
     const sectionNative = document.querySelector("#system-apps-section-native");
     const sectionWeb = document.querySelector("#system-apps-section-web");
     const containerNative = document.querySelector("#system-apps-win #system-apps-grid-native");
@@ -99,13 +99,13 @@ export class SystemAppsApp extends BaseApp {
     if (!containerNative || !containerWeb) return;
 
     const q = (query || "").toLowerCase();
-    const allApps = [...(this._nativeApps || []), ...(this._webApps || [])];
+    const allApps = [...(this.nativeApps || []), ...(this.webApps || [])];
     const nativeFiltered = q
       ? allApps.filter((a) => a.title.toLowerCase().includes(q) && (!a.targetUrl || a.id === "discordApp"))
-      : this._nativeApps;
+      : this.nativeApps;
     const webFiltered = q
       ? allApps.filter((a) => a.title.toLowerCase().includes(q) && a.targetUrl && a.id !== "discordApp")
-      : this._webApps;
+      : this.webApps;
 
     const total = (nativeFiltered || []).length + (webFiltered || []).length;
     if (total === 0) {
@@ -119,11 +119,11 @@ export class SystemAppsApp extends BaseApp {
 
     if (emptyEl) emptyEl.style.display = "none";
 
-    this._renderSection(containerNative, nativeFiltered, sectionNative);
-    this._renderSection(containerWeb, webFiltered, sectionWeb);
+    this.renderSection(containerNative, nativeFiltered, sectionNative);
+    this.renderSection(containerWeb, webFiltered, sectionWeb);
   }
 
-  _renderSection(container, items, sectionEl) {
+  renderSection(container, items, sectionEl) {
     if (items.length === 0) {
       container.innerHTML = "";
       if (sectionEl) sectionEl.style.display = "none";

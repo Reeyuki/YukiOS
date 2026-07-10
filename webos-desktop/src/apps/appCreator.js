@@ -117,13 +117,13 @@ export class AppCreatorApp extends BaseApp {
     super(services);
     this.appLauncher = services.appLauncher;
     this.desktopUI = services.desktopUI || null;
-    this._declarativeApp = null;
-    this._customScramjetApps = new Map();
+    this.declarativeApp = null;
+    this.customScramjetApps = new Map();
   }
 
-  _registerCustomScramjetApp(appId, name, url, icon) {
-    if (this._customScramjetApps.has(appId)) {
-      return this._customScramjetApps.get(appId);
+  registerCustomScramjetApp(appId, name, url, icon) {
+    if (this.customScramjetApps.has(appId)) {
+      return this.customScramjetApps.get(appId);
     }
 
     const AppClass = createScramjetWebApp({
@@ -134,9 +134,9 @@ export class AppCreatorApp extends BaseApp {
       windowSize: ["1280px", "800px"]
     });
 
-    const appInstance = new AppClass(this._services);
+    const appInstance = new AppClass(this.services);
     this.appLauncher.appRuntime.register(appId, appInstance);
-    this._customScramjetApps.set(appId, appInstance);
+    this.customScramjetApps.set(appId, appInstance);
 
     return appInstance;
   }
@@ -149,7 +149,7 @@ export class AppCreatorApp extends BaseApp {
     const existing = document.getElementById(AC.WIN_ID);
     if (existing) {
       os.window.focus(existing);
-      if (editAppId) this._enterEditMode(existing, editAppId);
+      if (editAppId) this.enterEditMode(existing, editAppId);
       return;
     }
 
@@ -236,10 +236,10 @@ export class AppCreatorApp extends BaseApp {
     win.innerHTML = content;
     os.window.addToTaskbar(AC.WIN_ID, "App Creator", AC.TASKBAR_ICON);
 
-    this._setupControls(win);
-    this._refreshInstalledList(win);
+    this.setupControls(win);
+    this.refreshInstalledList(win);
 
-    if (editAppId) this._enterEditMode(win, editAppId);
+    if (editAppId) this.enterEditMode(win, editAppId);
   }
 
   setDesktopUI(desktopUI) {
@@ -251,7 +251,7 @@ export class AppCreatorApp extends BaseApp {
   }
 
   async restoreInstalledApps() {
-    const apps = await this._loadAllCustomApps();
+    const apps = await this.loadAllCustomApps();
     for (const app of apps) {
       this.appLauncher.appMap[app.appId] = buildAppMapEntry(
         app.name,
@@ -262,15 +262,15 @@ export class AppCreatorApp extends BaseApp {
         clampProxyIndex(app.proxyIndex, PROXIES),
         !!app.scramjetEnabled
       );
-      this._addToDesktop(app.appId, app.name, app.icon, app.faviconUrl);
+      this.addToDesktop(app.appId, app.name, app.icon, app.faviconUrl);
 
       if (app.scramjetEnabled) {
-        this._registerCustomScramjetApp(app.appId, app.name, app.url, app.icon);
+        this.registerCustomScramjetApp(app.appId, app.name, app.url, app.icon);
       }
     }
   }
 
-  _setupControls(win) {
+  setupControls(win) {
     const iconFileInput = $("#ac-icon-file", win);
     const iconPreview = $("#ac-icon-preview", win);
     const installBtn = $("#ac-install-btn", win);
@@ -291,10 +291,10 @@ export class AppCreatorApp extends BaseApp {
     let editingAppId = null;
     let faviconLoadedUrl = null;
 
-    win._setEditingAppId = (id) => {
+    win.setEditingAppId = (id) => {
       editingAppId = id;
     };
-    win._setResolvedIcon = (v) => {
+    win.setResolvedIcon = (v) => {
       resolvedIconDataUrl = v;
     };
 
@@ -311,7 +311,7 @@ export class AppCreatorApp extends BaseApp {
         iconPreview.innerHTML = `<i class="${src}" style="font-size:18px;"></i>`;
       }
     };
-    win._setPreviewImg = setPreviewImg;
+    win.setPreviewImg = setPreviewImg;
 
     const resetForm = () => {
       editingAppId = null;
@@ -369,7 +369,7 @@ export class AppCreatorApp extends BaseApp {
     const avatarToggleBtn = $("#ac-avatar-toggle-btn", win);
     if (avatarToggleBtn) {
       avatarToggleBtn.addEventListener("click", () => {
-        this._openAvatarPickerWindow(win, setPreviewImg);
+        this.openAvatarPickerWindow(win, setPreviewImg);
       });
     }
 
@@ -377,13 +377,13 @@ export class AppCreatorApp extends BaseApp {
       const url = appUrlInput.value.trim();
       const name = $("#ac-name", win).value.trim() || "Preview";
       if (!url) {
-        this._showStatus(status, "error", "Please enter a URL to preview.");
+        this.showStatus(status, "error", "Please enter a URL to preview.");
         return;
       }
       const useProxy = !!proxyEnabledInput?.checked;
       const proxyIndex = clampProxyIndex(parseInt(proxySelect?.value), PROXIES);
       const useScramjet = !!scramjetEnabledInput?.checked;
-      await this._openPreviewWindow(name, url, useProxy, proxyIndex, useScramjet);
+      await this.openPreviewWindow(name, url, useProxy, proxyIndex, useScramjet);
     });
 
     installBtn.addEventListener("click", () => {
@@ -395,33 +395,33 @@ export class AppCreatorApp extends BaseApp {
       const scramjetEnabled = !!scramjetEnabledInput?.checked;
 
       if (!name) {
-        this._showStatus(status, "error", "App name is required.");
+        this.showStatus(status, "error", "App name is required.");
         return;
       }
       if (!url) {
-        this._showStatus(status, "error", "App URL is required.");
+        this.showStatus(status, "error", "App URL is required.");
         return;
       }
       const secureUrl = ensureHttpsProtocol(url);
       try {
         new URL(secureUrl);
       } catch {
-        this._showStatus(status, "error", "Invalid URL format.");
+        this.showStatus(status, "error", "Invalid URL format.");
         return;
       }
 
       const task = editingAppId
-        ? this._saveEdit(editingAppId, name, secureUrl, iconUrl, proxyEnabled, proxyIndex, scramjetEnabled, status, win)
-        : this._installApp(name, secureUrl, iconUrl, proxyEnabled, proxyIndex, scramjetEnabled, status, win);
+        ? this.saveEdit(editingAppId, name, secureUrl, iconUrl, proxyEnabled, proxyIndex, scramjetEnabled, status, win)
+        : this.installApp(name, secureUrl, iconUrl, proxyEnabled, proxyIndex, scramjetEnabled, status, win);
       task.catch(console.error);
     });
   }
 
-  async _refreshInstalledList(win) {
+  async refreshInstalledList(win) {
     const list = $("#ac-installed-list", win);
     if (!list) return;
 
-    const apps = await this._loadAllCustomApps();
+    const apps = await this.loadAllCustomApps();
 
     if (!apps.length) {
       setHTML(list, `<div class="ac-empty">No custom apps yet</div>`);
@@ -430,11 +430,11 @@ export class AppCreatorApp extends BaseApp {
 
     setHTML(list, "");
     for (const app of apps) {
-      list.append(this._buildAppRow(win, app));
+      list.append(this.buildAppRow(win, app));
     }
   }
 
-  _buildAppRow(win, app) {
+  buildAppRow(win, app) {
     const row = document.createElement("div");
     row.className = "ac-app-row";
     row.dataset.appId = app.appId;
@@ -474,19 +474,19 @@ export class AppCreatorApp extends BaseApp {
     const editBtn = document.createElement("button");
     editBtn.className = "ac-row-btn ac-row-btn-edit";
     editBtn.textContent = "Edit";
-    editBtn.addEventListener("click", () => this._enterEditMode(win, app.appId));
+    editBtn.addEventListener("click", () => this.enterEditMode(win, app.appId));
 
     const delBtn = document.createElement("button");
     delBtn.className = "ac-row-btn ac-row-btn-delete";
     delBtn.textContent = "Delete";
-    delBtn.addEventListener("click", () => this._deleteApp(app.appId, win));
+    delBtn.addEventListener("click", () => this.deleteApp(app.appId, win));
 
     actions.append(editBtn, delBtn);
     row.append(iconEl, info, actions);
     return row;
   }
 
-  async _loadAllCustomApps() {
+  async loadAllCustomApps() {
     const apps = [];
     try {
       const desktopFolder = await os.fs.readdir(["Desktop"]);
@@ -507,7 +507,7 @@ export class AppCreatorApp extends BaseApp {
               proxyEnabled: data.proxyEnabled || false,
               proxyIndex: data.proxyIndex || 0,
               scramjetEnabled: data.scramjetEnabled || false,
-              _fileName: fileName
+              fileName: fileName
             });
           }
         } catch {}
@@ -517,7 +517,7 @@ export class AppCreatorApp extends BaseApp {
     return apps;
   }
 
-  async _loadAppMeta(appId) {
+  async loadAppMeta(appId) {
     try {
       const desktopFolder = await os.fs.readdir(["Desktop"]);
       for (const [fileName] of Object.entries(desktopFolder)) {
@@ -526,15 +526,15 @@ export class AppCreatorApp extends BaseApp {
           const raw = await this.fs.readTextFile(["Desktop"], fileName);
           if (!raw) continue;
           const data = JSON.parse(raw);
-          if (data.isCustomApp && data.app === appId) return { ...data, _fileName: fileName };
+          if (data.isCustomApp && data.app === appId) return { ...data, fileName: fileName };
         } catch {}
       }
     } catch {}
     return null;
   }
 
-  async _enterEditMode(win, appId) {
-    const meta = await this._loadAppMeta(appId);
+  async enterEditMode(win, appId) {
+    const meta = await this.loadAppMeta(appId);
     if (!meta) return;
 
     $("#ac-name", win).value = meta.name || "";
@@ -550,8 +550,8 @@ export class AppCreatorApp extends BaseApp {
     if (scramjetEnabledInput) scramjetEnabledInput.checked = !!meta.scramjetEnabled;
 
     const iconIsData = meta.icon?.startsWith("data:");
-    win._setResolvedIcon(iconIsData ? meta.icon : null);
-    if (meta.icon) win._setPreviewImg(meta.icon);
+    win.setResolvedIcon(iconIsData ? meta.icon : null);
+    if (meta.icon) win.setPreviewImg(meta.icon);
 
     const editLabel = $("#ac-edit-label", win);
     if (editLabel) setText(editLabel, `Editing: ${meta.name}`);
@@ -561,23 +561,23 @@ export class AppCreatorApp extends BaseApp {
     if (formTitle) setText(formTitle, "Edit Custom App");
     const installBtn = $("#ac-install-btn", win);
     if (installBtn) installBtn.textContent = "Save Changes";
-    win._setEditingAppId(appId);
+    win.setEditingAppId(appId);
 
     $("#ac-name", win).focus();
     $(".window-content", win).scrollTop = 0;
   }
 
-  async _saveEdit(appId, name, url, iconUrl, proxyEnabled, proxyIndex, scramjetEnabled, statusEl, win) {
-    const meta = await this._loadAppMeta(appId);
+  async saveEdit(appId, name, url, iconUrl, proxyEnabled, proxyIndex, scramjetEnabled, statusEl, win) {
+    const meta = await this.loadAppMeta(appId);
     if (!meta) {
-      this._showStatus(statusEl, "error", "Could not find app to edit.");
+      this.showStatus(statusEl, "error", "Could not find app to edit.");
       os.notify.send("", `Failed to update "${name}": app not found.`, { appSource: AppSource.APP_CREATOR });
       return;
     }
 
     const faviconUrl = meta.faviconUrl || deriveFaviconUrl(url);
     const newFileName = `${name}.desktop`;
-    const fileNameChanged = meta._fileName !== newFileName;
+    const fileNameChanged = meta.fileName !== newFileName;
 
     const updated = {
       app: appId,
@@ -594,7 +594,7 @@ export class AppCreatorApp extends BaseApp {
 
     try {
       if (fileNameChanged) {
-        await os.fs.delete(["Desktop"], meta._fileName);
+        await os.fs.delete(["Desktop"], meta.fileName);
       }
       await os.fs.write(["Desktop", newFileName], JSON.stringify(updated, null, 2));
     } catch (e) {
@@ -615,16 +615,16 @@ export class AppCreatorApp extends BaseApp {
     }
 
     if (scramjetEnabled) {
-      this._registerCustomScramjetApp(appId, name, url, iconUrl);
+      this.registerCustomScramjetApp(appId, name, url, iconUrl);
     } else {
-      if (this._customScramjetApps.has(appId)) {
+      if (this.customScramjetApps.has(appId)) {
         this.appLauncher.appRuntime.unregister(appId);
-        this._customScramjetApps.delete(appId);
+        this.customScramjetApps.delete(appId);
       }
     }
 
     if (fileNameChanged) {
-      const oldIcon = document.querySelector(`.desktop-file-icon[data-file-name="${CSS.escape(meta._fileName)}"]`);
+      const oldIcon = document.querySelector(`.desktop-file-icon[data-file-name="${CSS.escape(meta.fileName)}"]`);
       if (oldIcon) oldIcon.remove();
       await this.desktopUI.iconManager.createDesktopFileIcon(newFileName);
       const icon = document.querySelector(`.desktop-file-icon[data-file-name="${CSS.escape(newFileName)}"]`);
@@ -632,27 +632,27 @@ export class AppCreatorApp extends BaseApp {
         icon.addEventListener("contextmenu", (e) => {
           e.preventDefault();
           e.stopPropagation();
-          this._showCustomAppContextMenu(e, icon, appId, this.desktopUI);
+          this.showCustomAppContextMenu(e, icon, appId, this.desktopUI);
         });
       }
     } else {
-      this._updateDesktopIcon(appId, name, iconUrl);
+      this.updateDesktopIcon(appId, name, iconUrl);
     }
 
     $("#ac-cancel-edit-btn", win).click();
-    this._showStatus(statusEl, "success", `"${name}" updated successfully.`);
+    this.showStatus(statusEl, "success", `"${name}" updated successfully.`);
     os.notify.send(`"${name}" updated successfully.`);
-    this._refreshInstalledList(win);
+    this.refreshInstalledList(win);
   }
 
-  async _deleteApp(appId, win) {
-    const meta = await this._loadAppMeta(appId);
+  async deleteApp(appId, win) {
+    const meta = await this.loadAppMeta(appId);
     if (!meta) return;
 
     if (!(await os.dialog.confirm("Confirm", `Delete "${meta.name}"? The desktop icon will also be removed.`))) return;
 
     try {
-      await os.fs.delete(["Desktop"], meta._fileName);
+      await os.fs.delete(["Desktop"], meta.fileName);
     } catch (e) {
       console.warn("AppCreator: fs delete failed", e);
       os.notify.send("", `Failed to delete "${meta.name}" from filesystem.`, { appSource: AppSource.APP_CREATOR });
@@ -660,19 +660,19 @@ export class AppCreatorApp extends BaseApp {
 
     delete this.appLauncher?.appMap?.[appId];
 
-    const desktopIcon = document.querySelector(`.desktop-file-icon[data-file-name="${CSS.escape(meta._fileName)}"]`);
+    const desktopIcon = document.querySelector(`.desktop-file-icon[data-file-name="${CSS.escape(meta.fileName)}"]`);
     if (desktopIcon) desktopIcon.remove();
 
     os.notify.send("", `"${meta.name}" has been uninstalled.`);
 
-    if (win) this._refreshInstalledList(win);
+    if (win) this.refreshInstalledList(win);
   }
 
-  async _updateDesktopIcon(appId, name, iconUrl) {
-    const meta = await this._loadAppMeta(appId);
+  async updateDesktopIcon(appId, name, iconUrl) {
+    const meta = await this.loadAppMeta(appId);
     if (!meta) return;
 
-    const desktopIcon = document.querySelector(`.desktop-file-icon[data-file-name="${CSS.escape(meta._fileName)}"]`);
+    const desktopIcon = document.querySelector(`.desktop-file-icon[data-file-name="${CSS.escape(meta.fileName)}"]`);
     if (!desktopIcon) return;
 
     const label = desktopIcon.querySelector("div");
@@ -713,7 +713,7 @@ export class AppCreatorApp extends BaseApp {
     }
   }
 
-  _showStatus(el, type, msg) {
+  showStatus(el, type, msg) {
     el.className = `ac-status ${type}`;
     el.textContent = msg;
     setTimeout(() => {
@@ -722,7 +722,7 @@ export class AppCreatorApp extends BaseApp {
     }, 4000);
   }
 
-  async _openPreviewWindow(name, url, proxyEnabled = false, proxyIndex = 0, scramjetEnabled = false) {
+  async openPreviewWindow(name, url, proxyEnabled = false, proxyIndex = 0, scramjetEnabled = false) {
     const secureUrl = ensureHttpsProtocol(url);
     let finalUrl = secureUrl;
 
@@ -750,7 +750,7 @@ export class AppCreatorApp extends BaseApp {
     os.window.addToTaskbar(winId, `${name} - Preview`, AC.TASKBAR_ICON);
   }
 
-  async _installApp(name, url, iconUrl, proxyEnabled, proxyIndex, scramjetEnabled, statusEl, win) {
+  async installApp(name, url, iconUrl, proxyEnabled, proxyIndex, scramjetEnabled, statusEl, win) {
     const secureUrl = ensureHttpsProtocol(url);
     const appId = `${AC.APP_ID_PREFIX}${name.toLowerCase().replace(/\s+/g, "-")}-${Date.now()}`;
     const fileName = `${name}.desktop`;
@@ -795,18 +795,18 @@ export class AppCreatorApp extends BaseApp {
       clampProxyIndex(proxyIndex, PROXIES),
       !!scramjetEnabled
     );
-    this._addToDesktop(appId, name, iconUrl, faviconUrl);
+    this.addToDesktop(appId, name, iconUrl, faviconUrl);
 
     if (scramjetEnabled) {
-      this._registerCustomScramjetApp(appId, name, secureUrl, iconUrl);
+      this.registerCustomScramjetApp(appId, name, secureUrl, iconUrl);
     }
 
-    this._showStatus(statusEl, "success", `"${name}" installed!`);
+    this.showStatus(statusEl, "success", `"${name}" installed!`);
     os.notify.send("", `"${name}" installed and added to desktop.`);
-    this._refreshInstalledList(win);
+    this.refreshInstalledList(win);
   }
 
-  async _addToDesktop(appId, name, iconUrl, faviconUrl) {
+  async addToDesktop(appId, name, iconUrl, faviconUrl) {
     if (this.desktopUI) {
       const fileName = `${name}.desktop`;
       await this.desktopUI.iconManager.createDesktopFileIcon(fileName);
@@ -815,7 +815,7 @@ export class AppCreatorApp extends BaseApp {
         icon.addEventListener("contextmenu", (e) => {
           e.preventDefault();
           e.stopPropagation();
-          this._showCustomAppContextMenu(e, icon, appId, this.desktopUI);
+          this.showCustomAppContextMenu(e, icon, appId, this.desktopUI);
         });
       }
     } else {
@@ -823,7 +823,7 @@ export class AppCreatorApp extends BaseApp {
     }
   }
 
-  _showCustomAppContextMenu(e, icon, appId, desktopUI) {
+  showCustomAppContextMenu(e, icon, appId, desktopUI) {
     desktopUI.selectionManager.clear();
     desktopUI.selectionManager.add(icon);
 
@@ -872,7 +872,7 @@ export class AppCreatorApp extends BaseApp {
     };
     menu.querySelector("#ctx-ca-delete").onclick = () => {
       hide();
-      this._deleteApp(appId, document.getElementById(AC.WIN_ID));
+      this.deleteApp(appId, document.getElementById(AC.WIN_ID));
     };
     menu.querySelector("#ctx-ca-props").onclick = () => {
       hide();
@@ -880,7 +880,7 @@ export class AppCreatorApp extends BaseApp {
     };
   }
 
-  _openAvatarPickerWindow(parentWin, setPreviewImg) {
+  openAvatarPickerWindow(parentWin, setPreviewImg) {
     const winId = "avatar-picker-win";
     const existing = document.getElementById(winId);
     if (existing) {
@@ -920,8 +920,8 @@ export class AppCreatorApp extends BaseApp {
         setPreviewImg(avatarUrl);
         const iconPreview = $("#ac-icon-preview", parentWin);
         if (iconPreview) {
-          parentWin._setResolvedIcon(avatarUrl);
-          parentWin._setPreviewImg(avatarUrl);
+          parentWin.setResolvedIcon(avatarUrl);
+          parentWin.setPreviewImg(avatarUrl);
         }
         os.window.close(win);
       });

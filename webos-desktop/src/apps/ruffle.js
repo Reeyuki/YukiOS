@@ -10,8 +10,8 @@ const DESKTOP_DIR = ["Desktop"];
 export class RuffleApp extends BaseApp {
   constructor(services) {
     super(services);
-    this._ruffleLoadPromise = null;
-    this._declarativeApp = null;
+    this.ruffleLoadPromise = null;
+    this.declarativeApp = null;
   }
 
   getDeclarativeSchema(opts) {
@@ -95,11 +95,11 @@ export class RuffleApp extends BaseApp {
           event.preventDefault();
           element.classList.remove("emu-upload-zone--dragover");
           const files = Array.from(event.dataTransfer.files).filter((f) => f.name.toLowerCase().endsWith(".swf"));
-          if (files.length > 0) await this._handleUploadedFiles(files, element);
+          if (files.length > 0) await this.handleUploadedFiles(files, element);
         },
         fileInputChange: async (payload, event, element, state) => {
           const files = Array.from(element.files);
-          if (files.length > 0) await this._handleUploadedFiles(files, document.getElementById("ruffle-upload-zone"));
+          if (files.length > 0) await this.handleUploadedFiles(files, document.getElementById("ruffle-upload-zone"));
           element.value = "";
         },
         loadUserFiles: async (payload, event, element, state) => {
@@ -175,7 +175,7 @@ export class RuffleApp extends BaseApp {
     } catch {}
   }
 
-  async _handleUploadedFiles(files, zone) {
+  async handleUploadedFiles(files, zone) {
     const originalHTML = zone.innerHTML;
     zone.innerHTML = `<i class="fa-solid fa-spinner fa-spin emu-state-icon ruf-state-icon"></i><div class="emu-state-text ruf-state-text">Saving ${files.length} file(s)...</div>`;
 
@@ -228,13 +228,13 @@ export class RuffleApp extends BaseApp {
         .replace(/[-_]/g, " ")
         .replace(/\b\w/g, (c) => c.toUpperCase());
 
-      this._launchRuffle(displayName, fileName, arrayBuffer);
+      this.launchRuffle(displayName, fileName, arrayBuffer);
     } catch (e) {
       os.notify.send(`SWF wouldn't load: ${e.message}`);
     }
   }
 
-  async _launchRuffle(displayName, fileName, swfData) {
+  async launchRuffle(displayName, fileName, swfData) {
     const winId = `ruffle-${Date.now()}`;
     const win = os.window.create(winId, displayName, "800px", "600px", {
       icon: "static/icons/ruffle.webp"
@@ -277,7 +277,7 @@ export class RuffleApp extends BaseApp {
 
     try {
       setLog("Starting Ruffle...");
-      await this._loadRuffleScript();
+      await this.loadRuffleScript();
 
       setLog("Starting Flash player...");
 
@@ -336,10 +336,10 @@ export class RuffleApp extends BaseApp {
     }
   }
 
-  _loadRuffleScript() {
-    if (this._ruffleLoadPromise) return this._ruffleLoadPromise;
+  loadRuffleScript() {
+    if (this.ruffleLoadPromise) return this.ruffleLoadPromise;
 
-    this._ruffleLoadPromise = (async () => {
+    this.ruffleLoadPromise = (async () => {
       if (__SINGLE_FILE__) {
         await import("@ruffle-rs/ruffle");
         return;
@@ -361,7 +361,7 @@ export class RuffleApp extends BaseApp {
       });
     })();
 
-    return this._ruffleLoadPromise;
+    return this.ruffleLoadPromise;
   }
 
   async launchFromFile(file) {
@@ -375,6 +375,6 @@ export class RuffleApp extends BaseApp {
       .replace(/[-_]/g, " ")
       .replace(/\b\w/g, (c) => c.toUpperCase());
 
-    this._launchRuffle(displayName, file.name, arrayBuffer);
+    this.launchRuffle(displayName, file.name, arrayBuffer);
   }
 }

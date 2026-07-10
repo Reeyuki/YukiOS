@@ -21,6 +21,8 @@ import { bindSelectMenu, getSelectMenuValue, setSelectMenuValue } from "../share
 import { bindRangeSlider, getRangeSliderValue, setRangeSliderValue } from "../shared/rangeSlider.js";
 import { addCustomTheme } from "../shared/themeEngine.js";
 import { bindAccountsCategory } from "./accountsPanel.js";
+import { taskbarPositionManager } from "../desktopui/taskbarPositionManager.js";
+import { applyAnimationSettings } from "../windowManager/AnimationSystem.js";
 
 export function bindNavigation(win) {
   const layout = $(".yuki-settings-layout", win);
@@ -176,8 +178,7 @@ export function bindDesktopCategory(win, save, settings, showSaved) {
       $$(".settings-btn[data-taskbar-pos]", win).forEach((b) => toggleClass(b, "active", b === btn));
       settings.taskbarPosition = pos;
       os.storage.set(StorageKeys.taskbarPosition, pos);
-      const { taskbarPositionManager: tpm } = await import("../desktopui/taskbarPositionManager.js");
-      tpm.setPosition(pos);
+      taskbarPositionManager.setPosition(pos);
     });
   });
 
@@ -475,8 +476,7 @@ export function bindAppearanceCategory(
 
   const clickBubbleToggle = $("#settingsClickBubble", win);
   if (clickBubbleToggle) {
-    bindEvent(clickBubbleToggle, "change", async () => {
-      const { applyAnimationSettings } = await import("../windowManager/AnimationSystem.js");
+    bindEvent(clickBubbleToggle, "change", () => {
       applyAnimationSettings({ clickBubble: clickBubbleToggle.checked });
       showSaved();
     });

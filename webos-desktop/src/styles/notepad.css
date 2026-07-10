@@ -157,12 +157,8 @@
 }
 
 .notepad-textarea::-webkit-scrollbar-thumb {
-  background: var(--glass-border);
-  border-radius: 99px;
-}
-
-.notepad-textarea::-webkit-scrollbar-thumb:hover {
   background: var(--glass-hover);
+  border-radius: 99px;
 }
 
 .notepad-textarea::-webkit-scrollbar-corner {

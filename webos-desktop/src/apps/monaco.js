@@ -24,7 +24,7 @@ export class MonacoApp extends BaseApp {
     this.tabCounter = 0;
     this.findWidgetVisible = false;
     this.icon = "fas fa-code";
-    this._declarativeApp = null;
+    this.declarativeApp = null;
     this.sessionKey = services.fileSystemManager?.sessionKey || "guest";
     this.setupTerminalCore();
   }
@@ -438,17 +438,17 @@ export class MonacoApp extends BaseApp {
       </div>
       <div class="window-content monaco-window-content">
         <div class="monaco-editors-wrapper"></div>
-        <div class="monaco-terminal-panel" style="display:none;flex:0 0 200px;border-top:1px solid rgba(255,255,255,0.1);background:#000;color:white;font-family:monospace;overflow:hidden;flex-direction:column;min-height:100px;">
-          <div class="monaco-terminal-header" style="display:flex;align-items:center;padding:4px 8px;background:rgba(255,255,255,0.05);border-bottom:1px solid rgba(255,255,255,0.1);cursor:ns-resize;">
-            <span style="font-size:11px;color:rgba(255,255,255,0.7);margin-right:auto;">TERMINAL</span>
-            <button class="monaco-terminal-close" style="background:none;border:none;color:rgba(255,255,255,0.5);cursor:pointer;padding:2px 6px;font-size:12px;">✕</button>
+        <div class="monaco-terminal-panel" style="display:none;flex:0 0 200px;border-top:1px solid var(--glass-border);background:var(--bg-primary);color:var(--text-primary);font-family:monospace;overflow:hidden;flex-direction:column;min-height:100px;">
+          <div class="monaco-terminal-header" style="display:flex;align-items:center;padding:4px 8px;background:var(--glass);border-bottom:1px solid var(--glass-border);cursor:ns-resize;">
+            <span style="font-size:11px;color:var(--text-secondary);margin-right:auto;">TERMINAL</span>
+            <button class="monaco-terminal-close" style="background:none;border:none;color:var(--text-muted);cursor:pointer;padding:2px 6px;font-size:12px;">✕</button>
           </div>
           <div id="monaco-terminal-output" style="flex:1;overflow-y:auto;padding:8px;font-size:12px;white-space:pre;user-select:text;-webkit-user-select:text;"></div>
-          <div id="monaco-terminal-input-line" style="display:flex;padding:4px 8px;background:rgba(0,0,0,0.3);">
-            <span id="monaco-terminal-prompt" style="color:#4ec9b0;"></span>
-            <input id="monaco-terminal-input" style="flex:1;background:transparent;border:none;color:white;font-family:monospace;outline:none;margin-left:5px;font-size:12px;">
+          <div id="monaco-terminal-input-line" style="display:flex;padding:4px 8px;background:var(--surface-1);">
+            <span id="monaco-terminal-prompt" style="color:var(--brand);"></span>
+            <input id="monaco-terminal-input" style="flex:1;background:transparent;border:none;color:var(--text-primary);font-family:monospace;outline:none;margin-left:5px;font-size:12px;">
           </div>
-          <div class="monaco-terminal-resize-handle" style="height:4px;background:rgba(255,255,255,0.1);cursor:ns-resize;"></div>
+          <div class="monaco-terminal-resize-handle" style="height:4px;background:var(--glass-border);cursor:ns-resize;"></div>
         </div>
       </div>
       <div class="monaco-statusbar">
@@ -590,7 +590,7 @@ export class MonacoApp extends BaseApp {
     this.updateTerminalPrompt();
   }
 
-  async printToTerminal(text, color = "white") {
+  async printToTerminal(text, color = "var(--text-primary)") {
     if (!this.terminalOutput) return;
     const line = document.createElement("div");
     line.style.color = color;
@@ -603,7 +603,7 @@ export class MonacoApp extends BaseApp {
     }
   }
 
-  printToTerminalSync(text, color = "white") {
+  printToTerminalSync(text, color = "var(--text-primary)") {
     if (!this.terminalOutput) return;
     const line = document.createElement("div");
     line.style.color = color;
@@ -620,9 +620,9 @@ export class MonacoApp extends BaseApp {
   async executeTerminalCommand(command) {
     if (!this.terminalOutput) return;
 
-    this.printToTerminalSync(`${this.shell.currentPath.join("/")} $ ${command}`, "#4ec9b0");
+    this.printToTerminalSync(`${this.shell.currentPath.join("/")} $ ${command}`, "var(--brand)");
 
-    const outputCallback = (text, color = "white") => {
+    const outputCallback = (text, color = "var(--text-primary)") => {
       this.printToTerminalSync(text, color);
     };
 
@@ -646,8 +646,8 @@ export class MonacoApp extends BaseApp {
       transform: translate(-50%, -50%);
       width: 600px;
       max-height: 400px;
-      background: rgba(30, 30, 30, 0.95);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: var(--bg-elev-3);
+      border: 1px solid var(--glass-border);
       border-radius: 8px;
       box-shadow: var(--shadow-depth);
       z-index: 10000;
@@ -660,10 +660,10 @@ export class MonacoApp extends BaseApp {
     input.type = "text";
     input.placeholder = "Type '>' for commands, or search actions...";
     input.style.cssText = `
-      background: rgba(0, 0, 0, 0.3);
+      background: var(--surface-1);
       border: none;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      color: white;
+      border-bottom: 1px solid var(--glass-border);
+      color: var(--text-primary);
       padding: 12px 16px;
       font-size: 14px;
       font-family: inherit;
@@ -877,11 +877,11 @@ export class MonacoApp extends BaseApp {
           display: flex;
           align-items: center;
           gap: 12px;
-          ${index === selectedIndex ? "background: rgba(255, 255, 255, 0.1);" : ""}
+          ${index === selectedIndex ? "background: var(--surface-hover);" : ""}
         `;
         itemEl.innerHTML = `
-          <span style="color: rgba(255, 255, 255, 0.5); font-size: 11px; min-width: 60px;">${item.category || "TERMINAL"}</span>
-          <span style="color: white;">${item.label}</span>
+          <span style="color: var(--text-muted); font-size: 11px; min-width: 60px;">${item.category || "TERMINAL"}</span>
+          <span style="color: var(--text-primary);">${item.label}</span>
         `;
         itemEl.addEventListener("click", () => {
           item.action();
@@ -938,7 +938,7 @@ export class MonacoApp extends BaseApp {
   }
 
   spawnTerminalWindow() {
-    const terminalApp = this._services?.terminalApp;
+    const terminalApp = this.services?.terminalApp;
     if (terminalApp) {
       terminalApp.open();
     } else {

@@ -53,7 +53,7 @@ export function windowMakeDraggable(win, wm) {
           dragOffsetX = posX - win.getBoundingClientRect().left;
           dragOffsetY = posY - win.getBoundingClientRect().top;
 
-          if (wasSnapped) wm._unsnap(win);
+          if (wasSnapped) wm.unsnap(win);
           wobbleStart(win);
         },
 
@@ -70,10 +70,10 @@ export function windowMakeDraggable(win, wm) {
 
           wobbleMove(win, dx, dy);
 
-          const zone = wm._getSnapZone(clientX, clientY);
-          wm._activeSnapZone = zone;
-          if (zone) wm._showSnapGhost(zone);
-          else wm._hideSnapGhost();
+          const zone = wm.getSnapZone(clientX, clientY);
+          wm.activeSnapZone = zone;
+          if (zone) wm.showSnapGhost(zone);
+          else wm.hideSnapGhost();
         },
 
         end() {
@@ -81,10 +81,10 @@ export function windowMakeDraggable(win, wm) {
           document.body.classList.remove("is-dragging");
           wobbleEnd(win);
 
-          if (wm._activeSnapZone) {
-            wm._applySnap(win, wm._activeSnapZone);
-            wm._activeSnapZone = null;
-            wm._hideSnapGhost();
+          if (wm.activeSnapZone) {
+            wm.applySnap(win, wm.activeSnapZone);
+            wm.activeSnapZone = null;
+            wm.hideSnapGhost();
           }
           if (wm.triggerSessionSave) wm.triggerSessionSave();
         }
@@ -98,7 +98,7 @@ export function windowMakeDraggable(win, wm) {
     h.addEventListener("contextmenu", (e) => {
       e.preventDefault();
       e.stopPropagation();
-      wm._showWindowContextMenu(e, win);
+      wm.showWindowContextMenu(e, win);
     });
   };
 
@@ -129,7 +129,7 @@ export function windowMakeDraggable(win, wm) {
     document.body.classList.add("is-resizing");
 
     const wasSnapped = !!win.dataset.snapZone;
-    if (wasSnapped) wm._unsnap(win);
+    if (wasSnapped) wm.unsnap(win);
 
     const { clientX: startX, clientY: startY } = getClientXY(e);
     const rect = win.getBoundingClientRect();
@@ -205,7 +205,7 @@ export function windowMakeDraggable(win, wm) {
     const dragOffsetX = startX - rect.left;
     const dragOffsetY = startY - rect.top;
 
-    if (wasSnapped) wm._unsnap(win);
+    if (wasSnapped) wm.unsnap(win);
     wobbleStart(win);
 
     const onMouseMove = (e) => {
@@ -222,10 +222,10 @@ export function windowMakeDraggable(win, wm) {
 
       wobbleMove(win, clientX - startX, clientY - startY);
 
-      const zone = wm._getSnapZone(clientX, clientY);
-      wm._activeSnapZone = zone;
-      if (zone) wm._showSnapGhost(zone);
-      else wm._hideSnapGhost();
+      const zone = wm.getSnapZone(clientX, clientY);
+      wm.activeSnapZone = zone;
+      if (zone) wm.showSnapGhost(zone);
+      else wm.hideSnapGhost();
     };
 
     const onMouseUp = () => {
@@ -238,10 +238,10 @@ export function windowMakeDraggable(win, wm) {
       document.body.classList.remove("is-dragging");
       wobbleEnd(win);
 
-      if (wm._activeSnapZone) {
-        wm._applySnap(win, wm._activeSnapZone);
-        wm._activeSnapZone = null;
-        wm._hideSnapGhost();
+      if (wm.activeSnapZone) {
+        wm.applySnap(win, wm.activeSnapZone);
+        wm.activeSnapZone = null;
+        wm.hideSnapGhost();
       }
       if (wm.triggerSessionSave) wm.triggerSessionSave();
     };
@@ -279,7 +279,7 @@ export function windowMakeDraggable(win, wm) {
   win.addEventListener("remove", () => observer.disconnect());
 }
 
-export function _getSnapZone(wm, x, y) {
+export function getSnapZone(wm, x, y) {
   const margin = 20;
   const w = window.innerWidth;
   const h = window.innerHeight;
@@ -335,7 +335,7 @@ export function _getSnapZone(wm, x, y) {
   return null;
 }
 
-export function _showSnapGhost(wm, zone) {
+export function showSnapGhost(wm, zone) {
   let ghost = document.getElementById("snap-ghost");
   if (!ghost) {
     ghost = document.createElement("div");
@@ -346,14 +346,14 @@ export function _showSnapGhost(wm, zone) {
   ghost.className = `snap-ghost-${zone} snap-ghost-active`;
 }
 
-export function _hideSnapGhost(wm) {
+export function hideSnapGhost(wm) {
   const ghost = document.getElementById("snap-ghost");
   if (ghost) {
     ghost.classList.remove("snap-ghost-active");
   }
 }
 
-export function _applySnap(wm, win, zone, skipSavePreSnap = false) {
+export function applySnap(wm, win, zone, skipSavePreSnap = false) {
   const entry = wm.openWindows.get(win.id);
   if (entry?.record) {
     if (!skipSavePreSnap) {
@@ -445,7 +445,7 @@ export function _applySnap(wm, win, zone, skipSavePreSnap = false) {
   }
 }
 
-export function _unsnap(wm, win) {
+export function unsnap(wm, win) {
   const entry = wm.openWindows.get(win.id);
   if (entry?.record) {
     entry.record.restorePreSnapGeometry();

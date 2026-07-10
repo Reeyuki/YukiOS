@@ -27,6 +27,7 @@ import { ArchiveExtractor } from "../archiveExtractor.js";
 import { formatSize, pluralize, isWindowFocused, buildClipboardIcons } from "../utils/utils.js";
 import { resolveDesktopIcon } from "../shared/iconUtils.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
+import { trigger as triggerCursorEffect } from "../cursorEffect.js";
 import { AppSource } from "../AppSource.js";
 import { showDynamicContextMenu } from "../shared/contextMenu.js";
 
@@ -61,9 +62,9 @@ export class ExplorerApp extends BaseApp {
     this.browserApp = null;
     this.desktopUI = null;
     this.open = this.open.bind(this);
-    this._instances = new Map();
-    this._thumbnailCache = new Map();
-    this._archiveExtractor = new ArchiveExtractor(this.fs, (msg) => os.notify.send(msg), AppSource.EXPLORER);
+    this.instances = new Map();
+    this.thumbnailCache = new Map();
+    this.archiveExtractor = new ArchiveExtractor(this.fs, (msg) => os.notify.send(msg), AppSource.EXPLORER);
   }
   setBrowser(browserApp) {
     this.browserApp = browserApp;
@@ -88,7 +89,7 @@ export class ExplorerApp extends BaseApp {
     this.v86app = v86app;
   }
 
-  _createInstance(winId, callback, notepadRef, mode) {
+  createInstance(winId, callback, notepadRef, mode) {
     const inst = {
       winId,
       currentPath: [],
@@ -99,32 +100,32 @@ export class ExplorerApp extends BaseApp {
       selectedFile: null,
       selectedItems: new Set(),
       mode: mode || "browse",
-      _isRendering: false,
-      _isTrashView: false,
-      _isDiskView: false,
+      isRendering: false,
+      isTrashView: false,
+      isDiskView: false,
       sortBy: "name",
       sortDir: "asc",
-      _lastClickedIndex: -1
+      lastClickedIndex: -1
     };
-    this._instances.set(winId, inst);
+    this.instances.set(winId, inst);
     return inst;
   }
 
-  _getInstance(winId) {
-    return this._instances.get(winId);
+  getInstance(winId) {
+    return this.instances.get(winId);
   }
-  _removeInstance(winId) {
-    this._instances.delete(winId);
+  removeInstance(winId) {
+    this.instances.delete(winId);
   }
 
-  _getClipboard() {
+  getClipboard() {
     return this.desktopUI?.getClipboard() ?? null;
   }
-  _setClipboard(data) {
+  setClipboard(data) {
     if (this.desktopUI) this.desktopUI.setClipboard(data);
   }
 
-  _clipboardAction(action, inst, itemName, isFile) {
+  clipboardAction(action, inst, itemName, isFile) {
     const win = $(`#${inst.winId}`);
     const view = win && $(`#${inst.winId}-view`, win);
     const items = buildClipboardIcons(
@@ -134,7 +135,7 @@ export class ExplorerApp extends BaseApp {
       view,
       inst.currentPath
     );
-    this._setClipboard({ source: "explorer", action, icons: items, sourceInst: inst });
+    this.setClipboard({ source: "explorer", action, icons: items, sourceInst: inst });
 
     if (action === "cut" && view) {
       items.forEach(({ data: { name: n } }) => {
@@ -146,27 +147,27 @@ export class ExplorerApp extends BaseApp {
     os.notify.send(`${items.length} ${pluralize(items.length, "item")} ${action}`);
   }
 
-  _pasteToCurrentPath(inst) {
+  pasteToCurrentPath(inst) {
     return pasteToPath(this, inst.currentPath, inst);
   }
 
-  _watchWindowRemoval(winId) {
+  watchWindowRemoval(winId) {
     const observer = new MutationObserver(() => {
       if (!$(`#${winId}`)) {
-        this._removeInstance(winId);
+        this.removeInstance(winId);
         observer.disconnect();
       }
     });
     observer.observe(document.body, { childList: true, subtree: true });
   }
 
-  _closeWindow(winId) {
+  closeWindow(winId) {
     const win = $(`#${winId}`);
     if (win) win.remove();
-    this._removeInstance(winId);
+    this.removeInstance(winId);
   }
 
-  _sidebarHTML(variant = "browse") {
+  sidebarHTML(variant = "browse") {
     const isDialog = variant !== "browse";
     const collapsed = os.storage.get(StorageKeys.explorerSidebarCollapsed) || {};
     const quickCollapsed = collapsed.quick ? "collapsed" : "";
@@ -225,16 +226,16 @@ export class ExplorerApp extends BaseApp {
     return html;
   }
 
-  _sidebarRebuild(win, inst) {
+  sidebarRebuild(win, inst) {
     const sidebar = win.querySelector(".explorer-sidebar");
     if (!sidebar) return;
-    sidebar.innerHTML = this._sidebarHTML(inst.mode);
-    this._bindSidebar(win, inst);
-    this._renderMountsInSidebar(win, inst);
-    this._updateActiveSidebar(inst);
+    sidebar.innerHTML = this.sidebarHTML(inst.mode);
+    this.bindSidebar(win, inst);
+    this.renderMountsInSidebar(win, inst);
+    this.updateActiveSidebar(inst);
   }
 
-  _bindSidebar(win, inst) {
+  bindSidebar(win, inst) {
     $$(".explorer-sidebar .nav-item", win).forEach((item) => {
       const rawPath = item.dataset.path;
       const mountPoint = item.dataset.mount;
@@ -242,7 +243,7 @@ export class ExplorerApp extends BaseApp {
         item.onclick = () => showTrashView(this, inst);
         item.oncontextmenu = (e) => showTrashContextMenu(this, e, inst);
       } else if (rawPath === "__disk__") {
-        item.onclick = () => this._showDiskView(inst);
+        item.onclick = () => this.showDiskView(inst);
       } else if (mountPoint) {
         item.onclick = () => this.navigateInstance(inst, mountPoint.split("/").filter(Boolean));
         const label = item.dataset.label;
@@ -282,7 +283,7 @@ export class ExplorerApp extends BaseApp {
                   os.dialog.confirm("Unmount", `Unmount "${label}"?`).then((confirmed) => {
                     if (confirmed) {
                       os.fs.unmount(label);
-                      this._renderMountsInSidebar(win, inst);
+                      this.renderMountsInSidebar(win, inst);
                       this.renderInstance(inst);
                     }
                   });
@@ -316,7 +317,7 @@ export class ExplorerApp extends BaseApp {
     });
   }
 
-  _renderMountsInSidebar(win, inst) {
+  renderMountsInSidebar(win, inst) {
     const container = win.querySelector(".explorer-storage-mounts");
     if (!container) return;
     const mounts = os.fs.getMounts();
@@ -333,7 +334,7 @@ export class ExplorerApp extends BaseApp {
       .join("");
   }
 
-  _bindBackButton(win, inst) {
+  bindBackButton(win, inst) {
     $(`#${inst.winId}-back`, win).onclick = async () => {
       if (inst.historyIndex > 0) {
         inst.historyIndex--;
@@ -343,7 +344,7 @@ export class ExplorerApp extends BaseApp {
     };
   }
 
-  _initExplorerView(win, winId) {
+  initExplorerView(win, winId) {
     const view = $(`#${winId}-view`, win);
     if (view) view.tabIndex = -1;
     return view;
@@ -368,7 +369,7 @@ export class ExplorerApp extends BaseApp {
     const isSelector = typeof callback === "function";
     const winId = options.forceId || (isSelector ? `explorer-selector-${Date.now()}` : `explorer-${Date.now()}`);
 
-    const inst = this._createInstance(winId, callback, notepadRef, isSelector ? "select" : "browse");
+    const inst = this.createInstance(winId, callback, notepadRef, isSelector ? "select" : "browse");
     const title = isSelector ? "Select File" : "File Explorer";
     const win = os.window.create(winId, title, options.width || "700px", options.height || "500px", {
       ...options,
@@ -402,7 +403,7 @@ export class ExplorerApp extends BaseApp {
         </div>
       </div>
       <div class="explorer-container">
-        ${this._sidebarHTML()}
+        ${this.sidebarHTML()}
         <div class="explorer-main" id="${winId}-view"></div>
       </div>
       ${
@@ -427,9 +428,9 @@ export class ExplorerApp extends BaseApp {
       }
     `;
 
-    this._initExplorerView(win, winId);
+    this.initExplorerView(win, winId);
 
-    this._watchWindowRemoval(winId);
+    this.watchWindowRemoval(winId);
 
     this.setupExplorerControls(win, winId);
     this.navigateInstance(inst, path);
@@ -437,7 +438,7 @@ export class ExplorerApp extends BaseApp {
 
   async openSaveDialog(defaultFileName = "Untitled.txt", onSave = null) {
     const winId = `explorer-save-${Date.now()}`;
-    const inst = this._createInstance(winId, null, null, "save");
+    const inst = this.createInstance(winId, null, null, "save");
     inst.saveCallback = onSave;
 
     const win = os.window.create(winId, "Save As", "700px", "540px", {
@@ -456,7 +457,7 @@ export class ExplorerApp extends BaseApp {
         >
       </div>
       <div class="explorer-container">
-        ${this._sidebarHTML("save")}
+        ${this.sidebarHTML("save")}
         <div class="explorer-main" id="${winId}-view"></div>
       </div>
       <div class="explorer-save-bar" id="${winId}-save-bar">
@@ -473,9 +474,9 @@ export class ExplorerApp extends BaseApp {
       </div>
     `;
 
-    this._initExplorerView(win, winId);
+    this.initExplorerView(win, winId);
 
-    this._watchWindowRemoval(winId);
+    this.watchWindowRemoval(winId);
 
     const fileNameInput = $(`#${winId}-filename-input`, win);
     const saveBtn = $(`#${winId}-save-btn`, win);
@@ -496,27 +497,27 @@ export class ExplorerApp extends BaseApp {
     saveBtn.onclick = () => {
       const fileName = fileNameInput.value.trim();
       if (!fileName) {
-        fileNameInput.style.borderColor = "#e06c75";
+        fileNameInput.style.borderColor = "var(--error)";
         fileNameInput.focus();
         return;
       }
       const cb = inst.saveCallback;
       inst.saveCallback = null;
-      this._closeWindow(winId);
+      this.closeWindow(winId);
       if (cb) cb(inst.currentPath, fileName);
     };
 
-    cancelBtn.onclick = () => this._closeWindow(winId);
+    cancelBtn.onclick = () => this.closeWindow(winId);
 
-    this._bindBackButton(win, inst);
-    this._bindSidebar(win, inst);
-    this._setupPathInput(win, inst);
+    this.bindBackButton(win, inst);
+    this.bindSidebar(win, inst);
+    this.setupPathInput(win, inst);
     this.navigateInstance(inst, []);
   }
 
   async openDirectoryDialog(onSelect = null) {
     const winId = `explorer-dir-${Date.now()}`;
-    const inst = this._createInstance(winId, null, null, "directory");
+    const inst = this.createInstance(winId, null, null, "directory");
     inst.directoryCallback = onSelect;
 
     const win = os.window.create(winId, "Select Directory", "700px", "500px", {
@@ -535,7 +536,7 @@ export class ExplorerApp extends BaseApp {
         >
       </div>
       <div class="explorer-container">
-        ${this._sidebarHTML("directory")}
+        ${this.sidebarHTML("directory")}
         <div class="explorer-main" id="${winId}-view"></div>
       </div>
       <div class="explorer-dir-bar" id="${winId}-dir-bar">
@@ -558,9 +559,9 @@ export class ExplorerApp extends BaseApp {
       </div>
     `;
 
-    this._initExplorerView(win, winId);
+    this.initExplorerView(win, winId);
 
-    this._watchWindowRemoval(winId);
+    this.watchWindowRemoval(winId);
 
     const selectedPathEl = $(`#${winId}-selected-path`, win);
     const selectBtn = $(`#${winId}-select-btn`, win);
@@ -573,15 +574,15 @@ export class ExplorerApp extends BaseApp {
     selectBtn.onclick = () => {
       const cb = inst.directoryCallback;
       inst.directoryCallback = null;
-      this._closeWindow(winId);
+      this.closeWindow(winId);
       if (cb) cb(inst.currentPath);
     };
 
-    cancelBtn.onclick = () => this._closeWindow(winId);
+    cancelBtn.onclick = () => this.closeWindow(winId);
 
-    this._bindBackButton(win, inst);
-    this._bindSidebar(win, inst);
-    this._setupPathInput(win, inst);
+    this.bindBackButton(win, inst);
+    this.bindSidebar(win, inst);
+    this.setupPathInput(win, inst);
 
     const originalNavigate = this.navigateInstance.bind(this);
     this.navigateInstance = (i, path) => {
@@ -597,10 +598,10 @@ export class ExplorerApp extends BaseApp {
   }
 
   setupExplorerControls(win, winId) {
-    const inst = this._getInstance(winId);
+    const inst = this.getInstance(winId);
 
-    this._bindBackButton(win, inst);
-    this._setupPathInput(win, inst);
+    this.bindBackButton(win, inst);
+    this.setupPathInput(win, inst);
 
     const nextBtn = $(`#${winId}-next`, win);
     if (nextBtn) {
@@ -636,9 +637,9 @@ export class ExplorerApp extends BaseApp {
       });
     }
 
-    this._setupViewToggle(win, inst);
+    this.setupViewToggle(win, inst);
 
-    this._bindSidebar(win, inst);
+    this.bindSidebar(win, inst);
 
     const viewEl = $(`#${winId}-view`, win);
     bindEvent(viewEl, "contextmenu", (e) => {
@@ -657,7 +658,7 @@ export class ExplorerApp extends BaseApp {
       if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA" || active.isContentEditable)) return;
       if (!win.contains(document.activeElement)) return;
 
-      if (e.key === "Delete" || KeybindManager.matches(e, "desktop.delete")) {
+      if (KeybindManager.matches(e, "explorer.deleteItem")) {
         e.preventDefault();
         if (!inst.selectedItems.size) return;
         const names = [...inst.selectedItems];
@@ -669,13 +670,13 @@ export class ExplorerApp extends BaseApp {
         return;
       }
 
-      if (e.key === "F5") {
+      if (KeybindManager.matches(e, "explorer.refresh")) {
         e.preventDefault();
         this.renderInstance(inst);
         return;
       }
 
-      if (e.key === "F2" || KeybindManager.matches(e, "desktop.rename")) {
+      if (KeybindManager.matches(e, "explorer.rename")) {
         e.preventDefault();
         const selectedName = inst.selectedFile || (inst.selectedItems.size === 1 ? [...inst.selectedItems][0] : null);
         if (!selectedName) return;
@@ -686,7 +687,7 @@ export class ExplorerApp extends BaseApp {
         return;
       }
 
-      if (e.key === "Enter") {
+      if (KeybindManager.matches(e, "explorer.enter")) {
         e.preventDefault();
         const view = $(`#${winId}-view`, win);
         if (!view) return;
@@ -697,7 +698,7 @@ export class ExplorerApp extends BaseApp {
         return;
       }
 
-      if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+      if (KeybindManager.matches(e, "explorer.navigateUp") || KeybindManager.matches(e, "explorer.navigateDown")) {
         e.preventDefault();
         const view = $(`#${winId}-view`, win);
         if (!view) return;
@@ -707,7 +708,7 @@ export class ExplorerApp extends BaseApp {
           inst.selectedItems.has(el.querySelector("span")?.textContent || "")
         );
         let nextIdx;
-        if (e.key === "ArrowDown") {
+        if (KeybindManager.matches(e, "explorer.navigateDown")) {
           nextIdx = selectedIdx < items.length - 1 ? selectedIdx + 1 : 0;
         } else {
           nextIdx = selectedIdx > 0 ? selectedIdx - 1 : items.length - 1;
@@ -719,13 +720,13 @@ export class ExplorerApp extends BaseApp {
             $$(".file-item.explorer-selected", view).forEach((el) => removeClass(el, "explorer-selected"));
             inst.selectedItems = new Set();
           }
-          this._selectExplorerItem(inst, name, el, false, false);
+          this.selectExplorerItem(inst, name, el, false, false);
           el.scrollIntoView({ block: "nearest" });
         }
         return;
       }
 
-      if (e.ctrlKey && (e.key === "f" || e.key === "F")) {
+      if (KeybindManager.matches(e, "explorer.search")) {
         e.preventDefault();
         const searchInput = $(`#${winId}-search`, win);
         if (searchInput) {
@@ -735,38 +736,38 @@ export class ExplorerApp extends BaseApp {
         return;
       }
 
-      if (e.ctrlKey && (e.key === "a" || e.key === "A")) {
+      if (KeybindManager.matches(e, "explorer.selectAll")) {
         e.preventDefault();
         const view = $(`#${winId}-view`, win);
-        if (!view || inst._isDiskView || inst._isTrashView) return;
+        if (!view || inst.isDiskView || inst.isTrashView) return;
         $$(".file-item", view).forEach((el) => {
           addClass(el, "explorer-selected");
           const name = el.querySelector("span")?.textContent;
           if (name) inst.selectedItems.add(name);
         });
-        this._updateStatusBar(inst, inst._cachedFolder);
+        this.updateStatusBar(inst, inst.cachedFolder);
         return;
       }
 
-      if (KeybindManager.matches(e, "desktop.copy") || (e.ctrlKey && (e.key === "c" || e.key === "C"))) {
+      if (KeybindManager.matches(e, "explorer.copy")) {
         e.preventDefault();
-        this._clipboardAction("copy", inst);
+        this.clipboardAction("copy", inst);
         return;
       }
-      if (KeybindManager.matches(e, "desktop.cut") || (e.ctrlKey && (e.key === "x" || e.key === "X"))) {
+      if (KeybindManager.matches(e, "explorer.cut")) {
         e.preventDefault();
-        this._clipboardAction("cut", inst);
+        this.clipboardAction("cut", inst);
         return;
       }
       return;
     };
     document.addEventListener("keydown", explorerKeyHandler);
 
-    this._setupSelectionBox(win, winId);
-    this._setupDropZone(win, winId);
+    this.setupSelectionBox(win, winId);
+    this.setupDropZone(win, winId);
   }
 
-  _setupPathInput(win, inst) {
+  setupPathInput(win, inst) {
     const pathInput = $(`#${inst.winId}-path`, win);
     if (!pathInput || pathInput.tagName !== "INPUT") return;
 
@@ -791,7 +792,7 @@ export class ExplorerApp extends BaseApp {
     bindEvents(pathInput, {
       keydown: async (e) => {
         e.stopPropagation();
-        if (e.key === "Enter") {
+        if (KeybindManager.matches(e, "explorer.enter")) {
           const val = pathInput.value.trim();
           if (!val || val === "/") {
             this.navigateInstance(inst, []);
@@ -819,7 +820,7 @@ export class ExplorerApp extends BaseApp {
             pathInput.value = "/" + inst.currentPath.join("/");
           }
           pathInput.blur();
-        } else if (e.key === "Escape") {
+        } else if (KeybindManager.matches(e, "explorer.escape")) {
           pathInput.value = "/" + inst.currentPath.join("/");
           pathInput.blur();
         }
@@ -837,7 +838,7 @@ export class ExplorerApp extends BaseApp {
     }
   }
 
-  _setupViewToggle(win, inst) {
+  setupViewToggle(win, inst) {
     const apply = (mode) => {
       const g = win.querySelector(`#${inst.winId}-view-grid`);
       const l = win.querySelector(`#${inst.winId}-view-list`);
@@ -852,10 +853,10 @@ export class ExplorerApp extends BaseApp {
       this.viewMode = mode;
       apply(mode);
       const viewEl = win.querySelector(`#${inst.winId}-view`);
-      if (inst._isTrashView) {
-        this._renderTrashView(inst, viewEl, win);
-      } else if (inst._isDiskView) {
-        this._renderDiskView(inst, viewEl, win);
+      if (inst.isTrashView) {
+        this.renderTrashView(inst, viewEl, win);
+      } else if (inst.isDiskView) {
+        this.renderDiskView(inst, viewEl, win);
       } else {
         this.renderInstance(inst);
       }
@@ -866,12 +867,12 @@ export class ExplorerApp extends BaseApp {
     apply(this.viewMode);
   }
 
-  _kindLabel(kind) {
+  kindLabel(kind) {
     const LABELS = { text: "Text Document", image: "Image", video: "Video", audio: "Audio", rom: "ROM File" };
     return LABELS[kind] || null;
   }
 
-  _formatFriendlyDate(d) {
+  formatFriendlyDate(d) {
     if (!d) return "—";
     const date = new Date(d);
     const mo = (date.getMonth() + 1).toString().padStart(2, "0");
@@ -882,7 +883,7 @@ export class ExplorerApp extends BaseApp {
     return `${mo}/${da}/${yr} ${hr}:${mi}`;
   }
 
-  _sortItems(items, sortBy, sortDir, folder, stats) {
+  sortItems(items, sortBy, sortDir, folder, stats) {
     const dir = sortDir === "asc" ? 1 : -1;
     const KIND_ORDER = { text: 1, image: 2, video: 3, audio: 4, rom: 5 };
     return [...items].sort((a, b) => {
@@ -917,8 +918,8 @@ export class ExplorerApp extends BaseApp {
     });
   }
 
-  _createListHeader(inst) {
-    const header = document.createElement("div");
+  createListHeader(inst) {
+    const header = createElement("div");
     header.className = "explorer-list-header";
     const cols = [
       { key: "name", label: "Name", cls: "list-h-name" },
@@ -927,12 +928,12 @@ export class ExplorerApp extends BaseApp {
       { key: "size", label: "Size", cls: "list-h-size" }
     ];
     cols.forEach((col) => {
-      const span = document.createElement("span");
+      const span = createElement("span");
       span.className = col.cls;
       span.textContent = col.label;
       if (inst.sortBy === col.key) {
         span.classList.add("list-h-active");
-        const arrow = document.createElement("i");
+        const arrow = createElement("i");
         arrow.className = `fas fa-sort-${inst.sortDir === "asc" ? "up" : "down"}`;
         span.appendChild(arrow);
       }
@@ -950,14 +951,14 @@ export class ExplorerApp extends BaseApp {
     return header;
   }
 
-  _ensureSelBox(view) {
+  ensureSelBox(view) {
     if (view.querySelector(".explorer-selbox")) return;
     const selBox = createElement("div", { className: "explorer-selbox" });
     setStyle(view, { position: "relative" });
     view.appendChild(selBox);
   }
 
-  _updateActiveSidebar(inst) {
+  updateActiveSidebar(inst) {
     const win = document.getElementById(inst.winId);
     if (!win) return;
     const items = win.querySelectorAll(".explorer-sidebar .nav-item");
@@ -972,17 +973,17 @@ export class ExplorerApp extends BaseApp {
       } else if (dataPath !== undefined) {
         isMatch = dataPath === currentPath;
       }
-      if (dataPath === "__trash__" && inst._isTrashView) isMatch = true;
-      if (dataPath === "" && inst._isTrashView) isMatch = false;
-      if (dataPath === "__disk__" && inst._isDiskView) isMatch = true;
-      if (dataPath !== "__disk__" && inst._isDiskView) isMatch = false;
+      if (dataPath === "__trash__" && inst.isTrashView) isMatch = true;
+      if (dataPath === "" && inst.isTrashView) isMatch = false;
+      if (dataPath === "__disk__" && inst.isDiskView) isMatch = true;
+      if (dataPath !== "__disk__" && inst.isDiskView) isMatch = false;
       item.classList.toggle("nav-item--active", isMatch);
     });
   }
 
-  _setupSelectionBox(win, winId) {
+  setupSelectionBox(win, winId) {
     const view = $(`#${winId}-view`, win);
-    this._ensureSelBox(view);
+    this.ensureSelBox(view);
 
     const selState = { active: false, startX: 0, startY: 0 };
 
@@ -1006,7 +1007,7 @@ export class ExplorerApp extends BaseApp {
 
     view.addEventListener("mousemove", (e) => {
       if (!selState.active) return;
-      const i = this._getInstance(winId);
+      const i = this.getInstance(winId);
       if (!i) return;
       const rect = view.getBoundingClientRect();
       const curX = e.clientX - rect.left + view.scrollLeft;
@@ -1052,7 +1053,7 @@ export class ExplorerApp extends BaseApp {
         }
       });
 
-      this._updateStatusBar(i, i._cachedFolder);
+      this.updateStatusBar(i, i.cachedFolder);
     });
 
     const endSel = () => {
@@ -1064,7 +1065,7 @@ export class ExplorerApp extends BaseApp {
     document.addEventListener("mouseup", endSel);
   }
 
-  _setupDropZone(win, winId) {
+  setupDropZone(win, winId) {
     const view = $(`#${winId}-view`, win);
     bindEvents(view, {
       dragover: (e) => {
@@ -1093,7 +1094,7 @@ export class ExplorerApp extends BaseApp {
   }
 
   navigate(path) {
-    const inst = [...this._instances.values()][0];
+    const inst = [...this.instances.values()][0];
     if (inst) return this.navigateInstance(inst, path);
   }
 
@@ -1106,8 +1107,8 @@ export class ExplorerApp extends BaseApp {
         path = path.split("/").filter(Boolean);
       }
     }
-    inst._isTrashView = false;
-    inst._isDiskView = false;
+    inst.isTrashView = false;
+    inst.isDiskView = false;
     inst.currentPath = Array.isArray(path) ? [...path] : [];
     inst.history = inst.history.slice(0, inst.historyIndex + 1);
     inst.history.push([...inst.currentPath]);
@@ -1128,23 +1129,23 @@ export class ExplorerApp extends BaseApp {
   }
 
   async render() {
-    const inst = [...this._instances.values()][0];
+    const inst = [...this.instances.values()][0];
     if (inst) await this.renderInstance(inst);
   }
 
   async renderInstance(inst) {
-    if (inst._isRendering) return;
-    inst._isRendering = true;
+    if (inst.isRendering) return;
+    inst.isRendering = true;
 
     const win = $(`#${inst.winId}`);
     if (!win) {
-      inst._isRendering = false;
+      inst.isRendering = false;
       return;
     }
     const view = $(`#${inst.winId}-view`, win);
     const pathDisplay = $(`#${inst.winId}-path`, win);
     if (!view) {
-      inst._isRendering = false;
+      inst.isRendering = false;
       return;
     }
 
@@ -1154,7 +1155,7 @@ export class ExplorerApp extends BaseApp {
     removeClass(view, "explorer-view-grid");
     removeClass(view, "explorer-view-list");
     addClass(view, `explorer-view-${this.viewMode}`);
-    this._ensureSelBox(view);
+    this.ensureSelBox(view);
     if (pathDisplay) {
       if (pathDisplay.tagName === "INPUT") {
         pathDisplay.value = "/" + inst.currentPath.join("/");
@@ -1164,8 +1165,8 @@ export class ExplorerApp extends BaseApp {
     }
 
     const folder = await os.fs.readdir(inst.currentPath);
-    inst._cachedFolder = folder;
-    if (inst.mode === "browse") inst._cachedFolderStats = await this._buildFolderStats(inst);
+    inst.cachedFolder = folder;
+    if (inst.mode === "browse") inst.cachedFolderStats = await this.buildFolderStats(inst);
 
     const entries = Object.entries(folder).filter(([name]) => {
       if (name === "system" && inst.currentPath.length === 0) return false;
@@ -1175,16 +1176,16 @@ export class ExplorerApp extends BaseApp {
     const items = await Promise.all(
       entries.map(async ([name, itemData]) => {
         const isFile = itemData?.type === "file";
-        const iconEl = await this._buildItemIconHTML(name, isFile, itemData, inst);
+        const iconEl = await this.buildItemIconHTML(name, isFile, itemData, inst);
         return { name, isFile, iconEl, itemData };
       })
     );
 
     if (this.viewMode === "list") {
-      const stats = inst._cachedFolderStats || {};
-      const sorted = this._sortItems(items, inst.sortBy, inst.sortDir, folder, stats);
+      const stats = inst.cachedFolderStats || {};
+      const sorted = this.sortItems(items, inst.sortBy, inst.sortDir, folder, stats);
 
-      const header = this._createListHeader(inst);
+      const header = this.createListHeader(inst);
       view.appendChild(header);
 
       for (const { name, isFile, iconEl, itemData } of sorted) {
@@ -1194,12 +1195,12 @@ export class ExplorerApp extends BaseApp {
         const kind = itemData?.kind || "";
         const size = isFile ? (itemData?.size ?? stat.size ?? 0) : "";
         const mtime = stat.mtime;
-        const typeLabel = isFile ? this._kindLabel(kind) || "File" : "File Folder";
+        const typeLabel = isFile ? this.kindLabel(kind) || "File" : "File Folder";
         setHTML(
           row,
-          `${iconEl}<span class="file-item-name">${name}</span><span class="file-col-date">${mtime ? this._formatFriendlyDate(mtime) : "—"}</span><span class="file-col-type">${typeLabel}</span><span class="file-col-size">${isFile ? formatSize(size) : ""}</span>`
+          `${iconEl}<span class="file-item-name">${name}</span><span class="file-col-date">${mtime ? this.formatFriendlyDate(mtime) : "—"}</span><span class="file-col-type">${typeLabel}</span><span class="file-col-size">${isFile ? formatSize(size) : ""}</span>`
         );
-        this._bindItemInteractions(row, name, isFile, inst, win);
+        this.bindItemInteractions(row, name, isFile, inst, win);
         view.appendChild(row);
       }
     } else {
@@ -1207,7 +1208,7 @@ export class ExplorerApp extends BaseApp {
         const item = createElement("div", { className: "file-item" });
         item.dataset.isFile = isFile ? "true" : "false";
         setHTML(item, `${iconEl}<span class="file-item-name">${name}</span>`);
-        this._bindItemInteractions(item, name, isFile, inst, win);
+        this.bindItemInteractions(item, name, isFile, inst, win);
         view.appendChild(item);
       }
     }
@@ -1216,12 +1217,12 @@ export class ExplorerApp extends BaseApp {
       speak("This folder is empty. Want me to help you organize?", ClippyAnimation.Searching);
     }
 
-    if (inst.mode === "browse") await this._updateStatusBar(inst, folder);
-    if (inst.mode === "select") this._bindSelectBarButton(inst);
-    await this._updateStorageIndicator(win, inst);
-    this._updateActiveSidebar(inst);
+    if (inst.mode === "browse") await this.updateStatusBar(inst, folder);
+    if (inst.mode === "select") this.bindSelectBarButton(inst);
+    await this.updateStorageIndicator(win, inst);
+    this.updateActiveSidebar(inst);
 
-    const cb = this._getClipboard();
+    const cb = this.getClipboard();
     if (cb && cb.action === "cut") {
       const items = cb.items || cb.icons || [];
       const src = cb.sourceInst?.winId;
@@ -1237,10 +1238,10 @@ export class ExplorerApp extends BaseApp {
       }
     }
 
-    inst._isRendering = false;
+    inst.isRendering = false;
   }
 
-  async _buildItemIconHTML(name, isFile, itemData, inst) {
+  async buildItemIconHTML(name, isFile, itemData, inst) {
     if (!isFile) {
       return `<img src="${resolveIconUrl("static/icons/file.webp")}" style="width:64px;height:64px;object-fit:cover;border-radius:8px">`;
     }
@@ -1254,7 +1255,7 @@ export class ExplorerApp extends BaseApp {
     let thumbnailSrc = null;
     if (isImageFile(name)) {
       const cacheKey = inst.currentPath.join("/") + "/" + name;
-      const cached = this._thumbnailCache.get(cacheKey);
+      const cached = this.thumbnailCache.get(cacheKey);
       if (cached) {
         thumbnailSrc = cached;
       } else {
@@ -1262,7 +1263,7 @@ export class ExplorerApp extends BaseApp {
           const content = await this.fs.getFileContent(inst.currentPath, name);
           const src = content instanceof Blob ? await readFileAsDataURL(content) : content;
           thumbnailSrc = await generateThumbnail(src);
-          if (thumbnailSrc) this._thumbnailCache.set(cacheKey, thumbnailSrc);
+          if (thumbnailSrc) this.thumbnailCache.set(cacheKey, thumbnailSrc);
         } catch (e) {
           console.error("Failed to load image thumbnail:", e);
         }
@@ -1272,11 +1273,11 @@ export class ExplorerApp extends BaseApp {
     return buildFileIconHTML(name, { thumbnailSrc, storedIcon: itemData.faIcon || itemData.icon });
   }
 
-  _bindItemInteractions(item, name, isFile, inst, win) {
+  bindItemInteractions(item, name, isFile, inst, win) {
     if (inst.mode === "select") {
       if (isFile) {
-        item.onclick = () => this._selectFile(inst, name, item);
-        item.ondblclick = () => this._confirmSelection(inst);
+        item.onclick = () => this.selectFile(inst, name, item);
+        item.ondblclick = () => this.confirmSelection(inst);
       } else {
         item.ondblclick = () => this.openItemForInstance(inst, name, false);
       }
@@ -1293,11 +1294,11 @@ export class ExplorerApp extends BaseApp {
       }
     } else {
       item.onclick = (e) => {
-        if (e.detail === 1) this._selectExplorerItem(inst, name, item, e.ctrlKey, e.shiftKey);
+        if (e.detail === 1) this.selectExplorerItem(inst, name, item, e.ctrlKey, e.shiftKey);
       };
       item.ondblclick = () => this.openItemForInstance(inst, name, isFile);
       item.oncontextmenu = (e) => showFileContextMenu(this, e, name, isFile, inst);
-      this._setupExplorerItemDrag(item, name, isFile, inst);
+      this.setupExplorerItemDrag(item, name, isFile, inst);
     }
 
     item.addEventListener("mouseenter", (e) => {
@@ -1306,7 +1307,7 @@ export class ExplorerApp extends BaseApp {
     item.addEventListener("mouseleave", () => hideFileTooltip());
   }
 
-  _selectFile(inst, name, itemEl) {
+  selectFile(inst, name, itemEl) {
     const win = $(`#${inst.winId}`);
     if (!win) return;
     $$(".file-item.explorer-selected", win).forEach((el) => removeClass(el, "explorer-selected"));
@@ -1318,22 +1319,22 @@ export class ExplorerApp extends BaseApp {
     if (btn) btn.disabled = false;
   }
 
-  _bindSelectBarButton(inst) {
+  bindSelectBarButton(inst) {
     const win = $(`#${inst.winId}`);
     const btn = win && $(`#${inst.winId}-select-btn`, win);
-    if (btn) btn.onclick = () => this._confirmSelection(inst);
+    if (btn) btn.onclick = () => this.confirmSelection(inst);
   }
 
-  _confirmSelection(inst) {
+  confirmSelection(inst) {
     if (!inst.selectedFile || !inst.fileSelectCallback) return;
     const cb = inst.fileSelectCallback;
     inst.fileSelectCallback = null;
-    this._closeWindow(inst.winId);
+    this.closeWindow(inst.winId);
     cb(inst.currentPath, inst.selectedFile);
   }
 
   async openItem(name, isFile) {
-    const inst = [...this._instances.values()][0];
+    const inst = [...this.instances.values()][0];
     if (inst) await this.openItemForInstance(inst, name, isFile);
   }
 
@@ -1348,16 +1349,14 @@ export class ExplorerApp extends BaseApp {
         const raw = await os.fs.read(inst.currentPath.concat(name));
         const content = JSON.parse(raw);
         if (content && content.app) {
-          const { trigger: triggerCursorEffect } = await import("../cursorEffect.js");
           triggerCursorEffect(content.icon || "fa-solid fa-cube");
-          os.storage.set(`launch_time:${content.app}`, Date.now());
+          os.storage.set(StorageKeys.launchTimePrefix + content.app, Date.now());
           const extra = content.steamGameId ? { steamGameId: content.steamGameId } : null;
           os.app.launch(content.app, false, extra);
           return;
         } else if (content && content.type === "youtube-embed") {
-          const { trigger: triggerCursorEffect } = await import("../cursorEffect.js");
           triggerCursorEffect("fa-brands fa-youtube");
-          this._openYouTubeEmbedDesktop(content);
+          this.openYouTubeEmbedDesktop(content);
           return;
         }
         console.error("Invalid .desktop file: missing app or type field");
@@ -1367,7 +1366,6 @@ export class ExplorerApp extends BaseApp {
       return;
     }
 
-    const { trigger: triggerCursorEffect } = await import("../cursorEffect.js");
     triggerCursorEffect();
     await openFileWith({
       name,
@@ -1387,7 +1385,7 @@ export class ExplorerApp extends BaseApp {
     openMediaViewer(name, src, kind, this.wm);
   }
 
-  _openYouTubeEmbedDesktop(content) {
+  openYouTubeEmbedDesktop(content) {
     const winId = `yt-embed-${Date.now()}`;
     const win = os.window.create(winId, content.name || "YouTube Embed", "800px", "600px", {
       icon: "static/icons/file.webp"
@@ -1422,15 +1420,15 @@ export class ExplorerApp extends BaseApp {
     `;
   }
 
-  _pasteToPath(destPath, inst) {
+  pasteToPath(destPath, inst) {
     return pasteToPath(this, destPath, inst);
   }
 
-  async _downloadItems(itemName, isFile, inst) {
+  async downloadItems(itemName, isFile, inst) {
     await downloadItems(this, itemName, isFile, inst);
   }
 
-  async _createArchiveFromItems(itemName, isFile, inst) {
+  async createArchiveFromItems(itemName, isFile, inst) {
     await createArchiveFromItems(this, itemName, isFile, inst);
   }
 
@@ -1442,19 +1440,19 @@ export class ExplorerApp extends BaseApp {
     showBackgroundContextMenu(this, e, inst);
   }
 
-  _selectExplorerItem(inst, name, itemEl, isCtrl, isShift) {
+  selectExplorerItem(inst, name, itemEl, isCtrl, isShift) {
     const win = document.getElementById(inst.winId);
     if (!win) return;
     const view = $(`#${inst.winId}-view`, win);
     if (!view) return;
     if (document.activeElement !== view && document.activeElement !== win) view.focus({ preventScroll: true });
 
-    if (isShift && inst._lastClickedIndex >= 0) {
+    if (isShift && inst.lastClickedIndex >= 0) {
       const items = $$(".file-item", view);
       const currentIdx = items.indexOf(itemEl);
       if (currentIdx >= 0) {
-        const start = Math.min(inst._lastClickedIndex, currentIdx);
-        const end = Math.max(inst._lastClickedIndex, currentIdx);
+        const start = Math.min(inst.lastClickedIndex, currentIdx);
+        const end = Math.max(inst.lastClickedIndex, currentIdx);
         if (!isCtrl) {
           $$(".file-item.explorer-selected", view).forEach((el) => removeClass(el, "explorer-selected"));
           inst.selectedItems = new Set();
@@ -1467,10 +1465,10 @@ export class ExplorerApp extends BaseApp {
             addClass(el, "explorer-selected");
           }
         }
-        inst._lastClickedIndex = currentIdx;
+        inst.lastClickedIndex = currentIdx;
         inst.selectedFile = name;
         if (this.desktopUI) this.desktopUI.lastFocusedContext = "explorer";
-        if (inst.mode === "browse") this._updateStatusBar(inst, inst._cachedFolder);
+        if (inst.mode === "browse") this.updateStatusBar(inst, inst.cachedFolder);
         return;
       }
     }
@@ -1489,13 +1487,13 @@ export class ExplorerApp extends BaseApp {
     }
 
     const viewItems = $$(".file-item", view);
-    inst._lastClickedIndex = viewItems.indexOf(itemEl);
+    inst.lastClickedIndex = viewItems.indexOf(itemEl);
     inst.selectedFile = name;
     if (this.desktopUI) this.desktopUI.lastFocusedContext = "explorer";
-    if (inst.mode === "browse") this._updateStatusBar(inst, inst._cachedFolder);
+    if (inst.mode === "browse") this.updateStatusBar(inst, inst.cachedFolder);
   }
 
-  _setupExplorerItemDrag(itemEl, name, isFile, inst) {
+  setupExplorerItemDrag(itemEl, name, isFile, inst) {
     itemEl.addEventListener("mousedown", (e) => {
       if (e.button !== 0 || e.target.tagName === "INPUT") return;
 
@@ -1510,17 +1508,17 @@ export class ExplorerApp extends BaseApp {
 
         if (!dragging && Math.sqrt(dx * dx + dy * dy) > 6) {
           dragging = true;
-          if (!inst.selectedItems.has(name)) this._selectExplorerItem(inst, name, itemEl, false);
+          if (!inst.selectedItems.has(name)) this.selectExplorerItem(inst, name, itemEl, false);
 
           const win = document.getElementById(inst.winId);
           const view = win?.querySelector(`#${inst.winId}-view`);
           const selectedEls = view ? [...view.querySelectorAll(".file-item.explorer-selected")] : [itemEl];
 
-          ghost = document.createElement("div");
+          ghost = createElement("div");
           ghost.className = "explorer-drag-ghost";
-          const iconEl = (selectedEls[0] || itemEl).querySelector("img")?.cloneNode() || document.createElement("div");
+          const iconEl = (selectedEls[0] || itemEl).querySelector("img")?.cloneNode() || createElement("div");
           iconEl.className = "explorer-ghost-icon";
-          const label = document.createElement("div");
+          const label = createElement("div");
           label.className = "explorer-file-label";
           label.textContent = selectedEls.length > 1 ? `${selectedEls.length} items` : name;
           ghost.appendChild(iconEl);
@@ -1592,7 +1590,7 @@ export class ExplorerApp extends BaseApp {
     });
   }
 
-  async _buildFolderStats(inst) {
+  async buildFolderStats(inst) {
     const dir = this.fs.resolveUserPath(inst.currentPath);
     const stats = {};
     try {
@@ -1607,7 +1605,7 @@ export class ExplorerApp extends BaseApp {
           if (s.isFile()) {
             stats[name] = { isFile: true, size: meta[name]?.size ?? s.size ?? 0, mtime: s.mtime };
           } else {
-            stats[name] = { isFile: false, size: await this._calcDirSize(full), mtime: s.mtime };
+            stats[name] = { isFile: false, size: await this.calcDirSize(full), mtime: s.mtime };
           }
         } catch {}
       }
@@ -1615,40 +1613,40 @@ export class ExplorerApp extends BaseApp {
     return stats;
   }
 
-  async _calcDirSize(dirPath) {
+  async calcDirSize(dirPath) {
     const { size } = await os.fs.calcDirSize(dirPath);
     return size;
   }
 
-  async _calcTotalStorage() {
-    return this._calcDirSize(this.fs.resolveUserPath([]));
+  async calcTotalStorage() {
+    return this.calcDirSize(this.fs.resolveUserPath([]));
   }
 
-  async _updateStorageIndicator(win, inst) {
-    this._renderMountsInSidebar(win, inst);
+  async updateStorageIndicator(win, inst) {
+    this.renderMountsInSidebar(win, inst);
   }
 
-  _showTrashView(inst) {
+  showTrashView(inst) {
     return showTrashView(this, inst);
   }
 
-  _renderTrashView(inst, view, win) {
+  renderTrashView(inst, view, win) {
     return renderTrashView(this, inst, view, win);
   }
 
-  async _showDiskView(inst) {
-    inst._isDiskView = true;
-    inst._isTrashView = false;
+  async showDiskView(inst) {
+    inst.isDiskView = true;
+    inst.isTrashView = false;
     const win = $(`#${inst.winId}`);
     if (!win) return;
     const view = $(`#${inst.winId}-view`, win);
     const pathDisplay = $(`#${inst.winId}-path`, win);
     if (!view) return;
     if (pathDisplay) pathDisplay.value = "/";
-    await this._renderDiskView(inst, view, win);
+    await this.renderDiskView(inst, view, win);
   }
 
-  async _renderDiskView(inst, view, win) {
+  async renderDiskView(inst, view, win) {
     view.innerHTML = "";
     removeClass(view, "games-page");
     removeClass(view, "explorer-trash-view");
@@ -1656,7 +1654,7 @@ export class ExplorerApp extends BaseApp {
     removeClass(view, "explorer-view-list");
     addClass(view, "explorer-disk-view");
 
-    const used = await this._calcTotalStorage();
+    const used = await this.calcTotalStorage();
     let quota = 0;
     try {
       if (navigator.storage && navigator.storage.estimate) {
@@ -1719,7 +1717,7 @@ export class ExplorerApp extends BaseApp {
       const mountPath = m.mountPoint;
       let mountUsed = 0;
       try {
-        mountUsed = await this._calcDirSize(mountPath.split("/").filter(Boolean));
+        mountUsed = await this.calcDirSize(mountPath.split("/").filter(Boolean));
       } catch {}
       const mPct = quota > 0 ? Math.min((mountUsed / quota) * 100, 100) : 0;
       html += `
@@ -1770,7 +1768,7 @@ export class ExplorerApp extends BaseApp {
                 const hidden = os.storage.get(StorageKeys.explorerDiskViewHidden) || [];
                 if (!hidden.includes(path)) hidden.push(path);
                 os.storage.set(StorageKeys.explorerDiskViewHidden, hidden);
-                this._renderDiskView(inst, view, win);
+                this.renderDiskView(inst, view, win);
               },
               "fa-times"
             )
@@ -1793,32 +1791,32 @@ export class ExplorerApp extends BaseApp {
       };
     });
 
-    inst._isDiskView = true;
-    await this._updateStorageIndicator(win, inst);
-    this._updateActiveSidebar(inst);
+    inst.isDiskView = true;
+    await this.updateStorageIndicator(win, inst);
+    this.updateActiveSidebar(inst);
   }
 
-  _showConfirmDialog({ title, message, confirmText = "OK", onConfirm }) {
+  showConfirmDialog({ title, message, confirmText = "OK", onConfirm }) {
     showConfirmDialog({ title, message, confirmText, onConfirm });
   }
 
-  _showInputDialog({ title, label, defaultValue, confirmText = "Create", onConfirm }) {
+  showInputDialog({ title, label, defaultValue, confirmText = "Create", onConfirm }) {
     showInputDialog({ title, label, defaultValue, confirmText, onConfirm });
   }
 
-  _showArchiveDialog({ title, defaultValue, onConfirm }) {
+  showArchiveDialog({ title, defaultValue, onConfirm }) {
     showArchiveDialog({ title, defaultValue, onConfirm });
   }
 
-  _startInlineRename(itemEl, currentName, inst) {
+  startInlineRename(itemEl, currentName, inst) {
     startInlineRename(this, itemEl, currentName, inst);
   }
 
-  _spawnInlineItem(inst, isFile) {
+  spawnInlineItem(inst, isFile) {
     spawnInlineItem(this, inst, isFile);
   }
 
-  async _updateStatusBar(inst, folder) {
+  async updateStatusBar(inst, folder) {
     const win = document.getElementById(inst.winId);
     if (!win) return;
     const itemsEl = win.querySelector(`#${inst.winId}-status-items`);
@@ -1834,7 +1832,7 @@ export class ExplorerApp extends BaseApp {
       return;
     }
 
-    const stats = inst._cachedFolderStats || {};
+    const stats = inst.cachedFolderStats || {};
     let totalSize = 0;
     for (const name of inst.selectedItems) {
       const s = stats[name];

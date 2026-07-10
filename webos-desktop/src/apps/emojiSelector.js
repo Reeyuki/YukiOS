@@ -70,7 +70,7 @@ export class EmojiSelectorApp extends BaseApp {
   }
 
   updateClipboardHistory(value) {
-    this._services.clipboardManager?.set(value, "text");
+    this.services.clipboardManager?.set(value, "text");
   }
 
   showPreview(win, message) {

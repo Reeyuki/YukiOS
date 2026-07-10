@@ -1,4 +1,4 @@
-import { os } from "../os/index.js";
+import { os } from "../framework.js";
 import { BusEvents } from "../core/EventBus.js";
 import { animateWindowClose, animateWindowMinimize, applyFocusGlow, applyZDepthLift } from "./AnimationSystem.js";
 import { getSetting } from "../shared/settingsUtils.js";
@@ -141,14 +141,14 @@ export class WindowStateManager {
     for (const winId of winIds) {
       const win = document.getElementById(winId);
       if (win) {
-        this._silenceWindow(win);
+        this.silenceWindow(win);
         win.remove();
       }
       this.manager.removeFromTaskbar(winId);
     }
   }
 
-  _silenceWindow(win) {
+  silenceWindow(win) {
     const iframes = win.querySelectorAll("iframe");
     iframes.forEach((iframe) => {
       try {
@@ -168,7 +168,7 @@ export class WindowStateManager {
     });
   }
 
-  _animateAndRemove(win) {
+  animateAndRemove(win) {
     animateWindowClose(win, () => win.remove());
   }
 
@@ -176,7 +176,7 @@ export class WindowStateManager {
     closeButton.addEventListener("click", () => {
       const win = document.getElementById(winId);
       if (!win) return;
-      this._animateAndRemove(win);
+      this.animateAndRemove(win);
       this.manager.removeFromTaskbar(winId);
     });
   }

@@ -1,55 +1,55 @@
-let _officeApp = null;
-let _loading = null;
+let officeApp = null;
+let loading = null;
 
 export async function getOfficeApp(services) {
-  if (_officeApp) return _officeApp;
-  if (_loading) return _loading;
+  if (officeApp) return officeApp;
+  if (loading) return loading;
 
-  _loading = import("../apps/office.js").then(({ OfficeApp }) => {
-    _officeApp = new OfficeApp(services);
-    _loading = null;
-    return _officeApp;
+  loading = import("../apps/office.js").then(({ OfficeApp }) => {
+    officeApp = new OfficeApp(services);
+    loading = null;
+    return officeApp;
   });
 
-  return _loading;
+  return loading;
 }
 
 export class OfficeAppProxy {
   constructor(services) {
-    this._services = services;
-    this._explorer = null;
-    this._real = null;
-    this._pending = null;
+    this.services = services;
+    this.explorer = null;
+    this.real = null;
+    this.pending = null;
   }
 
   setExplorer(explorer) {
-    this._explorer = explorer;
-    if (this._real) this._real.explorerApp = explorer;
+    this.explorer = explorer;
+    if (this.real) this.real.explorerApp = explorer;
   }
 
-  async _ensure() {
-    if (this._real) return this._real;
-    if (this._pending) return this._pending;
-    this._pending = getOfficeApp(this._services).then((app) => {
-      this._real = app;
-      this._pending = null;
+  async ensure() {
+    if (this.real) return this.real;
+    if (this.pending) return this.pending;
+    this.pending = getOfficeApp(this.services).then((app) => {
+      this.real = app;
+      this.pending = null;
       return app;
     });
-    return this._pending;
+    return this.pending;
   }
 
   async open(title, content, filePath) {
-    const app = await this._ensure();
+    const app = await this.ensure();
     return app.open(title, content, filePath);
   }
 
   async openFileDialog() {
-    const app = await this._ensure();
+    const app = await this.ensure();
     return app.openFileDialog();
   }
 
   async loadContent(fileName, content, filePath) {
-    const app = await this._ensure();
+    const app = await this.ensure();
     return app.loadContent(fileName, content, filePath);
   }
 }

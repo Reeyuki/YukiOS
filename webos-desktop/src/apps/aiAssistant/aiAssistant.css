@@ -696,12 +696,6 @@
 .ai-chat-history::-webkit-scrollbar-thumb,
 .ai-log-list::-webkit-scrollbar-thumb,
 .ai-reasoning-content::-webkit-scrollbar-thumb {
-  background: var(--glass-border);
-  border-radius: 3px;
-}
-
-.ai-chat-history::-webkit-scrollbar-thumb:hover,
-.ai-log-list::-webkit-scrollbar-thumb:hover,
-.ai-reasoning-content::-webkit-scrollbar-thumb:hover {
   background: var(--glass-hover);
+  border-radius: 3px;
 }

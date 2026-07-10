@@ -46,6 +46,17 @@
   color: var(--brand);
 }
 
+.desktop-file-icon--fa-wrapper {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  color: var(--brand);
+}
+
 .icon div {
   font-size: 1.05em;
   line-height: 1;
