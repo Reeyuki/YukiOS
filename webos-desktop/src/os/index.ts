@@ -90,6 +90,7 @@ function _buildFS() {
     getFileKind: (path: any) => api.getFileKind(path),
     getFileIcon: (path: any) => api.getFileIcon(path),
     getMetadata: (path: any, name: string) => api.getMetadata(path, name),
+    calcDirSize: (path: any) => api.calcDirSize(path),
     writeBinaryFile: (path: any, name: string, blob: any, kind?: any, icon?: any) =>
       api.writeBinaryFile(path, name, blob, kind, icon),
     readBinaryFile: (path: any, name: string) => api.readBinaryFile(path, name),
@@ -107,7 +108,11 @@ function _buildFS() {
     restoreAllTrashItems: () => api.restoreAllTrashItems(),
     deleteTrashItem: (id: string) => api.deleteTrashItem(id),
     emptyTrash: () => api.emptyTrash(),
-    getTrashCount: () => api.getTrashCount()
+    getTrashCount: () => api.getTrashCount(),
+    pickDirectory: () => api.pickDirectory(),
+    registerMount: (handle: any, label: string) => api.registerMount(handle, label),
+    unmount: (label: string) => api.unmount(label),
+    getMounts: () => api.getMounts()
   };
 }
 

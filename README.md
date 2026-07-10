@@ -3,7 +3,6 @@
 <div align="center">
 
 
-[![Users](https://img.shields.io/badge/Users-50k+-brightgreen?style=for-the-badge)](https://github.com/Reeyuki/yukios)
 [![License](https://img.shields.io/github/license/Reeyuki/yukios?style=for-the-badge&color=blue)](LICENSE)
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?style=for-the-badge&logo=discord)](https://discord.gg/wufbWFwr4G)
 
@@ -12,15 +11,14 @@
 
 </div>
 
-> A browser-based desktop environment running in a single web page, combining windowed multitasking, persistent storage,
-> emulators, tools, and a large collection of applications and games.
+> A browser-based desktop environment running in a single web page with window management, persistent storage,
+> emulators, utilities, and web applications.
 
-YukiOS turns a browser tab into a working desktop-style space with draggable windows, multitasking, file handling,
-emulators, productivity tools, and interactive apps. Everything runs locally in the browser with persistent storage and
-session state.
+YukiOS provides a desktop-style interface inside a browser tab with draggable windows, multitasking, file handling,
+emulators, productivity tools, and web applications. Core functionality runs in the browser using client-side storage and session state.
 
-It supports running Flash content, DOS programs, console emulation, WebAssembly apps, and standard web applications side
-by side.
+It includes support for Flash content, DOS programs, console emulation, WebAssembly applications, and standard web applications
+running alongside each other.
 
 Its built entirely in vanilla javascript/typescript without any frameworks.
 
@@ -31,7 +29,7 @@ Its built entirely in vanilla javascript/typescript without any frameworks.
 [Workspaces](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/workspaces.png)
 [Widgets](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/widgets.png)
 
-# ✨ Desktop Experience
+# Desktop Experience
 
 - Draggable, resizable, minimizable, maximizable windows
 - Window snapping (half screen, quarter screen, fullscreen)
@@ -51,7 +49,7 @@ Its built entirely in vanilla javascript/typescript without any frameworks.
 - Desktop stretch scroll prevention toggle
 - Alt+Left-Click window drag / Alt+Right-Click window resize
 - Window animation system with 35+ effects
-- Cursor launch effect on app start like in kde plasma
+- Cursor launch effect when applications start
 - Automatically saves and restores open apps, window positions and sizes, workspace assignments, scroll positions,
   window states (minimized, fullscreen, snapped), focus order
 
@@ -69,8 +67,7 @@ Its built entirely in vanilla javascript/typescript without any frameworks.
 - Command palette (Ctrl+K/P/F1) for app, file, and command search with built-in calculator, terminal run support with >
   prefix, and unit converter
 - Clippy contextual assistant with per-app tips
-- Animated UI with adaptive transparency effects: start menu, wallpaper switch, audio mixer, context menu, and
-  notification sliding animations
+- Animated UI components including start menu, wallpaper switcher, audio mixer, context menus, and notifications
 - Keyboard shortcuts app for customizing global hotkeys
 
 **Key Global Shortcuts:**
@@ -89,21 +86,23 @@ Its built entirely in vanilla javascript/typescript without any frameworks.
 - Terminal commands (prefix with `>`)
 - Built-in calculator and unit converter
 - Screenshot and screen recording controls
+- Dynamic favicon updates based on current app
 
 # 📁 Files & Storage
 
-- Persistent browser storage using IndexedDB
-- File explorer with thumbnails and previews with file/folder upload support
-- Drag-and-drop file operations from host OS
-- File properties dialog with rename support
-- Drag-select multiple files with selection box
-- Trash bin with restore functionality and permanent delete.
-- File information tooltip on desktop/explorer
-- Storage indicator showing total used space in Explorer sidebar
-- Archive support: `.zip`, `.gz`, `.tar`, `.tar.gz`, `.tgz`, `.tar.xz`, `.7z`, `.bz2`, `.tar.bz2`, `.xz`, `.rar`
-  (create: `.zip`, `.7z`, `.tar`, `.tar.gz`, `.tar.bz2`, `.gz`, `.bz2` with password-protected ZIP support)
-- HTML file rendering support
-- Dynamic favicon updates based on current app
+- IndexedDB-backed explorer with grid/list views, sortable columns, image thumbnails, inline rename, file properties,
+  trash, and drag-select
+- Sidebar with persistent Quick Access pin/unpin
+- Archive support: extract `.zip`/`.7z`/`.tar`/`.gz`/`.bz2`/`.xz`/`.rar`, create `.zip`/`.7z`/`.tar`/`.tar.gz`/`.bz2`
+  with compression level and ZIP password support
+- Right-click file conversion for common images (PNG, JPEG, WebP, SVG), structured data (JSON, CSV, XML, YAML),
+  text formats (TXT, Markdown, HTML), and common audio/video files
+- Mount external folders as virtual drives, set
+  images as wallpaper, or open any folder in Terminal
+- Save As and file/directory picker dialog
+- storage usage indicator, thumbnail cache
+- Explorer keyboard shortcuts: Ctrl+C copy, Ctrl+X cut, Ctrl+V paste
+  Ctrl+F search, Ctrl+A select all, arrow keys navigate, Enter open, F5 refresh, F2 rename, Delete trash
 
 # ⚙️ System Features
 
@@ -119,7 +118,7 @@ Its built entirely in vanilla javascript/typescript without any frameworks.
 - PWA install and offline caching support
 - User accounts with multi-profile support
 - Lock screen, session management, and idle timeout
-- Power management modes (Turbo, Balanced, Quality) with dedicated tray app and brightness controls (contrast, gamma,
+- Power profiles (Turbo, Balanced, Quality) with tray controls and brightness adjustment options (contrast, gamma,
   night mode)
 - Custom cursor support (with miku by default)
 - Import/export system for backup and migration

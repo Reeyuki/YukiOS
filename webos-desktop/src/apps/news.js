@@ -5,6 +5,22 @@ const appNewsEntries = APP_MANIFESTS.filter((manifest) => manifest.news).map((ma
 
 const EXISTING_NEWS_UPDATES = [
   {
+    date: "July 9, 2026",
+    sections: [
+      {
+        icon: "fa-hdd",
+        title: "Directory Mounting",
+        items: [
+          [
+            "fa-hdd",
+            "Mount Real Folders",
+            "Mount real local directories into the YukiOS filesystem via the File System Access API with full read/write support."
+          ]
+        ]
+      }
+    ]
+  },
+  {
     date: "July 7, 2026",
     sections: [
       {

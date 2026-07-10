@@ -1,5 +1,6 @@
 import { createElement, setHTML } from "../../shared/domUtils.js";
 import { os } from "../../framework.js";
+import { renderSelectMenu, getSelectMenuValue, bindSelectMenu } from "../../shared/selectMenu.js";
 
 const LEVEL_TEXTS = {
   0: "Store (No Compression)",
@@ -116,60 +117,43 @@ export function showInputDialog({ title, label, defaultValue, confirmText = "Cre
 export function showArchiveDialog({ title, defaultValue, onConfirm }) {
   const overlay = document.createElement("div");
   overlay.className = "explorer-confirmation-overlay";
+  const formatOptions = [
+    { value: "zip", label: "ZIP (.zip)" },
+    { value: "7z", label: "7z (.7z)" },
+    { value: "tar", label: "TAR (.tar)" },
+    { value: "tar.gz", label: "TAR.GZ (.tar.gz)" }
+  ];
   overlay.innerHTML = `
     <div class="_fd-dialog" style="width: 360px;">
       <div class="_fd-dialog-title">${title}</div>
-      <div style="display:flex; flex-direction:column; gap:12px; margin-top:8px;">
-        <div>
+      <div class="_fd-dialog-body">
+        <div class="_fd-field">
           <div class="_fd-dialog-label">Archive Name</div>
-          <input class="_fd-dialog-input archive-name-input" type="text" value="${defaultValue}" spellcheck="false" style="width:100%;">
+          <input class="_fd-dialog-input archive-name-input" type="text" value="${defaultValue}" spellcheck="false">
         </div>
-        <div>
+        <div class="_fd-field">
           <div class="_fd-dialog-label">Archive Format</div>
-          <select class="archive-type-select" style="
-            width: 100%;
-            padding: 8px 12px;
-            border-radius: 6px;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            background: rgba(30, 30, 46, 0.9);
-            color: #cdd6f4;
-            font-family: inherit;
-            font-size: 13px;
-            outline: none;
-          ">
-            <option value="zip">ZIP (.zip)</option>
-            <option value="7z">7z (.7z)</option>
-            <option value="tar">TAR (.tar)</option>
-            <option value="tar.gz">TAR.GZ (.tar.gz)</option>
-          </select>
+          ${renderSelectMenu("archive-format-select", formatOptions, "zip", "archive-type-select-menu")}
         </div>
-        <div class="archive-level-container" style="transition: opacity 0.18s ease;">
-          <div style="display:flex; justify-content:space-between;">
+        <div class="archive-level-container">
+          <div class="_fd-level-header">
             <div class="_fd-dialog-label">Compression Level</div>
-            <span class="compression-level-value" style="font-size:12px; color:#a6adc8; font-weight:bold;">Normal (6)</span>
+            <span class="compression-level-value">Normal (6)</span>
           </div>
-          <input class="archive-level-input" type="range" min="0" max="9" value="6" style="
-            width: 100%;
-            margin-top: 6px;
-            background: rgba(255, 255, 255, 0.1);
-            height: 4px;
-            border-radius: 2px;
-            outline: none;
-            cursor: pointer;
-          ">
+          <input class="archive-level-input" type="range" min="0" max="9" value="6">
         </div>
       </div>
-      <div class="_fd-dialog-error" style="display:none;font-size:12px;color:#e06c75;margin-top:6px;"></div>
-      <div class="_fd-dialog-actions" style="margin-top:16px;">
+      <div class="_fd-dialog-error"></div>
+      <div class="_fd-dialog-actions">
         <button class="_fd-btn _fd-btn-cancel">Cancel</button>
         <button class="_fd-btn _fd-btn-confirm">Create</button>
       </div>
     </div>
   `;
   document.body.appendChild(overlay);
+  bindSelectMenu(overlay);
 
   const nameInput = overlay.querySelector(".archive-name-input");
-  const select = overlay.querySelector(".archive-type-select");
   const levelContainer = overlay.querySelector(".archive-level-container");
   const levelInput = overlay.querySelector(".archive-level-input");
   const levelValEl = overlay.querySelector(".compression-level-value");
@@ -186,8 +170,9 @@ export function showArchiveDialog({ title, defaultValue, onConfirm }) {
     levelValEl.textContent = LEVEL_TEXTS[levelInput.value];
   };
 
-  select.onchange = () => {
-    if (select.value === "tar") {
+  const updateLevelState = () => {
+    const val = getSelectMenuValue("archive-format-select", overlay);
+    if (val === "tar") {
       levelContainer.style.opacity = "0.38";
       levelContainer.style.pointerEvents = "none";
     } else {
@@ -195,6 +180,12 @@ export function showArchiveDialog({ title, defaultValue, onConfirm }) {
       levelContainer.style.pointerEvents = "";
     }
   };
+
+  overlay.addEventListener("change", (e) => {
+    if (e.target.id === "archive-format-select" || e.target.closest?.("#archive-format-select")) {
+      updateLevelState();
+    }
+  });
 
   cancelBtn.onclick = close;
 
@@ -212,7 +203,7 @@ export function showArchiveDialog({ title, defaultValue, onConfirm }) {
       return;
     }
     confirmBtn.disabled = true;
-    const type = select.value;
+    const type = getSelectMenuValue("archive-format-select", overlay) || "zip";
     const level = parseInt(levelInput.value);
 
     try {
@@ -231,4 +222,6 @@ export function showArchiveDialog({ title, defaultValue, onConfirm }) {
     if (ev.key === "Escape") close();
     if (ev.key === "Enter") confirmBtn.click();
   };
+
+  updateLevelState();
 }

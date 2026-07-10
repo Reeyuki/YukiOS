@@ -1,5 +1,5 @@
 import "../styles/shortcuts.css";
-import { BaseApp, PersistenceTypes } from "../framework.js";
+import { os, BaseApp, PersistenceTypes } from "../framework.js";
 import { KeybindManager } from "../keybindManager.js";
 
 const MODIFIER_KEY_MAP = {
@@ -719,7 +719,7 @@ export class ShortcutsApp extends BaseApp {
         resetBtn.addEventListener("click", (e) => {
           e.stopPropagation();
           if (isCustom) {
-            if (confirm("Delete this custom shortcut?")) {
+            if (os.dialog.confirm("Delete this custom shortcut?")) {
               KeybindManager.deleteCustomAction(item.id);
               render();
             }

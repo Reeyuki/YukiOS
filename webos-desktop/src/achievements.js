@@ -72,7 +72,6 @@ export class AchievementsApp extends BaseApp {
     this._achievementQueue = [];
     this._isShowingAchievement = false;
     this._loadFromStorage();
-    this.incrementSession();
   }
 
   getDeclarativeSchema(opts) {
@@ -182,7 +181,8 @@ export class AchievementsApp extends BaseApp {
     os.events.on(BusEvents.TERMINAL_CMD_EXECUTED, () => this.triggerCommandExecution());
     os.events.on(BusEvents.WALLPAPER_CHANGED, () => this.incrementWallpaper());
     os.events.on(BusEvents.DESKTOP_ICON_ADDED, () => this.incrementDesktopFile());
-    os.events.on(BusEvents.ACHIEVEMENT_TRIGGER, ({ key }) => this.trigger(key));
+    os.events.on(BusEvents.ACHIEVEMENT_TRIGGER, ({ achievementId }) => this.trigger(achievementId));
+    os.events.on(BusEvents.SESSION_INITIALIZED, () => this.incrementSession());
   }
 
   _createAchievements() {

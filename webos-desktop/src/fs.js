@@ -6,6 +6,7 @@ import { PathResolver } from "./fs/PathResolver.js";
 import { FileKind, inferKind, mimeFromName, isBinaryName } from "./shared/fileKindDetector.js";
 import { BlobStorage } from "./fs/BlobStorage.js";
 import { TrashManager } from "./fs/TrashManager.js";
+import { MountManager } from "./fs/MountManager.js";
 import { StorageKeys, os } from "./framework.js";
 
 import { DEFAULT_WALLPAPER_FILES, WALLPAPER_STATIC_DIR } from "./wallpaperConfig.js";
@@ -204,6 +205,7 @@ export class FileSystemManager {
 
     this.blobs = new BlobStorage();
     this.trash = new TrashManager(this);
+    this.mountManager = new MountManager();
 
     this.fsReady = this.storage.fsReady;
     this._resolveFs = this.storage._resolveFs;
@@ -261,6 +263,7 @@ export class FileSystemManager {
   async initFS(sessionKey = "guest") {
     this.sessionKey = sessionKey;
     this.CONFIG.ROOT = `${this.CONFIG.USER_BASE}/${sessionKey}`;
+    this.mountManager.setRoot(this.CONFIG.ROOT);
 
     if (this.storage.fs) return this.fsReady;
 
@@ -270,6 +273,7 @@ export class FileSystemManager {
         await this.blobs.initBlobDB();
         await this.ensureDefaults();
         await this.trash.init();
+        await this.mountManager.init();
       } catch (e) {
         console.error("FS initialization failed:", e);
         try {
@@ -288,6 +292,7 @@ export class FileSystemManager {
   async setSession(sessionKey) {
     this.sessionKey = sessionKey;
     this.CONFIG.ROOT = `${this.CONFIG.USER_BASE}/${sessionKey}`;
+    this.mountManager.setRoot(this.CONFIG.ROOT);
     if (this.storage.fs) {
       await this.ensureDefaults();
     } else {
@@ -422,6 +427,24 @@ export class FileSystemManager {
     await this.notifyDesktopChange(["Desktop"]).catch(() => {});
   }
 
+  _getMountsFolder() {
+    const result = {};
+    const mounts = this.mountManager.getMounts();
+    for (const { label, mountPoint } of mounts) {
+      const name = mountPoint.split("/").pop() || label;
+      result[name] = {};
+    }
+    return result;
+  }
+
+  _isMounted(fullPath) {
+    return this.mountManager.isMountedPath(fullPath);
+  }
+
+  _resolveMount(fullPath) {
+    return this.mountManager.resolveMount(fullPath);
+  }
+
   async ensureDefaults() {
     const defaultsCreatedKey = StorageKeys.defaultsCreatedPrefix + this.sessionKey;
     if (os.storage.get(defaultsCreatedKey) === "true") {
@@ -542,6 +565,17 @@ export class FileSystemManager {
   async ensureFolder(path) {
     await this.fsReady;
     const dir = this.paths.resolveUserPath(path);
+    const mountsRoot = this.paths.join(this.CONFIG.ROOT, "Mounts");
+    if (dir.startsWith(mountsRoot + "/") || dir === mountsRoot) {
+      return;
+    }
+    if (this._isMounted(dir)) {
+      const resolved = this._resolveMount(dir);
+      if (resolved && resolved.relativePath) {
+        await this.mountManager.mkdir(resolved.mount, resolved.relativePath);
+      }
+      return;
+    }
     const segments = dir.split("/").filter(Boolean);
     let current = "";
     for (const seg of segments) {
@@ -553,6 +587,18 @@ export class FileSystemManager {
   async getFolder(path) {
     await this.fsReady;
     const dir = this.paths.resolveUserPath(path);
+    const mountsRoot = this.paths.join(this.CONFIG.ROOT, "Mounts");
+
+    if (this._isMounted(dir)) {
+      const resolved = this._resolveMount(dir);
+      if (resolved) {
+        return await this.mountManager.readdir(resolved.mount, resolved.relativePath);
+      }
+    }
+
+    if (dir === mountsRoot) {
+      return this._getMountsFolder();
+    }
 
     let entries;
     try {
@@ -598,6 +644,12 @@ export class FileSystemManager {
     await this.fsReady;
     const dir = this.paths.resolveUserPath(path);
     const fullPath = this.paths.join(dir, name);
+    if (this._isMounted(fullPath)) {
+      const resolved = this._resolveMount(fullPath);
+      if (resolved) {
+        return await this.mountManager.readFile(resolved.mount, resolved.relativePath);
+      }
+    }
     try {
       return await this.pRead("readFile", fullPath, "utf8");
     } catch {
@@ -623,19 +675,27 @@ export class FileSystemManager {
 
   async createFile(path, name, content = "", kind = null, icon = null, faIcon = null) {
     await this.fsReady;
-    const uniqueName = await this.getUniqueFileName(path, name);
     const dir = this.paths.resolveUserPath(path);
-    const filePath = this.paths.join(dir, uniqueName);
+    const filePath = this.paths.join(dir, name);
+    if (this._isMounted(filePath)) {
+      const resolved = this._resolveMount(filePath);
+      if (resolved) {
+        await this.mountManager.writeFile(resolved.mount, resolved.relativePath, content);
+        return name;
+      }
+    }
+    const uniqueName = await this.getUniqueFileName(path, name);
+    const filePath2 = this.paths.join(dir, uniqueName);
     const fileKind = kind || this.inferKind(uniqueName);
     const fileIcon = icon || (fileKind === FileKind.TEXT ? "static/icons/notepad.webp" : "static/icons/file.webp");
     await this.p("mkdir", dir, { recursive: true }).catch(() => {});
     if (isBlob(content)) {
       const typedBlob = content.type ? content : new Blob([content], { type: mimeFromName(uniqueName) });
-      await this.p("writeFile", filePath, "");
+      await this.p("writeFile", filePath2, "");
       await this.metadata.writeMeta(dir, uniqueName, { kind: fileKind, icon: fileIcon, faIcon, size: typedBlob.size });
-      await this.blobs._putBlob(filePath, typedBlob);
+      await this.blobs._putBlob(filePath2, typedBlob);
     } else {
-      await this.p("writeFile", filePath, content);
+      await this.p("writeFile", filePath2, content);
       await this.metadata.writeMeta(dir, uniqueName, { kind: fileKind, icon: fileIcon, faIcon, size: content.length });
     }
     await this.notifyDesktopChange(path);
@@ -644,9 +704,18 @@ export class FileSystemManager {
 
   async createFolder(path, name) {
     await this.fsReady;
+    const dir = this.paths.resolveUserPath(path);
+    const fullPath = this.paths.join(dir, name);
+    if (this._isMounted(fullPath)) {
+      const resolved = this._resolveMount(fullPath);
+      if (resolved) {
+        await this.mountManager.mkdir(resolved.mount, resolved.relativePath);
+        return name;
+      }
+    }
     const uniqueName = await this.getUniqueFileName(path, name);
-    const dir = this.paths.join(this.paths.resolveUserPath(path), uniqueName);
-    await this.p("mkdir", dir, { recursive: true });
+    const target = this.paths.join(dir, uniqueName);
+    await this.p("mkdir", target, { recursive: true });
     await this.notifyDesktopChange(path);
     return uniqueName;
   }
@@ -655,6 +724,18 @@ export class FileSystemManager {
     await this.fsReady;
     const dir = this.paths.resolveUserPath(path);
     const target = this.paths.join(dir, name);
+    if (this._isMounted(target)) {
+      const resolved = this._resolveMount(target);
+      if (resolved) {
+        const isFile = await this.mountManager.isFile(resolved.mount, resolved.relativePath);
+        if (isFile) {
+          await this.mountManager.deleteFile(resolved.mount, resolved.relativePath);
+        } else {
+          await this.mountManager.deleteDirectory(resolved.mount, resolved.relativePath);
+        }
+        return;
+      }
+    }
     const stat = await this.pStat(target);
     if (stat.isDirectory()) {
       await this.deleteDirectoryRecursive(target);
@@ -687,6 +768,15 @@ export class FileSystemManager {
     const oldPath = this.paths.join(dir, oldName);
     const newPath = this.paths.join(dir, newName);
 
+    if (this._isMounted(oldPath) || this._isMounted(newPath)) {
+      const oldResolved = this._resolveMount(oldPath);
+      const newResolved = this._resolveMount(newPath);
+      if (oldResolved && newResolved) {
+        await this.mountManager.rename(oldResolved.mount, oldResolved.relativePath, newResolved.relativePath);
+        return;
+      }
+    }
+
     if (oldName !== newName && (await this.exists(newPath))) {
       throw new Error(`A file or folder named "${newName}" already exists.`);
     }
@@ -713,6 +803,13 @@ export class FileSystemManager {
     await this.fsReady;
     const dir = this.paths.resolveUserPath(path);
     const filePath = this.paths.join(dir, name);
+    if (this._isMounted(filePath)) {
+      const resolved = this._resolveMount(filePath);
+      if (resolved) {
+        await this.mountManager.writeFile(resolved.mount, resolved.relativePath, content);
+        return;
+      }
+    }
     const exists = await this.exists(filePath);
     if (!exists) {
       const kind = this.inferKind(name);
@@ -743,6 +840,18 @@ export class FileSystemManager {
     await this.fsReady;
     const dir = this.paths.resolveUserPath(path);
     const fullPath = this.paths.join(dir, name);
+
+    if (this._isMounted(fullPath)) {
+      const resolved = this._resolveMount(fullPath);
+      if (resolved) {
+        const blob = await this.mountManager.readFileBinary(resolved.mount, resolved.relativePath);
+        if (blob && blob.type && blob.type !== "application/octet-stream") {
+          return blob;
+        }
+        const text = await this.mountManager.readFile(resolved.mount, resolved.relativePath);
+        return text;
+      }
+    }
 
     const blob = await this.blobs._getBlobByFullPath(fullPath);
     if (blob) {
@@ -776,13 +885,23 @@ export class FileSystemManager {
 
   async getFileKind(path, name) {
     await this.fsReady;
-    const meta = await this.readMeta(this.paths.resolveUserPath(path));
+    const dir = this.paths.resolveUserPath(path);
+    const fullPath = this.paths.join(dir, name);
+    if (this._isMounted(fullPath)) {
+      return this.inferKind(name);
+    }
+    const meta = await this.readMeta(dir);
     return meta[name]?.kind ?? null;
   }
 
   async getFileIcon(path, name) {
     await this.fsReady;
-    const meta = await this.readMeta(this.paths.resolveUserPath(path));
+    const dir = this.paths.resolveUserPath(path);
+    const fullPath = this.paths.join(dir, name);
+    if (this._isMounted(fullPath)) {
+      return "static/icons/file.webp";
+    }
+    const meta = await this.readMeta(dir);
     return meta[name]?.icon ?? null;
   }
 
@@ -792,9 +911,17 @@ export class FileSystemManager {
     return meta[name]?.faIcon ?? null;
   }
 
-  isFile(path, name) {
+  async isFile(path, name) {
+    const dir = this.paths.resolveUserPath(path);
+    const fullPath = this.paths.join(dir, name);
+    if (this._isMounted(fullPath)) {
+      const resolved = this._resolveMount(fullPath);
+      if (resolved) {
+        return await this.mountManager.isFile(resolved.mount, resolved.relativePath);
+      }
+    }
     try {
-      return this.storage.statSync(this.paths.join(this.paths.resolveUserPath(path), name)).isFile();
+      return this.storage.statSync(fullPath).isFile();
     } catch {
       return false;
     }
@@ -809,14 +936,28 @@ export class FileSystemManager {
   }
 
   async exists(path) {
+    if (this._isMounted(path)) {
+      const resolved = this._resolveMount(path);
+      if (resolved) {
+        return await this.mountManager.exists(resolved.mount, resolved.relativePath);
+      }
+    }
     return this.storage.exists(path);
   }
 
   async writeBinaryFile(folderPath, name, blob, kind = null, icon = null) {
     await this.fsReady;
-    const uniqueName = await this.getUniqueFileName(folderPath, name);
     const dir = this.paths.resolveUserPath(folderPath);
-    const fullPath = this.paths.join(dir, uniqueName);
+    const fullPath = this.paths.join(dir, name);
+    if (this._isMounted(fullPath)) {
+      const resolved = this._resolveMount(fullPath);
+      if (resolved) {
+        await this.mountManager.writeFile(resolved.mount, resolved.relativePath, blob);
+        return name;
+      }
+    }
+    const uniqueName = await this.getUniqueFileName(folderPath, name);
+    const fullPath2 = this.paths.join(dir, uniqueName);
     const fileKind = kind || this.inferKind(name);
 
     const iconMap = {
@@ -830,9 +971,9 @@ export class FileSystemManager {
 
     await this.p("mkdir", dir, { recursive: true }).catch(() => {});
     const typedBlob = isBlob(blob) && !blob.type ? new Blob([blob], { type: mimeFromName(name) }) : blob;
-    await this.p("writeFile", fullPath, "");
+    await this.p("writeFile", fullPath2, "");
     await this.metadata.writeMeta(dir, uniqueName, { kind: fileKind, icon: fileIcon, size: fileSize });
-    await this.blobs._putBlob(fullPath, typedBlob);
+    await this.blobs._putBlob(fullPath2, typedBlob);
     await this.notifyDesktopChange(folderPath);
     return uniqueName;
   }
@@ -841,6 +982,12 @@ export class FileSystemManager {
     await this.fsReady;
     const dir = this.paths.resolveUserPath(folderPath);
     const fullPath = this.paths.join(dir, name);
+    if (this._isMounted(fullPath)) {
+      const resolved = this._resolveMount(fullPath);
+      if (resolved) {
+        return await this.mountManager.readFileBinary(resolved.mount, resolved.relativePath);
+      }
+    }
     const blob = await this.blobs._getBlobByFullPath(fullPath);
     if (!blob) {
       return null;
@@ -852,6 +999,13 @@ export class FileSystemManager {
     await this.fsReady;
     const dir = this.paths.resolveUserPath(folderPath);
     const fullPath = this.paths.join(dir, name);
+    if (this._isMounted(fullPath)) {
+      const resolved = this._resolveMount(fullPath);
+      if (resolved) {
+        await this.mountManager.deleteFile(resolved.mount, resolved.relativePath);
+        return;
+      }
+    }
     await this.p("unlink", fullPath).catch(() => {});
     await this.metadata.removeMeta(dir, name);
     await this.blobs._deleteBlobByFullPath(fullPath);
@@ -863,6 +1017,15 @@ export class FileSystemManager {
     const dir = this.paths.resolveUserPath(folderPath);
     const oldPath = this.paths.join(dir, oldName);
     const newPath = this.paths.join(dir, newName);
+
+    if (this._isMounted(oldPath)) {
+      const oldResolved = this._resolveMount(oldPath);
+      const newResolved = this._resolveMount(newPath);
+      if (oldResolved && newResolved) {
+        await this.mountManager.rename(oldResolved.mount, oldResolved.relativePath, newResolved.relativePath);
+        return;
+      }
+    }
 
     if (oldName !== newName && (await this.exists(newPath))) {
       throw new Error(`A file named "${newName}" already exists.`);

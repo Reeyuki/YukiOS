@@ -133,11 +133,8 @@ export class TerminalApp extends BaseApp {
 
     this.terminalOutput.appendChild(line);
 
-    for (let i = 0; i < text.length; i++) {
-      span.textContent += text[i];
-      await new Promise((r) => setTimeout(r, delay));
-      this.terminalOutput.parentElement.scrollTop = this.terminalOutput.parentElement.scrollHeight;
-    }
+    span.textContent = text;
+    this.terminalOutput.parentElement.scrollTop = this.terminalOutput.parentElement.scrollHeight;
 
     this.printDepth--;
     if (this.printDepth === 0) {
@@ -669,18 +666,8 @@ export class TerminalApp extends BaseApp {
     };
 
     const calcSize = async (path) => {
-      let total = 0;
-      try {
-        const items = await os.fs.readdir(this.pathToString(path));
-        for (const [name, meta] of Object.entries(items)) {
-          if (meta.type === "file") {
-            total += meta.size || 0;
-          } else {
-            total += await calcSize([...path, name]);
-          }
-        }
-      } catch {}
-      return total;
+      const { size } = await os.fs.calcDirSize(path);
+      return size;
     };
 
     const readItems = async (path) => {

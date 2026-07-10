@@ -46,7 +46,7 @@ export async function startInlineRename(explorer, itemEl, currentName, inst) {
   spanEl.style.display = "none";
 
   const { wrap, input, errorTip } = createInlineInput(currentName);
-  itemEl.appendChild(wrap);
+  itemEl.insertBefore(wrap, spanEl.nextSibling);
 
   const dotIdx = currentName.lastIndexOf(".");
   input.focus();

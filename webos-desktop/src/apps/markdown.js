@@ -80,7 +80,7 @@ export class MarkdownApp extends BaseApp {
             await this.loadMarked();
             this.loadMarkdownCSS();
           } catch (error) {
-            os.notify.send("Markdown renderer unavailable.", "", { icon: "static/icons/markdown.webp" });
+            os.notify.send("Markdown renderer unavailable.", "", { icon: "fab fa-markdown" });
             return;
           }
 
@@ -96,7 +96,26 @@ export class MarkdownApp extends BaseApp {
     };
   }
 
-  loadContent(fileName, content, filePath) {
-    this.open(fileName, content, filePath);
+  async open(fileName = "README.md", content = "", filePath = null) {
+    const winId = `markdown-${Date.now()}`;
+    const win = os.window.create(winId, fileName, "750px", "550px", {
+      icon: "fab fa-markdown",
+      iconColor: "#519aba"
+    });
+    win.innerHTML = `
+      <div class="window-content markdown-container">
+        <article class="markdown-body" id="${winId}-content"></article>
+      </div>`;
+
+    try {
+      await this.loadMarked();
+      this.loadMarkdownCSS();
+      const decoded = decodeDataURLContent(content);
+      const rendered = this.marked.parse(decoded);
+      const el = win.querySelector(`#${winId}-content`);
+      if (el) el.innerHTML = rendered;
+    } catch (e) {
+      os.notify.send("Markdown renderer unavailable.", "", { icon: "fab fa-markdown" });
+    }
   }
 }

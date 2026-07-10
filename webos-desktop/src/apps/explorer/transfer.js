@@ -12,7 +12,6 @@ export async function pasteToPath(explorer, destPath, inst) {
 
   const { action } = cb;
   let pastedCount = 0;
-  let applyToAllAction = null;
 
   const copyFile = async (name, srcPath) => {
     const kind = await explorer.fs.getFileKind(srcPath, name);
@@ -22,24 +21,13 @@ export async function pasteToPath(explorer, destPath, inst) {
     const destFilePath = explorer.fs.join(destDir, name);
     const destExists = await os.fs.exists(destFilePath);
 
-    let resolvedAction = "replace";
+    let finalName = name;
     if (destExists) {
-      const result = await resolveConflictAction(name, applyToAllAction);
-      if (result.applyToAll) applyToAllAction = result.action;
-      resolvedAction = result.action;
+      finalName = await explorer.fs.getUniqueFileName(destPath, name);
     }
-
-    if (resolvedAction === "skip") return null;
-
-    let finalName = resolvedAction === "keep" ? await explorer.fs.getUniqueFileName(destPath, name) : name;
 
     const content = await explorer.fs.getFileContent(srcPath, name);
-    if (resolvedAction === "replace") {
-      await os.fs.delete(destPath, name).catch(() => {});
-      await os.fs.createFile(destPath, name, content, kind, fileIcon);
-    } else {
-      await os.fs.createFile(destPath, finalName, content, kind, fileIcon);
-    }
+    await os.fs.createFile(destPath, finalName, content, kind, fileIcon);
 
     return finalName;
   };
@@ -60,21 +48,8 @@ export async function pasteToPath(explorer, destPath, inst) {
       const destDir = explorer.fs.resolveUserPath(destFolderPath);
       const childExists = await os.fs.exists(explorer.fs.join(destDir, childName));
 
-      let resolvedAction = "replace";
-      if (childExists) {
-        const result = await resolveConflictAction(childName, applyToAllAction);
-        if (result.applyToAll) applyToAllAction = result.action;
-        resolvedAction = result.action;
-      }
-
-      if (resolvedAction === "skip") continue;
-
-      if (resolvedAction === "replace") {
-        await explorer.fs.updateFile(destFolderPath, childName, childContent);
-        await explorer.fs.writeMeta(destDir, childName, { kind: childKind, icon: childIcon });
-      } else {
-        await explorer.fs.createFile(destFolderPath, childName, childContent, childKind, childIcon);
-      }
+      const childFinalName = childExists ? await explorer.fs.getUniqueFileName(destFolderPath, childName) : childName;
+      await explorer.fs.createFile(destFolderPath, childFinalName, childContent, childKind, childIcon);
     }
 
     return uniqueName;
@@ -144,12 +119,6 @@ export async function pasteToPath(explorer, destPath, inst) {
     os.notify.send(`${pastedCount} ${pluralize(pastedCount, "item")} pasted`);
     await explorer.renderInstance(inst);
   }
-}
-
-async function resolveConflictAction(name, applyToAllAction) {
-  if (applyToAllAction) return { action: applyToAllAction, applyToAll: false };
-  const { showConflictDialog } = await import("../../shared/conflictDialog.js");
-  return showConflictDialog(name);
 }
 
 export async function downloadItems(explorer, itemName, isFile, inst) {

@@ -1,5 +1,5 @@
 import "../styles/explorer.css";
-import { BaseApp, os } from "../framework.js";
+import { BaseApp, StorageKeys, os } from "../framework.js";
 import { KeybindManager } from "../keybindManager.js";
 import {
   $,
@@ -24,19 +24,33 @@ import {
 import { scheduleFileTooltip, hideFileTooltip } from "../shared/fileTooltip.js";
 import { ClippyAnimation, speak } from "../ai/clippy.js";
 import { ArchiveExtractor } from "../archiveExtractor.js";
-import { formatSize, pluralize, isWindowFocused } from "../utils/utils.js";
+import { formatSize, pluralize, isWindowFocused, buildClipboardIcons } from "../utils/utils.js";
 import { resolveDesktopIcon } from "../shared/iconUtils.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { AppSource } from "../AppSource.js";
+import { showDynamicContextMenu } from "../shared/contextMenu.js";
 
 import { showConfirmDialog, showInputDialog, showArchiveDialog } from "./explorer/dialogs.js";
-import { showFileContextMenu, showBackgroundContextMenu } from "./explorer/contextMenus.js";
-import { handleFileUpload, uploadSingleFile, saveToWallpapers, triggerFileUpload } from "./explorer/upload.js";
+import {
+  showFileContextMenu,
+  showBackgroundContextMenu,
+  showSidebarItemContextMenu,
+  showTrashContextMenu
+} from "./explorer/contextMenus.js";
+import { handleFileUpload, uploadSingleFile, saveToWallpapers } from "./explorer/upload.js";
 import { showTrashView, renderTrashView } from "./explorer/trash.js";
 import { startInlineRename, spawnInlineItem } from "./explorer/inlineRename.js";
 import { pasteToPath, downloadItems, createArchiveFromItems } from "./explorer/transfer.js";
 
 export class ExplorerApp extends BaseApp {
+  get viewMode() {
+    return os.storage.get(StorageKeys.explorerViewMode) || "grid";
+  }
+
+  set viewMode(mode) {
+    os.storage.set(StorageKeys.explorerViewMode, mode);
+  }
+
   constructor(services) {
     super(services);
     this.fs = services.fileSystemManager;
@@ -86,7 +100,11 @@ export class ExplorerApp extends BaseApp {
       selectedItems: new Set(),
       mode: mode || "browse",
       _isRendering: false,
-      _isTrashView: false
+      _isTrashView: false,
+      _isDiskView: false,
+      sortBy: "name",
+      sortDir: "asc",
+      _lastClickedIndex: -1
     };
     this._instances.set(winId, inst);
     return inst;
@@ -106,6 +124,32 @@ export class ExplorerApp extends BaseApp {
     if (this.desktopUI) this.desktopUI.setClipboard(data);
   }
 
+  _clipboardAction(action, inst, itemName, isFile) {
+    const win = $(`#${inst.winId}`);
+    const view = win && $(`#${inst.winId}-view`, win);
+    const items = buildClipboardIcons(
+      inst.selectedItems,
+      itemName || [...inst.selectedItems][0],
+      isFile ?? true,
+      view,
+      inst.currentPath
+    );
+    this._setClipboard({ source: "explorer", action, icons: items, sourceInst: inst });
+
+    if (action === "cut" && view) {
+      items.forEach(({ data: { name: n } }) => {
+        const el = $$(".file-item", view).find((el) => el.querySelector("span")?.textContent === n);
+        if (el) setStyle(el, { opacity: "0.5" });
+      });
+    }
+
+    os.notify.send(`${items.length} ${pluralize(items.length, "item")} ${action}`);
+  }
+
+  _pasteToCurrentPath(inst) {
+    return pasteToPath(this, inst.currentPath, inst);
+  }
+
   _watchWindowRemoval(winId) {
     const observer = new MutationObserver(() => {
       if (!$(`#${winId}`)) {
@@ -122,31 +166,171 @@ export class ExplorerApp extends BaseApp {
     this._removeInstance(winId);
   }
 
-  _sidebarHTML() {
-    return `
-      <div class="explorer-sidebar">
-        <div class="start-item" data-path=""><i class="fas fa-home sidebar-icon-fa"></i>Home</div>
-        <div class="start-item" data-path="Documents"><i class="fas fa-file-alt sidebar-icon-fa"></i>Documents</div>
-        <div class="start-item" data-path="Desktop"><i class="fas fa-desktop sidebar-icon-fa"></i>Desktop</div>
-        <div class="start-item" data-path="Pictures"><i class="fas fa-image sidebar-icon-fa"></i>Pictures</div>
-        <div class="start-item" data-path="Music"><i class="fas fa-music sidebar-icon-fa"></i>Music</div>
-        <div class="start-item" data-path="Videos"><i class="fas fa-video sidebar-icon-fa"></i>Videos</div>
-        <div class="start-item explorer-trash-item" data-path="__trash__"><i class="fas fa-trash sidebar-icon-fa"></i>Trash</div>
-        <div class="explorer-storage">
-          <i class="fas fa-database"></i>
-          <span class="explorer-storage-size">Calculating...</span>
-        </div>
-      </div>`;
+  _sidebarHTML(variant = "browse") {
+    const isDialog = variant !== "browse";
+    const collapsed = os.storage.get(StorageKeys.explorerSidebarCollapsed) || {};
+    const quickCollapsed = collapsed.quick ? "collapsed" : "";
+    const pcCollapsed = collapsed.pc ? "collapsed" : "";
+
+    const quickItems = [
+      { path: "", icon: '<i class="fas fa-home"></i>', label: "Home" },
+      { path: "Desktop", icon: '<i class="fas fa-desktop"></i>', label: "Desktop" },
+      { path: "Downloads", icon: '<i class="fas fa-download"></i>', label: "Downloads" },
+      { path: "Documents", icon: '<i class="fas fa-file-lines"></i>', label: "Documents" },
+      { path: "Pictures", icon: '<i class="fas fa-image"></i>', label: "Pictures" }
+    ];
+    if (variant !== "directory") {
+      quickItems.push(
+        { path: "Music", icon: '<i class="fas fa-music"></i>', label: "Music" },
+        { path: "Videos", icon: '<i class="fas fa-video"></i>', label: "Videos" }
+      );
+    }
+
+    let html = '<div class="explorer-sidebar">';
+
+    html += `<div class="sidebar-section ${quickCollapsed}">`;
+    html += '<div class="sidebar-section-header" data-section="quick">';
+    html += '<i class="fas fa-chevron-down sidebar-chevron"></i>';
+    html += "<span>Quick Access</span></div>";
+    html += '<div class="sidebar-section-body">';
+    const qaHidden = new Set(os.storage.get(StorageKeys.explorerQuickAccessHidden) || []);
+    const visibleDefaults = quickItems.filter((q) => !qaHidden.has(q.path));
+    for (const { path, icon, label } of visibleDefaults) {
+      html += `<div class="nav-item" data-path="${path}">${icon}<span>${label}</span></div>`;
+    }
+    const pinned = os.storage.get(StorageKeys.explorerQuickAccess) || [];
+    for (const p of pinned) {
+      if (!quickItems.some((q) => q.path === p.path)) {
+        html += `<div class="nav-item nav-item--pinned" data-path="${p.path}"><i class="fas fa-thumbtack"></i><span>${p.label}</span></div>`;
+      }
+    }
+    html += "</div></div>";
+
+    html += `<div class="sidebar-section ${pcCollapsed}">`;
+    html += '<div class="sidebar-section-header" data-section="pc">';
+    html += '<i class="fas fa-chevron-down sidebar-chevron"></i>';
+    html += "<span>This PC</span></div>";
+    html += '<div class="sidebar-section-body">';
+    html +=
+      '<div class="nav-item nav-item--disk" data-path="__disk__"><i class="fas fa-hdd"></i><span>Local Disk (C:)</span></div>';
+    html += '<div class="explorer-storage-mounts"></div>';
+    html += "</div></div>";
+
+    html += '<div class="sidebar-section sidebar-section--trash">';
+    html +=
+      '<div class="nav-item nav-item--trash" data-path="__trash__"><i class="fas fa-trash"></i><span>Trash</span></div>';
+    html += "</div>";
+
+    html += "</div>";
+    return html;
   }
+
+  _sidebarRebuild(win, inst) {
+    const sidebar = win.querySelector(".explorer-sidebar");
+    if (!sidebar) return;
+    sidebar.innerHTML = this._sidebarHTML(inst.mode);
+    this._bindSidebar(win, inst);
+    this._renderMountsInSidebar(win, inst);
+    this._updateActiveSidebar(inst);
+  }
+
   _bindSidebar(win, inst) {
-    $$(".explorer-sidebar .start-item", win).forEach((item) => {
+    $$(".explorer-sidebar .nav-item", win).forEach((item) => {
       const rawPath = item.dataset.path;
+      const mountPoint = item.dataset.mount;
       if (rawPath === "__trash__") {
         item.onclick = () => showTrashView(this, inst);
+        item.oncontextmenu = (e) => showTrashContextMenu(this, e, inst);
+      } else if (rawPath === "__disk__") {
+        item.onclick = () => this._showDiskView(inst);
+      } else if (mountPoint) {
+        item.onclick = () => this.navigateInstance(inst, mountPoint.split("/").filter(Boolean));
+        const label = item.dataset.label;
+        item.oncontextmenu = (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          showDynamicContextMenu(e, (menu, menuItem, hr) => {
+            menu.appendChild(
+              menuItem(
+                "Open",
+                () => this.navigateInstance(inst, mountPoint.split("/").filter(Boolean)),
+                "fa-folder-open"
+              )
+            );
+            menu.appendChild(
+              menuItem(
+                "Open in New Window",
+                () => this.open([...mountPoint.split("/").filter(Boolean)]),
+                "fa-external-link-alt"
+              )
+            );
+            menu.appendChild(hr());
+            menu.appendChild(
+              menuItem(
+                "Copy Path",
+                () => {
+                  navigator.clipboard.writeText("/" + mountPoint).catch(() => {});
+                  os.notify.send(`Path copied: /${mountPoint}`);
+                },
+                "fa-copy"
+              )
+            );
+            menu.appendChild(
+              menuItem(
+                "Unmount",
+                () => {
+                  os.dialog.confirm("Unmount", `Unmount "${label}"?`).then((confirmed) => {
+                    if (confirmed) {
+                      os.fs.unmount(label);
+                      this._renderMountsInSidebar(win, inst);
+                      this.renderInstance(inst);
+                    }
+                  });
+                },
+                "fa-eject"
+              )
+            );
+          });
+        };
       } else {
         item.onclick = () => this.navigateInstance(inst, rawPath.split("/").filter(Boolean));
+        item.oncontextmenu = (e) => {
+          const label = item.textContent.trim();
+          showSidebarItemContextMenu(this, e, rawPath || "", label, inst);
+        };
       }
     });
+
+    $$(".sidebar-section-header", win).forEach((header) => {
+      header.onclick = () => {
+        const section = header.parentElement;
+        if (!section) return;
+        section.classList.toggle("collapsed");
+        const collapsed = os.storage.get(StorageKeys.explorerSidebarCollapsed) || {};
+        const key = header.dataset.section;
+        if (key) {
+          collapsed[key] = section.classList.contains("collapsed");
+          os.storage.set(StorageKeys.explorerSidebarCollapsed, collapsed);
+        }
+      };
+    });
+  }
+
+  _renderMountsInSidebar(win, inst) {
+    const container = win.querySelector(".explorer-storage-mounts");
+    if (!container) return;
+    const mounts = os.fs.getMounts();
+    if (!mounts.length) {
+      container.style.display = "none";
+      return;
+    }
+    container.style.display = "";
+    container.innerHTML = mounts
+      .map(
+        (m) =>
+          `<div class="nav-item" data-mount="${m.mountPoint}" data-label="${m.label}"><i class="fas fa-hdd" style="width:14px;text-align:center;font-size:11px;color:var(--brand);opacity:0.7;flex-shrink:0;"></i><span>${m.label}</span></div>`
+      )
+      .join("");
   }
 
   _bindBackButton(win, inst) {
@@ -161,6 +345,7 @@ export class ExplorerApp extends BaseApp {
 
   _initExplorerView(win, winId) {
     const view = $(`#${winId}-view`, win);
+    if (view) view.tabIndex = -1;
     return view;
   }
 
@@ -193,41 +378,28 @@ export class ExplorerApp extends BaseApp {
 
     win.innerHTML = `
       <div class="explorer-nav">
-        <div class="back-btn" id="${winId}-back">← Back</div>
-        <div class="back-btn" id="${winId}-next" style="margin-left:4px">→ Next</div>
-        <input
-          type="text"
-          class="explorer-win-path"
-          id="${winId}-path"
-          spellcheck="false"
-        >
-        <input
-          type="text"
-          id="${winId}-search"
-          placeholder="Search..."
-          spellcheck="false"
-          style="
-            margin-left:auto;padding:4px 10px;border-radius:5px;
-            border:1px solid rgba(255,255,255,0.15);
-            background:transparent;color:#fff;font-size:12px;
-            outline:none;font-family:inherit;width:160px;
-          "
-        >
-        ${
-          isSelector
-            ? ""
-            : `
-        <div class="explorer-upload-area" id="${winId}-upload-area">
-          <label class="explorer-upload-btn" title="Upload files">
-            ⬆ Upload
-            <input type="file" id="${winId}-file-input" multiple style="display:none">
-          </label>
-          <label class="explorer-upload-btn" title="Upload folder" style="margin-left:4px">
-            📁 Folder
-            <input type="file" id="${winId}-folder-input" multiple webkitdirectory style="display:none">
-          </label>
-        </div>`
-        }
+        <div class="back-btn" id="${winId}-back" title="Back"><i class="fas fa-chevron-left"></i></div>
+        <div class="back-btn" id="${winId}-next" title="Next"><i class="fas fa-chevron-right"></i></div>
+        <div class="back-btn" id="${winId}-up" title="Up"><i class="fas fa-arrow-up"></i></div>
+        <div class="explorer-path-wrap">
+          <input
+            type="text"
+            class="explorer-win-path"
+            id="${winId}-path"
+            spellcheck="false"
+          >
+          <i class="fas fa-sync-alt explorer-reload-icon" id="${winId}-reload"></i>
+        </div>
+        <div class="explorer-search-wrap">
+          <input
+            type="text"
+            id="${winId}-search"
+            class="explorer-search-input"
+            placeholder="Search..."
+            spellcheck="false"
+          >
+          <i class="fas fa-search explorer-search-icon"></i>
+        </div>
       </div>
       <div class="explorer-container">
         ${this._sidebarHTML()}
@@ -241,18 +413,15 @@ export class ExplorerApp extends BaseApp {
         <button id="${winId}-select-btn" class="explorer-select-confirm-btn" disabled>Select This File</button>
       </div>`
           : `
-      <div id="${winId}-status-bar" style="
-        display:flex;align-items:center;gap:0;
-        padding:4px 12px;
-        background:rgba(79, 158, 255, 0.1);
-        border-top:1px solid rgba(79, 158, 255, 0.15);
-        flex-shrink:0;font-size:11px;color:rgba(255,255,255,0.6);
-        min-height:24px;
-      ">
+      <div class="explorer-status-bar" id="${winId}-status-bar">
         <span id="${winId}-status-items"></span>
-        <span id="${winId}-status-selected" style="margin-left:auto"></span>
+        <span class="explorer-status-selected" id="${winId}-status-selected"></span>
+        <div class="explorer-view-toggle" id="${winId}-view-toggle">
+          <i class="fas fa-th explorer-view-btn" id="${winId}-view-grid" title="Grid view"></i>
+          <i class="fas fa-list explorer-view-btn" id="${winId}-view-list" title="List view"></i>
+        </div>
       </div>
-      <div id="${winId}-upload-progress" style="display:none;position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.7);color:#fff;font-size:12px;padding:6px 10px;z-index:10;border-radius:0 0 6px 6px;">
+      <div class="explorer-upload-progress" id="${winId}-upload-progress">
         Uploading...
       </div>`
       }
@@ -278,7 +447,7 @@ export class ExplorerApp extends BaseApp {
 
     win.innerHTML = `
       <div class="explorer-nav">
-        <div class="back-btn" id="${winId}-back">← Back</div>
+        <div class="back-btn" id="${winId}-back" title="Back"><i class="fas fa-chevron-left"></i></div>
         <input
           type="text"
           class="explorer-win-path"
@@ -287,48 +456,20 @@ export class ExplorerApp extends BaseApp {
         >
       </div>
       <div class="explorer-container">
-        <div class="explorer-sidebar">
-          <div class="start-item" data-path=""><img src="${resolveIconUrl("static/icons/file.webp")}" class="sidebar-icon">Home</div>
-          <div class="start-item" data-path="Documents"><img src="${resolveIconUrl("static/icons/notepad.webp")}" class="sidebar-icon">Documents</div>
-          <div class="start-item" data-path="Desktop"><i class="fas fa-desktop sidebar-icon-fa"></i>Desktop</div>
-          <div class="start-item" data-path="Pictures"><i class="fas fa-image sidebar-icon-fa"></i>Pictures</div>
-          <div class="explorer-storage">
-            <i class="fas fa-database"></i>
-            <span class="explorer-storage-size">Calculating...</span>
-          </div>
-        </div>
+        ${this._sidebarHTML("save")}
         <div class="explorer-main" id="${winId}-view"></div>
       </div>
-      <div id="${winId}-save-bar" style="
-        display:flex;align-items:center;gap:8px;
-        padding:8px 12px;
-        background:rgba(79, 158, 255, 0.08);
-        border-top:1px solid rgba(79, 158, 255, 0.15);
-        flex-shrink:0;
-      ">
-        <label style="color:#aaa;font-size:12px;white-space:nowrap;">File name:</label>
+      <div class="explorer-save-bar" id="${winId}-save-bar">
+        <label>File name:</label>
         <input
           id="${winId}-filename-input"
+          class="explorer-filename-input"
           type="text"
           value="${defaultFileName}"
           spellcheck="false"
-          style="
-            flex:1;padding:6px 10px;border-radius:5px;
-            border:1px solid rgba(255,255,255,0.15);
-            background:transparent;color:#fff;font-size:13px;
-            outline:none;font-family:inherit;
-          "
         >
-        <button id="${winId}-save-btn" style="
-          padding:6px 18px;border-radius:5px;border:none;
-          background:#2a6db5;color:#fff;font-size:13px;
-          cursor:pointer;font-family:inherit;white-space:nowrap;
-        ">Save</button>
-        <button id="${winId}-cancel-btn" style="
-          padding:6px 14px;border-radius:5px;border:none;
-          background:rgba(255,255,255,0.08);color:#ccc;font-size:13px;
-          cursor:pointer;font-family:inherit;
-        ">Cancel</button>
+        <button id="${winId}-save-btn" class="explorer-save-btn">Save</button>
+        <button id="${winId}-cancel-btn" class="explorer-dialog-cancel-btn">Cancel</button>
       </div>
     `;
 
@@ -385,7 +526,7 @@ export class ExplorerApp extends BaseApp {
 
     win.innerHTML = `
       <div class="explorer-nav">
-        <div class="back-btn" id="${winId}-back">← Back</div>
+        <div class="back-btn" id="${winId}-back" title="Back"><i class="fas fa-chevron-left"></i></div>
         <input
           type="text"
           class="explorer-win-path"
@@ -394,26 +535,10 @@ export class ExplorerApp extends BaseApp {
         >
       </div>
       <div class="explorer-container">
-        <div class="explorer-sidebar">
-          <div class="start-item" data-path=""><img src="${resolveIconUrl("static/icons/file.webp")}" class="sidebar-icon">Home</div>
-          <div class="start-item" data-path="Documents"><img src="${resolveIconUrl("static/icons/notepad.webp")}" class="sidebar-icon">Documents</div>
-          <div class="start-item" data-path="Desktop"><i class="fas fa-desktop sidebar-icon-fa"></i>Desktop</div>
-          <div class="start-item" data-path="Pictures"><i class="fas fa-image sidebar-icon-fa"></i>Pictures</div>
-          <div class="start-item" data-path="Downloads"><i class="fas fa-download sidebar-icon-fa"></i>Downloads</div>
-          <div class="explorer-storage">
-            <i class="fas fa-database"></i>
-            <span class="explorer-storage-size">Calculating...</span>
-          </div>
-        </div>
+        ${this._sidebarHTML("directory")}
         <div class="explorer-main" id="${winId}-view"></div>
       </div>
-      <div id="${winId}-dir-bar" style="
-        display:flex;align-items:center;gap:8px;
-        padding:8px 12px;
-        background:rgba(79, 158, 255, 0.08);
-        border-top:1px solid rgba(79, 158, 255, 0.15);
-        flex-shrink:0;
-      ">
+      <div class="explorer-dir-bar" id="${winId}-dir-bar">
         <label style="color:#aaa;font-size:12px;white-space:nowrap;">Selected:</label>
         <span id="${winId}-selected-path" style="
           flex:1;color:#fff;font-size:13px;
@@ -488,6 +613,15 @@ export class ExplorerApp extends BaseApp {
       };
     }
 
+    const upBtn = $(`#${winId}-up`, win);
+    if (upBtn) {
+      upBtn.onclick = () => {
+        if (inst.currentPath.length > 0) {
+          this.navigateInstance(inst, inst.currentPath.slice(0, -1));
+        }
+      };
+    }
+
     const searchInput = $(`#${winId}-search`, win);
     if (searchInput) {
       bindEvents(searchInput, {
@@ -502,18 +636,17 @@ export class ExplorerApp extends BaseApp {
       });
     }
 
+    this._setupViewToggle(win, inst);
+
     this._bindSidebar(win, inst);
 
     const viewEl = $(`#${winId}-view`, win);
     bindEvent(viewEl, "contextmenu", (e) => {
+      if (e.altKey) return;
       if (e.target === viewEl) showBackgroundContextMenu(this, e, inst);
     });
 
-    const lastMousePos = { x: 0, y: 0 };
-    bindEvent(win, "mousemove", (e) => {
-      lastMousePos.x = e.clientX;
-      lastMousePos.y = e.clientY;
-    });
+    bindEvent(win, "contextmenu", (e) => e.preventDefault());
 
     const explorerKeyHandler = (e) => {
       if (!$(`#${winId}`)) {
@@ -522,70 +655,138 @@ export class ExplorerApp extends BaseApp {
       }
       const active = document.activeElement;
       if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA" || active.isContentEditable)) return;
-      if (!isWindowFocused(winId, lastMousePos)) return;
+      if (!win.contains(document.activeElement)) return;
 
-      if (KeybindManager.matches(e, "desktop.paste")) {
+      if (e.key === "Delete" || KeybindManager.matches(e, "desktop.delete")) {
         e.preventDefault();
-        pasteToPath(this, inst.currentPath, inst);
+        if (!inst.selectedItems.size) return;
+        const names = [...inst.selectedItems];
+        inst.selectedItems = new Set();
+        Promise.all(names.map((n) => os.fs.trashFile(inst.currentPath, n))).then(() => {
+          os.notify.send(`${names.length} ${pluralize(names.length, "item")} moved to trash`);
+          this.renderInstance(inst);
+        });
         return;
       }
 
-      if (!e.ctrlKey) return;
-
-      if (KeybindManager.matches(e, "desktop.copy")) {
+      if (e.key === "F5") {
         e.preventDefault();
-      } else if (KeybindManager.matches(e, "desktop.cut")) {
-        e.preventDefault();
-      } else {
+        this.renderInstance(inst);
         return;
       }
 
-      if (!inst.selectedItems.size) return;
+      if (e.key === "F2" || KeybindManager.matches(e, "desktop.rename")) {
+        e.preventDefault();
+        const selectedName = inst.selectedFile || (inst.selectedItems.size === 1 ? [...inst.selectedItems][0] : null);
+        if (!selectedName) return;
+        const view = $(`#${winId}-view`, win);
+        const itemEl =
+          view && $$(".file-item", view).find((el) => el.querySelector("span")?.textContent === selectedName);
+        if (itemEl) startInlineRename(this, itemEl, selectedName, inst);
+        return;
+      }
 
-      const action = KeybindManager.matches(e, "desktop.cut") ? "cut" : "copy";
-      const view = $(`#${winId}-view`, win);
-      const icons = [...inst.selectedItems]
-        .map((name) => {
-          const el = view ? $$(".file-item", view).find((el) => el.querySelector("span")?.textContent === name) : null;
-          return { name, isFile: el?.dataset.isFile === "true" ?? true };
-        })
-        .map(({ name, isFile }) => ({
-          element: null,
-          data: { name, path: inst.currentPath, isFile }
-        }));
+      if (e.key === "Enter") {
+        e.preventDefault();
+        const view = $(`#${winId}-view`, win);
+        if (!view) return;
+        const sel = [...inst.selectedItems];
+        if (sel.length === 1) {
+          this.openItemForInstance(inst, sel[0], null);
+        }
+        return;
+      }
 
-      this._setClipboard({ action, items: icons, sourcePath: inst.currentPath });
+      if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+        e.preventDefault();
+        const view = $(`#${winId}-view`, win);
+        if (!view) return;
+        const items = $$(".file-item", view);
+        if (!items.length) return;
+        const selectedIdx = items.findIndex((el) =>
+          inst.selectedItems.has(el.querySelector("span")?.textContent || "")
+        );
+        let nextIdx;
+        if (e.key === "ArrowDown") {
+          nextIdx = selectedIdx < items.length - 1 ? selectedIdx + 1 : 0;
+        } else {
+          nextIdx = selectedIdx > 0 ? selectedIdx - 1 : items.length - 1;
+        }
+        const el = items[nextIdx];
+        const name = el.querySelector("span")?.textContent;
+        if (name) {
+          if (!e.shiftKey) {
+            $$(".file-item.explorer-selected", view).forEach((el) => removeClass(el, "explorer-selected"));
+            inst.selectedItems = new Set();
+          }
+          this._selectExplorerItem(inst, name, el, false, false);
+          el.scrollIntoView({ block: "nearest" });
+        }
+        return;
+      }
+
+      if (e.ctrlKey && (e.key === "f" || e.key === "F")) {
+        e.preventDefault();
+        const searchInput = $(`#${winId}-search`, win);
+        if (searchInput) {
+          searchInput.focus();
+          searchInput.select();
+        }
+        return;
+      }
+
+      if (e.ctrlKey && (e.key === "a" || e.key === "A")) {
+        e.preventDefault();
+        const view = $(`#${winId}-view`, win);
+        if (!view || inst._isDiskView || inst._isTrashView) return;
+        $$(".file-item", view).forEach((el) => {
+          addClass(el, "explorer-selected");
+          const name = el.querySelector("span")?.textContent;
+          if (name) inst.selectedItems.add(name);
+        });
+        this._updateStatusBar(inst, inst._cachedFolder);
+        return;
+      }
+
+      if (KeybindManager.matches(e, "desktop.copy") || (e.ctrlKey && (e.key === "c" || e.key === "C"))) {
+        e.preventDefault();
+        this._clipboardAction("copy", inst);
+        return;
+      }
+      if (KeybindManager.matches(e, "desktop.cut") || (e.ctrlKey && (e.key === "x" || e.key === "X"))) {
+        e.preventDefault();
+        this._clipboardAction("cut", inst);
+        return;
+      }
+      return;
     };
     document.addEventListener("keydown", explorerKeyHandler);
 
-    const renameKeyHandler = (e) => {
-      if (!$(`#${winId}`)) {
-        document.removeEventListener("keydown", renameKeyHandler);
-        return;
-      }
-      const active = document.activeElement;
-      if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA" || active.isContentEditable)) return;
-      if (!isWindowFocused(winId, lastMousePos) || !KeybindManager.matches(e, "desktop.rename")) return;
-      e.preventDefault();
-
-      const selectedName = inst.selectedFile || (inst.selectedItems.size === 1 ? [...inst.selectedItems][0] : null);
-      if (!selectedName) return;
-
-      const view = $(`#${winId}-view`, win);
-      const itemEl =
-        view && $$(".file-item", view).find((el) => el.querySelector("span")?.textContent === selectedName);
-      if (itemEl) startInlineRename(this, itemEl, selectedName, inst);
-    };
-    document.addEventListener("keydown", renameKeyHandler);
-
     this._setupSelectionBox(win, winId);
     this._setupDropZone(win, winId);
-    this._setupUploadInputs(win, winId, inst);
   }
 
   _setupPathInput(win, inst) {
     const pathInput = $(`#${inst.winId}-path`, win);
     if (!pathInput || pathInput.tagName !== "INPUT") return;
+
+    bindEvent(pathInput, "contextmenu", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      showDynamicContextMenu(e, (menu, item, hr) => {
+        menu.appendChild(
+          item(
+            "Copy Path",
+            () => {
+              const fullPath = "/" + inst.currentPath.join("/");
+              navigator.clipboard.writeText(fullPath).catch(() => {});
+              os.notify.send(`Path copied: ${fullPath}`);
+            },
+            "fa-copy"
+          )
+        );
+      });
+    });
 
     bindEvents(pathInput, {
       keydown: async (e) => {
@@ -627,6 +828,126 @@ export class ExplorerApp extends BaseApp {
         pathInput.select();
       }
     });
+
+    const reloadBtn = $(`#${inst.winId}-reload`, win);
+    if (reloadBtn) {
+      reloadBtn.onclick = () => {
+        this.renderInstance(inst);
+      };
+    }
+  }
+
+  _setupViewToggle(win, inst) {
+    const apply = (mode) => {
+      const g = win.querySelector(`#${inst.winId}-view-grid`);
+      const l = win.querySelector(`#${inst.winId}-view-list`);
+      if (g) g.classList.toggle("avt", mode === "grid");
+      if (l) l.classList.toggle("avt", mode === "list");
+    };
+
+    const handler = (e) => {
+      const btn = e.target.closest(`#${inst.winId}-view-grid, #${inst.winId}-view-list`);
+      if (!btn) return;
+      const mode = btn.id && btn.id.endsWith("grid") ? "grid" : "list";
+      this.viewMode = mode;
+      apply(mode);
+      const viewEl = win.querySelector(`#${inst.winId}-view`);
+      if (inst._isTrashView) {
+        this._renderTrashView(inst, viewEl, win);
+      } else if (inst._isDiskView) {
+        this._renderDiskView(inst, viewEl, win);
+      } else {
+        this.renderInstance(inst);
+      }
+    };
+
+    win.addEventListener("click", handler);
+
+    apply(this.viewMode);
+  }
+
+  _kindLabel(kind) {
+    const LABELS = { text: "Text Document", image: "Image", video: "Video", audio: "Audio", rom: "ROM File" };
+    return LABELS[kind] || null;
+  }
+
+  _formatFriendlyDate(d) {
+    if (!d) return "—";
+    const date = new Date(d);
+    const mo = (date.getMonth() + 1).toString().padStart(2, "0");
+    const da = date.getDate().toString().padStart(2, "0");
+    const yr = date.getFullYear();
+    const hr = date.getHours().toString().padStart(2, "0");
+    const mi = date.getMinutes().toString().padStart(2, "0");
+    return `${mo}/${da}/${yr} ${hr}:${mi}`;
+  }
+
+  _sortItems(items, sortBy, sortDir, folder, stats) {
+    const dir = sortDir === "asc" ? 1 : -1;
+    const KIND_ORDER = { text: 1, image: 2, video: 3, audio: 4, rom: 5 };
+    return [...items].sort((a, b) => {
+      const aData = folder[a.name] || {};
+      const bData = folder[b.name] || {};
+      const aStat = stats[a.name] || {};
+      const bStat = stats[b.name] || {};
+      if (a.isFile !== b.isFile) return a.isFile ? 1 : -1;
+      let cmp = 0;
+      switch (sortBy) {
+        case "name":
+          cmp = a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
+          break;
+        case "date": {
+          const aD = aStat.mtime ? new Date(aStat.mtime).getTime() : 0;
+          const bD = bStat.mtime ? new Date(bStat.mtime).getTime() : 0;
+          cmp = aD - bD;
+          break;
+        }
+        case "type": {
+          const aK = KIND_ORDER[aData.kind] || 99;
+          const bK = KIND_ORDER[bData.kind] || 99;
+          cmp = aK - bK;
+          if (cmp === 0) cmp = a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
+          break;
+        }
+        case "size":
+          cmp = (aData.size || 0) - (bData.size || 0);
+          break;
+      }
+      return cmp * dir;
+    });
+  }
+
+  _createListHeader(inst) {
+    const header = document.createElement("div");
+    header.className = "explorer-list-header";
+    const cols = [
+      { key: "name", label: "Name", cls: "list-h-name" },
+      { key: "date", label: "Date modified", cls: "list-h-date" },
+      { key: "type", label: "Type", cls: "list-h-type" },
+      { key: "size", label: "Size", cls: "list-h-size" }
+    ];
+    cols.forEach((col) => {
+      const span = document.createElement("span");
+      span.className = col.cls;
+      span.textContent = col.label;
+      if (inst.sortBy === col.key) {
+        span.classList.add("list-h-active");
+        const arrow = document.createElement("i");
+        arrow.className = `fas fa-sort-${inst.sortDir === "asc" ? "up" : "down"}`;
+        span.appendChild(arrow);
+      }
+      span.onclick = () => {
+        if (inst.sortBy === col.key) {
+          inst.sortDir = inst.sortDir === "asc" ? "desc" : "asc";
+        } else {
+          inst.sortBy = col.key;
+          inst.sortDir = "asc";
+        }
+        this.renderInstance(inst);
+      };
+      header.appendChild(span);
+    });
+    return header;
   }
 
   _ensureSelBox(view) {
@@ -634,6 +955,29 @@ export class ExplorerApp extends BaseApp {
     const selBox = createElement("div", { className: "explorer-selbox" });
     setStyle(view, { position: "relative" });
     view.appendChild(selBox);
+  }
+
+  _updateActiveSidebar(inst) {
+    const win = document.getElementById(inst.winId);
+    if (!win) return;
+    const items = win.querySelectorAll(".explorer-sidebar .nav-item");
+    const currentPath = inst.currentPath.join("/");
+    items.forEach((item) => {
+      const dataPath = item.dataset.path;
+      const mountPoint = item.dataset.mount;
+      const mountPath = mountPoint ? mountPoint.split("/").filter(Boolean).join("/") : null;
+      let isMatch = false;
+      if (mountPoint) {
+        isMatch = mountPath === currentPath;
+      } else if (dataPath !== undefined) {
+        isMatch = dataPath === currentPath;
+      }
+      if (dataPath === "__trash__" && inst._isTrashView) isMatch = true;
+      if (dataPath === "" && inst._isTrashView) isMatch = false;
+      if (dataPath === "__disk__" && inst._isDiskView) isMatch = true;
+      if (dataPath !== "__disk__" && inst._isDiskView) isMatch = false;
+      item.classList.toggle("nav-item--active", isMatch);
+    });
   }
 
   _setupSelectionBox(win, winId) {
@@ -736,23 +1080,6 @@ export class ExplorerApp extends BaseApp {
     });
   }
 
-  _setupUploadInputs(win, winId, inst) {
-    const fileInput = $(`#${winId}-file-input`, win);
-    const folderInput = $(`#${winId}-folder-input`, win);
-    if (fileInput) {
-      fileInput.addEventListener("change", async (e) => {
-        await handleFileUpload(this, Array.from(e.target.files), false, win, inst);
-        e.target.value = "";
-      });
-    }
-    if (folderInput) {
-      folderInput.addEventListener("change", async (e) => {
-        await handleFileUpload(this, Array.from(e.target.files), true, win, inst);
-        e.target.value = "";
-      });
-    }
-  }
-
   async handleFileUpload(files, isFolder, win, inst) {
     await handleFileUpload(this, files, isFolder, win, inst);
   }
@@ -780,6 +1107,7 @@ export class ExplorerApp extends BaseApp {
       }
     }
     inst._isTrashView = false;
+    inst._isDiskView = false;
     inst.currentPath = Array.isArray(path) ? [...path] : [];
     inst.history = inst.history.slice(0, inst.historyIndex + 1);
     inst.history.push([...inst.currentPath]);
@@ -823,6 +1151,9 @@ export class ExplorerApp extends BaseApp {
     view.innerHTML = "";
     removeClass(view, "games-page");
     removeClass(view, "explorer-trash-view");
+    removeClass(view, "explorer-view-grid");
+    removeClass(view, "explorer-view-list");
+    addClass(view, `explorer-view-${this.viewMode}`);
     this._ensureSelBox(view);
     if (pathDisplay) {
       if (pathDisplay.tagName === "INPUT") {
@@ -845,16 +1176,40 @@ export class ExplorerApp extends BaseApp {
       entries.map(async ([name, itemData]) => {
         const isFile = itemData?.type === "file";
         const iconEl = await this._buildItemIconHTML(name, isFile, itemData, inst);
-        return { name, isFile, iconEl };
+        return { name, isFile, iconEl, itemData };
       })
     );
 
-    for (const { name, isFile, iconEl } of items) {
-      const item = createElement("div", { className: "file-item" });
-      item.dataset.isFile = isFile ? "true" : "false";
-      setHTML(item, `${iconEl}<span>${name}</span>`);
-      this._bindItemInteractions(item, name, isFile, inst, win);
-      view.appendChild(item);
+    if (this.viewMode === "list") {
+      const stats = inst._cachedFolderStats || {};
+      const sorted = this._sortItems(items, inst.sortBy, inst.sortDir, folder, stats);
+
+      const header = this._createListHeader(inst);
+      view.appendChild(header);
+
+      for (const { name, isFile, iconEl, itemData } of sorted) {
+        const row = createElement("div", { className: "file-item" });
+        row.dataset.isFile = isFile ? "true" : "false";
+        const stat = stats[name] || {};
+        const kind = itemData?.kind || "";
+        const size = isFile ? (itemData?.size ?? stat.size ?? 0) : "";
+        const mtime = stat.mtime;
+        const typeLabel = isFile ? this._kindLabel(kind) || "File" : "File Folder";
+        setHTML(
+          row,
+          `${iconEl}<span class="file-item-name">${name}</span><span class="file-col-date">${mtime ? this._formatFriendlyDate(mtime) : "—"}</span><span class="file-col-type">${typeLabel}</span><span class="file-col-size">${isFile ? formatSize(size) : ""}</span>`
+        );
+        this._bindItemInteractions(row, name, isFile, inst, win);
+        view.appendChild(row);
+      }
+    } else {
+      for (const { name, isFile, iconEl } of items) {
+        const item = createElement("div", { className: "file-item" });
+        item.dataset.isFile = isFile ? "true" : "false";
+        setHTML(item, `${iconEl}<span class="file-item-name">${name}</span>`);
+        this._bindItemInteractions(item, name, isFile, inst, win);
+        view.appendChild(item);
+      }
     }
 
     if (Object.keys(folder).length === 0 && inst.mode === "browse") {
@@ -863,7 +1218,24 @@ export class ExplorerApp extends BaseApp {
 
     if (inst.mode === "browse") await this._updateStatusBar(inst, folder);
     if (inst.mode === "select") this._bindSelectBarButton(inst);
-    await this._updateStorageIndicator(win);
+    await this._updateStorageIndicator(win, inst);
+    this._updateActiveSidebar(inst);
+
+    const cb = this._getClipboard();
+    if (cb && cb.action === "cut") {
+      const items = cb.items || cb.icons || [];
+      const src = cb.sourceInst?.winId;
+      const sameInst = src === inst.winId || (cb.sourcePath && cb.sourcePath.join("/") === inst.currentPath.join("/"));
+      if (sameInst && items.length) {
+        const view = $(`#${inst.winId}-view`, win);
+        if (view) {
+          items.forEach(({ data: { name: n } }) => {
+            const el = $$(".file-item", view).find((el) => el.querySelector("span")?.textContent === n);
+            if (el) setStyle(el, { opacity: "0.5" });
+          });
+        }
+      }
+    }
 
     inst._isRendering = false;
   }
@@ -921,7 +1293,7 @@ export class ExplorerApp extends BaseApp {
       }
     } else {
       item.onclick = (e) => {
-        if (e.detail === 1) this._selectExplorerItem(inst, name, item, e.ctrlKey);
+        if (e.detail === 1) this._selectExplorerItem(inst, name, item, e.ctrlKey, e.shiftKey);
       };
       item.ondblclick = () => this.openItemForInstance(inst, name, isFile);
       item.oncontextmenu = (e) => showFileContextMenu(this, e, name, isFile, inst);
@@ -971,21 +1343,26 @@ export class ExplorerApp extends BaseApp {
       return;
     }
 
-    if (name.endsWith(".desktop") && this.appLauncher) {
+    if (name.endsWith(".desktop")) {
       try {
-        const raw = await this.fs.getFileContent(inst.currentPath, name);
+        const raw = await os.fs.read(inst.currentPath.concat(name));
         const content = JSON.parse(raw);
         if (content && content.app) {
           const { trigger: triggerCursorEffect } = await import("../cursorEffect.js");
           triggerCursorEffect(content.icon || "fa-solid fa-cube");
-          os.app.launch(content.app);
+          os.storage.set(`launch_time:${content.app}`, Date.now());
+          const extra = content.steamGameId ? { steamGameId: content.steamGameId } : null;
+          os.app.launch(content.app, false, extra);
+          return;
         } else if (content && content.type === "youtube-embed") {
           const { trigger: triggerCursorEffect } = await import("../cursorEffect.js");
           triggerCursorEffect("fa-brands fa-youtube");
           this._openYouTubeEmbedDesktop(content);
+          return;
         }
+        console.error("Invalid .desktop file: missing app or type field");
       } catch (e) {
-        console.error("Failed to parse desktop file JSON:", e);
+        console.error("Failed to open .desktop file:", e);
       }
       return;
     }
@@ -1065,13 +1442,38 @@ export class ExplorerApp extends BaseApp {
     showBackgroundContextMenu(this, e, inst);
   }
 
-  _triggerFileUpload(inst) {
-    triggerFileUpload(this, inst);
-  }
-
-  _selectExplorerItem(inst, name, itemEl, isCtrl) {
+  _selectExplorerItem(inst, name, itemEl, isCtrl, isShift) {
     const win = document.getElementById(inst.winId);
     if (!win) return;
+    const view = $(`#${inst.winId}-view`, win);
+    if (!view) return;
+    if (document.activeElement !== view && document.activeElement !== win) view.focus({ preventScroll: true });
+
+    if (isShift && inst._lastClickedIndex >= 0) {
+      const items = $$(".file-item", view);
+      const currentIdx = items.indexOf(itemEl);
+      if (currentIdx >= 0) {
+        const start = Math.min(inst._lastClickedIndex, currentIdx);
+        const end = Math.max(inst._lastClickedIndex, currentIdx);
+        if (!isCtrl) {
+          $$(".file-item.explorer-selected", view).forEach((el) => removeClass(el, "explorer-selected"));
+          inst.selectedItems = new Set();
+        }
+        for (let i = start; i <= end; i++) {
+          const el = items[i];
+          const n = el.querySelector("span")?.textContent;
+          if (n) {
+            inst.selectedItems.add(n);
+            addClass(el, "explorer-selected");
+          }
+        }
+        inst._lastClickedIndex = currentIdx;
+        inst.selectedFile = name;
+        if (this.desktopUI) this.desktopUI.lastFocusedContext = "explorer";
+        if (inst.mode === "browse") this._updateStatusBar(inst, inst._cachedFolder);
+        return;
+      }
+    }
 
     if (!isCtrl) {
       win.querySelectorAll(".file-item.explorer-selected").forEach((el) => el.classList.remove("explorer-selected"));
@@ -1086,6 +1488,8 @@ export class ExplorerApp extends BaseApp {
       itemEl.classList.add("explorer-selected");
     }
 
+    const viewItems = $$(".file-item", view);
+    inst._lastClickedIndex = viewItems.indexOf(itemEl);
     inst.selectedFile = name;
     if (this.desktopUI) this.desktopUI.lastFocusedContext = "explorer";
     if (inst.mode === "browse") this._updateStatusBar(inst, inst._cachedFolder);
@@ -1201,9 +1605,9 @@ export class ExplorerApp extends BaseApp {
           const full = this.fs.join(dir, name);
           const s = await this.fs.pStat(full);
           if (s.isFile()) {
-            stats[name] = { isFile: true, size: meta[name]?.size ?? s.size ?? 0 };
+            stats[name] = { isFile: true, size: meta[name]?.size ?? s.size ?? 0, mtime: s.mtime };
           } else {
-            stats[name] = { isFile: false, size: await this._calcDirSize(full) };
+            stats[name] = { isFile: false, size: await this._calcDirSize(full), mtime: s.mtime };
           }
         } catch {}
       }
@@ -1212,35 +1616,16 @@ export class ExplorerApp extends BaseApp {
   }
 
   async _calcDirSize(dirPath) {
-    let total = 0;
-    try {
-      const entries = await this.fs.pRead("readdir", dirPath);
-      const meta = await this.fs.readMeta(dirPath);
-      for (const name of entries) {
-        if (name === this.fs.CONFIG.META_FILE) continue;
-        try {
-          const full = this.fs.join(dirPath, name);
-          const s = await this.fs.pStat(full);
-          total += s.isFile() ? (meta[name]?.size ?? s.size ?? 0) : await this._calcDirSize(full);
-        } catch {}
-      }
-    } catch {}
-    return total;
+    const { size } = await os.fs.calcDirSize(dirPath);
+    return size;
   }
 
   async _calcTotalStorage() {
     return this._calcDirSize(this.fs.resolveUserPath([]));
   }
 
-  async _updateStorageIndicator(win) {
-    const el = win?.querySelector(".explorer-storage-size");
-    if (!el) return;
-    try {
-      const total = await this._calcTotalStorage();
-      el.textContent = formatSize(total);
-    } catch {
-      el.textContent = "—";
-    }
+  async _updateStorageIndicator(win, inst) {
+    this._renderMountsInSidebar(win, inst);
   }
 
   _showTrashView(inst) {
@@ -1249,6 +1634,168 @@ export class ExplorerApp extends BaseApp {
 
   _renderTrashView(inst, view, win) {
     return renderTrashView(this, inst, view, win);
+  }
+
+  async _showDiskView(inst) {
+    inst._isDiskView = true;
+    inst._isTrashView = false;
+    const win = $(`#${inst.winId}`);
+    if (!win) return;
+    const view = $(`#${inst.winId}-view`, win);
+    const pathDisplay = $(`#${inst.winId}-path`, win);
+    if (!view) return;
+    if (pathDisplay) pathDisplay.value = "/";
+    await this._renderDiskView(inst, view, win);
+  }
+
+  async _renderDiskView(inst, view, win) {
+    view.innerHTML = "";
+    removeClass(view, "games-page");
+    removeClass(view, "explorer-trash-view");
+    removeClass(view, "explorer-view-grid");
+    removeClass(view, "explorer-view-list");
+    addClass(view, "explorer-disk-view");
+
+    const used = await this._calcTotalStorage();
+    let quota = 0;
+    try {
+      if (navigator.storage && navigator.storage.estimate) {
+        const est = await navigator.storage.estimate();
+        quota = est.quota || 0;
+      }
+    } catch {}
+    const pct = quota > 0 ? Math.min((used / quota) * 100, 100) : 0;
+
+    const iconUrl = resolveIconUrl("static/icons/file.webp");
+    const folderItems = [
+      { path: "Desktop", label: "Desktop" },
+      { path: "Documents", label: "Documents" },
+      { path: "Downloads", label: "Downloads" },
+      { path: "Music", label: "Music" },
+      { path: "Pictures", label: "Pictures" },
+      { path: "Videos", label: "Videos" }
+    ];
+
+    const mounts = os.fs.getMounts();
+    const driveCount = 1 + mounts.length;
+
+    const collapsed = os.storage.get(StorageKeys.explorerSidebarCollapsed) || {};
+
+    let html = "";
+
+    const hiddenFolders = new Set(os.storage.get(StorageKeys.explorerDiskViewHidden) || []);
+    const visibleFolders = folderItems.filter((f) => !hiddenFolders.has(f.path));
+    html += `<div class="disk-section ${collapsed.diskFolders ? "collapsed" : ""}">`;
+    html += '<div class="disk-section-header" data-section="diskFolders">';
+    html +=
+      '<svg class="disk-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';
+    html += `<span>Folders (${visibleFolders.length})</span></div>`;
+    html += '<div class="disk-section-body"><div class="disk-folder-grid">';
+    for (const f of visibleFolders) {
+      html += `<div class="disk-folder-item" data-path="${f.path}"><img src="${iconUrl}"><span>${f.label}</span></div>`;
+    }
+    html += "</div></div></div>";
+
+    html += `<div class="disk-section ${collapsed.diskDrives ? "collapsed" : ""}">`;
+    html += '<div class="disk-section-header" data-section="diskDrives">';
+    html +=
+      '<svg class="disk-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';
+    html += `<span>Devices and drives (${driveCount})</span></div>`;
+    html += '<div class="disk-section-body"><div class="disk-drive-list">';
+
+    html += `
+      <div class="explorer-disk-card" data-path="">
+        <div class="explorer-disk-card-icon"><svg viewBox="0 0 36 36" fill="none" style="width:42px;height:42px;"><rect x="3" y="9" width="30" height="20" rx="3" stroke="var(--brand)" stroke-width="1.8" fill="rgba(255,255,255,0.04)"/><rect x="7" y="13" width="22" height="6" rx="1.5" fill="var(--brand)" opacity="0.25"/><circle cx="9" cy="22" r="1.5" fill="var(--brand)" opacity="0.5"/></svg></div>
+        <div class="explorer-disk-card-body">
+          <div class="explorer-disk-card-name">Local Disk (C:)</div>
+          <div class="explorer-disk-card-info">${formatSize(used)} used${quota > 0 ? ` of ${formatSize(quota)}` : ""}</div>
+          <div class="explorer-disk-progress">
+            <div class="explorer-disk-progress-fill" style="width:${pct}%"></div>
+          </div>
+        </div>
+      </div>`;
+
+    for (const m of mounts) {
+      const mountPath = m.mountPoint;
+      let mountUsed = 0;
+      try {
+        mountUsed = await this._calcDirSize(mountPath.split("/").filter(Boolean));
+      } catch {}
+      const mPct = quota > 0 ? Math.min((mountUsed / quota) * 100, 100) : 0;
+      html += `
+        <div class="explorer-disk-card" data-path="${mountPath}">
+          <div class="explorer-disk-card-icon"><svg viewBox="0 0 36 36" fill="none" style="width:42px;height:42px;"><rect x="3" y="9" width="30" height="20" rx="3" stroke="var(--brand)" stroke-width="1.8" fill="rgba(255,255,255,0.04)"/><rect x="7" y="13" width="22" height="6" rx="1.5" fill="var(--brand)" opacity="0.25"/><circle cx="9" cy="22" r="1.5" fill="var(--brand)" opacity="0.5"/></svg></div>
+          <div class="explorer-disk-card-body">
+            <div class="explorer-disk-card-name">${m.label}</div>
+            <div class="explorer-disk-card-info">${formatSize(mountUsed)}</div>
+            <div class="explorer-disk-progress">
+              <div class="explorer-disk-progress-fill" style="width:${mPct}%"></div>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    html += "</div></div></div>";
+    view.innerHTML = html;
+
+    view.querySelectorAll(".explorer-disk-card").forEach((card) => {
+      const path = card.dataset.path;
+      card.onclick = () => {
+        if (path === "") {
+          inst.currentPath = [];
+          this.renderInstance(inst);
+        } else {
+          this.navigateInstance(inst, path.split("/").filter(Boolean));
+        }
+      };
+    });
+
+    view.querySelectorAll(".disk-folder-item").forEach((item) => {
+      const path = item.dataset.path;
+      const label = item.querySelector("span")?.textContent || path;
+      item.onclick = () => this.navigateInstance(inst, path.split("/").filter(Boolean));
+      item.oncontextmenu = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        showDynamicContextMenu(e, (menu, menuItem, hr) => {
+          menu.appendChild(
+            menuItem("Open", () => this.navigateInstance(inst, path.split("/").filter(Boolean)), "fa-folder-open")
+          );
+          menu.appendChild(menuItem("Open in New Window", () => this.open([path]), "fa-external-link-alt"));
+          menu.appendChild(hr());
+          menu.appendChild(
+            menuItem(
+              "Remove from Folders",
+              () => {
+                const hidden = os.storage.get(StorageKeys.explorerDiskViewHidden) || [];
+                if (!hidden.includes(path)) hidden.push(path);
+                os.storage.set(StorageKeys.explorerDiskViewHidden, hidden);
+                this._renderDiskView(inst, view, win);
+              },
+              "fa-times"
+            )
+          );
+        });
+      };
+    });
+
+    view.querySelectorAll(".disk-section-header").forEach((header) => {
+      header.onclick = () => {
+        const section = header.parentElement;
+        if (!section) return;
+        section.classList.toggle("collapsed");
+        const st = os.storage.get(StorageKeys.explorerSidebarCollapsed) || {};
+        const key = header.dataset.section;
+        if (key) {
+          st[key] = section.classList.contains("collapsed");
+          os.storage.set(StorageKeys.explorerSidebarCollapsed, st);
+        }
+      };
+    });
+
+    inst._isDiskView = true;
+    await this._updateStorageIndicator(win, inst);
+    this._updateActiveSidebar(inst);
   }
 
   _showConfirmDialog({ title, message, confirmText = "OK", onConfirm }) {

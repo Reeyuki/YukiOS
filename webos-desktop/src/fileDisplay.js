@@ -125,12 +125,17 @@ export function readFileAsText(file) {
 
 export function buildFileIconHTML(name, { thumbnailSrc = null, size = 64, radius = 8, storedIcon = null } = {}) {
   const s = `width:${size}px;height:${size}px;border-radius:${radius}px;`;
-  const iconSource = thumbnailSrc || storedIcon;
+  let iconSource = thumbnailSrc || storedIcon;
 
-  if (iconSource && typeof iconSource === "string" && (iconSource.startsWith("fa") || iconSource.includes(" fa-"))) {
-    return `<div style="${s}display:flex;align-items:center;justify-content:center;font-size:${Math.round(
-      size * 0.44
-    )}px;color:var(--brand);background:var(--brand-dim);border:1px solid var(--glass-border);"><i class="${iconSource}"></i></div>`;
+  if (iconSource && typeof iconSource === "string") {
+    if (iconSource.startsWith("fa-") && !iconSource.includes(" ")) {
+      iconSource = "fas " + iconSource;
+    }
+    if (iconSource.startsWith("fa") || iconSource.includes(" fa-")) {
+      return `<div style="${s}display:flex;align-items:center;justify-content:center;font-size:${Math.round(
+        size * 0.44
+      )}px;color:var(--brand);background:var(--brand-dim);border:1px solid var(--glass-border);"><i class="${iconSource}"></i></div>`;
+    }
   }
 
   if (isHtmlFile(name)) {
@@ -575,8 +580,28 @@ export async function showFileProperties(path, name, isFolder, onRename = null) 
   const { os } = await import("./os/index.js");
   try {
     const displayLabel = isFolder ? name : _stripext(name);
-    const iconSrc = isFolder ? "static/icons/file.webp" : _resolveDesktopIconFromDOM(name) || resolveFileIcon(name);
-    const size = isFolder ? "--" : await _getItemSize(path);
+    let iconSrc;
+    if (isFolder) {
+      iconSrc = resolveIconUrl("static/icons/file.webp");
+    } else {
+      const domIcon = _resolveDesktopIconFromDOM(name);
+      iconSrc =
+        domIcon && !domIcon.startsWith("fa") && !domIcon.startsWith("http") && !domIcon.startsWith("data:")
+          ? resolveIconUrl(domIcon)
+          : domIcon || resolveFileIcon(name);
+    }
+    let contents = "";
+    let size;
+    if (isFolder) {
+      const { size: totalSize, files: fileCount, dirs: folderCount } = await os.fs.calcDirSize(path);
+      const parts = [];
+      if (fileCount > 0) parts.push(`${fileCount} File${fileCount !== 1 ? "s" : ""}`);
+      if (folderCount > 0) parts.push(`${folderCount} Folder${folderCount !== 1 ? "s" : ""}`);
+      contents = parts.join(", ") || "Empty";
+      size = totalSize > 0 ? formatSize(totalSize) : "Empty";
+    } else {
+      size = await _getItemSize(path);
+    }
     let type = isFolder ? "Folder" : fileKindFromName(name);
     const { FileKind } = await import("./fs.js");
     if (typeof type !== "string") {
@@ -623,6 +648,7 @@ export async function showFileProperties(path, name, isFolder, onRename = null) 
             <div style="opacity:0.7;">Type:</div><div>${type}</div>
             <div style="opacity:0.7;">Location:</div><div>${location}</div>
             <div style="opacity:0.7;">Size:</div><div>${size}</div>
+            ${isFolder ? `<div style="opacity:0.7;">Contents:</div><div>${contents}</div>` : ""}
             <div style="opacity:0.7;">Modified:</div><div>${modified}</div>
           </div>
         </div>

@@ -168,6 +168,34 @@ export class FileSystemAPI {
   }
 
   /**
+   * Recursively calculate directory size and count files/folders
+   * @param path - Directory path (relative to user home) - can be string or array
+   * @returns Total size in bytes, file count, and folder count
+   */
+  async calcDirSize(path: string | string[]): Promise<{ size: number; files: number; dirs: number }> {
+    let size = 0;
+    let files = 0;
+    let dirs = 0;
+    try {
+      const entries = await this.readdir(path);
+      const pathStr = await this._resolve(path);
+      for (const [name, entry] of Object.entries(entries)) {
+        if (entry.type === "file") {
+          files++;
+          size += entry.size ?? 0;
+        } else {
+          dirs++;
+          const sub = await this.calcDirSize(this.fs.paths.join(pathStr, name));
+          size += sub.size;
+          files += sub.files;
+          dirs += sub.dirs;
+        }
+      }
+    } catch {}
+    return { size, files, dirs };
+  }
+
+  /**
    * Infer file kind from filename
    * @param filename - Filename to analyze
    * @returns File kind
@@ -381,5 +409,39 @@ export class FileSystemAPI {
   async getTrashCount(): Promise<number> {
     await this.fs.fsReady;
     return await this.fs.trash.getItemCount();
+  }
+
+  /**
+   * Open browser file picker for directory selection
+   * @returns A FileSystemDirectoryHandle
+   */
+  async pickDirectory(): Promise<any> {
+    return await this.fs.mountManager.pickDirectory();
+  }
+
+  /**
+   * Register a picked directory as a mount point
+   * @param handle - The directory handle from pickDirectory()
+   * @param label - User-friendly name for the mount
+   * @returns The mount point path
+   */
+  registerMount(handle: any, label: string): string {
+    return this.fs.mountManager.registerMount(handle, label);
+  }
+
+  /**
+   * Unmount a previously mounted directory
+   * @param label - Mount label to remove
+   */
+  unmount(label: string): void {
+    this.fs.mountManager.unmount(label);
+  }
+
+  /**
+   * Get all active mount points
+   * @returns Array of { label, mountPoint }
+   */
+  getMounts(): Array<{ label: string; mountPoint: string }> {
+    return this.fs.mountManager.getMounts();
   }
 }

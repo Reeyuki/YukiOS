@@ -165,5 +165,11 @@ export const StorageKeys = {
   wallpaperEngineSchedules: "yukiOS_wallpaper_engine_schedules",
   wallpaperEngineViewMode: "yukiOS_wallpaper_engine_view_mode",
   wallpaperEngineSearchHistory: "yukiOS_wallpaper_engine_search_history",
-  sponsorDismissed: "yukiOS_sponsor_dismissed"
+  sponsorDismissed: "yukiOS_sponsor_dismissed",
+  storageMounts: "yukiOS_storage_mounts",
+  explorerViewMode: "yukiOS_explorer_view_mode",
+  explorerQuickAccess: "yukiOS_explorer_quick_access",
+  explorerSidebarCollapsed: "yukiOS_explorer_sidebar_collapsed",
+  explorerDiskViewHidden: "yukiOS_explorer_disk_view_hidden",
+  explorerQuickAccessHidden: "yukiOS_explorer_quick_access_hidden"
 };

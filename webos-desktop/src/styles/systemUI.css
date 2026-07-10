@@ -7,10 +7,11 @@
   box-shadow:
     0 10px 30px rgba(0, 0, 0, 0.55),
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
-  font-size: 14px;
+  font-size: 12.5px;
   color: var(--text-primary);
   overflow: hidden;
   animation: cmFadeIn 120ms ease-out both;
+  outline: none;
 }
 
 .context-menu-item.has-submenu {
@@ -20,8 +21,8 @@
 .context-menu-item.has-submenu > div {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
+  gap: 8px;
+  padding: 7px 10px;
   cursor: pointer;
   border-radius: var(--r-sm);
   transition:
@@ -48,8 +49,8 @@
 .context-menu-item.has-submenu .context-menu {
   position: fixed;
   z-index: 30001;
-  min-width: 160px;
-  padding: 6px;
+  min-width: 140px;
+  padding: 5px;
 }
 
 .context-menu-glass.closing {
@@ -62,6 +63,7 @@
   background: var(--glass-hover) !important;
   color: var(--text-primary);
   border-radius: var(--r-sm);
+  outline: none;
 }
 
 @keyframes cmFadeIn {
@@ -91,8 +93,9 @@
   position: absolute;
   display: none;
   z-index: 30000;
-  min-width: 160px;
-  padding: 6px;
+  min-width: 140px;
+  padding: 5px;
+  outline: none;
 }
 
 #context-menu div,
@@ -100,13 +103,19 @@
 #taskbar-pos-menu .context-menu-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
+  gap: 8px;
+  padding: 7px 10px;
   cursor: pointer;
   border-radius: var(--r-sm);
   transition:
     background 0.12s ease,
     transform 0.05s ease;
+}
+
+#context-menu div:focus,
+#taskbar-context-menu .menu-item:focus,
+#taskbar-pos-menu .context-menu-item:focus {
+  outline: none;
 }
 
 #context-menu div:hover,
@@ -126,7 +135,7 @@
 #context-menu hr,
 #taskbar-context-menu hr,
 #taskbar-pos-menu hr {
-  margin: 6px 4px;
+  margin: 4px 4px;
   border: none;
   height: 1px;
   background: var(--glass-border);
@@ -134,7 +143,7 @@
 
 #taskbar-context-menu .menu-item i,
 #taskbar-pos-menu .context-menu-item i {
-  font-size: 14px;
+  font-size: 12px;
   opacity: 0.7;
   transition: opacity 0.15s ease;
 }

@@ -137,16 +137,10 @@ export function buildClipboardIcons(selectedItems, itemName, isFile, view, curre
   }));
 }
 
-export function isWindowFocused(winId, lastMousePos) {
+export function isWindowFocused(winId) {
   const winEl = document.getElementById(winId);
   if (!winEl) return false;
-  const rect = winEl.getBoundingClientRect();
-  const mouseOver =
-    lastMousePos.x >= rect.left &&
-    lastMousePos.x <= rect.right &&
-    lastMousePos.y >= rect.top &&
-    lastMousePos.y <= rect.bottom;
-  return mouseOver || winEl.contains(document.activeElement);
+  return winEl.contains(document.activeElement);
 }
 
 export function sanitizeTitle(title) {

@@ -1235,16 +1235,16 @@ html[data-theme] .explorer-sidebar {
   color: var(--text-primary);
 }
 
-html[data-theme] .explorer-sidebar .start-item {
+html[data-theme] .explorer-sidebar .nav-item {
   color: var(--text-secondary);
 }
 
-html[data-theme] .explorer-sidebar .start-item:hover {
+html[data-theme] .explorer-sidebar .nav-item:hover {
   background: var(--surface-hover);
   color: var(--text-primary);
 }
 
-html[data-theme] .explorer-sidebar .start-item.active {
+html[data-theme] .explorer-sidebar .nav-item--active {
   background: var(--brand-dim);
   color: var(--brand);
 }
@@ -1489,12 +1489,9 @@ html[data-theme] .start-menu-item:hover {
   color: var(--text-primary);
 }
 
-html[data-theme] .sidebar-icon-fa {
+html[data-theme] .nav-item i,
+html[data-theme] .explorer-storage i {
   color: var(--brand);
-}
-
-html[data-theme] .explorer-sidebar .start-item:hover .sidebar-icon-fa {
-  color: var(--brand-hover);
 }
 
 .wallpaper-enter {

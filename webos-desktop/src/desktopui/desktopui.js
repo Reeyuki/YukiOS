@@ -526,33 +526,25 @@ export class DesktopUI {
             break;
           }
         }
+
+        if (!targetExplorerWin) {
+          for (const win of explorerWins) {
+            if (win.contains(document.activeElement)) {
+              targetExplorerWin = win;
+              break;
+            }
+          }
+        }
+
         if (targetExplorerWin) {
-          const winId = targetExplorerWin.id;
-          const inst = this.explorerApp?._getInstance(winId);
+          const inst = this.explorerApp?._getInstance(targetExplorerWin.id);
           if (inst) {
+            const source = clipboard.source;
             const iconsData = clipboard.icons;
             const action = clipboard.action;
-            const source = clipboard.source;
-            const sourceInst = clipboard.sourceInst;
             (async () => {
               if (source === "explorer") {
-                for (const iconData of iconsData) {
-                  const name = iconData.data.name;
-                  const srcPath = iconData.data.path;
-                  try {
-                    const content = await this.fs.getFileContent(srcPath, name);
-                    const kind = await this.fs.getFileKind(srcPath, name);
-                    const fileIcon = await this.fs.getFileIcon(srcPath, name);
-                    await this.fs.createFile(inst.currentPath, name, content, kind, fileIcon);
-                    if (action === "cut") {
-                      await os.fs.delete(srcPath, name);
-                    }
-                  } catch {}
-                }
-                if (action === "cut") {
-                  this.clipboardManager.setClipboard(null);
-                  if (sourceInst) await this.explorerApp.renderInstance(sourceInst);
-                }
+                await this.explorerApp._pasteToCurrentPath(inst);
               } else {
                 for (const iconData of iconsData) {
                   const appId = iconData.data.app;
@@ -566,10 +558,11 @@ export class DesktopUI {
                   if (action === "cut" && iconData.element) iconData.element.remove();
                 }
                 if (action === "cut") this.clipboardManager.setClipboard(null);
+                await this.explorerApp.renderInstance(inst);
+                os.notify.send(`${iconsData.length} item${iconsData.length !== 1 ? "s" : ""} pasted`);
               }
-              await this.explorerApp.renderInstance(inst);
-              os.notify.send(`${iconsData.length} item${iconsData.length !== 1 ? "s" : ""} pasted`);
             })();
+            e.stopImmediatePropagation();
             return;
           }
         }
@@ -586,6 +579,7 @@ export class DesktopUI {
               if (sourceInst) await this.explorerApp.renderInstance(sourceInst);
             }
           })();
+          e.stopImmediatePropagation();
           return;
         }
       }
