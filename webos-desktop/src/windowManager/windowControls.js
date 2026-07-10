@@ -20,15 +20,26 @@ export function setupWindowControls(win, wm) {
   const minBtn = win.querySelector(".minimize-btn");
   const downloadBtn = win.querySelector(".download-btn");
 
+  win.addEventListener("transitionend", (e) => {
+    if (e.propertyName === "width" || e.propertyName === "height" || e.propertyName === "top" || e.propertyName === "left") {
+      win.classList.remove("snapping");
+    }
+  });
+
   if (closeBtn) {
     closeBtn.onclick = () => closeWindow(win, wm);
   }
 
-  const headerSpan = win.querySelector(".window-header > span");
-  if (headerSpan) {
-    headerSpan.addEventListener("dblclick", (e) => {
-      if (e.target === e.currentTarget) return;
-      closeWindow(win, wm);
+  const header = win.querySelector(".window-header");
+  if (header) {
+    header.addEventListener("dblclick", (e) => {
+      if (e.target.closest(".window-controls")) return;
+      win.classList.add("snapping");
+      if (win.dataset.snapZone === "maximize") {
+        wm.unsnap(win);
+      } else {
+        wm.applySnap(win, "maximize");
+      }
     });
   }
 
@@ -37,6 +48,7 @@ export function setupWindowControls(win, wm) {
       if (win.dataset.snapZone === "maximize") {
         wm.toggleFullscreen(win);
       } else {
+        win.classList.add("snapping");
         wm.applySnap(win, "maximize");
       }
     };

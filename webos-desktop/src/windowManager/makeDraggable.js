@@ -30,7 +30,6 @@ export function windowMakeDraggable(win, wm) {
           wm.isDraggingWindow = true;
           document.body.classList.add("is-dragging");
 
-          const wasSnapped = !!win.dataset.snapZone;
           const disableStretch = isDesktopStretchScrollDisabled();
 
           if (disableStretch) {
@@ -53,11 +52,22 @@ export function windowMakeDraggable(win, wm) {
           dragOffsetX = posX - win.getBoundingClientRect().left;
           dragOffsetY = posY - win.getBoundingClientRect().top;
 
-          if (wasSnapped) wm.unsnap(win);
-          wobbleStart(win);
+          if (win.dataset.snapZone) {
+            win.dataset.dragUnsnapPending = "true";
+          } else {
+            wobbleStart(win);
+          }
         },
 
         move(e, dx, dy, clientX, clientY) {
+          if (win.dataset.dragUnsnapPending) {
+            delete win.dataset.dragUnsnapPending;
+            wm.unsnap(win);
+            dragOffsetX = clientX - win.getBoundingClientRect().left;
+            dragOffsetY = clientY - win.getBoundingClientRect().top;
+            wobbleStart(win);
+          }
+
           const newLeft = clientX - dragOffsetX;
           const newTop = clientY - dragOffsetY;
           win.style.left = `${newLeft}px`;
@@ -79,6 +89,7 @@ export function windowMakeDraggable(win, wm) {
         end() {
           wm.isDraggingWindow = false;
           document.body.classList.remove("is-dragging");
+          delete win.dataset.dragUnsnapPending;
           wobbleEnd(win);
 
           if (wm.activeSnapZone) {
