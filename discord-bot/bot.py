@@ -4,24 +4,26 @@ from discord.ext import commands
 import os
 import asyncio
 import random
+import re
+import subprocess
 from dotenv import load_dotenv
 
 from game_data import GAMES, DESCRIPTIONS, search_games, get_random_game, get_description, get_stats
 from news_data import NEWS_UPDATES, get_latest_news, get_news_by_date, format_news_embed, format_news_compact, news_count
 from app_data import APPS, search_apps, get_app_by_key, get_app_stats, CATEGORY_EMOJIS
-from sync_manager import run_sync
 
 load_dotenv()
 
 TOKEN = os.getenv("DISCORD_TOKEN")
 GUILD_ID = os.getenv("GUILD_ID")
 SYNC_GUILD_ID = os.getenv("SYNC_GUILD_ID")
-SYNC_CHANNEL_ID = os.getenv("SYNC_CHANNEL_ID")
-SYNC_INTERVAL = int(os.getenv("SYNC_INTERVAL", "3600"))
 
 intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix="!", intents=intents)
+
+REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+CHANNEL_ID = int(os.getenv("COMMIT_CHANNEL_ID"))
 
 TYPE_EMOJIS = {
     "game": "🎮",
@@ -31,22 +33,69 @@ TYPE_EMOJIS = {
     "unknown": "❓"
 }
 
-async def sync_loop():
+async def commit_sync():
     await bot.wait_until_ready()
-    if not SYNC_CHANNEL_ID:
-        print("[sync] SYNC_CHANNEL_ID not set, skipping sync")
+    channel = bot.get_channel(CHANNEL_ID)
+    if not channel:
+        print(f"[commit-sync] Channel {CHANNEL_ID} not found")
         return
-    channel_id = int(SYNC_CHANNEL_ID)
-    await run_sync(bot, channel_id)
-    while not bot.is_closed():
-        await asyncio.sleep(SYNC_INTERVAL)
-        await run_sync(bot, channel_id)
+
+    print(f"[commit-sync] Scanning channel {CHANNEL_ID} for existing commit messages...")
+
+    existing_shas = set()
+    try:
+        async for message in channel.history(limit=200):
+            for embed in message.embeds:
+                for field in embed.fields:
+                    if field.name == "Commit":
+                        match = re.search(r'`([a-f0-9]{7,40})`', field.value)
+                        if match:
+                            existing_shas.add(match.group(1))
+    except Exception as e:
+        print(f"[commit-sync] Failed to fetch messages: {e}")
+        return
+
+    print(f"[commit-sync] Found {len(existing_shas)} existing commit SHAs in channel")
+
+    try:
+        result = subprocess.run(
+            ["git", "log", "--since=1 month ago", "--format=%H %s"],
+            capture_output=True, text=True, cwd=REPO_ROOT
+        )
+    except Exception as e:
+        print(f"[commit-sync] Failed to run git log: {e}")
+        return
+
+    unsent = []
+    for line in result.stdout.strip().split("\n"):
+        if not line:
+            continue
+        parts = line.split(" ", 1)
+        sha = parts[0]
+        msg = parts[1] if len(parts) > 1 else ""
+        short_sha = sha[:7]
+        if short_sha not in existing_shas:
+            unsent.append((short_sha, msg))
+
+    print(f"[commit-sync] Found {len(unsent)} unsent commits from last month, sending...")
+    for short_sha, msg in unsent:
+        embed = discord.Embed(
+            title="🚀 New Commit",
+            color=0x8b5cf6
+        )
+        embed.add_field(name="Commit", value=f"`{short_sha}` — {msg}", inline=False)
+        embed.set_footer(text="YukiOS Changelog")
+        try:
+            await channel.send(embed=embed)
+            await asyncio.sleep(1)
+        except Exception as e:
+            print(f"[commit-sync] Failed to send commit {short_sha}: {e}")
 
 @bot.event
 async def on_ready():
     await bot.tree.sync()
     print(f"YukiOS Bot ready as {bot.user}")
-    asyncio.create_task(sync_loop())
+    asyncio.create_task(commit_sync())
 
 game_group = app_commands.Group(name="game", description="YukiOS Game Library commands")
 
