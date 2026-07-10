@@ -21,7 +21,12 @@ export function setupWindowControls(win, wm) {
   const downloadBtn = win.querySelector(".download-btn");
 
   win.addEventListener("transitionend", (e) => {
-    if (e.propertyName === "width" || e.propertyName === "height" || e.propertyName === "top" || e.propertyName === "left") {
+    if (
+      e.propertyName === "width" ||
+      e.propertyName === "height" ||
+      e.propertyName === "top" ||
+      e.propertyName === "left"
+    ) {
       win.classList.remove("snapping");
     }
   });

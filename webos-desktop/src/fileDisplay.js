@@ -212,9 +212,141 @@ export function buildFileIconHTML(name, { thumbnailSrc = null, size = 64, radius
   return `<img src="${resolveIconUrl("static/icons/notepad.webp")}" style="${s}object-fit:cover;">`;
 }
 
+function setupImageViewer(win) {
+  const container = win.querySelector(".img-viewer-container");
+  const img = container.querySelector("img");
+  const controls = container.querySelector(".img-viewer-controls");
+  const zoomInBtn = controls.querySelector(".img-zoom-in");
+  const zoomOutBtn = controls.querySelector(".img-zoom-out");
+  const fullscreenBtn = container.querySelector(".img-fullscreen-btn");
+
+  let scale = 1;
+  let tx = 0;
+  let ty = 0;
+  let fitScale = 1;
+  let isPanning = false;
+  let panStartX = 0;
+  let panStartY = 0;
+  let startTX = 0;
+  let startTY = 0;
+
+  function update() {
+    img.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
+  }
+
+  function calcFitScale() {
+    const cw = container.clientWidth;
+    const ch = container.clientHeight;
+    const nw = img.naturalWidth;
+    const nh = img.naturalHeight;
+    if (!nw || !nh) return 1;
+    return Math.min(cw / nw, ch / nh, 1);
+  }
+
+  function fitToContainer() {
+    fitScale = calcFitScale();
+    scale = fitScale;
+    const cw = container.clientWidth;
+    const ch = container.clientHeight;
+    tx = (cw - img.naturalWidth * scale) / 2;
+    ty = (ch - img.naturalHeight * scale) / 2;
+    img.style.removeProperty("max-width");
+    img.style.removeProperty("max-height");
+    update();
+  }
+
+  function zoomAt(newScale, cx, cy) {
+    const rect = container.getBoundingClientRect();
+    const originX = cx - rect.left;
+    const originY = cy - rect.top;
+    const oldScale = scale;
+    scale = Math.max(0.1, Math.min(10, newScale));
+    tx = originX - (originX - tx) * (scale / oldScale);
+    ty = originY - (originY - ty) * (scale / oldScale);
+    update();
+  }
+
+  function applyImageReady() {
+    img.style.removeProperty("opacity");
+    fitToContainer();
+    update();
+  }
+
+  img.onload = applyImageReady;
+  if (img.complete && img.naturalWidth > 0) applyImageReady();
+
+  container.addEventListener(
+    "wheel",
+    (e) => {
+      e.preventDefault();
+      const factor = e.deltaY > 0 ? 1 / 1.1 : 1.1;
+      zoomAt(scale * factor, e.clientX, e.clientY);
+    },
+    { passive: false }
+  );
+
+  img.addEventListener("dblclick", (e) => {
+    e.stopPropagation();
+    const atFit = Math.abs(scale - fitScale) < 0.01;
+    if (atFit) {
+      const rect = container.getBoundingClientRect();
+      scale = 1;
+      tx = (rect.width - img.naturalWidth) / 2;
+      ty = (rect.height - img.naturalHeight) / 2;
+      update();
+    } else {
+      fitToContainer();
+    }
+  });
+
+  img.addEventListener("mousedown", (e) => {
+    if (e.button !== 0) return;
+    isPanning = true;
+    panStartX = e.clientX;
+    panStartY = e.clientY;
+    startTX = tx;
+    startTY = ty;
+    img.classList.add("dragging");
+  });
+
+  document.addEventListener("mousemove", (e) => {
+    if (!isPanning) return;
+    tx = startTX + (e.clientX - panStartX);
+    ty = startTY + (e.clientY - panStartY);
+    update();
+  });
+
+  document.addEventListener("mouseup", () => {
+    if (isPanning) {
+      isPanning = false;
+      img.classList.remove("dragging");
+    }
+  });
+
+  zoomInBtn.addEventListener("click", () => {
+    const rect = container.getBoundingClientRect();
+    zoomAt(scale * 1.5, rect.left + rect.width / 2, rect.top + rect.height / 2);
+  });
+
+  zoomOutBtn.addEventListener("click", () => {
+    const rect = container.getBoundingClientRect();
+    zoomAt(scale / 1.5, rect.left + rect.width / 2, rect.top + rect.height / 2);
+  });
+
+  fullscreenBtn.addEventListener("click", () => {
+    os.window.maximize(win);
+  });
+
+  const ro = new ResizeObserver(() => {
+    if (Math.abs(scale - fitScale) < 0.01) fitToContainer();
+  });
+  ro.observe(container);
+}
+
 export function openMediaViewer(name, src, kind, windowManager) {
   const isVideo = kind === FileKind.VIDEO || isVideoFile(name);
   const isAudio = kind === FileKind.AUDIO || isAudioFile(name);
+  const isImage = !isVideo && !isAudio;
 
   const [width, height] = isAudio ? ["400px", "120px"] : ["500px", "400px"];
   const icon = isAudio ? resolveIconUrl("static/icons/spot.webp") : resolveIconUrl("static/icons/file.webp");
@@ -224,8 +356,6 @@ export function openMediaViewer(name, src, kind, windowManager) {
     media = `<video src="${src}" crossorigin="anonymous" controls autoplay loop style="max-width:100%;max-height:100%"></video>`;
   } else if (isAudio) {
     media = `<audio src="${src}" crossorigin="anonymous" controls autoplay style="width:90%"></audio>`;
-  } else {
-    media = `<img src="${src}" style="max-width:100%;max-height:100%">`;
   }
 
   const winId = `media-${Date.now()}`;
@@ -240,15 +370,35 @@ export function openMediaViewer(name, src, kind, windowManager) {
       ${os.window.getWindowControls(icon)}
     </div>
   `;
-  win.innerHTML =
-    headerHtml +
-    `
-    <div class="window-content" style="width:100%; height:100%; overflow:hidden;">
-      <div style="display:flex;justify-content:center;align-items:center;height:100%;background:var(--bg-primary);">
-        ${media}
+
+  if (isImage) {
+    win.innerHTML =
+      headerHtml +
+      `
+      <div class="window-content" style="width:100%;height:100%;overflow:hidden;padding:0;">
+        <div class="img-viewer-container">
+          <img src="${src}" style="opacity:0;">
+          <div class="img-viewer-controls">
+            <button class="img-zoom-out" title="Zoom Out"><i class="fas fa-search-minus"></i></button>
+            <button class="img-zoom-in" title="Zoom In"><i class="fas fa-search-plus"></i></button>
+          </div>
+          <div class="img-viewer-fullscreen">
+            <button class="img-fullscreen-btn" title="Fullscreen"><i class="fas fa-arrows-alt"></i></button>
+          </div>
+        </div>
       </div>
-    </div>
-  `;
+    `;
+  } else {
+    win.innerHTML =
+      headerHtml +
+      `
+      <div class="window-content" style="width:100%;height:100%;overflow:hidden;">
+        <div style="display:flex;justify-content:center;align-items:center;height:100%;background:var(--bg-primary);">
+          ${media}
+        </div>
+      </div>
+    `;
+  }
 
   const desktop = document.querySelector("#desktop");
   if (desktop) desktop.appendChild(win);
@@ -260,6 +410,8 @@ export function openMediaViewer(name, src, kind, windowManager) {
   os.window.addToTaskbar(winId, name, icon);
   os.window.focus(win);
   requestAnimationFrame(() => (win.style.opacity = ""));
+
+  if (isImage) setupImageViewer(win);
 }
 
 function base64ToBlob(dataURL) {
