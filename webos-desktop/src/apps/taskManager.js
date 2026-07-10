@@ -2,7 +2,7 @@ import "../styles/taskManager.css";
 import { $, $$, bindEvent, setText, setHTML, toggleClass } from "../shared/domUtils.js";
 import { BusEvents } from "../core/EventBusConstants.js";
 
-import { BaseApp, PersistenceTypes, os } from "../framework.js";
+import { BaseApp, os } from "../framework.js";
 export class TaskManagerApp extends BaseApp {
   constructor(services) {
     super(services);
@@ -21,7 +21,6 @@ export class TaskManagerApp extends BaseApp {
     this.longTaskBudget = 0;
     this.startFrameMonitor();
     this.startLongTaskMonitor();
-    this.declarativeApp = null;
   }
 
   startFrameMonitor() {
@@ -132,18 +131,13 @@ export class TaskManagerApp extends BaseApp {
     }
   }
 
-  getDeclarativeSchema(opts) {
-    return {
-      id: "taskmanager-app",
-      name: "Task Manager",
+  open(opts = {}) {
+    const win = os.window.create("taskmanager-app", "Task Manager", "760px", "540px", {
       icon: "fa fa-tasks",
-      windows: [
-        {
-          id: "taskmanager-app",
-          title: "Task Manager",
-          size: ["760px", "540px"],
-          icon: "fa fa-tasks",
-          ui: `<div id="tm-root">
+      appId: "taskmanager-app"
+    });
+
+    win.innerHTML = `<div id="tm-root">
         <div class="tm-sidebar">
           <div class="tm-sidebar-title">Task Manager</div>
           <button id="tm-tab-proc" data-tab="proc" class="tm-nav-item tm-nav-active">
@@ -262,138 +256,12 @@ export class TaskManagerApp extends BaseApp {
             </div>
           </div>
         </div>
-      </div>`,
-          events: {
-            "#tm-tab-proc": { click: { type: "custom:switchTab", stopPropagation: true } },
-            "#tm-tab-apps": { click: { type: "custom:switchTab", stopPropagation: true } },
-            "#tm-tab-perf": { click: { type: "custom:switchTab", stopPropagation: true } },
-            "#tm-filter": { input: { type: "custom:filterProcesses", stopPropagation: false } },
-            "#tm-filter-apps": { input: { type: "custom:filterApps", stopPropagation: false } },
-            "#tm-btn-refresh": { click: { type: "custom:refresh", stopPropagation: true } },
-            "#tm-btn-refresh-apps": { click: { type: "custom:refreshApps", stopPropagation: true } },
-            "#tm-btn-select-all": { click: { type: "custom:selectAll", stopPropagation: true } },
-            "#tm-btn-select-all-apps": { click: { type: "custom:selectAllApps", stopPropagation: true } },
-            "#tm-btn-kill": { click: { type: "custom:killProcess", stopPropagation: true } },
-            "#tm-btn-kill-apps": { click: { type: "custom:killProcessApps", stopPropagation: true } }
-          }
-        }
-      ],
-      state: {
-        initial: {
-          sortKey: "title",
-          sortAsc: true,
-          filter: "",
-          selectedIds: [],
-          appsFilter: "",
-          appsSelectedIds: [],
-          cpuHistory: Array(30).fill(0),
-          memHistory: Array(30).fill(0)
-        },
-        persistence: PersistenceTypes.MEMORY
-      },
-      actions: {
-        switchTab: (payload, event, element, state) => {
-          const tabProc = document.getElementById("tm-tab-proc");
-          const tabApps = document.getElementById("tm-tab-apps");
-          const tabPerf = document.getElementById("tm-tab-perf");
-          const panelProc = document.getElementById("tm-panel-proc");
-          const panelApps = document.getElementById("tm-panel-apps");
-          const panelPerf = document.getElementById("tm-panel-perf");
-          const tabId = element.dataset.tab;
+      </div>`;
 
-          [tabProc, tabApps, tabPerf].forEach((t) => t.classList.remove("tm-nav-active"));
-          [panelProc, panelApps, panelPerf].forEach((p) => (p.style.display = "none"));
-
-          if (tabId === "proc") {
-            tabProc.classList.add("tm-nav-active");
-            panelProc.style.display = "flex";
-            this.renderProcesses(document.getElementById("taskmanager-app"), "proc");
-          } else if (tabId === "apps") {
-            tabApps.classList.add("tm-nav-active");
-            panelApps.style.display = "flex";
-            this.renderProcesses(document.getElementById("taskmanager-app"), "apps");
-          } else if (tabId === "perf") {
-            tabPerf.classList.add("tm-nav-active");
-            panelPerf.style.display = "flex";
-            this.renderSysInfo(document.getElementById("taskmanager-app"));
-          }
-        },
-        filterProcesses: (payload, event, element, state) => {
-          this.filter = event.target.value.toLowerCase();
-          state.filter = this.filter;
-          this.renderProcesses(document.getElementById("taskmanager-app"), "proc");
-        },
-        filterApps: (payload, event, element, state) => {
-          this.appsFilter = event.target.value.toLowerCase();
-          state.appsFilter = this.appsFilter;
-          this.renderProcesses(document.getElementById("taskmanager-app"), "apps");
-        },
-        refresh: () => {
-          this.renderProcesses(document.getElementById("taskmanager-app"), "proc");
-          this.renderPerf(document.getElementById("taskmanager-app"));
-        },
-        refreshApps: () => {
-          this.renderProcesses(document.getElementById("taskmanager-app"), "apps");
-        },
-        selectAll: (payload, event, element, state) => {
-          const win = document.getElementById("taskmanager-app");
-          const tbody = $("#tm-tbody", win);
-          const allProcs = this.getProcesses();
-          const visibleProcs = allProcs.filter((p) => !this.filter || p.title.toLowerCase().includes(this.filter));
-          const allSelected = visibleProcs.length > 0 && visibleProcs.every((p) => this.selectedIds.has(p.winId));
-          if (allSelected) {
-            this.selectedIds.clear();
-          } else {
-            visibleProcs.forEach((p) => this.selectedIds.add(p.winId));
-          }
-          tbody.querySelectorAll(".tm-row").forEach((r) => {
-            r.classList.toggle("tm-row-selected", this.selectedIds.has(r.dataset.id));
-          });
-          this.updateSelectionUI(win, "proc");
-        },
-        selectAllApps: (payload, event, element, state) => {
-          const win = document.getElementById("taskmanager-app");
-          const tbody = $("#tm-tbody-apps", win);
-          const allProcs = this.getProcesses().filter((p) => !p.isTray);
-          const visibleProcs = allProcs.filter(
-            (p) => !this.appsFilter || p.title.toLowerCase().includes(this.appsFilter)
-          );
-          const allSelected = visibleProcs.length > 0 && visibleProcs.every((p) => this.appsSelectedIds.has(p.winId));
-          if (allSelected) {
-            this.appsSelectedIds.clear();
-          } else {
-            visibleProcs.forEach((p) => this.appsSelectedIds.add(p.winId));
-          }
-          tbody.querySelectorAll(".tm-row").forEach((r) => {
-            r.classList.toggle("tm-row-selected", this.appsSelectedIds.has(r.dataset.id));
-          });
-          this.updateSelectionUI(win, "apps");
-        },
-        killProcess: (payload, event, element, state) => {
-          const win = document.getElementById("taskmanager-app");
-          const idsToKill = Array.from(this.selectedIds);
-          idsToKill.forEach((id) => this.killProcess(id));
-          this.selectedIds.clear();
-          this.updateSelectionUI(win, "proc");
-          setTimeout(() => this.renderProcesses(win, "proc"), 200);
-        },
-        killProcessApps: (payload, event, element, state) => {
-          const win = document.getElementById("taskmanager-app");
-          const idsToKill = Array.from(this.appsSelectedIds);
-          idsToKill.forEach((id) => this.killProcess(id));
-          this.appsSelectedIds.clear();
-          this.updateSelectionUI(win, "apps");
-          setTimeout(() => this.renderProcesses(win, "apps"), 200);
-        }
-      },
-      onMount: "initTaskManager"
-    };
-  }
-
-  initTaskManager(payload, event, element, state) {
-    const win = document.getElementById("taskmanager-app");
+    this.bindEvents(win);
     this.renderProcesses(win, "proc");
     this.startRefresh(win);
+
     setTimeout(() => {
       const tabApps = document.getElementById("tm-tab-apps");
       if (tabApps) tabApps.click();

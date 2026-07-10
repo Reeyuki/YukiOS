@@ -1,24 +1,15 @@
 import { openFileConverter } from "../utils/fileConverter.js";
 
-import { BaseApp, PersistenceTypes, os } from "../framework.js";
+import { BaseApp, os } from "../framework.js";
 export class YukiConvertApp extends BaseApp {
   constructor(services) {
     super(services);
     this.openWindows = new Set();
   }
 
-  getDeclarativeSchema(opts) {
-    return {
-      id: "yuki-convert",
-      name: "Yuki Convert",
-      icon: "fas fa-exchange-alt",
-      windows: [
-        {
-          id: "yuki-convert",
-          title: "Yuki Convert",
-          size: ["540px", "420px"],
-          icon: "fas fa-exchange-alt",
-          ui: `<div class="window-content yuki-convert-landing">
+  open() {
+    const win = os.window.create("yuki-convert", "Yuki Convert", "540px", "420px", { icon: "fas fa-exchange-alt" });
+    win.innerHTML = `<div class="window-content yuki-convert-landing">
 
         <div id="yuki-convert-main-view" class="yuki-convert-landing-view">
           <div class="yuki-convert-icon-box">
@@ -45,110 +36,69 @@ export class YukiConvertApp extends BaseApp {
         </div>
 
         <input type="file" id="yuki-convert-file-input" class="yuki-convert-file-input" multiple>
-      </div>`,
-          events: {
-            "#yuki-convert-btn-local": {
-              click: {
-                type: "custom:selectLocalFiles",
-                stopPropagation: true
-              }
-            },
-            "#yuki-convert-btn-yuki": {
-              click: {
-                type: "custom:browseYukiOS",
-                stopPropagation: true
-              }
-            },
-            "#yuki-convert-file-input": {
-              change: {
-                type: "custom:handleFileInput",
-                stopPropagation: false
-              }
-            }
-          }
-        }
-      ],
-      state: {
-        initial: {
-          selectedFiles: [],
-          services: null
-        },
-        persistence: PersistenceTypes.NONE
-      },
-      actions: {
-        selectLocalFiles(payload, event, element, state) {
-          const fileInput = document.getElementById("yuki-convert-file-input");
-          if (fileInput) fileInput.click();
-        },
-        browseYukiOS(payload, event, element, state) {
-          const win = document.querySelector("#yuki-convert");
-          if (win) {
-            const closeBtn = win.querySelector(".close-btn");
-            if (closeBtn) closeBtn.click();
-          }
-          os.app.launch("explorerApp");
-          os.notify.send(
-            "Yuki Convert",
-            "Select one or more files, right-click, and choose 'Convert / Transform...'",
-            "info",
-            5000,
-            "fas fa-exchange-alt"
-          );
-        },
-        async handleFileInput(payload, event, element, state) {
-          const files = Array.from(element.files);
-          if (files.length === 0) return;
+      </div>`;
 
-          const mainView = document.getElementById("yuki-convert-main-view");
-          const loadingView = document.getElementById("yuki-convert-loading-view");
-          const win = document.querySelector("#yuki-convert");
+    const mainView = win.querySelector("#yuki-convert-main-view");
+    const loadingView = win.querySelector("#yuki-convert-loading-view");
+    const fileInput = win.querySelector("#yuki-convert-file-input");
+    const btnLocal = win.querySelector("#yuki-convert-btn-local");
+    const btnYuki = win.querySelector("#yuki-convert-btn-yuki");
 
-          if (mainView) mainView.style.display = "none";
-          if (loadingView) loadingView.style.display = "flex";
+    btnLocal.addEventListener("click", (e) => {
+      e.stopPropagation();
+      fileInput.click();
+    });
 
-          const path = ["Downloads"];
-          const fileNames = [];
+    btnYuki.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const closeBtn = win.querySelector(".close-btn");
+      if (closeBtn) closeBtn.click();
+      os.app.launch("explorerApp");
+      os.notify.send(
+        "Yuki Convert",
+        "Select one or more files, right-click, and choose 'Convert / Transform...'",
+        "info",
+        5000,
+        "fas fa-exchange-alt"
+      );
+    });
 
-          try {
-            const exists = await os.fs.exists(path);
-            if (!exists) {
-              await os.fs.mkdir(path);
-            } else {
-              const isFile = await os.fs.isFile(path);
-              if (isFile) {
-                await os.fs.delete(path);
-                await os.fs.mkdir(path);
-              }
-            }
-          } catch (e) {
+    fileInput.addEventListener("change", async (e) => {
+      const files = Array.from(fileInput.files);
+      if (files.length === 0) return;
+
+      if (mainView) mainView.style.display = "none";
+      if (loadingView) loadingView.style.display = "flex";
+
+      const path = ["Downloads"];
+      const fileNames = [];
+
+      try {
+        const exists = await os.fs.exists(path);
+        if (!exists) {
+          await os.fs.mkdir(path);
+        } else {
+          const isFile = await os.fs.isFile(path);
+          if (isFile) {
+            await os.fs.delete(path);
             await os.fs.mkdir(path);
           }
-
-          for (const file of files) {
-            await os.fs.writeBinaryFile(path, file.name, file);
-            fileNames.push(file.name);
-          }
-
-          if (win) {
-            const closeBtn = win.querySelector(".close-btn");
-            if (closeBtn) closeBtn.click();
-          }
-
-          for (const fileName of fileNames) {
-            openFileConverter(fileName, path, state.services);
-          }
         }
-      },
-      onMount: "initYukiConvert"
-    };
-  }
+      } catch (e) {
+        await os.fs.mkdir(path);
+      }
 
-  initYukiConvert(payload, event, element, state) {
-    state.services = this.services;
-    this.mainView = document.getElementById("yuki-convert-main-view");
-    this.loadingView = document.getElementById("yuki-convert-loading-view");
-    this.fileInput = document.getElementById("yuki-convert-file-input");
-    this.btnLocal = document.getElementById("yuki-convert-btn-local");
-    this.btnYuki = document.getElementById("yuki-convert-btn-yuki");
+      for (const file of files) {
+        await os.fs.writeBinaryFile(path, file.name, file);
+        fileNames.push(file.name);
+      }
+
+      const closeBtn = win.querySelector(".close-btn");
+      if (closeBtn) closeBtn.click();
+
+      for (const fileName of fileNames) {
+        openFileConverter(fileName, path, this.services);
+      }
+    });
   }
 }

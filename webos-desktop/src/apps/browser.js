@@ -1,5 +1,5 @@
 import "../styles/scramjet.css";
-import { BaseApp, PersistenceTypes, StorageKeys, os } from "../framework.js";
+import { BaseApp, StorageKeys, os } from "../framework.js";
 import { wobbleStart, wobbleMove, wobbleEnd } from "../windowManager/AnimationSystem.js";
 import { PROXIES } from "../proxies.js";
 
@@ -41,40 +41,32 @@ export class BrowserApp extends BaseApp {
     this.torOverlay = null;
   }
 
-  getDeclarativeSchema(opts) {
+  open(opts = {}) {
     const instanceNum = ++scramjetInstanceCount;
-    return {
-      id: "scramjet",
-      name: "Scramjet Browser",
+    const winId = "scramjet-window-" + instanceNum;
+    const isIncognito = opts?.isIncognito || false;
+    const openUrl = opts?.openUrl || null;
+
+    const title = isIncognito ? "Scramjet Browser (Private)" : "Scramjet Browser";
+    const win = os.window.create(winId, title, "1024px", "630px", {
       icon: "fas fa-globe",
-      windows: [
-        {
-          id: "scramjet-window-" + instanceNum,
-          title: opts?.isIncognito ? "Scramjet Browser (Private)" : "Scramjet Browser",
-          size: ["1024px", "630px"],
-          icon: "fas fa-globe",
-          skipHeader: true,
-          ui: `
-            <div class="scramjet-container" style="width:100%;height:100%;overflow:hidden;">
-              <iframe
-                class="scramjet-iframe"
-                style="width:100%;height:100%;border:none;"
-                sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation-by-user-activation"
-              ></iframe>
-            </div>
-          `
-        }
-      ],
-      state: {
-        initial: {
-          ...(opts?.isIncognito ? { isIncognito: true } : {}),
-          ...(opts?.openUrl ? { openUrl: opts.openUrl } : {})
-        },
-        persistence: PersistenceTypes.NONE
-      },
-      onMount: "initScramjet",
-      onClose: "cleanupScramjet"
-    };
+      appId: "browserApp",
+      skipHeader: true
+    });
+
+    win.innerHTML = `
+      <div class="scramjet-container" style="width:100%;height:100%;overflow:hidden;">
+        <iframe
+          class="scramjet-iframe"
+          style="width:100%;height:100%;border:none;"
+          sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation-by-user-activation"
+        ></iframe>
+      </div>
+    `;
+
+    this.initScramjet(null, null, win, { isIncognito, openUrl });
+
+    return win;
   }
 
   async initScramjet(payload, vt, element, state) {

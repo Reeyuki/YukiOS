@@ -24,7 +24,7 @@ export class MonacoApp extends BaseApp {
     this.tabCounter = 0;
     this.findWidgetVisible = false;
     this.icon = "fas fa-code";
-    this.declarativeApp = null;
+
     this.sessionKey = services.fileSystemManager?.sessionKey || "guest";
     this.setupTerminalCore();
   }

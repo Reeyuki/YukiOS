@@ -1,9 +1,25 @@
 import "../styles/news.css";
 
-import { APP_MANIFESTS, BaseApp, PersistenceTypes, StorageKeys, os } from "../framework.js";
+import { APP_MANIFESTS, BaseApp, StorageKeys, os } from "../framework.js";
 const appNewsEntries = APP_MANIFESTS.filter((manifest) => manifest.news).map((manifest) => manifest.news);
 
 const EXISTING_NEWS_UPDATES = [
+  {
+    date: "July 10, 2026",
+    sections: [
+      {
+        icon: "fa-code-branch",
+        title: "Git Integration",
+        items: [
+          [
+            "fa-code-branch",
+            "Full Git in Terminal",
+            "Clone, init, add, commit, push, pull, branch, stash and more inside the Terminal."
+          ]
+        ]
+      }
+    ]
+  },
   {
     date: "July 9, 2026",
     sections: [
@@ -1133,7 +1149,7 @@ export class NewsApp extends BaseApp {
     super(services);
   }
 
-  getDeclarativeSchema(opts) {
+  open() {
     const updates = NEWS_UPDATES;
 
     const renderSections = (sections) =>
@@ -1207,29 +1223,16 @@ export class NewsApp extends BaseApp {
       </div>
     `;
 
-    return {
-      id: "news-yukios",
-      name: "What's New",
+    const win = os.window.create("news-yukios", "What's New", "720px", "520px", {
       icon: "fa fa-newspaper",
-      windows: [
-        {
-          id: "news-yukios",
-          title: "What's New",
-          size: ["720px", "520px"],
-          icon: "fa fa-newspaper",
-          style: { left: "300px", top: "150px" },
-          ui: content
-        }
-      ],
-      state: {
-        initial: {},
-        persistence: PersistenceTypes.NONE
-      },
-      onMount: "initNews"
-    };
+      appId: "newsApp"
+    });
+    win.innerHTML = content;
+    this.initNews();
+    return win;
   }
 
-  initNews(payload, vt, element, state) {
+  initNews() {
     os.storage.set(StorageKeys.newsReadSignatureKey, getNewsContentSignature());
     os.storage.set(StorageKeys.newsSeenKey, "true");
     window.newsApp = this;

@@ -526,7 +526,7 @@ export const KEYBIND_DEFINITIONS = [
   },
   {
     id: "terminal.close",
-    defaultKeys: ["Ctrl", "D"],
+    defaultKeys: ["Alt", "W"],
     desc: "Close Terminal window",
     cat: "terminal",
     icon: "fas fa-times",

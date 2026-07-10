@@ -1,5 +1,5 @@
 import "../styles/systemApps.css";
-import { BaseApp, os, PersistenceTypes } from "../framework.js";
+import { BaseApp, os } from "../framework.js";
 import { getAppRegistry } from "../appRegistry.js";
 
 export class SystemAppsApp extends BaseApp {
@@ -7,51 +7,38 @@ export class SystemAppsApp extends BaseApp {
     super(services);
   }
 
-  getDeclarativeSchema() {
-    return {
-      id: "system-apps-win",
-      singleton: true,
-      name: "System Apps",
+  open() {
+    const win = os.window.create("system-apps-win", "System Apps", "800px", "600px", {
       icon: "fas fa-screwdriver-wrench",
-      windows: [
-        {
-          id: "system-apps-win",
-          title: "System Apps",
-          size: ["800px", "600px"],
-          icon: "fas fa-screwdriver-wrench",
-          ui: `
-             <div class="window-content system-apps-window">
-               <div style="padding:16px;display:flex;flex-direction:column;gap:12px;height:100%;box-sizing:border-box;">
-                 <input
-                   type="text"
-                   class="games-search-input"
-                   id="system-apps-search"
-                   placeholder="Search apps..."
-                   autocomplete="off"
-                 />
-                  <div class="system-apps-section" id="system-apps-section-native">
-                    <div class="system-apps-section-header">System Apps</div>
-                    <div class="games-app-grid" id="system-apps-grid-native"></div>
-                  </div>
-                  <div class="system-apps-section" id="system-apps-section-web">
-                    <div class="system-apps-section-header">Web Apps</div>
-                    <div class="games-app-grid" id="system-apps-grid-web"></div>
-                  </div>
-                 <div class="games-no-results" id="system-apps-empty" style="display:none;">No system apps found</div>
-               </div>
-             </div>
-           `
-        }
-      ],
-      state: {
-        initial: { apps: [], query: "" },
-        persistence: PersistenceTypes.MEMORY
-      },
-      onMount: "renderApps"
-    };
+      appId: "systemAppsApp"
+    });
+    win.innerHTML = `
+      <div class="window-content system-apps-window">
+        <div style="padding:16px;display:flex;flex-direction:column;gap:12px;height:100%;box-sizing:border-box;">
+          <input
+            type="text"
+            class="games-search-input"
+            id="system-apps-search"
+            placeholder="Search apps..."
+            autocomplete="off"
+          />
+          <div class="system-apps-section" id="system-apps-section-native">
+            <div class="system-apps-section-header">System Apps</div>
+            <div class="games-app-grid" id="system-apps-grid-native"></div>
+          </div>
+          <div class="system-apps-section" id="system-apps-section-web">
+            <div class="system-apps-section-header">Web Apps</div>
+            <div class="games-app-grid" id="system-apps-grid-web"></div>
+          </div>
+          <div class="games-no-results" id="system-apps-empty" style="display:none;">No system apps found</div>
+        </div>
+      </div>
+    `;
+    this.renderApps(win);
+    return win;
   }
 
-  renderApps(payload, event, element, state, actionExecutor) {
+  renderApps(win) {
     const appLauncher = this.services.appLauncher;
     if (!appLauncher) return;
     const appMap = appLauncher.appMap;
@@ -78,14 +65,15 @@ export class SystemAppsApp extends BaseApp {
 
     this.nativeApps = nativeApps;
     this.webApps = webApps;
-    this.renderGrid(state.query);
+    this._query = "";
+    this.renderGrid(this._query);
 
-    const searchInput = document.querySelector("#system-apps-win #system-apps-search");
+    const searchInput = win.querySelector("#system-apps-search");
     if (searchInput && !searchInput.saBound) {
       searchInput.saBound = true;
       searchInput.addEventListener("input", (e) => {
-        state.query = e.target.value;
-        this.renderGrid(state.query);
+        this._query = e.target.value;
+        this.renderGrid(this._query);
       });
     }
   }

@@ -7,7 +7,7 @@ import { APP_DESCRIPTIONS, descriptionMap } from "../games/gameDescriptions.js";
 const gameDescriptions = descriptionMap;
 import "../styles/yukiOsGuide.css";
 
-import { BaseApp, PersistenceTypes } from "../framework.js";
+import { BaseApp, os } from "../framework.js";
 const SYSTEM_INFO = {
   version: YUKIOS_VERSION,
   architecture: "Browser-based Desktop Environment",
@@ -340,34 +340,14 @@ export class YukiOsGuideApp extends BaseApp {
     this.appRegistry = getAppRegistry();
   }
 
-  getDeclarativeSchema(opts) {
-    return {
-      id: "yuki-os-guide",
-      name: "YukiOS Guide",
+  open(opts = {}) {
+    const win = os.window.create("yuki-os-guide", "YukiOS Guide", "900px", "650px", {
       icon: "fas fa-book-open",
-      windows: [
-        {
-          id: "yuki-os-guide",
-          title: "YukiOS Guide",
-          size: ["900px", "650px"],
-          icon: "fas fa-book-open",
-          style: { left: "350px", top: "200px" },
-          ui: this.buildUI()
-        }
-      ],
-      state: {
-        initial: {
-          currentTab: "overview",
-          searchQuery: ""
-        },
-        persistence: PersistenceTypes.MEMORY
-      },
-      onMount: "initYukiOsGuide"
-    };
-  }
+      appId: "yuki-os-guide"
+    });
 
-  initYukiOsGuide(payload, event, element, state) {
-    this.bindEvents(element);
+    win.innerHTML = this.buildUI();
+    this.bindEvents(win);
   }
 
   onClose(winId) {}

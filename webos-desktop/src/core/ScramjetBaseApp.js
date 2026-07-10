@@ -1,6 +1,6 @@
 import { BaseApp } from "./BaseApp.js";
 
-import { PersistenceTypes, StorageKeys, os } from "../framework.js";
+import { StorageKeys, os } from "../framework.js";
 export class ScramjetBaseApp extends BaseApp {
   constructor(services) {
     super(services);
@@ -28,63 +28,30 @@ export class ScramjetBaseApp extends BaseApp {
     return ["1024px", "768px"];
   }
 
-  getDeclarativeSchema(opts) {
-    return {
-      id: this.getAppId(),
-      name: this.getAppName(),
-      icon: this.getAppIcon(),
-      windows: [
-        {
-          id: `${this.getAppId()}-window`,
-          title: this.getAppName(),
-          size: this.getWindowSize(),
-          icon: this.getAppIcon(),
-          externalUrl: this.getAppId() !== "discordApp" ? this.getTargetURL() : undefined,
-          ui: `
-            <div class="scramjet-base-container" style="width:100%;height:100%;overflow:hidden;">
-              <iframe
-                id="${this.getAppId()}-iframe"
-                style="width:100%;height:100%;border:none;"
-                sandbox="${this.getSandbox()}"
-              ></iframe>
-            </div>
-          `
-        }
-      ],
-      state: {
-        initial: {},
-        persistence: PersistenceTypes.NONE
-      },
-      onMount: "initScramjet",
-      onClose: "cleanupScramjet"
-    };
-  }
-
   open(opts = {}) {
-    const schema = this.getDeclarativeSchema(opts);
-    if (!schema || !schema.windows || schema.windows.length === 0) {
-      throw new Error(`${this.constructor.name}.getDeclarativeSchema() must return a valid schema with windows.`);
-    }
-
-    const windowConfig = schema.windows[0];
-    const winId = windowConfig.id;
+    const winId = `${this.getAppId()}-window`;
+    const size = this.getWindowSize();
 
     if (this.isSingletonOpen(winId)) {
       return;
     }
 
-    const win = os.window.create(winId, windowConfig.title, windowConfig.size[0], windowConfig.size[1], {
-      icon: windowConfig.icon,
-      appId: schema.id
+    const win = os.window.create(winId, this.getAppName(), size[0], size[1], {
+      icon: this.getAppIcon(),
+      appId: this.getAppId()
     });
 
-    win.innerHTML = windowConfig.ui;
+    win.innerHTML = `
+      <div class="scramjet-base-container" style="width:100%;height:100%;overflow:hidden;">
+        <iframe
+          id="${this.getAppId()}-iframe"
+          style="width:100%;height:100%;border:none;"
+          sandbox="${this.getSandbox()}"
+        ></iframe>
+      </div>
+    `;
 
-    if (schema.onMount && typeof this[schema.onMount] === "function") {
-      this[schema.onMount](null, null, win, schema.state?.initial || {});
-    }
-
-    this.isDeclarative = true;
+    this.initScramjet(null, null, win, {});
     return win;
   }
 

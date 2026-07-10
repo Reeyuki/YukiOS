@@ -16,6 +16,7 @@
 }
 
 .terminal-output {
+  flex-shrink: 0;
   white-space: pre;
   min-height: 20px;
 }
@@ -53,6 +54,7 @@
 }
 
 .terminal-input-line {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
 }
@@ -91,6 +93,15 @@
   font-size: 14px;
   outline: none;
   caret-color: var(--text-primary, #ffffff);
+  resize: none;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  line-height: 1.4;
+  max-height: 50vh;
+}
+
+.terminal-input:disabled {
+  opacity: 0.4;
 }
 
 .terminal-prompt {

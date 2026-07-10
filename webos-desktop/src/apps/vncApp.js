@@ -1,6 +1,6 @@
 import "../styles/vnc.css";
 import { createElement } from "../shared/domUtils.js";
-import { BaseApp, PersistenceTypes, os, StorageKeys } from "../framework.js";
+import { BaseApp, os, StorageKeys } from "../framework.js";
 
 const NOVNC_CDN = "https://cdn.jsdelivr.net/npm/@novnc/novnc@1.5.0/dist/rfb.min.js";
 
@@ -14,140 +14,101 @@ export class VNCApp extends BaseApp {
     this.loaded = false;
   }
 
-  getDeclarativeSchema(opts) {
-    return {
-      id: "vnc-client",
-      name: "VNC Client",
-      icon: "fas fa-display",
-      windows: [
-        {
-          id: "vnc-client",
-          title: "VNC Client",
-          size: ["850px", "580px"],
-          icon: "fas fa-display",
-          ui: `
-            <div class="vnc-app">
-              <div class="vnc-toolbar">
-                <div class="vnc-toolbar-left">
-                  <button class="vnc-toolbar-btn" id="vnc-new-connection" title="New Connection">
-                    <i class="fas fa-plus"></i>
-                    <span>New</span>
-                  </button>
-                  <button class="vnc-toolbar-btn" id="vnc-disconnect" title="Disconnect" disabled>
-                    <i class="fas fa-plug"></i>
-                    <span>Disconnect</span>
-                  </button>
-                  <button class="vnc-toolbar-btn" id="vnc-fullscreen" title="Fullscreen" disabled>
-                    <i class="fas fa-expand"></i>
-                    <span>Fullscreen</span>
-                  </button>
-                  <button class="vnc-toolbar-btn" id="vnc-ctrl-alt-del" title="Send Ctrl+Alt+Del" disabled>
-                    <i class="fas fa-keyboard"></i>
-                    <span>Ctrl+Alt+Del</span>
-                  </button>
+  open(opts) {
+    const win = os.window.create("vnc-client", "VNC Client", "850px", "580px", {
+      icon: "fas fa-display"
+    });
+    win.innerHTML = `
+      <div class="vnc-app">
+        <div class="vnc-toolbar">
+          <div class="vnc-toolbar-left">
+            <button class="vnc-toolbar-btn" id="vnc-new-connection" title="New Connection">
+              <i class="fas fa-plus"></i>
+              <span>New</span>
+            </button>
+            <button class="vnc-toolbar-btn" id="vnc-disconnect" title="Disconnect" disabled>
+              <i class="fas fa-plug"></i>
+              <span>Disconnect</span>
+            </button>
+            <button class="vnc-toolbar-btn" id="vnc-fullscreen" title="Fullscreen" disabled>
+              <i class="fas fa-expand"></i>
+              <span>Fullscreen</span>
+            </button>
+            <button class="vnc-toolbar-btn" id="vnc-ctrl-alt-del" title="Send Ctrl+Alt+Del" disabled>
+              <i class="fas fa-keyboard"></i>
+              <span>Ctrl+Alt+Del</span>
+            </button>
+          </div>
+          <div class="vnc-toolbar-right">
+            <span class="vnc-status-badge" id="vnc-status-badge">
+              <span class="vnc-status-dot vnc-disconnected"></span>
+              Disconnected
+            </span>
+          </div>
+        </div>
+        <div class="vnc-main">
+          <div class="vnc-connect-screen" id="vnc-connect-screen">
+            <div class="vnc-connect-form">
+              <div class="vnc-connect-icon"><i class="fas fa-display"></i></div>
+              <h2 class="vnc-connect-title">VNC Remote Desktop</h2>
+              <p class="vnc-connect-desc">Connect to a remote computer via VNC</p>
+              <div class="vnc-form-group">
+                <label class="vnc-label">Host</label>
+                <input type="text" class="vnc-input" id="vnc-host" placeholder="e.g. 192.168.1.100" value="" />
+              </div>
+              <div class="vnc-form-row">
+                <div class="vnc-form-group">
+                  <label class="vnc-label">Port</label>
+                  <input type="number" class="vnc-input" id="vnc-port" placeholder="5900" value="5900" />
                 </div>
-                <div class="vnc-toolbar-right">
-                  <span class="vnc-status-badge" id="vnc-status-badge">
-                    <span class="vnc-status-dot vnc-disconnected"></span>
-                    Disconnected
-                  </span>
+                <div class="vnc-form-group">
+                  <label class="vnc-label">WebSocket Port</label>
+                  <input type="number" class="vnc-input" id="vnc-ws-port" placeholder="6080" value="6080" />
                 </div>
               </div>
-              <div class="vnc-main">
-                <div class="vnc-connect-screen" id="vnc-connect-screen">
-                  <div class="vnc-connect-form">
-                    <div class="vnc-connect-icon"><i class="fas fa-display"></i></div>
-                    <h2 class="vnc-connect-title">VNC Remote Desktop</h2>
-                    <p class="vnc-connect-desc">Connect to a remote computer via VNC</p>
-                    <div class="vnc-form-group">
-                      <label class="vnc-label">Host</label>
-                      <input type="text" class="vnc-input" id="vnc-host" placeholder="e.g. 192.168.1.100" value="" />
-                    </div>
-                    <div class="vnc-form-row">
-                      <div class="vnc-form-group">
-                        <label class="vnc-label">Port</label>
-                        <input type="number" class="vnc-input" id="vnc-port" placeholder="5900" value="5900" />
-                      </div>
-                      <div class="vnc-form-group">
-                        <label class="vnc-label">WebSocket Port</label>
-                        <input type="number" class="vnc-input" id="vnc-ws-port" placeholder="6080" value="6080" />
-                      </div>
-                    </div>
-                    <div class="vnc-form-group">
-                      <label class="vnc-label">Password (optional)</label>
-                      <input type="password" class="vnc-input" id="vnc-password" placeholder="VNC password" />
-                    </div>
-                    <div class="vnc-form-group">
-                      <label class="vnc-checkbox">
-                        <input type="checkbox" id="vnc-use-wss" checked />
-                        <span>Use WSS (encrypted WebSocket)</span>
-                      </label>
-                    </div>
-                    <div class="vnc-form-group">
-                      <label class="vnc-checkbox">
-                        <input type="checkbox" id="vnc-save-profile" />
-                        <span>Save as profile</span>
-                      </label>
-                    </div>
-                    <div class="vnc-profiles-section" id="vnc-profiles-section" style="display:none">
-                      <div class="vnc-profiles-header">
-                        <span>Saved Profiles</span>
-                      </div>
-                      <div class="vnc-profiles-list" id="vnc-profiles-list"></div>
-                    </div>
-                    <button class="vnc-connect-btn" id="vnc-connect-btn">
-                      <i class="fas fa-plug"></i>
-                      <span>Connect</span>
-                    </button>
-                  </div>
+              <div class="vnc-form-group">
+                <label class="vnc-label">Password (optional)</label>
+                <input type="password" class="vnc-input" id="vnc-password" placeholder="VNC password" />
+              </div>
+              <div class="vnc-form-group">
+                <label class="vnc-checkbox">
+                  <input type="checkbox" id="vnc-use-wss" checked />
+                  <span>Use WSS (encrypted WebSocket)</span>
+                </label>
+              </div>
+              <div class="vnc-form-group">
+                <label class="vnc-checkbox">
+                  <input type="checkbox" id="vnc-save-profile" />
+                  <span>Save as profile</span>
+                </label>
+              </div>
+              <div class="vnc-profiles-section" id="vnc-profiles-section" style="display:none">
+                <div class="vnc-profiles-header">
+                  <span>Saved Profiles</span>
                 </div>
-                <div class="vnc-viewer-container" id="vnc-viewer-container" style="display:none">
-                  <div class="vnc-canvas-wrapper" id="vnc-canvas-wrapper">
-                    <div class="vnc-loading" id="vnc-loading">
-                      <i class="fas fa-spinner fa-spin"></i>
-                      <span>Connecting to VNC server...</span>
-                    </div>
-                  </div>
-                </div>
+                <div class="vnc-profiles-list" id="vnc-profiles-list"></div>
+              </div>
+              <button class="vnc-connect-btn" id="vnc-connect-btn">
+                <i class="fas fa-plug"></i>
+                <span>Connect</span>
+              </button>
+            </div>
+          </div>
+          <div class="vnc-viewer-container" id="vnc-viewer-container" style="display:none">
+            <div class="vnc-canvas-wrapper" id="vnc-canvas-wrapper">
+              <div class="vnc-loading" id="vnc-loading">
+                <i class="fas fa-spinner fa-spin"></i>
+                <span>Connecting to VNC server...</span>
               </div>
             </div>
-          `
-        }
-      ],
-      state: {
-        initial: {
-          connected: false
-        },
-        persistence: PersistenceTypes.MEMORY
-      },
-      actions: {
-        newConnection: () => {
-          this.disconnect();
-          const connectScreen = document.getElementById("vnc-connect-screen");
-          const viewer = document.getElementById("vnc-viewer-container");
-          if (connectScreen) connectScreen.style.display = "flex";
-          if (viewer) viewer.style.display = "none";
-        },
-        disconnect: () => {
-          this.disconnect();
-        },
-        toggleFullscreen: () => {
-          this.toggleFullscreen();
-        },
-        sendCtrlAltDel: () => {
-          if (this.rfb && this.connected) {
-            this.rfb.sendCtrlAltDel();
-          }
-        },
-        connect: () => {
-          this.loadNoVNCAndConnect();
-        }
-      },
-      onMount: "initVNC"
-    };
+          </div>
+        </div>
+      </div>`;
+
+    this.initVNC();
   }
 
-  initVNC(payload, vt, element, state) {
+  initVNC() {
     this.profiles = this.loadProfiles();
     if (this.profiles.length > 0) {
       this.renderProfiles();

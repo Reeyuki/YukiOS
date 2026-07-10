@@ -2,7 +2,7 @@ import "../styles/weather.css";
 import { getWeatherInfo } from "../shared/weatherCodes.js";
 
 import { $, setHTML, setText } from "../shared/domUtils.js";
-import { BaseApp, PersistenceTypes, os } from "../framework.js";
+import { BaseApp, os } from "../framework.js";
 const WEATHER_CACHE_TTL = 10 * 60 * 1000;
 const LOCATION_CACHE_TTL = 24 * 60 * 60 * 1000;
 function getCached(key, ttl = WEATHER_CACHE_TTL) {
@@ -50,22 +50,14 @@ export class WeatherApp extends BaseApp {
     this.unit = "metric";
     this.currentCity = null;
     this.currentCoords = null;
-    this.declarativeApp = null;
   }
 
-  getDeclarativeSchema(opts) {
-    return {
-      id: "weather-win",
-      name: "Weather",
-      icon: "fas fa-cloud",
-      singleton: true,
-      windows: [
-        {
-          id: "weather-win",
-          title: "Weather",
-          size: ["420px", "560px"],
-          icon: "fas fa-cloud",
-          ui: `
+  async open(opts) {
+    if (await this.isSingletonOpen("weather-win")) return;
+    const win = os.window.create("weather-win", "Weather", "420px", "560px", {
+      icon: "fas fa-cloud"
+    });
+    win.innerHTML = `
       <div class="window-content">
         <div class="wx-toolbar">
           <button class="wx-loc-btn" id="wx-loc-btn" title="Use my location"><svg width="10" height="12" viewBox="0 0 10 14" fill="currentColor"><path d="M5 0C2.24 0 0 2.24 0 5c0 3.75 5 9 5 9s5-5.25 5-9c0-2.76-2.24-5-5-5zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg></button>
@@ -74,124 +66,36 @@ export class WeatherApp extends BaseApp {
           <button class="wx-unit-toggle" id="wx-unit-btn">°C</button>
         </div>
         <div class="wx-body" id="wx-body"></div>
-      </div>`,
-          events: {
-            "#wx-loc-btn": {
-              click: {
-                type: "custom:autoLocate",
-                stopPropagation: true
-              }
-            },
-            "#wx-search-btn": {
-              click: {
-                type: "custom:searchCity",
-                stopPropagation: true
-              }
-            },
-            "#wx-search-input": {
-              keydown: {
-                type: "custom:searchOnEnter",
-                stopPropagation: false
-              }
-            },
-            "#wx-unit-btn": {
-              click: {
-                type: "custom:toggleUnit",
-                stopPropagation: true
-              }
-            }
-          }
-        }
-      ],
-      state: {
-        initial: {
-          unit: "metric",
-          currentCity: null,
-          currentCoords: null,
-          currentWeatherData: null
-        },
-        persistence: PersistenceTypes.MEMORY
-      },
-      actions: {
-        autoLocate: async (payload, event, element, state) => {
-          const body = $("#wx-body");
-          const searchInput = $("#wx-search-input");
-          if (body) {
-            this.renderLoading(body);
-            try {
-              const loc = await detectUserLocation();
-              state.currentCoords = { latitude: loc.latitude, longitude: loc.longitude };
-              state.currentCity = loc.city;
-              const data = await this.fetchWeatherByCoords(loc.latitude, loc.longitude, loc.city, loc.country);
-              state.currentWeatherData = data;
-              this.renderWeather(body, data);
-              if (searchInput) searchInput.value = loc.city;
-            } catch (e) {
-              this.renderError(body, e.message || "Failed to detect location.");
-            }
-          }
-        },
-        searchCity: async (payload, event, element, state) => {
-          const body = $("#wx-body");
-          const searchInput = $("#wx-search-input");
-          const city = searchInput ? searchInput.value.trim() : "";
-          if (city && body) {
-            this.renderLoading(body);
-            try {
-              const data = await this.fetchWeatherByCity(city);
-              state.currentWeatherData = data;
-              state.currentCoords = { ...this.currentCoords };
-              state.currentCity = this.currentCity;
-              this.renderWeather(body, data);
-            } catch (e) {
-              this.renderError(body, e.message || "Failed to load weather.");
-            }
-          }
-        },
-        searchOnEnter: async (payload, event, element, state) => {
-          if (event.key === "Enter") {
-            const body = $("#wx-body");
-            const searchInput = $("#wx-search-input");
-            const city = searchInput ? searchInput.value.trim() : "";
-            if (city && body) {
-              this.renderLoading(body);
-              try {
-                const data = await this.fetchWeatherByCity(city);
-                state.currentWeatherData = data;
-                state.currentCoords = { ...this.currentCoords };
-                state.currentCity = this.currentCity;
-                this.renderWeather(body, data);
-              } catch (e) {
-                this.renderError(body, e.message || "Failed to load weather.");
-              }
-            }
-          }
-        },
-        toggleUnit: async (payload, event, element, state) => {
-          state.unit = state.unit === "metric" ? "imperial" : "metric";
-          this.unit = state.unit;
-          const unitBtn = $("#wx-unit-btn");
-          setText(unitBtn, state.unit === "metric" ? "°C" : "°F");
-          const body = $("#wx-body");
-          if (body && state.currentCoords) {
-            this.renderLoading(body);
-            try {
-              const data = await this.fetchWeatherByCoords(
-                state.currentCoords.latitude,
-                state.currentCoords.longitude,
-                state.currentCity,
-                state.currentWeatherData?.country ?? ""
-              );
-              state.currentWeatherData = data;
-              this.renderWeather(body, data);
-            } catch (e) {
-              this.renderError(body, e.message || "Failed to reload weather.");
-            }
-          }
-        }
-      },
-      onMount: "initWeather"
-    };
+      </div>`;
+
+    win.querySelector("#wx-loc-btn")?.addEventListener("click", async () => {
+      const body = $("#wx-body");
+      const searchInput = $("#wx-search-input");
+      if (body) await this.doAutoLocate(body, searchInput);
+    });
+
+    win.querySelector("#wx-search-btn")?.addEventListener("click", async () => {
+      const searchInput = $("#wx-search-input");
+      const city = searchInput ? searchInput.value.trim() : "";
+      if (city) await this.doSearch($("#wx-body"), city);
+    });
+
+    win.querySelector("#wx-search-input")?.addEventListener("keydown", async (e) => {
+      if (e.key === "Enter") {
+        const searchInput = $("#wx-search-input");
+        const city = searchInput ? searchInput.value.trim() : "";
+        if (city) await this.doSearch($("#wx-body"), city);
+      }
+    });
+
+    win.querySelector("#wx-unit-btn")?.addEventListener("click", async () => {
+      this.unit = this.unit === "metric" ? "imperial" : "metric";
+      const unitBtn = $("#wx-unit-btn");
+      setText(unitBtn, this.unit === "metric" ? "°C" : "°F");
+      await this.doRefreshWithUnit($("#wx-body"));
+    });
+
+    this.initWeather();
   }
 
   initWeather(payload, event, element, state) {

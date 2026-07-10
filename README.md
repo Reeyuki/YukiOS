@@ -136,7 +136,7 @@ Its built entirely in vanilla javascript/typescript without any frameworks.
 ## 🧠 Productivity & Development
 
 - Explorer
-- Terminal (Unix-like commands with tab completion, history, pipelines, and glob patterns)
+- Terminal (Unix-like commands with tab completion, history, pipelines, glob patterns, and full Git integration: clone, init, add, commit, push, pull, branch, stash, and more)
 - Notepad
 - Markdown Editor
 - Yuki Code
@@ -198,21 +198,8 @@ Its built entirely in vanilla javascript/typescript without any frameworks.
 
 - Discord
 - Spotify
-- TikTok
 - ChatGPT
-- Grok
 - Email providers (Gmail, Outlook, ProtonMail)
-- DeepSeek
-- Twitter/X
-- Instagram
-- Pinterest
-- GitHub GitLab CodePen Replit
-- Twitch
-- SoundCloud
-- Notion
-- Figma
-- Canva
-- Google Docs
 - kiwiIRC
 - GeForce Now
 - Scramjet Browser
@@ -278,6 +265,7 @@ See the [Development Guide](DEVELOPMENT.md).
 - [Eruda](https://github.com/liriliri/eruda)
 - [Novnc](https://github.com/novnc/novnc)
 - [webtor-rs](https://github.com/igor53627/webtor-rs) WASM Tor client (Arti + Snowflake)
+- [isomorphic-git](https://github.com/isomorphic-git/isomorphic-git) (Git client via CORS proxy)
 - Scramjet / BareMux / Epoxy Transport
 
 ## Build tooling

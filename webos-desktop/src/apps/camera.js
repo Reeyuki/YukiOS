@@ -1,11 +1,10 @@
 import "../styles/camera.css";
 import { openMediaViewer } from "../fileDisplay.js";
 import { FileKind } from "../shared/fileKindDetector.js";
-
 import { formatSize } from "../utils/utils.js";
 import { renderSelectMenu, bindSelectMenu, getSelectMenuValue } from "../shared/selectMenu.js";
+import { BaseApp, os } from "../framework.js";
 
-import { BaseApp, PersistenceTypes, os } from "../framework.js";
 export class CameraApp extends BaseApp {
   constructor(services) {
     super(services);
@@ -15,586 +14,244 @@ export class CameraApp extends BaseApp {
     this.recordings = [];
     this.recordingInterval = null;
     this.historyWin = null;
-    this.declarativeApp = null;
+    this.openWindows = new Set();
+    this.state = {
+      currentMode: "photo",
+      isRecording: false,
+      recordings: [],
+      historyFilter: "all",
+      historySort: "newest",
+      bulkSelectMode: false,
+      selectedItems: [],
+      currentPage: 1,
+      itemsPerPage: 12
+    };
   }
 
-  getDeclarativeSchema(opts) {
-    return {
-      id: "camera-win",
-      name: "Camera",
+  open() {
+    const winId = "camera-win";
+    if (this.openWindows.has(winId)) return;
+
+    const win = os.window.create(winId, "Camera", "800px", "600px", {
       icon: "static/icons/obs.webp",
-      windows: [
-        {
-          id: "camera-win",
-          title: "Camera",
-          size: ["800px", "600px"],
-          icon: "static/icons/obs.webp",
-          style: { minWidth: "400px", minHeight: "400px" },
-          ui: {
-            type: "element",
-            tag: "div",
-            props: {
-              className: "camera-app"
-            },
-            children: [
-              {
-                type: "element",
-                tag: "div",
-                props: {
-                  className: "camera-viewfinder"
-                },
-                children: [
-                  {
-                    type: "element",
-                    tag: "video",
-                    props: {
-                      id: "camera-video",
-                      autoplay: true,
-                      playsinline: true
-                    }
-                  },
-                  {
-                    type: "element",
-                    tag: "div",
-                    props: {
-                      className: "camera-rec-status"
-                    },
-                    children: [
-                      {
-                        type: "element",
-                        tag: "span",
-                        props: {
-                          id: "recording-icon"
-                        }
-                      },
-                      {
-                        type: "element",
-                        tag: "span",
-                        props: {
-                          id: "recording-timer"
-                        }
-                      }
-                    ]
-                  },
-                  {
-                    type: "element",
-                    tag: "div",
-                    props: {
-                      className: "camera-mode-indicator",
-                      id: "mode-indicator"
-                    },
-                    text: "Photo"
-                  },
-                  {
-                    type: "element",
-                    tag: "div",
-                    props: {
-                      className: "camera-download-overlay"
-                    },
-                    children: [
-                      {
-                        type: "element",
-                        tag: "a",
-                        props: {
-                          id: "download-link",
-                          className: "download-link"
-                        }
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                type: "element",
-                tag: "div",
-                props: {
-                  className: "camera-toolbar"
-                },
-                children: [
-                  {
-                    type: "element",
-                    tag: "div",
-                    props: {
-                      className: "camera-modes"
-                    },
-                    children: [
-                      {
-                        type: "element",
-                        tag: "button",
-                        props: {
-                          className: "cam-mode-btn active",
-                          "data-mode": "photo",
-                          id: "mode-photo"
-                        },
-                        events: {
-                          click: {
-                            type: "custom:modeClick",
-                            stopPropagation: true
-                          }
-                        },
-                        children: [
-                          {
-                            type: "element",
-                            tag: "svg",
-                            props: {
-                              viewBox: "0 0 24 24",
-                              width: "18",
-                              height: "18",
-                              fill: "none",
-                              stroke: "currentColor",
-                              strokeWidth: "2"
-                            },
-                            children: [
-                              {
-                                type: "element",
-                                tag: "rect",
-                                props: {
-                                  x: "3",
-                                  y: "6",
-                                  width: "18",
-                                  height: "12",
-                                  rx: "2"
-                                }
-                              },
-                              {
-                                type: "element",
-                                tag: "circle",
-                                props: {
-                                  cx: "12",
-                                  cy: "12",
-                                  r: "3"
-                                }
-                              },
-                              {
-                                type: "element",
-                                tag: "circle",
-                                props: {
-                                  cx: "17",
-                                  cy: "7",
-                                  r: "1",
-                                  fill: "currentColor",
-                                  stroke: "none"
-                                }
-                              }
-                            ]
-                          },
-                          {
-                            type: "element",
-                            tag: "span",
-                            text: "Photo"
-                          }
-                        ]
-                      },
-                      {
-                        type: "element",
-                        tag: "button",
-                        props: {
-                          className: "cam-mode-btn",
-                          "data-mode": "video",
-                          id: "mode-video"
-                        },
-                        events: {
-                          click: {
-                            type: "custom:modeClick",
-                            stopPropagation: true
-                          }
-                        },
-                        children: [
-                          {
-                            type: "element",
-                            tag: "svg",
-                            props: {
-                              viewBox: "0 0 24 24",
-                              width: "18",
-                              height: "18",
-                              fill: "none",
-                              stroke: "currentColor",
-                              strokeWidth: "2"
-                            },
-                            children: [
-                              {
-                                type: "element",
-                                tag: "rect",
-                                props: {
-                                  x: "3",
-                                  y: "6",
-                                  width: "14",
-                                  height: "12",
-                                  rx: "2"
-                                }
-                              },
-                              {
-                                type: "element",
-                                tag: "polygon",
-                                props: {
-                                  points: "17,10 21,8 21,16 17,14",
-                                  fill: "currentColor",
-                                  stroke: "none"
-                                }
-                              }
-                            ]
-                          },
-                          {
-                            type: "element",
-                            tag: "span",
-                            text: "Video"
-                          }
-                        ]
-                      },
-                      {
-                        type: "element",
-                        tag: "button",
-                        props: {
-                          className: "cam-mode-btn",
-                          "data-mode": "screen",
-                          id: "mode-screen"
-                        },
-                        events: {
-                          click: {
-                            type: "custom:modeClick",
-                            stopPropagation: true
-                          }
-                        },
-                        children: [
-                          {
-                            type: "element",
-                            tag: "svg",
-                            props: {
-                              viewBox: "0 0 24 24",
-                              width: "18",
-                              height: "18",
-                              fill: "none",
-                              stroke: "currentColor",
-                              strokeWidth: "2"
-                            },
-                            children: [
-                              {
-                                type: "element",
-                                tag: "rect",
-                                props: {
-                                  x: "2",
-                                  y: "4",
-                                  width: "20",
-                                  height: "14",
-                                  rx: "2"
-                                }
-                              },
-                              {
-                                type: "element",
-                                tag: "line",
-                                props: {
-                                  x1: "8",
-                                  y1: "21",
-                                  x2: "16",
-                                  y2: "21"
-                                }
-                              },
-                              {
-                                type: "element",
-                                tag: "line",
-                                props: {
-                                  x1: "12",
-                                  y1: "18",
-                                  x2: "12",
-                                  y2: "21"
-                                }
-                              }
-                            ]
-                          },
-                          {
-                            type: "element",
-                            tag: "span",
-                            text: "Screen"
-                          }
-                        ]
-                      }
-                    ]
-                  },
-                  {
-                    type: "element",
-                    tag: "div",
-                    props: {
-                      className: "camera-actions"
-                    },
-                    children: [
-                      {
-                        type: "element",
-                        tag: "div",
-                        props: {
-                          className: "cam-actions-side cam-actions-left"
-                        },
-                        children: [
-                          {
-                            type: "element",
-                            tag: "button",
-                            props: {
-                              className: "cam-action-btn secondary",
-                              id: "open-history-btn",
-                              title: "History"
-                            },
-                            events: {
-                              click: {
-                                type: "custom:historyClick",
-                                stopPropagation: true
-                              }
-                            },
-                            children: [
-                              {
-                                type: "element",
-                                tag: "svg",
-                                props: {
-                                  viewBox: "0 0 24 24",
-                                  width: "20",
-                                  height: "20",
-                                  fill: "none",
-                                  stroke: "currentColor",
-                                  strokeWidth: "2"
-                                },
-                                children: [
-                                  {
-                                    type: "element",
-                                    tag: "path",
-                                    props: {
-                                      d: "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 12"
-                                    }
-                                  },
-                                  {
-                                    type: "element",
-                                    tag: "path",
-                                    props: {
-                                      d: "M3 3v9h9"
-                                    }
-                                  }
-                                ]
-                              }
-                            ]
-                          }
-                        ]
-                      },
-                      {
-                        type: "element",
-                        tag: "button",
-                        props: {
-                          className: "cam-shutter-btn",
-                          id: "shutter-btn"
-                        },
-                        events: {
-                          click: {
-                            type: "custom:shutterClick",
-                            stopPropagation: true
-                          }
-                        },
-                        children: [
-                          {
-                            type: "element",
-                            tag: "span",
-                            props: {
-                              className: "shutter-inner"
-                            }
-                          }
-                        ]
-                      },
-                      {
-                        type: "element",
-                        tag: "div",
-                        props: {
-                          className: "cam-actions-side cam-actions-right"
-                        }
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          }
+      appId: "camera",
+      style: { minWidth: "400px", minHeight: "400px" }
+    });
+
+    this.win = win;
+    this.openWindows.add(winId);
+    win.innerHTML = this.buildUI();
+    this.bindCameraEvents(win);
+    this.initCamera(null, null, win, this.state);
+
+    win.addEventListener("remove", () => {
+      this.openWindows.delete(winId);
+      this.stopCamera();
+    });
+  }
+
+  buildUI() {
+    return `<div class="camera-app">
+  <div class="camera-viewfinder">
+    <video id="camera-video" autoplay playsinline></video>
+    <div class="camera-rec-status">
+      <span id="recording-icon"></span>
+      <span id="recording-timer"></span>
+    </div>
+    <div class="camera-mode-indicator" id="mode-indicator">Photo</div>
+    <div class="camera-download-overlay">
+      <a id="download-link" class="download-link"></a>
+    </div>
+  </div>
+  <div class="camera-toolbar">
+    <div class="camera-modes">
+      <button class="cam-mode-btn active" data-mode="photo" id="mode-photo">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="6" width="18" height="12" rx="2"/>
+          <circle cx="12" cy="12" r="3"/>
+          <circle cx="17" cy="7" r="1" fill="currentColor" stroke="none"/>
+        </svg>
+        <span>Photo</span>
+      </button>
+      <button class="cam-mode-btn" data-mode="video" id="mode-video">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="6" width="14" height="12" rx="2"/>
+          <polygon points="17,10 21,8 21,16 17,14" fill="currentColor" stroke="none"/>
+        </svg>
+        <span>Video</span>
+      </button>
+      <button class="cam-mode-btn" data-mode="screen" id="mode-screen">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="4" width="20" height="14" rx="2"/>
+          <line x1="8" y1="21" x2="16" y2="21"/>
+          <line x1="12" y1="18" x2="12" y2="21"/>
+        </svg>
+        <span>Screen</span>
+      </button>
+    </div>
+    <div class="camera-actions">
+      <div class="cam-actions-side cam-actions-left">
+        <button class="cam-action-btn secondary" id="open-history-btn" title="History">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 12"/>
+            <path d="M3 3v9h9"/>
+          </svg>
+        </button>
+      </div>
+      <button class="cam-shutter-btn" id="shutter-btn">
+        <span class="shutter-inner"></span>
+      </button>
+      <div class="cam-actions-side cam-actions-right"></div>
+    </div>
+  </div>
+</div>`;
+  }
+
+  bindCameraEvents(win) {
+    win.querySelectorAll(".cam-mode-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        win.querySelectorAll(".cam-mode-btn").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        this.state.currentMode = btn.dataset.mode;
+        const indicator = win.querySelector("#mode-indicator");
+        if (indicator) {
+          indicator.textContent = btn.querySelector("span")?.textContent || this.state.currentMode;
         }
-      ],
-      state: {
-        initial: {
-          currentMode: "photo",
-          isRecording: false,
-          recordings: [],
-          historyFilter: "all",
-          historySort: "newest",
-          bulkSelectMode: false,
-          selectedItems: []
-        },
-        persistence: PersistenceTypes.NONE
-      },
-      actions: {
-        modeClick: (payload, event, element, state) => {
-          const mode = element.dataset.mode;
-          const cameraApp = document.querySelector(".camera-app");
-          if (!cameraApp) return;
-          cameraApp.querySelectorAll(".cam-mode-btn").forEach((b) => b.classList.remove("active"));
-          element.classList.add("active");
-          state.currentMode = mode;
-          cameraApp.querySelector("#mode-indicator").textContent = element.querySelector("span").textContent;
-          this.updateShutterButton(state, cameraApp);
-        },
-        shutterClick: async (payload, event, element, state) => {
-          const cameraApp = document.querySelector(".camera-app");
-          if (!cameraApp) return;
+        this.updateShutterButton(this.state, win);
+      });
+    });
 
-          const shutterBtn = cameraApp.querySelector("#shutter-btn");
-          if (shutterBtn) {
-            shutterBtn.classList.add("shutter-snap");
-            setTimeout(() => shutterBtn.classList.remove("shutter-snap"), 200);
-          }
+    win.querySelector("#shutter-btn")?.addEventListener("click", async () => {
+      const shutterBtn = win.querySelector("#shutter-btn");
+      if (shutterBtn) {
+        shutterBtn.classList.add("shutter-snap");
+        setTimeout(() => shutterBtn.classList.remove("shutter-snap"), 200);
+      }
 
-          if (state.currentMode === "photo") {
-            await this.takePhoto(state);
-          } else if (state.currentMode === "video") {
-            if (!state.isRecording) {
-              this.startRecording(state, cameraApp);
-            } else {
-              this.stopRecording();
-            }
-          } else if (state.currentMode === "screen") {
-            if (!state.isRecording) {
-              await this.startScreenRecording(state, cameraApp);
-            } else {
-              this.stopRecording();
-            }
-          }
-        },
-        historyClick: (payload, event, element, state) => {
-          const historyWin = os.window.create("history-win", "Recordings History", "45vw", "70vh", {
-            icon: "static/icons/obs.webp"
-          });
-
-          historyWin.innerHTML = `
-            <div class="window-content">
-              <div class="history-controls">
-                <div class="history-filter">
-                  ${renderSelectMenu(
-                    "history-type-filter",
-                    [
-                      { value: "all", label: "All" },
-                      { value: "photo", label: "Photos" },
-                      { value: "video", label: "Videos" },
-                      { value: "screen", label: "Screen" }
-                    ],
-                    state.historyFilter || "all",
-                    "history-filter-select"
-                  )}
-                  ${renderSelectMenu(
-                    "history-sort",
-                    [
-                      { value: "newest", label: "Newest First" },
-                      { value: "oldest", label: "Oldest First" }
-                    ],
-                    state.historySort || "newest",
-                    "history-sort-select"
-                  )}
-                  <span id="history-count" class="history-count"></span>
-                </div>
-                <div class="history-actions">
-                  <button id="bulk-select-btn" class="history-btn secondary">Bulk Select</button>
-                  <button id="delete-selected-btn" class="history-btn danger" style="display: none;">Delete Selected</button>
-                </div>
-              </div>
-              <div id="history-list" class="history-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; padding: 16px; overflow-y: auto; max-height: calc(70vh - 120px);"></div>
-              <div class="history-pagination" style="display: flex; justify-content: center; align-items: center; gap: 16px; padding: 16px; border-top: 1px solid rgba(255,255,255,0.1);">
-                <button id="prev-page" class="history-btn secondary" disabled>Previous</button>
-                <span id="page-info">Page 1 of 1</span>
-                <button id="next-page" class="history-btn secondary" disabled>Next</button>
-              </div>
-            </div>
-          `;
-
-          bindSelectMenu(historyWin);
-
-          state.currentPage = 1;
-          state.itemsPerPage = 12;
-
-          const typeFilter = historyWin.querySelector("#history-type-filter");
-          const sortSelect = historyWin.querySelector("#history-sort");
-          const bulkSelectBtn = historyWin.querySelector("#bulk-select-btn");
-          const deleteSelectedBtn = historyWin.querySelector("#delete-selected-btn");
-          const prevPageBtn = historyWin.querySelector("#prev-page");
-          const nextPageBtn = historyWin.querySelector("#next-page");
-          const pageInfo = historyWin.querySelector("#page-info");
-
-          typeFilter.addEventListener("change", () => {
-            state.currentPage = 1;
-            this.renderHistory(state, historyWin);
-          });
-          sortSelect.addEventListener("change", () => {
-            state.currentPage = 1;
-            this.renderHistory(state, historyWin);
-          });
-
-          bulkSelectBtn.onclick = () => {
-            state.bulkSelectMode = !state.bulkSelectMode;
-            bulkSelectBtn.textContent = state.bulkSelectMode ? "Cancel Select" : "Bulk Select";
-            deleteSelectedBtn.style.display = state.bulkSelectMode ? "block" : "none";
-            state.selectedItems = [];
-            this.renderHistory(state, historyWin);
-          };
-
-          deleteSelectedBtn.onclick = async () => {
-            if (state.selectedItems.length === 0) return;
-            const confirmed = await os.dialog.confirm(
-              "Confirm",
-              `Delete ${state.selectedItems.length} selected items?`
-            );
-            if (!confirmed) return;
-            for (const id of state.selectedItems) {
-              await this.deleteRecording(id, state);
-            }
-            state.selectedItems = [];
-            this.renderHistory(state, historyWin);
-          };
-
-          prevPageBtn.onclick = () => {
-            if (state.currentPage > 1) {
-              state.currentPage--;
-              this.renderHistory(state, historyWin);
-            }
-          };
-
-          nextPageBtn.onclick = () => {
-            const totalPages = Math.ceil(state.recordings.length / state.itemsPerPage);
-            if (state.currentPage < totalPages) {
-              state.currentPage++;
-              this.renderHistory(state, historyWin);
-            }
-          };
-
-          this.renderHistory(state, historyWin);
-        },
-        historyFilterChange: (payload, event, element, state) => {
-          state.historyFilter = element.value;
-          this.renderHistory(state);
-        },
-        historySortChange: (payload, event, element, state) => {
-          state.historySort = element.value;
-          this.renderHistory(state);
-        },
-        bulkSelectClick: (payload, event, element, state) => {
-          state.bulkSelectMode = !state.bulkSelectMode;
-          element.textContent = state.bulkSelectMode ? "Cancel Select" : "Bulk Select";
-          const deleteBtn = document.querySelector("#delete-selected-btn");
-          if (deleteBtn) {
-            deleteBtn.style.display = state.bulkSelectMode ? "block" : "none";
-          }
-          state.selectedItems = [];
-          this.renderHistory(state);
-        },
-        deleteSelectedClick: async (payload, event, element, state) => {
-          if (state.selectedItems.length === 0) return;
-          const confirmed = await os.dialog.confirm("Confirm", `Delete ${state.selectedItems.length} selected items?`);
-          if (!confirmed) return;
-          for (const id of state.selectedItems) {
-            await this.deleteRecording(id, state);
-          }
-          state.selectedItems = [];
-          this.renderHistory(state);
+      if (this.state.currentMode === "photo") {
+        await this.takePhoto(this.state);
+      } else if (this.state.currentMode === "video") {
+        if (!this.state.isRecording) {
+          this.startRecording(this.state, win);
+        } else {
+          this.stopRecording();
         }
-      },
-      onMount: "initCamera"
+      } else if (this.state.currentMode === "screen") {
+        if (!this.state.isRecording) {
+          await this.startScreenRecording(this.state, win);
+        } else {
+          this.stopRecording();
+        }
+      }
+    });
+
+    win.querySelector("#open-history-btn")?.addEventListener("click", () => {
+      this.openHistoryWindow(this.state);
+    });
+  }
+
+  openHistoryWindow(state) {
+    const historyWin = os.window.create("history-win", "Recordings History", "45vw", "70vh", {
+      icon: "static/icons/obs.webp"
+    });
+
+    historyWin.innerHTML = `
+      <div class="window-content">
+        <div class="history-controls">
+          <div class="history-filter">
+            ${renderSelectMenu(
+              "history-type-filter",
+              [
+                { value: "all", label: "All" },
+                { value: "photo", label: "Photos" },
+                { value: "video", label: "Videos" },
+                { value: "screen", label: "Screen" }
+              ],
+              state.historyFilter || "all",
+              "history-filter-select"
+            )}
+            ${renderSelectMenu(
+              "history-sort",
+              [
+                { value: "newest", label: "Newest First" },
+                { value: "oldest", label: "Oldest First" }
+              ],
+              state.historySort || "newest",
+              "history-sort-select"
+            )}
+            <span id="history-count" class="history-count"></span>
+          </div>
+          <div class="history-actions">
+            <button id="bulk-select-btn" class="history-btn secondary">Bulk Select</button>
+            <button id="delete-selected-btn" class="history-btn danger" style="display: none;">Delete Selected</button>
+          </div>
+        </div>
+        <div id="history-list" class="history-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; padding: 16px; overflow-y: auto; max-height: calc(70vh - 120px);"></div>
+        <div class="history-pagination" style="display: flex; justify-content: center; align-items: center; gap: 16px; padding: 16px; border-top: 1px solid rgba(255,255,255,0.1);">
+          <button id="prev-page" class="history-btn secondary" disabled>Previous</button>
+          <span id="page-info">Page 1 of 1</span>
+          <button id="next-page" class="history-btn secondary" disabled>Next</button>
+        </div>
+      </div>
+    `;
+
+    bindSelectMenu(historyWin);
+
+    state.currentPage = 1;
+    state.itemsPerPage = 12;
+
+    const typeFilter = historyWin.querySelector("#history-type-filter");
+    const sortSelect = historyWin.querySelector("#history-sort");
+    const bulkSelectBtn = historyWin.querySelector("#bulk-select-btn");
+    const deleteSelectedBtn = historyWin.querySelector("#delete-selected-btn");
+    const prevPageBtn = historyWin.querySelector("#prev-page");
+    const nextPageBtn = historyWin.querySelector("#next-page");
+    const pageInfo = historyWin.querySelector("#page-info");
+
+    typeFilter.addEventListener("change", () => {
+      state.currentPage = 1;
+      this.renderHistory(state, historyWin);
+    });
+    sortSelect.addEventListener("change", () => {
+      state.currentPage = 1;
+      this.renderHistory(state, historyWin);
+    });
+
+    bulkSelectBtn.onclick = () => {
+      state.bulkSelectMode = !state.bulkSelectMode;
+      bulkSelectBtn.textContent = state.bulkSelectMode ? "Cancel Select" : "Bulk Select";
+      deleteSelectedBtn.style.display = state.bulkSelectMode ? "block" : "none";
+      state.selectedItems = [];
+      this.renderHistory(state, historyWin);
     };
+
+    deleteSelectedBtn.onclick = async () => {
+      if (state.selectedItems.length === 0) return;
+      const confirmed = await os.dialog.confirm("Confirm", `Delete ${state.selectedItems.length} selected items?`);
+      if (!confirmed) return;
+      for (const id of state.selectedItems) {
+        await this.deleteRecording(id, state);
+      }
+      state.selectedItems = [];
+      this.renderHistory(state, historyWin);
+    };
+
+    prevPageBtn.onclick = () => {
+      if (state.currentPage > 1) {
+        state.currentPage--;
+        this.renderHistory(state, historyWin);
+      }
+    };
+
+    nextPageBtn.onclick = () => {
+      const totalPages = Math.ceil(state.recordings.length / state.itemsPerPage);
+      if (state.currentPage < totalPages) {
+        state.currentPage++;
+        this.renderHistory(state, historyWin);
+      }
+    };
+
+    this.renderHistory(state, historyWin);
   }
 
   updateShutterButton(state, cameraApp) {

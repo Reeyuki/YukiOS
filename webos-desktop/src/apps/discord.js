@@ -1,5 +1,5 @@
 import { ScramjetBaseApp } from "../core/ScramjetBaseApp.js";
-import { PersistenceTypes, os } from "../framework.js";
+import { os } from "../framework.js";
 import { SYSTEM_APPS } from "../AppRegistryConfig.js";
 
 export class DiscordApp extends ScramjetBaseApp {
@@ -28,49 +28,12 @@ export class DiscordApp extends ScramjetBaseApp {
     return ["90vw", "85vh"];
   }
 
-  getDeclarativeSchema() {
-    return null;
-  }
-
   async open(opts = {}) {
     const iconHtml = '<i class="fab fa-discord" style="margin-right:8px;font-size:16px;"></i>';
     const controlsHtml = os.window.getWindowControls();
-
-    const schema = {
-      id: this.getAppId(),
-      name: this.getAppName(),
-      icon: this.getAppIcon(),
-      windows: [
-        {
-          id: `${this.getAppId()}-window`,
-          title: this.getAppName(),
-          size: this.getWindowSize(),
-          icon: this.getAppIcon(),
-          ui: `
-            <div class="window-header">
-              <span>${iconHtml}${this.getAppName()}</span>
-              ${controlsHtml}
-            </div>
-            <div class="window-content" style="overflow:hidden;">
-              <div class="scramjet-base-container" style="width:100%;height:100%;overflow:hidden;">
-                <iframe
-                  id="${this.getAppId()}-iframe"
-                  style="width:100%;height:100%;border:none;"
-                  sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation-by-user-activation"
-                ></iframe>
-              </div>
-            </div>
-          `
-        }
-      ],
-      state: { initial: {}, persistence: PersistenceTypes.NONE },
-      onMount: "initScramjet",
-      onClose: "cleanupScramjet"
-    };
-
-    const windowConfig = schema.windows[0];
-    const winId = windowConfig.id;
+    const winId = `${this.getAppId()}-window`;
     this.winId = winId;
+    const size = this.getWindowSize();
 
     if (await this.isSingletonOpen(winId)) {
       return;
@@ -78,18 +41,31 @@ export class DiscordApp extends ScramjetBaseApp {
 
     this.createSplash();
 
-    const win = this.wm.createWindow(winId, windowConfig.title, windowConfig.size[0], windowConfig.size[1], {
-      icon: windowConfig.icon,
-      appId: schema.id
+    const win = this.wm.createWindow(winId, this.getAppName(), size[0], size[1], {
+      icon: this.getAppIcon(),
+      appId: this.getAppId()
     });
 
-    win.innerHTML = windowConfig.ui;
-    this.wm.mountWindow(win, winId, windowConfig.title, windowConfig.icon);
+    win.innerHTML = `
+      <div class="window-header">
+        <span>${iconHtml}${this.getAppName()}</span>
+        ${controlsHtml}
+      </div>
+      <div class="window-content" style="overflow:hidden;">
+        <div class="scramjet-base-container" style="width:100%;height:100%;overflow:hidden;">
+          <iframe
+            id="${this.getAppId()}-iframe"
+            style="width:100%;height:100%;border:none;"
+            sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation-by-user-activation"
+          ></iframe>
+        </div>
+      </div>
+    `;
+    this.wm.mountWindow(win, winId, this.getAppName(), this.getAppIcon());
 
     win.getAnimations().forEach((a) => a.cancel());
     win.style.opacity = "0";
 
-    this.isDeclarative = true;
     if (schema.onMount && typeof this[schema.onMount] === "function") {
       this[schema.onMount](null, null, win, schema.state?.initial || {});
     }

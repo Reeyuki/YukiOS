@@ -1,5 +1,5 @@
 import { createElement } from "../shared/domUtils.js";
-import { BaseApp, PersistenceTypes, StorageKeys, os } from "../framework.js";
+import { BaseApp, StorageKeys, os } from "../framework.js";
 function clampInt(n, min, max) {
   n = Number.parseInt(String(n), 10);
   if (!Number.isFinite(n)) return min;
@@ -164,19 +164,12 @@ export class YouTubeUtilsApp extends BaseApp {
     this.favorites = this.loadFavorites();
   }
 
-  getDeclarativeSchema(opts) {
-    return {
-      id: "youtube-utils",
-      name: "YouTube Utilities",
+  open() {
+    const win = os.window.create("youtube-utils", "YouTube Utilities", "980px", "640px", {
       icon: "fab fa-youtube",
-      windows: [
-        {
-          id: "youtube-utils",
-          title: "YouTube Utilities",
-          size: ["980px", "640px"],
-          icon: "fab fa-youtube",
-          iconColor: "#ff2a2a",
-          ui: `<div class="window-content yt-utils">
+      iconColor: "#ff2a2a"
+    });
+    win.innerHTML = `<div class="window-content yt-utils">
         <div class="toolbar">
           <div class="row">
             <input id="yt-input" type="text" spellcheck="false" autocomplete="off"
@@ -279,198 +272,8 @@ export class YouTubeUtilsApp extends BaseApp {
         <div class="meta">
           Tips: Supports <code>watch</code>, <code>youtu.be</code>, <code>shorts</code>, <code>embed</code>, and playlists. Time params like <code>&t=1m30s</code> or <code>&start=90</code> are respected.
         </div>
-      </div>`,
-          events: {
-            "#yt-load": {
-              click: {
-                type: "custom:load",
-                stopPropagation: true
-              }
-            },
-            "#yt-paste": {
-              click: {
-                type: "custom:paste",
-                stopPropagation: true
-              }
-            },
-            "#yt-clear": {
-              click: {
-                type: "custom:clear",
-                stopPropagation: true
-              }
-            },
-            "#yt-copy-embed": {
-              click: {
-                type: "custom:copyEmbed",
-                stopPropagation: true
-              }
-            },
-            "#yt-open-yt": {
-              click: {
-                type: "custom:openYt",
-                stopPropagation: true
-              }
-            },
-            "#yt-create-desktop": {
-              click: {
-                type: "custom:createDesktop",
-                stopPropagation: true
-              }
-            },
-            "#yt-pin": {
-              click: {
-                type: "custom:pin",
-                stopPropagation: true
-              }
-            },
-            "#yt-tab-recent": {
-              click: {
-                type: "custom:tabRecent",
-                stopPropagation: true
-              }
-            },
-            "#yt-tab-fav": {
-              click: {
-                type: "custom:tabFav",
-                stopPropagation: true
-              }
-            },
-            "#yt-export": {
-              click: {
-                type: "custom:export",
-                stopPropagation: true
-              }
-            },
-            "#yt-import": {
-              click: {
-                type: "custom:import",
-                stopPropagation: true
-              }
-            },
-            "#yt-clear-list": {
-              click: {
-                type: "custom:clearList",
-                stopPropagation: true
-              }
-            },
-            "#yt-copy-time": {
-              click: {
-                type: "custom:copyTime",
-                stopPropagation: true
-              }
-            },
-            "#yt-jump-time": {
-              click: {
-                type: "custom:jumpTime",
-                stopPropagation: true
-              }
-            },
-            "#yt-save-preset": {
-              click: {
-                type: "custom:savePreset",
-                stopPropagation: true
-              }
-            },
-            "#yt-reset-preset": {
-              click: {
-                type: "custom:resetPreset",
-                stopPropagation: true
-              }
-            },
-            "#yt-input": {
-              keydown: {
-                type: "custom:inputKeydown",
-                stopPropagation: false
-              }
-            }
-          }
-        }
-      ],
-      state: {
-        initial: {
-          prefs: {
-            nocookie: true,
-            autoplay: false,
-            controls: true,
-            mute: false,
-            openInBrowserApp: false
-          },
-          preset: {
-            endSeconds: 0,
-            loop: false
-          },
-          recent: [],
-          favorites: []
-        },
-        persistence: PersistenceTypes.LOCAL_STORAGE
-      },
-      actions: {
-        load: (payload, event, element, state) => {
-          this.loadFromInput();
-        },
-        paste: async (payload, event, element, state) => {
-          await this.pasteFromClipboard();
-        },
-        clear: (payload, event, element, state) => {
-          this.clearEmbed();
-        },
-        copyEmbed: async (payload, event, element, state) => {
-          await this.copyEmbedUrl();
-        },
-        openYt: (payload, event, element, state) => {
-          this.openOnYouTube();
-        },
-        createDesktop: async (payload, event, element, state) => {
-          await this.createDesktopEntry();
-        },
-        pin: (payload, event, element, state) => {
-          this.togglePin();
-        },
-        tabRecent: (payload, event, element, state) => {
-          this.setActiveTab("recent");
-        },
-        tabFav: (payload, event, element, state) => {
-          this.setActiveTab("fav");
-        },
-        export: async (payload, event, element, state) => {
-          await this.exportAll();
-        },
-        import: async (payload, event, element, state) => {
-          await this.importAll();
-        },
-        clearList: (payload, event, element, state) => {
-          if (this.activeTab === "fav") {
-            this.favorites = [];
-            this.saveFavorites();
-          } else {
-            this.recent = [];
-            this.saveRecent();
-          }
-          this.renderLists();
-        },
-        copyTime: async (payload, event, element, state) => {
-          await this.copyWatchUrlAtTime();
-        },
-        jumpTime: (payload, event, element, state) => {
-          this.jumpToTime();
-        },
-        savePreset: (payload, event, element, state) => {
-          this.savePresetFromUI();
-        },
-        resetPreset: (payload, event, element, state) => {
-          this.resetPreset();
-        },
-        inputKeydown: (payload, event, element, state) => {
-          if (event.key === "Enter") {
-            this.loadFromInput();
-          }
-        },
-        initYoutube: (payload, event, element, state) => {
-          this.initYoutube(payload, event, element, state);
-        }
-      },
-      onMount: "initYoutube"
-    };
+      </div>`;
+    this.initYoutube(null, null, win, null);
   }
 
   initYoutube(payload, event, element, state) {

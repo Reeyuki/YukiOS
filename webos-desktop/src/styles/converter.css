@@ -93,7 +93,30 @@
 }
 
 .control-input,
+.control-select {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  color: #fff;
+  padding: 8px 12px;
+  font-size: 14px;
+  outline: none;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
 .control-input:focus,
+.control-select:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 2px var(--brand);
+  background: rgba(255, 255, 255, 0.09);
+}
+
 .control-row {
   display: flex;
   gap: 12px;

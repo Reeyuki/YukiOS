@@ -68,7 +68,10 @@ function doc(path, type, content) {
   const d = {
     path: n(path),
     type,
-    content: content instanceof Uint8Array ? content.buffer : (content ?? null),
+    content:
+      content instanceof Uint8Array
+        ? content.buffer.slice(content.byteOffset, content.byteOffset + content.byteLength)
+        : (content ?? null),
     size: content instanceof Uint8Array ? content.length : typeof content === "string" ? content.length : 0,
     mtime: Date.now(),
     ctime: Date.now()
@@ -138,7 +141,7 @@ const fs = {
       let content = d.content;
       if (content instanceof ArrayBuffer) {
         const uint8 = new Uint8Array(content);
-        content = encoding !== "utf8" && encoding ? uint8 : new TextDecoder().decode(uint8);
+        content = encoding ? new TextDecoder().decode(uint8) : uint8;
       }
       cb(null, content);
     } catch (e) {

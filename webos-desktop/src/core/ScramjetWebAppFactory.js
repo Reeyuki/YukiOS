@@ -32,13 +32,8 @@ export function createScramjetWebApp(config) {
       return windowSize;
     }
 
-    getDeclarativeSchema(opts) {
-      const schema = super.getDeclarativeSchema(opts);
-      this.winId = `${this.getAppId()}-window`;
-      return schema;
-    }
-
     async initScramjet(payload, vt, element, state) {
+      this.winId = `${this.getAppId()}-window`;
       await super.initScramjet(payload, vt, element, state);
 
       if (this.trayOptions) {

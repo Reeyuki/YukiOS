@@ -4,7 +4,7 @@ import { resolveGhUrl } from "./shared/assetResolver.js";
 import { audioMixer } from "./audioMixer.js";
 import { $$ } from "./shared/domUtils.js";
 
-import { BaseApp, PersistenceTypes, StorageKeys, os } from "./framework.js";
+import { BaseApp, StorageKeys, os } from "./framework.js";
 export const Achievements = {
   WelcomeAboard: "first_boot",
   MultiTasker: "window_manager",
@@ -74,19 +74,13 @@ export class AchievementsApp extends BaseApp {
     this.loadFromStorage();
   }
 
-  getDeclarativeSchema(opts) {
-    return {
-      id: "achievements-yukios",
-      name: "Achievements",
+  open(opts = {}) {
+    const win = os.window.create("achievements-yukios", "Achievements", "800px", "40em", {
       icon: "fa fa-trophy",
-      windows: [
-        {
-          id: "achievements-yukios",
-          title: "Achievements",
-          size: ["800px", "40em"],
-          icon: "fa fa-trophy",
-          style: { left: "200px", top: "30px" },
-          ui: `<div class="window-content achievements-content">
+      appId: "achievements-yukios"
+    });
+
+    win.innerHTML = `<div class="window-content achievements-content">
         <div class="achievements-scroll">
           <div class="achievements-hero">
             <div class="achievements-hero__bg"></div>
@@ -140,38 +134,17 @@ export class AchievementsApp extends BaseApp {
           </div>
           <div class="achievements-grid" id="achievements-grid"></div>
         </div>
-      </div>`,
-          events: {
-            ".achievements-toggle__btn": {
-              click: {
-                type: "custom:setFilter",
-                stopPropagation: true
-              }
-            }
-          }
-        }
-      ],
-      state: {
-        initial: {
-          currentFilter: "all",
-          unlocked: [],
-          counters: {}
-        },
-        persistence: PersistenceTypes.LOCAL_STORAGE
-      },
-      actions: {
-        setFilter: (payload, event, element, state) => {
-          const filter = element.dataset.filter || "all";
-          state.currentFilter = filter;
-          this.currentFilter = filter;
-          this.refresh();
-        }
-      },
-      onMount: "initAchievements"
-    };
-  }
+      </div>`;
 
-  initAchievements(payload, event, element, state) {
+    const scroll = win.querySelector(".achievements-scroll");
+    scroll.addEventListener("click", (e) => {
+      const btn = e.target.closest(".achievements-toggle__btn");
+      if (!btn) return;
+      const filter = btn.dataset.filter || "all";
+      this.currentFilter = filter;
+      this.refresh();
+    });
+
     this.refresh();
   }
 

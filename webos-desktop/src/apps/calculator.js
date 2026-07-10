@@ -1,887 +1,360 @@
 import "../styles/calculator.css";
 import { KeybindManager } from "../keybindManager.js";
+import { BaseApp, os } from "../framework.js";
 
-import { BaseApp, PersistenceTypes } from "../framework.js";
 export class CalculatorApp extends BaseApp {
   constructor(services) {
     super(services);
     this.openWindows = new Set();
-    this.elements = {};
+    this.reset();
   }
 
-  getDeclarativeSchema(opts) {
-    return {
-      id: "calculator",
-      name: "Calculator",
+  reset() {
+    this.current = "0";
+    this.previous = null;
+    this.operator = null;
+    this.lastOperand = null;
+    this.justEvaluated = false;
+    this.waitingForOperand = false;
+    this.error = false;
+    this.history = [];
+  }
+
+  open() {
+    const winId = "calculator-window";
+    if (this.openWindows.has(winId)) return;
+
+    const win = os.window.create(winId, "Calculator", "360px", "560px", {
       icon: "fas fa-calculator",
-      windows: [
-        {
-          id: "calculator-window",
-          title: "Calculator",
-          size: ["360px", "560px"],
-          icon: "fas fa-calculator",
-          ui: {
-            type: "element",
-            tag: "div",
-            props: {
-              className: "calc-body"
-            },
-            children: [
-              {
-                type: "element",
-                tag: "div",
-                props: {
-                  className: "calc-history",
-                  ref: "calc-history"
-                }
-              },
-              {
-                type: "element",
-                tag: "div",
-                props: {
-                  className: "calc-display"
-                },
-                children: [
-                  {
-                    type: "element",
-                    tag: "div",
-                    props: {
-                      className: "calc-expression",
-                      ref: "calc-expression"
-                    }
-                  },
-                  {
-                    type: "element",
-                    tag: "div",
-                    props: {
-                      className: "calc-result",
-                      ref: "calc-result",
-                      textContent: "0"
-                    }
-                  }
-                ]
-              },
-              {
-                type: "element",
-                tag: "div",
-                props: {
-                  className: "calc-grid"
-                },
-                children: [
-                  {
-                    type: "element",
-                    tag: "button",
-                    props: {
-                      className: "calc-btn span-two func",
-                      textContent: "AC"
-                    },
-                    events: {
-                      click: {
-                        type: "custom:clear",
-                        stopPropagation: true
-                      }
-                    }
-                  },
-                  {
-                    type: "element",
-                    tag: "button",
-                    props: {
-                      className: "calc-btn func",
-                      textContent: "+/−"
-                    },
-                    events: {
-                      click: {
-                        type: "custom:sign",
-                        stopPropagation: true
-                      }
-                    }
-                  },
-                  {
-                    type: "element",
-                    tag: "button",
-                    props: {
-                      className: "calc-btn func",
-                      textContent: "%"
-                    },
-                    events: {
-                      click: {
-                        type: "custom:percent",
-                        stopPropagation: true
-                      }
-                    }
-                  },
-                  {
-                    type: "element",
-                    tag: "button",
-                    props: {
-                      className: "calc-btn",
-                      textContent: "7"
-                    },
-                    events: {
-                      click: {
-                        type: "custom:digit",
-                        payload: "7",
-                        stopPropagation: true
-                      }
-                    }
-                  },
-                  {
-                    type: "element",
-                    tag: "button",
-                    props: {
-                      className: "calc-btn",
-                      textContent: "8"
-                    },
-                    events: {
-                      click: {
-                        type: "custom:digit",
-                        payload: "8",
-                        stopPropagation: true
-                      }
-                    }
-                  },
-                  {
-                    type: "element",
-                    tag: "button",
-                    props: {
-                      className: "calc-btn",
-                      textContent: "9"
-                    },
-                    events: {
-                      click: {
-                        type: "custom:digit",
-                        payload: "9",
-                        stopPropagation: true
-                      }
-                    }
-                  },
-                  {
-                    type: "element",
-                    tag: "button",
-                    props: {
-                      className: "calc-btn op",
-                      textContent: "÷"
-                    },
-                    events: {
-                      click: {
-                        type: "custom:op",
-                        payload: "÷",
-                        stopPropagation: true
-                      }
-                    }
-                  },
-                  {
-                    type: "element",
-                    tag: "button",
-                    props: {
-                      className: "calc-btn",
-                      textContent: "4"
-                    },
-                    events: {
-                      click: {
-                        type: "custom:digit",
-                        payload: "4",
-                        stopPropagation: true
-                      }
-                    }
-                  },
-                  {
-                    type: "element",
-                    tag: "button",
-                    props: {
-                      className: "calc-btn",
-                      textContent: "5"
-                    },
-                    events: {
-                      click: {
-                        type: "custom:digit",
-                        payload: "5",
-                        stopPropagation: true
-                      }
-                    }
-                  },
-                  {
-                    type: "element",
-                    tag: "button",
-                    props: {
-                      className: "calc-btn",
-                      textContent: "6"
-                    },
-                    events: {
-                      click: {
-                        type: "custom:digit",
-                        payload: "6",
-                        stopPropagation: true
-                      }
-                    }
-                  },
-                  {
-                    type: "element",
-                    tag: "button",
-                    props: {
-                      className: "calc-btn op",
-                      textContent: "×"
-                    },
-                    events: {
-                      click: {
-                        type: "custom:op",
-                        payload: "×",
-                        stopPropagation: true
-                      }
-                    }
-                  },
-                  {
-                    type: "element",
-                    tag: "button",
-                    props: {
-                      className: "calc-btn",
-                      textContent: "1"
-                    },
-                    events: {
-                      click: {
-                        type: "custom:digit",
-                        payload: "1",
-                        stopPropagation: true
-                      }
-                    }
-                  },
-                  {
-                    type: "element",
-                    tag: "button",
-                    props: {
-                      className: "calc-btn",
-                      textContent: "2"
-                    },
-                    events: {
-                      click: {
-                        type: "custom:digit",
-                        payload: "2",
-                        stopPropagation: true
-                      }
-                    }
-                  },
-                  {
-                    type: "element",
-                    tag: "button",
-                    props: {
-                      className: "calc-btn",
-                      textContent: "3"
-                    },
-                    events: {
-                      click: {
-                        type: "custom:digit",
-                        payload: "3",
-                        stopPropagation: true
-                      }
-                    }
-                  },
-                  {
-                    type: "element",
-                    tag: "button",
-                    props: {
-                      className: "calc-btn op",
-                      textContent: "−"
-                    },
-                    events: {
-                      click: {
-                        type: "custom:op",
-                        payload: "−",
-                        stopPropagation: true
-                      }
-                    }
-                  },
-                  {
-                    type: "element",
-                    tag: "button",
-                    props: {
-                      className: "calc-btn",
-                      textContent: "0"
-                    },
-                    events: {
-                      click: {
-                        type: "custom:digit",
-                        payload: "0",
-                        stopPropagation: true
-                      }
-                    }
-                  },
-                  {
-                    type: "element",
-                    tag: "button",
-                    props: {
-                      className: "calc-btn",
-                      textContent: "."
-                    },
-                    events: {
-                      click: {
-                        type: "custom:dot",
-                        stopPropagation: true
-                      }
-                    }
-                  },
-                  {
-                    type: "element",
-                    tag: "button",
-                    props: {
-                      className: "calc-btn op",
-                      textContent: "⌫"
-                    },
-                    events: {
-                      click: {
-                        type: "custom:backspace",
-                        stopPropagation: true
-                      }
-                    }
-                  },
-                  {
-                    type: "element",
-                    tag: "button",
-                    props: {
-                      className: "calc-btn op",
-                      textContent: "+"
-                    },
-                    events: {
-                      click: {
-                        type: "custom:op",
-                        payload: "+",
-                        stopPropagation: true
-                      }
-                    }
-                  },
-                  {
-                    type: "element",
-                    tag: "button",
-                    props: {
-                      className: "calc-btn span-four equals",
-                      textContent: "="
-                    },
-                    events: {
-                      click: {
-                        type: "custom:equals",
-                        stopPropagation: true
-                      }
-                    }
-                  }
-                ]
-              }
-            ]
-          },
-          events: {
-            window: {
-              keydown: {
-                type: "custom:handleKeydown",
-                stopPropagation: false
-              }
-            },
-            "#calc-history": {
-              click: {
-                type: "custom:handleHistoryClick",
-                stopPropagation: true
-              }
-            }
-          }
+      appId: "calculator"
+    });
+
+    this.win = win;
+    this.openWindows.add(winId);
+    this.reset();
+    win.innerHTML = this.buildUI();
+    this.bindCalculatorEvents(win);
+
+    const resultEl = win.querySelector("#calc-result");
+    if (resultEl) {
+      resultEl.textContent = this.current;
+      resultEl.className = "calc-result calc-result-size-lg";
+    }
+
+    win.addEventListener("remove", () => {
+      this.openWindows.delete(winId);
+      this.win = null;
+    });
+
+    win.setAttribute("tabindex", "0");
+    setTimeout(() => win.focus(), 50);
+  }
+
+  buildUI() {
+    return `<div class="calc-body">
+  <div class="calc-history" id="calc-history"></div>
+  <div class="calc-display">
+    <div class="calc-expression" id="calc-expression"></div>
+    <div class="calc-result calc-result-size-lg" id="calc-result">0</div>
+  </div>
+  <div class="calc-grid">
+    <button class="calc-btn span-two func" data-action="clear">AC</button>
+    <button class="calc-btn func" data-action="sign">+/−</button>
+    <button class="calc-btn func" data-action="percent">%</button>
+    <button class="calc-btn" data-action="digit" data-value="7">7</button>
+    <button class="calc-btn" data-action="digit" data-value="8">8</button>
+    <button class="calc-btn" data-action="digit" data-value="9">9</button>
+    <button class="calc-btn op" data-action="op" data-value="÷">÷</button>
+    <button class="calc-btn" data-action="digit" data-value="4">4</button>
+    <button class="calc-btn" data-action="digit" data-value="5">5</button>
+    <button class="calc-btn" data-action="digit" data-value="6">6</button>
+    <button class="calc-btn op" data-action="op" data-value="×">×</button>
+    <button class="calc-btn" data-action="digit" data-value="1">1</button>
+    <button class="calc-btn" data-action="digit" data-value="2">2</button>
+    <button class="calc-btn" data-action="digit" data-value="3">3</button>
+    <button class="calc-btn op" data-action="op" data-value="−">−</button>
+    <button class="calc-btn" data-action="digit" data-value="0">0</button>
+    <button class="calc-btn" data-action="dot">.</button>
+    <button class="calc-btn op" data-action="backspace">⌫</button>
+    <button class="calc-btn op" data-action="op" data-value="+">+</button>
+    <button class="calc-btn span-four equals" data-action="equals">=</button>
+  </div>
+</div>`;
+  }
+
+  bindCalculatorEvents(win) {
+    win.querySelectorAll("[data-action]").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const action = btn.dataset.action;
+        const value = btn.dataset.value;
+        switch (action) {
+          case "digit":
+            this.handleDigit(value);
+            break;
+          case "op":
+            this.handleOp(value);
+            break;
+          case "dot":
+            this.handleDot();
+            break;
+          case "clear":
+            this.handleClear();
+            break;
+          case "sign":
+            this.handleSign();
+            break;
+          case "percent":
+            this.handlePercent();
+            break;
+          case "backspace":
+            this.handleBackspace();
+            break;
+          case "equals":
+            this.handleEquals();
+            break;
         }
-      ],
-      state: {
-        initial: {
-          current: "0",
-          previous: null,
-          operator: null,
-          lastOperand: null,
-          justEvaluated: false,
-          waitingForOperand: false,
-          error: false,
-          history: []
-        },
-        persistence: PersistenceTypes.MEMORY
-      },
-      actions: {
-        updateDisplay: (payload, event, element, state) => {
-          const resultEl = element.closest(".calc-body").querySelector('[ref="calc-result"]');
-          if (resultEl) {
-            resultEl.textContent = state.current;
-            const calcSz = state.current.length > 10 ? "calc-result-size-sm" : "calc-result-size-lg";
-            resultEl.className = resultEl.className.replace(/calc-result-size-\w+/g, "").trim() + " " + calcSz;
-          }
-        },
-        renderHistory: (payload, event, element, state) => {
-          const historyEl = element.closest(".calc-body").querySelector('[ref="calc-history"]');
-          if (historyEl) {
-            historyEl.innerHTML = state.history
-              .map((h, i) => `<div class="calc-history-item" data-index="${i}">${h}</div>`)
-              .join("");
-          }
-        },
-        pushHistory: (payload, event, element, state) => {
-          state.history.unshift(payload);
-          if (state.history.length > 50) state.history.pop();
-          const historyEl = element.closest(".calc-body").querySelector('[ref="calc-history"]');
-          if (historyEl) {
-            historyEl.innerHTML = state.history
-              .map((h, i) => `<div class="calc-history-item" data-index="${i}">${h}</div>`)
-              .join("");
-          }
-        },
-        digit: (payload, event, element, state) => {
-          if (state.justEvaluated || state.waitingForOperand) {
-            state.current = payload;
-            state.waitingForOperand = false;
-            state.justEvaluated = false;
-          } else {
-            state.current = state.current === "0" ? payload : state.current + payload;
-          }
-          const resultEl = element.closest(".calc-body").querySelector('[ref="calc-result"]');
-          if (resultEl) {
-            resultEl.textContent = state.current;
-            const calcSz = state.current.length > 10 ? "calc-result-size-sm" : "calc-result-size-lg";
-            resultEl.className = resultEl.className.replace(/calc-result-size-\w+/g, "").trim() + " " + calcSz;
-          }
-        },
-        dot: (payload, event, element, state) => {
-          if (state.waitingForOperand) {
-            state.current = "0.";
-            state.waitingForOperand = false;
-          } else if (!state.current.includes(".")) {
-            state.current += ".";
-          }
-          const resultEl = element.closest(".calc-body").querySelector('[ref="calc-result"]');
-          if (resultEl) {
-            resultEl.textContent = state.current;
-            const calcSz = state.current.length > 10 ? "calc-result-size-sm" : "calc-result-size-lg";
-            resultEl.className = resultEl.className.replace(/calc-result-size-\w+/g, "").trim() + " " + calcSz;
-          }
-        },
-        clear: (payload, event, element, state) => {
-          state.current = "0";
-          state.previous = null;
-          state.operator = null;
-          state.lastOperand = null;
-          state.justEvaluated = false;
-          state.waitingForOperand = false;
-          state.error = false;
-          const expressionEl = element.closest(".calc-body").querySelector('[ref="calc-expression"]');
-          if (expressionEl) expressionEl.textContent = "";
-          const resultEl = element.closest(".calc-body").querySelector('[ref="calc-result"]');
-          if (resultEl) {
-            resultEl.textContent = state.current;
-            const calcSz = state.current.length > 10 ? "calc-result-size-sm" : "calc-result-size-lg";
-            resultEl.className = resultEl.className.replace(/calc-result-size-\w+/g, "").trim() + " " + calcSz;
-          }
-        },
-        sign: (payload, event, element, state) => {
-          const n = parseFloat(state.current);
-          if (Number.isFinite(n)) {
-            const r = Math.round(n * -1 * 1e12) / 1e12;
-            state.current = r.toString();
-          }
-          const resultEl = element.closest(".calc-body").querySelector('[ref="calc-result"]');
-          if (resultEl) {
-            resultEl.textContent = state.current;
-            const calcSz = state.current.length > 10 ? "calc-result-size-sm" : "calc-result-size-lg";
-            resultEl.className = resultEl.className.replace(/calc-result-size-\w+/g, "").trim() + " " + calcSz;
-          }
-        },
-        percent: (payload, event, element, state) => {
-          const cur = parseFloat(state.current);
-          if (!Number.isFinite(cur)) return;
+      });
+    });
 
-          if (state.previous !== null) {
-            const prev = parseFloat(state.previous);
-            if (Number.isFinite(prev)) {
-              if (state.operator === "+" || state.operator === "−") {
-                const r = Math.round(((prev * cur) / 100) * 1e12) / 1e12;
-                state.current = r.toString();
-              } else if (state.operator === "×" || state.operator === "÷") {
-                const r = Math.round((cur / 100) * 1e12) / 1e12;
-                state.current = r.toString();
-              }
-            }
-          } else {
-            const r = Math.round((cur / 100) * 1e12) / 1e12;
-            state.current = r.toString();
-          }
-          const resultEl = element.closest(".calc-body").querySelector('[ref="calc-result"]');
-          if (resultEl) {
-            resultEl.textContent = state.current;
-            const calcSz = state.current.length > 10 ? "calc-result-size-sm" : "calc-result-size-lg";
-            resultEl.className = resultEl.className.replace(/calc-result-size-\w+/g, "").trim() + " " + calcSz;
-          }
-        },
-        backspace: (payload, event, element, state) => {
-          if (!state.justEvaluated) {
-            if (state.current.length > 1) {
-              state.current = state.current.slice(0, -1);
-              if (state.current === "-" || state.current === "-0") state.current = "0";
-            } else {
-              state.current = "0";
-            }
-          }
-          const resultEl = element.closest(".calc-body").querySelector('[ref="calc-result"]');
-          if (resultEl) {
-            resultEl.textContent = state.current;
-            const calcSz = state.current.length > 10 ? "calc-result-size-sm" : "calc-result-size-lg";
-            resultEl.className = resultEl.className.replace(/calc-result-size-\w+/g, "").trim() + " " + calcSz;
-          }
-        },
-        op: (payload, event, element, state) => {
-          const applyOp = (a, op, b) => {
-            const fa = parseFloat(a);
-            const fb = parseFloat(b);
-            if (!Number.isFinite(fa) || !Number.isFinite(fb)) return null;
+    win.querySelector("#calc-history")?.addEventListener("click", (e) => {
+      const item = e.target.closest(".calc-history-item");
+      if (!item) return;
+      const idx = Number(item.dataset.index);
+      const entry = this.history[idx];
+      if (!entry) return;
+      this.current = entry.split("=").pop().trim();
+      this.justEvaluated = true;
+      this.updateDisplay();
+    });
 
-            let r;
-            if (op === "+") r = fa + fb;
-            else if (op === "−") r = fa - fb;
-            else if (op === "×") r = fa * fb;
-            else if (op === "÷") {
-              if (fb === 0) return null;
-              r = fa / fb;
-            }
-            return Math.round(r * 1e12) / 1e12;
-          };
+    win.addEventListener("keydown", (e) => this.handleKeydown(e));
+  }
 
-          if (state.previous !== null && state.operator && !state.waitingForOperand) {
-            const result = applyOp(state.previous, state.operator, state.current);
-            if (result === null) {
-              state.current = "Error";
-              state.error = true;
-            } else {
-              state.current = result.toString();
-              state.previous = state.current;
-            }
-          } else {
-            state.previous = state.current;
-          }
-          state.operator = payload;
-          state.waitingForOperand = true;
-          state.justEvaluated = false;
-          const expressionEl = element.closest(".calc-body").querySelector('[ref="calc-expression"]');
-          if (expressionEl) expressionEl.textContent = `${state.previous} ${payload}`;
-          const resultEl = element.closest(".calc-body").querySelector('[ref="calc-result"]');
-          if (resultEl) {
-            resultEl.textContent = state.current;
-            const calcSz = state.current.length > 10 ? "calc-result-size-sm" : "calc-result-size-lg";
-            resultEl.className = resultEl.className.replace(/calc-result-size-\w+/g, "").trim() + " " + calcSz;
-          }
-        },
-        equals: (payload, event, element, state) => {
-          const applyOp = (a, op, b) => {
-            const fa = parseFloat(a);
-            const fb = parseFloat(b);
-            if (!Number.isFinite(fa) || !Number.isFinite(fb)) return null;
+  handleDigit(payload) {
+    if (this.justEvaluated || this.waitingForOperand) {
+      this.current = payload;
+      this.waitingForOperand = false;
+      this.justEvaluated = false;
+    } else {
+      this.current = this.current === "0" ? payload : this.current + payload;
+    }
+    this.updateDisplay();
+  }
 
-            let r;
-            if (op === "+") r = fa + fb;
-            else if (op === "−") r = fa - fb;
-            else if (op === "×") r = fa * fb;
-            else if (op === "÷") {
-              if (fb === 0) return null;
-              r = fa / fb;
-            }
-            return Math.round(r * 1e12) / 1e12;
-          };
+  handleDot() {
+    if (this.waitingForOperand) {
+      this.current = "0.";
+      this.waitingForOperand = false;
+    } else if (!this.current.includes(".")) {
+      this.current += ".";
+    }
+    this.updateDisplay();
+  }
 
-          if (state.operator) {
-            let operand = !state.waitingForOperand ? state.current : state.lastOperand;
-            if (operand !== null) {
-              state.lastOperand = operand;
-              const result = applyOp(state.previous, state.operator, operand);
-              if (result === null) {
-                state.current = "Error";
-                state.error = true;
-              } else {
-                const entry = `${state.previous} ${state.operator} ${operand} = ${result}`;
-                state.history.unshift(entry);
-                if (state.history.length > 50) state.history.pop();
-                const historyEl = element.closest(".calc-body").querySelector('[ref="calc-history"]');
-                if (historyEl) {
-                  historyEl.innerHTML = state.history
-                    .map((h, i) => `<div class="calc-history-item" data-index="${i}">${h}</div>`)
-                    .join("");
-                }
-                const expressionEl = element.closest(".calc-body").querySelector('[ref="calc-expression"]');
-                if (expressionEl) expressionEl.textContent = `${state.previous} ${state.operator} ${operand} =`;
-                state.current = result.toString();
-                state.previous = state.current;
-                state.waitingForOperand = true;
-                state.justEvaluated = true;
-              }
-            }
-          }
-          const resultEl = element.closest(".calc-body").querySelector('[ref="calc-result"]');
-          if (resultEl) {
-            resultEl.textContent = state.current;
-            const calcSz = state.current.length > 10 ? "calc-result-size-sm" : "calc-result-size-lg";
-            resultEl.className = resultEl.className.replace(/calc-result-size-\w+/g, "").trim() + " " + calcSz;
-          }
-        },
-        handleKeydown: (payload, event, element, state) => {
-          const k = event.key;
-          const calcBody = element.querySelector(".calc-body");
+  handleClear() {
+    this.current = "0";
+    this.previous = null;
+    this.operator = null;
+    this.lastOperand = null;
+    this.justEvaluated = false;
+    this.waitingForOperand = false;
+    this.error = false;
+    const expressionEl = this.win?.querySelector("#calc-expression");
+    if (expressionEl) expressionEl.textContent = "";
+    this.updateDisplay();
+  }
 
-          if (!calcBody) return;
+  handleSign() {
+    const n = parseFloat(this.current);
+    if (Number.isFinite(n)) {
+      this.current = (Math.round(n * -1 * 1e12) / 1e12).toString();
+    }
+    this.updateDisplay();
+  }
 
-          if (KeybindManager.matches(event, "calc.paste")) {
-            navigator.clipboard
-              .readText()
-              .then((text) => {
-                if (!text) return;
-                try {
-                  const cleaned = text
-                    .replace(/×/g, "*")
-                    .replace(/÷/g, "/")
-                    .replace(/−/g, "-")
-                    .replace(/[^0-9+\-*/().% ]/g, "");
-                  if (!cleaned) return;
-                  const result = Function(`return (${cleaned})`)();
-                  if (!Number.isFinite(result)) return;
-                  const r = Math.round(result * 1e12) / 1e12;
-                  const formatted = r.toString();
-                  state.history.unshift(`${text} = ${formatted}`);
-                  if (state.history.length > 50) state.history.pop();
-                  const historyEl = calcBody.querySelector('[ref="calc-history"]');
-                  if (historyEl) {
-                    historyEl.innerHTML = state.history
-                      .map((h, i) => `<div class="calc-history-item" data-index="${i}">${h}</div>`)
-                      .join("");
-                  }
-                  const expressionEl = calcBody.querySelector('[ref="calc-expression"]');
-                  if (expressionEl) expressionEl.textContent = `${text} =`;
-                  state.current = formatted;
-                  state.previous = formatted;
-                  state.justEvaluated = true;
-                  const resultEl = calcBody.querySelector('[ref="calc-result"]');
-                  if (resultEl) {
-                    resultEl.textContent = state.current;
-                    const calcSz = state.current.length > 10 ? "calc-result-size-sm" : "calc-result-size-lg";
-                    resultEl.className = resultEl.className.replace(/calc-result-size-\w+/g, "").trim() + " " + calcSz;
-                  }
-                } catch {}
-              })
-              .catch(() => {});
-            event.preventDefault();
-            return;
-          }
+  handlePercent() {
+    const cur = parseFloat(this.current);
+    if (!Number.isFinite(cur)) return;
 
-          const actions = {
-            digit: (p) => {
-              if (state.justEvaluated || state.waitingForOperand) {
-                state.current = p;
-                state.waitingForOperand = false;
-                state.justEvaluated = false;
-              } else {
-                state.current = state.current === "0" ? p : state.current + p;
-              }
-              const resultEl = calcBody.querySelector('[ref="calc-result"]');
-              if (resultEl) {
-                resultEl.textContent = state.current;
-                const calcSz = state.current.length > 10 ? "calc-result-size-sm" : "calc-result-size-lg";
-                resultEl.className = resultEl.className.replace(/calc-result-size-\w+/g, "").trim() + " " + calcSz;
-              }
-            },
-            dot: () => {
-              if (state.waitingForOperand) {
-                state.current = "0.";
-                state.waitingForOperand = false;
-              } else if (!state.current.includes(".")) {
-                state.current += ".";
-              }
-              const resultEl = calcBody.querySelector('[ref="calc-result"]');
-              if (resultEl) {
-                resultEl.textContent = state.current;
-                const calcSz = state.current.length > 10 ? "calc-result-size-sm" : "calc-result-size-lg";
-                resultEl.className = resultEl.className.replace(/calc-result-size-\w+/g, "").trim() + " " + calcSz;
-              }
-            },
-            op: (p) => {
-              const applyOp = (a, op, b) => {
-                const fa = parseFloat(a);
-                const fb = parseFloat(b);
-                if (!Number.isFinite(fa) || !Number.isFinite(fb)) return null;
-
-                let r;
-                if (op === "+") r = fa + fb;
-                else if (op === "−") r = fa - fb;
-                else if (op === "×") r = fa * fb;
-                else if (op === "÷") {
-                  if (fb === 0) return null;
-                  r = fa / fb;
-                }
-                return Math.round(r * 1e12) / 1e12;
-              };
-
-              if (state.previous !== null && state.operator && !state.waitingForOperand) {
-                const result = applyOp(state.previous, state.operator, state.current);
-                if (result === null) {
-                  state.current = "Error";
-                  state.error = true;
-                } else {
-                  state.current = result.toString();
-                  state.previous = state.current;
-                }
-              } else {
-                state.previous = state.current;
-              }
-              state.operator = p;
-              state.waitingForOperand = true;
-              state.justEvaluated = false;
-              const expressionEl = calcBody.querySelector('[ref="calc-expression"]');
-              if (expressionEl) expressionEl.textContent = `${state.previous} ${p}`;
-              const resultEl = calcBody.querySelector('[ref="calc-result"]');
-              if (resultEl) {
-                resultEl.textContent = state.current;
-                const calcSz = state.current.length > 10 ? "calc-result-size-sm" : "calc-result-size-lg";
-                resultEl.className = resultEl.className.replace(/calc-result-size-\w+/g, "").trim() + " " + calcSz;
-              }
-            },
-            percent: () => {
-              const cur = parseFloat(state.current);
-              if (!Number.isFinite(cur)) return;
-
-              if (state.previous !== null) {
-                const prev = parseFloat(state.previous);
-                if (Number.isFinite(prev)) {
-                  if (state.operator === "+" || state.operator === "−") {
-                    const r = Math.round(((prev * cur) / 100) * 1e12) / 1e12;
-                    state.current = r.toString();
-                  } else if (state.operator === "×" || state.operator === "÷") {
-                    const r = Math.round((cur / 100) * 1e12) / 1e12;
-                    state.current = r.toString();
-                  }
-                }
-              } else {
-                const r = Math.round((cur / 100) * 1e12) / 1e12;
-                state.current = r.toString();
-              }
-              const resultEl = calcBody.querySelector('[ref="calc-result"]');
-              if (resultEl) {
-                resultEl.textContent = state.current;
-                const calcSz = state.current.length > 10 ? "calc-result-size-sm" : "calc-result-size-lg";
-                resultEl.className = resultEl.className.replace(/calc-result-size-\w+/g, "").trim() + " " + calcSz;
-              }
-            },
-            equals: () => {
-              const applyOp = (a, op, b) => {
-                const fa = parseFloat(a);
-                const fb = parseFloat(b);
-                if (!Number.isFinite(fa) || !Number.isFinite(fb)) return null;
-
-                let r;
-                if (op === "+") r = fa + fb;
-                else if (op === "−") r = fa - fb;
-                else if (op === "×") r = fa * fb;
-                else if (op === "÷") {
-                  if (fb === 0) return null;
-                  r = fa / fb;
-                }
-                return Math.round(r * 1e12) / 1e12;
-              };
-
-              if (state.operator) {
-                let operand = !state.waitingForOperand ? state.current : state.lastOperand;
-                if (operand !== null) {
-                  state.lastOperand = operand;
-                  const result = applyOp(state.previous, state.operator, operand);
-                  if (result === null) {
-                    state.current = "Error";
-                    state.error = true;
-                  } else {
-                    const entry = `${state.previous} ${state.operator} ${operand} = ${result}`;
-                    state.history.unshift(entry);
-                    if (state.history.length > 50) state.history.pop();
-                    const historyEl = calcBody.querySelector('[ref="calc-history"]');
-                    if (historyEl) {
-                      historyEl.innerHTML = state.history
-                        .map((h, i) => `<div class="calc-history-item" data-index="${i}">${h}</div>`)
-                        .join("");
-                    }
-                    const expressionEl = calcBody.querySelector('[ref="calc-expression"]');
-                    if (expressionEl) expressionEl.textContent = `${state.previous} ${state.operator} ${operand} =`;
-                    state.current = result.toString();
-                    state.previous = state.current;
-                    state.waitingForOperand = true;
-                    state.justEvaluated = true;
-                  }
-                }
-              }
-              const resultEl = calcBody.querySelector('[ref="calc-result"]');
-              if (resultEl) {
-                resultEl.textContent = state.current;
-                const calcSz = state.current.length > 10 ? "calc-result-size-sm" : "calc-result-size-lg";
-                resultEl.className = resultEl.className.replace(/calc-result-size-\w+/g, "").trim() + " " + calcSz;
-              }
-            },
-            backspace: () => {
-              if (!state.justEvaluated) {
-                if (state.current.length > 1) {
-                  state.current = state.current.slice(0, -1);
-                  if (state.current === "-" || state.current === "-0") state.current = "0";
-                } else {
-                  state.current = "0";
-                }
-              }
-              const resultEl = calcBody.querySelector('[ref="calc-result"]');
-              if (resultEl) {
-                resultEl.textContent = state.current;
-                const calcSz = state.current.length > 10 ? "calc-result-size-sm" : "calc-result-size-lg";
-                resultEl.className = resultEl.className.replace(/calc-result-size-\w+/g, "").trim() + " " + calcSz;
-              }
-            },
-            clear: () => {
-              state.current = "0";
-              state.previous = null;
-              state.operator = null;
-              state.lastOperand = null;
-              state.justEvaluated = false;
-              state.waitingForOperand = false;
-              state.error = false;
-              const expressionEl = calcBody.querySelector('[ref="calc-expression"]');
-              if (expressionEl) expressionEl.textContent = "";
-              const resultEl = calcBody.querySelector('[ref="calc-result"]');
-              if (resultEl) {
-                resultEl.textContent = state.current;
-                const calcSz = state.current.length > 10 ? "calc-result-size-sm" : "calc-result-size-lg";
-                resultEl.className = resultEl.className.replace(/calc-result-size-\w+/g, "").trim() + " " + calcSz;
-              }
-            }
-          };
-
-          if (k >= "0" && k <= "9") actions.digit(k);
-          else if (k === ".") actions.dot();
-          else if (k === "+") actions.op("+");
-          else if (k === "-") actions.op("−");
-          else if (k === "*") actions.op("×");
-          else if (k === "/") actions.op("÷");
-          else if (k === "%") actions.percent();
-          else if (k === "Enter" || k === "=") actions.equals();
-          else if (k === "Backspace") actions.backspace();
-          else if (k === "Escape" || k === "Delete") actions.clear();
-          else return;
-
-          event.preventDefault();
-        },
-        handleHistoryClick: (payload, event, element, state) => {
-          const item = event.target.closest(".calc-history-item");
-          if (!item) return;
-
-          const idx = Number(item.dataset.index);
-          const entry = state.history[idx];
-          const result = entry.split("=").pop().trim();
-          state.current = result;
-          state.justEvaluated = true;
-          const resultEl = element.closest(".calc-body").querySelector('[ref="calc-result"]');
-          if (resultEl) {
-            resultEl.textContent = state.current;
-            const calcSz = state.current.length > 10 ? "calc-result-size-sm" : "calc-result-size-lg";
-            resultEl.className = resultEl.className.replace(/calc-result-size-\w+/g, "").trim() + " " + calcSz;
-          }
+    if (this.previous !== null) {
+      const prev = parseFloat(this.previous);
+      if (Number.isFinite(prev)) {
+        if (this.operator === "+" || this.operator === "−") {
+          this.current = (Math.round(((prev * cur) / 100) * 1e12) / 1e12).toString();
+        } else if (this.operator === "×" || this.operator === "÷") {
+          this.current = (Math.round((cur / 100) * 1e12) / 1e12).toString();
         }
-      },
-      onMount: (win, state, actionExecutor) => {}
+      }
+    } else {
+      this.current = (Math.round((cur / 100) * 1e12) / 1e12).toString();
+    }
+    this.updateDisplay();
+  }
+
+  handleBackspace() {
+    if (!this.justEvaluated) {
+      if (this.current.length > 1) {
+        this.current = this.current.slice(0, -1);
+        if (this.current === "-" || this.current === "-0") this.current = "0";
+      } else {
+        this.current = "0";
+      }
+    }
+    this.updateDisplay();
+  }
+
+  handleOp(payload) {
+    const applyOp = (a, op, b) => {
+      const fa = parseFloat(a);
+      const fb = parseFloat(b);
+      if (!Number.isFinite(fa) || !Number.isFinite(fb)) return null;
+
+      let r;
+      if (op === "+") r = fa + fb;
+      else if (op === "−") r = fa - fb;
+      else if (op === "×") r = fa * fb;
+      else if (op === "÷") {
+        if (fb === 0) return null;
+        r = fa / fb;
+      }
+      return Math.round(r * 1e12) / 1e12;
     };
+
+    if (this.previous !== null && this.operator && !this.waitingForOperand) {
+      const result = applyOp(this.previous, this.operator, this.current);
+      if (result === null) {
+        this.current = "Error";
+        this.error = true;
+      } else {
+        this.current = result.toString();
+        this.previous = this.current;
+      }
+    } else {
+      this.previous = this.current;
+    }
+    this.operator = payload;
+    this.waitingForOperand = true;
+    this.justEvaluated = false;
+
+    const expressionEl = this.win?.querySelector("#calc-expression");
+    if (expressionEl) expressionEl.textContent = `${this.previous} ${payload}`;
+    this.updateDisplay();
+  }
+
+  handleEquals() {
+    const applyOp = (a, op, b) => {
+      const fa = parseFloat(a);
+      const fb = parseFloat(b);
+      if (!Number.isFinite(fa) || !Number.isFinite(fb)) return null;
+
+      let r;
+      if (op === "+") r = fa + fb;
+      else if (op === "−") r = fa - fb;
+      else if (op === "×") r = fa * fb;
+      else if (op === "÷") {
+        if (fb === 0) return null;
+        r = fa / fb;
+      }
+      return Math.round(r * 1e12) / 1e12;
+    };
+
+    if (this.operator) {
+      let operand = !this.waitingForOperand ? this.current : this.lastOperand;
+      if (operand !== null) {
+        this.lastOperand = operand;
+        const result = applyOp(this.previous, this.operator, operand);
+        if (result === null) {
+          this.current = "Error";
+          this.error = true;
+        } else {
+          const entry = `${this.previous} ${this.operator} ${operand} = ${result}`;
+          this.history.unshift(entry);
+          if (this.history.length > 50) this.history.pop();
+          const historyEl = this.win?.querySelector("#calc-history");
+          if (historyEl) {
+            historyEl.innerHTML = this.history
+              .map((h, i) => `<div class="calc-history-item" data-index="${i}">${h}</div>`)
+              .join("");
+          }
+          const expressionEl = this.win?.querySelector("#calc-expression");
+          if (expressionEl) expressionEl.textContent = `${this.previous} ${this.operator} ${operand} =`;
+          this.current = result.toString();
+          this.previous = this.current;
+          this.waitingForOperand = true;
+          this.justEvaluated = true;
+        }
+      }
+    }
+    this.updateDisplay();
+  }
+
+  handleKeydown(e) {
+    if (KeybindManager.matches(e, "calc.paste")) {
+      navigator.clipboard
+        .readText()
+        .then((text) => {
+          if (!text) return;
+          try {
+            const cleaned = text
+              .replace(/×/g, "*")
+              .replace(/÷/g, "/")
+              .replace(/−/g, "-")
+              .replace(/[^0-9+\-*/().% ]/g, "");
+            if (!cleaned) return;
+            const result = Function(`return (${cleaned})`)();
+            if (!Number.isFinite(result)) return;
+            const r = Math.round(result * 1e12) / 1e12;
+            const formatted = r.toString();
+            this.history.unshift(`${text} = ${formatted}`);
+            if (this.history.length > 50) this.history.pop();
+            const historyEl = this.win?.querySelector("#calc-history");
+            if (historyEl) {
+              historyEl.innerHTML = this.history
+                .map((h, i) => `<div class="calc-history-item" data-index="${i}">${h}</div>`)
+                .join("");
+            }
+            const expressionEl = this.win?.querySelector("#calc-expression");
+            if (expressionEl) expressionEl.textContent = `${text} =`;
+            this.current = formatted;
+            this.previous = formatted;
+            this.justEvaluated = true;
+            this.updateDisplay();
+          } catch {}
+        })
+        .catch(() => {});
+      e.preventDefault();
+      return;
+    }
+
+    const k = e.key;
+
+    if (k >= "0" && k <= "9") this.handleDigit(k);
+    else if (k === ".") this.handleDot();
+    else if (k === "+") this.handleOp("+");
+    else if (k === "-") this.handleOp("−");
+    else if (k === "*") this.handleOp("×");
+    else if (k === "/") this.handleOp("÷");
+    else if (k === "%") this.handlePercent();
+    else if (k === "Enter" || k === "=") this.handleEquals();
+    else if (k === "Backspace") this.handleBackspace();
+    else if (k === "Escape" || k === "Delete") this.handleClear();
+    else return;
+
+    e.preventDefault();
+  }
+
+  updateDisplay() {
+    const resultEl = this.win?.querySelector("#calc-result");
+    if (resultEl) {
+      resultEl.textContent = this.current;
+      const calcSz = this.current.length > 10 ? "calc-result-size-sm" : "calc-result-size-lg";
+      resultEl.className = resultEl.className.replace(/calc-result-size-\w+/g, "").trim() + " " + calcSz;
+    }
   }
 
   onClose(winId) {
     this.openWindows.delete(winId);
+    this.win = null;
   }
 }

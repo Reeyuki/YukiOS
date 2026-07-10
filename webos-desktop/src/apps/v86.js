@@ -2,7 +2,7 @@ import { Achievements } from "../achievements.js";
 import { CDN_BASES } from "../shared/assetResolver.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 
-import { BaseApp, PersistenceTypes, os } from "../framework.js";
+import { BaseApp, os } from "../framework.js";
 const IMAGES_DIR = ["VMs"];
 
 export class V86App extends BaseApp {
@@ -12,139 +12,84 @@ export class V86App extends BaseApp {
     this.v86LoadPromise = null;
   }
 
-  getDeclarativeSchema(opts) {
+  open(opts) {
     const systems = [
       { id: "freedos", name: "FreeDOS", icon: "fa-solid fa-terminal" },
       { id: "openbsd", name: "OpenBSD", icon: "fa-solid fa-fish" }
     ];
 
-    return {
-      id: "v86-win",
-      name: "V86",
-      icon: resolveIconUrl("static/icons/v86.webp"),
-      windows: [
-        {
-          id: "v86-win",
-          title: "V86",
-          size: ["800px", "600px"],
-          icon: resolveIconUrl("static/icons/v86.webp"),
-          ui: `<div class="window-content v86-shell emu-shell">
-        <div class="v86-header emu-header">
-          <i class="fa-solid fa-microchip v86-header-icon emu-header-icon"></i>
-          <div class="v86-header-text emu-header-text">
-            <div class="v86-title emu-title">V86 Emulator</div>
-            <div class="v86-subtitle emu-subtitle">Run x86 operating systems in your browser</div>
-          </div>
+    const win = os.window.create("v86-win", "V86", "800px", "600px", {
+      icon: resolveIconUrl("static/icons/v86.webp")
+    });
+    win.innerHTML = `<div class="window-content v86-shell emu-shell">
+      <div class="v86-header emu-header">
+        <i class="fa-solid fa-microchip v86-header-icon emu-header-icon"></i>
+        <div class="v86-header-text emu-header-text">
+          <div class="v86-title emu-title">V86 Emulator</div>
+          <div class="v86-subtitle emu-subtitle">Run x86 operating systems in your browser</div>
         </div>
-        <div 
-          id="v86-upload-zone"
-          class="v86-upload-zone emu-upload-zone"
-        >
-          <i class="fa-solid fa-upload v86-upload-icon emu-upload-icon"></i>
-          <div class="v86-upload-text emu-upload-text">Drop a <strong>.iso</strong>, <strong>.img</strong>, or <strong>.bin</strong> file here</div>
-          <div class="v86-upload-subtext emu-upload-subtext">or click to browse</div>
-          <input type="file" id="v86-file-input" class="emu-file-input" accept=".iso,.img,.bin,.state,.gz">
-        </div>
-        <div class="v86-section-title emu-section-title">My Images</div>
-        <div id="v86-user-images" class="emu-grid"></div>
-        <div class="v86-section-title emu-section-title">Featured Systems</div>
-        <div class="v86-system-grid emu-grid" id="v86-system-grid">
-          ${systems
-            .map(
-              (sys) => `
-      <div class="v86-system-card emu-card" data-system="${sys.id}">
-        <i class="${sys.icon} v86-system-icon emu-card-icon"></i>
-        <div class="v86-system-name emu-card-title">${sys.name}</div>
       </div>
-    `
-            )
-            .join("")}
-        </div>
-      </div>`,
-          events: {
-            "#v86-upload-zone": {
-              click: {
-                type: "custom:uploadClick",
-                stopPropagation: true
-              },
-              dragover: {
-                type: "custom:dragOver",
-                stopPropagation: false
-              },
-              dragleave: {
-                type: "custom:dragLeave",
-                stopPropagation: false
-              },
-              drop: {
-                type: "custom:dropFile",
-                stopPropagation: false
-              }
-            },
-            "#v86-file-input": {
-              change: {
-                type: "custom:fileChange",
-                stopPropagation: false
-              }
-            },
-            ".v86-system-card": {
-              click: {
-                type: "custom:launchSystem",
-                stopPropagation: true
-              },
-              mouseenter: {
-                type: "custom:cardHover",
-                payload: { hover: true },
-                stopPropagation: false
-              },
-              mouseleave: {
-                type: "custom:cardHover",
-                payload: { hover: false },
-                stopPropagation: false
-              }
-            }
-          }
-        }
-      ],
-      state: {
-        initial: {
-          userImages: []
-        },
-        persistence: PersistenceTypes.MEMORY
-      },
-      actions: {
-        uploadClick: (payload, event, element, state) => {
-          const input = document.getElementById("v86-file-input");
-          if (input) input.click();
-        },
-        dragOver: (payload, event, element, state) => {
-          event.preventDefault();
-          element.classList.add("v86-upload-zone-dragover");
-        },
-        dragLeave: (payload, event, element, state) => {
-          element.classList.remove("v86-upload-zone-dragover");
-        },
-        dropFile: async (payload, event, element, state) => {
-          event.preventDefault();
-          element.classList.remove("v86-upload-zone-dragover");
-          const file = event.dataTransfer.files[0];
-          if (file) await this.handleUploadedFile(file, element);
-        },
-        fileChange: async (payload, event, element, state) => {
-          const file = element.files[0];
-          if (file) await this.handleUploadedFile(file, document.getElementById("v86-upload-zone"));
-          element.value = "";
-        },
-        launchSystem: (payload, event, element, state) => {
-          const systemId = element.dataset.system;
-          const systemName = element.querySelector("div").textContent;
-          this.launchSystem(systemId, systemName);
-        },
-        cardHover: (payload, event, element, state) => {
-          element.classList.toggle("emu-card--hover", payload.hover);
-        }
-      },
-      onMount: "initV86"
-    };
+      <div 
+        id="v86-upload-zone"
+        class="v86-upload-zone emu-upload-zone"
+      >
+        <i class="fa-solid fa-upload v86-upload-icon emu-upload-icon"></i>
+        <div class="v86-upload-text emu-upload-text">Drop a <strong>.iso</strong>, <strong>.img</strong>, or <strong>.bin</strong> file here</div>
+        <div class="v86-upload-subtext emu-upload-subtext">or click to browse</div>
+        <input type="file" id="v86-file-input" class="emu-file-input" accept=".iso,.img,.bin,.state,.gz">
+      </div>
+      <div class="v86-section-title emu-section-title">My Images</div>
+      <div id="v86-user-images" class="emu-grid"></div>
+      <div class="v86-section-title emu-section-title">Featured Systems</div>
+      <div class="v86-system-grid emu-grid" id="v86-system-grid">
+        ${systems
+          .map(
+            (sys) => `
+    <div class="v86-system-card emu-card" data-system="${sys.id}">
+      <i class="${sys.icon} v86-system-icon emu-card-icon"></i>
+      <div class="v86-system-name emu-card-title">${sys.name}</div>
+    </div>
+  `
+          )
+          .join("")}
+      </div>
+    </div>`;
+
+    const uploadZone = win.querySelector("#v86-upload-zone");
+    const fileInput = win.querySelector("#v86-file-input");
+
+    uploadZone?.addEventListener("click", () => fileInput?.click());
+    uploadZone?.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      uploadZone.classList.add("v86-upload-zone-dragover");
+    });
+    uploadZone?.addEventListener("dragleave", () => {
+      uploadZone.classList.remove("v86-upload-zone-dragover");
+    });
+    uploadZone?.addEventListener("drop", async (e) => {
+      e.preventDefault();
+      uploadZone.classList.remove("v86-upload-zone-dragover");
+      const file = e.dataTransfer.files[0];
+      if (file) await this.handleUploadedFile(file, uploadZone);
+    });
+
+    fileInput?.addEventListener("change", async () => {
+      const file = fileInput.files[0];
+      if (file) await this.handleUploadedFile(file, uploadZone);
+      fileInput.value = "";
+    });
+
+    win.querySelectorAll(".v86-system-card").forEach((card) => {
+      card.addEventListener("click", () => {
+        const systemId = card.dataset.system;
+        const systemName = card.querySelector("div").textContent;
+        this.launchSystem(systemId, systemName);
+      });
+      card.addEventListener("mouseenter", () => card.classList.add("emu-card--hover"));
+      card.addEventListener("mouseleave", () => card.classList.remove("emu-card--hover"));
+    });
+
+    this.initV86(null, null, win, null);
   }
 
   async initV86(payload, event, element, state) {

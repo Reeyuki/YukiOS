@@ -3,7 +3,7 @@ import { BusEvents } from "../core/EventBus.js";
 import { CDN_BASES } from "../shared/assetResolver.js";
 import { CDN_CONFIG, getLibraryUrl } from "../shared/cdnConfig.js";
 
-import { BaseApp, PersistenceTypes, os } from "../framework.js";
+import { BaseApp, os } from "../framework.js";
 const FLASH_DIR = ["Flash"];
 const DESKTOP_DIR = ["Desktop"];
 
@@ -11,21 +11,13 @@ export class RuffleApp extends BaseApp {
   constructor(services) {
     super(services);
     this.ruffleLoadPromise = null;
-    this.declarativeApp = null;
   }
 
-  getDeclarativeSchema(opts) {
-    return {
-      id: "ruffle-win",
-      name: "Ruffle",
-      icon: "static/icons/ruffle.webp",
-      windows: [
-        {
-          id: "ruffle-win",
-          title: "Ruffle",
-          size: ["800px", "600px"],
-          icon: "static/icons/ruffle.webp",
-          ui: `
+  open(opts) {
+    const win = os.window.create("ruffle-win", "Ruffle", "800px", "600px", {
+      icon: "static/icons/ruffle.webp"
+    });
+    win.innerHTML = `
       <div class="emu-shell ruf-container">
         <div class="emu-header ruf-header">
           <i class="fa-solid fa-film emu-header-icon ruf-icon-main"></i>
@@ -44,78 +36,39 @@ export class RuffleApp extends BaseApp {
         
         <div class="emu-section-title ruf-section-title">My Flash Files</div>
         <div id="ruffle-user-files" class="emu-grid ruf-file-grid"></div>
-      </div>`,
-          events: {
-            "#ruffle-upload-zone": {
-              click: {
-                type: "custom:uploadZoneClick",
-                stopPropagation: true
-              },
-              dragover: {
-                type: "custom:uploadZoneDragover",
-                stopPropagation: false
-              },
-              dragleave: {
-                type: "custom:uploadZoneDragleave",
-                stopPropagation: false
-              },
-              drop: {
-                type: "custom:uploadZoneDrop",
-                stopPropagation: false
-              }
-            },
-            "#ruffle-file-input": {
-              change: {
-                type: "custom:fileInputChange",
-                stopPropagation: false
-              }
-            }
-          }
-        }
-      ],
-      state: {
-        initial: {
-          userFiles: []
-        },
-        persistence: PersistenceTypes.NONE
-      },
-      actions: {
-        uploadZoneClick: (payload, event, element, state) => {
-          const input = document.getElementById("ruffle-file-input");
-          if (input) input.click();
-        },
-        uploadZoneDragover: (payload, event, element, state) => {
-          event.preventDefault();
-          element.classList.add("emu-upload-zone--dragover");
-        },
-        uploadZoneDragleave: (payload, event, element, state) => {
-          element.classList.remove("emu-upload-zone--dragover");
-        },
-        uploadZoneDrop: async (payload, event, element, state) => {
-          event.preventDefault();
-          element.classList.remove("emu-upload-zone--dragover");
-          const files = Array.from(event.dataTransfer.files).filter((f) => f.name.toLowerCase().endsWith(".swf"));
-          if (files.length > 0) await this.handleUploadedFiles(files, element);
-        },
-        fileInputChange: async (payload, event, element, state) => {
-          const files = Array.from(element.files);
-          if (files.length > 0) await this.handleUploadedFiles(files, document.getElementById("ruffle-upload-zone"));
-          element.value = "";
-        },
-        loadUserFiles: async (payload, event, element, state) => {
-          await this.loadUserFiles();
-        },
-        refreshIcons: (payload, event, element, state) => {
-          if (window.FontAwesome && window.FontAwesome.dom && window.FontAwesome.dom.i2svg) {
-            const container = document.querySelector(".ruf-container");
-            if (container) {
-              window.FontAwesome.dom.i2svg({ node: container });
-            }
-          }
-        }
-      },
-      onMount: ["loadUserFiles", "refreshIcons"]
-    };
+      </div>`;
+
+    const uploadZone = win.querySelector("#ruffle-upload-zone");
+    const fileInput = win.querySelector("#ruffle-file-input");
+
+    uploadZone?.addEventListener("click", () => fileInput?.click());
+    uploadZone?.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      uploadZone.classList.add("emu-upload-zone--dragover");
+    });
+    uploadZone?.addEventListener("dragleave", () => {
+      uploadZone.classList.remove("emu-upload-zone--dragover");
+    });
+    uploadZone?.addEventListener("drop", async (e) => {
+      e.preventDefault();
+      uploadZone.classList.remove("emu-upload-zone--dragover");
+      const files = Array.from(e.dataTransfer.files).filter((f) => f.name.toLowerCase().endsWith(".swf"));
+      if (files.length > 0) await this.handleUploadedFiles(files, uploadZone);
+    });
+
+    fileInput?.addEventListener("change", async () => {
+      const files = Array.from(fileInput.files);
+      if (files.length > 0) await this.handleUploadedFiles(files, uploadZone);
+      fileInput.value = "";
+    });
+
+    this.loadUserFiles();
+    if (window.FontAwesome && window.FontAwesome.dom && window.FontAwesome.dom.i2svg) {
+      const container = win.querySelector(".ruf-container");
+      if (container) {
+        window.FontAwesome.dom.i2svg({ node: container });
+      }
+    }
   }
 
   async loadUserFiles() {

@@ -1,6 +1,6 @@
 import "../styles/maps.css";
 
-import { BaseApp, PersistenceTypes, os, StorageKeys } from "../framework.js";
+import { BaseApp, os, StorageKeys } from "../framework.js";
 import { $, $$, bindEvent } from "../shared/domUtils.js";
 
 const SOURCE_OPTIONS = [
@@ -19,19 +19,18 @@ export class MapsApp extends BaseApp {
     super(services);
   }
 
-  getDeclarativeSchema(opts) {
-    return {
-      id: "maps",
-      name: "Maps",
-      icon: "fas fa-map",
-      singleton: true,
-      windows: [
-        {
-          id: "maps-window",
-          title: "Maps",
-          size: ["900px", "650px"],
-          icon: "fas fa-map",
-          ui: `
+  open() {
+    this.state = {
+      source: "osm",
+      osmLayer: "mapnik",
+      osmZoom: 5,
+      osmLat: 20,
+      osmLng: 0,
+      settingsOpen: false
+    };
+
+    const win = os.window.create("maps-window", "Maps", "900px", "650px", { icon: "fas fa-map" });
+    win.innerHTML = `
 <div class="maps-container">
   <div class="maps-toolbar">
     <span class="maps-title"><i class="fas fa-map"></i> Maps</span>
@@ -91,62 +90,46 @@ export class MapsApp extends BaseApp {
       <button class="maps-apply-btn" id="maps-apply-btn">Apply</button>
     </div>
   </div>
-</div>`,
-          events: {
-            "#maps-settings-btn": {
-              click: { type: "custom:openSettings", stopPropagation: true }
-            },
-            "#maps-settings-close": {
-              click: { type: "custom:closeSettings", stopPropagation: true }
-            },
-            "#maps-settings-overlay": {
-              click: { type: "custom:closeSettings", stopPropagation: true }
-            },
-            "#maps-apply-btn": {
-              click: { type: "custom:applySettings", stopPropagation: true }
-            }
-          }
-        }
-      ],
-      state: {
-        initial: {
-          source: "osm",
-          osmLayer: "mapnik",
-          osmZoom: 5,
-          osmLat: 20,
-          osmLng: 0,
-          settingsOpen: false
-        },
-        persistence: PersistenceTypes.LOCAL_STORAGE
-      },
-      actions: {
-        openSettings: (payload, event, element, state) => {
-          state.settingsOpen = true;
-          this.syncSettingsPanel(state);
-        },
-        closeSettings: (payload, event, element, state) => {
-          state.settingsOpen = false;
-          this.syncSettingsPanel(state);
-          this.closeAllDropdowns();
-        },
-        applySettings: (payload, event, element, state) => {
-          const sourceText = $("#maps-source-trigger .maps-custom-select-text");
-          const source = sourceText ? this.getValueForLabel(sourceText.textContent, SOURCE_OPTIONS) : "osm";
-          state.source = source;
-          if (source === "osm") {
-            const layerText = $("#maps-layer-trigger .maps-custom-select-text");
-            state.osmLayer = layerText ? this.getValueForLabel(layerText.textContent, LAYER_OPTIONS) : "mapnik";
-            state.osmLat = parseFloat(document.getElementById("maps-lat-input").value) || 20;
-            state.osmLng = parseFloat(document.getElementById("maps-lng-input").value) || 0;
-            state.osmZoom = parseInt(document.getElementById("maps-zoom-input").value, 10) || 5;
-          }
-          state.settingsOpen = false;
-          this.syncSettingsPanel(state);
-          this.updateMap(state);
-        }
-      },
-      onMount: "initMaps"
-    };
+</div>`;
+
+    bindEvent($("#maps-settings-btn"), "click", (e) => {
+      e.stopPropagation();
+      this.state.settingsOpen = true;
+      this.syncSettingsPanel(this.state);
+    });
+
+    bindEvent($("#maps-settings-close"), "click", (e) => {
+      e.stopPropagation();
+      this.state.settingsOpen = false;
+      this.syncSettingsPanel(this.state);
+      this.closeAllDropdowns();
+    });
+
+    bindEvent($("#maps-settings-overlay"), "click", (e) => {
+      e.stopPropagation();
+      this.state.settingsOpen = false;
+      this.syncSettingsPanel(this.state);
+      this.closeAllDropdowns();
+    });
+
+    bindEvent($("#maps-apply-btn"), "click", (e) => {
+      e.stopPropagation();
+      const sourceText = $("#maps-source-trigger .maps-custom-select-text");
+      const source = sourceText ? this.getValueForLabel(sourceText.textContent, SOURCE_OPTIONS) : "osm";
+      this.state.source = source;
+      if (source === "osm") {
+        const layerText = $("#maps-layer-trigger .maps-custom-select-text");
+        this.state.osmLayer = layerText ? this.getValueForLabel(layerText.textContent, LAYER_OPTIONS) : "mapnik";
+        this.state.osmLat = parseFloat(document.getElementById("maps-lat-input").value) || 20;
+        this.state.osmLng = parseFloat(document.getElementById("maps-lng-input").value) || 0;
+        this.state.osmZoom = parseInt(document.getElementById("maps-zoom-input").value, 10) || 5;
+      }
+      this.state.settingsOpen = false;
+      this.syncSettingsPanel(this.state);
+      this.updateMap(this.state);
+    });
+
+    this.initMaps(null, null, null, this.state);
   }
 
   getValueForLabel(label, options) {

@@ -1,4 +1,5 @@
 import { defineConfig } from "vite";
+import { nodePolyfills } from "vite-plugin-node-polyfills";
 import { viteSingleFile } from "vite-plugin-singlefile";
 import { execSync } from "child_process";
 import { readFileSync, writeFileSync } from "fs";
@@ -66,7 +67,11 @@ function staticCdnRewrite() {
   };
 }
 
-const plugins = [serveStaticDev()];
+const plugins = [nodePolyfills({
+  include: ["buffer", "process", "stream", "path", "util", "timers"],
+  globals: { Buffer: true, global: true, process: true },
+  protocolImports: true
+}), serveStaticDev()];
 if (isSingleFile) {
   plugins.unshift(viteSingleFile());
 }

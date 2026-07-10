@@ -1,7 +1,7 @@
 import "../styles/rhythms.css";
 import { audioMixer } from "../audioMixer.js";
 
-import { BaseApp, PersistenceTypes } from "../framework.js";
+import { BaseApp, os } from "../framework.js";
 const FFT_SIZE = 2048;
 const FREQ_BIN_COUNT = FFT_SIZE / 2;
 
@@ -27,19 +27,13 @@ export class RhythmsApp extends BaseApp {
     this.color = "#8a2be2";
   }
 
-  getDeclarativeSchema(opts) {
-    return {
-      id: "rhythms",
-      name: "Rhythms",
+  open() {
+    const win = os.window.create("rhythms-window", "Rhythms", "800px", "600px", {
       icon: "fas fa-wave-square",
-      windows: [
-        {
-          id: "rhythms-window",
-          title: "Rhythms",
-          size: ["800px", "600px"],
-          icon: "fas fa-wave-square",
-          transparent: true,
-          ui: `
+      appId: "rhythms",
+      transparent: true
+    });
+    win.innerHTML = `
             <div class="rhythms-container">
               <button class="rhythms-settings-toggle" id="rhythms-settings-toggle">
                 <i class="fas fa-cog"></i>
@@ -91,16 +85,8 @@ export class RhythmsApp extends BaseApp {
               </div>
               <canvas id="rhythms-canvas" class="rhythms-canvas"></canvas>
             </div>
-          `
-        }
-      ],
-      state: {
-        initial: {},
-        persistence: PersistenceTypes.NONE
-      },
-      onMount: "initRhythms",
-      onClose: "cleanupRhythms"
-    };
+          `;
+    this.initRhythms(null, null, win, null);
   }
 
   initRhythms(payload, vt, element, state) {
@@ -620,7 +606,7 @@ export class RhythmsApp extends BaseApp {
     this.ctx.fillText("Play audio to visualize", width / 2, height / 2);
   }
 
-  cleanupRhythms(payload, vt, element, state) {
+  onClose(winId) {
     if (this.animationId) {
       cancelAnimationFrame(this.animationId);
       this.animationId = null;

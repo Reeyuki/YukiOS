@@ -1,7 +1,7 @@
 import "../styles/emojiSelector.css";
 import { getLibraryUrl } from "../shared/cdnConfig.js";
 
-import { BaseApp, PersistenceTypes } from "../framework.js";
+import { BaseApp, os } from "../framework.js";
 export class EmojiSelectorApp extends BaseApp {
   constructor(services) {
     super(services);
@@ -85,17 +85,15 @@ export class EmojiSelectorApp extends BaseApp {
     }, 1500);
   }
 
-  async initEmojiSelector(payload, event, element, state, actionExecutor) {
-    const app = actionExecutor.appInstance;
-    const win = element;
-    await app.loadEmojiMart();
+  async initEmojiSelector(win) {
+    await this.loadEmojiMart();
 
     if (typeof window.EmojiMart !== "undefined") {
       const picker = new window.EmojiMart.Picker({
         onEmojiSelect: async (emoji) => {
-          const copied = await app.copyEmoji(emoji);
+          const copied = await this.copyEmoji(emoji);
           const label = copied ? "Copied" : "Saved";
-          app.showPreview(win, `${label}: ${emoji.native}`);
+          this.showPreview(win, `${label}: ${emoji.native}`);
         },
         theme: "dark",
         set: "native",
@@ -111,51 +109,19 @@ export class EmojiSelectorApp extends BaseApp {
     }
   }
 
-  getDeclarativeSchema(opts) {
-    return {
-      id: "emoji-selector",
-      name: "Emoji Selector",
+  open() {
+    const win = os.window.create("emoji-selector-window", "Emoji Selector", "355px", "500px", {
       icon: "fas fa-face-smile",
-      windows: [
-        {
-          id: "emoji-selector-window",
-          title: "Emoji Selector",
-          size: ["355px", "500px"],
-          icon: "fas fa-face-smile",
-          ui: {
-            type: "element",
-            tag: "div",
-            props: {
-              className: "emoji-selector-container"
-            },
-            children: [
-              {
-                type: "element",
-                tag: "div",
-                props: {
-                  id: "emoji-mart-container",
-                  className: "emoji-mart-container"
-                }
-              },
-              {
-                type: "element",
-                tag: "div",
-                props: {
-                  className: "emoji-preview",
-                  ref: "emoji-preview"
-                }
-              }
-            ]
-          }
-        }
-      ],
-      state: {
-        initial: {},
-        persistence: PersistenceTypes.MEMORY
-      },
-      actions: {},
-      onMount: "initEmojiSelector"
-    };
+      appId: "emojiSelectorApp"
+    });
+    win.innerHTML = `
+      <div class="emoji-selector-container">
+        <div id="emoji-mart-container" class="emoji-mart-container"></div>
+        <div class="emoji-preview"></div>
+      </div>
+    `;
+    this.initEmojiSelector(win);
+    return win;
   }
 
   onClose(winId) {}

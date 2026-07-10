@@ -1,5 +1,5 @@
 import "../styles/torBrowser.css";
-import { BaseApp, PersistenceTypes, os } from "../framework.js";
+import { BaseApp, os } from "../framework.js";
 
 export class TorBrowserApp extends BaseApp {
   constructor(services) {
@@ -8,74 +8,63 @@ export class TorBrowserApp extends BaseApp {
     this.unsubs = [];
   }
 
-  getDeclarativeSchema(opts) {
-    return {
-      id: "tor-browser",
-      name: "Tor Manager",
+  open() {
+    const win = os.window.create("tor-browser", "Tor Manager", "520px", "420px", {
       icon: "fas fa-shield-halved",
-      windows: [
-        {
-          id: "tor-browser",
-          title: "Tor Manager",
-          size: ["520px", "420px"],
-          icon: "fas fa-shield-halved",
-          ui: `
-            <div class="tor-manager">
-              <div class="tor-body">
-                <div class="tor-controls">
-                  <button class="tor-start-btn" id="tor-start-btn">
-                    <i class="fas fa-play"></i>
-                    <span id="tor-start-label">Start Tor</span>
-                  </button>
-                  <button class="tor-stop-btn" id="tor-stop-btn" disabled>
-                    <i class="fas fa-stop"></i>
-                    Stop Tor
-                  </button>
-                  <button class="tor-reconnect-btn" id="tor-reconnect-btn" disabled>
-                    <i class="fas fa-sync-alt"></i>
-                    Reconnect
-                  </button>
-                </div>
+      appId: "torBrowserApp"
+    });
+    win.innerHTML = `
+      <div class="tor-manager">
+        <div class="tor-body">
+          <div class="tor-controls">
+            <button class="tor-start-btn" id="tor-start-btn">
+              <i class="fas fa-play"></i>
+              <span id="tor-start-label">Start Tor</span>
+            </button>
+            <button class="tor-stop-btn" id="tor-stop-btn" disabled>
+              <i class="fas fa-stop"></i>
+              Stop Tor
+            </button>
+            <button class="tor-reconnect-btn" id="tor-reconnect-btn" disabled>
+              <i class="fas fa-sync-alt"></i>
+              Reconnect
+            </button>
+          </div>
 
-                <div class="tor-status-card" id="tor-status-card">
-                  <div class="tor-status-row">
-                    <span class="tor-status-label">Status</span>
-                    <span class="tor-status-value" id="tor-status-value">
-                      <span class="tor-dot tor-dot-idle"></span>
-                      Stopped
-                    </span>
-                  </div>
-                  <div class="tor-status-row" id="tor-fetch-row" style="display:none">
-                    <span class="tor-status-label">Requests</span>
-                    <span class="tor-status-value" id="tor-fetch-count">0</span>
-                  </div>
-                </div>
+          <div class="tor-status-card" id="tor-status-card">
+            <div class="tor-status-row">
+              <span class="tor-status-label">Status</span>
+              <span class="tor-status-value" id="tor-status-value">
+                <span class="tor-dot tor-dot-idle"></span>
+                Stopped
+              </span>
+            </div>
+            <div class="tor-status-row" id="tor-fetch-row" style="display:none">
+              <span class="tor-status-label">Requests</span>
+              <span class="tor-status-value" id="tor-fetch-count">0</span>
+            </div>
+          </div>
 
-                <div class="tor-log-section">
-                  <div class="tor-log-header">
-                    <span>Connection Log</span>
-                    <button class="tor-log-clear" id="tor-log-clear">
-                      <i class="fas fa-trash"></i>
-                    </button>
-                  </div>
-                  <div class="tor-log" id="tor-log">
-                    <div class="tor-log-entry tor-log-info">
-                      <span class="tor-log-time">—</span>
-                      <span class="tor-log-msg">Ready. Click "Start Tor" to begin.</span>
-                    </div>
-                  </div>
-                </div>
+          <div class="tor-log-section">
+            <div class="tor-log-header">
+              <span>Connection Log</span>
+              <button class="tor-log-clear" id="tor-log-clear">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+            <div class="tor-log" id="tor-log">
+              <div class="tor-log-entry tor-log-info">
+                <span class="tor-log-time">—</span>
+                <span class="tor-log-msg">Ready. Click "Start Tor" to begin.</span>
               </div>
             </div>
-          `
-        }
-      ],
-      state: {
-        initial: {},
-        persistence: PersistenceTypes.SESSION
-      },
-      onMount: "initTorManager"
-    };
+          </div>
+        </div>
+      </div>
+    `;
+    this.win = win;
+    this.initTorManager();
+    return win;
   }
 
   initTorManager() {

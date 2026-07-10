@@ -1,6 +1,6 @@
 import "../styles/about.css";
 import { resolveIconUrl, resolveGhUrl } from "../shared/assetResolver.js";
-import { BaseApp, PersistenceTypes } from "../framework.js";
+import { BaseApp, os } from "../framework.js";
 import versionTxt from "../../version.txt?raw";
 export const YUKIOS_VERSION = versionTxt.trim();
 
@@ -73,19 +73,12 @@ export class AboutApp extends BaseApp {
     super(services);
   }
 
-  getDeclarativeSchema(opts) {
-    return {
-      id: "about-yukios",
-      name: "About YukiOS",
-      icon: "fa fa-circle-info",
-      windows: [
-        {
-          id: "about-yukios",
-          title: "About YukiOS",
-          size: ["720px", "85vh"],
-          icon: "fa fa-circle-info",
-          ui: `
-     
+  open(opts = {}) {
+    const win = os.window.create("about-yukios", "About YukiOS", "720px", "85vh", {
+      icon: "fa fa-circle-info"
+    });
+
+    win.innerHTML = `
       <div class="abx">
         <div class="abx-shell">
 
@@ -189,16 +182,8 @@ export class AboutApp extends BaseApp {
 
         </div>
       </div>
-    `
-        }
-      ],
-      state: {
-        initial: {},
-        persistence: PersistenceTypes.NONE
-      },
-      onMount: "init"
-    };
+    `;
   }
 
-  init(payload, event, element, state) {}
+  onClose(winId) {}
 }

@@ -46,6 +46,14 @@
   overflow: hidden;
 }
 
+.start-menu.search-mode .start-sidebar {
+  width: 0;
+  opacity: 0;
+  overflow: hidden;
+  border-right-color: transparent;
+  padding: 0;
+}
+
 .start-menu.search-mode .start-page[data-page="search-results"] {
   flex: 1;
   min-height: 0;

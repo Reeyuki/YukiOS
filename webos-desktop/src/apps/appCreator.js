@@ -117,7 +117,7 @@ export class AppCreatorApp extends BaseApp {
     super(services);
     this.appLauncher = services.appLauncher;
     this.desktopUI = services.desktopUI || null;
-    this.declarativeApp = null;
+
     this.customScramjetApps = new Map();
   }
 

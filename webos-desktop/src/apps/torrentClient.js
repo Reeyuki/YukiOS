@@ -2,7 +2,7 @@ import "../styles/torrent.css";
 import { $, $$, bindEvent } from "../shared/domUtils.js";
 import { showAboutDialog } from "../shared/aboutDialog.js";
 
-import { BaseApp, PersistenceTypes, os, StorageKeys } from "../framework.js";
+import { BaseApp, os, StorageKeys } from "../framework.js";
 export class TorrentClientApp extends BaseApp {
   constructor(services) {
     super(services);
@@ -21,19 +21,12 @@ export class TorrentClientApp extends BaseApp {
     this.loadHistory();
   }
 
-  getDeclarativeSchema(opts) {
-    return {
-      id: "torrent-client-win",
-      name: "Torrent Client",
+  open() {
+    const win = os.window.create("torrent-client-win", "Torrent Client", "900px", "600px", {
       icon: "fas fa-download",
-      singleton: true,
-      windows: [
-        {
-          id: "torrent-client-win",
-          title: "Torrent Client",
-          size: ["900px", "600px"],
-          icon: "fas fa-download",
-          ui: `
+      appId: "torrentClientApp"
+    });
+    win.innerHTML = `
       <div class="window-content">
         <div class="app-menubar">
           <div class="app-menubar-item" data-menu="file">
@@ -116,26 +109,14 @@ export class TorrentClientApp extends BaseApp {
             </div>
           </div>
         </div>
-      </div>`,
-          events: {}
-        }
-      ],
-      state: {
-        initial: { activeTorrents: {} },
-        persistence: PersistenceTypes.MEMORY
-      },
-      actions: {
-        initTorrentClient: (payload, event, win) => {
-          this.bindStaticEvents(win);
-          this.initWebTorrent();
-          this.renderTorrentList();
-          this.registerTray();
-          this.startStatusBarUpdate();
-          this.setupMenus(win);
-        }
-      },
-      onMount: "initTorrentClient"
-    };
+      </div>`;
+    this.bindStaticEvents(win);
+    this.initWebTorrent();
+    this.renderTorrentList();
+    this.registerTray();
+    this.startStatusBarUpdate();
+    this.setupMenus(win);
+    return win;
   }
 
   setupMenus(win) {

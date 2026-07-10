@@ -1,5 +1,5 @@
 import "../styles/roblox.css";
-import { BaseApp, PersistenceTypes, StorageKeys, os } from "../framework.js";
+import { BaseApp, StorageKeys, os } from "../framework.js";
 import { $, $$ } from "../shared/domUtils.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 
@@ -48,23 +48,17 @@ export class RobloxApp extends BaseApp {
     this.currentPage = "home";
   }
 
-  getDeclarativeSchema(opts) {
+  async open() {
+    if (await this.isSingletonOpen("roblox-win")) return;
+
     const username = os.storage.get(StorageKeys.username) || "Guest";
     const avatar = resolveIconUrl(os.storage.get(StorageKeys.profilePicture) || "static/icons/guest.webp");
 
-    return {
-      id: "roblox-win",
-      name: "Roblox",
-      icon: "static/icons/roblox.webp",
-      singleton: true,
-      windows: [
-        {
-          id: "roblox-win",
-          title: "Roblox",
-          size: ["1000px", "650px"],
-          icon: resolveIconUrl("static/icons/roblox.webp"),
-          minSize: ["600px", "400px"],
-          ui: `
+    const win = os.window.create("roblox-win", "Roblox", "1000px", "650px", {
+      icon: resolveIconUrl("static/icons/roblox.webp"),
+      appId: "roblox"
+    });
+    win.innerHTML = `
             <div class="roblox-app">
               <div class="roblox-header">
                 <img class="roblox-header-icon" src="${resolveIconUrl("static/icons/roblox.webp")}" alt="" />
@@ -114,15 +108,8 @@ export class RobloxApp extends BaseApp {
                 </div>
               </div>
             </div>
-          `
-        }
-      ],
-      state: {
-        initial: {},
-        persistence: PersistenceTypes.MEMORY
-      },
-      onMount: "initRoblox"
-    };
+          `;
+    this.initRoblox(null, null, win, null);
   }
 
   initRoblox(payload, vt, element, state) {

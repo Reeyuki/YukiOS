@@ -27,7 +27,6 @@ import { getNewsContentSignature, updateNewsBadge } from "./apps/news.js";
 import { SteamSettings } from "./games/steam.js";
 import { PROXIES, clampProxyIndex, buildProxyUrl, fetchHtmlThroughProxy } from "./proxies.js";
 import { trigger as triggerCursorEffect } from "./cursorEffect.js";
-import { DeclarativeApp } from "./runtime/DeclarativeApp.js";
 const STATICALLY_BASE = resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main");
 
 export class AppLauncher {
@@ -40,7 +39,6 @@ export class AppLauncher {
   TRANSPARENCY_ALLOWED_APP_IDS: Set<string>;
   clippyPromise: Promise<any>;
   appRegistry: Map<string, any>;
-  declarativeSchemas: Map<string, any>;
   BIC: string;
   appMap: Record<string, any>;
   launchedAppIds: Set<string>;
@@ -82,7 +80,6 @@ export class AppLauncher {
     }
 
     this.appRegistry = new Map();
-    this.declarativeSchemas = new Map();
 
     this.registerAppsFromMap();
 
@@ -146,71 +143,6 @@ export class AppLauncher {
         this.appRegistry.set(appId, instance);
       }
     }
-  }
-
-  async tryLaunchDeclarative(appId: string, opts?: any): Promise<any> {
-    const appInstance = this.appRegistry.get(appId);
-    if (!appInstance) return null;
-
-    const services = appInstance.services;
-    if (!services || !services.wm) {
-      return null;
-    }
-
-    if (services.fs && services.fs.fsReady) {
-      await services.fs.fsReady;
-    }
-
-    if (typeof appInstance.getDeclarativeSchema === "function") {
-      try {
-        const schema = appInstance.getDeclarativeSchema(opts);
-        if (schema && typeof schema === "object") {
-          if (!schema.actions) {
-            schema.actions = {};
-          }
-          if (schema.onMount) {
-            if (typeof schema.onMount === "string" && typeof appInstance[schema.onMount] === "function") {
-              if (!schema.actions[schema.onMount]) {
-                schema.actions[schema.onMount] = (
-                  payload: any,
-                  event: any,
-                  element: any,
-                  state: any,
-                  actionExecutor: any
-                ) => {
-                  return appInstance[schema.onMount](payload, event, element, state, actionExecutor);
-                };
-              }
-            } else if (typeof schema.onMount === "function") {
-              schema.actions.onMount = schema.onMount;
-              schema.onMount = "onMount";
-            }
-          }
-          if (!schema.onClose && typeof appInstance.onClose === "function") {
-            schema.onClose = (winId: string, state: any) => {
-              return appInstance.onClose(winId, state);
-            };
-          }
-          this.declarativeSchemas.set(schema.id, schema);
-          const declarativeApp = new DeclarativeApp(
-            schema,
-            {
-              wm: this.wm,
-              fs: this.fs,
-              bus: null,
-              notifications: null,
-              dialog: os.dialog
-            },
-            appInstance
-          );
-          return declarativeApp.open(opts);
-        }
-      } catch (e) {
-        console.warn(`Failed to use declarative schema for ${appId}, falling back to imperative`, e);
-      }
-    }
-
-    return null;
   }
 
   async speak(message: string, animation?: any): Promise<void> {
@@ -318,19 +250,13 @@ export class AppLauncher {
           ...appExtra
         });
       } else if (info.action) {
-        const result = await this.tryLaunchDeclarative(app, appExtra);
-        if (!result) {
-          await info.action.call(this, appExtra);
-        }
+        await info.action.call(this, appExtra);
       } else if (info.launchType === "instance") {
-        const result = await this.tryLaunchDeclarative(app, appExtra);
-        if (!result) {
-          const appInstance = this.appRegistry.get(app);
-          if (appInstance && typeof appInstance.open === "function") {
-            await appInstance.open(appExtra);
-          } else {
-            console.warn(`No open() method found for app: ${app}`);
-          }
+        const appInstance = this.appRegistry.get(app);
+        if (appInstance && typeof appInstance.open === "function") {
+          await appInstance.open(appExtra);
+        } else {
+          console.warn(`No open() method found for app: ${app}`);
         }
       }
       return;

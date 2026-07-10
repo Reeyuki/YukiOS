@@ -5,7 +5,7 @@ import { resolveIconUrl } from "../shared/assetResolver.js";
 import { CDN_CONFIG } from "../shared/cdnConfig.js";
 import { audioMixer } from "../audioMixer.js";
 
-import { BaseApp, PersistenceTypes, os } from "../framework.js";
+import { BaseApp, os } from "../framework.js";
 const EMULATOR_ICON = "static/icons/emulator.webp";
 const ROMS_DIR = ["ROMs"];
 const DESKTOP_DIR = ["Desktop"];
@@ -91,27 +91,19 @@ export class EmulatorApp extends BaseApp {
   constructor(services) {
     super(services);
     this.explorerApp = services.explorerApp;
-    this.declarativeApp = null;
   }
 
-  getDeclarativeSchema(opts) {
+  open(opts) {
     const allExtensions = new Set();
     Object.values(supportedExtensions).forEach((exts) => {
       exts.forEach((ext) => allExtensions.add(ext));
     });
     const extList = Array.from(allExtensions).sort().join(", ");
 
-    return {
-      id: "emulator-win",
-      name: "Yuki Emulator",
-      icon: EMULATOR_ICON,
-      windows: [
-        {
-          id: "emulator-win",
-          title: "Yuki Emulator",
-          size: ["800px", "600px"],
-          icon: EMULATOR_ICON,
-          ui: `
+    const win = os.window.create("emulator-win", "Yuki Emulator", "800px", "600px", {
+      icon: EMULATOR_ICON
+    });
+    win.innerHTML = `
       <div class="emu-shell ruf-container">
         <div class="emu-header ruf-header">
           <img src="${resolveIconUrl(EMULATOR_ICON)}" class="emu-header-icon ruf-icon-main">
@@ -134,78 +126,39 @@ export class EmulatorApp extends BaseApp {
         
         <div class="emu-section-title ruf-section-title">My ROMs</div>
         <div id="emulator-user-roms" class="emu-grid ruf-file-grid"></div>
-      </div>`,
-          events: {
-            "#emulator-upload-zone": {
-              click: {
-                type: "custom:uploadZoneClick",
-                stopPropagation: true
-              },
-              dragover: {
-                type: "custom:uploadZoneDragover",
-                stopPropagation: false
-              },
-              dragleave: {
-                type: "custom:uploadZoneDragleave",
-                stopPropagation: false
-              },
-              drop: {
-                type: "custom:uploadZoneDrop",
-                stopPropagation: false
-              }
-            },
-            "#emulator-file-input": {
-              change: {
-                type: "custom:fileInputChange",
-                stopPropagation: false
-              }
-            }
-          }
-        }
-      ],
-      state: {
-        initial: {
-          userRoms: []
-        },
-        persistence: PersistenceTypes.NONE
-      },
-      actions: {
-        uploadZoneClick: (payload, event, element, state) => {
-          const input = document.getElementById("emulator-file-input");
-          if (input) input.click();
-        },
-        uploadZoneDragover: (payload, event, element, state) => {
-          event.preventDefault();
-          element.classList.add("emu-upload-zone--dragover");
-        },
-        uploadZoneDragleave: (payload, event, element, state) => {
-          element.classList.remove("emu-upload-zone--dragover");
-        },
-        uploadZoneDrop: async (payload, event, element, state) => {
-          event.preventDefault();
-          element.classList.remove("emu-upload-zone--dragover");
-          const files = Array.from(event.dataTransfer.files);
-          if (files.length > 0) await this.handleUploadedFiles(files, element);
-        },
-        fileInputChange: async (payload, event, element, state) => {
-          const files = Array.from(element.files);
-          if (files.length > 0) await this.handleUploadedFiles(files, document.getElementById("emulator-upload-zone"));
-          element.value = "";
-        },
-        loadUserRoms: async (payload, event, element, state) => {
-          await this.loadUserRoms();
-        },
-        refreshIcons: (payload, event, element, state) => {
-          if (window.FontAwesome && window.FontAwesome.dom && window.FontAwesome.dom.i2svg) {
-            const container = document.querySelector(".emu-shell");
-            if (container) {
-              window.FontAwesome.dom.i2svg({ node: container });
-            }
-          }
-        }
-      },
-      onMount: ["loadUserRoms", "refreshIcons"]
-    };
+      </div>`;
+
+    const uploadZone = win.querySelector("#emulator-upload-zone");
+    const fileInput = win.querySelector("#emulator-file-input");
+
+    uploadZone?.addEventListener("click", () => fileInput?.click());
+    uploadZone?.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      uploadZone.classList.add("emu-upload-zone--dragover");
+    });
+    uploadZone?.addEventListener("dragleave", () => {
+      uploadZone.classList.remove("emu-upload-zone--dragover");
+    });
+    uploadZone?.addEventListener("drop", async (e) => {
+      e.preventDefault();
+      uploadZone.classList.remove("emu-upload-zone--dragover");
+      const files = Array.from(e.dataTransfer.files);
+      if (files.length > 0) await this.handleUploadedFiles(files, uploadZone);
+    });
+
+    fileInput?.addEventListener("change", async () => {
+      const files = Array.from(fileInput.files);
+      if (files.length > 0) await this.handleUploadedFiles(files, uploadZone);
+      fileInput.value = "";
+    });
+
+    this.loadUserRoms();
+    if (window.FontAwesome && window.FontAwesome.dom && window.FontAwesome.dom.i2svg) {
+      const container = win.querySelector(".emu-shell");
+      if (container) {
+        window.FontAwesome.dom.i2svg({ node: container });
+      }
+    }
   }
 
   async loadUserRoms() {

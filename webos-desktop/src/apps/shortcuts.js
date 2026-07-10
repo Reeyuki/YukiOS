@@ -1,5 +1,5 @@
 import "../styles/shortcuts.css";
-import { os, BaseApp, PersistenceTypes } from "../framework.js";
+import { os, BaseApp } from "../framework.js";
 import { KeybindManager } from "../keybindManager.js";
 
 const MODIFIER_KEY_MAP = {
@@ -17,18 +17,11 @@ export class ShortcutsApp extends BaseApp {
     this.editingCustomId = null;
   }
 
-  getDeclarativeSchema(opts) {
-    return {
-      id: "shortcuts-app",
-      name: "Keyboard Shortcuts",
-      icon: "fa fa-keyboard",
-      windows: [
-        {
-          id: "shortcuts-app",
-          title: "Keyboard Shortcuts",
-          size: ["820px", "620px"],
-          icon: "fa fa-keyboard",
-          ui: `
+  open(opts) {
+    const win = os.window.create("shortcuts-app", "Keyboard Shortcuts", "820px", "620px", {
+      icon: "fa fa-keyboard"
+    });
+    win.innerHTML = `
       <div class="sc-app-wrapper">
         <div class="sc-sidebar">
           <div class="sc-search-wrap">
@@ -135,47 +128,9 @@ export class ShortcutsApp extends BaseApp {
             </button>
           </div>
         </div>
-      </div>`,
-          events: {
-            ".sc-search-input": {
-              input: {
-                type: "custom:filterShortcuts",
-                stopPropagation: false
-              }
-            },
-            ".sc-nav-item": {
-              click: {
-                type: "custom:changeCategory",
-                stopPropagation: true
-              }
-            }
-          }
-        }
-      ],
-      state: {
-        initial: {
-          currentCategory: "all",
-          searchQuery: ""
-        },
-        persistence: PersistenceTypes.NONE
-      },
-      actions: {
-        initShortcuts: (payload, event, element, state) => {
-          this.initShortcuts(payload, event, element, state);
-        },
-        filterShortcuts: (payload, event, element, state) => {
-          state.searchQuery = event.target.value;
-        },
-        changeCategory: (payload, event, element, state) => {
-          state.currentCategory = element.dataset.cat;
-        }
-      },
-      onMount: "initShortcuts"
-    };
-  }
+      </div>`;
 
-  initShortcuts(payload, event, element, state) {
-    this.setupAppLogic(element);
+    this.setupAppLogic(win);
   }
 
   formatKeys(keys) {

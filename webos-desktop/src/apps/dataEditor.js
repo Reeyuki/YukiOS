@@ -1,7 +1,7 @@
 import "../styles/dataeditor.css";
-import { $, $$, bindEvent, setText, setHTML, toggleClass } from "../shared/domUtils.js";
+import { $, $$, setText, toggleClass, setHTML } from "../shared/domUtils.js";
+import { BaseApp, os } from "../framework.js";
 
-import { BaseApp, PersistenceTypes, os } from "../framework.js";
 export class DataEditorApp extends BaseApp {
   constructor(services) {
     super(services);
@@ -15,744 +15,216 @@ export class DataEditorApp extends BaseApp {
     this.idbPagination = { page: 1, pageSize: 50, total: 0 };
   }
 
-  getDeclarativeSchema(opts) {
-    return {
-      id: "dataEditor-declarative",
-      name: "Storage Editor",
+  open() {
+    const winId = "yukios-data-editor";
+    if (this.openWindows.has(winId)) return;
+
+    const win = os.window.create(winId, "Storage Editor", "1000px", "650px", {
       icon: "fas fa-database",
-      windows: [
-        {
-          id: "yukios-data-editor",
-          title: "Storage Editor",
-          size: ["1000px", "650px"],
-          icon: "fas fa-database",
-          ui: {
-            type: "element",
-            tag: "div",
-            props: {
-              className: "window-content data-editor-window"
-            },
-            children: [
-              {
-                type: "element",
-                tag: "div",
-                props: {
-                  className: "de-tabs"
-                },
-                children: [
-                  {
-                    type: "element",
-                    tag: "button",
-                    props: {
-                      id: "de-tab-ls",
-                      className: "de-tab de-tab-active"
-                    },
-                    children: [
-                      {
-                        type: "element",
-                        tag: "i",
-                        props: { className: "fas fa-hdd" }
-                      },
-                      {
-                        type: "element",
-                        tag: "span",
-                        props: { textContent: " localStorage" }
-                      }
-                    ],
-                    events: {
-                      click: {
-                        type: "custom:setTab",
-                        payload: "ls",
-                        stopPropagation: true
-                      }
-                    }
-                  },
-                  {
-                    type: "element",
-                    tag: "button",
-                    props: {
-                      id: "de-tab-ss",
-                      className: "de-tab"
-                    },
-                    children: [
-                      {
-                        type: "element",
-                        tag: "i",
-                        props: { className: "fas fa-memory" }
-                      },
-                      {
-                        type: "element",
-                        tag: "span",
-                        props: { textContent: " sessionStorage" }
-                      }
-                    ],
-                    events: {
-                      click: {
-                        type: "custom:setTab",
-                        payload: "ss",
-                        stopPropagation: true
-                      }
-                    }
-                  },
-                  {
-                    type: "element",
-                    tag: "button",
-                    props: {
-                      id: "de-tab-cookie",
-                      className: "de-tab"
-                    },
-                    children: [
-                      {
-                        type: "element",
-                        tag: "i",
-                        props: { className: "fas fa-cookie" }
-                      },
-                      {
-                        type: "element",
-                        tag: "span",
-                        props: { textContent: " Cookies" }
-                      }
-                    ],
-                    events: {
-                      click: {
-                        type: "custom:setTab",
-                        payload: "cookie",
-                        stopPropagation: true
-                      }
-                    }
-                  },
-                  {
-                    type: "element",
-                    tag: "button",
-                    props: {
-                      id: "de-tab-idb",
-                      className: "de-tab"
-                    },
-                    children: [
-                      {
-                        type: "element",
-                        tag: "i",
-                        props: { className: "fas fa-server" }
-                      },
-                      {
-                        type: "element",
-                        tag: "span",
-                        props: { textContent: " IndexedDB" }
-                      }
-                    ],
-                    events: {
-                      click: {
-                        type: "custom:setTab",
-                        payload: "idb",
-                        stopPropagation: true
-                      }
-                    }
-                  }
-                ]
-              },
-              {
-                type: "element",
-                tag: "div",
-                props: {
-                  className: "de-main"
-                },
-                children: [
-                  {
-                    type: "element",
-                    tag: "div",
-                    props: {
-                      className: "de-list-panel"
-                    },
-                    children: [
-                      {
-                        type: "element",
-                        tag: "div",
-                        props: {
-                          className: "de-search-container"
-                        },
-                        children: [
-                          {
-                            type: "element",
-                            tag: "input",
-                            props: {
-                              id: "de-search",
-                              placeholder: "Search keys and values..."
-                            },
-                            events: {
-                              input: {
-                                type: "custom:search",
-                                stopPropagation: true
-                              }
-                            }
-                          }
-                        ]
-                      },
-                      {
-                        type: "element",
-                        tag: "div",
-                        props: {
-                          className: "de-select-bar"
-                        },
-                        children: [
-                          {
-                            type: "element",
-                            tag: "input",
-                            props: {
-                              id: "de-select-all",
-                              type: "checkbox"
-                            },
-                            events: {
-                              change: {
-                                type: "custom:selectAll",
-                                stopPropagation: true
-                              }
-                            }
-                          },
-                          {
-                            type: "element",
-                            tag: "span",
-                            props: { textContent: "Select All" }
-                          },
-                          {
-                            type: "element",
-                            tag: "span",
-                            props: {
-                              id: "de-selected-count",
-                              textContent: "0 selected"
-                            }
-                          }
-                        ]
-                      },
-                      {
-                        type: "element",
-                        tag: "div",
-                        props: {
-                          id: "de-key-list",
-                          className: "de-key-list"
-                        }
-                      },
-                      {
-                        type: "element",
-                        tag: "div",
-                        props: {
-                          className: "de-list-actions"
-                        },
-                        children: [
-                          {
-                            type: "element",
-                            tag: "button",
-                            props: {
-                              id: "de-add-key"
-                            },
-                            children: [
-                              {
-                                type: "element",
-                                tag: "i",
-                                props: { className: "fas fa-plus" }
-                              },
-                              {
-                                type: "element",
-                                tag: "span",
-                                props: { textContent: " New" }
-                              }
-                            ],
-                            events: {
-                              click: {
-                                type: "custom:addKey",
-                                stopPropagation: true
-                              }
-                            }
-                          },
-                          {
-                            type: "element",
-                            tag: "button",
-                            props: {
-                              id: "de-bulk-delete",
-                              className: "de-delete",
-                              disabled: true
-                            },
-                            children: [
-                              {
-                                type: "element",
-                                tag: "i",
-                                props: { className: "fas fa-trash" }
-                              },
-                              {
-                                type: "element",
-                                tag: "span",
-                                props: { textContent: " Delete" }
-                              }
-                            ],
-                            events: {
-                              click: {
-                                type: "custom:bulkDelete",
-                                stopPropagation: true
-                              }
-                            }
-                          },
-                          {
-                            type: "element",
-                            tag: "button",
-                            props: {
-                              id: "de-bulk-export",
-                              disabled: true
-                            },
-                            children: [
-                              {
-                                type: "element",
-                                tag: "i",
-                                props: { className: "fas fa-download" }
-                              },
-                              {
-                                type: "element",
-                                tag: "span",
-                                props: { textContent: " Export" }
-                              }
-                            ],
-                            events: {
-                              click: {
-                                type: "custom:bulkExport",
-                                stopPropagation: true
-                              }
-                            }
-                          }
-                        ]
-                      }
-                    ]
-                  },
-                  {
-                    type: "element",
-                    tag: "div",
-                    props: {
-                      className: "de-edit-panel"
-                    },
-                    children: [
-                      {
-                        type: "element",
-                        tag: "div",
-                        props: {
-                          id: "de-empty-state",
-                          className: "de-empty-state"
-                        },
-                        children: [
-                          {
-                            type: "element",
-                            tag: "i",
-                            props: { className: "fas fa-table-cells" }
-                          },
-                          {
-                            type: "element",
-                            tag: "span",
-                            props: { textContent: "Select a key to inspect and edit" }
-                          }
-                        ]
-                      },
-                      {
-                        type: "element",
-                        tag: "div",
-                        props: {
-                          id: "de-editor-area",
-                          className: "de-editor-area"
-                        },
-                        children: [
-                          {
-                            type: "element",
-                            tag: "div",
-                            props: {
-                              className: "de-key-row"
-                            },
-                            children: [
-                              {
-                                type: "element",
-                                tag: "input",
-                                props: {
-                                  id: "de-key-input",
-                                  placeholder: "Key name"
-                                }
-                              },
-                              {
-                                type: "element",
-                                tag: "span",
-                                props: {
-                                  id: "de-key-type"
-                                }
-                              },
-                              {
-                                type: "element",
-                                tag: "span",
-                                props: {
-                                  id: "de-key-size"
-                                }
-                              }
-                            ]
-                          },
-                          {
-                            type: "element",
-                            tag: "div",
-                            props: {
-                              className: "de-json-toolbar"
-                            },
-                            children: [
-                              {
-                                type: "element",
-                                tag: "button",
-                                props: {
-                                  id: "de-prettify-btn"
-                                },
-                                children: [
-                                  {
-                                    type: "element",
-                                    tag: "i",
-                                    props: { className: "fas fa-align-left" }
-                                  },
-                                  {
-                                    type: "element",
-                                    tag: "span",
-                                    props: { textContent: " Prettify" }
-                                  }
-                                ],
-                                events: {
-                                  click: {
-                                    type: "custom:prettify",
-                                    stopPropagation: true
-                                  }
-                                }
-                              },
-                              {
-                                type: "element",
-                                tag: "button",
-                                props: {
-                                  id: "de-validate-btn"
-                                },
-                                children: [
-                                  {
-                                    type: "element",
-                                    tag: "i",
-                                    props: { className: "fas fa-check" }
-                                  },
-                                  {
-                                    type: "element",
-                                    tag: "span",
-                                    props: { textContent: " Validate" }
-                                  }
-                                ],
-                                events: {
-                                  click: {
-                                    type: "custom:validate",
-                                    stopPropagation: true
-                                  }
-                                }
-                              },
-                              {
-                                type: "element",
-                                tag: "span",
-                                props: {
-                                  id: "de-json-error"
-                                }
-                              }
-                            ]
-                          },
-                          {
-                            type: "element",
-                            tag: "textarea",
-                            props: {
-                              id: "de-val-input",
-                              spellcheck: "false"
-                            }
-                          },
-                          {
-                            type: "element",
-                            tag: "div",
-                            props: {
-                              className: "de-editor-actions"
-                            },
-                            children: [
-                              {
-                                type: "element",
-                                tag: "button",
-                                props: {
-                                  id: "de-copy-key-btn"
-                                },
-                                children: [
-                                  {
-                                    type: "element",
-                                    tag: "i",
-                                    props: { className: "fas fa-copy" }
-                                  },
-                                  {
-                                    type: "element",
-                                    tag: "span",
-                                    props: { textContent: " Copy Key" }
-                                  }
-                                ],
-                                events: {
-                                  click: {
-                                    type: "custom:copyKey",
-                                    stopPropagation: true
-                                  }
-                                }
-                              },
-                              {
-                                type: "element",
-                                tag: "button",
-                                props: {
-                                  id: "de-copy-val-btn"
-                                },
-                                children: [
-                                  {
-                                    type: "element",
-                                    tag: "i",
-                                    props: { className: "fas fa-copy" }
-                                  },
-                                  {
-                                    type: "element",
-                                    tag: "span",
-                                    props: { textContent: " Copy Value" }
-                                  }
-                                ],
-                                events: {
-                                  click: {
-                                    type: "custom:copyVal",
-                                    stopPropagation: true
-                                  }
-                                }
-                              },
-                              {
-                                type: "element",
-                                tag: "button",
-                                props: {
-                                  id: "de-rename-btn",
-                                  className: "de-rename"
-                                },
-                                children: [
-                                  {
-                                    type: "element",
-                                    tag: "i",
-                                    props: { className: "fas fa-edit" }
-                                  },
-                                  {
-                                    type: "element",
-                                    tag: "span",
-                                    props: { textContent: " Rename" }
-                                  }
-                                ],
-                                events: {
-                                  click: {
-                                    type: "custom:rename",
-                                    stopPropagation: true
-                                  }
-                                }
-                              },
-                              {
-                                type: "element",
-                                tag: "div",
-                                props: {
-                                  className: "de-spacer"
-                                }
-                              },
-                              {
-                                type: "element",
-                                tag: "button",
-                                props: {
-                                  id: "de-save-btn",
-                                  className: "de-save"
-                                },
-                                children: [
-                                  {
-                                    type: "element",
-                                    tag: "i",
-                                    props: { className: "fas fa-save" }
-                                  },
-                                  {
-                                    type: "element",
-                                    tag: "span",
-                                    props: { textContent: " Save" }
-                                  }
-                                ],
-                                events: {
-                                  click: {
-                                    type: "custom:save",
-                                    stopPropagation: true
-                                  }
-                                }
-                              },
-                              {
-                                type: "element",
-                                tag: "button",
-                                props: {
-                                  id: "de-delete-btn",
-                                  className: "de-delete"
-                                },
-                                children: [
-                                  {
-                                    type: "element",
-                                    tag: "i",
-                                    props: { className: "fas fa-trash" }
-                                  },
-                                  {
-                                    type: "element",
-                                    tag: "span",
-                                    props: { textContent: " Delete" }
-                                  }
-                                ],
-                                events: {
-                                  click: {
-                                    type: "custom:delete",
-                                    stopPropagation: true
-                                  }
-                                }
-                              },
-                              {
-                                type: "element",
-                                tag: "span",
-                                props: {
-                                  id: "de-status"
-                                }
-                              }
-                            ]
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
-          events: {}
+      appId: "dataEditor"
+    });
+
+    this.win = win;
+    this.openWindows.add(winId);
+    win.innerHTML = this.buildUI();
+    this.bindDataEditorEvents(win);
+    this.loadLocalStorage(win);
+
+    win.addEventListener("remove", () => {
+      this.openWindows.delete(winId);
+      this.win = null;
+    });
+  }
+
+  buildUI() {
+    return `<div class="window-content data-editor-window">
+  <div class="de-tabs">
+    <button id="de-tab-ls" class="de-tab de-tab-active" data-tab="ls"><i class="fas fa-hdd"></i><span> localStorage</span></button>
+    <button id="de-tab-ss" class="de-tab" data-tab="ss"><i class="fas fa-memory"></i><span> sessionStorage</span></button>
+    <button id="de-tab-cookie" class="de-tab" data-tab="cookie"><i class="fas fa-cookie"></i><span> Cookies</span></button>
+    <button id="de-tab-idb" class="de-tab" data-tab="idb"><i class="fas fa-server"></i><span> IndexedDB</span></button>
+  </div>
+  <div class="de-main">
+    <div class="de-list-panel">
+      <div class="de-search-container">
+        <input id="de-search" placeholder="Search keys and values...">
+      </div>
+      <div class="de-select-bar">
+        <input id="de-select-all" type="checkbox"><span>Select All</span><span id="de-selected-count">0 selected</span>
+      </div>
+      <div id="de-key-list" class="de-key-list"></div>
+      <div class="de-list-actions">
+        <button id="de-add-key"><i class="fas fa-plus"></i><span> New</span></button>
+        <button id="de-bulk-delete" class="de-delete" disabled><i class="fas fa-trash"></i><span> Delete</span></button>
+        <button id="de-bulk-export" disabled><i class="fas fa-download"></i><span> Export</span></button>
+      </div>
+    </div>
+    <div class="de-edit-panel">
+      <div id="de-empty-state" class="de-empty-state">
+        <i class="fas fa-table-cells"></i><span>Select a key to inspect and edit</span>
+      </div>
+      <div id="de-editor-area" class="de-editor-area" style="display:none">
+        <div class="de-key-row">
+          <input id="de-key-input" placeholder="Key name">
+          <span id="de-key-type"></span>
+          <span id="de-key-size"></span>
+        </div>
+        <div class="de-json-toolbar">
+          <button id="de-prettify-btn"><i class="fas fa-align-left"></i><span> Prettify</span></button>
+          <button id="de-validate-btn"><i class="fas fa-check"></i><span> Validate</span></button>
+          <span id="de-json-error"></span>
+        </div>
+        <textarea id="de-val-input" spellcheck="false"></textarea>
+        <div class="de-editor-actions">
+          <button id="de-copy-key-btn"><i class="fas fa-copy"></i><span> Copy Key</span></button>
+          <button id="de-copy-val-btn"><i class="fas fa-copy"></i><span> Copy Value</span></button>
+          <button id="de-rename-btn" class="de-rename"><i class="fas fa-edit"></i><span> Rename</span></button>
+          <div class="de-spacer"></div>
+          <button id="de-save-btn" class="de-save"><i class="fas fa-save"></i><span> Save</span></button>
+          <button id="de-delete-btn" class="de-delete"><i class="fas fa-trash"></i><span> Delete</span></button>
+          <span id="de-status"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>`;
+  }
+
+  bindDataEditorEvents(win) {
+    win.querySelectorAll(".de-tab").forEach((tab) => {
+      tab.addEventListener("click", (e) => {
+        e.stopPropagation();
+        this.switchTab(tab.dataset.tab, win);
+      });
+    });
+
+    win.querySelector("#de-search")?.addEventListener("input", () => {
+      this.reloadCurrentTab(win);
+    });
+
+    win.querySelector("#de-select-all")?.addEventListener("change", (e) => {
+      const keyList = $("#de-key-list", win);
+      const checkboxes = $$('input[type="checkbox"]', keyList);
+      this.selectedKeys.clear();
+      checkboxes.forEach((cb) => {
+        cb.checked = e.target.checked;
+        if (cb.checked) {
+          const container = cb.closest("div");
+          const labelEl = container.querySelector("span");
+          const key = labelEl.textContent;
+          this.selectedKeys.add({ key, value: null, context: this.currentIdbCtx });
         }
-      ],
-      state: {
-        initial: {
-          currentTab: "ls",
-          selectedKeys: []
-        },
-        persistence: PersistenceTypes.MEMORY
-      },
-      actions: {
-        setTab: (payload, event, element, state, actionExecutor) => {
-          const app = actionExecutor.appInstance;
-          app.currentTab = payload;
-          app.idbPagination = { page: 1, pageSize: 50, total: 0 };
+      });
+      this.updateSelectedCount(win);
+    });
 
-          const win = element.closest(".window-content");
-          const tabLs = $("#de-tab-ls", win);
-          const tabSs = $("#de-tab-ss", win);
-          const tabCookie = $("#de-tab-cookie", win);
-          const tabIdb = $("#de-tab-idb", win);
+    win.querySelector("#de-add-key")?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const emptyState = $("#de-empty-state", win);
+      const editorArea = $("#de-editor-area", win);
+      const keyInput = $("#de-key-input", win);
+      const valInput = $("#de-val-input", win);
+      const keyType = $("#de-key-type", win);
+      const keySize = $("#de-key-size", win);
 
-          if (tabLs) toggleClass(tabLs, "de-tab-active", payload === "ls");
-          if (tabSs) toggleClass(tabSs, "de-tab-active", payload === "ss");
-          if (tabCookie) toggleClass(tabCookie, "de-tab-active", payload === "cookie");
-          if (tabIdb) toggleClass(tabIdb, "de-tab-active", payload === "idb");
+      if (emptyState) emptyState.style.display = "none";
+      if (editorArea) editorArea.style.display = "flex";
+      if (this.activeKeyEl) this.activeKeyEl.style.background = "";
+      this.activeKeyEl = null;
+      this.currentIdbCtx = null;
+      if (keyInput) keyInput.value = "";
+      if (valInput) valInput.value = "";
+      if (keyType)
+        keyType.textContent =
+          this.currentTab === "ls"
+            ? "localStorage"
+            : this.currentTab === "ss"
+              ? "sessionStorage"
+              : this.currentTab === "cookie"
+                ? "Cookie"
+                : "IDB";
+      if (keySize) keySize.textContent = "0 B";
+      if (keyInput) keyInput.focus();
+    });
 
-          const emptyState = $("#de-empty-state", win);
-          const editorArea = $("#de-editor-area", win);
-          if (emptyState) emptyState.style.display = "flex";
-          if (editorArea) editorArea.style.display = "none";
-          app.activeKeyEl = null;
+    win.querySelector("#de-save-btn")?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      this.handleSave(e.currentTarget);
+    });
 
-          if (payload === "ls") app.loadLocalStorage(win);
-          else if (payload === "ss") app.loadSessionStorage(win);
-          else if (payload === "cookie") app.loadCookies(win);
-          else app.loadIdb(win);
-        },
-        search: (payload, event, element, state, actionExecutor) => {
-          const app = actionExecutor.appInstance;
-          const win = element.closest(".window-content");
-          if (app.currentTab === "ls") app.loadLocalStorage(win);
-          else if (app.currentTab === "ss") app.loadSessionStorage(win);
-          else if (app.currentTab === "cookie") app.loadCookies(win);
-          else app.loadIdb(win);
-        },
-        selectAll: (payload, event, element, state, actionExecutor) => {
-          const app = actionExecutor.appInstance;
-          const win = element.closest(".window-content");
-          const keyList = $("#de-key-list", win);
-          const checkboxes = $$('input[type="checkbox"]', keyList);
-          app.selectedKeys.clear();
-          checkboxes.forEach((cb) => {
-            cb.checked = element.checked;
-            if (cb.checked) {
-              const container = cb.closest("div");
-              const labelEl = container.querySelector("span");
-              const key = labelEl.textContent;
-              app.selectedKeys.add({ key, value: null, context: app.currentIdbCtx });
-            }
-          });
-          app.updateSelectedCount(win);
-        },
-        addKey: (payload, event, element, state, actionExecutor) => {
-          const app = actionExecutor.appInstance;
-          const win = element.closest(".window-content");
-          const emptyState = $("#de-empty-state", win);
-          const editorArea = $("#de-editor-area", win);
-          const keyInput = $("#de-key-input", win);
-          const valInput = $("#de-val-input", win);
-          const keyType = $("#de-key-type", win);
-          const keySize = $("#de-key-size", win);
+    win.querySelector("#de-delete-btn")?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      this.handleDelete(e.currentTarget);
+    });
 
-          if (emptyState) emptyState.style.display = "none";
-          if (editorArea) editorArea.style.display = "flex";
-          if (app.activeKeyEl) app.activeKeyEl.style.background = "";
-          app.activeKeyEl = null;
-          app.currentIdbCtx = null;
-          if (keyInput) keyInput.value = "";
-          if (valInput) valInput.value = "";
-          if (keyType)
-            keyType.textContent =
-              app.currentTab === "ls"
-                ? "localStorage"
-                : app.currentTab === "ss"
-                  ? "sessionStorage"
-                  : app.currentTab === "cookie"
-                    ? "Cookie"
-                    : "IDB";
-          if (keySize) keySize.textContent = "0 B";
-          if (keyInput) keyInput.focus();
-        },
-        save: (payload, event, element, state, actionExecutor) => {
-          const app = actionExecutor.appInstance;
-          app.handleSave(element);
-        },
-        delete: (payload, event, element, state, actionExecutor) => {
-          const app = actionExecutor.appInstance;
-          app.handleDelete(element);
-        },
-        rename: (payload, event, element, state, actionExecutor) => {
-          const app = actionExecutor.appInstance;
-          app.handleRename(element);
-        },
-        copyKey: (payload, event, element, state, actionExecutor) => {
-          const app = actionExecutor.appInstance;
-          app.handleCopyKey(element);
-        },
-        copyVal: (payload, event, element, state, actionExecutor) => {
-          const app = actionExecutor.appInstance;
-          app.handleCopyVal(element);
-        },
-        prettify: (payload, event, element, state, actionExecutor) => {
-          const app = actionExecutor.appInstance;
-          app.handlePrettify(element);
-        },
-        validate: (payload, event, element, state, actionExecutor) => {
-          const app = actionExecutor.appInstance;
-          app.handleValidate(element);
-        },
-        bulkDelete: (payload, event, element, state, actionExecutor) => {
-          const app = actionExecutor.appInstance;
-          app.handleBulkDelete(element);
-        },
-        bulkExport: (payload, event, element, state, actionExecutor) => {
-          const app = actionExecutor.appInstance;
-          app.handleBulkExport(element);
-        }
-      },
-      onMount: (win, state, actionExecutor) => {
-        const app = actionExecutor.appInstance;
-        app.loadLocalStorage(win);
+    win.querySelector("#de-rename-btn")?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      this.handleRename(e.currentTarget);
+    });
+
+    win.querySelector("#de-copy-key-btn")?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      this.handleCopyKey(e.currentTarget);
+    });
+
+    win.querySelector("#de-copy-val-btn")?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      this.handleCopyVal(e.currentTarget);
+    });
+
+    win.querySelector("#de-prettify-btn")?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      this.handlePrettify(e.currentTarget);
+    });
+
+    win.querySelector("#de-validate-btn")?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      this.handleValidate(e.currentTarget);
+    });
+
+    win.querySelector("#de-bulk-delete")?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      this.handleBulkDelete(e.currentTarget);
+    });
+
+    win.querySelector("#de-bulk-export")?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      this.handleBulkExport(e.currentTarget);
+    });
+
+    win.querySelector("#de-key-list")?.addEventListener("click", (e) => {
+      const item = e.target.closest(".de-key-item");
+      if (item) {
+        const idx = Array.from(item.parentNode.children).indexOf(item);
+        item.click();
       }
-    };
+    });
+  }
+
+  switchTab(tabId, win) {
+    this.currentTab = tabId;
+    this.idbPagination = { page: 1, pageSize: 50, total: 0 };
+
+    const tabLs = $("#de-tab-ls", win);
+    const tabSs = $("#de-tab-ss", win);
+    const tabCookie = $("#de-tab-cookie", win);
+    const tabIdb = $("#de-tab-idb", win);
+
+    if (tabLs) toggleClass(tabLs, "de-tab-active", tabId === "ls");
+    if (tabSs) toggleClass(tabSs, "de-tab-active", tabId === "ss");
+    if (tabCookie) toggleClass(tabCookie, "de-tab-active", tabId === "cookie");
+    if (tabIdb) toggleClass(tabIdb, "de-tab-active", tabId === "idb");
+
+    const emptyState = $("#de-empty-state", win);
+    const editorArea = $("#de-editor-area", win);
+    if (emptyState) emptyState.style.display = "flex";
+    if (editorArea) editorArea.style.display = "none";
+    this.activeKeyEl = null;
+
+    if (tabId === "ls") this.loadLocalStorage(win);
+    else if (tabId === "ss") this.loadSessionStorage(win);
+    else if (tabId === "cookie") this.loadCookies(win);
+    else this.loadIdb(win);
   }
 
   onClose(winId) {

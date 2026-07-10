@@ -18,7 +18,9 @@ export class PathResolver {
 
   normalizePath(path) {
     if (typeof path === "string") return path.split("/").filter(Boolean);
-    return Array.isArray(path) ? path.filter(Boolean) : [];
+    if (Array.isArray(path))
+      return path.flatMap((p) => (typeof p === "string" ? p.split("/").filter(Boolean) : p ? [p] : []));
+    return [];
   }
 
   resolvePath(input, currentPath = []) {
@@ -37,6 +39,11 @@ export class PathResolver {
       if (path.startsWith("/")) return path;
       path = [path];
     }
-    return this.join("/", ...this.CONFIG.ROOT.split("/").filter(Boolean), ...this.normalizePath(path));
+    const norm = this.normalizePath(path);
+    const rootParts = this.CONFIG.ROOT.split("/").filter(Boolean);
+    if (norm.length >= rootParts.length && norm.slice(0, rootParts.length).join("/") === rootParts.join("/")) {
+      return this.join("/", ...norm);
+    }
+    return this.join("/", ...rootParts, ...norm);
   }
 }

@@ -7,8 +7,6 @@ export class BaseApp {
   protected fs: any;
   protected bus: any;
   protected notifications: any;
-  protected isDeclarative: boolean;
-
   constructor(services: Record<string, any> = {}) {
     this.services = services;
     if (services.windowManager && !services.windowManager.__isProxied) {
@@ -30,15 +28,10 @@ export class BaseApp {
     this.fs = services.fs || services.fileSystemManager;
     this.bus = services.bus;
     this.notifications = services.notifications || services.notificationCenter;
-    this.isDeclarative = false;
   }
 
   open(opts?: any): any {
     throw new Error(`${this.constructor.name}.open() is not implemented.`);
-  }
-
-  getDeclarativeSchema(opts?: any): any {
-    return null;
   }
 
   onClose(winId: string): void {}

@@ -347,7 +347,6 @@ export const APP_MANIFESTS = [
     title: "Rhythms",
     icon: "fas fa-wave-square",
     launchType: "instance",
-    launchMethod: "declarative",
     windowIdPatterns: ["rhythms"],
     category: "media",
     clippy: { message: "Visualize audio beats and watch the rhythm come alive.", animation: ClippyAnimation.GetArtsy },

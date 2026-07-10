@@ -49,23 +49,14 @@ export class VirtualMachineManagerApp extends BaseApp {
     os.storage.set(STORAGE_KEY, this.vms);
   }
 
-  getDeclarativeSchema() {
-    return {
-      id: "vm-app",
-      name: "Virtual Machine Manager",
+  open() {
+    const win = os.window.create("vm-app", "Virtual Machine Manager", "580px", "480px", {
       icon: "fas fa-server",
-      windows: [
-        {
-          id: "vm-app",
-          title: "Virtual Machine Manager",
-          size: ["580px", "480px"],
-          icon: "fas fa-server",
-          ui: `<div class="vm-shell"></div>`
-        }
-      ],
-      state: { initial: {}, persistence: 0 },
-      onMount: "initVM"
-    };
+      appId: "virtualMachineManagerApp"
+    });
+    win.innerHTML = `<div class="vm-shell"></div>`;
+    this.initVM(win);
+    return win;
   }
 
   renderList(shell) {
@@ -458,8 +449,8 @@ export class VirtualMachineManagerApp extends BaseApp {
     }
   }
 
-  initVM(payload, event, element, state) {
-    const shell = element?.querySelector?.(".vm-shell") || document.querySelector("#vm-app .vm-shell");
+  initVM(win) {
+    const shell = win.querySelector(".vm-shell");
     if (!shell) return;
     this.renderList(shell);
   }

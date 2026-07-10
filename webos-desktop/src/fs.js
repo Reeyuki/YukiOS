@@ -633,7 +633,7 @@ export class FileSystemManager {
         const kind = meta[name]?.kind ?? this.inferKind(name);
         const icon = resolveIconUrl(meta[name]?.icon) ?? "static/icons/file.webp";
         const faIcon = meta[name]?.faIcon ?? null;
-        result[name] = { type: "file", kind, icon, faIcon, content: "", size: meta[name]?.size ?? 0 };
+        result[name] = { type: "file", kind, icon, faIcon, content: "", size: stat.size ?? meta[name]?.size ?? 0 };
       }
     }
 
