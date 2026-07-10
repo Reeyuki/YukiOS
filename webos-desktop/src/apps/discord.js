@@ -66,9 +66,7 @@ export class DiscordApp extends ScramjetBaseApp {
     win.getAnimations().forEach((a) => a.cancel());
     win.style.opacity = "0";
 
-    if (schema.onMount && typeof this[schema.onMount] === "function") {
-      this[schema.onMount](null, null, win, schema.state?.initial || {});
-    }
+    await this.initScramjet(null, null, win, {});
 
     const cleanup = () => this.removeSplash();
     const closeObserver = new MutationObserver(() => {
