@@ -22,7 +22,6 @@ const HARDCODED_DESKTOP_ICONS = [
   { app: "explorerApp", name: "Files", icon: "static/icons/file.webp" },
   { app: "steamApp", name: "Steam", icon: "static/icons/steam.webp" },
   { app: "discordApp", name: "Discord", icon: "fab fa-discord", isFa: true },
-  { app: "robloxApp", name: "Roblox", icon: "static/icons/roblox.webp" },
   { app: "browserApp", name: "Browser", icon: resolveIconUrl("static/icons/firefox.webp") },
   { app: "systemAppsApp", name: "System Apps", icon: "fas fa-tools", isFa: true },
   { app: "notepadApp", name: "Notepad", icon: "static/icons/notepad.webp" },

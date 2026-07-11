@@ -1,9 +1,9 @@
 import "../styles/roblox.css";
 import { BaseApp, StorageKeys, os } from "../framework.js";
 import { $, $$ } from "../shared/domUtils.js";
-import { resolveIconUrl } from "../shared/assetResolver.js";
+import { resolveIconUrl, resolveGhUrl } from "../shared/assetResolver.js";
 
-const CDN = "https://cdn.jsdelivr.net/gh/reeyuki/yukios-games@main/html/roblox";
+const CDN = resolveGhUrl("https://cdn.jsdelivr.net/gh/reeyuki/yukios-games@main/html/roblox");
 
 const COVER_MAP = {
   clclimbforbrainrots: "static/icons/roblox/swingbrainrots.webp",
@@ -21,6 +21,8 @@ const COVER_MAP = {
   clswingforbrainrots: "static/icons/roblox/swingbrainrots.webp"
 };
 
+const SUBDIR_GAMES = ["99_nights_in_the_forest", "grow_a_garden"];
+
 const GAMES = [
   { name: "Climb for Brainrots", id: "clclimbforbrainrots" },
   { name: "Jailbreak Obby", id: "cljailbreakobbbobob" },
@@ -34,7 +36,9 @@ const GAMES = [
   { name: "Yard Sale", id: "clobbyyardsale" },
   { name: "Sab Duel", id: "clsabduel" },
   { name: "Steal Brainrot", id: "clstealbrainrot" },
-  { name: "Swing for Brainrots", id: "clswingforbrainrots" }
+  { name: "Swing for Brainrots", id: "clswingforbrainrots" },
+  { name: "99 Nights in the Forest", id: "99_nights_in_the_forest" },
+  { name: "Grow a Garden", id: "grow_a_garden" }
 ];
 
 const FAKE_RATINGS = [4.2, 3.8, 4.5, 3.5, 4.8, 4.0, 3.2, 4.7, 3.9, 4.3, 3.6, 4.1, 4.4, 3.7, 4.6];
@@ -174,7 +178,7 @@ export class RobloxApp extends BaseApp {
       ...game,
       rating: FAKE_RATINGS[i],
       cover: COVER_MAP[game.id] ? resolveIconUrl(COVER_MAP[game.id]) : `${CDN}/covers/${game.id}.svg`,
-      url: `${CDN}/${game.id}.html`
+      url: SUBDIR_GAMES.includes(game.id) ? `${CDN}/${game.id}/index.html` : `${CDN}/${game.id}.html`
     }));
   }
 
