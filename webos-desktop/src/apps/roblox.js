@@ -4,6 +4,7 @@ import { $, $$ } from "../shared/domUtils.js";
 import { resolveIconUrl, resolveGhUrl } from "../shared/assetResolver.js";
 
 const CDN = resolveGhUrl("https://cdn.jsdelivr.net/gh/reeyuki/yukios-games@main/html/roblox");
+const CDN_ROBLOX = resolveGhUrl("https://cdn.jsdelivr.net/gh/reeyuki/yukios-games@main/roblox");
 
 const COVER_MAP = {
   clclimbforbrainrots: "static/icons/roblox/swingbrainrots.webp",
@@ -178,7 +179,7 @@ export class RobloxApp extends BaseApp {
       ...game,
       rating: FAKE_RATINGS[i],
       cover: COVER_MAP[game.id] ? resolveIconUrl(COVER_MAP[game.id]) : `${CDN}/covers/${game.id}.svg`,
-      url: SUBDIR_GAMES.includes(game.id) ? `${CDN}/${game.id}/index.html` : `${CDN}/${game.id}.html`
+      url: SUBDIR_GAMES.includes(game.id) ? `${CDN_ROBLOX}/${game.id}/index.html` : `${CDN}/${game.id}.html`
     }));
   }
 
