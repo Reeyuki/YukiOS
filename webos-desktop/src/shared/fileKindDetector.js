@@ -1,4 +1,12 @@
-export const FileKind = { TEXT: "text", IMAGE: "image", VIDEO: "video", AUDIO: "audio", ROM: "rom", OTHER: "other" };
+export const FileKind = {
+  TEXT: "text",
+  IMAGE: "image",
+  VIDEO: "video",
+  AUDIO: "audio",
+  ROM: "rom",
+  FONT: "font",
+  OTHER: "other"
+};
 
 export const IMAGE_EXTS = [
   "png",
@@ -235,7 +243,7 @@ export function fileKindFromName(name) {
   if (SWF_EXTS.includes(ext)) return FileKind.OTHER;
   if (ZIP_EXTS.includes(ext)) return FileKind.OTHER;
   if (EBOOK_EXTS.includes(ext)) return FileKind.OTHER;
-  if (FONT_EXTS.includes(ext)) return FileKind.OTHER;
+  if (FONT_EXTS.includes(ext)) return FileKind.FONT;
   if (DISK_EXTS.includes(ext)) return FileKind.OTHER;
   if (SHORTCUT_EXTS.includes(ext)) return FileKind.OTHER;
   if (HTML_EXTS.includes(ext)) return FileKind.OTHER;

@@ -1,3 +1,4 @@
+import { BusEvents } from "./core/EventBus.js";
 import { StorageKeys, os } from "./framework.js";
 class ClipboardManager {
   constructor() {
@@ -79,7 +80,7 @@ class ClipboardManager {
 
     this.broadcastUpdate(item);
     this.notifyChange(item);
-    os.events.emit("clipboard:update", item);
+    os.events.emit(BusEvents.CLIPBOARD_UPDATE, item);
   }
 
   get() {
@@ -100,7 +101,7 @@ class ClipboardManager {
     }
 
     this.notifyChange(null);
-    os.events.emit("clipboard:clear");
+    os.events.emit(BusEvents.CLIPBOARD_CLEAR);
   }
 
   onChange(callback) {

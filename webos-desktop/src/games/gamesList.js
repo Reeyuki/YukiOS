@@ -923,11 +923,17 @@ export const appMap = {
     icon: "/static/icons/doodle.webp",
     title: "Doodle Halloween Cat"
   },
-  halfLife: {
+  halfLife2: {
     type: "game",
-    url: "/static/games/html/half.html",
+    url: "https://hl2.slqnt.dev",
     icon: "/static/icons/half.webp",
-    title: "Half Life"
+    title: "Half Life 2"
+  },
+  portal: {
+    type: "game",
+    url: "https://yikes.pw/portal/",
+    icon: "/static/icons/portal.webp",
+    title: "Portal"
   },
   cs: {
     type: "game",

@@ -12,10 +12,8 @@ export const Achievements = {
   ArchiveHandler: "archive_handler",
   PersonalSpace: "personal_space",
   DesktopStylist: "desktop_stylist",
-  OrganizedDesktop: "organized_desktop",
   AppCollector: "app_collector",
-  DeveloperMode: "developer_mode",
-  DeveloperModeSuper: "developer_mode_super",
+  Skid: "skid",
   TerminalUser: "terminal_user",
   TerminalUserSuper: "terminal_user_super",
   OfficeWorker: "office_worker",
@@ -30,14 +28,26 @@ export const Achievements = {
   RegularUser: "regular_user",
   SystemVeteran: "system_veteran",
   Completionist: "completionist",
-  SetupComplete: "setup_complete"
+  SetupComplete: "setup_complete",
+  FontCustomizer: "font_customizer",
+  SnapHappy: "snap_happy",
+  WorkspaceWanderer: "workspace_wanderer",
+  WorkspaceArchitect: "workspace_architect",
+  GitGuru: "git_guru",
+  ScreenshotSavant: "screenshot_savant",
+  MathWhiz: "math_whiz",
+  NightPerson: "night_owl",
+  PowerUser: "power_user",
+  Customizer: "customizer",
+  Flashback: "flashback",
+  Converter: "converter"
 };
 
 export class AchievementsApp extends BaseApp {
   constructor(services) {
     super(services);
     this.achievements = this.createAchievements();
-    this.unlocked = new Set();
+    this.unlocked = new Map();
     this.s1 = new Audio(resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/audio/steam.opus"));
 
     this.initBusListeners();
@@ -57,16 +67,18 @@ export class AchievementsApp extends BaseApp {
         { at: 100, key: Achievements.GameHopperMega }
       ],
       wallpaper: [{ at: 5, key: Achievements.DesktopStylist }],
-      desktopFile: [{ at: 15, key: Achievements.OrganizedDesktop }],
       fileUploaded: [{ at: 100, key: Achievements.FileHoarder }],
       session: [
         { at: 5, key: Achievements.RegularUser },
         { at: 20, key: Achievements.SystemVeteran }
       ],
-      developerMode: [
-        { at: 1, key: Achievements.DeveloperMode },
-        { at: 10, key: Achievements.DeveloperModeSuper }
-      ]
+      windowSnapped: [{ at: 10, key: Achievements.SnapHappy }],
+      workspaceSwitched: [{ at: 25, key: Achievements.WorkspaceWanderer }],
+      workspaceAdded: [{ at: 3, key: Achievements.WorkspaceArchitect }],
+      gitCommand: [{ at: 1, key: Achievements.GitGuru }],
+      screenshotTaken: [{ at: 10, key: Achievements.ScreenshotSavant }],
+      calculationDone: [{ at: 50, key: Achievements.MathWhiz }],
+      powerProfileChange: [{ at: 5, key: Achievements.PowerUser }]
     };
     this.counters = {};
     this.achievementQueue = [];
@@ -151,11 +163,13 @@ export class AchievementsApp extends BaseApp {
   initBusListeners() {
     os.events.on(BusEvents.WINDOW_CREATED, () => this.incrementWindowOpen());
     os.events.on(BusEvents.APP_LAUNCHED, () => this.incrementAppLaunched());
-    os.events.on(BusEvents.TERMINAL_CMD_EXECUTED, () => this.triggerCommandExecution());
+    os.events.on(BusEvents.TERMINAL_CMD_EXECUTED, (data) => this.triggerCommandExecution(data?.command));
     os.events.on(BusEvents.WALLPAPER_CHANGED, () => this.incrementWallpaper());
-    os.events.on(BusEvents.DESKTOP_ICON_ADDED, () => this.incrementDesktopFile());
     os.events.on(BusEvents.ACHIEVEMENT_TRIGGER, ({ achievementId }) => this.trigger(achievementId));
     os.events.on(BusEvents.SESSION_INITIALIZED, () => this.incrementSession());
+    os.events.on(BusEvents.WINDOW_SNAPPED, () => this.increment("windowSnapped"));
+    os.events.on(BusEvents.WORKSPACE_SWITCHED, () => this.increment("workspaceSwitched"));
+    os.events.on(BusEvents.WORKSPACE_ADDED, () => this.increment("workspaceAdded"));
   }
 
   createAchievements() {
@@ -169,7 +183,7 @@ export class AchievementsApp extends BaseApp {
       },
       {
         id: Achievements.MultiTasker,
-        title: "Multitasker",
+        title: "Juggler",
         desc: "Run 5 apps simultaneously",
         icon: "fa-window-maximize",
         rarity: "common"
@@ -190,7 +204,7 @@ export class AchievementsApp extends BaseApp {
       },
       {
         id: Achievements.ArchiveHandler,
-        title: "Archive Handler",
+        title: "Unzipped",
         desc: "Extract a compressed archive",
         icon: "fa-file-zipper",
         rarity: "common"
@@ -204,16 +218,9 @@ export class AchievementsApp extends BaseApp {
       },
       {
         id: Achievements.DesktopStylist,
-        title: "Desktop Stylist",
+        title: "Curator",
         desc: "Change wallpaper 5 times",
         icon: "fa-paintbrush",
-        rarity: "uncommon"
-      },
-      {
-        id: Achievements.OrganizedDesktop,
-        title: "Organized Desktop",
-        desc: "Arrange 15 files on desktop",
-        icon: "fa-th",
         rarity: "uncommon"
       },
       {
@@ -224,50 +231,43 @@ export class AchievementsApp extends BaseApp {
         rarity: "rare"
       },
       {
-        id: Achievements.DeveloperMode,
-        title: "Developer Mode",
-        desc: "Use Terminal",
-        icon: "fa-code",
-        rarity: "common"
-      },
-      {
-        id: Achievements.DeveloperModeSuper,
-        title: "Super Developer Mode",
+        id: Achievements.Skid,
+        title: "SKID",
         desc: "Write neofetch on terminal",
         icon: "fa-laptop-code",
         rarity: "rare"
       },
       {
         id: Achievements.TerminalUser,
-        title: "Terminal User",
+        title: "First Command",
         desc: "Execute 5 commands in terminal",
         icon: "fa-terminal",
         rarity: "uncommon"
       },
       {
         id: Achievements.TerminalUserSuper,
-        title: "Terminal Pro",
+        title: "Terminal Velocity",
         desc: "Execute 50 commands in terminal",
         icon: "fa-terminal",
         rarity: "epic"
       },
       {
         id: Achievements.OfficeWorker,
-        title: "Office Worker",
+        title: "Paper Trail",
         desc: "Create a document in office suite",
         icon: "fa-file-word",
         rarity: "common"
       },
       {
         id: Achievements.ModelViewer,
-        title: "Model Viewer",
+        title: "Depth Perception",
         desc: "View a 3D model",
         icon: "fa-cube",
         rarity: "uncommon"
       },
       {
         id: Achievements.FirstGame,
-        title: "First Game",
+        title: "Insert Coin",
         desc: "Launch any game",
         icon: "fa-gamepad",
         rarity: "common"
@@ -281,14 +281,14 @@ export class AchievementsApp extends BaseApp {
       },
       {
         id: Achievements.GameHopperMega,
-        title: "Mega Game Hopper",
+        title: "Grand Game Hopper",
         desc: "Play 100 games",
         icon: "fa-crown",
         rarity: "legendary"
       },
       {
         id: Achievements.EmulatorFan,
-        title: "Emulator Fan",
+        title: "Emulated",
         desc: "Run a ROM",
         icon: "fa-microchip",
         rarity: "uncommon"
@@ -330,10 +330,94 @@ export class AchievementsApp extends BaseApp {
       },
       {
         id: Achievements.SetupComplete,
-        title: "System Ready",
+        title: "Welcome Home",
         desc: "Finish YukiOS setup wizard",
         icon: "fa-flag-checkered",
         rarity: "uncommon"
+      },
+      {
+        id: Achievements.FontCustomizer,
+        title: "Font Customizer",
+        desc: "Set a custom TTF font as system font",
+        icon: "fa-font",
+        rarity: "uncommon"
+      },
+      {
+        id: Achievements.SnapHappy,
+        title: "Snap Happy",
+        desc: "Snap windows to screen edges 10 times",
+        icon: "fa-arrows-left-right-to-line",
+        rarity: "uncommon"
+      },
+      {
+        id: Achievements.WorkspaceWanderer,
+        title: "Workspace Wanderer",
+        desc: "Switch workspaces 25 times",
+        icon: "fa-layer-group",
+        rarity: "uncommon"
+      },
+      {
+        id: Achievements.WorkspaceArchitect,
+        title: "Workspace Architect",
+        desc: "Create 3 different workspaces",
+        icon: "fa-plus",
+        rarity: "uncommon"
+      },
+      {
+        id: Achievements.GitGuru,
+        title: "Git Guru",
+        desc: "Execute a git command in the terminal",
+        icon: "fa-code-branch",
+        rarity: "common"
+      },
+      {
+        id: Achievements.ScreenshotSavant,
+        title: "Snip & Clip",
+        desc: "Take 10 screenshots",
+        icon: "fa-camera",
+        rarity: "uncommon"
+      },
+      {
+        id: Achievements.MathWhiz,
+        title: "Crunch Time",
+        desc: "Perform 50 calculations in the calculator",
+        icon: "fa-calculator",
+        rarity: "uncommon"
+      },
+      {
+        id: Achievements.NightPerson,
+        title: "Night Person",
+        desc: "Enable night mode",
+        icon: "fa-moon",
+        rarity: "common"
+      },
+      {
+        id: Achievements.PowerUser,
+        title: "Power Cycle",
+        desc: "Switch power profiles 5 times",
+        icon: "fa-bolt",
+        rarity: "uncommon"
+      },
+      {
+        id: Achievements.Customizer,
+        title: "Hotkeyed",
+        desc: "Customize a keyboard shortcut",
+        icon: "fa-keyboard",
+        rarity: "uncommon"
+      },
+      {
+        id: Achievements.Flashback,
+        title: "Flashback",
+        desc: "Play a Flash game",
+        icon: "fa-film",
+        rarity: "common"
+      },
+      {
+        id: Achievements.Converter,
+        title: "Converted",
+        desc: "Convert a file",
+        icon: "fa-exchange-alt",
+        rarity: "common"
       }
     ];
   }
@@ -341,7 +425,13 @@ export class AchievementsApp extends BaseApp {
   loadFromStorage() {
     try {
       const saved = os.storage.get(StorageKeys.achievements);
-      if (saved) this.unlocked = new Set(saved);
+      if (saved) {
+        if (Array.isArray(saved)) {
+          this.unlocked = new Map(saved.map((id) => [id, Date.now()]));
+        } else {
+          this.unlocked = new Map(Object.entries(saved));
+        }
+      }
       const savedCounters = os.storage.get(StorageKeys.achievementCounters);
       if (savedCounters) this.counters = savedCounters;
     } catch (e) {
@@ -351,7 +441,9 @@ export class AchievementsApp extends BaseApp {
 
   saveToStorage() {
     try {
-      os.storage.set(StorageKeys.achievements, [...this.unlocked]);
+      const obj = {};
+      for (const [id, ts] of this.unlocked) obj[id] = ts;
+      os.storage.set(StorageKeys.achievements, obj);
       os.storage.set(StorageKeys.achievementCounters, this.counters);
     } catch (e) {
       console.error("[Achievements]", e);
@@ -427,6 +519,7 @@ export class AchievementsApp extends BaseApp {
               </div>
             </div>
             <p class="achievement-card__desc">${a.desc}</p>
+            ${unlocked ? `<p class="achievement-card__date">Unlocked on ${new Date(this.unlocked.get(a.id)).toLocaleDateString()}</p>` : ""}
           </div>
         </div>
       `;
@@ -468,7 +561,7 @@ export class AchievementsApp extends BaseApp {
             (o) => `
           <button
             class="achievements-toggle__btn ${current === o.val ? "achievements-toggle__btn--active" : ""}"
-            onclick="window.achievements.setFilter('${o.val}')"
+            data-filter="${o.val}"
           >
             <i class="fas ${o.icon}"></i>
             <span>${o.label}</span>
@@ -491,7 +584,7 @@ export class AchievementsApp extends BaseApp {
     if (!this.achievements.find((a) => a.id === achievementKey)) return;
     if (this.unlocked.has(achievementKey)) return;
 
-    this.unlocked.add(achievementKey);
+    this.unlocked.set(achievementKey, Date.now());
     this.saveToStorage();
     this.queueAchievement(achievementKey, skipSound);
     this.refresh();
@@ -650,9 +743,6 @@ export class AchievementsApp extends BaseApp {
   incrementWallpaper() {
     this.increment("wallpaper");
   }
-  incrementDesktopFile() {
-    this.increment("desktopFile");
-  }
   incrementFileUploaded() {
     this.increment("fileUploaded");
   }
@@ -666,11 +756,20 @@ export class AchievementsApp extends BaseApp {
 
     this.increment("session");
   }
-  incrementDeveloperMode() {
-    this.increment("developerMode");
+  incrementScreenshotTaken() {
+    this.increment("screenshotTaken");
   }
-  triggerCommandExecution() {
+  incrementCalculationDone() {
+    this.increment("calculationDone");
+  }
+  incrementPowerProfileChange() {
+    this.increment("powerProfileChange");
+  }
+  triggerCommandExecution(command) {
     this.incrementTerminalCmd();
+    if (command && command.trim().startsWith("git ")) {
+      this.increment("gitCommand");
+    }
   }
 
   resetAll() {

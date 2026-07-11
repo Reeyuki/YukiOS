@@ -795,13 +795,16 @@ export function renderAppearanceSettings(s) {
             <span class="settings-label-title">Font Family</span>
             <span class="settings-label-desc">Choose the UI font</span>
           </div>
-          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px;">
-            <button class="settings-btn ${s.fontFamily === "opensans" ? "active" : ""}" data-font-family="opensans">Open Sans</button>
-            <button class="settings-btn ${s.fontFamily === "inter" ? "active" : ""}" data-font-family="inter">Inter</button>
-            <button class="settings-btn ${s.fontFamily === "rubik" ? "active" : ""}" data-font-family="rubik">Rubik</button>
-            <button class="settings-btn ${s.fontFamily === "sora" ? "active" : ""}" data-font-family="sora">Sora</button>
-            <button class="settings-btn ${s.fontFamily === "jetbrainsmono" ? "active" : ""}" data-font-family="jetbrainsmono">JetBrains Mono</button>
-            <button class="settings-btn ${s.fontFamily === "monocraft" ? "active" : ""}" data-font-family="monocraft">Monocraft</button>
+          <div style="display:flex;align-items:center;gap:12px;margin-top:10px;">
+            <span style="font-size:14px;">${
+              s.fontFamily === "__custom__" && os.storage.get(StorageKeys.customFont)
+                ? (() => {
+                    const cf = os.storage.get(StorageKeys.customFont);
+                    return `<i class="fas fa-font" style="color:var(--brand);margin-right:4px;"></i>${cf.family || "Custom Font"}`;
+                  })()
+                : "Open Sans"
+            } <span style="opacity:0.5;font-size:12px;">(default)</span></span>
+            <button class="settings-btn" data-fonts-in-system style="margin-left:auto;"><i class="fas fa-folder-open"></i> Fonts in system</button>
           </div>
         </div>
         <div class="settings-row">

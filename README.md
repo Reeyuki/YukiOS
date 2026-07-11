@@ -95,6 +95,8 @@ Its built entirely in vanilla javascript/typescript without any frameworks.
 - Sidebar with persistent Quick Access pin/unpin
 - Archive support: extract `.zip`/`.7z`/`.tar`/`.gz`/`.bz2`/`.xz`/`.rar`, create `.zip`/`.7z`/`.tar`/`.tar.gz`/`.bz2`
   with compression level and ZIP password support
+- Font file preview and viewer for TTF/OTF fonts with live sample text rendering
+- Right-click "Set as System Font" on TTF/OTF files.
 - Right-click file conversion for common images (PNG, JPEG, WebP, SVG), structured data (JSON, CSV, XML, YAML),
   text formats (TXT, Markdown, HTML), and common audio/video files
 - Mount external folders as virtual drives, set
@@ -112,8 +114,7 @@ Its built entirely in vanilla javascript/typescript without any frameworks.
   audio control
 - System sounds with interaction noises for common actions
 - Achievement tracking and usage milestones
-- Theme system with 40 presets and custom theme support, light/dark and transparency modes, with font options
-  (Monocraft, Inter, Rubik, Sora, JetBrains Mono)
+- Theme system with 40 presets and custom theme support, light/dark and transparency modes.
 - Wallpaper customization with 400 animated wallpapers and customizable Vanta.js support in wallpaper engine app
 - PWA install and offline caching support
 - User accounts with multi-profile support
@@ -138,25 +139,21 @@ Its built entirely in vanilla javascript/typescript without any frameworks.
 - Explorer
 - Terminal (Unix-like commands with tab completion, history, pipelines, glob patterns, and full Git integration: clone, init, add, commit, push, pull, branch, stash, and more)
 - Notepad
-- Markdown Editor
+- Markdown Viewer
 - Yuki Code
 - VS Code
 - Settings
 - Task Manager
-- Installed Apps
 - Calculator
 - Clock (alarms, stopwatch, timer)
-- About
 - Shortcuts
 - Setup Wizard
-- What's New
 - Achievements
 - Profile Customizer
 - Yuki AI Assistant
 - Storage Editor
 - Yuki Convert
 - Clipboard Manager
-- Categories
 - Emoji Selector
 - YukiDevTools (IT - TOOLS)
 - Dev Tools (Eruda)
@@ -164,10 +161,7 @@ Its built entirely in vanilla javascript/typescript without any frameworks.
 - News
 - YukiOS Guide
 - Display Performance
-- Network Tray
-- Maps
 - Virtual Machine Manager
-- Accounts
 
 ## 🎨 Media & Creative Tools
 
@@ -185,6 +179,7 @@ Its built entirely in vanilla javascript/typescript without any frameworks.
 - Rhythms (Cavalier-like audio visualizer)
 - Screenshot (page capture, area selection, screen recording)
 - Color Picker (screen color sampling with magnified preview)
+- Font Viewer for TTF/OTF files
 
 ## 🌐 Browser & Internet
 

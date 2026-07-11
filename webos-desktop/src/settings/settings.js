@@ -242,8 +242,7 @@ export class SettingsApp extends BaseApp {
       const selectedTurboMode = win.querySelector(".settings-btn[data-turbo-val].active")?.dataset.turboVal || "high";
       const startMenuWidth = Number(getRangeSliderValue("settingsStartMenuWidth", win)) || 650;
       const startMenuHeight = Number(getRangeSliderValue("settingsStartMenuHeight", win)) || 500;
-      const selectedFontFamily =
-        win.querySelector(".settings-btn[data-font-family].active")?.dataset.fontFamily || "poppins";
+      const selectedFontFamily = os.storage.get(StorageKeys.customFont) ? "__custom__" : "opensans";
 
       const cursorEffectEnabled = !!gc("#settingsCursorEffect");
       const wobblyWindows = !!gc("#settingsWobblyWindows");

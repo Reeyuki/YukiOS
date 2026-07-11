@@ -682,6 +682,12 @@
   text-overflow: ellipsis;
 }
 
+.overlay-ach-date {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.35);
+  margin-top: 4px;
+}
+
 .overlay-ach-rarity {
   font-size: 10px;
   text-transform: uppercase;

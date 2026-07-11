@@ -1,6 +1,6 @@
 import "../styles/terminal.css";
-import { Achievements } from "../achievements.js";
 import { BusEvents } from "../core/EventBus.js";
+import { Achievements } from "../achievements.js";
 import { KeybindManager } from "../keybindManager.js";
 import { showContextMenu } from "../shared/contextMenu.js";
 import { BaseApp, StorageKeys, os } from "../framework.js";
@@ -88,7 +88,7 @@ export class TerminalApp extends BaseApp {
   }
 
   setupSessionListener() {
-    os.events.on("session:initialized", (session) => {
+    os.events.on(BusEvents.SESSION_INITIALIZED, (session) => {
       this.sessionKey = session.key;
       this.displayName = session.name || os.storage.get(StorageKeys.username) || session.key;
       this.username = this.displayName;
@@ -880,8 +880,6 @@ export class TerminalApp extends BaseApp {
       await this.cmdNukeSystem();
       return;
     }
-
-    os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { key: Achievements.DeveloperMode });
 
     const chain = this.parseCommand(commandStr);
     for (const segment of chain) {
@@ -1797,7 +1795,7 @@ export class TerminalApp extends BaseApp {
   }
 
   async cmdNeofetch() {
-    os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { achievementId: Achievements.DeveloperModeSuper });
+    os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { achievementId: Achievements.Skid });
     const ua = navigator.userAgent;
     const platformRaw = navigator.userAgentData?.platform || navigator.platform || ua || "Unknown";
 

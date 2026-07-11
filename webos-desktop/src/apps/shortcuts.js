@@ -1,4 +1,6 @@
 import "../styles/shortcuts.css";
+import { Achievements } from "../achievements.js";
+import { BusEvents } from "../core/EventBus.js";
 import { os, BaseApp } from "../framework.js";
 import { KeybindManager } from "../keybindManager.js";
 
@@ -491,6 +493,7 @@ export class ShortcutsApp extends BaseApp {
         KeybindManager.setKeys(newId, customRecordedKeys);
       }
 
+      os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { achievementId: Achievements.Customizer });
       closeCustomModal();
       render();
     };

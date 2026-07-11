@@ -1,9 +1,12 @@
 import { $, $$ } from "../../shared/domUtils.js";
 import { os, StorageKeys } from "../../framework.js";
 import { FileKind } from "../../shared/fileKindDetector.js";
-
+import { BusEvents } from "../../core/EventBus.js";
+import { Achievements } from "../../achievements.js";
 import { showDynamicContextMenu } from "../../shared/contextMenu.js";
-import { fileKindFromName, showFileProperties, isImageFile } from "../../fileDisplay.js";
+import { isFontFile } from "../../shared/fileKindDetector.js";
+import { fileKindFromName, showFileProperties, isImageFile, readFontBlob } from "../../fileDisplay.js";
+import { applyFontFamily } from "../../settings/settingsApply.js";
 import { decodeFileContent, isArchiveFile } from "../../utils/utils.js";
 import { saveToWallpapers } from "./upload.js";
 import { showConflictDialog } from "../../shared/conflictDialog.js";
@@ -13,7 +16,6 @@ import { openFileConverter } from "../../utils/fileConverter.js";
 import { pasteToPath, downloadItems, createArchiveFromItems } from "./transfer.js";
 import { startInlineRename, spawnInlineItem } from "./inlineRename.js";
 import { SystemUtilities } from "../../system.js";
-import { Achievements } from "../../achievements.js";
 import { renderTrashView, showTrashView } from "./trash.js";
 import { triggerFileUpload, handleFileUpload } from "./upload.js";
 
@@ -326,6 +328,46 @@ export function showFileContextMenu(explorer, e, itemName, isFile, inst) {
             }
           },
           "fa-save"
+        )
+      );
+    }
+
+    if (isFile && isFontFile(itemName)) {
+      menu.appendChild(hr());
+      menu.appendChild(
+        item(
+          "Set as System Font",
+          async () => {
+            try {
+              const blob = await readFontBlob(itemName, inst.currentPath, explorer.fs);
+              if (!blob || !blob.size) throw new Error("Could not read font file");
+              const dataUrl = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+              });
+              const ext = itemName.split(".").pop().toLowerCase();
+              const formatMap = { ttf: "truetype", otf: "opentype", woff: "woff", woff2: "woff2" };
+              const fontFamily = itemName.replace(/\.[^.]+$/, "");
+              const customFontData = {
+                family: fontFamily,
+                stack: `"${fontFamily}", sans-serif`,
+                url: dataUrl,
+                format: formatMap[ext] || "truetype",
+                weight: "normal"
+              };
+              os.storage.set(StorageKeys.fontFamily, "__custom__");
+              os.storage.set(StorageKeys.customFont, customFontData);
+              applyFontFamily("custom", customFontData);
+              os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { achievementId: Achievements.FontCustomizer });
+              os.notify.send(`System font set to "${fontFamily}"`);
+            } catch (err) {
+              console.error("Set system font error:", err);
+              os.dialog.alert("Error", "Could not set system font");
+            }
+          },
+          "fa-font"
         )
       );
     }

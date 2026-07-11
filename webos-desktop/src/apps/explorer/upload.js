@@ -1,3 +1,4 @@
+import { BusEvents } from "../../core/EventBus.js";
 import { os } from "../../framework.js";
 import { FileKind } from "../../shared/fileKindDetector.js";
 import { $, setStyle } from "../../shared/domUtils.js";
@@ -55,7 +56,7 @@ async function resolveFilePayload(file, name) {
 }
 
 async function saveFilePayload(targetPath, name, kind, content, icon, isBinaryOffice = false, isBinary = false) {
-  os.events.emit("desktop:icon-added", { name, kind });
+  os.events.emit(BusEvents.DESKTOP_ICON_ADDED, { name, kind });
   if (isBinaryWrite(kind, isBinaryOffice, isBinary)) {
     await os.fs.writeBinaryFile(targetPath, name, content, kind, icon);
   } else {
@@ -191,7 +192,7 @@ export async function uploadSingleFile(explorer, file, targetPath, overrideName 
 }
 
 export async function saveToWallpapers(explorer, name, content, kind, icon) {
-  os.events.emit("achievement:trigger", { achievementId: Achievements.PersonalSpace });
+  os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { achievementId: Achievements.PersonalSpace });
 
   const wallpapersPath = ["Pictures", "Wallpapers"];
   await os.fs.mkdir(wallpapersPath);

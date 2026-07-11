@@ -193,8 +193,7 @@ export class RuffleApp extends BaseApp {
       icon: "static/icons/ruffle.webp"
     });
 
-    os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { achievementId: Achievements.RetroPlayer });
-
+    os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { achievementId: Achievements.Flashback });
     win.innerHTML = `
     <div class="window-content emu-window ruf-window">
       <div id="${winId}-inner" class="emu-state ruf-loading emu-load-wrap">

@@ -49,6 +49,12 @@ export const defaultStorage = {
           content: typeof __README_CONTENT__ !== "undefined" ? __README_CONTENT__ : "# YukiOS\n",
           kind: FileKind.TEXT,
           icon: "static/icons/notepad.webp"
+        },
+        "Monocraft.ttf": {
+          type: "file",
+          content: "https://cdn.jsdelivr.net/gh/IdreesInc/Monocraft@main/dist/Monocraft-ttf/Monocraft.ttf",
+          kind: FileKind.FONT,
+          icon: "fas fa-font"
         }
       },
       Music: {

@@ -2,6 +2,7 @@ import { Achievements } from "../achievements.js";
 import { CDN_BASES } from "../shared/assetResolver.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 
+import { BusEvents } from "../core/EventBus.js";
 import { BaseApp, os } from "../framework.js";
 const IMAGES_DIR = ["VMs"];
 
@@ -248,7 +249,7 @@ export class V86App extends BaseApp {
       icon: "static/icons/v86.webp"
     });
 
-    os.events.emit("achievement:trigger", { achievementId: Achievements.RetroPlayer });
+    os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { achievementId: Achievements.RetroPlayer });
 
     win.innerHTML = `
     <div class="window-content v86-window emu-window">

@@ -8,6 +8,11 @@ export class SystemAppsApp extends BaseApp {
   }
 
   open() {
+    const existingWin = document.getElementById("system-apps-win");
+    if (existingWin) {
+      os.window.focus("system-apps-win");
+      return existingWin;
+    }
     const win = os.window.create("system-apps-win", "System Apps", "800px", "600px", {
       icon: "fas fa-screwdriver-wrench",
       appId: "systemAppsApp"

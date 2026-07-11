@@ -131,6 +131,7 @@ export class WorkspaceManager {
     } else {
       this.switchInstant(id);
     }
+    os.events.emit(BusEvents.WORKSPACE_ADDED);
   }
 
   removeWorkspace(id) {
@@ -174,6 +175,7 @@ export class WorkspaceManager {
     if (!this.overviewOpen) {
       this.closeOverview();
     }
+    os.events.emit(BusEvents.WORKSPACE_SWITCHED);
   }
 
   switchTo(id) {
@@ -191,6 +193,7 @@ export class WorkspaceManager {
     }
 
     this.animateWorkspaceSwitch(direction);
+    os.events.emit(BusEvents.WORKSPACE_SWITCHED);
   }
 
   animateWorkspaceSwitch(direction) {

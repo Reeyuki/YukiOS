@@ -685,20 +685,20 @@
   width: 100%;
 }
 
-._fd-dialog-body {
+.fd-dialog-body {
   display: flex;
   flex-direction: column;
   gap: 12px;
   margin-top: 8px;
 }
 
-._fd-field {
+.fd-field {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-._fd-level-header {
+.fd-level-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -737,14 +737,14 @@
   cursor: pointer;
 }
 
-._fd-dialog-error {
+.fd-dialog-error {
   display: none;
   font-size: 12px;
   color: #e06c75;
   margin-top: 6px;
 }
 
-._fd-dialog-actions {
+.fd-dialog-actions {
   margin-top: 16px;
 }
 
@@ -1172,7 +1172,7 @@
   cursor: pointer;
 }
 
-._fd-dialog {
+.fd-dialog {
   background: var(--bg-secondary);
   border: 1px solid var(--glass-border);
   border-radius: 10px;
@@ -1185,21 +1185,21 @@
   color: var(--text-primary);
 }
 
-._fd-dialog-title {
+.fd-dialog-title {
   font-size: 13px;
   font-weight: 600;
   margin-bottom: 14px;
   color: var(--text-primary);
 }
 
-._fd-dialog-label {
+.fd-dialog-label {
   font-size: 13px;
   color: var(--text-secondary);
   margin-bottom: 6px;
   line-height: 1.5;
 }
 
-._fd-dialog-input {
+.fd-dialog-input {
   width: 100%;
   box-sizing: border-box;
   background: var(--glass);
@@ -1212,18 +1212,18 @@
   transition: border-color 0.15s;
 }
 
-._fd-dialog-input:focus {
+.fd-dialog-input:focus {
   border-color: var(--brand);
 }
 
-._fd-dialog-actions {
+.fd-dialog-actions {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
   margin-top: 16px;
 }
 
-._fd-btn {
+.fd-btn {
   font-size: 12px;
   cursor: pointer;
   border-radius: 5px;
@@ -1234,48 +1234,48 @@
     opacity 0.12s;
 }
 
-._fd-btn-cancel {
+.fd-btn-cancel {
   background: var(--glass);
   color: var(--text-secondary);
 }
 
-._fd-btn-cancel:hover {
+.fd-btn-cancel:hover {
   background: var(--glass-hover);
   color: var(--text-primary);
 }
 
-._fd-btn-confirm {
+.fd-btn-confirm {
   background: var(--brand);
   color: var(--text-primary);
 }
 
-._fd-btn-confirm:hover {
+.fd-btn-confirm:hover {
   background: var(--brand-hover);
 }
 
-._fd-btn-confirm:disabled {
+.fd-btn-confirm:disabled {
   opacity: 0.4;
   cursor: default;
 }
 
-._fd-btn-danger {
+.fd-btn-danger {
   background: var(--error);
   color: var(--text-primary);
 }
 
-._fd-btn-danger:hover {
+.fd-btn-danger:hover {
   background: var(--error-bg);
   color: var(--error);
 }
 
-._fd-dialog-error {
+.fd-dialog-error {
   display: none;
   font-size: 13px;
   color: var(--error);
   margin-top: 6px;
 }
 
-._fd-dialog-select {
+.fd-dialog-select {
   margin-top: 10px;
   background: var(--bg-elev-1);
   color: var(--text-primary);

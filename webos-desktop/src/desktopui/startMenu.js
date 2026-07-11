@@ -22,6 +22,7 @@ import {
   toggleClass,
   setStyle
 } from "../shared/domUtils.js";
+import { BusEvents } from "../core/EventBus.js";
 import { StorageKeys, os } from "../framework.js";
 import { KeybindManager } from "../keybindManager.js";
 function getStartMenuEl() {
@@ -271,7 +272,8 @@ let searchDebounceTimer = null;
 const RECENTLY_USED_MAX = 8;
 
 function getRecentlyUsed() {
-  return os.storage.get(StorageKeys.recentlyUsedApps) || [];
+  const val = os.storage.get(StorageKeys.recentlyUsedApps);
+  return Array.isArray(val) ? val : [];
 }
 
 export function trackRecentlyUsed(appId) {
@@ -1032,11 +1034,11 @@ function setupStartUserHover() {
 
   updateStartUserDisplay();
 
-  os.events.on("profile:updated", () => {
+  os.events.on(BusEvents.PROFILE_UPDATED, () => {
     updateStartUserDisplay();
   });
 
-  os.events.on("session:initialized", () => {
+  os.events.on(BusEvents.SESSION_INITIALIZED, () => {
     updateStartUserDisplay();
   });
 }

@@ -1,5 +1,6 @@
 import { showDynamicContextMenu } from "../shared/contextMenu.js";
 
+import { BusEvents } from "../core/EventBus.js";
 import { StorageKeys, os } from "../framework.js";
 class TrayManager {
   constructor() {
@@ -25,7 +26,7 @@ class TrayManager {
       }
     });
 
-    os.events.on("window:closed", ({ winId }) => {
+    os.events.on(BusEvents.WINDOW_CLOSED, ({ winId }) => {
       const item = this.items.get(winId);
       if (item && !item.resident) {
         this.items.delete(winId);

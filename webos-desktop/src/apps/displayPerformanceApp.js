@@ -1,5 +1,7 @@
 import { turboManager } from "../shared/turboManager.js";
 import { BRIGHTNESS_PRESETS } from "../shared/brightnessPresets.js";
+import { Achievements } from "../achievements.js";
+import { BusEvents } from "../core/EventBus.js";
 
 import { BaseApp, StorageKeys, os } from "../framework.js";
 import { KeybindManager } from "../keybindManager.js";
@@ -274,6 +276,8 @@ class DisplayPerformanceApp extends BaseApp {
   setPowerMode(mode) {
     this.powerMode = mode;
     turboManager.setMode(mode);
+
+    this.services?.achievementsApp?.incrementPowerProfileChange();
 
     const modeNames = {
       turbo: "Turbo",
@@ -574,6 +578,7 @@ class DisplayPerformanceApp extends BaseApp {
         this.nightModeEnabled = e.target.checked;
         this.saveSettings();
         if (this.nightModeEnabled) {
+          os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { achievementId: Achievements.NightPerson });
           this.checkNightMode();
           if (!this.shouldSuppressNotification()) {
             os.notify.send("Night Mode", "Scheduled night mode enabled", {

@@ -1,6 +1,7 @@
 import { makeDraggable } from "../shared/dragUtils.js";
 import { StorageKeys, os } from "../framework.js";
 import { wobbleStart, wobbleMove, wobbleEnd, wobbleCancel } from "./AnimationSystem.js";
+import { BusEvents } from "../core/EventBus.js";
 const desktop = document.getElementById("desktop");
 
 function getClientXY(e) {
@@ -454,6 +455,7 @@ export function applySnap(wm, win, zone, skipSavePreSnap = false) {
       height: halfH
     });
   }
+  os.events.emit(BusEvents.WINDOW_SNAPPED);
 }
 
 export function unsnap(wm, win) {

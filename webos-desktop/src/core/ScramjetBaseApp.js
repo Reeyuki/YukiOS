@@ -28,11 +28,11 @@ export class ScramjetBaseApp extends BaseApp {
     return ["1024px", "768px"];
   }
 
-  open(opts = {}) {
+  async open(opts = {}) {
     const winId = `${this.getAppId()}-window`;
     const size = this.getWindowSize();
 
-    if (this.isSingletonOpen(winId)) {
+    if (await this.isSingletonOpen(winId)) {
       return;
     }
 

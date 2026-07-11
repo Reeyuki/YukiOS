@@ -1,5 +1,6 @@
 import { KeybindManager } from "./keybindManager.js";
 import { StorageKeys, os } from "./framework.js";
+import { BusEvents } from "./core/EventBus.js";
 import { SteamDataManager, steamAppRenderer } from "./games/games.js";
 import { ScreenshotApp } from "./apps/screenshot.js";
 import { TerminalApp } from "./apps/terminal.js";
@@ -72,6 +73,10 @@ export class GameOverlayController {
         e.preventDefault();
         this.close();
       }
+    });
+
+    os.events.on(BusEvents.ACHIEVEMENT_TRIGGER, () => {
+      if (this.visible) this.renderAchievements();
     });
   }
 
@@ -912,6 +917,7 @@ export class GameOverlayController {
         ${filtered
           .map((a) => {
             const isUnlocked = unlocked.has(a.id);
+            const unlockedTs = isUnlocked ? unlocked.get(a.id) : null;
             return `
             <div class="overlay-achievement-card ${isUnlocked ? "overlay-achievement-card--unlocked" : "overlay-achievement-card--locked"}">
               <div class="overlay-ach-icon-wrap">
@@ -920,6 +926,7 @@ export class GameOverlayController {
               <div class="overlay-ach-info">
                 <div class="overlay-ach-title">${a.title}</div>
                 <div class="overlay-ach-desc">${a.desc || ""}</div>
+                ${unlockedTs ? `<div class="overlay-ach-date">Unlocked on ${new Date(unlockedTs).toLocaleDateString()}</div>` : ""}
               </div>
               <span class="overlay-ach-rarity overlay-ach-rarity--${a.rarity || "common"}">${a.rarity || "common"}</span>
             </div>

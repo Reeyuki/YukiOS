@@ -5,6 +5,7 @@ import { resolveIconUrl } from "../shared/assetResolver.js";
 import { KeybindManager } from "../keybindManager.js";
 import { showAboutDialog } from "../shared/aboutDialog.js";
 
+import { BusEvents } from "../core/EventBus.js";
 import { BaseApp, os } from "../framework.js";
 export class NotepadApp extends BaseApp {
   constructor(services) {
@@ -369,7 +370,7 @@ export class NotepadApp extends BaseApp {
     instance.modified = false;
     this.updateTitle(win, winId);
     speak("Great, your file has been saved!", ClippyAnimation.Greeting);
-    os.events.emit("achievement:trigger", { achievementId: Achievements.NoteTaker });
+    os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { achievementId: Achievements.NoteTaker });
   }
 
   saveFile(win, winId, onSuccess = null) {

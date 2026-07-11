@@ -1,6 +1,7 @@
 import { getLibraryUrl } from "../shared/cdnConfig.js";
 import { $$ } from "../shared/domUtils.js";
 
+import { BusEvents } from "../core/EventBus.js";
 import { StorageKeys, os } from "../framework.js";
 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
@@ -116,7 +117,7 @@ export function initClippy() {
     clippyEventBound = true;
     window.addEventListener("yukios:clippy-toggle", (e) => setClippyEnabled(!!e?.detail?.enabled));
 
-    os.events.on("settings:changed", (settings) => {
+    os.events.on(BusEvents.SETTINGS_CHANGED, (settings) => {
       if (settings && typeof settings.clippy !== "undefined") {
         setClippyEnabled(settings.clippy);
       }

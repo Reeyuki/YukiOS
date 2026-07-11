@@ -1,4 +1,7 @@
 import "../styles/converter.css";
+import { Achievements } from "../achievements.js";
+import { BusEvents } from "../core/EventBus.js";
+import { os } from "../framework.js";
 import { openFileWith } from "../fileDisplay.js";
 
 const conversionHistory = [];
@@ -1558,6 +1561,7 @@ export function openFileConverter(fileName, currentPath, services, onComplete = 
         dom.progressFill.style.width = "100%";
         dom.progressText.textContent = "Conversion Completed successfully!";
         wm.sendNotify(`Successfully converted to "${finalName}"`);
+        os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { achievementId: Achievements.Converter });
 
         updateHistoryUI();
 

@@ -182,7 +182,7 @@ export function applyTrayEnabled(enabled) {
   if (trayEl) trayEl.style.display = enabled ? "flex" : "none";
 }
 
-export function applyFontFamily(fontFamily) {
+export function applyFontFamily(fontFamily, customFontData = null) {
   const fontMap = {
     opensans: {
       family: "Open Sans",
@@ -224,7 +224,7 @@ export function applyFontFamily(fontFamily) {
     }
   };
 
-  const fontConfig = fontMap[fontFamily] || fontMap.opensans;
+  const fontConfig = customFontData || fontMap[fontFamily] || fontMap.opensans;
 
   const style = document.createElement("style");
   style.textContent = `

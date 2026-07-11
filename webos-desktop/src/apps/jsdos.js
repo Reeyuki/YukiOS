@@ -1,6 +1,7 @@
 import { Achievements } from "../achievements.js";
 import { zipSync } from "fflate";
 
+import { BusEvents } from "../core/EventBus.js";
 import { BaseApp, os } from "../framework.js";
 const GAMES_DIR = ["Games"];
 
@@ -194,7 +195,7 @@ export class JsDosApp extends BaseApp {
     const win = os.window.create(winId, displayName, "800px", "600px", {
       icon: "static/icons/jsdos.webp"
     });
-    os.events.emit("achievement:trigger", { achievementId: Achievements.RetroPlayer });
+    os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { achievementId: Achievements.RetroPlayer });
 
     win.innerHTML = `
     <div class="window-content jsdos-game-window emu-window">
@@ -332,7 +333,7 @@ export class JsDosApp extends BaseApp {
     const win = os.window.create(winId, name, "800px", "600px", {
       icon: "static/icons/jsdos.webp"
     });
-    os.events.emit("achievement:trigger", { achievementId: Achievements.RetroPlayer });
+    os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { achievementId: Achievements.RetroPlayer });
     win.innerHTML = `
     <div class="window-content jsdos-game-window">
       <div id="${winId}-inner" style="width:100%;height:100%;" class="jsdos-loading">

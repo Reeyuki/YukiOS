@@ -51,6 +51,7 @@ export {
   isZipFile,
   isExeFile,
   isSwfFile,
+  readFontBlob,
   OFFICE_EXTS
 };
 
@@ -96,7 +97,7 @@ export function resolveFileIcon(name) {
   if (isExeFile(name)) return resolveIconUrl("static/icons/jsdos.webp");
   if (isOfficeFile(name)) return resolveIconUrl("static/icons/office.webp");
   if (isEbookFile(name)) return resolveIconUrl("static/icons/office.webp");
-  if (isFontFile(name)) return resolveIconUrl("static/icons/office.webp");
+  if (isFontFile(name)) return "fas fa-font";
   if (isDiskFile(name)) return resolveIconUrl("static/icons/zip.webp");
   if (isShortcutFile(name)) return resolveIconUrl("static/icons/notepad.webp");
   if (isHtmlFile(name)) return resolveIconUrl("static/icons/firefox.webp");
@@ -653,6 +654,75 @@ async function openTextFile(name, path, content, notepadApp) {
   }
 }
 
+async function readFontBlob(name, path, fs) {
+  const blob = await fs.readBinaryFile(path, name);
+  if (blob && blob.size) return blob;
+  const content = await fs.getFileContent(path, name);
+  if (content instanceof Blob && content.size) return content;
+  if (typeof content === "string" && content) {
+    if (content.startsWith("data:") || content.startsWith("http://") || content.startsWith("https://")) {
+      try {
+        const resp = await fetch(content);
+        if (resp.ok) return resp.blob();
+      } catch {}
+    }
+    const bytes = Uint8Array.from(content, (c) => c.charCodeAt(0));
+    return new Blob([bytes], { type: "application/octet-stream" });
+  }
+  return null;
+}
+
+async function openFontFile(name, path, fs) {
+  try {
+    const blob = await readFontBlob(name, path, fs);
+    if (!blob || !blob.size) return os.dialog.alert("Error", "Could not read font file");
+    const ext = getExt(name);
+    const formatMap = { ttf: "truetype", otf: "opentype", woff: "woff", woff2: "woff2" };
+    const format = formatMap[ext] || "truetype";
+    const fontFamily = name.replace(/\.[^.]+$/, "");
+    const fontUrl = URL.createObjectURL(blob);
+
+    const style = document.createElement("style");
+    style.id = "font-preview-" + Date.now();
+    style.textContent = `@font-face { font-family: 'FontPreview'; src: url('${fontUrl}') format('${format}'); }`;
+    document.head.appendChild(style);
+
+    const winId = `font-preview-${Date.now()}`;
+    const win = os.window.create(winId, name, "550px", "480px", { icon: "fas fa-font" });
+
+    const contentEl = win.querySelector(".window-content");
+    if (contentEl) {
+      contentEl.style.padding = "20px";
+      contentEl.style.overflowY = "auto";
+    }
+    (contentEl || win).innerHTML = `
+      <div style="text-align:center;margin-bottom:16px;">
+        <div style="font-family:'FontPreview';font-size:64px;line-height:1.2;color:var(--text-primary);padding:20px 0;">
+          Aa Bb
+        </div>
+        <div style="font-family:'FontPreview';font-size:28px;line-height:1.3;color:var(--text-primary);">
+          The quick brown fox jumps over the lazy dog.
+        </div>
+      </div>
+      <div style="border-bottom:1px solid var(--glass-border);margin:16px 0;"></div>
+      <div style="display:grid;grid-template-columns:auto 1fr;gap:8px 16px;font-size:13px;">
+        <span style="opacity:0.6;">Family:</span><span>${fontFamily}</span>
+        <span style="opacity:0.6;">Format:</span><span>${format}</span>
+        <span style="opacity:0.6;">Size:</span><span>${formatFileSize(blob.size)}</span>
+      </div>
+      <div style="border-bottom:1px solid var(--glass-border);margin:16px 0;"></div>
+      <div style="font-family:'FontPreview';font-size:18px;line-height:1.6;color:var(--text-secondary);">
+        <div style="font-size:36px;margin-bottom:8px;">Aa Bb Cc Dd Ee Ff Gg</div>
+        <div style="font-size:24px;margin-bottom:8px;">Hh Ii Jj Kk Ll Mm Nn Oo Pp</div>
+        <div style="font-size:18px;margin-bottom:8px;">Qq Rr Ss Tt Uu Vv Ww Xx Yy Zz</div>
+        <div style="font-size:14px;">0123456789 !@#$%^&amp;*() {}[] &lt;&gt;?/</div>
+      </div>`;
+  } catch (err) {
+    console.error("[FileDisplay] openFontFile error:", err);
+    os.dialog.alert("Error", "Failed to open font file");
+  }
+}
+
 export async function openFileWith({
   name,
   path,
@@ -683,6 +753,7 @@ export async function openFileWith({
     if (isVideoFile(name) || isAudioFile(name) || isImageFile(name))
       return openMediaFile(name, path, fs, windowManager);
     if (isOfficeFile(name)) return openOfficeFile(name, path, fs, officeApp, notepadApp);
+    if (isFontFile(name)) return openFontFile(name, path, fs);
 
     const content = await fs.getFileContent(path, name);
 
@@ -767,7 +838,9 @@ export async function showFileProperties(path, name, isFolder, onRename = null) 
                   ? "ROM"
                   : type === FileKind.HTML
                     ? "HTML"
-                    : "File";
+                    : type === FileKind.FONT
+                      ? "Font"
+                      : "File";
     }
     if (type === "other" && isShortcutFile(name)) type = "Shortcut";
     const location = Array.isArray(path) ? path.join("/") : path;

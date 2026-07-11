@@ -108,6 +108,7 @@ export const StorageKeys = {
   windowSwitcherUI: "yukiOS_window_switcher_ui",
   windowSwitcherIncludeMinimized: "yukiOS_window_switcher_include_minimized",
   fontFamily: "yukiOS_font_family",
+  customFont: "yukiOS_custom_font",
   uiDensity: "yukiOS_ui_density",
   brightness: "yukiOS_brightness",
   contrast: "yukiOS_contrast",

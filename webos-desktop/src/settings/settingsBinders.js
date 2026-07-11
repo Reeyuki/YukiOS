@@ -559,16 +559,17 @@ export function bindAppearanceCategory(
     });
   }
 
-  $$(".settings-btn[data-font-family]", win).forEach((btn) => {
-    bindEvent(btn, "click", () => {
-      const fontFamily = btn.dataset.fontFamily;
-      $$(".settings-btn[data-font-family]", win).forEach((b) => toggleClass(b, "active", b === btn));
-      settings.fontFamily = fontFamily;
-      os.storage.set(StorageKeys.fontFamily, fontFamily);
-      applyFontFamily(fontFamily);
-      showSaved();
+  const fontsBtn = $("[data-fonts-in-system]", win);
+  if (fontsBtn) {
+    bindEvent(fontsBtn, "click", () => {
+      const explorer = window.services?.explorerApp;
+      if (explorer) {
+        explorer.open(["Documents"]);
+      } else {
+        os.app.launch("explorerApp", { path: ["Documents"] });
+      }
     });
-  });
+  }
 
   const openBtn = $("#settingsOpenWallpaperEngine", win);
   if (openBtn) {
