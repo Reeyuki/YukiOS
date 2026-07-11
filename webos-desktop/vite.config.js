@@ -42,6 +42,7 @@ function serveStaticDev() {
             css: "text/css"
           };
           res.setHeader("Content-Type", mimes[ext] || "application/octet-stream");
+          res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
           res.end(content);
         } catch {
           next();
@@ -107,6 +108,13 @@ export default defineConfig({
   base: isSingleFile ? "./" : "/",
   outDir,
   plugins,
+  server: {
+    headers: {
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Cross-Origin-Embedder-Policy": "require-corp",
+      "Cross-Origin-Resource-Policy": "cross-origin"
+    }
+  },
   define: {
     __GIT_COMMIT__: JSON.stringify(commitHash),
     __README_CONTENT__: JSON.stringify(readmeContent),

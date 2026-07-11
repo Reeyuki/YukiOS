@@ -2,7 +2,6 @@
 
 <div align="center">
 
-
 [![License](https://img.shields.io/github/license/Reeyuki/yukios?style=for-the-badge&color=blue)](LICENSE)
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?style=for-the-badge&logo=discord)](https://discord.gg/wufbWFwr4G)
 
@@ -15,17 +14,24 @@
 > emulators, utilities, and web applications.
 
 YukiOS provides a desktop-style interface inside a browser tab with draggable windows, multitasking, file handling,
-emulators, productivity tools, and web applications. Core functionality runs in the browser using client-side storage and session state.
+emulators, productivity tools, and web applications. Core functionality runs in the browser using client-side storage
+and session state.
 
-It includes support for Flash content, DOS programs, console emulation, WebAssembly applications, and standard web applications
-running alongside each other.
+It includes support for Flash content, DOS programs, console emulation, WebAssembly applications, and standard web
+applications running alongside each other.
 
 Its built entirely in vanilla javascript/typescript without any frameworks.
 
-![Login page](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/login.png) ![Steam interface](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/steam.png) ![Start menu](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/startmenu.png)
-![Steam overlay](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/overlay.png) ![Discord](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/dc.png) ![Web Apps](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/webapps.png)
-![Setup](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/setupsettings.png) ![Music1](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/audio1.png) ![Music2](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/audio2.png)
-![Music player](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/music.png) 
+![Login page](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/login.png)
+![Steam interface](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/steam.png)
+![Start menu](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/startmenu.png)
+![Steam overlay](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/overlay.png)
+![Discord](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/dc.png)
+![Web Apps](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/webapps.png)
+![Setup](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/setupsettings.png)
+![Music1](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/audio1.png)
+![Music2](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/audio2.png)
+![Music player](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/music.png)
 [Workspaces](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/workspaces.png)
 [Widgets](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/widgets.png)
 
@@ -97,14 +103,13 @@ Its built entirely in vanilla javascript/typescript without any frameworks.
   with compression level and ZIP password support
 - Font file preview and viewer for TTF/OTF fonts with live sample text rendering
 - Right-click "Set as System Font" on TTF/OTF files.
-- Right-click file conversion for common images (PNG, JPEG, WebP, SVG), structured data (JSON, CSV, XML, YAML),
-  text formats (TXT, Markdown, HTML), and common audio/video files
-- Mount external folders as virtual drives, set
-  images as wallpaper, or open any folder in Terminal
+- Right-click file conversion for common images (PNG, JPEG, WebP, SVG), structured data (JSON, CSV, XML, YAML), text
+  formats (TXT, Markdown, HTML), and common audio/video files
+- Mount external folders as virtual drives, set images as wallpaper, or open any folder in Terminal
 - Save As and file/directory picker dialog
 - storage usage indicator, thumbnail cache
-- Explorer keyboard shortcuts: Ctrl+C copy, Ctrl+X cut, Ctrl+V paste
-  Ctrl+F search, Ctrl+A select all, arrow keys navigate, Enter open, F5 refresh, F2 rename, Delete trash
+- Explorer keyboard shortcuts: Ctrl+C copy, Ctrl+X cut, Ctrl+V paste Ctrl+F search, Ctrl+A select all, arrow keys
+  navigate, Enter open, F5 refresh, F2 rename, Delete trash
 
 # ⚙️ System Features
 
@@ -119,8 +124,8 @@ Its built entirely in vanilla javascript/typescript without any frameworks.
 - PWA install and offline caching support
 - User accounts with multi-profile support
 - Lock screen, session management, and idle timeout
-- Power profiles (Turbo, Balanced, Quality) with tray controls and brightness adjustment options (contrast, gamma,
-  night mode)
+- Power profiles (Turbo, Balanced, Quality) with tray controls and brightness adjustment options (contrast, gamma, night
+  mode)
 - Custom cursor support (with miku by default)
 - Import/export system for backup and migration
 - Transparent UI toggle
@@ -137,7 +142,13 @@ Its built entirely in vanilla javascript/typescript without any frameworks.
 ## 🧠 Productivity & Development
 
 - Explorer
-- Terminal (Unix-like commands with tab completion, history, pipelines, glob patterns, and full Git integration: clone, init, add, commit, push, pull, branch, stash, and more)
+- Terminal: Unix-like shell with filesystem access, Python/Node REPLs, and Git
+  - Python REPL (Pyodide WASM), Node.js REPL (WebContainers)
+  - Full Git integration (clone, init, add, commit, push, pull, branch, stash, fetch, diff, remote, rm, checkout, log,
+    status)
+  - Multiple independent tabs with Alt+T / Ctrl+Tab / Alt+1-9
+  - `neofetch` with GPU/RAM/browser/engine detection
+  - `apps` command to manage app registry
 - Notepad
 - Markdown Viewer
 - Yuki Code
@@ -262,6 +273,8 @@ See the [Development Guide](DEVELOPMENT.md).
 - [webtor-rs](https://github.com/igor53627/webtor-rs) WASM Tor client (Arti + Snowflake)
 - [isomorphic-git](https://github.com/isomorphic-git/isomorphic-git) (Git client via CORS proxy)
 - Scramjet / BareMux / Epoxy Transport
+- [Pyodide](https://github.com/pyodide/pyodide) (WASM Python runtime)
+- [WebContainers](https://github.com/stackblitz/webcontainer-core) (WASM Node.js runtime)
 
 ## Build tooling
 

@@ -515,4 +515,28 @@ export class WindowManager {
   restorePinnedItems(): void {
     this.taskbarSystem.restorePinnedItems();
   }
+
+  setWindowTitle(winId: string, title: string): void {
+    const win = document.getElementById(winId);
+    if (!win) return;
+
+    const headerSpan = win.querySelector(".window-header > span");
+    if (headerSpan) {
+      const iconEl = headerSpan.querySelector("svg, i, img");
+      headerSpan.textContent = "";
+      if (iconEl) headerSpan.appendChild(iconEl);
+      headerSpan.appendChild(document.createTextNode(title));
+    }
+
+    const entry = this.openWindows.get(winId);
+    if (entry) {
+      entry.title = title;
+      if (entry.record) entry.record.title = title;
+    }
+  }
+
+  getWindowTitle(winId: string): string | null {
+    const entry = this.openWindows.get(winId);
+    return entry?.title ?? null;
+  }
 }

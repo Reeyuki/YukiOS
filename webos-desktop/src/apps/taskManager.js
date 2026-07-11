@@ -55,8 +55,7 @@ export class TaskManagerApp extends BaseApp {
 
   killProcess(id) {
     const titleFromWindow = (winEl) => {
-      const el = winEl.querySelector(".window-header span");
-      return el ? el.textContent.trim() : id;
+      return os.window.getTitle(winEl.id)?.trim() || id;
     };
 
     const winEl = document.getElementById(id);

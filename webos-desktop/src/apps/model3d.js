@@ -704,7 +704,6 @@ export class Model3DApp extends BaseApp {
       <span class="yb-sb-sep" style="margin-left:auto"></span>
       <span class="yb-sb-item" id="sb-anim"><i class="fa fa-film"></i> –</span>
       <span class="yb-sb-sep"></span>
-      <span class="yb-sb-item" id="sb-renderer"><i class="fa fa-microchip"></i> WebGL2</span>
     </div>
     `;
   }

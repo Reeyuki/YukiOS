@@ -7,15 +7,16 @@ import { BaseApp, StorageKeys, os } from "../framework.js";
 import { GitManager } from "../services/GitManager.js";
 import { getAppRegistry } from "../appRegistry.js";
 import { formatSize } from "../utils/utils.js";
+import { getPyodide, runPython } from "../services/PyodideManager.js";
+import { runNode } from "../services/WebContainerManager.js";
 
 export class TerminalApp extends BaseApp {
   constructor(services) {
     super(services);
-    this.sessionKey = services.fileSystemManager?.sessionKey || "guest";
-    this.currentPath = ["ys", "users", this.sessionKey];
+    this.currentPath = ["ys", "users", os.storage.get(StorageKeys.username) || "guest"];
     this.history = os.storage.get(StorageKeys.historyStorageKey) || [];
     this.historyIndex = this.history.length;
-    this.displayName = os.storage.get(StorageKeys.username) || this.sessionKey;
+    this.displayName = os.storage.get(StorageKeys.username) || "guest";
     this.username = this.displayName;
     this.hostname = "yuki-os";
     this.setupSessionListener();
@@ -43,6 +44,13 @@ export class TerminalApp extends BaseApp {
     this.tabs = [{ id: 1, currentPath: [...this.currentPath], outputHTML: "" }];
     this.activeTabId = 1;
     this.tabCounter = 1;
+    this.pyReplActive = false;
+    this.pyReplBuffer = "";
+    this.pyReplContinuation = false;
+    this.nodeReplActive = false;
+    this.nodeReplBuffer = "";
+    this.nodeReplContinuation = false;
+    this._nodeFallbackWarned = false;
     this.registerDefaultCommands();
   }
 
@@ -81,6 +89,13 @@ export class TerminalApp extends BaseApp {
     this.renderTabs();
     this.updatePrompt();
     this.setupEventHandlers();
+    this.pyReplActive = false;
+    this.pyReplBuffer = "";
+    this.pyReplContinuation = false;
+    this.nodeReplActive = false;
+    this.nodeReplBuffer = "";
+    this.nodeReplContinuation = false;
+    this._nodeFallbackWarned = false;
     this.terminalInput.addEventListener("input", () => {
       this.terminalInput.style.height = "auto";
       this.terminalInput.style.height = this.terminalInput.scrollHeight + "px";
@@ -89,10 +104,9 @@ export class TerminalApp extends BaseApp {
 
   setupSessionListener() {
     os.events.on(BusEvents.SESSION_INITIALIZED, (session) => {
-      this.sessionKey = session.key;
-      this.displayName = session.name || os.storage.get(StorageKeys.username) || session.key;
+      this.displayName = session.name || os.storage.get(StorageKeys.username) || "guest";
       this.username = this.displayName;
-      this.currentPath = ["ys", "users", session.key];
+      this.currentPath = ["ys", "users", this.displayName];
       this.env.HOME = `/home/${this.displayName}`;
       this.env.USER = this.displayName;
       this.updatePrompt();
@@ -132,7 +146,9 @@ export class TerminalApp extends BaseApp {
     this.terminalOutput.appendChild(line);
 
     span.textContent = text;
-    this.terminalOutput.parentElement.scrollTop = this.terminalOutput.parentElement.scrollHeight;
+    requestAnimationFrame(() => {
+      line.scrollIntoView({ block: "end", behavior: "instant" });
+    });
 
     this.printDepth--;
     if (this.printDepth === 0) {
@@ -151,6 +167,24 @@ export class TerminalApp extends BaseApp {
   async runEnteredCommand() {
     if (this.commandRunning) return;
     const command = this.terminalInput.value.trim();
+    if (this.pyReplActive || this.nodeReplActive) {
+      this.terminalInput.value = "";
+      this.terminalInputLine.style.display = "none";
+      this.commandRunning = true;
+      try {
+        if (this.pyReplActive) await this.runPythonRepl(command);
+        else await this.runNodeRepl(command);
+      } finally {
+        this.commandRunning = false;
+        this.terminalInputLine.style.display = "flex";
+        this.terminalInput.disabled = false;
+        this.terminalInput.focus();
+        requestAnimationFrame(() =>
+          this.terminalOutput.lastElementChild?.scrollIntoView({ block: "end", behavior: "instant" })
+        );
+      }
+      return;
+    }
     if (!command) return;
     this.history.push(command);
     this.historyIndex = this.history.length;
@@ -165,6 +199,9 @@ export class TerminalApp extends BaseApp {
       this.terminalInputLine.style.display = "flex";
       this.terminalInput.disabled = false;
       this.terminalInput.focus();
+      requestAnimationFrame(() =>
+        this.terminalOutput.lastElementChild?.scrollIntoView({ block: "end", behavior: "instant" })
+      );
     }
   }
 
@@ -196,8 +233,43 @@ export class TerminalApp extends BaseApp {
         const selection = window.getSelection();
         if (selection && selection.toString().length > 0) return;
         e.preventDefault();
+        if (this.pyReplActive || this.nodeReplActive) {
+          if (this.pyReplActive) {
+            this.pyReplBuffer = "";
+            this.pyReplContinuation = false;
+          }
+          if (this.nodeReplActive) {
+            this.nodeReplBuffer = "";
+            this.nodeReplContinuation = false;
+          }
+          this.updatePrompt();
+          this.enqueuePrint("^C");
+          this.terminalInput.value = "";
+          return;
+        }
         this.enqueuePrint("^C", null, true, this.promptHtml());
         this.terminalInput.value = "";
+      } else if (e.ctrlKey && e.key.toLowerCase() === "d") {
+        e.preventDefault();
+        e.stopPropagation();
+        if (this.pyReplActive) {
+          this.pyReplBuffer = "";
+          this.pyReplContinuation = false;
+          this.updatePrompt();
+          this.enqueuePrint("exit()", null, true, `<span class="prompt-python">>>> </span>`);
+          this.exitPythonRepl();
+          return;
+        }
+        if (this.nodeReplActive) {
+          this.nodeReplBuffer = "";
+          this.nodeReplContinuation = false;
+          this.updatePrompt();
+          this.enqueuePrint(".exit", null, true, `<span class="prompt-node">> </span>`);
+          this.exitNodeRepl();
+          return;
+        }
+        this.closeTabOrWindow();
+        return;
       } else if (KeybindManager.matches(e, "terminal.close")) {
         const selection = window.getSelection();
         if (selection && selection.toString().length > 0) return;
@@ -363,7 +435,7 @@ export class TerminalApp extends BaseApp {
   newTab() {
     this.snapshotActiveTab();
     const id = ++this.tabCounter;
-    const tab = { id, currentPath: ["ys", "users", this.sessionKey], outputHTML: "" };
+    const tab = { id, currentPath: ["ys", "users", this.displayName], outputHTML: "" };
     this.tabs.push(tab);
     this.activeTabId = id;
     this.currentPath = [...tab.currentPath];
@@ -1044,13 +1116,24 @@ export class TerminalApp extends BaseApp {
   }
 
   promptHtml() {
-    const raw = this.currentPath.length ? "/" + this.currentPath.join("/") : "/";
-    const path = raw.replace(this.sessionKey, this.displayName);
+    const path = this.currentPath.length ? "/" + this.currentPath.join("/") : "/";
     return `<span class="prompt-user">${this.displayName}</span><span class="prompt-at">@</span><span class="prompt-host">${this.hostname}</span><span class="prompt-sep">:</span><span class="prompt-path">${path}</span><span class="prompt-dollar">$</span>`;
   }
 
   updatePrompt() {
     if (!this.terminalPrompt) return;
+    if (this.pyReplActive) {
+      this.terminalPrompt.innerHTML = this.pyReplContinuation
+        ? '<span class="prompt-pycontinuation">... </span>'
+        : '<span class="prompt-python">>>> </span>';
+      return;
+    }
+    if (this.nodeReplActive) {
+      this.terminalPrompt.innerHTML = this.nodeReplContinuation
+        ? '<span class="prompt-nodecontinuation">... </span>'
+        : '<span class="prompt-node">> </span>';
+      return;
+    }
     this.terminalPrompt.innerHTML = this.promptHtml();
   }
 
@@ -1110,6 +1193,9 @@ export class TerminalApp extends BaseApp {
     this.registerCommand("lock", () => this.cmdLock());
     this.registerCommand("logout", () => this.cmdLogout());
     this.registerCommand("signout", () => this.cmdLogout());
+    this.registerCommand("python", (args, flags) => this.cmdPython(args, flags));
+    this.registerCommand("python3", (args, flags) => this.cmdPython(args, flags));
+    this.registerCommand("node", (args, flags) => this.cmdNode(args, flags));
   }
 
   cmdClear() {
@@ -1728,7 +1814,7 @@ export class TerminalApp extends BaseApp {
     const targets = args.length ? args.map((a) => this.fs.resolvePath(a, this.currentPath)) : [this.currentPath];
 
     for (const target of targets) {
-      const displayPath = this.pathToString(target).replace(this.sessionKey, this.displayName);
+      const displayPath = this.pathToString(target);
       if (summary) {
         const size = await getFileSize(target);
         await this.print(`${fmt(size)} ${displayPath}`);
@@ -1870,7 +1956,7 @@ export class TerminalApp extends BaseApp {
     const wins = Array.from(document.querySelectorAll(".window"));
     await this.print("  PID   TTY      TIME CMD");
     for (let i = 0; i < wins.length; i++) {
-      const cmd = wins[i].querySelector(".window-header span")?.textContent || "unknown";
+      const cmd = os.window.getTitle(wins[i].id) || "unknown";
       await this.print(`  ${1000 + i}  pts/0  0:00 ${cmd}`);
     }
   }
@@ -1919,7 +2005,10 @@ export class TerminalApp extends BaseApp {
       ["lock", "Lock the current session"],
       ["logout", "Sign out and return to login screen"],
       ["signout", "Sign out and return to login screen"],
-      ["exit", "Close the terminal"]
+      ["exit", "Close the terminal"],
+      ["python", "Run Python code or enter interactive REPL"],
+      ["python3", "Alias for python"],
+      ["node", "Run JS code or enter Node.js REPL"]
     ];
     await this.print("Available commands:");
     for (const [cmd, desc] of cmds) {
@@ -2495,6 +2584,182 @@ export class TerminalApp extends BaseApp {
       default:
         await this.print(`Unknown subcommand: ${sub}. Use: list, uninstall, install, disable, enable`);
     }
+  }
+
+  async cmdPython(args = [], flags = []) {
+    if (flags.includes("-c") || flags.includes("--command")) {
+      const code = args.join(" ");
+      if (!code) return this.print("python: -c option requires an argument");
+      await this.execPythonCode(code);
+      return;
+    }
+    if (args.length && !args[0].startsWith("-")) {
+      const filePath = args[0];
+      try {
+        const resolved = this.fs.resolvePath(filePath, this.currentPath);
+        const content = await os.fs.read(this.pathToString(resolved));
+        await this.execPythonCode(content);
+      } catch {
+        await this.print(`python: can't open file '${filePath}': No such file or directory`);
+      }
+      return;
+    }
+    await this.enterPythonRepl();
+  }
+
+  async execPythonCode(code) {
+    try {
+      await this.print("Loading Python...");
+      const { result, stdout, stderr, error } = await runPython(code);
+      if (error) {
+        await this.print("Traceback (most recent call last):", "#ff5555");
+        await this.print(error, "#ff5555");
+        return;
+      }
+      if (stdout) await this.print(stdout.trimEnd());
+      if (stderr) await this.print(stderr.trimEnd(), "#ff5555");
+      if (result !== undefined) await this.print(String(result));
+    } catch (e) {
+      await this.print(String(e.message || e), "#ff5555");
+    }
+  }
+
+  async enterPythonRepl() {
+    this.pyReplActive = true;
+    this.pyReplBuffer = "";
+    this.pyReplContinuation = false;
+    this.updatePrompt();
+    this.terminalInput.focus();
+  }
+
+  async exitPythonRepl() {
+    this.pyReplActive = false;
+    this.pyReplBuffer = "";
+    this.pyReplContinuation = false;
+    this.updatePrompt();
+  }
+
+  async runPythonRepl(line) {
+    if (line === "exit()" || line === "quit()" || line === "exit" || line === "quit") {
+      await this.exitPythonRepl();
+      return;
+    }
+    const promptStr = this.pyReplContinuation ? "..." : ">>>";
+    await this.print(line, null, true, `<span class="prompt-python">${promptStr} </span>`);
+    this.pyReplBuffer += line + "\n";
+    try {
+      const { result, stdout, stderr, error } = await runPython(this.pyReplBuffer);
+      if (stdout) await this.print(stdout.trimEnd());
+      if (stderr) await this.print(stderr.trimEnd(), "#ff5555");
+      if (error) {
+        const isIncomplete =
+          error.includes("unexpected EOF while parsing") ||
+          error.includes("expected an indented block") ||
+          error.includes("Unmatched") ||
+          (error.includes("invalid syntax") && line.endsWith(":"));
+        if (isIncomplete && line.trim()) {
+          this.pyReplContinuation = true;
+          this.updatePrompt();
+          return;
+        }
+        await this.print("Traceback (most recent call last):", "#ff5555");
+        await this.print(error, "#ff5555");
+        this.pyReplBuffer = "";
+      } else {
+        if (result !== undefined) await this.print(String(result));
+        this.pyReplBuffer = "";
+      }
+    } catch (e) {
+      await this.print(String(e.message || e), "#ff5555");
+      this.pyReplBuffer = "";
+    }
+    this.pyReplContinuation = false;
+    this.updatePrompt();
+  }
+
+  async cmdNode(args = [], flags = []) {
+    if (flags.includes("-e") || flags.includes("--eval")) {
+      const code = args.join(" ");
+      if (!code) return this.print("node: -e option requires an argument");
+      await this.execNodeCode(code);
+      return;
+    }
+    if (args.length && !args[0].startsWith("-")) {
+      const filePath = args[0];
+      try {
+        const resolved = this.fs.resolvePath(filePath, this.currentPath);
+        const content = await os.fs.read(this.pathToString(resolved));
+        await this.execNodeCode(content, filePath);
+      } catch {
+        await this.print(`node: can't open file '${filePath}': No such file or directory`);
+      }
+      return;
+    }
+    await this.enterNodeRepl();
+  }
+
+  async execNodeCode(code, filename) {
+    try {
+      if (!self.crossOriginIsolated) {
+        if (!this._nodeFallbackWarned) {
+          this._nodeFallbackWarned = true;
+          await this.enqueuePrint(
+            "Current webserver lacks cross-origin isolation, falling back to basic JavaScript eval."
+          );
+        }
+        await this.print("Falling back to basic JavaScript eval...");
+      } else {
+        await this.print("Loading Node.js runtime...");
+      }
+      const { stdout, stderr, error } = await runNode(code, filename || "/eval.js");
+      if (error) {
+        await this.print(error, "#ff5555");
+        return;
+      }
+      if (stdout) await this.print(stdout.trimEnd());
+      if (stderr) await this.print(stderr.trimEnd(), "#ff5555");
+    } catch (e) {
+      await this.print(String(e.message || e), "#ff5555");
+    }
+  }
+
+  async enterNodeRepl() {
+    this.nodeReplActive = true;
+    this.nodeReplBuffer = "";
+    this.nodeReplContinuation = false;
+    this.updatePrompt();
+    this.terminalInput.focus();
+  }
+
+  async exitNodeRepl() {
+    this.nodeReplActive = false;
+    this.nodeReplBuffer = "";
+    this.nodeReplContinuation = false;
+    this.updatePrompt();
+  }
+
+  async runNodeRepl(line) {
+    if (line === ".exit" || line === "exit" || line === "exit()") {
+      await this.exitNodeRepl();
+      return;
+    }
+    const promptStr = this.nodeReplContinuation ? "..." : ">";
+    await this.print(line, null, true, `<span class="prompt-node">${promptStr} </span>`);
+    this.nodeReplBuffer += line + "\n";
+    try {
+      const { stdout, stderr, error } = await runNode(line, "/repl.js");
+      if (stdout) await this.print(stdout.trimEnd());
+      if (stderr) await this.print(stderr.trimEnd(), "#ff5555");
+      if (error) {
+        await this.print(error, "#ff5555");
+        this.nodeReplBuffer = "";
+      }
+    } catch (e) {
+      await this.print(String(e.message || e), "#ff5555");
+      this.nodeReplBuffer = "";
+    }
+    this.nodeReplContinuation = false;
+    this.updatePrompt();
   }
 
   cmdShutdown() {

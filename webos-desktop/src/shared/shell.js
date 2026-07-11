@@ -1,4 +1,5 @@
 import { $$ } from "./domUtils.js";
+import { os } from "../framework.js";
 
 export class Shell {
   constructor(fs, sessionKey) {
@@ -423,7 +424,7 @@ export class Shell {
     const wins = $$(".window");
     output("  PID   TTY      TIME CMD");
     for (let i = 0; i < wins.length; i++) {
-      const cmd = wins[i].querySelector(".window-header span")?.textContent || "unknown";
+      const cmd = os.window.getTitle(wins[i].id) || "unknown";
       output(`  ${1000 + i}  pts/0  0:00 ${cmd}`);
     }
   }

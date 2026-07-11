@@ -222,6 +222,24 @@ export class WindowAPI {
   }
 
   /**
+   * Update a window's title in the DOM header and taskbar entry
+   * @param winId - Window ID
+   * @param title - New title
+   */
+  setTitle(winId: string, title: string): void {
+    this.wm.setWindowTitle(winId, title);
+  }
+
+  /**
+   * Get a window's title from the window registry
+   * @param winId - Window ID
+   * @returns The window title, or null if not found
+   */
+  getTitle(winId: string): string | null {
+    return this.wm.getWindowTitle(winId);
+  }
+
+  /**
    * Send notification through window manager
    * @param title - Notification title
    * @param message - Notification message

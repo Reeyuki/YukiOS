@@ -1578,12 +1578,7 @@ export class OfficeApp extends BaseApp {
   applyFileToState(fileName, state, win) {
     state.title = fileName;
     state.ext = FileUtils.getExtension(fileName);
-    const header = $(".window-header span", win);
-    if (header)
-      setHTML(
-        header,
-        `<img src="https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/icons/office.webp" style="width:25px;height:25px;margin-right:6px;vertical-align:middle;object-fit:contain;">${fileName} - Office`
-      );
+    os.window.setTitle(win.id, `${fileName} - Office`);
   }
 
   async replaceEditorContent(container, content, state, win) {
@@ -1954,10 +1949,7 @@ export class OfficeApp extends BaseApp {
       state.filePath = null;
       state.rawArrayBuffer = null;
       this.replaceEditorContent(editorArea, "", state, win);
-      setHTML(
-        $(".window-header span", win),
-        `<img src="https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/icons/office.webp" style="width:25px;height:25px;margin-right:6px;vertical-align:middle;object-fit:contain;">Untitled - Office`
-      );
+      os.window.setTitle(win.id, "Untitled - Office");
     }
   }
 

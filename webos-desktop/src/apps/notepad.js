@@ -229,21 +229,8 @@ export class NotepadApp extends BaseApp {
 
   updateTitle(win, winId) {
     const instance = this.instances.get(winId);
-    const headerSpan = win.querySelector(".window-header > span");
-    if (!headerSpan) return;
-
     const newTitle = `${instance.modified ? "*" : ""}${instance.currentTitle} - Notepad`;
-    const iconEl = headerSpan.querySelector("img, i");
-
-    if (iconEl) {
-      Array.from(headerSpan.childNodes)
-        .filter((n) => n.nodeType === Node.TEXT_NODE)
-        .forEach((n) => n.remove());
-      headerSpan.querySelector(".title-text")?.remove();
-      headerSpan.appendChild(document.createTextNode(newTitle));
-    } else {
-      headerSpan.textContent = newTitle;
-    }
+    os.window.setTitle(winId, newTitle);
   }
 
   setupKeyboardShortcuts(win, winId) {

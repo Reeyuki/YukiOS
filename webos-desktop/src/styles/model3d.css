@@ -1382,10 +1382,6 @@
   color: var(--brand);
 }
 
-#sb-renderer {
-  color: var(--text-muted);
-}
-
 .yb-context-menu {
   position: fixed;
   background: var(--menu-bg);

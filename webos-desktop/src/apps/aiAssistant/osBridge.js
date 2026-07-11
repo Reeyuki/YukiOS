@@ -348,7 +348,7 @@ export class OSBridge {
   getSystemState() {
     const windows = Array.from(document.querySelectorAll(".window")).map((win) => ({
       id: win.id,
-      title: win.querySelector(".window-header span")?.textContent || "Unknown",
+      title: os.window.getTitle(win.id) || "Unknown",
       appId: win.dataset.appId || null,
       visible: win.style.display !== "none",
       minimized: win.style.display === "none"

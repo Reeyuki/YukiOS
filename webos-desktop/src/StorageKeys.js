@@ -172,6 +172,7 @@ export const StorageKeys = {
   explorerQuickAccess: "yukiOS_explorer_quick_access",
   explorerSidebarCollapsed: "yukiOS_explorer_sidebar_collapsed",
   explorerDiskViewHidden: "yukiOS_explorer_disk_view_hidden",
+  explorerQuickAccessHidden: "yukiOS_explorer_quick_access_hidden",
   keybindCustomizations: "yukiOS_keybind_customizations",
   keybindCustomActions: "yukiOS_keybind_custom_actions",
   overlaySettings: "yukiOS_overlaysettings",

@@ -295,18 +295,80 @@ export class FileSystemManager {
     return this.fsReady;
   }
 
-  async setSession(sessionKey) {
-    this.sessionKey = sessionKey;
-    this.CONFIG.ROOT = `${this.CONFIG.USER_BASE}/${sessionKey}`;
+  async setSession(username) {
+    this.sessionKey = username;
+    this.CONFIG.ROOT = `${this.CONFIG.USER_BASE}/${username}`;
     this.mountManager.setRoot(this.CONFIG.ROOT);
     if (this.storage.fs) {
       await this.ensureDefaults();
     } else {
-      await this.initFS(sessionKey);
+      await this.initFS(username);
     }
+    await this.fsReady;
+    await this.migrateFromOldUuid(username);
     if (this.desktopUI) {
       await this.desktopUI.loadDesktopItems();
     }
+  }
+
+  async migrateFromOldUuid(username) {
+    const oldKey = os.storage.get(StorageKeys.userId);
+    if (!oldKey || oldKey === username || !/^[0-9a-f]{8}-[0-9a-f]{4}-/.test(oldKey)) return;
+    const oldRoot = `${this.CONFIG.USER_BASE}/${oldKey}`;
+    const newRoot = `${this.CONFIG.USER_BASE}/${username}`;
+    if (oldRoot === newRoot) return;
+    const oldExists = await this.exists(oldRoot).catch(() => false);
+    if (!oldExists) return;
+    const newExists = await this.exists(newRoot).catch(() => false);
+    if (newExists) return;
+    console.log(`Migrating user data from ${oldRoot} to ${newRoot}...`);
+    await this.migrateUserDir(oldRoot, newRoot);
+  }
+
+  async migrateUserDir(oldRoot, newRoot) {
+    const walkCopy = async (dirPath) => {
+      const entries = await this.pRead("readdir", dirPath).catch(() => []);
+      const newDirPath = dirPath.replace(oldRoot, newRoot);
+      await this.p("mkdir", newDirPath, { recursive: true }).catch(() => {});
+      for (const entry of entries) {
+        if (entry === this.CONFIG.META_FILE) continue;
+        if (entry === ".trash") continue;
+        const fullPath = this.paths.join(dirPath, entry);
+        const stat = await this.pStat(fullPath).catch(() => null);
+        if (!stat) continue;
+        if (stat.isDirectory()) {
+          await walkCopy(fullPath);
+        } else {
+          const newFullPath = fullPath.replace(oldRoot, newRoot);
+          const content = await this.pRead("readFile", fullPath).catch(() => null);
+          if (content !== null) {
+            await this.p("mkdir", this.paths.dirname(newFullPath), { recursive: true }).catch(() => {});
+            await this.p("writeFile", newFullPath, content);
+          }
+          const blob = await this.blobs.getBlobByFullPath(fullPath).catch(() => null);
+          if (blob) {
+            await this.blobs.putBlob(newFullPath, blob);
+            await this.blobs.deleteBlobByFullPath(fullPath).catch(() => {});
+          }
+        }
+      }
+    };
+
+    await walkCopy(oldRoot);
+
+    const oldMeta = await this.metadata.readMeta(this.paths.dirname(oldRoot)).catch(() => null);
+    if (oldMeta) {
+      const oldName = oldRoot.split("/").pop();
+      const newName = newRoot.split("/").pop();
+      if (oldMeta[oldName]) {
+        const newMetaDir = this.paths.dirname(newRoot);
+        await this.p("mkdir", newMetaDir, { recursive: true }).catch(() => {});
+        await this.metadata.writeMeta(newMetaDir, newName, oldMeta[oldName]);
+      }
+    }
+
+    await this.deleteDirectoryRecursive(oldRoot).catch(() => {});
+    console.log(`Migration complete: ${oldRoot} -> ${newRoot}`);
   }
 
   async exportSnapshot() {

@@ -87,6 +87,10 @@ export const CDN_CONFIG = {
     emojiMart: {
       version: "latest",
       path: "emoji-mart@latest/dist/browser.js"
+    },
+    pyodide: {
+      version: "0.25.0",
+      module: "pyodide/v0.25.0/full/pyodide.mjs"
     }
   }
 };

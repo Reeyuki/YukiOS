@@ -71,7 +71,9 @@ function buildWindow() {
     addToTaskbar: (winId: string, title: string, icon: string, color?: string) =>
       api.addToTaskbar(winId, title, icon, color),
     removeFromTaskbar: (winId: string) => api.removeFromTaskbar(winId),
-    getWindowControls: (url?: string, showDownload?: boolean) => api.getWindowControls(url, showDownload)
+    getWindowControls: (url?: string, showDownload?: boolean) => api.getWindowControls(url, showDownload),
+    setTitle: (winId: string, title: string) => api.setTitle(winId, title),
+    getTitle: (winId: string) => api.getTitle(winId)
   };
 }
 

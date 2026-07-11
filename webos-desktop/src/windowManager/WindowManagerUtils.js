@@ -147,8 +147,7 @@ export class WindowManagerUtils {
 
   downloadWindowContent(win) {
     const filename =
-      (win.querySelector(".window-header span")?.textContent?.trim() || win.id).replace(/[^\w\s-]/g, "").trim() ||
-      "window";
+      (this.manager.getWindowTitle(win.id)?.trim() || win.id).replace(/[^\w\s-]/g, "").trim() || "window";
 
     const iframe = win.querySelector("iframe");
     if (iframe) {

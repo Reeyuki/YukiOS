@@ -676,7 +676,7 @@ export class SessionManager {
     this.addToUserHistory(this.currentSession);
 
     if (this.services.fileSystemManager) {
-      await this.services.fileSystemManager.setSession(key);
+      await this.services.fileSystemManager.setSession(name);
     }
 
     os.events.emit(BusEvents.SESSION_INITIALIZED, this.currentSession);

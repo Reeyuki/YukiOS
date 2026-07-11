@@ -254,8 +254,7 @@ export class InputHandler {
       const isActive = index === this.windowSwitcherIndex;
       const entry = this.manager.openWindows.get(win.id);
 
-      const titleEl = win.querySelector(".window-header span");
-      const title = titleEl ? titleEl.textContent : entry?.title || win.id;
+      const title = entry?.title || win.id;
       const iconValue = entry?.iconValue || "";
       const color = entry?.color || null;
 

@@ -1,3 +1,4 @@
+import "../styles/markdown.css";
 import { decodeDataURLContent } from "../fileDisplay.js";
 
 import { BaseApp, os } from "../framework.js";
@@ -6,6 +7,7 @@ export class MarkdownApp extends BaseApp {
     super(services);
     this.marked = null;
     this.cssLoaded = false;
+    this.windowStates = new Map();
   }
 
   async loadMarked() {
@@ -44,7 +46,38 @@ export class MarkdownApp extends BaseApp {
     this.cssLoaded = true;
   }
 
+  async renderContent(winId, content) {
+    await this.loadMarked();
+    this.loadMarkdownCSS();
+    const decoded = decodeDataURLContent(content);
+    const rendered = this.marked.parse(decoded);
+    const el = document.getElementById(`${winId}-content`);
+    if (el) el.innerHTML = rendered;
+  }
+
+  setWindowTitle(winId, title) {
+    os.window.setTitle(winId, title);
+  }
+
   async open(fileName = "README.md", content = "", filePath = null) {
+    if (typeof fileName === "object") {
+      const opts = fileName;
+      const winId = opts.forceId || `markdown-${Date.now()}`;
+      os.window.create(winId, "Markdown", "750px", "550px", {
+        icon: "fab fa-markdown",
+        iconColor: "#519aba"
+      });
+      const win = document.getElementById(winId);
+      if (win) {
+        win.innerHTML = `
+          <div class="window-content markdown-container">
+            <article class="markdown-body" id="${winId}-content"></article>
+          </div>`;
+      }
+      this.windowStates.set(winId, { fileName: "Markdown", content: "", filePath: null });
+      return;
+    }
+
     const winId = `markdown-${Date.now()}`;
     const win = os.window.create(winId, fileName, "750px", "550px", {
       icon: "fab fa-markdown",
@@ -56,14 +89,28 @@ export class MarkdownApp extends BaseApp {
       </div>`;
 
     try {
-      await this.loadMarked();
-      this.loadMarkdownCSS();
-      const decoded = decodeDataURLContent(content);
-      const rendered = this.marked.parse(decoded);
-      const el = win.querySelector(`#${winId}-content`);
-      if (el) el.innerHTML = rendered;
+      await this.renderContent(winId, content);
+      this.windowStates.set(winId, { fileName, content, filePath });
     } catch (e) {
       os.notify.send("Markdown renderer unavailable.", "", { icon: "fab fa-markdown" });
+    }
+  }
+
+  getSnapshot(winId) {
+    const state = this.windowStates.get(winId);
+    return state ? { ...state } : null;
+  }
+
+  async restoreSnapshot(winId, snapshot) {
+    if (!snapshot) return;
+    this.windowStates.set(winId, { ...snapshot });
+    this.setWindowTitle(winId, snapshot.fileName);
+    if (snapshot.content) {
+      try {
+        await this.renderContent(winId, snapshot.content);
+      } catch (e) {
+        os.notify.send("Markdown renderer unavailable.", "", { icon: "fab fa-markdown" });
+      }
     }
   }
 }
