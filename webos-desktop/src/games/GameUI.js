@@ -1,5 +1,5 @@
 import { refreshIcons } from "../shared/contextMenu.js";
-import { SteamDataManager, desktopUI } from "./games.js";
+import { SteamDataManager, desktopUI, steamAudio } from "./games.js";
 import { observeLazyImages } from "./games.js";
 import { buildSteamShell, initDropdowns, initStorePage, getCdnBase, initSettingsPage } from "./steam.js";
 import { KeybindManager } from "../keybindManager.js";
@@ -59,11 +59,15 @@ export class GameUI {
       : `<i class="fas fa-gamepad" style="font-size:16px;color:var(--text-secondary);flex-shrink:0;"></i><span>${title}</span>`;
 
     item.addEventListener("click", () => {
+      steamAudio.playSelect();
       if (isArchive) {
         this.renderer.gameRenderer.renderArchiveGameOverview(container, game, onLaunch);
       } else {
         this.renderer.gameRenderer.renderGameOverview(container, appId, onLaunch);
       }
+    });
+    item.addEventListener("mouseenter", () => {
+      steamAudio.playHover();
     });
     item.addEventListener("dblclick", () => {
       if (isArchive) {
@@ -149,6 +153,52 @@ export class GameUI {
       hiddenList.appendChild(item);
     });
     observeLazyImages(hiddenList);
+  }
+
+  navigateSidebar(container, onLaunch, direction) {
+    const items = Array.from(container.querySelectorAll(".sidebar-game-list .sidebar-game-item")).filter(
+      (item) => item.offsetParent !== null
+    );
+    if (items.length === 0) return;
+
+    const currentIndex = items.findIndex((item) => item.classList.contains("active"));
+    const nextIndex =
+      currentIndex === -1
+        ? direction > 0
+          ? 0
+          : items.length - 1
+        : (currentIndex + direction + items.length) % items.length;
+
+    const nextItem = items[nextIndex];
+    if (!nextItem) return;
+
+    nextItem.scrollIntoView({ block: "nearest" });
+    nextItem.click();
+  }
+
+  navigateGamesList(container, onLaunch, direction) {
+    const libraryPage = container.querySelector(".steam-library-page");
+    if (!libraryPage) return;
+
+    const cards = Array.from(libraryPage.querySelectorAll(".steam-game-card")).filter(
+      (card) => card.offsetParent !== null
+    );
+    if (cards.length === 0) return;
+
+    const currentAppId = this.renderer.currentGame || this.renderer.currentArchiveGame?.appId || null;
+    const currentIndex = currentAppId ? cards.findIndex((card) => card.dataset.app === currentAppId) : -1;
+    const nextIndex =
+      currentIndex === -1
+        ? direction > 0
+          ? 0
+          : cards.length - 1
+        : (currentIndex + direction + cards.length) % cards.length;
+
+    const nextCard = cards[nextIndex];
+    if (!nextCard) return;
+
+    nextCard.scrollIntoView({ block: "nearest", inline: "nearest" });
+    nextCard.click();
   }
 
   initSidebarDrag(container) {
@@ -325,11 +375,13 @@ export class GameUI {
       const appId = card.dataset.app;
       const game = gameMap.get(appId);
       if (game) {
+        steamAudio.playSelect();
         this.renderer.gameRenderer.renderGameOverview(container, appId, onLaunch);
         return;
       }
       const archiveGame = this.renderer.archiveGamesCache.find((g) => g.appId === appId);
       if (archiveGame) {
+        steamAudio.playSelect();
         this.renderer.gameRenderer.renderArchiveGameOverview(container, archiveGame, onLaunch);
       }
     });
@@ -372,6 +424,7 @@ export class GameUI {
       (e) => {
         const card = e.target.closest(".steam-game-card");
         if (!card) return;
+        steamAudio.playHover();
         const appId = card.dataset.app;
         const game = gameMap.get(appId);
         const gameStats = stats[appId] || { totalMin: 0, recentMin: 0 };
@@ -417,6 +470,7 @@ export class GameUI {
   }
 
   render(container, onLaunch, wm = null, focusCollection = null) {
+    steamAudio.playSelect();
     SteamDataManager.setupDefaultCollections();
     const allGames = this.renderer.getGames();
     const hidden = SteamDataManager.getHidden();
@@ -539,6 +593,7 @@ export class GameUI {
 
     tabs.forEach((tab) => {
       tab.addEventListener("click", () => {
+        steamAudio.playNavigate();
         this.renderer.currentGame = null;
         this.renderer.currentArchiveGame = null;
         navigateTo(tab.dataset.page);
@@ -606,11 +661,15 @@ export class GameUI {
           ? `<img data-src="${icon}" /><span>${title}</span>`
           : `<i class="fas fa-gamepad" style="font-size:16px;color:var(--text-secondary);flex-shrink:0;"></i><span>${title}</span>`;
         item.addEventListener("click", () => {
+          steamAudio.playSelect();
           if (isArchive) {
             this.renderer.gameRenderer.renderArchiveGameOverview(container, g, onLaunch);
           } else {
             this.renderer.gameRenderer.renderGameOverview(container, appId, onLaunch);
           }
+        });
+        item.addEventListener("mouseenter", () => {
+          steamAudio.playHover();
         });
         sidebarList.appendChild(item);
         observeLazyImages(item);
@@ -689,6 +748,36 @@ export class GameUI {
       },
       true
     );
+
+    if (!this.renderer.arrowNavBound) {
+      this.renderer.arrowNavBound = true;
+
+      document.addEventListener(
+        "keydown",
+        (e) => {
+          const root = container;
+          if (!root || !document.body.contains(root)) return;
+          if (root.offsetParent === null) return;
+
+          const active = document.activeElement;
+          if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA" || active.isContentEditable)) {
+            return;
+          }
+
+          const sidebar = root.querySelector(".steam-library-sidebar");
+          if (!sidebar || sidebar.classList.contains("hidden")) return;
+
+          if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+            e.preventDefault();
+            this.navigateGamesList(root, onLaunch, e.key === "ArrowRight" ? 1 : -1);
+          } else if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+            e.preventDefault();
+            this.navigateSidebar(root, onLaunch, e.key === "ArrowDown" ? 1 : -1);
+          }
+        },
+        true
+      );
+    }
 
     const lastPage = os.storage.get(StorageKeys.steamLastPage);
     const isReturning = !!os.storage.get(StorageKeys.steamVisited);

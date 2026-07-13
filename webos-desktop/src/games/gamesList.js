@@ -1,4 +1,10 @@
 export const appMap = {
+  seaSweeper: {
+    type: "game",
+    url: "https://itch.io/embed-upload/18311457?color=107d6f",
+    icon: "/static/icons/seaSweeper.webp",
+    title: "Sea Sweeper: Idle Fisher"
+  },
   angryBirds2: {
     type: "game",
     url: "https://cdn.jsdelivr.net/gh/NaoTomori1/AngryBirds2@main/index.html",
@@ -49,7 +55,7 @@ export const appMap = {
   },
   helltaker: {
     type: "game",
-    url: "/static/games/helltakernew/helltaker/index.html",
+    url: "https://cdn.jsdelivr.net/gh/Reeyuki/Helltaker-Webport/refs/heads/main/index.html",
     icon: "/static/icons/helltaker.jpg",
     title: "Helltaker"
   },

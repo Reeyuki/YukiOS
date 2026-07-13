@@ -1,8 +1,8 @@
 import { CDN_CONFIG } from "../shared/cdnConfig.js";
 import { descriptionMap } from "./gameDescriptions.js";
 import { shouldEnableAds } from "../ads.js";
+import { steamAudio } from "./steamAudio.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
-
 import { StorageKeys, os } from "../framework.js";
 export function getCdnBase() {
   return CDN_CONFIG.repos.main.base;
@@ -11,6 +11,7 @@ export function getCdnBase() {
 export function getCdnBaseGames() {
   return CDN_CONFIG.repos.games.base;
 }
+
 export function buildSteamShell(container, username, profilePic, hiddenGamesCount, CDN_BASE_REF) {
   const settings = SteamSettings.load();
   const showAnimation = settings.enableStartupAnimation !== false;
@@ -315,9 +316,12 @@ export function initSettingsPage(container) {
       toggle.classList.remove("active");
     }
 
+    toggle.addEventListener("mouseenter", () => steamAudio.playHover());
+
     toggle.addEventListener("click", () => {
       const isActive = toggle.classList.contains("active");
       toggle.classList.toggle("active");
+      steamAudio.playSelect();
       SteamSettings.set(setting, !isActive);
 
       if (["hideArchiveGames", "hideLuminSDK", "recentlyPlayedRow"].includes(setting)) {
@@ -339,6 +343,7 @@ export function initSettingsPage(container) {
     select.value = value;
 
     select.addEventListener("change", (e) => {
+      steamAudio.playSelect();
       SteamSettings.set(setting, e.target.value);
 
       if (setting === "gridSize") {
@@ -366,6 +371,8 @@ export function initDropdowns(container, navigateTo, openFriendsWindow, wm) {
     });
 
   container.querySelectorAll(".steam-dropdown-trigger").forEach((trigger) => {
+    trigger.addEventListener("mouseenter", () => steamAudio.playHover());
+
     trigger.addEventListener("click", (e) => {
       e.stopPropagation();
       const dropdownId = trigger.dataset.dropdown + "-dropdown";
@@ -373,6 +380,7 @@ export function initDropdowns(container, navigateTo, openFriendsWindow, wm) {
       const isVisible = menu.classList.contains("visible");
       closeAll();
       if (!isVisible) {
+        steamAudio.playNavigate();
         const rect = trigger.getBoundingClientRect();
         menu.style.top = `${rect.bottom}px`;
         menu.style.left = `${rect.left}px`;
@@ -386,13 +394,17 @@ export function initDropdowns(container, navigateTo, openFriendsWindow, wm) {
   });
 
   container.querySelectorAll(".steam-dropdown-item").forEach((item) => {
+    item.addEventListener("mouseenter", () => steamAudio.playHover());
+
     item.addEventListener("click", (e) => {
       e.stopPropagation();
       closeAll();
       const action = item.dataset.action;
       if (action === "steam-settings") {
+        steamAudio.playSelect();
         navigateTo("settings");
       } else if (action === "steam-exit") {
+        steamAudio.playBack();
         const winRoot = container.closest(".window");
         if (winRoot) {
           const closeBtn = winRoot.querySelector(".window-close-btn, .close-btn, [data-action='close']");
@@ -400,15 +412,39 @@ export function initDropdowns(container, navigateTo, openFriendsWindow, wm) {
           else winRoot.remove();
         }
       } else if (action === "view-library") {
+        steamAudio.playNavigate();
         navigateTo("library");
       } else if (action === "view-downloads") {
+        steamAudio.playNavigate();
         navigateTo("downloads");
       } else if (action === "view-friends") {
+        steamAudio.playNavigate();
         openFriendsWindow(wm);
       } else if (action === "games-view-library") {
+        steamAudio.playNavigate();
         navigateTo("library");
       }
     });
+  });
+
+  container.querySelectorAll(".steam-tab").forEach((tab) => {
+    tab.addEventListener("mouseenter", () => steamAudio.playHover());
+  });
+
+  container.querySelectorAll(".steam-nav-btn").forEach((btn) => {
+    btn.addEventListener("mouseenter", () => steamAudio.playHover());
+    btn.addEventListener("click", () => {
+      if (btn.classList.contains("steam-back-btn")) {
+        steamAudio.playBack();
+      } else {
+        steamAudio.playNavigate();
+      }
+    });
+  });
+
+  container.querySelectorAll(".steam-downloads-btn, .steam-friends-btn, .steam-notifications").forEach((btn) => {
+    btn.addEventListener("mouseenter", () => steamAudio.playHover());
+    btn.addEventListener("click", () => steamAudio.playSelect());
   });
 
   document.addEventListener("click", closeAll);
@@ -617,7 +653,10 @@ export function initStorePage(container, onLaunch, navigateTo, CDN_BASE_REF, img
     thumb.className = "store-hero-thumb" + (i === 0 ? " active" : "");
     thumb.innerHTML = `<img src="${h.img}" />`;
 
+    thumb.addEventListener("mouseenter", () => steamAudio.playHover());
+
     thumb.addEventListener("click", () => {
+      steamAudio.playNavigate();
       storePage.querySelectorAll(".store-hero-thumb").forEach((t) => t.classList.remove("active"));
       thumb.classList.add("active");
 
@@ -630,16 +669,21 @@ export function initStorePage(container, onLaunch, navigateTo, CDN_BASE_REF, img
 
     heroThumbs.appendChild(thumb);
   });
+
+  heroPlayBtn.addEventListener("mouseenter", () => steamAudio.playHover());
   heroPlayBtn.addEventListener("click", (e) => {
     e.stopPropagation();
+    steamAudio.playSelect();
     onLaunch(heroPlayBtn.dataset.app);
   });
 
   const heroInfo = storePage.querySelector("#store-hero-info");
   if (heroInfo) {
     heroInfo.style.cursor = "pointer";
+    heroInfo.addEventListener("mouseenter", () => steamAudio.playHover());
     heroInfo.addEventListener("click", (e) => {
       if (e.target.closest(".store-play-btn")) return;
+      steamAudio.playNavigate();
       const appId = heroPlayBtn.dataset.app;
       navigateTo("library");
       onLaunch.__rendererRef?.setCurrentGame(appId);
@@ -668,12 +712,17 @@ export function initStorePage(container, onLaunch, navigateTo, CDN_BASE_REF, img
     </button>
   </div>
 `;
+      card.addEventListener("mouseenter", () => steamAudio.playHover());
+
+      card.querySelector(".store-card-play-btn").addEventListener("mouseenter", (e) => e.stopPropagation());
       card.querySelector(".store-card-play-btn").addEventListener("click", (e) => {
         e.stopPropagation();
+        steamAudio.playSelect();
         onLaunch(g.app);
       });
       card.addEventListener("click", (e) => {
         if (e.target.closest(".store-card-play-btn")) return;
+        steamAudio.playNavigate();
         navigateTo("library");
         onLaunch.__rendererRef?.setCurrentGame(g.app);
       });

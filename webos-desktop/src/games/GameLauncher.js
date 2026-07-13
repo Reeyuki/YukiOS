@@ -1,6 +1,6 @@
 import { sendLaunchAnalytics, getAnalyticsBase, fetchGamePlayCounts, getCachedPlayCounts } from "../analytics.js";
 import { CDN_CONFIG } from "../shared/cdnConfig.js";
-import { lazyImg, observeLazyImages, SteamDataManager, launcher } from "./games.js";
+import { lazyImg, observeLazyImages, SteamDataManager, launcher, steamAudio } from "./games.js";
 import { SteamSettings } from "./steam.js";
 import { os } from "../framework.js";
 import { $$ } from "../shared/domUtils.js";
@@ -234,6 +234,7 @@ export class GameLauncher {
 
         card.addEventListener("click", () => {
           popover.style.display = "none";
+          steamAudio.playSelect();
           this.renderer.gameRenderer.renderArchiveGameOverview(container, archiveGame, onLaunch);
         });
 
@@ -272,6 +273,7 @@ export class GameLauncher {
         };
 
         card.addEventListener("mouseenter", () => {
+          steamAudio.playHover();
           const rect = card.getBoundingClientRect();
           const gameStats = stats[appId] || { totalMin: 0, recentMin: 0 };
 

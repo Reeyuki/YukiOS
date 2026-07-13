@@ -3,6 +3,7 @@ import { descriptionMap } from "./gameDescriptions.js";
 import { GameRenderer } from "./GameRenderer.js";
 import { GameLauncher } from "./GameLauncher.js";
 import { GameUI } from "./GameUI.js";
+import { LargeModeAudio } from "./steamAudio.js";
 import { resolveGhUrl, resolveIconUrl } from "../shared/assetResolver.js";
 import { CDN_CONFIG } from "../shared/cdnConfig.js";
 import { getAppRegistry } from "../appRegistry.js";
@@ -20,6 +21,8 @@ export function getCdnBaseGames() {
 
 export let launcher = null;
 export let desktopUI = null;
+
+export const steamAudio = new LargeModeAudio();
 
 export function setGameLauncher(launcher) {
   launcher = launcher;
