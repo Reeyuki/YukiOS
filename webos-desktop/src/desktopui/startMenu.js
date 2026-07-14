@@ -73,6 +73,7 @@ export function closeStartMenu() {
 
 export function applyStartMenuSettings(el) {
   if (!el) return;
+  ensureStartMenuStructure(el);
   const width = os.storage.get(StorageKeys.startMenuWidth) || "650";
   const height = os.storage.get(StorageKeys.startMenuHeight) || "500";
   el.style.width = `${width}px`;
@@ -90,23 +91,37 @@ export function applyStartMenuSettings(el) {
   const staticCatNames = [
     "favorites",
     "recent",
-    "all",
+    "menu",
+    WEB_MENU_CATEGORY,
     "internet",
     "media",
     "office",
     "graphics",
-    "games",
     "development",
+    "games",
     "system",
     "help"
   ];
   const el2 = el.querySelector('.start-cat[data-cat="places"]');
   if (el2) el2.style.display = "none";
+  const deletedCats = getCategoryDeleted();
   staticCatNames.forEach((catName) => {
     const isEnabled = cats[catName] !== false;
-    const catEl = el.querySelector(`.start-cat[data-cat="${catName}"]`);
+    const catEl =
+      catName === "menu"
+        ? el.querySelector('.start-cat[data-cat="all"]')
+        : el.querySelector(`.start-cat[data-cat="${catName}"]`);
     if (catEl) {
-      catEl.style.display = isEnabled ? "flex" : "none";
+      catEl.style.display = deletedCats.has(catName) ? "none" : isEnabled ? "flex" : "none";
+    }
+  });
+
+  const renames = getCategoryRenames();
+  $$(".start-cat", el).forEach((catEl) => {
+    const cName = catEl.dataset.cat;
+    if (cName && renames[cName]) {
+      const textNode = catEl.childNodes[catEl.childNodes.length - 1];
+      if (textNode) textNode.textContent = ` ${renames[cName]}`;
     }
   });
 }
@@ -115,6 +130,7 @@ function openStartMenu({ focusSearch = false, openDefaultPage = true } = {}) {
   const el = getStartMenuEl();
   if (!el) return;
 
+  ensureStartMenuStructure(el);
   applyStartMenuSettings(el);
 
   el.classList.remove("closing");
@@ -125,7 +141,7 @@ function openStartMenu({ focusSearch = false, openDefaultPage = true } = {}) {
   updateFavoritesUI();
 
   if (sharedAppLauncher) {
-    ["system", "games"].forEach((cat) => {
+    ["all", "system", "games"].forEach((cat) => {
       populateCategoryPage(cat, sharedAppLauncher);
       renderedCategories.add(cat);
     });
@@ -141,22 +157,9 @@ function openStartMenu({ focusSearch = false, openDefaultPage = true } = {}) {
         console.error("[StartMenu]", e);
       }
     }
-    let defaultCat = "recent";
-    if (cats["recent"] === false) {
-      const catNames = [
-        "recent",
-        "all",
-        "favorites",
-        "internet",
-        "media",
-        "office",
-        "graphics",
-        "games",
-        "development",
-        "system",
-        "help",
-        "settingsApp"
-      ];
+    let defaultCat = "all";
+    if (cats.menu === false || cats.all === false) {
+      const catNames = ["all", WEB_MENU_CATEGORY, "favorites", "games", "system", "help", "settingsApp"];
       const firstEnabled = catNames.find((c) => cats[c] !== false);
       if (firstEnabled) defaultCat = firstEnabled;
     }
@@ -269,6 +272,81 @@ const renderedCategories = new Set();
 let searchDebounceTimer = null;
 
 const RECENTLY_USED_MAX = 8;
+const CORE_MENU_CATEGORY = "all";
+const WEB_MENU_CATEGORY = "web";
+const WEB_CATEGORY_ORDER = ["internet", "media", "office", "graphics", "development"];
+const WEB_CATEGORY_LABELS = {
+  internet: "Internet",
+  media: "Media",
+  office: "Office",
+  graphics: "Graphics",
+  development: "Development"
+};
+
+function getAppCategory(appId, appData) {
+  return appData.category || SYSTEM_APPS[appId]?.category || "system";
+}
+
+function isWebApp(appId, appData) {
+  if (appData.launchType === "iframe" || appData.launchType === "remote") return true;
+  if (appData.source || appData.targetUrl) return true;
+  return false;
+}
+
+function isCoreApp(appId, appData) {
+  return appData.type === "system" && !isWebApp(appId, appData);
+}
+
+function ensureStartMenuStructure(menuEl) {
+  if (!menuEl) return;
+
+  const catList = $(".start-cat-list", menuEl);
+  const content = $(".start-content", menuEl);
+  if (!catList || !content) return;
+
+  const allCat = $('.start-cat[data-cat="all"]', menuEl);
+  if (allCat) allCat.dataset.cat = "all";
+
+  const allPage = $('.start-page[data-page="all"]', menuEl);
+  if (allPage) allPage.dataset.page = "all";
+
+  let webCat = $('.start-cat[data-cat="web"]', menuEl);
+  if (!webCat) {
+    webCat = createElement("div");
+    webCat.className = "start-cat";
+    webCat.dataset.cat = WEB_MENU_CATEGORY;
+
+    const icon = createElement("i");
+    icon.className = "fas fa-globe";
+    webCat.appendChild(icon);
+    webCat.appendChild(document.createTextNode(" Web Apps"));
+
+    const gamesCat = $('.start-cat[data-cat="games"]', menuEl);
+    if (gamesCat) {
+      catList.insertBefore(webCat, gamesCat);
+    } else {
+      catList.appendChild(webCat);
+    }
+  }
+
+  let webPage = $('.start-page[data-page="web"]', menuEl);
+  if (!webPage) {
+    webPage = createElement("div");
+    webPage.className = "start-page";
+    webPage.dataset.page = WEB_MENU_CATEGORY;
+
+    const grid = createElement("div");
+    grid.className = "app-grid";
+    webPage.appendChild(grid);
+
+    const recentPage = $('.start-page[data-page="recent"]', menuEl);
+    if (recentPage) {
+      content.insertBefore(webPage, recentPage);
+    } else {
+      content.appendChild(webPage);
+    }
+  }
+}
 
 function getRecentlyUsed() {
   const val = os.storage.get(StorageKeys.recentlyUsedApps);
@@ -281,6 +359,44 @@ export function trackRecentlyUsed(appId) {
   recent.unshift(appId);
   if (recent.length > RECENTLY_USED_MAX) recent = recent.slice(0, RECENTLY_USED_MAX);
   os.storage.set(StorageKeys.recentlyUsedApps, recent);
+}
+
+const PROTECTED_CATEGORIES = new Set(["all", "favorites", "recent"]);
+
+function getCategoryRenames() {
+  try {
+    return os.storage.get(StorageKeys.startMenuCategoryRenames) || {};
+  } catch (e) {
+    return {};
+  }
+}
+
+function setCategoryRename(catName, newLabel) {
+  const renames = getCategoryRenames();
+  if (newLabel && newLabel.trim()) {
+    renames[catName] = newLabel.trim();
+  } else {
+    delete renames[catName];
+  }
+  os.storage.set(StorageKeys.startMenuCategoryRenames, renames);
+}
+
+function getCategoryDeleted() {
+  try {
+    return new Set(os.storage.get(StorageKeys.startMenuCategoryDeleted) || []);
+  } catch (e) {
+    return new Set();
+  }
+}
+
+function setCategoryDeleted(catName, deleted) {
+  const deletedSet = getCategoryDeleted();
+  if (deleted) {
+    deletedSet.add(catName);
+  } else {
+    deletedSet.delete(catName);
+  }
+  os.storage.set(StorageKeys.startMenuCategoryDeleted, [...deletedSet]);
 }
 
 function createRecentAppItem(appId, appData) {
@@ -492,9 +608,18 @@ function activateCategoryPage(cat) {
   } else if (cat.dataset.cat === "recent") {
     updateRecentlyUsedUI();
   } else if (
-    ["all", "internet", "media", "office", "graphics", "games", "development", "system", "help"].includes(
-      cat.dataset.cat
-    )
+    [
+      "all",
+      WEB_MENU_CATEGORY,
+      "internet",
+      "media",
+      "office",
+      "graphics",
+      "games",
+      "development",
+      "system",
+      "help"
+    ].includes(cat.dataset.cat)
   ) {
     if (!renderedCategories.has(cat.dataset.cat)) {
       populateCategoryPage(cat.dataset.cat, sharedAppLauncher);
@@ -646,7 +771,50 @@ export function setupStartMenu(appLauncher, sessionManager, selectionManager) {
         if (page) selectFirstItemInPage(page);
       }
     };
+
+    cat.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      showCategoryContextMenu(e, cat);
+    });
   });
+
+  const catListEl = $(".start-cat-list");
+  if (catListEl) {
+    catListEl.addEventListener("contextmenu", (e) => {
+      if (e.target.closest(".start-cat")) return;
+      const deletedCats = getCategoryDeleted();
+      if (deletedCats.size === 0) return;
+      e.preventDefault();
+      e.stopPropagation();
+      showDynamicContextMenu(e, (menu, item, hr) => {
+        menu.appendChild(
+          item(
+            "Restore All Categories",
+            () => {
+              deletedCats.forEach((c) => setCategoryDeleted(c, false));
+              applyStartMenuSettings(getStartMenuEl());
+            },
+            "fas fa-undo"
+          )
+        );
+        if (deletedCats.size > 1) menu.appendChild(hr());
+        deletedCats.forEach((catName) => {
+          const label = catName.charAt(0).toUpperCase() + catName.slice(1);
+          menu.appendChild(
+            item(
+              `Restore "${label}"`,
+              () => {
+                setCategoryDeleted(catName, false);
+                applyStartMenuSettings(getStartMenuEl());
+              },
+              "fas fa-plus"
+            )
+          );
+        });
+      });
+    });
+  }
 
   const searchInput = $("#start-menu-search");
 
@@ -823,7 +991,7 @@ export function setupStartMenu(appLauncher, sessionManager, selectionManager) {
 
       const appRegistry = getAppRegistry();
       const allApps = { ...appMap, ...os.app.getAllApps() };
-      const results = { menu: [], games: [], system: [] };
+      const results = { core: [], web: [], games: [], files: [] };
       const seenAppIds = new Set();
 
       Object.entries(allApps).forEach(([appId, appData]) => {
@@ -834,8 +1002,8 @@ export function setupStartMenu(appLauncher, sessionManager, selectionManager) {
         if (!fuzzyMatch(q, title) && !wordBoundaryMatch(q, description)) return;
         seenAppIds.add(appId);
         const item = createAppItem(appId, appData);
-        const category = appData.type === "system" ? "system" : "menu";
-        results[category].push({ element: item, title: appData.title || appId });
+        const bucket = isWebApp(appId, appData) ? "web" : appData.type === "game" ? "games" : "core";
+        results[bucket].push({ element: item, title: appData.title || appId });
       });
 
       SETTINGS_CATEGORIES.forEach((cat) => {
@@ -845,7 +1013,7 @@ export function setupStartMenu(appLauncher, sessionManager, selectionManager) {
           if (!seenAppIds.has(appId)) {
             seenAppIds.add(appId);
             const appData = { title, icon: cat.icon, type: "system", category: "system" };
-            results.system.push({ element: createAppItem(appId, appData), title });
+            results.core.push({ element: createAppItem(appId, appData), title });
           }
         }
       });
@@ -855,8 +1023,8 @@ export function setupStartMenu(appLauncher, sessionManager, selectionManager) {
         return fuzzyMatch(q, f.name) || fuzzyMatch(q, f.path);
       });
 
-      const categoryOrder = ["menu", "games", "files", "system"];
-      const categoryLabels = { menu: "Menu", games: "Games", files: "Files", system: "System" };
+      const categoryOrder = ["core", "web", "games", "files"];
+      const categoryLabels = { core: "Core Apps", web: "Web Apps", games: "Games", files: "Files" };
 
       const fragment = document.createDocumentFragment();
       let hasResults = false;
@@ -1592,15 +1760,17 @@ function populateCategoryPage(category, appLauncher) {
     if (appRegistry.isAppUninstalled(appId) || appRegistry.isAppDisabled(appId)) return;
 
     let shouldInclude = false;
-    if (category === "all") {
-      shouldInclude = true;
+    if (category === CORE_MENU_CATEGORY) {
+      shouldInclude = isCoreApp(appId, appData);
+    } else if (category === WEB_MENU_CATEGORY) {
+      shouldInclude = isWebApp(appId, appData);
     } else if (category === "games") {
       shouldInclude = appData.type === "game";
     } else if (category === "system") {
-      const appCategory = appData.category || SYSTEM_APPS[appId]?.category || "system";
+      const appCategory = getAppCategory(appId, appData);
       shouldInclude = appData.type === "system" && appCategory === "system";
     } else {
-      const appCategory = appData.category || SYSTEM_APPS[appId]?.category || "system";
+      const appCategory = getAppCategory(appId, appData);
       shouldInclude = appCategory === category;
     }
 
@@ -1609,7 +1779,7 @@ function populateCategoryPage(category, appLauncher) {
     }
   });
 
-  if (category === "all" || category === "system") {
+  if (category === CORE_MENU_CATEGORY || category === "system") {
     SETTINGS_CATEGORIES.forEach((cat) => {
       const appId = `settings-${cat.id}`;
       const appData = { title: `Settings: ${cat.title}`, icon: cat.icon, type: "system", category: "system" };
@@ -1619,7 +1789,7 @@ function populateCategoryPage(category, appLauncher) {
 
   const fragment = document.createDocumentFragment();
 
-  if (category === "all") {
+  if (category === CORE_MENU_CATEGORY) {
     apps.sort((a, b) => (a.appData.title || a.appId).localeCompare(b.appData.title || b.appId));
 
     const groupedApps = {};
@@ -1644,6 +1814,25 @@ function populateCategoryPage(category, appLauncher) {
           fragment.appendChild(createAppItem(appId, appData));
         });
       });
+  } else if (category === WEB_MENU_CATEGORY) {
+    WEB_CATEGORY_ORDER.forEach((webCategory) => {
+      const categoryApps = apps.filter(({ appId, appData }) => getAppCategory(appId, appData) === webCategory);
+      if (categoryApps.length === 0) return;
+
+      const categoryHeader = createElement("div");
+      categoryHeader.className = "search-category-header";
+      categoryHeader.textContent = WEB_CATEGORY_LABELS[webCategory] || webCategory;
+      fragment.appendChild(categoryHeader);
+
+      const categoryResults = createElement("div");
+      categoryResults.className = "search-category-results";
+      categoryApps
+        .sort((a, b) => (a.appData.title || a.appId).localeCompare(b.appData.title || b.appId))
+        .forEach(({ appId, appData }) => {
+          categoryResults.appendChild(createAppItem(appId, appData));
+        });
+      fragment.appendChild(categoryResults);
+    });
   } else {
     apps.forEach(({ appId, appData }) => {
       fragment.appendChild(createAppItem(appId, appData));
@@ -1651,6 +1840,97 @@ function populateCategoryPage(category, appLauncher) {
   }
 
   grid.appendChild(fragment);
+}
+
+function showAppItemContextMenu(e, appId, appData) {
+  console.log("[StartMenu] Context menu triggered for:", appId, appData);
+  showDynamicContextMenu(e, (menu, item, hr) => {
+    menu.appendChild(
+      item(
+        "Edit Item",
+        () => {
+          os.dialog
+            .prompt("Edit Item", `Enter a new name for "${appData.title || appId}":`, appData.title || appId)
+            .then((newName) => {
+              if (newName === null) return;
+              const appRegistry = getAppRegistry();
+              if (newName.trim() === "") {
+                appRegistry.resetAppName(appId);
+                appData.title = appRegistry.getAppDisplayName(appId, appData.title);
+              } else {
+                appRegistry.setAppName(appId, newName.trim());
+                appData.title = newName.trim();
+              }
+              const itemEl = $(`.start-menu-item[data-app="${CSS.escape(appId)}"] .app-title`);
+              if (itemEl) itemEl.textContent = appData.title;
+            });
+        },
+        "fas fa-pen-to-square"
+      )
+    );
+    menu.appendChild(
+      item(
+        "Delete Item",
+        () => {
+          os.dialog.confirm(
+            "Delete Item",
+            `Are you sure you want to remove ${appData.title || appId} from the start menu?`,
+            () => {
+              const appRegistry = getAppRegistry();
+              if (appRegistry) {
+                appRegistry.uninstallApp(appId);
+              }
+            }
+          );
+        },
+        "fas fa-trash-can"
+      )
+    );
+  });
+}
+
+function showCategoryContextMenu(e, catEl) {
+  const catName = catEl.dataset.cat;
+  const renames = getCategoryRenames();
+  const currentLabel = renames[catName] || catEl.textContent.trim();
+  const isProtected = PROTECTED_CATEGORIES.has(catName);
+
+  showDynamicContextMenu(e, (menu, item, hr) => {
+    menu.appendChild(
+      item(
+        "Rename Category",
+        () => {
+          os.dialog.prompt("Rename Category", `Enter a new name for this category:`, currentLabel).then((newLabel) => {
+            if (newLabel === null) return;
+            if (newLabel.trim() === "") {
+              setCategoryRename(catName, "");
+              const iconEl = catEl.querySelector("i");
+              const textNode = catEl.childNodes[catEl.childNodes.length - 1];
+              if (textNode) textNode.textContent = ` ${catName.charAt(0).toUpperCase() + catName.slice(1)}`;
+            } else {
+              setCategoryRename(catName, newLabel.trim());
+              const iconEl = catEl.querySelector("i");
+              const textNode = catEl.childNodes[catEl.childNodes.length - 1];
+              if (textNode) textNode.textContent = ` ${newLabel.trim()}`;
+            }
+          });
+        },
+        "fas fa-pen"
+      )
+    );
+    if (!isProtected) {
+      menu.appendChild(
+        item(
+          "Delete Category",
+          () => {
+            setCategoryDeleted(catName, true);
+            catEl.style.display = "none";
+          },
+          "fas fa-trash-can"
+        )
+      );
+    }
+  });
 }
 
 function createAppItem(appId, appData) {
@@ -1706,6 +1986,13 @@ function createAppItem(appId, appData) {
       os.app.launch(appId);
     }
     closeStartMenu();
+  });
+
+  item.addEventListener("contextmenu", (e) => {
+    console.log("[StartMenu] contextmenu event on item:", appId);
+    e.preventDefault();
+    e.stopPropagation();
+    showAppItemContextMenu(e, appId, appData);
   });
 
   return item;

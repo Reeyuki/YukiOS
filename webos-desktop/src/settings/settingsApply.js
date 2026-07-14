@@ -172,7 +172,10 @@ export function applyStartMenuCats(cats) {
   if (!el) return;
   const catNames = ["menu", "games", "system", "favorites", "settingsApp"];
   catNames.forEach((catName) => {
-    const catEl = el.querySelector(`.start-cat[data-cat="${catName}"]`);
+    const catEl =
+      catName === "menu"
+        ? el.querySelector('.start-cat[data-cat="all"]')
+        : el.querySelector(`.start-cat[data-cat="${catName}"]`);
     if (catEl) catEl.style.display = cats[catName] !== false ? "flex" : "none";
   });
 }

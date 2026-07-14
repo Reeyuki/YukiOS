@@ -12,7 +12,7 @@ export class RunApp extends BaseApp {
 
   registerGlobalShortcut() {
     document.addEventListener("keydown", (e) => {
-      if (KeybindManager.matches(e, "global.run")) {
+      if (KeybindManager.matches(e, "global.run") || KeybindManager.matches(e, "global.runMeta")) {
         e.preventDefault();
         this.open();
       }

@@ -16,6 +16,13 @@ export const KEYBIND_DEFINITIONS = [
     icon: "fas fa-terminal"
   },
   {
+    id: "global.runMeta",
+    defaultKeys: ["Meta", "R"],
+    desc: "Open Run dialog (Win+R)",
+    cat: "global",
+    icon: "fas fa-terminal"
+  },
+  {
     id: "global.commandPalette.k",
     defaultKeys: ["Ctrl", "K"],
     desc: "Open Unified Command Palette",

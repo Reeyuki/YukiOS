@@ -485,10 +485,13 @@ export class DesktopUI {
     this.startButton.addEventListener("click", (e) => {
       e.stopPropagation();
       this.toggleStartMenu();
-      document.querySelector('.start-cat[data-cat="menu"]')?.click();
+      document.querySelector('.start-cat[data-cat="all"]')?.click();
     });
     this.startMenu.addEventListener("click", (e) => e.stopPropagation());
-    document.addEventListener("click", () => this.closeAllMenus());
+    document.addEventListener("click", (e) => {
+      if (e.target.closest(".explorer-confirmation-overlay, .fd-dialog")) return;
+      this.closeAllMenus();
+    });
     this.desktop.addEventListener("contextmenu", (e) => this.handleContextMenu(e));
     this.setupIconHandlers();
     this.setupInteractableSelection();

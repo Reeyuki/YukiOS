@@ -72,7 +72,7 @@ Its built entirely in vanilla javascript/typescript without any frameworks.
   submenu traversal)
 - Command palette (Ctrl+K/P/F1) for app, file, and command search with built-in calculator, terminal run support with >
   prefix, and unit converter
-- Run dialog (Ctrl+R) — compact quick-launch window for opening apps, URLs, and terminal commands
+- Run dialog (Ctrl+R-Windows+R) — compact quick-launch window for opening apps, URLs, and terminal commands
 - Clippy contextual assistant with per-app tips
 - Animated UI components including start menu, wallpaper switcher, audio mixer, context menus, and notifications
 - Keyboard shortcuts app for customizing global hotkeys
