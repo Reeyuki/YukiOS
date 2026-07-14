@@ -748,7 +748,7 @@ export function setupStartMenu(appLauncher, sessionManager, selectionManager) {
 
   $("#start-shutdown-btn")?.addEventListener("click", () => {
     closeStartMenu();
-    sessionManager?.shutdown?.();
+    location.reload();
   });
 
   $$(".start-cat").forEach((cat) => {
