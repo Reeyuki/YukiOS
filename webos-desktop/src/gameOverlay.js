@@ -1633,40 +1633,31 @@ export class GameOverlayController {
   }
 
   startClock() {
-    this.updateClock();
-    this.clockInterval = setInterval(() => {
-      this.updateClock();
-      this.updateOverviewPlaytime();
-    }, 1000);
+    import("./services/timeWorker.js").then(({ subscribeTimeTick }) => {
+      this._overlayClockUnsub = subscribeTimeTick((data) => {
+        const timeEl = this.overlayEl?.querySelector("#overlay-clock-time");
+        const dateEl = this.overlayEl?.querySelector("#overlay-clock-date");
+        const sessionEl = this.overlayEl?.querySelector("#overlay-session-time");
+        if (timeEl) timeEl.textContent = data.timeLong;
+        if (dateEl) dateEl.textContent = data.dateLong;
+        if (sessionEl && this.sessionStart) {
+          const min = Math.round((Date.now() - this.sessionStart) / 60000);
+          sessionEl.textContent = `${min}m - this session`;
+        }
+      });
+    });
+    this.updateOverviewPlaytime();
+    this._playtimeInterval = setInterval(() => this.updateOverviewPlaytime(), 1000);
   }
 
   stopClock() {
-    if (this.clockInterval) {
-      clearInterval(this.clockInterval);
-      this.clockInterval = null;
+    if (this._overlayClockUnsub) {
+      this._overlayClockUnsub();
+      this._overlayClockUnsub = null;
     }
-  }
-
-  updateClock() {
-    const now = new Date();
-    const timeEl = this.overlayEl?.querySelector("#overlay-clock-time");
-    const dateEl = this.overlayEl?.querySelector("#overlay-clock-date");
-    const sessionEl = this.overlayEl?.querySelector("#overlay-session-time");
-
-    if (timeEl) {
-      timeEl.textContent = now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
-    }
-    if (dateEl) {
-      dateEl.textContent = now.toLocaleDateString("en-US", {
-        weekday: "short",
-        month: "long",
-        day: "numeric",
-        year: "numeric"
-      });
-    }
-    if (sessionEl && this.sessionStart) {
-      const min = Math.round((Date.now() - this.sessionStart) / 60000);
-      sessionEl.textContent = `${min}m - this session`;
+    if (this._playtimeInterval) {
+      clearInterval(this._playtimeInterval);
+      this._playtimeInterval = null;
     }
   }
 

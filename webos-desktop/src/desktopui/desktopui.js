@@ -580,6 +580,15 @@ export class DesktopUI {
       }
 
       if (KeybindManager.matches(e, "desktop.copy")) {
+        const explorerWins = document.querySelectorAll("[id^='explorer-']");
+        let anyExplorerFocused = false;
+        for (const win of explorerWins) {
+          if (isWindowFocused(win.id, lastMousePos)) {
+            anyExplorerFocused = true;
+            break;
+          }
+        }
+        if (anyExplorerFocused) return;
         e.preventDefault();
         const selectedArray = this.selectionManager.toArray();
         if (selectedArray.length > 0) {
@@ -589,6 +598,15 @@ export class DesktopUI {
       }
 
       if (KeybindManager.matches(e, "desktop.cut")) {
+        const explorerWins = document.querySelectorAll("[id^='explorer-']");
+        let anyExplorerFocused = false;
+        for (const win of explorerWins) {
+          if (isWindowFocused(win.id, lastMousePos)) {
+            anyExplorerFocused = true;
+            break;
+          }
+        }
+        if (anyExplorerFocused) return;
         e.preventDefault();
         const selectedArray = this.selectionManager.toArray();
         if (selectedArray.length > 0) {

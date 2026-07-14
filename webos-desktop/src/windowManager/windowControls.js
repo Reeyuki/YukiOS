@@ -39,6 +39,11 @@ export function setupWindowControls(win, wm) {
   if (header) {
     header.addEventListener("dblclick", (e) => {
       if (e.target.closest(".window-controls")) return;
+      const icon = header.querySelector("span > img, span > i, span > svg");
+      if (icon && (e.target === icon || icon.contains(e.target))) {
+        closeWindow(win, wm);
+        return;
+      }
       win.classList.add("snapping");
       if (win.dataset.snapZone === "maximize") {
         wm.unsnap(win);

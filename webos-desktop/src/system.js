@@ -703,16 +703,18 @@ export class SystemUtilities {
       createCalendarPopup();
     });
 
-    const updateClock = () => {
-      const now = new Date();
-      clock.textContent = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-      date.textContent = now.toLocaleDateString();
-      if (uptime) {
+    import("./services/timeWorker.js").then(({ subscribeTimeTick }) => {
+      subscribeTimeTick((data) => {
+        clock.textContent = data.timeStr;
+        date.textContent = data.dateStr;
+      });
+    });
+
+    if (uptime) {
+      setInterval(() => {
         uptime.textContent = `${Math.floor((Date.now() - pageLoadTime) / 60000)} min`;
-      }
-    };
-    setInterval(updateClock, 1000);
-    updateClock();
+      }, 60000);
+    }
   }
 
   static async startTaskbarWeather(appLauncher) {

@@ -3,10 +3,12 @@ import { createElement } from "../shared/domUtils.js";
 import { KeybindManager } from "../keybindManager.js";
 import { os, StorageKeys } from "../framework.js";
 import { getWeekNumber } from "../shared/calendarUtils.js";
+import { subscribeTimeTick } from "../services/timeWorker.js";
 
 let calendarPopup = null;
 let currentCalendarMonth = new Date();
-let calendarTimeInterval = null;
+let unsubTimeTick = null;
+let lastWorkerData = null;
 
 function drawClock(canvas, date) {
   if (!canvas || !date) return;
@@ -205,8 +207,11 @@ export function createCalendarPopup() {
 
   positionCalendarPopup();
 
-  updateCalendarTime();
-  calendarTimeInterval = setInterval(updateCalendarTime, 1000);
+  if (lastWorkerData) updateCalendarTime(lastWorkerData);
+  unsubTimeTick = subscribeTimeTick((data) => {
+    lastWorkerData = data;
+    updateCalendarTime(data);
+  });
 
   renderCalendar();
 
@@ -222,9 +227,9 @@ function closeCalendarPopup() {
     calendarPopup.remove();
     calendarPopup = null;
   }
-  if (calendarTimeInterval) {
-    clearInterval(calendarTimeInterval);
-    calendarTimeInterval = null;
+  if (unsubTimeTick) {
+    unsubTimeTick();
+    unsubTimeTick = null;
   }
   document.removeEventListener("keydown", handleCalendarKeydown);
   document.removeEventListener("click", closeCalendarOnClickOutside);
@@ -262,12 +267,12 @@ function positionCalendarPopup() {
   });
 }
 
-function updateCalendarTime() {
+function updateCalendarTime(data) {
   if (!calendarPopup) return;
   const canvas = calendarPopup.querySelector("#calendar-analog-canvas");
   const timeDisplay = calendarPopup.querySelector(".calendar-time-display");
   const digitalText = calendarPopup.querySelector(".calendar-digital-text");
-  const now = new Date();
+  const now = data ? new Date(data.timestamp) : new Date();
   if (canvas) {
     drawClock(canvas, now);
   }

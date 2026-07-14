@@ -46,7 +46,7 @@ Its built entirely in vanilla javascript/typescript without any frameworks.
 - Window icons in title bar (double-click to close the window)
 - Taskbar positioned on any edge of the screen
 - Taskbar drag to reorder and click to minimize/restore
-- Live taskbar window preview on hover with close button
+- Live taskbar window preview on hover
 - System tray with background-running apps
 - Tray icon scroll actions for audio, brightness, and workspace switching
 - Tray context menus with per-item quick actions
@@ -55,6 +55,7 @@ Its built entirely in vanilla javascript/typescript without any frameworks.
 - Desktop stretch scroll prevention toggle
 - Alt+Left-Click window drag / Alt+Right-Click window resize
 - Window animation system with 35+ effects
+- Desktop peek button in system tray with click to minimize/restore all windows, hover to temporarily reveal the desktop
 - Cursor launch effect when applications start
 - Automatically saves and restores open apps, window positions and sizes, workspace assignments, scroll positions,
   window states (minimized, fullscreen, snapped), focus order

@@ -360,17 +360,19 @@ export class SessionManager {
   }
 
   startClock() {
-    this.timeInterval = setInterval(() => {
-      if (!this.container) {
-        clearInterval(this.timeInterval);
-        return;
-      }
-      const timeEl = this.container.querySelector(".session-time");
-      if (timeEl) {
-        const d = new Date();
-        timeEl.textContent = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-      }
-    }, 1000 * 60);
+    import("./services/timeWorker.js").then(({ subscribeTimeTick }) => {
+      const timeEl = this.container?.querySelector(".session-time");
+      if (!timeEl) return;
+      const update = (data) => {
+        if (!this.container) {
+          unsub();
+          return;
+        }
+        timeEl.textContent = data.timeStr;
+      };
+      const unsub = subscribeTimeTick(update);
+      this._timeWorkerUnsub = unsub;
+    });
   }
 
   startUptimeCounter() {
@@ -748,9 +750,9 @@ export class SessionManager {
       }, 500);
     }
 
-    if (this.timeInterval) {
-      clearInterval(this.timeInterval);
-      this.timeInterval = null;
+    if (this._timeWorkerUnsub) {
+      this._timeWorkerUnsub();
+      this._timeWorkerUnsub = null;
     }
 
     if (this.uptimeInterval) {
@@ -788,8 +790,9 @@ export class SessionManager {
       wallpaper.pause();
     }
 
-    if (this.timeInterval) {
-      clearInterval(this.timeInterval);
+    if (this._timeWorkerUnsub) {
+      this._timeWorkerUnsub();
+      this._timeWorkerUnsub = null;
     }
 
     const wakeHandler = () => {

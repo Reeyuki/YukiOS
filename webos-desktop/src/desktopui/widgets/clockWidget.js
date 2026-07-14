@@ -1,11 +1,12 @@
 import { WidgetBase } from "../widgetManager.js";
+import { subscribeTimeTick } from "../../services/timeWorker.js";
 
 export class ClockWidget extends WidgetBase {
   constructor(manager, id) {
     super(manager, id, "clock", "Clock", 240, 130);
     this._24h = false;
     this.showSeconds = false;
-    this.interval = null;
+    this._timeUnsub = null;
   }
 
   onRender(contentEl) {
@@ -13,11 +14,11 @@ export class ClockWidget extends WidgetBase {
       <div class="widget-clock-time" id="w-clock-time-${this.id}"></div>
       <div class="widget-clock-date" id="w-clock-date-${this.id}"></div>
     `;
-    this.tick();
-    this.interval = setInterval(() => this.tick(), 1000);
+    this.tickFromWorker();
+    this._timeUnsub = subscribeTimeTick(() => this.tickFromWorker());
   }
 
-  tick() {
+  tickFromWorker() {
     const now = new Date();
     let hours = now.getHours();
     let minutes = now.getMinutes().toString().padStart(2, "0");
@@ -81,7 +82,7 @@ export class ClockWidget extends WidgetBase {
   applyConfig(data) {
     this._24h = data._24h === "true";
     this.showSeconds = data.showSeconds === "true";
-    this.tick();
+    this.tickFromWorker();
     this.manager.saveState();
   }
 
@@ -97,7 +98,7 @@ export class ClockWidget extends WidgetBase {
   }
 
   destroy() {
-    if (this.interval) clearInterval(this.interval);
+    if (this._timeUnsub) this._timeUnsub();
     super.destroy();
   }
 }
