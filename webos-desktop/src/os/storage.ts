@@ -5,11 +5,6 @@
  */
 
 export class StorageAPI {
-  /**
-   * Get a value from storage
-   * @param key - Storage key
-   * @returns Deserialized value or null if key doesn't exist or is malformed
-   */
   get<T = unknown>(key: string): T | null {
     try {
       const raw = localStorage.getItem(key);
@@ -22,11 +17,6 @@ export class StorageAPI {
     }
   }
 
-  /**
-   * Set a value in storage
-   * @param key - Storage key
-   * @param value - Value to store (automatically serialized)
-   */
   set(key: string, value: unknown): void {
     try {
       localStorage.setItem(key, JSON.stringify(value));
@@ -35,10 +25,6 @@ export class StorageAPI {
     }
   }
 
-  /**
-   * Remove a value from storage
-   * @param key - Storage key
-   */
   remove(key: string): void {
     try {
       localStorage.removeItem(key);
@@ -47,9 +33,6 @@ export class StorageAPI {
     }
   }
 
-  /**
-   * Clear all values from storage
-   */
   clear(): void {
     try {
       localStorage.clear();
@@ -58,11 +41,6 @@ export class StorageAPI {
     }
   }
 
-  /**
-   * Check if a key exists in storage
-   * @param key - Storage key
-   * @returns true if key exists
-   */
   has(key: string): boolean {
     return localStorage.getItem(key) !== null;
   }

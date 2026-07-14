@@ -23,12 +23,6 @@ export class FileSystemAPI {
     return Array.isArray(path) ? path.join("/") : path;
   }
 
-  /**
-   * Read file content
-   * @param path - File path (relative to user home) - can be string or array
-   * @param options - Read options
-   * @returns File content as string or Uint8Array
-   */
   async read(path: string | string[], options: ReadFileOptions = {}): Promise<string | Uint8Array> {
     const pathStr = await this.resolve(path);
     const fullPath = this.fs.resolveUserPath(pathStr);
@@ -39,12 +33,6 @@ export class FileSystemAPI {
     return await this.fs.pRead("readFile", fullPath, "utf8");
   }
 
-  /**
-   * Write file content
-   * @param path - File path (relative to user home) - can be string or array
-   * @param content - Content to write (string or Uint8Array)
-   * @param options - Write options
-   */
   async write(path: string | string[], content: string | Uint8Array, options: WriteFileOptions = {}): Promise<void> {
     const pathStr = await this.resolve(path);
     const fullPath = this.fs.resolveUserPath(pathStr);
@@ -68,30 +56,16 @@ export class FileSystemAPI {
     await this.fs.notifyDesktopChange(pathStr);
   }
 
-  /**
-   * Read directory contents
-   * @param path - Directory path (relative to user home) - can be string or array
-   * @returns Directory contents as object
-   */
   async readdir(path: string | string[]): Promise<FileSystemEntry> {
     const pathStr = await this.resolve(path);
     return await this.fs.getFolder(pathStr);
   }
 
-  /**
-   * Create directory
-   * @param path - Directory path (relative to user home) - can be string or array
-   */
   async mkdir(path: string | string[]): Promise<void> {
     const pathStr = await this.resolve(path);
     await this.fs.ensureFolder(pathStr);
   }
 
-  /**
-   * Delete file or directory
-   * @param path - Path to delete - can be string or array
-   * @param name - Name of item (for directory deletion)
-   */
   async delete(path: string | string[], name?: string): Promise<void> {
     const pathStr = await this.resolve(path);
 
@@ -104,22 +78,12 @@ export class FileSystemAPI {
     }
   }
 
-  /**
-   * Check if path exists
-   * @param path - Path to check - can be string or array
-   * @returns True if exists
-   */
   async exists(path: string | string[]): Promise<boolean> {
     const pathStr = await this.resolve(path);
     const fullPath = this.fs.resolveUserPath(pathStr);
     return await this.fs.exists(fullPath);
   }
 
-  /**
-   * Copy file or directory
-   * @param source - Source path - can be string or array
-   * @param destination - Destination path - can be string or array
-   */
   async copy(source: string | string[], destination: string | string[]): Promise<void> {
     const sourceStr = await this.resolve(source);
     const destStr = await this.resolve(destination);
@@ -132,11 +96,6 @@ export class FileSystemAPI {
     await this.fs.safeWriteFile(destPath, content);
   }
 
-  /**
-   * Rename/move file or directory
-   * @param oldPath - Current path - can be string or array
-   * @param newPath - New path - can be string or array
-   */
   async rename(oldPath: string | string[], newPath: string | string[]): Promise<void> {
     const oldStr = await this.resolve(oldPath);
     const newStr = await this.resolve(newPath);
@@ -154,12 +113,6 @@ export class FileSystemAPI {
     }
   }
 
-  /**
-   * Get file metadata
-   * @param path - File path
-   * @param name - File name
-   * @returns File metadata
-   */
   async getMetadata(path: string, name: string): Promise<{ kind?: FileKind; icon?: string }> {
     await this.fs.fsReady;
     const dir = this.fs.resolveUserPath(path);
@@ -167,11 +120,6 @@ export class FileSystemAPI {
     return meta[name] || {};
   }
 
-  /**
-   * Recursively calculate directory size and count files/folders
-   * @param path - Directory path (relative to user home) - can be string or array
-   * @returns Total size in bytes, file count, and folder count
-   */
   async calcDirSize(path: string | string[]): Promise<{ size: number; files: number; dirs: number }> {
     let size = 0;
     let files = 0;
@@ -195,20 +143,10 @@ export class FileSystemAPI {
     return { size, files, dirs };
   }
 
-  /**
-   * Infer file kind from filename
-   * @param filename - Filename to analyze
-   * @returns File kind
-   */
   inferKind(filename: string): FileKind {
     return this.fs.inferKind(filename);
   }
 
-  /**
-   * Check if path is a file (not a directory)
-   * @param path - File path (relative to user home) - can be string or array
-   * @returns True if path is a file
-   */
   async isFile(path: string | string[]): Promise<boolean> {
     const pathStr = await this.resolve(path);
     const fullPath = this.fs.resolveUserPath(pathStr);
@@ -219,11 +157,6 @@ export class FileSystemAPI {
     return item && item.type === "file";
   }
 
-  /**
-   * Get file kind for a specific file
-   * @param path - File path (relative to user home) - can be string or array
-   * @returns File kind
-   */
   async getFileKind(path: string | string[]): Promise<FileKind | undefined> {
     const pathStr = await this.resolve(path);
     const fullPath = this.fs.resolveUserPath(pathStr);
@@ -233,11 +166,6 @@ export class FileSystemAPI {
     return meta[basename]?.kind;
   }
 
-  /**
-   * Get file icon for a specific file
-   * @param path - File path (relative to user home) - can be string or array
-   * @returns File icon path
-   */
   async getFileIcon(path: string | string[]): Promise<string | undefined> {
     const pathStr = await this.resolve(path);
     const fullPath = this.fs.resolveUserPath(pathStr);
@@ -247,14 +175,6 @@ export class FileSystemAPI {
     return meta[basename]?.icon;
   }
 
-  /**
-   * Write binary file to blob storage
-   * @param path - Directory path (relative to user home) - can be string or array
-   * @param name - File name
-   * @param blob - Blob content
-   * @param kind - File kind
-   * @param icon - File icon
-   */
   async writeBinaryFile(
     path: string | string[],
     name: string,
@@ -266,47 +186,21 @@ export class FileSystemAPI {
     return await this.fs.writeBinaryFile(pathStr, name, blob, kind, icon);
   }
 
-  /**
-   * Read binary file from blob storage
-   * @param path - Directory path (relative to user home) - can be string or array
-   * @param name - File name
-   * @returns Blob content
-   */
   async readBinaryFile(path: string | string[], name: string): Promise<Blob | null> {
     const pathStr = await this.resolve(path);
     return await this.fs.readBinaryFile(pathStr, name);
   }
 
-  /**
-   * Delete binary file from blob storage
-   * @param path - Directory path (relative to user home) - can be string or array
-   * @param name - File name
-   */
   async deleteBinaryFile(path: string | string[], name: string): Promise<void> {
     const pathStr = await this.resolve(path);
     await this.fs.deleteBinaryFile(pathStr, name);
   }
 
-  /**
-   * Rename binary file in blob storage
-   * @param path - Directory path (relative to user home) - can be string or array
-   * @param oldName - Current file name
-   * @param newName - New file name
-   */
   async renameBinaryFile(path: string | string[], oldName: string, newName: string): Promise<void> {
     const pathStr = await this.resolve(path);
     await this.fs.renameBinaryFile(pathStr, oldName, newName);
   }
 
-  /**
-   * Create a new file
-   * @param path - Directory path (relative to user home) - can be string or array
-   * @param name - File name
-   * @param content - File content
-   * @param kind - File kind
-   * @param icon - File icon
-   * @param faIcon - Font Awesome icon
-   */
   async createFile(
     path: string | string[],
     name: string,
@@ -319,44 +213,21 @@ export class FileSystemAPI {
     return await this.fs.createFile(pathStr, name, content, kind, icon, faIcon);
   }
 
-  /**
-   * Create a new folder
-   * @param path - Directory path (relative to user home) - can be string or array
-   * @param name - Folder name
-   */
   async createFolder(path: string | string[], name: string): Promise<string> {
     const pathStr = await this.resolve(path);
     return await this.fs.createFolder(pathStr, name);
   }
 
-  /**
-   * Delete a file or folder
-   * @param path - Directory path (relative to user home) - can be string or array
-   * @param name - Item name
-   */
   async deleteItem(path: string | string[], name: string): Promise<void> {
     const pathStr = await this.resolve(path);
     await this.fs.deleteItem(pathStr, name);
   }
 
-  /**
-   * Rename a file or folder
-   * @param path - Directory path (relative to user home) - can be string or array
-   * @param oldName - Current name
-   * @param newName - New name
-   */
   async renameItem(path: string | string[], oldName: string, newName: string): Promise<void> {
     const pathStr = await this.resolve(path);
     await this.fs.renameItem(pathStr, oldName, newName);
   }
 
-  /**
-   * Update file content
-   * @param path - Directory path (relative to user home) - can be string or array
-   * @param name - File name
-   * @param content - New content
-   * @param meta - Optional metadata
-   */
   async updateFile(
     path: string | string[],
     name: string,
@@ -411,36 +282,18 @@ export class FileSystemAPI {
     return await this.fs.trash.getItemCount();
   }
 
-  /**
-   * Open browser file picker for directory selection
-   * @returns A FileSystemDirectoryHandle
-   */
   async pickDirectory(): Promise<any> {
     return await this.fs.mountManager.pickDirectory();
   }
 
-  /**
-   * Register a picked directory as a mount point
-   * @param handle - The directory handle from pickDirectory()
-   * @param label - User-friendly name for the mount
-   * @returns The mount point path
-   */
   registerMount(handle: any, label: string): string {
     return this.fs.mountManager.registerMount(handle, label);
   }
 
-  /**
-   * Unmount a previously mounted directory
-   * @param label - Mount label to remove
-   */
   unmount(label: string): void {
     this.fs.mountManager.unmount(label);
   }
 
-  /**
-   * Get all active mount points
-   * @returns Array of { label, mountPoint }
-   */
   getMounts(): Array<{ label: string; mountPoint: string }> {
     return this.fs.mountManager.getMounts();
   }

@@ -35,15 +35,6 @@ export class WindowAPI {
     }, timeoutMs);
   }
 
-  /**
-   * Create a new window
-   * @param id - Unique window identifier
-   * @param title - Window title
-   * @param width - Width (e.g., "80vw", 800)
-   * @param height - Height (e.g., "80vh", 600)
-   * @param options - Additional window options
-   * @returns Window element
-   */
   create(
     id: string,
     title: string,
@@ -118,10 +109,6 @@ export class WindowAPI {
     return win;
   }
 
-  /**
-   * Close a window
-   * @param win - Window element or window ID
-   */
   close(win: HTMLElement | string): void {
     if (typeof win === "string") {
       const element = $(`#${win}`);
@@ -133,17 +120,10 @@ export class WindowAPI {
     }
   }
 
-  /**
-   * Close all open windows
-   */
   closeAll(): void {
     this.wm.closeAll();
   }
 
-  /**
-   * Focus/bring a window to front
-   * @param win - Window element or window ID
-   */
   focus(win: HTMLElement | string): void {
     if (typeof win === "string") {
       const element = $(`#${win}`);
@@ -155,10 +135,6 @@ export class WindowAPI {
     }
   }
 
-  /**
-   * Minimize a window
-   * @param win - Window element or window ID
-   */
   minimize(win: HTMLElement | string): void {
     if (typeof win === "string") {
       const element = $(`#${win}`);
@@ -170,10 +146,6 @@ export class WindowAPI {
     }
   }
 
-  /**
-   * Maximize/restore a window
-   * @param win - Window element or window ID
-   */
   maximize(win: HTMLElement | string): void {
     if (typeof win === "string") {
       const element = $(`#${win}`);
@@ -185,69 +157,30 @@ export class WindowAPI {
     }
   }
 
-  /**
-   * Bring window to front (alias for focus)
-   * @param win - Window element or window ID
-   */
   bringToFront(win: HTMLElement | string): void {
     this.focus(win);
   }
 
-  /**
-   * Add window to taskbar
-   * @param winId - Window ID
-   * @param title - Window title
-   * @param icon - Icon URL or FontAwesome class
-   * @param color - Optional color
-   */
   addToTaskbar(winId: string, title: string, icon: string, color?: string): void {
     this.wm.addToTaskbar(winId, title, icon, color);
   }
 
-  /**
-   * Remove window from taskbar
-   * @param winId - Window ID
-   */
   removeFromTaskbar(winId: string): void {
     this.wm.removeFromTaskbar(winId);
   }
 
-  /**
-   * Get window controls HTML
-   * @param externalUrl - Optional external URL for controls
-   * @returns HTML string for window controls
-   */
   getWindowControls(externalUrl?: string, showDownload?: boolean): string {
     return this.wm.getWindowControls(externalUrl, showDownload);
   }
 
-  /**
-   * Update a window's title in the DOM header and taskbar entry
-   * @param winId - Window ID
-   * @param title - New title
-   */
   setTitle(winId: string, title: string): void {
     this.wm.setWindowTitle(winId, title);
   }
 
-  /**
-   * Get a window's title from the window registry
-   * @param winId - Window ID
-   * @returns The window title, or null if not found
-   */
   getTitle(winId: string): string | null {
     return this.wm.getWindowTitle(winId);
   }
 
-  /**
-   * Send notification through window manager
-   * @param title - Notification title
-   * @param message - Notification message
-   * @param type - Notification type
-   * @param duration - Duration in ms
-   * @param icon - Icon
-   * @param appSource - App source identifier
-   */
   notify(
     title: string,
     message: string,
