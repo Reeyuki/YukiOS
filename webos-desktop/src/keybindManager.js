@@ -9,6 +9,13 @@ const MODIFIER_ALIASES = {
 
 export const KEYBIND_DEFINITIONS = [
   {
+    id: "global.run",
+    defaultKeys: ["Ctrl", "R"],
+    desc: "Open Run dialog",
+    cat: "global",
+    icon: "fas fa-terminal"
+  },
+  {
     id: "global.commandPalette.k",
     defaultKeys: ["Ctrl", "K"],
     desc: "Open Unified Command Palette",

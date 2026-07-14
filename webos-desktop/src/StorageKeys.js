@@ -186,5 +186,7 @@ export const StorageKeys = {
   shittifyLastState: "yukiOS_shittify_laststate",
   launchTimePrefix: "yukiOS_launchtime:",
   historyStorageKey: "yukiOS_terminal_history",
-  terminalAliases: "yukiOS_terminal_aliases"
+  terminalAliases: "yukiOS_terminal_aliases",
+  runHistory: "yukiOS_run_history",
+  calendarClockStyle: "yukiOS_calendar_clock_style"
 };

@@ -170,7 +170,7 @@ export function applyStartMenuSize(width, height) {
 export function applyStartMenuCats(cats) {
   const el = document.getElementById("start-menu") || $(".start-menu");
   if (!el) return;
-  const catNames = ["menu", "games", "system", "favorites", "customize", "settingsApp"];
+  const catNames = ["menu", "games", "system", "favorites", "settingsApp"];
   catNames.forEach((catName) => {
     const catEl = el.querySelector(`.start-cat[data-cat="${catName}"]`);
     if (catEl) catEl.style.display = cats[catName] !== false ? "flex" : "none";

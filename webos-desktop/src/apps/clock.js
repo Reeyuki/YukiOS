@@ -229,7 +229,8 @@ export class ClockApp extends BaseApp {
     const defaults = {
       use24h: true,
       snoozeDuration: 5,
-      alarmSound: "classic"
+      alarmSound: "classic",
+      calendarClockStyle: "analog"
     };
     const saved = os.storage.get(StorageKeys.clockSettings);
     return saved ? { ...defaults, ...saved } : defaults;
@@ -518,6 +519,13 @@ export class ClockApp extends BaseApp {
           <div class="clock-settings-toggle">
             <button class="clock-settings-toggle-btn ${!this.settings.use24h ? "active" : ""}" data-setting="use24h" data-value="false">12h</button>
             <button class="clock-settings-toggle-btn ${this.settings.use24h ? "active" : ""}" data-setting="use24h" data-value="true">24h</button>
+          </div>
+        </div>
+        <div class="clock-settings-group">
+          <label class="clock-settings-label">Calendar Popup Clock</label>
+          <div class="clock-settings-toggle">
+            <button class="clock-settings-toggle-btn ${this.settings.calendarClockStyle === "analog" ? "active" : ""}" data-setting="calendarClockStyle" data-value="analog">Analog</button>
+            <button class="clock-settings-toggle-btn ${this.settings.calendarClockStyle === "digital" ? "active" : ""}" data-setting="calendarClockStyle" data-value="digital">Digital</button>
           </div>
         </div>
         <div class="clock-settings-group">

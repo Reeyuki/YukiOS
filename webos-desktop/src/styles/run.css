@@ -1,0 +1,114 @@
+.run-window {
+  min-width: 380px !important;
+  min-height: 180px !important;
+}
+
+.run-root {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+}
+
+.run-description {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.run-input-group {
+  position: relative;
+}
+
+.run-input {
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-sm);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-family: var(--font-ui);
+  outline: none;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+}
+
+.run-input:focus {
+  border-color: var(--brand);
+}
+
+.run-input::placeholder {
+  color: var(--text-muted);
+}
+
+.run-suggestions {
+  display: none;
+  position: fixed;
+  background: var(--bg-secondary);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-sm);
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 99999999;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.run-suggestion-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 12px;
+  cursor: pointer;
+  color: var(--text-primary);
+  font-size: 13px;
+  transition: background 0.1s;
+}
+
+.run-suggestion-item:hover,
+.run-suggestion-item.active {
+  background: var(--glass-hover);
+}
+
+.run-suggestion-item i {
+  width: 16px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.run-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.run-btn {
+  padding: 5px 24px;
+  border: none;
+  border-radius: var(--r-sm);
+  font-size: 13px;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    opacity 0.15s;
+}
+
+.run-btn-ok {
+  background: var(--brand);
+  color: #fff;
+}
+
+.run-btn-ok:hover {
+  opacity: 0.85;
+}
+
+.run-btn-cancel {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--glass-border);
+}
+
+.run-btn-cancel:hover {
+  background: var(--glass-hover);
+}

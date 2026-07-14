@@ -5,6 +5,22 @@ const appNewsEntries = APP_MANIFESTS.filter((manifest) => manifest.news).map((ma
 
 const EXISTING_NEWS_UPDATES = [
   {
+    date: "July 14, 2026",
+    sections: [
+      {
+        icon: "fa-terminal",
+        title: "Run Dialog",
+        items: [
+          [
+            "fa-terminal",
+            "Run Dialog",
+            "Press Ctrl+R to quickly launch apps, open URLs, or run commands from a single dialog."
+          ]
+        ]
+      }
+    ]
+  },
+  {
     date: "July 10, 2026",
     sections: [
       {

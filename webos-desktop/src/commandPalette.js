@@ -1,3 +1,4 @@
+import "./styles/commandPalette.css";
 import { SystemUtilities } from "./system.js";
 import { BusEvents } from "./core/EventBus.js";
 import { openFileWith } from "./fileDisplay.js";
@@ -17,223 +18,8 @@ export class CommandPalette {
     this.activeIndex = 0;
     this.currentSubpalette = null;
     this.inputElement = null;
-    this.overlayElement = null;
     this.resultsContainer = null;
-    this.setupUI();
     this.setupListeners();
-  }
-
-  setupUI() {
-    this.overlayElement = document.createElement("div");
-    this.overlayElement.id = "command-palette";
-    this.overlayElement.className = "cmd-palette-overlay";
-    this.overlayElement.style.display = "none";
-
-    this.overlayElement.innerHTML = `
-      <div class="cmd-palette-modal">
-        <div class="cmd-palette-header">
-          <i class="fas fa-search cmd-palette-search-icon"></i>
-          <input type="text" id="cmd-palette-input" placeholder="Type a command, app, or file name..." autocomplete="off">
-          <div class="cmd-palette-kbd">ESC</div>
-        </div>
-        <div class="cmd-palette-body">
-          <div id="cmd-palette-results" class="cmd-palette-results"></div>
-        </div>
-        <div class="cmd-palette-footer">
-          <span>Use <kbd>↑</kbd> <kbd>↓</kbd> to navigate, <kbd>Enter</kbd> to select, <kbd>Esc</kbd> to close</span>
-        </div>
-      </div>
-    `;
-
-    document.body.appendChild(this.overlayElement);
-
-    const style = document.createElement("style");
-    style.id = "command-palette-styles";
-    style.textContent = `
-      .cmd-palette-overlay {
-        position: fixed;
-        inset: 0;
-        z-index: 99999999;
-        background: var(--overlay-bg);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        display: flex;
-        align-items: flex-start;
-        justify-content: center;
-        padding-top: 100px;
-        font-family: 'Inter', system-ui, -apple-system, sans-serif;
-        color: var(--text-primary);
-        animation: cmdFadeIn 0.2s ease-out;
-      }
-
-      @keyframes cmdFadeIn {
-        from { opacity: 0; transform: scale(1.02); }
-        to { opacity: 1; transform: scale(1); }
-      }
-
-      .cmd-palette-modal {
-        width: 100%;
-        max-width: 600px;
-        max-height: 480px;
-        border-radius: 16px;
-        background: var(--bg-elev-2);
-        border: 1px solid var(--glass-border);
-        box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.5);
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-      }
-
-      .cmd-palette-header {
-        padding: 16px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        border-bottom: 1px solid var(--glass-border);
-      }
-
-      .cmd-palette-search-icon {
-        color: var(--text-muted);
-        font-size: 16px;
-      }
-
-      #cmd-palette-input {
-        flex: 1;
-        background: transparent;
-        border: none;
-        outline: none;
-        color: var(--text-primary);
-        font-size: 16px;
-        font-family: inherit;
-      }
-
-      .cmd-palette-kbd {
-        font-size: 10px;
-        font-weight: 600;
-        padding: 3px 6px;
-        background: var(--glass-border);
-        border: 1px solid var(--glass);
-        border-radius: 6px;
-        color: var(--text-muted);
-        letter-spacing: 0.5px;
-      }
-
-      .cmd-palette-body {
-        flex: 1;
-        overflow-y: auto;
-        max-height: 340px;
-        padding: 8px 0;
-      }
-
-      .cmd-palette-body::-webkit-scrollbar {
-        width: 6px;
-      }
-
-      .cmd-palette-body::-webkit-scrollbar-thumb {
-        background: var(--glass);
-        border-radius: 10px;
-      }
-
-      .cmd-palette-results {
-        display: flex;
-        flex-direction: column;
-      }
-
-      .cmd-palette-item {
-        padding: 10px 16px;
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        cursor: pointer;
-        transition: all 0.15s ease;
-      }
-
-      .cmd-palette-item:hover {
-        background: var(--surface-1);
-      }
-
-      .cmd-palette-item.active {
-        background: var(--glass-border);
-        border-left: 3px solid var(--brand);
-        padding-left: 13px;
-      }
-
-      .cmd-palette-item-icon {
-        width: 32px;
-        height: 32px;
-        border-radius: 8px;
-        object-fit: cover;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: var(--surface-1);
-        color: var(--text-secondary);
-        font-size: 14px;
-      }
-
-      .cmd-palette-item-icon img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        border-radius: 8px;
-      }
-
-      .cmd-palette-item-meta {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-        min-width: 0;
-      }
-
-      .cmd-palette-item-title {
-        font-size: 14px;
-        color: var(--text-primary);
-        font-weight: 500;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .cmd-palette-item-sub {
-        font-size: 11px;
-        color: var(--text-muted);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .cmd-palette-item-tag {
-        font-size: 10px;
-        font-weight: 600;
-        padding: 2px 8px;
-        border-radius: 10px;
-        background: var(--surface-1);
-        color: var(--text-muted);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-      }
-
-      .cmd-palette-footer {
-        padding: 10px 16px;
-        border-top: 1px solid var(--glass-border);
-        font-size: 11px;
-        color: var(--text-muted);
-        text-align: center;
-      }
-
-      .cmd-palette-footer kbd {
-        background: var(--glass-border);
-        padding: 1px 4px;
-        border-radius: 3px;
-        border: 1px solid var(--glass);
-        font-family: inherit;
-      }
-    `;
-    document.head.appendChild(style);
-
-    this.inputElement = this.overlayElement.querySelector("#cmd-palette-input");
-    this.resultsContainer = this.overlayElement.querySelector("#cmd-palette-results");
   }
 
   setupListeners() {
@@ -247,12 +33,48 @@ export class CommandPalette {
         this.toggle();
       }
     });
+  }
 
-    this.overlayElement.addEventListener("click", (e) => {
-      if (e.target === this.overlayElement) {
-        this.close();
-      }
+  toggle() {
+    const existing = document.getElementById("command-palette-win");
+    if (existing) {
+      this.close();
+    } else {
+      this.open();
+    }
+  }
+
+  async open() {
+    if (document.getElementById("session-overlay")) return;
+
+    this.isOpen = true;
+    this.currentSubpalette = null;
+    this.activeIndex = 0;
+
+    const win = os.window.create("command-palette-win", "Command Palette", "600px", "480px", {
+      icon: "fas fa-search",
+      appId: "___commandPalette___"
     });
+    win.classList.add("cp-window");
+
+    win.innerHTML = `
+      <div class="window-content cp-root">
+        <div class="cp-header">
+          <i class="fas fa-search cp-header-icon"></i>
+          <input type="text" class="cp-input" id="cp-input" placeholder="Type a command, app, or file name..." autocomplete="off">
+          <div class="cp-kbd">ESC</div>
+        </div>
+        <div class="cp-body">
+          <div class="cp-results" id="cp-results"></div>
+        </div>
+        <div class="cp-footer">
+          <span>Use <kbd>↑</kbd> <kbd>↓</kbd> to navigate, <kbd>Enter</kbd> to select, <kbd>Esc</kbd> to close</span>
+        </div>
+      </div>
+    `;
+
+    this.inputElement = win.querySelector("#cp-input");
+    this.resultsContainer = win.querySelector("#cp-results");
 
     this.inputElement.addEventListener("input", () => {
       this.activeIndex = 0;
@@ -260,49 +82,41 @@ export class CommandPalette {
     });
 
     this.inputElement.addEventListener("keydown", (e) => {
-      if (KeybindManager.matches(e, "global.closePalette")) {
+      if (e.key === "Escape") {
         e.preventDefault();
         this.close();
-      } else if (KeybindManager.matches(e, "global.paletteDown")) {
+      } else if (e.key === "ArrowDown") {
         e.preventDefault();
         this.activeIndex = (this.activeIndex + 1) % this.results.length;
         this.updateActiveSelection();
-      } else if (KeybindManager.matches(e, "global.paletteUp")) {
+      } else if (e.key === "ArrowUp") {
         e.preventDefault();
         this.activeIndex = (this.activeIndex - 1 + this.results.length) % this.results.length;
         this.updateActiveSelection();
-      } else if (KeybindManager.matches(e, "global.paletteEnter")) {
+      } else if (e.key === "Enter") {
         e.preventDefault();
         this.executeActive();
       }
     });
-  }
 
-  async toggle() {
-    if (this.isOpen) {
-      this.close();
-    } else {
-      await this.open();
-    }
-  }
+    win.addEventListener("remove", () => {
+      this.isOpen = false;
+      this.inputElement = null;
+      this.resultsContainer = null;
+    });
 
-  async open() {
-    if (document.getElementById("session-overlay")) {
-      return;
-    }
-    this.isOpen = true;
-    this.currentSubpalette = null;
-    this.activeIndex = 0;
     this.inputElement.value = "";
-    this.overlayElement.style.display = "flex";
     this.inputElement.focus();
     await this.loadFiles();
     this.renderResults();
   }
 
   close() {
+    const win = document.getElementById("command-palette-win");
+    if (win) {
+      os.window.close(win);
+    }
     this.isOpen = false;
-    this.overlayElement.style.display = "none";
   }
 
   async loadFiles() {
@@ -340,7 +154,8 @@ export class CommandPalette {
   }
 
   renderResults() {
-    const search = this.inputElement.value.trim().toLowerCase();
+    if (!this.resultsContainer) return;
+    const search = this.inputElement?.value.trim().toLowerCase() || "";
     this.resultsContainer.innerHTML = "";
 
     if (this.currentSubpalette === "wallpaper") {
@@ -456,7 +271,7 @@ export class CommandPalette {
       },
       {
         title: "Shutdown",
-        subtitle: "Shut down the system completely",
+        subtitle: "Close everything and shut down",
         tag: "session",
         icon: "fas fa-power-off",
         execute: async () => {
@@ -650,7 +465,7 @@ export class CommandPalette {
         if (!search || appTitle.toLowerCase().includes(search) || key.toLowerCase().includes(search)) {
           items.push({
             title: appTitle,
-            subtitle: app.type === "system" ? "Built-in System App" : `Game Category: ${app.type}`,
+            subtitle: app.type === "system" ? "Built-in System App" : `Game: ${app.type}`,
             tag: app.type === "system" ? "app" : "game",
             icon: app.icon || "fas fa-window-maximize",
             execute: () => os.app.launch(key)
@@ -663,7 +478,7 @@ export class CommandPalette {
       if (!search || file.name.toLowerCase().includes(search)) {
         items.push({
           title: file.name,
-          subtitle: `File Location: ${file.path}`,
+          subtitle: `File: ${file.path}`,
           tag: file.kind,
           icon: os.fs.getFileIcon(file.path),
           isFile: true,
@@ -694,17 +509,13 @@ export class CommandPalette {
     this.activeIndex = Math.min(this.activeIndex, Math.max(0, this.results.length - 1));
 
     if (this.results.length === 0) {
-      this.resultsContainer.innerHTML = `
-        <div style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 14px;">
-          No matching commands, apps, or files found.
-        </div>
-      `;
+      this.resultsContainer.innerHTML = `<div class="cp-empty">No matching commands, apps, or files found.</div>`;
       return;
     }
 
     this.results.forEach((item, index) => {
       const el = document.createElement("div");
-      el.className = `cmd-palette-item ${index === this.activeIndex ? "active" : ""}`;
+      el.className = `cp-item ${index === this.activeIndex ? "active" : ""}`;
       el.dataset.index = index;
 
       let iconHtml = "";
@@ -719,12 +530,12 @@ export class CommandPalette {
       }
 
       el.innerHTML = `
-        <div class="cmd-palette-item-icon">${iconHtml}</div>
-        <div class="cmd-palette-item-meta">
-          <div class="cmd-palette-item-title">${this.escapeHTML(item.title)}</div>
-          <div class="cmd-palette-item-sub">${this.escapeHTML(item.subtitle)}</div>
+        <div class="cp-item-icon">${iconHtml}</div>
+        <div class="cp-item-meta">
+          <div class="cp-item-title">${this.escapeHTML(item.title)}</div>
+          <div class="cp-item-sub">${this.escapeHTML(item.subtitle)}</div>
         </div>
-        <div class="cmd-palette-item-tag">${item.tag}</div>
+        <div class="cp-item-tag">${item.tag}</div>
       `;
 
       el.addEventListener("click", () => {
@@ -739,6 +550,7 @@ export class CommandPalette {
   }
 
   renderWallpaperSubpalette(search) {
+    if (!this.resultsContainer) return;
     const wallOpts = WALLPAPER_NAME_URL_PAIRS;
 
     let matches = wallOpts;
@@ -783,16 +595,16 @@ export class CommandPalette {
 
     this.results.forEach((item, index) => {
       const el = document.createElement("div");
-      el.className = `cmd-palette-item ${index === this.activeIndex ? "active" : ""}`;
+      el.className = `cp-item ${index === this.activeIndex ? "active" : ""}`;
       el.dataset.index = index;
 
       el.innerHTML = `
-        <div class="cmd-palette-item-icon"><i class="${item.icon}"></i></div>
-        <div class="cmd-palette-item-meta">
-          <div class="cmd-palette-item-title">${this.escapeHTML(item.title)}</div>
-          <div class="cmd-palette-item-sub">${this.escapeHTML(item.subtitle)}</div>
+        <div class="cp-item-icon"><i class="${item.icon}"></i></div>
+        <div class="cp-item-meta">
+          <div class="cp-item-title">${this.escapeHTML(item.title)}</div>
+          <div class="cp-item-sub">${this.escapeHTML(item.subtitle)}</div>
         </div>
-        <div class="cmd-palette-item-tag">${item.tag}</div>
+        <div class="cp-item-tag">${item.tag}</div>
       `;
 
       el.addEventListener("click", () => {
@@ -807,6 +619,7 @@ export class CommandPalette {
   }
 
   renderFileSearchSubpalette(search) {
+    if (!this.resultsContainer) return;
     const items = [
       {
         title: ".. Back to Main Menu",
@@ -875,7 +688,7 @@ export class CommandPalette {
 
     this.results.forEach((item, index) => {
       const el = document.createElement("div");
-      el.className = `cmd-palette-item ${index === this.activeIndex ? "active" : ""}`;
+      el.className = `cp-item ${index === this.activeIndex ? "active" : ""}`;
       el.dataset.index = index;
 
       let iconHtml = "";
@@ -890,12 +703,12 @@ export class CommandPalette {
       }
 
       el.innerHTML = `
-        <div class="cmd-palette-item-icon">${iconHtml}</div>
-        <div class="cmd-palette-item-meta">
-          <div class="cmd-palette-item-title">${this.escapeHTML(item.title)}</div>
-          <div class="cmd-palette-item-sub">${this.escapeHTML(item.subtitle)}</div>
+        <div class="cp-item-icon">${iconHtml}</div>
+        <div class="cp-item-meta">
+          <div class="cp-item-title">${this.escapeHTML(item.title)}</div>
+          <div class="cp-item-sub">${this.escapeHTML(item.subtitle)}</div>
         </div>
-        <div class="cmd-palette-item-tag">${item.tag}</div>
+        <div class="cp-item-tag">${item.tag}</div>
       `;
 
       el.addEventListener("click", () => {
@@ -1366,7 +1179,9 @@ export class CommandPalette {
   }
 
   updateActiveSelection() {
-    const items = this.resultsContainer.querySelectorAll(".cmd-palette-item");
+    const container = this.resultsContainer;
+    if (!container) return;
+    const items = container.querySelectorAll(".cp-item");
     items.forEach((item) => {
       const idx = parseInt(item.dataset.index);
       item.classList.toggle("active", idx === this.activeIndex);
@@ -1375,18 +1190,21 @@ export class CommandPalette {
   }
 
   scrollToActive() {
-    const activeEl = this.resultsContainer.querySelector(".cmd-palette-item.active");
+    const container = this.resultsContainer;
+    if (!container) return;
+    const activeEl = container.querySelector(".cp-item.active");
     if (!activeEl) return;
-    const parent = this.resultsContainer.parentElement;
+    const body = container.parentElement;
+    if (!body) return;
     const activeTop = activeEl.offsetTop;
     const activeBottom = activeTop + activeEl.offsetHeight;
-    const parentTop = parent.scrollTop;
-    const parentBottom = parentTop + parent.offsetHeight;
+    const parentTop = body.scrollTop;
+    const parentBottom = parentTop + body.offsetHeight;
 
     if (activeTop < parentTop) {
-      parent.scrollTop = activeTop;
+      body.scrollTop = activeTop;
     } else if (activeBottom > parentBottom) {
-      parent.scrollTop = activeBottom - parent.offsetHeight;
+      body.scrollTop = activeBottom - body.offsetHeight;
     }
   }
 

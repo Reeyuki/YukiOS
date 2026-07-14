@@ -155,7 +155,6 @@ function openStartMenu({ focusSearch = false, openDefaultPage = true } = {}) {
         "development",
         "system",
         "help",
-        "customize",
         "settingsApp"
       ];
       const firstEnabled = catNames.find((c) => cats[c] !== false);
@@ -532,7 +531,7 @@ function navigateCategories(direction) {
   selectedCategory.scrollIntoView({ block: "nearest" });
 
   const catName = selectedCategory.dataset.cat;
-  if (catName !== "settingsApp" && catName !== "customize") {
+  if (catName !== "settingsApp") {
     activateCategoryPage(selectedCategory);
   }
 }
@@ -636,11 +635,6 @@ export function setupStartMenu(appLauncher, sessionManager, selectionManager) {
       const catName = cat.dataset.cat;
       if (catName === "settingsApp") {
         os.app.launch("settingsApp");
-        return;
-      }
-      if (catName === "customize") {
-        os.app.launch("settingsApp", { section: "pane-accounts" });
-        speak("Let's make your profile look great!", ClippyAnimation.GetArtsy);
         return;
       }
       activateCategoryPage(cat);
@@ -751,7 +745,16 @@ export function setupStartMenu(appLauncher, sessionManager, selectionManager) {
 
     const dist = levenshtein(a, b);
 
-    return dist <= 1 || (a.length <= 5 && dist <= 2);
+    return dist <= 1;
+  }
+
+  function wordBoundaryMatch(query, text) {
+    const q = query.toLowerCase().trim();
+    const t = text.toLowerCase().trim();
+    if (!q) return true;
+    if (!t) return false;
+    const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return new RegExp("\\b" + escaped + "\\b").test(t);
   }
 
   function levenshtein(a, b) {
@@ -828,7 +831,7 @@ export function setupStartMenu(appLauncher, sessionManager, selectionManager) {
         if (appRegistry.isAppUninstalled(appId) || appRegistry.isAppDisabled(appId)) return;
         const title = (appData.title || appId).toLowerCase();
         const description = (APP_DESCRIPTIONS[appId] || descriptionMap[appId] || "").toLowerCase();
-        if (!fuzzyMatch(q, title) && !fuzzyMatch(q, description)) return;
+        if (!fuzzyMatch(q, title) && !wordBoundaryMatch(q, description)) return;
         seenAppIds.add(appId);
         const item = createAppItem(appId, appData);
         const category = appData.type === "system" ? "system" : "menu";

@@ -140,7 +140,6 @@
   flex-direction: column;
   background: linear-gradient(180deg, color-mix(in srgb, var(--brand) 8%, transparent) 0%, transparent 60%);
   position: relative;
-  overflow-y: auto;
   flex-shrink: 0;
   transition:
     width 0.25s cubic-bezier(0.4, 0, 0.2, 1),
@@ -149,11 +148,17 @@
     padding 0.2s ease;
 }
 
-.start-sidebar::-webkit-scrollbar {
+.start-cat-list {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.start-cat-list::-webkit-scrollbar {
   width: 4px;
 }
 
-.start-sidebar::-webkit-scrollbar-thumb {
+.start-cat-list::-webkit-scrollbar-thumb {
   background: color-mix(in srgb, var(--brand) 40%, transparent);
   border-radius: 4px;
 }

@@ -72,6 +72,7 @@ Its built entirely in vanilla javascript/typescript without any frameworks.
   submenu traversal)
 - Command palette (Ctrl+K/P/F1) for app, file, and command search with built-in calculator, terminal run support with >
   prefix, and unit converter
+- Run dialog (Ctrl+R) — compact quick-launch window for opening apps, URLs, and terminal commands
 - Clippy contextual assistant with per-app tips
 - Animated UI components including start menu, wallpaper switcher, audio mixer, context menus, and notifications
 - Keyboard shortcuts app for customizing global hotkeys
@@ -79,6 +80,7 @@ Its built entirely in vanilla javascript/typescript without any frameworks.
 **Key Global Shortcuts:**
 
 - Ctrl+K / Ctrl+P / F1 - Open command palette
+- Ctrl+R - Open Run dialog
 - Ctrl+D - Show/hide desktop
 - Alt+Q - Cycle through windows
 - Ctrl+Shift+S - Full screenshot
@@ -153,6 +155,7 @@ Its built entirely in vanilla javascript/typescript without any frameworks.
 - Markdown Viewer
 - Yuki Code
 - VS Code
+- Run (Ctrl+R quick-launch)
 - Settings
 - Task Manager
 - Calculator

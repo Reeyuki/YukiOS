@@ -558,9 +558,6 @@ export function renderDesktopSettings(s) {
             <div class="settings-grid-toggle"><span>Favorites</span>
               <label class="settings-toggle"><input type="checkbox" class="settings-start-cat-toggle" data-cat="favorites" ${s.startMenuCats.favorites !== false ? "checked" : ""}/><span class="settings-track"><span class="settings-thumb"></span></span></label>
             </div>
-            <div class="settings-grid-toggle"><span>Customize Profile</span>
-              <label class="settings-toggle"><input type="checkbox" class="settings-start-cat-toggle" data-cat="customize" ${s.startMenuCats.customize !== false ? "checked" : ""}/><span class="settings-track"><span class="settings-thumb"></span></span></label>
-            </div>
             <div class="settings-grid-toggle"><span>Settings</span>
               <label class="settings-toggle"><input type="checkbox" class="settings-start-cat-toggle" data-cat="settingsApp" ${s.startMenuCats.settingsApp !== false ? "checked" : ""}/><span class="settings-track"><span class="settings-thumb"></span></span></label>
             </div>

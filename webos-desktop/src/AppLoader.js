@@ -41,6 +41,7 @@ import { VNCApp } from "./apps/vncApp.js";
 import { DiscordApp } from "./apps/discord.js";
 import { RobloxApp } from "./apps/roblox.js";
 import { WallpaperEngineApp } from "./apps/wallpaperEngine.js";
+import { RunApp } from "./apps/run.js";
 
 const APP_CLASS_MAP = {
   terminalApp: TerminalApp,
@@ -83,7 +84,8 @@ const APP_CLASS_MAP = {
   vncApp: VNCApp,
   discordApp: DiscordApp,
   robloxApp: RobloxApp,
-  wallpaperEngineApp: WallpaperEngineApp
+  wallpaperEngineApp: WallpaperEngineApp,
+  runApp: RunApp
 };
 
 const APP_DEFINITIONS = APP_MANIFESTS.map((manifest) => {

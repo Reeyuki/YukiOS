@@ -1255,5 +1255,20 @@ export const APP_MANIFESTS = [
       animation: ClippyAnimation.Show
     },
     description: "Browse and play Roblox games with full immersive desktop support."
+  },
+  {
+    serviceKey: "runApp",
+    enhanced: true,
+    type: "system",
+    title: "Run",
+    icon: "fas fa-terminal",
+    launchType: "instance",
+    windowIdPatterns: ["run"],
+    category: "system",
+    clippy: {
+      message: "Quickly launch apps, open URLs, or run commands from a single dialog.",
+      animation: ClippyAnimation.GetWizardy
+    },
+    description: "Launch apps, open URLs, and run commands instantly with the Run dialog."
   }
 ];
