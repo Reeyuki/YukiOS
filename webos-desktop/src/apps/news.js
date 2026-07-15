@@ -8,6 +8,17 @@ const EXISTING_NEWS_UPDATES = [
     date: "July 15, 2026",
     sections: [
       {
+        icon: "fa-shield-halved",
+        title: "Ad Blocking",
+        items: [
+          [
+            "fa-shield-halved",
+            "Built-in Ad Blocker for browser",
+            "Blocks analytics, ads, and tracking scripts across all websites in browser app."
+          ]
+        ]
+      },
+      {
         icon: "fa-display",
         title: "Display",
         items: [

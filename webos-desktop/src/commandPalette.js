@@ -902,7 +902,9 @@ export class CommandPalette {
         tag: "calc",
         icon: "fas fa-calculator",
         execute: () => {
-          navigator.clipboard.writeText(result.toString());
+          var text = result.toString();
+          this.services.clipboardManager?.set(text, "text");
+          navigator.clipboard.writeText(text);
           os.notify.send("Calculator", "Result copied to clipboard", {
             type: "success",
             duration: 2000,
@@ -1096,7 +1098,9 @@ export class CommandPalette {
       tag: "conv",
       icon: "fas fa-arrows-left-right",
       execute: () => {
-        navigator.clipboard.writeText(result.toString());
+        var text = result.toString();
+        this.services.clipboardManager?.set(text, "text");
+        navigator.clipboard.writeText(text);
         os.notify.send("Conversion", "Result copied to clipboard", {
           type: "success",
           duration: 2000,

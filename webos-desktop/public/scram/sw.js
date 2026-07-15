@@ -12,8 +12,16 @@ self.$scramjet = {
 importScripts("https://cdn.jsdelivr.net/gh/Destroyed12121/Staticsj@main/JS/scramjet.all.js");
 importScripts("https://cdn.jsdelivr.net/npm/@mercuryworkshop/bare-mux/dist/index.js");
 
+importScripts(basePath + "adblock.js");
+
 const { ScramjetServiceWorker } = $scramjetLoadWorker();
 const scramjet = new ScramjetServiceWorker({ prefix: basePath + "scramjet/" });
+
+var adblock = new self.AdBlockEngine();
+var adblockReady = false;
+var adblockPageCount = 0;
+var adblockTotalRequests = 0;
+var adblockRecentBlocks = [];
 
 self.addEventListener("install", (e) => self.skipWaiting());
 self.addEventListener("activate", (e) => e.waitUntil(self.clients.claim()));
@@ -21,6 +29,15 @@ self.addEventListener("activate", (e) => e.waitUntil(self.clients.claim()));
 self.addEventListener("fetch", (event) => {
   event.respondWith(
     (async () => {
+      if (adblockReady && adblock.enabled) {
+        adblockTotalRequests++;
+        if (adblock.shouldBlock(event.request.url)) {
+          adblockPageCount++;
+          adblockRecentBlocks.push({ url: event.request.url, time: Date.now() });
+          if (adblockRecentBlocks.length > 200) adblockRecentBlocks.splice(0, 50);
+          return new Response(null, { status: 204, statusText: "Blocked by AdBlock" });
+        }
+      }
       await scramjet.loadConfig();
       if (scramjet.route(event)) return scramjet.fetch(event);
       return fetch(event.request);
@@ -32,13 +49,54 @@ let wispConfig = {};
 let resolveConfigReady;
 const configReadyPromise = new Promise((resolve) => (resolveConfigReady = resolve));
 
-self.addEventListener("message", ({ data }) => {
+self.addEventListener("message", (event) => {
+  var data = event.data;
   if (data.type === "config" && data.wispurl) {
     wispConfig.wispurl = data.wispurl;
     if (resolveConfigReady) {
       resolveConfigReady();
       resolveConfigReady = null;
     }
+  }
+  if (data.type === "adblock:init") {
+    if (data.enabled) {
+      adblock.init().then(() => {
+        adblockReady = true;
+        adblock.enabled = true;
+        self.clients.matchAll().then((clients) => {
+          clients.forEach((c) => c.postMessage({ type: "adblock:ready" }));
+        });
+      });
+    } else {
+      adblock.enabled = false;
+      adblockReady = true;
+    }
+  }
+  if (data.type === "adblock:toggle") {
+    adblock.enabled = data.enabled;
+    if (!data.enabled) { adblockPageCount = 0; }
+  }
+  if (data.type === "adblock:pagechange") {
+    adblockPageCount = 0;
+  }
+  if (data.type === "adblock:log") {
+    if (event.source) {
+      event.source.postMessage({
+        type: "adblock:log",
+        entries: adblockRecentBlocks.slice(-100)
+      });
+    }
+  }
+  if (data.type === "adblock:stats" && event.source) {
+    event.source.postMessage({
+      type: "adblock:stats",
+      blockedCount: adblock.blockedCount,
+      pageBlockedCount: adblockPageCount,
+      totalRequests: adblockTotalRequests,
+      enabled: adblock.enabled,
+      ready: adblockReady,
+      filterCount: adblock.blockFilters.length
+    });
   }
 });
 
@@ -51,6 +109,16 @@ setTimeout(() => {
 }, 1000);
 
 scramjet.addEventListener("request", async (e) => {
+  if (adblockReady && adblock.enabled) {
+    adblockTotalRequests++;
+    if (adblock.shouldBlock(e.url)) {
+      adblockPageCount++;
+      adblockRecentBlocks.push({ url: e.url, time: Date.now() });
+      if (adblockRecentBlocks.length > 200) adblockRecentBlocks.splice(0, 50);
+      e.response = new Response(null, { status: 204, statusText: "Blocked by AdBlock" });
+      return;
+    }
+  }
   e.response = (async () => {
     if (!scramjet.client) {
       await configReadyPromise;

@@ -42,14 +42,6 @@ export class RunApp extends BaseApp {
 
     this.bindEvents();
     this.focusInput();
-
-    this.win.addEventListener("remove", () => {
-      if (this.suggestionsEl) {
-        this.suggestionsEl.remove();
-        this.suggestionsEl = null;
-      }
-      this.win = null;
-    });
   }
 
   buildUI() {
@@ -183,6 +175,7 @@ export class RunApp extends BaseApp {
   }
 
   close() {
+    this.removeSuggestions();
     if (this.win) {
       os.window.close(this.win);
       this.win = null;
@@ -206,8 +199,16 @@ export class RunApp extends BaseApp {
     }
   }
 
+  removeSuggestions() {
+    if (this.suggestionsEl) {
+      this.suggestionsEl.remove();
+      this.suggestionsEl = null;
+    }
+  }
+
   onClose(winId) {
     if (winId === this.winId) {
+      this.removeSuggestions();
       this.win = null;
     }
   }
