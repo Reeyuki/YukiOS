@@ -1637,53 +1637,6 @@ export function initializeAppGrid(appLauncher) {
       item.appendChild(badge);
     }
 
-    item.draggable = true;
-
-    item.addEventListener("dragstart", (e) => {
-      e.dataTransfer.setData("text/plain", index);
-      e.dataTransfer.effectAllowed = "move";
-      item.style.opacity = "0.4";
-    });
-
-    item.addEventListener("dragend", () => {
-      item.style.opacity = "";
-      item.style.transform = "";
-      item.style.outline = "";
-    });
-
-    item.addEventListener("dragover", (e) => {
-      e.preventDefault();
-      e.dataTransfer.dropEffect = "move";
-    });
-
-    item.addEventListener("dragenter", (e) => {
-      e.preventDefault();
-      item.style.transform = "scale(1.03)";
-      item.style.outline = "2px dashed var(--brand)";
-    });
-
-    item.addEventListener("dragleave", () => {
-      item.style.transform = "";
-      item.style.outline = "";
-    });
-
-    item.addEventListener("drop", (e) => {
-      e.preventDefault();
-      item.style.transform = "";
-      item.style.outline = "";
-      const fromIndexStr = e.dataTransfer.getData("text/plain");
-      if (fromIndexStr === "") return;
-      const fromIndex = parseInt(fromIndexStr, 10);
-      const toIndex = index;
-      if (fromIndex !== toIndex) {
-        const gridItems = getGridItems();
-        const [moved] = gridItems.splice(fromIndex, 1);
-        gridItems.splice(toIndex, 0, moved);
-        saveGridItems(gridItems);
-        initializeAppGrid(appLauncher);
-      }
-    });
-
     item.addEventListener("click", () => {
       trackRecentlyUsed(itemData.app);
       os.app.launch(itemData.app);

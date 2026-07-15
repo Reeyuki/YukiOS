@@ -16,7 +16,7 @@
     "bf": "pnpm format && pnpm build:dev && cp -r dist/* ../desktop/",
     "build-win": "vite build",
     "preview": "vite preview",
-    "format": "pnpm exec prettier --write --cache --cache-location=.prettier-cache src",
+    "format": "git diff --name-only HEAD --diff-filter=ACMR | sed 's#^webos-desktop/##' | grep -E '\\.(js|jsx|ts|tsx|css|json|html)$' | xargs -r pnpm exec prettier --write --cache --cache-location=.prettier-cache",
     "lint": "eslint . --ext .js,.jsx --fix",
     "test": "vitest run",
     "test:watch": "vitest",

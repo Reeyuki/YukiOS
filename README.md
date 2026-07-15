@@ -62,8 +62,19 @@ Its built entirely in vanilla javascript/typescript without any frameworks.
 
 # 🧭 Navigation & UI
 
-- Start menu with keyboard navigation, alphabetical grouping, shortcuts for launch(Space, Tab, Ctrl), and a Recent page
-  showing last-opened apps and files with clear button
+- Start menu with:
+  - Fuzzy search (Levenshtein distance, word-boundary matching) across all apps and settings categories
+  - Favorites system — star/unstar apps with gold-tinted highlights and dedicated favorites page
+  - Customizable app grid — add/edit/remove items
+  - Category management — rename, delete/hide, restore categories via right-click context menu
+  - App grid organized into categories: Core, Web, Games, Files
+  - Desktop icon toggles — show/hide Games and System Apps independently
+  - User profile display with avatar, name, and hover tooltip
+  - Description tooltips on hover for all items
+  - Recent page tracking last-opened apps and files with clear button
+  - Full keyboard navigation with arrow keys between search/categories/apps, Launch with Enter/Space
+  - Clippy contextual tips on favorites and search events
+  - Persistent settings for width, height, and category visibility
 - Notification center with grouped messages
 - Do Not Disturb mode
 - Notification positioning controls
@@ -131,7 +142,7 @@ Its built entirely in vanilla javascript/typescript without any frameworks.
   mode)
 - Custom cursor support (with miku by default)
 - Import/export system for backup and migration
-- Transparent UI toggle
+- Transparent UI toggle with: glass effect on windows, taskbar, start menu.
 - Clock system using OffscreenCanvas rendering and lightweight NTP offset sync with js worker
 - Calendar popup from taskbar clock with monthly grid, keyboard navigation, and today button
 - Events ("Plans") system with title, date/time, repeat (daily/weekly/monthly/yearly), reminders, notes, and color
@@ -151,7 +162,7 @@ Its built entirely in vanilla javascript/typescript without any frameworks.
     status)
   - Multiple independent tabs with Alt+T / Ctrl+Tab / Alt+1-9
   - `neofetch` with GPU/RAM/browser/engine detection
-  - `apps` command to manage app registry
+  - `yuki` command for OS control: power mode, brightness, theme, wallpaper, workspaces, app management (list/uninstall/install/disable/enable), DND, notifications, storage report
 - Notepad
 - Markdown Viewer
 - Yuki Code

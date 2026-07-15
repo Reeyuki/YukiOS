@@ -5,10 +5,13 @@ import { KeybindManager } from "../keybindManager.js";
 import { showContextMenu } from "../shared/contextMenu.js";
 import { BaseApp, StorageKeys, os } from "../framework.js";
 import { GitManager } from "../services/GitManager.js";
-import { getAppRegistry } from "../appRegistry.js";
 import { formatSize } from "../utils/utils.js";
 import { getPyodide, runPython } from "../services/PyodideManager.js";
 import { runNode } from "../services/WebContainerManager.js";
+import { cmdYuki } from "./yukiCommand.js";
+import { processManager } from "../services/ProcessManager.js";
+import { audioMixer } from "../audioMixer.js";
+import { YUKIOS_VERSION } from "./about.js";
 
 export class TerminalApp extends BaseApp {
   constructor(services) {
@@ -1163,7 +1166,8 @@ export class TerminalApp extends BaseApp {
     this.registerCommand("ping", (args) => this.cmdPing(args));
     this.registerCommand("curl", (args) => this.cmdCurl(args));
     this.registerCommand("neofetch", () => this.cmdNeofetch());
-    this.registerCommand("ps", () => this.cmdPs());
+    this.registerCommand("ps", (args) => this.cmdPs(args));
+    this.registerCommand("kill", (args) => this.cmdKill(args));
     this.registerCommand("grep", (args) => this.cmdGrep(args));
     this.registerCommand("wc", (args) => this.cmdWc(args));
     this.registerCommand("du", (args, flags) => this.cmdDu(args, flags));
@@ -1186,7 +1190,6 @@ export class TerminalApp extends BaseApp {
     this.registerCommand("less", (args, flags, isPiped) => this.cmdLess(args, flags, isPiped));
     this.registerCommand("more", (args, flags, isPiped) => this.cmdLess(args, flags, isPiped));
     this.registerCommand("git", (args, flags) => this.cmdGit(args, flags));
-    this.registerCommand("apps", (args, flags) => this.cmdApps(args, flags));
     this.registerCommand("shutdown", () => this.cmdShutdown());
     this.registerCommand("reboot", () => this.cmdReboot());
     this.registerCommand("restart", () => this.cmdReboot());
@@ -1196,6 +1199,8 @@ export class TerminalApp extends BaseApp {
     this.registerCommand("python", (args, flags) => this.cmdPython(args, flags));
     this.registerCommand("python3", (args, flags) => this.cmdPython(args, flags));
     this.registerCommand("node", (args, flags) => this.cmdNode(args, flags));
+    this.registerCommand("yuki", (args) => cmdYuki(this, args));
+    processManager.init();
   }
 
   cmdClear() {
@@ -1927,24 +1932,35 @@ export class TerminalApp extends BaseApp {
     else if (/Apple/.test(navigator.vendor)) engine = "JavaScriptCore";
 
     const ram = navigator.deviceMemory ? `${navigator.deviceMemory} GB` : "Unknown";
-    const dnt = navigator.doNotTrack === "1" || window.doNotTrack === "1" ? "Enabled" : "Disabled";
-
     const elapsed = Date.now() - this.pageLoadTime;
     const uptime = `${Math.floor(elapsed / 3600000)}h, ${Math.floor((elapsed % 3600000) / 60000)}m`;
+
+    const theme = os.storage.get(StorageKeys.theme) || "dark";
+    const power = os.storage.get(StorageKeys.turboMode) || "balanced";
+    const dnd = os.storage.get(StorageKeys.dndKey) === "true" ? "on" : "off";
+    const winCount = document.querySelectorAll(".window").length;
+    const appCount = Object.keys(os.app.getAllApps()).length;
+    const mx = audioMixer();
+    const masterVol = mx.muted ? 0 : Math.round(mx.masterVolume * 100);
 
     const lines = [
       "",
       "",
       "                     " + this.displayName + "@" + this.hostname,
-      `        /\\           OS     ${osText}`,
-      `       /  \\          KERNEL   ${engine}wu`,
-      `      /\\   \\        CPU Cores: ${coresText}`,
-      `     / > ω <\\        BROWSER  ${browserText}`,
-      `    /   __   \\       GRAPHICS    ${gpu}`,
-      `   / __|  |__-\\      MEMOWY    ${ram}`,
-      `  /_-''    ''-_\\     DO-NOT-TRACK  ${dnt}`,
-      `                      RESOLUTION   ${window.innerWidth}x${window.innerHeight}`,
-      `                      UPTIME  ${uptime}`
+      `        /\\           OS          ${osText}`,
+      `       /  \\          KERNEL      ${engine}`,
+      `      /\\   \\         YukiOS      ${YUKIOS_VERSION}`,
+      `     / > ω <\\        CPU Cores   ${coresText}`,
+      `    /   __   \\       GPU         ${gpu}`,
+      `   / __|  |__-\\      MEMOWY      ${ram}`,
+      `  /_-''    ''-_\\     RESOLUTION  ${window.innerWidth}x${window.innerHeight}`,
+      `                     THEME       ${theme}`,
+      `                     BROWSER     ${browserText}`,
+      `                     UPTIME      ${uptime}`,
+      `                     APPS        ${appCount} reg  ${winCount} win`,
+      `                     POWER       ${power}`,
+      `                     DND         ${dnd}`,
+      `                     VOLUME      ${masterVol}%`
     ];
 
     for (const line of lines) {
@@ -1952,12 +1968,67 @@ export class TerminalApp extends BaseApp {
     }
   }
 
-  async cmdPs() {
-    const wins = Array.from(document.querySelectorAll(".window"));
-    await this.print("  PID   TTY      TIME CMD");
-    for (let i = 0; i < wins.length; i++) {
-      const cmd = os.window.getTitle(wins[i].id) || "unknown";
-      await this.print(`  ${1000 + i}  pts/0  0:00 ${cmd}`);
+  async cmdPs(args = []) {
+    const isAux =
+      args.includes("aux") || args.includes("-aux") || (args.includes("a") && args.includes("u") && args.includes("x"));
+    const showAll = isAux || args.includes("-a") || args.includes("x") || args.includes("e");
+    const user = this.displayName || "guest";
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
+    const procs = processManager.getProcesses();
+
+    if (isAux) {
+      await this.print(`USER       PID  %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND`);
+      for (const p of procs) {
+        const vsz = p.isTray ? "0" : `${Math.floor(Math.random() * 200000) + 200000}`;
+        const rss = p.isTray ? "0" : `${Math.floor(p.mem * 256)}`;
+        const stat = p.status === "Tray" ? "T" : p.status === "Suspended" ? "S" : "R";
+        await this.print(
+          `${user.padEnd(10)}${String(p.pid).padStart(5)} ${p.cpu.toFixed(1).padStart(5)} ${p.mem.toFixed(1).padStart(5)} ${vsz.padStart(7)} ${rss.padStart(5)} pts/0    ${stat}    ${timeStr} 0:00 ${p.title}`
+        );
+      }
+    } else if (showAll) {
+      await this.print(`  PID TTY      TIME CMD`);
+      for (const p of procs) {
+        await this.print(`  ${String(p.pid).padStart(5)} pts/0  0:00 ${p.title}`);
+      }
+    } else {
+      await this.print(`  PID STATUS   CMD`);
+      for (const p of procs) {
+        const status = p.status === "Tray" ? "Tray" : p.status === "Suspended" ? "Susp" : "Run ";
+        await this.print(`  ${String(p.pid).padStart(5)} ${status}    ${p.title}`);
+      }
+    }
+  }
+
+  async cmdKill(args = []) {
+    if (args.length === 0) {
+      await this.print("kill: usage: kill [-s sigspec | -n signum | -sigspec] pid [pid...]");
+      return;
+    }
+
+    let pidArg = args[args.length - 1];
+    if (pidArg.startsWith("-")) {
+      await this.print(`kill: unknown signal: ${pidArg}; using SIGTERM`);
+      pidArg = args.length > 1 ? args[args.length - 1] : null;
+      if (!pidArg) {
+        await this.print("kill: usage: kill [-s sigspec | -n signum | -sigspec] pid [pid...]");
+        return;
+      }
+    }
+
+    const pid = parseInt(pidArg, 10);
+    if (isNaN(pid)) {
+      await this.print(`kill: ${pidArg}: arguments must be process or job IDs`);
+      return;
+    }
+
+    const killed = processManager.killByPid(pid);
+    if (killed) {
+      await this.print(`[${pid}] terminated`);
+    } else {
+      await this.print(`kill: (${pid}) - No such process`);
     }
   }
 
@@ -1999,13 +2070,13 @@ export class TerminalApp extends BaseApp {
       ["tree", "Display directory tree"],
       ["du", "Estimate file/directory sizes"],
       ["git", "Git version control (clone, init, add, commit, status, log, ...)"],
-      ["apps", "List and manage installed apps (apps list, uninstall, disable, enable)"],
       ["shutdown", "Shut down YukiOS"],
       ["reboot", "Restart YukiOS"],
       ["lock", "Lock the current session"],
       ["logout", "Sign out and return to login screen"],
       ["signout", "Sign out and return to login screen"],
       ["exit", "Close the terminal"],
+      ["yuki", "OS control command — see 'yuki help'"],
       ["python", "Run Python code or enter interactive REPL"],
       ["python3", "Alias for python"],
       ["node", "Run JS code or enter Node.js REPL"]
@@ -2511,78 +2582,6 @@ export class TerminalApp extends BaseApp {
     ];
     for (const [cmd, desc] of cmds) {
       this.print(`  ${cmd.padEnd(10)} ${desc}`);
-    }
-  }
-
-  async cmdApps(args = [], flags = []) {
-    const appRegistry = getAppRegistry();
-    const appMap = os.app.getAllApps();
-
-    if (!args.length || args[0] === "list") {
-      const query = args.length > 1 ? args.slice(1).join(" ") : null;
-      const allApps = appRegistry.getAllApps(appMap);
-      const filtered = query
-        ? allApps.filter((a) => a.id.toLowerCase().includes(query) || a.displayName.toLowerCase().includes(query))
-        : allApps;
-
-      if (!filtered.length) {
-        return this.print("No apps found.");
-      }
-
-      await this.print(`Found ${filtered.length} app(s):`);
-      for (const app of filtered) {
-        const status = app.protected
-          ? "protected"
-          : app.uninstalled
-            ? "uninstalled"
-            : app.disabled
-              ? "disabled"
-              : "enabled";
-        const line = `  ${app.id.padEnd(24)} ${app.displayName.padEnd(20)} [${app.type.padEnd(8)}] [${status}]`;
-        await this.print(line);
-      }
-      return;
-    }
-
-    const sub = args[0];
-    const id = args[1];
-
-    if (!id) return this.print(`Usage: apps ${sub} <appId>`);
-
-    switch (sub) {
-      case "uninstall": {
-        if (appRegistry.isProtected(id)) {
-          return this.print(`Cannot uninstall protected app: ${id}`);
-        }
-        const confirmed = await os.dialog.confirm("Uninstall App", `Uninstall "${id}"?`);
-        if (confirmed && appRegistry.uninstallApp(id)) {
-          await this.print(`Uninstalled: ${id}`);
-        }
-        break;
-      }
-      case "install": {
-        appRegistry.restoreApp(id);
-        await this.print(`Restored: ${id}`);
-        break;
-      }
-      case "disable": {
-        if (appRegistry.isProtected(id)) {
-          return this.print(`Cannot disable protected app: ${id}`);
-        }
-        if (appRegistry.setAppDisabled(id, true)) {
-          await this.print(`Disabled: ${id}`);
-        }
-        break;
-      }
-      case "enable": {
-        appRegistry.restoreApp(id);
-        if (appRegistry.setAppDisabled(id, false)) {
-          await this.print(`Enabled: ${id}`);
-        }
-        break;
-      }
-      default:
-        await this.print(`Unknown subcommand: ${sub}. Use: list, uninstall, install, disable, enable`);
     }
   }
 

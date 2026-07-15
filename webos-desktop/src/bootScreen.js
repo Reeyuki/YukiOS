@@ -12,6 +12,10 @@ export function showBootScreen() {
     return { hide: () => Promise.resolve() };
   }
 
+  if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+    return { hide: () => Promise.resolve() };
+  }
+
   const launchRaw = os.storage.get(StorageKeys.lastLaunchTime);
   if (launchRaw) {
     try {

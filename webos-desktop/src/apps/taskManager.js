@@ -3,6 +3,7 @@ import { $, $$, bindEvent, setText, setHTML, toggleClass } from "../shared/domUt
 import { BusEvents } from "../core/EventBusConstants.js";
 
 import { BaseApp, os } from "../framework.js";
+import { processManager } from "../services/ProcessManager.js";
 export class TaskManagerApp extends BaseApp {
   constructor(services) {
     super(services);
@@ -15,12 +16,11 @@ export class TaskManagerApp extends BaseApp {
     this.appsSelectedIds = new Set();
     this.cpuHistory = Array(30).fill(0);
     this.memHistory = Array(30).fill(0);
-    this.usageCache = new Map();
-    this.windowBirthTimes = new Map();
     this.frameDropScore = 0;
     this.longTaskBudget = 0;
     this.startFrameMonitor();
     this.startLongTaskMonitor();
+    processManager.init();
   }
 
   startFrameMonitor() {
@@ -54,80 +54,7 @@ export class TaskManagerApp extends BaseApp {
   }
 
   killProcess(id) {
-    const titleFromWindow = (winEl) => {
-      return os.window.getTitle(winEl.id)?.trim() || id;
-    };
-
-    const winEl = document.getElementById(id);
-    if (winEl) {
-      const title = titleFromWindow(winEl);
-
-      try {
-        os.app.close(id);
-      } catch (_) {
-        console.error("[TaskManager]", _);
-      }
-
-      try {
-        this.wm.closeWindow(winEl);
-      } catch (_) {
-        console.error("[TaskManager]", _);
-      }
-
-      if (document.getElementById(id)) {
-        winEl.remove();
-      }
-
-      os.window.removeFromTaskbar(id);
-
-      try {
-        os.tray.unregister(id);
-      } catch (_) {
-        console.error("[TaskManager]", _);
-      }
-
-      try {
-        os.notify.send("", `"${title}" ended`);
-      } catch (_) {
-        console.error("[TaskManager]", _);
-      }
-      return;
-    }
-
-    const trayItems = os.tray.getTrayItems();
-    const trayArray =
-      trayItems instanceof Map
-        ? Array.from(trayItems.entries())
-            .filter(([, item]) => item.inTray)
-            .map(([winId, item]) => ({ winId, ...item }))
-        : Array.isArray(trayItems)
-          ? trayItems
-          : [];
-
-    const trayItem = trayArray.find((item) => item.winId === id);
-    if (trayItem) {
-      try {
-        os.app.close(id);
-      } catch (_) {
-        console.error("[TaskManager]", _);
-      }
-      try {
-        os.tray.unregister(id);
-      } catch (_) {
-        console.error("[TaskManager]", _);
-      }
-
-      os.window.removeFromTaskbar(id);
-
-      const hiddenWin = document.getElementById(id);
-      if (hiddenWin) hiddenWin.remove();
-
-      try {
-        os.notify.send("", `"${trayItem.label || id}" ended`);
-      } catch (_) {
-        console.error("[TaskManager]", _);
-      }
-    }
+    processManager.killByWinId(id);
   }
 
   open(opts = {}) {
@@ -359,46 +286,7 @@ export class TaskManagerApp extends BaseApp {
   }
 
   getProcesses() {
-    const procs = [];
-    const runningApps = os.app.getRunningApps();
-    runningApps.forEach((app) => {
-      const win = document.getElementById(app.winId);
-      if (!win) return;
-
-      const { cpu, mem } = this.measureWindow(app.winId, win);
-
-      procs.push({
-        winId: app.winId,
-        title: app.title,
-        icon: app.icon,
-        cpu,
-        mem,
-        status: app.status || "Running",
-        isTray: false
-      });
-    });
-
-    const trayItems = os.tray.getTrayItems();
-    const trayArray =
-      trayItems instanceof Map
-        ? Array.from(trayItems.entries())
-            .filter(([, item]) => item.inTray)
-            .map(([winId, item]) => ({ winId, ...item }))
-        : trayItems;
-    trayArray.forEach((item) => {
-      if (procs.find((p) => p.winId === item.winId)) return;
-      procs.push({
-        winId: item.winId,
-        title: item.label || item.winId,
-        icon: item.icon,
-        cpu: 0,
-        mem: 0,
-        status: "Tray",
-        isTray: true
-      });
-    });
-
-    return procs;
+    return processManager.getProcesses(this.frameDropScore, this.drainLongTaskBudget());
   }
 
   renderProcesses(win, tabType = "proc") {
@@ -701,52 +589,4 @@ export class TaskManagerApp extends BaseApp {
     this.windowChangeHandlers = handleWindowChange;
   }
 
-  measureWindow(winId, win) {
-    const now = performance.now();
-    if (!this.windowBirthTimes.has(winId)) this.windowBirthTimes.set(winId, now);
-
-    const isMinimized = win.style.display === "none";
-    const hasIframe = !!$("iframe", win);
-    const hasVideo = !!$("video", win);
-    const hasCanvas = !!$("canvas", win);
-    const domNodes = $$("*", win).length;
-    const uptimeMins = (now - this.windowBirthTimes.get(winId)) / 60000;
-    const prev = this.usageCache.get(winId) || { cpu: 0, mem: 0, domNodes };
-    const domDelta = Math.abs(domNodes - prev.domNodes);
-
-    let baseMem = 8 + domNodes * 0.04;
-    if (hasIframe) baseMem += 35;
-    if (hasVideo) baseMem += 18;
-    if (hasCanvas) baseMem += 12;
-    baseMem += Math.min(uptimeMins * 0.4, 20);
-    baseMem += (Math.random() - 0.5) * 2;
-    baseMem = Math.max(4, baseMem);
-
-    if (performance.memory) {
-      const totalHeapMB = performance.memory.usedJSHeapSize / 1048576;
-      const allWins = $$(".window");
-      const totalNodes = allWins.reduce((s, w) => s + w.querySelectorAll("*").length, 1);
-      const share = domNodes / totalNodes;
-      baseMem = Math.max(baseMem, totalHeapMB * share * 0.6);
-    }
-
-    const frameStress = Math.min(100, this.frameDropScore * 1.8);
-    const longTaskStress = Math.min(60, this.drainLongTaskBudget() / 10);
-    const activityStress = Math.min(40, domDelta * 2);
-
-    let cpuShare = isMinimized ? 0.05 : domNodes / Math.max(1, $$(".window *").length);
-    if (hasIframe && !isMinimized) cpuShare *= 2.2;
-    if (hasVideo && !isMinimized) cpuShare *= 1.8;
-    if (hasCanvas && !isMinimized) cpuShare *= 1.5;
-
-    const systemCpuSignal = frameStress * 0.5 + longTaskStress * 0.5;
-    let cpu = systemCpuSignal * cpuShare * 3 + activityStress * cpuShare;
-    cpu = prev.cpu * 0.55 + cpu * 0.45;
-    cpu += (Math.random() - 0.5) * 1.2;
-    cpu = Math.max(0.1, Math.min(99, isMinimized ? Math.min(cpu, 1.5) : cpu));
-
-    const result = { cpu, mem: Math.round(baseMem * 10) / 10, domNodes };
-    this.usageCache.set(winId, result);
-    return result;
-  }
 }

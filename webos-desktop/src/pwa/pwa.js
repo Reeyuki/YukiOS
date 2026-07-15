@@ -11,7 +11,7 @@ function onNewServiceWorker(registration) {
 
 export function registerPWA() {
   if (!("serviceWorker" in navigator)) return;
-  if (!window.isSecureContext && window.location.hostname !== "localhost") return;
+  if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") return;
 
   window.addEventListener("load", async () => {
     try {
