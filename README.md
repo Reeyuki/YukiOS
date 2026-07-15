@@ -55,8 +55,11 @@ Its built entirely in vanilla javascript/typescript without any frameworks.
 - Desktop stretch scroll prevention toggle
 - Alt+Left-Click window drag / Alt+Right-Click window resize
 - Window animation system with 35+ effects
+- Kde inspired physics-based wobbly windows when dragging
 - Desktop peek button in system tray with click to minimize/restore all windows, hover to temporarily reveal the desktop
 - Cursor launch effect when applications start
+- Desktop widget system: clock, weather, notes, calendar, todo, music controls, system monitor, battery, clipboard,
+  YouTube embed, photo frame slideshow, timer/stopwatch
 - Automatically saves and restores open apps, window positions and sizes, workspace assignments, scroll positions,
   window states (minimized, fullscreen, snapped), focus order
 
@@ -75,6 +78,7 @@ Its built entirely in vanilla javascript/typescript without any frameworks.
   - Full keyboard navigation with arrow keys between search/categories/apps, Launch with Enter/Space
   - Clippy contextual tips on favorites and search events
   - Persistent settings for width, height, and category visibility
+
 - Notification center with grouped messages
 - Do Not Disturb mode
 - Notification positioning controls
@@ -98,6 +102,10 @@ Its built entirely in vanilla javascript/typescript without any frameworks.
 - Ctrl+Shift+S - Full screenshot
 - Ctrl+Alt+S - Area screenshot
 - Ctrl+Shift+R - Screen recording
+- Ctrl+Arrow keys - Snap window to half/quarter screen
+- Ctrl+Alt+ArrowUp/Down - Adjust brightness
+- Ctrl+Alt+ArrowLeft/Right - Adjust color temperature
+- Alt+H - Open color picker
 
 **Command Palette Features:**
 
@@ -129,8 +137,7 @@ Its built entirely in vanilla javascript/typescript without any frameworks.
 
 - Notification system with app icons and actions
 - Audio mixer with per-app volume sliders, live waveform intensity visualizer, master/system volume, mute toggle, and
-  tray icon with scroll-to-adjust - uses `AudioContext` gain nodes and patched iframe `AudioContext` for cross-origin
-  audio control
+  tray icon with scroll-to-adjust
 - System sounds with interaction noises for common actions
 - Achievement tracking and usage milestones
 - Theme system with 40 presets and custom theme support, light/dark and transparency modes.
@@ -138,9 +145,10 @@ Its built entirely in vanilla javascript/typescript without any frameworks.
 - PWA install and offline caching support
 - User accounts with multi-profile support
 - Lock screen, session management, and idle timeout
-- Power profiles (Turbo, Balanced, Quality) with tray controls and brightness adjustment options (contrast, gamma, night
-  mode)
+- Power profiles (Turbo, Balanced, Quality) with tray controls
+- Brightness, contrast, gamma, and color temperature sliders
 - Custom cursor support (with miku by default)
+- Custom font system — set any TTF/OTF file as system font
 - Import/export system for backup and migration
 - Transparent UI toggle with: glass effect on windows, taskbar, start menu.
 - Clock system using OffscreenCanvas rendering and lightweight NTP offset sync with js worker
@@ -156,6 +164,7 @@ Its built entirely in vanilla javascript/typescript without any frameworks.
 ## 🧠 Productivity & Development
 
 - Explorer
+- Installed Apps (rename, disable, uninstall apps)
 - Terminal: Unix-like shell with filesystem access, Python/Node REPLs, and Git
   - Python REPL (Pyodide WASM), Node.js REPL (WebContainers)
   - Full Git integration (clone, init, add, commit, push, pull, branch, stash, fetch, diff, remote, rm, checkout, log,

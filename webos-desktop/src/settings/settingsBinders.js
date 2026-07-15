@@ -1,5 +1,5 @@
 import { StorageKeys, os } from "../framework.js";
-import { toggleHideGames, toggleHideSystemApps, updateGridConfig } from "../desktopui/desktopui.js";
+import { updateGridConfig } from "../desktopui/desktopui.js";
 import { audioMixer, SystemAudio } from "../audioMixer.js";
 import { applyTrayEnabled } from "./settingsApply.js";
 import {
@@ -13,7 +13,8 @@ import {
   applyFontFamily,
   applyUiDensity,
   applyDesktopIconSize,
-  applyTaskbarScale
+  applyTaskbarScale,
+  applyVirtualResolution
 } from "./settingsApply.js";
 import { exportData, importData, deleteAllData } from "./settingsData.js";
 import { $, $$, bindEvent, toggleClass, setText, createElement, setHTML } from "../shared/domUtils.js";
@@ -23,6 +24,7 @@ import { addCustomTheme } from "../shared/themeEngine.js";
 import { bindAccountsCategory } from "./accountsPanel.js";
 import { taskbarPositionManager } from "../desktopui/taskbarPositionManager.js";
 import { applyAnimationSettings } from "../windowManager/AnimationSystem.js";
+import { getResolutionLabel } from "../resolution/resolutionManager.js";
 
 export function bindNavigation(win) {
   const layout = $(".yuki-settings-layout", win);
@@ -273,21 +275,6 @@ export function bindDesktopCategory(win, save, settings, showSaved) {
       showSaved();
     });
   }
-
-  const hideGamesBtn = $("#settingsHideGamesBtn", win);
-  if (hideGamesBtn) {
-    bindEvent(hideGamesBtn, "click", () => {
-      toggleHideGames();
-      showSaved();
-    });
-  }
-  const hideAppsBtn = $("#settingsHideAppsBtn", win);
-  if (hideAppsBtn) {
-    bindEvent(hideAppsBtn, "click", () => {
-      toggleHideSystemApps();
-      showSaved();
-    });
-  }
 }
 
 export function bindAppearanceCategory(
@@ -305,6 +292,31 @@ export function bindAppearanceCategory(
 ) {
   bindEvent($("#settingsMacControls", win), "change", save);
   bindEvent($("#settingsCycleWallpaper", win), "change", save);
+
+  const resolutionSelect = $("#settingsResolution", win);
+  if (resolutionSelect) {
+    let previousResolution = settings.virtualResolution || "native";
+    bindEvent(resolutionSelect, "change", async () => {
+      const newValue = getSelectMenuValue("settingsResolution", win);
+      if (newValue === previousResolution) return;
+
+      applyVirtualResolution(newValue, settings.guiScale);
+      const label = getResolutionLabel(newValue);
+
+      const confirmed = await showResolutionCountdown(win, label);
+
+      if (confirmed) {
+        previousResolution = newValue;
+        settings.virtualResolution = newValue;
+        os.storage.set(StorageKeys.virtualResolution, newValue);
+        showSaved();
+      } else {
+        setSelectMenuValue("settingsResolution", previousResolution, win);
+        applyVirtualResolution(previousResolution, settings.guiScale);
+        showStatus(`Reverted to ${getResolutionLabel(previousResolution)}`);
+      }
+    });
+  }
 
   $$(".settings-btn[data-theme-val]", win).forEach((btn) => {
     bindEvent(btn, "click", () => {
@@ -410,6 +422,7 @@ export function bindAppearanceCategory(
       settings.guiScale = val;
       os.storage.set(StorageKeys.guiScale, String(val));
       applyGuiScale(val);
+      applyVirtualResolution(settings.virtualResolution || "native", val);
       showSaved();
     });
   }
@@ -970,6 +983,89 @@ export function renderTrayAppsList(win, settings) {
       settings.trayAppVisibility[wId] = visible;
       os.storage.set(StorageKeys.trayAppVisibility, settings.trayAppVisibility);
       os.tray.updateItemVisibility(wId, visible);
+    });
+  });
+}
+
+function showResolutionCountdown(win, resolutionLabel) {
+  return new Promise((resolve) => {
+    const overlay = createElement("div", {
+      className: "explorer-confirmation-overlay",
+      styles: {
+        zIndex: "999999",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "rgba(0,0,0,0.7)",
+        backdropFilter: "blur(8px)"
+      }
+    });
+
+    let seconds = 4;
+    let timerId = null;
+    let resolved = false;
+
+    function finish(confirmed) {
+      if (resolved) return;
+      resolved = true;
+      clearInterval(timerId);
+      overlay.style.opacity = "0";
+      overlay.style.transition = "opacity 0.3s";
+      setTimeout(() => overlay.remove(), 300);
+      resolve(confirmed);
+    }
+
+    const dialog = createElement("div", {
+      className: "overlay-dialog",
+      styles: { textAlign: "center", minWidth: "340px" }
+    });
+
+    setHTML(
+      dialog,
+      `
+      <div class="conflict-header" style="justify-content:center;">
+        <i class="fas fa-display conflict-icon" style="font-size:28px;"></i>
+        <span class="conflict-title">Keep these display settings?</span>
+      </div>
+      <div class="conflict-message" style="font-size:15px;margin:12px 0;">
+        ${resolutionLabel}
+      </div>
+      <div style="font-size:48px;font-weight:700;color:var(--brand);margin:16px 0;font-variant-numeric:tabular-nums;" id="res-countdown">4</div>
+      <div style="font-size:13px;color:var(--text-secondary);margin-bottom:20px;">
+        Reverting in <span id="res-countdown-text">4</span> seconds...
+      </div>
+      <div class="conflict-actions" style="justify-content:center;">
+        <button class="conflict-btn conflict-btn-keep" id="res-keep-btn" style="min-width:120px;">
+          <i class="fas fa-check conflict-btn-icon"></i> Keep
+        </button>
+      </div>
+    `
+    );
+
+    overlay.appendChild(dialog);
+    document.body.appendChild(overlay);
+
+    const countdownEl = dialog.querySelector("#res-countdown");
+    const countdownText = dialog.querySelector("#res-countdown-text");
+    const keepBtn = dialog.querySelector("#res-keep-btn");
+
+    requestAnimationFrame(() => {
+      overlay.style.opacity = "1";
+    });
+
+    timerId = setInterval(() => {
+      seconds -= 1;
+      if (countdownEl) countdownEl.textContent = String(seconds);
+      if (countdownText) countdownText.textContent = String(seconds);
+      if (seconds <= 0) {
+        finish(false);
+      }
+    }, 1000);
+
+    bindEvent(keepBtn, "click", () => finish(true));
+
+    bindEvent(overlay, "click", (e) => {
+      if (e.target === overlay) finish(false);
     });
   });
 }

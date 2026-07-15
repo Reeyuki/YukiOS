@@ -6,6 +6,7 @@ import { StorageKeys, os } from "../framework.js";
 import { renderSelectMenu } from "../shared/selectMenu.js";
 import { renderRangeSlider } from "../shared/rangeSlider.js";
 import { renderAccountsSettings } from "./accountsPanel.js";
+import { RESOLUTION_PRESETS, getViewportLabel } from "../resolution/resolutionManager.js";
 
 function getBrowserInfo() {
   const ua = navigator.userAgent;
@@ -630,27 +631,6 @@ export function renderDesktopSettings(s) {
         </div>
       </div>
 
-      <div class="settings-card" style="margin-top: 16px;">
-        <div class="settings-card-header"><i class="fas fa-eye-slash"></i> Desktop Visibility</div>
-        <div class="settings-row">
-          <div class="settings-label-group">
-            <span class="settings-label-title">Hide Games</span>
-            <span class="settings-label-desc">Toggle visibility of game icons on desktop</span>
-          </div>
-          <button class="settings-btn" id="settingsHideGamesBtn">
-            <i class="fas fa-eye-slash"></i> Toggle
-          </button>
-        </div>
-        <div class="settings-row">
-          <div class="settings-label-group">
-            <span class="settings-label-title">Hide System Apps</span>
-            <span class="settings-label-desc">Toggle visibility of system apps on desktop</span>
-          </div>
-          <button class="settings-btn" id="settingsHideAppsBtn">
-            <i class="fas fa-eye-slash"></i> Toggle
-          </button>
-        </div>
-      </div>
     </div>
   `;
 }
@@ -683,17 +663,31 @@ export function renderAppearanceSettings(s) {
     )
     .join("");
 
+  const viewportLabel = getViewportLabel();
+  const resolutionOptions = RESOLUTION_PRESETS.map((p) => ({ value: p.value, label: p.label }));
+
   return `
     <div id="pane-appearance" class="settings-category-pane">
       <div class="settings-category-header">Appearance</div>
 
-      <div class="settings-card" id="sc-style">
+      <div class="settings-card">
+        <div class="settings-card-header"><i class="fas fa-display"></i> Display</div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Display Resolution</span>
+            <span class="settings-label-desc">Scale desktop to simulate a different resolution. Actual: ${viewportLabel}</span>
+          </div>
+          ${renderSelectMenu("settingsResolution", resolutionOptions, s.virtualResolution || "native")}
+        </div>
+      </div>
+
+      <div class="settings-card" id="sc-style" style="margin-top: 16px;">
         <div class="settings-card-header"><i class="fas fa-palette"></i> Style &amp; Transparency</div>
 
         <div class="settings-row">
           <div class="settings-label-group">
             <span class="settings-label-title">macOS Window Controls</span>
-            <span class="settings-label-desc">Use macOS-style traffic light buttons</span>
+            <span class="settings-label-desc">Use macOS-style traffic light buttons(needs restart)</span>
           </div>
           <label class="settings-toggle">
             <input type="checkbox" id="settingsMacControls" ${s.macOsControls ? "checked" : ""}/>

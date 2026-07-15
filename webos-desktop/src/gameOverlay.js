@@ -1629,6 +1629,10 @@ export class GameOverlayController {
       }
     });
 
+    this.terminalApp.cmdExit = () => {
+      this.togglePanel("terminal");
+    };
+
     this.terminalApp.terminalInput.focus();
   }
 

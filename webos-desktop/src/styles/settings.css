@@ -14,6 +14,10 @@
   transition: border-color 0.2s;
 }
 
+.settings-card:has(.select-menu) {
+  overflow: visible;
+}
+
 .settings-card:hover {
   border-color: rgba(255, 255, 255, 0.1);
 }
@@ -464,7 +468,7 @@ html[data-theme-mode="light"] .settings-select {
 .yuki-settings-content {
   flex: 1;
   overflow-y: auto;
-  padding: var(--spacing-2xl) var(--spacing-xl) var(--spacing-xl);
+  padding: var(--spacing-2xl) var(--spacing-xl) 200px;
   position: relative;
   scroll-behavior: smooth;
 }

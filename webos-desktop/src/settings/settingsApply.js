@@ -3,6 +3,7 @@ import { turboManager } from "../shared/turboManager.js";
 import { getThemeColors } from "../shared/themeEngine.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { $, $$ } from "../shared/domUtils.js";
+import { applyResolution as applyResolutionTransform } from "../resolution/resolutionManager.js";
 const desktop = document.getElementById("desktop");
 
 const LIGHT_THEMES = new Set([
@@ -83,12 +84,11 @@ export function applySound(enabled, volume) {
 }
 
 export function applyGuiScale(scale) {
-  const scaleValue = scale / 100;
-  document.documentElement.style.setProperty("--gui-scale", String(scaleValue));
-  document.documentElement.style.transform = `scale(${scaleValue})`;
-  document.documentElement.style.transformOrigin = "top left";
-  document.documentElement.style.width = `${100 / scaleValue}%`;
-  document.documentElement.style.height = `${100 / scaleValue}%`;
+  document.documentElement.style.setProperty("--gui-scale", String(scale / 100));
+}
+
+export function applyVirtualResolution(resolution, guiScale) {
+  applyResolutionTransform(resolution, guiScale);
 }
 
 export function applyFontSize(size) {

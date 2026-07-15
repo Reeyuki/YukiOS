@@ -120,12 +120,14 @@ export class InputHandler {
 
   initWindowSwitcher() {
     document.addEventListener("keydown", (e) => {
-      if (KeybindManager.matches(e, "global.windowSwitcher")) {
+      const isForward = KeybindManager.matches(e, "global.windowSwitcher");
+      const isReverse = KeybindManager.matches(e, "global.windowSwitcherReverse");
+      if (isForward || isReverse) {
         e.preventDefault();
         if (!this.windowSwitcherActive) {
           this.startWindowSwitcher();
         } else {
-          this.cycleWindowSwitcher();
+          this.cycleWindowSwitcher(isReverse);
         }
       }
     });
@@ -185,9 +187,12 @@ export class InputHandler {
     this.bringToFront(this.windowSwitcherWindows[this.windowSwitcherIndex]);
   }
 
-  cycleWindowSwitcher() {
+  cycleWindowSwitcher(reverse = false) {
     const settings = this.getSwitcherSettings();
-    this.windowSwitcherIndex = (this.windowSwitcherIndex + 1) % this.windowSwitcherWindows.length;
+    const len = this.windowSwitcherWindows.length;
+    this.windowSwitcherIndex = reverse
+      ? (this.windowSwitcherIndex - 1 + len) % len
+      : (this.windowSwitcherIndex + 1) % len;
     const nextWindow = this.windowSwitcherWindows[this.windowSwitcherIndex];
 
     if (settings.ui === "overlay") {

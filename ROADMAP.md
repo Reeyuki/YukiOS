@@ -104,6 +104,7 @@ Planned features and improvements for YukiOS.
 - [📋] **Battery-aware performance** — Reduce animation fidelity and background activity automatically on low battery when running on mobile
 - [💡] **Mac dropdown entry** — Add Mac mode as a boot mode in login screen that automatically enables mac window header setting and changes taskbar
 - [💡] Alt+Tab visual switcher with live thumbnails (replaces Alt+Q text cycling)
+- [💡] Add bash command to terminal for sh script execution
 - [💡] Smooth theme transition animation
 - [💡] Window shake-to-minimize (Aero Shake)
 ---
@@ -126,21 +127,6 @@ Planned features and improvements for YukiOS.
 - [💡] **Multi-language IDE in YukiCode** — Plugable runtime system supporting Python (Pyodide), C/C++ (Emscripten), Lua (Fengari), and TypeScript compilation in a single editor
 - [💡] **Live source overrides** — Browse, edit, and hot-reload Yuki OS source code without rebuilding via Yuki OS Studio
 
----
-
-## Accessibility
-
-- [✅] Custom cursor support
-- [✅] GUI scaling options
-- [📋] **Keyboard navigation completeness** — Ensure every UI element is reachable and operable via keyboard
-- [📋] **High-contrast mode** — Theme variant with maximum contrast for readability
-- [📋] **Reduced motion mode** — Disable or minimize animations for vestibular sensitivity
-- [📋] **Screen reader support** — Proper ARIA labels and focus management for assistive technology
-- [📋] **Focus indicators** — Visible, high-contrast focus outlines on all interactive elements
-- [💡] **Text-to-speech** — Read selected text aloud
-- [💡] **Magnifier / zoom** — Lens-style screen magnification
-
----
 
 ## Polish & UX Improvements
 
@@ -149,18 +135,19 @@ Planned features and improvements for YukiOS.
 - [✅] Taskbar scaling and horizontal scroll
 - [✅] Taskbar drag reorder and window preview on hover
 - [✅] Alt+Left-Click drag / Alt+Right-Click resize
-- [✅] **Transparency setting for all panels** — Extend transparency effects to all tray menus, context menus, and GUI panels consistently
-- [✅] **Achievement popup redesign** — Replicate Steam achievement style with bottom-right corner popup
-- [📋] **Lock screen enrichment** — Show time with seconds, weather, media controls, notification badges, and quick actions (WiFi, brightness, volume)
-- [📋] **Notification system depth** — Grouping by app, history view, scheduled DND, per-app notification sounds, persistent notifications, snooze
-- [💡] **Window compositor effects** — Live window reflections in taskbar, advanced compositor effects beyond CSS transitions
+- [✅] Transparency setting for all panels — Extend transparency effects to all tray menus, context menus, and GUI panels consistently
+- [✅] Achievement popup redesign — Replicate Steam achievement style with bottom-right corner popup
+- [📋] Lock screen enrichment — Show time with seconds, weather, media controls, notification badges, and quick actions (WiFi, brightness, volume)
+- [📋] Notification system depth — Grouping by app, history view, scheduled DND, per-app notification sounds, persistent notifications, snooze
 - [💡] Apps playing audio should show a speaker icon on their taskbar entry; muted apps should show a muted speaker icon
 - [💡] Currently active apps should show an indicator to show they are active
+- [💡] Chrome OS theming
+- [💡] Magnifier / zoom — Lens-style screen magnification like windows 7 magnify app
 ---
 
 ## Known Bugs to Fix
 
-- [📋] Files saved in Pictures, moved to desktop, then dragged back appear as 0 bytes
+- [📋] Files saved in Pictures using upload to virtual fs, moved to desktop by dragging, then dragged back to explorer appear as 0 bytes
 
 ---
 

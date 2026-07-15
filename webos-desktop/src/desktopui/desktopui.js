@@ -1,9 +1,4 @@
-import {
-  updateFavoritesUI,
-  getToggleHideGames,
-  getToggleHideSystemApps,
-  setupStartMenu as setupStartMenuFn
-} from "./startMenu.js";
+import { updateFavoritesUI, setupStartMenu as setupStartMenuFn } from "./startMenu.js";
 import { desktop } from "./desktop.js";
 import { makeDraggable } from "../shared/dragUtils.js";
 import { StorageKeys, os } from "../framework.js";
@@ -32,8 +27,6 @@ import { TimerWidget } from "./widgets/timerWidget.js";
 import { YouTubeWidget } from "./widgets/youtubeWidget.js";
 
 let sharedAppLauncher;
-export let toggleHideGames = getToggleHideGames();
-export let toggleHideSystemApps = getToggleHideSystemApps();
 let GRID_CONFIG = { width: 76, height: 96, gap: 7 };
 
 export function updateGridConfig(iconSize) {
@@ -934,7 +927,7 @@ export class DesktopUI {
   }
 
   setupStartMenu() {
-    setupStartMenuFn(this.appLauncher, null, this.explorerApp, this.notepadApp, this.selectionManager);
+    setupStartMenuFn(this.appLauncher, null, this.selectionManager);
   }
 
   async initializeDesktopFiles() {

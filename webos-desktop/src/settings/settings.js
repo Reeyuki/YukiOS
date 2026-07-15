@@ -21,7 +21,8 @@ import {
   applyFontFamily,
   applyUiDensity,
   applyDesktopIconSize,
-  applyTaskbarScale
+  applyTaskbarScale,
+  applyVirtualResolution
 } from "./settingsApply.js";
 import {
   bindNavigation,
@@ -103,6 +104,7 @@ export class SettingsApp extends BaseApp {
         fontFamily: os.storage.get(StorageKeys.fontFamily) || "opensans",
         uiDensity: os.storage.get(StorageKeys.uiDensity) || "comfortable",
         wispServer: os.storage.get(StorageKeys.wispServer) || "wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/",
+        virtualResolution: os.storage.get(StorageKeys.virtualResolution) || "native",
         cursorEffectEnabled: os.storage.get(StorageKeys.cursorEffectEnabled) !== "false",
         wobblyWindows: os.storage.get(StorageKeys.wobblyWindows) === "true",
         wobbleSpringK: Number(os.storage.get(StorageKeys.wobbleSpringK)) || 170,
@@ -124,11 +126,20 @@ export class SettingsApp extends BaseApp {
       applyStartMenuCats(this.settings.startMenuCats);
       applyTransparentUI(this.settings.transparentUI);
       applyGuiScale(this.settings.guiScale);
+      applyVirtualResolution(this.settings.virtualResolution, this.settings.guiScale);
       applyFontSize(this.settings.fontSize);
       applyTrayEnabled(this.settings.trayEnabled);
       applyUiDensity(this.settings.uiDensity);
       applyDesktopIconSize(this.settings.desktopIconSize);
       applyTaskbarScale(this.settings.taskbarScale);
+
+      let resizeTimer;
+      window.addEventListener("resize", () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+          applyVirtualResolution(this.settings.virtualResolution, this.settings.guiScale);
+        }, 200);
+      });
 
       if (cursorFromLegacyStorage && !cursorOriginalFromStorage) {
         try {
@@ -322,7 +333,8 @@ export class SettingsApp extends BaseApp {
         wobbleDamping,
         wobbleMass,
         wobbleDragLag,
-        wobbleCoupleK
+        wobbleCoupleK,
+        virtualResolution: this.settings.virtualResolution
       });
 
       setCdnMirror(cdnMirror);

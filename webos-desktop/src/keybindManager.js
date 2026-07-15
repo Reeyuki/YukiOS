@@ -98,7 +98,14 @@ export const KEYBIND_DEFINITIONS = [
   {
     id: "global.windowSwitcher",
     defaultKeys: ["Alt", "Q"],
-    desc: "Cycle through open windows",
+    desc: "Cycle forward through open windows",
+    cat: "global",
+    icon: "fas fa-exchange-alt"
+  },
+  {
+    id: "global.windowSwitcherReverse",
+    defaultKeys: ["Shift", "Alt", "Q"],
+    desc: "Cycle backward through open windows",
     cat: "global",
     icon: "fas fa-exchange-alt"
   },

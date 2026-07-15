@@ -5,6 +5,22 @@ const appNewsEntries = APP_MANIFESTS.filter((manifest) => manifest.news).map((ma
 
 const EXISTING_NEWS_UPDATES = [
   {
+    date: "July 15, 2026",
+    sections: [
+      {
+        icon: "fa-display",
+        title: "Display",
+        items: [
+          [
+            "fa-display",
+            "Display Resolution",
+            "Switch between 20+ display resolutions with a 4-second countdown confirmation dialog."
+          ]
+        ]
+      }
+    ]
+  },
+  {
     date: "July 14, 2026",
     sections: [
       {

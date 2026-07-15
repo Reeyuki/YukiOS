@@ -1,6 +1,7 @@
 import "../styles/installedApps.css";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { getAppRegistry } from "../appRegistry.js";
+import { showContextMenu } from "../shared/contextMenu.js";
 
 import { BaseApp, os } from "../framework.js";
 export class InstalledAppsApp extends BaseApp {
@@ -68,42 +69,53 @@ export class InstalledAppsApp extends BaseApp {
         <span><i class="fas fa-th-list" style="color: white;margin-right: 6px;font-size: 25px;vertical-align: middle;"></i>Installed Apps</span>
         ${os.window.getWindowControls()}
       </div>
-      <div class="window-content" style="padding: 16px; gap: 16px;">
-        <div class="installed-apps-toolbar">
-          <input 
-            type="text" 
-            id="installed-apps-search" 
-            placeholder="Search apps..." 
-            style="flex: 1;"
-          >
-          <select id="installed-apps-filter">
+      <div class="window-content" style="padding:0;flex-direction:column;">
+        <div class="ia-toolbar">
+          <div class="ia-search">
+            <i class="fas fa-search ia-search-icon"></i>
+            <input type="text" id="ia-search-input" placeholder="Search apps...">
+          </div>
+          <select class="ia-filter" id="ia-filter">
             <option value="all">All Apps</option>
             <option value="core">Core System</option>
             <option value="bundled">Bundled</option>
             <option value="external">External</option>
+            <option value="uninstalled">Uninstalled</option>
           </select>
-          <button class="select-all-btn" id="select-all-btn">Select All</button>
+          <button class="ia-select-all-btn" id="ia-select-all"><i class="fas fa-check-double"></i> Select All</button>
         </div>
-        <div id="installed-apps-bulk-actions" class="installed-apps-bulk-actions" style="display: none;">
-          <span id="selected-count">0 selected</span>
-          <button class="bulk-toggle-btn" id="bulk-toggle-btn">Toggle Status</button>
-          <button class="bulk-uninstall-btn" id="bulk-uninstall-btn">Uninstall Selected</button>
-          <button class="bulk-clear-btn" id="bulk-clear-btn">Clear Selection</button>
+        <div class="ia-bulk-bar" id="ia-bulk-bar">
+          <span class="ia-bulk-count" id="ia-bulk-count">0 selected</span>
+          <button class="ia-bulk-btn" id="ia-bulk-toggle"><i class="fas fa-toggle-on"></i> Toggle Status</button>
+          <button class="ia-bulk-btn" id="ia-bulk-restore" style="display:none;"><i class="fas fa-undo"></i> Restore</button>
+          <button class="ia-bulk-btn ia-bulk-btn--danger" id="ia-bulk-uninstall"><i class="fas fa-trash-alt"></i> Uninstall</button>
+          <button class="ia-bulk-btn" id="ia-bulk-clear"><i class="fas fa-times"></i> Clear</button>
         </div>
-        <div id="installed-apps-list" class="installed-apps-list"></div>
-        <div id="installed-apps-pagination"></div>
-        <div id="installed-apps-status"></div>
+        <div class="ia-header">
+          <div class="ia-header-check"></div>
+          <div></div>
+          <div>Name</div>
+          <div>Type</div>
+          <div>Status</div>
+          <div>Actions</div>
+        </div>
+        <div class="ia-list" id="ia-list"></div>
+        <div class="ia-footer">
+          <span class="ia-status" id="ia-status"></span>
+          <div class="ia-pagination" id="ia-pagination"></div>
+        </div>
       </div>
     `;
   }
 
   bindControls(win, inst) {
-    const searchInput = win.querySelector("#installed-apps-search");
-    const filterSelect = win.querySelector("#installed-apps-filter");
-    const selectAllBtn = win.querySelector("#select-all-btn");
-    const bulkToggleBtn = win.querySelector("#bulk-toggle-btn");
-    const bulkUninstallBtn = win.querySelector("#bulk-uninstall-btn");
-    const bulkClearBtn = win.querySelector("#bulk-clear-btn");
+    const searchInput = win.querySelector("#ia-search-input");
+    const filterSelect = win.querySelector("#ia-filter");
+    const selectAllBtn = win.querySelector("#ia-select-all");
+    const bulkToggleBtn = win.querySelector("#ia-bulk-toggle");
+    const bulkRestoreBtn = win.querySelector("#ia-bulk-restore");
+    const bulkUninstallBtn = win.querySelector("#ia-bulk-uninstall");
+    const bulkClearBtn = win.querySelector("#ia-bulk-clear");
 
     searchInput.addEventListener("input", (e) => {
       inst.searchQuery = e.target.value.toLowerCase();
@@ -118,19 +130,14 @@ export class InstalledAppsApp extends BaseApp {
     });
 
     selectAllBtn.addEventListener("click", () => {
-      const filtered = inst.apps.filter((app) => {
-        const matchesSearch =
-          app.displayName.toLowerCase().includes(inst.searchQuery) || app.id.toLowerCase().includes(inst.searchQuery);
-        const matchesFilter = inst.currentFilter === "all" || app.type === inst.currentFilter;
-        return matchesSearch && matchesFilter;
-      });
+      const filtered = this.getFilteredApps(inst);
 
       if (inst.selectedApps.size === filtered.length) {
         inst.selectedApps.clear();
-        selectAllBtn.textContent = "Select All";
+        selectAllBtn.innerHTML = '<i class="fas fa-check-double"></i> Select All';
       } else {
         filtered.forEach((app) => inst.selectedApps.add(app.id));
-        selectAllBtn.textContent = "Deselect All";
+        selectAllBtn.innerHTML = '<i class="fas fa-check-double"></i> Deselect All';
       }
 
       this.updateBulkActions(win, inst);
@@ -139,6 +146,10 @@ export class InstalledAppsApp extends BaseApp {
 
     bulkToggleBtn.addEventListener("click", () => {
       this.handleBulkToggle(inst);
+    });
+
+    bulkRestoreBtn.addEventListener("click", () => {
+      this.handleBulkRestore(inst);
     });
 
     bulkUninstallBtn.addEventListener("click", () => {
@@ -152,6 +163,17 @@ export class InstalledAppsApp extends BaseApp {
     });
   }
 
+  getFilteredApps(inst) {
+    return inst.apps.filter((app) => {
+      const matchesSearch =
+        app.displayName.toLowerCase().includes(inst.searchQuery) || app.id.toLowerCase().includes(inst.searchQuery);
+      if (!matchesSearch) return false;
+      if (inst.currentFilter === "uninstalled") return app.uninstalled;
+      if (app.uninstalled) return false;
+      return inst.currentFilter === "all" || app.type === inst.currentFilter;
+    });
+  }
+
   loadApps(inst) {
     if (!this.appLauncher) {
       console.error("AppLauncher not set");
@@ -159,23 +181,18 @@ export class InstalledAppsApp extends BaseApp {
     }
 
     const allApps = this.appRegistry.getAllApps(this.appLauncher.appMap);
-    inst.apps = allApps.filter((app) => !app.uninstalled);
+    inst.apps = allApps;
     this.renderApps(document.getElementById(inst.winId), inst);
   }
 
   renderApps(win, inst) {
-    const listEl = win.querySelector("#installed-apps-list");
-    const statusEl = win.querySelector("#installed-apps-status");
-    const paginationEl = win.querySelector("#installed-apps-pagination");
+    const listEl = win.querySelector("#ia-list");
+    const statusEl = win.querySelector("#ia-status");
+    const paginationEl = win.querySelector("#ia-pagination");
 
     if (!listEl) return;
 
-    const filtered = inst.apps.filter((app) => {
-      const matchesSearch =
-        app.displayName.toLowerCase().includes(inst.searchQuery) || app.id.toLowerCase().includes(inst.searchQuery);
-      const matchesFilter = inst.currentFilter === "all" || app.type === inst.currentFilter;
-      return matchesSearch && matchesFilter;
-    });
+    const filtered = this.getFilteredApps(inst);
 
     inst.currentPage = 0;
     const totalPages = Math.ceil(filtered.length / inst.pageSize);
@@ -188,8 +205,11 @@ export class InstalledAppsApp extends BaseApp {
 
     if (filtered.length === 0) {
       listEl.innerHTML = `
-        <div class="installed-apps-empty">
-          No apps to show
+        <div class="ia-empty">
+          <i class="fas fa-box-open ia-empty-icon"></i>
+          <span class="ia-empty-text">
+            ${inst.searchQuery ? "No apps match your search" : inst.currentFilter === "uninstalled" ? "No uninstalled apps" : "No apps installed"}
+          </span>
         </div>
       `;
       statusEl.textContent = `0 apps`;
@@ -202,7 +222,7 @@ export class InstalledAppsApp extends BaseApp {
       listEl.appendChild(appEl);
     });
 
-    statusEl.textContent = `${filtered.length} app${filtered.length !== 1 ? "s" : ""} (showing ${startIndex + 1}-${endIndex})`;
+    statusEl.textContent = `${filtered.length} app${filtered.length !== 1 ? "s" : ""} (${startIndex + 1}–${endIndex})`;
 
     if (paginationEl) {
       this.renderPagination(paginationEl, inst, totalPages, filtered.length);
@@ -217,12 +237,16 @@ export class InstalledAppsApp extends BaseApp {
 
     paginationEl.style.display = "flex";
     paginationEl.innerHTML = `
-      <button class="pagination-btn" data-action="prev" ${inst.currentPage === 0 ? "disabled" : ""}>Previous</button>
-      <span>Page ${inst.currentPage + 1} of ${totalPages}</span>
-      <button class="pagination-btn" data-action="next" ${inst.currentPage >= totalPages - 1 ? "disabled" : ""}>Next</button>
+      <button class="ia-page-btn" data-action="prev" ${inst.currentPage === 0 ? "disabled" : ""}>
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      <span class="ia-page-info">${inst.currentPage + 1} / ${totalPages}</span>
+      <button class="ia-page-btn" data-action="next" ${inst.currentPage >= totalPages - 1 ? "disabled" : ""}>
+        <i class="fas fa-chevron-right"></i>
+      </button>
     `;
 
-    paginationEl.querySelectorAll(".pagination-btn").forEach((btn) => {
+    paginationEl.querySelectorAll(".ia-page-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
         const action = btn.dataset.action;
         if (action === "prev" && inst.currentPage > 0) {
@@ -237,18 +261,13 @@ export class InstalledAppsApp extends BaseApp {
   }
 
   renderCurrentPage(win, inst) {
-    const listEl = win.querySelector("#installed-apps-list");
-    const statusEl = win.querySelector("#installed-apps-status");
-    const paginationEl = win.querySelector("#installed-apps-pagination");
+    const listEl = win.querySelector("#ia-list");
+    const statusEl = win.querySelector("#ia-status");
+    const paginationEl = win.querySelector("#ia-pagination");
 
     if (!listEl) return;
 
-    const filtered = inst.apps.filter((app) => {
-      const matchesSearch =
-        app.displayName.toLowerCase().includes(inst.searchQuery) || app.id.toLowerCase().includes(inst.searchQuery);
-      const matchesFilter = inst.currentFilter === "all" || app.type === inst.currentFilter;
-      return matchesSearch && matchesFilter;
-    });
+    const filtered = this.getFilteredApps(inst);
 
     const totalPages = Math.ceil(filtered.length / inst.pageSize);
     const startIndex = inst.currentPage * inst.pageSize;
@@ -261,65 +280,94 @@ export class InstalledAppsApp extends BaseApp {
       listEl.appendChild(appEl);
     });
 
-    statusEl.textContent = `${filtered.length} app${filtered.length !== 1 ? "s" : ""} (showing ${startIndex + 1}-${endIndex})`;
+    statusEl.textContent = `${filtered.length} app${filtered.length !== 1 ? "s" : ""} (${startIndex + 1}–${endIndex})`;
     this.renderPagination(paginationEl, inst, totalPages, filtered.length);
   }
 
   createAppCard(app, inst) {
     const card = document.createElement("div");
-    card.className = "installed-app-card";
+    card.className = "ia-card";
     card.dataset.appId = app.id;
 
     const iconHtml = this.getAppIcon(app);
     const isSelected = inst.selectedApps.has(app.id);
 
     if (isSelected) {
-      card.classList.add("selected");
+      card.classList.add("is-selected");
+    }
+    if (app.uninstalled) {
+      card.classList.add("is-uninstalled");
     }
 
+    const isUninstalled = app.uninstalled;
+
     card.innerHTML = `
-      <div class="app-checkbox">
-        <input type="checkbox" class="app-select-checkbox" data-app="${app.id}" ${isSelected ? "checked" : ""}>
+      <div class="ia-card-check">
+        <input type="checkbox" class="ia-card-checkbox" data-app="${app.id}" ${isSelected ? "checked" : ""}>
       </div>
-      <div class="app-icon">
-        ${iconHtml}
+      <div class="ia-card-icon">${iconHtml}</div>
+      <div class="ia-card-info">
+        <div class="ia-card-name">${app.displayName}</div>
+        <div class="ia-card-id">${app.id}</div>
       </div>
-      <div class="app-info">
-        <div class="app-name">${app.displayName}</div>
-        <div class="app-meta">
-          <span class="app-id">${app.id}</span>
-          <span>•</span>
-          <span class="app-type">${this.getTypeLabel(app.type)}</span>
-          ${app.protected ? '<span>•</span><span style="color: var(--brand);">Protected</span>' : ""}
-        </div>
+      <div class="ia-card-type">${this.getTypeLabel(app.type)}</div>
+      <div class="ia-card-status">
+        ${
+          isUninstalled
+            ? `<button class="ia-restore-btn" title="Restore this app"><i class="fas fa-undo"></i> Restore</button>`
+            : `<label class="ia-toggle" title="${app.disabled ? "Enable" : "Disable"}">
+              <input type="checkbox" class="ia-toggle-input" ${app.disabled ? "" : "checked"} ${app.protected ? "disabled" : ""}>
+              <span class="ia-toggle-track"><span class="ia-toggle-thumb"></span></span>
+            </label>`
+        }
       </div>
-      <div class="app-status ${app.disabled ? "disabled" : "enabled"}">
-        ${app.disabled ? "Disabled" : "Enabled"}
-      </div>
-      <div class="app-actions">
-        <button class="app-action-btn rename-btn" data-app="${app.id}" title="Rename">
-          <i class="fas fa-edit"></i>
-        </button>
-        <button class="app-action-btn toggle-btn" data-app="${app.id}" data-disabled="${app.disabled}" title="${app.disabled ? "Enable" : "Disable"}" ${app.protected ? "disabled" : ""}>
-          <i class="fas ${app.disabled ? "fa-toggle-off" : "fa-toggle-on"}"></i>
-        </button>
-        <button class="app-action-btn uninstall-btn" data-app="${app.id}" title="Uninstall" ${app.protected ? "disabled" : ""}>
-          <i class="fas fa-trash"></i>
+      <div class="ia-card-actions">
+        <button class="ia-overflow-btn" title="More actions">
+          <i class="fas fa-ellipsis-v"></i>
         </button>
       </div>
     `;
 
     card.addEventListener("click", (e) => {
       const target = e.target;
-      if (target instanceof Element && (target.closest(".app-actions") || target.closest(".app-checkbox"))) return;
-      const checkbox = card.querySelector(".app-select-checkbox");
+      if (
+        target instanceof Element &&
+        (target.closest(".ia-card-actions") ||
+          target.closest(".ia-card-check") ||
+          target.closest(".ia-toggle") ||
+          target.closest(".ia-restore-btn"))
+      )
+        return;
+      const checkbox = card.querySelector(".ia-card-checkbox");
       if (checkbox instanceof HTMLInputElement) {
         checkbox.checked = !checkbox.checked;
         checkbox.dispatchEvent(new Event("change"));
       }
     });
 
-    this.bindAppActions(card, app, inst);
+    card.addEventListener("dblclick", (e) => {
+      const target = e.target;
+      if (
+        target instanceof Element &&
+        (target.closest(".ia-card-actions") ||
+          target.closest(".ia-card-check") ||
+          target.closest(".ia-toggle") ||
+          target.closest(".ia-restore-btn"))
+      )
+        return;
+      if (!isUninstalled) this.handleLaunch(app);
+    });
+
+    const restoreBtn = card.querySelector(".ia-restore-btn");
+    if (restoreBtn) {
+      restoreBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        this.handleRestore(app, inst);
+      });
+    }
+
+    this.bindToggle(card, app, inst);
+    this.bindOverflowMenu(card, app, inst);
     this.bindCheckbox(card, app, inst);
 
     return card;
@@ -353,68 +401,122 @@ export class InstalledAppsApp extends BaseApp {
     return labels[type] || type;
   }
 
-  bindAppActions(card, app, inst) {
-    const renameBtn = card.querySelector(".rename-btn");
-    const toggleBtn = card.querySelector(".toggle-btn");
-    const uninstallBtn = card.querySelector(".uninstall-btn");
+  bindToggle(card, app, inst) {
+    const toggleInput = card.querySelector(".ia-toggle-input");
+    if (!toggleInput || app.uninstalled) return;
 
-    renameBtn.addEventListener("click", async (e) => {
-      e.stopPropagation();
-      await this.handleRename(app, inst);
-    });
-
-    toggleBtn.addEventListener("click", async (e) => {
+    toggleInput.addEventListener("change", async (e) => {
       e.stopPropagation();
       if (app.protected) return;
       await this.handleToggle(app, inst);
     });
+  }
 
-    uninstallBtn.addEventListener("click", async (e) => {
+  bindOverflowMenu(card, app, inst) {
+    const overflowBtn = card.querySelector(".ia-overflow-btn");
+
+    overflowBtn.addEventListener("click", (e) => {
       e.stopPropagation();
-      if (app.protected) return;
-      await this.handleUninstall(app, inst);
+
+      const isUninstalled = app.uninstalled;
+      let items;
+
+      if (isUninstalled) {
+        items = [
+          { id: "restore-" + app.id, label: "Restore", action: "restore", icon: "fa-undo" },
+          "hr",
+          { id: "rename-" + app.id, label: "Edit Name", action: "rename", icon: "fa-edit" }
+        ];
+      } else {
+        items = [
+          { id: "launch-" + app.id, label: "Launch", action: "launch", icon: "fa-play" },
+          "hr",
+          { id: "rename-" + app.id, label: "Edit Name", action: "rename", icon: "fa-edit" },
+          {
+            id: "toggle-" + app.id,
+            label: app.disabled ? "Enable" : "Disable",
+            action: "toggle",
+            icon: "fa-toggle-on",
+            condition: () => !app.protected
+          },
+          "hr",
+          {
+            id: "uninstall-" + app.id,
+            label: "Uninstall",
+            action: "uninstall",
+            icon: "fa-trash",
+            condition: () => !app.protected
+          }
+        ];
+      }
+
+      showContextMenu(e, items, {
+        launch: () => this.handleLaunch(app),
+        rename: () => this.handleRename(app, inst),
+        toggle: () => this.handleToggle(app, inst),
+        uninstall: () => this.handleUninstall(app, inst),
+        restore: () => this.handleRestore(app, inst)
+      });
     });
   }
 
   bindCheckbox(card, app, inst) {
-    const checkbox = card.querySelector(".app-select-checkbox");
+    const checkbox = card.querySelector(".ia-card-checkbox");
     checkbox.addEventListener("change", (e) => {
       if (e.target.checked) {
         inst.selectedApps.add(app.id);
-        card.classList.add("selected");
+        card.classList.add("is-selected");
       } else {
         inst.selectedApps.delete(app.id);
-        card.classList.remove("selected");
+        card.classList.remove("is-selected");
       }
       this.updateBulkActions(document.getElementById(inst.winId), inst);
     });
   }
 
   updateBulkActions(win, inst) {
-    const bulkActions = win.querySelector("#installed-apps-bulk-actions");
-    const selectedCount = win.querySelector("#selected-count");
-    const selectAllBtn = win.querySelector("#select-all-btn");
+    const bulkBar = win.querySelector("#ia-bulk-bar");
+    const bulkCount = win.querySelector("#ia-bulk-count");
+    const bulkToggleBtn = win.querySelector("#ia-bulk-toggle");
+    const bulkRestoreBtn = win.querySelector("#ia-bulk-restore");
+    const bulkUninstallBtn = win.querySelector("#ia-bulk-uninstall");
+    const selectAllBtn = win.querySelector("#ia-select-all");
 
-    if (!bulkActions) return;
+    if (!bulkBar) return;
 
     const count = inst.selectedApps.size;
-    selectedCount.textContent = `${count} selected`;
+    const showingUninstalled = inst.currentFilter === "uninstalled";
 
     if (count > 0) {
-      bulkActions.style.display = "flex";
+      bulkBar.classList.add("is-visible");
+      bulkCount.textContent = `${count} selected`;
     } else {
-      bulkActions.style.display = "none";
+      bulkBar.classList.remove("is-visible");
     }
 
-    const filtered = inst.apps.filter((app) => {
-      const matchesSearch =
-        app.displayName.toLowerCase().includes(inst.searchQuery) || app.id.toLowerCase().includes(inst.searchQuery);
-      const matchesFilter = inst.currentFilter === "all" || app.type === inst.currentFilter;
-      return matchesSearch && matchesFilter;
-    });
+    if (bulkToggleBtn) bulkToggleBtn.style.display = showingUninstalled ? "none" : "";
+    if (bulkRestoreBtn) bulkRestoreBtn.style.display = showingUninstalled ? "" : "none";
+    if (bulkUninstallBtn) bulkUninstallBtn.style.display = showingUninstalled ? "none" : "";
+
+    const filtered = this.getFilteredApps(inst);
 
     if (selectAllBtn) {
-      selectAllBtn.textContent = count === filtered.length ? "Deselect All" : "Select All";
+      selectAllBtn.innerHTML =
+        count === filtered.length
+          ? '<i class="fas fa-check-double"></i> Deselect All'
+          : '<i class="fas fa-check-double"></i> Select All';
+    }
+  }
+
+  async handleRestore(app, inst) {
+    this.appRegistry.restoreApp(app.id);
+    this.loadApps(inst);
+    this.notify("App Restored", `"${app.displayName}" has been restored`, "success", 5000, "fas fa-undo");
+  }
+
+  handleLaunch(app) {
+    if (this.appLauncher && !app.disabled) {
+      this.appLauncher.launch(app.id);
     }
   }
 
@@ -440,6 +542,22 @@ export class InstalledAppsApp extends BaseApp {
         "fas fa-toggle-on"
       );
     }
+  }
+
+  async handleBulkRestore(inst) {
+    const selectedIds = Array.from(inst.selectedApps);
+    for (const appId of selectedIds) {
+      this.appRegistry.restoreApp(appId);
+    }
+    inst.selectedApps.clear();
+    this.loadApps(inst);
+    this.notify(
+      "Apps Restored",
+      `${selectedIds.length} app${selectedIds.length !== 1 ? "s" : ""} restored`,
+      "success",
+      5000,
+      "fas fa-undo"
+    );
   }
 
   async handleBulkUninstall(inst) {
