@@ -22,6 +22,7 @@ Planned features and improvements for YukiOS.
 - [✅] Desktop peek button with hover reveal
 - [✅] Desktop icon auto-sort rules (name, type, recent use)
 - [✅] Draggable desktop widgets (clock, weather, calendar)
+- [✅] **Window centering** — Middle-click title bar to center window on screen
 - [📋] **Keyboard-driven tiling** — Shortcut to auto-arrange all open windows into configurable grid layouts (2-column, 3-column, grid)
 - [📋] **Window rules** — Define behaviors per app: always open on specific workspace, at a set size, or always-on-top
 - [📋] **Per-workspace wallpapers** — Each workspace can have its own distinct wallpaper
@@ -30,10 +31,8 @@ Planned features and improvements for YukiOS.
 - [📋] **Picture-in-picture mode** — Detach any window into a floating always-on-top mini player, ideal for video
 - [💡] **3D desktop mode** — Render windows as panels in a 3D room using Three.js, with camera navigation and spatial workspace switching
 - [💡] **Tiling window manager mode** — Optional i3/sway-style keyboard-driven tiling WM
-- [💡] **Desktop folders** — Create folders directly on the desktop for file organization
 - [💡] **Window shake to minimize** — Shake a window to minimize all others (Windows 11 style)
 - [💡] **Per-app remembered window positions** — Independent of session restore, remember position per app permanently
-- [💡] **Window centering** — Middle-click title bar to center window on screen
 
 ---
 
@@ -81,13 +80,9 @@ Planned features and improvements for YukiOS.
 - [✅] Terminal, Explorer, Settings, Task Manager, Shortcuts, Achievements, Profile Customizer, Yuki AI Assistant
 - [✅] Clipboard Manager, Emoji Selector, YukiDevTools, Dev Tools (Eruda), Storage Editor, Yuki Convert
 - [✅] Browser, WebTorrent, Tor Manager, VNC Client, Steam-like launcher
-- [💡] Add modern ms paint web recreation (not old version)
-- [📋] **Download Manager** — Unified queue-based download panel with pause/resume/priority, segmented parallel downloading, and auto-routing to filesystem folders
-- [📋] **Yuki OS Studio** — Live source editor for modifying, overriding, and reloading Yuki OS source code at runtime without rebuilding
-- [📋] **Habit tracker / journal app** — Persistent daily journal with streak tracking and calendar heatmap
-- [📋] **Local database app** — Airtable-lite built on IndexedDB for structured data management
 - [💡] **Media tray app** — Replace the "now playing" indicator with a dedicated tray player showing album art, controls, and progress for any playing media
 - [💡] **Control Center / storage dashboard** — Centralized system data overview with storage usage breakdown
+- [💡] Add modern ms paint web recreation (not old version)
 
 ---
 
@@ -105,7 +100,6 @@ Planned features and improvements for YukiOS.
 - [✅] Calendar popup from taskbar clock with events ("Plans") system
 - [📋] **Sound themes** — System-wide audio feedback for login, window open/close, notifications, errors 
 - [📋] **Startup app manager** — Choose which apps launch automatically on login
-- [📋] **Dynamic themes** — Themes that auto-switch based on time of day (dark after sunset)
 - [📋] **Album art wallpaper** — Extract album art from currently playing music and set it as desktop wallpaper
 - [📋] **Battery-aware performance** — Reduce animation fidelity and background activity automatically on low battery when running on mobile
 - [💡] **Mac dropdown entry** — Add Mac mode as a boot mode in login screen that automatically enables mac window header setting and changes taskbar
@@ -128,10 +122,9 @@ Planned features and improvements for YukiOS.
 - [✅] Custom App Creator with auto-detected favicons and per-app CORS proxy
 - [✅] Eruda and YukiDevTools inspector
 - [✅] Storage Editor for browsing IndexedDB
-- [📋] **Visual theme editor** — Live-preview theme builder with color pickers and sliders
-- [📋] **Multi-language IDE in YukiCode** — Plugable runtime system supporting Python (Pyodide), C/C++ (Emscripten), Lua (Fengari), and TypeScript compilation in a single editor
-- [📋] **Live source overrides** — Browse, edit, and hot-reload Yuki OS source code without rebuilding via Yuki OS Studio
-- [💡] **Runtime module loading** — Dynamic import-based plugin architecture for extending the OS at runtime
+- [✅] **Visual theme editor** — Live-preview theme builder with color pickers and sliders
+- [💡] **Multi-language IDE in YukiCode** — Plugable runtime system supporting Python (Pyodide), C/C++ (Emscripten), Lua (Fengari), and TypeScript compilation in a single editor
+- [💡] **Live source overrides** — Browse, edit, and hot-reload Yuki OS source code without rebuilding via Yuki OS Studio
 
 ---
 
@@ -145,15 +138,7 @@ Planned features and improvements for YukiOS.
 - [📋] **Screen reader support** — Proper ARIA labels and focus management for assistive technology
 - [📋] **Focus indicators** — Visible, high-contrast focus outlines on all interactive elements
 - [💡] **Text-to-speech** — Read selected text aloud
-- [💡] **Speech-to-text / dictation** — Voice input for text fields
 - [💡] **Magnifier / zoom** — Lens-style screen magnification
-
----
-
-## Mobile & Cross-Device
-
-- [📋] **Touch gesture support** — Swipe for workspace switching, pinch to zoom on images, long-press for context menus
-- [📋] **Mobile layout mode** — Thumb-friendly taskbar, resized windows, adapted interaction patterns
 
 ---
 
@@ -164,25 +149,17 @@ Planned features and improvements for YukiOS.
 - [✅] Taskbar scaling and horizontal scroll
 - [✅] Taskbar drag reorder and window preview on hover
 - [✅] Alt+Left-Click drag / Alt+Right-Click resize
-- [📋] **Transparency setting for all panels** — Extend transparency effects to all tray menus, context menus, and GUI panels consistently
-- [📋] **Achievement popup redesign** — Replicate Steam achievement style with bottom-right corner popup
-- [📋] **First boot interactive tour** — Guided onboarding experience highlighting desktop, apps, files, windows, games, and customization
+- [✅] **Transparency setting for all panels** — Extend transparency effects to all tray menus, context menus, and GUI panels consistently
+- [✅] **Achievement popup redesign** — Replicate Steam achievement style with bottom-right corner popup
 - [📋] **Lock screen enrichment** — Show time with seconds, weather, media controls, notification badges, and quick actions (WiFi, brightness, volume)
-- [📋] **Context-aware context menus** — Right-click menus that adapt based on the target (desktop, file, window header, taskbar, URL)
-- [📋] **Keyboard shortcut discoverability** — Tooltips on hover showing shortcuts, searchable shortcuts app, interactive tutorial
 - [📋] **Notification system depth** — Grouping by app, history view, scheduled DND, per-app notification sounds, persistent notifications, snooze
-- [📋] **System tray enhancement** — Each tray item shows detailed info on click (network stats, battery graph, volume output device, extended weather forecast, calendar month view)
-- [📋] **System sounds customization** — Settings panel to assign custom audio files to system events (window open/close, notification, error, startup)
-- [💡] **Desktop file drag-out** — Drag files from YukiOS onto the host OS desktop using File System Access API
 - [💡] **Window compositor effects** — Live window reflections in taskbar, advanced compositor effects beyond CSS transitions
-- [💡] **Network speed indicator in tray** — Real-time upload/download speed display
 - [💡] Apps playing audio should show a speaker icon on their taskbar entry; muted apps should show a muted speaker icon
-
+- [💡] Currently active apps should show an indicator to show they are active
 ---
 
 ## Known Bugs to Fix
 
-- [📋] Right-click "Edit with Notepad" on .md files throws `TypeError: content.startsWith is not a function`
 - [📋] Files saved in Pictures, moved to desktop, then dragged back appear as 0 bytes
 
 ---
