@@ -642,7 +642,9 @@ export function renderAppearanceSettings(s) {
   const basicThemeButtons = basicThemes
     .map(
       (theme) => `
-      <button class="settings-btn ${s.theme === theme.value ? "active" : ""}" data-theme-val="${theme.value}"><i class="${theme.icon}"></i> ${theme.label}</button>
+      <button class="settings-btn theme-preview-btn ${s.theme === theme.value ? "active" : ""}" data-theme-val="${theme.value}" style="height: 56px; background: ${theme.preview || '#8b5cf6'}; color: ${theme.textColor || '#fff'};">
+        <span>${theme.label}</span>
+      </button>
     `
     )
     .join("");
@@ -650,7 +652,9 @@ export function renderAppearanceSettings(s) {
   const specialThemeButtons = specialThemes
     .map(
       (theme) => `
-      <button class="settings-btn ${s.theme === theme.value ? "active" : ""}" data-theme-val="${theme.value}"><i class="${theme.icon}"></i> ${theme.label}</button>
+      <button class="settings-btn theme-preview-btn ${s.theme === theme.value ? "active" : ""}" data-theme-val="${theme.value}" style="height: 56px; background: ${theme.preview || '#8b5cf6'}; color: ${theme.textColor || '#fff'};">
+        <span>${theme.label}</span>
+      </button>
     `
     )
     .join("");
@@ -658,7 +662,9 @@ export function renderAppearanceSettings(s) {
   const customThemeButtons = customThemes
     .map(
       (theme) => `
-      <button class="settings-btn ${s.theme === theme.value ? "active" : ""}" data-theme-val="${theme.value}"><i class="${theme.icon}"></i> ${theme.label}</button>
+      <button class="settings-btn theme-preview-btn ${s.theme === theme.value ? "active" : ""}" data-theme-val="${theme.value}" style="height: 56px; background: ${theme.preview || '#8b5cf6'}; color: ${theme.textColor || '#fff'};">
+        <span>${theme.label}</span>
+      </button>
     `
     )
     .join("");

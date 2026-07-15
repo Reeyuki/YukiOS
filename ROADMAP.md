@@ -24,15 +24,12 @@ Planned features and improvements for YukiOS.
 - [✅] Draggable desktop widgets (clock, weather, calendar)
 - [✅] **Window centering** — Middle-click title bar to center window on screen
 - [📋] **Keyboard-driven tiling** — Shortcut to auto-arrange all open windows into configurable grid layouts (2-column, 3-column, grid)
-- [📋] **Window rules** — Define behaviors per app: always open on specific workspace, at a set size, or always-on-top
-- [📋] **Per-workspace wallpapers** — Each workspace can have its own distinct wallpaper
-- [📋] **Workspace-specific pinned apps** — Pin different apps to each workspace's taskbar
-- [📋] **Multi-monitor simulation** — Split-screen mode simulating multiple displays
 - [📋] **Picture-in-picture mode** — Detach any window into a floating always-on-top mini player, ideal for video
+- [📋] **Per-workspace wallpapers** — Each workspace can have its own distinct wallpaper
+- [📋] **Multi-monitor simulation** — Split-screen mode simulating multiple displays
+- [�] **Window shake to minimize** — Shake a window to minimize all others (Windows 11 style)
+- [💡] **Tiling window manager mode** — i3/sway-style keyboard-driven configurable tiling WM
 - [💡] **3D desktop mode** — Render windows as panels in a 3D room using Three.js, with camera navigation and spatial workspace switching
-- [💡] **Tiling window manager mode** — Optional i3/sway-style keyboard-driven tiling WM
-- [💡] **Window shake to minimize** — Shake a window to minimize all others (Windows 11 style)
-- [💡] **Per-app remembered window positions** — Independent of session restore, remember position per app permanently
 
 ---
 
@@ -46,13 +43,12 @@ Planned features and improvements for YukiOS.
 - [✅] Storage usage indicator and thumbnail cache
 - [✅] Trash system with restore and permanent delete
 - [✅] File format conversion context menus
-- [📋] **Virtual drive mounting** — Open a ZIP or folder as a browsable drive in Explorer without extracting (maybe also add a WinRar/7z gui app)
 - [📋] **File content search** — Search inside file contents, not just filenames
-- [📋] **File tagging system** — Color-coded tags and labels for organization
+- [📋] **Virtual drive mounting** — Open a ZIP or folder as a browsable drive in Explorer without extracting (maybe also add a WinRar/7z gui app)
 - [📋] **ISO file read support** — Mount and browse ISO disc images directly in Explorer
-- [💡] **Encrypted storage vaults** — Create password-protected, encrypted containers that mount/unmount in Explorer, similar to KDE Plasma Vaults
-- [💡] **File indexing service** — Background indexer for instant search results (with explorer full search support)
 - [💡] **File association system** — Default apps per file type with open-with fallback
+- [💡] **File indexing service** — Background indexer for instant search results (with explorer full search support)
+- [💡] **Encrypted storage vaults** — Create password-protected, encrypted containers that mount/unmount in Explorer, similar to KDE Plasma Vaults
 
 ---
 
@@ -65,10 +61,10 @@ Planned features and improvements for YukiOS.
 - [📋] **Split-pane terminal** — Divide the terminal into side-by-side or stacked panes
 - [📋] **SSH client** — Connect to remote servers directly from the terminal (use webssh)
 - [📋] **Script execution support** — Run shell scripts from the filesystem as commands
-- [📋] **Custom shell prompt** — Configurable PS1-style prompt through settings UI (like bash, fish, zsh)
 - [📋] **Add vim/nano text editors** — Terminal-based text editors for quick file editing
-- [📋] **Tmux** — Terminal multiplexer with session attach/detach, pane splitting, and named sessions, with background run.
+- [📋] **Custom shell prompt** — Configurable PS1-style prompt through settings UI (like bash, fish, zsh)
 - [📋] **nslookup / dig support** — DNS resolution via Cloudflare DNS-over-HTTPS
+- [📋] **Tmux** — Terminal multiplexer with session attach/detach, pane splitting, and named sessions, with background run.
 - [💡] **FFmpeg and ImageMagick via WASM** — Media conversion and image processing directly in the terminal
 - [💡] **BoxedWine** — Run 16/32-bit Windows executables inside the terminal
 
@@ -80,8 +76,8 @@ Planned features and improvements for YukiOS.
 - [✅] Terminal, Explorer, Settings, Task Manager, Shortcuts, Achievements, Profile Customizer, Yuki AI Assistant
 - [✅] Clipboard Manager, Emoji Selector, YukiDevTools, Dev Tools (Eruda), Storage Editor, Yuki Convert
 - [✅] Browser, WebTorrent, Tor Manager, VNC Client, Steam-like launcher
-- [💡] **Media tray app** — Replace the "now playing" indicator with a dedicated tray player showing album art, controls, and progress for any playing media
 - [💡] **Control Center / storage dashboard** — Centralized system data overview with storage usage breakdown
+- [💡] **Media tray app** — Replace the "now playing" indicator with a dedicated tray player showing album art, controls, and progress for any playing media
 - [💡] Add modern ms paint web recreation (not old version)
 
 ---
@@ -98,15 +94,14 @@ Planned features and improvements for YukiOS.
 - [✅] Import/export for backup and migration
 - [✅] Animated boot screen on first load
 - [✅] Calendar popup from taskbar clock with events ("Plans") system
-- [📋] **Sound themes** — System-wide audio feedback for login, window open/close, notifications, errors 
 - [📋] **Startup app manager** — Choose which apps launch automatically on login
+- [📋] **Sound themes** — System-wide audio feedback for login, window open/close, notifications, errors
 - [📋] **Album art wallpaper** — Extract album art from currently playing music and set it as desktop wallpaper
 - [📋] **Battery-aware performance** — Reduce animation fidelity and background activity automatically on low battery when running on mobile
+- [💡] **Alt+Tab visual switcher with live thumbnails** — Replaces Alt+Q text cycling
+- [💡] **Smooth theme transition animation**
 - [💡] **Mac dropdown entry** — Add Mac mode as a boot mode in login screen that automatically enables mac window header setting and changes taskbar
-- [💡] Alt+Tab visual switcher with live thumbnails (replaces Alt+Q text cycling)
-- [💡] Add bash command to terminal for sh script execution
-- [💡] Smooth theme transition animation
-- [💡] Window shake-to-minimize (Aero Shake)
+- [💡] **Add bash command to terminal for sh script execution**
 ---
 
 ## Security & Privacy
@@ -125,7 +120,6 @@ Planned features and improvements for YukiOS.
 - [✅] Storage Editor for browsing IndexedDB
 - [✅] **Visual theme editor** — Live-preview theme builder with color pickers and sliders
 - [💡] **Multi-language IDE in YukiCode** — Plugable runtime system supporting Python (Pyodide), C/C++ (Emscripten), Lua (Fengari), and TypeScript compilation in a single editor
-- [💡] **Live source overrides** — Browse, edit, and hot-reload Yuki OS source code without rebuilding via Yuki OS Studio
 
 
 ## Polish & UX Improvements
@@ -137,12 +131,13 @@ Planned features and improvements for YukiOS.
 - [✅] Alt+Left-Click drag / Alt+Right-Click resize
 - [✅] Transparency setting for all panels — Extend transparency effects to all tray menus, context menus, and GUI panels consistently
 - [✅] Achievement popup redesign — Replicate Steam achievement style with bottom-right corner popup
-- [📋] Lock screen enrichment — Show time with seconds, weather, media controls, notification badges, and quick actions (WiFi, brightness, volume)
-- [📋] Notification system depth — Grouping by app, history view, scheduled DND, per-app notification sounds, persistent notifications, snooze
-- [💡] Apps playing audio should show a speaker icon on their taskbar entry; muted apps should show a muted speaker icon
-- [💡] Currently active apps should show an indicator to show they are active
-- [💡] Chrome OS theming
-- [💡] Magnifier / zoom — Lens-style screen magnification like windows 7 magnify app
+- [📋] **Notification system depth** — Grouping by app, history view, scheduled DND, per-app notification sounds, persistent notifications, snooze
+- [📋] **Lock screen enrichment** — Show time with seconds, weather, media controls, notification badges, and quick actions (WiFi, brightness, volume)
+- [💡] **Apps playing audio should show a speaker icon on their taskbar entry; muted apps should show a muted speaker icon**
+- [💡] **Currently active apps should show an indicator to show they are active**
+- [💡] **Magnifier / zoom** — Lens-style screen magnification like windows 7 magnify app
+- [💡] **Chrome OS theming**
+- [💡] **Windows xp, win7, win10, win11 theme support**
 ---
 
 ## Known Bugs to Fix

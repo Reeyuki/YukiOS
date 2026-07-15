@@ -749,13 +749,9 @@ export function bindDataCategory(win, save, settings, fs, showStatus, showSaved)
         `https://cdn.staticdelivr.com/gh/${u}/${r}/${b}/${p}${f}`
       ];
 
-      const siteMirrors = ["https://yukios.pages.dev/", "https://yukios.netlify.app/", "https://yukios.vercel.app/"];
-
-      const sources = [...siteMirrors, ...gitMirrors];
-
       let htmlContent = null;
 
-      for (const url of sources) {
+      for (const url of gitMirrors) {
         try {
           const res = await fetch(url + "?v=" + Date.now());
           if (res.ok) {

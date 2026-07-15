@@ -232,6 +232,27 @@
   font-size: 11px;
 }
 
+.theme-preview-btn {
+  justify-content: flex-end;
+  align-items: center;
+  padding: 8px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+  border: 2px solid transparent;
+  transition:
+    transform 0.15s,
+    border-color 0.15s,
+    filter 0.15s;
+}
+
+.theme-preview-btn:hover {
+  filter: brightness(1.08);
+}
+
+.theme-preview-btn.active {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
+}
+
 .settings-btn-warning {
   color: #fbbf24;
   background: rgba(251, 191, 36, 0.08);
