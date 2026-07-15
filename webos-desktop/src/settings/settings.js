@@ -164,7 +164,7 @@ export class SettingsApp extends BaseApp {
     const win = os.window.create(winId, "Settings", "805px", "600px", {
       icon: "fas fa-cog"
     });
-    win.innerHTML = buildSettingsHTML(this.settings, this.services.wm);
+    win.innerHTML = buildSettingsHTML(this.settings, this.wm);
 
     if (this.desktopUI !== undefined) this.desktopUI.closeAllMenus();
 
@@ -370,7 +370,7 @@ export class SettingsApp extends BaseApp {
       save,
       this.settings,
       this.fs,
-      this.services.wm,
+      this.wm,
       showStatus,
       showSaved,
       () => this.getCustomColors(),

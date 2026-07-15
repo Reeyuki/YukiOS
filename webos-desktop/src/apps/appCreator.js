@@ -113,10 +113,10 @@ async function tryLoadFavicon(appUrl) {
 }
 
 export class AppCreatorApp extends BaseApp {
-  constructor(services) {
-    super(services);
-    this.appLauncher = services.appLauncher;
-    this.desktopUI = services.desktopUI || null;
+  constructor(os) {
+    super(os);
+    this.appLauncher = null;
+    this.desktopUI = null;
 
     this.customScramjetApps = new Map();
   }
@@ -134,7 +134,7 @@ export class AppCreatorApp extends BaseApp {
       windowSize: ["1280px", "800px"]
     });
 
-    const appInstance = new AppClass(this.services);
+    const appInstance = new AppClass(this.os);
     this.appLauncher.appRuntime.register(appId, appInstance);
     this.customScramjetApps.set(appId, appInstance);
 

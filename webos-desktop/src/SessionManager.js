@@ -17,8 +17,8 @@ function generateUUID() {
 }
 
 export class SessionManager {
-  constructor(services) {
-    this.services = services;
+  constructor(os) {
+    this.os = os;
     this.currentSession = null;
     this.container = null;
     this.isLocked = false;
@@ -677,21 +677,22 @@ export class SessionManager {
     os.storage.set(StorageKeys.lastLaunchTime, Date.now().toString());
     this.addToUserHistory(this.currentSession);
 
-    if (this.services.fileSystemManager) {
-      await this.services.fileSystemManager.setSession(name);
+    if (this.os.kernel.fileSystemManager) {
+      await this.os.kernel.fileSystemManager.setSession(name);
     }
 
     os.events.emit(BusEvents.SESSION_INITIALIZED, this.currentSession);
 
-    if (this.services.windowManager) {
-      this.services.windowManager.setFileSystemManager(this.services.fileSystemManager);
-      setTimeout(() => this.services.windowManager.restoreSession(), 500);
+    if (this.os.kernel.windowManager) {
+      this.os.kernel.windowManager.setFileSystemManager(this.os.kernel.fileSystemManager);
+      setTimeout(() => this.os.kernel.windowManager.restoreSession(), 500);
     }
 
     audioMixer().playSystemSound(SystemAudio.START);
 
-    if (!os.storage.get(StorageKeys.setupCompleted) && this.services.setupApp) {
-      setTimeout(() => this.services.setupApp.open(), 1000);
+    if (!os.storage.get(StorageKeys.setupCompleted)) {
+      const setupApp = this.os.app.apps.setupApp;
+      if (setupApp) setTimeout(() => setupApp.open(), 1000);
     }
 
     this.startIdleDetection();
@@ -703,7 +704,7 @@ export class SessionManager {
 
     audioMixer().playSystemSound(SystemAudio.SHUTDOWN);
 
-    if (this.services.windowManager && typeof this.services.windowManager.closeAll === "function") {
+    if (this.os.kernel.windowManager && typeof this.os.kernel.windowManager.closeAll === "function") {
       os.window.closeAll();
     }
 
@@ -760,7 +761,7 @@ export class SessionManager {
       this.uptimeInterval = null;
     }
 
-    if (this.lastActiveWindow && this.services.windowManager) {
+    if (this.lastActiveWindow && this.os.kernel.windowManager) {
       os.window.bringToFront(this.lastActiveWindow);
     }
     this.lastActiveWindow = null;

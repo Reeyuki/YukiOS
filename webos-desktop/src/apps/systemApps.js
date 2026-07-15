@@ -44,7 +44,7 @@ export class SystemAppsApp extends BaseApp {
   }
 
   renderApps(win) {
-    const appLauncher = this.services.appLauncher;
+    const appLauncher = this.os.app._launcher;
     if (!appLauncher) return;
     const appMap = appLauncher.appMap;
     if (!appMap) return;

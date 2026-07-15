@@ -416,8 +416,10 @@ export function applyZDepthLift(win, active) {
 }
 
 export function initClickBubble() {
-  if (!isClickBubbleEnabled()) return;
-  document.addEventListener("pointerdown", handleClickBubble, { passive: true });
+  Promise.resolve().then(() => {
+    if (!isClickBubbleEnabled()) return;
+    document.addEventListener("pointerdown", handleClickBubble, { passive: true });
+  });
 }
 
 export function destroyClickBubble() {

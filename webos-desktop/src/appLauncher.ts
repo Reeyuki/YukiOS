@@ -45,12 +45,12 @@ export class AppLauncher {
   appSessions: Map<string, { appId: string; startTime: number }>;
   clippyMap: Record<string, any>;
 
-  constructor(windowManager: any, fileSystemManager: any, services: Record<string, any> = {}) {
+  constructor(windowManager: any, fileSystemManager: any, services: Record<string, any> | Map<string, any> = {}) {
     this.wm = windowManager;
     this.fs = fileSystemManager;
 
-    this.services = services;
-    Object.assign(this, services);
+    this.services = services instanceof Map ? Object.fromEntries(services) : services;
+    Object.assign(this, this.services);
 
     this.taskManager = services.taskManagerApp;
     this.adsManager = services.adsApp;

@@ -277,7 +277,7 @@ class DisplayPerformanceApp extends BaseApp {
     this.powerMode = mode;
     turboManager.setMode(mode);
 
-    this.services?.achievementsApp?.incrementPowerProfileChange();
+    this.os.app.apps.achievementsApp?.incrementPowerProfileChange();
 
     const modeNames = {
       turbo: "Turbo",

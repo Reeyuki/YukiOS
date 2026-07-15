@@ -2,32 +2,42 @@ import { AppSource } from "../AppSource.js";
 import { os as _os } from "../os/index.js";
 
 export class BaseApp {
+  protected os: any;
   protected services: Record<string, any>;
   protected wm: any;
   protected fs: any;
   protected bus: any;
   protected notifications: any;
-  constructor(services: Record<string, any> = {}) {
-    this.services = services;
-    if (services.windowManager && !services.windowManager.__isProxied) {
-      services.windowManager = new Proxy(services.windowManager, {
-        get: (target: any, prop: string) => {
-          if (prop === "sendNotify") {
-            return async (text: string, appSource: string | null = null) => {
-              const source = appSource || this.getAppSource();
-              const os = _os;
-              os.notify.send("", text, { appSource: source });
-            };
+  constructor(param: Record<string, any> = {}) {
+    if (param.kernel) {
+      this.os = param;
+      this.services = param as any;
+      this.wm = param.kernel?.windowManager;
+      this.fs = param.kernel?.fileSystemManager;
+      this.bus = param.events;
+      this.notifications = param.notify;
+    } else {
+      this.os = _os;
+      this.services = param;
+      if (param.windowManager && !param.windowManager.__isProxied) {
+        param.windowManager = new Proxy(param.windowManager, {
+          get: (target: any, prop: string) => {
+            if (prop === "sendNotify") {
+              return async (text: string, appSource: string | null = null) => {
+                const source = appSource || this.getAppSource();
+                _os.notify.send("", text, { appSource: source });
+              };
+            }
+            if (prop === "__isProxied") return true;
+            return target[prop];
           }
-          if (prop === "__isProxied") return true;
-          return target[prop];
-        }
-      });
+        });
+      }
+      this.wm = param.wm || param.windowManager;
+      this.fs = param.fs || param.fileSystemManager;
+      this.bus = param.bus;
+      this.notifications = param.notifications || param.notificationCenter;
     }
-    this.wm = services.wm || services.windowManager;
-    this.fs = services.fs || services.fileSystemManager;
-    this.bus = services.bus;
-    this.notifications = services.notifications || services.notificationCenter;
   }
 
   open(opts?: any): any {
@@ -90,8 +100,6 @@ export class BaseApp {
         return AppSource.EXPLORER;
       case "YukiConvertApp":
         return AppSource.YUKI_CONVERT;
-      case "youtubeUtilsApp":
-        return AppSource.YOUTUBE;
       case "SetupApp":
         return AppSource.SETUP;
       case "InstalledAppsApp":

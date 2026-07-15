@@ -8,6 +8,8 @@ const Caches = {
   games: { data: null, time: 0, promise: null },
   topTime: { data: null, time: 0, promise: null },
   stats: {},
+  peak: {},
+  insights: {},
   live: { data: null, time: 0, promise: null }
 };
 
@@ -484,6 +486,126 @@ async function fetchLive(env) {
   };
 }
 
+async function fetchPeakConcurrent(env, range) {
+  let days = 30;
+  if (range === "7d") days = 7;
+  if (range === "90d") days = 90;
+  if (range === "1y") days = 365;
+
+  const result = await env.DB.prepare(
+    `
+    WITH per_minute AS (
+      SELECT
+        date(timestamp) AS day,
+        strftime('%Y-%m-%d %H:%M', timestamp) AS minute,
+        COUNT(DISTINCT daily_id) AS concurrent
+      FROM analytics
+      WHERE timestamp >= datetime('now', '-' || ? || ' days')
+      GROUP BY day, minute
+    ),
+    daily_peak AS (
+      SELECT day, MAX(concurrent) AS peak
+      FROM per_minute
+      GROUP BY day
+    )
+    SELECT dp.day, dp.peak,
+      (SELECT MIN(pm.minute) FROM per_minute pm WHERE pm.day = dp.day AND pm.concurrent = dp.peak LIMIT 1) AS at_time
+    FROM daily_peak dp
+    ORDER BY dp.day DESC
+  `
+  )
+    .bind(days)
+    .all();
+
+  const results = result.results || [];
+  let overallPeak = 0;
+  let overallTime = null;
+  for (const row of results) {
+    if (row.peak > overallPeak) {
+      overallPeak = row.peak;
+      overallTime = row.at_time;
+    }
+  }
+
+  return {
+    overall_peak: {
+      concurrent: overallPeak,
+      at_time: overallTime
+    },
+    daily: results
+  };
+}
+
+async function fetchInsights(env, range) {
+  let days = 30;
+  if (range === "7d") days = 7;
+  if (range === "90d") days = 90;
+  if (range === "1y") days = 365;
+  const G = 1800;
+
+  const [eventTypes, newReturning, retention, hourly, userActivity, appUnique, appAvgTime, dauWauMau] =
+    await Promise.all([
+      env.DB.prepare(
+        `SELECT COALESCE(lower(trim(json_extract(data,'$.event'))),'unknown') AS et,COUNT(*) AS c FROM analytics WHERE timestamp>=datetime('now',-?||' days') GROUP BY et ORDER BY c DESC`
+      )
+        .bind(days)
+        .all(),
+      env.DB.prepare(
+        `WITH f AS(SELECT daily_id,MIN(date(timestamp)) AS fd FROM analytics GROUP BY daily_id),r AS(SELECT date(timestamp) AS d,daily_id FROM analytics WHERE timestamp>=datetime('now',-?||' days') GROUP BY d,daily_id)SELECT r.d,COUNT(DISTINCT r.daily_id) AS t,COUNT(DISTINCT CASE WHEN r.d=f.fd THEN r.daily_id END) AS n,COUNT(DISTINCT CASE WHEN r.d!=f.fd THEN r.daily_id END) AS rl FROM r JOIN f ON f.daily_id=r.daily_id GROUP BY r.d ORDER BY r.d`
+      )
+        .bind(days)
+        .all(),
+      env.DB.prepare(
+        `WITH u AS(SELECT date(timestamp) AS d,daily_id FROM analytics WHERE timestamp>=datetime('now',-?||' days') GROUP BY d,daily_id)SELECT a.d AS d,COUNT(DISTINCT a.daily_id) AS dau,ROUND(COUNT(DISTINCT b.daily_id)*1.0/NULLIF(COUNT(DISTINCT a.daily_id),0),3) AS d1,ROUND(COUNT(DISTINCT c.daily_id)*1.0/NULLIF(COUNT(DISTINCT a.daily_id),0),3) AS d7 FROM u a LEFT JOIN u b ON a.daily_id=b.daily_id AND b.d=date(a.d,'+1 day') LEFT JOIN u c ON a.daily_id=c.daily_id AND c.d=date(a.d,'+7 days') GROUP BY a.d ORDER BY a.d`
+      )
+        .bind(days)
+        .all(),
+      env.DB.prepare(
+        `SELECT CAST(strftime('%H',timestamp) AS INTEGER) AS h,COUNT(*) AS c FROM analytics WHERE timestamp>=datetime('now',-?||' days') GROUP BY h ORDER BY h`
+      )
+        .bind(days)
+        .all(),
+      env.DB.prepare(
+        `SELECT CASE WHEN c<5 THEN '1-4' WHEN c<10 THEN '5-9' WHEN c<20 THEN '10-19' WHEN c<50 THEN '20-49' WHEN c<100 THEN '50-99' ELSE '100+' END AS b,COUNT(*) AS u FROM(SELECT daily_id,COUNT(*) AS c FROM analytics WHERE timestamp>=datetime('now',-?||' days') GROUP BY daily_id)GROUP BY b ORDER BY MIN(c)`
+      )
+        .bind(days)
+        .all(),
+      env.DB.prepare(
+        `SELECT lower(trim(json_extract(data,'$.app'))) AS a,COUNT(DISTINCT daily_id) AS u,COUNT(*) AS l FROM analytics WHERE timestamp>=datetime('now',-?||' days') AND lower(trim(json_extract(data,'$.event')))='launch' GROUP BY a ORDER BY u DESC LIMIT 20`
+      )
+        .bind(days)
+        .all(),
+      env.DB.prepare(
+        `SELECT lower(trim(json_extract(data,'$.app'))) AS a,AVG(CAST(json_extract(data,'$.durationMs') AS REAL)) AS d,COUNT(*) AS c FROM analytics WHERE timestamp>=datetime('now',-?||' days') AND lower(trim(json_extract(data,'$.event')))='usage' AND json_extract(data,'$.durationMs') IS NOT NULL GROUP BY a ORDER BY d DESC LIMIT 20`
+      )
+        .bind(days)
+        .all(),
+      env.DB.prepare(
+        `WITH u AS(SELECT date(timestamp) AS d,daily_id FROM analytics WHERE timestamp>=datetime('now',-?||' days') GROUP BY d,daily_id),dd AS(SELECT DISTINCT d FROM u)SELECT d.d,(SELECT COUNT(DISTINCT daily_id) FROM u WHERE d.d=u.d) AS dau,(SELECT COUNT(DISTINCT daily_id) FROM u WHERE u.d>=date(d.d,'-6 days') AND u.d<=d.d) AS wau,(SELECT COUNT(DISTINCT daily_id) FROM u WHERE u.d>=date(d.d,'-29 days') AND u.d<=d.d) AS mau FROM dd d ORDER BY d.d`
+      )
+        .bind(days)
+        .all()
+    ]);
+
+  const sdBuckets = await env.DB.prepare(
+    `WITH o AS(SELECT daily_id,timestamp,LAG(timestamp)OVER(PARTITION BY daily_id ORDER BY timestamp) AS p FROM analytics WHERE timestamp>=datetime('now',-?||' days')),s AS(SELECT daily_id,timestamp,SUM(CASE WHEN p IS NULL OR(julianday(timestamp)-julianday(p))*86400>? THEN 1 ELSE 0 END)OVER(PARTITION BY daily_id ORDER BY timestamp) AS sn FROM o),b AS(SELECT daily_id,sn,MIN(timestamp) AS st,MAX(timestamp) AS en FROM s GROUP BY daily_id,sn),x AS(SELECT(julianday(en)-julianday(st))*86400000 AS du FROM b)SELECT COUNT(*) AS t,SUM(CASE WHEN du<60000 THEN 1 ELSE 0 END) AS a,SUM(CASE WHEN du>=60000 AND du<300000 THEN 1 ELSE 0 END) AS b,SUM(CASE WHEN du>=300000 AND du<900000 THEN 1 ELSE 0 END) AS c,SUM(CASE WHEN du>=900000 AND du<1800000 THEN 1 ELSE 0 END) AS d,SUM(CASE WHEN du>=1800000 AND du<3600000 THEN 1 ELSE 0 END) AS e,SUM(CASE WHEN du>=3600000 THEN 1 ELSE 0 END) AS f FROM x`
+  )
+    .bind(days, G)
+    .first();
+
+  return {
+    event_types: eventTypes.results || [],
+    new_returning: newReturning.results || [],
+    retention: retention.results || [],
+    hourly: hourly.results || [],
+    user_activity: userActivity.results || [],
+    app_unique_users: appUnique.results || [],
+    app_avg_time: appAvgTime.results || [],
+    dau_wau_mau: dauWauMau.results || [],
+    session_durations: sdBuckets || { t: 0, a: 0, b: 0, c: 0, d: 0, e: 0, f: 0 }
+  };
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -634,6 +756,18 @@ export default {
       return jsonResponse(result);
     }
 
+    if (url.pathname === "/admin/peak-concurrent" && request.method === "GET") {
+      const range = url.searchParams.get("range") || "30d";
+      const result = await withCache(Caches.peak, "peak-" + range, () => fetchPeakConcurrent(env, range));
+      return jsonResponse(result);
+    }
+
+    if (url.pathname === "/admin/insights" && request.method === "GET") {
+      const range = url.searchParams.get("range") || "30d";
+      const result = await withCache(Caches.insights, "insights-" + range, () => fetchInsights(env, range));
+      return jsonResponse(result);
+    }
+
     if (url.pathname === "/admin/export" && request.method === "GET") {
       const headers = {
         ...corsHeaders("application/json"),
@@ -737,6 +871,8 @@ export default {
       Caches.games = { data: null, time: 0, promise: null };
       Caches.topTime = { data: null, time: 0, promise: null };
       Caches.stats = {};
+      Caches.peak = {};
+      Caches.insights = {};
       Caches.live = { data: null, time: 0, promise: null };
 
       return jsonResponse({
@@ -853,8 +989,7 @@ a{color:inherit;text-decoration:none}
 .filter-input{padding:5px 12px;border-radius:6px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:11px;outline:none;width:160px;transition:border-color .15s;-webkit-appearance:none;appearance:none}
 .filter-input:focus{border-color:var(--accent)}
 
-.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px}
-@media(max-width:800px){.chart-grid{grid-template-columns:1fr}}
+.chart-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:28px}
 .chart-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;box-shadow:0 8px 32px oklch(0% 0 0 / 0.25)}
 .chart-card-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:16px;display:flex;align-items:center;gap:8px}
 .chart-card-title i{color:var(--accent)}
@@ -997,6 +1132,10 @@ canvas{width:100%!important;height:100%!important}
       <div class="nav-item" data-panel="exploration" onclick="switchPanel('exploration',this)">
         <i class="fa-solid fa-compass"></i>Exploration
       </div>
+      <div class="nav-section-label">Analytics</div>
+      <div class="nav-item" data-panel="insights" onclick="switchPanel('insights',this)">
+        <i class="fa-solid fa-chart-pie"></i>Insights
+      </div>
       <div class="nav-section-label">Admin</div>
       <div class="nav-item" data-panel="data" onclick="switchPanel('data',this)">
         <i class="fa-solid fa-database"></i>Data Management
@@ -1077,6 +1216,12 @@ canvas{width:100%!important;height:100%!important}
             <div class="kpi-val" id="kBounce">-</div>
             <div class="kpi-label">Bounce Sessions</div>
           </div>
+          <div class="kpi">
+            <div class="kpi-icon"><i class="fa-solid fa-people-group"></i></div>
+            <div class="kpi-val" id="kPeak">-</div>
+            <div class="kpi-label">Peak Concurrent</div>
+            <div class="kpi-sub" id="kPeakTime"></div>
+          </div>
         </div>
 
         <div class="chart-grid">
@@ -1087,6 +1232,10 @@ canvas{width:100%!important;height:100%!important}
           <div class="chart-card">
             <div class="chart-card-title"><i class="fa-solid fa-chart-line"></i>Sessions / Day</div>
             <div class="canvas-wrap"><canvas id="chartSess"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-card-title"><i class="fa-solid fa-people-group"></i>Peak Concurrent / Day</div>
+            <div class="canvas-wrap"><canvas id="chartPeak"></canvas></div>
           </div>
         </div>
       </div>
@@ -1149,6 +1298,35 @@ canvas{width:100%!important;height:100%!important}
         <div class="explore-grid" id="exploreGrid"><div class="empty-state"><i class="fa-solid fa-compass"></i>Load data to see exploration stats.</div></div>
       </div>
 
+      <div id="panel-insights" class="panel">
+        <div id="insightsContent" style="display:flex;flex-direction:column;gap:4px">
+          <div class="section-header"><div class="section-title"><i class="fa-solid fa-chart-pie"></i>Event Type Breakdown</div></div>
+          <div class="chart-grid">
+            <div class="chart-card"><div class="chart-card-title"><i class="fa-solid fa-chart-simple"></i>Events by Type</div><div class="canvas-wrap"><canvas id="chartET"></canvas></div></div>
+            <div class="chart-card"><div class="chart-card-title"><i class="fa-solid fa-clock"></i>Activity by Hour of Day</div><div class="canvas-wrap"><canvas id="chartHourly"></canvas></div></div>
+          </div>
+          <div class="section-header"><div class="section-title"><i class="fa-solid fa-users-line"></i>User Growth</div></div>
+          <div class="chart-grid">
+            <div class="chart-card"><div class="chart-card-title"><i class="fa-solid fa-user-plus"></i>New vs Returning Users / Day</div><div class="canvas-wrap"><canvas id="chartNR"></canvas></div></div>
+            <div class="chart-card"><div class="chart-card-title"><i class="fa-solid fa-chart-line"></i>DAU / WAU / MAU</div><div class="canvas-wrap"><canvas id="chartDWM"></canvas></div></div>
+          </div>
+          <div class="section-header"><div class="section-title"><i class="fa-solid fa-retweet"></i>Retention & Session Quality</div></div>
+          <div class="chart-grid">
+            <div class="chart-card"><div class="chart-card-title"><i class="fa-solid fa-percent"></i>Day-over-Day Retention (D1, D7)</div><div class="canvas-wrap"><canvas id="chartRet"></canvas></div></div>
+            <div class="chart-card"><div class="chart-card-title"><i class="fa-solid fa-clock-rotate-left"></i>Session Duration Distribution</div><div class="canvas-wrap"><canvas id="chartSD"></canvas></div></div>
+          </div>
+          <div class="section-header"><div class="section-title"><i class="fa-solid fa-gauge-high"></i>User & App Depth</div></div>
+          <div class="chart-grid">
+            <div class="chart-card"><div class="chart-card-title"><i class="fa-solid fa-gauge"></i>User Activity Levels (events)</div><div class="canvas-wrap"><canvas id="chartUA"></canvas></div></div>
+            <div class="chart-card"><div class="chart-card-title"><i class="fa-solid fa-users"></i>Apps by Unique Users</div><div class="canvas-wrap"><canvas id="chartAU"></canvas></div></div>
+          </div>
+          <div class="chart-grid">
+            <div class="chart-card"><div class="chart-card-title"><i class="fa-solid fa-stopwatch"></i>Avg Time Spent per App</div><div class="canvas-wrap"><canvas id="chartAT"></canvas></div></div>
+          </div>
+        </div>
+        <div id="insightsEmpty" class="empty-state" style="display:none"><i class="fa-solid fa-chart-pie"></i>Load data to see insights.</div>
+      </div>
+
       <div id="panel-data" class="panel">
         <div class="section-header">
           <div class="section-title"><i class="fa-solid fa-database"></i>Data Management</div>
@@ -1186,6 +1364,10 @@ var _exploreData=null;
 var _daySort="date";
 var _chartReq=null;
 var _chartSess=null;
+var _chartPeak=null;
+var _peakData=null;
+var _insightsData=null;
+var _cET=null,_cH=null,_cNR=null,_cDWM=null,_cRet=null,_cSD=null,_cUA=null,_cAU=null,_cAT=null;
 
 var panelTitles={
   dashboard:"Dashboard",
@@ -1195,6 +1377,7 @@ var panelTitles={
   flows:"Navigation Flows",
   entryexit:"Entry / Exit Apps",
   exploration:"Exploration Stats",
+  insights:"Insights",
   data:"Data Management"
 };
 
@@ -1262,11 +1445,11 @@ function loadAll(){
   token=document.getElementById("token").value.trim();
   if(!token){alert("Enter auth token first");return;}
   localStorage.setItem("yukios_admin_token", token);
-  loadStats();loadTopTime();loadSessions();loadFlows();loadEntryExit();loadExploration();loadLive();
+  loadStats();loadTopTime();loadSessions();loadFlows();loadEntryExit();loadExploration();loadLive();loadPeak();loadInsights();
   document.getElementById("lastRefresh").textContent="Loaded "+new Date().toLocaleTimeString();
   if(refreshTimer)clearInterval(refreshTimer);
   refreshTimer=setInterval(function(){
-    loadStats();loadTopTime();loadSessions();loadFlows();loadEntryExit();loadExploration();loadLive();
+    loadStats();loadTopTime();loadSessions();loadFlows();loadEntryExit();loadExploration();loadLive();loadPeak();loadInsights();
     document.getElementById("lastRefresh").textContent="Loaded "+new Date().toLocaleTimeString();
   },60000);
 }
@@ -1298,6 +1481,167 @@ function loadExploration(){
 
 function loadLive(){
   apiFetch("/admin/live", renderLive, "Live");
+}
+
+function loadPeak(){
+  var range=document.getElementById("range").value;
+  apiFetch("/admin/peak-concurrent?range="+range, function(d){_peakData=d;updateKpiPeak(d);renderPeakChart(d);}, "Peak");
+}
+
+function updateKpiPeak(data){
+  document.getElementById("kPeak").textContent=data.overall_peak.concurrent||0;
+  var t=data.overall_peak.at_time;
+  document.getElementById("kPeakTime").textContent=t?"at "+t:"";
+}
+
+function renderPeakChart(data){
+  if(!data.daily||!data.daily.length)return;
+  var reversed=[].concat(data.daily).reverse();
+  var labels=reversed.map(function(d){return d.day.slice(5);});
+  var vals=reversed.map(function(d){return d.peak;});
+  var cfg={type:"bar",options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){return" "+ctx.parsed.y.toLocaleString();}}}},scales:{x:{grid:{color:"rgba(255,255,255,.04)"},ticks:{color:"#64748b",font:{size:9}}},y:{grid:{color:"rgba(255,255,255,.04)"},ticks:{color:"#64748b",font:{size:9}}}}}};
+  if(_chartPeak){_chartPeak.destroy();}
+  var ctx=document.getElementById("chartPeak").getContext("2d");
+  var grad=ctx.createLinearGradient(0,0,0,160);
+  grad.addColorStop(0,"oklch(55% 0.14 220 / 0.9)");
+  grad.addColorStop(1,"oklch(55% 0.14 220 / 0.15)");
+  _chartPeak=new Chart(ctx,Object.assign({},cfg,{data:{labels:labels,datasets:[{data:vals,backgroundColor:grad,borderRadius:4,borderSkipped:false}]}}));
+}
+
+function bCfg(){return{type:"bar",options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){return" "+ctx.parsed.y.toLocaleString();}}}},scales:{x:{grid:{color:"rgba(255,255,255,.04)"},ticks:{color:"#64748b",font:{size:9}}},y:{beginAtZero:true,grid:{color:"rgba(255,255,255,.04)"},ticks:{color:"#64748b",font:{size:9}}}}}};}
+function lCfg(multi){var c={type:"line",options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:"#94a3b8",font:{size:9},boxWidth:10,usePointStyle:true},display:!!multi,position:"bottom"},tooltip:{callbacks:{label:function(ctx){return" "+ctx.parsed.y.toLocaleString();}}}},scales:{x:{grid:{color:"rgba(255,255,255,.04)"},ticks:{color:"#64748b",font:{size:9}}},y:{beginAtZero:true,grid:{color:"rgba(255,255,255,.04)"},ticks:{color:"#64748b",font:{size:9}}}}}};return c;}
+function hCfg(){var c=bCfg();c.options.indexAxis="y";c.options.plugins.legend.display=true;c.options.plugins.legend.labels={color:"#94a3b8",font:{size:8},boxWidth:10};return c;}
+function destroyChart(arr){arr.forEach(function(c){if(c)c.destroy();});}
+function grad(ctx,color){var g=ctx.createLinearGradient(0,0,0,160);g.addColorStop(0,"oklch("+color+" / 0.9)");g.addColorStop(1,"oklch("+color+" / 0.15)");return g;}
+var COLORS=["#22c55e","#f59e0b","#ef4444","#3b82f6","#a855f7","#ec4899","#14b8a6","#f97316"];
+
+function loadInsights(){
+  var range=document.getElementById("range").value;
+  apiFetch("/admin/insights?range="+range,function(d){_insightsData=d;renderInsights(d);},"Insights");
+}
+
+function renderInsights(d){
+  if(!d.event_types||!d.event_types.length){
+    document.getElementById("insightsContent").style.display="none";
+    document.getElementById("insightsEmpty").style.display="block";
+    return;
+  }
+  document.getElementById("insightsContent").style.display="flex";
+  document.getElementById("insightsEmpty").style.display="none";
+  renderET(d.event_types);renderHourly(d.hourly);renderNR(d.new_returning);renderDWM(d.dau_wau_mau);
+  renderRet(d.retention);renderSD(d.session_durations);renderUA(d.user_activity);renderAU(d.app_unique_users);renderAT(d.app_avg_time);
+}
+
+function renderET(data){
+  destroyChart([_cET]);
+  var labels=data.map(function(r){return r.et||"unknown";});
+  var vals=data.map(function(r){return r.c;});
+  var colors=COLORS.slice(0,labels.length);
+  var cfg=bCfg();cfg.options.plugins.legend.display=true;cfg.options.plugins.legend.labels={color:"#94a3b8",font:{size:9},boxWidth:10};
+  var ctx=document.getElementById("chartET").getContext("2d");
+  _cET=new Chart(ctx,Object.assign({},cfg,{data:{labels:labels,datasets:[{data:vals,backgroundColor:colors,borderRadius:4,borderSkipped:false}]}}));
+}
+
+function renderHourly(data){
+  destroyChart([_cH]);
+  var labels=data.map(function(r){return r.h.toString().padStart(2,"0")+":00";});
+  var vals=data.map(function(r){return r.c;});
+  if(!labels.length)return;
+  var ctx=document.getElementById("chartHourly").getContext("2d");
+  var g=grad(ctx,"55% 0.14 220");
+  _cH=new Chart(ctx,Object.assign({},bCfg(),{data:{labels:labels,datasets:[{data:vals,backgroundColor:g,borderRadius:2,borderSkipped:false}]}}));
+}
+
+function renderNR(data){
+  destroyChart([_cNR]);
+  if(!data||!data.length)return;
+  var labels=data.map(function(r){return r.d.slice(5);});
+  var newVals=data.map(function(r){return parseInt(r.n)||0;});
+  var retVals=data.map(function(r){return parseInt(r.rl)||0;});
+  var cfg=bCfg();cfg.options.scales.x.stacked=true;cfg.options.scales.y.stacked=true;
+  cfg.options.plugins.legend.display=true;cfg.options.plugins.legend.labels={color:"#94a3b8",font:{size:9},boxWidth:10};
+  var ctx=document.getElementById("chartNR").getContext("2d");
+  _cNR=new Chart(ctx,Object.assign({},cfg,{data:{labels:labels,datasets:[
+    {label:"New",data:newVals,backgroundColor:"#22c55e",borderRadius:0},
+    {label:"Returning",data:retVals,backgroundColor:"#3b82f6",borderRadius:4}
+  ]}}));
+}
+
+function renderDWM(data){
+  destroyChart([_cDWM]);
+  if(!data||!data.length)return;
+  var labels=data.map(function(r){return r.d.slice(5);});
+  var cfg=lCfg(true);
+  var ctx=document.getElementById("chartDWM").getContext("2d");
+  _cDWM=new Chart(ctx,Object.assign({},cfg,{data:{labels:labels,datasets:[
+    {label:"DAU",data:data.map(function(r){return r.dau;}),borderColor:"#22c55e",backgroundColor:"rgba(34,197,94,0.1)",fill:true,tension:0.2,pointRadius:2},
+    {label:"WAU",data:data.map(function(r){return r.wau;}),borderColor:"#f59e0b",backgroundColor:"rgba(245,158,11,0.1)",fill:true,tension:0.2,pointRadius:2},
+    {label:"MAU",data:data.map(function(r){return r.mau;}),borderColor:"#a855f7",backgroundColor:"rgba(168,85,247,0.1)",fill:true,tension:0.2,pointRadius:2}
+  ]}}));
+}
+
+function renderRet(data){
+  destroyChart([_cRet]);
+  if(!data||!data.length)return;
+  var cutoff=new Date();cutoff.setDate(cutoff.getDate()-1);
+  var filtered=data.filter(function(r){return r.d1!==null||r.d7!==null;});
+  if(!filtered.length)return;
+  var labels=filtered.map(function(r){return r.d.slice(5);});
+  var d1=filtered.map(function(r){return r.d1?Math.round(r.d1*100):null;});
+  var d7=filtered.map(function(r){return r.d7?Math.round(r.d7*100):null;});
+  var cfg=bCfg();cfg.options.plugins.legend.display=true;cfg.options.plugins.legend.labels={color:"#94a3b8",font:{size:9},boxWidth:10};
+  var ctx=document.getElementById("chartRet").getContext("2d");
+  _cRet=new Chart(ctx,Object.assign({},cfg,{data:{labels:labels,datasets:[
+    {label:"D1%",data:d1,backgroundColor:"#22c55e",borderRadius:2},
+    {label:"D7%",data:d7,backgroundColor:"#3b82f6",borderRadius:2}
+  ]}}));
+}
+
+function renderSD(data){
+  destroyChart([_cSD]);
+  if(!data||!data.t)return;
+  var labels=["<1m","1-5m","5-15m","15-30m","30-60m","60m+"];
+  var vals=[data.a||0,data.b||0,data.c||0,data.d||0,data.e||0,data.f||0];
+  var colors=["#22c55e","#3b82f6","#f59e0b","#f97316","#ef4444","#a855f7"];
+  var cfg=bCfg();
+  var ctx=document.getElementById("chartSD").getContext("2d");
+  _cSD=new Chart(ctx,Object.assign({},cfg,{data:{labels:labels,datasets:[{data:vals,backgroundColor:colors,borderRadius:4,borderSkipped:false}]}}));
+}
+
+function renderUA(data){
+  destroyChart([_cUA]);
+  if(!data||!data.length)return;
+  var labels=data.map(function(r){return r.b;});
+  var vals=data.map(function(r){return r.u;});
+  var ctx=document.getElementById("chartUA").getContext("2d");
+  var g=grad(ctx,"55% 0.14 220");
+  _cUA=new Chart(ctx,Object.assign({},bCfg(),{data:{labels:labels,datasets:[{data:vals,backgroundColor:g,borderRadius:4,borderSkipped:false}]}}));
+}
+
+function renderAU(data){
+  destroyChart([_cAU]);
+  if(!data||!data.length)return;
+  var reversed=[].concat(data).reverse();
+  var labels=reversed.map(function(r){return r.a||"unknown";});
+  var vals=reversed.map(function(r){return r.u;});
+  var ctx=document.getElementById("chartAU").getContext("2d");
+  _cAU=new Chart(ctx,Object.assign({},hCfg(),{
+    data:{labels:labels,datasets:[{data:vals,backgroundColor:"#3b82f6",borderRadius:4,borderSkipped:false}]},
+    options:Object.assign({},hCfg().options,{indexAxis:"y",scales:{x:{beginAtZero:true,grid:{color:"rgba(255,255,255,.04)"},ticks:{color:"#64748b",font:{size:8}}},y:{grid:{color:"rgba(255,255,255,.04)"},ticks:{color:"#64748b",font:{size:8}}}}})
+  }));
+}
+
+function renderAT(data){
+  destroyChart([_cAT]);
+  if(!data||!data.length)return;
+  var reversed=[].concat(data).reverse();
+  var labels=reversed.map(function(r){return r.a||"unknown";});
+  var vals=reversed.map(function(r){return Math.round((r.d||0)/1000);});
+  var ctx=document.getElementById("chartAT").getContext("2d");
+  _cAT=new Chart(ctx,Object.assign({},hCfg(),{
+    data:{labels:labels,datasets:[{data:vals,backgroundColor:"#a855f7",borderRadius:4,borderSkipped:false}]},
+    options:Object.assign({},hCfg().options,{indexAxis:"y",scales:{x:{beginAtZero:true,grid:{color:"rgba(255,255,255,.04)"},ticks:{color:"#64748b",font:{size:8},callback:function(v){return v+"s";}}},y:{grid:{color:"rgba(255,255,255,.04)"},ticks:{color:"#64748b",font:{size:8}}}}})
+  }));
 }
 
 document.addEventListener("DOMContentLoaded", function() {

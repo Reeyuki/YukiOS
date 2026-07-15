@@ -1271,7 +1271,7 @@ export class TorrentClientApp extends BaseApp {
       os.dialog.alert("Not Ready", "Wait for the download to finish before saving.");
       return;
     }
-    const explorerApp = this.services.explorerApp;
+    const explorerApp = this.os.app.apps.explorerApp;
     if (!explorerApp) {
       os.dialog.alert("Error", "Explorer app not available.");
       return;

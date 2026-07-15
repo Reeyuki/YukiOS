@@ -488,9 +488,9 @@ function getVideoMimeType(format, codec) {
   return `video/${format}`;
 }
 
-export function openFileConverter(fileName, currentPath, services, onComplete = null) {
-  const wm = services.windowManager || services.wm;
-  const fs = services.fileSystemManager || services.fs;
+export function openFileConverter(fileName, currentPath, os, onComplete = null) {
+  const wm = os.kernel?.windowManager;
+  const fs = os.kernel?.fileSystemManager;
   const ext = getFileExtension(fileName);
   const baseName = getFileNameWithoutExtension(fileName);
   const category = detectCategory(ext);
@@ -1574,13 +1574,13 @@ export function openFileConverter(fileName, currentPath, services, onComplete = 
                 name: finalName,
                 path: [...currentPath],
                 fs: fs,
-                notepadApp: services.notepadApp,
-                browserApp: services.browserApp,
+                notepadApp: os.app.apps.notepadApp,
+                browserApp: os.app.apps.browserApp,
                 windowManager: wm,
-                officeApp: services.officeApp,
-                markdownApp: services.markdownApp,
-                jsDosApp: services.jsDosApp,
-                appLauncher: services.appLauncher
+                officeApp: os.app.apps.officeApp,
+                markdownApp: os.app.apps.markdownApp,
+                jsDosApp: os.app.apps.jsDosApp,
+                appLauncher: os.app._launcher
               });
             }
           }, 300);

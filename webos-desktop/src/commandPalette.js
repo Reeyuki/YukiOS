@@ -10,8 +10,8 @@ import { KeybindManager } from "./keybindManager.js";
 import { StorageKeys, os } from "./framework.js";
 import { SETTINGS_CATEGORIES, launchSettingsPane } from "./settings/settingsNav.js";
 export class CommandPalette {
-  constructor(services) {
-    this.services = services;
+  constructor(os) {
+    this.os = os;
     this.isOpen = false;
     this.cachedFiles = [];
     this.results = [];
@@ -120,7 +120,7 @@ export class CommandPalette {
   }
 
   async loadFiles() {
-    const fs = this.services.fileSystemManager;
+    const fs = this.os.kernel?.fileSystemManager;
     if (!fs) return;
     this.cachedFiles = [];
     const walk = async (dirPath) => {
@@ -256,7 +256,7 @@ export class CommandPalette {
         subtitle: "Lock the current session and show the lock screen",
         tag: "session",
         icon: "fas fa-lock",
-        execute: () => this.services.sessionManager?.lockSession()
+        execute: () => this.os.app.apps.sessionManager?.lockSession()
       },
       {
         title: "Logout",
@@ -265,7 +265,7 @@ export class CommandPalette {
         icon: "fas fa-right-from-bracket",
         execute: async () => {
           if (await os.dialog.confirm("Logout", "Sign out and return to the login screen?")) {
-            await this.services.sessionManager?.lockToLoginScreen();
+            await this.os.app.apps.sessionManager?.lockToLoginScreen();
           }
         }
       },
@@ -276,7 +276,7 @@ export class CommandPalette {
         icon: "fas fa-power-off",
         execute: async () => {
           if (await os.dialog.confirm("Shutdown", "Close everything and shut down?")) {
-            await this.services.sessionManager?.lockToLoginScreen();
+            await this.os.app.apps.sessionManager?.lockToLoginScreen();
           }
         }
       },
@@ -340,7 +340,7 @@ export class CommandPalette {
         tag: "screenshot",
         icon: "fas fa-camera",
         execute: () => {
-          const app = this.services.screenshotApp;
+          const app = this.os.app.apps.screenshotApp;
           if (app) {
             app.open();
             app.captureFull(true);
@@ -353,7 +353,7 @@ export class CommandPalette {
         tag: "screenshot",
         icon: "fas fa-video",
         execute: () => {
-          const app = this.services.screenshotApp;
+          const app = this.os.app.apps.screenshotApp;
           if (app && !app.recording) {
             app.open();
             app.toggleRecording();
@@ -366,7 +366,7 @@ export class CommandPalette {
         tag: "screenshot",
         icon: "fas fa-stop",
         execute: () => {
-          const app = this.services.screenshotApp;
+          const app = this.os.app.apps.screenshotApp;
           if (app && app.recording) {
             app.toggleRecording();
           }
@@ -378,7 +378,7 @@ export class CommandPalette {
         tag: "screenshot",
         icon: "fas fa-crop-alt",
         execute: () => {
-          const app = this.services.screenshotApp;
+          const app = this.os.app.apps.screenshotApp;
           if (app) {
             app.open();
             app.captureArea(true);
@@ -435,10 +435,10 @@ export class CommandPalette {
           tag: "terminal",
           icon: "fas fa-terminal",
           execute: () => {
-            if (this.services.terminalApp) {
-              this.services.terminalApp.open();
+            if (this.os.app.apps.terminalApp) {
+              this.os.app.apps.terminalApp.open();
               setTimeout(() => {
-                this.services.terminalApp.executeCommand(cleanCmd);
+                this.os.app.apps.terminalApp.executeCommand(cleanCmd);
               }, 250);
             }
           }
@@ -483,17 +483,17 @@ export class CommandPalette {
           icon: os.fs.getFileIcon(file.path),
           isFile: true,
           execute: () => {
-            const launcher = this.services.windowManager.appLauncher;
-            const fsManager = this.services.fileSystemManager;
+            const launcher = this.os.kernel?.windowManager.appLauncher;
+            const fsManager = this.os.kernel?.fileSystemManager;
             openFileWith({
               name: file.name,
               path: fsManager.dirname(file.path),
               fs: fsManager,
-              notepadApp: this.services.notepadApp,
-              windowManager: this.services.windowManager,
-              officeApp: this.services.officeApp,
-              markdownApp: this.services.markdownApp,
-              jsDosApp: this.services.jsDosApp,
+              notepadApp: this.os.app.apps.notepadApp,
+              windowManager: this.os.kernel?.windowManager,
+              officeApp: this.os.app.apps.officeApp,
+              markdownApp: this.os.app.apps.markdownApp,
+              jsDosApp: this.os.app.apps.jsDosApp,
               appLauncher: launcher
             });
           }
@@ -653,18 +653,18 @@ export class CommandPalette {
             tag: file.kind,
             icon: os.fs.getFileIcon(file.path),
             execute: () => {
-              const launcher = this.services.windowManager.appLauncher;
-              const fsManager = this.services.fileSystemManager;
+              const launcher = this.os.kernel?.windowManager.appLauncher;
+              const fsManager = this.os.kernel?.fileSystemManager;
               openFileWith({
                 name: file.name,
                 path: fsManager.dirname(file.path),
                 fs: fsManager,
-                notepadApp: this.services.notepadApp,
-                browserApp: this.services.browserApp,
-                windowManager: this.services.windowManager,
-                officeApp: this.services.officeApp,
-                markdownApp: this.services.markdownApp,
-                jsDosApp: this.services.jsDosApp,
+                notepadApp: this.os.app.apps.notepadApp,
+                browserApp: this.os.app.apps.browserApp,
+                windowManager: this.os.kernel?.windowManager,
+                officeApp: this.os.app.apps.officeApp,
+                markdownApp: this.os.app.apps.markdownApp,
+                jsDosApp: this.os.app.apps.jsDosApp,
                 appLauncher: launcher
               });
             }
@@ -903,7 +903,7 @@ export class CommandPalette {
         icon: "fas fa-calculator",
         execute: () => {
           var text = result.toString();
-          this.services.clipboardManager?.set(text, "text");
+          this.os.kernel?.clipboardManager?.set(text, "text");
           navigator.clipboard.writeText(text);
           os.notify.send("Calculator", "Result copied to clipboard", {
             type: "success",
@@ -1099,7 +1099,7 @@ export class CommandPalette {
       icon: "fas fa-arrows-left-right",
       execute: () => {
         var text = result.toString();
-        this.services.clipboardManager?.set(text, "text");
+        this.os.kernel?.clipboardManager?.set(text, "text");
         navigator.clipboard.writeText(text);
         os.notify.send("Conversion", "Result copied to clipboard", {
           type: "success",
@@ -1156,8 +1156,8 @@ export class CommandPalette {
   }
 
   minimizeAllWindows() {
-    if (this.services.windowManager) {
-      const wm = this.services.windowManager;
+    if (this.os.kernel?.windowManager) {
+      const wm = this.os.kernel?.windowManager;
       const winIds = Array.from(wm.openWindows.keys());
       for (const winId of winIds) {
         const win = document.getElementById(winId);
@@ -1167,18 +1167,18 @@ export class CommandPalette {
   }
 
   toggleFullscreen() {
-    if (this.services.windowManager && this.services.windowManager.activeWindow) {
-      os.window.maximize(this.services.windowManager.activeWindow);
+    if (this.os.kernel?.windowManager && this.os.kernel?.windowManager.activeWindow) {
+      os.window.maximize(this.os.kernel?.windowManager.activeWindow);
     }
   }
 
   toggleWorkspaceOverview() {
-    const ws = this.services.windowManager?.workspaceManager;
+    const ws = this.os.kernel?.windowManager?.workspaceManager;
     if (ws) ws.toggleOverview();
   }
 
   switchWorkspace(index) {
-    const ws = this.services.windowManager?.workspaceManager;
+    const ws = this.os.kernel?.windowManager?.workspaceManager;
     if (ws && ws.workspaces[index]) ws.switchTo(ws.workspaces[index].id);
   }
 

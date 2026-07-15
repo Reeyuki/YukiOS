@@ -238,7 +238,6 @@ export class SetupApp extends BaseApp {
     this.userChoices = {
       theme: "dark",
       wallpaper: null,
-      taskbarPosition: "bottom",
       weather: true,
       notifications: true,
       sound: true,
@@ -397,7 +396,7 @@ export class SetupApp extends BaseApp {
     const themeButtons = themes
       .map(
         (theme) => `
-        <button class="theme-btn ${this.userChoices.theme === theme.value ? "active" : ""}" data-theme="${theme.value}" style="height: 56px; background: ${theme.preview || '#8b5cf6'}; color: ${theme.textColor || '#fff'};">
+        <button class="theme-btn ${this.userChoices.theme === theme.value ? "active" : ""}" data-theme="${theme.value}" style="height: 56px; background: ${theme.preview || "#8b5cf6"}; color: ${theme.textColor || "#fff"};">
           <span>${theme.label}</span>
         </button>
       `
@@ -472,28 +471,6 @@ export class SetupApp extends BaseApp {
           <button class="setup-btn setup-btn-secondary setup-upload-button" id="upload-wallpaper-btn">
             <i class="fas fa-upload"></i> Upload Custom Wallpaper
           </button>
-        </div>
-
-        <div class="personalize-section">
-          <label class="section-label">Taskbar Position</label>
-          <div class="taskbar-selector taskbar-selector-grid">
-            <button class="taskbar-btn ${this.userChoices.taskbarPosition === "bottom" ? "active" : ""}" data-position="bottom">
-              <i class="fas fa-arrow-down"></i>
-              <span>Bottom</span>
-            </button>
-            <button class="taskbar-btn ${this.userChoices.taskbarPosition === "top" ? "active" : ""}" data-position="top">
-              <i class="fas fa-arrow-up"></i>
-              <span>Top</span>
-            </button>
-            <button class="taskbar-btn ${this.userChoices.taskbarPosition === "left" ? "active" : ""}" data-position="left">
-              <i class="fas fa-arrow-left"></i>
-              <span>Left</span>
-            </button>
-            <button class="taskbar-btn ${this.userChoices.taskbarPosition === "right" ? "active" : ""}" data-position="right">
-              <i class="fas fa-arrow-right"></i>
-              <span>Right</span>
-            </button>
-          </div>
         </div>
       </div>
     `;
@@ -668,10 +645,6 @@ export class SetupApp extends BaseApp {
             <span>Wallpaper: ${this.userChoices.wallpaper || "Default"}</span>
           </div>
           <div class="summary-item">
-            <i class="fas fa-arrows-alt"></i>
-            <span>Taskbar: ${this.userChoices.taskbarPosition}</span>
-          </div>
-          <div class="summary-item">
             <i class="fas fa-cloud-sun"></i>
             <span>Weather: ${this.userChoices.weather ? "On" : "Off"}</span>
           </div>
@@ -783,16 +756,6 @@ export class SetupApp extends BaseApp {
         this.userChoices.wallpaper = wallpaper;
         wallpaperThumbs.forEach((t) => t.classList.remove("active"));
         thumb.classList.add("active");
-      });
-    });
-
-    const taskbarBtns = $$(".taskbar-btn", win);
-    taskbarBtns.forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const position = btn.dataset.position;
-        this.userChoices.taskbarPosition = position;
-        taskbarBtns.forEach((b) => b.classList.remove("active"));
-        btn.classList.add("active");
       });
     });
 
@@ -963,15 +926,14 @@ export class SetupApp extends BaseApp {
     os.storage.set(StorageKeys.username, finalizedName);
     os.storage.set(StorageKeys.profilePicture, finalizedAvatar);
 
-    if (this.services.sessionManager?.currentSession) {
-      this.services.sessionManager.currentSession.name = finalizedName;
-      this.services.sessionManager.currentSession.key =
+    if (this.os.app.apps.sessionManager?.currentSession) {
+      this.os.app.apps.sessionManager.currentSession.name = finalizedName;
+      this.os.app.apps.sessionManager.currentSession.key =
         finalizedName.toLowerCase().replace(/[^a-z0-9]/g, "") || "guest";
-      this.services.sessionManager.currentSession.avatar = finalizedAvatar;
+      this.os.app.apps.sessionManager.currentSession.avatar = finalizedAvatar;
     }
 
     os.storage.set(StorageKeys.theme, this.userChoices.theme);
-    os.storage.set(StorageKeys.taskbarPosition, this.userChoices.taskbarPosition);
     os.storage.set(StorageKeys.weather, this.userChoices.weather.toString());
     os.storage.set(StorageKeys.notificationsEnabled, this.userChoices.notifications.toString());
     os.storage.set(StorageKeys.soundEnabled, this.userChoices.sound.toString());
@@ -988,7 +950,7 @@ export class SetupApp extends BaseApp {
     os.storage.set(StorageKeys.clippy, this.userChoices.clippy.toString());
     os.storage.set(StorageKeys.clipboardManagerEnabled, this.userChoices.clipboardManager.toString());
 
-    this.services.achievementsApp?.trigger(Achievements.SetupComplete);
+    this.os.app.apps.achievementsApp?.trigger(Achievements.SetupComplete);
 
     if (this.userChoices.wallpaper) {
       try {
@@ -1006,11 +968,10 @@ export class SetupApp extends BaseApp {
         detail: { soundEnabled: this.userChoices.sound }
       })
     );
-    const welcomeContent = `All set, ${this.services.sessionManager?.currentSession?.name || "Guest"}!
+    const welcomeContent = `All set, ${this.os.app.apps.sessionManager?.currentSession?.name || "Guest"}!
 
 Here's what you picked:
 - Theme: ${this.userChoices.theme}
-- Taskbar: ${this.userChoices.taskbarPosition}
 - Turbo Mode: ${this.userChoices.turboMode}
 - Transparency: ${this.userChoices.transparency}
 - Weather: ${this.userChoices.weather ? "On" : "Off"}
@@ -1051,7 +1012,7 @@ Have fun!`;
   skipSetup(win) {
     os.storage.set(StorageKeys.setupCompleted, "true");
 
-    this.services.achievementsApp?.trigger(Achievements.SetupComplete);
+    this.os.app.apps.achievementsApp?.trigger(Achievements.SetupComplete);
     os.window.close(win);
     this.openWindows.delete("setup-wizard");
   }

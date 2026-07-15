@@ -1,12 +1,12 @@
 let officeApp = null;
 let loading = null;
 
-export async function getOfficeApp(services) {
+export async function getOfficeApp(os) {
   if (officeApp) return officeApp;
   if (loading) return loading;
 
   loading = import("../apps/office.js").then(({ OfficeApp }) => {
-    officeApp = new OfficeApp(services);
+    officeApp = new OfficeApp(os);
     loading = null;
     return officeApp;
   });
@@ -15,8 +15,8 @@ export async function getOfficeApp(services) {
 }
 
 export class OfficeAppProxy {
-  constructor(services) {
-    this.services = services;
+  constructor(os) {
+    this.os = os;
     this.explorer = null;
     this.real = null;
     this.pending = null;
@@ -30,7 +30,7 @@ export class OfficeAppProxy {
   async ensure() {
     if (this.real) return this.real;
     if (this.pending) return this.pending;
-    this.pending = getOfficeApp(this.services).then((app) => {
+    this.pending = getOfficeApp(this.os).then((app) => {
       this.real = app;
       this.pending = null;
       return app;

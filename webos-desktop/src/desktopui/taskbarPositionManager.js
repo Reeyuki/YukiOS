@@ -3,17 +3,16 @@ import { showStartStyleMenu } from "../shared/contextMenu.js";
 export class TaskbarPositionManager {
   constructor() {
     this.positions = ["bottom", "top", "left", "right"];
-    this.currentPosition = os.storage.get(StorageKeys.taskbarPosition) || "bottom";
+    this.currentPosition = "bottom";
     this.initialized = false;
 
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", () => this.init());
-    } else {
-      this.init();
     }
   }
 
   init() {
+    this.currentPosition = os.storage.get(StorageKeys.taskbarPosition) || "bottom";
     if (this.applyPosition(this.currentPosition)) {
       this.setupEventListeners();
     } else {

@@ -37,10 +37,10 @@ const DOCK_ITEM_DEFAULTS = [
 ];
 
 export class GameOverlayController {
-  constructor(appLauncher, services) {
+  constructor(appLauncher, os) {
     this.appLauncher = appLauncher;
-    this.services = services;
-    this.wm = services.windowManager;
+    this.os = os;
+    this.wm = os.kernel?.windowManager;
     this.visible = false;
     this.overlayEl = null;
     this.currentGameId = null;
@@ -883,7 +883,7 @@ export class GameOverlayController {
     const pane = this.overlayEl.querySelector('[data-panel="achievements"] .overlay-panel-body');
     if (!pane) return;
 
-    const achApp = this.services.achievementsApp;
+    const achApp = this.os.app.apps.achievementsApp;
     if (!achApp) {
       pane.innerHTML = `<div class="overlay-no-data">Achievements system not available</div>`;
       return;
@@ -1212,7 +1212,7 @@ export class GameOverlayController {
 
   async captureScreenshot(mode) {
     if (!this.screenshotApp) {
-      this.screenshotApp = new ScreenshotApp(this.services);
+      this.screenshotApp = new ScreenshotApp(this.os);
     }
 
     switch (mode) {
@@ -1583,7 +1583,7 @@ export class GameOverlayController {
     if (pane.querySelector(".terminal-content")) return;
     if (this.terminalApp && !this.terminalApp.destroyed) return;
 
-    this.terminalApp = new TerminalApp(this.services);
+    this.terminalApp = new TerminalApp(this.os);
 
     const content = createElement("div");
     content.className = "window-content terminal-content overlay-terminal-container";

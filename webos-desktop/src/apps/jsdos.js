@@ -6,9 +6,9 @@ import { BaseApp, os } from "../framework.js";
 const GAMES_DIR = ["Games"];
 
 export class JsDosApp extends BaseApp {
-  constructor(services) {
-    super(services);
-    this.explorerApp = services.explorerApp;
+  constructor(os) {
+    super(os);
+    this.explorerApp = os.app.apps.explorerApp;
   }
 
   async open() {

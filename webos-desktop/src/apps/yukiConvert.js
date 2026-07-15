@@ -97,7 +97,7 @@ export class YukiConvertApp extends BaseApp {
       if (closeBtn) closeBtn.click();
 
       for (const fileName of fileNames) {
-        openFileConverter(fileName, path, this.services);
+        openFileConverter(fileName, path, this.os);
       }
     });
   }

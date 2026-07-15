@@ -2,12 +2,12 @@ import { audioMixer } from "../../audioMixer.js";
 import { os, StorageKeys } from "../../framework.js";
 
 export class OSBridge {
-  constructor(services) {
-    this.services = services;
-    this.wm = services.wm;
-    this.fs = services.fs;
-    this.bus = services.bus;
-    this.appLauncher = services.appLauncher;
+  constructor(os) {
+    this.os = os;
+    this.wm = os.kernel?.windowManager;
+    this.fs = os.kernel?.fileSystemManager;
+    this.bus = os.events;
+    this.appLauncher = os.app._launcher;
     this.permissions = new Map();
   }
 

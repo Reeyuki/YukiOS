@@ -47,8 +47,10 @@ export class WorkspaceManager {
       if (taskbar) {
         taskbar.insertBefore(this.barEl, document.getElementById("system-tray"));
       }
-      const showWorkspace = os.storage.get(StorageKeys.showWorkspace) !== "false";
-      this.updateVisibility(showWorkspace);
+      Promise.resolve().then(() => {
+        const showWorkspace = os.storage.get(StorageKeys.showWorkspace) !== "false";
+        this.updateVisibility(showWorkspace);
+      });
     }
 
     this.barEl.innerHTML = "";

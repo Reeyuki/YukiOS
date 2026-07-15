@@ -102,9 +102,9 @@ function saveJSON(key, val) {
 }
 
 export class WallpaperEngineApp extends BaseApp {
-  constructor(services) {
-    super(services);
-    this.fs = services.fileSystemManager;
+  constructor(os) {
+    super(os);
+    this.fs = os.kernel?.fileSystemManager;
     this.winId = null;
     this.win = null;
     this.currentCategory = "all";

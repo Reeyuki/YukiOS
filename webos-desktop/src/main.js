@@ -12,7 +12,7 @@ import { DesktopPeekManager } from "./desktopPeek.js";
 import { SettingsApp } from "./settings/settings.js";
 import { AppCreatorApp } from "./apps/appCreator.js";
 import { OfficeAppProxy } from "./office/officeLoader.js";
-import { YouTubeUtilsApp } from "./apps/youtubeUtils.js";
+
 import { NotificationCenter } from "./notificationCenter.js";
 import { JsDosApp } from "./apps/jsdos.js";
 import { V86App } from "./apps/v86.js";
@@ -36,8 +36,8 @@ import { init } from "./cursorEffect.js";
 import { versionChecker } from "./versionChecker.js";
 import { $ } from "./shared/domUtils.js";
 import { showBootScreen } from "./bootScreen.js";
-
-const boot = showBootScreen();
+import { bus } from "./core/EventBus.js";
+import { trayManager } from "./tray/tray.js";
 
 initializeMirrors(appMap);
 registerPWA();
@@ -54,105 +54,97 @@ const notificationCenter = new NotificationCenter();
 const fileSystemManager = new FileSystemManager();
 const windowManager = new WindowManager(notificationCenter);
 const desktopPeekManager = new DesktopPeekManager(windowManager);
-import { bus } from "./core/EventBus.js";
-import { trayManager } from "./tray/tray.js";
-initializeOSBridge({
-  windowManager,
-  fileSystemManager,
-  notificationCenter,
-  appLauncher: null,
-  eventBus: bus
-});
-trayManager.init(windowManager);
 const clipboardManager = new ClipboardManager(bus);
 
-const services = {
-  notificationCenter,
-  fileSystemManager,
+trayManager.init(windowManager, bus);
+
+const os = initializeOSBridge({
   windowManager,
+  fileSystemManager,
+  notificationCenter,
   eventBus: bus,
-  clipboardManager,
-  get wm() {
-    return windowManager;
-  },
-  get fs() {
-    return fileSystemManager;
-  },
-  get bus() {
-    return bus;
-  }
-};
-
-const notepadApp = new NotepadApp(services);
-services.notepadApp = notepadApp;
-
-const youtubeUtilsApp = new YouTubeUtilsApp(services);
-services.youtubeUtilsApp = youtubeUtilsApp;
-
-const explorerApp = new ExplorerApp(services);
-services.explorerApp = explorerApp;
-setDialogExplorerApp(explorerApp);
-
-const officeApp = new OfficeAppProxy(services);
-services.officeApp = officeApp;
-
-officeApp.setExplorer(explorerApp);
-explorerApp.setOfficeApp(officeApp);
-
-notepadApp.setExplorer(explorerApp);
-
-const browserApp = new BrowserApp(services);
-services.browserApp = browserApp;
-
-youtubeUtilsApp.setBrowserApp(browserApp);
-
-const jsDosApp = new JsDosApp(services);
-services.jsDosApp = jsDosApp;
-explorerApp.setJsDos(jsDosApp);
-
-const v86app = new V86App(services);
-services.v86app = v86app;
-explorerApp.setv86App(v86app);
-
-const settingsApp = new SettingsApp(services);
-services.settingsApp = settingsApp;
-settingsApp.setFileSystemManager(fileSystemManager);
-
-const adsApp = new AdsManager(windowManager);
-services.adsApp = adsApp;
-explorerApp.setBrowser(browserApp);
-
-const appCreatorApp = new AppCreatorApp(services);
-services.appCreatorApp = appCreatorApp;
-
-loadApps(services);
-explorerApp.setMarkdownApp(services.markdownApp);
-
-const appLauncher = new AppLauncher(windowManager, fileSystemManager, services);
-services.appLauncher = appLauncher;
-init();
-appLauncher.setEmulatorApp(services.emulatorApp);
-setGameLauncher(appLauncher);
-windowManager.setAppLauncher(appLauncher);
-appCreatorApp.setAppLauncher(appLauncher);
-explorerApp.setAppLauncher(appLauncher);
-services.installedAppsApp.setAppLauncher(appLauncher);
-
-initializeOSBridge({
-  windowManager,
-  fileSystemManager,
-  notificationCenter,
-  appLauncher,
-  eventBus: bus
+  trayManager
 });
 
+os.kernel.clipboardManager = clipboardManager;
+init();
+window.os = os;
+
+const boot = showBootScreen();
+
+const preloaded = {};
+
+{
+  const apps = [
+    ["notepadApp", new NotepadApp(os)],
+    ["explorerApp", new ExplorerApp(os)],
+    ["officeApp", new OfficeAppProxy(os)],
+    ["browserApp", new BrowserApp(os)],
+    ["jsDosApp", new JsDosApp(os)],
+    ["v86app", new V86App(os)],
+    ["settingsApp", new SettingsApp(os)],
+    ["appCreatorApp", new AppCreatorApp(os)]
+  ];
+  for (const [key, instance] of apps) {
+    preloaded[key] = instance;
+    os.app.register(key, instance);
+  }
+  preloaded.explorerApp.setNotepadApp(preloaded.notepadApp);
+}
+
+setDialogExplorerApp(preloaded.explorerApp);
+
+const appRegistry = loadApps(os, preloaded);
+
+const explorerApp = preloaded.explorerApp;
+const notepadApp = preloaded.notepadApp;
+const browserApp = preloaded.browserApp;
+const officeApp = preloaded.officeApp;
+const jsDosApp = preloaded.jsDosApp;
+const v86App = preloaded.v86app;
+const settingsApp = preloaded.settingsApp;
+const appCreatorApp = preloaded.appCreatorApp;
+
+const appLauncher = new AppLauncher(windowManager, fileSystemManager, os.app._registry);
+os.setAppLauncher(appLauncher);
+windowManager.setAppLauncher(appLauncher);
+setGameLauncher(appLauncher);
+
+appLauncher.setEmulatorApp(os.app.apps.emulatorApp);
+appLauncher.overlayController = null;
+
+appCreatorApp.setAppLauncher(appLauncher);
+appCreatorApp.restoreInstalledApps();
+
+const installedAppsApp = os.app.apps.installedAppsApp;
+if (installedAppsApp) installedAppsApp.setAppLauncher(appLauncher);
+
+settingsApp.setFileSystemManager(fileSystemManager);
+settingsApp.setAppLauncher(appLauncher);
+
+explorerApp.setAppLauncher(appLauncher);
+explorerApp.setOfficeApp(officeApp);
+explorerApp.setJsDos(jsDosApp);
+explorerApp.setv86App(v86App);
+explorerApp.setBrowser(browserApp);
+explorerApp.setMarkdownApp(os.app.apps.markdownApp);
+
+officeApp.setExplorer(explorerApp);
+notepadApp.setExplorer(explorerApp);
+
 const desktopUI = new DesktopUI(appLauncher, notepadApp, explorerApp, fileSystemManager);
+setDesktopUI(desktopUI);
 
-const sessionManager = new SessionManager(services);
-services.sessionManager = sessionManager;
+appCreatorApp.setDesktopUI(desktopUI);
+settingsApp.setDesktopUI(desktopUI);
+explorerApp.setDesktopUI(desktopUI);
 
-const commandPalette = new CommandPalette(services);
-services.commandPalette = commandPalette;
+const sessionManager = new SessionManager(os);
+const commandPalette = new CommandPalette(os);
+
+SystemUtilities.startClock();
+SystemUtilities.setSettings(settingsApp);
+SystemUtilities.startTaskbarWeather(appLauncher);
 
 async function start() {
   const faScript = $('script[src*="font-awesome"], script[src*="fontawesome"]');
@@ -186,10 +178,6 @@ async function start() {
   settingsApp.setAppLauncher(appLauncher);
   appCreatorApp.setDesktopUI(desktopUI);
   appCreatorApp.setAppLauncher(appLauncher);
-  appCreatorApp.restoreInstalledApps();
-  SystemUtilities.startClock();
-  SystemUtilities.setSettings(settingsApp);
-  SystemUtilities.startTaskbarWeather(appLauncher);
   await SystemUtilities.loadWallpaper();
   windowManager.restorePinnedItems();
   desktopPeekManager.setupPeekButton();

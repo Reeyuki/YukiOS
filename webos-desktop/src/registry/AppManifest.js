@@ -1058,18 +1058,6 @@ export const APP_MANIFESTS = [
     description: "x86-64 full system emulator for running operating systems and legacy software."
   },
   {
-    serviceKey: "youtubeUtilsApp",
-    type: "system",
-    title: "YouTube Utilities",
-    icon: `${CDN_BASE}/static/icons/youtube.webp`,
-    launchType: "instance",
-    windowIdPatterns: ["youtube"],
-    isHeavy: true,
-    category: "internet",
-    clippy: { message: "Paste a video link and I'll slot it into a player.", animation: ClippyAnimation.Show },
-    description: "YouTube integration for watching videos within YukiOS."
-  },
-  {
     type: "system",
     title: "LibreSprite",
     source: "https://yukios.netlify.app/static/apps/libresprite/index.html",

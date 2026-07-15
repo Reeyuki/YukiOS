@@ -1072,11 +1072,11 @@ class EditorRegistry {
 }
 
 export class OfficeApp extends BaseApp {
-  constructor(services) {
-    super(services);
-    this.fs = services.fileSystemManager;
-    this.wm = services.windowManager;
-    this.explorerApp = services.explorerApp;
+  constructor(os) {
+    super(os);
+    this.fs = os.kernel?.fileSystemManager;
+    this.wm = os.kernel?.windowManager;
+    this.explorerApp = os.app.apps.explorerApp;
     this.idleTimer = null;
     this.idleDelay = 15000;
     this.editors = {};

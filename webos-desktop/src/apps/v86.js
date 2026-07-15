@@ -7,9 +7,9 @@ import { BaseApp, os } from "../framework.js";
 const IMAGES_DIR = ["VMs"];
 
 export class V86App extends BaseApp {
-  constructor(services) {
-    super(services);
-    this.explorerApp = services.explorerApp;
+  constructor(os) {
+    super(os);
+    this.explorerApp = os.app.apps.explorerApp;
     this.v86LoadPromise = null;
   }
 

@@ -14,8 +14,8 @@ import { audioMixer } from "../audioMixer.js";
 import { YUKIOS_VERSION } from "./about.js";
 
 export class TerminalApp extends BaseApp {
-  constructor(services) {
-    super(services);
+  constructor(os) {
+    super(os);
     this.currentPath = ["ys", "users", os.storage.get(StorageKeys.username) || "guest"];
     this.history = os.storage.get(StorageKeys.historyStorageKey) || [];
     this.historyIndex = this.history.length;
@@ -37,7 +37,7 @@ export class TerminalApp extends BaseApp {
       TERM: "xterm-256color"
     };
     this.aliases = os.storage.get(StorageKeys.terminalAliases) || {};
-    this.gitManager = new GitManager(services.fileSystemManager);
+    this.gitManager = new GitManager(os.kernel?.fileSystemManager);
     this.lastExitCode = 0;
     this.reverseSearchActive = false;
     this.reverseSearchQuery = "";
@@ -85,6 +85,7 @@ export class TerminalApp extends BaseApp {
     this.terminalInput = document.getElementById("terminal-input");
     this.terminalPrompt = document.getElementById("terminal-prompt");
     this.terminalInputLine = document.getElementById("terminal-input-line");
+    this.terminalContent = document.querySelector(".terminal-content");
     this.terminalTabsEl = document.getElementById("terminal-tabs");
     this.tabs = [{ id: 1, currentPath: [...this.currentPath], outputHTML: "" }];
     this.activeTabId = 1;
@@ -122,6 +123,11 @@ export class TerminalApp extends BaseApp {
     return "/" + path.join("/");
   }
 
+  isNearBottom() {
+    const el = this.terminalContent;
+    return el.scrollHeight - el.scrollTop - el.clientHeight < 50;
+  }
+
   async print(text, color = null, isCommand = false, promptText = null, delay = 1) {
     this.printDepth++;
     if (this.printDepth === 1) {
@@ -150,7 +156,9 @@ export class TerminalApp extends BaseApp {
 
     span.textContent = text;
     requestAnimationFrame(() => {
-      line.scrollIntoView({ block: "end", behavior: "instant" });
+      if (this.isNearBottom()) {
+        line.scrollIntoView({ block: "end", behavior: "instant" });
+      }
     });
 
     this.printDepth--;
@@ -182,9 +190,7 @@ export class TerminalApp extends BaseApp {
         this.terminalInputLine.style.display = "flex";
         this.terminalInput.disabled = false;
         this.terminalInput.focus();
-        requestAnimationFrame(() =>
-          this.terminalOutput.lastElementChild?.scrollIntoView({ block: "end", behavior: "instant" })
-        );
+        requestAnimationFrame(() => this.terminalInputLine.scrollIntoView({ block: "end", behavior: "instant" }));
       }
       return;
     }
@@ -202,9 +208,7 @@ export class TerminalApp extends BaseApp {
       this.terminalInputLine.style.display = "flex";
       this.terminalInput.disabled = false;
       this.terminalInput.focus();
-      requestAnimationFrame(() =>
-        this.terminalOutput.lastElementChild?.scrollIntoView({ block: "end", behavior: "instant" })
-      );
+      requestAnimationFrame(() => this.terminalInputLine.scrollIntoView({ block: "end", behavior: "instant" }));
     }
   }
 
@@ -2775,15 +2779,15 @@ export class TerminalApp extends BaseApp {
 
   async cmdLock() {
     await this.print("Locking session...");
-    if (this.services?.sessionManager) {
-      await this.services.sessionManager.lockSession();
+    if (this.os.app.apps.sessionManager) {
+      await this.os.app.apps.sessionManager.lockSession();
     }
   }
 
   async cmdLogout() {
     await this.print("Signing out...");
-    if (this.services?.sessionManager) {
-      await this.services.sessionManager.lockToLoginScreen();
+    if (this.os.app.apps.sessionManager) {
+      await this.os.app.apps.sessionManager.lockToLoginScreen();
     }
   }
 

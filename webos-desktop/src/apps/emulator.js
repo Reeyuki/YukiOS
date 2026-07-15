@@ -88,9 +88,9 @@ const supportedExtensions = {
 };
 
 export class EmulatorApp extends BaseApp {
-  constructor(services) {
-    super(services);
-    this.explorerApp = services.explorerApp;
+  constructor(os) {
+    super(os);
+    this.explorerApp = os.app.apps.explorerApp;
   }
 
   open(opts) {

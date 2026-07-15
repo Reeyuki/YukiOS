@@ -52,11 +52,11 @@ export class ExplorerApp extends BaseApp {
     os.storage.set(StorageKeys.explorerViewMode, mode);
   }
 
-  constructor(services) {
-    super(services);
-    this.fs = services.fileSystemManager;
-    this.wm = services.windowManager;
-    this.notepadApp = services.notepadApp;
+  constructor(os) {
+    super(os);
+    this.fs = os.kernel?.fileSystemManager;
+    this.wm = os.kernel?.windowManager;
+    this.notepadApp = os.app.apps.notepadApp;
     this.markdownApp = null;
     this.officeApp = null;
     this.browserApp = null;
@@ -68,6 +68,9 @@ export class ExplorerApp extends BaseApp {
   }
   setBrowser(browserApp) {
     this.browserApp = browserApp;
+  }
+  setNotepadApp(notepadApp) {
+    this.notepadApp = notepadApp;
   }
   setMarkdownApp(markdownApp) {
     this.markdownApp = markdownApp;

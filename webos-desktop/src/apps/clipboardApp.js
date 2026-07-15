@@ -1,9 +1,9 @@
 import { BaseApp, StorageKeys, os } from "../framework.js";
 class ClipboardManagerApp extends BaseApp {
-  constructor(services) {
-    super(services);
+  constructor(os) {
+    super(os);
     this.openWindows = new Set();
-    this.clipboardManager = services.clipboardManager;
+    this.clipboardManager = os.kernel?.clipboardManager;
     this.winId = "clipboard-manager-window";
     this.popupId = "clipboard-tray-popup";
     this.enabled = os.storage.get(StorageKeys.clipboardManagerEnabled) !== "false";

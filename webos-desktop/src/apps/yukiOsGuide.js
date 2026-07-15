@@ -353,7 +353,7 @@ export class YukiOsGuideApp extends BaseApp {
   onClose(winId) {}
 
   buildUI() {
-    const appMap = this.services.appLauncher?.appMap || gamesListAppMap || {};
+    const appMap = this.os.app._launcher?.appMap || gamesListAppMap || {};
     const allApps = this.appRegistry.getAllApps(appMap);
     const filteredApps = this.filterApps(allApps);
 
@@ -987,7 +987,7 @@ export class YukiOsGuideApp extends BaseApp {
   }
 
   refreshContent(win) {
-    const appMap = this.services.appLauncher?.appMap || gamesListAppMap || {};
+    const appMap = this.os.app._launcher?.appMap || gamesListAppMap || {};
     const allApps = this.appRegistry.getAllApps(appMap);
     const filteredApps = this.filterApps(allApps);
     const mainContent = win.querySelector(".yuki-guide-main");

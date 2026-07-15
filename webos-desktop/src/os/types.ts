@@ -306,8 +306,9 @@ export interface OSServices {
   windowManager: WindowManagerService;
   fileSystemManager: FileSystemManagerService;
   notificationCenter: NotificationCenterService;
-  appLauncher: AppLauncherService;
   eventBus: EventBusService;
+  trayManager: TrayManagerService;
+  appLauncher?: AppLauncherService | null;
 }
 
 export interface StorageAPI {

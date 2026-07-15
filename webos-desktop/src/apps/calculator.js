@@ -282,7 +282,7 @@ export class CalculatorApp extends BaseApp {
           if (expressionEl) expressionEl.textContent = `${this.previous} ${this.operator} ${operand} =`;
           this.current = result.toString();
           this.previous = this.current;
-          this.services?.achievementsApp?.incrementCalculationDone();
+          this.os.app.apps.achievementsApp?.incrementCalculationDone();
           this.waitingForOperand = true;
           this.justEvaluated = true;
         }

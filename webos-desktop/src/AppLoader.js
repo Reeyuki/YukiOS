@@ -111,11 +111,13 @@ const APP_DEFINITIONS = APP_MANIFESTS.map((manifest) => {
   return definition;
 }).filter(Boolean);
 
-export function loadApps(services) {
+export function loadApps(os, preloaded = {}) {
   for (const { serviceKey, AppClass, onLoad } of APP_DEFINITIONS) {
-    if (services[serviceKey]) continue;
-    const instance = new AppClass(services);
-    services[serviceKey] = instance;
-    if (onLoad) onLoad(instance, services);
+    if (preloaded[serviceKey]) continue;
+    const instance = new AppClass(os);
+    preloaded[serviceKey] = instance;
+    os.app.register(serviceKey, instance);
+    if (onLoad) onLoad(instance, preloaded);
   }
+  return preloaded;
 }
