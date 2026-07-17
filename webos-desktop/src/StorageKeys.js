@@ -185,5 +185,6 @@ export const StorageKeys = {
   historyStorageKey: "yukiOS_terminal_history",
   terminalAliases: "yukiOS_terminal_aliases",
   runHistory: "yukiOS_run_history",
-  calendarClockStyle: "yukiOS_calendar_clock_style"
+  calendarClockStyle: "yukiOS_calendar_clock_style",
+  isoMounts: "yukiOS_iso_mounts"
 };

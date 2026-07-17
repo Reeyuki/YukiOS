@@ -24,8 +24,8 @@ export let desktopUI = null;
 
 export const steamAudio = new LargeModeAudio();
 
-export function setGameLauncher(launcher) {
-  launcher = launcher;
+export function setGameLauncher(appLauncher) {
+  launcher = appLauncher;
 }
 
 export function setDesktopUI(ui) {

@@ -194,7 +194,7 @@ export class AppCreatorApp extends BaseApp {
             <div>
               <label class="ac-checkbox">
                 <input type="checkbox" id="ac-scramjet-enabled" />
-                <span>Use Scramjet mode (Broken right now, will fix it soon. You can open scramjet app normally meanwhile.)</span>
+                <span>Use Scramjet mode</span>
               </label>
               <p class="ac-hint">Scramjet mode uses a proxy browser for better compatibility with web apps.</p>
             </div>

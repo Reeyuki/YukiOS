@@ -210,7 +210,7 @@ export class V86App extends BaseApp {
         : Object.values(path ?? {}).filter((v) => typeof v === "string");
 
     try {
-      const blob = await os.fs.read([...normalizedPath, fileName]);
+      const blob = await os.fs.readBinaryFile(normalizedPath, fileName);
       if (!blob || blob.size === 0) {
         os.notify.send("V86", "Couldn't read that image file.");
         return;

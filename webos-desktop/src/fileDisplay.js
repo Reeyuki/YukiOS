@@ -11,6 +11,7 @@ import {
   isAudioFile,
   isOfficeFile,
   isZipFile,
+  isISOFile,
   isExeFile,
   isSwfFile,
   isModel3DFile,
@@ -46,9 +47,9 @@ export {
   getExt,
   fileKindFromName,
   isImageFile,
-  isVideoFile,
   isOfficeFile,
   isZipFile,
+  isISOFile,
   isExeFile,
   isSwfFile,
   readFontBlob,
@@ -147,6 +148,11 @@ export function buildFileIconHTML(name, { thumbnailSrc = null, size = 64, radius
     return `<div style="${s}display:flex;align-items:center;justify-content:center;font-size:${Math.round(
       size * 0.5
     )}px;color:var(--brand);background:var(--surface-1);border:1px solid var(--glass-border);"><i class="fab fa-markdown"></i></div>`;
+  }
+  if (isISOFile(name)) {
+    return `<div style="${s}display:flex;align-items:center;justify-content:center;font-size:${Math.round(
+      size * 0.44
+    )}px;color:var(--brand);background:var(--surface-1);border:1px solid var(--glass-border);"><i class="fas fa-compact-disc"></i></div>`;
   }
   if (isRomFile(name)) {
     return `<div style="${s}display:flex;align-items:center;justify-content:center;font-size:${Math.round(
@@ -737,6 +743,25 @@ export async function openFileWith({
 }) {
   try {
     if (isZipFile(name)) return;
+    if (name.toLowerCase().endsWith(".img")) {
+      const v86App = os.app.apps.v86app;
+      if (v86App?.launchImage) {
+        v86App.launchImage(name, path);
+      } else {
+        os.app.launch("v86");
+      }
+      return;
+    }
+    if (isISOFile(name)) {
+      try {
+        const mountPoint = await fs.mountISO(path, name);
+        os.notify.send("Disc Image", `Mounted "${name}"`, { icon: "fa-compact-disc" });
+        if (mountPoint) os.events.emit("iso:mounted", { mountPoint, path, name });
+      } catch (e) {
+        os.notify.send("Disc Image", `Failed to mount "${name}": ${e.message}`, { type: "error" });
+      }
+      return;
+    }
     trackRecentFile(name, path);
     console.log("Open file with: ", name, path);
 

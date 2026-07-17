@@ -92,23 +92,9 @@ export const OFFICE_EXTS = [
   "rtfx"
 ];
 
-export const ZIP_EXTS = [
-  "zip",
-  "gz",
-  "tgz",
-  "tar",
-  "rar",
-  "7z",
-  "bz2",
-  "xz",
-  "lz",
-  "lzma",
-  "zst",
-  "cab",
-  "iso",
-  "dmg",
-  "pak"
-];
+export const ZIP_EXTS = ["zip", "gz", "tgz", "tar", "rar", "7z", "bz2", "xz", "lz", "lzma", "zst", "cab", "dmg", "pak"];
+
+export const ISO_EXTS = ["iso", "bin", "img", "nrg", "mdf", "cdi"];
 
 export const EXE_EXTS = ["exe", "msi", "com", "bat", "cmd", "jsdos"];
 export const SWF_EXTS = ["swf"];
@@ -244,7 +230,8 @@ export function fileKindFromName(name) {
   if (ZIP_EXTS.includes(ext)) return FileKind.OTHER;
   if (EBOOK_EXTS.includes(ext)) return FileKind.OTHER;
   if (FONT_EXTS.includes(ext)) return FileKind.FONT;
-  if (DISK_EXTS.includes(ext)) return FileKind.OTHER;
+  if (DISK_EXTS.includes(ext)) return FileKind.ROM;
+  if (ISO_EXTS.includes(ext)) return FileKind.ROM;
   if (SHORTCUT_EXTS.includes(ext)) return FileKind.OTHER;
   if (HTML_EXTS.includes(ext)) return FileKind.OTHER;
   if (MARKDOWN_EXTS.includes(ext)) return FileKind.TEXT;
@@ -275,6 +262,9 @@ export function isOfficeFile(name) {
 }
 export function isZipFile(name) {
   return ZIP_EXTS.includes(getExt(name));
+}
+export function isISOFile(name) {
+  return ISO_EXTS.includes(getExt(name));
 }
 export function isExeFile(name) {
   return EXE_EXTS.includes(getExt(name));

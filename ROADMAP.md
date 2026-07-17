@@ -43,7 +43,6 @@ Planned features and improvements for YukiOS.
 - [✅] File format conversion context menus
 - [✅] **File content search** — Search inside file contents, not just filenames
 - [📋] **Virtual drive mounting** — Open a ZIP or folder as a browsable drive in Explorer without extracting (maybe also add a WinRar/7z gui app)
-- [📋] **ISO file read support** — Mount and browse ISO disc images directly in Explorer
 - [💡] **File association system** — Default apps per file type with open-with fallback
 - [💡] **Encrypted storage vaults** — Create password-protected, encrypted containers that mount/unmount in Explorer, similar to KDE Plasma Vaults
 

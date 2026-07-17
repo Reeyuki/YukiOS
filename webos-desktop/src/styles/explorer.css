@@ -551,12 +551,14 @@
   flex-direction: column;
 }
 
-.sidebar-section-body .explorer-storage-mounts {
+.sidebar-section-body .explorer-storage-mounts,
+.sidebar-section-body .explorer-iso-mounts {
   display: flex;
   flex-direction: column;
 }
 
-.sidebar-section-body .explorer-storage-mounts .nav-item {
+.sidebar-section-body .explorer-storage-mounts .nav-item,
+.sidebar-section-body .explorer-iso-mounts .nav-item {
   padding: 4px 12px 4px 28px;
   font-size: 12px;
 }

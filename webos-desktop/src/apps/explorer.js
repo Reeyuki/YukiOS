@@ -15,6 +15,7 @@ import {
 } from "../shared/domUtils.js";
 import {
   isImageFile,
+  isISOFile,
   readFileAsDataURL,
   buildFileIconHTML,
   openMediaViewer,
@@ -220,6 +221,7 @@ export class ExplorerApp extends BaseApp {
     html +=
       '<div class="nav-item nav-item--disk" data-path="__disk__"><i class="fas fa-hdd"></i><span>Local Disk (C:)</span></div>';
     html += '<div class="explorer-storage-mounts"></div>';
+    html += '<div class="explorer-iso-mounts"></div>';
     html += "</div></div>";
 
     html += '<div class="sidebar-section sidebar-section--trash">';
@@ -252,6 +254,7 @@ export class ExplorerApp extends BaseApp {
       } else if (mountPoint) {
         item.onclick = () => this.navigateInstance(inst, mountPoint.split("/").filter(Boolean));
         const label = item.dataset.label;
+        const isISO = mountPoint.startsWith("ISOs/");
         item.oncontextmenu = (e) => {
           e.preventDefault();
           e.stopPropagation();
@@ -285,15 +288,19 @@ export class ExplorerApp extends BaseApp {
               menuItem(
                 "Unmount",
                 () => {
-                  os.dialog.confirm("Unmount", `Unmount "${label}"?`).then((confirmed) => {
+                  os.dialog.confirm("Unmount", `Eject "${label}"?`).then((confirmed) => {
                     if (confirmed) {
-                      os.fs.unmount(label);
+                      if (isISO) {
+                        os.fs.unmountISO(label);
+                      } else {
+                        os.fs.unmount(label);
+                      }
                       this.renderMountsInSidebar(win, inst);
                       this.renderInstance(inst);
                     }
                   });
                 },
-                "fa-eject"
+                isISO ? "fa-eject" : "fa-eject"
               )
             );
           });
@@ -326,15 +333,34 @@ export class ExplorerApp extends BaseApp {
     const container = win.querySelector(".explorer-storage-mounts");
     if (!container) return;
     const mounts = os.fs.getMounts();
-    if (!mounts.length) {
+    const storageMounts = mounts.filter((m) => m.type !== "iso");
+    if (!storageMounts.length) {
+      container.style.display = "none";
+    } else {
+      container.style.display = "";
+      container.innerHTML = storageMounts
+        .map(
+          (m) =>
+            `<div class="nav-item" data-mount="${m.mountPoint}" data-label="${m.label}"><i class="fas fa-hdd" style="width:14px;text-align:center;font-size:11px;color:var(--brand);opacity:0.7;flex-shrink:0;"></i><span>${m.label}</span></div>`
+        )
+        .join("");
+    }
+    this.renderISOMountsInSidebar(win, inst);
+  }
+
+  renderISOMountsInSidebar(win, inst) {
+    const container = win.querySelector(".explorer-iso-mounts");
+    if (!container) return;
+    const isoMounts = os.fs.getISOMounts();
+    if (!isoMounts.length) {
       container.style.display = "none";
       return;
     }
     container.style.display = "";
-    container.innerHTML = mounts
+    container.innerHTML = isoMounts
       .map(
         (m) =>
-          `<div class="nav-item" data-mount="${m.mountPoint}" data-label="${m.label}"><i class="fas fa-hdd" style="width:14px;text-align:center;font-size:11px;color:var(--brand);opacity:0.7;flex-shrink:0;"></i><span>${m.label}</span></div>`
+          `<div class="nav-item" data-mount="${m.mountPoint}" data-label="${m.label}"><i class="fas fa-compact-disc" style="width:14px;text-align:center;font-size:12px;color:var(--brand);opacity:0.7;flex-shrink:0;"></i><span>${m.label}</span></div>`
       )
       .join("");
   }
@@ -1465,6 +1491,28 @@ export class ExplorerApp extends BaseApp {
         console.error("Invalid .desktop file: missing app or type field");
       } catch (e) {
         console.error("Failed to open .desktop file:", e);
+      }
+      return;
+    }
+
+    if (name.toLowerCase().endsWith(".img")) {
+      triggerCursorEffect("fa-microchip");
+      this.v86app.launchImage(name, [...inst.currentPath]);
+      return;
+    }
+
+    if (isISOFile(name)) {
+      triggerCursorEffect("fa-compact-disc");
+      try {
+        const mountPoint = await this.fs.mountISO(inst.currentPath, name);
+        os.notify.send("Disc Image", `Mounted "${name}"`, { icon: "fa-compact-disc" });
+        if (mountPoint) {
+          const win = $(`#${inst.winId}`);
+          if (win) this.sidebarRebuild(win, inst);
+          this.navigateInstance(inst, mountPoint.split("/").filter(Boolean));
+        }
+      } catch (e) {
+        os.notify.send("Disc Image", `Failed to mount "${name}": ${e.message}`, { type: "error" });
       }
       return;
     }

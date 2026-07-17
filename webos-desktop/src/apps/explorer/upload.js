@@ -13,7 +13,8 @@ import {
   resolveFileIcon,
   isExeFile,
   isSwfFile,
-  isZipFile
+  isZipFile,
+  isISOFile
 } from "../../fileDisplay.js";
 import { showConflictDialog } from "../../shared/conflictDialog.js";
 import { splitWebkitPath, pluralize } from "../../utils/utils.js";
@@ -41,7 +42,8 @@ async function resolveFilePayload(file, name) {
     kind === FileKind.ROM ||
     isExeFile(name) ||
     isSwfFile(name) ||
-    isZipFile(name);
+    isZipFile(name) ||
+    isISOFile(name);
   let content;
   if (isBinaryWrite(kind, isBinaryOffice, isBinary)) {
     content = file;

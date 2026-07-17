@@ -294,7 +294,20 @@ export class FileSystemAPI {
     this.fs.mountManager.unmount(label);
   }
 
-  getMounts(): Array<{ label: string; mountPoint: string }> {
-    return this.fs.mountManager.getMounts();
+  getMounts(): Array<{ label: string; mountPoint: string; type?: string }> {
+    return this.fs.getAllMounts();
+  }
+
+  async mountISO(path: string | string[], name: string): Promise<string> {
+    const pathStr = await this.resolve(path);
+    return await this.fs.mountISO(pathStr, name);
+  }
+
+  unmountISO(label: string): boolean {
+    return this.fs.unmountISO(label);
+  }
+
+  getISOMounts(): Array<{ label: string; mountPoint: string }> {
+    return this.fs.getISOMounts();
   }
 }

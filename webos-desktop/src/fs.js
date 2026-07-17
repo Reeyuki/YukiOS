@@ -8,6 +8,7 @@ import { BlobStorage } from "./fs/BlobStorage.js";
 import { TrashManager } from "./fs/TrashManager.js";
 import { MountManager } from "./fs/MountManager.js";
 import { StorageKeys, os } from "./framework.js";
+import { ISOFileSystem } from "./isoFS.js";
 
 import { DEFAULT_WALLPAPER_FILES, WALLPAPER_STATIC_DIR } from "./wallpaperConfig.js";
 
@@ -207,6 +208,7 @@ export class FileSystemManager {
     this.blobs = new BlobStorage();
     this.trash = new TrashManager(this);
     this.mountManager = new MountManager();
+    this.isoMounts = new Map();
 
     this.fsReady = this.storage.fsReady;
     this.resolveFs = this.storage.resolveFs;
@@ -275,6 +277,7 @@ export class FileSystemManager {
         await this.ensureDefaults();
         await this.trash.init();
         await this.mountManager.init();
+        this.restoreISOMounts();
       } catch (e) {
         console.error("FS initialization failed:", e);
         try {
@@ -520,6 +523,144 @@ export class FileSystemManager {
     return this.mountManager.resolveMount(fullPath);
   }
 
+  async mountISO(path, name) {
+    await this.fsReady;
+    const dir = this.paths.resolveUserPath(path);
+    const fullPath = this.paths.join(dir, name);
+    const ext = name.split(".").pop().toLowerCase();
+    const isoExts = ["iso", "bin", "img", "nrg", "mdf", "cdi"];
+    if (!isoExts.includes(ext)) throw new Error(`Not a supported disc image: ${name}`);
+
+    let buffer;
+    const blob = await this.blobs.getBlobByFullPath(fullPath);
+    if (blob) {
+      buffer = await blob.arrayBuffer();
+    } else {
+      try {
+        const raw = await this.pRead("readFile", fullPath);
+        if (raw instanceof ArrayBuffer || raw instanceof Uint8Array) {
+          buffer = raw instanceof Uint8Array ? raw.buffer : raw;
+        } else if (typeof raw === "string") {
+          if (raw.startsWith("data:")) {
+            const resp = await fetch(raw);
+            buffer = await resp.arrayBuffer();
+          } else if (raw.startsWith("http")) {
+            const resp = await fetch(raw);
+            buffer = await resp.arrayBuffer();
+          } else {
+            buffer = new TextEncoder().encode(raw).buffer;
+          }
+        }
+      } catch {
+        const rawBytes = await this.pRead("readFile", fullPath);
+        if (rawBytes instanceof Uint8Array) {
+          buffer = rawBytes.buffer;
+        } else {
+          throw new Error(`Could not read ISO file: ${fullPath}`);
+        }
+      }
+    }
+
+    if (!buffer || buffer.byteLength < 32768) {
+      throw new Error("Invalid or empty disc image");
+    }
+
+    const isoFS = new ISOFileSystem(buffer);
+
+    console.log("[ISO] Mounted:", isoFS.debugInfo());
+    let label = isoFS.volumeLabel || name.replace(/\.[^.]+$/, "").replace(/[^a-zA-Z0-9_\-. ]/g, "_");
+    if (!label) label = "Unknown Disc";
+
+    if (this.isoMounts.has(label)) {
+      let counter = 1;
+      let deduped = `${label} (${counter})`;
+      while (this.isoMounts.has(deduped)) {
+        counter++;
+        deduped = `${label} (${counter})`;
+      }
+      label = deduped;
+    }
+
+    const mountPoint = `ISOs/${label}`;
+    this.isoMounts.set(label, { isoFS, label, mountPoint, name, sourcePath: [...path] });
+    this.persistISOMounts();
+    return mountPoint;
+  }
+
+  unmountISO(label) {
+    const result = this.isoMounts.delete(label);
+    if (result) this.persistISOMounts();
+    return result;
+  }
+
+  getISOMounts() {
+    return Array.from(this.isoMounts.values()).map(({ label, mountPoint }) => ({ label, mountPoint, type: "iso" }));
+  }
+
+  isISOMounted(absolutePath) {
+    const isoRoot = this.paths.join(this.CONFIG.ROOT, "ISOs");
+    if (!absolutePath.startsWith(isoRoot + "/") && absolutePath !== isoRoot) return false;
+    for (const [, mount] of this.isoMounts) {
+      const fullMountPath = this.paths.join(this.CONFIG.ROOT, mount.mountPoint);
+      if (absolutePath === fullMountPath || absolutePath.startsWith(fullMountPath + "/")) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  resolveISOMount(absolutePath) {
+    const isoRoot = this.paths.join(this.CONFIG.ROOT, "ISOs");
+    if (!absolutePath.startsWith(isoRoot + "/") && absolutePath !== isoRoot) return null;
+    for (const [, mount] of this.isoMounts) {
+      const fullMountPath = this.paths.join(this.CONFIG.ROOT, mount.mountPoint);
+      if (absolutePath === fullMountPath) {
+        return { isoFS: mount.isoFS, relativePath: "" };
+      }
+      if (absolutePath.startsWith(fullMountPath + "/")) {
+        return { isoFS: mount.isoFS, relativePath: absolutePath.slice(fullMountPath.length + 1) };
+      }
+    }
+    return null;
+  }
+
+  getISOListFolder() {
+    const result = {};
+    for (const [, mount] of this.isoMounts) {
+      const name = mount.mountPoint.split("/").pop() || mount.label;
+      result[name] = {};
+    }
+    return result;
+  }
+
+  getAllMounts() {
+    return [...this.mountManager.getMounts(), ...this.getISOMounts()];
+  }
+
+  persistISOMounts() {
+    const meta = [];
+    for (const [, mount] of this.isoMounts) {
+      meta.push({ label: mount.label, mountPoint: mount.mountPoint, sourcePath: mount.sourcePath, name: mount.name });
+    }
+    try {
+      os.storage.set(StorageKeys.isoMounts, meta);
+    } catch {}
+  }
+
+  restoreISOMounts() {
+    try {
+      const stored = os.storage.get(StorageKeys.isoMounts);
+      if (Array.isArray(stored)) {
+        for (const entry of stored) {
+          if (!entry.label || !entry.sourcePath || !entry.name) continue;
+          this.mountISO(entry.sourcePath, entry.name).catch(() => {
+            this.isoMounts.delete(entry.label);
+          });
+        }
+      }
+    } catch {}
+  }
+
   async ensureDefaults() {
     const defaultsCreatedKey = StorageKeys.defaultsCreatedPrefix + this.sessionKey;
     if (os.storage.get(defaultsCreatedKey) === "true") {
@@ -654,6 +795,18 @@ export class FileSystemManager {
     await this.fsReady;
     const dir = this.paths.resolveUserPath(path);
     const mountsRoot = this.paths.join(this.CONFIG.ROOT, "Mounts");
+    const isoRoot = this.paths.join(this.CONFIG.ROOT, "ISOs");
+
+    if (this.isISOMounted(dir)) {
+      const resolved = this.resolveISOMount(dir);
+      if (resolved) {
+        return resolved.isoFS.readdir(resolved.relativePath);
+      }
+    }
+
+    if (dir === isoRoot) {
+      return this.getISOListFolder();
+    }
 
     if (this.isMounted(dir)) {
       const resolved = this.resolveMount(dir);
@@ -916,6 +1069,18 @@ export class FileSystemManager {
     const dir = this.paths.resolveUserPath(path);
     const fullPath = this.paths.join(dir, name);
 
+    if (this.isISOMounted(fullPath)) {
+      const resolved = this.resolveISOMount(fullPath);
+      if (resolved) {
+        const buf = resolved.isoFS.readFile(resolved.relativePath);
+        if (buf) {
+          const mime = mimeFromName(name);
+          return new Blob([buf], { type: mime });
+        }
+        return null;
+      }
+    }
+
     if (this.isMounted(fullPath)) {
       const resolved = this.resolveMount(fullPath);
       if (resolved) {
@@ -989,6 +1154,13 @@ export class FileSystemManager {
   async isFile(path, name) {
     const dir = this.paths.resolveUserPath(path);
     const fullPath = this.paths.join(dir, name);
+    if (this.isISOMounted(fullPath)) {
+      const resolved = this.resolveISOMount(fullPath);
+      if (resolved && resolved.isoFS.readFile(resolved.relativePath) !== null) {
+        return true;
+      }
+      return false;
+    }
     if (this.isMounted(fullPath)) {
       const resolved = this.resolveMount(fullPath);
       if (resolved) {

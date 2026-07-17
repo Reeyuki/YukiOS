@@ -4,7 +4,7 @@ import { FileKind } from "../../shared/fileKindDetector.js";
 import { BusEvents } from "../../core/EventBus.js";
 import { Achievements } from "../../achievements.js";
 import { showDynamicContextMenu } from "../../shared/contextMenu.js";
-import { isFontFile } from "../../shared/fileKindDetector.js";
+import { isFontFile, isISOFile } from "../../shared/fileKindDetector.js";
 import { fileKindFromName, showFileProperties, isImageFile, readFontBlob } from "../../fileDisplay.js";
 import { applyFontFamily } from "../../settings/settingsApply.js";
 import { decodeFileContent, isArchiveFile } from "../../utils/utils.js";
@@ -372,16 +372,21 @@ export function showFileContextMenu(explorer, e, itemName, isFile, inst) {
       );
     }
 
-    if (isFile && isArchiveFile(itemName)) {
+    if (isFile && (isArchiveFile(itemName) || isISOFile(itemName))) {
       menu.appendChild(hr());
       menu.appendChild(
         item(
           "Extract Here",
           () => {
-            explorer.archiveExtractor.extract(itemName, inst.currentPath, () => {
+            const cb = () => {
               if (window.achievements) window.achievements.trigger(Achievements.ArchiveHandler);
               explorer.renderInstance(inst);
-            });
+            };
+            if (isISOFile(itemName)) {
+              explorer.archiveExtractor.extractISO(itemName, inst.currentPath, cb);
+            } else {
+              explorer.archiveExtractor.extract(itemName, inst.currentPath, cb);
+            }
           },
           "fa-box-open"
         )

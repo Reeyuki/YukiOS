@@ -2,7 +2,8 @@ import { unzip, gunzip, strFromU8, zipSync, gzipSync, compressSync, decompressSy
 import { getLibraryUrl } from "./shared/cdnConfig.js";
 import { archiveBaseName, tarStr } from "./utils/utils.js";
 import { os } from "./framework.js";
-import { FileKind } from "./shared/fileKindDetector.js";
+import { FileKind, isISOFile } from "./shared/fileKindDetector.js";
+import { ISOFileSystem } from "./isoFS.js";
 
 function toOwnedBytes(data) {
   return new Uint8Array(data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength));
@@ -229,6 +230,8 @@ export class ArchiveExtractor {
         await os.fs.writeBinaryFile(destPath, innerName, blob, kind, icon);
       } else if (detectedFormat === "tar" || lower.endsWith(".tar")) {
         await this.extractTar(bytes, destPath);
+      } else if (isISOFile(itemName)) {
+        await this.extractISO(bytes, destPath);
       } else {
         await this.extractWithArchiveWasm(bytes, destPath, password);
       }
@@ -243,6 +246,64 @@ export class ArchiveExtractor {
         "fas fa-times-circle",
         this.appSource
       );
+    }
+  }
+
+  async extractISO(itemName, currentPath, onComplete) {
+    const lower = itemName.toLowerCase();
+    this.notify(`Extracting "${itemName}"...`, "info", 5000, null, this.appSource);
+    try {
+      let blob;
+      try {
+        blob = await this.fs.readBinaryFile(currentPath, itemName);
+      } catch {
+        blob = await os.fs.read([...currentPath, itemName]);
+      }
+      if (!blob) {
+        this.notify(`Could not read "${itemName}"`, "error", 5000, "fas fa-exclamation-triangle", this.appSource);
+        return;
+      }
+      const arrayBuffer = await blob.arrayBuffer();
+      const baseName = archiveBaseName(itemName);
+      const destPath = [...currentPath, baseName];
+      await os.fs.mkdir(destPath);
+      await this.extractISOFromBytes(arrayBuffer, destPath);
+      this.notify(`Extracted to "${baseName}/"`, "success", 5000, null, this.appSource);
+      if (onComplete) await onComplete();
+    } catch (err) {
+      this.notify(
+        `Failed to extract "${itemName}": ${err.message || err}`,
+        "error",
+        5000,
+        "fas fa-times-circle",
+        this.appSource
+      );
+    }
+  }
+
+  async extractISOFromBytes(buffer, destPath) {
+    const isoFS = new ISOFileSystem(buffer);
+    if (!isoFS.rootDir) {
+      this.notify("Could not parse ISO filesystem", "error", 5000, null, this.appSource);
+      return;
+    }
+    await this.copyFromISOFS(isoFS, "", destPath);
+  }
+
+  async copyFromISOFS(isoFS, dirPath, destPath) {
+    const entries = isoFS.readdir(dirPath);
+    for (const [name, entry] of Object.entries(entries)) {
+      if (entry.type === "dir" || Object.keys(entry).length === 0) {
+        const subDest = [...destPath, name];
+        await os.fs.mkdir(subDest);
+        await this.copyFromISOFS(isoFS, dirPath ? `${dirPath}/${name}` : name, subDest);
+      } else {
+        const filePath = dirPath ? `${dirPath}/${name}` : name;
+        const data = isoFS.readFile(filePath);
+        if (!data) continue;
+        const blob = new Blob([new Uint8Array(data)], { type: "application/octet-stream" });
+        await os.fs.writeBinaryFile(destPath, name, blob, entry.kind, entry.icon);
+      }
     }
   }
 
