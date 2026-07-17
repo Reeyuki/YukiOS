@@ -170,7 +170,9 @@ Its built entirely in vanilla javascript/typescript without any frameworks.
   - Full Git integration (clone, init, add, commit, push, pull, branch, stash, fetch, diff, remote, rm, checkout, log,
     status)
   - Multiple independent tabs with Alt+T / Ctrl+Tab / Alt+1-9
+  - `file` command with content-based magic byte detection for 10+ file formats
   - `neofetch` with GPU/RAM/browser/engine detection
+  - Pipeline (`|`), redirects (`>`/`>>`), command chaining (`&&`/`||`/`;`), Ctrl+R reverse search, and `file` with magic-byte content detection
   - `yuki` command for OS control: power mode, brightness, theme, wallpaper, workspaces, app management (list/uninstall/install/disable/enable), DND, notifications, storage report
 - Notepad
 - Markdown Viewer

@@ -6,6 +6,7 @@ import { showContextMenu } from "../shared/contextMenu.js";
 import { BaseApp, StorageKeys, os } from "../framework.js";
 import { GitManager } from "../services/GitManager.js";
 import { formatSize } from "../utils/utils.js";
+import { getExt } from "../shared/fileKindDetector.js";
 import { getPyodide, runPython } from "../services/PyodideManager.js";
 import { runNode } from "../services/WebContainerManager.js";
 import { cmdYuki } from "./yukiCommand.js";
@@ -1211,6 +1212,7 @@ export class TerminalApp extends BaseApp {
     this.registerCommand("find", (args, flags) => this.cmdFind(args, flags));
     this.registerCommand("which", (args) => this.cmdWhich(args));
     this.registerCommand("type", (args) => this.cmdType(args));
+    this.registerCommand("file", (args) => this.cmdFile(args));
     this.registerCommand("alias", (args) => this.cmdAlias(args));
     this.registerCommand("unalias", (args) => this.cmdUnalias(args));
     this.registerCommand("export", (args) => this.cmdExport(args));
@@ -1701,6 +1703,460 @@ export class TerminalApp extends BaseApp {
         this.print(`${name} is a shell builtin`);
       } else {
         this.print(`bash: type: ${name}: not found`);
+      }
+    }
+  }
+
+  async readFileBytes(parentPath, name, maxBytes = 96) {
+    try {
+      const fullPath = this.fs.paths.resolveUserPath(parentPath);
+      const filePath = this.fs.paths.join(fullPath, name);
+      if (this.fs.blobs) {
+        const blob = await this.fs.blobs.getBlobByFullPath(filePath).catch(() => null);
+        if (blob && blob.size > 0) {
+          const slice = blob.size > maxBytes ? blob.slice(0, maxBytes) : blob;
+          return new Uint8Array(await slice.arrayBuffer());
+        }
+      }
+      const raw = await this.fs.pRead("readFile", filePath).catch(() => null);
+      if (raw instanceof Uint8Array) return raw.slice(0, Math.min(raw.length, maxBytes));
+      if (typeof raw === "string") {
+        if (raw.startsWith("http") || raw.startsWith("data:") || raw.startsWith("/")) return null;
+        const encoded = new TextEncoder().encode(raw);
+        return encoded.slice(0, Math.min(encoded.length, maxBytes));
+      }
+    } catch {}
+    return null;
+  }
+
+  describePng(bytes) {
+    if (bytes.length < 33) return "PNG image data";
+    const width = (bytes[16] << 24) | (bytes[17] << 16) | (bytes[18] << 8) | bytes[19];
+    const height = (bytes[20] << 24) | (bytes[21] << 16) | (bytes[22] << 8) | bytes[23];
+    const bitDepth = bytes[24];
+    const colorType = bytes[25];
+    const interlace = bytes[28];
+    const colorNames = { 0: "Grayscale", 2: "RGB", 3: "Indexed", 4: "Grayscale+Alpha", 6: "RGBA" };
+    const color = colorNames[colorType] || `color-type-${colorType}`;
+    const inter = interlace ? "Adam7 interlaced" : "non-interlaced";
+    return `PNG image data, ${width} x ${height}, ${bitDepth}-bit/color ${color}, ${inter}`;
+  }
+
+  describeGif(bytes) {
+    if (bytes.length < 10) return "GIF image data";
+    const version = String.fromCharCode(bytes[3], bytes[4], bytes[5]);
+    const width = bytes[6] | (bytes[7] << 8);
+    const height = bytes[8] | (bytes[9] << 8);
+    return `GIF image data, version ${version}, ${width} x ${height}`;
+  }
+
+  describeJpeg(bytes) {
+    for (let i = 0; i < bytes.length - 4; i++) {
+      if (bytes[i] === 0xff && (bytes[i + 1] === 0xc0 || bytes[i + 1] === 0xc1 || bytes[i + 1] === 0xc2)) {
+        const precision = bytes[i + 4];
+        const height = (bytes[i + 5] << 8) | bytes[i + 6];
+        const width = (bytes[i + 7] << 8) | bytes[i + 8];
+        return `JPEG image data, ${width}x${height}${precision !== 8 ? `, ${precision}-bit` : ""}`;
+      }
+    }
+    return "JPEG image data";
+  }
+
+  describeWebp(bytes) {
+    if (bytes.length < 30) return "WebP image data";
+    if (bytes[12] === 0x56 && bytes[13] === 0x50 && bytes[14] === 0x38 && bytes[15] === 0x4c) {
+      if (bytes.length < 24) return "WebP image data (lossless)";
+      const packed = bytes[20] | (bytes[21] << 8) | (bytes[22] << 16) | (bytes[23] << 24);
+      const w = (packed & 0x3fff) + 1;
+      const h = ((packed >> 14) & 0x3fff) + 1;
+      return `WebP image data (lossless), ${w} x ${h}`;
+    }
+    if (bytes[12] === 0x56 && bytes[13] === 0x50 && bytes[14] === 0x38 && bytes[15] === 0x20) {
+      if (bytes.length < 30) return "WebP image data";
+      const w = ((bytes[27] & 0x3f) << 8) | (bytes[26] & 0x3f);
+      const h = ((bytes[29] & 0x3f) << 8) | (bytes[28] & 0x3f);
+      if (w && h) return `WebP image data, ${w} x ${h}`;
+      return "WebP image data";
+    }
+    return "WebP image data";
+  }
+
+  describeGzip(bytes, name) {
+    if (bytes.length < 10) return "gzip compressed data";
+    const flags = bytes[3];
+    const osByte = bytes[9];
+    const osNames = { 0: "FAT filesystem", 3: "Unix", 11: "NTFS", 255: "unknown" };
+    const os = osNames[osByte] || `OS ${osByte}`;
+    let details = `gzip compressed data, from ${os}`;
+    let pos = 10;
+    if (flags & 0x04) {
+      if (pos + 2 > bytes.length) return details;
+      const xlen = bytes[pos] | (bytes[pos + 1] << 8);
+      pos += 2 + xlen;
+    }
+    if (flags & 0x08) {
+      let fname = "";
+      while (pos < bytes.length && bytes[pos] !== 0) {
+        fname += String.fromCharCode(bytes[pos]);
+        pos++;
+      }
+      if (fname) details += `, original file name "${fname}"`;
+    }
+    return details;
+  }
+
+  describeElf(bytes) {
+    if (bytes.length < 20) return "data";
+    const elfClass = bytes[4] === 1 ? "32-bit" : bytes[4] === 2 ? "64-bit" : "unknown";
+    const isLE = bytes[5] === 1;
+    const endian = isLE ? "LSB" : bytes[5] === 2 ? "MSB" : "";
+    const type = isLE ? bytes[16] | (bytes[17] << 8) : (bytes[16] << 8) | bytes[17];
+    const typeNames = {
+      0: "NONE",
+      1: "REL (relocatable)",
+      2: "EXEC (executable)",
+      3: "DYN (shared object)",
+      4: "CORE"
+    };
+    const machine = isLE ? bytes[18] | (bytes[19] << 8) : (bytes[18] << 8) | bytes[19];
+    const machineNames = {
+      3: "i386",
+      8: "MIPS",
+      20: "PowerPC",
+      40: "ARM",
+      62: "x86-64",
+      183: "AArch64",
+      243: "RISC-V"
+    };
+    return `ELF ${elfClass} ${endian} ${typeNames[type] || `type-${type}`}, ${machineNames[machine] || `machine-${machine}`}`;
+  }
+
+  describeBmp(bytes) {
+    if (bytes.length < 26) return "BMP image data";
+    const width = bytes[18] | (bytes[19] << 8) | (bytes[20] << 16) | (bytes[21] << 24);
+    const height = bytes[22] | (bytes[23] << 8) | (bytes[24] << 16) | (bytes[25] << 24);
+    return `BMP image data, ${width} x ${height}`;
+  }
+
+  describeTiff(bytes) {
+    const isLE = bytes[0] === 0x49;
+    return `TIFF image data (${isLE ? "little-endian" : "big-endian"})`;
+  }
+
+  describeFlac() {
+    return "FLAC Audio";
+  }
+
+  describeOgg() {
+    return "OGG data";
+  }
+
+  describeMp3Id3(bytes) {
+    const major = bytes[3];
+    const minor = bytes[4];
+    return `ID3v${major}.${minor} Audio`;
+  }
+
+  describeWav(bytes) {
+    if (bytes.length < 28) return "WAV Audio";
+    const fmt = bytes[20] | (bytes[21] << 8);
+    const channels = bytes[22] | (bytes[23] << 8);
+    const sampleRate = bytes[24] | (bytes[25] << 8) | (bytes[26] << 16) | (bytes[27] << 24);
+    const fmtNames = { 1: "PCM", 3: "IEEE float", 6: "ALAW", 7: "\u00b5-law", 0xfffe: "Extensible" };
+    const fmtName = fmtNames[fmt] || `format-${fmt}`;
+    const chan = channels === 1 ? "mono" : channels === 2 ? "stereo" : `${channels} channels`;
+    return `WAV Audio, ${fmtName}, ${sampleRate} Hz, ${chan}`;
+  }
+
+  describeWasm(bytes) {
+    if (bytes.length < 8) return "WebAssembly binary";
+    const ver = (bytes[4] << 24) | (bytes[5] << 16) | (bytes[6] << 8) | bytes[7];
+    return `WebAssembly binary, version ${ver}`;
+  }
+
+  describeTtf(bytes) {
+    const isOtf = bytes[0] === 0x4f && bytes[1] === 0x54 && bytes[2] === 0x54 && bytes[3] === 0x4f;
+    return isOtf ? "OpenType font data" : "TrueType font data";
+  }
+
+  describeSqlite() {
+    return "SQLite database";
+  }
+
+  describeZstd() {
+    return "Zstandard compressed data";
+  }
+
+  describeJavaClass(bytes) {
+    if (bytes.length < 8) return "Java class data";
+    const major = ((bytes[6] & 0xff) << 8) | (bytes[7] & 0xff);
+    const javaVersions = {
+      45: "1.1",
+      46: "1.2",
+      47: "1.3",
+      48: "1.4",
+      49: "5",
+      50: "6",
+      51: "7",
+      52: "8",
+      53: "9",
+      54: "10",
+      55: "11",
+      56: "12",
+      57: "13",
+      58: "14",
+      59: "15",
+      60: "16",
+      61: "17",
+      62: "18",
+      63: "19",
+      64: "20",
+      65: "21",
+      66: "22"
+    };
+    const ver = javaVersions[major] || `${major}`;
+    return `Java class data (Java ${ver})`;
+  }
+
+  detectAndDescribe(name, kind, bytes) {
+    if (!bytes || bytes.length < 4) return this.getFileDescription(name, kind);
+
+    if (bytes[0] === 0x7f && bytes[1] === 0x45 && bytes[2] === 0x4c && bytes[3] === 0x46) {
+      return this.describeElf(bytes);
+    }
+    if (bytes[0] === 0x1f && bytes[1] === 0x8b) {
+      return this.describeGzip(bytes, name);
+    }
+    if (bytes[0] === 0xca && bytes[1] === 0xfe && bytes[2] === 0xba && bytes[3] === 0xbe) {
+      return this.describeJavaClass(bytes);
+    }
+    if (bytes[0] === 0x25 && bytes[1] === 0x50 && bytes[2] === 0x44 && bytes[3] === 0x46) {
+      return "PDF document";
+    }
+    if (bytes[0] === 0x50 && bytes[1] === 0x4b && bytes[2] === 0x03 && bytes[3] === 0x04) {
+      return "Zip archive data";
+    }
+    if (bytes[0] === 0x28 && bytes[1] === 0xb5 && bytes[2] === 0x2f && bytes[3] === 0xfd) {
+      return this.describeZstd();
+    }
+    if (bytes[0] === 0x42 && bytes[1] === 0x5a && bytes[2] === 0x68) {
+      const level = bytes[3] >= 0x31 && bytes[3] <= 0x39 ? `, block size ${bytes[3] - 0x30}00k` : "";
+      return `bzip2 compressed data${level}`;
+    }
+    if (bytes[0] === 0x37 && bytes[1] === 0x7a && bytes[2] === 0xbc && bytes[3] === 0xaf) {
+      return "7-zip archive data";
+    }
+    if (
+      bytes.length >= 16 &&
+      bytes[0] === 0x53 &&
+      bytes[1] === 0x51 &&
+      bytes[2] === 0x4c &&
+      bytes[3] === 0x69 &&
+      bytes[4] === 0x74 &&
+      bytes[5] === 0x65 &&
+      bytes[6] === 0x20 &&
+      bytes[7] === 0x66 &&
+      bytes[8] === 0x6f &&
+      bytes[9] === 0x72 &&
+      bytes[10] === 0x6d &&
+      bytes[11] === 0x61 &&
+      bytes[12] === 0x74 &&
+      bytes[13] === 0x20 &&
+      bytes[14] === 0x33 &&
+      bytes[15] === 0x00
+    ) {
+      return this.describeSqlite();
+    }
+    if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47) {
+      return this.describePng(bytes);
+    }
+    if (bytes[0] === 0x47 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x38) {
+      return this.describeGif(bytes);
+    }
+    if (bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) {
+      return this.describeJpeg(bytes);
+    }
+    if (bytes[0] === 0x42 && bytes[1] === 0x4d) {
+      return this.describeBmp(bytes);
+    }
+    if (
+      (bytes[0] === 0x49 && bytes[1] === 0x49 && bytes[2] === 0x2a && bytes[3] === 0x00) ||
+      (bytes[0] === 0x4d && bytes[1] === 0x4d && bytes[2] === 0x00 && bytes[3] === 0x2a)
+    ) {
+      return this.describeTiff(bytes);
+    }
+    if (bytes[0] === 0x00 && bytes[1] === 0x61 && bytes[2] === 0x73 && bytes[3] === 0x6d) {
+      return this.describeWasm(bytes);
+    }
+    if (bytes[0] === 0x00 && bytes[1] === 0x01 && bytes[2] === 0x00 && bytes[3] === 0x00) {
+      return this.describeTtf(bytes);
+    }
+    if (bytes[0] === 0x4f && bytes[1] === 0x54 && bytes[2] === 0x54 && bytes[3] === 0x4f) {
+      return this.describeTtf(bytes);
+    }
+    if (bytes[0] === 0x66 && bytes[1] === 0x4c && bytes[2] === 0x61 && bytes[3] === 0x43) {
+      return this.describeFlac();
+    }
+    if (bytes[0] === 0x4f && bytes[1] === 0x67 && bytes[2] === 0x67 && bytes[3] === 0x53) {
+      return this.describeOgg();
+    }
+    if (bytes[0] === 0x49 && bytes[1] === 0x44 && bytes[2] === 0x33) {
+      return this.describeMp3Id3(bytes);
+    }
+    if (bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46) {
+      if (bytes.length >= 12) {
+        const formType = String.fromCharCode(bytes[8], bytes[9], bytes[10], bytes[11]);
+        if (formType === "WAVE") return this.describeWav(bytes);
+        if (formType === "WEBP") return this.describeWebp(bytes);
+      }
+      return "RIFF data";
+    }
+    if (bytes.length >= 4) {
+      const snippet = new TextDecoder().decode(bytes.slice(0, Math.min(bytes.length, 200)));
+      if (/^\s*<svg[\s>]/i.test(snippet) || /^\s*<\?xml[\s>][\s\S]*<svg[\s>]/i.test(snippet)) {
+        return "SVG image";
+      }
+    }
+
+    return this.getFileDescription(name, kind);
+  }
+
+  getFileDescription(name, kind) {
+    const ext = getExt(name);
+    const extMap = {
+      txt: "ASCII text",
+      md: "Markdown text",
+      markdown: "Markdown text",
+      json: "JSON data",
+      html: "HTML document",
+      htm: "HTML document",
+      css: "CSS source",
+      js: "JavaScript source",
+      jsx: "JSX source",
+      ts: "TypeScript source",
+      tsx: "TSX source",
+      xml: "XML document",
+      csv: "CSV data",
+      yml: "YAML data",
+      yaml: "YAML data",
+      toml: "TOML data",
+      ini: "INI config",
+      cfg: "config data",
+      conf: "config data",
+      pdf: "PDF document",
+      png: "PNG image data",
+      jpg: "JPEG image data",
+      jpeg: "JPEG image data",
+      gif: "GIF image data",
+      webp: "WebP image data",
+      svg: "SVG image",
+      ico: "MS Windows icon",
+      bmp: "BMP image data",
+      avif: "AVIF image data",
+      heic: "HEIC image data",
+      heif: "HEIF image data",
+      tiff: "TIFF image data",
+      tif: "TIFF image data",
+      mp4: "MP4 video data",
+      webm: "WebM video data",
+      ogv: "OGG video data",
+      mov: "QuickTime video data",
+      mkv: "Matroska video data",
+      avi: "AVI video data",
+      m4v: "MPEG-4 video data",
+      wmv: "WMV video data",
+      flv: "Flash video data",
+      mp3: "MP3 Audio",
+      flac: "FLAC Audio",
+      wav: "WAV Audio",
+      ogg: "OGG Audio",
+      opus: "Opus Audio",
+      m4a: "AAC Audio",
+      aac: "AAC Audio",
+      wma: "WMA Audio",
+      mid: "MIDI Audio",
+      midi: "MIDI Audio",
+      aiff: "AIFF Audio",
+      caf: "Core Audio",
+      woff: "font data",
+      woff2: "font data",
+      ttf: "font data",
+      otf: "font data",
+      zip: "ZIP archive",
+      "7z": "7-Zip archive",
+      rar: "RAR archive",
+      tar: "TAR archive",
+      gz: "gzip compressed data",
+      bz2: "bzip2 compressed data",
+      xz: "XZ archive",
+      iso: "ISO image",
+      img: "disk image",
+      dmg: "DMG disk image",
+      exe: "PE executable",
+      dll: "PE DLL",
+      so: "shared object",
+      apk: "APK package",
+      deb: "Debian package",
+      rpm: "RPM package",
+      py: "Python script",
+      rb: "Ruby script",
+      sh: "shell script",
+      bash: "Bash script",
+      fish: "Fish script",
+      bat: "Batch script",
+      ps1: "PowerShell script",
+      c: "C source",
+      h: "C header",
+      cpp: "C++ source",
+      hpp: "C++ header",
+      java: "Java source",
+      rs: "Rust source",
+      go: "Go source",
+      swift: "Swift source",
+      kt: "Kotlin source",
+      dart: "Dart source",
+      lua: "Lua script",
+      php: "PHP script",
+      pl: "Perl script",
+      r: "R source",
+      sql: "SQL data",
+      srt: "SubRip subtitle",
+      vtt: "WebVTT subtitle",
+      torrent: "BitTorrent file",
+      wasm: "WebAssembly binary"
+    };
+
+    if (extMap[ext]) return extMap[ext];
+    if (kind === "text") return "ASCII text";
+    if (kind === "image") return ext ? `${ext.toUpperCase()} image data` : "image data";
+    if (kind === "video") return ext ? `${ext.toUpperCase()} video data` : "video data";
+    if (kind === "audio") return ext ? `${ext.toUpperCase()} Audio` : "Audio data";
+    if (kind === "font") return "font data";
+    if (kind === "rom") return "ROM image";
+    return ext ? `${ext.toUpperCase()} data` : "data";
+  }
+
+  async cmdFile(args) {
+    if (!args.length) return this.print("file: missing file operand");
+    const longest = args.reduce((max, a) => Math.max(max, a.length), 0);
+    for (const arg of args) {
+      try {
+        const fullPath = this.fs.resolvePath(arg, this.currentPath);
+        const parentPath = fullPath.slice(0, -1);
+        const name = fullPath[fullPath.length - 1];
+
+        const isFile = await this.fs.isFile(parentPath, name);
+        if (!isFile) {
+          await this.print(`${arg.padEnd(longest)}: directory`);
+          continue;
+        }
+
+        const kind = (await this.fs.getFileKind(parentPath, name)) || this.fs.inferKind(name);
+        const bytes = await this.readFileBytes(parentPath, name);
+        const desc = this.detectAndDescribe(name, kind, bytes);
+        await this.print(`${arg.padEnd(longest)}: ${desc}`);
+      } catch {
+        await this.print(`file: ${arg}: No such file or directory`);
       }
     }
   }

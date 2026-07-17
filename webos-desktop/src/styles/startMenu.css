@@ -943,6 +943,7 @@
   transition: background 0.12s;
   flex-shrink: 0;
   border-left: 2px solid transparent;
+  position: relative;
 }
 .recent-item:hover {
   background: color-mix(in srgb, var(--brand) 10%, transparent);
@@ -991,4 +992,18 @@
   overflow: hidden;
   text-overflow: ellipsis;
   line-height: var(--lh-tight);
+}
+
+.search-content-badge {
+  position: absolute;
+  right: 8px;
+  top: 4px;
+  font-size: 9px;
+  background: var(--brand);
+  color: #fff;
+  padding: 1px 5px;
+  border-radius: 4px;
+  opacity: 0.85;
+  line-height: 1.4;
+  pointer-events: none;
 }

@@ -25,8 +25,6 @@ Planned features and improvements for YukiOS.
 - [✅] **Window centering** — Middle-click title bar to center window on screen
 - [📋] **Keyboard-driven tiling** — Shortcut to auto-arrange all open windows into configurable grid layouts (2-column, 3-column, grid)
 - [📋] **Picture-in-picture mode** — Detach any window into a floating always-on-top mini player, ideal for video
-- [📋] **Per-workspace wallpapers** — Each workspace can have its own distinct wallpaper
-- [📋] **Multi-monitor simulation** — Split-screen mode simulating multiple displays
 - [�] **Window shake to minimize** — Shake a window to minimize all others (Windows 11 style)
 - [💡] **Tiling window manager mode** — i3/sway-style keyboard-driven configurable tiling WM
 - [💡] **3D desktop mode** — Render windows as panels in a 3D room using Three.js, with camera navigation and spatial workspace switching
@@ -43,11 +41,10 @@ Planned features and improvements for YukiOS.
 - [✅] Storage usage indicator and thumbnail cache
 - [✅] Trash system with restore and permanent delete
 - [✅] File format conversion context menus
-- [📋] **File content search** — Search inside file contents, not just filenames
+- [✅] **File content search** — Search inside file contents, not just filenames
 - [📋] **Virtual drive mounting** — Open a ZIP or folder as a browsable drive in Explorer without extracting (maybe also add a WinRar/7z gui app)
 - [📋] **ISO file read support** — Mount and browse ISO disc images directly in Explorer
 - [💡] **File association system** — Default apps per file type with open-with fallback
-- [💡] **File indexing service** — Background indexer for instant search results (with explorer full search support)
 - [💡] **Encrypted storage vaults** — Create password-protected, encrypted containers that mount/unmount in Explorer, similar to KDE Plasma Vaults
 
 ---

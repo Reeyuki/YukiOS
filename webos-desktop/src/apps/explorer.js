@@ -24,7 +24,7 @@ import {
 import { scheduleFileTooltip, hideFileTooltip } from "../shared/fileTooltip.js";
 import { ClippyAnimation, speak } from "../ai/clippy.js";
 import { ArchiveExtractor } from "../archiveExtractor.js";
-import { formatSize, pluralize, isWindowFocused, buildClipboardIcons } from "../utils/utils.js";
+import { formatSize, pluralize, isWindowFocused, buildClipboardIcons, isTextFile } from "../utils/utils.js";
 import { resolveDesktopIcon } from "../shared/iconUtils.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { trigger as triggerCursorEffect } from "../cursorEffect.js";
@@ -108,7 +108,9 @@ export class ExplorerApp extends BaseApp {
       isDiskView: false,
       sortBy: "name",
       sortDir: "asc",
-      lastClickedIndex: -1
+      lastClickedIndex: -1,
+      searchContentCache: new Map(),
+      recSearchView: false
     };
     this.instances.set(winId, inst);
     return inst;
@@ -627,14 +629,111 @@ export class ExplorerApp extends BaseApp {
     }
 
     const searchInput = $(`#${winId}-search`, win);
+    let searchVersion = 0;
+
+    const searchRecursive = async (dirPath, query, cache, version) => {
+      const results = [];
+      let entries;
+      try {
+        entries = await os.fs.readdir(dirPath);
+      } catch {
+        return results;
+      }
+      for (const [name, data] of Object.entries(entries)) {
+        if (version !== searchVersion) return results;
+        const fullPath = [...dirPath, name];
+        if (data.type !== "file") {
+          const sub = await searchRecursive(fullPath, query, cache, version);
+          results.push(...sub);
+        } else {
+          const nameMatch = name.toLowerCase().includes(query);
+          let contentMatch = false;
+          if (!nameMatch && isTextFile(name)) {
+            const cacheKey = fullPath.join("/");
+            let content = cache.get(cacheKey);
+            if (content === undefined) {
+              try {
+                const raw = await os.fs.read(fullPath);
+                content = typeof raw === "string" ? raw : raw?.toString?.() || "";
+                cache.set(cacheKey, content);
+              } catch {
+                continue;
+              }
+            }
+            contentMatch = content.toLowerCase().includes(query);
+          }
+          if (nameMatch || contentMatch) {
+            results.push({ name, path: fullPath, dirPath, contentMatch: contentMatch && !nameMatch });
+          }
+        }
+      }
+      return results;
+    };
+
+    const renderRecSearchResults = (results, query) => {
+      const view = $(`#${winId}-view`, win);
+      view.innerHTML = "";
+      view.classList.remove("explorer-view-grid", "explorer-view-list");
+      addClass(view, "explorer-rec-search");
+      const header = createElement("div", { className: "rec-search-header" });
+      setHTML(
+        header,
+        `<span>Results for "<strong>${query}</strong>"</span><span class="rec-search-count">${results.length} ${pluralize(results.length, "match")}</span>`
+      );
+      view.appendChild(header);
+      if (results.length === 0) {
+        const empty = createElement("div", { className: "rec-search-empty" });
+        empty.textContent = "No results found";
+        view.appendChild(empty);
+        return;
+      }
+      for (const r of results) {
+        const item = createElement("div", { className: "file-item rec-search-item" });
+        const relPath = r.dirPath.length ? r.dirPath.join("/") + "/" : "";
+        setHTML(
+          item,
+          `${buildFileIconHTML(r.name)}<span class="file-item-name">${r.name}</span><span class="rec-search-path">${relPath}</span>`
+        );
+        if (r.contentMatch) item.classList.add("cs-match");
+        item.addEventListener("click", () => {
+          $$(".rec-search-item.selected", view).forEach((el) => el.classList.remove("selected"));
+          item.classList.add("selected");
+        });
+        item.addEventListener("dblclick", async () => {
+          await this.navigateInstance(inst, r.dirPath);
+          const newView = $(`#${winId}-view`, win);
+          if (newView) {
+            const target = $$(".file-item", newView).find(
+              (el) => el.querySelector(".file-item-name")?.textContent === r.name
+            );
+            if (target) {
+              this.selectExplorerItem(inst, r.name, target, false, false);
+              target.scrollIntoView({ block: "nearest" });
+            }
+          }
+        });
+        view.appendChild(item);
+      }
+    };
+
     if (searchInput) {
+      let searchTimeout;
       bindEvents(searchInput, {
         input: () => {
-          const query = searchInput.value.toLowerCase();
-          $$(".file-item", $(`#${winId}-view`, win)).forEach((item) => {
-            const name = item.querySelector("span")?.textContent?.toLowerCase() || "";
-            item.style.display = name.includes(query) ? "" : "none";
-          });
+          clearTimeout(searchTimeout);
+          const currentVersion = ++searchVersion;
+          searchTimeout = setTimeout(async () => {
+            const query = searchInput.value.toLowerCase().trim();
+            if (currentVersion !== searchVersion) return;
+            if (!query) {
+              this.renderInstance(inst);
+              return;
+            }
+            const cache = inst.searchContentCache;
+            const results = await searchRecursive(inst.currentPath, query, cache, currentVersion);
+            if (currentVersion !== searchVersion) return;
+            renderRecSearchResults(results, query);
+          }, 150);
         },
         keydown: (e) => e.stopPropagation()
       });
@@ -1112,6 +1211,7 @@ export class ExplorerApp extends BaseApp {
     }
     inst.isTrashView = false;
     inst.isDiskView = false;
+    inst.searchContentCache = new Map();
     inst.currentPath = Array.isArray(path) ? [...path] : [];
     inst.history = inst.history.slice(0, inst.historyIndex + 1);
     inst.history.push([...inst.currentPath]);

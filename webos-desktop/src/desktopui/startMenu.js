@@ -3,6 +3,7 @@ import { APP_DESCRIPTIONS, descriptionMap } from "../games/gameDescriptions.js";
 import { camelize } from "../utils/utils.js";
 import { ClippyAnimation, speak } from "../ai/clippy.js";
 import { isImageFile, resolveFileIcon, openFileWith } from "../fileDisplay.js";
+import { isTextFile } from "../utils/utils.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { showDynamicContextMenu, refreshIcons } from "../shared/contextMenu.js";
 import { CDN_CONFIG } from "../shared/cdnConfig.js";
@@ -943,7 +944,7 @@ export function setupStartMenu(appLauncher, sessionManager, selectionManager) {
   }
   searchInput.addEventListener("input", (e) => {
     clearTimeout(searchDebounceTimer);
-    searchDebounceTimer = setTimeout(() => {
+    searchDebounceTimer = setTimeout(async () => {
       const q = e.target.value.toLowerCase().trim();
       const searchResultsPage = document.querySelector('.start-page[data-page="search-results"]');
 
@@ -1019,9 +1020,23 @@ export function setupStartMenu(appLauncher, sessionManager, selectionManager) {
       });
 
       const recentFiles = os.storage.get(StorageKeys.recentFiles) || [];
-      const fileResults = recentFiles.filter((f) => {
+      let fileResults = recentFiles.filter((f) => {
         return fuzzyMatch(q, f.name) || fuzzyMatch(q, f.path);
       });
+
+      const unmatched = recentFiles.filter(
+        (f) => isTextFile(f.name) && !fileResults.some((r) => r.name === f.name && r.path === f.path)
+      );
+      for (const f of unmatched) {
+        try {
+          const parts = f.path.split("/").filter(Boolean);
+          const data = await os.fs.read([...parts, f.name]);
+          const text = typeof data === "string" ? data : data?.toString?.() || "";
+          if (text.toLowerCase().includes(q)) {
+            fileResults.push({ ...f, contentMatch: true });
+          }
+        } catch {}
+      }
 
       const categoryOrder = ["core", "web", "games", "files"];
       const categoryLabels = { core: "Core Apps", web: "Web Apps", games: "Games", files: "Files" };
@@ -1040,7 +1055,14 @@ export function setupStartMenu(appLauncher, sessionManager, selectionManager) {
             const categoryResults = createElement("div");
             categoryResults.className = "search-category-results";
             fileResults.forEach((f) => {
-              categoryResults.appendChild(createRecentFileItem(f.name, f.path, f.kind));
+              const item = createRecentFileItem(f.name, f.path, f.kind);
+              if (f.contentMatch) {
+                const badge = createElement("span");
+                badge.className = "search-content-badge";
+                badge.textContent = "content match";
+                item.appendChild(badge);
+              }
+              categoryResults.appendChild(item);
             });
             fragment.appendChild(categoryResults);
           }

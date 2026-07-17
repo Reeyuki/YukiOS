@@ -134,6 +134,71 @@
   pointer-events: none;
 }
 
+.explorer-rec-search {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.rec-search-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  font-size: 13px;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--glass-border);
+  margin-bottom: 4px;
+  flex-shrink: 0;
+}
+
+.rec-search-count {
+  font-size: 11px;
+  color: var(--text-secondary);
+  opacity: 0.7;
+}
+
+.rec-search-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-style: italic;
+}
+
+.rec-search-item {
+  cursor: pointer;
+  border-radius: var(--r-sm, 6px);
+  padding: 4px 8px;
+  transition: background 0.1s;
+}
+
+.rec-search-item:hover {
+  background: color-mix(in srgb, var(--brand) 12%, transparent);
+}
+
+.rec-search-item.selected {
+  background: color-mix(in srgb, var(--brand) 20%, transparent);
+  outline: 1px solid color-mix(in srgb, var(--brand) 40%, transparent);
+}
+
+.rec-search-path {
+  font-size: 11px;
+  color: var(--text-secondary);
+  opacity: 0.65;
+  margin-left: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 1;
+  min-width: 0;
+}
+
 .explorer-view-toggle {
   display: flex;
   gap: 2px;
@@ -308,6 +373,15 @@
 .file-item-name {
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-item.cs-match .file-item-name::after {
+  content: " · content match";
+  font-size: 10px;
+  color: var(--brand);
+  opacity: 0.75;
+  margin-left: 4px;
   white-space: nowrap;
 }
 
