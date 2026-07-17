@@ -1230,6 +1230,7 @@ export class TerminalApp extends BaseApp {
     this.registerCommand("python", (args, flags) => this.cmdPython(args, flags));
     this.registerCommand("python3", (args, flags) => this.cmdPython(args, flags));
     this.registerCommand("node", (args, flags) => this.cmdNode(args, flags));
+    this.registerCommand("bash", (args) => this.cmdBash(args));
     this.registerCommand("yuki", (args) => cmdYuki(this, args));
     processManager.init();
   }
@@ -3245,6 +3246,59 @@ export class TerminalApp extends BaseApp {
     this.nodeReplContinuation = false;
     this.updatePrompt();
     this.terminalInput.focus();
+  }
+
+  async cmdBash(args = []) {
+    if (!args.length) {
+      await this.print("Usage: bash <script-file>");
+      await this.print("  Execute a shell script from the filesystem");
+      return;
+    }
+
+    const scriptPath = args[0];
+    try {
+      const resolved = this.fs.resolvePath(scriptPath, this.currentPath);
+      const content = await this.fs.readTextFile(this.pathToRelative(resolved), "");
+
+      if (!content || content.trim() === "") {
+        await this.print(`bash: ${scriptPath}: empty script`);
+        return;
+      }
+
+      const lines = content.split("\n");
+      let exitCode = 0;
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+
+        if (!trimmed || trimmed.startsWith("#")) continue;
+
+        await this.enqueuePrint(trimmed, null, true, this.promptHtml());
+
+        const chain = this.parseCommand(trimmed);
+        for (const segment of chain) {
+          if (segment.operator === "&&" && this.lastExitCode !== 0) {
+            exitCode = this.lastExitCode;
+            break;
+          }
+          if (segment.operator === "||" && this.lastExitCode === 0) {
+            break;
+          }
+          await this.executePipeline(segment.pipeline, segment.redirOut, segment.redirAppend, segment.redirIn);
+          exitCode = this.lastExitCode;
+        }
+
+        if (exitCode !== 0 && !trimmed.endsWith(" ||")) {
+          await this.print(`bash: script exited with status ${exitCode}`, "#ff5555");
+          break;
+        }
+      }
+
+      this.lastExitCode = exitCode;
+    } catch (e) {
+      await this.print(`bash: ${scriptPath}: No such file or directory`);
+      this.lastExitCode = 127;
+    }
   }
 
   async exitNodeRepl() {

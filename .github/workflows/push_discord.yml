@@ -81,7 +81,7 @@ jobs:
               pnpm install --frozen-lockfile
               pnpm build:single
 
-              HTML_FILE="$(find . -type f -name '*.html' ! -path '*/node_modules/*' | head -n 1)"
+              HTML_FILE="$(find dist -type f -name '*.html' | head -n 1)"
 
               if [ -n "$HTML_FILE" ] && [ -f "$HTML_FILE" ]; then
 
@@ -146,7 +146,7 @@ jobs:
             pnpm install --frozen-lockfile
             pnpm build:single
 
-            HTML_FILE="$(find . -type f -name '*.html' ! -path '*/node_modules/*' | head -n 1)"
+            HTML_FILE="$(find dist -type f -name '*.html' | head -n 1)"
 
             if [ -n "$HTML_FILE" ] && [ -f "$HTML_FILE" ]; then
               SHA="${GITHUB_SHA::7}"
