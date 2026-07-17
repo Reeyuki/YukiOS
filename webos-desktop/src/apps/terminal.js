@@ -16,7 +16,7 @@ import { YUKIOS_VERSION } from "./about.js";
 export class TerminalApp extends BaseApp {
   constructor(os) {
     super(os);
-    this.currentPath = ["ys", "users", os.storage.get(StorageKeys.username) || "guest"];
+    this.currentPath = ["home", os.storage.get(StorageKeys.username) || "guest"];
     this.history = os.storage.get(StorageKeys.historyStorageKey) || [];
     this.historyIndex = this.history.length;
     this.displayName = os.storage.get(StorageKeys.username) || "guest";
@@ -37,7 +37,8 @@ export class TerminalApp extends BaseApp {
       TERM: "xterm-256color"
     };
     this.aliases = os.storage.get(StorageKeys.terminalAliases) || {};
-    this.gitManager = new GitManager(os.kernel?.fileSystemManager);
+    this.fs = os.kernel?.fileSystemManager || os.fs;
+    this.gitManager = new GitManager(this.fs);
     this.lastExitCode = 0;
     this.reverseSearchActive = false;
     this.reverseSearchQuery = "";
@@ -110,7 +111,7 @@ export class TerminalApp extends BaseApp {
     os.events.on(BusEvents.SESSION_INITIALIZED, (session) => {
       this.displayName = session.name || os.storage.get(StorageKeys.username) || "guest";
       this.username = this.displayName;
-      this.currentPath = ["ys", "users", this.displayName];
+      this.currentPath = ["home", this.displayName];
       this.env.HOME = `/home/${this.displayName}`;
       this.env.USER = this.displayName;
       this.updatePrompt();
@@ -121,6 +122,21 @@ export class TerminalApp extends BaseApp {
     if (typeof path === "string") return path;
     if (!Array.isArray(path) || path.length === 0) return "/";
     return "/" + path.join("/");
+  }
+
+  pathToRelative(path) {
+    if (typeof path === "string") {
+      if (path.startsWith("/home/")) {
+        const parts = path.split("/").slice(3);
+        return parts.join("/");
+      }
+      return path;
+    }
+    if (!Array.isArray(path) || path.length === 0) return "";
+    if (path.length >= 2 && path[0] === "home") {
+      return path.slice(2).join("/");
+    }
+    return path.join("/");
   }
 
   isNearBottom() {
@@ -442,7 +458,7 @@ export class TerminalApp extends BaseApp {
   newTab() {
     this.snapshotActiveTab();
     const id = ++this.tabCounter;
-    const tab = { id, currentPath: ["ys", "users", this.displayName], outputHTML: "" };
+    const tab = { id, currentPath: ["home", this.displayName], outputHTML: "" };
     this.tabs.push(tab);
     this.activeTabId = id;
     this.currentPath = [...tab.currentPath];
@@ -578,9 +594,18 @@ export class TerminalApp extends BaseApp {
   }
 
   async expandGlob(pattern, path) {
-    const items = Object.keys(await os.fs.readdir(this.pathToString(path)));
-    const regex = new RegExp("^" + pattern.replace(/\*/g, ".*").replace(/\?/g, ".") + "$");
-    return items.filter((item) => regex.test(item));
+    const parts = pattern.split("/");
+    const filePattern = parts.pop();
+    const dirPath = parts.length > 0 ? this.fs.resolvePath(parts.join("/"), path) : path;
+
+    const items = Object.keys(await this.fs.getFolder(this.pathToString(dirPath)));
+    const regex = new RegExp("^" + filePattern.replace(/\*/g, ".*").replace(/\?/g, ".") + "$");
+    const matches = items.filter((item) => regex.test(item));
+
+    if (parts.length > 0) {
+      return matches.map((item) => [...parts, item].join("/"));
+    }
+    return matches;
   }
 
   async expandGlobsInArgs(args, path) {
@@ -881,7 +906,7 @@ export class TerminalApp extends BaseApp {
 
     if (redirIn) {
       try {
-        output = await os.fs.read(this.pathToString(this.fs.resolvePath(redirIn, this.currentPath)));
+        output = await this.fs.readTextFile(this.pathToRelative(this.fs.resolvePath(redirIn, this.currentPath)), "");
       } catch {
         await this.enqueuePrint(`bash: ${redirIn}: No such file or directory`);
         this.lastExitCode = 1;
@@ -1093,7 +1118,7 @@ export class TerminalApp extends BaseApp {
 
     let folderContents;
     try {
-      folderContents = Object.keys(await os.fs.readdir(this.pathToString(pathParts)));
+      folderContents = Object.keys(await this.fs.getFolder(this.pathToString(pathParts)));
     } catch {
       return;
     }
@@ -1232,12 +1257,12 @@ export class TerminalApp extends BaseApp {
 
     const listFolder = async (path, prefix = "") => {
       try {
-        const items = await os.fs.readdir(this.pathToString(path));
+        const items = await this.fs.getFolder(this.pathToString(path));
         let keys = Object.keys(items);
         if (!showAll) keys = keys.filter((k) => !k.startsWith("."));
         if (reverse) keys = keys.reverse();
         for (const item of keys) {
-          const isFile = await this.fs.isFile(path, item);
+          const isFile = items[item]?.type === "file";
           const display = longFormat
             ? `${isFile ? "-" : "d"} ${item}${isFile ? "" : "/"}${isFile && items[item].size != null ? ` ${formatSize(items[item].size)}` : ""}`
             : item + (isFile ? "" : "/");
@@ -1264,7 +1289,15 @@ export class TerminalApp extends BaseApp {
     }
     try {
       const newPath = this.fs.resolvePath(args[0], this.currentPath);
-      await os.fs.readdir(this.pathToString(newPath));
+      const pathStr = this.pathToString(newPath);
+      const exists = await this.fs.exists(pathStr);
+      if (!exists) {
+        throw new Error("No such file or directory");
+      }
+      const folder = await this.fs.getFolder(pathStr);
+      if (folder === null || typeof folder !== "object") {
+        throw new Error("Not a directory");
+      }
       this.currentPath = newPath;
     } catch {
       await this.print(`cd: ${args[0]}: No such file or directory`);
@@ -1276,7 +1309,7 @@ export class TerminalApp extends BaseApp {
     for (const dir of args) {
       try {
         const targetPath = this.fs.resolvePath(dir, this.currentPath);
-        await os.fs.mkdir(this.pathToString(targetPath));
+        await this.fs.createFolder(this.pathToRelative(targetPath), dir);
         await this.print(`Created directory: ${dir}`);
       } catch (e) {
         await this.print(`mkdir: cannot create directory '${dir}': ${e.message}`);
@@ -1288,7 +1321,7 @@ export class TerminalApp extends BaseApp {
     if (!args.length) return this.print("touch: missing file operand");
     for (const file of args) {
       try {
-        const parentEntries = await os.fs.readdir(this.pathToString(this.currentPath));
+        const parentEntries = await this.fs.getFolder(this.pathToString(this.currentPath));
         const existing = parentEntries[file];
         if (existing) {
           if (existing.type === "dir") {
@@ -1296,7 +1329,7 @@ export class TerminalApp extends BaseApp {
             continue;
           }
         }
-        await os.fs.write(this.pathToString([...this.currentPath, file]), "");
+        await this.fs.createFile(this.pathToRelative(this.currentPath), file, "");
         if (!existing) await this.print(`Created file: ${file}`);
       } catch (e) {
         await this.print(`touch: ${file}: ${e.message}`);
@@ -1315,16 +1348,16 @@ export class TerminalApp extends BaseApp {
         const parentPath = pathArray.slice(0, -1);
         const name = pathArray[pathArray.length - 1];
 
-        const isFile = await this.fs.isFile(parentPath, name);
+        const isFile = await this.fs.isFile(this.pathToString(parentPath), name);
         if (isFile) {
-          await os.fs.delete(parentPath, name);
+          await this.fs.deleteItem(this.pathToRelative(parentPath), name);
         } else {
           if (!isRecursive) throw new Error("is a directory");
-          const folderItems = Object.keys(await os.fs.readdir(this.pathToString(pathArray)));
+          const folderItems = Object.keys(await this.fs.getFolder(this.pathToString(pathArray)));
           for (const sub of folderItems) {
             await removeItem([...pathArray, sub]);
           }
-          await os.fs.delete(parentPath, name);
+          await this.fs.deleteItem(this.pathToRelative(parentPath), name);
         }
       } catch (e) {
         if (!isForce) await this.print(`rm: cannot remove '${pathArray.join("/")}': ${e.message}`);
@@ -1348,7 +1381,7 @@ export class TerminalApp extends BaseApp {
           if (!isFile) {
             await this.print(`cat: ${file}: Is a directory`);
           } else {
-            const content = await os.fs.read(this.pathToString(this.currentPath) + "/" + file);
+            const content = await this.fs.readTextFile(this.pathToRelative(this.currentPath), file);
             await this.print(content || "(empty file)");
           }
         } catch {
@@ -1390,16 +1423,23 @@ export class TerminalApp extends BaseApp {
     for (const file of files) {
       try {
         const targetPath = this.fs.resolvePath(file, this.currentPath);
-        const content = await os.fs.read(this.pathToString(targetPath));
-        const text = typeof content === "string" ? content : new TextDecoder().decode(content);
-        const lines = text.split("\n").length;
-        const words = text.split(/\s+/).filter(Boolean).length;
-        const chars = text.length;
-        const parts = [];
-        if (showLines) parts.push(String(lines).padStart(8));
-        if (showWords) parts.push(String(words).padStart(8));
-        if (showChars) parts.push(String(chars).padStart(8));
-        await this.print(parts.join("") + " " + file);
+        const parentPath = targetPath.slice(0, -1);
+        const name = targetPath[targetPath.length - 1];
+
+        if (await this.fs.isFile(parentPath, name)) {
+          const content = await this.fs.readTextFile(this.pathToRelative(targetPath), "");
+          const text = typeof content === "string" ? content : new TextDecoder().decode(content);
+          const lines = text.split("\n").length;
+          const words = text.split(/\s+/).filter(Boolean).length;
+          const chars = text.length;
+          const parts = [];
+          if (showLines) parts.push(String(lines).padStart(8));
+          if (showWords) parts.push(String(words).padStart(8));
+          if (showChars) parts.push(String(chars).padStart(8));
+          await this.print(parts.join("") + " " + file);
+        } else {
+          await this.print(`wc: ${file}: Is a directory`);
+        }
       } catch {
         await this.print(`wc: ${file}: No such file or directory`);
       }
@@ -1411,7 +1451,7 @@ export class TerminalApp extends BaseApp {
     const parent = pathArray.slice(0, -1);
     const name = pathArray[pathArray.length - 1];
     try {
-      const parentDir = await os.fs.readdir(this.pathToString(parent));
+      const parentDir = await this.fs.getFolder(this.pathToString(parent));
       const entry = parentDir[name];
       if (!entry) return false;
       return entry.type === "dir";
@@ -1425,11 +1465,11 @@ export class TerminalApp extends BaseApp {
     const parentSrc = srcPath.slice(0, -1);
     const isFile = await this.fs.isFile(parentSrc, name);
     if (isFile) {
-      const content = await os.fs.read(this.pathToString(srcPath));
-      await os.fs.write(this.pathToString(destPath), content);
+      const content = await this.fs.readTextFile(this.pathToRelative(srcPath), "");
+      await this.fs.createFile(this.pathToRelative(destPath), name, content);
     } else {
-      await os.fs.mkdir(this.pathToString(destPath));
-      const items = Object.keys(await os.fs.readdir(this.pathToString(srcPath)));
+      await this.fs.createFolder(this.pathToRelative(destPath), name);
+      const items = Object.keys(await this.fs.getFolder(this.pathToString(srcPath)));
       for (const child of items) {
         await this.copyItem([...srcPath, child], [...destPath, child]);
       }
@@ -1441,12 +1481,12 @@ export class TerminalApp extends BaseApp {
     const name = pathArray[pathArray.length - 1];
     const isFile = await this.fs.isFile(parent, name);
     if (!isFile) {
-      const items = Object.keys(await os.fs.readdir(this.pathToString(pathArray)));
+      const items = Object.keys(await this.fs.getFolder(this.pathToString(pathArray)));
       for (const child of items) {
         await this.deleteRecursive([...pathArray, child]);
       }
     }
-    await os.fs.delete(parent, name);
+    await this.fs.deleteItem(this.pathToRelative(parent), name);
   }
 
   async cmdCp(args = [], flags = []) {
@@ -1510,7 +1550,7 @@ export class TerminalApp extends BaseApp {
       try {
         const isFile = await this.fs.isFile(this.currentPath, args[0]);
         if (isFile) {
-          const content = await os.fs.read(this.pathToString(this.currentPath) + "/" + args[0]);
+          const content = await this.fs.readTextFile(this.pathToRelative(this.currentPath), args[0]);
           return { lines: content.split("\n") };
         }
       } catch {}
@@ -1621,7 +1661,7 @@ export class TerminalApp extends BaseApp {
     const walk = async (path) => {
       let items;
       try {
-        items = Object.keys(await os.fs.readdir(this.pathToString(path)));
+        items = Object.keys(await this.fs.getFolder(this.pathToString(path)));
       } catch {
         return;
       }
@@ -1811,13 +1851,29 @@ export class TerminalApp extends BaseApp {
       const parentPath = target.slice(0, -1);
       const name = target[target.length - 1];
       try {
-        if (await this.fs.isFile(parentPath, name)) {
-          const parent = await os.fs.readdir(this.pathToString(parentPath));
+        if (await this.fs.isFile(this.pathToString(parentPath), name)) {
+          const parent = await this.fs.getFolder(this.pathToString(parentPath));
           return parent[name]?.size || 0;
         }
       } catch {}
-      const { size } = await os.fs.calcDirSize(target);
-      return size;
+
+      // Calculate directory size recursively
+      const calcDirSize = async (pathArray) => {
+        let totalSize = 0;
+        try {
+          const items = await this.fs.getFolder(this.pathToString(pathArray));
+          for (const [itemName, itemMeta] of Object.entries(items)) {
+            if (itemMeta.type === "file") {
+              totalSize += itemMeta.size || 0;
+            } else {
+              totalSize += await calcDirSize([...pathArray, itemName]);
+            }
+          }
+        } catch {}
+        return totalSize;
+      };
+
+      return await calcDirSize(target);
     };
 
     const targets = args.length ? args.map((a) => this.fs.resolvePath(a, this.currentPath)) : [this.currentPath];
@@ -1829,7 +1885,7 @@ export class TerminalApp extends BaseApp {
         await this.print(`${fmt(size)} ${displayPath}`);
       } else {
         try {
-          const items = Object.entries(await os.fs.readdir(this.pathToString(target)));
+          const items = Object.entries(await this.fs.getFolder(this.pathToString(target)));
           for (const [name, meta] of items) {
             const itemPath = [...target, name];
             const itemSize = meta.type === "file" ? meta.size || 0 : await getFileSize(itemPath);
@@ -1850,7 +1906,7 @@ export class TerminalApp extends BaseApp {
 
     let items;
     try {
-      items = Object.keys(await os.fs.readdir(this.pathToString(path)));
+      items = Object.keys(await this.fs.getFolder(this.pathToString(path)));
     } catch {
       await this.print(`tree: cannot access '${this.pathToString(path)}': No such file or directory`);
       return;
@@ -2218,6 +2274,7 @@ export class TerminalApp extends BaseApp {
 
     await this.gitManager.clone(url, dir, onProgress, depth);
     statusEl.textContent = "";
+    await this.fs.updateMetadataFromStats(dir);
     await this.print("done.");
   }
 
@@ -2600,7 +2657,7 @@ export class TerminalApp extends BaseApp {
       const filePath = args[0];
       try {
         const resolved = this.fs.resolvePath(filePath, this.currentPath);
-        const content = await os.fs.read(this.pathToString(resolved));
+        const content = await this.fs.readTextFile(this.pathToRelative(resolved), "");
         await this.execPythonCode(content);
       } catch {
         await this.print(`python: can't open file '${filePath}': No such file or directory`);
@@ -2691,7 +2748,7 @@ export class TerminalApp extends BaseApp {
       const filePath = args[0];
       try {
         const resolved = this.fs.resolvePath(filePath, this.currentPath);
-        const content = await os.fs.read(this.pathToString(resolved));
+        const content = await this.fs.readTextFile(this.pathToRelative(resolved), "");
         await this.execNodeCode(content, filePath);
       } catch {
         await this.print(`node: can't open file '${filePath}': No such file or directory`);

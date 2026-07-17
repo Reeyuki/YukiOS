@@ -86,7 +86,7 @@ export class AppRestorationService {
     if (!this.wm.fs || !this.wm.fs.sessionKey) return;
 
     const sessionKey = this.wm.fs.sessionKey;
-    const sessionPath = `/ys/users/${sessionKey}/system/windowSession.json`;
+    const sessionPath = `/home/${sessionKey}/system/windowSession.json`;
 
     const persistenceEnabled = os.storage.get(StorageKeys.windowSessionPersistence) !== "false";
     if (!persistenceEnabled) {
@@ -205,7 +205,7 @@ export class AppRestorationService {
 
     try {
       const sessionKey = this.wm.fs.sessionKey;
-      const sessionPath = `/ys/users/${sessionKey}/system/windowSession.json`;
+      const sessionPath = `/home/${sessionKey}/system/windowSession.json`;
 
       const exists = await this.wm.fs.exists(sessionPath);
       if (!exists) {

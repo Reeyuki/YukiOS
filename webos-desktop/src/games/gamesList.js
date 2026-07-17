@@ -486,6 +486,12 @@ export const appMap = {
     icon: "/static/icons/raft.webp",
     title: "Raft"
   },
+  runescape: {
+    type: "game",
+    url: "https://play.rsps.app",
+    icon: "https://play.rsps.app/icons/icon-152x152.png",
+    title: "Runescape Web"
+  },
   yandereSim: {
     type: "game",
     url: "https://cdn.jsdelivr.net/gh/reeyuki/yukios-games@main/gnmath/yandere.html",

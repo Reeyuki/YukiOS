@@ -26,7 +26,7 @@ export class WindowSessionManager {
   async saveSession() {
     if (!this.manager.fs || !this.manager.fs.sessionKey) return;
     const sessionKey = this.manager.fs.sessionKey;
-    const sessionPath = `/ys/users/${sessionKey}/system/windowSession.json`;
+    const sessionPath = `/home/${sessionKey}/system/windowSession.json`;
 
     const persistenceEnabled = os.storage.get(StorageKeys.windowSessionPersistence) !== "false";
     if (!persistenceEnabled) {
@@ -128,7 +128,7 @@ export class WindowSessionManager {
     if (!persistenceEnabled) return;
     this.manager.isRestoring = true;
     const sessionKey = this.manager.fs.sessionKey;
-    const sessionPath = `/ys/users/${sessionKey}/system/windowSession.json`;
+    const sessionPath = `/home/${sessionKey}/system/windowSession.json`;
 
     try {
       const exists = await this.manager.fs.exists(sessionPath);

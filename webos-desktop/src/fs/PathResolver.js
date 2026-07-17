@@ -40,10 +40,10 @@ export class PathResolver {
       path = [path];
     }
     const norm = this.normalizePath(path);
-    const rootParts = this.CONFIG.ROOT.split("/").filter(Boolean);
-    if (norm.length >= rootParts.length && norm.slice(0, rootParts.length).join("/") === rootParts.join("/")) {
-      return this.join("/", ...norm);
+    const fullPath = this.join("/", ...norm);
+    if (fullPath === this.CONFIG.ROOT || fullPath.startsWith(this.CONFIG.ROOT + "/")) {
+      return fullPath;
     }
-    return this.join("/", ...rootParts, ...norm);
+    return this.join(this.CONFIG.ROOT, ...norm);
   }
 }

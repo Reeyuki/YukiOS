@@ -1060,13 +1060,27 @@ export const APP_MANIFESTS = [
   {
     type: "system",
     title: "LibreSprite",
-    source: "https://yukios.netlify.app/static/apps/libresprite/index.html",
+    source: "https://libresprite.github.io/online",
     icon: `${CDN_BASE}/static/icons/libresprite.webp`,
     launchType: "remote",
     windowIdPatterns: ["libresprite"],
     category: "graphics",
     clippy: { message: "Open LibreSprite and sketch directly in the browser.", animation: ClippyAnimation.GetArtsy },
     description: "Pixel art editor with layers, animation, and export options."
+  },
+  {
+    type: "system",
+    title: "Godot Web Editor",
+    source: "https://editor.godotengine.org/releases/latest",
+    icon: `${CDN_BASE}/static/icons/godot.webp`,
+    launchType: "remote",
+    windowIdPatterns: ["godot-web-editor"],
+    category: "development",
+    clippy: {
+      message: "Edit games and prototypes in the Godot engine right from your browser.",
+      animation: ClippyAnimation.GetWizardy
+    },
+    description: "Web-based Godot editor for creating and editing 2D and 3D games in your browser."
   },
   {
     type: "system",

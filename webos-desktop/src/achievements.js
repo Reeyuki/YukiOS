@@ -33,7 +33,6 @@ export const Achievements = {
   SnapHappy: "snap_happy",
   WorkspaceWanderer: "workspace_wanderer",
   WorkspaceArchitect: "workspace_architect",
-  GitGuru: "git_guru",
   ScreenshotSavant: "screenshot_savant",
   MathWhiz: "math_whiz",
   NightPerson: "night_owl",
@@ -75,7 +74,6 @@ export class AchievementsApp extends BaseApp {
       windowSnapped: [{ at: 10, key: Achievements.SnapHappy }],
       workspaceSwitched: [{ at: 25, key: Achievements.WorkspaceWanderer }],
       workspaceAdded: [{ at: 3, key: Achievements.WorkspaceArchitect }],
-      gitCommand: [{ at: 1, key: Achievements.GitGuru }],
       screenshotTaken: [{ at: 10, key: Achievements.ScreenshotSavant }],
       calculationDone: [{ at: 50, key: Achievements.MathWhiz }],
       powerProfileChange: [{ at: 5, key: Achievements.PowerUser }]
@@ -362,13 +360,6 @@ export class AchievementsApp extends BaseApp {
         desc: "Create 3 different workspaces",
         icon: "fa-plus",
         rarity: "uncommon"
-      },
-      {
-        id: Achievements.GitGuru,
-        title: "Git Guru",
-        desc: "Execute a git command in the terminal",
-        icon: "fa-code-branch",
-        rarity: "common"
       },
       {
         id: Achievements.ScreenshotSavant,

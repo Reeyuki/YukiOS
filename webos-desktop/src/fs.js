@@ -34,164 +34,160 @@ function isBlob(obj) {
 }
 
 export const defaultStorage = {
-  home: {
-    reeyuki: {
-      Desktop: {},
-      Documents: {
-        "INFO.txt": {
-          type: "file",
-          content: "Welcome aboard!\n\nYou can write and save text files using the Notepad app.",
-          kind: FileKind.TEXT,
-          icon: "static/icons/notepad.webp"
-        },
-        "YukiOS.md": {
-          type: "file",
-          content: typeof __README_CONTENT__ !== "undefined" ? __README_CONTENT__ : "# YukiOS\n",
-          kind: FileKind.TEXT,
-          icon: "static/icons/notepad.webp"
-        },
-        "Monocraft.ttf": {
-          type: "file",
-          content: "https://cdn.jsdelivr.net/gh/IdreesInc/Monocraft@main/dist/Monocraft-ttf/Monocraft.ttf",
-          kind: FileKind.FONT,
-          icon: "fas fa-font"
-        }
-      },
-      Music: {
-        "new_look_mii_maker_lofi_mix.mp3": {
-          type: "file",
-          content: resolveIconUrl("static/audio/new_look_mii_maker_lofi_mix.opus"),
-          kind: FileKind.AUDIO,
-          icon: "static/icons/spot.webp"
-        }
-      },
-      Pictures: {
-        "gandalf.gif": {
-          type: "file",
-          content: resolveIconUrl("static/gandalf.gif"),
-          kind: FileKind.IMAGE,
-          icon: resolveIconUrl("static/gandalf.gif")
-        },
-        Wallpapers: {
-          "wallpaper1.webp": {
-            type: "file",
-            content: defaultWallpaperUrl("wallpaper1.webp"),
-            kind: FileKind.IMAGE,
-            icon: defaultWallpaperUrl("wallpaper1.webp")
-          },
-          "wallpaper2.webp": {
-            type: "file",
-            content: defaultWallpaperUrl("wallpaper2.webp"),
-            kind: FileKind.IMAGE,
-            icon: defaultWallpaperUrl("wallpaper2.webp")
-          },
-          "wallpaper3.webp": {
-            type: "file",
-            content: defaultWallpaperUrl("wallpaper3.webp"),
-            kind: FileKind.IMAGE,
-            icon: defaultWallpaperUrl("wallpaper3.webp")
-          },
-          "wallpaper4.webp": {
-            type: "file",
-            content: defaultWallpaperUrl("wallpaper4.webp"),
-            kind: FileKind.IMAGE,
-            icon: defaultWallpaperUrl("wallpaper4.webp")
-          },
-          "wallpaper5.webp": {
-            type: "file",
-            content: defaultWallpaperUrl("wallpaper5.webp"),
-            kind: FileKind.IMAGE,
-            icon: defaultWallpaperUrl("wallpaper5.webp")
-          },
-          "wallpaper6.webp": {
-            type: "file",
-            content: defaultWallpaperUrl("wallpaper6.webp"),
-            kind: FileKind.IMAGE,
-            icon: defaultWallpaperUrl("wallpaper6.webp")
-          },
-          "wallpaper7.webp": {
-            type: "file",
-            content: defaultWallpaperUrl("wallpaper7.webp"),
-            kind: FileKind.IMAGE,
-            icon: defaultWallpaperUrl("wallpaper7.webp")
-          },
-          "wallpaper8.webp": {
-            type: "file",
-            content: defaultWallpaperUrl("wallpaper8.webp"),
-            kind: FileKind.IMAGE,
-            icon: defaultWallpaperUrl("wallpaper8.webp")
-          },
-          "wallpaper9.webp": {
-            type: "file",
-            content: defaultWallpaperUrl("wallpaper9.webp"),
-            kind: FileKind.IMAGE,
-            icon: defaultWallpaperUrl("wallpaper9.webp")
-          },
-          "wallpaper10.webp": {
-            type: "file",
-            content: defaultWallpaperUrl("wallpaper10.webp"),
-            kind: FileKind.IMAGE,
-            icon: defaultWallpaperUrl("wallpaper10.webp")
-          },
-          "wallpaper11.webp": {
-            type: "file",
-            content: defaultWallpaperUrl("wallpaper11.webp"),
-            kind: FileKind.IMAGE,
-            icon: defaultWallpaperUrl("wallpaper11.webp")
-          },
-          "wallpaper12.png": {
-            type: "file",
-            content: defaultWallpaperUrl("wallpaper12.png"),
-            kind: FileKind.IMAGE,
-            icon: defaultWallpaperUrl("wallpaper12.png")
-          },
-          "wallpaper13.png": {
-            type: "file",
-            content: defaultWallpaperUrl("wallpaper13.png"),
-            kind: FileKind.IMAGE,
-            icon: defaultWallpaperUrl("wallpaper13.png")
-          },
-          "mint.webp": {
-            type: "file",
-            content: defaultWallpaperUrl("mint.webp"),
-            kind: FileKind.IMAGE,
-            icon: defaultWallpaperUrl("mint.webp")
-          },
-          "redwin10.jpg": {
-            type: "file",
-            content: defaultWallpaperUrl("redwin10.jpg"),
-            kind: FileKind.IMAGE,
-            icon: defaultWallpaperUrl("redwin10.jpg")
-          },
-          "win7.webp": {
-            type: "file",
-            content: defaultWallpaperUrl("win7.webp"),
-            kind: FileKind.IMAGE,
-            icon: defaultWallpaperUrl("win7.webp")
-          },
-          "win10.webp": {
-            type: "file",
-            content: defaultWallpaperUrl("win10.webp"),
-            kind: FileKind.IMAGE,
-            icon: defaultWallpaperUrl("win10.webp")
-          },
-          "win11.webp": {
-            type: "file",
-            content: defaultWallpaperUrl("win11.webp"),
-            kind: FileKind.IMAGE,
-            icon: defaultWallpaperUrl("win11.webp")
-          },
-          "xp.webp": {
-            type: "file",
-            content: defaultWallpaperUrl("xp.webp"),
-            kind: FileKind.IMAGE,
-            icon: defaultWallpaperUrl("xp.webp")
-          }
-        }
-      },
-      Videos: {}
+  Desktop: {},
+  Documents: {
+    "INFO.txt": {
+      type: "file",
+      content: "Welcome aboard!\n\nYou can write and save text files using the Notepad app.",
+      kind: FileKind.TEXT,
+      icon: "static/icons/notepad.webp"
+    },
+    "YukiOS.md": {
+      type: "file",
+      content: typeof __README_CONTENT__ !== "undefined" ? __README_CONTENT__ : "# YukiOS\n",
+      kind: FileKind.TEXT,
+      icon: "static/icons/notepad.webp"
+    },
+    "Monocraft.ttf": {
+      type: "file",
+      content: "https://cdn.jsdelivr.net/gh/IdreesInc/Monocraft@main/dist/Monocraft-ttf/Monocraft.ttf",
+      kind: FileKind.FONT,
+      icon: "fas fa-font"
     }
-  }
+  },
+  Music: {
+    "new_look_mii_maker_lofi_mix.mp3": {
+      type: "file",
+      content: resolveIconUrl("static/audio/new_look_mii_maker_lofi_mix.opus"),
+      kind: FileKind.AUDIO,
+      icon: "static/icons/spot.webp"
+    }
+  },
+  Pictures: {
+    "gandalf.gif": {
+      type: "file",
+      content: resolveIconUrl("static/gandalf.gif"),
+      kind: FileKind.IMAGE,
+      icon: resolveIconUrl("static/gandalf.gif")
+    },
+    Wallpapers: {
+      "wallpaper1.webp": {
+        type: "file",
+        content: defaultWallpaperUrl("wallpaper1.webp"),
+        kind: FileKind.IMAGE,
+        icon: defaultWallpaperUrl("wallpaper1.webp")
+      },
+      "wallpaper2.webp": {
+        type: "file",
+        content: defaultWallpaperUrl("wallpaper2.webp"),
+        kind: FileKind.IMAGE,
+        icon: defaultWallpaperUrl("wallpaper2.webp")
+      },
+      "wallpaper3.webp": {
+        type: "file",
+        content: defaultWallpaperUrl("wallpaper3.webp"),
+        kind: FileKind.IMAGE,
+        icon: defaultWallpaperUrl("wallpaper3.webp")
+      },
+      "wallpaper4.webp": {
+        type: "file",
+        content: defaultWallpaperUrl("wallpaper4.webp"),
+        kind: FileKind.IMAGE,
+        icon: defaultWallpaperUrl("wallpaper4.webp")
+      },
+      "wallpaper5.webp": {
+        type: "file",
+        content: defaultWallpaperUrl("wallpaper5.webp"),
+        kind: FileKind.IMAGE,
+        icon: defaultWallpaperUrl("wallpaper5.webp")
+      },
+      "wallpaper6.webp": {
+        type: "file",
+        content: defaultWallpaperUrl("wallpaper6.webp"),
+        kind: FileKind.IMAGE,
+        icon: defaultWallpaperUrl("wallpaper6.webp")
+      },
+      "wallpaper7.webp": {
+        type: "file",
+        content: defaultWallpaperUrl("wallpaper7.webp"),
+        kind: FileKind.IMAGE,
+        icon: defaultWallpaperUrl("wallpaper7.webp")
+      },
+      "wallpaper8.webp": {
+        type: "file",
+        content: defaultWallpaperUrl("wallpaper8.webp"),
+        kind: FileKind.IMAGE,
+        icon: defaultWallpaperUrl("wallpaper8.webp")
+      },
+      "wallpaper9.webp": {
+        type: "file",
+        content: defaultWallpaperUrl("wallpaper9.webp"),
+        kind: FileKind.IMAGE,
+        icon: defaultWallpaperUrl("wallpaper9.webp")
+      },
+      "wallpaper10.webp": {
+        type: "file",
+        content: defaultWallpaperUrl("wallpaper10.webp"),
+        kind: FileKind.IMAGE,
+        icon: defaultWallpaperUrl("wallpaper10.webp")
+      },
+      "wallpaper11.webp": {
+        type: "file",
+        content: defaultWallpaperUrl("wallpaper11.webp"),
+        kind: FileKind.IMAGE,
+        icon: defaultWallpaperUrl("wallpaper11.webp")
+      },
+      "wallpaper12.png": {
+        type: "file",
+        content: defaultWallpaperUrl("wallpaper12.png"),
+        kind: FileKind.IMAGE,
+        icon: defaultWallpaperUrl("wallpaper12.png")
+      },
+      "wallpaper13.png": {
+        type: "file",
+        content: defaultWallpaperUrl("wallpaper13.png"),
+        kind: FileKind.IMAGE,
+        icon: defaultWallpaperUrl("wallpaper13.png")
+      },
+      "mint.webp": {
+        type: "file",
+        content: defaultWallpaperUrl("mint.webp"),
+        kind: FileKind.IMAGE,
+        icon: defaultWallpaperUrl("mint.webp")
+      },
+      "redwin10.jpg": {
+        type: "file",
+        content: defaultWallpaperUrl("redwin10.jpg"),
+        kind: FileKind.IMAGE,
+        icon: defaultWallpaperUrl("redwin10.jpg")
+      },
+      "win7.webp": {
+        type: "file",
+        content: defaultWallpaperUrl("win7.webp"),
+        kind: FileKind.IMAGE,
+        icon: defaultWallpaperUrl("win7.webp")
+      },
+      "win10.webp": {
+        type: "file",
+        content: defaultWallpaperUrl("win10.webp"),
+        kind: FileKind.IMAGE,
+        icon: defaultWallpaperUrl("win10.webp")
+      },
+      "win11.webp": {
+        type: "file",
+        content: defaultWallpaperUrl("win11.webp"),
+        kind: FileKind.IMAGE,
+        icon: defaultWallpaperUrl("win11.webp")
+      },
+      "xp.webp": {
+        type: "file",
+        content: defaultWallpaperUrl("xp.webp"),
+        kind: FileKind.IMAGE,
+        icon: defaultWallpaperUrl("xp.webp")
+      }
+    }
+  },
+  Videos: {}
 };
 
 export class FileSystemManager {
@@ -199,7 +195,6 @@ export class FileSystemManager {
     this.CONFIG = {
       GRID_SIZE: 80,
       ROOT: "/home/guest",
-      USER_BASE: "/ys/users",
       META_FILE: ".meta.json"
     };
     this.sessionKey = "guest";
@@ -268,7 +263,7 @@ export class FileSystemManager {
 
   async initFS(sessionKey = "guest") {
     this.sessionKey = sessionKey;
-    this.CONFIG.ROOT = `${this.CONFIG.USER_BASE}/${sessionKey}`;
+    this.CONFIG.ROOT = `/home/${sessionKey}`;
     this.mountManager.setRoot(this.CONFIG.ROOT);
 
     if (this.storage.fs) return this.fsReady;
@@ -284,7 +279,6 @@ export class FileSystemManager {
         console.error("FS initialization failed:", e);
         try {
           await this.storage.clearIndexedDB();
-          console.log("Cleared IndexedDB, retrying initialization...");
           setTimeout(attemptInit, 100);
         } catch (clearErr) {
           console.error("Failed to clear IndexedDB:", clearErr);
@@ -297,7 +291,7 @@ export class FileSystemManager {
 
   async setSession(username) {
     this.sessionKey = username;
-    this.CONFIG.ROOT = `${this.CONFIG.USER_BASE}/${username}`;
+    this.CONFIG.ROOT = `/home/${username}`;
     this.mountManager.setRoot(this.CONFIG.ROOT);
     if (this.storage.fs) {
       await this.ensureDefaults();
@@ -306,6 +300,7 @@ export class FileSystemManager {
     }
     await this.fsReady;
     await this.migrateFromOldUuid(username);
+    await this.migrateFromOldPath(username);
     if (this.desktopUI) {
       await this.desktopUI.loadDesktopItems();
     }
@@ -314,8 +309,20 @@ export class FileSystemManager {
   async migrateFromOldUuid(username) {
     const oldKey = os.storage.get(StorageKeys.userId);
     if (!oldKey || oldKey === username || !/^[0-9a-f]{8}-[0-9a-f]{4}-/.test(oldKey)) return;
-    const oldRoot = `${this.CONFIG.USER_BASE}/${oldKey}`;
-    const newRoot = `${this.CONFIG.USER_BASE}/${username}`;
+    const oldRoot = `/ys/users/${oldKey}`;
+    const newRoot = `/home/${username}`;
+    if (oldRoot === newRoot) return;
+    const oldExists = await this.exists(oldRoot).catch(() => false);
+    if (!oldExists) return;
+    const newExists = await this.exists(newRoot).catch(() => false);
+    if (newExists) return;
+    console.log(`Migrating user data from ${oldRoot} to ${newRoot}...`);
+    await this.migrateUserDir(oldRoot, newRoot);
+  }
+
+  async migrateFromOldPath(username) {
+    const oldRoot = `/ys/users/${username}`;
+    const newRoot = `/home/${username}`;
     if (oldRoot === newRoot) return;
     const oldExists = await this.exists(oldRoot).catch(() => false);
     if (!oldExists) return;
@@ -522,16 +529,7 @@ export class FileSystemManager {
       }
     }
 
-    const userHome = {
-      [this.sessionKey]: defaultStorage.home.reeyuki
-    };
-    const sessionDefaultStorage = {
-      ys: {
-        users: userHome
-      }
-    };
-
-    await this.createFromObject(sessionDefaultStorage, "/");
+    await this.createFromObject(defaultStorage, this.CONFIG.ROOT);
     await this.migrateDefaultWallpapers();
     os.storage.set(defaultsCreatedKey, "true");
   }
@@ -701,7 +699,16 @@ export class FileSystemManager {
         const kind = meta[name]?.kind ?? this.inferKind(name);
         const icon = resolveIconUrl(meta[name]?.icon) ?? "static/icons/file.webp";
         const faIcon = meta[name]?.faIcon ?? null;
-        result[name] = { type: "file", kind, icon, faIcon, content: "", size: stat.size ?? meta[name]?.size ?? 0 };
+        let fileSize = stat.size ?? meta[name]?.size ?? 0;
+
+        if (fileSize === 0) {
+          const blob = await this.blobs.getBlobByFullPath(full).catch(() => null);
+          if (blob) {
+            fileSize = blob.size;
+          }
+        }
+
+        result[name] = { type: "file", kind, icon, faIcon, content: "", size: fileSize };
       }
     }
 
@@ -989,10 +996,69 @@ export class FileSystemManager {
       }
     }
     try {
-      return this.storage.statSync(fullPath).isFile();
-    } catch {
-      return false;
-    }
+      const stat = await this.storage.statAsync(fullPath);
+      if (stat.isFile()) return true;
+    } catch {}
+
+    const folder = await this.getFolder(path);
+    const item = folder[name];
+    return item && item.type === "file";
+  }
+
+  async updateMetadataFromStats(dirPath) {
+    await this.fsReady;
+    const walkAndUpdate = async (path) => {
+      try {
+        const entries = await this.pRead("readdir", path);
+        for (const name of entries) {
+          if (name === this.CONFIG.META_FILE) continue;
+          if (name === ".git") continue;
+          const fullPath = this.paths.join(path, name);
+          try {
+            const stat = await this.pStat(fullPath);
+            if (stat.isFile()) {
+              const dir = this.paths.dirname(fullPath);
+              const fileName = this.paths.basename(fullPath);
+              const currentMeta = await this.readMeta(dir);
+              let fileSize = stat.size;
+
+              if (fileSize === 0) {
+                try {
+                  const content = await this.pRead("readFile", fullPath);
+                  fileSize =
+                    content instanceof Uint8Array ? content.length : typeof content === "string" ? content.length : 0;
+                } catch (readErr) {
+                  console.warn(`Failed to read ${fullPath} for size:`, readErr.message);
+                }
+              }
+
+              if (!currentMeta[fileName] || currentMeta[fileName].size !== fileSize) {
+                await this.writeMeta(dir, fileName, {
+                  kind: currentMeta[fileName]?.kind || this.inferKind(fileName),
+                  icon: currentMeta[fileName]?.icon,
+                  faIcon: currentMeta[fileName]?.faIcon,
+                  size: fileSize
+                });
+              }
+            } else if (stat.isDirectory()) {
+              await walkAndUpdate(fullPath);
+            }
+          } catch (statErr) {
+            try {
+              const entries = await this.pRead("readdir", fullPath);
+              if (Array.isArray(entries)) {
+                await walkAndUpdate(fullPath);
+              }
+            } catch {
+              console.warn(`Skipping ${fullPath} due to stat error:`, statErr.message);
+            }
+          }
+        }
+      } catch (e) {
+        console.warn(`Failed to update metadata for ${path}:`, e);
+      }
+    };
+    await walkAndUpdate(dirPath);
   }
 
   async writeFile(filePath, content) {

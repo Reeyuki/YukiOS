@@ -94,7 +94,7 @@ Planned features and improvements for YukiOS.
 - [✅] Import/export for backup and migration
 - [✅] Animated boot screen on first load
 - [✅] Calendar popup from taskbar clock with events ("Plans") system
-- [📋] **Startup app manager** — Choose which apps launch automatically on login
+- [📋] **Startup app manager** — Choose which apps launch automatically on login (maybe add this feature into task manager.)
 - [📋] **Sound themes** — System-wide audio feedback for login, window open/close, notifications, errors
 - [📋] **Album art wallpaper** — Extract album art from currently playing music and set it as desktop wallpaper
 - [📋] **Battery-aware performance** — Reduce animation fidelity and background activity automatically on low battery when running on mobile

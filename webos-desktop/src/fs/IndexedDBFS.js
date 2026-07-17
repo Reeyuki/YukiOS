@@ -41,6 +41,21 @@ function txDel(path) {
   return result;
 }
 
+async function txGet(path) {
+  const tx = db.transaction(STORE_NAME, "readonly");
+  const result = promisify(tx.objectStore(STORE_NAME).get(path));
+  return result;
+}
+
+async function pathExistsInDB(path) {
+  try {
+    const d = await txGet(path);
+    return d !== undefined;
+  } catch {
+    return false;
+  }
+}
+
 function n(path) {
   if (!path || typeof path !== "string") return "/";
   const norm = "/" + path.split("/").filter(Boolean).join("/");
@@ -79,14 +94,22 @@ function doc(path, type, content) {
   return d;
 }
 
-function mkdirRecursive(p) {
+async function mkdirRecursive(p) {
   const parts = n(p).split("/").filter(Boolean);
   let acc = "";
   for (const part of parts) {
     acc += "/" + part;
     if (!cache.has(acc)) {
-      const d = doc(acc, "directory");
-      cache.set(acc, d);
+      const existsInDB = await pathExistsInDB(acc);
+      if (!existsInDB) {
+        const d = doc(acc, "directory");
+        cache.set(acc, d);
+      } else {
+        const existing = await txGet(acc);
+        if (existing) {
+          cache.set(acc, existing);
+        }
+      }
     }
   }
 }
@@ -121,7 +144,10 @@ const fs = {
       const d = doc(np, "file", content);
       cache.set(np, d);
       txPut(d)
-        .then(() => cb(null))
+        .then(() => {
+          d.persisted = true;
+          cb(null);
+        })
         .catch(cb);
     } catch (e) {
       cb(e);
@@ -154,34 +180,67 @@ const fs = {
       cb = options;
       options = {};
     }
-    try {
-      const np = n(path);
-      if (cache.has(np))
-        return cb(Object.assign(new Error(`EEXIST: file already exists, mkdir '${path}'`), { code: "EEXIST" }));
-      if (options.recursive) {
-        mkdirRecursive(np);
-      } else {
-        const parent = n(np.substring(0, np.lastIndexOf("/")));
-        if (!cache.has(parent))
-          return cb(Object.assign(new Error(`ENOENT: no such parent directory, mkdir '${path}'`), { code: "ENOENT" }));
-        const d = doc(np, "directory");
-        cache.set(np, d);
+
+    const doMkdir = async () => {
+      try {
+        const np = n(path);
+
+        if (cache.has(np)) {
+          const existing = cache.get(np);
+          if (existing.type === "file") {
+            return cb(Object.assign(new Error(`EEXIST: file already exists, mkdir '${path}'`), { code: "EEXIST" }));
+          }
+          return cb(null);
+        }
+
+        const existsInDB = await pathExistsInDB(np);
+        if (existsInDB) {
+          const existing = await txGet(np);
+          if (existing) {
+            cache.set(np, existing);
+            if (existing.type === "file") {
+              return cb(Object.assign(new Error(`EEXIST: file already exists, mkdir '${path}'`), { code: "EEXIST" }));
+            }
+            return cb(null);
+          }
+        }
+
+        if (options.recursive) {
+          await mkdirRecursive(np);
+        } else {
+          const parent = n(np.substring(0, np.lastIndexOf("/")));
+          if (!cache.has(parent)) {
+            const parentExists = await pathExistsInDB(parent);
+            if (!parentExists) {
+              return cb(
+                Object.assign(new Error(`ENOENT: no such parent directory, mkdir '${path}'`), { code: "ENOENT" })
+              );
+            }
+            const parentDoc = await txGet(parent);
+            if (parentDoc) cache.set(parent, parentDoc);
+          }
+          const d = doc(np, "directory");
+          cache.set(np, d);
+        }
+
+        const allNew = [];
+        for (const [p, d] of cache) {
+          if (!d.persisted) allNew.push(d);
+        }
+        const tx = db.transaction(STORE_NAME, "readwrite");
+        const store = tx.objectStore(STORE_NAME);
+        for (const d of allNew) {
+          store.put(d);
+          d.persisted = true;
+        }
+        tx.oncomplete = () => cb(null);
+        tx.onerror = (e) => cb(e.target.error);
+      } catch (e) {
+        cb(e);
       }
-      const allNew = [];
-      for (const [p, d] of cache) {
-        if (!d.persisted) allNew.push(d);
-      }
-      const tx = db.transaction(STORE_NAME, "readwrite");
-      const store = tx.objectStore(STORE_NAME);
-      for (const d of allNew) {
-        store.put(d);
-        d.persisted = true;
-      }
-      tx.oncomplete = () => cb(null);
-      tx.onerror = (e) => cb(e.target.error);
-    } catch (e) {
-      cb(e);
-    }
+    };
+
+    doMkdir();
   },
 
   readdir(path, cb) {
@@ -269,6 +328,24 @@ const fs = {
     const np = n(path);
     if (np === "/") return new Stats({ type: "directory", path: "/", mtime: Date.now(), ctime: Date.now(), size: 0 });
     const d = cache.get(np);
+    if (!d) throw Object.assign(new Error(`ENOENT: no such file or directory, stat '${path}'`), { code: "ENOENT" });
+    return new Stats(d);
+  },
+
+  async statAsync(path) {
+    const np = n(path);
+    if (np === "/") return new Stats({ type: "directory", path: "/", mtime: Date.now(), ctime: Date.now(), size: 0 });
+
+    let d = cache.get(np);
+    if (!d) {
+      try {
+        d = await txGet(np);
+        if (d) {
+          cache.set(np, d);
+        }
+      } catch (e) {}
+    }
+
     if (!d) throw Object.assign(new Error(`ENOENT: no such file or directory, stat '${path}'`), { code: "ENOENT" });
     return new Stats(d);
   }

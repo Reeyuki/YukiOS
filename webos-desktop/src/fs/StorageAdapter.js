@@ -149,4 +149,12 @@ export class StorageAdapter {
     }
     return this.fs.statSync(path);
   }
+
+  async statAsync(path) {
+    await this.fsReady;
+    if (!this.fs || !this.fs.statAsync) {
+      return this.statSync(path);
+    }
+    return await this.fs.statAsync(path);
+  }
 }

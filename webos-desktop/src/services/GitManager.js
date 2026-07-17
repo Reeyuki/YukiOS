@@ -20,6 +20,10 @@ export class GitManager {
           return await storage.pRead("readFile", path);
         },
         writeFile: async (path, data) => {
+          const dataSize = data instanceof Uint8Array ? data.length : typeof data === "string" ? data.length : 0;
+          try {
+            await storage.p("unlink", path);
+          } catch {}
           if (data instanceof Uint8Array) {
             await storage.p("writeFile", path, data);
           } else if (typeof data === "string") {
@@ -35,7 +39,20 @@ export class GitManager {
           return await storage.pRead("readdir", path);
         },
         mkdir: async (path, opts) => {
-          await storage.p("mkdir", path, opts || {});
+          if (opts && opts.recursive) {
+            const segments = path.split("/").filter(Boolean);
+            let current = "";
+            for (const seg of segments) {
+              current += "/" + seg;
+              try {
+                await storage.p("mkdir", current);
+              } catch (e) {
+                if (e.code !== "EEXIST") throw e;
+              }
+            }
+          } else {
+            await storage.p("mkdir", path, opts || {});
+          }
         },
         rmdir: async (path) => {
           await storage.p("rmdir", path);
@@ -81,7 +98,12 @@ export class GitManager {
       onProgress
     };
     if (depth > 0) opts.depth = depth;
-    return await git.clone(opts);
+    const result = await git.clone(opts);
+
+    await this.storage.fsReady;
+    await this.storage.resolveFs();
+
+    return result;
   }
 
   async init(dir) {
