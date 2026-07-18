@@ -1,0 +1,33 @@
+html.battery-saver * {
+  animation-duration: 0s !important;
+  transition-duration: 0s !important;
+}
+
+html.battery-saver .window,
+html.battery-saver .taskbar-preview,
+html.battery-saver .context-menu,
+html.battery-saver #tray-overflow-popup,
+html.battery-saver #display-performance-tray-popup,
+html.battery-saver #clipboard-tray-popup,
+html.battery-saver #audio-mixer-panel {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+html.battery-saver .window:hover,
+html.battery-saver .icon:hover img {
+  transform: none !important;
+}
+
+html.battery-saver #vanta-container {
+  display: none !important;
+}
+
+html.battery-saver #wallpaper-video {
+  display: none !important;
+}
+
+html.battery-saver #vanta-container + #wallpaper-img {
+  display: block !important;
+}

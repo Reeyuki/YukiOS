@@ -187,5 +187,7 @@ export const StorageKeys = {
   runHistory: "yukiOS_run_history",
   calendarClockStyle: "yukiOS_calendar_clock_style",
   isoMounts: "yukiOS_iso_mounts",
-  startupApps: "yukiOS_startup_apps"
+  startupApps: "yukiOS_startup_apps",
+  batterySaverEnabled: "yukiOS_battery_saver_enabled",
+  batterySaverThreshold: "yukiOS_battery_saver_threshold"
 };

@@ -28,6 +28,8 @@ import { resolveIconUrl, initializeMirrors, CDN_MIRRORS, getCdnMirror, setCdnMir
 import { appMap } from "./games/gamesList.js";
 import "./desktopui/taskbarPositionManager.js";
 import { isMobile, isTouchDevice } from "./shared/platformUtils.js";
+import { batteryPerformanceManager } from "./services/BatteryPerformanceManager.js";
+import "./styles/batterySaver.css";
 import logoImg from "./assets/logo.png";
 import { showCdnPrompt } from "./shared/dialogs.js";
 import { initializeOSBridge, setDialogExplorerApp } from "./os/index.js";
@@ -186,6 +188,7 @@ async function start() {
   await boot.hide();
   await sessionPromise;
 
+  batteryPerformanceManager.init();
   versionChecker.start();
 
   const url = new URL(location.href);
